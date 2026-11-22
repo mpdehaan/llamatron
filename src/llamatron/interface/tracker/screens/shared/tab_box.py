@@ -28,6 +28,12 @@ TAB_ROW_LINES = 3
 NAME_LINE = 1
 # Where the cursor is, among the chosen tab's fields, when it is on the row of tabs.
 ON_TAB_ROW = -1
+# Where a move inside the box leads when it leaves the box downward, to what is under the box.
+BELOW_BOX = -2
+# The band of the fields across a tab's top, such as Enabled and Mode, above the columns' first band.
+TOP_BAND = -1
+# The blank line kept under the tallest tab's last line, so that nothing crowds the box's bottom edge.
+SPACE_UNDER = 1
 
 
 @dataclass(slots=True, kw_only=True)
@@ -36,6 +42,16 @@ class TabColumn:
 
     heading: object
     fields: list
+
+
+@dataclass(slots=True, kw_only=True)
+class Spot:
+    """Where a field of a tab is drawn: its band of columns side by side (TOP_BAND for the fields across the top), its column
+    among the band's, counted from the left, and the line its cursor stands on, counted from the top of its column."""
+
+    band: int
+    column: int
+    line: int
 
 
 @dataclass(slots=True, kw_only=True)
@@ -131,7 +147,7 @@ def box_lines(*, page, box, chosen, cursor, width):
     inner = width - SIDES - len(INSET) * SIDES
     contents = [_tab_contents(page=page, tab=tab, inner=inner, cursor=None) for tab in box.tabs]
     lines, selected = _tab_contents(page=page, tab=box.tabs[chosen], inner=inner, cursor=cursor)
-    height = max(len(content[0]) for content in contents)
+    height = max(len(content[0]) for content in contents) + SPACE_UNDER
     lines += [Text(drawing.NOTHING)] * (height - len(lines))
     result = _tab_row(tabs=box.tabs, chosen=chosen, width=width, here=cursor == ON_TAB_ROW)
     for line in lines:
@@ -142,6 +158,89 @@ def box_lines(*, page, box, chosen, cursor, width):
     if selected is None:
         return result, None
     return result, TAB_ROW_LINES + selected
+
+
+def spots_of(*, page, tab, width):
+    """Return where each of a tab's fields is drawn in a box of a width, as Spots, in the order of the tab's fields."""
+    inner = width - SIDES - len(INSET) * SIDES
+    spots = [Spot(band=TOP_BAND, column=0, line=place) for place in range(len(tab.top))]
+    drawn = [_column_lines(page=page, column=column, inner=inner, cursor=None)[0] for column in tab.columns]
+    for band_place, band in enumerate(_bands_of(widths=[_column_width(lines) for lines in drawn], inner=inner)):
+        for column_place, place in enumerate(band):
+            spots += _column_spots(page=page, column=tab.columns[place], band=band_place, column_place=column_place, inner=inner)
+    return spots
+
+
+def spot_below(*, spots, here):
+    """Return where Down leads from the field at a place: the next field down its column; at a column's foot, the first field of
+    the column below in the next band, the one in the same place or else the last; under the last band, BELOW_BOX."""
+    spot = spots[here]
+    later = [place for place in _column_places(spots=spots, band=spot.band, column=spot.column) if place > here]
+    if later:
+        return later[0]
+    bands = [band for band in _bands_in(spots) if band > spot.band]
+    if not bands:
+        return BELOW_BOX
+    return _column_places(spots=spots, band=bands[0], column=_column_near(spots=spots, band=bands[0], column=spot.column))[0]
+
+
+def spot_above(*, spots, here):
+    """Return where Up leads from the field at a place: the field above in its column; at a column's head, the last field of the
+    column above in the band before, the one in the same place or else the last; above the first band, ON_TAB_ROW."""
+    spot = spots[here]
+    earlier = [place for place in _column_places(spots=spots, band=spot.band, column=spot.column) if place < here]
+    if earlier:
+        return earlier[-1]
+    bands = [band for band in _bands_in(spots) if band < spot.band]
+    if not bands:
+        return ON_TAB_ROW
+    return _column_places(spots=spots, band=bands[-1], column=_column_near(spots=spots, band=bands[-1], column=spot.column))[-1]
+
+
+def spot_beside(*, spots, here, direction):
+    """Return where Left or Right leads from the field at a place: the field of the column beside, in the same band, whose line is
+    nearest, the upper of two as near; at the band's side, the same place."""
+    spot = spots[here]
+    places = _column_places(spots=spots, band=spot.band, column=spot.column + direction)
+    if not places:
+        return here
+    return min(places, key=lambda place: (abs(spots[place].line - spot.line), spots[place].line))
+
+
+def spot_from_below(spots):
+    """Return where Up from under the box leads: the last field of the first column of the last band."""
+    last_band = _bands_in(spots)[-1]
+    return _column_places(spots=spots, band=last_band, column=0)[-1]
+
+
+def _column_spots(*, page, column, band, column_place, inner):
+    """Return the Spots of a column's fields, each line counted from the column's top, its heading's line included."""
+    spots = []
+    line = 0
+    if column.heading is not None:
+        line += 1
+    for field in column.fields:
+        spots.append(Spot(band=band, column=column_place, line=line + field.SELECTED_LINE))
+        line += len(field.lines(page=page, here=False, label_width=0, width=inner))
+    return spots
+
+
+def _column_places(*, spots, band, column):
+    """Return the places of the fields of a column of a band, top to bottom."""
+    return [place for place, spot in enumerate(spots) if spot.band == band and spot.column == column]
+
+
+def _bands_in(spots):
+    """Return the bands the fields stand in, top to bottom."""
+    return sorted({spot.band for spot in spots})
+
+
+def _column_near(*, spots, band, column):
+    """Return the column of a band in a column's place, or the band's last where it has fewer."""
+    columns = sorted({spot.column for spot in spots if spot.band == band})
+    if column in columns:
+        return column
+    return columns[-1]
 
 
 def _tab_contents(*, page, tab, inner, cursor):
@@ -184,15 +283,24 @@ def _bands(*, page, columns, inner, cursor):
         first += len(column.fields)
     lines = []
     selected = None
-    band = []
-    for column_lines, column_selected in drawn:
-        if band and _band_width([*band, (column_lines, column_selected)]) > inner:
-            lines, selected = _band_added(lines=lines, band=band, selected=selected)
-            band = []
-        band.append((column_lines, column_selected))
-    if band:
-        lines, selected = _band_added(lines=lines, band=band, selected=selected)
+    for band in _bands_of(widths=[_column_width(column_lines) for column_lines, _ in drawn], inner=inner):
+        lines, selected = _band_added(lines=lines, band=[drawn[place] for place in band], selected=selected)
     return lines, selected
+
+
+def _bands_of(*, widths, inner):
+    """Return the bands columns of some widths stand in, each the places of the columns side by side in it: as many as fit the
+    box's inside, the rest in the bands below."""
+    bands = []
+    band = []
+    for place, width in enumerate(widths):
+        if band and _band_width([*[widths[each] for each in band], width]) > inner:
+            bands.append(band)
+            band = []
+        band.append(place)
+    if band:
+        bands.append(band)
+    return bands
 
 
 def _within(*, cursor, first, count):
@@ -218,9 +326,8 @@ def _column_lines(*, page, column, inner, cursor):
     return lines, selected
 
 
-def _band_width(band):
-    """Return how wide columns side by side are, each as wide as its widest line, with the space between them."""
-    widths = [_column_width(column_lines) for column_lines, _ in band]
+def _band_width(widths):
+    """Return how wide columns of some widths are side by side, with the space between them."""
     return sum(widths) + len(COLUMN_GAP) * (len(widths) - 1)
 
 

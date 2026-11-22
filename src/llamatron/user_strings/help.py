@@ -40,7 +40,7 @@ Reset AX to DX: sets that register back to its default as the scene starts, but 
 Launch together: in real-time playback only, a start reaching any clip launches them all; off, each waits for the clip above.
 Tab goes to the tabs, where Left and Right choose one. Tempo Ramps move the tempo over bars from its start and before its end.
 
-Up and down select a setting. Left and right change it, and ENTER types or chooses. Bksp goes back to the song's value.
+Up, down, Left and Right select a setting. [ and ] change it, and ENTER types or chooses. Bksp takes the song's value.
 """
 
 # ClipPage
@@ -50,7 +50,7 @@ Tab goes to the tabs; Left and Right choose one. Basics: Repeat, Loop, the order
 Chords, Arp, Guitarify, Timing, Phrasing: its own generators, off until Enabled. User: the set's generators it runs.
 One clip in each scene must not loop, or exporting stops. Advance is for real-time playback only.
 
-Up and down select. Left and right change. ENTER chooses. J jumps to the pattern. L plays the clip and stops it.
+Up, down, Left and Right select. [ and ] change. ENTER chooses. J jumps to the pattern. L plays the clip and stops it.
 """
 
 # MainPage
@@ -66,7 +66,7 @@ Nothing is saved or exported until you ask.
 
 # FilePage
 HELP_FILE_PAGE = """
-The set's own settings, and its file. Up and down select one. Left and right change it, and ENTER types or chooses.
+The set's own settings, and its file. Up and down select one. [ and ] change it, and ENTER types or chooses.
 Title, Author, Description and Notes: only for people reading or sharing the file. Description is one line saying what the
 set is; Bksp clears the first three. ENTER on Notes opens them for editing, as long as you like; Tab reaches Save and CANCEL. Step size: how long each step of a pattern is, unless the pattern sets its own. Default octaves: what a new note or drum hit gets.
 Octave labels: as Live numbers octaves on screen (middle C is C3) or from 0 (middle C is C5).
@@ -89,7 +89,7 @@ A adds one, C copies it, N renames it, M moves it, and S sorts them by name. Bks
 
 # SongPage
 HELP_SONG_PAGE = """
-One song's settings. Up and down select one. Left and right change it, and ENTER types or chooses.
+One song's settings. Up and down select one. [ and ] change it, and ENTER types or chooses.
 
 Name: ENTER renames the song, which N on the Songs page does too.
 Tempo: in quarter notes a minute, unless a scene sets its own. Time signature: only changes what's drawn, the beats in the pattern editor and the bars in Live.
@@ -143,7 +143,7 @@ Default velocity: a step with none typed. Accent: what an accent adds. Instrumen
 CC Lanes: the CC number each of a pattern's CC rows sends here, and a register bound to each.
 Tab goes to the tabs; Left and Right choose one. Chords, Arp, Guitarify, Timing, Phrasing: its own generators, off until Enabled.
 
-Up and down select a setting. Left and right change it, ENTER types, and Space or ENTER toggles. Bksp clears.
+Up, down, Left and Right select a setting. [ and ] change it, ENTER types, and Space or ENTER toggles. Bksp clears.
 """
 
 # OffsetsEditor
@@ -174,8 +174,8 @@ Patterns that use degrees need a scale to export.
 # ScalePage
 HELP_SCALE_PAGE = """
 Name: ENTER renames the scale, and every song and scene using it follows.
-Root: the note the scale starts on. Left and right step through the roots, and ENTER picks one on a keyboard.
-Kind: major, minor, a mode or a world scale. Left and right step through them, and ENTER picks from two pages.
+Root: the note the scale starts on. [ and ] step through the roots, and ENTER picks one on a keyboard.
+Kind: major, minor, a mode or a world scale. [ and ] step through them, and ENTER picks from two pages.
 
 A scale still named after its root and kind, like C Major, is renamed as they change, so the name keeps saying what it is. A name of your own, like main, stays.
 The notes the root and kind make are shown underneath, and how many songs and scenes use the scale, then a keyboard with the scale's keys filled and the root bracketed.
@@ -258,7 +258,7 @@ The four registers, AX to DX, are numbers the whole current song shares. Pattern
 
 Each starts at its default when the song starts, and again whenever a scene resets it. Adding never takes one past its minimum or maximum: it stops there, or, if it wraps, jumps to the other end.
 
-Up and down select. Left and right change a number, ENTER types one, and Bksp goes back to its default. ENTER switches wraps on and off.
+Up and down select. [ and ] change a number, ENTER types one, and Bksp goes back to its default. ENTER switches wraps on and off.
 """
 
 # DrawsPage
@@ -312,7 +312,7 @@ GM sound: one of General MIDI's 128 sounds, which the MIDI (General MIDI) export
 FluidSynth plays. ENTER chooses it from the families, each opening its sounds, where a sound can be heard.
 Default velocity: a step with none typed. Accent: an accent adds.
 
-Up and down select a setting. Left and right change it, and ENTER types or chooses. Bksp clears the device or sound.
+Up and down select a setting. [ and ] change it, and ENTER types or chooses. Bksp clears the device or sound.
 """
 
 # GrooveEditor

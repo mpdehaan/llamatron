@@ -12,7 +12,7 @@ A clip sits where a scene's row and a track's column meet on Arrange, so the cli
 
 The clip page shows the clip's Name and its list of Patterns, then a box of tabs holding the rest of its settings, then Play and Stop. The tabs are in the order the clip applies them: Basics, Chords, Arp and Guitarify, User, Timing and Phrasing, then Shapes, Velocity, Registers, Bypass When and Skip When.
 
-On the row of tabs, `←` and `→`, or `[` and `]`, choose a tab, stopping at the first and the last; `↓` goes into the tab, through its first column and then the next, and on below the box. `Tab` goes to the row of tabs from anywhere on the page. The tab chosen stays chosen on the next clip page until another is chosen. Where the tabs are wider than the box, `<` and `>` stand at the ends for the tabs hidden that way. The box keeps the height of its tallest tab, so choosing a tab moves nothing below it.
+On the row of tabs, `←` and `→`, or `[` and `]`, choose a tab, stopping at the first and the last; `↓` goes into the tab. Inside it, `↑` and `↓` keep to a column: at a column's foot `↓` leaves the box for what is below it, and `↑` from below comes back in at the foot of the first column; `←` and `→` go to the setting beside in the next column, the nearest by line, and change nothing. `[` and `]` change a value, and `ENTER` types or chooses one. `Tab` goes to the row of tabs from anywhere on the page. The tab chosen stays chosen on the next clip page until another is chosen. Where the tabs are wider than the box, `<` and `>` stand at the ends for the tabs hidden that way. The box keeps the height of its tallest tab, so choosing a tab moves nothing below it.
 
 | Setting | What it does |
 | --- | --- |

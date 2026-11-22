@@ -77,7 +77,7 @@ Each line of a table is one statement, read from left to right:
 
 The sums are in whole numbers: a division rounds down, and a remainder is counted from 0 upward. A typed 0 is refused after `/` and `%`, and when a register that divides holds 0 the statement counts as true.
 
-Left and Right move between the parts of a line and `ENTER` changes the part under the cursor: the register, the operator, and then a number or a register. `Bksp` sets the line back to `ignored`.
+The lines are drawn as a grid of five columns, one a part, each as wide as its widest value, so the table keeps its size as a line fills. Left and Right move between the parts of a line and `ENTER` changes the part under the cursor: the register, the operator, and then a number or a register. `Bksp` sets the line back to `ignored`.
 
 A step of a pattern can hold a statement of its own, which is read as the step is reached and stops the clip, starts the pattern over or mutes the step: see [Stop When, Restart When and Mute When](PATTERNS.md#stop-when-restart-when-and-mute-when).
 

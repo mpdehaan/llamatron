@@ -169,7 +169,7 @@ class TestSongPage(UITest):
         self.assertEqual(self.document.song().get_time_signature().to_text(), defaults.DEFAULT_TIME_SIGNATURE)
         await self.press(key_of(binding=keybindings.SongPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.document.song().get_time_signature().to_text(), file_format.TIME_SIGNATURE_CHOICES[file_format.TIME_SIGNATURE_CHOICES.index(defaults.DEFAULT_TIME_SIGNATURE) + 1])
-        await self.press(Key.LEFT, Key.LEFT)
+        await self.press(keybindings.FieldPage.LESS, keybindings.FieldPage.LESS)
         self.assertEqual(self.document.song().get_time_signature().to_text(), file_format.TIME_SIGNATURE_CHOICES[file_format.TIME_SIGNATURE_CHOICES.index(defaults.DEFAULT_TIME_SIGNATURE) - 1])
         await self.press(Key.ENTER)
         self.app.screen.value = SEVEN_EIGHT
@@ -184,7 +184,7 @@ class TestSongPage(UITest):
         self.assertIn(marks.MSG_ONE_STEP_SHOWN, self.text())
         await self.press(key_of(binding=keybindings.SongPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.document.song().get_written_entry_size(), file_format.STEP_SIZE_CHOICES[0])
-        await self.press(Key.LEFT)
+        await self.press(keybindings.FieldPage.LESS)
         self.assertIsNone(self.document.song().get_written_entry_size())
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
@@ -210,17 +210,17 @@ class TestSongPage(UITest):
         self.assertEqual(self.document.song().get_tempo(), 121)
         self.assertTrue(self.document.is_dirty())
 
-    async def test_the_brackets_change_the_tempo_and_the_legend_names_the_arrows_alone(self):
-        """A setting's legend says the arrows, with [ and ] and the older + and - working beside them."""
+    async def test_the_brackets_change_the_tempo_the_legend_names_them_and_left_and_right_step_nothing(self):
+        """A setting's legend says [ and ], with the older + and - working beside them; Left and Right only ever move."""
         await self.select_field(TEMPO)
         before = self.document.song().get_tempo()
         await self.press(key_of(binding=keybindings.SongPage.MORE, key=Key.RIGHT_BRACKET), key_of(binding=keybindings.SongPage.MORE, key=Key.RIGHT_BRACKET), key_of(binding=keybindings.SongPage.LESS, key=Key.LEFT_BRACKET))
         self.assertEqual(self.document.song().get_tempo(), before + 1)
         await self.press(Key.RIGHT, Key.LEFT, Key.LEFT)
-        self.assertEqual(self.document.song().get_tempo(), before)
+        self.assertEqual(self.document.song().get_tempo(), before + 1)
         self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.FieldPage.MORE)) + legends.MSG_LEGEND_WHAT.format(what=legends.What.MORE), self.text())
         self.assertIn(ui_testing.KEY_SHOWN.format(label=key_name(keybindings.FieldPage.LESS)) + legends.MSG_LEGEND_WHAT.format(what=legends.What.LESS), self.text())
-        # The legend names [ dec and ] inc, as everywhere a value steps, and Left and Right do the same off the legend.
+        # The legend names [ dec and ] inc, as everywhere a value steps.
         self.assertEqual((legends.KeyName.RIGHT_BRACKET, legends.KeyName.LEFT_BRACKET), (key_name(keybindings.FieldPage.MORE), key_name(keybindings.FieldPage.LESS)))
 
     async def test_typing_a_tempo(self):

@@ -157,7 +157,7 @@ class TestScalePage(UITest):
         # A new scale is scale-1, and only a person renames it.
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         await self.select_field(labels.MSG_ROOT_LABEL)
-        await self.press(Key.RIGHT, Key.RIGHT)
+        await self.press(keybindings.FieldPage.MORE, keybindings.FieldPage.MORE)
         self.assertEqual(self.root_and_kind(setlist.DEFAULT_SCALE), (NoteName.D, scale_type_name(ScaleType.MAJOR)))
         self.assertEqual(self.document.get_setlist().get_scale_names(), [setlist.DEFAULT_SCALE])
 
@@ -166,7 +166,7 @@ class TestScalePage(UITest):
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         self.assertIsInstance(self.app.screen, ScalePage)
         await self.select_field(labels.MSG_ROOT_LABEL)
-        await self.press(Key.RIGHT, Key.RIGHT)
+        await self.press(keybindings.FieldPage.MORE, keybindings.FieldPage.MORE)
         # A scale still named after its root and kind follows them, on the page and in the song.
         self.assertEqual(self.root_and_kind(D_MAJOR), (NoteName.D, scale_type_name(ScaleType.MAJOR)))
         self.assertIn(D_MAJOR, self.crumbs_line())
@@ -187,7 +187,7 @@ class TestScalePage(UITest):
         self.assertEqual(text.count(marks.MSG_KEY_OUT_OF_SCALE), BLACK_KEYS_ON_THE_KEYBOARD)
         self.assertIn(marks.MSG_ROOT_KEY_NAME.format(name=NoteName.C), text)
         await self.select_field(labels.MSG_ROOT_LABEL)
-        await self.press(Key.RIGHT)
+        await self.press(keybindings.FieldPage.MORE)
         text = self.text()
         # C# major: five black keys and two white keys an octave, with the root's name under its black key.
         self.assertEqual(text.count(marks.MSG_KEY_IN_SCALE), WHITE_KEYS_ON_THE_KEYBOARD)
@@ -211,7 +211,7 @@ class TestScalePage(UITest):
         self.assertEqual(self.document.song().get_scenes()[0].get_scale_name(), MAIN)
         self.assertIn(MAIN, self.crumbs_line())
         await self.select_field(labels.MSG_ROOT_LABEL)
-        await self.press(Key.RIGHT)
+        await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.root_and_kind(MAIN), (NoteName.C_SHARP, scale_type_name(ScaleType.MAJOR)))
         render_song(self.document.song())
 

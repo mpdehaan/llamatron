@@ -256,6 +256,7 @@ MSG_NEXT_ROW_WHAT = 'next row'
 # A settings page's tab box: on the row of tabs, the keys that choose a tab, and Tab, which goes to the row of tabs.
 MSG_TAB_WHAT = 'tab'
 MSG_TO_TABS_WHAT = 'to tabs'
+MSG_COLUMN_WHAT = 'column'
 MSG_SILENT_WHAT = 'silent'
 MSG_PLAY_WHAT = 'play'
 

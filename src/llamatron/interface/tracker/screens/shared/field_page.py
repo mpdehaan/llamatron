@@ -35,6 +35,8 @@ class FieldPage(Page):
         self.cursor = Cursor(place=0)
         # The cell the cursor is on in a row of cells, counted from the left.
         self.cell = 0
+        # How wide the tab box was last drawn, which decides how its columns stand and so where the arrows lead in it.
+        self.box_width = BOX_WIDTH
 
     def fields(self):
         return []
@@ -195,19 +197,100 @@ class FieldPage(Page):
             return self.key_toward(self.closed_heading_over(target).label) or Key.ENTER
         there = labels.index(target)
         here = self.cursor.get_place()
+        row = self.box_place()
+        if self.in_box() and row < there <= row + self.box_field_count():
+            return self.key_inside_box(here=here - row - 1, there=there - row - 1)
         first_button = self.first_button_place()
         if here < first_button or there < first_button or self.buttons_stacked():
             return key_between(here=here, there=there)
         return key_between(here=here, there=there, back=Key.LEFT, forward=Key.RIGHT)
 
+    def key_inside_box(self, *, here, there):
+        """Return the key that brings the cursor nearer a field of the chosen tab from another: along a column, across a band, or
+        toward the band that holds it."""
+        spots = self.box_spots()
+        start = spots[here]
+        end = spots[there]
+        if start.band == end.band and start.column == end.column:
+            return key_between(here=start.line, there=end.line)
+        if start.band == end.band:
+            return _key_across(here=start.column, there=end.column)
+        return key_between(here=start.band, there=end.band)
+
     def move_cursor(self, name):
         """Move between the fields with Up and Down, Down from the last field reaching the row of buttons and Up from any button
-        going back to the last field; Down on the buttons stays."""
+        going back to the last field; Down on the buttons stays. Inside the tab box, Up and Down keep to a column."""
         fields = self.shown_fields()
         if not fields:
             return
         # A row is come to at its first cell.
         self.cell = 0
+        if self.box_place() is not None:
+            self.move_with_box(name)
+            return
+        self.move_in_order(name)
+
+    def move_with_box(self, name):
+        """Move with Up or Down on a page with a tab box: inside it, along a column and out at its head or foot; from under it, Up
+        comes in at the foot of its first column; elsewhere, as on any page."""
+        row = self.box_place()
+        count = self.box_field_count()
+        place = self.cursor.get_place()
+        if row < place <= row + count:
+            self.move_inside_box(name=name, row=row, here=place - row - 1)
+            return
+        self.move_in_order(name)
+        if name == Key.UP and place > row + count and self.cursor.get_place() == row + count:
+            self.cursor.set_place(row + 1 + tab_box_values.spot_from_below(self.box_spots()))
+
+    def move_inside_box(self, *, name, row, here):
+        """Move with Up or Down from the field at a place among the chosen tab's: to the field it leads to, the row of tabs, or
+        what is under the box, staying put where nothing is."""
+        spots = self.box_spots()
+        if name == Key.DOWN:
+            there = tab_box_values.spot_below(spots=spots, here=here)
+        else:
+            there = tab_box_values.spot_above(spots=spots, here=here)
+        if there == tab_box_values.ON_TAB_ROW:
+            self.cursor.set_place(row)
+        elif there == tab_box_values.BELOW_BOX:
+            below = row + len(spots) + 1
+            if below < len(self.shown_fields()):
+                self.cursor.set_place(below)
+        else:
+            self.cursor.set_place(row + 1 + there)
+
+    def move_across(self, direction):
+        """Move with Left or Right inside the tab box, to the field beside in the column to that side, stopping at the sides."""
+        row = self.box_place()
+        here = self.cursor.get_place() - row - 1
+        self.cursor.set_place(row + 1 + tab_box_values.spot_beside(spots=self.box_spots(), here=here, direction=direction))
+
+    def box_place(self):
+        """Return the place of the row of tabs among the fields shown, or None on a page with no tab box."""
+        for place, field in enumerate(self.shown_fields()):
+            if field.IS_TAB_ROW:
+                return place
+        return None
+
+    def box_field_count(self):
+        """Return how many fields the chosen tab shows."""
+        box = self.tab_box()
+        return len(box.tabs[self.chosen_tab(box)].every_field())
+
+    def in_box(self):
+        """Return whether the cursor is on a field inside the tab box, not its row of tabs."""
+        row = self.box_place()
+        return row is not None and row < self.cursor.get_place() <= row + self.box_field_count()
+
+    def box_spots(self):
+        """Return where each field of the chosen tab is drawn, as the box was last drawn."""
+        box = self.tab_box()
+        return tab_box_values.spots_of(page=self, tab=box.tabs[self.chosen_tab(box)], width=self.box_width)
+
+    def move_in_order(self, name):
+        """Move with Up or Down through the fields in order, then the buttons."""
+        fields = self.shown_fields()
         first_button = self.first_button_place()
         if self.buttons_stacked():
             # Buttons too wide for one row stand one under another, and Up and Down go through them as through the fields.
@@ -289,6 +372,8 @@ class FieldPage(Page):
             result.append(self.bind(self.KEYS.SECTION, action=self.jump_section))
         if self.tab_box() is not None:
             result.append(self.bind(self.KEYS.TO_TABS, action=self.go_to_tabs))
+            if self.in_box() and not isinstance(row, Cells):
+                result.append(self.bind(self.KEYS.ACROSS, action=self.move_across))
         result += self.page_keys()
         return [self.bind(self.KEYS.BACK, action=self.go_back), *result]
 
@@ -354,7 +439,8 @@ class FieldPage(Page):
             inside = tab_box_values.ON_TAB_ROW
         elif place < cursor <= place + count:
             inside = cursor - place - 1
-        lines, selected = box_lines(page=self, box=box, chosen=chosen, cursor=inside, width=width or BOX_WIDTH)
+        self.box_width = width or BOX_WIDTH
+        lines, selected = box_lines(page=self, box=box, chosen=chosen, cursor=inside, width=self.box_width)
         return count, lines, selected
 
     def has_gap_after(self, *, place, field, fields):
@@ -394,6 +480,13 @@ class FieldPage(Page):
 
 def _key_toward_tab(*, here, there):
     """Return the key on the row of tabs that brings the chosen tab nearer another, by their places."""
+    if there < here:
+        return Key.LEFT
+    return Key.RIGHT
+
+
+def _key_across(*, here, there):
+    """Return Left or Right, toward a column of the tab box from another."""
     if there < here:
         return Key.LEFT
     return Key.RIGHT

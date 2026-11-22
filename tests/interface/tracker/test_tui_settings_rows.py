@@ -80,35 +80,38 @@ class TestPlusRow(UITest):
 
 class TestSettingArrows(UITest):
 
-    async def test_left_and_right_do_the_same_as_minus_and_plus(self):
+    async def test_left_and_right_step_nothing_and_the_brackets_step(self):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
         await self.select_field(TEMPO)
+        before = self.document.song().get_tempo()
         await self.press(Key.RIGHT, Key.RIGHT, Key.LEFT)
-        self.assertEqual(self.document.song().get_tempo(), 121)
+        self.assertEqual(self.document.song().get_tempo(), before)
+        await self.press(keybindings.FieldPage.MORE, keybindings.FieldPage.MORE, keybindings.FieldPage.LESS)
+        self.assertEqual(self.document.song().get_tempo(), before + 1)
 
     async def test_on_every_song_setting_with_a_value_to_step(self):
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
         await self.select_field(labels.MSG_SCALE_LABEL)
-        await self.press(Key.LEFT)
+        await self.press(keybindings.FieldPage.LESS)
         self.assertIsNone(self.document.song().get_scale_name())
-        await self.press(Key.RIGHT)
+        await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.document.song().get_scale_name(), setlist.DEFAULT_SCALE)
 
     async def test_on_every_set_setting_with_a_value_to_step(self):
         await self.press(keybindings.MainPage.FILE)
         await self.select_field(STEP_SIZE)
-        await self.press(Key.RIGHT)
+        await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.document.get_setlist().get_step_size(), Fraction(1, 8))
         await self.select_field(labels.MSG_DEFAULT_OCTAVE_LABEL)
-        await self.press(Key.LEFT)
+        await self.press(keybindings.FieldPage.LESS)
         self.assertEqual(self.document.get_setlist().get_default_octave(), defaults.DEFAULT_OCTAVE - 1)
         await self.select_field(labels.MSG_DEFAULT_DRUM_OCTAVE_LABEL)
-        await self.press(Key.RIGHT)
+        await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.document.get_setlist().get_default_drum_octave(), defaults.DEFAULT_DRUM_OCTAVE + 1)
         await self.select_field(labels.MSG_OCTAVE_LABELS_LABEL)
-        await self.press(Key.RIGHT)
+        await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.document.get_setlist().get_octave_labels(), OctaveLabels.LLAMATRON)
-        await self.press(Key.LEFT)
+        await self.press(keybindings.FieldPage.LESS)
         self.assertEqual(self.document.get_setlist().get_octave_labels(), OctaveLabels.LIVE)
 
     async def test_default_follow_action_is_chosen_from_a_list_and_written_only_when_set(self):

@@ -233,12 +233,13 @@ class GeneratorListPage(ListPage):
 
 
 class FieldPage(Page):
-    """A page of settings: Up and Down pick a field, Left and Right change its value, and what Enter and Bksp do is said by the field."""
+    """A page of settings: Up and Down pick a field, [ and ] change its value, Left and Right only ever move, and what Enter and
+    Bksp do is said by the field."""
 
     SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    # [ dec and ] inc, the one adjust system, named the same way everywhere; Left and Right do the same, off the legend.
-    LESS = Binding((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = Binding((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    # [ dec and ] inc, the one adjust system, named the same way everywhere. Left and Right step nothing: they move.
+    LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     # A field that's true or false answers to Space and Enter alike.
     TOGGLE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     # What Enter and Bksp do depends on the field, which says so itself: these words stand for the field's own.
@@ -255,7 +256,9 @@ class FieldPage(Page):
     # On a page with a tab box: on the row of tabs, Left and Right, and [ and ], choose the tab before or after; Tab goes to the row.
     ALONG_TABS = Binding(Steps(back=(Key.LEFT, *keys.LESS_KEYS), forward=(Key.RIGHT, *keys.MORE_KEYS)), legends.KeyName.LEFT_RIGHT, legends.MSG_TAB_WHAT)
     TO_TABS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_TABS_WHAT)
-    IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, ALONG_CELLS, ALONG_TABS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, TO_TABS, RENAME]
+    # Inside the tab box, Left and Right go to the field beside in the column to the left or right, stopping at the sides.
+    ACROSS = Binding(Steps(back=(Key.LEFT,), forward=(Key.RIGHT,)), legends.KeyName.LEFT_RIGHT, legends.MSG_COLUMN_WHAT)
+    IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, ALONG_CELLS, ALONG_TABS, ACROSS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, TO_TABS, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
 
 

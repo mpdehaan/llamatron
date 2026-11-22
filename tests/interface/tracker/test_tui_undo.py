@@ -365,7 +365,7 @@ class TestScalePageUndo(UndoTest):
         before = self.data()
         name = self.app.screen.item
         await self.select_field(labels.MSG_ROOT_LABEL)
-        await self.press(Key.RIGHT)
+        await self.press(keybindings.FieldPage.MORE)
         renamed = self.app.screen.item
         self.assertNotEqual(renamed, name)
         # A scale still named after its root is renamed as the root changes, and the page follows the name both ways.
