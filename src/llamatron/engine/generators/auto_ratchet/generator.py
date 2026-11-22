@@ -10,6 +10,9 @@ from llamatron.model.values import sound
 from llamatron.model.values.sound import Sound
 from llamatron.user_strings import errors
 
+# The place in the counts an AutoRatchet starts at when it carries on from nothing.
+FIRST_COUNT = 0
+
 # A count of one leaves a note as it is, and a count can't be less than that.
 UNCHANGED = 1
 
@@ -43,7 +46,9 @@ class AutoRatchet(ClipGenerator):
     def __init__(self, counts, continuation=None):
         self.set_counts(counts)
         # Which count comes next: the first, or where the same track's clip before left off when its Restart carries on.
-        self._first = 0 if continuation is None or continuation.state is None else continuation.state
+        self._first = FIRST_COUNT
+        if continuation is not None and continuation.state is not None:
+            self._first = continuation.state
         self._next = self._first
 
     def end_state(self):
@@ -88,7 +93,9 @@ class AutoRatchet(ClipGenerator):
 
     def _ratcheted_held(self, *, held, counts):
         """Return a held sound with its notes chopped, still held in the same place."""
-        parts = held[sound.PARTS] if held[sound.KIND] == sound.PHRASE else [held[sound.HELD_SOUND]]
+        parts = [held[sound.HELD_SOUND]]
+        if held[sound.KIND] == sound.PHRASE:
+            parts = held[sound.PARTS]
         return Sound.phrase(self._ratcheted(positions=parts, counts=counts), held[sound.LENGTH])
 
 
