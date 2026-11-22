@@ -92,12 +92,17 @@ class NamedScale(LlamaData):
         octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
         total = (octave + octaves_up) * midi.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0) + half_steps
         tone_octave, within = divmod(total, midi.HALF_STEPS_PER_OCTAVE)
-        below = max(index for index, step in enumerate(steps) if step <= within)
+        below = 0
+        for index, step in enumerate(steps):
+            if step <= within:
+                below = index
         if steps[below] == within:
             return below + limits.MIN_DEGREE, tone_octave, None
         if within - steps[below] == 1:
             return below + limits.MIN_DEGREE, tone_octave, Accidental.SHARP
-        above = steps[below + 1] if below + 1 < len(steps) else midi.HALF_STEPS_PER_OCTAVE
+        above = midi.HALF_STEPS_PER_OCTAVE
+        if below + 1 < len(steps):
+            above = steps[below + 1]
         if above - within == 1:
             octaves_more, place_above = divmod(below + 1, len(steps))
             return place_above + limits.MIN_DEGREE, tone_octave + octaves_more, Accidental.FLAT
@@ -149,7 +154,8 @@ def scale_type_name(kind):
 
 def scale_type_names():
     """Return every scale type's name as a file writes it, like 'minor', in alphabetical order."""
-    return sorted(scale_type_name(ScaleType[member_name]) for member_name in ScaleType.__members__)
+    names = [scale_type_name(ScaleType[member_name]) for member_name in ScaleType.__members__]
+    return sorted(names)
 
 
 def scale_type_called(kind):
