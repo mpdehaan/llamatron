@@ -78,7 +78,7 @@ def check_keyswitches(value):
     for slot in value:
         if slot is None:
             continue
-        if not isinstance(slot, dict) or not slot or any(key not in KEYSWITCH_SETTINGS for key in slot):
+        if not isinstance(slot, dict) or not slot or not set(slot) <= set(KEYSWITCH_SETTINGS):
             raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=file_format.KEYSWITCH_SLOT_COUNT, value=value))
         check_settings(settings=KEYSWITCH_SETTINGS, data=slot)
 
@@ -183,7 +183,10 @@ class Instrument(HoldsSettings):
         written = self._settings[InstrumentSetting.KEYSWITCHES]
         if written is None:
             return [NO_KEYSWITCH] * file_format.KEYSWITCH_SLOT_COUNT
-        return [NO_KEYSWITCH if slot is None else Keyswitch(slot.get(KeyswitchSetting.NAME), slot.get(KeyswitchSetting.NOTE)) for slot in written]
+        keyswitches = []
+        for slot in written:
+            keyswitches.append(_keyswitch_of(slot))
+        return keyswitches
 
     def get_keyswitch(self, slot):
         """Return one keyswitch slot, numbered from 0."""
@@ -196,7 +199,11 @@ class Instrument(HoldsSettings):
 
     def get_keyswitch_notes(self):
         """Return the MIDI note of every slot that has one, by slot, which is all that playing asks."""
-        return {slot: keyswitch.note for slot, keyswitch in enumerate(self.get_keyswitches()) if keyswitch.note is not None}
+        notes = {}
+        for slot, keyswitch in enumerate(self.get_keyswitches()):
+            if keyswitch.note is not None:
+                notes[slot] = keyswitch.note
+        return notes
 
     @notes_change
     def set_keyswitch(self, *, slot, name=None, note=None):
@@ -208,18 +215,20 @@ class Instrument(HoldsSettings):
             check_keyswitch_note(note)
         keyswitches = self.get_keyswitches()
         keyswitches[slot] = Keyswitch(name, note)
-        written = [_slot_data(keyswitch) for keyswitch in keyswitches]
-        self._settings[InstrumentSetting.KEYSWITCHES] = written if any(slot is not None for slot in written) else None
+        self._settings[InstrumentSetting.KEYSWITCHES] = _written_slots(keyswitches)
 
     @notes_change
     def set_keyswitches(self, keyswitches):
         """Give every slot its name and note at once, from ten Keyswitches in order, as the Keyswitch Map dialog answers them."""
         if len(keyswitches) != file_format.KEYSWITCH_SLOT_COUNT:
             raise InvalidValue(errors.ERR_BAD_KEYSWITCHES.format(count=file_format.KEYSWITCH_SLOT_COUNT, value=list(keyswitches)))
-        written = [_slot_data(Keyswitch(*keyswitch)) for keyswitch in keyswitches]
-        if any(slot is not None for slot in written):
+        given = []
+        for keyswitch in keyswitches:
+            given.append(Keyswitch(*keyswitch))
+        written = _written_slots(given)
+        if written is not None:
             check_keyswitches(written)
-        self._settings[InstrumentSetting.KEYSWITCHES] = written if any(slot is not None for slot in written) else None
+        self._settings[InstrumentSetting.KEYSWITCHES] = written
 
     def get_default_velocity(self):
         """Return the velocity a step with none typed plays at on its tracks, or None for the loudest, as a track with no instrument plays."""
@@ -255,3 +264,21 @@ class Instrument(HoldsSettings):
         if milliseconds is not None:
             SETTINGS[InstrumentSetting.KEYSWITCH_LEAD].check(milliseconds)
         self._settings[InstrumentSetting.KEYSWITCH_LEAD] = milliseconds
+
+
+def _keyswitch_of(slot):
+    """Return one slot as the file holds it as a Keyswitch, or NO_KEYSWITCH for an empty slot."""
+    if slot is None:
+        return NO_KEYSWITCH
+    return Keyswitch(slot.get(KeyswitchSetting.NAME), slot.get(KeyswitchSetting.NOTE))
+
+
+def _written_slots(keyswitches):
+    """Return the slots as a file holds them, or None when every slot is empty, which the file leaves out."""
+    written = []
+    for keyswitch in keyswitches:
+        written.append(_slot_data(keyswitch))
+    for slot in written:
+        if slot is not None:
+            return written
+    return None
