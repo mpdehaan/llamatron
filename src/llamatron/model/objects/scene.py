@@ -29,9 +29,18 @@ from llamatron.model.schema.file_format import RampPart, SceneSetting, Section
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.user_strings import errors
 
-# The settings of a scene's tempo ramps that are tempos, which a file writes as it writes a scene's tempo.
-RAMP_TEMPOS = tuple(file_format.TEMPO_RAMP_SETTINGS[(way, part)] for way in file_format.RAMP_WAYS for part in (RampPart.START, RampPart.END))
-RAMP_SETTINGS = tuple(file_format.TEMPO_RAMP_SETTINGS[(way, part)] for way in file_format.RAMP_WAYS for part in file_format.RAMP_PARTS)
+
+
+def _ramp_tempos():
+    """Return the settings of a scene's tempo ramps that are tempos, which a file writes as it writes a scene's tempo."""
+    tempos = []
+    for way in file_format.RAMP_WAYS:
+        tempos.append(file_format.TEMPO_RAMP_SETTINGS[(way, RampPart.START)])
+        tempos.append(file_format.TEMPO_RAMP_SETTINGS[(way, RampPart.END)])
+    return tuple(tempos)
+
+
+RAMP_TEMPOS = _ramp_tempos()
 
 
 class TempoRamp(NamedTuple):
@@ -53,23 +62,23 @@ def _check_scale_name(*, value, song):
         raise InvalidValue(errors.ERR_SCENE_NO_SUCH_SCALE.format(scale=value))
 
 
-def is_register_list(value):
-    """Return whether a value is a list of register names, each at most once."""
-    return isinstance(value, list) and all(name in file_format.REGISTER_NAMES for name in value) and len(set(value)) == len(value)
+def _is_list_of(*, value, names):
+    """Return whether a value is a list holding only some of the names."""
+    if not isinstance(value, list):
+        return False
+    for name in value:
+        if name not in names:
+            return False
+    return True
 
 
 def _check_reset(value):
-    if not is_register_list(value):
+    if not _is_list_of(value=value, names=file_format.REGISTER_NAMES) or len(set(value)) != len(value):
         raise InvalidValue(errors.ERR_BAD_RESET.format(names=listed(file_format.REGISTER_NAMES), value=value))
 
 
-def is_draw_list(value):
-    """Return whether a value is a list of the song's draws' names."""
-    return isinstance(value, list) and all(name in file_format.DRAW_NAMES for name in value)
-
-
 def _check_reset_draws(value):
-    if not is_draw_list(value):
+    if not _is_list_of(value=value, names=file_format.DRAW_NAMES):
         raise InvalidValue(errors.ERR_BAD_RESET_DRAWS.format(names=listed(file_format.DRAW_NAMES), value=value))
 
 
@@ -135,13 +144,11 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
             pass_over_unknown(data=data, allowed={*SETTINGS, SceneSetting.TRACKS})
             check_settings(settings=SETTINGS, data=data, song=song, leaving_out=READ_ANOTHER_WAY)
             _check_tempo(data)
-            clip_slots = {}
-            for track, clip_slot in (data.get(SceneSetting.TRACKS) or {}).items():
-                if not song.has_track(track):
-                    raise InvalidValue(errors.ERR_NO_SUCH_TRACK.format(track=track))
-                clip_slots[track] = ClipSlot.from_data(data=clip_slot, where=where, song=song, track=track)
+            clip_slots = None
+            if SceneSetting.TRACKS in data:
+                clip_slots = _clip_slots_from(data=data[SceneSetting.TRACKS] or {}, where=where, song=song)
             settings = {name: data[name] for name in SETTINGS if name in data}
-            return cls(clip_slots=clip_slots if SceneSetting.TRACKS in data else None, **settings)
+            return cls(clip_slots=clip_slots, **settings)
 
     def to_data(self):
         return self._data_from(data_built_anew)
@@ -150,19 +157,15 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         """Return the scene's data with each clip's as the clip keeps it, put together each time, since a clip changes without its scene changing."""
         return self._data_from(data_as_kept)
 
-    def _data_from(self, part_data):
-        data = written_settings(self._settings)
-        if self._clip_slots is not None:
-            data[SceneSetting.TRACKS] = {track: part_data(clip_slot) for track, clip_slot in self._clip_slots.items()}
-        return data
-
     def get_name(self):
         """Return its name as the file gives it, or None if it has none."""
         return self._settings[SceneSetting.NAME]
 
     def get_repeat(self):
         repeat = self._settings[SceneSetting.REPEAT]
-        return defaults.DEFAULT_REPEAT if repeat is None else repeat
+        if repeat is None:
+            return defaults.DEFAULT_REPEAT
+        return repeat
 
     def get_section(self):
         """Return the kind of section the scene says it is, or None for a scene that says none."""
@@ -175,13 +178,17 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
     def launches_together(self):
         """Return whether a start reaching any clip of the scene launches the whole scene in real-time playback, which no export reads."""
         launch = self._settings[SceneSetting.LAUNCH_TOGETHER]
-        return defaults.DEFAULT_LAUNCH_TOGETHER if launch is None else launch
+        if launch is None:
+            return defaults.DEFAULT_LAUNCH_TOGETHER
+        return launch
 
     @notes_change
     def set_launch_together(self, value):
         """Make a start reaching any of its clips launch the whole scene, or each clip wait for its own; the default is left out of the file."""
         SETTINGS[SceneSetting.LAUNCH_TOGETHER].check(value)
-        self._settings[SceneSetting.LAUNCH_TOGETHER] = None if value == defaults.DEFAULT_LAUNCH_TOGETHER else value
+        if value == defaults.DEFAULT_LAUNCH_TOGETHER:
+            value = None
+        self._settings[SceneSetting.LAUNCH_TOGETHER] = value
 
     def get_scale_name(self):
         """Return the name of the scale it sets, or None to use the song's."""
@@ -190,7 +197,9 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
     def get_tempo(self):
         """Return the tempo it sets, or None to use the song's. Its ramps move away from this tempo and back to it."""
         tempo = self._settings[SceneSetting.TEMPO]
-        return None if tempo is None else number(tempo)
+        if tempo is None:
+            return None
+        return number(tempo)
 
     def get_tempo_setting(self):
         """Return the tempo it sets, as written, or None if it has none."""
@@ -198,14 +207,19 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
 
     def get_tempo_ramp(self, way):
         """Return its tempo ramp in or out as a TempoRamp, or None when the ramp changes nothing: it gives no bars, or neither a start nor an end."""
-        start, end, over = (self._settings[file_format.TEMPO_RAMP_SETTINGS[(way, part)]] for part in file_format.RAMP_PARTS)
+        start = self.get_tempo_ramp_setting(way=way, part=RampPart.START)
+        end = self.get_tempo_ramp_setting(way=way, part=RampPart.END)
+        over = self.get_tempo_ramp_setting(way=way, part=RampPart.OVER)
         if over is None or (start is None and end is None):
             return None
-        return TempoRamp(None if start is None else number(start), None if end is None else number(end), over)
+        return TempoRamp(start=_number_or_none(start), end=_number_or_none(end), over=over)
 
     def has_tempo_ramp(self):
         """Return whether either of its tempo ramps changes its tempo."""
-        return any(self.get_tempo_ramp(way) is not None for way in file_format.RAMP_WAYS)
+        for way in file_format.RAMP_WAYS:
+            if self.get_tempo_ramp(way) is not None:
+                return True
+        return False
 
     def get_tempo_ramp_setting(self, *, way, part):
         """Return one part of one of its tempo ramps as written, or None where it is blank."""
@@ -223,19 +237,26 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
 
     def changes_registers(self):
         """Return whether it, or any of its clips, sets a register or adds to one."""
-        own = self._settings[SceneSetting.SET_REGISTERS] or self._settings[SceneSetting.ADD_REGISTERS]
-        return bool(own) or any(clip_slot.get_register_sets() or clip_slot.get_register_adds() for clip_slot in (self._clip_slots or {}).values())
+        if self._settings[SceneSetting.SET_REGISTERS] or self._settings[SceneSetting.ADD_REGISTERS]:
+            return True
+        for clip_slot in self._held_clip_slots().values():
+            if clip_slot.get_register_sets() or clip_slot.get_register_adds():
+                return True
+        return False
 
     def get_track_names(self):
         """Return the tracks it plays a clip slot on, in the order the file lists them."""
-        return list(self._clip_slots or {})
+        return list(self._held_clip_slots())
 
     def get_clip_slot(self, track):
         """Return its clip slot for a track, or None if it plays nothing there."""
-        return (self._clip_slots or {}).get(track)
+        # Asked for every clip a render plays, so it reads the dictionary itself rather than through _held_clip_slots.
+        if self._clip_slots is None:
+            return None
+        return self._clip_slots.get(track)
 
     def has_clip_slot(self, track):
-        return track in (self._clip_slots or {})
+        return self._clip_slots is not None and track in self._clip_slots
 
     def resets(self, register):
         """Return whether it sets a register back to its default as it starts."""
@@ -243,17 +264,24 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
 
     def copy(self):
         """Return a scene just like this one, with clip slots of its own."""
-        clip_slots = None if self._clip_slots is None else {track: clip_slot.copy() for track, clip_slot in self._clip_slots.items()}
+        clip_slots = None
+        if self._clip_slots is not None:
+            clip_slots = {track: clip_slot.copy() for track, clip_slot in self._clip_slots.items()}
         return Scene(clip_slots=clip_slots, **self._settings)
 
     def every_clip_loops(self):
         """Return whether every clip in the scene loops, which would leave the scene with no end, unless a step of a looping clip's pattern can stop the clip, which only the song knows (Song.scene_never_ends)."""
-        clip_slots = [self.get_clip_slot(track) for track in self.get_track_names()]
-        return bool(clip_slots) and all(clip_slot.loops() for clip_slot in clip_slots)
+        clip_slots = self._held_clip_slots()
+        if not clip_slots:
+            return False
+        for clip_slot in clip_slots.values():
+            if not clip_slot.loops():
+                return False
+        return True
 
     def clip_slots_naming(self, *, section, name):
         """Return the track of each of its clips that names an item of a section, in order: the clips that play or morph to a pattern, run a chain or grab from a track."""
-        return [track for track, clip_slot in (self._clip_slots or {}).items() if clip_slot.names_item(section=section, name=name)]
+        return [track for track, clip_slot in self._held_clip_slots().items() if clip_slot.names_item(section=section, name=name)]
 
     def grab_circle(self, *, track, other):
         """Return the tracks a grab from track to other would go round in a circle, like [lead, bass, lead], or None.
@@ -263,7 +291,9 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         path = [track, other]
         while path[-1] != track:
             clip_slot = self.get_clip_slot(path[-1])
-            following = None if clip_slot is None else clip_slot.get_grab_track()
+            if clip_slot is None:
+                return None
+            following = clip_slot.get_grab_track()
             if following is None or following in path[1:]:
                 return None
             path.append(following)
@@ -308,20 +338,16 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         """Make it set a register back to its default as it starts, or stop it, keeping the registers in order."""
         if register not in file_format.REGISTER_NAMES:
             raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=register, names=listed(file_format.REGISTER_NAMES)))
-        chosen = set(self.get_reset_names())
-        chosen = chosen | {register} if on else chosen - {register}
-        reset = [name for name in file_format.REGISTER_NAMES if name in chosen]
-        self._settings[SceneSetting.RESET] = reset or None
+        reset = _switched_in_order(chosen=self.get_reset_names(), name=register, on=on, order=file_format.REGISTER_NAMES)
+        self._settings[SceneSetting.RESET] = reset
 
     @notes_change
     def set_reset_draw(self, *, draw, on):
         """Make it reset a draw as it first starts, or stop it, keeping the draws in order."""
         if draw not in file_format.DRAW_NAMES:
             raise InvalidValue(errors.ERR_NO_SUCH_DRAW.format(name=draw, names=listed(file_format.DRAW_NAMES)))
-        chosen = set(self.get_reset_draw_names())
-        chosen = chosen | {draw} if on else chosen - {draw}
-        reset = [name for name in file_format.DRAW_NAMES if name in chosen]
-        self._settings[SceneSetting.RESET_DRAWS] = reset or None
+        reset = _switched_in_order(chosen=self.get_reset_draw_names(), name=draw, on=on, order=file_format.DRAW_NAMES)
+        self._settings[SceneSetting.RESET_DRAWS] = reset
 
     @notes_change
     def set_clip_slot(self, *, track, clip_slot, song):
@@ -342,18 +368,13 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
 
     def referring_parts(self):
         """Return its clips, which name patterns, chains and tracks."""
-        return list((self._clip_slots or {}).values())
+        return list(self._held_clip_slots().values())
 
     def rename_references(self, *, section, old, new):
         """Follow a rename as every stored object does, and move a renamed track's clip to the track's new name first."""
         if section == Section.TRACKS and self.has_clip_slot(old):
             self._move_clip_slot(old=old, new=new)
         super().rename_references(section=section, old=old, new=new)
-
-    @notes_change
-    def _move_clip_slot(self, *, old, new):
-        """Keep a track's clip under the track's new name, in its place."""
-        self._clip_slots = {(new if track == old else track): clip_slot for track, clip_slot in self._clip_slots.items()}
 
     @notes_change
     def remove_track(self, track):
@@ -386,9 +407,61 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         SETTINGS[SceneSetting.GROOVE].check(choice, song=song)
         self._settings[SceneSetting.GROOVE] = choice
 
+    def _data_from(self, part_data):
+        data = written_settings(self._settings)
+        if self._clip_slots is not None:
+            data[SceneSetting.TRACKS] = {track: part_data(clip_slot) for track, clip_slot in self._clip_slots.items()}
+        return data
+
+    def _held_clip_slots(self):
+        """Return its clip slots by track, an empty dictionary when the file wrote none."""
+        if self._clip_slots is None:
+            return {}
+        return self._clip_slots
+
+    @notes_change
+    def _move_clip_slot(self, *, old, new):
+        """Keep a track's clip under the track's new name, in its place."""
+        moved = {}
+        for track, clip_slot in self._clip_slots.items():
+            if track == old:
+                track = new
+            moved[track] = clip_slot
+        self._clip_slots = moved
+
 
 def _check_tempo(data):
     """Refuse a tempo that isn't a number, the scene's own or one of its ramps'."""
     for name in (SceneSetting.TEMPO, *RAMP_TEMPOS):
         if name in data:
             SETTINGS[name].check_held(data)
+
+
+def _clip_slots_from(*, data, where, song):
+    """Return a scene's clip slots read from the file's data, by track, refusing a track the song doesn't have."""
+    clip_slots = {}
+    for track, clip_slot in data.items():
+        if not song.has_track(track):
+            raise InvalidValue(errors.ERR_NO_SUCH_TRACK.format(track=track))
+        clip_slots[track] = ClipSlot.from_data(data=clip_slot, where=where, song=song, track=track)
+    return clip_slots
+
+
+def _number_or_none(written):
+    """Return a tempo as written as a number, or None where it is blank."""
+    if written is None:
+        return None
+    return number(written)
+
+
+def _switched_in_order(*, chosen, name, on, order):
+    """Return the names chosen with one switched on or off, in the order given, or None when none is left."""
+    switched = set(chosen)
+    if on:
+        switched.add(name)
+    else:
+        switched.discard(name)
+    in_order = [each for each in order if each in switched]
+    if not in_order:
+        return None
+    return in_order
