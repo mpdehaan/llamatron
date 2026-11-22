@@ -62,7 +62,9 @@ class DriftPlay:
     def every(self, name):
         """Return how long one of a drift's triggers lasts, in whole notes."""
         written = self.settings(name).get_every()
-        return self._bar if written is None else in_whole_notes(time=written, bar=self._bar)
+        if written is None:
+            return self._bar
+        return in_whole_notes(time=written, bar=self._bar)
 
     def trigger_at(self, *, name, time):
         """Return which trigger of a drift is current at a time from the song's top, counted from 0."""
@@ -145,7 +147,10 @@ class DriftPlay:
     def _chooser(self, name):
         """Return what draws a drift's random numbers: from the render's seed with its name, when a test or a tool gives one, or else Python's own."""
         if name not in self._choosers:
-            self._choosers[name] = random_source(None if self._seed is None else DRIFT_SEED.format(seed=self._seed, name=name))
+            seed = None
+            if self._seed is not None:
+                seed = DRIFT_SEED.format(seed=self._seed, name=name)
+            self._choosers[name] = random_source(seed)
         return self._choosers[name]
 
     def position(self, *, name, trigger):
@@ -159,7 +164,9 @@ class DriftPlay:
             place = trigger % (steps + 1)
         elif direction == DriftDirection.PENDULUM:
             place = trigger % (2 * steps)
-            place = place if place <= steps else 2 * steps - place
+            # Past the last step, the walk comes back the other way.
+            if place > steps:
+                place = 2 * steps - place
         else:
             place = self._walk(name=name, trigger=trigger, steps=steps)
         return place / steps
@@ -183,7 +190,9 @@ class DriftPlay:
             second = settings.get_value(version=DriftVersion.B, value=value) or step_effects.NOTHING_ADDED
             numbers[value] = round(first + (second - first) * position)
         spread = numbers[DriftValue.DEGREE_RANDOM]
-        random_degree = chooser.randint(-spread, spread) if spread else step_effects.NOTHING_ADDED
+        random_degree = step_effects.NOTHING_ADDED
+        if spread:
+            random_degree = chooser.randint(-spread, spread)
         scale = self._override(settings=settings, value=DriftValue.SCALE, chance=numbers[DriftValue.SCALE_PROBABILITY], position=position, chooser=chooser)
         root = self._override(settings=settings, value=DriftValue.ROOT, chance=numbers[DriftValue.ROOT_PROBABILITY], position=position, chooser=chooser)
         return Trigger(numbers, random_degree, scale, root)
@@ -194,7 +203,9 @@ class DriftPlay:
         second = settings.get_value(version=DriftVersion.B, value=value)
         if first is None and second is None:
             return None
-        choice = second if chooser.random() < position else first
+        choice = first
+        if chooser.random() < position:
+            choice = second
         if choice is None or chooser.random() * FULL_CHANCE >= chance:
             return None
         return choice
