@@ -118,7 +118,9 @@ class Play:
         events = self.events
         offset = self.offset
         tag = self.tag
-        limit = self.end if self.cut else None
+        limit = None
+        if self.cut:
+            limit = self.end
         due = []
         place = self.fed
         while place < len(events):
@@ -237,10 +239,14 @@ class Player:
             at = bar
         elif responsiveness == LiveResponsiveness.CLIP_RESTART and play.start < now:
             into = score.next_pass_start(scene=play.scene, track=play.track, elapsed=now - play.start)
-            at = None if into is None else play.start + into
+            at = None
+            if into is not None:
+                at = play.start + into
         else:
             at = soonest
-        return soonest if at is None else max(at, soonest)
+        if at is None:
+            return soonest
+        return max(at, soonest)
 
     def _end_notes_across(self, *, play, at, score, scene, track):
         """Send a note off at a moment for every note of a play, by the score it was queued from, that started before it and sounds across it."""
@@ -317,8 +323,12 @@ class Player:
         first = min(running, key=lambda play: play.start)
         elapsed = now - first.start
         bar = self._score.bar_seconds(scene=first.scene, elapsed=elapsed)
-        bars_done = int(elapsed // bar) if bar > NO_BARS else NO_BARS
-        at = first.start + (bars_done + ONE_BAR) * bar if bar > NO_BARS else first.end
+        if bar > NO_BARS:
+            bars_done = int(elapsed // bar)
+            at = first.start + (bars_done + ONE_BAR) * bar
+        else:
+            at = first.end
+
         return min(at, first.end)
 
     def tick(self):
@@ -359,13 +369,22 @@ class Player:
     def is_playing(self):
         """Return whether anything plays now or is still to come: a play not over, or a moment that can still launch or end one."""
         now = self._now()
-        return any(play.end > now for play in self._plays) or any(self._can_act(moment) for moment in self._moments)
+        for play in self._plays:
+            if play.end > now:
+                return True
+        for moment in self._moments:
+            if self._can_act(moment):
+                return True
+        return False
 
     def _can_act(self, moment):
         """Return whether a moment can still do something: a launch can, and a check of a scene's or a clip's end can while a play of it is neither cut nor done."""
         if moment.kind not in (SCENE_DONE, CLIP_DONE):
             return True
-        return any(play.scene == moment.scene and not play.cut and not play.done and play.start < moment.time for play in self._plays)
+        for play in self._plays:
+            if play.scene == moment.scene and not play.cut and not play.done and play.start < moment.time:
+                return True
+        return False
 
     def running_plays(self):
         now = self._now()
@@ -381,7 +400,8 @@ class Player:
     def heard(self, *, since):
         """Return the clock's time now, and for each track with a clip running, the notes that started after since and those still sounding, as the score's Heard notes, for the visualizer; with since None, those sounding now alone."""
         now = self._now()
-        since = now if since is None else since
+        if since is None:
+            since = now
         heard = []
         for play in self.running_plays():
             started, held = self._score.clip_notes(scene=play.scene, track=play.track).heard(since=since - play.start, until=now - play.start)
@@ -412,7 +432,9 @@ class Player:
     def scene_elapsed(self, scene):
         """Return how far into a scene its earliest running clip is, in seconds, or None when none plays."""
         starts = [play.start for play in self.running_plays() if play.scene == scene]
-        return None if not starts else self._now() - min(starts)
+        if not starts:
+            return None
+        return self._now() - min(starts)
 
     def clip_elapsed(self, *, scene, track):
         """Return how far into its play a clip is, in seconds, or None when the clip isn't playing."""
@@ -455,7 +477,10 @@ class Player:
             elif old.start < at < old.end:
                 self._cut(play=old, at=at)
             elif old.start > at:
-                next_start = old.start if next_start is None else min(next_start, old.start)
+                if next_start is None:
+                    next_start = old.start
+                else:
+                    next_start = min(next_start, old.start)
         self._play_count += 1
         end = at + self._score.get_scene_seconds(scene)
         loops = forever or self._score.loops(scene=scene, track=track)
@@ -520,7 +545,10 @@ class Player:
                 self._plan(time=at, kind=LAUNCH_CLIPS, scene=below, tracks=new)
 
     def _is_planned(self, *, time, kind, scene, track=None):
-        return any(moment.time == time and moment.kind == kind and moment.scene == scene and (track is None or track in moment.tracks) for moment in self._moments)
+        for moment in self._moments:
+            if moment.time == time and moment.kind == kind and moment.scene == scene and (track is None or track in moment.tracks):
+                return True
+        return False
 
     def _stop_everything_at(self, at):
         """End every play at a moment, now or ahead, and forget every moment to come, for a scene launched by hand."""
@@ -541,7 +569,8 @@ class Player:
 
     def _cut(self, *, play, at, score=None):
         """End a play at a moment: now, by stopping its tag, or later, by dropping its events from then and ending the notes sounding across it, by the score it was queued from."""
-        score = self._score if score is None else score
+        if score is None:
+            score = self._score
         if at <= self._now():
             self._sender.stop_tag(play.tag)
         else:
@@ -554,4 +583,8 @@ class Player:
 
 def _renumbered(*, moment, scene_map, track_map):
     """Return a moment of the lights with its scene and tracks renumbered after an edit, leaving out a track that is gone."""
-    return moment._replace(scene=scene_map[moment.scene], tracks=tuple(track_map[track] for track in moment.tracks if track_map.get(track) is not None))
+    tracks = []
+    for track in moment.tracks:
+        if track_map.get(track) is not None:
+            tracks.append(track_map[track])
+    return moment._replace(scene=scene_map[moment.scene], tracks=tuple(tracks))
