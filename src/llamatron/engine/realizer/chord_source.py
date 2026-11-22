@@ -30,7 +30,9 @@ class ChordSource:
         a single note is a chord of itself. A chord goes on through the rests after it.
         """
         started = bisect_right(self._times, time)
-        return self._chords[self._times[started - 1]] if started else None
+        if not started:
+            return None
+        return self._chords[self._times[started - 1]]
 
 
 def _chords_by_start(clip):
@@ -62,6 +64,8 @@ def _place_chord(*, sound, start, end, scale, chords):
 
 def _chord_of(*, sound, scale):
     """Return a note's or a chord's root as a MIDI number, and its notes within an octave."""
-    notes = sound[sound_values.NOTES] if sound[sound_values.KIND] == sound_values.CHORD else [sound]
+    notes = [sound]
+    if sound[sound_values.KIND] == sound_values.CHORD:
+        notes = sound[sound_values.NOTES]
     numbers = [as_note(position=note, scale=scale)[sound_values.MIDI] for note in notes]
     return numbers[0], frozenset(number % HALF_STEPS_PER_OCTAVE for number in numbers)
