@@ -52,5 +52,8 @@ class EuclidSettings(GeneratorSettings):
 
 def _check_hits_fit(*, hits, steps):
     """Refuse more hits than steps, a bar of sixteenths when the steps are left out."""
-    if hits is not None and hits > (limits.DEFAULT_EUCLID_STEPS if steps is None else steps):
-        raise InvalidValue(errors.ERR_EUCLID_TOO_MANY_HITS.format(hits=hits, steps=limits.DEFAULT_EUCLID_STEPS if steps is None else steps))
+    most = steps
+    if most is None:
+        most = limits.DEFAULT_EUCLID_STEPS
+    if hits is not None and hits > most:
+        raise InvalidValue(errors.ERR_EUCLID_TOO_MANY_HITS.format(hits=hits, steps=most))
