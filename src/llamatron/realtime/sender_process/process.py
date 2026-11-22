@@ -117,7 +117,9 @@ class RealtimeMIDISenderProcess:
         hands back what it sent on close. driver is TIMESTAMPED or IMMEDIATE, by default the timestamped one where CoreMIDI is."""
         self._ports = list(ports)
         self._recording = recording
-        self._driver = default_driver() if driver is None else driver
+        if driver is None:
+            driver = default_driver()
+        self._driver = driver
         self._connection = None
         self._process = None
         self._port_places = {name: place for place, name in enumerate(self._ports)}
@@ -178,16 +180,28 @@ class RealtimeMIDISenderProcess:
 
 def default_driver():
     """Return the driver that sends best here: the timestamped one where CoreMIDI is, on macOS, and the immediate one elsewhere."""
-    return TIMESTAMPED if coremidi.is_available() else IMMEDIATE
+    if coremidi.is_available():
+        return TIMESTAMPED
+    return IMMEDIATE
 
 
 def engine_for(*, driver, ports, recording):
     """Return the engine a driver sends through, on the real clock, with its outputs opened: recording ones with recording."""
     clock = MonotonicClock()
     if driver == TIMESTAMPED:
-        outputs = {name: (ScheduledRecordingOutput(clock=clock) if recording else CoreMidiOutput(name=name)) for name in ports}
+        outputs = {}
+        for name in ports:
+            if recording:
+                outputs[name] = ScheduledRecordingOutput(clock=clock)
+            else:
+                outputs[name] = CoreMidiOutput(name=name)
         return ScheduledPlaybackEngine(clock=clock, outputs=outputs)
-    outputs = {name: (RecordingOutput() if recording else RtMidiOutput(name=name)) for name in ports}
+    outputs = {}
+    for name in ports:
+        if recording:
+            outputs[name] = RecordingOutput()
+        else:
+            outputs[name] = RtMidiOutput(name=name)
     return PlaybackEngine(clock=clock, outputs=outputs)
 
 
@@ -288,13 +302,17 @@ def run_sender(*, connection, ports, recording, driver):
         kind = message[0]
         if kind == START:
             engine.start(at=message[1])
-            started = time.perf_counter() if message[1] is None else message[1]
+            started = message[1]
+            if started is None:
+                started = time.perf_counter()
         elif kind == ADD_RECORDS:
             _add_records(engine=engine, message=message, ports=ports)
         elif kind in FORWARDED:
             FORWARDED[kind](engine=engine, message=message)
         elif kind == CLOSE:
             engine.close()
-            sent = engine.recordings() if recording else None
+            sent = None
+            if recording:
+                sent = engine.recordings()
             connection.send((started, sent))
             return
