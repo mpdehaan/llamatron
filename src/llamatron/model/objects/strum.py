@@ -64,7 +64,11 @@ def strum_values(value):
     fade = value(StrumPart.FADE)
     loose = value(StrumPart.LOOSE_TIMING)
     upstroke = value(StrumPart.UPSTROKE_STRINGS) or DEFAULT_UPSTROKE_STRINGS
-    return StrumValues(direction, SPREAD_MILLISECONDS[spread], NO_FADE if fade is None else fade, NO_LOOSE_TIMING if loose is None else loose, UPSTROKE_COUNTS.get(upstroke))
+    if fade is None:
+        fade = NO_FADE
+    if loose is None:
+        loose = NO_LOOSE_TIMING
+    return StrumValues(direction, SPREAD_MILLISECONDS[spread], fade, loose, UPSTROKE_COUNTS.get(upstroke))
 
 
 def strums_at_all(strum):
