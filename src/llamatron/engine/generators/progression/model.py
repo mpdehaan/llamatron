@@ -97,7 +97,9 @@ class ProgressionSettings(GeneratorSettings):
 
     def _with_defaults(self, *, values, default_seed, default_step, bar):
         every = values.get(ProgressionSetting.EVERY, Bars(1))
-        values[ProgressionSetting.EVERY] = bar * every.count if isinstance(every, Bars) else every
+        if isinstance(every, Bars):
+            every = bar * every.count
+        values[ProgressionSetting.EVERY] = every
         chords = values[ProgressionSetting.CHORDS]
         for row in PROGRESSION_ROWS:
             values[row] = _lined_up(values=values.get(row), count=len(chords))
@@ -136,4 +138,7 @@ def _lined_up(*, values, count):
 
 def _tensions_in_order(value):
     """Return the tensions a chord's value holds, in the order the tensions come, as a tuple, or None for none."""
-    return None if value is None else tuple(tension for tension in file_format.TENSIONS if tension in value)
+    if value is None:
+        return None
+    tensions = [tension for tension in file_format.TENSIONS if tension in value]
+    return tuple(tensions)
