@@ -45,6 +45,9 @@ MOST_PARAMETERS = 5
 MOST_TYPE_CHECKS = 1
 # The most lines of code a file or a class may hold, blank lines and comments left out.
 MOST_CODE_LINES = 500
+# The render and the real-time sender, where a split for size alone would cost a call in the busiest loops, may hold more.
+MOST_CODE_LINES_PLAYING = 1000
+PLAYING_FOLDERS = ('engine', 'realtime')
 # The files that are lists by nature, the set file's names, the program's text and the key bindings, which no split would make clearer.
 LIST_FILES = ('model/schema/file_format.py', 'interface/tracker/keybindings.py')
 LIST_FOLDERS = ('user_strings',)
@@ -80,6 +83,13 @@ def is_elif(*, parent, child):
 def code_lines(lines):
     """Return how many of some lines are code: not blank and not a comment."""
     return sum(1 for line in lines if line.strip() and not line.strip().startswith(COMMENT))
+
+
+def most_code_lines(path):
+    """Return the most lines of code a file of the program, and each class in it, may hold."""
+    if path.split('/')[0] in PLAYING_FOLDERS:
+        return MOST_CODE_LINES_PLAYING
+    return MOST_CODE_LINES
 
 
 def is_a_list_file(path):
@@ -170,7 +180,7 @@ class ShapeFinder(ast.NodeVisitor):
 
     def visit_ClassDef(self, node):
         self.names.append(node.name)
-        if not is_a_list_file(self.path) and code_lines(self.lines[node.lineno - 1:node.end_lineno]) > MOST_CODE_LINES:
+        if not is_a_list_file(self.path) and code_lines(self.lines[node.lineno - 1:node.end_lineno]) > most_code_lines(self.path):
             self.found[BIG_CLASSES].append(self.place())
         self.own.append(own_private_names(node))
         self.generic_visit(node)
@@ -217,7 +227,7 @@ def breaks():
         name = str(path.relative_to(SOURCE))
         finder = ShapeFinder(path=name, lines=text.splitlines())
         finder.visit(ast.parse(text, filename=str(path)))
-        if not is_a_list_file(name) and code_lines(finder.lines) > MOST_CODE_LINES:
+        if not is_a_list_file(name) and code_lines(finder.lines) > most_code_lines(name):
             finder.found[BIG_FILES].append(name)
         for rule in RULES:
             found[rule] += [place for place in finder.found[rule] if place not in found[rule]]
