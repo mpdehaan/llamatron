@@ -4,8 +4,10 @@
 
 """The built-in generators a clip and a track each hold: one of each kind a plugin declares built in, such as Chords and the
 Arpeggiator, kept in the file by kind under one setting, switched off until switched on, and with no name, since nothing but
-its holder runs it. Each is read as its plugin's settings, marked built in, and changed through its holder, so that the holder's
-revision moves with every change."""
+its holder runs it. Each is read as its plugin's settings, marked built in, which hand themselves back to their holder after
+every change, so that the holder keeps them and its revision moves."""
+
+import functools
 
 from llamatron.caching.revised import notes_change
 from llamatron.model.file.checks import listed, reading
@@ -54,10 +56,10 @@ class HoldsBuiltIns:
     BUILT_IN_SETTING = None
 
     def get_built_in(self, kind):
-        """Return the settings of its built-in generator of a kind, as its plugin's settings marked built in: a copy, changed
-        only through set_built_in_setting, and blank settings, switched off, where it holds none."""
+        """Return the settings of its built-in generator of a kind, as its plugin's settings marked built in, blank and switched off
+        where it holds none: every change made through their setters is kept here."""
         written = self._written_built_ins().get(kind) or {}
-        return generator_plugins.settings_of(kind)(written, built_in=True)
+        return generator_plugins.settings_of(kind)(written, built_in=True, keeper=functools.partial(self._keep_built_in, kind=kind))
 
     def has_built_in_on(self, kind):
         """Return whether its built-in generator of a kind is switched on."""
@@ -71,16 +73,10 @@ class HoldsBuiltIns:
             return []
         return [kind for kind in generator_plugins.built_in_kinds() if self.has_built_in_on(kind)]
 
-    @notes_change
     def set_built_in_setting(self, *, kind, name, value):
         """Set one setting of its built-in generator of a kind, checked as the set's list checks it, or None to leave it out."""
         settings = self.get_built_in(kind)
         settings.set_written(name=name, value=value)
-        built_ins = dict(self._written_built_ins())
-        built_ins[kind] = settings.to_data()
-        if not built_ins[kind]:
-            del built_ins[kind]
-        self.set_written(name=self.BUILT_IN_SETTING, value=built_ins or None)
 
     def names_item(self, *, section, name):
         """Return whether one of its own settings, or one of its built-in generators, names an item of a section."""
@@ -102,15 +98,17 @@ class HoldsBuiltIns:
             settings = self.get_built_in(kind)
             if settings.names_item(section=section, name=old):
                 settings.rename_references(section=section, old=old, new=new)
-                self._keep_built_in(kind=kind, settings=settings)
+                self._keep_built_in(settings, kind=kind)
 
     def _written_built_ins(self):
         """Return its built-in generators' settings as written, by kind."""
         return self.get_written(self.BUILT_IN_SETTING) or {}
 
     @notes_change
-    def _keep_built_in(self, *, kind, settings):
-        """Keep a built-in generator's settings as they now are."""
+    def _keep_built_in(self, settings, *, kind):
+        """Keep a built-in generator's settings as they now are, leaving out of the file a kind with nothing written."""
         built_ins = dict(self._written_built_ins())
         built_ins[kind] = settings.to_data()
-        self.set_written(name=self.BUILT_IN_SETTING, value=built_ins)
+        if not built_ins[kind]:
+            del built_ins[kind]
+        self.set_written(name=self.BUILT_IN_SETTING, value=built_ins or None)

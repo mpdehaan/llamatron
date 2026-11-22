@@ -33,7 +33,7 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
     something other than what the file writes.
     """
 
-    __slots__ = ('_built_in',)
+    __slots__ = ('_built_in', '_keeper')
 
     BYPASS_SETTING = file_format.BYPASS_WHEN
     GENERATOR = None
@@ -55,13 +55,15 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
         """Return whether its generator adds to the registers as it plays: no, unless a plugin's settings say otherwise."""
         return False
 
-    def __init__(self, settings, *, built_in=False):
+    def __init__(self, settings, *, built_in=False, keeper=None):
         """built_in says whether these are the settings of a clip's or a track's built-in generator, which is switched off until
-        switched on, where a generator of the set's list is on until switched off."""
+        switched on, where a generator of the set's list is on until switched off. keeper, given with a built-in's, is handed
+        the settings after every change, so that the clip or track holding them keeps them and says it changed."""
         # Kept as given, as a copy, so that the object shares nothing with the data it was read from. Reading a file checks the data first.
         self.note_change()
         self._settings = own_copy(settings) or {}
         self._built_in = built_in
+        self._keeper = keeper
 
     @classmethod
     def from_data(cls, *, data, where, song=None):
@@ -128,6 +130,8 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
         else:
             self.SETTINGS[name].check(value)
             self._settings[name] = own_copy(value)
+        if self._keeper is not None:
+            self._keeper(self)
 
     def limits_of(self, name):
         """Return the lowest and highest a whole number of these settings may be, by the setting's file name: its description's,

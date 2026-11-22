@@ -84,6 +84,17 @@ class TestBuiltInsAsStored(unittest.TestCase):
         lead.set_built_in_setting(kind=chords_plugin.NAME, name=file_format.GENERATOR_ENABLED, value=None)
         self.assertNotIn(TrackSetting.BUILT_IN, lead.to_data())
 
+    def test_a_change_through_the_built_ins_own_setters_is_kept_by_its_holder(self):
+        song_read, lead = lead_of(song())
+        revision = lead.get_revision()
+        settings = lead.get_built_in(chords_plugin.NAME)
+        settings.set_written(name=file_format.GENERATOR_ENABLED, value=True)
+        settings.set_written(name=ChordsSetting.MODE, value=chords_model.PROGRESSION)
+        self.assertEqual(lead.to_data()[TrackSetting.BUILT_IN], {chords_plugin.NAME: {**ON, ChordsSetting.MODE: chords_model.PROGRESSION}})
+        self.assertNotEqual(lead.get_revision(), revision)
+        settings.copy().set_written(name=ChordsSetting.MODE, value=None)
+        self.assertEqual(lead.get_built_in(chords_plugin.NAME).get_written(ChordsSetting.MODE), chords_model.PROGRESSION)
+
     def test_a_setting_is_checked_as_the_sets_list_checks_it(self):
         song_read, lead = lead_of(song())
         with self.assertRaises(InvalidValue):

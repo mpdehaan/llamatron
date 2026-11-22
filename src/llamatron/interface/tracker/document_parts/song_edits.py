@@ -160,6 +160,21 @@ class SongEdits:
         """Return the ClipSlot a track plays in a scene, or None if it plays nothing there."""
         return self._scene(index).get_clip_slot(track)
 
+    def built_in(self, place):
+        """Return the settings of a built-in generator of the current song, by its BuiltInPlace, which keep every change made
+        through their setters in the clip or the track holding them."""
+        return self._built_in_holder(place).get_built_in(place.kind)
+
+    def has_built_in(self, place):
+        """Return whether the clip or the track holding a built-in generator is still in the current song, which an undo can
+        take away."""
+        song = self.song()
+        if not song.has_track(place.track):
+            return False
+        if place.is_the_tracks():
+            return True
+        return place.scene < len(song.get_scenes()) and self.clip_slot(index=place.scene, track=place.track) is not None
+
     def add_clip_slot(self, *, index, track, pattern):
         """Give a track a clip in a scene, playing a pattern once."""
         self.change_set(self.song().add_clip, index=index, track=track, pattern=pattern)
@@ -209,3 +224,9 @@ class SongEdits:
         clip_slot = self.clip_slot(index=index, track=track)
         self.change_set(self.song().get_scene(index).remove_clip_slot, track)
         return self.paste_clip_slot(index=to_index, track=to_track, copied=clip_slot)
+
+    def _built_in_holder(self, place):
+        """Return what holds a built-in generator: the track, or its clip in a scene."""
+        if place.is_the_tracks():
+            return self.song().get_track(place.track)
+        return self.clip_slot(index=place.scene, track=place.track)
