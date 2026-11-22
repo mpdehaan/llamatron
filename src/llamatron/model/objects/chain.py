@@ -124,7 +124,12 @@ class Chain(BypassedWhen, HoldsSettings):
     def _rename_own_references(self, *, section, old, new):
         """Make every step that ran the renamed generator run it under its new name."""
         kind = generator_plugins.names_by_section()[section]
-        self._steps = [ChainStep(kind, new) if step == (kind, old) else step for step in self._steps]
+        renamed = []
+        for step in self._steps:
+            if step == (kind, old):
+                step = ChainStep(kind, new)
+            renamed.append(step)
+        self._steps = renamed
 
     def _check_place(self, place):
         if not 0 <= place < len(self._steps):
@@ -147,8 +152,12 @@ def _names_one_generator(step):
 
 def check_chain_names(*, value, song):
     """Refuse a list of chains unless it is a list of the set's chains by name, a chain allowed more than once, since it then runs more than once."""
-    if not isinstance(value, list) or not all(isinstance(name, str) for name in value):
+    if not isinstance(value, list):
         raise InvalidValue(errors.ERR_NOT_CHAIN_NAMES.format(value=value))
     for name in value:
-        if not song.get_setlist().has_generator_named(name):
+        if not isinstance(name, str):
+            raise InvalidValue(errors.ERR_NOT_CHAIN_NAMES.format(value=value))
+    setlist = song.get_setlist()
+    for name in value:
+        if not setlist.has_generator_named(name):
             raise InvalidValue(errors.ERR_NO_GENERATOR_CALLED.format(name=name))
