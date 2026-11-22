@@ -120,7 +120,7 @@ class PatternPlayer:
     the track's transpose and the register the track's velocity is bound to, if any.
     """
 
-    __slots__ = ('_song', '_setlist', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_default_octave', '_default_drum_octave', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
+    __slots__ = ('_song', '_setlist', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_default_octaves', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
 
     def __init__(self, *, song, scene, scale, track, scale_name=None, modulations=None, passes=None):
         """scale_name is the scale the clip's degrees take their notes from: the clip's own, or the scene's when it's None.
@@ -141,9 +141,9 @@ class PatternPlayer:
         # What a step with no velocity typed plays at on this track, and what an accented step adds.
         self._default_velocity = song.default_velocity_of(track)
         self._accent = song.accent_of(track)
-        # The octave a step with none plays in, a drum's and a note's, read once, since the set can't change while a clip plays.
-        self._default_octave = self._setlist.get_default_octave()
-        self._default_drum_octave = self._setlist.get_default_drum_octave()
+        # The octave a step with none plays in, by whether its pattern is a drum pattern, read once, since the set can't change
+        # while a clip plays.
+        self._default_octaves = {False: self._setlist.get_default_octave(), True: self._setlist.get_default_drum_octave()}
         # The scene's scale at each octave a note asked for, and its size, built once rather than for every note of every pass, since the scene's scale can't change while a clip plays.
         self._scales_by_octave = {}
         self._scale_size = None
@@ -198,7 +198,7 @@ class PatternPlayer:
         scale its degrees take their notes from, the track's transpose, default velocity and accent, and the song's default octaves."""
         named = None if self._scale_name is None else self._setlist.get_named_scale(self._scale_name)
         scale_of_name = None if named is None else (named.get_root(), named.get_kind())
-        return (self._scale, scale_of_name, self._transpose, self._default_velocity, self._accent, self._default_octave, self._default_drum_octave)
+        return (self._scale, scale_of_name, self._transpose, self._default_velocity, self._accent, self._default_octaves[False], self._default_octaves[True])
 
     def _pass_key(self, *, pattern_name, pattern, played, steps, pass_draws):
         """Return the key a pass is remembered by, or None for a pass that reads what carries between passes or a player that
@@ -396,10 +396,7 @@ class PatternPlayer:
         # Blanks are filled in with plain ifs rather than a helper, since this runs for every note of every pass.
         octave = values[Row.OCTAVE]
         if octave is None:
-            if drum:
-                octave = self._default_drum_octave
-            else:
-                octave = self._default_octave
+            octave = self._default_octaves[drum]
         if velocity is None:
             velocity = self._default_velocity
         velocity = _clamped_velocity(velocity + velocity_added)
@@ -424,14 +421,7 @@ class PatternPlayer:
             slices.append(Sound.inverted(sound, values[Row.INVERSION]))
         if not heard:
             return [Sound.rest(piece[sound_values.LENGTH]) for piece in slices]
-        probability = values[Row.PROBABILITY]
-        if probability is None:
-            probability = defaults.DEFAULT_PROBABILITY
-        if effects is not None and effects.probability:
-            probability = max(min(probability + effects.probability, limits.MAX_PROBABILITY), limits.MIN_PROBABILITY)
-        if probability >= limits.MAX_PROBABILITY or counting:
-            return slices
-        return [piece if _rolls_under(rolls=rolls, probability=probability) else Sound.rest(piece[sound_values.LENGTH]) for piece in slices]
+        return _played_by_chance(slices=slices, probability=values[Row.PROBABILITY], effects=effects, rolls=rolls, counting=counting)
 
     def _grabbed_sound(self, *, number_grabbed, chord, length, velocity, glide, shift, drum, where):
         """Return a grabbed note, moved along this clip's scale, or by half steps for drums, with the step's chord built on it.
@@ -706,6 +696,24 @@ def _controls_sent(*, values, time):
         Control(time=time, number=lane, value=values[row], slide=bool(values[Row.SLIDE]))
         for lane, row in enumerate(file_format.CC_ROWS) if values[row] is not None
     ]
+
+
+def _played_by_chance(*, slices, probability, effects, rolls, counting):
+    """Return a step's slices as its probability plays them, each a rest where its roll fails: the step's probability, the
+    default where it has none, moved by what the clip's modulations add and held from 0 to 100. Counting plays every slice."""
+    if probability is None:
+        probability = defaults.DEFAULT_PROBABILITY
+    if effects is not None and effects.probability:
+        probability = max(min(probability + effects.probability, limits.MAX_PROBABILITY), limits.MIN_PROBABILITY)
+    if probability >= limits.MAX_PROBABILITY or counting:
+        return slices
+    played = []
+    for piece in slices:
+        if _rolls_under(rolls=rolls, probability=probability):
+            played.append(piece)
+        else:
+            played.append(Sound.rest(piece[sound_values.LENGTH]))
+    return played
 
 
 def _clamped_velocity(velocity):
