@@ -41,7 +41,9 @@ class AutoRatchetSettings(GeneratorSettings):
     def get_counts(self):
         """Return its counts as the file writes them, or None when the file leaves them out."""
         counts = self.get_written(AutoRatchetSetting.COUNTS)
-        return None if counts is None else list(counts)
+        if counts is None:
+            return None
+        return list(counts)
 
     @classmethod
     def new(cls):
