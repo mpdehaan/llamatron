@@ -52,7 +52,9 @@ class ScheduledPlaybackEngine(PlaybackEngine):
 
     def next_action(self):
         due = self.next_due()
-        return None if due is None else due - HORIZON_SECONDS
+        if due is None:
+            return None
+        return due - HORIZON_SECONDS
 
     def spins(self):
         return False
