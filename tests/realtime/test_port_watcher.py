@@ -9,6 +9,7 @@ another program makes later is seen by listing again."""
 import subprocess
 import sys
 import threading
+import time
 import unittest
 from unittest import mock
 
@@ -23,8 +24,10 @@ HAS_LIBRARY = ports.has_midi_library.__name__
 # test looks for it.
 LATER_PORT = 'llamatron port made later'
 MADE = 'made'
-MAKES_A_PORT = f"import time; from tests.realtime.test_coremidi import Destination; Destination({LATER_PORT!r}); print({MADE!r}, flush=True); time.sleep(10)"
-LOOKS = 20
+MAKES_A_PORT = f"import time; from tests.realtime.test_coremidi import Destination; Destination({LATER_PORT!r}); print({MADE!r}, flush=True); time.sleep(60)"
+# How long the listing may take to show a port another program made: CoreMIDI tells other programs late on a loaded
+# machine, as when the suite runs beside itself, so the test looks again and again until a deadline.
+WAIT_SECONDS = 10
 LOOK_SECONDS = 0.1
 
 
@@ -85,7 +88,8 @@ class TestCoreMidiListing(unittest.TestCase):
         self.addCleanup(other.wait)
         self.addCleanup(other.kill)
         self.assertEqual(other.stdout.readline().strip(), MADE)
-        for _ in range(LOOKS):
+        deadline = time.monotonic() + WAIT_SECONDS
+        while time.monotonic() < deadline:
             if LATER_PORT in watcher.names_now():
                 return
             threading.Event().wait(LOOK_SECONDS)
