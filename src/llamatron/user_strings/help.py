@@ -278,18 +278,6 @@ Vel+= and Prob are added to every note's; Degree + moves notes along the scale, 
 Scale and Root take over the clip's scale with their prob. AX+= to DX+= add to the registers at each trigger.
 """
 
-# ArpEditor
-HELP_ARP_EDITOR = """
-Name: ENTER renames it, and every chain using it follows.
-Step: how long each note of the chord plays.
-Order: which way it goes through the chord. Random uses the seed.
-Octave range: plays the chord again in up to 4 octaves. Octave jump: up after the whole chord, or after each note.
-Offsets: the arp's own steps, like a groovebox's. Each moves its note along the scale, and a blank step is silent. Bksp removes them.
-Seed: leave it to use the song seed, or set one for just this arpeggiator.
-
-Up and down select a setting. Left and right change it, and ENTER types or chooses.
-"""
-
 # PatternEditor
 HELP_PATTERN_EDITOR = """
 Each column is a step, as long as the step size. Tab switches between the piano roll and the rows. Home/End jump to the ends.

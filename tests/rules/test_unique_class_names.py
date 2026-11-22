@@ -21,7 +21,6 @@ ALLOWED = (
     'AccentRow',
     'AccidentalRow',
     'AddRow',
-    'ArpEditor',
     'ArrangePage',
     'CcRow',
     'ChainEditor',

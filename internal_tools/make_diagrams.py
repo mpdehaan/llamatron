@@ -69,7 +69,6 @@ SECTION_ARGUMENT = 'section'
 # Screens whose names in words aren't just their class names split up.
 SCREEN_LABELS = {
     MAIN_SCREEN_ID: 'Main screen',
-    'ArpEditor': 'Arpeggiator editor',
     'FilePage': 'File/Global',
 }
 PAGE_SUFFIX = 'Page'

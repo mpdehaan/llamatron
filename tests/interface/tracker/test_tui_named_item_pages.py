@@ -16,10 +16,10 @@ from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.generators.arp_editor import ArpEditor
 from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor
-from llamatron.interface.tracker.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
+from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
+from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.user_strings import errors, marks
 from tests.support import ui_testing
@@ -71,7 +71,7 @@ class NamedItemChecks:
 
     async def another(self):
         """Add a second thing to the page's section, a copy of the first, and return its name."""
-        new = self.document.copy_named(section=self.PAGE.SECTION, name=self.FIRST)
+        new = self.document.copy_named(section=self.page.SECTION, name=self.FIRST)
         self.document.record_edit()
         return new
 
@@ -79,7 +79,7 @@ class NamedItemChecks:
         self.page.rename()
         await self.pilot.pause()
         self.assertIsInstance(self.app.screen, PromptDialog)
-        self.assertIn(self.PAGE.RENAME_PROMPT, self.text())
+        self.assertIn(self.page.RENAME_PROMPT, self.text())
         self.app.screen.value = name
         await self.press(Key.ENTER)
 
@@ -94,28 +94,28 @@ class NamedItemChecks:
         await self.rename_to(RENAMED)
         self.assertIs(self.app.screen, self.page)
         self.assertEqual(self.page.item, RENAMED)
-        self.assertIn(RENAMED, self.document.names_of(self.PAGE.SECTION))
-        self.assertNotIn(self.FIRST, self.document.names_of(self.PAGE.SECTION))
+        self.assertIn(RENAMED, self.document.names_of(self.page.SECTION))
+        self.assertNotIn(self.FIRST, self.document.names_of(self.page.SECTION))
         self.assert_crumbs_name(RENAMED)
 
     async def test_a_name_in_use_and_an_empty_name_are_each_refused_in_their_own_words(self):
         if not self.RENAMES:
             self.skipTest(THE_PAGE_DOES_NOT_RENAME)
         other = await self.another()
-        before = self.document.names_of(self.PAGE.SECTION)
+        before = self.document.names_of(self.page.SECTION)
         await self.rename_to(other)
         self.assertIn(errors.ERR_NAME_IN_USE.format(name=other), self.text())
         await self.rename_to(drawing.NOTHING)
         self.assertIn(errors.ERR_EMPTY_NAME, self.text())
-        self.assertEqual(self.document.names_of(self.PAGE.SECTION), before)
+        self.assertEqual(self.document.names_of(self.page.SECTION), before)
         self.assertEqual(self.page.item, self.FIRST)
 
     async def test_the_page_follows_a_rename_made_elsewhere_and_ignores_another_things(self):
         other = await self.another()
-        self.page.follow_renames({self.PAGE.SECTION: {other: RENAMED}})
+        self.page.follow_renames({self.page.SECTION: {other: RENAMED}})
         self.assertEqual(self.page.item, self.FIRST)
-        self.document.rename_named(section=self.PAGE.SECTION, old=self.FIRST, new=RENAMED)
-        self.page.follow_renames({self.PAGE.SECTION: {self.FIRST: RENAMED}})
+        self.document.rename_named(section=self.page.SECTION, old=self.FIRST, new=RENAMED)
+        self.page.follow_renames({self.page.SECTION: {self.FIRST: RENAMED}})
         self.assertEqual(self.page.item, RENAMED)
         self.assertTrue(self.page.still_exists())
         await self.press(Key.DOWN)
@@ -123,7 +123,7 @@ class NamedItemChecks:
 
     async def test_the_thing_is_gone_once_it_is_deleted(self):
         await self.another()
-        self.document.delete_named(section=self.PAGE.SECTION, name=self.FIRST)
+        self.document.delete_named(section=self.page.SECTION, name=self.FIRST)
         self.assertFalse(self.page.still_exists())
 
 
@@ -144,10 +144,14 @@ class TestChainEditorShowsItsChain(NamedItemChecks, UITest):
     FIRST = ui_testing.NAMED
 
 
-class TestArpEditorShowsItsArp(NamedItemChecks, UITest):
+class TestPluginEditorShowsItsGenerator(NamedItemChecks, UITest):
+    """The page drawn from a plugin's view, here an arpeggiator's, given its section as it opens."""
 
-    PAGE = ArpEditor
+    PAGE = PluginEditor
     FIRST = ui_testing.UP_ARP
+
+    def make_page(self):
+        return PluginEditor(holder=self.app.screen.holder, name=self.FIRST, section=arp_plugin.SECTION)
 
 
 class TestOffsetsEditorShowsItsArp(NamedItemChecks, UITest):
@@ -170,7 +174,7 @@ class TestOffsetsEditorShowsItsArp(NamedItemChecks, UITest):
 # What a page that serves many sections is given as it opens.
 SECTION_GIVEN = 'section'
 
-CHECKED = [TestPatternEditorShowsItsPattern, TestChainEditorShowsItsChain, TestArpEditorShowsItsArp, TestOffsetsEditorShowsItsArp]
+CHECKED = [TestPatternEditorShowsItsPattern, TestChainEditorShowsItsChain, TestPluginEditorShowsItsGenerator, TestOffsetsEditorShowsItsArp]
 
 
 class TestEveryPageOfOneNamedThingIsChecked(unittest.TestCase):

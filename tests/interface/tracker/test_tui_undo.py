@@ -20,9 +20,7 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
-from llamatron.interface.tracker.screens.generators.arp_editor import ArpEditor
 from llamatron.interface.tracker.screens.generators.generators_page import GeneratorsPage
-from llamatron.interface.tracker.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.interface.tracker.screens.pattern.pattern_editor import Munge, PatternEditor, Reconfigure
 from llamatron.interface.tracker.screens.pattern.patterns_page import PatternsPage
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
@@ -30,6 +28,8 @@ from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.interface.tracker.screens.set.notes_page import NotesPage
 from llamatron.interface.tracker.screens.set.scale_page import ScalePage
 from llamatron.interface.tracker.screens.set.song_page import SongPage
+from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
+from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import default_scale_name, new_name
 from llamatron.model.schema import defaults
@@ -348,10 +348,10 @@ class TestOffsetsEditorUndo(UndoTest):
 
     async def test_undoing_the_offsets_and_then_the_arp_closes_this_editor_and_then_the_arps(self):
         name = await self.add_generator(arp_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, ArpEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
         # Opening the offsets editor gives a new arp its row of offsets, which is the first thing to undo.
         await self.open_offsets()
-        await self.check_undo_goes_back_to(ArpEditor)
+        await self.check_undo_goes_back_to(PluginEditor)
         self.assertIsNone(self.document.get_setlist().get_generator_settings(kind=arp_plugin.NAME, name=name).get_offsets())
         await self.check_undo_goes_back_to(GeneratorsPage)
 

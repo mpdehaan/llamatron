@@ -359,10 +359,6 @@ class InstrumentEditor(FieldPage):
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
-class ArpEditor(FieldPage):
-    """The arpeggiator's editor, with the settings keys alone."""
-
-
 class ChainStatementsPage(FieldPage):
     """A chain's statements about the registers, with the settings keys alone."""
 

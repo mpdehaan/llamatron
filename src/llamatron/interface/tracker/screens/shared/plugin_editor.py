@@ -12,16 +12,23 @@ from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
 from llamatron.interface.tracker.screens.shared.guitar_bar_editor import guitar_bar_field
 from llamatron.interface.tracker.screens.shared.octave_field import octave_field
+from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
 from llamatron.interface.tracker.screens.shared.progression_field import progression_field
 from llamatron.interface.tracker.screens.shared.restart_field import restart_field
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
+from llamatron.interface.tracker.screens.shared.shared import numbers_text
 from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
 from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import shape_setting
-from llamatron.model.schema.generator_views import ChoiceView, GuitarBarView, NumberView, OctaveView, ProgressionView, RestartView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView
+from llamatron.model.schema.generator_views import ChoiceView, GuitarBarView, NumberView, OctaveView, OffsetsView, ProgressionView, RegisterAddView, RestartView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
+
+# What a register add left out of the file is, and the offsets an arpeggiator starts its editor with where it has none.
+NO_ADD = 0
+NO_OFFSET = 0
+NEW_OFFSET_STEPS = 8
 
 
 def has_view(section):
@@ -122,6 +129,19 @@ class PluginEditor(GeneratorEditor, FieldPage):
             names.add(written)
         return sorted_names(names)
 
+    def open_offsets(self, setting):
+        """Open the offsets editor, giving the generator a row of offsets of nothing first where it has none."""
+        if self.settings().get_written(setting.setting) is None:
+            self.store(setting=setting.setting, value=[NO_OFFSET] * NEW_OFFSET_STEPS)
+        self.show_page(OffsetsEditor(holder=self.holder, name=self.item))
+
+    def offsets_shown(self, setting):
+        """Return the offsets on one line, or (none) where the generator has none."""
+        offsets = self.settings().get_written(setting.setting)
+        if offsets is None:
+            return marks.MSG_NONE_SHOWN
+        return numbers_text(offsets)
+
     def store_track(self, choice, *, setting):
         """Keep the track a setting names, None or (none) naming none."""
         if choice == marks.MSG_NONE_SHOWN:
@@ -133,6 +153,10 @@ class PluginEditor(GeneratorEditor, FieldPage):
         if number == setting.default or (setting.default is None and not number):
             number = None
         self.store(setting=setting.setting, value=number)
+
+    def store_register_add(self, number, *, setting):
+        """Keep what every note adds to a register, left out of the file where it adds nothing."""
+        self.store(setting=setting, value=number or None)
 
     def store_time(self, value, *, setting):
         """Keep a step length, None leaving the pattern's step size."""
@@ -195,6 +219,10 @@ class PluginEditor(GeneratorEditor, FieldPage):
             return [progression_field(page=self, label=setting.label)]
         if kind is GuitarBarView:
             return [guitar_bar_field(page=self, label=setting.label)]
+        if kind is RegisterAddView:
+            return [self._register_add_field(setting)]
+        if kind is OffsetsView:
+            return [self._offsets_field(setting)]
         raise TypeError(setting)
 
     def _number_field(self, setting):
@@ -236,6 +264,22 @@ class PluginEditor(GeneratorEditor, FieldPage):
         return octave_field(
             page=self, label=setting.label, current=functools.partial(self.octave_of, setting), lowest=functools.partial(self.lowest_of, setting),
             highest=functools.partial(self.highest_of, setting), default=setting.default, set_octave=functools.partial(self.store_octave, setting=setting),
+        )
+
+    def _register_add_field(self, setting):
+        """Return the field for what every note adds to a register, within the current song's Allowed Inc Max for it."""
+        most = self.document().song().get_register(setting.register).get_allowed_inc_max()
+        number = self.settings().get_written(setting.setting) or NO_ADD
+        return NumberField(
+            page=self, label=setting.label, number=number, lowest=-most, highest=most,
+            set=functools.partial(self.store_register_add, setting=setting.setting), clear=functools.partial(self.store, setting=setting.setting, value=None),
+        )
+
+    def _offsets_field(self, setting):
+        """Return the field of an arpeggiator's offsets, ENTER opening the offsets editor and Bksp removing them."""
+        return Field(
+            label=setting.label, value=functools.partial(self.offsets_shown, setting), adjust=None, enter=functools.partial(self.open_offsets, setting),
+            enter_what=legends.What.EDIT, clear=functools.partial(self.store, setting=setting.setting, value=None), clear_what=legends.What.REMOVE,
         )
 
     def _track_field(self, setting):

@@ -18,14 +18,13 @@ from llamatron.interface.tracker.dialogs.grid_choice_dialog import GridChoiceDia
 from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.generators.arp_editor import ArpEditor
 from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor, step_shown
 from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
 from llamatron.interface.tracker.screens.generators.generator_pages import generator_page_of_kind
-from llamatron.interface.tracker.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.scale_page import ScalePage
 from llamatron.interface.tracker.screens.set.scales_page import ScalesPage
+from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
 from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.model.objects import setlist
 from llamatron.model.objects.named_scale import scale_type_name
@@ -368,7 +367,7 @@ class TestGeneratorsPage(UITest):
         await self.press(Key.DOWN)
         self.assertEqual(self.app.screen.current(), (arp_plugin.NAME, UP))
         await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, ArpEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
 
     async def test_the_types_and_the_generators_under_each_are_sorted_by_name(self):
         first = await self.add_generator(arp_plugin.SECTION)
@@ -408,7 +407,7 @@ class TestGeneratorsPage(UITest):
 
     async def test_adding_asks_the_kind_names_it_opens_it_and_opens_its_type(self):
         name = await self.add_generator(arp_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, ArpEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
         self.assertEqual(self.arp(name).get_order(), written_name(ChordOrder.UP))
         await self.press(Key.ESCAPE)
         self.assertEqual(self.app.screen.current(), (arp_plugin.NAME, name))
@@ -467,12 +466,12 @@ class TestArpEditor(UITest):
 
     async def test_editing_an_arps_offsets_and_octaves(self):
         await self.open_generator(section=arp_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, ArpEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
         await self.select_field(labels.MSG_OCTAVE_RANGE_LABEL)
-        await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
+        await self.press(key_of(binding=keybindings.PluginEditor.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.arp(UP).get_octave_range(), 2)
         await self.select_field(labels.MSG_OCTAVE_JUMP_LABEL)
-        await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
+        await self.press(key_of(binding=keybindings.PluginEditor.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.arp(UP).get_octave_jump(), written_name(OctaveJump.AFTER_EACH_NOTE))
         self.assertIn(AFTER_EACH_NOTE, self.text())
         await self.select_field(labels.MSG_OFFSETS_LABEL)
@@ -494,13 +493,13 @@ class TestArpEditor(UITest):
 
     async def test_editing_an_arp(self):
         await self.open_generator(section=arp_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, ArpEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
         await self.select_field(labels.MSG_STEP_LABEL)
         before = self.arp(UP).get_step()
-        await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
+        await self.press(key_of(binding=keybindings.PluginEditor.MORE, key=Key.RIGHT_BRACKET))
         # ] (inc) steps to the next value of the one list of times that every time setting shares.
         self.assertEqual(self.arp(UP).get_step(), file_format.TIME_CHOICES[file_format.TIME_CHOICES.index(before) + 1])
-        await self.press(Key.DOWN, key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
+        await self.press(Key.DOWN, key_of(binding=keybindings.PluginEditor.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.arp(UP).get_order(), written_name(ChordOrder.DOWN))
 
 class TestArpEditorFields(UITest):
@@ -509,7 +508,7 @@ class TestArpEditorFields(UITest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.open_generator(section=arp_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, ArpEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
 
     def up(self):
         return self.arp(UP)
@@ -518,7 +517,7 @@ class TestArpEditorFields(UITest):
         for register in file_format.REGISTER_NAMES:
             with self.subTest(register=register):
                 await self.select_field(labels.MSG_ARP_NOTE_ADD_LABEL.format(name=register))
-                await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
+                await self.press(key_of(binding=keybindings.PluginEditor.MORE, key=Key.RIGHT_BRACKET))
                 self.assertEqual(self.up().get_note_add(register), 1)
                 await self.press(Key.BACKSPACE)
                 self.assertIsNone(self.up().get_note_add(register))
@@ -532,7 +531,7 @@ class TestArpEditorFields(UITest):
         self.assertEqual(self.chain_steps(NAMED)[0], (arp_plugin.NAME, RISE))
         self.assertIn(RISE, self.crumbs_line())
         await self.select_field(labels.MSG_ORDER_LABEL)
-        await self.press(key_of(binding=keybindings.ArpEditor.MORE, key=Key.RIGHT_BRACKET))
+        await self.press(key_of(binding=keybindings.PluginEditor.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.arp(RISE).get_order(), written_name(ChordOrder.DOWN))
 
     async def test_choosing_a_step_and_an_order(self):
@@ -839,7 +838,7 @@ class TestChainEditorAdding(UITest):
         await self.pick(arp_strings.MSG_LABEL)
         name = new_name(word=suggested_word(arp_strings.MSG_LABEL), taken=())
         self.assertEqual(self.chain_steps(EMPTY), [(arp_plugin.NAME, name)])
-        self.assertIsInstance(self.app.screen, ArpEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
         self.assertEqual(self.app.screen.crumb_trail()[-1], labels.MSG_OPENED_ITEM_CRUMB.format(word=arp_strings.MSG_LABEL, name=name))
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, ChainEditor)
