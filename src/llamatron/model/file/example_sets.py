@@ -33,7 +33,9 @@ UNDERSCORE = '_'
 
 def example_sets(*, root=None):
     """Return every example set's path, folder by folder and by path within each, under root, the current folder unless given."""
-    top = EXAMPLES_FOLDER if root is None else os.path.join(root, EXAMPLES_FOLDER)
+    top = EXAMPLES_FOLDER
+    if root is not None:
+        top = os.path.join(root, EXAMPLES_FOLDER)
     return [path for folder in SET_FOLDERS for path in sets_within(os.path.join(top, folder))]
 
 
