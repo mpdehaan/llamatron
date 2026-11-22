@@ -105,87 +105,150 @@ def lasting(*, steps, count):
 
 
 def strummed(*, symbols, lasts, settings, bar_length):
-    """About how many notes a bar a Guitarify makes of a pattern's steps: its bar of strokes, each a whole stroke of the strings
-    held, one string, or nothing, over the chords written, each chord for as long as the chord lasts."""
-    held = sum(strings_held(symbol=symbol, settings=settings) * steps for symbol, steps in zip(symbols, lasts)) / sum(lasts)
+    """Return about how many notes a bar a Guitarify makes of a pattern's steps: its bar of strokes, each a whole stroke of the
+    strings held, one string, or nothing, over the chords written, each chord for as long as the chord lasts."""
+    held = 0
+    for symbol, steps in zip(symbols, lasts):
+        held += strings_held(symbol=symbol, settings=settings) * steps
+    held = held / sum(lasts)
     strokes = settings.get_bar()
-    sounded = sum(0 if stroke in SILENT_STROKES else held if stroke in WHOLE_STROKES else ONE_NOTE for stroke in strokes)
-    return sounded * float(bar_length / (time_length(settings.get_cell()) * len(strokes)))
+    sounded = 0
+    for stroke in strokes:
+        sounded += _notes_of_stroke(stroke=stroke, held=held)
+    cell = time_length(settings.get_cell())
+    return sounded * float(bar_length / (cell * len(strokes)))
+
+
+def _notes_of_stroke(*, stroke, held):
+    """Return how many notes a stroke of a Guitarify's bar sounds: none, the strings held, or one."""
+    if stroke in SILENT_STROKES:
+        return 0
+    if stroke in WHOLE_STROKES:
+        return held
+    return ONE_NOTE
 
 
 def clip_count(*, song, slot, bar_length):
-    """About how many notes a bar a clip sounds, and how loud a note of its pattern is written, from the pattern and the clip's
-    chains alone: (notes a bar, loudness of a note), or None for a clip that sounds nothing."""
-    pattern = song.get_setlist().get_pattern(slot.get_pattern_name())
+    """Return about how many notes a bar a clip sounds, and how loud a note of its pattern is written, from the pattern and the
+    clip's chains alone: (notes a bar, loudness of a note), or None for a clip that sounds nothing."""
+    setlist = song.get_setlist()
+    pattern = setlist.get_pattern(slot.get_pattern_name())
     steps = pattern.get_note_steps()
     if not steps:
         return None
     symbols = [pattern.get_value(row=Row.CHORD, step=step) for step in steps]
-    written = [pattern.get_value(row=Row.VELOCITY, step=step) for step in steps]
-    loudness = sum(defaults.DEFAULT_VELOCITY if velocity is None else velocity for velocity in written) / len(written)
-    bars = float(pattern.get_steps() * (pattern.get_step_size() or song.get_setlist().get_step_size()) / bar_length)
-    notes = sum(chord_notes(symbol) for symbol in symbols) / bars
+    step_size = pattern.get_step_size() or setlist.get_step_size()
+    bars = float(pattern.get_steps() * step_size / bar_length)
+    written = 0
+    for symbol in symbols:
+        written += chord_notes(symbol)
+    notes = written / bars
     for name in slot.get_chain_names():
-        for step in song.get_setlist().chain_run(name).get_steps():
+        chain = setlist.chain_run(name)
+        for step in chain.get_steps():
             if step.kind == guitarify_plugin.NAME:
-                notes = strummed(symbols=symbols, lasts=lasting(steps=steps, count=pattern.get_steps()), settings=song.get_setlist().get_generator_settings(kind=step.kind, name=step.name), bar_length=bar_length)
+                settings = setlist.get_generator_settings(kind=step.kind, name=step.name)
+                lasts = lasting(steps=steps, count=pattern.get_steps())
+                notes = strummed(symbols=symbols, lasts=lasts, settings=settings, bar_length=bar_length)
             elif step.kind == arp_plugin.NAME:
-                notes = float(bar_length / time_length(song.get_setlist().get_generator_settings(kind=step.kind, name=step.name).get_step()))
-    return notes, loudness
+                settings = setlist.get_generator_settings(kind=step.kind, name=step.name)
+                notes = float(bar_length / time_length(settings.get_step()))
+    return notes, _typical_velocity(pattern=pattern, steps=steps)
+
+
+def _typical_velocity(*, pattern, steps):
+    """Return how loud a note of a pattern is written, on average over its steps that hold notes."""
+    total = 0
+    for step in steps:
+        velocity = pattern.get_value(row=Row.VELOCITY, step=step)
+        if velocity is None:
+            velocity = defaults.DEFAULT_VELOCITY
+        total += velocity
+    return total / len(steps)
 
 
 def counted(*, song):
-    """What each player adds up to in each scene of a song, counted from what is written: a list, one for a scene, of {player:
-    (notes a bar, loudness a bar)}, leaving out a muted track and a player who sounds nothing. A clip that plays once through a
-    longer scene counts for the share of the scene the clip lasts."""
-    bar_length = song.get_time_signature().bar_length()
+    """Return what each player adds up to in each scene of a song, counted from what is written: a list, one for a scene, of
+    {player: (notes a bar, loudness a bar)}, leaving out a muted track and a player who sounds nothing. A clip that plays once
+    through a longer scene counts for the share of the scene the clip lasts."""
+    time_signature = song.get_time_signature()
+    bar_length = time_signature.bar_length()
     scenes = []
     for scene in song.get_scenes():
-        share = scene.get_velocity().typical() / WHOLE
-        players = {}
-        for track in scene.get_track_names():
-            slot = scene.get_clip_slot(track)
-            found = None if song.get_track(track).is_muted() else clip_count(song=song, slot=slot, bar_length=bar_length)
-            if found is None:
-                continue
-            notes = found[NOTES] * (1 if slot.loops() else lasting_share(song=song, scene=scene, slot=slot))
-            so_far = players.get(player_of(track), (0, 0))
-            players[player_of(track)] = (so_far[NOTES] + notes, so_far[LOUDNESS] + notes * found[LOUDNESS] * share)
-        scenes.append(players)
+        scenes.append(_counted_scene(song=song, scene=scene, bar_length=bar_length))
     return scenes
+
+
+def _counted_scene(*, song, scene, bar_length):
+    """Return what each player adds up to in one scene, counted from what is written."""
+    velocity = scene.get_velocity()
+    share = velocity.typical() / WHOLE
+    players = {}
+    for track_name in scene.get_track_names():
+        track = song.get_track(track_name)
+        if track.is_muted():
+            continue
+        slot = scene.get_clip_slot(track_name)
+        found = clip_count(song=song, slot=slot, bar_length=bar_length)
+        if found is None:
+            continue
+        notes = found[NOTES]
+        if not slot.loops():
+            notes = notes * lasting_share(song=song, scene=scene, slot=slot)
+        player = player_of(track_name)
+        so_far = players.get(player, (0, 0))
+        players[player] = (so_far[NOTES] + notes, so_far[LOUDNESS] + notes * found[LOUDNESS] * share)
+    return players
 
 
 def pattern_length(*, song, slot):
-    """How long a clip's pattern lasts played through as often as the clip repeats it, in whole notes."""
-    pattern = song.get_setlist().get_pattern(slot.get_pattern_name())
-    return pattern.get_steps() * (pattern.get_step_size() or song.get_setlist().get_step_size()) * (slot.get_repeat() or 1)
+    """Return how long a clip's pattern lasts played through as often as the clip repeats it, in whole notes."""
+    setlist = song.get_setlist()
+    pattern = setlist.get_pattern(slot.get_pattern_name())
+    step_size = pattern.get_step_size() or setlist.get_step_size()
+    return pattern.get_steps() * step_size * (slot.get_repeat() or 1)
 
 
 def lasting_share(*, song, scene, slot):
-    """The share of a scene a clip that does not loop lasts: its length against the longest such clip of the scene."""
-    longest = max(pattern_length(song=song, slot=scene.get_clip_slot(track)) for track in scene.get_track_names() if not scene.get_clip_slot(track).loops())
-    return float(pattern_length(song=song, slot=slot) / longest)
+    """Return the share of a scene a clip that does not loop lasts: its length against the longest such clip of the scene."""
+    lengths = []
+    for track_name in scene.get_track_names():
+        other = scene.get_clip_slot(track_name)
+        if not other.loops():
+            lengths.append(pattern_length(song=song, slot=other))
+    return float(pattern_length(song=song, slot=slot) / max(lengths))
 
 
 def measured(*, song, seed=A_SEED):
-    """What each player adds up to in each scene of a song, as played: the sums counted() gives, taken from every note sounded.
-    Playing takes several times as long as writing the song, so this is for a report and a test to hold the count against."""
-    grid = SongRealizer(song, seed=seed).render()
-    bar_length = grid.get_time_signature().bar_length()
+    """Return what each player adds up to in each scene of a song, as played: the sums counted() gives, taken from every note
+    sounded. Playing takes several times as long as writing the song, so this is for a report and a test to hold the count against."""
+    realizer = SongRealizer(song, seed=seed)
+    grid = realizer.render()
+    time_signature = grid.get_time_signature()
+    bar_length = time_signature.bar_length()
     scenes = []
     for row in grid.get_rows():
-        players = {}
-        bars = float(grid.row_length(row) / bar_length)
-        for column in grid.get_columns():
-            clip = grid.get_clip(row=row, column=column)
-            if clip is None or song.get_track(column.get_name()).is_muted():
-                continue
-            notes, loudness = clip_sums(clip)
-            if notes and bars:
-                so_far = players.get(player_of(column.get_name()), (0, 0))
-                players[player_of(column.get_name())] = (so_far[NOTES] + notes / bars, so_far[LOUDNESS] + loudness / bars)
-        scenes.append(players)
+        scenes.append(_measured_row(song=song, grid=grid, row=row, bar_length=bar_length))
     return scenes
+
+
+def _measured_row(*, song, grid, row, bar_length):
+    """Return what each player adds up to in one scene, as played."""
+    players = {}
+    bars = float(grid.row_length(row) / bar_length)
+    for column in grid.get_columns():
+        name = column.get_name()
+        clip = grid.get_clip(row=row, column=column)
+        track = song.get_track(name)
+        if clip is None or track.is_muted():
+            continue
+        notes, loudness = clip_sums(clip)
+        if not notes or not bars:
+            continue
+        player = player_of(name)
+        so_far = players.get(player, (0, 0))
+        players[player] = (so_far[NOTES] + notes / bars, so_far[LOUDNESS] + loudness / bars)
+    return players
 
 
 def trade_of(*, before, now):
@@ -232,8 +295,11 @@ def with_trades(*, song, kept=()):
 
 
 def whole_band(players):
-    """What a scene's players add up to together, for each bar."""
-    return sum(sums[LOUDNESS] for sums in players.values())
+    """Return what a scene's players add up to together, for each bar."""
+    total = 0
+    for sums in players.values():
+        total += sums[LOUDNESS]
+    return total
 
 
 def step(*, before, now):
