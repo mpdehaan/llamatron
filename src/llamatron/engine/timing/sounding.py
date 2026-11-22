@@ -55,4 +55,6 @@ def sounding_notes(position):
 
 def velocity_of(note):
     """Return how loud a note plays: its own velocity, or VELOCITY where it has none."""
-    return VELOCITY if note[sound.VELOCITY] is None else note[sound.VELOCITY]
+    if note[sound.VELOCITY] is None:
+        return VELOCITY
+    return note[sound.VELOCITY]
