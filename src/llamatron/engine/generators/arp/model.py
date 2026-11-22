@@ -93,7 +93,12 @@ def _nearest_offsets(offsets):
         return corrections.NO_NEAREST_VALUE
     if not all(offset is None or is_whole_number(offset) for offset in offsets):
         return corrections.NO_NEAREST_VALUE
-    return [offset if offset is None else min(max(offset, -schema.MAX_OFFSET), schema.MAX_OFFSET) for offset in offsets]
+    nearest = []
+    for offset in offsets:
+        if offset is not None:
+            offset = min(max(offset, -schema.MAX_OFFSET), schema.MAX_OFFSET)
+        nearest.append(offset)
+    return nearest
 
 
 def _is_step_add(value):
