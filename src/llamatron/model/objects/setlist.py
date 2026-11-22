@@ -738,6 +738,14 @@ class Setlist(HoldsSections, HoldsSettings):
     def get_song(self, name):
         return self._section(Section.SONGS).get(name)
 
+    def name_of_song(self, song):
+        """Return the name a song of the set goes by."""
+        for name in self.get_song_names():
+            if self.get_song(name) is song:
+                return name
+        # Every song is made by its set and knows it, so a song the set does not hold is a mistake in the program.
+        raise LookupError(song)
+
     def get_song_names(self):
         """Return the names of the songs, in the set's order."""
         return self._section(Section.SONGS).names()

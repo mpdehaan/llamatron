@@ -95,7 +95,11 @@ class SongRealizer:
     lane wins.
     """
 
-    __slots__ = ('_song', '_setlist', '_state', '_scenes', '_clips', '_counted', '_lengths', '_timelines', '_output', '_starts', '_end_states', '_chord_counts', '_looping_scenes_go_round', '_decided', '_guesses', '_cutting', '_settled_by_playing', '_ramped', '_data', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes')
+    __slots__ = (
+        '_song', '_setlist', '_state', '_scenes', '_clips', '_counted', '_lengths', '_timelines', '_output', '_starts',
+        '_end_states', '_chord_counts', '_looping_scenes_go_round', '_decided', '_guesses', '_cutting', '_settled_by_playing',
+        '_ramped', '_data', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes',
+    )
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None, takes=None):
         """Render a song, its random parts drawn afresh, or from a seed where one is given, so that a test or a tool can repeat a render.
@@ -118,7 +122,7 @@ class SongRealizer:
         self._scenes = WrittenScene.write_out(song)
         # Whether playing changes the registers, which every scene asks and which looks through every pattern of the set, asked
         # once, since nothing changes the song while it renders.
-        self._changes_registers = song.get_setlist().changes_registers()
+        self._changes_registers = self._setlist.changes_registers()
         self._clips = {}
         # Clips played only to record their register changes, with those changes.
         self._counted = {}
@@ -265,8 +269,14 @@ class SongRealizer:
         if not self._can_take_from(after):
             return
         name = _song_name_of(self._song)
-        first = min(first_changed_scene(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes()), self._first_retaken(after))
-        count = min(sum(scene.get_repeat() for scene in self._song.get_scenes()[:first]), len(after.get_state().get_checkpoints()))
+        scenes = self._song.get_scenes()
+        first_changed = first_changed_scene(before=after._data, after=self._data, song_name=name, scenes=scenes)
+        first = min(first_changed, self._first_retaken(after))
+        plays_before = 0
+        for scene in scenes[:first]:
+            plays_before += scene.get_repeat()
+        after_state = after.get_state()
+        count = min(plays_before, len(after_state.get_checkpoints()))
         self._take_scenes(after=after, count=count)
         if self._clips_stand_apart():
             changed = changed_clips(before=after._data, after=self._data, song_name=name, scenes=self._song.get_scenes())
@@ -277,7 +287,10 @@ class SongRealizer:
     def _first_retaken(self, after):
         """Return the place in the song of the first scene a clip of which has another take than in an earlier render, or the
         number of scenes when none has."""
-        return min((place for place, _track in self._state.retaken(after.get_state())), default=len(self._song.get_scenes()))
+        first = len(self._song.get_scenes())
+        for place, _track in self._state.retaken(after.get_state()):
+            first = min(first, place)
+        return first
 
     def _with_retaken(self, *, changed, after):
         """Return each scene's changed tracks with the tracks whose take differs from an earlier render's added."""
@@ -340,7 +353,9 @@ class SongRealizer:
         unchanged = []
         for written in self._scenes[self._reused:]:
             here = changed[song_places[id(written.get_scene())]]
-            reached.update(every_track if here is None else here)
+            if here is None:
+                here = every_track
+            reached.update(here)
             self._reach_through(scene=written, reached=reached)
             unchanged += [(written.get_number(), track) for track in written.get_track_names() if track not in reached]
         return unchanged
@@ -362,12 +377,14 @@ class SongRealizer:
             reached.update(grown)
 
     def _tracks_followed(self, *, scene, track):
-        """Return the tracks whose notes a track's clip in a written scene plays from: the one it grabs from, and those whose chords or tune its generators follow."""
-        followed = {scene.get_clip_slot(track).get_grab_track()}
+        """Return the tracks whose notes a track's clip in a written scene plays from: the one it grabs from, and those whose
+        chords or tune its generators follow."""
+        clip_slot = scene.get_clip_slot(track)
+        followed = {clip_slot.get_grab_track()}
         for step in self.chain_steps(scene=scene, track=track):
             if registry.follows_tracks(step.kind):
                 settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
-                followed.update(name for section, name in settings.named_items() if section == Section.TRACKS)
+                followed.update(_tracks_named(settings))
         return followed
 
     def chain_steps(self, *, scene, track):
@@ -380,14 +397,22 @@ class SongRealizer:
         clips first ask for its triggers."""
         setlist = self._setlist
         kinds = [kind for kind in generator_plugins.plugins() if modulates(kind)]
-        return not any(self._state.get_modulations().draws_in_order(kind=kind, name=name) for kind in kinds for name in setlist.get_generator_names(kind))
+        modulations = self._state.get_modulations()
+        for kind in kinds:
+            for name in setlist.get_generator_names(kind):
+                if modulations.draws_in_order(kind=kind, name=name):
+                    return False
+        return True
 
     def kept_tracks(self, scenes):
         """Return the tracks whose clips were taken from an earlier render in every written-out scene given."""
         return {track for track in self._song.get_track_names() if self._kept_in_all(scenes=scenes, track=track)}
 
     def _kept_in_all(self, *, scenes, track):
-        return all(self.is_clip_kept(scene=scene, track=track) for scene in scenes)
+        for scene in scenes:
+            if not self.is_clip_kept(scene=scene, track=track):
+                return False
+        return True
 
     def get_kept_clip_count(self):
         """Return how many clips after the scenes taken whole the render took from an earlier one, track by track."""
@@ -407,7 +432,10 @@ class SongRealizer:
 
     def _settles_any(self):
         """Return whether any written scene is played to find how long it lasts."""
-        return any(self._is_settled_by_playing(scene) for scene in self._scenes)
+        for scene in self._scenes:
+            if self._is_settled_by_playing(scene):
+                return True
+        return False
 
     def _every_length(self):
         """Return how long every written scene lasts, in order."""
@@ -444,28 +472,7 @@ class SongRealizer:
         if instrument is None or not instrument.get_keyswitch_lead():
             return None
         milliseconds = instrument.get_keyswitch_lead()
-        lead = Fraction(milliseconds) * Fraction(tempo).limit_denominator(TEMPO_DENOMINATOR) / MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE
-        return Rational(lead.numerator, lead.denominator)
-
-    def strum_plan(self, *, scene, track, tempo):
-        """Return how a clip strums its chords at its scene's tempo, or None: the last Strum generator its chains name, else the clip's own strum, else its track's."""
-        strum = None
-        restart = Restart.EVERY_CLIP
-        for chain in self.chains_of(scene=scene, track=track):
-            for step in self._setlist.chain_run(chain).get_steps():
-                if registry.fills(name=step.kind, method=STRUMS):
-                    strum, restart = registry.controller_of(step.kind).strum(self._setlist.get_generator_settings(kind=step.kind, name=step.name))
-        if strum is None:
-            strum = scene.get_scene().get_clip_slot(track).get_strum() or self._song.get_track(track).get_strum()
-        if not strums_at_all(strum):
-            return None
-        # A gap in milliseconds is that share of a whole note, which lasts four beats at the tempo.
-        gap = Fraction(strum.milliseconds) * Fraction(tempo).limit_denominator(TEMPO_DENOMINATOR) / MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE
-        return StrumPlan(
-            direction=strum.direction, gap=Rational(gap.numerator, gap.denominator), fade=strum.fade, loose_timing=strum.loose_timing,
-            upstroke_count=strum.upstroke_count, beat=self._song.get_time_signature().beat_length(), seed=self._state.strum_seed(scene=scene, track=track),
-            offset=self.run_offset(scene=scene, restart=restart), chords_before=self._chords_before(scene=scene, track=track, restart=restart),
-        )
+        return _share_of_whole_note(milliseconds=milliseconds, tempo=tempo)
 
     def nudge_plan(self, *, scene, track):
         """Return how a clip's notes are rushed and dragged, from every Rush and Drag its chains name, or None when they name neither."""
@@ -475,21 +482,32 @@ class SongRealizer:
             for step in self._setlist.chain_run(chain).get_steps():
                 if registry.fills(name=step.kind, method=MOVES_NOTES):
                     place = ChainStepPlace(realizer=self, clip=clip, step=StepInChains(step=step, chain=chain, index=None, key=None))
-                    rows.append(registry.controller_of(step.kind).moving_row(settings=self._setlist.get_generator_settings(kind=step.kind, name=step.name), place=place))
-        return NudgePlan(rows=rows) if rows else None
+                    controller = registry.controller_of(step.kind)
+                    settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+                    rows.append(controller.moving_row(settings=settings, place=place))
+        if not rows:
+            return None
+        return NudgePlan(rows=rows)
 
 
     def _chords_before(self, *, scene, track, restart):
         """Return how many chords a track's clips strummed earlier in a run, which the render loop has counted, scene by scene."""
         start = self._scenes.index(self.run_start(scene=scene, restart=restart))
-        return sum(self._chord_counts.get((written.get_number(), track), 0) for written in self._scenes[start:self._scenes.index(scene)])
+        end = self._scenes.index(scene)
+        count = 0
+        for written in self._scenes[start:end]:
+            count += self._chord_counts.get((written.get_number(), track), 0)
+        return count
 
     def _add_tracks(self, grid):
         """Add a finished track to the grid for each of the song's tracks, and return them by name."""
         tracks = {}
         for name in self._song.get_track_names():
             track = self._song.get_track(name)
-            tracks[name] = grid.add_column(ClipColumn(name=name, mute=track.is_muted(), drum=track.is_drum(), gm_sound=self.gm_sound_of(track), fluidsynth=self.plays_through_fluidsynth(track)))
+            gm_sound = self.gm_sound_of(track)
+            fluidsynth = self.plays_through_fluidsynth(track)
+            column = ClipColumn(name=name, mute=track.is_muted(), drum=track.is_drum(), gm_sound=gm_sound, fluidsynth=fluidsynth)
+            tracks[name] = grid.add_column(column)
         return tracks
 
     def get_scenes(self):
@@ -545,7 +563,8 @@ class SongRealizer:
         key = (scene.get_number(), track)
         if key not in self._clips:
             registers = RegisterReader(timeline=self.get_timeline(scene), place=self._track_place(track))
-            clip = ClipSlotPlayer(realizer=self, song=self._song, scene=scene, track_name=track).play(grabbing=clip_slot.get_grab_track() is not None, registers=registers)
+            player = ClipSlotPlayer(realizer=self, song=self._song, scene=scene, track_name=track)
+            clip = player.play(grabbing=clip_slot.get_grab_track() is not None, registers=registers)
             settings = self._song.get_track(track)
             bound = [(number, name) for number, name in zip(settings.get_cc_numbers(), settings.get_cc_registers()) if number is not None and name is not None]
             if bound:
@@ -566,7 +585,8 @@ class SongRealizer:
             return self._decided_clip(scene=scene, track=track)
         if key not in self._counted:
             recorder = RegisterRecorder(self._track_place(track))
-            clip = ClipSlotPlayer(realizer=self, song=self._song, scene=scene, track_name=track).play(grabbing=False, registers=recorder)
+            player = ClipSlotPlayer(realizer=self, song=self._song, scene=scene, track_name=track)
+            clip = player.play(grabbing=False, registers=recorder)
             self._counted[key] = (clip, recorder.get_changes())
         return self._counted[key]
 
@@ -591,7 +611,10 @@ class SongRealizer:
             number = written.get_number()
             if number not in self._timelines:
                 before = self._scenes.index(written) - 1
-                self._state.draw_afresh_for_a_take(written=written, scene_before=self._scenes[before] if before >= 0 else None)
+                scene_before = None
+                if before >= 0:
+                    scene_before = self._scenes[before]
+                self._state.draw_afresh_for_a_take(written=written, scene_before=scene_before)
                 resets = self._resets_of(written)
                 start = with_resets(values=values, registers=self._state.get_registers(), names=resets)
                 if turned:
@@ -615,7 +638,9 @@ class SongRealizer:
         a clip of it short, and from the changes its clips make otherwise."""
         if self._is_settled_by_playing(scene):
             return self._decide(scene=scene, start=start, turned=turned, draws=draws)
-        return RegisterTimeline(registers=self._state.get_registers(), start=start, changes=self._scene_changes(scene), chooser=self._state.get_register_chooser(), turned=turned, draws=draws)
+        changes = self._scene_changes(scene)
+        chooser = self._state.get_register_chooser()
+        return RegisterTimeline(registers=self._state.get_registers(), start=start, changes=changes, chooser=chooser, turned=turned, draws=draws)
 
     def _cutting_of(self, name):
         """Return whether a step of a pattern can cut a pass short, and whether one can stop its clip, asked of the pattern once for the render."""
@@ -626,18 +651,32 @@ class SongRealizer:
 
     def _cuts_passes(self, *, scene, track):
         """Return whether a step of the pattern a track's clip plays in a scene can stop the clip or start the pattern over, so that the clip is played with the registers to find what it does."""
-        return any(self._cutting_of(name)[CUTS] for name in scene.get_clip_slot(track).get_pattern_names())
+        clip_slot = scene.get_clip_slot(track)
+        for name in clip_slot.get_pattern_names():
+            if self._cutting_of(name)[CUTS]:
+                return True
+        return False
 
     def fills_its_scene(self, *, scene, track):
         """Return whether a track's clip in a scene loops for as long as the scene lasts: a looping clip that no step of its pattern can stop."""
         clip_slot = scene.get_clip_slot(track)
-        return clip_slot.loops() and not any(self._cutting_of(name)[STOPS] for name in clip_slot.get_pattern_names())
+        if not clip_slot.loops():
+            return False
+        for name in clip_slot.get_pattern_names():
+            if self._cutting_of(name)[STOPS]:
+                return False
+        return True
 
     def _is_settled_by_playing(self, scene):
         """Return whether any clip of a scene can be cut short by the registers, so that the scene's length and its registers are found together, by playing. Asked once for each play of a scene."""
         number = scene.get_number()
         if number not in self._settled_by_playing:
-            self._settled_by_playing[number] = any(self._cuts_passes(scene=scene, track=track) for track in scene.get_track_names())
+            settled = False
+            for track in scene.get_track_names():
+                if self._cuts_passes(scene=scene, track=track):
+                    settled = True
+                    break
+            self._settled_by_playing[number] = settled
         return self._settled_by_playing[number]
 
     def _decide(self, *, scene, start, turned, draws=None):
@@ -658,15 +697,22 @@ class SongRealizer:
         # The clips whose own length the registers decide, and the looping ones that fill the scene whatever length it comes to.
         ending = [track for track in cut if not self.fills_its_scene(scene=scene, track=track)]
         filling = [track for track in cut if track not in ending]
-        fixed = [self._played_once(scene=scene, track=track) for track in every if track not in cut and not scene.get_clip_slot(track).loops()]
+        fixed = []
+        for track in every:
+            clip_slot = scene.get_clip_slot(track)
+            if track not in cut and not clip_slot.loops():
+                fixed.append(self._played_once(scene=scene, track=track))
         if not ending and not fixed:
             # Nothing in the scene ends: it is refused, or goes round once, as any scene whose every clip loops.
             if not self._looping_scenes_go_round:
                 raise SongFileError(errors.ERR_RENDERER_EVERY_CLIP_LOOPS.format(scene=scene.describe()))
             fixed = [self._played_once(scene=scene, track=track) for track in every]
-        own = scene_change(sets=scene.get_scene().get_register_sets() if scene.is_first_play() else {}, adds=scene.get_scene().get_register_adds())
+        own = _own_change(scene)
         guess = random_source(GUESS_SEED)
-        alone = RegisterTimeline(registers=self._state.get_registers(), start=start, changes=[own] if own else [], chooser=guess, turned=turned)
+        own_changes = []
+        if own:
+            own_changes.append(own)
+        alone = RegisterTimeline(registers=self._state.get_registers(), start=start, changes=own_changes, chooser=guess, turned=turned)
         self._guesses[number] = lambda track: RegisterSolo(
             place=self._track_place(track), registers=self._state.get_registers(), start=alone.end_values(), chooser=guess, turned=alone.get_end_turned(),
         )
@@ -688,7 +734,8 @@ class SongRealizer:
                 found = (changes, [self._decided[(number, track)] for track in ending])
                 # Every round draws a register's random values from the same place, so that the same changes always make the same timeline.
                 self._state.get_register_chooser().setstate(drawn)
-                timeline = RegisterTimeline(registers=self._state.get_registers(), start=start, changes=changes, chooser=self._state.get_register_chooser(), turned=turned, draws=draws)
+                chooser = self._state.get_register_chooser()
+                timeline = RegisterTimeline(registers=self._state.get_registers(), start=start, changes=changes, chooser=chooser, turned=turned, draws=draws)
                 if found == settled:
                     return timeline
                 settled = found
@@ -699,7 +746,8 @@ class SongRealizer:
     def _tried(self, *, scene, track):
         """Return a clip the registers can cut short, played to count its changes against the scene's registers as they are guessed so far, and those changes."""
         registers = self._guesses[scene.get_number()](track)
-        clip = ClipSlotPlayer(realizer=self, song=self._song, scene=scene, track_name=track).play(grabbing=False, registers=registers)
+        player = ClipSlotPlayer(realizer=self, song=self._song, scene=scene, track_name=track)
+        clip = player.play(grabbing=False, registers=registers)
         return clip, registers.get_changes()
 
     def _decided_clip(self, *, scene, track):
@@ -719,7 +767,10 @@ class SongRealizer:
 
     def _with_draw_resets(self, *, draws, written):
         """Return the draws as a written-out scene starts them: the draws it resets sent back to their start, on its first play alone."""
-        names = written.get_scene().get_reset_draw_names() if written.is_first_play() else []
+        if not written.is_first_play():
+            return draws
+        scene = written.get_scene()
+        names = scene.get_reset_draw_names()
         if not names:
             return draws
         draws = draws.copy()
@@ -745,15 +796,17 @@ class SongRealizer:
         length = self.get_scene_length(scene)
         changes = []
         # A scene sets registers only as it first starts, and adds to them on every play, its repeats too.
-        own = scene_change(sets=scene.get_scene().get_register_sets() if scene.is_first_play() else {}, adds=scene.get_scene().get_register_adds())
+        own = _own_change(scene)
         if own is not None:
             changes.append(own)
         for track in scene.get_track_names():
             changes += _before(changes=self.counted_clip(scene=scene, track=track)[1], end=length)
         start = self.scene_start(scene)
-        for step in dict.fromkeys(step for track in scene.get_track_names() for step in self.modulators_of(scene=scene, track=track)):
+        modulations = self._state.get_modulations()
+        for step in self._modulators_in(scene):
             origin = self.modulation_origin(scene=scene, step=step)
-            for time, adds in self._state.get_modulations().play_of(step.kind).adds_between(name=step.name, start=start, end=start + length, origin=origin):
+            play = modulations.play_of(step.kind)
+            for time, adds in play.adds_between(name=step.name, start=start, end=start + length, origin=origin):
                 changes.append(RegisterChange(time - start, MODULATION_PLACE, {}, adds))
         return changes
 
@@ -762,7 +815,9 @@ class SongRealizer:
         clip_slot = scene.get_clip_slot(track)
         if clip_slot is None:
             return []
-        return [*clip_slot.get_chain_names(), *scene.get_scene().get_chain_names(), *self._song.get_track(track).get_chain_names()]
+        written_scene = scene.get_scene()
+        song_track = self._song.get_track(track)
+        return [*clip_slot.get_chain_names(), *written_scene.get_chain_names(), *song_track.get_chain_names()]
 
     def modulators_of(self, *, scene, track):
         """Return the steps of a track's clip's chains in a scene whose generators change values as the song plays, in order, or none when it plays nothing."""
@@ -788,12 +843,15 @@ class SongRealizer:
         if scene.every_clip_loops():
             if not self._looping_scenes_go_round:
                 raise SongFileError(errors.ERR_RENDERER_EVERY_CLIP_LOOPS.format(scene=scene.describe()))
-            length = max((self._played_once(scene=scene, track=track) for track in scene.get_track_names()), default=NO_LENGTH)
+            length = NO_LENGTH
+            for track in scene.get_track_names():
+                length = max(length, self._played_once(scene=scene, track=track))
             self._lengths[number] = length
             return length
         length = NO_LENGTH
         for track in scene.get_track_names():
-            if not scene.get_clip_slot(track).loops():
+            clip_slot = scene.get_clip_slot(track)
+            if not clip_slot.loops():
                 length = max(length, self.get_clip_length(scene=scene, track=track))
         self._lengths[number] = length
         return length
@@ -820,7 +878,11 @@ class SongRealizer:
     def _played_once(self, *, scene, track):
         """Return how long a clip lasts played once: its pattern repeat times, whether or not it loops."""
         clip_slot = scene.get_clip_slot(track)
-        return clip_slot.get_repeat() * sum(self._setlist.get_pattern_length(self._setlist.get_pattern(name)) for name in clip_slot.get_pattern_names())
+        one_pass = 0
+        for name in clip_slot.get_pattern_names():
+            pattern = self._setlist.get_pattern(name)
+            one_pass += self._setlist.get_pattern_length(pattern)
+        return clip_slot.get_repeat() * one_pass
 
 
     def get_seed(self):
@@ -850,7 +912,10 @@ class SongRealizer:
         end = start + 1
         while end < len(self._scenes) and (restart == Restart.WHOLE_SONG or not self._scenes[end].is_first_play()):
             end += 1
-        return sum((self.get_scene_length(written) for written in self._scenes[start:end]), NO_LENGTH)
+        length = NO_LENGTH
+        for written in self._scenes[start:end]:
+            length = length + self.get_scene_length(written)
+        return length
 
     def continuation(self, *, settings, scene, track, key, counting, clip_length=None):
         """Return where a generator carries on from in a track's clip: how far into its run, how long the run lasts, and the state the same track's latest clip before in the run left it in.
@@ -889,16 +954,89 @@ class SongRealizer:
 
     def plays_drums(self, *, scene, track):
         """Return whether a track's clip in a written-out scene plays a drum pattern."""
-        return self._setlist.get_pattern(scene.get_clip_slot(track).get_pattern_name()).is_drum()
+        clip_slot = scene.get_clip_slot(track)
+        pattern = self._setlist.get_pattern(clip_slot.get_pattern_name())
+        return pattern.is_drum()
 
 
     def make_generator(self, *, step, scene, track, chain, index, key=None, counting=False):
         """Return the generator for one step of a chain, as a clip slot on a track in a scene uses it: what the step's plugin's
         controller makes of its settings at the step's place."""
         settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
-        place = ChainStepPlace(realizer=self, clip=ClipBeingMade(scene=scene, track=track, counting=counting), step=StepInChains(step=step, chain=chain, index=index, key=key))
-        return registry.controller_of(step.kind).make_generator(settings=settings, place=place)
+        clip = ClipBeingMade(scene=scene, track=track, counting=counting)
+        step_in_chains = StepInChains(step=step, chain=chain, index=index, key=key)
+        place = ChainStepPlace(realizer=self, clip=clip, step=step_in_chains)
+        controller = registry.controller_of(step.kind)
+        return controller.make_generator(settings=settings, place=place)
 
+    def strum_plan(self, *, scene, track, tempo):
+        """Return how a clip strums its chords at its scene's tempo, or None: the last Strum generator its chains name, else the
+        clip's own strum, else its track's."""
+        strum, restart = self._chain_strum(scene=scene, track=track)
+        if strum is None:
+            strum = self._own_strum(scene=scene, track=track)
+        if not strums_at_all(strum):
+            return None
+        time_signature = self._song.get_time_signature()
+        return StrumPlan(
+            direction=strum.direction, gap=_share_of_whole_note(milliseconds=strum.milliseconds, tempo=tempo), fade=strum.fade,
+            loose_timing=strum.loose_timing, upstroke_count=strum.upstroke_count, beat=time_signature.beat_length(),
+            seed=self._state.strum_seed(scene=scene, track=track), offset=self.run_offset(scene=scene, restart=restart),
+            chords_before=self._chords_before(scene=scene, track=track, restart=restart),
+        )
+
+    def _chain_strum(self, *, scene, track):
+        """Return the strum of the last Strum generator a clip's chains name and how it restarts, or None and every clip."""
+        strum = None
+        restart = Restart.EVERY_CLIP
+        for step in self.chain_steps(scene=scene, track=track):
+            if registry.fills(name=step.kind, method=STRUMS):
+                controller = registry.controller_of(step.kind)
+                settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+                strum, restart = controller.strum(settings)
+        return strum, restart
+
+    def _own_strum(self, *, scene, track):
+        """Return the strum a clip was given of its own, else its track's."""
+        written_scene = scene.get_scene()
+        clip_slot = written_scene.get_clip_slot(track)
+        song_track = self._song.get_track(track)
+        return clip_slot.get_strum() or song_track.get_strum()
+
+    def _modulators_in(self, scene):
+        """Return every step whose generator changes values as the song plays that the clips of a scene name, each once, in order."""
+        steps = {}
+        for track in scene.get_track_names():
+            for step in self.modulators_of(scene=scene, track=track):
+                steps[step] = None
+        return list(steps)
+
+
+
+def _tracks_named(settings):
+    """Return the tracks a generator's settings name."""
+    tracks = []
+    for section, name in settings.named_items():
+        if section == Section.TRACKS:
+            tracks.append(name)
+    return tracks
+
+
+def _share_of_whole_note(*, milliseconds, tempo):
+    """Return a time in milliseconds as a share of a whole note, which lasts four beats at the tempo."""
+    beats_a_minute = Fraction(tempo).limit_denominator(TEMPO_DENOMINATOR)
+    share = Fraction(milliseconds) * beats_a_minute / MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE
+    return Rational(share.numerator, share.denominator)
+
+
+def _own_change(scene):
+    """Return what a written-out scene changes of the registers itself: it sets them only as it first starts, and adds to them
+    on every play, its repeats too."""
+    written_scene = scene.get_scene()
+    sets = {}
+    if scene.is_first_play():
+        sets = written_scene.get_register_sets()
+    return scene_change(sets=sets, adds=written_scene.get_register_adds())
 
 
 def _through_scene(*, entries, count, number_of):
@@ -933,7 +1071,7 @@ def _tracks_retaken_in(*, place, retaken):
 def _song_name_of(song):
     """Return the name a song goes by in its set."""
     setlist = song.get_setlist()
-    return next(name for name in setlist.get_song_names() if setlist.get_song(name) is song)
+    return setlist.name_of_song(song)
 
 
 def _seconds_of(*, length, clock, whole):
@@ -965,7 +1103,8 @@ def _grab_circle(scene):
     for start in scene.get_track_names():
         path = [start]
         while True:
-            following = scene.get_clip_slot(path[-1]).get_grab_track()
+            clip_slot = scene.get_clip_slot(path[-1])
+            following = clip_slot.get_grab_track()
             if following is None or scene.get_clip_slot(following) is None or following in path[1:]:
                 break
             if following == start:
@@ -1017,4 +1156,10 @@ def _before(*, changes, end):
 
 def _chords_in(clip):
     """Return how many chords a finished clip plays, a held one too, which a strum's down up counts."""
-    return sum(1 for sound in clip.get_sounds() if sound[sound_values.KIND] == sound_values.CHORD or (sound[sound_values.KIND] == sound_values.HELD and sound[sound_values.HELD_SOUND][sound_values.KIND] == sound_values.CHORD))
+    count = 0
+    for sound in clip.get_sounds():
+        if sound[sound_values.KIND] == sound_values.HELD:
+            sound = sound[sound_values.HELD_SOUND]
+        if sound[sound_values.KIND] == sound_values.CHORD:
+            count += 1
+    return count
