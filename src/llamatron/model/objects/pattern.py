@@ -95,20 +95,26 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
                 raise InvalidValue(errors.ERR_BAD_STEPS.format(lowest=limits.MIN_STEPS, value=steps))
             for setting in settings_held(settings=SETTINGS, data=data):
                 name = setting.get_name()
-                with reading(errors.ERR_WHERE_IN_ROW.format(where=where, row=name) if name in PLACED_BY_NAME else where):
+                place = where
+                if name in PLACED_BY_NAME:
+                    place = errors.ERR_WHERE_IN_ROW.format(where=where, row=name)
+                with reading(place):
                     setting.check_held(data)
             drum = data.get(PatternSetting.DRUM, False)
             for row in file_format.PATTERN_ROWS:
                 _check_row(row=row, data=data, steps=steps, drum=drum, where=where)
             _check_ties(data=data, steps=steps)
             rows = {row: data.get(row) for row in file_format.PATTERN_ROWS}
-            return cls(steps=steps, rows=rows, **{name: data.get(name) for name in SETTINGS})
+            settings = {name: data.get(name) for name in SETTINGS}
+            return cls(steps=steps, rows=rows, **settings)
 
     def to_data(self):
         """Return its settings and rows, leaving out rows with nothing in them, so that files stay short."""
         data = {PatternSetting.STEPS: self._steps}
         data.update(written_settings(self._settings))
-        data.update({row: _saved_row(row=row, values=values) for row, values in self._rows.items() if _holds_something(row=row, values=values)})
+        for row, values in self._rows.items():
+            if _holds_something(row=row, values=values):
+                data[row] = _saved_row(row=row, values=values)
         return data
 
     def copy(self):
@@ -121,7 +127,9 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
     def get_step_size(self):
         """Return how long each of its steps is, in whole notes, or None to use the song's step size."""
         step_size = self.get_written_step_size()
-        return None if step_size is None else written_length(value=step_size, most=limits.MAX_STEP_SIZE)
+        if step_size is None:
+            return None
+        return written_length(value=step_size, most=limits.MAX_STEP_SIZE)
 
     def get_written_step_size(self):
         """Return its step size as the file writes it, like 1/8, or None to use the song's."""
@@ -130,7 +138,9 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
     def get_time_signature(self):
         """Return the time signature it's drawn in, or None to use the song's."""
         text = self.get_written_time_signature()
-        return None if text is None else time_signature(text)
+        if text is None:
+            return None
+        return time_signature(text)
 
     def get_written_time_signature(self):
         """Return its time signature as the file writes it, like 6/8, or None to use the song's."""
@@ -139,7 +149,9 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
     def get_entry_size(self):
         """Return how long a note placed on its piano roll lasts, in whole notes, or None to use the song's entry size."""
         entry_size = self.get_written_entry_size()
-        return None if entry_size is None else written_length(value=entry_size, most=limits.MAX_GATE)
+        if entry_size is None:
+            return None
+        return written_length(value=entry_size, most=limits.MAX_GATE)
 
     def get_written_entry_size(self):
         """Return its entry size as the file writes it, like 1/8, or None to use the song's."""
@@ -155,12 +167,16 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
     def get_row(self, row):
         """Return a copy of one row's values, one per step, or None if the row is blank throughout."""
         values = self._rows[row]
-        return None if values is None else list(values)
+        if values is None:
+            return None
+        return list(values)
 
     def get_value(self, *, row, step):
         """Return one step's value on a row, or None if it's blank there."""
         values = self._rows[row]
-        return values[step] if values else None
+        if not values:
+            return None
+        return values[step]
 
     def get_every_step_values(self, *, rows):
         """Return every step's values on some rows, a dictionary by row for each step in order, with None where a step is blank.
@@ -181,7 +197,7 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     def adds_to_registers(self):
         """Return whether any step adds to a register, which is a non-zero value on a register change row."""
-        return any(self._adds_on(row) for row in file_format.REGISTER_ADD_ROWS.values())
+        return self._adds_on_any(file_format.REGISTER_ADD_ROWS.values())
 
     def adds_anything(self, row):
         """Return whether any step of a register's += row adds or takes away anything at all: most patterns add nothing, and
@@ -190,7 +206,10 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     def adds_past(self, *, row, most):
         """Return whether any step of a register's += row adds or takes away more than most."""
-        return any(value and abs(value) > most for value in self._rows[row] or [])
+        for value in self._rows[row] or []:
+            if value and abs(value) > most:
+                return True
+        return False
 
     @notes_change
     def hold_adds(self, *, row, most):
@@ -199,7 +218,7 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     def sets_registers(self):
         """Return whether any step sets a register to a value, which is a value on a register's = row, 0 included."""
-        return any(value is not None for row in file_format.REGISTER_SET_ROWS.values() for value in self._rows[row] or [])
+        return self._holds_a_value_on(file_format.REGISTER_SET_ROWS.values())
 
     def changes_registers(self):
         """Return whether any step sets a register or adds to one, so that playing the pattern changes the registers' values."""
@@ -207,17 +226,24 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     def uses_registers(self):
         """Return whether any step reads a register: a row of +Note or +Vel switched on there, or a statement about the registers."""
-        if any(self._adds_on(row) for rows in (file_format.REGISTER_NOTE_ROWS, file_format.REGISTER_VELOCITY_ROWS) for row in rows.values()):
+        if self._adds_on_any(file_format.REGISTER_NOTE_ROWS.values()) or self._adds_on_any(file_format.REGISTER_VELOCITY_ROWS.values()):
             return True
-        return any(self.has_statements(kind) for kind in file_format.STATEMENT_ROWS)
+        return self._has_statements_of_any(file_format.STATEMENT_ROWS)
 
     def uses_draws(self):
         """Return whether any step uses a draw or resets one: a row of the Use Draws section switched on there."""
-        return any(self._adds_on(row) for rows in (file_format.DRAW_NOTE_ROWS, file_format.DRAW_VELOCITY_ROWS, file_format.DRAW_RESET_ROWS) for row in rows.values())
+        for rows in (file_format.DRAW_NOTE_ROWS, file_format.DRAW_VELOCITY_ROWS, file_format.DRAW_RESET_ROWS):
+            if self._adds_on_any(rows.values()):
+                return True
+        return False
 
     def reads_draws(self):
         """Return whether any step's statement reads a draw, which a draw that redraws in conditions draws from."""
-        return any(draws_read(statement) for kind in file_format.STATEMENT_ROWS for statement in (self.get_statements(kind) or []) if statement is not None)
+        for kind in file_format.STATEMENT_ROWS:
+            for statement in self.get_statements(kind) or []:
+                if statement is not None and draws_read(statement):
+                    return True
+        return False
 
     def has_statements(self, kind):
         """Return whether any step holds a statement of a kind about the registers: one that stops the clip, starts the pattern over or mutes the step."""
@@ -225,11 +251,12 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     def cuts_passes_short(self):
         """Return whether any step can stop the clip or start the pattern over, so that how long a pass lasts is known only as it plays."""
-        return any(self.has_statements(kind) for kind in file_format.STATEMENTS_CUTTING_A_PASS)
+        return self._has_statements_of_any(file_format.STATEMENTS_CUTTING_A_PASS)
 
     def get_statement(self, *, kind, step):
         """Return the statement of a kind a step holds, as a file writes one on a clip, or None when the step holds none or holds parts that make no statement."""
-        return statement_of([self.get_value(row=row, step=step) for row in file_format.STATEMENT_ROWS[kind]])
+        parts = [self.get_value(row=row, step=step) for row in file_format.STATEMENT_ROWS[kind]]
+        return statement_of(parts)
 
     def get_statements(self, kind):
         """Return every step's statement of a kind, None where a step holds none, or None when no step holds one."""
@@ -243,11 +270,33 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     def sends_controls(self):
         """Return whether any step holds a CC value, which a value of 0 is too."""
-        return any(value is not None for row in file_format.CC_ROWS for value in self._rows[row] or [])
+        return self._holds_a_value_on(file_format.CC_ROWS)
 
     def _adds_on(self, row):
         """Return whether any step has a non-zero value on a row."""
         return any(self._rows[row] or [])
+
+    def _adds_on_any(self, rows):
+        """Return whether any step has a non-zero value on any of some rows."""
+        for row in rows:
+            if self._adds_on(row):
+                return True
+        return False
+
+    def _holds_a_value_on(self, rows):
+        """Return whether any step holds a value on any of some rows, 0 included."""
+        for row in rows:
+            for value in self._rows[row] or []:
+                if value is not None:
+                    return True
+        return False
+
+    def _has_statements_of_any(self, kinds):
+        """Return whether any step holds a statement of any of some kinds."""
+        for kind in kinds:
+            if self.has_statements(kind):
+                return True
+        return False
 
     def has_sound(self, step):
         """Return whether a step plays something: it has a degree, or it's marked to grab its note from another track, which a file can hold without a degree."""
@@ -259,11 +308,16 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     def get_first_octave(self):
         """Return the octave of the first step that sets one, or None if no step does."""
-        octaves = self._rows[Row.OCTAVE] or []
-        return next((octave for octave in octaves if octave is not None), None)
+        for octave in self._rows[Row.OCTAVE] or []:
+            if octave is not None:
+                return octave
+        return None
 
     def has_notes(self):
-        return any(self.has_sound(step) for step in range(self._steps))
+        for step in range(self._steps):
+            if self.has_sound(step):
+                return True
+        return False
 
     def has_grab_steps(self):
         """Return whether any step is marked to grab its note from another track."""
@@ -274,13 +328,21 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
         self._check_step(step)
         if self.has_sound(step) or self.get_value(row=Row.TIE, step=step):
             return True
-        if any(self.get_value(row=row, step=step) is not None for row in file_format.CC_ROWS):
-            return True
-        return any(self.get_value(row=row, step=step) not in (None, NO_CHANGE) for row in file_format.REGISTER_ADD_ROWS.values())
+        for row in file_format.CC_ROWS:
+            if self.get_value(row=row, step=step) is not None:
+                return True
+        for row in file_format.REGISTER_ADD_ROWS.values():
+            if self.get_value(row=row, step=step) not in (None, NO_CHANGE):
+                return True
+        return False
 
     def steps_with_anything_from(self, start):
         """Return how many steps from a position onward hold anything, which shortening the pattern would lose."""
-        return sum(1 for step in range(start, self._steps) if self.holds_anything(step))
+        count = 0
+        for step in range(start, self._steps):
+            if self.holds_anything(step):
+                count += 1
+        return count
 
     def get_note_name(self, *, step, scale, default_octave, default_drum_octave, octave_label_offset):
         """Return the name of a step's note in a scale, like F#3, or None if the step has none.
@@ -295,11 +357,13 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
         accidental = self.get_value(row=Row.ACCIDENTAL, step=step) or NO_ACCIDENTAL
         octave = self.get_value(row=Row.OCTAVE, step=step)
         if self.is_drum():
-            octave = default_drum_octave if octave is None else octave
+            if octave is None:
+                octave = default_drum_octave
             return NOTE_NAME.format(name=degree + accidental, octave=octave - octave_label_offset)
         if scale is None:
             return None
-        octave = default_octave if octave is None else octave
+        if octave is None:
+            octave = default_octave
         half_steps = scale.get_half_steps()
         octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(half_steps))
         moved = half_steps[place] + octaves_up * midi.HALF_STEPS_PER_OCTAVE + file_format.ACCIDENTALS.get(accidental, 0)
@@ -332,7 +396,9 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
             if kind == StepStatement.RESTART and step == FIRST_STEP:
                 raise InvalidValue(errors.ERR_RESTART_ON_FIRST_STEP)
         for row, part in zip(file_format.STATEMENT_ROWS[kind], file_format.STATEMENT_PARTS):
-            value = None if statement is None else statement.get(part)
+            value = None
+            if statement is not None:
+                value = statement.get(part)
             if value is None and self._rows[row] is None:
                 continue
             if self._rows[row] is None:
@@ -407,7 +473,9 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
         SETTINGS[PatternSetting.DRUM].check(drum)
         for row in NOTE_ROWS:
             self._rows[row] = None
-        self._settings[PatternSetting.DRUM] = True if drum else None
+        self._settings[PatternSetting.DRUM] = None
+        if drum:
+            self._settings[PatternSetting.DRUM] = True
         if drum:
             # A drum's notes are of no scale.
             self._settings[PatternSetting.SCALE_LENGTH] = None
@@ -439,7 +507,9 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
     def set_direction(self, direction):
         """Set the order its steps play in, with forward left out of the file as the default."""
         SETTINGS[PatternSetting.DIRECTION].check(direction)
-        self._settings[PatternSetting.DIRECTION] = None if direction == Direction.FORWARD else direction
+        if direction == Direction.FORWARD:
+            direction = None
+        self._settings[PatternSetting.DIRECTION] = direction
 
     @notes_change
     def rearrange(self, order):
@@ -451,7 +521,7 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
     @notes_change
     def take_steps(self, order):
         """Make the pattern of its own steps in a new order, given as the old place of each new step, where a step may come more than once: the pattern is then as long as the order."""
-        if not order or len(order) > limits.MAX_STEPS or any(not is_whole_number_from(value=step, lowest=0, highest=self._steps - 1) for step in order):
+        if not self._is_order_of_steps(order):
             raise InvalidValue(errors.ERR_PATTERN_NOT_AN_ORDER.format(order=order))
         for row, values in self._rows.items():
             if values is not None:
@@ -461,6 +531,15 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
         for row in file_format.STATEMENT_ROWS[StepStatement.RESTART]:
             if self._rows[row] is not None:
                 self._rows[row][FIRST_STEP] = blank_value(row)
+
+    def _is_order_of_steps(self, order):
+        """Return whether a list names some of the pattern's own steps, each more than once if need be, and no more than a pattern may hold."""
+        if not order or len(order) > limits.MAX_STEPS:
+            return False
+        for step in order:
+            if not is_whole_number_from(value=step, lowest=0, highest=self._steps - 1):
+                return False
+        return True
 
     def repeat_at_end(self, *, first, last):
         """Add a copy of the steps from first through last after the last step."""
@@ -476,7 +555,8 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     def roll(self, steps):
         """Turn the pattern so many steps to the left, or to the right when negative: a step pushed off one end comes in at the other."""
-        self.take_steps([(step + steps) % self._steps for step in range(self._steps)])
+        order = [(step + steps) % self._steps for step in range(self._steps)]
+        self.take_steps(order)
 
     def roll_through(self, step):
         """Turn a step and every step before it one step to the left among themselves: the first step comes in at the step's place."""
@@ -515,7 +595,8 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     def clear_all_but_pitch(self):
         """Blank everything a step holds but which notes it plays: its degree, octave, sharp or flat and chord stay."""
-        self.clear_rows([row for row in file_format.PATTERN_ROWS if row not in file_format.PITCH_ROWS])
+        rows = [row for row in file_format.PATTERN_ROWS if row not in file_format.PITCH_ROWS]
+        self.clear_rows(rows)
 
     def clear_chords(self):
         """Blank every step's chord, with its tensions, borrowed scale and inversion, leaving the note each chord was built on."""
@@ -555,7 +636,8 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
     @notes_change
     def splice(self, *, other, at=None):
         """Add another pattern's steps after its own last step, or before the step at a place, 0 for before its first; the other is not changed."""
-        at = self._steps if at is None else at
+        if at is None:
+            at = self._steps
         if not is_whole_number_from(value=at, lowest=0, highest=self._steps):
             raise InvalidValue(errors.ERR_PATTERN_NO_SUCH_STEP.format(step=at, steps=self._steps))
         if self._steps + other.get_steps() > limits.MAX_STEPS or other.is_drum() != self.is_drum():
@@ -639,7 +721,13 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
 def _copied_rows(rows):
     """Return a copy of every row's list of values as the pattern holds them, with None for a row that isn't given, so the pattern owns its lists."""
-    return {row: (None if rows.get(row) is None else row_descriptions.ROW_DESCRIPTIONS[row].read(rows[row])) for row in file_format.PATTERN_ROWS}
+    copied = {}
+    for row in file_format.PATTERN_ROWS:
+        values = rows.get(row)
+        if values is not None:
+            values = row_descriptions.ROW_DESCRIPTIONS[row].read(values)
+        copied[row] = values
+    return copied
 
 
 def own_step_value(value):
