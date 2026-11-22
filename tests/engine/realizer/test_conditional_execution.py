@@ -5,14 +5,15 @@
 """Conditional Execution: a scene's and a clip's sets and adds of the registers, and the statements about the registers that bypass generators or make a clip sit out.
 
 Every song here plays one note a pass, moved up C major by AX, so that the notes heard say
-what AX was as each pass started, and an AutoRatchet that plays every note twice, so that a
-pass with two notes is one the generator ran on.
+what AX was as each pass started, and a Chords generator that moves every note to chord II, one
+note of the scale higher, so that a pass a note higher is one the generator ran on.
 """
 
 import unittest
 
-from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin
-from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
+from llamatron.engine.generators import chords as chords_plugin
+from llamatron.engine.generators.chords import model as chords_model
+from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
@@ -36,11 +37,12 @@ LEAD = 'lead'
 OTHER = 'other'
 MAIN = 'main'
 X = 'x'
-TWICE = 'twice'
-DOUBLED = 'doubled'
+TWICE = 'up'
+DOUBLED = 'moved'
 PARTS_AS_READ = (StatementPart.REGISTER, StatementPart.OPERATOR, StatementPart.VALUE, StatementPart.COMPARISON, StatementPart.AGAINST)
-# How many notes the AutoRatchet makes of each note.
-RATCHETS = 2
+# How many notes of the scale the Chords generator moves each note up: chord II is one above chord I.
+MOVED_BY = 1
+CHORD_II = 2
 # AX is free to count well past the passes any test plays.
 ROOMY = {AX: {RegisterSetting.MAXIMUM: 100}, BX: {RegisterSetting.MAXIMUM: 100}}
 
@@ -64,13 +66,13 @@ def song(*, clip=None, scene=None, track=None, chain=None, generator=None, chain
     if other is not None:
         tracks[OTHER] = {}
         clips[OTHER] = {ClipSlotSetting.PATTERN: X, **other}
-    steps = [{auto_ratchet_plugin.NAME: TWICE}]
+    steps = [{chords_plugin.NAME: TWICE}]
     return {
         Section.SCALES: {MAIN: {ScaleSetting.ROOT: NoteName.C, ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}}, SongSetting.SCALE: MAIN,
         Section.PATTERNS: {X: {
             PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: STEP_SIZE, Row.DEGREE: [1], Row.OCTAVE: [OCTAVE], file_format.REGISTER_NOTE_ROWS[AX]: [RegisterUse.ADD],
         }},
-        auto_ratchet_plugin.SECTION: {TWICE: {AutoRatchetSetting.COUNTS: [RATCHETS], **(generator or {})}},
+        chords_plugin.SECTION: {TWICE: {ChordsSetting.MODE: chords_model.PROGRESSION, ProgressionSetting.CHORDS: [CHORD_II], **(generator or {})}},
         Section.CHAINS: {DOUBLED: steps if chain is None else {ChainSetting.STEPS: steps, **chain}},
         Section.REGISTERS: registers or ROOMY,
         Section.TRACKS: tracks,
@@ -233,40 +235,41 @@ class TestBypassingGenerators(unittest.TestCase):
     """A pass goes by a generator, a chain or every chain while a statement holds where it is written."""
 
     COUNTING = {ClipSlotSetting.REPEAT: 4, ClipSlotSetting.ADD_REGISTERS: {AX: 1}}
-    EVERY_PASS_TWICE = [value for value in (1, 2, 3, 4) for _ in range(RATCHETS)]
-    ODD_PASSES_ONCE = [1, 2, 2, 3, 4, 4]
+    EVERY_PASS_MOVED = [value + MOVED_BY for value in (1, 2, 3, 4)]
+    # AX is odd on the first and third passes, which go by the generator, and even on the others, which it moves.
+    ODD_PASSES_UNMOVED = [1, 2 + MOVED_BY, 3, 4 + MOVED_BY]
     TABLE = [statement(AX, Operator.ODD)]
 
     def test_the_generator_runs_on_every_pass_with_no_statement(self):
-        self.assertEqual(heard(song(clip=self.COUNTING, chained=True)), notes_at(self.EVERY_PASS_TWICE))
+        self.assertEqual(heard(song(clip=self.COUNTING, chained=True)), notes_at(self.EVERY_PASS_MOVED))
 
     def test_a_statement_on_the_generator(self):
         data = song(clip=self.COUNTING, chained=True, generator={file_format.BYPASS_WHEN: self.TABLE})
-        self.assertEqual(heard(data), notes_at(self.ODD_PASSES_ONCE))
+        self.assertEqual(heard(data), notes_at(self.ODD_PASSES_UNMOVED))
 
     def test_a_statement_on_the_chain(self):
         data = song(clip=self.COUNTING, chained=True, chain={ChainSetting.BYPASS_WHEN: self.TABLE})
-        self.assertEqual(heard(data), notes_at(self.ODD_PASSES_ONCE))
+        self.assertEqual(heard(data), notes_at(self.ODD_PASSES_UNMOVED))
 
     def test_a_statement_on_the_clip_the_scene_and_the_track(self):
         on_clip = song(clip={**self.COUNTING, ClipSlotSetting.BYPASS_WHEN: self.TABLE}, chained=True)
         on_scene = song(clip=self.COUNTING, chained=True, scene={SceneSetting.BYPASS_WHEN: self.TABLE})
         on_track = song(clip=self.COUNTING, chained=True, track={TrackSetting.BYPASS_WHEN: self.TABLE})
         for data in (on_clip, on_scene, on_track):
-            self.assertEqual(heard(data), notes_at(self.ODD_PASSES_ONCE))
+            self.assertEqual(heard(data), notes_at(self.ODD_PASSES_UNMOVED))
 
     def test_a_statement_true_on_every_pass_and_on_none(self):
         always = song(clip=self.COUNTING, chained=True, generator={file_format.BYPASS_WHEN: [statement(AX, Operator.MORE, 0)]})
         never = song(clip=self.COUNTING, chained=True, generator={file_format.BYPASS_WHEN: [statement(AX, Operator.LESS, 0)]})
         self.assertEqual(heard(always), notes_at([1, 2, 3, 4]))
-        self.assertEqual(heard(never), notes_at(self.EVERY_PASS_TWICE))
+        self.assertEqual(heard(never), notes_at(self.EVERY_PASS_MOVED))
 
     def test_a_chain_and_a_generator_keep_their_statements_through_a_save(self):
         data = song(chained=True, chain={ChainSetting.BYPASS_WHEN: self.TABLE}, generator={file_format.BYPASS_WHEN: self.TABLE})
         setlist = setlist_from_data(data)
         self.assertEqual(setlist.get_chain(DOUBLED).get_bypass_when(), self.TABLE)
         self.assertEqual(setlist.get_chain(DOUBLED).to_data()[ChainSetting.BYPASS_WHEN], self.TABLE)
-        self.assertEqual(setlist.get_generator_settings(kind=auto_ratchet_plugin.NAME, name=TWICE).get_bypass_when(), self.TABLE)
+        self.assertEqual(setlist.get_generator_settings(kind=chords_plugin.NAME, name=TWICE).get_bypass_when(), self.TABLE)
         self.assertIsInstance(setlist_from_data(song(chained=True)).get_chain(DOUBLED).to_data(), list)
 
 

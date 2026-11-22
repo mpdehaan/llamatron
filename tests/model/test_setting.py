@@ -12,13 +12,14 @@ import unittest
 from llamatron.engine.generators import settings_base
 from llamatron.engine.generators.arp import schema
 from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings
-from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting, AutoRatchetSettings
 from llamatron.engine.generators.chords.model import ChordsSetting, ChordsSettings, ProgressionSetting
 from llamatron.engine.generators.drift.model import DriftSetting, DriftSettings, versioned
 from llamatron.engine.generators.guitarify.model import GuitarifySettings
 from llamatron.engine.generators.hocket.model import HocketSetting, HocketSettings
 from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
 from llamatron.engine.generators.phrasing.model import PhrasingSetting, PhrasingSettings
+from llamatron.engine.generators.timing import parts as timing_parts
+from llamatron.engine.generators.timing.model import TimingSettings
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed
 from llamatron.model.file.invalid_value import InvalidValue
@@ -117,7 +118,6 @@ DESCRIBED = [
     (RegisterSetting, register.SETTINGS, ()),
     (DrawSetting, draw.SETTINGS, ()),
     (ArpSetting, ArpSettings.SETTINGS, ()),
-    (AutoRatchetSetting, AutoRatchetSettings.SETTINGS, ()),
     # A drift's own settings; each version's values are named from DriftValue, which the test below holds them to.
     (DriftSetting, {name: setting for name, setting in DriftSettings.SETTINGS.items() if name in vars(DriftSetting).values()}, ()),
     # A Chords generator's own settings and its progression's, each named from its own class.
@@ -479,8 +479,8 @@ class TestReadingAndSettingAgree(unittest.TestCase):
     def test_a_generators_setting_checked_by_a_function_of_its_own(self):
         """The rest of every generator's settings are tried by TestEveryGeneratorSettingRefusesAlike, from their descriptions."""
         self.assert_same_refusal(
-            read=lambda: AutoRatchetSettings.from_data(data={AutoRatchetSetting.COUNTS: FIRST}, where=HERE),
-            change=lambda: AutoRatchetSettings.new().set_setting(name=AutoRatchetSetting.COUNTS, value=FIRST),
+            read=lambda: TimingSettings.from_data(data={timing_parts.steps_of(timing_parts.RUSH): FIRST}, where=HERE),
+            change=lambda: TimingSettings.new().set_setting(name=timing_parts.steps_of(timing_parts.RUSH), value=FIRST),
         )
 
 

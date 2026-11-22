@@ -8,10 +8,10 @@ import copy
 import unittest
 import yaml
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators import arp as arp_plugin, timing as timing_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
-from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
+from llamatron.engine.generators.timing import parts as timing_parts
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema.file_format import ClipSlotSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
@@ -30,7 +30,8 @@ WOBBLY = 'wobbly'
 C_MAJOR = 'C major'
 WOBBLE = 'wobble'
 EXPECTED_SETTINGS = 'expected clip settings'
-NEEDS_COUNTS = 'needs counts'
+# What a Timing generator's row of steps written as a number is refused with.
+STEPS_NOT_STEPS = 'must be a list of 1 to'
 UNKNOWN_SCALE_TYPE = 'unknown scale type'
 ROOT_NOTE = 'root note'
 ROOT_AND_A_TYPE = 'root and a type'
@@ -38,7 +39,6 @@ NEEDS_A_PATTERN = 'needs a pattern'
 DESCRIPTION_MUST_BE_TEXT = 'description must be text'
 NOTES_MUST_BE_TEXT = 'notes must be text'
 R = 'r'
-COUNT = 'count'
 # A name no object of the program knows, put at every level of a set by the test of names passed over.
 NOT_KNOWN = 'not_known'
 NOT_A_ROOT = 'H'
@@ -51,7 +51,7 @@ RAIN = 'Rain'
 def parts_of(data):
     """Return every part of a set's data that holds settings: the set, each song and its tracks, scenes and clips, each pattern
     and each generator."""
-    parts = [data, *data[Section.PATTERNS].values(), *data[auto_ratchet_plugin.SECTION].values()]
+    parts = [data, *data[Section.PATTERNS].values(), *data[timing_plugin.SECTION].values()]
     for song in data[Section.SONGS].values():
         parts += [song, *song[Section.TRACKS].values()]
         for scene in song[Section.SCENES]:
@@ -83,7 +83,7 @@ class TestErrors(unittest.TestCase):
         # another version might, a setting taken away included; the set reads as it would without them and writes none of them.
         scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [song_testing.X]}}}]
         plain = as_setlist(with_parts(
-            patterns={A: pat([1, QUARTER])}, auto_ratchets={R: {AutoRatchetSetting.COUNTS: [2]}}, chains={song_testing.X: [{auto_ratchet_plugin.NAME: R}]}, scenes=scenes,
+            patterns={A: pat([1, QUARTER])}, timings={R: {timing_parts.steps_of(timing_parts.RUSH): [True]}}, chains={song_testing.X: [{timing_plugin.NAME: R}]}, scenes=scenes,
         ))
         with_unknown = copy.deepcopy(plain)
         for holder in parts_of(with_unknown):
@@ -108,13 +108,7 @@ class TestErrors(unittest.TestCase):
         self.assert_error('unknown generator (wobble)', chains={song_testing.X: [{WOBBLE: {}}]})
 
     def test_a_generator_no_chain_uses_is_checked_too(self):
-        # A misspelled setting is passed over as unknown, so the generator lacks the setting it needs.
-        self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {COUNT: [2]}})
-        self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}})
-
-    def test_missing_generator_setting(self):
-        scenes = [{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [song_testing.X]}}}]
-        self.assert_error(NEEDS_COUNTS, auto_ratchets={R: {}}, chains={song_testing.X: [{auto_ratchet_plugin.NAME: R}]}, scenes=scenes)
+        self.assert_error(STEPS_NOT_STEPS, timings={R: {timing_parts.steps_of(timing_parts.RUSH): 4}})
 
     def test_an_arp_with_no_step_plays_at_the_step_of_the_pattern_its_clip_plays(self):
         # A step left out is "(pattern)", where it was refused before.

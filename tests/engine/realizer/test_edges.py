@@ -17,9 +17,9 @@ import yaml
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.positions import cut_position
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators import arp as arp_plugin, timing as timing_plugin
 from llamatron.engine.generators.arp.model import ArpSetting
-from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
+from llamatron.engine.generators.timing import parts as timing_parts
 from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters.exports import ExportKind
 from llamatron.interface.tracker import app as tui_app
@@ -74,7 +74,7 @@ SCENES_IS_A_DICT = 'scenes is a dict'
 SCENE_IS_A_LIST = 'scene is a list'
 SCENE_REPEAT_IS_ZERO = 'scene repeat is zero'
 TEMPO_RAMP_BARS_ARE_ZERO = 'tempo ramp bars are zero'
-COUNTS_IS_NOT_A_LIST = 'counts is not a list'
+STEPS_ARE_NOT_A_LIST = 'steps are not a list'
 UP = 'up'
 LEAD = 'lead'
 FAST = 'fast'
@@ -134,15 +134,15 @@ class TestMalformedFiles(unittest.TestCase):
             DRUM_IS_WORDS: changed(patterns__a={PatternSetting.STEPS: 1, PatternSetting.DRUM: YES}),
             TRACK_SETTINGS_ARE_A_LIST: changed(tracks={LEAD: [1], BASS: {}}),
             CHAIN_IS_A_DICT: changed(chains={X: {arp_plugin.NAME: UP}}),
-            'chain step has two generators': changed(chains={X: [{arp_plugin.NAME: UP, auto_ratchet_plugin.NAME: UP}]}),
+            'chain step has two generators': changed(chains={X: [{arp_plugin.NAME: UP, timing_plugin.NAME: UP}]}),
             SCENES_IS_A_DICT: changed(scenes={ONE: {}}),
             SCENE_IS_A_LIST: changed(scenes=[[LEAD]]),
             SCENE_REPEAT_IS_ZERO: changed(scenes__0__repeat=0),
             TEMPO_RAMP_BARS_ARE_ZERO: changed(scenes__0__tempo_in_over=0),
-            COUNTS_IS_NOT_A_LIST: changed(auto_ratchets={R: {AutoRatchetSetting.COUNTS: 4}}, chains={X: [{auto_ratchet_plugin.NAME: R}]}),
+            STEPS_ARE_NOT_A_LIST: changed(timings={R: {timing_parts.steps_of(timing_parts.RUSH): 4}}, chains={X: [{timing_plugin.NAME: R}]}),
         }
         for name, data in cases.items():
-            if name == COUNTS_IS_NOT_A_LIST:
+            if name == STEPS_ARE_NOT_A_LIST:
                 data[Section.SCENES][0][Section.TRACKS][LEAD][ClipSlotSetting.CHAINS] = [X]
             with self.subTest(name=name), self.assertRaises(SongFileError):
                 render_data(data)

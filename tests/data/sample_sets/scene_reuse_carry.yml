@@ -1,6 +1,6 @@
 version: 1.0.591
 title: Scene Reuse Carry
-description: "an AutoRatchet that carries its count from clip to clip down the lead's track from the song's top, beside a bass, for tests/realtime/test_scene_reuse.py"
+description: "an arpeggiator in random order that carries its draws from clip to clip down the lead's track from the song's top, beside a bass, for tests/realtime/test_scene_reuse.py"
 
 scales:
   - { name: C Major, root: C, type: major }
@@ -10,14 +10,17 @@ patterns:
     steps: 5
     step_size: 1/8
     degree: [1, 3, 5, 3, 2]
+    chord: [3, 3, 3, 3, 3]
   - name: lead_two
     steps: 5
     step_size: 1/8
     degree: [2, 4, 6, 4, 3]
+    chord: [3, 3, 3, 3, 3]
   - name: lead_three
     steps: 5
     step_size: 1/8
     degree: [5, 4, 3, 2, 1]
+    chord: [3, 3, 3, 3, 3]
   - name: bass_line
     steps: 5
     step_size: 1/8
@@ -25,7 +28,7 @@ patterns:
     octave: [2, ~, 2, ~, 2]
 
 generators:
-  - { name: counting, kind: auto_ratchet, counts: [2, 3, 4], restart: whole_song }
+  - { name: counting, kind: arp, step: 1/32, order: random, restart: whole_song }
 
 songs:
   - name: carry

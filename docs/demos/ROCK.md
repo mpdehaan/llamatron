@@ -165,7 +165,7 @@ chorus twice.
 A solo guitar showpiece in the manner of Van Halen's Eruption: picked runs, bends, a dive, a fast
 study and tapped arpeggios, with the opening run coming back at the end. The band hits one chord and
 leaves; picked runs, bends, a dive, tremolo picking, a study on a circle of chords that a
-Progression moves, tremolo picking that an AutoRatchet chops into four and a Drift pushes upward,
+progression moves, tremolo picking that a Ratchet of 4 chops into four and a Drift pushes upward,
 arpeggios tapped in sextuplets by an Arpeggiator on i VI VII V and again wider on i VI iv V, the
 opening run once more, a last dive and a last chord. It stays out of that solo's key.
 
@@ -174,7 +174,7 @@ opening run once more, a last dive and a last chord. It stays out of that solo's
 
 | chords | arps | ratchets | chains | ties | tempo changes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/AUTORATCHET.md) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/CHORDS.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of volcano -->
 
 <a id="why_say_it_again"></a>

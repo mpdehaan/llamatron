@@ -54,7 +54,7 @@ STAR = '*'
 FEATURE_COLUMNS = [
     ('chords', ['chords']),
     ('arps', ['arps']),
-    ('ratchets', ['ratchets', 'ratchet offsets', 'AutoRatchets']),
+    ('ratchets', ['ratchets', 'ratchet offsets']),
     ('chains', ['chains']),
     ('grabs', ['grab steps', 'grab track']),
     ('hocket', ['hockets']),
@@ -110,7 +110,6 @@ FEATURE_LINKS = {
     'arps': GENERATOR_DOC.format(page='ARPEGGIATOR'),
     'ratchets': ADVANCED_ROWS_DOC,
     'ratchet offsets': ADVANCED_ROWS_DOC,
-    'AutoRatchets': GENERATOR_DOC.format(page='AUTORATCHET'),
     'chains': CHAINS_DOC,
     'grab steps': GRABBING_DOC,
     'grab track': GRABBING_DOC,

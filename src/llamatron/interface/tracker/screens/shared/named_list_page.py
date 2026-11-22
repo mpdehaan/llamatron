@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""A page that lists the named things of one section of the set: its patterns, scales, chains, grooves, songs, arps or AutoRatchets.
+"""A page that lists the named things of one section of the set: its patterns, scales, chains, grooves, songs or generators.
 
 Renaming, copying, deleting, moving and sorting the selected thing are the same on every such
 page, since the document edits every section the same way (interface/tracker/document_parts/named_edits.py),

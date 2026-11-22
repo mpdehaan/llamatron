@@ -42,8 +42,8 @@ from tests.support.key_map import KeyMap, should_write, write_key_map, written_k
 from tests.support.ui_testing import key_of, leaf_pages, UITest
 
 # The words help uses for the keys whose names on screen are arrows or that the legend has no name of their own for.
-# The place on the Generators page of the first kind after the arpeggiators and the AutoRatchets.
-FIRST_KIND_AFTER_AUTO_RATCHETS = 2
+# The place on the Generators page of the first kind after the first two.
+THIRD_KIND = 2
 FIRST_SCENE = 0
 EVERYWHERE_ENTRY = '- `{key}` {what}'
 KEY_WORDS = {'Shift+Tab': Key.SHIFT_TAB, 'Up': Key.UP, 'Down': Key.DOWN, 'Left': Key.LEFT, 'Right': Key.RIGHT, 'Home': Key.HOME, 'End': Key.END, 'PgUp': Key.PAGE_UP, 'PgDn': Key.PAGE_DOWN}

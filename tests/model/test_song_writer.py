@@ -25,8 +25,8 @@ SONG = {
     },
     'tracks': {'lead': {'transpose': 2, 'cc': [74, None, None, 1]}, 'kick': {'drum': True}, 'plain': {}},
     'arps': {'bells': {'step': '1/8', 'order': 'up'}},
-    'auto_ratchets': {'rolls': {'counts': [1, 4]}},
-    'chains': {'x': [{'auto_ratchet': 'rolls'}, {'arp': 'bells'}], 'nothing': [], 'named': [{'arp': 'bells'}]},
+    'timings': {'rolls': {'rush_steps': [True, False]}},
+    'chains': {'x': [{'timing': 'rolls'}, {'arp': 'bells'}], 'nothing': [], 'named': [{'arp': 'bells'}]},
     'registers': {'AX': {'maximum': 3, 'wrap': True}, 'DX': {'minimum': -100, 'default': -5}},
     'scenes': [
         {'name': 'one', 'repeat': 3, 'reset': ['AX', 'DX'], 'scale': 'A Minor', 'tempo_in_start': 120, 'tempo_in_end': 130, 'tempo_in_over': 2, 'tracks': {'lead': {'pattern': 'a', 'chain': 'x', 'loop': True, 'repeat': 2, 'morph_to': 'hit', 'morph_style': 'left', 'grab_track': 'kick'}}},
@@ -123,7 +123,7 @@ class TestDumpSetlist(unittest.TestCase):
         self.assertIn('generators:\n  - { name: bells, kind: arp, step: 1/8, order: up }', text)
         self.assertIn('    registers:\n      AX: { maximum: 3, wrap: true }\n      DX: { minimum: -100, default: -5 }\n\n    tracks:', text)
         self.assertIn("      - name: one\n        repeat: 3\n        reset: [AX, DX]\n", text)
-        self.assertIn('  - { name: rolls, kind: auto_ratchet, counts: [1, 4] }', text)
+        self.assertIn('  - { name: rolls, kind: timing, rush_steps: [true, false] }', text)
         self.assertIn('  - { name: x, kind: chain, generators: [{ name: rolls }, { name: bells }] }', text)
         self.assertIn('  - { name: nothing, kind: chain, generators: [] }', text)
         self.assertIn('scales:\n  - { name: main, root: C, type: minor }\n  - { name: A Minor, root: A, type: minor }', text)

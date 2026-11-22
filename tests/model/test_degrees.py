@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import contextlib
+from fractions import Fraction
 import io
 import mido
 import os
@@ -14,7 +15,7 @@ from llamatron.engine.clips.clip_column import ClipColumn
 from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.engine.generators.arp.generator import Arp
-from llamatron.engine.generators.auto_ratchet.generator import AutoRatchet
+from llamatron.engine.generators.timing.generator import Shorten
 from llamatron.exporters import midi_messages
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.model.values.chord import Chord
@@ -22,6 +23,8 @@ from llamatron.model.values.note import Degree, Note, NoteName, Rest
 from llamatron.model.values.scale import Scale, ScaleType
 
 QUARTER = 0.25
+# Half of each note starting on a quarter note plays, the rest a rest.
+HALF_SHORTENED = 50
 # What the clip files are named under, and the two scenes' files.
 EXPORT = 'song'
 FIRST_SCENE_CLIP = EXPORT + '_clip_s_001-t_001.mid'
@@ -330,19 +333,20 @@ class TestGeneratorsWithDegrees(unittest.TestCase):
 
     def test_every_generator_keeps_degrees_as_degrees(self):
         clip = Clip(notes=[1, 2, 3], note_length=QUARTER)
-        for generator in [AutoRatchet([2]), Arp(step=QUARTER)]:
+        for generator in [Shorten(steps=[True], step=Fraction(1, 4), shorten=HALF_SHORTENED), Arp(step=QUARTER)]:
             with self.subTest(generator=type(generator).__name__):
                 result = generator.generate(clip)
-                self.assertTrue(all(isinstance(p, Degree) for p in result.get_notes()))
+                # A Shorten leaves a rest after the part of each note it cuts off.
+                self.assertTrue(all(isinstance(p, (Degree, Rest)) for p in result.get_notes()))
 
     def test_every_generator_keeps_note_length(self):
         clip = Clip(notes=[1], note_length=QUARTER)
-        for generator in [AutoRatchet([2]), Arp(step=QUARTER)]:
+        for generator in [Shorten(steps=[True], step=Fraction(1, 4), shorten=HALF_SHORTENED), Arp(step=QUARTER)]:
             with self.subTest(generator=type(generator).__name__):
                 self.assertEqual(generator.generate(clip).get_note_length(), QUARTER)
 
     def test_generators_reject_invalid_items_added_to_a_list(self):
-        for generator in [AutoRatchet([2]), Arp(step=QUARTER)]:
+        for generator in [Shorten(steps=[True], step=Fraction(1, 4), shorten=HALF_SHORTENED), Arp(step=QUARTER)]:
             clip = Clip(notes=[1], note_length=QUARTER)
             clip.get_notes().append(C4_2)
             with self.subTest(generator=type(generator).__name__):

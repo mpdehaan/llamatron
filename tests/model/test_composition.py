@@ -14,12 +14,12 @@ import random
 import re
 import unittest
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators import arp as arp_plugin, timing as timing_plugin
 from llamatron.engine.generators.arp import schema
 from llamatron.engine.generators.arp.generator import Arp, ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings, written_name
-from llamatron.engine.generators.auto_ratchet.generator import AutoRatchet
-from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting, AutoRatchetSettings
+from llamatron.engine.generators.timing import parts as timing_parts
+from llamatron.engine.generators.timing.model import TimingSettings
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.chain import Chain
@@ -69,13 +69,10 @@ SIDEWAYS = 'sideways'
 CHAIN_X = 'chain x'
 SIXTEENTH = '1/16'
 COUNT = 'count'
-NEEDS_COUNTS = errors.ERR_NEEDS_SETTING.format(name=AutoRatchetSetting.COUNTS)
 EIGHTH_FRACTION = Fraction(1, 8)
-CHAIN_X_AUTO_RATCHET = 'chain (x), auto_ratchet'
-# What a misspelled setting leaves an AutoRatchet read from a file lacking, the name being passed over as unknown, and what
-# settings built by the program with the same name are refused with, after the place of the generator.
-NO_COUNTS_HERE = 'here: needs counts'
-UNKNOWN_COUNT_IN_CHAIN = 'chain (x), auto_ratchet: unknown setting (count)'
+CHAIN_X_ARP = 'chain (x), arp'
+# What settings built by the program with a name no arp has are refused with, after the place of the generator.
+UNKNOWN_COUNT_IN_CHAIN = 'chain (x), arp: unknown setting (count)'
 # Settings of an arp that reading a file refuses, each wrong in one setting.
 WRONG_ARP_SETTINGS = [
     {ArpSetting.ORDER: 'sideways'},
@@ -426,11 +423,7 @@ class TestGeneratorSettings(RoundTrip):
 
     def test_round_trip_keeps_settings_as_written(self):
         self.assert_round_trip(ArpSettings, {ArpSetting.STEP: SIXTEENTH, ArpSetting.ORDER: written_name(ChordOrder.UP_DOWN), ArpSetting.OFFSETS: [0, None, 7]})
-        self.assert_round_trip(AutoRatchetSettings, {AutoRatchetSetting.COUNTS: [1, 4]})
-
-    def test_a_generator_written_with_no_settings_is_refused_for_what_it_needs(self):
-        with self.assertRaisesRegex(SongFileError, NEEDS_COUNTS):
-            AutoRatchetSettings.from_data(data=None, where=HERE)
+        self.assert_round_trip(TimingSettings, {timing_parts.steps_of(timing_parts.RUSH): [True, False]})
 
     def test_an_arp_with_no_step_takes_the_step_of_the_pattern_its_clip_plays(self):
         # An arp's step left out is "(pattern)", where it was refused before.
@@ -442,20 +435,15 @@ class TestGeneratorSettings(RoundTrip):
         arp = ArpSettings.from_data(data={ArpSetting.STEP: EIGHTH, ArpSetting.ORDER: written_name(ChordOrder.DOWN)}, where=HERE).make_generator(where='chain x, arp', default_seed=7)
         self.assertIsInstance(arp, Arp)
         self.assertEqual((arp.get_step(), arp.get_order(), arp.get_seed()), (Fraction(1, 8), ChordOrder.DOWN, 7))
-        self.assertIsInstance(AutoRatchetSettings.from_data(data={AutoRatchetSetting.COUNTS: [2]}, where=HERE).make_generator(where=CHAIN_X, default_seed=7), AutoRatchet)
 
     def test_wrong_settings_are_refused_when_read_and_name_the_place(self):
-        with self.assertRaisesRegex(SongFileError, re.escape(NO_COUNTS_HERE)):
-            AutoRatchetSettings.from_data(data={COUNT: [2]}, where=HERE)
         for data in WRONG_ARP_SETTINGS:
             with self.subTest(data=data), self.assertRaises(SongFileError):
                 ArpSettings.from_data(data={ArpSetting.STEP: EIGHTH, **data}, where=HERE)
 
     def test_settings_built_without_a_file_are_refused_when_used_and_name_the_chain(self):
         with self.assertRaisesRegex(SongFileError, re.escape(UNKNOWN_COUNT_IN_CHAIN)):
-            AutoRatchetSettings({COUNT: [2]}).make_generator(where=CHAIN_X_AUTO_RATCHET, default_seed=1)
-        with self.assertRaisesRegex(SongFileError, NEEDS_COUNTS):
-            AutoRatchetSettings({}).make_generator(where=CHAIN_X, default_seed=1)
+            ArpSettings({COUNT: [2]}).make_generator(where=CHAIN_X_ARP, default_seed=1)
 
 
 class TestChain(RoundTrip):
@@ -469,7 +457,7 @@ class TestChain(RoundTrip):
     def test_refusals(self):
         setlist = a_song().get_setlist()
         self.assert_refused('expected a list of generators', Chain, {}, setlist=setlist)
-        self.assert_refused('each step must be one generator', Chain, [{arp_plugin.NAME: UP, auto_ratchet_plugin.NAME: R}], setlist=setlist)
+        self.assert_refused('each step must be one generator', Chain, [{arp_plugin.NAME: UP, timing_plugin.NAME: R}], setlist=setlist)
         self.assert_refused('unknown generator (wobble)', Chain, [{WOBBLE: UP}], setlist=setlist)
         self.assert_refused('no arp called (down)', Chain, [{arp_plugin.NAME: NOT_AN_ARP}], setlist=setlist)
 
@@ -635,7 +623,7 @@ class TestSetlistAndSong(RoundTrip):
         song = a_song()
         self.assertTrue(song.get_setlist().has_pattern(A) and song.has_track(LEAD) and song.get_setlist().has_chain(X) and song.get_setlist().has_scale(MAIN))
         self.assertTrue(song.get_setlist().has_generator(kind=arp_plugin.NAME, name=UP))
-        self.assertFalse(song.get_setlist().has_generator(kind=auto_ratchet_plugin.NAME, name=UP))
+        self.assertFalse(song.get_setlist().has_generator(kind=timing_plugin.NAME, name=UP))
         self.assertEqual(song.get_track_names(), [LEAD, BASS])
         self.assertEqual(song.get_setlist().get_pattern(B).get_value(row=Row.DEGREE, step=0), 5)
 

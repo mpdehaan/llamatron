@@ -191,7 +191,7 @@ The notes the root and kind make are shown underneath, and how many songs and sc
 HELP_CHAIN_EDITOR = """
 The steps run from top to bottom, each working on what the last one made.
 
-A adds an arpeggiator or AutoRatchet, which you make on the Generators page. ENTER changes one, C copies it, and Bksp removes it. M picks up a step, Up and Down carry it, and ENTER drops it.
+A adds a generator, which you make on the Generators page. ENTER changes one, C copies it, and Bksp removes it. M picks up a step, Up and Down carry it, and ENTER drops it.
 N renames the chain, and every clip using it follows. W opens the chain's statements about the registers, which say when a pass goes by the whole chain.
 / searches the list as you type: Tab completes, ENTER keeps your place, ESC goes back to the whole list.
 """
@@ -276,14 +276,6 @@ Direction: forward stays at the second, loop starts again at the first, pendulum
 Below, each setting has two versions side by side. Left and Right pick one, [ and ] change it, ENTER types or picks, Bksp clears.
 Vel+= and Prob are added to every note's; Degree + moves notes along the scale, and Degree random by a random amount.
 Scale and Root take over the clip's scale with their prob. AX+= to DX+= add to the registers at each trigger.
-"""
-
-# AutoRatchetEditor
-HELP_AUTO_RATCHET_EDITOR = """
-Name: ENTER renames it, and every chain using it follows.
-Counts: how many equal repeats to chop each note or chord into, using the next number each time and starting again at the end.
-
-Press ENTER and type whole numbers with spaces between them, like 1 1 4.
 """
 
 # ArpEditor

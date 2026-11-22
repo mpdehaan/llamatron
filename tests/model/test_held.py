@@ -9,7 +9,6 @@ import unittest
 
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.generators.arp.generator import Arp
-from llamatron.engine.generators.auto_ratchet.generator import AutoRatchet
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.held import Held, phrase
@@ -60,13 +59,6 @@ class TestHeld(unittest.TestCase):
             (Fraction(1, 8), Fraction(1, 4), Note(name=NoteName.E, octave_number=5).get_midi_number()),
         ])
         self.assertEqual(clip.total_length(), Fraction(1, 4))
-
-    def test_an_auto_ratchet_chops_a_held_sound_in_place(self):
-        clip = AutoRatchet([1, 2]).generate(Clip(notes=[Held(sound=C, length=Fraction(1, 8)), D, Rest(Fraction(3, 8))]))
-        self.assertEqual(events(clip), [
-            (0, Fraction(1, 2), C.get_midi_number()), (Fraction(1, 8), Fraction(3, 16), D.get_midi_number()),
-            (Fraction(3, 16), Fraction(1, 4), D.get_midi_number()),
-        ])
 
     def test_its_length_and_sound_are_checked(self):
         with self.assertRaises(ValueError):

@@ -4,7 +4,7 @@
 
 """Conditional Execution on the pages: the table of statements about the registers on a chain's, a generator's, a scene's, a clip's and a track's page, and a scene's and a clip's sets and adds."""
 
-from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators import timing as timing_plugin
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.keys import Key
@@ -141,9 +141,9 @@ class TestStatementsOnOtherPages(StatementsTest):
     """The same table on a generator's, a scene's, a clip's and a track's page, and a scene's and a clip's sets and adds."""
 
     async def test_a_generator(self):
-        await self.open_generator(section=auto_ratchet_plugin.SECTION)
+        await self.open_generator(section=timing_plugin.SECTION)
         await self.write_every_third()
-        settings = self.document.get_setlist().get_generator_settings(kind=auto_ratchet_plugin.NAME, name=ui_testing.ROLLS)
+        settings = self.document.get_setlist().get_generator_settings(kind=timing_plugin.NAME, name=ui_testing.LOOSE)
         self.assertEqual(settings.get_bypass_when(), [self.every_third()])
 
     async def test_a_scene(self):

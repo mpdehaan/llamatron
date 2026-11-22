@@ -104,7 +104,6 @@ ERR_LENGTH_NOT_POSITIVE = 'a length must be more than zero, got {value!r}'
 ERR_CHECKS_BAD_OCTAVE = 'an octave must be an integer from {lowest} to {highest}, got {value!r}'
 
 # model/objects/generator_settings.py
-ERR_NEEDS_SETTING = 'needs {name}'
 ERR_NOT_A_CHOICE = '{name} must be one of: {choices}, got {value!r}'
 ERR_GENERATOR_BAD_OCTAVE_RANGE = '{name} must be an integer from {lowest} to {highest}, got {value!r}'
 ERR_GENERATOR_BAD_OFFSETS = '{problem}'
@@ -134,7 +133,6 @@ ERR_BAD_SHAPE_PERCENT = '{name} must be an integer from {lowest} to {highest}, g
 ERR_BAD_SHAPE_THEN = '{name} must be one of: {choices}, got {value!r}'
 ERR_GENERATOR_BAD_ADD = '{name} must be an integer from {lowest} to {highest}, got {value!r}'
 ERR_GENERATOR_BAD_STEP_ADDS = 'must be a list of 1 to {most} adds, each an integer from {lowest} to {highest} or blank, got {value!r}'
-ERR_GENERATOR_NOT_A_LIST = '{name} must be a list, got {value!r}'
 ERR_GENERATOR_NO_SUCH_SETTING = 'unknown setting ({name}), expected one of: {names}'
 ERR_NOT_SETTINGS = 'expected settings by name, got {value!r}'
 ERR_NO_OFFSETS = 'has no offsets to change'
@@ -302,9 +300,6 @@ ERR_ARP_BAD_OCTAVE_RANGE = 'octave range must be an integer from {lowest} to {hi
 ERR_ARP_BAD_OFFSETS = 'offsets must be a list of {lowest} to {highest} steps, got {value!r}'
 ERR_BAD_OFFSET = 'an offset must be an integer from -{most} to {most}, or None for a silent step, got {value!r}'
 
-# generators/auto_ratchet.py
-ERR_AUTO_RATCHET_NOT_A_LIST = 'expected a list of counts, got {value!r}'
-ERR_BAD_COUNT = 'a count must be a positive integer, got {value!r}'
 
 
 # generators/blend.py, and engine/timing/timing.py for the scale
@@ -451,7 +446,6 @@ ERR_CANT_OPEN_TITLE = 'Cannot open'
 # The Songs page, when the last song's deletion is refused.
 ERR_LAST_SONG_SHOWN = 'the set needs at least one song, so the last one cannot be deleted'
 ERR_NOTHING_TO_ADD_TITLE = 'Nothing to add'
-ERR_BAD_COUNTS = 'counts must be integers of 1 or more, separated by spaces'
 
 # interface/tracker/screens/pattern/pattern_editor.py and the rows in interface/tracker/components/
 ERR_NOT_A_LENGTH = '({text}) is not an integer or a fraction such as 1/8'

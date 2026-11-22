@@ -21,7 +21,7 @@ import io
 import os
 import sys
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
+from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.engine.generators.chords import model as chords_model
 from llamatron.engine.generators.chords.model import ChordsSetting
 from llamatron.engine.generators.guitarify import model as guitarify_model
@@ -223,7 +223,6 @@ FEATURES = [
     ('several songs', lambda data: len(songs(data)) > 1),
     ('several scales', lambda data: len(data.get(Section.SCALES, {})) > 1),
     ('arps', has_section(arp_plugin.SECTION)),
-    ('AutoRatchets', has_section(auto_ratchet_plugin.SECTION)),
     ('drifts', has_section(drift_plugin.SECTION)),
     ('progressions', chords_in_mode(chords_model.PROGRESSION)),
     ('voice leadings', chords_voicing),

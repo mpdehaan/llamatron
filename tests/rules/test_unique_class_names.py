@@ -23,7 +23,6 @@ ALLOWED = (
     'AddRow',
     'ArpEditor',
     'ArrangePage',
-    'AutoRatchetEditor',
     'CcRow',
     'ChainEditor',
     'ChainStatementsPage',

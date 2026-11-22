@@ -92,7 +92,6 @@ ALLOWED = {
         'interface/tracker/screens/generators/chain_editor.py imports interface.tracker.screens.generators.chain_statements_page',
         'interface/tracker/screens/generators/chain_editor.py imports interface.tracker.screens.generators.generator_pages',
         'interface/tracker/screens/generators/generator_pages.py imports interface.tracker.screens.generators.arp_editor',
-        'interface/tracker/screens/generators/generator_pages.py imports interface.tracker.screens.generators.auto_ratchet_editor',
         'interface/tracker/screens/generators/generator_pages.py imports interface.tracker.screens.generators.drift_editor',
         'interface/tracker/screens/generators/generator_pages.py imports interface.tracker.screens.generators.hocket_editor',
         'interface/tracker/screens/generators/generator_pages.py imports interface.tracker.screens.generators.musician_editor',

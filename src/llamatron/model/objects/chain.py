@@ -30,7 +30,7 @@ class ChainStep(NamedTuple):
 
 
 class Chain(BypassedWhen, HoldsSettings):
-    """Steps like arp: bells or auto_ratchet: rolls, each naming a generator the song defines.
+    """Steps like arp: bells or chords: verse, each naming a generator the song defines.
 
     A step only names its generator. The generator's settings are kept with the song, under its
     name, so that several chains can share one.

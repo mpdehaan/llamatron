@@ -4,7 +4,7 @@
 """The pages that list named things all rename, copy, delete, move and sort the same way (interface/tracker/screens/shared/named_list_page.py).
 
 The same checks run on each of them: the Patterns, Scales, Chains, Grooves, Songs, Arpeggiators
-and AutoRatchets pages. What a page alone does, like adding, is tested with the page.
+and generators pages. What a page alone does, like adding, is tested with the page.
 """
 
 import unittest

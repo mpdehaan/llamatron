@@ -130,7 +130,6 @@ A generator changes how a clip's notes are played, without changing its pattern.
 
 | What it does | Page |
 | --- | --- |
-| Notes chopped into quick repeats | [AutoRatchet](docs/generators/AUTORATCHET.md) |
 
 ### Timing
 

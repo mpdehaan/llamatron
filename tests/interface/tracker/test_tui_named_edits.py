@@ -9,7 +9,7 @@ then the little that differs by kind: the current song, a factory groove's copy 
 
 import unittest
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators import arp as arp_plugin, timing as timing_plugin
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import sections
 from llamatron.model.objects.groove import FactoryGroove
@@ -21,7 +21,7 @@ from tests.support.ui_testing import a_song
 
 # The sections whose items have names, which are every section these edits take.
 NAMED_SECTIONS = [
-    Section.PATTERNS, Section.SCALES, arp_plugin.SECTION, auto_ratchet_plugin.SECTION, Section.CHAINS, Section.GROOVES, Section.SONGS, Section.TRACKS,
+    Section.PATTERNS, Section.SCALES, arp_plugin.SECTION, timing_plugin.SECTION, Section.CHAINS, Section.GROOVES, Section.SONGS, Section.TRACKS,
 ]
 A_GROOVE = 'shuffle'
 RENAMED = 'renamed'

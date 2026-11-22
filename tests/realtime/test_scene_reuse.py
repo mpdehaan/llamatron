@@ -43,7 +43,7 @@ DRIFTING_SET = os.path.join(os.path.dirname(__file__), '..', 'data', 'sample_set
 GRABBING_DEMO = os.path.join(EXAMPLES, 'learning', '20_arrangement_shanty.yml')
 GRABBING_TRACK = 'bass'
 GRABBED_TRACK = 'pad'
-# A set whose lead runs an AutoRatchet that carries its count from clip to clip from the song's top, beside a bass in the first
+# A set whose lead runs an arpeggiator in random order that carries its draws from clip to clip from the song's top, beside a bass in the first
 # scene, with a pattern of its own in each scene.
 CARRYING_SET = os.path.join(os.path.dirname(__file__), '..', 'data', 'sample_sets', 'scene_reuse_carry.yml')
 CARRYING_BASS = 'bass_line'
@@ -202,7 +202,7 @@ class TestScoreTakesClips(unittest.TestCase):
     def test_a_track_reached_in_one_scene_plays_again_in_the_scenes_after_since_its_generators_carry_on(self):
         edited = Edited(CARRYING_SET)
         first = edited.score()
-        # A rest in the lead's second clip moves the count its last clip starts from, though the last clip's pattern is untouched.
+        # A rest in the lead's second clip moves the draws its last clip starts from, though the last clip's pattern is untouched.
         edited.setlist.get_pattern(CARRYING_BASS).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
         edited.setlist.get_pattern(CARRYING_MIDDLE).set_value(row=Row.DEGREE, step=0, value=None)
         self.assertEqual(edited.score(earlier=first).get_kept_clip_count(), 1)

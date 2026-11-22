@@ -8,7 +8,7 @@
 Run from the top folder, with python-rtmidi installed in the virtual environment:
 
     .venv/bin/python internal_tools/midi_timing_spike.py                                   # minimal_techno's first 20 seconds, sent from a separate process
-    .venv/bin/python internal_tools/midi_timing_spike.py examples/learning/11_ode_to_joy_ratchet.yml --seconds 30
+    .venv/bin/python internal_tools/midi_timing_spike.py examples/learning/02_pachelbel.yml --seconds 30
     .venv/bin/python internal_tools/midi_timing_spike.py --sender thread                   # the same from a thread in this process, the baseline
     .venv/bin/python internal_tools/midi_timing_spike.py --sender thread --busy            # while this process renders the song over and over, as the tracker draws
     .venv/bin/python internal_tools/midi_timing_spike.py --port "IAC Driver Bus 1"         # send to a real port as well, to hear it

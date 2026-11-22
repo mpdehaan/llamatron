@@ -7,8 +7,8 @@ import unittest
 
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.generators.arp.generator import Arp, ChordOrder
-from llamatron.engine.generators.auto_ratchet.generator import AutoRatchet
 from llamatron.engine.generators.base import ClipGenerator
+from llamatron.engine.generators.timing.generator import Shorten
 from llamatron.model.values.chord import Chord, ChordType
 from llamatron.model.values.note import Note, NoteName, Rest
 from llamatron.model.values.scale import Scale, ScaleType
@@ -26,8 +26,11 @@ SCALE = Scale(root=Note(name='C', octave_number=0, length=QUARTER), typ=ScaleTyp
 # Names the tests give to their own things, and other values they use.
 R = 'R'
 C4_C4 = 'C4 C4'
-D4_D4 = 'D4 D4'
-C4_C4_E4_E4_G4_G4_C4_C4 = 'C4 C4 E4 E4 G4 G4 C4 C4'
+C4_R = 'C4 R'
+D4_R = 'D4 R'
+C4_R_E4_R_G4_R_C4_R = 'C4 R E4 R G4 R C4 R'
+# Half of each note starting on a quarter note plays, the rest a rest.
+HALF_SHORTENED = 50
 CLIP = 'clip'
 RIFF = 'Riff'
 C4_E4_G4_C4_E4_G4_C4_E4 = 'C4 E4 G4 C4 E4 G4 C4 E4'
@@ -45,6 +48,11 @@ C4_D4 = 'C4 D4'
 C4_D4_R_C4 = 'C4 D4 R C4'
 C4_E4_C4_E4 = 'C4 E4 C4 E4'
 NOT_AN_ORDER = 'UP'
+
+
+def shortened():
+    """Return a Shorten whose every quarter note's step is on, playing half of each note."""
+    return Shorten(steps=[True], step=Fraction(1, 4), shorten=HALF_SHORTENED)
 
 
 def names(clip):
@@ -70,17 +78,17 @@ class TestClipGenerator(unittest.TestCase):
         self.assertEqual(result.get_notes(), [D4, C4])
 
     def test_one_generator_can_be_reused(self):
-        ratchet = AutoRatchet([2])
-        self.assertEqual(names(ratchet.generate(Clip(notes=[C4]))), C4_C4)
-        self.assertEqual(names(ratchet.generate(Clip(notes=[D4]))), D4_D4)
+        shorten = shortened()
+        self.assertEqual(names(shorten.generate(Clip(notes=[C4]))), C4_R)
+        self.assertEqual(names(shorten.generate(Clip(notes=[D4]))), D4_R)
 
     def test_generators_can_be_chained(self):
         clip = Clip(notes=[C_MAJOR_WHOLE])
-        result = AutoRatchet([2]).generate(Arp(step=QUARTER).generate(clip))
-        self.assertEqual(names(result), C4_C4_E4_E4_G4_G4_C4_C4)
+        result = shortened().generate(Arp(step=QUARTER).generate(clip))
+        self.assertEqual(names(result), C4_R_E4_R_G4_R_C4_R)
 
     def test_every_generator_leaves_the_original_unchanged(self):
-        for generator in [AutoRatchet([2]), Arp(step=QUARTER)]:
+        for generator in [shortened(), Arp(step=QUARTER)]:
             with self.subTest(generator=type(generator).__name__):
                 original = Clip(notes=[C_MAJOR, Rest(QUARTER)], length=1)
                 generator.generate(original)
@@ -88,7 +96,7 @@ class TestClipGenerator(unittest.TestCase):
                 self.assertEqual(original.get_length(), 1)
 
     def test_every_generator_makes_a_new_clip_and_keeps_the_details(self):
-        for generator in [AutoRatchet([2]), Arp(step=QUARTER)]:
+        for generator in [shortened(), Arp(step=QUARTER)]:
             with self.subTest(generator=type(generator).__name__):
                 original = Clip(name=RIFF, notes=[C_MAJOR], scale=SCALE, length=1)
                 result = generator.generate(original)
@@ -98,7 +106,7 @@ class TestClipGenerator(unittest.TestCase):
                 self.assertIs(result.get_scale(), SCALE)
 
     def test_every_generator_rejects_anything_but_a_clip(self):
-        for generator in [AutoRatchet([2]), Arp(step=QUARTER)]:
+        for generator in [shortened(), Arp(step=QUARTER)]:
             for value in [None, CLIP, [C4], C4]:
                 with self.subTest(generator=type(generator).__name__, value=value):
                     with self.assertRaises(ValueError):

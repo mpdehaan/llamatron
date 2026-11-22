@@ -11,7 +11,7 @@ from fractions import Fraction
 import pathlib
 import unittest
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators import arp as arp_plugin, phrasing as phrasing_plugin
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.migrations import migrated
@@ -110,11 +110,11 @@ class TestLists(unittest.TestCase):
         self.assertEqual(song.get_scenes()[0].get_clip_slot(song_testing.LEAD).get_chain_names(), [song_testing.X])
 
     def test_two_generators_of_different_kinds_with_one_name_are_told_apart_and_their_chain_follows(self):
-        data = as_setlist(old_lead(arps={SHARED: {}}, auto_ratchets={SHARED: {'counts': [2]}}, chains={song_testing.X: [{arp_plugin.NAME: SHARED}, {auto_ratchet_plugin.NAME: SHARED}]}))
+        data = as_setlist(old_lead(arps={SHARED: {}}, phrasings={SHARED: {}}, chains={song_testing.X: [{arp_plugin.NAME: SHARED}, {phrasing_plugin.NAME: SHARED}]}))
         setlist, conversion = read_migrated(data)
         renamed = SHARED + '-2'
-        self.assertEqual(conversion.get_renames(), [(auto_ratchet_plugin.NAME, SHARED, renamed)])
-        self.assertEqual([tuple(step) for step in setlist.get_chain(song_testing.X).get_steps()], [(arp_plugin.NAME, SHARED), (auto_ratchet_plugin.NAME, renamed)])
+        self.assertEqual(conversion.get_renames(), [(phrasing_plugin.NAME, SHARED, renamed)])
+        self.assertEqual([tuple(step) for step in setlist.get_chain(song_testing.X).get_steps()], [(arp_plugin.NAME, SHARED), (phrasing_plugin.NAME, renamed)])
 
     def test_an_old_file_with_values_out_of_range_is_moved_then_corrected(self):
         setlist, corrections = Setlist.read_file_corrected(str(OUT_OF_RANGE_BEFORE_LISTS))

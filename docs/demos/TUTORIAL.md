@@ -13,7 +13,6 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Ties](#tie): `08_tie.yml`
 - [Grooves](#groove): `09_groove.yml`
 - [Directions](#mtn_king_direction): `10_mtn_king_direction.yml`
-- [Ratchets](#ode_to_joy_ratchet): `11_ode_to_joy_ratchet.yml`
 - [Arpeggiator](#sailor_arpeggiator): `12_sailor_arpeggiator.yml`
 - [Glide and Shorten](#acid_glide): `14_acid_glide.yml`
 - [Articulate](#acid_articulate): `15_acid_articulate.yml`
@@ -198,9 +197,9 @@ can hear how the track's choice wins over the scene's, which wins over the song'
 
 [`examples/learning/09_groove.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/09_groove.yml) · G minor · 130 BPM · 1:51 · 5 scenes · 5 tracks
 
-| chords | arps | ratchets | chains | grooves |
-| :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/AUTORATCHET.md) | [✓](../generators/CHAIN.md) | [✓](../GROOVES.md) |
+| chords | arps | chains | grooves |
+| :---: | :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) | [✓](../GROOVES.md) |
 <!-- end of the generated summary of 09_groove -->
 
 <a id="mtn_king_direction"></a>
@@ -215,20 +214,6 @@ forward and the two reverses to pendulum, random and brownian. The demo also sho
 | :---: |
 | [✓](../PATTERNS.md#play-directions) |
 <!-- end of the generated summary of 10_mtn_king_direction -->
-
-<a id="ode_to_joy_ratchet"></a>
-## Ratchets: `11_ode_to_joy_ratchet.yml`
-
-The first line of Ode to Joy, slowed down to long notes, and then chopped up. The scenes named
-Ratchet use a pattern's own Ratchet, Ratchet offset and Probability rows. The scenes named
-AutoRatchet leave the pattern alone and do the chopping in a chain instead.
-
-[`examples/learning/11_ode_to_joy_ratchet.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/11_ode_to_joy_ratchet.yml) · D major · 144 BPM · 4:00 · 18 scenes · 1 tracks
-
-| chords | ratchets | chains | probability |
-| :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#glide-and-probability) |
-<!-- end of the generated summary of 11_ode_to_joy_ratchet -->
 
 <a id="sailor_arpeggiator"></a>
 ## Arpeggiator: `12_sailor_arpeggiator.yml`
@@ -312,13 +297,13 @@ hear it.
 ## Chains: `17_complex_gifts_chain.yml`
 
 Simple Gifts on a single track, growing from the plain tune into triads, then synthwave, then happy
-metal, using only five patterns and a chain for each scene. The demo shows that a chain runs its steps in order, so an arpeggiator followed by an AutoRatchet sounds different from the other way round.
+metal, using a few patterns and a chain for each scene. The demo shows that a chain runs its steps in order, each working on what the one before made.
 
 [`examples/learning/17_complex_gifts_chain.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/17_complex_gifts_chain.yml) · A major · 120 BPM · 2:40 · 10 scenes · 1 tracks
 
 | chords | arps | ratchets | chains |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/AUTORATCHET.md) | [✓](../generators/CHAIN.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) |
 <!-- end of the generated summary of 17_complex_gifts_chain -->
 
 <a id="techno_morph"></a>

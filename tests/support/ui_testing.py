@@ -15,10 +15,9 @@ import unittest
 from unittest import mock
 
 from llamatron.caching.memory import Memory
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
+from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
-from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.engine.generators.chords import model as chords_model
 from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
 from llamatron.engine.generators.hocket.model import HocketSetting
@@ -73,7 +72,6 @@ QUIET_VALUE = '.'
 CHROMATIC_SCALE = 'all'
 
 # Names the tests give to their own things, and other values they use.
-ROLLS = 'rolls'
 # A drift of the test song's, which only changes loudness, slightly, so that it changes no test's notes.
 SWAY = 'sway'
 SHAPED = 'shaped'
@@ -123,7 +121,6 @@ def a_song(*, path=None):
     """Return a Document holding a set of one song with a few patterns, two tracks, a chain and two scenes."""
     data = new_setlist()
     song = data[Section.SONGS][names_text.MSG_DEFAULT_SONG_NAME]
-    data[auto_ratchet_plugin.SECTION] = {ROLLS: {AutoRatchetSetting.COUNTS: [1, 4]}}
     data[drift_plugin.SECTION] = {SWAY: {DRIFT_SOFTER: -1}}
     # A shape generator of each kind, which no chain names, so that their pages have something to show.
     # A Chords generator in each mode: Progression, Voicing and Follow Progression.
@@ -148,7 +145,7 @@ def a_song(*, path=None):
     }
     song[Section.TRACKS] = {LEAD: {}, DRUMS: {}}
     data[arp_plugin.SECTION] = {UP_ARP: {ArpSetting.STEP: EIGHTH, ArpSetting.ORDER: written_name(ChordOrder.UP)}}
-    data[Section.CHAINS] = {NAMED: [{arp_plugin.NAME: UP_ARP}, {auto_ratchet_plugin.NAME: ROLLS}], EMPTY: []}
+    data[Section.CHAINS] = {NAMED: [{arp_plugin.NAME: UP_ARP}, {timing_plugin.NAME: LOOSE}], EMPTY: []}
     song[Section.SCENES] = [
         {SceneSetting.NAME: ONE, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: TUNE}, DRUMS: {ClipSlotSetting.PATTERN: BEAT, ClipSlotSetting.LOOP: True}}},
         {SceneSetting.NAME: TWO, SceneSetting.TRACKS: {}},
@@ -335,9 +332,6 @@ class UITest(unittest.IsolatedAsyncioTestCase):
     def arp(self, name):
         return self.document.get_setlist().get_generator_settings(kind=arp_plugin.NAME, name=name)
 
-    def auto_ratchet(self, name):
-        return self.document.get_setlist().get_generator_settings(kind=auto_ratchet_plugin.NAME, name=name)
-
     def chain_steps(self, name):
         return self.document.get_setlist().get_chain(name).get_steps()
 
@@ -354,7 +348,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
                 self.document.change_pattern(self.document.pattern(name).set_value, row=row, step=step, value=value)
 
     def delete_every_generator(self):
-        """Delete every arp and AutoRatchet, which the chains must have stopped using first."""
+        """Delete every generator, which the chains must have stopped using first."""
         song = self.document.song()
         for kind, section in generator_plugins.sections_by_name().items():
             for name in song.get_setlist().get_generator_names(kind):

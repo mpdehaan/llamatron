@@ -36,7 +36,6 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
     BYPASS_SETTING = file_format.BYPASS_WHEN
     GENERATOR = None
     SETTINGS = {}
-    REQUIRED = []
     # What turns a setting as the file writes it into what the generator takes, for the settings where the two differ.
     TAKEN_AS = {}
     # Whether its generators may add to the registers as they play, which a plugin whose settings answer adds_to_registers() says.
@@ -83,15 +82,12 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
 
     @classmethod
     def check_data(cls, data):
-        """Raise InvalidValue unless data holds only settings this generator has, each one right, and every one it needs. Reading a
+        """Raise InvalidValue unless data holds only settings this generator has, each one right. Reading a
         file passes over the names it doesn't know first (from_data), so a name refused here is one the program itself handed over."""
         if not isinstance(data, dict):
             raise InvalidValue(errors.ERR_NOT_SETTINGS.format(value=data))
         refuse_unknown(data=data, allowed=cls.SETTINGS)
         check_settings(settings=cls.SETTINGS, data=data)
-        for name in cls.REQUIRED:
-            if name not in data:
-                raise InvalidValue(errors.ERR_NEEDS_SETTING.format(name=name))
 
     def to_data(self):
         return own_copy(self._settings)

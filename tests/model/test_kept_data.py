@@ -17,7 +17,7 @@ makes, and the items whose data is the same are the very objects they were.
 import copy
 import unittest
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators import arp as arp_plugin, timing as timing_plugin
 from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.setlist_reader import set_file_data
@@ -162,7 +162,7 @@ class TestKeptData(unittest.TestCase):
         self.assertEqual(after, self.setlist.to_data())
         self.assertIsNot(after[Section.PATTERNS][ui_testing.TUNE], before[Section.PATTERNS][ui_testing.TUNE])
         self.assertIs(after[Section.PATTERNS][ui_testing.OTHER], before[Section.PATTERNS][ui_testing.OTHER])
-        self.assertIs(after[auto_ratchet_plugin.SECTION][ui_testing.ROLLS], before[auto_ratchet_plugin.SECTION][ui_testing.ROLLS])
+        self.assertIs(after[timing_plugin.SECTION][ui_testing.LOOSE], before[timing_plugin.SECTION][ui_testing.LOOSE])
         name = self.document.get_current_song_name()
         scenes_before = before[Section.SONGS][name][Section.SCENES]
         scenes_after = after[Section.SONGS][name][Section.SCENES]

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """What a page that shows one named thing of the set shares: which thing it shows, whether the thing is still there, and renaming it.
 
-The pattern, chain and groove editors, the arpeggiator and AutoRatchet editors, the offsets
+The pattern, chain and groove editors, the generators' editors, the offsets
 editor, the Scale page and the track editor each show one item of a section by its name. Each
 kept the name and its crumbs, asked whether an undo had taken the item away, and renamed it, in
 its own words. They descend from three different pages (Page, ListPage and FieldPage), so what

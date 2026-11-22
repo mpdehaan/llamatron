@@ -11,7 +11,7 @@ from typing import NamedTuple
 import unittest
 
 from llamatron.engine.clips.clip import Clip
-from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, shapes as shapes_plugin
+from llamatron.engine.generators import chords as chords_plugin, shapes as shapes_plugin
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.generators.chords import model as chords_model
 from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
@@ -106,14 +106,6 @@ class TestTimeFollowingGenerators(unittest.TestCase):
 
 
 class TestStateKeepingGenerators(unittest.TestCase):
-
-    def test_an_auto_ratchet_carries_its_count_on(self):
-        settings = {'counts': [1, 2, 3]}
-        fresh = played(two_scenes(section=auto_ratchet_plugin.SECTION, kind=auto_ratchet_plugin.NAME, settings=settings))
-        carried = played(two_scenes(section=auto_ratchet_plugin.SECTION, kind=auto_ratchet_plugin.NAME, settings=settings, restart=Restart.WHOLE_SONG))
-        self.assertEqual(fresh[1], fresh[0])
-        # Eight notes used up counts 1 2 3 1 2 3 1 2, so the second scene starts on 3.
-        self.assertEqual(carried[1][0].length * 3, fresh[0][0].length)
 
     def test_voice_leading_voices_a_clips_first_chord_near_the_chord_it_was_handed(self):
         chord = Clip(notes=[Chord([Note(name=name, octave_number=5, length=QUARTER) for name in (NoteName.C, NoteName.E, NoteName.G)])])

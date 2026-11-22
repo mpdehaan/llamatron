@@ -7,10 +7,11 @@
 from fractions import Fraction
 import unittest
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
-from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
+from llamatron.engine.generators.chords import model as chords_model
+from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
 from llamatron.engine.timing import sounding
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
@@ -34,7 +35,10 @@ NO_ARP_CALLED = 'no arp called'
 UNKNOWN_GENERATOR = 'unknown generator'
 SLOW = 'slow'
 TWICE = 'twice'
-SOME = 'some'
+# A Chords generator moving every note to chord II, one note of the scale up, and what the test pattern then plays.
+UP_A_STEP = {ChordsSetting.MODE: chords_model.PROGRESSION, ProgressionSetting.CHORDS: [2]}
+MOVED_ONCE = [50, 53]
+MOVED_TWICE = [52, 55]
 PATTERN_C = 'c'
 PAINT = 'paint'
 BELLS = 'bells'
@@ -47,24 +51,24 @@ class TestChains(unittest.TestCase):
 
     def song(self, chains):
         return render_data(with_parts(
-            arps={SLOW: {ArpSetting.STEP: HALF}}, auto_ratchets={TWICE: {AutoRatchetSetting.COUNTS: [2]}, SOME: {AutoRatchetSetting.COUNTS: [1, 3]}},
+            arps={SLOW: {ArpSetting.STEP: HALF}}, **{chords_plugin.SECTION: {TWICE: UP_A_STEP}},
             chains=chains,
             scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [song_testing.X]}}}],
         ))
 
     def test_a_clip_slot_can_use_a_chain(self):
-        song = self.song({song_testing.X: [{auto_ratchet_plugin.NAME: TWICE}]})
-        self.assertEqual(pitches(clip(song=song, scene=1, track=song_testing.LEAD)), [48, 48, 52, 52])
+        song = self.song({song_testing.X: [{chords_plugin.NAME: TWICE}]})
+        self.assertEqual(pitches(clip(song=song, scene=1, track=song_testing.LEAD)), MOVED_ONCE)
 
-    def test_a_chain_applies_its_steps_in_order(self):
-        song = self.song({song_testing.X: [{auto_ratchet_plugin.NAME: TWICE}, {auto_ratchet_plugin.NAME: SOME}]})
-        self.assertEqual(pitches(clip(song=song, scene=1, track=song_testing.LEAD)), [48] * 4 + [52] * 4)
+    def test_a_chain_applies_every_step_each_to_what_the_one_before_made(self):
+        song = self.song({song_testing.X: [{chords_plugin.NAME: TWICE}, {chords_plugin.NAME: TWICE}]})
+        self.assertEqual(pitches(clip(song=song, scene=1, track=song_testing.LEAD)), MOVED_TWICE)
 
     def test_settings_must_be_in_their_own_section(self):
         with self.assertRaisesRegex(SongFileError, NO_ARP_CALLED):
             self.song({song_testing.X: [{arp_plugin.NAME: {ArpSetting.STEP: HALF}}]})
 
-    def test_only_arps_and_auto_ratchets_can_be_in_a_chain(self):
+    def test_only_generators_can_be_in_a_chain(self):
         for step in [BLEND, REPEATER, TAKE_RHYTHM, HOLD]:
             with self.subTest(step=step), self.assertRaisesRegex(SongFileError, UNKNOWN_GENERATOR):
                 self.song({song_testing.X: [{step: TWICE}]})
@@ -129,22 +133,22 @@ class TestArps(unittest.TestCase):
         events, _ = timed_events(clip=clip(song=render_data(data), scene=1, track=song_testing.LEAD), scale=None)
         self.assertEqual({event[3] for event in events}, {40})
 
-    def test_a_chain_can_use_a_named_auto_ratchet(self):
+    def test_a_chain_can_use_a_named_chords_generator(self):
         scene = {Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: PATTERN_D, ClipSlotSetting.CHAINS: [song_testing.X]}}}
-        data = with_parts(patterns={PATTERN_D: pat([1, HALF], [3, HALF])}, scenes=[scene], auto_ratchets={ROLLS: {AutoRatchetSetting.COUNTS: [2]}}, chains={song_testing.X: [{auto_ratchet_plugin.NAME: ROLLS}]})
-        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), [48, 48, 52, 52])
+        data = with_parts(patterns={PATTERN_D: pat([1, HALF], [3, HALF])}, scenes=[scene], chains={song_testing.X: [{chords_plugin.NAME: ROLLS}]}, **{chords_plugin.SECTION: {ROLLS: UP_A_STEP}})
+        self.assertEqual(pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD)), MOVED_ONCE)
 
     def test_named_generators_run_in_chain_order(self):
         found = self.lead(
-            arps={BELLS: {ArpSetting.STEP: HALF}}, auto_ratchets={ROLLS: {AutoRatchetSetting.COUNTS: [2]}},
-            chains={song_testing.X: [{arp_plugin.NAME: BELLS}, {auto_ratchet_plugin.NAME: ROLLS}]},
+            arps={BELLS: {ArpSetting.STEP: HALF}}, **{chords_plugin.SECTION: {ROLLS: UP_A_STEP}},
+            chains={song_testing.X: [{arp_plugin.NAME: BELLS}, {chords_plugin.NAME: ROLLS}]},
         )
-        self.assertEqual(pitches(found), [48, 48, 52, 52])
+        self.assertEqual(pitches(found), MOVED_ONCE)
 
     def test_unknown_names_and_types_are_refused(self):
         for parts in [
             {Section.CHAINS: {song_testing.X: [{arp_plugin.NAME: NOPE}]}},
-            {Section.CHAINS: {song_testing.X: [{auto_ratchet_plugin.NAME: NOPE}]}},
+            {Section.CHAINS: {song_testing.X: [{chords_plugin.NAME: NOPE}]}},
             {Section.CHAINS: {song_testing.X: [{HOLD: {LENGTH: '1/128'}}]}},
             {PAINT: [{ClipSlotSetting.CHAINS: [song_testing.X], Section.TRACKS: [song_testing.LEAD], Section.SCENES: [1]}]},
         ]:

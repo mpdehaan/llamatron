@@ -7,10 +7,11 @@ InvalidValue when it's wrong, and leaves the object as it was."""
 
 import unittest
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators import arp as arp_plugin, timing as timing_plugin
 from llamatron.engine.generators.arp import model as arp_settings
 from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings
-from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting, AutoRatchetSettings
+from llamatron.engine.generators.timing import parts as timing_parts
+from llamatron.engine.generators.timing.model import TimingSettings
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import clip_slot, setlist as setlist_values
 from llamatron.model.objects.chain import Chain
@@ -28,7 +29,7 @@ from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 
-# The song the tests build: two patterns, two tracks, a scale, an arp, an AutoRatchet and a chain.
+# The song the tests build: two patterns, two tracks, a scale, an arp, a Timing generator and a chain.
 TUNE = 'tune'
 ANSWER = 'answer'
 LEAD = 'lead'
@@ -87,10 +88,10 @@ def song_with_everything():
     setlist.add_item(section=Section.PATTERNS, name=TUNE, item=Pattern(steps=STEPS, rows={Row.DEGREE: [DEGREE] * STEPS}))
     setlist.add_item(section=Section.PATTERNS, name=ANSWER, item=Pattern(steps=STEPS, rows={}))
     setlist.add_item(section=arp_plugin.SECTION, name=UP, item=ArpSettings.new())
-    setlist.add_item(section=auto_ratchet_plugin.SECTION, name=ROLLS, item=AutoRatchetSettings.new())
+    setlist.add_item(section=timing_plugin.SECTION, name=ROLLS, item=TimingSettings.new())
     chain = Chain([])
     chain.add_step(kind=arp_plugin.NAME, name=UP, setlist=setlist)
-    chain.add_step(kind=auto_ratchet_plugin.NAME, name=ROLLS, setlist=setlist)
+    chain.add_step(kind=timing_plugin.NAME, name=ROLLS, setlist=setlist)
     setlist.add_item(section=Section.CHAINS, name=NAMED, item=chain)
     song = Song.new(setlist=setlist)
     setlist.add_item(section=Section.SONGS, name=VERSE, item=song)
@@ -361,7 +362,7 @@ class TestChain(SetterTestCase):
         self.chain.set_step(place=FIRST, kind=arp_plugin.NAME, name=UP, setlist=self.song.get_setlist())
         self.assertEqual([step.name for step in self.chain.get_steps()], [UP, UP])
         self.assertTrue(self.chain.names_item(section=arp_plugin.SECTION, name=UP))
-        self.assertFalse(self.chain.names_item(section=auto_ratchet_plugin.SECTION, name=ROLLS))
+        self.assertFalse(self.chain.names_item(section=timing_plugin.SECTION, name=ROLLS))
 
 
 class TestRegister(SetterTestCase):
@@ -405,9 +406,9 @@ class TestGeneratorSettings(SetterTestCase):
         self.arp.remove_cell(FIRST)
         self.assertIsNone(self.arp.get_offsets())
 
-    def test_auto_ratchet_counts_are_checked(self):
-        rolls = AutoRatchetSettings.new()
-        self.assertRefused(rolls, rolls.set_setting, name=AutoRatchetSetting.COUNTS, value=NOT_A_NAME)
+    def test_a_timing_generators_row_of_steps_is_checked(self):
+        rolls = TimingSettings.new()
+        self.assertRefused(rolls, rolls.set_setting, name=timing_parts.steps_of(timing_parts.RUSH), value=NOT_A_NAME)
 
 
 class TestSong(SetterTestCase):

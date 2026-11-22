@@ -130,7 +130,6 @@ class ArpSettings(HasCells, GeneratorSettings):
         settings_base.RESTART_SETTING,
     )
     # A step left out is "(pattern)": the step size of the pattern the clip plays.
-    REQUIRED = []
     TAKEN_AS = {ArpSetting.STEP: time_length, ArpSetting.ORDER: _order, ArpSetting.OCTAVE_JUMP: _octave_jump}
 
     def _with_defaults(self, *, values, default_seed, default_step, bar):

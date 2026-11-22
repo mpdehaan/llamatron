@@ -51,11 +51,6 @@ def move_key(page):
     return page.bind(page.KEYS.MOVE, action=page.start_moving)
 
 
-def counts_text(counts):
-    """Return an AutoRatchet's counts as typed, like 1 1 4, or nothing when it has none yet."""
-    return drawing.SPACE.join(str(count) for count in counts or [])
-
-
 def play_through(*, page, play, what, said):
     """Start real-time playback through the page's transport: tell why nothing can play if so, and otherwise play and say on the status line what started, or that what (the scene or clip, named) starts at the next bar."""
     problem = page.app.transport.problem()

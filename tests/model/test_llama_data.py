@@ -58,7 +58,7 @@ class TestLlamaData(unittest.TestCase):
 
     def test_every_kind_of_object_in_a_song_file_is_one(self):
         names = {subclass.__name__ for subclass in every_subclass()}
-        for name in ['Setlist', 'Song', 'Scene', 'ClipSlot', 'Track', 'Pattern', 'NamedScale', 'Chain', 'ArpSettings', 'AutoRatchetSettings']:
+        for name in ['Setlist', 'Song', 'Scene', 'ClipSlot', 'Track', 'Pattern', 'NamedScale', 'Chain', 'ArpSettings', 'TimingSettings']:
             with self.subTest(name=name):
                 self.assertIn(name, names)
 

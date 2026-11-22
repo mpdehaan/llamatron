@@ -367,10 +367,6 @@ class ChainStatementsPage(FieldPage):
     """A chain's statements about the registers, with the settings keys alone."""
 
 
-class AutoRatchetEditor(FieldPage):
-    """The AutoRatchet's editor, with the settings keys alone."""
-
-
 class HocketEditor(FieldPage):
     """A Hocket's editor, with the settings keys alone."""
 

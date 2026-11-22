@@ -50,6 +50,13 @@ patterns:
     gate: [1/8, ~, ~, 1/8, ~, ~, 1/8, ~, ~, ~, 1/8, ~, 1/8, ~, 1/8, ~]
     dot: [d, ~, ~, d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, ~, 5, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~]
+  - name: b tumble
+    steps: 64
+    degree: [1, ~, ~, 3, ~, ~, 1, ~, ~, ~, 6, ~, 1, ~, 7, ~, 1, ~, ~, 3, ~, ~, 1, ~, ~, ~, 6, ~, 1, ~, 7, ~, 1, ~, ~, 3, ~, ~, 1, ~, ~, ~, 6, ~, 1, ~, 7, ~, 1, ~, ~, 3, ~, ~, 1, ~, ~, ~, 6, ~, 1, ~, 7, ~]
+    gate: [1/8, ~, ~, 1/8, ~, ~, 1/8, ~, ~, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, ~, 1/8, ~, ~, 1/8, ~, ~, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, ~, 1/8, ~, ~, 1/8, ~, ~, ~, 1/8, ~, 1/8, ~, 1/8, ~, 1/8, ~, ~, 1/8, ~, ~, 1/8, ~, ~, ~, 1/8, ~, 1/8, ~, 1/8, ~]
+    dot: [d, ~, ~, d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, d, ~, ~, d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, d, ~, ~, d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, d, ~, ~, d, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, 5, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, 5, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, 5, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, 5, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 4, ~]
+    ratchet: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, ~]
   - name: b_up
     steps: 16
     degree: [3, ~, ~, 5, ~, ~, 3, ~, ~, ~, 1, ~, 3, ~, 2, ~]
@@ -65,10 +72,6 @@ patterns:
     octave: [~, 3, ~, 3]
     velocity: [~, 110, ~, 80]
     probability: [~, 100, ~, 70]
-
-generators:
-  - { name: tumble, kind: auto_ratchet, counts: [1, 1, 1, 1, 1, 1, 1, 4] }
-  - { name: tumble ratchet, kind: chain, generators: [{ name: tumble }] }
 
 instruments:
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
@@ -144,7 +147,7 @@ songs:
           - { track: hat, pattern: hat_loose, loop: true }
           - { track: clap, pattern: clap, loop: true }
           - { track: bass, pattern: bass, loop: true }
-          - { track: lead, pattern: b, generators: [{ name: tumble ratchet }], loop: true }
+          - { track: lead, pattern: b tumble, loop: true }
       - name: strip
         tempo: 132
         tempo_out_end: 100

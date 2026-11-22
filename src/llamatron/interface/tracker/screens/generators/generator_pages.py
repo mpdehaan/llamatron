@@ -7,7 +7,6 @@ from typing import NamedTuple
 
 from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.interface.tracker.screens.generators.arp_editor import ArpEditor
-from llamatron.interface.tracker.screens.generators.auto_ratchet_editor import AutoRatchetEditor
 from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
 from llamatron.interface.tracker.screens.generators.hocket_editor import HocketEditor
 from llamatron.interface.tracker.screens.generators.musician_editor import MusicianEditor
@@ -34,7 +33,7 @@ def _in_shown_order(listings):
 
 # The page that edits a generator of each kind, by the section of the set that holds them, which each editor names.
 EDITORS = {editor.SECTION: editor for editor in (
-    ArpEditor, AutoRatchetEditor, DriftEditor, HocketEditor, MusicianEditor,
+    ArpEditor, DriftEditor, HocketEditor, MusicianEditor,
 )}
 
 

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The pages that show one named thing all keep its name, follow its rename and notice when it is gone the same way (interface/tracker/screens/shared/shows_named_item.py).
 
-The same checks run on each of them: the pattern, chain, groove, arpeggiator, AutoRatchet and
+The same checks run on each of them: the pattern, chain, groove and arpeggiator editors, the page drawn from a plugin's view, the
 offsets editors, the Scale page and the track editor. The key that renames from each page is
 tested with the page, so these checks call the page's rename and answer its prompt.
 """

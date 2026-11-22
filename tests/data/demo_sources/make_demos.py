@@ -128,7 +128,6 @@ DESCRIPTIONS = {
     'hocket_shanty': 'a hocketed melody',
     'techno_morph': 'a minimal techno groove, morphing',
     'pachelbel': "Pachelbel's Canon",
-    'ode_to_joy_ratchet': 'long notes, ratcheted',
     'scale': 'every scale, run up and down',
 }
 
@@ -143,11 +142,6 @@ EDITING = {
         'Keep one arpeggiator per chain, with the chain named after it, and scene names that say',
         'what changed. Up to about 30 scenes is fine. The single D at the end of the chords is',
         'there on purpose, to show what offsets and octave ranges do to a single note.',
-    ],
-    'ode_to_joy_ratchet': [
-        'Scenes that use the pattern rows start with "Ratchet", and scenes that use a chain start',
-        'with "AutoRatchet". "AutoRatchet 2, same as Ratchet 2" sounds the same as "Ratchet 2" on',
-        'purpose. Avoid religious tunes here, which is why it uses Ode to Joy.',
     ],
     'complex_gifts_chain': [
         'Keep it to one track, with chains doing the work. It should stay musical, moving from a',
@@ -374,95 +368,6 @@ def arpeggiator():
 
 
 # ---------------------------------------------------------------------------------------------
-# Ode to Joy, for ratchets. From the flutetunes.com transcription, D major at 144 BPM, with every
-# note twice as long so that the ratchets have room.
-
-ODE = [('F#3', '1/2')] * 2 + [('G3', '1/2'), ('A3', '1/2'), ('A3', '1/2'), ('G3', '1/2'), ('F#3', '1/2'), ('E3', '1/2'),
-                              ('D3', '1/2'), ('D3', '1/2'), ('E3', '1/2'), ('F#3', '1/2'), ('F#3', '3/4'), ('E3', '1/4'), ('E3', 1)]
-
-
-def ratchet():
-    root, kind = 'D', 'major'
-
-    def ode(**rows):
-        return pattern(with_rows(ODE, **rows) if rows else ODE, root, kind)
-
-    rested = []
-    for note, duration in ODE:
-        rested += [(note, F(duration) / 2), (None, F(duration) / 2)]
-    patterns = {
-        'long_notes': ode(),
-        'ratchet_2': ode(ratchet=2),
-        'ratchet_3': ode(ratchet=3),
-        'ratchet_4': ode(ratchet=4),
-        'ratchet_mixed': ode(ratchet=[1, 2, 3, 4]),
-        'ratchet_building': ode(ratchet=[1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 4, 6, 8, 16]),
-        'ratchet_chords': ode(ratchet=2, chord=3),
-        'ratchet_offset_up': ode(ratchet=4, ratchet_offset=1),
-        'ratchet_offset_down': ode(ratchet=4, ratchet_offset=-1),
-        'ratchet_offset_thirds': ode(ratchet=3, ratchet_offset=2),
-        'ratchet_probability': ode(ratchet=4, probability=60),
-        'long_notes_with_rests': pattern(rested, root, kind),
-        'long_chords': ode(chord=3),
-    }
-    auto_ratchets = {
-        'two': {'counts': [2]},
-        'four_three_two_one': {'counts': [4, 3, 2, 1]},
-        'every_fourth_note_rolls': {'counts': [1, 1, 1, 4]},
-        'one_then_four': {'counts': [1, 4]},
-        'three': {'counts': [3]},
-        'one_then_three': {'counts': [1, 3]},
-    }
-    chains = {name: [{'auto_ratchet': name}] for name in auto_ratchets}
-
-    def scene(name, pattern_name, chain=None):
-        clip_slot = {'pattern': pattern_name}
-        if chain:
-            clip_slot['chains'] = [chain]
-        return {'name': name, 'tracks': {'tune': clip_slot}}
-
-    scenes = [
-        scene('Long notes', 'long_notes'),
-        scene('Ratchet 2', 'ratchet_2'),
-        scene('Ratchet 3', 'ratchet_3'),
-        scene('Ratchet 4', 'ratchet_4'),
-        scene('Ratchet 1 2 3 4, step by step', 'ratchet_mixed'),
-        scene('Ratchet building up to 16', 'ratchet_building'),
-        scene('Ratchet 2 on chords', 'ratchet_chords'),
-        scene('Ratchet offset +1 (climbing)', 'ratchet_offset_up'),
-        scene('Ratchet offset -1 (falling)', 'ratchet_offset_down'),
-        scene('Ratchet offset +2 (thirds)', 'ratchet_offset_thirds'),
-        scene('Ratchet 4 at 60% probability', 'ratchet_probability'),
-        scene('AutoRatchet 2, same as Ratchet 2', 'long_notes', 'two'),
-        scene('AutoRatchet 4 3 2 1', 'long_notes', 'four_three_two_one'),
-        scene('AutoRatchet 1 1 1 4', 'long_notes', 'every_fourth_note_rolls'),
-        scene('AutoRatchet 1 4, rests skipped', 'long_notes_with_rests', 'one_then_four'),
-        scene('AutoRatchet 3 on chords', 'long_chords', 'three'),
-        scene('AutoRatchet 1 3 over Ratchet 2', 'ratchet_2', 'one_then_three'),
-        scene('AutoRatchet 2 over Ratchet offset', 'ratchet_offset_up', 'two'),
-    ]
-    write(file_name='11_ode_to_joy_ratchet.yml', header=[
-        'Ratchet demo: long notes, and what ratcheting does to them.',
-        'Run it with: llamatron examples/learning/11_ode_to_joy_ratchet.yml --to ableton --replace',
-        '',
-        'The tune is the first line of Beethoven\'s Ode to Joy, in D major at 144 BPM as the',
-        'flutetunes.com transcription has it, with every note twice as long so it starts slow.',
-        '',
-        'Scenes named Ratchet use the pattern\'s own Ratchet rows, so each one has its own pattern:',
-        'ratchet splits a step into equal notes in the same time, ratchet_offset moves each slice',
-        'along the scale, and probability is rolled for each slice. Scenes named AutoRatchet all',
-        'use the plain long_notes pattern (or one close to it) and do the chopping in a chain, so',
-        'the pattern stays the same and only the chain changes. AutoRatchet cycles through its',
-        'counts one note or chord at a time, and rests never use one up. The last two scenes run an',
-        'AutoRatchet over a pattern that already ratchets, so it chops the slices again.',
-        '',
-        'The first AutoRatchet scene sounds the same as Ratchet 2 on purpose: the chain does to the',
-        'plain pattern what the Ratchet row does in the pattern itself.',
-    ], song=song('Ratchet demo', 144, 'D Major', {'D Major': {'root': 'D', 'type': 'major'}}, patterns,
-            {'tune': {}}, scenes, auto_ratchets=auto_ratchets, chains=chains))
-
-
-# ---------------------------------------------------------------------------------------------
 # Simple Gifts, for chains. From the flutetunes.com transcription, A major at 120 BPM: the first
 # strain, with the two-note pickup moved to the front so the pattern loops cleanly.
 
@@ -477,8 +382,7 @@ GIFTS = [
     ('B3', '1/4'), ('B3', '1/4'), ('C#4', '1/4'), ('C#4', '1/8'), ('B3', '1/8'),
     ('A3', '1/4'), ('A3', '1/8'), ('B3', '1/8'), ('A3', '1/4'),
 ]
-# One chord a bar: A A E E A A E A, with the pickup on A. Each is in half notes, so that an
-# AutoRatchet chops every one into the same note length.
+# One chord a bar: A A E E A A E A, with the pickup on A, each in half notes.
 GIFTS_CHANGES = [('A2', '1/4')] + [(root, '1/2') for root in ['A2'] * 4 + ['E2'] * 4 + ['A2'] * 4 + ['E2'] * 2] + [('A2', '1/2'), ('A2', '1/4')]
 
 
@@ -487,6 +391,7 @@ def chain():
     power = [(note, length, {'chord': 5}) for note, length in GIFTS_CHANGES]
     patterns = {
         'tune': pattern(GIFTS, root, kind),
+        'tune_doubled': pattern(with_rows(GIFTS, ratchet=2), root, kind),
         'tune_in_triads': pattern(with_rows(GIFTS, chord=3), root, kind),
         'tune_in_power_chords': pattern([(midi(note) - 12, length, {'chord': 5}) for note, length in GIFTS], root, kind),
         'changes_sevenths': pattern([(note, length, {'chord': 7}) for note, length in GIFTS_CHANGES], root, kind),
@@ -504,53 +409,36 @@ def chain():
         'octave_pedal': {'step': '1/16', 'order': 'up', 'offsets': [0, 0, 7, 0]},
         'answer_a_fifth_up': {'step': '1/32', 'order': 'up', 'offsets': [0, 4]},
     }
-    auto_ratchets = {
-        'double': {'counts': [2]},
-        'chug': {'counts': [4]},
-        'chug_with_fills': {'counts': [4, 4, 4, 8]},
-        'stutter': {'counts': [1, 1, 1, 1, 1, 1, 1, 3]},
-    }
     chains = {
         'octave_sparkle': [{'arp': 'octave_sparkle'}],
         'trill_in_thirds': [{'arp': 'trill_in_thirds'}],
-        'double': [{'auto_ratchet': 'double'}],
         'shred': [{'arp': 'shred_up'}],
         'triad_up': [{'arp': 'triad_up'}],
         'triad_wide': [{'arp': 'triad_wide'}],
-        'triad_up_then_stutter': [{'arp': 'triad_up'}, {'auto_ratchet': 'stutter'}],
         'synth_arp': [{'arp': 'synth_arp'}],
-        'synth_arp_then_stutter': [{'arp': 'synth_arp'}, {'auto_ratchet': 'stutter'}],
-        'stutter_then_synth_arp': [{'auto_ratchet': 'stutter'}, {'arp': 'synth_arp'}],
         'synth_arp_then_answer': [{'arp': 'synth_arp'}, {'arp': 'answer_a_fifth_up'}],
         'synth_arp_wide': [{'arp': 'synth_arp_wide'}],
-        'chug': [{'auto_ratchet': 'chug'}],
-        'chug_with_fills': [{'auto_ratchet': 'chug_with_fills'}],
-        'double_then_shred_down': [{'auto_ratchet': 'double'}, {'arp': 'shred_down'}],
-        'finale': [{'arp': 'octave_pedal'}, {'auto_ratchet': 'stutter'}],
+        'shred_down': [{'arp': 'shred_down'}],
+        'finale': [{'arp': 'octave_pedal'}],
     }
     plan = [
         ('Tune', 'tune', None),
         ('Tune: octave sparkle', 'tune', 'octave_sparkle'),
         ('Tune: trill in thirds', 'tune', 'trill_in_thirds'),
-        ('Tune: doubled', 'tune', 'double'),
+        ('Tune: doubled', 'tune_doubled', None),
         ('Tune: shred up', 'tune', 'shred'),
         ('Triads: tune in triads', 'tune_in_triads', None),
         ('Triads: arpeggiated', 'tune_in_triads', 'triad_up'),
         ('Triads: two octaves', 'tune_in_triads', 'triad_wide'),
-        ('Triads: arp then stutter', 'tune_in_triads', 'triad_up_then_stutter'),
+        ('Triads: arp', 'tune_in_triads', 'triad_up'),
         ('Synthwave: seventh chords', 'changes_sevenths', None),
         ('Synthwave: arp', 'changes_sevenths', 'synth_arp'),
-        ('Synthwave: arp then stutter', 'changes_sevenths', 'synth_arp_then_stutter'),
-        ('Synthwave: stutter then arp', 'changes_sevenths', 'stutter_then_synth_arp'),
         ('Synthwave: arp of an arp', 'changes_sevenths', 'synth_arp_then_answer'),
         ('Synthwave: three octaves', 'changes_sevenths', 'synth_arp_wide'),
         ('Metal: power chords', 'changes_power_chords', None),
-        ('Metal: chug', 'changes_power_chords', 'chug'),
-        ('Metal: chug with fills', 'changes_power_chords', 'chug_with_fills'),
         ('Metal: tune in power chords', 'tune_in_power_chords', None),
-        ('Metal: power tune doubled', 'tune_in_power_chords', 'double'),
-        ('Metal: double then shred down', 'tune', 'double_then_shred_down'),
-        ('Finale: octave pedal, stutter', 'tune_in_power_chords', 'finale'),
+        ('Metal: shred down', 'tune', 'shred_down'),
+        ('Finale: octave pedal', 'tune_in_power_chords', 'finale'),
     ]
     scenes = []
     for name, pattern_name, chain in plan:
@@ -568,16 +456,14 @@ def chain():
         'scene changes only the pattern and the chain. Try a bright synth for the synthwave scenes',
         'and a distorted guitar or saw lead for the metal ones.',
         '',
-        'There are only five patterns: the tune, the tune in triads, the tune in power chords, and',
-        'the chord changes as seventh chords and as power chords. The changes are written in half',
-        'notes, so that an AutoRatchet chops every chord into the same length (4 makes eighths).',
+        'There are six patterns: the tune, the tune with every note a Ratchet of 2, the tune in',
+        'triads, the tune in power chords, and the chord changes as seventh chords and as power chords.',
         '',
-        'A chain runs its steps in order, and each step works on what the one before made. So',
-        '"arp then stutter" ratchets the arpeggio\'s notes, while "stutter then arp" arpeggiates each',
-        'ratcheted chord from the start, which sounds different. "Arp of an arp" puts a second',
-        'arpeggiator after the first: its offsets turn each single note into a note and a fifth.',
+        'A chain runs its steps in order, and each step works on what the one before made. "Arp of',
+        'an arp" puts a second arpeggiator after the first: its offsets turn each single note into a',
+        'note and a fifth.',
     ], song=song('Chain demo', 120, 'A Major', {'A Major': {'root': 'A', 'type': 'major'}}, patterns,
-            {'gifts': {}}, scenes, arps=arps, auto_ratchets=auto_ratchets, chains=chains))
+            {'gifts': {}}, scenes, arps=arps, chains=chains))
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1056,7 +942,6 @@ def main(*, output=OUTPUT):
     OUTPUT = output
     scale()
     arpeggiator()
-    ratchet()
     chain()
     hocket_shanty()
     arrangement_shanty()

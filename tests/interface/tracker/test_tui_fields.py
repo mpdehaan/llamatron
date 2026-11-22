@@ -19,7 +19,6 @@ from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
 from llamatron.interface.tracker.screens.generators.arp_editor import ArpEditor
-from llamatron.interface.tracker.screens.generators.auto_ratchet_editor import AutoRatchetEditor
 from llamatron.interface.tracker.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
 from llamatron.interface.tracker.screens.generators.hocket_editor import HocketEditor
@@ -241,7 +240,7 @@ class FieldPagesTest(UITest):
             self.document.add_instrument(AN_INSTRUMENT)
         return [
             SongPage(holder), ScenePage(holder=holder, index=FIRST_SCENE), ClipPage(holder=holder, index=FIRST_SCENE, track=ui_testing.LEAD), ArpEditor(holder=holder, name=ui_testing.UP_ARP),
-            TrackEditor(holder=holder, name=ui_testing.LEAD), RegistersPage(holder), DrawsPage(holder), FilePage(holder), AutoRatchetEditor(holder=holder, name=ui_testing.ROLLS), DriftEditor(holder=holder, name=ui_testing.SWAY),
+            TrackEditor(holder=holder, name=ui_testing.LEAD), RegistersPage(holder), DrawsPage(holder), FilePage(holder), DriftEditor(holder=holder, name=ui_testing.SWAY),
             PluginEditor(holder=holder, name=ui_testing.POP, section=chords_plugin.SECTION), PluginEditor(holder=holder, name=ui_testing.SMOOTH, section=chords_plugin.SECTION), HocketEditor(holder=holder, name=ui_testing.TRADE), PluginEditor(holder=holder, name=ui_testing.FOLLOWS, section=chords_plugin.SECTION), PluginEditor(holder=holder, name=ui_testing.BREATHES, section=phrasing_plugin.SECTION), MusicianEditor(holder=holder, name=ui_testing.STRUMMER), PluginEditor(holder=holder, name=ui_testing.PICKED, section=guitarify_plugin.SECTION),
             PluginEditor(holder=holder, name=ui_testing.LOOSE, section=timing_plugin.SECTION),
             PluginEditor(holder=holder, name=ui_testing.SHAPED, section=shapes_plugin.SECTION),
@@ -365,7 +364,7 @@ class NumbersStopAtTheirEnds:
 
 
 # The settings pages FieldPagesTest tours.
-PAGES_TOURED = 23
+PAGES_TOURED = 22
 
 
 class TestNumbersStopAtTheirEndsOnTheSongPage(NumbersStopAtTheirEnds, FieldPagesTest):

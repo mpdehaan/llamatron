@@ -433,7 +433,6 @@ MSG_ORDER_LABEL = 'Order'
 MSG_OCTAVE_RANGE_LABEL = 'Octave range'
 MSG_OCTAVE_JUMP_LABEL = 'Octave jump'
 MSG_OFFSETS_LABEL = 'Offsets'
-MSG_COUNTS_LABEL = 'Counts'
 MSG_STEP_ROW_LABEL = ' Step'
 MSG_OFFSET_ROW_LABEL = ' Offset'
 # The offsets editor's rows of register adds, under the Offset row, and the arp editor's adds on every note.

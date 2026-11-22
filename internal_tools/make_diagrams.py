@@ -70,7 +70,6 @@ SECTION_ARGUMENT = 'section'
 SCREEN_LABELS = {
     MAIN_SCREEN_ID: 'Main screen',
     'ArpEditor': 'Arpeggiator editor',
-    'AutoRatchetEditor': 'AutoRatchet editor',
     'FilePage': 'File/Global',
 }
 PAGE_SUFFIX = 'Page'

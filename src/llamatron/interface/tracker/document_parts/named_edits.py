@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Document's edits to anything that has a name: renaming, copying, deleting, moving and sorting take the section the thing is in, and so does asking which names a section has.
 
-A pattern, a scale, an arp, an AutoRatchet, a chain, a groove, a song and a track are each a
+A pattern, a scale, a generator, a chain, a groove, a song and a track are each a
 named item of a section, and the set and the song edit every section the same way. So these five
 edits are written once and take the section, where each kind had a method of its own before.
 The little that differs by kind is here too, in one place: the current song follows its rename

@@ -22,7 +22,7 @@ class Held:
     """A sound that starts here and lasts its own length, while the next position starts after length.
 
     The sound is a Note, a Chord, or a phrase: a tuple of positions played one after another
-    from here, which is what an arpeggiator or AutoRatchet makes of a held chord. A Held is
+    from here, which is what an arpeggiator makes of a held chord. A Held is
     immutable: there are no setters.
     """
 

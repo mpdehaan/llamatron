@@ -16,7 +16,7 @@ from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEdito
 from llamatron.user_strings import labels, marks, messages
 from tests.support.ui_testing import back_key, forward_key, UITest
 
-HEADINGS = sorted([labels.GeneratorGroup.ARRANGEMENT, labels.GeneratorGroup.ARTICULATION, labels.GeneratorGroup.BAND, labels.GeneratorGroup.CHAINS, labels.GeneratorGroup.HARMONY, labels.GeneratorGroup.RHYTHM, labels.GeneratorGroup.TIMING, labels.GeneratorGroup.TRANSITIONS, labels.GeneratorGroup.VOICING])
+HEADINGS = sorted([labels.GeneratorGroup.ARRANGEMENT, labels.GeneratorGroup.ARTICULATION, labels.GeneratorGroup.BAND, labels.GeneratorGroup.CHAINS, labels.GeneratorGroup.HARMONY, labels.GeneratorGroup.TIMING, labels.GeneratorGroup.TRANSITIONS, labels.GeneratorGroup.VOICING])
 HARMONY_PLACE = HEADINGS.index(labels.GeneratorGroup.HARMONY)
 # The test song's Chords generators, one in each mode.
 CHORDS_IN_THE_TEST_SONG = 3

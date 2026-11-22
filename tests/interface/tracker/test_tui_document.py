@@ -8,10 +8,9 @@ import tempfile
 import unittest
 import yaml
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
+from llamatron.engine.generators import arp as arp_plugin, timing as timing_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
-from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.exporters.exports import export_name, ExportKind
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.document_parts import pattern_edits
@@ -144,9 +143,9 @@ def song_with_things():
     }
     song[Section.TRACKS] = {LEAD: {}, BASS: {}}
     data[arp_plugin.SECTION] = {UP: {ArpSetting.STEP: EIGHTH, ArpSetting.ORDER: written_name(ChordOrder.UP)}}
-    data[auto_ratchet_plugin.SECTION] = {ROLLS: {AutoRatchetSetting.COUNTS: [2]}}
+    data[timing_plugin.SECTION] = {ROLLS: {}}
     data[Section.CHAINS] = {
-        NAMED: [{arp_plugin.NAME: UP}, {auto_ratchet_plugin.NAME: ROLLS}],
+        NAMED: [{arp_plugin.NAME: UP}, {timing_plugin.NAME: ROLLS}],
     }
     song[Section.SCENES] = [
         {SceneSetting.NAME: ONE, SceneSetting.REPEAT: 2, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.CHAINS: [NAMED]}}},
@@ -577,7 +576,7 @@ class TestRenaming(unittest.TestCase):
     keeps the song playable, and owns what a scale's default name does."""
 
     def test_a_rename_in_any_section_leaves_a_song_that_plays(self):
-        for section, old in ((Section.PATTERNS, B), (Section.TRACKS, LEAD), (Section.CHAINS, NAMED), (arp_plugin.SECTION, UP), (auto_ratchet_plugin.SECTION, ROLLS)):
+        for section, old in ((Section.PATTERNS, B), (Section.TRACKS, LEAD), (Section.CHAINS, NAMED), (arp_plugin.SECTION, UP), (timing_plugin.SECTION, ROLLS)):
             with self.subTest(section=section):
                 document = song_with_things()
                 document.rename_named(section=section, old=old, new=NEW)

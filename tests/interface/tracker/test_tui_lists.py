@@ -4,10 +4,11 @@
 
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
+from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.engine.generators.arp import schema, strings as arp_strings
 from llamatron.engine.generators.arp.generator import ChordOrder, OctaveJump
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
+from llamatron.engine.generators.timing import parts as timing_parts
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components import keyboard
 from llamatron.interface.tracker.components.keyboard import Keyboard
@@ -18,7 +19,6 @@ from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedCho
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.generators.arp_editor import ArpEditor
-from llamatron.interface.tracker.screens.generators.auto_ratchet_editor import AutoRatchetEditor
 from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor, step_shown
 from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
 from llamatron.interface.tracker.screens.generators.generator_pages import generator_page_of_kind
@@ -26,6 +26,7 @@ from llamatron.interface.tracker.screens.generators.offsets_editor import Offset
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.scale_page import ScalePage
 from llamatron.interface.tracker.screens.set.scales_page import ScalesPage
+from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.model.objects import setlist
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import new_name, suggested_word
@@ -84,9 +85,7 @@ UP = 'up'
 GAUGE_LEVELS_ON_A_TALL_CONSOLE = 7
 GAUGE_LEVELS_ON_A_USUAL_CONSOLE = 5
 ARPEGGIATORS = 'Arpeggiators'
-AUTORATCHETS = 'AutoRatchets'
 QUARTER = '1/4'
-INTEGERS = 'integers'
 EMPTY = 'empty'
 CHAIN_EMPTY = 'chain empty'
 CHAIN_NAMED = 'chain named'
@@ -94,7 +93,7 @@ GENERATORS = 'Generators'
 FAST = 'fast'
 RISE = 'rise'
 CLIMB = 'climb'
-ROLLS_COPY = 'rolls-2'
+LOOSE_COPY = 'loose-2'
 NAMED = 'named'
 AFTER_CHORD = 'after chord'
 BRIGHT = 'bright'
@@ -456,10 +455,11 @@ class TestGeneratorsPage(UITest):
     async def test_a_copy_is_listed_under_its_type_with_the_cursor_on_it(self):
         await self.press(keybindings.MainPage.GENERATORS)
         page = self.app.screen
-        page.put_cursor_on(kind=auto_ratchet_plugin.NAME, name=ui_testing.ROLLS)
+        page.put_cursor_on(kind=timing_plugin.NAME, name=ui_testing.LOOSE)
         await self.press(keybindings.GeneratorsPage.COPY)
-        self.assertEqual(self.auto_ratchet(ROLLS_COPY).get_counts(), [1, 4])
-        self.assertEqual(page.current(), (auto_ratchet_plugin.NAME, ROLLS_COPY))
+        copied = self.document.get_setlist().get_generator_settings(kind=timing_plugin.NAME, name=LOOSE_COPY)
+        self.assertEqual(copied.step_row(timing_parts.RUSH).get_steps(), ui_testing.LOOSE_RUSH)
+        self.assertEqual(page.current(), (timing_plugin.NAME, LOOSE_COPY))
 
 
 class TestArpEditor(UITest):
@@ -739,47 +739,20 @@ class TestOffsetsEditorOnAUsualConsole(UITest):
         self.assertIn(marks.MSG_CURSOR_STEP_MARKS.format(text=16), self.text())
 
 
-class TestAutoRatchetAdded(UITest):
+class TestGeneratorRenamed(UITest):
+    """A generator's page renames the generator and every chain step naming it."""
 
-    async def test_an_auto_ratchet_can_be_made_edited_and_added_to_a_chain(self):
-        name = await self.add_generator(auto_ratchet_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, AutoRatchetEditor)
-        self.assertEqual(self.auto_ratchet(name).get_counts(), [2])
-        await self.select_field(labels.MSG_COUNTS_LABEL)
-        await self.press(Key.ENTER)
-        self.app.screen.value = '1 1 4'
-        await self.press(Key.ENTER)
-        self.assertEqual(self.auto_ratchet(name).get_counts(), [1, 1, 4])
-        await self.press(Key.ESCAPE, Key.ESCAPE)
-        await self.open_chain(ui_testing.EMPTY)
-        await self.press(keybindings.ChainEditor.ADD)
-        await self.pick(step_shown(kind=auto_ratchet_plugin.NAME, name=name))
-        self.assertEqual(self.chain_steps(EMPTY), [(auto_ratchet_plugin.NAME, name)])
-        render_song(self.document.song())
-
-
-class TestAutoRatchetEditor(UITest):
-    """An AutoRatchet's settings page."""
-
-    async def test_the_name_field_renames_the_auto_ratchet_and_its_chains(self):
-        await self.open_generator(section=auto_ratchet_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, AutoRatchetEditor)
+    async def test_the_name_field_renames_the_generator_and_its_chains(self):
+        await self.open_generator(section=timing_plugin.SECTION)
+        self.assertIsInstance(self.app.screen, PluginEditor)
         await self.select_field(labels.MSG_NAME_LABEL)
         await self.press(Key.ENTER)
         self.app.screen.value = FAST
         await self.press(Key.ENTER)
-        self.assertEqual(self.document.get_setlist().get_generator_names(auto_ratchet_plugin.NAME), [FAST])
-        self.assertEqual(self.chain_steps(NAMED)[1], (auto_ratchet_plugin.NAME, FAST))
+        self.assertEqual(self.document.get_setlist().get_generator_names(timing_plugin.NAME), [FAST])
+        self.assertEqual(self.chain_steps(NAMED)[1], (timing_plugin.NAME, FAST))
         self.assertIn(FAST, self.crumbs_line())
 
-    async def test_bad_counts_are_refused(self):
-        await self.open_generator(section=auto_ratchet_plugin.SECTION)
-        await self.select_field(labels.MSG_COUNTS_LABEL)
-        await self.press(Key.ENTER)
-        self.app.screen.value = '1 x'
-        await self.press(Key.ENTER)
-        self.assertEqual(self.auto_ratchet(ui_testing.ROLLS).get_counts(), [1, 4])
-        self.assertIn(INTEGERS, self.text())
 
 class TestChainEditor(UITest):
 
@@ -796,7 +769,7 @@ class TestChainEditor(UITest):
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options[0], messages.MSG_NEW_GENERATOR_CHOICE)
         named = [
-            (arp_plugin.NAME, ui_testing.UP_ARP), (auto_ratchet_plugin.NAME, ui_testing.ROLLS), (drift_plugin.NAME, ui_testing.SWAY), (chords_plugin.NAME, ui_testing.POP), (chords_plugin.NAME, ui_testing.SMOOTH),
+            (arp_plugin.NAME, ui_testing.UP_ARP), (drift_plugin.NAME, ui_testing.SWAY), (chords_plugin.NAME, ui_testing.POP), (chords_plugin.NAME, ui_testing.SMOOTH),
             (shapes_plugin.NAME, ui_testing.SHAPED),
             (timing_plugin.NAME, ui_testing.LOOSE), (hocket_plugin.NAME, ui_testing.TRADE),
             (guitarify_plugin.NAME, ui_testing.PICKED), (chords_plugin.NAME, ui_testing.FOLLOWS), (phrasing_plugin.NAME, ui_testing.BREATHES), (musician_plugin.NAME, ui_testing.STRUMMER),
@@ -804,17 +777,17 @@ class TestChainEditor(UITest):
         # The generators are offered in the order of their plugins' names.
         named.sort()
         self.assertEqual(self.app.screen.options[1:], [step_shown(kind=kind, name=name) for kind, name in named])
-        self.app.screen.cursor.set_place(1 + named.index((auto_ratchet_plugin.NAME, ui_testing.ROLLS)))
+        self.app.screen.cursor.set_place(1 + named.index((timing_plugin.NAME, ui_testing.LOOSE)))
         await self.press(Key.ENTER)
-        self.assertEqual(self.steps(), [(auto_ratchet_plugin.NAME, ui_testing.ROLLS), (auto_ratchet_plugin.NAME, ui_testing.ROLLS)])
+        self.assertEqual(self.steps(), [(timing_plugin.NAME, ui_testing.LOOSE), (timing_plugin.NAME, ui_testing.LOOSE)])
         await self.press(Key.DOWN, Key.ENTER)
         self.app.screen.cursor.set_place(1)
         await self.press(Key.ENTER)
-        self.assertEqual(self.steps(), [(auto_ratchet_plugin.NAME, ui_testing.ROLLS), (arp_plugin.NAME, UP)])
+        self.assertEqual(self.steps(), [(timing_plugin.NAME, ui_testing.LOOSE), (arp_plugin.NAME, UP)])
         await self.press(keybindings.ChainEditor.COPY)
-        self.assertEqual(self.steps(), [(auto_ratchet_plugin.NAME, ui_testing.ROLLS), (arp_plugin.NAME, UP), (arp_plugin.NAME, UP)])
+        self.assertEqual(self.steps(), [(timing_plugin.NAME, ui_testing.LOOSE), (arp_plugin.NAME, UP), (arp_plugin.NAME, UP)])
         await self.press(Key.UP, Key.UP, keybindings.ChainEditor.MOVE, Key.DOWN, Key.ENTER)
-        self.assertEqual(self.steps(), [(arp_plugin.NAME, UP), (auto_ratchet_plugin.NAME, ui_testing.ROLLS), (arp_plugin.NAME, UP)])
+        self.assertEqual(self.steps(), [(arp_plugin.NAME, UP), (timing_plugin.NAME, ui_testing.LOOSE), (arp_plugin.NAME, UP)])
         await self.press(Key.BACKSPACE, Key.BACKSPACE)
         self.assertEqual(self.steps(), [(arp_plugin.NAME, UP)])
         render_song(self.document.song())
@@ -831,7 +804,7 @@ class TestChainEditor(UITest):
 
     async def test_a_step_cannot_move_past_the_ends(self):
         await self.press(keybindings.ChainEditor.MOVE, Key.UP, Key.ENTER)
-        self.assertEqual(self.steps(), [(arp_plugin.NAME, UP), (auto_ratchet_plugin.NAME, ui_testing.ROLLS)])
+        self.assertEqual(self.steps(), [(arp_plugin.NAME, UP), (timing_plugin.NAME, ui_testing.LOOSE)])
 
     async def test_each_step_shows_its_generators_name_then_its_kind_and_a_repeat_is_numbered_on_screen_only(self):
         self.document.change_set(self.document.get_setlist().get_chain(NAMED).add_step, kind=arp_plugin.NAME, name=UP, setlist=self.document.get_setlist())

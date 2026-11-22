@@ -32,9 +32,9 @@ generators:
   - { name: wide, kind: arp, step: 1/32, order: up_down, octave_range: 2 }
   - { name: sparkle, kind: arp, step: 1/32, order: up, octave_range: 3, octave_jump: after_each_note }
   - { name: thirds, kind: arp, step: 1/16, order: up, offsets: [0, 2, 4, 2] }
-  - { name: double, kind: auto_ratchet, counts: [2] }
-  - { name: triple, kind: auto_ratchet, counts: [3, 1] }
-  - { name: stutter, kind: auto_ratchet, counts: [1, 1, 4, 1] }
+  - { name: double, kind: timing, shorten_steps: [true] }
+  - { name: triple, kind: timing, glide_steps: [true, false, false] }
+  - { name: stutter, kind: timing, shorten_steps: [false, false, true, false], glide_steps: [true, false] }
   - { name: twenty, kind: chain, generators: [{ name: up }, { name: double }, { name: thirds }, { name: triple }, { name: wide }, { name: stutter }, { name: down }, { name: double }, { name: sparkle }, { name: triple }, { name: up }, { name: stutter }, { name: thirds }, { name: double }, { name: wide }, { name: triple }, { name: down }, { name: stutter }, { name: sparkle }, { name: double }] }
   - { name: short, kind: chain, generators: [{ name: up }, { name: double }] }
 

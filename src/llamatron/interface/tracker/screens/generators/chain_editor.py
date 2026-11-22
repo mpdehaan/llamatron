@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The Chain editor page: a chain's steps, each an arpeggiator or AutoRatchet chosen by name."""
+"""The Chain editor page: a chain's steps, each a generator chosen by name."""
 
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
@@ -44,7 +44,7 @@ def steps_shown(steps):
 
 
 class ChainEditor(ShowsNamedItem, ListPage):
-    """A chain's steps, each an arpeggiator or AutoRatchet chosen by name."""
+    """A chain's steps, each a generator chosen by name."""
 
     KEYS = keybindings.ChainEditor
 

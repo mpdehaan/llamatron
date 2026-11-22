@@ -6,9 +6,9 @@ A Chain is a generator that runs other generators, one after another, as a list.
 
 ## How a Chain Runs
 
-A Chain runs its generators from top to bottom, each working on what the generator before it made. An arpeggiator followed by an AutoRatchet arpeggiates first and then chops every arpeggiated note into repeats, while an AutoRatchet followed by an arpeggiator ratchets the chords first and then arpeggiates the repeats.
+A Chain runs its generators from top to bottom, each working on what the generator before it made. An arpeggiator followed by a second arpeggiator arpeggiates first and then turns each arpeggiated note into a figure of its own, while a Chords generator followed by an arpeggiator moves the chords first and then arpeggiates them.
 
-Listed on a clip, a scene or a track, a Chain runs its generators in its own place in that list. A clip whose Generators field holds a Guitarify, then a Chain of an arpeggiator and an AutoRatchet, then a Swell, plays as if its list were the Guitarify, the arpeggiator, the AutoRatchet and the Swell. A Chain's own steps are plain generators, never another Chain.
+Listed on a clip, a scene or a track, a Chain runs its generators in its own place in that list. A clip whose Generators field holds a Guitarify, then a Chain of an arpeggiator and a Timing generator, then a Shapes generator, plays as if its list were the Guitarify, the arpeggiator, the Timing generator and the Shapes generator. A Chain's own steps are plain generators, never another Chain.
 
 ## Placement
 
@@ -30,4 +30,4 @@ Make a Chain on the Generators page with `A`, choosing Chain under the Chains he
 
 ## Applying the Generator
 
-`examples/learning/17_complex_gifts_chain.yml` runs Chains of arpeggiators and AutoRatchets on Simple Gifts.
+`examples/learning/17_complex_gifts_chain.yml` runs Chains of arpeggiators on Simple Gifts.

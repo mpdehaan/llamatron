@@ -57,7 +57,7 @@ def reading(where):
             said = errors.ERR_AT.format(where=where, problem=problem)
         raise SongFileError(said, correction=correction) from None
 
-# How messages list choices, like "arp, auto_ratchet".
+# How messages list choices, like "arp, chords".
 LIST_SEPARATOR = ', '
 
 
