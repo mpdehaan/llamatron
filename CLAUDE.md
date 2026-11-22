@@ -50,7 +50,7 @@ Read when the work needs them:
   `REFACTORING.md` with `REFACTORING_LOG.md` (git-ignored; before any refactoring step), `GENRES.md` (before working on
   `internal_tools/analysis_and_generation/`, a demo or a generator; nothing of the genre library goes on the website until the
   user says so), `GENRE_REVIEW.md` (before changing a band genre's template or the solo, riff, loudness or instrument writers),
-  `MASHUPS.md`, `REALTIME_PLAYBACK.md`, `VISUALIZER.md`, `RECORDING.md`.
+  `MASHUPS.md`, `REALTIME_PLAYBACK.md`, `VISUALIZER.md`, `RECORDING.md`, `EXPERTS.md` (before consulting an expert agent).
 - `.claude/music_theory_notes/`: Claude's notes on structure, hooks, melody, harmony, drums and genres, principles only (its
   `README.md` has the rules). Read the subject's file before building in its area; add to it as the work teaches.
 - `.claude/IDEAS.yml`: the user's only ideas file, for every kind of idea.
