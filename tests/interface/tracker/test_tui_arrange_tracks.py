@@ -192,7 +192,7 @@ class TestTrackEditor(UITest):
         self.assertIsInstance(self.app.screen, TrackEditor)
 
     def field_text(self, label):
-        return next(field.value() for field in self.app.screen.fields() if field.label == label)
+        return next(field.value() for field in self.app.screen.every_setting() if field.label == label)
 
     async def test_the_default_velocity_shows_the_instrument_s_until_the_track_has_its_own(self):
         self.assertEqual(self.field_text(labels.MSG_DEFAULT_VELOCITY_LABEL), defaults.DEFAULT_VELOCITY)

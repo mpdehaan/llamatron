@@ -27,6 +27,21 @@ STATEMENT_TABLES = (
 )
 
 
+def built_in_tabs(*, page, track, scene, kinds):
+    """Return the tabs of the built-in generators of some kinds a track holds, or its clip in a scene, scene being
+    OF_THE_TRACK for the track's own, in order."""
+    tabs = []
+    for kind in kinds:
+        place = BuiltInPlace(track=track, scene=scene, kind=kind)
+        tabs.append(BuiltInTab(page=page, place=place).tab())
+    return tabs
+
+
+def fields_tab(*, label, fields):
+    """Return a tab of one column of fields with no heading, a section's heading among them left out."""
+    return Tab(label=label, columns=[TabColumn(heading=None, fields=without_headings(fields))])
+
+
 class ClipTabs:
     """What makes the clip page's tabs: page is the clip page, which says which clip, and asks for every dialog."""
 
@@ -46,7 +61,7 @@ class ClipTabs:
         return [
             self._basics_tab(),
             *self._built_in_tabs(generator_plugins.built_ins_before_list()),
-            Tab(label=labels_text.MSG_USER_TAB, columns=[TabColumn(heading=None, fields=[generators_field(page=page, names=self._chain_names, store=self._set_chain_names)])]),
+            fields_tab(label=labels_text.MSG_USER_TAB, fields=[generators_field(page=page, names=self._chain_names, store=self._set_chain_names)]),
             *self._built_in_tabs(generator_plugins.built_ins_after_list()),
             Tab(label=labels_text.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
             Tab(label=labels_text.MSG_VELOCITY_TAB, columns=columns_of_sections(velocity_ramp_sections(page=page, own=own, above=above, store=store))),
@@ -73,18 +88,14 @@ class ClipTabs:
     def _built_in_tabs(self, kinds):
         """Return the tabs of the clip's built-in generators of some kinds, in order."""
         page = self._page
-        tabs = []
-        for kind in kinds:
-            place = BuiltInPlace(track=page.track, scene=page.index, kind=kind)
-            tabs.append(BuiltInTab(page=page, place=place).tab())
-        return tabs
+        return built_in_tabs(page=page, track=page.track, scene=page.index, kinds=kinds)
 
     def _statements_tab(self, *, tab, label, table, name, statements):
         """Return the tab of one of the clip's tables of statements."""
         store = functools.partial(self._set_statement, name=name)
         fields = statement_section(page=self._page, label=label, table=table, statements=functools.partial(statements, name),
                                    store=lambda place, statement: store(place=place, statement=statement))
-        return Tab(label=tab, columns=[TabColumn(heading=None, fields=without_headings(fields))])
+        return fields_tab(label=tab, fields=fields)
 
     def _register_sections(self):
         """Return the clip's sections about the registers: what it sets them to as it launches, and what it adds every time its

@@ -46,10 +46,6 @@ class VelocityTest(UITest):
         """Return what a field of the page shows as its value."""
         return next(field for field in self.page.every_setting() if field.label == label).value()
 
-    async def open_section(self, way):
-        await self.select_field(labels_text.MSG_VELOCITY_RAMP_SECTIONS[way])
-        await self.press(keybindings.FieldPage.TOGGLE)
-
 
 class TestVelocityOnTheScenePage(VelocityTest):
 
@@ -73,17 +69,12 @@ class TestVelocityOnTheScenePage(VelocityTest):
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.scene().get_velocity().level, limits.MAX_VELOCITY_PERCENT)
 
-    async def test_a_ramps_fields_show_only_while_its_section_is_open_and_a_blank_end_shows_the_velocity(self):
-        labels = [field.label for field in self.page.shown_fields()]
-        self.assertNotIn(IN_START, labels)
+    async def test_a_ramps_blank_start_shows_the_velocity(self):
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
-        await self.open_section(RampWay.IN)
-        self.assertIn(IN_START, [field.label for field in self.page.shown_fields()])
         self.assertEqual(self.shown(IN_START), marks.MSG_FROM_VELOCITY_SHOWN.format(value=percent(SCENE_LEVEL)))
         self.assertEqual(self.shown(IN_OVER), marks.MSG_NONE_SHOWN)
 
-    async def test_a_ramp_is_made_by_stepping_its_start_and_its_bars_and_the_heading_says_it_is_set(self):
-        await self.open_section(RampWay.IN)
+    async def test_a_ramp_is_made_by_stepping_its_start_and_its_bars(self):
         await self.select_field(IN_START)
         await self.press(keybindings.FieldPage.LESS)
         await self.select_field(IN_OVER)
@@ -91,11 +82,8 @@ class TestVelocityOnTheScenePage(VelocityTest):
         ramp = self.scene().get_velocity().ramp_in
         self.assertEqual((ramp.start, ramp.end, ramp.over), (velocity_ramps.AS_WRITTEN - 1, velocity_ramps.AS_WRITTEN, limits.MIN_RAMP_BARS + 1))
         self.assertEqual(self.shown(IN_OVER), marks.MSG_RAMP_BARS_SHOWN.format(bars=limits.MIN_RAMP_BARS + 1))
-        await self.open_section(RampWay.IN)
-        self.assertIn(marks.MSG_SECTION_SET, self.text())
 
-    async def test_the_ramp_out_is_a_section_of_its_own(self):
-        await self.open_section(RampWay.OUT)
+    async def test_the_ramp_out_is_a_column_of_its_own(self):
         await self.select_field(OUT_END)
         await self.press(keybindings.FieldPage.LESS)
         self.assertEqual(self.scene().get_velocity_settings()[VelocitySetting.OUT_END], velocity_ramps.AS_WRITTEN - 1)

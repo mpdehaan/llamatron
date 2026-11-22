@@ -11,12 +11,14 @@ from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.groove_choice import groove_choice_field
 from llamatron.interface.tracker.screens.shared import statements
+from llamatron.interface.tracker.screens.shared.arrange_tabs import fields_tab
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.shared import scene_name
 from llamatron.interface.tracker.screens.shared.statements import register_fields, statement_section
+from llamatron.interface.tracker.screens.shared.tab_box import columns_of_sections, Tab, TabBox, TabColumn
 from llamatron.interface.tracker.screens.shared.velocity_fields import velocity_field, velocity_ramp_sections
 from llamatron.interface.tracker.text import clock, plain_number, sorted_names, tempo_text
 from llamatron.model.schema import file_format, limits
@@ -199,12 +201,38 @@ class ScenePage(FieldPage):
         return marks.MSG_SONG_TEMPO_SHOWN.format(tempo=tempo_text(song.get_tempo()))
 
     def fields(self):
+        return [NameField(value=self._name_shown, rename=self.rename), TabBox(tabs=self._tabs())]
+
+    def _tabs(self):
+        """Return the scene's tabs: Basics, its list of generators under User, Shapes, Velocity, Tempo Ramps, Registers and
+        Bypass When. A scene holds no built-in generator."""
+        own, above, store = self.velocity_values()
+        shapes = []
+        for shape in file_format.PLACED_SHAPES:
+            shapes += self.shape_section(shape)
+        tempo_ramps = []
+        for way in file_format.RAMP_WAYS:
+            tempo_ramps += self.tempo_ramp_section(way)
+        velocity = TabColumn(heading=None, fields=[velocity_field(page=self, own=own, above=above, store=store)])
+        registers, bypass = self.register_sections()
+        return [
+            self._basics_tab(),
+            fields_tab(label=labels.MSG_USER_TAB, fields=[generators_field(page=self, names=self._chain_names, store=self._set_chain_names)]),
+            Tab(label=labels.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
+            Tab(label=labels.MSG_VELOCITY_TAB, columns=[velocity, *columns_of_sections(velocity_ramp_sections(page=self, own=own, above=above, store=store))]),
+            Tab(label=labels.MSG_TEMPO_RAMPS_TAB, columns=columns_of_sections(tempo_ramps)),
+            Tab(label=labels.MSG_REGISTERS_TAB, columns=columns_of_sections(registers)),
+            fields_tab(label=labels.MSG_BYPASS_WHEN_TAB, fields=bypass),
+        ]
+
+    def _basics_tab(self):
+        """Return the Basics tab: Playing, how the scene plays, and Reset As It Starts, the registers and draws it starts afresh."""
         scene = self.scene()
         song = self.document().song()
-        own_velocity, velocity_above, store_velocity = self.velocity_values()
-        fields = [
-            NameField(value=self._name_shown, rename=self.rename),
+        playing = [
             self.section_field(),
+            NumberField(page=self, label=labels.MSG_REPEAT_LABEL, number=scene.get_repeat(), lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT, set=self._set_repeat),
+            Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=self._set_launch_together),
             Field(label=labels.MSG_SCALE_LABEL, value=self.scale_text, adjust=None, enter=self.pick_scale, enter_what=legends.What.CHOOSE,
                   clear=self.clear_scale, clear_what=legends.MSG_USE_SONG_SCALE_WHAT),
             self.groove_field(),
@@ -212,23 +240,12 @@ class ScenePage(FieldPage):
                 page=self, label=labels.MSG_TEMPO_LABEL, number=self.tempo(), start=plain_number(song.get_tempo()), shown=self.tempo_text(),
                 lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=self.set_tempo, clear=self.clear_tempo, clear_what=legends.MSG_USE_SONG_TEMPO_WHAT,
             ),
-            velocity_field(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
-            NumberField(page=self, label=labels.MSG_REPEAT_LABEL, number=scene.get_repeat(), lowest=limits.MIN_REPEAT,
-                        highest=limits.MAX_SCENE_REPEAT, set=self._set_repeat),
         ]
-        for name in file_format.REGISTER_NAMES:
-            fields.append(self.reset_field(name))
-        for name in file_format.DRAW_NAMES:
-            fields.append(self.reset_draw_field(name))
-        # Real-time playback alone reads it, so it comes last, after everything the export reads.
-        fields.append(Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=self._set_launch_together))
-        fields.append(generators_field(page=self, names=self._chain_names, store=self._set_chain_names))
-        for way in file_format.RAMP_WAYS:
-            fields += self.tempo_ramp_section(way)
-        fields += velocity_ramp_sections(page=self, own=own_velocity, above=velocity_above, store=store_velocity)
-        for shape in file_format.PLACED_SHAPES:
-            fields += self.shape_section(shape)
-        return fields + self.register_sections()
+        resets = [self.reset_field(name) for name in file_format.REGISTER_NAMES]
+        resets += [self.reset_draw_field(name) for name in file_format.DRAW_NAMES]
+        return Tab(label=labels.MSG_BASICS_TAB, columns=[
+            TabColumn(heading=labels.MSG_PLAYING_HEADING, fields=playing), TabColumn(heading=labels.MSG_RESET_AS_IT_STARTS_HEADING, fields=resets),
+        ])
 
     def _name_shown(self):
         return self.scene().get_name() or drawing.NOTHING
@@ -256,10 +273,10 @@ class ScenePage(FieldPage):
         return scene.get_written, lambda name: None, lambda name, value: self._set_written(name=name, value=value)
 
     def register_sections(self):
-        """Return the scene's sections about the registers: what it sets them to as it first starts, what it adds every time it
-        plays, and the statements that bypass the generators of its clips."""
+        """Return the scene's sections about the registers, what it sets them to as it first starts and what it adds every time
+        it plays, and the statements that bypass the generators of its clips."""
         scene = self.scene()
-        return [
+        registers = [
             *register_fields(
                 page=self, label=labels.MSG_SET_REGISTERS_LABEL, name_label=labels.MSG_SET_REGISTER_LABEL, values=scene.get_register_sets,
                 store=lambda register, value: self._change(self.scene().set_register_set, register=register, value=value),
@@ -268,11 +285,12 @@ class ScenePage(FieldPage):
                 page=self, label=labels.MSG_ADD_REGISTERS_LABEL, name_label=labels.MSG_ADD_REGISTER_LABEL, values=scene.get_register_adds,
                 store=lambda register, value: self._change(self.scene().set_register_add, register=register, value=value),
             ),
-            *statement_section(
-                page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE, statements=scene.get_bypass_when,
-                store=lambda place, statement: self._change(self.scene().set_bypass_statement, place=place, statement=statement),
-            ),
         ]
+        bypass = statement_section(
+            page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE, statements=scene.get_bypass_when,
+            store=lambda place, statement: self._change(self.scene().set_bypass_statement, place=place, statement=statement),
+        )
+        return registers, bypass
 
     def shape_section(self, shape):
         """Return a shape's section: how busy, loud or long every clip of the scene plays over it."""

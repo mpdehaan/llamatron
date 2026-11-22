@@ -8,17 +8,20 @@ import functools
 from rich.text import Text
 
 from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker.document_parts import built_in_place
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.groove_choice import groove_choice_field
 from llamatron.interface.tracker.screens.shared import statements
+from llamatron.interface.tracker.screens.shared.arrange_tabs import built_in_tabs, fields_tab
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.interface.tracker.screens.shared.octave_field import octave_field
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.interface.tracker.screens.shared.statements import statement_section
+from llamatron.interface.tracker.screens.shared.tab_box import Tab, TabBox, TabColumn
 from llamatron.interface.tracker.text import sorted_names
-from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema import defaults, file_format, generator_plugins, limits
 from llamatron.model.schema.file_format import Section, TrackSetting
 from llamatron.model.values import midi
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
@@ -139,24 +142,29 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         return self.track().get_instrument_name() or marks.MSG_NONE_SHOWN
 
     def fields(self):
-        track = self.track()
-        result = self._playing_fields(track)
-        result += self._octave_fields(track)
-        result += [self.default_velocity_field(), self.accent_field()]
-        result += self._cc_fields(track)
-        result.append(generators_field(page=self, names=self._chain_names, store=self._set_chain_names))
-        result.append(self.instrument_field())
-        result += self._statement_sections(track)
-        return result
+        return [NameField(value=self._item_name, rename=self.rename), TabBox(tabs=self._tabs())]
 
-    def _playing_fields(self, track):
-        """Return the name, Drum, Mute, Groove and Transpose fields."""
+    def _tabs(self):
+        """Return the track's tabs, in the order they apply: Basics, the built-in generators before its list of generators, its
+        list under User, the built-ins after it, then CC Lanes, Bypass When and Skip When."""
+        track = self.track()
+        general = [
+            self.instrument_field(), Toggle(label=labels.MSG_DRUM_LABEL, on=track.is_drum(), set=self._set_drum),
+            Toggle(label=labels.MSG_MUTE_LABEL, on=track.is_muted(), set=self._set_mute), self.groove_field(),
+        ]
+        notes = [self._transpose_field(track), *self._octave_fields(track), self.default_velocity_field(), self.accent_field()]
+        numbers = [self.cc_field(lane) for lane in range(len(file_format.CC_ROWS))]
         return [
-            NameField(value=self._item_name, rename=self.rename),
-            Toggle(label=labels.MSG_DRUM_LABEL, on=track.is_drum(), set=self._set_drum),
-            Toggle(label=labels.MSG_MUTE_LABEL, on=track.is_muted(), set=self._set_mute),
-            self.groove_field(),
-            self._transpose_field(track),
+            Tab(label=labels.MSG_BASICS_TAB, columns=[
+                TabColumn(heading=labels.MSG_GENERAL_HEADING, fields=general), TabColumn(heading=labels.MSG_NOTES_HEADING, fields=notes),
+            ]),
+            *built_in_tabs(page=self, track=self.item, scene=built_in_place.OF_THE_TRACK, kinds=generator_plugins.built_ins_before_list()),
+            fields_tab(label=labels.MSG_USER_TAB, fields=[generators_field(page=self, names=self._chain_names, store=self._set_chain_names)]),
+            *built_in_tabs(page=self, track=self.item, scene=built_in_place.OF_THE_TRACK, kinds=generator_plugins.built_ins_after_list()),
+            Tab(label=labels.MSG_CC_LANES_TAB, columns=[
+                TabColumn(heading=None, fields=numbers), TabColumn(heading=None, fields=self._cc_register_fields(track)),
+            ]),
+            *[fields_tab(label=tab, fields=fields) for tab, fields in self._statement_sections(track)],
         ]
 
     def _item_name(self):
@@ -203,12 +211,10 @@ class TrackEditor(ShowsNamedItem, FieldPage):
     def _set_highest_octave(self, octave):
         self._change(self.track().set_highest_octave, octave)
 
-    def _cc_fields(self, track):
-        """Return a field for each CC lane's number, then a field for each lane's register, then the velocity's register."""
+    def _cc_register_fields(self, track):
+        """Return a field for each CC lane's register, then the velocity's register."""
         lanes = range(len(file_format.CC_ROWS))
         result = []
-        for lane in lanes:
-            result.append(self.cc_field(lane))
         registers = track.get_cc_registers()
         for lane in lanes:
             label = labels.MSG_CC_REGISTER_LABEL.format(number=lane + 1)
@@ -231,13 +237,17 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         self._change(self.track().set_chain_names, names=names, song=song)
 
     def _statement_sections(self, track):
-        """Return the sections of statements about the registers that bypass the generators of the track's clips, and that make
-        its clips sit out."""
-        tables = ((labels.MSG_BYPASS_WHEN_LABEL, statements.FIRST_TABLE, TrackSetting.BYPASS_WHEN), (labels.MSG_SKIP_WHEN_LABEL, statements.SECOND_TABLE, TrackSetting.SKIP_WHEN))
+        """Return the tables of statements about the registers that bypass the generators of the track's clips, and that make its
+        clips sit out, each its tab's name and its fields."""
+        tables = (
+            (labels.MSG_BYPASS_WHEN_TAB, labels.MSG_BYPASS_WHEN_LABEL, statements.FIRST_TABLE, TrackSetting.BYPASS_WHEN),
+            (labels.MSG_SKIP_WHEN_TAB, labels.MSG_SKIP_WHEN_LABEL, statements.SECOND_TABLE, TrackSetting.SKIP_WHEN),
+        )
         result = []
-        for label, table, name in tables:
-            result += statement_section(page=self, label=label, table=table, statements=functools.partial(track.get_statements, name),
-                                        store=self._statement_store(name))
+        for tab, label, table, name in tables:
+            fields = statement_section(page=self, label=label, table=table, statements=functools.partial(track.get_statements, name),
+                                       store=self._statement_store(name))
+            result.append((tab, fields))
         return result
 
     def _statement_store(self, name):

@@ -836,11 +836,8 @@ class TestScenePage(UITest):
         await self.go_to(TEMPO)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.scene().get_tempo_setting(), 121)
-        # A ramp's section is closed until opened, and a blank part steps from the scene's tempo.
+        # A ramp is on the Tempo Ramps tab, and a blank part steps from the scene's tempo.
         end = labels_text.MSG_TEMPO_RAMP_LABELS[(RampWay.IN, RampPart.END)]
-        self.assertNotIn(end, [field.label for field in self.page.shown_fields()])
-        await self.go_to(labels_text.MSG_TEMPO_RAMP_SECTIONS[RampWay.IN])
-        await self.press(keybindings.FieldPage.TOGGLE)
         await self.go_to(end)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
         # With no bars given there is no ramp yet.

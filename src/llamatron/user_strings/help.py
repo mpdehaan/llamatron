@@ -35,12 +35,10 @@ With Real Time on, Space plays what the cursor is on, the song from the corner, 
 # ScenePage
 HELP_SCENE_PAGE = """
 A scene starts all of its clips together, and lasts as long as its longest clip that does not loop.
-Scale: used by its clips, instead of the song's. Tempo: instead of the song's.
-Groove: for its clips, instead of the song's. off plays them straight whatever the song or a track chooses.
-Tempo Ramp In and Tempo Ramp Out: move the tempo step by step over a number of bars, from the scene's start and back from its end.
-Repeat: plays the whole scene that many times.
+Scale, Tempo, Groove: for its clips, instead of the song's; a Groove of off plays them straight. Repeat: plays it that many times.
 Reset AX to DX: sets that register back to its default as the scene starts, but not on its repeats.
-Launch together: in real-time playback only, a start reaching any clip of the scene launches them all. Off, each clip waits for the clip above it to send one, and Arrange marks the scene.
+Launch together: in real-time playback only, a start reaching any clip launches them all; off, each waits for the clip above.
+Tab goes to the tabs, where Left and Right choose one. Tempo Ramps move the tempo over bars from its start and before its end.
 
 Up and down select a setting. Left and right change it, and ENTER types or chooses. Bksp goes back to the song's value.
 """
@@ -138,15 +136,12 @@ TIME is one play at the current song's tempo. USED counts the clips, in every so
 
 # TrackEditor
 HELP_TRACK_EDITOR = """
-Name: ENTER renames the track, which updates every scene.
-Drum: a drum track is never transposed, nor a drum pattern.
-Mute: starts switched off in Live. Its clips can still be grabbed.
-Groove: for its clips, instead of the scene's or the song's. off plays them straight whatever the scene or song chooses.
-Transpose: moves every note on the track along the scale when exporting, without changing its patterns.
-Lowest and Highest octave: the octaves its instrument plays, the whole MIDI range to start, which the piano roll marks.
-Default velocity: a step with none typed. Accent: an accent adds.
-CC 1 to CC 4: the CC number that each of a pattern's CC rows sends on this track. A row with no number sends nothing here.
-Instrument: where the track plays in real time, one of the Instruments page's, or none to leave it out.
+Name: ENTER renames the track, which updates every scene. Drum: a drum track is never transposed.
+Mute: starts switched off in Live; its clips can still be grabbed. Groove: for its clips, instead of the scene's or song's.
+Transpose: moves its notes along the scale. Lowest and Highest octave: what its instrument plays, which the piano roll marks.
+Default velocity: a step with none typed. Accent: what an accent adds. Instrument: where it plays in real time, or none.
+CC Lanes: the CC number each of a pattern's CC rows sends here, and a register bound to each.
+Tab goes to the tabs; Left and Right choose one. Chords, Arp, Guitarify, Timing, Phrasing: its own generators, off until Enabled.
 
 Up and down select a setting. Left and right change it, ENTER types, and Space or ENTER toggles. Bksp clears.
 """

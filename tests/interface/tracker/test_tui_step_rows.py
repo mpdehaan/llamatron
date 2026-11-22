@@ -7,12 +7,13 @@ from llamatron.engine.generators import timing as timing_plugin
 from llamatron.engine.generators.timing import model as timing_model, parts, strings as timing_strings, view as timing_view
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
 from llamatron.model.schema import limits
 from llamatron.user_strings import marks
 from tests.support import ui_testing
-from tests.support.ui_testing import UITest
+from tests.support.ui_testing import back_key, forward_key, UITest
 
 
 def part_label(*, label, part):
@@ -43,6 +44,43 @@ class TimingPageTest(UITest):
     async def open_part(self, part):
         await self.select_field(timing_view.PART_NAMES[part])
         await self.press(keybindings.FieldPage.TOGGLE)
+
+
+class TestSectionsOnTheTimingPage(TimingPageTest):
+    """A settings page's sections, here the Timing page's parts: each closed until Space or ENTER opens it, saying (set) when a
+    value inside is written, PgUp and PgDn jumping between the headings, and a section opened staying open on the next page."""
+
+    def labels(self):
+        return [field.label for field in self.app.screen.shown_fields()]
+
+    async def test_a_section_opens_and_closes_and_its_fields_show_only_while_open(self):
+        amount = part_label(label=timing_strings.MSG_AMOUNT_LABEL, part=parts.DRAG)
+        self.assertNotIn(amount, self.labels())
+        await self.open_part(parts.DRAG)
+        self.assertIn(amount, self.labels())
+        await self.select_field(timing_view.PART_NAMES[parts.DRAG])
+        await self.press(Key.ENTER)
+        self.assertNotIn(amount, self.labels())
+
+    async def test_pgdn_and_pgup_jump_between_the_headings_and_stop_at_the_ends(self):
+        down = forward_key(keybindings.FieldPage.SECTION)
+        up = back_key(keybindings.FieldPage.SECTION)
+        await self.press(down)
+        self.assertEqual(self.app.screen.field().label, timing_view.PART_NAMES[parts.RUSH])
+        await self.press(down)
+        self.assertEqual(self.app.screen.field().label, timing_view.PART_NAMES[parts.DRAG])
+        await self.press(up, up, up)
+        self.assertEqual(self.app.screen.field().label, timing_view.PART_NAMES[parts.RUSH])
+        headings = [field.label for field in self.app.screen.shown_fields() if isinstance(field, Heading)]
+        await self.press(*[down] * (len(headings) + 1))
+        self.assertEqual(self.app.screen.field().label, headings[-1])
+
+    async def test_an_open_section_stays_open_on_the_next_page(self):
+        amount = part_label(label=timing_strings.MSG_AMOUNT_LABEL, part=parts.DRAG)
+        await self.open_part(parts.DRAG)
+        await self.press(Key.ESCAPE)
+        await self.open_generator(section=timing_plugin.SECTION)
+        self.assertIn(amount, self.labels())
 
 
 class TestTimingPage(TimingPageTest):

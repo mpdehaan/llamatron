@@ -13,7 +13,6 @@ from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor, sound_text
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.main_page import MainPage
-from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import Section, SetlistSetting, TrackSetting
 from llamatron.model.values import midi
@@ -206,10 +205,9 @@ class TestTrackInstrumentField(UITest):
 
     async def test_it_is_chosen_from_the_sets_instruments_with_none_first_and_bksp_clears_it(self):
         await self.select_field(labels.MSG_INSTRUMENT_LABEL)
-        # Instrument is the last setting, and only the + Strum section comes after it.
-        fields = self.app.screen.fields()
-        first_heading = next(place for place, field in enumerate(fields) if isinstance(field, Heading))
-        self.assertEqual(fields[first_heading - 1].label, labels.MSG_INSTRUMENT_LABEL)
+        # Instrument is the first setting of the Basics tab's General column.
+        general = self.app.screen.tab_box().tabs[0].columns[0]
+        self.assertEqual(general.fields[0].label, labels.MSG_INSTRUMENT_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.options, [marks.MSG_NONE_SHOWN, INSTRUMENT_1, SYNTH])

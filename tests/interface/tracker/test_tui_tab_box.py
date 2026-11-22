@@ -11,10 +11,11 @@ from llamatron.engine.generators.chords import strings as chords_strings
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
+from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
 from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting
-from llamatron.user_strings import labels, marks
+from llamatron.user_strings import labels, marks, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import back_key, forward_key, UITest
 
@@ -85,3 +86,24 @@ class TestTheTabBoxOnTheClipPage(UITest):
         self.assertIsInstance(self.app.screen, OffsetsEditor)
         self.assertIsNotNone(self.clip_slot().get_built_in(arp_plugin.NAME).get_offsets())
         self.assertIn(labels.MSG_BUILT_IN_WORD, self.text())
+
+
+class TestWhatOverridesWhat(UITest):
+    """A clip's built-in tab says when it overrides its track's, both being on, and a track's names the clips overriding it."""
+
+    async def test_the_clips_and_the_tracks_tabs_say_which_stands_in_for_which(self):
+        track = self.document.song().get_track(ui_testing.LEAD)
+        clip_slot = self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD)
+        word = chords_strings.MSG_TAB_LABEL.lower()
+        self.document.change_set(track.set_built_in_setting, kind=chords_plugin.NAME, name=file_format.GENERATOR_ENABLED, value=True)
+        self.document.change_set(clip_slot.set_built_in_setting, kind=chords_plugin.NAME, name=file_format.GENERATOR_ENABLED, value=True)
+        self.app.chosen_tabs[ClipPage.__name__] = chords_strings.MSG_TAB_LABEL
+        self.app.chosen_tabs[TrackEditor.__name__] = chords_strings.MSG_TAB_LABEL
+        self.app.screen.show_page(ClipPage(holder=self.app.screen.holder, index=FIRST_SCENE, track=ui_testing.LEAD))
+        await self.pilot.pause()
+        self.assertIn(messages.MSG_BUILT_IN_OVERRIDES_TRACKS.format(word=word), self.text())
+        self.app.screen.show_page(TrackEditor(holder=self.app.screen.holder, name=ui_testing.LEAD))
+        await self.pilot.pause()
+        scene = self.document.song().get_scenes()[FIRST_SCENE].get_name()
+        clip = messages.MSG_BUILT_IN_OVERRIDING_CLIP.format(scene=scene, track=ui_testing.LEAD)
+        self.assertIn(messages.MSG_BUILT_IN_OVERRIDDEN_ONCE.format(word=word, clips=clip), self.text())

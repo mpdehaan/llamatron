@@ -5,9 +5,14 @@
 built-in the clip or the track holds, the page that shows the tab asking for every dialog. ENTER on a part, such as a Chords
 generator's progression, opens that part's page on the built-in."""
 
+from llamatron.interface.tracker.screens.shared.shared import scene_name
 from llamatron.interface.tracker.screens.shared.view_fields import ViewFields
+from llamatron.model.file.checks import listed
 from llamatron.model.schema import generator_plugins
-from llamatron.user_strings import labels
+from llamatron.user_strings import labels, messages
+
+# The most clips a track's built-in tab names among those whose own built-in stands in for it.
+MOST_NAMED = 3
 
 
 class BuiltInTab(ViewFields):
@@ -26,11 +31,37 @@ class BuiltInTab(ViewFields):
         self.holder = page.holder
 
     def tab(self):
-        """Return the generator's tab: Enabled and its Mode across the top, then its columns, marked on or off."""
-        return self.view_tab(label=self._plugin.strings.MSG_TAB_LABEL)
+        """Return the generator's tab: Enabled and its Mode across the top, then its columns, marked on or off, with what stands
+        in for what: a clip's built-in that is on over its track's, and a track's under its clips' that are on."""
+        tab = self.view_tab(label=self._plugin.strings.MSG_TAB_LABEL)
+        tab.remarks = self._overrides()
+        return tab
 
     def view(self):
         return self._plugin.view
+
+    def _overrides(self):
+        """Return the remark saying what stands in for what, or none: on a clip's tab, that it overrides the track's, both being
+        on; on a track's, the clips whose own is on, the first few named."""
+        place = self._place
+        song = self._page.document().song()
+        word = self._plugin.strings.MSG_TAB_LABEL.lower()
+        if not place.is_the_tracks():
+            clip_on = self.settings().is_enabled()
+            if clip_on and song.get_track(place.track).has_built_in_on(place.kind):
+                return [messages.MSG_BUILT_IN_OVERRIDES_TRACKS.format(word=word)]
+            return []
+        overriding = []
+        for index, scene in enumerate(song.get_scenes()):
+            clip_slot = scene.get_clip_slot(place.track)
+            if clip_slot is not None and clip_slot.has_built_in_on(place.kind):
+                overriding.append(messages.MSG_BUILT_IN_OVERRIDING_CLIP.format(scene=scene_name(scene=scene, index=index), track=place.track))
+        if not overriding:
+            return []
+        template = messages.MSG_BUILT_IN_OVERRIDDEN
+        if len(overriding) == 1:
+            template = messages.MSG_BUILT_IN_OVERRIDDEN_ONCE
+        return [template.format(word=word, count=len(overriding), clips=listed(overriding[:MOST_NAMED]))]
 
     def settings(self):
         """Return the built-in generator's settings, which keep every change in the clip or the track holding them."""

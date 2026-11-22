@@ -9,13 +9,12 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
-from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import RampWay, Shape, shape_setting, ShapePart
+from llamatron.model.schema.file_format import Shape, shape_setting, ShapePart
 from llamatron.user_strings import labels as labels_text, marks
 from tests.support import ui_testing
-from tests.support.ui_testing import back_key, forward_key, UITest
+from tests.support.ui_testing import UITest
 
 FULL = 100
 HALF = 50
@@ -103,8 +102,9 @@ def heading_text(*, shape, is_open):
     return labels_text.MSG_SECTION_LABEL.format(mark=marks.MSG_SECTION_OPEN_MARK if is_open else marks.MSG_SECTION_CLOSED_MARK, name=labels_text.MSG_SHAPE_NAMES[shape])
 
 
-class TestShapeSectionsOnTheScenePage(UITest):
-    """On the Scene page, each shape is a section, closed until Space or Enter opens it, saying (set) when anything inside holds a value."""
+class TestShapesOnTheScenePage(UITest):
+    """On the Scene page, the Shapes tab holds Density and Articulate, each a column; a scene has no Swell, its velocity and
+    velocity ramps saying how loud it plays."""
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -112,55 +112,13 @@ class TestShapeSectionsOnTheScenePage(UITest):
         await self.pilot.pause()
         self.page = self.app.screen
 
-    def labels(self):
-        return [field.label for field in self.page.shown_fields()]
-
-    async def test_a_section_opens_and_closes_and_its_fields_show_only_while_open(self):
+    async def test_the_shapes_tab_steps_the_scenes_own_articulate(self):
         start = labels_text.MSG_SHAPE_FIELD_LABELS[ShapePart.START].format(shape=labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])
-        self.assertIn(heading_text(shape=Shape.ARTICULATE, is_open=False), self.text())
-        # How loud a scene plays is its velocity and velocity ramps, so the Scene page has no Swell section.
-        self.assertNotIn(labels_text.MSG_SHAPE_NAMES[Shape.SWELL], self.labels())
-        self.assertNotIn(start, self.labels())
-        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])
-        await self.press(keybindings.FieldPage.TOGGLE)
-        self.assertIn(heading_text(shape=Shape.ARTICULATE, is_open=True), self.text())
-        self.assertIn(start, self.labels())
+        shapes = next(tab for tab in self.page.tab_box().tabs if tab.label == labels_text.MSG_SHAPES_TAB)
+        self.assertEqual([column.heading for column in shapes.columns], [labels_text.MSG_SHAPE_NAMES[shape] for shape in file_format.PLACED_SHAPES])
         await self.select_field(start)
         await self.press(keybindings.FieldPage.LESS)
         self.assertEqual(self.document.song().get_scenes()[0].get_shape(Shape.ARTICULATE).start, FULL - 1)
-        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])
-        await self.press(Key.ENTER)
-        self.assertNotIn(start, self.labels())
-        self.assertIn(heading_text(shape=Shape.ARTICULATE, is_open=False), self.text())
-        self.assertIn(marks.MSG_SECTION_SET, self.text())
-
-    async def test_pgdn_and_pgup_jump_between_the_headings(self):
-        down = forward_key(keybindings.FieldPage.SECTION)
-        up = back_key(keybindings.FieldPage.SECTION)
-        await self.press(down)
-        self.assertIsInstance(self.page.field(), Heading)
-        self.assertEqual(self.page.field().label, labels_text.MSG_TEMPO_RAMP_SECTIONS[RampWay.IN])
-        # Past the two tempo ramps and the two velocity ramps to the shapes.
-        await self.press(down, down)
-        self.assertEqual(self.page.field().label, labels_text.MSG_VELOCITY_RAMP_SECTIONS[RampWay.IN])
-        await self.press(down, down)
-        self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
-        await self.press(down)
-        self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.ARTICULATE])
-        await self.press(up)
-        self.assertEqual(self.page.field().label, labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
-
-    async def test_pgdn_stops_at_the_last_heading(self):
-        headings = [field.label for field in self.page.fields() if isinstance(field, Heading)]
-        await self.press(*[forward_key(keybindings.FieldPage.SECTION)] * (len(headings) + 1))
-        self.assertEqual(self.page.field().label, headings[-1])
-
-    async def test_an_open_section_stays_open_on_the_next_scene_page(self):
-        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
-        await self.press(Key.ENTER, Key.ESCAPE)
-        self.app.screen.show_page(ScenePage(holder=self.app.screen.holder, index=0))
-        await self.pilot.pause()
-        self.assertIn(heading_text(shape=Shape.DENSITY, is_open=True), self.text())
 
 
 class TestShapeSectionsOnTheClipPage(UITest):
