@@ -20,6 +20,7 @@ screen is the one place that reminds of them.
 """
 
 from collections import deque
+import functools
 from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Text
@@ -108,7 +109,12 @@ def cell_opened_by(key):
 
 def cell_positions(*, rows, binding):
     """Return every row and column of the geometry that a binding's cell covers, in reading order."""
-    return [(row, column) for row, cells in enumerate(rows) for column, item in enumerate(cells) if item.binding is binding]
+    positions = []
+    for row, cells in enumerate(rows):
+        for column, item in enumerate(cells):
+            if item.binding is binding:
+                positions.append((row, column))
+    return positions
 
 
 def moved(*, rows, position, key):
@@ -130,8 +136,10 @@ def moved(*, rows, position, key):
         if there.binding is not here.binding and there is not EMPTY_CELL:
             break
     places = cell_positions(rows=rows, binding=there.binding)
-    tall = len({place[0] for place in places}) > 1
-    wide = len({place[1] for place in places}) > 1
+    rows_covered = {place[0] for place in places}
+    columns_covered = {place[1] for place in places}
+    tall = len(rows_covered) > 1
+    wide = len(columns_covered) > 1
     if (row_step and tall) or (column_step and wide):
         return places[0]
     return row, column
@@ -174,34 +182,46 @@ class MainPage(Page):
 
     def keys(self):
         return [
-            self.bind(self.KEYS.FILE, action=lambda: self.show_page(FilePage(self.holder))),
-            self.bind(self.KEYS.SONGS, action=lambda: self.show_page(SongsPage(self.holder))),
-            self.bind(self.KEYS.PATTERNS, action=lambda: self.show_page(PatternsPage(self.holder))),
-            self.bind(self.KEYS.GENERATORS, action=lambda: self.show_page(GeneratorsPage(self.holder))),
-            self.bind(self.KEYS.SCALES, action=lambda: self.show_page(ScalesPage(self.holder))),
-            self.bind(self.KEYS.GROOVES, action=lambda: self.show_page(GroovesPage(self.holder))),
-            self.bind(self.KEYS.INSTRUMENTS, action=lambda: self.show_page(InstrumentsPage(self.holder))),
-            self.bind(self.KEYS.REGISTERS, action=lambda: self.show_page(RegistersPage(self.holder))),
-            self.bind(self.KEYS.DRAWS, action=lambda: self.show_page(self.app.section_page_of(Section.DRAWS)(self.holder))),
-            self.bind(self.KEYS.ARRANGE, action=lambda: self.show_page(ArrangePage(self.holder))),
+            self.bind(self.KEYS.FILE, action=functools.partial(self.open_page, FilePage)),
+            self.bind(self.KEYS.SONGS, action=functools.partial(self.open_page, SongsPage)),
+            self.bind(self.KEYS.PATTERNS, action=functools.partial(self.open_page, PatternsPage)),
+            self.bind(self.KEYS.GENERATORS, action=functools.partial(self.open_page, GeneratorsPage)),
+            self.bind(self.KEYS.SCALES, action=functools.partial(self.open_page, ScalesPage)),
+            self.bind(self.KEYS.GROOVES, action=functools.partial(self.open_page, GroovesPage)),
+            self.bind(self.KEYS.INSTRUMENTS, action=functools.partial(self.open_page, InstrumentsPage)),
+            self.bind(self.KEYS.REGISTERS, action=functools.partial(self.open_page, RegistersPage)),
+            self.bind(self.KEYS.DRAWS, action=self.open_draws_page),
+            self.bind(self.KEYS.ARRANGE, action=functools.partial(self.open_page, ArrangePage)),
             # The Real Time switch sits among the pages as a cell of its own, with its mark where a page's cell has its count.
             self.bind(self.KEYS.REAL_TIME, action=self.toggle_real_time),
         ]
 
+    def open_page(self, page_class):
+        """Open one of the pages the main screen's buttons open."""
+        self.show_page(page_class(self.holder))
+
+    def open_draws_page(self):
+        """Open the Draws page, which the program names by its section."""
+        self.open_page(self.app.section_page_of(Section.DRAWS))
+
     def toggle_real_time(self):
         """Turn real-time playback on or off, which needs an instrument to play through, and say which on the status line."""
         document = self.document()
-        if not document.get_setlist().get_instrument_names():
+        setlist = document.get_setlist()
+        if not setlist.get_instrument_names():
             self.tell(errors.ERR_NO_INSTRUMENTS_TITLE, errors.ERR_ADD_INSTRUMENT_FIRST)
             return
-        on = not document.get_setlist().is_real_time()
-        document.change_set(document.get_setlist().set_real_time, on)
+        on = not setlist.is_real_time()
+        document.change_set(setlist.set_real_time, on)
         if not on and self.app.transport.is_playing():
             # Arrange shows no stop with Real Time off, so turning it off stops what plays, which was once a bug.
             self.app.transport.stop_all()
             self.say(messages.MSG_REAL_TIME_OFF_STOPPED)
             return
-        self.say(messages.MSG_REAL_TIME_ON if on else messages.MSG_REAL_TIME_OFF)
+        if on:
+            self.say(messages.MSG_REAL_TIME_ON)
+        else:
+            self.say(messages.MSG_REAL_TIME_OFF)
 
     def cursor_keys(self):
         return [
@@ -224,7 +244,7 @@ class MainPage(Page):
             everywhere_key(page=self, binding=self.KEYS.SAVE),
             self.bind(self.KEYS.OPEN_SET_HERE, action=does[self.KEYS.OPEN_SET]),
             self.bind(self.KEYS.EXPORT_HERE, action=does[self.KEYS.EXPORT]),
-            self.bind(self.KEYS.IMPORT_HERE, action=lambda: import_midi(self)),
+            self.bind(self.KEYS.IMPORT_HERE, action=functools.partial(import_midi, self)),
             quit_key(self),
         ]
 
@@ -248,14 +268,19 @@ class MainPage(Page):
     def menu_items(self):
         """Return every cell the cursor can be on, each once, along the rows."""
         items = []
+        seen = set()
         for row in self.rows():
             for item in row:
-                if item is not EMPTY_CELL and all(item.binding is not other.binding for other in items):
+                if item is not EMPTY_CELL and item.binding not in seen:
+                    seen.add(item.binding)
                     items.append(item)
         return items
 
     def selected(self):
-        return next(item for item in self.menu_items() if item.binding is self.chosen)
+        for item in self.menu_items():
+            if item.binding is self.chosen:
+                return item
+        raise StopIteration
 
     def select(self, binding):
         """Put the cursor on the cell of a binding, at the cell's first row and column."""
@@ -270,14 +295,21 @@ class MainPage(Page):
         """Return the row and column of the geometry the cursor is at: where an arrow left it inside its cell, while the layout still
         has the cell there, or else the first row and column the cell covers."""
         places = cell_positions(rows=self.rows(), binding=self.chosen)
-        return self.position if self.position in places else places[0]
+        if self.position in places:
+            return self.position
+        return places[0]
 
     def on_arrange(self):
         return self.chosen is self.KEYS.ARRANGE
 
     def in_bar(self):
         """Return whether the cursor is on one of the bar's actions."""
-        return self.chosen is self.KEYS.FILE or any(item.binding is self.chosen for item in self.actions())
+        if self.chosen is self.KEYS.FILE:
+            return True
+        for item in self.actions():
+            if item.binding is self.chosen:
+                return True
+        return False
 
     def move_cursor(self, name):
         """Move by the geometry drawn: an arrow goes to the cell beside, above or below, and none goes past an edge.
@@ -299,7 +331,8 @@ class MainPage(Page):
         self.selected().action()
 
     def duration(self):
-        return self.document().lengths().song_seconds()
+        lengths = self.document().lengths()
+        return lengths.song_seconds()
 
     def time_text(self):
         """Return the time at the right of the header: where the song is while it plays, and how long it is, or its length alone,
@@ -315,7 +348,9 @@ class MainPage(Page):
         setlist = self.document().get_setlist()
         name = cell_name(item)
         if name == labels_text.PageName.REAL_TIME:
-            return marks.MSG_REAL_TIME_ON_MARK if setlist.is_real_time() else marks.MSG_REAL_TIME_OFF_MARK
+            if setlist.is_real_time():
+                return marks.MSG_REAL_TIME_ON_MARK
+            return marks.MSG_REAL_TIME_OFF_MARK
         if name == labels_text.PageName.GENERATORS:
             return len(setlist.every_generator_name())
         if name == labels_text.PageName.GROOVES:
@@ -343,7 +378,8 @@ class MainPage(Page):
     def shown_name(self, item):
         """Return the name drawn on a cell: its own, but Arrange/Play on the Arrange cell while the set's Real Time switch is on,
         so that the cell says where a song is played."""
-        if item.binding is self.KEYS.ARRANGE and self.document().get_setlist().is_real_time():
+        setlist = self.document().get_setlist()
+        if item.binding is self.KEYS.ARRANGE and setlist.is_real_time():
             return labels_text.PageName.ARRANGE_PLAY
         return cell_name(item)
 
@@ -371,35 +407,51 @@ class MainPage(Page):
 
     def draw_cell(self, *, canvases, left, item, selected, width):
         """Draw one cell, width wide, onto its three lines: its box, double-lined and bright when selected and otherwise in its colour, the key bold and reversed, the name, bold when selected, and the count."""
-        self.draw_box(canvases=canvases, left=left, width=width, selected=selected, style=Style.BOLD if selected else self.edge_style(item))
+        edge = self.edge_style(item)
+        name_style = Style.PLAIN
+        if selected:
+            edge = Style.BOLD
+            name_style = Style.BOLD
+        self.draw_box(canvases=canvases, left=left, width=width, selected=selected, style=edge)
         middle = canvases[1]
         right = left + width - 1
         label = padded(item.shown_label())
         name = self.shown_name(item)
         start = left + 1 + len(EDGE_GAP)
         middle.write(column=start, text=label, style=Style.KEY)
-        middle.write(column=start + len(label), text=NAME_GAP + name, style=Style.BOLD if selected else Style.PLAIN)
+        middle.write(column=start + len(label), text=NAME_GAP + name, style=name_style)
         count = self.count(item)
         if count is not None:
             # Right-aligned, with one space before the box's edge, or against the edge when a long name leaves no room for the space.
             name_end = start + len(label) + len(NAME_GAP) + len(name)
-            middle.write(column=max(right - 1 - len(str(count)), min(name_end + len(NAME_GAP), right - len(str(count)))), text=str(count))
+            count_text = str(count)
+            column = max(right - 1 - len(count_text), min(name_end + len(NAME_GAP), right - len(count_text)))
+            middle.write(column=column, text=count_text)
 
     def draw_bar(self, *, canvases, rows, lefts, left, width):
         """Draw the bar of the file's actions: one box, double-lined while the cursor is in it, its actions in rows on the grid's
         columns with no lines between them, each column's keys starting under the keys of the buttons above and its names starting
         at one place, past the column's longest key, and the selected action's name in reverse video."""
         selected = self.selected()
-        self.draw_box(canvases=canvases, left=left, width=width, selected=self.in_bar(), style=Style.BOLD if self.in_bar() else Style.DIM)
+        in_bar = self.in_bar()
+        edge = Style.DIM
+        if in_bar:
+            edge = Style.BOLD
+        self.draw_box(canvases=canvases, left=left, width=width, selected=in_bar, style=edge)
         for column, column_left in enumerate(lefts):
             labels = [padded(row[column].shown_label()) for row in rows]
-            key_room = max(len(label) for label in labels)
+            key_room = max(map(len, labels))
             start = column_left + 1 + len(EDGE_GAP)
             for canvas, row, label in zip(canvases[1:-1], rows, labels):
                 item = row[column]
                 canvas.write(column=start, text=label, style=Style.KEY)
-                chosen = item.binding is selected.binding
-                canvas.write(column=start + key_room, text=NAME_GAP + self.shown_name(item) + (drawing.SPACE if chosen else drawing.NOTHING), style=Style.REVERSE if chosen else Style.PLAIN)
+                # The chosen action's name is reversed with a space after it, so that the reversed block stands clear of the name.
+                text = NAME_GAP + self.shown_name(item)
+                style = Style.PLAIN
+                if item.binding is selected.binding:
+                    text += drawing.SPACE
+                    style = Style.REVERSE
+                canvas.write(column=start + key_room, text=text, style=style)
 
     def body(self, *, width, height):
         """Return the block of buttons, the same on every console: Arrange's bar, the three rows of buttons, a blank line and the bar of the file's actions."""
@@ -418,4 +470,6 @@ class MainPage(Page):
         bar = [Canvas(total) for _ in range(BAR_ROWS + BORDERS)]
         self.draw_bar(canvases=bar, rows=rows[1 + BUTTON_ROWS:], lefts=lefts, left=0, width=total)
         blank = [Text(drawing.NOTHING)]
-        return blank * LINES_ABOVE_GRID + [canvas.text() for canvas in grid] + blank * LINES_ABOVE_BAR + [canvas.text() for canvas in bar]
+        grid_lines = [canvas.text() for canvas in grid]
+        bar_lines = [canvas.text() for canvas in bar]
+        return blank * LINES_ABOVE_GRID + grid_lines + blank * LINES_ABOVE_BAR + bar_lines
