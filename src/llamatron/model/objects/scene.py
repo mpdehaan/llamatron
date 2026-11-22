@@ -134,7 +134,9 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         self.note_change()
         # The list of registers to reset is copied, so that the scene shares nothing with the data it was read from.
         self._settings = {name: own_copy(settings.get(name)) for name in SETTINGS}
-        self._clip_slots = None if clip_slots is None else dict(clip_slots)
+        self._clip_slots = None
+        if clip_slots is not None:
+            self._clip_slots = dict(clip_slots)
 
     @classmethod
     def from_data(cls, *, data, where, song=None):
