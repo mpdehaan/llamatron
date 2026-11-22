@@ -138,8 +138,8 @@ patterns:
     tie: [false, true, false, true, false, false, false, true, false, true, true, false, false, false, false, false, false, true, false, true, false, false, false, true, false, true, true, false, false, false, false, false, false, true, false, true, false, false, false, true, false, true, true, false, false, false, false, false, false, true, false, true, false, false, false, true, false, true, true, false, false, false, false, false, false, true, false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, false, true, true, false, false, false, false, false, false, true, false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, false, true, true, true, true, true, false, false]
 
 generators:
-  - { name: verse, kind: progression, chords: [1, 1, 4, 1, 1, 1, 5, 5, 1, 1, 4, 1, 4, 1, 5, 1] }
-  - { name: chorus, kind: progression, chords: [1, 1, 4, 1, 1, 1, 5, 5, 1, 1, 4, 1, 4, 1, 5, 1] }
+  - { name: verse, kind: chords, mode: progression, chords: [1, 1, 4, 1, 1, 1, 5, 5, 1, 1, 4, 1, 4, 1, 5, 1] }
+  - { name: chorus, kind: chords, mode: progression, chords: [1, 1, 4, 1, 1, 1, 5, 5, 1, 1, 4, 1, 4, 1, 5, 1] }
   - { name: boom, kind: guitarify, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }

@@ -282,10 +282,10 @@ patterns:
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
 
 generators:
-  - { name: one, kind: progression, chords: [1, 1, 4, 4, 5, 5, 1, 1] }
-  - { name: middle, kind: progression, chords: [4, 1, 4, 5] }
-  - { name: castle, kind: progression, chords: [1, 1, 3, 3, 5, 5, 7, 7], accidentals: [~, ~, ~, ~, b, b, b, b] }
-  - { name: win, kind: progression, chords: [1, 6, 7, 1], accidentals: [~, b, b, ~] }
+  - { name: one, kind: chords, mode: progression, chords: [1, 1, 4, 4, 5, 5, 1, 1] }
+  - { name: middle, kind: chords, mode: progression, chords: [4, 1, 4, 5] }
+  - { name: castle, kind: chords, mode: progression, chords: [1, 1, 3, 3, 5, 5, 7, 7], accidentals: [~, ~, ~, ~, b, b, b, b] }
+  - { name: win, kind: chords, mode: progression, chords: [1, 6, 7, 1], accidentals: [~, b, b, ~] }
   - { name: one chords, kind: chain, generators: [{ name: one }] }
   - { name: middle chords, kind: chain, generators: [{ name: middle }] }
   - { name: castle chords, kind: chain, generators: [{ name: castle }] }

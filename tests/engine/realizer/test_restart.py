@@ -11,9 +11,11 @@ from typing import NamedTuple
 import unittest
 
 from llamatron.engine.clips.clip import Clip
-from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin, progression as progression_plugin, shapes as shapes_plugin
+from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, shapes as shapes_plugin
 from llamatron.engine.generators.base import Continuation
-from llamatron.engine.generators.voice_leading.generator import VoiceLeading
+from llamatron.engine.generators.chords import model as chords_model
+from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
+from llamatron.engine.generators.chords.voicing import VoiceLeading
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.schema import file_format
@@ -74,7 +76,8 @@ def first_names(notes):
 
 
 def progression(*, restart=None, first_repeat=1):
-    return two_scenes(section=progression_plugin.SECTION, kind=progression_plugin.NAME, settings={'chords': [1, 5, 6, 4]}, restart=restart, first_repeat=first_repeat)
+    settings = {ChordsSetting.MODE: chords_model.PROGRESSION, ProgressionSetting.CHORDS: [1, 5, 6, 4]}
+    return two_scenes(section=chords_plugin.SECTION, kind=chords_plugin.NAME, settings=settings, restart=restart, first_repeat=first_repeat)
 
 
 class TestTimeFollowingGenerators(unittest.TestCase):

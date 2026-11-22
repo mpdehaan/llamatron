@@ -172,10 +172,10 @@ patterns:
     tie: [false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
 generators:
-  - { name: verse, kind: progression, chords: [6, 1, 4, 1, 5, 1, 6, 5], every: 1/2 }
-  - { name: chorus, kind: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 }
-  - { name: onion, kind: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] }
-  - { name: onion chorus, kind: progression, chords: [6, 3, 4, 1, 4, 1, 5, 5] }
+  - { name: verse, kind: chords, mode: progression, chords: [6, 1, 4, 1, 5, 1, 6, 5], every: 1/2 }
+  - { name: chorus, kind: chords, mode: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 }
+  - { name: onion, kind: chords, mode: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] }
+  - { name: onion chorus, kind: chords, mode: progression, chords: [6, 3, 4, 1, 4, 1, 5, 5] }
   - { name: bass strum, kind: guitarify, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, true, false, false, false, true, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 }
   - { name: strum, kind: guitarify, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 }
   - { name: roll, kind: guitarify, bar: [bass, string_4, string_3, string_2, bass, string_4, string_3, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true }

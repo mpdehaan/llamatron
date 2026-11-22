@@ -13,14 +13,12 @@ from llamatron.engine.generators import settings_base
 from llamatron.engine.generators.arp import schema
 from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting, AutoRatchetSettings
+from llamatron.engine.generators.chords.model import ChordsSetting, ChordsSettings, ProgressionSetting
 from llamatron.engine.generators.drift.model import DriftSetting, DriftSettings, versioned
-from llamatron.engine.generators.follow_chords.model import FollowChordsSetting, FollowChordsSettings
 from llamatron.engine.generators.guitarify.model import GuitarifySettings
 from llamatron.engine.generators.hocket.model import HocketSetting, HocketSettings
 from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
 from llamatron.engine.generators.phrasing.model import PhrasingSetting, PhrasingSettings
-from llamatron.engine.generators.progression.model import ProgressionSetting, ProgressionSettings
-from llamatron.engine.generators.voice_leading.model import VoiceLeadingSetting, VoiceLeadingSettings
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed
 from llamatron.model.file.invalid_value import InvalidValue
@@ -122,10 +120,10 @@ DESCRIBED = [
     (AutoRatchetSetting, AutoRatchetSettings.SETTINGS, ()),
     # A drift's own settings; each version's values are named from DriftValue, which the test below holds them to.
     (DriftSetting, {name: setting for name, setting in DriftSettings.SETTINGS.items() if name in vars(DriftSetting).values()}, ()),
-    (ProgressionSetting, ProgressionSettings.SETTINGS, ()),
-    (VoiceLeadingSetting, VoiceLeadingSettings.SETTINGS, ()),
+    # A Chords generator's own settings and its progression's, each named from its own class.
+    (ChordsSetting, {name: setting for name, setting in ChordsSettings.SETTINGS.items() if name in vars(ChordsSetting).values()}, ()),
+    (ProgressionSetting, {name: setting for name, setting in ChordsSettings.SETTINGS.items() if name in vars(ProgressionSetting).values()}, ()),
     (HocketSetting, HocketSettings.SETTINGS, ()),
-    (FollowChordsSetting, FollowChordsSettings.SETTINGS, ()),
     (PhrasingSetting, PhrasingSettings.SETTINGS, ()),
     (MusicianSetting, MusicianSettings.SETTINGS, ()),
     (GuitarifySetting, GuitarifySettings.SETTINGS, ()),

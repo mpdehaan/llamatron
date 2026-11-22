@@ -16,7 +16,7 @@ Nothing is drawn by chance but a loose player's loudness, which comes from the s
 import random
 
 from llamatron.engine.generators.base import ClipGenerator
-from llamatron.engine.generators.follow_chords.generator import FollowChords
+from llamatron.engine.generators.chords.following import FollowChords
 from llamatron.engine.generators.musician import schema
 from llamatron.engine.generators.parts import parts_of
 from llamatron.math.rational import Rational

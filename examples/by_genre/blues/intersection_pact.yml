@@ -155,9 +155,9 @@ patterns:
     tie: [false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
 
 generators:
-  - { name: blues, kind: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] }
-  - { name: turn, kind: progression, chords: [5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7] }
-  - { name: last, kind: progression, chords: [1, 4, 1, 1], qualities: [dom7, dom7, dom7, dom7] }
+  - { name: blues, kind: chords, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] }
+  - { name: turn, kind: chords, mode: progression, chords: [5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7] }
+  - { name: last, kind: chords, mode: progression, chords: [1, 4, 1, 1], qualities: [dom7, dom7, dom7, dom7] }
   - { name: blues chords, kind: chain, generators: [{ name: blues }] }
   - { name: turn chords, kind: chain, generators: [{ name: turn }] }
   - { name: last chords, kind: chain, generators: [{ name: last }] }

@@ -6,7 +6,7 @@ notes: |
   of its own. This is a homage to M*A*S*H (Johnny Mandel): its chords, form, sounds and drums follow
   that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 3.
 
-  A verse on iv VII III i, twice, a Progression moving one bar of picking; a refrain on VI VII v i, iv
+  A verse on iv VII III i, twice, a progression moving one bar of picking; a refrain on VI VII v i, iv
   VII i; the tune's lines each answered; about a minute, as a theme runs.
 
   Subgenre: a folk ballad of about 1970 used as a television theme, played without its words. Drums:
@@ -121,8 +121,8 @@ patterns:
     tie: [false, false, false, false, false, true, false, true, false, true, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, true, false, false, true, true, true]
 
 generators:
-  - { name: verse, kind: progression, chords: [4, 7, 3, 1] }
-  - { name: refrain, kind: progression, chords: [6, 7, 5, 1, 4, 7, 1, 1] }
+  - { name: verse, kind: chords, mode: progression, chords: [4, 7, 3, 1] }
+  - { name: refrain, kind: chords, mode: progression, chords: [6, 7, 5, 1, 4, 7, 1, 1] }
   - { name: soft, kind: guitarify, bar: [down, nothing, nothing, nothing, down, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 24 }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: verse strum, kind: chain, generators: [{ name: verse }, { name: soft }] }

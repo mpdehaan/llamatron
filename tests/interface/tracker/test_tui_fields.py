@@ -10,7 +10,7 @@ to Space and Enter alike.
 
 import unittest
 
-from llamatron.engine.generators import phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
+from llamatron.engine.generators import chords as chords_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.interface.tracker import key_table, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
@@ -22,13 +22,10 @@ from llamatron.interface.tracker.screens.generators.arp_editor import ArpEditor
 from llamatron.interface.tracker.screens.generators.auto_ratchet_editor import AutoRatchetEditor
 from llamatron.interface.tracker.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
-from llamatron.interface.tracker.screens.generators.follow_chords_editor import FollowChordsEditor
 from llamatron.interface.tracker.screens.generators.guitarify_editor import GuitarifyEditor
 from llamatron.interface.tracker.screens.generators.hocket_editor import HocketEditor
 from llamatron.interface.tracker.screens.generators.musician_editor import MusicianEditor
-from llamatron.interface.tracker.screens.generators.progression_editor import ProgressionEditor
 from llamatron.interface.tracker.screens.generators.strum_editor import StrumEditor
-from llamatron.interface.tracker.screens.generators.voice_leading_editor import VoiceLeadingEditor
 from llamatron.interface.tracker.screens.set.draws_page import DrawsPage
 from llamatron.interface.tracker.screens.set.file_page import FilePage
 from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor
@@ -247,7 +244,7 @@ class FieldPagesTest(UITest):
         return [
             SongPage(holder), ScenePage(holder=holder, index=FIRST_SCENE), ClipPage(holder=holder, index=FIRST_SCENE, track=ui_testing.LEAD), ArpEditor(holder=holder, name=ui_testing.UP_ARP),
             TrackEditor(holder=holder, name=ui_testing.LEAD), RegistersPage(holder), DrawsPage(holder), FilePage(holder), AutoRatchetEditor(holder=holder, name=ui_testing.ROLLS), DriftEditor(holder=holder, name=ui_testing.SWAY),
-            ProgressionEditor(holder=holder, name=ui_testing.POP), VoiceLeadingEditor(holder=holder, name=ui_testing.SMOOTH), HocketEditor(holder=holder, name=ui_testing.TRADE), FollowChordsEditor(holder=holder, name=ui_testing.FOLLOWS), PluginEditor(holder=holder, name=ui_testing.BREATHES, section=phrasing_plugin.SECTION), MusicianEditor(holder=holder, name=ui_testing.STRUMMER), GuitarifyEditor(holder=holder, name=ui_testing.PICKED), StrumEditor(holder=holder, name=ui_testing.FOLK),
+            PluginEditor(holder=holder, name=ui_testing.POP, section=chords_plugin.SECTION), PluginEditor(holder=holder, name=ui_testing.SMOOTH, section=chords_plugin.SECTION), HocketEditor(holder=holder, name=ui_testing.TRADE), PluginEditor(holder=holder, name=ui_testing.FOLLOWS, section=chords_plugin.SECTION), PluginEditor(holder=holder, name=ui_testing.BREATHES, section=phrasing_plugin.SECTION), MusicianEditor(holder=holder, name=ui_testing.STRUMMER), GuitarifyEditor(holder=holder, name=ui_testing.PICKED), StrumEditor(holder=holder, name=ui_testing.FOLK),
             PluginEditor(holder=holder, name=ui_testing.LOOSE, section=timing_plugin.SECTION),
             PluginEditor(holder=holder, name=ui_testing.SHAPED, section=shapes_plugin.SECTION),
             ScalePage(holder=holder, name=setlist.DEFAULT_SCALE), ChainStatementsPage(holder=holder, name=ui_testing.NAMED), InstrumentEditor(holder=holder, name=AN_INSTRUMENT), self.a_wizard(holder),

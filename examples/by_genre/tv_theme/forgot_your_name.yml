@@ -154,10 +154,10 @@ patterns:
     velocity: [~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, ~, ~]
 
 generators:
-  - { name: verse, kind: progression, chords: [1, 5, 1, 5, 1, 5, 6, 5] }
-  - { name: chorus, kind: progression, chords: [1, 7, 4, 5], accidentals: [~, b, ~, ~], qualities: [~, M, ~, ~] }
-  - { name: bridge, kind: progression, chords: [6, 3, 4, 1, 6, 3, 4, 5] }
-  - { name: near, kind: voice_leading, lowest_octave: 4, highest_octave: 5 }
+  - { name: verse, kind: chords, mode: progression, chords: [1, 5, 1, 5, 1, 5, 6, 5] }
+  - { name: chorus, kind: chords, mode: progression, chords: [1, 7, 4, 5], accidentals: [~, b, ~, ~], qualities: [~, M, ~, ~] }
+  - { name: bridge, kind: chords, mode: progression, chords: [6, 3, 4, 1, 6, 3, 4, 5] }
+  - { name: near, kind: chords, lowest_octave: 4, highest_octave: 5 }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
   - { name: bridge chords, kind: chain, generators: [{ name: bridge }] }

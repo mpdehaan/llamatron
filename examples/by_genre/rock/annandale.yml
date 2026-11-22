@@ -175,10 +175,10 @@ patterns:
     tie: [false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true]
 
 generators:
-  - { name: verse, kind: progression, chords: [1, 1, 4, 1, 1, 1, 4, 5], qualities: [add9, add9, add9, add9, add9, add9, add9, 7sus4] }
-  - { name: chorus, kind: progression, chords: [6, 2, 4, 5, 6, 2, 4, 1], qualities: [m7, dom7, ~, ~, m7, dom7, ~, add9] }
-  - { name: horns, kind: progression, chords: [1, 7, 4, 1], accidentals: [~, b, ~, ~], qualities: [~, M, ~, ~] }
-  - { name: near, kind: voice_leading, lowest_octave: 4, highest_octave: 5 }
+  - { name: verse, kind: chords, mode: progression, chords: [1, 1, 4, 1, 1, 1, 4, 5], qualities: [add9, add9, add9, add9, add9, add9, add9, 7sus4] }
+  - { name: chorus, kind: chords, mode: progression, chords: [6, 2, 4, 5, 6, 2, 4, 1], qualities: [m7, dom7, ~, ~, m7, dom7, ~, add9] }
+  - { name: horns, kind: chords, mode: progression, chords: [1, 7, 4, 1], accidentals: [~, b, ~, ~], qualities: [~, M, ~, ~] }
+  - { name: near, kind: chords, lowest_octave: 4, highest_octave: 5 }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
   - { name: horns chords, kind: chain, generators: [{ name: horns }] }

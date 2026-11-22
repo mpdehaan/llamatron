@@ -9,8 +9,9 @@ import os
 import unittest
 import unittest.mock
 
-from llamatron.engine.generators import follow_chords as follow_chords_plugin, musician as musician_plugin
-from llamatron.engine.generators.follow_chords.model import FollowChordsSetting
+from llamatron.engine.generators import chords as chords_plugin, musician as musician_plugin
+from llamatron.engine.generators.chords import model as chords_model
+from llamatron.engine.generators.chords.model import ChordsSetting
 from llamatron.model.file import version
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.setlist import Setlist
@@ -347,9 +348,12 @@ class TestArranged(unittest.TestCase):
         # The bass player's Musician plays the clip first, and the clip's own chain then follows the chords.
         musician_chain, chain = played[BASS][composer.CHAINS]
         self.assertEqual(given[composer.CHAINS][musician_chain], [{musician_plugin.NAME: band.musician_name(BASS)}])
-        self.assertEqual(given[composer.CHAINS][chain][0], {follow_chords_plugin.NAME: wizard_text.MSG_FOLLOW_CHORDS_NAME})
-        self.assertEqual(given[composer.GENERATORS][follow_chords_plugin.SECTION], {wizard_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: wizard_text.MSG_CHORDS_TRACK}})
-        self.assertNotIn(arranger.PROGRESSIONS, given[composer.GENERATORS])
+        self.assertEqual(given[composer.CHAINS][chain][0], {chords_plugin.NAME: wizard_text.MSG_FOLLOW_CHORDS_NAME})
+        chords = given[composer.GENERATORS][chords_plugin.SECTION]
+        follow = {ChordsSetting.MODE: chords_model.FOLLOW_PROGRESSION, ChordsSetting.CHORDS_FROM: wizard_text.MSG_CHORDS_TRACK}
+        self.assertEqual(chords[wizard_text.MSG_FOLLOW_CHORDS_NAME], follow)
+        modes = [settings.get(ChordsSetting.MODE) for settings in chords.values()]
+        self.assertNotIn(chords_model.PROGRESSION, modes)
         pattern = arranger.values_of(style=self.style, trait=arranger.CHORD_TRAIT)[self.style[arranger.TEMPLATES][SHUFFLE][arranger.CHORD_TRAIT]][arranger.PATTERN]
         made = given[composer.PARTS][played[wizard_text.MSG_CHORDS_TRACK]][composer.RAW]
         # The shuffle's last two bars hold two chords each, so the chords are written by the half bar, a step a chord.

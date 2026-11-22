@@ -1,20 +1,19 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The tracker's Progression: the Progressions page, the progression editor and the chord editor, with the picker of named progressions."""
+"""The tracker's chord editor of a Chords generator's progression, with the picker of named progressions."""
 
-from llamatron.engine.generators import progression as progression_plugin
-from llamatron.engine.generators.progression import model as progression_settings
+from llamatron.engine.generators import chords as chords_plugin
+from llamatron.engine.generators.chords import model as chords_model
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs import chord_dialog
 from llamatron.interface.tracker.dialogs.chord_dialog import ChordDialog
 from llamatron.interface.tracker.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.generators import chords_editor
-from llamatron.interface.tracker.screens.generators.chords_editor import ChordsEditor
-from llamatron.interface.tracker.screens.generators.progression_editor import ProgressionEditor
+from llamatron.interface.tracker.screens.shared import chords_editor
+from llamatron.interface.tracker.screens.shared.chords_editor import ChordsEditor
 from llamatron.model.objects.named_scale import scale_type_name
-from llamatron.model.schema import file_format, limits
+from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, NamedProgression, Restart, Tension
 from llamatron.model.values.progressions import named_progression
 from llamatron.model.values.scale import ScaleType
@@ -43,48 +42,17 @@ G_SEVEN_FLAT_NINE = 'G7(b9)'
 A_FLAT_NOTES = 'Ab C Eb'
 
 
-class TestProgressionAdded(UITest):
-
-    async def test_a_new_one_has_one_chord_that_moves_nothing(self):
-        name = await self.add_generator(progression_plugin.SECTION)
-        self.assertEqual(self.document.get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=name).get_chords(), [limits.MIN_PROGRESSION_DEGREE])
-
-
-class TestProgressionEditor(UITest):
-    """The progression editor: its Every from the one list of times, and its Chords field opening the chord editor."""
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        await self.open_generator(section=progression_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, ProgressionEditor)
-
-    def progression(self):
-        return self.document.get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP)
-
-    async def test_every_starts_at_a_bar_and_steps_through_the_list(self):
-        self.assertIn(file_format.ONE_BAR_WRITTEN, self.text())
-        await self.select_field(labels.MSG_EVERY_LABEL)
-        await self.press(keybindings.ProgressionEditor.MORE)
-        self.assertEqual(self.progression().get_every(), [time for time in file_format.TIME_CHOICES if time != file_format.ONE_BAR_WRITTEN][0])
-
-    async def test_the_chords_field_shows_the_numerals_and_opens_the_chord_editor(self):
-        self.assertIn(POP_NUMERALS, self.text())
-        await self.select_field(labels.MSG_CHORDS_LABEL)
-        await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, ChordsEditor)
-
-
 class TestChordsEditor(UITest):
     """The chord editor: degrees stepped and typed, the #/b and Inv. rows, chords inserted and removed, and H filling the chords."""
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.app.screen.show_page(ChordsEditor(holder=self.app.screen.holder, name=ui_testing.POP))
+        self.app.screen.show_page(ChordsEditor(holder=self.app.screen.holder, name=ui_testing.POP, section=chords_plugin.SECTION))
         await self.pilot.pause()
         self.page = self.app.screen
 
     def progression(self):
-        return self.document.get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP)
+        return self.document.get_setlist().get_generator_settings(kind=chords_plugin.NAME, name=ui_testing.POP)
 
     async def test_it_shows_each_chords_numeral_and_name_in_the_songs_scale(self):
         for name in POP_NAMES:
@@ -179,7 +147,7 @@ class TestChordsEditor(UITest):
         await self.press(Key.ENTER)
         self.assertEqual(self.progression().get_tensions()[1], (Tension.FLAT_NINTH,))
         self.assertEqual(self.progression().get_qualities()[1], ChordSymbol.DOMINANT7)
-        self.assertEqual(self.progression().get_inversions()[1], progression_settings.PROGRESSION_INVERSIONS[0])
+        self.assertEqual(self.progression().get_inversions()[1], chords_model.PROGRESSION_INVERSIONS[0])
         self.assertIn(G_SEVEN_FLAT_NINE, self.text())
 
     async def test_escape_in_the_dialog_changes_nothing(self):
@@ -232,12 +200,12 @@ class TestRestartField(UITest):
     """Every generator's editor ends its own settings with Restart: every clip, on new scene or whole song."""
 
     async def test_restart_steps_through_its_choices(self):
-        await self.open_generator(section=progression_plugin.SECTION)
-        progression = self.document.get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP)
+        await self.open_generator(section=chords_plugin.SECTION, name=ui_testing.POP)
+        progression = self.document.get_setlist().get_generator_settings(kind=chords_plugin.NAME, name=ui_testing.POP)
         self.assertEqual(progression.get_restart(), Restart.EVERY_CLIP)
         self.assertIn(labels.MSG_RESTART_NAMES[Restart.EVERY_CLIP], self.text())
         await self.select_field(labels.MSG_RESTART_LABEL)
-        await self.press(keybindings.ProgressionEditor.MORE)
-        self.assertEqual(self.document.get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP).get_restart(), Restart.ON_NEW_SCENE)
-        await self.press(keybindings.ProgressionEditor.MORE)
-        self.assertEqual(self.document.get_setlist().get_generator_settings(kind=progression_plugin.NAME, name=ui_testing.POP).get_restart(), Restart.WHOLE_SONG)
+        await self.press(keybindings.PluginEditor.MORE)
+        self.assertEqual(self.document.get_setlist().get_generator_settings(kind=chords_plugin.NAME, name=ui_testing.POP).get_restart(), Restart.ON_NEW_SCENE)
+        await self.press(keybindings.PluginEditor.MORE)
+        self.assertEqual(self.document.get_setlist().get_generator_settings(kind=chords_plugin.NAME, name=ui_testing.POP).get_restart(), Restart.WHOLE_SONG)

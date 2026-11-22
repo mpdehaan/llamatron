@@ -102,8 +102,8 @@ patterns:
 
 generators:
   - { name: sequence, kind: arp, step: 1/16, order: up, octave_range: 2 }
-  - { name: drone, kind: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] }
-  - { name: theme, kind: progression, chords: [1, 6, 4, 5] }
+  - { name: drone, kind: chords, mode: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] }
+  - { name: theme, kind: chords, mode: progression, chords: [1, 6, 4, 5] }
   - { name: rise, kind: shapes, swell_start: 60, swell_end: 120, swell_accent: 0 }
   - { name: drone chords, kind: chain, generators: [{ name: drone }] }
   - { name: theme chords, kind: chain, generators: [{ name: theme }] }

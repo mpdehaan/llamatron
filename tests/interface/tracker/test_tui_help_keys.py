@@ -22,7 +22,7 @@ import inspect
 import re
 import unittest
 
-from llamatron.engine.generators import arp as arp_plugin, guitarify as guitarify_plugin, progression as progression_plugin, timing as timing_plugin
+from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, guitarify as guitarify_plugin, timing as timing_plugin
 from llamatron.engine.generators.timing import parts as timing_parts, strings as timing_strings, view as timing_view
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.components import pattern_rows
@@ -288,8 +288,8 @@ class KeyTour(UITest):
         await self.press(Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
-        # A progression's Chords field opens the chord editor.
-        await self.open_generator(section=progression_plugin.SECTION)
+        # A Chords generator's Chords field, in Progression mode, opens the chord editor.
+        await self.open_generator(section=chords_plugin.SECTION, name=ui_testing.POP)
         await self.select_field(labels.MSG_CHORDS_LABEL)
         await self.press(Key.ENTER)
         await self.walk()

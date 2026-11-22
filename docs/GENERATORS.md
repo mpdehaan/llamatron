@@ -68,8 +68,7 @@ Which chords a figure follows.
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
-| [FollowChords](generators/FOLLOW_CHORDS.md) | Moves a figure to the chords another track plays | `examples/learning/24_follow_chords.yml` |
-| [Progression](generators/PROGRESSION.md) | Moves a figure through a progression of chords | `examples/learning/06_chord_progression_generator.yml` |
+| [Chords](generators/CHORDS.md) | Moves a figure through a progression of chords, or to the chords another track plays, and voices each chord nearest the one before | `examples/learning/06_chord_progression_generator.yml`, `examples/learning/24_follow_chords.yml`, `examples/learning/05_voice_leading.yml` |
 
 ### Rhythm
 
@@ -105,7 +104,6 @@ How a chord's notes are laid out and played.
 | --- | --- | --- |
 | [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/12_sailor_arpeggiator.yml` |
 | [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/23_guitarify.yml` |
-| [VoiceLeading](generators/VOICE_LEADING.md) | Voices each chord nearest the chord before | `examples/learning/05_voice_leading.yml` |
 
 [About Demos](DEMOS.md) describes every demo, and its table shows which features each one uses.
 
@@ -113,7 +111,7 @@ How a chord's notes are laid out and played.
 
 ![The Generators page](screenshots/generators.svg)
 
-Press `G` on the main screen for the Generators page, which lists every generator of the set under a heading for its type, such as `- Density (2)`, the types and the generators under each sorted by name. Every type is closed until opened: Space or `ENTER` on a heading opens and closes its type, the set's file keeps which types are open, and `PgUp` and `PgDn` jump between the headings. The kinds are the Chain, Arpeggiator, AutoRatchet, Drift, Progression, VoiceLeading, Strum, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and FollowChords. A generator changes a clip's notes when the song plays or exports; to use one, add it to the Generators field of a clip, a scene or a track, on its own or in a chain.
+Press `G` on the main screen for the Generators page, which lists every generator of the set under a heading for its type, such as `- Chords (2)`, the types and the generators under each sorted by name. Every type is closed until opened: Space or `ENTER` on a heading opens and closes its type, the set's file keeps which types are open, and `PgUp` and `PgDn` jump between the headings. The kinds are the Chain, Arpeggiator, AutoRatchet, Drift, Progression, VoiceLeading, Strum, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and FollowChords. A generator changes a clip's notes when the song plays or exports; to use one, add it to the Generators field of a clip, a scene or a track, on its own or in a chain.
 
 | Key | What it does |
 | --- | --- |

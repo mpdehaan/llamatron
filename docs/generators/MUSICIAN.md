@@ -14,7 +14,7 @@ Each instrument also has a lowest and a highest note, which Range respects.
 
 ## Chords From and Tune From
 
-Chords from names the track whose chords the Musician follows, in the same scene, exactly as [Follow Chords](FOLLOW_CHORDS.md) does: the part is written once over chord I, and the Musician moves the notes to whatever chord that track plays. A Musician with a track in Chords from needs no Follow Chords in its chain.
+Chords from names the track whose chords the Musician follows, in the same scene, exactly as a [Chords](CHORDS.md) generator in Follow Progression mode does: the part is written once over chord I, and the Musician moves the notes to whatever chord that track plays. A Musician with a track in Chords from needs no Follow Chords in its chain.
 
 Tune from names the track that carries the tune. The Musician listens to that track and makes room, as Gives way says.
 

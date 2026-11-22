@@ -21,7 +21,9 @@ import io
 import os
 import sys
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin
+from llamatron.engine.generators.chords import model as chords_model
+from llamatron.engine.generators.chords.model import ChordsSetting
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits
@@ -100,6 +102,25 @@ def any_song_setting(setting):
 
 def has_section(section):
     return lambda data: bool(data.get(section))
+
+
+def chords_in_mode(mode):
+    """Return a check of whether a set has a Chords generator in a mode."""
+    return lambda data: any(chords_mode(settings) == mode for settings in (data.get(chords_plugin.SECTION) or {}).values())
+
+
+def chords_mode(settings):
+    """Return the mode of a Chords generator's settings as a set file holds them, Voicing where left out."""
+    return settings.get(ChordsSetting.MODE) or chords_model.DEFAULT_MODE
+
+
+def chords_voicing(data):
+    """Return whether a set has a Chords generator that voices chords: in Voicing mode, or with Voice leading switched on."""
+    for settings in (data.get(chords_plugin.SECTION) or {}).values():
+        written = settings.get(ChordsSetting.VOICE_LEADING)
+        if written or (written is None and chords_mode(settings) == chords_model.VOICING):
+            return True
+    return False
 
 
 def any_song_section(section):
@@ -198,13 +219,13 @@ FEATURES = [
     ('arps', has_section(arp_plugin.SECTION)),
     ('AutoRatchets', has_section(auto_ratchet_plugin.SECTION)),
     ('drifts', has_section(drift_plugin.SECTION)),
-    ('progressions', has_section(progression_plugin.SECTION)),
-    ('voice leadings', has_section(voice_leading_plugin.SECTION)),
+    ('progressions', chords_in_mode(chords_model.PROGRESSION)),
+    ('voice leadings', chords_voicing),
     ('inversions', any_pattern_row(Row.INVERSION)),
     ('timings', has_section(timing_plugin.SECTION)),
     ('hockets', has_section(hocket_plugin.SECTION)),
     ('guitarifies', has_section(guitarify_plugin.SECTION)),
-    ('follow chords', has_section(follow_chords_plugin.SECTION)),
+    ('follow chords', chords_in_mode(chords_model.FOLLOW_PROGRESSION)),
     ('phrasings', has_section(phrasing_plugin.SECTION)),
     ('musicians', has_section(musician_plugin.SECTION)),
     ('strums', lambda data: has_section(strum_plugin.SECTION)(data) or any_track_setting(TrackSetting.STRUM_DIRECTION)(data) or any_clip_slot_setting(ClipSlotSetting.STRUM_DIRECTION)(data)),

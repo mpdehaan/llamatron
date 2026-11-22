@@ -156,8 +156,8 @@ patterns:
 
 generators:
   - { name: harp, kind: arp, step: 1/8, order: up, octave_range: 2 }
-  - { name: chase, kind: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] }
-  - { name: calm, kind: progression, chords: [3, 7, 6, 3] }
+  - { name: chase, kind: chords, mode: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] }
+  - { name: calm, kind: chords, mode: progression, chords: [3, 7, 6, 3] }
   - { name: chase chords, kind: chain, generators: [{ name: chase }] }
   - { name: calm chords, kind: chain, generators: [{ name: calm }] }
   - { name: calm harp, kind: chain, generators: [{ name: calm }, { name: harp }] }

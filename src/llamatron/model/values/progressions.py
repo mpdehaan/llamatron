@@ -11,6 +11,8 @@ scale becomes that plain degree, any other the degree a half step above it with 
 it with a sharp, and plain degrees then follow later edits of the scale, as a pattern's do.
 """
 
+from typing import NamedTuple
+
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Accidental, NamedProgression, Quality
 from llamatron.model.values.scale import ScaleType
@@ -27,6 +29,18 @@ QUALITIES = {(4, 7): Quality.MAJOR, (3, 7): Quality.MINOR, (3, 6): Quality.DIMIN
 OTHER_QUALITY = Quality.MAJOR
 UPPER_CASE_QUALITIES = (Quality.MAJOR, Quality.AUGMENTED)
 ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
+
+
+class ProgressionRows(NamedTuple):
+    """A progression's chords and the rows beside them, each a list as long as the chords: each chord's degree, its sharp or flat,
+    its inversion, the scale type it borrows, its named quality and its tensions, None on a step for none."""
+
+    chords: list
+    accidentals: list
+    inversions: list
+    scales: list
+    qualities: list
+    tensions: list
 
 
 def shape_of(scale):

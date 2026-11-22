@@ -119,8 +119,8 @@ patterns:
     tie: [false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
 generators:
-  - { name: hook, kind: progression, chords: [1, 1, 6, 7] }
-  - { name: second, kind: progression, chords: [4, 1, 4, 5], qualities: [~, ~, ~, M] }
+  - { name: hook, kind: chords, mode: progression, chords: [1, 1, 6, 7] }
+  - { name: second, kind: chords, mode: progression, chords: [4, 1, 4, 5], qualities: [~, ~, ~, M] }
   - { name: hook chords, kind: chain, generators: [{ name: hook }] }
   - { name: second chords, kind: chain, generators: [{ name: second }] }
 

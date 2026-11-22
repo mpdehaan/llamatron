@@ -1,0 +1,33 @@
+version: 1.0.206
+title: Arp before lists
+description: "a strummed guitar pattern, plain and then arpeggiated, kept in the layout before lists"
+scales:
+  G Major: { root: G, type: major }
+patterns:
+  strumming:
+    steps: 8
+    step_size: 1/8
+    degree: [1, ~, 1, 1, ~, 1, 1, 1]
+    octave: [4, ~, 4, 4, ~, 4, 4, 4]
+    chord: [3, ~, 3, 3, ~, 3, 3, 3]
+    velocity: [96, ~, 88, 70, ~, 72, 90, 70]
+arps:
+  climb: { step: 1/16, order: up, octave_range: 2 }
+chains:
+  climb:
+    - arp: climb
+instruments:
+  steel guitar: { device: "*FluidSynth", gm_sound: 26 }
+songs:
+  arp_before_lists:
+    tempo: 92
+    scale: G Major
+    tracks:
+      guitar: { instrument: steel guitar }
+    scenes:
+      - name: plain
+        tracks:
+          guitar: { pattern: strumming, repeat: 2 }
+      - name: climbing
+        tracks:
+          guitar: { pattern: strumming, chains: [climb], repeat: 2 }

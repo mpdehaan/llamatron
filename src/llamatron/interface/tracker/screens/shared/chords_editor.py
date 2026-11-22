@@ -15,8 +15,6 @@ notes added on top. On those rows [ and ] and Space step through the choices and
 pattern editor opens, on that row's list. The Name row and the status line say what the cursor's chord comes to.
 """
 
-from llamatron.engine.generators import progression as progression_plugin
-from llamatron.engine.generators.progression import model as progression_settings
 from llamatron.interface.tracker import drawing, key_table, keybindings, keys as keys_values, scale_categories
 from llamatron.interface.tracker.chord_text import ChordInWords
 from llamatron.interface.tracker.components.chord_row import quality_names
@@ -32,7 +30,7 @@ from llamatron.model.objects.naming import words
 from llamatron.model.schema import file_format, limits
 from llamatron.model.values import progressions
 from llamatron.model.values.chords import borrowed, chord_half_steps
-from llamatron.model.values.progressions import named_progression_in, shown_numerals
+from llamatron.model.values.progressions import named_progression_in, ProgressionRows, shown_numerals
 from llamatron.user_strings import help as help_text, labels, marks, messages
 
 # The rows the cursor edits, top to bottom, in the order that is the same wherever a chord is chosen: its root, with the root's sharp or flat, then its quality, its
@@ -64,7 +62,7 @@ THIRD_AND_FIFTH = 2
 # How much of a scale type's name and of a chord's tensions a cell shows.
 CELL_ROOM = 5
 # The inversions a chord steps through: root position first.
-INVERSION_CYCLE = [None, *progression_settings.PROGRESSION_INVERSIONS]
+INVERSION_CYCLE = [None, *range(1, limits.MAX_PROGRESSION_INVERSION + 1)]
 # The chord I inserts.
 INSERTED_DEGREE = limits.MIN_PROGRESSION_DEGREE
 # What a digit types on the Inv. row to go back to root position.
@@ -76,13 +74,14 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
 
     KEYS = keybindings.ChordsEditor
     HELP = help_text.HELP_CHORDS_EDITOR
-    SECTION = progression_plugin.SECTION
     CRUMBS_BEFORE = (labels.Crumb.GENERATORS,)
     CRUMBS_AFTER = (labels.Crumb.CHORDS,)
     # A cell is wide enough for a numeral like ♭vii° or a name like Bb°.
     CELL_WIDTH = 7
 
-    def __init__(self, *, holder, name):
+    def __init__(self, *, holder, name, section):
+        # The section names the generator before the page opens, since opening asks for the page's crumbs and caption.
+        self.SECTION = section
         super().__init__(holder=holder, name=name)
         self.edited_row = CHORD_ROW
 
@@ -134,10 +133,11 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
 
     def store(self, rows):
         """Store every row, given in the order of the rows on screen."""
-        self.document().set_progression(
-            name=self.item, chords=rows[CHORD_ROW], accidentals=rows[ACCIDENTAL_ROW], inversions=rows[INVERSION_ROW],
-            scales=rows[SCALE_ROW], qualities=rows[QUALITY_ROW], tensions=rows[TENSION_ROW],
+        progression = ProgressionRows(
+            chords=rows[CHORD_ROW], accidentals=rows[ACCIDENTAL_ROW], inversions=rows[INVERSION_ROW], scales=rows[SCALE_ROW],
+            qualities=rows[QUALITY_ROW], tensions=rows[TENSION_ROW],
         )
+        self.document().set_progression(section=self.SECTION, name=self.item, rows=progression)
 
     def changed_here(self, *, row, value):
         """Store a value on the cursor's step of one of the rows."""
@@ -170,7 +170,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
             if number is not None:
                 self.set_value(number)
         elif self.edited_row == INVERSION_ROW:
-            number = self.typed_number(digit=digit, low=ROOT_POSITION_TYPED, high=progression_settings.PROGRESSION_INVERSIONS[-1])
+            number = self.typed_number(digit=digit, low=ROOT_POSITION_TYPED, high=limits.MAX_PROGRESSION_INVERSION)
             if number is not None:
                 self.changed_here(row=INVERSION_ROW, value=number or None)
 

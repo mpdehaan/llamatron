@@ -39,7 +39,7 @@ rolled like a harp.
 
 | chords | chains | ties | progressions | strum |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) | [✓](../generators/STRUM.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) | [✓](../generators/STRUM.md) |
 <!-- end of the generated summary of 13_classic_strum -->
 
 <a id="complex_gifts_chain"></a>
@@ -76,7 +76,7 @@ the tune pass between them.
 <a id="secret_chord"></a>
 ## Hallelujah Chords: `secret_chord.yml`
 
-Leonard Cohen's chords for Hallelujah in 6/8, played through a Progression, under a melody of its
+Leonard Cohen's chords for Hallelujah in 6/8, played through a progression, under a melody of its
 own. In 6/8: a piano rolls each chord, a nylon guitar strums it, and a cello sings a tune of its
 own, plain in the verses; a choir and strings come in for the choruses, whose phrases are long
 falling notes. The chords are the song's, a whole step up.
@@ -86,5 +86,5 @@ falling notes. The chords are the song's, a whole step up.
 
 | chords | chains | ties | progressions | strum |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) | [✓](../generators/STRUM.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) | [✓](../generators/STRUM.md) |
 <!-- end of the generated summary of secret_chord -->

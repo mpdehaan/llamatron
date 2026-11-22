@@ -19,7 +19,7 @@ from dataclasses import dataclass
 import pathlib
 import re
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drift as drift_plugin, hocket as hocket_plugin, progression as progression_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, hocket as hocket_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.document import Document
@@ -37,10 +37,11 @@ ARP_SONG = ROOT / 'examples' / 'learning' / '12_sailor_arpeggiator.yml'
 SWELL_SONG = ROOT / 'examples' / 'learning' / '16_bolero_swell.yml'
 STRUM_SONG = ROOT / 'examples' / 'learning' / '13_classic_strum.yml'
 PROGRESSION_SONG = ROOT / 'examples' / 'learning' / '06_chord_progression_generator.yml'
+# The Chords generator of that song the Chords shots show, in Progression mode.
+SHOWN_PROGRESSION = 'pop'
 HOCKET_SONG = ROOT / 'examples' / 'learning' / '19_hocket_shanty.yml'
 DRIFT_SONG = ROOT / 'examples' / 'by_genre' / 'rock' / 'volcano.yml'
 DENSITY_SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'edm_density.yml'
-VOICE_LEADING_SONG = ROOT / 'examples' / 'learning' / '05_voice_leading.yml'
 GLIDE_SONG = ROOT / 'examples' / 'learning' / '14_acid_glide.yml'
 # The progression demo's bass, a clip with a chain, by its place from the left.
 CHAINED_TRACK_PLACE = 4
@@ -80,6 +81,8 @@ class Shot:
     # A generator section whose first generator the Generators page opens before the keys are pressed, since where it sits on
     # the one list depends on the song.
     generator: str = None
+    # The name of the generator of that section to open, or None for its first.
+    generator_name: str = None
     # A panel of the song wizard, by its name in the wizard's tree: the wizard is opened, the wizard's genre, subgenre and seed are
     # chosen so that the shot is the same every time, and the tree's cursor goes to the panel.
     wizard: str = None
@@ -131,11 +134,10 @@ SHOTS = [
     Shot(name='clip_strum', keys=[keybindings.MainPage.ARRANGE, Key.DOWN, Key.RIGHT, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=STRUM_SONG),
     Shot(name='instruments', keys=[keybindings.MainPage.INSTRUMENTS]),
     Shot(name='instrument_editor', keys=[keybindings.MainPage.INSTRUMENTS, Key.ENTER]),
-    Shot(name='progression_editor', generator=progression_plugin.SECTION, keys=[], song=PROGRESSION_SONG),
-    Shot(name='chords_editor', generator=progression_plugin.SECTION, keys=[Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),
+    Shot(name='chords_generator', generator=chords_plugin.SECTION, generator_name=SHOWN_PROGRESSION, keys=[], song=PROGRESSION_SONG),
+    Shot(name='chords_editor', generator=chords_plugin.SECTION, generator_name=SHOWN_PROGRESSION, keys=[Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),
     Shot(name='drift_editor', generator=drift_plugin.SECTION, keys=[], song=DRIFT_SONG),
     Shot(name='hocket_editor', generator=hocket_plugin.SECTION, keys=[], song=HOCKET_SONG),
-    Shot(name='voice_leading_editor', generator=voice_leading_plugin.SECTION, keys=[], song=VOICE_LEADING_SONG),
     Shot(name='strum_editor', generator=strum_plugin.SECTION, keys=[], song=STRUM_SONG),
     Shot(name='shapes_editor', generator=shapes_plugin.SECTION, keys=[], song=SWELL_SONG),
     Shot(name='timing_editor', generator=timing_plugin.SECTION, keys=[], song=GLIDE_SONG),
@@ -183,9 +185,8 @@ async def take(shot):
             await pilot.press(first_key(keybindings.MainPage.GENERATORS))
             await pilot.pause()
             kind = generator_pages.GENERATOR_PAGES[shot.generator].kind
-            place = next(place for place, (each, _) in enumerate(app.screen.generators()) if each == kind)
-            for _ in range(place):
-                await pilot.press(Key.DOWN)
+            found = next((each, name) for each, name in app.screen.generators() if each == kind and shot.generator_name in (None, name))
+            app.screen.put_cursor_on(kind=found[0], name=found[1])
             await pilot.press(Key.ENTER)
             await pilot.pause()
         if shot.wizard is not None:

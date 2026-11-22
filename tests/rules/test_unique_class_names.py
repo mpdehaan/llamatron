@@ -45,7 +45,6 @@ ALLOWED = (
     'DriftEditor',
     'FieldPage',
     'FilePage',
-    'FollowChordsEditor',
     'GateRow',
     'GeneratorListPage',
     'GeneratorsPage',
@@ -90,7 +89,6 @@ ALLOWED = (
     'PianoRoll',
     'PickManyDialog',
     'PluginEditor',
-    'ProgressionEditor',
     'PromptDialog',
     'QuitDialog',
     'RegisterRow',
@@ -114,7 +112,6 @@ ALLOWED = (
     'TieRow',
     'ToggleRow',
     'TrackEditor',
-    'VoiceLeadingEditor',
     'WizardPage',
 )
 MSG_SHARED = 'class names shared by more than one class: {names}'

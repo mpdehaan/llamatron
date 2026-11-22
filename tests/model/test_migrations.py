@@ -25,14 +25,13 @@ from tests.support.rendering import as_setlist, render_data
 from tests.support.song_testing import clip, pat, pitches, with_parts
 
 DATA = pathlib.Path(__file__).resolve().parent.parent / 'data' / 'migrations'
-EXAMPLES = pathlib.Path(__file__).resolve().parent.parent.parent / 'examples'
 SRC = pathlib.Path(__file__).resolve().parent.parent.parent / 'src' / 'llamatron'
 MIGRATIONS = SRC / 'model' / 'file' / 'migrations'
-STRUM_BEFORE_LISTS = DATA / 'strum_before_lists.yml'
-STRUM_NOW = EXAMPLES / 'learning' / '13_classic_strum.yml'
+ARP_BEFORE_LISTS = DATA / 'arp_before_lists.yml'
+ARP_NOW = DATA / 'arp_now.yml'
 OUT_OF_RANGE_BEFORE_LISTS = DATA / 'out_of_range_before_lists.yml'
-# The chains of the strum demo before lists, each of which a generator of another kind came first with.
-STRUM_RENAMES = [(FileLayout.CHAIN, 'verse', 'verse-2'), (FileLayout.CHAIN, 'harp roll', 'harp roll-2'), (FileLayout.CHAIN, 'chorus', 'chorus-2')]
+# The chain of the set before lists, which its arpeggiator of the same name came first with.
+ARP_RENAMES = [(FileLayout.CHAIN, 'climb', 'climb-2')]
 # Versions from before each change of layout.
 BEFORE_LIVE_OCTAVES = '1.0.24'
 LIVE_OCTAVES_SINCE = '1.0.30'
@@ -84,13 +83,13 @@ def old_lead(**more):
 class TestLists(unittest.TestCase):
 
     def test_a_file_before_lists_reads_as_the_file_written_now_and_plays_the_same(self):
-        old = Setlist.read_file(str(STRUM_BEFORE_LISTS))
+        old = Setlist.read_file(str(ARP_BEFORE_LISTS))
         self.assertTrue(old.get_conversion().has_moved())
-        self.assertEqual(old.get_conversion().get_renames(), STRUM_RENAMES)
-        self.assertEqual(played(STRUM_BEFORE_LISTS), played(STRUM_NOW))
+        self.assertEqual(old.get_conversion().get_renames(), ARP_RENAMES)
+        self.assertEqual(played(ARP_BEFORE_LISTS), played(ARP_NOW))
 
     def test_a_file_written_now_is_not_moved(self):
-        now = Setlist.read_file(str(STRUM_NOW))
+        now = Setlist.read_file(str(ARP_NOW))
         self.assertFalse(now.get_conversion().has_moved())
         self.assertEqual(now.get_conversion().get_renames(), [])
 

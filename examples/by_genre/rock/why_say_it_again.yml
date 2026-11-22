@@ -144,9 +144,9 @@ patterns:
     velocity: [115, 109, ~, 101, 106, ~, 104, 101, 115, 109, ~, 101, 106, ~, ~, ~, 115, 109, ~, 101, 106, ~, 104, 101, 115, 109, ~, 101, 106, ~, ~, ~]
 
 generators:
-  - { name: verse, kind: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] }
-  - { name: chorus, kind: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] }
-  - { name: bridge, kind: progression, chords: [2, 2, 4, 5] }
+  - { name: verse, kind: chords, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] }
+  - { name: chorus, kind: chords, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] }
+  - { name: bridge, kind: chords, mode: progression, chords: [2, 2, 4, 5] }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
   - { name: bridge chords, kind: chain, generators: [{ name: bridge }] }

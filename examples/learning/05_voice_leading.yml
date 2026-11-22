@@ -5,11 +5,11 @@ notes: |
   Voice leading: an original piece for piano at 96 beats a minute in D major, block chords over
   a bass, where three progressions are each played three ways, back to back, so that you hear
   what voicing does: in root position, every chord jumping up from its root; with the chord
-  editor's Inv. row set by hand; and through the Voice leading generator, which plays each chord
+  editor's Inv. row set by hand; and through a Chords generator's Voice leading, which plays each chord
   in the inversion and octave nearest the chord before.
   Run it with: llamatron examples/learning/05_voice_leading.yml --to ableton --replace
 
-  The chords are one pattern, a triad on degree 1 twice a bar, moved by a Progression; the bass
+  The chords are one pattern, a triad on degree 1 twice a bar, moved by a progression; the bass
   plays the roots, which voice leading leaves alone, since one note has no inversion. The chains
   named "smooth" add the voice leading called smooth after the progression.
 
@@ -45,14 +45,14 @@ patterns:
     tie: [false, true, true, true]
 
 generators:
-  - { name: pop, kind: progression, chords: [1, 5, 6, 4] }
-  - { name: pop by hand, kind: progression, chords: [1, 5, 6, 4], inversions: [~, 1, ~, 2] }
-  - { name: pachelbel, kind: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5] }
-  - { name: pachelbel by hand, kind: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5], inversions: [~, 1, ~, 1, 2, ~, 2, 1] }
-  - { name: circle, kind: progression, chords: [6, 2, 5, 1] }
-  - { name: circle by hand, kind: progression, chords: [6, 2, 5, 1], inversions: [~, 2, 1, ~] }
-  - { name: smooth, kind: voice_leading }
-  - { name: over the bass, kind: voice_leading, root_in_bass: true }
+  - { name: pop, kind: chords, mode: progression, chords: [1, 5, 6, 4] }
+  - { name: pop by hand, kind: chords, mode: progression, chords: [1, 5, 6, 4], inversions: [~, 1, ~, 2] }
+  - { name: pachelbel, kind: chords, mode: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5] }
+  - { name: pachelbel by hand, kind: chords, mode: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5], inversions: [~, 1, ~, 1, 2, ~, 2, 1] }
+  - { name: circle, kind: chords, mode: progression, chords: [6, 2, 5, 1] }
+  - { name: circle by hand, kind: chords, mode: progression, chords: [6, 2, 5, 1], inversions: [~, 2, 1, ~] }
+  - { name: smooth, kind: chords }
+  - { name: over the bass, kind: chords, root_in_bass: true }
   - { name: pop chords, kind: chain, generators: [{ name: pop }] }
   - { name: pop by hand chords, kind: chain, generators: [{ name: pop by hand }] }
   - { name: pop smooth, kind: chain, generators: [{ name: pop }, { name: smooth }] }

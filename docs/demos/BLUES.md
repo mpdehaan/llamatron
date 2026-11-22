@@ -21,7 +21,7 @@ with the chords.
 
 | chords | chains | grooves | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../GROOVES.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 07_blues_chords -->
 
 <a id="groove"></a>
@@ -56,5 +56,5 @@ verses; two guitar choruses.
 
 | chains | ties | grooves | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of intersection_pact -->

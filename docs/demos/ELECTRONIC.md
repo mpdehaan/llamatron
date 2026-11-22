@@ -85,7 +85,7 @@ lyrical middle in the dominant key and a last time a step higher. No club effect
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of mainstreet_hoedown -->
 
 <a id="microwave_snacks"></a>
@@ -101,7 +101,7 @@ early synthesizer records were.
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of microwave_snacks -->
 
 <a id="minimal_techno"></a>
@@ -143,7 +143,7 @@ on every beat, a house piano in the choruses and a breakdown on the pad.
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of nomore_nomore -->
 
 <a id="ode_to_joy_ratchet"></a>
@@ -176,7 +176,7 @@ once more; and an ending for percussion and pad.
 
 | chords | chains | ties | shapes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/SHAPES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/SHAPES.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of percussion_fish -->
 
 <a id="registers"></a>
@@ -208,7 +208,7 @@ the dragon, a battle; the return, the theme with everything; an epilogue for the
 
 | chords | chains | ties | tempo changes | shapes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/SHAPES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/SHAPES.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of roll_d20 -->
 
 <a id="sailor_arpeggiator"></a>
@@ -231,7 +231,7 @@ arpeggio.
 ## Trance Builds by Density: `sandworm.yml`
 
 A late nineties trance anthem in the manner of Sandstorm (Darude), its builds made by Density. A saw
-lead hammers one note in sixteenths, the riff moved through i, iv, III and VII by a Progression; a
+lead hammers one note in sixteenths, the riff moved through i, iv, III and VII by a progression; a
 kick on every beat and a bass galloping on the offbeats; a snare roll and the riff thickened by
 Density before each drop; a long breakdown on the pad.
 
@@ -240,7 +240,7 @@ Density before each drop; a long breakdown on the pad.
 
 | chords | chains | ties | shapes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/SHAPES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/SHAPES.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of sandworm -->
 
 <a id="techno_morph"></a>
@@ -268,7 +268,7 @@ its own.
 
 | chords | arps | chains | ties | shapes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/SHAPES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/SHAPES.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of the_mineral -->
 
 <a id="tie"></a>

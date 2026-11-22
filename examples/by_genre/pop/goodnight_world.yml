@@ -157,9 +157,9 @@ patterns:
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, true, false, true]
 
 generators:
-  - { name: loop, kind: progression, chords: [1, 1, 6, 5], every: 1/2 }
-  - { name: pre, kind: progression, chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] }
-  - { name: bridge, kind: progression, chords: [1, 4], qualities: [sus4, M] }
+  - { name: loop, kind: chords, mode: progression, chords: [1, 1, 6, 5], every: 1/2 }
+  - { name: pre, kind: chords, mode: progression, chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] }
+  - { name: bridge, kind: chords, mode: progression, chords: [1, 4], qualities: [sus4, M] }
   - { name: loop chords, kind: chain, generators: [{ name: loop }] }
   - { name: pre chords, kind: chain, generators: [{ name: pre }] }
   - { name: bridge chords, kind: chain, generators: [{ name: bridge }] }

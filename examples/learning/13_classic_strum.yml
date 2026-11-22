@@ -8,7 +8,7 @@ notes: |
   Run it with: llamatron examples/learning/13_classic_strum.yml --to ableton --replace
 
   The guitar plays the folk strumming pattern, down, down-up, up-down-up, written once as eighth
-  notes of one chord, and a Progression moves it through the verse's I-V-vi-IV and the chorus's
+  notes of one chord, and a progression moves it through the verse's I-V-vi-IV and the chorus's
   IV-I-V. Strum is set on the guitar track, by the beat with the normal spread: down on the
   beats, low string to high, and up between them, 8 milliseconds from one string to the next.
   The clips' own Strum sections change it scene by scene, so you can hear the difference.
@@ -23,7 +23,7 @@ notes: |
   Scene 9: the last verse, the track's strum again.
 
   When changing this demo:
-  - Keep the guitar's pattern one chord, so that every chord is the Progression's and every
+  - Keep the guitar's pattern one chord, so that every chord is the progression's and every
     strum the Strum settings'.
   - Keep the first scene with Strum off, to hear what the strum adds.
   - Keep all three places a strum is set: the track's, the clips' own, and the generator.
@@ -49,8 +49,8 @@ patterns:
     tie: [false, true, false, true]
 
 generators:
-  - { name: verse, kind: progression, chords: [1, 5, 6, 4] }
-  - { name: chorus, kind: progression, chords: [4, 1, 5] }
+  - { name: verse, kind: chords, mode: progression, chords: [1, 5, 6, 4] }
+  - { name: chorus, kind: chords, mode: progression, chords: [4, 1, 5] }
   - { name: harp roll, kind: strum, direction: by_the_beat, spread: harp }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: harp roll strum, kind: chain, generators: [{ name: harp roll }] }

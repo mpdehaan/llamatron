@@ -150,8 +150,8 @@ patterns:
 
 generators:
   - { name: sequence, kind: arp, step: 1/16, order: up_down, octave_range: 2 }
-  - { name: riff, kind: progression, chords: [1, 1, 1, 1, 1, 1, 6, 7] }
-  - { name: drop, kind: progression, chords: [1, 1, 6, 7] }
+  - { name: riff, kind: chords, mode: progression, chords: [1, 1, 1, 1, 1, 1, 6, 7] }
+  - { name: drop, kind: chords, mode: progression, chords: [1, 1, 6, 7] }
   - { name: rise, kind: shapes, density_start: 0, density_end: 100 }
   - { name: riff chords, kind: chain, generators: [{ name: riff }] }
   - { name: drop chords, kind: chain, generators: [{ name: drop }] }

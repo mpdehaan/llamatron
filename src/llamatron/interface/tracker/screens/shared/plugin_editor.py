@@ -7,16 +7,19 @@ settings, drawn from the description alone, so that the plugin's page needs no c
 import functools
 
 from llamatron.interface.tracker import keybindings
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField
+from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.octave_field import octave_field
+from llamatron.interface.tracker.screens.shared.progression_field import progression_field
 from llamatron.interface.tracker.screens.shared.restart_field import restart_field
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
 from llamatron.interface.tracker.screens.shared.time_field import time_field
+from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import shape_setting
-from llamatron.model.schema.generator_views import ChoiceView, NumberView, RestartView, SectionView, ShapeView, StepsView, TimeView
+from llamatron.model.schema.generator_views import ChoiceView, NumberView, OctaveView, ProgressionView, RestartView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 
@@ -50,10 +53,79 @@ class PluginEditor(GeneratorEditor, FieldPage):
 
     def fields(self):
         fields = [NameField(value=self.shown_name, rename=self.rename)]
+        mode = None
+        if self._view.mode is not None:
+            fields.append(self._choice_field(self._view.mode))
+            mode = self.chosen(self._view.mode)
         for column in self._view.columns:
+            if column.modes and mode not in column.modes:
+                continue
             for setting in column.settings:
                 fields += self._fields_of(setting)
         return fields
+
+    def chosen(self, setting):
+        """Return the value a choice holds, the value it takes when the file leaves it out where it is not written."""
+        current = self.settings().get_written(setting.setting)
+        if current is None:
+            return setting.default
+        return current
+
+    def is_toggled(self, setting):
+        """Return whether a toggle is on: as written, else as it is when left out."""
+        written = self.settings().get_written(setting.setting)
+        if written is None:
+            return self.toggle_default(setting)
+        return written
+
+    def toggle_default(self, setting):
+        """Return whether a toggle is on when the file leaves it out, which may depend on the generator's mode."""
+        if setting.by_mode is None:
+            return setting.default
+        return setting.by_mode.get(self.chosen(self._view.mode), setting.default)
+
+    def store_toggle(self, on, *, setting):
+        """Keep a toggle, left out of the file where it is what the toggle is when left out."""
+        value = on
+        if on == self.toggle_default(setting):
+            value = None
+        self.store(setting=setting.setting, value=value)
+
+    def store_octave(self, octave, *, setting):
+        """Keep an end of a range of octaves, left out of the file where it is the end taken when left out."""
+        if octave == setting.default:
+            octave = None
+        self.store(setting=setting.setting, value=octave)
+
+    def octave_of(self, setting):
+        """Return an end of a range of octaves, its default where the file leaves it out."""
+        written = self.settings().get_written(setting.setting)
+        if written is None:
+            return setting.default
+        return written
+
+    def lowest_of(self, setting):
+        """Return the lowest a number may be, which another setting may raise."""
+        return self.settings().limits_of(setting.setting)[0]
+
+    def highest_of(self, setting):
+        """Return the highest a number may be, which another setting may lower."""
+        return self.settings().limits_of(setting.setting)[1]
+
+    def tracks(self, setting):
+        """Return the tracks that can be named: the current song's, sorted, and the one named among them even when the song has no
+        such track, so that it is seen and kept."""
+        names = set(self.document().song().get_track_names())
+        written = self.settings().get_written(setting.setting)
+        if written is not None:
+            names.add(written)
+        return sorted_names(names)
+
+    def store_track(self, choice, *, setting):
+        """Keep the track a setting names, None or (none) naming none."""
+        if choice == marks.MSG_NONE_SHOWN:
+            choice = None
+        self.store(setting=setting.setting, value=choice)
 
     def store_number(self, number, *, setting):
         """Keep a number of the generator, left out of the file where it is the number taken when left out, or cleared."""
@@ -112,6 +184,14 @@ class PluginEditor(GeneratorEditor, FieldPage):
             return [self._steps_field(setting)]
         if kind is SectionView:
             return self._section_fields(setting)
+        if kind is ToggleView:
+            return [self._toggle(setting)]
+        if kind is OctaveView:
+            return [self._octave_field(setting)]
+        if kind is TrackView:
+            return [self._track_field(setting)]
+        if kind is ProgressionView:
+            return [progression_field(page=self, label=setting.label)]
         raise TypeError(setting)
 
     def _number_field(self, setting):
@@ -132,10 +212,34 @@ class PluginEditor(GeneratorEditor, FieldPage):
         )
 
     def _time_field(self, setting):
-        """Return the field that chooses how long each step of a row is, the pattern's step size first."""
+        """Return the field that chooses a length of time, the value taken when left out first: the pattern's step size unless the
+        view says otherwise."""
+        first = setting.first
+        if first is None:
+            first = marks.MSG_PATTERN_STEP_SHOWN
         return time_field(
-            page=self, label=setting.label, written=self.settings().get_written(setting.setting), first=marks.MSG_PATTERN_STEP_SHOWN,
+            page=self, label=setting.label, written=self.settings().get_written(setting.setting), first=first,
             store=functools.partial(self.store_time, setting=setting.setting),
+        )
+
+    def _toggle(self, setting):
+        """Return the field that turns a setting on and off."""
+        return Toggle(label=setting.label, on=self.is_toggled(setting), set=functools.partial(self.store_toggle, setting=setting))
+
+    def _octave_field(self, setting):
+        """Return the field for one end of a range of octaves, kept from crossing the other end."""
+        return octave_field(
+            page=self, label=setting.label, current=functools.partial(self.octave_of, setting), lowest=functools.partial(self.lowest_of, setting),
+            highest=functools.partial(self.highest_of, setting), default=setting.default, set_octave=functools.partial(self.store_octave, setting=setting),
+        )
+
+    def _track_field(self, setting):
+        """Return the field that chooses a track of the current song, (none) first."""
+        named = self.settings().get_written(setting.setting) or marks.MSG_NONE_SHOWN
+        return ChoiceField(
+            page=self, label=setting.label, choices=[marks.MSG_NONE_SHOWN, *self.tracks(setting)], current=named,
+            set=functools.partial(self.store_track, setting=setting), clear=functools.partial(self.store_track, None, setting=setting),
+            clear_what=legends.MSG_NO_TRACK_WHAT,
         )
 
     def _steps_field(self, setting):

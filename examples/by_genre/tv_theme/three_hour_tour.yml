@@ -149,9 +149,9 @@ patterns:
     tie: [false, true, true, true, false, true, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, false, false, true, false, true, false, true, true, false]
 
 generators:
-  - { name: shanty, kind: progression, chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }
-  - { name: refrain, kind: progression, chords: [3, 7, 5, 1], qualities: [~, ~, M, ~] }
-  - { name: turn, kind: progression, chords: [6, 3, 4, 5], qualities: [~, ~, ~, M] }
+  - { name: shanty, kind: chords, mode: progression, chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }
+  - { name: refrain, kind: chords, mode: progression, chords: [3, 7, 5, 1], qualities: [~, ~, M, ~] }
+  - { name: turn, kind: chords, mode: progression, chords: [6, 3, 4, 5], qualities: [~, ~, ~, M] }
   - { name: boom, kind: guitarify, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 }
   - { name: shanty chords, kind: chain, generators: [{ name: shanty }] }
   - { name: shanty strum, kind: chain, generators: [{ name: shanty }, { name: boom }] }

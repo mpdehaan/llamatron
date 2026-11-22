@@ -146,8 +146,8 @@ patterns:
     tie: [false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
 generators:
-  - { name: fanfare, kind: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
-  - { name: answer, kind: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
+  - { name: fanfare, kind: chords, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
+  - { name: answer, kind: chords, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
   - { name: fanfare chords, kind: chain, generators: [{ name: fanfare }] }
   - { name: answer chords, kind: chain, generators: [{ name: answer }] }
 

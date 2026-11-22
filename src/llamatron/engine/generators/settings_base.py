@@ -126,6 +126,12 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
             self.SETTINGS[name].check(value)
             self._settings[name] = own_copy(value)
 
+    def limits_of(self, name):
+        """Return the lowest and highest a whole number of these settings may be, by the setting's file name: its description's,
+        unless a kind's settings narrow them by another of its settings."""
+        described = self.SETTINGS[name]
+        return described.get_lowest(), described.get_highest()
+
     def get_restart(self):
         """Return when the generator starts over, every clip unless set."""
         return self.get_written(file_format.GENERATOR_RESTART) or Restart.EVERY_CLIP

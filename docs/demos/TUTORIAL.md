@@ -114,35 +114,35 @@ the order of the scale picker. Use it to preview a scale before choosing one. Th
 
 Block chords on the piano over a bass in D major, three progressions each played three ways, back
 to back: in root position, every chord jumping up from its root; inverted by hand with the chord
-editor's Inv. row; and through the Voice leading generator, which plays each chord in the
+editor's Inv. row; and through a Chords generator's Voice leading, which plays each chord in the
 inversion and octave nearest the chord before. The last scene keeps the root in the bass.
 
 [`examples/learning/05_voice_leading.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/05_voice_leading.yml) · D major · 96 BPM · 3:00 · 9 scenes · 2 tracks
 
 | chords | chains | ties | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 05_voice_leading -->
 
 **New Features Introduced**
 
 | chains | ties | progressions |
 | :---: | :---: | :---: |
-| [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) |
 
 <a id="chord_progression_generator"></a>
 ## Progressions: `06_chord_progression_generator.yml`
 
 A pop song in C major made from three patterns one bar long, an arpeggio, a bass figure and a
-chord pad, each written over chord I and played through a Progression, a different one in every
+chord pad, each written over chord I and played through a progression, a different one in every
 scene: Pop, Fifties, Andalusian in A minor, Pachelbel's eight chords, Pop again with the pad's
-chords inverted so that they move less, and Pop with the pad through a Voice leading generator.
+chords inverted so that they move less, and Pop with the pad through a Chords generator's Voice leading.
 
 [`examples/learning/06_chord_progression_generator.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/06_chord_progression_generator.yml) · C major · 96 BPM · 3:00 · 6 scenes · 6 tracks
 
 | chords | chains | ties | key changes | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../SCENES.md#scene-settings) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 06_chord_progression_generator -->
 
 <a id="blues_chords"></a>
@@ -157,7 +157,7 @@ with the chords.
 
 | chords | chains | grooves | progressions |
 | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../GROOVES.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../GROOVES.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 07_blues_chords -->
 
 **New Features Introduced**
@@ -258,7 +258,7 @@ rolled like a harp.
 
 | chords | chains | ties | progressions | strum |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) | [✓](../generators/STRUM.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) | [✓](../generators/STRUM.md) |
 <!-- end of the generated summary of 13_classic_strum -->
 
 **New Features Introduced**
@@ -397,7 +397,7 @@ that changing one pattern changes every part that follows it.
 ## Grabbed Parts: `21_look_ma_no_notes.yml`
 
 A gospel song in A flat where the bass, the piano and the lead hold no notes at all. The organ
-holds one seventh chord a bar, moved through the changes by Progression generators, and every
+holds one seventh chord a bar, moved through the changes by Chords generators, and every
 other part is Grab steps that take the root of the organ's chord and build on it: the bass an
 octave down, the piano's chords from its Chord row, and the lead three ways, from the register
 rows, from an arpeggiator and from climbing and falling ratchets. The last chorus goes up a half
@@ -407,7 +407,7 @@ step, and every part follows.
 
 | chords | arps | ratchets | chains | grabs | ties | grooves | key changes | registers | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 21_look_ma_no_notes -->
 
 <a id="registers"></a>
@@ -451,24 +451,24 @@ playing, so the demo shows what its Shape and Strokes sections do to the same ki
 ## Follow Chords: `24_follow_chords.yml`
 
 A song in A minor whose chords are written in one place, a muted track called SILENT Chords. The bass,
-the pad and the arpeggio each play one bar, written over chord I, through a Follow Chords
-generator that moves their notes to whatever chord that track plays. The chords are heard plainly
+the pad and the arpeggio each play one bar, written over chord I, through a Chords
+generator in Follow Progression mode that moves their notes to whatever chord that track plays. The chords are heard plainly
 first, then the band plays without following and sounds stuck on one chord, then the bass follows
 alone, then everyone. Later scenes add a tune, change the chords under the same patterns, change
-chord twice a bar, and follow chords that a Progression makes on that track.
+chord twice a bar, and follow chords that a progression makes on that track.
 
 [`examples/learning/24_follow_chords.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/24_follow_chords.yml) · A minor · 96 BPM · 2:40 · 8 scenes · 8 tracks
 
 | chords | chains | follow chords | ties | progressions |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/FOLLOW_CHORDS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/CHORDS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 24_follow_chords -->
 
 **New Features Introduced**
 
 | follow chords |
 | :---: |
-| [✓](../generators/FOLLOW_CHORDS.md) |
+| [✓](../generators/CHORDS.md) |
 
 <a id="phrasing"></a>
 ## Phrasing: `25_phrasing.yml`
@@ -504,7 +504,7 @@ breakdown the bass plays one hit a bar and the rhythm guitar is muted.
 
 | chords | chains | follow chords | musician | ties |
 | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/FOLLOW_CHORDS.md) | [✓](../generators/MUSICIAN.md) | [✓](../PATTERNS.md#ties) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/CHORDS.md) | [✓](../generators/MUSICIAN.md) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of 26_musician -->
 
 **New Features Introduced**

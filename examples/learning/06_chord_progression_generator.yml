@@ -4,7 +4,7 @@ description: three one-bar patterns played through five chord progressions
 notes: |
   Chord progression generator: a pop song at 96 beats a minute in C major, made from three
   patterns one bar long, an arpeggio, a bass figure and a chord pad, each written over chord I
-  and played through a Progression, a different one in every scene.
+  and played through a progression, a different one in every scene.
   Run it with: llamatron examples/learning/06_chord_progression_generator.yml --to ableton --replace
 
   A Progression moves a clip's notes to each of its chords in turn, a chord a bar here. A plain
@@ -20,7 +20,7 @@ notes: |
   Scene 4: Pachelbel, eight chords, I-V-vi-iii-IV-I-IV-V, eight bars.
   Scene 5: Pop again, with the pad's chords inverted by the Inv. row (G with B at the bottom,
   F with C at the bottom), so the chords move less, eight bars.
-  Scene 6: Pop once more, the pad through the Voice leading generator called smooth, which picks
+  Scene 6: Pop once more, the pad through the Chords generator called smooth, whose Voice leading, which picks
   each chord's inversion nearest the chord before by itself, eight bars.
 
   When changing this demo:
@@ -76,12 +76,12 @@ patterns:
     velocity: [90, 60, 80, 60, 90, 60, 80, 60]
 
 generators:
-  - { name: pop, kind: progression, chords: [1, 5, 6, 4] }
-  - { name: fifties, kind: progression, chords: [1, 6, 4, 5] }
-  - { name: andalusian, kind: progression, chords: [1, 7, 6, 5] }
-  - { name: pachelbel, kind: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5] }
-  - { name: pop inverted, kind: progression, chords: [1, 5, 6, 4], inversions: [~, 1, ~, 2] }
-  - { name: smooth, kind: voice_leading }
+  - { name: pop, kind: chords, mode: progression, chords: [1, 5, 6, 4] }
+  - { name: fifties, kind: chords, mode: progression, chords: [1, 6, 4, 5] }
+  - { name: andalusian, kind: chords, mode: progression, chords: [1, 7, 6, 5] }
+  - { name: pachelbel, kind: chords, mode: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5] }
+  - { name: pop inverted, kind: chords, mode: progression, chords: [1, 5, 6, 4], inversions: [~, 1, ~, 2] }
+  - { name: smooth, kind: chords }
   - { name: pop chords, kind: chain, generators: [{ name: pop }] }
   - { name: fifties chords, kind: chain, generators: [{ name: fifties }] }
   - { name: andalusian chords, kind: chain, generators: [{ name: andalusian }] }

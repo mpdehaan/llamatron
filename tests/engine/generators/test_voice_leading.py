@@ -9,8 +9,8 @@ chord a bar, and voice it.
 
 import unittest
 
-from llamatron.engine.generators import voice_leading as voice_leading_plugin
-from llamatron.engine.generators.voice_leading.model import VoiceLeadingSetting
+from llamatron.engine.generators import chords as chords_plugin
+from llamatron.engine.generators.chords.model import ChordsSetting
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import Row, Section
 from tests.engine.generators.test_progression import through
@@ -30,8 +30,8 @@ def voiced(*, voicing=None, chords=POP):
     """Return the pitches of each bar's chord, through a progression and, when given, a voice leading after it."""
     data = through({'chords': chords}, rows={Row.CHORD: [TRIAD, None, None, None]}, repeat=BARS)
     if voicing is not None:
-        data[voice_leading_plugin.SECTION] = {VOICING: voicing}
-        data[Section.CHAINS]['chords'].append({voice_leading_plugin.NAME: VOICING})
+        data[chords_plugin.SECTION][VOICING] = voicing
+        data[Section.CHAINS]['chords'].append({chords_plugin.NAME: VOICING})
     return [sorted(pitch for start, _, pitch, _ in notes(data) if start == bar) for bar in range(BARS)]
 
 
@@ -47,23 +47,23 @@ class TestVoiceLeading(unittest.TestCase):
         self.assertEqual(voiced(voicing={})[0], ROOT_POSITION[0])
 
     def test_a_range_keeps_every_note_within_it(self):
-        found = voiced(voicing={VoiceLeadingSetting.LOWEST_OCTAVE: 5, VoiceLeadingSetting.HIGHEST_OCTAVE: 5})
+        found = voiced(voicing={ChordsSetting.LOWEST_OCTAVE: 5, ChordsSetting.HIGHEST_OCTAVE: 5})
         for chord in found[1:]:
             self.assertTrue(all(60 <= pitch < 72 for pitch in chord), chord)
 
     def test_the_root_kept_in_the_bass_stays_where_it_was_written(self):
-        found = voiced(voicing={VoiceLeadingSetting.ROOT_IN_BASS: True})
+        found = voiced(voicing={ChordsSetting.ROOT_IN_BASS: True})
         self.assertEqual([chord[0] for chord in found], [chord[0] for chord in ROOT_POSITION])
         for chord in found:
             self.assertEqual(chord[0], min(chord))
 
     def test_a_range_no_voicing_fits_leaves_the_chord_as_written(self):
         # Octave 10, from MIDI 120, is further than the four octaves a voicing is tried from where its chord was written.
-        found = voiced(voicing={VoiceLeadingSetting.LOWEST_OCTAVE: 10, VoiceLeadingSetting.HIGHEST_OCTAVE: 10})
+        found = voiced(voicing={ChordsSetting.LOWEST_OCTAVE: 10, ChordsSetting.HIGHEST_OCTAVE: 10})
         self.assertEqual(found, ROOT_POSITION)
 
     def test_a_lowest_octave_above_the_highest_is_refused(self):
         data = through({'chords': POP})
-        data[voice_leading_plugin.SECTION] = {VOICING: {VoiceLeadingSetting.LOWEST_OCTAVE: 6, VoiceLeadingSetting.HIGHEST_OCTAVE: 5}}
+        data[chords_plugin.SECTION][VOICING] = {ChordsSetting.LOWEST_OCTAVE: 6, ChordsSetting.HIGHEST_OCTAVE: 5}
         with self.assertRaises(SongFileError):
             setlist_from_data(data)

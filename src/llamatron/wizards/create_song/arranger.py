@@ -20,8 +20,9 @@ import os
 import random
 import zlib
 
-from llamatron.engine.generators import follow_chords as follow_chords_plugin, musician as musician_plugin, phrasing as phrasing_plugin
-from llamatron.engine.generators.follow_chords.model import FollowChordsSetting
+from llamatron.engine.generators import chords as chords_plugin, musician as musician_plugin, phrasing as phrasing_plugin
+from llamatron.engine.generators.chords import model as chords_model
+from llamatron.engine.generators.chords.model import ChordsSetting
 from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.named_scale import scale_type_called
@@ -144,10 +145,7 @@ SCENE = 'scene'
 PLAY = 'play'
 PART = 'part'
 ONCE = 'once'
-PROGRESSIONS = 'progressions'
-PROGRESSION = 'progression'
 ACCIDENTALS = 'accidentals'
-VOICE_LEADINGS = 'voice_leadings'
 NEAR = 'near'
 DRUM_KIT = 'drum kit'
 CRASH = 'crash'
@@ -161,7 +159,7 @@ NOTES_OF_A_SCALE_WITH_TRIADS = 7
 THIRD_PLACE = 2
 FIFTH_PLACE = 4
 HOME_CHORDS = {(4, 7): ChordSymbol.MAJOR, (3, 7): ChordSymbol.MINOR, (3, 6): ChordSymbol.DIMINISHED, (4, 8): ChordSymbol.AUGMENTED}
-FOLLOWS_THE_CHORDS = {follow_chords_plugin.NAME: wizard_text.MSG_FOLLOW_CHORDS_NAME}
+FOLLOWS_THE_CHORDS = {chords_plugin.NAME: wizard_text.MSG_FOLLOW_CHORDS_NAME}
 # How the tune is delivered, where a song says: the settings of the one Phrasing its tune's clips then run.
 TUNE_PHRASING = 'tune_phrasing'
 # The song's own musicians, the settings of a Musician by the player whose clips it plays, in place of the one the player is given.
@@ -248,7 +246,6 @@ PART_SETTING = '{part}_{setting}'
 GUITARIFIES = 'guitarifies'
 # The set's section that holds each kind of generator a value may bring.
 SECTION_OF_KIND = {'guitarify': 'guitarifies', 'arp': 'arps', 'strum': 'strums'}
-VOICE_LEADING_KIND = 'voice_leading'
 HELD_CHORD = '3'
 MAJOR = 'major'
 BY_SECTION = 'by_section'
@@ -1724,7 +1721,7 @@ class Arrangement:
             at.chords_played = progression
             return
         self._progressions[progression] = section_progression
-        self._chains[progression] = [{PROGRESSION: progression}]
+        self._chains[progression] = [{chords_plugin.NAME: progression}]
         self._parts[progression] = {RAW: one_chord(self._meter)}
         at.chords_played = {PART: progression, CHAINS: [progression]}
 
@@ -1811,7 +1808,7 @@ class Arrangement:
             for kind in generator:
                 links.append({kind: name})
         if role.get(VOICE_LEADING):
-            links.append({VOICE_LEADING_KIND: NEAR})
+            links.append({chords_plugin.NAME: NEAR})
         links.append({TIMING: name})
         self._chains[chain] = links
         return chain
@@ -2027,9 +2024,13 @@ class Arrangement:
 
     def _generators(self):
         """Return the generators the song's clips run, by section: what follows the chords, the players' ways' own, the tune's
-        phrasing, the players' Musicians, the progressions and voice leading."""
-        follow = {wizard_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: wizard_text.MSG_CHORDS_TRACK}}
-        generators = {follow_chords_plugin.SECTION: follow}
+        phrasing and the players' Musicians; what follows the chords, the progressions and the voice leading are Chords generators."""
+        chords = {wizard_text.MSG_FOLLOW_CHORDS_NAME: {ChordsSetting.MODE: chords_model.FOLLOW_PROGRESSION, ChordsSetting.CHORDS_FROM: wizard_text.MSG_CHORDS_TRACK}}
+        for name, progression in self._progressions.items():
+            chords[name] = {ChordsSetting.MODE: chords_model.PROGRESSION, **progression}
+        if self._leads_voices():
+            chords[NEAR] = dict(NEAR_VOICES)
+        generators = {chords_plugin.SECTION: chords}
         generators.update(self._extra)
         if self._phrased:
             # The tune is delivered as a player would deliver it, by one Phrasing every clip of the tune runs after its timing.
@@ -2037,10 +2038,6 @@ class Arrangement:
             self._chains[wizard_text.MSG_TUNE_PHRASING_NAME] = [{phrasing_plugin.NAME: wizard_text.MSG_TUNE_PHRASING_NAME}]
         if self._style[GENRE] not in band.GENRES_WITHOUT_MUSICIANS:
             generators[musician_plugin.SECTION] = self._musicians_heard()
-        if self._progressions:
-            generators[PROGRESSIONS] = self._progressions
-        if self._leads_voices():
-            generators[VOICE_LEADINGS] = {NEAR: dict(NEAR_VOICES)}
         return generators
 
     def _musicians_heard(self):

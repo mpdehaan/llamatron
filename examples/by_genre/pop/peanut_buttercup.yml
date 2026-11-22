@@ -195,9 +195,9 @@ patterns:
     tie: [false, false, false, true, false, false, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, true, true, false, false, false, true, false, true, false, true, false, false, false, false, false, true, true, true]
 
 generators:
-  - { name: chorus, kind: progression, chords: [1, 1, 3, 3, 4, 4, 5, 5, 1, 1, 4, 4, 1, 5, 5, 1], qualities: [~, ~, dom7, dom7, ~, ~, ~, ~, ~, dom7, ~, m, ~, ~, ~, ~] }
-  - { name: verse, kind: progression, chords: [1, 5, 7, 4], accidentals: [~, ~, b, ~] }
-  - { name: climb, kind: progression, chords: [4, 4, 3, 3, 2, 2, 5, 5] }
+  - { name: chorus, kind: chords, mode: progression, chords: [1, 1, 3, 3, 4, 4, 5, 5, 1, 1, 4, 4, 1, 5, 5, 1], qualities: [~, ~, dom7, dom7, ~, ~, ~, ~, ~, dom7, ~, m, ~, ~, ~, ~] }
+  - { name: verse, kind: chords, mode: progression, chords: [1, 5, 7, 4], accidentals: [~, ~, b, ~] }
+  - { name: climb, kind: chords, mode: progression, chords: [4, 4, 3, 3, 2, 2, 5, 5] }
   - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: climb chords, kind: chain, generators: [{ name: climb }] }

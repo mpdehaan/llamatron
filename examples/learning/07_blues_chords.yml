@@ -72,9 +72,9 @@ patterns:
     velocity: [90, 60, 80, 60, 90, 60, 80, 60]
 
 generators:
-  - { name: twelve bar, kind: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
-  - { name: quick change, kind: progression, chords: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
-  - { name: ending, kind: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1] }
+  - { name: twelve bar, kind: chords, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
+  - { name: quick change, kind: chords, mode: progression, chords: [1, 4, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
+  - { name: ending, kind: chords, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 1] }
   - { name: twelve bar chords, kind: chain, generators: [{ name: twelve bar }] }
   - { name: quick change chords, kind: chain, generators: [{ name: quick change }] }
   - { name: ending chords, kind: chain, generators: [{ name: ending }] }

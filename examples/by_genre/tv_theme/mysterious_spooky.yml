@@ -126,9 +126,9 @@ patterns:
     tie: [false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
 
 generators:
-  - { name: motif, kind: progression, chords: [1, 2, 1, 5] }
-  - { name: theme, kind: progression, chords: [1, 1, 2, 2, 5, 5, 1, 1], qualities: [~, ~, dom7, dom7, dom7, dom7, ~, ~] }
-  - { name: middle, kind: progression, chords: [4, 4, 1, 1, 2, 2, 5, 5], qualities: [~, ~, ~, ~, dom7, dom7, dom7, dom7] }
+  - { name: motif, kind: chords, mode: progression, chords: [1, 2, 1, 5] }
+  - { name: theme, kind: chords, mode: progression, chords: [1, 1, 2, 2, 5, 5, 1, 1], qualities: [~, ~, dom7, dom7, dom7, dom7, ~, ~] }
+  - { name: middle, kind: chords, mode: progression, chords: [4, 4, 1, 1, 2, 2, 5, 5], qualities: [~, ~, ~, ~, dom7, dom7, dom7, dom7] }
   - { name: motif chords, kind: chain, generators: [{ name: motif }] }
   - { name: theme chords, kind: chain, generators: [{ name: theme }] }
   - { name: middle chords, kind: chain, generators: [{ name: middle }] }

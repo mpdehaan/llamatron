@@ -10,7 +10,7 @@ The demo songs in the gospel style. Each is described below, with the features i
 ## Grabbed Parts: `21_look_ma_no_notes.yml`
 
 A gospel song in A flat where the bass, the piano and the lead hold no notes at all. The organ
-holds one seventh chord a bar, moved through the changes by Progression generators, and every
+holds one seventh chord a bar, moved through the changes by Chords generators, and every
 other part is Grab steps that take the root of the organ's chord and build on it: the bass an
 octave down, the piano's chords from its Chord row, and the lead three ways, from the register
 rows, from an arpeggiator and from climbing and falling ratchets. The last chorus goes up a half
@@ -21,5 +21,5 @@ step, and every part follows.
 
 | chords | arps | ratchets | chains | grabs | ties | grooves | key changes | registers | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 21_look_ma_no_notes -->

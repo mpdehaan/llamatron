@@ -154,8 +154,8 @@ patterns:
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
 generators:
-  - { name: riff, kind: progression, chords: [1, 1, 7, 4], every: 1/4 }
-  - { name: middle, kind: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] }
+  - { name: riff, kind: chords, mode: progression, chords: [1, 1, 7, 4], every: 1/4 }
+  - { name: middle, kind: chords, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] }
   - { name: riff chords, kind: chain, generators: [{ name: riff }] }
   - { name: middle chords, kind: chain, generators: [{ name: middle }] }
 

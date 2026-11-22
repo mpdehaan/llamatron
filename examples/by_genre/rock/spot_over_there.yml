@@ -157,9 +157,9 @@ patterns:
     velocity: [~, ~, ~, ~, ~, ~, 98, 103, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, 103, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, 103, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, 103, ~, ~, ~, ~, ~, ~, ~, ~]
 
 generators:
-  - { name: verse, kind: progression, chords: [1, 4, 5, 4], every: 1/2 }
-  - { name: pre, kind: progression, chords: [3, 4] }
-  - { name: chorus, kind: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 }
+  - { name: verse, kind: chords, mode: progression, chords: [1, 4, 5, 4], every: 1/2 }
+  - { name: pre, kind: chords, mode: progression, chords: [3, 4] }
+  - { name: chorus, kind: chords, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 }
   - { name: muted, kind: guitarify, bar: [down, mute, mute, mute, down, mute, mute, mute], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
   - { name: ring, kind: guitarify, bar: [down, nothing, down, nothing], accents: [false, false, false, false], cell: 1/4, let_ring: true, single_notes: power_chord, spread: 2, fade: 0 }
   - { name: open, kind: guitarify, bar: [down, down, down, down, down, down, down, down], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, single_notes: scale_chord, spread: 6 }

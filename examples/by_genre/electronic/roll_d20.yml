@@ -244,10 +244,10 @@ patterns:
     velocity: [112, ~, 100, 105, ~, ~, ~, ~]
 
 generators:
-  - { name: theme, kind: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] }
-  - { name: dance, kind: progression, chords: [1, 7, 1, 7, 1, 7, 5, 1] }
-  - { name: crypt, kind: progression, chords: [1] }
-  - { name: dragon, kind: progression, chords: [1, 2, 1, 4, 1, 6, 7, 1], accidentals: [~, b, ~, ~, ~, ~, ~, ~] }
+  - { name: theme, kind: chords, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] }
+  - { name: dance, kind: chords, mode: progression, chords: [1, 7, 1, 7, 1, 7, 5, 1] }
+  - { name: crypt, kind: chords, mode: progression, chords: [1] }
+  - { name: dragon, kind: chords, mode: progression, chords: [1, 2, 1, 4, 1, 6, 7, 1], accidentals: [~, b, ~, ~, ~, ~, ~, ~] }
   - { name: fade, kind: shapes, swell_start: 100, swell_end: 40 }
   - { name: grow, kind: shapes, swell_start: 50, swell_end: 110 }
   - { name: theme chords, kind: chain, generators: [{ name: theme }] }

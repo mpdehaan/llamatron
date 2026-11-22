@@ -221,12 +221,6 @@ A clip runs its own generators first, then its scene's, then its track's. A gene
 A adds a generator, picked from the set's. M picks one up to carry with Up and Down, ENTER dropping it, and Bksp takes it out of the list. ESC goes back.
 """
 
-# ProgressionEditor
-HELP_PROGRESSION_EDITOR = """
-Every: how long each chord lasts, a bar unless set, counted from the clip's start. The progression loops while the clip plays.
-Chords: ENTER opens the chord editor. A new progression has one chord, on the first degree, which changes nothing.
-"""
-
 # ChordsEditor
 HELP_CHORDS_EDITOR = """
 Each column is a chord: its bar rises to its degree, with its numeral and its name in the song's scale beneath.
@@ -236,12 +230,6 @@ Scale borrows the chord from another scale type on the same root, Quality names 
 I inserts a chord and D removes one. H fills the chords with a named progression, matched to the song's scale.
 """
 
-# VoiceLeadingEditor
-HELP_VOICE_LEADING_EDITOR = """
-Lowest octave and Highest octave: the chords stay within them, so they don't drift up or down over a long piece.
-Keep the root in the bass: the chord's lowest written note stays where it is and only the notes above it move, as when a bass track plays the roots.
-"""
-
 # HocketEditor
 HELP_HOCKET_EDITOR = """
 Source track: the track of the current song whose notes the hocketing tracks take turns at. Renaming that track renames
@@ -249,15 +237,6 @@ it here too. A track the song lacks hands out nothing.
 Restart: every clip starts the turns again with the first track at each clip the source plays; on new scene and whole
 song carry them on.
 Each track still plays its own pattern's notes besides those it is handed.
-"""
-
-# FollowChordsEditor
-HELP_FOLLOW_CHORDS_EDITOR = """
-Moves a clip's notes to the chords another track plays, so that the chords are written once.
-Chords from: the track of the current song whose chords are followed, in the same scene. Renaming that track renames it
-here too. With no track, or a track with no clip in the scene, nothing moves.
-The clip's pattern is taken as written over chord I. Each note moves up the scale to the chord sounding as it starts.
-The track followed may write its chords by hand or make them with a Progression, and may be muted.
 """
 
 # PluginEditor: the help every generator page drawn from its plugin's view shares, which each page replaces with its plugin's own.

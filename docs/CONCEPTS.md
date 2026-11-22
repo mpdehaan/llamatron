@@ -12,13 +12,13 @@ A song is easiest to write when every change is heard as it is made. llamatron p
 
 ## Chord Progressions
 
-A pattern is written once and played in many places, and a generator changes how it plays without changing what it says. The most useful case is a chord progression: write a one-bar figure over chord I, an arpeggio, a bass line or a chord, and a Progression generator moves the figure through the chords, so that one bar becomes a whole section, and changing the progression rewrites the section without touching the pattern.
+A pattern is written once and played in many places, and a generator changes how it plays without changing what it says. The most useful case is a chord progression: write a one-bar figure over chord I, an arpeggio, a bass line or a chord, and a Chords generator in Progression mode moves the figure through the chords, so that one bar becomes a whole section, and changing the progression rewrites the section without touching the pattern.
 
 1. On Patterns, `P`, write a one-bar figure on degree 1. See [Patterns](PATTERNS.md).
-2. On Generators, `G`, open Progressions and press `A`. In the progression's editor, press `ENTER` on Chords, then `H` to pick a named progression, such as pop or twelve-bar blues, matched to the song's scale. See [Progression](generators/PROGRESSION.md).
-3. On Generators, `G`, add a chain and put the progression in it. See [Chain](generators/CHAIN.md).
+2. On Generators, `G`, press `A` and choose Chords. On its page, set Mode to Progression, press `ENTER` on Chords, then `H` to pick a named progression, such as pop or twelve-bar blues, matched to the song's scale. See [Chords](generators/CHORDS.md).
+3. On Generators, `G`, add a chain and put the Chords generator in it. See [Chain](generators/CHAIN.md).
 4. Put the chain on the clips that play the figure, on the clip page's Generators field, or on the Scene page to move a whole section, or in the track editor to move every clip of a track. See [Clips](CLIPS.md) and [Scenes](SCENES.md).
-5. For chords that move smoothly rather than jumping, add a VoiceLeading generator after the progression in the same chain. See [VoiceLeading](generators/VOICE_LEADING.md).
+5. For chords that move smoothly rather than jumping, switch on the Chords generator's Voice leading. See [Chords](generators/CHORDS.md#voice-leading).
 
 `examples/learning/06_chord_progression_generator.yml` is this recipe, finished.
 

@@ -234,10 +234,10 @@ patterns:
     velocity: [96, 80, 84, 80, 87, 80, 84, 80]
 
 generators:
-  - { name: verse, kind: progression, chords: [1, 1, 6, 7] }
-  - { name: chorus, kind: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
-  - { name: twin, kind: progression, chords: [1, 6, 7, 1] }
-  - { name: fast, kind: progression, chords: [1, 7, 6, 7] }
+  - { name: verse, kind: chords, mode: progression, chords: [1, 1, 6, 7] }
+  - { name: chorus, kind: chords, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
+  - { name: twin, kind: chords, mode: progression, chords: [1, 6, 7, 1] }
+  - { name: fast, kind: chords, mode: progression, chords: [1, 7, 6, 7] }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
   - { name: twin chords, kind: chain, generators: [{ name: twin }] }

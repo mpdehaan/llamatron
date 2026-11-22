@@ -194,11 +194,11 @@ patterns:
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true, false, false, false, false]
 
 generators:
-  - { name: chorus, kind: progression, chords: [4, 5, 3, 6], every: 1/2 }
-  - { name: verse, kind: progression, chords: [4, 5, 4, 5, 4, 5, 2, 5], every: 1/2 }
-  - { name: build, kind: progression, chords: [4, 4, 5, 5], every: 1/2 }
-  - { name: bridge, kind: progression, chords: [2, 2, 6, 6], every: 1/2 }
-  - { name: near, kind: voice_leading, lowest_octave: 4, highest_octave: 5 }
+  - { name: chorus, kind: chords, mode: progression, chords: [4, 5, 3, 6], every: 1/2 }
+  - { name: verse, kind: chords, mode: progression, chords: [4, 5, 4, 5, 4, 5, 2, 5], every: 1/2 }
+  - { name: build, kind: chords, mode: progression, chords: [4, 4, 5, 5], every: 1/2 }
+  - { name: bridge, kind: chords, mode: progression, chords: [2, 2, 6, 6], every: 1/2 }
+  - { name: near, kind: chords, lowest_octave: 4, highest_octave: 5 }
   - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: build chords, kind: chain, generators: [{ name: build }] }

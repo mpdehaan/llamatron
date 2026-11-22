@@ -30,12 +30,47 @@ class NumberView(NamedTuple):
     default: object = None
 
 
-class TimeView(NamedTuple):
-    """How long each step of a row is, chosen from the lengths every time setting offers, the pattern's step size unless set:
-    the setting's file name and its label."""
+class ToggleView(NamedTuple):
+    """A setting that is on or off: the setting's file name, its label, whether it is on when the file leaves it out, and where
+    that differs by the generator's mode, a dictionary of it by mode."""
 
     setting: str
     label: str
+    default: bool = False
+    by_mode: object = None
+
+
+class OctaveView(NamedTuple):
+    """One end of a range of octaves, shown in the set's octave labels and kept from crossing the other end, which the settings'
+    limits_of answers: the setting's file name, its label, and the octave it takes when the file leaves it out."""
+
+    setting: str
+    label: str
+    default: int
+
+
+class TrackView(NamedTuple):
+    """A track of the current song the generator names, chosen from the song's tracks, (none) first: the setting's file name and
+    its label. A rename of the track follows."""
+
+    setting: str
+    label: str
+
+
+class ProgressionView(NamedTuple):
+    """A progression's chords, shown as numerals in the song's scale, which ENTER opens in the chord editor: its label. The
+    settings answer the progression's rows (get_chords and the rest)."""
+
+    label: str
+
+
+class TimeView(NamedTuple):
+    """A length of time, chosen from the lengths every time setting offers: the setting's file name, its label, and what its first
+    choice, the value when left out, shows, None for the pattern's step size."""
+
+    setting: str
+    label: str
+    first: object = None
 
 
 class StepsView(NamedTuple):
@@ -70,14 +105,18 @@ class SectionView(NamedTuple):
 
 
 class ColumnView(NamedTuple):
-    """A column of a generator's tab: its heading, or None for a column without one, and its settings from the top."""
+    """A column of a generator's tab: its heading, or None for a column without one, its settings from the top, and the modes it
+    shows in, or none for every mode."""
 
     heading: object
     settings: tuple
+    modes: tuple = ()
 
 
 class GeneratorView(NamedTuple):
-    """A generator's tab, or its page: its columns from the left, and the help its page's F1 shows."""
+    """A generator's tab, or its page: its columns from the left, the help its page's F1 shows, and its Mode, a ChoiceView shown
+    first, or None for a generator with one way of working."""
 
     columns: tuple
     help: str
+    mode: object = None

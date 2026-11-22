@@ -256,8 +256,8 @@ patterns:
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true]
 
 generators:
-  - { name: a, kind: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] }
-  - { name: b, kind: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] }
+  - { name: a, kind: chords, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] }
+  - { name: b, kind: chords, mode: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] }
   - { name: arrive, kind: shapes, density_start: 15, density_end: 100 }
   - { name: leave, kind: shapes, density_start: 100, density_end: 15 }
   - { name: fade, kind: shapes, swell_start: 100, swell_end: 35 }

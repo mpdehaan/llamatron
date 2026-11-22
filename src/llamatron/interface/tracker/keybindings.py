@@ -371,20 +371,8 @@ class AutoRatchetEditor(FieldPage):
     """The AutoRatchet's editor, with the settings keys alone."""
 
 
-class ProgressionEditor(FieldPage):
-    """A progression's editor, with the settings keys alone."""
-
-
-class VoiceLeadingEditor(FieldPage):
-    """A voice leading's editor, with the settings keys alone."""
-
-
 class HocketEditor(FieldPage):
     """A Hocket's editor, with the settings keys alone."""
-
-
-class FollowChordsEditor(FieldPage):
-    """A Follow Chords' editor, with the settings keys alone."""
 
 
 class PluginEditor(FieldPage):

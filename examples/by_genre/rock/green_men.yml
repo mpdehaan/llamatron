@@ -127,8 +127,8 @@ patterns:
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true]
 
 generators:
-  - { name: riff, kind: progression, chords: [1, 4, 7, 4, 1, 7, 4, 1], accidentals: [~, ~, b, ~, ~, b, ~, ~], every: 1/2 }
-  - { name: chorus, kind: progression, chords: [4, 1, 5, 1] }
+  - { name: riff, kind: chords, mode: progression, chords: [1, 4, 7, 4, 1, 7, 4, 1], accidentals: [~, ~, b, ~, ~, b, ~, ~], every: 1/2 }
+  - { name: chorus, kind: chords, mode: progression, chords: [4, 1, 5, 1] }
   - { name: riff guitar, kind: guitarify, bar: [down, down, nothing, down, down, down, nothing, mute], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
   - { name: stops, kind: guitarify, bar: [mute, nothing, mute, mute, mute, nothing, mute, mute, mute, nothing, mute, mute, mute, nothing, mute, mute, down, down, nothing, down, down, down, nothing, mute, down, down, nothing, down, down, down, nothing, mute], accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
   - { name: open, kind: guitarify, bar: [down, down, down, down, down, down, down, down], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }

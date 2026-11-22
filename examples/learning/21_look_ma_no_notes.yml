@@ -4,7 +4,7 @@ description: "a gospel song whose bass, piano and lead are all grabbed from the 
 notes: |
   Look ma, no notes: an original gospel song at 76 beats a minute in A flat, swung, where the
   bass, the piano and the lead hold no notes at all. One chord is entered in the whole song, a
-  seventh chord on degree 1 that the organ holds a bar at a time, and Progression generators move
+  seventh chord on degree 1 that the organ holds a bar at a time, and Chords generators move
   it through the changes; every other part is Grab steps that take the root of whatever chord the
   organ plays, and build on it.
   Run it with: llamatron examples/learning/21_look_ma_no_notes.yml --to ableton --replace
@@ -115,9 +115,9 @@ patterns:
 
 generators:
   - { name: gospel run, kind: arp, step: 1/16, order: up, octave_range: 2 }
-  - { name: verse, kind: progression, chords: [1, 4, 1, 5] }
-  - { name: chorus, kind: progression, chords: [6, 2, 5, 1] }
-  - { name: turnaround, kind: progression, chords: [4, 4, 1, 5] }
+  - { name: verse, kind: chords, mode: progression, chords: [1, 4, 1, 5] }
+  - { name: chorus, kind: chords, mode: progression, chords: [6, 2, 5, 1] }
+  - { name: turnaround, kind: chords, mode: progression, chords: [4, 4, 1, 5] }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
   - { name: turnaround chords, kind: chain, generators: [{ name: turnaround }] }

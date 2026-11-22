@@ -7,7 +7,7 @@ notes: |
   are the same in every scene: only who plays them differs.
   Run it with: llamatron examples/learning/26_musician.yml --to ableton --replace
 
-  Scene 1, as written: each pattern goes through a Follow Chords generator and nothing else. Every
+  Scene 1, as written: each pattern goes through a Chords generator in Follow Progression mode and nothing else. Every
   player plays every note all the time, the lead guitar on top of the tune.
   Scene 2, a verse: each clip is played by a Musician instead. The rhythm guitar plays softer, the
   hi-hat keeps to the beats, the organ sits out, and the lead guitar plays only where the tune
@@ -92,7 +92,7 @@ patterns:
     velocity: [90, 60, 80, 60, 90, 60, 80, 60]
 
 generators:
-  - { name: follow, kind: follow_chords, chords_from: SILENT Chords }
+  - { name: follow, kind: chords, mode: follow_progression, chords_from: SILENT Chords }
   - { name: rhythm guitar, kind: musician, instrument: rhythm guitarist, chords_from: SILENT Chords, tune_from: tune, accents: backbeat, by_section: { verse: { played: softer }, breakdown: { played: muted } } }
   - { name: bass, kind: musician, instrument: bassist, chords_from: SILENT Chords, by_section: { breakdown: { played: hits } } }
   - { name: organ, kind: musician, instrument: backing organ, chords_from: SILENT Chords, tune_from: tune, by_section: { verse: { plays: false }, breakdown: { plays: false } } }

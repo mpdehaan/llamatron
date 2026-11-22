@@ -5,7 +5,9 @@
 
 import unittest
 
-from llamatron.engine.generators import progression as progression_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import chords as chords_plugin
+from llamatron.engine.generators.chords import model as chords_model
+from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from tests.engine.realizer.test_registers import song
@@ -42,11 +44,11 @@ def grabbed(*, inversion=None, voiced=False, chords=(1, 5, 6, 4)):
         tracks=(CHORDS, BASS),
     )
     data[Section.TRACKS][CHORDS] = {TrackSetting.MUTE: True}
-    data[progression_plugin.SECTION] = {PROGRESSION: {'chords': list(chords)}}
-    data[Section.CHAINS] = {PROGRESSION_CHAIN: [{progression_plugin.NAME: PROGRESSION}]}
+    data[chords_plugin.SECTION] = {PROGRESSION: {ChordsSetting.MODE: chords_model.PROGRESSION, ProgressionSetting.CHORDS: list(chords)}}
+    data[Section.CHAINS] = {PROGRESSION_CHAIN: [{chords_plugin.NAME: PROGRESSION}]}
     if voiced:
-        data[voice_leading_plugin.SECTION] = {VOICED: {}}
-        data[Section.CHAINS][PROGRESSION_CHAIN].append({voice_leading_plugin.NAME: VOICED})
+        data[chords_plugin.SECTION][VOICED] = {}
+        data[Section.CHAINS][PROGRESSION_CHAIN].append({chords_plugin.NAME: VOICED})
     return [pitch for _, _, pitch, _ in notes_on(data, track=1)]
 
 

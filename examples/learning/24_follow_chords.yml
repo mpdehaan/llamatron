@@ -4,7 +4,7 @@ description: "a band stuck on one chord, then following chords written once on a
 notes: |
   Follow Chords: a song at 96 beats a minute in A minor. The bass, the pad and the arpeggio each
   play one bar, written over chord I. The song's chords are written in one place, the muted track
-  called SILENT Chords, and the Follow Chords generator called follow moves a player's notes to
+  called SILENT Chords, and the Chords generator called follow, in Follow Progression mode, moves a player's notes to
   whatever chord that track plays at that moment in the same scene.
   Run it with: llamatron examples/learning/24_follow_chords.yml --to ableton --replace
 
@@ -20,7 +20,7 @@ notes: |
   Scene 7, two chords a bar: Am, G, F and E, half a bar each. The E is a major chord, from outside
   A minor, and the tracks that follow take its G sharp.
   The pad holds one chord a bar, so the pad takes the first chord of each bar.
-  Scene 8, chords from a Progression: the SILENT Chords track's pattern holds one chord, and a
+  Scene 8, chords from a progression: the SILENT Chords track's pattern holds one chord, and a
   Progression in that clip's chain makes Am, G, F and G of it. What follows reads the chords as
   they come out of the SILENT Chords track, so it never matters how they were written.
 
@@ -110,8 +110,8 @@ patterns:
     velocity: [90, 60, 80, 60, 90, 60, 80, 60]
 
 generators:
-  - { name: down and back, kind: progression, chords: [1, 7, 6, 7] }
-  - { name: follow, kind: follow_chords, chords_from: SILENT Chords }
+  - { name: down and back, kind: chords, mode: progression, chords: [1, 7, 6, 7] }
+  - { name: follow, kind: chords, mode: follow_progression, chords_from: SILENT Chords }
   - { name: follow chords followed, kind: chain, generators: [{ name: follow }] }
   - { name: down and back chords, kind: chain, generators: [{ name: down and back }] }
 

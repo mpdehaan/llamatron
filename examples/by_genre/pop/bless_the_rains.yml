@@ -222,10 +222,10 @@ patterns:
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
 
 generators:
-  - { name: verse, kind: progression, chords: [1, 1, 3, 3, 6, 6, 1, 6], every: 1/2 }
-  - { name: chorus, kind: progression, chords: [6, 4, 1, 5] }
-  - { name: riff, kind: progression, chords: [4, 3, 6, 6] }
-  - { name: near, kind: voice_leading, lowest_octave: 4, highest_octave: 5 }
+  - { name: verse, kind: chords, mode: progression, chords: [1, 1, 3, 3, 6, 6, 1, 6], every: 1/2 }
+  - { name: chorus, kind: chords, mode: progression, chords: [6, 4, 1, 5] }
+  - { name: riff, kind: chords, mode: progression, chords: [4, 3, 6, 6] }
+  - { name: near, kind: chords, lowest_octave: 4, highest_octave: 5 }
   - { name: verse chords, kind: chain, generators: [{ name: verse }] }
   - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
   - { name: riff chords, kind: chain, generators: [{ name: riff }] }

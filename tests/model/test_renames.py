@@ -13,7 +13,7 @@ here checks that what is declared is real and that the two can't disagree, in ev
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin
-from llamatron.engine.generators.follow_chords.model import FollowChordsSetting, FollowChordsSettings
+from llamatron.engine.generators.chords.model import ChordsSetting, ChordsSettings
 from llamatron.engine.generators.hocket.model import HocketSetting, HocketSettings
 from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
 from llamatron.interface.tracker.document import Document
@@ -74,7 +74,7 @@ GROOVE_USES = 3
 EXAMPLES = example_sets()
 # The classes that declare which of their settings name things, and where each keeps its settings' names. A chain names
 # generators by its steps, which aren't settings, so it answers for itself.
-SETTINGS_OF = {ClipSlot: ClipSlotSetting, Scene: SceneSetting, Song: SongSetting, Track: TrackSetting, HocketSettings: HocketSetting, FollowChordsSettings: FollowChordsSetting, MusicianSettings: MusicianSetting}
+SETTINGS_OF = {ClipSlot: ClipSlotSetting, Scene: SceneSetting, Song: SongSetting, Track: TrackSetting, HocketSettings: HocketSetting, ChordsSettings: ChordsSetting, MusicianSettings: MusicianSetting}
 # One name given to a pattern, a scale, a chain, a groove, an arp, an AutoRatchet and a track at once.
 SHARED = 'shared'
 # The arp's and the AutoRatchet's names, which a set file lists beside the chain's, where no two generators share a name.

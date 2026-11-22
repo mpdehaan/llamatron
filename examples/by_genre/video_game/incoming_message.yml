@@ -381,16 +381,16 @@ patterns:
     tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
 generators:
-  - { name: stage_0, kind: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_1, kind: progression, chords: [1, 1, 7, 7, 6, 6, 7, 7, 4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_2, kind: progression, chords: [1, 3, 7, 6, 1, 3, 7, 5, 6, 7, 1, 1, 6, 7, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] }
-  - { name: stage_3, kind: progression, chords: [1, 1, 6, 7, 1, 1, 6, 7, 4, 5, 1, 1, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~] }
-  - { name: stage_4, kind: progression, chords: [3, 7, 6, 1, 3, 7, 6, 5, 4, 1, 4, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_5, kind: progression, chords: [1, 7, 6, 5, 1, 7, 6, 5, 1, 1, 4, 4, 7, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_6, kind: progression, chords: [1, 6, 3, 7, 1, 6, 3, 7, 4, 7, 3, 6, 4, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_7, kind: progression, chords: [1, 1, 6, 5, 1, 1, 6, 5, 4, 4, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_8, kind: progression, chords: [6, 7, 1, 1, 6, 7, 1, 5, 4, 5, 3, 6, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] }
-  - { name: stage_9, kind: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
+  - { name: stage_0, kind: chords, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
+  - { name: stage_1, kind: chords, mode: progression, chords: [1, 1, 7, 7, 6, 6, 7, 7, 4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] }
+  - { name: stage_2, kind: chords, mode: progression, chords: [1, 3, 7, 6, 1, 3, 7, 5, 6, 7, 1, 1, 6, 7, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] }
+  - { name: stage_3, kind: chords, mode: progression, chords: [1, 1, 6, 7, 1, 1, 6, 7, 4, 5, 1, 1, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~] }
+  - { name: stage_4, kind: chords, mode: progression, chords: [3, 7, 6, 1, 3, 7, 6, 5, 4, 1, 4, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
+  - { name: stage_5, kind: chords, mode: progression, chords: [1, 7, 6, 5, 1, 7, 6, 5, 1, 1, 4, 4, 7, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
+  - { name: stage_6, kind: chords, mode: progression, chords: [1, 6, 3, 7, 1, 6, 3, 7, 4, 7, 3, 6, 4, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] }
+  - { name: stage_7, kind: chords, mode: progression, chords: [1, 1, 6, 5, 1, 1, 6, 5, 4, 4, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
+  - { name: stage_8, kind: chords, mode: progression, chords: [6, 7, 1, 1, 6, 7, 1, 5, 4, 5, 3, 6, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] }
+  - { name: stage_9, kind: chords, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
   - { name: stage_0 chords, kind: chain, generators: [{ name: stage_0 }] }
   - { name: stage_1 chords, kind: chain, generators: [{ name: stage_1 }] }
   - { name: stage_2 chords, kind: chain, generators: [{ name: stage_2 }] }

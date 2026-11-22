@@ -124,8 +124,7 @@ A generator changes how a clip's notes are played, without changing its pattern.
 
 | What it does | Page |
 | --- | --- |
-| A figure moved to the chords another track plays | [FollowChords](docs/generators/FOLLOW_CHORDS.md) |
-| A figure moved through chords | [Progression](docs/generators/PROGRESSION.md) |
+| A figure moved through chords, or to the chords another track plays, and its chords voiced | [Chords](docs/generators/CHORDS.md) |
 
 ### Rhythm
 
@@ -153,7 +152,6 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | --- | --- |
 | A chord played one note at a time | [Arpeggiator](docs/generators/ARPEGGIATOR.md) |
 | Chords and notes played as a guitar plays them | [Guitarify](docs/generators/GUITARIFY.md) |
-| Chords voiced nearest the chord before | [VoiceLeading](docs/generators/VOICE_LEADING.md) |
 
 ## Song Wizard
 

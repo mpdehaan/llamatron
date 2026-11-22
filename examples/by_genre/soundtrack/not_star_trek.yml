@@ -136,9 +136,9 @@ patterns:
     tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
 
 generators:
-  - { name: fanfare, kind: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] }
-  - { name: second, kind: progression, chords: [1, 3, 4, 1, 6, 2, 5, 5] }
-  - { name: bridge, kind: progression, chords: [4, 5, 3, 6, 6, 7, 5, 5], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] }
+  - { name: fanfare, kind: chords, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] }
+  - { name: second, kind: chords, mode: progression, chords: [1, 3, 4, 1, 6, 2, 5, 5] }
+  - { name: bridge, kind: chords, mode: progression, chords: [4, 5, 3, 6, 6, 7, 5, 5], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] }
   - { name: fanfare chords, kind: chain, generators: [{ name: fanfare }] }
   - { name: second chords, kind: chain, generators: [{ name: second }] }
   - { name: bridge chords, kind: chain, generators: [{ name: bridge }] }

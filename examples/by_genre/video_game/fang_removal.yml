@@ -106,8 +106,8 @@ patterns:
 
 generators:
   - { name: chip, kind: arp, step: 1/16, order: up, octave_range: 1 }
-  - { name: a, kind: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }
-  - { name: b, kind: progression, chords: [4, 7, 3, 6, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
+  - { name: a, kind: chords, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }
+  - { name: b, kind: chords, mode: progression, chords: [4, 7, 3, 6, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
   - { name: a chords, kind: chain, generators: [{ name: a }] }
   - { name: b chords, kind: chain, generators: [{ name: b }] }
   - { name: a arp, kind: chain, generators: [{ name: a }, { name: chip }] }

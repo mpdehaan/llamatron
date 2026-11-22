@@ -9,8 +9,7 @@ the section. What's here is what each kind alone has: how a new one starts, and 
 """
 
 
-from llamatron.engine.generators import arp as arp_plugin, musician as musician_plugin, progression as progression_plugin
-from llamatron.engine.generators.progression.model import ProgressionSetting
+from llamatron.engine.generators import arp as arp_plugin, musician as musician_plugin
 from llamatron.model.objects.groove import new_groove
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name, is_default_scale_name, words
@@ -154,17 +153,9 @@ class SetEdits:
         """Set what a kind of section has of its own for a musician, whether the musician plays there or how the part is played, or None for what a section does unasked."""
         self.change_set(self.generator(section=musician_plugin.SECTION, name=name).set_section_own, section=section, name=setting, value=value)
 
-    def set_progression(self, *, name, chords, accidentals, inversions, scales=None, qualities=None, tensions=None):
-        """Set a progression's chords, with a sharp or flat, an inversion, a borrowed scale type, a quality and tensions for each, a row of nothing left out."""
-        progression = self.generator(section=progression_plugin.SECTION, name=name)
-        nothing = [None] * len(chords)
-        rows = {
-            ProgressionSetting.CHORDS: chords, ProgressionSetting.ACCIDENTALS: accidentals, ProgressionSetting.INVERSIONS: inversions,
-            ProgressionSetting.SCALES: scales or nothing, ProgressionSetting.QUALITIES: qualities or nothing,
-            ProgressionSetting.TENSIONS: [None if value is None else list(value) for value in tensions or nothing],
-        }
-        for setting, values in rows.items():
-            self.change_set(progression.set_setting, name=setting, value=list(values) if any(value is not None for value in values) else None)
+    def set_progression(self, *, section, name, rows):
+        """Set a generator's progression: its chords and the rows beside them, given as ProgressionRows, a row of nothing left out."""
+        self.change_set(self.generator(section=section, name=name).set_progression, rows)
 
     def set_arp_offset(self, *, name, step, offset):
         """Set one step of an arp's offsets, where None is a silent step."""
