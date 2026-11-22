@@ -100,7 +100,9 @@ class PlaybackProcess:
 
     def get_process_id(self):
         """Return the render process's id, or None before it starts, for a test that ends it as a crash would."""
-        return None if self._process is None else self._process.pid
+        if self._process is None:
+            return None
+        return self._process.pid
 
     def is_ready(self):
         """Return whether the render process has started and nothing is starting it now, so that asking it something will not wait for it to start."""
@@ -139,7 +141,9 @@ class PlaybackProcess:
         answer = self._answer()
         if answer[0] == render_process.REFUSED:
             _kind, kind, words = answer
-            raise SongFileError(words) if kind == render_process.REFUSED_SONG else SenderNotStarted(words)
+            if kind == render_process.REFUSED_SONG:
+                raise SongFileError(words)
+            raise SenderNotStarted(words)
         _kind, waits, status = answer
         self._take_status(status)
         self._playing = wanted
@@ -175,7 +179,9 @@ class PlaybackProcess:
         or hung process never keeps the tracker from quitting, Ctrl+C included."""
         if self._process is None:
             return None
-        result = self._ask_to_close() if self._process.is_alive() else None
+        result = None
+        if self._process.is_alive():
+            result = self._ask_to_close()
         self._process.join(CLOSE_SECONDS)
         end_process_group(self._process)
         self._process.join(CLOSE_SECONDS)
