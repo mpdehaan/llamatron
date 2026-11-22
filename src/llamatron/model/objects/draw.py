@@ -12,7 +12,7 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import is_whole_number, listed, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects.llama_data import HoldsSettings, own_copy
+from llamatron.model.objects.llama_data import HoldsSettings, own_copy, written_settings
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import DrawSetting
 from llamatron.model.schema.setting import Checked, Choice, described, Flag, WholeNumber
@@ -26,7 +26,7 @@ def is_slot_value(value):
 
 def check_slots(value):
     """Raise InvalidValue unless a value is a draw's slots: a list of MIN_DRAW_SLOTS to MAX_DRAW_SLOTS values or blanks."""
-    if not isinstance(value, list) or not limits.MIN_DRAW_SLOTS <= len(value) <= limits.MAX_DRAW_SLOTS or not all(is_slot_value(slot) for slot in value):
+    if not _is_slots(value):
         raise InvalidValue(errors.ERR_BAD_DRAW_SLOTS.format(lowest=limits.MIN_DRAW_SLOTS, highest=limits.MAX_DRAW_SLOTS, value=value))
 
 
@@ -64,7 +64,8 @@ class Draw(HoldsSettings):
     @classmethod
     def from_data(cls, *, data, where, song=None):
         with reading(where):
-            data = {} if data is None else data
+            if data is None:
+                data = {}
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_DRAW_EXPECTED_SETTINGS.format(data=data))
             pass_over_unknown(data=data, allowed=SETTINGS)
@@ -78,7 +79,7 @@ class Draw(HoldsSettings):
         return Draw(**self._settings)
 
     def to_data(self):
-        return {name: own_copy(value) for name, value in self._settings.items() if value is not None}
+        return written_settings(self._settings)
 
     def get_direction(self):
         return self._setting(DrawSetting.DIRECTION)
@@ -121,13 +122,15 @@ class Draw(HoldsSettings):
         settings = {**self._settings, name: value}
         if name in (DrawSetting.VALUE_MIN, DrawSetting.VALUE_MAX) and settings[DrawSetting.SLOTS] is not None:
             lowest, highest = _range_of(settings)
-            settings[DrawSetting.SLOTS] = [None if slot is None else max(lowest, min(slot, highest)) for slot in settings[DrawSetting.SLOTS]]
+            settings[DrawSetting.SLOTS] = _held_within(slots=settings[DrawSetting.SLOTS], lowest=lowest, highest=highest)
         self._settings = _checked(settings)._settings
 
     def set_slot(self, *, place, value):
         """Give one slot a value, held within Value Min and Value Max, or make it blank with None."""
         slots = self.get_slots()
-        slots[place] = None if value is None else max(self.get_value_min(), min(value, self.get_value_max()))
+        if value is not None:
+            value = max(self.get_value_min(), min(value, self.get_value_max()))
+        slots[place] = value
         self.set_setting(name=DrawSetting.SLOTS, value=slots)
 
     def set_slot_count(self, count):
@@ -137,14 +140,20 @@ class Draw(HoldsSettings):
 
     def _setting(self, name):
         value = self._settings[name]
-        return DEFAULTS[name] if value is None else value
+        if value is None:
+            return DEFAULTS[name]
+        return value
 
 
 def _range_of(settings):
     """Return the lowest and highest value a draw's settings allow, defaults filled in."""
     lowest = settings.get(DrawSetting.VALUE_MIN)
     highest = settings.get(DrawSetting.VALUE_MAX)
-    return (limits.MIN_DRAW_VALUE if lowest is None else lowest), (limits.MAX_DRAW_VALUE if highest is None else highest)
+    if lowest is None:
+        lowest = limits.MIN_DRAW_VALUE
+    if highest is None:
+        highest = limits.MAX_DRAW_VALUE
+    return lowest, highest
 
 
 def _checked(data):
@@ -160,3 +169,23 @@ def _checked(data):
         if slot is not None and not lowest <= slot <= highest:
             raise InvalidValue(errors.ERR_DRAW_SLOT_OUT_OF_RANGE.format(lowest=lowest, highest=highest, value=slot))
     return Draw(**data)
+
+
+def _is_slots(value):
+    """Return whether a value is a draw's slots: a list of MIN_DRAW_SLOTS to MAX_DRAW_SLOTS values or blanks."""
+    if not isinstance(value, list) or not limits.MIN_DRAW_SLOTS <= len(value) <= limits.MAX_DRAW_SLOTS:
+        return False
+    for slot in value:
+        if not is_slot_value(slot):
+            return False
+    return True
+
+
+def _held_within(*, slots, lowest, highest):
+    """Return slots with each value held between lowest and highest, blanks left blank."""
+    held = []
+    for slot in slots:
+        if slot is not None:
+            slot = max(lowest, min(slot, highest))
+        held.append(slot)
+    return held
