@@ -60,7 +60,8 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
     @classmethod
     def from_data(cls, *, data, where, song=None):
         with reading(where):
-            data = {} if data is None else data
+            if data is None:
+                data = {}
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_NOT_SETTINGS.format(value=data))
             cls.pass_over_unknown_names(data)
@@ -97,7 +98,9 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
 
     def get_written(self, name):
         """Return a setting as the file writes it, or None if the file leaves it out. Only what is written is held, in the order written."""
-        return self._settings.get(name) if isinstance(self._settings, dict) else None
+        if not isinstance(self._settings, dict):
+            return None
+        return self._settings.get(name)
 
     def copy(self):
         return type(self)(self.to_data())
@@ -146,7 +149,14 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
 
     def _taken_values(self):
         """Return the settings as the generator takes them: a length as a number, a choice as what its name means, and the rest as written."""
-        return {name: self.TAKEN_AS[name](value) if name in self.TAKEN_AS else value for name, value in self._settings.items() if name != file_format.BYPASS_WHEN}
+        taken = {}
+        for name, value in self._settings.items():
+            if name == file_format.BYPASS_WHEN:
+                continue
+            if name in self.TAKEN_AS:
+                value = self.TAKEN_AS[name](value)
+            taken[name] = value
+        return taken
 
     def _with_defaults(self, *, values, default_seed, default_step, bar):
         """Return the generator's values, with a seed and a step added where it needs them. Most don't."""
