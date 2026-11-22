@@ -8,11 +8,11 @@ from llamatron.engine.generators.drift import model as drift_settings, strings a
 from llamatron.engine.generators.drift.model import DriftSetting, versioned
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.key_table import cursor_moved
-from llamatron.interface.tracker.screens.generators.restart_field import restart_field
-from llamatron.interface.tracker.screens.generators.time_field import time_field
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
+from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import DriftValue

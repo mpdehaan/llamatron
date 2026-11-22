@@ -5,11 +5,11 @@
 
 from llamatron.engine.generators.shape_part import ShapeSetting
 from llamatron.interface.tracker import keybindings
-from llamatron.interface.tracker.screens.generators.restart_field import restart_field
-from llamatron.interface.tracker.screens.generators.shape_fields import shape_fields
 from llamatron.interface.tracker.screens.shared.field import NameField, NumberField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
+from llamatron.interface.tracker.screens.shared.shape_fields import shape_fields
 from llamatron.model.schema import limits
 from llamatron.user_strings import labels, marks
 

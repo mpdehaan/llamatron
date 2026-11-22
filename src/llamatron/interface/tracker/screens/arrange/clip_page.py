@@ -13,12 +13,12 @@ from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.generators_field import generators_field
 from llamatron.interface.tracker.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
-from llamatron.interface.tracker.screens.generators.shape_fields import shape_section
 from llamatron.interface.tracker.screens.generators.strum_fields import strum_section
 from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.listening import listen, stop_listening
+from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.shared import columns, scene_name
 from llamatron.interface.tracker.screens.shared.statements import register_fields, statement_section
 from llamatron.interface.tracker.text import clock, sorted_names

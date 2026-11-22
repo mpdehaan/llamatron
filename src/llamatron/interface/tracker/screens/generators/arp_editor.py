@@ -9,13 +9,13 @@ from llamatron.engine.generators.arp import model as arp_model, model as arp_set
 from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.generators.offsets_editor import OffsetsEditor
-from llamatron.interface.tracker.screens.generators.restart_field import restart_field
-from llamatron.interface.tracker.screens.generators.time_field import time_field
 from llamatron.interface.tracker.screens.shared import shared
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
 from llamatron.interface.tracker.screens.shared.shared import numbers_text
+from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import file_format
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages

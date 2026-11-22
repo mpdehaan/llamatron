@@ -9,10 +9,10 @@ from llamatron.engine.generators.guitarify import model as guitarify_settings, s
 from llamatron.engine.generators.guitarify.schema import ready_bar_matching
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.generators.guitar_bar_editor import GuitarBarEditor
-from llamatron.interface.tracker.screens.generators.restart_field import restart_field
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Approach, ChordColor, GuitarifySetting, SingleNotes, Tuning
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages

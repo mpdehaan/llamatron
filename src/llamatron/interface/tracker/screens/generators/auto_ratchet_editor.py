@@ -8,10 +8,10 @@ from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin
 from llamatron.engine.generators.auto_ratchet import strings as auto_ratchet_strings
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.screens.generators.restart_field import restart_field
 from llamatron.interface.tracker.screens.shared.field import Field, NameField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
 from llamatron.interface.tracker.screens.shared.shared import counts_text
 from llamatron.user_strings import errors, help as help_text, labels, messages
 

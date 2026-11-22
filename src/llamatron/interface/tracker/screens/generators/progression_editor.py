@@ -8,11 +8,11 @@ from llamatron.engine.generators.progression import strings as progression_strin
 from llamatron.engine.generators.progression.model import ProgressionSetting
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.generators.chords_editor import ChordsEditor
-from llamatron.interface.tracker.screens.generators.restart_field import restart_field
-from llamatron.interface.tracker.screens.generators.time_field import time_field
 from llamatron.interface.tracker.screens.shared.field import Field, NameField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
+from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.model.schema import file_format
 from llamatron.model.values.progressions import roman_numeral
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages

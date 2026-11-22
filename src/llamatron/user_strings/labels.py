@@ -329,7 +329,7 @@ MSG_DRIFT_VALUE_LABELS = {
 # A version row's two values, the one the cursor is on marked like the offsets editor's cursor.
 MSG_DRIFT_PAIR = '{a:<10}{b}'
 MSG_DRIFT_PICKED = '<{value}>'
-# interface/tracker/screens/generators/shape_fields.py: each shape's name, which heads its section, and its parts' labels, the shape's name in front on the Scene and clip pages.
+# interface/tracker/screens/shared/shape_fields.py: each shape's name, which heads its section, and its parts' labels, the shape's name in front on the Scene and clip pages.
 MSG_SHAPE_NAMES = {Shape.DENSITY: 'Density', Shape.SWELL: 'Swell', Shape.ARTICULATE: 'Articulate'}
 MSG_SHAPE_FIELD_LABELS = {ShapePart.START: '{shape} start', ShapePart.END: '{shape} end', ShapePart.OVER: '{shape} over', ShapePart.THEN: '{shape} then'}
 MSG_SHAPE_PART_LABELS = {ShapePart.START: 'Start', ShapePart.END: 'End', ShapePart.OVER: 'Over', ShapePart.THEN: 'Then'}
@@ -403,7 +403,7 @@ MSG_STRUM_WORDS = {
     StrumDirection.BY_THE_BEAT: 'by the beat', StrumDirection.DOWN_UP: 'down up', UpstrokeStrings.TOP_3: 'top 3', UpstrokeStrings.TOP_4: 'top 4',
 }
 MSG_TRACK_STRUM_CHOICE = '(track)'
-# interface/tracker/screens/generators/restart_field.py: when a generator starts over, as its editor names the choices.
+# interface/tracker/screens/shared/restart_field.py: when a generator starts over, as its editor names the choices.
 MSG_RESTART_LABEL = 'Restart'
 MSG_GLIDE_AMOUNT_LABEL = 'Glide amount'
 MSG_SHORTEN_LABEL = 'Shorten amount'
@@ -431,7 +431,7 @@ MSG_PROGRESSION_NAMES = {
     NamedProgression.LONG_TURNAROUND: 'Long turnaround', NamedProgression.CIRCLE_OF_FIFTHS: 'Circle of fifths', NamedProgression.RHYTHM_CHANGES: 'Rhythm changes',
     NamedProgression.FOLK: 'Folk, country', NamedProgression.GOSPEL: 'Gospel', NamedProgression.PACHELBEL: 'Pachelbel', NamedProgression.ANDALUSIAN: 'Andalusian', NamedProgression.MINOR: 'Minor',
 }
-# interface/tracker/screens/generators/time_field.py: what the list of times calls a dotted or triplet length, where its written fraction says nothing to a musician.
+# interface/tracker/screens/shared/time_field.py: what the list of times calls a dotted or triplet length, where its written fraction says nothing to a musician.
 MSG_TIME_NAMES = {
     '1/24': '1/16 triplet', '3/32': 'dotted 1/16', '1/12': '1/8 triplet', '3/16': 'dotted 1/8', '1/6': '1/4 triplet',
 }

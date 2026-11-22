@@ -6,11 +6,11 @@
 from llamatron.engine.generators import strum as strum_plugin
 from llamatron.engine.generators.strum import strings as strum_strings
 from llamatron.interface.tracker import keybindings
-from llamatron.interface.tracker.screens.generators.restart_field import restart_field
 from llamatron.interface.tracker.screens.generators.strum_fields import strum_fields
 from llamatron.interface.tracker.screens.shared.field import NameField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
 from llamatron.user_strings import help as help_text, labels, messages
 
 

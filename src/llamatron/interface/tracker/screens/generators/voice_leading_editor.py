@@ -7,11 +7,11 @@ from llamatron.engine.generators import voice_leading as voice_leading_plugin
 from llamatron.engine.generators.voice_leading import model as voice_leading_settings, strings as voice_leading_strings
 from llamatron.engine.generators.voice_leading.model import VoiceLeadingSetting
 from llamatron.interface.tracker import keybindings
-from llamatron.interface.tracker.screens.generators.restart_field import restart_field
 from llamatron.interface.tracker.screens.shared.field import NameField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
 from llamatron.interface.tracker.screens.shared.octave_field import octave_field
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
 from llamatron.model.values import note
 from llamatron.user_strings import help as help_text, labels, messages
 

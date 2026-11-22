@@ -7,10 +7,10 @@ from llamatron.engine.generators import hocket as hocket_plugin
 from llamatron.engine.generators.hocket import strings as hocket_strings
 from llamatron.engine.generators.hocket.model import HocketSetting
 from llamatron.interface.tracker import keybindings
-from llamatron.interface.tracker.screens.generators.restart_field import restart_field
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, NameField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 

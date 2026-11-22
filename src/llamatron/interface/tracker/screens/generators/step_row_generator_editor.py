@@ -5,11 +5,11 @@
 
 from llamatron.engine.generators.step_row import StepRowSetting
 from llamatron.interface.tracker import keybindings
-from llamatron.interface.tracker.screens.generators.restart_field import restart_field
-from llamatron.interface.tracker.screens.generators.time_field import time_field
 from llamatron.interface.tracker.screens.shared.field import Field, NameField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
+from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.user_strings import labels, legends, marks
 
 
