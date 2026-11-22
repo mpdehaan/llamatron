@@ -42,8 +42,9 @@ def data_as_kept(part):
 
 def or_default(*, value, default):
     """Return a setting's value, or its default if the file left it out."""
-    return default if value is None else value
-
+    if value is None:
+        return default
+    return value
 
 
 @functools.cache
@@ -52,7 +53,11 @@ def references_of(kind):
     list generators and chains naming an item of every generator section, whichever plugins there are."""
     if not kind.CHAINS_NAMED_BY:
         return kind.REFERENCES
-    return {**kind.REFERENCES, **{section: kind.CHAINS_NAMED_BY for section in sections.generator_sections()}}
+    references = dict(kind.REFERENCES)
+    for section in sections.generator_sections():
+        references[section] = kind.CHAINS_NAMED_BY
+    return references
+
 
 class LlamaData(Revised):
     """Something stored in a set file, which can turn itself into file data and back.
@@ -109,7 +114,11 @@ class LlamaData(Revised):
 
     def names_item(self, *, section, name):
         """Return whether one of its own settings names an item of a section, as a clip names its pattern."""
-        return any(_names(value=self._settings.get(setting), name=name) for setting in references_of(type(self)).get(section, ()))
+        references = references_of(type(self))
+        for setting in references.get(section, ()):
+            if _names(value=self._settings.get(setting), name=name):
+                return True
+        return False
 
     def named_items(self):
         """Return everything its own settings name, as a set of (section, name): what names_item() answers one item at a time,
@@ -117,12 +126,7 @@ class LlamaData(Revised):
         named = set()
         for section, settings in references_of(type(self)).items():
             for setting in settings:
-                # A setting the file leaves out names nothing.
-                value = self._settings.get(setting)
-                if isinstance(value, list):
-                    named.update((section, name) for name in value)
-                elif value is not None:
-                    named.add((section, value))
+                named.update(_named_by(section=section, value=self._settings.get(setting)))
         return named
 
     def everything_named(self):
@@ -146,15 +150,6 @@ class LlamaData(Revised):
         for part in self.referring_parts():
             part.rename_references(section=section, old=old, new=new)
 
-    @notes_change
-    def _rename_own_references(self, *, section, old, new):
-        for setting in references_of(type(self))[section]:
-            value = self._settings[setting]
-            if isinstance(value, list):
-                self._settings[setting] = [new if item == old else item for item in value]
-            elif value == old:
-                self._settings[setting] = new
-
     def to_data(self):
         """Return this object's settings as plain data in the set file's format."""
         raise NotImplementedError(errors.ERR_NEEDS_TO_DATA.format(kind=type(self).__name__))
@@ -172,6 +167,15 @@ class LlamaData(Revised):
         parts of the set that every song shares, like a chain, take the setlist instead.
         """
         raise NotImplementedError(errors.ERR_NEEDS_FROM_DATA.format(kind=cls.__name__))
+
+    @notes_change
+    def _rename_own_references(self, *, section, old, new):
+        for setting in references_of(type(self))[section]:
+            value = self._settings[setting]
+            if isinstance(value, list):
+                self._settings[setting] = _renamed_in(items=value, old=old, new=new)
+            elif value == old:
+                self._settings[setting] = new
 
 
 class HoldsSettings(LlamaData):
@@ -206,7 +210,9 @@ class HoldsSettings(LlamaData):
         """Store a setting's value as set_written() does, leaving the setting out of the file where the value is its default."""
         if value is not None:
             self.SETTINGS[name].check(value, song=song)
-        self.set_written(name=name, value=None if value == default else value, song=song)
+        if value == default:
+            value = None
+        self.set_written(name=name, value=value, song=song)
 
     def to_data(self):
         """Return the settings the file writes: those that hold a value."""
@@ -215,4 +221,29 @@ class HoldsSettings(LlamaData):
 
 def _names(*, value, name):
     """Return whether a setting names an item: holds its name, or a list holding it, as a list of chains does."""
-    return name in value if isinstance(value, list) else value == name
+    if isinstance(value, list):
+        return name in value
+    return value == name
+
+
+def _named_by(*, section, value):
+    """Return what one setting names, as (section, name) pairs: each name of a list, the one name it holds, or nothing where the file
+    leaves the setting out."""
+    if isinstance(value, list):
+        named = []
+        for name in value:
+            named.append((section, name))
+        return named
+    if value is None:
+        return []
+    return [(section, value)]
+
+
+def _renamed_in(*, items, old, new):
+    """Return a list of names with one renamed wherever it stands."""
+    renamed = []
+    for item in items:
+        if item == old:
+            item = new
+        renamed.append(item)
+    return renamed
