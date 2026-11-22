@@ -37,7 +37,9 @@ def whole_steps_up(*, length, step_size):
     """Return how many whole steps a length takes, counting a part of a step as one, as a gate's reach is drawn."""
     steps = length / step_size
     whole = steps.numerator // steps.denominator
-    return whole if whole * steps.denominator == steps.numerator else whole + 1
+    if whole * steps.denominator == steps.numerator:
+        return whole
+    return whole + 1
 
 
 def whole_steps_down(*, length, step_size):
@@ -80,7 +82,9 @@ class PatternNotes:
             return None
         length = written_length(value=gate, most=limits.MAX_GATE)
         modifier = self.get_value(row=Row.DOT, step=step)
-        return length if modifier is None else length * file_format.GATE_MODIFIERS[modifier]
+        if modifier is None:
+            return length
+        return length * file_format.GATE_MODIFIERS[modifier]
 
     def note_span(self, *, step, step_size):
         """Return how many steps the note on a step covers on a piano roll: its ties, or its gate rounded up to whole steps, and any ties right after that."""
@@ -258,7 +262,10 @@ class PatternNotes:
         if gate <= step_size:
             return False
         shorter = gate - step_size
-        self.set_value(row=Row.GATE, step=start, value=None if shorter == step_size else fraction_text(shorter))
+        gate = None
+        if shorter != step_size:
+            gate = fraction_text(shorter)
+        self.set_value(row=Row.GATE, step=start, value=gate)
         return True
 
     def cycle_accidental(self, start):
