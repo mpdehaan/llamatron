@@ -31,7 +31,9 @@ ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 
 def shape_of(scale):
     """Return a scale's half steps from its root, or the major scale's when there's none."""
-    return SHAPE_WITHOUT_A_SCALE if scale is None else scale.get_half_steps()
+    if scale is None:
+        return SHAPE_WITHOUT_A_SCALE
+    return scale.get_half_steps()
 
 
 def half_steps_to(*, scale, degree, accidental=None):
@@ -44,7 +46,9 @@ def half_steps_to(*, scale, degree, accidental=None):
 def quality_of(*, scale, degree, accidental=None):
     """Return a chord's quality: the scale's triad on a plain degree, the figure's own, on degree 1, for one with a sharp or flat."""
     shape = shape_of(scale)
-    place = 0 if accidental else (degree - 1) % len(shape)
+    place = 0
+    if not accidental:
+        place = (degree - 1) % len(shape)
     root = shape[place]
     third = (shape[(place + 2) % len(shape)] - root) % HALF_STEPS_PER_OCTAVE
     fifth = (shape[(place + 4) % len(shape)] - root) % HALF_STEPS_PER_OCTAVE
@@ -55,8 +59,9 @@ def roman_numeral(*, scale, degree, accidental=None):
     """Return a chord's Roman numeral: upper case major, lower case minor, a mark for diminished or augmented, a sharp or flat in front."""
     quality = quality_of(scale=scale, degree=degree, accidental=accidental)
     numeral = ROMAN_NUMERALS[(degree - 1) % len(ROMAN_NUMERALS)]
-    numeral = numeral if quality in UPPER_CASE_QUALITIES else numeral.lower()
-    return marks.MSG_ACCIDENTAL_MARKS.get(accidental, '') + numeral + marks.MSG_QUALITY_MARKS[quality]
+    if quality not in UPPER_CASE_QUALITIES:
+        numeral = numeral.lower()
+    return marks.MSG_ACCIDENTAL_MARKS.get(accidental, NO_MARK) + numeral + marks.MSG_QUALITY_MARKS[quality]
 
 
 def matched_to(*, scale, chords):
@@ -77,7 +82,7 @@ def matched_to(*, scale, chords):
             degrees.append(shape.index(within + 1) + 1)
             accidentals.append(Accidental.FLAT)
         else:
-            degrees.append(max(index for index, step in enumerate(shape) if step < within) + 1)
+            degrees.append(_last_place_below(shape=shape, within=within) + 1)
             accidentals.append(Accidental.SHARP)
     return degrees, accidentals
 
@@ -116,6 +121,7 @@ NAMED_PROGRESSIONS = [
 ]
 FLAT_WRITTEN = 'b'
 SHARP_WRITTEN = '#'
+NO_MARK = ''
 
 
 def numeral_half_steps(numeral):
@@ -132,14 +138,33 @@ def numeral_half_steps(numeral):
 
 def named_progression(key):
     """Return a named progression's numerals, as written."""
-    return next(written for column in NAMED_PROGRESSIONS for name, written in column if name == key).split()
+    for column in NAMED_PROGRESSIONS:
+        for name, written in column:
+            if name == key:
+                return written.split()
+    raise StopIteration(key)
 
 
 def named_progression_in(*, key, scale):
     """Return a named progression as (degrees, accidentals) in a scale."""
-    return matched_to(scale=scale, chords=[numeral_half_steps(numeral) for numeral in named_progression(key)])
+    chords = [numeral_half_steps(numeral) for numeral in named_progression(key)]
+    return matched_to(scale=scale, chords=chords)
 
 
 def shown_numerals(key):
     """Return a named progression's numerals as the picker shows them, with flat signs."""
-    return marks.MSG_PRESET_NUMERALS_SEPARATOR.join(marks.MSG_ACCIDENTAL_MARKS[Accidental.FLAT] + numeral[len(FLAT_WRITTEN):] if numeral.startswith(FLAT_WRITTEN) else numeral for numeral in named_progression(key))
+    shown = []
+    for numeral in named_progression(key):
+        if numeral.startswith(FLAT_WRITTEN):
+            numeral = marks.MSG_ACCIDENTAL_MARKS[Accidental.FLAT] + numeral[len(FLAT_WRITTEN):]
+        shown.append(numeral)
+    return marks.MSG_PRESET_NUMERALS_SEPARATOR.join(shown)
+
+
+def _last_place_below(*, shape, within):
+    """Return the place of the scale's highest note below some half steps above its root."""
+    last = None
+    for index, step in enumerate(shape):
+        if step < within:
+            last = index
+    return last
