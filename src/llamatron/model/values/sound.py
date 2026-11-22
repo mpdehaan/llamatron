@@ -109,7 +109,8 @@ class Sound:
         if kind is Rest:
             return (REST, Length.exact(position.get_length()))
         if kind is Chord:
-            return Sound.chord([Sound.of(note) for note in position.get_notes()])
+            notes = [Sound.of(note) for note in position.get_notes()]
+            return Sound.chord(notes)
         if kind is Degree:
             return (
                 DEGREE, _as_pair(position.get_length()), position.get_number(), position.get_octave(),
@@ -119,7 +120,8 @@ class Sound:
             held = position.get_sound()
             length = Length.exact(position.get_length())
             if is_phrase(held):
-                return (PHRASE, length, tuple([Sound.of(part) for part in held]))
+                parts = [Sound.of(part) for part in held]
+                return (PHRASE, length, tuple(parts))
             return (HELD, length, Sound.of(held))
         raise ValueError(errors.ERR_NOT_A_POSITION.format(value=position))
 
@@ -133,14 +135,16 @@ class Sound:
         if kind == REST:
             return Rest(Length.rational(sound[LENGTH]))
         if kind == CHORD:
-            return Chord([Sound.position(note) for note in sound[NOTES]])
+            notes = [Sound.position(note) for note in sound[NOTES]]
+            return Chord(notes)
         if kind == DEGREE:
             return Degree(
                 number=sound[NUMBER], length=_as_number(sound[LENGTH]), octave=sound[OCTAVE],
                 scale_notes=sound[SCALE_NOTES], half_steps=sound[HALF_STEPS],
             )
         if kind == PHRASE:
-            return Held(sound=phrase(Sound.position(part) for part in sound[PARTS]), length=Length.rational(sound[LENGTH]))
+            parts = [Sound.position(part) for part in sound[PARTS]]
+            return Held(sound=phrase(parts), length=Length.rational(sound[LENGTH]))
         return Held(sound=Sound.position(sound[HELD_SOUND]), length=Length.rational(sound[LENGTH]))
 
     def kind(sound):
@@ -169,7 +173,8 @@ class Sound:
     def lasting(played, length):
         """Return a note or chord with every note in it lasting length."""
         if played[KIND] == CHORD:
-            return (CHORD, length, tuple([Sound.with_length(note, length) for note in played[NOTES]]))
+            notes = [Sound.with_length(note, length) for note in played[NOTES]]
+            return (CHORD, length, tuple(notes))
         return Sound.with_length(played, length)
 
     def half_step(note, steps):
@@ -179,7 +184,9 @@ class Sound:
         """
         midi = note[MIDI] + steps
         if midi_numbers.MIN_MIDI_NUMBER <= midi <= midi_numbers.MAX_MIDI_NUMBER:
-            names = note_values.FLAT_NAMES if note[NAME].endswith(note_values.FLAT_SIGN) else note_values.SHARP_NAMES
+            names = note_values.SHARP_NAMES
+            if note[NAME].endswith(note_values.FLAT_SIGN):
+                names = note_values.FLAT_NAMES
             return (NOTE, note[LENGTH], midi, note[VELOCITY], note[GLIDE], names[midi % midi_numbers.HALF_STEPS_PER_OCTAVE])
         return Sound.of(Sound.position(note).half_step(steps))
 
@@ -191,8 +198,9 @@ class Sound:
         if not inversion or chord[KIND] != CHORD:
             return chord
         notes = list(chord[NOTES])
-        lowest = sorted(range(len(notes)), key=lambda place: notes[place][MIDI])[:min(inversion, len(notes) - 1)]
-        for place in lowest:
+        by_pitch = sorted(range(len(notes)), key=lambda place: notes[place][MIDI])
+        moved = min(inversion, len(notes) - 1)
+        for place in by_pitch[:moved]:
             try:
                 notes[place] = Sound.half_step(notes[place], midi_numbers.HALF_STEPS_PER_OCTAVE)
             except ValueError:
@@ -201,7 +209,8 @@ class Sound:
 
     def chord_above(root, half_steps):
         """Return the chord a root note makes with the notes some half steps above it, each spelled as half_step spells it."""
-        return Sound.chord([root, *[Sound.half_step(root, above) for above in half_steps]])
+        above_the_root = [Sound.half_step(root, above) for above in half_steps]
+        return Sound.chord([root, *above_the_root])
 
     def settled(sound, scale):
         """Return the note a degree plays in a scale, which is the note the Degree class would give."""
@@ -217,9 +226,13 @@ HOLDABLE = (NOTE, CHORD, DEGREE)
 
 def _as_pair(length):
     """Return a note's or degree's length as a pair, or None for one that has none yet."""
-    return None if length is None else Length.exact(length)
+    if length is None:
+        return None
+    return Length.exact(length)
 
 
 def _as_number(length):
     """Return a pair as the Rational a class takes, or None for a length that isn't there yet."""
-    return None if length is None else Length.rational(length)
+    if length is None:
+        return None
+    return Length.rational(length)
