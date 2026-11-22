@@ -305,7 +305,7 @@ class TestSongsPage(UITest):
 
     async def test_songs_share_the_patterns_and_have_their_own_tracks(self):
         self.document.add_song(SECOND_SONG)
-        self.assertEqual(self.document.song().get_setlist().get_pattern_names(), [TUNE, ui_testing.BEAT, OTHER])
+        self.assertEqual(self.document.get_setlist().get_pattern_names(), [TUNE, ui_testing.BEAT, OTHER])
         self.assertEqual(self.document.song().get_track_names(), [FIRST_TRACK])
         self.document.select_song(names_text.MSG_DEFAULT_SONG_NAME)
         self.assertEqual(self.document.song().get_track_names(), [LEAD, DRUMS])

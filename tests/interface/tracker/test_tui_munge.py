@@ -52,7 +52,7 @@ class TestMunge(UITest):
     def row(self, *, row=None):
         """Return a row of the pattern, its degrees unless another is named."""
         row = Row.DEGREE if row is None else row
-        return self.document.song().get_setlist().get_pattern(LONG).get_row(row)
+        return self.document.get_setlist().get_pattern(LONG).get_row(row)
 
     async def test_the_key_opens_the_choices_sorted_by_name_and_esc_changes_nothing(self):
         await self.press(keybindings.PatternEditor.MUNGE)
@@ -99,7 +99,7 @@ class TestMunge(UITest):
         for choice in (Munge.COPY_BEFORE_TO_END, Munge.MIRROR):
             with self.subTest(choice=choice):
                 await munge(test=self, choice=choice)
-                self.assertEqual(self.document.song().get_setlist().get_pattern(LONG).get_steps(), limits.MAX_STEPS)
+                self.assertEqual(self.document.get_setlist().get_pattern(LONG).get_steps(), limits.MAX_STEPS)
                 self.assertIn(errors.ERR_MUNGE_TOO_MANY_STEPS.format(steps=limits.MAX_STEPS * 2 if choice == Munge.MIRROR else limits.MAX_STEPS + 2, most=limits.MAX_STEPS), self.text())
 
     async def test_a_roll_asks_how_many_steps_and_the_cursor_stays(self):
@@ -217,7 +217,7 @@ class TestMunge(UITest):
         self.assertEqual(self.row(), [1, OTHER_DEGREE, 2, OTHER_DEGREE, 3, OTHER_DEGREE, 4, OTHER_DEGREE, 5, OTHER_DEGREE])
         # The cursor stays on its note.
         self.assertEqual(self.editor.step, 2)
-        self.assertEqual(self.document.song().get_setlist().get_pattern(ui_testing.OTHER).get_steps(), 1)
+        self.assertEqual(self.document.get_setlist().get_pattern(ui_testing.OTHER).get_steps(), 1)
 
     async def test_splice_asks_for_another_pattern_and_adds_it_at_the_end(self):
         await munge(test=self, choice=Munge.SPLICE)

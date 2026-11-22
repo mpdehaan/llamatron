@@ -41,7 +41,7 @@ class TestGroovesPage(UITest):
         self.assertIsInstance(self.app.screen, GroovesPage)
 
     def grooves(self):
-        return self.document.song().get_setlist().get_groove_names()
+        return self.document.get_setlist().get_groove_names()
 
     async def test_the_factory_grooves_are_listed_first_and_marked(self):
         self.assertEqual(self.grooves(), groove_values.FACTORY_GROOVE_NAMES)
@@ -70,31 +70,31 @@ class TestGroovesPage(UITest):
         self.assertIn(FactoryGroove.SWING_58, self.crumbs_line())
         await self.press(Key.RIGHT, '9', keybindings.GrooveEditor.MORE, keybindings.GrooveEditor.REMOVE_CELL, keybindings.GrooveEditor.CELL_LENGTH, keybindings.GrooveEditor.RENAME)
         self.assertIsInstance(self.app.screen, GrooveEditor)
-        self.assertEqual(self.document.song().get_setlist().get_groove(FactoryGroove.SWING_58).get_cells()[1], 16)
-        self.assertEqual(len(self.document.song().get_setlist().get_groove(FactoryGroove.SWING_58).get_cells()), groove_values.GROOVE_CELLS)
+        self.assertEqual(self.document.get_setlist().get_groove(FactoryGroove.SWING_58).get_cells()[1], 16)
+        self.assertEqual(len(self.document.get_setlist().get_groove(FactoryGroove.SWING_58).get_cells()), groove_values.GROOVE_CELLS)
         self.assertFalse(self.document.is_dirty())
 
     async def test_copying_a_factory_groove_makes_one_of_your_own(self):
         await self.press(Key.DOWN, Key.DOWN, keybindings.GroovesPage.COPY)
         self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, SWING_58_COPY])
         self.assertIn(messages.MSG_COPIED_TO.format(name=SWING_58_COPY), self.text())
-        self.assertEqual(self.document.song().get_setlist().get_groove(SWING_58_COPY).get_cells(), self.document.song().get_setlist().get_groove(FactoryGroove.SWING_58).get_cells())
+        self.assertEqual(self.document.get_setlist().get_groove(SWING_58_COPY).get_cells(), self.document.get_setlist().get_groove(FactoryGroove.SWING_58).get_cells())
         self.assertIn(marks.MSG_OWN_GROOVE_SHOWN, self.text())
         await self.press(Key.ENTER, Key.RIGHT, '9')
-        self.assertEqual(self.document.song().get_setlist().get_groove(SWING_58_COPY).get_cells()[1], 9)
+        self.assertEqual(self.document.get_setlist().get_groove(SWING_58_COPY).get_cells()[1], 9)
 
     async def test_up_and_down_nudge_a_cell_like_plus_and_minus(self):
         await self.press(keybindings.GroovesPage.ADD)
         self.assertIsInstance(self.app.screen, GrooveEditor)
         await self.press(Key.UP, Key.UP, Key.RIGHT, Key.DOWN, key_of(binding=keybindings.GrooveEditor.LESS, key=Key.MINUS))
-        self.assertEqual(self.document.song().get_setlist().get_groove(GROOVE_1).get_cells()[:2], [2, -2])
+        self.assertEqual(self.document.get_setlist().get_groove(GROOVE_1).get_cells()[:2], [2, -2])
 
     async def test_a_adds_a_numbered_straight_groove_and_opens_it(self):
         await self.press(keybindings.GroovesPage.ADD)
         self.assertIsInstance(self.app.screen, GrooveEditor)
         self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, GROOVE_1])
-        self.assertEqual(self.document.song().get_setlist().get_groove(GROOVE_1).get_cells(), [groove_values.STRAIGHT] * groove_values.GROOVE_CELLS)
-        self.assertEqual(self.document.song().get_setlist().get_groove(GROOVE_1).get_cell_length_text(), defaults.DEFAULT_GROOVE_CELL_LENGTH)
+        self.assertEqual(self.document.get_setlist().get_groove(GROOVE_1).get_cells(), [groove_values.STRAIGHT] * groove_values.GROOVE_CELLS)
+        self.assertEqual(self.document.get_setlist().get_groove(GROOVE_1).get_cell_length_text(), defaults.DEFAULT_GROOVE_CELL_LENGTH)
         await self.press(Key.ESCAPE, keybindings.GroovesPage.ADD)
         self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, GROOVE_1, GROOVE_2])
 
@@ -138,7 +138,7 @@ class TestGrooveEditor(UITest):
         self.assertIsInstance(self.app.screen, GrooveEditor)
 
     def groove(self):
-        return self.document.song().get_setlist().get_groove(GROOVE_1)
+        return self.document.get_setlist().get_groove(GROOVE_1)
 
     async def test_the_brackets_change_an_amount_and_the_legend_names_up_and_down_alone(self):
         await self.press(Key.RIGHT, keybindings.GrooveEditor.MORE, keybindings.GrooveEditor.MORE, keybindings.GrooveEditor.LESS)
@@ -169,13 +169,13 @@ class TestGrooveEditor(UITest):
         self.app.screen.value = SHUFFLE
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, GrooveEditor)
-        self.assertIn(SHUFFLE, self.document.song().get_setlist().get_groove_names())
-        self.assertNotIn(GROOVE_1, self.document.song().get_setlist().get_groove_names())
+        self.assertIn(SHUFFLE, self.document.get_setlist().get_groove_names())
+        self.assertNotIn(GROOVE_1, self.document.get_setlist().get_groove_names())
         self.assertEqual(self.track(ui_testing.DRUMS).get_groove_choice(), SHUFFLE)
         self.assertIn(marks.MSG_GROOVE_NAME_SHOWN.format(label=labels.MSG_NAME_LABEL, name=SHUFFLE).strip(), self.text())
         self.assertIn(SHUFFLE, self.crumbs_line())
         await self.press(Key.RIGHT, '7')
-        self.assertEqual(self.document.song().get_setlist().get_groove(SHUFFLE).get_cells()[1], 7)
+        self.assertEqual(self.document.get_setlist().get_groove(SHUFFLE).get_cells()[1], 7)
 
     async def test_amounts_stop_at_the_limits(self):
         await self.press(*[keybindings.GrooveEditor.MORE] * (limits.MAX_GROOVE_AMOUNT + 5))

@@ -50,7 +50,7 @@ class TestRearrangingAPattern(UITest):
         self.editor = self.app.screen
 
     def rows(self, *, row=Row.DEGREE):
-        return self.document.song().get_setlist().get_pattern(LONG_PATTERN).get_row(row)
+        return self.document.get_setlist().get_pattern(LONG_PATTERN).get_row(row)
 
     async def test_reverse_after_reverses_everything_after_the_cursor(self):
         await self.press(Key.RIGHT)

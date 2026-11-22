@@ -235,9 +235,9 @@ class TestDocumentEdges(unittest.TestCase):
     def test_copying_a_chain_copies_its_steps(self):
         document = Document(setlist=setlist_from_data(good()))
         new = document.copy_named(section=Section.CHAINS, name=X)
-        self.assertEqual(document.song().get_setlist().get_chain(new).get_steps(), [(arp_plugin.NAME, UP)])
+        self.assertEqual(document.get_setlist().get_chain(new).get_steps(), [(arp_plugin.NAME, UP)])
         document.change_set(document.get_setlist().get_chain(new).remove_step, 0)
-        self.assertEqual(document.song().get_setlist().get_chain(X).get_steps(), [(arp_plugin.NAME, UP)])
+        self.assertEqual(document.get_setlist().get_chain(X).get_steps(), [(arp_plugin.NAME, UP)])
 
 
 class TestWaysIn(unittest.TestCase):

@@ -22,7 +22,7 @@ class TestHocketAdded(UITest):
 
     async def test_a_new_one_has_no_source(self):
         name = await self.add_generator(hocket_plugin.SECTION)
-        self.assertIsNone(self.document.song().get_setlist().get_generator_settings(kind=hocket_plugin.NAME, name=name).get_source())
+        self.assertIsNone(self.document.get_setlist().get_generator_settings(kind=hocket_plugin.NAME, name=name).get_source())
 
 
 class TestHocketEditor(UITest):
@@ -34,7 +34,7 @@ class TestHocketEditor(UITest):
         await self.select_field(labels.MSG_SOURCE_TRACK_LABEL)
 
     def source(self):
-        return self.document.song().get_setlist().get_generator_settings(kind=hocket_plugin.NAME, name=ui_testing.TRADE).get_source()
+        return self.document.get_setlist().get_generator_settings(kind=hocket_plugin.NAME, name=ui_testing.TRADE).get_source()
 
     async def test_the_source_is_picked_from_the_songs_tracks_with_none_first(self):
         await self.press(Key.ENTER)

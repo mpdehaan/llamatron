@@ -240,14 +240,14 @@ class TestPatternsPageUndo(UndoTest):
 
     def next_pattern_name(self):
         """Return the name the Patterns page offers for a new pattern: one more than the highest number there."""
-        return new_name(word=names_text.MSG_NEW_PATTERN_WORD, taken=self.document.song().get_setlist().get_pattern_names())
+        return new_name(word=names_text.MSG_NEW_PATTERN_WORD, taken=self.document.get_setlist().get_pattern_names())
 
     async def test_undoing_the_add_while_its_editor_is_open_goes_back_to_the_list(self):
         added = self.next_pattern_name()
         await self.press(keybindings.MainPage.PATTERNS, keybindings.PatternsPage.ADD, keybindings.NewPatternDialog.OK, Key.ENTER)
         self.assertIsInstance(self.app.screen, PatternEditor)
         await self.check_undo_goes_back_to(PatternsPage)
-        self.assertNotIn(added, self.document.song().get_setlist().get_pattern_names())
+        self.assertNotIn(added, self.document.get_setlist().get_pattern_names())
         self.assertIn(messages.MSG_UNDONE.format(what=self.named(section=Section.PATTERNS, name=added)), self.text())
 
 
@@ -259,7 +259,7 @@ class TestPatternEditorUndo(UndoTest):
         self.assertIsInstance(self.app.screen, PatternEditor)
 
     def velocities(self):
-        return self.document.song().get_setlist().get_pattern(ui_testing.TUNE).get_row(Row.VELOCITY)
+        return self.document.get_setlist().get_pattern(ui_testing.TUNE).get_row(Row.VELOCITY)
 
     async def test_undoing_a_rename_keeps_the_editor_on_the_pattern_under_its_old_name(self):
         await self.reconfigure(Reconfigure.RENAME)
@@ -296,7 +296,7 @@ class TestPatternEditorUndo(UndoTest):
         entry_set = self.data()
         self.assertNotEqual(entry_set, before)
         await self.press(Key.RIGHT, Key.UP, keybindings.PianoRoll.PLACE)
-        self.assertEqual(self.document.song().get_setlist().get_pattern(ui_testing.TUNE).get_row(Row.TIE), [False, False, True, False])
+        self.assertEqual(self.document.get_setlist().get_pattern(ui_testing.TUNE).get_row(Row.TIE), [False, False, True, False])
         await self.check_undo_and_redo(before=entry_set, after=self.data())
         self.assertTrue(self.app.screen.on_roll())
         self.assertEqual((self.app.screen.step, self.app.screen.roll.pitch), (1, self.app.screen.roll.pitch))
@@ -310,7 +310,7 @@ class TestPatternEditorUndo(UndoTest):
         await self.check_undo_and_redo(before=before, after=self.data())
         before = self.data()
         await self.press(keybindings.PianoRoll.ERASE)
-        self.assertEqual(self.document.song().get_setlist().get_pattern(ui_testing.TUNE).get_row(Row.DEGREE), [1, None, None, None])
+        self.assertEqual(self.document.get_setlist().get_pattern(ui_testing.TUNE).get_row(Row.DEGREE), [1, None, None, None])
         await self.check_undo_and_redo(before=before, after=self.data())
 
 
@@ -332,7 +332,7 @@ class TestOffsetsEditorUndo(UndoTest):
         self.assertIsInstance(self.app.screen, OffsetsEditor)
 
     def offsets(self):
-        return self.document.song().get_setlist().get_generator_settings(kind=arp_plugin.NAME, name=ui_testing.UP_ARP).get_offsets()
+        return self.document.get_setlist().get_generator_settings(kind=arp_plugin.NAME, name=ui_testing.UP_ARP).get_offsets()
 
     async def test_typing_an_offset_is_one_step_and_two_digits_are_still_one(self):
         await self.open_generator(section=arp_plugin.SECTION)
@@ -352,14 +352,14 @@ class TestOffsetsEditorUndo(UndoTest):
         # Opening the offsets editor gives a new arp its row of offsets, which is the first thing to undo.
         await self.open_offsets()
         await self.check_undo_goes_back_to(ArpEditor)
-        self.assertIsNone(self.document.song().get_setlist().get_generator_settings(kind=arp_plugin.NAME, name=name).get_offsets())
+        self.assertIsNone(self.document.get_setlist().get_generator_settings(kind=arp_plugin.NAME, name=name).get_offsets())
         await self.check_undo_goes_back_to(GeneratorsPage)
 
 
 class TestScalePageUndo(UndoTest):
 
     async def test_changing_the_root_is_one_step_and_the_crumb_follows(self):
-        self.document.rename_named(section=Section.SCALES, old=self.document.song().get_setlist().get_scale_names()[0], new=default_scale_name(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR)))
+        self.document.rename_named(section=Section.SCALES, old=self.document.get_setlist().get_scale_names()[0], new=default_scale_name(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR)))
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
         self.assertIsInstance(self.app.screen, ScalePage)
         before = self.data()
@@ -381,7 +381,7 @@ class TestGrooveEditorUndo(UndoTest):
         name = names_text.MSG_NUMBERED_NAME.format(base=names_text.MSG_NEW_GROOVE_WORD, number=defaults.FIRST_NUMBER)
         before = self.data()
         await self.press(Key.RIGHT, *TWELVE)
-        self.assertEqual(self.document.song().get_setlist().get_groove(name).get_cells()[1], int(''.join(TWELVE)))
+        self.assertEqual(self.document.get_setlist().get_groove(name).get_cells()[1], int(''.join(TWELVE)))
         await self.check_undo_and_redo(before=before, after=self.data())
 
 

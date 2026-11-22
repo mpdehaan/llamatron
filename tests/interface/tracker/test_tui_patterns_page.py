@@ -63,7 +63,7 @@ class PatternsPageTest(UITest):
         self.page = self.app.screen
 
     def names(self):
-        return self.document.song().get_setlist().get_pattern_names()
+        return self.document.get_setlist().get_pattern_names()
 
     def rows(self):
         """Return what each row of the page is, in order."""
@@ -106,7 +106,7 @@ class TestPatternsPage(PatternsPageTest):
         self.assertIn(NEW, self.names())
         self.assertEqual(self.group_of(NEW), ui_testing.MELODIES)
         self.assertIsInstance(self.app.screen, PatternEditor)
-        self.assertEqual(self.document.song().get_setlist().get_pattern(NEW).get_steps(), DEFAULT_STEPS)
+        self.assertEqual(self.document.get_setlist().get_pattern(NEW).get_steps(), DEFAULT_STEPS)
         await self.press(Key.ESCAPE)
         self.assertEqual(self.page.current(), NEW)
 
@@ -393,7 +393,7 @@ class TestPatternGroups(PatternsPageTest):
         # The new group's name goes at the front: joined to a name that lacked the old group's, and in its place where the name began with it.
         self.assertEqual(self.document.get_setlist().patterns_in_group(MELODIES_COPY), [MELODIES_COPY + MELODIES_RIFF[len(ui_testing.MELODIES):], TUNE_IN_COPY])
         self.assertEqual(self.page.listed(), Listed(patterns_page.HEADING, MELODIES_COPY))
-        self.assertEqual(self.document.song().get_setlist().get_pattern(TUNE_IN_COPY).to_data(), {**self.document.song().get_setlist().get_pattern(ui_testing.TUNE).to_data(), **self.document.song().get_setlist().get_pattern(TUNE_IN_COPY).to_data()})
+        self.assertEqual(self.document.get_setlist().get_pattern(TUNE_IN_COPY).to_data(), {**self.document.get_setlist().get_pattern(ui_testing.TUNE).to_data(), **self.document.get_setlist().get_pattern(TUNE_IN_COPY).to_data()})
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.names(), names)
 

@@ -299,7 +299,7 @@ class TestFilePageEdges(UITest):
 
     async def test_choosing_a_scale_needs_one_first(self):
         self.document.change_set(self.document.song().set_scale_name, None)
-        for name in self.document.song().get_setlist().get_scale_names():
+        for name in self.document.get_setlist().get_scale_names():
             self.document.delete_named(section=Section.SCALES, name=name)
         await self.press(keybindings.MainPage.SONGS, Key.ENTER)
         await self.select_field(labels_text.MSG_SCALE_LABEL)

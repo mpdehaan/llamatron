@@ -32,7 +32,7 @@ class TestDensityAdded(UITest):
 
     async def test_a_new_one_changes_nothing(self):
         name = await self.add_generator(density_plugin.SECTION)
-        self.assertEqual(self.document.song().get_setlist().get_generator_settings(kind=density_plugin.NAME, name=name).to_data(), {})
+        self.assertEqual(self.document.get_setlist().get_generator_settings(kind=density_plugin.NAME, name=name).to_data(), {})
 
 
 class ShapeEditorTest(UITest):
@@ -49,7 +49,7 @@ class ShapeEditorTest(UITest):
         self.assertIsInstance(self.app.screen, self.PAGE)
 
     def shape(self):
-        return self.document.song().get_setlist().get_generator_settings(kind=self.KIND, name=self.NAME).get_shape()
+        return self.document.get_setlist().get_generator_settings(kind=self.KIND, name=self.NAME).get_shape()
 
 
 class TestDensityEditor(ShapeEditorTest):

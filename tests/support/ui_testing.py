@@ -336,17 +336,17 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         return self.document.song().get_track(name)
 
     def arp(self, name):
-        return self.document.song().get_setlist().get_generator_settings(kind=arp_plugin.NAME, name=name)
+        return self.document.get_setlist().get_generator_settings(kind=arp_plugin.NAME, name=name)
 
     def auto_ratchet(self, name):
-        return self.document.song().get_setlist().get_generator_settings(kind=auto_ratchet_plugin.NAME, name=name)
+        return self.document.get_setlist().get_generator_settings(kind=auto_ratchet_plugin.NAME, name=name)
 
     def chain_steps(self, name):
-        return self.document.song().get_setlist().get_chain(name).get_steps()
+        return self.document.get_setlist().get_chain(name).get_steps()
 
     def root_and_kind(self, name):
         """Return a named scale's root and type as the file writes them."""
-        scale = self.document.song().get_setlist().get_named_scale(name)
+        scale = self.document.get_setlist().get_named_scale(name)
         return scale.get_root(), scale.get_kind()
 
     def add_pattern_with_rows(self, *, name, steps, rows):

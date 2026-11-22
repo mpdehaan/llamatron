@@ -30,7 +30,7 @@ class GuitarifyTest(UITest):
         self.assertIsInstance(self.app.screen, GuitarifyEditor)
 
     def guitar(self):
-        return self.document.song().get_setlist().get_generator_settings(kind=guitarify_plugin.NAME, name=ui_testing.PICKED)
+        return self.document.get_setlist().get_generator_settings(kind=guitarify_plugin.NAME, name=ui_testing.PICKED)
 
     def written(self):
         return self.guitar().to_data()
@@ -41,7 +41,7 @@ class TestGuitarifyAdded(UITest):
     async def test_a_new_one_shapes_and_plays_the_default_bar_with_nothing_written(self):
         name = await self.add_generator(guitarify_plugin.SECTION)
         self.assertIsInstance(self.app.screen, GuitarifyEditor)
-        guitar = self.document.song().get_setlist().get_generator_settings(kind=guitarify_plugin.NAME, name=name)
+        guitar = self.document.get_setlist().get_generator_settings(kind=guitarify_plugin.NAME, name=name)
         self.assertTrue(guitar.shapes())
         self.assertTrue(guitar.strikes())
         self.assertEqual(guitar.get_bar(), list(guitar_bars.READY_BARS[guitar_bars.DEFAULT_BAR].strokes))

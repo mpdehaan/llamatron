@@ -78,7 +78,7 @@ class TestChainStatementsPage(StatementsTest):
         self.assertIsInstance(self.app.screen, ChainStatementsPage)
 
     def table(self):
-        return self.document.song().get_setlist().get_chain(self.chain).get_bypass_when()
+        return self.document.get_setlist().get_chain(self.chain).get_bypass_when()
 
     async def test_a_line_starts_ignored_and_a_register_makes_it_a_statement(self):
         self.assertEqual(self.table(), [])
@@ -143,7 +143,7 @@ class TestStatementsOnOtherPages(StatementsTest):
     async def test_a_generator(self):
         await self.open_generator(section=auto_ratchet_plugin.SECTION)
         await self.write_every_third()
-        settings = self.document.song().get_setlist().get_generator_settings(kind=auto_ratchet_plugin.NAME, name=ui_testing.ROLLS)
+        settings = self.document.get_setlist().get_generator_settings(kind=auto_ratchet_plugin.NAME, name=ui_testing.ROLLS)
         self.assertEqual(settings.get_bypass_when(), [self.every_third()])
 
     async def test_a_scene(self):

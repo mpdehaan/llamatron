@@ -248,10 +248,10 @@ class TestDrumPatterns(UITest):
         await self.reconfigure(Reconfigure.DRUM)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.NO)
-        self.assertTrue(self.document.song().get_setlist().get_pattern(BEAT).is_drum())
+        self.assertTrue(self.document.get_setlist().get_pattern(BEAT).is_drum())
         await self.reconfigure(Reconfigure.DRUM)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertFalse(self.document.song().get_setlist().get_pattern(BEAT).is_drum())
+        self.assertFalse(self.document.get_setlist().get_pattern(BEAT).is_drum())
         self.assertFalse(self.document.has_notes(BEAT))
 
     async def test_it_builds(self):

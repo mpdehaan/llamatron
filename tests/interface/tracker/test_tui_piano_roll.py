@@ -100,7 +100,7 @@ class RollTest(UITest):
         # Each column is as wide as its wider cell, so the second line's cells start where the first's do.
         header = self.app.screen.header_lines()
         first, second = self.text().splitlines()[header:header + 2]
-        self.assertTrue(first.startswith(marks.MSG_HEADER_INDENT + marks.MSG_STEPS_HEADER.format(steps=self.document.song().get_setlist().get_pattern(ui_testing.TUNE).get_steps())))
+        self.assertTrue(first.startswith(marks.MSG_HEADER_INDENT + marks.MSG_STEPS_HEADER.format(steps=self.document.get_setlist().get_pattern(ui_testing.TUNE).get_steps())))
         self.assertTrue(second.startswith(marks.MSG_HEADER_INDENT + marks.MSG_TIME_SIGNATURE_SHOWN.format(signature=defaults.DEFAULT_TIME_SIGNATURE, whose=marks.MSG_FROM_SONG_SHOWN)))
         starts = self.header_cell_starts(first)
         self.assertEqual(len(starts), 3)
@@ -111,7 +111,7 @@ class RollTest(UITest):
 
     def row(self, row):
         """Return a row's value on every step, with False where a toggle row was never written."""
-        pattern = self.document.song().get_setlist().get_pattern(ui_testing.TUNE)
+        pattern = self.document.get_setlist().get_pattern(ui_testing.TUNE)
         return [bool(pattern.get_value(row=row, step=step)) if row_descriptions.ROW_DESCRIPTIONS[row].is_on_or_off() else pattern.get_value(row=row, step=step) for step in range(pattern.get_steps())]
 
     def value(self, *, row, step):
@@ -229,7 +229,7 @@ class TestPlacingNotes(RollTest):
         self.assertEqual(self.row(Row.TIE), [False, False, False, False])
 
     async def test_e_opens_a_picker_of_entry_sizes_with_the_songs_first_and_the_patterns_own_marked(self):
-        pattern = self.document.song().get_setlist().get_pattern(ui_testing.TUNE)
+        pattern = self.document.get_setlist().get_pattern(ui_testing.TUNE)
         await self.press(keybindings.PianoRoll.ENTRY_SIZE)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         self.assertEqual(self.app.screen.title, labels.MSG_ENTRY_SIZE_LABEL)
@@ -311,10 +311,10 @@ class TestPlacingNotes(RollTest):
 
     async def test_space_on_a_notes_head_erases_the_note_as_backspace_does(self):
         await self.press(keybindings.PianoRoll.PLACE)
-        erased_with_space = self.document.song().get_setlist().get_pattern(ui_testing.TUNE).to_data()
+        erased_with_space = self.document.get_setlist().get_pattern(ui_testing.TUNE).to_data()
         self.assertEqual(self.row(Row.DEGREE), [None, 3, None, None])
         await self.press(keybindings.Page.UNDO, keybindings.PianoRoll.ERASE)
-        self.assertEqual(self.document.song().get_setlist().get_pattern(ui_testing.TUNE).to_data(), erased_with_space)
+        self.assertEqual(self.document.get_setlist().get_pattern(ui_testing.TUNE).to_data(), erased_with_space)
 
     async def test_space_in_the_middle_of_a_note_held_by_its_gate_erases_the_whole_note(self):
         # E's gate reaches over step 3, so the cursor there is in E's middle.
@@ -328,13 +328,13 @@ class TestPlacingNotes(RollTest):
         await self.press(keybindings.PianoRoll.PLACE)
         self.assertEqual(self.row(Row.DEGREE), [1, None, None, None])
         self.assertEqual(self.row(Row.TIE), [False, True, True, True])
-        drawn = self.document.song().get_setlist().get_pattern(ui_testing.TUNE).to_data()
+        drawn = self.document.get_setlist().get_pattern(ui_testing.TUNE).to_data()
         await self.press(Key.RIGHT, Key.RIGHT, keybindings.PianoRoll.PLACE)
         self.assertEqual(self.row(Row.DEGREE), [None, None, None, None])
         self.assertEqual(self.row(Row.TIE), [False, False, False, False])
         # Erasing with Space is one undo step, which brings the whole note back.
         await self.press(keybindings.Page.UNDO)
-        self.assertEqual(self.document.song().get_setlist().get_pattern(ui_testing.TUNE).to_data(), drawn)
+        self.assertEqual(self.document.get_setlist().get_pattern(ui_testing.TUNE).to_data(), drawn)
         await self.press(keybindings.Page.REDO)
         # A second Space draws a new note of the entry size where the cursor is, cut at the pattern's end, not the note that was erased.
         await self.press(keybindings.PianoRoll.PLACE)
