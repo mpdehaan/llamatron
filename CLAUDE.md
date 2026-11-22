@@ -1,90 +1,99 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code in this repository.
+
+MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119. Every rule in this file and its imports is the user's. Claude MUST NOT
+change, weaken or add an exception to a MUST without the user's yes, and asks before changing any other rule.
 
 ## Mandates
 
-What Claude may never do, whatever the task, the mode it runs in or what a tool permits. These are the user's, with no
-exceptions but the ones written here, and they come before every other rule in this file and in `.claude/`.
+These come before every other rule, whatever the task, mode or tool permits.
 
-- **A path outside the working directory is used exactly as the user gave it, or not at all.** When a path the user names
-  outside the repository does not exist or cannot be read, Claude stops and says so: no listing of the folder the path is in,
-  no search for a file of a near name, no guess at another folder, no look at a newer or likelier file. Claude looks for
-  files in a folder outside the repository only when the user has named that folder and said to look for files there, and
-  never finds such a folder on its own.
-- **No shell command outside the working directory without the user's confirmation.** Claude never runs a shell command in a
-  folder outside the repository, and never runs one that names, reads, writes or lists a file or folder outside the
-  repository, until the user has confirmed that command or that path in the conversation. This holds for Claude's own
-  working files too, a scratch folder or a memory folder a tool provides included, and for any tool that reads or writes a
-  file, not only the shell. A confirmation covers what was confirmed and no more: one path confirmed is not leave for the
-  folder around the path, and leave given in one conversation does not carry to the next unless it is written here. When
-  work seems to need a path outside, Claude asks first, naming the exact path and what would be done there.
-  The one standing exception, confirmed by the user: the folders under `/private/tmp` whose names start with `claude`, where
-  Claude Code keeps a session's scratch files, may be read, written and run in without asking. The exception covers nothing
-  else under `/private/tmp` or `/tmp`, and not the memory folder under the user's home.
-  A second standing exception, confirmed by the user: Claude may write demo sets for the user to listen to in the folder
-  `/tmp/llamatron_demos`, and nowhere else under `/tmp`, without asking.
-- **No status of work and no list of planned work goes into source control, without exception.** What is done, what is partly done, what is next, a queue, a plan's steps and their state, and anything that records a conversation with the user are kept in files git ignores (`.claude/QUEUE.md`, `.claude/DESIGNS.md`, `.claude/features/WIZARD_DESIGNS.md`, `.claude/features/REFACTORING.md`, `.claude/features/REFACTORING_LOG.md`), never committed, and a commit message says what the code does, never where a plan stands. How a feature that exists is built may be recorded in the repository's notes freely.
-- **Claude makes no new file in `.claude/` of its own accord.** Claude keeps up the files that are there, and may suggest a new one when the user and Claude discuss taking notes; a new file is made only once the user agrees.
+- A path outside the repository MUST be used exactly as the user gave it. If it does not exist or cannot be read, Claude stops
+  and says so: no listing its folder, no search for a near name, no guessing another folder.
+- Claude MUST NOT run a shell command in, or naming, reading, writing or listing, a path outside the repository without the
+  user's confirmation of that command or path in the conversation. This covers every tool, and Claude's own scratch and memory
+  folders. A confirmation covers what was confirmed only, and only in that conversation. Standing exceptions:
+  - `/tmp/claude/llamatron` (the same as `/private/tmp/claude/llamatron`): every temporary file of Claude's work MUST go here,
+    in subfolders by purpose, such as demo sets for the user in `/tmp/claude/llamatron/demos`.
+  - The folders under `/private/tmp` whose names start with `claude`, where Claude Code keeps session scratch files.
+- Status of work and lists of planned work MUST NOT go into source control: what is done, partly done or next, a queue, a plan's
+  state, or a record of a conversation. They live in git-ignored files (`.claude/QUEUE.md`, `.claude/DESIGNS.md`,
+  `.claude/features/WIZARD_DESIGNS.md`, `.claude/features/REFACTORING.md`, `.claude/features/REFACTORING_LOG.md`). A commit
+  message says what the code does. How an existing feature is built MAY be recorded freely.
+- Claude MUST NOT make a new file in `.claude/` without the user's agreement; it MAY suggest one.
 
 ## Project
 
-llamatron is a text UI that helps people compose electronic music in MIDI, for Ableton Live and, later, other DAWs. Its features are inspired by Ableton's Session View, hardware sequencers like the Elektron Monomachine and the Sequentix Cirklon, and software trackers. `docs/WHY_LLAMATRON.md` is part of the definition of what the program is for: it says what llamatron takes from each of those, where it differs and why it composes before the DAW, and a feature is judged against it. The user edits it by hand, and it's updated when an idea it describes changes. The Python classes underneath are internal: no person is expected to use them as an API, so they can change freely to suit the tracker. It's at an early stage. The third-party dependencies are `mido`, `python-rtmidi`, `PyYAML` and `textual`, pinned in `requirements.txt`, which `setup.py` also reads. The package is `llamatron`, in `src/llamatron`, and the code and its tests import it by that name, so it has to be installed (as below) before anything runs.
+llamatron is a text UI for composing electronic music in MIDI, for Ableton Live and later other DAWs, inspired by Ableton's
+Session View, the Elektron Monomachine, the Sequentix Cirklon and software trackers. `docs/WHY_LLAMATRON.md` defines what it is
+for, and features are judged against it. The Python classes are internal, not an API, and change freely to suit the tracker.
+Dependencies: `mido`, `python-rtmidi`, `PyYAML`, `textual`, pinned in `requirements.txt`, which `setup.py` reads. The package is
+`llamatron` in `src/llamatron`, and must be installed (below) before anything runs.
 
 ## Where everything is
 
-- `.claude/PRINCIPLES.md`: the goals the user judges the work by, which decide a close call the rules don't settle.
-- `.claude/DESIGNS.md` and `.claude/features/WIZARD_DESIGNS.md`: the designs agreed with the user and not yet built, the second the arranger's and the song wizard's. Both are Claude's own, kept on this computer only and ignored by git, as the queue is. Neither is imported: read the part at hand before building it.
-- `.claude/QUEUE.md`: the order the agreed work is built in, Claude's own list, kept on this computer only and ignored by git (the user's choice).
-- `.claude/STYLE.md`: every rule for the code and the documents, with its reason and the test that enforces it.
-- `.claude/TESTING.md`: how the tests are run, what a change must come with, how tests are written and where each kind lives.
-- `.claude/COMMUNICATION.md`: how Claude works with the user: committing, asking, numbering questions and explaining changes.
-- `.claude/format/`: the model and the file format, a file for each part (the table under "The references, read when needed").
-- `.claude/UX.md`: the user's rules for how the text UI behaves: keys, pickers, dialogs, the status line, wording and drawing.
-- `.claude/tracker/`: the text UI, a file for each group of pages (the same table).
-- `.claude/COMMANDS.md`: every script and tool, with what each is for.
-- `.claude/features/SONG_WIZARD.md`: the song wizard: what it is, the user's rules for it, a style template's format, the players, the sections and the arranger. It isn't imported: read it before working on `src/llamatron/wizards/create_song/`.
-- `.claude/KEYMAP.md`: what every key does on every page, with the cursor at each kind of place, then each key's pages, then every settings page's fields, generated by `internal_tools/key_map.sh` from the key tour of `tests/interface/tracker/test_tui_help_keys.py`, whose `TestKeyMapIsCurrent` keeps it current. It isn't imported: look a key up there before reading a page's code (the user's ask), and run the script after changing a key.
-- `.claude/features/REFACTORING.md`: the agreed refactoring toward objects that convey meaning, its steps in order and what is done, with `.claude/features/REFACTORING_LOG.md`, a row of measurements a step. Both are Claude's own, kept on this computer only and ignored by git, as the queue is. Neither is imported: read the first before any step of the refactoring.
-- `.claude/features/GENRES.md`: the genre library's standing rules: what it is, what may be read, how imperfect data is weighed, and licenses. It isn't imported: read it before working on `internal_tools/analysis_and_generation/`, a demo or a generator. Nothing of the genre library goes on the website until the user says so (the user's rule).
-- `.claude/features/GENRE_REVIEW.md`: what was learnt and agreed from the expert's review of the band genres' templates, in the order it is built. It isn't imported: read it before changing a band genre's style template or the solo, riff, loudness or instrument writers.
-- `.claude/features/MASHUPS.md`: how a mashup is made so that its genre is half the piece, and how a classical work's notes are brought in for one. It isn't imported: read it before making or changing a mashup.
+Imported, loaded every session: `.claude/COMMUNICATION.md` (working with the user), `.claude/STYLE.md` (code rules),
+`.claude/TESTING.md` (tests), `.claude/PRINCIPLES.md` (what decides a close call), `.claude/UX.md` (how the text UI behaves).
 
-- `.claude/music_theory_notes/`: what Claude knows of song structure, hooks, melody, harmony, drumming, drum machines, band interplay and each genre, kept by Claude and ahead of the code (the user's idea); `README.md` there has its rules: no band, artist or work named, no melody written down, principles only. It isn't imported: read a subject's file before building in its area, and add to it as the work teaches.
-- `src/llamatron/user_strings/`: every piece of text the program shows or raises, one module for each
-  way the text is used.
-- `.claude/IDEAS.yml`: the user's ideas for later, kept by Claude, with what each would mean for the code. The user calls it their ideas file, and it is the only ideas file (the user's rule): ideas for the program, the documentation, the guides, the website and the demo videos are all in it, and no second ideas file is made.
-- `README.md`, `GUIDE.md`, `INSTALL.md`, every chapter in `docs/` and `docs/DEMOS.md` are for people, and the user edits them by hand too. `GUIDE.md` is the documentation's home page and the website's: an introduction, the demo songs featured, and tables linking every page, which the website's sidebar is built from, each heading a group that opens and closes: Intro (`docs/WHY_LLAMATRON.md`; Installing, `docs/INSTALLING.md` with `docs/FLUIDSYNTH.md` and `docs/INSTALLING_RECORDING.md` under it; `docs/GETTING_STARTED.md`; `docs/CONCEPTS.md`), Demo Songs (`docs/DEMOS.md`, `docs/demos/TUTORIAL.md`, a page for each genre in `docs/demos/`, and `docs/demos/OTHER.md` last), Mashups (a page for each subgenre of mashup, in `docs/demos/`), Objects (`docs/OBJECT_MODEL.md`, `docs/PATTERNS.md`, `docs/SCENES.md`, `docs/TRACKS.md`, `docs/INSTRUMENTS.md`, `docs/ARRANGE.md`, `docs/CLIPS.md`, `docs/SCALES.md`, `docs/REGISTERS.md`, `docs/GROOVES.md`), Generators (`docs/GENERATORS.md` and a page for each in `docs/generators/`, the Chain among them, in nine categories), Song Wizard (`docs/WIZARD.md`), File Operations (`docs/EXPORTING.md`, `docs/IMPORTING.md`), MIDI & Performance (`docs/MIDI_SETUP.md`, `docs/PLAYING_LIVE.md`, `docs/VISUALIZERS.md`) and Advanced (`docs/USER_SCRIPTS.md`, `docs/RECORDING.md`, `docs/ARCHITECTURE.md`). `INSTALL.md` points to `docs/INSTALLING.md`. Each thing is described on one page only; another links to it rather than repeating it, and titles and headings are formal, in Title Case (the user's rules).
+Read when the work needs them:
 
-Everything in `.claude/` is for Claude: it holds what the user doesn't need to read. `STYLE.md`, `TESTING.md`, `COMMUNICATION.md`, `UX.md` and `PRINCIPLES.md` are imported at the end of this file, so they load in every session; the files of `.claude/format/` and `.claude/tracker/`, the files of `.claude/features/`, `COMMANDS.md` and `KEYMAP.md` are read when the work needs them, each a file for one component so that only the part at hand is read (the user's choice). `tests/rules/test_doc_paths.py` checks that every source path these documents name exists.
+- `.claude/QUEUE.md`: the order of agreed work. `.claude/DESIGNS.md` and `.claude/features/WIZARD_DESIGNS.md`: agreed designs not
+  yet built. All git-ignored.
+- `.claude/format/` and `.claude/tracker/`: the model, file format and pages, a file per part (table at the end).
+- `.claude/COMMANDS.md`: every script and tool.
+- `.claude/KEYMAP.md`: every key on every page, generated by `internal_tools/key_map.sh`. Look a key up here before reading a
+  page's code; rerun the script after changing a key.
+- `.claude/DOCS.md`: how the documents and the website are written and kept current.
+- `.claude/TEST_LAYOUT.md`: which test module tests what.
+- `.claude/features/`: one file per standalone feature: `SONG_WIZARD.md` (before working in `src/llamatron/wizards/create_song/`),
+  `REFACTORING.md` with `REFACTORING_LOG.md` (git-ignored; before any refactoring step), `GENRES.md` (before working on
+  `internal_tools/analysis_and_generation/`, a demo or a generator; nothing of the genre library goes on the website until the
+  user says so), `GENRE_REVIEW.md` (before changing a band genre's template or the solo, riff, loudness or instrument writers),
+  `MASHUPS.md`, `REALTIME_PLAYBACK.md`, `VISUALIZER.md`, `RECORDING.md`.
+- `.claude/music_theory_notes/`: Claude's notes on structure, hooks, melody, harmony, drums and genres, principles only (its
+  `README.md` has the rules). Read the subject's file before building in its area; add to it as the work teaches.
+- `.claude/IDEAS.yml`: the user's only ideas file, for every kind of idea.
+- `src/llamatron/user_strings/`: every piece of text the program shows or raises.
+- `README.md`, `GUIDE.md`, `INSTALL.md`, `docs/`: for people; the user edits them too (`.claude/DOCS.md`).
+
+`tests/rules/test_doc_paths.py` checks that every source path these documents name exists.
 
 ## License
 
-The project is licensed under GPLv3, with the full text in `LICENSE`, which grants the terms. Every Python file and shell script, including new and empty ones, starts with the short header, three lines, `# llamatron: a music program`, the copyright line and `# SPDX-License-Identifier: GPL-3.0-or-later`, copied from any existing source file (the user's choice of the SPDX form over the 15-line notice). Put it above the module docstring, and below a script's `#!` line.
+GPLv3, full text in `LICENSE`. Every Python file and shell script, new and empty ones included, MUST start with the three-line
+header copied from any source file (`# llamatron: a music program`, the copyright line, `# SPDX-License-Identifier:
+GPL-3.0-or-later`), above the module docstring and below a `#!` line.
 
 ## Commands
 
-`.claude/COMMANDS.md` lists every script and tool with what each is for; it isn't imported, so read it when one is needed, and a new or changed script updates it and `docs/USER_SCRIPTS.md` in the same change (the user's rule, which `tests/rules/test_doc_paths.py` holds). The everyday commands are short `sh` scripts named with underscores, in two folders by who runs them (the user's layout): `user_scripts/` for anyone using llamatron and `internal_tools/`, which the user also calls the support folder, for developing it, with the genre library's tools in `internal_tools/analysis_and_generation/`. The top folder holds only `llamatron.sh`, which starts the tracker, on a set if one is named. Every script runs from the top folder wherever it is started and passes on what it is given. The ones every session needs:
+`.claude/COMMANDS.md` lists every script; a new or changed script MUST update it and `docs/USER_SCRIPTS.md` in the same change.
+Scripts are `sh`, named with underscores: `user_scripts/` for users, `internal_tools/` (the "support folder") for development,
+with the genre tools in `internal_tools/analysis_and_generation/`. The top folder holds only `llamatron.sh`. Every script runs
+from the top folder wherever started.
 
 ```
-python3 -m venv .venv && .venv/bin/python -m pip install -e .   # once: the environment and the llamatron command, which uses the code here
+python3 -m venv .venv && .venv/bin/python -m pip install -e .   # once
 ./llamatron.sh examples/learning/08_tie.yml                     # the tracker, on a set
-internal_tools/test.sh                                          # the whole suite in parallel, about 35 seconds (internal_tools/test_one.sh NAME for one)
-internal_tools/check_before_commit.sh                           # what Claude runs before committing code: the version check, then the tests that cover the change
-internal_tools/test_map.sh                                      # the map of which tests cover which files, under coverage, after moving code or adding many tests
-internal_tools/bump.sh                                          # the version's last number raised; internal_tools/push_all.sh does it once a push
-internal_tools/capture.sh, internal_tools/compare.sh            # before and after a change that should leave the music alone: every export byte for byte
-internal_tools/key_map.sh                                       # .claude/KEYMAP.md rewritten, after changing a key
-internal_tools/make_docs.sh                                     # the diagrams, the screenshots and the demo tables
-internal_tools/push_all.sh                                      # the one command that sends anything to GitHub, run only when asked to push; it retakes the screenshots and rebuilds the website first (internal_tools/rebuild_docs.sh)
-internal_tools/song_wizard_compose.sh                                 # the song wizard (.claude/features/SONG_WIZARD.md)
+internal_tools/test.sh [NAMES]                                  # the suite in parallel, about 35 seconds
+internal_tools/check_before_commit.sh                           # before committing code; check its real exit code
+internal_tools/test_map.sh                                      # rebuild the test map after moving code or adding many tests
+internal_tools/capture.sh, internal_tools/compare.sh            # every export byte for byte, before and after
+internal_tools/time.sh                                          # render timings
+internal_tools/key_map.sh                                       # rewrite .claude/KEYMAP.md after changing a key
+internal_tools/make_docs.sh                                     # diagrams, screenshots, demo tables
+internal_tools/push_all.sh                                      # the only way to push, only when asked
+internal_tools/song_wizard_compose.sh                           # the song wizard
 ```
-
-`.claude/TESTING.md` says how the tests are run and written: no commit of code goes in without the tests that cover it passing, and no push without the whole suite, there is no git hook, by the user's rule, and documents alone are committed without a run.
 
 ## Version
 
-`src/llamatron/model/file/version.py` holds `VERSION`, a string of three whole numbers separated by dots, like `1.0.2`, which `setup.py` reads, the About dialog shows, and every saved set file records as `version`. Versions are compared number by number with `version_numbers()`, never as decimals. The last number is raised once a push, not with every commit (the user's rule, to save time): `internal_tools/push_all.sh` runs `internal_tools/bump_version.py --before-push`, which bumps it where Python under `src/` changed since the last push and the version did not, and commits the bump before every test runs. A bump goes through that script, `internal_tools/bump.sh` by hand, never a hand edit or a text replacement, which once matched nothing and changed nothing; the first two numbers are the user's. `BUILD_DATE` and `BUILD_TIME` beside it are the date and time of the last bump, which the script writes with it, since nothing builds the program; the About dialog shows them. A change to the set file's layout that would break an older file comes with a migration (`model/file/migrations/`, `.claude/STYLE.md`). The example sets keep the `version` they were last saved with, and the tests that save and reload them ignore it, so a code bump never rewrites the examples: their `version` only moves when they're re-saved because the format changed. The program and the files share the one number.
+`src/llamatron/model/file/version.py` holds `VERSION` (three numbers, like `1.0.2`), read by `setup.py`, shown by About and
+written into every set file. Compare with `version_numbers()`, never as decimals. The last number is raised once per push by
+`internal_tools/push_all.sh` (via `internal_tools/bump_version.py --before-push`) when Python under `src/` changed; by hand only
+with `internal_tools/bump.sh`, never a hand edit. The first two numbers are the user's. `BUILD_DATE` and `BUILD_TIME` are written
+with each bump. A layout change that would break an older file MUST come with a migration (`model/file/migrations/`). Examples
+keep the `version` they were saved with.
 
 ## Working with the user
 
@@ -108,25 +117,27 @@ internal_tools/song_wizard_compose.sh                                 # the song
 
 ## The references, read when needed
 
-The references aren't imported, to keep every session light, and each is a file for one component, so that work on one thing reads only its part (the user's choice). A note about a component goes in that component's file, and a feature that stands on its own, like the song wizard, the genre library, the mashups, the visualizer, the recordings or real-time playback, gets a file of its own in `.claude/features/` (the user's layout). Read, before working on:
+A note about a component goes in its file; a standalone feature gets its own file in `.claude/features/`.
 
 | The work | Read |
 | --- | --- |
-| The packages, the music values, the composition objects, reading and writing a set, corrections, renames | `.claude/format/MODEL.md` |
+| Packages, music values, composition objects, reading and writing a set, corrections, renames | `.claude/format/MODEL.md` |
 | A setting of the file, or what a file refuses | `.claude/format/FILE_RULES.md` |
 | Playing a song into clips, the command line, performance | `.claude/format/PLAYBACK.md` |
-| Real-time playback: the engine, the Realtime Sender Process, playing from the pages | `.claude/features/REALTIME_PLAYBACK.md` |
+| Real-time playback | `.claude/features/REALTIME_PLAYBACK.md` |
 | An exporter or the MIDI import | `.claude/format/EXPORTERS.md` |
 | A generator | `.claude/format/GENERATORS.md` |
 | An example, a demo or a homage | `.claude/format/EXAMPLES.md`, and `.claude/features/MASHUPS.md` for a mashup |
-| Keys, help, the main screen, dialogs, settings pages, files, the document, undo and redo, the status line, the header | `.claude/tracker/SHARED.md` |
-| The File, Songs, Scales, Generators, Chains, Grooves, Instruments and Registers pages | `.claude/tracker/PAGES.md` |
-| Arrange, the details view, Scene View, the track editor, the clip page | `.claude/tracker/ARRANGE.md` |
-| The pattern editor, the piano roll, keyswitches, the offsets and groove editors | `.claude/tracker/PATTERN_EDITOR.md` |
+| Keys, help, main screen, dialogs, settings pages, files, the document, undo, status line, header, colours | `.claude/tracker/SHARED.md` |
+| File, Songs, Scales, Generators, Chains, Grooves, Instruments, Registers pages | `.claude/tracker/PAGES.md` |
+| Arrange, details view, Scene View, track editor, clip page | `.claude/tracker/ARRANGE.md` |
+| Pattern editor, piano roll, keyswitches, offsets and groove editors | `.claude/tracker/PATTERN_EDITOR.md` |
 | The visualizer | `.claude/features/VISUALIZER.md` |
 | A recording, the batch videos, the video tutorial | `.claude/features/RECORDING.md` |
 | Any page's keys | `.claude/KEYMAP.md` |
-| A script or a tool | `.claude/COMMANDS.md` |
+| A script or tool | `.claude/COMMANDS.md` |
+| The documents, the website, screenshots | `.claude/DOCS.md` |
+| Where a test goes, or what tests a feature | `.claude/TEST_LAYOUT.md` |
 | The song wizard | `.claude/features/SONG_WIZARD.md` |
 | The genre library | `.claude/features/GENRES.md` |
-| What the song wizard or a style template should make music do: structure, hooks, melody, harmony, drums, interplay, a genre | the subject's file in `.claude/music_theory_notes/` (its `README.md` has the notes' rules) |
+| What the song wizard or a template should make music do | the subject's file in `.claude/music_theory_notes/` |
