@@ -31,9 +31,12 @@ def _no_cc_numbers():
 
 def _is_cc_number_list(numbers):
     """Return whether numbers has a CC number, or None for a lane that sends nothing, for every CC lane."""
-    return isinstance(numbers, list) and len(numbers) == len(file_format.CC_ROWS) and all(
-        number is None or is_whole_number_from(value=number, lowest=midi.MIN_CC_NUMBER, highest=midi.MAX_CC_NUMBER) for number in numbers
-    )
+    if not isinstance(numbers, list) or len(numbers) != len(file_format.CC_ROWS):
+        return False
+    for number in numbers:
+        if number is not None and not is_whole_number_from(value=number, lowest=midi.MIN_CC_NUMBER, highest=midi.MAX_CC_NUMBER):
+            return False
+    return True
 
 
 def _check_cc_numbers(numbers):
