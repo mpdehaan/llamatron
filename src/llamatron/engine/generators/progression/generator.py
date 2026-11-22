@@ -56,7 +56,9 @@ class Progression(ClipGenerator):
         self._borrowed = {}
         self._every = every
         # How far into its run the clip starts, which a Restart that doesn't start over with the clip sets.
-        self._offset = ZERO_OFFSET if continuation is None else continuation.offset
+        self._offset = ZERO_OFFSET
+        if continuation is not None:
+            self._offset = continuation.offset
 
     def chord_at(self, time):
         """Return which chord of the progression plays at a time from the clip's start, counted from 0."""
@@ -120,7 +122,9 @@ class Progression(ClipGenerator):
         names the note at its place above the root, it becomes the chord's root, moved, and that many half steps.
         """
         kind = self._scales[place]
-        drawn_from = scale if kind is None else self._scale_borrowed(scale=scale, kind=kind)
+        drawn_from = scale
+        if kind is not None:
+            drawn_from = self._scale_borrowed(scale=scale, kind=kind)
         above, extra = _place_in(note=note, scale=scale)
         if drawn_from is not scale:
             note = _carried(note=note, scale=scale, drawn_from=drawn_from)
@@ -142,7 +146,10 @@ def _place_in(*, note, scale):
     """Return which note of a scale's octave, counted from 0, a note is at or just above, and how many half steps above it."""
     shape = scale.get_type().value
     within = (note[sound_values.MIDI] - scale.get_root().get_midi_number()) % HALF_STEPS_PER_OCTAVE
-    place = max(index for index, step in enumerate(shape) if step <= within)
+    place = 0
+    for index, step in enumerate(shape):
+        if step <= within:
+            place = index
     return place, within - shape[place]
 
 
@@ -171,7 +178,9 @@ def _with_tensions(*, notes, tensions):
 
 def _half_steps_to(*, degree, scale):
     """Return how many half steps a degree of a scale is above its root, the major scale's when there's no scale."""
-    shape = SHAPE_WITHOUT_A_SCALE if scale is None else scale.get_type().value
+    shape = SHAPE_WITHOUT_A_SCALE
+    if scale is not None:
+        shape = scale.get_type().value
     octaves, place = divmod(degree - 1, len(shape))
     return octaves * HALF_STEPS_PER_OCTAVE + shape[place]
 
