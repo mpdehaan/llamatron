@@ -364,21 +364,17 @@ class ChainStatementsPage(FieldPage):
 
 
 class PluginEditor(FieldPage):
-    """A generator's page drawn from its plugin's view, with the settings keys alone."""
+    """A generator's page drawn from its plugin's view: the settings keys, and on a row of cells, such as a drift's two versions
+    of a value or a Musician's kinds of section, Left and Right move between the cells and [ and ] change the one under the cursor."""
+
+    SLOT_LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    SLOT_MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    IN_HELP = [Page.BACK, FieldPage.SELECT, FieldPage.ALONG_CELLS, FieldPage.LESS, FieldPage.MORE, SLOT_LESS, SLOT_MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR, FieldPage.SECTION, FieldPage.RENAME, FieldPage.ALONG_BUTTONS]
+    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
 class MusicianEditor(FieldPage):
     """A musician's editor, with the settings keys alone."""
-
-
-class DriftEditor(FieldPage):
-    """The drift's editor: the settings keys, except that Left and Right pick version A or B on a row that has both, so only [ and ] change a value."""
-
-    LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    VERSION = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_A_OR_B_WHAT)
-    IN_HELP = [Page.BACK, FieldPage.SELECT, VERSION, LESS, MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR, FieldPage.SECTION, FieldPage.RENAME, FieldPage.ALONG_BUTTONS]
-    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
 class NotesPage(Page):

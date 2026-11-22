@@ -91,6 +91,11 @@ class OffsetsView(NamedTuple):
     label: str
 
 
+class DriftValuesView(NamedTuple):
+    """A drift's values, each a row of its version A and version B side by side, a number or a scale or root: no settings of its
+    own to name, since the drift's model names every value."""
+
+
 class TimeView(NamedTuple):
     """A length of time, chosen from the lengths every time setting offers: the setting's file name, its label, and what its first
     choice, the value when left out, shows, None for the pattern's step size."""

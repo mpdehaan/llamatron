@@ -287,7 +287,22 @@ class Cells(Field):
 
 
 @dataclass(slots=True, kw_only=True)
-class Strip(Cells):
+class SteppedCells(Cells):
+    """A row of settings side by side under one label whose cells step: Left and Right move between the cells, and [ and ] step
+    the cell under the cursor, which answers Enter and Bksp as the field it is, as a drift's two versions of one value. The page's
+    keys say SLOT_LESS and SLOT_MORE for [ and ]."""
+
+    def row_keys(self, page):
+        """Return Left and Right, which move between the cells, and [ and ], which step the cell under the cursor."""
+        bound = Cells.row_keys(self, page)
+        cell = page.cell_field()
+        if cell is not None and cell.adjust:
+            bound += [page.bind(page.KEYS.SLOT_MORE, action=lambda: cell.adjust(1)), page.bind(page.KEYS.SLOT_LESS, action=lambda: cell.adjust(-1))]
+        return bound
+
+
+@dataclass(slots=True, kw_only=True)
+class Strip(SteppedCells):
     """A strip of numbered slots, a draw's, drawn after a blank line as a grid boxed in dim lines with a row numbering the slots
     over a row of their values: Left and Right move between the slots, and [ and ] step the slot under the cursor, which answers
     Enter and Bksp as the NumberField it is. The grid scrolls to keep the cursor's slot in view. lit is the place of the slot
@@ -326,15 +341,6 @@ class Strip(Cells):
         numbers.append(Box.BAR, style=Style.DIM)
         values.append(Box.BAR, style=Style.DIM)
         return [Text(drawing.NOTHING), top, numbers, rule, values, bottom]
-
-    def row_keys(self, page):
-        """Return Left and Right, which move between the slots, and [ and ], which step the slot under the cursor."""
-        bound = Cells.row_keys(self, page)
-        cell = page.cell_field()
-        if cell is not None and cell.adjust:
-            bound += [page.bind(page.KEYS.SLOT_MORE, action=lambda: cell.adjust(1)), page.bind(page.KEYS.SLOT_LESS, action=lambda: cell.adjust(-1))]
-        return bound
-
 
 @dataclass(slots=True, kw_only=True)
 class Button(Field):

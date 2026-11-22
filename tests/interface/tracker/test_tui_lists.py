@@ -19,7 +19,6 @@ from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedCho
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor, step_shown
-from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
 from llamatron.interface.tracker.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.scale_page import ScalePage
@@ -603,22 +602,22 @@ class TestListSearchErases(UITest):
         self.assertNotIn(messages.MSG_SEARCH_STATUS.format(text=SEARCH_TYPED), self.text())
 
 
-class TestDriftEditor(UITest):
-    """A drift's editor: its own settings, then each value for both versions, Left and Right picking one."""
+class TestDriftPage(UITest):
+    """A drift's page: its own settings, then each value a row of both versions, Left and Right moving between them."""
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.open_generator(section=drift_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, DriftEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
 
     def drift(self):
         return self.document.get_setlist().get_generator_settings(kind=drift_plugin.NAME, name=ui_testing.SWAY)
 
     async def test_left_and_right_pick_a_version_and_the_brackets_change_only_that_one(self):
         await self.select_field(labels.MSG_DRIFT_VALUE_LABELS[DriftValue.DEGREE])
-        await self.press(keybindings.DriftEditor.MORE)
+        await self.press(keybindings.PluginEditor.SLOT_MORE)
         self.assertEqual(self.drift().get_value(version=DriftVersion.A, value=DriftValue.DEGREE), 1)
-        await self.press(Key.RIGHT, keybindings.DriftEditor.LESS, keybindings.DriftEditor.LESS)
+        await self.press(Key.RIGHT, keybindings.PluginEditor.SLOT_LESS, keybindings.PluginEditor.SLOT_LESS)
         self.assertEqual(self.drift().get_value(version=DriftVersion.B, value=DriftValue.DEGREE), -2)
         self.assertEqual(self.drift().get_value(version=DriftVersion.A, value=DriftValue.DEGREE), 1)
         await self.press(Key.BACKSPACE)
@@ -626,7 +625,7 @@ class TestDriftEditor(UITest):
 
     async def test_a_scale_override_is_picked_from_the_songs_scales(self):
         await self.select_field(labels.MSG_DRIFT_VALUE_LABELS[DriftValue.SCALE])
-        await self.press(keybindings.DriftEditor.MORE)
+        await self.press(keybindings.PluginEditor.SLOT_MORE)
         self.assertEqual(self.drift().get_value(version=DriftVersion.A, value=DriftValue.SCALE), sorted(self.document.get_setlist().get_scale_names())[0])
 
     async def test_enter_on_a_scale_override_picks_from_a_list_whose_first_entry_clears_it(self):
@@ -640,10 +639,10 @@ class TestDriftEditor(UITest):
 
     async def test_its_own_settings_step_and_go_back_to_their_defaults(self):
         await self.select_field(labels.MSG_DRIFT_DIRECTION_LABEL)
-        await self.press(keybindings.DriftEditor.MORE)
+        await self.press(keybindings.PluginEditor.MORE)
         self.assertEqual(self.drift().get_direction(), file_format.DRIFT_DIRECTIONS[1])
         await self.select_field(labels.MSG_EVERY_LABEL)
-        await self.press(keybindings.DriftEditor.MORE)
+        await self.press(keybindings.PluginEditor.MORE)
         self.assertIsNotNone(self.drift().get_every())
 
 

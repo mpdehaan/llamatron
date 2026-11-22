@@ -7,6 +7,7 @@ settings, drawn from the description alone, so that the plugin's page needs no c
 import functools
 
 from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker.screens.shared.drift_values import drift_value_rows
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
@@ -22,13 +23,21 @@ from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import shape_setting
-from llamatron.model.schema.generator_views import ChoiceView, GuitarBarView, NumberView, OctaveView, OffsetsView, ProgressionView, RegisterAddView, RestartView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView
+from llamatron.model.schema.generator_views import ChoiceView, DriftValuesView, GuitarBarView, NumberView, OctaveView, OffsetsView, ProgressionView, RegisterAddView, RestartView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 # What a register add left out of the file is, and the offsets an arpeggiator starts its editor with where it has none.
 NO_ADD = 0
 NO_OFFSET = 0
 NEW_OFFSET_STEPS = 8
+
+# The method that makes the fields of each kind of setting a view holds, a field or a list of them.
+FIELD_MAKERS = {
+    ChoiceView: '_choice_field', NumberView: '_number_field', ShapeView: '_shape_fields', RestartView: '_restart_field', TimeView: '_time_field',
+    StepsView: '_steps_field', SectionView: '_section_fields', ToggleView: '_toggle', OctaveView: '_octave_field', TrackView: '_track_field',
+    ProgressionView: '_progression_field', GuitarBarView: '_guitar_bar_field', RegisterAddView: '_register_add_field', OffsetsView: '_offsets_field',
+    DriftValuesView: '_drift_value_rows',
+}
 
 
 def has_view(section):
@@ -193,37 +202,27 @@ class PluginEditor(GeneratorEditor, FieldPage):
         self.store(setting=setting.setting, value=value)
 
     def _fields_of(self, setting):
-        """Return the fields that edit one of the view's settings, by the kind of setting it is."""
-        kind = type(setting)
-        if kind is ChoiceView:
-            return [self._choice_field(setting)]
-        if kind is NumberView:
-            return [self._number_field(setting)]
-        if kind is ShapeView:
-            return self._shape_fields(setting)
-        if kind is RestartView:
-            return [restart_field(self)]
-        if kind is TimeView:
-            return [self._time_field(setting)]
-        if kind is StepsView:
-            return [self._steps_field(setting)]
-        if kind is SectionView:
-            return self._section_fields(setting)
-        if kind is ToggleView:
-            return [self._toggle(setting)]
-        if kind is OctaveView:
-            return [self._octave_field(setting)]
-        if kind is TrackView:
-            return [self._track_field(setting)]
-        if kind is ProgressionView:
-            return [progression_field(page=self, label=setting.label)]
-        if kind is GuitarBarView:
-            return [guitar_bar_field(page=self, label=setting.label)]
-        if kind is RegisterAddView:
-            return [self._register_add_field(setting)]
-        if kind is OffsetsView:
-            return [self._offsets_field(setting)]
-        raise TypeError(setting)
+        """Return the fields that edit one of the view's settings, made by the method its kind of setting names."""
+        made = getattr(self, FIELD_MAKERS[type(setting)])(setting)
+        if isinstance(made, list):
+            return made
+        return [made]
+
+    def _restart_field(self, setting):
+        """Return the generator's Restart field."""
+        return restart_field(self)
+
+    def _progression_field(self, setting):
+        """Return the field of the generator's progression, ENTER opening the chord editor."""
+        return progression_field(page=self, label=setting.label)
+
+    def _guitar_bar_field(self, setting):
+        """Return the field of a Guitarify's bar of strokes, ENTER opening the bar editor."""
+        return guitar_bar_field(page=self, label=setting.label)
+
+    def _drift_value_rows(self, setting):
+        """Return a row of version A and version B for each of a drift's values."""
+        return drift_value_rows(self)
 
     def _number_field(self, setting):
         """Return the field that steps a whole number between its setting's limits, its default where left out, else blank."""

@@ -6,9 +6,9 @@
 generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import drift
-from llamatron.engine.generators.drift import strings
+from llamatron.engine.generators.drift import strings, view
 from llamatron.engine.generators.drift.controller import DriftController
 from llamatron.engine.generators.drift.model import DriftSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=drift.NAME, section=drift.SECTION, settings=DriftSettings, strings=strings, controller=DriftController())
+PLUGIN = GeneratorPlugin(name=drift.NAME, section=drift.SECTION, settings=DriftSettings, strings=strings, controller=DriftController(), view=view.VIEW)

@@ -259,16 +259,6 @@ Left and Right move. Space or ENTER turns the step under the cursor on or off, t
 I inserts a step and D removes one, from 1 to 16.
 """
 
-# DriftEditor
-HELP_DRIFT_EDITOR = """
-Every: how often it triggers and picks new amounts. Steps to the second version: how many triggers it takes.
-Direction: forward stays at the second, loop starts again at the first, pendulum goes back and forth, brownian wanders.
-
-Below, each setting has two versions side by side. Left and Right pick one, [ and ] change it, ENTER types or picks, Bksp clears.
-Vel+= and Prob are added to every note's; Degree + moves notes along the scale, and Degree random by a random amount.
-Scale and Root take over the clip's scale with their prob. AX+= to DX+= add to the registers at each trigger.
-"""
-
 # PatternEditor
 HELP_PATTERN_EDITOR = """
 Each column is a step, as long as the step size. Tab switches between the piano roll and the rows. Home/End jump to the ends.

@@ -40,7 +40,6 @@ ALLOWED = (
     'DotRow',
     'DrawResetRow',
     'DrawsPage',
-    'DriftEditor',
     'FieldPage',
     'FilePage',
     'GateRow',

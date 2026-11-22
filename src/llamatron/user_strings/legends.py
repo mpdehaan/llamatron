@@ -253,7 +253,6 @@ MSG_NO_CC_WHAT = 'none'
 MSG_UNBIND_WHAT = 'unbind'
 # The offsets editor: a one-row grid with a label column this wide, and a margin around it.
 MSG_NEXT_ROW_WHAT = 'next row'
-MSG_A_OR_B_WHAT = 'A or B'
 MSG_SILENT_WHAT = 'silent'
 MSG_PLAY_WHAT = 'play'
 
