@@ -132,7 +132,9 @@ class RowOfNumbers(RowDescription):
 
     def problem_with(self, value, *, drum):
         # Written out rather than asked of nearest(), since reading a file checks every step's value with this.
-        return self._problem if type(value) is not int or value < self._lowest or value > self._highest else None
+        if type(value) is not int or value < self._lowest or value > self._highest:
+            return self._problem
+        return None
 
     def nearest(self, value, *, drum):
         """Return the end of the range nearest a whole number outside it."""
@@ -166,8 +168,12 @@ class RowOfDegrees(RowDescription):
 
     def problem_with(self, value, *, drum):
         if drum:
-            return None if is_note_letter(value) else errors.ERR_NOT_NOTE_LETTER
-        return self._problem if type(value) is not int or value < self._lowest else None
+            if is_note_letter(value):
+                return None
+            return errors.ERR_NOT_NOTE_LETTER
+        if type(value) is not int or value < self._lowest:
+            return self._problem
+        return None
 
     def nearest(self, value, *, drum):
         """Return the lowest degree for a whole number under it. A drum pattern's note letter has no nearest."""
@@ -214,7 +220,9 @@ class RowOfChoices(RowDescription):
         return list(self._choices)
 
     def problem_with(self, value, *, drum):
-        return None if value in self._choices else self._problem
+        if value in self._choices:
+            return None
+        return self._problem
 
 
 class RowOfChords(RowOfChoices):
@@ -231,7 +239,9 @@ class RowOfChords(RowOfChoices):
     def problem_with(self, value, *, drum):
         if drum:
             return errors.ERR_CHORD_ON_DRUMS
-        return None if str(value) in self._choices else self._problem
+        if str(value) in self._choices:
+            return None
+        return self._problem
 
 
 class RowOfInversions(RowOfChoices):
@@ -251,78 +261,99 @@ class RowOfInversions(RowOfChoices):
         return super().problem_with(value, drum=drum)
 
 
-class RowOfTensions(RowDescription):
-    """The Tension row: the notes added on top of a step's chord, a few of the tensions, each once. A pattern holds a step's as
-    a tuple, lowest first, which nothing can change, and a file writes a list. A drum pattern has no chords, so no tensions."""
+class RowOfChosenSets(RowDescription):
+    """A row whose steps each hold a few of its choices, each once, such as tensions or keyswitch slots. A pattern holds a step's as
+    a tuple in the choices' order, which nothing can change, and a file writes a list."""
 
     __slots__ = ('_choices', '_problem')
 
-    def __init__(self, *, name, choices):
-        super().__init__(name=name, changes_with_drums=True)
+    def __init__(self, *, name, choices, problem, changes_with_drums=False):
+        super().__init__(name=name, changes_with_drums=changes_with_drums)
         self._choices = tuple(choices)
-        self._problem = errors.ERR_NOT_TENSIONS.format(choices=listed(self._choices))
+        self._problem = problem
 
     def get_choices(self):
-        """Return the tensions, in the order the editor offers them."""
+        """Return the choices, in the order the editor offers them."""
         return list(self._choices)
+
+    def in_order(self, chosen):
+        """Return some choices as a step holds them: a tuple in the choices' order, or nothing when there are none."""
+        ordered = []
+        for choice in self._choices:
+            if choice in chosen:
+                ordered.append(choice)
+        if not ordered:
+            return None
+        return tuple(ordered)
+
+    def kept(self, value):
+        return self.in_order(value)
+
+    def written(self, values):
+        written = []
+        for value in values:
+            if value is not None:
+                value = list(value)
+            written.append(value)
+        return written
+
+    def read(self, values):
+        read = []
+        for value in values:
+            if value is not None:
+                value = self.in_order(value)
+            read.append(value)
+        return read
+
+    def holds_a_choice(self, item):
+        """Return whether one item of a step's value is one of the choices."""
+        return item in self._choices
+
+    def is_chosen_set(self, value):
+        """Return whether a value is a list or tuple of some of the choices, each once."""
+        if not isinstance(value, (list, tuple)) or not value or len(set(value)) != len(value):
+            return False
+        for item in value:
+            if not self.holds_a_choice(item):
+                return False
+        return True
+
+    def problem_with(self, value, *, drum):
+        if self.is_chosen_set(value):
+            return None
+        return self._problem
+
+
+class RowOfTensions(RowOfChosenSets):
+    """The Tension row: the notes added on top of a step's chord, a few of the tensions, each once, lowest first. A drum pattern has
+    no chords, so no tensions."""
+
+    __slots__ = ()
+
+    def __init__(self, *, name, choices):
+        super().__init__(name=name, choices=choices, problem=errors.ERR_NOT_TENSIONS.format(choices=listed(choices)), changes_with_drums=True)
 
     def is_in_drum_patterns(self):
         return False
 
-    def in_order(self, tensions):
-        """Return some tensions as a step holds them: a tuple, lowest first, or nothing when there are none."""
-        return tuple(tension for tension in self._choices if tension in tensions) or None
-
-    def kept(self, value):
-        return self.in_order(value)
-
-    def written(self, values):
-        return [None if value is None else list(value) for value in values]
-
-    def read(self, values):
-        return [None if value is None else self.in_order(value) for value in values]
-
     def problem_with(self, value, *, drum):
         if drum:
             return errors.ERR_TENSION_ON_DRUMS
-        if not isinstance(value, (list, tuple)) or not value or len(set(value)) != len(value) or any(tension not in self._choices for tension in value):
-            return self._problem
-        return None
+        return super().problem_with(value, drum=drum)
 
 
-class RowOfKeyswitches(RowDescription):
-    """The Keyswitch row: which of its instrument's keyswitch slots a step's note is played with, each once. A pattern holds a
-    step's as a tuple, lowest first, which nothing can change, and a file writes a list. A pattern names slots and never notes,
-    since the notes are the instrument's, and a drum pattern's steps take them as any other's."""
+class RowOfKeyswitches(RowOfChosenSets):
+    """The Keyswitch row: which of its instrument's keyswitch slots a step's note is played with, each once, lowest first. A
+    pattern names slots and never notes, since the notes are the instrument's, and a drum pattern's steps take them as any other's."""
 
-    __slots__ = ('_choices', '_problem')
+    __slots__ = ()
 
     def __init__(self, *, name, choices):
-        super().__init__(name=name)
-        self._choices = tuple(choices)
-        self._problem = errors.ERR_NOT_KEYSWITCHES.format(choices=listed(self._choices))
+        super().__init__(name=name, choices=choices, problem=errors.ERR_NOT_KEYSWITCHES.format(choices=listed(choices)))
 
-    def get_choices(self):
-        """Return the slots, in order."""
-        return list(self._choices)
-
-    def in_order(self, slots):
-        """Return some slots as a step holds them: a tuple, lowest first, or nothing when there are none."""
-        return tuple(slot for slot in self._choices if slot in slots) or None
-
-    def kept(self, value):
-        return self.in_order(value)
-
-    def written(self, values):
-        return [None if value is None else list(value) for value in values]
-
-    def read(self, values):
-        return [None if value is None else self.in_order(value) for value in values]
-
-    def problem_with(self, value, *, drum):
-        if not isinstance(value, (list, tuple)) or not value or len(set(value)) != len(value) or any(type(slot) is not int or slot not in self._choices for slot in value):
-            return self._problem
-        return None
+    def holds_a_choice(self, item):
+        """Return whether an item is a slot: a whole number among the slots, never true or false, which equal 1 and 0."""
+        return type(item) is int and item in self._choices
 
 
 class RowOfChordScales(RowOfChoices):
@@ -357,7 +388,9 @@ class RowOfToggles(RowDescription):
         return [bool(value) for value in values]
 
     def problem_with(self, value, *, drum):
-        return None if is_true_or_false(value) else errors.ERR_PATTERN_NOT_TRUE_OR_FALSE
+        if is_true_or_false(value):
+            return None
+        return errors.ERR_PATTERN_NOT_TRUE_OR_FALSE
 
 
 class RowOfRegisterUses(RowDescription):
@@ -381,7 +414,13 @@ class RowOfRegisterUses(RowDescription):
         return list(file_format.REGISTER_USES)
 
     def written(self, values):
-        return [RegisterUse.OFF if value is None else int(value) for value in values]
+        written = []
+        for value in values:
+            if value is None:
+                written.append(RegisterUse.OFF)
+            else:
+                written.append(int(value))
+        return written
 
     def read(self, values):
         return self.written(values)
