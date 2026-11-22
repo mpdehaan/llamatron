@@ -27,7 +27,9 @@ class Part:
     def __init__(self, *, start, sound):
         self.start = start
         self.place = Length.rational(sound[sound_values.LENGTH])
-        self.sound = sound[sound_values.HELD_SOUND] if sound[sound_values.KIND] == sound_values.HELD else sound
+        self.sound = sound
+        if sound[sound_values.KIND] == sound_values.HELD:
+            self.sound = sound[sound_values.HELD_SOUND]
         self.heard = Length.rational(self.sound[sound_values.LENGTH])
         # A note struck more than once sounds that many times over the time it is heard, each as long as the others.
         self.strikes = 1
@@ -39,20 +41,28 @@ class Part:
     def pitch(self):
         """Return the highest pitch that sounds, to tell a note from the note after it."""
         if self.sound[sound_values.KIND] == sound_values.CHORD:
-            return max((note[sound_values.MIDI] for note in self.sound[sound_values.NOTES] if note[sound_values.KIND] == sound_values.NOTE), default=NO_PITCH)
+            highest = NO_PITCH
+            for note in self.sound[sound_values.NOTES]:
+                if note[sound_values.KIND] == sound_values.NOTE and note[sound_values.MIDI] > highest:
+                    highest = note[sound_values.MIDI]
+            return highest
         return self.sound[sound_values.MIDI]
 
     def loudness(self):
         """Return how loud the sound is, the loudest of a chord's notes, or None for a sound with no loudness of its own."""
         notes = self.sound[sound_values.NOTES] if self.sound[sound_values.KIND] == sound_values.CHORD else [self.sound]
         loudest = [note[sound_values.VELOCITY] for note in notes if note[sound_values.KIND] == sound_values.NOTE and note[sound_values.VELOCITY] is not None]
-        return max(loudest) if loudest else None
+        if not loudest:
+            return None
+        return max(loudest)
 
     def lowest(self):
         """Return the lowest pitch that sounds, or None for a sound with no pitch."""
         notes = self.sound[sound_values.NOTES] if self.sound[sound_values.KIND] == sound_values.CHORD else [self.sound]
         pitches = [note[sound_values.MIDI] for note in notes if note[sound_values.KIND] == sound_values.NOTE]
-        return min(pitches) if pitches else None
+        if not pitches:
+            return None
+        return min(pitches)
 
     def silence(self):
         """Make the sound a rest as long as its place."""
@@ -64,7 +74,7 @@ class Part:
         """Move every note of the sound by a number of half steps, or leave the sound where any note would pass out of the MIDI range."""
         try:
             if self.sound[sound_values.KIND] == sound_values.CHORD:
-                self.sound = Sound.chord([Sound.half_step(note, half_steps) if note[sound_values.KIND] == sound_values.NOTE else note for note in self.sound[sound_values.NOTES]])
+                self.sound = Sound.chord(_notes_moved(notes=self.sound[sound_values.NOTES], half_steps=half_steps))
             elif self.sound[sound_values.KIND] == sound_values.NOTE:
                 self.sound = Sound.half_step(self.sound, half_steps)
         except ValueError:
@@ -80,10 +90,14 @@ class Part:
     def sounds(self):
         """Return the sounds that take this one's place: itself as heard, held where it outlasts its place and followed by a rest where it stops short."""
         if not self.is_note():
-            return [Sound.with_length(self.sound, Length.of(self.place))] if self.sound[sound_values.KIND] in (sound_values.REST, sound_values.PHRASE) else [self._as_placed(self.sound)]
+            if self.sound[sound_values.KIND] in (sound_values.REST, sound_values.PHRASE):
+                return [Sound.with_length(self.sound, Length.of(self.place))]
+            return [self._as_placed(self.sound)]
         if self.strikes > 1:
             struck = [lasting(sound=self.sound, heard=self.heard / self.strikes)] * self.strikes
-            return struck if self.heard >= self.place else [*struck, Sound.rest(Length.of(self.place - self.heard))]
+            if self.heard >= self.place:
+                return struck
+            return [*struck, Sound.rest(Length.of(self.place - self.heard))]
         played = lasting(sound=self.sound, heard=self.heard)
         if self.heard == self.place:
             return [played]
@@ -93,7 +107,9 @@ class Part:
 
     def _as_placed(self, sound):
         """Return a sound phrasing does not change, in its place: held again where it was held."""
-        return sound if self.heard == self.place else Sound.held(sound, Length.of(self.place))
+        if self.heard == self.place:
+            return sound
+        return Sound.held(sound, Length.of(self.place))
 
 
 def parts_of(sounds):
@@ -120,3 +136,13 @@ def louder(*, note, steps):
         return note
     velocity = max(midi.MIN_VELOCITY, min(midi.MAX_VELOCITY, note[sound_values.VELOCITY] + steps))
     return Sound.note(length=note[sound_values.LENGTH], midi=note[sound_values.MIDI], velocity=velocity, glide=note[sound_values.GLIDE], name=note[sound_values.NAME])
+
+
+def _notes_moved(*, notes, half_steps):
+    """Return a chord's notes each moved by a number of half steps, anything but a note left as it is."""
+    moved = []
+    for note in notes:
+        if note[sound_values.KIND] == sound_values.NOTE:
+            note = Sound.half_step(note, half_steps)
+        moved.append(note)
+    return moved
