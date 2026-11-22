@@ -78,7 +78,9 @@ class PlaybackEngine:
 
     def start(self, *, at=None):
         """Take this moment as the timeline's zero, or a reading of the clock given from outside, so that the tracker and the process count from one moment."""
-        self._started = self._clock.now() if at is None else at
+        if at is None:
+            at = self._clock.now()
+        self._started = at
 
     def is_started(self):
         return self._started is not None
@@ -99,7 +101,9 @@ class PlaybackEngine:
 
     def next_due(self):
         """Return the seconds of the next event, or None when nothing is queued."""
-        return self._pending[0][0] if self._pending else None
+        if not self._pending:
+            return None
+        return self._pending[0][0]
 
     def next_action(self):
         """Return the seconds at which the sending loop next has something to do, or None when nothing is queued: here, when the next
