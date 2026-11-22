@@ -10,6 +10,7 @@ over says a length, and then holds, repeats or bounces back. A part left blank i
 song that sets none of it plays as it always has.
 """
 
+import functools
 from typing import NamedTuple
 
 from llamatron.model.file import corrections
@@ -49,7 +50,10 @@ def shape_part_settings(*, shape, named):
 
 def shape_settings():
     """Return the descriptions of every shape's settings a scene or a clip holds, like density_start, in the order a file writes them."""
-    return [setting for shape in file_format.PLACED_SHAPES for setting in shape_part_settings(shape=shape, named=lambda part, shape=shape: shape_setting(shape=shape, part=part))]
+    settings = []
+    for shape in file_format.PLACED_SHAPES:
+        settings += shape_part_settings(shape=shape, named=functools.partial(_named_part, shape=shape))
+    return settings
 
 
 def shape_values(*, settings, shape, accent=NO_ACCENT):
@@ -59,6 +63,18 @@ def shape_values(*, settings, shape, accent=NO_ACCENT):
     if start is None and end is None:
         return None
     return ShapeValues(
-        UNCHANGED if start is None else start, UNCHANGED if end is None else end, settings.get(shape_setting(shape=shape, part=ShapePart.OVER)),
+        _or_unchanged(start), _or_unchanged(end), settings.get(shape_setting(shape=shape, part=ShapePart.OVER)),
         settings.get(shape_setting(shape=shape, part=ShapePart.THEN)) or file_format.SHAPE_THENS[0], accent,
     )
+
+
+def _named_part(part, *, shape):
+    """Return the file's name for one part of a shape, such as density_start."""
+    return shape_setting(shape=shape, part=part)
+
+
+def _or_unchanged(value):
+    """Return a shape's start or end, or UNCHANGED where it is blank."""
+    if value is None:
+        return UNCHANGED
+    return value
