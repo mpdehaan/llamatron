@@ -32,7 +32,9 @@ class VoiceLeading(ClipGenerator):
         self._highest_octave = highest_octave
         self._root_in_bass = root_in_bass
         # The pitches of the chord before, from the same track's clip before when its Restart carries on.
-        self._first_before = None if continuation is None else continuation.state
+        self._first_before = None
+        if continuation is not None:
+            self._first_before = continuation.state
         self._before = self._first_before
 
     def end_state(self):
@@ -42,13 +44,20 @@ class VoiceLeading(ClipGenerator):
         before = self._first_before
         result = []
         for sound in clip.resolved_sounds():
-            chord = sound[sound_values.HELD_SOUND] if sound[sound_values.KIND] == sound_values.HELD else sound
+            held = sound[sound_values.KIND] == sound_values.HELD
+            chord = sound
+            if held:
+                chord = sound[sound_values.HELD_SOUND]
             if chord[sound_values.KIND] != sound_values.CHORD:
                 result.append(sound)
                 continue
-            voiced = chord if before is None else self._voiced(chord=chord, before=before)
+            voiced = chord
+            if before is not None:
+                voiced = self._voiced(chord=chord, before=before)
             before = sorted(note[sound_values.MIDI] for note in voiced[sound_values.NOTES])
-            result.append((sound_values.HELD, sound[sound_values.LENGTH], voiced) if sound[sound_values.KIND] == sound_values.HELD else voiced)
+            if held:
+                voiced = (sound_values.HELD, sound[sound_values.LENGTH], voiced)
+            result.append(voiced)
         self._before = before
         return result, clip.get_length()
 
@@ -56,16 +65,29 @@ class VoiceLeading(ClipGenerator):
         """Return whether a voicing's notes all lie within the range and within MIDI's."""
         lowest = max(self._lowest_octave * HALF_STEPS_PER_OCTAVE, midi.MIN_MIDI_NUMBER)
         highest = min((self._highest_octave + 1) * HALF_STEPS_PER_OCTAVE - 1, midi.MAX_MIDI_NUMBER)
-        return all(lowest <= pitch <= highest for pitch in pitches)
+        for pitch in pitches:
+            if not lowest <= pitch <= highest:
+                return False
+        return True
 
     def _voiced(self, *, chord, before):
         """Return a chord voiced nearest the pitches of the chord before it, its notes kept in the order it was built, so that its first is still its root for a grab."""
         order = list(chord[sound_values.NOTES])
         notes = sorted(order, key=lambda note: note[sound_values.MIDI])
-        fixed = notes[:1] if self._root_in_bass else []
-        moving = notes[1:] if self._root_in_bass else notes
-        target = before[1:] if self._root_in_bass and len(before) > 1 else before
-        floor = fixed[0][sound_values.MIDI] if fixed else None
+        # With the root kept in the bass, the lowest note stays and the rest move nearest the chord before's notes above its bass.
+        fixed = []
+        moving = notes
+        target = before
+        if self._root_in_bass:
+            fixed = notes[:1]
+            moving = notes[1:]
+            if len(before) > 1:
+                target = before[1:]
+
+
+        floor = None
+        if fixed:
+            floor = fixed[0][sound_values.MIDI]
         best = None
         for shape in _inversions([note[sound_values.MIDI] for note in moving]):
             for octaves in range(-OCTAVES_TRIED, OCTAVES_TRIED + 1):
@@ -89,4 +111,9 @@ def _inversions(pitches):
 
 def _lowest_moved_up(*, pitches, moved):
     """Return pitches given lowest first with the lowest so many of them moved up an octave."""
-    return [pitch + HALF_STEPS_PER_OCTAVE if place < moved else pitch for place, pitch in enumerate(pitches)]
+    played = []
+    for place, pitch in enumerate(pitches):
+        if place < moved:
+            pitch += HALF_STEPS_PER_OCTAVE
+        played.append(pitch)
+    return played
