@@ -46,7 +46,11 @@ class Progression(ClipGenerator):
         nothing = [None] * len(self._chords)
         self._accidentals = list(accidentals or nothing)
         self._inversions = list(inversions or nothing)
-        self._scales = [None if kind is None else scale_type_called(kind) for kind in scales or nothing]
+        self._scales = []
+        for kind in scales or nothing:
+            if kind is not None:
+                kind = scale_type_called(kind)
+            self._scales.append(kind)
         self._tensions = list(tensions or nothing)
         # For each chord, the half steps its quality and tensions give the figure's notes, by their place above the chord's root.
         self._replaced = [replaced_places(symbol=symbol, tensions=added) for symbol, added in zip(qualities or nothing, self._tensions)]
