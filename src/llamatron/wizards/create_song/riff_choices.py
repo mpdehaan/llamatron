@@ -13,7 +13,8 @@ from llamatron.user_strings import errors, names as names_text, song_wizard as w
 from llamatron.wizards.create_song import arranger, notation as tune_notation, riffs as riffs_values, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, bar_length, in_octaves_of
 from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart
-from llamatron.wizards.create_song.riffs import bars_of as riff_bars_of, flattened_in, line_of as riff_line_of
+from llamatron.wizards.create_song.heavy_riffs import flattened_in
+from llamatron.wizards.create_song.riffs import bars_of as riff_bars_of, line_of as riff_line_of
 
 
 def _are_new_riff_settings(settings):

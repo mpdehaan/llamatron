@@ -6,8 +6,9 @@
 
 import unittest
 
-from llamatron.wizards.create_song import line_edits, notation, riffs, wizard_names
-from llamatron.wizards.create_song.riffs import heavy_line, riff_line
+from llamatron.wizards.create_song import heavy_riffs, line_edits, notation, riffs, wizard_names
+from llamatron.wizards.create_song.heavy_riffs import heavy_line
+from llamatron.wizards.create_song.riffs import riff_line
 
 A_SEED = 11
 ANOTHER_SEED = 12
@@ -91,7 +92,7 @@ class TestHeavyRiff(unittest.TestCase):
             line = heavy_line(seed=seed, take=riffs.FIRST_TAKE, eighths=EIGHTHS)
             sounding = [note for note in line if notation.REST not in note]
             with self.subTest(seed=seed):
-                self.assertGreaterEqual(2 * sum(riffs.is_root(note) for note in sounding), len(sounding))
+                self.assertGreaterEqual(2 * sum(heavy_riffs.is_root(note) for note in sounding), len(sounding))
                 tail = [tuple(note[notation.DEGREE] for note in line[-len(ending):]) for ending in riffs.TAILS]
                 self.assertIn(True, [found == tuple(place[0] for place in ending) for found, ending in zip(tail, riffs.TAILS)])
                 self.assertTrue(all(notation.CHORD not in note and notation.LEVEL not in note and note[notation.STEPS] == 1 for note in line[-2:]))
@@ -101,7 +102,7 @@ class TestHeavyRiff(unittest.TestCase):
             muted = heavy_line(seed=seed, take=riffs.FIRST_TAKE, eighths=EIGHTHS, between=riffs.MUTED_ROOTS)
             rests = heavy_line(seed=seed, take=riffs.FIRST_TAKE, eighths=EIGHTHS, between=riffs.RESTS_BETWEEN)
             with self.subTest(seed=seed):
-                self.assertTrue(all(riffs.is_root(note) and note[riffs.GATE] == riffs.MUTED_GATE and note[notation.STEPS] == 1 for note in muted if note.get(notation.LEVEL) == wizard_names.GHOST))
+                self.assertTrue(all(heavy_riffs.is_root(note) and note[riffs.GATE] == riffs.MUTED_GATE and note[notation.STEPS] == 1 for note in muted if note.get(notation.LEVEL) == wizard_names.GHOST))
                 self.assertFalse(any(notation.REST in note for note in muted))
                 self.assertFalse(any(note.get(notation.LEVEL) == wizard_names.GHOST for note in rests))
 
@@ -119,8 +120,8 @@ class TestHeavyRiff(unittest.TestCase):
         self.assertEqual(heavy_line(seed=A_SEED, take=riffs.FIRST_TAKE, eighths=EIGHTHS, bars=ONE_BAR, gap=True), one)
 
     def test_the_third_and_the_seventh_are_flattened_over_a_scale_that_has_them_major(self):
-        self.assertEqual(riffs.flattened_in(MAJOR), riffs.FLATTENED)
-        self.assertEqual(riffs.flattened_in(MINOR), ())
+        self.assertEqual(heavy_riffs.flattened_in(MAJOR), riffs.FLATTENED)
+        self.assertEqual(heavy_riffs.flattened_in(MINOR), ())
         for seed in range(MANY_SEEDS):
             line = heavy_line(seed=seed, take=riffs.FIRST_TAKE, eighths=EIGHTHS, flattened=riffs.FLATTENED)
             plain = heavy_line(seed=seed, take=riffs.FIRST_TAKE, eighths=EIGHTHS)

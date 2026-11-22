@@ -8,7 +8,7 @@ import copy
 
 from llamatron.model.schema.file_format import SectionKind
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, hook_writing, line_edits, melody as melody_writer, notation as tune_notation, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, hook_writing, line_edits, melody as melody_writer, notation as tune_notation, tune_reading, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged
 from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart, chosen_only
 from llamatron.wizards.create_song.melody import placement_of, plan_with_hook_placed
@@ -347,7 +347,7 @@ class HookChoices(ChoicesPart):
         if pattern is None or pattern[tune_notation.STEPS] % bar:
             return None
         try:
-            lines, octave, _ = tune_notation.tune_lines(pattern=pattern, bar=bar)
+            lines, octave, _ = tune_reading.tune_lines(pattern=pattern, bar=bar)
         except tune_notation.NotWritable:
             return None
         steps, notes = self._sounded(lines=lines, octave=octave)

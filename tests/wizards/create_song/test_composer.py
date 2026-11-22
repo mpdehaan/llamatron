@@ -11,7 +11,7 @@ import unittest.mock
 from llamatron.model.file import version
 from llamatron.model.file.setlist_reader import set_file_data
 from llamatron.model.objects.setlist import Setlist
-from llamatron.wizards.create_song import composer, decomposer, notation, shaping, wizard_names
+from llamatron.wizards.create_song import composer, decomposer, notation, shaping, tune_reading, wizard_names
 
 FILE_ENCODING = 'utf-8'
 # Demos of three feels: dance music with a sung lead, a shanty in a minor key, and swung jazz.
@@ -77,7 +77,7 @@ class TestTuneLines(unittest.TestCase):
         self.assertEqual(pattern[notation.ACCIDENTAL][4], notation.ACCIDENTAL_MARKS[notation.FLAT])
 
     def test_a_pattern_reads_back_as_the_same_lines(self):
-        lines, octave, velocity = notation.tune_lines(pattern=self.tune(), bar=BAR_OF_EIGHTHS)
+        lines, octave, velocity = tune_reading.tune_lines(pattern=self.tune(), bar=BAR_OF_EIGHTHS)
         self.assertEqual(lines, [LINE, SECOND_LINE])
         self.assertEqual(octave, OCTAVE)
         self.assertEqual(velocity, VELOCITY)
@@ -85,7 +85,7 @@ class TestTuneLines(unittest.TestCase):
     def test_a_pattern_with_no_notes_cannot_be_written_as_a_tune(self):
         silent = {notation.STEPS: 2, notation.DEGREE: [None, None]}
         with self.assertRaises(notation.NotWritable):
-            notation.tune_lines(pattern=silent, bar=BAR_OF_EIGHTHS)
+            tune_reading.tune_lines(pattern=silent, bar=BAR_OF_EIGHTHS)
 
 
 class TestDrumHits(unittest.TestCase):

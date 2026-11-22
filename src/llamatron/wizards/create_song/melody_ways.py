@@ -9,7 +9,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, melody as melody_writer, notation as tune_notation, wizard_limits
 from llamatron.wizards.create_song.arranger import arranged
-from llamatron.wizards.create_song.riffs import flattened_in
+from llamatron.wizards.create_song.heavy_riffs import flattened_in
 from llamatron.wizards.create_song.section_melody import SectionMelody
 
 

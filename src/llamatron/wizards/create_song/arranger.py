@@ -31,13 +31,14 @@ from llamatron.user_strings import errors, labels, song_wizard as wizard_text
 from llamatron.wizards.create_song import band, breaks, characters, drum_solo, interplay, joins, loudness, melody, notation, riffs as riffs_values, shaping, song_plan, wizard_names
 from llamatron.wizards.create_song.breaks import cut_up
 from llamatron.wizards.create_song.characters import character_of, held_to, label_of, level_of
+from llamatron.wizards.create_song.heavy_riffs import flattened_in
 from llamatron.wizards.create_song.interplay import UnderLead
 from llamatron.wizards.create_song.joins import drum_tail, pieces_of_tail, with_tail
 from llamatron.wizards.create_song.loudness import drum_levels, in_proportion, note_levels, scaled, spread, with_own
 from llamatron.wizards.create_song.melody import has_hook, plan_as_asked, plan_with_hook_placed, plan_with_tag, sketched
 from llamatron.wizards.create_song.notation import clamped, drum_rows
 from llamatron.wizards.create_song.players import player_name
-from llamatron.wizards.create_song.riffs import accent_bars, bars_of as riff_bars_of, bars_played, flattened_in, held_bar, line_of as riff_line_of, single, split_bars
+from llamatron.wizards.create_song.riffs import accent_bars, bars_of as riff_bars_of, bars_played, held_bar, line_of as riff_line_of, single, split_bars
 from llamatron.wizards.create_song.shaping import is_compound
 from llamatron.wizards.create_song.song_plan import SongPlan
 

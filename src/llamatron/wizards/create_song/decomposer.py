@@ -15,8 +15,9 @@ from fractions import Fraction
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import composer, notation, shaping, wizard_names
 from llamatron.wizards.create_song.composer import bars_of, pattern_of, players_of, scene_of, signature_of
-from llamatron.wizards.create_song.notation import drum_hits, kept_rows, NotWritable, tune_lines
+from llamatron.wizards.create_song.notation import drum_hits, kept_rows, NotWritable
 from llamatron.wizards.create_song.shaping import is_compound, role_of, shaped, unshaped
+from llamatron.wizards.create_song.tune_reading import tune_lines
 
 SET_SETTINGS = (composer.VERSION, composer.TITLE, composer.DESCRIPTION, composer.AUTHOR, composer.NOTES, composer.REAL_TIME, composer.PROTECTED, composer.SCALES, composer.PATTERNS, composer.CHAINS, composer.INSTRUMENTS, composer.SONGS)
 CLIP_SETTINGS = (composer.PATTERN, composer.REPEAT, composer.LOOP, composer.CHAINS)
