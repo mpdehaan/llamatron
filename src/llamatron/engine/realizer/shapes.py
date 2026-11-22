@@ -73,7 +73,9 @@ def velocity_percent_at(*, velocity, time):
 
 def percent_at(*, values, time, span):
     """Return a shape's percentage at a time from its start, ramping from start to end over its over (or the whole span), then holding, repeating or bouncing."""
-    length = span if values.over is None else Rational(values.over)
+    length = span
+    if values.over is not None:
+        length = Rational(values.over)
     if not length:
         return values.end
     place = time / length
@@ -81,7 +83,10 @@ def percent_at(*, values, time, span):
         share = place - math.floor(place)
     elif values.then == ShapeThen.BOUNCE:
         lap = place - 2 * math.floor(place / 2)
-        share = lap if lap <= 1 else 2 - lap
+        # Past halfway round, the shape comes back down.
+        share = lap
+        if lap > 1:
+            share = 2 - lap
     else:
         share = min(place, 1)
     return values.start + (values.end - values.start) * share
@@ -127,13 +132,11 @@ def reshaped(*, sounds, density=None, swell=None, articulate=None, velocity=None
 
     span is the clip's length, which a note's lengthening never reaches past.
     """
-    starts = []
-    now = length_values.ZERO
-    for sound in sounds:
-        starts.append(now)
-        now = Length.add(now, sound[sound_values.LENGTH])
+    starts = _starts_of(sounds)
     levels = strengths(starts=starts, bar=bar, beat=beat)
-    following = _next_sounding_starts(sounds=sounds, starts=starts) if articulate is not None else None
+    following = None
+    if articulate is not None:
+        following = _next_sounding_starts(sounds=sounds, starts=starts, end=Length.exact(span))
     result = []
     for place, sound in enumerate(sounds):
         if sound[sound_values.KIND] == sound_values.REST:
@@ -152,17 +155,27 @@ def reshaped(*, sounds, density=None, swell=None, articulate=None, velocity=None
         if velocity is not None:
             sound = _with_velocity(sound=sound, scale=velocity_percent_at(velocity=velocity, time=time))
         if articulate is not None:
-            room = Length.subtract(Length.exact(span) if following[place] is None else following[place], starts[place])
+            room = Length.subtract(following[place], starts[place])
             result += _with_length(sound=sound, share=percent_at(values=articulate[0], time=time + articulate[2], span=articulate[1]), room=room)
             continue
         result.append(sound)
     return result
 
 
-def _next_sounding_starts(*, sounds, starts):
-    """Return, for each sound, where the next sound that is no rest starts, or None after the last, found in one pass from the end."""
+def _starts_of(sounds):
+    """Return where each of a clip's sounds starts, as pairs."""
+    starts = []
+    now = length_values.ZERO
+    for sound in sounds:
+        starts.append(now)
+        now = Length.add(now, sound[sound_values.LENGTH])
+    return starts
+
+
+def _next_sounding_starts(*, sounds, starts, end):
+    """Return, for each sound, where the next sound that is no rest starts, or the end after the last, found in one pass from the end."""
     following = [None] * len(sounds)
-    upcoming = None
+    upcoming = end
     for place in range(len(sounds) - 1, -1, -1):
         following[place] = upcoming
         if sounds[place][sound_values.KIND] != sound_values.REST:
@@ -172,14 +185,18 @@ def _next_sounding_starts(*, sounds, starts):
 
 def _rational(number):
     """Return a percentage as a Rational, whether it's a whole number or already one."""
-    return number if isinstance(number, Rational) else Rational(number)
+    if isinstance(number, Rational):
+        return number
+    return Rational(number)
 
 
 def _with_velocity(*, sound, scale):
     """Return a sound with every note's velocity scaled by a percentage, held from 1 to 127."""
     kind = sound[sound_values.KIND]
     if kind == sound_values.NOTE:
-        velocity = defaults.DEFAULT_VELOCITY if sound[sound_values.VELOCITY] is None else sound[sound_values.VELOCITY]
+        velocity = sound[sound_values.VELOCITY]
+        if velocity is None:
+            velocity = defaults.DEFAULT_VELOCITY
         scaled = max(min(round(velocity * scale / FULL), midi.MAX_VELOCITY), midi.MIN_VELOCITY)
         return sound[:sound_values.VELOCITY] + (scaled,) + sound[sound_values.VELOCITY + 1:]
     if kind == sound_values.CHORD:
@@ -196,11 +213,17 @@ def _with_length(*, sound, share, room):
     if sound[sound_values.KIND] == sound_values.PHRASE:
         return [sound]
     held = sound[sound_values.KIND] == sound_values.HELD
-    played = sound[sound_values.HELD_SOUND] if held else sound
-    written = played[sound_values.LENGTH] if played[sound_values.KIND] != sound_values.CHORD else Length.longest([note[sound_values.LENGTH] for note in played[sound_values.NOTES]])
+    played = sound
+    if held:
+        played = sound[sound_values.HELD_SOUND]
+    written = played[sound_values.LENGTH]
+    if played[sound_values.KIND] == sound_values.CHORD:
+        written = Length.longest([note[sound_values.LENGTH] for note in played[sound_values.NOTES]])
     place = sound[sound_values.LENGTH]
     wanted = Length.multiplied(written, Length.of(_rational(share) / FULL))
-    lasting = Length.shorter(wanted, room) if Length.less(length_values.ZERO, room) else wanted
+    lasting = wanted
+    if Length.less(length_values.ZERO, room):
+        lasting = Length.shorter(wanted, room)
     if lasting == place:
         return [Sound.lasting(played, lasting)]
     if Length.less(lasting, place):
