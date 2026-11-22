@@ -152,7 +152,9 @@ class ArpSettings(HasCells, GeneratorSettings):
 
     def get_offsets(self):
         offsets = self.get_written(ArpSetting.OFFSETS)
-        return None if offsets is None else list(offsets)
+        if offsets is None:
+            return None
+        return list(offsets)
 
     def get_note_add(self, register):
         """Return how much each note the arp plays adds to a register, or None for nothing."""
@@ -164,18 +166,30 @@ class ArpSettings(HasCells, GeneratorSettings):
         if offsets is None:
             return None
         adds = self.get_written(ARP_STEP_ADDS[register]) or []
-        return [adds[place] if place < len(adds) else None for place in range(len(offsets))]
+        # The adds are as many as the offsets, a blank for each past the last written.
+        lined_up = []
+        for place in range(len(offsets)):
+            if place < len(adds):
+                lined_up.append(adds[place])
+            else:
+                lined_up.append(None)
+        return lined_up
 
     def adds_to_registers(self):
         """Return whether its notes or its offsets' steps add to any register."""
-        return any(self.get_note_add(register) for register in file_format.REGISTER_NAMES) or any(any(self.get_step_adds(register) or []) for register in file_format.REGISTER_NAMES)
+        for register in file_format.REGISTER_NAMES:
+            if self.get_note_add(register) or any(self.get_step_adds(register) or []):
+                return True
+        return False
 
     def set_step_add(self, *, register, step, add):
         """Set what one step of the offsets adds to a register, where None or 0 adds nothing; a row that adds nothing is left out of the file."""
         self._offsets_to_change(step)
         adds = self.get_step_adds(register)
         adds[step] = add or None
-        self.set_setting(name=ARP_STEP_ADDS[register], value=adds if any(adds) else None)
+        if not any(adds):
+            adds = None
+        self.set_setting(name=ARP_STEP_ADDS[register], value=adds)
 
     @classmethod
     def new(cls):
@@ -209,7 +223,9 @@ class ArpSettings(HasCells, GeneratorSettings):
         self.set_setting(name=ArpSetting.OFFSETS, value=offsets or None)
         for register, adds in rows.items():
             kept = adds[:step] + adds[step + 1:]
-            self.set_setting(name=ARP_STEP_ADDS[register], value=kept if any(kept) else None)
+            if not any(kept):
+                kept = None
+            self.set_setting(name=ARP_STEP_ADDS[register], value=kept)
 
     def _offsets_to_change(self, step):
         """Return a copy of the offsets with a step to change, or raise InvalidValue if there's no such step."""
