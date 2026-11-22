@@ -16,10 +16,14 @@ class MusicianController(GeneratorController):
     FOLLOWS_TRACKS = True
 
     def make_generator(self, *, settings, place):
+        # A drum pattern's notes are drums, which no chord moves, whoever is said to play them.
+        chords = None
+        if not place.plays_drums():
+            chords = place.chords_followed(settings.get_chords_from())
         surroundings = Surroundings(
             section=place.section(),
-            # A drum pattern's notes are drums, which no chord moves, whoever is said to play them.
-            chords=None if place.plays_drums() else place.chords_followed(settings.get_chords_from()),
+
+            chords=chords,
             tune=place.tune_heard(settings.get_tune_from()),
         )
         return settings.generator_for(where=place.where(), bar=place.bar(), beat=place.beat(), surroundings=surroundings, seed=place.seed())
