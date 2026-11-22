@@ -70,7 +70,8 @@ class TestChainPlaces(unittest.TestCase):
         data = chained(clip_chains=[OTHER_CHAIN], scene_chains=[TWICE], track_chains=[OTHER_CHAIN, TWICE])
         realizer = SongRealizer(song_from_data(data))
         scene = realizer.get_scenes()[0]
-        self.assertEqual(realizer.chains_of(scene=scene, track=test_registers.LEAD), [OTHER_CHAIN, TWICE, OTHER_CHAIN, TWICE])
+        runs = realizer.chains_of(scene=scene, track=test_registers.LEAD)
+        self.assertEqual([run.name for run in runs], [OTHER_CHAIN, TWICE, OTHER_CHAIN, TWICE])
 
     def test_deleting_a_generator_takes_it_out_of_every_chain_and_every_list(self):
         built = song_from_data(chained(clip_chains=[CHOP, TWICE], scene_chains=[CHOP], track_chains=[CHOP]))

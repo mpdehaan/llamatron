@@ -169,20 +169,20 @@ class ClipSlotPlayer:
         # How many times each generator has come up in the clip's chains, so that one named twice keeps two states.
         times = {}
         untouched = clip
-        for chain in chains:
+        for run in chains:
             entering = clip
-            written = self._setlist.chain_run(chain)
+            written = run.chain
             for step in written.get_steps():
                 # A modulation works on the steps as the pattern plays, and a shape on the finished clip after the chains (engine/realizer/modulations.py, engine/realizer/shapes.py).
                 # A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum, not the pitch.
                 if registry.fills(name=step.kind, method=MAKES_GENERATORS) and not (registry.moves_pitches(step.kind) and self._plays_drums()):
                     key = (step.kind, step.name, times.get((step.kind, step.name), 0))
                     times[(step.kind, step.name)] = key[-1] + 1
-                    generator = self._realizer.make_generator(step=step, scene=self._scene, track=self._track_name, chain=chain, index=index, key=key, counting=counting)
+                    generator = self._realizer.make_generator(step=step, scene=self._scene, track=self._track_name, chain=run.name, index=index, key=key, counting=counting)
                     generated = generator.generate(clip)
                     self._realizer.keep_end_state(scene=self._scene, track=self._track_name, key=key, counting=counting, state=generator.end_state())
                     adds += generator.register_adds()
-                    own = self._setlist.get_generator_settings(kind=step.kind, name=step.name).get_bypass_when()
+                    own = step.settings_in(self._setlist).get_bypass_when()
                     clip = _kept_where(tripped=_tripped(passes=passes, tables=[own]), before=clip, after=generated, passes=passes)
                 index += 1
             clip = _kept_where(tripped=_tripped(passes=passes, tables=[written.get_bypass_when()]), before=entering, after=clip, passes=passes)
@@ -216,11 +216,11 @@ class ClipSlotPlayer:
         """Return the draws the clip's statements read as a pass starts, those that make it sit out and those that bypass its
         generators, that redraw in conditions: the pass's first step takes them, so that the pass starts from one value of each."""
         statements = [*self._skip_tables(), *self._bypass_tables()]
-        for chain in self._realizer.chains_of(scene=self._scene, track=self._track_name):
-            written = self._setlist.chain_run(chain)
+        for run in self._realizer.chains_of(scene=self._scene, track=self._track_name):
+            written = run.chain
             statements.append(written.get_bypass_when())
             for step in written.get_steps():
-                settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+                settings = step.settings_in(self._setlist)
                 statements.append(settings.get_bypass_when())
         read = _draws_read_by(statements)
         redrawing = set()
@@ -234,9 +234,9 @@ class ClipSlotPlayer:
         """Return the tables of statements that make the clip sit a pass out: its own and its track's."""
         return [self._clip_slot.get_statements(ClipSlotSetting.SKIP_WHEN), self._track.get_statements(TrackSetting.SKIP_WHEN)]
 
-    def _shape_is_bypassed(self, *, chain, name, kind, passes):
-        """Return whether a shape a chain names is left out of the clip. A shape works on the whole clip at once, so the registers as the clip's first pass starts speak for all of it."""
-        tables = [*self._bypass_tables(), self._setlist.chain_run(chain).get_bypass_when(), self._setlist.get_generator_settings(kind=kind, name=name).get_bypass_when()]
+    def _shape_is_bypassed(self, *, run, step, passes):
+        """Return whether a shape a chain's step names is left out of the clip. A shape works on the whole clip at once, so the registers as the clip's first pass starts speak for all of it."""
+        tables = [*self._bypass_tables(), run.chain.get_bypass_when(), step.settings_in(self._setlist).get_bypass_when()]
         return any(_tripped(passes=passes[:FIRST_PASS + 1], tables=tables))
 
     def _plays_drums(self):
@@ -246,16 +246,16 @@ class ClipSlotPlayer:
     def _shaped(self, clip, *, passes):
         """Return the clip with its Density, Swell and Articulate applied: the last generator of each kind its chains name, else the clip's own Density or Articulate, else its scene's, and with the velocity of the clip and its scene. A generator its statements bypass is not named."""
         named = {}
-        for chain in self._realizer.chains_of(scene=self._scene, track=self._track_name):
-            for step in self._setlist.chain_run(chain).get_steps():
-                self._name_shapes(named=named, chain=chain, step=step, passes=passes)
+        for run in self._realizer.chains_of(scene=self._scene, track=self._track_name):
+            for step in run.chain.get_steps():
+                self._name_shapes(named=named, run=run, step=step, passes=passes)
         clip_length = clip.total_length()
         scene_length = self._realizer.get_scene_length(self._scene)
         shapes = {}
         for shape in SHAPES:
             if shape in named:
                 # A generator's ramp runs over its whole run, which its Restart says: the clip, every play of the scene in a row, or the song.
-                settings = self._setlist.get_generator_settings(kind=named[shape].kind, name=named[shape].name)
+                settings = named[shape].settings_in(self._setlist)
                 restart = settings.get_restart()
                 span = self._realizer.run_span(scene=self._scene, restart=restart, clip_length=clip_length)
                 shapes[shape] = (settings.get_shape(shape), span, self._realizer.run_offset(scene=self._scene, restart=restart))
@@ -274,12 +274,12 @@ class ClipSlotPlayer:
         )
         return Clip(name=clip.get_name(), sounds=sounds, scale=clip.get_scale(), length=clip.get_length(), note_length=clip.get_note_length(), controls=clip.get_controls())
 
-    def _name_shapes(self, *, named, chain, step, passes):
+    def _name_shapes(self, *, named, run, step, passes):
         """Put each shape a chain's step sets in named, by the shape, a later step winning, unless the step's statements bypass it."""
         kinds = registry.shapes_of(step.kind)
-        if not kinds or self._shape_is_bypassed(chain=chain, name=step.name, kind=step.kind, passes=passes):
+        if not kinds or self._shape_is_bypassed(run=run, step=step, passes=passes):
             return
-        settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+        settings = step.settings_in(self._setlist)
         for shape in kinds:
             if settings.get_shape(shape) is not None:
                 named[shape] = step

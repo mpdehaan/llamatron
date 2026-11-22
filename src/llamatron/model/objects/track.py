@@ -8,6 +8,7 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import is_whole_number_from, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.objects.built_ins import built_ins_setting, HoldsBuiltIns, pass_over_unknown_built_ins
 from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.conditions import statements_setting, with_statement
 from llamatron.model.objects.groove import check_groove_choice
@@ -64,10 +65,11 @@ SETTINGS = described(
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
     statements_setting(TrackSetting.BYPASS_WHEN),
     statements_setting(TrackSetting.SKIP_WHEN),
+    built_ins_setting(TrackSetting.BUILT_IN),
 )
 
 
-class Track(RunsChains, HoldsSettings):
+class Track(HoldsBuiltIns, RunsChains, HoldsSettings):
     """A track's settings: whether it's a drum track, whether it's muted, its transpose, octave range, CC numbers, groove and instrument, and the registers bound to its CC lanes and its velocity.
 
     A setting the file leaves out is kept as None and means its default, so that saving writes
@@ -78,6 +80,7 @@ class Track(RunsChains, HoldsSettings):
 
     SETTINGS = SETTINGS
     CHAINS_SETTING = TrackSetting.CHAINS
+    BUILT_IN_SETTING = TrackSetting.BUILT_IN
 
     # A track names the groove it chooses.
     REFERENCES = {Section.GROOVES: (TrackSetting.GROOVE,), Section.INSTRUMENTS: (TrackSetting.INSTRUMENT,)}
@@ -86,7 +89,7 @@ class Track(RunsChains, HoldsSettings):
     def __init__(
         self, *, drum=None, mute=None, transpose=None, lowest_octave=None, highest_octave=None, cc=None, groove=None, instrument=None,
         cc1_register=None, cc2_register=None, cc3_register=None, cc4_register=None, velocity_register=None, default_velocity=None, accent=None, chains=None,
-        bypass_when=None, skip_when=None,
+        bypass_when=None, skip_when=None, built_in=None,
     ):
         self.note_change()
         self._settings = {
@@ -95,7 +98,7 @@ class Track(RunsChains, HoldsSettings):
             TrackSetting.INSTRUMENT: instrument, TrackSetting.CC1_REGISTER: cc1_register, TrackSetting.CC2_REGISTER: cc2_register,
             TrackSetting.CC3_REGISTER: cc3_register, TrackSetting.CC4_REGISTER: cc4_register, TrackSetting.VELOCITY_REGISTER: velocity_register, TrackSetting.DEFAULT_VELOCITY: default_velocity, TrackSetting.ACCENT: accent,
             TrackSetting.CHAINS: own_copy(chains),
-            TrackSetting.BYPASS_WHEN: own_copy(bypass_when), TrackSetting.SKIP_WHEN: own_copy(skip_when),
+            TrackSetting.BYPASS_WHEN: own_copy(bypass_when), TrackSetting.SKIP_WHEN: own_copy(skip_when), TrackSetting.BUILT_IN: own_copy(built_in),
         }
 
     @classmethod
@@ -106,6 +109,7 @@ class Track(RunsChains, HoldsSettings):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_TRACK_EXPECTED_SETTINGS.format(data=data))
             pass_over_unknown(data=data, allowed=SETTINGS)
+            pass_over_unknown_built_ins(data=data, name=TrackSetting.BUILT_IN)
             check_settings(settings=SETTINGS, data=data, song=song)
             _check_octave_order(lowest=data.get(TrackSetting.LOWEST_OCTAVE, limits.MIN_OCTAVE), highest=data.get(TrackSetting.HIGHEST_OCTAVE, limits.MAX_OCTAVE))
             settings = {name: data.get(name) for name in SETTINGS}

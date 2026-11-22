@@ -16,6 +16,7 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import check_name, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.objects.built_ins import built_ins_setting, HoldsBuiltIns, pass_over_unknown_built_ins
 from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.conditions import register_values_setting, statements_setting, with_statement
 from llamatron.model.objects.llama_data import HoldsSettings, own_copy, settings_by_name, written_settings
@@ -94,10 +95,11 @@ SETTINGS = described(
     register_values_setting(ClipSlotSetting.ADD_REGISTERS),
     statements_setting(ClipSlotSetting.BYPASS_WHEN),
     statements_setting(ClipSlotSetting.SKIP_WHEN),
+    built_ins_setting(ClipSlotSetting.BUILT_IN),
 )
 
 
-class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
+class ClipSlot(HoldsBuiltIns, RunsChains, SetsRegisters, HoldsSettings):
     """A pattern to play, and how: its chain, repeats or loop, direction, morph and grab, and its own name if it has one.
 
     Settings the file leaves out are kept as None, meaning their defaults. A clip with no name of
@@ -109,6 +111,7 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
 
     SETTINGS = SETTINGS
     CHAINS_SETTING = ClipSlotSetting.CHAINS
+    BUILT_IN_SETTING = ClipSlotSetting.BUILT_IN
     SET_REGISTERS_SETTING = ClipSlotSetting.SET_REGISTERS
     ADD_REGISTERS_SETTING = ClipSlotSetting.ADD_REGISTERS
 
@@ -133,6 +136,7 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_CLIP_SLOT_EXPECTED_SETTINGS.format(data=data))
             pass_over_unknown(data=data, allowed={*SETTINGS, ClipSlotSetting.PATTERN})
+            pass_over_unknown_built_ins(data=data, name=ClipSlotSetting.BUILT_IN)
             # One pattern, as a file names it, is read as a list of one in the file's own data, where a correction is made, and
             # the data is then put back as the file had it, in the file's order, since it may be data the undo history keeps.
             keys = list(data)

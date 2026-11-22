@@ -28,6 +28,10 @@ class ChainStep(NamedTuple):
     kind: str
     name: str
 
+    def settings_in(self, setlist):
+        """Return the settings of the generator the step names, which the set holds."""
+        return setlist.get_generator_settings(kind=self.kind, name=self.name)
+
 
 class Chain(BypassedWhen, HoldsSettings):
     """Steps like arp: bells or chords: verse, each naming a generator the song defines.

@@ -16,6 +16,7 @@ from llamatron.engine.generators import registry
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.realizer import registers as registers_values
 from llamatron.engine.realizer.bound_controls import bound_controls
+from llamatron.engine.realizer.chain_runs import chain_runs
 from llamatron.engine.realizer.chain_step_place import ChainStepPlace, ClipBeingMade, StepInChains
 from llamatron.engine.realizer.clip_slot_player import ClipSlotPlayer
 from llamatron.engine.realizer.draws import DrawPlay
@@ -98,7 +99,7 @@ class SongRealizer:
     __slots__ = (
         '_song', '_setlist', '_state', '_scenes', '_clips', '_counted', '_lengths', '_timelines', '_output', '_starts',
         '_end_states', '_chord_counts', '_looping_scenes_go_round', '_decided', '_guesses', '_cutting', '_settled_by_playing',
-        '_ramped', '_data', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes',
+        '_ramped', '_data', '_reused', '_kept_clips', '_changes_registers', '_earlier', '_passes', '_runs',
     )
 
     def __init__(self, song, *, seed=None, looping_scenes_go_round=False, data=None, takes=None):
@@ -124,6 +125,9 @@ class SongRealizer:
         # once, since nothing changes the song while it renders.
         self._changes_registers = self._setlist.changes_registers()
         self._clips = {}
+        # What each clip runs its notes through, by written scene and track, asked many times a clip and worked out once, since
+        # nothing changes the song while it renders.
+        self._runs = {}
         # Clips played only to record their register changes, with those changes.
         self._counted = {}
         self._lengths = {}
@@ -393,13 +397,13 @@ class SongRealizer:
         followed = {clip_slot.get_grab_track()}
         for step in self.chain_steps(scene=scene, track=track):
             if registry.follows_tracks(step.kind):
-                settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+                settings = step.settings_in(self._setlist)
                 followed.update(_tracks_named(settings))
         return followed
 
     def chain_steps(self, *, scene, track):
         """Return every step of every chain a track's clip in a written scene runs."""
-        return [step for chain in self.chains_of(scene=scene, track=track) for step in self._setlist.chain_run(chain).get_steps()]
+        return [step for run in self.chains_of(scene=scene, track=track) for step in run.chain.get_steps()]
 
     def _clips_stand_apart(self):
         """Return whether each track's clips play apart from the other tracks' but where a scene joins them, or where the
@@ -490,12 +494,12 @@ class SongRealizer:
         """Return how a clip's notes are rushed and dragged, from every lit Rush and Drag of the generators its chains name, or None where there is none."""
         rows = []
         clip = ClipBeingMade(scene=scene, track=track, counting=False)
-        for chain in self.chains_of(scene=scene, track=track):
-            for step in self._setlist.chain_run(chain).get_steps():
+        for run in self.chains_of(scene=scene, track=track):
+            for step in run.chain.get_steps():
                 if registry.fills(name=step.kind, method=MOVES_NOTES):
-                    place = ChainStepPlace(realizer=self, clip=clip, step=StepInChains(step=step, chain=chain, index=None, key=None))
+                    place = ChainStepPlace(realizer=self, clip=clip, step=StepInChains(step=step, chain=run.name, index=None, key=None))
                     controller = registry.controller_of(step.kind)
-                    settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+                    settings = step.settings_in(self._setlist)
                     rows += controller.moving_rows(settings=settings, place=place)
         if not rows:
             return None
@@ -836,17 +840,21 @@ class SongRealizer:
         return changes
 
     def chains_of(self, *, scene, track):
-        """Return the chains a track's clip in a written-out scene runs, in order: the clip's own, the scene's, then the track's; none when it plays nothing."""
-        clip_slot = scene.get_clip_slot(track)
-        if clip_slot is None:
-            return []
-        written_scene = scene.get_scene()
-        song_track = self._song.get_track(track)
-        return [*clip_slot.get_chain_names(), *written_scene.get_chain_names(), *song_track.get_chain_names()]
+        """Return what a track's clip in a written-out scene runs its notes through, as ChainRuns in order: its built-ins before
+        the lists, the chains of the clip's own list, the scene's and the track's, then its built-ins after them; none when it plays
+        nothing."""
+        key = (scene.get_number(), track)
+        if key not in self._runs:
+            clip_slot = scene.get_clip_slot(track)
+            runs = []
+            if clip_slot is not None:
+                runs = chain_runs(setlist=self._setlist, clip_slot=clip_slot, scene=scene.get_scene(), track=self._song.get_track(track))
+            self._runs[key] = runs
+        return self._runs[key]
 
     def modulators_of(self, *, scene, track):
         """Return the steps of a track's clip's chains in a scene whose generators change values as the song plays, in order, or none when it plays nothing."""
-        return [step for chain in self.chains_of(scene=scene, track=track) for step in self._setlist.chain_run(chain).get_steps() if modulates(step.kind)]
+        return [step for run in self.chains_of(scene=scene, track=track) for step in run.chain.get_steps() if modulates(step.kind)]
 
     def scene_start(self, scene):
         """Return where a written-out scene starts from the song's top, in whole notes: the scenes before it laid end to end."""
@@ -977,7 +985,7 @@ class SongRealizer:
 
     def modulation_origin(self, *, scene, step):
         """Return where a modulating generator's clock starts for a written-out scene, from the song's top, as its Restart says."""
-        settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+        settings = step.settings_in(self._setlist)
         return self.scene_start(self.run_start(scene=scene, restart=settings.get_restart()))
 
 
@@ -991,7 +999,7 @@ class SongRealizer:
     def make_generator(self, *, step, scene, track, chain, index, key=None, counting=False):
         """Return the generator for one step of a chain, as a clip slot on a track in a scene uses it: what the step's plugin's
         controller makes of its settings at the step's place."""
-        settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+        settings = step.settings_in(self._setlist)
         clip = ClipBeingMade(scene=scene, track=track, counting=counting)
         step_in_chains = StepInChains(step=step, chain=chain, index=index, key=key)
         place = ChainStepPlace(realizer=self, clip=clip, step=step_in_chains)
@@ -1019,7 +1027,7 @@ class SongRealizer:
         for step in self.chain_steps(scene=scene, track=track):
             if registry.fills(name=step.kind, method=STRUMS):
                 controller = registry.controller_of(step.kind)
-                settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+                settings = step.settings_in(self._setlist)
                 found = controller.strum(settings)
                 if found is not None:
                     strum, restart = found

@@ -11,6 +11,8 @@ Each constant starts with MSG_.
 # A generator named for its kind where a generator of another kind has its name, as kick rush beside kick drag, a set file
 # listing every generator in one list where no two share a name; each kind's word is in labels.py.
 MSG_NAMED_FOR_KIND = '{name} {word}'
+# engine/realizer/chain_runs.py: what a clip's or a track's built-in generator goes by where a generator's name is asked for.
+MSG_BUILT_IN_NAME = '(built-in)'
 
 # model/objects/naming.py
 # How a copy or a new thing is numbered, like bass-2, what joins the number, and a new scale's name, like F_harmonic_minor,

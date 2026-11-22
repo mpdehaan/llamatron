@@ -11,4 +11,7 @@ from llamatron.engine.generators.chords.controller import ChordsController
 from llamatron.engine.generators.chords.model import ChordsSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=chords.NAME, section=chords.SECTION, settings=ChordsSettings, strings=strings, controller=ChordsController(), view=view.VIEW)
+# Where the built-in chords every clip and track holds runs: below generator_plugins.LIST_PLACE before their own lists of generators, above it after.
+CHORDS_PLACE = 10
+
+PLUGIN = GeneratorPlugin(name=chords.NAME, section=chords.SECTION, settings=ChordsSettings, strings=strings, controller=ChordsController(), view=view.VIEW, built_in_place=CHORDS_PLACE)

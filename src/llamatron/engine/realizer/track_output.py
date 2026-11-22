@@ -93,7 +93,7 @@ class TrackOutput:
         """Return the notes a generator that deals notes out hands each track in a written-out scene, by the track, worked out once for the scene."""
         key = (scene.get_number(), step.name)
         if key not in self._dealt:
-            settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+            settings = step.settings_in(self._setlist)
             self._dealt[key] = registry.controller_of(step.kind).notes_dealt(settings=settings, place=DealingPlace(realizer=self._realizer, output=self, scene=scene, name=step.name))
         return self._dealt[key]
 

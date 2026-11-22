@@ -19,6 +19,10 @@ from typing import NamedTuple
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Section
 
+# Where a clip's or a track's own list of generators runs among its built-in generators, each of which a plugin places by a
+# number: lower runs before the list, higher after it.
+LIST_PLACE = 50
+
 # Where the plugins are, and the module of each that declares it.
 PLUGINS_PACKAGE = 'llamatron.engine.generators'
 DECLARATION = 'declaration'
@@ -29,15 +33,18 @@ class GeneratorPlugin(NamedTuple):
     its strings module, which holds every word it shows: MSG_LABEL, what it is called beside a generator's name, MSG_KIND_WORD,
     the word a generator named for its kind takes, MSG_CAPTION_WORD, the word its page's caption names it by, and
     MSG_CHANGED_WORD, the word an undo of a change to one of its generators says, MSG_GROUP, the heading the Generators page
-    offers it under, its controller, which holds all its logic (engine/generators/controller.py), and its view, which describes
-    its page (model/schema/generator_views.py), or None for a plugin whose page the tracker still holds."""
+    offers it under, its controller, which holds all its logic (engine/generators/controller.py), its view, which describes
+    its page (model/schema/generator_views.py), and, for a plugin every clip and track holds one of built in, where that one
+    runs: a number below LIST_PLACE before the clip's or the track's list of generators, above it after, None for a plugin
+    with no built-in."""
 
     name: str
     section: str
     settings: type
     strings: object
     controller: object
-    view: object = None
+    view: object
+    built_in_place: int = None
 
 
 @functools.cache
@@ -50,6 +57,25 @@ def plugins():
         if folder.ispkg:
             found.append(importlib.import_module(f'{PLUGINS_PACKAGE}.{folder.name}.{DECLARATION}').PLUGIN)
     return {plugin.name: plugin for plugin in sorted(found, key=lambda plugin: plugin.name)}
+
+
+@functools.cache
+def built_in_kinds():
+    """Return the names of the plugins a clip and a track hold one of built in, in the order those run."""
+    built_in = [plugin for plugin in plugins().values() if plugin.built_in_place is not None]
+    return tuple(plugin.name for plugin in sorted(built_in, key=lambda plugin: plugin.built_in_place))
+
+
+@functools.cache
+def built_ins_before_list():
+    """Return the names of the built-in plugins that run before a clip's or a track's own list of generators, in order."""
+    return tuple(name for name in built_in_kinds() if plugins()[name].built_in_place < LIST_PLACE)
+
+
+@functools.cache
+def built_ins_after_list():
+    """Return the names of the built-in plugins that run after a clip's or a track's own list of generators, in order."""
+    return tuple(name for name in built_in_kinds() if plugins()[name].built_in_place > LIST_PLACE)
 
 
 @functools.cache

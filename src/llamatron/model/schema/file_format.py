@@ -162,6 +162,8 @@ class TrackSetting:
     # The register statements that bypass the generators of the track's clips, and that make its clips sit out a pass.
     BYPASS_WHEN = 'bypass_when'
     SKIP_WHEN = 'skip_when'
+    # Its built-in generators' settings, by kind, each switched off until switched on.
+    BUILT_IN = 'built_in'
 
 
 class PatternSetting:
@@ -301,6 +303,8 @@ class ClipSlotSetting:
     # The register statements that bypass its generators, and that make it sit out a pass.
     BYPASS_WHEN = 'bypass_when'
     SKIP_WHEN = 'skip_when'
+    # Its built-in generators' settings, by kind, each switched off until switched on.
+    BUILT_IN = 'built_in'
 
 
 class SceneSetting:

@@ -33,7 +33,7 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
     something other than what the file writes.
     """
 
-    __slots__ = ()
+    __slots__ = ('_built_in',)
 
     BYPASS_SETTING = file_format.BYPASS_WHEN
     GENERATOR = None
@@ -55,10 +55,13 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
         """Return whether its generator adds to the registers as it plays: no, unless a plugin's settings say otherwise."""
         return False
 
-    def __init__(self, settings):
+    def __init__(self, settings, *, built_in=False):
+        """built_in says whether these are the settings of a clip's or a track's built-in generator, which is switched off until
+        switched on, where a generator of the set's list is on until switched off."""
         # Kept as given, as a copy, so that the object shares nothing with the data it was read from. Reading a file checks the data first.
         self.note_change()
         self._settings = own_copy(settings) or {}
+        self._built_in = built_in
 
     @classmethod
     def from_data(cls, *, data, where, song=None):
@@ -103,7 +106,7 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
         return self._settings.get(name)
 
     def copy(self):
-        return type(self)(self.to_data())
+        return type(self)(self.to_data(), built_in=self._built_in)
 
     def set_setting(self, *, name, value):
         """Set one setting by its file name, checking it as reading a file does, or None to leave it out."""
@@ -133,8 +136,16 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
         return described.get_lowest(), described.get_highest()
 
     def is_enabled(self):
-        """Return whether the generator runs where a list or a chain names it: yes, unless switched off."""
-        return self.get_written(file_format.GENERATOR_ENABLED) is not False
+        """Return whether the generator runs: a generator of the set's list unless switched off, a built-in one only once
+        switched on."""
+        written = self.get_written(file_format.GENERATOR_ENABLED)
+        if written is None:
+            return not self._built_in
+        return written
+
+    def is_built_in(self):
+        """Return whether these are a clip's or a track's built-in generator's settings."""
+        return self._built_in
 
     def get_restart(self):
         """Return when the generator starts over, every clip unless set."""
