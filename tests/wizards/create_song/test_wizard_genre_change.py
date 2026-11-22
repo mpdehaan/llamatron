@@ -46,23 +46,30 @@ class TestLostWithGenre(unittest.TestCase):
 
     def test_each_setting_of_the_band_changed_is_counted_once_and_a_setting_put_back_is_not(self):
         choices = chosen()
-        player = next(role for role in choices.get_band().roles_in() if role != choices.get_band().tune_player() and role in choices.get_tunes().tune_players_offered())
-        choices.get_tunes().set_tune_played_by(player)
+        band_choices = choices.get_band()
+        tune_choices = choices.get_tunes()
+        band = band_choices
+        tunes = tune_choices
+        player = next(role for role in band.roles_in() if role != band.tune_player() and role in tunes.tune_players_offered())
+        tunes.set_tune_played_by(player)
         self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_BAND_SETTINGS: 1}, {}))
-        left_out = next(role for role in choices.get_band().roles_in() if role != player and role in choices.get_tunes().tune_players_offered())
+        left_out = next(role for role in band.roles_in() if role != player and role in tunes.tune_players_offered())
         choices.player(left_out).set_in(on=False)
         self.assertEqual(choices.lost_with_genre()[0][wizard_limits.LOST_BAND_SETTINGS], 2)
         choices.player(left_out).set_in(on=True)
-        choices.get_tunes().set_tune_played_by(None)
+        tunes.set_tune_played_by(None)
         self.assertEqual(choices.lost_with_genre(), NOTHING_LOST)
 
     def test_chords_written_by_hand_the_form_and_new_takes_are_lost_and_counted_by_kind(self):
         choices = chosen()
-        choices.get_tunes().new_tune_take(A_KIND)
-        choices.get_tunes().new_tune_take(A_KIND)
-        choices.get_tunes().new_tune_take(ANOTHER_KIND)
+        tune_choices = choices.get_tunes()
+        tunes = tune_choices
+        place_section = choices.section(A_PLACE)
+        tunes.new_tune_take(A_KIND)
+        tunes.new_tune_take(A_KIND)
+        tunes.new_tune_take(ANOTHER_KIND)
         self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_TUNE_TAKES: 2}, {}))
-        choices.section(A_PLACE).set_own(field=wizard_names.ARRANGER_CHORDS, value=OWN_CHORDS)
+        place_section.set_own(field=wizard_names.ARRANGER_CHORDS, value=OWN_CHORDS)
         lost, kept = choices.lost_with_genre()
         self.assertEqual(lost[wizard_limits.LOST_OWN_CHORDS], 1)
         self.assertEqual(lost[wizard_limits.LOST_FORM], 1)
@@ -70,7 +77,9 @@ class TestLostWithGenre(unittest.TestCase):
 
     def test_tunes_written_by_hand_are_kept_and_alone_lose_nothing(self):
         choices = chosen()
-        choices.get_tunes().set_tune_pattern(kind=A_KIND, pattern=choices.get_tunes().tune_pattern(A_KIND))
+        tune_choices = choices.get_tunes()
+        tunes = tune_choices
+        tunes.set_tune_pattern(kind=A_KIND, pattern=tunes.tune_pattern(A_KIND))
         self.assertEqual(choices.lost_with_genre(), ({}, {wizard_limits.KEPT_OWN_TUNES: 1}))
-        choices.get_tunes().new_tune_take(ANOTHER_KIND)
+        tunes.new_tune_take(ANOTHER_KIND)
         self.assertEqual(choices.lost_with_genre(), ({wizard_limits.LOST_TUNE_TAKES: 1}, {wizard_limits.KEPT_OWN_TUNES: 1}))

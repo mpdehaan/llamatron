@@ -39,27 +39,33 @@ class TestWizardStages(WizardTest):
 
     async def test_a_closing_section_s_fade_out_has_a_velocity_and_bars_of_its_own(self):
         choices = await self.to_form()
-        choices.get_song_form().set_end(wizard_limits.REPEAT_AND_FADE)
+        form_choices = choices.get_song_form()
+        song_form = form_choices
+        song_form.set_end(wizard_limits.REPEAT_AND_FADE)
         await self.press(Key.DOWN, Key.UP)
-        last = len(choices.get_song_form().section_kinds_in_form()) - 1
-        self.assertEqual(choices.section(last).fade().way(), wizard_limits.FADE_OUT)
+        last = len(song_form.section_kinds_in_form()) - 1
+        section = choices.section(last)
+        section_fade = section.fade()
+        self.assertEqual(section_fade.way(), wizard_limits.FADE_OUT)
         branch = SectionBranch(page=self.wizard(), place=last)
         fade = labels.MSG_WIZARD_FADE_LABELS[wizard_limits.FADE_OUT]
-        self.assertEqual([branch.fade_field(field).label for field in choices.section(last).fade().fields()], [fade[wizard_names.SONG_PLAN_FADES], fade[wizard_names.FADE_LEVEL], fade[wizard_names.FADE_OVER]])
+        self.assertEqual([branch.fade_field(field).label for field in section_fade.fields()], [fade[wizard_names.SONG_PLAN_FADES], fade[wizard_names.FADE_LEVEL], fade[wizard_names.FADE_OVER]])
         # Until given, the fade takes every bar of the section.
-        self.assertEqual(branch.fade_field(wizard_names.FADE_OVER).value(), labels.MSG_WIZARD_FADE_BARS.format(value=choices.section(last).bars()))
+        self.assertEqual(branch.fade_field(wizard_names.FADE_OVER).value(), labels.MSG_WIZARD_FADE_BARS.format(value=section.bars()))
 
     def more(self):
         return key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
 
     async def test_the_panel_shows_how_the_song_starts_and_ends_and_no_stage_fields_until_a_way_has_stages(self):
         choices = await self.to_form()
+        form_choices = choices.get_song_form()
+        song_form = form_choices
         shown = self.text()
         for said in (labels.MSG_WIZARD_STARTS_LABEL, labels.MSG_WIZARD_ENDS_LABEL, wizard_limits.FULL_BAND, wizard_limits.HELD_CHORD):
             self.assertIn(said, shown)
         for label in (labels.MSG_WIZARD_FIRST_PLAYER_LABEL, labels.MSG_WIZARD_SETUP_BARS_LABEL):
             self.assertNotIn(label, shown)
-        self.assertEqual(choices.get_song_form().get_start(), wizard_limits.FULL_BAND)
+        self.assertEqual(song_form.get_start(), wizard_limits.FULL_BAND)
 
     async def test_how_the_song_starts_and_ends_comes_before_the_form_on_the_panel(self):
         await self.to_form()
@@ -69,41 +75,50 @@ class TestWizardStages(WizardTest):
 
     async def test_stepping_starts_with_makes_the_stages_sections_of_the_tree(self):
         choices = await self.to_form()
+        form_choices = choices.get_song_form()
+        song_form = form_choices
         before = len(self.wizard().rows())
         await self.select_field(labels.MSG_WIZARD_STARTS_LABEL)
-        offered = choices.get_song_form().starts()
+        offered = song_form.starts()
         await self.press(*[self.more()] * offered.index(wizard_limits.DRUMS_FIRST))
-        self.assertEqual(choices.get_song_form().get_start(), wizard_limits.DRUMS_FIRST)
+        self.assertEqual(song_form.get_start(), wizard_limits.DRUMS_FIRST)
         self.assertEqual(len(self.wizard().rows()), before + 1)
         self.assertIn(labels.MSG_WIZARD_SETUP_BARS_LABEL, self.text())
         self.assertTrue(self.wizard().has_choices_to_lose())
 
     async def test_the_first_player_and_the_setup_s_bars_are_chosen_under_a_way_with_stages(self):
         choices = await self.to_form()
-        choices.get_song_form().set_start(wizard_limits.LAYERS)
-        choices.get_song_form().set_end(wizard_limits.SLOWS_DOWN)
+        form_choices = choices.get_song_form()
+        first_section = choices.section(FIRST)
+        song_form = form_choices
+        song_form.set_start(wizard_limits.LAYERS)
+        song_form.set_end(wizard_limits.SLOWS_DOWN)
         await self.press(Key.DOWN, Key.UP)
         await self.select_field(labels.MSG_WIZARD_FIRST_PLAYER_LABEL)
-        first = choices.get_song_form().get_first_player()
+        first = song_form.get_first_player()
         await self.press(self.more())
-        self.assertNotEqual(choices.get_song_form().get_first_player(), first)
-        self.assertEqual(choices.section(FIRST).plays(), [choices.get_song_form().get_first_player()])
+        self.assertNotEqual(song_form.get_first_player(), first)
+        self.assertEqual(first_section.plays(), [song_form.get_first_player()])
         await self.select_field(labels.MSG_WIZARD_SETUP_BARS_LABEL)
-        bars = choices.get_song_form().get_setup_bars()
+        bars = song_form.get_setup_bars()
         await self.press(self.more())
-        self.assertGreater(choices.get_song_form().get_setup_bars(), bars)
-        self.assertEqual(choices.section(FIRST).bars(), choices.get_song_form().get_setup_bars())
+        self.assertGreater(song_form.get_setup_bars(), bars)
+        self.assertEqual(first_section.bars(), song_form.get_setup_bars())
 
     async def test_opening_sections_a_person_changed_read_as_the_person_s_own(self):
         choices = await self.to_form()
-        choices.get_song_form().set_start(wizard_limits.DRUMS_FIRST)
-        choices.section(FIRST).set_plays(role=THE_BASS, on=True)
+        form_choices = choices.get_song_form()
+        first_section = choices.section(FIRST)
+        song_form = form_choices
+        song_form.set_start(wizard_limits.DRUMS_FIRST)
+        first_section.set_plays(role=THE_BASS, on=True)
         await self.press(Key.DOWN, Key.UP)
-        self.assertIsNone(choices.get_song_form().get_start())
+        self.assertIsNone(song_form.get_start())
         self.assertIn(labels.MSG_WIZARD_OWN_START, self.text())
 
     async def test_an_intro_s_fade_in_is_switched_on_its_panel_and_shows_its_velocity_and_bars(self):
         choices = await self.to_form()
+        intro_place_section = choices.section(THE_INTRO_PLACE)
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_named_branch(THE_INTRO)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
@@ -111,14 +126,14 @@ class TestWizardStages(WizardTest):
         await self.select_field(fade[wizard_names.SONG_PLAN_FADES])
         self.assertNotIn(fade[wizard_names.FADE_LEVEL], [field.label for field in self.app.screen.shown_fields()])
         await self.press(Key.SPACE)
-        self.assertTrue(choices.section(THE_INTRO_PLACE).own(field=wizard_names.SONG_PLAN_FADES))
+        self.assertTrue(intro_place_section.own(field=wizard_names.SONG_PLAN_FADES))
         self.assertIn(labels.MSG_WIZARD_FADE_VELOCITY.format(value=wizard_names.FADED), self.text())
         await self.select_field(fade[wizard_names.FADE_LEVEL])
         await self.press(keybindings.WizardPage.MORE)
-        self.assertEqual(choices.section(THE_INTRO_PLACE).own(field=wizard_names.FADE_LEVEL), wizard_names.FADED + 1)
+        self.assertEqual(intro_place_section.own(field=wizard_names.FADE_LEVEL), wizard_names.FADED + 1)
         await self.select_field(fade[wizard_names.FADE_OVER])
         await self.press(keybindings.WizardPage.LESS)
-        self.assertEqual(choices.section(THE_INTRO_PLACE).own(field=wizard_names.FADE_OVER), choices.section(THE_INTRO_PLACE).bars() - 1)
+        self.assertEqual(intro_place_section.own(field=wizard_names.FADE_OVER), intro_place_section.bars() - 1)
         # A verse has no fade.
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_named_branch(A_VERSE)

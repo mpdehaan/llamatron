@@ -104,7 +104,11 @@ class TestWizardMusicians(unittest.TestCase):
 
     def test_every_clip_of_a_player_runs_the_players_musician_first(self):
         choices = chosen()
-        self.assertTrue(choices.get_band().has_musicians())
+        band_choices = choices.get_band()
+        band = band_choices
+        bass = choices.player(THE_BASS)
+        drums = choices.player(THE_DRUMS)
+        self.assertTrue(band.has_musicians())
         song = made_song(choices)
         drum_tracks = {track for track in song.get_track_names() if song.get_track(track).is_drum()}
         seen = set()
@@ -119,34 +123,38 @@ class TestWizardMusicians(unittest.TestCase):
                 seen.add(wanted)
         for name in seen:
             self.assertTrue(song.get_setlist().has_generator(kind=musician_plugin.NAME, name=name))
-        self.assertIn(choices.player(THE_BASS).musician_name(), seen)
-        self.assertIn(choices.player(THE_DRUMS).musician_name(), seen)
+        self.assertIn(bass.musician_name(), seen)
+        self.assertIn(drums.musician_name(), seen)
 
     def test_a_song_of_machines_has_no_musicians(self):
         choices = chosen(genre=A_GENRE_OF_MACHINES, subgenre=None)
-        self.assertFalse(choices.get_band().has_musicians())
+        band_choices = choices.get_band()
+        band = band_choices
+        self.assertFalse(band.has_musicians())
         setlist, _ = choices.made_for_listening()
         self.assertFalse(setlist.to_data().get(musician_plugin.SECTION))
 
     def test_a_players_own_musician_is_kept_and_played_until_the_player_is_given_back_the_usual_one(self):
         choices = chosen()
-        self.assertIsNone(choices.player(THE_BASS).get_musician())
-        usual = made_song(choices).get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=choices.player(THE_BASS).musician_name()).to_data()
+        bass = choices.player(THE_BASS)
+        self.assertIsNone(bass.get_musician())
+        usual = made_song(choices).get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=bass.musician_name()).to_data()
         own = {MusicianSetting.INSTRUMENT: schema.BASSIST, MusicianSetting.LOUDNESS: schema.LOUDEST}
-        choices.player(THE_BASS).set_musician(settings={**own, MusicianSetting.TUNE_FROM: A_TRACK, MusicianSetting.CHORDS_FROM: A_TRACK})
-        self.assertEqual(choices.player(THE_BASS).get_musician(), own)
+        bass.set_musician(settings={**own, MusicianSetting.TUNE_FROM: A_TRACK, MusicianSetting.CHORDS_FROM: A_TRACK})
+        self.assertEqual(bass.get_musician(), own)
         self.assertEqual(WizardChoices.from_data(choices.to_data()).player(THE_BASS).get_musician(), own)
-        made = made_song(choices).get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=choices.player(THE_BASS).musician_name())
+        made = made_song(choices).get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=bass.musician_name())
         self.assertEqual(made.get_own(MusicianSetting.LOUDNESS), schema.LOUDEST)
         self.assertEqual(made.get_tune_from(), usual.get(MusicianSetting.TUNE_FROM))
         self.assertIsNone(made.get_chords_from())
-        choices.player(THE_BASS).set_musician(settings=None)
-        self.assertIsNone(choices.player(THE_BASS).get_musician())
-        self.assertEqual(made_song(choices).get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=choices.player(THE_BASS).musician_name()).to_data(), usual)
+        bass.set_musician(settings=None)
+        self.assertIsNone(bass.get_musician())
+        self.assertEqual(made_song(choices).get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=bass.musician_name()).to_data(), usual)
 
     def test_settings_no_musician_has_are_refused_and_nothing_changes(self):
         choices = chosen()
+        bass = choices.player(THE_BASS)
         for wrong in ({MusicianSetting.ACTIVITY: NOT_A_FORM}, {NOT_A_SETTING: schema.BUSY}):
             with self.assertRaises(ValueError):
-                choices.player(THE_BASS).set_musician(settings=wrong)
-        self.assertIsNone(choices.player(THE_BASS).get_musician())
+                bass.set_musician(settings=wrong)
+        self.assertIsNone(bass.get_musician())

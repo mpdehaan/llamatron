@@ -106,7 +106,9 @@ class WizardTest(UITest):
     def hook_picture(self):
         """The Hooks panel's picture as the page draws it: the whole section that says the hook, with the hook's bars in a frame."""
         choices = self.choices()
-        return [line.plain.strip() for line in self.wizard().branch().remarks(A_WIDE_PANEL)], picture_of(hook=choices.get_hook().hook_section_notes(), width=A_WIDE_PANEL, lit=choices.get_hook().hook_bars())
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        return [line.plain.strip() for line in self.wizard().branch().remarks(A_WIDE_PANEL)], picture_of(hook=hook.hook_section_notes(), width=A_WIDE_PANEL, lit=hook.hook_bars())
 
     async def choose_genre_and_subgenre(self):
         """Choose the first genre and its first subgenre, each with ] (inc) from nothing chosen on its panel, and go back to the tree."""
@@ -328,17 +330,19 @@ class TestWizardPage(WizardTest):
     async def test_the_meter_is_shown_and_stepping_the_length_chooses_a_longer_or_a_shorter_form(self):
         await self.choose_genre_and_subgenre()
         choices = self.choices()
+        form_choices = choices.get_song_form()
+        song_form = form_choices
         self.assertIn(choices.meter(), self.text())
-        self.assertIn(clock(choices.get_song_form().form_seconds()), self.text())
-        forms = choices.get_song_form().forms_by_length()
+        self.assertIn(clock(song_form.form_seconds()), self.text())
+        forms = song_form.forms_by_length()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_LENGTH_LABEL)
         back = key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)
         await self.press(*[back] * len(forms))
-        self.assertEqual(choices.get_song_form().get_form(), forms[0])
+        self.assertEqual(song_form.get_form(), forms[0])
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.get_song_form().get_form(), forms[1])
-        self.assertIn(clock(choices.get_song_form().form_seconds()), self.text())
+        self.assertEqual(song_form.get_form(), forms[1])
+        self.assertIn(clock(song_form.form_seconds()), self.text())
         # The meter is the subgenre's, so its field does nothing.
         await self.select_field(labels_text.MSG_WIZARD_METER_LABEL)
         before = choices.to_data()
@@ -370,7 +374,9 @@ class TestWizardPage(WizardTest):
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         choices = self.choices()
-        sections = choices.get_song_form().form_sections()
+        form_choices = choices.get_song_form()
+        song_form = form_choices
+        sections = song_form.form_sections()
         text = self.text()
         self.assertIn(labels_text.MSG_WIZARD_FORM_LABEL, text)
         # The Form branch starts open, so that the sections show themselves.
@@ -397,22 +403,24 @@ class TestWizardPage(WizardTest):
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         choices = self.choices()
-        forms = choices.get_song_form().forms()
+        form_choices = choices.get_song_form()
+        song_form = form_choices
+        forms = song_form.forms()
         self.assertGreater(len(forms), 1)
-        self.assertEqual(choices.get_song_form().get_form(), forms[0])
+        self.assertEqual(song_form.get_form(), forms[0])
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_SUGGESTED_FORM_BUTTON)
         # No key steps the form, which only the dialog changes.
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET), Key.RIGHT, Key.DOWN)
-        self.assertEqual(choices.get_song_form().get_form(), forms[0])
+        self.assertEqual(song_form.get_form(), forms[0])
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         for form in forms:
-            self.assertIn(marks.MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=choices.get_song_form().form_section_count(form), length=clock(choices.get_song_form().form_seconds(form=form))), self.text())
+            self.assertIn(marks.MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=song_form.form_section_count(form), length=clock(song_form.form_seconds(form=form))), self.text())
         await self.press(Key.ESCAPE)
-        self.assertEqual(choices.get_song_form().get_form(), forms[0])
+        self.assertEqual(song_form.get_form(), forms[0])
         await self.press(Key.ENTER, Key.DOWN, Key.ENTER)
-        self.assertEqual(choices.get_song_form().get_form(), forms[1])
+        self.assertEqual(song_form.get_form(), forms[1])
 
     async def test_create_refuses_until_a_genre_and_a_subgenre_are_chosen(self):
         before = self.document.get_setlist().to_data()
@@ -510,41 +518,49 @@ class TestWizardBand(WizardTest):
     async def test_the_band_lists_every_player_and_opens_to_a_branch_for_each_who_is_in(self):
         await self.open_the_band()
         choices = self.choices()
-        self.assertTrue(choices.interplay().answerers())
+        interplay_choices = choices.interplay()
+        band_choices = choices.get_band()
+        interplay = interplay_choices
+        band = band_choices
+        self.assertTrue(interplay.answerers())
         self.assertEqual([field.label for field in self.wizard().fields()],
-                         [labels_text.MSG_WIZARD_SOUNDS_LABEL, labels_text.MSG_WIZARD_TUNE_LABEL, labels_text.MSG_WIZARD_ANSWERED_BY_LABEL, *(choices.player(role).title() for role in choices.get_band().roles() if choices.player(role).can_play())])
+                         [labels_text.MSG_WIZARD_SOUNDS_LABEL, labels_text.MSG_WIZARD_TUNE_LABEL, labels_text.MSG_WIZARD_ANSWERED_BY_LABEL, *(choices.player(role).title() for role in band.roles() if choices.player(role).can_play())])
         # The Band starts open: Left closes it and Right opens it to a branch for each player who is in.
         rows = len(self.wizard().rows())
         await self.press(Key.LEFT)
-        self.assertEqual(len(self.wizard().rows()), rows - len(choices.get_band().roles_in()))
+        self.assertEqual(len(self.wizard().rows()), rows - len(band.roles_in()))
         await self.press(Key.RIGHT)
         self.assertEqual(len(self.wizard().rows()), rows)
         await self.press(Key.DOWN)
-        self.assertEqual(self.wizard().branch().name(), choices.player(choices.get_band().roles_in()[0]).title())
+        self.assertEqual(self.wizard().branch().name(), choices.player(band.roles_in()[0]).title())
 
     async def test_a_toggle_leaves_a_player_out_and_puts_the_player_back_and_the_last_player_stays(self):
         await self.open_the_band()
         choices = self.choices()
-        players = choices.get_band().roles_in()
+        band_choices = choices.get_band()
+        band = band_choices
+        players = band.roles_in()
         await self.press(Key.RIGHT, keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(choices.player(players[0]).title())
         await self.press(Key.SPACE)
-        self.assertEqual(choices.get_band().roles_in(), players[1:])
+        self.assertEqual(band.roles_in(), players[1:])
         self.assertNotIn(choices.player(players[0]).title(), [branch.name() for _, branch in self.wizard().rows()])
         await self.press(Key.ENTER)
-        self.assertEqual(choices.get_band().roles_in(), players)
+        self.assertEqual(band.roles_in(), players)
         for player in players[:-1]:
             await self.select_field(choices.player(player).title())
             await self.press(Key.SPACE)
         await self.select_field(choices.player(players[-1]).title())
         await self.press(Key.SPACE)
-        self.assertEqual(choices.get_band().roles_in(), players[-1:])
+        self.assertEqual(band.roles_in(), players[-1:])
         self.assertIn(errors.ERR_WIZARD_LAST_PLAYER, self.text())
 
     async def test_a_players_own_gauges_show_under_busy_and_one_moved_makes_the_player_custom_until_busy_is_chosen_again(self):
         await self.choose_genre_and_subgenre()
         choices = self.choices()
-        player = next(role for role in choices.get_band().roles_in() if choices.player(role).has_busy() and choices.player(role).gauges())
+        band_choices = choices.get_band()
+        band = band_choices
+        player = next(role for role in band.roles_in() if choices.player(role).has_busy() and choices.player(role).gauges())
         await self.go_to_named_branch(choices.player(player).title())
         shown = self.text()
         for gauge in choices.player(player).gauges():
@@ -567,10 +583,12 @@ class TestWizardBand(WizardTest):
     async def test_a_players_branch_chooses_how_the_player_plays_and_how_busy_shown_as_a_gauge(self):
         await self.open_the_band()
         choices = self.choices()
-        player = next(role for role in choices.get_band().roles_in() if choices.player(role).has_busy() and len(choices.player(role).traits()) == 1)
+        band_choices = choices.get_band()
+        band = band_choices
+        player = next(role for role in band.roles_in() if choices.player(role).has_busy() and len(choices.player(role).traits()) == 1)
         trait = choices.player(player).traits()[0]
         ways = choices.player(player).ways(trait=trait)
-        await self.press(Key.RIGHT, *[Key.DOWN] * (choices.get_band().roles_in().index(player) + 1))
+        await self.press(Key.RIGHT, *[Key.DOWN] * (band.roles_in().index(player) + 1))
         self.assertEqual(self.wizard().branch().name(), choices.player(player).title())
         text = self.text()
         self.assertIn(labels_text.MSG_WIZARD_BUSY_LABEL, text)
@@ -592,9 +610,12 @@ class TestWizardBand(WizardTest):
     async def test_the_song_made_has_the_band_chosen(self):
         await self.open_the_band()
         choices = self.choices()
-        out = choices.get_band().roles_in()[0]
+        band_choices = choices.get_band()
+        band = band_choices
+        out = band.roles_in()[0]
+        player = choices.player(out)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(choices.player(out).title())
+        await self.select_field(player.title())
         await self.press(Key.SPACE, keybindings.WizardPage.TO_TREE)
         await self.create()
         self.assertNotIn(out, self.document.song().get_track_names())
@@ -609,42 +630,52 @@ class TestWizardSounds(WizardTest):
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
         choices = self.choices()
-        role = [role for role in choices.get_band().roles_in() if choices.get_sounds().has_sound(role)][0]
-        await self.press(Key.RIGHT, *[Key.DOWN] * (choices.get_band().roles_in().index(role) + 1))
+        sound_choices = choices.get_sounds()
+        band_choices = choices.get_band()
+        sounds = sound_choices
+        band = band_choices
+        role = [role for role in band.roles_in() if sounds.has_sound(role)][0]
+        await self.press(Key.RIGHT, *[Key.DOWN] * (band.roles_in().index(role) + 1))
         return role
 
     async def test_the_bands_sounds_are_stepped_and_a_player_shows_the_bands_sound_as_the_bands(self):
         role = await self.open_a_player()
         choices = self.choices()
-        self.assertIn(marks.MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=choices.get_sounds().sound_name(choices.get_sounds().get_sound(role))), self.text())
+        sound_choices = choices.get_sounds()
+        sounds = sound_choices
+        self.assertIn(marks.MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=sounds.sound_name(sounds.get_sound(role))), self.text())
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_SOUNDS_LABEL)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET), keybindings.WizardPage.TO_TREE)
-        self.assertEqual(choices.get_sounds().get_band_sounds(), wizard_limits.BAND_SOUNDS[1])
+        self.assertEqual(sounds.get_band_sounds(), wizard_limits.BAND_SOUNDS[1])
         self.assertEqual(wizard_limits.BAND_SOUNDS[1], wizard_limits.ACOUSTIC)
 
     async def test_a_players_sound_is_picked_from_the_genres_and_goes_back_to_the_bands(self):
         role = await self.open_a_player()
         choices = self.choices()
-        own = choices.get_sounds().genre_sounds(role)
+        sound_choices = choices.get_sounds()
+        sounds = sound_choices
+        own = sounds.genre_sounds(role)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_SOUND_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertIn(marks.MSG_WIZARD_FROM_BAND.format(sound=choices.get_sounds().sound_name(choices.get_sounds().band_sound(role))), self.text())
+        self.assertIn(marks.MSG_WIZARD_FROM_BAND.format(sound=sounds.sound_name(sounds.band_sound(role))), self.text())
         self.assertIn(labels_text.MSG_WIZARD_MORE_SOUNDS, self.text())
         await self.press(*[Key.UP] * (len(own) + 2), *[Key.DOWN] * len(own), Key.ENTER)
-        self.assertTrue(choices.get_sounds().has_own_sound(role))
-        self.assertEqual(choices.get_sounds().get_sound(role), own[-1])
-        self.assertNotIn(marks.MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=choices.get_sounds().sound_name(own[-1])), self.text())
+        self.assertTrue(sounds.has_own_sound(role))
+        self.assertEqual(sounds.get_sound(role), own[-1])
+        self.assertNotIn(marks.MSG_WIZARD_BAND_SOUND_SHOWN.format(sound=sounds.sound_name(own[-1])), self.text())
         await self.press(Key.ENTER, *[Key.UP] * (len(own) + 2), Key.ENTER)
-        self.assertFalse(choices.get_sounds().has_own_sound(role))
+        self.assertFalse(sounds.has_own_sound(role))
 
     async def test_more_sounds_opens_every_general_midi_sound_by_family_and_the_song_made_plays_the_one_picked(self):
         role = await self.open_a_player()
         choices = self.choices()
-        own = choices.get_sounds().genre_sounds(role)
+        sound_choices = choices.get_sounds()
+        sounds = sound_choices
+        own = sounds.genre_sounds(role)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_SOUND_LABEL)
         await self.press(Key.ENTER, *[Key.DOWN] * (len(own) + 2), Key.ENTER)
@@ -653,9 +684,9 @@ class TestWizardSounds(WizardTest):
         # Every family of General MIDI is offered, the last ones too, and a sound of the last can be taken.
         self.assertEqual([name for name, _ in dialog.groups], labels_text.MSG_GM_FAMILIES)
         await self.press(*[Key.DOWN] * len(labels_text.MSG_GM_FAMILIES), Key.ENTER, *[Key.DOWN] * limits.GM_FAMILY_SIZE, Key.ENTER)
-        picked = choices.get_sounds().get_sound(role)
+        picked = sounds.get_sound(role)
         self.assertEqual(picked, limits.MAX_GM_SOUND)
-        self.assertTrue(choices.get_sounds().has_own_sound(role))
+        self.assertTrue(sounds.has_own_sound(role))
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.create()
         setlist = self.document.get_setlist()
@@ -670,9 +701,10 @@ class TestWizardGuitarists(WizardTest):
         """Choose the first genre that offers one guitarist, or the first that does not, and go to the Band."""
         for genre in genre_names():
             choices = self.choices()
+            guitarists = choices.guitarists()
             choices.set_genre(genre)
             choices.set_subgenre(choices.subgenres()[0])
-            if choices.guitarists().offers_one() == offers:
+            if guitarists.offers_one() == offers:
                 break
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
         await self.press(Key.DOWN, Key.UP)
@@ -680,6 +712,9 @@ class TestWizardGuitarists(WizardTest):
     async def test_one_guitarist_is_chosen_on_the_band_and_the_two_players_show_as_one(self):
         await self.choose(offers=True)
         choices = self.choices()
+        band_choices = choices.get_band()
+        guitarists = choices.guitarists()
+        band = band_choices
         await self.press(Key.RIGHT)
         rows = len(self.wizard().rows())
         await self.press(keybindings.WizardPage.INTO_FIELDS)
@@ -687,9 +722,9 @@ class TestWizardGuitarists(WizardTest):
         # The count is shown as a number, and [ (dec) steps from 2 to 1.
         self.assertEqual(str(self.wizard().field().value()), str(wizard_limits.TWO_GUITARISTS))
         await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET), keybindings.WizardPage.TO_TREE)
-        self.assertEqual(choices.guitarists().get_count(), wizard_limits.ONE_GUITARIST_COUNT)
+        self.assertEqual(guitarists.get_count(), wizard_limits.ONE_GUITARIST_COUNT)
         self.assertEqual(len(self.wizard().rows()), rows - 1)
-        self.assertEqual([field.label for field in self.wizard().fields()][2:], [choices.player(role).title() for role in choices.get_band().roles_shown() if choices.player(role).can_play()])
+        self.assertEqual([field.label for field in self.wizard().fields()][2:], [choices.player(role).title() for role in band.roles_shown() if choices.player(role).can_play()])
         await self.create()
         self.assertIsInstance(self.app.screen, ArrangePage)
 
@@ -706,52 +741,65 @@ class TestWizardKit(WizardTest):
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
         choices = self.choices()
-        await self.press(Key.RIGHT, *[Key.DOWN] * len([role for role in choices.get_band().roles_in() if role in choices.get_band().roles_shown()]))
-        self.assertFalse(choices.get_sounds().has_sound(choices.get_band().roles_in()[-1]))
+        sound_choices = choices.get_sounds()
+        band_choices = choices.get_band()
+        sounds = sound_choices
+        band = band_choices
+        await self.press(Key.RIGHT, *[Key.DOWN] * len([role for role in band.roles_in() if role in band.roles_shown()]))
+        self.assertFalse(sounds.has_sound(band.roles_in()[-1]))
 
     async def test_a_piece_is_switched_off_and_on_and_the_last_piece_stays(self):
         await self.open_the_drums()
         choices = self.choices()
-        pieces = choices.get_kit().pieces()
+        kit_choices = choices.get_kit()
+        kit = kit_choices
+        pieces = kit.pieces()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=pieces[0]))
         await self.press(Key.SPACE)
-        self.assertFalse(choices.get_kit().piece_is_on(pieces[0]))
+        self.assertFalse(kit.piece_is_on(pieces[0]))
         await self.press(Key.SPACE)
-        self.assertTrue(choices.get_kit().piece_is_on(pieces[0]))
+        self.assertTrue(kit.piece_is_on(pieces[0]))
         for piece in pieces:
             await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=piece))
             await self.press(Key.SPACE)
-        self.assertTrue(choices.get_kit().piece_is_on(pieces[-1]))
+        self.assertTrue(kit.piece_is_on(pieces[-1]))
         self.assertIn(errors.ERR_WIZARD_LAST_PIECE, self.text())
 
     async def test_a_break_is_chosen_on_the_drums_branch_and_takes_the_place_of_the_drums_other_ways(self):
         await self.open_the_drums()
         choices = self.choices()
-        drums = choices.get_band().roles_in()[-1]
-        self.assertEqual(choices.get_kit().breaks(), break_names())
-        before = choices.player(drums).traits()
+        band_choices = choices.get_band()
+        kit_choices = choices.get_kit()
+        band = band_choices
+        kit = kit_choices
+        drums = band.roles_in()[-1]
+        player = choices.player(drums)
+        self.assertEqual(kit.breaks(), break_names())
+        before = player.traits()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_BREAK_LABEL)
         self.assertEqual(self.wizard().field().value(), labels_text.MSG_WIZARD_NO_BREAK)
         self.assertNotIn(labels_text.MSG_WIZARD_BREAK_CUT_LABEL, self.text())
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertIsNotNone(choices.get_kit().get_break())
-        self.assertIn(choices.get_kit().get_break(), self.text())
-        self.assertLess(len(choices.player(drums).traits()), len(before))
+        self.assertIsNotNone(kit.get_break())
+        self.assertIn(kit.get_break(), self.text())
+        self.assertLess(len(player.traits()), len(before))
         # How far the break is cut up shows under a break chosen: a gauge that is empty for the break as written.
         await self.select_field(labels_text.MSG_WIZARD_BREAK_CUT_LABEL)
         self.assertNotIn(marks.MSG_WIZARD_GAUGE_FULL, self.wizard().field().value())
         await self.press(*[key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)] * wizard_names.MOST_CUT)
-        self.assertEqual(choices.get_kit().get_break_cut(), wizard_names.MOST_CUT)
+        self.assertEqual(kit.get_break_cut(), wizard_names.MOST_CUT)
         self.assertNotIn(marks.MSG_WIZARD_GAUGE_EMPTY, self.wizard().field().value())
         await self.press(*[key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)] * wizard_names.MOST_CUT)
-        self.assertEqual(choices.get_kit().get_break_cut(), wizard_names.LEAST_CUT)
+        self.assertEqual(kit.get_break_cut(), wizard_names.LEAST_CUT)
 
     async def test_a_piece_is_a_row_of_two_cells_and_left_and_right_move_between_them(self):
         await self.open_the_drums()
         choices = self.choices()
-        piece = choices.get_kit().pieces()[0]
+        kit_choices = choices.get_kit()
+        kit = kit_choices
+        piece = kit.pieces()[0]
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=piece))
         wizard = self.wizard()
@@ -760,14 +808,14 @@ class TestWizardKit(WizardTest):
         await self.press(Key.LEFT)
         self.assertEqual(wizard.cell, 0)
         await self.press(Key.SPACE)
-        self.assertFalse(choices.get_kit().piece_is_on(piece))
+        self.assertFalse(kit.piece_is_on(piece))
         await self.press(Key.SPACE)
-        self.assertTrue(choices.get_kit().piece_is_on(piece))
+        self.assertTrue(kit.piece_is_on(piece))
         # Right moves to the sound, steps nothing, and stays at the last cell; Left moves back.
         await self.press(Key.RIGHT, Key.RIGHT)
         self.assertEqual(wizard.cell, 1)
         self.assertEqual(wizard.cell_field().enter_what, legends.What.CHOOSE)
-        self.assertTrue(choices.get_kit().piece_is_on(piece))
+        self.assertTrue(kit.piece_is_on(piece))
         await self.press(Key.LEFT)
         self.assertEqual(wizard.cell, 0)
         # Another row is come to at its first cell again.
@@ -777,7 +825,9 @@ class TestWizardKit(WizardTest):
     async def test_a_piece_takes_another_drum_or_a_general_midi_sound_on_the_note_of_the_pickers_note_row(self):
         await self.open_the_drums()
         choices = self.choices()
-        piece = choices.get_kit().pieces()[0]
+        kit_choices = choices.get_kit()
+        kit = kit_choices
+        piece = kit.pieces()[0]
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=piece))
         wizard = self.wizard()
@@ -789,13 +839,13 @@ class TestWizardKit(WizardTest):
         self.assertNotIn(piece, [drum for _, drum in dialog.groups[0][1]])
         self.assertIn(marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(wizard_limits.USUAL_PIECE_NOTE)), self.text())
         await self.press(Key.DOWN, Key.ENTER, Key.ENTER)
-        drum = choices.get_kit().piece_sound(piece)
-        self.assertIn(drum, choices.get_kit().drums())
+        drum = kit.piece_sound(piece)
+        self.assertIn(drum, kit.drums())
         self.assertEqual(wizard.cell_field().value(), marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum))
         # A General MIDI sound plays the note of the picker's Note row, stepped there, and the cell shows both.
         await self.press(Key.ENTER, *[Key.DOWN] * (len(labels_text.MSG_GM_FAMILIES) + 1), key_of(binding=keybindings.SoundDialog.NOTE_LESS, key=Key.LEFT_BRACKET))
         await self.press(*[Key.UP] * len(labels_text.MSG_GM_FAMILIES), Key.ENTER, Key.ENTER)
-        self.assertEqual((choices.get_kit().piece_sound(piece), choices.get_kit().piece_note(piece)), (limits.MIN_GM_SOUND, wizard_limits.USUAL_PIECE_NOTE - 1))
+        self.assertEqual((kit.piece_sound(piece), kit.piece_note(piece)), (limits.MIN_GM_SOUND, wizard_limits.USUAL_PIECE_NOTE - 1))
         self.assertEqual(wizard.cell_field().value(), marks.MSG_WIZARD_SOUND_ON_NOTE.format(sound=labels_text.MSG_GM_SOUNDS[0], note=note_shown(wizard_limits.USUAL_PIECE_NOTE - 1)))
         # A note typed on the Note row and taken there keeps the sound and changes the note.
         await self.press(Key.ENTER, *[Key.DOWN] * (len(labels_text.MSG_GM_FAMILIES) + 2))
@@ -803,48 +853,52 @@ class TestWizardKit(WizardTest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, SoundDialog)
         await self.press(Key.ENTER)
-        self.assertEqual((choices.get_kit().piece_sound(piece), choices.get_kit().piece_note(piece)), (limits.MIN_GM_SOUND, note_typed(A_NOTE_TYPED)))
+        self.assertEqual((kit.piece_sound(piece), kit.piece_note(piece)), (limits.MIN_GM_SOUND, note_typed(A_NOTE_TYPED)))
         # Bksp on the sound's cell gives the piece its own drum back, and is offered only while the piece has another sound.
         await self.press(keybindings.WizardPage.CLEAR)
-        self.assertIsNone(choices.get_kit().piece_sound(piece))
+        self.assertIsNone(kit.piece_sound(piece))
         self.assertIsNone(wizard.cell_field().clear)
 
     async def test_a_piece_given_a_kit_drum_again_drops_its_note_from_the_row_and_from_the_song(self):
         await self.open_the_drums()
         choices = self.choices()
-        piece = choices.get_kit().pieces()[0]
-        choices.get_kit().set_piece_sound(piece=piece, sound=limits.MIN_GM_SOUND)
-        choices.get_kit().set_piece_note(piece=piece, note=note_typed(A_NOTE_TYPED))
+        kit_choices = choices.get_kit()
+        kit = kit_choices
+        piece = kit.pieces()[0]
+        kit.set_piece_sound(piece=piece, sound=limits.MIN_GM_SOUND)
+        kit.set_piece_note(piece=piece, note=note_typed(A_NOTE_TYPED))
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_KIT_PIECE.format(piece=piece))
         await self.press(Key.RIGHT)
         self.assertIn(note_shown(note_typed(A_NOTE_TYPED)), self.wizard().cell_field().value())
         # A drum of the kit taken with a note on the Note row: the note is not used, and the row shows the drum alone.
         await self.press(Key.ENTER, *[Key.UP] * (len(labels_text.MSG_GM_FAMILIES) + 2), Key.DOWN, Key.ENTER, Key.ENTER)
-        drum = choices.get_kit().piece_sound(piece)
-        self.assertIn(drum, choices.get_kit().drums())
-        self.assertIsNone(choices.get_kit().piece_note(piece))
+        drum = kit.piece_sound(piece)
+        self.assertIn(drum, kit.drums())
+        self.assertIsNone(kit.piece_note(piece))
         self.assertEqual(self.wizard().cell_field().value(), marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum))
         self.assertNotIn(wizard_text.MSG_PIECE_INSTRUMENT.format(piece), choices.made_setlist(name=A_SONG_NAME, version=version.VERSION).to_data()[Section.INSTRUMENTS])
         # ENTER on the Note row then keeps the drum, and so does the piece's own drum.
         await self.press(Key.ENTER, *[Key.DOWN] * (len(labels_text.MSG_GM_FAMILIES) + 2), Key.ENTER)
-        self.assertEqual((choices.get_kit().piece_sound(piece), choices.get_kit().piece_note(piece)), (drum, None))
+        self.assertEqual((kit.piece_sound(piece), kit.piece_note(piece)), (drum, None))
         await self.press(Key.ENTER, *[Key.UP] * (len(labels_text.MSG_GM_FAMILIES) + 2), Key.ENTER)
-        self.assertEqual((choices.get_kit().piece_sound(piece), choices.get_kit().piece_note(piece)), (None, None))
+        self.assertEqual((kit.piece_sound(piece), kit.piece_note(piece)), (None, None))
         self.assertEqual(self.wizard().cell_field().value(), marks.MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece))
 
     async def test_how_often_fills_come_is_a_gauge_that_is_empty_at_never(self):
         await self.open_the_drums()
         choices = self.choices()
+        kit_choices = choices.get_kit()
+        kit = kit_choices
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_DRUM_FILLS_LABEL)
         await self.press(*[key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)] * wizard_limits.MOST_FILLS)
-        self.assertEqual(choices.get_kit().get_fills(), wizard_limits.FEWEST_FILLS)
+        self.assertEqual(kit.get_fills(), wizard_limits.FEWEST_FILLS)
         shown = self.wizard().field().value()
         self.assertIn(labels_text.MSG_WIZARD_FILLS_COME[0], shown)
         self.assertNotIn(marks.MSG_WIZARD_GAUGE_FULL, shown)
         await self.press(*[key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)] * wizard_limits.MOST_FILLS)
-        self.assertEqual(choices.get_kit().get_fills(), wizard_limits.MOST_FILLS)
+        self.assertEqual(kit.get_fills(), wizard_limits.MOST_FILLS)
         shown = self.wizard().field().value()
         self.assertIn(labels_text.MSG_WIZARD_FILLS_COME[-1], shown)
         self.assertNotIn(marks.MSG_WIZARD_GAUGE_EMPTY, shown)
@@ -852,26 +906,35 @@ class TestWizardKit(WizardTest):
     async def test_quiet_notes_show_only_for_a_groove_that_has_them_and_are_switched_off(self):
         await self.open_the_drums()
         choices = self.choices()
-        drums = choices.get_band().roles_in()[-1]
-        with_them = [(trait, way) for trait in choices.player(drums).traits() for way in choices.player(drums).ways(trait=trait) if self.has_quiet_notes_with(trait=trait, way=way)]
-        without = [(trait, way) for trait in choices.player(drums).traits() for way in choices.player(drums).ways(trait=trait) if not self.has_quiet_notes_with(trait=trait, way=way)]
+        band_choices = choices.get_band()
+        kit_choices = choices.get_kit()
+        band = band_choices
+        kit = kit_choices
+        drums = band.roles_in()[-1]
+        player = choices.player(drums)
+        with_them = [(trait, way) for trait in player.traits() for way in player.ways(trait=trait) if self.has_quiet_notes_with(trait=trait, way=way)]
+        without = [(trait, way) for trait in player.traits() for way in player.ways(trait=trait) if not self.has_quiet_notes_with(trait=trait, way=way)]
         if without:
-            choices.get_band().set_way(trait=without[0][0], value=without[0][1])
-        if not choices.get_kit().has_quiet_notes():
+            band.set_way(trait=without[0][0], value=without[0][1])
+        if not kit.has_quiet_notes():
             await self.press(Key.UP, Key.DOWN)
             self.assertNotIn(labels_text.MSG_WIZARD_QUIET_NOTES_LABEL, self.text())
-        choices.get_band().set_way(trait=with_them[0][0], value=with_them[0][1])
+        band.set_way(trait=with_them[0][0], value=with_them[0][1])
         await self.press(Key.UP, Key.DOWN, keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_QUIET_NOTES_LABEL)
         await self.press(Key.SPACE)
-        self.assertFalse(choices.get_kit().plays_quiet_notes())
+        self.assertFalse(kit.plays_quiet_notes())
         # The toggle stays while the quiet notes are off, so that they can be switched on again.
         self.assertIn(labels_text.MSG_WIZARD_QUIET_NOTES_LABEL, self.text())
 
     def has_quiet_notes_with(self, *, trait, way):
         choices = self.choices().__class__.from_data(self.choices().to_data())
-        choices.get_band().set_way(trait=trait, value=way)
-        return choices.get_kit().has_quiet_notes()
+        band_choices = choices.get_band()
+        kit_choices = choices.get_kit()
+        band = band_choices
+        kit = kit_choices
+        band.set_way(trait=trait, value=way)
+        return kit.has_quiet_notes()
 
 class TestWizardForm(WizardTest):
     """The Form branch: the sections as branches, added, copied, removed and moved with a list's keys, and each section's settings."""
@@ -1028,47 +1091,60 @@ class TestWizardInterplay(WizardTest):
 
     async def open_rock(self):
         choices = self.choices()
+        interplay_choices = choices.interplay()
+        interplay = interplay_choices
         choices.set_genre(A_GENRE_WITH_RHYTHMS)
         choices.set_subgenre(choices.subgenres()[0])
         await self.press(Key.DOWN, Key.UP)
-        self.assertIsNotNone(choices.interplay().answered_by())
+        self.assertIsNotNone(interplay.answered_by())
 
     async def test_the_band_shows_who_has_the_tune_and_nobody_can_be_made_to_answer(self):
         await self.open_rock()
         choices = self.choices()
-        answering = choices.interplay().answered_by()
+        band_choices = choices.get_band()
+        interplay_choices = choices.interplay()
+        band = band_choices
+        interplay = interplay_choices
+        answering = interplay.answered_by()
+        player = choices.player(answering)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_TUNE_LABEL)
-        self.assertEqual(self.wizard().field().value(), choices.player(choices.get_band().tune_player()).title())
+        self.assertEqual(self.wizard().field().value(), choices.player(band.tune_player()).title())
         await self.select_field(labels_text.MSG_WIZARD_ANSWERED_BY_LABEL)
-        self.assertEqual(self.wizard().field().value(), choices.player(answering).title())
+        self.assertEqual(self.wizard().field().value(), player.title())
         await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET))
-        self.assertIsNone(choices.interplay().answered_by())
+        self.assertIsNone(interplay.answered_by())
         self.assertEqual(self.wizard().field().value(), labels_text.MSG_WIZARD_NOBODY)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.interplay().answered_by(), answering)
+        self.assertEqual(interplay.answered_by(), answering)
 
     async def open_the_answering_player(self):
         await self.open_rock()
         choices = self.choices()
+        band_choices = choices.get_band()
+        interplay_choices = choices.interplay()
+        band = band_choices
+        interplay = interplay_choices
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
-        shown = [role for role in choices.get_band().roles_in() if role in choices.get_band().roles_shown()]
-        await self.press(Key.RIGHT, *[Key.DOWN] * (shown.index(choices.interplay().answered_by()) + 1), keybindings.WizardPage.INTO_FIELDS)
+        shown = [role for role in band.roles_in() if role in band.roles_shown()]
+        await self.press(Key.RIGHT, *[Key.DOWN] * (shown.index(interplay.answered_by()) + 1), keybindings.WizardPage.INTO_FIELDS)
 
     async def test_the_answering_player_has_a_role_by_section_or_one_for_every_section_and_fills_busy(self):
         await self.open_the_answering_player()
         choices = self.choices()
+        interplay_choices = choices.interplay()
+        interplay = interplay_choices
         await self.select_field(labels_text.MSG_WIZARD_ROLE_LABEL)
         self.assertEqual(self.wizard().field().value(), labels_text.MSG_WIZARD_BY_SECTION)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.interplay().get_role_plan(), choices.interplay().ways_beside()[0])
+        self.assertEqual(interplay.get_role_plan(), interplay.ways_beside()[0])
         await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET))
-        self.assertIsNone(choices.interplay().get_role_plan())
+        self.assertIsNone(interplay.get_role_plan())
         await self.select_field(labels_text.MSG_WIZARD_FILLS_BUSY_LABEL)
-        busy = choices.interplay().get_fills_busy()
+        busy = interplay.get_fills_busy()
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.interplay().get_fills_busy(), busy + 1)
+        self.assertEqual(interplay.get_fills_busy(), busy + 1)
         self.assertIn(str(busy + 1), self.wizard().field().value())
 
     async def test_a_player_who_answers_nobody_has_neither_field(self):
@@ -1082,8 +1158,12 @@ class TestWizardInterplay(WizardTest):
     async def test_a_section_shows_the_plans_role_takes_its_own_and_bksp_gives_it_back_to_the_plan(self):
         await self.open_rock()
         choices = self.choices()
-        place = next(place for place in range(len(choices.get_song_form().section_labels())) if choices.section(place).has_role())
-        label = labels_text.MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.player(choices.interplay().answered_by()).title())
+        interplay_choices = choices.interplay()
+        form_choices = choices.get_song_form()
+        interplay = interplay_choices
+        song_form = form_choices
+        place = next(place for place in range(len(song_form.section_labels())) if choices.section(place).has_role())
+        label = labels_text.MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.player(interplay.answered_by()).title())
         planned = choices.section(place).role()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         await self.press(Key.RIGHT, *[Key.DOWN] * (place + 1), keybindings.WizardPage.INTO_FIELDS)
@@ -1091,13 +1171,13 @@ class TestWizardInterplay(WizardTest):
         self.assertEqual(self.wizard().field().value(), marks.MSG_WIZARD_ROLE_FROM_PLAN.format(way=planned))
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertTrue(choices.section(place).has_own_role())
-        self.assertEqual(choices.section(place).role(), choices.interplay().ways_beside()[0])
-        self.assertEqual(self.wizard().field().value(), choices.interplay().ways_beside()[0])
+        self.assertEqual(choices.section(place).role(), interplay.ways_beside()[0])
+        self.assertEqual(self.wizard().field().value(), interplay.ways_beside()[0])
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertFalse(choices.section(place).has_own_role())
         self.assertEqual(self.wizard().field().value(), marks.MSG_WIZARD_ROLE_FROM_PLAN.format(way=planned))
         # A section nobody has the tune in has no such field.
-        without = next(place for place in range(len(choices.get_song_form().section_labels())) if not choices.section(place).has_role())
+        without = next(place for place in range(len(song_form.section_labels())) if not choices.section(place).has_role())
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         await self.press(*[Key.DOWN] * (without + 1), keybindings.WizardPage.INTO_FIELDS)
@@ -1109,11 +1189,14 @@ class TestWizardPlayerRows(WizardTest):
 
     async def serial(self):
         choices = self.choices()
+        band_choices = choices.get_band()
+        melody_choices = choices.melody()
+        band = band_choices
         choices.set_genre(A_GENRE_WITH_RHYTHMS)
         choices.set_subgenre(choices.subgenres()[0])
-        choices.melody().set_style(melody.SERIAL)
+        melody_choices.set_style(melody.SERIAL)
         await self.press(Key.DOWN, Key.UP)
-        role = next(role for role in choices.get_band().roles_in() if choices.player(role).rows())
+        role = next(role for role in band.roles_in() if choices.player(role).rows())
         await self.go_to_named_branch(choices.player(role).title())
         return choices, role
 
@@ -1249,10 +1332,12 @@ class TestWizardComposition(WizardTest):
         """A genre that has one of some song traits with several ways."""
         for genre in genre_names():
             choices = self.choices().__class__()
+            band_choices = choices.get_band()
+            band = band_choices
             choices.set_genre(genre)
             choices.set_subgenre(choices.subgenres()[0])
-            trait = choices.get_band().song_trait(traits)
-            if trait is not None and len(choices.get_band().song_ways(trait)) > 1:
+            trait = band.song_trait(traits)
+            if trait is not None and len(band.song_ways(trait)) > 1:
                 return genre
         raise AssertionError(traits)
 
@@ -1272,22 +1357,26 @@ class TestWizardComposition(WizardTest):
     async def test_the_progression_is_chosen_on_the_chords_branch(self):
         await self.choose(genre=self.a_genre_with(wizard_limits.PROGRESSION_TRAITS))
         choices = self.choices()
-        trait = choices.get_band().song_trait(wizard_limits.PROGRESSION_TRAITS)
-        ways = choices.get_band().song_ways(trait)
-        choices.get_band().set_way(trait=trait, value=ways[0])
+        band_choices = choices.get_band()
+        band = band_choices
+        trait = band.song_trait(wizard_limits.PROGRESSION_TRAITS)
+        ways = band.song_ways(trait)
+        band.set_way(trait=trait, value=ways[0])
         await self.go_to_named_branch(labels_text.MSG_WIZARD_CHORDS_BRANCH)
         self.assertIn(ways[0], self.text())
         await self.step(labels_text.MSG_WIZARD_PROGRESSION_LABEL)
-        self.assertEqual(choices.get_band().get_way(trait), ways[1])
+        self.assertEqual(band.get_way(trait), ways[1])
 
     async def test_a_progression_shows_its_numerals_and_each_kind_of_sections_chords_in_the_songs_key(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
+        band_choices = choices.get_band()
+        band = band_choices
         choices.set_root(A_ROOT)
         choices.set_scale_type(wizard_limits.MAJOR)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_CHORDS_BRANCH)
         self.assertIn(messages.MSG_WIZARD_CHORDS_DRAWN_LATER, self.text())
-        choices.get_band().set_way(trait=choices.progression_trait(), value=A_PROGRESSION)
+        band.set_way(trait=choices.progression_trait(), value=A_PROGRESSION)
         await self.press(Key.DOWN, Key.UP)
         shown = self.text()
         self.assertNotIn(messages.MSG_WIZARD_CHORDS_DRAWN_LATER, shown)
@@ -1298,7 +1387,7 @@ class TestWizardComposition(WizardTest):
         self.assertNotIn(A_HELD_KIND, kinds)
         width = max(len(kind) for kind in kinds)
         self.assertIn(marks.MSG_WIZARD_CHORDS_LINE.format(kind=A_VERSE, width=width, chords=ITS_VERSE_CHORDS), shown)
-        choices.get_band().set_way(trait=choices.progression_trait(), value=A_PLAIN_PROGRESSION)
+        band.set_way(trait=choices.progression_trait(), value=A_PLAIN_PROGRESSION)
         choices.set_scale_type(wizard_limits.MINOR)
         await self.press(Key.DOWN, Key.UP)
         self.assertIn(marks.MSG_WIZARD_CHORDS_LINE.format(kind=A_VERSE, width=width, chords=ITS_VERSE_CHORDS_IN_MINOR), self.text())
@@ -1318,16 +1407,17 @@ class TestWizardComposition(WizardTest):
     async def test_the_hooks_panel_draws_the_hook_the_song_made_will_have(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
+        hook_choices = choices.get_hook()
         await self.go_to_hook_panel()
-        hook = choices.get_hook().hook_notes()
+        hook = hook_choices.hook_notes()
         shown = self.text()
         drawn, picture = self.hook_picture()
         for line in picture:
             self.assertIn(line.strip(), drawn)
         # The section's notes hold the hook's, in the hook's bars.
-        first = choices.get_hook().hook_bars()[0]
+        first = hook_choices.hook_bars()[0]
         start = (first - 1) * hook[1]
-        self.assertEqual([note for note in choices.get_hook().hook_section_notes()[2] if start <= note[0] < start + hook[0]], [(start + at, length, pitch) for at, length, pitch in hook[2]])
+        self.assertEqual([note for note in hook_choices.hook_section_notes()[2] if start <= note[0] < start + hook[0]], [(start + at, length, pitch) for at, length, pitch in hook[2]])
         self.assertIn(messages.MSG_WIZARD_HOOK_MADE, shown)
         for _, _, pitch in hook[2]:
             self.assertIn(note_shown(pitch), shown)
@@ -1337,17 +1427,19 @@ class TestWizardComposition(WizardTest):
     async def test_regenerate_writes_another_hook_and_the_picture_goes_with_the_hook(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
+        hook_choices = choices.get_hook()
+        hook = hook_choices
         await self.go_to_hook_panel()
-        first = choices.get_hook().hook_notes()
+        first = hook.hook_notes()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
-        self.assertNotEqual(choices.get_hook().hook_notes(), first)
+        self.assertNotEqual(hook.hook_notes(), first)
         drawn, picture = self.hook_picture()
         for line in picture:
             self.assertIn(line.strip(), drawn)
         await self.press(keybindings.WizardPage.TO_TREE)
-        choices.get_hook().set_hook(False)
+        hook.set_hook(False)
         await self.press(Key.DOWN, Key.UP)
         self.assertNotIn(labels_text.MSG_WIZARD_REGENERATE_BUTTON, self.text())
 
@@ -1369,9 +1461,11 @@ class TestWizardComposition(WizardTest):
     async def test_the_hooks_picture_goes_with_the_hook(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
+        hook_choices = choices.get_hook()
+        hook = hook_choices
         await self.go_to_hook_panel()
         self.assertIn(marks.MSG_WIZARD_HOOK_CELL, self.text())
-        choices.get_hook().set_hook(False)
+        hook.set_hook(False)
         await self.press(Key.DOWN, Key.UP)
         self.assertNotIn(marks.MSG_WIZARD_HOOK_CELL, self.text())
 
@@ -1389,20 +1483,24 @@ class TestWizardComposition(WizardTest):
     async def test_a_genre_with_a_hook_has_no_switch_and_a_song_without_one_is_given_it_on_the_hooks_panel(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
-        self.assertTrue(choices.get_hook().has_hook())
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        self.assertTrue(hook.has_hook())
         await self.go_to_hook_panel()
         self.assertNotIn(labels_text.MSG_WIZARD_MAIN_HOOK_LABEL, self.text())
-        choices.get_hook().set_hook(False)
+        hook.set_hook(False)
         await self.press(Key.DOWN, Key.UP)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_MAIN_HOOK_LABEL)
         await self.press(Key.SPACE)
-        self.assertTrue(choices.get_hook().has_hook())
+        self.assertTrue(hook.has_hook())
         self.assertNotIn(labels_text.MSG_WIZARD_MAIN_HOOK_LABEL, self.text())
 
     async def test_the_progression_starts_on_any_and_is_left_to_chance_again_from_the_field(self):
         await self.choose(genre=self.a_genre_with(wizard_limits.PROGRESSION_TRAITS))
         choices = self.choices()
+        band_choices = choices.get_band()
+        band = band_choices
         await self.go_to_named_branch(labels_text.MSG_WIZARD_CHORDS_BRANCH)
         self.assertTrue(choices.has_any_progression())
         await self.press(keybindings.WizardPage.INTO_FIELDS)
@@ -1410,32 +1508,36 @@ class TestWizardComposition(WizardTest):
         self.assertEqual(self.wizard().field().value(), labels_text.MSG_WIZARD_ANY_PROGRESSION)
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertFalse(choices.has_any_progression())
-        self.assertEqual(choices.get_band().get_way(choices.progression_trait()), choices.get_band().song_ways(choices.progression_trait())[0])
+        self.assertEqual(band.get_way(choices.progression_trait()), band.song_ways(choices.progression_trait())[0])
         await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET))
         self.assertTrue(choices.has_any_progression())
 
     async def test_a_progression_written_for_the_other_scale_type_says_so_and_may_still_be_chosen(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
+        band_choices = choices.get_band()
+        band = band_choices
         trait = choices.progression_trait()
-        ways = choices.get_band().song_ways(trait)
+        ways = band.song_ways(trait)
         other = next(way for way in ways if choices.progression_scale_type(way) != choices.get_scale_type())
         same = next(way for way in ways if choices.progression_scale_type(way) == choices.get_scale_type())
-        choices.get_band().set_way(trait=trait, value=other)
+        band.set_way(trait=trait, value=other)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_CHORDS_BRANCH)
         marked = marks.MSG_WIZARD_PROGRESSION_FOR.format(progression='', scale=labels_text.MSG_WIZARD_SCALE_TYPE_NAMES[choices.progression_scale_type(other)])
         self.assertIn(other, self.text())
         self.assertIn(marked, self.text())
-        choices.get_band().set_way(trait=trait, value=same)
+        band.set_way(trait=trait, value=same)
         await self.press(Key.DOWN, Key.UP)
         self.assertNotIn(marks.MSG_WIZARD_PROGRESSION_FOR.format(progression='', scale=labels_text.MSG_WIZARD_SCALE_TYPE_NAMES[choices.progression_scale_type(same)]), self.text())
 
     async def test_composition_shows_what_each_branch_under_it_is_set_to(self):
         await self.choose(genre=A_GENRE_WITH_RHYTHMS)
         choices = self.choices()
+        tune_choices = choices.get_tunes()
+        tunes = tune_choices
         await self.go_to_named_branch(labels_text.MSG_WIZARD_COMPOSITION_BRANCH)
         shown = self.text()
-        player = choices.player(choices.get_tunes().tune_played_by()).title()
+        player = choices.player(tunes.tune_played_by()).title()
         for name, value in ((labels_text.MSG_WIZARD_CHORDS_BRANCH, labels_text.MSG_WIZARD_ANY_PROGRESSION), (labels_text.MSG_WIZARD_MELODY_BRANCH, player),
                             (labels_text.MSG_WIZARD_RIFFS_BRANCH, str(len(choices.get_riffs().riff_names())))):
             self.assertIn(marks.MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=len(WIDEST_COMPOSITION_BRANCH), value=value), shown)
@@ -1467,17 +1569,23 @@ class TestWizardComposition(WizardTest):
 
     async def go_to_the_drums(self):
         choices = self.choices()
-        await self.go_to_named_branch(choices.player(next(role for role in choices.get_band().roles_in() if not choices.get_sounds().has_sound(role))).title())
+        band_choices = choices.get_band()
+        sound_choices = choices.get_sounds()
+        band = band_choices
+        sounds = sound_choices
+        await self.go_to_named_branch(choices.player(next(role for role in band.roles_in() if not sounds.has_sound(role))).title())
 
     async def test_the_fill_pattern_is_chosen_on_the_drums_branch(self):
         await self.choose(genre=self.a_genre_with(wizard_limits.FILLS_TRAITS))
         choices = self.choices()
-        trait = choices.get_band().song_trait(wizard_limits.FILLS_TRAITS)
-        ways = choices.get_band().song_ways(trait)
-        choices.get_band().set_way(trait=trait, value=ways[0])
+        band_choices = choices.get_band()
+        band = band_choices
+        trait = band.song_trait(wizard_limits.FILLS_TRAITS)
+        ways = band.song_ways(trait)
+        band.set_way(trait=trait, value=ways[0])
         await self.go_to_the_drums()
         await self.step(labels_text.MSG_WIZARD_FILLS_LABEL)
-        self.assertEqual(choices.get_band().get_way(trait), ways[1])
+        self.assertEqual(band.get_way(trait), ways[1])
 
     async def test_a_fill_pattern_with_one_way_is_not_shown(self):
         empty = [genre for genre in genre_names() if not self.fields_of(genre=genre, traits=(wizard_limits.FILLS_TRAITS,))]
@@ -1489,10 +1597,12 @@ class TestWizardComposition(WizardTest):
 
     def fields_of(self, *, genre, traits):
         choices = self.choices().__class__()
+        band_choices = choices.get_band()
+        band = band_choices
         choices.set_genre(genre)
         choices.set_subgenre(choices.subgenres()[0])
-        found = [choices.get_band().song_trait(group) for group in traits]
-        return [trait for trait in found if trait is not None and len(choices.get_band().song_ways(trait)) > 1]
+        found = [band.song_trait(group) for group in traits]
+        return [trait for trait in found if trait is not None and len(band.song_ways(trait)) > 1]
 
 
 class TestWizardStart(WizardTest):

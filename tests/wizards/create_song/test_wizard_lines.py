@@ -6,12 +6,11 @@
 
 import unittest
 
-from llamatron.model.file import version
 from llamatron.model.schema.file_format import Section
 from llamatron.wizards.create_song import line_edits, melody, notation, phrasing, wizard_limits
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support.wizard_testing import made_data
 
-A_NAME = 'made'
 A_SEED = 11
 A_GENRE = 'rock'
 A_SUBGENRE = 'arena rock'
@@ -35,7 +34,7 @@ def chosen(*, genre=A_GENRE, subgenre=A_SUBGENRE, plan=None):
 
 
 def patterns(choices):
-    return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
+    return made_data(choices)[Section.PATTERNS]
 
 
 def notes_of(choices, *, line, place=A_VERSE):
@@ -52,10 +51,14 @@ class TestWizardLines(unittest.TestCase):
 
     def test_a_section_s_lines_are_read_with_their_player_their_notes_and_whether_they_breathe(self):
         for choices in self.cases():
-            lines = choices.section(A_VERSE).lines().as_made()
+            band_choices = choices.get_band()
+            verse_section = choices.section(A_VERSE)
+            verse_section_lines = verse_section.lines()
+            band = band_choices
+            lines = verse_section_lines.as_made()
             self.assertTrue(lines)
             for line in lines:
-                self.assertEqual(line[wizard_limits.LINE_PLAYER], choices.get_band().tune_player())
+                self.assertEqual(line[wizard_limits.LINE_PLAYER], band.tune_player())
                 self.assertEqual(line_edits.steps_of(line[melody.LINE_NOTES]) % choices.tune_steps_in_bar(), 0)
                 self.assertEqual(line[wizard_limits.LINE_OWN], {})
             # The first line is a new idea, and so breathes; a line that says an idea again does not.
@@ -64,34 +67,40 @@ class TestWizardLines(unittest.TestCase):
 
     def test_a_line_s_own_breath_ends_the_line_in_that_rest_and_none_gives_the_breath_back(self):
         for choices in self.cases():
+            verse_section = choices.section(A_VERSE)
+            verse_section_lines = verse_section.lines()
             before = notes_of(choices, line=FIRST)
             usual = patterns(choices)
             eighth = choices.tune_steps_in_bar() // 8
-            choices.section(A_VERSE).lines().set_line(line=FIRST, field=phrasing.LINE_BREATH, value=A_LONG_BREATH)
+            verse_section_lines.set_line(line=FIRST, field=phrasing.LINE_BREATH, value=A_LONG_BREATH)
             self.assertEqual(notes_of(choices, line=FIRST)[-1], {notation.REST: A_LONG_BREATH * eighth})
             self.assertNotEqual(patterns(choices), usual)
-            choices.section(A_VERSE).lines().set_line(line=FIRST, field=phrasing.LINE_BREATH, value=phrasing.NO_BREATH)
+            verse_section_lines.set_line(line=FIRST, field=phrasing.LINE_BREATH, value=phrasing.NO_BREATH)
             # With no breath the line is as its writer left it, which may end in a rest of the line's own, shorter than the breath.
             self.assertLess(notes_of(choices, line=FIRST)[-1].get(notation.REST, phrasing.NO_BREATH), A_LONG_BREATH * eighth)
-            choices.section(A_VERSE).lines().set_line(line=FIRST, field=phrasing.LINE_BREATH, value=None)
+            verse_section_lines.set_line(line=FIRST, field=phrasing.LINE_BREATH, value=None)
             self.assertEqual(notes_of(choices, line=FIRST), before)
             self.assertEqual(patterns(choices), usual)
 
     def test_a_line_s_early_note_is_switched_for_the_line_alone(self):
         for choices in self.cases():
+            verse_section = choices.section(A_VERSE)
+            verse_section_lines = verse_section.lines()
             both = []
             for early in (True, False):
-                choices.section(A_VERSE).lines().set_line(line=FIRST, field=phrasing.LINE_EARLY, value=early)
-                self.assertEqual(choices.section(A_VERSE).lines().as_made()[FIRST][wizard_limits.LINE_OWN], {phrasing.LINE_EARLY: early})
+                verse_section_lines.set_line(line=FIRST, field=phrasing.LINE_EARLY, value=early)
+                self.assertEqual(verse_section_lines.as_made()[FIRST][wizard_limits.LINE_OWN], {phrasing.LINE_EARLY: early})
                 both.append(notes_of(choices, line=FIRST))
             self.assertNotEqual(both[0], both[1])
 
     def test_a_line_s_own_notes_are_the_line_and_the_idea_wherever_the_section_says_the_idea_again(self):
         for choices in self.cases():
-            lines = choices.section(A_VERSE).lines().as_made()
+            verse_section = choices.section(A_VERSE)
+            verse_section_lines = verse_section.lines()
+            lines = verse_section_lines.as_made()
             written = line_edits.moved(line=lines[FIRST][melody.LINE_NOTES], step=0, by=UP_TWO)
-            choices.section(A_VERSE).lines().set_line(line=FIRST, field=melody.LINE_NOTES, value=written)
-            after = choices.section(A_VERSE).lines().as_made()
+            verse_section_lines.set_line(line=FIRST, field=melody.LINE_NOTES, value=written)
+            after = verse_section_lines.as_made()
             self.assertEqual([line_edits.place_of(note) for note in after[FIRST][melody.LINE_NOTES] if not line_edits.is_rest(note)],
                              [line_edits.place_of(note) for note in written if not line_edits.is_rest(note)])
             self.assertFalse(after[FIRST][wizard_limits.LINE_BREATHES])
@@ -102,11 +111,13 @@ class TestWizardLines(unittest.TestCase):
             again = WizardChoices.from_data(choices.to_data())
             self.assertEqual(again.section(A_VERSE).lines().as_made(), after)
             self.assertEqual(patterns(again), patterns(choices))
-            choices.section(A_VERSE).lines().set_line(line=FIRST, field=melody.LINE_NOTES, value=None)
-            self.assertEqual(choices.section(A_VERSE).lines().as_made(), lines)
+            verse_section_lines.set_line(line=FIRST, field=melody.LINE_NOTES, value=None)
+            self.assertEqual(verse_section_lines.as_made(), lines)
 
     def test_what_a_line_cannot_take_is_refused(self):
         choices = chosen()
+        verse_section = choices.section(A_VERSE)
+        verse_section_lines = verse_section.lines()
         notes = notes_of(choices, line=FIRST)
         refused = [dict(line=NOT_A_LINE, field=phrasing.LINE_BREATH, value=1), dict(line=FIRST, field=NOT_A_FIELD, value=1), dict(line=FIRST, field=phrasing.LINE_BREATH, value=phrasing.LONGEST_BREATH + 1),
                    dict(line=FIRST, field=phrasing.LINE_BREATH, value=True), dict(line=FIRST, field=phrasing.LINE_EARLY, value=1), dict(line=FIRST, field=melody.LINE_NOTES, value=notes[:1]),
@@ -114,5 +125,5 @@ class TestWizardLines(unittest.TestCase):
         for given in refused:
             with self.subTest(given=given):
                 with self.assertRaises(ValueError):
-                    choices.section(A_VERSE).lines().set_line(**given)
+                    verse_section_lines.set_line(**given)
         self.assertEqual(notes_of(choices, line=FIRST), notes)

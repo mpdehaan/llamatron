@@ -6,13 +6,13 @@
 
 import unittest
 
-from llamatron.model.file import version
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import names, song_wizard as wizard_text
 from llamatron.wizards.create_song import riffs, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support import wizard_testing
+from tests.support.wizard_testing import made_data
 
-A_NAME = 'made'
 A_SEED = 11
 A_GENRE = 'rock'
 A_RIFF_SUBGENRE = 'hard rock'
@@ -38,7 +38,7 @@ def chosen(*, subgenre=A_PLAIN_SUBGENRE):
 
 
 def patterns(choices):
-    return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
+    return made_data(choices)[Section.PATTERNS]
 
 
 def pattern_of(*, role, riff):
@@ -113,7 +113,7 @@ class TestWizardRiffList(unittest.TestCase):
         with self.assertRaises(ValueError):
             choices.get_riffs().rename_riff(riff=other, name=A_NEW_NAME.upper())
         with self.assertRaises(ValueError):
-            choices.get_riffs().rename_riff(riff=NOT_A_RIFF, name=A_NAME)
+            choices.get_riffs().rename_riff(riff=NOT_A_RIFF, name=wizard_testing.SONG_NAME)
 
     def test_a_copy_for_another_player_is_that_players_riff_with_a_name_counted_on(self):
         choices = chosen()
@@ -202,16 +202,20 @@ class TestWizardSectionPlayers(unittest.TestCase):
 
     def test_the_melodys_player_has_the_melody_and_another_player_takes_it_in_one_kind_of_section(self):
         choices = chosen()
-        singer = choices.get_band().tune_player()
+        band_choices = choices.get_band()
+        tune_choices = choices.get_tunes()
+        band = band_choices
+        tunes = tune_choices
+        singer = band.tune_player()
         self.assertEqual(choices.section_part(kind=A_VERSE, role=singer), wizard_limits.MELODY_PART)
         taker = next(role for role in choices.section_players(A_VERSE) if role != singer and wizard_limits.MELODY_PART in choices.section_parts_offered(kind=A_VERSE, role=role))
         before = patterns(choices)
         choices.set_section_part(kind=A_VERSE, role=taker, part=wizard_limits.MELODY_PART)
-        self.assertEqual(choices.get_tunes().tune_player_in(A_VERSE), taker)
+        self.assertEqual(tunes.tune_player_in(A_VERSE), taker)
         self.assertEqual(choices.section_part(kind=A_VERSE, role=singer), wizard_limits.RESTS_PART)
         self.assertNotEqual(patterns(choices), before)
         choices.set_section_part(kind=A_VERSE, role=singer, part=wizard_limits.MELODY_PART)
-        self.assertEqual(choices.get_tunes().tune_player_in(A_VERSE), singer)
+        self.assertEqual(tunes.tune_player_in(A_VERSE), singer)
         self.assertEqual(patterns(choices), before)
 
     def test_every_kind_of_section_of_the_form_is_listed_once_and_a_song_kept_keeps_its_riffs(self):

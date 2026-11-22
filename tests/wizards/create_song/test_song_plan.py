@@ -320,10 +320,12 @@ class TestStagedSolos(unittest.TestCase):
 
     def test_the_wizard_says_the_shape_each_solo_takes_and_a_solo_s_own_shape_stands(self):
         choices = WizardChoices()
+        form_choices = choices.get_song_form()
+        song_form = form_choices
         choices.set_genre(BLUES)
         choices.set_subgenre(A_BLUES)
         choices.set_seed(SEED)
-        solos = [place for place, label in enumerate(choices.get_song_form().section_labels()) if label.startswith(SOLO)]
+        solos = [place for place, label in enumerate(song_form.section_labels()) if label.startswith(SOLO)]
         self.assertGreater(len(solos), 1)
         names = choices.section(solos[0]).shapes()
         said = [choices.section(place).from_plan(field=wizard_limits.SHAPE_OF_SECTION) for place in solos]

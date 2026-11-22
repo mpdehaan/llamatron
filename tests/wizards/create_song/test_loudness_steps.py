@@ -167,9 +167,11 @@ class TestTheWizardsSong(unittest.TestCase):
 
     def test_a_traded_clip_plays_at_its_scenes_loudness_lowered_and_no_melody_trades(self):
         choices = arena_rock()
+        melody_choices = choices.melody()
+        melody = melody_choices
         setlist = choices.made_setlist(name=A_NAME, version=version.VERSION)
         song = setlist.get_song(A_NAME)
-        melodies = choices.melody().players()
+        melodies = melody.players()
         for scene_name, track in self.clips_with_a_velocity(setlist):
             scene = [scene for scene in song.get_scenes() if scene.get_name() == scene_name][0]
             own = scene.get_clip_slot(track).get_velocity(scene)

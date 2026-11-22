@@ -89,9 +89,13 @@ class TestWizardListening(PlaybackTest):
 
     async def test_a_part_that_is_no_melody_is_heard_over_the_drums_and_a_player_with_no_clip_is_refused(self):
         choices = self.app.screen.get_choices()
+        hook_choices = choices.get_hook()
+        band_choices = choices.get_band()
+        hook = hook_choices
+        band = band_choices
         setlist, name = choices.made_for_listening()
-        scene = choices.get_hook().hook_scene()
-        self.preview().play_line(setlist=setlist, name=name, index=scene, track=choices.get_band().tune_player(), what=A_PART)
+        scene = hook.hook_scene()
+        self.preview().play_line(setlist=setlist, name=name, index=scene, track=band.tune_player(), what=A_PART)
         await self.let_the_preview_play(A_WHILE)
         self.assertEqual(len(self.channels_heard()), A_PLAYER_AND_THE_DRUMS)
         self.assertIn(DRUM_CHANNEL_BYTE, self.channels_heard())
@@ -132,11 +136,12 @@ class TestWizardListening(PlaybackTest):
         wizard = self.app.screen
         choices = wizard.get_choices()
         role = choices.get_riffs().riff_instruments()[0]
+        player = choices.player(role)
         riff = choices.get_riffs().add_riff(role=role)
         await self.go_to(labels.MSG_WIZARD_RIFFS_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         self.assertNotIn(keybindings.WizardPage.LISTEN, wizard.shown_keys())
-        wizard.app.open_field_sections.add(choices.player(role).title())
+        wizard.app.open_field_sections.add(player.title())
         wizard.go_to_field(riff)
         await self.press(Key.DOWN, Key.UP)
         await self.press(keybindings.WizardPage.LISTEN)

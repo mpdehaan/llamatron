@@ -6,13 +6,12 @@
 
 import unittest
 
-from llamatron.model.file import version
 from llamatron.model.schema.file_format import Section
 from llamatron.wizards.create_song import line_edits, notation
 from llamatron.wizards.create_song.line_edits import found, moved, place_of, steps_of, stretched, tidied, toggled
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support.wizard_testing import made_data
 
-A_NAME = 'made'
 A_SEED = 11
 A_GENRE = 'rock'
 A_SUBGENRE = 'arena rock'
@@ -101,58 +100,68 @@ class TestWizardHookNotes(unittest.TestCase):
 
     def made(self, choices):
         """The music of the song made: its patterns."""
-        return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
+        return made_data(choices)[Section.PATTERNS]
 
     def test_the_wizard_s_own_line_written_back_is_the_same_hook_and_the_same_song(self):
         choices = self.chosen()
+        hook_choices = choices.get_hook()
+        hook = hook_choices
         before = self.made(choices)
-        notes = choices.get_hook().hook_notes()
-        self.assertFalse(choices.get_hook().hook_is_own())
-        choices.get_hook().set_hook_line(choices.get_hook().hook_line())
-        self.assertTrue(choices.get_hook().hook_is_own())
-        self.assertEqual(choices.get_hook().hook_notes(), notes)
+        notes = hook.hook_notes()
+        self.assertFalse(hook.hook_is_own())
+        hook.set_hook_line(hook.hook_line())
+        self.assertTrue(hook.hook_is_own())
+        self.assertEqual(hook.hook_notes(), notes)
         self.assertEqual(self.made(choices), before)
 
     def test_an_edited_line_is_the_hook_everywhere_the_hook_is_said_and_none_gives_it_back(self):
         choices = self.chosen()
+        hook_choices = choices.get_hook()
+        hook = hook_choices
         before = self.made(choices)
-        notes = choices.get_hook().hook_notes()
-        edited = line_edits.moved(line=choices.get_hook().hook_line(), step=FIRST_STEP, by=UP)
-        choices.get_hook().set_hook_line(edited)
-        self.assertEqual(choices.get_hook().hook_line(), edited)
-        self.assertNotEqual(choices.get_hook().hook_notes(), notes)
+        notes = hook.hook_notes()
+        edited = line_edits.moved(line=hook.hook_line(), step=FIRST_STEP, by=UP)
+        hook.set_hook_line(edited)
+        self.assertEqual(hook.hook_line(), edited)
+        self.assertNotEqual(hook.hook_notes(), notes)
         # The first note alone moved, to the next note of the scale.
-        self.assertEqual(choices.get_hook().hook_notes()[2][1:], notes[2][1:])
-        self.assertEqual(choices.get_hook().hook_notes()[2][0][2], choices.get_hook().pitch_of_place(place_of(edited[0])))
+        self.assertEqual(hook.hook_notes()[2][1:], notes[2][1:])
+        self.assertEqual(hook.hook_notes()[2][0][2], hook.pitch_of_place(place_of(edited[0])))
         self.assertNotEqual(self.made(choices), before)
         again = WizardChoices.from_data(choices.to_data())
         self.assertTrue(again.get_hook().hook_is_own())
         self.assertEqual(self.made(again), self.made(choices))
-        choices.get_hook().set_hook_line(None)
-        self.assertFalse(choices.get_hook().hook_is_own())
+        hook.set_hook_line(None)
+        self.assertFalse(hook.hook_is_own())
         self.assertEqual(self.made(choices), before)
 
     def test_notes_written_by_hand_stay_through_a_new_take_a_chosen_kind_and_the_plan_switched_off(self):
         choices = self.chosen()
-        edited = line_edits.moved(line=choices.get_hook().hook_line(), step=FIRST_STEP, by=UP)
-        choices.get_hook().set_hook_line(edited)
-        choices.get_hook().new_hook()
-        self.assertEqual(choices.get_hook().hook_line(), edited)
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        edited = line_edits.moved(line=hook.hook_line(), step=FIRST_STEP, by=UP)
+        hook.set_hook_line(edited)
+        hook.new_hook()
+        self.assertEqual(hook.hook_line(), edited)
         choices.set_song_plan(False)
-        self.assertEqual(choices.get_hook().hook_line(), edited)
+        self.assertEqual(hook.hook_line(), edited)
 
     def test_a_line_that_is_not_one_is_refused_and_the_hook_stays(self):
         choices = self.chosen()
-        notes = choices.get_hook().hook_notes()
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        notes = hook.hook_notes()
         for refused in NOT_LINES:
             with self.assertRaises(ValueError):
-                choices.get_hook().set_hook_line(refused)
-        self.assertEqual(choices.get_hook().hook_notes(), notes)
-        self.assertFalse(choices.get_hook().hook_is_own())
+                hook.set_hook_line(refused)
+        self.assertEqual(hook.hook_notes(), notes)
+        self.assertFalse(hook.hook_is_own())
 
     def test_a_song_with_no_hook_has_no_line_to_write(self):
         choices = self.chosen()
-        choices.get_hook().set_hook(False)
-        self.assertIsNone(choices.get_hook().hook_line())
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        hook.set_hook(False)
+        self.assertIsNone(hook.hook_line())
         with self.assertRaises(ValueError):
-            choices.get_hook().set_hook_line([{notation.DEGREE: 1, notation.STEPS: 16}])
+            hook.set_hook_line([{notation.DEGREE: 1, notation.STEPS: 16}])

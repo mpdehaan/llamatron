@@ -180,24 +180,28 @@ class TestWizardLoudness(unittest.TestCase):
 
     def test_a_player_has_the_genres_levels_until_the_song_gives_its_own_and_takes_them_back(self):
         choices = chosen()
-        usual = choices.player(THE_BASS).loudness().levels()
+        bass = choices.player(THE_BASS)
+        bass_loudness = bass.loudness()
+        usual = bass_loudness.levels()
         self.assertEqual(list(usual), list(wizard_names.LOUDNESS_LEVELS))
-        self.assertFalse(choices.player(THE_BASS).loudness().level_is_own(level=wizard_names.NORMAL))
-        choices.player(THE_BASS).loudness().set_level(level=wizard_names.NORMAL, number=QUIET)
-        self.assertTrue(choices.player(THE_BASS).loudness().level_is_own(level=wizard_names.NORMAL))
-        self.assertEqual(choices.player(THE_BASS).loudness().levels()[wizard_names.NORMAL], QUIET)
-        self.assertEqual(choices.player(THE_BASS).loudness().levels()[wizard_names.ACCENT] - QUIET, usual[wizard_names.ACCENT] - usual[wizard_names.NORMAL])
-        choices.player(THE_BASS).loudness().set_level(level=wizard_names.NORMAL, number=None)
-        self.assertEqual(choices.player(THE_BASS).loudness().levels(), usual)
+        self.assertFalse(bass_loudness.level_is_own(level=wizard_names.NORMAL))
+        bass_loudness.set_level(level=wizard_names.NORMAL, number=QUIET)
+        self.assertTrue(bass_loudness.level_is_own(level=wizard_names.NORMAL))
+        self.assertEqual(bass_loudness.levels()[wizard_names.NORMAL], QUIET)
+        self.assertEqual(bass_loudness.levels()[wizard_names.ACCENT] - QUIET, usual[wizard_names.ACCENT] - usual[wizard_names.NORMAL])
+        bass_loudness.set_level(level=wizard_names.NORMAL, number=None)
+        self.assertEqual(bass_loudness.levels(), usual)
         self.assertEqual(choices.to_data(), chosen().to_data())
         # The genre's own number chosen is no level of the song's own.
-        choices.player(THE_BASS).loudness().set_level(level=wizard_names.NORMAL, number=usual[wizard_names.NORMAL])
-        self.assertFalse(choices.player(THE_BASS).loudness().level_is_own(level=wizard_names.NORMAL))
+        bass_loudness.set_level(level=wizard_names.NORMAL, number=usual[wizard_names.NORMAL])
+        self.assertFalse(bass_loudness.level_is_own(level=wizard_names.NORMAL))
 
     def test_a_quieter_player_is_quieter_in_the_song_and_the_others_are_as_they_were(self):
         plain = patterns(chosen())
         choices = chosen()
-        choices.player(THE_BASS).loudness().set_level(level=wizard_names.NORMAL, number=QUIET)
+        bass = choices.player(THE_BASS)
+        bass_loudness = bass.loudness()
+        bass_loudness.set_level(level=wizard_names.NORMAL, number=QUIET)
         made = patterns(choices)
         changed = [name for name in plain if plain[name] != made[name]]
         self.assertTrue(changed)
@@ -208,7 +212,9 @@ class TestWizardLoudness(unittest.TestCase):
     def test_the_drummers_levels_are_the_whole_kits(self):
         plain = patterns(chosen())
         choices = chosen()
-        choices.player(THE_DRUMS).loudness().set_level(level=wizard_names.NORMAL, number=QUIET)
+        drums = choices.player(THE_DRUMS)
+        drums_loudness = drums.loudness()
+        drums_loudness.set_level(level=wizard_names.NORMAL, number=QUIET)
         made = patterns(choices)
         for piece in (A_KICK, A_SNARE):
             name = next(name for name in plain if name.startswith(piece))
@@ -216,21 +222,31 @@ class TestWizardLoudness(unittest.TestCase):
 
     def test_only_the_levels_a_player_plays_are_offered(self):
         choices = chosen()
+        bass = choices.player(THE_BASS)
+        bass_loudness = bass.loudness()
+        lead = choices.player(THE_LEAD)
+        lead_loudness = lead.loudness()
+        drums = choices.player(THE_DRUMS)
+        drums_loudness = drums.loudness()
+        not_a_player = choices.player(NOT_A_PLAYER)
+        not_a_player_loudness = not_a_player.loudness()
         # The bass under the kind's riff plays its accents and its short quiet roots; with no riff the bass plays one level.
-        self.assertLessEqual({wizard_names.GHOST, wizard_names.NORMAL, wizard_names.ACCENT}, set(choices.player(THE_BASS).loudness().levels_offered()))
+        self.assertLessEqual({wizard_names.GHOST, wizard_names.NORMAL, wizard_names.ACCENT}, set(bass_loudness.levels_offered()))
         for riff in choices.get_riffs().riff_names():
             choices.get_riffs().delete_riff(riff)
-        self.assertEqual(choices.player(THE_BASS).loudness().levels_offered(), [wizard_names.NORMAL])
-        self.assertIn(wizard_names.ACCENT, choices.player(THE_LEAD).loudness().levels_offered())
-        self.assertNotIn(wizard_names.GHOST, choices.player(THE_DRUMS).loudness().levels_offered())
+        self.assertEqual(bass_loudness.levels_offered(), [wizard_names.NORMAL])
+        self.assertIn(wizard_names.ACCENT, lead_loudness.levels_offered())
+        self.assertNotIn(wizard_names.GHOST, drums_loudness.levels_offered())
         self.assertIn(wizard_names.GHOST, chosen(genre=SOUL_FUNK, subgenre=FUNK).player(THE_DRUMS).loudness().levels_offered())
-        self.assertEqual(choices.player(NOT_A_PLAYER).loudness().levels_offered(), [])
+        self.assertEqual(not_a_player_loudness.levels_offered(), [])
 
     def test_the_snares_ghost_notes_are_far_quieter_than_its_backbeat_and_go_with_the_quiet_notes(self):
         choices = chosen(genre=SOUL_FUNK, subgenre=FUNK)
+        kit_choices = choices.get_kit()
+        kit = kit_choices
         snare = next(pattern for name, pattern in patterns(choices).items() if name.startswith(A_SNARE) and A_SNARE_BAR in name)
         self.assertLess(min(sounded(snare)), max(sounded(snare)) // 2)
-        choices.get_kit().set_quiet_notes(False)
+        kit.set_quiet_notes(False)
         without = next(pattern for name, pattern in patterns(choices).items() if name.startswith(A_SNARE) and A_SNARE_BAR in name)
         self.assertGreater(min(sounded(without)), max(sounded(without)) // 2)
 
@@ -249,15 +265,21 @@ class TestWizardLoudness(unittest.TestCase):
 
     def test_the_usual_dynamics_are_no_choice_of_the_songs_own(self):
         choices = chosen()
-        choices.player(THE_DRUMS).loudness().set_dynamics(dynamics=wizard_names.MOST_DYNAMICS)
+        drums = choices.player(THE_DRUMS)
+        drums_loudness = drums.loudness()
+        drums_loudness.set_dynamics(dynamics=wizard_names.MOST_DYNAMICS)
         self.assertNotEqual(choices.to_data(), chosen().to_data())
-        choices.player(THE_DRUMS).loudness().set_dynamics(dynamics=loudness.USUAL_DYNAMICS)
+        drums_loudness.set_dynamics(dynamics=loudness.USUAL_DYNAMICS)
         self.assertEqual(choices.to_data(), chosen().to_data())
 
     def test_the_choices_are_kept_with_the_song_and_make_the_same_song_again(self):
         choices = chosen()
-        choices.player(THE_DRUMS).loudness().set_dynamics(dynamics=wizard_names.MOST_DYNAMICS)
-        choices.player(THE_LEAD).loudness().set_level(level=wizard_names.ACCENT, number=LOUDER)
+        drums = choices.player(THE_DRUMS)
+        drums_loudness = drums.loudness()
+        lead = choices.player(THE_LEAD)
+        lead_loudness = lead.loudness()
+        drums_loudness.set_dynamics(dynamics=wizard_names.MOST_DYNAMICS)
+        lead_loudness.set_level(level=wizard_names.ACCENT, number=LOUDER)
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual(again.player(THE_DRUMS).loudness().get_dynamics(), wizard_names.MOST_DYNAMICS)
         self.assertEqual(again.player(THE_LEAD).loudness().levels()[wizard_names.ACCENT], LOUDER)
@@ -266,12 +288,16 @@ class TestWizardLoudness(unittest.TestCase):
 
     def test_another_genre_forgets_a_players_loudness(self):
         choices = chosen()
-        choices.player(THE_DRUMS).loudness().set_dynamics(dynamics=wizard_names.MOST_DYNAMICS)
-        choices.player(THE_BASS).loudness().set_level(level=wizard_names.NORMAL, number=QUIET)
+        drums = choices.player(THE_DRUMS)
+        drums_loudness = drums.loudness()
+        bass = choices.player(THE_BASS)
+        bass_loudness = bass.loudness()
+        drums_loudness.set_dynamics(dynamics=wizard_names.MOST_DYNAMICS)
+        bass_loudness.set_level(level=wizard_names.NORMAL, number=QUIET)
         choices.set_genre(SOUL_FUNK)
         choices.set_subgenre(FUNK)
-        self.assertEqual(choices.player(THE_DRUMS).loudness().get_dynamics(), loudness.USUAL_DYNAMICS)
-        self.assertFalse(choices.player(THE_BASS).loudness().level_is_own(level=wizard_names.NORMAL))
+        self.assertEqual(drums_loudness.get_dynamics(), loudness.USUAL_DYNAMICS)
+        self.assertFalse(bass_loudness.level_is_own(level=wizard_names.NORMAL))
 
     def test_what_is_no_level_no_velocity_or_no_player_is_refused(self):
         choices = chosen()

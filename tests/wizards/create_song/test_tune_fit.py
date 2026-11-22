@@ -78,25 +78,29 @@ class TestWizardFitsTune(unittest.TestCase):
 
     def test_only_a_tune_written_by_hand_has_chords_to_watch(self):
         choices = self.chosen()
-        self.assertEqual(choices.get_tunes().own_tune_chords(), {})
-        choices.get_tunes().set_tune_pattern(kind=A_KIND, pattern=choices.get_tunes().tune_pattern(A_KIND))
-        self.assertEqual(list(choices.get_tunes().own_tune_chords()), [A_KIND])
+        tune_choices = choices.get_tunes()
+        tunes = tune_choices
+        self.assertEqual(tunes.own_tune_chords(), {})
+        tunes.set_tune_pattern(kind=A_KIND, pattern=tunes.tune_pattern(A_KIND))
+        self.assertEqual(list(tunes.own_tune_chords()), [A_KIND])
         with self.assertRaises(ValueError):
             self.chosen().get_tunes().fit_tune(A_KIND)
 
     def test_a_tune_is_fitted_to_the_chords_its_section_now_hears_and_stays_the_persons_own(self):
         choices = self.chosen()
-        written = choices.get_tunes().tune_pattern(A_KIND)
-        choices.get_tunes().set_tune_pattern(kind=A_KIND, pattern=written)
-        before = choices.get_tunes().own_tune_chords()
-        choices.section(choices.get_tunes().tune_place(A_KIND)).set_own(field=wizard_names.ARRANGER_CHORDS, value=OTHER_CHORDS)
-        self.assertNotEqual(choices.get_tunes().own_tune_chords(), before)
-        self.assertEqual(choices.get_tunes().tune_pattern(A_KIND), written)
-        choices.get_tunes().fit_tune(A_KIND)
-        fit = choices.get_tunes().tune_pattern(A_KIND)
-        self.assertTrue(choices.get_tunes().tune_is_own(A_KIND))
+        tune_choices = choices.get_tunes()
+        tunes = tune_choices
+        written = tunes.tune_pattern(A_KIND)
+        tunes.set_tune_pattern(kind=A_KIND, pattern=written)
+        before = tunes.own_tune_chords()
+        choices.section(tunes.tune_place(A_KIND)).set_own(field=wizard_names.ARRANGER_CHORDS, value=OTHER_CHORDS)
+        self.assertNotEqual(tunes.own_tune_chords(), before)
+        self.assertEqual(tunes.tune_pattern(A_KIND), written)
+        tunes.fit_tune(A_KIND)
+        fit = tunes.tune_pattern(A_KIND)
+        self.assertTrue(tunes.tune_is_own(A_KIND))
         self.assertNotEqual(fit[Row.DEGREE], written[Row.DEGREE])
         self.assertEqual([degree is None for degree in fit[Row.DEGREE]], [degree is None for degree in written[Row.DEGREE]])
         self.assertEqual(fit[Row.TIE], written[Row.TIE])
-        choices.get_tunes().fit_tune(A_KIND)
-        self.assertEqual(choices.get_tunes().tune_pattern(A_KIND), fit)
+        tunes.fit_tune(A_KIND)
+        self.assertEqual(tunes.tune_pattern(A_KIND), fit)

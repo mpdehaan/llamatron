@@ -6,13 +6,12 @@
 
 import unittest
 
-from llamatron.model.file import version
 from llamatron.model.schema.file_format import Section
 from llamatron.wizards.create_song import melody, wizard_limits, wizard_names
 from llamatron.wizards.create_song.melody import plan_as_asked
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support.wizard_testing import made_data
 
-A_NAME = 'made'
 A_SEED = 11
 A_GENRE = 'rock'
 A_SUBGENRE = 'folk rock'
@@ -35,7 +34,7 @@ def chosen():
 
 
 def patterns(choices):
-    return choices.made_setlist(name=A_NAME, version=version.VERSION).to_data()[Section.PATTERNS]
+    return made_data(choices)[Section.PATTERNS]
 
 
 class TestPlanAsAsked(unittest.TestCase):
@@ -77,22 +76,24 @@ class TestWizardMelodyChoices(unittest.TestCase):
 
     def test_each_field_starts_at_the_genres_own_which_is_not_kept_and_another_value_changes_the_melody(self):
         choices = chosen()
+        melody_ways = choices.melody_ways()
         usual = choices.to_data()
         for field, value in ((wizard_limits.MELODY_BUSY, wizard_limits.MELODY_SPARSE), (wizard_limits.MELODY_RANGE, wizard_limits.MELODY_WIDE), (melody.REPEATS, melody.REPEATS_A_LOT)):
-            self.assertEqual(choices.melody_ways().get_way(field), wizard_limits.USUAL_MELODY_WAYS[field])
+            self.assertEqual(melody_ways.get_way(field), wizard_limits.USUAL_MELODY_WAYS[field])
             before = patterns(choices)
-            choices.melody_ways().set_way(field=field, value=value)
-            self.assertEqual(choices.melody_ways().get_way(field), value)
+            melody_ways.set_way(field=field, value=value)
+            self.assertEqual(melody_ways.get_way(field), value)
             self.assertNotEqual(patterns(choices), before)
             self.assertEqual(WizardChoices.from_data(choices.to_data()).melody_ways().get_way(field), value)
-            choices.melody_ways().set_way(field=field, value=wizard_limits.USUAL_MELODY_WAYS[field])
+            melody_ways.set_way(field=field, value=wizard_limits.USUAL_MELODY_WAYS[field])
             self.assertEqual(patterns(choices), before)
         self.assertEqual(choices.to_data(), usual)
 
     def test_only_values_that_make_another_song_are_offered_with_the_genres_own_and_the_one_chosen(self):
         choices = chosen()
-        for field in choices.melody_ways().fields():
-            for value in choices.melody_ways().ways_offered(field):
+        melody_ways = choices.melody_ways()
+        for field in melody_ways.fields():
+            for value in melody_ways.ways_offered(field):
                 if value != wizard_limits.USUAL_MELODY_WAYS[field]:
                     other = WizardChoices.from_data(choices.to_data())
                     other.melody_ways().set_way(field=field, value=value)
@@ -100,45 +101,51 @@ class TestWizardMelodyChoices(unittest.TestCase):
 
     def test_a_character_is_the_genres_until_chosen_changes_the_melody_and_is_given_back(self):
         choices = chosen()
+        melody_ways = choices.melody_ways()
         before = patterns(choices)
-        self.assertIsNone(choices.melody_ways().get_character())
-        self.assertIn(wizard_limits.SMOOTH, choices.melody_ways().characters_offered())
-        choices.melody_ways().set_character(wizard_limits.SMOOTH)
+        self.assertIsNone(melody_ways.get_character())
+        self.assertIn(wizard_limits.SMOOTH, melody_ways.characters_offered())
+        melody_ways.set_character(wizard_limits.SMOOTH)
         self.assertNotEqual(patterns(choices), before)
         self.assertEqual(WizardChoices.from_data(choices.to_data()).melody_ways().get_character(), wizard_limits.SMOOTH)
-        choices.melody_ways().set_character(None)
+        melody_ways.set_character(None)
         self.assertEqual(patterns(choices), before)
 
     def test_a_character_that_writes_in_rows_shows_the_players_rows(self):
         choices = chosen()
-        if wizard_limits.ATONAL not in choices.melody_ways().characters_offered():
+        band_choices = choices.get_band()
+        melody_ways = choices.melody_ways()
+        band = band_choices
+        if wizard_limits.ATONAL not in melody_ways.characters_offered():
             self.skipTest(wizard_limits.ATONAL)
-        self.assertFalse(any(choices.player(role).rows() for role in choices.get_band().roles_in()))
-        choices.melody_ways().set_character(wizard_limits.ATONAL)
-        self.assertTrue(any(choices.player(role).rows() for role in choices.get_band().roles_in()))
+        self.assertFalse(any(choices.player(role).rows() for role in band.roles_in()))
+        melody_ways.set_character(wizard_limits.ATONAL)
+        self.assertTrue(any(choices.player(role).rows() for role in band.roles_in()))
 
     def test_a_kind_of_section_takes_a_height_and_a_busy_of_its_own_and_gives_each_back(self):
         choices = chosen()
+        melody_ways = choices.melody_ways()
         before = patterns(choices)
-        for field in choices.melody_ways().of_kind(A_KIND).fields():
-            self.assertIsNone(choices.melody_ways().of_kind(A_KIND).get_way(field))
-            value = choices.melody_ways().of_kind(A_KIND).ways_offered(field)[0]
-            choices.melody_ways().of_kind(A_KIND).set_way(field=field, value=value)
-            self.assertEqual(choices.melody_ways().of_kind(A_KIND).get_way(field), value)
+        for field in melody_ways.of_kind(A_KIND).fields():
+            self.assertIsNone(melody_ways.of_kind(A_KIND).get_way(field))
+            value = melody_ways.of_kind(A_KIND).ways_offered(field)[0]
+            melody_ways.of_kind(A_KIND).set_way(field=field, value=value)
+            self.assertEqual(melody_ways.of_kind(A_KIND).get_way(field), value)
             self.assertNotEqual(patterns(choices), before)
             self.assertEqual(WizardChoices.from_data(choices.to_data()).melody_ways().of_kind(A_KIND).get_way(field), value)
-            choices.melody_ways().of_kind(A_KIND).set_way(field=field, value=None)
+            melody_ways.of_kind(A_KIND).set_way(field=field, value=None)
             self.assertEqual(patterns(choices), before)
-        self.assertIn(wizard_names.MELODY_HEIGHT, choices.melody_ways().of_kind(A_KIND).fields())
+        self.assertIn(wizard_names.MELODY_HEIGHT, melody_ways.of_kind(A_KIND).fields())
 
     def test_what_is_no_field_no_value_or_no_kind_with_a_melody_is_refused_and_a_genre_change_forgets_the_choices(self):
         choices = chosen()
-        for refused in (lambda: choices.melody_ways().set_way(field=NOT_A_WAY, value=wizard_limits.MELODY_SPARSE), lambda: choices.melody_ways().set_way(field=wizard_limits.MELODY_BUSY, value=NOT_A_WAY),
-                        lambda: choices.melody_ways().set_character(NOT_A_WAY), lambda: choices.melody_ways().of_kind(A_KIND_WITH_NO_MELODY).set_way(field=wizard_names.MELODY_HEIGHT, value=melody.HIGH),
-                        lambda: choices.melody_ways().of_kind(A_KIND).set_way(field=wizard_names.MELODY_HEIGHT, value=NOT_A_WAY)):
+        melody_ways = choices.melody_ways()
+        for refused in (lambda: melody_ways.set_way(field=NOT_A_WAY, value=wizard_limits.MELODY_SPARSE), lambda: melody_ways.set_way(field=wizard_limits.MELODY_BUSY, value=NOT_A_WAY),
+                        lambda: melody_ways.set_character(NOT_A_WAY), lambda: melody_ways.of_kind(A_KIND_WITH_NO_MELODY).set_way(field=wizard_names.MELODY_HEIGHT, value=melody.HIGH),
+                        lambda: melody_ways.of_kind(A_KIND).set_way(field=wizard_names.MELODY_HEIGHT, value=NOT_A_WAY)):
             with self.assertRaises(ValueError):
                 refused()
-        choices.melody_ways().set_way(field=wizard_limits.MELODY_BUSY, value=wizard_limits.MELODY_SPARSE)
+        melody_ways.set_way(field=wizard_limits.MELODY_BUSY, value=wizard_limits.MELODY_SPARSE)
         choices.set_genre(ANOTHER_GENRE)
         choices.set_subgenre(choices.subgenres()[0])
-        self.assertEqual(choices.melody_ways().get_way(wizard_limits.MELODY_BUSY), wizard_limits.USUAL_MELODY_WAYS[wizard_limits.MELODY_BUSY])
+        self.assertEqual(melody_ways.get_way(wizard_limits.MELODY_BUSY), wizard_limits.USUAL_MELODY_WAYS[wizard_limits.MELODY_BUSY])

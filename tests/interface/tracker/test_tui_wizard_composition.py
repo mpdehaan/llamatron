@@ -93,43 +93,48 @@ class TestWizardMelody(CompositionTest):
 
     async def test_the_panel_holds_who_plays_the_melody_then_what_every_melody_shares_and_the_phrasing(self):
         choices = self.choices()
-        ways = [labels.MSG_WIZARD_MELODY_WAY_LABELS[field] for field in choices.melody_ways().fields()]
+        melody_ways = choices.melody_ways()
+        ways = [labels.MSG_WIZARD_MELODY_WAY_LABELS[field] for field in melody_ways.fields()]
         self.assertEqual(self.field_labels()[:len(ways) + 2], [labels.MSG_WIZARD_TUNE_LABEL, *ways, labels.MSG_WIZARD_CHARACTER_LABEL])
         self.assertIn(labels.MSG_WIZARD_PHRASING_LABEL, self.field_labels())
-        self.assertEqual(set(choices.melody_ways().fields()), {wizard_limits.MELODY_BUSY, wizard_limits.MELODY_RANGE, melody.REPEATS})
+        self.assertEqual(set(melody_ways.fields()), {wizard_limits.MELODY_BUSY, wizard_limits.MELODY_RANGE, melody.REPEATS})
 
     async def test_each_field_is_chosen_from_its_list_and_changes_the_song(self):
         choices = self.choices()
+        melody_ways = choices.melody_ways()
         for field, value in ((wizard_limits.MELODY_BUSY, wizard_limits.MELODY_SPARSE), (wizard_limits.MELODY_RANGE, wizard_limits.MELODY_WIDE), (melody.REPEATS, melody.REPEATS_A_LOT)):
             before = choices.made_for_listening()[0].to_data()
             await self.select_field(labels.MSG_WIZARD_MELODY_WAY_LABELS[field])
             await self.press(Key.ENTER)
-            usual = choices.melody_ways().genre_way(field)
+            usual = melody_ways.genre_way(field)
             self.assertEqual(list(self.app.screen.options), [labels.MSG_WIZARD_VALUE_FROM.format(value=way, origin=labels.MSG_WIZARD_USUAL_MELODY) if way == usual else way for way in wizard_limits.MELODY_WAYS[field]])
             await self.pick(value)
-            self.assertEqual(choices.melody_ways().get_way(field), value)
+            self.assertEqual(melody_ways.get_way(field), value)
             self.assertNotEqual(choices.made_for_listening()[0].to_data(), before)
 
     async def test_the_character_is_the_genres_until_one_is_chosen_and_the_first_entry_gives_it_back(self):
         choices = self.choices()
+        melody_ways = choices.melody_ways()
         await self.select_field(labels.MSG_WIZARD_CHARACTER_LABEL)
         self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_USUAL_MELODY)
         await self.press(Key.ENTER)
-        self.assertEqual(list(self.app.screen.options), [labels.MSG_WIZARD_USUAL_MELODY, *choices.melody_ways().characters_offered()])
+        self.assertEqual(list(self.app.screen.options), [labels.MSG_WIZARD_USUAL_MELODY, *melody_ways.characters_offered()])
         await self.pick(wizard_limits.SMOOTH)
-        self.assertEqual(choices.melody_ways().get_character(), wizard_limits.SMOOTH)
+        self.assertEqual(melody_ways.get_character(), wizard_limits.SMOOTH)
         await self.press(Key.ENTER)
         await self.pick(labels.MSG_WIZARD_USUAL_MELODY)
-        self.assertIsNone(choices.melody_ways().get_character())
+        self.assertIsNone(melody_ways.get_character())
 
     async def test_the_melody_is_given_to_another_player(self):
         choices = self.choices()
-        other = next(role for role in choices.get_tunes().tune_players_offered() if role != choices.get_tunes().tune_played_by())
+        tune_choices = choices.get_tunes()
+        tunes = tune_choices
+        other = next(role for role in tunes.tune_players_offered() if role != tunes.tune_played_by())
         title = self.title(other)
         await self.select_field(labels.MSG_WIZARD_TUNE_LABEL)
         await self.press(Key.ENTER)
         await self.pick(title)
-        self.assertEqual(choices.get_tunes().tune_played_by(), other)
+        self.assertEqual(tunes.tune_played_by(), other)
 
 
 class TestWizardSectionMelody(CompositionTest):
@@ -140,29 +145,32 @@ class TestWizardSectionMelody(CompositionTest):
 
     async def test_height_is_the_genres_until_chosen_and_busy_is_the_songs_until_chosen(self):
         choices = self.choices()
+        melody_ways = choices.melody_ways()
         await self.select_field(labels.MSG_WIZARD_HEIGHT_LABEL)
         self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_VALUE_FROM.format(value=choices.genre_height_in(A_KIND), origin=labels.MSG_WIZARD_USUAL_MELODY))
         before = choices.made_for_listening()[0].to_data()
         other = melody.HIGH if choices.genre_height_in(A_KIND) != melody.HIGH else melody.LOW
         await self.press(Key.ENTER)
         await self.pick(other)
-        self.assertEqual(choices.melody_ways().of_kind(A_KIND).get_way(wizard_names.MELODY_HEIGHT), other)
+        self.assertEqual(melody_ways.of_kind(A_KIND).get_way(wizard_names.MELODY_HEIGHT), other)
         self.assertNotEqual(choices.made_for_listening()[0].to_data(), before)
         await self.select_field(labels.MSG_WIZARD_SECTION_BUSY_LABEL)
-        self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_VALUE_FROM.format(value=choices.melody_ways().get_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
+        self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_VALUE_FROM.format(value=melody_ways.get_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG))
         await self.press(Key.ENTER)
         await self.pick(wizard_limits.MELODY_SPARSE)
-        self.assertEqual(choices.melody_ways().of_kind(A_KIND).get_way(wizard_limits.MELODY_BUSY), wizard_limits.MELODY_SPARSE)
+        self.assertEqual(melody_ways.of_kind(A_KIND).get_way(wizard_limits.MELODY_BUSY), wizard_limits.MELODY_SPARSE)
         await self.press(Key.ENTER)
         # One list holds every value, the song's own said to be so, and picking the song's own gives the field back.
-        usual = labels.MSG_WIZARD_VALUE_FROM.format(value=choices.melody_ways().get_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG)
+        usual = labels.MSG_WIZARD_VALUE_FROM.format(value=melody_ways.get_way(wizard_limits.MELODY_BUSY), origin=labels.MSG_WIZARD_FROM_SONG)
         self.assertIn(usual, self.app.screen.options)
         self.assertNotIn(labels.MSG_WIZARD_FROM_SONG, self.app.screen.options)
         await self.pick(usual)
-        self.assertIsNone(choices.melody_ways().of_kind(A_KIND).get_way(wizard_limits.MELODY_BUSY))
+        self.assertIsNone(melody_ways.of_kind(A_KIND).get_way(wizard_limits.MELODY_BUSY))
 
     async def test_the_notes_open_in_the_pattern_editor_are_kept_when_edited_and_given_back_with_bksp(self):
         choices = self.choices()
+        tune_choices = choices.get_tunes()
+        tunes = tune_choices
         await self.select_field(labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
         self.assertIn(messages.MSG_WIZARD_HOOK_MADE, self.text())
         await self.press(Key.ENTER)
@@ -170,27 +178,29 @@ class TestWizardSectionMelody(CompositionTest):
         self.change_first_step()
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertTrue(choices.get_tunes().tune_is_own(A_KIND))
+        self.assertTrue(tunes.tune_is_own(A_KIND))
         self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
         self.assertEqual(self.wizard().field().label, labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertFalse(choices.get_tunes().tune_is_own(A_KIND))
+        self.assertFalse(tunes.tune_is_own(A_KIND))
 
     async def test_regenerate_asks_first_starting_on_no_and_writes_another_melody_with_nothing_kept(self):
         choices = self.choices()
-        first = choices.get_tunes().tune_pattern(A_KIND)
+        tune_choices = choices.get_tunes()
+        tunes = tune_choices
+        first = tunes.tune_pattern(A_KIND)
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         name = messages.MSG_WIZARD_MELODY_OF.format(kind=A_KIND)
         self.assertEqual(self.app.screen.title, messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name))
         await self.press(Key.ENTER)
-        self.assertEqual(choices.get_tunes().tune_pattern(A_KIND), first)
+        self.assertEqual(tunes.tune_pattern(A_KIND), first)
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
-        self.assertNotEqual(choices.get_tunes().tune_pattern(A_KIND), first)
+        self.assertNotEqual(tunes.tune_pattern(A_KIND), first)
         self.assertIn(messages.MSG_WIZARD_REGENERATED.format(name=name), self.text())
 
     async def test_the_panel_has_four_buttons_edit_first_with_no_key_of_their_own_and_listen_names_the_melody(self):
@@ -225,48 +235,54 @@ class TestWizardSectionMelody(CompositionTest):
 
     async def test_the_chorus_with_the_hook_shows_where_the_hook_sits_and_the_gauges_of_its_other_lines(self):
         choices = self.choices()
-        kind, _ = choices.get_hook().hook_line_place()
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        kind, _ = hook.hook_line_place()
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=kind))
-        self.assertTrue(choices.get_hook().is_body_of_hook(kind))
-        for label in (labels.MSG_WIZARD_PLACEMENT_LABEL, *(labels.MSG_WIZARD_BODY_GAUGE_LABELS[name] for name in choices.get_hook().body_gauges()), labels.MSG_WIZARD_HOOK_HEADING,
-                      labels.MSG_WIZARD_BEHAVIOR_LABEL, *(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name] for name in choices.get_hook().hook_gauges())):
+        self.assertTrue(hook.is_body_of_hook(kind))
+        for label in (labels.MSG_WIZARD_PLACEMENT_LABEL, *(labels.MSG_WIZARD_BODY_GAUGE_LABELS[name] for name in hook.body_gauges()), labels.MSG_WIZARD_HOOK_HEADING,
+                      labels.MSG_WIZARD_BEHAVIOR_LABEL, *(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name] for name in hook.hook_gauges())):
             self.assertIn(label, self.field_labels())
         # Height there is the hook's gauge, never the melody's own field of how high the melody sits.
         self.assertEqual(self.field_labels().count(labels.MSG_WIZARD_HEIGHT_LABEL), 1)
         self.assertNotIn(labels.MSG_WIZARD_SECTION_BUSY_LABEL, self.field_labels())
-        self.assertFalse(choices.get_hook().is_body_of_hook(A_KIND))
+        self.assertFalse(hook.is_body_of_hook(A_KIND))
 
     async def test_placement_lists_every_place_with_the_genres_said_to_be_so_and_moves_the_hook_line(self):
         choices = self.choices()
-        kind, _ = choices.get_hook().hook_line_place()
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        kind, _ = hook.hook_line_place()
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=kind))
-        usual = labels.MSG_WIZARD_VALUE_FROM.format(value=choices.get_hook().genre_hook_placement(), origin=labels.MSG_WIZARD_USUAL_MELODY)
+        usual = labels.MSG_WIZARD_VALUE_FROM.format(value=hook.genre_hook_placement(), origin=labels.MSG_WIZARD_USUAL_MELODY)
         await self.select_field(labels.MSG_WIZARD_PLACEMENT_LABEL)
         self.assertEqual(self.wizard().field().value(), usual)
         await self.press(Key.ENTER)
-        self.assertEqual(list(self.app.screen.options), [usual if place == choices.get_hook().genre_hook_placement() else place for place in melody.PLACEMENTS])
+        self.assertEqual(list(self.app.screen.options), [usual if place == hook.genre_hook_placement() else place for place in melody.PLACEMENTS])
         await self.pick(melody.LAST_LINE)
-        self.assertEqual(choices.get_hook().get_hook_placement(), melody.LAST_LINE)
-        self.assertEqual(choices.get_hook().hook_line_place()[1], len(melody.PLACEMENTS) + 1)
+        self.assertEqual(hook.get_hook_placement(), melody.LAST_LINE)
+        self.assertEqual(hook.hook_line_place()[1], len(melody.PLACEMENTS) + 1)
         await self.press(Key.ENTER)
         await self.pick(usual)
-        self.assertEqual(choices.get_hook().get_hook_placement(), choices.get_hook().genre_hook_placement())
+        self.assertEqual(hook.get_hook_placement(), hook.genre_hook_placement())
 
     async def test_a_gauge_of_the_chorus_s_other_lines_steps_and_the_delete_key_gives_the_genre_s_back(self):
         choices = self.choices()
-        kind, _ = choices.get_hook().hook_line_place()
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        kind, _ = hook.hook_line_place()
         await self.press(keybindings.WizardPage.TO_TREE)
         await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=kind))
-        usual = choices.get_hook().genre_body_gauge(hook_writing.SPACE)
+        usual = hook.genre_body_gauge(hook_writing.SPACE)
         await self.select_field(labels.MSG_WIZARD_BODY_GAUGE_LABELS[hook_writing.SPACE])
         self.assertIn(labels.MSG_WIZARD_VALUE_FROM.format(value=usual, origin=labels.MSG_WIZARD_USUAL_MELODY), self.wizard().field().value())
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(choices.get_hook().get_body_gauge(hook_writing.SPACE), usual + 1)
-        self.assertTrue(choices.get_hook().writing_gauge_is_moved(part=wizard_names.BODY_WRITING, name=hook_writing.SPACE))
+        self.assertEqual(hook.get_body_gauge(hook_writing.SPACE), usual + 1)
+        self.assertTrue(hook.writing_gauge_is_moved(part=wizard_names.BODY_WRITING, name=hook_writing.SPACE))
         await self.press(keybindings.FieldPage.CLEAR)
-        self.assertFalse(choices.get_hook().writing_gauge_is_moved(part=wizard_names.BODY_WRITING, name=hook_writing.SPACE))
+        self.assertFalse(hook.writing_gauge_is_moved(part=wizard_names.BODY_WRITING, name=hook_writing.SPACE))
 
     async def test_no_panel_of_a_kinds_melody_holds_the_hook(self):
         kind, _ = self.choices().get_hook().hook_line_place()
@@ -385,48 +401,54 @@ class TestWizardSoloMelody(CompositionTest):
 
     async def test_the_panel_says_who_plays_the_solo_and_in_which_section_and_has_its_buttons_edit_first(self):
         choices = self.choices()
-        place = choices.get_solos().solo_places()[0]
+        solo_choices = choices.get_solos()
+        solos = solo_choices
+        place = solos.solo_places()[0]
         self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_SOLO_PLAYED_BY_LABEL, labels.MSG_WIZARD_SOLO_SECTION_LABEL, labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_REGENERATE_BUTTON,
                                                labels.MSG_WIZARD_LISTEN_BUTTON,
                                                labels.MSG_WIZARD_LISTEN_BAND_BUTTON])
         shown = self.text()
-        self.assertIn(choices.player(choices.get_solos().solo_player()).title(), shown)
+        self.assertIn(choices.player(solos.solo_player()).title(), shown)
         self.assertIn(messages.MSG_WIZARD_HOOK_MADE, shown)
         what, heard_at, track = self.wizard().branch().listens()
-        self.assertEqual((heard_at, track), (place, choices.get_solos().solo_player()))
+        self.assertEqual((heard_at, track), (place, solos.solo_player()))
         self.assertEqual(self.wizard().branch().heard_with_band()[1:], (place, None))
 
     async def test_the_solos_notes_open_in_the_pattern_editor_are_kept_when_edited_and_given_back_with_bksp(self):
         choices = self.choices()
-        place = choices.get_solos().solo_places()[0]
+        solo_choices = choices.get_solos()
+        solos = solo_choices
+        place = solos.solo_places()[0]
         await self.select_field(labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.change_first_step()
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertTrue(choices.get_solos().solo_is_own(place))
+        self.assertTrue(solos.solo_is_own(place))
         self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertFalse(choices.get_solos().solo_is_own(place))
+        self.assertFalse(solos.solo_is_own(place))
 
 
     async def test_regenerate_asks_and_writes_another_solo_and_gives_up_notes_edited_by_hand(self):
         choices = self.choices()
-        place = choices.get_solos().solo_places()[0]
-        written = choices.get_solos().solo_pattern(place)
+        solo_choices = choices.get_solos()
+        solos = solo_choices
+        place = solos.solo_places()[0]
+        written = solos.solo_pattern(place)
         self.assertTrue(self.wizard().branch().listens_alone())
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.NO)
-        self.assertEqual(choices.get_solos().solo_pattern(place), written)
+        self.assertEqual(solos.solo_pattern(place), written)
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
-        self.assertNotEqual(choices.get_solos().solo_pattern(place), written)
-        self.assertFalse(choices.get_solos().solo_is_own(place))
-        self.assertEqual(choices.get_solos().solo_take(place), wizard_limits.FIRST_TUNE_TAKE + 1)
+        self.assertNotEqual(solos.solo_pattern(place), written)
+        self.assertFalse(solos.solo_is_own(place))
+        self.assertEqual(solos.solo_take(place), wizard_limits.FIRST_TUNE_TAKE + 1)
 
 
 class TestWizardHooks(CompositionTest):
@@ -439,108 +461,130 @@ class TestWizardHooks(CompositionTest):
 
     async def test_the_panel_shows_both_headings_open_where_the_hook_is_sung_how_it_is_written_and_its_picture(self):
         choices = self.choices()
-        edit = labels.MSG_WIZARD_EDIT_KIND_NOTES_BUTTON.format(kind=choices.get_hook().hook_kind().capitalize())
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        edit = labels.MSG_WIZARD_EDIT_KIND_NOTES_BUTTON.format(kind=hook.hook_kind().capitalize())
         for label in (labels.MSG_WIZARD_MAIN_HOOK_HEADING, labels.MSG_WIZARD_SUNG_IN_LABEL, labels.MSG_WIZARD_HOOK_BARS_LABEL, labels.MSG_WIZARD_SECOND_HOOK_HEADING, labels.MSG_WIZARD_SECOND_HOOK_LABEL,
                       edit, labels.MSG_WIZARD_REGENERATE_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON):
             self.assertIn(label, self.field_labels())
         # How the hook is written is said on the panel of the section that says the hook.
-        for label in (labels.MSG_WIZARD_BEHAVIOR_LABEL, *(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name] for name in choices.get_hook().hook_gauges())):
+        for label in (labels.MSG_WIZARD_BEHAVIOR_LABEL, *(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name] for name in hook.hook_gauges())):
             self.assertNotIn(label, self.field_labels())
-        first, last = choices.get_hook().hook_bars()
+        first, last = hook.hook_bars()
         await self.select_field(labels.MSG_WIZARD_HOOK_BARS_LABEL)
         self.assertEqual(self.wizard().field().value(), labels.MSG_WIZARD_HOOK_BARS.format(first=first, last=last))
         shown = self.text()
         self.assertIn(marks.MSG_WIZARD_HOOK_FRAME_NAME, shown)
-        self.assertIn(messages.MSG_WIZARD_HOOK_IS_BARS.format(first=first, last=last, kind=choices.get_hook().hook_kind()), shown)
+        self.assertIn(messages.MSG_WIZARD_HOOK_IS_BARS.format(first=first, last=last, kind=hook.hook_kind()), shown)
 
     async def test_listen_plays_whoever_plays_the_melody_in_the_hooks_section_and_never_a_player_with_no_clip_there(self):
         choices = self.choices()
+        hook_choices = choices.get_hook()
+        tune_choices = choices.get_tunes()
+        band_choices = choices.get_band()
+        hook = hook_choices
+        tunes = tune_choices
+        band = band_choices
         what, scene, player = self.wizard().branch().listens()
-        self.assertEqual((scene, player), (choices.get_hook().hook_scene(), choices.get_band().tune_player()))
-        other = next(role for role in choices.get_tunes().tune_players_offered() if role != choices.get_band().tune_player())
-        choices.get_tunes().set_tune_played_by(other)
+        self.assertEqual((scene, player), (hook.hook_scene(), band.tune_player()))
+        other = next(role for role in tunes.tune_players_offered() if role != band.tune_player())
+        tunes.set_tune_played_by(other)
         await self.press(Key.DOWN, Key.UP)
         what, scene, player = self.wizard().branch().listens()
         self.assertEqual(player, other)
         setlist, name = choices.made_for_listening()
         self.assertTrue(setlist.get_song(name).get_scenes()[scene].has_clip_slot(player))
-        self.assertFalse(setlist.get_song(name).get_scenes()[scene].has_clip_slot(choices.get_band().tune_player()))
+        self.assertFalse(setlist.get_song(name).get_scenes()[scene].has_clip_slot(band.tune_player()))
 
     async def test_edit_opens_the_whole_section_in_the_pattern_editor_and_edited_notes_are_the_sections_own(self):
         choices = self.choices()
-        kind = choices.get_hook().hook_kind()
+        tune_choices = choices.get_tunes()
+        hook_choices = choices.get_hook()
+        tunes = tune_choices
+        hook = hook_choices
+        kind = hook.hook_kind()
         await self.select_field(labels.MSG_WIZARD_EDIT_KIND_NOTES_BUTTON.format(kind=kind.capitalize()))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.change_first_step()
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, WizardPage)
-        self.assertTrue(choices.get_tunes().tune_is_own(kind))
+        self.assertTrue(tunes.tune_is_own(kind))
         self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
         # Notes written by hand are never written over by another hook.
         self.assertNotIn(labels.MSG_WIZARD_REGENERATE_BUTTON, self.field_labels())
         # Where the hook sits among the chorus's lines is the chorus's to say, on the chorus's own panel.
         self.assertNotIn(labels.MSG_WIZARD_PLACEMENT_LABEL, self.field_labels())
         await self.select_field(labels.MSG_WIZARD_SUNG_IN_LABEL)
-        self.assertEqual(self.wizard().field().value(), choices.get_hook().hook_line_place()[0])
+        self.assertEqual(self.wizard().field().value(), hook.hook_line_place()[0])
         self.assertIn(marks.MSG_WIZARD_HOOK_CELL, self.text())
 
     async def test_behavior_lists_every_behavior_with_the_genres_said_to_be_so_and_writes_another_hook(self):
         choices = self.choices()
-        usual = labels.MSG_WIZARD_VALUE_FROM.format(value=choices.get_hook().genre_hook_behavior(), origin=labels.MSG_WIZARD_USUAL_MELODY)
-        before = choices.get_hook().hook_notes()
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        usual = labels.MSG_WIZARD_VALUE_FROM.format(value=hook.genre_hook_behavior(), origin=labels.MSG_WIZARD_USUAL_MELODY)
+        before = hook.hook_notes()
         await self.press(keybindings.WizardPage.TO_TREE)
-        await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=choices.get_hook().hook_kind()))
+        await self.open_panel(section_melody_branch.MELODY_KEY.format(kind=hook.hook_kind()))
         await self.select_field(labels.MSG_WIZARD_BEHAVIOR_LABEL)
         self.assertEqual(self.wizard().field().value(), usual)
         await self.press(Key.ENTER)
-        self.assertEqual(list(self.app.screen.options), [usual if behavior == choices.get_hook().genre_hook_behavior() else behavior for behavior in wizard_names.BEHAVIORS])
-        other = next(behavior for behavior in wizard_names.BEHAVIORS if behavior != choices.get_hook().genre_hook_behavior())
+        self.assertEqual(list(self.app.screen.options), [usual if behavior == hook.genre_hook_behavior() else behavior for behavior in wizard_names.BEHAVIORS])
+        other = next(behavior for behavior in wizard_names.BEHAVIORS if behavior != hook.genre_hook_behavior())
         await self.pick(other)
-        self.assertEqual(choices.get_hook().get_hook_behavior(), other)
-        self.assertNotEqual(choices.get_hook().hook_notes(), before)
+        self.assertEqual(hook.get_hook_behavior(), other)
+        self.assertNotEqual(hook.hook_notes(), before)
         await self.press(Key.ENTER)
         await self.pick(usual)
-        self.assertEqual(choices.get_hook().hook_notes(), before)
+        self.assertEqual(hook.hook_notes(), before)
 
     async def test_regenerate_asks_first_and_writes_another_hook_with_the_gauges_kept(self):
         choices = self.choices()
-        choices.get_hook().set_hook_gauge(name=hook_writing.HOLD, position=wizard_names.HOOK_WRITING_LOWEST)
+        hook_choices = choices.get_hook()
+        hook = hook_choices
+        hook.set_hook_gauge(name=hook_writing.HOLD, position=wizard_names.HOOK_WRITING_LOWEST)
         await self.press(Key.DOWN, Key.UP)
-        before = choices.get_hook().hook_notes()
+        before = hook.hook_notes()
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.NO)
-        self.assertEqual(choices.get_hook().hook_notes(), before)
+        self.assertEqual(hook.hook_notes(), before)
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
-        self.assertNotEqual(choices.get_hook().hook_notes(), before)
-        self.assertEqual(choices.get_hook().get_hook_gauge(hook_writing.HOLD), wizard_names.HOOK_WRITING_LOWEST)
+        self.assertNotEqual(hook.hook_notes(), before)
+        self.assertEqual(hook.get_hook_gauge(hook_writing.HOLD), wizard_names.HOOK_WRITING_LOWEST)
         self.assertIn(messages.MSG_WIZARD_REGENERATED.format(name=messages.MSG_WIZARD_HOOK_NAME), self.text())
 
     async def test_the_second_hook_is_switched_on_names_its_kind_of_section_and_has_a_button_of_its_own(self):
         choices = self.choices()
+        hook_choices = choices.get_hook()
+        hook = hook_choices
         self.assertNotIn(labels.MSG_WIZARD_NEW_SECOND_HOOK_BUTTON, self.field_labels())
         await self.select_field(labels.MSG_WIZARD_SECOND_HOOK_LABEL)
         await self.press(Key.SPACE)
-        self.assertEqual(choices.get_hook().get_second_hook_kind(), choices.get_hook().second_hook_kinds()[0])
+        self.assertEqual(hook.get_second_hook_kind(), hook.second_hook_kinds()[0])
         self.assertIn(labels.MSG_WIZARD_SECOND_SUNG_IN_LABEL, self.field_labels())
-        take = choices.get_hook().get_second_hook_take()
+        take = hook.get_second_hook_take()
         await self.select_field(labels.MSG_WIZARD_NEW_SECOND_HOOK_BUTTON)
         await self.press(Key.ENTER)
-        self.assertEqual(choices.get_hook().get_second_hook_take(), take + 1)
+        self.assertEqual(hook.get_second_hook_take(), take + 1)
         await self.select_field(labels.MSG_WIZARD_SECOND_HOOK_LABEL)
         await self.press(Key.SPACE)
-        self.assertFalse(choices.get_hook().has_second_hook())
+        self.assertFalse(hook.has_second_hook())
 
     async def test_listen_plays_the_hook_under_the_cursors_heading(self):
         choices = self.choices()
-        choices.get_hook().set_second_hook(choices.get_hook().second_hook_kinds()[0])
+        hook_choices = choices.get_hook()
+        band_choices = choices.get_band()
+        hook = hook_choices
+        band = band_choices
+        hook.set_second_hook(hook.second_hook_kinds()[0])
         await self.press(Key.DOWN, Key.UP)
         await self.select_field(labels.MSG_WIZARD_SUNG_IN_LABEL)
-        self.assertEqual(self.wizard().branch().listens(), (messages.MSG_WIZARD_LISTEN_HOOK, choices.get_hook().hook_scene(), choices.get_band().tune_player()))
+        self.assertEqual(self.wizard().branch().listens(), (messages.MSG_WIZARD_LISTEN_HOOK, hook.hook_scene(), band.tune_player()))
         await self.select_field(labels.MSG_WIZARD_SECOND_SUNG_IN_LABEL)
-        self.assertEqual(self.wizard().branch().listens(), (messages.MSG_WIZARD_LISTEN_SECOND_HOOK, choices.get_hook().second_hook_scene(), choices.get_band().tune_player()))
+        self.assertEqual(self.wizard().branch().listens(), (messages.MSG_WIZARD_LISTEN_SECOND_HOOK, hook.second_hook_scene(), band.tune_player()))
 
 
 class TestWizardRiffs(CompositionTest):

@@ -64,7 +64,9 @@ def made(choices):
 
 def place_of(*, choices, kind, which=0):
     """The place in the form of a section of a kind: the first, or a later one."""
-    return [place for place, label in enumerate(choices.get_song_form().section_labels()) if label.split('-')[0] == kind][which]
+    form_choices = choices.get_song_form()
+    song_form = form_choices
+    return [place for place, label in enumerate(song_form.section_labels()) if label.split('-')[0] == kind][which]
 
 
 class TestRoomInALine(unittest.TestCase):
@@ -174,26 +176,28 @@ class TestArrangedBesideTheTune(unittest.TestCase):
 
     def test_a_player_who_waits_everywhere_makes_the_song_made_before_answering_could_be_chosen(self):
         choices = wizard()
-        choices.interplay().set_role_plan(interplay.WAITS)
+        interplay_choices = choices.interplay()
+        interplay_choices.set_role_plan(interplay.WAITS)
         waiting = made(choices)
         song = choices.song_picks(SONG_NAME)
         del song[arranger.BESIDE]
         self.assertEqual(waiting, arranger.arranged(style=arranger.style_named(ROCK), song=song))
-        choices.interplay().set_answered_by(None)
+        interplay_choices.set_answered_by(None)
         self.assertEqual(made(choices), waiting)
 
     def test_a_blues_chorus_answered_every_line_is_played_as_the_genre_writes_it_and_a_player_who_waits_is_silent_there(self):
         choices = wizard(genre=BLUES, subgenre='shuffle')
-        answering = choices.interplay().answered_by()
+        interplay_choices = choices.interplay()
+        answering = interplay_choices.answered_by()
         song = choices.song_picks(SONG_NAME)
         as_planned = made(choices)
         del song[arranger.BESIDE]
         self.assertEqual(as_planned, arranger.arranged(style=arranger.style_named(BLUES), song=song))
-        choices.interplay().set_role_plan(interplay.WAITS)
+        interplay_choices.set_role_plan(interplay.WAITS)
         waiting = made(choices)
         chorus = next(scene for scene in waiting[arranger.FORM] if scene[arranger.SCENE] == CHORUS)
         self.assertNotIn(answering, chorus[arranger.PLAY])
-        choices.interplay().set_role_plan(interplay.FILLS)
+        interplay_choices.set_role_plan(interplay.FILLS)
         chorus = next(scene for scene in made(choices)[arranger.FORM] if scene[arranger.SCENE] == CHORUS)
         self.assertEqual(chorus[arranger.PLAY][answering][arranger.PART], wizard_text.MSG_PART_BESIDE.format(CHORUS, answering, interplay.FILLS))
 
@@ -211,40 +215,47 @@ class TestWizardInterplayChoices(unittest.TestCase):
 
     def test_a_new_song_is_answered_by_the_genres_player_going_by_the_subgenres_plan(self):
         choices = wizard()
-        self.assertEqual(choices.get_band().tune_player(), 'lead')
-        self.assertEqual((choices.interplay().answerers(), choices.interplay().answered_by()), ([SOLO], SOLO))
-        self.assertIsNone(choices.interplay().get_role_plan())
+        band_choices = choices.get_band()
+        band = band_choices
+        interplay_choices = choices.interplay()
+        self.assertEqual(band.tune_player(), 'lead')
+        self.assertEqual((interplay_choices.answerers(), interplay_choices.answered_by()), ([SOLO], SOLO))
+        self.assertIsNone(interplay_choices.get_role_plan())
         verse = place_of(choices=choices, kind=VERSE)
         chorus = place_of(choices=choices, kind=CHORUS)
         solo = place_of(choices=choices, kind=SOLO)
+        section = choices.section(solo)
         self.assertEqual(choices.section(verse).role(), interplay.FILLS)
         self.assertEqual(choices.section(chorus).role(), interplay.DOUBLES)
         hard = wizard(subgenre=HARD_ROCK)
         hard_verse = place_of(choices=hard, kind=VERSE)
         self.assertEqual(hard.section(hard_verse).role(), interplay.RIFF)
         # A kind the plan leaves out is waited through, and a section nobody has the tune in has no role.
-        self.assertFalse(choices.section(solo).has_role())
+        self.assertFalse(section.has_role())
         with self.assertRaises(ValueError) as refused:
-            choices.section(solo).role()
+            section.role()
         self.assertEqual(str(refused.exception), errors.ERR_WIZARD_SECTION_HAS_NO_ROLE.format(value=solo))
 
     def test_nobody_answers_where_the_genre_has_no_answering_player_or_the_subgenre_gives_the_player_no_way(self):
         for genre, subgenre in ((ELECTRONIC, 'house'), (ROCK, PUNK)):
             choices = wizard(genre=genre, subgenre=subgenre)
-            self.assertEqual((choices.interplay().answerers(), choices.interplay().answered_by()), ([], None))
-            self.assertFalse(choices.interplay().has_fills_busy())
+            interplay_choices = choices.interplay()
+            self.assertEqual((interplay_choices.answerers(), interplay_choices.answered_by()), ([], None))
+            self.assertFalse(interplay_choices.has_fills_busy())
             self.assertNotIn(arranger.BESIDE, choices.song_picks(SONG_NAME))
             with self.assertRaises(ValueError):
-                choices.interplay().set_role_plan(interplay.FILLS)
+                interplay_choices.set_role_plan(interplay.FILLS)
 
     def test_one_role_for_every_section_a_sections_own_and_the_plan_again(self):
         choices = wizard()
+        interplay_choices = choices.interplay()
         verse = place_of(choices=choices, kind=VERSE)
         chorus = place_of(choices=choices, kind=CHORUS)
+        section = choices.section(chorus)
         usual = made(choices)
         choices.section(verse).set_own_role(interplay.RIFF)
         self.assertTrue(choices.section(verse).has_own_role())
-        self.assertEqual((choices.section(verse).role(), choices.section(chorus).role()), (interplay.RIFF, interplay.DOUBLES))
+        self.assertEqual((choices.section(verse).role(), section.role()), (interplay.RIFF, interplay.DOUBLES))
         # Only that verse changed: the second verse still goes by the plan.
         second_verse = place_of(choices=choices, kind=VERSE, which=1)
         self.assertEqual(choices.section(second_verse).role(), interplay.FILLS)
@@ -253,21 +264,23 @@ class TestWizardInterplayChoices(unittest.TestCase):
         self.assertFalse(choices.section(verse).has_own_role())
         self.assertEqual(choices.section(verse).role(), interplay.FILLS)
         choices.section(verse).set_own_role(interplay.RIFF)
-        choices.interplay().set_role_plan(interplay.ANSWERS)
+        interplay_choices.set_role_plan(interplay.ANSWERS)
         self.assertEqual({choices.section(place).role() for place in (verse, chorus)}, {interplay.ANSWERS})
         self.assertFalse(choices.section(verse).has_own_role())
-        choices.interplay().set_role_plan(None)
-        self.assertEqual(choices.section(chorus).role(), interplay.DOUBLES)
+        interplay_choices.set_role_plan(None)
+        self.assertEqual(section.role(), interplay.DOUBLES)
 
     def test_what_is_chosen_is_kept_with_the_song_and_a_song_kept_before_keeps_to_what_was_made_then(self):
         choices = wizard()
+        interplay_choices = choices.interplay()
         verse = place_of(choices=choices, kind=VERSE)
-        choices.section(verse).set_own_role(interplay.ANSWERS)
-        choices.interplay().set_fills_busy(wizard_names.INTERPLAY_MOST_BUSY)
+        section = choices.section(verse)
+        section.set_own_role(interplay.ANSWERS)
+        interplay_choices.set_fills_busy(wizard_names.INTERPLAY_MOST_BUSY)
         again = WizardChoices.from_data(choices.to_data())
         self.assertEqual((again.section(verse).role(), again.interplay().get_fills_busy(), again.interplay().answered_by()), (interplay.ANSWERS, wizard_names.INTERPLAY_MOST_BUSY, SOLO))
         self.assertEqual(made(again), made(choices))
-        choices.interplay().set_answered_by(None)
+        interplay_choices.set_answered_by(None)
         again = WizardChoices.from_data(choices.to_data())
         self.assertIsNone(again.interplay().answered_by())
         self.assertEqual(again.to_data()[wizard_limits.BESIDE_SAVED][wizard_limits.BY], None)
@@ -278,24 +291,29 @@ class TestWizardInterplayChoices(unittest.TestCase):
 
     def test_what_is_no_player_no_way_and_no_place_of_the_gauge_is_refused(self):
         choices = wizard()
+        interplay_choices = choices.interplay()
+        interplay = interplay_choices
         verse = place_of(choices=choices, kind=VERSE)
+        section = choices.section(verse)
         with self.assertRaises(ValueError) as refused:
-            choices.interplay().set_answered_by(NO_SUCH)
+            interplay.set_answered_by(NO_SUCH)
         self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_ANSWERER.format(value=NO_SUCH))
-        for setter in (choices.interplay().set_role_plan, lambda way: choices.section(verse).set_own_role(way)):
+        for setter in (interplay.set_role_plan, lambda way: section.set_own_role(way)):
             with self.assertRaises(ValueError) as refused:
                 setter(NO_SUCH)
             self.assertEqual(str(refused.exception), errors.ERR_WIZARD_NO_SUCH_WAY_BESIDE.format(value=NO_SUCH))
         for busy in (wizard_names.INTERPLAY_LEAST_BUSY - 1, wizard_names.INTERPLAY_MOST_BUSY + 1, True, NO_SUCH):
             with self.assertRaises(ValueError) as refused:
-                choices.interplay().set_fills_busy(busy)
+                interplay.set_fills_busy(busy)
             self.assertEqual(str(refused.exception), errors.ERR_WIZARD_FILLS_BUSY.format(low=wizard_names.INTERPLAY_LEAST_BUSY, high=wizard_names.INTERPLAY_MOST_BUSY, value=busy))
 
     def test_every_place_of_fills_busy_makes_a_song_of_its_own(self):
         choices = wizard()
+        interplay_choices = choices.interplay()
+        interplay = interplay_choices
         songs = []
         for busy in range(wizard_names.INTERPLAY_LEAST_BUSY, wizard_names.INTERPLAY_MOST_BUSY + 1):
-            choices.interplay().set_fills_busy(busy)
+            interplay.set_fills_busy(busy)
             song = choices.made_setlist(name=SONG_NAME, version=version.VERSION).to_data()
             self.assertNotIn(song, songs, busy)
             songs.append(song)
