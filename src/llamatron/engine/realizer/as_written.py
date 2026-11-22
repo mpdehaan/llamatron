@@ -6,7 +6,6 @@
 
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.shapes import shape_settings
-from llamatron.model.objects.strum import strum_settings
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 
@@ -25,16 +24,15 @@ def as_written(song):
         for row in CHANCE_AND_READING_ROWS:
             pattern.pop(row, None)
     shaped = [setting.get_name() for setting in shape_settings()]
-    strummed = [setting.get_name() for setting in strum_settings()]
     for song_data in data[Section.SONGS].values():
         song_data.pop(SongSetting.GROOVE, None)
         for track in (song_data.get(Section.TRACKS) or {}).values():
-            for name in [TrackSetting.CHAINS, TrackSetting.GROOVE, *strummed]:
+            for name in [TrackSetting.CHAINS, TrackSetting.GROOVE]:
                 track.pop(name, None)
         for scene in song_data.get(Section.SCENES) or []:
             for name in [SceneSetting.CHAINS, SceneSetting.GROOVE, *shaped]:
                 scene.pop(name, None)
             for clip in (scene.get(SceneSetting.TRACKS) or {}).values():
-                for name in [ClipSlotSetting.CHAINS, *shaped, *strummed]:
+                for name in [ClipSlotSetting.CHAINS, *shaped]:
                     clip.pop(name, None)
     return Setlist.from_data(data=data).get_song(song_name)

@@ -19,7 +19,7 @@ from dataclasses import dataclass
 import pathlib
 import re
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, hocket as hocket_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, hocket as hocket_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.document import Document
@@ -35,7 +35,6 @@ SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'minimal_techno.yml'
 ARP_SONG = ROOT / 'examples' / 'learning' / '12_sailor_arpeggiator.yml'
 # The demos whose pages show the advanced settings of scenes, clips, tracks and the newer generators.
 SWELL_SONG = ROOT / 'examples' / 'learning' / '16_bolero_swell.yml'
-STRUM_SONG = ROOT / 'examples' / 'learning' / '13_classic_strum.yml'
 PROGRESSION_SONG = ROOT / 'examples' / 'learning' / '06_chord_progression_generator.yml'
 # The Chords generator of that song the Chords shots show, in Progression mode.
 SHOWN_PROGRESSION = 'pop'
@@ -131,14 +130,12 @@ SHOTS = [
     # The settings pages' sections, opened with PgDn to a heading and Space: a scene's Velocity Ramp In, past its two tempo ramps and a clip's Strum.
     Shot(name='scene_swell', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.SPACE], song=SWELL_SONG),
     Shot(name='scene_density', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=DENSITY_SONG),
-    Shot(name='clip_strum', keys=[keybindings.MainPage.ARRANGE, Key.DOWN, Key.RIGHT, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=STRUM_SONG),
     Shot(name='instruments', keys=[keybindings.MainPage.INSTRUMENTS]),
     Shot(name='instrument_editor', keys=[keybindings.MainPage.INSTRUMENTS, Key.ENTER]),
     Shot(name='chords_generator', generator=chords_plugin.SECTION, generator_name=SHOWN_PROGRESSION, keys=[], song=PROGRESSION_SONG),
     Shot(name='chords_editor', generator=chords_plugin.SECTION, generator_name=SHOWN_PROGRESSION, keys=[Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),
     Shot(name='drift_editor', generator=drift_plugin.SECTION, keys=[], song=DRIFT_SONG),
     Shot(name='hocket_editor', generator=hocket_plugin.SECTION, keys=[], song=HOCKET_SONG),
-    Shot(name='strum_editor', generator=strum_plugin.SECTION, keys=[], song=STRUM_SONG),
     Shot(name='shapes_editor', generator=shapes_plugin.SECTION, keys=[], song=SWELL_SONG),
     Shot(name='timing_editor', generator=timing_plugin.SECTION, keys=[], song=GLIDE_SONG),
     Shot(name='chain_list', keys=[keybindings.MainPage.ARRANGE, *[Key.RIGHT] * CHAINED_TRACK_PLACE, Key.ENTER, Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),

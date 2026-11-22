@@ -20,11 +20,10 @@ from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.conditions import register_values_setting, statements_setting, with_statement
 from llamatron.model.objects.llama_data import HoldsSettings, own_copy, settings_by_name, written_settings
 from llamatron.model.objects.shapes import shape_settings, shape_values
-from llamatron.model.objects.strum import strum_settings, strum_values
 from llamatron.model.objects.traits import RunsChains, SetsRegisters
 from llamatron.model.objects.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, PatternOrder, Section, strum_setting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternOrder, Section
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.model.values.blend_mode import BlendMode
 from llamatron.user_strings import errors, marks
@@ -91,7 +90,6 @@ SETTINGS = described(
     Checked(name=ClipSlotSetting.SCALE, check=_check_scale_name, needs_song=True),
     *velocity_setting_descriptions(),
     *shape_settings(),
-    *strum_settings(),
     register_values_setting(ClipSlotSetting.SET_REGISTERS),
     register_values_setting(ClipSlotSetting.ADD_REGISTERS),
     statements_setting(ClipSlotSetting.BYPASS_WHEN),
@@ -183,15 +181,6 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
     def get_pattern_name(self):
         """Return the first pattern it plays, which is the only one of a clip with one pattern, and what such a clip goes by."""
         return self._settings[ClipSlotSetting.PATTERNS][0]
-
-    def get_strum(self):
-        """Return how the clip strums its chords, or None when its Direction is blank and it takes its track's."""
-        return strum_values(self._strum_part)
-
-    def set_strum_setting(self, *, part, value):
-        """Set one part of the clip's strum, or None to leave it blank."""
-        name = strum_setting(part)
-        self.set_written(name=name, value=value)
 
     def get_velocity_settings(self):
         """Return its velocity settings as written, each by its file name: the level that holds and the parts of its two ramps, None where one is blank."""
@@ -350,10 +339,6 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
     @notes_change
     def clear_grab(self):
         self._settings[ClipSlotSetting.GRAB_TRACK] = None
-
-    def _strum_part(self, part):
-        """Return one part of the clip's strum as written, or None where it is blank."""
-        return self._settings[strum_setting(part)]
 
 
 def _check_morph(*, data, repeat):

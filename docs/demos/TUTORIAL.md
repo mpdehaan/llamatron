@@ -15,7 +15,6 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Directions](#mtn_king_direction): `10_mtn_king_direction.yml`
 - [Ratchets](#ode_to_joy_ratchet): `11_ode_to_joy_ratchet.yml`
 - [Arpeggiator](#sailor_arpeggiator): `12_sailor_arpeggiator.yml`
-- [Strum](#classic_strum): `13_classic_strum.yml`
 - [Glide and Shorten](#acid_glide): `14_acid_glide.yml`
 - [Articulate](#acid_articulate): `15_acid_articulate.yml`
 - [Swell](#bolero_swell): `16_bolero_swell.yml`
@@ -246,27 +245,6 @@ arpeggio.
 | [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) |
 <!-- end of the generated summary of 12_sailor_arpeggiator -->
 
-<a id="classic_strum"></a>
-## Strum: `13_classic_strum.yml`
-
-An acoustic folk song in G major whose guitar chords are strummed as a hand crosses the strings,
-down on the beats and up between them, compared scene by scene: struck all at once, strummed
-tight, normal, with the full acoustic setting of fade, loose timing and light upstrokes, and
-rolled like a harp.
-
-[`examples/learning/13_classic_strum.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/13_classic_strum.yml) · G major · 92 BPM · 2:52 · 9 scenes · 2 tracks
-
-| chords | chains | ties | progressions | strum |
-| :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) | [✓](../generators/STRUM.md) |
-<!-- end of the generated summary of 13_classic_strum -->
-
-**New Features Introduced**
-
-| strum |
-| :---: |
-| [✓](../generators/STRUM.md) |
-
 <a id="acid_glide"></a>
 ## Glide and Shorten: `14_acid_glide.yml`
 
@@ -427,25 +405,26 @@ at once. Then DX fades the riff, kick and hat out together over six repeats of t
 <a id="guitarify"></a>
 ## Guitarify: `23_guitarify.yml`
 
-A tour of guitar playing in twenty short scenes, each a way a guitar is played, on seven General
-MIDI guitars and nothing else: a country bass note and strum, picking with thumb and fingers,
+A tour of guitar playing in twenty-one short scenes, each a way a guitar is played, on seven
+General MIDI guitars and nothing else: chords as written strummed in Strum mode, a country bass
+note and strum, picking with thumb and fingers,
 bluegrass crosspicking, jazz comping, a blues in open G, power chords, a surf tremolo, the folk
 strum, funk scratching, a singer's rolled chords, metal gallops and a twelve bar shuffle. Every
 pattern is only a row of chords or low notes, and the Guitarify generator of each scene does the
-playing, so the demo shows what its Shape and Strokes sections do to the same kind of pattern.
+playing, so the demo shows what its Strum mode and its Shape and Strokes halves do to the same kind of pattern.
 
-[`examples/learning/23_guitarify.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/23_guitarify.yml) · G major · 104 BPM · 3:09 · 20 scenes · 7 tracks
+[`examples/learning/23_guitarify.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/23_guitarify.yml) · G major · 96 BPM · 3:19 · 21 scenes · 7 tracks
 
-| chords | chains | guitarify | key changes | tempo changes | progressions |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#chords) |
+| chords | chains | guitarify | key changes | tempo changes | progressions | strum |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#chords) | [✓](../generators/GUITARIFY.md) |
 <!-- end of the generated summary of 23_guitarify -->
 
 **New Features Introduced**
 
-| guitarify |
-| :---: |
-| [✓](../generators/GUITARIFY.md) |
+| guitarify | strum |
+| :---: | :---: |
+| [✓](../generators/GUITARIFY.md) | [✓](../generators/GUITARIFY.md) |
 
 <a id="follow_chords"></a>
 ## Follow Chords: `24_follow_chords.yml`

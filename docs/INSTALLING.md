@@ -33,7 +33,7 @@ sh user_scripts/install_fluidsynth.sh
 [FluidSynth](FLUIDSYNTH.md) describes what the script installs, how the tracker uses FluidSynth, and when to use your own instruments instead. To check that it works, open a demo and play it:
 
 ```
-./llamatron.sh examples/learning/13_classic_strum.yml
+./llamatron.sh examples/learning/02_pachelbel.yml
 ```
 
 Press `A` for Arrange, move to the top left corner with the arrows, where `▶ song` shows, and press `Space`.

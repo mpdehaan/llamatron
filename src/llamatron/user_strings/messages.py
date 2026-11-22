@@ -324,7 +324,7 @@ MSG_MOVING_TRACK = 'track ({name})'
 MSG_MOVING_CLIP = 'clip ({name})'
 MSG_MOVING_ROW = '({name})'
 
-# interface/tracker/screens/generators/guitar_bar_editor.py: the lines above the bar of strokes.
+# interface/tracker/screens/shared/guitar_bar_editor.py: the lines above the bar of strokes.
 MSG_GUITAR_BAR_NOTE = 'one stroke a cell of {cell}, played on whatever sounds, following the song\'s bars'
 MSG_GUITAR_CELL_NOTE = 'cell {number}: {stroke}'
 MSG_GUITAR_CELL_ACCENTED_NOTE = 'cell {number}: {stroke}, accented'

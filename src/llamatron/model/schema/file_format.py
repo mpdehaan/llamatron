@@ -159,12 +159,6 @@ class TrackSetting:
     ACCENT = 'accent'
     # The chains every clip of the track runs, after the clip's and the scene's.
     CHAINS = 'chains'
-    # How the track's chords are strummed, unless a clip strums its own way.
-    STRUM_DIRECTION = 'strum_direction'
-    STRUM_SPREAD = 'strum_spread'
-    STRUM_FADE = 'strum_fade'
-    STRUM_LOOSE_TIMING = 'strum_loose_timing'
-    STRUM_UPSTROKE_STRINGS = 'strum_upstroke_strings'
     # The register statements that bypass the generators of the track's clips, and that make its clips sit out a pass.
     BYPASS_WHEN = 'bypass_when'
     SKIP_WHEN = 'skip_when'
@@ -283,12 +277,6 @@ class ClipSlotSetting:
     PATTERN_ORDER = 'pattern_order'
     # The chains a clip runs, in order, before its scene's and its track's.
     CHAINS = 'chains'
-    # How the clip's chords are strummed, over its track's.
-    STRUM_DIRECTION = 'strum_direction'
-    STRUM_SPREAD = 'strum_spread'
-    STRUM_FADE = 'strum_fade'
-    STRUM_LOOSE_TIMING = 'strum_loose_timing'
-    STRUM_UPSTROKE_STRINGS = 'strum_upstroke_strings'
     # How busy, how loud and how long its notes are over time, over its scene's.
     DENSITY_START = 'density_start'
     DENSITY_END = 'density_end'
@@ -940,59 +928,13 @@ class NamedProgression:
 
 
 class StrumDirection:
-    """The order a chord's notes sound in when strummed: down is low to high, as a pick moves on a downstroke, up the reverse; by the beat follows a hand that moves down on the beats and up between them; down up alternates chord by chord; off strums nothing, for a clip that won't take its track's strum."""
+    """The order a chord's notes sound in when strummed: down is low to high, as a pick moves on a downstroke, up the reverse; by the beat follows a hand that moves down on the beats and up between them; down up alternates chord by chord."""
 
     BY_THE_BEAT = 'by_the_beat'
     DOWN = 'down'
     UP = 'up'
     DOWN_UP = 'down_up'
-    OFF = 'off'
 
-
-STRUM_DIRECTIONS = [StrumDirection.BY_THE_BEAT, StrumDirection.DOWN, StrumDirection.UP, StrumDirection.DOWN_UP, StrumDirection.OFF]
-
-
-class StrumSpread:
-    """How far apart a strum's strings sound, each a number of milliseconds whatever the tempo, since a hand doesn't slow down with the song."""
-
-    TIGHT = 'tight'
-    CRISP = 'crisp'
-    NORMAL = 'normal'
-    LOOSE = 'loose'
-    RAKE = 'rake'
-    HARP = 'harp'
-
-
-STRUM_SPREADS = [StrumSpread.TIGHT, StrumSpread.CRISP, StrumSpread.NORMAL, StrumSpread.LOOSE, StrumSpread.RAKE, StrumSpread.HARP]
-
-
-class UpstrokeStrings:
-    """Which of a chord's notes an upstroke catches: all of them, or only the top three or four, as a hand often does."""
-
-    ALL = 'all'
-    TOP_3 = 'top_3'
-    TOP_4 = 'top_4'
-
-
-UPSTROKE_STRINGS = [UpstrokeStrings.ALL, UpstrokeStrings.TOP_3, UpstrokeStrings.TOP_4]
-
-
-class StrumPart:
-    """A strum's settings as a Strum generator names them, and as a track or a clip names them after strum_."""
-
-    DIRECTION = 'direction'
-    SPREAD = 'spread'
-    FADE = 'fade'
-    LOOSE_TIMING = 'loose_timing'
-    UPSTROKE_STRINGS = 'upstroke_strings'
-
-
-STRUM_SETTING = 'strum_{part}'
-
-
-def strum_setting(part):
-    """Return a track's or a clip's setting of one part of its strum, like strum_spread."""
-    return STRUM_SETTING.format(part=part)
 
 
 class Tuning:
@@ -1114,9 +1056,12 @@ GENERATOR_RESTART = 'restart'
 
 
 class GuitarifySetting:
-    """A Guitarify's settings, as a file names them: Shape's, then the strokes'."""
+    """A Guitarify's settings, as a file names them: its Mode and a strum's direction, then Shape's, then the strokes'."""
 
     RESTART = GENERATOR_RESTART
+
+    MODE = 'mode'
+    DIRECTION = 'direction'
 
     SHAPE = 'shape'
     TUNING = 'tuning'

@@ -13,7 +13,6 @@ from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.generators_field import generators_field
 from llamatron.interface.tracker.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
-from llamatron.interface.tracker.screens.generators.strum_fields import strum_section
 from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
@@ -26,7 +25,7 @@ from llamatron.interface.tracker.uses import loop_error_lines
 from llamatron.model.objects import clip_slot as clip_slot_values
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, Section, shape_setting, strum_setting
+from llamatron.model.schema.file_format import ClipSlotSetting, Section, shape_setting
 from llamatron.user_strings import errors, help as help_text, labels as labels_text, legends, marks, messages, names as names_text
 
 EXISTING_PATTERN = 0
@@ -403,7 +402,6 @@ class ClipPage(FieldPage):
             Field(label=labels_text.MSG_GRAB_TRACK_LABEL, value=self._grab_shown, adjust=None, enter=self.pick_grab_track, enter_what=legends.What.CHOOSE,
                   clear=functools.partial(self.clear, ClipSlotSetting.GRAB_TRACK), clear_what=legends.MSG_NO_GRAB_WHAT),
             self.follow_action_field(),
-            *self.strum_section(),
             *velocity_ramp_sections(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
         ]
         for shape in file_format.PLACED_SHAPES:
@@ -456,27 +454,6 @@ class ClipPage(FieldPage):
         """Ask for the pattern the clip morphs into."""
         clip_slot = self.clip_slot()
         self.pick_pattern(title=labels_text.MSG_MORPH_TO_LABEL, current=clip_slot.get_morph_target(), then=self.set_morph_target)
-
-    def strum_section(self):
-        """Return the clip's + Strum section: how it strums its chords, over its track's."""
-        song = self.document().song()
-        track = song.get_track(self.track)
-        strum = track.get_strum()
-        taken = marks.MSG_NONE_SHOWN
-        if strum is not None:
-            taken = labels_text.MSG_STRUM_WORDS.get(strum.direction, strum.direction)
-        return strum_section(
-            page=self, value=self._strum_written, first=labels_text.MSG_TRACK_STRUM_CHOICE, inherited=marks.MSG_FROM_TRACK_SHOWN.format(value=taken),
-            store=lambda part, value: self._set_strum(part=part, value=value),
-        )
-
-    def _strum_written(self, part):
-        clip_slot = self.clip_slot()
-        return clip_slot.get_written(strum_setting(part))
-
-    def _set_strum(self, *, part, value):
-        clip_slot = self.clip_slot()
-        self.document().change_set(clip_slot.set_strum_setting, part=part, value=value)
 
     def _set_written(self, *, name, value):
         clip_slot = self.clip_slot()

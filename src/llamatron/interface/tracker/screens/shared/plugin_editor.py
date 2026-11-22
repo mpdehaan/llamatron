@@ -10,6 +10,7 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.guitar_bar_editor import guitar_bar_field
 from llamatron.interface.tracker.screens.shared.octave_field import octave_field
 from llamatron.interface.tracker.screens.shared.progression_field import progression_field
 from llamatron.interface.tracker.screens.shared.restart_field import restart_field
@@ -19,7 +20,7 @@ from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import shape_setting
-from llamatron.model.schema.generator_views import ChoiceView, NumberView, OctaveView, ProgressionView, RestartView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView
+from llamatron.model.schema.generator_views import ChoiceView, GuitarBarView, NumberView, OctaveView, ProgressionView, RestartView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 
@@ -192,6 +193,8 @@ class PluginEditor(GeneratorEditor, FieldPage):
             return [self._track_field(setting)]
         if kind is ProgressionView:
             return [progression_field(page=self, label=setting.label)]
+        if kind is GuitarBarView:
+            return [guitar_bar_field(page=self, label=setting.label)]
         raise TypeError(setting)
 
     def _number_field(self, setting):
@@ -205,6 +208,8 @@ class PluginEditor(GeneratorEditor, FieldPage):
         elif number is None:
             number = setting.default
             start = setting.default
+        if number is not None:
+            shown = _number_shown(number=number, setting=setting)
         return NumberField(
             page=self, label=setting.label, number=number, start=start, shown=shown, lowest=described.get_lowest(),
             highest=described.get_highest(), set=functools.partial(self.store_number, setting=setting),
@@ -286,3 +291,12 @@ def _settings_named(views):
         if hasattr(view, 'setting'):
             names.append(view.setting)
     return names
+
+
+def _number_shown(*, number, setting):
+    """Return how a number of a view shows: the word for 0 where it has one, else its template filled, or None for the number alone."""
+    if number == 0 and setting.zero_shown is not None:
+        return setting.zero_shown
+    if setting.shown is None:
+        return None
+    return setting.shown.format(number=number)

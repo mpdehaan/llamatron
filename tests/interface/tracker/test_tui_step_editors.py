@@ -17,11 +17,11 @@ from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.interface.tracker.screens.generators.offsets_editor import OffsetsEditor
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.groove_editor import GrooveEditor
 from llamatron.interface.tracker.screens.shared.chords_editor import ChordsEditor
+from llamatron.interface.tracker.screens.shared.guitar_bar_editor import GuitarBarEditor
 from llamatron.interface.tracker.screens.shared.one_row_editor import OneRowEditor
 from llamatron.interface.tracker.screens.shared.step_editor import StepEditor
 from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor

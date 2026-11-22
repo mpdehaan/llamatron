@@ -30,7 +30,8 @@ class GeneratorController:
 
 
     def strum(self, settings):
-        """Return how its generator strums a clip's chords, as a Strum, and the generator's Restart, or None for none."""
+        """Return how its generator strums a clip's chords at the very end, as StrumValues, and the generator's Restart; or None
+        where these settings strum nothing."""
         return None
 
     def moving_rows(self, *, settings, place):

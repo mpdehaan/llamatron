@@ -12,10 +12,9 @@ from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.conditions import statements_setting, with_statement
 from llamatron.model.objects.groove import check_groove_choice
 from llamatron.model.objects.llama_data import HoldsSettings, left_out_if_default, or_default, own_copy
-from llamatron.model.objects.strum import strum_settings, strum_values
 from llamatron.model.objects.traits import RunsChains
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import Section, strum_setting, TrackSetting
+from llamatron.model.schema.file_format import Section, TrackSetting
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.model.values import midi
 from llamatron.user_strings import errors
@@ -63,7 +62,6 @@ SETTINGS = described(
     WholeNumber(name=TrackSetting.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, error=errors.ERR_BAD_DEFAULT_VELOCITY),
     WholeNumber(name=TrackSetting.ACCENT, lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT, error=errors.ERR_BAD_ACCENT),
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
-    *strum_settings(),
     statements_setting(TrackSetting.BYPASS_WHEN),
     statements_setting(TrackSetting.SKIP_WHEN),
 )
@@ -88,7 +86,6 @@ class Track(RunsChains, HoldsSettings):
     def __init__(
         self, *, drum=None, mute=None, transpose=None, lowest_octave=None, highest_octave=None, cc=None, groove=None, instrument=None,
         cc1_register=None, cc2_register=None, cc3_register=None, cc4_register=None, velocity_register=None, default_velocity=None, accent=None, chains=None,
-        strum_direction=None, strum_spread=None, strum_fade=None, strum_loose_timing=None, strum_upstroke_strings=None,
         bypass_when=None, skip_when=None,
     ):
         self.note_change()
@@ -97,8 +94,7 @@ class Track(RunsChains, HoldsSettings):
             TrackSetting.LOWEST_OCTAVE: lowest_octave, TrackSetting.HIGHEST_OCTAVE: highest_octave, TrackSetting.CC: own_copy(cc), TrackSetting.GROOVE: groove,
             TrackSetting.INSTRUMENT: instrument, TrackSetting.CC1_REGISTER: cc1_register, TrackSetting.CC2_REGISTER: cc2_register,
             TrackSetting.CC3_REGISTER: cc3_register, TrackSetting.CC4_REGISTER: cc4_register, TrackSetting.VELOCITY_REGISTER: velocity_register, TrackSetting.DEFAULT_VELOCITY: default_velocity, TrackSetting.ACCENT: accent,
-            TrackSetting.CHAINS: own_copy(chains), TrackSetting.STRUM_DIRECTION: strum_direction, TrackSetting.STRUM_SPREAD: strum_spread,
-            TrackSetting.STRUM_FADE: strum_fade, TrackSetting.STRUM_LOOSE_TIMING: strum_loose_timing, TrackSetting.STRUM_UPSTROKE_STRINGS: strum_upstroke_strings,
+            TrackSetting.CHAINS: own_copy(chains),
             TrackSetting.BYPASS_WHEN: own_copy(bypass_when), TrackSetting.SKIP_WHEN: own_copy(skip_when),
         }
 
@@ -222,19 +218,6 @@ class Track(RunsChains, HoldsSettings):
     def set_velocity_register(self, register):
         """Bind the velocity to a register by name, or None to bind it to nothing."""
         self.set_written(name=TrackSetting.VELOCITY_REGISTER, value=register)
-
-    def get_strum_setting(self, part):
-        """Return one part of the track's strum as the file writes it, like its spread, or None when it's blank."""
-        return self._settings[strum_setting(part)]
-
-    def get_strum(self):
-        """Return how the track strums its chords, or None when its Direction is blank."""
-        return strum_values(self.get_strum_setting)
-
-    def set_strum_setting(self, *, part, value):
-        """Set one part of the track's strum, or None to leave it blank."""
-        name = strum_setting(part)
-        self.set_written(name=name, value=value)
 
     def get_statements(self, name):
         """Return one of its tables of statements about the registers, by the setting's name: the one that bypasses its clips' generators or the one that makes its clips sit out."""

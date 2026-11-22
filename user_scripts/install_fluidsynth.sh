@@ -104,5 +104,5 @@ fi
 
 echo
 echo "FluidSynth is ready. Open an example and play it in real time:"
-echo "    .venv/bin/llamatron examples/learning/13_classic_strum.yml"
+echo "    .venv/bin/llamatron examples/learning/02_pachelbel.yml"
 echo "then press A for Arrange, go to the top left corner with the arrows, and press Space."

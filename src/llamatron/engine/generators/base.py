@@ -55,3 +55,13 @@ class ClipGenerator(ABC):
     @abstractmethod
     def _generate(self, clip):
         """Return the new clip's list of sounds and its length."""
+
+
+class UnchangedClip(ClipGenerator):
+    """Makes a clip that is the one given, unchanged: what a generator runs as a step of a chain where its settings change no
+    notes there, as a Guitarify that strums only at the end."""
+
+    __slots__ = ()
+
+    def _generate(self, clip):
+        return clip.resolved_sounds(), clip.get_length()

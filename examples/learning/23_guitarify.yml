@@ -1,9 +1,10 @@
 version: 1.0.591
 title: Guitarify
-description: "twenty short scenes, each a way a guitar is played, from a porch to an arena, on guitars alone"
+description: "twenty-one short scenes, each a way a guitar is played, from a strum as written to an arena, on guitars alone"
 notes: |
-  Guitarify: an original tour of guitar playing, twenty scenes by genre, each four bars (the
-  shuffle its full twelve), on seven General MIDI guitars and nothing else, one guitar a scene.
+  Guitarify: an original tour of guitar playing, twenty-one scenes, the first strummed as written
+  and the rest by genre, each four bars (the shuffle its full twelve), on seven General MIDI
+  guitars and nothing else, one guitar a scene.
   Run it with: llamatron examples/learning/23_guitarify.yml
 
   Every pattern here is only a row of chords or low notes, one a bar or two a bar. The playing
@@ -11,19 +12,23 @@ notes: |
   would, one note a string, in the scene's tuning and position, and makes a single low note a
   power chord in the loud scenes. Its Strokes half plays a bar of strokes on whatever sounds:
   strums down and up, muted strums, the bass string, the alternate bass and single strings.
+  In Strum mode, it plays the chords as written and strums each one at the end instead, as a hand
+  crosses the strings.
 
-  Scenes 1 and 2: country. A bass note and a strum, then thumb and fingers picking with Let ring.
-  Scene 3: bluegrass crosspicking. Scene 4: jazz, four strums to the bar on four strings.
-  Scene 5: blues in open G tuning. Scene 6: rock and roll, power chords in eighths.
-  Scene 7: surf, one string picked fast. Scene 8: the folk strum. Scene 9: folk rock, ringing.
-  Scene 10: soul, the chord on the backbeat. Scene 11: funk, sixteenths mostly muted.
-  Scene 12: a singer's rolled chords, each string heard. Scenes 13 and 14: hard rock and punk.
-  Scenes 15 to 17: metal, galloping, thrashing, then slow in drop D.
-  Scene 18: alternative, two bars picked quietly and two strummed hard, one bar of 32 strokes.
-  Scene 19: a twelve bar blues shuffle, the bar in triplets. Scene 20: the last chord, rolled.
+  Scene 1: the chords as written, strummed by the beat in Strum mode.
+
+  Scenes 2 and 3: country. A bass note and a strum, then thumb and fingers picking with Let ring.
+  Scene 4: bluegrass crosspicking. Scene 5: jazz, four strums to the bar on four strings.
+  Scene 6: blues in open G tuning. Scene 7: rock and roll, power chords in eighths.
+  Scene 8: surf, one string picked fast. Scene 9: the folk strum. Scene 10: folk rock, ringing.
+  Scene 11: soul, the chord on the backbeat. Scene 12: funk, sixteenths mostly muted.
+  Scene 13: a singer's rolled chords, each string heard. Scenes 14 and 15: hard rock and punk.
+  Scenes 16 to 18: metal, galloping, thrashing, then slow in drop D.
+  Scene 19: alternative, two bars picked quietly and two strummed hard, one bar of 32 strokes.
+  Scene 20: a twelve bar blues shuffle, the bar in triplets. Scene 21: the last chord, rolled.
 
   When changing this demo:
-  - Keep it guitars only, one guitar a scene, and every scene its own Guitarify.
+  - Keep it guitars only, one guitar a scene, and every scene its own Guitarify, the first in Strum mode.
   - Keep the patterns plain chords, so that everything heard between them is the generator's.
   - Each scene is an original progression: none is taken from an existing song.
 real_time: true
@@ -40,6 +45,12 @@ scales:
   - { name: D Minor, root: D, type: minor }
 
 patterns:
+  - name: strummed
+    steps: 16
+    step_size: 1/4
+    degree: [1, 1, 1, 1, 4, 4, 4, 4, 5, 5, 5, 5, 1, 1, 1, 1]
+    octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    chord: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
   - name: porch
     steps: 4
     step_size: 1
@@ -161,6 +172,10 @@ patterns:
     chord: [3, 3, 3, 3]
 
 generators:
+  - name: as written
+    kind: guitarify
+    mode: strum
+    spread: 15
   - name: porch
     kind: guitarify
     # the ready-made bar: boom chick
@@ -294,6 +309,7 @@ generators:
   - { name: quiet loud, kind: guitarify, bar: [bass, string_3, string_2, string_1, string_2, string_3, string_2, string_1, bass, string_3, string_2, string_1, string_2, string_3, string_2, string_1, down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up], accents: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false], cell: 1/8, let_ring: true }
   - { name: shuffle, kind: guitarify, bar: [down, nothing, down, down, nothing, down, down, nothing, down, down, nothing, down], accents: [false, false, false, true, false, false, false, false, false, true, false, false], cell: 1/12, strings: 4, spread: 4 }
   - { name: last chord, kind: guitarify, bar: [down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up, bass, string_4, string_3, string_2, string_1, nothing, nothing, nothing], accents: [true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true }
+  - { name: as written guitar, kind: chain, generators: [{ name: as written }] }
   - { name: porch guitar, kind: chain, generators: [{ name: porch }] }
   - { name: thumb and fingers guitar, kind: chain, generators: [{ name: thumb and fingers }] }
   - { name: crosspick guitar, kind: chain, generators: [{ name: crosspick }] }
@@ -340,6 +356,11 @@ songs:
       - { name: distortion, instrument: distortion guitar }
 
     scenes:
+      - name: "strum: as written"
+        scale: G Major
+        tempo: 96
+        clips:
+          - { track: steel, pattern: strummed, generators: [{ name: as written guitar }] }
       - name: "country: porch"
         scale: G Major
         tempo: 104

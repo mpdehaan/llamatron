@@ -77,7 +77,6 @@ Which notes sound, and when within the beat.
 | Generator | What it does | Demo |
 | --- | --- | --- |
 | [AutoRatchet](generators/AUTORATCHET.md) | Chops notes into quick repeats | `examples/learning/11_ode_to_joy_ratchet.yml` |
-| [Strum](generators/STRUM.md) | Spreads a chord's notes in time like a pick | `examples/learning/13_classic_strum.yml` |
 
 ### Timing
 

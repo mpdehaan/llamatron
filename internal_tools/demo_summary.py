@@ -161,7 +161,7 @@ FEATURE_LINKS = {
     'progressions': GENERATOR_DOC.format(page='CHORDS'),
     'voice leadings': GENERATOR_DOC.format(page='CHORDS'),
     'inversions': CHORDS_DOC,
-    'strums': GENERATOR_DOC.format(page='STRUM'),
+    'strums': GENERATOR_DOC.format(page='GUITARIFY'),
     'timings': GENERATOR_DOC.format(page='TIMING'),
 }
 USED_LINK = '[{mark}]({link})'

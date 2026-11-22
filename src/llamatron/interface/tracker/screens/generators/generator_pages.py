@@ -9,10 +9,8 @@ from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedCho
 from llamatron.interface.tracker.screens.generators.arp_editor import ArpEditor
 from llamatron.interface.tracker.screens.generators.auto_ratchet_editor import AutoRatchetEditor
 from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
-from llamatron.interface.tracker.screens.generators.guitarify_editor import GuitarifyEditor
 from llamatron.interface.tracker.screens.generators.hocket_editor import HocketEditor
 from llamatron.interface.tracker.screens.generators.musician_editor import MusicianEditor
-from llamatron.interface.tracker.screens.generators.strum_editor import StrumEditor
 from llamatron.interface.tracker.screens.shared.plugin_editor import has_view, plugin_editor_of
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import Section
@@ -36,7 +34,7 @@ def _in_shown_order(listings):
 
 # The page that edits a generator of each kind, by the section of the set that holds them, which each editor names.
 EDITORS = {editor.SECTION: editor for editor in (
-    ArpEditor, AutoRatchetEditor, DriftEditor, StrumEditor, HocketEditor, GuitarifyEditor, MusicianEditor,
+    ArpEditor, AutoRatchetEditor, DriftEditor, HocketEditor, MusicianEditor,
 )}
 
 

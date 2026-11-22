@@ -21,13 +21,14 @@ import io
 import os
 import sys
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.engine.generators.chords import model as chords_model
 from llamatron.engine.generators.chords.model import ChordsSetting
+from llamatron.engine.generators.guitarify import model as guitarify_model
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, shape_setting, SongSetting, StepStatement, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, GuitarifySetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, shape_setting, SongSetting, StepStatement, TrackSetting
 
 SET_SUFFIX = '.yml'
 USED = '●'
@@ -102,6 +103,11 @@ def any_song_setting(setting):
 
 def has_section(section):
     return lambda data: bool(data.get(section))
+
+
+def guitarify_strumming(data):
+    """Return whether a set has a Guitarify in Strum mode."""
+    return any(settings.get(GuitarifySetting.MODE) == guitarify_model.STRUM for settings in (data.get(guitarify_plugin.SECTION) or {}).values())
 
 
 def chords_in_mode(mode):
@@ -228,7 +234,7 @@ FEATURES = [
     ('follow chords', chords_in_mode(chords_model.FOLLOW_PROGRESSION)),
     ('phrasings', has_section(phrasing_plugin.SECTION)),
     ('musicians', has_section(musician_plugin.SECTION)),
-    ('strums', lambda data: has_section(strum_plugin.SECTION)(data) or any_track_setting(TrackSetting.STRUM_DIRECTION)(data) or any_clip_slot_setting(ClipSlotSetting.STRUM_DIRECTION)(data)),
+    ('strums', guitarify_strumming),
     ('Shapes', has_section(shapes_plugin.SECTION)),
     ('chains', has_section(Section.CHAINS)),
     ('own grooves', has_section(Section.GROOVES)),

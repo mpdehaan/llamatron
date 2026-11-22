@@ -59,7 +59,6 @@ MSG_DETAILS_SHAPE = '{shape}: {start}→{end}'
 MSG_DETAILS_SHAPE_NAMES = {Shape.DENSITY: 'density', Shape.SWELL: 'swell', Shape.ARTICULATE: 'articulate'}
 MSG_DETAILS_GRAB = 'grab: {track}'
 MSG_DETAILS_ADVANCE = 'advance: {action}'
-MSG_DETAILS_STRUM = 'strum: {direction}'
 MSG_DETAILS_INSTRUMENT = 'inst: {name}'
 MSG_DETAILS_TRANSPOSE = 'transpose: {amount:+d}'
 MSG_DETAILS_MUTED = 'muted'
@@ -157,10 +156,6 @@ MSG_PARENT_ROW = '../'
 MSG_FOLDER_ROW = '{name}/'
 # A step that's off, in a row of steps written out on one line.
 MSG_STEP_OFF = '.'
-# A spread with how many milliseconds apart it sounds two strings.
-MSG_SPREAD_SHOWN = '{name} ({milliseconds} ms)'
-# A voice leading's range on its list page, in the set's octave labels.
-# A shape generator's start and end, as its list page shows them.
 # A number that isn't set, in a list of numbers like CC numbers or offsets.
 MSG_NO_NUMBER_MARK = '-'
 MSG_DRUM_TRACK_SHOWN = '(drum track)'
@@ -317,7 +312,6 @@ MSG_GROOVE_NAME_SHOWN = '  {label}: {name}'
 # interface/tracker/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_GROOVE_OFF_SHOWN = 'off'
 MSG_SONG_GROOVE_SHOWN = '{groove} (from song)'
-MSG_FROM_TRACK_SHOWN = '{value} (from track)'
 MSG_FROM_INSTRUMENT_SHOWN = '{value} (from instrument)'
 MSG_FROM_SET_SHOWN = '{value} (from set)'
 MSG_SCENE_OR_SONG_GROOVE_SHOWN = '(scene or song)'
@@ -370,12 +364,7 @@ MSG_FLAT_SPELLED = 'b'
 MSG_NUMERALS_SEPARATOR = ' '
 MSG_PRESET_NUMERALS_SEPARATOR = '–'
 
-# interface/tracker/screens/generators/guitarify_editor.py, interface/tracker/screens/generators/guitar_bar_editor.py: a Guitarify's values, and what each stroke is drawn as in its cell.
-MSG_GUITAR_OPEN_POSITION = 'open'
-MSG_GUITAR_FRET = 'fret {fret}'
-MSG_GUITAR_NO_CAPO = '(none)'
-MSG_GUITAR_MILLISECONDS = '{milliseconds} ms'
-MSG_GUITAR_EVERY_STRING = 'all'
+# interface/tracker/screens/shared/guitar_bar_editor.py: a Guitarify's bar, and what each stroke is drawn as in its cell.
 MSG_GUITAR_BAR_SHOWN = '{name}, {count} cells of {cell}'
 MSG_STROKE_MARKS = {
     Stroke.NOTHING: '—', Stroke.DOWN: '↓', Stroke.UP: '↑', Stroke.MUTE: 'x', Stroke.STAB: '!', Stroke.BASS: 'B', Stroke.MUTED_BASS: 'b', Stroke.ALT_BASS: 'A', Stroke.SQUEAL: '^',

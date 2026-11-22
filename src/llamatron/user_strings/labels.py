@@ -7,7 +7,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.interface.tracker.keys import RowSection
-from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
+from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, Tuning
 
 
 def register_labels(*, rows, label):
@@ -348,8 +348,6 @@ MSG_MUSICIAN_PLAYS_LABEL = 'Plays'
 MSG_MUSICIAN_PLAYED_LABEL = 'Played'
 MSG_MUSICIAN_SECTION_HEADING = 'In a {section}'
 MSG_MUSICIAN_INSTRUMENT_CHOICE = '(instrument)'
-MSG_GUITAR_SHAPE_SECTION = 'Shape'
-MSG_GUITAR_STROKES_SECTION = 'Strokes'
 MSG_GUITAR_SHAPE_LABEL = 'Shape chords'
 MSG_GUITAR_TUNING_LABEL = 'Tuning'
 MSG_GUITAR_POSITION_LABEL = 'Position'
@@ -391,18 +389,6 @@ MSG_ACCENT_ROW_LABEL = 'Accent'
 MSG_READY_BARS_TITLE = 'Ready-made bar'
 MSG_SOURCE_TRACK_LABEL = 'Source track'
 MSG_ROOT_IN_BASS_LABEL = 'Keep the root in the bass'
-MSG_STRUM_FIELD_LABELS = {
-    StrumPart.DIRECTION: 'Strum direction', StrumPart.SPREAD: 'Strum spread', StrumPart.FADE: 'Strum fade', StrumPart.LOOSE_TIMING: 'Strum loose timing',
-    StrumPart.UPSTROKE_STRINGS: 'Strum upstrokes',
-}
-MSG_STRUM_PART_LABELS = {
-    StrumPart.DIRECTION: 'Direction', StrumPart.SPREAD: 'Spread', StrumPart.FADE: 'Fade', StrumPart.LOOSE_TIMING: 'Loose timing',
-    StrumPart.UPSTROKE_STRINGS: 'Upstroke strings',
-}
-MSG_STRUM_WORDS = {
-    StrumDirection.BY_THE_BEAT: 'by the beat', StrumDirection.DOWN_UP: 'down up', UpstrokeStrings.TOP_3: 'top 3', UpstrokeStrings.TOP_4: 'top 4',
-}
-MSG_TRACK_STRUM_CHOICE = '(track)'
 # interface/tracker/screens/shared/restart_field.py: when a generator starts over, as its editor names the choices.
 MSG_RESTART_LABEL = 'Restart'
 MSG_STEP_NUMBER_ROW_LABEL = 'Step'

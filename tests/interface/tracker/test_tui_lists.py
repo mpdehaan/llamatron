@@ -4,7 +4,7 @@
 
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.engine.generators.arp import schema, strings as arp_strings
 from llamatron.engine.generators.arp.generator import ChordOrder, OctaveJump
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
@@ -797,7 +797,7 @@ class TestChainEditor(UITest):
         self.assertEqual(self.app.screen.options[0], messages.MSG_NEW_GENERATOR_CHOICE)
         named = [
             (arp_plugin.NAME, ui_testing.UP_ARP), (auto_ratchet_plugin.NAME, ui_testing.ROLLS), (drift_plugin.NAME, ui_testing.SWAY), (chords_plugin.NAME, ui_testing.POP), (chords_plugin.NAME, ui_testing.SMOOTH),
-            (strum_plugin.NAME, ui_testing.FOLK), (shapes_plugin.NAME, ui_testing.SHAPED),
+            (shapes_plugin.NAME, ui_testing.SHAPED),
             (timing_plugin.NAME, ui_testing.LOOSE), (hocket_plugin.NAME, ui_testing.TRADE),
             (guitarify_plugin.NAME, ui_testing.PICKED), (chords_plugin.NAME, ui_testing.FOLLOWS), (phrasing_plugin.NAME, ui_testing.BREATHES), (musician_plugin.NAME, ui_testing.STRUMMER),
         ]

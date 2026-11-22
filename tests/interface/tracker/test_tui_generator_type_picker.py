@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The picker of a new generator's type: the types under headings that open and close, searched by typing, on the Generators page."""
 
-from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, strum as strum_plugin
+from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, hocket as hocket_plugin
 from llamatron.engine.generators.arp import strings as arp_strings
 from llamatron.engine.generators.chords import strings as chords_strings
-from llamatron.engine.generators.strum import strings as strum_strings
+from llamatron.engine.generators.hocket import strings as hocket_strings
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.interface.tracker.keys import Key
@@ -20,8 +20,8 @@ HEADINGS = sorted([labels.GeneratorGroup.ARRANGEMENT, labels.GeneratorGroup.ARTI
 HARMONY_PLACE = HEADINGS.index(labels.GeneratorGroup.HARMONY)
 # The test song's Chords generators, one in each mode.
 CHORDS_IN_THE_TEST_SONG = 3
-# What is typed to search for Strum: its name in small letters, since a search ignores case.
-SEARCHED = strum_strings.MSG_LABEL.lower()
+# What is typed to search for Hocket: its name in small letters, since a search ignores case.
+SEARCHED = hocket_strings.MSG_LABEL.lower()
 
 
 # How wide the picker's lines are drawn when a test reads them.
@@ -59,7 +59,7 @@ class TestGeneratorTypePicker(UITest):
         self.assertEqual(self.dialog.headings, HEADINGS)
         in_harmony = [listing.label for listing in generator_pages.GENERATOR_PAGES.values() if listing.group == labels.GeneratorGroup.HARMONY]
         self.assertEqual(in_harmony, [chords_strings.MSG_LABEL])
-        self.assertEqual(generator_pages.GENERATOR_PAGES[strum_plugin.SECTION].group, labels.GeneratorGroup.RHYTHM)
+        self.assertEqual(generator_pages.GENERATOR_PAGES[hocket_plugin.SECTION].group, labels.GeneratorGroup.ARRANGEMENT)
         self.assertEqual(generator_pages.GENERATOR_PAGES[arp_plugin.SECTION].group, labels.GeneratorGroup.VOICING)
 
     async def test_space_or_enter_opens_a_heading_and_closes_it_again(self):
@@ -96,10 +96,10 @@ class TestGeneratorTypePicker(UITest):
     async def test_typing_searches_every_type_with_no_headings_and_enter_picks(self):
         await self.type(SEARCHED)
         shown = self.text()
-        self.assertIn(strum_strings.MSG_LABEL, shown)
-        self.assertNotIn(heading(name=labels.GeneratorGroup.RHYTHM, is_open=False), shown)
+        self.assertIn(hocket_strings.MSG_LABEL, shown)
+        self.assertNotIn(heading(name=labels.GeneratorGroup.ARRANGEMENT, is_open=False), shown)
         await self.press(Key.ENTER)
-        self.assertEqual(len(self.document.names_of(strum_plugin.SECTION)), 2)
+        self.assertEqual(len(self.document.names_of(hocket_plugin.SECTION)), 2)
 
     async def test_erasing_the_search_shows_the_headings_again_on_the_found_types_heading(self):
         await self.type(arp_strings.MSG_LABEL)

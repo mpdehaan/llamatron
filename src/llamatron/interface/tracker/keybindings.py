@@ -383,14 +383,6 @@ class MusicianEditor(FieldPage):
     """A musician's editor, with the settings keys alone."""
 
 
-class GuitarifyEditor(FieldPage):
-    """A Guitarify's editor, with the settings keys alone."""
-
-
-class StrumEditor(FieldPage):
-    """A Strum's editor, with the settings keys alone."""
-
-
 class DriftEditor(FieldPage):
     """The drift's editor: the settings keys, except that Left and Right pick version A or B on a row that has both, so only [ and ] change a value."""
 

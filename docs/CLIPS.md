@@ -25,7 +25,6 @@ A clip sits where a scene's row and a track's column meet on Arrange, so the cli
 | Velocity | How loud the clip plays, as a percentage of each note's written velocity, over its scene's Velocity. Blank takes the scene's, shown as `80% (from scene)`, or 100%. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
 | Grab track | Another track in the scene, whose notes the pattern's Grab steps play. `Bksp` sets none. |
 | Advance | What the clip does in real-time playback when it finishes, as described under Advance below. `ENTER` chooses. A clip that sets none shows the set's default, such as `With Scene (from set)`. |
-| + Strum | A section, closed until opened, like the track editor's: Strum direction `(track)` takes the track's strum, shown as the direction it takes, such as `down (from track)`, `off` strums nothing whatever the track says, and any other direction strums this clip its own way. See [Strum](generators/STRUM.md). |
 | + Velocity Ramp In, + Velocity Ramp Out | Sections, closed until opened, like the Scene page's, that fade this clip in and out. Each field set here wins over the scene's. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
 | + Density, + Articulate | Sections, closed until opened, like the Scene page's, shaping this clip across its own length. A shape set here wins over the scene's, and a generator in the clip's chains wins over both. |
 | + Set Registers, + Increment Registers | Sections, closed until opened, that set each register to a value as the clip starts and add an amount every time the clip's pattern starts over. See [Set Registers and Increment Registers](REGISTERS.md#set-registers-and-increment-registers). |
@@ -72,11 +71,9 @@ Advance is Live's follow action: what a clip does in real-time playback when it 
 
 A scene is done when every clip in it that doesn't loop has finished its repeats. A looping clip loops on until the scene below starts, so a scene whose every clip loops plays until you start something else. When the scene below has Launch together on, a start reaching any of its clips launches the whole scene and stops everything still playing in the scene above. A clip that sets nothing shows the File/Global page's Default follow action as its own.
 
-## Clip Strum and Chains
+## Clip Chains
 
-A clip's sections set its own strum and shapes, over those of its track and its scene. In `examples/learning/13_classic_strum.yml`, this clip strums by the beat with a tight spread:
-
-![A clip's Strum section open](screenshots/clip_strum.svg)
+A clip's sections set its own shapes, over those of its scene. A strum comes from a [Guitarify](generators/GUITARIFY.md) in Strum mode in the clip's chains.
 
 `ENTER` on a clip's Generators field opens the list of generators the clip runs, where `A` adds one:
 

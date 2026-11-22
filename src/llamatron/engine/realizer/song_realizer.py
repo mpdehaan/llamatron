@@ -34,7 +34,6 @@ from llamatron.engine.timing.strum_plan import StrumPlan
 from llamatron.math.random_source import random_source
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects.strum import strums_at_all
 from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import RampWay, Restart, Section, StepStatement
 from llamatron.model.values import sound as sound_values
@@ -1004,8 +1003,6 @@ class SongRealizer:
         clip's own strum, else its track's."""
         strum, restart = self._chain_strum(scene=scene, track=track)
         if strum is None:
-            strum = self._own_strum(scene=scene, track=track)
-        if not strums_at_all(strum):
             return None
         time_signature = self._song.get_time_signature()
         return StrumPlan(
@@ -1016,22 +1013,17 @@ class SongRealizer:
         )
 
     def _chain_strum(self, *, scene, track):
-        """Return the strum of the last Strum generator a clip's chains name and how it restarts, or None and every clip."""
+        """Return the strum of the last generator a clip's chains name that strums, and how it restarts, or None and every clip."""
         strum = None
         restart = Restart.EVERY_CLIP
         for step in self.chain_steps(scene=scene, track=track):
             if registry.fills(name=step.kind, method=STRUMS):
                 controller = registry.controller_of(step.kind)
                 settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
-                strum, restart = controller.strum(settings)
+                found = controller.strum(settings)
+                if found is not None:
+                    strum, restart = found
         return strum, restart
-
-    def _own_strum(self, *, scene, track):
-        """Return the strum a clip was given of its own, else its track's."""
-        written_scene = scene.get_scene()
-        clip_slot = written_scene.get_clip_slot(track)
-        song_track = self._song.get_track(track)
-        return clip_slot.get_strum() or song_track.get_strum()
 
     def _modulators_in(self, scene):
         """Return every step whose generator changes values as the song plays that the clips of a scene name, each once, in order."""

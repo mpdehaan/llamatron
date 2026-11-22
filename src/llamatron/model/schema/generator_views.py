@@ -23,11 +23,14 @@ class ChoiceView(NamedTuple):
 
 class NumberView(NamedTuple):
     """A whole number of the generator, stepped between the limits its setting's description holds: the setting's file name, its
-    label, and the number it takes when the file leaves it out, or None for a number shown blank until given."""
+    label, the number it takes when the file leaves it out, or None for a number shown blank until given, how it is shown, a
+    template filled with {number} or None for the number alone, and what shows for 0 where that has a word of its own."""
 
     setting: str
     label: str
     default: object = None
+    shown: object = None
+    zero_shown: object = None
 
 
 class ToggleView(NamedTuple):
@@ -60,6 +63,13 @@ class TrackView(NamedTuple):
 class ProgressionView(NamedTuple):
     """A progression's chords, shown as numerals in the song's scale, which ENTER opens in the chord editor: its label. The
     settings answer the progression's rows (get_chords and the rest)."""
+
+    label: str
+
+
+class GuitarBarView(NamedTuple):
+    """A Guitarify's bar of strokes, shown as its ready-made name or as the player's own, which ENTER opens in the bar editor: its
+    label."""
 
     label: str
 

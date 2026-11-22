@@ -5,14 +5,14 @@
 """Tests for the Guitarify editor, its two sections, and the editor of its bar of strokes."""
 
 from llamatron.engine.generators import guitarify as guitarify_plugin
-from llamatron.engine.generators.guitarify import model as guitarify_settings, schema as guitar_bars
+from llamatron.engine.generators.guitarify import model as guitarify_settings, schema as guitar_bars, strings as guitarify_strings, view as guitarify_view
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.generators import guitar_bar_editor
-from llamatron.interface.tracker.screens.generators.guitar_bar_editor import GuitarBarEditor
-from llamatron.interface.tracker.screens.generators.guitarify_editor import GuitarifyEditor
+from llamatron.interface.tracker.screens.shared import guitar_bar_editor
+from llamatron.interface.tracker.screens.shared.guitar_bar_editor import GuitarBarEditor
+from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import GuitarifySetting, ReadyBar, SingleNotes, Stroke, Tuning
+from llamatron.model.schema.file_format import GuitarifySetting, ReadyBar, SingleNotes, Stroke, StrumDirection, Tuning
 from llamatron.user_strings import labels, marks, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
@@ -27,7 +27,7 @@ class GuitarifyTest(UITest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.open_generator(section=guitarify_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, GuitarifyEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
 
     def guitar(self):
         return self.document.get_setlist().get_generator_settings(kind=guitarify_plugin.NAME, name=ui_testing.PICKED)
@@ -40,7 +40,7 @@ class TestGuitarifyAdded(UITest):
 
     async def test_a_new_one_shapes_and_plays_the_default_bar_with_nothing_written(self):
         name = await self.add_generator(guitarify_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, GuitarifyEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
         guitar = self.document.get_setlist().get_generator_settings(kind=guitarify_plugin.NAME, name=name)
         self.assertTrue(guitar.shapes())
         self.assertTrue(guitar.strikes())
@@ -48,42 +48,60 @@ class TestGuitarifyAdded(UITest):
         self.assertEqual(guitar.to_data(), {})
 
 
-class TestGuitarifyEditor(GuitarifyTest):
+class TestGuitarifyPage(GuitarifyTest):
 
-    async def test_the_two_sections_are_closed_until_opened(self):
-        text = self.text()
-        self.assertIn(labels.MSG_GUITAR_SHAPE_SECTION, text)
-        self.assertIn(labels.MSG_GUITAR_STROKES_SECTION, text)
-        self.assertNotIn(labels.MSG_GUITAR_TUNING_LABEL, text)
-        await self.select_field(labels.MSG_GUITAR_TUNING_LABEL)
-        self.assertIn(labels.MSG_GUITAR_TUNING_LABEL, self.text())
+    def labels(self):
+        return [field.label for field in self.app.screen.shown_fields()]
 
-    async def test_a_closed_section_says_when_something_inside_is_set(self):
-        self.assertNotIn(marks.MSG_SECTION_SET, self.text())
-        self.document.change_set(self.document.generator(section=guitarify_plugin.SECTION, name=ui_testing.PICKED).set_setting, name=GuitarifySetting.CAPO, value=2)
-        await self.press(Key.DOWN)
-        self.assertIn(marks.MSG_SECTION_SET, self.text())
+    async def test_guitar_mode_shows_both_hands_and_strum_mode_only_the_strum(self):
+        self.assertIn(labels.MSG_GUITAR_TUNING_LABEL, self.labels())
+        self.assertIn(labels.MSG_GUITAR_BAR_LABEL, self.labels())
+        self.assertNotIn(guitarify_strings.MSG_DIRECTION_LABEL, self.labels())
+        await self.select_field(guitarify_strings.MSG_MODE_LABEL)
+        await self.press(keybindings.PluginEditor.MORE)
+        self.assertEqual(self.guitar().get_mode(), guitarify_settings.STRUM)
+        self.assertIn(guitarify_strings.MSG_DIRECTION_LABEL, self.labels())
+        self.assertIn(labels.MSG_GUITAR_SPREAD_LABEL, self.labels())
+        self.assertNotIn(labels.MSG_GUITAR_TUNING_LABEL, self.labels())
+        self.assertNotIn(labels.MSG_GUITAR_BAR_LABEL, self.labels())
+
+    async def test_the_shared_settings_keep_their_values_across_modes(self):
+        await self.select_field(labels.MSG_GUITAR_FADE_LABEL)
+        await self.press(keybindings.PluginEditor.MORE)
+        await self.select_field(guitarify_strings.MSG_MODE_LABEL)
+        await self.press(keybindings.PluginEditor.MORE)
+        self.assertEqual(self.guitar().get_fade(), guitarify_settings.DEFAULT_GUITAR_FADE + 1)
+        self.assertEqual(self.guitar().strum_values().fade, guitarify_settings.DEFAULT_GUITAR_FADE + 1)
+
+    async def test_the_direction_steps_through_the_strum_directions(self):
+        await self.select_field(guitarify_strings.MSG_MODE_LABEL)
+        await self.press(keybindings.PluginEditor.MORE)
+        await self.select_field(guitarify_strings.MSG_DIRECTION_LABEL)
+        self.assertIn(guitarify_view.DIRECTION_NAMES[StrumDirection.BY_THE_BEAT], self.text())
+        await self.press(keybindings.PluginEditor.MORE)
+        self.assertEqual(self.guitar().get_direction(), StrumDirection.DOWN)
+        self.assertEqual(self.guitar().strum_values().direction, StrumDirection.DOWN)
 
     async def test_each_half_is_switched_off_and_on(self):
         await self.select_field(labels.MSG_GUITAR_SHAPE_LABEL)
-        await self.press(keybindings.GuitarifyEditor.TOGGLE)
+        await self.press(keybindings.PluginEditor.TOGGLE)
         self.assertFalse(self.guitar().shapes())
-        await self.press(keybindings.GuitarifyEditor.TOGGLE)
+        await self.press(keybindings.PluginEditor.TOGGLE)
         self.assertTrue(self.guitar().shapes())
         self.assertNotIn(GuitarifySetting.SHAPE, self.written())
         await self.select_field(labels.MSG_GUITAR_STROKES_LABEL)
-        await self.press(keybindings.GuitarifyEditor.TOGGLE)
+        await self.press(keybindings.PluginEditor.TOGGLE)
         self.assertFalse(self.guitar().strikes())
 
     async def test_the_tuning_steps_through_its_choices_and_stops_at_the_ends(self):
         await self.select_field(labels.MSG_GUITAR_TUNING_LABEL)
         self.assertIn(labels.MSG_GUITAR_TUNING_NAMES[Tuning.STANDARD], self.text())
-        await self.press(keybindings.GuitarifyEditor.LESS)
+        await self.press(keybindings.PluginEditor.LESS)
         self.assertEqual(self.guitar().get_tuning(), Tuning.STANDARD)
-        await self.press(keybindings.GuitarifyEditor.MORE)
+        await self.press(keybindings.PluginEditor.MORE)
         self.assertEqual(self.guitar().get_tuning(), Tuning.DROP_D)
         self.assertIn(labels.MSG_GUITAR_TUNING_NAMES[Tuning.DROP_D], self.text())
-        await self.press(keybindings.GuitarifyEditor.LESS)
+        await self.press(keybindings.PluginEditor.LESS)
         self.assertNotIn(GuitarifySetting.TUNING, self.written())
 
     async def test_the_tuning_is_picked_from_a_list(self):
@@ -94,11 +112,11 @@ class TestGuitarifyEditor(GuitarifyTest):
 
     async def test_the_position_is_open_or_a_fret_and_stops_at_the_last_fret(self):
         await self.select_field(labels.MSG_GUITAR_POSITION_LABEL)
-        self.assertIn(marks.MSG_GUITAR_OPEN_POSITION, self.text())
-        await self.press(keybindings.GuitarifyEditor.MORE)
+        self.assertIn(guitarify_strings.MSG_OPEN_POSITION, self.text())
+        await self.press(keybindings.PluginEditor.MORE)
         self.assertEqual(self.guitar().get_position(), 1)
-        self.assertIn(marks.MSG_GUITAR_FRET.format(fret=1), self.text())
-        await self.press(*[keybindings.GuitarifyEditor.MORE] * (guitarify_settings.MAX_GUITAR_FRET + 1))
+        self.assertIn(guitarify_strings.MSG_FRET.format(number=1), self.text())
+        await self.press(*[keybindings.PluginEditor.MORE] * (guitarify_settings.MAX_GUITAR_FRET + 1))
         self.assertEqual(self.guitar().get_position(), guitarify_settings.MAX_GUITAR_FRET)
         await self.press(Key.BACKSPACE)
         self.assertNotIn(GuitarifySetting.POSITION, self.written())
@@ -112,32 +130,32 @@ class TestGuitarifyEditor(GuitarifyTest):
 
     async def test_single_notes_step_through_leave_power_chord_and_scale_chord(self):
         await self.select_field(labels.MSG_GUITAR_SINGLE_NOTES_LABEL)
-        await self.press(keybindings.GuitarifyEditor.MORE)
+        await self.press(keybindings.PluginEditor.MORE)
         self.assertEqual(self.guitar().get_single_notes(), SingleNotes.POWER_CHORD)
         self.assertIn(labels.MSG_GUITAR_SINGLE_NOTES_NAMES[SingleNotes.POWER_CHORD], self.text())
-        await self.press(keybindings.GuitarifyEditor.MORE)
+        await self.press(keybindings.PluginEditor.MORE)
         self.assertEqual(self.guitar().get_single_notes(), SingleNotes.SCALE_CHORD)
 
     async def test_let_ring_is_a_toggle(self):
         await self.select_field(labels.MSG_GUITAR_LET_RING_LABEL)
-        await self.press(keybindings.GuitarifyEditor.TOGGLE)
+        await self.press(keybindings.PluginEditor.TOGGLE)
         self.assertTrue(self.guitar().lets_ring())
-        await self.press(keybindings.GuitarifyEditor.TOGGLE)
+        await self.press(keybindings.PluginEditor.TOGGLE)
         self.assertNotIn(GuitarifySetting.LET_RING, self.written())
 
     async def test_the_spread_is_shown_in_milliseconds_and_left_out_at_its_default(self):
         await self.select_field(labels.MSG_GUITAR_SPREAD_LABEL)
-        self.assertIn(marks.MSG_GUITAR_MILLISECONDS.format(milliseconds=guitarify_settings.DEFAULT_GUITAR_SPREAD), self.text())
-        await self.press(keybindings.GuitarifyEditor.MORE)
+        self.assertIn(guitarify_strings.MSG_MILLISECONDS.format(number=guitarify_settings.DEFAULT_GUITAR_SPREAD), self.text())
+        await self.press(keybindings.PluginEditor.MORE)
         self.assertEqual(self.guitar().get_spread(), guitarify_settings.DEFAULT_GUITAR_SPREAD + 1)
-        await self.press(keybindings.GuitarifyEditor.LESS)
+        await self.press(keybindings.PluginEditor.LESS)
         self.assertNotIn(GuitarifySetting.SPREAD, self.written())
 
     async def test_upstroke_strings_down_to_none_means_every_string(self):
         await self.select_field(labels.MSG_GUITAR_UPSTROKE_LABEL)
-        await self.press(*[keybindings.GuitarifyEditor.LESS] * 6)
+        await self.press(*[keybindings.PluginEditor.LESS] * 6)
         self.assertEqual(self.guitar().get_upstroke(), guitarify_settings.EVERY_STRING)
-        self.assertIn(marks.MSG_GUITAR_EVERY_STRING, self.text())
+        self.assertIn(guitarify_strings.MSG_EVERY_STRING, self.text())
 
     async def test_the_bar_field_names_the_ready_made_bar_and_opens_its_editor(self):
         await self.select_field(labels.MSG_GUITAR_BAR_LABEL)
@@ -145,7 +163,7 @@ class TestGuitarifyEditor(GuitarifyTest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, GuitarBarEditor)
         await self.press(keybindings.GuitarBarEditor.MORE, Key.ESCAPE)
-        self.assertIsInstance(self.app.screen, GuitarifyEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
         self.assertIn(labels.MSG_OWN_BAR, self.text())
 
 

@@ -21,7 +21,7 @@ from llamatron.interface.tracker.screens.set.scale_page import ScalePage
 from llamatron.interface.tracker.screens.shared.generator_names import listed_generator
 from llamatron.interface.visualizers import modes
 from llamatron.model.schema import generator_plugins
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, FollowAction, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, FollowAction, RampPart, RampWay, RegisterName, Shape
 from llamatron.user_strings import labels, legends, marks, names
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, UITest
@@ -103,17 +103,15 @@ class TestDetails(unittest.TestCase):
         self.assertEqual(self.scene_lines(), [marks.MSG_DETAILS_SCALE.format(name=OWN_SCALE)])
         self.assertEqual(self.clip_lines(), [marks.MSG_DETAILS_SCALE.format(name=OWN_SCALE)])
 
-    def test_a_clip_shows_its_grab_its_advance_unless_it_is_the_default_its_strum_and_its_shapes(self):
+    def test_a_clip_shows_its_grab_its_advance_unless_it_is_the_default_and_its_shapes(self):
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.FOLLOW_ACTION, value=self.setlist.get_default_follow_action())
         self.assertEqual(self.clip_lines(), [])
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.GRAB_TRACK, value=ui_testing.DRUMS)
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.FOLLOW_ACTION, value=FollowAction.NEXT)
-        self.document.change_set(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_strum_setting, part=StrumPart.DIRECTION, value=StrumDirection.DOWN)
         self.document.change_set(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=ClipSlotSetting.DENSITY_START, value=DENSITY_START)
         self.document.change_set(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=ClipSlotSetting.DENSITY_END, value=DENSITY_END)
         self.assertEqual(self.clip_lines(), [
             marks.MSG_DETAILS_GRAB.format(track=ui_testing.DRUMS), marks.MSG_DETAILS_ADVANCE.format(action=labels.MSG_FOLLOW_ACTION_NAMES[FollowAction.NEXT]),
-            marks.MSG_DETAILS_STRUM.format(direction=StrumDirection.DOWN),
             marks.MSG_DETAILS_SHAPE.format(shape=marks.MSG_DETAILS_SHAPE_NAMES[Shape.DENSITY], start=DENSITY_START, end=DENSITY_END),
         ])
 
@@ -133,15 +131,14 @@ class TestDetails(unittest.TestCase):
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_groove_choice, choice=SONG_GROOVE, song=self.document.song())
         self.assertIn(marks.MSG_DETAILS_GROOVE.format(name=SONG_GROOVE), self.scene_lines())
 
-    def test_a_track_shows_its_instrument_transpose_strum_and_mute(self):
+    def test_a_track_shows_its_instrument_transpose_and_mute(self):
         self.document.add_instrument(INSTRUMENT)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=INSTRUMENT)
         self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_transpose, TRANSPOSE)
-        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_strum_setting, part=StrumPart.DIRECTION, value=StrumDirection.UP)
         self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_mute, True)
         self.assertEqual(self.track_lines(), [
             marks.MSG_DETAILS_INSTRUMENT.format(name=INSTRUMENT), marks.MSG_DETAILS_TRANSPOSE.format(amount=TRANSPOSE),
-            marks.MSG_DETAILS_STRUM.format(direction=StrumDirection.UP), marks.MSG_DETAILS_MUTED,
+            marks.MSG_DETAILS_MUTED,
         ])
 
     def test_a_clips_name_line_marks_its_loop_and_repeats_and_its_morph_and_direction_are_spelled_out_on_lines(self):

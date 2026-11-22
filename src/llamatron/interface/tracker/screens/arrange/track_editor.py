@@ -11,7 +11,6 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.generators_field import generators_field
 from llamatron.interface.tracker.screens.arrange.groove_choice import groove_choice_field
-from llamatron.interface.tracker.screens.generators.strum_fields import strum_section
 from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
@@ -147,7 +146,6 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         result += self._cc_fields(track)
         result.append(generators_field(page=self, names=self._chain_names, store=self._set_chain_names))
         result.append(self.instrument_field())
-        result += strum_section(page=self, value=track.get_strum_setting, first=marks.MSG_NONE_SHOWN, store=self._strum_store())
         result += self._statement_sections(track)
         return result
 
@@ -231,12 +229,6 @@ class TrackEditor(ShowsNamedItem, FieldPage):
     def _set_chain_names(self, names):
         song = self.document().song()
         self._change(self.track().set_chain_names, names=names, song=song)
-
-    def _strum_store(self):
-        """Return what stores a part of the track's strum, as the strum's section hands on the part and its value."""
-        def store(part, value):
-            self._change(self.track().set_strum_setting, part=part, value=value)
-        return store
 
     def _statement_sections(self, track):
         """Return the sections of statements about the registers that bypass the generators of the track's clips, and that make

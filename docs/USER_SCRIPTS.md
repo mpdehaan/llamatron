@@ -64,7 +64,7 @@ Exports every example as one General MIDI file in `previews/`, playable in any M
 
 ```
 sh user_scripts/demos_to_midi.sh
-sh user_scripts/demos_to_midi.sh examples/learning/13_classic_strum.yml
+sh user_scripts/demos_to_midi.sh examples/learning/02_pachelbel.yml
 ```
 
 Parameters:
@@ -77,7 +77,7 @@ Turns every demo into a WAV file in `previews/` in one go: it makes the previews
 
 ```
 sh user_scripts/demos_to_wavs.sh
-sh user_scripts/demos_to_wavs.sh previews/classic_strum.mid
+sh user_scripts/demos_to_wavs.sh previews/pachelbel.mid
 ```
 
 Parameters:
@@ -92,12 +92,12 @@ Plays a demo's WAV file in the terminal, by its number in the list or its name, 
 sh user_scripts/play_demo.sh
 sh user_scripts/play_demo.sh --list
 sh user_scripts/play_demo.sh 12
-sh user_scripts/play_demo.sh classic_strum
+sh user_scripts/play_demo.sh pachelbel
 ```
 
 Parameters:
 
-- `DEMO`: the demo to play, by its number in the list, by its name, such as `classic_strum`, or by the path of a WAV file; a numbered list to pick from unless given.
+- `DEMO`: the demo to play, by its number in the list, by its name, such as `pachelbel`, or by the path of a WAV file; a numbered list to pick from unless given.
 - `--list`: print the numbered list and play nothing.
 - `--folder FOLDER`: where the WAV files are, `previews/` unless given.
 

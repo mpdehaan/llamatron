@@ -245,7 +245,7 @@ GENERATOR_STEPS = 'steps'
 PART_SETTING = '{part}_{setting}'
 GUITARIFIES = 'guitarifies'
 # The set's section that holds each kind of generator a value may bring.
-SECTION_OF_KIND = {'guitarify': 'guitarifies', 'arp': 'arps', 'strum': 'strums'}
+SECTION_OF_KIND = {'guitarify': 'guitarifies', 'arp': 'arps'}
 HELD_CHORD = '3'
 MAJOR = 'major'
 BY_SECTION = 'by_section'

@@ -49,10 +49,6 @@ MAX_PROGRESSION_DEGREE = 7
 MAX_PROGRESSION_INVERSION = 2
 # A pattern's Inversion row goes to the third inversion, which only a chord of four notes or more has; a triad plays a third as its second.
 INVERSIONS = [1, 2, 3]
-# A strum's fade, how much quieter its last string is than its first, and its loose timing, how much each string's spacing varies, as percentages.
-MAX_STRUM_FADE = 50
-MAX_LOOSE_TIMING = 50
-MIN_STRUM_PERCENT = 0
 # A Glide's, a Shorten's, a Rush's or a Drag's row holds from 1 to this many steps; a shortened note plays this share of itself at least and most, and a rush or a drag moves a note by up to half a step.
 MAX_STEP_ROW = 16
 MIN_STEP_ROW = 1

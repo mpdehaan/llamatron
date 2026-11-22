@@ -2,7 +2,18 @@
 
 A keyboard plays a chord as a stack of notes struck together and held. A guitar plays the same chord across six strings, one note a string, and a hand strikes those strings in a rhythm: a strum down, a strum up, a muted strum, the bass string, one string picked alone. Guitarify plays a clip's chords and notes that way, on any instrument, so a pattern that is only a row of chords becomes a strummed or picked part.
 
-Guitarify has two sections, and each can be switched off. Shape is the fretting hand, which decides the notes of each chord. Strokes is the other hand, which decides when each string sounds.
+Guitarify has two modes, its Mode the first setting on its page:
+
+- **Guitar**, the default, plays a part as a guitar's two hands would. It has two halves, and each can be switched off: Shape, the Left Hand, is the fretting hand, which decides the notes of each chord; Strokes, the Right Hand, is the other hand, which decides when each string sounds.
+- **Strum** leaves the chords as written and strums each one at the very end of the clip, after its chains and its shapes, the way a hand crosses the strings: its notes start one after another, each lasting to the chord's end. It has a Direction and shares Spread, Fade, Loose timing and Upstroke strings with Guitar mode, so switching modes keeps them.
+
+## Strum
+
+| Setting | What it does |
+| --- | --- |
+| Direction | The order the strings sound in: "by the beat", the default, down on each beat and up between, as a hand moves; "down", low to high; "up", high to low; "down up", alternating chord by chord. |
+
+Spread, Fade, Loose timing and Upstroke strings are as Strokes describes below. A chord's strum is drawn from the song's seed, so it plays the same every time. The last Guitarify in Strum mode a clip's chains name strums the clip; a single note is left alone.
 
 ## Shape
 
@@ -34,7 +45,7 @@ Strokes plays a bar of strokes, one stroke a cell, on whatever chord or note sou
 | Approach | How a new chord is reached: "off" plays the chord where the pattern wrote the chord; "from below" and "from above" first play the chord one fret lower or higher for a sixteenth. The first chord of a clip is never approached. |
 | Restart | When the bar starts over, as [Generators](../GENERATORS.md#restart) describes. |
 
-Guitarify's Spread, Fade, Loose timing and Upstroke strings are Guitarify's own. The [Strum](STRUM.md) generator and the Strum sections of a track and a clip are separate and unchanged.
+Spread, Fade, Loose timing and Upstroke strings are shared with Strum mode.
 
 ## Bar Editor
 

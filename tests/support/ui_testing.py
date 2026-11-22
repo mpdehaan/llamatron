@@ -15,7 +15,7 @@ import unittest
 from unittest import mock
 
 from llamatron.caching.memory import Memory
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
@@ -84,7 +84,6 @@ DENSITY_START = shape_setting(shape=Shape.DENSITY, part=ShapePart.START)
 SWELL_START = shape_setting(shape=Shape.SWELL, part=ShapePart.START)
 POP = 'pop'
 SMOOTH = 'smooth'
-FOLK = 'folk'
 LOOSE = 'loose'
 # The test song's Timing generator rushes the first of every four steps and glides the first of every three.
 LOOSE_RUSH = [True, False, False, False]
@@ -133,7 +132,6 @@ def a_song(*, path=None):
         SMOOTH: {},
         FOLLOWS: {ChordsSetting.MODE: chords_model.FOLLOW_PROGRESSION, ChordsSetting.CHORDS_FROM: LEAD},
     }
-    data[strum_plugin.SECTION] = {FOLK: {}}
     data[timing_plugin.SECTION] = {LOOSE: {timing_parts.steps_of(timing_parts.RUSH): LOOSE_RUSH, timing_parts.steps_of(timing_parts.GLIDE): LOOSE_GLIDE}}
     data[hocket_plugin.SECTION] = {TRADE: {HocketSetting.SOURCE: LEAD}}
     data[guitarify_plugin.SECTION] = {PICKED: {}}

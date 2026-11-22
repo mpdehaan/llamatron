@@ -12,9 +12,10 @@ from llamatron.model.file import corrections
 from llamatron.model.file.checks import Bars, is_true_or_false, listed, time_length
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.llama_data import or_default
+from llamatron.model.objects.strum import StrumValues
 from llamatron.model.objects.traits import HasCells
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import Approach, ChordColor, GuitarifySetting, SingleNotes, Stroke, Tuning
+from llamatron.model.schema.file_format import Approach, ChordColor, GuitarifySetting, SingleNotes, Stroke, StrumDirection, Tuning
 from llamatron.model.schema.setting import Checked, Choice, described, Flag, WholeNumber
 from llamatron.user_strings import errors
 
@@ -62,6 +63,15 @@ MAX_GUITAR_PERCENT = 50
 
 # An upstroke that catches every string.
 EVERY_STRING = 0
+# What a Guitarify does with a clip's chords, as a file names it: plays them as a guitar's two hands would, or strums them as
+# written, spread by a direction.
+GUITAR = 'guitar'
+STRUM = 'strum'
+MODES = [GUITAR, STRUM]
+DEFAULT_MODE = GUITAR
+# The directions a strum crosses the strings in, by the beat unless set.
+DIRECTIONS = [StrumDirection.BY_THE_BEAT, StrumDirection.DOWN, StrumDirection.UP, StrumDirection.DOWN_UP]
+DEFAULT_DIRECTION = StrumDirection.BY_THE_BEAT
 
 
 def _check_guitar_bar(values):
@@ -87,6 +97,8 @@ class GuitarifySettings(HasCells, GeneratorSettings):
 
     GENERATOR = Guitarify
     SETTINGS = described(
+        Choice(name=GuitarifySetting.MODE, choices=MODES, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
+        Choice(name=GuitarifySetting.DIRECTION, choices=DIRECTIONS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         _guitar_flag(GuitarifySetting.SHAPE),
         Choice(name=GuitarifySetting.TUNING, choices=file_format.TUNINGS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE),
         WholeNumber(name=GuitarifySetting.POSITION, lowest=0, highest=MAX_GUITAR_FRET, error=errors.ERR_BAD_SHAPE_PERCENT),
@@ -125,6 +137,20 @@ class GuitarifySettings(HasCells, GeneratorSettings):
 
     def _with_tempo(self, *, values, tempo):
         return dict(values, tempo=tempo)
+
+    def get_mode(self):
+        return or_default(value=self.get_written(GuitarifySetting.MODE), default=DEFAULT_MODE)
+
+    def get_direction(self):
+        return or_default(value=self.get_written(GuitarifySetting.DIRECTION), default=DEFAULT_DIRECTION)
+
+    def strum_values(self):
+        """Return how it strums a clip's chords in Strum mode: its direction, its spread, fade and loose timing, and how many top
+        strings an upstroke catches, None for every string."""
+        upstroke = self.get_upstroke()
+        if upstroke == EVERY_STRING:
+            upstroke = None
+        return StrumValues(self.get_direction(), self.get_spread(), self.get_fade(), self.get_loose_timing(), upstroke)
 
     def shapes(self):
         """Return whether the Shape half is on, which it is unless switched off."""

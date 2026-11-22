@@ -140,13 +140,6 @@ def groove_lines(choice):
     return [detail(marks_text.MSG_DETAILS_GROOVE.format(name=choice), target=Target(kind=Section.GROOVES, name=choice))]
 
 
-def strum_lines(strum):
-    """Return the line of a strum set on a clip or a track."""
-    if strum is None:
-        return []
-    return [detail(marks_text.MSG_DETAILS_STRUM.format(direction=labels.MSG_STRUM_WORDS.get(strum.direction, strum.direction)))]
-
-
 def scale_lines(*, song, name):
     """Return the line of a scene's or a clip's own scale, only where it differs from the song's."""
     if name is None or name == song.get_scale_name():
@@ -155,7 +148,7 @@ def scale_lines(*, song, name):
 
 
 def clip_details(*, setlist, song, clip_slot):
-    """Return a clip's lines of details: its chains, its own scale, its morph, its direction, its grab, its Advance when it isn't the set's default, its strum and its shapes."""
+    """Return a clip's lines of details: its chains, its own scale, its morph, its direction, its grab, its Advance when it isn't the set's default and its shapes."""
     lines = chain_lines(song=song, names=clip_slot.get_chain_names())
     lines += scale_lines(song=song, name=clip_slot.get_scale_name())
     if clip_slot.get_morph_target():
@@ -167,7 +160,6 @@ def clip_details(*, setlist, song, clip_slot):
     written = clip_slot.get_written_follow_action()
     if written is not None and written != setlist.get_default_follow_action():
         lines.append(detail(marks_text.MSG_DETAILS_ADVANCE.format(action=labels.MSG_FOLLOW_ACTION_NAMES[written])))
-    lines += strum_lines(clip_slot.get_strum())
     return lines + velocity_lines(clip_slot) + shape_lines(clip_slot)
 
 
@@ -188,14 +180,13 @@ def scene_details(*, song, scene):
 
 
 def track_details(*, song, track):
-    """Return a track's lines of details: its chains, its instrument, its transpose, its groove, its strum and whether it's muted."""
+    """Return a track's lines of details: its chains, its instrument, its transpose, its groove and whether it's muted."""
     lines = chain_lines(song=song, names=track.get_chain_names())
     if track.get_instrument_name():
         lines.append(detail(marks_text.MSG_DETAILS_INSTRUMENT.format(name=track.get_instrument_name()), target=Target(kind=Section.INSTRUMENTS, name=track.get_instrument_name())))
     if track.get_transpose() != NO_TRANSPOSE:
         lines.append(detail(marks_text.MSG_DETAILS_TRANSPOSE.format(amount=track.get_transpose())))
     lines += groove_lines(track.get_groove_choice())
-    lines += strum_lines(track.get_strum())
     if track.is_muted():
         lines.append(detail(marks_text.MSG_DETAILS_MUTED))
     return lines
