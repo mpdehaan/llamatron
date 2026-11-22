@@ -207,7 +207,9 @@ class TimeLength(Setting):
         """Return the longest allowed length for a length that is longer. Anything that isn't a length has no nearest value, and neither has a length of nothing, since no length is the shortest."""
         if not is_written_length(value) or positive_or_nothing(value) <= checks.NO_LENGTH:
             return corrections.NO_NEAREST_VALUE
-        return self._most if positive_or_nothing(value) > self._most else value
+        if positive_or_nothing(value) > self._most:
+            return self._most
+        return value
 
 
 def positive_or_nothing(value):
@@ -234,7 +236,9 @@ class Checked(Setting):
         self._nearest = nearest
 
     def nearest(self, value):
-        return corrections.NO_NEAREST_VALUE if self._nearest is None else self._nearest(value)
+        if self._nearest is None:
+            return corrections.NO_NEAREST_VALUE
+        return self._nearest(value)
 
     def check(self, value, *, song=None):
         if self._needs_song:
