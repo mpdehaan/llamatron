@@ -27,14 +27,23 @@ class ClipTicks:
 
     def __init__(self, *, positions, scale, length, groove):
         """positions are the clip's, every length filled in; length is the clip's, a Rational; groove is its Groove, or None."""
-        cell, moves = groove.moves() if groove is not None else (None, [])
+        cell = None
+        moves = []
+        if groove is not None:
+            cell, moves = groove.moves()
         found = set()
         for position in positions:
             _add_denominators(position=position, found=found)
-        self._ticks = math.lcm(length.denominator, sounding.GLIDE_OVERLAP.denominator, *found, *(move.denominator for move in moves), cell.denominator if cell is not None else 1)
+        for move in moves:
+            found.add(move.denominator)
+        if cell is not None:
+            found.add(cell.denominator)
+        self._ticks = math.lcm(length.denominator, sounding.GLIDE_OVERLAP.denominator, *found)
         self._length = self._ticks_of(length)
         self._glide = self._ticks_of(sounding.GLIDE_OVERLAP)
-        self._cell = None if cell is None else self._ticks_of(cell)
+        self._cell = None
+        if cell is not None:
+            self._cell = self._ticks_of(cell)
         self._moves = [self._ticks_of(move) for move in moves]
         self._slots = []
         start = 0
@@ -52,7 +61,9 @@ class ClipTicks:
             if not notes:
                 continue
             onset = self._moved(slot_start)
-            following = slots[place + 1][1] if place + 1 < len(slots) else {}
+            following = {}
+            if place + 1 < len(slots):
+                following = slots[place + 1][1]
             start = min(onset, self._length)
             start_whole = reduced(numerator=start, denominator=ticks)
             for midi_number, note in notes.items():
