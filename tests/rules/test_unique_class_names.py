@@ -55,7 +55,6 @@ ALLOWED = (
     'GuitarBarEditor',
     'Heading',
     'HelpDialog',
-    'HocketEditor',
     'ImportDialog',
     'ImportedDialog',
     'InstrumentEditor',

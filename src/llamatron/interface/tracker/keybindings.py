@@ -363,10 +363,6 @@ class ChainStatementsPage(FieldPage):
     """A chain's statements about the registers, with the settings keys alone."""
 
 
-class HocketEditor(FieldPage):
-    """A Hocket's editor, with the settings keys alone."""
-
-
 class PluginEditor(FieldPage):
     """A generator's page drawn from its plugin's view, with the settings keys alone."""
 

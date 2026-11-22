@@ -8,7 +8,7 @@ from llamatron.engine.generators.hocket.model import HocketSetting
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.generators.hocket_editor import HocketEditor
+from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import labels, marks
 from tests.support import ui_testing
@@ -30,7 +30,7 @@ class TestHocketEditor(UITest):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.open_generator(section=hocket_plugin.SECTION)
-        self.assertIsInstance(self.app.screen, HocketEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
         await self.select_field(labels.MSG_SOURCE_TRACK_LABEL)
 
     def source(self):
@@ -42,7 +42,7 @@ class TestHocketEditor(UITest):
         self.assertEqual(self.app.screen.options, [marks.MSG_NONE_SHOWN, ui_testing.DRUMS, ui_testing.LEAD])
         await self.press(Key.UP, Key.ENTER)
         self.assertEqual(self.source(), ui_testing.DRUMS)
-        await self.press(keybindings.HocketEditor.CLEAR)
+        await self.press(keybindings.PluginEditor.CLEAR)
         self.assertIsNone(self.source())
 
     async def test_renaming_the_source_track_renames_the_source(self):

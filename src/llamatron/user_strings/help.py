@@ -230,15 +230,6 @@ Scale borrows the chord from another scale type on the same root, Quality names 
 I inserts a chord and D removes one. H fills the chords with a named progression, matched to the song's scale.
 """
 
-# HocketEditor
-HELP_HOCKET_EDITOR = """
-Source track: the track of the current song whose notes the hocketing tracks take turns at. Renaming that track renames
-it here too. A track the song lacks hands out nothing.
-Restart: every clip starts the turns again with the first track at each clip the source plays; on new scene and whole
-song carry them on.
-Each track still plays its own pattern's notes besides those it is handed.
-"""
-
 # PluginEditor: the help every generator page drawn from its plugin's view shares, which each page replaces with its plugin's own.
 HELP_PLUGIN_EDITOR = """
 A generator's settings, as its kind describes them.
