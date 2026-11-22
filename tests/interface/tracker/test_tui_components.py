@@ -73,7 +73,7 @@ class TestLengthBar(unittest.TestCase):
 
 class TestFrame(unittest.TestCase):
 
-    def test_the_edges_go_between_the_columns_in_bold(self):
+    def test_the_edges_go_between_the_columns_never_in_bold(self):
         frame = Frame(left=1, right=5)
         top, middle, bottom = Canvas(WIDTH), Canvas(WIDTH), Canvas(WIDTH)
         frame.top(top)
@@ -83,7 +83,7 @@ class TestFrame(unittest.TestCase):
         self.assertEqual(middle.text().plain, drawing.SPACE + Box.DOUBLE_BAR + drawing.SPACE * 3 + Box.DOUBLE_BAR + drawing.SPACE * 2)
         self.assertEqual(bottom.text().plain, drawing.SPACE + Box.DOUBLE_BOTTOM_LEFT + Box.DOUBLE_RULE * 3 + Box.DOUBLE_BOTTOM_RIGHT + drawing.SPACE * 2)
         self.assertEqual(frame.inner_width(), 3)
-        self.assertEqual([span.style for span in top.text().spans if span.style], [Style.BOLD])
+        self.assertNotIn(Style.BOLD, [span.style for span in top.text().spans])
 
     def test_a_bottom_on_a_rule_leaves_the_rule_and_joins_it_at_each_side(self):
         frame = Frame(left=1, right=5)

@@ -16,7 +16,7 @@ class Frame:
 
     __slots__ = ('_left', '_right', '_style')
 
-    def __init__(self, *, left, right, style=Style.BOLD):
+    def __init__(self, *, left, right, style=Style.SELECTED_EDGE):
         self._left = left
         self._right = right
         self._style = style

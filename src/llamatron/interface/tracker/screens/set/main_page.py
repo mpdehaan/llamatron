@@ -406,11 +406,11 @@ class MainPage(Page):
             canvas.write(column=left + width - 1, text=bar, style=style)
 
     def draw_cell(self, *, canvases, left, item, selected, width):
-        """Draw one cell, width wide, onto its three lines: its box, double-lined and bright when selected and otherwise in its colour, the key bold and reversed, the name, bold when selected, and the count."""
+        """Draw one cell, width wide, onto its three lines: its box, double-lined and plain when selected and otherwise in its colour, the key bold and reversed, the name, bold when selected, and the count."""
         edge = self.edge_style(item)
         name_style = Style.PLAIN
         if selected:
-            edge = Style.BOLD
+            edge = Style.SELECTED_EDGE
             name_style = Style.BOLD
         self.draw_box(canvases=canvases, left=left, width=width, selected=selected, style=edge)
         middle = canvases[1]
@@ -436,7 +436,7 @@ class MainPage(Page):
         in_bar = self.in_bar()
         edge = Style.DIM
         if in_bar:
-            edge = Style.BOLD
+            edge = Style.SELECTED_EDGE
         self.draw_box(canvases=canvases, left=left, width=width, selected=in_bar, style=edge)
         for column, column_left in enumerate(lefts):
             labels = [padded(row[column].shown_label()) for row in rows]

@@ -37,6 +37,9 @@ class Style:
     DIM = 'dim'
     REVERSE = 'reverse'
     PLAIN = ''
+    # A selected box's double lines, never bold: many fonts draw bold double-line characters shorter, or from another font, so
+    # that a box's sides stop short of its corners. The selected name stays bold.
+    SELECTED_EDGE = PLAIN
     # The one use of colour, for the lights of real-time playback, whose shapes change too, so that the state shows without it.
     PLAYING = 'bold red'
     SOUNDING = 'bold green'
@@ -59,9 +62,9 @@ class Style:
     DELETE_TITLE = 'bold red'
     DETAILS_DIVIDER = 'blue'
     # The box around the playing scene's name on Arrange in a recording nobody performs.
-    PLAYING_SCENE = 'bold blue'
+    PLAYING_SCENE = 'blue'
     # The box around a cell Tab has locked into, so that the lock shows, and the word for a cell with no details of its own.
-    DETAILS_LOCKED = 'bold green'
+    DETAILS_LOCKED = 'green'
     DETAILS_STOCK = 'red'
     # A key's label on the main screen's cells, bold as well as reversed.
     KEY = 'bold reverse'
