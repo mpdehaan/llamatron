@@ -26,7 +26,7 @@ notes: |
 
   The first three scenes keep the same instruments while only the loudness climbs, so you can
   hear that the change is the velocity and not new parts. In the last scene the timpani run through
-  a Swell generator called hits, at 100% with an accent of 30%, on top of the scene's velocity,
+  a Shapes generator called hits, its Swell at 100% with an accent of 30%, on top of the scene's velocity,
   which makes every downbeat land harder.
 
   All of this changes velocity, and how loud a velocity sounds is up to the instrument. Use
@@ -95,7 +95,7 @@ patterns:
     velocity: [96, ~, ~, 96, ~, ~, 96, ~, ~, 96, ~, ~, 96, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
 
 generators:
-  - { name: hits, kind: swell, start: 100, end: 100, accent: 30 }
+  - { name: hits, kind: shapes, swell_start: 100, swell_end: 100, swell_accent: 30 }
   - { name: hits swell, kind: chain, generators: [{ name: hits }] }
 
 instruments:

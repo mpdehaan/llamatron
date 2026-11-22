@@ -248,8 +248,8 @@ generators:
   - { name: dance, kind: progression, chords: [1, 7, 1, 7, 1, 7, 5, 1] }
   - { name: crypt, kind: progression, chords: [1] }
   - { name: dragon, kind: progression, chords: [1, 2, 1, 4, 1, 6, 7, 1], accidentals: [~, b, ~, ~, ~, ~, ~, ~] }
-  - { name: fade, kind: swell, start: 100, end: 40 }
-  - { name: grow, kind: swell, start: 50, end: 110 }
+  - { name: fade, kind: shapes, swell_start: 100, swell_end: 40 }
+  - { name: grow, kind: shapes, swell_start: 50, swell_end: 110 }
   - { name: theme chords, kind: chain, generators: [{ name: theme }] }
   - { name: dance chords, kind: chain, generators: [{ name: dance }] }
   - { name: crypt chords, kind: chain, generators: [{ name: crypt }] }

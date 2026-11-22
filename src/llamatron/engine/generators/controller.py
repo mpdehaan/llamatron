@@ -21,7 +21,8 @@ class GeneratorController:
     # Whether its generators play from what another track plays, its chords or its tune, named in the settings' tracks.
     FOLLOWS_TRACKS = False
     # The shape its generators lay over a whole finished clip, a Shape such as density, or None for none.
-    SHAPE = None
+    # The shapes over time its generators lay over a finished clip, each where set: none unless a plugin names some.
+    SHAPES = ()
 
     def make_generator(self, *, settings, place):
         """Return the generator that runs on a clip's notes as one step of a chain, from the generator's settings and its

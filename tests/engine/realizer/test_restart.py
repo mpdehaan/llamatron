@@ -11,13 +11,13 @@ from typing import NamedTuple
 import unittest
 
 from llamatron.engine.clips.clip import Clip
-from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin, progression as progression_plugin, swell as swell_plugin
+from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin, progression as progression_plugin, shapes as shapes_plugin
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.generators.voice_leading.generator import VoiceLeading
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Restart, Row, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Restart, Row, SceneSetting, Section, Shape, shape_setting, ShapePart
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName
 from tests.engine.realizer import test_registers
@@ -94,7 +94,8 @@ class TestTimeFollowingGenerators(unittest.TestCase):
         self.assertEqual(first_names(scenes[2]), ['C', 'E', 'G', 'A'])
 
     def test_a_swells_ramp_runs_over_the_whole_song(self):
-        data = two_scenes(section=swell_plugin.SECTION, kind=swell_plugin.NAME, settings={'start': 0, 'end': 100}, restart=Restart.WHOLE_SONG,
+        swell = {shape_setting(shape=Shape.SWELL, part=ShapePart.START): 0, shape_setting(shape=Shape.SWELL, part=ShapePart.END): 100}
+        data = two_scenes(section=shapes_plugin.SECTION, kind=shapes_plugin.NAME, settings=swell, restart=Restart.WHOLE_SONG,
                           rows={Row.VELOCITY: [100] * STEPS})
         scenes = played(data)
         self.assertLess(scenes[0][-1].velocity, scenes[1][0].velocity)

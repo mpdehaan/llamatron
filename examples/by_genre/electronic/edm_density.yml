@@ -11,7 +11,7 @@ notes: |
   start, then its middle, the other beats, the eighths and last the sixteenths. At 100% every
   note plays, at 50% the sixteenths between the eighths drop out, at 25% only the beats are
   left. A scene's Density, on the Scene page, ramps every clip of the scene from its start to its
-  end; a Density generator in a clip's chain wins over it for that clip. This set makes four,
+  end; a Shapes generator's Density in a clip's chain wins over it for that clip. This set makes four,
   sparse, half, rise and fall, each with a one-step chain of the same name.
 
   Scene 1, intro, 16 bars: the scene's Density from 25% to 100%, the drums and bass filling in.
@@ -91,10 +91,10 @@ patterns:
     velocity: [90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60, 90, 60, 70, 60]
 
 generators:
-  - { name: sparse, kind: density, start: 25, end: 25 }
-  - { name: half, kind: density, start: 12, end: 12 }
-  - { name: rise, kind: density, start: 0, end: 100 }
-  - { name: fall, kind: density, start: 100, end: 0 }
+  - { name: sparse, kind: shapes, density_start: 25, density_end: 25 }
+  - { name: half, kind: shapes, density_start: 12, density_end: 12 }
+  - { name: rise, kind: shapes, density_start: 0, density_end: 100 }
+  - { name: fall, kind: shapes, density_start: 100, density_end: 0 }
   - { name: sparse density, kind: chain, generators: [{ name: sparse }] }
   - { name: half density, kind: chain, generators: [{ name: half }] }
   - { name: rise density, kind: chain, generators: [{ name: rise }] }

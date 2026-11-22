@@ -248,9 +248,7 @@ class ClipSlotPlayer:
         named = {}
         for chain in self._realizer.chains_of(scene=self._scene, track=self._track_name):
             for step in self._setlist.chain_run(chain).get_steps():
-                shape = registry.shape_of(step.kind)
-                if shape is not None and not self._shape_is_bypassed(chain=chain, name=step.name, kind=step.kind, passes=passes):
-                    named[shape] = step
+                self._name_shapes(named=named, chain=chain, step=step, passes=passes)
         clip_length = clip.total_length()
         scene_length = self._realizer.get_scene_length(self._scene)
         shapes = {}
@@ -260,7 +258,7 @@ class ClipSlotPlayer:
                 settings = self._setlist.get_generator_settings(kind=named[shape].kind, name=named[shape].name)
                 restart = settings.get_restart()
                 span = self._realizer.run_span(scene=self._scene, restart=restart, clip_length=clip_length)
-                shapes[shape] = (settings.get_shape(), span, self._realizer.run_offset(scene=self._scene, restart=restart))
+                shapes[shape] = (settings.get_shape(shape), span, self._realizer.run_offset(scene=self._scene, restart=restart))
             elif shape in file_format.PLACED_SHAPES and self._clip_slot.get_shape(shape) is not None:
                 shapes[shape] = (self._clip_slot.get_shape(shape), clip_length, NO_OFFSET)
             elif shape in file_format.PLACED_SHAPES and self._scene.get_scene().get_shape(shape) is not None:
@@ -275,6 +273,16 @@ class ClipSlotPlayer:
             span=clip_length, bar=signature.bar_length(), beat=signature.beat_length(),
         )
         return Clip(name=clip.get_name(), sounds=sounds, scale=clip.get_scale(), length=clip.get_length(), note_length=clip.get_note_length(), controls=clip.get_controls())
+
+    def _name_shapes(self, *, named, chain, step, passes):
+        """Put each shape a chain's step sets in named, by the shape, a later step winning, unless the step's statements bypass it."""
+        kinds = registry.shapes_of(step.kind)
+        if not kinds or self._shape_is_bypassed(chain=chain, name=step.name, kind=step.kind, passes=passes):
+            return
+        settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+        for shape in kinds:
+            if settings.get_shape(shape) is not None:
+                named[shape] = step
 
     def _placed_velocity(self, *, clip_length, scene_length):
         """Return how loud the clip plays over its time, as a PlacedVelocity, or None where every note plays as written.

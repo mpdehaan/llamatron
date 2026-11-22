@@ -21,7 +21,7 @@ import io
 import os
 import sys
 
-from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drag as drag_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shapes as shapes_plugin, shorten as shorten_plugin, strum as strum_plugin, voice_leading as voice_leading_plugin
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits
@@ -211,9 +211,7 @@ FEATURES = [
     ('phrasings', has_section(phrasing_plugin.SECTION)),
     ('musicians', has_section(musician_plugin.SECTION)),
     ('strums', lambda data: has_section(strum_plugin.SECTION)(data) or any_track_setting(TrackSetting.STRUM_DIRECTION)(data) or any_clip_slot_setting(ClipSlotSetting.STRUM_DIRECTION)(data)),
-    ('Densities', has_section(density_plugin.SECTION)),
-    ('Swells', has_section(swell_plugin.SECTION)),
-    ('Articulates', has_section(articulate_plugin.SECTION)),
+    ('Shapes', has_section(shapes_plugin.SECTION)),
     ('chains', has_section(Section.CHAINS)),
     ('own grooves', has_section(Section.GROOVES)),
     ('description', lambda data: SetlistSetting.DESCRIPTION in data),

@@ -21,6 +21,25 @@ class ChoiceView(NamedTuple):
     names: object = None
 
 
+class NumberView(NamedTuple):
+    """A whole number of the generator, stepped between the limits its setting's description holds, blank until given: the
+    setting's file name and its label."""
+
+    setting: str
+    label: str
+
+
+class ShapeView(NamedTuple):
+    """One shape over time, a Density, a Swell or an Articulate: a section headed by the shape's name holding its start, end, over
+    and then, each named with the shape in front, like density_start."""
+
+    shape: str
+
+
+class RestartView(NamedTuple):
+    """The generator's Restart: when it starts over, every clip, on new scene or whole song."""
+
+
 class ColumnView(NamedTuple):
     """A column of a generator's tab: its heading, or None for a column without one, and its settings from the top."""
 

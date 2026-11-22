@@ -258,10 +258,10 @@ patterns:
 generators:
   - { name: a, kind: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] }
   - { name: b, kind: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] }
-  - { name: arrive, kind: density, start: 15, end: 100 }
-  - { name: leave, kind: density, start: 100, end: 15 }
-  - { name: fade, kind: swell, start: 100, end: 35 }
-  - { name: rise, kind: swell, start: 45, end: 110 }
+  - { name: arrive, kind: shapes, density_start: 15, density_end: 100 }
+  - { name: leave, kind: shapes, density_start: 100, density_end: 15 }
+  - { name: fade, kind: shapes, swell_start: 100, swell_end: 35 }
+  - { name: rise, kind: shapes, swell_start: 45, swell_end: 110 }
   - { name: a chords, kind: chain, generators: [{ name: a }] }
   - { name: b chords, kind: chain, generators: [{ name: b }] }
   - { name: arrive density, kind: chain, generators: [{ name: arrive }] }

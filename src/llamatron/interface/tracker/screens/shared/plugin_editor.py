@@ -7,11 +7,15 @@ settings, drawn from the description alone, so that the plugin's page needs no c
 import functools
 
 from llamatron.interface.tracker import keybindings
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, NameField
+from llamatron.interface.tracker.screens.shared.field import ChoiceField, NameField, NumberField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
+from llamatron.interface.tracker.screens.shared.restart_field import restart_field
+from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.model.schema import generator_plugins
-from llamatron.user_strings import help as help_text, labels, messages
+from llamatron.model.schema.file_format import shape_setting
+from llamatron.model.schema.generator_views import ChoiceView, NumberView, RestartView, ShapeView
+from llamatron.user_strings import help as help_text, labels, marks, messages
 
 
 def has_view(section):
@@ -46,8 +50,16 @@ class PluginEditor(GeneratorEditor, FieldPage):
         fields = [NameField(value=self.shown_name, rename=self.rename)]
         for column in self._view.columns:
             for setting in column.settings:
-                fields.append(self._choice_field(setting))
+                fields += self._fields_of(setting)
         return fields
+
+    def store_number(self, number, *, setting):
+        """Keep a number of the generator, left out of the file where it is 0 or cleared."""
+        self.store(setting=setting, value=number or None)
+
+    def shape_part(self, part, *, shape):
+        """Return one part of a shape as the file holds it, or None where it is blank."""
+        return self.settings().get_written(shape_setting(shape=shape, part=part))
 
     def shown_name(self):
         return self.item
@@ -57,6 +69,39 @@ class PluginEditor(GeneratorEditor, FieldPage):
         if value == setting.default:
             value = None
         self.store(setting=setting.setting, value=value)
+
+    def _fields_of(self, setting):
+        """Return the fields that edit one of the view's settings, by the kind of setting it is."""
+        kind = type(setting)
+        if kind is ChoiceView:
+            return [self._choice_field(setting)]
+        if kind is NumberView:
+            return [self._number_field(setting)]
+        if kind is ShapeView:
+            return self._shape_fields(setting)
+        if kind is RestartView:
+            return [restart_field(self)]
+        raise TypeError(setting)
+
+    def _number_field(self, setting):
+        """Return the field that steps a whole number between its setting's limits, blank until given."""
+        number = self.settings().get_written(setting.setting)
+        described = self.settings().SETTINGS[setting.setting]
+        shown = None
+        if number is None:
+            shown = marks.MSG_NONE_SHOWN
+        return NumberField(
+            page=self, label=setting.label, number=number, start=described.get_lowest(), shown=shown, lowest=described.get_lowest(),
+            highest=described.get_highest(), set=functools.partial(self.store_number, setting=setting.setting),
+            clear=functools.partial(self.store, setting=setting.setting, value=None),
+        )
+
+    def _shape_fields(self, setting):
+        """Return a shape's section: its heading, then its start, end, over and then."""
+        return shape_section(
+            page=self, shape=setting.shape, value=functools.partial(self.shape_part, shape=setting.shape),
+            store=lambda part, value: self.store(setting=shape_setting(shape=setting.shape, part=part), value=value),
+        )
 
     def _choice_field(self, setting):
         """Return the field that chooses a setting's value from its list, shown by its name where the view gives one."""

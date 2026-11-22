@@ -97,10 +97,8 @@ A change that takes place over a section or a song.
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
-| [Articulate](generators/ARTICULATE.md) | Ramps how long notes sound over a section | `examples/learning/15_acid_articulate.yml` |
-| [Density](generators/DENSITY.md) | Ramps how many notes play over a section | `examples/by_genre/electronic/edm_density.yml` |
 | [Drift](generators/DRIFT.md) | Changes the song slowly from version A to version B | `examples/by_genre/electronic/mainstreet_hoedown.yml` |
-| [Swell](generators/SWELL.md) | Ramps how loud notes play over a section | `examples/learning/16_bolero_swell.yml` |
+| [Shapes](generators/SHAPES.md) | Ramps how many notes play, how loud and how long over a section | `examples/by_genre/electronic/edm_density.yml` |
 
 ### Voicing
 
@@ -152,7 +150,7 @@ Every generator's page ends with a section called Bypass Generators When, a tabl
 
 ## Shapes
 
-[Density](generators/DENSITY.md), [Swell](generators/SWELL.md) and [Articulate](generators/ARTICULATE.md) shape a clip's notes over time, each a percentage that ramps from a start to an end. Each is a generator, which a chain names as `density: name`, `swell: name` or `articulate: name`, and Density and Articulate are also set in a section of the Scene page and of the clip page, `+ Density` and `+ Articulate`. A generator in a clip's chains wins over the clip's own setting, which wins over its scene's, so that a generator can be painted on many clips and changed in one place. How loud a scene or a clip plays is set by its Velocity and its velocity ramps, which a Swell generator scales again: see [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). Every setting left blank plays as 100%, changing nothing.
+Density, Swell and Articulate shape a clip's notes over time, each a percentage that ramps from a start to an end. A [Shapes](generators/SHAPES.md) generator holds all three, and a chain names it as `shapes: name`; Density and Articulate are also set in a section of the Scene page and of the clip page, `+ Density` and `+ Articulate`. A generator in a clip's chains wins over the clip's own setting, which wins over its scene's, so that a generator can be painted on many clips and changed in one place. How loud a scene or a clip plays is set by its Velocity and its velocity ramps, which a Shapes generator's Swell scales again: see [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). Every setting left blank plays as 100%, changing nothing.
 
 | Setting | What it does |
 | --- | --- |

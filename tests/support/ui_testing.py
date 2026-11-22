@@ -15,7 +15,7 @@ import unittest
 from unittest import mock
 
 from llamatron.caching.memory import Memory
-from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drag as drag_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shapes as shapes_plugin, shorten as shorten_plugin, strum as strum_plugin, voice_leading as voice_leading_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
@@ -40,7 +40,7 @@ from llamatron.interface.tracker.screens.shared.list_page import ListPage
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema import file_format, generator_plugins
-from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, ShapePart
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, Shape, shape_setting, ShapePart
 from llamatron.model.values.note import NoteName
 from llamatron.realtime.devices.fluidsynth import FluidSynth
 from llamatron.user_strings import names as names_text
@@ -76,7 +76,12 @@ CHROMATIC_SCALE = 'all'
 ROLLS = 'rolls'
 # A drift of the test song's, which only changes loudness, slightly, so that it changes no test's notes.
 SWAY = 'sway'
-THIN = 'thin'
+SHAPED = 'shaped'
+# The test song's Shapes generator thins the notes and makes them softer from its start.
+SHAPED_DENSITY_START = 50
+SHAPED_SWELL_START = 80
+DENSITY_START = shape_setting(shape=Shape.DENSITY, part=ShapePart.START)
+SWELL_START = shape_setting(shape=Shape.SWELL, part=ShapePart.START)
 POP = 'pop'
 SMOOTH = 'smooth'
 FOLK = 'folk'
@@ -89,8 +94,6 @@ PICKED = 'picked'
 FOLLOWS = 'follows'
 BREATHES = 'breathes'
 STRUMMER = 'strummer'
-FADE = 'fade'
-CLIPPED = 'clipped'
 DRIFT_SOFTER = 'b_velocity'
 TUNE = 'tune'
 BEAT = 'beat'
@@ -136,9 +139,7 @@ def a_song(*, path=None):
     data[follow_chords_plugin.SECTION] = {FOLLOWS: {FollowChordsSetting.CHORDS_FROM: LEAD}}
     data[phrasing_plugin.SECTION] = {BREATHES: {}}
     data[musician_plugin.SECTION] = {STRUMMER: {}}
-    data[density_plugin.SECTION] = {THIN: {ShapePart.START: 50}}
-    data[swell_plugin.SECTION] = {FADE: {ShapePart.START: 80}}
-    data[articulate_plugin.SECTION] = {CLIPPED: {ShapePart.START: 50}}
+    data[shapes_plugin.SECTION] = {SHAPED: {DENSITY_START: SHAPED_DENSITY_START, SWELL_START: SHAPED_SWELL_START}}
     data[Section.PATTERNS] = {
         TUNE: {
             PatternSetting.GROUP: MELODIES, PatternSetting.STEPS: 4, PatternSetting.STEP_SIZE: EIGHTH, Row.DEGREE: [1, 3, None, None], Row.GATE: [QUARTER, QUARTER, EIGHTH, None],

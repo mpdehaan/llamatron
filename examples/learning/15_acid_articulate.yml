@@ -12,7 +12,7 @@ notes: |
   after it, but a note never runs past where the next one starts, so 200% joins the notes end
   to end, and a synth with glide turned on slides between them. It is set three ways, and this
   demo uses all three: on the Scene page for every clip of the scene, on the clip page for the
-  line alone, and as an Articulate generator in a chain, which wins over both.
+  line alone, and as a Shapes generator's Articulate in a chain, which wins over both.
 
   The filter: the line's first step adds 24 to the register AX each time round, AX goes back to
   4 as each scene starts (the Registers page's Reset each scene), and the acid track's CC1 Reg
@@ -22,7 +22,7 @@ notes: |
   Scene 1, blips: the kick and the line, the scene's Articulate from 15% to 100%.
   Scene 2, hats: the line's own Articulate, from 20% to 200%.
   Scene 3, groove: claps join; the scene's Articulate from 25% to 150%.
-  Scene 4, squelch: the line runs through an Articulate generator called squelch, bouncing
+  Scene 4, squelch: the line runs through a Shapes generator called squelch, its Articulate bouncing
   between 20% and 180% every bar.
   Scene 5, breakdown: no drums; a pad, and the line from 50% to 200%.
   Scene 6, build: stabs join; the scene's Articulate from 10% to 200%.
@@ -87,7 +87,7 @@ patterns:
     tie: [false, true, true, true, false, true, true, true]
 
 generators:
-  - { name: squelch, kind: articulate, start: 20, end: 180, over: 1, then: bounce }
+  - { name: squelch, kind: shapes, articulate_start: 20, articulate_end: 180, articulate_over: 1, articulate_then: bounce }
   - { name: squelch articulation, kind: chain, generators: [{ name: squelch }] }
 
 instruments:

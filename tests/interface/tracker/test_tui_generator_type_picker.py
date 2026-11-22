@@ -35,12 +35,16 @@ class TestGeneratorTypePicker(UITest):
         self.dialog = self.app.screen
         self.assertIsInstance(self.dialog, GroupedChoiceDialog)
 
+    def shown_choices(self):
+        # The picker's own rows, since the screen's text holds the Generators page behind it too.
+        return [row for row in self.dialog.rows() if row[1] is not None]
+
     async def test_it_opens_on_closed_headings_in_order_under_its_title(self):
         shown = self.text()
         self.assertIn(messages.MSG_NEW_GENERATOR_KIND_TITLE, shown)
         places = [shown.index(heading(name=name, is_open=False)) for name in HEADINGS]
         self.assertEqual(places, sorted(places))
-        self.assertNotIn(follow_chords_strings.MSG_LABEL, shown)
+        self.assertEqual(self.shown_choices(), [])
 
     async def test_every_type_is_under_a_heading_once_by_name(self):
         self.assertEqual(sorted(self.dialog.options), sorted(listing.label for listing in generator_pages.LISTED_PAGES.values()))
@@ -57,7 +61,7 @@ class TestGeneratorTypePicker(UITest):
         self.assertIn(follow_chords_strings.MSG_LABEL, self.text())
         await self.press(Key.ENTER)
         self.assertIn(heading(name=labels.GeneratorGroup.HARMONY, is_open=False), self.text())
-        self.assertNotIn(follow_chords_strings.MSG_LABEL, self.text())
+        self.assertEqual(self.shown_choices(), [])
         self.assertIsInstance(self.app.screen, GroupedChoiceDialog)
 
     async def test_enter_on_a_type_makes_one_and_opens_it(self):

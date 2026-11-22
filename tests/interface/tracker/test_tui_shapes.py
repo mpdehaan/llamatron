@@ -1,119 +1,102 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The tracker's Density, Swell and Articulate: their list pages and editors, the sections on the Scene page and the clip page, and the settings pages' sections that hold them."""
+"""The tracker's Density, Swell and Articulate: the Shapes generator's page, the sections on the Scene page and the clip page, and the settings pages' sections that hold them."""
 
-from llamatron.engine.generators import articulate as articulate_plugin, density as density_plugin, swell as swell_plugin
+from llamatron.engine.generators import shapes as shapes_plugin
+from llamatron.engine.generators.shapes import model as shapes_model, strings as shapes_strings
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
-from llamatron.interface.tracker.screens.generators.articulate_editor import ArticulateEditor
-from llamatron.interface.tracker.screens.generators.density_editor import DensityEditor
-from llamatron.interface.tracker.screens.generators.swell_editor import SwellEditor
 from llamatron.interface.tracker.screens.shared.field import Heading
+from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import RampWay, Shape, shape_setting, ShapePart
 from llamatron.user_strings import labels as labels_text, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import back_key, forward_key, UITest
 
-# What a test names the generator it adds.
-NEW_ONE = 'lift'
-# The start each test song's shape generator was given.
-THIN_START = 50
-FADE_START = 80
-CLIPPED_START = 50
 FULL = 100
 HALF = 50
 
 
-class TestDensityAdded(UITest):
+def part_label(*, shape, part):
+    return labels_text.MSG_SHAPE_FIELD_LABELS[part].format(shape=labels_text.MSG_SHAPE_NAMES[shape])
+
+
+class TestShapesAdded(UITest):
 
     async def test_a_new_one_changes_nothing(self):
-        name = await self.add_generator(density_plugin.SECTION)
-        self.assertEqual(self.document.get_setlist().get_generator_settings(kind=density_plugin.NAME, name=name).to_data(), {})
+        name = await self.add_generator(shapes_plugin.SECTION)
+        self.assertEqual(self.document.get_setlist().get_generator_settings(kind=shapes_plugin.NAME, name=name).to_data(), {})
 
 
-class ShapeEditorTest(UITest):
-    """What a shape generator's editor shares: it opens on the test song's one generator of its kind."""
-
-    SECTION = None
-    PAGE = None
-    KIND = None
-    NAME = None
+class TestShapesPage(UITest):
+    """A Shapes generator's page: Density, Swell and Articulate, each a section closed until opened, with its start, end, over and
+    then; a Swell accent; and Restart. It opens on the test song's Shapes generator, whose Density and Swell start are set."""
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.open_generator(section=self.SECTION)
-        self.assertIsInstance(self.app.screen, self.PAGE)
+        await self.open_generator(section=shapes_plugin.SECTION)
+        self.assertIsInstance(self.app.screen, PluginEditor)
 
-    def shape(self):
-        return self.document.get_setlist().get_generator_settings(kind=self.KIND, name=self.NAME).get_shape()
+    def settings(self):
+        return self.document.get_setlist().get_generator_settings(kind=shapes_plugin.NAME, name=ui_testing.SHAPED)
 
+    async def open_section(self, shape):
+        await self.select_field(labels_text.MSG_SHAPE_NAMES[shape])
+        await self.press(keybindings.FieldPage.TOGGLE)
 
-class TestDensityEditor(ShapeEditorTest):
-    """A Density's editor: start and end step within 0 to 100, Bksp leaves one blank, and over and then are chosen."""
+    async def test_every_shape_is_a_section_saying_whether_it_is_set(self):
+        text = self.text()
+        for shape in file_format.SHAPES:
+            self.assertIn(heading_text(shape=shape, is_open=False), text)
+        self.assertEqual(text.count(marks.MSG_SECTION_SET), 2)
 
-    SECTION = density_plugin.SECTION
-    PAGE = DensityEditor
-    KIND = density_plugin.NAME
-    NAME = ui_testing.THIN
-
-    async def test_start_steps_and_clears(self):
-        await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.START])
-        await self.press(keybindings.DensityEditor.MORE)
-        self.assertEqual(self.shape().start, THIN_START + 1)
+    async def test_density_start_steps_and_clears(self):
+        await self.open_section(Shape.DENSITY)
+        await self.select_field(part_label(shape=Shape.DENSITY, part=ShapePart.START))
+        await self.press(keybindings.PluginEditor.MORE)
+        self.assertEqual(self.settings().get_shape(Shape.DENSITY).start, ui_testing.SHAPED_DENSITY_START + 1)
         await self.press(Key.BACKSPACE)
-        self.assertEqual(self.shape().start, FULL)
+        # With its start and end both blank, the Density is no longer in force.
+        self.assertIsNone(self.settings().get_shape(Shape.DENSITY))
 
-    async def test_end_stops_at_the_top(self):
-        await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.END])
-        await self.press(keybindings.DensityEditor.MORE)
-        self.assertEqual(self.shape().end, FULL)
+    async def test_density_end_stops_at_the_top(self):
+        await self.open_section(Shape.DENSITY)
+        await self.select_field(part_label(shape=Shape.DENSITY, part=ShapePart.END))
+        await self.press(keybindings.PluginEditor.MORE)
+        self.assertEqual(self.settings().get_shape(Shape.DENSITY).end, FULL)
 
-    async def test_then_steps_through_hold_repeat_and_bounce(self):
-        self.assertEqual(self.shape().then, file_format.SHAPE_THENS[0])
-        await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.THEN])
-        await self.press(keybindings.DensityEditor.MORE)
-        self.assertEqual(self.shape().then, file_format.SHAPE_THENS[1])
+    async def test_then_steps_and_over_steps_from_the_whole_span_to_a_length(self):
+        await self.open_section(Shape.SWELL)
+        await self.select_field(part_label(shape=Shape.SWELL, part=ShapePart.THEN))
+        await self.press(keybindings.PluginEditor.MORE)
+        self.assertEqual(self.settings().get_shape(Shape.SWELL).then, file_format.SHAPE_THENS[1])
+        await self.select_field(part_label(shape=Shape.SWELL, part=ShapePart.OVER))
+        await self.press(keybindings.PluginEditor.MORE)
+        self.assertIsNotNone(self.settings().get_shape(Shape.SWELL).over)
 
-    async def test_over_steps_from_the_whole_clip_to_a_length(self):
-        self.assertIsNone(self.shape().over)
-        await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.OVER])
-        await self.press(keybindings.DensityEditor.MORE)
-        self.assertIsNotNone(self.shape().over)
+    async def test_the_swell_accent_steps_up_to_its_most(self):
+        await self.select_field(shapes_strings.MSG_SWELL_ACCENT_LABEL)
+        await self.press(*[keybindings.PluginEditor.MORE] * (limits.MAX_ACCENT + 1))
+        self.assertEqual(self.settings().get_written(shapes_model.SWELL_ACCENT), limits.MAX_ACCENT)
+        self.assertEqual(self.settings().get_shape(Shape.SWELL).accent, limits.MAX_ACCENT)
 
-    async def test_it_has_no_accent(self):
-        self.assertNotIn(labels_text.MSG_ACCENT_LABEL, [field.label for field in self.app.screen.fields()])
+    async def test_articulate_start_stops_at_its_least(self):
+        await self.open_section(Shape.ARTICULATE)
+        await self.select_field(part_label(shape=Shape.ARTICULATE, part=ShapePart.START))
+        await self.press(Key.ENTER)
+        self.app.screen.value = str(limits.MIN_ARTICULATE)
+        await self.press(Key.ENTER, keybindings.PluginEditor.LESS)
+        self.assertEqual(self.settings().get_shape(Shape.ARTICULATE).start, limits.MIN_ARTICULATE)
+        self.assertEqual(self.settings().get_shape(Shape.ARTICULATE).end, FULL)
 
-
-class TestSwellEditor(ShapeEditorTest):
-    """A Swell's editor has an accent besides, up to its most."""
-
-    SECTION = swell_plugin.SECTION
-    PAGE = SwellEditor
-    KIND = swell_plugin.NAME
-    NAME = ui_testing.FADE
-
-    async def test_the_accent_steps_up_to_its_most(self):
-        await self.select_field(labels_text.MSG_ACCENT_LABEL)
-        await self.press(*[keybindings.SwellEditor.MORE] * (limits.MAX_ACCENT + 1))
-        self.assertEqual(self.shape().accent, limits.MAX_ACCENT)
-
-
-class TestArticulateEditor(ShapeEditorTest):
-    """An Articulate's editor: start stops at its least."""
-
-    SECTION = articulate_plugin.SECTION
-    PAGE = ArticulateEditor
-    KIND = articulate_plugin.NAME
-    NAME = ui_testing.CLIPPED
-
-    async def test_start_stops_at_its_least(self):
-        await self.select_field(labels_text.MSG_SHAPE_PART_LABELS[ShapePart.START])
-        await self.press(*[keybindings.ArticulateEditor.LESS] * CLIPPED_START)
-        self.assertEqual(self.shape().start, limits.MIN_ARTICULATE)
+    async def test_restart_is_chosen(self):
+        await self.select_field(labels_text.MSG_RESTART_LABEL)
+        await self.press(keybindings.PluginEditor.MORE)
+        self.assertIsNotNone(self.settings().get_written(file_format.GENERATOR_RESTART))
 
 
 def heading_text(*, shape, is_open):

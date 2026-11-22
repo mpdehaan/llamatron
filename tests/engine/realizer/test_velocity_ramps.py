@@ -10,8 +10,7 @@ track plays two bars.
 
 import unittest
 
-from llamatron.engine.generators import swell as swell_plugin
-from llamatron.engine.generators.shape_part import ShapeSetting
+from llamatron.engine.generators import shapes as shapes_plugin
 from llamatron.engine.realizer.shapes import PlacedRamp, PlacedVelocity, velocity_percent_at
 from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
@@ -19,7 +18,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.objects.velocity_ramps import Velocity, velocity_of, VelocityRamp
 from llamatron.model.schema import limits
-from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, VelocitySetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, Shape, VelocitySetting
 from llamatron.model.values import midi
 from tests.engine.realizer import test_registers, test_shapes
 from tests.engine.realizer.test_shapes import bar_of_sixteenths, one_scene
@@ -78,9 +77,10 @@ class TestTheVelocityThatHolds(unittest.TestCase):
         self.assertEqual(set(played(lead_of(scene={VelocitySetting.LEVEL: limits.MAX_VELOCITY_PERCENT}))), {midi.MAX_VELOCITY})
         self.assertEqual(set(played(lead_of(scene={VelocitySetting.LEVEL: limits.MIN_VELOCITY_PERCENT}))), {midi.MIN_VELOCITY})
 
-    def test_a_swell_generator_scales_what_the_scene_already_scaled(self):
-        data = one_scene(rows=ROWS, scene={VelocitySetting.LEVEL: HALF}, chain=[{swell_plugin.NAME: test_shapes.SHAPED}],
-                         generators={swell_plugin.SECTION: {test_shapes.SHAPED: {ShapeSetting.START: HALF, ShapeSetting.END: HALF}}})
+    def test_a_shapes_generators_swell_scales_what_the_scene_already_scaled(self):
+        swell = test_shapes.steady(shape=Shape.SWELL, percent=HALF)
+        data = one_scene(rows=ROWS, scene={VelocitySetting.LEVEL: HALF}, chain=[{shapes_plugin.NAME: test_shapes.SHAPED}],
+                         generators={shapes_plugin.SECTION: {test_shapes.SHAPED: swell}})
         self.assertEqual(set(played(data)), {QUARTER})
 
 

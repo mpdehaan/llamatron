@@ -35,6 +35,6 @@ def follows_tracks(name):
 
 
 @functools.cache
-def shape_of(name):
-    """Return the shape the generators of the plugin of a name lay over a finished clip, or None."""
-    return controller_of(name).SHAPE
+def shapes_of(name):
+    """Return the shapes the generators of the plugin of a name lay over a finished clip, each where set, or none."""
+    return controller_of(name).SHAPES

@@ -147,10 +147,8 @@ A generator changes how a clip's notes are played, without changing its pattern.
 
 | What it does | Page |
 | --- | --- |
-| How long notes sound, ramping over a section | [Articulate](docs/generators/ARTICULATE.md) |
-| How many notes play, ramping over a section | [Density](docs/generators/DENSITY.md) |
 | One slow change over the whole song | [Drift](docs/generators/DRIFT.md) |
-| How loud notes play, ramping over a section | [Swell](docs/generators/SWELL.md) |
+| How many notes play, how loud and how long, ramping over a section | [Shapes](docs/generators/SHAPES.md) |
 
 ### Voicing
 

@@ -137,7 +137,7 @@ patterns:
 
 generators:
   - { name: loop, kind: progression, chords: [1, 1, 1, 1, 4, 4, 3, 7] }
-  - { name: rise, kind: density, start: 0, end: 100 }
+  - { name: rise, kind: shapes, density_start: 0, density_end: 100 }
   - { name: loop chords, kind: chain, generators: [{ name: loop }] }
   - { name: rise density, kind: chain, generators: [{ name: rise }] }
   - { name: riff rise, kind: chain, generators: [{ name: loop }, { name: rise }] }

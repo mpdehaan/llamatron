@@ -45,7 +45,7 @@ VOCABULARY_PACKAGES = ('user_strings',)
 FRONT_DOORS = {
     # Of the Engine, the Realizer is reached only through the song's realizer; its clips, timing, parts and plugins are open.
     # Of the generator plugins, a plugin's package, declaration, model, schema and strings, and the registry and the parts their models own.
-    'engine': ('clips', 'timing', 'realizer.song_realizer', 'realizer.as_written', 'generators.registry', 'generators.step_row', 'generators.shape_part',
+    'engine': ('clips', 'timing', 'realizer.song_realizer', 'realizer.as_written', 'generators.registry', 'generators.step_row',
                'generators.*', 'generators.*.model', 'generators.*.schema', 'generators.*.strings', 'generators.*.declaration'),
     # Of the Model, its values and schema, the set and the song, the names it makes, and the toolkit that settings and the generator
     # plugins' models are written with; the rest of its objects and its file are its own.

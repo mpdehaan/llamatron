@@ -9,7 +9,7 @@ import inspect
 import sys
 import unittest
 
-from llamatron.engine.generators import settings_base, shape_part, step_row
+from llamatron.engine.generators import settings_base, step_row
 from llamatron.engine.generators.arp import schema
 from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting, AutoRatchetSettings
@@ -22,10 +22,8 @@ from llamatron.engine.generators.musician.model import MusicianSetting, Musician
 from llamatron.engine.generators.phrasing.model import PhrasingSetting, PhrasingSettings
 from llamatron.engine.generators.progression.model import ProgressionSetting, ProgressionSettings
 from llamatron.engine.generators.rush.model import RushSettings
-from llamatron.engine.generators.shape_part import ShapeSetting
 from llamatron.engine.generators.shorten.model import ShortenSettings
 from llamatron.engine.generators.step_row import StepRowSetting
-from llamatron.engine.generators.swell.model import SwellSettings
 from llamatron.engine.generators.voice_leading.model import VoiceLeadingSetting, VoiceLeadingSettings
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed
@@ -94,7 +92,7 @@ FIRST = 1
 PATTERN_ONE = names_text.MSG_NEW_PATTERN_NAME.format(number=FIRST)
 TRACK_ONE = names_text.MSG_NEW_TRACK_NAME.format(number=FIRST)
 # The modules that hold classes of setting names.
-NAMING_MODULES = [file_format, step_row, shape_part, *(sys.modules[plugin.settings.__module__] for plugin in generator_plugins.plugins().values())]
+NAMING_MODULES = [file_format, step_row, *(sys.modules[plugin.settings.__module__] for plugin in generator_plugins.plugins().values())]
 SETTING_CLASS_ENDING = 'Setting'
 # Each class of setting names, the descriptions of those settings, and the names that aren't settings with a
 # value of their own to check: a pattern's steps are its size, and a scene's tracks are its clips.
@@ -128,8 +126,6 @@ DESCRIBED = [
     (AutoRatchetSetting, AutoRatchetSettings.SETTINGS, ()),
     # A drift's own settings; each version's values are named from DriftValue, which the test below holds them to.
     (DriftSetting, {name: setting for name, setting in DriftSettings.SETTINGS.items() if name in vars(DriftSetting).values()}, ()),
-    # A Swell's settings are every shape generator's, and an accent besides.
-    (ShapeSetting, SwellSettings.SETTINGS, ()),
     (ProgressionSetting, ProgressionSettings.SETTINGS, ()),
     (VoiceLeadingSetting, VoiceLeadingSettings.SETTINGS, ()),
     # A Glide's, a Shorten's, a Rush's and a Drag's settings share one class of names.

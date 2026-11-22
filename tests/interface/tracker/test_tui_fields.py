@@ -10,7 +10,7 @@ to Space and Enter alike.
 
 import unittest
 
-from llamatron.engine.generators import phrasing as phrasing_plugin
+from llamatron.engine.generators import phrasing as phrasing_plugin, shapes as shapes_plugin
 from llamatron.interface.tracker import key_table, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
@@ -19,10 +19,8 @@ from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
 from llamatron.interface.tracker.screens.generators.arp_editor import ArpEditor
-from llamatron.interface.tracker.screens.generators.articulate_editor import ArticulateEditor
 from llamatron.interface.tracker.screens.generators.auto_ratchet_editor import AutoRatchetEditor
 from llamatron.interface.tracker.screens.generators.chain_statements_page import ChainStatementsPage
-from llamatron.interface.tracker.screens.generators.density_editor import DensityEditor
 from llamatron.interface.tracker.screens.generators.drag_editor import DragEditor
 from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
 from llamatron.interface.tracker.screens.generators.follow_chords_editor import FollowChordsEditor
@@ -34,7 +32,6 @@ from llamatron.interface.tracker.screens.generators.progression_editor import Pr
 from llamatron.interface.tracker.screens.generators.rush_editor import RushEditor
 from llamatron.interface.tracker.screens.generators.shorten_editor import ShortenEditor
 from llamatron.interface.tracker.screens.generators.strum_editor import StrumEditor
-from llamatron.interface.tracker.screens.generators.swell_editor import SwellEditor
 from llamatron.interface.tracker.screens.generators.voice_leading_editor import VoiceLeadingEditor
 from llamatron.interface.tracker.screens.set.draws_page import DrawsPage
 from llamatron.interface.tracker.screens.set.file_page import FilePage
@@ -256,7 +253,7 @@ class FieldPagesTest(UITest):
             TrackEditor(holder=holder, name=ui_testing.LEAD), RegistersPage(holder), DrawsPage(holder), FilePage(holder), AutoRatchetEditor(holder=holder, name=ui_testing.ROLLS), DriftEditor(holder=holder, name=ui_testing.SWAY),
             ProgressionEditor(holder=holder, name=ui_testing.POP), VoiceLeadingEditor(holder=holder, name=ui_testing.SMOOTH), HocketEditor(holder=holder, name=ui_testing.TRADE), FollowChordsEditor(holder=holder, name=ui_testing.FOLLOWS), PluginEditor(holder=holder, name=ui_testing.BREATHES, section=phrasing_plugin.SECTION), MusicianEditor(holder=holder, name=ui_testing.STRUMMER), GuitarifyEditor(holder=holder, name=ui_testing.PICKED), StrumEditor(holder=holder, name=ui_testing.FOLK), GlideEditor(holder=holder, name=ui_testing.SLIDES), ShortenEditor(holder=holder, name=ui_testing.CLIPS),
             RushEditor(holder=holder, name=ui_testing.PUSH), DragEditor(holder=holder, name=ui_testing.LAZY),
-            DensityEditor(holder=holder, name=ui_testing.THIN), SwellEditor(holder=holder, name=ui_testing.FADE), ArticulateEditor(holder=holder, name=ui_testing.CLIPPED),
+            PluginEditor(holder=holder, name=ui_testing.SHAPED, section=shapes_plugin.SECTION),
             ScalePage(holder=holder, name=setlist.DEFAULT_SCALE), ChainStatementsPage(holder=holder, name=ui_testing.NAMED), InstrumentEditor(holder=holder, name=AN_INSTRUMENT), self.a_wizard(holder),
         ]
 
@@ -281,7 +278,8 @@ class TestFieldsOnThePages(FieldPagesTest):
 
     async def test_every_page_of_fields_is_toured(self):
         every = sorted(page.__name__ for page in leaf_pages() if issubclass(page, FieldPage))
-        self.assertEqual(sorted(type(page).__name__ for page in self.pages()), every)
+        # The page drawn from a plugin's view is toured once for each plugin that has one.
+        self.assertEqual(sorted({type(page).__name__ for page in self.pages()}), every)
 
     async def test_every_toggle_answers_to_space_and_to_enter(self):
         found = 0
@@ -376,7 +374,7 @@ class NumbersStopAtTheirEnds:
 
 
 # The settings pages FieldPagesTest tours.
-PAGES_TOURED = 29
+PAGES_TOURED = 27
 
 
 class TestNumbersStopAtTheirEndsOnTheSongPage(NumbersStopAtTheirEnds, FieldPagesTest):

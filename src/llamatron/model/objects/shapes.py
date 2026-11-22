@@ -48,11 +48,16 @@ def shape_part_settings(*, shape, named):
     ]
 
 
+def prefixed_shape_settings(shape):
+    """Return the descriptions of one shape's four parts, each named with the shape in front, like density_start."""
+    return shape_part_settings(shape=shape, named=functools.partial(_named_part, shape=shape))
+
+
 def shape_settings():
     """Return the descriptions of every shape's settings a scene or a clip holds, like density_start, in the order a file writes them."""
     settings = []
     for shape in file_format.PLACED_SHAPES:
-        settings += shape_part_settings(shape=shape, named=functools.partial(_named_part, shape=shape))
+        settings += prefixed_shape_settings(shape)
     return settings
 
 

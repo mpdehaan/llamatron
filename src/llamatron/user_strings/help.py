@@ -333,25 +333,6 @@ Left and Right move. Space or ENTER turns the step under the cursor on or off, t
 I inserts a step and D removes one, from 1 to 16.
 """
 
-# DensityEditor
-HELP_DENSITY_EDITOR = """
-Start and end: the share of notes that play, from 0 to 100, ramping from one to the other. Blank plays as 100.
-Over: how long one ramp lasts, the whole clip unless set. Then: after a ramp, hold stays at the end, repeat starts again, bounce ramps back.
-"""
-
-# SwellEditor
-HELP_SWELL_EDITOR = """
-Start and end: each note's velocity as a percentage, from 0 to 200, ramping from one to the other. Blank plays as 100.
-Over: how long one ramp lasts, the whole clip unless set. Then: after a ramp, hold stays at the end, repeat starts again, bounce ramps back.
-Accent: how much louder the beats are, up to 50 percent.
-"""
-
-# ArticulateEditor
-HELP_ARTICULATE_EDITOR = """
-Start and end: how long each note sounds, as a percentage of what's written, from 10 to 200, never past the next note. Blank plays as 100.
-Over: how long one ramp lasts, the whole clip unless set. Then: after a ramp, hold stays at the end, repeat starts again, bounce ramps back.
-"""
-
 # DriftEditor
 HELP_DRIFT_EDITOR = """
 Every: how often it triggers and picks new amounts. Steps to the second version: how many triggers it takes.

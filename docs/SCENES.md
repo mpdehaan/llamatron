@@ -28,7 +28,7 @@ On Arrange, `ENTER` on a scene's name opens the Scene page.
 | + Tempo Ramp In, + Tempo Ramp Out | Sections, closed until opened, that move the tempo gradually at the scene's start and at its end. See [Tempo Ramps](#tempo-ramps). |
 | + Velocity Ramp In, + Velocity Ramp Out | Sections, closed until opened, that fade the scene in from its start and out to its end. See [Velocity and Velocity Ramps](#velocity-and-velocity-ramps). |
 | + Bypass Generators When | A section of statements about the registers. When one is true as a clip's pattern starts over, that pass goes by the clip's generators untouched. See [Conditional Execution](REGISTERS.md#conditional-execution). |
-| + Density, + Articulate | Sections, closed until opened, each with a Start, End, Over and Then that shape every clip of the scene across the whole scene, unless a clip sets its own shape or a generator in its chains does. See [Density](generators/DENSITY.md) and [Articulate](generators/ARTICULATE.md). |
+| + Density, + Articulate | Sections, closed until opened, each with a Start, End, Over and Then that shape every clip of the scene across the whole scene, unless a clip sets its own shape or a generator in its chains does. See [Shapes](generators/SHAPES.md). |
 
 The page shows how long the scene lasts, and any problem, such as every clip looping. Turning on a loop that leaves a scene with no clip that ends opens a Scene loop errors dialog naming the scenes to fix, and exporting while any scene is in that state does the same.
 
@@ -68,7 +68,7 @@ In an example scenario, a scene of 8 bars has Velocity at 80, Velocity in start 
 
 A clip has the same seven fields on its clip page. Each field a clip sets wins over the scene's, and a field the clip leaves blank takes the scene's, shown as `80% (from scene)`. When a clip gives a ramp its own bars, the bars are counted over that clip's own play: from where the clip starts, and back from where the clip ends, which for a looping clip is the end of the scene.
 
-A [Swell](generators/SWELL.md) generator in a clip's chains scales the same notes again, on top of the scene's and the clip's velocity, so that one Swell can add accents or a shape of its own to many clips.
+A [Shapes](generators/SHAPES.md) generator's Swell, in a clip's chains, scales the same notes again, on top of the scene's and the clip's velocity, so that one Shapes generator can add accents or a shape of its own to many clips.
 
 In `examples/learning/16_bolero_swell.yml`, each scene's Velocity Ramp In starts where the scene before ended, for one long crescendo:
 

@@ -423,22 +423,6 @@ class DragEditor(StepRowGeneratorEditor):
     """A Drag's editor."""
 
 
-class ShapeEditor(FieldPage):
-    """A shape generator's editor, with the settings keys alone."""
-
-
-class DensityEditor(ShapeEditor):
-    """A Density's editor."""
-
-
-class SwellEditor(ShapeEditor):
-    """A Swell's editor."""
-
-
-class ArticulateEditor(ShapeEditor):
-    """An Articulate's editor."""
-
-
 class DriftEditor(FieldPage):
     """The drift's editor: the settings keys, except that Left and Right pick version A or B on a row that has both, so only [ and ] change a value."""
 

@@ -88,7 +88,7 @@ bass on one note, a slow pad, a heartbeat kick and a plain theme in long notes o
 
 | chords | arps | chains | ties | shapes | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/SWELL.md) | [✓](../generators/PROGRESSION.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/SHAPES.md) | [✓](../generators/PROGRESSION.md) |
 <!-- end of the generated summary of strange_woodworking -->
 
 <a id="tumbleweeds"></a>
