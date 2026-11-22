@@ -33,11 +33,17 @@ def is_version(text):
     if not isinstance(text, str):
         return False
     parts = text.split(VERSION_SEPARATOR)
-    return len(parts) == VERSION_PARTS and all(part.isdigit() and part.isascii() for part in parts)
+    if len(parts) != VERSION_PARTS:
+        return False
+    for part in parts:
+        if not part.isdigit() or not part.isascii():
+            return False
+    return True
 
 
 def version_numbers(text):
     """Return a version's three numbers, so versions compare number by number, like (1, 0, 2)."""
     if not is_version(text):
         raise ValueError(errors.ERR_BAD_VERSION_TEXT.format(value=text))
-    return tuple(int(part) for part in text.split(VERSION_SEPARATOR))
+    parts = text.split(VERSION_SEPARATOR)
+    return tuple(map(int, parts))
