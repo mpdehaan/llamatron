@@ -110,10 +110,22 @@ class TestArrangeDrawing(UITest):
         width, height = self.SIZE
         shown = self.page.drawing.visible_scenes(height)
         self.assertLess(len(shown), MANY_SCENES)
-        self.assertEqual(len(self.drawn()), arrange_drawing.HEADER_LINES + len(shown) * arrange_drawing.SCENE_LINES + arrange_drawing.FOOTER_LINES)
+        # The + row is off screen, so its lines go to the scenes: as many fit as the room under the header holds.
+        self.assertFalse(self.page.drawing.shows_plus_row(shown=shown, height=height))
+        self.assertEqual(len(shown), (height - arrange_drawing.HEADER_LINES) // arrange_drawing.SCENE_LINES)
+        self.assertEqual(len(self.drawn()), arrange_drawing.HEADER_LINES + len(shown) * arrange_drawing.SCENE_LINES)
+        self.assertNotIn(marks.MSG_ADD_ROW_MARK, self.drawn()[-1].plain)
         for _ in range(MANY_SCENES):
             self.press_at_once(Key.DOWN)
-        self.assertIn(self.page.row, self.page.drawing.visible_scenes(height))
+        shown = self.page.drawing.visible_scenes(height)
+        self.assertIn(self.page.row, shown)
+        # With the last scene on screen, the + row comes into view under it.
+        while not self.page.on_plus_row():
+            self.press_at_once(Key.DOWN)
+        shown = self.page.drawing.visible_scenes(height)
+        self.assertTrue(self.page.on_plus_row())
+        self.assertTrue(self.page.drawing.shows_plus_row(shown=shown, height=height))
+        self.assertEqual(len(self.drawn()), arrange_drawing.HEADER_LINES + len(shown) * arrange_drawing.SCENE_LINES + arrange_drawing.FOOTER_LINES)
 
     async def test_the_frame_is_drawn_around_what_the_cursor_is_on_and_nowhere_when_that_is_off_screen(self):
         width, height = self.SIZE

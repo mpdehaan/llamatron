@@ -211,32 +211,24 @@ class ArrangeDrawing:
         return self._page.left, last
 
     def visible_scenes(self, height):
-        """Return the range of scene indexes that fit, scrolling to the cursor, with the header and the + row always shown."""
-        if self.widened():
-            return self.visible_tall_scenes(height)
-        room = max((height - HEADER_LINES - FOOTER_LINES) // SCENE_LINES, 1)
-        if self._page.row < self._page.top:
-            self._page.top = max(self._page.row, 0)
-        elif self._page.row >= self._page.top + room:
-            self._page.top = self._page.row - room + 1
-        return range(self._page.top, min(self._page.top + room, len(self._page.scenes())))
-
-    def visible_tall_scenes(self, height):
-        """Return the range of scene indexes that fit in the details view, where each row is as tall as its details need, scrolling to the cursor."""
-        room = height - self.header_lines() - FOOTER_LINES
+        """Return the range of scene indexes that fit, each as tall as scene_lines says, scrolling to the cursor; the + row after the
+        last scene takes room only once it comes on screen (shows_plus_row), so that a long song shows a scene more."""
         count = len(self._page.scenes())
+        room = height - self.header_lines()
+        wanted = min(max(self._page.row, 0), count)
+        top = max(min(self._page.top, wanted), 0)
+        while top < wanted and not self._rows_fit(first=top, last=wanted, room=room):
+            top += 1
+        stop = top + 1
+        while stop <= count and self._rows_fit(first=top, last=stop, room=room):
+            stop += 1
+        self._page.top = top
+        return range(top, min(stop, count))
 
-        def fits(first, index):
-            return sum(self.scene_lines(row) for row in range(first, index + 1)) <= room
-
-        wanted = min(max(self._page.row, 0), count - 1)
-        self._page.top = max(min(self._page.top, wanted), 0)
-        while self._page.top < wanted and not fits(self._page.top, wanted):
-            self._page.top += 1
-        last = self._page.top + 1
-        while last < count and fits(self._page.top, last):
-            last += 1
-        return range(self._page.top, min(last, count))
+    def shows_plus_row(self, *, shown, height):
+        """Return whether the + row is on screen below the scenes shown: when the last scene is among them and the row fits."""
+        count = len(self._page.scenes())
+        return shown.stop == count and self._rows_fit(first=shown.start, last=count, room=height - self.header_lines())
 
     def cell_column(self, place):
         """Return the column of the divider before a track's column, the scene column's double divider for the first track shown;
@@ -306,7 +298,8 @@ class ArrangeDrawing:
             else:
                 names.write(column=column, text=marks_text.MSG_ADD_ROW_MARK.center(width), style=Style.DIM)
         if last < len(tracks) + 1:
-            names.write(column=self.cell_column(last) + 1, text=Box.MORE, style=Style.DIM)
+            # More tracks lie to the right: the mark takes the last divider's place, which a full width leaves at the edge.
+            names.write(column=self.cell_column(last), text=Box.MORE, style=Style.DIM)
         self.draw_grid_line(lines[-1], first=first, last=last)
 
     def shown_track_name(self, name):
@@ -384,12 +377,11 @@ class ArrangeDrawing:
         else:
             line.write(column=column, text=marks_text.MSG_PLAY_MARK, style=Style.DIM)
 
-    def draw_footer(self, lines, *, at_end, first, last):
-        """Draw the room for a frame's top, the + row where a scene is added, when the end of the list is on screen, and the room for its bottom."""
+    def draw_footer(self, lines, *, first, last):
+        """Draw the room for a frame's top, the + row where a scene is added, and the room for its bottom."""
         for line in lines:
             self.draw_dividers(line, first=first, last=last)
-        if at_end:
-            lines[1].write(column=SCENE_BAR_COLUMN, text=marks_text.MSG_ADD_ROW_MARK, style=Style.DIM)
+        lines[1].write(column=SCENE_BAR_COLUMN, text=marks_text.MSG_ADD_ROW_MARK, style=Style.DIM)
 
     def frame_place(self, *, shown, first, last):
         """Return the frame around what the cursor is on, the line its top edge is on and how many lines it holds, or None when the cursor is off screen."""
@@ -465,14 +457,18 @@ class ArrangeDrawing:
         first, last = self.visible_tracks(width)
         shown = self.visible_scenes(height)
         header = self.header_lines()
-        count = header + sum(self.scene_lines(index) for index in shown) + FOOTER_LINES
+        plus_row = self.shows_plus_row(shown=shown, height=height)
+        count = header + sum(self.scene_lines(index) for index in shown)
+        if plus_row:
+            count += FOOTER_LINES
         lines = [Canvas(width) for _ in range(count)]
         self.draw_header(lines[:header], first=first, last=last)
         start = header
         for index in shown:
             self.draw_scene(lines[start:start + self.scene_lines(index)], index=index, first=first, last=last)
             start += self.scene_lines(index)
-        self.draw_footer(lines[-FOOTER_LINES:], at_end=shown.stop == len(self._page.scenes()), first=first, last=last)
+        if plus_row:
+            self.draw_footer(lines[-FOOTER_LINES:], first=first, last=last)
         if self._page.boxes_playing_scene():
             # A recording nobody performs has no cursor to show: the playing scene is boxed instead.
             tops = {}
@@ -493,3 +489,16 @@ class ArrangeDrawing:
                 frame.sides(line)
             frame.bottom(lines[top + 1 + inside])
         return [line.text() for line in lines]
+
+    def _row_lines(self, index):
+        """Return how many lines a row takes: a scene's, or the + row's after the last scene."""
+        if index == len(self._page.scenes()):
+            return FOOTER_LINES
+        return self.scene_lines(index)
+
+    def _rows_fit(self, *, first, last, room):
+        """Return whether the rows from first to last, the + row counting as the row after the last scene, fit in room lines."""
+        total = 0
+        for index in range(first, last + 1):
+            total += self._row_lines(index)
+        return total <= room
