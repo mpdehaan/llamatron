@@ -38,7 +38,13 @@ def as_items(mapping, *, key=FileLayout.NAME):
 
 def with_key_replaced(settings, *, old, new, value):
     """Return a copy of settings with one key put in place of another, in its place, holding a value."""
-    return {(new if key == old else key): (value if key == old else held) for key, held in settings.items()}
+    replaced = {}
+    for key, held in settings.items():
+        if key == old:
+            replaced[new] = value
+        else:
+            replaced[key] = held
+    return replaced
 
 
 def name_references(names):
@@ -53,14 +59,16 @@ def as_file_layout(data):
     written = {}
     generators = []
     for key, value in data.items():
-        if key in generator_plugins.names_by_section():
-            generators += [{FileLayout.NAME: name, FileLayout.KIND: generator_plugins.names_by_section()[key], **settings} for name, settings in value.items()]
+        kinds = generator_plugins.names_by_section()
+        if key in kinds:
+            generators += _generator_items(kind=kinds[key], generators=value)
         elif key == Section.CHAINS:
-            generators += [_chain_item(name=name, chain=chain) for name, chain in value.items()]
+            for name, chain in value.items():
+                generators.append(_chain_item(name=name, chain=chain))
         elif key in LISTED_SECTIONS:
             written[key] = as_items(value)
         elif key == Section.SONGS:
-            written[key] = [{FileLayout.NAME: name, **_song_in_file(song)} for name, song in value.items()]
+            written[key] = _named_items(mapping=value, key=FileLayout.NAME, laid_out=_song_in_file)
         else:
             written[key] = value
     if generators:
@@ -69,17 +77,25 @@ def as_file_layout(data):
 
 
 def _chain_item(*, name, chain):
-    steps = chain[OBJECT_CHAIN_STEPS] if isinstance(chain, dict) else chain
-    item = {FileLayout.NAME: name, FileLayout.KIND: FileLayout.CHAIN, FileLayout.GENERATORS: name_references([next(iter(step.values())) for step in steps])}
+    steps = chain
     if isinstance(chain, dict):
-        item.update({key: value for key, value in chain.items() if key != OBJECT_CHAIN_STEPS})
+        steps = chain[OBJECT_CHAIN_STEPS]
+    # Each step is {kind: name}, and the file names the generator alone.
+    names = []
+    for step in steps:
+        names.append(next(iter(step.values())))
+    item = {FileLayout.NAME: name, FileLayout.KIND: FileLayout.CHAIN, FileLayout.GENERATORS: name_references(names)}
+    if isinstance(chain, dict):
+        for key, value in chain.items():
+            if key != OBJECT_CHAIN_STEPS:
+                item[key] = value
     return item
 
 
 def _song_in_file(song):
     written = dict(song)
     if isinstance(written.get(Section.TRACKS), dict):
-        written[Section.TRACKS] = [{FileLayout.NAME: name, **_references_in_file(track)} for name, track in written[Section.TRACKS].items()]
+        written[Section.TRACKS] = _named_items(mapping=written[Section.TRACKS], key=FileLayout.NAME, laid_out=_references_in_file)
     if Section.SCENES in written:
         written[Section.SCENES] = [_scene_in_file(scene) for scene in written[Section.SCENES]]
     return written
@@ -88,7 +104,7 @@ def _song_in_file(song):
 def _scene_in_file(scene):
     written = _references_in_file(scene)
     if OBJECT_SCENE_TRACKS in written:
-        clips = [{FileLayout.TRACK: track, **_references_in_file(clip)} for track, clip in written[OBJECT_SCENE_TRACKS].items()]
+        clips = _named_items(mapping=written[OBJECT_SCENE_TRACKS], key=FileLayout.TRACK, laid_out=_references_in_file)
         written = with_key_replaced(written, old=OBJECT_SCENE_TRACKS, new=FileLayout.CLIPS, value=clips)
     return written
 
@@ -113,7 +129,8 @@ def as_object_layout(data):
         elif key == FileLayout.GENERATORS:
             read.update(_generators_by_kind(value))
         elif key == Section.SONGS:
-            read[key] = {name: _song_of_file(song) for name, song in keyed(items=value, section=key).items()}
+            songs = keyed(items=value, section=key)
+            read[key] = _each_read(mapping=songs, read=_song_of_file)
         else:
             read[key] = value
     return read
@@ -168,14 +185,21 @@ def _chain_of_file(*, name, settings, kinds):
                 raise InvalidValue(errors.ERR_CHAIN_IN_CHAIN.format(name=name, step=step))
             steps.append({kinds[step]: step})
     rest = {field: value for field, value in settings.items() if field != FileLayout.GENERATORS}
-    return {OBJECT_CHAIN_STEPS: steps, **rest} if rest else steps
+    if not rest:
+        return steps
+    return {OBJECT_CHAIN_STEPS: steps, **rest}
 
 
 def _names_of(references):
     """Return the names a list of { name: x } holds, or raise InvalidValue for anything else."""
-    if not isinstance(references, list) or not all(isinstance(reference, dict) and set(reference) == {FileLayout.NAME} for reference in references):
+    if not isinstance(references, list):
         raise InvalidValue(errors.ERR_EXPECTED_NAMES.format(value=references))
-    return [reference[FileLayout.NAME] for reference in references]
+    names = []
+    for reference in references:
+        if not isinstance(reference, dict) or set(reference) != {FileLayout.NAME}:
+            raise InvalidValue(errors.ERR_EXPECTED_NAMES.format(value=references))
+        names.append(reference[FileLayout.NAME])
+    return names
 
 
 def _song_of_file(song):
@@ -183,7 +207,8 @@ def _song_of_file(song):
         return song
     read = dict(song)
     if Section.TRACKS in read:
-        read[Section.TRACKS] = {name: _references_of_file(track) for name, track in keyed(items=read[Section.TRACKS], section=Section.TRACKS).items()}
+        tracks = keyed(items=read[Section.TRACKS], section=Section.TRACKS)
+        read[Section.TRACKS] = _each_read(mapping=tracks, read=_references_of_file)
     if isinstance(read.get(Section.SCENES), list):
         read[Section.SCENES] = [_scene_of_file(scene) for scene in read[Section.SCENES]]
     return read
@@ -195,7 +220,7 @@ def _scene_of_file(scene):
     read = _references_of_file(scene)
     if FileLayout.CLIPS in read:
         clips = keyed(items=read[FileLayout.CLIPS], section=FileLayout.CLIPS, key=FileLayout.TRACK)
-        read = with_key_replaced(read, old=FileLayout.CLIPS, new=OBJECT_SCENE_TRACKS, value={track: _references_of_file(clip) for track, clip in clips.items()})
+        read = with_key_replaced(read, old=FileLayout.CLIPS, new=OBJECT_SCENE_TRACKS, value=_each_read(mapping=clips, read=_references_of_file))
     return read
 
 
@@ -228,7 +253,9 @@ class GeneratorWithoutPlugin(Correction):
         if not without:
             del self._holder[self._key]
         for chain in (self._holder.get(Section.CHAINS) or {}).values():
-            steps = chain.get(OBJECT_CHAIN_STEPS, []) if isinstance(chain, dict) else chain
+            steps = chain
+            if isinstance(chain, dict):
+                steps = chain.get(OBJECT_CHAIN_STEPS, [])
             steps[:] = [step for step in steps if step != {self._found: self._name}]
         _drop_from_chain_lists(data=self._holder.get(Section.SONGS), name=self._name)
 
@@ -248,3 +275,27 @@ def _drop_from_chain_lists(*, data, name):
     elif isinstance(data, list):
         for value in data:
             _drop_from_chain_lists(data=value, name=name)
+
+
+def _generator_items(*, kind, generators):
+    """Return one kind's generators as the file lists them, each with its name and kind first."""
+    items = []
+    for name, settings in generators.items():
+        items.append({FileLayout.NAME: name, FileLayout.KIND: kind, **settings})
+    return items
+
+
+def _named_items(*, mapping, key, laid_out):
+    """Return things kept by name as the file lists them, each laid out as the file writes it, with its name first under key."""
+    items = []
+    for name, settings in mapping.items():
+        items.append({key: name, **laid_out(settings)})
+    return items
+
+
+def _each_read(*, mapping, read):
+    """Return things kept by name with each read from the file's layout into the objects'."""
+    read_items = {}
+    for name, settings in mapping.items():
+        read_items[name] = read(settings)
+    return read_items
