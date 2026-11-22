@@ -99,7 +99,9 @@ class RenderLoop:
     def run(self):
         try:
             while self._closed is None:
-                timeout = PLAYER_TICK_SECONDS if self._was_playing or self._waiting else None
+                timeout = None
+                if self._was_playing or self._waiting:
+                    timeout = PLAYER_TICK_SECONDS
                 if self._connection.poll(timeout):
                     self._take_waiting()
                 if self._closed is None:
@@ -175,10 +177,15 @@ class RenderLoop:
             built = self._playback.built(wanted)
             if built is not None:
                 self._waiting.remove(wanted)
-                self._connection.send((BUILT, wanted, None if built.problem is None else str(built.problem)))
+                problem = None
+                if built.problem is not None:
+                    problem = str(built.problem)
+                self._connection.send((BUILT, wanted, problem))
         playing = self._playback.is_playing()
         if playing or self._was_playing:
             status = self._playback.status(at=time.monotonic(), since=self._since)
-            self._since = status.now if playing else None
+            self._since = None
+            if playing:
+                self._since = status.now
             self._connection.send((STATUS, status))
         self._was_playing = playing
