@@ -212,14 +212,15 @@ class TestArrangeDetailsView(UITest):
         self.assertFalse(self.page.shows_details())
         self.assertEqual(self.drawn(), usual)
 
-    async def test_the_details_view_draws_a_double_divider_after_the_scenes_and_one_between_the_tracks(self):
-        self.assertTrue(all(line[arrange_drawing.SCENE_WIDTH] != Box.DOUBLE_BAR for line in self.drawn()))
-        await self.press(keybindings.ArrangePage.SHOW_DETAILS)
-        lines = self.drawn()
-        self.assertTrue(any(line[arrange_drawing.SCENE_WIDTH] == Box.DOUBLE_BAR for line in lines))
-        self.assertTrue(any(line[arrange_drawing.SCENE_WIDTH] == Box.DOUBLE_CROSS for line in lines))
-        divider = self.page.drawing.cell_column(1)
-        self.assertTrue(any(line[divider] == Box.BAR for line in lines))
+    async def test_the_grid_lines_stay_in_the_details_view_a_double_divider_after_the_scenes_and_one_between_the_tracks(self):
+        for shown in (False, True):
+            if shown:
+                await self.press(keybindings.ArrangePage.SHOW_DETAILS)
+            lines = self.drawn()
+            self.assertTrue(any(line[arrange_drawing.SCENE_WIDTH] == Box.DOUBLE_BAR for line in lines))
+            self.assertTrue(any(line[arrange_drawing.SCENE_WIDTH] == Box.DOUBLE_CROSS for line in lines))
+            divider = self.page.drawing.cell_column(1)
+            self.assertTrue(any(line[divider] == Box.BAR for line in lines))
 
     async def test_every_row_grows_by_its_tallest_cells_details_and_a_cell_with_none_says_stock(self):
         usual = len(self.drawn())
@@ -358,7 +359,6 @@ class TestPickingDetails(UITest):
         self.assertIn(marks.MSG_DETAILS_CHAIN.format(name=ui_testing.NAMED), self.text())
         self.assertGreater(self.page.drawing.track_width(self.document.track_names().index(ui_testing.LEAD)), arrange_drawing.CELL_WIDTH)
         self.assertEqual(self.page.drawing.track_width(drums), arrange_drawing.CELL_WIDTH)
-        self.assertTrue(all(line[arrange_drawing.SCENE_WIDTH] != Box.DOUBLE_BAR for line in opened if len(line) > arrange_drawing.SCENE_WIDTH))
         await self.press(keybindings.ArrangePage.OUT_OF_DETAILS)
         self.assertEqual([line.plain for line in self.page.drawing.body(width=width, height=height)], usual)
 

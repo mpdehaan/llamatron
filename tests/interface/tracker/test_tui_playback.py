@@ -127,6 +127,9 @@ TICKS_A_PASS = 10
 LAST_TUNE_STEP = 3
 RENAMED_PATTERN = 'another'
 
+# A line of a dialog has its two sides.
+DIALOG_SIDES = 2
+
 
 class FakeFluidSynth:
     """Stands in for FluidSynth: starts nothing, and counts how often it was asked to run and to stop."""
@@ -202,8 +205,14 @@ class PlaybackTest(UITest):
         return [data for _, data in self.outputs[port].sent if data[0] & KIND_MASK == timeline.NOTE_ON]
 
     def words_shown(self):
-        """Return the screen's text as one line of single spaces, with the dialogs' sides taken out, since a dialog wraps a long message."""
-        return SPACE.join(self.text().replace(Box.HEAVY_BAR, SPACE).split())
+        """Return the screen's text as one line of single spaces, a dialog's lines read only between its sides, since a dialog wraps a
+        long message over the page and whatever the page draws beside it would break the message's words apart."""
+        words = []
+        for line in self.text().splitlines():
+            if line.count(Box.HEAVY_BAR) >= DIALOG_SIDES:
+                line = line[line.index(Box.HEAVY_BAR) + 1:line.rindex(Box.HEAVY_BAR)]
+            words.extend(line.split())
+        return SPACE.join(words)
 
     def assert_told(self, message):
         self.assertIn(SPACE.join(message.split()), self.words_shown())

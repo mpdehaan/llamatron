@@ -164,14 +164,13 @@ class TestArrangePage(UITest):
                 return number
         self.fail(text)
 
-    def assert_framed(self, *, text, height, above=1, bottom=Box.DOUBLE_BOTTOM_LEFT):
-        """Check that one double-lined frame is drawn around height lines, with text on an inside line, the top edge above lines up,
-        and bottom on the line under them."""
+    def assert_framed(self, *, text, height, above=1):
+        """Check that one double-lined frame is drawn around height lines, with text on an inside line and the top edge above lines up."""
         lines = self.grid_lines()
         number = self.line_with(text) - above + 1
         self.assertEqual(self.text().count(Box.DOUBLE_TOP_LEFT), 1)
         self.assertIn(Box.DOUBLE_TOP_LEFT, lines[number - 1])
-        self.assertIn(bottom, lines[number + height])
+        self.assertIn(Box.DOUBLE_BOTTOM_LEFT, lines[number + height])
         left = lines[number - 1].index(Box.DOUBLE_TOP_LEFT)
         right = lines[number - 1].index(Box.DOUBLE_TOP_RIGHT)
         for inside in lines[number:number + height]:
@@ -196,12 +195,8 @@ class TestArrangePage(UITest):
         await self.press(Key.DOWN)
         self.assert_framed(text=legends.What.ADD, height=2, above=2)
         await self.press(Key.UP, Key.UP)
-        # A track name's frame ends on the header's rule, its sides meeting the rule in joints and the rule running on between them.
-        self.assert_framed(text=LEAD, height=1, bottom=Box.DOUBLE_BOTTOM_TEE)
-        rule = self.grid_lines()[self.line_with(LEAD) + 1]
-        self.assertNotIn(Box.DOUBLE_BOTTOM_LEFT, rule)
-        self.assertEqual(rule.count(Box.DOUBLE_BOTTOM_TEE), 2)
-        self.assertIn(Box.DOUBLE_BOTTOM_TEE + Box.RULE, rule)
+        # A track name's frame closes above the grid line under the header, touching no line, as a scene's does.
+        self.assert_framed(text=LEAD, height=1)
         await self.press(Key.DOWN, Key.DOWN, Key.DOWN)
         self.assertTrue(self.page.on_plus_row())
         # The + row's frame starts at the left edge, so the + is looked for just inside it, past the header's own +.
@@ -210,15 +205,23 @@ class TestArrangePage(UITest):
         self.assertEqual(self.text().count(Box.DOUBLE_TOP_LEFT), 1)
         self.assertEqual(lines[number - 1][0], Box.DOUBLE_TOP_LEFT)
         self.assertEqual(lines[number + 1][0], Box.DOUBLE_BOTTOM_LEFT)
-        self.assertEqual(lines[number][arrange_drawing.SCENE_WIDTH - 1], Box.DOUBLE_BAR)
+        self.assertEqual(lines[number][arrange_drawing.SCENE_FRAME_RIGHT], Box.DOUBLE_BAR)
 
-    async def test_the_header_and_the_scene_column_keep_their_rule_and_the_corner_is_blank(self):
+    async def test_the_grid_lines_run_between_the_tracks_and_under_the_header_and_each_scene_and_the_corner_is_blank(self):
         lines = self.grid_lines()
-        rule = self.line_with(Box.CROSS)
+        rule = self.line_with(Box.DOUBLE_CROSS)
+        divider = self.page.drawing.cell_column(1)
         self.assertEqual(lines[rule][:arrange_drawing.SCENE_WIDTH], Box.RULE * arrange_drawing.SCENE_WIDTH)
+        self.assertEqual(lines[rule][divider], Box.CROSS)
         self.assertEqual(lines[rule - 1][:arrange_drawing.SCENE_WIDTH].strip(), drawing.NOTHING)
-        self.assertEqual(lines[rule - 1][arrange_drawing.SCENE_WIDTH], Box.BAR)
-        self.assertEqual(lines[self.line_with(ONE)][arrange_drawing.SCENE_WIDTH], Box.BAR)
+        self.assertEqual(lines[rule - 1][arrange_drawing.SCENE_WIDTH], Box.DOUBLE_BAR)
+        one = self.line_with(ONE)
+        self.assertEqual(lines[one][arrange_drawing.SCENE_WIDTH], Box.DOUBLE_BAR)
+        self.assertEqual(lines[one][divider], Box.BAR)
+        # Under scene one, past its bar and the room for a frame's bottom, a grid line crosses the dividers.
+        under = one + arrange_drawing.SCENE_LINES - 2
+        self.assertEqual(lines[under][arrange_drawing.SCENE_WIDTH], Box.DOUBLE_CROSS)
+        self.assertEqual(lines[under][divider], Box.CROSS)
 
     async def test_length_bars_show_each_clip_against_its_scene_and_each_scene_against_the_longest(self):
         # In scene two, tune plays twice and other once for half as long, and scene one is half as long as scene two.

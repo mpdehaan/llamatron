@@ -8,7 +8,7 @@ Arrange is where a song is put together: scenes as rows, tracks as columns, and 
 
 Press `A` on the main screen to open the current song's arrangement. The track names run across the top, and the first column holds the scene names, each with its repeat count and length. Scenes play from top to bottom. A new song starts with `track-1` and `scene-1`, and new tracks and scenes are numbered the same way until they are renamed on their own pages.
 
-A double-lined box marks whatever the cursor is on: a clip, a scene, a track name, or one of the `+` places, including the `+` after the last track. The arrows move the box around the grid. When there are more tracks or scenes than fit, the clips scroll while the track names and the scene column stay in place. An empty cell is blank until the cursor reaches it, when it shows `+` and `add`.
+Light blue lines run between the tracks and under each scene, so that the grid is easy to follow. A double-lined box inside a cell marks whatever the cursor is on: a clip, a scene, a track name, or one of the `+` places, including the `+` after the last track. The arrows move the box around the grid. When there are more tracks or scenes than fit, the clips scroll while the track names and the scene column stay in place. An empty cell is blank until the cursor reaches it, when it shows `+` and `add`.
 
 Under each scene is a bar of its length against the longest scene's, and under each clip a bar of the clip's length against its scene's. A clip that fills its scene, or loops, has a full bar, and a clip that ends early has a shorter one.
 
@@ -68,7 +68,7 @@ Marks after a clip's pattern name show its settings:
 
 ## Details View
 
-`D` shows the details view, which reveals how a song is put together, and `D` again goes back to the usual grid. Under each scene's bar, each clip's bar and each track's name are the chains it runs, in the order they run, each written `chain: name`, then a `+` for adding another, then each setting that isn't its default, on a line of its own, such as `scale:` for a scale other than the song's, `morph: other`, `direction: pendulum`, `density: 25→100` or `inst: piano`. A cell with nothing of its own says `stock`. Columns widen to fit, and blue dividers separate the tracks. Every key works as it does in the usual grid.
+`D` shows the details view, which reveals how a song is put together, and `D` again goes back to the usual grid. Under each scene's bar, each clip's bar and each track's name are the chains it runs, in the order they run, each written `chain: name`, then a `+` for adding another, then each setting that isn't its default, on a line of its own, such as `scale:` for a scale other than the song's, `morph: other`, `direction: pendulum`, `density: 25→100` or `inst: piano`. A cell with nothing of its own says `stock`. Columns widen to fit. Every key works as it does in the usual grid.
 
 ![Arrange's details view of mainstreet_hoedown, showing each clip's chains](screenshots/arrange_details.svg)
 

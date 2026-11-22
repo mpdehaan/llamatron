@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Draws the Arrange page: the track names across the top, a scene on each row with its clips beside it, and the frame around what the cursor is on.
 
-The grid is laid out on Canvas lines, three for the header, three for each scene and three after
-the last, and the frame is drawn over them last. The track names and the scene column stay in
+The grid is laid out on Canvas lines, four for the header, five for each scene and three after
+the last, with grid lines between the tracks and under each scene, and the frame is drawn over them
+last, inside the cell it marks, so that it touches no line. The track names and the scene column stay in
 place while the clips scroll. A bar under each scene shows its length against the longest
 scene's, and one under each clip its length against its scene's. The page keeps the cursor and
 how far the grid has scrolled, and this draws from them, as the pattern editor's drawings do
@@ -24,29 +25,39 @@ from llamatron.interface.tracker.text import clock
 from llamatron.model.schema import defaults
 from llamatron.user_strings import legends, marks as marks_text
 
-SCENE_WIDTH = 24
+SCENE_WIDTH = 25
 CELL_WIDTH = 13
-# A scene's label and its bar leave the first column and the last for a frame's sides.
+# A scene's frame runs from the first column to the one before a blank column beside the divider, so that it touches no line, and
+# the scene's label and bar stay inside it.
+SCENE_FRAME_RIGHT = SCENE_WIDTH - 2
 SCENE_LABEL_COLUMN = 1
-SCENE_LABEL_WIDTH = SCENE_WIDTH - 2
+SCENE_LABEL_WIDTH = SCENE_WIDTH - 3
 SCENE_BAR_COLUMN = 3
-SCENE_BAR = LengthBar(width=SCENE_WIDTH - SCENE_BAR_COLUMN - 1, hatched=True)
+SCENE_BAR = LengthBar(width=SCENE_WIDTH - SCENE_BAR_COLUMN - 2, hatched=True)
 CLIP_BAR = LengthBar(width=CELL_WIDTH - 2, hatched=False)
 # While Real Time is on, a play button sits before each clip's bar, which gives up a column to it, and before each scene's bar, which has the room.
 PLAY_BUTTON_WIDTH = 2
 CLIP_BAR_WITH_BUTTON = LengthBar(width=CELL_WIDTH - 2 - PLAY_BUTTON_WIDTH, hatched=False)
 # The room a track's name leaves for the sounding light after it while Real Time is on.
 SOUNDING_MARK_WIDTH = 2
-# The lines above the scenes (room for a frame's top, the track names and the rule), each scene's (a spacer, the name and the bar)
-# and the ones after them (a spacer, the + row and room for a frame's bottom).
-HEADER_LINES = 3
+# The lines above the scenes (room for a frame's top, the track names, room for its bottom and the rule), each scene's (room for a
+# frame's top, the name, the bar, room for its bottom and the grid line under it) and the ones after them (room for a frame's top,
+# the + row and room for its bottom).
+HEADER_LINES = 4
 # Where the clip area starts, the first column past the scene names' divider, which the visualizer fills, and how many lines up from its bottom a mode's name shows.
 CLIP_AREA_LEFT = SCENE_WIDTH + 1
 NAME_ROWS_UP = 2
-SCENE_LINES = 3
+SCENE_LINES = 5
 FOOTER_LINES = 3
-# How tall a frame's inside is: one line around a track's name or the + row, and a scene's lines but the spacer around a scene or a clip.
+# How tall a frame's inside is: one line around a track's name or the + row, and a scene's lines but the frame's room and the grid
+# line around a scene or a clip.
 NAME_LINES = 1
+# The lines of a scene below what a frame holds: room for the frame's bottom and the grid line.
+LINES_UNDER_A_SCENE = 2
+# Each track's column between its dividers holds, either side of its cell, a blank column and a column for a frame's side, so that
+# a frame touches no divider.
+FRAME_ROOM = 2
+COLUMN_EXTRA = 2 * FRAME_ROOM + 1
 # In the details view, the room a column keeps beside its text: a space before a clip's name and one after; the indent of a detail under
 # its bar and one after; and a space before a track's name, the sounding light and one after. And where each kind of line is written.
 NAME_ROOM = 2
@@ -54,10 +65,10 @@ DETAIL_ROOM = 2 + PLAY_BUTTON_WIDTH
 TRACK_NAME_ROOM = 2 + SOUNDING_MARK_WIDTH
 DETAIL_INDENT = 1 + PLAY_BUTTON_WIDTH
 TRACK_DETAIL_INDENT = 1
-# The lines of a scene before its details: the spacer, the name and the bar.
+# The lines of a scene before its details: the frame's room, the name and the bar.
 FIRST_DETAIL_LINE = 3
 # How long a scene's detail may be under its bar, leaving room for the brackets of a pick before the scene column's divider.
-SCENE_DETAIL_ROOM = SCENE_WIDTH - SCENE_BAR_COLUMN - 2
+SCENE_DETAIL_ROOM = SCENE_WIDTH - SCENE_BAR_COLUMN - 3
 
 
 def clip_text(clip_slot, *, repeats_left=None):
@@ -167,7 +178,7 @@ class ArrangeDrawing:
         """Return the first and last visible places among the track columns and the + after them, scrolling to the cursor."""
         if self.widened():
             return self.visible_wide_tracks(width)
-        count = max((width - SCENE_WIDTH - 2) // (CELL_WIDTH + 1), 1)
+        count = max((width - SCENE_WIDTH - 1) // (CELL_WIDTH + COLUMN_EXTRA), 1)
         total = len(self._page.tracks()) + 1
         if self._page.in_a_track_column():
             place = self._page.track_place()
@@ -180,11 +191,11 @@ class ArrangeDrawing:
 
     def visible_wide_tracks(self, width):
         """Return the first and last visible places in the details view, where each column is as wide as its details need, scrolling to the cursor."""
-        room = width - SCENE_WIDTH - (1 if self.shows_details() else 2)
+        room = width - SCENE_WIDTH - 1
         total = len(self._page.tracks()) + 1
 
         def fits(first, place):
-            return sum(self.track_width(column) + 1 for column in range(first, place + 1)) <= room
+            return sum(self.track_width(column) + COLUMN_EXTRA for column in range(first, place + 1)) <= room
 
         if self._page.in_a_track_column():
             place = self._page.track_place()
@@ -228,29 +239,29 @@ class ArrangeDrawing:
         return range(self._page.top, min(last, count))
 
     def cell_column(self, place):
-        """Return the column of the divider before a track's clip slot, where a frame's left edge goes: in the details view the first track's is the scene column's double divider, so that every column lies the same way between its dividers."""
-        if self.shows_details():
-            return SCENE_WIDTH + sum(self.track_width(column) + 1 for column in range(self._page.left, place))
-        return SCENE_WIDTH + 1 + sum(self.track_width(column) + 1 for column in range(self._page.left, place))
+        """Return the column of the divider before a track's column, the scene column's double divider for the first track shown;
+        a frame's left side goes one column in, and the cell's text two."""
+        return SCENE_WIDTH + sum(self.track_width(column) + COLUMN_EXTRA for column in range(self._page.left, place))
+
+    def frame_around(self, place):
+        """Return the frame around a track's column, a blank column inside each of its dividers, so that it touches neither."""
+        left = self.cell_column(place) + FRAME_ROOM
+        return Frame(left=left, right=left + self.track_width(place) + 1)
 
     def draw_dividers(self, line, *, first, last):
-        """Draw the scene column's divider down a line, and in the details view a double one and one between every two tracks, in blue, so that the view shows itself."""
-        if not self.shows_details():
-            line.write(column=SCENE_WIDTH, text=Box.BAR, style=Style.DIM)
-            return
+        """Draw the grid's lines down a line: the scene column's double divider and one after every track shown, in light blue."""
         line.write(column=SCENE_WIDTH, text=Box.DOUBLE_BAR, style=Style.DETAILS_DIVIDER)
         for place in range(first + 1, last + 1):
             line.write(column=self.cell_column(place), text=Box.BAR, style=Style.DETAILS_DIVIDER)
 
-    def draw_rule(self, line, *, first, last):
-        """Draw the rule under the track names, crossing the scene column's divider, and in the details view every divider, in blue."""
-        if not self.shows_details():
-            line.write(column=0, text=Box.RULE * SCENE_WIDTH + Box.CROSS + Box.RULE * ((last - first) * (CELL_WIDTH + 1) + 1), style=Style.DIM)
-            return
-        line.write(column=0, text=Box.RULE * (self.cell_column(last) + 1), style=Style.DIM)
+    def draw_grid_line(self, line, *, first, last):
+        """Draw a grid line across a line, under the track names or a scene, crossing every divider, in light blue."""
+        end = self.cell_column(last)
+        line.write(column=0, text=Box.RULE * end, style=Style.DETAILS_DIVIDER)
         line.write(column=SCENE_WIDTH, text=Box.DOUBLE_CROSS, style=Style.DETAILS_DIVIDER)
-        for place in range(first + 1, last + 1):
+        for place in range(first + 1, last):
             line.write(column=self.cell_column(place), text=Box.CROSS, style=Style.DETAILS_DIVIDER)
+        line.write(column=end, text=Box.RIGHT_TEE, style=Style.DETAILS_DIVIDER)
 
     def scene_label(self, index):
         scene = self._page.scenes()[index]
@@ -272,14 +283,14 @@ class ArrangeDrawing:
         """
         tracks = self._page.tracks()
         names = lines[1]
-        for line in lines[1:-1]:
+        for line in lines[:-1]:
             self.draw_dividers(line, first=first, last=last)
         transport = self._page.transport()
         if self._page.real_time_on():
             playing = transport.is_playing()
             names.write(column=SCENE_LABEL_COLUMN, text=marks_text.MSG_SONG_BUTTON.format(mark=marks_text.MSG_STOP_MARK if playing else marks_text.MSG_PLAY_MARK), style=Style.PLAYING if playing else Style.DIM)
         for place in range(first, last):
-            column = self.cell_column(place) + 1
+            column = self.cell_column(place) + FRAME_ROOM + 1
             width = self.track_width(place)
             if place < len(tracks):
                 shown = self.shown_track_name(tracks[place])
@@ -291,12 +302,12 @@ class ArrangeDrawing:
                     names.write(column=column, text=fit(text=drawing.SPACE + shown, width=width), style=Style.BOLD)
                 if self.cell_open(track_cell(tracks[place])):
                     here = self._page.on_track_name() and self._page.track_place() == place
-                    self.draw_details(lines[2:-1], details=self.layout().track_details[place], column=column + TRACK_DETAIL_INDENT, here=here)
+                    self.draw_details(lines[2:-2], details=self.layout().track_details[place], column=column + TRACK_DETAIL_INDENT, here=here)
             else:
                 names.write(column=column, text=marks_text.MSG_ADD_ROW_MARK.center(width), style=Style.DIM)
         if last < len(tracks) + 1:
             names.write(column=self.cell_column(last) + 1, text=Box.MORE, style=Style.DIM)
-        self.draw_rule(lines[-1], first=first, last=last)
+        self.draw_grid_line(lines[-1], first=first, last=last)
 
     def shown_track_name(self, name):
         """Return a track's name as the header shows it: whole, cut to its column, or in the details view cut at DETAIL_WIDTH, its column widened to fit."""
@@ -305,16 +316,18 @@ class ArrangeDrawing:
         return name
 
     def draw_scene(self, lines, *, index, first, last, clips=True):
-        """Draw a scene's three lines: the spacer above it, its name with its time, and its length bar, with its clips beside them unless clips is false."""
+        """Draw a scene's lines: room for a frame's top, its name with its time, its length bar, room for a frame's bottom and the grid
+        line under it, with its clips beside them unless clips is false."""
         lengths = self._page.document().lengths()
         tracks = self._page.tracks()
-        for line in lines:
+        for line in lines[:-1]:
             self.draw_dividers(line, first=first, last=last)
+        self.draw_grid_line(lines[-1], first=first, last=last)
         lines[1].write(column=SCENE_LABEL_COLUMN, text=self.scene_label(index), style=Style.BOLD)
         layout = self.layout() if self.widened() else None
         if self.cell_open(scene_cell(index)):
             here = self._page.on_scene_name() and not self._page.on_plus_row() and self._page.row == index
-            self.draw_details(lines[FIRST_DETAIL_LINE:], details=layout.scene_details[index], column=SCENE_BAR_COLUMN, here=here, room=SCENE_DETAIL_ROOM)
+            self.draw_details(lines[FIRST_DETAIL_LINE:-LINES_UNDER_A_SCENE], details=layout.scene_details[index], column=SCENE_BAR_COLUMN, here=here, room=SCENE_DETAIL_ROOM)
         transport = self._page.transport()
         real_time = self._page.real_time_on()
         played = transport.scene_elapsed(index) if real_time else None
@@ -322,7 +335,7 @@ class ArrangeDrawing:
         if real_time:
             self.play_button(lines[2], column=SCENE_LABEL_COLUMN, playing=index in transport.playing_scenes())
         for place in range(first, min(last, len(tracks)) if clips else first):
-            column = self.cell_column(place) + 1
+            column = self.cell_column(place) + FRAME_ROOM + 1
             width = self.track_width(place)
             details = self.cell_open(clip_cell(index=index, track=tracks[place]))
             named = detailed_clip_text if details else clip_text
@@ -348,7 +361,7 @@ class ArrangeDrawing:
             if details:
                 indent = DETAIL_INDENT if real_time else 1
                 here = self._page.on_clip_slot() and self._page.row == index and self._page.track_place() == place
-                self.draw_details(lines[FIRST_DETAIL_LINE:], details=layout.clip_details.get((index, tracks[place]), []), column=column + indent, here=here)
+                self.draw_details(lines[FIRST_DETAIL_LINE:-LINES_UNDER_A_SCENE], details=layout.clip_details.get((index, tracks[place]), []), column=column + indent, here=here)
 
     @staticmethod
     def clip_bar(bar, *, lengths, clip_slot, index, track, played=None):
@@ -372,7 +385,7 @@ class ArrangeDrawing:
             line.write(column=column, text=marks_text.MSG_PLAY_MARK, style=Style.DIM)
 
     def draw_footer(self, lines, *, at_end, first, last):
-        """Draw the spacer under the last scene and the + row where a scene is added, when the end of the list is on screen."""
+        """Draw the room for a frame's top, the + row where a scene is added, when the end of the list is on screen, and the room for its bottom."""
         for line in lines:
             self.draw_dividers(line, first=first, last=last)
         if at_end:
@@ -380,26 +393,24 @@ class ArrangeDrawing:
 
     def frame_place(self, *, shown, first, last):
         """Return the frame around what the cursor is on, the line its top edge is on and how many lines it holds, or None when the cursor is off screen."""
-        names = self.header_lines() - 2
+        names = self.header_lines() - 3
         if self._page.on_corner():
-            return Frame(left=0, right=SCENE_WIDTH - 1), 0, names
+            return Frame(left=0, right=SCENE_FRAME_RIGHT), 0, names
         if self._page.on_header():
             place = self._page.track_place()
             if first <= place < last:
-                return Frame(left=self.cell_column(place), right=self.cell_column(place) + self.track_width(place) + 1), 0, names
+                return self.frame_around(place), 0, names
             return None
         scenes_height = sum(self.scene_lines(index) for index in shown)
         if self._page.on_plus_row():
-            return Frame(left=0, right=SCENE_WIDTH - 1), self.header_lines() + scenes_height, NAME_LINES
+            return Frame(left=0, right=SCENE_FRAME_RIGHT), self.header_lines() + scenes_height, NAME_LINES
         if self._page.row not in shown:
             return None
         line = self.header_lines() + sum(self.scene_lines(index) for index in range(shown.start, self._page.row))
-        inside = self.scene_lines(self._page.row) - 1
+        inside = self.scene_lines(self._page.row) - 1 - LINES_UNDER_A_SCENE
         if self._page.on_scene_name():
-            return Frame(left=0, right=SCENE_WIDTH - 1), line, inside
-        place = self._page.track_place()
-        column = self.cell_column(place)
-        return Frame(left=column, right=column + self.track_width(place) + 1), line, inside
+            return Frame(left=0, right=SCENE_FRAME_RIGHT), line, inside
+        return self.frame_around(self._page.track_place()), line, inside
 
     def visualized_body(self, *, width, height, mode, now, heard):
         """Return the page's lines with a visualizer mode in the clip area: the track names along the top and the scene names down the left as ever, and the mode's frame over everything inside them, down to the last line above the footer, with no frame for the cursor."""
@@ -414,7 +425,7 @@ class ArrangeDrawing:
         for line in lines[HEADER_LINES:]:
             line.write(column=SCENE_WIDTH, text=Box.BAR, style=Style.DIM)
         if self._page.boxes_playing_scene():
-            self.box_playing_scene(lines=lines, tops={index: HEADER_LINES + number * SCENE_LINES for number, index in enumerate(shown)}, inside=SCENE_LINES - 1)
+            self.box_playing_scene(lines=lines, tops={index: HEADER_LINES + number * SCENE_LINES for number, index in enumerate(shown)}, inside=SCENE_LINES - 1 - LINES_UNDER_A_SCENE)
         texts = [line.text() for line in lines]
         frame = mode.frame(width=max(width - CLIP_AREA_LEFT, 0), height=len(lines) - HEADER_LINES, now=now, heard=heard)
         for row, piece in enumerate(frame):
@@ -427,10 +438,10 @@ class ArrangeDrawing:
         if index is None or index not in tops:
             return
         top = tops[index]
-        held = self.scene_lines(index) - 1 if inside is None else inside
+        held = self.scene_lines(index) - 1 - LINES_UNDER_A_SCENE if inside is None else inside
         if top + 1 + held >= len(lines):
             return
-        frame = Frame(left=0, right=SCENE_WIDTH - 1, style=Style.PLAYING_SCENE)
+        frame = Frame(left=0, right=SCENE_FRAME_RIGHT, style=Style.PLAYING_SCENE)
         frame.top(lines[top])
         for line in lines[top + 1:top + 1 + held]:
             frame.sides(line)
@@ -480,10 +491,5 @@ class ArrangeDrawing:
             frame.top(lines[top])
             for line in lines[top + 1:top + 1 + inside]:
                 frame.sides(line)
-            bottom = top + 1 + inside
-            # The corner's and a track name's frames end on the rule under the header, which runs on through them.
-            if bottom == header - 1:
-                frame.bottom_on_rule(lines[bottom])
-            else:
-                frame.bottom(lines[bottom])
+            frame.bottom(lines[top + 1 + inside])
         return [line.text() for line in lines]
