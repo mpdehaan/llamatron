@@ -14,7 +14,7 @@ import re
 import unittest
 
 from llamatron.interface.tracker.screens import wizard
-from llamatron.interface.tracker.screens.shared import kit_fields
+from llamatron.interface.tracker.screens.shared import kit_fields, section_fade, section_own_fields
 from llamatron.wizards.create_song.band_choices import BandChoices
 from llamatron.wizards.create_song.form_choices import FormChoices
 from llamatron.wizards.create_song.guitarist_choices import GuitaristChoices
@@ -55,8 +55,11 @@ SECTION_CHANGES = ('copy', 'move', 'remove')
 # are the sections a player plays in, which the player's Comes in and Lays out set.
 NOT_ON_THE_PAGE = ('set_extra', 'set_plays_of', 'set_intro_hook', 'set_own_sections', 'set_seed', 'set_song_extras', 'set_phrasing', 'set_phrasing_way', 'set_style', 'set_style_gauge', 'set_setting', 'set_tune_played_by_in')
 A_CALL = r'\.{name}\b'
-A_CALL_ON_A_SECTION = r'\.section\([^)]*\)\.{name}\b'
+# A section's change is called on a section asked for by its place, or on one held under the name section.
+A_CALL_ON_A_SECTION = r'(\.section\([^)]*\)|\bsection|\._section\(\))\.{name}\b'
 SOURCE_FILES = '*.py'
+# The modules of shared fields the wizard's panels show: the drum kit's, a section's fade and what a section is given of its own.
+SHARED_FIELDS = (kit_fields, section_fade, section_own_fields)
 
 
 def changes():
@@ -66,10 +69,11 @@ def changes():
 
 
 def wizard_screens_source():
-    """Return the source of every module of the wizard's screens, and of the drum kit's fields they show, joined."""
+    """Return the source of every module of the wizard's screens, and of the shared fields they show, joined."""
     folder = pathlib.Path(wizard.__file__).parent
     sources = [path.read_text() for path in sorted(folder.glob(SOURCE_FILES))]
-    sources.append(pathlib.Path(kit_fields.__file__).read_text())
+    for module in SHARED_FIELDS:
+        sources.append(pathlib.Path(module.__file__).read_text())
     return ''.join(sources)
 
 

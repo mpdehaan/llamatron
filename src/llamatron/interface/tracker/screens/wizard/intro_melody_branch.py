@@ -18,8 +18,8 @@ from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField, Field, Heading, Toggle
+from llamatron.interface.tracker.screens.shared.section_fade import fade_field
 from llamatron.interface.tracker.screens.wizard.branch import Branch
-from llamatron.interface.tracker.screens.wizard.section_branch import fade_field
 from llamatron.model.file.checks import listed
 from llamatron.user_strings import errors, labels, legends, marks, messages
 from llamatron.wizards.create_song import wizard_limits
