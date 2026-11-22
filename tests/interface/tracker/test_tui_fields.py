@@ -285,7 +285,7 @@ class TestFieldsOnThePages(FieldPagesTest):
                 await self.press(Key.ENTER)
                 if self.app.screen is not page:
                     await self.press(Key.ENTER)
-                self.assertEqual(page.fields()[place].on, before, (type(page).__name__, field.label))
+                self.assertEqual(page.shown_fields()[place].on, before, (type(page).__name__, field.label))
             self.app.pop_screen()
             await self.pilot.pause()
         self.assertGreater(found, 0)

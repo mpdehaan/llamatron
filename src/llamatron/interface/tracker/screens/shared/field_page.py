@@ -4,6 +4,7 @@
 
 """The Field page: settings in a column, where the keys depend on the setting under the cursor."""
 
+import functools
 from rich.text import Text
 
 from llamatron.interface.tracker import drawing, key_table, keybindings
@@ -12,10 +13,16 @@ from llamatron.interface.tracker.cursor import Cursor, key_between, NoSuchPlace
 from llamatron.interface.tracker.drawing import cursor_mark, Style
 from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.screens.shared import tab_box as tab_box_values
 from llamatron.interface.tracker.screens.shared.field import Button, Cells, Field, Heading, NameField, NumberField
 from llamatron.interface.tracker.screens.shared.page import Page
+from llamatron.interface.tracker.screens.shared.tab_box import box_lines, TabRow
 from llamatron.model.objects import setlist
 from llamatron.user_strings import errors, labels as labels_text, legends, marks
+
+
+# How wide a tab box is drawn where a page is drawn with no width, as a test draws it.
+BOX_WIDTH = 80
 
 
 class FieldPage(Page):
@@ -78,12 +85,45 @@ class FieldPage(Page):
         shown = []
         open_now = True
         for field in self.every_field():
-            if isinstance(field, Heading):
+            if field.IS_TAB_BOX:
+                shown.append(TabRow(label=field.label, value=functools.partial(str, drawing.NOTHING)))
+                shown += field.tabs[self.chosen_tab(field)].every_field()
+            elif isinstance(field, Heading):
                 shown.append(field)
                 open_now = self.is_open(field)
             elif open_now or isinstance(field, Button):
                 shown.append(field)
         return shown
+
+    def every_setting(self):
+        """Return every field of the page, those in every tab of its box among them, as a search for a field by its label wants."""
+        fields = []
+        for field in self.every_field():
+            if field.IS_TAB_BOX:
+                for tab in field.tabs:
+                    fields += tab.every_field()
+            else:
+                fields.append(field)
+        return fields
+
+    def tab_box(self):
+        """Return the page's tab box, or None where it has none."""
+        return next((field for field in self.every_field() if field.IS_TAB_BOX), None)
+
+    def chosen_tab(self, box):
+        """Return the place of the tab the box shows: the one the page's kind last showed this session, else the first."""
+        return box.tab_named(self.app.chosen_tabs.get(type(self).__name__))
+
+    def step_tab(self, direction):
+        """Choose the tab before or after the chosen one, stopping at the first and the last."""
+        box = self.tab_box()
+        place = max(min(self.chosen_tab(box) + direction, len(box.tabs) - 1), 0)
+        self.app.chosen_tabs[type(self).__name__] = box.tabs[place].label
+
+    def go_to_tabs(self):
+        """Put the cursor on the row of tabs."""
+        rows = [place for place, field in enumerate(self.shown_fields()) if field.IS_TAB_ROW]
+        self.cursor.set_place(rows[0])
 
     def is_open(self, heading):
         # A heading that starts open is closed by the same toggle that opens another.
@@ -148,6 +188,9 @@ class FieldPage(Page):
         Down from the last field reaches the buttons, which Left and Right go along, or Up and Down where they are stacked.
         """
         labels = [field.label for field in self.shown_fields()]
+        box = self.tab_box()
+        if target not in labels and box is not None and box.place_holding(target) is not None:
+            return self.key_toward(box.label) or _key_toward_tab(here=self.chosen_tab(box), there=box.place_holding(target))
         if target not in labels:
             return self.key_toward(self.closed_heading_over(target).label) or Key.ENTER
         there = labels.index(target)
@@ -244,6 +287,8 @@ class FieldPage(Page):
             result.append(self.bind(self.KEYS.ALONG_BUTTONS, action=self.move_along_buttons, wants_key=True))
         if any(isinstance(item, Heading) for item in self.every_field()):
             result.append(self.bind(self.KEYS.SECTION, action=self.jump_section))
+        if self.tab_box() is not None:
+            result.append(self.bind(self.KEYS.TO_TABS, action=self.go_to_tabs))
         result += self.page_keys()
         return [self.bind(self.KEYS.BACK, action=self.go_back), *result]
 
@@ -255,14 +300,25 @@ class FieldPage(Page):
         """
         fields = self.shown_fields()
         self.field()
-        label_width = max((len(field.get_drawn_label(self)) for field in self.every_field() if not isinstance(field, Button)), default=0) + 2
+        label_width = max((len(field.get_drawn_label(self)) for field in self.every_field() if not isinstance(field, Button) and not field.IS_TAB_BOX), default=0) + 2
         cursor = self.cursor.get_place()
         lines = [Text(drawing.NOTHING)]
         selected = 0
         seen_heading = False
         buttons = [field for field in fields if isinstance(field, Button)]
+        inside_box = 0
         for place, field in enumerate(fields):
             if isinstance(field, Button):
+                continue
+            if inside_box:
+                # The chosen tab's fields are drawn with the box, by its row of tabs.
+                inside_box -= 1
+                continue
+            if field.IS_TAB_ROW:
+                inside_box, box, box_selected = self._box_at(place=place, cursor=cursor, width=width)
+                if box_selected is not None:
+                    selected = len(lines) + box_selected
+                lines += [*box, Text(drawing.NOTHING)]
                 continue
             if isinstance(field, Heading) and not seen_heading:
                 seen_heading = True
@@ -286,6 +342,20 @@ class FieldPage(Page):
         if remarks:
             lines += [Text(drawing.NOTHING), *remarks]
         return self.window_of_lines(lines=lines, selected=selected, height=height)
+
+    def _box_at(self, *, place, cursor, width):
+        """Return how many of the chosen tab's fields follow the row of tabs at a place, the box's lines, and the place of the
+        cursor's line among them, or None where the cursor is outside the box."""
+        box = self.tab_box()
+        chosen = self.chosen_tab(box)
+        count = len(box.tabs[chosen].every_field())
+        inside = None
+        if cursor == place:
+            inside = tab_box_values.ON_TAB_ROW
+        elif place < cursor <= place + count:
+            inside = cursor - place - 1
+        lines, selected = box_lines(page=self, box=box, chosen=chosen, cursor=inside, width=width or BOX_WIDTH)
+        return count, lines, selected
 
     def has_gap_after(self, *, place, field, fields):
         """Return whether a blank line follows a setting: a Name that starts the page before its other settings, and the last of a list."""
@@ -320,3 +390,10 @@ class FieldPage(Page):
                 return
             then(number)
         self.ask_text(title=title, value=value, then=answered)
+
+
+def _key_toward_tab(*, here, there):
+    """Return the key on the row of tabs that brings the chosen tab nearer another, by their places."""
+    if there < here:
+        return Key.LEFT
+    return Key.RIGHT

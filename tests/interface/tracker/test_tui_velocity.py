@@ -44,7 +44,7 @@ class VelocityTest(UITest):
 
     def shown(self, label):
         """Return what a field of the page shows as its value."""
-        return next(field for field in self.page.fields() if field.label == label).value()
+        return next(field for field in self.page.every_setting() if field.label == label).value()
 
     async def open_section(self, way):
         await self.select_field(labels_text.MSG_VELOCITY_RAMP_SECTIONS[way])
@@ -121,7 +121,6 @@ class TestVelocityOnTheClipPage(VelocityTest):
 
     async def test_a_blank_field_shows_its_scenes_value_and_says_so(self):
         self.assertEqual(self.shown(labels_text.MSG_VELOCITY_PERCENT_LABEL), marks.MSG_FROM_SCENE_SHOWN.format(value=percent(SCENE_LEVEL)))
-        await self.open_section(RampWay.IN)
         self.assertEqual(self.shown(IN_START), marks.MSG_FROM_SCENE_SHOWN.format(value=percent(RAMP_START)))
         self.assertEqual(self.shown(IN_OVER), marks.MSG_FROM_SCENE_SHOWN.format(value=marks.MSG_RAMP_BARS_SHOWN.format(bars=RAMP_BARS)))
 
@@ -135,7 +134,6 @@ class TestVelocityOnTheClipPage(VelocityTest):
         self.assertEqual(self.clip_slot().get_velocity(self.scene()).level, SCENE_LEVEL)
 
     async def test_a_clips_own_bars_make_the_ramp_the_clips(self):
-        await self.open_section(RampWay.IN)
         await self.select_field(IN_OVER)
         await self.press(keybindings.FieldPage.MORE)
         ramp = self.clip_slot().get_velocity(self.scene()).ramp_in

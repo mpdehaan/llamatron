@@ -30,3 +30,6 @@ Breath: the silence after each line, taken from the line's last note: none, quic
 Rise and fall: each line grows louder toward its main note, a long note late in the line, and falls away.
 Notes: choppy, each note short with space after; as written; or flowing, each note held until the next.
 """
+
+# The name of the tab of the built-in one every clip and track holds.
+MSG_TAB_LABEL = 'Phrasing'

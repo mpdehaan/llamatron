@@ -10,26 +10,46 @@ A clip sits where a scene's row and a track's column meet on Arrange, so the cli
 
 ## Clip Settings
 
+The clip page shows the clip's Name and its list of Patterns, then a box of tabs holding the rest of its settings, then Play and Stop. The tabs are in the order the clip applies them: Basics, Chords, Arp and Guitarify, User, Timing and Phrasing, then Shapes, Velocity, Registers, Bypass When and Skip When.
+
+On the row of tabs, `←` and `→`, or `[` and `]`, choose a tab, stopping at the first and the last; `↓` goes into the tab, through its first column and then the next, and on below the box. `Tab` goes to the row of tabs from anywhere on the page. The tab chosen stays chosen on the next clip page until another is chosen. Where the tabs are wider than the box, `<` and `>` stand at the ends for the tabs hidden that way. The box keeps the height of its tallest tab, so choosing a tab moves nothing below it.
+
 | Setting | What it does |
 | --- | --- |
 | Name | A name of the clip's own, shown on the grid and used for the clip in Live and in the clip tree's file names. Without one, the clip goes by its pattern's name. `Bksp` clears it. |
 | Patterns | The patterns the clip plays, one after another, as one long pattern (see Pattern Lists below). A clip of 1 pattern is a list of 1. `A`, or `ENTER` on the `+` row, adds a pattern; `Bksp` takes the pattern under the cursor out of the list, which deletes no pattern; `M` picks the pattern up, the arrows carry it and `ENTER` drops it; `ENTER` or `J` opens the pattern in the pattern editor, and `ESC` comes back. |
-| Scale | A scale of the clip's own, which wins over the scene's and the song's, so that one track can play in another key or mode. `ENTER` picks one, and `Bksp` goes back to the scene's, shown with where it comes from, such as `A Minor (from scene)`. |
-| Generators | The generators the clip runs, in order, each shown with its kind, such as `Chain: fills, Timing: rolls`. `ENTER` opens the list, where `A` adds any of the set's generators, a chain among them, `M` moves one and `Bksp` takes one out; `Bksp` on the field clears them all. A clip runs its own generators first, then its scene's, then its track's. See [Generators](GENERATORS.md) and [Chain](generators/CHAIN.md). |
+| Play, Stop | Buttons under the box, which do what `L` (Listen) does: play the clip in real time as its scene would, with its generators, grabs, scale and direction, again and again until `L` is pressed again or Stop is. When the clip's track has no instrument, a list asks which of the set's instruments to listen through, for this listening alone. While the Real Time switch is off, the clip plays through General MIDI in [FluidSynth](FLUIDSYNTH.md) instead, the piano, or the drum kit for drums. See [Playing Live](PLAYING_LIVE.md). |
+
+The Basics tab has two columns. Order says how the clip plays its patterns:
+
+| Setting | What it does |
+| --- | --- |
 | Pattern order | Which pattern of the list comes next, each pass through the list (see Pattern Lists below). |
 | Step direction | Overrides the play direction of the steps inside each pattern of the list, and of the pattern the clip morphs to. `Bksp` goes back to each pattern's own direction, shown as `forward (from pattern)` or the like, or `(each pattern)` for a list of several. |
 | Repeat | How many times the clip plays its whole list of patterns, from 1 to 9999, before staying silent while the scene's other clips finish. |
 | Loop | Plays the clip until the scene's longest clip that doesn't loop is done. `Space` or `ENTER` toggles it. |
 | Morph to | With Repeat above 1, a second pattern to change into across the repeats. |
 | Morph direction | `left`, `right` or `middle`: where the change sweeps in from. |
+| Advance | What the clip does in real-time playback when it finishes, as described under Advance below. `ENTER` chooses. A clip that sets none shows the set's default, such as `With Scene (from set)`. |
+
+General holds the rest:
+
+| Setting | What it does |
+| --- | --- |
+| Scale | A scale of the clip's own, which wins over the scene's and the song's, so that one track can play in another key or mode. `ENTER` picks one, and `Bksp` goes back to the scene's, shown with where it comes from, such as `A Minor (from scene)`. |
 | Velocity | How loud the clip plays, as a percentage of each note's written velocity, over its scene's Velocity. Blank takes the scene's, shown as `80% (from scene)`, or 100%. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
 | Grab track | Another track in the scene, whose notes the pattern's Grab steps play. `Bksp` sets none. |
-| Advance | What the clip does in real-time playback when it finishes, as described under Advance below. `ENTER` chooses. A clip that sets none shows the set's default, such as `With Scene (from set)`. |
-| + Velocity Ramp In, + Velocity Ramp Out | Sections, closed until opened, like the Scene page's, that fade this clip in and out. Each field set here wins over the scene's. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
-| + Density, + Articulate | Sections, closed until opened, like the Scene page's, shaping this clip across its own length. A shape set here wins over the scene's, and a generator in the clip's chains wins over both. |
-| + Set Registers, + Increment Registers | Sections, closed until opened, that set each register to a value as the clip starts and add an amount every time the clip's pattern starts over. See [Set Registers and Increment Registers](REGISTERS.md#set-registers-and-increment-registers). |
-| + Bypass Generators When, + Skip Playback When | Sections of statements about the registers, read each time the clip's pattern starts over: the first lets a pass go by the clip's generators untouched, and the second makes the clip sit a pass out. See [Conditional Execution](REGISTERS.md#conditional-execution). |
-| Play, Stop | Buttons under the settings, which do what `L` (Listen) does: play the clip in real time as its scene would, with its chains, grabs, scale and direction, again and again until `L` is pressed again or Stop is. When the clip's track has no instrument, a list asks which of the set's instruments to listen through, for this listening alone. While the Real Time switch is off, the clip plays through General MIDI in [FluidSynth](FLUIDSYNTH.md) instead, the piano, or the drum kit for drums. See [Playing Live](PLAYING_LIVE.md). |
+
+The other tabs:
+
+| Tab | What it holds |
+| --- | --- |
+| Chords, Arp, Guitarify, Timing, Phrasing | The clip's built-in generators, one of each, with the settings of the generator's own page: Enabled first, then its Mode where it has one, then its columns. A built-in is off until Enabled is switched on; its tab shows `●` after its name while on and `○`, dim, while off. A clip's built-in that is on stands in for its track's of the same kind. Chords, Arp and Guitarify run before the clip's list of generators, Timing and Phrasing after it. `ENTER` on a part, such as the Arp's Offsets, opens that part's page on the clip's built-in. See [Generators](GENERATORS.md). |
+| User | The Generators field: the generators of the set the clip runs, in order, each shown with its kind, such as `Chain: fills, Timing: rolls`. `ENTER` opens the list, where `A` adds any of the set's generators, a chain among them, `M` moves one and `Bksp` takes one out; `Bksp` on the field clears them all. A clip runs its own list first, then its scene's, then its track's. See [Generators](GENERATORS.md) and [Chain](generators/CHAIN.md). |
+| Shapes | Density and Articulate, like the Scene page's, shaping this clip across its own length. A shape set here wins over the scene's, and a generator the clip runs wins over both. |
+| Velocity | Velocity Ramp In and Velocity Ramp Out, like the Scene page's, which fade this clip in and out. Each field set here wins over the scene's. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
+| Registers | Set Registers and Increment Registers: each register's value as the clip starts, and the amount added every time the clip's pattern starts over. See [Set Registers and Increment Registers](REGISTERS.md#set-registers-and-increment-registers). |
+| Bypass When, Skip When | Statements about the registers, read each time the clip's pattern starts over: the first lets a pass go by the clip's generators untouched, and the second makes the clip sit a pass out. See [Conditional Execution](REGISTERS.md#conditional-execution). |
 
 ## Pattern Lists
 

@@ -11,30 +11,22 @@ from rich.text import Text
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Style
-from llamatron.interface.tracker.screens.arrange.generators_field import generators_field
-from llamatron.interface.tracker.screens.arrange.velocity_fields import velocity_field, velocity_ramp_sections
-from llamatron.interface.tracker.screens.shared import statements
+from llamatron.interface.tracker.screens.shared.arrange_tabs import ClipTabs
 from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.listening import listen, stop_listening
-from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.shared import columns, scene_name
-from llamatron.interface.tracker.screens.shared.statements import register_fields, statement_section
+from llamatron.interface.tracker.screens.shared.tab_box import TabBox
 from llamatron.interface.tracker.text import clock, sorted_names
 from llamatron.interface.tracker.uses import loop_error_lines
 from llamatron.model.objects import clip_slot as clip_slot_values
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, Section, shape_setting
+from llamatron.model.schema.file_format import ClipSlotSetting, Section
 from llamatron.user_strings import errors, help as help_text, labels as labels_text, legends, marks, messages, names as names_text
 
 EXISTING_PATTERN = 0
 ONE_PATTERN = 1
-# The clip's two tables of statements: their labels, where each sits on the page and the setting each is.
-STATEMENT_TABLES = (
-    (labels_text.MSG_BYPASS_WHEN_LABEL, statements.FIRST_TABLE, ClipSlotSetting.BYPASS_WHEN),
-    (labels_text.MSG_SKIP_WHEN_LABEL, statements.SECOND_TABLE, ClipSlotSetting.SKIP_WHEN),
-)
 
 
 @dataclass(slots=True, kw_only=True)
@@ -389,30 +381,17 @@ class ClipPage(FieldPage):
         self.set_value(setting=ClipSlotSetting.MORPH_STYLE, value=styles[(place + offset) % len(styles)])
 
     def fields(self):
-        own_velocity, velocity_above, store_velocity = self.velocity_values()
         result = [
             NameField(value=self.name_text, rename=self.rename, clear=functools.partial(self.clear, ClipSlotSetting.NAME), clear_what=legends.MSG_USE_PATTERN_NAME_WHAT),
             *self.pattern_rows(),
-            Field(label=labels_text.MSG_SCALE_LABEL, value=self.scale_text, adjust=None, enter=self.pick_scale, enter_what=legends.What.CHOOSE,
-                  clear=functools.partial(self.clear, ClipSlotSetting.SCALE), clear_what=legends.MSG_USE_SCENE_SCALE_WHAT),
-            generators_field(page=self, names=self._chain_names, store=self._set_chain_names),
-            self.pattern_order_field(),
-            *self._playing_fields(),
-            velocity_field(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
-            Field(label=labels_text.MSG_GRAB_TRACK_LABEL, value=self._grab_shown, adjust=None, enter=self.pick_grab_track, enter_what=legends.What.CHOOSE,
-                  clear=functools.partial(self.clear, ClipSlotSetting.GRAB_TRACK), clear_what=legends.MSG_NO_GRAB_WHAT),
-            self.follow_action_field(),
-            *velocity_ramp_sections(page=self, own=own_velocity, above=velocity_above, store=store_velocity),
+            TabBox(tabs=ClipTabs(self).tabs()),
         ]
-        for shape in file_format.PLACED_SHAPES:
-            result += self.shape_section(shape)
-        result += self.register_sections()
         # Real-time playback's buttons, which do what L does, drawn below the settings after a blank line as every page's buttons are.
         result.append(Button(label=labels_text.MSG_PLAY_LABEL, key_name=legends.KeyName.L, enter=self.listen, enter_what=legends.MSG_LISTEN_WHAT))
         result.append(Button(label=labels_text.MSG_STOP_LABEL, key_name=legends.KeyName.L, enter=self.stop, enter_what=legends.MSG_STOP_WHAT))
         return result
 
-    def _playing_fields(self):
+    def playing_fields(self):
         """Return the fields of how the clip plays its patterns: the direction, the repeats, the loop, and the morph where the
         clip repeats."""
         clip_slot = self.clip_slot()
@@ -434,18 +413,6 @@ class ClipPage(FieldPage):
                                     enter=functools.partial(self.step_style, 1), enter_what=legends.What.NEXT))
         return result
 
-    def _chain_names(self):
-        clip_slot = self.clip_slot()
-        return clip_slot.get_chain_names()
-
-    def _set_chain_names(self, names):
-        """Give the clip the chains named, or none."""
-        self.set_value(setting=ClipSlotSetting.CHAINS, value=names or None)
-
-    def _grab_shown(self):
-        clip_slot = self.clip_slot()
-        return clip_slot.get_grab_track() or marks.MSG_NONE_SHOWN
-
     def _morph_shown(self):
         clip_slot = self.clip_slot()
         return clip_slot.get_morph_target() or marks.MSG_NONE_SHOWN
@@ -454,64 +421,6 @@ class ClipPage(FieldPage):
         """Ask for the pattern the clip morphs into."""
         clip_slot = self.clip_slot()
         self.pick_pattern(title=labels_text.MSG_MORPH_TO_LABEL, current=clip_slot.get_morph_target(), then=self.set_morph_target)
-
-    def _set_written(self, *, name, value):
-        clip_slot = self.clip_slot()
-        self.document().change_set(clip_slot.set_written, name=name, value=value)
-
-    def _set_register_set(self, *, register, value):
-        clip_slot = self.clip_slot()
-        self.document().change_set(clip_slot.set_register_set, register=register, value=value)
-
-    def _set_register_add(self, *, register, value):
-        clip_slot = self.clip_slot()
-        self.document().change_set(clip_slot.set_register_add, register=register, value=value)
-
-    def _set_statement(self, *, name, place, statement):
-        clip_slot = self.clip_slot()
-        self.document().change_set(clip_slot.set_statement, name=name, place=place, statement=statement)
-
-    def velocity_values(self):
-        """Return what the velocity fields read the clip's own velocity settings with, what gives a blank one from its scene,
-        and what keeps one."""
-        clip_slot = self.clip_slot()
-        scene = self._scene()
-        return clip_slot.get_written, scene.get_written, lambda name, value: self._set_written(name=name, value=value)
-
-    def register_sections(self):
-        """Return the clip's sections about the registers: what it sets them to as it launches, what it adds every time its
-        pattern starts over, and the statements that bypass its generators, and that make it sit out."""
-        clip_slot = self.clip_slot()
-        fields = [
-            *register_fields(
-                page=self, label=labels_text.MSG_SET_REGISTERS_LABEL, name_label=labels_text.MSG_SET_REGISTER_LABEL, values=clip_slot.get_register_sets,
-                store=lambda register, value: self._set_register_set(register=register, value=value),
-            ),
-            *register_fields(
-                page=self, label=labels_text.MSG_ADD_REGISTERS_LABEL, name_label=labels_text.MSG_ADD_REGISTER_LABEL, values=clip_slot.get_register_adds,
-                store=lambda register, value: self._set_register_add(register=register, value=value),
-            ),
-        ]
-        for label, table, name in STATEMENT_TABLES:
-            store = functools.partial(self._store_statement, name=name)
-            fields += statement_section(page=self, label=label, table=table, statements=functools.partial(clip_slot.get_statements, name),
-                                        store=lambda place, statement, store=store: store(place=place, statement=statement))
-        return fields
-
-    def _store_statement(self, *, name, place, statement):
-        """Write one statement of one of the clip's tables."""
-        self._set_statement(name=name, place=place, statement=statement)
-
-    def shape_section(self, shape):
-        """Return a shape's section: how busy, loud or long the clip plays over it, over its scene's."""
-        clip_slot = self.clip_slot()
-
-        def value(part):
-            return clip_slot.get_written(shape_setting(shape=shape, part=part))
-
-        def store(part, value):
-            self._set_written(name=shape_setting(shape=shape, part=part), value=value)
-        return shape_section(page=self, shape=shape, value=value, store=store)
 
     def follow_action_field(self):
         """Return the Follow action field: what the clip sends down in real-time playback when its scene is done, shown as the

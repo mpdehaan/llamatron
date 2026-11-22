@@ -47,13 +47,12 @@ Up and down select a setting. Left and right change it, and ENTER types or choos
 
 # ClipPage
 HELP_CLIP_PAGE = """
-Name: what the grid and the exports call it, or its pattern's name if it has none. Patterns: what it plays, in a row; A adds, M moves, Bksp removes. Chain: generators to run on it.
-Repeat: how many times it plays, then silence while other clips finish. Loop: plays until the other clips are done. One clip in each scene must not loop, or exporting stops.
-Pattern order: which pattern is next. Step direction: overrides each pattern's own. With Repeat above 1, Morph to changes into a second pattern across the repeats, from Morph direction.
-Grab track: Grab steps play the note that track last started, with their chord.
-Advance: real-time playback only, never an export. With Scene starts the clip below when the whole scene is done, Next when this clip ends, Off never. Blank, it shows File/Global's default.
+Name: what the grid and exports call it, else its pattern's name. Patterns: what it plays; A adds, M moves, Bksp removes.
+Tab goes to the tabs; Left and Right choose one. Basics: Repeat, Loop, the orders, Morph to, Advance, Scale, Velocity, Grab.
+Chords, Arp, Guitarify, Timing, Phrasing: its own generators, off until Enabled. User: the set's generators it runs.
+One clip in each scene must not loop, or exporting stops. Advance is for real-time playback only.
 
-Up and down select. Left and right change. ENTER chooses. J jumps to the pattern in its editor. L plays the clip, again and again, and stops it; Play and Stop below do the same.
+Up and down select. Left and right change. ENTER chooses. J jumps to the pattern. L plays the clip and stops it.
 """
 
 # MainPage

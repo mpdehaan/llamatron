@@ -19,6 +19,7 @@ from llamatron.interface.tracker.screens.shared.section_table import section_tab
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.shared import numbers_text
 from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
+from llamatron.interface.tracker.screens.shared.tab_box import Tab, TabColumn, without_headings
 from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import file_format
@@ -52,6 +53,21 @@ class ViewFields:
     def view(self):
         """Return the plugin's view the fields are made from."""
         raise NotImplementedError
+
+    def view_tab(self, *, label):
+        """Return the view as a tab of a tab box: Enabled and the Mode across the top, then a column of each of the view's columns
+        the mode shows, each section of one standing as a column of its own under its heading, marked on or off."""
+        view = self.view()
+        top = [self._enabled_field()]
+        mode = None
+        if view.mode is not None:
+            top.append(self._choice_field(view.mode))
+            mode = self.chosen(view.mode)
+        columns = []
+        for column in view.columns:
+            if not column.modes or mode in column.modes:
+                columns += self._tab_columns(column)
+        return Tab(label=label, top=top, columns=columns, on=self.settings().is_enabled())
 
     def view_fields(self):
         """Return Enabled, the Mode where the view has one, then the fields of every column the mode shows, in order."""
@@ -190,6 +206,23 @@ class ViewFields:
         if value == setting.default:
             value = None
         self.store(setting=setting.setting, value=value)
+
+    def _tab_columns(self, column):
+        """Return a view's column as the columns of a tab: its settings under its heading, each section among them a column of
+        its own after them, under the section's heading."""
+        own = []
+        sections = []
+        for setting in column.settings:
+            if type(setting) is SectionView:
+                fields = []
+                for inside in setting.settings:
+                    fields += self._fields_of(inside)
+                sections.append(TabColumn(heading=setting.heading, fields=without_headings(fields)))
+            else:
+                own += without_headings(self._fields_of(setting))
+        if own:
+            return [TabColumn(heading=column.heading, fields=own), *sections]
+        return sections
 
     def _enabled_field(self):
         """Return the generator's switch, written only where it differs from how a generator of its kind starts."""

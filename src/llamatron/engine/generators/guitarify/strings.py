@@ -43,3 +43,6 @@ above the capo. Single notes: leave, power chord or scale chord. Right Hand: the
 ENTER on Bar edits it. Let ring: a string sounds until struck again. Each hand can be switched off.
 Spread, Fade and Loose timing: the time between a strum's strings, how much quieter each is, and how uneven the gaps are.
 """
+
+# The name of the tab of the built-in one every clip and track holds.
+MSG_TAB_LABEL = 'Guitarify'

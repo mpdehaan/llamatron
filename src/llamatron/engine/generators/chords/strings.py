@@ -32,3 +32,6 @@ the part taken as written over chord I, ENTER on Chords opening the chord editor
 the track named in Chords from plays in the same scene. Voice leading voices each chord nearest the one before, within the
 octaves, the root kept in the bass if asked; it is on in Voicing mode and off in the others unless set.
 """
+
+# The name of the tab of the built-in one every clip and track holds.
+MSG_TAB_LABEL = 'Chords'

@@ -35,3 +35,6 @@ Rush plays notes early and Drag plays them late, by a share of a step; Shorten p
 Each is a row of steps from each clip's start, at its own Step, the pattern's step size unless set; a note starting on a
 step that is on is changed. ENTER on Steps opens the row. A part with no step on does nothing.
 """
+
+# The name of the tab of the built-in one every clip and track holds.
+MSG_TAB_LABEL = 'Timing'

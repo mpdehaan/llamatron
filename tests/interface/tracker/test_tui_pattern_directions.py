@@ -45,9 +45,7 @@ class TestDirectionsAndGrab(UITest):
         return self.app.screen
 
     async def go_to(self, page, label):
-        page.cursor.set_place([field.label for field in page.fields()].index(label))
-        page.draw()
-        await self.pilot.pause()
+        await self.select_field(label)
 
     async def test_a_clip_shows_the_patterns_direction_until_it_overrides_it(self):
         self.document.change_pattern(self.document.pattern(TUNE).set_direction, Direction.ALTERNATE)

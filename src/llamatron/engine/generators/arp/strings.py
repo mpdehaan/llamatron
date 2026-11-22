@@ -27,3 +27,6 @@ Octave range: plays the chord again in up to 4 octaves. Octave jump: up after th
 Offsets: the arp's own steps, like a groovebox's. Each moves its note along the scale, and a blank step is silent.
 ENTER on Offsets opens them, and Bksp removes them. Each register's field: what every note adds to it.
 """
+
+# The name of the tab of the built-in one every clip and track holds.
+MSG_TAB_LABEL = 'Arp'

@@ -386,6 +386,20 @@ MSG_ACCENT_ROW_LABEL = 'Accent'
 MSG_READY_BARS_TITLE = 'Ready-made bar'
 MSG_SOURCE_TRACK_LABEL = 'Source track'
 MSG_ROOT_IN_BASS_LABEL = 'Keep the root in the bass'
+# interface/tracker/screens/shared/tab_box.py: the row of tabs, as the cursor finds it.
+MSG_TABS_LABEL = 'Tabs'
+# interface/tracker/screens/arrange/clip_page.py and the track's and scene's pages: their tabs, and the Basics tab's columns.
+MSG_BASICS_TAB = 'Basics'
+MSG_USER_TAB = 'User'
+MSG_SHAPES_TAB = 'Shapes'
+MSG_VELOCITY_TAB = 'Velocity'
+MSG_REGISTERS_TAB = 'Registers'
+MSG_BYPASS_WHEN_TAB = 'Bypass When'
+MSG_SKIP_WHEN_TAB = 'Skip When'
+MSG_ORDER_HEADING = 'Order'
+MSG_GENERAL_HEADING = 'General'
+# interface/tracker/screens/shared/built_in_tab.py: what the crumbs call a page opened on a part of a built-in generator.
+MSG_BUILT_IN_WORD = 'built in'
 # interface/tracker/screens/shared/plugin_editor.py: every generator's switch, first after its name.
 MSG_ENABLED_LABEL = 'Enabled'
 # interface/tracker/screens/shared/restart_field.py: when a generator starts over, as its editor names the choices.

@@ -169,8 +169,6 @@ class TestShapeSectionsOnTheClipPage(UITest):
     async def test_a_clips_density_is_its_own(self):
         self.app.screen.show_page(ClipPage(holder=self.app.screen.holder, index=0, track=ui_testing.LEAD))
         await self.pilot.pause()
-        await self.select_field(labels_text.MSG_SHAPE_NAMES[Shape.DENSITY])
-        await self.press(Key.ENTER)
         await self.select_field(labels_text.MSG_SHAPE_FIELD_LABELS[ShapePart.END].format(shape=labels_text.MSG_SHAPE_NAMES[Shape.DENSITY]))
         await self.press(Key.ENTER)
         self.app.screen.value = str(HALF)

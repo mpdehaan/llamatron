@@ -252,7 +252,10 @@ class FieldPage(Page):
     ALONG_BUTTONS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
     # In a row of cells side by side, Left and Right move between the cells, and step nothing.
     ALONG_CELLS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
-    IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, ALONG_CELLS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, RENAME]
+    # On a page with a tab box: on the row of tabs, Left and Right, and [ and ], choose the tab before or after; Tab goes to the row.
+    ALONG_TABS = Binding(Steps(back=(Key.LEFT, *keys.LESS_KEYS), forward=(Key.RIGHT, *keys.MORE_KEYS)), legends.KeyName.LEFT_RIGHT, legends.MSG_TAB_WHAT)
+    TO_TABS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_TABS_WHAT)
+    IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, ALONG_CELLS, ALONG_TABS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, TO_TABS, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
 
 

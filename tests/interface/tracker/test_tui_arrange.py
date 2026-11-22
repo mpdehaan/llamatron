@@ -21,7 +21,6 @@ from llamatron.interface.tracker.screens.generators.generator_list_page import G
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.interface.tracker.screens.set.registers_page import RegistersPage
-from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.interface.tracker.screens.shared.generator_names import listed_generator
 from llamatron.model.objects import setlist
 from llamatron.model.objects.scene import TempoRamp
@@ -464,10 +463,10 @@ class TestClipPage(UITest):
         return self.document.clip_slot(index=0, track=LEAD)
 
     def labels(self):
-        return [field.label for field in self.page.fields()]
+        return [field.label for field in self.page.every_setting()]
 
     def follow_action_text(self):
-        return next(field.value() for field in self.page.fields() if field.label == labels_text.MSG_FOLLOW_ACTION_LABEL)
+        return next(field.value() for field in self.page.every_setting() if field.label == labels_text.MSG_FOLLOW_ACTION_LABEL)
 
     def patterns(self):
         return self.clip_slot().get_pattern_names()
@@ -700,14 +699,15 @@ class TestRhythmAndNotesFromOnAClip(UITest):
     def clip_slot(self):
         return self.document.clip_slot(index=0, track=LEAD)
 
-    async def test_they_are_at_the_bottom_of_the_page(self):
+    async def test_grab_track_ends_the_general_column_of_the_basics_tab(self):
         self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.REPEAT, value=2)
         self.document.set_clip_slot_morph_target(index=0, track=LEAD, pattern=OTHER)
-        # Grab track is the last of the fields that shape the notes; only Follow action, which real-time playback alone reads, comes after it, and then the sections of Density, Swell and Articulate, and the Play and Stop buttons.
-        fields = self.page.fields()
-        first_heading = next(place for place, field in enumerate(fields) if isinstance(field, Heading))
-        labels = [field.label for field in fields[:first_heading]]
-        self.assertEqual(labels[-2:], [GRAB_TRACK, labels_text.MSG_FOLLOW_ACTION_LABEL])
+        # The Basics tab's Order says how the clip plays its patterns, Follow action last, and General its scale, velocity and grab.
+        basics = self.page.tab_box().tabs[0]
+        self.assertEqual([column.heading for column in basics.columns], [labels_text.MSG_ORDER_HEADING, labels_text.MSG_GENERAL_HEADING])
+        order, general = basics.columns
+        self.assertEqual(order.fields[-1].label, labels_text.MSG_FOLLOW_ACTION_LABEL)
+        self.assertEqual(general.fields[-1].label, GRAB_TRACK)
 
     async def test_choosing_none_clears(self):
         self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.GRAB_TRACK, value=DRUMS)
@@ -791,7 +791,7 @@ class TestGrabEdges(UITest):
         await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER)
         page = self.app.screen
         self.assertIsInstance(page, ClipPage)
-        page.cursor.set_place([field.label for field in page.fields()].index(GRAB_TRACK))
+        await self.select_field(GRAB_TRACK)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn(NO_OTHER_TRACKS, self.text())
@@ -891,9 +891,7 @@ class TestScenesAndClipsEdges(UITest):
         return self.app.screen
 
     async def go_to(self, page, label):
-        page.cursor.set_place([field.label for field in page.fields()].index(label))
-        page.draw()
-        await self.pilot.pause()
+        await self.select_field(label)
 
     def scene(self):
         return self.document.song().get_scenes()[0]

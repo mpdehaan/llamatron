@@ -83,6 +83,9 @@ class Field:
     # Which of the lines a field draws holds the cursor, and whether a blank line may follow the field.
     SELECTED_LINE = 0
     MAY_LEAVE_A_GAP = True
+    # Whether it stands for a tab box among a page's fields, or is the row of tabs, which a page draws with the box.
+    IS_TAB_BOX = False
+    IS_TAB_ROW = False
 
     def is_toggle(self):
         """Return whether the setting is on or off, which answers to Space and Enter alike."""
