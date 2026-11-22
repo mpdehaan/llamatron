@@ -29,14 +29,15 @@ class GeneratorPlugin(NamedTuple):
     its strings module, which holds every word it shows: MSG_LABEL, what it is called beside a generator's name, MSG_KIND_WORD,
     the word a generator named for its kind takes, MSG_CAPTION_WORD, the word its page's caption names it by, and
     MSG_CHANGED_WORD, the word an undo of a change to one of its generators says, MSG_GROUP, the heading the Generators page
-    offers it under, and its controller, which holds all its
-    logic (engine/generators/controller.py)."""
+    offers it under, its controller, which holds all its logic (engine/generators/controller.py), and its view, which describes
+    its page (model/schema/generator_views.py), or None for a plugin whose page the tracker still holds."""
 
     name: str
     section: str
     settings: type
     strings: object
     controller: object
+    view: object = None
 
 
 @functools.cache

@@ -8,6 +8,7 @@ offsets editors, the Scale page and the track editor. The key that renames from 
 tested with the page, so these checks call the page's rename and answer its prompt.
 """
 
+import inspect
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin
@@ -166,14 +167,19 @@ class TestOffsetsEditorShowsItsArp(NamedItemChecks, UITest):
 # The pages of one named thing that carry the full checks: a list, a settings editor and a generator's, standing for every such
 # page, since the rule below holds that every one shows, follows renames and renames by the one shared way; and the offsets
 # editor, which is the one that renames nothing.
+# What a page that serves many sections is given as it opens.
+SECTION_GIVEN = 'section'
+
 CHECKED = [TestPatternEditorShowsItsPattern, TestChainEditorShowsItsChain, TestArpEditorShowsItsArp, TestOffsetsEditorShowsItsArp]
 
 
 class TestEveryPageOfOneNamedThingIsChecked(unittest.TestCase):
 
     def test_every_such_page_names_its_section_and_its_crumbs(self):
+        # A page drawn from a generator plugin's view, which serves every such plugin, is given its section as it opens.
         for page in pages_of_one_named_thing():
-            self.assertIsNotNone(page.SECTION, page.__name__)
+            if page.SECTION is None:
+                self.assertIn(SECTION_GIVEN, inspect.signature(page.__init__).parameters, page.__name__)
             self.assertTrue(page.CRUMBS_BEFORE, page.__name__)
 
     def test_no_page_keeps_a_way_of_its_own(self):

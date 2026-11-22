@@ -260,13 +260,9 @@ The clip's pattern is taken as written over chord I. Each note moves up the scal
 The track followed may write its chords by hand or make them with a Progression, and may be muted.
 """
 
-# PhrasingEditor
-HELP_PHRASING_EDITOR = """
-Plays a tune as a singer would deliver it, in lines. The pattern stays as written, and no note is left out.
-Line: how long a line of the tune is, a sentence of it.
-Breath: the silence after each line, taken from the line's last note: none, quick or deep.
-Rise and fall: each line grows louder toward its main note, a long note late in the line, and falls away.
-Notes: choppy, each note short with space after; as written; or flowing, each note held until the next.
+# PluginEditor: the help every generator page drawn from its plugin's view shares, which each page replaces with its plugin's own.
+HELP_PLUGIN_EDITOR = """
+A generator's settings, as its kind describes them.
 """
 
 # MusicianEditor

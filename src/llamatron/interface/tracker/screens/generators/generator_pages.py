@@ -17,13 +17,13 @@ from llamatron.interface.tracker.screens.generators.glide_editor import GlideEdi
 from llamatron.interface.tracker.screens.generators.guitarify_editor import GuitarifyEditor
 from llamatron.interface.tracker.screens.generators.hocket_editor import HocketEditor
 from llamatron.interface.tracker.screens.generators.musician_editor import MusicianEditor
-from llamatron.interface.tracker.screens.generators.phrasing_editor import PhrasingEditor
 from llamatron.interface.tracker.screens.generators.progression_editor import ProgressionEditor
 from llamatron.interface.tracker.screens.generators.rush_editor import RushEditor
 from llamatron.interface.tracker.screens.generators.shorten_editor import ShortenEditor
 from llamatron.interface.tracker.screens.generators.strum_editor import StrumEditor
 from llamatron.interface.tracker.screens.generators.swell_editor import SwellEditor
 from llamatron.interface.tracker.screens.generators.voice_leading_editor import VoiceLeadingEditor
+from llamatron.interface.tracker.screens.shared.plugin_editor import has_view, plugin_editor_of
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import labels, messages
@@ -46,13 +46,18 @@ def _in_shown_order(listings):
 
 # The page that edits a generator of each kind, by the section of the set that holds them, which each editor names.
 EDITORS = {editor.SECTION: editor for editor in (
-    ArpEditor, AutoRatchetEditor, DriftEditor, ProgressionEditor, VoiceLeadingEditor, StrumEditor, DensityEditor, SwellEditor, ArticulateEditor, GlideEditor, ShortenEditor, RushEditor, DragEditor, HocketEditor, GuitarifyEditor, FollowChordsEditor, PhrasingEditor, MusicianEditor,
+    ArpEditor, AutoRatchetEditor, DriftEditor, ProgressionEditor, VoiceLeadingEditor, StrumEditor, DensityEditor, SwellEditor, ArticulateEditor, GlideEditor, ShortenEditor, RushEditor, DragEditor, HocketEditor, GuitarifyEditor, FollowChordsEditor, MusicianEditor,
 )}
 
 
 def _listing_of(plugin):
-    """Return how the tracker lists a generator plugin: its name, its section, its own label and heading, and its editor."""
-    return GeneratorListing(kind=plugin.name, section=plugin.section, label=plugin.strings.MSG_LABEL, group=plugin.strings.MSG_GROUP, EDITOR=EDITORS[plugin.section])
+    """Return how the tracker lists a generator plugin: its name, its section, its own label and heading, and its editor, the
+    page drawn from its view where it describes one."""
+    if has_view(plugin.section):
+        editor = plugin_editor_of(plugin.section)
+    else:
+        editor = EDITORS[plugin.section]
+    return GeneratorListing(kind=plugin.name, section=plugin.section, label=plugin.strings.MSG_LABEL, group=plugin.strings.MSG_GROUP, EDITOR=editor)
 
 
 def _plugin_listings():

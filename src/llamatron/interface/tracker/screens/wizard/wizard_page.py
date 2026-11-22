@@ -28,11 +28,11 @@ from llamatron.interface.tracker.drawing import Box, cursor_mark, Style
 from llamatron.interface.tracker.key_table import cursor_moved, first_key
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.generators.musician_editor import MusicianEditor
-from llamatron.interface.tracker.screens.generators.phrasing_editor import PhrasingEditor
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.instrument_editor import sound_families
 from llamatron.interface.tracker.screens.shared import sound_trial
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
+from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.interface.tracker.screens.shared.sound_trial import hits_of, run_of, SoundTrial
 from llamatron.interface.tracker.screens.wizard import starts
 from llamatron.interface.tracker.screens.wizard.band_branch import BandBranch
@@ -340,7 +340,7 @@ class WizardPage(FieldPage):
         if read(Document(setlist=setlist)) is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
-        screen = functools.partial(PhrasingEditor, holder=self.holder, name=name)
+        screen = functools.partial(PluginEditor, holder=self.holder, name=name, section=phrasing_plugin.SECTION)
         self.open_in_draft(setlist=setlist, read=read, screen=screen, keep=self._choices.set_tune_phrasing,
                            kept=messages.MSG_WIZARD_PHRASING_KEPT, unchanged=messages.MSG_WIZARD_PHRASING_UNCHANGED)
 

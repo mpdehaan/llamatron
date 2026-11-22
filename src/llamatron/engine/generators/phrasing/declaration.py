@@ -6,9 +6,9 @@
 generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import phrasing
-from llamatron.engine.generators.phrasing import strings
+from llamatron.engine.generators.phrasing import strings, view
 from llamatron.engine.generators.phrasing.controller import PhrasingController
 from llamatron.engine.generators.phrasing.model import PhrasingSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=phrasing.NAME, section=phrasing.SECTION, settings=PhrasingSettings, strings=strings, controller=PhrasingController())
+PLUGIN = GeneratorPlugin(name=phrasing.NAME, section=phrasing.SECTION, settings=PhrasingSettings, strings=strings, controller=PhrasingController(), view=view.VIEW)
