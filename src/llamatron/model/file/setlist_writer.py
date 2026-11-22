@@ -67,19 +67,28 @@ def _notes(text):
     key = SetlistSetting.NOTES
     if not text.strip():
         return [SETTING.format(key=key, value=_text(text))]
-    indent = BLOCK_INDENT if text.lstrip(LINE_BREAK)[:1] == SPACE else NO_INDENT
-    if not text.endswith(LINE_BREAK):
-        chomp = DROP_LAST_BREAK
-        body = text
-    else:
-        chomp = KEEP_EVERY_BREAK if text.endswith(BLANK_LINE) else KEEP_ONE_BREAK
+    # A block whose first line starts with a space says how far it is indented, which YAML can't work out from that line.
+    indent = NO_INDENT
+    if text.lstrip(LINE_BREAK)[:1] == SPACE:
+        indent = BLOCK_INDENT
+    chomp = DROP_LAST_BREAK
+    body = text
+    if text.endswith(LINE_BREAK):
+        chomp = KEEP_ONE_BREAK
+        if text.endswith(BLANK_LINE):
+            chomp = KEEP_EVERY_BREAK
         body = text[:-len(LINE_BREAK)]
-    return [BLOCK.format(key=key, indent=indent, chomp=chomp)] + _indented_lines(body)
+    return [BLOCK.format(key=key, indent=indent, chomp=chomp), *_indented_lines(body)]
 
 
 def _indented_lines(body):
     """Return a block's lines, each indented under its key, with blank lines left blank."""
-    return [INDENT + line if line else line for line in body.split(LINE_BREAK)]
+    lines = []
+    for line in body.split(LINE_BREAK):
+        if line:
+            line = INDENT + line
+        lines.append(line)
+    return lines
 
 
 def _text(value):
@@ -87,7 +96,8 @@ def _text(value):
     if value is None:
         return NULL
     if isinstance(value, list):
-        return LIST.format(items=ITEM_SEPARATOR.join(_text(item) for item in value))
+        items = [_text(item) for item in value]
+        return LIST.format(items=ITEM_SEPARATOR.join(items))
     if isinstance(value, dict):
         return _braces(value)
     return _scalar_text(kind=type(value), value=value)
@@ -99,7 +109,9 @@ def _scalar_text(*, kind, value):
     thousands of times, and asking YAML about each was most of the time a save took. The kind is part of what is remembered,
     since 1, 1.0 and true are equal to Python and are written differently."""
     if kind is str:
-        return value if _reads_back_as_itself(value) else json.dumps(value)
+        if _reads_back_as_itself(value):
+            return value
+        return json.dumps(value)
     return _first_line(yaml.safe_dump(value))
 
 
@@ -115,26 +127,35 @@ def _first_line(text):
 def _braces(settings):
     if not settings:
         return EMPTY_MAP
-    return MAP.format(items=ITEM_SEPARATOR.join(SETTING.format(key=_text(key), value=_text(value)) for key, value in settings.items()))
+    items = []
+    for key, value in settings.items():
+        items.append(SETTING.format(key=_text(key), value=_text(value)))
+    return MAP.format(items=ITEM_SEPARATOR.join(items))
 
 
 def _keyed(*, section, items):
     """Return a section of settings kept by fixed names, as a song's registers are, each on one line with its settings in braces."""
-    return [HEADING.format(key=section)] + [INDENT + SETTING.format(key=_text(name), value=_braces(item)) for name, item in items.items()]
+    lines = [HEADING.format(key=section)]
+    for name, item in items.items():
+        lines.append(INDENT + SETTING.format(key=_text(name), value=_braces(item)))
+    return lines
 
 
 def _items(*, section, items):
     """Return a list of named things, each item on one line with its settings, its name first, in braces."""
     if not items:
         return [SETTING.format(key=section, value=EMPTY_LIST)]
-    return [HEADING.format(key=section)] + [INDENT + LIST_ITEM + _braces(item) for item in items]
+    lines = [HEADING.format(key=section)]
+    for item in items:
+        lines.append(INDENT + LIST_ITEM + _braces(item))
+    return lines
 
 
 def _patterns(patterns):
     lines = [HEADING.format(key=Section.PATTERNS)]
     for pattern in patterns:
         lines.append(INDENT + LIST_ITEM + SETTING.format(key=FileLayout.NAME, value=_text(pattern[FileLayout.NAME])))
-        lines += [INDENT * 2 + line for line in _pattern_lines(pattern)]
+        lines += _indented(lines=_pattern_lines(pattern), depth=2)
     return lines
 
 
@@ -146,7 +167,9 @@ def _pattern_lines(pattern):
     for setting in _PATTERN_SETTINGS:
         if pattern.get(setting):
             lines.append(SETTING.format(key=setting, value=_text(pattern[setting])))
-    lines += [SETTING.format(key=row, value=_text(pattern[row])) for row in file_format.PATTERN_ROWS if pattern.get(row) is not None]
+    for row in file_format.PATTERN_ROWS:
+        if pattern.get(row) is not None:
+            lines.append(SETTING.format(key=row, value=_text(pattern[row])))
     return lines
 
 
@@ -165,20 +188,26 @@ def _scene_lines(scene):
         return [INDENT + LIST_ITEM + EMPTY_MAP]
     lines = []
     for key, value in scene.items():
-        prefix = INDENT + LIST_ITEM if not lines else INDENT * 2
-        if key == FileLayout.CLIPS:
-            lines.append(prefix + (HEADING.format(key=key) if value else SETTING.format(key=key, value=EMPTY_LIST)))
-            lines += [INDENT * 3 + LIST_ITEM + _braces(clip) for clip in value or []]
-        else:
+        # The first setting starts the list item, and the rest line up under it.
+        prefix = INDENT * 2
+        if not lines:
+            prefix = INDENT + LIST_ITEM
+        if key != FileLayout.CLIPS:
             lines.append(prefix + SETTING.format(key=key, value=_text(value)))
+        elif not value:
+            lines.append(prefix + SETTING.format(key=key, value=EMPTY_LIST))
+        else:
+            lines.append(prefix + HEADING.format(key=key))
+            for clip in value:
+                lines.append(INDENT * 3 + LIST_ITEM + _braces(clip))
     return lines
 
 
 def _settings_lines(setlist):
     """Return the set's settings, with the notes as a block straight after the title, author and description."""
-    settings = [SETTING.format(key=key, value=_text(setlist[key])) for key in _SETTINGS if key in setlist]
+    settings = _setting_lines(data=setlist, keys=_SETTINGS)
     if setlist.get(SetlistSetting.NOTES):
-        place = sum(key in setlist for key in _BEFORE_NOTES)
+        place = len(_setting_lines(data=setlist, keys=_BEFORE_NOTES))
         settings[place:place] = _notes(setlist[SetlistSetting.NOTES])
     return settings
 
@@ -186,7 +215,7 @@ def _settings_lines(setlist):
 def _song_groups(song):
     """Return one song's lines in groups: its settings, registers, tracks and scenes, leaving out what it doesn't have."""
     groups = []
-    settings = [SETTING.format(key=key, value=_text(song[key])) for key in _SONG_SETTINGS if key in song]
+    settings = _setting_lines(data=song, keys=_SONG_SETTINGS)
     if settings:
         groups.append(settings)
     if song.get(Section.REGISTERS):
@@ -210,7 +239,7 @@ def _songs(songs):
         for place, group in enumerate(_song_groups(song)):
             if place:
                 lines.append(NOTHING)
-            lines += [INDENT * 2 + line for line in group]
+            lines += _indented(lines=group, depth=2)
     return lines
 
 
@@ -238,5 +267,27 @@ def _joined(sections):
     """Join sections with a blank line between, except after one ending in a blank line, which kept notes' block would absorb."""
     text = LINE_BREAK.join(sections[0])
     for section in sections[1:]:
-        text += (LINE_BREAK if text.endswith(LINE_BREAK) else BLANK_LINE) + LINE_BREAK.join(section)
+        if text.endswith(LINE_BREAK):
+            text += LINE_BREAK
+        else:
+            text += BLANK_LINE
+        text += LINE_BREAK.join(section)
     return text
+
+
+def _setting_lines(*, data, keys):
+    """Return a line for each of some keys the data holds, in the keys' order."""
+    lines = []
+    for key in keys:
+        if key in data:
+            lines.append(SETTING.format(key=key, value=_text(data[key])))
+    return lines
+
+
+def _indented(*, lines, depth):
+    """Return lines each indented so many levels."""
+    indent = INDENT * depth
+    indented = []
+    for line in lines:
+        indented.append(indent + line)
+    return indented
