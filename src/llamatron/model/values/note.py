@@ -293,7 +293,9 @@ class Note:
     def spelled_half_step(self, n):
         """Return the name and octave number of the note n half steps away, spelled as half_step spells it."""
         _check_integer(n)
-        names = FLAT_NAMES if self._name.endswith(FLAT_SIGN) else SHARP_NAMES
+        names = SHARP_NAMES
+        if self._name.endswith(FLAT_SIGN):
+            names = FLAT_NAMES
         octave_number, semitones = divmod(self._midi_number + n, midi.HALF_STEPS_PER_OCTAVE)
         return names[semitones], octave_number
 
