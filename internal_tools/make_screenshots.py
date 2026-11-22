@@ -19,7 +19,7 @@ from dataclasses import dataclass
 import pathlib
 import re
 
-from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, drift as drift_plugin, hocket as hocket_plugin, shapes as shapes_plugin, timing as timing_plugin
+from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, drift as drift_plugin, hocket as hocket_plugin, shapes as shapes_plugin
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.document import Document
@@ -27,23 +27,39 @@ from llamatron.interface.tracker.key_table import first_key
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.generators import generator_pages
 from llamatron.model.file import version
+from llamatron.model.objects.sections import Section
 from llamatron.user_strings import labels
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'minimal_techno.yml'
-# minimal_techno has no arpeggiators, so the arpeggiator screens are shown on this one.
-ARP_SONG = ROOT / 'examples' / 'learning' / '11_sailor_arpeggiator.yml'
+# minimal_techno has no arpeggiators, so the arpeggiator screens are shown on the chain demo, whose arpeggiators stay in the
+# set's list, and on its arpeggiator with offsets.
+ARP_SONG = ROOT / 'examples' / 'learning' / '15_complex_gifts_chain.yml'
+SHOWN_ARP = 'trill_in_thirds'
+# The chain demo's chain the chain editor's shot shows.
+SHOWN_CHAIN = 'shred'
+# Offsets' place among an arpeggiator's settings, counted from its Name.
+OFFSETS_PLACE = 6
 # The demos whose pages show the advanced settings of scenes, clips, tracks and the newer generators.
 SWELL_SONG = ROOT / 'examples' / 'learning' / '14_bolero_swell.yml'
 PROGRESSION_SONG = ROOT / 'examples' / 'learning' / '06_chord_progression_generator.yml'
 # The Chords generator of that song the Chords shots show, in Progression mode.
 SHOWN_PROGRESSION = 'pop'
+# The Chords field's place among a Chords generator's settings, counted from its Name.
+CHORDS_PLACE = 4
 HOCKET_SONG = ROOT / 'examples' / 'learning' / '17_hocket_shanty.yml'
 DRIFT_SONG = ROOT / 'examples' / 'by_genre' / 'rock' / 'volcano.yml'
 DENSITY_SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'edm_density.yml'
 GLIDE_SONG = ROOT / 'examples' / 'learning' / '12_acid_glide.yml'
-# The progression demo's bass, a clip with a chain, by its place from the left.
-CHAINED_TRACK_PLACE = 4
+# Where the acid glide's first clip with its Timing tab on stands: the second scene, and the acid track, fourth from the left.
+GLIDE_TRACK_PLACE = 4
+# The Timing tab's place on the clip page's row of tabs, after Basics, Chords, Arp, Guitarify and User.
+TIMING_TAB_PLACE = 5
+# The progression demo's pad in its "pop, voice-led" scene, a clip with a chain, by its scene's place from the top and its
+# track's from the left, and the User tab, which lists its chains, by its place on the clip page's row of tabs.
+CHAINED_SCENE_PLACE = 5
+CHAINED_TRACK_PLACE = 5
+USER_TAB_PLACE = 4
 FOLDER = ROOT / 'docs' / 'screenshots'
 # What the song wizard's shots choose, and the player and the section whose panels are shown.
 WIZARD_GENRE = 'rock'
@@ -107,12 +123,12 @@ SHOTS = [
     Shot(name='pattern_editor_register_changes', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 7, Key.SPACE, Key.DOWN]),
     # With Real Time on, Up from the first scene's name reaches Arrange's corner, and Right the first track's name.
     Shot(name='track_editor', keys=[keybindings.MainPage.ARRANGE, Key.UP, Key.RIGHT, Key.ENTER]),
-    Shot(name='generators', keys=[keybindings.MainPage.GENERATORS]),
-    Shot(name='arp_editor', generator=arp_plugin.SECTION, keys=[], song=ARP_SONG),
-    # Offsets is the sixth setting of an arpeggiator, after its Name, and Enter on it opens the offsets editor.
-    Shot(name='offsets_editor', generator=arp_plugin.SECTION, keys=[Key.DOWN, Key.DOWN, Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=ARP_SONG),
-    # The chain is a kind on the Generators page: PgDn to its heading, Space opens it, and Down and ENTER open the chain.
-    Shot(name='chain_editor', keys=[keybindings.MainPage.GENERATORS, Key.PAGE_DOWN, Key.SPACE, Key.DOWN, Key.ENTER]),
+    # Space opens the Arpeggiator group, the first on the Generators page.
+    Shot(name='generators', keys=[keybindings.MainPage.GENERATORS, Key.SPACE], song=ARP_SONG),
+    Shot(name='arp_editor', generator=arp_plugin.SECTION, generator_name=SHOWN_ARP, keys=[], song=ARP_SONG),
+    # Offsets is the sixth setting of an arpeggiator after its Name, and Enter on it opens the offsets editor.
+    Shot(name='offsets_editor', generator=arp_plugin.SECTION, generator_name=SHOWN_ARP, keys=[*[Key.DOWN] * OFFSETS_PLACE, Key.ENTER], song=ARP_SONG),
+    Shot(name='chain_editor', generator=Section.CHAINS, generator_name=SHOWN_CHAIN, keys=[], song=ARP_SONG),
     Shot(name='grooves', keys=[keybindings.MainPage.GROOVES]),
     Shot(name='groove_editor', keys=[keybindings.MainPage.GROOVES, Key.DOWN, Key.DOWN, Key.ENTER]),
     Shot(name='registers', keys=[keybindings.MainPage.REGISTERS]),
@@ -132,12 +148,16 @@ SHOTS = [
     Shot(name='instruments', keys=[keybindings.MainPage.INSTRUMENTS]),
     Shot(name='instrument_editor', keys=[keybindings.MainPage.INSTRUMENTS, Key.ENTER]),
     Shot(name='chords_generator', generator=chords_plugin.SECTION, generator_name=SHOWN_PROGRESSION, keys=[], song=PROGRESSION_SONG),
-    Shot(name='chords_editor', generator=chords_plugin.SECTION, generator_name=SHOWN_PROGRESSION, keys=[Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),
+    Shot(name='chords_editor', generator=chords_plugin.SECTION, generator_name=SHOWN_PROGRESSION, keys=[*[Key.DOWN] * CHORDS_PLACE, Key.ENTER], song=PROGRESSION_SONG),
     Shot(name='drift_editor', generator=drift_plugin.SECTION, keys=[], song=DRIFT_SONG),
     Shot(name='hocket_editor', generator=hocket_plugin.SECTION, keys=[], song=HOCKET_SONG),
     Shot(name='shapes_editor', generator=shapes_plugin.SECTION, keys=[], song=SWELL_SONG),
-    Shot(name='timing_editor', generator=timing_plugin.SECTION, keys=[], song=GLIDE_SONG),
-    Shot(name='chain_list', keys=[keybindings.MainPage.ARRANGE, *[Key.RIGHT] * CHAINED_TRACK_PLACE, Key.ENTER, Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),
+    # A clip's Timing tab: Down to the second scene, Right to the acid track's clip, ENTER opens it, Tab goes to the row of tabs
+    # and Right reaches Timing.
+    Shot(name='timing_editor', keys=[keybindings.MainPage.ARRANGE, Key.DOWN, *[Key.RIGHT] * GLIDE_TRACK_PLACE, Key.ENTER,
+                                     keybindings.FieldPage.TO_TABS, *[Key.RIGHT] * TIMING_TAB_PLACE], song=GLIDE_SONG),
+    Shot(name='chain_list', keys=[keybindings.MainPage.ARRANGE, *[Key.DOWN] * CHAINED_SCENE_PLACE, *[Key.RIGHT] * CHAINED_TRACK_PLACE, Key.ENTER,
+                                 keybindings.FieldPage.TO_TABS, *[Key.RIGHT] * USER_TAB_PLACE], song=PROGRESSION_SONG),
     Shot(name='wizard_genre', wizard=labels.MSG_WIZARD_GENRE_BRANCH, keys=[]),
     Shot(name='wizard_band', wizard=labels.MSG_WIZARD_BAND_BRANCH, keys=[]),
     Shot(name='wizard_player', wizard=WIZARD_PLAYER, keys=[]),
@@ -180,7 +200,7 @@ async def take(shot):
         if shot.generator is not None:
             await pilot.press(first_key(keybindings.MainPage.GENERATORS))
             await pilot.pause()
-            kind = generator_pages.GENERATOR_PAGES[shot.generator].kind
+            kind = generator_pages.LISTED_PAGES[shot.generator].kind
             found = next((each, name) for each, name in app.screen.generators() if each == kind and shot.generator_name in (None, name))
             app.screen.put_cursor_on(kind=found[0], name=found[1])
             await pilot.press(Key.ENTER)

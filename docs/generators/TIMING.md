@@ -11,7 +11,7 @@ The Glide runs first and then the Shorten, so a note on a step lit in both glide
 
 ## Settings
 
-![A Timing generator's settings](../screenshots/timing_editor.svg)
+![A clip's Timing tab](../screenshots/timing_editor.svg)
 
 Each part is a section, `+ Rush`, `+ Drag`, `+ Shorten` and `+ Glide`, closed until opened and saying `(set)` when anything inside holds a value.
 
