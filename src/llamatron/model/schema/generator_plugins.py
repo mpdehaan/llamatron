@@ -96,7 +96,9 @@ def is_generator_entry(entry):
 def sensible_generator_order(value):
     """Return a generator order made sensible: each entry a one-key map of a generator's kind to its name, anything else left
     out, never refused, since the order only says how the Generators page lists them; None for none."""
-    entries = value if isinstance(value, list) else []
+    entries = []
+    if isinstance(value, list):
+        entries = value
     kept = [dict(entry) for entry in entries if is_generator_entry(entry)]
     return kept or None
 
@@ -104,10 +106,18 @@ def sensible_generator_order(value):
 @functools.cache
 def sections_adding_to_registers():
     """Return the sections of the plugins whose generators may add to the registers as they play."""
-    return tuple(plugin.section for plugin in plugins().values() if plugin.settings.MAY_ADD_TO_REGISTERS)
+    sections = []
+    for plugin in plugins().values():
+        if plugin.settings.MAY_ADD_TO_REGISTERS:
+            sections.append(plugin.section)
+    return tuple(sections)
 
 
 @functools.cache
 def names_naming(section):
     """Return the names of the plugins whose generators' settings name an item of a section, as a Hocket names a track."""
-    return tuple(name for name, plugin in plugins().items() if section in plugin.settings.REFERENCES)
+    names = []
+    for name, plugin in plugins().items():
+        if section in plugin.settings.REFERENCES:
+            names.append(name)
+    return tuple(names)
