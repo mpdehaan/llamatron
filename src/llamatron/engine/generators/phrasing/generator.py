@@ -73,12 +73,10 @@ class Phrasing(ClipGenerator):
         """Make a line's notes choppy or flowing: all but its last note when flowing, which the breath follows."""
         if self._join == schema.CHOPPY_NOTES:
             for part in line:
-                part.heard = part.heard / 2 if part.heard <= LONGEST_HALVED_NOTE else part.heard - EIGHTH
+                part.heard = _choppy(part.heard)
         elif self._join == schema.FLOWING_NOTES:
             for part, after in zip(line, line[1:]):
-                reach = after.start - part.start
-                if reach > part.heard:
-                    part.heard = reach - GAP_BEFORE_SAME_PITCH if after.pitch() == part.pitch() else reach
+                part.heard = _flowing(part=part, after=after)
 
     def _take_breath(self, line):
         """Shorten a line's last note for the breath after the line, by no more than the note can spare and by nothing where the tune already rests or the note sounds on into the next line."""
@@ -118,9 +116,29 @@ class Phrasing(ClipGenerator):
 
 def _share(*, start, first, last):
     """Return how far a time is from a first time to a last, from 0 to 1, which is 1 where the two are one time."""
-    return Rational(1) if last == first else (start - first) / (last - first)
+    if last == first:
+        return Rational(1)
+    return (start - first) / (last - first)
 
 
 def _weight(part):
     """Return what makes one note more a line's main note than another: its length, then its pitch, then how late it starts."""
     return (part.heard, part.pitch(), part.start)
+
+
+def _choppy(heard):
+    """Return how long a choppy note sounds: a short note half as long, a longer one an eighth shorter."""
+    if heard <= LONGEST_HALVED_NOTE:
+        return heard / 2
+    return heard - EIGHTH
+
+
+def _flowing(*, part, after):
+    """Return how long a flowing note sounds: up to the next note, a little short of it where the next note plays the same pitch,
+    and never shorter than it sounded."""
+    reach = after.start - part.start
+    if reach <= part.heard:
+        return part.heard
+    if after.pitch() == part.pitch():
+        return reach - GAP_BEFORE_SAME_PITCH
+    return reach
