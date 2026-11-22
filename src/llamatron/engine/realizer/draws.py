@@ -41,7 +41,12 @@ class DrawPlay:
 
     def values(self):
         """Return each draw's last value, by name, NOTHING_DRAWN for one that has drawn nothing yet."""
-        return {name: self._last[name][1] if name in self._last else NOTHING_DRAWN for name in file_format.DRAW_NAMES}
+        values = {}
+        for name in file_format.DRAW_NAMES:
+            values[name] = NOTHING_DRAWN
+            if name in self._last:
+                values[name] = self._last[name][1]
+        return values
 
     def places(self):
         """Return the place of the slot each draw last took its value from, by name, for the draws that have drawn."""
@@ -49,7 +54,9 @@ class DrawPlay:
 
     def last_slot(self, name):
         """Return the place of the slot a draw last took its value from, or None before it has drawn."""
-        return self._last[name][0] if name in self._last else None
+        if name not in self._last:
+            return None
+        return self._last[name][0]
 
     def reset(self, name):
         """Send a draw back to its first slot, or a serial draw to a new round. A draw that picks any slot has nothing to reset."""
