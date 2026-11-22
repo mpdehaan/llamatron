@@ -57,4 +57,6 @@ class GlideSettings(GeneratorSettings):
 
     def get_glide_amount(self):
         written = self.get_written(StepRowSetting.GLIDE_AMOUNT)
-        return DEFAULT_GLIDE_AMOUNT if written is None else number(written)
+        if written is None:
+            return DEFAULT_GLIDE_AMOUNT
+        return number(written)
