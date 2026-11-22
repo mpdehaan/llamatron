@@ -120,7 +120,7 @@ class PatternPlayer:
     the track's transpose and the register the track's velocity is bound to, if any.
     """
 
-    __slots__ = ('_song', '_setlist', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_default_octaves', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
+    __slots__ = ('_song', '_setlist', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_default_octaves', '_transposes', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
 
     def __init__(self, *, song, scene, scale, track, scale_name=None, modulations=None, passes=None):
         """scale_name is the scale the clip's degrees take their notes from: the clip's own, or the scene's when it's None.
@@ -144,14 +144,20 @@ class PatternPlayer:
         # The octave a step with none plays in, by whether its pattern is a drum pattern, read once, since the set can't change
         # while a clip plays.
         self._default_octaves = {False: self._setlist.get_default_octave(), True: self._setlist.get_default_drum_octave()}
+        # How far the track moves a note along its scale, by whether the pattern is a drum pattern, which has no scale to move along.
+        self._transposes = {False: self._transpose, True: NO_HALF_STEPS}
         # The scene's scale at each octave a note asked for, and its size, built once rather than for every note of every pass, since the scene's scale can't change while a clip plays.
         self._scales_by_octave = {}
         self._scale_size = None
         # Each pattern's step values, gathered the first pass it plays in the render rather than for every pass or clip, since no
         # pattern changes while a render plays.
-        self._played_patterns = {} if passes is None else passes.get_played_patterns()
+        self._played_patterns = {}
+        if passes is not None:
+            self._played_patterns = passes.get_played_patterns()
         # A clip that hears a drift or binds a register to its velocity reads what carries between passes in every pass.
-        self._passes = passes if modulations is None and self._velocity_register is None else None
+        self._passes = None
+        if modulations is None and self._velocity_register is None:
+            self._passes = passes
         # What the player's passes are remembered by besides their patterns, worked out the first time a pass is remembered.
         self._context = None
 
@@ -164,7 +170,7 @@ class PatternPlayer:
                 values, pattern.sends_controls(), pattern.sends_keyswitches(),
                 pattern.changes_registers(), pattern.uses_registers(), step_draws is not None,
                 pattern.get_statements(StepStatement.STOP), pattern.get_statements(StepStatement.RESTART), pattern.get_statements(StepStatement.MUTE),
-                step_draws, any(_plays_by_chance(step_values) for step_values in values), any(step_values[Row.GRAB] for step_values in values),
+                step_draws, _any_by_chance(values), _any_grabs(values),
             )
         return self._played_patterns[pattern_name]
 
@@ -175,10 +181,13 @@ class PatternPlayer:
             return None
         steps = []
         for step, step_values in enumerate(values):
-            by_statements = redrawn[step] if redrawn is not None else NO_REDRAWS
+            by_statements = NO_REDRAWS
+            if redrawn is not None:
+                by_statements = redrawn[step]
             used = _draws_used(step_values)
             resets = _draws_reset(step_values)
-            steps.append(StepDraws(resets, tuple(name for name in file_format.DRAW_NAMES if name in by_statements or name in used)))
+            drawn = _draws_among(by_statements, used)
+            steps.append(StepDraws(resets, drawn))
         return steps
 
     def _redrawn(self, pattern):
@@ -190,14 +199,19 @@ class PatternPlayer:
         for kind in file_format.STATEMENT_ROWS:
             for step, statement in enumerate(pattern.get_statements(kind) or []):
                 if statement is not None:
-                    found[step].update(name for name in draws_read(statement) if name in redrawing)
-        return found if any(found) else None
+                    found[step].update(_redrawn_by(statement=statement, redrawing=redrawing))
+        if not any(found):
+            return None
+        return found
 
     def pass_context(self):
         """Return everything of this player's a plain pass's notes follow from besides its pattern: the clip's scale, the named
         scale its degrees take their notes from, the track's transpose, default velocity and accent, and the song's default octaves."""
-        named = None if self._scale_name is None else self._setlist.get_named_scale(self._scale_name)
-        scale_of_name = None if named is None else (named.get_root(), named.get_kind())
+        scale_of_name = None
+        if self._scale_name is not None:
+            named = self._setlist.get_named_scale(self._scale_name)
+            scale_of_name = (named.get_root(), named.get_kind())
+
         return (self._scale, scale_of_name, self._transpose, self._default_velocity, self._accent, self._default_octaves[False], self._default_octaves[True])
 
     def _pass_key(self, *, pattern_name, pattern, played, steps, pass_draws):
@@ -220,13 +234,22 @@ class PatternPlayer:
 
         kind is the scale type a step borrows its notes from, on the same root, or None for the scale's own.
         """
-        scale_name = self._scale_name if effects is None or effects.scale is None else effects.scale
-        root = None if effects is None else effects.root
+        scale_name = self._scale_name
+        root = None
+        if effects is not None:
+            root = effects.root
+            if effects.scale is not None:
+                scale_name = effects.scale
+
         key = (octave, scale_name, root, kind)
         if key not in self._scales_by_octave:
             named = self._setlist.get_named_scale(scale_name)
             if root is not None or kind is not None:
-                named = NamedScale(root=named.get_root() if root is None else root, kind=named.get_kind() if kind is None else kind)
+                if root is None:
+                    root = named.get_root()
+                if kind is None:
+                    kind = named.get_kind()
+                named = NamedScale(root=root, kind=kind)
             self._scales_by_octave[key] = named.scale_at(octave)
         return self._scales_by_octave[key]
 
@@ -281,17 +304,27 @@ class PatternPlayer:
         steps = order.next_steps(key=(PATTERN_STEPS, pattern_name), count=pattern.get_steps(), direction=direction or pattern.get_direction())
         # A pass of a pattern that reads and changes nothing carrying between passes is remembered by its key (engine/realizer/pass_memory.py).
         key = self._pass_key(pattern_name=pattern_name, pattern=pattern, played=played, steps=steps, pass_draws=pass_draws)
-        remembered = None if key is None else self._passes.recall(key)
+        remembered = None
+        if key is not None:
+            remembered = self._passes.recall(key)
         if remembered is not None and not self._passes.is_checking():
             return remembered
         # A morph's target neither changes the registers nor is cut short by them: only the clip's own pattern decides.
-        stops = played.stops if changes_registers else None
-        restarts = played.restarts if changes_registers else None
-        mutes = None if counting else played.mutes
+        stops = None
+        restarts = None
+        step_draws = None
+        if changes_registers:
+            stops = played.stops
+            restarts = played.restarts
+            step_draws = played.step_draws
+
+        mutes = None
+        if not counting:
+            mutes = played.mutes
         # Where a step's statement cut the pass short, if one did, and whether it ended the clip or only started the pattern over.
         cut_at = None
         done = False
-        step_draws = played.step_draws if changes_registers else None
+
         # Where a step falls in the clip, a Rational, is worked out only for a pattern whose steps ask for it, once a pass.
         asks_moment = any((
             step_draws is not None,  # a step draws
@@ -306,7 +339,9 @@ class PatternPlayer:
             if asks_moment:
                 moment = start + slot * step_size
             # Every draw the step takes is taken before its statements read the values, the step's one draw from it.
-            drawing = step_draws[step] if step_draws is not None else None
+            drawing = None
+            if step_draws is not None:
+                drawing = step_draws[step]
             if not slot and pass_draws and changes_registers:
                 drawing = _with_pass_draws(drawing=drawing, names=pass_draws)
             if drawing is not None and (drawing.drawn or drawing.resets):
@@ -327,7 +362,12 @@ class PatternPlayer:
             if played.sends_controls:
                 controls += _controls_sent(values=values, time=slot * step_size)
             if changes or reads_registers:
-                current = registers.at_step(time=moment, sets=_register_sets(values) if changes else NO_SETS, adds=_register_adds(values) if changes else NO_ADDS)
+                sets = NO_SETS
+                adds = NO_ADDS
+                if changes:
+                    sets = _register_sets(values)
+                    adds = _register_adds(values)
+                current = registers.at_step(time=moment, sets=sets, adds=adds)
             if values[Row.TIE]:
                 if tied_to is not None:
                     sounding[tied_to] = _tied_to(sounding=sounding[tied_to], end=Length.add(time, step_length))
@@ -336,14 +376,18 @@ class PatternPlayer:
                 elif slot == leading_ties:
                     leading_ties += 1
                 continue
-            grabbed = grab.note_at(moment) if grab and values[Row.GRAB] else None
+            grabbed = None
+            if grab and values[Row.GRAB]:
+                grabbed = grab.note_at(moment)
             # A step with no note of its own can still grab one; with nothing to grab yet, it's silence, like an empty step.
             if values[Row.DEGREE] is None and grabbed is None:
                 tied_to = None
                 continue
             tied_to = len(sounding)
             note_moved = NOTHING_ADDED
-            velocity_added = self._accent if values[Row.ACCENT] else NOTHING_ADDED
+            velocity_added = NOTHING_ADDED
+            if values[Row.ACCENT]:
+                velocity_added = self._accent
             velocity = values[Row.VELOCITY]
             if uses_registers:
                 moved, added = _moved_by_values(values=values, current=current, drum=drum, draws=draws)
@@ -403,7 +447,7 @@ class PatternPlayer:
         ratchet = values[Row.RATCHET] or defaults.DEFAULT_RATCHET
         offset = values[Row.RATCHET_OFFSET] or NO_HALF_STEPS
         slices = []
-        transpose = NO_HALF_STEPS if drum else self._transpose
+        transpose = self._transposes[drum]
         slice_length = Length.shared(length, ratchet)
         last = ratchet - 1
         for place in range(ratchet):
@@ -431,7 +475,10 @@ class PatternPlayer:
         """
         note = Sound.note(length=length, midi=number_grabbed, velocity=velocity, glide=glide, name=note_values.SHARP_NAMES[number_grabbed % midi.HALF_STEPS_PER_OCTAVE])
         try:
-            root = along_scale(note=note, steps=shift, scale=None if drum else self._scale)
+            scale = self._scale
+            if drum:
+                scale = None
+            root = along_scale(note=note, steps=shift, scale=scale)
         except ValueError:
             root = note
         # A drum pattern has no chords.
@@ -460,7 +507,9 @@ class PatternPlayer:
                 notes.append(along_scale(note=root, steps=move, scale=scale))
             except ValueError:
                 pass
-        return Sound.chord(notes) if len(notes) > 1 else root
+        if len(notes) == 1:
+            return root
+        return Sound.chord(notes)
 
     def _sound(self, *, values, drum, length, velocity, glide, octave, shift, where, effects=None):
         """Return a step's note or chord, moved by a number of scale degrees or, for drums, half steps.
@@ -473,7 +522,9 @@ class PatternPlayer:
                 return self._degree_sound(values=values, length=length, velocity=velocity, glide=glide, octave=at_octave, shift=shift, where=where, effects=effects)
             name = values[Row.DEGREE] + (values[Row.ACCIDENTAL] or NO_ACCIDENTAL)
             note = Sound.named_note(name=name, octave=at_octave, length=length, velocity=velocity, glide=glide)
-            return Sound.half_step(note, shift) if shift else note
+            if not shift:
+                return note
+            return Sound.half_step(note, shift)
 
         # Moving by a whole octave's worth of notes is the same as moving the octave, so a big
         # move, like four registers can make, starts from an octave in the MIDI range.
@@ -505,7 +556,9 @@ class PatternPlayer:
         scale = self._scene_scale_at(octave, effects=effects, kind=values[Row.CHORD_SCALE])
         half_steps = file_format.ACCIDENTALS.get(values[Row.ACCIDENTAL], NO_HALF_STEPS)
         degree = values[Row.DEGREE]
-        symbol = None if values[Row.CHORD] is None else str(values[Row.CHORD])
+        symbol = None
+        if values[Row.CHORD] is not None:
+            symbol = str(values[Row.CHORD])
         if symbol is not None and symbol not in file_format.FIXED_CHORDS:
             # A chord of scale notes: the step's degree and the scale degrees above it that a symbol like 7 names.
             return Sound.chord([
@@ -513,7 +566,9 @@ class PatternPlayer:
                 for above in file_format.SCALE_CHORDS[symbol]
             ])
         root = scale.sound_at(degree=degree, scale_notes=shift, half_steps=half_steps, length=length, velocity=velocity, glide=glide)
-        return root if symbol is None else Sound.chord_above(root, file_format.FIXED_CHORDS[symbol].value)
+        if symbol is None:
+            return root
+        return Sound.chord_above(root, file_format.FIXED_CHORDS[symbol].value)
 
 
 def _with_tensions(*, chord, tensions):
@@ -560,7 +615,7 @@ def _tied_to(*, sounding, end):
     there's no note to hold.
     """
     start, pieces = sounding
-    total = pieces[0][sound_values.LENGTH] if len(pieces) == 1 else Length.total([piece[sound_values.LENGTH] for piece in pieces])
+    total = _total_length(pieces)
     extra = Length.subtract(end, Length.add(start, total))
     last = pieces[-1]
     if extra == length_values.ZERO or last[sound_values.KIND] == sound_values.REST:
@@ -573,9 +628,13 @@ def _tied_to(*, sounding, end):
 
 def _gate(*, values, step_length):
     """Return how long a step's note sounds: its gate, or one step if it has none, made dotted or a triplet by its Dot row."""
-    gate = step_length if values[Row.GATE] is None else Length.exact(written_length(value=values[Row.GATE], most=limits.MAX_GATE))
+    gate = step_length
+    if values[Row.GATE] is not None:
+        gate = Length.exact(written_length(value=values[Row.GATE], most=limits.MAX_GATE))
     modifier = values[Row.DOT]
-    return gate if modifier is None else Length.multiplied(gate, GATE_MODIFIER_PAIRS[modifier])
+    if modifier is None:
+        return gate
+    return Length.multiplied(gate, GATE_MODIFIER_PAIRS[modifier])
 
 
 def _holds(*, statement, values):
@@ -606,10 +665,12 @@ def _in_sequence(*, sounding, length, step_length):
     now = length_values.ZERO
     count = len(sounding)
     for place, (start, played) in enumerate(sounding):
-        following = sounding[place + 1][START] if place + 1 < count else length
+        following = length
+        if place + 1 < count:
+            following = sounding[place + 1][START]
         if Length.less(now, start):
             positions += _rests(start=now, end=start, step_length=step_length)
-        gate = played[0][sound_values.LENGTH] if len(played) == 1 else Length.total([piece[sound_values.LENGTH] for piece in played])
+        gate = _total_length(played)
         gap = Length.subtract(following, start)
         if Length.less(gap, gate):
             if len(played) == 1 and played[0][sound_values.KIND] == sound_values.REST:
@@ -640,7 +701,9 @@ def _rests(*, start, end, step_length):
     # Only the first rest can start between two steps, so the steps after it are counted on from its end.
     step_end = Length.times(step_length, Length.whole_times(start, step_length) + 1)
     while Length.less(now, end):
-        piece_end = step_end if Length.less(step_end, end) else end
+        piece_end = end
+        if Length.less(step_end, end):
+            piece_end = step_end
         rests.append((sound_values.REST, Length.subtract(piece_end, now)))
         now = piece_end
         step_end = Length.add(step_end, step_length)
@@ -655,29 +718,44 @@ def _register_adds(values):
 def _moved_by_values(*, values, current, drum, draws):
     """Return how far a step's +Note and +Vel rows move its note and its velocity by the registers' values, and by the draws'
     where the pattern uses draws. A drum pattern has no scale to move a note along, so only its velocity moves."""
-    note_moved = NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.REGISTER_NOTE_ROWS)
+    note_moved = NOTHING_ADDED
+    if not drum:
+        note_moved = _used_values(values=values, current=current, rows=file_format.REGISTER_NOTE_ROWS)
     velocity_added = _used_values(values=values, current=current, rows=file_format.REGISTER_VELOCITY_ROWS)
     if draws:
-        note_moved += NOTHING_ADDED if drum else _used_values(values=values, current=current, rows=file_format.DRAW_NOTE_ROWS)
+        if not drum:
+            note_moved += _used_values(values=values, current=current, rows=file_format.DRAW_NOTE_ROWS)
         velocity_added += _used_values(values=values, current=current, rows=file_format.DRAW_VELOCITY_ROWS)
     return note_moved, velocity_added
 
 
 def _with_pass_draws(*, drawing, names):
     """Return a pass's first step's StepDraws with the draws its clip's statements redraw as the pass starts taken too, each once."""
-    resets = drawing.resets if drawing is not None else ()
-    drawn = drawing.drawn if drawing is not None else ()
-    return StepDraws(resets, tuple(name for name in file_format.DRAW_NAMES if name in drawn or name in names))
+    resets = ()
+    drawn = ()
+    if drawing is not None:
+        resets = drawing.resets
+        drawn = drawing.drawn
+
+    return StepDraws(resets, _draws_among(drawn, names))
 
 
 def _draws_used(values):
     """Return the draws a step's rows use, each once however many of its rows use it, in the order the draws come."""
-    return tuple(name for name in file_format.DRAW_NAMES if values[file_format.DRAW_NOTE_ROWS[name]] or values[file_format.DRAW_VELOCITY_ROWS[name]])
+    used = []
+    for name in file_format.DRAW_NAMES:
+        if values[file_format.DRAW_NOTE_ROWS[name]] or values[file_format.DRAW_VELOCITY_ROWS[name]]:
+            used.append(name)
+    return tuple(used)
 
 
 def _draws_reset(values):
     """Return the draws a step resets before it draws, in the order the draws come."""
-    return tuple(name for name, row in file_format.DRAW_RESET_ROWS.items() if values[row])
+    reset = []
+    for name, row in file_format.DRAW_RESET_ROWS.items():
+        if values[row]:
+            reset.append(name)
+    return tuple(reset)
 
 
 def _register_sets(values):
@@ -687,7 +765,11 @@ def _register_sets(values):
 
 def _used_values(*, values, current, rows):
     """Return the total of the registers a step uses on some rows, like its +Note rows: each register's current value added (1) or subtracted (-1)."""
-    return sum((current[name] * values[row] for name, row in rows.items() if values[row]), NOTHING_ADDED)
+    total = NOTHING_ADDED
+    for name, row in rows.items():
+        if values[row]:
+            total += current[name] * values[row]
+    return total
 
 
 def _controls_sent(*, values, time):
@@ -740,3 +822,47 @@ def _other_octaves_to_try(shift):
     if not shift:
         return []
     return [change for size in range(1, MAX_OCTAVE_CHANGE + 1) for change in (-size, size)]
+
+
+def _any_by_chance(values):
+    """Return whether any step of a pattern plays by chance."""
+    for step_values in values:
+        if _plays_by_chance(step_values):
+            return True
+    return False
+
+
+def _any_grabs(values):
+    """Return whether any step of a pattern grabs a note from another track."""
+    for step_values in values:
+        if step_values[Row.GRAB]:
+            return True
+    return False
+
+
+def _draws_among(*named):
+    """Return the draws any of some collections of names hold, each once, in the order the draws come."""
+    drawn = []
+    for name in file_format.DRAW_NAMES:
+        for names in named:
+            if name in names:
+                drawn.append(name)
+                break
+    return tuple(drawn)
+
+
+def _total_length(pieces):
+    """Return how long some pieces of a step last together, as a pair: the one piece's length, or the sum of several."""
+    if len(pieces) == 1:
+        return pieces[0][sound_values.LENGTH]
+    lengths = [piece[sound_values.LENGTH] for piece in pieces]
+    return Length.total(lengths)
+
+
+def _redrawn_by(*, statement, redrawing):
+    """Return the draws a statement reads that redraw in conditions."""
+    redrawn = []
+    for name in draws_read(statement):
+        if name in redrawing:
+            redrawn.append(name)
+    return redrawn
