@@ -111,7 +111,10 @@ class Groove(HasCells, LlamaData):
 
     def is_straight(self):
         """Return whether the groove moves nothing, like the factory groove none."""
-        return all(amount == STRAIGHT for amount in self._cells)
+        for amount in self._cells:
+            if amount != STRAIGHT:
+                return False
+        return True
 
     # Timing, which the exporters' timing code asks for.
 
@@ -125,7 +128,10 @@ class Groove(HasCells, LlamaData):
         """Return how long a cell is, in whole notes, and how far a note in each cell is moved, in order, for the timing code that
         moves many notes by the groove at once."""
         cell_length = self.get_cell_length()
-        return cell_length, [cell_length * Rational(amount, PERCENT) for amount in self._cells]
+        offsets = []
+        for amount in self._cells:
+            offsets.append(cell_length * Rational(amount, PERCENT))
+        return cell_length, offsets
 
     def moved(self, time):
         """Return when a note at a time plays once the groove has moved it, never before the clip's start."""
@@ -161,7 +167,9 @@ class Groove(HasCells, LlamaData):
         """Set how long a cell is, as the file writes it, like 1/8, or None for the default."""
         if value is not None:
             SETTINGS[GrooveSetting.CELL_LENGTH].check(value)
-        self._cell_length = None if value == defaults.DEFAULT_GROOVE_CELL_LENGTH else value
+        if value == defaults.DEFAULT_GROOVE_CELL_LENGTH:
+            value = None
+        self._cell_length = value
 
     def _check_step(self, step):
         if not is_whole_number_from(value=step, lowest=0, highest=len(self._cells) - 1):
@@ -170,10 +178,22 @@ class Groove(HasCells, LlamaData):
 
 def _is_cell_list(cells):
     """Return whether a value is a list of 1 to MAX_GROOVE_CELLS amounts, each within the limits."""
-    return (
-        isinstance(cells, list) and limits.MIN_GROOVE_CELLS <= len(cells) <= limits.MAX_GROOVE_CELLS
-        and all(is_whole_number_from(value=amount, lowest=limits.MIN_GROOVE_AMOUNT, highest=limits.MAX_GROOVE_AMOUNT) for amount in cells)
-    )
+    if not _is_whole_numbers(cells):
+        return False
+    for amount in cells:
+        if not limits.MIN_GROOVE_AMOUNT <= amount <= limits.MAX_GROOVE_AMOUNT:
+            return False
+    return True
+
+
+def _is_whole_numbers(cells):
+    """Return whether a value is a list of as many integers as a groove may hold."""
+    if not isinstance(cells, list) or not limits.MIN_GROOVE_CELLS <= len(cells) <= limits.MAX_GROOVE_CELLS:
+        return False
+    for amount in cells:
+        if not is_whole_number(amount):
+            return False
+    return True
 
 
 def _check_cells(cells):
@@ -183,9 +203,12 @@ def _check_cells(cells):
 
 def _nearest_cells(cells):
     """Return cells with each amount outside the limits at the nearest limit, or NO_NEAREST_VALUE unless they're the right number of whole numbers."""
-    if not isinstance(cells, list) or not limits.MIN_GROOVE_CELLS <= len(cells) <= limits.MAX_GROOVE_CELLS or not all(is_whole_number(amount) for amount in cells):
+    if not _is_whole_numbers(cells):
         return corrections.NO_NEAREST_VALUE
-    return [min(max(amount, limits.MIN_GROOVE_AMOUNT), limits.MAX_GROOVE_AMOUNT) for amount in cells]
+    nearest = []
+    for amount in cells:
+        nearest.append(min(max(amount, limits.MIN_GROOVE_AMOUNT), limits.MAX_GROOVE_AMOUNT))
+    return nearest
 
 
 # A groove's settings, each described once, in the order they're written to a file.
@@ -203,7 +226,9 @@ def new_groove():
 def swing_groove(*, percent, cell_length):
     """Return a swing of a percentage on cells of a length: every second cell is delayed by twice the percentage over 50."""
     delay = (percent - STRAIGHT_SWING) * SWING_DELAY_PER_PERCENT
-    return Groove(cells=[STRAIGHT, delay] * (GROOVE_CELLS // 2), cell_length=None if cell_length == defaults.DEFAULT_GROOVE_CELL_LENGTH else cell_length)
+    if cell_length == defaults.DEFAULT_GROOVE_CELL_LENGTH:
+        cell_length = None
+    return Groove(cells=[STRAIGHT, delay] * (GROOVE_CELLS // 2), cell_length=cell_length)
 
 
 def push_groove():
@@ -258,10 +283,14 @@ def groove_for(*, choices, song):
     so a track's groove beats its scene's, which beats its song's, and the factory groove none
     and any other straight groove move nothing.
     """
-    if any(choice is False for choice in choices):
-        return None
+    for choice in choices:
+        if choice is False:
+            return None
     for choice in choices:
         if choice is not None:
-            groove = song.get_setlist().get_groove(choice)
-            return None if groove.is_straight() else groove
+            setlist = song.get_setlist()
+            groove = setlist.get_groove(choice)
+            if groove.is_straight():
+                return None
+            return groove
     return None
