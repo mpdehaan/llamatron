@@ -61,7 +61,8 @@ class Register(HoldsSettings):
     @classmethod
     def from_data(cls, *, data, where, song=None):
         with reading(where):
-            data = {} if data is None else data
+            if data is None:
+                data = {}
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_REGISTER_EXPECTED_SETTINGS.format(data=data))
             pass_over_unknown(data=data, allowed=SETTINGS)
@@ -140,7 +141,9 @@ class Register(HoldsSettings):
             return lowest
         if behavior == ResetBehavior.CLIP_RESET:
             return highest
-        return highest if past_the_top else lowest
+        if past_the_top:
+            return highest
+        return lowest
 
     def reversed(self, *, value, amount, turned):
         """Return a value with an amount added by a register that reverses, as a Bounced: the value, and whether the register then counts the other way.
@@ -153,9 +156,15 @@ class Register(HoldsSettings):
         highest = self.get_maximum()
         if lowest == highest:
             return Bounced(value=lowest, turned=turned)
-        result = value - amount if turned else value + amount
+        # While turned, an amount counts the other way.
+        if turned:
+            amount = -amount
+        result = value + amount
         while not lowest <= result <= highest:
-            result = 2 * highest - result if result > highest else 2 * lowest - result
+            if result > highest:
+                result = 2 * highest - result
+            else:
+                result = 2 * lowest - result
             turned = not turned
         return Bounced(value=result, turned=turned)
 
@@ -165,7 +174,9 @@ class Register(HoldsSettings):
 
     def _setting(self, name):
         value = self._settings[name]
-        return DEFAULTS[name] if value is None else value
+        if value is None:
+            return DEFAULTS[name]
+        return value
 
 
 def _checked(settings):
