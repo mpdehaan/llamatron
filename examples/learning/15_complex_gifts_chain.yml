@@ -100,9 +100,6 @@ songs:
       - name: "Triads: two octaves"
         clips:
           - { track: gifts, pattern: tune_in_triads, generators: [{ name: triad_wide arp }] }
-      - name: "Triads: arp"
-        clips:
-          - { track: gifts, pattern: tune_in_triads, generators: [{ name: triad_up arp }] }
       - name: "Tune: reprise"
         clips:
           - { track: gifts, pattern: tune }

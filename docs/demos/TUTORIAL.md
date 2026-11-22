@@ -299,7 +299,7 @@ hear it.
 Simple Gifts on a single track, growing from the plain tune into triads, then synthwave, then happy
 metal, using a few patterns and a chain for each scene. The demo shows that a chain runs its steps in order, each working on what the one before made.
 
-[`examples/learning/15_complex_gifts_chain.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/15_complex_gifts_chain.yml) · A major · 120 BPM · 2:40 · 10 scenes · 1 tracks
+[`examples/learning/15_complex_gifts_chain.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/15_complex_gifts_chain.yml) · A major · 120 BPM · 2:24 · 9 scenes · 1 tracks
 
 | chords | arps | ratchets | chains |
 | :---: | :---: | :---: | :---: |

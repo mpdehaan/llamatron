@@ -430,7 +430,6 @@ def chain():
         ('Triads: tune in triads', 'tune_in_triads', None),
         ('Triads: arpeggiated', 'tune_in_triads', 'triad_up'),
         ('Triads: two octaves', 'tune_in_triads', 'triad_wide'),
-        ('Triads: arp', 'tune_in_triads', 'triad_up'),
         ('Synthwave: seventh chords', 'changes_sevenths', None),
         ('Synthwave: arp', 'changes_sevenths', 'synth_arp'),
         ('Synthwave: arp of an arp', 'changes_sevenths', 'synth_arp_then_answer'),
