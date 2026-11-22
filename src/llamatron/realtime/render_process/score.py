@@ -81,7 +81,10 @@ class Score:
         if earlier is not None and earlier._routes != routes:
             earlier = None
         realizer = SongRealizer(song, seed=seed, looping_scenes_go_round=True, data=data, takes=takes)
-        grid = realizer.render(after=None if earlier is None else earlier._realizer)
+        after = None
+        if earlier is not None:
+            after = earlier.get_realizer()
+        grid = realizer.render(after=after)
         realization = realizer.realization()
         reused = realization.get_reused_scene_count()
         self._realizer = realizer
@@ -117,19 +120,27 @@ class Score:
             self._draw_lights.append([])
             for track in self._tracks:
                 self._events[(index, track)] = []
-                clip_slot = scene.get_clip_slot(track) if scene.has_clip_slot(track) else None
+                clip_slot = scene.get_clip_slot(track)
                 # A looping clip that a step of its pattern can stop is a clip that ends, as an export has it.
                 self._loops[(index, track)] = clip_slot is not None and realization.loops_through(scene=scene, track=track)
                 # An empty slot is done when its scene is done and counts as "With Scene", so the track below starts as the export has it start.
-                self._follow_actions[(index, track)] = FollowAction.WITH_SCENE if clip_slot is None else setlist.follow_action_of(clip_slot)
-                self._repeats[(index, track)] = None if clip_slot is None or clip_slot.loops() else clip_slot.get_repeat()
+                if clip_slot is None:
+                    self._follow_actions[(index, track)] = FollowAction.WITH_SCENE
+                    self._repeats[(index, track)] = None
+                    continue
+                self._follow_actions[(index, track)] = setlist.follow_action_of(clip_slot)
+                self._repeats[(index, track)] = None
+                if not clip_slot.loops():
+                    self._repeats[(index, track)] = clip_slot.get_repeat()
             if scene_rows and scene_rows[-1] < reused:
                 self._scene_seconds.append(score_records.take_scene(into=self._records(), earlier=earlier._records(), index=index, tracks=self._tracks))
                 self._taken_tracks.append(set())
                 song_start += self._scene_seconds[-1]
                 continue
             # The tracks whose clips the render took from the earlier score's in every repeat of the scene, whose events are taken too.
-            kept = set() if earlier is None else realization.kept_tracks(scene_rows)
+            kept = set()
+            if earlier is not None:
+                kept = realization.kept_tracks(scene_rows)
             self._taken_tracks.append(kept)
             for place in scene_rows:
                 row = rows[place]
@@ -159,6 +170,10 @@ class Score:
         if realization.has_taken_anything() and memory.Memory.checks_by_default():
             score_records.check(kept=self._records(), again=Score(song=song, routes=routes, seed=seed, takes=takes)._records())
 
+    def get_realizer(self):
+        """Return the Realizer that rendered the score, whose clips a later score's render takes up where nothing changed."""
+        return self._realizer
+
     def get_reused_scene_count(self):
         """Return how many written scenes, from the first, the score took from an earlier one rather than rendering them."""
         return self._realization.get_reused_scene_count()
@@ -178,7 +193,9 @@ class Score:
         """Return where every draw stood a number of seconds into a scene, by name, the place of each one's last slot: none before the scene's first draw."""
         moments = self._draw_lights[scene]
         found = bisect.bisect_right(moments, seconds, key=first_of)
-        return moments[found - 1][1] if found else NO_DRAW_PLACES
+        if not found:
+            return NO_DRAW_PLACES
+        return moments[found - 1][1]
 
     def get_tracks(self):
         return list(self._tracks)
@@ -253,7 +270,9 @@ class Score:
         if not clip_seconds:
             return None
         repeat = self._repeats[(scene, track)]
-        pass_seconds = clip_seconds / repeat if repeat else clip_seconds
+        pass_seconds = clip_seconds
+        if repeat:
+            pass_seconds = clip_seconds / repeat
         passes = math.ceil(max(elapsed - row.start, START_OF_SCENE) / pass_seconds - PASS_TOLERANCE)
         at = row.start + passes * pass_seconds
         return min(at, row.start + row.seconds)
