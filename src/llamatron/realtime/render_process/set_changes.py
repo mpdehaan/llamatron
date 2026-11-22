@@ -63,7 +63,10 @@ def _parent_of(*, root, path, copied):
     for key in path[:-1]:
         child = node[key]
         if id(child) not in copied:
-            child = dict(child) if isinstance(child, dict) else list(child)
+            if isinstance(child, dict):
+                child = dict(child)
+            else:
+                child = list(child)
             copied.add(id(child))
             node[key] = child
         node = child
