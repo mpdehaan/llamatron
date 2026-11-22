@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The rules of a function's shape in the program: a body of at most 30 lines, blocks at most three deep, or four with a reason, at
 most five parameters, no reach into another object's private names, no catch of every error but with a reason, at most one
-check that an object is of a class of the program's own, and at most 300 lines of code to a file or a class, files that are lists
+check that an object is of a class of the program's own, and at most 500 lines of code to a file or a class, files that are lists
 by nature aside.
 
 internal_tools/code_shape.py finds what breaks each rule; tests/rules/shape_exceptions.py lists what broke them when they were

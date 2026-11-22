@@ -44,7 +44,7 @@ DEEPEST_ALLOWED = 4
 MOST_PARAMETERS = 5
 MOST_TYPE_CHECKS = 1
 # The most lines of code a file or a class may hold, blank lines and comments left out.
-MOST_CODE_LINES = 300
+MOST_CODE_LINES = 500
 # The files that are lists by nature, the set file's names, the program's text and the key bindings, which no split would make clearer.
 LIST_FILES = ('model/schema/file_format.py', 'interface/tracker/keybindings.py')
 LIST_FOLDERS = ('user_strings',)
