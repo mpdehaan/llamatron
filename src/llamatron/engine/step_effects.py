@@ -35,5 +35,8 @@ def heard_at(*, heard, time):
     effects = NO_EFFECTS
     for play, names, origins in heard:
         effects_now = play.effects(names=names, time=time, origins=origins)
-        effects = effects_now if effects is NO_EFFECTS else combined(first=effects, second=effects_now)
+        if effects is NO_EFFECTS:
+            effects = effects_now
+        else:
+            effects = combined(first=effects, second=effects_now)
     return effects
