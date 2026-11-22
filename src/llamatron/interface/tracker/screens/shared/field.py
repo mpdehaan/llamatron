@@ -302,6 +302,46 @@ class SteppedCells(Cells):
 
 
 @dataclass(slots=True, kw_only=True)
+class TableRow(SteppedCells):
+    """A row of a table of settings: SteppedCells whose every cell takes its column's width, the room of the column's heading or
+    its widest value, so that the table's rows line up and its columns never move."""
+
+    widths: list
+
+    def lines(self, *, page, here, label_width, width):
+        """Return the row's line: its label, then each cell padded to its column's width, the cell under the cursor in reverse video."""
+        line = Text(no_wrap=True)
+        line.append(cursor_mark(here))
+        line.append(self.label.ljust(label_width), style=Style.BOLD if here else Style.PLAIN)
+        for place, cell in enumerate(self.cells):
+            on_cell = here and place == min(page.cell, len(self.cells) - 1)
+            line.append(padded(cell.value()).ljust(self.widths[place] + len(padded(drawing.NOTHING))), style=Style.REVERSE if on_cell else Style.PLAIN)
+            line.append(CELL_GAP)
+        return [line]
+
+
+@dataclass(slots=True, kw_only=True)
+class CaptionedTableRow(TableRow):
+    """A table's first row, which draws the table's caption above itself: the caption at the labels' place, in bold, and each
+    column's heading over its column."""
+
+    caption: str
+    headings: list
+
+    SELECTED_LINE = 1
+
+    def lines(self, *, page, here, label_width, width):
+        """Return the caption's line, then the row's own."""
+        caption = Text(no_wrap=True)
+        caption.append(cursor_mark(False))
+        caption.append(self.caption.ljust(label_width), style=Style.BOLD)
+        for place, heading in enumerate(self.headings):
+            caption.append(padded(heading).ljust(self.widths[place] + len(padded(drawing.NOTHING))), style=Style.BOLD)
+            caption.append(CELL_GAP)
+        return [caption, *TableRow.lines(self, page=page, here=here, label_width=label_width, width=width)]
+
+
+@dataclass(slots=True, kw_only=True)
 class Strip(SteppedCells):
     """A strip of numbered slots, a draw's, drawn after a blank line as a grid boxed in dim lines with a row numbering the slots
     over a row of their values: Left and Right move between the slots, and [ and ] step the slot under the cursor, which answers

@@ -8,7 +8,7 @@ from llamatron.engine.generators.musician import schema
 from llamatron.engine.generators.musician.model import MusicianSetting
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.generators.musician_editor import MusicianEditor
+from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import labels, messages
@@ -162,7 +162,7 @@ class TestWizardEditPlayer(WizardTest):
         self.assertIsNone(bass.get_musician())
         await self.select_field(labels.MSG_WIZARD_EDIT_PLAYER_BUTTON)
         await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, MusicianEditor)
+        self.assertIsInstance(self.app.screen, PluginEditor)
         self.assertTrue(self.app.is_drafting())
         self.assertEqual(self.app.screen.item, bass.musician_name())
         self.app.screen.store(setting=MusicianSetting.LOUDNESS, value=schema.LOUDEST)

@@ -66,7 +66,6 @@ ALLOWED = (
     'Listed',
     'MainPage',
     'MessageDialog',
-    'MusicianEditor',
     'NamedListPage',
     'NewPatternDialog',
     'NewRiffDialog',

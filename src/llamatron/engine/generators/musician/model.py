@@ -68,6 +68,11 @@ def check_musician_by_section(value):
         check_settings(settings=MUSICIAN_BY_SECTION, data=own)
 
 
+# What a Musician's page may show a field only when: the instrument plays pitches, or a track with the tune is named.
+PLAYS_PITCHES = 'plays_pitches'
+NAMES_A_TUNE = 'names_a_tune'
+
+
 class MusicianSettings(GeneratorSettings):
     """A musician's settings: the instrument, the tracks the chords and the tune are read from, the player's touch, and what each kind of section has of its own.
 
@@ -122,6 +127,16 @@ class MusicianSettings(GeneratorSettings):
         if name == MusicianSetting.NOTES:
             return or_default(value=self.get_written(name), default=self.musician_class().USUAL_NOTES)
         return or_default(value=self.get_written(name), default=MUSICIAN_DEFAULTS[name])
+
+    def holds(self, condition):
+        """Return whether a condition its page shows a field only when holds: PLAYS_PITCHES or NAMES_A_TUNE."""
+        if condition == PLAYS_PITCHES:
+            return self.musician_class().LOWEST is not None
+        return self.get_tune_from() is not None
+
+    def inherits(self, name):
+        """Return whether a setting takes its value from the instrument, which its page says beside the value."""
+        return self.follows_instrument(name)
 
     def follows_instrument(self, name):
         """Return whether a setting is left to the instrument: how the musician gives way or holds its notes, with nothing written for it."""

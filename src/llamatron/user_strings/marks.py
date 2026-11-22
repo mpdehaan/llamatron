@@ -273,6 +273,8 @@ MSG_MOVING_OPEN = '<'
 MSG_MOVING_CLOSE = '>'
 # A settings page's toggle that is off, an empty circle, so that a toggle shows itself either way.
 MSG_FIELD_TOGGLE_OFF = '○'
+# A table's Played cell where the player sits out that kind of section, with nothing to choose.
+MSG_SITS_OUT_SHOWN = '·'
 # What a register's +Note or +Vel cell shows when the step adds the register or subtracts it (RegisterRow).
 MSG_REGISTER_ADDS = '+'
 MSG_REGISTER_SUBTRACTS = '-'

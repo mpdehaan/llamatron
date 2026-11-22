@@ -6,8 +6,7 @@
 from typing import NamedTuple
 
 from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedChoiceDialog
-from llamatron.interface.tracker.screens.generators.musician_editor import MusicianEditor
-from llamatron.interface.tracker.screens.shared.plugin_editor import has_view, plugin_editor_of
+from llamatron.interface.tracker.screens.shared.plugin_editor import plugin_editor_of
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import labels, messages
@@ -28,19 +27,10 @@ def _in_shown_order(listings):
     return sorted(listings, key=lambda listing: (listing.group.casefold(), listing.label.casefold()))
 
 
-# The page that edits a generator of each kind, by the section of the set that holds them, which each editor names.
-EDITORS = {editor.SECTION: editor for editor in (
-    MusicianEditor,
-)}
-
-
 def _listing_of(plugin):
     """Return how the tracker lists a generator plugin: its name, its section, its own label and heading, and its editor, the
-    page drawn from its view where it describes one."""
-    if has_view(plugin.section):
-        editor = plugin_editor_of(plugin.section)
-    else:
-        editor = EDITORS[plugin.section]
+    page drawn from its view."""
+    editor = plugin_editor_of(plugin.section)
     return GeneratorListing(kind=plugin.name, section=plugin.section, label=plugin.strings.MSG_LABEL, group=plugin.strings.MSG_GROUP, EDITOR=editor)
 
 

@@ -373,10 +373,6 @@ class PluginEditor(FieldPage):
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
-class MusicianEditor(FieldPage):
-    """A musician's editor, with the settings keys alone."""
-
-
 class NotesPage(Page):
     """The Description page: reading, it scrolls and E edits; editing, Tab moves between the text and the Save and Cancel buttons."""
 

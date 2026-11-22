@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """The words the Musician generator plugin shows: what it is called beside a generator's name, the word its page's caption names it by, and the word a generator named for
-its kind takes, as in kick player."""
+its kind takes, as in kick player, its columns' headings, and its page's help."""
 
 from llamatron.user_strings import labels
 
@@ -14,3 +14,18 @@ MSG_CAPTION_WORD = 'musician'
 MSG_CHANGED_WORD = 'Musician'
 # The heading the Generators page offers it under.
 MSG_GROUP = labels.GeneratorGroup.BAND
+
+# The headings of its columns, and the caption of its table of the kinds of section.
+MSG_PLAYER_HEADING = 'Player'
+MSG_TOUCH_HEADING = 'Touch'
+MSG_SECTIONS_CAPTION = 'Sections'
+
+# Its page's help.
+HELP_PAGE = """
+Plays a clip as a player of the band would. Every note is one the clip wrote: moved, left out, held or made softer.
+Chords from: the track whose chords the notes follow. Tune from: the track with the tune, which the musician plays round.
+Activity: fewer of the notes, or long notes struck again. Loudness and Looseness: how loud, and how evenly.
+Gives way: softer under the tune, or silent until the tune rests. Accents: the notes of the bar leaned on.
+Notes: as written, each held until the next, or short. Range: an octave lower or higher, inside the instrument.
+Sections: a row for each kind of section the song's scenes have: whether the musician plays there, and how.
+"""

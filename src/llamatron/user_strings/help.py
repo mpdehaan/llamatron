@@ -235,16 +235,6 @@ HELP_PLUGIN_EDITOR = """
 A generator's settings, as its kind describes them.
 """
 
-# MusicianEditor
-HELP_MUSICIAN_EDITOR = """
-Plays a clip as a player of the band would. Every note is one the clip wrote: moved, left out, held or made softer.
-Chords from: the track whose chords the notes follow. Tune from: the track with the tune, which the musician plays round.
-Activity: fewer of the notes, or long notes struck again. Loudness and Looseness: how loud, and how evenly.
-Gives way: softer under the tune, or silent until the tune rests. Accents: the notes of the bar leaned on.
-Notes: as written, each held until the next, or short. Range: an octave lower or higher, inside the instrument.
-Under each kind of section: whether the musician plays there, and how, whole, softer, thinned, head only, muted or hits.
-"""
-
 # GuitarBarEditor
 HELP_GUITAR_BAR_EDITOR = """
 A bar of strokes, one a cell, following the song's bars. Left and Right move; [ and ] change the cursor's stroke.

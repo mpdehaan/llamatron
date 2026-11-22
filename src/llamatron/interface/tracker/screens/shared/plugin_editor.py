@@ -8,7 +8,7 @@ import functools
 
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.shared.drift_values import drift_value_rows
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
+from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, gauge_shown, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
 from llamatron.interface.tracker.screens.shared.guitar_bar_editor import guitar_bar_field
@@ -16,6 +16,7 @@ from llamatron.interface.tracker.screens.shared.octave_field import octave_field
 from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
 from llamatron.interface.tracker.screens.shared.progression_field import progression_field
 from llamatron.interface.tracker.screens.shared.restart_field import restart_field
+from llamatron.interface.tracker.screens.shared.section_table import section_table
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.shared import numbers_text
 from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
@@ -23,7 +24,7 @@ from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import shape_setting
-from llamatron.model.schema.generator_views import ChoiceView, DriftValuesView, GuitarBarView, NumberView, OctaveView, OffsetsView, ProgressionView, RegisterAddView, RestartView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView
+from llamatron.model.schema.generator_views import ChoiceView, DriftValuesView, GaugeView, GuitarBarView, InheritedChoiceView, NumberView, OctaveView, OffsetsView, ProgressionView, RegisterAddView, RestartView, SectionsView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView, WhenView
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
 # What a register add left out of the file is, and the offsets an arpeggiator starts its editor with where it has none.
@@ -36,14 +37,9 @@ FIELD_MAKERS = {
     ChoiceView: '_choice_field', NumberView: '_number_field', ShapeView: '_shape_fields', RestartView: '_restart_field', TimeView: '_time_field',
     StepsView: '_steps_field', SectionView: '_section_fields', ToggleView: '_toggle', OctaveView: '_octave_field', TrackView: '_track_field',
     ProgressionView: '_progression_field', GuitarBarView: '_guitar_bar_field', RegisterAddView: '_register_add_field', OffsetsView: '_offsets_field',
-    DriftValuesView: '_drift_value_rows',
+    DriftValuesView: '_drift_value_rows', WhenView: '_when_fields', InheritedChoiceView: '_inherited_choice', GaugeView: '_gauge',
+    SectionsView: '_section_table',
 }
-
-
-def has_view(section):
-    """Return whether the generator plugin of a section describes its view, so that this page edits its generators."""
-    plugin = generator_plugins.plugins_by_section()[section]
-    return plugin.view is not None
 
 
 def plugin_editor_of(section):
@@ -163,6 +159,12 @@ class PluginEditor(GeneratorEditor, FieldPage):
             number = None
         self.store(setting=setting.setting, value=number)
 
+    def store_inherited(self, chosen, *, setting):
+        """Keep a choice that comes from above until chosen, the first choice giving it back to what is above."""
+        if chosen == setting.inherited_choice:
+            chosen = None
+        self.store(setting=setting.setting, value=chosen)
+
     def store_register_add(self, number, *, setting):
         """Keep what every note adds to a register, left out of the file where it adds nothing."""
         self.store(setting=setting, value=number or None)
@@ -223,6 +225,41 @@ class PluginEditor(GeneratorEditor, FieldPage):
     def _drift_value_rows(self, setting):
         """Return a row of version A and version B for each of a drift's values."""
         return drift_value_rows(self)
+
+    def _section_table(self, setting):
+        """Return the table of what the generator does in each kind of section the song's scenes have."""
+        return section_table(page=self, view=setting)
+
+    def _when_fields(self, setting):
+        """Return a setting's fields while its condition holds, and none while it doesn't."""
+        if not self.settings().holds(setting.when):
+            return []
+        return self._fields_of(setting.view)
+
+    def _inherited_choice(self, setting):
+        """Return a choice whose value comes from above until chosen: its first choice gives it back, and a value from above says so."""
+        settings = self.settings()
+        value = settings.get_own(setting.setting)
+        current = value
+        shown = value
+        if settings.inherits(setting.setting):
+            current = setting.inherited_choice
+            shown = setting.inherited_shown.format(value=value)
+        return ChoiceField(
+            page=self, label=setting.label, choices=[setting.inherited_choice, *setting.choices], current=current, shown=shown,
+            set=functools.partial(self.store_inherited, setting=setting), clear=functools.partial(self.store, setting=setting.setting, value=None),
+        )
+
+    def _gauge(self, setting):
+        """Return a number stepped or typed and drawn as a horizontal gauge, empty at its lowest."""
+        written = self.settings().get_written(setting.setting)
+        number = setting.default
+        if written is not None:
+            number = written
+        return NumberField(
+            page=self, label=setting.label, number=number, shown=gauge_shown(place=number, lowest=setting.lowest + 1, highest=setting.highest),
+            lowest=setting.lowest, highest=setting.highest, set=functools.partial(self.store_number, setting=setting),
+        )
 
     def _number_field(self, setting):
         """Return the field that steps a whole number between its setting's limits, its default where left out, else blank."""

@@ -96,6 +96,52 @@ class DriftValuesView(NamedTuple):
     own to name, since the drift's model names every value."""
 
 
+class WhenView(NamedTuple):
+    """A setting shown only while a condition holds, which the settings answer by holds(when): the setting's view and the
+    condition."""
+
+    view: object
+    when: str
+
+
+class InheritedChoiceView(NamedTuple):
+    """A choice whose value comes from above until chosen, as a Musician's Notes from its instrument: the settings answer
+    inherits(setting) and get_own(setting). The setting's file name, its label, its choices, the first choice, which gives the
+    value back to what is above, and how a value taken from above shows, a template filled with {value}."""
+
+    setting: str
+    label: str
+    choices: tuple
+    inherited_choice: str
+    inherited_shown: str
+
+
+class GaugeView(NamedTuple):
+    """A number drawn as a horizontal gauge, empty at its lowest: the setting's file name, its label, its lowest and highest, and
+    the number it takes when the file leaves it out."""
+
+    setting: str
+    label: str
+    lowest: int
+    highest: int
+    default: int
+
+
+class SectionsView(NamedTuple):
+    """A table of what a generator does in each kind of section the song's scenes have, a row a kind under a caption, Plays and
+    Played as its columns: the settings answer get_for(section=, name=), get_section_own(section=, name=) and
+    set_section_own(section=, name=, value=). Its caption, the two settings' names and labels, Played's choices, and what each
+    takes when a section says nothing."""
+
+    caption: str
+    plays: str
+    plays_label: str
+    played: str
+    played_label: str
+    played_choices: tuple
+    defaults: object
+
+
 class TimeView(NamedTuple):
     """A length of time, chosen from the lengths every time setting offers: the setting's file name, its label, and what its first
     choice, the value when left out, shows, None for the pattern's step size."""

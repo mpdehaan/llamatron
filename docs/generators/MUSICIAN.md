@@ -34,7 +34,7 @@ Range moves the part an octave down with "low" or up with "high", and then bring
 
 ## Kinds of Section
 
-A scene can say what kind of section it is, on the Scene page: a verse, a chorus, a breakdown and so on. Under the Musician's settings is a heading for each kind of section the song has, such as "In a verse", and under each heading are two settings.
+A scene can say what kind of section it is, on the Scene page: a verse, a chorus, a breakdown and so on. Under the Musician's settings is the Sections table, a row for each kind of section the song's scenes have, with two columns, Plays and Played. Left and Right move between them: Space switches Plays, and `[` and `]` step Played, or ENTER picks it from a list. Where the player sits out, Played shows `·`.
 
 Plays says whether the player plays in that kind of section at all. A player who sits out the verses and comes in at the chorus is the oldest way a band makes a chorus feel bigger.
 
@@ -64,8 +64,8 @@ Played says how the part is played there:
 | Accents | "none", "downbeat", "backbeat", "offbeats" | "none" |
 | Notes | "as written", "held", "short" | What the instrument does |
 | Range | "low", "as written", "high" | "as written" |
-| Plays, under a kind of section | on or off | on |
-| Played, under a kind of section | "whole", "softer", "thinned", "head only", "muted", "hits" | "whole" |
+| Plays, in a row of the Sections table | on or off | on |
+| Played, in a row of the Sections table | "whole", "softer", "thinned", "head only", "muted", "hits" | "whole" |
 
 A drummer and a percussionist have no Chords from and no Range.
 

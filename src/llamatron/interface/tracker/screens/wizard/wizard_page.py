@@ -27,7 +27,6 @@ from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.drawing import Box, cursor_mark, Style
 from llamatron.interface.tracker.key_table import cursor_moved, first_key
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.generators.musician_editor import MusicianEditor
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.instrument_editor import sound_families
 from llamatron.interface.tracker.screens.shared import sound_trial
@@ -365,7 +364,7 @@ class WizardPage(FieldPage):
             # A player who plays in no section of the song has no clips, and so no Musician to open.
             self.refuse(errors.ERR_WIZARD_PLAYER_PLAYS_NOTHING)
             return
-        screen = functools.partial(MusicianEditor, holder=self.holder, name=name)
+        screen = functools.partial(PluginEditor, holder=self.holder, name=name, section=musician_plugin.SECTION)
         self.open_in_draft(setlist=setlist, read=read, screen=screen, keep=functools.partial(self._keep_musician, role=role),
                            kept=messages.MSG_WIZARD_PLAYER_KEPT, unchanged=messages.MSG_WIZARD_PLAYER_UNCHANGED)
 

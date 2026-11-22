@@ -6,9 +6,9 @@
 generators, the class of its settings, and its words."""
 
 from llamatron.engine.generators import musician
-from llamatron.engine.generators.musician import strings
+from llamatron.engine.generators.musician import strings, view
 from llamatron.engine.generators.musician.controller import MusicianController
 from llamatron.engine.generators.musician.model import MusicianSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-PLUGIN = GeneratorPlugin(name=musician.NAME, section=musician.SECTION, settings=MusicianSettings, strings=strings, controller=MusicianController())
+PLUGIN = GeneratorPlugin(name=musician.NAME, section=musician.SECTION, settings=MusicianSettings, strings=strings, controller=MusicianController(), view=view.VIEW)

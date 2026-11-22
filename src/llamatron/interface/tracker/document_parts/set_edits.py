@@ -9,7 +9,7 @@ the section. What's here is what each kind alone has: how a new one starts, and 
 """
 
 
-from llamatron.engine.generators import arp as arp_plugin, musician as musician_plugin
+from llamatron.engine.generators import arp as arp_plugin
 from llamatron.model.objects.groove import new_groove
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name, is_default_scale_name, words
@@ -148,10 +148,6 @@ class SetEdits:
         kind = generator_plugins.names_by_section()[section]
         settings = generator_plugins.settings_of(kind).new()
         self.change_set(self._setlist.add_item, section=section, name=name, item=settings)
-
-    def set_musician_section(self, *, name, section, setting, value):
-        """Set what a kind of section has of its own for a musician, whether the musician plays there or how the part is played, or None for what a section does unasked."""
-        self.change_set(self.generator(section=musician_plugin.SECTION, name=name).set_section_own, section=section, name=setting, value=value)
 
     def set_progression(self, *, section, name, rows):
         """Set a generator's progression: its chords and the rows beside them, given as ProgressionRows, a row of nothing left out."""
