@@ -289,7 +289,9 @@ SETTINGS_OF_SCENE = 'settings'
 
 
 def listed(names):
-    return ', '.join(sorted(str(name) for name in names))
+    """Return names as one line of text, in order, with a comma between."""
+    words = [str(name) for name in names]
+    return ', '.join(sorted(words))
 
 
 def values_of(*, style, trait):
@@ -297,35 +299,57 @@ def values_of(*, style, trait):
 
 
 def fits(*, entry, picks):
-    return all(picks.get(trait) == wanted for trait, wanted in entry.get(NEEDS, {}).items() if trait in picks)
+    """Return whether a value fits the picks: every trait it needs, of those picked, is picked the way it needs."""
+    needs = entry.get(NEEDS, {})
+    for trait, wanted in needs.items():
+        if trait in picks and picks[trait] != wanted:
+            return False
+    return True
 
 
 def picked(*, style, song):
-    """Every trait's pick: the song's own, else its template's, else the commonest value that fits what is picked."""
+    """Return every trait's pick: the song's own, else its template's, else the commonest value that fits what is picked."""
     templates = style[TEMPLATES]
     if song[TEMPLATE] not in templates:
         raise ValueError(errors.ERR_NO_STYLE_KIND.format(style[NAME], song[TEMPLATE], listed(templates)))
-    picks = {**templates[song[TEMPLATE]]}
+    picks = dict(templates[song[TEMPLATE]])
     picks.update(song.get(PICKS, {}))
     for trait in style[TRAITS]:
         values = values_of(style=style, trait=trait)
         if not values:
             continue
         if trait not in picks:
-            fitting = [entry for entry in values.values() if fits(entry=entry, picks=picks)]
-            picks[trait] = max(fitting, key=share_of)[VALUE]
+            picks[trait] = _commonest_fitting(values=values, picks=picks)
         if picks[trait] not in values:
             raise ValueError(errors.ERR_NO_TRAIT_VALUE.format(trait, picks[trait], listed(values)))
-    for trait, value in picks.items():
-        for needed, wanted in values_of(style=style, trait=trait).get(value, {}).get(NEEDS, {}).items():
-            if picks.get(needed) != wanted:
-                raise ValueError(errors.ERR_PICK_NEEDS.format(trait, value, needed, wanted, picks.get(needed)))
+    _refuse_unmet_needs(style=style, picks=picks)
     return picks
 
 
+def _commonest_fitting(*, values, picks):
+    """Return the commonest of a trait's values that fits the picks."""
+    fitting = [entry for entry in values.values() if fits(entry=entry, picks=picks)]
+    commonest = max(fitting, key=share_of)
+    return commonest[VALUE]
+
+
+def _refuse_unmet_needs(*, style, picks):
+    """Refuse picks where a value picked needs another trait picked a way it is not."""
+    for trait, value in picks.items():
+        ways = values_of(style=style, trait=trait)
+        entry = ways.get(value, {})
+        for needed, wanted in entry.get(NEEDS, {}).items():
+            if picks.get(needed) != wanted:
+                raise ValueError(errors.ERR_PICK_NEEDS.format(trait, value, needed, wanted, picks.get(needed)))
+
+
 def style_names():
-    """The names of the style templates there are."""
-    return sorted(name[:-len(STYLE_SUFFIX)] for name in os.listdir(STYLE_TEMPLATES) if name.endswith(STYLE_SUFFIX))
+    """Return the names of the style templates there are."""
+    names = []
+    for name in os.listdir(STYLE_TEMPLATES):
+        if name.endswith(STYLE_SUFFIX):
+            names.append(name[:-len(STYLE_SUFFIX)])
+    return sorted(names)
 
 
 def style_named(name):
@@ -335,24 +359,32 @@ def style_named(name):
 
 
 def player_of(*, style, instrument, character):
-    """What a style says of an instrument's player of a character, or nothing."""
-    return characters.player_of(levels=style.get(PLAYERS, {}).get(instrument, {}), character=character)
+    """Return what a style says of an instrument's player of a character, or nothing."""
+    players = style.get(PLAYERS, {})
+    return characters.player_of(levels=players.get(instrument, {}), character=character)
 
 
 def players_in(*, style, roles, levels, section):
-    """Each role's player in a section: the song's, held to the complexity the section allows the instrument."""
-    return {role[ROLE]: player_of(style=style, instrument=role.get(PLAYER), character=character_in(levels=levels, instrument=role.get(PLAYER), section=section)) for role in roles}
+    """Return each role's player in a section: the song's, held to the complexity the section allows the instrument."""
+    players = {}
+    for role in roles:
+        instrument = role.get(PLAYER)
+        character = character_in(levels=levels, instrument=instrument, section=section)
+        players[role[ROLE]] = player_of(style=style, instrument=instrument, character=character)
+    return players
 
 
 def character_in(*, levels, instrument, section):
-    """The character an instrument's player plays with in a section, or nothing where the song names no player for the instrument: the
-    song's, a level or the places of its gauges, held to the level the section allows the instrument."""
-    here = section.get(LEVELS_HERE, {}).get(instrument)
+    """Return the character an instrument's player plays with in a section, or nothing where the song names no player for the
+    instrument: the song's, a level or the places of its gauges, held to the level the section allows the instrument."""
+    levels_here = section.get(LEVELS_HERE, {})
+    here = levels_here.get(instrument)
     if here is not None:
         return character_of(here)
     if instrument not in levels:
         return None
-    return held_to(character=character_of(levels[instrument]), allowed=section.get(ALLOWS, {}).get(instrument))
+    allowed = section.get(ALLOWS, {})
+    return held_to(character=character_of(levels[instrument]), allowed=allowed.get(instrument))
 
 
 def timing_generators(*, move):
@@ -361,8 +393,16 @@ def timing_generators(*, move):
 
 
 def drum_pattern(part):
-    """A drum's part as a pattern."""
-    return drum_rows(drum=part[notation.DRUM], hits=part[notation.HITS], loud=part[notation.LOUD], soft=part[wizard_names.SOFT], step_size=part[notation.STEP], accent=part.get(wizard_names.ACCENT), ghost=part.get(wizard_names.GHOST))
+    """Return a drum's part as a pattern."""
+    return drum_rows(
+        drum=part[notation.DRUM],
+        hits=part[notation.HITS],
+        loud=part[notation.LOUD],
+        soft=part[wizard_names.SOFT],
+        step_size=part[notation.STEP],
+        accent=part.get(wizard_names.ACCENT),
+        ghost=part.get(wizard_names.GHOST),
+    )
 
 
 def uneven(*, pattern, by, dice):
@@ -371,41 +411,68 @@ def uneven(*, pattern, by, dice):
 
 
 def leaning(*, pattern, profile, meter, dynamics):
-    """A drum's pattern with the strokes on each beat louder or softer by the style's lean on that beat, as far as the drummer's dynamics say."""
+    """Return a drum's pattern with the strokes on each beat louder or softer by the style's lean on that beat, as far as the
+    drummer's dynamics say."""
     size = Fraction(pattern[notation.STEP_SIZE])
-    beat = shaping.COMPOUND_BEAT if is_compound(meter) else shaping.SIMPLE_BEAT
+    beat = shaping.SIMPLE_BEAT
+    if is_compound(meter):
+        beat = shaping.COMPOUND_BEAT
     velocities = []
     for place, loud in enumerate(pattern[notation.VELOCITY]):
         count = ((place * size) % bar_length(meter)) / beat
-        on_a_beat = loud is not None and count.denominator == 1
-        velocities.append(clamped(loud + scaled(move=profile[int(count) % len(profile)], dynamics=dynamics)) if on_a_beat else loud)
-    return {**pattern, notation.VELOCITY: velocities}
+        if loud is not None and count.denominator == 1:
+            move = scaled(move=profile[int(count) % len(profile)], dynamics=dynamics)
+            loud = clamped(loud + move)
+        velocities.append(loud)
+    leaned = dict(pattern)
+    leaned[notation.VELOCITY] = velocities
+    return leaned
 
 
 def drummer_role(roles):
-    """The name of the role that plays the drums."""
-    return next((role[ROLE] for role in roles if role.get(DRUMS)), DRUMS)
+    """Return the name of the role that plays the drums."""
+    for role in roles:
+        if role.get(DRUMS):
+            return role[ROLE]
+    return DRUMS
 
 
 def loud_style(*, style, song, roles):
-    """A style with each drum's four levels worked out, as the song has them: the kit's levels where the song gives its own, every
-    piece moved in proportion, and each level as far from the normal one as the drummer's dynamics say."""
+    """Return a style with each drum's four levels worked out, as the song has them: the kit's levels where the song gives its
+    own, every piece moved in proportion, and each level as far from the normal one as the drummer's dynamics say."""
     drummer = drummer_role(roles)
-    kit = drum_levels(style[LOUDNESS][DRUMS])
-    chosen = with_own(levels=kit, own=song.get(LOUDNESS, {}).get(drummer))
-    dynamics = song.get(DYNAMICS, {}).get(drummer, loudness.USUAL_DYNAMICS)
-    return {**style, LOUDNESS: {piece: spread(levels=in_proportion(levels=drum_levels(given), kit=kit, chosen=chosen), dynamics=dynamics)
-                                for piece, given in style[LOUDNESS].items()}}
+    written = style[LOUDNESS]
+    kit = drum_levels(written[DRUMS])
+    song_loudness = song.get(LOUDNESS, {})
+    chosen = with_own(levels=kit, own=song_loudness.get(drummer))
+    song_dynamics = song.get(DYNAMICS, {})
+    dynamics = song_dynamics.get(drummer, loudness.USUAL_DYNAMICS)
+    pieces = {}
+    for piece, given in written.items():
+        moved = in_proportion(levels=drum_levels(given), kit=kit, chosen=chosen)
+        pieces[piece] = spread(levels=moved, dynamics=dynamics)
+    loud = dict(style)
+    loud[LOUDNESS] = pieces
+    return loud
 
 
 def loud_role(*, role, song):
-    """A player of notes as loud as the song has the player: the role with the song's levels and dynamics for it, where it gives any."""
-    own = song.get(LOUDNESS, {}).get(role[ROLE])
-    dynamics = song.get(DYNAMICS, {}).get(role[ROLE])
+    """Return a player of notes as loud as the song has the player: the role with the song's levels and dynamics for it, where
+    it gives any."""
+    song_loudness = song.get(LOUDNESS, {})
+    own = song_loudness.get(role[ROLE])
+    song_dynamics = song.get(DYNAMICS, {})
+    dynamics = song_dynamics.get(role[ROLE])
     if notation.VELOCITY not in role or (own is None and dynamics is None):
         return role
-    levels = spread(levels=with_own(levels=note_levels(role[notation.VELOCITY]), own=own), dynamics=loudness.USUAL_DYNAMICS if dynamics is None else dynamics)
-    return {**role, notation.VELOCITY: levels[wizard_names.NORMAL], LEVELS_OF_ROLE: {level: levels[level] for level in (wizard_names.ACCENT, wizard_names.SOFT, wizard_names.GHOST)}}
+    if dynamics is None:
+        dynamics = loudness.USUAL_DYNAMICS
+    chosen = with_own(levels=note_levels(role[notation.VELOCITY]), own=own)
+    levels = spread(levels=chosen, dynamics=dynamics)
+    loud = dict(role)
+    loud[notation.VELOCITY] = levels[wizard_names.NORMAL]
+    loud[LEVELS_OF_ROLE] = {level: levels[level] for level in (wizard_names.ACCENT, wizard_names.SOFT, wizard_names.GHOST)}
+    return loud
 
 
 def voice_of(role):
@@ -414,8 +481,12 @@ def voice_of(role):
 
 
 def struck(*, levels, hits):
-    """How loud a drum's part is: its normal and soft strokes, and its accent and ghost note where its hits have any."""
-    return {notation.LOUD: levels[wizard_names.NORMAL], wizard_names.SOFT: levels[wizard_names.SOFT], **{level: levels[level] for level in (wizard_names.ACCENT, wizard_names.GHOST) if level in hits}}
+    """Return how loud a drum's part is: its normal and soft strokes, and its accent and ghost note where its hits have any."""
+    struck_levels = {notation.LOUD: levels[wizard_names.NORMAL], wizard_names.SOFT: levels[wizard_names.SOFT]}
+    for level in (wizard_names.ACCENT, wizard_names.GHOST):
+        if level in hits:
+            struck_levels[level] = levels[level]
+    return struck_levels
 
 
 def share_of(entry):
@@ -423,12 +494,15 @@ def share_of(entry):
 
 
 def share_in(*, style, entry, template):
-    """How common a value is in one of a style's templates: its share in the template's family where the style has families and the
-    value says how common it is in each, or its share in the style as a whole; a value that says how common it is in the template itself is that common."""
-    if template in entry.get(BY, {}):
-        return entry[BY][template]
-    family = style.get(FAMILIES, {}).get(template)
-    return entry.get(BY_FAMILY, {}).get(family, entry[SHARE])
+    """Return how common a value is in one of a style's templates: its share in the template's family where the style has
+    families and the value says how common it is in each, or its share in the style as a whole; a value that says how common
+    it is in the template itself is that common."""
+    by_template = entry.get(BY, {})
+    if template in by_template:
+        return by_template[template]
+    families = style.get(FAMILIES, {})
+    by_family = entry.get(BY_FAMILY, {})
+    return by_family.get(families.get(template), entry[SHARE])
 
 
 def said_over(*, usual, own):
@@ -442,28 +516,47 @@ STYLES_IN_TEMPLATES = {}
 
 
 def variants_of(*, style, template):
-    """The kinds of song a style's template holds, the commonest first, or none."""
-    return sorted(style.get(VARIANTS, {}).get(template, []), key=share_of, reverse=True)
+    """Return the kinds of song a style's template holds, the commonest first, or none."""
+    variants = style.get(VARIANTS, {})
+    return sorted(variants.get(template, []), key=share_of, reverse=True)
 
 
 def variant_named(*, style, template, variant):
-    """One kind of song of a template by its name, or None for a name the template has no kind of, as a song kept before the kind was renamed."""
-    return next((entry for entry in variants_of(style=style, template=template) if entry[NAME] == variant), None)
+    """Return one kind of song of a template by its name, or None for a name the template has no kind of, as a song saved
+    before the kind was renamed."""
+    for entry in variants_of(style=style, template=template):
+        if entry[NAME] == variant:
+            return entry
+    return None
 
 
 def style_in(*, style, template, variant=None):
-    """A style as one of its templates has it: what the style says by_subgenre for the template laid over the style, and then what
-    the song's kind says laid over that, worked out once. A style that says nothing of the template or the kind, or one already so
-    laid over, is returned as it is."""
-    own = style.get(BY_SUBGENRE, {}).get(template)
+    """Return a style as one of its templates has it: what the style says by_subgenre for the template laid over the style,
+    and then what the song's kind says laid over that, worked out once. A style that says nothing of the template or the
+    kind, or one already so laid over, is returned as it is."""
+    subgenres = style.get(BY_SUBGENRE, {})
+    own = subgenres.get(template)
     kind = variant_named(style=style, template=template, variant=variant)
     if not own and kind is None:
         return style
-    key = (style[NAME], template, variant if kind is not None else None)
+    kind_name = None
+    if kind is not None:
+        kind_name = variant
+    key = (style[NAME], template, kind_name)
     if key not in STYLES_IN_TEMPLATES:
-        laid = said_over(usual={name: value for name, value in style.items() if name != BY_SUBGENRE}, own=own) if own else style
-        STYLES_IN_TEMPLATES[key] = {**(said_over(usual=laid, own=kind.get(STYLE, {})) if kind is not None else laid)}
+        STYLES_IN_TEMPLATES[key] = _laid_over_style(style=style, own=own, kind=kind)
     return STYLES_IN_TEMPLATES[key]
+
+
+def _laid_over_style(*, style, own, kind):
+    """Return a style with what it says of a template laid over it, and then what a kind of song says."""
+    laid = style
+    if own:
+        usual = {name: value for name, value in style.items() if name != BY_SUBGENRE}
+        laid = said_over(usual=usual, own=own)
+    if kind is not None:
+        laid = said_over(usual=laid, own=kind.get(STYLE, {}))
+    return dict(laid)
 
 
 @functools.cache
@@ -505,18 +598,31 @@ def half_bar_of(meter):
 
 
 def progression_of(*, chords, every, meter=COMMON_TIME):
-    """A list of chords as a Progression's settings; where a bar has two chords and nothing says how long a chord lasts, each
-    chord lasts half a bar, so long as a Progression holds that many."""
-    if not every and any(shares_a_bar(chord) for chord in chords) and fits_by_halves(chords):
+    """Return a list of chords as a Progression's settings; where a bar has two chords and nothing says how long a chord
+    lasts, each chord lasts half a bar, so long as a Progression holds that many."""
+    if not every and _shares_any_bar(chords) and fits_by_halves(chords):
         chords = halves_of(chords)
         every = half_bar_of(meter)
-    made = {wizard_names.ARRANGER_CHORDS: [chord_of(chord)[notation.DEGREE] for chord in chords]}
-    marks = [ACCIDENTAL_MARKS.get(chord_of(chord).get(notation.ACCIDENTAL)) for chord in chords]
+    degrees = []
+    marks = []
+    for chord in chords:
+        parsed = chord_of(chord)
+        degrees.append(parsed[notation.DEGREE])
+        marks.append(ACCIDENTAL_MARKS.get(parsed.get(notation.ACCIDENTAL)))
+    made = {wizard_names.ARRANGER_CHORDS: degrees}
     if any(marks):
         made[ACCIDENTALS] = marks
     if every:
         made[EVERY] = every
     return made
+
+
+def _shares_any_bar(chords):
+    """Return whether any of the chords is two that share a bar."""
+    for chord in chords:
+        if shares_a_bar(chord):
+            return True
+    return False
 
 
 def home_chord_of(scale_type):
@@ -528,20 +634,27 @@ def home_chord_of(scale_type):
 
 
 def chords_written(*, progression, meter, scale_type):
-    """A progression's chords as a pattern of the chords track, a step a chord, each a triad of the scale on its degree; a chord
-    on a degree with a sharp or a flat is the scale's home chord moved there, as a Progression plays it. Nothing where a chord
-    lasts longer than a step can, or such a chord's kind cannot be named: the chords track then makes its chords with the
-    Progression."""
+    """Return a progression's chords as a pattern of the chords track, a step a chord, each a triad of the scale on its degree;
+    a chord on a degree with a sharp or a flat is the scale's home chord moved there, as a Progression plays it. Nothing where
+    a chord lasts longer than a step can, or such a chord's kind cannot be named: the chords track then makes its chords with
+    the Progression."""
     bar = Fraction(meter)
-    lasts = Fraction(str(in_whole_notes(time=progression[EVERY], bar=bar))) if EVERY in progression else bar
-    marks = progression.get(ACCIDENTALS) or [None] * len(progression[wizard_names.ARRANGER_CHORDS])
+    lasts = bar
+    if EVERY in progression:
+        length = in_whole_notes(time=progression[EVERY], bar=bar)
+        lasts = Fraction(str(length))
+    degrees = progression[wizard_names.ARRANGER_CHORDS]
+    marks = progression.get(ACCIDENTALS) or [None] * len(degrees)
     home = home_chord_of(scale_type)
     if lasts > limits.MAX_STEP_SIZE or (any(marks) and home is None):
         return None
-    written = {
-        PatternSetting.STEPS: len(progression[wizard_names.ARRANGER_CHORDS]), PatternSetting.STEP_SIZE: str(lasts), Row.DEGREE: list(progression[wizard_names.ARRANGER_CHORDS]),
-        Row.CHORD: [SCALE_TRIAD if mark is None else home for mark in marks],
-    }
+    chords = []
+    for mark in marks:
+        if mark is None:
+            chords.append(SCALE_TRIAD)
+        else:
+            chords.append(home)
+    written = {PatternSetting.STEPS: len(degrees), PatternSetting.STEP_SIZE: str(lasts), Row.DEGREE: list(degrees), Row.CHORD: chords}
     if any(marks):
         written[Row.ACCIDENTAL] = list(marks)
     return written
@@ -598,16 +711,31 @@ def cut_of(picks):
 
 
 def pieces_played(song):
-    """What each remapped piece of a song's kit plays, as the drum's name or the note's number drum_rows takes, each checked."""
+    """Return what each remapped piece of a song's kit plays, as the drum's name or the note's number drum_rows takes, each checked."""
     played = {}
-    for piece, sounds_as in song.get(PIECE_SOUNDS, {}).items():
-        if set(sounds_as) == {PLAYED_DRUM} and sounds_as[PLAYED_DRUM] in wizard_names.NOTATION_KIT:
+    piece_sounds = song.get(PIECE_SOUNDS, {})
+    for piece, sounds_as in piece_sounds.items():
+        if _plays_another_drum(sounds_as):
             played[piece] = sounds_as[PLAYED_DRUM]
-        elif set(sounds_as) == {PLAYED_SOUND, PLAYED_NOTE} and whole(value=sounds_as[PLAYED_SOUND], low=limits.MIN_GM_SOUND, high=limits.MAX_GM_SOUND) and whole(value=sounds_as[PLAYED_NOTE], low=LOWEST_NOTE, high=HIGHEST_NOTE):
+        elif _plays_a_sound_on_a_note(sounds_as):
             played[piece] = sounds_as[PLAYED_NOTE]
         else:
             raise ValueError(errors.ERR_PIECE_SOUND.format(piece, sounds_as))
     return played
+
+
+def _plays_another_drum(sounds_as):
+    """Return whether a piece of the kit is played as another drum of the kit."""
+    return set(sounds_as) == {PLAYED_DRUM} and sounds_as[PLAYED_DRUM] in wizard_names.NOTATION_KIT
+
+
+def _plays_a_sound_on_a_note(sounds_as):
+    """Return whether a piece of the kit is played as a General MIDI sound on a note, each in range."""
+    if set(sounds_as) != {PLAYED_SOUND, PLAYED_NOTE}:
+        return False
+    if not whole(value=sounds_as[PLAYED_SOUND], low=limits.MIN_GM_SOUND, high=limits.MAX_GM_SOUND):
+        return False
+    return whole(value=sounds_as[PLAYED_NOTE], low=LOWEST_NOTE, high=HIGHEST_NOTE)
 
 
 def whole(*, value, low, high):
@@ -617,33 +745,47 @@ def whole(*, value, low, high):
 
 
 def fill_named(*, style, name):
-    """The fill of a name, each drum's hits, or no fill for no name or a name the style lacks."""
-    return values_of(style=style, trait=FILLS).get(name, {}).get(characters.FILL, {})
+    """Return the fill of a name, each drum's hits, or no fill for no name or a name the style lacks."""
+    fills = values_of(style=style, trait=FILLS)
+    fill = fills.get(name, {})
+    return fill.get(characters.FILL, {})
 
 
 def solo_parts(*, style, bars, seed, kit):
-    """A drum solo's parts, a part for each piece of the kit that sounds in it."""
+    """Return a drum solo's parts, a part for each piece of the kit that sounds in it."""
+    written = style[LOUDNESS]
+    kit = kit or {}
+    solo = drum_solo.solo_hits(bars=bars, seed=seed)
     parts = {}
-    for piece, hits in drum_solo.solo_hits(bars=bars, seed=seed).items():
+    for piece, hits in solo.items():
         # A style as written says a drum's normal stroke alone, and a song's style all four levels.
-        levels = drum_levels(style[LOUDNESS].get(piece, style[LOUDNESS][DRUMS]))
-        parts[piece] = {notation.DRUM: (kit or {}).get(piece, piece), notation.STEP: drum_solo.STEP, **struck(levels=levels, hits=hits), notation.HITS: hits}
+        levels = drum_levels(written.get(piece, written[DRUMS]))
+        part = {notation.DRUM: kit.get(piece, piece), notation.STEP: drum_solo.STEP}
+        part.update(struck(levels=levels, hits=hits))
+        part[notation.HITS] = hits
+        parts[piece] = part
     return parts
 
 
 def frozen(value):
-    """Plain data as something that can be a key."""
+    """Return plain data as something that can be a key."""
     if isinstance(value, dict):
-        return tuple(sorted((name, frozen(inner)) for name, inner in value.items()))
+        pairs = [(name, frozen(inner)) for name, inner in value.items()]
+        return tuple(sorted(pairs))
     if isinstance(value, list):
-        return tuple(frozen(inner) for inner in value)
+        values = [frozen(inner) for inner in value]
+        return tuple(values)
     return value
 
 
 def one_hit(*, style, meter, drum, played):
-    """One bar in which a piece of the kit is hit once, on the first beat, as the drum or the note the song has the piece play."""
-    loud = style[LOUDNESS].get(drum, style[LOUDNESS][DRUMS])[wizard_names.NORMAL]
-    return {notation.DRUM: played.get(drum, drum), notation.STEP: EIGHTH, notation.LOUD: loud, wizard_names.SOFT: loud, notation.HITS: [notation.LOUD] + [notation.NONE] * (int(bar_length(meter) * EIGHTHS_IN_WHOLE) - 1)}
+    """Return one bar in which a piece of the kit is hit once, on the first beat, as the drum or the note the song has the piece play."""
+    written = style[LOUDNESS]
+    levels = written.get(drum, written[DRUMS])
+    loud = levels[wizard_names.NORMAL]
+    eighths = int(bar_length(meter) * EIGHTHS_IN_WHOLE)
+    hits = [notation.LOUD] + [notation.NONE] * (eighths - 1)
+    return {notation.DRUM: played.get(drum, drum), notation.STEP: EIGHTH, notation.LOUD: loud, wizard_names.SOFT: loud, notation.HITS: hits}
 
 
 def lasts(note):
@@ -652,22 +794,44 @@ def lasts(note):
 
 
 def with_ending(*, bar, ends):
-    """A figure's bar whose last steps are a decoration's notes: what the bar played before them stays, a note they cut into shortened."""
-    room = sum(lasts(note) for note in bar) - sum(lasts(note) for note in ends)
+    """Return a figure's bar whose last steps are a decoration's notes: what the bar played before them stays, a note they cut
+    into shortened."""
+    room = _length_of(bar) - _length_of(ends)
     kept = []
     for note in bar:
         if room <= 0:
             break
         length = min(lasts(note), room)
-        kept.append({**note, (notation.REST if notation.REST in note else notation.STEPS): length})
+        kept.append(_lasting(note=note, length=length))
         room -= length
-    return kept + [dict(note) for note in ends]
+    for note in ends:
+        kept.append(dict(note))
+    return kept
+
+
+def _length_of(notes):
+    """Return how many steps notes last together."""
+    total = 0
+    for note in notes:
+        total += lasts(note)
+    return total
+
+
+def _lasting(*, note, length):
+    """Return a copy of a note or a rest lasting a length."""
+    lasting = dict(note)
+    if notation.REST in note:
+        lasting[notation.REST] = length
+    else:
+        lasting[notation.STEPS] = length
+    return lasting
 
 
 def ending_fits(*, variation, grid, meter):
-    """Whether a player's ending can be laid on a figure: it is written for the meter, or for any, and one of the two grids
-    divides the other, so that the finer holds both."""
-    if ENDS not in variation or variation.get(NEEDS, {}).get(METER, meter) != meter:
+    """Return whether a player's ending can be laid on a figure: it is written for the meter, or for any, and one of the two
+    grids divides the other, so that the finer holds both."""
+    needs = variation.get(NEEDS, {})
+    if ENDS not in variation or needs.get(METER, meter) != meter:
         return False
     return grid % variation[melody.GRID] == 0 or variation[melody.GRID] % grid == 0
 
@@ -678,16 +842,22 @@ def stretched(*, notes, by):
 
 
 def decorated_figure(*, bars, player, phrase_bars, meter):
-    """A figure as a player plays it: a phrase of its bars, the bars the player varies ending in the player's own notes, on
-    the finest grid of the figure's and the endings'. A player who varies nothing plays the figure as written, and an ending
-    written for another meter, or on a grid that neither divides the figure's nor is divided by it, is left out."""
-    grid = sum(lasts(note) for note in bars[0])
-    fitting = [variation for variation in player.get(characters.VARIES, []) if ending_fits(variation=variation, grid=grid, meter=meter)]
+    """Return a figure as a player plays it: a phrase of its bars, the bars the player varies ending in the player's own notes,
+    on the finest grid of the figure's and the endings'. A player who varies nothing plays the figure as written, and an
+    ending written for another meter, or on a grid that neither divides the figure's nor is divided by it, is left out."""
+    grid = _length_of(bars[0])
+    variations = player.get(characters.VARIES, [])
+    fitting = [variation for variation in variations if ending_fits(variation=variation, grid=grid, meter=meter)]
     if not fitting or phrase_bars % len(bars):
         return [notation.copied_line(bar) for bar in bars]
-    finest = max([grid] + [variation[melody.GRID] for variation in fitting])
+    grids = [grid]
+    for variation in fitting:
+        grids.append(variation[melody.GRID])
+    finest = max(grids)
     fitting = [variation for variation in fitting if finest % variation[melody.GRID] == 0]
-    phrase = [stretched(notes=bars[count % len(bars)], by=finest // grid) for count in range(phrase_bars)]
+    phrase = []
+    for count in range(phrase_bars):
+        phrase.append(stretched(notes=bars[count % len(bars)], by=finest // grid))
     for variation in fitting:
         ends = stretched(notes=variation[ENDS], by=finest // variation[melody.GRID])
         for bar in variation[BARS]:
@@ -696,10 +866,13 @@ def decorated_figure(*, bars, player, phrase_bars, meter):
 
 
 def figure_part(*, entry, role, meter, player, phrase_bars):
-    """A value's figure as a tune's part, as a player plays it; the figure's bars are its lines."""
+    """Return a value's figure as a tune's part, as a player plays it; the figure's bars are its lines."""
     lines = decorated_figure(bars=entry[FIGURE], player=player, phrase_bars=phrase_bars, meter=meter)
-    grid = sum(lasts(note) for note in lines[0])
-    return {notation.STEP: step_of(meter=meter, grid=grid), notation.OCTAVE: role[notation.OCTAVE], **voice_of(role), notation.LINES: lines}
+    grid = _length_of(lines[0])
+    part = {notation.STEP: step_of(meter=meter, grid=grid), notation.OCTAVE: role[notation.OCTAVE]}
+    part.update(voice_of(role))
+    part[notation.LINES] = lines
+    return part
 
 
 def held_part(*, role, meter, chord):
@@ -715,24 +888,35 @@ def tune_part(*, lines, role, meter, grid):
 
 
 def habits_of(*, habits, player):
-    """A style's melody habits as a player keeps them: a wider or narrower range, and the busier rhythms for a busy player."""
-    kept = {**habits, **({melody.SPAN: player[melody.SPAN]} if melody.SPAN in player else {})}
+    """Return a style's melody habits as a player keeps them: a wider or narrower range, and the busier rhythms for a busy player."""
+    kept = dict(habits)
+    if melody.SPAN in player:
+        kept[melody.SPAN] = player[melody.SPAN]
     if player.get(characters.BUSY):
         kept[melody.RHYTHMS] = habits[melody.ANSWER_RHYTHMS]
     return kept
 
 
 def way_beside(*, beside, role, place, tune, section):
-    """What the player beside the tune does in the section at a place of the form, or None for any other player, for a section nobody has
-    the tune in, and for a section whose own plan already has the player answer every line, which is played as the plan writes it."""
+    """Return what the player beside the tune does in the section at a place of the form, or None for any other player, for a
+    section nobody has the tune in, and for a section whose own plan already has the player answer every line, which is
+    played as the plan writes it."""
     if role[ROLE] != beside.get(ROLE) or tune is None or tune is role:
         return None
     way = beside[BESIDE_WAYS][place]
     if way not in interplay.WAYS:
         raise ValueError(errors.ERR_NO_SUCH_WAY_BESIDE.format(way))
-    if way == interplay.ANSWERS and role[ROLE] in section[PLAYS] and any(entry.get(melody.ANSWER) for entry in section.get(PLAN, [])):
+    if way == interplay.ANSWERS and role[ROLE] in section[PLAYS] and _plan_answers(section):
         return None
     return way
+
+
+def _plan_answers(section):
+    """Return whether a section's own plan has a line answered."""
+    for entry in section.get(PLAN, []):
+        if entry.get(melody.ANSWER):
+            return True
+    return False
 
 
 def line_letters(*, plans, answers):
@@ -747,55 +931,88 @@ def line_letters(*, plans, answers):
 
 
 def band_said(*, style, song, roles):
-    """Who plays, for the notes: each instrument's player by name, with what the style says of the player."""
+    """Return who plays, for the notes: each instrument's player by name, with what the style says of the player."""
+    played = set()
+    for role in roles:
+        played.add(role.get(PLAYER))
     said = []
     for instrument, complexity in song.get(PLAYERS, {}).items():
-        if any(role.get(PLAYER) == instrument for role in roles):
-            level = level_of(character_of(complexity))
-            if level is None:
-                # A player whose gauges were set one by one is nobody's preset, and is named by the instrument alone.
-                said.append(wizard_text.MSG_PLAYED_BY_OWN.format(instrument))
-                continue
-            player = player_of(style=style, instrument=instrument, character=character_of(level))
-            said.append(wizard_text.MSG_PLAYED_BY.format(instrument, player_name(instrument=instrument, complexity=level), player.get(characters.SAYS, '')).strip())
+        if instrument in played:
+            said.append(_player_said(style=style, instrument=instrument, complexity=complexity))
     return said
 
 
+def _player_said(*, style, instrument, complexity):
+    """Return what the notes say of an instrument's player: the player's name and what the style says of the player."""
+    character = character_of(complexity)
+    level = level_of(character)
+    if level is None:
+        # A player whose gauges were set one by one is nobody's preset, and is named by the instrument alone.
+        return wizard_text.MSG_PLAYED_BY_OWN.format(instrument)
+    player = player_of(style=style, instrument=instrument, character=character_of(level))
+    name = player_name(instrument=instrument, complexity=level)
+    said = wizard_text.MSG_PLAYED_BY.format(instrument, name, player.get(characters.SAYS, ''))
+    return said.strip()
+
+
 def sound_of(*, style, song, role, usual):
-    """The name of the sound a player plays with: the song's own choice for the player, a General MIDI number, called by the
-    style's name for that number where the style has one and by General MIDI's otherwise; or the sound the way of playing has."""
-    number = song.get(ROLE_SOUNDS, {}).get(role)
+    """Return the name of the sound a player plays with: the song's own choice for the player, a General MIDI number, called by
+    the style's name for that number where the style has one and by General MIDI's otherwise; or the sound the way of playing has."""
+    role_sounds = song.get(ROLE_SOUNDS, {})
+    number = role_sounds.get(role)
     if number is None:
         return usual
     named = [name for name, of_style in style[SOUNDS].items() if of_style == number]
     if usual in named:
         return usual
-    return named[0] if named else labels.MSG_GM_SOUNDS[number - limits.MIN_GM_SOUND].lower()
+    if named:
+        return named[0]
+    general_midi = labels.MSG_GM_SOUNDS[number - limits.MIN_GM_SOUND]
+    return general_midi.lower()
 
 
 def section_of(*, name, style, song):
-    """A section as the song describes it over what the style says of a section of its name."""
-    of_song = song.get(SECTIONS, {}).get(name, {})
+    """Return a section as the song describes it over what the style says of a section of its name, with the song's hooks
+    placed and what it asks of its melodies laid over its plan."""
+    sections_of_song = song.get(SECTIONS, {})
+    of_song = sections_of_song.get(name, {})
     kind = of_song.get(KIND, name)
-    if kind not in style[SECTIONS] and not of_song:
+    kinds = style[SECTIONS]
+    if kind not in kinds and not of_song:
         raise ValueError(errors.ERR_NO_SUCH_SECTION.format(name))
-    section = {**style[SECTIONS].get(kind, {}), **of_song, KIND: kind}
-    # The song's hooks: the main one placed among the lines of the kind of section that says it, and the tag sung in its kind,
-    # by its singer, who then plays there.
+    section = dict(kinds.get(kind, {}))
+    section.update(of_song)
+    section[KIND] = kind
+    _place_hooks(section=section, song=song)
+    _lay_asks_over(section=section, song=song)
+    return section
+
+
+def _place_hooks(*, section, song):
+    """Place the song's hooks in a section: the main one among the lines of the kind of section that says it, and the tag sung
+    in its kind, by its singer, who then plays there."""
+    kind = section[KIND]
     hooks = song.get(melody.HOOKS, {})
     main = hooks.get(melody.MAIN_HOOK, {})
     if main.get(melody.SUNG_IN) == kind and main.get(melody.PLACEMENT) and section.get(PLAN):
         section[PLAN] = plan_with_hook_placed(plan=section[PLAN], placement=main[melody.PLACEMENT])
     second = hooks.get(melody.SECOND_HOOK, {})
     if second.get(melody.SUNG_IN) == kind and not section.get(HELD):
-        section[PLAN] = plan_with_tag(plan=section.get(PLAN, []), lines=section.get(BARS, BARS_IN_A_TAG_LINE) // BARS_IN_A_TAG_LINE)
-        section[PLAYS] = list(dict.fromkeys([*section.get(PLAYS, []), second[melody.SUNG_BY]]))
+        lines = section.get(BARS, BARS_IN_A_TAG_LINE) // BARS_IN_A_TAG_LINE
+        section[PLAN] = plan_with_tag(plan=section.get(PLAN, []), lines=lines)
+        players = [*section.get(PLAYS, []), second[melody.SUNG_BY]]
+        section[PLAYS] = list(dict.fromkeys(players))
+
+
+def _lay_asks_over(*, section, song):
+    """Lay what the song asks of its melodies over a section's plan: for the whole song, and for its kind of section."""
     asks = song.get(melody.MELODY_ASKS)
-    if asks and section.get(PLAN):
-        # What the song asks of its melodies is laid over the plan: for the whole song, and for this kind of section.
-        of_kind = asks.get(melody.BY_KIND, {}).get(kind, {})
-        section[PLAN] = plan_as_asked(plan=section[PLAN], height=of_kind.get(wizard_names.MELODY_HEIGHT), busy=of_kind.get(melody.LINE_BUSY, asks.get(melody.LINE_BUSY)), repeats=asks.get(melody.REPEATS))
-    return section
+    if not asks or not section.get(PLAN):
+        return
+    by_kind = asks.get(melody.BY_KIND, {})
+    of_kind = by_kind.get(section[KIND], {})
+    busy = of_kind.get(melody.LINE_BUSY, asks.get(melody.LINE_BUSY))
+    section[PLAN] = plan_as_asked(plan=section[PLAN], height=of_kind.get(wizard_names.MELODY_HEIGHT), busy=busy, repeats=asks.get(melody.REPEATS))
 
 
 def tempo_of(*, style, song, picks):
@@ -1385,7 +1602,10 @@ def arranged(*, style, song):
 
 def _level_at(*, marks, place):
     """Return how loud a decoration's drum hits at a step: an accent, loud, soft, a ghost note, or none."""
-    return next((level for level in (wizard_names.ACCENT, notation.LOUD, wizard_names.SOFT, wizard_names.GHOST) if place in marks.get(level, [])), notation.NONE)
+    for level in (wizard_names.ACCENT, notation.LOUD, wizard_names.SOFT, wizard_names.GHOST):
+        if place in marks.get(level, []):
+            return level
+    return notation.NONE
 
 
 def _bar_of_chords(*, chord, shared):
