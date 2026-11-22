@@ -199,10 +199,6 @@ generators:
   - { name: build, kind: chords, mode: progression, chords: [4, 4, 5, 5], every: 1/2 }
   - { name: bridge, kind: chords, mode: progression, chords: [2, 2, 6, 6], every: 1/2 }
   - { name: near, kind: chords, lowest_octave: 4, highest_octave: 5 }
-  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
-  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
-  - { name: build chords, kind: chain, generators: [{ name: build }] }
-  - { name: bridge chords, kind: chain, generators: [{ name: bridge }] }
   - { name: chorus keys, kind: chain, generators: [{ name: chorus }, { name: near }] }
   - { name: verse keys, kind: chain, generators: [{ name: verse }, { name: near }] }
   - { name: build keys, kind: chain, generators: [{ name: build }, { name: near }] }
@@ -248,9 +244,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6], every: 1/2 } } }
           - { track: pad, pattern: pad, generators: [{ name: chorus keys }], loop: true }
-          - { track: stabs, pattern: stabs, generators: [{ name: chorus chords }], loop: true }
+          - { track: stabs, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6], every: 1/2 } } }
           - { track: hook, pattern: hook, loop: true }
       - name: verse
         clips:
@@ -258,7 +254,7 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 4, 5, 4, 5, 2, 5], every: 1/2 } } }
           - { track: pad, pattern: pad, generators: [{ name: verse keys }], loop: true }
           - { track: lead, pattern: verse tune, loop: true }
       - name: build
@@ -267,9 +263,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: build chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 5, 5], every: 1/2 } } }
           - { track: pad, pattern: pad, generators: [{ name: build keys }], loop: true }
-          - { track: stabs, pattern: stabs, generators: [{ name: build chords }], loop: true }
+          - { track: stabs, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 5, 5], every: 1/2 } } }
           - { track: lead, pattern: build tune, loop: true }
       - name: stop
         clips:
@@ -282,9 +278,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6], every: 1/2 } } }
           - { track: pad, pattern: pad, generators: [{ name: chorus keys }], loop: true }
-          - { track: stabs, pattern: stabs, generators: [{ name: chorus chords }], loop: true }
+          - { track: stabs, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6], every: 1/2 } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: choir, pattern: chorus third, loop: true }
           - { track: crash, pattern: crash, loop: true }
@@ -294,7 +290,7 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 4, 5, 4, 5, 2, 5], every: 1/2 } } }
           - { track: pad, pattern: pad, generators: [{ name: verse keys }], loop: true }
           - { track: lead, pattern: verse tune, loop: true }
       - name: build 2
@@ -303,9 +299,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: build chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 5, 5], every: 1/2 } } }
           - { track: pad, pattern: pad, generators: [{ name: build keys }], loop: true }
-          - { track: stabs, pattern: stabs, generators: [{ name: build chords }], loop: true }
+          - { track: stabs, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 5, 5], every: 1/2 } } }
           - { track: lead, pattern: build tune, loop: true }
       - name: stop 2
         clips:
@@ -318,9 +314,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6], every: 1/2 } } }
           - { track: pad, pattern: pad, generators: [{ name: chorus keys }], loop: true }
-          - { track: stabs, pattern: stabs, generators: [{ name: chorus chords }], loop: true }
+          - { track: stabs, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6], every: 1/2 } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: choir, pattern: chorus third, loop: true }
           - { track: crash, pattern: crash, loop: true }
@@ -328,7 +324,7 @@ songs:
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: bridge chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [2, 2, 6, 6], every: 1/2 } } }
           - { track: pad, pattern: pad, generators: [{ name: bridge keys }], loop: true }
           - { track: hook, pattern: hook, loop: true }
       - name: last chorus
@@ -337,9 +333,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6], every: 1/2 } } }
           - { track: pad, pattern: pad, generators: [{ name: chorus keys }], loop: true }
-          - { track: stabs, pattern: stabs, generators: [{ name: chorus chords }], loop: true }
+          - { track: stabs, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6], every: 1/2 } } }
           - { track: lead, pattern: chorus tune twice, loop: true }
           - { track: hook, pattern: hook, loop: true }
           - { track: choir, pattern: chorus third twice, loop: true }
@@ -350,7 +346,7 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6], every: 1/2 } } }
           - { track: pad, pattern: pad, generators: [{ name: chorus keys }], loop: true }
-          - { track: stabs, pattern: stabs, generators: [{ name: chorus chords }], loop: true }
+          - { track: stabs, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6], every: 1/2 } } }
           - { track: hook, pattern: hook, loop: true }

@@ -179,9 +179,6 @@ generators:
   - { name: chorus, kind: chords, mode: progression, chords: [6, 2, 4, 5, 6, 2, 4, 1], qualities: [m7, dom7, ~, ~, m7, dom7, ~, add9] }
   - { name: horns, kind: chords, mode: progression, chords: [1, 7, 4, 1], accidentals: [~, b, ~, ~], qualities: [~, M, ~, ~] }
   - { name: near, kind: chords, lowest_octave: 4, highest_octave: 5 }
-  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
-  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
-  - { name: horns chords, kind: chain, generators: [{ name: horns }] }
   - { name: verse keys, kind: chain, generators: [{ name: verse }, { name: near }] }
   - { name: chorus keys, kind: chain, generators: [{ name: chorus }, { name: near }] }
   - { name: horns keys, kind: chain, generators: [{ name: horns }, { name: near }] }
@@ -220,7 +217,7 @@ songs:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: horns chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 4, 1], accidentals: [~, b, ~, ~], qualities: [~, M, ~, ~] } } }
           - { track: piano, pattern: pump, generators: [{ name: horns keys }], loop: true }
           - { track: horns, pattern: horn line, loop: true }
       - name: verse
@@ -228,7 +225,7 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 4, 5], qualities: [add9, add9, add9, add9, add9, add9, add9, 7sus4] } } }
           - { track: piano, pattern: pump, generators: [{ name: verse keys }], loop: true }
           - { track: lead, pattern: verse tune, loop: true }
           - { track: guitar, pattern: fills, loop: true }
@@ -239,9 +236,9 @@ songs:
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 4, 5, 6, 2, 4, 1], qualities: [m7, dom7, ~, ~, m7, dom7, ~, add9] } } }
           - { track: piano, pattern: pump, generators: [{ name: chorus keys }], loop: true }
-          - { track: horns, pattern: punch, generators: [{ name: chorus chords }], loop: true }
+          - { track: horns, pattern: punch, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 4, 5, 6, 2, 4, 1], qualities: [m7, dom7, ~, ~, m7, dom7, ~, add9] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: voices, pattern: chorus third, loop: true }
       - name: horns 2
@@ -249,7 +246,7 @@ songs:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: horns chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 4, 1], accidentals: [~, b, ~, ~], qualities: [~, M, ~, ~] } } }
           - { track: piano, pattern: pump, generators: [{ name: horns keys }], loop: true }
           - { track: horns, pattern: horn line, loop: true }
       - name: verse 2
@@ -257,11 +254,11 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 4, 5], qualities: [add9, add9, add9, add9, add9, add9, add9, 7sus4] } } }
           - { track: piano, pattern: pump, generators: [{ name: verse keys }], loop: true }
           - { track: lead, pattern: verse tune, loop: true }
           - { track: guitar, pattern: fills, loop: true }
-          - { track: horns, pattern: answer, generators: [{ name: verse chords }], loop: true }
+          - { track: horns, pattern: answer, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 4, 5], qualities: [add9, add9, add9, add9, add9, add9, add9, 7sus4] } } }
       - name: chorus 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
@@ -269,9 +266,9 @@ songs:
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 4, 5, 6, 2, 4, 1], qualities: [m7, dom7, ~, ~, m7, dom7, ~, add9] } } }
           - { track: piano, pattern: pump, generators: [{ name: chorus keys }], loop: true }
-          - { track: horns, pattern: punch, generators: [{ name: chorus chords }], loop: true }
+          - { track: horns, pattern: punch, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 4, 5, 6, 2, 4, 1], qualities: [m7, dom7, ~, ~, m7, dom7, ~, add9] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: voices, pattern: chorus third, loop: true }
       - name: guitar solo
@@ -279,10 +276,10 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 4, 5], qualities: [add9, add9, add9, add9, add9, add9, add9, 7sus4] } } }
           - { track: piano, pattern: pump, generators: [{ name: verse keys }], loop: true }
           - { track: guitar, pattern: solo, loop: true }
-          - { track: horns, pattern: answer, generators: [{ name: verse chords }], loop: true }
+          - { track: horns, pattern: answer, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 4, 5], qualities: [add9, add9, add9, add9, add9, add9, add9, 7sus4] } } }
       - name: last chorus
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
@@ -290,9 +287,9 @@ songs:
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 4, 5, 6, 2, 4, 1], qualities: [m7, dom7, ~, ~, m7, dom7, ~, add9] } } }
           - { track: piano, pattern: pump, generators: [{ name: chorus keys }], loop: true }
-          - { track: horns, pattern: punch, generators: [{ name: chorus chords }], loop: true }
+          - { track: horns, pattern: punch, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 4, 5, 6, 2, 4, 1], qualities: [m7, dom7, ~, ~, m7, dom7, ~, add9] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: voices, pattern: chorus third, loop: true }
       - name: ride out
@@ -300,7 +297,7 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: horns chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 4, 1], accidentals: [~, b, ~, ~], qualities: [~, M, ~, ~] } } }
           - { track: piano, pattern: pump, generators: [{ name: horns keys }], loop: true }
           - { track: horns, pattern: horn line, loop: true }
           - { track: guitar, pattern: solo, loop: true }

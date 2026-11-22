@@ -4,7 +4,7 @@ description: "a band stuck on one chord, then following chords written once on a
 notes: |
   Follow Chords: a song at 96 beats a minute in A minor. The bass, the pad and the arpeggio each
   play one bar, written over chord I. The song's chords are written in one place, the muted track
-  called SILENT Chords, and the Chords generator called follow, in Follow Progression mode, moves a player's notes to
+  called SILENT Chords, and a clip's Chords tab, in Follow Progression mode, moves the clip's notes to
   whatever chord that track plays at that moment in the same scene.
   Run it with: llamatron examples/learning/22_follow_chords.yml --to ableton --replace
 
@@ -12,7 +12,7 @@ notes: |
   chords the band will follow are known.
   Scene 2, the band, not following: the three one-bar patterns as written. Everyone stays on A
   minor and the band sounds stuck.
-  Scene 3, the bass follows: the chain follow is on the bass alone. The bass moves with the chords
+  Scene 3, the bass follows: Follow Progression is on the bass's clip alone. The bass moves with the chords
   while the pad and the arpeggio stay where they were.
   Scene 4, everyone follows.
   Scene 5, with a tune: a lead written note by note over the same chords, with the band under it.
@@ -21,7 +21,7 @@ notes: |
   A minor, and the tracks that follow take its G sharp.
   The pad holds one chord a bar, so the pad takes the first chord of each bar.
   Scene 8, chords from a progression: the SILENT Chords track's pattern holds one chord, and a
-  Progression in that clip's chain makes Am, G, F and G of it. What follows reads the chords as
+  Progression on that clip's Chords tab makes Am, G, F and G of it. What follows reads the chords as
   they come out of the SILENT Chords track, so it never matters how they were written.
 
   Try it: open the pattern chords written, change a step's degree, and hear the bass, the pad and
@@ -31,7 +31,7 @@ notes: |
   - Keep the SILENT Chords track muted, and keep every chord of a scene on that track alone, but
     for scene 1, where the pad plays the same pattern to be heard.
   - Keep the three figures one bar long, written over chord I.
-  - Keep scene 2 without the chain and scene 3 with the chain on the bass alone.
+  - Keep scene 2 without Follow Progression and scene 3 with it on the bass's clip alone.
 real_time: true
 protected: true
 
@@ -109,12 +109,6 @@ patterns:
     octave: [3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [90, 60, 80, 60, 90, 60, 80, 60]
 
-generators:
-  - { name: down and back, kind: chords, mode: progression, chords: [1, 7, 6, 7] }
-  - { name: follow, kind: chords, mode: follow_progression, chords_from: SILENT Chords }
-  - { name: follow chords followed, kind: chain, generators: [{ name: follow }] }
-  - { name: down and back chords, kind: chain, generators: [{ name: down and back }] }
-
 instruments:
   - { name: finger bass, device: "*FluidSynth", gm_sound: 34 }
   - { name: warm pad, device: "*FluidSynth", gm_sound: 90 }
@@ -158,7 +152,7 @@ songs:
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: follow chords followed }], repeat: 8 }
+          - { track: bass, pattern: bass, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
           - { track: pad, pattern: pad, repeat: 8 }
           - { track: arpeggio, pattern: arpeggio, repeat: 8 }
       - name: everyone follows
@@ -167,18 +161,18 @@ songs:
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: pad, pattern: pad, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: arpeggio, pattern: arpeggio, generators: [{ name: follow chords followed }], repeat: 8 }
+          - { track: bass, pattern: bass, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: pad, pattern: pad, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: arpeggio, pattern: arpeggio, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
       - name: with a tune
         clips:
           - { track: SILENT Chords, pattern: chords written, repeat: 2 }
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: pad, pattern: pad, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: arpeggio, pattern: arpeggio, generators: [{ name: follow chords followed }], repeat: 8 }
+          - { track: bass, pattern: bass, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: pad, pattern: pad, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: arpeggio, pattern: arpeggio, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
           - { track: lead, pattern: tune, repeat: 2 }
       - name: "new chords, same patterns"
         clips:
@@ -186,24 +180,24 @@ songs:
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: pad, pattern: pad, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: arpeggio, pattern: arpeggio, generators: [{ name: follow chords followed }], repeat: 8 }
+          - { track: bass, pattern: bass, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: pad, pattern: pad, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: arpeggio, pattern: arpeggio, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
       - name: two chords a bar
         clips:
           - { track: SILENT Chords, pattern: chords by halves, repeat: 4 }
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: pad, pattern: pad, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: arpeggio, pattern: arpeggio, generators: [{ name: follow chords followed }], repeat: 8 }
+          - { track: bass, pattern: bass, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: pad, pattern: pad, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: arpeggio, pattern: arpeggio, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
       - name: chords from a Progression
         clips:
-          - { track: SILENT Chords, pattern: one chord, generators: [{ name: down and back chords }], repeat: 8 }
+          - { track: SILENT Chords, pattern: one chord, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7] } } }
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: pad, pattern: pad, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: arpeggio, pattern: arpeggio, generators: [{ name: follow chords followed }], repeat: 8 }
+          - { track: bass, pattern: bass, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: pad, pattern: pad, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: arpeggio, pattern: arpeggio, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }

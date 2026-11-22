@@ -135,14 +135,6 @@ patterns:
     velocity: [108, ~, 96, ~, 99, ~, ~, ~, 108, ~, 96, ~, 99, ~, ~, ~, 108, ~, 96, ~, 99, ~, ~, ~, 108, ~, 96, ~, 99, ~, ~, ~, 108, ~, 96, ~, 99, ~, ~, ~, 108, ~, 96, ~, 99, ~, ~, ~, 108, ~, 96, ~, 99, ~, 96, ~, 108, ~, 96, ~, 99, ~, ~, ~]
     tie: [false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true]
 
-generators:
-  - { name: a, kind: chords, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] }
-  - { name: b, kind: chords, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] }
-  - { name: c, kind: chords, mode: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5] }
-  - { name: a chords, kind: chain, generators: [{ name: a }] }
-  - { name: b chords, kind: chain, generators: [{ name: b }] }
-  - { name: c chords, kind: chain, generators: [{ name: c }] }
-
 instruments:
   - { name: square lead, device: "*FluidSynth", gm_sound: 81 }
   - { name: calliope, device: "*FluidSynth", gm_sound: 83 }
@@ -171,23 +163,23 @@ songs:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: block, pattern: block, loop: true }
-          - { track: bass, pattern: oom, generators: [{ name: a chords }], loop: true }
-          - { track: harpsichord, pattern: chick, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
+          - { track: harpsichord, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
       - name: tune
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: block, pattern: block, loop: true }
-          - { track: bass, pattern: oom, generators: [{ name: a chords }], loop: true }
-          - { track: harpsichord, pattern: chick, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
+          - { track: harpsichord, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
           - { track: lead, pattern: a tune, loop: true }
       - name: tune in thirds
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: block, pattern: block, loop: true }
-          - { track: bass, pattern: oom, generators: [{ name: a chords }], loop: true }
-          - { track: harpsichord, pattern: chick, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
+          - { track: harpsichord, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
           - { track: lead, pattern: a tune, loop: true }
           - { track: harmony, pattern: a third, loop: true }
       - name: sequence
@@ -195,22 +187,22 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: block, pattern: block, loop: true }
-          - { track: bass, pattern: oom, generators: [{ name: b chords }], loop: true }
-          - { track: harpsichord, pattern: figure, generators: [{ name: b chords }], loop: true }
-          - { track: lead, pattern: sequence, generators: [{ name: b chords }], loop: true }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
+          - { track: harpsichord, pattern: figure, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
+          - { track: lead, pattern: sequence, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
       - name: tune 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: block, pattern: block, loop: true }
-          - { track: bass, pattern: oom, generators: [{ name: a chords }], loop: true }
-          - { track: harpsichord, pattern: figure, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
+          - { track: harpsichord, pattern: figure, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
           - { track: lead, pattern: a tune, loop: true }
       - name: middle
         scale: A Major
         clips:
-          - { track: bass, pattern: oom, generators: [{ name: c chords }], repeat: 16 }
-          - { track: harpsichord, pattern: figure, generators: [{ name: c chords }], loop: true }
+          - { track: bass, pattern: oom, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5] } } }
+          - { track: harpsichord, pattern: figure, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 6, 3, 4, 1, 4, 5] } } }
           - { track: harmony, pattern: c tune, loop: true }
           - { track: block, pattern: block, loop: true }
       - name: sequence in thirds
@@ -218,22 +210,22 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: block, pattern: block, loop: true }
-          - { track: bass, pattern: oom, generators: [{ name: b chords }], loop: true }
-          - { track: harpsichord, pattern: figure, generators: [{ name: b chords }], loop: true }
-          - { track: lead, pattern: sequence, generators: [{ name: b chords }], loop: true }
-          - { track: harmony, pattern: sequence third, generators: [{ name: b chords }], loop: true }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
+          - { track: harpsichord, pattern: figure, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
+          - { track: lead, pattern: sequence, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
+          - { track: harmony, pattern: sequence third, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
       - name: harpsichord alone
         clips:
-          - { track: harpsichord, pattern: figure, generators: [{ name: a chords }], repeat: 8 }
-          - { track: bass, pattern: oom, generators: [{ name: a chords }], loop: true }
+          - { track: harpsichord, pattern: figure, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
           - { track: block, pattern: block, loop: true }
       - name: tune 3
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: block, pattern: block, loop: true }
-          - { track: bass, pattern: oom, generators: [{ name: a chords }], loop: true }
-          - { track: harpsichord, pattern: chick, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
+          - { track: harpsichord, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
           - { track: lead, pattern: a tune, loop: true }
           - { track: harmony, pattern: a third, loop: true }
       - name: a step higher
@@ -242,8 +234,8 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: block, pattern: block, loop: true }
-          - { track: bass, pattern: oom, generators: [{ name: a chords }], loop: true }
-          - { track: harpsichord, pattern: figure, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
+          - { track: harpsichord, pattern: figure, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
           - { track: lead, pattern: a tune, loop: true }
           - { track: harmony, pattern: a third, loop: true }
       - name: last sequence
@@ -252,15 +244,15 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: block, pattern: block, loop: true }
-          - { track: bass, pattern: oom, generators: [{ name: b chords }], loop: true }
-          - { track: harpsichord, pattern: figure, generators: [{ name: b chords }], loop: true }
-          - { track: lead, pattern: sequence, generators: [{ name: b chords }], loop: true }
-          - { track: harmony, pattern: sequence third, generators: [{ name: b chords }], loop: true }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
+          - { track: harpsichord, pattern: figure, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
+          - { track: lead, pattern: sequence, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
+          - { track: harmony, pattern: sequence third, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1, 4, 2, 5, 1] } } }
       - name: ending
         scale: E Major
         clips:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: block, pattern: block, loop: true }
-          - { track: bass, pattern: oom, generators: [{ name: a chords }], loop: true }
-          - { track: harpsichord, pattern: chick, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: oom, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }
+          - { track: harpsichord, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 4, 5, 1] } } }

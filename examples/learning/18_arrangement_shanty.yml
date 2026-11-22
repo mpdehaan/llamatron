@@ -14,7 +14,7 @@ notes: |
   - harmony plays the same melody patterns, with transpose: 2 on its track, so it follows
     the lead a third higher, moving along the scale rather than by a fixed interval.
   - pad plays the chord patterns as written.
-  - pluck plays the same chord patterns through an arpeggiator chain, transposed an octave up.
+  - pluck plays the same chord patterns through the arpeggiator on its clips' Arp tab, transposed an octave up.
   - bass has a one-bar rhythm, bass_rhythm, with Grab on every step. It grabs from the pad,
     which gives the lowest note of each chord, the root, and transpose: -7 puts it an octave
     lower. It loops, so it lasts as long as the scene, and it follows any chord change.
@@ -28,7 +28,7 @@ notes: |
 
   When changing this demo:
   The point is how few patterns it needs, so add parts by reusing the four note patterns
-  with a track setting, a chain or a grab, rather than with new note patterns.
+  with a track setting, a clip's Arp tab or a grab, rather than with new note patterns.
 real_time: true
 protected: true
 
@@ -90,10 +90,6 @@ patterns:
     degree: [~, D]
     accidental: [~, "#"]
     octave: [~, 3]
-
-generators:
-  - { name: pluck, kind: arp, step: 1/8, order: up_down }
-  - { name: pluck arp, kind: chain, generators: [{ name: pluck }] }
 
 instruments:
   - { name: fiddle, device: "*FluidSynth", gm_sound: 111 }
@@ -161,7 +157,7 @@ songs:
         clips:
           - { track: lead, pattern: melody_verse }
           - { track: counter, pattern: counter_rhythm, loop: true, grab_track: lead }
-          - { track: pluck, pattern: chords_verse, generators: [{ name: pluck arp }] }
+          - { track: pluck, pattern: chords_verse, built_in: { arp: { enabled: true, step: 1/8, order: up_down } } }
           - { track: bass, pattern: bass_rhythm, loop: true, grab_track: pad }
           - { track: stomp, pattern: stomp, loop: true }
           - { track: clap, pattern: clap, loop: true }
@@ -171,7 +167,7 @@ songs:
           - { track: harmony, pattern: melody_chorus }
           - { track: counter, pattern: counter_rhythm, loop: true, grab_track: lead }
           - { track: pad, pattern: chords_chorus }
-          - { track: pluck, pattern: chords_chorus, generators: [{ name: pluck arp }] }
+          - { track: pluck, pattern: chords_chorus, built_in: { arp: { enabled: true, step: 1/8, order: up_down } } }
           - { track: bass, pattern: bass_rhythm, loop: true, grab_track: pad }
           - { track: stomp, pattern: stomp, loop: true }
           - { track: clap, pattern: clap, loop: true }

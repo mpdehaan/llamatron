@@ -135,14 +135,6 @@ patterns:
     velocity: [112, ~, ~, ~, 103, ~, ~, ~, 112, ~, ~, ~, 103, ~, ~, ~, 112, ~, ~, ~, 103, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~, 103, ~, ~, ~, 112, ~, ~, ~, 103, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
 
-generators:
-  - { name: fanfare, kind: chords, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] }
-  - { name: second, kind: chords, mode: progression, chords: [1, 3, 4, 1, 6, 2, 5, 5] }
-  - { name: bridge, kind: chords, mode: progression, chords: [4, 5, 3, 6, 6, 7, 5, 5], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] }
-  - { name: fanfare chords, kind: chain, generators: [{ name: fanfare }] }
-  - { name: second chords, kind: chain, generators: [{ name: second }] }
-  - { name: bridge chords, kind: chain, generators: [{ name: bridge }] }
-
 instruments:
   - { name: timpani, device: "*FluidSynth", gm_sound: 48 }
   - { name: strings, device: "*FluidSynth", gm_sound: 49 }
@@ -172,61 +164,61 @@ songs:
       - name: opening
         clips:
           - { track: snare, pattern: roll, repeat: 4 }
-          - { track: timpani, pattern: timpani, generators: [{ name: fanfare chords }], loop: true }
-          - { track: brass, pattern: held low, generators: [{ name: fanfare chords }], loop: true }
+          - { track: timpani, pattern: timpani, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
+          - { track: brass, pattern: held low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
       - name: fanfare
         clips:
-          - { track: strings, pattern: held, generators: [{ name: fanfare chords }], repeat: 16 }
-          - { track: basses, pattern: low, generators: [{ name: fanfare chords }], loop: true }
+          - { track: strings, pattern: held, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
+          - { track: basses, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
           - { track: trumpet, pattern: fanfare, loop: true }
-          - { track: brass, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
-          - { track: timpani, pattern: timpani, generators: [{ name: fanfare chords }], loop: true }
+          - { track: brass, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
+          - { track: timpani, pattern: timpani, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
           - { track: snare, pattern: march, loop: true }
           - { track: cymbal, pattern: cymbal, loop: true }
       - name: second theme
         clips:
           - { track: strings, pattern: second, repeat: 2 }
-          - { track: basses, pattern: low, generators: [{ name: second chords }], loop: true }
-          - { track: horns, pattern: held low, generators: [{ name: second chords }], loop: true }
+          - { track: basses, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 4, 1, 6, 2, 5, 5] } } }
+          - { track: horns, pattern: held low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 4, 1, 6, 2, 5, 5] } } }
       - name: fanfare 2
         clips:
-          - { track: strings, pattern: held, generators: [{ name: fanfare chords }], repeat: 8 }
-          - { track: basses, pattern: low, generators: [{ name: fanfare chords }], loop: true }
+          - { track: strings, pattern: held, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
+          - { track: basses, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
           - { track: trumpet, pattern: fanfare, loop: true }
-          - { track: brass, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
-          - { track: timpani, pattern: timpani, generators: [{ name: fanfare chords }], loop: true }
+          - { track: brass, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
+          - { track: timpani, pattern: timpani, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
           - { track: snare, pattern: march, loop: true }
           - { track: horns, pattern: fanfare, loop: true }
       - name: bridge
         clips:
-          - { track: strings, pattern: held, generators: [{ name: bridge chords }], repeat: 8 }
-          - { track: basses, pattern: low, generators: [{ name: bridge chords }], loop: true }
+          - { track: strings, pattern: held, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6, 6, 7, 5, 5], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
+          - { track: basses, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6, 6, 7, 5, 5], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
           - { track: horns, pattern: bridge, loop: true }
-          - { track: timpani, pattern: timpani, generators: [{ name: bridge chords }], loop: true }
+          - { track: timpani, pattern: timpani, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 3, 6, 6, 7, 5, 5], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
           - { track: snare, pattern: march, loop: true }
       - name: second theme 2
         clips:
-          - { track: strings, pattern: held, generators: [{ name: second chords }], repeat: 8 }
-          - { track: basses, pattern: low, generators: [{ name: second chords }], loop: true }
+          - { track: strings, pattern: held, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 4, 1, 6, 2, 5, 5] } } }
+          - { track: basses, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 4, 1, 6, 2, 5, 5] } } }
           - { track: trumpet, pattern: second, loop: true }
-          - { track: brass, pattern: chords, generators: [{ name: second chords }], loop: true }
-          - { track: timpani, pattern: timpani, generators: [{ name: second chords }], loop: true }
+          - { track: brass, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 4, 1, 6, 2, 5, 5] } } }
+          - { track: timpani, pattern: timpani, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 4, 1, 6, 2, 5, 5] } } }
           - { track: snare, pattern: march, loop: true }
-          - { track: horns, pattern: held low, generators: [{ name: second chords }], loop: true }
+          - { track: horns, pattern: held low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 4, 1, 6, 2, 5, 5] } } }
       - name: finale
         clips:
-          - { track: strings, pattern: held, generators: [{ name: fanfare chords }], repeat: 16 }
-          - { track: basses, pattern: low, generators: [{ name: fanfare chords }], loop: true }
+          - { track: strings, pattern: held, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
+          - { track: basses, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
           - { track: trumpet, pattern: fanfare, loop: true }
-          - { track: brass, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
-          - { track: timpani, pattern: timpani, generators: [{ name: fanfare chords }], loop: true }
+          - { track: brass, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
+          - { track: timpani, pattern: timpani, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
           - { track: snare, pattern: march, loop: true }
           - { track: horns, pattern: fanfare, loop: true }
           - { track: cymbal, pattern: cymbal, loop: true }
       - name: ending
         clips:
           - { track: snare, pattern: roll, repeat: 4 }
-          - { track: timpani, pattern: timpani, generators: [{ name: fanfare chords }], loop: true }
-          - { track: brass, pattern: held low, generators: [{ name: fanfare chords }], loop: true }
-          - { track: strings, pattern: held, generators: [{ name: fanfare chords }], loop: true }
+          - { track: timpani, pattern: timpani, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
+          - { track: brass, pattern: held low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
+          - { track: strings, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 4, 1, 6, 7, 1, 1], accidentals: [~, ~, ~, ~, b, b, ~, ~], qualities: [~, ~, ~, ~, M, M, ~, ~] } } }
           - { track: cymbal, pattern: cymbal, loop: true }

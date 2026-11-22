@@ -156,21 +156,6 @@ patterns:
     octave: [~, ~, ~, ~, ~, ~, 5, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [~, ~, ~, ~, ~, ~, 98, 103, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, 103, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, 103, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 98, 103, ~, ~, ~, ~, ~, ~, ~, ~]
 
-generators:
-  - { name: verse, kind: chords, mode: progression, chords: [1, 4, 5, 4], every: 1/2 }
-  - { name: pre, kind: chords, mode: progression, chords: [3, 4] }
-  - { name: chorus, kind: chords, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 }
-  - { name: muted, kind: guitarify, bar: [down, mute, mute, mute, down, mute, mute, mute], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 }
-  - { name: ring, kind: guitarify, bar: [down, nothing, down, nothing], accents: [false, false, false, false], cell: 1/4, let_ring: true, single_notes: power_chord, spread: 2, fade: 0 }
-  - { name: open, kind: guitarify, bar: [down, down, down, down, down, down, down, down], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, single_notes: scale_chord, spread: 6 }
-  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
-  - { name: pre chords, kind: chain, generators: [{ name: pre }] }
-  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
-  - { name: verse muted, kind: chain, generators: [{ name: verse }, { name: muted }] }
-  - { name: pre ring, kind: chain, generators: [{ name: pre }, { name: ring }] }
-  - { name: chorus muted, kind: chain, generators: [{ name: chorus }, { name: muted }] }
-  - { name: chorus open, kind: chain, generators: [{ name: chorus }, { name: open }] }
-
 instruments:
   - { name: distortion guitar, device: "*FluidSynth", gm_sound: 31 }
   - { name: pick bass, device: "*FluidSynth", gm_sound: 35 }
@@ -201,21 +186,21 @@ songs:
         clips:
           - { track: kick, pattern: kick four, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: guitar, pattern: root twice, generators: [{ name: verse muted }], repeat: 4 }
+          - { track: guitar, pattern: root twice, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4, 5, 4], every: 1/2 }, guitarify: { enabled: true, bar: [down, mute, mute, mute, down, mute, mute, mute], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 } } }
       - name: verse
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: guitar, pattern: root twice, generators: [{ name: verse muted }], repeat: 16 }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: guitar, pattern: root twice, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4, 5, 4], every: 1/2 }, guitarify: { enabled: true, bar: [down, mute, mute, mute, down, mute, mute, mute], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4, 5, 4], every: 1/2 } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: pre-chorus
         clips:
           - { track: kick, pattern: kick four, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: guitar, pattern: root, generators: [{ name: pre ring }], repeat: 4 }
-          - { track: bass, pattern: bass, generators: [{ name: pre chords }], loop: true }
+          - { track: guitar, pattern: root, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [3, 4] }, guitarify: { enabled: true, bar: [down, nothing, down, nothing], accents: [false, false, false, false], cell: 1/4, let_ring: true, single_notes: power_chord, spread: 2, fade: 0 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 4] } } }
           - { track: lead, pattern: pre tune, loop: true }
       - name: chorus
         clips:
@@ -223,9 +208,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash, loop: true }
-          - { track: guitar, pattern: root twice, generators: [{ name: chorus open }], repeat: 8 }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: keys, pattern: keys, generators: [{ name: chorus chords }], loop: true }
+          - { track: guitar, pattern: root twice, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 }, guitarify: { enabled: true, bar: [down, down, down, down, down, down, down, down], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, single_notes: scale_chord, spread: 6 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 } } }
+          - { track: keys, pattern: keys, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: solo, pattern: chorus echo, loop: true }
       - name: verse 2
@@ -233,15 +218,15 @@ songs:
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: guitar, pattern: root twice, generators: [{ name: verse muted }], repeat: 16 }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: guitar, pattern: root twice, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4, 5, 4], every: 1/2 }, guitarify: { enabled: true, bar: [down, mute, mute, mute, down, mute, mute, mute], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4, 5, 4], every: 1/2 } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: pre-chorus 2
         clips:
           - { track: kick, pattern: kick four, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: guitar, pattern: root, generators: [{ name: pre ring }], repeat: 4 }
-          - { track: bass, pattern: bass, generators: [{ name: pre chords }], loop: true }
+          - { track: guitar, pattern: root, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [3, 4] }, guitarify: { enabled: true, bar: [down, nothing, down, nothing], accents: [false, false, false, false], cell: 1/4, let_ring: true, single_notes: power_chord, spread: 2, fade: 0 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 4] } } }
           - { track: lead, pattern: pre tune, loop: true }
       - name: chorus 2
         clips:
@@ -249,9 +234,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash, loop: true }
-          - { track: guitar, pattern: root twice, generators: [{ name: chorus open }], repeat: 8 }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: keys, pattern: keys, generators: [{ name: chorus chords }], loop: true }
+          - { track: guitar, pattern: root twice, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 }, guitarify: { enabled: true, bar: [down, down, down, down, down, down, down, down], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, single_notes: scale_chord, spread: 6 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 } } }
+          - { track: keys, pattern: keys, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: solo, pattern: chorus echo, loop: true }
       - name: solo
@@ -260,8 +245,8 @@ songs:
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: guitar, pattern: root twice, generators: [{ name: chorus muted }], repeat: 8 }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
+          - { track: guitar, pattern: root twice, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 }, guitarify: { enabled: true, bar: [down, mute, mute, mute, down, mute, mute, mute], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 } } }
           - { track: solo, pattern: solo, loop: true }
       - name: last chorus
         scale: C Major
@@ -270,9 +255,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash, loop: true }
-          - { track: guitar, pattern: root twice, generators: [{ name: chorus open }], repeat: 16 }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: keys, pattern: keys, generators: [{ name: chorus chords }], loop: true }
+          - { track: guitar, pattern: root twice, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 }, guitarify: { enabled: true, bar: [down, down, down, down, down, down, down, down], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, single_notes: scale_chord, spread: 6 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 } } }
+          - { track: keys, pattern: keys, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 5, 6, 4, 1, 5, 6, 4, 1, 5, 6, 4, 4, 5, 5], every: 1/2 } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: solo, pattern: chorus echo, loop: true }
       - name: outro
@@ -280,5 +265,5 @@ songs:
         clips:
           - { track: kick, pattern: kick four, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: guitar, pattern: root twice, generators: [{ name: verse muted }], repeat: 4 }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: guitar, pattern: root twice, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4, 5, 4], every: 1/2 }, guitarify: { enabled: true, bar: [down, mute, mute, mute, down, mute, mute, mute], accents: [true, false, false, false, true, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4, 5, 4], every: 1/2 } } }

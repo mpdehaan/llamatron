@@ -171,30 +171,6 @@ patterns:
     velocity: [112, ~, 104, ~, 100, ~, ~, ~, 104, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 100, ~, ~, ~, 104, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 116, ~, 104, ~, 104, ~, 104, ~, 100, ~, ~, ~, 112, ~, 104, ~, 104, ~, 104, ~, 100, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
-generators:
-  - { name: verse, kind: chords, mode: progression, chords: [6, 1, 4, 1, 5, 1, 6, 5], every: 1/2 }
-  - { name: chorus, kind: chords, mode: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 }
-  - { name: onion, kind: chords, mode: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] }
-  - { name: onion chorus, kind: chords, mode: progression, chords: [6, 3, 4, 1, 4, 1, 5, 5] }
-  - { name: bass strum, kind: guitarify, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, true, false, false, false, true, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 }
-  - { name: strum, kind: guitarify, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 }
-  - { name: roll, kind: guitarify, bar: [bass, string_4, string_3, string_2, bass, string_4, string_3, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true }
-  - { name: jangle, kind: guitarify, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, true, false, false, true, false], cell: 1/8, let_ring: true, position: 7, strings: 4, spread: 6 }
-  - { name: chime, kind: guitarify, bar: [string_4, string_2, string_1, string_3, string_2, string_1, string_3, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true, position: 5, strings: 4 }
-  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
-  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
-  - { name: onion chords, kind: chain, generators: [{ name: onion }] }
-  - { name: onion chorus chords, kind: chain, generators: [{ name: onion chorus }] }
-  - { name: verse bass strum, kind: chain, generators: [{ name: verse }, { name: bass strum }] }
-  - { name: verse roll, kind: chain, generators: [{ name: verse }, { name: roll }] }
-  - { name: verse chime, kind: chain, generators: [{ name: verse }, { name: chime }] }
-  - { name: chorus strum, kind: chain, generators: [{ name: chorus }, { name: strum }] }
-  - { name: chorus chime, kind: chain, generators: [{ name: chorus }, { name: chime }] }
-  - { name: onion strum, kind: chain, generators: [{ name: onion }, { name: strum }] }
-  - { name: onion jangle, kind: chain, generators: [{ name: onion }, { name: jangle }] }
-  - { name: onion chorus strum, kind: chain, generators: [{ name: onion chorus }, { name: strum }] }
-  - { name: onion chorus jangle, kind: chain, generators: [{ name: onion chorus }, { name: jangle }] }
-
 instruments:
   - { name: steel guitar, device: "*FluidSynth", gm_sound: 26 }
   - { name: finger bass, device: "*FluidSynth", gm_sound: 34 }
@@ -222,23 +198,23 @@ songs:
       - name: intro
         clips:
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strum, pattern: chord twice, generators: [{ name: verse roll }], repeat: 4 }
+          - { track: strum, pattern: chord twice, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [6, 1, 4, 1, 5, 1, 6, 5], every: 1/2 }, guitarify: { enabled: true, bar: [bass, string_4, string_3, string_2, bass, string_4, string_3, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true } } }
       - name: verse
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: side, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strum, pattern: chord twice, generators: [{ name: verse bass strum }], repeat: 16 }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: strum, pattern: chord twice, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [6, 1, 4, 1, 5, 1, 6, 5], every: 1/2 }, guitarify: { enabled: true, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, true, false, false, false, true, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 1, 4, 1, 5, 1, 6, 5], every: 1/2 } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: chorus
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: side, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strum, pattern: chord twice, generators: [{ name: chorus strum }], repeat: 8 }
-          - { track: jangle, pattern: chord high twice, generators: [{ name: chorus chime }], loop: true }
-          - { track: bass, pattern: bass run, generators: [{ name: chorus chords }], loop: true }
+          - { track: strum, pattern: chord twice, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 }, guitarify: { enabled: true, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 } } }
+          - { track: jangle, pattern: chord high twice, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 }, guitarify: { enabled: true, bar: [string_4, string_2, string_1, string_3, string_2, string_1, string_3, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true, position: 5, strings: 4 } } }
+          - { track: bass, pattern: bass run, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 } } }
           - { track: lead, pattern: chorus tune, loop: true }
       - name: jangle
         tempo: 140
@@ -247,9 +223,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strum, pattern: chord, generators: [{ name: onion strum }], repeat: 16 }
-          - { track: jangle, pattern: chord high, generators: [{ name: onion jangle }], loop: true }
-          - { track: bass, pattern: bass run, generators: [{ name: onion chords }], loop: true }
+          - { track: strum, pattern: chord, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] }, guitarify: { enabled: true, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 } } }
+          - { track: jangle, pattern: chord high, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] }, guitarify: { enabled: true, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, true, false, false, true, false], cell: 1/8, let_ring: true, position: 7, strings: 4, spread: 6 } } }
+          - { track: bass, pattern: bass run, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] } } }
           - { track: lead, pattern: jangle tune, loop: true }
       - name: jangle chorus
         tempo: 140
@@ -258,27 +234,27 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strum, pattern: chord, generators: [{ name: onion chorus strum }], repeat: 8 }
-          - { track: jangle, pattern: chord high, generators: [{ name: onion chorus jangle }], loop: true }
-          - { track: bass, pattern: bass run, generators: [{ name: onion chorus chords }], loop: true }
+          - { track: strum, pattern: chord, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [6, 3, 4, 1, 4, 1, 5, 5] }, guitarify: { enabled: true, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 } } }
+          - { track: jangle, pattern: chord high, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 3, 4, 1, 4, 1, 5, 5] }, guitarify: { enabled: true, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, true, false, false, true, false], cell: 1/8, let_ring: true, position: 7, strings: 4, spread: 6 } } }
+          - { track: bass, pattern: bass run, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 3, 4, 1, 4, 1, 5, 5] } } }
           - { track: lead, pattern: onion tune, loop: true }
       - name: verse 2
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: side, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strum, pattern: chord twice, generators: [{ name: verse bass strum }], repeat: 16 }
-          - { track: jangle, pattern: chord high twice, generators: [{ name: verse chime }], loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: strum, pattern: chord twice, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [6, 1, 4, 1, 5, 1, 6, 5], every: 1/2 }, guitarify: { enabled: true, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, true, false, false, false, true, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 } } }
+          - { track: jangle, pattern: chord high twice, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 1, 4, 1, 5, 1, 6, 5], every: 1/2 }, guitarify: { enabled: true, bar: [string_4, string_2, string_1, string_3, string_2, string_1, string_3, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true, position: 5, strings: 4 } } }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 1, 4, 1, 5, 1, 6, 5], every: 1/2 } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: chorus 2
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: side, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strum, pattern: chord twice, generators: [{ name: chorus strum }], repeat: 8 }
-          - { track: jangle, pattern: chord high twice, generators: [{ name: chorus chime }], loop: true }
-          - { track: bass, pattern: bass run, generators: [{ name: chorus chords }], loop: true }
+          - { track: strum, pattern: chord twice, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 }, guitarify: { enabled: true, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 } } }
+          - { track: jangle, pattern: chord high twice, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 }, guitarify: { enabled: true, bar: [string_4, string_2, string_1, string_3, string_2, string_1, string_3, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true, position: 5, strings: 4 } } }
+          - { track: bass, pattern: bass run, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 } } }
           - { track: lead, pattern: chorus tune, loop: true }
       - name: jangle 2
         tempo: 140
@@ -287,9 +263,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strum, pattern: chord, generators: [{ name: onion strum }], repeat: 16 }
-          - { track: jangle, pattern: chord high, generators: [{ name: onion jangle }], loop: true }
-          - { track: bass, pattern: bass run, generators: [{ name: onion chords }], loop: true }
+          - { track: strum, pattern: chord, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] }, guitarify: { enabled: true, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 } } }
+          - { track: jangle, pattern: chord high, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] }, guitarify: { enabled: true, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, true, false, false, true, false], cell: 1/8, let_ring: true, position: 7, strings: 4, spread: 6 } } }
+          - { track: bass, pattern: bass run, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] } } }
           - { track: lead, pattern: jangle tune, loop: true }
       - name: jangle chorus 2
         tempo: 140
@@ -298,11 +274,11 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strum, pattern: chord, generators: [{ name: onion chorus strum }], repeat: 8 }
-          - { track: jangle, pattern: chord high, generators: [{ name: onion chorus jangle }], loop: true }
-          - { track: bass, pattern: bass run, generators: [{ name: onion chorus chords }], loop: true }
+          - { track: strum, pattern: chord, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [6, 3, 4, 1, 4, 1, 5, 5] }, guitarify: { enabled: true, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, false, true, false, false, false], cell: 1/8, let_ring: true, spread: 10, loose_timing: 15 } } }
+          - { track: jangle, pattern: chord high, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 3, 4, 1, 4, 1, 5, 5] }, guitarify: { enabled: true, bar: [down, nothing, down, up, down, up, down, up], accents: [true, false, false, true, false, false, true, false], cell: 1/8, let_ring: true, position: 7, strings: 4, spread: 6 } } }
+          - { track: bass, pattern: bass run, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 3, 4, 1, 4, 1, 5, 5] } } }
           - { track: lead, pattern: onion tune, loop: true }
       - name: outro
         clips:
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strum, pattern: chord twice, generators: [{ name: verse roll }], repeat: 4 }
+          - { track: strum, pattern: chord twice, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [6, 1, 4, 1, 5, 1, 6, 5], every: 1/2 }, guitarify: { enabled: true, bar: [bass, string_4, string_3, string_2, bass, string_4, string_3, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true } } }

@@ -154,14 +154,6 @@ patterns:
     velocity: [124, ~, 112, 112, 112, ~, 108, ~, 120, 112, 112, 112, 112, 112, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 124, ~, 112, 112, 112, ~, 108, ~, 120, 112, 112, 112, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 124, ~, 112, 112, 112, ~, 108, ~, 120, 112, 112, 112, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
 
-generators:
-  - { name: blues, kind: chords, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] }
-  - { name: turn, kind: chords, mode: progression, chords: [5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7] }
-  - { name: last, kind: chords, mode: progression, chords: [1, 4, 1, 1], qualities: [dom7, dom7, dom7, dom7] }
-  - { name: blues chords, kind: chain, generators: [{ name: blues }] }
-  - { name: turn chords, kind: chain, generators: [{ name: turn }] }
-  - { name: last chords, kind: chain, generators: [{ name: last }] }
-
 instruments:
   - { name: steel guitar, device: "*FluidSynth", gm_sound: 26 }
   - { name: harmonica, device: "*FluidSynth", gm_sound: 23 }
@@ -184,50 +176,50 @@ songs:
       - name: turnaround
         clips:
           - { track: foot, pattern: foot, repeat: 4 }
-          - { track: guitar, pattern: riff, generators: [{ name: turn chords }], loop: true }
+          - { track: guitar, pattern: riff, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7] } } }
           - { track: slide, pattern: intro, loop: true }
       - name: first verse
         clips:
           - { track: foot, pattern: foot, repeat: 12 }
-          - { track: guitar, pattern: riff, generators: [{ name: blues chords }], loop: true }
+          - { track: guitar, pattern: riff, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] } } }
           - { track: slide, pattern: fills, loop: true }
           - { track: voice, pattern: a, loop: true }
       - name: pleading
         clips:
           - { track: foot, pattern: foot, repeat: 12 }
-          - { track: guitar, pattern: stop, generators: [{ name: blues chords }], loop: true }
+          - { track: guitar, pattern: stop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] } } }
           - { track: slide, pattern: fills, loop: true }
           - { track: voice, pattern: b, loop: true }
       - name: guitar
         clips:
           - { track: foot, pattern: foot, repeat: 12 }
-          - { track: guitar, pattern: riff, generators: [{ name: blues chords }], loop: true }
+          - { track: guitar, pattern: riff, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] } } }
           - { track: slide, pattern: solo 1, loop: true }
       - name: second verse
         clips:
           - { track: foot, pattern: foot, repeat: 12 }
-          - { track: guitar, pattern: riff, generators: [{ name: blues chords }], loop: true }
+          - { track: guitar, pattern: riff, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] } } }
           - { track: slide, pattern: fills, loop: true }
           - { track: voice, pattern: a, loop: true }
       - name: guitar again
         clips:
           - { track: foot, pattern: foot, repeat: 12 }
-          - { track: guitar, pattern: riff, generators: [{ name: blues chords }], loop: true }
+          - { track: guitar, pattern: riff, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] } } }
           - { track: slide, pattern: solo 2, loop: true }
       - name: pleading again
         clips:
           - { track: foot, pattern: foot, repeat: 12 }
-          - { track: guitar, pattern: stop, generators: [{ name: blues chords }], loop: true }
+          - { track: guitar, pattern: stop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] } } }
           - { track: slide, pattern: fills, loop: true }
           - { track: voice, pattern: b, loop: true }
       - name: last verse
         clips:
           - { track: foot, pattern: foot, repeat: 12 }
-          - { track: guitar, pattern: riff, generators: [{ name: blues chords }], loop: true }
+          - { track: guitar, pattern: riff, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] } } }
           - { track: slide, pattern: fills, loop: true }
           - { track: voice, pattern: a, loop: true }
       - name: ending
         clips:
           - { track: foot, pattern: foot, repeat: 4 }
-          - { track: guitar, pattern: end riff, generators: [{ name: last chords }], loop: true }
+          - { track: guitar, pattern: end riff, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4, 1, 1], qualities: [dom7, dom7, dom7, dom7] } } }
           - { track: slide, pattern: end, loop: true }

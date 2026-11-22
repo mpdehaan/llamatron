@@ -233,16 +233,6 @@ patterns:
     octave: [3, 3, 4, 3, 4, 3, 4, 3]
     velocity: [96, 80, 84, 80, 87, 80, 84, 80]
 
-generators:
-  - { name: verse, kind: chords, mode: progression, chords: [1, 1, 6, 7] }
-  - { name: chorus, kind: chords, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
-  - { name: twin, kind: chords, mode: progression, chords: [1, 6, 7, 1] }
-  - { name: fast, kind: chords, mode: progression, chords: [1, 7, 6, 7] }
-  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
-  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
-  - { name: twin chords, kind: chain, generators: [{ name: twin }] }
-  - { name: fast chords, kind: chain, generators: [{ name: fast }] }
-
 instruments:
   - { name: pick bass, device: "*FluidSynth", gm_sound: 35 }
   - { name: distortion guitar, device: "*FluidSynth", gm_sound: 31 }
@@ -279,15 +269,15 @@ songs:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: verse chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
       - name: twin guitars
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: twin chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: twin chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
           - { track: crash, pattern: crash, loop: true }
           - { track: guitar 1, pattern: twin, loop: true }
           - { track: guitar 2, pattern: twin above, loop: true }
@@ -296,16 +286,16 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: verse chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: chorus
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: chorus chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: twin guitars again
@@ -313,8 +303,8 @@ songs:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: twin chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: twin chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
           - { track: crash, pattern: crash, loop: true }
           - { track: guitar 1, pattern: twin half, loop: true }
           - { track: guitar 2, pattern: twin half above, loop: true }
@@ -323,16 +313,16 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: verse chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: chorus 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: chorus chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: becalmed
@@ -346,9 +336,9 @@ songs:
         clips:
           - { track: toms, pattern: toms, repeat: 8 }
           - { track: toms high, pattern: toms high, loop: true }
-          - { track: bass, pattern: eighths, generators: [{ name: verse chords }], loop: true }
-          - { track: clean, pattern: build guitar, generators: [{ name: verse chords }], loop: true }
-          - { track: pad, pattern: drone, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: clean, pattern: build guitar, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: pad, pattern: drone, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
       - name: storm
         tempo: 168
         clips:
@@ -356,8 +346,8 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash, loop: true }
-          - { track: bass, pattern: eighths, generators: [{ name: fast chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: fast chords }], loop: true }
+          - { track: bass, pattern: eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7] } } }
           - { track: guitar 1, pattern: fast, loop: true }
           - { track: guitar 2, pattern: fast above, loop: true }
       - name: solo
@@ -366,16 +356,16 @@ songs:
           - { track: kick, pattern: kick fast, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: eighths, generators: [{ name: chorus chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: guitar 1, pattern: solo, loop: true }
       - name: last chorus
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: chorus chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: guitar 2, pattern: twin half above, loop: true }
@@ -384,8 +374,8 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: twin chords }], loop: true }
-          - { track: rhythm, pattern: gallop chords, generators: [{ name: twin chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: rhythm, pattern: gallop chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
           - { track: crash, pattern: crash, loop: true }
           - { track: guitar 1, pattern: twin, loop: true }
           - { track: guitar 2, pattern: twin above, loop: true }

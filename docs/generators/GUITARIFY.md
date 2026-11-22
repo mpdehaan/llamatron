@@ -70,7 +70,7 @@ The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four to 
 
 ## Applying the Generator
 
-Add a Guitarify to a chain, as `guitarify: name`, and give clips that chain. A Progression before the Guitarify in the same chain moves one written chord through a song's chords, and the Guitarify then plays each. `examples/learning/21_guitarify.yml` plays twenty short scenes, each a way a guitar is played, from one pattern of chords a scene.
+Switch on the Guitarify tab of a clip or a track, or add a Guitarify to a chain, as `guitarify: name`, and give clips that chain. A Progression before the Guitarify in the same chain moves one written chord through a song's chords, and the Guitarify then plays each. `examples/learning/21_guitarify.yml` plays twenty short scenes, each a way a guitar is played, from one pattern of chords a scene.
 
 ## Settings by Genre
 

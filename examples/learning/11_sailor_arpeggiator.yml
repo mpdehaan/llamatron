@@ -14,12 +14,12 @@ notes: |
   notes. A plain arpeggiator leaves the single D alone, but one with offsets or an octave
   range arpeggiates it as a chord of one note, which the last half note of each scene shows.
 
-  Each chain holds exactly one arpeggiator with the same name, so a scene's chain says what
+  Each scene's chords clip sets its arpeggiator on its Arp tab, and the scene's name says what
   it demonstrates. The first scenes change one setting at a time, from the step length and
   the order to the octave range, the octave jump and the offsets. The last ones combine them.
 
   When changing this demo:
-  Keep one arpeggiator per chain, with the chain named after it, and scene names that say
+  Keep one arpeggiator per scene, on the chords clip's Arp tab, and scene names that say
   what changed. Up to about 30 scenes is fine. The single D at the end of the chords is
   there on purpose, to show what offsets and octave ranges do to a single note.
 real_time: true
@@ -43,54 +43,6 @@ patterns:
     octave: [5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 4, ~, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~]
     velocity: [90, ~, 90, 90, 90, ~, 90, 90, 90, ~, 90, ~, 90, ~, 90, ~, 90, ~, 90, 90, 90, ~, 90, 90, 90, ~, 90, ~, 90, ~, 90, ~, 90, ~, 90, 90, 90, ~, 90, 90, 90, ~, 90, ~, 90, ~, 90, ~, 90, ~, 90, ~, 90, ~, 90, ~, 90, ~, ~, ~, 90, ~, ~, ~]
 
-generators:
-  - { name: up_eighths, kind: arp, step: 1/8, order: up }
-  - { name: up_sixteenths, kind: arp, step: 1/16, order: up }
-  - { name: up_triplets, kind: arp, step: 1/12, order: up }
-  - { name: up_thirty_seconds, kind: arp, step: 1/32, order: up }
-  - { name: down, kind: arp, step: 1/16, order: down }
-  - { name: up_down, kind: arp, step: 1/16, order: up_down }
-  - { name: down_up, kind: arp, step: 1/16, order: down_up }
-  - { name: random_1, kind: arp, step: 1/16, order: random }
-  - { name: random_2, kind: arp, step: 1/16, order: random }
-  - { name: two_octaves_after_chord, kind: arp, step: 1/16, order: up, octave_range: 2, octave_jump: after_chord }
-  - { name: two_octaves_after_each_note, kind: arp, step: 1/16, order: up, octave_range: 2, octave_jump: after_each_note }
-  - { name: three_octaves_up_down, kind: arp, step: 1/16, order: up_down, octave_range: 3 }
-  - { name: four_octaves_fast, kind: arp, step: 1/32, order: up, octave_range: 4 }
-  - { name: offsets_octave_bounce, kind: arp, step: 1/16, order: up, offsets: [0, 7] }
-  - { name: offsets_neighbors, kind: arp, step: 1/16, order: up, offsets: [0, 1, 0, -1] }
-  - { name: offsets_silent_steps, kind: arp, step: 1/16, order: up, offsets: [0, ~, 0, 0, ~, 0, ~, 0] }
-  - { name: offsets_climb, kind: arp, step: 1/16, order: up, offsets: [0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0] }
-  - { name: offsets_drop, kind: arp, step: 1/16, order: down, offsets: [0, -7] }
-  - { name: up_down_two_octaves_thirds, kind: arp, step: 1/16, order: up_down, octave_range: 2, offsets: [0, 0, 2] }
-  - { name: random_three_octaves_each_note, kind: arp, step: 1/16, order: random, octave_range: 3, octave_jump: after_each_note }
-  - { name: down_eighths_gaps, kind: arp, step: 1/8, order: down, offsets: [0, ~, 7, ~] }
-  - { name: triplets_up_down_two_octaves, kind: arp, step: 1/12, order: up_down, octave_range: 2 }
-  - { name: sparkle, kind: arp, step: 1/32, order: up_down, octave_range: 4, offsets: [0, 7, ~, 2] }
-  - { name: up_eighths arp, kind: chain, generators: [{ name: up_eighths }] }
-  - { name: up_sixteenths arp, kind: chain, generators: [{ name: up_sixteenths }] }
-  - { name: up_triplets arp, kind: chain, generators: [{ name: up_triplets }] }
-  - { name: up_thirty_seconds arp, kind: chain, generators: [{ name: up_thirty_seconds }] }
-  - { name: down arp, kind: chain, generators: [{ name: down }] }
-  - { name: up_down arp, kind: chain, generators: [{ name: up_down }] }
-  - { name: down_up arp, kind: chain, generators: [{ name: down_up }] }
-  - { name: random_1 arp, kind: chain, generators: [{ name: random_1 }] }
-  - { name: random_2 arp, kind: chain, generators: [{ name: random_2 }] }
-  - { name: two_octaves_after_chord arp, kind: chain, generators: [{ name: two_octaves_after_chord }] }
-  - { name: two_octaves_after_each_note arp, kind: chain, generators: [{ name: two_octaves_after_each_note }] }
-  - { name: three_octaves_up_down arp, kind: chain, generators: [{ name: three_octaves_up_down }] }
-  - { name: four_octaves_fast arp, kind: chain, generators: [{ name: four_octaves_fast }] }
-  - { name: offsets_octave_bounce arp, kind: chain, generators: [{ name: offsets_octave_bounce }] }
-  - { name: offsets_neighbors arp, kind: chain, generators: [{ name: offsets_neighbors }] }
-  - { name: offsets_silent_steps arp, kind: chain, generators: [{ name: offsets_silent_steps }] }
-  - { name: offsets_climb arp, kind: chain, generators: [{ name: offsets_climb }] }
-  - { name: offsets_drop arp, kind: chain, generators: [{ name: offsets_drop }] }
-  - { name: up_down_two_octaves_thirds arp, kind: chain, generators: [{ name: up_down_two_octaves_thirds }] }
-  - { name: random_three_octaves_each_note arp, kind: chain, generators: [{ name: random_three_octaves_each_note }] }
-  - { name: down_eighths_gaps arp, kind: chain, generators: [{ name: down_eighths_gaps }] }
-  - { name: triplets_up_down_two_octaves arp, kind: chain, generators: [{ name: triplets_up_down_two_octaves }] }
-  - { name: sparkle arp, kind: chain, generators: [{ name: sparkle }] }
-
 instruments:
   - { name: warm pad, device: "*FluidSynth", gm_sound: 90 }
   - { name: square lead, device: "*FluidSynth", gm_sound: 81 }
@@ -112,93 +64,93 @@ songs:
           - { track: tune, pattern: tune }
       - name: "Arp up, 1/8 steps"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: up_eighths arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/8, order: up } } }
           - { track: tune, pattern: tune }
       - name: "Arp up, 1/16 steps"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: up_sixteenths arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: up } } }
           - { track: tune, pattern: tune }
       - name: "Arp up, 1/12 steps (triplets)"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: up_triplets arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/12, order: up } } }
           - { track: tune, pattern: tune }
       - name: "Arp up, 1/32 steps"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: up_thirty_seconds arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/32, order: up } } }
           - { track: tune, pattern: tune }
       - name: "Order: down"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: down arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: down } } }
           - { track: tune, pattern: tune }
       - name: "Order: up_down"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: up_down arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: up_down } } }
           - { track: tune, pattern: tune }
       - name: "Order: down_up"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: down_up arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: down_up } } }
           - { track: tune, pattern: tune }
       - name: "Order: random"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: random_1 arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: random } } }
           - { track: tune, pattern: tune }
       - name: "Order: random, again"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: random_2 arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: random } } }
           - { track: tune, pattern: tune }
       - name: "Octave range 2, jump after_chord"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: two_octaves_after_chord arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: up, octave_range: 2, octave_jump: after_chord } } }
           - { track: tune, pattern: tune }
       - name: "Octave range 2, jump after_each_note"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: two_octaves_after_each_note arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: up, octave_range: 2, octave_jump: after_each_note } } }
           - { track: tune, pattern: tune }
       - name: "Octave range 3, up_down"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: three_octaves_up_down arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: up_down, octave_range: 3 } } }
           - { track: tune, pattern: tune }
       - name: "Octave range 4, 1/32 steps"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: four_octaves_fast arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/32, order: up, octave_range: 4 } } }
           - { track: tune, pattern: tune }
       - name: "Offsets 0 7 (octave bounce)"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: offsets_octave_bounce arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: up, offsets: [0, 7] } } }
           - { track: tune, pattern: tune }
       - name: "Offsets 0 1 0 -1 (neighbors)"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: offsets_neighbors arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: up, offsets: [0, 1, 0, -1] } } }
           - { track: tune, pattern: tune }
       - name: Offsets with silent steps
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: offsets_silent_steps arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: up, offsets: [0, ~, 0, 0, ~, 0, ~, 0] } } }
           - { track: tune, pattern: tune }
       - name: Offsets climbing 0 to 7 and back
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: offsets_climb arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: up, offsets: [0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0] } } }
           - { track: tune, pattern: tune }
       - name: "Offsets 0 -7, order down"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: offsets_drop arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: down, offsets: [0, -7] } } }
           - { track: tune, pattern: tune }
       - name: "Combined: up_down, 2 octaves, thirds"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: up_down_two_octaves_thirds arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: up_down, octave_range: 2, offsets: [0, 0, 2] } } }
           - { track: tune, pattern: tune }
       - name: "Combined: random, 3 octaves, each note"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: random_three_octaves_each_note arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/16, order: random, octave_range: 3, octave_jump: after_each_note } } }
           - { track: tune, pattern: tune }
       - name: "Combined: down, 1/8, octave gaps"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: down_eighths_gaps arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/8, order: down, offsets: [0, ~, 7, ~] } } }
           - { track: tune, pattern: tune }
       - name: "Combined: triplets up_down 2 octaves"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: triplets_up_down_two_octaves arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/12, order: up_down, octave_range: 2 } } }
           - { track: tune, pattern: tune }
       - name: "Combined: 1/32 up_down 4 octaves offsets"
         clips:
-          - { track: chords, pattern: chords, generators: [{ name: sparkle arp }] }
+          - { track: chords, pattern: chords, built_in: { arp: { enabled: true, step: 1/32, order: up_down, octave_range: 4, offsets: [0, 7, ~, 2] } } }
           - { track: tune, pattern: tune }

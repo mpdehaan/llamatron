@@ -145,12 +145,6 @@ patterns:
     velocity: [117, ~, 106, ~, 108, ~, 106, ~, 117, ~, ~, ~, ~, ~, ~, ~, 117, ~, 106, ~, 108, ~, 106, ~, 117, ~, ~, ~, ~, ~, ~, ~, 117, ~, 106, ~, 108, ~, 106, ~, 117, ~, ~, ~, ~, ~, ~, ~, 117, ~, 106, ~, 108, ~, 106, ~, 117, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
-generators:
-  - { name: fanfare, kind: chords, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
-  - { name: answer, kind: chords, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
-  - { name: fanfare chords, kind: chain, generators: [{ name: fanfare }] }
-  - { name: answer chords, kind: chain, generators: [{ name: answer }] }
-
 instruments:
   - { name: strings, device: "*FluidSynth", gm_sound: 49 }
   - { name: bass, device: "*FluidSynth", gm_sound: 34 }
@@ -187,9 +181,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
           - { track: ride, pattern: ride, loop: true }
-          - { track: bass, pattern: drive, generators: [{ name: fanfare chords }], loop: true }
-          - { track: strings, pattern: held, generators: [{ name: fanfare chords }], loop: true }
-          - { track: stabs, pattern: offbeat, generators: [{ name: fanfare chords }], loop: true }
+          - { track: bass, pattern: drive, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: strings, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: stabs, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: fanfare, loop: true }
       - name: answer
         clips:
@@ -197,9 +191,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
           - { track: ride, pattern: ride, loop: true }
-          - { track: bass, pattern: drive, generators: [{ name: answer chords }], loop: true }
-          - { track: strings, pattern: held, generators: [{ name: answer chords }], loop: true }
-          - { track: stabs, pattern: offbeat, generators: [{ name: answer chords }], loop: true }
+          - { track: bass, pattern: drive, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: strings, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: stabs, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: trombone, pattern: answer, loop: true }
       - name: drums
         clips:
@@ -213,9 +207,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
           - { track: ride, pattern: ride, loop: true }
-          - { track: bass, pattern: drive, generators: [{ name: fanfare chords }], loop: true }
-          - { track: strings, pattern: held, generators: [{ name: fanfare chords }], loop: true }
-          - { track: stabs, pattern: offbeat, generators: [{ name: fanfare chords }], loop: true }
+          - { track: bass, pattern: drive, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: strings, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: stabs, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: fanfare, loop: true }
       - name: ending
         scale: C# Minor

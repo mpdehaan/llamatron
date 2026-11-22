@@ -217,16 +217,6 @@ patterns:
     velocity: [106, ~, ~, ~, ~, ~, ~, ~, 106, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
 
-generators:
-  - { name: a, kind: chords, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] }
-  - { name: b, kind: chords, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] }
-  - { name: fanfare, kind: chords, mode: progression, chords: [1, 7, 6, 5], accidentals: [~, b, b, ~] }
-  - { name: deep, kind: chords, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }
-  - { name: a chords, kind: chain, generators: [{ name: a }] }
-  - { name: b chords, kind: chain, generators: [{ name: b }] }
-  - { name: fanfare chords, kind: chain, generators: [{ name: fanfare }] }
-  - { name: deep chords, kind: chain, generators: [{ name: deep }] }
-
 instruments:
   - { name: square lead, device: "*FluidSynth", gm_sound: 81 }
   - { name: second square, device: "*FluidSynth", gm_sound: 81 }
@@ -259,30 +249,30 @@ songs:
         clips:
           - { track: lead, pattern: fanfare, repeat: 1 }
           - { track: harmony, pattern: fanfare low, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: fanfare chords }], loop: true }
-          - { track: bass, pattern: low, generators: [{ name: fanfare chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], accidentals: [~, b, b, ~] } } }
+          - { track: bass, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], accidentals: [~, b, b, ~] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: overworld
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: noise, pattern: march, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] } } }
           - { track: lead, pattern: march a, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: "overworld, two voices"
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: noise, pattern: march, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] } } }
           - { track: lead, pattern: march a, loop: true }
           - { track: harmony, pattern: march a harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: a chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: second strain
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: noise, pattern: march, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: b chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
           - { track: lead, pattern: march b, loop: true }
           - { track: harmony, pattern: march b harmony, loop: true }
           - { track: crash, pattern: crash, loop: true }
@@ -290,10 +280,10 @@ songs:
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: noise, pattern: march, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] } } }
           - { track: lead, pattern: march a, loop: true }
           - { track: harmony, pattern: march a harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: a chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: down the stairs
         scale: D Minor
@@ -303,23 +293,23 @@ songs:
         scale: D Minor
         tempo: 120
         clips:
-          - { track: pulse, pattern: figure, generators: [{ name: deep chords }], repeat: 8 }
-          - { track: bass, pattern: low, generators: [{ name: deep chords }], loop: true }
+          - { track: pulse, pattern: figure, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
+          - { track: bass, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
       - name: "dungeon, deeper"
         scale: D Minor
         tempo: 120
         clips:
-          - { track: pulse, pattern: figure, generators: [{ name: deep chords }], repeat: 8 }
-          - { track: bass, pattern: low, generators: [{ name: deep chords }], loop: true }
+          - { track: pulse, pattern: figure, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
+          - { track: bass, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
           - { track: hollow, pattern: deep, loop: true }
           - { track: heart, pattern: heart, loop: true }
       - name: "dungeon, deepest"
         scale: D Minor
         tempo: 120
         clips:
-          - { track: pulse, pattern: figure, generators: [{ name: deep chords }], repeat: 16 }
-          - { track: chip, pattern: figure high, generators: [{ name: deep chords }], loop: true }
-          - { track: bass, pattern: low, generators: [{ name: deep chords }], loop: true }
+          - { track: pulse, pattern: figure, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
+          - { track: chip, pattern: figure high, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
+          - { track: bass, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
           - { track: hollow, pattern: deep, loop: true }
           - { track: harmony, pattern: deep high, loop: true }
           - { track: heart, pattern: heart, loop: true }
@@ -331,28 +321,28 @@ songs:
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: noise, pattern: march, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] } } }
           - { track: lead, pattern: march a, loop: true }
           - { track: harmony, pattern: march a harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: a chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: second strain again
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: noise, pattern: march, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: b chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
           - { track: lead, pattern: march b, loop: true }
           - { track: harmony, pattern: march b harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: b chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: last march
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: noise, pattern: march, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] } } }
           - { track: lead, pattern: march a, loop: true }
           - { track: harmony, pattern: march a harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: a chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 5, 5], accidentals: [~, ~, b, b, b, b, ~, ~] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: ending
         clips:

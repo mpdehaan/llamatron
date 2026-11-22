@@ -65,22 +65,6 @@ patterns:
     accidental: [~, "#", ~, "#"]
     octave: [~, 3, ~, 3]
 
-generators:
-  - { name: loose hats, kind: timing, rush_steps: [true, false, false, false, false], rush_step: 1/8, drag_steps: [false, false, true, false, true], drag_step: 1/8 }
-  - { name: clap lay back, kind: timing, drag_steps: [false, true, true], drag_step: 1/4, drag_amount: 25 }
-  - { name: five, kind: timing, shorten_steps: [false, false, false, false, true], glide_steps: [true, false, false, true, false] }
-  - { name: seven, kind: timing, shorten_steps: [false, true, false, false, false, false, true], glide_steps: [true, false, false, true, false, false, false] }
-  - { name: three, kind: timing, shorten_steps: [false, false, true], glide_steps: [true, false, false] }
-  - { name: long five, kind: timing, shorten_steps: [false, false, false, false, true], glide_steps: [true, false, false, true, false], glide_amount: 1/32 }
-  - { name: slow seven, kind: timing, shorten_steps: [false, true, false, false, false, false, true], shorten_step: 1/8, glide_steps: [true, false, false, true, false, false, false], glide_step: 1/8 }
-  - { name: hats loose, kind: chain, generators: [{ name: loose hats }] }
-  - { name: clap lay back drag, kind: chain, generators: [{ name: clap lay back }] }
-  - { name: five glide, kind: chain, generators: [{ name: five }] }
-  - { name: seven glide, kind: chain, generators: [{ name: seven }] }
-  - { name: three glide, kind: chain, generators: [{ name: three }] }
-  - { name: long five glide, kind: chain, generators: [{ name: long five }] }
-  - { name: slow seven glide, kind: chain, generators: [{ name: slow seven }] }
-
 instruments:
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
   - { name: drum kit, device: "*FluidSynth" }
@@ -106,34 +90,34 @@ songs:
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: hats, pattern: hats, loop: true }
-          - { track: acid, pattern: acid, generators: [{ name: five glide }], repeat: 12 }
+          - { track: acid, pattern: acid, repeat: 12, built_in: { timing: { enabled: true, shorten_steps: [false, false, false, false, true], glide_steps: [true, false, false, true, false] } } }
       - name: seven steps
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: hats, pattern: hats, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: acid, pattern: acid, generators: [{ name: seven glide }], repeat: 12 }
+          - { track: acid, pattern: acid, repeat: 12, built_in: { timing: { enabled: true, shorten_steps: [false, true, false, false, false, false, true], glide_steps: [true, false, false, true, false, false, false] } } }
       - name: three steps
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: hats, pattern: hats, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: acid, pattern: acid, generators: [{ name: three glide }], repeat: 12 }
+          - { track: acid, pattern: acid, repeat: 12, built_in: { timing: { enabled: true, shorten_steps: [false, false, true], glide_steps: [true, false, false] } } }
       - name: "breakdown, long slides"
         clips:
-          - { track: acid, pattern: acid, generators: [{ name: long five glide }], repeat: 12 }
+          - { track: acid, pattern: acid, repeat: 12, built_in: { timing: { enabled: true, shorten_steps: [false, false, false, false, true], glide_steps: [true, false, false, true, false], glide_amount: 1/32 } } }
       - name: "build, eighth notes"
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: hats, pattern: hats, loop: true }
-          - { track: acid, pattern: acid, generators: [{ name: slow seven glide }], repeat: 12 }
+          - { track: acid, pattern: acid, repeat: 12, built_in: { timing: { enabled: true, shorten_steps: [false, true, false, false, false, false, true], shorten_step: 1/8, glide_steps: [true, false, false, true, false, false, false], glide_step: 1/8 } } }
       - name: drop
         clips:
           - { track: kick, pattern: kick, loop: true }
-          - { track: hats, pattern: hats, generators: [{ name: hats loose }], loop: true }
-          - { track: clap, pattern: clap, generators: [{ name: clap lay back drag }], loop: true }
-          - { track: acid, pattern: acid, generators: [{ name: seven glide }], repeat: 12 }
+          - { track: hats, pattern: hats, loop: true, built_in: { timing: { enabled: true, rush_steps: [true, false, false, false, false], rush_step: 1/8, drag_steps: [false, false, true, false, true], drag_step: 1/8 } } }
+          - { track: clap, pattern: clap, loop: true, built_in: { timing: { enabled: true, drag_steps: [false, true, true], drag_step: 1/4, drag_amount: 25 } } }
+          - { track: acid, pattern: acid, repeat: 12, built_in: { timing: { enabled: true, shorten_steps: [false, true, false, false, false, false, true], glide_steps: [true, false, false, true, false, false, false] } } }
       - name: outro
         clips:
           - { track: kick, pattern: kick, loop: true }
-          - { track: acid, pattern: acid, generators: [{ name: three glide }], repeat: 12 }
+          - { track: acid, pattern: acid, repeat: 12, built_in: { timing: { enabled: true, shorten_steps: [false, false, true], glide_steps: [true, false, false] } } }

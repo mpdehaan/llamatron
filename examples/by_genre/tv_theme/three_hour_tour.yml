@@ -148,18 +148,6 @@ patterns:
     velocity: [114, ~, ~, ~, 118, ~, 102, ~, 106, ~, ~, ~, 106, ~, 106, ~, 114, ~, ~, 106, 106, ~, 102, ~, 118, ~, 106, ~, 102, ~, ~, ~]
     tie: [false, true, true, true, false, true, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, false, false, true, false, true, false, true, true, false]
 
-generators:
-  - { name: shanty, kind: chords, mode: progression, chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }
-  - { name: refrain, kind: chords, mode: progression, chords: [3, 7, 5, 1], qualities: [~, ~, M, ~] }
-  - { name: turn, kind: chords, mode: progression, chords: [6, 3, 4, 5], qualities: [~, ~, ~, M] }
-  - { name: boom, kind: guitarify, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 }
-  - { name: shanty chords, kind: chain, generators: [{ name: shanty }] }
-  - { name: shanty strum, kind: chain, generators: [{ name: shanty }, { name: boom }] }
-  - { name: refrain chords, kind: chain, generators: [{ name: refrain }] }
-  - { name: refrain strum, kind: chain, generators: [{ name: refrain }, { name: boom }] }
-  - { name: turn chords, kind: chain, generators: [{ name: turn }] }
-  - { name: turn strum, kind: chain, generators: [{ name: turn }, { name: boom }] }
-
 instruments:
   - { name: steel guitar, device: "*FluidSynth", gm_sound: 26 }
   - { name: accordion, device: "*FluidSynth", gm_sound: 22 }
@@ -189,58 +177,58 @@ songs:
     scenes:
       - name: verse 1
         clips:
-          - { track: guitar, pattern: chord, generators: [{ name: shanty strum }], repeat: 8 }
+          - { track: guitar, pattern: chord, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }, guitarify: { enabled: true, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 } } }
           - { track: lead, pattern: shanty, loop: true }
           - { track: bell, pattern: bell, loop: true }
       - name: refrain
         clips:
-          - { track: guitar, pattern: chord, generators: [{ name: refrain strum }], repeat: 4 }
+          - { track: guitar, pattern: chord, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 5, 1], qualities: [~, ~, M, ~] }, guitarify: { enabled: true, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 } } }
           - { track: lead, pattern: call, loop: true }
           - { track: kick, pattern: kick, loop: true }
           - { track: brush, pattern: brush, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: bass, pattern: two beat, generators: [{ name: refrain chords }], loop: true }
-          - { track: accordion, pattern: held, generators: [{ name: refrain chords }], loop: true }
+          - { track: bass, pattern: two beat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 5, 1], qualities: [~, ~, M, ~] } } }
+          - { track: accordion, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 5, 1], qualities: [~, ~, M, ~] } } }
           - { track: voices, pattern: answer, loop: true }
       - name: verse 2
         scale: Eb Minor
         clips:
-          - { track: guitar, pattern: chord, generators: [{ name: shanty strum }], repeat: 8 }
+          - { track: guitar, pattern: chord, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }, guitarify: { enabled: true, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 } } }
           - { track: lead, pattern: shanty, loop: true }
           - { track: kick, pattern: kick, loop: true }
           - { track: brush, pattern: brush, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: bass, pattern: two beat, generators: [{ name: shanty chords }], loop: true }
-          - { track: accordion, pattern: held, generators: [{ name: shanty chords }], loop: true }
+          - { track: bass, pattern: two beat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] } } }
+          - { track: accordion, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] } } }
       - name: the turn
         scale: Eb Minor
         clips:
-          - { track: guitar, pattern: chord, generators: [{ name: turn strum }], repeat: 4 }
+          - { track: guitar, pattern: chord, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [6, 3, 4, 5], qualities: [~, ~, ~, M] }, guitarify: { enabled: true, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 } } }
           - { track: lead, pattern: turn, loop: true }
           - { track: kick, pattern: kick, loop: true }
           - { track: brush, pattern: brush, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: bass, pattern: two beat, generators: [{ name: turn chords }], loop: true }
+          - { track: bass, pattern: two beat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 3, 4, 5], qualities: [~, ~, ~, M] } } }
       - name: verse 3
         scale: E Minor
         clips:
-          - { track: guitar, pattern: chord, generators: [{ name: shanty strum }], repeat: 8 }
+          - { track: guitar, pattern: chord, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }, guitarify: { enabled: true, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 } } }
           - { track: lead, pattern: shanty, loop: true }
           - { track: kick, pattern: kick, loop: true }
           - { track: brush, pattern: brush, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: bass, pattern: two beat, generators: [{ name: shanty chords }], loop: true }
-          - { track: accordion, pattern: held, generators: [{ name: shanty chords }], loop: true }
+          - { track: bass, pattern: two beat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] } } }
+          - { track: accordion, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 7, 3, 7, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] } } }
           - { track: voices, pattern: shanty men, loop: true }
       - name: last refrain
         scale: E Minor
         clips:
-          - { track: guitar, pattern: chord, generators: [{ name: refrain strum }], repeat: 4 }
+          - { track: guitar, pattern: chord, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 5, 1], qualities: [~, ~, M, ~] }, guitarify: { enabled: true, bar: [bass, nothing, down, up, alt_bass, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 14 } } }
           - { track: lead, pattern: call, loop: true }
           - { track: kick, pattern: kick, loop: true }
           - { track: brush, pattern: brush, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: bass, pattern: two beat, generators: [{ name: refrain chords }], loop: true }
-          - { track: accordion, pattern: held, generators: [{ name: refrain chords }], loop: true }
+          - { track: bass, pattern: two beat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 5, 1], qualities: [~, ~, M, ~] } } }
+          - { track: accordion, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 5, 1], qualities: [~, ~, M, ~] } } }
           - { track: voices, pattern: answer, loop: true }
           - { track: bell, pattern: bell, loop: true }

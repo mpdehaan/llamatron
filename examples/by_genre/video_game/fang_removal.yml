@@ -104,15 +104,6 @@ patterns:
     velocity: [116, ~, 104, ~, 107, ~, 104, ~, 116, ~, 104, ~, 107, ~, ~, ~, 116, ~, 104, ~, 107, ~, 104, ~, 116, ~, 104, ~, 107, ~, ~, ~, 116, 100, 104, 100, 107, 100, 104, 100, 116, ~, 104, ~, 107, ~, ~, ~, 116, 100, 104, 100, 107, 100, 104, 100, 116, ~, ~, ~, 107, ~, ~, ~]
     tie: [false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, false, true, true, true]
 
-generators:
-  - { name: chip, kind: arp, step: 1/16, order: up, octave_range: 1 }
-  - { name: a, kind: chords, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }
-  - { name: b, kind: chords, mode: progression, chords: [4, 7, 3, 6, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
-  - { name: a chords, kind: chain, generators: [{ name: a }] }
-  - { name: b chords, kind: chain, generators: [{ name: b }] }
-  - { name: a arp, kind: chain, generators: [{ name: a }, { name: chip }] }
-  - { name: b arp, kind: chain, generators: [{ name: b }, { name: chip }] }
-
 instruments:
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
   - { name: square lead, device: "*FluidSynth", gm_sound: 81 }
@@ -138,81 +129,81 @@ songs:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
       - name: A
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: a chords }], loop: true }
-          - { track: harmony, pattern: chord, generators: [{ name: a arp }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
+          - { track: harmony, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 1 } } }
           - { track: lead, pattern: a, loop: true }
       - name: B
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: b chords }], loop: true }
-          - { track: harmony, pattern: chord, generators: [{ name: b arp }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 6, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: harmony, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 6, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 1 } } }
           - { track: lead, pattern: b, loop: true }
       - name: A 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: a chords }], loop: true }
-          - { track: harmony, pattern: chord, generators: [{ name: a arp }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
+          - { track: harmony, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 1 } } }
           - { track: lead, pattern: a, loop: true }
       - name: bridge
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: a chords }], loop: true }
-          - { track: harmony, pattern: chord, generators: [{ name: a arp }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
+          - { track: harmony, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 1 } } }
       - name: A 3
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: a chords }], loop: true }
-          - { track: harmony, pattern: chord, generators: [{ name: a arp }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
+          - { track: harmony, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 1 } } }
           - { track: lead, pattern: a, loop: true }
       - name: B 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: b chords }], loop: true }
-          - { track: harmony, pattern: chord, generators: [{ name: b arp }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 6, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: harmony, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 6, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 1 } } }
           - { track: lead, pattern: b, loop: true }
       - name: A 4
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: a chords }], loop: true }
-          - { track: harmony, pattern: chord, generators: [{ name: a arp }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
+          - { track: harmony, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 1 } } }
           - { track: lead, pattern: a, loop: true }
       - name: B 3
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: b chords }], loop: true }
-          - { track: harmony, pattern: chord, generators: [{ name: b arp }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 6, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: harmony, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 6, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 1 } } }
           - { track: lead, pattern: b, loop: true }
       - name: last A
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: a chords }], loop: true }
-          - { track: harmony, pattern: chord, generators: [{ name: a arp }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
+          - { track: harmony, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 1 } } }
           - { track: lead, pattern: a, loop: true }
       - name: ending
         clips:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: octaves, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }

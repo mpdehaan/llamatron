@@ -191,12 +191,6 @@ patterns:
     velocity: [105, ~, ~, ~, ~, ~, 94, ~, 105, ~, ~, ~, 96, ~, ~, ~, 105, ~, ~, ~, ~, ~, 94, ~, 105, ~, ~, ~, ~, ~, ~, ~, 105, ~, ~, ~, 96, ~, ~, ~, 105, ~, ~, ~, 96, ~, ~, ~, 105, ~, ~, ~, ~, ~, 94, ~, 105, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, false, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true]
 
-generators:
-  - { name: chorus, kind: chords, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] }
-  - { name: slide, kind: chords, mode: progression, chords: [7, 4, 1, 1], accidentals: [b, ~, ~, ~], qualities: [M, ~, ~, ~] }
-  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
-  - { name: slide chords, kind: chain, generators: [{ name: slide }] }
-
 instruments:
   - { name: overdriven guitar, device: "*FluidSynth", gm_sound: 30 }
   - { name: clean guitar, device: "*FluidSynth", gm_sound: 28 }
@@ -255,9 +249,9 @@ songs:
           - { track: open, pattern: open, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
           - { track: crash, pattern: crash, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: chorus chords }], loop: true }
-          - { track: scratch, pattern: scratch, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
+          - { track: scratch, pattern: scratch, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: voices, pattern: chorus below, loop: true }
       - name: riff 2
@@ -287,9 +281,9 @@ songs:
           - { track: open, pattern: open, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
           - { track: crash, pattern: crash, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: chorus chords }], loop: true }
-          - { track: scratch, pattern: scratch, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
+          - { track: scratch, pattern: scratch, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: voices, pattern: chorus below, loop: true }
       - name: solo
@@ -310,9 +304,9 @@ songs:
           - { track: open, pattern: open, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
           - { track: crash, pattern: crash, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: chorus chords }], loop: true }
-          - { track: scratch, pattern: scratch, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
+          - { track: scratch, pattern: scratch, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: voices, pattern: chorus below, loop: true }
       - name: slide guitars
@@ -322,9 +316,9 @@ songs:
           - { track: hat, pattern: hat, loop: true }
           - { track: open, pattern: open, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: slide chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: slide chords }], loop: true }
-          - { track: scratch, pattern: scratch, generators: [{ name: slide chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [7, 4, 1, 1], accidentals: [b, ~, ~, ~], qualities: [M, ~, ~, ~] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [7, 4, 1, 1], accidentals: [b, ~, ~, ~], qualities: [M, ~, ~, ~] } } }
+          - { track: scratch, pattern: scratch, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [7, 4, 1, 1], accidentals: [b, ~, ~, ~], qualities: [M, ~, ~, ~] } } }
           - { track: slide, pattern: slide, loop: true }
           - { track: second slide, pattern: slide above, loop: true }
       - name: riff 3

@@ -145,15 +145,7 @@ patterns:
     tie: [false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]
 
 generators:
-  - { name: tapping, kind: arp, step: 1/24, order: down }
-  - { name: tapping wide, kind: arp, step: 1/24, order: up_down, octave_range: 2 }
   - { name: climb, kind: drift, every: 1/2, steps_to_b: 12, direction: forward, restart: on_new_scene, a_degree: 0, b_degree: 4, a_degree_random: 1, b_degree_random: 2 }
-  - { name: study, kind: chords, mode: progression, chords: [1, 4, 7, 3, 6, 2, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] }
-  - { name: tap, kind: chords, mode: progression, chords: [1, 6, 7, 5], qualities: [~, ~, ~, M] }
-  - { name: tap high, kind: chords, mode: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] }
-  - { name: study chords, kind: chain, generators: [{ name: study }] }
-  - { name: tap chords, kind: chain, generators: [{ name: tap }, { name: tapping }] }
-  - { name: tap high chords, kind: chain, generators: [{ name: tap high }, { name: tapping wide }] }
   - { name: tremolo ratchet, kind: chain, generators: [{ name: climb }] }
 
 instruments:
@@ -200,15 +192,15 @@ songs:
       - name: study
         tempo: 126
         clips:
-          - { track: guitar, pattern: study, generators: [{ name: study chords }], repeat: 8 }
+          - { track: guitar, pattern: study, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4, 7, 3, 6, 2, 5, 1], qualities: [~, ~, ~, ~, ~, ~, M, ~] } } }
       - name: tapping
         tempo: 126
         clips:
-          - { track: guitar, pattern: tap chord, generators: [{ name: tap chords }], repeat: 8 }
+          - { track: guitar, pattern: tap chord, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 5], qualities: [~, ~, ~, M] }, arp: { enabled: true, step: 1/24, order: down } } }
       - name: tapping higher
         tempo: 132
         clips:
-          - { track: guitar, pattern: tap chord, generators: [{ name: tap high chords }], repeat: 8 }
+          - { track: guitar, pattern: tap chord, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] }, arp: { enabled: true, step: 1/24, order: up_down, octave_range: 2 } } }
       - name: picking again
         tempo: 138
         clips:

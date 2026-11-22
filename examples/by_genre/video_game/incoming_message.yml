@@ -380,28 +380,6 @@ patterns:
     velocity: [92, ~, ~, 76, 83, ~, 80, ~, 92, ~, ~, 76, 83, ~, ~, ~, 92, ~, ~, 76, 83, ~, 80, ~, 92, ~, ~, ~, ~, ~, ~, ~, 92, ~, ~, 76, 83, ~, 80, ~, 92, ~, ~, 76, 83, ~, 80, ~, 92, ~, 80, ~, 83, ~, 80, ~, 92, ~, ~, ~, ~, ~, ~, ~, ~, 76, 80, 76, 83, ~, 80, ~, ~, 76, 80, 76, 83, ~, 80, ~, 92, ~, 80, ~, 83, ~, 80, ~, 92, ~, ~, ~, 83, ~, ~, ~, ~, 76, 80, 76, 83, ~, 80, ~, ~, 76, 80, 76, 83, ~, 80, ~, 92, ~, 80, ~, 83, ~, 80, ~, 92, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, false, false, true, false, true, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, true, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
-generators:
-  - { name: stage_0, kind: chords, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_1, kind: chords, mode: progression, chords: [1, 1, 7, 7, 6, 6, 7, 7, 4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_2, kind: chords, mode: progression, chords: [1, 3, 7, 6, 1, 3, 7, 5, 6, 7, 1, 1, 6, 7, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] }
-  - { name: stage_3, kind: chords, mode: progression, chords: [1, 1, 6, 7, 1, 1, 6, 7, 4, 5, 1, 1, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~] }
-  - { name: stage_4, kind: chords, mode: progression, chords: [3, 7, 6, 1, 3, 7, 6, 5, 4, 1, 4, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_5, kind: chords, mode: progression, chords: [1, 7, 6, 5, 1, 7, 6, 5, 1, 1, 4, 4, 7, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_6, kind: chords, mode: progression, chords: [1, 6, 3, 7, 1, 6, 3, 7, 4, 7, 3, 6, 4, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_7, kind: chords, mode: progression, chords: [1, 1, 6, 5, 1, 1, 6, 5, 4, 4, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_8, kind: chords, mode: progression, chords: [6, 7, 1, 1, 6, 7, 1, 5, 4, 5, 3, 6, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] }
-  - { name: stage_9, kind: chords, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] }
-  - { name: stage_0 chords, kind: chain, generators: [{ name: stage_0 }] }
-  - { name: stage_1 chords, kind: chain, generators: [{ name: stage_1 }] }
-  - { name: stage_2 chords, kind: chain, generators: [{ name: stage_2 }] }
-  - { name: stage_3 chords, kind: chain, generators: [{ name: stage_3 }] }
-  - { name: stage_4 chords, kind: chain, generators: [{ name: stage_4 }] }
-  - { name: stage_5 chords, kind: chain, generators: [{ name: stage_5 }] }
-  - { name: stage_6 chords, kind: chain, generators: [{ name: stage_6 }] }
-  - { name: stage_7 chords, kind: chain, generators: [{ name: stage_7 }] }
-  - { name: stage_8 chords, kind: chain, generators: [{ name: stage_8 }] }
-  - { name: stage_9 chords, kind: chain, generators: [{ name: stage_9 }] }
-
 instruments:
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
   - { name: chip, device: "*FluidSynth", gm_sound: 81 }
@@ -436,7 +414,7 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass eighths, generators: [{ name: stage_0 chords }], loop: true }
+          - { track: bass, pattern: bass eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_0 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: "stage_0, doubled"
@@ -445,12 +423,12 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass eighths, generators: [{ name: stage_0 chords }], loop: true }
+          - { track: bass, pattern: bass eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_0 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_0 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_0 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_0 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
       - name: to stage_1
         scale: G Minor
         clips:
@@ -463,7 +441,7 @@ songs:
           - { track: kick, pattern: kick four, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat sixteenths, loop: true }
-          - { track: bass, pattern: bass gallop, generators: [{ name: stage_1 chords }], loop: true }
+          - { track: bass, pattern: bass gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 7, 7, 4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_1 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: "stage_1, doubled"
@@ -472,12 +450,12 @@ songs:
           - { track: kick, pattern: kick four, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat sixteenths, loop: true }
-          - { track: bass, pattern: bass gallop, generators: [{ name: stage_1 chords }], loop: true }
+          - { track: bass, pattern: bass gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 7, 7, 4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_1 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_1 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_1 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_1 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 7, 7, 4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7, 6, 6, 7, 7, 4, 4, 1, 1, 4, 4, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: saw, pattern: stage_1 low, loop: true }
       - name: to stage_2
         scale: A Minor
@@ -491,7 +469,7 @@ songs:
           - { track: kick, pattern: kick push, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass octaves, generators: [{ name: stage_2 chords }], loop: true }
+          - { track: bass, pattern: bass octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 7, 6, 1, 3, 7, 5, 6, 7, 1, 1, 6, 7, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] } } }
           - { track: lead, pattern: stage_2 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: "stage_2, doubled"
@@ -500,12 +478,12 @@ songs:
           - { track: kick, pattern: kick push, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass octaves, generators: [{ name: stage_2 chords }], loop: true }
+          - { track: bass, pattern: bass octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 7, 6, 1, 3, 7, 5, 6, 7, 1, 1, 6, 7, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] } } }
           - { track: lead, pattern: stage_2 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_2 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_2 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_2 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 7, 6, 1, 3, 7, 5, 6, 7, 1, 1, 6, 7, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 3, 7, 6, 1, 3, 7, 5, 6, 7, 1, 1, 6, 7, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] } } }
       - name: to stage_3
         scale: C Minor
         clips:
@@ -518,7 +496,7 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass eighths, generators: [{ name: stage_3 chords }], loop: true }
+          - { track: bass, pattern: bass eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7, 1, 1, 6, 7, 4, 5, 1, 1, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~] } } }
           - { track: lead, pattern: stage_3 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: "stage_3, doubled"
@@ -527,12 +505,12 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass eighths, generators: [{ name: stage_3 chords }], loop: true }
+          - { track: bass, pattern: bass eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7, 1, 1, 6, 7, 4, 5, 1, 1, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~] } } }
           - { track: lead, pattern: stage_3 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_3 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_3 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_3 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7, 1, 1, 6, 7, 4, 5, 1, 1, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7, 1, 1, 6, 7, 4, 5, 1, 1, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~] } } }
           - { track: saw, pattern: stage_3 low, loop: true }
       - name: to stage_4
         scale: D Minor
@@ -546,7 +524,7 @@ songs:
           - { track: kick, pattern: kick four, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat sixteenths, loop: true }
-          - { track: bass, pattern: bass octaves, generators: [{ name: stage_4 chords }], loop: true }
+          - { track: bass, pattern: bass octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 6, 1, 3, 7, 6, 5, 4, 1, 4, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_4 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: "stage_4, doubled"
@@ -555,12 +533,12 @@ songs:
           - { track: kick, pattern: kick four, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat sixteenths, loop: true }
-          - { track: bass, pattern: bass octaves, generators: [{ name: stage_4 chords }], loop: true }
+          - { track: bass, pattern: bass octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 6, 1, 3, 7, 6, 5, 4, 1, 4, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_4 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_4 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_4 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_4 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 6, 1, 3, 7, 6, 5, 4, 1, 4, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 6, 1, 3, 7, 6, 5, 4, 1, 4, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
       - name: to stage_5
         scale: F# Minor
         clips:
@@ -573,7 +551,7 @@ songs:
           - { track: kick, pattern: kick push, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass gallop, generators: [{ name: stage_5 chords }], loop: true }
+          - { track: bass, pattern: bass gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5, 1, 7, 6, 5, 1, 1, 4, 4, 7, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_5 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: "stage_5, doubled"
@@ -582,12 +560,12 @@ songs:
           - { track: kick, pattern: kick push, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass gallop, generators: [{ name: stage_5 chords }], loop: true }
+          - { track: bass, pattern: bass gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5, 1, 7, 6, 5, 1, 1, 4, 4, 7, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_5 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_5 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_5 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_5 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5, 1, 7, 6, 5, 1, 1, 4, 4, 7, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5, 1, 7, 6, 5, 1, 1, 4, 4, 7, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: saw, pattern: stage_5 low, loop: true }
       - name: to stage_6
         scale: B Minor
@@ -601,7 +579,7 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass eighths, generators: [{ name: stage_6 chords }], loop: true }
+          - { track: bass, pattern: bass eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 3, 7, 1, 6, 3, 7, 4, 7, 3, 6, 4, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_6 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: "stage_6, doubled"
@@ -610,12 +588,12 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass eighths, generators: [{ name: stage_6 chords }], loop: true }
+          - { track: bass, pattern: bass eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 3, 7, 1, 6, 3, 7, 4, 7, 3, 6, 4, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_6 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_6 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_6 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_6 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 3, 7, 1, 6, 3, 7, 4, 7, 3, 6, 4, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 3, 7, 1, 6, 3, 7, 4, 7, 3, 6, 4, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, M, M] } } }
       - name: to stage_7
         scale: F Minor
         clips:
@@ -628,7 +606,7 @@ songs:
           - { track: kick, pattern: kick four, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat sixteenths, loop: true }
-          - { track: bass, pattern: bass octaves, generators: [{ name: stage_7 chords }], loop: true }
+          - { track: bass, pattern: bass octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5, 1, 1, 6, 5, 4, 4, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_7 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: "stage_7, doubled"
@@ -637,12 +615,12 @@ songs:
           - { track: kick, pattern: kick four, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat sixteenths, loop: true }
-          - { track: bass, pattern: bass octaves, generators: [{ name: stage_7 chords }], loop: true }
+          - { track: bass, pattern: bass octaves, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5, 1, 1, 6, 5, 4, 4, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_7 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_7 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_7 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_7 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5, 1, 1, 6, 5, 4, 4, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5, 1, 1, 6, 5, 4, 4, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, M, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: saw, pattern: stage_7 low, loop: true }
       - name: to stage_8
         scale: C# Minor
@@ -656,7 +634,7 @@ songs:
           - { track: kick, pattern: kick push, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass gallop, generators: [{ name: stage_8 chords }], loop: true }
+          - { track: bass, pattern: bass gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 1, 5, 4, 5, 3, 6, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] } } }
           - { track: lead, pattern: stage_8 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: "stage_8, doubled"
@@ -665,12 +643,12 @@ songs:
           - { track: kick, pattern: kick push, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass gallop, generators: [{ name: stage_8 chords }], loop: true }
+          - { track: bass, pattern: bass gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 1, 5, 4, 5, 3, 6, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] } } }
           - { track: lead, pattern: stage_8 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_8 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_8 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_8 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 1, 5, 4, 5, 3, 6, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 1, 5, 4, 5, 3, 6, 4, 5, 1, 1], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, ~, ~] } } }
       - name: to stage_9
         scale: E Minor
         clips:
@@ -683,22 +661,22 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass eighths, generators: [{ name: stage_9 chords }], loop: true }
+          - { track: bass, pattern: bass eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_9 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_9 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_9 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_9 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
       - name: "stage_9, doubled"
         scale: E Minor
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass eighths, generators: [{ name: stage_9 chords }], loop: true }
+          - { track: bass, pattern: bass eighths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: lead, pattern: stage_9 tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: harmony, pattern: stage_9 harmony, loop: true }
-          - { track: chip, pattern: chip, generators: [{ name: stage_9 chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: stage_9 chords }], loop: true }
+          - { track: chip, pattern: chip, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 5, 6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M, ~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: saw, pattern: stage_9 low, loop: true }

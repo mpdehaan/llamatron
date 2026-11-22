@@ -257,13 +257,10 @@ patterns:
 
 generators:
   - { name: a, kind: chords, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] }
-  - { name: b, kind: chords, mode: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] }
   - { name: arrive, kind: shapes, density_start: 15, density_end: 100 }
   - { name: leave, kind: shapes, density_start: 100, density_end: 15 }
   - { name: fade, kind: shapes, swell_start: 100, swell_end: 35 }
   - { name: rise, kind: shapes, swell_start: 45, swell_end: 110 }
-  - { name: a chords, kind: chain, generators: [{ name: a }] }
-  - { name: b chords, kind: chain, generators: [{ name: b }] }
   - { name: arrive density, kind: chain, generators: [{ name: arrive }] }
   - { name: leave density, kind: chain, generators: [{ name: leave }] }
   - { name: fade swell, kind: chain, generators: [{ name: a }, { name: fade }] }
@@ -308,7 +305,7 @@ songs:
     scenes:
       - name: pad and piano
         clips:
-          - { track: pad, pattern: pad, generators: [{ name: a chords }], repeat: 16 }
+          - { track: pad, pattern: pad, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
           - { track: piano, pattern: piano, loop: true }
           - { track: shaker, pattern: shaker, generators: [{ name: arrive density }], loop: true }
           - { track: conga, pattern: conga, generators: [{ name: arrive density }], loop: true }
@@ -321,8 +318,8 @@ songs:
           - { track: conga, pattern: conga, loop: true }
           - { track: conga low, pattern: conga low, loop: true }
           - { track: shaker, pattern: shaker, loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: a chords }], loop: true }
-          - { track: keys, pattern: keys, generators: [{ name: a chords }], loop: true }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
+          - { track: keys, pattern: keys, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
           - { track: vibes, pattern: fish, loop: true }
       - name: drop
         clips:
@@ -330,11 +327,11 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: ghost, pattern: ghost, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: reese, pattern: reese, generators: [{ name: a chords }], loop: true }
-          - { track: sub, pattern: sub, generators: [{ name: a chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: a chords }], loop: true }
+          - { track: reese, pattern: reese, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
+          - { track: sub, pattern: sub, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
           - { track: vibes, pattern: fish, loop: true }
-          - { track: keys, pattern: keys, generators: [{ name: a chords }], loop: true }
+          - { track: keys, pattern: keys, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: "drop, with the school"
         clips:
@@ -342,9 +339,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: ghost, pattern: ghost, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: reese, pattern: reese, generators: [{ name: a chords }], loop: true }
-          - { track: sub, pattern: sub, generators: [{ name: a chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: a chords }], loop: true }
+          - { track: reese, pattern: reese, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
+          - { track: sub, pattern: sub, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
           - { track: conga, pattern: conga, loop: true }
           - { track: conga low, pattern: conga low, loop: true }
           - { track: timbale, pattern: timbale, loop: true }
@@ -353,12 +350,12 @@ songs:
           - { track: cowbell, pattern: cowbell, loop: true }
           - { track: vibes, pattern: fish, loop: true }
           - { track: flute, pattern: fish flute, loop: true }
-          - { track: keys, pattern: keys, generators: [{ name: a chords }], loop: true }
+          - { track: keys, pattern: keys, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: breakdown
         clips:
-          - { track: pad, pattern: pad, generators: [{ name: b chords }], repeat: 16 }
-          - { track: keys, pattern: keys held, generators: [{ name: b chords }], loop: true }
+          - { track: pad, pattern: pad, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] } } }
+          - { track: keys, pattern: keys held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] } } }
           - { track: piano, pattern: piano, loop: true }
           - { track: shaker, pattern: shaker, loop: true }
           - { track: woodblock, pattern: woodblock, loop: true }
@@ -377,11 +374,11 @@ songs:
           - { track: snare, pattern: snare chop, loop: true }
           - { track: ghost, pattern: ghost, loop: true }
           - { track: hat, pattern: ride, loop: true }
-          - { track: reese, pattern: reese b, generators: [{ name: b chords }], loop: true }
-          - { track: sub, pattern: sub, generators: [{ name: b chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: b chords }], loop: true }
+          - { track: reese, pattern: reese b, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] } } }
+          - { track: sub, pattern: sub, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] } } }
           - { track: vibes, pattern: fish b, loop: true }
-          - { track: keys, pattern: keys, generators: [{ name: b chords }], loop: true }
+          - { track: keys, pattern: keys, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 6, 6, 5, 5] } } }
           - { track: timbale, pattern: timbale, loop: true }
           - { track: cowbell, pattern: cowbell, loop: true }
           - { track: crash, pattern: crash, loop: true }
@@ -393,7 +390,7 @@ songs:
           - { track: woodblock, pattern: woodblock, loop: true }
           - { track: shaker, pattern: shaker, loop: true }
           - { track: cowbell, pattern: cowbell, loop: true }
-          - { track: sub, pattern: sub, generators: [{ name: a chords }], loop: true }
+          - { track: sub, pattern: sub, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
           - { track: ghost, pattern: ghost, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: half time
@@ -404,9 +401,9 @@ songs:
           - { track: conga, pattern: conga, loop: true }
           - { track: conga low, pattern: conga low, loop: true }
           - { track: shaker, pattern: shaker, loop: true }
-          - { track: reese, pattern: reese, generators: [{ name: a chords }], loop: true }
-          - { track: sub, pattern: sub, generators: [{ name: a chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: a chords }], loop: true }
+          - { track: reese, pattern: reese, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
+          - { track: sub, pattern: sub, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
           - { track: piano, pattern: piano, loop: true }
           - { track: vibes, pattern: fish b, loop: true }
           - { track: crash, pattern: crash, loop: true }
@@ -416,9 +413,9 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: ghost, pattern: ghost, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: reese, pattern: reese, generators: [{ name: a chords }], loop: true }
-          - { track: sub, pattern: sub, generators: [{ name: a chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: a chords }], loop: true }
+          - { track: reese, pattern: reese, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
+          - { track: sub, pattern: sub, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
           - { track: conga, pattern: conga, loop: true }
           - { track: conga low, pattern: conga low, loop: true }
           - { track: timbale, pattern: timbale, loop: true }
@@ -427,7 +424,7 @@ songs:
           - { track: cowbell, pattern: cowbell, loop: true }
           - { track: vibes, pattern: fish, loop: true }
           - { track: flute, pattern: fish flute, loop: true }
-          - { track: keys, pattern: keys, generators: [{ name: a chords }], loop: true }
+          - { track: keys, pattern: keys, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 6, 1, 1, 4, 5] } } }
           - { track: piano, pattern: piano, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: percussion and pad

@@ -169,12 +169,6 @@ patterns:
     velocity: [119, 105, 108, 105, 110, 105, 108, 105, 119, ~, ~, ~, 110, ~, 108, ~, 119, 105, 108, 105, 110, 105, 108, 105, 119, ~, ~, ~, 110, ~, 108, ~, 119, 105, 108, 105, 110, ~, 108, ~, 119, ~, ~, ~, 110, ~, 108, ~, 119, 105, 108, 105, 110, 105, 108, 105, 119, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, false, false, false, false, false, false, true, true, true, false, true, false, true, false, false, false, false, false, false, false, false, false, true, true, true, false, true, false, true, false, false, false, false, false, true, false, true, false, true, true, true, false, true, false, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, false]
 
-generators:
-  - { name: fanfare, kind: chords, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] }
-  - { name: verse, kind: chords, mode: progression, chords: [1, 1, 6, 7] }
-  - { name: fanfare chords, kind: chain, generators: [{ name: fanfare }] }
-  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
-
 instruments:
   - { name: distortion guitar, device: "*FluidSynth", gm_sound: 31 }
   - { name: pick bass, device: "*FluidSynth", gm_sound: 35 }
@@ -207,9 +201,9 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: fanfare chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: fanfare chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
           - { track: crash, pattern: crash, loop: true }
           - { track: brass, pattern: fanfare, loop: true }
       - name: verse
@@ -217,18 +211,18 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: verse chords }], loop: true }
-          - { track: guitar, pattern: mute, generators: [{ name: verse chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: guitar, pattern: mute, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: lead, pattern: verse, loop: true }
       - name: chorus
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: fanfare chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: fanfare chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
           - { track: lead, pattern: chorus, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: brass, pattern: answer, loop: true }
@@ -237,9 +231,9 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: fanfare chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: fanfare chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
           - { track: crash, pattern: crash, loop: true }
           - { track: brass, pattern: fanfare, loop: true }
       - name: verse 2
@@ -247,18 +241,18 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: verse chords }], loop: true }
-          - { track: guitar, pattern: mute, generators: [{ name: verse chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: guitar, pattern: mute, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: lead, pattern: verse, loop: true }
       - name: chorus 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: fanfare chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: fanfare chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
           - { track: lead, pattern: chorus, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: brass, pattern: answer, loop: true }
@@ -267,24 +261,24 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: fanfare chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: fanfare chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
           - { track: crash, pattern: crash, loop: true }
           - { track: solo, pattern: solo, loop: true }
       - name: breakdown
         clips:
           - { track: kick, pattern: kick soft, repeat: 4 }
-          - { track: pad, pattern: pad, generators: [{ name: fanfare chords }], loop: true }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
           - { track: brass, pattern: fanfare soft, loop: true }
       - name: last chorus
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: fanfare chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: fanfare chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
           - { track: lead, pattern: chorus, loop: true }
           - { track: crash, pattern: crash, loop: true }
           - { track: brass, pattern: answer, loop: true }
@@ -293,15 +287,15 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: gallop, generators: [{ name: fanfare chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: fanfare chords }], loop: true }
+          - { track: bass, pattern: gallop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
           - { track: crash, pattern: crash, loop: true }
           - { track: brass, pattern: fanfare, loop: true }
       - name: ending
         clips:
           - { track: kick, pattern: kick soft, repeat: 4 }
           - { track: crash, pattern: crash, loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: fanfare chords }], loop: true }
-          - { track: guitar, pattern: chords, generators: [{ name: fanfare chords }], loop: true }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
+          - { track: guitar, pattern: chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 7, 1, 6, 4, 5], qualities: [~, ~, ~, ~, ~, ~, ~, M] } } }
           - { track: brass, pattern: fanfare soft, loop: true }

@@ -105,14 +105,32 @@ def has_section(section):
     return lambda data: bool(data.get(section))
 
 
+def generators_of(*, data, plugin):
+    """Return the settings of every generator of a plugin's kind in a set: those of the set's list, then every clip's and every
+    track's built-in one, switched on, as a set file holds them."""
+    found = list((data.get(plugin.SECTION) or {}).values())
+    holders = [(clip_slot, ClipSlotSetting.BUILT_IN) for clip_slot in clip_slots(data)]
+    holders += [(track, TrackSetting.BUILT_IN) for track in tracks(data)]
+    for holder, setting in holders:
+        built_in = (holder.get(setting) or {}).get(plugin.NAME)
+        if built_in and built_in.get(file_format.GENERATOR_ENABLED):
+            found.append(built_in)
+    return found
+
+
+def uses_generator(plugin):
+    """Return a check of whether a set has a generator of a plugin's kind, in its list or built in."""
+    return lambda data: bool(generators_of(data=data, plugin=plugin))
+
+
 def guitarify_strumming(data):
     """Return whether a set has a Guitarify in Strum mode."""
-    return any(settings.get(GuitarifySetting.MODE) == guitarify_model.STRUM for settings in (data.get(guitarify_plugin.SECTION) or {}).values())
+    return any(settings.get(GuitarifySetting.MODE) == guitarify_model.STRUM for settings in generators_of(data=data, plugin=guitarify_plugin))
 
 
 def chords_in_mode(mode):
     """Return a check of whether a set has a Chords generator in a mode."""
-    return lambda data: any(chords_mode(settings) == mode for settings in (data.get(chords_plugin.SECTION) or {}).values())
+    return lambda data: any(chords_mode(settings) == mode for settings in generators_of(data=data, plugin=chords_plugin))
 
 
 def chords_mode(settings):
@@ -122,7 +140,7 @@ def chords_mode(settings):
 
 def chords_voicing(data):
     """Return whether a set has a Chords generator that voices chords: in Voicing mode, or with Voice leading switched on."""
-    for settings in (data.get(chords_plugin.SECTION) or {}).values():
+    for settings in generators_of(data=data, plugin=chords_plugin):
         written = settings.get(ChordsSetting.VOICE_LEADING)
         if written or (written is None and chords_mode(settings) == chords_model.VOICING):
             return True
@@ -222,19 +240,19 @@ FEATURES = [
     ('draw resets', any_scene_setting(SceneSetting.RESET_DRAWS)),
     ('several songs', lambda data: len(songs(data)) > 1),
     ('several scales', lambda data: len(data.get(Section.SCALES, {})) > 1),
-    ('arps', has_section(arp_plugin.SECTION)),
-    ('drifts', has_section(drift_plugin.SECTION)),
+    ('arps', uses_generator(arp_plugin)),
+    ('drifts', uses_generator(drift_plugin)),
     ('progressions', chords_in_mode(chords_model.PROGRESSION)),
     ('voice leadings', chords_voicing),
     ('inversions', any_pattern_row(Row.INVERSION)),
-    ('timings', has_section(timing_plugin.SECTION)),
-    ('hockets', has_section(hocket_plugin.SECTION)),
-    ('guitarifies', has_section(guitarify_plugin.SECTION)),
+    ('timings', uses_generator(timing_plugin)),
+    ('hockets', uses_generator(hocket_plugin)),
+    ('guitarifies', uses_generator(guitarify_plugin)),
     ('follow chords', chords_in_mode(chords_model.FOLLOW_PROGRESSION)),
-    ('phrasings', has_section(phrasing_plugin.SECTION)),
-    ('musicians', has_section(musician_plugin.SECTION)),
+    ('phrasings', uses_generator(phrasing_plugin)),
+    ('musicians', uses_generator(musician_plugin)),
     ('strums', guitarify_strumming),
-    ('Shapes', has_section(shapes_plugin.SECTION)),
+    ('Shapes', uses_generator(shapes_plugin)),
     ('chains', has_section(Section.CHAINS)),
     ('own grooves', has_section(Section.GROOVES)),
     ('description', lambda data: SetlistSetting.DESCRIPTION in data),

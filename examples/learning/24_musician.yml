@@ -92,14 +92,12 @@ patterns:
     velocity: [90, 60, 80, 60, 90, 60, 80, 60]
 
 generators:
-  - { name: follow, kind: chords, mode: follow_progression, chords_from: SILENT Chords }
   - { name: rhythm guitar, kind: musician, instrument: rhythm guitarist, chords_from: SILENT Chords, tune_from: tune, accents: backbeat, by_section: { verse: { played: softer }, breakdown: { played: muted } } }
   - { name: bass, kind: musician, instrument: bassist, chords_from: SILENT Chords, by_section: { breakdown: { played: hits } } }
   - { name: organ, kind: musician, instrument: backing organ, chords_from: SILENT Chords, tune_from: tune, by_section: { verse: { plays: false }, breakdown: { plays: false } } }
   - { name: lead guitar, kind: musician, instrument: lead guitarist, chords_from: SILENT Chords, tune_from: tune, by_section: { breakdown: { plays: false } } }
   - { name: hats, kind: musician, instrument: drummer, looseness: 1, by_section: { verse: { played: thinned }, breakdown: { plays: false } } }
   - { name: snare, kind: musician, instrument: drummer, by_section: { breakdown: { plays: false } } }
-  - { name: follow chords followed, kind: chain, generators: [{ name: follow }] }
   - { name: rhythm guitar player, kind: chain, generators: [{ name: rhythm guitar }] }
   - { name: bass player, kind: chain, generators: [{ name: bass }] }
   - { name: organ player, kind: chain, generators: [{ name: organ }] }
@@ -140,10 +138,10 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, repeat: 8 }
           - { track: hats, pattern: hats, repeat: 8 }
-          - { track: bass, pattern: bass, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: rhythm guitar, pattern: strum, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: organ, pattern: organ, generators: [{ name: follow chords followed }], repeat: 8 }
-          - { track: lead guitar, pattern: licks, generators: [{ name: follow chords followed }], repeat: 8 }
+          - { track: bass, pattern: bass, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: rhythm guitar, pattern: strum, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: organ, pattern: organ, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
+          - { track: lead guitar, pattern: licks, repeat: 8, built_in: { chords: { enabled: true, mode: follow_progression, chords_from: SILENT Chords } } }
           - { track: tune, pattern: tune, repeat: 2 }
       - name: a verse
         section: verse

@@ -160,12 +160,6 @@ patterns:
     octave: [5, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     velocity: [80, ~, 84, ~, 88, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
 
-generators:
-  - { name: bells, kind: arp, step: 1/8, order: up_down }
-  - { name: bright_bells, kind: arp, step: 1/16, order: up_down, octave_range: 2, octave_jump: after_chord }
-  - { name: bells arp, kind: chain, generators: [{ name: bells }] }
-  - { name: bright_bells arp, kind: chain, generators: [{ name: bright_bells }] }
-
 instruments:
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
   - { name: warm pad, device: "*FluidSynth", gm_sound: 90 }
@@ -201,7 +195,7 @@ songs:
         clips:
           - { track: bass, pattern: bass, repeat: 2 }
           - { track: pad, pattern: pad, loop: true }
-          - { track: bells, pattern: bells, generators: [{ name: bells arp }], loop: true }
+          - { track: bells, pattern: bells, loop: true, built_in: { arp: { enabled: true, step: 1/8, order: up_down } } }
       - name: tape
         clips:
           - { track: kick, pattern: kick, repeat: 4 }
@@ -209,7 +203,7 @@ songs:
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true }
           - { track: pad, pattern: pad, loop: true }
-          - { track: bells, pattern: bells, generators: [{ name: bells arp }], loop: true }
+          - { track: bells, pattern: bells, loop: true, built_in: { arp: { enabled: true, step: 1/8, order: up_down } } }
       - name: kids
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
@@ -225,7 +219,7 @@ songs:
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true }
           - { track: pad, pattern: pad, loop: true }
-          - { track: bells, pattern: bells, generators: [{ name: bells arp }], loop: true }
+          - { track: bells, pattern: bells, loop: true, built_in: { arp: { enabled: true, step: 1/8, order: up_down } } }
           - { track: keys, pattern: tune, repeat: 2, morph_to: answer, morph_style: right }
           - { track: echo, pattern: echo, loop: true, grab_track: keys }
       - name: shade
@@ -243,7 +237,7 @@ songs:
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true }
           - { track: pad, pattern: pad, loop: true }
-          - { track: bells, pattern: bells, generators: [{ name: bright_bells arp }], loop: true }
+          - { track: bells, pattern: bells, loop: true, built_in: { arp: { enabled: true, step: 1/16, order: up_down, octave_range: 2, octave_jump: after_chord } } }
           - { track: keys, pattern: answer, loop: true }
           - { track: echo, pattern: echo, loop: true, grab_track: keys }
       - name: slow
@@ -253,12 +247,12 @@ songs:
         clips:
           - { track: bass, pattern: bass }
           - { track: pad, pattern: pad, loop: true }
-          - { track: bells, pattern: bells, generators: [{ name: bells arp }], loop: true }
+          - { track: bells, pattern: bells, loop: true, built_in: { arp: { enabled: true, step: 1/8, order: up_down } } }
       - name: home
         scale: D Major
         tempo: 72
         clips:
           - { track: bass, pattern: bass_end }
           - { track: pad, pattern: pad_end, loop: true }
-          - { track: bells, pattern: bells_end, generators: [{ name: bells arp }], loop: true }
+          - { track: bells, pattern: bells_end, loop: true, built_in: { arp: { enabled: true, step: 1/8, order: up_down } } }
           - { track: keys, pattern: tune_end, loop: true }

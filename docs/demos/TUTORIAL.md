@@ -153,9 +153,9 @@ with the chords.
 
 [`examples/learning/07_blues_chords.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/07_blues_chords.yml) · G major · 96 BPM · 3:00 · 6 scenes · 7 tracks
 
-| chords | chains | grooves | progressions |
-| :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../GROOVES.md) | [✓](../generators/CHORDS.md) |
+| chords | grooves | progressions |
+| :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../GROOVES.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 07_blues_chords -->
 
 **New Features Introduced**
@@ -174,9 +174,9 @@ thing here to a finished song.
 
 [`examples/learning/08_tie.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/08_tie.yml) · D mixolydian · 84 BPM · 2:58 · 9 scenes · 8 tracks
 
-| chords | arps | ratchets | chains | grabs | morphs | directions | ties | probability | key changes | tempo changes | CCs | registers |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#play-directions) | [✓](../PATTERNS.md#ties) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#ccs) | [✓](../REGISTERS.md) |
+| chords | arps | ratchets | grabs | morphs | directions | ties | probability | key changes | tempo changes | CCs | registers |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CLIPS.md#grabbing-notes) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#play-directions) | [✓](../PATTERNS.md#ties) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#ccs) | [✓](../REGISTERS.md) |
 <!-- end of the generated summary of 08_tie -->
 
 **New Features Introduced**
@@ -197,9 +197,9 @@ can hear how the track's choice wins over the scene's, which wins over the song'
 
 [`examples/learning/09_groove.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/09_groove.yml) · G minor · 130 BPM · 1:51 · 5 scenes · 5 tracks
 
-| chords | arps | chains | grooves |
-| :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) | [✓](../GROOVES.md) |
+| chords | arps | grooves |
+| :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../GROOVES.md) |
 <!-- end of the generated summary of 09_groove -->
 
 <a id="mtn_king_direction"></a>
@@ -225,9 +225,9 @@ arpeggio.
 
 [`examples/learning/11_sailor_arpeggiator.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/11_sailor_arpeggiator.yml) · D dorian · 112 BPM · 3:26 · 24 scenes · 2 tracks
 
-| chords | arps | chains |
-| :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) |
+| chords | arps |
+| :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) |
 <!-- end of the generated summary of 11_sailor_arpeggiator -->
 
 <a id="acid_glide"></a>
@@ -239,9 +239,9 @@ each bar, though the line itself never changes.
 
 [`examples/learning/12_acid_glide.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/12_acid_glide.yml) · A minor · 128 BPM · 3:00 · 8 scenes · 4 tracks
 
-| chains | feel |
-| :---: | :---: |
-| [✓](../generators/CHAIN.md) | [✓](../generators/TIMING.md) |
+| feel |
+| :---: |
+| [✓](../generators/TIMING.md) |
 <!-- end of the generated summary of 12_acid_glide -->
 
 **New Features Introduced**
@@ -351,9 +351,9 @@ that changing one pattern changes every part that follows it.
 
 [`examples/learning/18_arrangement_shanty.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/18_arrangement_shanty.yml) · A minor · 100 BPM · 2:34 · 8 scenes · 8 tracks
 
-| chords | arps | chains | grabs |
-| :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#grabbing-notes) |
+| chords | arps | grabs |
+| :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../CLIPS.md#grabbing-notes) |
 <!-- end of the generated summary of 18_arrangement_shanty -->
 
 <a id="look_ma_no_notes"></a>
@@ -368,9 +368,9 @@ step, and every part follows.
 
 [`examples/learning/19_look_ma_no_notes.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/19_look_ma_no_notes.yml) · Ab major · 76 BPM · 2:57 · 6 scenes · 7 tracks
 
-| chords | arps | ratchets | chains | grabs | ties | grooves | key changes | registers | progressions |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../generators/CHAIN.md) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../generators/CHORDS.md) |
+| chords | arps | ratchets | grabs | ties | grooves | key changes | registers | progressions |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 19_look_ma_no_notes -->
 
 <a id="registers"></a>
@@ -400,9 +400,9 @@ playing, so the demo shows what its Strum mode and its Shape and Strokes halves 
 
 [`examples/learning/21_guitarify.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/21_guitarify.yml) · G major · 96 BPM · 3:19 · 21 scenes · 7 tracks
 
-| chords | chains | guitarify | key changes | tempo changes | progressions | strum |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#chords) | [✓](../generators/GUITARIFY.md) |
+| chords | guitarify | key changes | tempo changes | progressions | strum |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#chords) | [✓](../generators/GUITARIFY.md) |
 <!-- end of the generated summary of 21_guitarify -->
 
 **New Features Introduced**
@@ -423,9 +423,9 @@ chord twice a bar, and follow chords that a progression makes on that track.
 
 [`examples/learning/22_follow_chords.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/22_follow_chords.yml) · A minor · 96 BPM · 2:40 · 8 scenes · 8 tracks
 
-| chords | chains | follow chords | ties | progressions |
-| :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/CHORDS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) |
+| chords | follow chords | ties | progressions |
+| :---: | :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHORDS.md) | [✓](../PATTERNS.md#ties) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 22_follow_chords -->
 
 **New Features Introduced**
@@ -444,9 +444,9 @@ with the settings together.
 
 [`examples/learning/23_phrasing.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/23_phrasing.yml) · A minor · 68 BPM · 3:46 · 8 scenes · 6 tracks
 
-| chords | chains | phrasing | ties |
-| :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/PHRASING.md) | [✓](../PATTERNS.md#ties) |
+| chords | phrasing | ties |
+| :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/PHRASING.md) | [✓](../PATTERNS.md#ties) |
 <!-- end of the generated summary of 23_phrasing -->
 
 **New Features Introduced**
@@ -543,9 +543,9 @@ keep their order.
 
 [`examples/learning/27_pattern_lists.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/27_pattern_lists.yml) · E minor · 120 BPM · 2:24 · 8 scenes · 5 tracks
 
-| chains | guitarify | directions |
-| :---: | :---: | :---: |
-| [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#play-directions) |
+| guitarify | directions |
+| :---: | :---: |
+| [✓](../generators/GUITARIFY.md) | [✓](../PATTERNS.md#play-directions) |
 <!-- end of the generated summary of 27_pattern_lists -->
 
 <a id="draws"></a>

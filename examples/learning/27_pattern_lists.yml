@@ -109,10 +109,6 @@ patterns:
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
     octave: [3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~, 3, ~]
 
-generators:
-  - { name: power chords, kind: guitarify, single_notes: power_chord }
-  - { name: power chords guitar, kind: chain, generators: [{ name: power chords }] }
-
 instruments:
   - { name: distortion guitar, device: "*FluidSynth", gm_sound: 31 }
   - { name: picked bass, device: "*FluidSynth", gm_sound: 35 }
@@ -125,7 +121,7 @@ songs:
     genre: Exercise
 
     tracks:
-      - { name: riff, instrument: distortion guitar, default_velocity: 100, generators: [{ name: power chords guitar }] }
+      - { name: riff, instrument: distortion guitar, default_velocity: 100, built_in: { guitarify: { enabled: true, single_notes: power_chord } } }
       - { name: bass, instrument: picked bass, default_velocity: 96 }
       - { name: kick, drum: true, instrument: drum kit, default_velocity: 112 }
       - { name: snare, drum: true, instrument: drum kit, default_velocity: 104 }

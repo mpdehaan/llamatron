@@ -60,6 +60,7 @@ class TestExamples(unittest.TestCase):
         for path in self.paths:
             for chain in (set_file_data(path)[0].get(Section.CHAINS) or {}).values():
                 used |= {next(iter(step)) for step in chain}
+            used |= built_ins_used(example_setlist(path))
         self.assertEqual(set(generator_plugins.plugins()) - used, set())
 
     def test_tempo_keeps_rising_through_minimal_techno(self):
@@ -124,3 +125,16 @@ def check_sounds(*, test, path):
                 test.assertTrue(instrument.uses_fluidsynth())
                 if not track.is_drum():
                     test.assertIsNotNone(instrument.get_gm_sound())
+
+
+def built_ins_used(setlist):
+    """Return the kinds of the built-in generators that any clip or track of a set has switched on."""
+    used = set()
+    for song in setlist.get_songs():
+        for name in song.get_track_names():
+            used |= set(song.get_track(name).built_ins_on())
+            for scene in song.get_scenes():
+                clip_slot = scene.get_clip_slot(name)
+                if clip_slot is not None:
+                    used |= set(clip_slot.built_ins_on())
+    return used

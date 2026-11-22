@@ -4,7 +4,7 @@ description: "a tune heard as written, then with each setting of Phrasing change
 notes: |
   Phrasing: a slow ballad at 68 beats a minute in A minor. One tune is heard again and again, each
   time through a Phrasing generator that changes one thing, so that each setting can be heard
-  alone. The tune's pattern is the same in scenes 1 to 4 and 7: only the chain on its clip differs.
+  alone. The tune's pattern is the same in scenes 1 to 4 and 7: only its clip's Phrasing tab differs.
   Run it with: llamatron examples/learning/23_phrasing.yml --to ableton --replace
 
   Scene 1, as written: four lines of two bars, each ending on a note held for a bar. Every note
@@ -20,7 +20,8 @@ notes: |
   what a new Phrasing starts with.
   Scene 8, the chorus sung: a deep breath, a lot of rise and fall, flowing.
 
-  Try it: open the generator called sung and change one list at a time while scene 7 plays.
+  Try it: open scene 7's lead clip, go to its Phrasing tab and change one setting at a time while
+  scene 7 plays.
 
   When changing this demo:
   - Keep the tune the same pattern in scenes 1 to 4 and 7, and verse tune short the same notes with gaps.
@@ -98,20 +99,6 @@ patterns:
     octave: [3, 3, 3, 3, 3, 3, 3, 3]
     velocity: [70, 44, 60, 44, 70, 44, 60, 44]
 
-generators:
-  - { name: deep breath, kind: phrasing, breath: deep, rise_and_fall: none }
-  - { name: rise and fall, kind: phrasing, breath: none, rise_and_fall: a lot }
-  - { name: choppy, kind: phrasing, breath: none, rise_and_fall: none, notes: choppy }
-  - { name: flowing, kind: phrasing, breath: none, rise_and_fall: none, notes: flowing }
-  - { name: sung, kind: phrasing }
-  - { name: sung chorus, kind: phrasing, breath: deep, rise_and_fall: a lot, notes: flowing }
-  - { name: deep breath phrasing, kind: chain, generators: [{ name: deep breath }] }
-  - { name: rise and fall phrasing, kind: chain, generators: [{ name: rise and fall }] }
-  - { name: choppy phrasing, kind: chain, generators: [{ name: choppy }] }
-  - { name: flowing phrasing, kind: chain, generators: [{ name: flowing }] }
-  - { name: sung phrasing, kind: chain, generators: [{ name: sung }] }
-  - { name: sung chorus phrasing, kind: chain, generators: [{ name: sung chorus }] }
-
 instruments:
   - { name: voice, device: "*FluidSynth", gm_sound: 54 }
   - { name: electric piano, device: "*FluidSynth", gm_sound: 5 }
@@ -145,7 +132,7 @@ songs:
       - name: "breath: deep"
         section: verse
         clips:
-          - { track: lead, pattern: verse tune, generators: [{ name: deep breath phrasing }] }
+          - { track: lead, pattern: verse tune, built_in: { phrasing: { enabled: true, breath: deep, rise_and_fall: none } } }
           - { track: keys, pattern: verse keys }
           - { track: bass, pattern: verse bass }
           - { track: kick, pattern: kick, loop: true }
@@ -154,7 +141,7 @@ songs:
       - name: "rise and fall: a lot"
         section: verse
         clips:
-          - { track: lead, pattern: verse tune, generators: [{ name: rise and fall phrasing }] }
+          - { track: lead, pattern: verse tune, built_in: { phrasing: { enabled: true, breath: none, rise_and_fall: a lot } } }
           - { track: keys, pattern: verse keys }
           - { track: bass, pattern: verse bass }
           - { track: kick, pattern: kick, loop: true }
@@ -163,7 +150,7 @@ songs:
       - name: "notes: choppy"
         section: verse
         clips:
-          - { track: lead, pattern: verse tune, generators: [{ name: choppy phrasing }] }
+          - { track: lead, pattern: verse tune, built_in: { phrasing: { enabled: true, breath: none, rise_and_fall: none, notes: choppy } } }
           - { track: keys, pattern: verse keys }
           - { track: bass, pattern: verse bass }
           - { track: kick, pattern: kick, loop: true }
@@ -181,7 +168,7 @@ songs:
       - name: "notes: flowing"
         section: verse
         clips:
-          - { track: lead, pattern: verse tune short, generators: [{ name: flowing phrasing }] }
+          - { track: lead, pattern: verse tune short, built_in: { phrasing: { enabled: true, breath: none, rise_and_fall: none, notes: flowing } } }
           - { track: keys, pattern: verse keys }
           - { track: bass, pattern: verse bass }
           - { track: kick, pattern: kick, loop: true }
@@ -190,7 +177,7 @@ songs:
       - name: "verse, sung"
         section: verse
         clips:
-          - { track: lead, pattern: verse tune, generators: [{ name: sung phrasing }] }
+          - { track: lead, pattern: verse tune, built_in: { phrasing: { enabled: true } } }
           - { track: keys, pattern: verse keys }
           - { track: bass, pattern: verse bass }
           - { track: kick, pattern: kick, loop: true }
@@ -199,7 +186,7 @@ songs:
       - name: "chorus, sung"
         section: chorus
         clips:
-          - { track: lead, pattern: chorus tune, generators: [{ name: sung chorus phrasing }] }
+          - { track: lead, pattern: chorus tune, built_in: { phrasing: { enabled: true, breath: deep, rise_and_fall: a lot, notes: flowing } } }
           - { track: keys, pattern: chorus keys }
           - { track: bass, pattern: chorus bass }
           - { track: kick, pattern: kick, loop: true }

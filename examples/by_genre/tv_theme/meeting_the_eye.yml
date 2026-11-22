@@ -232,14 +232,6 @@ patterns:
     velocity: [90, 90, ~, 110, ~, ~, ~, ~, 98, 98, 98, 98, 94, ~, ~, ~, 90, 90, ~, 110, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 90, 90, ~, 110, ~, ~, ~, ~, 90, 90, ~, 110, ~, ~, ~, ~, 106, ~, 98, ~, 98, ~, 98, ~, 94, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, false, false, false, true, true, true, true, false, false, false, false, false, true, false, false, false, false, false, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
-generators:
-  - { name: verse, kind: chords, mode: progression, chords: [1, 1, 6, 7] }
-  - { name: chorus, kind: chords, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] }
-  - { name: tonic, kind: chords, mode: progression, chords: [1] }
-  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
-  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
-  - { name: tonic chords, kind: chain, generators: [{ name: tonic }] }
-
 instruments:
   - { name: distortion guitar, device: "*FluidSynth", gm_sound: 31 }
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
@@ -275,27 +267,27 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash short, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: tonic chords }], loop: true }
-          - { track: guitar, pattern: slogan guitar, generators: [{ name: tonic chords }], loop: true }
-          - { track: brass, pattern: slogan brass, generators: [{ name: tonic chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1] } } }
+          - { track: guitar, pattern: slogan guitar, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1] } } }
+          - { track: brass, pattern: slogan brass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1] } } }
       - name: chorus
         clips:
           - { track: kick, pattern: kick drive, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: guitar, pattern: chorus guitar, generators: [{ name: chorus chords }], loop: true }
-          - { track: brass, pattern: chorus brass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
+          - { track: guitar, pattern: chorus guitar, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
+          - { track: brass, pattern: chorus brass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
           - { track: lead, pattern: chorus tune, loop: true }
-          - { track: robot, pattern: robot, generators: [{ name: chorus chords }], loop: true }
+          - { track: robot, pattern: robot, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
       - name: verse
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: guitar, pattern: chug, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: guitar, pattern: chug, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: chorus 2
         clips:
@@ -303,36 +295,36 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: guitar, pattern: chorus guitar, generators: [{ name: chorus chords }], loop: true }
-          - { track: brass, pattern: chorus brass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
+          - { track: guitar, pattern: chorus guitar, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
+          - { track: brass, pattern: chorus brass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
           - { track: lead, pattern: chorus tune, loop: true }
-          - { track: robot, pattern: robot, generators: [{ name: chorus chords }], loop: true }
+          - { track: robot, pattern: robot, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
           - { track: voices, pattern: chorus above, loop: true }
       - name: drum break
         clips:
           - { track: kick, pattern: kick drive, repeat: 2 }
           - { track: snare, pattern: fill, loop: true }
           - { track: toms, pattern: toms, loop: true }
-          - { track: robot, pattern: robot alone, generators: [{ name: tonic chords }], loop: true }
+          - { track: robot, pattern: robot alone, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1] } } }
       - name: last chorus
         clips:
           - { track: kick, pattern: kick drive, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: crash, pattern: crash, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: guitar, pattern: chorus guitar, generators: [{ name: chorus chords }], loop: true }
-          - { track: brass, pattern: chorus brass, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
+          - { track: guitar, pattern: chorus guitar, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
+          - { track: brass, pattern: chorus brass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
           - { track: lead, pattern: chorus tune, loop: true }
-          - { track: robot, pattern: robot, generators: [{ name: chorus chords }], loop: true }
+          - { track: robot, pattern: robot, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 5, 6, 7, 1, 1], qualities: [~, ~, ~, M, ~, ~, ~, ~] } } }
           - { track: voices, pattern: chorus above, loop: true }
       - name: ending
         clips:
           - { track: kick, pattern: kick drive, repeat: 2 }
           - { track: crash, pattern: crash short, loop: true }
-          - { track: bass, pattern: end bass, generators: [{ name: tonic chords }], loop: true }
-          - { track: guitar, pattern: end guitar, generators: [{ name: tonic chords }], loop: true }
-          - { track: brass, pattern: end brass, generators: [{ name: tonic chords }], loop: true }
+          - { track: bass, pattern: end bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1] } } }
+          - { track: guitar, pattern: end guitar, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1] } } }
+          - { track: brass, pattern: end brass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1] } } }
           - { track: lead, pattern: end tune, loop: true }
-          - { track: robot, pattern: robot alone, generators: [{ name: tonic chords }], loop: true }
+          - { track: robot, pattern: robot alone, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1] } } }

@@ -88,10 +88,6 @@ patterns:
     octave: [4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~]
     chord: [7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, dom7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~, 7, ~, ~, ~]
 
-generators:
-  - { name: bubble, kind: arp, step: 1/16, order: up, octave_range: 2 }
-  - { name: bubble arp, kind: chain, generators: [{ name: bubble }] }
-
 grooves:
   - { name: behind the beat, cells: [12, 44], cell_length: 1/8 }
   - { name: hard shuffle, cells: [0, 44], cell_length: 1/8 }
@@ -121,7 +117,7 @@ songs:
         clips:
           - { track: lead, pattern: lick }
           - { track: pedals, pattern: pedals }
-          - { track: pads, pattern: changes, generators: [{ name: bubble arp }] }
+          - { track: pads, pattern: changes, built_in: { arp: { enabled: true, step: 1/16, order: up, octave_range: 2 } } }
           - { track: drums, pattern: kick_snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
       - name: Straight
@@ -129,7 +125,7 @@ songs:
         clips:
           - { track: lead, pattern: lick }
           - { track: pedals, pattern: pedals }
-          - { track: pads, pattern: changes, generators: [{ name: bubble arp }] }
+          - { track: pads, pattern: changes, built_in: { arp: { enabled: true, step: 1/16, order: up, octave_range: 2 } } }
           - { track: drums, pattern: kick_snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
       - name: Behind the beat
@@ -137,7 +133,7 @@ songs:
         clips:
           - { track: lead, pattern: lick }
           - { track: pedals, pattern: pedals }
-          - { track: pads, pattern: changes, generators: [{ name: bubble arp }] }
+          - { track: pads, pattern: changes, built_in: { arp: { enabled: true, step: 1/16, order: up, octave_range: 2 } } }
           - { track: drums, pattern: kick_snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
       - name: Hard shuffle
@@ -145,13 +141,13 @@ songs:
         clips:
           - { track: lead, pattern: lick }
           - { track: pedals, pattern: pedals }
-          - { track: pads, pattern: changes, generators: [{ name: bubble arp }] }
+          - { track: pads, pattern: changes, built_in: { arp: { enabled: true, step: 1/16, order: up, octave_range: 2 } } }
           - { track: drums, pattern: kick_snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
       - name: Bubbling pads
         clips:
           - { track: lead, pattern: lick }
           - { track: pedals, pattern: pedals }
-          - { track: pads, pattern: changes, generators: [{ name: bubble arp }] }
+          - { track: pads, pattern: changes, built_in: { arp: { enabled: true, step: 1/16, order: up, octave_range: 2 } } }
           - { track: drums, pattern: kick_snare, loop: true }
           - { track: hats, pattern: hats, loop: true }

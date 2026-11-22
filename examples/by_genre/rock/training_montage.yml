@@ -148,12 +148,6 @@ patterns:
     velocity: [117, ~, 106, 103, 108, ~, 106, ~, 117, 103, 106, 103, 108, ~, ~, ~, 117, ~, 106, 103, 108, ~, 106, ~, 117, ~, ~, ~, ~, ~, ~, ~, 117, 103, 106, 103, 108, 103, 106, 103, 117, ~, ~, ~, 108, ~, 106, ~, 117, 103, 106, 103, 108, ~, 106, ~, 117, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, false, false, false, false, true, true, true, false, true, false, false, false, true, false, true, false, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, true, false, true, false, false, false, false, false, true, false, true, false, true, true, true, true, true, false, false]
 
-generators:
-  - { name: verse, kind: chords, mode: progression, chords: [1, 6, 7, 1] }
-  - { name: chorus, kind: chords, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] }
-  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
-  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
-
 instruments:
   - { name: muted guitar, device: "*FluidSynth", gm_sound: 29 }
   - { name: distortion guitar, device: "*FluidSynth", gm_sound: 31 }
@@ -201,29 +195,29 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: pedal, pattern: pedal, generators: [{ name: verse chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: pedal, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
           - { track: lead, pattern: verse, loop: true }
       - name: build
         clips:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: pedal, pattern: pedal, generators: [{ name: verse chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: verse chords }], loop: true }
-          - { track: hits, pattern: stabs, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: pedal, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: hits, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: chorus
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: pedal, pattern: pedal, generators: [{ name: chorus chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: chorus chords }], loop: true }
-          - { track: hits, pattern: stabs, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
+          - { track: pedal, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
+          - { track: hits, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
           - { track: lead, pattern: chorus, loop: true }
           - { track: gang, pattern: gang, loop: true }
           - { track: crash, pattern: crash, loop: true }
@@ -241,29 +235,29 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: pedal, pattern: pedal, generators: [{ name: verse chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: pedal, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
           - { track: lead, pattern: verse, loop: true }
       - name: build 2
         clips:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: pedal, pattern: pedal, generators: [{ name: verse chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: verse chords }], loop: true }
-          - { track: hits, pattern: stabs, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: pedal, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: hits, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: chorus 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: pedal, pattern: pedal, generators: [{ name: chorus chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: chorus chords }], loop: true }
-          - { track: hits, pattern: stabs, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
+          - { track: pedal, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
+          - { track: hits, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
           - { track: lead, pattern: chorus, loop: true }
           - { track: gang, pattern: gang, loop: true }
           - { track: crash, pattern: crash, loop: true }
@@ -272,10 +266,10 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: pedal, pattern: pedal, generators: [{ name: verse chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: verse chords }], loop: true }
-          - { track: hits, pattern: stabs, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: pedal, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
+          - { track: hits, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1] } } }
           - { track: solo, pattern: solo, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: breakdown
@@ -287,10 +281,10 @@ songs:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: pedal, pattern: pedal, generators: [{ name: chorus chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: chorus chords }], loop: true }
-          - { track: hits, pattern: stabs, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
+          - { track: pedal, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
+          - { track: hits, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 1, 1, 4, 7, 6, 6] } } }
           - { track: lead, pattern: chorus, loop: true }
           - { track: gang, pattern: gang, loop: true }
           - { track: crash, pattern: crash, loop: true }

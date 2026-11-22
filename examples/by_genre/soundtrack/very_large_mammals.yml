@@ -112,10 +112,6 @@ patterns:
     velocity: [102, ~, ~, ~, 94, 88, 93, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false]
 
-generators:
-  - { name: blues, kind: chords, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] }
-  - { name: blues chords, kind: chain, generators: [{ name: blues }] }
-
 instruments:
   - { name: acoustic bass, device: "*FluidSynth", gm_sound: 33 }
   - { name: tuba, device: "*FluidSynth", gm_sound: 59 }
@@ -149,45 +145,45 @@ songs:
           - { track: kick, pattern: kick, repeat: 12 }
           - { track: snare, pattern: snare, loop: true }
           - { track: ride, pattern: ride, loop: true }
-          - { track: bass, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: tuba, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: organ, pattern: offbeat, generators: [{ name: blues chords }], loop: true }
+          - { track: bass, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: tuba, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: organ, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
       - name: tune
         clips:
           - { track: kick, pattern: kick, repeat: 12 }
           - { track: snare, pattern: snare, loop: true }
           - { track: ride, pattern: ride, loop: true }
-          - { track: bass, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: tuba, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: organ, pattern: offbeat, generators: [{ name: blues chords }], loop: true }
+          - { track: bass, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: tuba, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: organ, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
           - { track: lead, pattern: tune, loop: true }
       - name: horns
         clips:
           - { track: kick, pattern: kick, repeat: 12 }
           - { track: snare, pattern: snare, loop: true }
           - { track: ride, pattern: ride, loop: true }
-          - { track: bass, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: tuba, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: organ, pattern: offbeat, generators: [{ name: blues chords }], loop: true }
-          - { track: horns, pattern: answer, generators: [{ name: blues chords }], loop: true }
+          - { track: bass, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: tuba, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: organ, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: horns, pattern: answer, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
           - { track: lead, pattern: tune, loop: true }
       - name: walk
         clips:
           - { track: kick, pattern: kick, repeat: 12 }
           - { track: snare, pattern: snare, loop: true }
           - { track: ride, pattern: ride, loop: true }
-          - { track: bass, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: tuba, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: clarinet, pattern: riff, generators: [{ name: blues chords }], loop: true }
+          - { track: bass, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: tuba, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: clarinet, pattern: riff, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
       - name: tune 2
         clips:
           - { track: kick, pattern: kick, repeat: 12 }
           - { track: snare, pattern: snare, loop: true }
           - { track: ride, pattern: ride, loop: true }
-          - { track: bass, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: tuba, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: organ, pattern: offbeat, generators: [{ name: blues chords }], loop: true }
-          - { track: horns, pattern: answer, generators: [{ name: blues chords }], loop: true }
+          - { track: bass, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: tuba, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: organ, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: horns, pattern: answer, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
           - { track: lead, pattern: tune, loop: true }
           - { track: clarinet, pattern: tune low, loop: true }
       - name: stomp
@@ -195,19 +191,19 @@ songs:
           - { track: kick, pattern: kick, repeat: 12 }
           - { track: snare, pattern: snare, loop: true }
           - { track: ride, pattern: ride, loop: true }
-          - { track: bass, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: tuba, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: organ, pattern: offbeat, generators: [{ name: blues chords }], loop: true }
-          - { track: horns, pattern: answer, generators: [{ name: blues chords }], loop: true }
+          - { track: bass, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: tuba, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: organ, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: horns, pattern: answer, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
           - { track: clarinet, pattern: tune low, loop: true }
       - name: last tune
         clips:
           - { track: kick, pattern: kick, repeat: 12 }
           - { track: snare, pattern: snare, loop: true }
           - { track: ride, pattern: ride, loop: true }
-          - { track: bass, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: tuba, pattern: boogie, generators: [{ name: blues chords }], loop: true }
-          - { track: organ, pattern: offbeat, generators: [{ name: blues chords }], loop: true }
-          - { track: horns, pattern: answer, generators: [{ name: blues chords }], loop: true }
+          - { track: bass, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: tuba, pattern: boogie, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: organ, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
+          - { track: horns, pattern: answer, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5] } } }
           - { track: lead, pattern: tune, loop: true }
           - { track: clarinet, pattern: tune low, loop: true }

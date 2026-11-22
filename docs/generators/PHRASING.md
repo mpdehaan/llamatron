@@ -2,7 +2,7 @@
 
 A tune written step by step plays every note at one loudness and fills every bar, which is how a music box plays. A singer or a horn player delivers the same tune in lines, the sentences of the tune: each line starts gently, grows toward its most important note and falls away, and a breath follows before the next line starts. Phrasing plays a tune that way. The pattern stays exactly as written, no note is left out and no pitch changes, so another delivery is another setting and never another tune.
 
-A musician reaches for Phrasing when a tune sounds stiff or run together. Add Phrasing to a chain on the clip that plays the tune.
+A musician reaches for Phrasing when a tune sounds stiff or run together. Switch on the Phrasing tab of the clip that plays the tune, or add Phrasing to a chain on that clip.
 
 ## Line
 

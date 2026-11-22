@@ -120,15 +120,6 @@ patterns:
     velocity: [~, ~, 92, 88, 95, ~, 92, ~, 104, ~, ~, 88, 95, ~, ~, ~, ~, ~, 92, 88, 95, ~, 92, ~, 104, ~, ~, 88, 95, ~, ~, ~]
     tie: [false, false, false, false, false, true, false, true, false, true, true, false, false, true, true, true, false, false, false, false, false, true, false, true, false, true, true, false, false, true, true, true]
 
-generators:
-  - { name: verse, kind: chords, mode: progression, chords: [4, 7, 3, 1] }
-  - { name: refrain, kind: chords, mode: progression, chords: [6, 7, 5, 1, 4, 7, 1, 1] }
-  - { name: soft, kind: guitarify, bar: [down, nothing, nothing, nothing, down, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 24 }
-  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
-  - { name: verse strum, kind: chain, generators: [{ name: verse }, { name: soft }] }
-  - { name: refrain chords, kind: chain, generators: [{ name: refrain }] }
-  - { name: refrain strum, kind: chain, generators: [{ name: refrain }, { name: soft }] }
-
 instruments:
   - { name: nylon guitar, device: "*FluidSynth", gm_sound: 25 }
   - { name: acoustic bass, device: "*FluidSynth", gm_sound: 33 }
@@ -154,30 +145,30 @@ songs:
     scenes:
       - name: theme
         clips:
-          - { track: guitar, pattern: pick, generators: [{ name: verse chords }], repeat: 8 }
-          - { track: guitar 2, pattern: strum, generators: [{ name: verse strum }], loop: true }
+          - { track: guitar, pattern: pick, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 1] } } }
+          - { track: guitar 2, pattern: strum, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 1] }, guitarify: { enabled: true, bar: [down, nothing, nothing, nothing, down, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 24 } } }
           - { track: lead, pattern: verse, loop: true }
       - name: refrain
         clips:
-          - { track: guitar, pattern: pick, generators: [{ name: refrain chords }], repeat: 8 }
-          - { track: guitar 2, pattern: strum, generators: [{ name: refrain strum }], loop: true }
+          - { track: guitar, pattern: pick, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 5, 1, 4, 7, 1, 1] } } }
+          - { track: guitar 2, pattern: strum, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 5, 1, 4, 7, 1, 1] }, guitarify: { enabled: true, bar: [down, nothing, nothing, nothing, down, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 24 } } }
           - { track: rim, pattern: rim, loop: true }
           - { track: shaker, pattern: shaker, loop: true }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: refrain chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 5, 1, 4, 7, 1, 1] } } }
           - { track: lead, pattern: refrain, loop: true }
           - { track: answer, pattern: echo, loop: true }
       - name: theme again
         clips:
-          - { track: guitar, pattern: pick, generators: [{ name: verse chords }], repeat: 4 }
-          - { track: guitar 2, pattern: strum, generators: [{ name: verse strum }], loop: true }
+          - { track: guitar, pattern: pick, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 1] } } }
+          - { track: guitar 2, pattern: strum, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 1] }, guitarify: { enabled: true, bar: [down, nothing, nothing, nothing, down, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 24 } } }
           - { track: rim, pattern: rim, loop: true }
           - { track: shaker, pattern: shaker, loop: true }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 1] } } }
           - { track: lead, pattern: first line, loop: true }
       - name: outro
         clips:
-          - { track: guitar, pattern: pick, generators: [{ name: verse chords }], repeat: 4 }
-          - { track: guitar 2, pattern: strum, generators: [{ name: verse strum }], loop: true }
+          - { track: guitar, pattern: pick, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 1] } } }
+          - { track: guitar 2, pattern: strum, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 7, 3, 1] }, guitarify: { enabled: true, bar: [down, nothing, nothing, nothing, down, nothing, down, up], accents: [false, false, false, false, false, false, false, false], cell: 1/8, spread: 24 } } }
           - { track: answer, pattern: first line, loop: true }

@@ -156,14 +156,6 @@ patterns:
     velocity: [115, 102, 104, 102, 106, 102, 104, 102, 115, 102, 104, 102, 106, 102, 104, 102, 115, 102, 104, 102, 106, 102, 104, 102, 115, 102, 104, 102, 106, 102, 104, ~, 115, 102, 104, 102, 106, 102, 104, 102, 115, 102, 104, 102, 106, 102, 104, 102, 115, 102, 104, 102, 106, 102, 104, 102, 115, ~, ~, ~, 106, ~, 104, ~]
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, true, false, true]
 
-generators:
-  - { name: loop, kind: chords, mode: progression, chords: [1, 1, 6, 5], every: 1/2 }
-  - { name: pre, kind: chords, mode: progression, chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] }
-  - { name: bridge, kind: chords, mode: progression, chords: [1, 4], qualities: [sus4, M] }
-  - { name: loop chords, kind: chain, generators: [{ name: loop }] }
-  - { name: pre chords, kind: chain, generators: [{ name: pre }] }
-  - { name: bridge chords, kind: chain, generators: [{ name: bridge }] }
-
 instruments:
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
   - { name: square lead, device: "*FluidSynth", gm_sound: 81 }
@@ -201,25 +193,25 @@ songs:
           - { track: hat, pattern: hat, loop: true }
           - { track: riff, pattern: riff, loop: true }
           - { track: riff high, pattern: riff high, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
       - name: verse
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: clap, pattern: clap, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
           - { track: riff, pattern: riff, loop: true }
           - { track: riff high, pattern: riff high, loop: true }
-          - { track: pad, pattern: pad half, generators: [{ name: loop chords }], loop: true }
+          - { track: pad, pattern: pad half, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: pre-chorus
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: clap, pattern: clap, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: pre chords }], loop: true }
-          - { track: riff, pattern: pulse, generators: [{ name: pre chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: pre chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] } } }
+          - { track: riff, pattern: pulse, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] } } }
           - { track: lead, pattern: pre tune, loop: true }
           - { track: choir, pattern: pre third, loop: true }
       - name: instrumental
@@ -227,57 +219,57 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: clap, pattern: clap, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
           - { track: riff, pattern: riff, loop: true }
           - { track: riff high, pattern: riff high, loop: true }
-          - { track: pad, pattern: pad half, generators: [{ name: loop chords }], loop: true }
+          - { track: pad, pattern: pad half, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
           - { track: solo, pattern: solo tune, loop: true }
       - name: verse 2
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: clap, pattern: clap, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
           - { track: riff, pattern: riff, loop: true }
           - { track: riff high, pattern: riff high, loop: true }
-          - { track: pad, pattern: pad half, generators: [{ name: loop chords }], loop: true }
+          - { track: pad, pattern: pad half, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: pre-chorus 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: clap, pattern: clap, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: pre chords }], loop: true }
-          - { track: riff, pattern: pulse, generators: [{ name: pre chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: pre chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] } } }
+          - { track: riff, pattern: pulse, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 5, 1, 4], qualities: [~, M, ~, ~] } } }
           - { track: lead, pattern: pre tune, loop: true }
           - { track: choir, pattern: pre third, loop: true }
       - name: bridge
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
-          - { track: bass, pattern: bass, generators: [{ name: bridge chords }], loop: true }
-          - { track: riff, pattern: pulse, generators: [{ name: bridge chords }], loop: true }
-          - { track: pad, pattern: pad, generators: [{ name: bridge chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4], qualities: [sus4, M] } } }
+          - { track: riff, pattern: pulse, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4], qualities: [sus4, M] } } }
+          - { track: pad, pattern: pad, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4], qualities: [sus4, M] } } }
           - { track: lead, pattern: bridge tune, loop: true }
       - name: verse 3
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: clap, pattern: clap, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
           - { track: riff, pattern: riff, loop: true }
           - { track: riff high, pattern: riff high, loop: true }
-          - { track: pad, pattern: pad half, generators: [{ name: loop chords }], loop: true }
+          - { track: pad, pattern: pad half, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: instrumental 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: clap, pattern: clap, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
           - { track: riff, pattern: riff, loop: true }
           - { track: riff high, pattern: riff high, loop: true }
-          - { track: pad, pattern: pad half, generators: [{ name: loop chords }], loop: true }
+          - { track: pad, pattern: pad half, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }
           - { track: solo, pattern: solo tune, loop: true }
       - name: outro
         clips:
@@ -285,4 +277,4 @@ songs:
           - { track: hat, pattern: hat, loop: true }
           - { track: riff, pattern: riff, loop: true }
           - { track: riff high, pattern: riff high, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: loop chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 5], every: 1/2 } } }

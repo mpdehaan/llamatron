@@ -113,12 +113,6 @@ patterns:
     velocity: [110, ~, ~, ~, 102, ~, 101, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 102, ~, 101, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, 102, ~, 101, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, 101, ~, 102, ~, 101, ~, 110, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
 
-generators:
-  - { name: a, kind: chords, mode: progression, chords: [1, 6, 2, 5] }
-  - { name: b, kind: chords, mode: progression, chords: [3, 3, 6, 6, 2, 2, 5, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] }
-  - { name: a chords, kind: chain, generators: [{ name: a }] }
-  - { name: b chords, kind: chain, generators: [{ name: b }] }
-
 instruments:
   - { name: vibraphone, device: "*FluidSynth", gm_sound: 12 }
   - { name: celesta, device: "*FluidSynth", gm_sound: 9 }
@@ -150,32 +144,32 @@ songs:
           - { track: ride, pattern: ride, repeat: 16 }
           - { track: brush, pattern: brush, loop: true }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: walk, generators: [{ name: a chords }], loop: true }
-          - { track: strings, pattern: pluck, generators: [{ name: a chords }], loop: true }
-          - { track: celesta, pattern: sparkle, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: walk, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 2, 5] } } }
+          - { track: strings, pattern: pluck, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 2, 5] } } }
+          - { track: celesta, pattern: sparkle, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 2, 5] } } }
           - { track: vibes, pattern: a, loop: true }
       - name: B
         clips:
           - { track: ride, pattern: ride, repeat: 8 }
           - { track: brush, pattern: brush, loop: true }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: walk, generators: [{ name: b chords }], loop: true }
-          - { track: strings, pattern: pluck, generators: [{ name: b chords }], loop: true }
+          - { track: bass, pattern: walk, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 3, 6, 6, 2, 2, 5, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] } } }
+          - { track: strings, pattern: pluck, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 3, 6, 6, 2, 2, 5, 5], qualities: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7] } } }
           - { track: vibes, pattern: b, loop: true }
       - name: A 2
         clips:
           - { track: ride, pattern: ride, repeat: 8 }
           - { track: brush, pattern: brush, loop: true }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: walk, generators: [{ name: a chords }], loop: true }
-          - { track: strings, pattern: pluck, generators: [{ name: a chords }], loop: true }
-          - { track: celesta, pattern: sparkle, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: walk, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 2, 5] } } }
+          - { track: strings, pattern: pluck, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 2, 5] } } }
+          - { track: celesta, pattern: sparkle, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 2, 5] } } }
           - { track: vibes, pattern: a, loop: true }
       - name: ending
         clips:
           - { track: ride, pattern: ride, repeat: 4 }
           - { track: brush, pattern: brush, loop: true }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: walk, generators: [{ name: a chords }], loop: true }
-          - { track: strings, pattern: pluck, generators: [{ name: a chords }], loop: true }
-          - { track: celesta, pattern: sparkle, generators: [{ name: a chords }], loop: true }
+          - { track: bass, pattern: walk, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 2, 5] } } }
+          - { track: strings, pattern: pluck, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 2, 5] } } }
+          - { track: celesta, pattern: sparkle, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 2, 5] } } }

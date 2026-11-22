@@ -61,11 +61,11 @@ Three rows let a chord leave the song's scale. Each chord is worked out in one o
 
 ### Chords Track
 
-Put the song's chords on a track of their own, called Chords here, and turn that track's Mute on in the track editor so that the chords are a guide and make no sound. In each scene, the Chords track's clip says what the chords are, in either of two ways. The chords can be written by hand, a step a chord, with the step's Degree as the chord's root and its Chord row as the chord. Or the pattern can hold one chord and a Chords generator in Progression mode in that clip's chain can make the progression from it. FollowChords reads the chords as they come out of the Chords track, after that track's own chain, so the two ways are followed alike.
+Put the song's chords on a track of their own, called Chords here, and turn that track's Mute on in the track editor so that the chords are a guide and make no sound. In each scene, the Chords track's clip says what the chords are, in either of two ways. The chords can be written by hand, a step a chord, with the step's Degree as the chord's root and its Chord row as the chord. Or the pattern can hold one chord and a Chords generator in Progression mode, on that clip's Chords tab or in its chain, can make the progression from it. FollowChords reads the chords as they come out of the Chords track, after that track's own generators, so the two ways are followed alike.
 
 ### Following
 
-Write a figure over chord I, a bar of bass, an arpeggio or a held chord, and add a Chords generator in Follow Progression mode to a chain on its clip. As each note starts, it finds the chord most lately started on the track followed, in the same scene, and moves the note up the clip's scale by as many notes as that chord's root is above the scale's root. The scale decides whether a chord is major or minor, as in Progression mode: a figure written on A in A minor plays F, A and C over a chord on F. Where the track followed plays a chord from outside the scale, such as E major in A minor, a note of the figure that is a third, a fifth or a seventh above the figure's root takes the chord's own note, so the figure plays G sharp. Rests, rhythm, velocity and gates stay as written.
+Write a figure over chord I, a bar of bass, an arpeggio or a held chord, and switch on its clip's Chords tab in Follow Progression mode, or add a Chords generator in that mode to a chain on the clip. As each note starts, it finds the chord most lately started on the track followed, in the same scene, and moves the note up the clip's scale by as many notes as that chord's root is above the scale's root. The scale decides whether a chord is major or minor, as in Progression mode: a figure written on A in A minor plays F, A and C over a chord on F. Where the track followed plays a chord from outside the scale, such as E major in A minor, a note of the figure that is a third, a fifth or a seventh above the figure's root takes the chord's own note, so the figure plays G sharp. Rests, rhythm, velocity and gates stay as written.
 
 A chord goes on through the rests after it, until the next chord starts. Before the first chord of a scene, with no track chosen, or in a scene where the track followed has no clip, nothing moves. A drum pattern is left alone. Tracks cannot follow each other in a circle.
 
@@ -77,7 +77,7 @@ Chords played in root position jump around: C, then G, then Am, each built up fr
 
 ## Applying the Generator
 
-Add the Chords generator to a chain, as `chords: name`, and give clips that chain; [Concepts](../CONCEPTS.md#chord-progressions) walks through it.
+Switch on the Chords tab of a clip or a track, or add the Chords generator to a chain, as `chords: name`, and give clips that chain; [Concepts](../CONCEPTS.md#chord-progressions) walks through it.
 
 - `examples/learning/06_chord_progression_generator.yml` plays three one-bar patterns through five progressions, and `examples/learning/07_blues_chords.yml` is a twelve-bar blues.
 - `examples/learning/05_voice_leading.yml` plays three progressions in root position, inverted by hand with the chord editor's Inv. row, and voice-led; the last scene of `examples/learning/06_chord_progression_generator.yml` voice-leads its pad.

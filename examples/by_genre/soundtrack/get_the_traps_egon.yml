@@ -153,12 +153,6 @@ patterns:
     velocity: [91, ~, ~, ~, ~, ~, ~, ~, 91, ~, ~, ~, ~, ~, ~, ~, 91, ~, ~, ~, 82, ~, ~, ~, 91, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
-generators:
-  - { name: riff, kind: chords, mode: progression, chords: [1, 1, 7, 4], every: 1/4 }
-  - { name: middle, kind: chords, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] }
-  - { name: riff chords, kind: chain, generators: [{ name: riff }] }
-  - { name: middle chords, kind: chain, generators: [{ name: middle }] }
-
 instruments:
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
   - { name: synth brass, device: "*FluidSynth", gm_sound: 63 }
@@ -199,16 +193,16 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true }
-          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
-          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: brass, pattern: hit, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
+          - { track: guitar, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
       - name: hook
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true }
-          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
-          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: brass, pattern: hit, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
+          - { track: guitar, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
           - { track: lead, pattern: hook, loop: true }
           - { track: shout, pattern: shout, loop: true }
       - name: riff 2
@@ -217,16 +211,16 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true }
-          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
-          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: brass, pattern: hit, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
+          - { track: guitar, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
       - name: hook 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true }
-          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
-          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: brass, pattern: hit, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
+          - { track: guitar, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
           - { track: lead, pattern: hook, loop: true }
           - { track: shout, pattern: shout, loop: true }
       - name: middle
@@ -234,8 +228,8 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: middle bass, generators: [{ name: middle chords }], loop: true }
-          - { track: brass, pattern: bar hit, generators: [{ name: middle chords }], loop: true }
+          - { track: bass, pattern: middle bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
+          - { track: brass, pattern: bar hit, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
           - { track: lead, pattern: middle tune, loop: true }
       - name: riff 3
         clips:
@@ -243,8 +237,8 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true }
-          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
-          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: brass, pattern: hit, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
+          - { track: guitar, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
           - { track: clap, pattern: clap, loop: true }
       - name: ghosts
         clips:
@@ -258,8 +252,8 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: middle bass, generators: [{ name: middle chords }], loop: true }
-          - { track: brass, pattern: bar hit, generators: [{ name: middle chords }], loop: true }
+          - { track: bass, pattern: middle bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
+          - { track: brass, pattern: bar hit, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 4, 4, 5, 5] } } }
           - { track: lead, pattern: middle tune, loop: true }
       - name: last hook
         clips:
@@ -267,8 +261,8 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true }
-          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
-          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: brass, pattern: hit, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
+          - { track: guitar, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
           - { track: lead, pattern: hook, loop: true }
           - { track: shout, pattern: shout, loop: true }
           - { track: clap, pattern: clap, loop: true }
@@ -279,5 +273,5 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true }
-          - { track: brass, pattern: hit, generators: [{ name: riff chords }], loop: true }
-          - { track: guitar, pattern: chick, generators: [{ name: riff chords }], loop: true }
+          - { track: brass, pattern: hit, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }
+          - { track: guitar, pattern: chick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4], every: 1/4 } } }

@@ -103,12 +103,7 @@ patterns:
 generators:
   - { name: sequence, kind: arp, step: 1/16, order: up, octave_range: 2 }
   - { name: drone, kind: chords, mode: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] }
-  - { name: theme, kind: chords, mode: progression, chords: [1, 6, 4, 5] }
   - { name: rise, kind: shapes, swell_start: 60, swell_end: 120, swell_accent: 0 }
-  - { name: drone chords, kind: chain, generators: [{ name: drone }] }
-  - { name: theme chords, kind: chain, generators: [{ name: theme }] }
-  - { name: drone arp, kind: chain, generators: [{ name: drone }, { name: sequence }] }
-  - { name: theme arp, kind: chain, generators: [{ name: theme }, { name: sequence }] }
   - { name: rising arp, kind: chain, generators: [{ name: drone }, { name: sequence }, { name: rise }] }
 
 instruments:
@@ -135,37 +130,37 @@ songs:
     scenes:
       - name: sequence
         clips:
-          - { track: sequence, pattern: chord, generators: [{ name: drone arp }], repeat: 8 }
+          - { track: sequence, pattern: chord, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 2 } } }
       - name: gathering
         clips:
-          - { track: sequence, pattern: chord, generators: [{ name: drone arp }], repeat: 8 }
-          - { track: bass, pattern: pulse, generators: [{ name: drone chords }], loop: true }
+          - { track: sequence, pattern: chord, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 2 } } }
+          - { track: bass, pattern: pulse, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] } } }
           - { track: kick, pattern: kick, loop: true }
       - name: theme
         clips:
-          - { track: sequence, pattern: triad, generators: [{ name: theme arp }], repeat: 16 }
-          - { track: bass, pattern: pulse, generators: [{ name: theme chords }], loop: true }
-          - { track: pad, pattern: held, generators: [{ name: theme chords }], loop: true }
+          - { track: sequence, pattern: triad, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 2 } } }
+          - { track: bass, pattern: pulse, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5] } } }
+          - { track: pad, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5] } } }
           - { track: kick, pattern: kick, loop: true }
           - { track: lead, pattern: theme, loop: true }
       - name: rise
         clips:
           - { track: sequence, pattern: chord, generators: [{ name: rising arp }], repeat: 8 }
-          - { track: bass, pattern: pulse, generators: [{ name: drone chords }], loop: true }
-          - { track: pad, pattern: held, generators: [{ name: drone chords }], loop: true }
+          - { track: bass, pattern: pulse, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] } } }
+          - { track: pad, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] } } }
           - { track: kick, pattern: kick, loop: true }
           - { track: tom, pattern: tom, loop: true }
       - name: alone
         clips:
-          - { track: pad, pattern: held, generators: [{ name: drone chords }], repeat: 4 }
+          - { track: pad, pattern: held, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] } } }
       - name: theme 2
         clips:
-          - { track: sequence, pattern: triad, generators: [{ name: theme arp }], repeat: 16 }
-          - { track: bass, pattern: pulse, generators: [{ name: theme chords }], loop: true }
-          - { track: pad, pattern: held, generators: [{ name: theme chords }], loop: true }
+          - { track: sequence, pattern: triad, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 2 } } }
+          - { track: bass, pattern: pulse, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5] } } }
+          - { track: pad, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5] } } }
           - { track: kick, pattern: kick, loop: true }
           - { track: tom, pattern: tom, loop: true }
           - { track: lead, pattern: theme, loop: true }
       - name: ending
         clips:
-          - { track: sequence, pattern: chord, generators: [{ name: drone arp }], repeat: 4 }
+          - { track: sequence, pattern: chord, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 1, 1, 6, 6, 1, 1] }, arp: { enabled: true, step: 1/16, order: up, octave_range: 2 } } }

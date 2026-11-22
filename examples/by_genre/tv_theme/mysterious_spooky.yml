@@ -125,14 +125,6 @@ patterns:
     velocity: [114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, ~, ~, 114, ~, 102, ~, 105, ~, 102, ~, 114, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, false]
 
-generators:
-  - { name: motif, kind: chords, mode: progression, chords: [1, 2, 1, 5] }
-  - { name: theme, kind: chords, mode: progression, chords: [1, 1, 2, 2, 5, 5, 1, 1], qualities: [~, ~, dom7, dom7, dom7, dom7, ~, ~] }
-  - { name: middle, kind: chords, mode: progression, chords: [4, 4, 1, 1, 2, 2, 5, 5], qualities: [~, ~, ~, ~, dom7, dom7, dom7, dom7] }
-  - { name: motif chords, kind: chain, generators: [{ name: motif }] }
-  - { name: theme chords, kind: chain, generators: [{ name: theme }] }
-  - { name: middle chords, kind: chain, generators: [{ name: middle }] }
-
 instruments:
   - { name: tuba, device: "*FluidSynth", gm_sound: 59 }
   - { name: harpsichord, device: "*FluidSynth", gm_sound: 7 }
@@ -158,27 +150,27 @@ songs:
     scenes:
       - name: snaps
         clips:
-          - { track: harpsichord, pattern: motif, generators: [{ name: motif chords }], repeat: 8 }
+          - { track: harpsichord, pattern: motif, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 2, 1, 5] } } }
           - { track: clicks, pattern: clicks, loop: true }
-          - { track: bass, pattern: tuba short, generators: [{ name: motif chords }], loop: true }
+          - { track: bass, pattern: tuba short, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 2, 1, 5] } } }
       - name: theme
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: brush, loop: true }
-          - { track: bass, pattern: tuba, generators: [{ name: theme chords }], loop: true }
-          - { track: harpsichord, pattern: offbeat, generators: [{ name: theme chords }], loop: true }
+          - { track: bass, pattern: tuba, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 2, 2, 5, 5, 1, 1], qualities: [~, ~, dom7, dom7, dom7, dom7, ~, ~] } } }
+          - { track: harpsichord, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 2, 2, 5, 5, 1, 1], qualities: [~, ~, dom7, dom7, dom7, dom7, ~, ~] } } }
           - { track: lead, pattern: theme, loop: true }
       - name: middle
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: brush, loop: true }
-          - { track: bass, pattern: tuba, generators: [{ name: middle chords }], loop: true }
-          - { track: harpsichord, pattern: offbeat, generators: [{ name: middle chords }], loop: true }
+          - { track: bass, pattern: tuba, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 2, 2, 5, 5], qualities: [~, ~, ~, ~, dom7, dom7, dom7, dom7] } } }
+          - { track: harpsichord, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 4, 1, 1, 2, 2, 5, 5], qualities: [~, ~, ~, ~, dom7, dom7, dom7, dom7] } } }
           - { track: lead, pattern: middle, loop: true }
       - name: ending
         clips:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: brush, loop: true }
-          - { track: bass, pattern: tuba, generators: [{ name: theme chords }], loop: true }
-          - { track: harpsichord, pattern: offbeat, generators: [{ name: theme chords }], loop: true }
-          - { track: organ, pattern: held, generators: [{ name: theme chords }], loop: true }
+          - { track: bass, pattern: tuba, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 2, 2, 5, 5, 1, 1], qualities: [~, ~, dom7, dom7, dom7, dom7, ~, ~] } } }
+          - { track: harpsichord, pattern: offbeat, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 2, 2, 5, 5, 1, 1], qualities: [~, ~, dom7, dom7, dom7, dom7, ~, ~] } } }
+          - { track: organ, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 2, 2, 5, 5, 1, 1], qualities: [~, ~, dom7, dom7, dom7, dom7, ~, ~] } } }

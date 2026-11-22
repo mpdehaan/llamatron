@@ -245,15 +245,9 @@ patterns:
 
 generators:
   - { name: theme, kind: chords, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] }
-  - { name: dance, kind: chords, mode: progression, chords: [1, 7, 1, 7, 1, 7, 5, 1] }
   - { name: crypt, kind: chords, mode: progression, chords: [1] }
-  - { name: dragon, kind: chords, mode: progression, chords: [1, 2, 1, 4, 1, 6, 7, 1], accidentals: [~, b, ~, ~, ~, ~, ~, ~] }
   - { name: fade, kind: shapes, swell_start: 100, swell_end: 40 }
   - { name: grow, kind: shapes, swell_start: 50, swell_end: 110 }
-  - { name: theme chords, kind: chain, generators: [{ name: theme }] }
-  - { name: dance chords, kind: chain, generators: [{ name: dance }] }
-  - { name: crypt chords, kind: chain, generators: [{ name: crypt }] }
-  - { name: dragon chords, kind: chain, generators: [{ name: dragon }] }
   - { name: fade swell, kind: chain, generators: [{ name: theme }, { name: fade }] }
   - { name: grow swell, kind: chain, generators: [{ name: crypt }, { name: grow }] }
 
@@ -297,23 +291,23 @@ songs:
       - name: the theme
         clips:
           - { track: recorder, pattern: theme, repeat: 1 }
-          - { track: harp, pattern: harp, generators: [{ name: theme chords }], loop: true }
-          - { track: strings, pattern: pedal, generators: [{ name: theme chords }], loop: true }
+          - { track: harp, pattern: harp, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] } } }
+          - { track: strings, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] } } }
       - name: the tavern
         tempo: 100
         clips:
           - { track: harpsichord, pattern: dance low, repeat: 2 }
           - { track: recorder, pattern: dance, loop: true }
-          - { track: harp, pattern: pluck chords, generators: [{ name: dance chords }], loop: true }
+          - { track: harp, pattern: pluck chords, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 7, 1, 7, 5, 1] } } }
           - { track: timpani, pattern: timpani dance, loop: true }
           - { track: tamb, pattern: tamb, loop: true }
-          - { track: strings, pattern: pedal, generators: [{ name: dance chords }], loop: true }
+          - { track: strings, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 7, 1, 7, 5, 1] } } }
       - name: the road
         tempo: 84
         clips:
           - { track: horn, pattern: theme low, repeat: 2 }
-          - { track: strings, pattern: chord, generators: [{ name: theme chords }], loop: true }
-          - { track: organ, pattern: pedal, generators: [{ name: theme chords }], loop: true }
+          - { track: strings, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] } } }
+          - { track: organ, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] } } }
           - { track: harpsichord, pattern: counter, loop: true }
           - { track: timpani, pattern: march low, loop: true }
           - { track: snare, pattern: march snare, loop: true }
@@ -322,15 +316,15 @@ songs:
         clips:
           - { track: organ, pattern: crypt, repeat: 2 }
           - { track: choir, pattern: crypt choir, loop: true }
-          - { track: strings, pattern: pedal, generators: [{ name: crypt chords }], loop: true }
+          - { track: strings, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1] } } }
           - { track: bells, pattern: toll, loop: true }
       - name: the dragon
         tempo: 104
         clips:
           - { track: horn, pattern: dragon, repeat: 2 }
           - { track: strings, pattern: dragon high, loop: true }
-          - { track: organ, pattern: stabs, generators: [{ name: dragon chords }], loop: true }
-          - { track: choir, pattern: fifths, generators: [{ name: dragon chords }], loop: true }
+          - { track: organ, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 2, 1, 4, 1, 6, 7, 1], accidentals: [~, b, ~, ~, ~, ~, ~, ~] } } }
+          - { track: choir, pattern: fifths, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 2, 1, 4, 1, 6, 7, 1], accidentals: [~, b, ~, ~, ~, ~, ~, ~] } } }
           - { track: timpani, pattern: battle, loop: true }
           - { track: toms, pattern: battle high, loop: true }
           - { track: crash, pattern: battle crash, loop: true }
@@ -341,9 +335,9 @@ songs:
           - { track: recorder, pattern: theme high, loop: true }
           - { track: choir, pattern: theme, loop: true }
           - { track: harpsichord, pattern: dance low, loop: true }
-          - { track: harp, pattern: harp, generators: [{ name: theme chords }], loop: true }
-          - { track: strings, pattern: chord, generators: [{ name: theme chords }], loop: true }
-          - { track: organ, pattern: pedal, generators: [{ name: theme chords }], loop: true }
+          - { track: harp, pattern: harp, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] } } }
+          - { track: strings, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] } } }
+          - { track: organ, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] } } }
           - { track: timpani, pattern: march low, loop: true }
           - { track: bells, pattern: toll, loop: true }
       - name: epilogue

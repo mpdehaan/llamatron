@@ -118,12 +118,6 @@ patterns:
     velocity: [103, ~, ~, ~, ~, ~, 92, ~, 103, ~, ~, ~, ~, ~, ~, ~, 103, ~, ~, ~, 94, ~, ~, ~, 103, ~, ~, ~, ~, ~, 92, ~, 103, ~, ~, ~, ~, ~, 92, ~, 103, ~, ~, ~, ~, ~, ~, ~, 103, ~, ~, ~, 94, ~, ~, ~, 103, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
-generators:
-  - { name: hook, kind: chords, mode: progression, chords: [1, 1, 6, 7] }
-  - { name: second, kind: chords, mode: progression, chords: [4, 1, 4, 5], qualities: [~, ~, ~, M] }
-  - { name: hook chords, kind: chain, generators: [{ name: hook }] }
-  - { name: second chords, kind: chain, generators: [{ name: second }] }
-
 instruments:
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }
   - { name: synth brass, device: "*FluidSynth", gm_sound: 63 }
@@ -166,7 +160,7 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: lead, pattern: hook, loop: true }
       - name: second part
         clips:
@@ -174,8 +168,8 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: second chords }], loop: true }
-          - { track: brass, pattern: stab, generators: [{ name: second chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 4, 5], qualities: [~, ~, ~, M] } } }
+          - { track: brass, pattern: stab, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 4, 5], qualities: [~, ~, ~, M] } } }
           - { track: marimba, pattern: second, loop: true }
       - name: hook
         clips:
@@ -183,8 +177,8 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
-          - { track: brass, pattern: stab, generators: [{ name: hook chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: brass, pattern: stab, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: lead, pattern: hook, loop: true }
       - name: bells
         clips:
@@ -192,8 +186,8 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
-          - { track: brass, pattern: stab, generators: [{ name: hook chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: brass, pattern: stab, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: bells, pattern: bells, loop: true }
           - { track: marimba, pattern: second, loop: true }
       - name: hook 2
@@ -202,8 +196,8 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
-          - { track: brass, pattern: stab, generators: [{ name: hook chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: brass, pattern: stab, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: lead, pattern: hook, loop: true }
       - name: break
         clips:
@@ -211,15 +205,15 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
       - name: second part 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: second chords }], loop: true }
-          - { track: brass, pattern: stab, generators: [{ name: second chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 4, 5], qualities: [~, ~, ~, M] } } }
+          - { track: brass, pattern: stab, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 1, 4, 5], qualities: [~, ~, ~, M] } } }
           - { track: marimba, pattern: second, loop: true }
           - { track: bells, pattern: second, loop: true }
       - name: last hook
@@ -228,7 +222,7 @@ songs:
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: clap, pattern: clap, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: hook chords }], loop: true }
-          - { track: brass, pattern: stab, generators: [{ name: hook chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
+          - { track: brass, pattern: stab, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: lead, pattern: hook, loop: true }
           - { track: bells, pattern: bells, loop: true }

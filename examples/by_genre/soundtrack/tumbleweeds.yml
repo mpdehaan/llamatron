@@ -153,12 +153,6 @@ patterns:
     velocity: [96, ~, ~, ~, ~, ~, 84, ~, 96, ~, ~, ~, ~, ~, ~, ~, 96, ~, ~, ~, 87, ~, 84, ~, 96, ~, ~, ~, ~, ~, ~, ~, 96, ~, ~, ~, ~, ~, 84, ~, 96, ~, ~, ~, ~, ~, ~, ~, 96, ~, 84, ~, 87, ~, 84, ~, 96, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, true, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
 
-generators:
-  - { name: theme, kind: chords, mode: progression, chords: [1, 1, 4, 1, 1, 1, 7, 1], qualities: [~, ~, M, ~, ~, ~, ~, ~] }
-  - { name: climax, kind: chords, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] }
-  - { name: theme chords, kind: chain, generators: [{ name: theme }] }
-  - { name: climax chords, kind: chain, generators: [{ name: climax }] }
-
 instruments:
   - { name: ocarina, device: "*FluidSynth", gm_sound: 80 }
   - { name: whistle, device: "*FluidSynth", gm_sound: 79 }
@@ -205,46 +199,46 @@ songs:
         clips:
           - { track: toms, pattern: gallop, repeat: 16 }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: theme chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 7, 1], qualities: [~, ~, M, ~, ~, ~, ~, ~] } } }
           - { track: guitar, pattern: theme, loop: true }
       - name: call 2
         clips:
           - { track: toms, pattern: gallop, repeat: 8 }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: theme chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 7, 1], qualities: [~, ~, M, ~, ~, ~, ~, ~] } } }
           - { track: whistle, pattern: call, loop: true }
           - { track: voices, pattern: answer, loop: true }
-          - { track: harmonica, pattern: held, generators: [{ name: theme chords }], loop: true }
+          - { track: harmonica, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 7, 1], qualities: [~, ~, M, ~, ~, ~, ~, ~] } } }
       - name: climax
         clips:
           - { track: toms, pattern: gallop, repeat: 8 }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: climax chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: trumpet, pattern: climax, loop: true }
-          - { track: strings, pattern: held, generators: [{ name: climax chords }], loop: true }
-          - { track: voices, pattern: held, generators: [{ name: climax chords }], loop: true }
+          - { track: strings, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: voices, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: theme 2
         clips:
           - { track: toms, pattern: gallop, repeat: 8 }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: theme chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 7, 1], qualities: [~, ~, M, ~, ~, ~, ~, ~] } } }
           - { track: guitar, pattern: theme, loop: true }
           - { track: whistle, pattern: theme above, loop: true }
       - name: alone
         clips:
           - { track: bell, pattern: bell, repeat: 2 }
           - { track: harmonica, pattern: lonely, loop: true }
-          - { track: strings, pattern: held, generators: [{ name: theme chords }], loop: true }
+          - { track: strings, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 7, 1], qualities: [~, ~, M, ~, ~, ~, ~, ~] } } }
       - name: climax 2
         clips:
           - { track: toms, pattern: gallop, repeat: 16 }
           - { track: kick, pattern: kick, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: climax chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: trumpet, pattern: climax, loop: true }
-          - { track: strings, pattern: held, generators: [{ name: climax chords }], loop: true }
-          - { track: voices, pattern: held, generators: [{ name: climax chords }], loop: true }
-          - { track: guitar, pattern: bass, generators: [{ name: climax chords }], loop: true }
+          - { track: strings, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: voices, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
+          - { track: guitar, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 5, 5], qualities: [~, ~, ~, ~, ~, ~, M, M] } } }
           - { track: crash, pattern: crash, loop: true }
       - name: call 3
         clips:
@@ -255,4 +249,4 @@ songs:
         clips:
           - { track: bell, pattern: bell, repeat: 1 }
           - { track: toms, pattern: gallop soft, loop: true }
-          - { track: strings, pattern: held, generators: [{ name: theme chords }], loop: true }
+          - { track: strings, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 4, 1, 1, 1, 7, 1], qualities: [~, ~, M, ~, ~, ~, ~, ~] } } }

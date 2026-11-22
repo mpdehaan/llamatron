@@ -143,14 +143,6 @@ patterns:
     octave: [6, 6, ~, 5, 6, ~, 6, 6, 6, 6, ~, 5, 5, ~, ~, ~, 6, 6, ~, 5, 6, ~, 6, 6, 6, 6, ~, 5, 5, ~, ~, ~]
     velocity: [115, 109, ~, 101, 106, ~, 104, 101, 115, 109, ~, 101, 106, ~, ~, ~, 115, 109, ~, 101, 106, ~, 104, 101, 115, 109, ~, 101, 106, ~, ~, ~]
 
-generators:
-  - { name: verse, kind: chords, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] }
-  - { name: chorus, kind: chords, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] }
-  - { name: bridge, kind: chords, mode: progression, chords: [2, 2, 4, 5] }
-  - { name: verse chords, kind: chain, generators: [{ name: verse }] }
-  - { name: chorus chords, kind: chain, generators: [{ name: chorus }] }
-  - { name: bridge chords, kind: chain, generators: [{ name: bridge }] }
-
 instruments:
   - { name: finger bass, device: "*FluidSynth", gm_sound: 34 }
   - { name: clean guitar, device: "*FluidSynth", gm_sound: 28 }
@@ -179,36 +171,36 @@ songs:
     scenes:
       - name: bass
         clips:
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], repeat: 4 }
+          - { track: bass, pattern: bass, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
       - name: drums
         clips:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
       - name: guitar
         clips:
           - { track: kick, pattern: kick, repeat: 4 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: guitar, pattern: chop, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
+          - { track: guitar, pattern: chop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
       - name: verse
         clips:
           - { track: kick, pattern: kick, repeat: 16 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: guitar, pattern: chop, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
+          - { track: guitar, pattern: chop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: chorus
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: guitar, pattern: chop, generators: [{ name: chorus chords }], loop: true }
-          - { track: second guitar, pattern: pick, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] } } }
+          - { track: guitar, pattern: chop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] } } }
+          - { track: second guitar, pattern: pick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: verse 2
@@ -216,18 +208,18 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: guitar, pattern: chop, generators: [{ name: verse chords }], loop: true }
-          - { track: second guitar, pattern: pick, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
+          - { track: guitar, pattern: chop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
+          - { track: second guitar, pattern: pick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: chorus 2
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: guitar, pattern: chop, generators: [{ name: chorus chords }], loop: true }
-          - { track: second guitar, pattern: pick, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] } } }
+          - { track: guitar, pattern: chop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] } } }
+          - { track: second guitar, pattern: pick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: bridge
@@ -235,26 +227,26 @@ songs:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: bridge chords }], loop: true }
-          - { track: second guitar, pattern: pick, generators: [{ name: bridge chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [2, 2, 4, 5] } } }
+          - { track: second guitar, pattern: pick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [2, 2, 4, 5] } } }
           - { track: lead, pattern: bridge tune, loop: true }
       - name: verse 3
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: guitar, pattern: chop, generators: [{ name: verse chords }], loop: true }
-          - { track: second guitar, pattern: pick, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
+          - { track: guitar, pattern: chop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
+          - { track: second guitar, pattern: pick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
           - { track: lead, pattern: verse tune, loop: true }
       - name: chorus 3
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: chorus chords }], loop: true }
-          - { track: guitar, pattern: chop, generators: [{ name: chorus chords }], loop: true }
-          - { track: second guitar, pattern: pick, generators: [{ name: chorus chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] } } }
+          - { track: guitar, pattern: chop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] } } }
+          - { track: second guitar, pattern: pick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1], accidentals: [b, b, ~, ~], qualities: [M, M, m, m] } } }
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: coda
@@ -262,11 +254,11 @@ songs:
           - { track: kick, pattern: kick, repeat: 12 }
           - { track: snare, pattern: snare, loop: true }
           - { track: hat, pattern: hat, loop: true }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
-          - { track: guitar, pattern: chop, generators: [{ name: verse chords }], loop: true }
-          - { track: second guitar, pattern: pick, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
+          - { track: guitar, pattern: chop, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
+          - { track: second guitar, pattern: pick, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }
           - { track: noise, pattern: scratch, loop: true }
       - name: bass again
         clips:
           - { track: kick, pattern: kick, repeat: 4 }
-          - { track: bass, pattern: bass, generators: [{ name: verse chords }], loop: true }
+          - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 7], accidentals: [~, ~, b, b], qualities: [dom7, dom7, M, M] } } }

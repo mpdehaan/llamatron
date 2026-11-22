@@ -154,14 +154,6 @@ patterns:
     velocity: [96, ~, ~, ~, 87, ~, ~, ~, 96, ~, ~, ~, ~, ~, ~, ~, 96, ~, ~, ~, 87, ~, ~, ~, 96, ~, ~, ~, ~, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
 
-generators:
-  - { name: harp, kind: arp, step: 1/8, order: up, octave_range: 2 }
-  - { name: chase, kind: chords, mode: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] }
-  - { name: calm, kind: chords, mode: progression, chords: [3, 7, 6, 3] }
-  - { name: chase chords, kind: chain, generators: [{ name: chase }] }
-  - { name: calm chords, kind: chain, generators: [{ name: calm }] }
-  - { name: calm harp, kind: chain, generators: [{ name: calm }, { name: harp }] }
-
 instruments:
   - { name: contrabass, device: "*FluidSynth", gm_sound: 44 }
   - { name: cello, device: "*FluidSynth", gm_sound: 43 }
@@ -218,16 +210,16 @@ songs:
           - { track: cymbal, pattern: cymbal, loop: true }
       - name: chase
         clips:
-          - { track: basses, pattern: cell fast, generators: [{ name: chase chords }], repeat: 16 }
-          - { track: strings, pattern: stab, generators: [{ name: chase chords }], loop: true }
+          - { track: basses, pattern: cell fast, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] } } }
+          - { track: strings, pattern: stab, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] } } }
           - { track: horns, pattern: chase tune, loop: true }
-          - { track: timpani, pattern: timpani, generators: [{ name: chase chords }], loop: true }
+          - { track: timpani, pattern: timpani, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] } } }
           - { track: snare, pattern: snare, loop: true }
       - name: calm
         tempo: 80
         clips:
-          - { track: strings, pattern: held high, generators: [{ name: calm chords }], repeat: 8 }
-          - { track: harp, pattern: held, generators: [{ name: calm harp }], loop: true }
+          - { track: strings, pattern: held high, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 6, 3] } } }
+          - { track: harp, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 6, 3] }, arp: { enabled: true, step: 1/8, order: up, octave_range: 2 } } }
           - { track: flute, pattern: calm tune, loop: true }
       - name: lurking again
         tempo: 70
@@ -242,7 +234,7 @@ songs:
           - { track: timpani, pattern: timpani, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: cymbal, pattern: cymbal, loop: true }
-          - { track: strings, pattern: stab, generators: [{ name: chase chords }], loop: true }
+          - { track: strings, pattern: stab, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] } } }
       - name: ending
         tempo: 70
         clips:
