@@ -142,7 +142,9 @@ class MusicianSettings(GeneratorSettings):
     def get_for(self, *, section, name):
         """Return whether the musician plays in a kind of section, or how the part is played there: the section's own, or else playing it whole."""
         own = self.get_section_own(section=section, name=name)
-        return MUSICIAN_SECTION_DEFAULTS[name] if own is None else own
+        if own is None:
+            return MUSICIAN_SECTION_DEFAULTS[name]
+        return own
 
     @notes_change
     def set_section_own(self, *, section, name, value):
