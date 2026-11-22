@@ -50,19 +50,24 @@ def _check_pattern_name(*, value, song):
 
 def _check_pattern_names(*, value, song):
     """Refuse a clip's patterns unless they are a list of at least one of the set's patterns by name, a pattern allowed more than once, all drum patterns or none."""
-    if not isinstance(value, list) or not value or not all(isinstance(name, str) for name in value):
+    if not isinstance(value, list) or not value:
         raise InvalidValue(errors.ERR_NOT_PATTERN_NAMES.format(value=value))
     for name in value:
+        if not isinstance(name, str):
+            raise InvalidValue(errors.ERR_NOT_PATTERN_NAMES.format(value=value))
+    setlist = song.get_setlist()
+    kinds = set()
+    for name in value:
         _check_pattern_name(value=name, song=song)
-    if len({song.get_setlist().get_pattern(name).is_drum() for name in value}) > 1:
+        pattern = setlist.get_pattern(name)
+        kinds.add(pattern.is_drum())
+    if len(kinds) > 1:
         raise InvalidValue(errors.ERR_PATTERNS_DRUMS_AND_NOTES)
 
 
 def _check_scale_name(*, value, song):
     if not song.get_setlist().has_scale(value):
         raise InvalidValue(errors.ERR_SCENE_NO_SUCH_SCALE.format(scale=value))
-
-
 
 
 def _check_grab_track_name(*, value, song):
@@ -149,7 +154,13 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
 
     def to_data(self):
         """Return the clip as a file holds it: a clip of one pattern names it as pattern, as files always have, and a clip of several lists them as patterns."""
-        return {(ClipSlotSetting.PATTERN if is_one_pattern(name=name, value=value) else name): (value[0] if is_one_pattern(name=name, value=value) else value) for name, value in written_settings(self._settings).items()}
+        data = {}
+        for name, value in written_settings(self._settings).items():
+            if name == ClipSlotSetting.PATTERNS and len(value) == 1:
+                data[ClipSlotSetting.PATTERN] = value[0]
+            else:
+                data[name] = value
+        return data
 
     def get_name(self):
         """Return the clip's own name, or None if it goes by its pattern's."""
@@ -157,8 +168,9 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
 
     def get_display_name(self):
         """Return the name the clip shows and exports as: its own, or its pattern's, with a count of the patterns after the first when it plays several."""
-        if self.get_name():
-            return self.get_name()
+        name = self.get_name()
+        if name:
+            return name
         names = self.get_pattern_names()
         if len(names) == 1:
             return names[0]
@@ -174,7 +186,7 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
 
     def get_strum(self):
         """Return how the clip strums its chords, or None when its Direction is blank and it takes its track's."""
-        return strum_values(lambda part: self._settings[strum_setting(part)])
+        return strum_values(self._strum_part)
 
     def set_strum_setting(self, *, part, value):
         """Set one part of the clip's strum, or None to leave it blank."""
@@ -198,7 +210,9 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
 
     def get_repeat(self):
         repeat = self._settings[ClipSlotSetting.REPEAT]
-        return defaults.DEFAULT_REPEAT if repeat is None else repeat
+        if repeat is None:
+            return defaults.DEFAULT_REPEAT
+        return repeat
 
     def get_direction(self):
         """Return the direction it overrides its patterns with, or None to use theirs."""
@@ -211,7 +225,9 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
     def get_morph_style(self):
         """Return how it morphs, as a BlendMode, or None if it doesn't morph."""
         style = self.get_morph_style_name()
-        return None if style is None else MORPH_STYLES[style]
+        if style is None:
+            return None
+        return MORPH_STYLES[style]
 
     def get_morph_style_name(self):
         """Return how it morphs as the file writes it, like 'left', or None if it doesn't morph."""
@@ -231,7 +247,6 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
 
     def copy(self):
         return ClipSlot(**self._settings)
-
 
     # Changing the clip slot.
 
@@ -255,14 +270,19 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
     def set_loop(self, loop):
         """Make it loop until its scene ends, or not, which is left out of the file."""
         SETTINGS[ClipSlotSetting.LOOP].check(loop)
-        self._settings[ClipSlotSetting.LOOP] = True if loop else None
+        # Not looping is the default, which the file leaves out.
+        self._settings[ClipSlotSetting.LOOP] = None
+        if loop:
+            self._settings[ClipSlotSetting.LOOP] = True
 
     @notes_change
     def set_repeat(self, repeat):
         """Set how many times it plays its pattern, where None or 1 is once. Going back to once drops its morph, which runs across repeats."""
         if repeat is not None:
             SETTINGS[ClipSlotSetting.REPEAT].check(repeat)
-        self._settings[ClipSlotSetting.REPEAT] = None if repeat == defaults.DEFAULT_REPEAT else repeat
+        if repeat == defaults.DEFAULT_REPEAT:
+            repeat = None
+        self._settings[ClipSlotSetting.REPEAT] = repeat
         if self.get_repeat() < MIN_MORPH_REPEAT:
             self.clear_morph()
 
@@ -331,6 +351,10 @@ class ClipSlot(RunsChains, SetsRegisters, HoldsSettings):
     def clear_grab(self):
         self._settings[ClipSlotSetting.GRAB_TRACK] = None
 
+    def _strum_part(self, part):
+        """Return one part of the clip's strum as written, or None where it is blank."""
+        return self._settings[strum_setting(part)]
+
 
 def _check_morph(*, data, repeat):
     """Refuse a morph without both its settings or without enough repeats, once each setting has been checked on its own."""
@@ -338,11 +362,6 @@ def _check_morph(*, data, repeat):
         raise InvalidValue(errors.ERR_MORPH_NEEDS_BOTH)
     if ClipSlotSetting.MORPH_TO in data and repeat < MIN_MORPH_REPEAT:
         raise InvalidValue(errors.ERR_MORPH_TOO_FEW_REPEATS.format(lowest=MIN_MORPH_REPEAT))
-
-
-def is_one_pattern(*, name, value):
-    """Return whether a setting is a clip's patterns and holds one pattern alone."""
-    return name == ClipSlotSetting.PATTERNS and len(value) == 1
 
 
 def _read_pattern(data):
@@ -359,4 +378,9 @@ def _unread_pattern(*, data, keys):
     now = dict(data)
     now[ClipSlotSetting.PATTERN] = now.pop(ClipSlotSetting.PATTERNS)[0]
     data.clear()
-    data.update({key: now[key] for key in [*keys, *now] if key in now})
+    for key in keys:
+        if key in now:
+            data[key] = now[key]
+    for key, value in now.items():
+        if key not in data:
+            data[key] = value
