@@ -11,6 +11,7 @@ cursor's and D removes the cursor's. S steps the cell's length, and R picks a re
 which replaces the strokes, the accents and the cell's length together.
 """
 
+import functools
 from rich.text import Text
 
 from llamatron.engine.generators import guitarify as guitarify_plugin
@@ -138,4 +139,4 @@ def bar_shown(guitar):
 
 def guitar_bar_field(*, page, label):
     """Return the field of the bar of strokes of the Guitarify a page shows, ENTER opening it in the bar editor."""
-    return Field(label=label, value=lambda: bar_shown(page.settings()), enter=lambda: page.show_page(GuitarBarEditor(holder=page.holder, name=page.item)), enter_what=legends.What.EDIT)
+    return Field(label=label, value=lambda: bar_shown(page.settings()), enter=functools.partial(page.open_part, GuitarBarEditor), enter_what=legends.What.EDIT)

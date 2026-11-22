@@ -43,4 +43,4 @@ def _numerals_on(page):
 
 def _open_chords(page):
     """Open the chord editor on the progression of the generator a page shows."""
-    page.show_page(ChordsEditor(holder=page.holder, name=page.item, section=page.SECTION))
+    page.open_part(ChordsEditor, section=page.SECTION)

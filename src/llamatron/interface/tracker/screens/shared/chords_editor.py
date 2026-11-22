@@ -79,10 +79,10 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
     # A cell is wide enough for a numeral like ♭vii° or a name like Bb°.
     CELL_WIDTH = 7
 
-    def __init__(self, *, holder, name, section):
+    def __init__(self, *, holder, name, section, built_in=None):
         # The section names the generator before the page opens, since opening asks for the page's crumbs and caption.
         self.SECTION = section
-        super().__init__(holder=holder, name=name)
+        super().__init__(holder=holder, name=name, built_in=built_in)
         self.edited_row = CHORD_ROW
 
     def scale(self):

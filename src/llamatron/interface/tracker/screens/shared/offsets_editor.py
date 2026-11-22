@@ -54,8 +54,8 @@ class OffsetsEditor(GeneratorEditor, OneRowEditor):
     INSERT = KEYS.INSERT_STEP
     REMOVE = KEYS.REMOVE_STEP
 
-    def __init__(self, *, holder, name):
-        super().__init__(holder=holder, name=name)
+    def __init__(self, *, holder, name, built_in=None):
+        super().__init__(holder=holder, name=name, built_in=built_in)
         self.edited_row = OFFSET_ROW
 
     def offsets(self):

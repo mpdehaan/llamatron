@@ -28,11 +28,11 @@ class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
     CRUMBS_AFTER = (labels.Crumb.STEPS,)
     CELL_WIDTH = 5
 
-    def __init__(self, *, holder, name, section, steps):
+    def __init__(self, *, holder, name, section, steps, built_in=None):
         # The section names the generator before the page opens, since opening asks for the page's crumbs and caption.
         self.SECTION = section
         self._steps = steps
-        super().__init__(holder=holder, name=name)
+        super().__init__(holder=holder, name=name, built_in=built_in)
 
     def values(self):
         return self.row().get_steps()
