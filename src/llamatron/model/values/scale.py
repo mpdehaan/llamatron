@@ -136,10 +136,14 @@ class Scale:
         root = self._root
         midi = root.get_midi_number() + octaves * midi_numbers.HALF_STEPS_PER_OCTAVE + steps[index] + half_steps
         if midi_numbers.MIN_MIDI_NUMBER <= midi <= midi_numbers.MAX_MIDI_NUMBER:
-            names = note.FLAT_NAMES if root.get_name().endswith(note.FLAT_SIGN) else note.SHARP_NAMES
+            names = note.SHARP_NAMES
+            if root.get_name().endswith(note.FLAT_SIGN):
+                names = note.FLAT_NAMES
             return Sound.note(length=length, midi=midi, velocity=velocity, glide=glide, name=names[midi % midi_numbers.HALF_STEPS_PER_OCTAVE])
         # The class says what is wrong with the note, in the words it always has.
-        number = None if length is None else Length.rational(length)
+        number = None
+        if length is not None:
+            number = Length.rational(length)
         return Sound.of(self.note_at(degree=degree, scale_notes=scale_notes, half_steps=half_steps, length=number, velocity=velocity, glide=glide))
 
     def __eq__(self, other):
