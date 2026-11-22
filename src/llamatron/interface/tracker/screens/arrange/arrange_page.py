@@ -19,6 +19,7 @@ This page keeps the cursor, how far the grid has scrolled, the keys and what eac
 the song. ArrangeDrawing (arrange_drawing.py) draws the grid from them.
 """
 
+import functools
 from rich.text import Text
 import time
 from typing import NamedTuple
@@ -137,7 +138,8 @@ class ArrangePage(Page):
         self.drawing = ArrangeDrawing(self)
 
     def duration(self):
-        return self.document().lengths().song_seconds()
+        lengths = self.document().lengths()
+        return lengths.song_seconds()
 
     def time_text(self):
         """Return the time at the right of the crumbs: where the song is while it plays, and how long it is, or its length alone."""
@@ -148,10 +150,12 @@ class ArrangePage(Page):
 
     def real_time_on(self):
         """Return whether the set's Real Time switch is on, which is when the page has its play buttons and the corner."""
-        return self.document().get_setlist().is_real_time()
+        setlist = self.document().get_setlist()
+        return setlist.is_real_time()
 
     def scenes(self):
-        return self.document().song().get_scenes()
+        song = self.document().song()
+        return song.get_scenes()
 
     def tracks(self):
         return self.document().track_names()
@@ -196,7 +200,13 @@ class ArrangePage(Page):
         """Return what the cursor is on, as an ArrangePlace: a clip, a scene's name, a track's name or the corner. None on either +."""
         if self.on_plus_row() or self.on_track_plus():
             return None
-        return ArrangePlace(scene=None if self.on_header() else self.row, track=self.track() if self.in_a_track_column() else None)
+        scene = None
+        if not self.on_header():
+            scene = self.row
+        track = None
+        if self.in_a_track_column():
+            track = self.track()
+        return ArrangePlace(scene=scene, track=track)
 
     def key_toward(self, target):
         """Return the arrow that brings the cursor nearer an ArrangePlace, or None when the cursor is on it.
@@ -208,8 +218,12 @@ class ArrangePage(Page):
             raise NoSuchPlace(screen=self, target=target)
         if target.scene is not None and not HEADER_ROW < target.scene < len(self.scenes()):
             raise NoSuchPlace(screen=self, target=target)
-        row = HEADER_ROW if target.scene is None else target.scene
-        column = SCENE_COLUMN if target.track is None else self.tracks().index(target.track) + FIRST_TRACK_COLUMN
+        row = HEADER_ROW
+        if target.scene is not None:
+            row = target.scene
+        column = SCENE_COLUMN
+        if target.track is not None:
+            column = self.tracks().index(target.track) + FIRST_TRACK_COLUMN
         if self.on_plus_row():
             return Key.UP
         if self.on_header() and row != HEADER_ROW:
@@ -221,9 +235,15 @@ class ArrangePage(Page):
         if self.on_plus_row():
             self.column = SCENE_COLUMN
         elif self.on_header():
-            self.column = max(min(self.column, len(self.tracks()) + FIRST_TRACK_COLUMN), SCENE_COLUMN if self.real_time_on() else FIRST_TRACK_COLUMN)
+            self.column = max(min(self.column, len(self.tracks()) + FIRST_TRACK_COLUMN), self.first_header_column())
         else:
             self.column = max(min(self.column, len(self.tracks())), SCENE_COLUMN)
+
+    def first_header_column(self):
+        """Return the first column the cursor reaches on the header: the corner while Real Time is on, the first track's name otherwise."""
+        if self.real_time_on():
+            return SCENE_COLUMN
+        return FIRST_TRACK_COLUMN
 
     def keys(self):
         self.clamp()
@@ -278,8 +298,13 @@ class ArrangePage(Page):
         self.confirm(title=messages.MSG_FRACTURE_TITLE, lines=[messages.MSG_FRACTURE_QUESTION], then=self.fracture)
 
     def fracture(self):
-        copies = self.document().change_set(self.document().get_setlist().fracture, self.document().song())
-        self.say(messages.MSG_FRACTURED.format(count=len(copies)) if copies else messages.MSG_NOTHING_TO_FRACTURE)
+        document = self.document()
+        setlist = document.get_setlist()
+        copies = document.change_set(setlist.fracture, document.song())
+        if copies:
+            self.say(messages.MSG_FRACTURED.format(count=len(copies)))
+        else:
+            self.say(messages.MSG_NOTHING_TO_FRACTURE)
 
     def toggle_details(self):
         """Show the details view, or the usual one again."""
@@ -298,7 +323,9 @@ class ArrangePage(Page):
 
     def inset_keys(self):
         """Return the keys while Scene View shows: P closes it, the arrows move its cursor, PgUp and PgDn jump a bar, V switches its view, - and = zoom, [ and ] scroll its sidebar, and Esc closes it too, as Esc closes the topmost thing everywhere."""
-        switch = self.KEYS.TO_PLAYED if self.inset.is_written() else self.KEYS.TO_WRITTEN
+        switch = self.KEYS.TO_WRITTEN
+        if self.inset.is_written():
+            switch = self.KEYS.TO_PLAYED
         return [
             self.bind(self.KEYS.ESCAPE_INSET, action=self.close_inset),
             self.bind(self.KEYS.CLOSE_INSET, action=self.close_inset),
@@ -317,9 +344,10 @@ class ArrangePage(Page):
             return None
         if self.on_scene_name():
             return scene_cell(self.row)
-        if self.document().clip_slot(index=self.row, track=self.track()) is None:
+        track = self.track()
+        if self.document().clip_slot(index=self.row, track=track) is None:
             return None
-        return clip_cell(index=self.row, track=self.track())
+        return clip_cell(index=self.row, track=track)
 
     def pickable(self):
         """Return the places among the cursor's cell's lines of details of those that name something with a page of its own, which Tab can pick."""
@@ -333,17 +361,24 @@ class ArrangePage(Page):
             self.stop_picking()
             return False
         count = len(self.pickable())
-        self.picked = None if count == 0 else min(self.picked or 0, count - 1)
+        if count == 0:
+            self.picked = None
+        else:
+            self.picked = min(self.picked or 0, count - 1)
         return True
 
     def picked_line(self):
         """Return the place among the cursor's cell's lines of details of the one picked, which the drawing puts in brackets, or None."""
-        return self.pickable()[self.picked] if self.picking() and self.picked is not None else None
+        if not self.picking() or self.picked is None:
+            return None
+        return self.pickable()[self.picked]
 
     def start_picking(self):
         """Open the cursor's cell's details, if the details view isn't showing them, and lock into the cell, on its first line naming something if it has one."""
         self.locked = True
-        self.picked = 0 if self.pickable() else None
+        self.picked = None
+        if self.pickable():
+            self.picked = 0
         if not self.shows_details():
             self.opened_cell = self.cursor_cell()
 
@@ -366,7 +401,10 @@ class ArrangePage(Page):
     def picked_target(self):
         """Return what the picked line names, or None."""
         place = self.picked_line()
-        return None if place is None else self.drawing.details_at_cursor()[place].target
+        if place is None:
+            return None
+        details = self.drawing.details_at_cursor()
+        return details[place].target
 
     def cell_chain_names(self):
         """Return the chains the cursor's cell runs, a clip's, a scene's or a track's, in order."""
@@ -376,15 +414,20 @@ class ArrangePage(Page):
             return list(song.get_track(cell[1]).get_chain_names())
         if cell[0] == arrange_details.SCENE_CELL:
             return list(song.get_scenes()[cell[1]].get_chain_names())
-        return list(self.document().clip_slot(index=cell[1], track=cell[2]).get_chain_names())
+        clip_slot = self.document().clip_slot(index=cell[1], track=cell[2])
+        return list(clip_slot.get_chain_names())
 
     def set_cell_chain_names(self, names):
         """Set the chains the cursor's cell runs, through the setter of a clip, a scene or a track."""
         cell = self.cursor_cell()
+        document = self.document()
+        song = document.song()
         if cell[0] == arrange_details.TRACK_CELL:
-            self.document().change_set(self.document().song().get_track(cell[1]).set_chain_names, names=names, song=self.document().song())
+            track = song.get_track(cell[1])
+            document.change_set(track.set_chain_names, names=names, song=song)
         elif cell[0] == arrange_details.SCENE_CELL:
-            self.document().change_set(self.document().song().get_scene(cell[1]).set_chain_names, names=names, song=self.document().song())
+            scene = song.get_scene(cell[1])
+            document.change_set(scene.set_chain_names, names=names, song=song)
         else:
             self.document().set_clip_slot_setting(index=cell[1], track=cell[2], setting=ClipSlotSetting.CHAINS, value=names)
 
@@ -399,7 +442,10 @@ class ArrangePage(Page):
 
         def chosen(place):
             self.set_cell_chain_names([*names, offered[place]])
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_ADD_GENERATOR_TITLE, options=[listed_generator(setlist=setlist, name=name) for name in offered]), then=chosen)
+        options = []
+        for name in offered:
+            options.append(listed_generator(setlist=setlist, name=name))
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_ADD_GENERATOR_TITLE, options=options), then=chosen)
 
     def remove_chain_from_cell(self):
         """Take the picked chain out of the cursor's cell alone, the chain staying in the set."""
@@ -409,7 +455,8 @@ class ArrangePage(Page):
 
     def open_picked(self):
         """Open the page of what the picked line names, a chain's, a generator's, a scale's, an instrument's or a groove's, its crumbs after Arrange's."""
-        target = self.drawing.details_at_cursor()[self.picked_line()].target
+        details = self.drawing.details_at_cursor()
+        target = details[self.picked_line()].target
         if target.kind in DETAIL_WORDS:
             self.open_editor(section=target.kind, name=target.name, word=DETAIL_WORDS[target.kind])
         else:
@@ -420,7 +467,8 @@ class ArrangePage(Page):
 
     def shown_modes(self):
         """Return the visualizer modes the key steps through, every mode but those the set hides, in order."""
-        hidden = self.document().get_setlist().get_hidden_visualizers()
+        setlist = self.document().get_setlist()
+        hidden = setlist.get_hidden_visualizers()
         return [mode for mode in modes.MODES if mode.OPTION not in hidden]
 
     def first_mode(self):
@@ -428,7 +476,9 @@ class ArrangePage(Page):
         shown = self.shown_modes()
         setlist = self.document().get_setlist()
         chosen = mode_called(setlist.visualizer_for(self.document().song()) or drawing.NOTHING)
-        return chosen if chosen in shown else shown[0]
+        if chosen in shown:
+            return chosen
+        return shown[0]
 
     def next_visualizer(self):
         """Show the first mode, or the next one shown, or the clips again after the last."""
@@ -439,7 +489,9 @@ class ArrangePage(Page):
         if self.visualizer is None:
             self.show_visualizer(self.first_mode())
             return
-        place = shown.index(type(self.visualizer)) + 1 if type(self.visualizer) in shown else len(shown)
+        place = len(shown)
+        if type(self.visualizer) in shown:
+            place = shown.index(type(self.visualizer)) + 1
         if place < len(shown):
             self.show_visualizer(shown[place])
         else:
@@ -450,12 +502,15 @@ class ArrangePage(Page):
         shown = self.shown_modes()
         if not shown:
             return
-        place = shown.index(type(self.visualizer)) if type(self.visualizer) in shown else 0
+        place = 0
+        if type(self.visualizer) in shown:
+            place = shown.index(type(self.visualizer))
         self.show_visualizer(shown[(place + direction) % len(shown)])
 
     def show_visualizer(self, mode):
         """Show a visualizer mode over the clip area, drawing a frame every FRAME_SECONDS while it shows."""
-        self.visualizer = mode.made_for(hidden=self.document().get_setlist().get_hidden_visualizers())
+        setlist = self.document().get_setlist()
+        self.visualizer = mode.made_for(hidden=setlist.get_hidden_visualizers())
         self._visualizer_began = time.monotonic()
         if self._frame_timer is None:
             self._frame_timer = self.set_interval(FRAME_SECONDS, self.draw)
@@ -477,10 +532,10 @@ class ArrangePage(Page):
             return [self.bind(self.KEYS.ADD_TRACK, action=self.add_track), self.bind(self.KEYS.ADD_TRACK_HERE, action=self.add_track)]
         return [
             self.bind(self.KEYS.ADD_TRACK, action=self.add_track),
-            self.bind(self.KEYS.TRACK_SETTINGS, action=lambda: self.open_editor(section=Section.TRACKS, name=self.track())),
+            self.bind(self.KEYS.TRACK_SETTINGS, action=self.open_track_editor),
             self.bind(self.KEYS.COPY_TRACK, action=self.copy_track),
             self.bind(self.KEYS.INSERT_TRACK, action=self.insert_track),
-            self.bind(self.KEYS.MOVE_TRACK, action=lambda: self.start_moving(MOVING_TRACK)),
+            self.bind(self.KEYS.MOVE_TRACK, action=functools.partial(self.start_moving, MOVING_TRACK)),
             self.bind(self.KEYS.DELETE_TRACK, action=self.delete_track),
         ]
 
@@ -490,9 +545,9 @@ class ArrangePage(Page):
         if self.on_scene_name():
             result += self.play_scene_keys()
             result += [
-                self.bind(self.KEYS.SCENE_SETTINGS, action=lambda: self.show_page(ScenePage(holder=self.holder, index=self.row))),
+                self.bind(self.KEYS.SCENE_SETTINGS, action=self.open_scene_page),
                 self.bind(self.KEYS.SCENE_VIEW, action=self.open_scene_view),
-                self.bind(self.KEYS.MOVE_SCENE, action=lambda: self.start_moving(MOVING_SCENE)),
+                self.bind(self.KEYS.MOVE_SCENE, action=functools.partial(self.start_moving, MOVING_SCENE)),
                 self.bind(self.KEYS.COPY_SCENE, action=self.copy_scene),
                 self.bind(self.KEYS.DELETE_SCENE, action=self.delete_scene),
             ]
@@ -504,9 +559,9 @@ class ArrangePage(Page):
             else:
                 result += self.play_clip_keys()
                 result += [
-                    self.bind(self.KEYS.EDIT_CLIP, action=lambda: self.show_page(ClipPage(holder=self.holder, index=self.row, track=self.track()))),
-                    self.bind(self.KEYS.OPEN_PATTERN, action=lambda: self.open_pattern(clip_slot)),
-                    self.bind(self.KEYS.MOVE_CLIP, action=lambda: self.start_moving(MOVING_CLIP)),
+                    self.bind(self.KEYS.EDIT_CLIP, action=self.open_clip_page),
+                    self.bind(self.KEYS.OPEN_PATTERN, action=functools.partial(self.open_pattern, clip_slot)),
+                    self.bind(self.KEYS.MOVE_CLIP, action=functools.partial(self.start_moving, MOVING_CLIP)),
                     self.bind(self.KEYS.COPY_CLIP, action=self.copy_clip),
                     self.bind(self.KEYS.DELETE_CLIP, action=self.delete_clip),
                 ]
@@ -514,6 +569,15 @@ class ArrangePage(Page):
                 result.append(self.bind(self.KEYS.PASTE_CLIP, action=self.paste_clip))
         result.append(self.bind(self.KEYS.INSERT_SCENE, action=self.insert_scene))
         return result
+
+    def open_track_editor(self):
+        self.open_editor(section=Section.TRACKS, name=self.track())
+
+    def open_scene_page(self):
+        self.show_page(ScenePage(holder=self.holder, index=self.row))
+
+    def open_clip_page(self):
+        self.show_page(ClipPage(holder=self.holder, index=self.row, track=self.track()))
 
     def play_scene_keys(self):
         """Return Space on a scene's name while Real Time is on: stop everything when the scene plays, and play from the scene otherwise."""
@@ -538,13 +602,16 @@ class ArrangePage(Page):
     def play_scene(self):
         index = self.row
         scene = messages.MSG_SCENE_NUMBER.format(number=index + FIRST_SCENE_NUMBER)
-        play_through(page=self, play=lambda: self.transport().play_scene(index=index), what=scene, said=messages.MSG_PLAYING_FROM.format(scene=scene))
+        play = functools.partial(self.transport().play_scene, index=index)
+        play_through(page=self, play=play, what=scene, said=messages.MSG_PLAYING_FROM.format(scene=scene))
 
     def play_clip(self):
         index = self.row
         track = self.track()
-        clip = messages.MSG_CLIP_ON_TRACK.format(name=self.document().clip_slot(index=index, track=track).get_display_name(), track=track)
-        play_through(page=self, play=lambda: self.transport().play_clip(index=index, track=track), what=clip, said=messages.MSG_PLAYING_CLIP.format(clip=clip))
+        clip_slot = self.document().clip_slot(index=index, track=track)
+        clip = messages.MSG_CLIP_ON_TRACK.format(name=clip_slot.get_display_name(), track=track)
+        play = functools.partial(self.transport().play_clip, index=index, track=track)
+        play_through(page=self, play=play, what=clip, said=messages.MSG_PLAYING_CLIP.format(clip=clip))
 
     def stop_playing_all(self):
         self.transport().stop_all()
@@ -621,9 +688,8 @@ class ArrangePage(Page):
         if self.stage.shows_clips(now):
             inside = inside_of(frame_box(width=width, height=height))
             clips = self.page_lines(width=max(inside.right - inside.left + 1, 1), height=max(inside.bottom - inside.top + 1, 1))
-        playing = self.transport().playing_scenes()
         staged = self.stage.screen(arrange=screen, width=width, height=height, now=now, frame=frame, clips=clips, seconds_per_beat=heard.seconds_per_beat,
-                                   scene=max(playing) if playing else None)
+                                   scene=self.playing_scene())
         if self.app.launch.announce and not self.stage.is_black():
             return announced(lines=staged, text=self.scene_to_announce(now), inside=inside_of(frame_box(width=width, height=height)))
         return staged
@@ -636,12 +702,16 @@ class ArrangePage(Page):
         if name != self._name_shown:
             self._name_shown = name
             self._name_since = now
-        return name if now - self._name_since < NAME_SECONDS else None
+        if now - self._name_since >= NAME_SECONDS:
+            return None
+        return name
 
     def playing_scene(self):
         """Return the index of the scene that plays, the lowest on the page when a start by hand left two playing, or None."""
         playing = self.transport().playing_scenes()
-        return max(playing) if playing else None
+        if not playing:
+            return None
+        return max(playing)
 
     def boxes_playing_scene(self):
         return self.app.launch.boxes_playing_scene()
@@ -662,11 +732,17 @@ class ArrangePage(Page):
     # Scenes.
 
     def new_scene_name(self):
-        names = {scene.get_name() for scene in self.scenes()}
-        return new_name(word=names_text.MSG_NEW_SCENE_WORD, taken=[name for name in names if name is not None])
+        taken = set()
+        for scene in self.scenes():
+            name = scene.get_name()
+            if name is not None:
+                taken.add(name)
+        return new_name(word=names_text.MSG_NEW_SCENE_WORD, taken=list(taken))
 
     def add_scene(self):
-        index = len(self.scenes()) if self.on_plus_row() else self.row + 1
+        index = self.row + 1
+        if self.on_plus_row():
+            index = len(self.scenes())
         self.document().add_scene(index=index, name=self.new_scene_name())
         self.row = index
         self.column = SCENE_COLUMN
@@ -678,15 +754,21 @@ class ArrangePage(Page):
     def copy_scene(self):
         """Ask whether a copy of the scene shares its patterns or gets copies of them, then add the copy with its clips right below it, and move onto it."""
         row = self.row
-        self.ask_how_patterns_copy(title=messages.MSG_COPY_SCENE_TITLE.format(name=scene_name(scene=self.scenes()[row], index=row)),
-                                   then=lambda own: self.copied_scene(row=row, own=own))
+        name = scene_name(scene=self.scenes()[row], index=row)
+        title = messages.MSG_COPY_SCENE_TITLE.format(name=name)
+        self.ask_how_patterns_copy(title=title, then=functools.partial(self.copied_scene, row=row))
 
-    def copied_scene(self, *, row, own):
+    def copied_scene(self, own, *, row):
+        """Copy the scene to just below it, giving the copy's clips patterns of their own when own is true, and move onto it."""
         document = self.document()
         document.copy_scene(row)
         if own:
-            copy = document.song().get_scene(row + 1)
-            document.give_own_patterns([copy.get_clip_slot(track) for track in copy.get_track_names()])
+            song = document.song()
+            copy = song.get_scene(row + 1)
+            clip_slots = []
+            for track in copy.get_track_names():
+                clip_slots.append(copy.get_clip_slot(track))
+            document.give_own_patterns(clip_slots)
         self.row = row + 1
 
     def ask_how_patterns_copy(self, *, title, then):
@@ -705,7 +787,12 @@ class ArrangePage(Page):
         message = [messages.MSG_DELETE_SCENE_QUESTION.format(name=scene_name(scene=scene, index=self.row))]
         if count:
             message.append(messages.MSG_ALSO_DELETES_CLIPS.format(count=count))
-        self.confirm_delete(lines=message, then=lambda: self.document().change_set(self.document().song().remove_scene, self.row))
+        self.confirm_delete(lines=message, then=self.remove_scene)
+
+    def remove_scene(self):
+        """Take the cursor's scene out of the song, as one edit of the set."""
+        song = self.document().song()
+        self.document().change_set(song.remove_scene, self.row)
 
     # Move mode: M on a scene's name, a track's name or a clip picks it up, the arrows carry it, a clip only into an
     # empty cell, and Enter, Esc or M drops it where it is. The box around it is green while it's carried.
@@ -717,11 +804,13 @@ class ArrangePage(Page):
 
     def say_moving(self):
         if self.moving == MOVING_SCENE:
-            what = messages.MSG_MOVING_SCENE.format(name=scene_name(scene=self.scenes()[self.row], index=self.row))
+            scene = self.scenes()[self.row]
+            what = messages.MSG_MOVING_SCENE.format(name=scene_name(scene=scene, index=self.row))
         elif self.moving == MOVING_TRACK:
             what = messages.MSG_MOVING_TRACK.format(name=self.track())
         else:
-            what = messages.MSG_MOVING_CLIP.format(name=self.document().clip_slot(index=self.row, track=self.track()).get_display_name())
+            clip_slot = self.document().clip_slot(index=self.row, track=self.track())
+            what = messages.MSG_MOVING_CLIP.format(name=clip_slot.get_display_name())
         self.say(messages.MSG_MOVING.format(what=what))
 
     def moving_keys(self):
@@ -797,13 +886,20 @@ class ArrangePage(Page):
         """Ask whether a copy of the track shares its patterns or gets copies of them, then add the copy with its clips to its right, and move onto it."""
         name = self.track()
         column = self.column
-        self.ask_how_patterns_copy(title=messages.MSG_COPY_TRACK_TITLE.format(name=name), then=lambda own: self.copied_track(name=name, column=column, own=own))
+        title = messages.MSG_COPY_TRACK_TITLE.format(name=name)
+        self.ask_how_patterns_copy(title=title, then=functools.partial(self.copied_track, name=name, column=column))
 
-    def copied_track(self, *, name, column, own):
+    def copied_track(self, own, *, name, column):
+        """Copy the track to its right, giving the copy's clips patterns of their own when own is true, and move onto it."""
         document = self.document()
         copy = document.copy_named(section=Section.TRACKS, name=name)
         if own:
-            document.give_own_patterns([scene.get_clip_slot(copy) for scene in document.song().get_scenes() if scene.has_clip_slot(copy)])
+            song = document.song()
+            clip_slots = []
+            for scene in song.get_scenes():
+                if scene.has_clip_slot(copy):
+                    clip_slots.append(scene.get_clip_slot(copy))
+            document.give_own_patterns(clip_slots)
         self.column = column + 1
 
     def delete_track(self):
@@ -822,7 +918,7 @@ class ArrangePage(Page):
         grabbing = grabbers(song=document.song(), song_name=document.get_current_song_name(), track=name)
         if grabbing:
             message.append(messages.MSG_GRABBERS_STOP.format(count=len(grabbing)))
-        self.confirm_delete(lines=message, then=lambda: document.delete_named(section=Section.TRACKS, name=name))
+        self.confirm_delete(lines=message, then=functools.partial(document.delete_named, section=Section.TRACKS, name=name))
 
     def shift_track(self, offset):
         """Move the cursor's track one place left or right, the cursor going with it."""
@@ -832,7 +928,8 @@ class ArrangePage(Page):
     # Clips.
 
     def add_clip(self):
-        patterns = sorted_names(self.document().song().get_setlist().get_pattern_names())
+        setlist = self.document().get_setlist()
+        patterns = sorted_names(setlist.get_pattern_names())
         if not patterns:
             self.tell(errors.ERR_NO_PATTERNS_TITLE, errors.ERR_ADD_A_PATTERN_FIRST)
             return
@@ -847,22 +944,27 @@ class ArrangePage(Page):
     def blank_pattern(self):
         """Make a blank pattern named after the cursor's track, a drum pattern on a drum track, put a clip of it in the empty cell and open it."""
         track = self.track()
-        name = self.document().new_name(section=Section.PATTERNS, word=track)
+        document = self.document()
+        name = document.new_name(section=Section.PATTERNS, word=track)
         # A pattern made on a clip goes in the group named after the clip's track.
-        drum = self.document().song().get_track(track).is_drum()
-        self.document().add_pattern(name=name, group=track, drum=drum)
-        self.document().add_clip_slot(index=self.row, track=track, pattern=name)
+        song = document.song()
+        drum = song.get_track(track).is_drum()
+        document.add_pattern(name=name, group=track, drum=drum)
+        document.add_clip_slot(index=self.row, track=track, pattern=name)
         if not drum:
             # The pattern is written for a scale as large as the one its clip plays under.
-            self.document().change_pattern(self.document().pattern(name).set_scale_length, self.document().scale_length_for_pattern(name))
-        self.open_pattern(self.document().clip_slot(index=self.row, track=track))
+            pattern = document.pattern(name)
+            document.change_pattern(pattern.set_scale_length, document.scale_length_for_pattern(name))
+        clip_slot = document.clip_slot(index=self.row, track=track)
+        self.open_pattern(clip_slot)
 
     def open_pattern(self, clip_slot):
         """Open the pattern editor on the clip's pattern, with this page's crumbs before the pattern's, so that Esc comes back here."""
         self.open_editor(section=Section.PATTERNS, name=clip_slot.get_pattern_name(), opened_from=self, track=self.track())
 
     def copy_clip(self):
-        self.copied = self.document().clip_slot(index=self.row, track=self.track()).copy()
+        clip_slot = self.document().clip_slot(index=self.row, track=self.track())
+        self.copied = clip_slot.copy()
         self.say(messages.MSG_COPIED_CLIP)
 
     def paste_clip(self):
@@ -873,4 +975,11 @@ class ArrangePage(Page):
     def delete_clip(self):
         track = self.track()
         row = self.row
-        self.confirm_delete(lines=[messages.MSG_DELETE_CLIP_QUESTION.format(track=track)], then=lambda: self.document().change_set(self.document().song().get_scene(row).remove_clip_slot, track))
+        question = messages.MSG_DELETE_CLIP_QUESTION.format(track=track)
+        self.confirm_delete(lines=[question], then=functools.partial(self.remove_clip, row=row, track=track))
+
+    def remove_clip(self, *, row, track):
+        """Take a clip out of its scene, as one edit of the set."""
+        song = self.document().song()
+        scene = song.get_scene(row)
+        self.document().change_set(scene.remove_clip_slot, track)
