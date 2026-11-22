@@ -21,7 +21,7 @@ import io
 import os
 import sys
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drag as drag_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shapes as shapes_plugin, shorten as shorten_plugin, strum as strum_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin, voice_leading as voice_leading_plugin
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits
@@ -201,10 +201,7 @@ FEATURES = [
     ('progressions', has_section(progression_plugin.SECTION)),
     ('voice leadings', has_section(voice_leading_plugin.SECTION)),
     ('inversions', any_pattern_row(Row.INVERSION)),
-    ('glides', has_section(glide_plugin.SECTION)),
-    ('shortens', has_section(shorten_plugin.SECTION)),
-    ('rushes', has_section(rush_plugin.SECTION)),
-    ('drags', has_section(drag_plugin.SECTION)),
+    ('timings', has_section(timing_plugin.SECTION)),
     ('hockets', has_section(hocket_plugin.SECTION)),
     ('guitarifies', has_section(guitarify_plugin.SECTION)),
     ('follow chords', has_section(follow_chords_plugin.SECTION)),

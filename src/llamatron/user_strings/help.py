@@ -298,34 +298,6 @@ Spread: how far apart the strings sound, in milliseconds whatever the tempo, fro
 Fade: how much quieter the last string is. Loose timing: how much each gap varies. Upstroke strings: what an upstroke catches.
 """
 
-# GlideEditor
-HELP_GLIDE_EDITOR = """
-Step: how long each step of the row is, the pattern's step size unless set.
-Glide amount: how far a gliding note runs into the next.
-Steps: ENTER opens the row of steps, each on or off.
-"""
-
-# ShortenEditor
-HELP_SHORTEN_EDITOR = """
-Step: how long each step of the row is, the pattern's step size unless set.
-Shorten amount: how much of itself a shortened note plays.
-Steps: ENTER opens the row of steps, each on or off.
-"""
-
-# RushEditor
-HELP_RUSH_EDITOR = """
-Step: how long each step of the row is, the pattern's step size unless set.
-Rush amount: how far a note moves early, as a share of a step, up to half.
-Steps: ENTER opens the row of steps, each on or off.
-"""
-
-# DragEditor
-HELP_DRAG_EDITOR = """
-Step: how long each step of the row is, the pattern's step size unless set.
-Drag amount: how far a note moves late, as a share of a step, up to half.
-Steps: ENTER opens the row of steps, each on or off.
-"""
-
 # StepRowEditor
 HELP_STEP_ROW_EDITOR = """
 A row of steps, each on or off, running from each clip's start at the generator's own step.

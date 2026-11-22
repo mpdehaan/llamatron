@@ -403,26 +403,6 @@ class StrumEditor(FieldPage):
     """A Strum's editor, with the settings keys alone."""
 
 
-class StepRowGeneratorEditor(FieldPage):
-    """A Glide's, a Shorten's, a Rush's or a Drag's editor, with the settings keys alone."""
-
-
-class GlideEditor(StepRowGeneratorEditor):
-    """A Glide's editor."""
-
-
-class ShortenEditor(StepRowGeneratorEditor):
-    """A Shorten's editor."""
-
-
-class RushEditor(StepRowGeneratorEditor):
-    """A Rush's editor."""
-
-
-class DragEditor(StepRowGeneratorEditor):
-    """A Drag's editor."""
-
-
 class DriftEditor(FieldPage):
     """The drift's editor: the settings keys, except that Left and Right pick version A or B on a row that has both, so only [ and ] change a value."""
 
@@ -529,22 +509,6 @@ class GuitarBarEditor(StepEditor):
     READY_BARS = Binding(Key.R, legends.KeyName.R, legends.MSG_READY_BARS_WHAT)
     IN_HELP = [Page.BACK, MOVE, LESS, MORE, ACCENT, INSERT_CELL, REMOVE_CELL, CELL_LENGTH, READY_BARS]
     IN_LEGEND = IN_HELP
-
-
-class GlideStepsEditor(StepRowEditor):
-    """A Glide's row of steps."""
-
-
-class ShortenStepsEditor(StepRowEditor):
-    """A Shorten's row of steps."""
-
-
-class RushStepsEditor(StepRowEditor):
-    """A Rush's row of steps."""
-
-
-class DragStepsEditor(StepRowEditor):
-    """A Drag's row of steps."""
 
 
 class GrooveEditor(OneRowEditor):

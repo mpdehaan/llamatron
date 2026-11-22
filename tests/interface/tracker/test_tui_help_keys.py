@@ -22,7 +22,8 @@ import inspect
 import re
 import unittest
 
-from llamatron.engine.generators import arp as arp_plugin, drag as drag_plugin, glide as glide_plugin, guitarify as guitarify_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin
+from llamatron.engine.generators import arp as arp_plugin, guitarify as guitarify_plugin, progression as progression_plugin, timing as timing_plugin
+from llamatron.engine.generators.timing import parts as timing_parts, strings as timing_strings, view as timing_view
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.components import pattern_rows
 from llamatron.interface.tracker.key_table import first_key
@@ -272,13 +273,15 @@ class KeyTour(UITest):
         await self.press(Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
-        # A Glide's, a Shorten's, a Rush's and a Drag's Steps field opens its steps page.
-        for section in (glide_plugin.SECTION, shorten_plugin.SECTION, rush_plugin.SECTION, drag_plugin.SECTION):
-            await self.open_generator(section=section)
-            await self.select_field(labels.MSG_STEPS_LABEL)
-            await self.press(Key.ENTER)
-            await self.walk()
-            await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
+        # A Timing generator's Rush steps field, in its Rush section, opens the row's steps page.
+        rush = timing_view.PART_NAMES[timing_parts.RUSH]
+        await self.open_generator(section=timing_plugin.SECTION)
+        await self.select_field(rush)
+        await self.press(keybindings.FieldPage.TOGGLE)
+        await self.select_field(timing_strings.MSG_STEPS_LABEL.format(part=rush))
+        await self.press(Key.ENTER)
+        await self.walk()
+        await self.press(Key.ESCAPE, Key.ESCAPE, Key.ESCAPE)
         # A Guitarify's Bar field, in its Strokes section, opens the bar of strokes.
         await self.open_generator(section=guitarify_plugin.SECTION)
         await self.select_field(labels.MSG_GUITAR_BAR_LABEL)

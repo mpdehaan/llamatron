@@ -238,11 +238,13 @@ KEPT_BESIDE_A_BREAK = 'percussion'
 CUT_SEED = 'cut {} {}'
 RUSH = 'rush'
 DRAG = 'drag'
-RUSHES = 'rushes'
-DRAGS = 'drags'
+# The Timing generator a track's rush and drag are written in, its section, and its parts' settings, rush_steps and the like.
+TIMING = 'timing'
+TIMINGS = 'timings'
 RAW = 'raw'
 AMOUNT = 'amount'
 GENERATOR_STEPS = 'steps'
+PART_SETTING = '{part}_{setting}'
 GUITARIFIES = 'guitarifies'
 # The set's section that holds each kind of generator a value may bring.
 SECTION_OF_KIND = {'guitarify': 'guitarifies', 'arp': 'arps', 'strum': 'strums'}
@@ -388,8 +390,14 @@ def character_in(*, levels, instrument, section):
 
 
 def timing_generators(*, move):
-    """A track's Rush and Drag: every step moved by the amount the player gives, or neither doing anything, there to be changed."""
-    return {kind: ({GENERATOR_STEPS: [True], AMOUNT: move[kind]} if kind in move else {GENERATOR_STEPS: [False]}) for kind in (RUSH, DRAG)}
+    """A track's Timing generator: its Rush and its Drag each moving every step by the amount the player gives, a part the player
+    gives none doing nothing, there to be changed."""
+    settings = {}
+    for part in (RUSH, DRAG):
+        if part in move:
+            settings[PART_SETTING.format(part=part, setting=GENERATOR_STEPS)] = [True]
+            settings[PART_SETTING.format(part=part, setting=AMOUNT)] = move[part]
+    return settings
 
 
 def drum_pattern(part):
@@ -1519,8 +1527,8 @@ class Arrangement:
             entry = ways[self._picks[role[TRAIT]]]
             if SOUND in entry:
                 self._seat(role=role, entry=entry)
-        for track, moves in self._timing.items():
-            self._time_track(track=track, moves=moves)
+        for track, settings in self._timing.items():
+            self._time_track(track=track, settings=settings)
         for piece in self._drum_tracks:
             self._tracks[piece] = DRUM_KIT
 
@@ -1553,13 +1561,11 @@ class Arrangement:
             player = self._playing[name]
             guitarifies[name].update(player.get(characters.GUITARIFY_OF_PLAYER, {}))
 
-    def _time_track(self, *, track, moves):
-        """Give a track the chain that rushes and drags it, and how far it rushes and drags."""
-        self._chains[wizard_text.MSG_TIMING_CHAIN.format(track)] = [{RUSH: track}, {DRAG: track}]
-        rushes = self._extra.setdefault(RUSHES, {})
-        rushes[track] = moves[RUSH]
-        drags = self._extra.setdefault(DRAGS, {})
-        drags[track] = moves[DRAG]
+    def _time_track(self, *, track, settings):
+        """Give a track the chain that rushes and drags it, through a Timing generator of the track's name."""
+        self._chains[wizard_text.MSG_TIMING_CHAIN.format(track)] = [{TIMING: track}]
+        timings = self._extra.setdefault(TIMINGS, {})
+        timings[track] = settings
 
     def _write_section(self, *, count, name):
         """Write one section of the form as a scene: who plays in it and which part each plays, writing the parts the section is
@@ -1806,8 +1812,7 @@ class Arrangement:
                 links.append({kind: name})
         if role.get(VOICE_LEADING):
             links.append({VOICE_LEADING_KIND: NEAR})
-        links.append({RUSH: name})
-        links.append({DRAG: name})
+        links.append({TIMING: name})
         self._chains[chain] = links
         return chain
 
@@ -1858,7 +1863,7 @@ class Arrangement:
             self._parts[riff_part] = self._riff_drawn(role=role, riff=riff, riff_here=riff_here, first=first)
             self._shaped.append(riff_part)
         riff_chain = wizard_text.MSG_PART_OF_SECTION.format(chain, riffs_values.RIFF)
-        self._chains[riff_chain] = [dict(FOLLOWS_THE_CHORDS), {RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
+        self._chains[riff_chain] = [dict(FOLLOWS_THE_CHORDS), {TIMING: role[ROLE]}]
         at.play[role[ROLE]] = {PART: riff_part, CHAINS: [riff_chain]}
 
     def _riff_written_by_hand(self, *, role, riff, written_for):

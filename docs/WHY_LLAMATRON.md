@@ -46,7 +46,7 @@ There are many kinds, all listed together on the Generators page:
 - **Progressions**, which move a figure written over one chord through a chord progression, and **VoiceLeading**, which plays each chord in the inversion nearest the one before.
 - **Strums**, which spread a chord's notes in time like a guitarist's hand.
 - **Densities, Swells and Articulates**, which shape how many notes play, how loud and how long, ramping across a clip or a section, for builds, crescendos and fades.
-- **Glides, Shortens, Rushes and Drags**, rows of steps that slide notes into the next, shorten them, or push them early and late, each on its own cycle against the pattern.
+- **Timing**, rows of steps that slide notes into the next, shorten them, or push them early and late, each on its own cycle against the pattern.
 - **Drifts**, one slow process for the whole song that moves velocity, probability, degrees, the scale or the root from one version to another as the song goes on.
 - **Hockets**, which deal one track's notes out among other tracks in turn, one note each, so a melody passes between voices.
 

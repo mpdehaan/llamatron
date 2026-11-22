@@ -49,7 +49,7 @@ each bar, though the line itself never changes.
 
 | chains | feel |
 | :---: | :---: |
-| [✓](../generators/CHAIN.md) | [✓](../generators/GLIDE.md) |
+| [✓](../generators/CHAIN.md) | [✓](../generators/TIMING.md) |
 <!-- end of the generated summary of 14_acid_glide -->
 
 <a id="edm_density"></a>

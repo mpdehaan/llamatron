@@ -42,7 +42,7 @@ from llamatron.user_strings import errors, marks
 
 # The controller's methods that strum a clip's chords and move its notes early or late.
 STRUMS = 'strum'
-MOVES_NOTES = 'moving_row'
+MOVES_NOTES = 'moving_rows'
 # A tempo is held to this denominator, and a whole note lasts this many milliseconds at one beat a minute.
 TEMPO_DENOMINATOR = 1000
 MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE = 240_000
@@ -488,7 +488,7 @@ class SongRealizer:
         return _share_of_whole_note(milliseconds=milliseconds, tempo=tempo)
 
     def nudge_plan(self, *, scene, track):
-        """Return how a clip's notes are rushed and dragged, from every Rush and Drag its chains name, or None when they name neither."""
+        """Return how a clip's notes are rushed and dragged, from every lit Rush and Drag of the generators its chains name, or None where there is none."""
         rows = []
         clip = ClipBeingMade(scene=scene, track=track, counting=False)
         for chain in self.chains_of(scene=scene, track=track):
@@ -497,7 +497,7 @@ class SongRealizer:
                     place = ChainStepPlace(realizer=self, clip=clip, step=StepInChains(step=step, chain=chain, index=None, key=None))
                     controller = registry.controller_of(step.kind)
                     settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
-                    rows.append(controller.moving_row(settings=settings, place=place))
+                    rows += controller.moving_rows(settings=settings, place=place)
         if not rows:
             return None
         return NudgePlan(rows=rows)

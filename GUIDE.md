@@ -112,9 +112,7 @@ A generator changes how a clip's notes are played, without changing its pattern.
 
 | What it does | Page |
 | --- | --- |
-| Notes sliding into the next | [Glide](docs/generators/GLIDE.md) |
 | A tune delivered in lines, with a breath, a rise and fall | [Phrasing](docs/generators/PHRASING.md) |
-| Notes played short on chosen steps | [Shorten](docs/generators/SHORTEN.md) |
 
 ### Band Generators
 
@@ -140,8 +138,7 @@ A generator changes how a clip's notes are played, without changing its pattern.
 
 | What it does | Page |
 | --- | --- |
-| Notes pushed late | [Drag](docs/generators/DRAG.md) |
-| Notes pushed early | [Rush](docs/generators/RUSH.md) |
+| Notes pushed early or late, played short or sliding into the next, on chosen steps | [Timing](docs/generators/TIMING.md) |
 
 ### Transitions
 

@@ -22,11 +22,32 @@ class ChoiceView(NamedTuple):
 
 
 class NumberView(NamedTuple):
-    """A whole number of the generator, stepped between the limits its setting's description holds, blank until given: the
-    setting's file name and its label."""
+    """A whole number of the generator, stepped between the limits its setting's description holds: the setting's file name, its
+    label, and the number it takes when the file leaves it out, or None for a number shown blank until given."""
 
     setting: str
     label: str
+    default: object = None
+
+
+class TimeView(NamedTuple):
+    """How long each step of a row is, chosen from the lengths every time setting offers, the pattern's step size unless set:
+    the setting's file name and its label."""
+
+    setting: str
+    label: str
+
+
+class StepsView(NamedTuple):
+    """A row of on-or-off steps, which ENTER opens on a page of its own: the file name of the row's setting, which of the
+    generator's rows it is (the settings answer step_row(row)), its label, the name its page gives the row, and the line its page
+    shows above the row, saying what a lit step does."""
+
+    setting: str
+    row: str
+    label: str
+    row_name: str
+    note: str
 
 
 class ShapeView(NamedTuple):
@@ -38,6 +59,14 @@ class ShapeView(NamedTuple):
 
 class RestartView(NamedTuple):
     """The generator's Restart: when it starts over, every clip, on new scene or whole song."""
+
+
+class SectionView(NamedTuple):
+    """A section of a generator's settings under a heading, closed until opened and saying (set) while anything inside holds a
+    value: its heading and its settings from the top."""
+
+    heading: str
+    settings: tuple
 
 
 class ColumnView(NamedTuple):

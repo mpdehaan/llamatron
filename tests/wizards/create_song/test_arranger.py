@@ -645,17 +645,19 @@ class TestPlayers(unittest.TestCase):
                     self.assertEqual(counts, sorted(counts))
                     self.assertGreater(counts[1], 0)
 
-    def test_every_track_has_a_rush_and_a_drag_that_do_nothing_until_a_player_moves_them(self):
+    def test_every_track_has_a_timing_generator_that_does_nothing_until_a_player_moves_it(self):
         given = arranger.arranged(style=self.style, song=self.song())
-        generators = given[composer.GENERATORS]
+        timings = given[composer.GENERATORS][arranger.TIMINGS]
+        self.assertIn(SNARE, timings)
         for track in given[composer.TRACKS]:
-            if track in generators[arranger.RUSHES]:
-                self.assertEqual(generators[arranger.RUSHES][track], {arranger.GENERATOR_STEPS: [False]})
-                self.assertEqual(given[composer.CHAINS][wizard_text.MSG_TIMING_CHAIN.format(track)], [{arranger.RUSH: track}, {arranger.DRAG: track}])
-        self.assertIn(SNARE, generators[arranger.DRAGS])
+            if track in timings:
+                self.assertEqual(timings[track], {})
+                self.assertEqual(given[composer.CHAINS][wizard_text.MSG_TIMING_CHAIN.format(track)], [{arranger.TIMING: track}])
         late = arranger.arranged(style=self.style, song=self.song(levels={players.DRUMS: players.TASTEFUL}))
         drag = self.style[arranger.PLAYERS][players.DRUMS][players.TASTEFUL][characters.TIMING][SNARE][arranger.DRAG]
-        self.assertEqual(late[composer.GENERATORS][arranger.DRAGS][SNARE], {arranger.GENERATOR_STEPS: [True], arranger.AMOUNT: drag})
+        drag_steps = arranger.PART_SETTING.format(part=arranger.DRAG, setting=arranger.GENERATOR_STEPS)
+        drag_amount = arranger.PART_SETTING.format(part=arranger.DRAG, setting=arranger.AMOUNT)
+        self.assertEqual(late[composer.GENERATORS][arranger.TIMINGS][SNARE], {drag_steps: [True], drag_amount: drag})
 
     def test_a_players_drum_hits_are_uneven_by_no_more_than_the_player_says_and_the_same_for_a_seed(self):
         level = players.WILD

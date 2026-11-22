@@ -50,13 +50,11 @@ What plays where, among the tracks.
 
 ### Articulation
 
-How each note is played: joined, short, or phrased.
+How each note is played: phrased.
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
-| [Glide](generators/GLIDE.md) | Runs notes on chosen steps into the next note | `examples/learning/14_acid_glide.yml` |
 | [Phrasing](generators/PHRASING.md) | Plays a tune in lines, as a singer would: a breath after each, a rise and fall, notes choppy or flowing | `examples/learning/25_phrasing.yml` |
-| [Shorten](generators/SHORTEN.md) | Plays notes on chosen steps short | `examples/learning/14_acid_glide.yml` |
 
 ### Band Generators
 
@@ -84,12 +82,11 @@ Which notes sound, and when within the beat.
 
 ### Timing
 
-Notes placed early or late.
+Notes placed early or late, played short or joined.
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
-| [Drag](generators/DRAG.md) | Plays notes on chosen steps late | `examples/learning/14_acid_glide.yml` |
-| [Rush](generators/RUSH.md) | Plays notes on chosen steps early | `examples/learning/14_acid_glide.yml` |
+| [Timing](generators/TIMING.md) | Plays notes on chosen steps early, late, short or sliding into the next | `examples/learning/14_acid_glide.yml` |
 
 ### Transitions
 
@@ -146,7 +143,7 @@ Every generator's page ends with a section called Bypass Generators When, a tabl
 
 ## Rows of Steps
 
-[Glide](generators/GLIDE.md), [Shorten](generators/SHORTEN.md), [Rush](generators/RUSH.md) and [Drag](generators/DRAG.md) are each a row of 1 to 16 steps, each on (`●`) or off, running from each clip's start at its own Step, the clip's pattern's step size unless set; a note starting on a step that is on is changed. A row shorter than the pattern, 5 or 7 steps over 16, lands somewhere new each time round, so that slides, short notes and pushes move through a line that never changes. `ENTER` on Steps opens the row: Left and Right move along it, `Space` or `ENTER` turns the step under the cursor on or off, the line above the row saying what a step that is on does, and `I` and `D` insert and remove steps.
+A [Timing](generators/TIMING.md) generator's Rush, Drag, Shorten and Glide are each a row of 1 to 16 steps, each on (`●`) or off, running from each clip's start at its own Step, the clip's pattern's step size unless set; a note starting on a step that is on is changed. A row shorter than the pattern, 5 or 7 steps over 16, lands somewhere new each time round, so that slides, short notes and pushes move through a line that never changes. `ENTER` on Steps opens the row: Left and Right move along it, `Space` or `ENTER` turns the step under the cursor on or off, the line above the row saying what a step that is on does, and `I` and `D` insert and remove steps.
 
 ## Shapes
 

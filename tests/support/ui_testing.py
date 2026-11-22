@@ -15,14 +15,14 @@ import unittest
 from unittest import mock
 
 from llamatron.caching.memory import Memory
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drag as drag_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shapes as shapes_plugin, shorten as shorten_plugin, strum as strum_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin, voice_leading as voice_leading_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
 from llamatron.engine.generators.follow_chords.model import FollowChordsSetting
 from llamatron.engine.generators.hocket.model import HocketSetting
 from llamatron.engine.generators.progression.model import ProgressionSetting
-from llamatron.engine.generators.step_row import StepRowSetting
+from llamatron.engine.generators.timing import parts as timing_parts
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
@@ -85,10 +85,10 @@ SWELL_START = shape_setting(shape=Shape.SWELL, part=ShapePart.START)
 POP = 'pop'
 SMOOTH = 'smooth'
 FOLK = 'folk'
-SLIDES = 'slides'
-CLIPS = 'clips'
-PUSH = 'push'
-LAZY = 'lazy'
+LOOSE = 'loose'
+# The test song's Timing generator rushes the first of every four steps and glides the first of every three.
+LOOSE_RUSH = [True, False, False, False]
+LOOSE_GLIDE = [True, False, False]
 TRADE = 'trade'
 PICKED = 'picked'
 FOLLOWS = 'follows'
@@ -130,10 +130,7 @@ def a_song(*, path=None):
     data[progression_plugin.SECTION] = {POP: {ProgressionSetting.CHORDS: [1, 5, 6, 4]}}
     data[voice_leading_plugin.SECTION] = {SMOOTH: {}}
     data[strum_plugin.SECTION] = {FOLK: {}}
-    data[glide_plugin.SECTION] = {SLIDES: {StepRowSetting.STEPS: [True, False, False]}}
-    data[shorten_plugin.SECTION] = {CLIPS: {StepRowSetting.STEPS: [False, True]}}
-    data[rush_plugin.SECTION] = {PUSH: {StepRowSetting.STEPS: [True, False, False, False]}}
-    data[drag_plugin.SECTION] = {LAZY: {StepRowSetting.STEPS: [False, True]}}
+    data[timing_plugin.SECTION] = {LOOSE: {timing_parts.steps_of(timing_parts.RUSH): LOOSE_RUSH, timing_parts.steps_of(timing_parts.GLIDE): LOOSE_GLIDE}}
     data[hocket_plugin.SECTION] = {TRADE: {HocketSetting.SOURCE: LEAD}}
     data[guitarify_plugin.SECTION] = {PICKED: {}}
     data[follow_chords_plugin.SECTION] = {FOLLOWS: {FollowChordsSetting.CHORDS_FROM: LEAD}}

@@ -3,15 +3,15 @@ title: Acid glide
 description: "one acid line whose slides and short notes move with rows of 5, 7 and 3 steps"
 notes: |
   Acid glide: fluid acid techno at 128 beats a minute in A minor, one sixteen-note acid line from
-  start to finish, and Glide and Shorten generators putting its slides and its short notes
+  start to finish, and Timing generators putting its slides and its short notes
   somewhere new each time round. Play it on a synth with glide, or portamento, turned on: a gliding note runs into
   the next one, and the synth slides between the two.
   Run it with: llamatron examples/learning/14_acid_glide.yml --to ableton --replace
 
-  A Glide is a row of steps, each on or off, running from each clip's start at its own step: a
-  note starting on a step that's on glides into the next. A Shorten is the same, a note starting
-  on a step that's on playing short. Each chain here pairs a Glide with a Shorten of the same
-  length. A row shorter than the line, 5 or 7 or 3 steps over 16, lands somewhere new every bar,
+  A Timing generator's Glide is a row of steps, each on or off, running from each clip's start at its
+  own step: a note starting on a step that's on glides into the next. Its Shorten is the same, a note
+  starting on a step that's on playing short. Each Timing generator here pairs a Glide with a Shorten
+  of the same length. A row shorter than the line, 5 or 7 or 3 steps over 16, lands somewhere new every bar,
   so the slides move through the line though the line never changes.
 
   Scene 1: the kick and the line, no glide.
@@ -22,8 +22,8 @@ notes: |
   Scene 5: breakdown: the 5-step rows with a long glide of a 32nd, slow slides.
   Scene 6: build: the 7-step rows running in eighth notes, half as fast.
   Scene 7: drop: everything, the 7-step rows again, and the drums loosened: a Rush pulls some hats
-  early and Drags lay other hats and the claps back, the step-row generators that move notes in time
-  rather than change them.
+  early and Drags lay other hats and the claps back, the rows of a Timing generator that move notes in
+  time rather than change them.
   Scene 8: outro: the 3-step rows over the kick.
 
   When changing this demo:
@@ -66,25 +66,20 @@ patterns:
     octave: [~, 3, ~, 3]
 
 generators:
-  - { name: five, kind: glide, steps: [true, false, false, true, false] }
-  - { name: seven, kind: glide, steps: [true, false, false, true, false, false, false] }
-  - { name: three, kind: glide, steps: [true, false, false] }
-  - { name: long five, kind: glide, steps: [true, false, false, true, false], glide_amount: 1/32 }
-  - { name: slow seven, kind: glide, steps: [true, false, false, true, false, false, false], step: 1/8 }
-  - { name: five shorten, kind: shorten, steps: [false, false, false, false, true] }
-  - { name: seven shorten, kind: shorten, steps: [false, true, false, false, false, false, true] }
-  - { name: three shorten, kind: shorten, steps: [false, false, true] }
-  - { name: slow seven shorten, kind: shorten, steps: [false, true, false, false, false, false, true], step: 1/8 }
-  - { name: hat lean, kind: rush, steps: [true, false, false, false, false], step: 1/8 }
-  - { name: hat lay back, kind: drag, steps: [false, false, true, false, true], step: 1/8 }
-  - { name: clap lay back, kind: drag, steps: [false, true, true], step: 1/4, amount: 25 }
-  - { name: hats loose, kind: chain, generators: [{ name: hat lean }, { name: hat lay back }] }
+  - { name: loose hats, kind: timing, rush_steps: [true, false, false, false, false], rush_step: 1/8, drag_steps: [false, false, true, false, true], drag_step: 1/8 }
+  - { name: clap lay back, kind: timing, drag_steps: [false, true, true], drag_step: 1/4, drag_amount: 25 }
+  - { name: five, kind: timing, shorten_steps: [false, false, false, false, true], glide_steps: [true, false, false, true, false] }
+  - { name: seven, kind: timing, shorten_steps: [false, true, false, false, false, false, true], glide_steps: [true, false, false, true, false, false, false] }
+  - { name: three, kind: timing, shorten_steps: [false, false, true], glide_steps: [true, false, false] }
+  - { name: long five, kind: timing, shorten_steps: [false, false, false, false, true], glide_steps: [true, false, false, true, false], glide_amount: 1/32 }
+  - { name: slow seven, kind: timing, shorten_steps: [false, true, false, false, false, false, true], shorten_step: 1/8, glide_steps: [true, false, false, true, false, false, false], glide_step: 1/8 }
+  - { name: hats loose, kind: chain, generators: [{ name: loose hats }] }
   - { name: clap lay back drag, kind: chain, generators: [{ name: clap lay back }] }
-  - { name: five glide, kind: chain, generators: [{ name: five }, { name: five shorten }] }
-  - { name: seven glide, kind: chain, generators: [{ name: seven }, { name: seven shorten }] }
-  - { name: three glide, kind: chain, generators: [{ name: three }, { name: three shorten }] }
-  - { name: long five glide, kind: chain, generators: [{ name: long five }, { name: five shorten }] }
-  - { name: slow seven glide, kind: chain, generators: [{ name: slow seven }, { name: slow seven shorten }] }
+  - { name: five glide, kind: chain, generators: [{ name: five }] }
+  - { name: seven glide, kind: chain, generators: [{ name: seven }] }
+  - { name: three glide, kind: chain, generators: [{ name: three }] }
+  - { name: long five glide, kind: chain, generators: [{ name: long five }] }
+  - { name: slow seven glide, kind: chain, generators: [{ name: slow seven }] }
 
 instruments:
   - { name: synth bass, device: "*FluidSynth", gm_sound: 39 }

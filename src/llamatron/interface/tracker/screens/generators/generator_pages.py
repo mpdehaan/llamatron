@@ -8,16 +8,12 @@ from typing import NamedTuple
 from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.interface.tracker.screens.generators.arp_editor import ArpEditor
 from llamatron.interface.tracker.screens.generators.auto_ratchet_editor import AutoRatchetEditor
-from llamatron.interface.tracker.screens.generators.drag_editor import DragEditor
 from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
 from llamatron.interface.tracker.screens.generators.follow_chords_editor import FollowChordsEditor
-from llamatron.interface.tracker.screens.generators.glide_editor import GlideEditor
 from llamatron.interface.tracker.screens.generators.guitarify_editor import GuitarifyEditor
 from llamatron.interface.tracker.screens.generators.hocket_editor import HocketEditor
 from llamatron.interface.tracker.screens.generators.musician_editor import MusicianEditor
 from llamatron.interface.tracker.screens.generators.progression_editor import ProgressionEditor
-from llamatron.interface.tracker.screens.generators.rush_editor import RushEditor
-from llamatron.interface.tracker.screens.generators.shorten_editor import ShortenEditor
 from llamatron.interface.tracker.screens.generators.strum_editor import StrumEditor
 from llamatron.interface.tracker.screens.generators.voice_leading_editor import VoiceLeadingEditor
 from llamatron.interface.tracker.screens.shared.plugin_editor import has_view, plugin_editor_of
@@ -43,7 +39,7 @@ def _in_shown_order(listings):
 
 # The page that edits a generator of each kind, by the section of the set that holds them, which each editor names.
 EDITORS = {editor.SECTION: editor for editor in (
-    ArpEditor, AutoRatchetEditor, DriftEditor, ProgressionEditor, VoiceLeadingEditor, StrumEditor, GlideEditor, ShortenEditor, RushEditor, DragEditor, HocketEditor, GuitarifyEditor, FollowChordsEditor, MusicianEditor,
+    ArpEditor, AutoRatchetEditor, DriftEditor, ProgressionEditor, VoiceLeadingEditor, StrumEditor, HocketEditor, GuitarifyEditor, FollowChordsEditor, MusicianEditor,
 )}
 
 

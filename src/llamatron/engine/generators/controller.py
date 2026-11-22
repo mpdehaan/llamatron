@@ -20,7 +20,6 @@ class GeneratorController:
     MOVES_PITCHES = False
     # Whether its generators play from what another track plays, its chords or its tune, named in the settings' tracks.
     FOLLOWS_TRACKS = False
-    # The shape its generators lay over a whole finished clip, a Shape such as density, or None for none.
     # The shapes over time its generators lay over a finished clip, each where set: none unless a plugin names some.
     SHAPES = ()
 
@@ -34,9 +33,10 @@ class GeneratorController:
         """Return how its generator strums a clip's chords, as a Strum, and the generator's Restart, or None for none."""
         return None
 
-    def moving_row(self, *, settings, place):
-        """Return how its generator moves a clip's notes early or late, as a MovingRow, at a place in the clip's chains."""
-        return None
+    def moving_rows(self, *, settings, place):
+        """Return how its generator moves a clip's notes early or late, as MovingRows whose moves add up, at a place in the
+        clip's chains; none for a kind that moves nothing."""
+        return []
 
 
     def notes_dealt(self, *, settings, place):

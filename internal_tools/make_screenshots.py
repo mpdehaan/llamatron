@@ -19,7 +19,7 @@ from dataclasses import dataclass
 import pathlib
 import re
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drag as drag_plugin, drift as drift_plugin, glide as glide_plugin, hocket as hocket_plugin, progression as progression_plugin, rush as rush_plugin, shapes as shapes_plugin, shorten as shorten_plugin, strum as strum_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drift as drift_plugin, hocket as hocket_plugin, progression as progression_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin, voice_leading as voice_leading_plugin
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.document import Document
@@ -42,7 +42,6 @@ DRIFT_SONG = ROOT / 'examples' / 'by_genre' / 'rock' / 'volcano.yml'
 DENSITY_SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'edm_density.yml'
 VOICE_LEADING_SONG = ROOT / 'examples' / 'learning' / '05_voice_leading.yml'
 GLIDE_SONG = ROOT / 'examples' / 'learning' / '14_acid_glide.yml'
-RUSH_SONG = ROOT / 'examples' / 'learning' / '14_acid_glide.yml'
 # The progression demo's bass, a clip with a chain, by its place from the left.
 CHAINED_TRACK_PLACE = 4
 FOLDER = ROOT / 'docs' / 'screenshots'
@@ -139,10 +138,7 @@ SHOTS = [
     Shot(name='voice_leading_editor', generator=voice_leading_plugin.SECTION, keys=[], song=VOICE_LEADING_SONG),
     Shot(name='strum_editor', generator=strum_plugin.SECTION, keys=[], song=STRUM_SONG),
     Shot(name='shapes_editor', generator=shapes_plugin.SECTION, keys=[], song=SWELL_SONG),
-    Shot(name='glide_editor', generator=glide_plugin.SECTION, keys=[], song=GLIDE_SONG),
-    Shot(name='shorten_editor', generator=shorten_plugin.SECTION, keys=[], song=GLIDE_SONG),
-    Shot(name='rush_editor', generator=rush_plugin.SECTION, keys=[], song=RUSH_SONG),
-    Shot(name='drag_editor', generator=drag_plugin.SECTION, keys=[], song=RUSH_SONG),
+    Shot(name='timing_editor', generator=timing_plugin.SECTION, keys=[], song=GLIDE_SONG),
     Shot(name='chain_list', keys=[keybindings.MainPage.ARRANGE, *[Key.RIGHT] * CHAINED_TRACK_PLACE, Key.ENTER, Key.DOWN, Key.DOWN, Key.DOWN, Key.ENTER], song=PROGRESSION_SONG),
     Shot(name='wizard_genre', wizard=labels.MSG_WIZARD_GENRE_BRANCH, keys=[]),
     Shot(name='wizard_band', wizard=labels.MSG_WIZARD_BAND_BRANCH, keys=[]),

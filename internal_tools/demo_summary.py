@@ -79,7 +79,7 @@ FEATURE_COLUMNS = [
     ('shapes', ['clip shapes', 'scene shapes', 'Shapes']),
     ('progressions', ['progressions', 'voice leadings', 'inversions']),
     ('strum', ['strums']),
-    ('feel', ['glides', 'shortens', 'rushes', 'drags']),
+    ('feel', ['timings']),
 ]
 # Where each feature is explained, as a link from a page of docs/demos/: what a demo's checkmark opens. A feature with no page
 # of its own to point at is left out, and its checkmark is plain.
@@ -162,10 +162,7 @@ FEATURE_LINKS = {
     'voice leadings': GENERATOR_DOC.format(page='VOICE_LEADING'),
     'inversions': CHORDS_DOC,
     'strums': GENERATOR_DOC.format(page='STRUM'),
-    'glides': GENERATOR_DOC.format(page='GLIDE'),
-    'shortens': GENERATOR_DOC.format(page='SHORTEN'),
-    'rushes': GENERATOR_DOC.format(page='RUSH'),
-    'drags': GENERATOR_DOC.format(page='DRAG'),
+    'timings': GENERATOR_DOC.format(page='TIMING'),
 }
 USED_LINK = '[{mark}]({link})'
 # The Tutorial Demos page's table of what a demo is the first to use, written after the demo's section.

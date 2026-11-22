@@ -23,6 +23,10 @@ HARMONY_PLACE = HEADINGS.index(labels.GeneratorGroup.HARMONY)
 SEARCHED = strum_strings.MSG_LABEL.lower()
 
 
+# How wide the picker's lines are drawn when a test reads them.
+PICKER_WIDTH = 60
+
+
 def heading(*, name, is_open):
     return marks.MSG_GROUP_OF_CHOICES.format(mark=marks.MSG_SECTION_OPEN_MARK if is_open else marks.MSG_SECTION_CLOSED_MARK, name=name)
 
@@ -42,7 +46,9 @@ class TestGeneratorTypePicker(UITest):
     async def test_it_opens_on_closed_headings_in_order_under_its_title(self):
         shown = self.text()
         self.assertIn(messages.MSG_NEW_GENERATOR_KIND_TITLE, shown)
-        places = [shown.index(heading(name=name, is_open=False)) for name in HEADINGS]
+        # The picker's own lines, since the screen's lines hold the Generators page behind it, with headings of its own, too.
+        drawn = [line.plain for line in self.dialog.lines(PICKER_WIDTH)]
+        places = [_line_holding(lines=drawn, text=heading(name=name, is_open=False)) for name in HEADINGS]
         self.assertEqual(places, sorted(places))
         self.assertEqual(self.shown_choices(), [])
 
@@ -98,3 +104,11 @@ class TestGeneratorTypePicker(UITest):
         await self.press(*[keybindings.ChoiceDialog.ERASE] * len(voice_leading_strings.MSG_LABEL))
         self.assertEqual(self.dialog.headings[self.dialog.rows()[self.dialog.row][0]], labels.GeneratorGroup.VOICING)
         self.assertIn(heading(name=labels.GeneratorGroup.VOICING, is_open=False), self.text())
+
+
+def _line_holding(*, lines, text):
+    """Return the number of the first of some lines that holds a text."""
+    for number, line in enumerate(lines):
+        if text in line:
+            return number
+    raise AssertionError(text)

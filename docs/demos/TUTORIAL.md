@@ -278,14 +278,14 @@ each bar, though the line itself never changes.
 
 | chains | feel |
 | :---: | :---: |
-| [✓](../generators/CHAIN.md) | [✓](../generators/GLIDE.md) |
+| [✓](../generators/CHAIN.md) | [✓](../generators/TIMING.md) |
 <!-- end of the generated summary of 14_acid_glide -->
 
 **New Features Introduced**
 
 | feel |
 | :---: |
-| [✓](../generators/GLIDE.md) |
+| [✓](../generators/TIMING.md) |
 
 <a id="acid_articulate"></a>
 ## Articulate: `15_acid_articulate.yml`

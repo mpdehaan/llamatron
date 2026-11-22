@@ -9,21 +9,17 @@ import inspect
 import sys
 import unittest
 
-from llamatron.engine.generators import settings_base, step_row
+from llamatron.engine.generators import settings_base
 from llamatron.engine.generators.arp import schema
 from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting, AutoRatchetSettings
 from llamatron.engine.generators.drift.model import DriftSetting, DriftSettings, versioned
 from llamatron.engine.generators.follow_chords.model import FollowChordsSetting, FollowChordsSettings
-from llamatron.engine.generators.glide.model import GlideSettings
 from llamatron.engine.generators.guitarify.model import GuitarifySettings
 from llamatron.engine.generators.hocket.model import HocketSetting, HocketSettings
 from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
 from llamatron.engine.generators.phrasing.model import PhrasingSetting, PhrasingSettings
 from llamatron.engine.generators.progression.model import ProgressionSetting, ProgressionSettings
-from llamatron.engine.generators.rush.model import RushSettings
-from llamatron.engine.generators.shorten.model import ShortenSettings
-from llamatron.engine.generators.step_row import StepRowSetting
 from llamatron.engine.generators.voice_leading.model import VoiceLeadingSetting, VoiceLeadingSettings
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed
@@ -92,7 +88,7 @@ FIRST = 1
 PATTERN_ONE = names_text.MSG_NEW_PATTERN_NAME.format(number=FIRST)
 TRACK_ONE = names_text.MSG_NEW_TRACK_NAME.format(number=FIRST)
 # The modules that hold classes of setting names.
-NAMING_MODULES = [file_format, step_row, *(sys.modules[plugin.settings.__module__] for plugin in generator_plugins.plugins().values())]
+NAMING_MODULES = [file_format, *(sys.modules[plugin.settings.__module__] for plugin in generator_plugins.plugins().values())]
 SETTING_CLASS_ENDING = 'Setting'
 # Each class of setting names, the descriptions of those settings, and the names that aren't settings with a
 # value of their own to check: a pattern's steps are its size, and a scene's tracks are its clips.
@@ -128,8 +124,6 @@ DESCRIBED = [
     (DriftSetting, {name: setting for name, setting in DriftSettings.SETTINGS.items() if name in vars(DriftSetting).values()}, ()),
     (ProgressionSetting, ProgressionSettings.SETTINGS, ()),
     (VoiceLeadingSetting, VoiceLeadingSettings.SETTINGS, ()),
-    # A Glide's, a Shorten's, a Rush's and a Drag's settings share one class of names.
-    (StepRowSetting, {**GlideSettings.SETTINGS, **ShortenSettings.SETTINGS, **RushSettings.SETTINGS}, ()),
     (HocketSetting, HocketSettings.SETTINGS, ()),
     (FollowChordsSetting, FollowChordsSettings.SETTINGS, ()),
     (PhrasingSetting, PhrasingSettings.SETTINGS, ()),

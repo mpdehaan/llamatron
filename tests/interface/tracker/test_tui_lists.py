@@ -4,7 +4,7 @@
 
 """The Tracks, Scales, Generators and Chains pages and their editors."""
 
-from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drag as drag_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shapes as shapes_plugin, shorten as shorten_plugin, strum as strum_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import arp as arp_plugin, auto_ratchet as auto_ratchet_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, shapes as shapes_plugin, strum as strum_plugin, timing as timing_plugin, voice_leading as voice_leading_plugin
 from llamatron.engine.generators.arp import schema, strings as arp_strings
 from llamatron.engine.generators.arp.generator import ChordOrder, OctaveJump
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
@@ -798,7 +798,7 @@ class TestChainEditor(UITest):
         named = [
             (arp_plugin.NAME, ui_testing.UP_ARP), (auto_ratchet_plugin.NAME, ui_testing.ROLLS), (drift_plugin.NAME, ui_testing.SWAY), (progression_plugin.NAME, ui_testing.POP), (voice_leading_plugin.NAME, ui_testing.SMOOTH),
             (strum_plugin.NAME, ui_testing.FOLK), (shapes_plugin.NAME, ui_testing.SHAPED),
-            (glide_plugin.NAME, ui_testing.SLIDES), (shorten_plugin.NAME, ui_testing.CLIPS), (rush_plugin.NAME, ui_testing.PUSH), (drag_plugin.NAME, ui_testing.LAZY), (hocket_plugin.NAME, ui_testing.TRADE),
+            (timing_plugin.NAME, ui_testing.LOOSE), (hocket_plugin.NAME, ui_testing.TRADE),
             (guitarify_plugin.NAME, ui_testing.PICKED), (follow_chords_plugin.NAME, ui_testing.FOLLOWS), (phrasing_plugin.NAME, ui_testing.BREATHES), (musician_plugin.NAME, ui_testing.STRUMMER),
         ]
         # The generators are offered in the order of their plugins' names.

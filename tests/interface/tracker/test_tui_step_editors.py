@@ -18,16 +18,13 @@ from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.generators.chords_editor import ChordsEditor
-from llamatron.interface.tracker.screens.generators.drag_steps_editor import DragStepsEditor
-from llamatron.interface.tracker.screens.generators.glide_steps_editor import GlideStepsEditor
 from llamatron.interface.tracker.screens.generators.guitar_bar_editor import GuitarBarEditor
 from llamatron.interface.tracker.screens.generators.offsets_editor import OffsetsEditor
-from llamatron.interface.tracker.screens.generators.rush_steps_editor import RushStepsEditor
-from llamatron.interface.tracker.screens.generators.shorten_steps_editor import ShortenStepsEditor
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.groove_editor import GrooveEditor
 from llamatron.interface.tracker.screens.shared.one_row_editor import OneRowEditor
 from llamatron.interface.tracker.screens.shared.step_editor import StepEditor
+from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
 from llamatron.model.objects.groove import FactoryGroove
 from llamatron.user_strings import legends, marks
 from tests.support import ui_testing
@@ -231,7 +228,7 @@ class TestEveryStepEditorIsChecked(unittest.TestCase):
     def test_the_editors_of_steps_are_the_pattern_editor_the_chord_editor_and_the_editors_of_one_row(self):
         # The chord editor has three rows, which Up and Down move between, and degrees from 1 to 7, a Guitarify's bar holds strokes over accents, and the steps pages of Glide, Shorten, Rush and Drag hold toggles, so none is an editor of one row of numbers either side of zero; test_tui_progressions.py and test_tui_step_rows.py test them.
         pages = [page for page in leaf_pages() if issubclass(page, StepEditor)]
-        self.assertEqual(sorted(page.__name__ for page in pages), sorted(page.__name__ for page in (PatternEditor, ChordsEditor, GuitarBarEditor, GlideStepsEditor, ShortenStepsEditor, RushStepsEditor, DragStepsEditor, *[checks.PAGE for checks in CHECKED])))
+        self.assertEqual(sorted(page.__name__ for page in pages), sorted(page.__name__ for page in (PatternEditor, ChordsEditor, GuitarBarEditor, StepRowEditor, *[checks.PAGE for checks in CHECKED])))
 
     def test_every_editor_of_one_row_says_what_the_row_holds(self):
         for checks in CHECKED:

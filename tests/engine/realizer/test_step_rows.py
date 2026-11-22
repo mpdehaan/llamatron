@@ -5,7 +5,8 @@
 
 import unittest
 
-from llamatron.engine.generators import drag as drag_plugin, glide as glide_plugin, rush as rush_plugin, shorten as shorten_plugin
+from llamatron.engine.generators import timing as timing_plugin
+from llamatron.engine.generators.timing import parts
 from llamatron.engine.timing import sounding
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
@@ -35,20 +36,37 @@ def through(*rows):
     return data
 
 
+def part(name, steps, **settings):
+    """Return one Timing generator, (section, kind, settings), with one part's row lit and that part's own settings, by their
+    short names, such as amount."""
+    named = {parts.steps_of(name): steps}
+    for setting, value in settings.items():
+        named[name + '_' + setting] = value
+    return (timing_plugin.SECTION, timing_plugin.NAME, named)
+
+
 def glide(steps, **settings):
-    return (glide_plugin.SECTION, glide_plugin.NAME, {'steps': steps, **settings})
+    return part(parts.GLIDE, steps, **settings)
 
 
 def shorten(steps, **settings):
-    return (shorten_plugin.SECTION, shorten_plugin.NAME, {'steps': steps, **settings})
+    return part(parts.SHORTEN, steps, **settings)
 
 
 def rush(steps, **settings):
-    return (rush_plugin.SECTION, rush_plugin.NAME, {'steps': steps, **settings})
+    return part(parts.RUSH, steps, **settings)
 
 
 def drag(steps, **settings):
-    return (drag_plugin.SECTION, drag_plugin.NAME, {'steps': steps, **settings})
+    return part(parts.DRAG, steps, **settings)
+
+
+def together(*generators):
+    """Return one Timing generator holding the parts of several, each of another part."""
+    settings = {}
+    for _, _, named in generators:
+        settings.update(named)
+    return (timing_plugin.SECTION, timing_plugin.NAME, settings)
 
 
 def lengths(*rows):
@@ -65,19 +83,33 @@ class TestGlide(unittest.TestCase):
         self.assertEqual(lengths(glide([ON, OFF]))[:2], [QUARTER + sounding.GLIDE_OVERLAP, QUARTER])
 
     def test_the_glide_amount_sets_how_far(self):
-        self.assertEqual(lengths(glide([ON], glide_amount='1/16'))[0], QUARTER + SIXTEENTH)
+        self.assertEqual(lengths(glide([ON], amount='1/16'))[0], QUARTER + SIXTEENTH)
 
     def test_the_last_note_has_nothing_to_glide_into(self):
         self.assertEqual(lengths(glide([ON]))[-1], QUARTER)
+
+    def test_a_part_with_no_step_lit_changes_nothing(self):
+        self.assertEqual(lengths(glide([OFF, OFF])), [QUARTER] * STEPS)
+
+
+class TestGlideAndShortenTogether(unittest.TestCase):
+    """In one Timing generator the Glide runs first, then the Shorten, which changes only a note the Glide left alone."""
+
+    def test_each_changes_the_notes_on_its_own_steps(self):
+        found = lengths(together(glide([ON, OFF]), shorten([OFF, ON], amount=50)))
+        self.assertEqual(found, [QUARTER + sounding.GLIDE_OVERLAP, Rational(1, 8), QUARTER + sounding.GLIDE_OVERLAP, Rational(1, 8)])
+
+    def test_a_note_on_a_step_of_both_glides_and_is_not_shortened(self):
+        self.assertEqual(lengths(together(glide([ON, OFF]), shorten([ON], amount=50)))[0], QUARTER + sounding.GLIDE_OVERLAP)
 
 
 class TestShorten(unittest.TestCase):
 
     def test_a_step_that_is_on_plays_its_share(self):
-        self.assertEqual(set(lengths(shorten([ON], shorten=50))), {Rational(1, 8)})
+        self.assertEqual(set(lengths(shorten([ON], amount=50))), {Rational(1, 8)})
 
     def test_the_row_runs_at_its_own_step(self):
-        self.assertEqual(lengths(shorten([ON, OFF], step='1/2', shorten=50)), [Rational(1, 8), Rational(1, 8), QUARTER, QUARTER])
+        self.assertEqual(lengths(shorten([ON, OFF], step='1/2', amount=50)), [Rational(1, 8), Rational(1, 8), QUARTER, QUARTER])
 
 
 class TestRushAndDrag(unittest.TestCase):
@@ -88,6 +120,9 @@ class TestRushAndDrag(unittest.TestCase):
 
     def test_a_step_on_in_both_moves_by_the_difference(self):
         self.assertEqual(starts(rush([OFF, ON], amount=10), drag([OFF, ON], amount=30))[1], QUARTER + QUARTER / 5)
+
+    def test_one_generators_rush_and_drag_add_up_as_two_generators_do(self):
+        self.assertEqual(starts(together(rush([OFF, ON], amount=10), drag([OFF, ON], amount=30)))[1], QUARTER + QUARTER / 5)
 
     def test_the_first_note_cannot_move_before_the_clip(self):
         self.assertEqual(starts(rush([ON]))[0], 0)

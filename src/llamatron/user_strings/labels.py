@@ -405,11 +405,6 @@ MSG_STRUM_WORDS = {
 MSG_TRACK_STRUM_CHOICE = '(track)'
 # interface/tracker/screens/shared/restart_field.py: when a generator starts over, as its editor names the choices.
 MSG_RESTART_LABEL = 'Restart'
-MSG_GLIDE_AMOUNT_LABEL = 'Glide amount'
-MSG_SHORTEN_LABEL = 'Shorten amount'
-MSG_RUSH_AMOUNT_LABEL = 'Rush amount'
-MSG_DRAG_AMOUNT_LABEL = 'Drag amount'
-MSG_STEPS_LABEL = 'Steps'
 MSG_STEP_NUMBER_ROW_LABEL = 'Step'
 MSG_RESTART_NAMES = {Restart.EVERY_CLIP: 'every clip', Restart.ON_NEW_SCENE: 'on new scene', Restart.WHOLE_SONG: 'whole song'}
 MSG_CHORDS_LABEL = 'Chords'
