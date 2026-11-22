@@ -5,16 +5,17 @@
 """Rendering a composed Song into a ClipGrid of finished clips, for the exporters to write."""
 
 from fractions import Fraction
+import functools
 from typing import NamedTuple
 
 from llamatron.engine.clips.clip_column import ClipColumn
 from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
-from llamatron.engine.clips.control import Control
 from llamatron.engine.clips.row_clock import RowClock
 from llamatron.engine.generators import registry
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.realizer import registers as registers_values
+from llamatron.engine.realizer.bound_controls import bound_controls
 from llamatron.engine.realizer.chain_step_place import ChainStepPlace, ClipBeingMade, StepInChains
 from llamatron.engine.realizer.clip_slot_player import ClipSlotPlayer
 from llamatron.engine.realizer.draws import DrawPlay
@@ -36,7 +37,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.strum import strums_at_all
 from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import RampWay, Restart, Section, StepStatement
-from llamatron.model.values import midi, sound as sound_values
+from llamatron.model.values import sound as sound_values
 from llamatron.user_strings import errors, marks
 
 # The controller's methods that strum a clip's chords and move its notes early or late.
@@ -165,7 +166,9 @@ class SongRealizer:
     def gm_sound_of(self, track):
         """Return the General MIDI sound of a track's instrument, or None when the track has no instrument or the instrument no sound."""
         instrument = self.instrument_of(track)
-        return None if instrument is None else instrument.get_gm_sound()
+        if instrument is None:
+            return None
+        return instrument.get_gm_sound()
 
     def plays_through_fluidsynth(self, track):
         """Return whether a track's instrument plays through FluidSynth."""
@@ -206,7 +209,9 @@ class SongRealizer:
             self._state.note_scene_start()
             if self._earlier is not None:
                 self._hold_kept_clips_to_registers(scene)
-        tempo = None if scene.get_tempo() is None else float(scene.get_tempo())
+        tempo = scene.get_tempo()
+        if tempo is not None:
+            tempo = float(tempo)
         grid_scene = grid.add_row(ClipRow(name=scene.get_name(), tempo=tempo))
         for name in self._song.get_track_names():
             clip = self._finished_clip(scene=scene, track=name, tempo=tempo)
@@ -238,7 +243,8 @@ class SongRealizer:
         clip = self.get_clip(scene=scene, track=track)
         if clip is None or self.is_clip_kept(scene=scene, track=track):
             return clip
-        tempo = self._song.get_tempo() if tempo is None else tempo
+        if tempo is None:
+            tempo = self._song.get_tempo()
         # The groove goes on last, so that generators, grabs and lengths never see it.
         clip.set_groove(self._song.groove_at(scene=scene, track=track))
         clip.set_strum(self.strum_plan(scene=scene, track=track, tempo=tempo))
@@ -295,7 +301,12 @@ class SongRealizer:
     def _with_retaken(self, *, changed, after):
         """Return each scene's changed tracks with the tracks whose take differs from an earlier render's added."""
         retaken = self._state.retaken(after.get_state())
-        return [here if here is None else here | _tracks_retaken_in(place=index, retaken=retaken) for index, here in enumerate(changed)]
+        with_retaken = []
+        for index, here in enumerate(changed):
+            if here is not None:
+                here = here | _tracks_retaken_in(place=index, retaken=retaken)
+            with_retaken.append(here)
+        return with_retaken
 
     def _can_take_from(self, after):
         """Return whether this render can take anything from an earlier one: both made with data from the same seed, the song's
@@ -454,7 +465,9 @@ class SongRealizer:
             rows = [written for written in self._scenes if written.get_scene() is played]
             lengths = [self.get_scene_length(written) for written in rows]
             signature = self._song.get_time_signature()
-            base = self._song.get_tempo() if played.get_tempo() is None else played.get_tempo()
+            base = played.get_tempo()
+            if base is None:
+                base = self._song.get_tempo()
             tempos = ramped_tempos(
                 base=base, ramp_in=played.get_tempo_ramp(RampWay.IN), ramp_out=played.get_tempo_ramp(RampWay.OUT),
                 length=sum(lengths, START), bar=signature.bar_length(), step=self._setlist.get_step_size(),
@@ -525,7 +538,9 @@ class SongRealizer:
         """
         result = []
         for scene in self._scenes:
-            tempo = self._song.get_tempo() if scene.get_tempo() is None else scene.get_tempo()
+            tempo = scene.get_tempo()
+            if tempo is None:
+                tempo = self._song.get_tempo()
             whole_notes_to_seconds = Rational(SECONDS_PER_MINUTE * QUARTER_NOTES_PER_WHOLE_NOTE) / tempo
             clips = {}
             problem = None
@@ -535,7 +550,9 @@ class SongRealizer:
                 self._check_plays(scene)
                 tempos = self.tempos_of(scene)
                 # A scene that ramps its tempo is timed beat by beat, as its exports are.
-                clock = None if tempos is None else RowClock(tempos)
+                clock = None
+                if tempos is not None:
+                    clock = RowClock(tempos)
                 for track in scene.get_track_names():
                     clips[track] = _seconds_of(length=self.get_clip_length(scene=scene, track=track), clock=clock, whole=whole_notes_to_seconds)
                 # A scene with a problem has no length, so it's set only once the checks pass.
@@ -568,7 +585,7 @@ class SongRealizer:
             settings = self._song.get_track(track)
             bound = [(number, name) for number, name in zip(settings.get_cc_numbers(), settings.get_cc_registers()) if number is not None and name is not None]
             if bound:
-                clip.add_controls(_bound_controls(
+                clip.add_controls(bound_controls(
                     bound=bound, timeline=self.get_timeline(scene), own=clip.get_controls(), end=self.get_clip_length(scene=scene, track=track),
                 ))
             self._clips[key] = clip
@@ -590,6 +607,10 @@ class SongRealizer:
             self._counted[key] = (clip, recorder.get_changes())
         return self._counted[key]
 
+    def _register_trial(self, track, *, timeline):
+        """Return how a track's clip hears the registers while a scene's timeline is still being settled: the timeline's values."""
+        return RegisterTrial(place=self._track_place(track), timeline=timeline)
+
     def _track_place(self, track):
         """Return a track's place in the song, counted from 0, which orders register changes made at the same time."""
         return self._song.get_track_names().index(track)
@@ -606,15 +627,13 @@ class SongRealizer:
         # The registers that reverse and are counting the other way, which a reset puts back to counting forward.
         turned = registers_values.NOT_TURNED
         # Where the song's draws stand, carried from scene to scene, or None in a song whose draws hold no value.
-        draws = DrawPlay(self._state.get_draws()) if self._song.uses_draws() else None
+        draws = None
+        if self._song.uses_draws():
+            draws = DrawPlay(self._state.get_draws())
         for written in self._scenes[:self._scenes.index(scene) + 1]:
             number = written.get_number()
             if number not in self._timelines:
-                before = self._scenes.index(written) - 1
-                scene_before = None
-                if before >= 0:
-                    scene_before = self._scenes[before]
-                self._state.draw_afresh_for_a_take(written=written, scene_before=scene_before)
+                self._state.draw_afresh_for_a_take(written=written, scene_before=self._scene_before(written))
                 resets = self._resets_of(written)
                 start = with_resets(values=values, registers=self._state.get_registers(), names=resets)
                 if turned:
@@ -632,6 +651,13 @@ class SongRealizer:
             turned = self._timelines[number].get_end_turned()
             draws = self._timelines[number].get_end_draws()
         return self._timelines[scene.get_number()]
+
+    def _scene_before(self, written):
+        """Return the written-out scene before one, or None for the first."""
+        before = self._scenes.index(written) - 1
+        if before < 0:
+            return None
+        return self._scenes[before]
 
     def _timeline_of(self, *, scene, start, turned, draws):
         """Return a written-out scene's register values from where they start: found by playing the scene where a register can cut
@@ -739,7 +765,7 @@ class SongRealizer:
                 if found == settled:
                     return timeline
                 settled = found
-                self._guesses[number] = lambda track, timeline=timeline: RegisterTrial(place=self._track_place(track), timeline=timeline)
+                self._guesses[number] = functools.partial(self._register_trial, timeline=timeline)
         finally:
             del self._guesses[number]
 
@@ -828,7 +854,11 @@ class SongRealizer:
         number = scene.get_number()
         if number not in self._starts:
             place = self._scenes.index(scene)
-            self._starts[number] = NO_LENGTH if place == 0 else self.scene_start(self._scenes[place - 1]) + self.get_scene_length(self._scenes[place - 1])
+            if place == 0:
+                self._starts[number] = NO_LENGTH
+            else:
+                before = self._scenes[place - 1]
+                self._starts[number] = self.scene_start(before) + self.get_scene_length(before)
         return self._starts[number]
 
     def get_scene_length(self, scene):
@@ -1083,7 +1113,9 @@ def _seconds_of(*, length, clock, whole):
 
 def _whole_if_possible(number):
     """Return a number as a whole number if it is one, like 120 rather than 120.0."""
-    return int(number) if number.is_integer() else number
+    if number.is_integer():
+        return int(number)
+    return number
 
 
 def _patterns_played(clip_slot):
@@ -1113,45 +1145,9 @@ def _grab_circle(scene):
     return None
 
 
-def _bound_controls(*, bound, timeline, own, end):
-    """Return the CC values a clip's bound lanes send: each lane's register, as it is at the clip's start and after each change before end, held to a CC value.
-
-    bound holds (CC number, register name) for each lane that has a CC number on the track and a
-    register bound to it; a lane with no CC number sends nothing, bound or not. A value is sent
-    only when it differs from the last value the lane sent, the clip's own included, and never at
-    a moment where the clip sends a value of its own on the lane, which wins.
-    """
-    moments = [(START, timeline.values_after(START))] + [moment for moment in timeline.changes_within(start=START, end=end) if moment[0] != START]
-    controls = []
-    for number, name in bound:
-        own_values = {control.get_time(): control.get_value() for control in own if control.get_number() == number}
-        sent = sorted([(time, value, True) for time, value in own_values.items()] + [(time, _cc_value(values[name]), False) for time, values in moments],
-                      key=_sent_order)
-        last = None
-        for time, value, is_own in sent:
-            if is_own:
-                last = value
-            elif time not in own_values and value != last:
-                controls.append(Control(time=time, number=number, value=value))
-                last = value
-    return controls
-
-
-def _sent_order(item):
-    """Return when a lane's value is sent, as (time, whether it's the clip's own), so that the clip's own comes after a bound one at the same time and is what holds."""
-    return item[0], item[2]
-
-
-def _cc_value(value):
-    """Return a register's value held to what a CC value can be."""
-    return max(min(value, midi.MAX_CC_VALUE), midi.MIN_CC_VALUE)
-
-
 def _before(*, changes, end):
     """Return the register changes made before a time, the end of their scene."""
     return [change for change in changes if change.time < end]
-
-
 
 
 def _chords_in(clip):
