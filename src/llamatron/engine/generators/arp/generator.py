@@ -172,7 +172,9 @@ class Arp(ClipGenerator):
         self._adds = []
         positions = self._arpeggiate(positions=original, generator=generator, scale=clip.get_scale(), start=length_values.ZERO)
         if clip.get_length() is None:
-            self._random_state = None if self._seed is None else generator.getstate()
+            self._random_state = None
+            if self._seed is not None:
+                self._random_state = generator.getstate()
             return positions, None
 
         wanted = Length.exact(clip.get_length())
@@ -182,7 +184,9 @@ class Arp(ClipGenerator):
             positions += more
             total = Length.add(total, Length.total([position[sound.LENGTH] for position in more]))
         self._adds = [(time, adds) for time, adds in self._adds if Length.less(time, wanted)]
-        self._random_state = None if self._seed is None else generator.getstate()
+        self._random_state = None
+        if self._seed is not None:
+            self._random_state = generator.getstate()
         return fit_to_length(positions=positions, length=wanted), clip.get_length()
 
     def _plays_single_notes(self):
