@@ -11,6 +11,8 @@ holds what. Its tracks and registers are changed the same way as the set's secti
 remove_item, rename_item and so on, and renaming or removing a track tells the scenes.
 """
 
+import functools
+
 from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed, number, pass_over_unknown, reading, time_signature, written_length
@@ -145,7 +147,8 @@ class Song(HoldsSections, HoldsSettings):
     @classmethod
     def from_data(cls, *, data, where, setlist):
         """Read one song's data, checking every part of it, placing each error inside the song."""
-        data = {} if data is None else data
+        if data is None:
+            data = {}
         with reading(where):
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_NOT_A_SONG.format(value=data))
@@ -162,7 +165,10 @@ class Song(HoldsSections, HoldsSettings):
     def _read_settings(self, *, data, where):
         for setting in settings_held(settings=SETTINGS, data=data):
             name = setting.get_name()
-            with reading(where if name in NAMED_BY_THEIR_MESSAGE else errors.ERR_WHERE_WITHIN.format(where=where, part=name)):
+            place = errors.ERR_WHERE_WITHIN.format(where=where, part=name)
+            if name in NAMED_BY_THEIR_MESSAGE:
+                place = where
+            with reading(place):
                 setting.check_held(data, song=self)
         self._settings = {name: own_copy(data.get(name)) for name in SETTINGS}
         self._settings[SongSetting.VISUALIZER] = sensible_visualizer(self._settings[SongSetting.VISUALIZER])
@@ -183,9 +189,7 @@ class Song(HoldsSections, HoldsSettings):
             if not isinstance(registers, dict) or not set(registers) <= set(file_format.REGISTER_NAMES):
                 raise InvalidValue(errors.ERR_REGISTERS_NOT_NAMED.format(names=listed(file_format.REGISTER_NAMES)))
         if Section.REGISTERS in data:
-            self._set_section(section=Section.REGISTERS, items={
-                name: Register.from_data(data=settings, where=self._where(where=where, label=names.MSG_REGISTER_WORD, name=name)) for name, settings in registers.items()
-            })
+            self._read_items(section=Section.REGISTERS, data=registers, where=where, label=names.MSG_REGISTER_WORD, read=Register.from_data)
 
     def _read_draws(self, *, data, where):
         """Read the draws' settings. There are always four, so the file only names those it changes."""
@@ -194,9 +198,7 @@ class Song(HoldsSections, HoldsSettings):
             if not isinstance(draws, dict) or not set(draws) <= set(file_format.DRAW_NAMES):
                 raise InvalidValue(errors.ERR_DRAWS_NOT_NAMED.format(names=listed(file_format.DRAW_NAMES)))
         if Section.DRAWS in data:
-            self._set_section(section=Section.DRAWS, items={
-                name: Draw.from_data(data=settings, where=self._where(where=where, label=names.MSG_DRAW_WORD, name=name)) for name, settings in draws.items()
-            })
+            self._read_items(section=Section.DRAWS, data=draws, where=where, label=names.MSG_DRAW_WORD, read=Draw.from_data)
 
     def _read_tracks(self, *, data, where):
         tracks = data.get(Section.TRACKS) or {}
@@ -204,9 +206,15 @@ class Song(HoldsSections, HoldsSettings):
             if not isinstance(tracks, dict):
                 raise InvalidValue(errors.ERR_TRACKS_NOT_NAMED)
         if Section.TRACKS in data:
-            self._set_section(section=Section.TRACKS, items={
-                name: Track.from_data(data=settings, where=self._where(where=where, label=names.MSG_TRACK_WORD, name=name), song=self) for name, settings in tracks.items()
-            })
+            read = functools.partial(Track.from_data, song=self)
+            self._read_items(section=Section.TRACKS, data=tracks, where=where, label=names.MSG_TRACK_WORD, read=read)
+
+    def _read_items(self, *, section, data, where, label, read):
+        """Read a section's named items, each from its settings by read, each error placed by the item's name."""
+        items = {}
+        for name, settings in data.items():
+            items[name] = read(data=settings, where=self._where(where=where, label=label, name=name))
+        self._set_section(section=section, items=items)
 
     @notes_change
     def _read_scenes(self, *, data, where):
@@ -214,10 +222,14 @@ class Song(HoldsSections, HoldsSettings):
         with reading(where):
             if not isinstance(scenes, list):
                 raise InvalidValue(errors.ERR_SCENES_NOT_A_LIST)
-        self._scenes = None if Section.SCENES not in data else [
-            Scene.from_data(data=scene, where=errors.ERR_WHERE_WITHIN.format(where=where, part=errors.ERR_WHERE_SCENE_ENTRY.format(number=number)), song=self)
-            for number, scene in enumerate(scenes, start=FIRST_SCENE_NUMBER)
-        ]
+        if Section.SCENES not in data:
+            self._scenes = None
+            return
+        self._scenes = []
+        for scene_number, scene in enumerate(scenes, start=FIRST_SCENE_NUMBER):
+            entry = errors.ERR_WHERE_SCENE_ENTRY.format(number=scene_number)
+            place = errors.ERR_WHERE_WITHIN.format(where=where, part=entry)
+            self._scenes.append(Scene.from_data(data=scene, where=place, song=self))
 
     def _where(self, *, where, label, name):
         """Return how a message places one of the song's named items, like song (one), track (bass)."""
@@ -279,7 +291,9 @@ class Song(HoldsSections, HoldsSettings):
         16. 7/8 at a 1/4 step is three and a half steps, so None.
         """
         steps = self.get_time_signature().bar_length() / self._setlist.get_step_size()
-        return steps.numerator if steps.denominator == WHOLE_STEPS else None
+        if steps.denominator != WHOLE_STEPS:
+            return None
+        return steps.numerator
 
     def get_pattern_time_signature(self, pattern):
         """Return the time signature a pattern is drawn in: its own, or else the song's."""
@@ -288,7 +302,9 @@ class Song(HoldsSections, HoldsSettings):
     def get_entry_size(self):
         """Return how long a note placed on a piano roll lasts unless the pattern says otherwise, in whole notes, or None for one step."""
         entry_size = self.get_written_entry_size()
-        return None if entry_size is None else written_length(value=entry_size, most=limits.MAX_GATE)
+        if entry_size is None:
+            return None
+        return written_length(value=entry_size, most=limits.MAX_GATE)
 
     def get_written_entry_size(self):
         """Return the song's entry size as the file writes it, like 1/8, or None for one step."""
@@ -417,7 +433,10 @@ class Song(HoldsSections, HoldsSettings):
 
     def add_new_track(self, *, name, drum=False, place=None):
         """Add a new track with no clips, a drum track if drum, at the end or before the track at a place, and return it."""
-        track = Track(drum=True) if drum else Track()
+        if drum:
+            track = Track(drum=True)
+        else:
+            track = Track()
         if place is None:
             self.add_item(section=Section.TRACKS, name=name, item=track)
         else:
@@ -478,7 +497,8 @@ class Song(HoldsSections, HoldsSettings):
 
     def copy_track(self, *, name, new):
         """Add a copy of a track right after it, with copies of its clip slots in every scene."""
-        self._section(Section.TRACKS).add(name=new, item=self.get_track(name).copy(), after=name)
+        copy = self.get_track(name).copy()
+        self._section(Section.TRACKS).add(name=new, item=copy, after=name)
         for scene in self.get_scenes():
             clip_slot = scene.get_clip_slot(name)
             if clip_slot is not None:
@@ -496,8 +516,7 @@ class Song(HoldsSections, HoldsSettings):
             raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=name, names=listed(file_format.REGISTER_NAMES)))
         register = self.get_register(name).copy()
         register.set_setting(name=setting, value=value)
-        registers = {**dict(self._section(Section.REGISTERS).items()), name: register}
-        changed = {name: registers[name] for name in file_format.REGISTER_NAMES if name in registers and not registers[name].is_default()}
+        changed = self._section(Section.REGISTERS).changed_with(name=name, item=register, order=file_format.REGISTER_NAMES)
         self._set_section(section=Section.REGISTERS, items=changed or None)
 
     # The draws. There are always four, and the file names only those with settings changed.
@@ -512,29 +531,32 @@ class Song(HoldsSections, HoldsSettings):
 
     def set_draw_setting(self, *, name, setting, value):
         """Change one setting of a draw, AD to DD, by its file name, or None for its default."""
-        self._change_draw(name=name, change=lambda draw: draw.set_setting(name=setting, value=value))
+        self._change_draw(name=name, change=functools.partial(Draw.set_setting, name=setting, value=value))
 
     def set_draw_slot(self, *, name, place, value):
         """Give one slot of a draw a value, held within the draw's range, or make it blank with None."""
-        self._change_draw(name=name, change=lambda draw: draw.set_slot(place=place, value=value))
+        self._change_draw(name=name, change=functools.partial(Draw.set_slot, place=place, value=value))
 
     def set_draw_slot_count(self, *, name, count):
         """Make a draw hold count slots, new ones blank."""
-        self._change_draw(name=name, change=lambda draw: draw.set_slot_count(count))
+        self._change_draw(name=name, change=functools.partial(Draw.set_slot_count, count=count))
 
     def _change_draw(self, *, name, change):
-        """Change a copy of a draw with change, and keep it, leaving the file to name only the draws with settings changed."""
+        """Change a copy of a draw, AD to DD, by one of its methods, and keep it, leaving the file to name only the draws whose
+        settings differ from the default."""
         if name not in file_format.DRAW_NAMES:
             raise InvalidValue(errors.ERR_NO_SUCH_DRAW.format(name=name, names=listed(file_format.DRAW_NAMES)))
         draw = self.get_draw(name).copy()
         change(draw)
-        draws = {**dict(self._section(Section.DRAWS).items()), name: draw}
-        changed = {name: draws[name] for name in file_format.DRAW_NAMES if name in draws and not draws[name].is_default()}
+        changed = self._section(Section.DRAWS).changed_with(name=name, item=draw, order=file_format.DRAW_NAMES)
         self._set_section(section=Section.DRAWS, items=changed or None)
 
     def uses_draws(self):
         """Return whether any draw holds a value, so that a render need only follow the draws when one does."""
-        return any(draw.filled_places() for draw in self._written_draws())
+        for draw in self._written_draws():
+            if draw.filled_places():
+                return True
+        return False
 
     # The scenes, in the order they play.
 
@@ -590,7 +612,11 @@ class Song(HoldsSections, HoldsSettings):
 
     def clip_slots_naming(self, *, section, name):
         """Return (number, scene, track) for each clip that names an item of a section: the clips that play or morph to a pattern, run a chain or grab from a track."""
-        return [(number, scene, track) for number, scene in self.numbered_scenes() for track in scene.clip_slots_naming(section=section, name=name)]
+        found = []
+        for scene_number, scene in self.numbered_scenes():
+            for track in scene.clip_slots_naming(section=section, name=name):
+                found.append((scene_number, scene, track))
+        return found
 
     def scenes_naming(self, *, section, name):
         """Return (number, scene) for each scene that chose an item of a section, a scale or a groove, not counting the song's own choice."""
@@ -598,7 +624,11 @@ class Song(HoldsSections, HoldsSettings):
 
     def tracks_naming(self, *, section, name):
         """Return the name of each track that chose an item of a section, which is a groove."""
-        return [track for track in self.get_track_names() if self.get_track(track).names_item(section=section, name=name)]
+        found = []
+        for track in self.get_track_names():
+            if self.get_track(track).names_item(section=section, name=name):
+                found.append(track)
+        return found
 
     def scenes_that_never_end(self):
         """Return (number, scene) for each scene in which every clip loops."""
@@ -608,12 +638,27 @@ class Song(HoldsSections, HoldsSettings):
         """Return whether every clip of a scene loops and no step of a pattern they play can stop its clip, so that nothing ends the scene."""
         if not scene.every_clip_loops():
             return False
-        patterns = [name for track in scene.get_track_names() for name in scene.get_clip_slot(track).get_pattern_names()]
-        return not any(self._setlist.has_pattern(name) and self._setlist.get_pattern(name).has_statements(StepStatement.STOP) for name in patterns)
+        for track in scene.get_track_names():
+            clip_slot = scene.get_clip_slot(track)
+            for name in clip_slot.get_pattern_names():
+                if self._can_stop_its_clip(name):
+                    return False
+        return True
+
+    def _can_stop_its_clip(self, pattern_name):
+        """Return whether a pattern of the set has a step that can stop the clip playing it."""
+        if not self._setlist.has_pattern(pattern_name):
+            return False
+        pattern = self._setlist.get_pattern(pattern_name)
+        return pattern.has_statements(StepStatement.STOP)
 
     def track_clip_count(self, name):
         """Return how many scenes a track plays in."""
-        return sum(1 for scene in self.get_scenes() if scene.has_clip_slot(name))
+        count = 0
+        for scene in self.get_scenes():
+            if scene.has_clip_slot(name):
+                count += 1
+        return count
 
     # The song's own named objects.
 
@@ -636,34 +681,53 @@ class Song(HoldsSections, HoldsSettings):
         if own is not None:
             return own
         instrument = self.instrument_of(track)
-        of_instrument = None if instrument is None else instrument.get_default_velocity()
-        return defaults.DEFAULT_VELOCITY if of_instrument is None else of_instrument
+        if instrument is None:
+            return defaults.DEFAULT_VELOCITY
+        of_instrument = instrument.get_default_velocity()
+        if of_instrument is None:
+            return defaults.DEFAULT_VELOCITY
+        return of_instrument
 
     def accent_of(self, track):
         """Return what an accented step adds to its velocity on a track: the track's accent on top of its instrument's."""
         instrument = self.instrument_of(track)
-        return track.get_accent() + (defaults.DEFAULT_INSTRUMENT_ACCENT if instrument is None else instrument.get_accent())
+        instrument_accent = defaults.DEFAULT_INSTRUMENT_ACCENT
+        if instrument is not None:
+            instrument_accent = instrument.get_accent()
+        return track.get_accent() + instrument_accent
 
     def instrument_of(self, track):
         """Return a track's instrument, or None when it names none or the set has none of that name."""
         name = track.get_instrument_name()
-        return self._setlist.get_instrument(name) if name is not None and self._setlist.has_instrument(name) else None
+        if name is None or not self._setlist.has_instrument(name):
+            return None
+        return self._setlist.get_instrument(name)
 
     def forget_generator(self, name):
         """Take a generator out of every list of generators of the song: its tracks', its scenes' and its clips'."""
-        listing = [self._section(Section.TRACKS).get(track) for track in self.get_track_names()]
+        holders = []
+        for track in self.get_track_names():
+            holders.append(self.get_track(track))
         for scene in self.get_scenes():
-            listing += [scene, *[scene.get_clip_slot(track) for track in scene.get_track_names()]]
-        for holder in listing:
-            if name in holder.get_chain_names():
-                holder.set_chain_names(names=[each for each in holder.get_chain_names() if each != name], song=self)
+            holders.append(scene)
+            for track in scene.get_track_names():
+                holders.append(scene.get_clip_slot(track))
+        for holder in holders:
+            chain_names = holder.get_chain_names()
+            if name in chain_names:
+                kept = [each for each in chain_names if each != name]
+                holder.set_chain_names(names=kept, song=self)
 
     def scenes_change_registers(self):
         """Return whether any of its scenes, or any clip of one, sets a register or adds to one, or whether a draw that holds a
         value redraws in conditions, which a statement of a scene, a clip, a track, a chain or a generator can draw from."""
-        return any(scene.changes_registers() for scene in self.get_scenes()) or any(
-            draw.redraws_in_conditions() and draw.filled_places() for draw in self._written_draws()
-        )
+        for scene in self.get_scenes():
+            if scene.changes_registers():
+                return True
+        for draw in self._written_draws():
+            if draw.redraws_in_conditions() and draw.filled_places():
+                return True
+        return False
 
 
 

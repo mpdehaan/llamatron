@@ -99,6 +99,17 @@ class NamedItems(Revised):
         """Return the items, in the section's order."""
         return list(self._all().values())
 
+    def changed_with(self, *, name, item, order):
+        """Return the items with one put in place of its name, keeping only those whose settings differ from the default, in an
+        order of every name, as a song's four registers and four draws, which the file names only when changed."""
+        held = dict(self._all())
+        held[name] = item
+        changed = {}
+        for each in order:
+            if each in held and not held[each].is_default():
+                changed[each] = held[each]
+        return changed
+
     # Changing. Each change keeps the order of everything else.
 
     @notes_change
