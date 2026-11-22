@@ -32,8 +32,7 @@ class GeneratorPlugin(NamedTuple):
     """What a generator plugin declares: its name, the section of a set that holds its generators, its settings' class, and
     its strings module, which holds every word it shows: MSG_LABEL, what it is called beside a generator's name, MSG_KIND_WORD,
     the word a generator named for its kind takes, MSG_CAPTION_WORD, the word its page's caption names it by, and
-    MSG_CHANGED_WORD, the word an undo of a change to one of its generators says, MSG_GROUP, the heading the Generators page
-    offers it under, its controller, which holds all its logic (engine/generators/controller.py), its view, which describes
+    MSG_CHANGED_WORD, the word an undo of a change to one of its generators says, its controller, which holds all its logic (engine/generators/controller.py), its view, which describes
     its page (model/schema/generator_views.py), and, for a plugin every clip and track holds one of built in, where that one
     runs: a number below LIST_PLACE before the clip's or the track's list of generators, above it after, None for a plugin
     with no built-in."""

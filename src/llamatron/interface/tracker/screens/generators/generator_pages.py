@@ -5,7 +5,7 @@
 
 from typing import NamedTuple
 
-from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedChoiceDialog
+from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.screens.shared.plugin_editor import plugin_editor_of
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import Section
@@ -18,20 +18,19 @@ class GeneratorListing(NamedTuple):
     kind: str
     section: str
     label: str
-    group: str
     EDITOR: type
 
 
 def _in_shown_order(listings):
-    """Return the kinds of generator as they are offered: by heading, and by name under a heading, capitals ignored."""
-    return sorted(listings, key=lambda listing: (listing.group.casefold(), listing.label.casefold()))
+    """Return the kinds of generator as they are offered: by name, capitals ignored."""
+    return sorted(listings, key=lambda listing: listing.label.casefold())
 
 
 def _listing_of(plugin):
-    """Return how the tracker lists a generator plugin: its name, its section, its own label and heading, and its editor, the
-    page drawn from its view."""
+    """Return how the tracker lists a generator plugin: its name, its section, its own label, and its editor, the page drawn
+    from its view."""
     editor = plugin_editor_of(plugin.section)
-    return GeneratorListing(kind=plugin.name, section=plugin.section, label=plugin.strings.MSG_LABEL, group=plugin.strings.MSG_GROUP, EDITOR=editor)
+    return GeneratorListing(kind=plugin.name, section=plugin.section, label=plugin.strings.MSG_LABEL, EDITOR=editor)
 
 
 def _plugin_listings():
@@ -45,18 +44,17 @@ GENERATOR_PAGES = {listing.section: listing for listing in _in_shown_order(_plug
 
 # A chain, which a clip, a scene and a track list beside the generators and the Generators page lists as one more kind; its
 # editor is the chain editor (interface/tracker/screens/editors.py), and a chain's own steps are never chains.
-CHAIN_LISTING = GeneratorListing(kind=file_format.CHAIN_KIND, section=Section.CHAINS, label=labels.MSG_CHAIN_LABEL, group=labels.GeneratorGroup.CHAINS, EDITOR=None)
+CHAIN_LISTING = GeneratorListing(kind=file_format.CHAIN_KIND, section=Section.CHAINS, label=labels.MSG_CHAIN_LABEL, EDITOR=None)
 # Every kind the Generators page lists and offers to make, the chain among them, in the order it offers them.
 LISTED_PAGES = {listing.section: listing for listing in _in_shown_order((CHAIN_LISTING, *GENERATOR_PAGES.values()))}
 
 
-def generator_type_dialog(*, opened, listings=GENERATOR_PAGES):
-    """Return the dialog that asks which type of generator to make, the types under their headings; it answers a place among the
-    listings, a chain's steps offering the generators and the Generators page every kind, the chain among them (LISTED_PAGES)."""
-    groups = {}
-    for listing in listings.values():
-        groups.setdefault(listing.group, []).append(listing.label)
-    return GroupedChoiceDialog(title=messages.MSG_NEW_GENERATOR_KIND_TITLE, groups=list(groups.items()), opened=opened)
+def generator_type_dialog(*, listings=GENERATOR_PAGES):
+    """Return the dialog that asks which type of generator to make, the types sorted by name, searched by typing; it answers a
+    place among the listings, a chain's steps offering the generators and the Generators page every kind, the chain among them
+    (LISTED_PAGES)."""
+    names = [listing.label for listing in listings.values()]
+    return ChoiceDialog(title=messages.MSG_NEW_GENERATOR_KIND_TITLE, options=names)
 
 
 def generator_page_of_kind(kind):

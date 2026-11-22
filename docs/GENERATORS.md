@@ -38,7 +38,7 @@ changes only what you edited.
 
 ## Generator Kinds
 
-The generators fall into eight categories by what they change, as the sidebar and the picker of a new generator's type group them.
+The generators fall into eight categories by what they change, as the sidebar groups them. The picker of a new generator's type lists them all together, sorted by name.
 
 ### Arrangement
 

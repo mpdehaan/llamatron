@@ -5,7 +5,6 @@
 """The words the Timing generator plugin shows: what it is called beside a generator's name, the word its page's caption names it
 by, the word a generator named for its kind takes, as in hat timing, each part's words, and its page's help."""
 
-from llamatron.user_strings import labels
 
 MSG_LABEL = 'Timing'
 MSG_KIND_WORD = 'timing'
@@ -13,7 +12,6 @@ MSG_CAPTION_WORD = 'timing'
 # What an undo or a redo of a change to one of its generators names the generator's kind.
 MSG_CHANGED_WORD = 'Timing'
 # The heading the Generators page offers it under.
-MSG_GROUP = labels.GeneratorGroup.TIMING
 
 # Each part's name, which heads its section on the page and names its row on its steps page.
 MSG_RUSH = 'Rush'

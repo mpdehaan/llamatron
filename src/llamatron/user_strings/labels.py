@@ -301,21 +301,7 @@ MSG_NEW_PATTERN_BUTTONS = ('OK', 'CANCEL')
 MSG_NEW_GROUP_BUTTON = '[ New Pattern Group ]'
 MSG_NEW_GROUP_NAME_LABEL = 'New Group Name: '
 MSG_NOTES_KIND = 'notes'
-# interface/tracker/screens/generators/generator_pages.py: the headings the kinds of generator are offered under, by what each kind is for.
-class GeneratorGroup:
-    """The names of the groups the Generators page lists the kinds of generator under."""
-
-    ARRANGEMENT = 'Arrangement'
-    CHAINS = 'Chains'
-    ARTICULATION = 'Articulation'
-    BAND = 'Band Generators'
-    HARMONY = 'Harmony'
-    RHYTHM = 'Rhythm'
-    TIMING = 'Timing'
-    TRANSITIONS = 'Transitions'
-    VOICING = 'Voicing'
-
-
+# interface/tracker/screens/generators/generator_pages.py: a chain, as the Generators page lists it beside the kinds of generator.
 MSG_CHAIN_LABEL = 'Chain'
 # interface/tracker/screens/shared/drift_values.py and the Drift's view: its own fields, then each value's two versions, A and B side by side.
 MSG_EVERY_LABEL = 'Every'

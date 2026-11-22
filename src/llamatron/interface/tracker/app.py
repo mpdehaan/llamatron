@@ -83,8 +83,6 @@ class LlamatronApp(App, inherit_bindings=False):
         self.open_field_sections = set()
         # The tab each kind of page with a tab box last showed, by the page's class, remembered for the session.
         self.chosen_tabs = {}
-        # The headings open in the picker of a new generator's type, kept for the session.
-        self.open_generator_groups = set()
         # The headings open in the pattern editor's Munge dialog, kept for the session.
         self.open_munge_groups = set()
         self.on_roll = True

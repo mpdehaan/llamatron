@@ -5,7 +5,6 @@
 """The words the Chords generator plugin shows: what it is called beside a generator's name, the word its page's caption names it
 by, the word a generator named for its kind takes, as in bass chords, its Mode's words, its columns' headings and its page's help."""
 
-from llamatron.user_strings import labels
 
 MSG_LABEL = 'Chords'
 MSG_KIND_WORD = 'chords'
@@ -13,7 +12,6 @@ MSG_CAPTION_WORD = 'chords'
 # What an undo or a redo of a change to one of its generators names the generator's kind.
 MSG_CHANGED_WORD = 'Chords'
 # The heading the Generators page offers it under.
-MSG_GROUP = labels.GeneratorGroup.HARMONY
 
 MSG_MODE_LABEL = 'Mode'
 MSG_VOICING_MODE = 'Voicing'

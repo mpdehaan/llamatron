@@ -103,7 +103,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
             self.document().add_generator(section=sections[place], name=name)
             then(kind=listing.kind, name=name)
             self.open_editor(section=listing.section, name=name, word=listing.label)
-        self.ask(dialog=generator_type_dialog(opened=self.holder.open_generator_groups), then=chosen)
+        self.ask(dialog=generator_type_dialog(), then=chosen)
 
     def add(self):
         def chosen(*, kind, name):

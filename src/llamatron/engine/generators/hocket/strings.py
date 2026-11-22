@@ -5,7 +5,6 @@
 """The words the Hocket generator plugin shows: what it is called beside a generator's name, the word its page's caption names it by, and the word a generator named for
 its kind takes, as in kick hocket, and its page's help."""
 
-from llamatron.user_strings import labels
 
 MSG_LABEL = 'Hocket'
 MSG_KIND_WORD = 'hocket'
@@ -13,7 +12,6 @@ MSG_CAPTION_WORD = 'hocket'
 # What an undo or a redo of a change to one of its generators names the generator's kind.
 MSG_CHANGED_WORD = 'Hocket'
 # The heading the Generators page offers it under.
-MSG_GROUP = labels.GeneratorGroup.ARRANGEMENT
 
 # Its page's help.
 HELP_PAGE = """

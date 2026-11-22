@@ -15,7 +15,6 @@ from llamatron.interface.tracker.components.keyboard import Keyboard
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.grid_choice_dialog import GridChoiceDialog
-from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedChoiceDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor, step_shown
@@ -402,7 +401,7 @@ class TestGeneratorsPage(UITest):
     async def test_the_last_row_adds_with_enter(self):
         await self.press(keybindings.MainPage.GENERATORS)
         await self.press(*[Key.DOWN] * len(self.app.screen.rows()), Key.ENTER)
-        self.assertIsInstance(self.app.screen, GroupedChoiceDialog)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
 
     async def test_adding_asks_the_kind_names_it_opens_it_and_opens_its_type(self):
         name = await self.add_generator(arp_plugin.SECTION)
@@ -833,7 +832,7 @@ class TestChainEditorAdding(UITest):
     async def test_a_new_generator_is_made_of_the_kind_picked_added_to_the_chain_and_opened(self):
         await self.open_chain(ui_testing.EMPTY)
         await self.press(keybindings.ChainEditor.ADD, Key.ENTER)
-        self.assertIsInstance(self.app.screen, GroupedChoiceDialog)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.pick(arp_strings.MSG_LABEL)
         name = new_name(word=suggested_word(arp_strings.MSG_LABEL), taken=())
         self.assertEqual(self.chain_steps(EMPTY), [(arp_plugin.NAME, name)])

@@ -5,7 +5,6 @@
 """The words the Guitarify generator plugin shows: what it is called beside a generator's name, the word its page's caption names it by, the word a generator named for
 its kind takes, as in kick guitar, its Mode's words, its columns' headings, how some of its numbers show, and its page's help."""
 
-from llamatron.user_strings import labels
 
 MSG_LABEL = 'Guitarify'
 MSG_KIND_WORD = 'guitar'
@@ -13,7 +12,6 @@ MSG_CAPTION_WORD = 'guitarify'
 # What an undo or a redo of a change to one of its generators names the generator's kind.
 MSG_CHANGED_WORD = 'Guitarify'
 # The heading the Generators page offers it under.
-MSG_GROUP = labels.GeneratorGroup.VOICING
 
 MSG_MODE_LABEL = 'Mode'
 MSG_GUITAR_MODE = 'Guitar'

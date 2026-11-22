@@ -169,7 +169,7 @@ class GeneratorsPage(ListPage):
             self.document().add_generator(section=listing.section, name=name)
             self.put_cursor_on(kind=listing.kind, name=name)
             self.open_editor(section=listing.section, name=name)
-        self.ask(dialog=generator_type_dialog(opened=self.holder.open_generator_groups, listings=generator_pages.LISTED_PAGES), then=chosen)
+        self.ask(dialog=generator_type_dialog(listings=generator_pages.LISTED_PAGES), then=chosen)
 
     def rename(self):
         kind, name = self.current()
