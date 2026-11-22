@@ -67,7 +67,10 @@ class ChainStepPlace:
 
     def tempo(self):
         """Return the scene's tempo, or the song's where the scene sets none."""
-        return self._song.get_tempo() if self._scene.get_tempo() is None else self._scene.get_tempo()
+        tempo = self._scene.get_tempo()
+        if tempo is None:
+            return self._song.get_tempo()
+        return tempo
 
     def section(self):
         """Return the kind of section the scene is, as the song wizard named it, or None."""
