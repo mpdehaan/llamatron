@@ -20,6 +20,15 @@ def _choices_module():
     return wizard_choices
 
 
+def _drop_empty_kinds(chosen):
+    """Drop a kind of section left with nothing chosen of its melody, and the kinds where none is left."""
+    kept = {name: own for name, own in chosen[melody_writer.BY_KIND].items() if own}
+    if kept:
+        chosen[melody_writer.BY_KIND] = kept
+    else:
+        del chosen[melody_writer.BY_KIND]
+
+
 class MelodyWays:
     """What was chosen of how the song's melodies go: how busy, how wide and how repeating they are, their character, and
     each kind of section's own melody, all held in the song's extras, each the genre's own until chosen."""
@@ -39,7 +48,9 @@ class MelodyWays:
         """Return the values of a field of the whole song's melodies that are heard in the song as it stands: the genre's own,
         each other that makes another song, and the one chosen."""
         heard = self.values_heard(field=field)
-        return [value for value in wizard_limits.MELODY_WAYS[field] if value == wizard_limits.USUAL_MELODY_WAYS[field] or value in heard or value == self.get_way(field)]
+        usual = wizard_limits.USUAL_MELODY_WAYS[field]
+        chosen = self.get_way(field)
+        return [value for value in wizard_limits.MELODY_WAYS[field] if value == usual or value in heard or value == chosen]
 
     def values_heard(self, *, field, kind=None):
         """The values of a melody field, of the song or of a kind of section, that make another song than the field left
@@ -47,15 +58,28 @@ class MelodyWays:
         return self._choices.offered(key=(wizard_limits.MELODY_HEARD_ANSWER, field, kind), compute=lambda: self._found_values_heard(field=field, kind=kind))
 
     def _found_values_heard(self, *, field, kind):
+        """Return the values of a melody field that make another song than the field left unchosen, found by arranging the song each way."""
+        ways = wizard_limits.MELODY_WAYS
+        if kind is not None:
+            ways = wizard_limits.SECTION_MELODY_WAYS
         made = {}
-        for value in (None, *(wizard_limits.SECTION_MELODY_WAYS if kind is not None else wizard_limits.MELODY_WAYS)[field]):
-            trial = type(self._choices).from_data(self._choices.to_data())
-            trial.melody_ways().keep_chosen(field=field, value=value, kind=kind)
-            try:
-                made[value] = arranged(style=_choices_module().style_of(self._choices.get_genre()), song=trial.song_picks(self._choices.get_subgenre()))[arranger.PARTS]
-            except (ValueError, IndexError, KeyError, SongFileError):
-                made[value] = made.get(None)
+        for value in (None, *ways[field]):
+            made[value] = self._parts_with_way(field=field, value=value, kind=kind, fallback=made.get(None))
         return [value for value in made if value is not None and made[value] != made[None]]
+
+    def _parts_with_way(self, *, field, value, kind, fallback):
+        """Return the parts the song has with one way of its melodies chosen, or fallback where that song cannot be made."""
+        data = self._choices.to_data()
+        trial = type(self._choices).from_data(data)
+        trial_ways = trial.melody_ways()
+        trial_ways.keep_chosen(field=field, value=value, kind=kind)
+        try:
+            song = trial.song_picks(self._choices.get_subgenre())
+            style = _choices_module().style_of(self._choices.get_genre())
+            made = arranged(style=style, song=song)
+        except (ValueError, IndexError, KeyError, SongFileError):
+            return fallback
+        return made[arranger.PARTS]
 
     def get_way(self, field):
         """Return what the song says of its melodies in one field: the genre's own until another is chosen."""
@@ -70,20 +94,24 @@ class MelodyWays:
         """Choose how busy the song's melodies are, how wide they range or how much they repeat; the genre's own is asked for by its name."""
         if field not in wizard_limits.MELODY_WAYS or value not in wizard_limits.MELODY_WAYS[field]:
             raise ValueError(errors.ERR_WIZARD_MELODY_WAY.format(field=field, value=value))
-        self.keep_chosen(field=field, value=None if value == wizard_limits.USUAL_MELODY_WAYS[field] else value)
+        chosen = value
+        if value == wizard_limits.USUAL_MELODY_WAYS[field]:
+            chosen = None
+        self.keep_chosen(field=field, value=chosen)
 
     def keep_chosen(self, *, field, value, kind=None):
         """Keep one thing chosen of the melodies, for the song or for a kind of section, or forget it with None."""
         chosen = dict(self._choices.get_extra(wizard_limits.MELODY_CHOSEN) or {})
         self._choices.set_extra(name=wizard_limits.MELODY_CHOSEN, value=chosen)
-        held = chosen if kind is None else chosen.setdefault(melody_writer.BY_KIND, {}).setdefault(kind, {})
+        held = chosen
+        if kind is not None:
+            by_kind = chosen.setdefault(melody_writer.BY_KIND, {})
+            held = by_kind.setdefault(kind, {})
         held.pop(field, None)
         if value is not None:
             held[field] = value
         if kind is not None:
-            chosen[melody_writer.BY_KIND] = {name: own for name, own in chosen[melody_writer.BY_KIND].items() if own}
-            if not chosen[melody_writer.BY_KIND]:
-                del chosen[melody_writer.BY_KIND]
+            _drop_empty_kinds(chosen)
         if not chosen:
             self._choices.set_extra(name=wizard_limits.MELODY_CHOSEN, value=None)
         self._choices.clear_answers()
@@ -91,13 +119,16 @@ class MelodyWays:
     def characters_offered(self):
         """Return the characters a melody of the subgenre can be given: each whose engine can write the subgenre's melodies, an
         engine with no gauges only where the genre does not write by it already."""
-        if not self._choices.is_ready() or not self._choices.get_tunes().tune_kinds():
+        tunes = self._choices.get_tunes()
+        if not self._choices.is_ready() or not tunes.tune_kinds():
             return []
-        given = dict(genre=self._choices.get_genre(), subgenre=self._choices.get_subgenre(), variant=self._choices.get_variant())
+        choices_module = _choices_module()
+        kind_of_song = dict(genre=self._choices.get_genre(), subgenre=self._choices.get_subgenre(), variant=self._choices.get_variant())
         offered = []
         for character in wizard_limits.CHARACTERS:
             engine = wizard_limits.CHARACTER_ENGINES[character]
-            if _choices_module().melody_works(style=engine, **given) and (engine in wizard_limits.GAUGED_STYLES or not _choices_module().melody_is_usual(style=engine, **given)):
+            works = choices_module.melody_works(**kind_of_song, style=engine)
+            if works and (engine in wizard_limits.GAUGED_STYLES or not choices_module.melody_is_usual(**kind_of_song, style=engine)):
                 offered.append(character)
         return offered
 

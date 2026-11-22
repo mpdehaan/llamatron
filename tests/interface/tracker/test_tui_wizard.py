@@ -672,7 +672,7 @@ class TestWizardGuitarists(WizardTest):
             choices = self.choices()
             choices.set_genre(genre)
             choices.set_subgenre(choices.subgenres()[0])
-            if choices.get_band().offers_one_guitarist() == offers:
+            if choices.guitarists().offers_one() == offers:
                 break
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
         await self.press(Key.DOWN, Key.UP)
@@ -687,7 +687,7 @@ class TestWizardGuitarists(WizardTest):
         # The count is shown as a number, and [ (dec) steps from 2 to 1.
         self.assertEqual(str(self.wizard().field().value()), str(wizard_limits.TWO_GUITARISTS))
         await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET), keybindings.WizardPage.TO_TREE)
-        self.assertEqual(choices.get_band().get_guitarists(), wizard_limits.ONE_GUITARIST_COUNT)
+        self.assertEqual(choices.guitarists().get_count(), wizard_limits.ONE_GUITARIST_COUNT)
         self.assertEqual(len(self.wizard().rows()), rows - 1)
         self.assertEqual([field.label for field in self.wizard().fields()][2:], [choices.player(role).title() for role in choices.get_band().roles_shown() if choices.player(role).can_play()])
         await self.create()

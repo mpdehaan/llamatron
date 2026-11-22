@@ -32,6 +32,7 @@ from llamatron.wizards.create_song.band_choices import BandChoices
 from llamatron.wizards.create_song.choices_part import cached_until_choices_change, chosen_only, SavedChoices
 from llamatron.wizards.create_song.composer import composed
 from llamatron.wizards.create_song.form_choices import FormChoices
+from llamatron.wizards.create_song.guitarist_choices import GuitaristChoices
 from llamatron.wizards.create_song.hook_choices import HookChoices
 from llamatron.wizards.create_song.interplay_choices import InterplayChoices
 from llamatron.wizards.create_song.kit_choices import KitChoices
@@ -241,7 +242,7 @@ def _counted_only(counts):
 class WizardChoices:
     """The choices of one run of the song wizard."""
 
-    __slots__ = ('_extras', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form_part', '_seed', '_melody_part', '_melody_ways', '_hook', '_sounds_part', '_solos', '_tunes', '_band', '_interplay', '_kit', '_riffs_part', '_answers', '_answers_of', '_offers', '_offers_of', '_offers_held', '_offers_mixed', '_cached', '_variant')
+    __slots__ = ('_extras', '_genre', '_subgenre', '_root', '_scale_type', '_tempo', '_form_part', '_seed', '_melody_part', '_melody_ways', '_hook', '_sounds_part', '_solos', '_tunes', '_band', '_guitarists', '_interplay', '_kit', '_riffs_part', '_answers', '_answers_of', '_offers', '_offers_of', '_offers_held', '_offers_mixed', '_cached', '_variant')
 
     def __init__(self):
         # Answers found by making the song, each kept until a choice changes.
@@ -270,6 +271,7 @@ class WizardChoices:
         # The parts of the choices, each holding what was chosen of one thing of the song.
         self._band = BandChoices(choices=self)
         self._interplay = InterplayChoices(choices=self)
+        self._guitarists = GuitaristChoices(choices=self)
         self._kit = KitChoices(choices=self)
         self._hook = HookChoices(choices=self)
         self._riffs_part = RiffChoices(choices=self)
@@ -318,6 +320,7 @@ class WizardChoices:
         # And a song kept has the riff it kept, or none: the riff its kind of music gives a new song is no part of it.
         self._extras.pop(riffs_values.RIFF, None)
         self._band.restore(saved)
+        self._guitarists.restore(saved)
         self._interplay.restore(saved)
         self._kit.restore(saved)
         self._sounds_part.restore(saved)
@@ -343,6 +346,7 @@ class WizardChoices:
             wizard_limits.EXTRAS_SAVED: self.get_song_extras() or None,
         }
         held.update(self._band.to_data())
+        held.update(self._guitarists.to_data())
         held.update(self._interplay.to_data())
         held.update(self._form_part.to_data())
         held.update(self._melody_part.to_data())
@@ -352,6 +356,10 @@ class WizardChoices:
         return chosen_only(held)
 
     # The genre and the subgenre, which everything else follows.
+
+    def guitarists(self):
+        """Return the choice of one guitarist or two."""
+        return self._guitarists
 
     def interplay(self):
         """Return the choices of the player beside the tune: who answers it, what the player does in each section and how busy."""
@@ -502,7 +510,7 @@ class WizardChoices:
         """Return every setting another genre forgets, each under a name of its own, so that two sets of choices can be compared
         setting by setting."""
         counted = {}
-        for part in (self._melody_part, self._form_part, self._band, self._interplay, self._kit, self._hook, self._sounds_part):
+        for part in (self._melody_part, self._form_part, self._band, self._guitarists, self._interplay, self._kit, self._hook, self._sounds_part):
             counted.update(part.counted())
         return counted
 
@@ -679,6 +687,7 @@ class WizardChoices:
 
     def _forget_band(self):
         self._band.reset()
+        self._guitarists.reset()
         self._interplay.reset()
         self._sounds_part.reset()
         self._kit.reset()
@@ -777,7 +786,7 @@ class WizardChoices:
         sections = self._form_part.song_sections()
         for place, name in enumerate(self._form_part.form_sections()):
             section = self.section(place)
-            plays = self._band.plays_of_one_guitarist(section.plays())
+            plays = self._guitarists.plays_in_section(section.plays())
             if plays is not None:
                 sections[name][arranger.PLAYS] = plays
         return sections
@@ -789,7 +798,7 @@ class WizardChoices:
         sections = {}
         for kind in set(self._form_part.form_sections()):
             written = kinds[kind].get(arranger.PLAYS, [])
-            plays = self._band.plays_of_one_guitarist(list(written))
+            plays = self._guitarists.plays_in_section(list(written))
             if plays is not None:
                 sections[kind] = {arranger.KIND: kind, arranger.PLAYS: plays}
         return sections

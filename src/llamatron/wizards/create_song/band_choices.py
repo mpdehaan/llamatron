@@ -9,24 +9,23 @@ from llamatron.wizards.create_song import arranger, band, characters, wizard_lim
 from llamatron.wizards.create_song.arranger import values_of
 from llamatron.wizards.create_song.characters import preset
 from llamatron.wizards.create_song.choices_part import add_counted, ChoicesPart, chosen_only
+from llamatron.wizards.create_song.own_values import is_integer_between
 
 
 class BandChoices(ChoicesPart):
     """What was chosen of the band: each trait's way of playing where one was chosen, how busy each instrument's player is, the gauges and rows a player was given, the players left out, and how many guitarists."""
 
-    __slots__ = ('_ways', '_levels', '_own_gauges', '_rows', '_without', '_guitarists')
+    __slots__ = ('_ways', '_levels', '_own_gauges', '_rows', '_without')
 
     def __init__(self, *, choices):
         ChoicesPart.__init__(self, choices=choices)
         self.reset()
 
     def reset(self):
-        """Go back to a band with nothing chosen: no way of playing, no level, nobody left out, two guitarists."""
+        """Go back to a band with nothing chosen: no way of playing, no level, nobody left out."""
         # Each trait's way of playing where one was chosen, how busy each instrument's player is, and the players left out.
         self._ways = {}
         self._without = []
-        # How many guitarists the band has: two, one for the chords and one for the solo, or one who plays both.
-        self._guitarists = wizard_limits.TWO_GUITARISTS
         self.forget_players()
 
     def forget_players(self):
@@ -45,16 +44,12 @@ class BandChoices(ChoicesPart):
 
     def to_data(self):
         """Return what a song keeps of the band, as plain data a song file saves: only what was chosen."""
-        guitarists = self._guitarists
-        if guitarists == wizard_limits.TWO_GUITARISTS:
-            guitarists = None
         held = {
             arranger.PICKS: dict(self._ways) or None,
             arranger.PLAYERS: dict(self._levels) or None,
             arranger.WITHOUT: list(self._without) or None,
             wizard_limits.PLAYER_GAUGES_SAVED: self._saved_gauges() or None,
             wizard_limits.PLAYER_ROWS_SAVED: self._saved_rows() or None,
-            wizard_limits.GUITARISTS_SAVED: guitarists,
         }
         return chosen_only(held)
 
@@ -85,10 +80,8 @@ class BandChoices(ChoicesPart):
             saved.apply(self.take_level, player=player, level=level)
         self._restore_gauges(saved)
         for role in saved.listing(arranger.WITHOUT):
-            saved.apply(self.restore_without, role=role)
-        guitarists = saved.value(wizard_limits.GUITARISTS_SAVED)
-        if guitarists:
-            saved.apply(self.restore_guitarists, count=guitarists)
+            player = self._choices.player(role)
+            saved.apply(player.set_in, False)
 
     def _restore_gauges(self, saved):
         """Restore the gauges each player had moved."""
@@ -103,8 +96,9 @@ class BandChoices(ChoicesPart):
         rows_by_role = saved.mapping(wizard_limits.PLAYER_ROWS_SAVED)
         for role, rows in rows_by_role.items():
             rows_kept = saved.as_mapping(rows)
+            player = self._choices.player(role)
             for name, values in rows_kept.items():
-                saved.apply(self.restore_player_row, role=role, name=name, values=values)
+                saved.apply(player.set_row, name=name, values=values)
 
     def add_picks(self, picks):
         """Add the band's picks to the song's: each trait's way, each instrument's player, who is left out and the rows the
@@ -121,17 +115,12 @@ class BandChoices(ChoicesPart):
         """Return every setting of the band, each under a name of its own, so that two bands can be compared setting by setting."""
         counted = {
             (wizard_limits.GENRE_SETTING, arranger.WITHOUT): sorted(self._without),
-            (wizard_limits.GENRE_SETTING, wizard_limits.GUITARISTS_SAVED): self._guitarists,
         }
         add_counted(counted, kind=arranger.PICKS, held=self._ways)
         add_counted(counted, kind=arranger.PLAYERS, held=self._levels)
         add_counted(counted, kind=wizard_limits.PLAYER_GAUGES_SAVED, held=self._own_gauges)
         add_counted(counted, kind=wizard_limits.PLAYER_ROWS_SAVED, held=self._rows)
         return counted
-
-    def restore_without(self, role):
-        """Leave out a player a kept song left out."""
-        self._choices.player(role).set_in(False)
 
     def is_left_out(self, role):
         """Return whether a player was left out of the band."""
@@ -191,57 +180,22 @@ class BandChoices(ChoicesPart):
         return [entry[arranger.ROLE] for entry in self._choices.style()[arranger.ROLES]] if self._choices.is_ready() else []
 
 
-    # One guitarist or two: a band whose one guitarist plays the chords and takes the solo, the chords
-    # stopping where the solo plays, shown as one player.
-
-    def one_guitarist(self):
-        return self._choices.style().get(wizard_limits.ONE_GUITARIST) if self._choices.is_ready() else None
-
-    def offers_one_guitarist(self):
-        """Return whether the band can have one guitarist: the genre says which two players the one would be, and the solo can be a guitar's."""
-        one = self.one_guitarist()
-        return bool(one) and self._choices.player(one[wizard_limits.CHORDS_PLAYER]).can_play() and one[wizard_limits.SOLO_WAY] in self._choices.player(one[wizard_limits.SOLO_PLAYER]).ways(trait=self.role_named(one[wizard_limits.SOLO_PLAYER])[arranger.TRAIT])
-
-    def get_guitarists(self):
-        return self._guitarists
-
-    def has_one_guitarist(self):
-        return self._guitarists == wizard_limits.ONE_GUITARIST_COUNT
-
-    def set_guitarists(self, count):
-        """Choose two guitarists or one. One guitarist takes the solo on the guitar, whatever took it before."""
-        if isinstance(count, bool) or count not in wizard_limits.GUITARIST_COUNTS or (count == wizard_limits.ONE_GUITARIST_COUNT and not self.offers_one_guitarist()):
-            raise ValueError(errors.ERR_WIZARD_GUITARISTS.format(value=count))
-        self._guitarists = count
-        if count == wizard_limits.ONE_GUITARIST_COUNT:
-            one = self.one_guitarist()
-            if one[wizard_limits.SOLO_PLAYER] in self._without:
-                self._without.remove(one[wizard_limits.SOLO_PLAYER])
-            self._ways[self.role_named(one[wizard_limits.SOLO_PLAYER])[arranger.TRAIT]] = one[wizard_limits.SOLO_WAY]
-
-    def restore_guitarists(self, *, count):
-        self.set_guitarists(count)
 
     def roles_shown(self):
         """Return the players the screen shows: every player, but for the player of the solo where one guitarist plays both."""
-        hidden = self.one_guitarist()[wizard_limits.SOLO_PLAYER] if self.has_one_guitarist() else None
+        guitarists = self._choices.guitarists()
+        hidden = guitarists.hidden_player()
         return [role for role in self.roles() if role != hidden]
 
     def _without_of_song(self):
         """Return the players the song leaves out: those left out, and with them the solo of one guitarist who is left out."""
         without = list(self._without)
-        if self.has_one_guitarist():
-            one = self.one_guitarist()
+        guitarists = self._choices.guitarists()
+        if guitarists.has_one():
+            one = guitarists.one_plays()
             if one[wizard_limits.CHORDS_PLAYER] in without and one[wizard_limits.SOLO_PLAYER] not in without:
                 without.append(one[wizard_limits.SOLO_PLAYER])
         return without
-
-    def plays_of_one_guitarist(self, plays):
-        """Return who plays in a section where one guitarist plays both parts: the chords stop where the solo plays."""
-        one = self.one_guitarist()
-        if self.has_one_guitarist() and one[wizard_limits.SOLO_PLAYER] in plays and one[wizard_limits.CHORDS_PLAYER] in plays:
-            return [role for role in plays if role != one[wizard_limits.CHORDS_PLAYER]]
-        return None
 
     def roles_in(self):
         return [role for role in self.roles() if self._choices.player(role).is_in()]
@@ -262,13 +216,27 @@ class BandChoices(ChoicesPart):
         """Return the first of some traits the genre has that no player owns, as chords under either name a genre gives them, or None."""
         if not self._choices.is_ready():
             return None
-        of_players = {trait for role in self.roles() for trait in self._choices.player(role).traits()}
-        return next((trait for trait in traits if trait not in of_players and isinstance(self._choices.style()[arranger.TRAITS].get(trait), list)), None)
+        owned = self._traits_of_players()
+        style = self._choices.style()
+        written = style[arranger.TRAITS]
+        for trait in traits:
+            if trait not in owned and isinstance(written.get(trait), list):
+                return trait
+        return None
+
+    def _traits_of_players(self):
+        """Return every trait a player of the band owns."""
+        owned = set()
+        for role in self.roles():
+            player = self._choices.player(role)
+            owned.update(player.traits())
+        return owned
 
     def song_ways(self, trait):
         """Return the ways a trait of the whole song may go beside the other picks, the commonest first."""
-        entries = sorted(values_of(style=self._choices.style(), trait=trait).values(), key=self._choices.share_in_subgenre, reverse=True)
-        return [entry[arranger.VALUE] for entry in entries if self.works(trait=trait, value=entry[arranger.VALUE])]
+        ways = values_of(style=self._choices.style(), trait=trait)
+        by_share = sorted(ways.values(), key=self._choices.share_in_subgenre, reverse=True)
+        return [entry[arranger.VALUE] for entry in by_share if self.works(trait=trait, value=entry[arranger.VALUE])]
 
     def get_way(self, trait):
         return self._choices.picks()[trait]
@@ -280,7 +248,11 @@ class BandChoices(ChoicesPart):
 
 
     def take_level(self, *, player, level):
-        if isinstance(level, bool) or not isinstance(level, int) or level not in self._choices.style().get(arranger.PLAYERS, {}).get(player, {}):
+        """Give an instrument's player a level of busyness the genre writes; every gauge of the player goes back to the preset's place."""
+        style = self._choices.style()
+        players = style.get(arranger.PLAYERS, {})
+        levels = players.get(player, {})
+        if isinstance(level, bool) or not isinstance(level, int) or level not in levels:
             raise ValueError(errors.ERR_WIZARD_BUSY.format(low=wizard_limits.LEAST_BUSY, high=wizard_limits.MOST_BUSY, value=level))
         self._levels[player] = level
         # A preset chosen puts every gauge of the player back where the preset has it.
@@ -290,7 +262,15 @@ class BandChoices(ChoicesPart):
 
     def tune_player(self):
         """Return the player who has the tune: the first player of lines who answers nobody and is in the band, or None."""
-        return next((role for role in self.roles_in() if self._choices.get_sounds().has_sound(role) and not self.role_named(role).get(arranger.ANSWERS) and self._choices.player(role).plays_lines()), None)
+        sounds = self._choices.get_sounds()
+        for role in self.roles_in():
+            entry = self.role_named(role)
+            if not sounds.has_sound(role) or entry.get(arranger.ANSWERS):
+                continue
+            player = self._choices.player(role)
+            if player.plays_lines():
+                return role
+        return None
 
 
     # A player's gauges: where each stands, the preset's place until moved.
@@ -313,7 +293,9 @@ class BandChoices(ChoicesPart):
 
 
     def restore_player_gauge(self, *, player, gauge, place):
-        if isinstance(place, bool) or not isinstance(place, int) or not wizard_names.CHARACTERS_LOWEST <= place <= wizard_names.CHARACTERS_HIGHEST or gauge not in characters.GAUGES or player not in self._levels:
+        """Put back a gauge a song saved of an instrument's player; a gauge at the preset's place is the preset's again."""
+        is_place = is_integer_between(place, low=wizard_names.CHARACTERS_LOWEST, high=wizard_names.CHARACTERS_HIGHEST)
+        if not is_place or gauge not in characters.GAUGES or player not in self._levels:
             raise ValueError(errors.ERR_WIZARD_PLAYER_GAUGE.format(low=wizard_names.CHARACTERS_LOWEST, high=wizard_names.CHARACTERS_HIGHEST, value=place))
         own = self._own_gauges.setdefault(player, {})
         own[gauge] = place
@@ -322,13 +304,6 @@ class BandChoices(ChoicesPart):
             del own[gauge]
 
 
-    def row_limits(self, name):
-        """Return the lowest and the highest number a cell of a row can hold."""
-        return wizard_limits.ROW_LIMITS[name]
-
-
-    def restore_player_row(self, *, role, name, values):
-        self._choices.player(role).set_row(name=name, values=values)
 
     def _habits_of(self, *, role, rows):
         """Return a player's own rows that the player is dealt, each a copy."""

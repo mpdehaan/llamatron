@@ -31,9 +31,9 @@ class BandBranch(Branch):
         # Sounds is the band's, which every player follows unless the player has a Sound of its own.
         sounds = ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_SOUNDS_LABEL, choices=list(wizard_limits.BAND_SOUNDS), current=choices.get_sounds().get_band_sounds(), set=self.get_page().choosing(choices.get_sounds().set_band_sounds))
         fields = [sounds]
-        if choices.get_band().offers_one_guitarist() or choices.get_band().has_one_guitarist():
+        if choices.guitarists().offers_one() or choices.guitarists().has_one():
             # One guitarist plays the chords and takes the solo, and is then one player on the screen.
-            fields.append(ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_GUITARISTS_LABEL, choices=list(wizard_limits.GUITARIST_COUNTS), names=[str(count) for count in wizard_limits.GUITARIST_COUNTS], current=choices.get_band().get_guitarists(), set=self.get_page().choosing(choices.get_band().set_guitarists)))
+            fields.append(ChoiceField(page=self.get_page(), label=labels.MSG_WIZARD_GUITARISTS_LABEL, choices=list(wizard_limits.GUITARIST_COUNTS), names=[str(count) for count in wizard_limits.GUITARIST_COUNTS], current=choices.guitarists().get_count(), set=self.get_page().choosing(choices.guitarists().set_count)))
         if choices.interplay().answerers():
             # Who has the tune, which is only shown, and who answers that player: one of the players who can, or nobody.
             answerers = choices.interplay().answerers()

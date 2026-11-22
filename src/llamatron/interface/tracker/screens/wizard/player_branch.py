@@ -262,7 +262,7 @@ class PlayerBranch(Branch):
         """Open a row of the player's in the Row dialog, and keep the row the dialog answers with."""
         choices = self.get_choices()
         page = self.get_page()
-        lowest, highest = choices.get_band().row_limits(name)
+        lowest, highest = wizard_limits.ROW_LIMITS[name]
         dialog = RowDialog(title=messages.MSG_WIZARD_ROW_TITLE.format(row=labels.MSG_WIZARD_ROW_LABELS[name], player=self.name()), values=choices.player(self._role).get_row(name=name),
                            lowest=lowest, highest=highest, fewest=wizard_limits.FEWEST_ROW_CELLS, most=wizard_limits.MOST_ROW_CELLS, usual=choices.player(self._role).genre_row(name=name))
         page.ask(dialog=dialog, then=page.choosing(lambda values: choices.player(self._role).set_row(name=name, values=values)))

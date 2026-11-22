@@ -539,7 +539,7 @@ class TestWizardShapesAndIntroHook(unittest.TestCase):
         choices = chosen()
         places = choices.get_solos().solo_places()
         self.assertTrue(places)
-        choices.get_band().set_guitarists(wizard_limits.ONE_GUITARIST_COUNT)
+        choices.guitarists().set_count(wizard_limits.ONE_GUITARIST_COUNT)
         self.assertEqual(choices.get_solos().solo_places(), places)
         self.assertIsNotNone(choices.get_solos().solo_pattern(places[0]))
 

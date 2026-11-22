@@ -82,12 +82,18 @@ class PlayerChoices:
     def title(self):
         """Return what a player is called on the screen: the clearer name the genre gives the player, which may follow how the
         player plays, as a lead that is a singer or a lead guitar; or the player's name where the genre gives no other."""
-        entry = self._band().role_named(self._role)
-        if self._band().has_one_guitarist() and self._role == self._band().one_guitarist()[wizard_limits.CHORDS_PLAYER]:
-            return self._band().one_guitarist()[arranger.ROLE_TITLE]
+        entry = self._role_entry()
+        guitarists = self._choices.guitarists()
+        if guitarists.has_one():
+            one = guitarists.one_plays()
+            if self._role == one[wizard_limits.CHORDS_PLAYER]:
+                return one[arranger.ROLE_TITLE]
         traits = self.traits()
         by_way = entry.get(arranger.ROLE_TITLES, {})
-        way = self._band().get_way(traits[0]) if len(traits) == 1 else None
+        way = None
+        if len(traits) == 1:
+            band = self._band()
+            way = band.get_way(traits[0])
         return by_way.get(way, entry.get(arranger.ROLE_TITLE, self._role))
 
     def set_in(self, on):

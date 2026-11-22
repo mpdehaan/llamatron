@@ -727,24 +727,24 @@ class TestWizardGuitarists(unittest.TestCase):
 
     def test_a_band_has_two_guitarists_until_one_is_chosen_and_a_genre_with_no_guitar_solo_offers_only_two(self):
         choices = self.rock()
-        self.assertEqual(choices.get_band().get_guitarists(), wizard_limits.TWO_GUITARISTS)
-        self.assertTrue(choices.get_band().offers_one_guitarist())
-        without = [place for place in range(len(genre_names())) if not chosen(genre=place).get_band().offers_one_guitarist()]
+        self.assertEqual(choices.guitarists().get_count(), wizard_limits.TWO_GUITARISTS)
+        self.assertTrue(choices.guitarists().offers_one())
+        without = [place for place in range(len(genre_names())) if not chosen(genre=place).guitarists().offers_one()]
         self.assertTrue(without)
         with self.assertRaises(ValueError):
-            chosen(genre=without[0]).get_band().set_guitarists(wizard_limits.ONE_GUITARIST_COUNT)
+            chosen(genre=without[0]).guitarists().set_count(wizard_limits.ONE_GUITARIST_COUNT)
         with self.assertRaises(ValueError):
-            choices.get_band().set_guitarists(NOT_A_CHOICE)
+            choices.guitarists().set_count(NOT_A_CHOICE)
 
     def test_one_guitarist_is_one_player_on_the_screen_who_takes_the_solo_on_the_guitar(self):
         choices = self.rock()
         one = self.one(choices)
-        choices.get_band().set_guitarists(wizard_limits.ONE_GUITARIST_COUNT)
+        choices.guitarists().set_count(wizard_limits.ONE_GUITARIST_COUNT)
         self.assertNotIn(one[wizard_limits.SOLO_PLAYER], choices.get_band().roles_shown())
         self.assertEqual(choices.player(one[wizard_limits.CHORDS_PLAYER]).title(), one[arranger.ROLE_TITLE])
         self.assertEqual(choices.get_band().get_way(one[wizard_limits.SOLO_PLAYER]), one[wizard_limits.SOLO_WAY])
         self.assertTrue(choices.player(one[wizard_limits.SOLO_PLAYER]).is_in())
-        choices.get_band().set_guitarists(wizard_limits.TWO_GUITARISTS)
+        choices.guitarists().set_count(wizard_limits.TWO_GUITARISTS)
         self.assertIn(one[wizard_limits.SOLO_PLAYER], choices.get_band().roles_shown())
 
     def test_the_chords_stop_where_the_solo_plays_in_a_suggested_form_and_in_the_songs_own(self):
@@ -755,7 +755,7 @@ class TestWizardGuitarists(unittest.TestCase):
                 choices.section(0).copy()
             both = [name for name, tracks in self.players_by_scene(choices).items() if one[wizard_limits.SOLO_PLAYER] in tracks and one[wizard_limits.CHORDS_PLAYER] in tracks]
             self.assertTrue(both)
-            choices.get_band().set_guitarists(wizard_limits.ONE_GUITARIST_COUNT)
+            choices.guitarists().set_count(wizard_limits.ONE_GUITARIST_COUNT)
             scenes = self.players_by_scene(choices)
             self.assertTrue(any(one[wizard_limits.SOLO_PLAYER] in tracks for tracks in scenes.values()))
             self.assertTrue(any(one[wizard_limits.CHORDS_PLAYER] in tracks for tracks in scenes.values()))
@@ -765,7 +765,7 @@ class TestWizardGuitarists(unittest.TestCase):
     def test_one_guitarist_left_out_takes_the_solo_out_too(self):
         choices = self.rock()
         one = self.one(choices)
-        choices.get_band().set_guitarists(wizard_limits.ONE_GUITARIST_COUNT)
+        choices.guitarists().set_count(wizard_limits.ONE_GUITARIST_COUNT)
         choices.player(one[wizard_limits.CHORDS_PLAYER]).set_in(on=False)
         tracks = choices.made_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME).get_track_names()
         self.assertNotIn(one[wizard_limits.SOLO_PLAYER], tracks)
@@ -774,12 +774,12 @@ class TestWizardGuitarists(unittest.TestCase):
     def test_one_guitarist_is_kept_with_the_choices_and_another_subgenre_has_two_again(self):
         choices = self.rock()
         self.assertNotIn(wizard_limits.GUITARISTS_SAVED, choices.to_data())
-        choices.get_band().set_guitarists(wizard_limits.ONE_GUITARIST_COUNT)
+        choices.guitarists().set_count(wizard_limits.ONE_GUITARIST_COUNT)
         again = WizardChoices.from_data(choices.to_data())
-        self.assertTrue(again.get_band().has_one_guitarist())
+        self.assertTrue(again.guitarists().has_one())
         self.assertEqual(again.to_data(), choices.to_data())
         again.set_subgenre(again.subgenres()[1])
-        self.assertFalse(again.get_band().has_one_guitarist())
+        self.assertFalse(again.guitarists().has_one())
 
 
 FIRST_DEGREE = 1
@@ -1030,7 +1030,7 @@ class TestWizardPlayerRows(unittest.TestCase):
 
     def moved(self, *, choices, name, row):
         """A row with every cell at the end of its range the cell is further from."""
-        lowest, highest = choices.get_band().row_limits(name)
+        lowest, highest = wizard_limits.ROW_LIMITS[name]
         return [lowest if value - lowest > highest - value else highest for value in row]
 
     def test_rows_show_only_under_the_serial_style_and_only_for_a_player_of_lines(self):
@@ -1081,7 +1081,7 @@ class TestWizardPlayerRows(unittest.TestCase):
     def test_a_row_out_of_range_too_long_or_of_another_style_is_refused(self):
         choices = self.serial()
         role = self.a_player(choices)
-        lowest, highest = choices.get_band().row_limits(melody.LENGTHS)
+        lowest, highest = wizard_limits.ROW_LIMITS[melody.LENGTHS]
         for values in ([], [lowest] * (wizard_limits.MOST_ROW_CELLS + 1), [lowest - 1], [highest + 1], [True], [NOT_A_NUMBER], NOT_A_NUMBER):
             with self.assertRaises(ValueError):
                 choices.player(role).set_row(name=melody.LENGTHS, values=values)
@@ -1096,7 +1096,7 @@ class TestWizardPlayerRows(unittest.TestCase):
     def test_a_row_kept_says_nothing_under_another_style_and_a_new_genre_forgets_the_rows(self):
         choices = self.serial()
         role = self.a_player(choices)
-        choices.player(role).set_row(name=melody.LENGTHS, values=[choices.get_band().row_limits(melody.LENGTHS)[1]])
+        choices.player(role).set_row(name=melody.LENGTHS, values=[wizard_limits.ROW_LIMITS[melody.LENGTHS][1]])
         choices.melody().set_style(None)
         plain = self.serial()
         plain.melody().set_style(None)

@@ -491,8 +491,8 @@ def every_choice(choices):
         for answer in offered:
             if answer != usual:
                 yield FORM_ANSWER, (name, answer), lambda made, name=name, answer=answer: made.get_song_form().set_form_from_answers({name: answer}), [lambda made: made.get_song_form().set_form_from_answers({})]
-    if choices.get_band().offers_one_guitarist():
-        yield GUITARISTS, wizard_limits.ONE_GUITARIST_COUNT, lambda made: made.get_band().set_guitarists(wizard_limits.ONE_GUITARIST_COUNT), [nothing_first]
+    if choices.guitarists().offers_one():
+        yield GUITARISTS, wizard_limits.ONE_GUITARIST_COUNT, lambda made: made.guitarists().set_count(wizard_limits.ONE_GUITARIST_COUNT), [nothing_first]
     yield SEED, ANOTHER_SEED, lambda made: made.set_seed(ANOTHER_SEED), [nothing_first]
     yield TEMPO, A_LITTLE_FASTER, lambda made: made.set_tempo(made.get_tempo() + A_LITTLE_FASTER), [nothing_first]
     for variant in choices.variants():
@@ -576,7 +576,7 @@ def both(*, first, then):
 
 def far_row(*, choices, role, name):
     """A player's row with every cell at the end of its range the cell is further from."""
-    lowest, highest = choices.get_band().row_limits(name)
+    lowest, highest = wizard_limits.ROW_LIMITS[name]
     return [lowest if value - lowest > highest - value else highest for value in choices.player(role).get_row(name=name)]
 
 

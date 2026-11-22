@@ -132,20 +132,35 @@ class KitChoices(ChoicesPart):
     # How often the drummer plays a fill, and the snare's quiet notes.
 
     def _drummer(self):
-        """Return what the genre says of its drummer at the level the drums are busy."""
-        choices = self._choices
-        drums = next((role for role in choices.get_band().roles() if not choices.get_sounds().has_sound(role)), None)
-        return player_of(style=choices.style(), instrument=arranger.DRUMS, character=choices.get_band().character(arranger.DRUMS)) if drums else {}
+        """Return what the genre says of its drummer at the level the drums are busy, or nothing for a band with no drums."""
+        if not self._has_drums():
+            return {}
+        band = self._choices.get_band()
+        return player_of(style=self._choices.style(), instrument=arranger.DRUMS, character=band.character(arranger.DRUMS))
+
+    def _has_drums(self):
+        """Return whether the band has a drummer: a player whose sound is the kit's, not chosen."""
+        band = self._choices.get_band()
+        sounds = self._choices.get_sounds()
+        for role in band.roles():
+            if not sounds.has_sound(role):
+                return True
+        return False
 
     def get_fills(self):
         """Return how often a fill comes, from FEWEST_FILLS, never, to MOST_FILLS: the position chosen, or the one nearest to
         what the drummer does at the level the drums are busy."""
         if self._fills is not None:
             return self._fills
-        every = self._drummer().get(characters.FILL_EVERY, self._choices.style().get(arranger.PHRASE_BARS, arranger.DEFAULT_PHRASE_BARS))
+        style = self._choices.style()
+        drummer = self._drummer()
+        every = drummer.get(characters.FILL_EVERY, style.get(arranger.PHRASE_BARS, arranger.DEFAULT_PHRASE_BARS))
         if every == 0:
             return wizard_limits.FEWEST_FILLS
-        return next((position for position, bars in wizard_limits.FILLS_EVERY.items() if isinstance(bars, int) and 0 < every <= bars), wizard_limits.EACH_SECTION_FILLS)
+        for position, bars in wizard_limits.FILLS_EVERY.items():
+            if isinstance(bars, int) and 0 < every <= bars:
+                return position
+        return wizard_limits.EACH_SECTION_FILLS
 
     def set_fills(self, position):
         if isinstance(position, bool) or not isinstance(position, int) or not wizard_limits.FEWEST_FILLS <= position <= wizard_limits.MOST_FILLS:
@@ -157,13 +172,19 @@ class KitChoices(ChoicesPart):
         return self._choices.offered(key=wizard_limits.QUIET_NOTES_ANSWER, compute=self._has_quiet_notes)
 
     def _has_quiet_notes(self):
+        """Return whether the song has quiet notes to leave out, found by arranging the song both ways, since a drummer's
+        unevenness has made numbers of the strokes by then."""
         choices = self._choices
         if not choices.is_ready():
             return False
-        song = {name: value for name, value in choices.song_picks(choices.get_subgenre()).items() if name != arranger.QUIET_NOTES}
+        picks = choices.song_picks(choices.get_subgenre())
+        song = {name: value for name, value in picks.items() if name != arranger.QUIET_NOTES}
+        without_quiet = dict(song)
+        without_quiet[arranger.QUIET_NOTES] = False
         style = choices.style()
-        # Found by arranging the song both ways, since a drummer's unevenness has made numbers of the strokes by then.
-        return arranged(style=style, song=song)[arranger.PARTS] != arranged(style=style, song={**song, arranger.QUIET_NOTES: False})[arranger.PARTS]
+        with_parts = arranged(style=style, song=song)
+        without_parts = arranged(style=style, song=without_quiet)
+        return with_parts[arranger.PARTS] != without_parts[arranger.PARTS]
 
     def plays_quiet_notes(self):
         return self._quiet_notes
@@ -220,8 +241,7 @@ class KitChoices(ChoicesPart):
     def breaks(self):
         """Return the drum breaks the song may play: every break where the band has drums and the meter is the one a break
         is written in, and none otherwise."""
-        choices = self._choices
-        if not choices.is_ready() or choices.meter() != arranger.COMMON_TIME or not any(not choices.get_sounds().has_sound(role) for role in choices.get_band().roles()):
+        if not self._choices.is_ready() or self._choices.meter() != arranger.COMMON_TIME or not self._has_drums():
             return []
         return break_names()
 
@@ -239,7 +259,11 @@ class KitChoices(ChoicesPart):
         self._break = arranger.NO_BREAK if name is None else name
 
     def _restore_break(self, *, name):
-        self.set_break(None if name == arranger.NO_BREAK else name)
+        """Put back the break a song saved, or no break where it saved none."""
+        chosen = name
+        if name == arranger.NO_BREAK:
+            chosen = None
+        self.set_break(chosen)
 
     def get_break_cut(self):
         """Return how far the break is cut up, from LEAST_CUT, as written, to MOST_CUT."""

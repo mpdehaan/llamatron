@@ -16,6 +16,12 @@ def family_of(sound):
     return (sound - limits.MIN_GM_SOUND) // limits.GM_FAMILY_SIZE
 
 
+def _add_new(*, found, sound):
+    """Add a sound to those found, unless it is among them already."""
+    if sound not in found:
+        found.append(sound)
+
+
 class SoundChoices(ChoicesPart):
     """What was chosen of the sounds: the band's, one of BAND_SOUNDS, which every player follows, and each player's own General MIDI sound, which overrides it."""
 
@@ -63,19 +69,28 @@ class SoundChoices(ChoicesPart):
 
     def has_sound(self, role):
         """Return whether a player's sound can be chosen: a player of notes, never the drums, whose kit the grooves are written for."""
-        return not self._choices.get_band().role_named(role).get(arranger.DRUMS)
+        band = self._choices.get_band()
+        entry = band.role_named(role)
+        return not entry.get(arranger.DRUMS)
 
     def usual_sound(self, role):
         """Return the General MIDI sound a player usually plays with: what the genre has stand in for the player in the subgenre,
         as it does for a singer, whose voice General MIDI plays poorly, or the sound of the player's way."""
         style = self._choices.style()
-        stands_in = style.get(wizard_limits.STAND_INS, {}).get(role, {}).get(self._choices.get_subgenre())
-        return style[arranger.SOUNDS][stands_in] if stands_in else self._way_sound(role)
+        stand_ins = style.get(wizard_limits.STAND_INS, {})
+        of_role = stand_ins.get(role, {})
+        stands_in = of_role.get(self._choices.get_subgenre())
+        if stands_in:
+            return style[arranger.SOUNDS][stands_in]
+        return self._way_sound(role)
 
     def _way_sound(self, role):
         """Return the General MIDI sound a player's way of playing has, which the arranger gives the player unless the song says another."""
         style = self._choices.style()
-        entry = values_of(style=style, trait=self._choices.get_band().role_named(role)[arranger.TRAIT])[self._choices.get_band().get_way(self._choices.get_band().role_named(role)[arranger.TRAIT])]
+        band = self._choices.get_band()
+        trait = band.role_named(role)[arranger.TRAIT]
+        ways = values_of(style=style, trait=trait)
+        entry = ways[band.get_way(trait)]
         return style[arranger.SOUNDS][entry[arranger.SOUND]]
 
     def get_band_sounds(self):
@@ -116,15 +131,19 @@ class SoundChoices(ChoicesPart):
         self._sounds[role] = sound
 
     def genre_sounds(self, role):
-        """Return the genre's own sounds that suit a player, each a General MIDI number: the sounds of the ways the player can play."""
+        """Return the genre's own sounds that suit a player, each a General MIDI number: the sounds of the ways the player can
+        play, then of what stands in for the player."""
         style = self._choices.style()
+        band = self._choices.get_band()
+        sounds = style[arranger.SOUNDS]
+        ways = values_of(style=style, trait=band.role_named(role)[arranger.TRAIT])
         found = []
-        for entry in values_of(style=style, trait=self._choices.get_band().role_named(role)[arranger.TRAIT]).values():
-            if arranger.SOUND in entry and style[arranger.SOUNDS][entry[arranger.SOUND]] not in found:
-                found.append(style[arranger.SOUNDS][entry[arranger.SOUND]])
-        for stands_in in style.get(wizard_limits.STAND_INS, {}).get(role, {}).values():
-            if style[arranger.SOUNDS][stands_in] not in found:
-                found.append(style[arranger.SOUNDS][stands_in])
+        for entry in ways.values():
+            if arranger.SOUND in entry:
+                _add_new(found=found, sound=sounds[entry[arranger.SOUND]])
+        stand_ins = style.get(wizard_limits.STAND_INS, {})
+        for stands_in in stand_ins.get(role, {}).values():
+            _add_new(found=found, sound=sounds[stands_in])
         return found
 
     def sound_name(self, sound):
