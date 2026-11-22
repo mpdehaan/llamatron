@@ -60,11 +60,21 @@ def tempos_within(*, tempos, start, end):
 
 def _span(*, ramp, length, bar):
     """Return how long a ramp lasts in whole notes, by its bars, or the whole scene for no ramp, which is never read."""
-    return length if ramp is None else ramp.over * bar
+    if ramp is None:
+        return length
+    return ramp.over * bar
 
 
 def _between(*, ramp, base, share):
     """Return the tempo a share of the way through a ramp, a start or an end left blank being the tempo there would have been."""
-    start = float(base if ramp.start is None else ramp.start)
-    end = float(base if ramp.end is None else ramp.end)
+    # A blank start or end of a ramp is the tempo there would have been.
+    start = base
+    end = base
+    if ramp.start is not None:
+        start = ramp.start
+    if ramp.end is not None:
+        end = ramp.end
+    start = float(start)
+    end = float(end)
+
     return round(start + (end - start) * float(share), TEMPO_PLACES)
