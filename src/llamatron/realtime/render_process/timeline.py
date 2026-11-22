@@ -75,7 +75,9 @@ class Playing(NamedTuple):
 
 def sort_key(event):
     """Return what the timeline is ordered by: time, with note offs and program changes before note ons at the same instant."""
-    return (event.whole, OFFS_FIRST if event.kind in FIRST_AT_AN_INSTANT else ONS_AFTER)
+    if event.kind in FIRST_AT_AN_INSTANT:
+        return (event.whole, OFFS_FIRST)
+    return (event.whole, ONS_AFTER)
 
 
 def song_timeline(*, grid, routes):
@@ -108,12 +110,18 @@ def clip_timeline(*, clip, scale, route, tag, scene_start, scene_seconds, clock)
 
     def at(time, kind, number, value):
         # Made with _make, which costs about half what the NamedTuple's constructor does by name, every field given: a score makes about 600,000 events.
-        return Playing._make((time if starts_at_zero else scene_start + time, scene_seconds + clock.seconds_at(time), route.port, route.channel, kind, number, value, tag, NOT_A_SWITCH))
+        whole = time
+        if not starts_at_zero:
+            whole = scene_start + time
+        return Playing._make((whole, scene_seconds + clock.seconds_at(time), route.port, route.channel, kind, number, value, tag, NOT_A_SWITCH))
     if route.program is not None:
         events.append(at(Rational(0), PROGRAM_CHANGE, route.program, NO_VELOCITY))
     notes, clip_length = timed_events(clip=clip, scale=scale)
     # Keyswitches go to a plugin through a MIDI port, never to FluidSynth, which would sound each as a note, and come before the notes they change at the same instant.
-    for switch in () if not route.keyswitches else keyswitch_events(clip=clip, clip_length=clip_length):
+    switches = ()
+    if route.keyswitches:
+        switches = keyswitch_events(clip=clip, clip_length=clip_length)
+    for switch in switches:
         events.append(at(switch.start, NOTE_ON, switch.midi_number, switch.velocity)._replace(switch=True))
         events.append(at(switch.end, NOTE_OFF, switch.midi_number, NO_VELOCITY)._replace(switch=True))
     for note in notes:
