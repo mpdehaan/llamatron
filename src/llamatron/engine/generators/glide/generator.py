@@ -11,6 +11,9 @@ from llamatron.math.length import Length
 from llamatron.model.values import sound as sound_values
 from llamatron.model.values.sound import Sound
 
+# Where a glide starts that carries on from nothing.
+NO_OFFSET = 0
+
 
 class StepRowGenerator(ClipGenerator):
     """What Glide and Shorten share: a row of on-or-off steps, each as long as step, from the clip's start, changing the single notes starting on a step that's on."""
@@ -21,7 +24,9 @@ class StepRowGenerator(ClipGenerator):
         self._steps = list(steps)
         self._step = step
         # How far into its run the clip starts, which a Restart that doesn't start over with the clip sets.
-        self._offset = 0 if continuation is None else continuation.offset
+        self._offset = NO_OFFSET
+        if continuation is not None:
+            self._offset = continuation.offset
 
     def is_on(self, time):
         """Return whether the row's step a time from the clip's start falls in is on."""
@@ -64,5 +69,7 @@ def _next_pitch(following):
     for sound in following:
         if sound[sound_values.KIND] == sound_values.REST:
             return None
-        return sound[sound_values.MIDI] if sound[sound_values.KIND] == sound_values.NOTE else None
+        if sound[sound_values.KIND] != sound_values.NOTE:
+            return None
+        return sound[sound_values.MIDI]
     return None
