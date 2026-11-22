@@ -1065,6 +1065,42 @@ def in_octaves_of(*, pattern, by, group):
     return moved
 
 
+def _section_chords(section, *, entry):
+    """Return the chords a section plays: its own, else the progression's for its kind, else the progression's pattern."""
+    by_section = entry.get(BY_SECTION, {})
+    written = section.get(wizard_names.ARRANGER_CHORDS) or by_section.get(section[KIND]) or entry[PATTERN]
+    return [chord_of(chord) for chord in written]
+
+
+def _without_quiet_notes(hits):
+    """Return a snare's hits with the soft strokes and ghost notes between the main ones left out."""
+    kept = []
+    for hit in hits:
+        if hit in (wizard_names.SOFT, wizard_names.GHOST):
+            kept.append(notation.NONE)
+        else:
+            kept.append(hit)
+    return kept
+
+
+def _figure_has_chords(entry):
+    """Return whether a way of playing's figure plays a chord anywhere."""
+    for bar in entry.get(FIGURE, []):
+        for note in bar:
+            if notation.CHORD in note:
+                return True
+    return False
+
+
+def _with_chain_first(*, clip, chain):
+    """Return a clip that runs a chain first, before its own."""
+    if isinstance(clip, str):
+        clip = {PART: clip}
+    chained = dict(clip)
+    chained[CHAINS] = [chain, *clip.get(CHAINS, [])]
+    return chained
+
+
 class SongRiff:
     """One riff of a song as the arranger places it: its name, None for the song's first; the riff as chosen; its notes, a line in
     eighths; how many bars it lasts; its bars apart, or None where it has one; and the players who play it, the first its chords."""
@@ -1111,61 +1147,134 @@ class Arrangement:
     def __init__(self, *, style, song):
         self._song = song
         self._style = style_in(style=style, template=song[TEMPLATE], variant=song.get(VARIANT))
+        self._read_style()
+        self._plan_song()
+        self._read_band()
+        self._read_riffs()
+        self._parts = {}
+        self._write_drums()
+        self._seat_players()
+        self._read_form()
+        for count, name in enumerate(self._form_names, start=1):
+            self._write_section(count=count, name=name)
+
+    def _read_style(self):
+        """Read what the style and the song's picks say of the whole song: the meter, the tempo, the form, the band's roles as
+        loud as the song has them, how long a phrase is, the chords, the key and the tune's habits."""
         self._picks = picked(style=self._style, song=self._song)
         self._meter = str(self._picks.get(METER, COMMON_TIME))
         self._tempo = tempo_of(style=self._style, song=self._song, picks=self._picks)
         self._form_names = form_of(style=self._style, song=self._song, meter=self._meter, tempo=self._tempo)
-        lift = 1 if self._song[KEY][ROOT] in LOW_ROOTS else 0
-        self._roles = [loud_role(role={**role, notation.OCTAVE: role[notation.OCTAVE] + lift} if notation.OCTAVE in role else role, song=self._song) for role in self._style[ROLES]]
+        self._roles = self._loud_roles()
         self._style = loud_style(style=self._style, song=self._song, roles=self._roles)
         self._phrase_bars = self._style.get(PHRASE_BARS, DEFAULT_PHRASE_BARS)
         chord_trait = self._style.get(CHORD_TRAIT_FIELD, CHORD_TRAIT)
-        self._chord_entry = values_of(style=self._style, trait=chord_trait)[self._picks[chord_trait]]
-        self._scale_type = self._song[KEY].get(TYPE, self._chord_entry.get(SCALE_TYPE, MAJOR))
-        self._scale = SCALE_NAME.format(self._song[KEY][ROOT], self._scale_type.capitalize())
-        self._habits = self._style[MELODY] if melody.GRID in self._style[MELODY] else self._style[MELODY][self._meter]
-        # A tune in a scale type the style gives notes of its own, a minor song its minor notes and home, takes those: the major
-        # notes read in a minor scale rest on the scale's third and sound like the major key beside it.
-        self._habits = {**self._habits, **self._habits.get(BY_SCALE_TYPE, {}).get(self._scale_type, {})}
-        if self._song.get(song_plan.PLAN_OF_SONG) not in (None, False):
-            # A song that asks for a plan has a section made for each place of its form, each saying what the plan worked out.
-            def chords_of(section):
-                return [chord_of(chord) for chord in section.get(wizard_names.ARRANGER_CHORDS) or self._chord_entry.get(BY_SECTION, {}).get(section[KIND]) or self._chord_entry[PATTERN]]
-            self._song = SongPlan(style=self._style, song=self._song, form_names=self._form_names, tempo=self._tempo, scale_type=self._scale_type, chords_of=chords_of).planned()
-            self._form_names = self._song[FORM]
+        chord_ways = values_of(style=self._style, trait=chord_trait)
+        self._chord_entry = chord_ways[self._picks[chord_trait]]
+        key = self._song[KEY]
+        self._scale_type = key.get(TYPE, self._chord_entry.get(SCALE_TYPE, MAJOR))
+        self._scale = SCALE_NAME.format(key[ROOT], self._scale_type.capitalize())
+        self._habits = self._habits_in_scale()
+
+    def _loud_roles(self):
+        """Return the band's roles as loud as the song has them, each an octave up in a song whose root sits low."""
+        lift = 0
+        if self._song[KEY][ROOT] in LOW_ROOTS:
+            lift = 1
+        roles = []
+        for role in self._style[ROLES]:
+            if notation.OCTAVE in role:
+                role = dict(role)
+                role[notation.OCTAVE] = role[notation.OCTAVE] + lift
+            roles.append(loud_role(role=role, song=self._song))
+        return roles
+
+    def _habits_in_scale(self):
+        """Return the tune's habits in the song's meter, with what the style says of its scale type laid over them: a minor song
+        takes its minor notes and home, since the major notes read in a minor scale rest on the scale's third and sound like the
+        major key beside it."""
+        written = self._style[MELODY]
+        habits = written
+        if melody.GRID not in written:
+            habits = written[self._meter]
+        by_scale_type = habits.get(BY_SCALE_TYPE, {})
+        laid = dict(habits)
+        laid.update(by_scale_type.get(self._scale_type, {}))
+        return laid
+
+    def _plan_song(self):
+        """Plan a song that asks for a plan: a section made for each place of its form, each saying what the plan worked out."""
+        if self._song.get(song_plan.PLAN_OF_SONG) in (None, False):
+            return
+        chords_of = functools.partial(_section_chords, entry=self._chord_entry)
+        plan = SongPlan(style=self._style, song=self._song, form_names=self._form_names, tempo=self._tempo, scale_type=self._scale_type, chords_of=chords_of)
+        self._song = plan.planned()
+        self._form_names = self._song[FORM]
+
+    def _read_band(self):
+        """Read the song's band: each instrument's player, who is left out, the kit's pieces left out and what each plays as,
+        each player at the song's level, the drummer and the traits the drums have."""
         self._levels = self._song.get(PLAYERS, {})
         self._without = self._song.get(WITHOUT, [])
-        self._no_drums = any(role.get(DRUMS) and role[ROLE] in self._without for role in self._roles)
         self._pieces_off = self._song.get(WITHOUT_PIECES, [])
         self._played = pieces_played(self._song)
         self._playing = players_in(style=self._style, roles=self._roles, levels=self._levels, section={})
-        self._drummer = next((self._playing[role[ROLE]] for role in self._roles if role.get(DRUMS)), {})
-        self._drum_traits = [trait for role in self._roles for trait in role.get(DRUMS, [])] + [FILLS]
-        # The song's riffs, where it has any: first the song's own, or the one its kind of music is built on, then each riff added
-        # for kinds of section, by name; and how many eighths a bar of a riff lasts.
+        self._no_drums = False
+        self._drummer = {}
+        self._drum_traits = []
+        for role in self._roles:
+            if role.get(DRUMS):
+                self._no_drums = self._no_drums or role[ROLE] in self._without
+                if not self._drummer:
+                    self._drummer = self._playing[role[ROLE]]
+            self._drum_traits.extend(role.get(DRUMS, []))
+        self._drum_traits.append(FILLS)
+
+    def _read_riffs(self):
+        """Read the song's riffs, where it has any: first the song's own, or the one its kind of music is built on, then each
+        riff added for kinds of section, by name, each drawn from a seed of its own; and how many eighths a bar of a riff lasts."""
         self._riff_eighths = int(bar_length(self._meter) * EIGHTHS_IN_WHOLE)
-        self._riffs = [self.riff_made(riff=self._song.get(riffs_values.RIFF, self._style.get(riffs_values.RIFF)) or {}, name=None, seed=self._song.get(SEED, 0))]
+        seed = self._song.get(SEED, 0)
+        first = self._song.get(riffs_values.RIFF, self._style.get(riffs_values.RIFF)) or {}
+        self._riffs = [self.riff_made(riff=first, name=None, seed=seed)]
         for more in self._song.get(MORE_RIFFS, []):
-            self._riffs.append(self.riff_made(riff=more, name=more[NAME], seed=zlib.crc32(MORE_RIFF_SEED.format(seed=self._song.get(SEED, 0), name=more.get(RIFF_DRAWN_AS, more[NAME])).encode())))
-        self._parts = {}
-        self._write_drums()
-        self._seat_players()
+            seed_text = MORE_RIFF_SEED.format(seed=seed, name=more.get(RIFF_DRAWN_AS, more[NAME]))
+            more_seed = zlib.crc32(seed_text.encode())
+            self._riffs.append(self.riff_made(riff=more, name=more[NAME], seed=more_seed))
+
+    def _read_form(self):
+        """Read what the form's sections are written from: each section's plan of lines, whether the song has a hook, the tune's
+        phrasing and the player beside the tune; and start the form, its notes and what each section has met so far."""
         self._form = []
         self._notes = []
         self._met = {}
         self._same_tunes = {}
         # The scales of sections in a key or a scale of their own, by name.
         self._more_scales = {}
-        self._plans = [section_of(name=name, style=self._style, song=self._song).get(PLAN, []) for name in self._form_names]
-        # A song has a hook where the song or its style asks for one and a section of its form marks a line as one.
-        self._has_a_hook = bool(self._song.get(melody.HOOK, self._style.get(melody.HOOK, False))) and any(has_hook(plan) for plan in self._plans)
-        self._phrased = [wizard_text.MSG_TUNE_PHRASING_NAME] if self._song.get(TUNE_PHRASING) is not None else []
+        self._plans = []
+        for name in self._form_names:
+            section = section_of(name=name, style=self._style, song=self._song)
+            self._plans.append(section.get(PLAN, []))
+        self._has_a_hook = self._asks_for_hook() and self._form_marks_a_hook()
+        self._phrased = []
+        if self._song.get(TUNE_PHRASING) is not None:
+            self._phrased = [wizard_text.MSG_TUNE_PHRASING_NAME]
         self._beside = self._song.get(BESIDE, {})
-        self._under = UnderLead(busy=self._beside.get(BESIDE_BUSY, interplay.USUAL_BUSY), habits=self._habits, grid=self._habits[melody.GRID], scale_type=self._scale_type, seed=self._song.get(SEED, 0))
+        busy = self._beside.get(BESIDE_BUSY, interplay.USUAL_BUSY)
+        self._under = UnderLead(busy=busy, habits=self._habits, grid=self._habits[melody.GRID], scale_type=self._scale_type, seed=self._song.get(SEED, 0))
         self._solos_met = 0
         self._intros_met = 0
-        for count, name in enumerate(self._form_names, start=1):
-            self._write_section(count=count, name=name)
+
+    def _asks_for_hook(self):
+        """Return whether the song, or its style, asks for a hook."""
+        return bool(self._song.get(melody.HOOK, self._style.get(melody.HOOK, False)))
+
+    def _form_marks_a_hook(self):
+        """Return whether a section of the form marks a line of its plan as the hook."""
+        for plan in self._plans:
+            if has_hook(plan):
+                return True
+        return False
 
     def _drumming(self):
         """Return what every section's drums are written from."""
@@ -1175,30 +1284,57 @@ class Arrangement:
         return SongDrumming(style=self._style, roles=self._roles, meter=self._meter, phrase_bars=self._phrase_bars, seed=self._song.get(SEED, 0), kit=self._played, own_fill=own_fill)
 
     def riff_made(self, *, riff, name, seed):
-        """A riff of the song with its notes, its bars and the players of the band who play it: those of its players whose part is a figure."""
-        notes = riff_line_of(riff=riff, seed=seed, eighths=self._riff_eighths, flattened=flattened_in(self._scale_type)) if riff.get(riffs_values.RIFF_ROLES) else []
-        players = [role[ROLE] for role in self._roles if role[ROLE] in riff.get(riffs_values.RIFF_ROLES, []) and role[ROLE] not in self._without and not role.get(DRUMS)
-                   and FIGURE in values_of(style=self._style, trait=role[TRAIT]).get(self._picks.get(role[TRAIT]), {})] if notes else []
-        return SongRiff(name=name, riff=riff, notes=notes, count=riff_bars_of(line=notes, eighths=self._riff_eighths) or 1, split=split_bars(line=notes, eighths=self._riff_eighths), players=players)
+        """Return a riff of the song with its notes, its bars and the players of the band who play it."""
+        notes = []
+        if riff.get(riffs_values.RIFF_ROLES):
+            notes = riff_line_of(riff=riff, seed=seed, eighths=self._riff_eighths, flattened=flattened_in(self._scale_type))
+        players = []
+        if notes:
+            players = self._riff_players(riff)
+        count = riff_bars_of(line=notes, eighths=self._riff_eighths) or 1
+        split = split_bars(line=notes, eighths=self._riff_eighths)
+        return SongRiff(name=name, riff=riff, notes=notes, count=count, split=split, players=players)
+
+    def _riff_players(self, riff):
+        """Return the players of the band who play a riff: those of its players in the band, not the drummer, whose part is a figure."""
+        named = riff.get(riffs_values.RIFF_ROLES, [])
+        players = []
+        for role in self._roles:
+            if role[ROLE] not in named or role[ROLE] in self._without or role.get(DRUMS):
+                continue
+            ways = values_of(style=self._style, trait=role[TRAIT])
+            way = ways.get(self._picks.get(role[TRAIT]), {})
+            if FIGURE in way:
+                players.append(role[ROLE])
+        return players
 
     def chords_in(self, section, *, shared=False):
-        """A section's chords, its last bar set up for what follows where the section says so."""
-        bars = 1 if section.get(HELD) else section[BARS]
-        written = section.get(wizard_names.ARRANGER_CHORDS) or self._chord_entry.get(BY_SECTION, {}).get(section[KIND]) or self._chord_entry[PATTERN]
+        """Return a section's chords, its last bar set up for what follows where the section says so."""
+        if section.get(HELD):
+            bars = 1
+        else:
+            bars = section[BARS]
+        by_section = self._chord_entry.get(BY_SECTION, {})
+        written = section.get(wizard_names.ARRANGER_CHORDS) or by_section.get(section[KIND]) or self._chord_entry[PATTERN]
         # A bar of two chords is kept as its two for the progression, and is its first chord for whatever goes bar by bar.
         chords = [_bar_of_chords(chord=chord, shared=shared) for chord in written]
-        if section.get(LAST_CHORD) is not None and not section.get(EVERY, self._chord_entry.get(EVERY)) and len(chords) <= bars:
+        every = section.get(EVERY, self._chord_entry.get(EVERY))
+        if section.get(LAST_CHORD) is not None and not every and len(chords) <= bars:
             # The section's last bar is set up for what follows: the chords are written out a bar each, and the last bar takes the approach chord.
-            chords = [chords[bar % len(chords)] for bar in range(bars - 1)] + [chord_of(section[LAST_CHORD])]
+            chords = [chords[bar % len(chords)] for bar in range(bars - 1)]
+            chords.append(chord_of(section[LAST_CHORD]))
         return chords
 
     def riff_bars_in(self, section, *, riff):
-        """Which bar of a riff each bar of a section plays, None where a riff that stays at home gives way to a held chord; nothing
-        where the section has not the riff."""
-        if not riff.players or section.get(HELD) or section[KIND] not in riff.riff.get(riffs_values.RIFF_KINDS, []) or section[BARS] % riff.count:
+        """Return which bar of a riff each bar of a section plays, None where a riff that stays at home gives way to a held chord;
+        nothing where the section has not the riff."""
+        kinds = riff.riff.get(riffs_values.RIFF_KINDS, [])
+        if not riff.players or section.get(HELD) or section[KIND] not in kinds or section[BARS] % riff.count:
             return []
-        stays = riff.riff.get(wizard_names.RIFF_WITH_CHORDS) == wizard_names.STAYS_HOME and riff.split is not None and not section.get(EVERY, self._chord_entry.get(EVERY))
-        return bars_played(chords=self.chords_in(section), bars=section[BARS], count=riff.count, stays=stays)
+        every = section.get(EVERY, self._chord_entry.get(EVERY))
+        stays = riff.riff.get(wizard_names.RIFF_WITH_CHORDS) == wizard_names.STAYS_HOME and riff.split is not None and not every
+        chords = self.chords_in(section)
+        return bars_played(chords=chords, bars=section[BARS], count=riff.count, stays=stays)
 
     def riff_played(self, section, *, by=None, notes=None):
         """The first of the song's riffs that plays in a section, with which of its bars each bar of the section plays: the first a
@@ -1212,72 +1348,162 @@ class Arrangement:
 
     def _write_drums(self):
         """Write the drums' parts, a set for each way the form's sections have the drummer play, and say which set each section plays."""
-        # Imported here, since the drums are written with this module's helpers.
-        from llamatron.wizards.create_song.drum_writing import SectionDrums, SectionToDrum
         drum_sets = {}
-        usual_drummer = label_of(character_of(self._levels[DRUMS])) if DRUMS in self._levels else None
         self._drums_of = {}
         for name in self._form_names:
             section = section_of(name=name, style=self._style, song=self._song)
             if self._no_drums or section.get(HELD) or DRUMS not in section[PLAYS] or name in self._drums_of:
                 continue
-            character = character_in(levels=self._levels, instrument=DRUMS, section=section)
-            level = None if character is None else label_of(character)
-            changed = {trait: value for trait, value in section.get(PICKS, {}).items()
-                       if trait in self._drum_traits and fits(entry=values_of(style=self._style, trait=trait)[value], picks=self._picks)}
-            plays = player_of(style=self._style, instrument=DRUMS, character=character)
-            if FILLS_COME in self._song:
-                # The song says how often a fill comes, whatever the drummer would do: never, at the end of each section, or every so many bars.
-                plays = {**plays, characters.FILL_EVERY: section[BARS] if self._song[FILLS_COME] == EACH_SECTION else self._song[FILLS_COME]}
-            # A drum solo is written in four; in another meter the drummer plays the section alone as any other.
-            drum_solo_here = bool(section.get(DRUM_SOLO)) and self._meter == COMMON_TIME
+            self._drums_of[name] = self._drum_set(name=name, section=section, drum_sets=drum_sets)
+        self._drum_tracks = []
+        for pieces in self._drums_of.values():
+            for piece in pieces:
+                if piece not in self._drum_tracks:
+                    self._drum_tracks.append(piece)
+        timings = self._drummer.get(characters.TIMING, {})
+        self._timing = {piece: timing_generators(move=timings.get(piece, {})) for piece in self._drum_tracks}
+
+    def _drum_set(self, *, name, section, drum_sets):
+        """Return the drum set a section plays, by piece, writing it where no section before asked for the same set."""
+        character = character_in(levels=self._levels, instrument=DRUMS, section=section)
+        level = None
+        if character is not None:
+            level = label_of(character)
+        changed = self._drum_picks_in(section)
+        plays = self._drummer_in(section=section, character=character)
+        # A drum solo is written in four; in another meter the drummer plays the section alone as any other.
+        solo = bool(section.get(DRUM_SOLO)) and self._meter == COMMON_TIME
+        over, riff_key = self._kicked_riff_in(section=section, solo=solo)
+        phrase = plays.get(characters.FILL_EVERY, self._phrase_bars) or self._phrase_bars
+        key = (level, tuple(sorted(changed.items())), math.gcd(phrase, section[BARS]))
+        key = self._drum_set_key(key=key, section=section, solo=solo, riff_key=riff_key)
+        if key not in drum_sets:
+            made = self._written_drums(section=section, changed=changed, plays=plays, solo=solo, over=over)
             leaves = section.get(wizard_names.JOINS_LEAVES)
-            key = (level, tuple(sorted(changed.items())), math.gcd(plays.get(characters.FILL_EVERY, self._phrase_bars) or self._phrase_bars, section[BARS]))
-            if leaves is not None:
-                key = key + (section[BARS], frozen(leaves), section.get(FILL_INSIDE), section.get(FILL_INSIDE_EVERY), frozen(section.get(MARKER)), section.get(MARKER_EVERY))
-            if drum_solo_here:
-                key = (DRUM_SOLO, section[BARS])
-            # Under a riff of chords on its accents the kick strikes each accent, bar by bar.
-            kicked_riff, riff_here = self.riff_played(section, notes=wizard_names.ACCENT_CHORDS) if not drum_solo_here else (None, [])
-            kick_bars = accent_bars(line=kicked_riff.notes, eighths=self._riff_eighths) if kicked_riff is not None else []
-            over = {KICK: [None if bar is None else kick_bars[bar] for bar in riff_here]} if any(bar is not None for bar in riff_here) else None
-            if over:
-                key = key + (riffs_values.RIFF, kicked_riff.name, section[BARS], tuple(riff_here))
-            if key not in drum_sets:
-                if drum_solo_here:
-                    made = solo_parts(style=self._style, bars=section[BARS], seed=self._song.get(SEED, 0), kit=self._played)
-                else:
-                    inside = {FILL_INSIDE: section.get(FILL_INSIDE), FILL_INSIDE_EVERY: section.get(FILL_INSIDE_EVERY), MARKER: section.get(MARKER), MARKER_EVERY: section.get(MARKER_EVERY)}
-                    asked = SectionToDrum(picks={**self._picks, **changed}, drummer=plays, bars=section[BARS], leaves=leaves, inside=inside, over=over)
-                    drums = SectionDrums(drumming=self._drumming(), asked=asked)
-                    made = drums.parts()
-                drum_sets[key] = {}
-                for piece, part in made.items():
-                    # A piece of the kit switched off is left out: its strokes are never moved to another piece.
-                    if piece in self._pieces_off:
-                        continue
-                    if piece == SNARE and not self._song.get(QUIET_NOTES, True):
-                        # The quiet notes switched off: the snare's soft strokes and ghost notes between the main ones are left out.
-                        part = {**part, notation.HITS: [notation.NONE if hit in (wizard_names.SOFT, wizard_names.GHOST) else hit for hit in part[notation.HITS]]}
-                    profile = self._style.get(BEAT_LOUDNESS)
-                    is_uneven = plays.get(characters.UNEVEN) and not drum_solo_here
-                    if (profile and not drum_solo_here) or is_uneven:
-                        # A pattern written out, where each stroke's loudness is its own: the style's lean on each beat, then a person's unevenness on top.
-                        pattern = drum_pattern(part)
-                        if profile and not drum_solo_here:
-                            pattern = leaning(pattern=pattern, profile=profile, meter=self._meter, dynamics=self._song.get(DYNAMICS, {}).get(drummer_role(self._roles), loudness.USUAL_DYNAMICS))
-                        if is_uneven:
-                            pattern = uneven(pattern=pattern, by=plays[characters.UNEVEN], dice=random.Random(DRUM_SEED.format(self._song.get(SEED, 0), piece, section[KIND])))
-                        part = {RAW: pattern}
-                    named = piece if leaves is None and not over and key[:2] == (usual_drummer, ()) and piece not in self._parts else wizard_text.MSG_PART_OF_SECTION.format(piece, name if leaves is not None or over else section[KIND])
-                    self._parts[named] = part
-                    drum_sets[key][piece] = named
-            self._drums_of[name] = drum_sets[key]
-        self._drum_tracks = list(dict.fromkeys(piece for pieces in self._drums_of.values() for piece in pieces))
-        self._timing = {piece: timing_generators(move=self._drummer.get(characters.TIMING, {}).get(piece, {})) for piece in self._drum_tracks}
+            plain = leaves is None and not over and key[:2] == (self._usual_drummer(), ())
+            named_by = section[KIND]
+            if leaves is not None or over:
+                named_by = name
+            drum_sets[key] = self._named_drum_parts(section=section, made=made, plays=plays, plain=plain, named_by=named_by)
+        return drum_sets[key]
+
+    def _usual_drummer(self):
+        """Return the level of the song's drummer, or None where the song names none."""
+        if DRUMS not in self._levels:
+            return None
+        return label_of(character_of(self._levels[DRUMS]))
+
+    def _drum_picks_in(self, section):
+        """Return the picks of the drums a section changes, each where it fits the song's picks."""
+        changed = {}
+        for trait, value in section.get(PICKS, {}).items():
+            if trait not in self._drum_traits:
+                continue
+            ways = values_of(style=self._style, trait=trait)
+            if fits(entry=ways[value], picks=self._picks):
+                changed[trait] = value
+        return changed
+
+    def _drummer_in(self, *, section, character):
+        """Return how the drummer plays in a section: as the drummer of the character plays, with a fill as often as the song says
+        where it says, never, at the end of each section, or every so many bars."""
+        plays = player_of(style=self._style, instrument=DRUMS, character=character)
+        if FILLS_COME not in self._song:
+            return plays
+        every = self._song[FILLS_COME]
+        if every == EACH_SECTION:
+            every = section[BARS]
+        plays = dict(plays)
+        plays[characters.FILL_EVERY] = every
+        return plays
+
+    def _kicked_riff_in(self, *, section, solo):
+        """Return the kick's own bars where a riff of chords on its accents plays in a section, the kick striking each accent bar
+        by bar, and what tells the section's set apart for it; or two Nones."""
+        if solo:
+            return None, None
+        riff, riff_here = self.riff_played(section, notes=wizard_names.ACCENT_CHORDS)
+        if riff is None:
+            return None, None
+        kick_bars = accent_bars(line=riff.notes, eighths=self._riff_eighths)
+        kicked = []
+        any_kicked = False
+        for bar in riff_here:
+            if bar is None:
+                kicked.append(None)
+            else:
+                kicked.append(kick_bars[bar])
+                any_kicked = True
+        if not any_kicked:
+            return None, None
+        return {KICK: kicked}, (riffs_values.RIFF, riff.name, section[BARS], tuple(riff_here))
+
+    def _drum_set_key(self, *, key, section, solo, riff_key):
+        """Return what tells a section's drum set apart from another's: the drummer, the picks changed and the phrase; and for a
+        planned section how it leaves and the fills and marker inside; a drum solo by its bars alone; and a riff the kick follows."""
+        leaves = section.get(wizard_names.JOINS_LEAVES)
+        if leaves is not None:
+            key = key + (section[BARS], frozen(leaves), section.get(FILL_INSIDE), section.get(FILL_INSIDE_EVERY), frozen(section.get(MARKER)), section.get(MARKER_EVERY))
+        if solo:
+            key = (DRUM_SOLO, section[BARS])
+        if riff_key is not None:
+            key = key + riff_key
+        return key
+
+    def _written_drums(self, *, section, changed, plays, solo, over):
+        """Return the parts of the kit a section plays, by piece: a drum solo's, or the section's drums."""
+        # Imported here, since the drums are written with this module's helpers.
+        from llamatron.wizards.create_song.drum_writing import SectionDrums, SectionToDrum
+        if solo:
+            return solo_parts(style=self._style, bars=section[BARS], seed=self._song.get(SEED, 0), kit=self._played)
+        inside = {FILL_INSIDE: section.get(FILL_INSIDE), FILL_INSIDE_EVERY: section.get(FILL_INSIDE_EVERY), MARKER: section.get(MARKER), MARKER_EVERY: section.get(MARKER_EVERY)}
+        picks = dict(self._picks)
+        picks.update(changed)
+        asked = SectionToDrum(picks=picks, drummer=plays, bars=section[BARS], leaves=section.get(wizard_names.JOINS_LEAVES), inside=inside, over=over)
+        drums = SectionDrums(drumming=self._drumming(), asked=asked)
+        return drums.parts()
+
+    def _named_drum_parts(self, *, section, made, plays, plain, named_by):
+        """Return the parts of a drum set by piece, each dressed and kept under its name: the piece's own where the set is plain
+        and the piece has no part yet, else the piece's in the section; a piece of the kit switched off is left out, its strokes
+        never moved to another piece."""
+        solo = bool(section.get(DRUM_SOLO)) and self._meter == COMMON_TIME
+        named = {}
+        for piece, part in made.items():
+            if piece in self._pieces_off:
+                continue
+            part = self._dressed_drum_part(piece=piece, part=part, plays=plays, solo=solo, kind=section[KIND])
+            part_name = wizard_text.MSG_PART_OF_SECTION.format(piece, named_by)
+            if plain and piece not in self._parts:
+                part_name = piece
+            self._parts[part_name] = part
+            named[piece] = part_name
+        return named
+
+    def _dressed_drum_part(self, *, piece, part, plays, solo, kind):
+        """Return a drum's part as the song plays it: the snare's quiet notes left out where the song says, and, where each stroke's
+        loudness is its own, a pattern written out with the style's lean on each beat and then a person's unevenness on top."""
+        if piece == SNARE and not self._song.get(QUIET_NOTES, True):
+            part = dict(part)
+            part[notation.HITS] = _without_quiet_notes(part[notation.HITS])
+        profile = self._style.get(BEAT_LOUDNESS)
+        leans = profile and not solo
+        is_uneven = plays.get(characters.UNEVEN) and not solo
+        if not leans and not is_uneven:
+            return part
+        pattern = drum_pattern(part)
+        if leans:
+            dynamics = self._song.get(DYNAMICS, {})
+            drummer_dynamics = dynamics.get(drummer_role(self._roles), loudness.USUAL_DYNAMICS)
+            pattern = leaning(pattern=pattern, profile=profile, meter=self._meter, dynamics=drummer_dynamics)
+        if is_uneven:
+            dice = random.Random(DRUM_SEED.format(self._song.get(SEED, 0), piece, kind))
+            pattern = uneven(pattern=pattern, by=plays[characters.UNEVEN], dice=dice)
+        return {RAW: pattern}
 
     def _seat_players(self):
-        """Give each pitched player of the band a track and a sound, and write what a player plays wherever the player plays: the figure and the held chord."""
+        """Give each pitched player of the band a track and a sound, and write what a player plays wherever the player plays:
+        the figure and the held chord."""
         # The order of a made song's tracks: the muted chords track first, then the chords, the lead and the backing, the bass, and the drums last.
         self._tracks = {wizard_text.MSG_CHORDS_TRACK: wizard_text.MSG_CHORDS_INSTRUMENT}
         self._instruments = {DRUM_KIT: None, wizard_text.MSG_CHORDS_INSTRUMENT: CHORDS_GUIDE_SOUND}
@@ -1289,83 +1515,154 @@ class Arrangement:
         for role in self._roles:
             if role.get(DRUMS) or role[ROLE] in self._without:
                 continue
-            entry = values_of(style=self._style, trait=role[TRAIT])[self._picks[role[TRAIT]]]
-            if SOUND not in entry:
-                continue
-            sound = sound_of(style=self._style, song=self._song, role=role[ROLE], usual=entry[SOUND])
-            self._instruments[sound] = self._style[SOUNDS].get(sound, self._song.get(ROLE_SOUNDS, {}).get(role[ROLE]))
-            self._tracks[role[ROLE]] = sound
-            self._pitched.append((role, entry))
-            if FIGURE in entry:
-                self._parts[role[ROLE]] = figure_part(entry=entry, role=role, meter=self._meter, player=self._playing[role[ROLE]], phrase_bars=self._phrase_bars)
-                self._shaped.append(role[ROLE])
-            self._parts[wizard_text.MSG_PART_OF_SECTION.format(role[ROLE], HELD)] = held_part(role=role, meter=self._meter, chord=any(notation.CHORD in note for bar in entry.get(FIGURE, []) for note in bar))
-            self._timing[role[ROLE]] = timing_generators(move=self._playing[role[ROLE]].get(characters.TIMING, {}))
-            for generator in entry.get(GENERATORS, []):
-                for kind, settings in generator.items():
-                    self._extra.setdefault(SECTION_OF_KIND[kind], {})[role[ROLE]] = dict(settings)
-            if role[ROLE] in self._extra.get(GUITARIFIES, {}):
-                self._extra[GUITARIFIES][role[ROLE]].update(self._playing[role[ROLE]].get(characters.GUITARIFY_OF_PLAYER, {}))
+            ways = values_of(style=self._style, trait=role[TRAIT])
+            entry = ways[self._picks[role[TRAIT]]]
+            if SOUND in entry:
+                self._seat(role=role, entry=entry)
         for track, moves in self._timing.items():
-            self._chains[wizard_text.MSG_TIMING_CHAIN.format(track)] = [{RUSH: track}, {DRAG: track}]
-            self._extra.setdefault(RUSHES, {})[track] = moves[RUSH]
-            self._extra.setdefault(DRAGS, {})[track] = moves[DRAG]
-        self._tracks.update({piece: DRUM_KIT for piece in self._drum_tracks})
+            self._time_track(track=track, moves=moves)
+        for piece in self._drum_tracks:
+            self._tracks[piece] = DRUM_KIT
+
+    def _seat(self, *, role, entry):
+        """Give one pitched player a track and a sound, its figure and its held chord, its timing and its way's generators."""
+        name = role[ROLE]
+        song_sounds = self._song.get(ROLE_SOUNDS, {})
+        sound = sound_of(style=self._style, song=self._song, role=name, usual=entry[SOUND])
+        self._instruments[sound] = self._style[SOUNDS].get(sound, song_sounds.get(name))
+        self._tracks[name] = sound
+        self._pitched.append((role, entry))
+        player = self._playing[name]
+        if FIGURE in entry:
+            self._parts[name] = figure_part(entry=entry, role=role, meter=self._meter, player=player, phrase_bars=self._phrase_bars)
+            self._shaped.append(name)
+        held = wizard_text.MSG_PART_OF_SECTION.format(name, HELD)
+        self._parts[held] = held_part(role=role, meter=self._meter, chord=_figure_has_chords(entry))
+        self._timing[name] = timing_generators(move=player.get(characters.TIMING, {}))
+        self._add_generators(role=role, entry=entry)
+
+    def _add_generators(self, *, role, entry):
+        """Give a player the generators its way of playing runs, a Guitarify with the player's own settings laid over it."""
+        name = role[ROLE]
+        for generator in entry.get(GENERATORS, []):
+            for kind, settings in generator.items():
+                of_kind = self._extra.setdefault(SECTION_OF_KIND[kind], {})
+                of_kind[name] = dict(settings)
+        guitarifies = self._extra.get(GUITARIFIES, {})
+        if name in guitarifies:
+            player = self._playing[name]
+            guitarifies[name].update(player.get(characters.GUITARIFY_OF_PLAYER, {}))
+
+    def _time_track(self, *, track, moves):
+        """Give a track the chain that rushes and drags it, and how far it rushes and drags."""
+        self._chains[wizard_text.MSG_TIMING_CHAIN.format(track)] = [{RUSH: track}, {DRAG: track}]
+        rushes = self._extra.setdefault(RUSHES, {})
+        rushes[track] = moves[RUSH]
+        drags = self._extra.setdefault(DRAGS, {})
+        drags[track] = moves[DRAG]
 
     def _write_section(self, *, count, name):
-        """Write one section of the form as a scene: who plays in it and which part each plays, writing the parts the section is the first to play."""
-        at = SectionInHand(count=count, name=name)
-        at.section = section_of(name=at.name, style=self._style, song=self._song)
-        self._met[at.name] = self._met.get(at.name, 0) + 1
-        self._solos_met += at.section[KIND] == SOLO_KIND
-        self._intros_met += at.section[KIND] == INTRO_KIND
-        at.scene_name = at.name if self._met[at.name] == 1 else wizard_text.MSG_REPEATED_SCENE.format(at.name, self._met[at.name])
-        at.bars = 1 if at.section.get(HELD) else at.section[BARS]
-        at.chords = self.chords_in(at.section)
-        at.play = {}
-        at.tune_role = None
+        """Write one section of the form as a scene: who plays in it and which part each plays, writing the parts the section is
+        the first to play. A section in which nothing of the song's picks plays, as pads alone where the song has no chord part,
+        is left out."""
+        at = self._section_in_hand(count=count, name=name)
         if at.section.get(HELD):
             self._hold(at)
         else:
-            self._play_drums(at)
-            at.here = players_in(style=self._style, roles=self._roles, levels=self._levels, section=at.section)
-            self._write_chords(at)
-            # The player who has the tune in the section, if any: a player of lines who answers nobody.
-            at.tune_role = next((other for other, other_entry in self._pitched if FIGURE not in other_entry and not other.get(ANSWERS) and other[ROLE] in at.section[PLAYS]), None)
-            for role, entry in self._pitched:
-                self._give_part(at, role=role, entry=entry)
-        # The tune goes to the player the song gives it to: for this kind of section, or else for the whole song. That player plays
-        # the tune in place of the usual part, the player who had the tune rests, and with nobody the section has no tune.
-        tune_by = self._song.get(TUNE_BY, {}).get(at.section[KIND], self._song.get(TUNE_BY_SONG))
-        if at.tune_role is not None and at.tune_role[ROLE] in at.play and tune_by is not None and tune_by != at.tune_role[ROLE]:
-            tune_played = at.play.pop(at.tune_role[ROLE])
-            if tune_by != NOBODY and any(role[ROLE] == tune_by for role in self._roles):
-                at.play[tune_by] = tune_played
+            self._play_through(at)
+        self._give_tune_away(at)
         if not at.play:
-            # Nothing of the song's picks plays in this section, as pads alone where the song has no chord part: it is left out.
             self._met[at.name] -= 1
             return
         at.play[wizard_text.MSG_CHORDS_TRACK] = at.chords_played
-        scene_settings = dict(at.section.get(SCENE_SETTINGS) or {})
+        scene = {SCENE: at.scene_name, BARS: at.bars, PLAY: at.play}
+        settings = self._scene_settings_of(at)
+        if settings:
+            scene[SETTINGS_OF_SCENE] = settings
+        self._form.append(scene)
+        self._notes.append(self._said_of_scene(at))
+
+    def _section_in_hand(self, *, count, name):
+        """Return a section of the form taken in hand: its scene's name, numbered from the second time it comes, its bars and its
+        chords, counting the solos and the intros met so far."""
+        at = SectionInHand(count=count, name=name)
+        at.section = section_of(name=name, style=self._style, song=self._song)
+        self._met[name] = self._met.get(name, 0) + 1
+        if at.section[KIND] == SOLO_KIND:
+            self._solos_met += 1
+        if at.section[KIND] == INTRO_KIND:
+            self._intros_met += 1
+        at.scene_name = name
+        if self._met[name] > 1:
+            at.scene_name = wizard_text.MSG_REPEATED_SCENE.format(name, self._met[name])
+        if at.section.get(HELD):
+            at.bars = 1
+        else:
+            at.bars = at.section[BARS]
+        at.chords = self.chords_in(at.section)
+        return at
+
+    def _play_through(self, at):
+        """Write a section the band plays through: the drums, the chords, and each pitched player's part, knowing who has the tune."""
+        self._play_drums(at)
+        at.here = players_in(style=self._style, roles=self._roles, levels=self._levels, section=at.section)
+        self._write_chords(at)
+        at.tune_role = self._tune_role_in(at.section)
+        for role, entry in self._pitched:
+            self._give_part(at, role=role, entry=entry)
+
+    def _tune_role_in(self, section):
+        """Return the player who has the tune in a section, if any: a player of lines who answers nobody and plays there."""
+        for role, entry in self._pitched:
+            if FIGURE not in entry and not role.get(ANSWERS) and role[ROLE] in section[PLAYS]:
+                return role
+        return None
+
+    def _give_tune_away(self, at):
+        """Give the section's tune to the player the song gives it to: for this kind of section, or else for the whole song. That
+        player plays the tune in place of the usual part, the player who had the tune rests, and with nobody the section has no tune."""
+        tune_by_kind = self._song.get(TUNE_BY, {})
+        tune_by = tune_by_kind.get(at.section[KIND], self._song.get(TUNE_BY_SONG))
+        role = at.tune_role
+        if role is None or role[ROLE] not in at.play or tune_by is None or tune_by == role[ROLE]:
+            return
+        tune_played = at.play.pop(role[ROLE])
+        if tune_by != NOBODY and self._has_role(tune_by):
+            at.play[tune_by] = tune_played
+
+    def _has_role(self, name):
+        """Return whether the band has a role of a name."""
+        for role in self._roles:
+            if role[ROLE] == name:
+                return True
+        return False
+
+    def _scene_settings_of(self, at):
+        """Return the settings of a section's scene: what the section says, with the kind of section it is, a key or a scale of
+        its own named and added to the set's, and a climb, a fade or a change of tempo taking all its bars where it says no bars."""
+        settings = dict(at.section.get(SCENE_SETTINGS) or {})
         if at.section[KIND] in file_format.SECTION_KINDS:
             # A scene says what kind of section it is, where the kind is one a scene may be.
-            scene_settings.setdefault(SECTION_OF_SCENE, at.section[KIND])
-        if isinstance(scene_settings.get(SCALE), dict):
+            settings.setdefault(SECTION_OF_SCENE, at.section[KIND])
+        if isinstance(settings.get(SCALE), dict):
             # A section in a key or a scale of its own: the scale is named as the song's is and added to the set's.
-            own_scale = scene_settings[SCALE]
-            scene_settings[SCALE] = SCALE_NAME.format(own_scale[ROOT], own_scale[TYPE].capitalize())
-            self._more_scales[scene_settings[SCALE]] = {ROOT: own_scale[ROOT], TYPE: own_scale[TYPE]}
-        # A section that climbs or fades with no bars said does so across all of its bars.
-        if VelocitySetting.IN_START in scene_settings:
-            scene_settings.setdefault(VelocitySetting.IN_OVER, at.bars)
-        if VelocitySetting.OUT_END in scene_settings:
-            scene_settings.setdefault(VelocitySetting.OUT_OVER, at.bars)
-        if SceneSetting.TEMPO_IN_END in scene_settings:
-            # A section that moves to another tempo by its end ramps across all of its bars.
-            scene_settings.setdefault(SceneSetting.TEMPO_IN_OVER, at.bars)
-        self._form.append({SCENE: at.scene_name, BARS: at.bars, PLAY: at.play, **({SETTINGS_OF_SCENE: scene_settings} if scene_settings else {})})
-        said_of_scene = wizard_text.MSG_MADE_SCENE.format(at.count, at.scene_name, at.bars)
-        self._notes.append(MADE_SCENE_SAID.format(said_of_scene, at.section[SAID_OF_SECTION]) if at.section.get(SAID_OF_SECTION) else said_of_scene)
+            own_scale = settings[SCALE]
+            settings[SCALE] = SCALE_NAME.format(own_scale[ROOT], own_scale[TYPE].capitalize())
+            self._more_scales[settings[SCALE]] = {ROOT: own_scale[ROOT], TYPE: own_scale[TYPE]}
+        if VelocitySetting.IN_START in settings:
+            settings.setdefault(VelocitySetting.IN_OVER, at.bars)
+        if VelocitySetting.OUT_END in settings:
+            settings.setdefault(VelocitySetting.OUT_OVER, at.bars)
+        if SceneSetting.TEMPO_IN_END in settings:
+            settings.setdefault(SceneSetting.TEMPO_IN_OVER, at.bars)
+        return settings
+
+    def _said_of_scene(self, at):
+        """Return what the notes say of a section's scene: its count, its name and its bars, and what the plan said of it."""
+        said = wizard_text.MSG_MADE_SCENE.format(at.count, at.scene_name, at.bars)
+        if not at.section.get(SAID_OF_SECTION):
+            return said
+        return MADE_SCENE_SAID.format(said, at.section[SAID_OF_SECTION])
 
     def _hold(self, at):
         """Write a section that is one held chord: a crash and a kick where the kit has them, each backing player holding the chord, and the chord on the chords track."""
@@ -1392,7 +1689,8 @@ class Arrangement:
 
     def _play_drums(self, at):
         """Have each piece of the kit play the part written for the section, with a crash on its first beat where the section starts with one."""
-        for piece, part in self._drums_of.get(at.name, {}).items():
+        drum_set = self._drums_of.get(at.name, {})
+        for piece, part in drum_set.items():
             at.play[piece] = {PART: part, CHAINS: [wizard_text.MSG_TIMING_CHAIN.format(piece)]}
         if at.section.get(CRASH_START) and at.name in self._drums_of and CRASH not in self._pieces_off:
             start = wizard_text.MSG_SECTION_START_PART.format(CRASH)
@@ -1403,27 +1701,60 @@ class Arrangement:
             at.play.setdefault(CRASH, {PART: start, ONCE: True})
 
     def _write_chords(self, at):
-        """Write the section's chords on the chords track, a step a chord, which every clip that plays them follows."""
+        """Write the section's chords on the chords track, a step a chord, which every clip that plays them follows; chords no
+        step can hold are made by a Progression."""
         progression = wizard_text.MSG_PART_OF_SECTION.format(at.name, wizard_names.ARRANGER_CHORDS)
-        # The section's chords go on the chords track, written a step a chord, which every clip that plays them follows.
-        section_progression = progression_of(chords=self.chords_in(at.section, shared=True), every=at.section.get(EVERY, self._chord_entry.get(EVERY)), meter=self._meter)
-        own_scale = (at.section.get(SCENE_SETTINGS) or {}).get(SCALE)
-        written_chords = chords_written(progression=section_progression, meter=self._meter, scale_type=own_scale[TYPE] if isinstance(own_scale, dict) else self._scale_type)
-        if written_chords is None:
-            self._progressions[progression] = section_progression
-            self._chains[progression] = [{PROGRESSION: progression}]
-            self._parts[progression] = {RAW: one_chord(self._meter)}
-            at.chords_played = {PART: progression, CHAINS: [progression]}
-        else:
-            self._parts[progression] = {RAW: written_chords}
+        every = at.section.get(EVERY, self._chord_entry.get(EVERY))
+        chords = self.chords_in(at.section, shared=True)
+        section_progression = progression_of(chords=chords, every=every, meter=self._meter)
+        scene_settings = at.section.get(SCENE_SETTINGS) or {}
+        own_scale = scene_settings.get(SCALE)
+        scale_type = self._scale_type
+        if isinstance(own_scale, dict):
+            scale_type = own_scale[TYPE]
+        written = chords_written(progression=section_progression, meter=self._meter, scale_type=scale_type)
+        if written is not None:
+            self._parts[progression] = {RAW: written}
             at.chords_played = progression
+            return
+        self._progressions[progression] = section_progression
+        self._chains[progression] = [{PROGRESSION: progression}]
+        self._parts[progression] = {RAW: one_chord(self._meter)}
+        at.chords_played = {PART: progression, CHAINS: [progression]}
 
     def _lines_of(self, at, *, role):
-        """The lines a player of a tune plays in the section: those the section gives, or those sketched for the player."""
-        given = at.section.get(LINES_GIVEN, {}).get(role[ROLE])
-        return given or sketched(habits={**habits_of(habits=self._habits, player=at.here[role[ROLE]]), **role.get(HABITS, {}), **self._song.get(ROLE_HABITS, {}).get(role[ROLE], {}), **self._song.get(MELODY, {})}, plan=at.section[PLAN], chords=at.chords, scale_type=self._scale_type, seed=self._song.get(SEED, 0),
-                                 answers=bool(role.get(ANSWERS)), engine=self._song.get(MELODY_ENGINE, role.get(melody.ENGINE)), voice=role.get(VOICE), letters=line_letters(plans=self._plans, answers=bool(role.get(ANSWERS))),
-                                 hook=self._has_a_hook, hook_take=self._song.get(melody.HOOK_TAKE, melody.FIRST_HOOK_TAKE), tag_take=self._song.get(melody.HOOKS, {}).get(melody.SECOND_HOOK, {}).get(melody.TAG_TAKE, melody.FIRST_HOOK_TAKE))
+        """Return the lines a player of a tune plays in the section: those the section gives, or those sketched for the player."""
+        given_lines = at.section.get(LINES_GIVEN, {})
+        given = given_lines.get(role[ROLE])
+        if given:
+            return given
+        answers = bool(role.get(ANSWERS))
+        hooks = self._song.get(melody.HOOKS, {})
+        second_hook = hooks.get(melody.SECOND_HOOK, {})
+        return sketched(
+            habits=self._habits_of_player(at=at, role=role),
+            plan=at.section[PLAN],
+            chords=at.chords,
+            scale_type=self._scale_type,
+            seed=self._song.get(SEED, 0),
+            answers=answers,
+            engine=self._song.get(MELODY_ENGINE, role.get(melody.ENGINE)),
+            voice=role.get(VOICE),
+            letters=line_letters(plans=self._plans, answers=answers),
+            hook=self._has_a_hook,
+            hook_take=self._song.get(melody.HOOK_TAKE, melody.FIRST_HOOK_TAKE),
+            tag_take=second_hook.get(melody.TAG_TAKE, melody.FIRST_HOOK_TAKE),
+        )
+
+    def _habits_of_player(self, *, at, role):
+        """Return the tune's habits as a player keeps them in a section, with the role's own, the song's for the role and the
+        song's for its melodies laid over them."""
+        habits = habits_of(habits=self._habits, player=at.here[role[ROLE]])
+        habits.update(role.get(HABITS, {}))
+        role_habits = self._song.get(ROLE_HABITS, {})
+        habits.update(role_habits.get(role[ROLE], {}))
+        habits.update(self._song.get(MELODY, {}))
+        return habits
 
     def _give_part(self, at, *, role, entry):
         """Give a pitched player the part the player plays in the section, writing the part where no section before wrote it: an answer beside the tune, a figure, or a tune."""
@@ -1452,147 +1783,347 @@ class Arrangement:
             at.play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [wizard_text.MSG_TIMING_CHAIN.format(role[ROLE])]}
 
     def _play_figure(self, at, *, role, entry):
-        """Have a backing player play the player's figure over the section's chords, or the song's riff where the section has one, or the figure with the band's last bar together."""
-        chain = wizard_text.MSG_PART_OF_SECTION.format(at.name, role[ROLE])
-        self._chains[chain] = [dict(FOLLOWS_THE_CHORDS)] + [{kind: role[ROLE]} for generator in entry.get(GENERATORS, []) for kind in generator]
-        if role.get(VOICE_LEADING):
-            self._chains[chain].append({VOICE_LEADING_KIND: NEAR})
-        self._chains[chain] += [{RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
-        figure = role[ROLE]
-        entry_here = entry
-        if FIGURE in entry.get(BY_SECTION, {}).get(at.section[KIND], {}):
-            # The value's own figure for this kind of section, a part of its own, in place of the figure played elsewhere.
-            entry_here = {**entry, FIGURE: entry[BY_SECTION][at.section[KIND]][FIGURE]}
-            figure = wizard_text.MSG_PART_OF_SECTION.format(role[ROLE], at.section[KIND])
-            if figure not in self._parts:
-                self._parts[figure] = figure_part(entry=entry_here, role=role, meter=self._meter, player=self._playing[role[ROLE]], phrase_bars=self._phrase_bars)
-                self._shaped.append(figure)
-        if at.here[role[ROLE]] != self._playing[role[ROLE]]:
-            held_back = figure_part(entry=entry_here, role=role, meter=self._meter, player=at.here[role[ROLE]], phrase_bars=self._phrase_bars)
-            # A player held back who plays the figure no differently plays the one part, so that no part is written twice.
-            if held_back != self._parts[figure]:
-                figure = wizard_text.MSG_PART_AT_LEVEL.format(figure, label_of(character_in(levels=self._levels, instrument=role.get(PLAYER), section=at.section)))
-                if figure not in self._parts:
-                    self._parts[figure] = held_back
-                    self._shaped.append(figure)
+        """Have a backing player play the player's figure over the section's chords, or the song's riff where the section has one,
+        or the figure with the band's last bar together."""
+        chain = self._figure_chain(at=at, role=role, entry=entry)
+        figure, entry_here = self._figure_of_kind(at=at, role=role, entry=entry)
+        figure = self._figure_held_back(at=at, role=role, entry=entry_here, figure=figure)
         riff, riff_here = self.riff_played(at.section, by=role[ROLE])
         if riff_here:
-            # The song's riff takes the place of the player's figure here: moved by the chords and played as written, with none of the figure's
-            # own generators. Its first player plays its chords, and a player under the first its notes alone.
-            written_for = riff.riff.get(RIFF_FOR, riff.players[0])
-            first = role[ROLE] == written_for
-            riff_part = wizard_text.MSG_PART_OF_SECTION.format(role[ROLE], riff.name or riffs_values.RIFF)
-            if None in riff_here:
-                # A riff that stays at home is written out for the whole section: the riff over the home chord, and every other chord held.
-                riff_part = wizard_text.MSG_PART_OF_SECTION.format(at.name, riff_part)
-            if riff.riff.get(RIFF_OWN) is not None:
-                # A riff written by hand is played as written, each player in the player's own octave.
-                first_role = next(other for other in self._roles if other[ROLE] == written_for)
-                self._parts.setdefault(riff_part, {RAW: in_octaves_of(pattern=riff.riff[RIFF_OWN], by=role[notation.OCTAVE] - first_role[notation.OCTAVE], group=role[ROLE])})
-            elif riff_part not in self._parts:
-                lines = [riff.notes] if None not in riff_here else [held_bar(eighths=self._riff_eighths, chord=first) if bar is None else riff.split[bar] for bar in riff_here]
-                self._parts[riff_part] = {notation.STEP: EIGHTH, notation.OCTAVE: role[notation.OCTAVE], **voice_of(role), notation.LINES: [notation.copied_line(line if first else single(line)) for line in lines]}
-                self._shaped.append(riff_part)
-            riff_chain = wizard_text.MSG_PART_OF_SECTION.format(chain, riffs_values.RIFF)
-            self._chains[riff_chain] = [dict(FOLLOWS_THE_CHORDS), {RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
-            at.play[role[ROLE]] = {PART: riff_part, CHAINS: [riff_chain]}
+            self._play_riff(at=at, role=role, riff=riff, riff_here=riff_here, chain=chain)
             return
-        leaves = at.section.get(wizard_names.JOINS_LEAVES) or {}
-        if leaves.get(joins.TAIL) in (joins.DROP_OUT, joins.STOPS):
-            # The band's last bar together: the figure is written out for the whole section, so that its last bar alone differs.
-            whole_part = wizard_text.MSG_PART_OF_SECTION.format(at.name, wizard_text.MSG_PART_OF_SECTION.format(role[ROLE], leaves[joins.TAIL]))
-            self._parts[whole_part] = {**self._parts[figure], notation.LINES: with_tail(bars=self._parts[figure][notation.LINES], count=at.bars, tail=leaves[joins.TAIL], eighths=leaves.get(joins.TAIL_EIGHTHS, 0))}
-            self._shaped.append(whole_part)
-            figure = whole_part
+        figure = self._figure_with_tail(at=at, role=role, figure=figure)
         at.play[role[ROLE]] = {PART: figure, CHAINS: [chain]}
 
+    def _figure_chain(self, *, at, role, entry):
+        """Return the chain a player's figure runs in the section, made here: following the chords, the way's generators, voice
+        leading where the player leads its voices, then rushed and dragged."""
+        name = role[ROLE]
+        chain = wizard_text.MSG_PART_OF_SECTION.format(at.name, name)
+        links = [dict(FOLLOWS_THE_CHORDS)]
+        for generator in entry.get(GENERATORS, []):
+            for kind in generator:
+                links.append({kind: name})
+        if role.get(VOICE_LEADING):
+            links.append({VOICE_LEADING_KIND: NEAR})
+        links.append({RUSH: name})
+        links.append({DRAG: name})
+        self._chains[chain] = links
+        return chain
+
+    def _figure_of_kind(self, *, at, role, entry):
+        """Return the part of a player's figure for the section and the way played: the way's own figure for this kind of section,
+        a part of its own, in place of the figure played elsewhere."""
+        by_section = entry.get(BY_SECTION, {})
+        of_kind = by_section.get(at.section[KIND], {})
+        if FIGURE not in of_kind:
+            return role[ROLE], entry
+        entry_here = dict(entry)
+        entry_here[FIGURE] = of_kind[FIGURE]
+        figure = wizard_text.MSG_PART_OF_SECTION.format(role[ROLE], at.section[KIND])
+        if figure not in self._parts:
+            self._parts[figure] = figure_part(entry=entry_here, role=role, meter=self._meter, player=self._playing[role[ROLE]], phrase_bars=self._phrase_bars)
+            self._shaped.append(figure)
+        return figure, entry_here
+
+    def _figure_held_back(self, *, at, role, entry, figure):
+        """Return the part of a player held back in the section to a lower level, a part of its own; a player held back who plays
+        the figure no differently plays the one part, so that no part is written twice."""
+        here = at.here[role[ROLE]]
+        if here == self._playing[role[ROLE]]:
+            return figure
+        held_back = figure_part(entry=entry, role=role, meter=self._meter, player=here, phrase_bars=self._phrase_bars)
+        if held_back == self._parts[figure]:
+            return figure
+        character = character_in(levels=self._levels, instrument=role.get(PLAYER), section=at.section)
+        figure = wizard_text.MSG_PART_AT_LEVEL.format(figure, label_of(character))
+        if figure not in self._parts:
+            self._parts[figure] = held_back
+            self._shaped.append(figure)
+        return figure
+
+    def _play_riff(self, *, at, role, riff, riff_here, chain):
+        """Have a player play the song's riff in place of the figure: moved by the chords and played as written, with none of the
+        figure's own generators. Its first player plays its chords, and a player under the first its notes alone."""
+        written_for = riff.riff.get(RIFF_FOR, riff.players[0])
+        first = role[ROLE] == written_for
+        riff_part = wizard_text.MSG_PART_OF_SECTION.format(role[ROLE], riff.name or riffs_values.RIFF)
+        if None in riff_here:
+            # A riff that stays at home is written out for the whole section: the riff over the home chord, and every other chord held.
+            riff_part = wizard_text.MSG_PART_OF_SECTION.format(at.name, riff_part)
+        if riff.riff.get(RIFF_OWN) is not None:
+            # A riff written by hand is played as written, each player in the player's own octave.
+            self._parts.setdefault(riff_part, self._riff_written_by_hand(role=role, riff=riff, written_for=written_for))
+        elif riff_part not in self._parts:
+            self._parts[riff_part] = self._riff_drawn(role=role, riff=riff, riff_here=riff_here, first=first)
+            self._shaped.append(riff_part)
+        riff_chain = wizard_text.MSG_PART_OF_SECTION.format(chain, riffs_values.RIFF)
+        self._chains[riff_chain] = [dict(FOLLOWS_THE_CHORDS), {RUSH: role[ROLE]}, {DRAG: role[ROLE]}]
+        at.play[role[ROLE]] = {PART: riff_part, CHAINS: [riff_chain]}
+
+    def _riff_written_by_hand(self, *, role, riff, written_for):
+        """Return a riff written by hand as a player plays it, in the player's own octave."""
+        first_role = None
+        for other in self._roles:
+            if other[ROLE] == written_for:
+                first_role = other
+                break
+        octaves = role[notation.OCTAVE] - first_role[notation.OCTAVE]
+        return {RAW: in_octaves_of(pattern=riff.riff[RIFF_OWN], by=octaves, group=role[ROLE])}
+
+    def _riff_drawn(self, *, role, riff, riff_here, first):
+        """Return a riff drawn from the seed as a player plays it: its first player its chords, others its notes alone, and a riff
+        that stays at home held over every chord but the home one."""
+        if None not in riff_here:
+            lines = [riff.notes]
+        else:
+            lines = []
+            for bar in riff_here:
+                if bar is None:
+                    lines.append(held_bar(eighths=self._riff_eighths, chord=first))
+                else:
+                    lines.append(riff.split[bar])
+        copied = []
+        for line in lines:
+            if not first:
+                line = single(line)
+            copied.append(notation.copied_line(line))
+        part = {notation.STEP: EIGHTH, notation.OCTAVE: role[notation.OCTAVE]}
+        part.update(voice_of(role))
+        part[notation.LINES] = copied
+        return part
+
+    def _figure_with_tail(self, *, at, role, figure):
+        """Return the part of a figure as the band's last bar together: written out for the whole section where it leaves with a
+        drop-out or a stop, so that its last bar alone differs."""
+        leaves = at.section.get(wizard_names.JOINS_LEAVES) or {}
+        tail = leaves.get(joins.TAIL)
+        if tail not in (joins.DROP_OUT, joins.STOPS):
+            return figure
+        whole_part = wizard_text.MSG_PART_OF_SECTION.format(at.name, wizard_text.MSG_PART_OF_SECTION.format(role[ROLE], tail))
+        written = self._parts[figure]
+        part = dict(written)
+        part[notation.LINES] = with_tail(bars=written[notation.LINES], count=at.bars, tail=tail, eighths=leaves.get(joins.TAIL_EIGHTHS, 0))
+        self._parts[whole_part] = part
+        self._shaped.append(whole_part)
+        return whole_part
+
     def _play_tune(self, at, *, role):
-        """Have a player of lines play the section's tune: one written by hand, or the lines given or sketched for the player, the one part each time a tune returns note for note."""
-        own_tune = (self._song.get(OWN_TUNES, {}).get(at.section[KIND]) or self._song.get(TAKEN_TUNES, {}).get(at.section[KIND])) if role is at.tune_role else None
-        if at.section[KIND] == INTRO_KIND and self._song.get(OWN_INTRO, {}).get(role[ROLE]) is not None:
-            own_tune = self._song[OWN_INTRO][role[ROLE]]
-        own_solo = self._song.get(OWN_SOLOS, {}).get(self._solos_met, {}).get(role[ROLE]) if at.section[KIND] == SOLO_KIND else None
-        if at.section[KIND] == INTRO_KIND and self._song.get(OWN_INTROS, {}).get(self._intros_met, {}).get(role[ROLE]) is not None:
-            # One part of an intro keeps notes of its own, as one solo does, named for its scene.
-            own_solo = self._song[OWN_INTROS][self._intros_met][role[ROLE]]
-        if own_solo is not None:
-            own_tune = own_solo
-        if own_tune is not None:
-            # A tune written by hand is played as written by every section of its kind, and nothing here writes one over it;
-            # a solo written by hand is that one solo's alone.
-            part = wizard_text.MSG_OWN_TUNE_PART.format(kind=at.section[KIND] if own_solo is None else at.scene_name)
-            self._parts.setdefault(part, {RAW: copy.deepcopy(own_tune)})
-            # The notes keep the chains the player's written part would run: the tune's phrasing is the tune's player's alone.
-            at.play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [wizard_text.MSG_TIMING_CHAIN.format(role[ROLE]), *(self._phrased if role is at.tune_role else [])]}
+        """Have a player of lines play the section's tune: one written by hand, or the lines given or sketched for the player, the
+        one part each time a tune returns note for note."""
+        chains = [wizard_text.MSG_TIMING_CHAIN.format(role[ROLE])]
+        if role is at.tune_role:
+            # The tune's phrasing is the tune's player's alone.
+            chains.extend(self._phrased)
+        part, own = self._own_tune_part(at=at, role=role)
+        if own is not None:
+            # A tune written by hand is played as written by every section of its kind, and nothing here writes one over it; a
+            # solo written by hand is that one solo's alone. The notes keep the chains the player's written part would run.
+            self._parts.setdefault(part, {RAW: copy.deepcopy(own)})
+            at.play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: chains}
             return
+        part = self._tune_written(at=at, role=role)
+        if part is not None:
+            at.play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: chains}
+
+    def _own_tune_part(self, *, at, role):
+        """Return the name of the part and the notes of a tune written by hand that a player plays in the section, or two Nones:
+        a solo's or a part of the intro's own notes, named for its scene, else the kind's own or taken tune for the tune's player."""
+        own_solo = self._own_solo_notes(at=at, role=role)
+        if own_solo is not None:
+            return wizard_text.MSG_OWN_TUNE_PART.format(kind=at.scene_name), own_solo
+        own = self._own_tune_notes(at=at, role=role)
+        if own is not None:
+            return wizard_text.MSG_OWN_TUNE_PART.format(kind=at.section[KIND]), own
+        return None, None
+
+    def _own_tune_notes(self, *, at, role):
+        """Return the notes of the kind's tune written by hand or taken, for the tune's player, or of the intro the player has of
+        its own for every part, or None."""
+        kind = at.section[KIND]
+        notes = None
+        if role is at.tune_role:
+            own_tunes = self._song.get(OWN_TUNES, {})
+            taken = self._song.get(TAKEN_TUNES, {})
+            notes = own_tunes.get(kind) or taken.get(kind)
+        own_intro = self._song.get(OWN_INTRO, {})
+        if kind == INTRO_KIND and own_intro.get(role[ROLE]) is not None:
+            notes = own_intro[role[ROLE]]
+        return notes
+
+    def _own_solo_notes(self, *, at, role):
+        """Return the notes a player has of its own for this one solo, or this one part of the intro, or None."""
+        kind = at.section[KIND]
+        notes = None
+        if kind == SOLO_KIND:
+            own_solos = self._song.get(OWN_SOLOS, {})
+            of_solo = own_solos.get(self._solos_met, {})
+            notes = of_solo.get(role[ROLE])
+        if kind == INTRO_KIND:
+            own_intros = self._song.get(OWN_INTROS, {})
+            of_part = own_intros.get(self._intros_met, {})
+            if of_part.get(role[ROLE]) is not None:
+                # One part of an intro keeps notes of its own, as one solo does, named for its scene.
+                notes = of_part[role[ROLE]]
+        return notes
+
+    def _tune_written(self, *, at, role):
+        """Return the part of the tune a player plays in the section, writing it where no section wrote it before, or None where
+        the player's lines are silent; a tune that returns note for note, as a chorus's, is the one part each time, where the
+        song's sections are planned."""
         part = wizard_text.MSG_PART_OF_SECTION.format(at.name, role[ROLE])
-        if part not in self._parts:
-            lines = self._lines_of(at, role=role)
-            if notation.is_silent(lines):
-                return
-            written = tune_part(lines=lines, role=role, meter=self._meter, grid=self._habits[melody.GRID])
-            # A tune that returns note for note, as a chorus's, is the one part each time, where the song's sections are planned.
-            same = self._same_tunes.get((role[ROLE], repr(written))) if DRAWN_AS in at.section else None
-            if same is not None:
-                part = same
-            else:
-                self._parts[part] = written
-                self._shaped.append(part)
-                self._same_tunes[(role[ROLE], repr(written))] = part
         if part in self._parts:
-            at.play[role[ROLE]] = {PART: part, ONCE: True, CHAINS: [wizard_text.MSG_TIMING_CHAIN.format(role[ROLE]), *(self._phrased if role is at.tune_role else [])]}
+            return part
+        lines = self._lines_of(at, role=role)
+        if notation.is_silent(lines):
+            return None
+        written = tune_part(lines=lines, role=role, meter=self._meter, grid=self._habits[melody.GRID])
+        same = (role[ROLE], repr(written))
+        if DRAWN_AS in at.section and same in self._same_tunes:
+            return self._same_tunes[same]
+        self._parts[part] = written
+        self._shaped.append(part)
+        self._same_tunes[same] = part
+        return part
 
     def as_input(self):
         """Return the song as arranged, a song wizard input: its tracks, parts, generators, chains and the scenes of its form."""
-        generators = {follow_chords_plugin.SECTION: {wizard_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: wizard_text.MSG_CHORDS_TRACK}}, **self._extra}
+        generators = self._generators()
+        said = self._said_of_band()
+        own_sounds = self._kit_sounds_as_instruments()
+        notes = wizard_text.MSG_MADE_SONG_NOTES.format(title=self._song[TITLE], style=self._style[TITLE], template=self._song[TEMPLATE], picks=said, form='\n'.join(self._notes))
+        scales = {self._scale: {ROOT: self._song[KEY][ROOT], TYPE: self._scale_type}}
+        scales.update(self._more_scales)
+        drum_tracks = [piece for piece in self._drum_tracks if piece not in own_sounds]
+        given = {
+            NAME: self._song[NAME],
+            TITLE: self._song[TITLE],
+            DESCRIPTION: self._song.get(DESCRIPTION, self._song[TITLE]),
+            GENRE: self._style[GENRE],
+            SUBGENRE: self._song[TEMPLATE],
+            VARIANT: self._song.get(VARIANT),
+            NOTES: notes,
+            SCALES: scales,
+            SCALE: self._scale,
+            TEMPO: self._tempo,
+            FEEL: self._style[FEEL],
+            SHAPED: self._shaped,
+            INSTRUMENTS: self._instruments,
+            TRACKS: self._tracks,
+            DRUM_TRACKS: drum_tracks,
+            MUTED_TRACKS: [wizard_text.MSG_CHORDS_TRACK],
+            GENERATORS: generators,
+            CHAINS: self._chains,
+            PARTS: self._parts,
+            FORM: self._form,
+        }
+        self._add_song_wide(given)
+        return given
+
+    def _generators(self):
+        """Return the generators the song's clips run, by section: what follows the chords, the players' ways' own, the tune's
+        phrasing, the players' Musicians, the progressions and voice leading."""
+        follow = {wizard_text.MSG_FOLLOW_CHORDS_NAME: {FollowChordsSetting.CHORDS_FROM: wizard_text.MSG_CHORDS_TRACK}}
+        generators = {follow_chords_plugin.SECTION: follow}
+        generators.update(self._extra)
         if self._phrased:
             # The tune is delivered as a player would deliver it, by one Phrasing every clip of the tune runs after its timing.
             generators[phrasing_plugin.SECTION] = {wizard_text.MSG_TUNE_PHRASING_NAME: dict(self._song[TUNE_PHRASING])}
             self._chains[wizard_text.MSG_TUNE_PHRASING_NAME] = [{phrasing_plugin.NAME: wizard_text.MSG_TUNE_PHRASING_NAME}]
         if self._style[GENRE] not in band.GENRES_WITHOUT_MUSICIANS:
-            # Each player's clips are played by the player's Musician, first in their chains, and every piece of the kit by the drummer's.
-            usual_tune = next((role[ROLE] for role, entry in self._pitched if FIGURE not in entry and not role.get(ANSWERS)), None)
-            tune_track = self._song.get(TUNE_BY_SONG, usual_tune)
-            members = [band.BandMember(track=role[ROLE], player=role.get(PLAYER), backing=FIGURE in entry, answers=bool(role.get(ANSWERS)), sound=self._instruments.get(self._tracks[role[ROLE]])) for role, entry in self._pitched]
-            musicians, musician_of = band.band_of(members=members, drummer=drummer_role(self._roles), drum_tracks=self._drum_tracks, tune_track=tune_track if tune_track in self._tracks else None, own=self._song.get(MUSICIANS, {}))
-            heard = set()
-            for scene in self._form:
-                for track, clip in scene[PLAY].items():
-                    if track in musician_of:
-                        clip = {PART: clip} if isinstance(clip, str) else clip
-                        scene[PLAY][track] = {**clip, CHAINS: [musician_of[track], *clip.get(CHAINS, [])]}
-                        heard.add(musician_of[track])
-            generators[musician_plugin.SECTION] = {name: settings for name, settings in musicians.items() if name in heard}
-            self._chains.update({name: [{musician_plugin.NAME: name}] for name in heard})
+            generators[musician_plugin.SECTION] = self._musicians_heard()
         if self._progressions:
             generators[PROGRESSIONS] = self._progressions
-        if any(role.get(VOICE_LEADING) for role, _ in self._pitched):
+        if self._leads_voices():
             generators[VOICE_LEADINGS] = {NEAR: dict(NEAR_VOICES)}
-        said = '\n'.join(band_said(style=self._style, song=self._song, roles=self._roles) + [wizard_text.MSG_MADE_PICK.format(trait, value) for trait, value in self._picks.items()])
-        # A piece of the kit that sounds as a General MIDI sound is a track with an instrument of its own, and no drum track.
-        own_sounds = {piece: sounds_as[PLAYED_SOUND] for piece, sounds_as in self._song.get(PIECE_SOUNDS, {}).items() if PLAYED_SOUND in sounds_as and piece in self._tracks}
+        return generators
+
+    def _musicians_heard(self):
+        """Return the Musicians the song's clips run, by name: each player's clips are played by the player's Musician, first in
+        their chains, and every piece of the kit by the drummer's; a Musician nobody's clips run is left out."""
+        tune_track = self._tune_track()
+        musicians, musician_of = band.band_of(members=self._band_members(), drummer=drummer_role(self._roles), drum_tracks=self._drum_tracks,
+                                              tune_track=tune_track, own=self._song.get(MUSICIANS, {}))
+        heard = set()
+        for scene in self._form:
+            for track, clip in scene[PLAY].items():
+                if track in musician_of:
+                    scene[PLAY][track] = _with_chain_first(clip=clip, chain=musician_of[track])
+                    heard.add(musician_of[track])
+        for name in heard:
+            self._chains[name] = [{musician_plugin.NAME: name}]
+        return {name: settings for name, settings in musicians.items() if name in heard}
+
+    def _band_members(self):
+        """Return each pitched player as a member of the band, for the Musicians."""
+        members = []
+        for role, entry in self._pitched:
+            sound = self._instruments.get(self._tracks[role[ROLE]])
+            members.append(band.BandMember(track=role[ROLE], player=role.get(PLAYER), backing=FIGURE in entry, answers=bool(role.get(ANSWERS)), sound=sound))
+        return members
+
+    def _tune_track(self):
+        """Return the track that has the tune: the song's own choice, or the first player of lines who answers nobody; None where
+        the song has no such track."""
+        usual = None
+        for role, entry in self._pitched:
+            if FIGURE not in entry and not role.get(ANSWERS):
+                usual = role[ROLE]
+                break
+        tune_track = self._song.get(TUNE_BY_SONG, usual)
+        if tune_track in self._tracks:
+            return tune_track
+        return None
+
+    def _leads_voices(self):
+        """Return whether any pitched player leads its voices."""
+        for role, _ in self._pitched:
+            if role.get(VOICE_LEADING):
+                return True
+        return False
+
+    def _said_of_band(self):
+        """Return what the notes say of the band and of each pick, a line each."""
+        said = band_said(style=self._style, song=self._song, roles=self._roles)
+        for trait, value in self._picks.items():
+            said.append(wizard_text.MSG_MADE_PICK.format(trait, value))
+        return '\n'.join(said)
+
+    def _kit_sounds_as_instruments(self):
+        """Give each piece of the kit that sounds as a General MIDI sound a track with an instrument of its own, and return those
+        pieces' sounds, by piece: such a piece has no drum track."""
+        own_sounds = {}
+        for piece, sounds_as in self._song.get(PIECE_SOUNDS, {}).items():
+            if PLAYED_SOUND in sounds_as and piece in self._tracks:
+                own_sounds[piece] = sounds_as[PLAYED_SOUND]
         for piece, sound in own_sounds.items():
-            self._instruments[wizard_text.MSG_PIECE_INSTRUMENT.format(piece)] = sound
-            self._tracks[piece] = wizard_text.MSG_PIECE_INSTRUMENT.format(piece)
-        given = {
-            NAME: self._song[NAME], TITLE: self._song[TITLE], DESCRIPTION: self._song.get(DESCRIPTION, self._song[TITLE]), GENRE: self._style[GENRE], SUBGENRE: self._song[TEMPLATE], VARIANT: self._song.get(VARIANT),
-            NOTES: wizard_text.MSG_MADE_SONG_NOTES.format(title=self._song[TITLE], style=self._style[TITLE], template=self._song[TEMPLATE], picks=said, form='\n'.join(self._notes)),
-            SCALES: {self._scale: {ROOT: self._song[KEY][ROOT], TYPE: self._scale_type}, **self._more_scales}, SCALE: self._scale, TEMPO: self._tempo,
-            FEEL: self._style[FEEL], SHAPED: self._shaped, INSTRUMENTS: self._instruments, TRACKS: self._tracks, DRUM_TRACKS: [piece for piece in self._drum_tracks if piece not in own_sounds], MUTED_TRACKS: [wizard_text.MSG_CHORDS_TRACK], GENERATORS: generators, CHAINS: self._chains,
-            PARTS: self._parts, FORM: self._form,
-        }
+            instrument = wizard_text.MSG_PIECE_INSTRUMENT.format(piece)
+            self._instruments[instrument] = sound
+            self._tracks[piece] = instrument
+        return own_sounds
+
+    def _add_song_wide(self, given):
+        """Add what holds for the whole song where it says: its groove, how far the feel moves each track's notes, and its meter."""
         groove = self._song.get(GROOVE, self._style.get(GROOVE))
         if groove and groove != NO_GROOVE:
             given[GROOVE] = groove
         if self._song.get(DYNAMICS):
-            # How far the feel moves each track's notes: a player's own track, and for the drummer every piece of the kit.
-            of_tracks = {role[ROLE]: self._song[DYNAMICS][role[ROLE]] for role in self._roles if role[ROLE] in self._song[DYNAMICS] and role[ROLE] in self._tracks}
-            if drummer_role(self._roles) in self._song[DYNAMICS]:
-                of_tracks.update({piece: self._song[DYNAMICS][drummer_role(self._roles)] for piece in self._drum_tracks})
-            given[DYNAMICS] = of_tracks
+            given[DYNAMICS] = self._dynamics_of_tracks()
         if self._meter != COMMON_TIME:
             given[TIME_SIGNATURE] = self._meter
-        return given
+
+    def _dynamics_of_tracks(self):
+        """Return how far the feel moves each track's notes: a player's own track, and for the drummer every piece of the kit."""
+        dynamics = self._song[DYNAMICS]
+        of_tracks = {}
+        for role in self._roles:
+            if role[ROLE] in dynamics and role[ROLE] in self._tracks:
+                of_tracks[role[ROLE]] = dynamics[role[ROLE]]
+        drummer = drummer_role(self._roles)
+        if drummer in dynamics:
+            for piece in self._drum_tracks:
+                of_tracks[piece] = dynamics[drummer]
+        return of_tracks
 
 
 def arranged(*, style, song):
