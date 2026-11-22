@@ -38,6 +38,12 @@ class Part:
         """Return whether the sound is a note or a chord of them, which phrasing changes; a rest and a phrase are left as they are."""
         return self.sound[sound_values.KIND] in (sound_values.NOTE, sound_values.CHORD)
 
+    def notes(self):
+        """Return the sound's notes: a chord's, or the one note."""
+        if self.sound[sound_values.KIND] == sound_values.CHORD:
+            return self.sound[sound_values.NOTES]
+        return [self.sound]
+
     def pitch(self):
         """Return the highest pitch that sounds, to tell a note from the note after it."""
         if self.sound[sound_values.KIND] == sound_values.CHORD:
@@ -50,7 +56,7 @@ class Part:
 
     def loudness(self):
         """Return how loud the sound is, the loudest of a chord's notes, or None for a sound with no loudness of its own."""
-        notes = self.sound[sound_values.NOTES] if self.sound[sound_values.KIND] == sound_values.CHORD else [self.sound]
+        notes = self.notes()
         loudest = [note[sound_values.VELOCITY] for note in notes if note[sound_values.KIND] == sound_values.NOTE and note[sound_values.VELOCITY] is not None]
         if not loudest:
             return None
@@ -58,7 +64,7 @@ class Part:
 
     def lowest(self):
         """Return the lowest pitch that sounds, or None for a sound with no pitch."""
-        notes = self.sound[sound_values.NOTES] if self.sound[sound_values.KIND] == sound_values.CHORD else [self.sound]
+        notes = self.notes()
         pitches = [note[sound_values.MIDI] for note in notes if note[sound_values.KIND] == sound_values.NOTE]
         if not pitches:
             return None
