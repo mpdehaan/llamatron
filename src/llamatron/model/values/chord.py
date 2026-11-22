@@ -82,14 +82,9 @@ class Chord:
     def get_length(self):
         """The length of the longest note, or None if any note doesn't have a length yet."""
         lengths = [note.get_length() for note in self._notes]
-        return None if None in lengths else max(lengths)
-
-    def _sorted_pitches_and_lengths(self):
-        # The middle value stops a length of None being compared with a number.
-        ordered = sorted(
-            (note.get_midi_number(), note.get_length() is None, note.get_length() or NO_LENGTH) for note in self._notes
-        )
-        return tuple(ordered)
+        if None in lengths:
+            return None
+        return max(lengths)
 
     def __eq__(self, other):
         if not isinstance(other, Chord):
@@ -102,17 +97,34 @@ class Chord:
     def __repr__(self):
         return reprs.REPR_CHORD.format(notes=self._notes)
 
+    def _sorted_pitches_and_lengths(self):
+        ordered = []
+        for note in self._notes:
+            length = note.get_length()
+            # The middle value stops a length of None being compared with a number.
+            ordered.append((note.get_midi_number(), length is None, length or NO_LENGTH))
+        ordered.sort()
+        return tuple(ordered)
+
 
 def movement(*, pitches, before):
     """Return how far a voicing's notes move from the chord before, as MIDI numbers: lowest to lowest when both have as many
     notes, and otherwise each note to the nearest of the chord before. Voice leading and the munge that voices chords nearest
     both choose the voicing that moves least."""
     now = sorted(pitches)
+    moved = 0
     if len(now) == len(before):
-        return sum(abs(pitch - other) for pitch, other in zip(now, before))
-    return sum(distance_to_nearest(pitch=pitch, others=before) for pitch in now)
+        for pitch, other in zip(now, before):
+            moved += abs(pitch - other)
+        return moved
+    for pitch in now:
+        moved += distance_to_nearest(pitch=pitch, others=before)
+    return moved
 
 
 def distance_to_nearest(*, pitch, others):
     """Return how far a pitch is from the nearest of other pitches."""
-    return min(abs(pitch - other) for other in others)
+    distances = []
+    for other in others:
+        distances.append(abs(pitch - other))
+    return min(distances)
