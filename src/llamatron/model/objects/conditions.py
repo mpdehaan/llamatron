@@ -18,6 +18,8 @@ A scene's and a clip's sets and adds of the registers are checked here too, sinc
 the statements are usually written against.
 """
 
+import operator as operations
+
 from llamatron.model.file.checks import is_whole_number, listed
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.schema import file_format, limits
@@ -44,20 +46,20 @@ NO_NAME = ''
 
 # How each comparison answers for two integers.
 COMPARED = {
-    Operator.LESS: lambda left, right: left < right,
-    Operator.AT_MOST: lambda left, right: left <= right,
-    Operator.SAME: lambda left, right: left == right,
-    Operator.AT_LEAST: lambda left, right: left >= right,
-    Operator.MORE: lambda left, right: left > right,
-    Operator.DIFFERENT: lambda left, right: left != right,
+    Operator.LESS: operations.lt,
+    Operator.AT_MOST: operations.le,
+    Operator.SAME: operations.eq,
+    Operator.AT_LEAST: operations.ge,
+    Operator.MORE: operations.gt,
+    Operator.DIFFERENT: operations.ne,
 }
-# What each sum makes of two integers.
+# What each sum makes of two integers: a division rounds down, and a remainder takes the sign of what divides.
 WORKED_OUT = {
-    Operator.PLUS: lambda left, right: left + right,
-    Operator.MINUS: lambda left, right: left - right,
-    Operator.TIMES: lambda left, right: left * right,
-    Operator.REMAINDER: lambda left, right: left % right,
-    Operator.DIVIDED_BY: lambda left, right: left // right,
+    Operator.PLUS: operations.add,
+    Operator.MINUS: operations.sub,
+    Operator.TIMES: operations.mul,
+    Operator.REMAINDER: operations.mod,
+    Operator.DIVIDED_BY: operations.floordiv,
 }
 
 
@@ -65,7 +67,9 @@ def parts_of(operator):
     """Return the parts a statement with an operator holds after it, in order: none for odd and even, a value for a comparison, and a value, a comparison and what to compare with for a sum."""
     if operator in file_format.PARITY_OPERATORS:
         return ()
-    return ARITHMETIC_PARTS if operator in file_format.ARITHMETIC_OPERATORS else COMPARING_PARTS
+    if operator in file_format.ARITHMETIC_OPERATORS:
+        return ARITHMETIC_PARTS
+    return COMPARING_PARTS
 
 
 def new_statement(register):
@@ -76,23 +80,15 @@ def new_statement(register):
 def with_operator(*, statement, operator):
     """Return a statement given another operator, keeping each part the new operator still takes and filling in the rest, so that no statement is left half written."""
     changed = {StatementPart.REGISTER: statement[StatementPart.REGISTER], StatementPart.OPERATOR: operator}
-    starting = {StatementPart.VALUE: NEW_DIVISOR if operator in file_format.DIVIDING_OPERATORS else NEW_NUMBER, StatementPart.COMPARISON: Operator.SAME, StatementPart.AGAINST: NEW_NUMBER}
+    new_value = NEW_NUMBER
+    if operator in file_format.DIVIDING_OPERATORS:
+        new_value = NEW_DIVISOR
+    starting = {StatementPart.VALUE: new_value, StatementPart.COMPARISON: Operator.SAME, StatementPart.AGAINST: NEW_NUMBER}
     for part in parts_of(operator):
         changed[part] = statement.get(part, starting[part])
     if operator in file_format.DIVIDING_OPERATORS and changed[StatementPart.VALUE] == ZERO:
         changed[StatementPart.VALUE] = starting[StatementPart.VALUE]
     return changed
-
-
-def _is_number(value):
-    return is_whole_number(value) and -limits.MAX_STATEMENT_NUMBER <= value <= limits.MAX_STATEMENT_NUMBER
-
-
-def _check_number(*, name, part, value):
-    """Refuse what a statement works with unless it is a register's or a draw's name or an integer within the limits."""
-    if value not in file_format.VALUE_NAMES and not _is_number(value):
-        raise InvalidValue(errors.ERR_STATEMENT_BAD_NUMBER.format(
-            name=name, part=part, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, value=value))
 
 
 def check_statement(*, name, statement):
@@ -122,7 +118,10 @@ def statement_of(parts):
     """Return the statement made of parts in the order they are written, None for a part left out, or None when the parts name no register or make no whole statement, as rows written by hand can."""
     if parts[REGISTER_PLACE] is None:
         return None
-    statement = {part: value for part, value in zip(EVERY_PART, parts) if value is not None}
+    statement = {}
+    for part, value in zip(EVERY_PART, parts):
+        if value is not None:
+            statement[part] = value
     try:
         check_statement(name=NO_NAME, statement=statement)
     except InvalidValue:
@@ -143,10 +142,7 @@ def statements_setting(name):
 def register_values_setting(name):
     """Return the description of a setting that gives some of the registers an integer each: what to set them to, or what to add to them."""
     def check(value):
-        right = isinstance(value, dict) and all(
-            register in file_format.REGISTER_NAMES and is_whole_number(amount) and limits.MIN_REGISTER_VALUE <= amount <= limits.MAX_REGISTER_VALUE
-            for register, amount in value.items())
-        if not right:
+        if not _is_register_values(value):
             raise InvalidValue(errors.ERR_BAD_REGISTER_VALUES.format(
                 name=name, names=listed(file_format.REGISTER_NAMES), lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, value=value))
     return Checked(name=name, check=check)
@@ -161,7 +157,13 @@ def with_register_value(*, values, register, value):
         held.pop(register, None)
     else:
         held[register] = value
-    return {name: held[name] for name in file_format.REGISTER_NAMES if name in held} or None
+    ordered = {}
+    for name in file_format.REGISTER_NAMES:
+        if name in held:
+            ordered[name] = held[name]
+    if not ordered:
+        return None
+    return ordered
 
 
 def with_statement(*, statements, place, statement):
@@ -178,11 +180,6 @@ def with_statement(*, statements, place, statement):
     else:
         table[place] = dict(statement)
     return table or None
-
-
-def _number(*, written, values):
-    """Return what a statement works with as an integer: a register's or a draw's value, or the number written."""
-    return values[written] if written in file_format.VALUE_NAMES else written
 
 
 def is_true(*, statement, values):
@@ -202,10 +199,47 @@ def is_true(*, statement, values):
 
 def draws_read(statement):
     """Return the draws a statement reads, by name, in the order the draws come: its first part, its value or what it is compared with."""
-    named = {statement.get(part) for part in (StatementPart.REGISTER, StatementPart.VALUE, StatementPart.AGAINST)}
-    return tuple(name for name in file_format.DRAW_NAMES if name in named)
+    named = {statement.get(StatementPart.REGISTER), statement.get(StatementPart.VALUE), statement.get(StatementPart.AGAINST)}
+    read = []
+    for name in file_format.DRAW_NAMES:
+        if name in named:
+            read.append(name)
+    return tuple(read)
 
 
 def any_true(*, statements, values):
     """Return whether any statement of a table holds for the registers' values. A table with no statement never does."""
-    return any(is_true(statement=statement, values=values) for statement in statements)
+    for statement in statements:
+        if is_true(statement=statement, values=values):
+            return True
+    return False
+
+
+def _is_number(value):
+    return is_whole_number(value) and -limits.MAX_STATEMENT_NUMBER <= value <= limits.MAX_STATEMENT_NUMBER
+
+
+def _check_number(*, name, part, value):
+    """Refuse what a statement works with unless it is a register's or a draw's name or an integer within the limits."""
+    if value not in file_format.VALUE_NAMES and not _is_number(value):
+        raise InvalidValue(errors.ERR_STATEMENT_BAD_NUMBER.format(
+            name=name, part=part, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, value=value))
+
+
+def _is_register_values(value):
+    """Return whether a setting gives registers an integer each, within the registers' limits."""
+    if not isinstance(value, dict):
+        return False
+    for register, amount in value.items():
+        if register not in file_format.REGISTER_NAMES or not is_whole_number(amount):
+            return False
+        if not limits.MIN_REGISTER_VALUE <= amount <= limits.MAX_REGISTER_VALUE:
+            return False
+    return True
+
+
+def _number(*, written, values):
+    """Return what a statement works with as an integer: a register's or a draw's value, or the number written."""
+    if written in file_format.VALUE_NAMES:
+        return values[written]
+    return written
