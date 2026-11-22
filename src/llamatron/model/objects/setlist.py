@@ -114,7 +114,9 @@ STARTER_DEGREE = 1
 
 def starter_pattern():
     """Return the data of the starter pattern: the root on each beat of one bar, with a blank gate, so each note lasts its step."""
-    degrees = [STARTER_DEGREE if step % STARTER_STEPS_PER_BEAT == 0 else None for step in range(STARTER_PATTERN_STEPS)]
+    degrees = [None] * STARTER_PATTERN_STEPS
+    for step in range(0, STARTER_PATTERN_STEPS, STARTER_STEPS_PER_BEAT):
+        degrees[step] = STARTER_DEGREE
     return {PatternSetting.STEPS: STARTER_PATTERN_STEPS, Row.DEGREE: degrees}
 
 
@@ -440,7 +442,9 @@ class Setlist(HoldsSections, HoldsSettings):
     def get_pattern_step_size(self, pattern):
         """Return how long each step of a pattern is: its own step size, or else the set's."""
         step_size = pattern.get_step_size()
-        return self.get_step_size() if step_size is None else step_size
+        if step_size is None:
+            return self.get_step_size()
+        return step_size
 
     def get_pattern_length(self, pattern):
         """Return how long one pass through a pattern lasts, in whole notes: its steps times its step size.
@@ -495,7 +499,9 @@ class Setlist(HoldsSections, HoldsSettings):
     def follow_action_of(self, clip_slot):
         """Return what a clip slot sends down in real-time playback when its scene is done: its own setting, or the set's default."""
         written = clip_slot.get_written_follow_action()
-        return self.get_default_follow_action() if written is None else written
+        if written is None:
+            return self.get_default_follow_action()
+        return written
 
     def is_protected(self):
         """Return whether the set's file is protected, so that the tracker saves a copy rather than writing over it."""
@@ -597,7 +603,9 @@ class Setlist(HoldsSections, HoldsSettings):
     def _set_text(self, *, name, text):
         """Store text that's only for people, or leave it out of the file when it's blank."""
         SETTINGS[name].check(text)
-        self._settings[name] = text if text.strip() else None
+        if not text.strip():
+            text = None
+        self._settings[name] = text
 
     # Changing the named sections, all the same way. An item is a Pattern, NamedScale, Chain,
     # generator settings object or Song, and the set keeps the names in it right.
@@ -621,7 +629,11 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def every_generator_name(self):
         """Return the name of every generator of every kind and of every chain, which share one list in a set file and so may share no name."""
-        return [name for section in sections.generator_sections() for name in self._section(section).names()]
+        names = []
+        for section in sections.generator_sections():
+            held = self._section(section)
+            names += held.names()
+        return names
 
     def _check_generator_name(self, *, section, name, old):
         """Refuse a name for a generator or a chain that a generator or chain of another kind has, old being the name it is
@@ -674,7 +686,12 @@ class Setlist(HoldsSections, HoldsSettings):
     def _rename_in_generator_order(self, *, kind, old, new):
         order = self._settings[SetlistSetting.GENERATOR_ORDER]
         if order:
-            self._settings[SetlistSetting.GENERATOR_ORDER] = [{kind: new} if entry == {kind: old} else entry for entry in order]
+            renamed = []
+            for entry in order:
+                if entry == {kind: old}:
+                    entry = {kind: new}
+                renamed.append(entry)
+            self._settings[SetlistSetting.GENERATOR_ORDER] = renamed
 
     def referring_parts(self):
         """Return its chains, which name generators, and its songs, which name everything else."""
@@ -774,7 +791,12 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def named_by_songs(self):
         """Return every item a song could bring with it, as (section, name): the scales, patterns, generators, chains, grooves and instruments."""
-        return [(section, item) for section in sections.setlist_sections() if section != Section.SONGS for item in self.get_item_names(section)]
+        items = []
+        for section in sections.setlist_sections():
+            if section != Section.SONGS:
+                for item in self.get_item_names(section):
+                    items.append((section, item))
+        return items
 
     def remove_unused(self):
         """Take out everything nothing in the set names, so that a set made for one song holds only what the song uses."""
@@ -785,7 +807,10 @@ class Setlist(HoldsSections, HoldsSettings):
         only it ran after, so the search goes round until nothing more is left unnamed."""
         while True:
             named = self.everything_named()
-            unnamed = [(section, item) for section, item in items if self.has_item(section=section, name=item) and (section, item) not in named]
+            unnamed = []
+            for section, item in items:
+                if self.has_item(section=section, name=item) and (section, item) not in named:
+                    unnamed.append((section, item))
             if not unnamed:
                 return
             for section, item in unnamed:
@@ -872,13 +897,11 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def first_song_name(self):
         """Return the name of the first song, or None if the set has none."""
-        names = self.get_song_names()
-        return names[0] if names else None
+        return _first_of(self.get_song_names())
 
     def first_scale_name(self):
         """Return the name of the first scale, which a new song starts in, or None if the set has none."""
-        names = self.get_scale_names()
-        return names[0] if names else None
+        return _first_of(self.get_scale_names())
 
     # What uses what across the set, so that the tracker can refuse to delete something still in use.
 
@@ -891,11 +914,21 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def scenes_naming(self, *, section, name):
         """Return (song name, number, scene) for each scene that chose an item of a section, not counting the songs' own choices."""
-        return [(song, number, scene) for song in self.get_song_names() for number, scene in self.get_song(song).scenes_naming(section=section, name=name)]
+        naming = []
+        for song in self.get_song_names():
+            held = self.get_song(song)
+            for number, scene in held.scenes_naming(section=section, name=name):
+                naming.append((song, number, scene))
+        return naming
 
     def tracks_naming(self, *, section, name):
         """Return (song name, track name) for each track that chose an item of a section."""
-        return [(song, track) for song in self.get_song_names() for track in self.get_song(song).tracks_naming(section=section, name=name)]
+        naming = []
+        for song in self.get_song_names():
+            held = self.get_song(song)
+            for track in held.tracks_naming(section=section, name=name):
+                naming.append((song, track))
+        return naming
 
     def clip_slots_naming(self, *, section, name):
         """Return (song name, number, scene, track) for each clip that names an item of a section."""
@@ -1206,3 +1239,9 @@ class Setlist(HoldsSections, HoldsSettings):
         """Return the names of the chains, in the set's order."""
         return self._section(Section.CHAINS).names()
 
+
+def _first_of(names):
+    """Return the first of some names, or None when there are none."""
+    if not names:
+        return None
+    return names[0]
