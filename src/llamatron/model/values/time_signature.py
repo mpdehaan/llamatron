@@ -20,7 +20,7 @@ MIN_BEATS = 1
 MAX_BEATS = 32
 UNITS = (1, 2, 4, 8, 16, 32)
 # The units as a message lists them.
-UNITS_LISTED = ', '.join(str(unit) for unit in UNITS)
+UNITS_LISTED = ', '.join(map(str, UNITS))
 # In compound meters like 6/8, 9/8 and 12/8 the beat is a dotted note, three of the bottom
 # number's notes, so a bar of 6/8 is counted in two, not six.
 COMPOUND_GROUP = 3
@@ -32,7 +32,9 @@ WHOLE = 1
 
 def is_time_signature(text):
     """Return whether text is a time signature, written like 4/4, with beats and a note value in range."""
-    match = _WRITTEN.fullmatch(text) if isinstance(text, str) else None
+    if not isinstance(text, str):
+        return False
+    match = _WRITTEN.fullmatch(text)
     if match is None:
         return False
     beats = int(match.group(1))
@@ -76,7 +78,9 @@ class TimeSignature:
 
     def beat_length(self):
         """Return how long one beat lasts, in whole notes: the bottom number's note, or three of them in a compound meter."""
-        notes = COMPOUND_GROUP if self.is_compound() else 1
+        notes = 1
+        if self.is_compound():
+            notes = COMPOUND_GROUP
         return Rational(notes, self._unit)
 
     def bar_length(self):
