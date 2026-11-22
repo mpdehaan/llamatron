@@ -52,7 +52,10 @@ def reading(where):
         correction = problem.get_correction()
         if correction is not None:
             correction.set_place(where)
-        raise SongFileError(str(problem) if where is TOP_OF_FILE else errors.ERR_AT.format(where=where, problem=problem), correction=correction) from None
+        said = str(problem)
+        if where is not TOP_OF_FILE:
+            said = errors.ERR_AT.format(where=where, problem=problem)
+        raise SongFileError(said, correction=correction) from None
 
 # How messages list choices, like "arp, auto_ratchet".
 LIST_SEPARATOR = ', '
@@ -60,7 +63,7 @@ LIST_SEPARATOR = ', '
 
 def listed(items):
     """Return items as text for a message, separated by commas and never shown as a Python list."""
-    return LIST_SEPARATOR.join(str(item) for item in items)
+    return LIST_SEPARATOR.join(map(str, items))
 
 
 
@@ -285,4 +288,6 @@ def time_length(value):
 def in_whole_notes(*, time, bar):
     """Return a time setting as a length in whole notes, a count of bars taking a bar as long as given."""
     parsed = time_length(time)
-    return bar * parsed.count if isinstance(parsed, Bars) else parsed
+    if isinstance(parsed, Bars):
+        return bar * parsed.count
+    return parsed
