@@ -74,7 +74,9 @@ class StepRow(HasCells):
     def step_length(self, *, default_step, bar):
         """Return how long each step is, in whole notes."""
         step = self.get_step()
-        return default_step if step is None else in_whole_notes(time=step, bar=bar)
+        if step is None:
+            return default_step
+        return in_whole_notes(time=step, bar=bar)
 
     def generator_values(self, *, default_step, bar):
         """Return the row and its step as the generator that runs takes them."""
