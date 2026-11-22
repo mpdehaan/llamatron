@@ -29,6 +29,8 @@ NOTE_TEXT = re.compile(r'([A-G][#b]?)(\d+)')
 # The classes a clip's list holds, for asking whether a value is already one of them.
 POSITION_TYPES = (Note, Chord, Rest, Degree, Held)
 POSITION_KINDS = frozenset(POSITION_TYPES)
+# Where a clip starts, and the length of a clip that plays nothing.
+CLIP_START = 0
 # Every clip gets the next number when it's made, whichever grid it ends up in.
 _next_clip_id = count(0)
 
@@ -368,6 +370,14 @@ class Clip:
             name=self._name, sounds=self.played_sounds() * times, scale=self._scale,
             note_length=self._note_length, controls=controls,
         )
+
+    def looped_to(self, length):
+        """Return a new Clip that plays this one over and over, cut to last a length, as a morph's target is to its pass."""
+        clip = self
+        own_length = self.total_length()
+        if own_length > CLIP_START:
+            clip = self.repeated(math.ceil(length / own_length))
+        return clip.section(start=CLIP_START, end=length)
 
     def __repr__(self):
         # Printing a clip leaves it holding what it held, so the objects are made for the text alone.

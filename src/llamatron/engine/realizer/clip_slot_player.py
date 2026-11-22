@@ -4,7 +4,6 @@
 
 """Playing what one track plays in one scene into a finished clip."""
 
-from math import ceil
 
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.generators import registry
@@ -92,12 +91,19 @@ class ClipSlotPlayer:
         where = errors.ERR_CLIP_SLOT_PLAYER_WHERE.format(scene=scene.get_number(), track=self._track_name)
         scale = self._clip_scale()
         modulators = self._realizer.modulators_of(scene=scene, track=self._track_name)
-        hearing = None if not modulators or registers.is_counting() else (self._heard(modulators), self._realizer.scene_start(scene))
+        hearing = None
+        if modulators and not registers.is_counting():
+            hearing = (self._heard(modulators), self._realizer.scene_start(scene))
         player = PatternPlayer(song=self._song, scene=scene, scale=scale, track=self._track, scale_name=self._scale_name(), modulations=hearing, passes=self._realizer.get_passes())
-        grab = self._realizer.get_track_output().get_grab_source(scene=scene, track=self._track_name) if grabbing else None
+        grab = None
+        if grabbing:
+            output = self._realizer.get_track_output()
+            grab = output.get_grab_source(scene=scene, track=self._track_name)
         # A looping clip that a step of its pattern can stop is never cut to its scene nor made to fill it: it lasts until the step's statement holds.
         loop = self._realizer.fills_its_scene(scene=scene, track=self._track_name)
-        fill = self._realizer.get_scene_length(scene) if loop else None
+        fill = None
+        if loop:
+            fill = self._realizer.get_scene_length(scene)
         try:
             clip, switched, passes = self._play_passes(player=player, grab=grab, scale=scale, where=where, fill=fill, registers=registers)
             controls = clip.get_controls()
@@ -107,10 +113,15 @@ class ClipSlotPlayer:
             # What the chain's generators add to the registers comes after what the pattern's steps add at the same moment.
             for time, adds in chain_adds:
                 registers.at_step(time=time, sets=NO_SETS, adds=adds)
-            end = fill if loop else clip.total_length()
+            if loop:
+                end = fill
+            else:
+                end = clip.total_length()
             # A looping clip is cut where its scene ends. One that doesn't loop plays the whole of what it played, so nothing is cut, and sectioning it to its own length would only rebuild every position.
             if loop:
-                sounds = clip.section(start=NO_LENGTH, end=end).get_sounds() if end > NO_LENGTH else []
+                sounds = []
+                if fill > NO_LENGTH:
+                    sounds = clip.section(start=NO_LENGTH, end=fill).get_sounds()
             else:
                 sounds = clip.played_sounds()
             controls = self._sent_controls(controls=controls, end=end)
@@ -186,7 +197,10 @@ class ClipSlotPlayer:
         for step in modulators:
             by_kind.setdefault(step.kind, []).append(step)
         modulations = self._realizer.get_state().get_modulations()
-        return tuple((modulations.play_of(kind), _names_of(steps), self._origins(steps)) for kind, steps in by_kind.items())
+        heard = []
+        for kind, steps in by_kind.items():
+            heard.append((modulations.play_of(kind), _names_of(steps), self._origins(steps)))
+        return tuple(heard)
 
     def _origins(self, steps):
         """Return where each modulating generator's clock starts for the clip's scene, by its name."""
@@ -206,9 +220,16 @@ class ClipSlotPlayer:
         for chain in self._realizer.chains_of(scene=self._scene, track=self._track_name):
             written = self._setlist.chain_run(chain)
             statements.append(written.get_bypass_when())
-            statements += [self._setlist.get_generator_settings(kind=step.kind, name=step.name).get_bypass_when() for step in written.get_steps()]
+            for step in written.get_steps():
+                settings = self._setlist.get_generator_settings(kind=step.kind, name=step.name)
+                statements.append(settings.get_bypass_when())
         read = _draws_read_by(statements)
-        return frozenset(name for name in read if self._song.get_draw(name).redraws_in_conditions())
+        redrawing = set()
+        for name in read:
+            draw = self._song.get_draw(name)
+            if draw.redraws_in_conditions():
+                redrawing.add(name)
+        return frozenset(redrawing)
 
     def _skip_tables(self):
         """Return the tables of statements that make the clip sit a pass out: its own and its track's."""
@@ -226,7 +247,11 @@ class ClipSlotPlayer:
         if mask is None:
             return clip
         bar = self._song.get_time_signature().bar_length()
-        step = self._setlist.get_pattern_step_size(self._setlist.get_pattern(self._clip_slot.get_pattern_name())) if mask.step is None else in_whole_notes(time=mask.step, bar=bar)
+        if mask.step is None:
+            pattern = self._setlist.get_pattern(self._clip_slot.get_pattern_name())
+            step = self._setlist.get_pattern_step_size(pattern)
+        else:
+            step = in_whole_notes(time=mask.step, bar=bar)
         return EuclidMask(hits=mask.hits, steps=mask.steps, rotate=mask.rotate, step=step).generate(clip)
 
     def _plays_drums(self):
@@ -280,11 +305,16 @@ class ClipSlotPlayer:
         before = self._realizer.run_offset(scene=self._scene, restart=Restart.ON_NEW_SCENE)
         ramp_in = velocity.ramp_in
         if ramp_in is not None:
-            ramp_in = PlacedRamp(ramp_in.start, ramp_in.end, ramp_in.over * bar, NO_OFFSET if ramp_in.of_clip else -before)
+            offset = -before
+            if ramp_in.of_clip:
+                offset = NO_OFFSET
+            ramp_in = PlacedRamp(ramp_in.start, ramp_in.end, ramp_in.over * bar, offset)
         ramp_out = velocity.ramp_out
         if ramp_out is not None:
             if ramp_out.of_clip:
-                end = scene_length if self._realizer.fills_its_scene(scene=self._scene, track=self._track_name) else clip_length
+                end = clip_length
+                if self._realizer.fills_its_scene(scene=self._scene, track=self._track_name):
+                    end = scene_length
             else:
                 end = self._realizer.run_span(scene=self._scene, restart=Restart.ON_NEW_SCENE, clip_length=clip_length) - before
             ramp_out = PlacedRamp(ramp_out.start, ramp_out.end, ramp_out.over * bar, end - ramp_out.over * bar)
@@ -321,7 +351,9 @@ class ClipSlotPlayer:
     def _clip_octave(self):
         """Return the octave for the root of this clip's scale: the octave of the first note the clip plays."""
         octave = self._setlist.get_pattern(self._clip_slot.get_pattern_name()).get_first_octave()
-        return self._setlist.get_default_octave() if octave is None else octave
+        if octave is None:
+            return self._setlist.get_default_octave()
+        return octave
 
     def _play_passes(self, *, player, grab, scale, where, fill, registers):
         """Return what the clip plays before any chains, its repeats or enough passes to fill a length, the keyswitch slots played, and its passes.
@@ -346,19 +378,25 @@ class ClipSlotPlayer:
         pattern_rolls = drawn_from_when_asked(self._seed_for(PATTERN_ORDER_SEED))
         repeat = self._clip_slot.get_repeat()
         # A looping clip that a step of its pattern can stop plays until the step's statement holds, giving up after the most passes a clip can repeat.
-        most = limits.MAX_CLIP_REPEAT if fill is None and self._clip_slot.loops() else repeat
+        most = repeat
+        if fill is None and self._clip_slot.loops():
+            most = limits.MAX_CLIP_REPEAT
         sounds = []
         controls = []
         switched = []
         total = Rational(0)
         place = 0
-        while (place < most) if fill is None else (total < fill):
-            values = registers.at_pass(time=total, sets=sets if place == FIRST_PASS else NO_SETS, adds=adds)
+        # A clip plays up to its most passes, or, filling its scene, until it reaches the scene's end; it sets the registers as its
+        # first pass starts.
+        pass_sets = sets
+        while (fill is None and place < most) or (fill is not None and total < fill):
+            values = registers.at_pass(time=total, sets=pass_sets, adds=adds)
+            pass_sets = NO_SETS
             played = self._play_pass(player=player, grab=grab, scale=scale, place=place % repeat, repeat=repeat, where=where, rolls=rolls, order=order, target_order=target_order, registers=registers, start=total, turn=place, pattern_rolls=pattern_rolls, pass_draws=pass_draws)
             length = played.length
             if length == NO_LENGTH:
                 break
-            if values is not None and any(any_true(statements=table, values=values) for table in skips):
+            if values is not None and _any_holds(tables=skips, values=values):
                 played.clip = Clip(sounds=[Sound.rest(Length.of(length))], scale=scale)
                 played.tied_from_before = NO_LENGTH
                 played.keyswitches = []
@@ -377,7 +415,9 @@ class ClipSlotPlayer:
             if played.done:
                 break
         clip = Clip(sounds=sounds, scale=scale, controls=controls)
-        return (clip.section(start=NO_LENGTH, end=fill) if fill else clip), switched, passes
+        if fill:
+            clip = clip.section(start=NO_LENGTH, end=fill)
+        return clip, switched, passes
 
     def _seed_for(self, template):
         """Return the seed for one of this clip's random choices, or None when the render has no seed."""
@@ -386,7 +426,9 @@ class ClipSlotPlayer:
             return None
         made = template.format(seed=seed, scene=self._scene.get_number(), track=self._track_name)
         take = self._realizer.get_state().take_of(scene=self._scene, track=self._track_name)
-        return TAKE_SEED.format(seed=made, take=take) if take else made
+        if not take:
+            return made
+        return TAKE_SEED.format(seed=made, take=take)
 
     def _play_pass(self, *, player, grab, scale, place, repeat, where, rolls, order, target_order, registers, start, turn, pattern_rolls, pass_draws):
         """Return one pass through the clip slot's pattern as a Pass, part way through any morph.
@@ -405,16 +447,23 @@ class ClipSlotPlayer:
         clip = played.clip
         morph_to = clip_slot.get_morph_target()
         # A pass a step's statement cut short is left as it played, with no morph over the part it never reached.
-        if morph_to is None or played.length != sum(player.pattern_length(self._setlist.get_pattern(name)) for name in names) or not clip.has_positions():
+        if morph_to is None or played.length != self._patterns_length(player=player, names=names) or not clip.has_positions():
             return played
         target = player.play_pass(pattern_name=morph_to, grab=None, direction=clip_slot.get_direction(), where=where, rolls=rolls, order=target_order, registers=registers, start=start, changes_registers=False).clip
         amount = Rational(place, repeat - 1) * FULL_MORPH
-        target = _looped(clip=target, length=played.length)
+        target = target.looped_to(played.length)
         blend = Blend(target=target, amount=amount, mode=clip_slot.get_morph_style())
         start, end = blend.region(clip)
         controls = morph_controls(source=clip, target=target, start=start, end=end)
         played.clip = Clip(sounds=blend.generate(clip).played_sounds(), scale=scale, controls=controls)
         return played
+
+    def _patterns_length(self, *, player, names):
+        """Return how long the clip's patterns last laid end to end, one pass through them."""
+        total = Rational(0)
+        for name in names:
+            total += player.pattern_length(self._setlist.get_pattern(name))
+        return total
 
     def _play_patterns(self, *, player, names, grab, scale, where, rolls, order, registers, start, pass_draws):
         """Return one pass through the clip's patterns in the order given, each played whole after the one before, as one Pass: the patterns laid end to end as one long pattern.
@@ -434,7 +483,11 @@ class ClipSlotPlayer:
         tied_from_before = NO_LENGTH
         done = False
         for place, name in enumerate(names):
-            played = player.play_pass(pattern_name=name, grab=grab, direction=direction, where=where, rolls=rolls, order=order, registers=registers, start=start + total, pass_draws=pass_draws if not place else pattern_values.NO_PASS_DRAWS)
+            # Only the first pattern of the pass takes the draws its clip's statements read as the pass starts.
+            drawn = pattern_values.NO_PASS_DRAWS
+            if not place:
+                drawn = pass_draws
+            played = player.play_pass(pattern_name=name, grab=grab, direction=direction, where=where, rolls=rolls, order=order, registers=registers, start=start + total, pass_draws=drawn)
             if place == 0:
                 tied_from_before = played.tied_from_before
             elif played.tied_from_before > NO_LENGTH:
@@ -476,7 +529,10 @@ def _kept_where(*, tripped, before, after, passes):
     for (start, end, _), left_out in zip(passes, tripped):
         end = min(end, total)
         if start < end:
-            sounds += (before if left_out else after).section(start=start, end=end).get_sounds()
+            heard = after
+            if left_out:
+                heard = before
+            sounds += heard.section(start=start, end=end).get_sounds()
     return Clip(name=after.get_name(), sounds=sounds, scale=after.get_scale(), length=after.get_length(), note_length=after.get_note_length(), controls=after.get_controls())
 
 
@@ -502,14 +558,6 @@ def _tied_on(*, sounds, extra):
     return [*sounds[:-1], held]
 
 
-def _looped(*, clip, length):
-    """Return a clip repeated or cut to last a length."""
-    own_length = clip.total_length()
-    if own_length > NO_LENGTH:
-        clip = clip.repeated(ceil(length / own_length))
-    return clip.section(start=NO_LENGTH, end=length)
-
-
 def _moved_later(*, controls, time):
     """Return CC values moved later by a time, for a pass that starts there."""
     return [item.moved_by(time) for item in controls]
@@ -517,12 +565,17 @@ def _moved_later(*, controls, time):
 
 def _in_whole_notes(*, values, bar):
     """Return a shape's values with its over, which may be written in bars, as a length in whole notes."""
-    return values if values.over is None else values._replace(over=in_whole_notes(time=values.over, bar=bar))
+    if values.over is None:
+        return values
+    return values._replace(over=in_whole_notes(time=values.over, bar=bar))
 
 
 def _any_holds(*, tables, values):
     """Return whether any statement of any of the tables holds for the registers' values."""
-    return any(any_true(statements=table, values=values) for table in tables)
+    for table in tables:
+        if any_true(statements=table, values=values):
+            return True
+    return False
 
 
 def _draws_read_by(tables):
@@ -537,3 +590,4 @@ def _draws_read_by(tables):
 def _names_of(steps):
     """Return the names of the generators of chain steps, in order."""
     return [step.name for step in steps]
+
