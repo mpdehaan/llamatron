@@ -40,6 +40,13 @@ def data_as_kept(part):
     return part.kept_data()
 
 
+def left_out_if_default(*, value, default):
+    """Return a setting's value as a file keeps it: None, which leaves it out of the file, where the value is its default."""
+    if value == default:
+        return None
+    return value
+
+
 def or_default(*, value, default):
     """Return a setting's value, or its default if the file left it out."""
     if value is None:

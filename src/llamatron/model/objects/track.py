@@ -12,7 +12,7 @@ from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.conditions import statements_setting, with_statement
 from llamatron.model.objects.euclid import euclid_settings, euclid_values
 from llamatron.model.objects.groove import check_groove_choice
-from llamatron.model.objects.llama_data import HoldsSettings, or_default, own_copy
+from llamatron.model.objects.llama_data import HoldsSettings, left_out_if_default, or_default, own_copy
 from llamatron.model.objects.strum import strum_settings, strum_values
 from llamatron.model.objects.traits import RunsChains
 from llamatron.model.schema import defaults, file_format, limits
@@ -105,13 +105,15 @@ class Track(RunsChains, HoldsSettings):
     @classmethod
     def from_data(cls, *, data, where, song=None):
         with reading(where):
-            data = {} if data is None else data
+            if data is None:
+                data = {}
             if not isinstance(data, dict):
                 raise InvalidValue(errors.ERR_TRACK_EXPECTED_SETTINGS.format(data=data))
             pass_over_unknown(data=data, allowed=SETTINGS)
             check_settings(settings=SETTINGS, data=data, song=song)
             _check_octave_order(lowest=data.get(TrackSetting.LOWEST_OCTAVE, limits.MIN_OCTAVE), highest=data.get(TrackSetting.HIGHEST_OCTAVE, limits.MAX_OCTAVE))
-            return cls(**{name: data.get(name) for name in SETTINGS})
+            settings = {name: data.get(name) for name in SETTINGS}
+            return cls(**settings)
 
     def is_drum(self):
         return bool(self._settings[TrackSetting.DRUM])
@@ -124,7 +126,9 @@ class Track(RunsChains, HoldsSettings):
         if self.is_drum():
             return defaults.DEFAULT_TRANSPOSE
         transpose = self._settings[TrackSetting.TRANSPOSE]
-        return defaults.DEFAULT_TRANSPOSE if transpose is None else transpose
+        if transpose is None:
+            return defaults.DEFAULT_TRANSPOSE
+        return transpose
 
     def get_default_velocity(self):
         """Return the velocity a step with none typed plays at on the track, or None where the track leaves that to its instrument."""
@@ -159,14 +163,14 @@ class Track(RunsChains, HoldsSettings):
         """Set the lowest octave it plays, which can't be above the highest; the bottom of the MIDI range is left out of the file."""
         SETTINGS[TrackSetting.LOWEST_OCTAVE].check(octave)
         _check_octave_order(lowest=octave, highest=self.get_highest_octave())
-        self._settings[TrackSetting.LOWEST_OCTAVE] = None if octave == limits.MIN_OCTAVE else octave
+        self._settings[TrackSetting.LOWEST_OCTAVE] = left_out_if_default(value=octave, default=limits.MIN_OCTAVE)
 
     @notes_change
     def set_highest_octave(self, octave):
         """Set the highest octave it plays, which can't be below the lowest; the top of the MIDI range is left out of the file."""
         SETTINGS[TrackSetting.HIGHEST_OCTAVE].check(octave)
         _check_octave_order(lowest=self.get_lowest_octave(), highest=octave)
-        self._settings[TrackSetting.HIGHEST_OCTAVE] = None if octave == limits.MAX_OCTAVE else octave
+        self._settings[TrackSetting.HIGHEST_OCTAVE] = left_out_if_default(value=octave, default=limits.MAX_OCTAVE)
 
     def get_groove_choice(self):
         """Return the groove it chooses by name, False for no groove on this track whatever the scene and song choose, or None to take theirs."""
@@ -189,7 +193,9 @@ class Track(RunsChains, HoldsSettings):
     def get_cc_numbers(self):
         """Return the CC number each of a pattern's CC lanes sends on this track, or None for a lane it doesn't use."""
         numbers = self._settings[TrackSetting.CC]
-        return _no_cc_numbers() if numbers is None else list(numbers)
+        if numbers is None:
+            return _no_cc_numbers()
+        return list(numbers)
 
     def get_cc_registers(self):
         """Return the register each CC lane is bound to, in lane order, or None for a lane that isn't bound."""
@@ -256,7 +262,13 @@ class Track(RunsChains, HoldsSettings):
         self._settings[name] = table
 
     def copy(self):
-        return Track(**{**self._settings, TrackSetting.CC: self.get_cc_numbers() if self._settings[TrackSetting.CC] else None, TrackSetting.CHAINS: own_copy(self._settings[TrackSetting.CHAINS])})
+        settings = dict(self._settings)
+        if settings[TrackSetting.CC]:
+            settings[TrackSetting.CC] = self.get_cc_numbers()
+        else:
+            settings[TrackSetting.CC] = None
+        settings[TrackSetting.CHAINS] = own_copy(settings[TrackSetting.CHAINS])
+        return Track(**settings)
 
     # Changing the track. A setting at its default is left out of the file.
 
@@ -267,15 +279,10 @@ class Track(RunsChains, HoldsSettings):
         self._set_flag(flag=TrackSetting.MUTE, on=mute)
 
     @notes_change
-    def _set_flag(self, *, flag, on):
-        SETTINGS[flag].check(on)
-        self._settings[flag] = True if on else None
-
-    @notes_change
     def set_transpose(self, transpose):
         """Set how far it moves its notes along the scale, which can be negative."""
         SETTINGS[TrackSetting.TRANSPOSE].check(transpose)
-        self._settings[TrackSetting.TRANSPOSE] = None if transpose == defaults.DEFAULT_TRANSPOSE else transpose
+        self._settings[TrackSetting.TRANSPOSE] = left_out_if_default(value=transpose, default=defaults.DEFAULT_TRANSPOSE)
 
     @notes_change
     def set_cc_number(self, *, lane, number):
@@ -285,7 +292,15 @@ class Track(RunsChains, HoldsSettings):
         numbers = self.get_cc_numbers()
         numbers[lane] = number
         SETTINGS[TrackSetting.CC].check(numbers)
-        self._settings[TrackSetting.CC] = None if numbers == _no_cc_numbers() else numbers
+        self._settings[TrackSetting.CC] = left_out_if_default(value=numbers, default=_no_cc_numbers())
+
+    @notes_change
+    def _set_flag(self, *, flag, on):
+        """Turn a flag on, or off, which the file leaves out."""
+        SETTINGS[flag].check(on)
+        self._settings[flag] = None
+        if on:
+            self._settings[flag] = True
 
 
 def _check_octave_order(*, lowest, highest):
