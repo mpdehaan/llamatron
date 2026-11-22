@@ -99,7 +99,10 @@ class ClipGrid:
     def tempo_at(self, row):
         """Return the tempo for a row: its own if it has one, else the song's."""
         self._check_row(row)
-        return self._tempo if row.get_tempo() is None else row.get_tempo()
+        tempo = row.get_tempo()
+        if tempo is None:
+            return self._tempo
+        return tempo
 
     def tempos_in(self, row):
         """Return a row's tempos in order, (time in whole notes from its start, tempo), the first at its start."""
