@@ -35,14 +35,20 @@ def place_without(*, where, name):
     if where is None or where == name:
         return names.MSG_THE_FILE
     ending = errors.ERR_WHERE_WITHIN.format(where=NO_PLACE, part=name)
-    return where[:-len(ending)] if where.endswith(ending) else where
+    if where.endswith(ending):
+        return where[:-len(ending)]
+    return where
 
 
 def changed_count(*, found, used):
     """Return how many values of a list a correction changes, or None for a correction of one value."""
     if not isinstance(found, list) or not isinstance(used, list):
         return None
-    return sum(1 for before, after in zip(found, used) if before != after)
+    changed = 0
+    for before, after in zip(found, used):
+        if before != after:
+            changed += 1
+    return changed
 
 
 class Correction:
