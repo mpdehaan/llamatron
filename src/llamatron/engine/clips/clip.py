@@ -58,7 +58,12 @@ def _to_position(value):
 
 def _same_objects(*, first, second):
     """Return whether two sequences hold the very same objects, in order."""
-    return len(first) == len(second) and all(a is b for a, b in zip(first, second))
+    if len(first) != len(second):
+        return False
+    for one, other in zip(first, second):
+        if one is not other:
+            return False
+    return True
 
 
 def _control_time(control):
@@ -93,7 +98,9 @@ class Clip:
         self._id = next(_next_clip_id)
         self.set_name(name)
         if sounds is None:
-            self.set_notes([] if notes is None else notes)
+            if notes is None:
+                notes = []
+            self.set_notes(notes)
         else:
             self._notes = None
             self._sounds = sounds
@@ -101,7 +108,9 @@ class Clip:
         self.set_length(length)
         self.set_note_length(note_length)
         self._loop = loop
-        self._controls = self._sorted_controls([] if controls is None else controls)
+        if controls is None:
+            controls = []
+        self._controls = self._sorted_controls(controls)
         self.set_time_signature(time_signature)
         self._groove = None
         self._strum = None
@@ -152,7 +161,9 @@ class Clip:
 
     def has_positions(self):
         """Return whether the clip lists anything at all."""
-        return bool(self._notes if self._sounds is None else self._sounds)
+        if self._sounds is None:
+            return bool(self._notes)
+        return bool(self._sounds)
 
     def get_scale(self):
         return self._scale
@@ -245,7 +256,7 @@ class Clip:
         self._controls = self._sorted_controls([*self._controls, *controls])
 
     def _sorted_controls(self, controls):
-        if not isinstance(controls, (list, tuple)) or not all(isinstance(item, Control) for item in controls):
+        if not _is_controls(controls):
             raise ValueError(errors.ERR_NOT_CONTROLS.format(value=controls))
         return sorted(controls, key=_control_time)
 
@@ -266,10 +277,14 @@ class Clip:
         kind = sound[sound_values.KIND]
         if kind == sound_values.PHRASE:
             parts = [self._filled(part) for part in sound[sound_values.PARTS]]
-            return sound if _same_objects(first=parts, second=sound[sound_values.PARTS]) else (sound_values.PHRASE, sound[sound_values.LENGTH], tuple(parts))
+            if _same_objects(first=parts, second=sound[sound_values.PARTS]):
+                return sound
+            return (sound_values.PHRASE, sound[sound_values.LENGTH], tuple(parts))
         if kind == sound_values.HELD:
             filled = self._filled(sound[sound_values.HELD_SOUND])
-            return sound if filled is sound[sound_values.HELD_SOUND] else (sound_values.HELD, sound[sound_values.LENGTH], filled)
+            if filled is sound[sound_values.HELD_SOUND]:
+                return sound
+            return (sound_values.HELD, sound[sound_values.LENGTH], filled)
         if sound[sound_values.LENGTH] is not None:
             # A rest, or a note, degree or chord with every length of its own, which is nearly every position of a rendered clip.
             return sound
@@ -288,7 +303,10 @@ class Clip:
         kind = sound[sound_values.KIND]
         if kind == sound_values.HELD or kind == sound_values.PHRASE:
             # What it holds is checked for missing lengths too, as resolving it would.
-            for part in sound[sound_values.PARTS] if kind == sound_values.PHRASE else [sound[sound_values.HELD_SOUND]]:
+            parts = [sound[sound_values.HELD_SOUND]]
+            if kind == sound_values.PHRASE:
+                parts = sound[sound_values.PARTS]
+            for part in parts:
                 self._resolved_length(part)
             return sound[sound_values.LENGTH]
         if sound[sound_values.LENGTH] is not None:
@@ -304,7 +322,9 @@ class Clip:
     def played_sounds(self):
         """Return resolved sounds that fill the clip's set length, if it has one."""
         sounds = self.resolved_sounds()
-        return sounds if self._length is None else fit_to_length(positions=sounds, length=Length.exact(self._length))
+        if self._length is None:
+            return sounds
+        return fit_to_length(positions=sounds, length=Length.exact(self._length))
 
     def length_key(self):
         """Return what the clip's total length is worked out from, for cached_while, or None for a clip that holds objects, whose list
@@ -381,5 +401,17 @@ class Clip:
 
     def __repr__(self):
         # Printing a clip leaves it holding what it held, so the objects are made for the text alone.
-        notes = self._notes if self._sounds is None else [Sound.position(sound) for sound in self._sounds]
+        notes = self._notes
+        if self._sounds is not None:
+            notes = [Sound.position(sound) for sound in self._sounds]
         return reprs.REPR_CLIP.format(name=self._name, notes=notes, scale=self._scale, length=self._length, note_length=self._note_length, id=self._id)
+
+
+def _is_controls(controls):
+    """Return whether a value is a list or tuple of CC values."""
+    if not isinstance(controls, (list, tuple)):
+        return False
+    for item in controls:
+        if not isinstance(item, Control):
+            return False
+    return True
