@@ -32,4 +32,11 @@ class StrumSettings(GeneratorSettings):
 
     def get_strum(self):
         """Return how it strums, by the beat when its direction is blank."""
-        return strum_values(lambda part: self.get_written(part) if part != StrumPart.DIRECTION else self.get_written(part) or StrumDirection.BY_THE_BEAT)
+        return strum_values(self._strum_part)
+
+    def _strum_part(self, part):
+        """Return one part of the strum as written, by the beat for a blank direction."""
+        written = self.get_written(part)
+        if part == StrumPart.DIRECTION and not written:
+            return StrumDirection.BY_THE_BEAT
+        return written
