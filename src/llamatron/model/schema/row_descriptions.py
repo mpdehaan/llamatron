@@ -552,4 +552,8 @@ def row_described(name):
 
 def rows_where(condition):
     """Return the names of the rows whose description a condition is true of, in the order a file writes them."""
-    return tuple(name for name in file_format.PATTERN_ROWS if condition(ROW_DESCRIPTIONS[name]))
+    rows = []
+    for name in file_format.PATTERN_ROWS:
+        if condition(ROW_DESCRIPTIONS[name]):
+            rows.append(name)
+    return tuple(rows)
