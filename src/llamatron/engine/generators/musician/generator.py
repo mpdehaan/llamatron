@@ -23,6 +23,9 @@ from llamatron.math.rational import Rational
 from llamatron.model.values import midi, sound as sound_values
 from llamatron.model.values.sound import Sound
 
+# How far a note wanders with no reach to wander in.
+NO_WANDER = 0
+
 EIGHTH = Rational(1, 8)
 SIXTEENTH = Rational(1, 16)
 QUARTER = Rational(1, 4)
@@ -82,9 +85,13 @@ class Musician(ClipGenerator):
         self._activity = activity
         self._loudness = loudness
         self._looseness = looseness
-        self._gives_way = self.USUAL_GIVES_WAY if gives_way is None else gives_way
+        self._gives_way = self.USUAL_GIVES_WAY
+        if gives_way is not None:
+            self._gives_way = gives_way
         self._accents = accents
-        self._notes = self.USUAL_NOTES if notes is None else notes
+        self._notes = self.USUAL_NOTES
+        if notes is not None:
+            self._notes = notes
         self._range = range
         self._by_section = by_section or {}
         self._seed = seed
@@ -151,11 +158,16 @@ class Musician(ClipGenerator):
         """Play fewer of the part's notes or strike its long notes again: a sparse player keeps the notes on the bar's halves and a light one the notes on the beats, each with every note a beat long or longer; a busy player strikes a note of a quarter or longer twice and a very busy one a note of an eighth or longer twice."""
         for part in _notes_of(parts):
             if self._activity in (schema.SPARSE, schema.LIGHT):
-                grid = self._bar / 2 if self._activity == schema.SPARSE and (self._bar / 2 / self._beat).is_whole() else self._beat
+                grid = self._beat
+                if self._activity == schema.SPARSE and (self._bar / 2 / self._beat).is_whole():
+                    grid = self._bar / 2
                 if part.heard < self._beat and not self._on_grid(part=part, grid=grid):
                     part.silence()
             elif self._activity in (schema.BUSY, schema.VERY_BUSY):
-                if part.heard >= (QUARTER if self._activity == schema.BUSY else EIGHTH):
+                longest = EIGHTH
+                if self._activity == schema.BUSY:
+                    longest = QUARTER
+                if part.heard >= longest:
                     part.strikes = 2
 
     def _give_way(self, parts):
@@ -211,7 +223,9 @@ class Musician(ClipGenerator):
         dice = random.Random(self._seed)
         reach = self._looseness * LOOSENESS_STEP
         for part in _notes_of(parts):
-            wander = dice.randint(-reach, reach) if reach else 0
+            wander = NO_WANDER
+            if reach:
+                wander = dice.randint(-reach, reach)
             if self._loudness or wander:
                 part.louder_by(self._loudness * LOUDNESS_STEP + wander)
 
