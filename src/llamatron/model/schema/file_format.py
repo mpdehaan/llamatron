@@ -165,11 +165,6 @@ class TrackSetting:
     STRUM_FADE = 'strum_fade'
     STRUM_LOOSE_TIMING = 'strum_loose_timing'
     STRUM_UPSTROKE_STRINGS = 'strum_upstroke_strings'
-    # The Euclidean rhythm that masks every clip on the track: only a note starting on one of its hits plays.
-    EUCLID_HITS = 'euclid_hits'
-    EUCLID_STEPS = 'euclid_steps'
-    EUCLID_ROTATE = 'euclid_rotate'
-    EUCLID_STEP = 'euclid_step'
     # The register statements that bypass the generators of the track's clips, and that make its clips sit out a pass.
     BYPASS_WHEN = 'bypass_when'
     SKIP_WHEN = 'skip_when'
@@ -1000,23 +995,6 @@ def strum_setting(part):
     return STRUM_SETTING.format(part=part)
 
 
-class EuclidPart:
-    """A Euclidean rhythm's settings as a Euclid generator names them, and as a track names them after euclid_."""
-
-    HITS = 'hits'
-    STEPS = 'steps'
-    ROTATE = 'rotate'
-    STEP = 'step'
-
-
-EUCLID_SETTING = 'euclid_{part}'
-
-
-def euclid_setting(part):
-    """Return a track's setting of one part of its Euclidean mask, like euclid_hits."""
-    return EUCLID_SETTING.format(part=part)
-
-
 class Tuning:
     """The tunings a Guitarify knows, as a file names them."""
 
@@ -1120,19 +1098,6 @@ class ReadyBar:
     STRUM_AND_CLICK = 'strum_and_click'
     SLOW_PICK = 'slow_pick'
     FOUR_STOMPS = 'four_stomps'
-
-
-class NamedRhythm:
-    """The named Euclidean rhythms the Hits field's H offers, each a key the tracker's words name."""
-
-    TRESILLO = 'tresillo'
-    CINQUILLO = 'cinquillo'
-    KHAFIF_E_RAMAL = 'khafif_e_ramal'
-    AKSAK = 'aksak'
-    VENDA = 'venda'
-    BEMBE = 'bembe'
-    SAMBA = 'samba'
-    BOSSA_NOVA = 'bossa_nova'
 
 
 class Restart:

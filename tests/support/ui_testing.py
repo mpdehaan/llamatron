@@ -15,7 +15,7 @@ import unittest
 from unittest import mock
 
 from llamatron.caching.memory import Memory
-from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, follow_chords as follow_chords_plugin, glide as glide_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.engine.generators.auto_ratchet.model import AutoRatchetSetting
@@ -40,7 +40,7 @@ from llamatron.interface.tracker.screens.shared.list_page import ListPage
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema import file_format, generator_plugins
-from llamatron.model.schema.file_format import ClipSlotSetting, EuclidPart, PatternSetting, Row, SceneSetting, Section, ShapePart
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, ShapePart
 from llamatron.model.values.note import NoteName
 from llamatron.realtime.devices.fluidsynth import FluidSynth
 from llamatron.user_strings import names as names_text
@@ -80,7 +80,6 @@ THIN = 'thin'
 POP = 'pop'
 SMOOTH = 'smooth'
 FOLK = 'folk'
-CLAVE = 'clave'
 SLIDES = 'slides'
 CLIPS = 'clips'
 PUSH = 'push'
@@ -128,7 +127,6 @@ def a_song(*, path=None):
     data[progression_plugin.SECTION] = {POP: {ProgressionSetting.CHORDS: [1, 5, 6, 4]}}
     data[voice_leading_plugin.SECTION] = {SMOOTH: {}}
     data[strum_plugin.SECTION] = {FOLK: {}}
-    data[euclid_plugin.SECTION] = {CLAVE: {EuclidPart.HITS: 3, EuclidPart.STEPS: 8}}
     data[glide_plugin.SECTION] = {SLIDES: {StepRowSetting.STEPS: [True, False, False]}}
     data[shorten_plugin.SECTION] = {CLIPS: {StepRowSetting.STEPS: [False, True]}}
     data[rush_plugin.SECTION] = {PUSH: {StepRowSetting.STEPS: [True, False, False, False]}}

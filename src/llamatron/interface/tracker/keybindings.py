@@ -345,10 +345,9 @@ class ClipPage(FieldPage):
 
 
 class TrackEditor(FieldPage):
-    """The track editor: the settings keys, and H on the Euclid hits field for a named rhythm."""
+    """The track editor: the settings keys."""
 
-    PICK_RHYTHM = Binding(Key.H, legends.KeyName.H, legends.MSG_PICK_RHYTHM_WHAT)
-    IN_HELP = [*FieldPage.IN_HELP, PICK_RHYTHM]
+    IN_HELP = FieldPage.IN_HELP
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
@@ -402,14 +401,6 @@ class GuitarifyEditor(FieldPage):
 
 class StrumEditor(FieldPage):
     """A Strum's editor, with the settings keys alone."""
-
-
-class EuclidEditor(FieldPage):
-    """A Euclid's editor: the settings keys, and H on Hits for a named rhythm."""
-
-    PICK_RHYTHM = Binding(Key.H, legends.KeyName.H, legends.MSG_PICK_RHYTHM_WHAT)
-    IN_HELP = [*FieldPage.IN_HELP, PICK_RHYTHM]
-    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
 class StepRowGeneratorEditor(FieldPage):

@@ -79,7 +79,6 @@ FEATURE_COLUMNS = [
     ('shapes', ['clip shapes', 'scene shapes', 'Densities', 'Swells', 'Articulates']),
     ('progressions', ['progressions', 'voice leadings', 'inversions']),
     ('strum', ['strums']),
-    ('euclid', ['euclids']),
     ('feel', ['glides', 'shortens', 'rushes', 'drags']),
 ]
 # Where each feature is explained, as a link from a page of docs/demos/: what a demo's checkmark opens. A feature with no page
@@ -165,7 +164,6 @@ FEATURE_LINKS = {
     'voice leadings': GENERATOR_DOC.format(page='VOICE_LEADING'),
     'inversions': CHORDS_DOC,
     'strums': GENERATOR_DOC.format(page='STRUM'),
-    'euclids': GENERATOR_DOC.format(page='EUCLID'),
     'glides': GENERATOR_DOC.format(page='GLIDE'),
     'shortens': GENERATOR_DOC.format(page='SHORTEN'),
     'rushes': GENERATOR_DOC.format(page='RUSH'),
@@ -252,16 +250,8 @@ TUTORIAL_INTRO = """# Tutorial Demos
 The demos in `examples/learning/`, in the order to learn them, each teaching one feature a scene at a time. Each is described again on its genre's page; [About Demos](../DEMOS.md) lists every page of demos.
 """
 LEARNING = 'learning'
-# The pages made of one folder's demos: examples/other's, listed last among the pages of demos; the
-# Tutorial Demos page is the learning folder's, in its numbered order.
-OTHER = 'other'
-OTHER_PAGE = 'OTHER.md'
-OTHER_TITLE = 'Other'
-OTHER_INTRO = """# Other
-
-The demos in `examples/other/`, which fit no other folder. Each is described again on its genre's page; [About Demos](../DEMOS.md) lists every page of demos.
-"""
-FOLDER_PAGES = (TUTORIAL_PAGE, OTHER_PAGE)
+# The page made of one folder's demos: the Tutorial Demos page is the learning folder's, in its numbered order.
+FOLDER_PAGES = (TUTORIAL_PAGE,)
 PARAGRAPH = '\n\n'
 LINE = '\n'
 OPTION_FORMAT = '--format'
@@ -510,7 +500,6 @@ def index_lines(*, paths):
     for genre in sorted(genres, key=str.lower):
         link = DEMO_PAGE_LINK.format(page=genre_page(genre))
         lines.append(markdown_line([SET_LINK.format(name=genre, link=link), str(len(genres[genre]))]))
-    lines.append(folder_line(title=OTHER_TITLE, page=OTHER_PAGE, paths=in_folder(paths=paths, folder=OTHER)))
     return lines
 
 
@@ -623,7 +612,6 @@ def write_docs(*, features, check_only):
     written, problems = with_summaries(texts=dict(pages), paths=paths, rows=rows, links=links, used=used)
     written = {name: page if name in FOLDER_PAGES else sorted_page(page) for name, page in written.items()}
     written[TUTORIAL_PAGE] = tutorial_page(texts=written, paths=paths, rows=rows, used=used)
-    written[OTHER_PAGE] = folder_page(texts=written, paths=paths, folder=OTHER, intro=OTHER_INTRO)
     for problem in problems:
         print(problem, file=sys.stderr)
     shown = DEMOS_DOCUMENT.relative_to(ROOT)

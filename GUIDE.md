@@ -57,8 +57,6 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 | [Soundtrack](docs/demos/SOUNDTRACK.md) | The soundtrack demo songs. |
 | [TV Theme](docs/demos/TV_THEME.md) | The TV theme demo songs. |
 | [Video Game](docs/demos/VIDEO_GAME.md) | The video game demo songs. |
-| [World](docs/demos/WORLD.md) | The world demo songs. |
-| [Other](docs/demos/OTHER.md) | The demos in `examples/other/`, which fit no other folder. |
 
 ## Mashups
 
@@ -136,7 +134,6 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | What it does | Page |
 | --- | --- |
 | Notes chopped into quick repeats | [AutoRatchet](docs/generators/AUTORATCHET.md) |
-| Only the notes on a Euclidean rhythm | [Euclid](docs/generators/EUCLID.md) |
 | Chords spread in time like a pick | [Strum](docs/generators/STRUM.md) |
 
 ### Timing

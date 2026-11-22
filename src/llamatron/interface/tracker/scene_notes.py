@@ -6,7 +6,7 @@
 Played is the song's own render, the one the exports and real-time playback use, so it shows what
 every chain, groove, strum, shape and register does; a song with no seed draws its random parts
 afresh, so it is one take. Written renders a copy of the set with everything taken out that works
-after the patterns are read: every chain, shape, strum, Euclidean mask and groove, and the steps'
+after the patterns are read: every chain, shape, strum and groove, and the steps'
 probability and the rows that read the registers, so that each note shows as its pattern writes it.
 A clip whose pattern reads the registers is marked either way, since what the registers do to it
 depends on the whole song before it: its notes are drawn apart, never mixed in.

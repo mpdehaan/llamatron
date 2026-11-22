@@ -24,7 +24,6 @@ from llamatron.interface.tracker.screens.generators.chain_statements_page import
 from llamatron.interface.tracker.screens.generators.density_editor import DensityEditor
 from llamatron.interface.tracker.screens.generators.drag_editor import DragEditor
 from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
-from llamatron.interface.tracker.screens.generators.euclid_editor import EuclidEditor
 from llamatron.interface.tracker.screens.generators.follow_chords_editor import FollowChordsEditor
 from llamatron.interface.tracker.screens.generators.glide_editor import GlideEditor
 from llamatron.interface.tracker.screens.generators.guitarify_editor import GuitarifyEditor
@@ -254,7 +253,7 @@ class FieldPagesTest(UITest):
         return [
             SongPage(holder), ScenePage(holder=holder, index=FIRST_SCENE), ClipPage(holder=holder, index=FIRST_SCENE, track=ui_testing.LEAD), ArpEditor(holder=holder, name=ui_testing.UP_ARP),
             TrackEditor(holder=holder, name=ui_testing.LEAD), RegistersPage(holder), DrawsPage(holder), FilePage(holder), AutoRatchetEditor(holder=holder, name=ui_testing.ROLLS), DriftEditor(holder=holder, name=ui_testing.SWAY),
-            ProgressionEditor(holder=holder, name=ui_testing.POP), VoiceLeadingEditor(holder=holder, name=ui_testing.SMOOTH), HocketEditor(holder=holder, name=ui_testing.TRADE), FollowChordsEditor(holder=holder, name=ui_testing.FOLLOWS), PhrasingEditor(holder=holder, name=ui_testing.BREATHES), MusicianEditor(holder=holder, name=ui_testing.STRUMMER), GuitarifyEditor(holder=holder, name=ui_testing.PICKED), StrumEditor(holder=holder, name=ui_testing.FOLK), EuclidEditor(holder=holder, name=ui_testing.CLAVE), GlideEditor(holder=holder, name=ui_testing.SLIDES), ShortenEditor(holder=holder, name=ui_testing.CLIPS),
+            ProgressionEditor(holder=holder, name=ui_testing.POP), VoiceLeadingEditor(holder=holder, name=ui_testing.SMOOTH), HocketEditor(holder=holder, name=ui_testing.TRADE), FollowChordsEditor(holder=holder, name=ui_testing.FOLLOWS), PhrasingEditor(holder=holder, name=ui_testing.BREATHES), MusicianEditor(holder=holder, name=ui_testing.STRUMMER), GuitarifyEditor(holder=holder, name=ui_testing.PICKED), StrumEditor(holder=holder, name=ui_testing.FOLK), GlideEditor(holder=holder, name=ui_testing.SLIDES), ShortenEditor(holder=holder, name=ui_testing.CLIPS),
             RushEditor(holder=holder, name=ui_testing.PUSH), DragEditor(holder=holder, name=ui_testing.LAZY),
             DensityEditor(holder=holder, name=ui_testing.THIN), SwellEditor(holder=holder, name=ui_testing.FADE), ArticulateEditor(holder=holder, name=ui_testing.CLIPPED),
             ScalePage(holder=holder, name=setlist.DEFAULT_SCALE), ChainStatementsPage(holder=holder, name=ui_testing.NAMED), InstrumentEditor(holder=holder, name=AN_INSTRUMENT), self.a_wizard(holder),
@@ -376,7 +375,7 @@ class NumbersStopAtTheirEnds:
 
 
 # The settings pages FieldPagesTest tours.
-PAGES_TOURED = 30
+PAGES_TOURED = 29
 
 
 class TestNumbersStopAtTheirEndsOnTheSongPage(NumbersStopAtTheirEnds, FieldPagesTest):

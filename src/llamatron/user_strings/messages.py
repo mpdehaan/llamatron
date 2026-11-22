@@ -315,8 +315,6 @@ MSG_TRACK_GROOVE_TITLE = 'Track groove'
 MSG_CHORDS_NOTE = 'each chord moves the clip from chord I, in the song\'s scale'
 MSG_PROGRESSION_PICKER_TITLE = 'Progressions'
 
-# interface/tracker/screens/generators/euclid_fields.py: the title of the picker of named rhythms.
-MSG_RHYTHM_PICKER_TITLE = 'Rhythms'
 
 
 # interface/tracker/screens/shared/list_page.py and interface/tracker/screens/arrange/arrange_page.py: Move mode.

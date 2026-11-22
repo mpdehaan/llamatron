@@ -302,13 +302,6 @@ Spread: how far apart the strings sound, in milliseconds whatever the tempo, fro
 Fade: how much quieter the last string is. Loose timing: how much each gap varies. Upstroke strings: what an upstroke catches.
 """
 
-# EuclidEditor
-HELP_EUCLID_EDITOR = """
-Hits over Steps make the rhythm, drawn under the fields. Rotate moves it later by that many steps.
-Step: how long each step is, the clip's pattern's step size unless set.
-H on Hits picks a named rhythm, like the tresillo, three hits over eight steps.
-"""
-
 # GlideEditor
 HELP_GLIDE_EDITOR = """
 Step: how long each step of the row is, the pattern's step size unless set.

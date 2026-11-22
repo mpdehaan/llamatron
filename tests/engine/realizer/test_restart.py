@@ -11,7 +11,7 @@ from typing import NamedTuple
 import unittest
 
 from llamatron.engine.clips.clip import Clip
-from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin, euclid as euclid_plugin, progression as progression_plugin, swell as swell_plugin
+from llamatron.engine.generators import auto_ratchet as auto_ratchet_plugin, progression as progression_plugin, swell as swell_plugin
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.generators.voice_leading.generator import VoiceLeading
 from llamatron.engine.timing.timing import timed_events
@@ -92,13 +92,6 @@ class TestTimeFollowingGenerators(unittest.TestCase):
         scenes = played(progression(restart=Restart.ON_NEW_SCENE, first_repeat=2))
         self.assertEqual(first_names(scenes[1]), ['A', 'C', 'E', 'F'])
         self.assertEqual(first_names(scenes[2]), ['C', 'E', 'G', 'A'])
-
-    def test_a_euclid_carries_its_rhythm_on(self):
-        data = two_scenes(section=euclid_plugin.SECTION, kind=euclid_plugin.NAME, settings={'hits': 1, 'steps': 3}, restart=Restart.WHOLE_SONG)
-        scenes = played(data)
-        # Eight quarter notes, a hit every third: the second scene's first hit falls on its second step.
-        self.assertEqual(len(scenes[0]), 3)
-        self.assertEqual(scenes[1][0].start * STEPS, 1)
 
     def test_a_swells_ramp_runs_over_the_whole_song(self):
         data = two_scenes(section=swell_plugin.SECTION, kind=swell_plugin.NAME, settings={'start': 0, 'end': 100}, restart=Restart.WHOLE_SONG,

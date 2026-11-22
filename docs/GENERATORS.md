@@ -80,7 +80,6 @@ Which notes sound, and when within the beat.
 | Generator | What it does | Demo |
 | --- | --- | --- |
 | [AutoRatchet](generators/AUTORATCHET.md) | Chops notes into quick repeats | `examples/learning/11_ode_to_joy_ratchet.yml` |
-| [Euclid](generators/EUCLID.md) | Keeps only the notes on a Euclidean rhythm | `examples/other/euclidean.yml` |
 | [Strum](generators/STRUM.md) | Spreads a chord's notes in time like a pick | `examples/learning/13_classic_strum.yml` |
 
 ### Timing
@@ -119,7 +118,7 @@ How a chord's notes are laid out and played.
 
 ![The Generators page](screenshots/generators.svg)
 
-Press `G` on the main screen for the Generators page, which lists every generator of the set under a heading for its type, such as `- Density (2)`, the types and the generators under each sorted by name. Every type is closed until opened: Space or `ENTER` on a heading opens and closes its type, the set's file keeps which types are open, and `PgUp` and `PgDn` jump between the headings. The kinds are the Chain, Arpeggiator, AutoRatchet, Drift, Progression, VoiceLeading, Strum, Euclid, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and FollowChords. A generator changes a clip's notes when the song plays or exports; to use one, add it to the Generators field of a clip, a scene or a track, on its own or in a chain.
+Press `G` on the main screen for the Generators page, which lists every generator of the set under a heading for its type, such as `- Density (2)`, the types and the generators under each sorted by name. Every type is closed until opened: Space or `ENTER` on a heading opens and closes its type, the set's file keeps which types are open, and `PgUp` and `PgDn` jump between the headings. The kinds are the Chain, Arpeggiator, AutoRatchet, Drift, Progression, VoiceLeading, Strum, Density, Swell, Articulate, Glide, Shorten, Rush, Drag, Hocket, Guitarify and FollowChords. A generator changes a clip's notes when the song plays or exports; to use one, add it to the Generators field of a clip, a scene or a track, on its own or in a chain.
 
 | Key | What it does |
 | --- | --- |
@@ -141,7 +140,7 @@ Every generator ends its settings with Restart, which says when it starts over:
 - "on new scene": the first time each scene plays, carrying on through the scene's repeats;
 - "whole song": never, running along the song from its top, the scenes laid end to end, so that a scene launched by hand plays as it would at its place in the song.
 
-A generator that carries on keeps what it was doing: a progression runs on across scenes, a Euclidean rhythm keeps drifting against the bar, a shape's ramp can last the whole song, an AutoRatchet goes on through its counts, a voice leading voices a scene's first chord near the last chord before, and an arpeggiator goes on with its random choices. A generator painted on several tracks gives each track a copy of its own, so that tracks line up when their patterns do.
+A generator that carries on keeps what it was doing: a progression runs on across scenes, a shape's ramp can last the whole song, an AutoRatchet goes on through its counts, a voice leading voices a scene's first chord near the last chord before, and an arpeggiator goes on with its random choices. A generator painted on several tracks gives each track a copy of its own, so that tracks line up when their patterns do.
 
 ## Bypass Generators When
 

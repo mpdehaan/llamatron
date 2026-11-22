@@ -4,7 +4,6 @@
 
 """A song as its patterns are written, before anything that works after them, which Scene View shows beside the song as played."""
 
-from llamatron.model.objects.euclid import euclid_settings
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.shapes import shape_settings
 from llamatron.model.objects.strum import strum_settings
@@ -27,11 +26,10 @@ def as_written(song):
             pattern.pop(row, None)
     shaped = [setting.get_name() for setting in shape_settings()]
     strummed = [setting.get_name() for setting in strum_settings()]
-    masked = [setting.get_name() for setting in euclid_settings()]
     for song_data in data[Section.SONGS].values():
         song_data.pop(SongSetting.GROOVE, None)
         for track in (song_data.get(Section.TRACKS) or {}).values():
-            for name in [TrackSetting.CHAINS, TrackSetting.GROOVE, *strummed, *masked]:
+            for name in [TrackSetting.CHAINS, TrackSetting.GROOVE, *strummed]:
                 track.pop(name, None)
         for scene in song_data.get(Section.SCENES) or []:
             for name in [SceneSetting.CHAINS, SceneSetting.GROOVE, *shaped]:

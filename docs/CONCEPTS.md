@@ -38,9 +38,8 @@ A part that plays exactly the same every time can sound mechanical. llamatron ca
 
 1. On a pattern's rows, set Probability on a few steps, so that their notes come and go. See [Patterns](PATTERNS.md).
 2. Through the pattern editor's `R` (Reconfigure), choose a play direction, such as pendulum or brownian.
-3. In a drum track's track editor, open `+ Euclid` to keep only the hits of a Euclidean rhythm; `H` on Hits picks a named one. See [Euclid](generators/EUCLID.md).
-4. On the Song page, choose a groove for swing. See [Grooves](GROOVES.md).
-5. For a part that wanders slowly over the whole song, add a Drift generator to the clips' chains. See [Drift](generators/DRIFT.md).
+3. On the Song page, choose a groove for swing. See [Grooves](GROOVES.md).
+4. For a part that wanders slowly over the whole song, add a Drift generator to the clips' chains. See [Drift](generators/DRIFT.md).
 
 ## Hocketing
 

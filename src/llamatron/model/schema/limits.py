@@ -53,11 +53,6 @@ INVERSIONS = [1, 2, 3]
 MAX_STRUM_FADE = 50
 MAX_LOOSE_TIMING = 50
 MIN_STRUM_PERCENT = 0
-# A Euclidean rhythm spreads from 1 to this many hits over as many steps or fewer, and a mask with hits but no steps set spreads them over a bar of sixteenths.
-MIN_EUCLID = 1
-MAX_EUCLID = 32
-DEFAULT_EUCLID_STEPS = 16
-NO_ROTATION = 0
 # A Glide's, a Shorten's, a Rush's or a Drag's row holds from 1 to this many steps; a shortened note plays this share of itself at least and most, and a rush or a drag moves a note by up to half a step.
 MAX_STEP_ROW = 16
 MIN_STEP_ROW = 1

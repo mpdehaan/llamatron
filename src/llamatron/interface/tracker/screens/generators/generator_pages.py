@@ -12,7 +12,6 @@ from llamatron.interface.tracker.screens.generators.auto_ratchet_editor import A
 from llamatron.interface.tracker.screens.generators.density_editor import DensityEditor
 from llamatron.interface.tracker.screens.generators.drag_editor import DragEditor
 from llamatron.interface.tracker.screens.generators.drift_editor import DriftEditor
-from llamatron.interface.tracker.screens.generators.euclid_editor import EuclidEditor
 from llamatron.interface.tracker.screens.generators.follow_chords_editor import FollowChordsEditor
 from llamatron.interface.tracker.screens.generators.glide_editor import GlideEditor
 from llamatron.interface.tracker.screens.generators.guitarify_editor import GuitarifyEditor
@@ -47,7 +46,7 @@ def _in_shown_order(listings):
 
 # The page that edits a generator of each kind, by the section of the set that holds them, which each editor names.
 EDITORS = {editor.SECTION: editor for editor in (
-    ArpEditor, AutoRatchetEditor, DriftEditor, ProgressionEditor, VoiceLeadingEditor, StrumEditor, EuclidEditor, DensityEditor, SwellEditor, ArticulateEditor, GlideEditor, ShortenEditor, RushEditor, DragEditor, HocketEditor, GuitarifyEditor, FollowChordsEditor, PhrasingEditor, MusicianEditor,
+    ArpEditor, AutoRatchetEditor, DriftEditor, ProgressionEditor, VoiceLeadingEditor, StrumEditor, DensityEditor, SwellEditor, ArticulateEditor, GlideEditor, ShortenEditor, RushEditor, DragEditor, HocketEditor, GuitarifyEditor, FollowChordsEditor, PhrasingEditor, MusicianEditor,
 )}
 
 

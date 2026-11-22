@@ -8,7 +8,6 @@
 from llamatron.engine.clips.clip import Clip
 from llamatron.engine.generators import registry
 from llamatron.engine.parts.blend import Blend
-from llamatron.engine.parts.euclidean_mask import EuclidMask
 from llamatron.engine.realizer import pattern_player as pattern_values
 from llamatron.engine.realizer.morph_controls import morph_controls
 from llamatron.engine.realizer.pattern_order import ordered_patterns
@@ -109,7 +108,7 @@ class ClipSlotPlayer:
             controls = clip.get_controls()
             clip, chain_adds = self._through_chain(clip, counting=registers.is_counting(), passes=passes)
             if not registers.is_counting():
-                clip = self._shaped(self._masked(clip), passes=passes)
+                clip = self._shaped(clip, passes=passes)
             # What the chain's generators add to the registers comes after what the pattern's steps add at the same moment.
             for time, adds in chain_adds:
                 registers.at_step(time=time, sets=NO_SETS, adds=adds)
@@ -239,20 +238,6 @@ class ClipSlotPlayer:
         """Return whether a shape a chain names is left out of the clip. A shape works on the whole clip at once, so the registers as the clip's first pass starts speak for all of it."""
         tables = [*self._bypass_tables(), self._setlist.chain_run(chain).get_bypass_when(), self._setlist.get_generator_settings(kind=kind, name=name).get_bypass_when()]
         return any(_tripped(passes=passes[:FIRST_PASS + 1], tables=tables))
-
-    def _masked(self, clip):
-        """Return the clip with its track's Euclidean mask applied after its chains, or as it is when the track has none."""
-        track = self._song.get_track(self._track_name)
-        mask = track.get_euclid()
-        if mask is None:
-            return clip
-        bar = self._song.get_time_signature().bar_length()
-        if mask.step is None:
-            pattern = self._setlist.get_pattern(self._clip_slot.get_pattern_name())
-            step = self._setlist.get_pattern_step_size(pattern)
-        else:
-            step = in_whole_notes(time=mask.step, bar=bar)
-        return EuclidMask(hits=mask.hits, steps=mask.steps, rotate=mask.rotate, step=step).generate(clip)
 
     def _plays_drums(self):
         """Return whether the clip slot's own pattern is a drum pattern."""

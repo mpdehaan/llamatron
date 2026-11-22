@@ -21,7 +21,7 @@ from llamatron.interface.tracker.screens.set.scale_page import ScalePage
 from llamatron.interface.tracker.screens.shared.generator_names import listed_generator
 from llamatron.interface.visualizers import modes
 from llamatron.model.schema import generator_plugins
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, EuclidPart, FollowAction, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, FollowAction, RampPart, RampWay, RegisterName, Shape, StrumDirection, StrumPart
 from llamatron.user_strings import labels, legends, marks, names
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, UITest
@@ -40,8 +40,6 @@ TRANSPOSE = -7
 INSTRUMENT = 'piano'
 DENSITY_START = 25
 DENSITY_END = 100
-EUCLID_HITS = 3
-EUCLID_STEPS = 8
 A_LONG_NAME = 'a pattern name far longer than any detail is allowed to be'
 LONG_CHAIN = 'a chain name far longer than any detail may be'
 NO_ROOM = 2
@@ -135,17 +133,15 @@ class TestDetails(unittest.TestCase):
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_groove_choice, choice=SONG_GROOVE, song=self.document.song())
         self.assertIn(marks.MSG_DETAILS_GROOVE.format(name=SONG_GROOVE), self.scene_lines())
 
-    def test_a_track_shows_its_instrument_transpose_euclid_strum_and_mute(self):
+    def test_a_track_shows_its_instrument_transpose_strum_and_mute(self):
         self.document.add_instrument(INSTRUMENT)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=INSTRUMENT)
         self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_transpose, TRANSPOSE)
-        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_euclid_setting, part=EuclidPart.HITS, value=EUCLID_HITS)
-        self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_euclid_setting, part=EuclidPart.STEPS, value=EUCLID_STEPS)
         self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_strum_setting, part=StrumPart.DIRECTION, value=StrumDirection.UP)
         self.document.change_set(self.document.song().get_track(ui_testing.LEAD).set_mute, True)
         self.assertEqual(self.track_lines(), [
             marks.MSG_DETAILS_INSTRUMENT.format(name=INSTRUMENT), marks.MSG_DETAILS_TRANSPOSE.format(amount=TRANSPOSE),
-            marks.MSG_DETAILS_EUCLID.format(hits=EUCLID_HITS, steps=EUCLID_STEPS), marks.MSG_DETAILS_STRUM.format(direction=StrumDirection.UP), marks.MSG_DETAILS_MUTED,
+            marks.MSG_DETAILS_STRUM.format(direction=StrumDirection.UP), marks.MSG_DETAILS_MUTED,
         ])
 
     def test_a_clips_name_line_marks_its_loop_and_repeats_and_its_morph_and_direction_are_spelled_out_on_lines(self):

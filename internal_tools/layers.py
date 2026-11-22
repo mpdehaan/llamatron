@@ -50,7 +50,7 @@ FRONT_DOORS = {
     # Of the Model, its values and schema, the set and the song, the names it makes, and the toolkit that settings and the generator
     # plugins' models are written with; the rest of its objects and its file are its own.
     'model': ('values', 'schema', 'objects.setlist', 'objects.song', 'objects.naming', 'objects.llama_data', 'objects.traits',
-              'objects.conditions', 'objects.shapes', 'objects.strum', 'objects.euclid', 'objects.velocity_ramps', 'file.song_file_error',
+              'objects.conditions', 'objects.shapes', 'objects.strum', 'objects.velocity_ramps', 'file.song_file_error',
               'file.checks', 'file.invalid_value', 'file.corrections', 'file.version', 'file.files'),
     'exporters': ('exports',),
     'importers': ('midi_import',),

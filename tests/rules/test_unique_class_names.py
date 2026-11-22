@@ -47,7 +47,6 @@ ALLOWED = (
     'DrawResetRow',
     'DrawsPage',
     'DriftEditor',
-    'EuclidEditor',
     'FieldPage',
     'FilePage',
     'FollowChordsEditor',

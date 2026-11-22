@@ -19,7 +19,7 @@ from dataclasses import dataclass
 import pathlib
 import re
 
-from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, euclid as euclid_plugin, glide as glide_plugin, hocket as hocket_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
+from llamatron.engine.generators import arp as arp_plugin, articulate as articulate_plugin, auto_ratchet as auto_ratchet_plugin, density as density_plugin, drag as drag_plugin, drift as drift_plugin, glide as glide_plugin, hocket as hocket_plugin, progression as progression_plugin, rush as rush_plugin, shorten as shorten_plugin, strum as strum_plugin, swell as swell_plugin, voice_leading as voice_leading_plugin
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.document import Document
@@ -36,7 +36,6 @@ ARP_SONG = ROOT / 'examples' / 'learning' / '12_sailor_arpeggiator.yml'
 # The demos whose pages show the advanced settings of scenes, clips, tracks and the newer generators.
 SWELL_SONG = ROOT / 'examples' / 'learning' / '16_bolero_swell.yml'
 STRUM_SONG = ROOT / 'examples' / 'learning' / '13_classic_strum.yml'
-EUCLID_SONG = ROOT / 'examples' / 'other' / 'euclidean.yml'
 PROGRESSION_SONG = ROOT / 'examples' / 'learning' / '06_chord_progression_generator.yml'
 HOCKET_SONG = ROOT / 'examples' / 'learning' / '19_hocket_shanty.yml'
 DRIFT_SONG = ROOT / 'examples' / 'by_genre' / 'rock' / 'volcano.yml'
@@ -45,8 +44,7 @@ VOICE_LEADING_SONG = ROOT / 'examples' / 'learning' / '05_voice_leading.yml'
 ARTICULATE_SONG = ROOT / 'examples' / 'learning' / '15_acid_articulate.yml'
 GLIDE_SONG = ROOT / 'examples' / 'learning' / '14_acid_glide.yml'
 RUSH_SONG = ROOT / 'examples' / 'learning' / '14_acid_glide.yml'
-# The euclidean demo's shaker, the track with a Euclidean mask, and the progression demo's bass, a clip with a chain, by their places from the left.
-EUCLID_TRACK_PLACE = 5
+# The progression demo's bass, a clip with a chain, by its place from the left.
 CHAINED_TRACK_PLACE = 4
 FOLDER = ROOT / 'docs' / 'screenshots'
 # What the song wizard's shots choose, and the player and the section whose panels are shown.
@@ -129,11 +127,10 @@ SHOTS = [
     Shot(name='scene_view_played', keys=[keybindings.MainPage.ARRANGE, keybindings.ArrangePage.SCENE_VIEW, keybindings.ArrangePage.TO_PLAYED], song=DENSITY_SONG),
     Shot(name='scene', keys=[keybindings.MainPage.ARRANGE, Key.ENTER]),
     Shot(name='clip', keys=[keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER]),
-    # The settings pages' sections, opened with PgDn to a heading and Space: a scene's Velocity Ramp In, past its two tempo ramps, a clip's Strum, a track's Euclid.
+    # The settings pages' sections, opened with PgDn to a heading and Space: a scene's Velocity Ramp In, past its two tempo ramps and a clip's Strum.
     Shot(name='scene_swell', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.SPACE], song=SWELL_SONG),
     Shot(name='scene_density', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=DENSITY_SONG),
     Shot(name='clip_strum', keys=[keybindings.MainPage.ARRANGE, Key.DOWN, Key.RIGHT, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=STRUM_SONG),
-    Shot(name='track_euclid', keys=[keybindings.MainPage.ARRANGE, Key.UP, *[Key.RIGHT] * EUCLID_TRACK_PLACE, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=EUCLID_SONG),
     Shot(name='instruments', keys=[keybindings.MainPage.INSTRUMENTS]),
     Shot(name='instrument_editor', keys=[keybindings.MainPage.INSTRUMENTS, Key.ENTER]),
     Shot(name='progression_editor', generator=progression_plugin.SECTION, keys=[], song=PROGRESSION_SONG),
@@ -142,7 +139,6 @@ SHOTS = [
     Shot(name='hocket_editor', generator=hocket_plugin.SECTION, keys=[], song=HOCKET_SONG),
     Shot(name='voice_leading_editor', generator=voice_leading_plugin.SECTION, keys=[], song=VOICE_LEADING_SONG),
     Shot(name='strum_editor', generator=strum_plugin.SECTION, keys=[], song=STRUM_SONG),
-    Shot(name='euclid_editor', generator=euclid_plugin.SECTION, keys=[], song=EUCLID_SONG),
     Shot(name='density_editor', generator=density_plugin.SECTION, keys=[], song=DENSITY_SONG),
     Shot(name='swell_editor', generator=swell_plugin.SECTION, keys=[], song=SWELL_SONG),
     Shot(name='articulate_editor', generator=articulate_plugin.SECTION, keys=[], song=ARTICULATE_SONG),

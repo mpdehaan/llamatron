@@ -11,7 +11,6 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.generators_field import generators_field
 from llamatron.interface.tracker.screens.arrange.groove_choice import groove_choice_field
-from llamatron.interface.tracker.screens.generators.euclid_fields import euclid_section, pick_rhythm
 from llamatron.interface.tracker.screens.generators.strum_fields import strum_section
 from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
@@ -21,7 +20,7 @@ from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNam
 from llamatron.interface.tracker.screens.shared.statements import statement_section
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import EuclidPart, Section, TrackSetting
+from llamatron.model.schema.file_format import Section, TrackSetting
 from llamatron.model.values import midi
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
 
@@ -148,7 +147,6 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         result += self._cc_fields(track)
         result.append(generators_field(page=self, names=self._chain_names, store=self._set_chain_names))
         result.append(self.instrument_field())
-        result += euclid_section(page=self, value=track.get_euclid_setting, store=self._euclid_store())
         result += strum_section(page=self, value=track.get_strum_setting, first=marks.MSG_NONE_SHOWN, store=self._strum_store())
         result += self._statement_sections(track)
         return result
@@ -255,24 +253,6 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         def store(place, statement):
             self._change(self.track().set_statement, name=name, place=place, statement=statement)
         return store
-
-    def store_euclid(self, *, part, value):
-        self._change(self.track().set_euclid_setting, part=part, value=value)
-
-    def _euclid_store(self):
-        """Return what stores a part of the track's Euclidean mask, as the mask's section and the rhythm picker hand on the part
-        and its value."""
-        def store(part, value):
-            self.store_euclid(part=part, value=value)
-        return store
-
-    def page_keys(self):
-        if self.field().label == labels.MSG_EUCLID_FIELD_LABELS[EuclidPart.HITS]:
-            return [self.bind(self.KEYS.PICK_RHYTHM, action=self._pick_rhythm)]
-        return []
-
-    def _pick_rhythm(self):
-        pick_rhythm(page=self, store=self._euclid_store())
 
     def remarks(self, width):
         return [Text(messages.MSG_TRANSPOSE_NOTE, style=Style.DIM)]

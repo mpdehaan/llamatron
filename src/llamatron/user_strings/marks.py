@@ -62,7 +62,6 @@ MSG_DETAILS_ADVANCE = 'advance: {action}'
 MSG_DETAILS_STRUM = 'strum: {direction}'
 MSG_DETAILS_INSTRUMENT = 'inst: {name}'
 MSG_DETAILS_TRANSPOSE = 'transpose: {amount:+d}'
-MSG_DETAILS_EUCLID = 'euclid: {hits}/{steps}'
 MSG_DETAILS_MUTED = 'muted'
 MSG_DETAILS_LIST_SEPARATOR = ', '
 # Around the line of details Tab picked, which ENTER opens, chosen over the triangle, which marks play.
@@ -158,10 +157,6 @@ MSG_PARENT_ROW = '../'
 MSG_FOLDER_ROW = '{name}/'
 # A step that's off, in a row of steps written out on one line.
 MSG_STEP_OFF = '.'
-# A Euclidean rhythm drawn a mark a step, and a named rhythm as its picker offers it.
-MSG_EUCLID_HIT = 'X'
-MSG_EUCLID_MISS = '.'
-MSG_RHYTHM_SHOWN = '{name}: {hits} over {steps}, {drawn}'
 # A spread with how many milliseconds apart it sounds two strings.
 MSG_SPREAD_SHOWN = '{name} ({milliseconds} ms)'
 # A voice leading's range on its list page, in the set's octave labels.

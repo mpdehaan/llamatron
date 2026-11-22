@@ -188,16 +188,13 @@ def scene_details(*, song, scene):
 
 
 def track_details(*, song, track):
-    """Return a track's lines of details: its chains, its instrument, its transpose, its groove, its Euclidean mask, its strum and whether it's muted."""
+    """Return a track's lines of details: its chains, its instrument, its transpose, its groove, its strum and whether it's muted."""
     lines = chain_lines(song=song, names=track.get_chain_names())
     if track.get_instrument_name():
         lines.append(detail(marks_text.MSG_DETAILS_INSTRUMENT.format(name=track.get_instrument_name()), target=Target(kind=Section.INSTRUMENTS, name=track.get_instrument_name())))
     if track.get_transpose() != NO_TRANSPOSE:
         lines.append(detail(marks_text.MSG_DETAILS_TRANSPOSE.format(amount=track.get_transpose())))
     lines += groove_lines(track.get_groove_choice())
-    euclid = track.get_euclid()
-    if euclid is not None:
-        lines.append(detail(marks_text.MSG_DETAILS_EUCLID.format(hits=euclid.hits, steps=euclid.steps)))
     lines += strum_lines(track.get_strum())
     if track.is_muted():
         lines.append(detail(marks_text.MSG_DETAILS_MUTED))

@@ -10,13 +10,12 @@ from llamatron.model.file.checks import is_whole_number_from, pass_over_unknown,
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.conditions import statements_setting, with_statement
-from llamatron.model.objects.euclid import euclid_settings, euclid_values
 from llamatron.model.objects.groove import check_groove_choice
 from llamatron.model.objects.llama_data import HoldsSettings, left_out_if_default, or_default, own_copy
 from llamatron.model.objects.strum import strum_settings, strum_values
 from llamatron.model.objects.traits import RunsChains
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import euclid_setting, Section, strum_setting, TrackSetting
+from llamatron.model.schema.file_format import Section, strum_setting, TrackSetting
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.model.values import midi
 from llamatron.user_strings import errors
@@ -65,7 +64,6 @@ SETTINGS = described(
     WholeNumber(name=TrackSetting.ACCENT, lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT, error=errors.ERR_BAD_ACCENT),
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
     *strum_settings(),
-    *euclid_settings(),
     statements_setting(TrackSetting.BYPASS_WHEN),
     statements_setting(TrackSetting.SKIP_WHEN),
 )
@@ -91,7 +89,7 @@ class Track(RunsChains, HoldsSettings):
         self, *, drum=None, mute=None, transpose=None, lowest_octave=None, highest_octave=None, cc=None, groove=None, instrument=None,
         cc1_register=None, cc2_register=None, cc3_register=None, cc4_register=None, velocity_register=None, default_velocity=None, accent=None, chains=None,
         strum_direction=None, strum_spread=None, strum_fade=None, strum_loose_timing=None, strum_upstroke_strings=None,
-        euclid_hits=None, euclid_steps=None, euclid_rotate=None, euclid_step=None, bypass_when=None, skip_when=None,
+        bypass_when=None, skip_when=None,
     ):
         self.note_change()
         self._settings = {
@@ -101,7 +99,6 @@ class Track(RunsChains, HoldsSettings):
             TrackSetting.CC3_REGISTER: cc3_register, TrackSetting.CC4_REGISTER: cc4_register, TrackSetting.VELOCITY_REGISTER: velocity_register, TrackSetting.DEFAULT_VELOCITY: default_velocity, TrackSetting.ACCENT: accent,
             TrackSetting.CHAINS: own_copy(chains), TrackSetting.STRUM_DIRECTION: strum_direction, TrackSetting.STRUM_SPREAD: strum_spread,
             TrackSetting.STRUM_FADE: strum_fade, TrackSetting.STRUM_LOOSE_TIMING: strum_loose_timing, TrackSetting.STRUM_UPSTROKE_STRINGS: strum_upstroke_strings,
-            TrackSetting.EUCLID_HITS: euclid_hits, TrackSetting.EUCLID_STEPS: euclid_steps, TrackSetting.EUCLID_ROTATE: euclid_rotate, TrackSetting.EUCLID_STEP: euclid_step,
             TrackSetting.BYPASS_WHEN: own_copy(bypass_when), TrackSetting.SKIP_WHEN: own_copy(skip_when),
         }
 
@@ -237,19 +234,6 @@ class Track(RunsChains, HoldsSettings):
     def set_strum_setting(self, *, part, value):
         """Set one part of the track's strum, or None to leave it blank."""
         name = strum_setting(part)
-        self.set_written(name=name, value=value)
-
-    def get_euclid_setting(self, part):
-        """Return one part of the track's Euclidean mask as the file writes it, or None when it's blank."""
-        return self._settings[euclid_setting(part)]
-
-    def get_euclid(self):
-        """Return the track's Euclidean mask, or None when its hits are blank."""
-        return euclid_values(self.get_euclid_setting)
-
-    def set_euclid_setting(self, *, part, value):
-        """Set one part of the track's Euclidean mask, or None to leave it blank."""
-        name = euclid_setting(part)
         self.set_written(name=name, value=value)
 
     def get_statements(self, name):

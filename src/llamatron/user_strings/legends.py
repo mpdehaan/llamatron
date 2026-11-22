@@ -348,7 +348,6 @@ MSG_USE_SCENE_GROOVE_WHAT = 'use the scene or song groove'
 MSG_PICK_PROGRESSION_WHAT = 'pick progression'
 
 # interface/tracker/keybindings.py, on a mask's Hits field: H fills the hits and steps with a named rhythm.
-MSG_PICK_RHYTHM_WHAT = 'pick rhythm'
 
 # interface/tracker/screens/wizard/wizard_page.py
 MSG_WIZARD_FOLD_WHAT = 'fold'

@@ -7,7 +7,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.interface.tracker.keys import RowSection
-from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, EuclidPart, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, NamedRhythm, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
+from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, StrumDirection, StrumPart, Tuning, UpstrokeStrings
 
 
 def register_labels(*, rows, label):
@@ -417,13 +417,6 @@ MSG_DRAG_AMOUNT_LABEL = 'Drag amount'
 MSG_STEPS_LABEL = 'Steps'
 MSG_STEP_NUMBER_ROW_LABEL = 'Step'
 MSG_RESTART_NAMES = {Restart.EVERY_CLIP: 'every clip', Restart.ON_NEW_SCENE: 'on new scene', Restart.WHOLE_SONG: 'whole song'}
-MSG_EUCLID_FIELD_LABELS = {EuclidPart.HITS: 'Euclid hits', EuclidPart.STEPS: 'Euclid steps', EuclidPart.ROTATE: 'Euclid rotate', EuclidPart.STEP: 'Euclid step'}
-MSG_EUCLID_PART_LABELS = {EuclidPart.HITS: 'Hits', EuclidPart.STEPS: 'Steps', EuclidPart.ROTATE: 'Rotate', EuclidPart.STEP: 'Step'}
-MSG_RHYTHM_NAMES = {
-    NamedRhythm.TRESILLO: 'tresillo, Cuba', NamedRhythm.CINQUILLO: 'cinquillo, Cuba', NamedRhythm.KHAFIF_E_RAMAL: 'khafif-e-ramal, Persia',
-    NamedRhythm.AKSAK: 'aksak, Turkey', NamedRhythm.VENDA: 'Venda, South Africa', NamedRhythm.BEMBE: 'bembé, West Africa',
-    NamedRhythm.SAMBA: 'samba, Brazil', NamedRhythm.BOSSA_NOVA: 'bossa nova, Brazil',
-}
 MSG_CHORDS_LABEL = 'Chords'
 MSG_CHORD_ROW_LABEL = 'Chord'
 MSG_NUMERAL_ROW_LABEL = 'Degree'
