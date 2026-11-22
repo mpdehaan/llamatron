@@ -89,9 +89,13 @@ ITEM_KINDS = {
     Section.SONGS: Song,
 }
 def item_class(section):
-    """Return the class that reads each item of a section of the set: a generator plugin's settings, or the section's own class."""
-    plugin = generator_plugins.plugins_by_section().get(section)
-    return ITEM_KINDS[section] if plugin is None else plugin.settings
+    """Return the class that reads each item of a section of the set: a generator plugin's settings, or the section's own
+    class."""
+    plugins = generator_plugins.plugins_by_section()
+    plugin = plugins.get(section)
+    if plugin is None:
+        return ITEM_KINDS[section]
+    return plugin.settings
 
 
 # The sections whose items are read knowing the set, where the others take the set in place of a song, to look names up in.
@@ -114,20 +118,47 @@ def starter_pattern():
     return {PatternSetting.STEPS: STARTER_PATTERN_STEPS, Row.DEGREE: degrees}
 
 
+def _plays_pattern(*, scene, track, pattern):
+    """Return whether a track's clip in a scene plays a pattern."""
+    if not scene.has_clip_slot(track):
+        return False
+    clip_slot = scene.get_clip_slot(track)
+    return pattern in clip_slot.get_pattern_names()
+
+
+def _scales_playing(*, song, scene, pattern):
+    """Return the scale each clip of a scene that plays a pattern plays it in: the clip's own, else the scene's, else the
+    song's, leaving out a clip that plays in no scale."""
+    scales = []
+    for track in scene.clip_slots_naming(section=Section.PATTERNS, name=pattern):
+        clip_slot = scene.get_clip_slot(track)
+        scale = clip_slot.get_scale_name() or scene.get_scale_name() or song.get_scale_name()
+        if scale:
+            scales.append(scale)
+    return scales
+
+
 def new_setlist():
-    """Return the data of a new set: a C major scale and a starter pattern, both deletable, and one song called untitled whose first track plays the pattern in its first scene, the pattern in the group named after that track."""
+    """Return the data of a new set: a C major scale and a starter pattern, both deletable, and one song called untitled whose
+    first track plays the pattern in its first scene, the pattern in the group named after that track."""
     first_pattern = names_text.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)
     first_track = names_text.MSG_NEW_TRACK_NAME.format(number=defaults.FIRST_NUMBER)
     song = started_song(scale=DEFAULT_SCALE)
     song[Section.SCENES][0][SceneSetting.TRACKS] = {first_track: {ClipSlotSetting.PATTERN: first_pattern}}
-    return {
+    data = {
         Section.SCALES: {DEFAULT_SCALE: {ScaleSetting.ROOT: note.ROOT_NAMES[0], ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}},
         SetlistSetting.STEP_SIZE: defaults.DEFAULT_STEP_SIZE,
-        SetlistSetting.DEFAULT_OCTAVE: defaults.DEFAULT_OCTAVE, SetlistSetting.DEFAULT_DRUM_OCTAVE: defaults.DEFAULT_DRUM_OCTAVE,
+        SetlistSetting.DEFAULT_OCTAVE: defaults.DEFAULT_OCTAVE,
+        SetlistSetting.DEFAULT_DRUM_OCTAVE: defaults.DEFAULT_DRUM_OCTAVE,
         SetlistSetting.OCTAVE_LABELS: defaults.DEFAULT_OCTAVE_LABELS,
-        Section.PATTERNS: {first_pattern: {**starter_pattern(), PatternSetting.GROUP: first_track}}, **{section: {} for section in generator_plugins.sections_by_name().values()}, Section.CHAINS: {},
-        Section.SONGS: {names_text.MSG_DEFAULT_SONG_NAME: song},
+        Section.PATTERNS: {first_pattern: {**starter_pattern(), PatternSetting.GROUP: first_track}},
     }
+    sections_by_name = generator_plugins.sections_by_name()
+    for section in sections_by_name.values():
+        data[section] = {}
+    data[Section.CHAINS] = {}
+    data[Section.SONGS] = {names_text.MSG_DEFAULT_SONG_NAME: song}
+    return data
 
 
 
@@ -224,7 +255,8 @@ class Setlist(HoldsSections, HoldsSettings):
     @notes_change
     def fill_in_defaults(self):
         """Give every setting and section a new set has a value where a file left it out, so that saving writes them."""
-        for name, value in new_setlist().items():
+        new = new_setlist()
+        for name, value in new.items():
             if name in self._settings and self._settings[name] is None:
                 self._settings[name] = value
         for items in self._sections.values():
@@ -270,12 +302,14 @@ class Setlist(HoldsSections, HoldsSettings):
         self._read(data)
 
     def _read(self, data):
-        """Read every setting and section from a set file's data, in the order the file is read: each section can name what the ones before it hold."""
+        """Read every setting and section from a set file's data, in the order the file is read: each section can name what the
+        ones before it hold."""
         _refuse_generators_without_plugin(data)
         self._read_settings(data)
         self._read_scales(data)
         self._read_items(data=data, section=Section.PATTERNS)
-        for section in generator_plugins.sections_by_name().values():
+        sections_by_name = generator_plugins.sections_by_name()
+        for section in sections_by_name.values():
             self._read_generators(data=data, section=section)
         self._read_items(data=data, section=Section.CHAINS)
         self._read_grooves(data)
@@ -304,7 +338,10 @@ class Setlist(HoldsSections, HoldsSettings):
     def _read_settings(self, data):
         for setting in settings_held(settings=SETTINGS, data=data):
             name = setting.get_name()
-            with reading(checks.TOP_OF_FILE if name in NAMED_BY_THEIR_MESSAGE else name):
+            where = name
+            if name in NAMED_BY_THEIR_MESSAGE:
+                where = checks.TOP_OF_FILE
+            with reading(where):
                 setting.check_held(data)
         self._settings = {name: own_copy(data.get(name)) for name in SETTINGS}
         self._settings[SetlistSetting.VISUALIZER] = sensible_visualizer(self._settings[SetlistSetting.VISUALIZER])
@@ -350,17 +387,23 @@ class Setlist(HoldsSections, HoldsSettings):
         if section not in data:
             self._set_section(section=section, items=None)
             return
-        self._set_section(section=section, items={name: self._item(section=section, name=name, data=item) for name, item in (data[section] or {}).items()})
+        items = {}
+        held = data[section] or {}
+        for name, item in held.items():
+            items[name] = self._item(section=section, name=name, data=item)
+        self._set_section(section=section, items=items)
 
     def _item(self, *, section, name, data):
-        """Return the item of a section that its data describes: the one the set has already, if it keeps this very data, or one read from the data."""
+        """Return the item of a section that its data describes: the one the set has already, if it keeps this very data, or one
+        read from the data."""
         same = self._sections[section].same_item(name=name, data=data)
         if same is not None:
             return same
         where = self._where(section=section, name=name)
+        kind = item_class(section)
         if section in READ_WITH_THE_SET:
-            return item_class(section).from_data(data=data, where=where, setlist=self)
-        return item_class(section).from_data(data=data, where=where, song=self)
+            return kind.from_data(data=data, where=where, setlist=self)
+        return kind.from_data(data=data, where=where, song=self)
 
     def _where(self, *, section, name):
         """Return how a message places one item of a section, like pattern (tune)."""
@@ -408,10 +451,20 @@ class Setlist(HoldsSections, HoldsSettings):
         return pattern.get_steps() * self.get_pattern_step_size(pattern)
 
     def changes_registers(self):
-        """Return whether any pattern sets a register, adds to one or uses a draw, any arpeggiator adds to one, or any scene or clip sets or adds to one, so that playing changes the registers' values; a draw's uses are counted with the registers' changes."""
-        return any(pattern.changes_registers() or pattern.uses_draws() or pattern.reads_draws() for pattern in self._section(Section.PATTERNS).values()) or any(
-            generator.adds_to_registers() for section in generator_plugins.sections_adding_to_registers() for generator in self._section(section).values()
-        ) or any(song.scenes_change_registers() for song in self._section(Section.SONGS).values())
+        """Return whether any pattern sets a register, adds to one or uses a draw, any arpeggiator adds to one, or any scene or
+        clip sets or adds to one, so that playing changes the registers' values; a draw's uses are counted with the registers'
+        changes."""
+        for pattern in self._section(Section.PATTERNS).values():
+            if pattern.changes_registers() or pattern.uses_draws() or pattern.reads_draws():
+                return True
+        for section in generator_plugins.sections_adding_to_registers():
+            for generator in self._section(section).values():
+                if generator.adds_to_registers():
+                    return True
+        for song in self._section(Section.SONGS).values():
+            if song.scenes_change_registers():
+                return True
+        return False
 
     def get_default_octave(self):
         return self._setting(name=SetlistSetting.DEFAULT_OCTAVE, default=defaults.DEFAULT_OCTAVE)
@@ -450,8 +503,12 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def get_genres(self):
         """Return the genres the set's songs say they are, each once in the songs' order."""
-        styles = [self.get_song(name).get_style_name() for name in self.get_song_names()]
-        return list(dict.fromkeys(genre for genre in styles if genre))
+        genres = {}
+        for name in self.get_song_names():
+            genre = self.get_song(name).get_style_name()
+            if genre:
+                genres[genre] = None
+        return list(genres)
 
     def _names_but(self, *, section, old):
         """Return the names of a section's items but the name an item is being renamed from."""
@@ -567,31 +624,41 @@ class Setlist(HoldsSections, HoldsSettings):
         return [name for section in sections.generator_sections() for name in self._section(section).names()]
 
     def _check_generator_name(self, *, section, name, old):
-        """Refuse a name for a generator or a chain that a generator or chain of another kind has, old being the name it is renamed from."""
+        """Refuse a name for a generator or a chain that a generator or chain of another kind has, old being the name it is
+        renamed from."""
         if section not in sections.generator_sections():
             return
-        others = [held for held in sections.generator_sections() if held != section]
-        taken = next((held for held in others if is_taken(name=name, taken=self._names_but(section=held, old=old))), None)
-        if taken is not None:
-            raise InvalidValue(errors.ERR_NAME_TAKEN.format(label=sections.section_label(taken), name=name))
+        for held in sections.generator_sections():
+            if held != section and is_taken(name=name, taken=self._names_but(section=held, old=old)):
+                raise InvalidValue(errors.ERR_NAME_TAKEN.format(label=sections.section_label(held), name=name))
 
     # The order of the Generators page: every generator on one list, kept in an order of its own.
 
     def ordered_generators(self):
         """Return every generator as (kind, name) in the Generators page's order: the order kept, leaving out any generator
         gone, then any it doesn't name, kind by kind in each kind's own order."""
-        existing = [(kind, name) for kind, section in generator_plugins.listed_sections().items() for name in self._section(section).names()]
+        existing = []
+        listed = generator_plugins.listed_sections()
+        for kind, section in listed.items():
+            for name in self._section(section).names():
+                existing.append((kind, name))
         kept = []
         for entry in self._settings[SetlistSetting.GENERATOR_ORDER] or []:
             pair = next(iter(entry.items()))
             if pair in existing and pair not in kept:
                 kept.append(pair)
-        return kept + [pair for pair in existing if pair not in kept]
+        for pair in existing:
+            if pair not in kept:
+                kept.append(pair)
+        return kept
 
     @notes_change
     def set_generator_order(self, pairs):
         """Keep the Generators page's order, every generator as (kind, name)."""
-        self._settings[SetlistSetting.GENERATOR_ORDER] = generator_plugins.sensible_generator_order([{kind: name} for kind, name in pairs])
+        entries = []
+        for kind, name in pairs:
+            entries.append({kind: name})
+        self._settings[SetlistSetting.GENERATOR_ORDER] = generator_plugins.sensible_generator_order(entries)
 
     def move_generator(self, *, place, offset):
         """Move a generator up or down the Generators page's list, and return whether it moved, which it can't past either end."""
@@ -615,12 +682,18 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def copy_item(self, *, section, name, new):
         """Add a copy of an item under a new name, at the end of its section, and return the copy."""
-        item = self._section(section).get(name).copy()
-        self._section(section).add(name=new, item=item)
-        if section in generator_plugins.names_by_section() and self._settings[SetlistSetting.GENERATOR_ORDER]:
+        items = self._section(section)
+        original = items.get(name)
+        item = original.copy()
+        items.add(name=new, item=item)
+        names_by_section = generator_plugins.names_by_section()
+        if section in names_by_section and self._settings[SetlistSetting.GENERATOR_ORDER]:
             # On the Generators page a copy comes straight after what it copies, as on every list.
-            kind = generator_plugins.names_by_section()[section]
-            pairs = [pair for pair in self.ordered_generators() if pair != (kind, new)]
+            kind = names_by_section[section]
+            pairs = []
+            for pair in self.ordered_generators():
+                if pair != (kind, new):
+                    pairs.append(pair)
             pairs.insert(pairs.index((kind, name)) + 1, (kind, new))
             self.set_generator_order(pairs)
         return item
@@ -662,15 +735,22 @@ class Setlist(HoldsSections, HoldsSettings):
         song = self.get_song(name).to_data()
         new = Setlist.new()
         new.fill_in_defaults()
-        first = new.first_song_name()
-        if song == new.get_song(first).to_data():
+        first = new.get_song(new.first_song_name())
+        if song == first.to_data():
             # A new set's song plays the starter pattern, which must be as it started too.
-            patterns = new.get_pattern_names()
-            return all(self.has_pattern(pattern) and self.get_item(section=Section.PATTERNS, name=pattern).to_data() == new.get_item(section=Section.PATTERNS, name=pattern).to_data() for pattern in patterns)
-        added = copy_name(name=name, taken=new.get_song_names())
-        new.add_new_song(added)
-        new.get_song(added).fill_in_defaults()
-        return song == new.get_song(added).to_data()
+            return self._has_patterns_of(new)
+        added_name = copy_name(name=name, taken=new.get_song_names())
+        new.add_new_song(added_name)
+        added = new.get_song(added_name)
+        added.fill_in_defaults()
+        return song == added.to_data()
+
+    def _has_patterns_of(self, other):
+        """Return whether the set holds every pattern of another set, each just as the other holds it."""
+        for pattern in other.get_pattern_names():
+            if not self.has_pattern(pattern) or not self._same(section=Section.PATTERNS, name=pattern, other=other):
+                return False
+        return True
 
     def replace_song(self, *, name, other, new=None):
         """Replace a song entirely, in its place, with the one song of another set and all that song uses, which the song wizard does.
@@ -724,11 +804,16 @@ class Setlist(HoldsSections, HoldsSettings):
     def is_named(self, *, section, name):
         """Return whether anything in the set names an item of a section: a song, a scene, a track, a clip or a chain."""
         namers = (self.songs_naming, self.scenes_naming, self.tracks_naming, self.clip_slots_naming, self.chains_naming)
-        return any(naming(section=section, name=name) for naming in namers)
+        for naming in namers:
+            if naming(section=section, name=name):
+                return True
+        return False
 
     def _same(self, *, section, name, other):
         """Return whether this set and another hold the very same thing under a name."""
-        return self.get_item(section=section, name=name).to_data() == other.get_item(section=section, name=name).to_data()
+        mine = self.get_item(section=section, name=name)
+        theirs = other.get_item(section=section, name=name)
+        return mine.to_data() == theirs.to_data()
 
     # The songs.
 
@@ -814,7 +899,12 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def clip_slots_naming(self, *, section, name):
         """Return (song name, number, scene, track) for each clip that names an item of a section."""
-        return [(song, number, scene, track) for song in self.get_song_names() for number, scene, track in self.get_song(song).clip_slots_naming(section=section, name=name)]
+        naming = []
+        for song_name in self.get_song_names():
+            song = self.get_song(song_name)
+            for number, scene, track in song.clip_slots_naming(section=section, name=name):
+                naming.append((song_name, number, scene, track))
+        return naming
 
     def chains_naming(self, *, section, name):
         """Return the name of each chain that runs a generator of a section."""
@@ -822,9 +912,14 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def allowed_inc_max_for_pattern(self, *, name, register):
         """Return the narrowest Allowed Inc Max a register has in the songs that play a pattern, or None when no song plays it."""
-        songs = dict.fromkeys(song for song, _, _, _ in self.clip_slots_naming(section=Section.PATTERNS, name=name))
-        limits = [self.get_song(song).get_register(register).get_allowed_inc_max() for song in songs]
-        return min(limits) if limits else None
+        narrowest = None
+        for song_name, _, _, _ in self.clip_slots_naming(section=Section.PATTERNS, name=name):
+            song = self.get_song(song_name)
+            held = song.get_register(register)
+            allowed = held.get_allowed_inc_max()
+            if narrowest is None or allowed < narrowest:
+                narrowest = allowed
+        return narrowest
 
     def hold_adds_within_limits(self):
         """Bring every pattern's += rows within the narrowest Allowed Inc Max of the songs that play it: lowering a limit changes what used it."""
@@ -838,13 +933,13 @@ class Setlist(HoldsSections, HoldsSettings):
                     pattern.hold_adds(row=row, most=most)
 
     def scales_for_pattern(self, name):
-        """Return the name of every scale a pattern can play in: each clip's own that plays it, or else its scene's, or else its song's."""
+        """Return the name of every scale a pattern can play in: each clip's own that plays it, or else its scene's, or else its
+        song's."""
         names = []
         for song in self.get_songs():
             for scene in song.get_scenes():
-                for track in scene.clip_slots_naming(section=Section.PATTERNS, name=name):
-                    names.append(scene.get_clip_slot(track).get_scale_name() or scene.get_scale_name() or song.get_scale_name())
-        return [scale for scale in names if scale]
+                names += _scales_playing(song=song, scene=scene, pattern=name)
+        return names
 
     # Looking up the set's named objects.
 
@@ -888,12 +983,20 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def get_pattern_groups(self):
         """Return the names of the groups the patterns are in, sorted as names are, each once."""
-        groups = {self.get_pattern(name).get_group() for name in self.get_pattern_names()}
-        return sorted((group for group in groups if group is not None), key=name_order)
+        groups = set()
+        for name in self.get_pattern_names():
+            group = self.get_pattern(name).get_group()
+            if group is not None:
+                groups.add(group)
+        return sorted(groups, key=name_order)
 
     def patterns_in_group(self, group):
         """Return the names of a group's patterns, sorted as names are; None is the patterns in no group."""
-        return sorted((name for name in self.get_pattern_names() if self.get_pattern(name).get_group() == group), key=name_order)
+        names = []
+        for name in self.get_pattern_names():
+            if self.get_pattern(name).get_group() == group:
+                names.append(name)
+        return sorted(names, key=name_order)
 
     @notes_change
     def rename_pattern_group(self, *, old, new):
@@ -957,41 +1060,53 @@ class Setlist(HoldsSections, HoldsSettings):
         for scene in song.get_scenes():
             for track in song.get_track_names():
                 clip_slot = scene.get_clip_slot(track)
-                if clip_slot is None:
-                    continue
-                # A pattern the clip names twice stays one pattern inside the clip: only what another clip plays is copied.
-                own = {}
-                for name in clip_slot.get_pattern_names():
-                    if name in own:
-                        continue
-                    own[name] = name
-                    if name in seen:
-                        own[name] = copy_name(name=name, taken=self.get_pattern_names())
-                        self.copy_item(section=Section.PATTERNS, name=name, new=own[name])
-                        copies.append(own[name])
-                seen.update(own.values())
-                if any(new != name for name, new in own.items()):
-                    clip_slot.set_pattern_names(names=[own[name] for name in clip_slot.get_pattern_names()], song=song)
+                if clip_slot is not None:
+                    self._fracture_clip(clip_slot=clip_slot, song=song, seen=seen, copies=copies)
         return copies
+
+    def _fracture_clip(self, *, clip_slot, song, seen, copies):
+        """Give one clip a copy of each pattern of its list that an earlier clip plays."""
+        # A pattern the clip names twice stays one pattern inside the clip: only what another clip plays is copied.
+        own = {}
+        for name in clip_slot.get_pattern_names():
+            if name in own:
+                continue
+            own[name] = name
+            if name in seen:
+                own[name] = copy_name(name=name, taken=self.get_pattern_names())
+                self.copy_item(section=Section.PATTERNS, name=name, new=own[name])
+                copies.append(own[name])
+        seen.update(own.values())
+        names = []
+        for name in clip_slot.get_pattern_names():
+            names.append(own[name])
+        if names != clip_slot.get_pattern_names():
+            clip_slot.set_pattern_names(names=names, song=song)
 
     @notes_change
     def group_patterns_by_track(self, song):
-        """Put every pattern of no group that a song plays in the group named after the first track that plays it, as the song wizard and an import do."""
+        """Put every pattern of no group that a song plays in the group named after the first track that plays it, as the song
+        wizard and an import do."""
         for scene in song.get_scenes():
             for track in song.get_track_names():
-                if not scene.has_clip_slot(track):
-                    continue
-                for name in scene.get_clip_slot(track).get_pattern_names():
-                    if self.get_pattern(name).get_group() is None:
-                        self.get_pattern(name).set_group(track)
+                if scene.has_clip_slot(track):
+                    clip_slot = scene.get_clip_slot(track)
+                    self._group_unless_grouped(names=clip_slot.get_pattern_names(), group=track)
+
+    def _group_unless_grouped(self, *, names, group):
+        """Put each pattern named that is in no group in a group."""
+        for name in names:
+            pattern = self.get_pattern(name)
+            if pattern.get_group() is None:
+                pattern.set_group(group)
 
     def first_track_playing(self, pattern):
         """Return the name of the first track, in any song, with a clip that plays a pattern, or nothing when no clip plays it."""
-        for song in self.get_song_names():
-            song = self.get_song(song)
+        for song_name in self.get_song_names():
+            song = self.get_song(song_name)
             for scene in song.get_scenes():
                 for track in song.get_track_names():
-                    if scene.has_clip_slot(track) and pattern in scene.get_clip_slot(track).get_pattern_names():
+                    if _plays_pattern(scene=scene, track=track, pattern=pattern):
                         return track
         return None
 
@@ -1066,7 +1181,11 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def generator_kind(self, name):
         """Return the kind of the generator of a name, chain for a chain, or None for a name no generator has."""
-        return next((kind for kind, section in generator_plugins.listed_sections().items() if self._section(section).has(name)), None)
+        listed = generator_plugins.listed_sections()
+        for kind, section in listed.items():
+            if self._section(section).has(name):
+                return kind
+        return None
 
     def has_generator_named(self, name):
         """Return whether a generator of any kind, a chain among them, has a name."""
@@ -1077,8 +1196,11 @@ class Setlist(HoldsSections, HoldsSettings):
         generator of another kind, a chain of that generator alone, made for the asking."""
         if self.has_chain(name):
             return self.get_chain(name)
-        kind = next(kind for kind, section in generator_plugins.sections_by_name().items() if self._section(section).has(name))
-        return Chain([(kind, name)])
+        sections_by_name = generator_plugins.sections_by_name()
+        for kind, section in sections_by_name.items():
+            if self._section(section).has(name):
+                return Chain([(kind, name)])
+        raise LookupError(name)
 
     def get_chain_names(self):
         """Return the names of the chains, in the set's order."""
