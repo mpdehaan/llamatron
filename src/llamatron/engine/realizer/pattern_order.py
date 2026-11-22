@@ -21,10 +21,14 @@ def ordered_patterns(*, names, order, place, rolls):
     if order == PatternOrder.REVERSE_B:
         return backward
     if order == PatternOrder.ALTERNATE:
-        return backward if is_return_pass(place) else names
+        if is_return_pass(place):
+            return backward
+        return names
     if order == PatternOrder.PENDULUM:
         # The way back starts on the pattern before the last, which has just played, and the last then closes the pass.
-        return [*backward[1:], *backward[:1]] if is_return_pass(place) else names
+        if is_return_pass(place):
+            return [*backward[1:], *backward[:1]]
+        return names
     if order == PatternOrder.RANDOM:
         rolls.shuffle(names)
         return names
