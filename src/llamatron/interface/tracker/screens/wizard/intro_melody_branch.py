@@ -136,26 +136,15 @@ class IntroMelodyBranch(Branch):
         now = choices.intro_melody_player(place)
         if titles:
             melody = ChoiceField(page=page, label=labels.MSG_WIZARD_PART_MELODY_LABEL, choices=[labels.MSG_WIZARD_NOBODY, *titles], current=labels.MSG_WIZARD_NOBODY if now is None else choices.player(now).title(),
-                                 set=self.refusing(lambda title: choices.set_intro_melody(place=place, role=titles.get(title))))
+                                 set=self.get_page().refusing(lambda title: choices.set_intro_melody(place=place, role=titles.get(title))))
         else:
             melody = Field(label=labels.MSG_WIZARD_PART_MELODY_LABEL, value=lambda: labels.MSG_WIZARD_NOBODY)
         fades = [fade_field(branch=self, place=place, field=field) for field in choices.section(place).fade().fields()]
         plays = choices.section(place).plays()
         players = [Toggle(label=choices.player(role).title(), on=role in plays,
-                          set=self.refusing(lambda on, role=role: choices.section(place).set_plays(role=role, on=on)))
+                          set=self.get_page().refusing(lambda on, role=role: choices.section(place).set_plays(role=role, on=on)))
                    for role in choices.get_band().roles_in() if role in choices.get_band().roles_shown()]
         return [bars, melody, *fades, *players]
-
-    def refusing(self, setter):
-        """Return a setter made through the page, which says why on the status line where the song cannot take the value."""
-        page = self.get_page()
-
-        def set_value(value):
-            try:
-                page.choosing(setter)(value)
-            except ValueError as problem:
-                page.refuse(str(problem))
-        return set_value
 
     def buttons(self):
         """Return the buttons, which act on the marked part: its melody's notes in the pattern editor, its melody's player alone,

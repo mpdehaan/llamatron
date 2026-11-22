@@ -141,6 +141,17 @@ class WizardPage(FieldPage):
             return result
         return chosen
 
+    def refusing(self, setter):
+        """Return a setter made as choosing() makes one, which says why on the status line where the song cannot take the value."""
+        chosen = self.choosing(setter)
+
+        def set_value(value):
+            try:
+                chosen(value)
+            except ValueError as problem:
+                self.refuse(str(problem))
+        return set_value
+
     def ask_to_fit_tunes(self, *, before):
         """Ask whether to fit each tune written by hand whose chords a choice just changed: YES moves its long notes that clash to
         the nearest note of the new chord, and NO keeps the tune as written."""

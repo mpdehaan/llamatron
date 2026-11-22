@@ -14,6 +14,7 @@ import re
 import unittest
 
 from llamatron.interface.tracker.screens import wizard
+from llamatron.interface.tracker.screens.shared import kit_fields
 from llamatron.wizards.create_song.band_choices import BandChoices
 from llamatron.wizards.create_song.form_choices import FormChoices
 from llamatron.wizards.create_song.guitarist_choices import GuitaristChoices
@@ -65,9 +66,11 @@ def changes():
 
 
 def wizard_screens_source():
-    """Return the source of every module of the wizard's screens, joined."""
+    """Return the source of every module of the wizard's screens, and of the drum kit's fields they show, joined."""
     folder = pathlib.Path(wizard.__file__).parent
-    return ''.join(path.read_text() for path in sorted(folder.glob(SOURCE_FILES)))
+    sources = [path.read_text() for path in sorted(folder.glob(SOURCE_FILES))]
+    sources.append(pathlib.Path(kit_fields.__file__).read_text())
+    return ''.join(sources)
 
 
 def section_changes():

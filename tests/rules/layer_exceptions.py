@@ -233,7 +233,6 @@ ALLOWED = {
         'interface/tracker/screens/wizard/melodies_branch.py imports interface.tracker.screens.wizard.section_melody_branch',
         'interface/tracker/screens/wizard/melodies_branch.py imports interface.tracker.screens.wizard.solo_melody_branch',
         'interface/tracker/screens/wizard/melody_branch.py imports interface.tracker.screens.wizard.branch',
-        'interface/tracker/screens/wizard/player_branch.py imports model.schema.limits',
         'interface/tracker/screens/wizard/player_branch.py imports interface.tracker.screens.wizard.branch',
         'interface/tracker/screens/wizard/riff_assign_branch.py imports model.file.checks',
         'interface/tracker/screens/wizard/riff_assign_branch.py imports interface.tracker.screens.wizard.riffs_branch',

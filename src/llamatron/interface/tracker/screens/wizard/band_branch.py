@@ -23,7 +23,11 @@ class BandBranch(Branch):
         return None if self.get_choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE
 
     def children(self):
-        return [PlayerBranch(page=self.get_page(), role=role) for role in self.get_choices().get_band().roles_in() if role in self.get_choices().get_band().roles_shown()]
+        """Return a panel for each player the band shows."""
+        choices = self.get_choices()
+        band = choices.get_band()
+        shown = band.roles_shown()
+        return [PlayerBranch(page=self.get_page(), role=role) for role in band.roles_in() if role in shown]
 
     def fields(self):
         choices = self.get_choices()
