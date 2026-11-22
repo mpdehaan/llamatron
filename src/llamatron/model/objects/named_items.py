@@ -40,7 +40,9 @@ class NamedItems(Revised):
     def __init__(self, *, label, items=None):
         self.note_change()
         self._label = label
-        self._items = None if items is None else dict(items)
+        self._items = None
+        if items is not None:
+            self._items = dict(items)
 
     def is_written(self):
         """Return whether the file had this section, even an empty one."""
@@ -66,7 +68,9 @@ class NamedItems(Revised):
     def same_item(self, *, name, data):
         """Return the item with a name if the data it keeps is this data, or None: the item that reading this data again would only build again."""
         item = self._all().get(name)
-        return item if item is not None and item.kept_data() == data else None
+        if item is not None and item.kept_data() == data:
+            return item
+        return None
 
     def _all(self):
         return self._items or {}
@@ -117,7 +121,9 @@ class NamedItems(Revised):
         """Add an item at the end, or right after another item."""
         self._check_new_name(name)
         pairs = self.items()
-        place = len(pairs) if after is None else self._place_of(after) + 1
+        place = len(pairs)
+        if after is not None:
+            place = self._place_of(after) + 1
         pairs.insert(place, (name, item))
         self._items = dict(pairs)
 
@@ -146,7 +152,12 @@ class NamedItems(Revised):
         self._check(old)
         if not same_name(one=new, other=old):
             self._check_new_name(new)
-        self._items = {(new if name == old else name): item for name, item in self._items.items()}
+        renamed = {}
+        for name, item in self._items.items():
+            if name == old:
+                name = new
+            renamed[name] = item
+        self._items = renamed
 
     @notes_change
     def move(self, *, place, offset):
