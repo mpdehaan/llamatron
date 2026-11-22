@@ -54,7 +54,10 @@ def known(*, text, choices):
     if not isinstance(text, str):
         return None
     wanted = text.strip().lower()
-    return next((choice for choice in choices if choice.lower() == wanted), None)
+    for choice in choices:
+        if choice.lower() == wanted:
+            return choice
+    return None
 
 
 def sensible_style(*, genre, subgenre, variant):
