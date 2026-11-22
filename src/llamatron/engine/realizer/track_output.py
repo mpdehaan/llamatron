@@ -144,7 +144,10 @@ class TrackOutput:
                 raise SongFileError(errors.ERR_CIRCULAR_FOLLOW.format(scene=scene.describe(), loop=marks.MSG_CIRCLE_ARROW.join([*tracks, source])))
             self._following.append((scene.get_number(), track))
             try:
-                clip = self._realizer.counted_clip(scene=scene, track=source)[0] if counting else self._realizer.get_clip(scene=scene, track=source)
+                if counting:
+                    clip = self._realizer.counted_clip(scene=scene, track=source)[0]
+                else:
+                    clip = self._realizer.get_clip(scene=scene, track=source)
             finally:
                 self._following.pop()
             self._chord_sources[key] = ChordSource(clip)
@@ -165,7 +168,10 @@ class TrackOutput:
                 raise SongFileError(errors.ERR_CIRCULAR_FOLLOW.format(scene=scene.describe(), loop=marks.MSG_CIRCLE_ARROW.join([*tracks, source])))
             self._following.append((scene.get_number(), track))
             try:
-                clip = self._realizer.counted_clip(scene=scene, track=source)[0] if counting else self._realizer.get_clip(scene=scene, track=source)
+                if counting:
+                    clip = self._realizer.counted_clip(scene=scene, track=source)[0]
+                else:
+                    clip = self._realizer.get_clip(scene=scene, track=source)
             finally:
                 self._following.pop()
             self._tune_sources[key] = TuneSource(clip)
