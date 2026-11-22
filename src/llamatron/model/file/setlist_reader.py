@@ -65,7 +65,8 @@ def as_a_set_is_written(*, data, where, allowed):
     """Return a set's data, checked to be one, or raise SongFileError if it isn't a set at all. allowed is the names of the
     settings a set holds."""
     # Every setting has a default, so an empty file is an empty set.
-    data = {} if data is None else data
+    if data is None:
+        data = {}
     if not isinstance(data, dict):
         raise SongFileError(errors.ERR_NOT_A_SETLIST)
     with reading(where):
