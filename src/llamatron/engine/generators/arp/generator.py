@@ -124,12 +124,16 @@ class Arp(ClipGenerator):
         self._seed = seed
         self._octave_range = octave_range
         self._octave_jump = octave_jump
-        self._offsets = None if offsets is None else list(offsets)
+        self._offsets = None
+        if offsets is not None:
+            self._offsets = list(offsets)
         self._note_adds = {name: amount for name, amount in zip(REGISTERS, (ax_add, bx_add, cx_add, dx_add)) if amount}
         self._step_adds = {name: list(adds) for name, adds in zip(REGISTERS, (ax_step_adds, bx_step_adds, cx_step_adds, dx_step_adds)) if adds}
         self._adds = []
         # Where its random choices carry on from, the same track's clip before's, when its Restart carries on.
-        self._start_state = None if continuation is None else continuation.state
+        self._start_state = None
+        if continuation is not None:
+            self._start_state = continuation.state
         self._random_state = self._start_state
 
     def end_state(self):
@@ -201,11 +205,16 @@ class Arp(ClipGenerator):
 
     def _arpeggiate_held(self, *, held, generator, scale, start):
         """Return a held sound arpeggiated across its own length, still held in the same place."""
-        parts = held[sound.PARTS] if held[sound.KIND] == sound.PHRASE else [held[sound.HELD_SOUND]]
+        parts = [held[sound.HELD_SOUND]]
+        if held[sound.KIND] == sound.PHRASE:
+            parts = held[sound.PARTS]
         return Sound.phrase(self._arpeggiate(positions=parts, generator=generator, scale=scale, start=start), held[sound.LENGTH])
 
     def _arpeggiate_chord(self, *, chord, generator, scale, start):
-        notes = self._climb(_lowest_to_highest(chord) if chord[sound.KIND] == sound.CHORD else [chord])
+        chord_notes = [chord]
+        if chord[sound.KIND] == sound.CHORD:
+            chord_notes = _lowest_to_highest(chord)
+        notes = self._climb(chord_notes)
         pattern = self._pattern(notes)
         result = []
         step = Length.exact(self._step)
@@ -215,13 +224,18 @@ class Arp(ClipGenerator):
         now = start
         while Length.is_positive(remaining):
             length = Length.shorter(step, remaining)
-            offset = NO_OFFSET if self._offsets is None else self._offsets[place % len(self._offsets)]
+            offset = NO_OFFSET
+            if self._offsets is not None:
+                offset = self._offsets[place % len(self._offsets)]
             self._note_step_adds(time=now, place=place, plays=offset is not None)
             place += 1
             if offset is None:
                 result.append(Sound.rest(length))
             else:
-                note = generator.choice(notes) if pattern is None else pattern[index % len(pattern)]
+                if pattern is None:
+                    note = generator.choice(notes)
+                else:
+                    note = pattern[index % len(pattern)]
                 result.append(Sound.with_length(along_scale(note=note, steps=offset, scale=scale), length))
                 index += 1
             remaining = Length.subtract(remaining, length)
@@ -230,7 +244,9 @@ class Arp(ClipGenerator):
 
     def _note_step_adds(self, *, time, place, plays):
         """Note what a step of the arp adds to the registers: its offsets step's adds, and each note's adds when it plays a note."""
-        adds = dict(self._note_adds) if plays else {}
+        adds = {}
+        if plays:
+            adds = dict(self._note_adds)
         if self._offsets is not None:
             for name, row in self._step_adds.items():
                 amount = row[place % len(self._offsets) % len(row)]
