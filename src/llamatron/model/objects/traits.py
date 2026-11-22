@@ -30,7 +30,10 @@ class RunsChains:
 
     def set_chain_names(self, *, names, song):
         """Set the chains it runs, by name, in order, or none for an empty list."""
-        self.set_written(name=self.CHAINS_SETTING, value=list(names) if names else None, song=song)
+        chains = None
+        if names:
+            chains = list(names)
+        self.set_written(name=self.CHAINS_SETTING, value=chains, song=song)
 
 
 class BypassedWhen:
