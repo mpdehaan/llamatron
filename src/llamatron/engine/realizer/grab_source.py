@@ -29,12 +29,16 @@ class GrabSource:
         inversions came. Two sounds starting together give the first one's.
         """
         latest = self._latest_start_by(time)
-        return None if latest is None else self._onsets[latest]
+        if latest is None:
+            return None
+        return self._onsets[latest]
 
     def _latest_start_by(self, time):
         """Return the latest time a note starts at or before a time, or None if none has started."""
         started = bisect_right(self._times, time)
-        return self._times[started - 1] if started else None
+        if not started:
+            return None
+        return self._times[started - 1]
 
 
 def _notes_by_start(clip):
