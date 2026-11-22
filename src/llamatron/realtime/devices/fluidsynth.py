@@ -84,7 +84,9 @@ class FluidSynthInstallation(NamedTuple):
 
 def installation():
     """Return where FluidSynth and its SoundFont are installed, or None where they aren't."""
-    return FluidSynthInstallation(fluidsynth_path(), soundfont_path()) if installed() else None
+    if not installed():
+        return None
+    return FluidSynthInstallation(fluidsynth_path(), soundfont_path())
 
 
 def installed():
@@ -110,7 +112,9 @@ class FluidSynth:
         """port_names, start_process(words), now and sleep are for the tests, which start no real FluidSynth."""
         self._process = None
         self._port_names = port_names
-        self._start_process = self._popen if start_process is None else start_process
+        if start_process is None:
+            start_process = self._popen
+        self._start_process = start_process
         self._now = now
         self._sleep = sleep
 
