@@ -68,12 +68,51 @@ LABEL_OF_FIELD = 'label'
 CHOICES_OF_FIELD = 'choices'
 # What the page keeps the tree's rows and a branch's fields under.
 
+# The branches that start open: the Band and Form branches among them, so that the players and the sections, and the keys that
+# add, copy, remove and move a section, show themselves with no key to learn.
+OPEN_AT_START = (
+    labels.MSG_WIZARD_GENRE_BRANCH,
+    labels.MSG_WIZARD_BAND_BRANCH,
+    labels.MSG_WIZARD_COMPOSITION_BRANCH,
+    labels.MSG_WIZARD_MELODIES_BRANCH,
+    labels.MSG_WIZARD_FORM_BRANCH,
+)
+
 
 def said_of(answer):
-    """What a kept answer says, to hold against the same answer worked out again: each row's depth and branch by name, or each
-    field's kind, label and choices."""
-    return [(item[0], item[1].key()) if isinstance(item, tuple) else (type(item).__name__, getattr(item, LABEL_OF_FIELD, None), getattr(item, CHOICES_OF_FIELD, None))
-            for item in answer]
+    """Return what a kept answer says, to hold against the same answer worked out again: each row's depth and branch by name,
+    or each field's kind, label and choices."""
+    said = []
+    for item in answer:
+        if isinstance(item, tuple):
+            depth, branch = item
+            said.append((depth, branch.key()))
+        else:
+            said.append((type(item).__name__, getattr(item, LABEL_OF_FIELD, None), getattr(item, CHOICES_OF_FIELD, None)))
+    return said
+
+
+def _pattern_data(draft, *, name):
+    """Return the data of a pattern of a draft of the set, or None where the draft has no pattern of the name."""
+    setlist = draft.get_setlist()
+    if not setlist.has_pattern(name):
+        return None
+    pattern = setlist.get_pattern(name)
+    return pattern.to_data()
+
+
+def _generator_data(draft, *, kind, name):
+    """Return the settings of a generator of a draft of the set, or None where the draft has no generator of the kind and name."""
+    setlist = draft.get_setlist()
+    if not setlist.has_generator(kind=kind, name=name):
+        return None
+    settings = setlist.get_generator_settings(kind=kind, name=name)
+    return settings.to_data()
+
+
+def _run_played(sound, *, run):
+    """Return how a sound is tried: a run of the song's scale in the player's octave."""
+    return run, sound_trial.RUN_STEP, sound
 
 
 class WizardPage(FieldPage):
@@ -95,11 +134,10 @@ class WizardPage(FieldPage):
         self._changed = False
         # What the current song kept of the run that made it, the way of starting chosen in the dialog that opens the wizard on
         # such a song.
-        self._last = self.document().song().get_wizard_choices()
+        song = self.document().song()
+        self._last = song.get_wizard_choices()
         self._start = None
-        # The Band and Form branches start open, so that the players and the sections, and the keys that add, copy,
-        # remove and move a section, show themselves with no key to learn.
-        self._open = {labels.MSG_WIZARD_GENRE_BRANCH, labels.MSG_WIZARD_BAND_BRANCH, labels.MSG_WIZARD_COMPOSITION_BRANCH, labels.MSG_WIZARD_MELODIES_BRANCH, labels.MSG_WIZARD_FORM_BRANCH}
+        self._open = set(OPEN_AT_START)
         self.tree_place = FIRST_PLACE
         self.in_fields = False
         # The part of the intro the Intro panel's buttons act on: the part the cursor was last on or in, by its number.
@@ -176,10 +214,13 @@ class WizardPage(FieldPage):
         return self.branch().name()
 
     def key_toward_panel(self, name):
-        """Return the key that brings the tree's cursor nearer the wizard panel of a name, the first of that name the tree shows, or None when the cursor is on it and in the tree."""
+        """Return the key that brings the tree's cursor nearer the wizard panel of a name, the first of that name the tree shows,
+        or None when the cursor is on it and in the tree."""
         if self.in_fields:
             return first_key(self.KEYS.TO_TREE)
-        return key_between(here=self.tree_place, there=place_of(screen=self, names=[branch.name() for _, branch in self.rows()], target=name))
+        names = [branch.name() for _, branch in self.rows()]
+        there = place_of(screen=self, names=names, target=name)
+        return key_between(here=self.tree_place, there=there)
 
     def label_under_cursor(self):
         """Return the label of the field the cursor is on, or None in the tree or on a field with no label."""
@@ -219,7 +260,7 @@ class WizardPage(FieldPage):
 
     def edit_intro(self, *, place=None):
         """Open the pattern editor on the melody of a part of the intro, the notes of the player who says the hook there; the
-        notes are kept as that part's own when the editor closes, if they were changed."""
+        notes are saved as that part's own when the editor closes, if they were changed."""
         try:
             setlist, _ = self._choices.made_for_listening()
             name = self._choices.intro_pattern_name(place=place)
@@ -229,23 +270,37 @@ class WizardPage(FieldPage):
         if name is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
-        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.set_intro_pattern(place=place, pattern=pattern), kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=wizard_limits.INTRO),
-                          unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=wizard_limits.INTRO))
+        keep = functools.partial(self._keep_intro, place=place)
+        kept = messages.MSG_WIZARD_TUNE_KEPT.format(kind=wizard_limits.INTRO)
+        unchanged = messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=wizard_limits.INTRO)
+        self.open_pattern(setlist=setlist, name=name, keep=keep, kept=kept, unchanged=unchanged)
+
+    def _keep_intro(self, pattern, *, place):
+        """Save a pattern as the own melody of a part of the intro."""
+        self._choices.set_intro_pattern(place=place, pattern=pattern)
 
     def edit_solo(self, place):
-        """Open the pattern editor on the solo at a place of the form, its player's notes; the notes are kept as that solo's own
+        """Open the pattern editor on the solo at a place of the form, its player's notes; the notes are saved as that solo's own
         when the editor closes, if they were changed."""
+        solos = self._choices.get_solos()
         try:
             setlist, _ = self._choices.made_for_listening()
-            name = self._choices.get_solos().solo_pattern_name(place)
+            name = solos.solo_pattern_name(place)
         except (ValueError, SongFileError) as problem:
             self.refuse(str(problem))
             return
         if name is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
-        self.open_pattern(setlist=setlist, name=name, keep=lambda pattern: self._choices.get_solos().set_solo_pattern(place=place, pattern=pattern), kept=messages.MSG_WIZARD_TUNE_KEPT.format(kind=wizard_limits.SOLO),
-                          unchanged=messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=wizard_limits.SOLO))
+        keep = functools.partial(self._keep_solo, place=place)
+        kept = messages.MSG_WIZARD_TUNE_KEPT.format(kind=wizard_limits.SOLO)
+        unchanged = messages.MSG_WIZARD_TUNE_UNCHANGED.format(kind=wizard_limits.SOLO)
+        self.open_pattern(setlist=setlist, name=name, keep=keep, kept=kept, unchanged=unchanged)
+
+    def _keep_solo(self, pattern, *, place):
+        """Save a pattern as the own notes of the solo at a place of the form."""
+        solos = self._choices.get_solos()
+        solos.set_solo_pattern(place=place, pattern=pattern)
 
     def edit_riff(self, riff):
         """Open the pattern editor on a riff's notes as the player the riff was written for plays them, in a song where that player
@@ -260,11 +315,11 @@ class WizardPage(FieldPage):
                           kept=messages.MSG_WIZARD_RIFF_KEPT.format(riff=riff), unchanged=messages.MSG_WIZARD_RIFF_UNCHANGED.format(riff=riff))
 
     def open_pattern(self, *, setlist, name, keep, kept, unchanged):
-        """Open the pattern editor on a pattern of a draft of the set the choices make. When the editor closes, keep() is given the
-        pattern's data if it changed, and the status line says kept or unchanged."""
-        def pattern_of(draft):
-            return draft.get_setlist().get_pattern(name).to_data() if draft.get_setlist().has_pattern(name) else None
-        self.open_in_draft(setlist=setlist, read=pattern_of, screen=lambda: PatternEditor(holder=self.holder, name=name, opened_from=self), keep=keep, kept=kept, unchanged=unchanged)
+        """Open the pattern editor on a pattern of a draft of the set the choices make. When the editor closes, keep() is given
+        the pattern's data if it changed, and the status line says saved or unchanged."""
+        read = functools.partial(_pattern_data, name=name)
+        screen = functools.partial(PatternEditor, holder=self.holder, name=name, opened_from=self)
+        self.open_in_draft(setlist=setlist, read=read, screen=screen, keep=keep, kept=kept, unchanged=unchanged)
 
     def open_in_draft(self, *, setlist, read, screen, keep, kept, unchanged):
         """Open a page on a draft of the set the choices make. read(draft) gives the data of the thing the page edits, or None once
@@ -278,39 +333,46 @@ class WizardPage(FieldPage):
     def edit_tune_phrasing(self):
         """Open the Phrasing page on the Phrasing the tune's clips run, in a draft of the set the choices make."""
         name = wizard_text.MSG_TUNE_PHRASING_NAME
+        setlist = self._set_to_draft()
+        if setlist is None:
+            return
+        read = functools.partial(_generator_data, kind=phrasing_plugin.NAME, name=name)
+        if read(Document(setlist=setlist)) is None:
+            self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
+            return
+        screen = functools.partial(PhrasingEditor, holder=self.holder, name=name)
+        self.open_in_draft(setlist=setlist, read=read, screen=screen, keep=self._choices.set_tune_phrasing,
+                           kept=messages.MSG_WIZARD_PHRASING_KEPT, unchanged=messages.MSG_WIZARD_PHRASING_UNCHANGED)
+
+    def _set_to_draft(self):
+        """Return the set the choices make, to draft in, or None after saying on the status line why it cannot be made."""
         try:
             setlist, _ = self._choices.made_for_listening()
         except (ValueError, SongFileError) as problem:
             self.refuse(str(problem))
-            return
-
-        def phrasing_of(draft):
-            song = draft.song()
-            return song.get_setlist().get_generator_settings(kind=phrasing_plugin.NAME, name=name).to_data() if song.get_setlist().has_generator(kind=phrasing_plugin.NAME, name=name) else None
-        if phrasing_of(Document(setlist=setlist)) is None:
-            self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
-            return
-        self.open_in_draft(setlist=setlist, read=phrasing_of, screen=lambda: PhrasingEditor(holder=self.holder, name=name), keep=self._choices.set_tune_phrasing,
-                           kept=messages.MSG_WIZARD_PHRASING_KEPT, unchanged=messages.MSG_WIZARD_PHRASING_UNCHANGED)
+            return None
+        return setlist
 
     def edit_player(self, role):
         """Open the Musician page on the Musician that plays a player's clips, in a draft of the set the choices make."""
-        name = self._choices.player(role).musician_name()
-        try:
-            setlist, _ = self._choices.made_for_listening()
-        except (ValueError, SongFileError) as problem:
-            self.refuse(str(problem))
+        player = self._choices.player(role)
+        name = player.musician_name()
+        setlist = self._set_to_draft()
+        if setlist is None:
             return
-
-        def musician_of(draft):
-            song = draft.song()
-            return song.get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=name).to_data() if song.get_setlist().has_generator(kind=musician_plugin.NAME, name=name) else None
-        if musician_of(Document(setlist=setlist)) is None:
+        read = functools.partial(_generator_data, kind=musician_plugin.NAME, name=name)
+        if read(Document(setlist=setlist)) is None:
             # A player who plays in no section of the song has no clips, and so no Musician to open.
             self.refuse(errors.ERR_WIZARD_PLAYER_PLAYS_NOTHING)
             return
-        self.open_in_draft(setlist=setlist, read=musician_of, screen=lambda: MusicianEditor(holder=self.holder, name=name),
-                           keep=lambda settings: self._choices.player(role).set_musician(settings=settings), kept=messages.MSG_WIZARD_PLAYER_KEPT, unchanged=messages.MSG_WIZARD_PLAYER_UNCHANGED)
+        screen = functools.partial(MusicianEditor, holder=self.holder, name=name)
+        self.open_in_draft(setlist=setlist, read=read, screen=screen, keep=functools.partial(self._keep_musician, role=role),
+                           kept=messages.MSG_WIZARD_PLAYER_KEPT, unchanged=messages.MSG_WIZARD_PLAYER_UNCHANGED)
+
+    def _keep_musician(self, settings, *, role):
+        """Give a player a Musician of the person's own."""
+        player = self._choices.player(role)
+        player.set_musician(settings=settings)
 
     def on_screen_resume(self):
         """Take a tune's or a riff's notes back from the pattern editor, which has closed, before the page is drawn again."""
@@ -350,30 +412,38 @@ class WizardPage(FieldPage):
         self.listen_to(self.branch().listens())
 
     def listen_to(self, heard):
-        """Play what a panel names: what it is called, the place of its section, the player whose clip alone plays, and, where it is
-        heard in another song than the one the choices make, as a riff nobody plays yet is, that song's set and name."""
+        """Play what a panel names: what it is called, the place of its section, the player whose clip alone plays, and, where it
+        is heard in another song than the one the choices make, as a riff nobody plays yet is, that song's set and name."""
         if heard is None:
             self.refuse(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             return
         what, index, track, *made = heard
-        problem = self.problem_listening(what=what, index=index, track=track, made=made[0] if made else None, alone=self.branch().listens_alone())
+        elsewhere = None
+        if made:
+            elsewhere = made[0]
+        branch = self.branch()
+        problem = self.problem_listening(what=what, index=index, track=track, made=elsewhere, alone=branch.listens_alone())
         if problem is not None:
             self.refuse(problem)
             return
         self.say(messages.MSG_WIZARD_LISTENING.format(what=what))
 
     def problem_listening(self, *, what, index, track, made=None, alone=False):
-        """Play a section of the song as it would be made, or one track of the section, and return why it could not be heard, or None. A dialog over the page listens through this too."""
+        """Play a section of the song as it would be made, or one track of the section, and return why it could not be heard, or
+        None. A dialog over the page listens through this too."""
         preview = self.app.made_preview()
         if not preview.can_sound():
             return errors.ERR_WIZARD_CANNOT_LISTEN
         try:
             setlist, name = made or self._choices.made_for_listening()
-            if index >= len(setlist.get_song(name).get_scenes()):
+            song = setlist.get_song(name)
+            if index >= len(song.get_scenes()):
                 raise ValueError(errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO)
             if track is None:
-                return preview.sender_refusal(functools.partial(preview.play_section, setlist=setlist, name=name, index=index, what=what))
-            return preview.sender_refusal(functools.partial(preview.play_line, setlist=setlist, name=name, index=index, track=track, what=what, with_drums=not alone))
+                play = functools.partial(preview.play_section, setlist=setlist, name=name, index=index, what=what)
+            else:
+                play = functools.partial(preview.play_line, setlist=setlist, name=name, index=index, track=track, what=what, with_drums=not alone)
+            return preview.sender_refusal(play)
         except (ValueError, SongFileError):
             return errors.ERR_WIZARD_NOTHING_TO_LISTEN_TO
 
@@ -382,7 +452,9 @@ class WizardPage(FieldPage):
         self.say(messages.MSG_STOPPED)
 
     def ask_song_name(self):
-        self.ask_name(title=messages.MSG_WIZARD_SONG_NAME_PROMPT, value=self._song_name, taken=self.document().song_names(), then=self.choosing(self.set_song_name))
+        """Ask for the name of the song the wizard makes."""
+        document = self.document()
+        self.ask_name(title=messages.MSG_WIZARD_SONG_NAME_PROMPT, value=self._song_name, taken=document.song_names(), then=self.choosing(self.set_song_name))
 
     def set_song_name(self, name):
         self._song_name = name
@@ -419,7 +491,14 @@ class WizardPage(FieldPage):
 
     def roots(self):
         """Return the tree's top branches, in the order a song is thought through: each is a page of the wizard, the genre and then the subgenre unlocking the rest."""
-        return [GenreBranch(page=self), SubgenreBranch(page=self), BandBranch(page=self), CompositionBranch(page=self), FormBranch(page=self), CreateBranch(page=self)]
+        return [
+            GenreBranch(page=self),
+            SubgenreBranch(page=self),
+            BandBranch(page=self),
+            CompositionBranch(page=self),
+            FormBranch(page=self),
+            CreateBranch(page=self),
+        ]
 
     def cursor_place(self):
         """Where the cursor is: the branch of the tree, and the field while the cursor is in the fields."""
@@ -445,7 +524,10 @@ class WizardPage(FieldPage):
         dozens of times, to find the cursor, to list the keys and to draw, and each asking built every branch and field again
         from the choices, which made every key slow. The held offers are let go first, once the cursor has left their cell."""
         self.release_offers_once_left()
-        return (repr(self._choices.to_data()), self._song_name, tuple(sorted(self._open)), self.moving, self._start, tuple(sorted(self.app.open_field_sections)))
+        choices = repr(self._choices.to_data())
+        open_branches = tuple(sorted(self._open))
+        open_sections = tuple(sorted(self.app.open_field_sections))
+        return (choices, self._song_name, open_branches, self.moving, self._start, open_sections)
 
     @cached_while(shown_state, said=said_of)
     def rows(self):
@@ -500,8 +582,12 @@ class WizardPage(FieldPage):
             self.refuse(self.refusal_of(branch))
             return
         self.in_fields = True
-        fields = self.shown_fields()
-        self.cursor.set_place(next((place for place, field in enumerate(fields) if field.enter or field.adjust), FIRST_PLACE))
+        first = FIRST_PLACE
+        for place, field in enumerate(self.shown_fields()):
+            if field.enter or field.adjust:
+                first = place
+                break
+        self.cursor.set_place(first)
 
     def to_tree(self):
         self.in_fields = False
@@ -526,7 +612,9 @@ class WizardPage(FieldPage):
     def keys(self):
         if self.in_fields:
             # A settings page's keys, but for ESC, which goes back to the tree here and not from the page.
-            return [self.bind(self.KEYS.TO_TREE, action=self.to_tree), *super().keys()[1:], *self.branch().field_keys(), *self.listen_keys()]
+            settings_keys = super().keys()[1:]
+            branch = self.branch()
+            return [self.bind(self.KEYS.TO_TREE, action=self.to_tree), *settings_keys, *branch.field_keys(), *self.listen_keys()]
         if self.moving:
             # While a branch is carried, only the keys that carry and drop it work, as in every move mode.
             return [self.bind(self.KEYS.DROP, action=self.drop), self.bind(self.KEYS.CARRY, action=self.carry)]
@@ -541,7 +629,9 @@ class WizardPage(FieldPage):
         if branch.adds():
             result.append(self.bind(self.KEYS.ADD, action=self.add_to_list))
         if branch.is_listed():
-            result += [self.bind(self.KEYS.COPY, action=self.copy_listed), self.bind(self.KEYS.DELETE, action=self.remove_listed), self.bind(self.KEYS.MOVE, action=self.start_moving)]
+            result.append(self.bind(self.KEYS.COPY, action=self.copy_listed))
+            result.append(self.bind(self.KEYS.DELETE, action=self.remove_listed))
+            result.append(self.bind(self.KEYS.MOVE, action=self.start_moving))
         return result + self.listen_keys()
 
     # A branch that is one of a list: added to, copied, removed and moved with the keys every list of the tracker has.
@@ -559,112 +649,193 @@ class WizardPage(FieldPage):
         self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_ADD_SECTION_TITLE, options=kinds), then=chosen)
 
     def insert_in_list(self):
-        """Ask which kind of thing to insert and put one before the branch under the cursor, the cursor staying on the new one, as on Arrange."""
+        """Ask which kind of thing to insert and put one before the branch under the cursor, the cursor staying on the new one, as
+        on Arrange."""
         branch = self.branch()
         kinds = branch.kinds_to_add()
-        self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_INSERT_SECTION_TITLE, options=kinds), then=lambda place: self.choosing(branch.insert)(kinds[place]))
+        dialog = ChoiceDialog(title=labels.MSG_WIZARD_INSERT_SECTION_TITLE, options=kinds)
+        self.ask(dialog=dialog, then=functools.partial(self._insert_kind, branch=branch, kinds=kinds))
+
+    def _insert_kind(self, place, *, branch, kinds):
+        """Insert the kind picked before the branch under the cursor."""
+        self.choosing(branch.insert)(kinds[place])
 
     def pick_sound(self, role):
         """Choose a player's sound from a list: the band's first, which takes the sound from the band again, then the genre's
         own sounds that suit the player, then a row that opens every General MIDI sound that plays notes."""
-        choices = self._choices
-        own = choices.get_sounds().genre_sounds(role)
-        options = [marks.MSG_WIZARD_FROM_BAND.format(sound=choices.get_sounds().sound_name(choices.get_sounds().band_sound(role))), *(choices.get_sounds().sound_name(sound) for sound in own), labels.MSG_WIZARD_MORE_SOUNDS]
-        current = own.index(choices.get_sounds().get_sound(role)) + 1 if choices.get_sounds().has_own_sound(role) and choices.get_sounds().get_sound(role) in own else (len(options) - 1 if choices.get_sounds().has_own_sound(role) else FIRST_PLACE)
+        sounds = self._choices.get_sounds()
+        own = sounds.genre_sounds(role)
+        options = self._sound_options(role=role, own=own)
+        last = len(options) - 1
+        player = self._choices.player(role)
+        title = labels.MSG_WIZARD_SOUND_TITLE.format(player=player.title())
+        dialog = ChoiceDialog(title=title, options=options, current=self._sound_place(role=role, own=own, last=last))
+        self.ask(dialog=dialog, then=functools.partial(self._sound_chosen, role=role, own=own, last=last))
 
-        def chosen(place):
-            if place == len(options) - 1:
-                self.pick_any_sound(role)
-            else:
-                self.choosing(lambda sound: choices.get_sounds().set_sound(role=role, sound=sound))(None if place == FIRST_PLACE else own[place - 1])
-        self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_SOUND_TITLE.format(player=choices.player(role).title()), options=options, current=current), then=chosen)
+    def _sound_options(self, *, role, own):
+        """Return the sounds a player is offered: the band's, the genre's own that suit the player, and the row of every sound."""
+        sounds = self._choices.get_sounds()
+        band_sound = sounds.sound_name(sounds.band_sound(role))
+        options = [marks.MSG_WIZARD_FROM_BAND.format(sound=band_sound)]
+        for sound in own:
+            options.append(sounds.sound_name(sound))
+        options.append(labels.MSG_WIZARD_MORE_SOUNDS)
+        return options
+
+    def _sound_place(self, *, role, own, last):
+        """Return where the list of sounds opens: on the player's own sound, the row of every sound for one not among the
+        genre's, or the band's."""
+        sounds = self._choices.get_sounds()
+        if not sounds.has_own_sound(role):
+            return FIRST_PLACE
+        sound = sounds.get_sound(role)
+        if sound in own:
+            return own.index(sound) + 1
+        return last
+
+    def _sound_chosen(self, place, *, role, own, last):
+        """Give the player the sound picked, the band's again, or open every sound."""
+        if place == last:
+            self.pick_any_sound(role)
+            return
+        sound = None
+        if place != FIRST_PLACE:
+            sound = own[place - 1]
+        self.choosing(functools.partial(self._set_sound, role=role))(sound)
+
+    def _set_sound(self, sound, *, role):
+        """Give a player a sound of its own, or the band's with None."""
+        sounds = self._choices.get_sounds()
+        sounds.set_sound(role=role, sound=sound)
 
     def pick_any_sound(self, role):
-        """Choose a player's sound from every General MIDI sound, by family; a sound is tried as a run of the song's scale in the player's octave."""
-        choices = self._choices
-        run = run_of(root=choices.root_half_steps(), steps=choices.scale_half_steps(), octave=choices.player(role).get_octave())
-        dialog = SoundDialog(title=labels.MSG_WIZARD_MORE_SOUNDS_TITLE, groups=sound_families(), current=choices.get_sounds().get_sound(role), trial=SoundTrial(page=self, played=lambda sound: (run, sound_trial.RUN_STEP, sound)))
+        """Choose a player's sound from every General MIDI sound, by family; a sound is tried as a run of the song's scale in the
+        player's octave."""
+        sounds = self._choices.get_sounds()
+        player = self._choices.player(role)
+        run = run_of(root=self._choices.root_half_steps(), steps=self._choices.scale_half_steps(), octave=player.get_octave())
+        trial = SoundTrial(page=self, played=functools.partial(_run_played, run=run))
+        dialog = SoundDialog(title=labels.MSG_WIZARD_MORE_SOUNDS_TITLE, groups=sound_families(), current=sounds.get_sound(role), trial=trial)
+        self.ask(dialog=dialog, then=functools.partial(self._any_sound_chosen, role=role))
 
-        def chosen(sound):
-            if sound is not None:
-                self.choosing(lambda picked: choices.get_sounds().set_sound(role=role, sound=picked))(sound)
-        self.ask(dialog=dialog, then=chosen)
+    def _any_sound_chosen(self, sound, *, role):
+        """Give the player the sound picked from every sound, where one was."""
+        if sound is not None:
+            self.choosing(functools.partial(self._set_sound, role=role))(sound)
 
     def pick_piece_sound(self, piece):
-        """Choose what a piece of the kit sounds as: its own drum first, then the kit's drums, then every General MIDI sound by family, and
-        on the Note row under them the note a General MIDI sound plays. A drum is tried as four hits of the kit, and a General MIDI sound
-        as four notes, on the note the row shows."""
-        choices = self._choices
-        drums = [(marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum), drum) for drum in choices.get_kit().drums() if drum != piece]
+        """Choose what a piece of the kit sounds as: its own drum first, then the kit's drums, then every General MIDI sound by
+        family, and on the Note row under them the note a General MIDI sound plays. A drum is tried as four hits of the kit, and
+        a General MIDI sound as four notes, on the note the row shows."""
+        kit = self._choices.get_kit()
+        drums = []
+        for drum in kit.drums():
+            if drum != piece:
+                drums.append((marks.MSG_WIZARD_KIT_DRUM_SHOWN.format(drum=drum), drum))
 
         def played(sound):
-            if isinstance(sound, str):
-                return hits_of(wizard_names.NOTATION_KIT[piece if sound == OWN_DRUM else sound]), sound_trial.HITS_STEP, None
-            return hits_of(dialog.note), sound_trial.HITS_STEP, sound
+            if not isinstance(sound, str):
+                return hits_of(dialog.note), sound_trial.HITS_STEP, sound
+            drum = sound
+            if sound == OWN_DRUM:
+                drum = piece
+            return hits_of(wizard_names.NOTATION_KIT[drum]), sound_trial.HITS_STEP, None
+        top = [(marks.MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece), OWN_DRUM)]
+        groups = [(labels.MSG_WIZARD_KIT_DRUMS, drums), *sound_families()]
+        current = kit.piece_sound(piece) or OWN_DRUM
+        note = kit.piece_note(piece) or wizard_limits.USUAL_PIECE_NOTE
+        trial = SoundTrial(page=self, played=played)
+        dialog = SoundDialog(title=labels.MSG_WIZARD_PIECE_SOUND_TITLE.format(piece=piece), top=top, groups=groups, current=current, trial=trial, note=note)
+        self.ask(dialog=dialog, then=self.choosing(functools.partial(self._piece_sound_chosen, piece=piece)))
 
-        def chosen(answer):
-            sound, note = answer
-            if isinstance(sound, str):
-                choices.get_kit().set_piece_sound(piece=piece, sound=None if sound == OWN_DRUM else sound)
-            else:
-                choices.get_kit().set_piece_sound(piece=piece, sound=sound)
-                choices.get_kit().set_piece_note(piece=piece, note=note)
-        dialog = SoundDialog(title=labels.MSG_WIZARD_PIECE_SOUND_TITLE.format(piece=piece), top=[(marks.MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece), OWN_DRUM)],
-                             groups=[(labels.MSG_WIZARD_KIT_DRUMS, drums), *sound_families()], current=choices.get_kit().piece_sound(piece) or OWN_DRUM, trial=SoundTrial(page=self, played=played),
-                             note=choices.get_kit().piece_note(piece) or wizard_limits.USUAL_PIECE_NOTE)
-        self.ask(dialog=dialog, then=self.choosing(chosen))
+    def _piece_sound_chosen(self, answer, *, piece):
+        """Have a piece of the kit sound as what was picked: its own drum, another drum of the kit, or a sound on a note."""
+        sound, note = answer
+        kit = self._choices.get_kit()
+        if not isinstance(sound, str):
+            kit.set_piece_sound(piece=piece, sound=sound)
+            kit.set_piece_note(piece=piece, note=note)
+            return
+        if sound == OWN_DRUM:
+            sound = None
+        kit.set_piece_sound(piece=piece, sound=sound)
 
     def pick_suggested_form(self):
         """Offer the forms the subgenre suggests in a dialog, each with its sections and its length at the tempo chosen, and
         take the one picked; where a person changed the sections, ask first, since the form picked replaces them."""
-        choices = self._choices
-        forms = choices.get_song_form().forms()
-        options = [marks.MSG_WIZARD_SUGGESTED_FORM.format(form=form, count=choices.get_song_form().form_section_count(form), length=clock(choices.get_song_form().form_seconds(form=form))) for form in forms]
-
-        def pick():
-            self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_SUGGESTED_FORM_TITLE, options=options, current=forms.index(choices.get_song_form().get_form())),
-                     then=lambda place: self.choosing(choices.get_song_form().set_form)(forms[place]))
-
-        def answered(yes):
-            if yes:
-                pick()
-        if choices.get_song_form().has_own_form():
-            self.ask(dialog=ConfirmDialog(title=labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=answered)
+        form = self._choices.get_song_form()
+        if form.has_own_form():
+            self.ask(dialog=self._replace_sections_dialog(), then=self._pick_form_if_yes)
         else:
-            pick()
+            self._pick_form()
+
+    def _replace_sections_dialog(self):
+        """Return the dialog that asks whether the person's own sections may be replaced."""
+        return ConfirmDialog(title=labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION])
+
+    def _pick_form_if_yes(self, yes):
+        if yes:
+            self._pick_form()
+
+    def _pick_form(self):
+        """Offer the forms the subgenre suggests, each with its count of sections and its length, opening on the form chosen."""
+        form = self._choices.get_song_form()
+        forms = form.forms()
+        options = []
+        for name in forms:
+            length = clock(form.form_seconds(form=name))
+            options.append(marks.MSG_WIZARD_SUGGESTED_FORM.format(form=name, count=form.form_section_count(name), length=length))
+        dialog = ChoiceDialog(title=labels.MSG_WIZARD_SUGGESTED_FORM_TITLE, options=options, current=forms.index(form.get_form()))
+        self.ask(dialog=dialog, then=functools.partial(self._form_picked, forms=forms))
+
+    def _form_picked(self, place, *, forms):
+        """Take the form picked."""
+        form = self._choices.get_song_form()
+        self.choosing(form.set_form)(forms[place])
 
     def ask_form_questions(self):
-        """Ask the questions a form is made from, one dialog a question, each opening on its usual answer, and make the form the answers ask for
-        the song's own; ESC at any question leaves the form as it was, and where a person changed the sections, the last step asks first."""
-        choices = self._choices
-        questions = choices.get_song_form().form_questions()
-        answers = {}
+        """Ask the questions a form is made from, one dialog a question, each opening on its usual answer, and make the form the
+        answers ask for the song's own; ESC at any question leaves the form as it was, and where a person changed the sections,
+        the last step asks first."""
+        form = self._choices.get_song_form()
+        self._ask_form_question(questions=form.form_questions(), place=FIRST_PLACE, answers={})
 
-        def make():
-            try:
-                self.choosing(choices.get_song_form().set_form_from_answers)(answers)
-            except ValueError as problem:
-                self.refuse(str(problem))
-                return
-            self._open.add(labels.MSG_WIZARD_FORM_BRANCH)
+    def _ask_form_question(self, *, questions, place, answers):
+        """Ask the form's question at a place, or, once every one is answered, make the form."""
+        if place == len(questions):
+            self._finish_form(answers)
+            return
+        name, offered, usual = questions[place]
+        dialog = ChoiceDialog(title=labels.MSG_WIZARD_FORM_QUESTION_TITLES[name], options=list(offered), current=offered.index(usual))
+        self.ask(dialog=dialog, then=functools.partial(self._form_answered, questions=questions, place=place, answers=answers))
 
-        def finish():
-            if choices.get_song_form().has_own_form():
-                self.ask(dialog=ConfirmDialog(title=labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION]), then=lambda yes: make() if yes else None)
-            else:
-                make()
+    def _form_answered(self, chosen, *, questions, place, answers):
+        """Keep the answer picked to the form's question at a place, and ask the next."""
+        name, offered, _ = questions[place]
+        answers[name] = offered[chosen]
+        self._ask_form_question(questions=questions, place=place + 1, answers=answers)
 
-        def ask(place):
-            if place == len(questions):
-                finish()
-                return
-            name, offered, usual = questions[place]
+    def _finish_form(self, answers):
+        """Make the form the answers ask for, asking first where a person changed the sections."""
+        form = self._choices.get_song_form()
+        if form.has_own_form():
+            self.ask(dialog=self._replace_sections_dialog(), then=functools.partial(self._make_form_if_yes, answers=answers))
+        else:
+            self._make_form(answers)
 
-            def answered(chosen):
-                answers[name] = offered[chosen]
-                ask(place + 1)
-            self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_FORM_QUESTION_TITLES[name], options=list(offered), current=offered.index(usual)), then=answered)
-        ask(FIRST_PLACE)
+    def _make_form_if_yes(self, yes, *, answers):
+        if yes:
+            self._make_form(answers)
+
+    def _make_form(self, answers):
+        """Make the form the answers ask for the song's own, and open the Form panel."""
+        form = self._choices.get_song_form()
+        try:
+            self.choosing(form.set_form_from_answers)(answers)
+        except ValueError as problem:
+            self.refuse(str(problem))
+            return
+        self._open.add(labels.MSG_WIZARD_FORM_BRANCH)
 
     def copy_listed(self):
         self.choosing(lambda branch: branch.copy())(self.branch())
@@ -744,27 +915,37 @@ class WizardPage(FieldPage):
         return (labels.MSG_WIZARD_REPLACE_CAPTION if self.replaces() else labels.MSG_WIZARD_CAPTION).format(name=self._song_name)
 
     def tree_lines(self):
-        """Return the tree's lines: each branch after its cursor's mark, indented by its depth, with its open or closed mark, its note dim,
-        and at the line's end the mark of the branch whose fields hold the cursor."""
+        """Return the tree's lines: each branch after its cursor's mark, indented by its depth, with its open or closed mark, its
+        note dim, and at the line's end the mark of the branch whose fields hold the cursor."""
         lines = []
         for place, (depth, branch) in enumerate(self.rows()):
-            under_cursor = place == self.tree_place
-            line = Text(no_wrap=True)
-            line.append(cursor_mark(under_cursor and not self.in_fields))
-            line.append(drawing.INDENT * depth)
-            if branch.children():
-                line.append((marks.MSG_WIZARD_BRANCH_OPEN if self.shows_children(branch) else marks.MSG_WIZARD_BRANCH_CLOSED) + drawing.SPACE)
-            else:
-                line.append(drawing.INDENT)
-            carried = self.moving and under_cursor
-            line.append(marks.MSG_WIZARD_CARRIED.format(name=branch.name()) if carried else branch.name(), style=self.name_style(branch=branch, under_cursor=under_cursor))
-            if branch.note():
-                line.append(drawing.SPACE + branch.note(), style=Style.DIM)
-            line.truncate(TREE_WIDTH - 2)
-            line.pad_right(TREE_WIDTH - 2 - len(line.plain))
-            line.append((marks.MSG_WIZARD_EDITED_BRANCH if under_cursor and self.in_fields else drawing.SPACE) + drawing.SPACE)
-            lines.append(line)
+            lines.append(self._tree_line(depth=depth, branch=branch, under_cursor=place == self.tree_place))
         return lines
+
+    def _tree_line(self, *, depth, branch, under_cursor):
+        """Return one branch's line of the tree."""
+        line = Text(no_wrap=True)
+        line.append(cursor_mark(under_cursor and not self.in_fields))
+        line.append(drawing.INDENT * depth)
+        if not branch.children():
+            line.append(drawing.INDENT)
+        elif self.shows_children(branch):
+            line.append(marks.MSG_WIZARD_BRANCH_OPEN + drawing.SPACE)
+        else:
+            line.append(marks.MSG_WIZARD_BRANCH_CLOSED + drawing.SPACE)
+        name = branch.name()
+        if self.moving and under_cursor:
+            name = marks.MSG_WIZARD_CARRIED.format(name=name)
+        line.append(name, style=self.name_style(branch=branch, under_cursor=under_cursor))
+        if branch.note():
+            line.append(drawing.SPACE + branch.note(), style=Style.DIM)
+        line.truncate(TREE_WIDTH - 2)
+        line.pad_right(TREE_WIDTH - 2 - len(line.plain))
+        edited = drawing.SPACE
+        if under_cursor and self.in_fields:
+            edited = marks.MSG_WIZARD_EDITED_BRANCH
+        line.append(edited + drawing.SPACE)
+        return line
 
     def name_style(self, *, branch, under_cursor):
         """Return the style of a branch's name in the tree: the branch under the cursor bold in the wizard's theme colour, so that the
@@ -790,10 +971,16 @@ class WizardPage(FieldPage):
         fields = self.field_lines(width=max(width - TREE_WIDTH - len(DIVIDER), LEAST_FIELDS_WIDTH), height=height)
         lines = []
         for place in range(max(len(tree), len(fields), height)):
+            tree_part = Text(drawing.SPACE * TREE_WIDTH)
+            if place < len(tree):
+                tree_part = tree[place]
+            fields_part = Text(drawing.NOTHING)
+            if place < len(fields):
+                fields_part = fields[place]
             line = Text(no_wrap=True)
-            line.append_text(tree[place] if place < len(tree) else Text(drawing.SPACE * TREE_WIDTH))
+            line.append_text(tree_part)
             line.append(DIVIDER, style=Style.DIM)
-            line.append_text(fields[place] if place < len(fields) else Text(drawing.NOTHING))
+            line.append_text(fields_part)
             lines.append(line)
         return lines
 
