@@ -64,7 +64,9 @@ def chosen_move(*, direction, choices):
     if chance < CHANCE_OF_MOVING_ON:
         return MOVE_ON
     if direction == Direction.BROWNIAN:
-        return MOVE_BACK if chance < CHANCE_OF_MOVING_ON_OR_BACK else STAY
+        if chance < CHANCE_OF_MOVING_ON_OR_BACK:
+            return MOVE_BACK
+        return STAY
     return MOVE_BACK
 
 
