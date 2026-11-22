@@ -105,7 +105,7 @@ class CoreMidi:
         """Return the destination a name picks as RtMidiOutput would pick it, the first whose name is it or starts with it."""
         for place in range(self.midi.MIDIGetNumberOfDestinations()):
             destination = self.midi.MIDIGetDestination(place)
-            if any(found == name or found.startswith(name) for found in self.names_of(destination)):
+            if _named_like(names=self.names_of(destination), name=name):
                 return destination
         raise ValueError(errors.ERR_NO_SUCH_MIDI_PORT.format(name=name))
 
@@ -177,3 +177,11 @@ class CoreMidiOutput(ScheduledOutput):
         message = bytes(data)
         self._midi.MIDIPacketListAdd(self._buffer, PACKET_LIST_BYTES, packet, stamp, len(message), message)
         self._midi.MIDISend(self._port, self._destination, self._buffer)
+
+
+def _named_like(*, names, name):
+    """Return whether any of a destination's names is a name, or starts with it."""
+    for found in names:
+        if found == name or found.startswith(name):
+            return True
+    return False
