@@ -14,11 +14,13 @@ from llamatron.model.objects.llama_data import HoldsSettings, own_copy
 from llamatron.model.objects.traits import BypassedWhen
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Restart
-from llamatron.model.schema.setting import check_settings, Choice
+from llamatron.model.schema.setting import check_settings, Choice, Flag
 from llamatron.user_strings import errors
 
 # Every generator's Restart: when it starts over, every clip unless set.
 RESTART_SETTING = Choice(name=file_format.GENERATOR_RESTART, choices=file_format.RESTARTS, default=corrections.LEFT_OUT, error=errors.ERR_NOT_A_CHOICE)
+# Every generator's switch, first of its settings: on unless written off.
+ENABLED_SETTING = Flag(name=file_format.GENERATOR_ENABLED, error=errors.ERR_GENERATOR_ENABLED_NOT_TRUE_OR_FALSE)
 # Every generator keeps a table of statements about the registers, written last, which says when a clip's pass goes by it untouched.
 BYPASS_STATEMENTS = statements_setting(file_format.BYPASS_WHEN)
 
@@ -42,10 +44,12 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
     MAY_ADD_TO_REGISTERS = False
 
     def __init_subclass__(cls, **named):
-        """Give every kind of settings the table of statements that bypasses its generator, as its last setting."""
+        """Give every kind of settings its switch, as its first setting, and the table of statements that bypasses its generator,
+        as its last."""
         super().__init_subclass__(**named)
-        settings = {name: description for name, description in cls.SETTINGS.items() if name != file_format.BYPASS_WHEN}
-        cls.SETTINGS = {**settings, file_format.BYPASS_WHEN: BYPASS_STATEMENTS}
+        shared = (file_format.BYPASS_WHEN, file_format.GENERATOR_ENABLED)
+        settings = {name: description for name, description in cls.SETTINGS.items() if name not in shared}
+        cls.SETTINGS = {file_format.GENERATOR_ENABLED: ENABLED_SETTING, **settings, file_format.BYPASS_WHEN: BYPASS_STATEMENTS}
 
     def adds_to_registers(self):
         """Return whether its generator adds to the registers as it plays: no, unless a plugin's settings say otherwise."""
@@ -128,6 +132,10 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
         described = self.SETTINGS[name]
         return described.get_lowest(), described.get_highest()
 
+    def is_enabled(self):
+        """Return whether the generator runs where a list or a chain names it: yes, unless switched off."""
+        return self.get_written(file_format.GENERATOR_ENABLED) is not False
+
     def get_restart(self):
         """Return when the generator starts over, every clip unless set."""
         return self.get_written(file_format.GENERATOR_RESTART) or Restart.EVERY_CLIP
@@ -153,7 +161,7 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
         """Return the settings as the generator takes them: a length as a number, a choice as what its name means, and the rest as written."""
         taken = {}
         for name, value in self._settings.items():
-            if name == file_format.BYPASS_WHEN:
+            if name in (file_format.BYPASS_WHEN, file_format.GENERATOR_ENABLED):
                 continue
             if name in self.TAKEN_AS:
                 value = self.TAKEN_AS[name](value)

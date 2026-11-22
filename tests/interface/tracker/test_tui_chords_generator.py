@@ -57,8 +57,8 @@ class TestModes(ChordsPageTest):
 
     NAME = ui_testing.SMOOTH
 
-    async def test_each_mode_shows_its_own_column_and_the_voicing_column(self):
-        self.assertEqual(self.labels()[1], chords_strings.MSG_MODE_LABEL)
+    async def test_enabled_and_mode_come_first_and_each_mode_shows_its_own_column_and_the_voicing_column(self):
+        self.assertEqual(self.labels()[1:3], [labels.MSG_ENABLED_LABEL, chords_strings.MSG_MODE_LABEL])
         self.assertIn(chords_view.MODE_NAMES[chords_model.VOICING], self.text())
         self.assertNotIn(labels.MSG_EVERY_LABEL, self.labels())
         self.assertNotIn(labels.MSG_CHORDS_FROM_LABEL, self.labels())

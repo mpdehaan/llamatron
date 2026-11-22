@@ -1226,13 +1226,22 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def chain_run(self, name):
         """Return the chain a name in a clip's, a scene's or a track's list of generators runs: the chain of that name, or, for a
-        generator of another kind, a chain of that generator alone, made for the asking."""
+        generator of another kind, a chain of that generator alone, made for the asking. A generator switched off is left out of
+        what runs."""
         if self.has_chain(name):
-            return self.get_chain(name)
+            chain = self.get_chain(name)
+            steps = chain.get_steps()
+            running = [step for step in steps if self.get_generator_settings(kind=step.kind, name=step.name).is_enabled()]
+            if len(running) == len(steps):
+                return chain
+            return Chain(running, bypass_when=chain.get_bypass_when())
         sections_by_name = generator_plugins.sections_by_name()
         for kind, section in sections_by_name.items():
-            if self._section(section).has(name):
+            if not self._section(section).has(name):
+                continue
+            if self._section(section).get(name).is_enabled():
                 return Chain([(kind, name)])
+            return Chain([])
         raise LookupError(name)
 
     def get_chain_names(self):

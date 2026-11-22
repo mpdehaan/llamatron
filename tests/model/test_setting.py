@@ -92,7 +92,7 @@ SETTING_CLASS_ENDING = 'Setting'
 # Each class of setting names, the descriptions of those settings, and the names that aren't settings with a
 # value of their own to check: a pattern's steps are its size, and a scene's tracks are its clips.
 # The setting every generator has, described once for them all and named by no generator's own class of names.
-SHARED_BY_GENERATORS = {file_format.BYPASS_WHEN}
+SHARED_BY_GENERATORS = {file_format.BYPASS_WHEN, file_format.GENERATOR_ENABLED}
 
 def without_velocity(settings):
     """Return a scene's or a clip's settings without the velocity settings, which the two share and VelocitySetting names."""

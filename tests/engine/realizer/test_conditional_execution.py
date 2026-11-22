@@ -273,5 +273,32 @@ class TestBypassingGenerators(unittest.TestCase):
         self.assertIsInstance(setlist_from_data(song(chained=True)).get_chain(DOUBLED).to_data(), list)
 
 
+
+class TestASwitchedOffGenerator(unittest.TestCase):
+    """A generator whose Enabled is off is passed over wherever a chain or a list of generators names it, and only off is written."""
+
+    OFF = {file_format.GENERATOR_ENABLED: False}
+    UNMOVED = [0]
+    MOVED = [MOVED_BY]
+
+    def test_a_chain_passes_it_over(self):
+        self.assertEqual(heard(song(chained=True)), notes_at(self.MOVED))
+        self.assertEqual(heard(song(chained=True, generator=self.OFF)), notes_at(self.UNMOVED))
+
+    def test_a_clips_list_naming_it_alone_passes_it_over(self):
+        self.assertEqual(heard(song(clip={ClipSlotSetting.CHAINS: [TWICE]})), notes_at(self.MOVED))
+        self.assertEqual(heard(song(clip={ClipSlotSetting.CHAINS: [TWICE]}, generator=self.OFF)), notes_at(self.UNMOVED))
+
+    def test_only_off_is_written(self):
+        setlist = setlist_from_data(song(chained=True))
+        settings = setlist.get_generator_settings(kind=chords_plugin.NAME, name=TWICE)
+        self.assertTrue(settings.is_enabled())
+        settings.set_written(name=file_format.GENERATOR_ENABLED, value=False)
+        self.assertFalse(settings.is_enabled())
+        self.assertIs(settings.to_data()[file_format.GENERATOR_ENABLED], False)
+        with self.assertRaises(InvalidValue):
+            settings.set_written(name=file_format.GENERATOR_ENABLED, value=OCTAVE)
+
+
 if __name__ == '__main__':
     unittest.main()

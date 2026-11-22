@@ -9,6 +9,7 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
+from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import labels, marks
 from tests.support import ui_testing
@@ -54,3 +55,19 @@ class TestHocketEditor(UITest):
         self.app.screen.draw()
         await self.press(Key.ENTER)
         self.assertIn(GONE, self.app.screen.options)
+
+
+class TestEnabledOnAGeneratorsPage(UITest):
+    """Every generator's page shows Enabled first after its name, here a hocket's: Space switches it, and only off is written."""
+
+    async def test_space_switches_the_generator_off_and_on_again(self):
+        await self.open_generator(section=hocket_plugin.SECTION)
+        settings = self.document.get_setlist().get_generator_settings(kind=hocket_plugin.NAME, name=ui_testing.TRADE)
+        labels_shown = [field.label for field in self.app.screen.shown_fields()]
+        self.assertEqual(labels_shown[1], labels.MSG_ENABLED_LABEL)
+        await self.select_field(labels.MSG_ENABLED_LABEL)
+        await self.press(Key.SPACE)
+        self.assertFalse(settings.is_enabled())
+        self.assertIs(settings.to_data()[file_format.GENERATOR_ENABLED], False)
+        await self.press(Key.SPACE)
+        self.assertNotIn(file_format.GENERATOR_ENABLED, settings.to_data())

@@ -386,6 +386,8 @@ MSG_ACCENT_ROW_LABEL = 'Accent'
 MSG_READY_BARS_TITLE = 'Ready-made bar'
 MSG_SOURCE_TRACK_LABEL = 'Source track'
 MSG_ROOT_IN_BASS_LABEL = 'Keep the root in the bass'
+# interface/tracker/screens/shared/plugin_editor.py: every generator's switch, first after its name.
+MSG_ENABLED_LABEL = 'Enabled'
 # interface/tracker/screens/shared/restart_field.py: when a generator starts over, as its editor names the choices.
 MSG_RESTART_LABEL = 'Restart'
 MSG_STEP_NUMBER_ROW_LABEL = 'Step'

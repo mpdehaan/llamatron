@@ -120,6 +120,10 @@ Press `G` on the main screen for the Generators page, which lists every generato
 | `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it; the list keeps its order when the set is saved |
 | `Bksp` | Delete it after asking; it is taken out of every chain and list that runs it, and the question names up to five |
 
+## Enabled
+
+Every generator's page starts with Enabled, after its Name, on unless switched off with Space or ENTER. A generator switched off is passed over wherever a chain or a clip's, a scene's or a track's list of generators names it, so a part can be heard without it and brought back without taking it out of every list. The set file writes `enabled: false` only for a generator switched off.
+
 ## Time Settings
 
 Every setting of a generator that is a time, an arpeggiator's Step, a drift's or a progression's Every and a shape's Over, chooses from one list, in this order: its own first choice, such as `(pattern)` or `(whole)`, then 1/64, 1/32, 1/16, 1/16 triplet, dotted 1/16, 1/8, 1/8 triplet, dotted 1/8, 1/4, 1/4 triplet, 1/2, and then 1, 2, 4, 8 and 16 bars, a bar being as long as the song's time signature says. A time a set file holds that isn't on the list, such as an older file's `2`, stays as it is and is offered at the end of the list.

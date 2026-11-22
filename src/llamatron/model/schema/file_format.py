@@ -1053,6 +1053,8 @@ class Restart:
 RESTARTS = [Restart.EVERY_CLIP, Restart.ON_NEW_SCENE, Restart.WHOLE_SONG]
 # Every generator's setting of when it starts over.
 GENERATOR_RESTART = 'restart'
+# Every generator's switch, on unless written off: one switched off is passed over wherever a list or a chain names it.
+GENERATOR_ENABLED = 'enabled'
 
 
 class GuitarifySetting:

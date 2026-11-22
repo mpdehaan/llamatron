@@ -22,7 +22,7 @@ from llamatron.interface.tracker.screens.shared.shared import numbers_text
 from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
 from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.interface.tracker.text import sorted_names
-from llamatron.model.schema import generator_plugins
+from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import shape_setting
 from llamatron.model.schema.generator_views import ChoiceView, DriftValuesView, GaugeView, GuitarBarView, InheritedChoiceView, NumberView, OctaveView, OffsetsView, ProgressionView, RegisterAddView, RestartView, SectionsView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView, WhenView
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
@@ -65,7 +65,7 @@ class PluginEditor(GeneratorEditor, FieldPage):
         super().__init__(holder=holder, name=name)
 
     def fields(self):
-        fields = [NameField(value=self.shown_name, rename=self.rename)]
+        fields = [NameField(value=self.shown_name, rename=self.rename), self._enabled_field()]
         mode = None
         if self._view.mode is not None:
             fields.append(self._choice_field(self._view.mode))
@@ -202,6 +202,18 @@ class PluginEditor(GeneratorEditor, FieldPage):
         if value == setting.default:
             value = None
         self.store(setting=setting.setting, value=value)
+
+    def _enabled_field(self):
+        """Return the generator's switch, written only when off."""
+        settings = self.settings()
+        return Toggle(label=labels.MSG_ENABLED_LABEL, on=settings.is_enabled(), set=self._store_enabled)
+
+    def _store_enabled(self, on):
+        """Keep the generator's switch, left out of the file while on."""
+        value = None
+        if not on:
+            value = False
+        self.store(setting=file_format.GENERATOR_ENABLED, value=value)
 
     def _fields_of(self, setting):
         """Return the fields that edit one of the view's settings, made by the method its kind of setting names."""
