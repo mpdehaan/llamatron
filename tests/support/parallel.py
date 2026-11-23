@@ -4,6 +4,10 @@
 
 """Runs every test, one test class to a process, with as many processes at once as the computer has cores.
 
+Each class's process is forked from a server that has already imported llamatron, Textual and the tests' support, so that no
+class pays for those imports again: each still starts from that same clean state and runs alone. Under coverage, each class
+starts a whole new Python instead, since coverage has to be running before anything is imported.
+
 The tests don't depend on each other, and the slow ones are the text UI tests, so this finishes
 in about the time of the slowest class rather than of all of them together. The slowest classes
 start first, by the seconds each took last time, kept in .test_times.json (which git ignores), and
@@ -20,7 +24,11 @@ tests whose module, class or method name contains one of them, as unittest's -k 
 """
 
 from concurrent.futures import ThreadPoolExecutor
+import contextlib
+import importlib
+import io
 import json
+import multiprocessing
 import os
 import re
 import subprocess
@@ -36,8 +44,16 @@ MSG_NOTHING_MATCHES = 'No test matches {names}.'
 # unittest's own option for running only the tests whose name contains a word, which each class is run with.
 FILTER_OPTION = '-k'
 MSG_NO_COUNT = '{name} did not say how many tests it ran:\n{output}'
+MSG_CRASHED = '{name} stopped without finishing, with exit code {code}.'
+# What the server every class's process is forked from imports first, so that no class imports it again.
+PRELOADED = ['llamatron.interface.tracker.app', 'tests.support.ui_testing', 'tests.support.rendering']
+# Modules that name something after the process that imports them, such as FluidSynth's port after the tracker's process id,
+# imported again in each class's process so that each has its own, as it did in a Python of its own.
+RELOADED_IN_EACH_CLASS = ['llamatron.realtime.realtime_names']
+# How unittest's -k turns a word into a pattern of test names.
+NAME_PATTERN = '*{word}*'
 MSG_TIMED_OUT = '{name} did not finish within {seconds}s and was stopped: a test is probably looping, waiting for a key to do something it never does.\n{output}'
-# How long one class may run before it's stopped and counted as failed: the slowest takes about 35 seconds, so a class that
+# How long one class may run before it's stopped and counted as failed: the slowest takes about 25 seconds, so a class that
 # runs this long is a test looping, like one pressing a key until a row appears that never does, which is caught here.
 CLASS_TIMEOUT_SECONDS = 120
 MSG_SUMMARY = 'Ran {tests} tests in {classes} classes in {seconds:.1f}s, with {workers} at a time. The slowest was {slowest}, at {slowest_seconds:.1f}s.'
@@ -101,8 +117,48 @@ def filter_options(filters):
     return [option for word in filters for option in (FILTER_OPTION, word)]
 
 
-def run_class(*, name, root, filters):
-    """Run one test class in its own process, only the tests the filters allow, and return (name, whether it passed, its output, how many tests it ran, seconds)."""
+def run_class(*, name, root, filters, context):
+    """Run one test class in its own process, only the tests the filters allow, and return (name, whether it passed, its
+    output, how many tests it ran, seconds)."""
+    if os.environ.get(COVERAGE_SETTING):
+        return run_class_under_coverage(name=name, root=root, filters=filters)
+    started = time.monotonic()
+    receiving, sending = context.Pipe(duplex=False)
+    process = context.Process(target=run_in_child, kwargs=dict(name=name, root=root, filters=filters, sending=sending))
+    process.start()
+    sending.close()
+    if not receiving.poll(class_timeout()):
+        process.kill()
+        process.join()
+        return name, False, MSG_TIMED_OUT.format(name=name, seconds=class_timeout(), output=''), None, time.monotonic() - started
+    try:
+        passed, output, count = receiving.recv()
+    except EOFError:
+        process.join()
+        return name, False, MSG_CRASHED.format(name=name, code=process.exitcode), None, time.monotonic() - started
+    process.join()
+    return name, passed, output, count, time.monotonic() - started
+
+
+def run_in_child(*, name, root, filters, sending):
+    """Run one test class inside a forked process and send back whether it passed, unittest's output and how many tests ran.
+    What the tests print themselves is thrown away, as it was when each class ran in a Python of its own."""
+    os.chdir(root)
+    for module in RELOADED_IN_EACH_CLASS:
+        importlib.reload(importlib.import_module(module))
+    loader = unittest.TestLoader()
+    if filters:
+        loader.testNamePatterns = [NAME_PATTERN.format(word=word) for word in filters]
+    stream = io.StringIO()
+    with open(os.devnull, 'w') as nowhere, contextlib.redirect_stdout(nowhere):
+        suite = loader.loadTestsFromName(name)
+        result = unittest.TextTestRunner(stream=stream).run(suite)
+    sending.send((result.wasSuccessful(), stream.getvalue(), result.testsRun))
+    sending.close()
+
+
+def run_class_under_coverage(*, name, root, filters):
+    """Run one test class in a whole new Python under coverage, and return what run_class returns."""
     started = time.monotonic()
     # The tests are a package, tests, found from the top folder.
     environment = dict(os.environ, PYTHONPATH=root)
@@ -116,6 +172,13 @@ def run_class(*, name, root, filters):
     found = RAN_COUNT.search(finished.stderr)
     count = int(found.group(1)) if found else None
     return name, finished.returncode == SUCCESS, finished.stderr, count, time.monotonic() - started
+
+
+def forking_context():
+    """Return the context every class's process is forked from: a server that has imported what every class needs."""
+    context = multiprocessing.get_context('forkserver')
+    context.set_forkserver_preload(PRELOADED)
+    return context
 
 
 def remembered_times(path):
@@ -158,8 +221,9 @@ def main(filters):
     times_path = os.path.join(root, TIMES_FILE)
     times = remembered_times(times_path)
     started = time.monotonic()
+    context = forking_context()
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        results = list(pool.map(lambda name: run_class(name=name, root=root, filters=filters), slowest_first(names=names, times=times)))
+        results = list(pool.map(lambda name: run_class(name=name, root=root, filters=filters, context=context), slowest_first(names=names, times=times)))
     if not filters:
         remember_times(path=times_path, times=times, results=results)
     failed = []

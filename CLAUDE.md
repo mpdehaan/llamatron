@@ -77,7 +77,7 @@ from the top folder wherever started.
 ```
 python3 -m venv .venv && .venv/bin/python -m pip install -e .   # once
 ./llamatron.sh examples/learning/08_tie.yml                     # the tracker, on a set
-internal_tools/test.sh [NAMES]                                  # the suite in parallel, about 35 seconds
+internal_tools/test.sh [NAMES]                                  # the suite in parallel, about 65 seconds
 internal_tools/check_before_commit.sh                           # before committing code; check its real exit code
 internal_tools/test_map.sh                                      # rebuild the test map after moving code or adding many tests
 internal_tools/capture.sh, internal_tools/compare.sh            # every export byte for byte, before and after
