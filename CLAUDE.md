@@ -81,6 +81,7 @@ internal_tools/test.sh [NAMES]                                  # the suite in p
 internal_tools/check_before_commit.sh                           # before committing code; check its real exit code
 internal_tools/test_map.sh                                      # rebuild the test map after moving code or adding many tests
 internal_tools/capture.sh, internal_tools/compare.sh            # every export byte for byte, before and after
+internal_tools/compare_screens.sh capture|compare DIR           # every page's screen, before and after
 internal_tools/time.sh                                          # render timings
 internal_tools/key_map.sh                                       # rewrite .claude/KEYMAP.md after changing a key
 internal_tools/make_docs.sh                                     # diagrams, screenshots, demo tables
