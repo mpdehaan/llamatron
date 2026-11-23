@@ -379,14 +379,12 @@ ERR_NOT_A_TIME_SIGNATURE = 'expected a TimeSignature, got {value!r}'
 
 # interface/tracker/screens/arrange/arrange_page.py
 # The mark beside a scene on the Arrange grid. The full explanation is the loop errors dialog.
-ERR_ADD_A_PATTERN_FIRST = 'Add a pattern first, on the Patterns page.'
 # Deleting the last scene or track is refused in a dialog.
 ERR_LAST_SCENE_SHOWN = 'A song needs at least one scene, so the last one cannot be deleted.'
 ERR_LAST_TRACK_SHOWN = 'A song needs at least one track, so the last one cannot be deleted.'
 # A scene or track with clips, which can't be deleted while the song plays, since its clips may be playing.
 ERR_SCENE_PLAYING_SHOWN = 'A scene with clips cannot be deleted while the song plays. Stop it first, with Space on the corner or Ctrl+T.'
 ERR_TRACK_PLAYING_SHOWN = 'A track with clips cannot be deleted while the song plays. Stop it first, with Space on the corner or Ctrl+T.'
-ERR_NO_PATTERNS_TITLE = 'No patterns'
 ERR_NO_OTHER_TRACKS_TITLE = 'No other tracks'
 ERR_ADD_ANOTHER_TRACK = 'Add another track to grab notes from, on the Tracks page.'
 

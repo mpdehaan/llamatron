@@ -23,6 +23,8 @@ MSG_DELETE_TRACK_QUESTION = 'Delete track {name}?'
 MSG_DELETE_CLIP_QUESTION = 'Delete the clip on track {track}?'
 MSG_GRABBERS_STOP = '{count} clip(s) that grab from it will stop grabbing.'
 MSG_PATTERN_FOR_CLIP_TITLE = 'Pattern for this clip'
+# The first choice of an empty cell's picker on Arrange, which makes a new blank pattern for the clip and opens it.
+MSG_NEW_PATTERN_CHOICE = '(new pattern)'
 MSG_COPIED_CLIP = 'copied the clip: press V on another cell to paste it'
 MSG_PASTED_WITHOUT_GRAB = 'pasted without its grab from {track}, which would go round in a circle here'
 # The scene page.

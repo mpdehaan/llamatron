@@ -33,7 +33,6 @@ from tests.support.rendering import render_song
 from tests.support.ui_testing import back_key, fixed_text, forward_key, key_name, key_of, UITest
 
 # Names the tests give to their own things, and other values they use.
-PATTERNS_PAGE = 'Patterns page'
 # How many words of a dialog's message to look for, since the dialog wraps it.
 FIRST_WORDS = 5
 LEAD = 'lead'
@@ -348,8 +347,18 @@ class TestArrangePage(UITest):
         await self.press(keybindings.ConfirmDialog.YES)
         self.assertEqual(self.scenes(), [ONE, TWO])
 
+    async def test_enter_on_a_blank_clip_offers_a_new_pattern_first_which_opens_in_the_pattern_editor(self):
+        await self.press(Key.RIGHT, Key.DOWN, Key.ENTER)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        self.assertEqual(self.app.screen.under_cursor(), messages.MSG_NEW_PATTERN_CHOICE)
+        await self.press(Key.ENTER)
+        name = names.MSG_NUMBERED_NAME.format(base=LEAD, number=1)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertEqual(self.app.screen.item, name)
+        self.assertEqual(self.document.clip_slot(index=1, track=LEAD).get_pattern_name(), name)
+
     async def test_enter_on_a_blank_clip_picks_a_pattern_and_stays_on_arrange_until_enter_again(self):
-        # Adding a clip doesn't open it; Enter on the clip again does.
+        # Adding a clip of an existing pattern doesn't open it; Enter on the clip again does.
         await self.press(Key.RIGHT, Key.DOWN, Key.ENTER)
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.pick(BEAT)
@@ -376,7 +385,7 @@ class TestArrangePage(UITest):
         await self.press(keybindings.ArrangePage.DELETE_CLIP, keybindings.ConfirmDialog.YES, keybindings.ArrangePage.BLANK_PATTERN)
         self.assertEqual(self.app.screen.item, names.MSG_NUMBERED_NAME.format(base=LEAD, number=2))
 
-    async def test_no_patterns_is_explained(self):
+    async def test_with_no_patterns_enter_on_an_empty_cell_still_offers_a_new_one(self):
         # The clips go first, since a pattern a clip plays can't be deleted.
         for index, scene in enumerate(self.document.song().get_scenes()):
             for track in scene.get_track_names():
@@ -384,8 +393,10 @@ class TestArrangePage(UITest):
         for name in self.document.get_setlist().get_pattern_names():
             self.document.delete_named(section=Section.PATTERNS, name=name)
         await self.press(Key.RIGHT, Key.DOWN, Key.ENTER)
-        self.assertIsInstance(self.app.screen, MessageDialog)
-        self.assertIn(PATTERNS_PAGE, self.text())
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertEqual(self.app.screen.item, names.MSG_NUMBERED_NAME.format(base=LEAD, number=1))
 
     async def test_enter_on_a_scene_opens_its_settings(self):
         await self.press(Key.ENTER)

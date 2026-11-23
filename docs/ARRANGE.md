@@ -32,7 +32,7 @@ The keys depend on what is under the cursor:
 | A scene's name | `Bksp` | Delete the scene and its clips, after asking; the last scene can't be deleted |
 | A scene's row | `A` | Add a scene below it |
 | The `+` row at the bottom | `ENTER` or `A` | Add a scene at the end |
-| An empty cell | `ENTER` | Choose a pattern and add a clip; `ENTER` on the clip again opens it |
+| An empty cell | `ENTER` | Choose what the new clip plays: "(new pattern)", first, does what `B` does; an existing pattern adds a clip of it, and `ENTER` on the clip again opens it |
 | An empty cell | `B` | Make a blank pattern named after the track, add a clip of it and open it in the pattern editor |
 | A clip | `ENTER` | Open the clip page, as [Clips](CLIPS.md) describes |
 | A clip | `J` | Jump to the clip's pattern in the pattern editor; `ESC` comes back to the clip |

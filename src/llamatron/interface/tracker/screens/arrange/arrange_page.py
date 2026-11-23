@@ -62,6 +62,8 @@ HEADER_ROW = -1
 SCENE_COLUMN = 0
 FIRST_SCENE_NUMBER = 1
 FIRST_TRACK_COLUMN = 1
+# The first choice of an empty cell's picker, which makes a new blank pattern, before the existing patterns.
+NEW_PATTERN_PLACE = 0
 # The number a blank pattern named after its track starts from, as lead 1.
 # What Move mode can carry.
 MOVING_SCENE = 'scene'
@@ -928,18 +930,21 @@ class ArrangePage(Page):
     # Clips.
 
     def add_clip(self):
+        """Ask what the empty cell's clip plays: a new blank pattern, first, as B makes one, or an existing pattern."""
         setlist = self.document().get_setlist()
         patterns = sorted_names(setlist.get_pattern_names())
-        if not patterns:
-            self.tell(errors.ERR_NO_PATTERNS_TITLE, errors.ERR_ADD_A_PATTERN_FIRST)
-            return
         row = self.row
         track = self.track()
 
-        # The clip is added and Arrange stays: Enter on the clip again opens it.
+        # A new pattern opens in the pattern editor; with an existing one the clip is added and Arrange stays, and Enter on the
+        # clip again opens it.
         def chosen(place):
-            self.document().add_clip_slot(index=row, track=track, pattern=patterns[place])
-        self.ask(dialog=ChoiceDialog(title=messages.MSG_PATTERN_FOR_CLIP_TITLE, options=patterns), then=chosen)
+            if place == NEW_PATTERN_PLACE:
+                self.blank_pattern()
+                return
+            self.document().add_clip_slot(index=row, track=track, pattern=patterns[place - 1])
+        options = [messages.MSG_NEW_PATTERN_CHOICE, *patterns]
+        self.ask(dialog=ChoiceDialog(title=messages.MSG_PATTERN_FOR_CLIP_TITLE, options=options), then=chosen)
 
     def blank_pattern(self):
         """Make a blank pattern named after the cursor's track, a drum pattern on a drum track, put a clip of it in the empty cell and open it."""
