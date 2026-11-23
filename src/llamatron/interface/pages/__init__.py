@@ -11,6 +11,7 @@ hands it the page to ask through and what only the tracker can do, such as openi
 - file_global: the File/Global page, the set's own settings.
 - instrument: one instrument's page, where it plays and how loud.
 - scale: one scale's page, its name, root and kind, and its notes.
+- scene: the Scene page, one scene's settings.
 - song: the Song page, one song's settings.
 - track: the Track editor, one track's settings and its built-in generators.
 - time_field, octave_field, velocity_fields, shape_fields, drift_values, section_table: the fields several pages share, a
