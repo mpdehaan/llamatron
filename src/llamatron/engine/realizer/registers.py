@@ -2,17 +2,15 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The song's registers as a scene plays: what each step sets them to and adds to them, and the values each step sees.
+"""The song's draws as a scene plays: what each step draws and resets, and the values each step sees.
 
-The registers are shared by every track, but each track's clip is played on its own. So a scene
-is played twice. First every clip is played with a RegisterRecorder, which notes what each step
-sets and adds and when, the same way the scene's length is found. A step's sets come before its
-adds. A RegisterTimeline then applies those
-changes in time order, and at the same moment in track order, starting from the values the scene
-starts with. Then every clip is played again with a RegisterReader, so each step sees the values
-at its own moment, after its own change. Registers only change pitches and velocities and whether
-a note sounds, never when anything plays or what a step sets or adds (a condition or probability silences a note and never a change), so both plays go
-through exactly the same changes.
+The draws are shared by every track, but each track's clip is played on its own. So a scene is played twice. First every clip
+is played with a RegisterRecorder, which notes what each step draws and resets and when, the same way the scene's length is
+found. A RegisterTimeline then draws them in time order, and at the same moment in track order, from where the draws stand as
+the scene starts. Then every clip is played again with a RegisterReader, so each step sees the values at its own moment, after
+its own draws. A step draws whether its note sounds or not, and the values only change pitches and velocities and whether a note
+sounds, never when anything plays, so both plays go through exactly the same draws. The classes keep the names they had when
+the song also had registers.
 """
 
 from bisect import bisect_right
@@ -22,18 +20,10 @@ from llamatron.model.schema import file_format
 
 # What a step sees while a clip is only played to find its changes.
 NO_VALUE = 0
-# A place after every track's, for the values once every track has made its change at a moment.
-LAST_PLACE = float('inf')
-# No register counting the other way, which is how a song starts.
-NOT_TURNED = frozenset()
-# What happens at one moment happens in this order: the scene's own sets and adds, each clip's as its pattern starts over, in
-# track order, and then the steps', in track order. A clip's place is its track's, this far before every step's.
-SCENE_PLACE = float('-inf')
-CLIPS_BEFORE_STEPS = 1000000
-# The place a clip reads the registers from as its pattern starts over: after every clip's own change then, before any step's.
+# The place a clip reads the values from as its pattern starts over: before any step's draws.
 AS_A_PASS_STARTS = -1
 NO_CHANGES = {}
-# How far before a track's own change at a moment its step reads the registers to decide whether the clip goes on.
+# How far before a track's own change at a moment its step reads the values to decide whether the clip goes on.
 BEFORE_OWN_CHANGE = 0.5
 # How far before a track's own change a step resets and takes its draws: just before its statements read them.
 CONDITION_DRAWS = 0.75
@@ -41,92 +31,38 @@ CONDITION_DRAWS = 0.75
 # reads them, which a Restart When can make a step at the same moment, so that a restarting step never reads the next pass's draw.
 PASS_START_DRAWS = 0.4
 PASS_START_READS = 0.3
-# When a scene's own changes happen: as it starts.
-SCENE_START = 0
 
 
 class RegisterChange(NamedTuple):
-    """What one step sets the registers to and adds to them: at a time in its scene, from the track at a place in the song."""
+    """What one step does to the draws: at a time in its scene, from the track at a place in the song, the draws it uses, each
+    drawing once, and the draws it resets before it draws (draws.py)."""
 
     time: object
     place: int
-    sets: dict
-    adds: dict
-    # The draws the step uses, each drawing once, and the draws it resets before it draws (draws.py).
-    draws: tuple = ()
-    draw_resets: tuple = ()
+    draws: tuple
+    draw_resets: tuple
 
 
-def starting_values(registers):
-    """Return every register's default, as the registers start when rendering starts.
-
-    registers is the song's Register for each name. Every draw is there too, as having drawn nothing yet.
-    """
-    return {**dict.fromkeys(file_format.DRAW_NAMES, NO_VALUE)}
-
-
-def with_resets(*, values, registers, names):
-    """Return register values with the named registers set back to their defaults, as a scene that resets them starts."""
-    values = dict(values)
-    for name in names:
-        values[name] = registers[name].get_default()
-    return values
-
-
-class Turned:
-    """Which of the registers that reverse are counting the other way, kept by whoever keeps their values, and the one way anything is added to a register.
-
-    A register is turned when an add or a subtraction takes it past an end, and counts forward
-    again once the other end is passed, or when anything sets it or resets it.
-    """
-
-    __slots__ = ('_registers', '_reversing', '_turned')
-
-    def __init__(self, *, registers, turned):
-        self._registers = registers
-        self._reversing = frozenset(name for name, register in registers.items() if register.reverses())
-        self._turned = NOT_TURNED
-        if self._reversing:
-            self._turned = set(turned)
-
-    def forward(self, name):
-        """Put a register back to counting forward, as a set or a reset does."""
-        if name in self._turned:
-            self._turned.discard(name)
-
-    def added(self, *, name, value, amount, chooser):
-        """Return a register's value with an amount added, as its Reset behavior has it, noting which way it then counts."""
-        register = self._registers[name]
-        if name not in self._reversing:
-            return register.added(value=value, amount=amount, chooser=chooser)
-        bounced = register.reversed(value=value, amount=amount, turned=name in self._turned)
-        if bounced.turned:
-            self._turned.add(name)
-        else:
-            self._turned.discard(name)
-        return bounced.value
-
-    def names(self):
-        return frozenset(self._turned)
+def starting_values():
+    """Return every draw as having drawn nothing yet, as the draws start when rendering starts."""
+    return dict.fromkeys(file_format.DRAW_NAMES, NO_VALUE)
 
 
 class RegisterTimeline:
-    """The values of every register through one scene, from what its steps add to them.
+    """The values of every draw through one scene, from what its steps draw.
 
-    Changes are RegisterChanges, applied in time order, and at the same time in track order.
+    Changes are RegisterChanges, drawn in time order, and at the same time in track order.
     """
 
-    __slots__ = ('_start', '_moments', '_values', '_turned', '_draws', '_draw_moments', '_taken')
+    __slots__ = ('_start', '_moments', '_values', '_draws', '_draw_moments', '_taken')
 
-    def __init__(self, *, registers, start, changes, chooser=None, turned=NOT_TURNED, draws=None):
-        """chooser draws the random values of a register whose Reset behavior picks one, and of a draw that chooses at random,
-        turned names the registers that reverse and are counting the other way as the scene starts, and draws is where the song's
-        draws stand as it starts (a DrawPlay), which the timeline carries on from without changing, or None in a song with no draws."""
+    def __init__(self, *, start, changes, chooser=None, draws=None):
+        """chooser draws the values of a draw that chooses at random, and draws is where the song's draws stand as the scene
+        starts (a DrawPlay), which the timeline carries on from without changing, or None in a song with no draws."""
         self._start = dict(start)
         self._moments = []
         self._values = []
         values = dict(start)
-        turned = Turned(registers=registers, turned=turned)
         self._draws = None
         if draws is not None:
             self._draws = draws.copy()
@@ -135,11 +71,6 @@ class RegisterTimeline:
         # What each change that drew took, by its moment, which a clip's pass reads as it starts.
         self._taken = {}
         for change in sorted(changes, key=_moment_of):
-            for name, value in change.sets.items():
-                values[name] = registers[name].held(value)
-                turned.forward(name)
-            for name, amount in change.adds.items():
-                values[name] = turned.added(name=name, value=values[name], amount=amount, chooser=chooser)
             if self._draws is not None:
                 for name in change.draw_resets:
                     self._draws.reset(name)
@@ -150,13 +81,12 @@ class RegisterTimeline:
                     self._taken[(change.time, change.place)] = {name: values[name] for name in change.draws}
             self._moments.append((change.time, change.place))
             self._values.append(dict(values))
-        self._turned = turned.names()
 
     def reads_as(self, other):
         """Return whether a clip reading this timeline reads what it would read from another: the same values at every moment,
-        the same registers counting the other way, and the same draws taken and standing where they stand."""
-        return (self._start, self._moments, self._values, self._turned, self._draw_moments, self._taken, _places_of(self._draws)) == (
-            other._start, other._moments, other._values, other._turned, other._draw_moments, other._taken, _places_of(other._draws))
+        and the same draws taken and standing where they stand."""
+        return (self._start, self._moments, self._values, self._draw_moments, self._taken, _places_of(self._draws)) == (
+            other._start, other._moments, other._values, other._draw_moments, other._taken, _places_of(other._draws))
 
     def get_draw_moments(self):
         """Return each moment in the scene at which a draw drew, as (time, the place of every draw's last slot), in time order."""
@@ -166,50 +96,28 @@ class RegisterTimeline:
         """Return where the song's draws stand once the scene is over, which the next scene starts from, or None in a song with no draws."""
         return self._draws
 
-    def get_end_turned(self):
-        """Return the names of the registers that reverse and are counting the other way once the scene is over, which the next scene starts with."""
-        return self._turned
-
     def draws_taken(self, *, time, place):
         """Return the values a track at a place drew at a time, by draw name, empty where it drew nothing then."""
         return self._taken.get((time, place), NO_CHANGES)
 
     def values_at(self, *, time, place):
-        """Return every register's value as a track at a place sees it at a time, after any change it makes then."""
+        """Return every draw's value as a track at a place sees it at a time, after any draw it takes then."""
         found = bisect_right(self._moments, (time, place))
         if not found:
             return self._start
         return self._values[found - 1]
 
-    def changes_within(self, *, start, end):
-        """Return (time, values) for each moment from start to before end at which a register changed, the values being those after every change made then, in time order."""
-        found = []
-        for (time, _), values in zip(self._moments, self._values):
-            if start <= time < end:
-                if found and found[-1][0] == time:
-                    found[-1] = (time, values)
-                else:
-                    found.append((time, values))
-        return found
-
-    def values_after(self, time):
-        """Return every register's value once every change made at a time, by every track, is done."""
-        found = bisect_right(self._moments, (time, LAST_PLACE))
-        if not found:
-            return self._start
-        return self._values[found - 1]
-
     def end_values(self):
-        """Return every register's value once the scene is over, which the next scene starts with."""
+        """Return every draw's value once the scene is over, which the next scene starts with."""
         if not self._values:
             return self._start
         return self._values[-1]
 
 
 class RegisterRecorder:
-    """Stands in for the registers while a clip is played to find what it adds to the registers.
+    """Stands in for the draws while a clip is played to find what its steps draw.
 
-    Every step sees no value, which doesn't matter, because registers never change when a step plays.
+    Every step sees no value, which doesn't matter, because what a step draws never depends on a value.
     """
 
     __slots__ = ('_place', '_changes')
@@ -218,16 +126,12 @@ class RegisterRecorder:
         self._place = place
         self._changes = []
 
-    def at_step(self, *, time, sets, adds):
-        """Note what a step sets the registers to and adds to them at a time in the scene, and return the values it sees."""
-        if sets or adds:
-            self._changes.append(RegisterChange(time, self._place, sets, adds))
+    def at_step(self, time):
+        """Return the values a step sees at a time in the scene: none, while a clip is only played to count its draws."""
         return no_values()
 
-    def at_pass(self, *, time, sets, adds):
-        """Note what a clip sets the registers to and adds to them as its pattern starts over at a time in the scene, and return None: nothing is known of the values yet."""
-        if sets or adds:
-            self._changes.append(RegisterChange(time, self._place - CLIPS_BEFORE_STEPS, sets, adds))
+    def at_pass(self, time):
+        """Return None: nothing is known of the values as a pass starts while a clip is only played to count its draws."""
         return None
 
     def before_step(self, time, *, first=False):
@@ -237,10 +141,10 @@ class RegisterRecorder:
     def before_statements(self, *, time, draws, draw_resets, first=False):
         """Note the draws a step resets and then takes at a time in the scene, just before its statements read the values; first
         says it is the first step of a pass."""
-        self._changes.append(RegisterChange(time, self._place - _draws_place(first), NO_CHANGES, NO_CHANGES, draws, draw_resets))
+        self._changes.append(RegisterChange(time, self._place - _draws_place(first), draws, draw_resets))
 
     def is_counting(self):
-        """Return true: a clip played to count its changes plays every note, as if neither probability nor a condition silenced one, so that what an arpeggiator adds for its notes is counted the same in every take."""
+        """Return true: a clip played to count its draws plays every note, as if neither probability nor a condition silenced one."""
         return True
 
     def get_changes(self):
@@ -249,7 +153,7 @@ class RegisterRecorder:
 
 
 class RegisterReader:
-    """The registers as one track's steps see them, from its scene's RegisterTimeline."""
+    """The draws' values as one track's steps see them, from its scene's RegisterTimeline."""
 
     __slots__ = ('_timeline', '_place')
 
@@ -261,8 +165,8 @@ class RegisterReader:
         """Return false: a finished clip's notes are silenced by probability and conditions as they play."""
         return False
 
-    def at_pass(self, *, time, sets, adds):
-        """Return the values a clip sees as its pattern starts over at a time in the scene, after every clip's own sets and adds then, which are already in the timeline."""
+    def at_pass(self, time):
+        """Return the values a clip sees as its pattern starts over at a time in the scene."""
         values = self._timeline.values_at(time=time, place=AS_A_PASS_STARTS)
         # The pass's first step draws before anything reads the values, and the clip's statements read what it drew.
         taken = self._timeline.draws_taken(time=time, place=self._place - PASS_START_DRAWS)
@@ -270,12 +174,12 @@ class RegisterReader:
             return values
         return {**values, **taken}
 
-    def at_step(self, *, time, sets, adds):
-        """Return the values a step sees at a time in the scene, the draws' among them. What it sets, adds and draws is already in the timeline."""
+    def at_step(self, time):
+        """Return the values a step sees at a time in the scene. What it draws is already in the timeline."""
         return self._timeline.values_at(time=time, place=self._place)
 
     def before_step(self, time, *, first=False):
-        """Return the values as a step is reached at a time in the scene, before the step's own sets and adds, after every earlier track's then."""
+        """Return the values as a step's statements read them at a time in the scene, after its own draws and every earlier track's then."""
         return self._timeline.values_at(time=time, place=self._place - _reads_place(first))
 
     def before_statements(self, *, time, draws, draw_resets, first=False):
@@ -283,11 +187,10 @@ class RegisterReader:
 
 
 class RegisterTrial(RegisterRecorder):
-    """Stands in for the registers while a clip whose statements can end it is played to find its changes and its length.
+    """Stands in for the draws while a clip whose statements can end it is played to find its draws and its length.
 
-    Such a clip's changes depend on the registers, since a step it never reaches changes
-    nothing. So it notes its changes as a RegisterRecorder does, and decides whether it goes
-    on from a guess at the scene's timeline. The scene is played again with the timeline its
+    Such a clip's draws depend on the values, since a step it never reaches draws nothing. So it notes its draws as a
+    RegisterRecorder does, and decides whether it goes on from a guess at the scene's timeline. The scene is played again with the timeline its
     changes make until that timeline is the guess (SongRealizer), which it comes to because a
     value at any moment depends only on the changes before it.
     """
@@ -299,43 +202,32 @@ class RegisterTrial(RegisterRecorder):
         self._timeline = timeline
 
     def before_step(self, time, *, first=False):
-        """Return the values as a step is reached at a time in the scene, before the step's own sets and adds, by the guess."""
+        """Return the values as a step's statements read them at a time in the scene, by the guess."""
         return self._timeline.values_at(time=time, place=self._place - _reads_place(first))
 
 
 class RegisterSolo(RegisterRecorder):
-    """The first guess for a clip whose statements can end it: the clip played as if no other track changed a register.
+    """The first guess for a clip whose statements can end it: the clip played as if no other track drew.
 
-    It keeps the registers' values itself, from the values its scene starts with, changing
-    them by what its own steps set and add, and the draws too, taking each value its steps draw,
-    so that a statement reading a draw sees what the step drew. With one track counting, the usual
-    case, the guess is already right; where other tracks count too, the trials after it put that right.
+    It keeps the draws' values itself, from the values its scene starts with, taking each value its steps draw, so that a
+    statement reading a draw sees what the step drew. With one track counting, the usual case, the guess is already right; where
+    other tracks count too, the trials after it put that right.
     """
 
-    __slots__ = ('_registers', '_values', '_chooser', '_turned', '_draws')
+    __slots__ = ('_values', '_chooser', '_draws')
 
-    def __init__(self, *, place, registers, before, chooser):
-        """before is the timeline of what the scene itself changes as it starts, whose end values, registers counting the
-        other way and draws the guess starts from, carrying on without changing them."""
+    def __init__(self, *, place, start, draws, chooser):
+        """start is every draw's value as the scene starts, and draws where the song's draws stand then, or None in a song with
+        no draws, which the guess carries on from without changing."""
         super().__init__(place)
-        self._registers = registers
-        self._values = dict(before.end_values())
+        self._values = dict(start)
         self._chooser = chooser
-        self._turned = Turned(registers=registers, turned=before.get_end_turned())
         self._draws = None
-        if before.get_end_draws() is not None:
-            self._draws = before.get_end_draws().copy()
-
-    def at_step(self, *, time, sets, adds):
-        self._change(sets=sets, adds=adds)
-        return super().at_step(time=time, sets=sets, adds=adds)
-
-    def at_pass(self, *, time, sets, adds):
-        self._change(sets=sets, adds=adds)
-        return super().at_pass(time=time, sets=sets, adds=adds)
+        if draws is not None:
+            self._draws = draws.copy()
 
     def before_step(self, time, *, first=False):
-        """Return the values as a step is reached, before the step's own sets and adds."""
+        """Return the values as a step's statements read them, after its own draws."""
         return self._values
 
     def before_statements(self, *, time, draws, draw_resets, first=False):
@@ -348,23 +240,9 @@ class RegisterSolo(RegisterRecorder):
         for name in draws:
             self._values[name] = self._draws.draw(name=name, chooser=self._chooser)
 
-    def _change(self, *, sets, adds):
-        for name, value in sets.items():
-            self._values[name] = self._registers[name].held(value)
-            self._turned.forward(name)
-        for name, amount in adds.items():
-            self._values[name] = self._turned.added(name=name, value=self._values[name], amount=amount, chooser=self._chooser)
-
-
-def scene_change(*, sets, adds):
-    """Return what a scene itself sets the registers to and adds to them as it starts, before anything else at that moment, or None when it does neither."""
-    if not sets and not adds:
-        return None
-    return RegisterChange(SCENE_START, SCENE_PLACE, sets, adds)
-
 
 def no_values():
-    """Return a value of nothing for every register and every draw."""
+    """Return a value of nothing for every draw."""
     return dict.fromkeys(file_format.DRAW_NAMES, NO_VALUE)
 
 

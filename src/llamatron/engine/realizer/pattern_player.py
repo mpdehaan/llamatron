@@ -104,13 +104,10 @@ class StepDraws(NamedTuple):
     drawn: tuple
 
 
-# What a step sets the registers to and adds to them when its pattern changes none, or when a morph's target plays.
-NO_ADDS = {}
 # A step whose statements redraw nothing.
 NO_REDRAWS = frozenset()
 # A pass whose clip reads no draw that redraws as the pass starts.
 NO_PASS_DRAWS = frozenset()
-NO_SETS = {}
 
 
 class PatternPlayer:
@@ -359,7 +356,7 @@ class PatternPlayer:
             if played.sends_controls:
                 controls += _controls_sent(values=values, time=slot * step_size)
             if uses_registers:
-                current = registers.at_step(time=moment, sets=NO_SETS, adds=NO_ADDS)
+                current = registers.at_step(moment)
             if values[Row.TIE]:
                 if tied_to is not None:
                     sounding[tied_to] = _tied_to(sounding=sounding[tied_to], end=Length.add(time, step_length))

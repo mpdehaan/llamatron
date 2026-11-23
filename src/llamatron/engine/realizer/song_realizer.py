@@ -14,7 +14,6 @@ from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.engine.clips.row_clock import RowClock
 from llamatron.engine.generators import registry
 from llamatron.engine.generators.base import Continuation
-from llamatron.engine.realizer import registers as registers_values
 from llamatron.engine.realizer.chain_runs import chain_runs
 from llamatron.engine.realizer.chain_step_place import ChainStepPlace, ClipBeingMade, StepInChains
 from llamatron.engine.realizer.clip_slot_player import ClipSlotPlayer
@@ -23,7 +22,7 @@ from llamatron.engine.realizer.modulations import modulates
 from llamatron.engine.realizer.pass_memory import PassMemory
 from llamatron.engine.realizer.pattern_player import check_pattern_has_a_scale
 from llamatron.engine.realizer.realization import Realization
-from llamatron.engine.realizer.registers import RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, starting_values, with_resets
+from llamatron.engine.realizer.registers import RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, starting_values
 from llamatron.engine.realizer.scene_reuse import changed_clips, first_changed_scene
 from llamatron.engine.realizer.song_state import SongState
 from llamatron.engine.realizer.tempo_ramps import ramped_tempos, tempos_within
@@ -610,16 +609,13 @@ class SongRealizer:
         return self._song.get_track_names().index(track)
 
     def get_timeline(self, scene):
-        """Return the register values through a written-out scene.
+        """Return the draws' values through a written-out scene.
 
-        A scene starts with the values the scene before it ended with, or the registers' defaults
-        for the first scene, and then sets the registers it resets back to their defaults, and as
-        it first starts, not on its repeats, every register that resets each scene. A scene
-        before it that can't be played changes nothing, so that estimates can still show this one.
+        A scene starts with the values and the draws where the scene before it left them, or as nothing yet drawn for the first
+        scene, and, as it first starts, not on its repeats, sends the draws it resets back to their start. A scene before it
+        that can't be played changes nothing, so that estimates can still show this one.
         """
-        values = starting_values(self._state.get_registers())
-        # The registers that reverse and are counting the other way, which a reset puts back to counting forward.
-        turned = registers_values.NOT_TURNED
+        values = starting_values()
         # Where the song's draws stand, carried from scene to scene, or None in a song whose draws hold no value.
         draws = None
         if self._song.uses_draws():
@@ -628,21 +624,17 @@ class SongRealizer:
             number = written.get_number()
             if number not in self._timelines:
                 self._state.draw_afresh_for_a_take(written=written, scene_before=self._scene_before(written))
-                resets = self._resets_of(written)
-                start = with_resets(values=values, registers=self._state.get_registers(), names=resets)
-                if turned:
-                    turned = turned.difference(resets)
+                start = values
                 if draws is not None:
                     draws = self._with_draw_resets(draws=draws, written=written)
                     start = {**start, **draws.values()}
                 try:
-                    self._timelines[number] = self._timeline_of(scene=written, start=start, turned=turned, draws=draws)
+                    self._timelines[number] = self._timeline_of(scene=written, start=start, draws=draws)
                 except SongFileError:
                     if written is scene:
                         raise
                     continue
             values = self._timelines[number].end_values()
-            turned = self._timelines[number].get_end_turned()
             draws = self._timelines[number].get_end_draws()
         return self._timelines[scene.get_number()]
 
@@ -653,14 +645,14 @@ class SongRealizer:
             return None
         return self._scenes[before]
 
-    def _timeline_of(self, *, scene, start, turned, draws):
-        """Return a written-out scene's register values from where they start: found by playing the scene where a register can cut
-        a clip of it short, and from the changes its clips make otherwise."""
+    def _timeline_of(self, *, scene, start, draws):
+        """Return a written-out scene's draws' values from where they start: found by playing the scene where a statement can cut
+        a clip of it short, and from the draws its clips take otherwise."""
         if self._is_settled_by_playing(scene):
-            return self._decide(scene=scene, start=start, turned=turned, draws=draws)
+            return self._decide(scene=scene, start=start, draws=draws)
         changes = self._scene_changes(scene)
         chooser = self._state.get_register_chooser()
-        return RegisterTimeline(registers=self._state.get_registers(), start=start, changes=changes, chooser=chooser, turned=turned, draws=draws)
+        return RegisterTimeline(start=start, changes=changes, chooser=chooser, draws=draws)
 
     def _cutting_of(self, name):
         """Return whether a step of a pattern can cut a pass short, and whether one can stop its clip, asked of the pattern once for the render."""
@@ -699,7 +691,7 @@ class SongRealizer:
             self._settled_by_playing[number] = settled
         return self._settled_by_playing[number]
 
-    def _decide(self, *, scene, start, turned, draws=None):
+    def _decide(self, *, scene, start, draws=None):
         """Return the register values through a scene in which a step's statement can stop a clip or start a pattern over, finding how long its clips and the scene last.
 
         What such a clip changes in the registers depends on the registers, since a step it
@@ -727,13 +719,8 @@ class SongRealizer:
             if not self._looping_scenes_go_round:
                 raise SongFileError(errors.ERR_RENDERER_EVERY_CLIP_LOOPS.format(scene=scene.describe()))
             fixed = [self._played_once(scene=scene, track=track) for track in every]
-        own = _own_change(scene)
         guess = random_source(GUESS_SEED)
-        own_changes = []
-        if own:
-            own_changes.append(own)
-        alone = RegisterTimeline(registers=self._state.get_registers(), start=start, changes=own_changes, chooser=guess, turned=turned, draws=draws)
-        self._guesses[number] = lambda track: RegisterSolo(place=self._track_place(track), registers=self._state.get_registers(), before=alone, chooser=guess)
+        self._guesses[number] = lambda track: RegisterSolo(place=self._track_place(track), start=start, draws=draws, chooser=guess)
         # Until the first play is in, the scene is taken to last as long as the clips nothing can cut.
         self._lengths[number] = max(fixed, default=NO_LENGTH)
         drawn = self._state.get_register_chooser().getstate()
@@ -753,7 +740,7 @@ class SongRealizer:
                 # Every round draws a register's random values from the same place, so that the same changes always make the same timeline.
                 self._state.get_register_chooser().setstate(drawn)
                 chooser = self._state.get_register_chooser()
-                timeline = RegisterTimeline(registers=self._state.get_registers(), start=start, changes=changes, chooser=chooser, turned=turned, draws=draws)
+                timeline = RegisterTimeline(start=start, changes=changes, chooser=chooser, draws=draws)
                 if found == settled:
                     return timeline
                 settled = found
@@ -796,23 +783,12 @@ class SongRealizer:
             draws.reset(name)
         return draws
 
-    def _resets_of(self, written):
-        """Return the registers a written-out scene sets back to their defaults as it starts: on its first play every register that resets each scene."""
-        names = []
-        if written.is_first_play():
-            names += [name for name, register in self._state.get_registers().items() if register.resets_each_scene() and name not in names]
-        return names
-
     def _scene_changes(self, scene):
         """Return every change a scene's clips make before the scene ends: the draws they take."""
         if not self._changes_registers:
             return []
         length = self.get_scene_length(scene)
         changes = []
-        # A scene sets registers only as it first starts, and adds to them on every play, its repeats too.
-        own = _own_change(scene)
-        if own is not None:
-            changes.append(own)
         for track in scene.get_track_names():
             changes += _before(changes=self.counted_clip(scene=scene, track=track)[1], end=length)
         return changes
@@ -1027,11 +1003,6 @@ def _share_of_whole_note(*, milliseconds, tempo):
     return Rational(share.numerator, share.denominator)
 
 
-def _own_change(scene):
-    """Return what a written-out scene changes of the registers itself: nothing, since a scene sets and adds to none."""
-    return None
-
-
 def _through_scene(*, entries, count, number_of):
     """Return the entries of what a render worked out whose written scene, which number_of finds in a key, is among the first count."""
     return {key: value for key, value in entries.items() if number_of(key) <= count}
@@ -1109,14 +1080,14 @@ def _grab_circle(scene):
 
 
 def _before(*, changes, end):
-    """Return the register changes made before a time, the end of their scene, and the draws taken at that very time: a step
-    that stops its clip, ending the scene, takes its draws before its statements stop it, so its draws belong to the scene."""
-    return [change for change in changes if change.time < end or (change.time == end and _only_draws(change))]
+    """Return the draws taken before a time, the end of their scene, and those taken at that very time: a step that stops its
+    clip, ending the scene, takes its draws before its statements stop it, so its draws belong to the scene."""
+    return [change for change in changes if change.time < end or (change.time == end and _draws_anything(change))]
 
 
-def _only_draws(change):
-    """Return whether a change takes or resets draws and sets and adds to no register."""
-    return not change.sets and not change.adds and bool(change.draws or change.draw_resets)
+def _draws_anything(change):
+    """Return whether a change takes or resets a draw."""
+    return bool(change.draws or change.draw_resets)
 
 
 def _chords_in(clip):

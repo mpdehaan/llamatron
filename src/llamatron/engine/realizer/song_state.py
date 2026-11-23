@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""What carries through a song as one render plays it, apart from any one clip: the registers and draws it starts from, the
+"""What carries through a song as one render plays it, apart from any one clip: the draws it starts from, the
 random streams every choice is drawn from and each clip's take, the song's modulations, and where those streams stood as
 each written-out scene started, for a later render that takes its first scenes from this one."""
 
@@ -20,7 +20,7 @@ SEED_TAKE_FACTOR = 1_000_000_007
 FIRST_TAKE = 0
 # The seed the song's random draws start afresh from as a retaken scene first starts.
 DRAWS_TAKE_SEED = '{seed}/{scene}/draws take {take}'
-# The registers' random values, for a Reset behavior that picks one, come from a generator of their own, so that they can't change what probability or an arp draws.
+# The draws' random values come from a generator of their own, so that they can't change what probability or an arp draws.
 REGISTER_SEED_OFFSET = 7
 # What a strum's seed adds, so that its loose timing draws apart from everything else, and how many seeds a render picks from.
 STRUM_SEED_OFFSET = 977
@@ -30,7 +30,7 @@ STRUM_SEEDS = 1_000_000
 class SongState:
     """The state of a song through one render, which the Realizer walks scene by scene and every clip reads."""
 
-    __slots__ = ('_song', '_seed', '_takes', '_song_places', '_registers', '_draws', '_register_chooser', '_modulations', '_strum_seed', '_checkpoints')
+    __slots__ = ('_song', '_seed', '_takes', '_song_places', '_draws', '_register_chooser', '_modulations', '_strum_seed', '_checkpoints')
 
     def __init__(self, *, song, seed, takes, keeps_checkpoints):
         """takes gives a clip new random choices by (the scene's place in the song, the track); keeps_checkpoints says whether
@@ -41,8 +41,6 @@ class SongState:
         if takes is not None:
             self._takes = dict(takes)
         self._song_places = {id(scene): place for place, scene in enumerate(song.get_scenes())}
-        # No song holds registers any more, so the timeline that carries the draws carries no register.
-        self._registers = {}
         self._draws = {name: song.get_draw(name) for name in file_format.DRAW_NAMES}
         register_seed = None
         strum_seed = None
@@ -68,14 +66,11 @@ class SongState:
     def get_checkpoints(self):
         return self._checkpoints
 
-    def get_registers(self):
-        return self._registers
-
     def get_draws(self):
         return self._draws
 
     def get_register_chooser(self):
-        """Return what draws the registers' and the draws' random values."""
+        """Return what draws the draws' random values."""
         return self._register_chooser
 
     def get_modulations(self):

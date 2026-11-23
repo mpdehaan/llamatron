@@ -52,16 +52,8 @@ MAKES_GENERATORS = 'make_generator'
 NO_OFFSET = 0
 # The shapes laid over a finished clip, by a generator its chains name or by the clip's or its scene's own settings.
 SHAPES = (Shape.DENSITY, Shape.SWELL, Shape.ARTICULATE)
-NO_SETS = {}
-# A clip's pass adds nothing to the registers as it starts.
-NO_ADDS = {}
-# The pass a clip launches on, when it sets registers, and the pass whose statements speak for a shape, which works on the whole clip.
+# The pass whose statements speak for a shape, which works on the whole clip.
 FIRST_PASS = 0
-
-
-def _time_of(change):
-    """Return when a generator's register change happens, which orders them."""
-    return change[0]
 
 
 class ClipSlotPlayer:
@@ -108,12 +100,9 @@ class ClipSlotPlayer:
         try:
             clip, switched, passes = self._play_passes(player=player, grab=grab, scale=scale, where=where, fill=fill, registers=registers)
             controls = clip.get_controls()
-            clip, chain_adds = self._through_chain(clip, counting=registers.is_counting(), passes=passes)
+            clip = self._through_chain(clip, counting=registers.is_counting(), passes=passes)
             if not registers.is_counting():
                 clip = self._shaped(clip, passes=passes)
-            # What the chain's generators add to the registers comes after what the pattern's steps add at the same moment.
-            for time, adds in chain_adds:
-                registers.at_step(time=time, sets=NO_SETS, adds=adds)
             if loop:
                 end = fill
             else:
@@ -148,25 +137,23 @@ class ClipSlotPlayer:
         return self._setlist.get_named_scale(scale_name).scale_at(self._clip_octave())
 
     def _through_chain(self, clip, *, counting, passes):
-        """Return the clip after each generator of its chains, in order, and what the generators add to the registers, as (time, adds) in time order.
+        """Return the clip after each generator of its chains, in order.
 
         Its chains are the clip slot's own, then its scene's, then its track's,
         each in its own order, so a chain named in two places runs twice. Each
         generator is counted along all of them for its seed, so a clip with one chain draws as
         it always has.
 
-        passes are the clip's passes of its pattern, each with the registers' values as it
+        passes are the clip's passes of its pattern, each with the draws' values as it
         started. A pass on which a generator's statements hold goes by that generator
         untouched, one on which a chain's hold goes by the whole chain, and one on which the
         scene's, the clip's or the track's hold goes by every chain. A generator still runs
-        over the whole clip, so that what it carries from note to note and what it adds to the
-        registers never depend on the registers, and the passes it is left out of are put back
-        as they were.
+        over the whole clip, so that what it carries from note to note never depends on the
+        draws, and the passes it is left out of are put back as they were.
         """
         chains = self._realizer.chains_of(scene=self._scene, track=self._track_name)
         if not chains or clip.total_length() == NO_LENGTH:
-            return clip, []
-        adds = []
+            return clip
         index = 0
         # How many times each generator has come up in the clip's chains, so that one named twice keeps two states.
         times = {}
@@ -188,7 +175,7 @@ class ClipSlotPlayer:
                 index += 1
             clip = _kept_where(tripped=_tripped(passes=passes, tables=[written.get_bypass_when()]), before=entering, after=clip, passes=passes)
         clip = _kept_where(tripped=_tripped(passes=passes, tables=self._bypass_tables()), before=untouched, after=clip, passes=passes)
-        return clip, sorted(adds, key=_time_of)
+        return clip
 
     def _heard(self, modulators):
         """Return what the clip hears of the song's modulations: for each plugin its chains name a generator of, in the order
@@ -369,7 +356,7 @@ class ClipSlotPlayer:
         place = 0
         # A clip plays up to its most passes, or, filling its scene, until it reaches the scene's end.
         while (fill is None and place < most) or (fill is not None and total < fill):
-            values = registers.at_pass(time=total, sets=NO_SETS, adds=NO_ADDS)
+            values = registers.at_pass(total)
             played = self._play_pass(player=player, grab=grab, scale=scale, place=place % repeat, repeat=repeat, where=where, rolls=rolls, order=order, target_order=target_order, registers=registers, start=total, turn=place, pattern_rolls=pattern_rolls, pass_draws=pass_draws)
             length = played.length
             if length == NO_LENGTH:
