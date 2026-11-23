@@ -71,8 +71,6 @@ ALLOWED = {
         'interface/tracker/screens/arrange/clip_page.py imports model.schema.limits',
         'interface/tracker/screens/arrange/clip_page.py imports model.objects.naming',
         'interface/tracker/screens/arrange/scene_page.py imports model.schema.limits',
-        'interface/tracker/screens/arrange/track_editor.py imports model.schema.defaults',
-        'interface/tracker/screens/arrange/track_editor.py imports model.schema.limits',
         'interface/tracker/screens/generators/chain_editor.py imports model.objects.naming',
         'interface/tracker/screens/generators/chain_editor.py imports interface.tracker.screens.generators.chain_statements_page',
         'interface/tracker/screens/generators/chain_editor.py imports interface.tracker.screens.generators.generator_pages',
