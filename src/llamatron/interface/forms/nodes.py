@@ -241,7 +241,7 @@ class ChoiceField(Field):
 
     def pick(self):
         if self.grouped is not None:
-            self.page.ask(dialog=self.grouped.dialog(title=self.label, current=self.current), then=lambda place: self.set(self.grouped.value_at(place)))
+            self.page.ask_grouped(title=self.label, grouped=self.grouped, current=self.current, then=lambda place: self.set(self.grouped.value_at(place)))
             return
         opens_on = str(self.current if self.picked is None else self.picked)
         place = self.choices.index(opens_on) if opens_on in self.choices else FIRST_CHOICE

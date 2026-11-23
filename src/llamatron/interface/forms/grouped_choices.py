@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Choices offered in groups, each under a heading: a picker's list with its headings, and what each place in it stands for."""
 
-from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.model.schema import file_format
 from llamatron.user_strings import labels
 
@@ -13,6 +11,9 @@ from llamatron.user_strings import labels
 VALUE_NAMES_IN_ORDER = list(file_format.DRAW_NAMES)
 # What choosing a number to type stands for in a value's picker.
 NUMBER_CHOSEN = 'number'
+# The blank line between two groups, and the place a picker opens on with nothing to choose.
+BETWEEN_GROUPS = ''
+FIRST_PLACE = 0
 # Those names in their groups, each under its heading.
 VALUE_GROUPS = [(labels.MSG_PICKER_DRAWS_HEADING, file_format.DRAW_NAMES)]
 
@@ -30,7 +31,7 @@ class GroupedChoices:
         self._headings = []
         for place, (heading, choices) in enumerate(groups):
             if place:
-                self._heading(drawing.NOTHING)
+                self._heading(BETWEEN_GROUPS)
             if heading is not None:
                 self._heading(heading)
             for shown, value in choices:
@@ -42,10 +43,18 @@ class GroupedChoices:
         self._shown.append(text)
         self._values.append(None)
 
-    def dialog(self, *, title, current):
-        """Return the picker, opening on the choice that stands for current, or on the first choice."""
+    def shown(self):
+        """Return what the picker shows, a line each, the headings and the blank lines between groups among them."""
+        return list(self._shown)
+
+    def heading_places(self):
+        """Return the places of the headings and the blank lines, which are never chosen."""
+        return list(self._headings)
+
+    def opening_place(self, current):
+        """Return the place the picker opens on: the choice that stands for current, or the first choice."""
         places = [place for place, value in enumerate(self._values) if place not in self._headings and value == current]
-        return ChoiceDialog(title=title, options=self._shown, current=places[0] if places else 0, headings=self._headings)
+        return places[0] if places else FIRST_PLACE
 
     def value_at(self, place):
         """Return what the choice at a place in the picker stands for."""

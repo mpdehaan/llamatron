@@ -28,7 +28,7 @@ MSG_OK_CANCEL_BUTTONS = ('OK', 'CANCEL')
 # The confirm dialog's two buttons, in the order they're drawn and the arrows move: yes first, since ENTER presses the selected one.
 MSG_CONFIRM_BUTTONS = ('YES', 'NO')
 
-# interface/tracker/screens/shared/statements.py: Bypass When, the table of statements about the draws
+# interface/pages/statements.py: Bypass When, the table of statements about the draws
 MSG_BYPASS_WHEN_LABEL = 'Bypass When'
 MSG_STATEMENT_IGNORED = 'ignored'
 MSG_STATEMENT_REGISTER_TITLE = 'Draw'
@@ -460,7 +460,7 @@ MSG_DRAW_VALUE_MIN_LABEL = 'Value Min'
 MSG_DRAW_VALUE_MAX_LABEL = 'Value Max'
 MSG_DRAW_CONDITIONS_REDRAW_LABEL = 'Conditions redraw'
 MSG_DRAW_STRIP_LABEL = 'Strip'
-# interface/tracker/dialogs/grouped_choices.py: the headings of a statement's pickers.
+# interface/forms/grouped_choices.py: the headings of a statement's pickers.
 MSG_PICKER_CONSTANT_HEADING = '--Constant--'
 MSG_PICKER_DRAWS_HEADING = '--Draws--'
 # The strip's two rows, as a grid's label column shows them.

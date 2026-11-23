@@ -11,8 +11,8 @@ they share is a mixin beside whichever of those a page is.
 """
 
 from llamatron.engine.generators import drift as drift_plugin
-from llamatron.interface.tracker.screens.shared import statements
-from llamatron.interface.tracker.screens.shared.statements import statement_section
+from llamatron.interface.pages import statements
+from llamatron.interface.pages.statements import statement_section
 from llamatron.model.schema import generator_plugins
 from llamatron.user_strings import labels
 

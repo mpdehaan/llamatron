@@ -4,8 +4,8 @@
 
 """Kinds of row in the pattern editor: the limits a file holds a row to, the statement rows, the Tie row, and a drum pattern's rows."""
 
+from llamatron.interface.forms import grouped_choices
 from llamatron.interface.tracker import keybindings
-from llamatron.interface.tracker.dialogs import grouped_choices
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.keys import Key

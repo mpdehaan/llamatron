@@ -103,6 +103,12 @@ class BuiltInTab(ViewFields):
     def ask_choice(self, **given):
         return self._page.ask_choice(**given)
 
+    def ask_grouped(self, **given):
+        return self._page.ask_grouped(**given)
+
+    def ask_many(self, **given):
+        return self._page.ask_many(**given)
+
     def ask_number(self, **given):
         return self._page.ask_number(**given)
 

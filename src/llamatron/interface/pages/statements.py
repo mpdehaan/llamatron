@@ -15,12 +15,10 @@ ENTER changes the one under the cursor, and Bksp sets the line back to ignored.
 """
 
 
-from llamatron.interface.forms import statement_rows
+from llamatron.interface.forms import grouped_choices, statement_rows
+from llamatron.interface.forms.grouped_choices import number_or_names, value_groups
 from llamatron.interface.forms.nodes import ChoiceField, Field
 from llamatron.interface.forms.statement_rows import FirstStatementRow, StatementRow
-from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.dialogs import grouped_choices
-from llamatron.interface.tracker.dialogs.grouped_choices import number_or_names, value_groups
 from llamatron.model.objects import conditions
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import StatementPart
@@ -30,6 +28,8 @@ from llamatron.user_strings import errors, labels, legends
 FIRST_TABLE = 0
 # The number a statement divides by may not be this.
 ZERO = 0
+# What a table's heading says after its name: nothing, never a mark of a value set.
+NOTHING_SAID = ''
 # The first choice of a value's picker is a number to type; the registers follow.
 
 
@@ -39,7 +39,7 @@ def statement_section(*, page, label, table, statements, store):
     statements() is the table as its object keeps it, and store(place, statement) writes one
     statement, or removes it for None. table is the table's place among the page's tables.
     """
-    heading = page.heading(label=label, is_set=None, said=lambda: drawing.NOTHING)
+    heading = page.heading(label=label, is_set=None, said=lambda: NOTHING_SAID)
     return [heading, *statement_lines(page=page, table=table, statements=statements, store=store)]
 
 
@@ -132,5 +132,5 @@ def _value_cell(*, page, current, divides, store, clear):
             store(chosen)
 
     def pick():
-        page.ask(dialog=grouped.dialog(title=labels.MSG_STATEMENT_VALUE_TITLE, current=current if current in file_format.VALUE_NAMES else grouped_choices.NUMBER_CHOSEN), then=picked)
+        page.ask_grouped(title=labels.MSG_STATEMENT_VALUE_TITLE, grouped=grouped, current=current if current in file_format.VALUE_NAMES else grouped_choices.NUMBER_CHOSEN, then=picked)
     return Field(label=labels.MSG_STATEMENT_VALUE_TITLE, value=lambda: str(current).ljust(statement_rows.NUMBER_WIDTH), enter=pick, enter_what=legends.What.CHOOSE, clear=clear)

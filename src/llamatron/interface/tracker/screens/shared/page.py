@@ -234,6 +234,11 @@ class Page(BindsKeys, Screen):
         """Open a picker of options on the one at current, passing the place chosen to then unless it is cancelled."""
         self.ask(dialog=ChoiceDialog(title=title, options=options, current=current), then=then)
 
+    def ask_grouped(self, *, title, grouped, current, then):
+        """Open a picker of choices in groups under headings (GroupedChoices), on the choice that stands for current, passing the
+        place chosen to then unless it is cancelled."""
+        self.ask(dialog=ChoiceDialog(title=title, options=grouped.shown(), current=grouped.opening_place(current), headings=grouped.heading_places()), then=then)
+
     def ask_many(self, *, title, options, names, picked, then):
         """Open a list where any of the options can be picked, named by names, the picked ones marked, passing those picked to
         then unless it is cancelled."""

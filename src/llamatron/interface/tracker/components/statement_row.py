@@ -9,11 +9,11 @@ its result and what the result is compared with. A row writes its part through t
 one setter of a whole statement, so that no step is left holding half of one.
 """
 
+from llamatron.interface.forms import grouped_choices
+from llamatron.interface.forms.grouped_choices import number_or_names, value_groups
 from llamatron.interface.tracker import key_table, keybindings
 from llamatron.interface.tracker.components.pattern_row import PatternRow
-from llamatron.interface.tracker.dialogs import grouped_choices
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.dialogs.grouped_choices import number_or_names, value_groups
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.model.objects import conditions
 from llamatron.model.schema import file_format, limits
@@ -124,7 +124,7 @@ class StatementRow(PatternRow):
         if self.part == StatementPart.REGISTER:
             grouped = value_groups(first=(None, [(labels.MSG_STATEMENT_IGNORED, None)]))
             current = None if statement is None else statement[self.part]
-            self.editor.ask(dialog=grouped.dialog(title=labels.MSG_STATEMENT_REGISTER_TITLE, current=current), then=lambda place: self.with_part(grouped.value_at(place)))
+            self.editor.ask_grouped(title=labels.MSG_STATEMENT_REGISTER_TITLE, grouped=grouped, current=current, then=lambda place: self.with_part(grouped.value_at(place)))
             return
         if self.part in CHOSEN_PARTS:
             choices, title = CHOSEN_PARTS[self.part]
@@ -141,7 +141,7 @@ class StatementRow(PatternRow):
             else:
                 self.with_part(chosen)
         opens_on = current if current in file_format.VALUE_NAMES else grouped_choices.NUMBER_CHOSEN
-        self.editor.ask(dialog=grouped.dialog(title=labels.MSG_STATEMENT_VALUE_TITLE, current=opens_on), then=picked)
+        self.editor.ask_grouped(title=labels.MSG_STATEMENT_VALUE_TITLE, grouped=grouped, current=opens_on, then=picked)
 
     def ask_number(self, current):
         lowest = -limits.MAX_STATEMENT_NUMBER

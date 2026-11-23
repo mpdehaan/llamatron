@@ -4,11 +4,11 @@
 
 """The page of a chain's statements about the draws, which say when a clip's pass goes by the whole chain."""
 
+from llamatron.interface.pages import statements
+from llamatron.interface.pages.statements import statement_lines
 from llamatron.interface.tracker import keybindings
-from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.interface.tracker.screens.shared.statements import statement_lines
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import help as help_text, labels
 
