@@ -9,10 +9,10 @@ import functools
 from llamatron.caching.cached import cached_while
 from llamatron.interface.forms import moves, tab_box as tab_box_nodes
 from llamatron.interface.forms.cursor import Cursor, NoSuchPlace
+from llamatron.interface.forms.navigator import FormNavigator, page_buttons_start
 from llamatron.interface.forms.nodes import Button, Cells, Field, Heading, NameField, NumberField
 from llamatron.interface.forms.tab_box import TabRow
 from llamatron.interface.tracker import drawing, key_table, keybindings
-from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.renderers import settings_page, tab_box as tab_box_drawing
 from llamatron.interface.tracker.renderers.settings_page import SettingsPageDrawing
 from llamatron.interface.tracker.screens.shared.kept_fields import fields_said
@@ -234,123 +234,33 @@ class FieldPage(Page):
         return closed[-1]
 
     def key_toward(self, target):
-        """Return the key that brings the cursor nearer the field or the button with a label, or None when the cursor is on it.
-
-        A field in a closed section is reached as a person reaches it: the way to its section's heading, then the key that opens the section.
-        Down from the last field reaches the buttons, which Left and Right go along, or Up and Down where they are stacked.
-        """
-        labels = [field.label for field in self.shown_fields()]
-        box = self.tab_box()
-        if target not in labels and box is not None and box.place_holding(target) is not None:
-            return self.key_toward(box.label) or _key_toward_tab(here=self.chosen_tab(box), there=box.place_holding(target))
-        if target not in labels:
-            return self.key_toward(self.closed_heading_over(target).label) or Key.ENTER
-        there = labels.index(target)
-        here = self.cursor.get_place()
-        row = self.box_place()
-        if self.in_box() and row < there <= row + self.box_field_count():
-            return self.key_inside_box(here=here - row - 1, there=there - row - 1)
-        first_button = self.first_button_place()
-        if here < first_button or there < first_button or self.buttons_stacked():
-            return moves.toward(here=here, there=there)
-        return moves.toward(here=here, there=there, back=Key.LEFT, forward=Key.RIGHT)
-
-    def key_inside_box(self, *, here, there):
-        """Return the key that brings the cursor nearer a field of the chosen tab from another: along a column, across a band, or
-        toward the band that holds it."""
-        spots = self.box_spots()
-        start = spots[here]
-        end = spots[there]
-        if start.band == end.band and start.column == end.column:
-            return moves.toward(here=start.line, there=end.line)
-        if start.band == end.band:
-            return _key_across(here=start.column, there=end.column)
-        return moves.toward(here=start.band, there=end.band)
+        """Return the key that brings the cursor nearer the field or the button with a label, or None when it is on it."""
+        return FormNavigator(self).key_toward(target)
 
     def move_cursor(self, name):
-        """Move between the fields with Up and Down, Down from the last field reaching the row of buttons and Up from any button
-        going back to the last field; Down on the buttons stays. Inside the tab box, Up and Down keep to a column."""
-        fields = self.shown_fields()
-        if not fields:
-            return
-        # A row is come to at its first cell.
-        self.cell = 0
-        if self.box_place() is not None:
-            self.move_with_box(name)
-            return
-        self.move_in_order(name)
-
-    def move_with_box(self, name):
-        """Move with Up or Down on a page with a tab box: inside it, along a column and out at its head or foot; from under it, Up
-        comes in at the foot of its first column; elsewhere, as on any page."""
-        row = self.box_place()
-        count = self.box_field_count()
-        place = self.cursor.get_place()
-        if row < place <= row + count:
-            self.move_inside_box(name=name, row=row, here=place - row - 1)
-            return
-        self.move_in_order(name)
-        if name == Key.UP and place > row + count and self.cursor.get_place() == row + count:
-            self.cursor.set_place(row + 1 + tab_box_nodes.spot_from_below(self.box_spots()))
-
-    def move_inside_box(self, *, name, row, here):
-        """Move with Up or Down from the field at a place among the chosen tab's: to the field it leads to, the row of tabs, or
-        what is under the box, staying put where nothing is."""
-        spots = self.box_spots()
-        if name == Key.DOWN:
-            there = tab_box_nodes.spot_below(spots=spots, here=here)
-        else:
-            there = tab_box_nodes.spot_above(spots=spots, here=here)
-        if there == tab_box_nodes.ON_TAB_ROW:
-            self.cursor.set_place(row)
-        elif there == tab_box_nodes.BELOW_BOX:
-            below = row + len(spots) + 1
-            if below < len(self.shown_fields()):
-                self.cursor.set_place(below)
-        else:
-            self.cursor.set_place(row + 1 + there)
+        """Move with Up or Down through the form, as the navigator goes."""
+        return FormNavigator(self).move_cursor(name)
 
     def move_across(self, direction):
-        """Move with Left or Right inside the tab box, to the field beside in the column to that side, stopping at the sides."""
-        row = self.box_place()
-        here = self.cursor.get_place() - row - 1
-        self.cursor.set_place(row + 1 + tab_box_nodes.spot_beside(spots=self.box_spots(), here=here, direction=direction))
+        """Move with Left or Right inside the tab box, to the field beside in the column to that side."""
+        return FormNavigator(self).move_across(direction)
 
     def box_place(self):
         """Return the place of the row of tabs among the fields shown, or None on a page with no tab box."""
-        for place, field in enumerate(self.shown_fields()):
-            if field.IS_TAB_ROW:
-                return place
-        return None
+        return FormNavigator(self).box_place()
 
     def box_field_count(self):
         """Return how many fields the chosen tab shows."""
-        box = self.tab_box()
-        return len(box.tabs[self.chosen_tab(box)].every_field())
+        return FormNavigator(self).box_field_count()
 
     def in_box(self):
         """Return whether the cursor is on a field inside the tab box, not its row of tabs."""
-        row = self.box_place()
-        return row is not None and row < self.cursor.get_place() <= row + self.box_field_count()
+        return FormNavigator(self).in_box()
 
     def box_spots(self):
         """Return where each field of the chosen tab is drawn, as the box was last drawn."""
         box = self.tab_box()
         return tab_box_drawing.spots_of(page=self, tab=box.tabs[self.chosen_tab(box)], width=self.box_width)
-
-    def move_in_order(self, name):
-        """Move with Up or Down through the fields in order, then the buttons."""
-        fields = self.shown_fields()
-        first_button = self.first_button_place()
-        if self.buttons_stacked():
-            # Buttons too wide for one row stand one under another, and Up and Down go through them as through the fields.
-            self.cursor.move(name=name, count=len(fields))
-            return
-        if self.cursor.get_place() >= first_button:
-            if name == Key.UP and first_button:
-                self.cursor.set_place(first_button - 1)
-            return
-        self.cursor.move(name=name, count=min(first_button + 1, len(fields)))
 
     def buttons_stacked(self):
         """Return whether the page's buttons were last drawn one under another, a row of them being wider than the page."""
@@ -369,19 +279,12 @@ class FieldPage(Page):
         self.cell = moves.moved(place=self.cell, name=name, count=len(self.field().cells))
 
     def first_button_place(self):
-        """Return the place of the page's first button among the fields shown, or how many fields show when there's none: after
-        the chosen tab's fields, whose last may be a button of the tab's own."""
-        start = page_buttons_start(self.shown_fields())
-        box = self.box_place()
-        if box is None:
-            return start
-        return max(start, box + 1 + self.box_field_count())
+        """Return the place of the page's first button among the fields shown, or how many fields show when there's none."""
+        return FormNavigator(self).first_button_place()
 
     def move_along_buttons(self, name):
         """Move along the row of buttons with Left and Right, stopping at both ends."""
-        first_button = self.first_button_place()
-        count = len(self.shown_fields()) - first_button
-        self.cursor.set_place(first_button + moves.moved(place=self.cursor.get_place() - first_button, name=name, count=count))
+        return FormNavigator(self).move_along_buttons(name)
 
     def remember_place(self):
         field = self.field()
@@ -435,27 +338,3 @@ class FieldPage(Page):
                 return
             then(number)
         self.ask_text(title=title, value=value, then=answered)
-
-
-def _key_toward_tab(*, here, there):
-    """Return the key on the row of tabs that brings the chosen tab nearer another, by their places."""
-    if there < here:
-        return Key.LEFT
-    return Key.RIGHT
-
-
-def _key_across(*, here, there):
-    """Return Left or Right, toward a column of the tab box from another."""
-    if there < here:
-        return Key.LEFT
-    return Key.RIGHT
-
-
-def page_buttons_start(fields):
-    """Return the place where a page's own buttons start among its fields: the run of buttons at the end, which the page draws
-    in a row below its settings, or how many fields there are when none end it. A button among a tab's columns stands before
-    that run and is drawn in its tab."""
-    start = len(fields)
-    while start and isinstance(fields[start - 1], Button):
-        start -= 1
-    return start
