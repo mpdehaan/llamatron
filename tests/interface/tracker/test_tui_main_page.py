@@ -17,10 +17,10 @@ from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.generators.generators_page import GeneratorsPage
 from llamatron.interface.tracker.screens.pattern.patterns_page import PatternsPage
 from llamatron.interface.tracker.screens.set import main_page
+from llamatron.interface.tracker.screens.set.draws_page import DrawsPage
 from llamatron.interface.tracker.screens.set.file_page import FilePage
 from llamatron.interface.tracker.screens.set.main_page import arrows_between, cell_positions, MainPage, moved
 from llamatron.interface.tracker.screens.set.open_page import OpenPage
-from llamatron.interface.tracker.screens.set.registers_page import RegistersPage
 from llamatron.interface.tracker.screens.set.scales_page import ScalesPage
 from llamatron.interface.tracker.screens.set.songs_page import SongsPage
 from llamatron.interface.tracker.text import clock
@@ -235,23 +235,22 @@ class TestMainPageOnAUsualConsole(UITest):
         # Undo and Redo have no cell, since they're Ctrl+Z and Ctrl+Y on every page, and F1 lists them.
         self.assertNotIn('« Ctrl+Z »', text)
         self.assertNotIn(labels.PageName.UNDO, text)
-        # Arrange on a bar across the top beside the Real Time switch, then three buttons to a line, a blank line, and the bar:
+        # Arrange alone on a bar across the top, then three buttons to a line, a blank line, and the bar:
         # Open, Import and File/Global over Save, Export and Quit.
         lines = text.splitlines()
         arrange = next(number for number, line in enumerate(lines) if '« A »' in line)
-        self.assertEqual(lines[arrange].count('«'), 2)
-        self.assertIn('« T »', lines[arrange])
+        self.assertEqual(lines[arrange].count('«'), 1)
         self.assertLess(arrange, next(number for number, line in enumerate(lines) if '« S »' in line))
         self.assertEqual(sum(1 for line in lines if '« F »' in line), 1)
         for row in ('« S »', '« G »', '« I »'):
             self.assertEqual(next(line for line in lines if row in line).count('«'), main_page.COLUMNS)
-        # Songs, the Wizard and Patterns; Scales, Generators and Draws; Grooves, Instruments and Registers.
+        # Songs, the Wizard and Patterns; Scales, Generators and Draws; Grooves, Instruments and the Real Time switch.
         self.assertIn('« W »', next(line for line in lines if '« S »' in line))
         self.assertIn('« P »', next(line for line in lines if '« S »' in line))
         self.assertIn('« Z »', next(line for line in lines if '« G »' in line))
         self.assertIn('« D »', next(line for line in lines if '« G »' in line))
         self.assertIn('« V »', next(line for line in lines if '« I »' in line))
-        self.assertIn('« R »', next(line for line in lines if '« I »' in line))
+        self.assertIn('« T »', next(line for line in lines if '« I »' in line))
         opens = next(number for number, line in enumerate(lines) if '« O »' in line)
         self.assertIn('« L »', lines[opens])
         self.assertIn('« F »', lines[opens])
@@ -275,7 +274,7 @@ class TestMainPageOnAUsualConsole(UITest):
         # The set's own grooves, never the factory ones, which every set has.
         self.assertEqual(counts[first_key(keybindings.MainPage.GROOVES)], 0)
         self.assertEqual(counts[first_key(keybindings.MainPage.GENERATORS)], len(setlist.every_generator_name()))
-        for binding in (keybindings.MainPage.FILE, keybindings.MainPage.REGISTERS, keybindings.MainPage.DRAWS, keybindings.MainPage.ARRANGE, keybindings.MainPage.SAVE, keybindings.MainPage.OPEN_SET_HERE, keybindings.MainPage.EXPORT_HERE, keybindings.MainPage.QUIT):
+        for binding in (keybindings.MainPage.FILE, keybindings.MainPage.WIZARD, keybindings.MainPage.DRAWS, keybindings.MainPage.ARRANGE, keybindings.MainPage.SAVE, keybindings.MainPage.OPEN_SET_HERE, keybindings.MainPage.EXPORT_HERE, keybindings.MainPage.QUIT):
             self.assertIsNone(counts[first_key(binding)], binding)
         # The count sits one space in from the box's edge, on the selected cell as on the others.
         await self.press(Key.DOWN)
@@ -290,34 +289,33 @@ class TestMainPageOnAUsualConsole(UITest):
         self.assertIn(labels.PageName.SONGS, boxed_line(self.text()))
         await self.press(Key.RIGHT, Key.RIGHT)
         self.assertIn(labels.PageName.PATTERNS, boxed_line(self.text()))
-        # Down from Patterns is Draws, and Down again Registers.
+        # Down from Patterns is Draws, and Down again the Real Time switch; Draws opens and the box stays on it.
         await self.press(Key.DOWN)
         self.assertIn(labels.PageName.DRAWS, boxed_line(self.text()))
-        await self.press(Key.DOWN)
-        self.assertIn(labels.PageName.REGISTERS, boxed_line(self.text()))
         await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, RegistersPage)
+        self.assertIsInstance(self.app.screen, DrawsPage)
         await self.press(Key.ESCAPE)
-        self.assertIn(labels.PageName.REGISTERS, boxed_line(self.text()))
+        self.assertIn(labels.PageName.DRAWS, boxed_line(self.text()))
+        await self.press(Key.DOWN)
+        self.assertIn(labels.PageName.REAL_TIME, boxed_line(self.text()))
 
     async def test_every_arrow_moves_by_the_geometry_drawn_and_stops_at_every_edge(self):
         # From each cell, where Up, Down, Left and Right go, the cell itself where the arrow stops at an edge.
         keys = keybindings.MainPage
         moves = {
-            keys.ARRANGE: (keys.ARRANGE, keys.SONGS, keys.ARRANGE, keys.REAL_TIME),
-            keys.REAL_TIME: (keys.REAL_TIME, keys.PATTERNS, keys.ARRANGE, keys.REAL_TIME),
+            keys.ARRANGE: (keys.ARRANGE, keys.SONGS, keys.ARRANGE, keys.ARRANGE),
             keys.SONGS: (keys.ARRANGE, keys.SCALES, keys.SONGS, keys.WIZARD),
             keys.WIZARD: (keys.ARRANGE, keys.GENERATORS, keys.SONGS, keys.PATTERNS),
-            keys.PATTERNS: (keys.REAL_TIME, keys.DRAWS, keys.WIZARD, keys.PATTERNS),
+            keys.PATTERNS: (keys.ARRANGE, keys.DRAWS, keys.WIZARD, keys.PATTERNS),
             keys.SCALES: (keys.SONGS, keys.GROOVES, keys.SCALES, keys.GENERATORS),
             keys.GENERATORS: (keys.WIZARD, keys.INSTRUMENTS, keys.SCALES, keys.DRAWS),
-            keys.DRAWS: (keys.PATTERNS, keys.REGISTERS, keys.GENERATORS, keys.DRAWS),
+            keys.DRAWS: (keys.PATTERNS, keys.REAL_TIME, keys.GENERATORS, keys.DRAWS),
             keys.GROOVES: (keys.SCALES, keys.OPEN_SET_HERE, keys.GROOVES, keys.INSTRUMENTS),
-            keys.INSTRUMENTS: (keys.GENERATORS, keys.IMPORT_HERE, keys.GROOVES, keys.REGISTERS),
-            keys.REGISTERS: (keys.DRAWS, keys.FILE, keys.INSTRUMENTS, keys.REGISTERS),
+            keys.INSTRUMENTS: (keys.GENERATORS, keys.IMPORT_HERE, keys.GROOVES, keys.REAL_TIME),
+            keys.REAL_TIME: (keys.DRAWS, keys.FILE, keys.INSTRUMENTS, keys.REAL_TIME),
             keys.OPEN_SET_HERE: (keys.GROOVES, keys.SAVE, keys.OPEN_SET_HERE, keys.IMPORT_HERE),
             keys.IMPORT_HERE: (keys.INSTRUMENTS, keys.EXPORT_HERE, keys.OPEN_SET_HERE, keys.FILE),
-            keys.FILE: (keys.REGISTERS, keys.QUIT, keys.IMPORT_HERE, keys.FILE),
+            keys.FILE: (keys.REAL_TIME, keys.QUIT, keys.IMPORT_HERE, keys.FILE),
             keys.SAVE: (keys.OPEN_SET_HERE, keys.SAVE, keys.SAVE, keys.EXPORT_HERE),
             keys.EXPORT_HERE: (keys.IMPORT_HERE, keys.EXPORT_HERE, keys.SAVE, keys.QUIT),
             keys.QUIT: (keys.FILE, keys.QUIT, keys.EXPORT_HERE, keys.QUIT),
@@ -341,10 +339,9 @@ class TestMainPageOnAUsualConsole(UITest):
                 self.assertIs(page.selected().binding, keys.ARRANGE)
                 await self.press(Key.DOWN)
                 self.assertIs(page.selected().binding, under)
-        # Arrange is one button across two columns, beside the Real Time switch: Left stays on it, and the column it was reached
-        # from is kept.
+        # Arrange is one button across the three columns: Left and Right stay on it, and the column it was reached from is kept.
         page.select(keys.WIZARD)
-        await self.press(Key.UP, Key.LEFT, Key.DOWN)
+        await self.press(Key.UP, Key.LEFT, Key.RIGHT, Key.DOWN)
         self.assertIs(page.selected().binding, keys.WIZARD)
 
     async def test_the_selected_action_of_the_bar_is_reversed_in_the_bars_double_lined_box(self):

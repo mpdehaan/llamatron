@@ -217,7 +217,7 @@ class TestArrowsAndTheMark(UITest):
         arrange = next(item for item in page.menu_items() if item.binding is keybindings.MainPage.ARRANGE)
         self.assertEqual(page.edge_style(patterns).color.get_truecolor(), themes.balanced(themes.PATTERNS))
         self.assertEqual(page.edge_style(arrange), Style.DIM)
-        brightness = {round(themes.luminance(themes.balanced(colour)), 2) for colour in (themes.SONGS, themes.PATTERNS, themes.GROOVES, themes.REGISTERS)}
+        brightness = {round(themes.luminance(themes.balanced(colour)), 2) for colour in (themes.SONGS, themes.PATTERNS, themes.GROOVES, themes.DRAWS)}
         self.assertEqual(len(brightness), 1)
 
     async def test_enter_on_the_quit_cell_quits(self):

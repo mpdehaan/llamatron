@@ -319,10 +319,6 @@ MSG_PATTERN_DIRECTION_WHAT = "use each pattern's direction"
 MSG_LETTERS_WHAT = 'letters'
 MSG_DEGREES_WHAT = 'scale degrees'
 
-# interface/tracker/screens/set/registers_page.py
-MSG_REGISTER_ENTER_WHAT = 'type'
-MSG_REGISTER_CLEAR_WHAT = 'default'
-
 # interface/tracker/screens/set/grooves_page.py
 MSG_GROOVE_WHAT = 'groove {name}'
 MSG_INSTRUMENT_WHAT = 'instrument {name}'

@@ -252,15 +252,6 @@ Basics: #/b, Velocity, Keyswitch. Chord: Chord, Tension, Scale (ENTER picks), In
 S sizes the pattern, and on the rows I inserts a step and D removes one. M munges it. R reconfigures it: load over, step size, time signature, drum on or off, direction, rename. L plays it at once, again and again, and stops it.
 """
 
-# RegistersPage
-HELP_REGISTERS_PAGE = """
-The four registers, AX to DX, are numbers the whole current song shares. Pattern steps change them with AX+= and use them with AX+Note and AX+Vel, on the pattern editor's register rows.
-
-Each starts at its default when the song starts, and again whenever a scene resets it. Adding never takes one past its minimum or maximum: it stops there, or, if it wraps, jumps to the other end.
-
-Up and down select. [ and ] change a number, ENTER types one, and Bksp goes back to its default. ENTER switches wraps on and off.
-"""
-
 # DrawsPage
 HELP_DRAWS_PAGE = """
 The eight draws, AD to HD, are short lists of numbers the whole current song shares. A pattern's step uses one with Note+=

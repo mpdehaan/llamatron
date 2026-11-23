@@ -20,12 +20,11 @@ from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.generators.generator_list_page import GeneratorListPage
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.main_page import MainPage
-from llamatron.interface.tracker.screens.set.registers_page import RegistersPage
 from llamatron.interface.tracker.screens.shared.generator_names import listed_generator
 from llamatron.model.objects import setlist
 from llamatron.model.objects.scene import TempoRamp
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DrawName, FollowAction, PatternOrder, RampPart, RampWay, RegisterName, RegisterSetting, Row, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DrawName, FollowAction, PatternOrder, RampPart, RampWay, Row, Section
 from llamatron.model.values.blend_mode import BlendMode
 from llamatron.user_strings import errors, labels as labels_text, legends, marks, messages, names
 from tests.support import ui_testing
@@ -947,94 +946,3 @@ class TestScenesAndClipsEdges(UITest):
 OUT_OF_ORDER_START = fixed_text(errors.ERR_OUT_OF_ORDER)
 
 
-class TestRegistersPage(UITest):
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-        await self.press(keybindings.MainPage.REGISTERS)
-        self.page = self.app.screen
-
-    def label(self, *, name, what):
-        return labels_text.MSG_REGISTER_FIELD_LABEL.format(name=name, what=what)
-
-    def register(self, name):
-        return self.document.register(name)
-
-    async def test_it_opens_from_the_main_screen_with_every_register(self):
-        self.assertIsInstance(self.page, RegistersPage)
-        labels = [field.label for field in self.page.fields()]
-        for name in file_format.REGISTER_NAMES:
-            for _, what in labels_text.MSG_REGISTER_NUMBER_FIELDS:
-                self.assertIn(self.label(name=name, what=what), labels)
-            for what in (labels_text.MSG_REGISTER_RESET_BEHAVIOR_FIELD, labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD, labels_text.MSG_REGISTER_ALLOWED_INC_MAX_FIELD):
-                self.assertIn(self.label(name=name, what=what), labels)
-
-    async def test_it_is_a_grid_the_arrows_move_over_stopping_at_every_edge(self):
-        # A row for each register and a column for each setting, the cursor stopping at every edge.
-        columns = len(self.page.fields()) // len(file_format.REGISTER_NAMES)
-        await self.press(Key.UP, Key.LEFT)
-        self.assertEqual(self.page.cursor.get_place(), 0)
-        await self.press(Key.DOWN, Key.RIGHT)
-        self.assertEqual(self.page.cursor.get_place(), columns + 1)
-        await self.press(*[Key.DOWN] * len(file_format.REGISTER_NAMES), *[Key.RIGHT] * columns)
-        self.assertEqual(self.page.cursor.get_place(), len(self.page.fields()) - 1)
-        self.assertEqual(self.page.field().label, self.label(name=file_format.REGISTER_NAMES[-1], what=labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD))
-        for heading in labels_text.MSG_REGISTER_COLUMNS:
-            self.assertIn(heading, self.text())
-
-    async def test_numbers_change_and_go_back_to_their_defaults(self):
-        await self.select_field(self.label(name=RegisterName.BX, what=RegisterSetting.MAXIMUM))
-        await self.press(key_of(binding=keybindings.RegistersPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.register(RegisterName.BX).get_maximum(), defaults.DEFAULT_REGISTER_MAXIMUM + 1)
-        await self.press(Key.BACKSPACE)
-        self.assertEqual(self.register(RegisterName.BX).get_maximum(), defaults.DEFAULT_REGISTER_MAXIMUM)
-        self.assertNotIn(Section.REGISTERS, self.document.song().to_data())
-
-    async def test_a_typed_number_can_be_negative(self):
-        lowest = -50
-        await self.select_field(self.label(name=RegisterName.DX, what=RegisterSetting.MINIMUM))
-        await self.press(Key.ENTER)
-        self.app.screen.value = str(lowest)
-        await self.press(Key.ENTER)
-        self.assertEqual(self.register(RegisterName.DX).get_minimum(), lowest)
-        render_song(self.document.song())
-
-    async def test_settings_out_of_order_are_refused_with_the_reason(self):
-        await self.select_field(self.label(name=RegisterName.AX, what=RegisterSetting.MINIMUM))
-        await self.press(key_of(binding=keybindings.RegistersPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.register(RegisterName.AX).get_minimum(), defaults.DEFAULT_REGISTER_MINIMUM)
-        self.assertIn(OUT_OF_ORDER_START, self.text())
-
-    async def test_reset_behavior_steps_through_its_choices_and_reset_each_scene_toggles(self):
-        await self.select_field(self.label(name=RegisterName.CX, what=labels_text.MSG_REGISTER_RESET_BEHAVIOR_FIELD))
-        await self.press(key_of(binding=keybindings.RegistersPage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.register(RegisterName.CX).get_reset_behavior(), file_format.RESET_BEHAVIORS[1])
-        self.assertIn(labels_text.MSG_RESET_BEHAVIOR_NAMES[file_format.RESET_BEHAVIORS[1]], self.text())
-        await self.press(key_of(binding=keybindings.RegistersPage.LESS, key=Key.LEFT_BRACKET))
-        self.assertEqual(self.register(RegisterName.CX).get_reset_behavior(), file_format.RESET_BEHAVIORS[0])
-        self.assertNotIn(Section.REGISTERS, self.document.song().to_data())
-        await self.select_field(self.label(name=RegisterName.CX, what=labels_text.MSG_REGISTER_RESET_EACH_SCENE_FIELD))
-        await self.press(Key.ENTER)
-        self.assertTrue(self.register(RegisterName.CX).resets_each_scene())
-        await self.press(Key.ENTER)
-        self.assertFalse(self.register(RegisterName.CX).resets_each_scene())
-
-    async def test_a_lower_allowed_inc_max_brings_the_adds_within_it_and_undo_brings_them_back(self):
-        add_row = file_format.REGISTER_ADD_ROWS[RegisterName.AX]
-        self.document.change_pattern(self.document.pattern(TUNE).set_value, row=add_row, step=0, value=BIG_ADD)
-        self.document.change_pattern(self.document.pattern(TUNE).set_value, row=add_row, step=1, value=-BIG_ADD)
-        self.document.record_edit()
-        await self.select_field(self.label(name=RegisterName.AX, what=labels_text.MSG_REGISTER_ALLOWED_INC_MAX_FIELD))
-        await self.press(Key.ENTER)
-        self.app.screen.value = str(NARROW_INC_MAX)
-        await self.press(Key.ENTER)
-        self.assertEqual(self.register(RegisterName.AX).get_allowed_inc_max(), NARROW_INC_MAX)
-        self.assertEqual([self.document.step_value(name=TUNE, row=add_row, step=step) for step in (0, 1)], [NARROW_INC_MAX, -NARROW_INC_MAX])
-        await self.press(keybindings.Page.UNDO)
-        self.assertEqual([self.document.step_value(name=TUNE, row=add_row, step=step) for step in (0, 1)], [BIG_ADD, -BIG_ADD])
-
-    async def test_settings_save_and_load(self):
-        await self.select_field(self.label(name=RegisterName.AX, what=RegisterSetting.MAXIMUM))
-        await self.press(key_of(binding=keybindings.RegistersPage.LESS, key=Key.LEFT_BRACKET))
-        self.document.save(path='x.yml')
-        self.assertEqual(Document.load('x.yml').register(RegisterName.AX).get_maximum(), defaults.DEFAULT_REGISTER_MAXIMUM - 1)

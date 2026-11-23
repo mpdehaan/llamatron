@@ -307,8 +307,6 @@ class KeyTour(UITest):
         await self.walk()
         await self.press(Key.ESCAPE)
         await self.walk()
-        await self.press(Key.ESCAPE, keybindings.MainPage.REGISTERS)
-        await self.walk()
         # The Draws page opens with its first draw's section opened, so that the strip's keys show.
         await self.press(Key.ESCAPE, keybindings.MainPage.DRAWS, keybindings.DrawsPage.TOGGLE)
         await self.walk()

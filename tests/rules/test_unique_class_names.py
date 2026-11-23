@@ -86,7 +86,6 @@ ALLOWED = (
     'PromptDialog',
     'QuitDialog',
     'RegisterRow',
-    'RegistersPage',
     'RowDialog',
     'ScalePage',
     'ScalesPage',

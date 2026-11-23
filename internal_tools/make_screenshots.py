@@ -131,7 +131,6 @@ SHOTS = [
     Shot(name='chain_editor', generator=Section.CHAINS, generator_name=SHOWN_CHAIN, keys=[], song=ARP_SONG),
     Shot(name='grooves', keys=[keybindings.MainPage.GROOVES]),
     Shot(name='groove_editor', keys=[keybindings.MainPage.GROOVES, Key.DOWN, Key.DOWN, Key.ENTER]),
-    Shot(name='registers', keys=[keybindings.MainPage.REGISTERS]),
     Shot(name='arrange', keys=[keybindings.MainPage.ARRANGE]),
     # The details view on the hoedown, whose clips run chains, and Tab locked into the first clip's details, for Arrange's page.
     Shot(name='arrange_details', keys=[keybindings.MainPage.ARRANGE, keybindings.ArrangePage.SHOW_DETAILS], song=DRIFT_SONG),

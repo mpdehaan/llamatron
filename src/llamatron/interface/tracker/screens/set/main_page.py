@@ -6,7 +6,7 @@
 
 One block of buttons, the same size on every console and at the top left, never stretched to the window:
 Arrange, where most of the work happens, is a bar across the top, as wide as the three columns under it. Under it, three rows
-of three, in the order a song is made: Songs, Patterns and Scales; Generators, Chains and Grooves; Instruments, Registers and
+of three, in the order a song is made: Songs, the Wizard and Patterns; Scales, Generators and Draws; Grooves, Instruments and
 the Real Time switch. Then a blank line, and one bar as wide as the grid with the file's six actions in two rows on the grid's
 own columns, with no lines between them: Open over Save, Import over Export, File/Global over Quit, each column's keys under
 the keys of the buttons above and its names starting at one place. Each page's button is boxed in its page's theme colour
@@ -35,7 +35,6 @@ from llamatron.interface.tracker.screens.set.file_page import FilePage
 from llamatron.interface.tracker.screens.set.grooves_page import GroovesPage
 from llamatron.interface.tracker.screens.set.importing import import_midi
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
-from llamatron.interface.tracker.screens.set.registers_page import RegistersPage
 from llamatron.interface.tracker.screens.set.scales_page import ScalesPage
 from llamatron.interface.tracker.screens.set.songs_page import SongsPage
 from llamatron.interface.tracker.screens.shared.everywhere import everywhere_actions, everywhere_key, quit_key
@@ -54,7 +53,7 @@ NAME_GAP = drawing.SPACE
 BORDERS = 2
 # A cell's three lines: its top edge, its key and name, and its bottom edge.
 CELL_LINES = 3
-# The rows of the geometry: Arrange's bar beside the Real Time switch, three rows of buttons, and the two rows of actions in the bar under them.
+# The rows of the geometry: Arrange's bar, three rows of buttons, and the two rows of actions in the bar under them.
 ARRANGE_ROW = 0
 BUTTON_ROWS = 3
 BAR_ROWS = 2
@@ -66,7 +65,7 @@ ARROW_STEPS = {Key.UP: (-1, 0), Key.DOWN: (1, 0), Key.LEFT: (0, -1), Key.RIGHT: 
 # The colour each page's cell is boxed in, its page's theme toned to the edges' one brightness; a cell with none is boxed dim.
 CELL_THEMES = {
     labels_text.PageName.SONGS: themes.SONGS, labels_text.PageName.WIZARD: themes.WIZARD, labels_text.PageName.PATTERNS: themes.PATTERNS, labels_text.PageName.GENERATORS: themes.GENERATORS,
-    labels_text.PageName.SCALES: themes.SCALES, labels_text.PageName.GROOVES: themes.GROOVES, labels_text.PageName.INSTRUMENTS: themes.INSTRUMENTS, labels_text.PageName.REGISTERS: themes.REGISTERS, labels_text.PageName.DRAWS: themes.DRAWS,
+    labels_text.PageName.SCALES: themes.SCALES, labels_text.PageName.GROOVES: themes.GROOVES, labels_text.PageName.INSTRUMENTS: themes.INSTRUMENTS, labels_text.PageName.DRAWS: themes.DRAWS,
     labels_text.PageName.FILE: themes.SET_FILE,
 }
 # The pages whose cell counts the set's things, by the section counted. Generators and Grooves are counted on their own.
@@ -190,7 +189,6 @@ class MainPage(Page):
             self.bind(self.KEYS.SCALES, action=functools.partial(self.open_page, ScalesPage)),
             self.bind(self.KEYS.GROOVES, action=functools.partial(self.open_page, GroovesPage)),
             self.bind(self.KEYS.INSTRUMENTS, action=functools.partial(self.open_page, InstrumentsPage)),
-            self.bind(self.KEYS.REGISTERS, action=functools.partial(self.open_page, RegistersPage)),
             self.bind(self.KEYS.DRAWS, action=self.open_draws_page),
             self.bind(self.KEYS.ARRANGE, action=functools.partial(self.open_page, ArrangePage)),
             # The Real Time switch sits among the pages as a cell of its own, with its mark where a page's cell has its count.
@@ -254,18 +252,18 @@ class MainPage(Page):
         ]
 
     def rows(self):
-        """Return the cells by the geometry drawn, six rows of three: Arrange across two columns of the first row, beside the
-        Real Time switch, since Arrange plays the song when it is on; Songs, the Wizard and Patterns; Scales, Generators and Draws;
-        Grooves, Instruments and Registers; then the bar's two rows, Open, Import and File/Global over Save, Export and Quit."""
+        """Return the cells by the geometry drawn, six rows of three: Arrange across the first row; Songs, the Wizard and
+        Patterns; Scales, Generators and Draws; Grooves, Instruments and the Real Time switch; then the bar's two rows, Open, Import
+        and File/Global over Save, Export and Quit."""
         pages = {item.binding: item for item in self.keys()}
         keys = self.KEYS
         save, open_set, export, import_midi_here, quit_here = self.actions()
         arrange = pages[keys.ARRANGE]
         return [
-            [arrange, arrange, pages[keys.REAL_TIME]],
+            [arrange, arrange, arrange],
             [pages[keys.SONGS], pages[keys.WIZARD], pages[keys.PATTERNS]],
             [pages[keys.SCALES], pages[keys.GENERATORS], pages[keys.DRAWS]],
-            [pages[keys.GROOVES], pages[keys.INSTRUMENTS], pages[keys.REGISTERS]],
+            [pages[keys.GROOVES], pages[keys.INSTRUMENTS], pages[keys.REAL_TIME]],
             [open_set, import_midi_here, pages[keys.FILE]],
             [save, export, quit_here],
         ]
@@ -318,8 +316,8 @@ class MainPage(Page):
 
     def move_cursor(self, name):
         """Move by the geometry drawn: an arrow goes to the cell beside, above or below, and none goes past an edge.
-        Arrange is two columns wide, so Left stays on it, and Down from it goes back to the button the cursor came from, or to
-        the first one."""
+        Arrange is three columns wide, so Left and Right stay on it, and Down from it goes back to the button the cursor came
+        from, or to the first one."""
         rows = self.rows()
         there = moved(rows=rows, position=self.row_and_column(), key=name)
         if there is None:
@@ -349,7 +347,7 @@ class MainPage(Page):
         return drawing.NOTHING
 
     def count(self, item):
-        """Return what a cell shows at its right: how many of its things a page has, the Real Time switch's mark, or None where a count means nothing: File, Registers, Arrange and the actions."""
+        """Return what a cell shows at its right: how many of its things a page has, the Real Time switch's mark, or None where a count means nothing: File, the Wizard, Draws, Arrange and the actions."""
         setlist = self.document().get_setlist()
         name = cell_name(item)
         if name == labels_text.PageName.REAL_TIME:
@@ -466,10 +464,7 @@ class MainPage(Page):
         total = lefts[-1] + widths[-1]
         selected = self.selected()
         grid = [Canvas(total) for _ in range((1 + BUTTON_ROWS) * CELL_LINES)]
-        first = grid[:CELL_LINES]
-        real_time = rows[ARRANGE_ROW][-1]
-        self.draw_cell(canvases=first, left=0, item=rows[ARRANGE_ROW][0], selected=self.on_arrange(), width=lefts[-1] - CELL_GAP)
-        self.draw_cell(canvases=first, left=lefts[-1], item=real_time, selected=real_time.binding is selected.binding, width=widths[-1])
+        self.draw_cell(canvases=grid[:CELL_LINES], left=0, item=rows[ARRANGE_ROW][0], selected=self.on_arrange(), width=total)
         for number, row in enumerate(rows[1:1 + BUTTON_ROWS], start=1):
             lines = grid[number * CELL_LINES:(number + 1) * CELL_LINES]
             for column, item in enumerate(row):

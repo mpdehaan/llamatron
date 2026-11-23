@@ -7,7 +7,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.interface.tracker.keys import RowSection
-from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, RegisterSetting, ResetBehavior, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, Tuning
+from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, Tuning
 
 
 def register_labels(*, rows, label):
@@ -142,7 +142,6 @@ class PageName:
     SCALES = 'Scales'
     GROOVES = 'Grooves'
     INSTRUMENTS = 'Instruments'
-    REGISTERS = 'Registers'
     DRAWS = 'Draws'
     ARRANGE = 'Arrange'
     # What the main screen's Arrange cell is called while the set's Real Time switch is on, since Arrange then plays the song too.
@@ -564,22 +563,6 @@ MSG_CHORD_NAMES = {
     ChordSymbol.SCALE_FIFTH: 'root and fifth from the scale', ChordSymbol.SCALE_TRIAD: 'triad from the scale',
     ChordSymbol.SCALE_SEVENTH: 'seventh from the scale', ChordSymbol.SCALE_NINTH: 'ninth from the scale',
     ChordSymbol.SCALE_ELEVENTH: 'eleventh from the scale', ChordSymbol.SCALE_THIRTEENTH: 'thirteenth from the scale',
-}
-
-# interface/tracker/screens/set/registers_page.py
-# Each register's settings on the page, labelled like "AX minimum", in the order they're shown.
-# The Registers page's columns, in the grid's order.
-MSG_REGISTER_COLUMNS = ('Inc max', 'Reset behavior', 'Minimum', 'Default', 'Maximum', 'Scene reset')
-MSG_REGISTER_FIELD_LABEL = '{name} {what}'
-MSG_REGISTER_NUMBER_FIELDS = [(RegisterSetting.DEFAULT, 'default'), (RegisterSetting.MINIMUM, 'minimum'), (RegisterSetting.MAXIMUM, 'maximum')]
-MSG_REGISTER_RESET_BEHAVIOR_FIELD = 'reset behavior'
-MSG_REGISTER_RESET_EACH_SCENE_FIELD = 'reset each scene'
-MSG_REGISTER_ALLOWED_INC_MAX_FIELD = 'allowed inc max'
-# What the Reset behavior field calls each choice, in the order the choices step. The two with a slash say what happens past
-# the maximum and then what happens below the minimum.
-MSG_RESET_BEHAVIOR_NAMES = {
-    ResetBehavior.CLIP: 'clip', ResetBehavior.RESET_CLIP: 'reset/clip', ResetBehavior.CLIP_RESET: 'clip/reset', ResetBehavior.RESET_TO_DEFAULT: 'reset to default',
-    ResetBehavior.REVERSE: 'reverse', ResetBehavior.OVERFLOW: 'overflow', ResetBehavior.PICK_RANDOM: 'pick random',
 }
 
 # interface/tracker/screens/set/groove_editor.py

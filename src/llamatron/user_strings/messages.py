@@ -262,9 +262,6 @@ MSG_CHORD_RESTING_OWN = '; in {scale} it is {name}'
 MSG_RESTING_STEP = 'step {step}'
 MSG_RESTING_CHORD = 'chord {chord}'
 
-# interface/tracker/screens/set/registers_page.py
-MSG_REGISTER_PROMPT = '{label} ({lowest} to {highest})'
-
 # interface/tracker/screens/set/grooves_page.py
 MSG_RENAME_GROOVE_PROMPT = 'Rename groove'
 

@@ -2,8 +2,6 @@
 
 Registers are four numbers that the whole song shares. Pattern steps set them, add to them, use them to move notes and velocities, and test them to decide what plays. This page covers the Registers page; the pattern rows that work with registers are described under [Set Registers and Use Registers](PATTERNS.md#set-registers-and-use-registers) and [Stop When, Restart When and Mute When](PATTERNS.md#stop-when-restart-when-and-mute-when) on the Patterns page.
 
-![The Registers page](screenshots/registers.svg)
-
 ## Register Settings
 
 Press `R` on the main screen to open the Registers page, a grid with a row for each register and a column for each setting. The four registers, AX, BX, CX and DX, belong to the current song, and each has these settings, shown across the grid as Inc max, Reset behavior, Minimum, Default, Maximum and Scene reset:

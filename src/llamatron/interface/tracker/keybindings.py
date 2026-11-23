@@ -78,7 +78,6 @@ class MainPage(Page):
     SCALES = Binding(Key.Z, legends.KeyName.Z, labels.PageName.SCALES)
     GROOVES = Binding(Key.V, legends.KeyName.V, labels.PageName.GROOVES)
     INSTRUMENTS = Binding(Key.I, legends.KeyName.I, labels.PageName.INSTRUMENTS)
-    REGISTERS = Binding(Key.R, legends.KeyName.R, labels.PageName.REGISTERS)
     DRAWS = Binding(Key.D, legends.KeyName.D, labels.PageName.DRAWS)
     ARRANGE = Binding(Key.A, legends.KeyName.A, labels.PageName.ARRANGE)
     # The Real Time switch, a cell among the pages that turns real-time playback on and off.
@@ -96,7 +95,7 @@ class MainPage(Page):
     FOOTER_HELP = Binding(Key.F1, legends.KeyName.F1, legends.MSG_HELP_FOOTER_WHAT)
     FOOTER_ABOUT = Binding(Key.F3, legends.KeyName.F3, legends.MSG_ABOUT_FOOTER_WHAT)
     # The pages in the order of their cells, four to a row.
-    PAGES = [FILE, SONGS, WIZARD, PATTERNS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, REGISTERS, DRAWS, ARRANGE, REAL_TIME]
+    PAGES = [FILE, SONGS, WIZARD, PATTERNS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, DRAWS, ARRANGE, REAL_TIME]
     IN_HELP = [*PAGES, OPEN_SET_HERE, EXPORT_HERE, IMPORT_HERE, QUIT, SELECT, OPEN]
     IN_LEGEND = [SELECT, OPEN, FOOTER_HELP, FOOTER_ABOUT]
 
@@ -315,17 +314,6 @@ class DrawsPage(FieldPage):
     # On a draw's strip, a digit puts that number in the slot under the cursor at once; ENTER still asks for any number.
     TYPE_SLOT = Binding(keys.DIGITS, legends.KeyName.DIGITS, legends.What.TYPE)
     IN_HELP = [Page.BACK, FieldPage.SELECT, FieldPage.ALONG_CELLS, FieldPage.LESS, FieldPage.MORE, SLOT_LESS, SLOT_MORE, TYPE_SLOT, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR, FieldPage.SECTION]
-    IN_LEGEND = IN_HELP
-
-
-class RegistersPage(FieldPage):
-    """The Registers page, a grid of the four registers by their settings: the arrows move over it, stopping at
-    every edge, [ and ] make the value under the cursor less and more, and Enter, Space and Bksp act on it as on a settings page."""
-
-    MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
-    LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
-    MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
-    IN_HELP = [Page.BACK, MOVE, LESS, MORE, FieldPage.TOGGLE, FieldPage.ENTER, FieldPage.CLEAR]
     IN_LEGEND = IN_HELP
 
 

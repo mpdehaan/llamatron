@@ -62,7 +62,7 @@ These hold on every page:
 
 ![The main screen, showing minimal_techno](screenshots/main.svg)
 
-The main screen is one block of buttons, the same size in every window. Arrange is the wide bar at the top, with the Real Time switch beside it. Under them are three rows of three: Songs, the Wizard and Patterns; Scales, Generators and Draws; Grooves, Instruments and Registers. A bar under the buttons holds Open, Save, Import, Export, File/Global and Quit. While a song plays, the header shows a play mark and a clock beside the song's length. Press a cell's letter, or move the box with the arrows and press `ENTER`; the arrows move to the cell beside, above or below. A cell whose page is a list counts what the set holds there. The box stays where it was when you come back with `ESC`.
+The main screen is one block of buttons, the same size in every window. Arrange is the bar across the top. Under it are three rows of three: Songs, the Wizard and Patterns; Scales, Generators and Draws; Grooves, Instruments and the Real Time switch. A bar under the buttons holds Open, Save, Import, Export, File/Global and Quit. While a song plays, the header shows a play mark and a clock beside the song's length. Press a cell's letter, or move the box with the arrows and press `ENTER`; the arrows move to the cell beside, above or below. A cell whose page is a list counts what the set holds there. The box stays where it was when you come back with `ESC`.
 
 | Key | Page | What it is for |
 | --- | --- | --- |
@@ -74,14 +74,13 @@ The main screen is one block of buttons, the same size in every window. Arrange 
 | `Z` | Scales | The named scales that songs, scenes and clips use |
 | `V` | Grooves | Swing and other timing feels |
 | `I` | Instruments | The MIDI devices and channels, or FluidSynth, that tracks play through in real time |
-| `R` | Registers | AX to DX, four numbers that pattern steps change and use, in the current song |
 | `D` | Draws | AD to HD, eight short lists of numbers that pattern steps take from in turn, in the current song |
 | `A` | Arrange | The scenes, tracks and clips of the current song. The cell reads Arrange/Play while Real Time is on, since Arrange then plays the song too |
 | `T` | Real Time | A switch, not a page: `●` when the set plays through its instruments in real time, `○` when not |
 | `O`, `X`, `L` | Open, Export, Load MIDI | On this screen alone, without Ctrl |
 | `Q` | Quit | Asks first only when there are unsaved changes |
 
-Registers and Arrange edit the current song, which the Songs page picks. Patterns, Chains, Generators, Scales, Grooves and Instruments belong to the set, so a change there is seen by every song.
+Draws and Arrange edit the current song, which the Songs page picks. Patterns, Chains, Generators, Scales, Grooves and Instruments belong to the set, so a change there is seen by every song.
 
 ## Screen Map
 
