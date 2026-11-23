@@ -7,10 +7,10 @@ generator's progression, opens that part's page on the built-in."""
 
 from llamatron.interface.forms.nodes import Button
 from llamatron.interface.forms.tab_box import TabColumn
+from llamatron.interface.forms.text import scene_name
 from llamatron.interface.pages import places
 from llamatron.interface.pages.places import GeneratorPartPlace
-from llamatron.interface.tracker.screens.shared.shared import scene_name
-from llamatron.interface.tracker.screens.shared.view_fields import ViewFields
+from llamatron.interface.pages.view_fields import ViewFields
 from llamatron.model.file.checks import listed
 from llamatron.model.schema import generator_plugins
 from llamatron.user_strings import labels, legends, messages

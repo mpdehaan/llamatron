@@ -11,8 +11,9 @@ from llamatron.interface.forms import percentages
 from llamatron.interface.forms.nodes import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.forms.percentages import percent_shown
 from llamatron.interface.forms.tab_box import columns_of_sections, Tab, TabBox, TabColumn
-from llamatron.interface.forms.text import clock, sorted_names, tempo_text
+from llamatron.interface.forms.text import clock, scene_name, sorted_names, tempo_text
 from llamatron.interface.pages import statements
+from llamatron.interface.pages.arrange_tabs import fields_tab, reset_draws_tab
 from llamatron.interface.pages.generators_field import generators_field
 from llamatron.interface.pages.groove_choice import groove_choice_field
 from llamatron.interface.pages.shape_fields import shape_section
@@ -20,9 +21,7 @@ from llamatron.interface.pages.statements import statement_section
 from llamatron.interface.pages.velocity_fields import velocity_field, velocity_ramp_sections, VelocityValues
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.drawing import Style
-from llamatron.interface.tracker.screens.shared.arrange_tabs import fields_tab, reset_draws_tab
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
-from llamatron.interface.tracker.screens.shared.shared import scene_name
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import RampPart, Section, shape_setting
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages

@@ -7,10 +7,10 @@ settings, drawn from the description alone, so that the plugin's page needs no c
 import functools
 
 from llamatron.interface.forms.nodes import NameField
+from llamatron.interface.pages.view_fields import ViewFields
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
-from llamatron.interface.tracker.screens.shared.view_fields import ViewFields
 from llamatron.model.schema import generator_plugins
 from llamatron.user_strings import help as help_text, labels, messages
 

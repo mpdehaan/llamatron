@@ -8,9 +8,9 @@ from llamatron.engine.generators import chords as chords_plugin, timing as timin
 from llamatron.engine.generators.chords import strings as chords_strings
 from llamatron.interface.forms.nodes import Cells
 from llamatron.interface.pages import statements
+from llamatron.interface.pages.built_in_place import BuiltInPlace
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage

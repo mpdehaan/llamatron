@@ -5,11 +5,13 @@
 
 from llamatron.math.rational import Rational
 from llamatron.model.objects.naming import name_order
-from llamatron.user_strings import marks
+from llamatron.user_strings import marks, names
 
 SECONDS_PER_MINUTE = 60
 # A whole number has this denominator.
 WHOLE = 1
+# Between the numbers of a row shown on one line.
+NUMBER_GAP = ' '
 
 
 def fraction(value):
@@ -38,3 +40,14 @@ def clock(seconds):
         return marks.MSG_NO_TIME
     total = int(round(seconds))
     return marks.MSG_CLOCK.format(minutes=total // SECONDS_PER_MINUTE, seconds=total % SECONDS_PER_MINUTE)
+
+
+def numbers_text(numbers):
+    """Return numbers with a space between them and a dash for each that isn't set, like 74 - - 1."""
+    return NUMBER_GAP.join(marks.MSG_NO_NUMBER_MARK if number is None else str(number) for number in numbers)
+
+
+def scene_name(*, scene, index):
+    """Return a scene's name, or what it's called by its place if the file gives it none."""
+    name = scene.get_name()
+    return names.MSG_NEW_SCENE_NAME.format(number=index + 1) if name is None else str(name)

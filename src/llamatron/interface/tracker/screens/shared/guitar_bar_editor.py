@@ -10,15 +10,12 @@ the cursor's cell, drawn as every toggle is. I inserts a cell that plays nothing
 cursor's and D removes the cursor's. S steps the cell's length, and R picks a ready-made bar,
 which replaces the strokes, the accents and the cell's length together.
 """
-
-import functools
 from rich.text import Text
 
 from llamatron.engine.generators import guitarify as guitarify_plugin
 from llamatron.engine.generators.guitarify import model as guitarify_settings, schema as guitar_bars
 from llamatron.engine.generators.guitarify.schema import ready_bar_matching
-from llamatron.interface.forms.nodes import Field, stepped
-from llamatron.interface.pages import places
+from llamatron.interface.forms.nodes import stepped
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Box, Style
@@ -26,7 +23,7 @@ from llamatron.interface.tracker.screens.shared.generator_editor import Generato
 from llamatron.interface.tracker.screens.shared.step_editor import StepEditor
 from llamatron.interface.tracker.screens.shared.step_grid import StepGrid
 from llamatron.model.schema import file_format
-from llamatron.user_strings import help as help_text, labels, legends, marks, messages
+from llamatron.user_strings import help as help_text, labels, marks, messages
 
 # The lengths S steps a cell through, going round.
 CELL_LENGTHS = ['1/4', '1/8', '1/16', '1/12', '1/32']
@@ -126,17 +123,3 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
             self.grid_line(label=labels.MSG_ACCENT_ROW_LABEL, cells=[(place, marks.MSG_TOGGLE_ON if accents[place] else marks.MSG_TOGGLE_OFF) for place in places]),
             self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)),
         ]
-
-
-def bar_shown(guitar):
-    """Return a Guitarify's bar on one line: its ready-made name, or that it is someone's own, how many cells and how long each."""
-    ready = ready_bar_matching(cell=guitar.get_cell(), strokes=guitar.get_bar(), accents=guitar.get_accents())
-    name = labels.MSG_OWN_BAR
-    if ready is not None:
-        name = labels.MSG_READY_BAR_NAMES[ready]
-    return marks.MSG_GUITAR_BAR_SHOWN.format(name=name, count=len(guitar.get_bar()), cell=guitar.get_cell())
-
-
-def guitar_bar_field(*, page, label):
-    """Return the field of the bar of strokes of the Guitarify a page shows, ENTER opening it in the bar editor."""
-    return Field(label=label, value=lambda: bar_shown(page.settings()), enter=functools.partial(page.open_part, places.GUITAR_BAR), enter_what=legends.What.EDIT)

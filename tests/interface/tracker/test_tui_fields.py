@@ -14,9 +14,9 @@ from llamatron.engine.generators import arp as arp_plugin, chords as chords_plug
 from llamatron.engine.generators.chords import strings as chords_strings
 from llamatron.interface.forms import nodes
 from llamatron.interface.forms.nodes import ChoiceField, Field, Heading, NameField, NumberField, Toggle, within
+from llamatron.interface.pages.built_in_place import BuiltInPlace
 from llamatron.interface.tracker import key_table, keybindings
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
-from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage

@@ -17,5 +17,8 @@ hands it the page to ask through and what only the tracker can do, such as openi
 - generator_names, generators_field, groove_choice: a generator's name as lists show it, the Generators field, which asks
   its page to open the list that edits it, and a scene's or a track's Groove.
 - statements: Bypass When, a table of statements about the draws, and a scene's or a clip's sets and adds.
+- view_fields, built_in_tab, arrange_tabs, built_in_place: a generator's settings from its view, a built-in generator's
+  tab, a clip's tabs, and where a built-in generator is; progression_field, restart_field, guitar_bar_field: a generator's
+  progression, Restart and guitar bar.
 - visualizer_fields: the fields that choose the visualizer's modes, which the File/Global and Song pages share.
 """

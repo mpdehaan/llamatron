@@ -3,10 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """What several screens share: the scale and root pickers, the note lengths, the file suffixes and the key lists that list pages build from."""
-
 from llamatron.engine.generators.arp import model as arp_model
-from llamatron.interface.tracker import drawing
-from llamatron.user_strings import errors, marks, messages, names
+from llamatron.user_strings import errors, marks, messages
 
 
 SONG_SUFFIX = '.yml'
@@ -15,11 +13,6 @@ SONG_SUFFIXES = (SONG_SUFFIX, '.yaml')
 MIDI_SUFFIXES = ('.mid', '.midi')
 ORDERS = list(arp_model.ORDERS)
 DEFAULT_ORDER = ORDERS[0]
-
-
-def numbers_text(numbers):
-    """Return numbers with a space between them and a dash for each that isn't set, like 74 - - 1."""
-    return drawing.SPACE.join(marks.MSG_NO_NUMBER_MARK if number is None else str(number) for number in numbers)
 
 
 def list_keys(*, page, extra, always=()):
@@ -47,12 +40,6 @@ def play_through(*, page, play, what, said):
         page.tell(errors.ERR_CANT_PLAY_TITLE, tried.refusal)
         return
     page.say(messages.MSG_STARTS_AT_NEXT_BAR.format(what=what) if tried.answer else said)
-
-
-def scene_name(*, scene, index):
-    """Return a scene's name, or what it's called by its place if the file gives it none."""
-    name = scene.get_name()
-    return names.MSG_NEW_SCENE_NAME.format(number=index + 1) if name is None else str(name)
 
 
 def columns(rows):

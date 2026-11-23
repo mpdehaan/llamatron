@@ -412,7 +412,7 @@ MSG_COPY_TRACK_TITLE = 'Copy track ({name})'
 # interface/tracker/screens/set/draws_page.py
 MSG_DRAW_SLOT_PROMPT = '{name} slot {place} ({lowest} to {highest})'
 
-# interface/tracker/screens/shared/built_in_tab.py: what a built-in generator's tab says of what stands in for what.
+# interface/pages/built_in_tab.py: what a built-in generator's tab says of what stands in for what.
 MSG_BUILT_IN_OVERRIDES_TRACKS = "overrides the track's {word}"
 MSG_BUILT_IN_OVERRIDDEN = '{word} overridden in {count} clips: {clips}'
 MSG_BUILT_IN_OVERRIDDEN_ONCE = '{word} overridden in 1 clip: {clips}'

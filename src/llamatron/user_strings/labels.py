@@ -382,18 +382,18 @@ MSG_ORDER_HEADING = 'Order'
 MSG_NOTES_HEADING = 'Notes'
 MSG_PLAYING_HEADING = 'Playing'
 MSG_RESET_DRAWS_TAB = 'Reset Draws'
-# interface/tracker/screens/shared/built_in_tab.py: the button that opens a built-in generator's statements, with how many it holds.
+# interface/pages/built_in_tab.py: the button that opens a built-in generator's statements, with how many it holds.
 MSG_BYPASS_WHEN_BUTTON = 'Bypass When ({count})'
 # What the Reset Draws tab says while no draw of the song holds a value.
 MSG_NO_DRAWS_CONFIGURED = 'No draws configured'
 MSG_CC_LANES_TAB = 'MIDI CCs'
 MSG_TEMPO_RAMPS_TAB = 'Tempo Ramps'
 MSG_ROUTING_HEADING = 'Routing'
-# interface/tracker/screens/shared/built_in_tab.py: what the crumbs call a page opened on a part of a built-in generator.
+# interface/pages/built_in_tab.py: what the crumbs call a page opened on a part of a built-in generator.
 MSG_BUILT_IN_WORD = 'built-in'
 # interface/tracker/screens/shared/plugin_editor.py: every generator's switch, first after its name.
 MSG_ENABLED_LABEL = 'Enabled'
-# interface/tracker/screens/shared/restart_field.py: when a generator starts over, as its editor names the choices.
+# interface/pages/restart_field.py: when a generator starts over, as its editor names the choices.
 MSG_RESTART_LABEL = 'Restart'
 MSG_STEP_NUMBER_ROW_LABEL = 'Step'
 MSG_RESTART_NAMES = {Restart.EVERY_CLIP: 'every clip', Restart.ON_NEW_SCENE: 'on new scene', Restart.WHOLE_SONG: 'whole song'}
