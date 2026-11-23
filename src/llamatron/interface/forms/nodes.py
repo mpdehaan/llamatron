@@ -408,3 +408,33 @@ class TextField(Field):
 
     def blanked(self):
         self.set_text(self.blank)
+
+
+@dataclass(slots=True, kw_only=True)
+class SettingNumberField(NumberField):
+    """A whole number that is a setting of something in the set, by the setting's file name: its range is the setting's own,
+    said once where the setting is described, and the number is stored through the document, which the holder checks; Bksp
+    leaves the setting out. in_effect is the number shown and stepped from where that is not the number written, as a track's
+    accent is its default until one is set."""
+
+    document: object
+    holder: object
+    name: str
+    in_effect: object = None
+    number: object = None
+    set: Callable = None
+
+    def __post_init__(self):
+        described = self.holder.SETTINGS[self.name]
+        self.number = self.holder.get_written(self.name) if self.in_effect is None else self.in_effect
+        self.lowest = described.get_lowest()
+        self.highest = described.get_highest()
+        self.set = self.store
+        self.clear = self.left_out
+        NumberField.__post_init__(self)
+
+    def store(self, number):
+        self.document.set_setting(holder=self.holder, name=self.name, value=number)
+
+    def left_out(self):
+        self.store(None)

@@ -10,7 +10,7 @@ from llamatron.caching.cached import cached_while
 from llamatron.interface.forms import moves, tab_box as tab_box_nodes
 from llamatron.interface.forms.cursor import Cursor, NoSuchPlace
 from llamatron.interface.forms.navigator import FormNavigator, page_buttons_start
-from llamatron.interface.forms.nodes import Button, Cells, Heading, NameField, NumberField, TextField
+from llamatron.interface.forms.nodes import Button, Cells, Heading, NameField, SettingNumberField, TextField
 from llamatron.interface.forms.tab_box import TabRow
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.renderers import settings_page, tab_box as tab_box_drawing
@@ -79,19 +79,9 @@ class FieldPage(Page):
         return TextField(label=label, page=self, current=current, set_text=set_text, blank=setlist.NO_TEXT)
 
     def setting_number_field(self, *, label, holder, name, shown=None, in_effect=None, start=None, typed=None, clear_what=None):
-        """A field for a whole number that is a setting of something in the set, by the setting's file name.
-
-        The range is the setting's own, said once where the setting is described, and the number is stored through
-        the document, which the holder checks; Bksp leaves the setting out. in_effect is the number shown and stepped
-        from where that is not the number written, as a track's accent is its default until one is set.
-        """
-        described = holder.SETTINGS[name]
-
-        def store(number):
-            self.document().set_setting(holder=holder, name=name, value=number)
-        return NumberField(
-            page=self, label=label, number=holder.get_written(name) if in_effect is None else in_effect, start=start, shown=shown, typed=typed,
-            lowest=described.get_lowest(), highest=described.get_highest(), set=store, clear=lambda: store(None), clear_what=clear_what,
+        """A field for a whole number that is a setting of something in the set, by the setting's file name (SettingNumberField)."""
+        return SettingNumberField(
+            page=self, document=self.document(), label=label, holder=holder, name=name, in_effect=in_effect, start=start, shown=shown, typed=typed, clear_what=clear_what,
         )
 
     def page_keys(self):

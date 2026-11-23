@@ -4,12 +4,12 @@
 
 """The instrument editor: one instrument's name, MIDI device or FluidSynth, channel and General MIDI sound."""
 
+from llamatron.interface.forms import percentages
 from llamatron.interface.forms.nodes import Button, Field, NameField, NumberField
 from llamatron.interface.forms.text import sorted_names
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.keyswitch_map_dialog import KeyswitchMapDialog
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
-from llamatron.interface.tracker.screens.shared import percentages
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.interface.tracker.screens.shared.sound_trial import run_in_sound, SoundTrial

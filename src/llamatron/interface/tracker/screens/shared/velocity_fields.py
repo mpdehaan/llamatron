@@ -11,7 +11,7 @@ of a ramp of that level. A ramp field left blank on the clip page shows the scen
 from typing import NamedTuple
 
 from llamatron.interface.forms.nodes import NumberField
-from llamatron.interface.tracker.screens.shared.percentages import percent_shown
+from llamatron.interface.forms.percentages import percent_shown
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import RampPart, VelocitySetting
