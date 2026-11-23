@@ -12,7 +12,7 @@ A scene starts all of its clips together and has no length of its own: a scene l
 
 On Arrange, `ENTER` on a scene's name opens the Scene page.
 
-Under the Name, a box of tabs holds the rest, as on the clip page (see [Clips](CLIPS.md#clip-settings) for the keys): Basics, with Playing (Section, Repeat, Launch together, Scale, Groove, Tempo) and Reset As It Starts (the registers' and draws' resets); User, the Generators field; Shapes; Velocity, the Velocity field and the two ramps; Tempo Ramps; Registers; Bypass When. A scene has no built-in generators.
+Under the Name, a box of tabs holds the rest, as on the clip page (see [Clips](CLIPS.md#clip-settings) for the keys): Settings, with Playing (Section, Repeat, Launch together, Scale, Groove, Tempo) and Reset As It Starts (the registers' and draws' resets); Generators, the Generators field; Shapes; Velocity, the Velocity field and the two ramps; Tempo Ramps; Registers; Bypass When. A scene has no built-in generators.
 
 | Setting | What it does |
 | --- | --- |

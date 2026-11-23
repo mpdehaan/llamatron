@@ -376,8 +376,8 @@ MSG_ROOT_IN_BASS_LABEL = 'Keep the root in the bass'
 # interface/tracker/screens/shared/tab_box.py: the row of tabs, as the cursor finds it.
 MSG_TABS_LABEL = 'Tabs'
 # interface/tracker/screens/arrange/clip_page.py and the track's and scene's pages: their tabs, and the Basics tab's columns.
-MSG_BASICS_TAB = 'Basics'
-MSG_USER_TAB = 'User'
+MSG_BASICS_TAB = 'Settings'
+MSG_USER_TAB = 'Generators'
 MSG_SHAPES_TAB = 'Shapes'
 MSG_VELOCITY_TAB = 'Velocity'
 MSG_REGISTERS_TAB = 'Registers'
