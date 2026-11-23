@@ -141,6 +141,7 @@ class PageName:
 
     FILE = 'File/Global'
     SONGS = 'Songs'
+    WIZARD = 'Wizard'
     PATTERNS = 'Patterns'
     GENERATORS = 'Generators'
     SCALES = 'Scales'

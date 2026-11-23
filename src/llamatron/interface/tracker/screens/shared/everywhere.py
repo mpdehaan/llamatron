@@ -39,14 +39,14 @@ def everywhere_actions(page):
         def refused():
             page.refuse(errors.ERR_NOT_WHILE_DRAFTING)
         return {
-            page.KEYS.SAVE: refused, page.KEYS.OPEN_SET: refused, page.KEYS.EXPORT: refused, page.KEYS.WIZARD: refused,
+            page.KEYS.SAVE: refused, page.KEYS.OPEN_SET: refused, page.KEYS.EXPORT: refused,
             page.KEYS.UNDO: lambda: undo(page), page.KEYS.REDO: lambda: redo(page), page.KEYS.HELP: page.show_help, page.KEYS.ABOUT: page.show_about,
             page.KEYS.SILENCE: lambda: silence(page), page.KEYS.QUIT_NOW: page.app.exit,
         }
     return {
         page.KEYS.SAVE: lambda: save(page), page.KEYS.OPEN_SET: lambda: open_set(page), page.KEYS.EXPORT: lambda: export(page),
         page.KEYS.UNDO: lambda: undo(page), page.KEYS.REDO: lambda: redo(page), page.KEYS.HELP: page.show_help, page.KEYS.ABOUT: page.show_about,
-        page.KEYS.SILENCE: lambda: silence(page), page.KEYS.QUIT_NOW: page.app.exit, page.KEYS.WIZARD: lambda: page.holder.show_wizard(page),
+        page.KEYS.SILENCE: lambda: silence(page), page.KEYS.QUIT_NOW: page.app.exit,
     }
 
 

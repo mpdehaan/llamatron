@@ -377,7 +377,6 @@ MSG_WIZARD_SECTIONS_HINT = 'Sections are in the tree at the left.'
 MSG_WIZARD_MOVING = 'moving ({name}): ↑↓ carry it, ENTER, ESC or M drops it'
 MSG_WIZARD_REPLACED = 'replaced song ({name})'
 MSG_WIZARD_NOTHING_TO_UNDO = 'nothing changes until Apply, so the wizard has nothing to undo'
-MSG_WIZARD_ALREADY_OPEN = 'the wizard is open'
 MSG_WIZARD_SONG_NAME_PROMPT = 'Name of the new song'
 MSG_WIZARD_CHOOSE_FIRST = 'Choose a genre and a subgenre first.'
 

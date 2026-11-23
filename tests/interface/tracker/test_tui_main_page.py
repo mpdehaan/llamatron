@@ -201,7 +201,7 @@ class TestMainPage(UITest):
                     position = moved(rows=rows, position=position, key=arrow)
                 self.assertIs(rows[position[0]][position[1]].binding, end)
         # On the screen, the arrows to a cell are the ones a person would press.
-        self.assertEqual(page.arrows_to(keybindings.MainPage.PATTERNS), [Key.DOWN, Key.RIGHT])
+        self.assertEqual(page.arrows_to(keybindings.MainPage.WIZARD), [Key.DOWN, Key.RIGHT])
         self.assertEqual(page.arrows_to(keybindings.MainPage.ARRANGE), [])
 
 
@@ -235,22 +235,23 @@ class TestMainPageOnAUsualConsole(UITest):
         # Undo and Redo have no cell, since they're Ctrl+Z and Ctrl+Y on every page, and F1 lists them.
         self.assertNotIn('« Ctrl+Z »', text)
         self.assertNotIn(labels.PageName.UNDO, text)
-        # Arrange alone on a bar across the top, then three buttons to a line, a blank line, and the bar: Open, Import and
-        # File/Global over Save, Export and Quit.
+        # Arrange on a bar across the top beside the Real Time switch, then three buttons to a line, a blank line, and the bar:
+        # Open, Import and File/Global over Save, Export and Quit.
         lines = text.splitlines()
         arrange = next(number for number, line in enumerate(lines) if '« A »' in line)
-        self.assertEqual(lines[arrange].count('«'), 1)
+        self.assertEqual(lines[arrange].count('«'), 2)
+        self.assertIn('« T »', lines[arrange])
         self.assertLess(arrange, next(number for number, line in enumerate(lines) if '« S »' in line))
         self.assertEqual(sum(1 for line in lines if '« F »' in line), 1)
         for row in ('« S »', '« G »', '« I »'):
             self.assertEqual(next(line for line in lines if row in line).count('«'), main_page.COLUMNS)
-        # Generators' row has Draws between Generators and Grooves.
-        self.assertIn('« D »', next(line for line in lines if '« G »' in line))
+        # Songs, the Wizard and Patterns; Scales, Generators and Draws; Grooves, Instruments and Registers.
+        self.assertIn('« W »', next(line for line in lines if '« S »' in line))
         self.assertIn('« P »', next(line for line in lines if '« S »' in line))
-        self.assertIn('« Z »', next(line for line in lines if '« S »' in line))
-        self.assertIn('« V »', next(line for line in lines if '« G »' in line))
+        self.assertIn('« Z »', next(line for line in lines if '« G »' in line))
+        self.assertIn('« D »', next(line for line in lines if '« G »' in line))
+        self.assertIn('« V »', next(line for line in lines if '« I »' in line))
         self.assertIn('« R »', next(line for line in lines if '« I »' in line))
-        self.assertIn('« T »', next(line for line in lines if '« I »' in line))
         opens = next(number for number, line in enumerate(lines) if '« O »' in line)
         self.assertIn('« L »', lines[opens])
         self.assertIn('« F »', lines[opens])
@@ -287,7 +288,7 @@ class TestMainPageOnAUsualConsole(UITest):
         self.assertIn(labels.PageName.ARRANGE, boxed_line(self.text()))
         await self.press(Key.DOWN)
         self.assertIn(labels.PageName.SONGS, boxed_line(self.text()))
-        await self.press(Key.RIGHT)
+        await self.press(Key.RIGHT, Key.RIGHT)
         self.assertIn(labels.PageName.PATTERNS, boxed_line(self.text()))
         # Down from Patterns is Draws, and Down again Registers.
         await self.press(Key.DOWN)
@@ -303,19 +304,20 @@ class TestMainPageOnAUsualConsole(UITest):
         # From each cell, where Up, Down, Left and Right go, the cell itself where the arrow stops at an edge.
         keys = keybindings.MainPage
         moves = {
-            keys.ARRANGE: (keys.ARRANGE, keys.SONGS, keys.ARRANGE, keys.ARRANGE),
-            keys.SONGS: (keys.ARRANGE, keys.GENERATORS, keys.SONGS, keys.PATTERNS),
-            keys.PATTERNS: (keys.ARRANGE, keys.DRAWS, keys.SONGS, keys.SCALES),
-            keys.SCALES: (keys.ARRANGE, keys.GROOVES, keys.PATTERNS, keys.SCALES),
-            keys.GENERATORS: (keys.SONGS, keys.INSTRUMENTS, keys.GENERATORS, keys.DRAWS),
-            keys.DRAWS: (keys.PATTERNS, keys.REGISTERS, keys.GENERATORS, keys.GROOVES),
-            keys.GROOVES: (keys.SCALES, keys.REAL_TIME, keys.DRAWS, keys.GROOVES),
-            keys.INSTRUMENTS: (keys.GENERATORS, keys.OPEN_SET_HERE, keys.INSTRUMENTS, keys.REGISTERS),
-            keys.REGISTERS: (keys.DRAWS, keys.IMPORT_HERE, keys.INSTRUMENTS, keys.REAL_TIME),
-            keys.REAL_TIME: (keys.GROOVES, keys.FILE, keys.REGISTERS, keys.REAL_TIME),
-            keys.OPEN_SET_HERE: (keys.INSTRUMENTS, keys.SAVE, keys.OPEN_SET_HERE, keys.IMPORT_HERE),
-            keys.IMPORT_HERE: (keys.REGISTERS, keys.EXPORT_HERE, keys.OPEN_SET_HERE, keys.FILE),
-            keys.FILE: (keys.REAL_TIME, keys.QUIT, keys.IMPORT_HERE, keys.FILE),
+            keys.ARRANGE: (keys.ARRANGE, keys.SONGS, keys.ARRANGE, keys.REAL_TIME),
+            keys.REAL_TIME: (keys.REAL_TIME, keys.PATTERNS, keys.ARRANGE, keys.REAL_TIME),
+            keys.SONGS: (keys.ARRANGE, keys.SCALES, keys.SONGS, keys.WIZARD),
+            keys.WIZARD: (keys.ARRANGE, keys.GENERATORS, keys.SONGS, keys.PATTERNS),
+            keys.PATTERNS: (keys.REAL_TIME, keys.DRAWS, keys.WIZARD, keys.PATTERNS),
+            keys.SCALES: (keys.SONGS, keys.GROOVES, keys.SCALES, keys.GENERATORS),
+            keys.GENERATORS: (keys.WIZARD, keys.INSTRUMENTS, keys.SCALES, keys.DRAWS),
+            keys.DRAWS: (keys.PATTERNS, keys.REGISTERS, keys.GENERATORS, keys.DRAWS),
+            keys.GROOVES: (keys.SCALES, keys.OPEN_SET_HERE, keys.GROOVES, keys.INSTRUMENTS),
+            keys.INSTRUMENTS: (keys.GENERATORS, keys.IMPORT_HERE, keys.GROOVES, keys.REGISTERS),
+            keys.REGISTERS: (keys.DRAWS, keys.FILE, keys.INSTRUMENTS, keys.REGISTERS),
+            keys.OPEN_SET_HERE: (keys.GROOVES, keys.SAVE, keys.OPEN_SET_HERE, keys.IMPORT_HERE),
+            keys.IMPORT_HERE: (keys.INSTRUMENTS, keys.EXPORT_HERE, keys.OPEN_SET_HERE, keys.FILE),
+            keys.FILE: (keys.REGISTERS, keys.QUIT, keys.IMPORT_HERE, keys.FILE),
             keys.SAVE: (keys.OPEN_SET_HERE, keys.SAVE, keys.SAVE, keys.EXPORT_HERE),
             keys.EXPORT_HERE: (keys.IMPORT_HERE, keys.EXPORT_HERE, keys.SAVE, keys.QUIT),
             keys.QUIT: (keys.FILE, keys.QUIT, keys.EXPORT_HERE, keys.QUIT),
@@ -332,17 +334,18 @@ class TestMainPageOnAUsualConsole(UITest):
     async def test_down_from_arrange_goes_back_to_the_button_the_cursor_came_from(self):
         keys = keybindings.MainPage
         page = self.app.screen
-        for under in (keys.SONGS, keys.PATTERNS, keys.SCALES):
+        for under in (keys.SONGS, keys.WIZARD):
             with self.subTest(under=under):
                 page.select(under)
                 await self.press(Key.UP)
                 self.assertIs(page.selected().binding, keys.ARRANGE)
                 await self.press(Key.DOWN)
                 self.assertIs(page.selected().binding, under)
-        # Arrange is one button across the three columns: Left and Right stay on it, and the column it was reached from is kept.
-        page.select(keys.SCALES)
-        await self.press(Key.UP, Key.LEFT, Key.RIGHT, Key.DOWN)
-        self.assertIs(page.selected().binding, keys.SCALES)
+        # Arrange is one button across two columns, beside the Real Time switch: Left stays on it, and the column it was reached
+        # from is kept.
+        page.select(keys.WIZARD)
+        await self.press(Key.UP, Key.LEFT, Key.DOWN)
+        self.assertIs(page.selected().binding, keys.WIZARD)
 
     async def test_the_selected_action_of_the_bar_is_reversed_in_the_bars_double_lined_box(self):
         page = self.app.screen

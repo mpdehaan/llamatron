@@ -35,7 +35,7 @@ from llamatron.interface.tracker.status_line import StatusLine
 from llamatron.interface.tracker.transport import Transport
 from llamatron.interface.visualizers.modes import mode_called
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.user_strings import errors, labels, messages
+from llamatron.user_strings import errors, labels
 
 
 # inherit_bindings=False drops Textual's own Ctrl+Q, since Quit is Q on the main screen alone.
@@ -209,10 +209,8 @@ class LlamatronApp(App, inherit_bindings=False):
             self.pop_screen()
 
     def show_wizard(self, page):
-        """Open the song wizard over a page, which F5 does from anywhere, unless the page is the wizard itself."""
-        if isinstance(page, WizardPage):
-            page.say(messages.MSG_WIZARD_ALREADY_OPEN)
-        elif page.document().song().get_wizard_choices() is None:
+        """Open the song wizard over a page, as W does on the main screen."""
+        if page.document().song().get_wizard_choices() is None:
             page.show_page(WizardPage(self))
         else:
             # On a song the wizard made, a dialog asks how to start first; ESC opens no wizard.

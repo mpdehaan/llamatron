@@ -37,7 +37,6 @@ Every screen is laid out the same way, from top to bottom:
 | `Ctrl+C` | Quits at once, from any page or dialog, without asking about unsaved changes, and closes FluidSynth and the MIDI connections as quitting does. |
 | `F2` | Renames what the page shows or what the cursor is on, as `N` does. |
 | `F3` | About llamatron: its version, when it was built, where it lives and its license. |
-| `F5` | Opens the [Song Wizard](WIZARD.md), which makes a whole song from a few choices. |
 
 On a Mac, `F1`, `F2` and `F3` are `Fn`+`F1`, `Fn`+`F2` and `Fn`+`F3` unless System Settings sets the function keys as standard keys.
 
@@ -63,12 +62,13 @@ These hold on every page:
 
 ![The main screen, showing minimal_techno](screenshots/main.svg)
 
-The main screen is one block of buttons, the same size in every window. Arrange is the bar across the top. Under it are three rows of three: Songs, Patterns and Scales; Generators, Draws and Grooves; Instruments, Registers and the Real Time switch. A bar under the buttons holds Open, Save, Import, Export, File/Global and Quit. While a song plays, the header shows a play mark and a clock beside the song's length. Press a cell's letter, or move the box with the arrows and press `ENTER`; the arrows move to the cell beside, above or below. A cell whose page is a list counts what the set holds there. The box stays where it was when you come back with `ESC`.
+The main screen is one block of buttons, the same size in every window. Arrange is the wide bar at the top, with the Real Time switch beside it. Under them are three rows of three: Songs, the Wizard and Patterns; Scales, Generators and Draws; Grooves, Instruments and Registers. A bar under the buttons holds Open, Save, Import, Export, File/Global and Quit. While a song plays, the header shows a play mark and a clock beside the song's length. Press a cell's letter, or move the box with the arrows and press `ENTER`; the arrows move to the cell beside, above or below. A cell whose page is a list counts what the set holds there. The box stays where it was when you come back with `ESC`.
 
 | Key | Page | What it is for |
 | --- | --- | --- |
 | `F` | File/Global | The set's title, author, description, notes and defaults, with New and Save As |
 | `S` | Songs | The songs in the set, and which one is current |
+| `W` | Wizard | The [Song Wizard](WIZARD.md), which makes a whole song from a few choices |
 | `P` | Patterns | The notes, in a grid of steps, shared by every song |
 | `G` | Generators | Every kind of generator, and the chains of them that clips, scenes and tracks run |
 | `Z` | Scales | The named scales that songs, scenes and clips use |

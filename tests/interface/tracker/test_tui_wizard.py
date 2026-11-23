@@ -18,7 +18,6 @@ from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.note_names import note_shown, note_typed
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.set.main_page import MainPage
-from llamatron.interface.tracker.screens.set.songs_page import SongsPage
 from llamatron.interface.tracker.screens.wizard import solo_melody_branch, starts
 from llamatron.interface.tracker.screens.wizard.hook_picture import picture_of
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
@@ -75,7 +74,7 @@ class WizardTest(UITest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.press(keybindings.Page.WIZARD)
+        await self.open_wizard()
 
     def wizard(self):
         return self.app.screen
@@ -127,16 +126,23 @@ class WizardTest(UITest):
         await self.select_field(labels_text.MSG_WIZARD_CREATE_BUTTON)
         await self.press(Key.ENTER)
 
+    async def open_wizard(self):
+        """Go back to the main screen, the one page whose W opens the wizard, from wherever the last step left the tracker, and press W."""
+        while not isinstance(self.app.screen, MainPage):
+            await self.press(Key.ESCAPE)
+        await self.press(keybindings.MainPage.WIZARD)
+
     async def start_with(self, start):
-        """Choose one of the four ways to start in the dialog that F5 opens on a song the wizard made, which then opens the wizard."""
+        """Choose one of the four ways to start in the dialog that W opens on a song the wizard made, which then opens the wizard."""
         self.assertIsInstance(self.app.screen, ChoiceDialog)
         await self.press(*[Key.DOWN] * starts.STARTS.index(start), Key.ENTER)
 
     async def make_a_song_and_open_the_wizard_on_it(self):
-        """Make a song with the wizard, which becomes current, and press F5 again, which asks how to start; return the song's name."""
+        """Make a song with the wizard, which becomes current and opens on Arrange, go back to the main screen and press W again,
+        which asks how to start; return the song's name."""
         await self.choose_genre_and_subgenre()
         await self.create()
-        await self.press(keybindings.Page.WIZARD)
+        await self.open_wizard()
         return self.document.get_current_song_name()
 
     def song_data(self, name):
@@ -145,14 +151,14 @@ class WizardTest(UITest):
 
 class TestWizardPage(WizardTest):
 
-    async def test_f5_opens_the_wizard_from_any_page_with_the_cursor_in_the_tree_on_genre(self):
+    async def test_w_on_the_main_screen_opens_the_wizard_with_the_cursor_in_the_tree_on_genre(self):
         self.assertIsInstance(self.wizard(), WizardPage)
         self.assertFalse(self.wizard().in_fields)
         self.assertEqual(self.wizard().branch().name(), labels_text.MSG_WIZARD_GENRE_BRANCH)
-        await self.press(Key.ESCAPE, keybindings.ConfirmDialog.YES, keybindings.MainPage.SONGS, keybindings.Page.WIZARD)
-        self.assertIsInstance(self.wizard(), WizardPage)
         await self.press(Key.ESCAPE, keybindings.ConfirmDialog.YES)
-        self.assertIsInstance(self.app.screen, SongsPage)
+        self.assertIsInstance(self.app.screen, MainPage)
+        await self.open_wizard()
+        self.assertIsInstance(self.wizard(), WizardPage)
 
     async def test_the_tree_is_steered_to_a_wizard_panel_by_its_name_from_the_tree_and_from_a_panels_fields(self):
         names = [branch.name() for _, branch in self.wizard().rows()]
@@ -164,12 +170,6 @@ class TestWizardPage(WizardTest):
         await self.go_to_panel(names[1])
         self.assertFalse(self.wizard().in_fields)
         self.assertEqual(self.wizard().panel_under_cursor(), names[1])
-
-    async def test_f5_in_the_wizard_says_the_wizard_is_open(self):
-        await self.press(keybindings.Page.WIZARD)
-        self.assertIsInstance(self.wizard(), WizardPage)
-        self.assertEqual(len(self.app.pages()), 2)
-        self.assertIn(messages.MSG_WIZARD_ALREADY_OPEN, self.text())
 
     async def test_the_tree_lists_genre_form_and_create_and_the_fields_of_the_branch_under_the_cursor_show(self):
         text = self.text()
@@ -461,7 +461,7 @@ class TestWizardPage(WizardTest):
         await self.create()
         first = self.document.get_current_song_name()
         first_data = self.document.get_setlist().get_item(section=Section.SONGS, name=first).to_data()
-        await self.press(keybindings.Page.WIZARD)
+        await self.open_wizard()
         await self.start_with(starts.NEW_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
         second = self.wizard().get_song_name()
@@ -1080,7 +1080,7 @@ class TestWizardForm(WizardTest):
         await self.create()
         self.assertIsInstance(self.app.screen, ArrangePage)
         self.assertEqual(len(self.document.song().get_scenes()), len(sections))
-        await self.press(keybindings.Page.WIZARD)
+        await self.open_wizard()
         await self.start_with(starts.NEW_FROM_LAST)
         self.assertEqual(self.sections(), sections)
         self.assertTrue(self.choices().get_song_form().has_own_form())
@@ -1620,13 +1620,13 @@ class TestWizardStart(WizardTest):
         for start in starts.STARTS:
             self.assertIn(labels_text.MSG_WIZARD_START_NAMES[start], text)
         await self.press(Key.ESCAPE)
-        self.assertIsInstance(self.app.screen, ArrangePage)
+        self.assertIsInstance(self.app.screen, MainPage)
 
     async def test_the_last_row_of_the_dialog_is_cancel_which_opens_no_wizard(self):
         await self.make_a_song_and_open_the_wizard_on_it()
         self.assertIn(labels_text.MSG_WIZARD_START_CANCEL, self.text())
         await self.press(*[Key.DOWN] * len(starts.STARTS), Key.ENTER)
-        self.assertIsInstance(self.app.screen, ArrangePage)
+        self.assertIsInstance(self.app.screen, MainPage)
 
     async def test_the_wizard_asks_before_closing_and_names_no_choices_until_something_is_changed_after_the_start(self):
         await self.make_a_song_and_open_the_wizard_on_it()
@@ -1635,7 +1635,7 @@ class TestWizardStart(WizardTest):
         await self.press(Key.ESCAPE)
         self.assertIn(messages.MSG_WIZARD_CLOSE_UNCHANGED_QUESTION, self.text())
         await self.press(keybindings.ConfirmDialog.YES)
-        self.assertIsInstance(self.app.screen, ArrangePage)
+        self.assertIsInstance(self.app.screen, MainPage)
 
     async def test_a_new_song_from_the_last_settings_starts_with_the_songs_choices_and_a_name_of_its_own(self):
         first = await self.make_a_song_and_open_the_wizard_on_it()
@@ -1687,14 +1687,14 @@ class TestWizardStart(WizardTest):
         first = await self.make_a_song_and_open_the_wizard_on_it()
         await self.press(Key.ESCAPE)
         # A third song after it, so that the replaced song's place is not the last.
-        await self.press(keybindings.Page.WIZARD)
+        await self.open_wizard()
         await self.start_with(starts.NEW_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
         await self.create()
         third = self.document.get_current_song_name()
         third_data = self.song_data(third)
         self.document.select_song(first)
-        await self.press(keybindings.Page.WIZARD)
+        await self.open_wizard()
         await self.start_with(starts.REPLACE_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
         # The name is only shown, since a replaced song keeps it.
@@ -1713,7 +1713,7 @@ class TestWizardStart(WizardTest):
         await self.press(Key.ESCAPE)
         self.document.change_set(self.document.song().set_tempo, self.document.song().get_tempo() + 1)
         edited = self.document.get_setlist().to_data()
-        await self.press(keybindings.Page.WIZARD)
+        await self.open_wizard()
         await self.start_with(starts.REPLACE_FROM_SCRATCH)
         await self.choose_genre_and_subgenre()
         await self.create()

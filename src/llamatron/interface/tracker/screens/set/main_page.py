@@ -54,7 +54,7 @@ NAME_GAP = drawing.SPACE
 BORDERS = 2
 # A cell's three lines: its top edge, its key and name, and its bottom edge.
 CELL_LINES = 3
-# The rows of the geometry: Arrange's bar, three rows of buttons, and the two rows of actions in the bar under them.
+# The rows of the geometry: Arrange's bar beside the Real Time switch, three rows of buttons, and the two rows of actions in the bar under them.
 ARRANGE_ROW = 0
 BUTTON_ROWS = 3
 BAR_ROWS = 2
@@ -65,7 +65,7 @@ LINES_ABOVE_BAR = 1
 ARROW_STEPS = {Key.UP: (-1, 0), Key.DOWN: (1, 0), Key.LEFT: (0, -1), Key.RIGHT: (0, 1)}
 # The colour each page's cell is boxed in, its page's theme toned to the edges' one brightness; a cell with none is boxed dim.
 CELL_THEMES = {
-    labels_text.PageName.SONGS: themes.SONGS, labels_text.PageName.PATTERNS: themes.PATTERNS, labels_text.PageName.GENERATORS: themes.GENERATORS,
+    labels_text.PageName.SONGS: themes.SONGS, labels_text.PageName.WIZARD: themes.WIZARD, labels_text.PageName.PATTERNS: themes.PATTERNS, labels_text.PageName.GENERATORS: themes.GENERATORS,
     labels_text.PageName.SCALES: themes.SCALES, labels_text.PageName.GROOVES: themes.GROOVES, labels_text.PageName.INSTRUMENTS: themes.INSTRUMENTS, labels_text.PageName.REGISTERS: themes.REGISTERS, labels_text.PageName.DRAWS: themes.DRAWS,
     labels_text.PageName.FILE: themes.SET_FILE,
 }
@@ -184,6 +184,7 @@ class MainPage(Page):
         return [
             self.bind(self.KEYS.FILE, action=functools.partial(self.open_page, FilePage)),
             self.bind(self.KEYS.SONGS, action=functools.partial(self.open_page, SongsPage)),
+            self.bind(self.KEYS.WIZARD, action=self.open_wizard),
             self.bind(self.KEYS.PATTERNS, action=functools.partial(self.open_page, PatternsPage)),
             self.bind(self.KEYS.GENERATORS, action=functools.partial(self.open_page, GeneratorsPage)),
             self.bind(self.KEYS.SCALES, action=functools.partial(self.open_page, ScalesPage)),
@@ -199,6 +200,10 @@ class MainPage(Page):
     def open_page(self, page_class):
         """Open one of the pages the main screen's buttons open."""
         self.show_page(page_class(self.holder))
+
+    def open_wizard(self):
+        """Open the song wizard, which asks first how to start on a song the wizard made."""
+        self.holder.show_wizard(self)
 
     def open_draws_page(self):
         """Open the Draws page, which the program names by its section."""
@@ -249,18 +254,18 @@ class MainPage(Page):
         ]
 
     def rows(self):
-        """Return the cells by the geometry drawn, six rows of three: Arrange across the first row; Songs,
-        Patterns and Scales; Generators, Draws and Grooves; Instruments, Registers and the Real Time switch; then the bar's two
-        rows, Open, Import and File/Global over Save, Export and Quit."""
+        """Return the cells by the geometry drawn, six rows of three: Arrange across two columns of the first row, beside the
+        Real Time switch, since Arrange plays the song when it is on; Songs, the Wizard and Patterns; Scales, Generators and Draws;
+        Grooves, Instruments and Registers; then the bar's two rows, Open, Import and File/Global over Save, Export and Quit."""
         pages = {item.binding: item for item in self.keys()}
         keys = self.KEYS
         save, open_set, export, import_midi_here, quit_here = self.actions()
         arrange = pages[keys.ARRANGE]
         return [
-            [arrange, arrange, arrange],
-            [pages[keys.SONGS], pages[keys.PATTERNS], pages[keys.SCALES]],
-            [pages[keys.GENERATORS], pages[keys.DRAWS], pages[keys.GROOVES]],
-            [pages[keys.INSTRUMENTS], pages[keys.REGISTERS], pages[keys.REAL_TIME]],
+            [arrange, arrange, pages[keys.REAL_TIME]],
+            [pages[keys.SONGS], pages[keys.WIZARD], pages[keys.PATTERNS]],
+            [pages[keys.SCALES], pages[keys.GENERATORS], pages[keys.DRAWS]],
+            [pages[keys.GROOVES], pages[keys.INSTRUMENTS], pages[keys.REGISTERS]],
             [open_set, import_midi_here, pages[keys.FILE]],
             [save, export, quit_here],
         ]
@@ -313,8 +318,8 @@ class MainPage(Page):
 
     def move_cursor(self, name):
         """Move by the geometry drawn: an arrow goes to the cell beside, above or below, and none goes past an edge.
-        Arrange is three columns wide, so Left and Right stay on it, and Down from it goes back to the button the cursor came
-        from, or to the first one."""
+        Arrange is two columns wide, so Left stays on it, and Down from it goes back to the button the cursor came from, or to
+        the first one."""
         rows = self.rows()
         there = moved(rows=rows, position=self.row_and_column(), key=name)
         if there is None:
@@ -461,7 +466,10 @@ class MainPage(Page):
         total = lefts[-1] + widths[-1]
         selected = self.selected()
         grid = [Canvas(total) for _ in range((1 + BUTTON_ROWS) * CELL_LINES)]
-        self.draw_cell(canvases=grid[:CELL_LINES], left=0, item=rows[ARRANGE_ROW][0], selected=self.on_arrange(), width=total)
+        first = grid[:CELL_LINES]
+        real_time = rows[ARRANGE_ROW][-1]
+        self.draw_cell(canvases=first, left=0, item=rows[ARRANGE_ROW][0], selected=self.on_arrange(), width=lefts[-1] - CELL_GAP)
+        self.draw_cell(canvases=first, left=lefts[-1], item=real_time, selected=real_time.binding is selected.binding, width=widths[-1])
         for number, row in enumerate(rows[1:1 + BUTTON_ROWS], start=1):
             lines = grid[number * CELL_LINES:(number + 1) * CELL_LINES]
             for column, item in enumerate(row):

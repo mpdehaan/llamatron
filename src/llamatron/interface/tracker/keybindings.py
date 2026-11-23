@@ -49,8 +49,6 @@ class Page:
     HELP = Binding(Key.F1, legends.KeyName.F1, legends.What.HELP)
     # About is F3, so that F2 renames as on Windows.
     ABOUT = Binding(Key.F3, legends.KeyName.F3, legends.What.ABOUT)
-    # The song wizard is F5, set apart from F1 and F3, which only inform: F9 and the keys above it are the Mac's own.
-    WIZARD = Binding(Key.F5, legends.KeyName.F5, legends.What.WIZARD)
     BACK = Binding(Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.BACK)
     # The keys every page has, in the order the F1 dialog lists them. Ctrl+S is Save because a plain
     # letter would be typed into names, and Cmd+S never reaches a terminal program. Open is Ctrl+O,
@@ -63,8 +61,7 @@ class Page:
     # pushed the step's description off the screen; the F1 dialog shows them all. On a Mac, F1 and
     # F2 need Fn unless the function keys are set to standard keys.
     # Silence sits before Undo, so that the F1 dialog's two columns of the keys besides F1 keep Undo above Redo.
-    # The wizard sits after Silence, so that Undo still starts the second column, above Redo.
-    EVERYWHERE = [SAVE, OPEN_SET, EXPORT, SILENCE, WIZARD, UNDO, REDO, HELP, ABOUT, QUIT_NOW]
+    EVERYWHERE = [SAVE, OPEN_SET, EXPORT, SILENCE, UNDO, REDO, HELP, ABOUT, QUIT_NOW]
     IN_HELP = [BACK]
     IN_LEGEND = [BACK]
 
@@ -74,6 +71,8 @@ class MainPage(Page):
 
     FILE = Binding(Key.F, legends.KeyName.F, labels.PageName.FILE)
     SONGS = Binding(Key.S, legends.KeyName.S, labels.PageName.SONGS)
+    # The song wizard, a cell beside Songs, opened here alone, by a letter, since many keyboards have no F keys to spare.
+    WIZARD = Binding(Key.W, legends.KeyName.W, labels.PageName.WIZARD)
     PATTERNS = Binding(Key.P, legends.KeyName.P, labels.PageName.PATTERNS)
     GENERATORS = Binding(Key.G, legends.KeyName.G, labels.PageName.GENERATORS)
     SCALES = Binding(Key.Z, legends.KeyName.Z, labels.PageName.SCALES)
@@ -97,7 +96,7 @@ class MainPage(Page):
     FOOTER_HELP = Binding(Key.F1, legends.KeyName.F1, legends.MSG_HELP_FOOTER_WHAT)
     FOOTER_ABOUT = Binding(Key.F3, legends.KeyName.F3, legends.MSG_ABOUT_FOOTER_WHAT)
     # The pages in the order of their cells, four to a row.
-    PAGES = [FILE, SONGS, PATTERNS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, REGISTERS, DRAWS, ARRANGE, REAL_TIME]
+    PAGES = [FILE, SONGS, WIZARD, PATTERNS, GENERATORS, SCALES, GROOVES, INSTRUMENTS, REGISTERS, DRAWS, ARRANGE, REAL_TIME]
     IN_HELP = [*PAGES, OPEN_SET_HERE, EXPORT_HERE, IMPORT_HERE, QUIT, SELECT, OPEN]
     IN_LEGEND = [SELECT, OPEN, FOOTER_HELP, FOOTER_ABOUT]
 

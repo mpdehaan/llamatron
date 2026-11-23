@@ -32,7 +32,7 @@ class TestWizardListening(PlaybackTest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.press(keybindings.Page.WIZARD)
+        await self.press(keybindings.MainPage.WIZARD)
         choices = self.app.screen.get_choices()
         choices.set_genre(GENRE)
         choices.set_subgenre(SUBGENRE)

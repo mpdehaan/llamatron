@@ -354,7 +354,7 @@ class KeyTour(UITest):
         await self.walk()
         # The song wizard: its tree, then the fields of its Genre branch with a genre and a subgenre chosen, so that every field shows,
         # then the tree again, where the Form branch now opens, and the fields of the Create branch, whose button is not pressed.
-        await self.press(keybindings.Page.WIZARD)
+        await self.press(keybindings.MainPage.WIZARD)
         await self.walk()
         more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
         # The walk left the tree's cursor on its last branch, so it goes back up to Genre first.
