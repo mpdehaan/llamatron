@@ -114,21 +114,18 @@ def capture(directory):
 
 
 def compare(directory):
-    """Capture again beside the directory's capture and print where any stop's screen differs; return whether all are the same."""
-    again = directory.rstrip(os.sep) + AGAIN
-    if not capture(again):
+    """Capture again beside the directory's capture and print where any stop's screen differs; return whether all are the same.
+    A stop that differs is captured a second time and counted only if it differs again, since the tour presses keys without
+    waiting and a page that works something out in the background, as the song wizard does, can be caught before it is done."""
+    differing, stops = differences(before=directory, after=directory.rstrip(os.sep) + AGAIN)
+    if differing is None:
         return False
-    differing = []
-    stops = 0
-    for size in SIZES:
-        name = FILE_NAME.format(columns=size[0], rows=size[1])
-        before = read_stops(os.path.join(directory, name))
-        after = read_stops(os.path.join(again, name))
-        if len(before) != len(after):
-            print(MSG_STOPS_DIFFER.format(before=len(before), after=len(after), size=size))
+    if differing:
+        again, _ = differences(before=directory, after=directory.rstrip(os.sep) + AGAIN + AGAIN)
+        if again is None:
             return False
-        stops = len(before)
-        differing += [(size, number, old, new) for number, (old, new) in enumerate(zip(before, after)) if old != new]
+        twice = {(size, number) for size, number, _, _ in again}
+        differing = [difference for difference in differing if (difference[0], difference[1]) in twice]
     if not differing:
         print(MSG_SAME.format(stops=stops, sizes=len(SIZES)))
         return True
@@ -136,6 +133,25 @@ def compare(directory):
     for size, number, old, new in differing[:MOST_SHOWN]:
         show_difference(size=size, number=number, old=old, new=new)
     return False
+
+
+def differences(*, before, after):
+    """Capture into after and return the stops whose screens differ from before's, each (size, number, old, new), and how many
+    stops a size has; or None for the differences where the capture failed or the tour stopped a different number of times."""
+    if not capture(after):
+        return None, 0
+    differing = []
+    stops = 0
+    for size in SIZES:
+        name = FILE_NAME.format(columns=size[0], rows=size[1])
+        old_stops = read_stops(os.path.join(before, name))
+        new_stops = read_stops(os.path.join(after, name))
+        if len(old_stops) != len(new_stops):
+            print(MSG_STOPS_DIFFER.format(before=len(old_stops), after=len(new_stops), size=size))
+            return None, 0
+        stops = len(old_stops)
+        differing += [(size, number, old, new) for number, (old, new) in enumerate(zip(old_stops, new_stops)) if old != new]
+    return differing, stops
 
 
 def read_stops(path):

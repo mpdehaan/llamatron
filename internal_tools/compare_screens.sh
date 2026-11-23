@@ -9,7 +9,6 @@ set -eu
 # Run from the top folder, the one above this script's, wherever it is started from.
 cd "$(dirname "$0")/.."
 
-# The hash seed is fixed so that two captures of the same code always match: one panel of the song wizard was seen to show
-# a remark that depends on the order of a hash. The tool says what it found on its output; what goes to the errors is asyncio's
-# notes of slow steps, which the tests turn on, and is left out.
+# The hash seed is fixed so that nothing a capture shows can differ by the order of a hash. The tool says what it found on its
+# output; what goes to the errors is asyncio's notes of slow steps, which the tests turn on, and is left out.
 exec env PYTHONHASHSEED=0 PYTHONPATH=. .venv/bin/python internal_tools/compare_screens.py "${1:-compare}" "${2:-.compare_screens}" 2>/dev/null
