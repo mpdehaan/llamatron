@@ -103,6 +103,12 @@ class Shot:
     wizard: str = None
 
 
+# The minimal techno set's bass line that the pattern editor's shots show, and the keys that find it on the Patterns page.
+BASS_LINE = 'tumble'
+TO_BASS_LINE = [keybindings.MainPage.PATTERNS, keybindings.ListPage.SEARCH, *BASS_LINE, Key.ENTER, Key.ENTER]
+# How many tabs to the right of Settings the Scene page's Shapes tab stands: Velocity, Tempo Ramps, Shapes.
+SHAPES_TAB = 3
+
 SHOTS = [
     Shot(name='main', keys=[]),
     Shot(name='file', keys=[keybindings.MainPage.FILE]),
@@ -111,14 +117,14 @@ SHOTS = [
     Shot(name='scales', keys=[keybindings.MainPage.SCALES]),
     Shot(name='scale', keys=[keybindings.MainPage.SCALES, Key.ENTER]),
     Shot(name='patterns', keys=[keybindings.MainPage.PATTERNS]),
-    # The third pattern of the song is a bass line, which shows more rows than a drum pattern.
-    Shot(name='pattern_editor', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER]),
-    Shot(name='pattern_editor_rows', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR]),
+    # A bass line, which shows more rows than a drum pattern, found by searching the Patterns page, whatever its group's tab.
+    Shot(name='pattern_editor', keys=TO_BASS_LINE),
+    Shot(name='pattern_editor_rows', keys=[*TO_BASS_LINE, keybindings.PatternEditor.TO_EDITOR]),
     # Tab opens the rows under the roll, PgDn jumps from heading to heading (Basics, Chord, Timing, Advanced, CCs, Use Registers, Set Registers), Space opens the section and Down goes to its first row.
-    Shot(name='pattern_editor_advanced', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 4, Key.SPACE, Key.DOWN]),
+    Shot(name='pattern_editor_advanced', keys=[*TO_BASS_LINE, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 4, Key.SPACE, Key.DOWN]),
     # The Chord section's heading is the second: Space opens it, Down reaches the Chord row and Enter opens the Chord Selector, where Right three times reaches the scales and Down and Enter open the flyout of Common.
-    Shot(name='chord_selector', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.SPACE, Key.DOWN, Key.ENTER, Key.RIGHT, Key.RIGHT, Key.RIGHT, Key.DOWN, Key.ENTER]),
-    Shot(name='pattern_editor_cc', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 5, Key.SPACE, Key.DOWN]),
+    Shot(name='chord_selector', keys=[*TO_BASS_LINE, keybindings.PatternEditor.TO_EDITOR, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.SPACE, Key.DOWN, Key.ENTER, Key.RIGHT, Key.RIGHT, Key.RIGHT, Key.DOWN, Key.ENTER]),
+    Shot(name='pattern_editor_cc', keys=[*TO_BASS_LINE, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 5, Key.SPACE, Key.DOWN]),
     # With Real Time on, Up from the first scene's name reaches Arrange's corner, and Right the first track's name.
     Shot(name='track_editor', keys=[keybindings.MainPage.ARRANGE, Key.UP, Key.RIGHT, Key.ENTER]),
     # Space opens the Arpeggiator group, the first on the Generators page.
@@ -139,9 +145,9 @@ SHOTS = [
     Shot(name='scene_view_played', keys=[keybindings.MainPage.ARRANGE, keybindings.ArrangePage.SCENE_VIEW, keybindings.ArrangePage.TO_PLAYED], song=DENSITY_SONG),
     Shot(name='scene', keys=[keybindings.MainPage.ARRANGE, Key.ENTER]),
     Shot(name='clip', keys=[keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER]),
-    # The settings pages' sections, opened with PgDn to a heading and Space: a scene's Velocity Ramp In, past its two tempo ramps and a clip's Strum.
-    Shot(name='scene_swell', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.SPACE], song=SWELL_SONG),
-    Shot(name='scene_density', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, Key.PAGE_DOWN, Key.SPACE], song=DENSITY_SONG),
+    # The Scene page's tabs, chosen from the row of tabs and gone into with Down: Velocity, the second, and Shapes, the fourth.
+    Shot(name='scene_swell', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, keybindings.FieldPage.TO_TABS, Key.RIGHT, Key.DOWN], song=SWELL_SONG),
+    Shot(name='scene_density', keys=[keybindings.MainPage.ARRANGE, Key.ENTER, keybindings.FieldPage.TO_TABS, *[Key.RIGHT] * SHAPES_TAB, Key.DOWN], song=DENSITY_SONG),
     Shot(name='instruments', keys=[keybindings.MainPage.INSTRUMENTS]),
     Shot(name='instrument_editor', keys=[keybindings.MainPage.INSTRUMENTS, Key.ENTER]),
     Shot(name='chords_generator', generator=chords_plugin.SECTION, generator_name=SHOWN_PROGRESSION, keys=[], song=PROGRESSION_SONG),

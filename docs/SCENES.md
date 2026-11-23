@@ -72,7 +72,7 @@ A [Shapes](generators/SHAPES.md) generator's Swell, in a clip's chains, scales t
 
 In `examples/learning/14_bolero_swell.yml`, each scene's Velocity Ramp In starts where the scene before ended, for one long crescendo:
 
-![A scene's Velocity Ramp In section open](screenshots/scene_swell.svg)
+![A scene's Velocity tab, with its Velocity Ramp In](screenshots/scene_swell.svg)
 
 How loud a velocity sounds is up to the instrument: some synth presets ignore velocity, and then none of this is heard.
 
@@ -80,4 +80,4 @@ How loud a velocity sounds is up to the instrument: some synth presets ignore ve
 
 The Scene page's sections shape every clip of the scene over its length. In `examples/by_genre/electronic/edm_density.yml`, the intro's Density ramps from 25 to 100 across the scene, filling in to a build:
 
-![A scene's Density section open](screenshots/scene_density.svg)
+![A scene's Shapes tab, with its Density](screenshots/scene_density.svg)
