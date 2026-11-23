@@ -213,7 +213,11 @@ class PianoRoll(BindsKeys):
         """Return how wide a row's label can be, from the label's parts at their widest: the widest note name with the widest octave label, or the octave alone, and the largest degree.
 
         The width is worked out from the parts rather than from a row because a row's label needs a note that exists, and the top row's may not while a degree past the scale's top is being typed.
+        It is worked out once until the set changes, since every key asks it many times.
         """
+        return self.remembered(key=PianoRoll.widest_row_label.__name__, compute=self._widest_row_label)
+
+    def _widest_row_label(self):
         song = self.document().song()
         octave = max((str(song.get_setlist().shown_octave(number)) for number in (limits.MIN_OCTAVE, limits.MAX_OCTAVE)), key=len)
         notes = [marks.MSG_ROLL_OCTAVE_ONLY.format(octave=octave), *[name + octave for name in note_values.ROOT_NAMES]]

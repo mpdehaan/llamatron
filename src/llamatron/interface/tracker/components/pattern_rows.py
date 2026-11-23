@@ -75,6 +75,7 @@ ROW_CLASSES = {
 # The slot each row of the Keyswitch section is for, by the row's name in the rows view.
 SLOT_OF_ROW = {slot_row_name(slot): slot for slot in range(file_format.KEYSWITCH_SLOT_COUNT)}
 KEYSWITCH_SLOTS_KEY = 'keyswitch slots'
+SHOWN_SECTIONS_KEY = 'shown sections'
 # The arrows that move the cursor along the steps; the others move it between rows.
 STEP_ARROWS = (Key.LEFT, Key.RIGHT)
 TOP_ROW = 0
@@ -139,8 +140,12 @@ class PatternRows(BindsKeys):
 
     def shown_sections(self):
         """Return the sections that have rows in this pattern: a drum pattern has no Chord section, since none of its rows mean
-        anything there, and the Keyswitch section shows only once an instrument's Keyswitch Map or a step gives it a slot."""
-        return [section for section in SECTIONS if self.section_rows(section)]
+        anything there, and the Keyswitch section shows only once an instrument's Keyswitch Map or a step gives it a slot. Worked
+        out once until the set changes, since every key asks it many times, to find the cursor's row and to draw."""
+        editor = self.editor
+        document = editor.document()
+        key = (SHOWN_SECTIONS_KEY, editor.item, editor.opened_track)
+        return document.remembered(key=key, on=(document,), compute=lambda: [section for section in SECTIONS if self.section_rows(section)])
 
     def section_of(self, row):
         """Return the section a row is in, by its name or its heading's, or None for a pinned row."""

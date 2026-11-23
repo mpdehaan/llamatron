@@ -526,8 +526,15 @@ class Song(HoldsSections, HoldsSettings):
         self._set_section(section=Section.DRAWS, items=changed or None)
 
     def draws_with_values(self):
-        """Return the names of the draws that hold a value in a slot, in order: the draws switched on, since a draw starts empty."""
-        return [name for name in file_format.DRAW_NAMES if self.get_draw(name).filled_places()]
+        """Return the names of the draws that hold a value in a slot, in order: the draws switched on, since a draw starts empty,
+        and only one the file writes can hold one."""
+        section = self._section(Section.DRAWS)
+        names = []
+        for name in file_format.DRAW_NAMES:
+            draw = section.find(name)
+            if draw is not None and draw.filled_places():
+                names.append(name)
+        return names
 
     def uses_draws(self):
         """Return whether any draw holds a value, so that a render need only follow the draws when one does."""
