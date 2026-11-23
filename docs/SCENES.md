@@ -58,7 +58,7 @@ The two ramps are the fades. Velocity Ramp In starts at the scene's first bar an
 
 | Setting | What it does |
 | --- | --- |
-| Velocity in start, Velocity out start | The percentage the ramp starts from. Blank, the ramp starts from the Velocity field's value, shown as `80% (from Velocity)` or the like. |
+| Velocity in start, Velocity out start | The percentage the ramp starts from. Blank, the ramp starts from the Velocity field's value, shown as `80% (from velocity)` or the like. |
 | Velocity in end, Velocity out end | The percentage the ramp reaches. Blank, the ramp reaches the Velocity field's value. |
 | Velocity in over, Velocity out over | How many bars the ramp takes, from 1 to 9999. Blank, there is no ramp. |
 

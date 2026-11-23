@@ -25,7 +25,7 @@ The Settings tab has two columns. Order says how the clip plays its patterns:
 | Setting | What it does |
 | --- | --- |
 | Pattern order | Which pattern of the list comes next, each pass through the list (see Pattern Lists below). |
-| Step direction | Overrides the play direction of the steps inside each pattern of the list, and of the pattern the clip morphs to. `Bksp` goes back to each pattern's own direction, shown as `forward (from pattern)` or the like, or `(each pattern)` for a list of several. |
+| Step direction | Overrides the play direction of the steps inside each pattern of the list, and of the pattern the clip morphs to. `Bksp` goes back to each pattern's own direction, shown as `forward (from pattern)` or the like, or `(from each pattern)` for a list of several. |
 | Repeat | How many times the clip plays its whole list of patterns, from 1 to 9999, before staying silent while the scene's other clips finish. |
 | Loop | Plays the clip until the scene's longest clip that doesn't loop is done. `Space` or `ENTER` toggles it. |
 | Morph to | With Repeat above 1, a second pattern to change into across the repeats. |

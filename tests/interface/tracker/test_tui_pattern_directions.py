@@ -11,7 +11,7 @@ from llamatron.interface.tracker.screens.pattern.pattern_editor import Reconfigu
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, Row
-from llamatron.user_strings import labels, marks, messages
+from llamatron.user_strings import labels, legends, marks, messages
 from tests.support import ui_testing
 from tests.support.pattern_editor_testing import open_section
 from tests.support.rendering import render_song
@@ -63,9 +63,13 @@ class TestDirectionsAndGrab(UITest):
         page = await self.clip_page()
         await self.go_to(page, DIRECTION)
         await self.press(Key.ENTER)
-        self.assertEqual(self.app.screen.options[0], "(pattern)  use each pattern's direction")
-        self.assertEqual(self.app.screen.options[1], 'forward    first step to last')
-        self.app.screen.cursor.set_place(self.app.screen.options.index('brownian   on 50%, back 25%, stay 25%'))
+        first = self.app.screen.options[0]
+        self.assertTrue(first.startswith(labels.MSG_PATTERN_DIRECTION_OPTION))
+        self.assertTrue(first.endswith(legends.MSG_PATTERN_DIRECTION_WHAT))
+        options = self.app.screen.options
+        self.assertTrue(options[1].startswith(Direction.FORWARD))
+        self.assertTrue(options[1].endswith(labels.MSG_DIRECTION_NAMES[Direction.FORWARD]))
+        self.app.screen.cursor.set_place(next(place for place, option in enumerate(options) if option.startswith(Direction.BROWNIAN)))
         await self.press(Key.ENTER)
         self.assertEqual(self.document.clip_slot(index=0, track=LEAD).get_direction(), Direction.BROWNIAN)
 

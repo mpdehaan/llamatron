@@ -106,14 +106,14 @@ MSG_VELOCITY_PERCENT_SHOWN = '{percent}%'
 # A shape's start or end, Density, Swell or Articulate, as a percentage once set.
 MSG_SHAPE_PERCENT_SHOWN = '{percent}%'
 MSG_FROM_SCENE_SHOWN = '{value} (from scene)'
-MSG_FROM_VELOCITY_SHOWN = '{value} (from Velocity)'
+MSG_FROM_VELOCITY_SHOWN = '{value} (from velocity)'
 MSG_DETAILS_VELOCITY = 'velocity: {percent}%'
 MSG_DETAILS_VELOCITY_RAMPS = 'velocity: {percent}%*'
 MSG_ONE_STEP_SHOWN = '(one step)'
 MSG_CLIP_NAMED_FOR_PATTERN = '(pattern: {pattern})'
 # A clip of several patterns on Arrange: its first pattern and how many more follow.
 MSG_CLIP_PATTERNS_COUNTED = '{name} +{more}'
-MSG_EACH_PATTERN_DIRECTION_SHOWN = '(each pattern)'
+MSG_EACH_PATTERN_DIRECTION_SHOWN = '(from each pattern)'
 MSG_PATTERN_DIRECTION_SHOWN = '{direction} (from pattern)'
 
 # interface/tracker/screens/shared/page.py and interface/tracker/key_table.py: the key names, the labels and the words every page shares
@@ -165,7 +165,7 @@ MSG_CHAIN_STEP_SHOWN = '{name} ({kind})'
 MSG_CHAIN_STEP_AGAIN = '{name} {number} ({kind})'
 # The arp pages: how they show settings a file leaves out, and what they start from.
 # A generator's step left as the step size of the pattern each clip plays.
-MSG_PATTERN_STEP_SHOWN = '(pattern)'
+MSG_PATTERN_STEP_SHOWN = '(from pattern)'
 # A list of chains, as a field shows it.
 MSG_CHAIN_JOIN = ', '
 # A draw's slot on the Draws page's strip: right-justified with a space after it, in a cell as wide as -99 and a space either side.
@@ -288,7 +288,7 @@ MSG_UNSET_MARK = '.'
 MSG_BLOCKED_CELL = '/'
 MSG_DRUM_LETTER_ROW = 'Note'
 MSG_STEP_SIZE_SHOWN = 'Step size {size}{whose}'
-MSG_FROM_SONG_SHOWN = " (song's)"
+MSG_FROM_SONG_SHOWN = ' (from song)'
 
 # interface/tracker/screens/set/grooves_page.py
 MSG_FACTORY_GROOVE_SHOWN = 'factory'
@@ -320,7 +320,7 @@ MSG_GROOVE_OFF_SHOWN = 'off'
 MSG_SONG_GROOVE_SHOWN = '{groove} (from song)'
 MSG_FROM_INSTRUMENT_SHOWN = '{value} (from instrument)'
 MSG_FROM_SET_SHOWN = '{value} (from set)'
-MSG_SCENE_OR_SONG_GROOVE_SHOWN = '(scene or song)'
+MSG_SCENE_OR_SONG_GROOVE_SHOWN = '(from scene or song)'
 
 # interface/tracker/screens/shared/list_page.py and interface/tracker/screens/arrange/arrange_page.py
 # The row at the bottom of a list that adds to it, and the cell on Arrange that adds a scene or a track.

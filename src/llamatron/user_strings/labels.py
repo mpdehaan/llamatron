@@ -43,7 +43,7 @@ MSG_STATEMENT_LINE_LABEL = ' '
 # A scene's or a clip's field for each draw it can start over, like "Reset AD".
 MSG_RESET_LABEL = 'Reset {name}'
 MSG_SONG_OPTION = '(song)'
-MSG_SCENE_OPTION = '(scene)'
+MSG_SCENE_OPTION = 'from scene'
 MSG_NAME_LABEL = 'Name'
 MSG_SCALE_LABEL = 'Scale'
 MSG_TEMPO_LABEL = 'Tempo'
@@ -264,7 +264,7 @@ MSG_DEFAULT_DRUM_OCTAVE_LABEL = 'Default drum octave'
 MSG_OCTAVE_LABELS_LABEL = 'Octave labels'
 # interface/tracker/screens/set/visualizer_fields.py: the visualizer mode Arrange shows first, what none of a song's own is called, and the section that hides modes.
 MSG_VISUALIZER_LABEL = 'Visualizer'
-MSG_SETS_VISUALIZER_CHOICE = "(set's)"
+MSG_SETS_VISUALIZER_CHOICE = 'from set'
 # The File/Global page's tabs, after its first, MSG_SETTINGS_TAB, and its buttons beside Save and Open.
 MSG_NEW_SET_BUTTON = 'New'
 MSG_SAVE_AS_BUTTON = 'Save As'
@@ -533,7 +533,7 @@ MSG_MUNGE_CHOICES = [
     'apply voice leading (octave shift)',
 ]
 # The clip page's extra choice, for a clip that follows its pattern's direction.
-MSG_PATTERN_DIRECTION_OPTION = '(pattern)'
+MSG_PATTERN_DIRECTION_OPTION = 'from pattern'
 # What each chord symbol means, as the editor describes it.
 MSG_CHORD_NAMES = {
     ChordSymbol.MAJOR: 'major', ChordSymbol.MINOR: 'minor', ChordSymbol.DIMINISHED: 'diminished',

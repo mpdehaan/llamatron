@@ -9,7 +9,7 @@ An arpeggiator plays each chord one note at a time, and keeps going for as long 
 | Setting | What it does |
 | --- | --- |
 | Name | `ENTER` renames the arpeggiator, and every chain using it follows. |
-| Step | How long each note of the chord plays: `(pattern)`, the step size of the pattern each clip plays, which a new arpeggiator starts with, or a time from the list every time setting shares. `Bksp` goes back to `(pattern)`. |
+| Step | How long each note of the chord plays: `(from pattern)`, the step size of the pattern each clip plays, which a new arpeggiator starts with, or a time from the list every time setting shares. `Bksp` goes back to `(pattern)`. |
 | Order | `up` or `down` by pitch, `up_down`, `down_up`, or `random`. |
 | Octave range | Plays the chord again in up to 4 octaves, from 1, which is the chord alone. |
 | Octave jump | `after chord` plays the whole chord before moving up an octave, so C E G becomes C E G C E G; `after each note` plays each note in every octave first, so it becomes C C E E G G. |
