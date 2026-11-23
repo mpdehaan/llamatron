@@ -910,6 +910,11 @@ MSG_WIZARD_GENRE_BRANCH = 'Genre'
 MSG_WIZARD_SUBGENRE_BRANCH = 'Subgenre'
 MSG_WIZARD_FORM_BRANCH = 'Form'
 MSG_WIZARD_CREATE_BRANCH = 'Apply'
+# A tab's own row in its list, at its head, before its parts, by the tab's name: the band's members, and the overview of the
+# composition and of the form.
+MSG_WIZARD_MEMBERS_ROW = 'Members'
+MSG_WIZARD_OVERVIEW_ROW = 'Overview'
+MSG_WIZARD_TAB_OWN_ROWS = {MSG_WIZARD_BAND_BRANCH: MSG_WIZARD_MEMBERS_ROW, MSG_WIZARD_COMPOSITION_BRANCH: MSG_WIZARD_OVERVIEW_ROW, MSG_WIZARD_FORM_BRANCH: MSG_WIZARD_OVERVIEW_ROW}
 MSG_WIZARD_SUBGENRE_LABEL = 'Subgenre'
 MSG_WIZARD_KEY_LABEL = 'Key'
 MSG_WIZARD_FORM_LABEL = 'Form'
@@ -920,8 +925,6 @@ MSG_WIZARD_CREATE_BUTTON = 'Apply'
 # The buttons under the wizard's tab box, which open the tab before or after.
 MSG_WIZARD_BACK_BUTTON = '< Back'
 MSG_WIZARD_NEXT_BUTTON = 'Next >'
-# A tab's own row in its list, at its head, before its parts.
-MSG_WIZARD_TAB_OWN_ROW = 'Whole {name}'
 MSG_WIZARD_SCALE_TYPE_NAMES = {'major': 'Major', 'minor': 'Minor'}
 
 MSG_LISTED_GENERATOR = '{kind} ({name})'

@@ -1035,8 +1035,8 @@ class WizardPage(FieldPage):
         return (labels.MSG_WIZARD_REPLACE_CAPTION if self.replaces() else labels.MSG_WIZARD_CAPTION).format(name=self._song_name)
 
     def tree_lines(self):
-        """Return the chosen tab's list: each row after its cursor's mark, indented by its depth below the tab's own row, which
-        reads Whole and the tab's name, its note dim, and at the line's end the mark of the row whose fields hold the cursor."""
+        """Return the chosen tab's list: each row after its cursor's mark, indented by its depth below the tab's own row, named
+        for what its fields hold (MSG_WIZARD_TAB_OWN_ROWS), its note dim, and at the line's end the mark of the row whose fields hold the cursor."""
         first, end = self.tab_rows()
         lines = []
         for place in range(first, end):
@@ -1048,10 +1048,11 @@ class WizardPage(FieldPage):
         """Return one row of a tab's list."""
         line = Text(no_wrap=True)
         line.append(cursor_mark(under_cursor and not (self.in_fields or self.on_tab_row or self.on_buttons)))
-        line.append(drawing.INDENT * depth)
+        # Each part one space in from the part that holds it, so that a short list keeps its names close to the cursor's mark.
+        line.append(drawing.SPACE * depth)
         name = branch.name()
         if depth == tree_values.TOP:
-            name = labels.MSG_WIZARD_TAB_OWN_ROW.format(name=name.lower())
+            name = labels.MSG_WIZARD_TAB_OWN_ROWS.get(name, name)
         if self.moving and under_cursor:
             name = marks.MSG_WIZARD_CARRIED.format(name=name)
         line.append(name, style=self.name_style(branch=branch, under_cursor=under_cursor))
@@ -1073,15 +1074,13 @@ class WizardPage(FieldPage):
         return Style.DIM if self.refusal_of(branch) else Style.PLAIN
 
     def field_lines(self, *, width, height):
-        """Return the right side's lines: the branch's title, then its fields as a settings page draws them, all dim while the cursor is in the tree."""
+        """Return the right side's lines: the branch's title, then its fields as a settings page draws them, the cursor's mark on a
+        field only while the cursor is in the fields."""
         place = self.cursor.get_place()
         if not self.in_fields:
             self.cursor.set_place(NO_PLACE)
         lines = [Text(drawing.SPACE + self.branch().title(), style=Style.BOLD), *FieldPage.body(self, width=width, height=max(height - 1, 1))]
         self.cursor.set_place(place)
-        if not self.in_fields:
-            for line in lines:
-                line.stylize(Style.DIM)
         return lines
 
     def body(self, *, width, height):
