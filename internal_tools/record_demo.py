@@ -48,6 +48,7 @@ sites expect.
 import argparse
 import importlib.util
 import os
+import pty
 import shutil
 import subprocess
 import sys
@@ -107,9 +108,16 @@ TRIMMING_FOLDER = '.trimming'
 OLD_TRIMMING_MARK = '.trimming.mov'
 SUCCESS = 0
 FAILURE = 1
-# The video tutorial's screen recording, which runs with no time limit and stops when a key is typed into its own terminal, for a take whose length nobody knows.
-TUTORIAL_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'make_video_tutorial.py')
-TUTORIAL_MODULE = 'make_video_tutorial'
+# The screen recording of an interactive take, which runs with no time limit and stops when a key is typed into its own terminal,
+# for a take whose length nobody knows: screencapture of a window or of a rectangle of the screen, and what stops it and how long
+# it may take to write the file after.
+WINDOW_FLAG = '-l'
+REGION_FLAG = '-R'
+SOUND_FLAG = '-G'
+SCREENCAPTURE = 'screencapture'
+CAPTURE_FLAGS = ['-x', '-v']
+STOP_KEY = b'q'
+STOP_TIMEOUT_SECONDS = 60
 REGION_SCRIPT = 'window_region.py'
 REGION_MODULE = 'window_region'
 # Asking FluidSynth's own shell which audio outputs it can play to: the Options line of its device setting.
@@ -187,6 +195,39 @@ NOT_WRITTEN = 'no video was written: screencapture ended with {code}'
 TRIM_GAVE_UP = 'the trim ran longer than {seconds} seconds and was stopped'
 NOT_TRIMMED = 'the video was left as it was, its last seconds showing the terminal: avconvert could not trim it ({reason})'
 MEGABYTE = 1024 * 1024
+
+
+class ScreenRecording:
+    """screencapture recording a window into a file, started under a pseudo-terminal of its own, since screencapture stops and
+    writes its file when a character is typed there and writes nothing when it is signalled."""
+
+    __slots__ = ('process', 'terminal')
+
+    def __init__(self, *, path, window, audio_device, region=None):
+        """audio_device is the id of the audio input device to record the sound from, or None for a silent video; region is a
+        rectangle of the screen, as screencapture -R takes it, to record in place of the window."""
+        self.terminal, own_end = pty.openpty()
+        sound = [] if audio_device is None else [SOUND_FLAG, audio_device]
+        # No -V: with a time limit screencapture neither prompts nor stops for a character (found when a take hung), so a take's
+        # time limit quits the tracker instead.
+        where = [REGION_FLAG, region] if region is not None else [WINDOW_FLAG, str(window)]
+        command = [SCREENCAPTURE, *CAPTURE_FLAGS, *where, *sound, path]
+        self.process = subprocess.Popen(command, stdin=own_end, stdout=own_end, stderr=own_end, close_fds=True)
+        os.close(own_end)
+
+    def stop(self):
+        """Type the character that ends the recording, wait for the file to be written, and return screencapture's exit code, or
+        None when it didn't stop and had to be ended, which leaves no file."""
+        if self.process.poll() is None:
+            os.write(self.terminal, STOP_KEY)
+        try:
+            code = self.process.wait(timeout=STOP_TIMEOUT_SECONDS)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+            self.process.wait()
+            code = None
+        os.close(self.terminal)
+        return code
 
 
 def ask_for_view():
@@ -431,14 +472,6 @@ def trim_end(*, video, recorded_seconds, give_up_after=None):
     return None
 
 
-def screen_recording():
-    """Return the video tutorial's ScreenRecording, which records until it is stopped, loaded from internal_tools/make_video_tutorial.py, since internal_tools/ is not a package."""
-    spec = importlib.util.spec_from_file_location(TUTORIAL_MODULE, TUTORIAL_SCRIPT)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.ScreenRecording
-
-
 def scroll_text_of(*, path, scroll=True, scroll_text=None):
     """Return the words a take of the set at path scrolls after the title: the words given, or DEMO: and the set's name from its file, or None when the take scrolls nothing."""
     if not scroll:
@@ -462,7 +495,7 @@ def record(*, path, driver, audio_device, assignment, max_seconds, window_id, go
     device recorded, or to fluidsynth_output, an output device that also reaches it. With interactive,
     nothing plays until the person recording starts it, and the take ends when they stop it from
     Arrange's corner, so a song whose every clip loops is welcome; recording is the screen recording
-    the tests give in place of the tutorial's. With batch, the take is a batch video (interface/tracker/batch_stage.py)
+    the tests give in place of the screen's. With batch, the take is a batch video (interface/tracker/batch_stage.py)
     of the visualizer mode given, recorded from the rectangle the window's cells cover alone, so that
     no title bar or margin is in it, and named after the set and the mode; region is what finds that
     rectangle, which the tests give. A take that isn't interactive and shows a visualizer mode is a batch video
@@ -561,7 +594,7 @@ def recorded_until_quit(*, document, video, window, device, launch, region, reco
     The recording stops when the tracker does, so quitting early, through the main screen's Quit, ends
     the video there rather than leaving the screen recorded until a time limit.
     """
-    recording_class = screen_recording() if recording is None else recording
+    recording_class = ScreenRecording if recording is None else recording
     capture = recording_class(path=video, window=window, audio_device=device[0], region=region)
     started = time.monotonic()
     try:

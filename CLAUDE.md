@@ -136,7 +136,7 @@ A note about a component goes in its file; a standalone feature gets its own fil
 | Arrange, details view, Scene View, track editor, clip page | `.claude/tracker/ARRANGE.md` |
 | Pattern editor, piano roll, keyswitches, offsets and groove editors | `.claude/tracker/PATTERN_EDITOR.md` |
 | The visualizer | `.claude/features/VISUALIZER.md` |
-| A recording, the batch videos, the video tutorial | `.claude/features/RECORDING.md` |
+| A recording, the batch videos | `.claude/features/RECORDING.md` |
 | Any page's keys | `.claude/KEYMAP.md` |
 | A script or tool | `.claude/COMMANDS.md` |
 | The documents, the website, screenshots | `.claude/DOCS.md` |

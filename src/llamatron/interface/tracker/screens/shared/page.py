@@ -17,7 +17,7 @@ from textual.screen import Screen
 from textual.widgets import Static
 
 from llamatron.interface.forms.text import clock
-from llamatron.interface.tracker import caption_strip, drawing, keybindings
+from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.dialogs.about_dialog import AboutDialog
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -394,15 +394,9 @@ class Page(BindsKeys, Screen):
         width, height = self.size
         if width <= 0 or height <= 0:
             return
-        strip = self.holder.get_caption_strip()
-        # The video tutorial's captions take the foot of the screen, and the page moves up to make room.
-        if strip is not None:
-            height = max(height - caption_strip.CAPTION_LINES, 1)
         self.screen_height = height
         lines = self.page_lines(width=width, height=height)
         screen = self.staged_screen(screen=lines, width=width, height=height)
-        if strip is not None:
-            screen = screen + strip.lines(width)
         self.query_one(VIEW_SELECTOR, Static).update(Text(drawing.LINE_BREAK).join(screen))
 
     def page_lines(self, *, width, height):

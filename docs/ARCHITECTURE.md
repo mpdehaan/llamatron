@@ -199,7 +199,7 @@ flowchart LR
 
 | Package | What it holds |
 | --- | --- |
-| `interface` | The Interface: what a person sees and uses. tracker/ is the text UI, its pages, dialogs and widgets; visualizers/ the |
+| `interface` | The Interface: what a person sees and uses. tracker/ is the text UI, its pages, dialogs and widgets; and visualizers/ the |
 | `llamatron` | llamatron composes music in MIDI for DAWs, from a text UI. This top level holds the command line and the text every part shows. |
 | `model` | The Model: the set as it is stored, in four parts. values/ holds the musical values every part of llamatron works with; |
 | `engine` | The Engine: what makes a song into music. clips/ holds the finished clips a song is realized into and the grid that maps |

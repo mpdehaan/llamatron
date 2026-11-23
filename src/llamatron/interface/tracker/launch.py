@@ -12,9 +12,7 @@ opens on the splash first, shows it again once the song has ended, leaves the sa
 header, and refuses a song that would wait on a looping clip forever, since a recording of it would never end (internal_tools/record_demo.py).
 An interactive launch for recording, opens Arrange after the splash with the cursor on the corner and
 plays nothing: the person recording starts it with Space, performs, and ends the take by stopping from the corner, or
-with Esc, after which the splash shows again and the tracker quits. A
-launch driven from outside, which internal_tools/make_video_tutorial.py makes, hands the app to something
-that presses keys into it, the video tutorial (interface/tutorial/runner.py), which the tracker knows nothing of.
+with Esc, after which the splash shows again and the tracker quits.
 """
 
 from llamatron.interface.pages.uses import looping_scenes
@@ -38,18 +36,14 @@ class Launch:
 
     __slots__ = (
         'autoplay', 'quit_when_finished', 'for_recording', 'test_splash', 'max_seconds', 'splash_seconds', 'lead_in_seconds', 'lead_out_seconds',
-        'driven_by', 'visualizer', 'hold_seconds', 'interactive', 'batch_video', 'opening_only', 'ready_seconds', 'title_seconds', 'alternate', 'scroll_text', 'scroll_seconds', 'announce', 'details',
+        'visualizer', 'hold_seconds', 'interactive', 'batch_video', 'opening_only', 'ready_seconds', 'title_seconds', 'alternate', 'scroll_text', 'scroll_seconds', 'announce', 'details',
     )
 
     def __init__(self, *, autoplay=False, quit_when_finished=False, for_recording=False, test_splash=False, max_seconds=None,
                  splash_seconds=SPLASH_SECONDS, lead_in_seconds=LEAD_IN_SECONDS, lead_out_seconds=LEAD_OUT_SECONDS,
-                 driven_by=None, visualizer=None, hold_seconds=NO_HOLD, interactive=False, batch_video=False, opening_only=False,
+                 visualizer=None, hold_seconds=NO_HOLD, interactive=False, batch_video=False, opening_only=False,
                  ready_seconds=batch_stage.READY_SECONDS, title_seconds=None, alternate=True, scroll_text=None, scroll_seconds=None, announce=False, details=False):
         """quit_when_finished implies autoplay, and so does visualizer, which opens Arrange with that mode showing; test_splash shows the start screen for splash_seconds, fading out, and quits (internal_tools/demo_splash_screen.py), and max_seconds quits after that many seconds whatever plays. The three timings are for the tests, which can't wait.
-
-        driven_by is a function of the app that returns what drives the tracker from outside, the
-        video tutorial (tutorial.runner.tutorial), whose start(then=) is called once the tracker
-        is open; with it, quit_when_finished quits once whatever it played has ended.
 
         Launched for recording, a song that ends shows the splash again for splash_seconds after the
         lead-out, and the tracker then waits hold_seconds more
@@ -69,7 +63,7 @@ class Launch:
         shows, and no mode's name then. details, opens Arrange with its details view showing,
         as D shows it, wherever the clips show.
         """
-        self.autoplay = (autoplay or quit_when_finished or visualizer is not None) and driven_by is None
+        self.autoplay = autoplay or quit_when_finished or visualizer is not None
         self.quit_when_finished = quit_when_finished
         self.for_recording = for_recording
         self.test_splash = test_splash
@@ -77,7 +71,6 @@ class Launch:
         self.splash_seconds = splash_seconds
         self.lead_in_seconds = lead_in_seconds
         self.lead_out_seconds = lead_out_seconds
-        self.driven_by = driven_by
         # The visualizer mode Arrange opens with over the clips, by its name on the command line, or None for the clips.
         self.visualizer = visualizer
         self.hold_seconds = hold_seconds
@@ -104,7 +97,7 @@ class Launch:
 
     def is_plain(self):
         """Return whether the tracker opens as it always has, on the main screen, doing nothing by itself."""
-        return not (self.autoplay or self.for_recording or self.test_splash or self.max_seconds is not None or self.driven_by is not None)
+        return not (self.autoplay or self.for_recording or self.test_splash or self.max_seconds is not None)
 
     def needs_set(self):
         """Return whether the launch needs a set to play: everything but the splash alone."""

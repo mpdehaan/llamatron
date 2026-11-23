@@ -248,17 +248,6 @@ for eight seconds, where a visualizer mode's name otherwise shows; with
 and `internal_tools/demo_splash_screen.sh --scroll-text 'DEMO: Hocket Shanty'`
 shows the splash and then those words crossing the screen.
 
-## Tutorial Videos
-
-`internal_tools/tutorial.sh examples/learning/01_hello_world.yml` records a
-different kind of video: the tracker building that set from a new one, key by
-key, with a box of narration over the screen, then playing the set into the
-DAW and quitting. The tutorial needs the same setup as a take, and writes
-`recordings/<set>_tutorial.mov`, the name of the set with `_tutorial` after
-it. The video starts on the splash and ends the moment the tracker quits.
-`--no-play` builds the set without playing it, and the video has no sound;
-`--no-video` runs the tutorial in the terminal without recording.
-
 ## Troubleshooting
 
 - **No sound in the video, though Live played**: Live's output isn't the

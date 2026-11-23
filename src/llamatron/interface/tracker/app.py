@@ -73,11 +73,7 @@ class LlamatronApp(App, inherit_bindings=False):
         self._staged = None
         # Whether an interactive take is ending, so that it ends once.
         self._take_ending = False
-        # What drives a launch from outside, the video tutorial's runner, for the tool's report and the tests.
-        self.driven = None
         self._status_line = StatusLine()
-        # What the video tutorial says, shown at the foot of every page while it runs, and None otherwise (interface/tracker/caption_strip.py).
-        self._caption_strip = None
         # Which page the pattern editor shows, the piano roll or a set of rows, which stays as you move between patterns.
         # The pattern editor's open sections, kept for the session like the choice of the roll, so every pattern opens the way the last was left.
         self.open_sections = set(keys.OPEN_AT_START)
@@ -180,19 +176,6 @@ class LlamatronApp(App, inherit_bindings=False):
 
     def get_status_line(self):
         return self._status_line
-
-    def get_caption_strip(self):
-        return self._caption_strip
-
-    def show_caption_strip(self, strip):
-        """Show the caption strip at the foot of every page from now on, the video tutorial's, and draw the pages again."""
-        self._caption_strip = strip
-        self.redraw_pages()
-
-    def redraw_pages(self):
-        """Draw every open page again, those under a dialog too, which shows them through."""
-        for page in self.pages():
-            page.draw()
 
     def pages(self):
         """Return the pages open, from the main screen up to the one on top, leaving out any dialog over it."""
@@ -300,8 +283,6 @@ class LlamatronApp(App, inherit_bindings=False):
             seconds = self.launch.title_seconds if self.launch.batch_video else self.launch.splash_seconds
             self.push_screen(Splash(seconds=seconds))
             self.set_timer(seconds, lambda: self._after_title(lambda: self._after_splash(page)))
-        elif self.launch.driven_by is not None:
-            self._begin_driving()
         elif self.launch.autoplay:
             self._open_arrange(page)
 
@@ -323,23 +304,8 @@ class LlamatronApp(App, inherit_bindings=False):
             self._open_stage(page)
         elif self.launch.interactive:
             self._open_arrange_for_a_performance(page)
-        elif self.launch.driven_by is not None:
-            self._begin_driving()
         elif self.launch.autoplay:
             self._open_arrange(page)
-
-    def _begin_driving(self):
-        """Hand the tracker to what drives it from outside, and once that is done, watch for the end of what it played when the launch quits then."""
-        self.driven = self.launch.driven_by(self)
-        self.driven.start(then=self._driving_done)
-
-    def _driving_done(self):
-        self._autoplay_started = self.transport.is_playing()
-        if self.launch.quit_when_finished:
-            if not self._autoplay_started:
-                self.set_timer(self.launch.lead_out_seconds, self.exit)
-            else:
-                self.set_interval(launch_values.FINISHED_CHECK_SECONDS, self._quit_when_finished)
 
     def _open_arrange(self, page):
         arrange = ArrangePage(self)
