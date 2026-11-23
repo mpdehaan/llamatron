@@ -201,7 +201,7 @@ class SectionMelodyBranch(Branch):
             Button(label=labels.MSG_WIZARD_EDIT_NOTES_BUTTON, enter=edit, enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=give_back,
                    clear_what=legends.MSG_TUNE_USUAL_WHAT),
             Button(label=labels.MSG_WIZARD_REGENERATE_BUTTON, enter=self.regenerate, enter_what=legends.MSG_REGENERATE_WHAT),
-            Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=self._listen, enter_what=legends.MSG_LISTEN_WHAT),
+            Button(label=labels.MSG_LISTEN_LABEL, key_name=legends.KeyName.L, enter=self._listen, enter_what=legends.MSG_LISTEN_WHAT),
             Button(label=labels.MSG_WIZARD_LISTEN_BAND_BUTTON, enter=self._listen_with_band, enter_what=legends.MSG_LISTEN_WHAT),
         ]
 

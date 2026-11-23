@@ -684,8 +684,13 @@ class TestClipPagePlayback(PlaybackTest):
         self.give_lead_an_instrument()
         await self.open_clip(track_steps=1)
         await self.select_field(labels.MSG_LISTEN_LABEL)
+        listening = self.page.listen_button().label
         await self.press(Key.ENTER)
         self.assertTrue(self.page.is_listening())
+        # While the clip plays the button says Stop, at the width it had, so that it never moves.
+        stopping = self.page.listen_button().label
+        self.assertEqual(stopping.strip(), labels.MSG_STOP_LISTENING_LABEL)
+        self.assertEqual(len(stopping), len(listening))
         await self.press(Key.ENTER)
         self.assertFalse(self.page.is_listening())
         self.assertIn(messages.MSG_STOPPED, self.text())

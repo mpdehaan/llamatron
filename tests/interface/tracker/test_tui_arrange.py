@@ -497,10 +497,10 @@ class TestClipPage(UITest):
         self.assertEqual(self.pattern_rows(), self.patterns())
         self.assertEqual(len(self.patterns()), ONE_MORE)
         self.assertEqual(self.labels().count(labels_text.MSG_PATTERNS_LABEL), ONE_MORE)
-        self.assertEqual([field.value() for field in self.page.fields() if isinstance(field, AddRow)], [marks.MSG_ADD_ROW])
+        self.assertEqual([field.value() for field in self.page.fields() if isinstance(field, AddRow)], [marks.MSG_NEW_ROW])
         # A blank line stands between the list's + row and the settings after it.
         lines = [line.strip() for line in self.text().splitlines()]
-        add = next(place for place, line in enumerate(lines) if line.endswith(marks.MSG_ADD_ROW) and len(line) <= len(marks.MSG_ADD_ROW) + 2)
+        add = next(place for place, line in enumerate(lines) if line.endswith(marks.MSG_NEW_ROW) and len(line) <= len(marks.MSG_NEW_ROW) + 2)
         self.assertIn(labels_text.MSG_PATTERNS_LABEL, lines[add - 1])
         self.assertEqual(lines[add + 1], drawing.NOTHING)
 

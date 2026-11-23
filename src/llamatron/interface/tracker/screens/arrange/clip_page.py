@@ -207,7 +207,7 @@ class ClipPage(FieldPage):
         rows = []
         for place, name in enumerate(clip_slot.get_pattern_names()):
             rows.append(self._pattern_row(place=place, name=name))
-        rows.append(AddRow(label=drawing.NOTHING, value=lambda: marks.MSG_ADD_ROW, adjust=None, enter=self.add_pattern, enter_what=legends.What.ADD))
+        rows.append(AddRow(label=drawing.NOTHING, value=lambda: marks.MSG_NEW_ROW, adjust=None, enter=self.add_pattern, enter_what=legends.What.ADD))
         return rows
 
     def _pattern_row(self, *, place, name):
@@ -392,9 +392,11 @@ class ClipPage(FieldPage):
     def listen_button(self):
         """Return the Listen button, drawn below the settings after a blank line as every page's buttons are, which does what L
         does: it starts listening to the clip, or stops it while the clip plays."""
+        # Both names take the room of the longer, so that the button never changes its width as it changes its name.
+        width = max(len(labels_text.MSG_LISTEN_LABEL), len(labels_text.MSG_STOP_LISTENING_LABEL))
         if self.is_listening():
-            return Button(label=labels_text.MSG_LISTEN_LABEL, key_name=legends.KeyName.L, enter=self.stop, enter_what=legends.MSG_STOP_LISTENING_WHAT)
-        return Button(label=labels_text.MSG_LISTEN_LABEL, key_name=legends.KeyName.L, enter=self.listen, enter_what=legends.MSG_LISTEN_WHAT)
+            return Button(label=labels_text.MSG_STOP_LISTENING_LABEL.center(width), key_name=legends.KeyName.L, enter=self.stop, enter_what=legends.MSG_STOP_LISTENING_WHAT)
+        return Button(label=labels_text.MSG_LISTEN_LABEL.center(width), key_name=legends.KeyName.L, enter=self.listen, enter_what=legends.MSG_LISTEN_WHAT)
 
     def playing_fields(self):
         """Return the fields of how the clip plays its patterns: the direction, the repeats, the loop, and the morph where the

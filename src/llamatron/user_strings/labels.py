@@ -88,8 +88,9 @@ MSG_GRAB_TRACK_LABEL = 'Grab track'
 MSG_DEVICE_LABEL = 'Device'
 MSG_CHANNEL_LABEL = 'Channel'
 MSG_INSTRUMENT_LABEL = 'Instrument'
-# The clip page's buttons for real-time playback.
+# The Listen button of the clip page and the song wizard's panels, and what the clip page's says while the clip plays.
 MSG_LISTEN_LABEL = 'Listen'
+MSG_STOP_LISTENING_LABEL = 'Stop'
 # What a clip does in real-time playback when its scene is done, which no export reads, and the set's default for it.
 MSG_FOLLOW_ACTION_LABEL = 'Follow action'
 MSG_DEFAULT_FOLLOW_ACTION_LABEL = 'Default follow action'
@@ -789,7 +790,6 @@ MSG_WIZARD_EDIT_NOTES_BUTTON = 'Edit Notes'
 MSG_WIZARD_SOLO_NUMBERED = '{kind} {number}'
 MSG_WIZARD_SOLO_PLAYED_BY_LABEL = 'Played by'
 MSG_WIZARD_SOLO_SECTION_LABEL = 'Section'
-MSG_WIZARD_LISTEN_BUTTON = 'Listen'
 MSG_WIZARD_REGENERATE_BUTTON = 'Regenerate'
 # interface/tracker/screens/wizard/riffs_branch.py, interface/tracker/screens/wizard/riff_assign_branch.py, interface/tracker/screens/wizard/section_players_branch.py, interface/tracker/dialogs/new_riff_dialog.py: the riffs.
 MSG_WIZARD_RIFFS_BRANCH = 'Riffs'

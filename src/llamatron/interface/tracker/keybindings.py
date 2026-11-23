@@ -329,7 +329,7 @@ class ClipPage(FieldPage):
     MOVE_PATTERN = Binding(Key.M, legends.KeyName.M, legends.MSG_MOVE_PATTERN_WHAT)
     CARRY = Binding(Steps(back=(Key.UP,), forward=(Key.DOWN,)), legends.KeyName.UP_DOWN, legends.What.CARRY)
     DROP = Binding(keys.MOVE_DROP_KEYS, legends.KeyName.ENTER_ESC_M, legends.What.DROP)
-    # Real-time playback: L plays the clip as its scene would, looping until stopped, and L again stops it, with the Play and Stop buttons below the fields doing the same.
+    # Real-time playback: L plays the clip as its scene would, looping until stopped, and L again stops it, with the Listen button below the fields doing the same.
     LISTEN = Binding(Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
     STOP_LISTENING = Binding(Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
     IN_HELP = [FieldPage.IN_HELP[0], DROP, *FieldPage.IN_HELP[1:], CARRY, ADD_PATTERN, MOVE_PATTERN, OPEN_PATTERN, LISTEN, STOP_LISTENING]

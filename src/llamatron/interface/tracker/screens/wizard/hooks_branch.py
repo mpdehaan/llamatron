@@ -143,7 +143,7 @@ class HooksBranch(Branch):
         if not hook.hook_is_own() and not tunes.tune_is_own(kind):
             # Notes written by hand are never written over by another hook.
             buttons.append(Button(label=labels.MSG_WIZARD_REGENERATE_BUTTON, enter=self.regenerate, enter_what=legends.MSG_REGENERATE_WHAT))
-        buttons.append(Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=self._listen, enter_what=legends.MSG_LISTEN_WHAT))
+        buttons.append(Button(label=labels.MSG_LISTEN_LABEL, key_name=legends.KeyName.L, enter=self._listen, enter_what=legends.MSG_LISTEN_WHAT))
         buttons.append(Button(label=labels.MSG_WIZARD_LISTEN_BAND_BUTTON, enter=self._listen_with_band, enter_what=legends.MSG_LISTEN_WHAT))
         if hook.has_second_hook():
             new_second = functools.partial(page.choosing(self._new_second_hook), None)

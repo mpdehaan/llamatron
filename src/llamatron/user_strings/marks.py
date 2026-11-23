@@ -113,7 +113,6 @@ MSG_ONE_STEP_SHOWN = '(one step)'
 MSG_CLIP_NAMED_FOR_PATTERN = '(pattern: {pattern})'
 # A clip of several patterns on Arrange: its first pattern and how many more follow.
 MSG_CLIP_PATTERNS_COUNTED = '{name} +{more}'
-MSG_ADD_ROW = '+'
 MSG_EACH_PATTERN_DIRECTION_SHOWN = '(each pattern)'
 MSG_PATTERN_DIRECTION_SHOWN = '{direction} (from pattern)'
 
@@ -326,8 +325,8 @@ MSG_SCENE_OR_SONG_GROOVE_SHOWN = '(scene or song)'
 # interface/tracker/screens/shared/list_page.py and interface/tracker/screens/arrange/arrange_page.py
 # The row at the bottom of a list that adds to it, and the cell on Arrange that adds a scene or a track.
 MSG_ADD_ROW_MARK = '+'
-# interface/tracker/screens/shared/list_page.py and interface/tracker/screens/generators/generators_page.py
-# The row at the bottom of a list page that adds to it, saying what it does.
+# interface/tracker/screens/shared/list_page.py, interface/tracker/screens/generators/generators_page.py and the clip page's list of patterns
+# The row at the bottom of a list that adds to it, saying what it does.
 MSG_NEW_ROW = '+ (New)'
 
 

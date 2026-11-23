@@ -20,7 +20,7 @@ from llamatron.model.schema.file_format import Row
 from llamatron.user_strings import errors, labels, marks, messages, names
 from llamatron.wizards.create_song import hook_writing, melody, riffs, wizard_limits, wizard_names
 from tests.interface.tracker.test_tui_wizard import WizardTest
-from tests.support.ui_testing import key_of
+from tests.support.ui_testing import key_name, key_of
 
 A_GENRE = 'rock'
 A_SUBGENRE = 'folk rock'
@@ -203,15 +203,17 @@ class TestWizardSectionMelody(CompositionTest):
         self.assertNotEqual(tunes.tune_pattern(A_KIND), first)
         self.assertIn(messages.MSG_WIZARD_REGENERATED.format(name=name), self.text())
 
-    async def test_the_panel_has_four_buttons_edit_first_with_no_key_of_their_own_and_listen_names_the_melody(self):
-        buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_REGENERATE_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON, labels.MSG_WIZARD_LISTEN_BAND_BUTTON]
+    async def test_the_panel_has_four_buttons_edit_first_listen_showing_its_key_and_naming_the_melody(self):
+        buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_REGENERATE_BUTTON, labels.MSG_LISTEN_LABEL, labels.MSG_WIZARD_LISTEN_BAND_BUTTON]
         self.assertEqual(self.field_labels()[-len(buttons):], buttons)
-        self.assertEqual([field.key_name for field in self.wizard().shown_fields()[-len(buttons):]], [drawing.NOTHING] * len(buttons))
+        # Listen shows L, which does the same on the panel; the other buttons have no key of their own.
+        keys = [drawing.NOTHING, drawing.NOTHING, key_name(keybindings.WizardPage.LISTEN), drawing.NOTHING]
+        self.assertEqual([field.key_name for field in self.wizard().shown_fields()[-len(buttons):]], keys)
         self.assertIsNone(self.wizard().branch().heard_with_band()[2])
 
     async def test_buttons_too_wide_for_a_row_stand_one_under_another_and_up_and_down_go_through_them(self):
         wizard = self.wizard()
-        buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_REGENERATE_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON, labels.MSG_WIZARD_LISTEN_BAND_BUTTON]
+        buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_REGENERATE_BUTTON, labels.MSG_LISTEN_LABEL, labels.MSG_WIZARD_LISTEN_BAND_BUTTON]
         fields = wizard.shown_fields()[-len(buttons):]
         self.assertEqual(len(wizard.row_of_buttons(buttons=fields, selected=0, width=A_WIDE_ROOM)), button_row.ROW_LINES)
         self.assertFalse(wizard.buttons_stacked())
@@ -316,7 +318,7 @@ class TestWizardIntroMelody(CompositionTest):
 
     async def test_the_panel_has_how_the_song_starts_a_heading_for_each_part_and_buttons_that_say_how_to_give_a_part_a_melody(self):
         choices = self.choices()
-        buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON, labels.MSG_WIZARD_LISTEN_BAND_BUTTON, labels.MSG_WIZARD_ADD_PART_BUTTON]
+        buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_LISTEN_LABEL, labels.MSG_WIZARD_LISTEN_BAND_BUTTON, labels.MSG_WIZARD_ADD_PART_BUTTON]
         self.assertEqual(len(choices.intro_parts()), ONE_PART)
         self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_STARTS_LABEL, self.part(intro_melody_branch.FIRST_PART), *buttons])
         # With nobody saying the hook, the panel says where to choose a player, and Edit Notes and Listen say so too.
@@ -405,7 +407,7 @@ class TestWizardSoloMelody(CompositionTest):
         solos = solo_choices
         place = solos.solo_places()[0]
         self.assertEqual(self.field_labels(), [labels.MSG_WIZARD_SOLO_PLAYED_BY_LABEL, labels.MSG_WIZARD_SOLO_SECTION_LABEL, labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_REGENERATE_BUTTON,
-                                               labels.MSG_WIZARD_LISTEN_BUTTON,
+                                               labels.MSG_LISTEN_LABEL,
                                                labels.MSG_WIZARD_LISTEN_BAND_BUTTON])
         shown = self.text()
         self.assertIn(choices.player(solos.solo_player()).title(), shown)
@@ -465,7 +467,7 @@ class TestWizardHooks(CompositionTest):
         hook = hook_choices
         edit = labels.MSG_WIZARD_EDIT_KIND_NOTES_BUTTON.format(kind=hook.hook_kind().capitalize())
         for label in (labels.MSG_WIZARD_MAIN_HOOK_HEADING, labels.MSG_WIZARD_SUNG_IN_LABEL, labels.MSG_WIZARD_HOOK_BARS_LABEL, labels.MSG_WIZARD_SECOND_HOOK_HEADING, labels.MSG_WIZARD_SECOND_HOOK_LABEL,
-                      edit, labels.MSG_WIZARD_REGENERATE_BUTTON, labels.MSG_WIZARD_LISTEN_BUTTON):
+                      edit, labels.MSG_WIZARD_REGENERATE_BUTTON, labels.MSG_LISTEN_LABEL):
             self.assertIn(label, self.field_labels())
         # How the hook is written is said on the panel of the section that says the hook.
         for label in (labels.MSG_WIZARD_BEHAVIOR_LABEL, *(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[name] for name in hook.hook_gauges())):

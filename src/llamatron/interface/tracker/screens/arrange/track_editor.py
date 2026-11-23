@@ -128,8 +128,8 @@ class TrackEditor(ShowsNamedItem, FieldPage):
         return [NameField(value=self._item_name, rename=self.rename), TabBox(tabs=self._tabs())]
 
     def _tabs(self):
-        """Return the track's tabs, in the order they apply: Basics, the built-in generators before its list of generators, its
-        list under User, the built-ins after it, then CC Lanes, Bypass When and Skip When."""
+        """Return the track's tabs: Settings, MIDI CCs, the built-in generators in the order they run, then More Generators,
+        whose list runs after every built-in."""
         track = self.track()
         general = [
             self.instrument_field(), Toggle(label=labels.MSG_DRUM_LABEL, on=track.is_drum(), set=self._set_drum),

@@ -151,7 +151,7 @@ class IntroMelodyBranch(Branch):
         and the part with the band; and the button that adds a part."""
         page = self.get_page()
         return [Button(label=labels.MSG_WIZARD_EDIT_NOTES_BUTTON, enter=self.edit_notes, enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=self.give_back, clear_what=legends.MSG_TUNE_USUAL_WHAT),
-                Button(label=labels.MSG_WIZARD_LISTEN_BUTTON, enter=self.listen_alone, enter_what=legends.MSG_LISTEN_WHAT),
+                Button(label=labels.MSG_LISTEN_LABEL, key_name=legends.KeyName.L, enter=self.listen_alone, enter_what=legends.MSG_LISTEN_WHAT),
                 Button(label=labels.MSG_WIZARD_LISTEN_BAND_BUTTON, enter=lambda: page.listen_to(self.heard_with_band()), enter_what=legends.MSG_LISTEN_WHAT),
                 Button(label=labels.MSG_WIZARD_ADD_PART_BUTTON, enter=self.add_part, enter_what=legends.What.ADD)]
 
