@@ -239,15 +239,27 @@ class Row:
     BD_NOTE = 'bd_note'
     CD_NOTE = 'cd_note'
     DD_NOTE = 'dd_note'
+    ED_NOTE = 'ed_note'
+    FD_NOTE = 'fd_note'
+    GD_NOTE = 'gd_note'
+    HD_NOTE = 'hd_note'
     AD_VELOCITY = 'ad_velocity'
     BD_VELOCITY = 'bd_velocity'
     CD_VELOCITY = 'cd_velocity'
     DD_VELOCITY = 'dd_velocity'
+    ED_VELOCITY = 'ed_velocity'
+    FD_VELOCITY = 'fd_velocity'
+    GD_VELOCITY = 'gd_velocity'
+    HD_VELOCITY = 'hd_velocity'
     # Whether the step sends each draw back to its start, or a serial draw to a new round, before the step draws.
     AD_RESET = 'ad_reset'
     BD_RESET = 'bd_reset'
     CD_RESET = 'cd_reset'
     DD_RESET = 'dd_reset'
+    ED_RESET = 'ed_reset'
+    FD_RESET = 'fd_reset'
+    GD_RESET = 'gd_reset'
+    HD_RESET = 'hd_reset'
     # A step's statements about the registers, one of each kind, each written across five rows: the register, the operator,
     # a number or a register, and after a sum the comparison of the result and what it is compared with.
     STOP_C1 = 'stop_c1'
@@ -410,12 +422,16 @@ class RegisterName:
 
 
 class DrawName:
-    """The song's four draws, whose names are fixed."""
+    """The song's eight draws, whose names are fixed."""
 
     AD = 'AD'
     BD = 'BD'
     CD = 'CD'
     DD = 'DD'
+    ED = 'ED'
+    FD = 'FD'
+    GD = 'GD'
+    HD = 'HD'
 
 
 class DrawSetting:
@@ -728,14 +744,23 @@ REGISTER_ADD_ROWS = {
 REGISTER_SET_ROWS = {
     RegisterName.AX: Row.AX_SET, RegisterName.BX: Row.BX_SET, RegisterName.CX: Row.CX_SET, RegisterName.DX: Row.DX_SET,
 }
-DRAW_NAMES = [DrawName.AD, DrawName.BD, DrawName.CD, DrawName.DD]
+DRAW_NAMES = [DrawName.AD, DrawName.BD, DrawName.CD, DrawName.DD, DrawName.ED, DrawName.FD, DrawName.GD, DrawName.HD]
 # Every value a statement of Conditional Execution can read, by name: the registers and the draws.
 VALUE_NAMES = [*REGISTER_NAMES, *DRAW_NAMES]
 # Each draw's rows in a pattern, the Use Draws section: whether its value moves the note, whether it changes the velocity, and
 # whether the step resets the draw.
-DRAW_NOTE_ROWS = {DrawName.AD: Row.AD_NOTE, DrawName.BD: Row.BD_NOTE, DrawName.CD: Row.CD_NOTE, DrawName.DD: Row.DD_NOTE}
-DRAW_VELOCITY_ROWS = {DrawName.AD: Row.AD_VELOCITY, DrawName.BD: Row.BD_VELOCITY, DrawName.CD: Row.CD_VELOCITY, DrawName.DD: Row.DD_VELOCITY}
-DRAW_RESET_ROWS = {DrawName.AD: Row.AD_RESET, DrawName.BD: Row.BD_RESET, DrawName.CD: Row.CD_RESET, DrawName.DD: Row.DD_RESET}
+DRAW_NOTE_ROWS = {
+    DrawName.AD: Row.AD_NOTE, DrawName.BD: Row.BD_NOTE, DrawName.CD: Row.CD_NOTE, DrawName.DD: Row.DD_NOTE,
+    DrawName.ED: Row.ED_NOTE, DrawName.FD: Row.FD_NOTE, DrawName.GD: Row.GD_NOTE, DrawName.HD: Row.HD_NOTE,
+}
+DRAW_VELOCITY_ROWS = {
+    DrawName.AD: Row.AD_VELOCITY, DrawName.BD: Row.BD_VELOCITY, DrawName.CD: Row.CD_VELOCITY, DrawName.DD: Row.DD_VELOCITY,
+    DrawName.ED: Row.ED_VELOCITY, DrawName.FD: Row.FD_VELOCITY, DrawName.GD: Row.GD_VELOCITY, DrawName.HD: Row.HD_VELOCITY,
+}
+DRAW_RESET_ROWS = {
+    DrawName.AD: Row.AD_RESET, DrawName.BD: Row.BD_RESET, DrawName.CD: Row.CD_RESET, DrawName.DD: Row.DD_RESET,
+    DrawName.ED: Row.ED_RESET, DrawName.FD: Row.FD_RESET, DrawName.GD: Row.GD_RESET, DrawName.HD: Row.HD_RESET,
+}
 
 
 class StepStatement:

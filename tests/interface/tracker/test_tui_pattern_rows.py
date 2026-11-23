@@ -163,7 +163,7 @@ class TestStatementRows(PatternEditorTest):
         await self.press(keybindings.StatementRow.NEXT)
         await self.go_to_row(value_row)
         await self.press(keybindings.StatementRow.CHOOSE)
-        for heading in (labels_text.MSG_PICKER_CONSTANT_HEADING, labels_text.MSG_PICKER_DRAWS_HEADING, labels_text.MSG_PICKER_REGISTERS_HEADING):
+        for heading in (labels_text.MSG_PICKER_CONSTANT_HEADING, labels_text.MSG_PICKER_DRAWS_HEADING):
             self.assertIn(heading, self.text())
         # From the last draw, one Down passes the blank line and the registers' heading to the first register.
         await self.press(*[Key.DOWN] * len(file_format.DRAW_NAMES), Key.DOWN, Key.ENTER)

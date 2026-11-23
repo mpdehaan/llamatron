@@ -105,7 +105,7 @@ class NamedItems(Revised):
 
     def changed_with(self, *, name, item, order):
         """Return the items with one put in place of its name, keeping only those whose settings differ from the default, in an
-        order of every name, as a song's four registers and four draws, which the file names only when changed."""
+        order of every name, as a song's four registers and eight draws, which the file names only when changed."""
         held = dict(self._all())
         held[name] = item
         changed = {}

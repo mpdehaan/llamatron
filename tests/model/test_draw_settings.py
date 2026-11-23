@@ -17,7 +17,7 @@ from tests.support.song_testing import with_parts
 
 SLOTS = [3, None, -2]
 NOT_A_DIRECTION = 'sideways'
-NOT_A_DRAW = 'ED'
+NOT_A_DRAW = 'JD'
 
 
 def song_of(**parts):

@@ -263,7 +263,7 @@ Up and down select. [ and ] change a number, ENTER types one, and Bksp goes back
 
 # DrawsPage
 HELP_DRAWS_PAGE = """
-The four draws, AD to DD, are short lists of numbers the whole current song shares. A pattern's step uses one with Note+=
+The eight draws, AD to HD, are short lists of numbers the whole current song shares. A pattern's step uses one with Note+=
 or Vel+= in the Use Draws section, and takes the next number of its strip each time, added to its note or velocity.
 
 Direction says which slot comes next: a pattern's directions, serial (every slot once a round, in a random order) or any

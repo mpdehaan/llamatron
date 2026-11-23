@@ -1,7 +1,7 @@
 # Draws
 
 A draw is a short list of numbers that the whole song shares, and each time a step of a pattern uses the draw it takes the next
-number and adds it to its note or its velocity. The song has four, AD, BD, CD and DD, beside the four registers.
+number and adds it to its note or its velocity. The song has eight, AD to HD, beside the four registers.
 
 A register counts, and a draw deals. Think of a draw as a deck of cards laid out in a row. A drummer who plays a little louder on
 every other hit is a draw of 0 and 20 moving forward; a singer who climbs a step on each line of a verse is a draw of 0, 1, 2 and 3;

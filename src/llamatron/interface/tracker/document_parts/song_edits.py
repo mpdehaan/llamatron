@@ -127,7 +127,7 @@ class SongEdits:
         return None
 
     def draw(self, name):
-        """Return a draw, AD to DD, as a Draw, with its defaults for anything not set."""
+        """Return a draw, AD to HD, as a Draw, with its defaults for anything not set."""
         return self.song().get_draw(name)
 
     def set_draw_setting(self, *, name, setting, value):

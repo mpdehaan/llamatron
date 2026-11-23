@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""A draw: one of the song's four lists of values, AD to DD, that a pattern's steps add to their notes and velocities.
+"""A draw: one of the song's eight lists of values, AD to HD, that a pattern's steps add to their notes and velocities.
 
 Each time a step uses a draw it takes the value of the draw's next slot, the slots taken in the draw's direction: any direction
 a pattern's steps move in, serial, which deals every slot once a round in a random order, or any, which picks a slot at random

@@ -17,7 +17,7 @@ NOTHING_DRAWN = 0
 
 
 class DrawPlay:
-    """Where each of the song's four draws stands: how far a draw that repeats exactly has gone, where a draw that chooses as it
+    """Where each of the song's eight draws stands: how far a draw that repeats exactly has gone, where a draw that chooses as it
     goes is, which slots a serial draw has left this round, and each draw's last value and the slot it came from."""
 
     __slots__ = ('_draws', '_taken', '_places', '_rounds', '_last')

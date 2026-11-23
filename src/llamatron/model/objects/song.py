@@ -522,7 +522,7 @@ class Song(HoldsSections, HoldsSettings):
     # The draws. There are always four, and the file names only those with settings changed.
 
     def get_draw(self, name):
-        """Return a draw by its name, AD to DD, with its default settings if the file leaves it out."""
+        """Return a draw by its name, AD to HD, with its default settings if the file leaves it out."""
         return self._section(Section.DRAWS).find(name) or Draw()
 
     def _written_draws(self):
@@ -530,7 +530,7 @@ class Song(HoldsSections, HoldsSettings):
         return self._section(Section.DRAWS).values()
 
     def set_draw_setting(self, *, name, setting, value):
-        """Change one setting of a draw, AD to DD, by its file name, or None for its default."""
+        """Change one setting of a draw, AD to HD, by its file name, or None for its default."""
         self._change_draw(name=name, change=functools.partial(Draw.set_setting, name=setting, value=value))
 
     def set_draw_slot(self, *, name, place, value):
@@ -542,7 +542,7 @@ class Song(HoldsSections, HoldsSettings):
         self._change_draw(name=name, change=functools.partial(Draw.set_slot_count, count=count))
 
     def _change_draw(self, *, name, change):
-        """Change a copy of a draw, AD to DD, by one of its methods, and keep it, leaving the file to name only the draws whose
+        """Change a copy of a draw, AD to HD, by one of its methods, and keep it, leaving the file to name only the draws whose
         settings differ from the default."""
         if name not in file_format.DRAW_NAMES:
             raise InvalidValue(errors.ERR_NO_SUCH_DRAW.format(name=name, names=listed(file_format.DRAW_NAMES)))

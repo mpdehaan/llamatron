@@ -75,7 +75,7 @@ The main screen is one block of buttons, the same size in every window. Arrange 
 | `V` | Grooves | Swing and other timing feels |
 | `I` | Instruments | The MIDI devices and channels, or FluidSynth, that tracks play through in real time |
 | `R` | Registers | AX to DX, four numbers that pattern steps change and use, in the current song |
-| `D` | Draws | AD to DD, four short lists of numbers that pattern steps take from in turn, in the current song |
+| `D` | Draws | AD to HD, eight short lists of numbers that pattern steps take from in turn, in the current song |
 | `A` | Arrange | The scenes, tracks and clips of the current song. The cell reads Arrange/Play while Real Time is on, since Arrange then plays the song too |
 | `T` | Real Time | A switch, not a page: `●` when the set plays through its instruments in real time, `○` when not |
 | `O`, `X`, `L` | Open, Export, Load MIDI | On this screen alone, without Ctrl |

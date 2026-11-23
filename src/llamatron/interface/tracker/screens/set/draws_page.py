@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The Draws page: the song's four draws, AD to DD, each a section of settings over its strip of slots."""
+"""The Draws page: the song's eight draws, AD to HD, each a section of settings over its strip of slots."""
 
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, NumberField, Strip, Toggle
