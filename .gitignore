@@ -37,4 +37,3 @@ examples/**/*.wav
 .claude/features/REFACTORING_LOG.md
 .compare_screens/
 .compare_screens_again/
-.compare_screens_again_again/
