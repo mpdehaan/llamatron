@@ -22,6 +22,7 @@ from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.help_dialog import HelpDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
+from llamatron.interface.tracker.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.drawing import Box, fit, legend, Style
 from llamatron.interface.tracker.key_table import BindsKeys, pressed_key, quits_at_once
@@ -232,6 +233,11 @@ class Page(BindsKeys, Screen):
     def ask_choice(self, *, title, options, current, then):
         """Open a picker of options on the one at current, passing the place chosen to then unless it is cancelled."""
         self.ask(dialog=ChoiceDialog(title=title, options=options, current=current), then=then)
+
+    def ask_many(self, *, title, options, names, picked, then):
+        """Open a list where any of the options can be picked, named by names, the picked ones marked, passing those picked to
+        then unless it is cancelled."""
+        self.ask(dialog=PickManyDialog(title=title, options=options, names=names, picked=picked), then=then)
 
     def ask(self, *, dialog, then):
         """Show a dialog, and pass its answer to a function unless it was cancelled."""

@@ -6,8 +6,8 @@
 import functools
 
 from llamatron.interface.forms.nodes import ChoiceField, Field, NameField, NumberField, stepped
+from llamatron.interface.pages.visualizer_fields import visualizer_field
 from llamatron.interface.tracker import keybindings, themes
-from llamatron.interface.tracker.screens.set.visualizer_fields import visualizer_field
 from llamatron.interface.tracker.screens.shared.everywhere import export
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shared import ask_time_signature

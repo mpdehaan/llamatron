@@ -7,7 +7,7 @@ they are drawn: a Field is one setting, and the kinds of Field say what most set
 A Field is a label, the text of its value, and what Left and Right, Enter and Bksp do there, each a function, so any setting
 can be written as one. Most settings are one of a few kinds, each a class that is given what the setting is and works the
 functions out: a Toggle is on or off, a NameField renames, a NumberField is a whole number between two ends and a ChoiceField is one of a
-fixed list. A Button is a row that acts on Enter, and a Heading opens and closes the section under it. A page makes
+fixed list, and a TextField is a line of text. A Button is a row that acts on Enter, and a Heading opens and closes the section under it. A page makes
 its fields afresh for every key and every drawing, so a kind is given the value as it is now rather than a function that reads
 it. The tracker draws a node through its renderers (interface/tracker/renderers/), the only code that knows how it looks.
 """
@@ -15,6 +15,7 @@ it. The tracker draws a node through its renderers (interface/tracker/renderers/
 from dataclasses import dataclass
 from typing import Callable
 
+from llamatron.model.schema import limits
 from llamatron.user_strings import labels, legends, marks
 
 # How the tracker draws each kind of field (interface/tracker/renderers/fields.py): a setting's label and value on one line, a
@@ -43,6 +44,11 @@ def stepped(*, values, current, offset):
     text = str(current)
     place = values.index(text) if text in values else len(values) // 2
     return values[max(min(place + offset, len(values) - 1), 0)]
+
+
+def octave_moved(*, octave, offset):
+    """Return an octave moved by an offset, kept within the file's range."""
+    return max(min(octave + offset, limits.MAX_OCTAVE), limits.MIN_OCTAVE)
 
 
 def within(*, number, lowest, highest):
@@ -376,3 +382,29 @@ class Strip(SteppedCells):
     # The strip is drawn after a blank line, and the cursor is on its row of values, the fourth of the grid's five lines.
     SELECTED_LINE = 1 + STRIP_VALUE_LINE
     DRAWN_AS = STRIP
+
+
+@dataclass(slots=True, kw_only=True)
+class TextField(Field):
+    """A line of text, like a set's title: Enter asks the page for it, starting from what it says now, and Bksp blanks it.
+
+    current() reads the text, set_text(text) stores it, blank text clearing it, and blank is what a cleared field stores.
+    """
+
+    page: object
+    current: Callable
+    set_text: Callable
+    blank: str = NOTHING
+    value: Callable = None
+    enter_what: str = legends.What.EDIT
+
+    def __post_init__(self):
+        self.value = self.current
+        self.enter = self.ask
+        self.clear = self.blanked
+
+    def ask(self):
+        self.page.ask_text(title=self.label, value=self.current(), then=self.set_text)
+
+    def blanked(self):
+        self.set_text(self.blank)

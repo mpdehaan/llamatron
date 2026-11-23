@@ -6,7 +6,6 @@
 
 from llamatron.engine.generators.arp import model as arp_model
 from llamatron.interface.tracker import drawing
-from llamatron.model.schema import limits
 from llamatron.model.values import time_signature
 from llamatron.model.values.time_signature import is_time_signature
 from llamatron.user_strings import errors, marks, messages, names
@@ -18,11 +17,6 @@ SONG_SUFFIXES = (SONG_SUFFIX, '.yaml')
 MIDI_SUFFIXES = ('.mid', '.midi')
 ORDERS = list(arp_model.ORDERS)
 DEFAULT_ORDER = ORDERS[0]
-
-
-def octave_moved(*, octave, offset):
-    """Return an octave moved by an offset, kept within the file's range."""
-    return max(min(octave + offset, limits.MAX_OCTAVE), limits.MIN_OCTAVE)
 
 
 def numbers_text(numbers):

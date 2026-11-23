@@ -4,7 +4,6 @@
 """The fields that choose visualizer modes: the mode Arrange's visualizer key shows first, on the File/Global page and the Song page, the song's over the set's, and the File/Global page's Hide Visualizers section."""
 
 from llamatron.interface.forms.nodes import ChoiceField, Field
-from llamatron.interface.tracker.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.interface.visualizers.modes import mode_called
 from llamatron.model.schema import file_format
 from llamatron.user_strings import labels, legends, marks
@@ -34,7 +33,6 @@ def hidden_visualizers_field(*, page):
         def chosen(names):
             for name in file_format.VISUALIZER_NAMES:
                 page.document().change_set(page.document().get_setlist().set_visualizer_hidden, name=name, hidden=name in names)
-        dialog = PickManyDialog(title=labels.MSG_HIDE_VISUALIZERS_LABEL, options=list(file_format.VISUALIZER_NAMES), names=[mode_called(name).NAME for name in file_format.VISUALIZER_NAMES],
-                                picked=setlist.get_hidden_visualizers())
-        page.ask(dialog=dialog, then=chosen)
+        page.ask_many(title=labels.MSG_HIDE_VISUALIZERS_LABEL, options=list(file_format.VISUALIZER_NAMES), names=[mode_called(name).NAME for name in file_format.VISUALIZER_NAMES],
+                      picked=setlist.get_hidden_visualizers(), then=chosen)
     return Field(label=labels.MSG_HIDE_VISUALIZERS_LABEL, value=shown, enter=pick, enter_what=legends.What.CHOOSE)

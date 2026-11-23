@@ -3,8 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The field of one end of a range of octaves, which the track editor and the voice leading editor share, shown and typed in the set's octave labels."""
 
-from llamatron.interface.forms.nodes import Field
-from llamatron.interface.tracker.screens.shared.shared import octave_moved
+from llamatron.interface.forms.nodes import Field, octave_moved
 from llamatron.user_strings import legends
 
 

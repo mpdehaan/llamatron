@@ -10,7 +10,7 @@ from llamatron.caching.cached import cached_while
 from llamatron.interface.forms import moves, tab_box as tab_box_nodes
 from llamatron.interface.forms.cursor import Cursor, NoSuchPlace
 from llamatron.interface.forms.navigator import FormNavigator, page_buttons_start
-from llamatron.interface.forms.nodes import Button, Cells, Field, Heading, NameField, NumberField
+from llamatron.interface.forms.nodes import Button, Cells, Heading, NameField, NumberField, TextField
 from llamatron.interface.forms.tab_box import TabRow
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.renderers import settings_page, tab_box as tab_box_drawing
@@ -18,7 +18,7 @@ from llamatron.interface.tracker.renderers.settings_page import SettingsPageDraw
 from llamatron.interface.tracker.screens.shared.kept_fields import fields_said
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.model.objects import setlist
-from llamatron.user_strings import errors, legends
+from llamatron.user_strings import errors
 
 
 # How wide a tab box is drawn where a page is drawn with no width, as a test draws it.
@@ -76,8 +76,7 @@ class FieldPage(Page):
 
     def text_field(self, *, label, current, set_text):
         """A field for text like the title: current() reads it, and set_text(text) stores it, blank text clearing it."""
-        return Field(label=label, value=current, adjust=None, enter=lambda: self.ask_text(title=label, value=current(), then=set_text), enter_what=legends.What.EDIT,
-                     clear=lambda: set_text(setlist.NO_TEXT), clear_what=legends.What.CLEAR)
+        return TextField(label=label, page=self, current=current, set_text=set_text, blank=setlist.NO_TEXT)
 
     def setting_number_field(self, *, label, holder, name, shown=None, in_effect=None, start=None, typed=None, clear_what=None):
         """A field for a whole number that is a setting of something in the set, by the setting's file name.
