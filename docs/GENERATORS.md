@@ -1,44 +1,55 @@
 # Generators
 
-A pattern says what a part is; a generator says how it is played. This page explains what generators are,
-how they are put to work, and the settings every kind shares. Each kind has a page of its own, listed under
-Generator Kinds below, and [Chain](generators/CHAIN.md) covers the chains that run them.
+A pattern says what a part is; a generator says how it is played. This page
+explains what generators are, how they are put to work, and the settings every
+kind shares. Each kind has a page of its own, listed under Generator Kinds
+below, and [Chain](generators/CHAIN.md) covers the chains that run them.
 
 ## What a Generator Does
 
-A generator takes the notes a clip makes and changes them: it arpeggiates a chord, moves a figure through
-a progression, strums, thins out, swells, slides or hands notes to another track. A generator works on the finished clip, never on the pattern, so nothing you wrote changes. Other clips that play the same pattern
-are untouched unless they run the generator too, and the generator follows whatever scale, chords and
-tempo the clip is in when it plays: change the scene's scale and the arpeggio follows.
+A generator takes the notes a clip makes and changes them: it arpeggiates a
+chord, moves a figure through a progression, strums, thins out, swells, slides
+or hands notes to another track. A generator works on the finished clip, never
+on the pattern, so nothing you wrote changes. Other clips that play the same
+pattern are untouched unless they run the generator too, and the generator
+follows whatever scale, chords and tempo the clip is in when it plays: change
+the scene's scale and the arpeggio follows.
 
-Generators are heard everywhere a song is: in real time as it plays, and in every export.
+Generators are heard everywhere a song is: in real time as it plays, and in
+every export.
 
 ## Chains
 
-A clip, a scene and a track each list the generators they run, one after another. A chain is a generator
-too, one that runs a list of other generators in its place, so that several clips can share the same list;
+A clip, a scene and a track each list the generators they run, one after
+another. A chain is a generator too, one that runs a list of other generators
+in its place, so that several clips can share the same list;
 [Chain](generators/CHAIN.md) says how.
 
 ## Generators as Paint
 
-The way to think of a generator is as paint. A clip's list applies it to exactly the clips that should have it,
-and editing the generator afterwards changes everything painted with it at once, across every song of the
-set. Write one strum, paint it on every guitar part, and change how every guitar strums by editing one
-generator.
+The way to think of a generator is as paint. A clip's list applies it to
+exactly the clips that should have it, and editing the generator afterwards
+changes everything painted with it at once, across every song of the set.
+Write one strum, paint it on every guitar part, and change how every guitar
+strums by editing one generator.
 
-Some generators have a quick version as a setting of a clip, a scene or a track, like a clip's strum or a
-scene's density. The setting is quickest for one place; the generator is worth having for the many places
-that should share one shape and change together.
+Some generators have a quick version as a setting of a clip, a scene or a
+track, like a clip's strum or a scene's density. The setting is quickest for
+one place; the generator is worth having for the many places that should share
+one shape and change together.
 
 ## Chance
 
-Every generator that chooses anything at random, a random arpeggio order or a drift's random degree,
-draws afresh each time the song plays or exports, so each is a new take. While a song plays in real time, one take is kept for the whole play, so an edit
-changes only what you edited.
+Every generator that chooses anything at random, a random arpeggio order or a
+drift's random degree, draws afresh each time the song plays or exports, so
+each is a new take. While a song plays in real time, one take is kept for the
+whole play, so an edit changes only what you edited.
 
 ## Generator Kinds
 
-The generators fall into eight categories by what they change, as the sidebar groups them. The picker of a new generator's type lists them all together, sorted by name.
+The generators fall into eight categories by what they change, as the sidebar
+groups them. The picker of a new generator's type lists them all together,
+sorted by name.
 
 ### Arrangement
 
@@ -103,13 +114,22 @@ How a chord's notes are laid out and played.
 | [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/11_sailor_arpeggiator.yml` |
 | [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/21_guitarify.yml` |
 
-[About Demos](DEMOS.md) describes every demo, and its table shows which features each one uses.
+[About Demos](DEMOS.md) describes every demo, and its table shows which
+features each one uses.
 
 ## Generators Page
 
 ![The Generators page](screenshots/generators.svg)
 
-Press `G` on the main screen for the Generators page, which lists every generator of the set under a heading for its type, such as `- Chords (2)`, the types and the generators under each sorted by name. Every type is closed until opened: Space or `ENTER` on a heading opens and closes its type, the set's file keeps which types are open, and `PgUp` and `PgDn` jump between the headings. The kinds are the Chain, Arpeggiator, Chords, Drift, Guitarify, Hocket, Musician, Phrasing, Shapes and Timing. A generator changes a clip's notes when the song plays or exports; to use one, add it to the Generators field of a clip, a scene or a track, on its own or in a chain.
+Press `G` on the main screen for the Generators page, which lists every
+generator of the set under a heading for its type, such as `- Chords (2)`, the
+types and the generators under each sorted by name. Every type is closed until
+opened: Space or `ENTER` on a heading opens and closes its type, the set's
+file keeps which types are open, and `PgUp` and `PgDn` jump between the
+headings. The kinds are the Chain, Arpeggiator, Chords, Drift, Guitarify,
+Hocket, Musician, Phrasing, Shapes and Timing. A generator changes a clip's
+notes when the song plays or exports; to use one, add it to the Generators
+field of a clip, a scene or a track, on its own or in a chain.
 
 | Key | What it does |
 | --- | --- |
@@ -122,32 +142,73 @@ Press `G` on the main screen for the Generators page, which lists every generato
 
 ## Enabled
 
-Every generator's page starts with Enabled, after its Name, on unless switched off with Space or ENTER. A generator switched off is passed over wherever a chain or a clip's, a scene's or a track's list of generators names it, so a part can be heard without it and brought back without taking it out of every list. The set file writes `enabled: false` only for a generator switched off.
+Every generator's page starts with Enabled, after its Name, on unless switched
+off with Space or ENTER. A generator switched off is passed over wherever a
+chain or a clip's, a scene's or a track's list of generators names it, so a
+part can be heard without it and brought back without taking it out of every
+list. The set file writes `enabled: false` only for a generator switched off.
 
 ## Time Settings
 
-Every setting of a generator that is a time, an arpeggiator's Step, a drift's or a progression's Every and a shape's Over, chooses from one list, in this order: its own first choice, such as `(from pattern)` or `(whole)`, then 1/64, 1/32, 1/16, 1/16 triplet, dotted 1/16, 1/8, 1/8 triplet, dotted 1/8, 1/4, 1/4 triplet, 1/2, and then 1, 2, 4, 8 and 16 bars, a bar being as long as the song's time signature says. A time a set file holds that isn't on the list, such as an older file's `2`, stays as it is and is offered at the end of the list.
+Every setting of a generator that is a time, an arpeggiator's Step, a drift's
+or a progression's Every and a shape's Over, chooses from one list, in this
+order: its own first choice, such as `(from pattern)` or `(whole)`, then 1/64,
+1/32, 1/16, 1/16 triplet, dotted 1/16, 1/8, 1/8 triplet, dotted 1/8, 1/4, 1/4
+triplet, 1/2, and then 1, 2, 4, 8 and 16 bars, a bar being as long as the
+song's time signature says. A time a set file holds that isn't on the list,
+such as an older file's `2`, stays as it is and is offered at the end of the
+list.
 
 ## Restart
 
-Every generator ends its settings with Restart, which says when it starts over:
+Every generator ends its settings with Restart, which says when it starts
+over:
 - "every clip", the default: with every clip, as if made anew for it;
-- "on new scene": the first time each scene plays, carrying on through the scene's repeats;
-- "whole song": never, running along the song from its top, the scenes laid end to end, so that a scene launched by hand plays as it would at its place in the song.
+- "on new scene": the first time each scene plays, carrying on through the
+  scene's repeats;
+- "whole song": never, running along the song from its top, the scenes laid
+  end to end, so that a scene launched by hand plays as it would at its place
+  in the song.
 
-A generator that carries on keeps what it was doing: a progression runs on across scenes, a shape's ramp can last the whole song, a voice leading voices a scene's first chord near the last chord before, and an arpeggiator goes on with its random choices. A generator painted on several tracks gives each track a copy of its own, so that tracks line up when their patterns do.
+A generator that carries on keeps what it was doing: a progression runs on
+across scenes, a shape's ramp can last the whole song, a voice leading voices
+a scene's first chord near the last chord before, and an arpeggiator goes on
+with its random choices. A generator painted on several tracks gives each
+track a copy of its own, so that tracks line up when their patterns do.
 
 ## Bypass When
 
-Every generator's page ends with a section called Bypass When, a table of statements about the draws. When one is true as a clip's pattern starts over, the notes of that pass go by the generator untouched, in every chain that names the generator. See [Bypass When](DRAWS.md#bypass-when).
+Every generator's page ends with a section called Bypass When, a table of
+statements about the draws. When one is true as a clip's pattern starts over,
+the notes of that pass go by the generator untouched, in every chain that
+names the generator. See [Bypass When](DRAWS.md#bypass-when).
 
 ## Rows of Steps
 
-A [Timing](generators/TIMING.md) generator's Rush, Drag, Shorten and Glide are each a row of 1 to 16 steps, each on (`●`) or off, running from each clip's start at its own Step, the clip's pattern's step size unless set; a note starting on a step that is on is changed. The settings page shows each row as `[configure]`. A row shorter than the pattern, 5 or 7 steps over 16, lands somewhere new each time round, so that slides, short notes and pushes move through a line that never changes. `ENTER` on Steps opens the row: Left and Right move along it, `Space` or `ENTER` turns the step under the cursor on or off, the line above the row saying what a step that is on does, and `I` and `D` insert and remove steps.
+A [Timing](generators/TIMING.md) generator's Rush, Drag, Shorten and Glide are
+each a row of 1 to 16 steps, each on (`●`) or off, running from each clip's
+start at its own Step, the clip's pattern's step size unless set; a note
+starting on a step that is on is changed. The settings page shows each row as
+`[configure]`. A row shorter than the pattern, 5 or 7 steps over 16, lands
+somewhere new each time round, so that slides, short notes and pushes move
+through a line that never changes. `ENTER` on Steps opens the row: Left and
+Right move along it, `Space` or `ENTER` turns the step under the cursor on or
+off, the line above the row saying what a step that is on does, and `I` and
+`D` insert and remove steps.
 
 ## Shapes
 
-Density, Swell and Articulate shape a clip's notes over time, each a percentage that ramps from a start to an end. A [Shapes](generators/SHAPES.md) generator holds all three, and a chain names it as `shapes: name`; Density and Articulate are also set in a section of the Scene page and of the clip page, `+ Density` and `+ Articulate`. A generator in a clip's chains wins over the clip's own setting, which wins over its scene's, so that a generator can be painted on many clips and changed in one place. How loud a scene or a clip plays is set by its Velocity and its velocity ramps, which a Shapes generator's Swell scales again: see [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). Every setting left blank plays as 100%, changing nothing.
+Density, Swell and Articulate shape a clip's notes over time, each a
+percentage that ramps from a start to an end. A [Shapes](generators/SHAPES.md)
+generator holds all three, and a chain names it as `shapes: name`; Density and
+Articulate are also set in a section of the Scene page and of the clip page,
+`+ Density` and `+ Articulate`. A generator in a clip's chains wins over the
+clip's own setting, which wins over its scene's, so that a generator can be
+painted on many clips and changed in one place. How loud a scene or a clip
+plays is set by its Velocity and its velocity ramps, which a Shapes
+generator's Swell scales again: see [Velocity and Velocity
+Ramps](SCENES.md#velocity-and-velocity-ramps). Every setting left blank plays
+as 100%, changing nothing.
 
 | Setting | What it does |
 | --- | --- |

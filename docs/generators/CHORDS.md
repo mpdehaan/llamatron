@@ -1,12 +1,21 @@
 # Chords
 
-A Chords generator moves a part's notes to chords and voices them. Write a short figure over chord I, a riff, an arpeggio, a bass line or a chord, and its Mode decides where the chords come from:
+A Chords generator moves a part's notes to chords and voices them. Write a
+short figure over chord I, a riff, an arpeggio, a bass line or a chord, and
+its Mode decides where the chords come from:
 
-- **Voicing**, the default, leaves the notes where they are and only voices the chords, as Voice leading below describes.
-- **Progression** moves the clip's notes to each chord of a progression in turn, so that one bar becomes a whole section, and changing the progression rewrites the section without touching the pattern.
-- **Follow Progression** moves the clip's notes to the chords another track plays, so that a song's chords are written once, in one place, and everything else follows them.
+- **Voicing**, the default, leaves the notes where they are and only voices
+  the chords, as Voice leading below describes.
+- **Progression** moves the clip's notes to each chord of a progression in
+  turn, so that one bar becomes a whole section, and changing the progression
+  rewrites the section without touching the pattern.
+- **Follow Progression** moves the clip's notes to the chords another track
+  plays, so that a song's chords are written once, in one place, and
+  everything else follows them.
 
-Every mode then voices the chords if Voice leading is on: on by default in Voicing mode, off in the others until switched on. A drum pattern is left alone.
+Every mode then voices the chords if Voice leading is on: on by default in
+Voicing mode, off in the others until switched on. A drum pattern is left
+alone.
 
 ![A Chords generator's settings](../screenshots/chords_generator.svg)
 
@@ -28,13 +37,30 @@ Every mode then voices the chords if Voice leading is on: on by default in Voici
 
 ### Chord Movement
 
-The chords are degrees of the scale. A plain degree moves every note that many steps up the scale, less one, so the scale decides whether the chord is major or minor: in C major, a C major chord moved to 6 plays A minor, and in C minor the same progression is minor. A degree with a sharp or a flat moves the notes by exact half steps instead, keeping the figure's own sound, which is how borrowed chords such as the rock ♭VII (B♭ major in C major) come out right. A note the pattern writes outside the scale keeps its distance from the scale note below it, so a figure written as a `dom7` chord stays a dominant seventh on every chord. The rhythm, velocity and everything else stay as written, and a drum pattern is left alone. Each chord lasts Every, a bar by default, counted from the clip's start, the progression looping for as long as the clip plays.
+The chords are degrees of the scale. A plain degree moves every note that many
+steps up the scale, less one, so the scale decides whether the chord is major
+or minor: in C major, a C major chord moved to 6 plays A minor, and in C minor
+the same progression is minor. A degree with a sharp or a flat moves the notes
+by exact half steps instead, keeping the figure's own sound, which is how
+borrowed chords such as the rock ♭VII (B♭ major in C major) come out right. A
+note the pattern writes outside the scale keeps its distance from the scale
+note below it, so a figure written as a `dom7` chord stays a dominant seventh
+on every chord. The rhythm, velocity and everything else stay as written, and
+a drum pattern is left alone. Each chord lasts Every, a bar by default,
+counted from the clip's start, the progression looping for as long as the clip
+plays.
 
 ### Chord Editor
 
-![The chords of a progression, as numerals and names in the song's scale](../screenshots/chords_editor.svg)
+![The chords of a progression, as numerals and names in the song's
+scale](../screenshots/chords_editor.svg)
 
-The chord editor draws each chord as a column: a bar rising to its degree, then its Roman numeral (upper case for major, lower case for minor, ° for diminished) and its name in the song's scale, such as `Am`, then a `#/b` row, the Quality, Tens. and Scale rows, and an `Inv.` row. The status line names the chord under the cursor and its notes. A new progression has one chord, I, which changes nothing until edited.
+The chord editor draws each chord as a column: a bar rising to its degree,
+then its Roman numeral (upper case for major, lower case for minor, ° for
+diminished) and its name in the song's scale, such as `Am`, then a `#/b` row,
+the Quality, Tens. and Scale rows, and an `Inv.` row. The status line names
+the chord under the cursor and its notes. A new progression has one chord, I,
+which changes nothing until edited.
 
 | Key | What it does |
 | --- | --- |
@@ -45,11 +71,15 @@ The chord editor draws each chord as a column: a bar rising to its degree, then 
 | `I`, `D` | Insert a chord I before the cursor's, or remove the cursor's, keeping 1 to 32 chords. |
 | `H` | Opens a picker of 24 named progressions, from Pop to Andalusian, and fills the chords with the one chosen, matched to the song's scale. |
 
-An inversion of 1 moves each chord's lowest note up an octave, and 2 its lowest two.
+An inversion of 1 moves each chord's lowest note up an octave, and 2 its
+lowest two.
 
 ### Chords Outside the Scale
 
-Three rows let a chord leave the song's scale. Each chord is worked out in one order: the Scale row picks the scale, the Chord and `#/b` rows pick the root in that scale, the Quality row names the chord if set, and the Tens. row adds notes on top.
+Three rows let a chord leave the song's scale. Each chord is worked out in one
+order: the Scale row picks the scale, the Chord and `#/b` rows pick the root
+in that scale, the Quality row names the chord if set, and the Tens. row adds
+notes on top.
 
 | Row | What it does |
 | --- | --- |
@@ -61,24 +91,60 @@ Three rows let a chord leave the song's scale. Each chord is worked out in one o
 
 ### Chords Track
 
-Put the song's chords on a track of their own, called Chords here, and turn that track's Mute on in the track editor so that the chords are a guide and make no sound. In each scene, the Chords track's clip says what the chords are, in either of two ways. The chords can be written by hand, a step a chord, with the step's Degree as the chord's root and its Chord row as the chord. Or the pattern can hold one chord and a Chords generator in Progression mode, on that clip's Chords tab or in its chain, can make the progression from it. FollowChords reads the chords as they come out of the Chords track, after that track's own generators, so the two ways are followed alike.
+Put the song's chords on a track of their own, called Chords here, and turn
+that track's Mute on in the track editor so that the chords are a guide and
+make no sound. In each scene, the Chords track's clip says what the chords
+are, in either of two ways. The chords can be written by hand, a step a chord,
+with the step's Degree as the chord's root and its Chord row as the chord. Or
+the pattern can hold one chord and a Chords generator in Progression mode, on
+that clip's Chords tab or in its chain, can make the progression from it.
+FollowChords reads the chords as they come out of the Chords track, after that
+track's own generators, so the two ways are followed alike.
 
 ### Following
 
-Write a figure over chord I, a bar of bass, an arpeggio or a held chord, and switch on its clip's Chords tab in Follow Progression mode, or add a Chords generator in that mode to a chain on the clip. As each note starts, it finds the chord most lately started on the track followed, in the same scene, and moves the note up the clip's scale by as many notes as that chord's root is above the scale's root. The scale decides whether a chord is major or minor, as in Progression mode: a figure written on A in A minor plays F, A and C over a chord on F. Where the track followed plays a chord from outside the scale, such as E major in A minor, a note of the figure that is a third, a fifth or a seventh above the figure's root takes the chord's own note, so the figure plays G sharp. Rests, rhythm, velocity and gates stay as written.
+Write a figure over chord I, a bar of bass, an arpeggio or a held chord, and
+switch on its clip's Chords tab in Follow Progression mode, or add a Chords
+generator in that mode to a chain on the clip. As each note starts, it finds
+the chord most lately started on the track followed, in the same scene, and
+moves the note up the clip's scale by as many notes as that chord's root is
+above the scale's root. The scale decides whether a chord is major or minor,
+as in Progression mode: a figure written on A in A minor plays F, A and C over
+a chord on F. Where the track followed plays a chord from outside the scale,
+such as E major in A minor, a note of the figure that is a third, a fifth or a
+seventh above the figure's root takes the chord's own note, so the figure
+plays G sharp. Rests, rhythm, velocity and gates stay as written.
 
-A chord goes on through the rests after it, until the next chord starts. Before the first chord of a scene, with no track chosen, or in a scene where the track followed has no clip, nothing moves. A drum pattern is left alone. Tracks cannot follow each other in a circle.
+A chord goes on through the rests after it, until the next chord starts.
+Before the first chord of a scene, with no track chosen, or in a scene where
+the track followed has no clip, nothing moves. A drum pattern is left alone.
+Tracks cannot follow each other in a circle.
 
-Change a chord on the Chords track and every clip that follows it changes with it.
+Change a chord on the Chords track and every clip that follows it changes with
+it.
 
 ## Voice Leading
 
-Chords played in root position jump around: C, then G, then Am, each built up from its root, moves every note a long way. A pianist plays G with its B at the bottom and F with its C at the bottom, so that the notes barely move. Voice leading does that for you: the first chord of a clip plays as written, and each chord after takes the inversion and the octave whose notes move least from the chord before. Single notes, such as a bass line's, are left alone.
+Chords played in root position jump around: C, then G, then Am, each built up
+from its root, moves every note a long way. A pianist plays G with its B at
+the bottom and F with its C at the bottom, so that the notes barely move.
+Voice leading does that for you: the first chord of a clip plays as written,
+and each chord after takes the inversion and the octave whose notes move least
+from the chord before. Single notes, such as a bass line's, are left alone.
 
 ## Applying the Generator
 
-Switch on the Chords tab of a clip or a track, or add the Chords generator to a chain, as `chords: name`, and give clips that chain; [Concepts](../CONCEPTS.md#chord-progressions) walks through it.
+Switch on the Chords tab of a clip or a track, or add the Chords generator to
+a chain, as `chords: name`, and give clips that chain;
+[Concepts](../CONCEPTS.md#chord-progressions) walks through it.
 
-- `examples/learning/06_chord_progression_generator.yml` plays three one-bar patterns through five progressions, and `examples/learning/07_blues_chords.yml` is a twelve-bar blues.
-- `examples/learning/05_voice_leading.yml` plays three progressions in root position, inverted by hand with the chord editor's Inv. row, and voice-led; the last scene of `examples/learning/06_chord_progression_generator.yml` voice-leads its pad.
-- `examples/learning/22_follow_chords.yml` plays a band stuck on one chord and then following one muted track, SILENT Chords, one player at a time, with the chords written by hand and then made by a progression.
+- `examples/learning/06_chord_progression_generator.yml` plays three one-bar
+  patterns through five progressions, and
+  `examples/learning/07_blues_chords.yml` is a twelve-bar blues.
+- `examples/learning/05_voice_leading.yml` plays three progressions in root
+  position, inverted by hand with the chord editor's Inv. row, and voice-led;
+  the last scene of `examples/learning/06_chord_progression_generator.yml`
+  voice-leads its pad.
+- `examples/learning/22_follow_chords.yml` plays a band stuck on one chord and
+  then following one muted track, SILENT Chords, one player at a time, with
+  the chords written by hand and then made by a progression.

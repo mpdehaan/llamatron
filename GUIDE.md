@@ -1,8 +1,15 @@
 # llamatron
 
-llamatron is a tracker for the terminal: a composing environment where songs are built from shared patterns, scales and generators, arranged in scenes, and played. It plays in real time through MIDI hardware, software synthesizers or a DAW, or through FluidSynth with no setup at all, and exports to Ableton Live sets, MIDI files and WAV audio, so that a song can be finished in any DAW.
+llamatron is a tracker for the terminal: a composing environment where songs
+are built from shared patterns, scales and generators, arranged in scenes, and
+played. It plays in real time through MIDI hardware, software synthesizers or
+a DAW, or through FluidSynth with no setup at all, and exports to Ableton Live
+sets, MIDI files and WAV audio, so that a song can be finished in any DAW.
 
-A file holds a set of songs, like the songs of one concert. The patterns, scales, generators, chains, grooves and instruments belong to the set, and every song shares them; each song has its own tempo, scale, groove, tracks, draws and scenes.
+A file holds a set of songs, like the songs of one concert. The patterns,
+scales, generators, chains, grooves and instruments belong to the set, and
+every song shares them; each song has its own tempo, scale, groove, tracks,
+draws and scenes.
 
 ## Intro
 
@@ -34,9 +41,13 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 
 ## Demo Songs
 
-**[▶ See every demo song](docs/DEMOS.md)**: each example set, what it plays, how long it lasts and which features it shows, with videos to watch. Every demo plays as it comes through FluidSynth: open one, press `A` for Arrange, move to the top left corner and press `Space`.
+**[▶ See every demo song](docs/DEMOS.md)**: each example set, what it plays,
+how long it lasts and which features it shows, with videos to watch. Every
+demo plays as it comes through FluidSynth: open one, press `A` for Arrange,
+move to the top left corner and press `Space`.
 
-[![The Density demo, edm_density.yml, on YouTube](https://img.youtube.com/vi/68vSj5sSW3c/hqdefault.jpg)](https://www.youtube.com/watch?v=68vSj5sSW3c)
+[![The Density demo, edm_density.yml, on
+YouTube](https://img.youtube.com/vi/68vSj5sSW3c/hqdefault.jpg)](https://www.youtube.com/watch?v=68vSj5sSW3c)
 
 | Page | What it covers |
 | --- | --- |
@@ -72,7 +83,8 @@ A file holds a set of songs, like the songs of one concert. The patterns, scales
 
 ## Objects
 
-Each object of a set has a page in the tracker and a page here, with its settings and keys; `F1` on any page of the tracker lists its keys too.
+Each object of a set has a page in the tracker and a page here, with its
+settings and keys; `F1` on any page of the tracker lists its keys too.
 
 | Object | Key on the main screen | Page |
 | --- | --- | --- |
@@ -89,7 +101,9 @@ Each object of a set has a page in the tracker and a page here, with its setting
 
 ## Generators
 
-A generator changes how a clip's notes are played, without changing its pattern. The overview describes what every generator shares, and each generator has a page of its own, grouped by what it changes.
+A generator changes how a clip's notes are played, without changing its
+pattern. The overview describes what every generator shares, and each
+generator has a page of its own, grouped by what it changes.
 
 | What it covers | Page |
 | --- | --- |
@@ -179,8 +193,18 @@ A generator changes how a clip's notes are played, without changing its pattern.
 | [Recording](docs/RECORDING.md) | Videos of a set playing, by itself or performed, one at a time or every demo in a batch. |
 | [Architecture](docs/ARCHITECTURE.md) | How the code is put together, for anyone reading it, with a link to it on GitHub. |
 
-[![llamatron's visualizers, on YouTube](https://img.youtube.com/vi/yt9NffJ1HF4/hqdefault.jpg)](https://www.youtube.com/watch?v=yt9NffJ1HF4)
+[![llamatron's visualizers, on
+YouTube](https://img.youtube.com/vi/yt9NffJ1HF4/hqdefault.jpg)](https://www.youtube.com/watch?v=yt9NffJ1HF4)
 
 ## Trademarks
 
-Ableton and Ableton Live are trademarks of Ableton AG. Elektron and Monomachine are trademarks of Elektron Music Machines MAV AB. Sequentix and Cirklon are trademarks of Sequentix Music Systems Ltd. Apple and macOS are trademarks of Apple Inc., registered in the U.S. and other countries. YouTube is a trademark of Google LLC. GitHub is a trademark of GitHub, Inc. Linux is the registered trademark of Linus Torvalds in the U.S. and other countries. All other trademarks are the property of their respective owners. llamatron is an independent project, not affiliated with, sponsored by or endorsed by any of these companies; their names are used only to describe compatibility and inspiration.
+Ableton and Ableton Live are trademarks of Ableton AG. Elektron and
+Monomachine are trademarks of Elektron Music Machines MAV AB. Sequentix and
+Cirklon are trademarks of Sequentix Music Systems Ltd. Apple and macOS are
+trademarks of Apple Inc., registered in the U.S. and other countries. YouTube
+is a trademark of Google LLC. GitHub is a trademark of GitHub, Inc. Linux is
+the registered trademark of Linus Torvalds in the U.S. and other countries.
+All other trademarks are the property of their respective owners. llamatron is
+an independent project, not affiliated with, sponsored by or endorsed by any
+of these companies; their names are used only to describe compatibility and
+inspiration.

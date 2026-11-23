@@ -1,11 +1,23 @@
 # Guitarify
 
-A keyboard plays a chord as a stack of notes struck together and held. A guitar plays the same chord across six strings, one note a string, and a hand strikes those strings in a rhythm: a strum down, a strum up, a muted strum, the bass string, one string picked alone. Guitarify plays a clip's chords and notes that way, on any instrument, so a pattern that is only a row of chords becomes a strummed or picked part.
+A keyboard plays a chord as a stack of notes struck together and held. A
+guitar plays the same chord across six strings, one note a string, and a hand
+strikes those strings in a rhythm: a strum down, a strum up, a muted strum,
+the bass string, one string picked alone. Guitarify plays a clip's chords and
+notes that way, on any instrument, so a pattern that is only a row of chords
+becomes a strummed or picked part.
 
 Guitarify has two modes, its Mode the first setting on its page:
 
-- **Guitar**, the default, plays a part as a guitar's two hands would. It has two halves, and each can be switched off: Shape, the Left Hand, is the fretting hand, which decides the notes of each chord; Strokes, the Right Hand, is the other hand, which decides when each string sounds.
-- **Strum** leaves the chords as written and strums each one at the very end of the clip, after its chains and its shapes, the way a hand crosses the strings: its notes start one after another, each lasting to the chord's end. It has a Direction and shares Spread, Fade, Loose timing and Upstroke strings with Guitar mode, so switching modes keeps them.
+- **Guitar**, the default, plays a part as a guitar's two hands would. It has
+  two halves, and each can be switched off: Shape, the Left Hand, is the
+  fretting hand, which decides the notes of each chord; Strokes, the Right
+  Hand, is the other hand, which decides when each string sounds.
+- **Strum** leaves the chords as written and strums each one at the very end
+  of the clip, after its chains and its shapes, the way a hand crosses the
+  strings: its notes start one after another, each lasting to the chord's end.
+  It has a Direction and shares Spread, Fade, Loose timing and Upstroke
+  strings with Guitar mode, so switching modes keeps them.
 
 ## Strum
 
@@ -13,11 +25,19 @@ Guitarify has two modes, its Mode the first setting on its page:
 | --- | --- |
 | Direction | The order the strings sound in: "by the beat", the default, down on each beat and up between, as a hand moves; "down", low to high; "up", high to low; "down up", alternating chord by chord. |
 
-Spread, Fade, Loose timing and Upstroke strings are as Strokes describes below. A chord's strum is drawn from the song's seed, so it plays the same every time. The last Guitarify in Strum mode a clip's chains name strums the clip; a single note is left alone.
+Spread, Fade, Loose timing and Upstroke strings are as Strokes describes
+below. A chord's strum is drawn from the song's seed, so it plays the same
+every time. The last Guitarify in Strum mode a clip's chains name strums the
+clip; a single note is left alone.
 
 ## Shape
 
-Shape holds each chord as a hand can hold it: at most one note on each string, every note within four frets of the hand's position, and the chord's lowest written note in the bass wherever a string can reach it. C, E and G written close together become C, E, G, C and E across five strings, the open C chord. A hand with too few strings for a chord leaves the fifth out first and the root out last.
+Shape holds each chord as a hand can hold it: at most one note on each string,
+every note within four frets of the hand's position, and the chord's lowest
+written note in the bass wherever a string can reach it. C, E and G written
+close together become C, E, G, C and E across five strings, the open C chord.
+A hand with too few strings for a chord leaves the fifth out first and the
+root out last.
 
 | Setting | What it does |
 | --- | --- |
@@ -31,7 +51,9 @@ Shape holds each chord as a hand can hold it: at most one note on each string, e
 
 ## Strokes
 
-Strokes plays a bar of strokes, one stroke a cell, on whatever chord or note sounds at that moment. The bar follows the song's bars and goes round for as long as the clip plays. A single note is played by every stroke.
+Strokes plays a bar of strokes, one stroke a cell, on whatever chord or note
+sounds at that moment. The bar follows the song's bars and goes round for as
+long as the clip plays. A single note is played by every stroke.
 
 | Setting | What it does |
 | --- | --- |
@@ -49,7 +71,11 @@ Spread, Fade, Loose timing and Upstroke strings are shared with Strum mode.
 
 ## Bar Editor
 
-The bar's editor shows one cell a column, with the stroke above and the accent below. Left and Right move along the cells, `[` and `]` change the stroke under the cursor, Space or ENTER accents the cell, `I` inserts a cell, `D` removes one, `S` steps the cell length and `R` picks a ready-made bar. A bar holds up to 32 cells.
+The bar's editor shows one cell a column, with the stroke above and the accent
+below. Left and Right move along the cells, `[` and `]` change the stroke
+under the cursor, Space or ENTER accents the cell, `I` inserts a cell, `D`
+removes one, `S` steps the cell length and `R` picks a ready-made bar. A bar
+holds up to 32 cells.
 
 | Stroke | Drawn | What plays |
 | --- | :---: | --- |
@@ -64,17 +90,34 @@ The bar's editor shows one cell a column, with the stroke above and the accent b
 | squeal | `^` | One note two octaves above the chord's lowest, short and at full loudness, as a pinched harmonic. |
 | string 1 to string 4 | `1` to `4` | One string, counted from the highest. A string the chord lacks plays the nearest string the chord has. |
 
-Where a bar has any accented cell, the strokes without an accent play a little softer.
+Where a bar has any accented cell, the strokes without an accent play a little
+softer.
 
-The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four to the bar, backbeat, boogie, shuffle, scratch, all down, arena, chug, gallop, thrash, tremolo, chime, roll up, roll down, held, skank, disco, pedal riff, five beat, strum and click, slow pick, four stomps and power groove. Picking one replaces the strokes, the accents and the cell length together, and the bar can be edited from there. A rolled chord is the roll up or the roll down bar with Let ring on.
+The ready-made bars are folk strum, boom-chick, travis pick, crosspick, four
+to the bar, backbeat, boogie, shuffle, scratch, all down, arena, chug, gallop,
+thrash, tremolo, chime, roll up, roll down, held, skank, disco, pedal riff,
+five beat, strum and click, slow pick, four stomps and power groove. Picking
+one replaces the strokes, the accents and the cell length together, and the
+bar can be edited from there. A rolled chord is the roll up or the roll down
+bar with Let ring on.
 
 ## Applying the Generator
 
-Switch on the Guitarify tab of a clip or a track, or add a Guitarify to a chain, as `guitarify: name`, and give clips that chain. A Progression before the Guitarify in the same chain moves one written chord through a song's chords, and the Guitarify then plays each. `examples/learning/21_guitarify.yml` plays twenty short scenes, each a way a guitar is played, from one pattern of chords a scene.
+Switch on the Guitarify tab of a clip or a track, or add a Guitarify to a
+chain, as `guitarify: name`, and give clips that chain. A Progression before
+the Guitarify in the same chain moves one written chord through a song's
+chords, and the Guitarify then plays each.
+`examples/learning/21_guitarify.yml` plays twenty short scenes, each a way a
+guitar is played, from one pattern of chords a scene.
 
 ## Settings by Genre
 
-The Guitarify demo, `examples/learning/21_guitarify.yml`, plays twenty short examples, each a scene of its own on one guitar. The table lists, for each example, the fields of the Guitarify editor that were changed from their defaults, under the editor's two sections, with the values as the editor shows them. An empty cell means every field of that section was left alone. The demo's tracks are named after their guitars, and the tempo is the scene's.
+The Guitarify demo, `examples/learning/21_guitarify.yml`, plays twenty short
+examples, each a scene of its own on one guitar. The table lists, for each
+example, the fields of the Guitarify editor that were changed from their
+defaults, under the editor's two sections, with the values as the editor shows
+them. An empty cell means every field of that section was left alone. The
+demo's tracks are named after their guitars, and the tempo is the scene's.
 
 | Genre | Example Name | Guitar | BPM | Shape | Strokes |
 | --- | --- | --- | --- | --- | --- |
@@ -99,4 +142,8 @@ The Guitarify demo, `examples/learning/21_guitarify.yml`, plays twenty short exa
 | blues | shuffle | clean | 120 | Strings: 4 | Bar: shuffle, 12 cells of 1/12<br>Spread: 4 ms |
 | finale | last chord | steel | 92 | | Bar: custom, 32 cells of 1/8<br>Let ring: on |
 
-A Bar shown as custom was written by hand in the bar editor: quiet loud plays two bars picked string by string and then two strummed, and last chord three bars strummed and then one rolled from the bass string up. Opening the demo and pressing `ENTER` on the Bar of each shows the strokes. A switch that is on, which the editor shows as `●`, is written as on.
+A Bar shown as custom was written by hand in the bar editor: quiet loud plays
+two bars picked string by string and then two strummed, and last chord three
+bars strummed and then one rolled from the bass string up. Opening the demo
+and pressing `ENTER` on the Bar of each shows the strokes. A switch that is
+on, which the editor shows as `●`, is written as on.

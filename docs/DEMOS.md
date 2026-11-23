@@ -1,51 +1,67 @@
 # About Demos
 
-The example sets are in `examples/`, in three folders: `learning/`, demos that each teach one feature a scene at
-a time, most of them on a well-known tune so that you can hear what the feature changes, numbered in the order to
-learn them; `other/`, demos that fit no other folder; and `by_genre/`, every other song, in a folder for each genre. The table below lists
-every one, with a video where there is one, and the sections after it describe each demo.
+The example sets are in `examples/`, in three folders: `learning/`, demos that
+each teach one feature a scene at a time, most of them on a well-known tune so
+that you can hear what the feature changes, numbered in the order to learn
+them; `other/`, demos that fit no other folder; and `by_genre/`, every other
+song, in a folder for each genre. The table below lists every one, with a
+video where there is one, and the sections after it describe each demo.
 
-All demos included are starting points, many are improved if you edit them, and even more so if you were to export to Ableton Live or send them in realtime to synths that you were tweaking in real time. These files are marked "protected" by default, which you can turn off in settings - although it is better to copy them to a new location first if you want to make your own versions.
+All demos included are starting points, many are improved if you edit them,
+and even more so if you were to export to Ableton Live or send them in
+realtime to synths that you were tweaking in real time. These files are marked
+"protected" by default, which you can turn off in settings - although it is
+better to copy them to a new location first if you want to make your own
+versions.
 
 ## Opening a Demo
 
-Start llamatron from the project folder and press `Ctrl+O`, or `O` on the main screen. The Open page starts in `examples/`:
-`ENTER` goes into a folder, such as `learning/`, and `ENTER` on a file opens the demo. A demo can also be named when
-llamatron starts:
+Start llamatron from the project folder and press `Ctrl+O`, or `O` on the main
+screen. The Open page starts in `examples/`: `ENTER` goes into a folder, such
+as `learning/`, and `ENTER` on a file opens the demo. A demo can also be named
+when llamatron starts:
 
 ```
 llamatron examples/learning/11_sailor_arpeggiator.yml
 ```
 
-Every set plays in real time as it comes, through FluidSynth, a free software synthesizer, each
-track on a General MIDI sound chosen for it: install FluidSynth once with `sh user_scripts/install_fluidsynth.sh`,
-open a set, press `A` for Arrange, go to the top left corner and press Space.
+Every set plays in real time as it comes, through FluidSynth, a free software
+synthesizer, each track on a General MIDI sound chosen for it: install
+FluidSynth once with `sh user_scripts/install_fluidsynth.sh`, open a set,
+press `A` for Arrange, go to the top left corner and press Space.
 
-The demos won't sound as good through FluidSynth as through a DAW, since FluidSynth has one basic sound for each of
-General MIDI's 128 instruments. Many of the songs were made quickly while the project was young, and they are improved
-over time, so a demo's video may show an older version of the song or of llamatron.
+The demos won't sound as good through FluidSynth as through a DAW, since
+FluidSynth has one basic sound for each of General MIDI's 128 instruments.
+Many of the songs were made quickly while the project was young, and they are
+improved over time, so a demo's video may show an older version of the song or
+of llamatron.
 
-Or export one straight to a Live set, then open it in Live and put an instrument on each track:
+Or export one straight to a Live set, then open it in Live and put an
+instrument on each track:
 
 ```
 llamatron examples/learning/11_sailor_arpeggiator.yml --to ableton --replace
 ```
 
-Live's scenes keep the demo's scene names, which say what each one shows, and each clip is
-named after the pattern it plays. Launch the scenes from the top, one at a time. Every demo also has notes, which explain it in
-more detail than this page and say what to keep in mind when changing it. They're at the top of
-the file, and in the tracker, the Notes field of the File/Global page opens them.
+Live's scenes keep the demo's scene names, which say what each one shows, and
+each clip is named after the pattern it plays. Launch the scenes from the top,
+one at a time. Every demo also has notes, which explain it in more detail than
+this page and say what to keep in mind when changing it. They're at the top of
+the file, and in the tracker, the Notes field of the File/Global page opens
+them.
 
-Every example set is protected, so you can try things in one without spoiling it: `Ctrl+S`
-offers to save a copy under another name, and the copy is yours. The File/Global page's Protected setting
-turns the protection off if you'd rather change the original.
+Every example set is protected, so you can try things in one without spoiling
+it: `Ctrl+S` offers to save a copy under another name, and the copy is yours.
+The File/Global page's Protected setting turns the protection off if you'd
+rather change the original.
 
 ## Demo Pages
 
-Each page below describes its demos: what each one plays, how long it plays, the features it uses and its video where
-there is one, with a link to the demo's file. Tutorial Demos holds the learning demos in the order to learn them.
-`sh user_scripts/demo_report.sh` prints every demo as comma-separated values, and `internal_tools/demo_table.sh` keeps these
-pages current.
+Each page below describes its demos: what each one plays, how long it plays,
+the features it uses and its video where there is one, with a link to the
+demo's file. Tutorial Demos holds the learning demos in the order to learn
+them. `sh user_scripts/demo_report.sh` prints every demo as comma-separated
+values, and `internal_tools/demo_table.sh` keeps these pages current.
 
 <!-- generated by internal_tools/demo_summary.py -->
 | page | demos |
@@ -77,47 +93,58 @@ pages current.
 
 ## Additional Preview Options
 
-The demos can be heard without opening llamatron. `sh user_scripts/demos_to_midi.sh` exports every demo as a General MIDI
-file in `previews/`, which any MIDI player plays; `sh user_scripts/demos_to_wavs.sh` turns every demo into a WAV file there,
-through FluidSynth; and `sh user_scripts/play_demo.sh` lists the WAV files and plays the one chosen in the terminal.
-[User Scripts](USER_SCRIPTS.md#listening-to-the-demos) describes each script.
+The demos can be heard without opening llamatron. `sh
+user_scripts/demos_to_midi.sh` exports every demo as a General MIDI file in
+`previews/`, which any MIDI player plays; `sh user_scripts/demos_to_wavs.sh`
+turns every demo into a WAV file there, through FluidSynth; and `sh
+user_scripts/play_demo.sh` lists the WAV files and plays the one chosen in the
+terminal. [User Scripts](USER_SCRIPTS.md#listening-to-the-demos) describes
+each script.
 
 ## Silent Tracks
 
-A track whose name has SILENT in it is muted: its settings have `mute: true`, so Live starts
-with it switched off. A silent track's clips are still written, so you can switch the track on to hear what's there, and other tracks can still grab notes from the track. That's what silent tracks are for.
+A track whose name has SILENT in it is muted: its settings have `mute: true`,
+so Live starts with it switched off. A silent track's clips are still written,
+so you can switch the track on to hear what's there, and other tracks can
+still grab notes from the track. That's what silent tracks are for.
 
 ## MIDI Files for Import
 
 Public domain tunes as MIDI files, for trying the tracker's MIDI import on:
 
-- `entertainer.mid`: The Entertainer, from the Mutopia Project, with its LilyPond source
-  `entertainer.ly`. The Entertainer demo was cut from it.
-- `wellerman.mid`: The Wellerman, the arrangement demo's song, exported with MIDI (Multitrack).
-- `pachelbel_canon.mid`: Pachelbel's Canon, the classical demo's song, exported the same way.
+- `entertainer.mid`: The Entertainer, from the Mutopia Project, with its
+  LilyPond source `entertainer.ly`. The Entertainer demo was cut from it.
+- `wellerman.mid`: The Wellerman, the arrangement demo's song, exported with
+  MIDI (Multitrack).
+- `pachelbel_canon.mid`: Pachelbel's Canon, the classical demo's song,
+  exported the same way.
 
 ## Tune Sources
 
-Every tune is in the public domain. The notes and tempos were taken from these transcriptions,
-and each demo's notes say which one it used:
+Every tune is in the public domain. The notes and tempos were taken from these
+transcriptions, and each demo's notes say which one it used:
 
-- Drunken Sailor, Simple Gifts, Ode to Joy, In the Hall of the Mountain King and Pachelbel's
-  Canon: the transcriptions at [flutetunes.com](https://www.flutetunes.com), using their tempos.
-- The Wellerman: the sung setting, with lyrics and chords, at
-  [The Session](https://thesession.org/tunes/20383) (setting 8). No original tempo is known,
-  so 100 BPM is an estimate.
+- Drunken Sailor, Simple Gifts, Ode to Joy, In the Hall of the Mountain King
+  and Pachelbel's Canon: the transcriptions at
+  [flutetunes.com](https://www.flutetunes.com), using their tempos.
+- The Wellerman: the sung setting, with lyrics and chords, at [The
+  Session](https://thesession.org/tunes/20383) (setting 8). No original tempo
+  is known, so 100 BPM is an estimate.
 - Für Elise: written from the well-known opening.
 - The groove demo's shuffle is llamatron's own tune, written for the demo.
-- The Entertainer: the [Mutopia Project](https://www.mutopiaproject.org)'s typesetting of the
-  1902 edition, which its typesetter placed in the public domain, at its tempo of 72.
+- The Entertainer: the [Mutopia Project](https://www.mutopiaproject.org)'s
+  typesetting of the 1902 edition, which its typesetter placed in the public
+  domain, at its tempo of 72.
 
-`tests/data/demo_sources/make_demos.py` wrote the first version of every demo but the ties
-and groove demos, which were written by hand, from notes written into it and, for The Entertainer,
-from `examples/midi/entertainer.mid`, which is kept with its LilyPond source among the MIDI files
-to import, so that nothing has to be downloaded again. Running it overwrites every
-demo, including any changes made by hand, so it's only for starting over.
+`tests/data/demo_sources/make_demos.py` wrote the first version of every demo
+but the ties and groove demos, which were written by hand, from notes written
+into it and, for The Entertainer, from `examples/midi/entertainer.mid`, which
+is kept with its LilyPond source among the MIDI files to import, so that
+nothing has to be downloaded again. Running it overwrites every demo,
+including any changes made by hand, so it's only for starting over.
 
-The tests load, export and save every demo on each run, without checking what they play, so
-editing a demo is safe as long as it still loads. The tests also run the generator into a temporary
-folder and check what it writes against its sources: that The Entertainer it makes plays the
-notes of `entertainer.mid`, and that the hocketing voices it makes add up to the melody.
+The tests load, export and save every demo on each run, without checking what
+they play, so editing a demo is safe as long as it still loads. The tests also
+run the generator into a temporary folder and check what it writes against its
+sources: that The Entertainer it makes plays the notes of `entertainer.mid`,
+and that the hocketing voices it makes add up to the melody.

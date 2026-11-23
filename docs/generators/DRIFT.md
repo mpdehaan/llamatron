@@ -1,10 +1,21 @@
 # Drift
 
-![A drift's settings, version A beside version B](../screenshots/drift_editor.svg)
+![A drift's settings, version A beside version
+B](../screenshots/drift_editor.svg)
 
-A drift slowly changes the clips that name it in their chains, over the whole song: their loudness, how often their notes play, the notes themselves, and their scale and root. A drift is one process for the whole song, so every clip that names the drift hears the same drift at the same moment, and the drift keeps changing through scenes where no clip hears it. A little drift keeps a gentle piece from sounding mechanical over its repeats; a lot makes a strange one wander.
+A drift slowly changes the clips that name it in their chains, over the whole
+song: their loudness, how often their notes play, the notes themselves, and
+their scale and root. A drift is one process for the whole song, so every clip
+that names the drift hears the same drift at the same moment, and the drift
+keeps changing through scenes where no clip hears it. A little drift keeps a
+gentle piece from sounding mechanical over its repeats; a lot makes a strange
+one wander.
 
-A drift triggers every so often and picks new amounts, holding them until the next trigger. A drift has two versions of every setting, A and B, starts at A, and moves one step toward B at each trigger. A drift was built to be used mostly with its Restart at "whole song", so that it runs from the top of the song through every scene.
+A drift triggers every so often and picks new amounts, holding them until the
+next trigger. A drift has two versions of every setting, A and B, starts at A,
+and moves one step toward B at each trigger. A drift was built to be used
+mostly with its Restart at "whole song", so that it runs from the top of the
+song through every scene.
 
 ## Settings
 
@@ -18,7 +29,11 @@ A drift triggers every so often and picks new amounts, holding them until the ne
 
 ## Versions A and B
 
-Below the settings, each row has a value for A and for B side by side, the one Left and Right picked marked `< >`. `[` and `]` change the one picked, `ENTER` types it or picks from a list, and `Bksp` clears it. Numbers are blended between A and B by how far the drift has moved, and a scale or a root is B's with a chance of how far it has moved.
+Below the settings, each row has a value for A and for B side by side, the one
+Left and Right picked marked `< >`. `[` and `]` change the one picked, `ENTER`
+types it or picks from a list, and `Bksp` clears it. Numbers are blended
+between A and B by how far the drift has moved, and a scale or a root is B's
+with a chance of how far it has moved.
 
 | Row | What it does at each trigger |
 | --- | --- |
@@ -31,4 +46,8 @@ Below the settings, each row has a value for A and for B side by side, the one L
 
 ## Applying the Generator
 
-Add the drift to a chain, as `drift: name`, and give clips that chain. The drift's place in the chain doesn't matter, and an arpeggiator after the drift arpeggiates the drifted notes. `examples/by_genre/electronic/mainstreet_hoedown.yml` uses a very slight one on its loudness.
+Add the drift to a chain, as `drift: name`, and give clips that chain. The
+drift's place in the chain doesn't matter, and an arpeggiator after the drift
+arpeggiates the drifted notes.
+`examples/by_genre/electronic/mainstreet_hoedown.yml` uses a very slight one
+on its loudness.

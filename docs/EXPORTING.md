@@ -1,17 +1,20 @@
 # Exporting
 
-Besides playing a song in real time, llamatron writes a song out: as a Live set to finish in a DAW, as MIDI
-files for any other DAW or player, or as a WAV file to listen to anywhere. This page covers every kind of
-export, where the files go, and exporting from the command line; [Opening and Saving](GETTING_STARTED.md#opening-and-saving)
-covers saving the set itself.
+Besides playing a song in real time, llamatron writes a song out: as a Live
+set to finish in a DAW, as MIDI files for any other DAW or player, or as a WAV
+file to listen to anywhere. This page covers every kind of export, where the
+files go, and exporting from the command line; [Opening and
+Saving](GETTING_STARTED.md#opening-and-saving) covers saving the set itself.
 
 ## Tracker Export
 
-`Ctrl+X`, on any page, exports the current song and asks which kind first. A set that hasn't been saved
-yet is saved first, since an export is named after the set's file and written beside it. When the export
-is written, the status line says where it went.
+`Ctrl+X`, on any page, exports the current song and asks which kind first. A
+set that hasn't been saved yet is saved first, since an export is named after
+the set's file and written beside it. When the export is written, the status
+line says where it went.
 
-Every export is named `<set>_<song>`, so `songs/foo.yml` with a song called `bar` exports as:
+Every export is named `<set>_<song>`, so `songs/foo.yml` with a song called
+`bar` exports as:
 
 | Kind | File | What it's for |
 | --- | --- | --- |
@@ -24,40 +27,55 @@ Every export is named `<set>_<song>`, so `songs/foo.yml` with a song called `bar
 
 ## Export Contents
 
-An export plays the song as written, every scene once through from the top, as Live's Arrangement View
-lays it out, with every generator, groove, draw and random choice played into the notes. Every export
-is a new take of the song's random choices.
+An export plays the song as written, every scene once through from the top, as
+Live's Arrangement View lays it out, with every generator, groove, draw and
+random choice played into the notes. Every export is a new take of the song's
+random choices.
 
-Some things belong to real-time playback alone and no export reads them: instruments' devices, a clip's
-follow action and a scene's Launch together, the Live response, and anything you did by hand while the
-song played. Muted tracks are left out of the MIDI and WAV exports, and in the Live set they are switched
-off. The MIDI files lay the scenes end to end as Live's Arrangement View does, so a track that plays
-nothing in the first scenes starts with silence and every file lines up. Every MIDI file carries the song's time signature, and so does the Live set, so a DAW draws its bar
-lines on the song's beats. The MIDI file, the MIDI stems, the MIDI clips and the Live set carry the keyswitch notes described in
-[Instruments](INSTRUMENTS.md); the General MIDI file and the WAV file leave them out.
+Some things belong to real-time playback alone and no export reads them:
+instruments' devices, a clip's follow action and a scene's Launch together,
+the Live response, and anything you did by hand while the song played. Muted
+tracks are left out of the MIDI and WAV exports, and in the Live set they are
+switched off. The MIDI files lay the scenes end to end as Live's Arrangement
+View does, so a track that plays nothing in the first scenes starts with
+silence and every file lines up. Every MIDI file carries the song's time
+signature, and so does the Live set, so a DAW draws its bar lines on the
+song's beats. The MIDI file, the MIDI stems, the MIDI clips and the Live set
+carry the keyswitch notes described in [Instruments](INSTRUMENTS.md); the
+General MIDI file and the WAV file leave them out.
 
-A scene's [tempo ramps](SCENES.md#tempo-ramps) are written into every MIDI file and the WAV file, a tempo change at each step. In a Live set, the ramps are tempo automation in Arrangement View, which follows them. A scene in Live's Session View launches at one tempo and cannot ramp, so each scene there launches at the tempo of its first beat. To hear the ramps while launching scenes, play the song from llamatron into Live over MIDI in real time, or import the MIDI file.
+A scene's [tempo ramps](SCENES.md#tempo-ramps) are written into every MIDI
+file and the WAV file, a tempo change at each step. In a Live set, the ramps
+are tempo automation in Arrangement View, which follows them. A scene in
+Live's Session View launches at one tempo and cannot ramp, so each scene there
+launches at the tempo of its first beat. To hear the ramps while launching
+scenes, play the song from llamatron into Live over MIDI in real time, or
+import the MIDI file.
 
 ## File Locations
 
-Exports sit beside the set's file, so a set and its exports stay together wherever you run llamatron
-from, and every file of a song starts with `<set>_<song>`, so exporting one song never touches another's.
+Exports sit beside the set's file, so a set and its exports stay together
+wherever you run llamatron from, and every file of a song starts with
+`<set>_<song>`, so exporting one song never touches another's.
 
-Writing a Live set over an earlier one asks first, once in a session for each set, because replacing it
-loses anything you saved over that set in Live; to keep work you've done in Live, save it there under
-another name. The MIDI kinds and the WAV just write over their earlier files. The exports of the sets in
-`examples/` are ignored by git.
+Writing a Live set over an earlier one asks first, once in a session for each
+set, because replacing it loses anything you saved over that set in Live; to
+keep work you've done in Live, save it there under another name. The MIDI
+kinds and the WAV just write over their earlier files. The exports of the sets
+in `examples/` are ignored by git.
 
-In Live, each llamatron track is a MIDI track with no instrument, so drop one onto each track to hear
-it. Scenes keep their names, and each clip is named after the pattern it plays. The project was made with
-Ableton Live 12.3, and later versions should open it.
+In Live, each llamatron track is a MIDI track with no instrument, so drop one
+onto each track to hear it. Scenes keep their names, and each clip is named
+after the pattern it plays. The project was made with Ableton Live 12.3, and
+later versions should open it.
 
 ## Command-Line Export
 
-`--to` exports a set without opening the tracker, writing every song in it beside the set's file, the
-same as `Ctrl+X`. On its own it writes Live sets, and it can name another kind: `ableton`, `midi`
-(MIDI (Multitrack)), `stems`, `cliptree` (MIDI (Clips)), `gm` (MIDI (General MIDI)) or `wav`
-(WAV (FluidSynth)). Put it after the set's name:
+`--to` exports a set without opening the tracker, writing every song in it
+beside the set's file, the same as `Ctrl+X`. On its own it writes Live sets,
+and it can name another kind: `ableton`, `midi` (MIDI (Multitrack)), `stems`,
+`cliptree` (MIDI (Clips)), `gm` (MIDI (General MIDI)) or `wav` (WAV
+(FluidSynth)). Put it after the set's name:
 
 ```
 llamatron examples/by_genre/electronic/minimal_techno.yml --to

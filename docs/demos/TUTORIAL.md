@@ -34,10 +34,11 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 <a id="hello_world"></a>
 ## Hello World: `01_hello_world.yml`
 
-The smallest set there is: a C major scale up in the first scene, down in the second, and up again
-in the third while a second track holds a C chord for a quarter note, every note a sixteenth. Three
-seconds long. Open it to see what a pattern, a track and a scene are, play it first when setting up
-real-time MIDI (`docs/MIDI_SETUP.md`), and record it first (`docs/RECORDING.md`).
+The smallest set there is: a C major scale up in the first scene, down in the
+second, and up again in the third while a second track holds a C chord for a
+quarter note, every note a sixteenth. Three seconds long. Open it to see what
+a pattern, a track and a scene are, play it first when setting up real-time
+MIDI (`docs/MIDI_SETUP.md`), and record it first (`docs/RECORDING.md`).
 
 [`examples/learning/01_hello_world.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/01_hello_world.yml) · C major · 120 BPM · 0:03 · 3 scenes · 2 tracks
 
@@ -55,9 +56,10 @@ real-time MIDI (`docs/MIDI_SETUP.md`), and record it first (`docs/RECORDING.md`)
 <a id="pachelbel"></a>
 ## Patterns Only: `02_pachelbel.yml`
 
-The opening of Pachelbel's Canon in D for three violins and a cello, using nothing but patterns
-and scenes, the way you might copy a score in. Because it's a canon, the violins share the same
-patterns, each a scene behind the one before.
+The opening of Pachelbel's Canon in D for three violins and a cello, using
+nothing but patterns and scenes, the way you might copy a score in. Because
+it's a canon, the violins share the same patterns, each a scene behind the one
+before.
 
 [`examples/learning/02_pachelbel.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/02_pachelbel.yml) · D major · 44 BPM · 1:19 · 7 scenes · 4 tracks
 
@@ -75,9 +77,10 @@ patterns, each a scene behind the one before.
 <a id="mary_keychange"></a>
 ## Key Changes: `03_mary_keychange.yml`
 
-Mary Had a Little Lamb in four keys, one a scene: C major, C minor, E major, and whole tone on
-F#. The tune and its bass are one pattern each, written in scale degrees, and only each scene's
-Scale changes, so it shows how a key change is one field on the Scene page and no pattern moves.
+Mary Had a Little Lamb in four keys, one a scene: C major, C minor, E major,
+and whole tone on F#. The tune and its bass are one pattern each, written in
+scale degrees, and only each scene's Scale changes, so it shows how a key
+change is one field on the Scene page and no pattern moves.
 
 [`examples/learning/03_mary_keychange.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/03_mary_keychange.yml) · C major · 112 BPM · 1:09 · 4 scenes · 2 tracks
 
@@ -95,8 +98,10 @@ Scale changes, so it shows how a key change is one field on the Scene page and n
 <a id="scale"></a>
 ## Scales: `04_scale.yml`
 
-Every scale llamatron knows, each run up an octave and back down from D, one scene per scale, in
-the order of the scale picker. Use it to preview a scale before choosing one. The demo shows that a scene can set its own scale, and that a degree past the top of a scale wraps up an octave.
+Every scale llamatron knows, each run up an octave and back down from D, one
+scene per scale, in the order of the scale picker. Use it to preview a scale
+before choosing one. The demo shows that a scene can set its own scale, and
+that a degree past the top of a scale wraps up an octave.
 
 [`examples/learning/04_scale.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/04_scale.yml) · D major · 120 BPM · 3:01 · 47 scenes · 1 tracks
 
@@ -108,10 +113,11 @@ the order of the scale picker. Use it to preview a scale before choosing one. Th
 <a id="voice_leading"></a>
 ## Voice Leading: `05_voice_leading.yml`
 
-Block chords on the piano over a bass in D major, three progressions each played three ways, back
-to back: in root position, every chord jumping up from its root; inverted by hand with the chord
-editor's Inv. row; and through a Chords generator's Voice leading, which plays each chord in the
-inversion and octave nearest the chord before. The last scene keeps the root in the bass.
+Block chords on the piano over a bass in D major, three progressions each
+played three ways, back to back: in root position, every chord jumping up from
+its root; inverted by hand with the chord editor's Inv. row; and through a
+Chords generator's Voice leading, which plays each chord in the inversion and
+octave nearest the chord before. The last scene keeps the root in the bass.
 
 [`examples/learning/05_voice_leading.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/05_voice_leading.yml) · D major · 96 BPM · 3:00 · 9 scenes · 2 tracks
 
@@ -129,10 +135,12 @@ inversion and octave nearest the chord before. The last scene keeps the root in 
 <a id="chord_progression_generator"></a>
 ## Progressions: `06_chord_progression_generator.yml`
 
-A pop song in C major made from three patterns one bar long, an arpeggio, a bass figure and a
-chord pad, each written over chord I and played through a progression, a different one in every
-scene: Pop, Fifties, Andalusian in A minor, Pachelbel's eight chords, Pop again with the pad's
-chords inverted so that they move less, and Pop with the pad through a Chords generator's Voice leading.
+A pop song in C major made from three patterns one bar long, an arpeggio, a
+bass figure and a chord pad, each written over chord I and played through a
+progression, a different one in every scene: Pop, Fifties, Andalusian in A
+minor, Pachelbel's eight chords, Pop again with the pad's chords inverted so
+that they move less, and Pop with the pad through a Chords generator's Voice
+leading.
 
 [`examples/learning/06_chord_progression_generator.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/06_chord_progression_generator.yml) · C major · 96 BPM · 3:00 · 6 scenes · 6 tracks
 
@@ -144,10 +152,10 @@ chords inverted so that they move less, and Pop with the pad through a Chords ge
 <a id="blues_chords"></a>
 ## Twelve-Bar Blues: `07_blues_chords.yml`
 
-A shuffle blues in G, where the walking bass, the comping chords and the riff are each one bar
-long, played through the twelve-bar blues and the quick-change blues. The comp's chord is a
-dominant seventh, which stays one on every chord of the blues, and the riff's blue note moves
-with the chords.
+A shuffle blues in G, where the walking bass, the comping chords and the riff
+are each one bar long, played through the twelve-bar blues and the
+quick-change blues. The comp's chord is a dominant seventh, which stays one on
+every chord of the blues, and the riff's blue note moves with the chords.
 
 [`examples/learning/07_blues_chords.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/07_blues_chords.yml) · G major · 96 BPM · 3:00 · 6 scenes · 7 tracks
 
@@ -165,9 +173,11 @@ with the chords.
 <a id="tie"></a>
 ## Ties: `08_tie.yml`
 
-An original downtempo piece in D Mixolydian whose pad draws its chords with the Tie row rather
-than with gates, so a chord lasts as long as the ties that follow it, and whose ending holds a
-bass note with ties alone, longer than any gate could make it. The demo also brings in the tracks one at a time, morphs a tune into its answer, grabs an echo and slides a filter, so it's the closest
+An original downtempo piece in D Mixolydian whose pad draws its chords with
+the Tie row rather than with gates, so a chord lasts as long as the ties that
+follow it, and whose ending holds a bass note with ties alone, longer than any
+gate could make it. The demo also brings in the tracks one at a time, morphs a
+tune into its answer, grabs an echo and slides a filter, so it's the closest
 thing here to a finished song.
 
 [`examples/learning/08_tie.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/08_tie.yml) · D mixolydian · 84 BPM · 2:58 · 9 scenes · 8 tracks
@@ -186,12 +196,14 @@ thing here to a finished song.
 <a id="groove"></a>
 ## Grooves: `09_groove.yml`
 
-A twelve-bar organ shuffle in G minor, llamatron's own tune in the spirit of a sixties organ
-trio: a tonewheel organ lick, walking pedals, seventh chords bubbling through an arpeggiator, and drums.
-The song shuffles with the factory groove `8th swing 66`, the pedals and pads keep grooves of
-their own, the drums are `off` so the kick and snare stay on the grid, and the scenes play it
-straight, drag it behind the beat with a groove of the set's own, and shuffle it harder, so you
-can hear how the track's choice wins over the scene's, which wins over the song's.
+A twelve-bar organ shuffle in G minor, llamatron's own tune in the spirit of a
+sixties organ trio: a tonewheel organ lick, walking pedals, seventh chords bubbling
+through an arpeggiator, and drums. The song shuffles with the factory groove
+`8th swing 66`, the pedals and pads keep grooves of their own, the drums are
+`off` so the kick and snare stay on the grid, and the scenes play it straight,
+drag it behind the beat with a groove of the set's own, and shuffle it harder,
+so you can hear how the track's choice wins over the scene's, which wins over
+the song's.
 
 [`examples/learning/09_groove.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/09_groove.yml) · G minor · 130 BPM · 1:51 · 5 scenes · 5 tracks
 
@@ -203,8 +215,9 @@ can hear how the track's choice wins over the scene's, which wins over the song'
 <a id="mtn_king_direction"></a>
 ## Directions: `10_mtn_king_direction.yml`
 
-The theme of In the Hall of the Mountain King played in each of the step directions, from
-forward and the two reverses to pendulum, random and brownian. The demo also shows that a clip's direction overrides its pattern's.
+The theme of In the Hall of the Mountain King played in each of the step
+directions, from forward and the two reverses to pendulum, random and
+brownian. The demo also shows that a clip's direction overrides its pattern's.
 
 [`examples/learning/10_mtn_king_direction.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/10_mtn_king_direction.yml) · B minor · 138 BPM · 2:33 · 11 scenes · 2 tracks
 
@@ -216,10 +229,10 @@ forward and the two reverses to pendulum, random and brownian. The demo also sho
 <a id="sailor_arpeggiator"></a>
 ## Arpeggiator: `11_sailor_arpeggiator.yml`
 
-The verse of What Shall We Do With the Drunken Sailor, with its chords played through a different
-arpeggiator in every scene: step lengths, orders, octave ranges and jumps, offsets, and then
-combinations of them. The tune plays alongside, plainly, so you can mute it and hear only the
-arpeggio.
+The verse of What Shall We Do With the Drunken Sailor, with its chords played
+through a different arpeggiator in every scene: step lengths, orders, octave
+ranges and jumps, offsets, and then combinations of them. The tune plays
+alongside, plainly, so you can mute it and hear only the arpeggio.
 
 [`examples/learning/11_sailor_arpeggiator.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/11_sailor_arpeggiator.yml) · D dorian · 112 BPM · 3:26 · 24 scenes · 2 tracks
 
@@ -231,9 +244,10 @@ arpeggio.
 <a id="acid_glide"></a>
 ## Glide and Shorten: `12_acid_glide.yml`
 
-Fluid acid techno for a synth with portamento: one sixteen-note acid line from start to finish,
-and Glide and Shorten rows of 5, 7 and 3 steps putting its slides and short notes somewhere new
-each bar, though the line itself never changes.
+Fluid acid techno for a synth with portamento: one sixteen-note acid line from
+start to finish, and Glide and Shorten rows of 5, 7 and 3 steps putting its
+slides and short notes somewhere new each bar, though the line itself never
+changes.
 
 [`examples/learning/12_acid_glide.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/12_acid_glide.yml) · A minor · 128 BPM · 3:00 · 8 scenes · 4 tracks
 
@@ -251,9 +265,11 @@ each bar, though the line itself never changes.
 <a id="acid_articulate"></a>
 ## Articulate: `13_acid_articulate.yml`
 
-An acid house line played the whole way through, whose notes lengthen from short blips into
-long, gliding, joined notes over each scene while its filter opens, with no gate changed. The demo sets Articulate on the scenes, on the line itself and as a generator that bounces between short
-and long every bar, and a copy of the line with a CC 74 row opens the filter in the build, the
+An acid house line played the whole way through, whose notes lengthen from
+short blips into long, gliding, joined notes over each scene while its filter
+opens, with no gate changed. The demo sets Articulate on the scenes, on the
+line itself and as a generator that bounces between short and long every bar,
+and a copy of the line with a CC 74 row opens the filter in the build, the
 drop and the peak.
 
 [`examples/learning/13_acid_articulate.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/13_acid_articulate.yml) · A minor · 120 BPM · 3:00 · 9 scenes · 6 tracks
@@ -272,12 +288,13 @@ drop and the peak.
 <a id="bolero_swell"></a>
 ## Swell: `14_bolero_swell.yml`
 
-An original piece in three in the manner of Ravel's Bolero: one tune and one snare rhythm,
-nine scenes of one unbroken crescendo from soft to full force, climbing evenly in loudness, without one velocity
-changed in a pattern. Each scene's Velocity Ramp In starts where the scene before ended, the first three
-scenes keep the same instruments so that only the loudness climbs, and in the last the timpani
-run through a Shapes generator whose Swell accents every downbeat. Use velocity-sensitive instruments to
-hear it.
+An original piece in three in the manner of Ravel's Bolero: one tune and one
+snare rhythm, nine scenes of one unbroken crescendo from soft to full force,
+climbing evenly in loudness, without one velocity changed in a pattern. Each
+scene's Velocity Ramp In starts where the scene before ended, the first three
+scenes keep the same instruments so that only the loudness climbs, and in the
+last the timpani run through a Shapes generator whose Swell accents every
+downbeat. Use velocity-sensitive instruments to hear it.
 
 [`examples/learning/14_bolero_swell.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/14_bolero_swell.yml) · C major · 72 BPM · 3:00 · 9 scenes · 7 tracks
 
@@ -295,8 +312,10 @@ hear it.
 <a id="complex_gifts_chain"></a>
 ## Chains: `15_complex_gifts_chain.yml`
 
-Simple Gifts on a single track, growing from the plain tune into triads, then synthwave, then happy
-metal, using a few patterns and a chain for each scene. The demo shows that a chain runs its steps in order, each working on what the one before made.
+Simple Gifts on a single track, growing from the plain tune into triads, then
+synthwave, then happy metal, using a few patterns and a chain for each scene.
+The demo shows that a chain runs its steps in order, each working on what the
+one before made.
 
 [`examples/learning/15_complex_gifts_chain.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/15_complex_gifts_chain.yml) · A major · 120 BPM · 2:24 · 9 scenes · 1 tracks
 
@@ -308,8 +327,9 @@ metal, using a few patterns and a chain for each scene. The demo shows that a ch
 <a id="techno_morph"></a>
 ## Morphing: `16_techno_morph.yml`
 
-A 16-step minimal techno groove whose bass and lead slowly turn into other patterns over 8 or
-16 bars, in each morph style. The lead turns into the opening of Für Elise.
+A 16-step minimal techno groove whose bass and lead slowly turn into other
+patterns over 8 or 16 bars, in each morph style. The lead turns into the
+opening of Für Elise.
 
 [`examples/learning/16_techno_morph.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/16_techno_morph.yml) · A minor · 126 BPM · 2:17 · 8 scenes · 4 tracks
 
@@ -321,10 +341,11 @@ A 16-step minimal techno groove whose bass and lead slowly turn into other patte
 <a id="hocket_shanty"></a>
 ## Hocketing: `17_hocket_shanty.yml`
 
-The Wellerman, held by a muted track called SILENT melody, with up to four voices taking turns
-at its notes, one note each, through a Hocket generator that names the melody's track as its
-source. That's called hocketing. One voice plays every note, two alternate, and four each play
-every fourth note; each voice has a sound of its own, flute, clarinet, oboe and violin, to hear
+The Wellerman, held by a muted track called SILENT melody, with up to four
+voices taking turns at its notes, one note each, through a Hocket generator
+that names the melody's track as its source. That's called hocketing. One
+voice plays every note, two alternate, and four each play every fourth note;
+each voice has a sound of its own, flute, clarinet, oboe and violin, to hear
 the tune pass between them.
 
 [`examples/learning/17_hocket_shanty.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/17_hocket_shanty.yml) · A minor · 100 BPM · 2:14 · 7 scenes · 5 tracks
@@ -343,10 +364,11 @@ the tune pass between them.
 <a id="arrangement_shanty"></a>
 ## Few Patterns: `18_arrangement_shanty.yml`
 
-The Wellerman again, with eight parts built from only four note patterns. The harmony is the
-melody patterns transposed on its track, the bass grabs the roots of the pad's chords, and a
-counter-line grabs the melody in its own rhythm. Read this one to see how to set up a song so
-that changing one pattern changes every part that follows it.
+The Wellerman again, with eight parts built from only four note patterns. The
+harmony is the melody patterns transposed on its track, the bass grabs the
+roots of the pad's chords, and a counter-line grabs the melody in its own
+rhythm. Read this one to see how to set up a song so that changing one pattern
+changes every part that follows it.
 
 [`examples/learning/18_arrangement_shanty.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/18_arrangement_shanty.yml) · A minor · 100 BPM · 2:34 · 8 scenes · 8 tracks
 
@@ -358,12 +380,13 @@ that changing one pattern changes every part that follows it.
 <a id="look_ma_no_notes"></a>
 ## Grabbed Parts: `19_look_ma_no_notes.yml`
 
-A gospel song in A flat where the bass, the piano and the lead hold no notes at all. The organ
-holds one seventh chord a bar, moved through the changes by Chords generators, and every
-other part is Grab steps that take the root of the organ's chord and build on it: the bass an
-octave down, the piano's chords from its Chord row, and the lead three ways, from a draw's
-rows, from an arpeggiator and from climbing and falling ratchets. The last chorus goes up a half
-step, and every part follows.
+A gospel song in A flat where the bass, the piano and the lead hold no notes
+at all. The organ holds one seventh chord a bar, moved through the changes by
+Chords generators, and every other part is Grab steps that take the root of
+the organ's chord and build on it: the bass an octave down, the piano's chords
+from its Chord row, and the lead three ways, from a draw's rows, from an
+arpeggiator and from climbing and falling ratchets. The last chorus goes up a
+half step, and every part follows.
 
 [`examples/learning/19_look_ma_no_notes.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/19_look_ma_no_notes.yml) · Ab major · 76 BPM · 2:57 · 6 scenes · 7 tracks
 
@@ -375,13 +398,15 @@ step, and every part follows.
 <a id="guitarify"></a>
 ## Guitarify: `21_guitarify.yml`
 
-A tour of guitar playing in twenty-one short scenes, each a way a guitar is played, on seven
-General MIDI guitars and nothing else: chords as written strummed in Strum mode, a country bass
-note and strum, picking with thumb and fingers,
-bluegrass crosspicking, jazz comping, a blues in open G, power chords, a surf tremolo, the folk
-strum, funk scratching, a singer's rolled chords, metal gallops and a twelve bar shuffle. Every
-pattern is only a row of chords or low notes, and the Guitarify generator of each scene does the
-playing, so the demo shows what its Strum mode and its Shape and Strokes halves do to the same kind of pattern.
+A tour of guitar playing in twenty-one short scenes, each a way a guitar is
+played, on seven General MIDI guitars and nothing else: chords as written
+strummed in Strum mode, a country bass note and strum, picking with thumb and
+fingers, bluegrass crosspicking, jazz comping, a blues in open G, power
+chords, a surf tremolo, the folk strum, funk scratching, a singer's rolled
+chords, metal gallops and a twelve bar shuffle. Every pattern is only a row of
+chords or low notes, and the Guitarify generator of each scene does the
+playing, so the demo shows what its Strum mode and its Shape and Strokes
+halves do to the same kind of pattern.
 
 [`examples/learning/21_guitarify.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/21_guitarify.yml) · G major · 104 BPM · 3:19 · 21 scenes · 7 tracks
 
@@ -399,12 +424,14 @@ playing, so the demo shows what its Strum mode and its Shape and Strokes halves 
 <a id="follow_chords"></a>
 ## Follow Chords: `22_follow_chords.yml`
 
-A song in A minor whose chords are written in one place, a muted track called SILENT Chords. The bass,
-the pad and the arpeggio each play one bar, written over chord I, through a Chords
-generator in Follow Progression mode that moves their notes to whatever chord that track plays. The chords are heard plainly
-first, then the band plays without following and sounds stuck on one chord, then the bass follows
-alone, then everyone. Later scenes add a tune, change the chords under the same patterns, change
-chord twice a bar, and follow chords that a progression makes on that track.
+A song in A minor whose chords are written in one place, a muted track called
+SILENT Chords. The bass, the pad and the arpeggio each play one bar, written
+over chord I, through a Chords generator in Follow Progression mode that moves
+their notes to whatever chord that track plays. The chords are heard plainly
+first, then the band plays without following and sounds stuck on one chord,
+then the bass follows alone, then everyone. Later scenes add a tune, change
+the chords under the same patterns, change chord twice a bar, and follow
+chords that a progression makes on that track.
 
 [`examples/learning/22_follow_chords.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/22_follow_chords.yml) · A minor · 96 BPM · 2:40 · 8 scenes · 8 tracks
 
@@ -422,10 +449,11 @@ chord twice a bar, and follow chords that a progression makes on that track.
 <a id="phrasing"></a>
 ## Phrasing: `23_phrasing.yml`
 
-A slow ballad in A minor whose tune is heard as written and then through a Phrasing generator with
-one setting changed in each scene: a deep breath after each line, a rise and fall of loudness, choppy
-notes, and flowing notes on the tune written short. The last two scenes are a verse and a chorus sung
-with the settings together.
+A slow ballad in A minor whose tune is heard as written and then through a
+Phrasing generator with one setting changed in each scene: a deep breath after
+each line, a rise and fall of loudness, choppy notes, and flowing notes on the
+tune written short. The last two scenes are a verse and a chorus sung with the
+settings together.
 
 [`examples/learning/23_phrasing.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/23_phrasing.yml) · A minor · 68 BPM · 3:46 · 8 scenes · 6 tracks
 
@@ -443,11 +471,13 @@ with the settings together.
 <a id="musician"></a>
 ## Musician: `24_musician.yml`
 
-A band in G major whose players each have one bar. The first scene plays every pattern as written,
-all the time. The scenes after it hand the same patterns to Musician generators: in the verse the
-rhythm guitar plays softer, the hi-hat keeps to the beats, the organ sits out and the lead guitar
-plays only where the tune rests; in the chorus everyone plays and the organ holds each chord; in the
-breakdown the bass plays one hit a bar and the rhythm guitar is muted.
+A band in G major whose players each have one bar. The first scene plays every
+pattern as written, all the time. The scenes after it hand the same patterns
+to Musician generators: in the verse the rhythm guitar plays softer, the
+hi-hat keeps to the beats, the organ sits out and the lead guitar plays only
+where the tune rests; in the chorus everyone plays and the organ holds each
+chord; in the breakdown the bass plays one hit a bar and the rhythm guitar is
+muted.
 
 [`examples/learning/24_musician.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/24_musician.yml) · G major · 104 BPM · 2:09 · 7 scenes · 9 tracks
 
@@ -465,12 +495,14 @@ breakdown the bass plays one hit a bar and the rhythm guitar is muted.
 <a id="accents"></a>
 ## Accents: `26_accents.yml`
 
-A funk groove in E minor with no velocity typed on any step. Each part plays at the Default velocity
-of its track, and a step whose Accent switch is on plays louder by the track's Accent. The first
-scene plays four bars with every switch off, so the groove sounds flat. The scenes after it switch
-accents on a part at a time: the hats on the beat, then off the beat, then a snare whose quiet
-ghost notes sit under an accented backbeat, then the bass and the keys, then hats accented in
-threes across the beat. The last scene plays the first again, to hear what the switches did.
+A funk groove in E minor with no velocity typed on any step. Each part plays
+at the Default velocity of its track, and a step whose Accent switch is on
+plays louder by the track's Accent. The first scene plays four bars with every
+switch off, so the groove sounds flat. The scenes after it switch accents on a
+part at a time: the hats on the beat, then off the beat, then a snare whose
+quiet ghost notes sit under an accented backbeat, then the bass and the keys,
+then hats accented in threes across the beat. The last scene plays the first
+again, to hear what the switches did.
 
 [`examples/learning/26_accents.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/26_accents.yml) · E minor · 100 BPM · 2:19 · 7 scenes · 5 tracks
 
@@ -488,14 +520,15 @@ threes across the beat. The last scene plays the first again, to hear what the s
 <a id="pattern_lists"></a>
 ## Pattern Lists: `27_pattern_lists.yml`
 
-A hard rock riff in E minor made of four patterns of one bar each: the main figure, an answer, a
-run up and a stop. Every clip of the riff plays a list of those patterns, as
-[Pattern Lists](../CLIPS.md#pattern-lists) describes, and every section of the song is the same four
-bars in another order. The first scene plays the four bars once. The verse and the chorus list them
-two ways, with the bass listing bars of its own and the drums playing three bars of the beat and a
-fill. The scenes after show Pattern order: alternate, pendulum, and first, then random. The seventh
-scene sets Step direction, which plays the steps inside each pattern backward while the patterns
-keep their order.
+A hard rock riff in E minor made of four patterns of one bar each: the main
+figure, an answer, a run up and a stop. Every clip of the riff plays a list of
+those patterns, as [Pattern Lists](../CLIPS.md#pattern-lists) describes, and
+every section of the song is the same four bars in another order. The first
+scene plays the four bars once. The verse and the chorus list them two ways,
+with the bass listing bars of its own and the drums playing three bars of the
+beat and a fill. The scenes after show Pattern order: alternate, pendulum, and
+first, then random. The seventh scene sets Step direction, which plays the
+steps inside each pattern backward while the patterns keep their order.
 
 [`examples/learning/27_pattern_lists.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/27_pattern_lists.yml) · E minor · 120 BPM · 2:24 · 8 scenes · 5 tracks
 
@@ -507,12 +540,15 @@ keep their order.
 <a id="draws"></a>
 ## Draws: `28_draws.yml`
 
-Draws in eleven scenes, every note written as the same C in a chromatic scale, so that everything that moves is a draw. A
-count-in plays C, C#, D and D# from a draw that moves forward. Four scenes deal twelve-tone rows from a serial draw, which plays
-every pitch of the octave once before any comes again: plainly, passed between two instruments, with rests and leaps, and in
-pairs. Four scenes over a bass add two draws on alternate steps, add them together, pull one against the other, and add all
-three. The last two scenes gate notes by draws: a melody that grows as a draw counts the bars, and a bell whose rhythm
-comes from a draw that its own condition redraws.
+Draws in eleven scenes, every note written as the same C in a chromatic scale,
+so that everything that moves is a draw. A count-in plays C, C#, D and D# from
+a draw that moves forward. Four scenes deal twelve-tone rows from a serial
+draw, which plays every pitch of the octave once before any comes again:
+plainly, passed between two instruments, with rests and leaps, and in pairs.
+Four scenes over a bass add two draws on alternate steps, add them together,
+pull one against the other, and add all three. The last two scenes gate notes
+by draws: a melody that grows as a draw counts the bars, and a bell whose
+rhythm comes from a draw that its own condition redraws.
 
 [`examples/learning/28_draws.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/28_draws.yml) · C chromatic · 108 BPM · 2:58 · 11 scenes · 6 tracks
 

@@ -1,70 +1,143 @@
 # Concepts
 
-Each of the other pages covers one part of the tracker in full. This page covers the ideas that join them, in the order a song grows: hearing it as you work, moving one figure through chords, shaping sections, introducing randomness, passing a melody between voices, performing, and recording and exporting. Each section explains the idea, then gives the pages and keys, and links the page with every detail. This page follows on from [Getting Started](GETTING_STARTED.md), whose first song, a melody, a kick drum and a scene that plays them, is the starting point.
+Each of the other pages covers one part of the tracker in full. This page
+covers the ideas that join them, in the order a song grows: hearing it as you
+work, moving one figure through chords, shaping sections, introducing
+randomness, passing a melody between voices, performing, and recording and
+exporting. Each section explains the idea, then gives the pages and keys, and
+links the page with every detail. This page follows on from [Getting
+Started](GETTING_STARTED.md), whose first song, a melody, a kick drum and a
+scene that plays them, is the starting point.
 
 ## Enabling Audio
 
-A song is easiest to write when every change is heard as it is made. llamatron plays a set in real time through its instruments: each instrument names a device, either a MIDI port connected to a synthesizer or DAW, or `*FluidSynth`, the software synthesizer the tracker starts by itself. A track chooses the instrument it plays through. While a song plays, every edit on any page is heard, at the moment the song's Live Response setting says.
+A song is easiest to write when every change is heard as it is made. llamatron
+plays a set in real time through its instruments: each instrument names a
+device, either a MIDI port connected to a synthesizer or DAW, or
+`*FluidSynth`, the software synthesizer the tracker starts by itself. A track
+chooses the instrument it plays through. While a song plays, every edit on any
+page is heard, at the moment the song's Live Response setting says.
 
-1. On the main screen, press `I` for Instruments and `A` to add one. On its Device field, press `ENTER` and choose `*FluidSynth`, or one of your MIDI ports, and give it a General MIDI sound if it plays through FluidSynth. Adding the first instrument turns the set's Real Time switch on. See [Instruments](INSTRUMENTS.md).
-2. On Arrange, move to a track's name and press `ENTER` for the track editor, and choose the instrument on its Instrument field. A drum track wants Drum on, and plays on channel 10 through FluidSynth. See [Tracks](TRACKS.md).
-3. On Arrange, move to the top left corner, where `▶ song` shows, and press `Space`. The song plays on while you move to any page. See [Playing Live](PLAYING_LIVE.md).
+1. On the main screen, press `I` for Instruments and `A` to add one. On its
+   Device field, press `ENTER` and choose `*FluidSynth`, or one of your MIDI
+   ports, and give it a General MIDI sound if it plays through FluidSynth.
+   Adding the first instrument turns the set's Real Time switch on. See
+   [Instruments](INSTRUMENTS.md).
+2. On Arrange, move to a track's name and press `ENTER` for the track editor,
+   and choose the instrument on its Instrument field. A drum track wants Drum
+   on, and plays on channel 10 through FluidSynth. See [Tracks](TRACKS.md).
+3. On Arrange, move to the top left corner, where `▶ song` shows, and press
+   `Space`. The song plays on while you move to any page. See [Playing
+   Live](PLAYING_LIVE.md).
 
 ## Chord Progressions
 
-A pattern is written once and played in many places, and a generator changes how it plays without changing what it says. The most useful case is a chord progression: write a one-bar figure over chord I, an arpeggio, a bass line or a chord, and a Chords generator in Progression mode moves the figure through the chords, so that one bar becomes a whole section, and changing the progression rewrites the section without touching the pattern.
+A pattern is written once and played in many places, and a generator changes
+how it plays without changing what it says. The most useful case is a chord
+progression: write a one-bar figure over chord I, an arpeggio, a bass line or
+a chord, and a Chords generator in Progression mode moves the figure through
+the chords, so that one bar becomes a whole section, and changing the
+progression rewrites the section without touching the pattern.
 
-1. On Patterns, `P`, write a one-bar figure on degree 1. See [Patterns](PATTERNS.md).
-2. On Generators, `G`, press `A` and choose Chords. On its page, set Mode to Progression, press `ENTER` on Chords, then `H` to pick a named progression, such as pop or twelve-bar blues, matched to the song's scale. See [Chords](generators/CHORDS.md).
-3. On Generators, `G`, add a chain and put the Chords generator in it. See [Chain](generators/CHAIN.md).
-4. Put the chain on the clips that play the figure, on the clip page's Generators field, or on the Scene page to move a whole section, or in the track editor to move every clip of a track. See [Clips](CLIPS.md) and [Scenes](SCENES.md).
-5. For chords that move smoothly rather than jumping, switch on the Chords generator's Voice leading. See [Chords](generators/CHORDS.md#voice-leading).
+1. On Patterns, `P`, write a one-bar figure on degree 1. See
+   [Patterns](PATTERNS.md).
+2. On Generators, `G`, press `A` and choose Chords. On its page, set Mode to
+   Progression, press `ENTER` on Chords, then `H` to pick a named progression,
+   such as pop or twelve-bar blues, matched to the song's scale. See
+   [Chords](generators/CHORDS.md).
+3. On Generators, `G`, add a chain and put the Chords generator in it. See
+   [Chain](generators/CHAIN.md).
+4. Put the chain on the clips that play the figure, on the clip page's
+   Generators field, or on the Scene page to move a whole section, or in the
+   track editor to move every clip of a track. See [Clips](CLIPS.md) and
+   [Scenes](SCENES.md).
+5. For chords that move smoothly rather than jumping, switch on the Chords
+   generator's Voice leading. See
+   [Chords](generators/CHORDS.md#voice-leading).
 
-`examples/learning/06_chord_progression_generator.yml` is this recipe, finished.
+`examples/learning/06_chord_progression_generator.yml` is this recipe,
+finished.
 
 ## Shaping Sections
 
-A section of a song often changes over its length: a build grows denser, a crescendo grows louder, a breakdown thins out. Three things do this, each a percentage that ramps from a start to an end: Density, how many notes play; velocity, how loud they are; and Articulate, how long they sound.
+A section of a song often changes over its length: a build grows denser, a
+crescendo grows louder, a breakdown thins out. Three things do this, each a
+percentage that ramps from a start to an end: Density, how many notes play;
+velocity, how loud they are; and Articulate, how long they sound.
 
-1. On Arrange, copy a scene with `C` to make the next section, and change its clips. See [Arrange](ARRANGE.md).
-2. On the scene's Scene page, on its Shapes tab set Density's Start to 25 and End to 100: the section starts sparse and fills in to a build. `+ Velocity Ramp In` and `+ Velocity Ramp Out` fade the section in and out, and `+ Articulate` does the same as Density for length. See [Scenes](SCENES.md).
-3. To give many sections the same shape and change it in one place, make a Shapes generator instead, and put it in a chain on those scenes. See [Shapes](generators/SHAPES.md).
+1. On Arrange, copy a scene with `C` to make the next section, and change its
+   clips. See [Arrange](ARRANGE.md).
+2. On the scene's Scene page, on its Shapes tab set Density's Start to 25 and
+   End to 100: the section starts sparse and fills in to a build. `+ Velocity
+   Ramp In` and `+ Velocity Ramp Out` fade the section in and out, and `+
+   Articulate` does the same as Density for length. See [Scenes](SCENES.md).
+3. To give many sections the same shape and change it in one place, make a
+   Shapes generator instead, and put it in a chain on those scenes. See
+   [Shapes](generators/SHAPES.md).
 
-`examples/by_genre/electronic/edm_density.yml` and `examples/learning/14_bolero_swell.yml` show both ways.
+`examples/by_genre/electronic/edm_density.yml` and
+`examples/learning/14_bolero_swell.yml` show both ways.
 
 ## Introducing Randomness
 
-A part that plays exactly the same every time can sound mechanical. llamatron can vary a song by chance, while keeping that chance under control: every play and every export draws the random choices afresh, so each is a new take.
+A part that plays exactly the same every time can sound mechanical. llamatron
+can vary a song by chance, while keeping that chance under control: every play
+and every export draws the random choices afresh, so each is a new take.
 
-1. On a pattern's rows, set Probability on a few steps, so that their notes come and go. See [Patterns](PATTERNS.md).
-2. Through the pattern editor's `R` (Reconfigure), choose a play direction, such as pendulum or brownian.
+1. On a pattern's rows, set Probability on a few steps, so that their notes
+   come and go. See [Patterns](PATTERNS.md).
+2. Through the pattern editor's `R` (Reconfigure), choose a play direction,
+   such as pendulum or brownian.
 3. On the Song page, choose a groove for swing. See [Grooves](GROOVES.md).
-4. For a part that wanders slowly over the whole song, add a Drift generator to the clips' chains. See [Drift](generators/DRIFT.md).
+4. For a part that wanders slowly over the whole song, add a Drift generator
+   to the clips' chains. See [Drift](generators/DRIFT.md).
 
 ## Hocketing
 
-A hocket passes a melody between voices, one note each, as singers did in early music. In llamatron one track plays the melody as a source, and a Hocket generator deals its notes out among other tracks, so that no single sound plays every note.
+A hocket passes a melody between voices, one note each, as singers did in
+early music. In llamatron one track plays the melody as a source, and a Hocket
+generator deals its notes out among other tracks, so that no single sound
+plays every note.
 
-1. Make a track that plays the melody, and turn its Mute on in the track editor, so that it is only a source.
+1. Make a track that plays the melody, and turn its Mute on in the track
+   editor, so that it is only a source.
 2. Make three or four tracks, each with an instrument and a pattern of rests.
-3. On Generators, add a Hocket, and choose the melody's track on its Source Track field.
-4. Put the Hocket's chain on the voices' clips. The voices take turns at the melody, a note each.
+3. On Generators, add a Hocket, and choose the melody's track on its Source
+   Track field.
+4. Put the Hocket's chain on the voices' clips. The voices take turns at the
+   melody, a note each.
 
-See [Hocket](generators/HOCKET.md). `examples/learning/17_hocket_shanty.yml` does this with four voices.
+See [Hocket](generators/HOCKET.md). `examples/learning/17_hocket_shanty.yml`
+does this with four voices.
 
 ## Performing
 
-A song can be performed rather than only played from the top: scenes and clips are launched by hand, held, and changed as they play, with every launch landing on the next bar.
+A song can be performed rather than only played from the top: scenes and clips
+are launched by hand, held, and changed as they play, with every launch
+landing on the next bar.
 
-1. On the Song page, set Live Response to "next bar", so that edits land on the beat, or "ASAP" for at once. See [Object Model](OBJECT_MODEL.md).
-2. Play from Arrange, and launch scenes by hand with `Space` on their names, or a single clip with `Space` on it; each launch waits for the next bar. See [Playing Live](PLAYING_LIVE.md).
-3. To hold a section while you work, turn on its clips' Loop on the clip page: the scene plays on. Then change anything, a scale, a pattern or a generator, and hear it come in.
-4. On Arrange, `Z` shows a visualizer over the clips while the song plays. See [Visualizers](VISUALIZERS.md).
+1. On the Song page, set Live Response to "next bar", so that edits land on
+   the beat, or "ASAP" for at once. See [Object Model](OBJECT_MODEL.md).
+2. Play from Arrange, and launch scenes by hand with `Space` on their names,
+   or a single clip with `Space` on it; each launch waits for the next bar.
+   See [Playing Live](PLAYING_LIVE.md).
+3. To hold a section while you work, turn on its clips' Loop on the clip page:
+   the scene plays on. Then change anything, a scale, a pattern or a
+   generator, and hear it come in.
+4. On Arrange, `Z` shows a visualizer over the clips while the song plays. See
+   [Visualizers](VISUALIZERS.md).
 
 ## Recording and Exporting
 
-A finished song leaves the tracker in three ways: as a video, as audio, or as a project to finish in a DAW.
+A finished song leaves the tracker in three ways: as a video, as audio, or as
+a project to finish in a DAW.
 
-- **A video:** `sh user_scripts/record.sh --sound fluidsynth --interactive examples/learning/01_hello_world.yml` records you performing a set, ending when you stop it on the corner; the other recording scripts play a set by itself or through a DAW. See [Recording](RECORDING.md).
-- **Audio:** `Ctrl+X` and WAV (FluidSynth) writes the song as a WAV file. See [Exporting](EXPORTING.md).
-- **A DAW project:** `Ctrl+X` and Ableton Live set, or one of the MIDI kinds for another DAW, then add instruments, effects and mixing there. See [Exporting](EXPORTING.md).
+- **A video:** `sh user_scripts/record.sh --sound fluidsynth --interactive
+  examples/learning/01_hello_world.yml` records you performing a set, ending
+  when you stop it on the corner; the other recording scripts play a set by
+  itself or through a DAW. See [Recording](RECORDING.md).
+- **Audio:** `Ctrl+X` and WAV (FluidSynth) writes the song as a WAV file. See
+  [Exporting](EXPORTING.md).
+- **A DAW project:** `Ctrl+X` and Ableton Live set, or one of the MIDI kinds
+  for another DAW, then add instruments, effects and mixing there. See
+  [Exporting](EXPORTING.md).

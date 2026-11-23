@@ -1,14 +1,25 @@
 # Tracks
 
-A track is a column of Arrange, with its own instrument, transpose, CC numbers and more. This page covers the track editor, whose settings apply to every clip on the track.
+A track is a column of Arrange, with its own instrument, transpose, CC numbers
+and more. This page covers the track editor, whose settings apply to every
+clip on the track.
 
 ![A track's settings](screenshots/track_editor.svg)
 
 ## Track Settings
 
-On Arrange, `ENTER` on a track's name opens the track editor. Tracks become tracks in Live in the order Arrange shows them.
+On Arrange, `ENTER` on a track's name opens the track editor. Tracks become
+tracks in Live in the order Arrange shows them.
 
-Under the Name, a box of tabs holds the rest, as on the clip page (see [Clips](CLIPS.md#clip-settings) for the keys): Settings, with Routing (Instrument, Drum, Mute, Groove) and Notes (Transpose, the octaves, Default velocity, Accent, Velocity); MIDI CCs; then the generators in the order they run: Chords, Arp, Guitarify, Timing and Phrasing, the track's built-in generators, and last More Generators, the Generators field, whose generators run after every built-in. A track's built-in generator plays on every clip of the track whose own of the same kind is off; its tab names the clips whose own stands in for it, such as `chords overridden in 1 clip: verse (lead)`.
+Under the Name, a box of tabs holds the rest, as on the clip page (see
+[Clips](CLIPS.md#clip-settings) for the keys): Settings, with Routing
+(Instrument, Drum, Mute, Groove) and Notes (Transpose, the octaves, Default
+velocity, Accent, Velocity); MIDI CCs; then the generators in the order they
+run: Chords, Arp, Guitarify, Timing and Phrasing, the track's built-in
+generators, and last More Generators, the Generators field, whose generators
+run after every built-in. A track's built-in generator plays on every clip of
+the track whose own of the same kind is off; its tab names the clips whose own
+stands in for it, such as `chords overridden in 1 clip: verse (lead)`.
 
 | Setting | What it does |
 | --- | --- |
