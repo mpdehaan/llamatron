@@ -110,8 +110,12 @@ def statement_section(*, page, label, table, statements, store):
     statement, or removes it for None. table is the table's place among the page's tables.
     """
     heading = page.heading(label=label, is_set=None, said=lambda: drawing.NOTHING)
-    lines = [_line(page=page, place=place, table=table, statements=statements, store=store) for place in range(limits.MAX_STATEMENTS)]
-    return [heading, *lines]
+    return [heading, *statement_lines(page=page, table=table, statements=statements, store=store)]
+
+
+def statement_lines(*, page, table, statements, store):
+    """Return a table's lines without a heading, a line for each statement it may hold, for a page that is the table alone."""
+    return [_line(page=page, place=place, table=table, statements=statements, store=store) for place in range(limits.MAX_STATEMENTS)]
 
 
 def _line(*, page, place, table, statements, store):

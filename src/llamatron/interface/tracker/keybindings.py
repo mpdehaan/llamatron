@@ -254,9 +254,13 @@ class FieldPage(Page):
     # On a page with a tab box: on the row of tabs, Left and Right, and [ and ], choose the tab before or after; Tab goes to the row.
     ALONG_TABS = Binding(Steps(back=(Key.LEFT, *keys.LESS_KEYS), forward=(Key.RIGHT, *keys.MORE_KEYS)), legends.KeyName.LEFT_RIGHT, legends.MSG_TAB_WHAT)
     TO_TABS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_TABS_WHAT)
+    # On the row of tabs, Tab goes back into the box, so that Tab toggles between the two.
+    INTO_TAB = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_INTO_TAB_WHAT)
+    # Inside the tab box, PgUp and PgDn choose the tab before or after, keeping the cursor's column where they can.
+    TAB_PAGES = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_TAB_WHAT)
     # Inside the tab box, Left and Right go to the field beside in the column to the left or right, stopping at the sides.
     ACROSS = Binding(Steps(back=(Key.LEFT,), forward=(Key.RIGHT,)), legends.KeyName.LEFT_RIGHT, legends.MSG_COLUMN_WHAT)
-    IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, ALONG_CELLS, ALONG_TABS, ACROSS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, TO_TABS, RENAME]
+    IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, ALONG_CELLS, ALONG_TABS, ACROSS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, TAB_PAGES, TO_TABS, INTO_TAB, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
 
 

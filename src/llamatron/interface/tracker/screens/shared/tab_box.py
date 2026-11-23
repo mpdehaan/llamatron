@@ -209,6 +209,22 @@ def spot_beside(*, spots, here, direction):
     return min(places, key=lambda place: (abs(spots[place].line - spot.line), spots[place].line))
 
 
+def spot_like(*, spots, spot):
+    """Return the place of the field standing where a spot of another tab stood: in the same band and column, on the nearest
+    line; else the column of that place in the nearest band that has one; else the first field."""
+    for band in sorted(_bands_in(spots), key=lambda band: abs(band - spot.band)):
+        same = _column_places(spots=spots, band=band, column=spot.column)
+        if same:
+            return min(same, key=lambda place: (abs(spots[place].line - spot.line), spots[place].line))
+    return 0
+
+
+def has_columns_beside(*, spots, here):
+    """Return whether the field at a place shares its band with another column, so that Left and Right have somewhere to go."""
+    spot = spots[here]
+    return any(other.band == spot.band and other.column != spot.column for other in spots)
+
+
 def spot_from_below(spots):
     """Return where Up from under the box leads: the last field of the first column of the last band."""
     last_band = _bands_in(spots)[-1]

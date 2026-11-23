@@ -53,7 +53,7 @@ class FieldPage(Page):
         shared = self.shared_sections()
         if not shared:
             return fields
-        first_button = next((place for place, field in enumerate(fields) if isinstance(field, Button)), len(fields))
+        first_button = page_buttons_start(fields)
         return [*fields[:first_button], *shared, *fields[first_button:]]
 
     def text_field(self, *, label, current, set_text):
@@ -126,8 +126,38 @@ class FieldPage(Page):
 
     def go_to_tabs(self):
         """Put the cursor on the row of tabs."""
-        rows = [place for place, field in enumerate(self.shown_fields()) if field.IS_TAB_ROW]
-        self.cursor.set_place(rows[0])
+        self.cursor.set_place(self.box_place())
+
+    def go_into_tab(self):
+        """Put the cursor on the chosen tab's first field, from the row of tabs."""
+        if self.box_field_count():
+            self.cursor.set_place(self.box_place() + 1)
+
+    def box_keys(self, row):
+        """Return the keys of a page with a tab box, only those that do something where the cursor is: on the row of tabs, Tab
+        into the box; inside it, Tab to the row, PgUp and PgDn to the tab before or after, and Left and Right to the column
+        beside, where the band has one."""
+        if self.cursor.get_place() == self.box_place():
+            return [self.bind(self.KEYS.INTO_TAB, action=self.go_into_tab)]
+        keys = [self.bind(self.KEYS.TO_TABS, action=self.go_to_tabs)]
+        if not self.in_box():
+            return keys
+        keys.append(self.bind(self.KEYS.TAB_PAGES, action=self.page_through_tabs))
+        here = self.cursor.get_place() - self.box_place() - 1
+        if not isinstance(row, Cells) and tab_box_values.has_columns_beside(spots=self.box_spots(), here=here):
+            keys.append(self.bind(self.KEYS.ACROSS, action=self.move_across))
+        return keys
+
+    def page_through_tabs(self, direction):
+        """Choose the tab before or after from inside the box, the cursor going to the field standing where it stood, or to the
+        row of tabs where the tab chosen has no fields."""
+        row = self.box_place()
+        spot = self.box_spots()[self.cursor.get_place() - row - 1]
+        self.step_tab(direction)
+        if not self.box_field_count():
+            self.cursor.set_place(row)
+            return
+        self.cursor.set_place(row + 1 + tab_box_values.spot_like(spots=self.box_spots(), spot=spot))
 
     def is_open(self, heading):
         # A heading that starts open is closed by the same toggle that opens another.
@@ -337,9 +367,13 @@ class FieldPage(Page):
         self.cell = cursor_moved(place=self.cell, name=name, count=len(self.field().cells))
 
     def first_button_place(self):
-        """Return the place of the first button among the fields shown, or how many fields show when there's none."""
-        fields = self.shown_fields()
-        return next((place for place, field in enumerate(fields) if isinstance(field, Button)), len(fields))
+        """Return the place of the page's first button among the fields shown, or how many fields show when there's none: after
+        the chosen tab's fields, whose last may be a button of the tab's own."""
+        start = page_buttons_start(self.shown_fields())
+        box = self.box_place()
+        if box is None:
+            return start
+        return max(start, box + 1 + self.box_field_count())
 
     def move_along_buttons(self, name):
         """Move along the row of buttons with Left and Right, stopping at both ends."""
@@ -368,14 +402,12 @@ class FieldPage(Page):
         name = next((item for item in self.every_field() if isinstance(item, NameField)), None)
         if name is not None:
             result.append(self.bind(self.KEYS.RENAME, action=name.rename))
-        if isinstance(field, Button) and not self.buttons_stacked():
+        if self.cursor.get_place() >= self.first_button_place() and field is not None and not self.buttons_stacked():
             result.append(self.bind(self.KEYS.ALONG_BUTTONS, action=self.move_along_buttons, wants_key=True))
-        if any(isinstance(item, Heading) for item in self.every_field()):
-            result.append(self.bind(self.KEYS.SECTION, action=self.jump_section))
         if self.tab_box() is not None:
-            result.append(self.bind(self.KEYS.TO_TABS, action=self.go_to_tabs))
-            if self.in_box() and not isinstance(row, Cells):
-                result.append(self.bind(self.KEYS.ACROSS, action=self.move_across))
+            result += self.box_keys(row)
+        if any(isinstance(item, Heading) for item in self.every_field()) and not self.in_box():
+            result.append(self.bind(self.KEYS.SECTION, action=self.jump_section))
         result += self.page_keys()
         return [self.bind(self.KEYS.BACK, action=self.go_back), *result]
 
@@ -392,10 +424,11 @@ class FieldPage(Page):
         lines = [Text(drawing.NOTHING)]
         selected = 0
         seen_heading = False
-        buttons = [field for field in fields if isinstance(field, Button)]
+        first_button = self.first_button_place()
+        buttons = fields[first_button:]
         inside_box = 0
         for place, field in enumerate(fields):
-            if isinstance(field, Button):
+            if place >= first_button:
                 continue
             if inside_box:
                 # The chosen tab's fields are drawn with the box, by its row of tabs.
@@ -492,3 +525,13 @@ def _key_across(*, here, there):
     if there < here:
         return Key.LEFT
     return Key.RIGHT
+
+
+def page_buttons_start(fields):
+    """Return the place where a page's own buttons start among its fields: the run of buttons at the end, which the page draws
+    in a row below its settings, or how many fields there are when none end it. A button among a tab's columns stands before
+    that run and is drawn in its tab."""
+    start = len(fields)
+    while start and isinstance(fields[start - 1], Button):
+        start -= 1
+    return start

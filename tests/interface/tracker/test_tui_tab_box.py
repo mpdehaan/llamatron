@@ -160,6 +160,60 @@ class TestTheArrowsInTheTabBox(UITest):
         self.assertEqual(self.under_cursor(), labels.MSG_TABS_LABEL)
 
 
+class TestTheKeysOfTheTabBox(UITest):
+    """PgUp and PgDn choose a tab from inside the box, keeping the cursor's column; Tab goes between the row of tabs and the box;
+    and the legend lists only the keys that do something where the cursor is."""
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        self.app.screen.show_page(ClipPage(holder=self.app.screen.holder, index=FIRST_SCENE, track=ui_testing.LEAD))
+        await self.pilot.pause()
+        self.page = self.app.screen
+
+    def chosen(self):
+        box = self.page.tab_box()
+        return box.tabs[self.page.chosen_tab(box)].label
+
+    def bound(self):
+        return [item.binding for item in self.page.keys()]
+
+    def column(self):
+        return self.page.box_spots()[self.page.cursor.get_place() - self.page.box_place() - 1].column
+
+    async def test_page_down_and_up_choose_the_next_and_the_last_tab_keeping_the_column_and_stopping_at_the_ends(self):
+        names = [tab.label for tab in self.page.tab_box().tabs]
+        await self.select_field(labels.MSG_GRAB_TRACK_LABEL)
+        column = self.column()
+        await self.press(forward_key(keybindings.FieldPage.TAB_PAGES))
+        self.assertEqual(self.chosen(), names[1])
+        self.assertTrue(self.page.in_box())
+        await self.press(back_key(keybindings.FieldPage.TAB_PAGES))
+        self.assertEqual(self.chosen(), names[0])
+        self.assertEqual(self.column(), column)
+        await self.press(back_key(keybindings.FieldPage.TAB_PAGES))
+        self.assertEqual(self.chosen(), names[0])
+
+    async def test_tab_goes_to_the_row_of_tabs_and_back_into_the_box(self):
+        await self.select_field(labels.MSG_REPEAT_LABEL)
+        self.assertIn(keybindings.FieldPage.TO_TABS, self.bound())
+        await self.press(keybindings.FieldPage.TO_TABS)
+        self.assertEqual(self.page.cursor.get_place(), self.page.box_place())
+        self.assertNotIn(keybindings.FieldPage.TO_TABS, self.bound())
+        await self.press(keybindings.FieldPage.INTO_TAB)
+        self.assertEqual(self.page.cursor.get_place(), self.page.box_place() + 1)
+
+    async def test_left_and_right_are_listed_only_where_a_column_stands_beside(self):
+        await self.select_field(labels.MSG_REPEAT_LABEL)
+        self.assertIn(keybindings.FieldPage.ACROSS, self.bound())
+        self.app.screen.show_page(TrackEditor(holder=self.app.screen.holder, name=ui_testing.LEAD))
+        await self.pilot.pause()
+        self.page = self.app.screen
+        names = [tab.label for tab in self.page.tab_box().tabs]
+        await self.press(keybindings.FieldPage.TO_TABS, *[Key.RIGHT] * names.index(labels.MSG_CC_LANES_TAB), Key.DOWN)
+        self.assertTrue(self.page.in_box())
+        self.assertNotIn(keybindings.FieldPage.ACROSS, self.bound())
+
+
 class TestTheBoxesLook(UITest):
     """The box leaves a blank line under its tallest tab's last line, and a table of statements is a grid that keeps its size
     whatever its lines hold."""

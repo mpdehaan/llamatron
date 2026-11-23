@@ -6,9 +6,10 @@
 
 from llamatron.engine.generators import chords as chords_plugin, timing as timing_plugin
 from llamatron.engine.generators.chords import strings as chords_strings
-from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
+from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor
@@ -153,7 +154,13 @@ class TestGeneratorStatementsPage(StatementsTest):
     async def test_the_button_says_how_many_statements_and_opens_the_generators_table(self):
         names = [tab.label for tab in self.clip_page.tab_box().tabs]
         await self.press(keybindings.FieldPage.TO_TABS, *[Key.RIGHT] * names.index(chords_strings.MSG_TAB_LABEL))
-        await self.select_field(labels.MSG_CONDITIONS_BUTTON.format(count=0))
+        button = labels.MSG_CONDITIONS_BUTTON.format(count=0)
+        await self.select_field(button)
+        # The button is drawn boxed inside its tab, once: the page's own row of buttons below the box never repeats it.
+        self.assertEqual(self.text().count(button), 1)
+        line = next(line for line in self.text().splitlines() if button in line)
+        self.assertTrue(line.startswith(Box.BAR))
+        self.assertIn(Box.DOUBLE_BAR + drawing.SPACE + button, line)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, GeneratorStatementsPage)
         await self.write_every_third()

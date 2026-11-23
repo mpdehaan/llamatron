@@ -9,7 +9,7 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
-from llamatron.interface.tracker.screens.shared.statements import statement_section
+from llamatron.interface.tracker.screens.shared.statements import statement_lines
 from llamatron.user_strings import help as help_text, labels
 
 
@@ -25,13 +25,12 @@ class GeneratorStatementsPage(GeneratorEditor, FieldPage):
         # The section names the generator before the page opens, since opening asks for the page's crumbs and caption.
         self.SECTION = section
         super().__init__(holder=holder, name=name, built_in=built_in)
-        # The table is what the page is for, so its heading starts open.
-        self.app.open_field_sections |= {labels.MSG_BYPASS_WHEN_LABEL}
 
     def fields(self):
+        """Return the table's lines with no heading, since the table is all the page holds."""
         document = self.document()
-        return statement_section(
-            page=self, label=labels.MSG_BYPASS_WHEN_LABEL, table=statements.FIRST_TABLE, statements=self._statements,
+        return statement_lines(
+            page=self, table=statements.FIRST_TABLE, statements=self._statements,
             store=lambda place, statement: document.change_set(self.settings().set_bypass_statement, place=place, statement=statement),
         )
 

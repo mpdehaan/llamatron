@@ -20,6 +20,7 @@ from rich.text import Text
 from typing import Callable
 
 from llamatron.interface.tracker import drawing
+from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Box, cursor_mark, padded, Style
 from llamatron.interface.tracker.screens.shared.shared import stepped
@@ -398,6 +399,14 @@ class Button(Field):
 
     key_name: str = drawing.NOTHING
     value: Callable = lambda: drawing.NOTHING
+
+    # A button among a tab's columns is drawn boxed, its name on the box's middle line.
+    SELECTED_LINE = 1
+
+    def lines(self, *, page, here, label_width, width):
+        """Return the button boxed as a page's buttons are, double-lined under the cursor: drawn so only where it stands among a
+        tab's columns, since a page draws its own buttons in a row below its settings."""
+        return [Text(drawing.INDENT) + line for line in button_row(buttons=[(self.key_name, self.label)], selected=0 if here else None)]
 
 
 @dataclass(slots=True, kw_only=True)
