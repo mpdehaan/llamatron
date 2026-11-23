@@ -9,6 +9,8 @@ A kind not yet moved to the forms (interface/forms/nodes.py) still draws itself,
 from rich.text import Text
 
 from llamatron.interface.forms import nodes
+from llamatron.interface.tracker import drawing
+from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.drawing import cursor_mark, padded, Style
 from llamatron.user_strings import legends, marks
 
@@ -17,7 +19,7 @@ def field_lines(field, *, page, here, label_width, width):
     """Return the lines a field is drawn as, the cursor on it where here is true, its label as wide as label_width."""
     if field.DRAWN_AS == nodes.OWN_LINES:
         return field.lines(page=page, here=here, label_width=label_width, width=width)
-    return setting_line(field, page=page, here=here, label_width=label_width)
+    return DRAWERS[field.DRAWN_AS](field, page=page, here=here, label_width=label_width)
 
 
 def setting_line(field, *, page, here, label_width):
@@ -30,3 +32,22 @@ def setting_line(field, *, page, here, label_width):
     if field.enter_what == legends.What.CHOOSE:
         line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
     return [line]
+
+
+def button_lines(button, *, page, here, label_width):
+    """Return a button boxed as a page's buttons are, double-lined under the cursor: drawn so only where it stands among a tab's
+    columns, since a page draws its own buttons in a row below its settings."""
+    return [Text(drawing.INDENT) + line for line in button_row(buttons=[(button.key_name, button.label)], selected=0 if here else None)]
+
+
+def heading_lines(heading, *, page, here, label_width):
+    """Return a section's heading: its name after its open or closed mark, bold, and what it says of what is set inside, dim."""
+    line = Text(no_wrap=True)
+    line.append(cursor_mark(here))
+    line.append(heading.get_drawn_label(page).ljust(label_width), style=Style.BOLD)
+    line.append(padded(heading.value()), style=Style.DIM)
+    return [line]
+
+
+# How each kind of node is drawn, by what it says it is drawn as.
+DRAWERS = {nodes.SETTING_LINE: setting_line, nodes.BUTTON: button_lines, nodes.HEADING: heading_lines}

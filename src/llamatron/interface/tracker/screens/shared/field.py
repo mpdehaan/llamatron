@@ -22,14 +22,11 @@ from typing import Callable
 from llamatron.interface.forms import nodes
 from llamatron.interface.forms.nodes import Field
 from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.drawing import Box, cursor_mark, padded, Style
 from llamatron.user_strings import labels, legends, marks
 
 
 
-# A heading with nothing set inside shows no value.
-NOTHING_SET = ''
 
 
 # What stands between two cells of a row of cells.
@@ -192,78 +189,6 @@ class Strip(SteppedCells):
         numbers.append(Box.BAR, style=Style.DIM)
         values.append(Box.BAR, style=Style.DIM)
         return [Text(drawing.NOTHING), top, numbers, rule, values, bottom]
-
-@dataclass(slots=True, kw_only=True)
-class Button(Field):
-    """A row that runs an action on Enter, like Save on the File page, so that nobody has to remember its key.
-
-    It shows the key it stands for the way the main screen's menu does, and nothing else: a
-    button's name says what it does, or the dialog it opens will. A button reached only with the
-    arrows has no key's name. A page's buttons always come
-    after its settings, and the page draws them below the settings after one blank line, so that
-    what edits the set and what acts on it never run together.
-    """
-
-    DRAWN_AS = nodes.OWN_LINES
-
-    key_name: str = drawing.NOTHING
-    value: Callable = lambda: drawing.NOTHING
-
-    # A button among a tab's columns is drawn boxed, its name on the box's middle line.
-    SELECTED_LINE = 1
-
-    def lines(self, *, page, here, label_width, width):
-        """Return the button boxed as a page's buttons are, double-lined under the cursor: drawn so only where it stands among a
-        tab's columns, since a page draws its own buttons in a row below its settings."""
-        return [Text(drawing.INDENT) + line for line in button_row(buttons=[(self.key_name, self.label)], selected=0 if here else None)]
-
-
-@dataclass(slots=True, kw_only=True)
-class Heading(Field):
-    """A section's heading on a settings page, like the rows view's: Space or Enter opens or closes it, and the fields after it, up to the next heading, show only while it is open.
-
-    label is the section's name, which the page draws after its open or closed mark, is_set()
-    says whether any field inside holds a value, so that a closed heading never hides one
-    silently, and toggle() opens or closes it.
-    """
-
-    DRAWN_AS = nodes.OWN_LINES
-
-    is_set: Callable = None
-    toggle: Callable = None
-    value: Callable = None
-    enter_what: str = None
-    # A heading over the few fields a page is for starts open, and is closed by hand.
-    starts_open: bool = False
-    # What the heading says after its name in place of the mark of a value inside, as a list's heading says how many it holds.
-    said: Callable = None
-
-    def __post_init__(self):
-        self.value = self.shown
-        self.enter = self.toggle
-
-    MAY_LEAVE_A_GAP = False
-
-    def is_toggle(self):
-        return True
-
-    def get_drawn_label(self, page):
-        """Return the section's name after its open or closed mark."""
-        mark = marks.MSG_SECTION_OPEN_MARK if page.is_open(self) else marks.MSG_SECTION_CLOSED_MARK
-        return labels.MSG_SECTION_LABEL.format(mark=mark, name=self.label)
-
-    def lines(self, *, page, here, label_width, width):
-        line = Text(no_wrap=True)
-        line.append(cursor_mark(here))
-        line.append(self.get_drawn_label(page).ljust(label_width), style=Style.BOLD)
-        line.append(padded(self.value()), style=Style.DIM)
-        return [line]
-
-    def shown(self):
-        if self.said is not None:
-            return self.said()
-        return marks.MSG_SECTION_SET if self.is_set() else NOTHING_SET
-
 
 def gauge_shown(*, place, lowest, highest, said=None):
     """Return a number drawn as a horizontal gauge with the number after it, as the players' gauges are: a block for each place up to the number's,

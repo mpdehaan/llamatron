@@ -5,9 +5,9 @@
 
 from llamatron.engine.generators import timing as timing_plugin
 from llamatron.engine.generators.timing import model as timing_model, parts, strings as timing_strings, view as timing_view
+from llamatron.interface.forms.nodes import Heading
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
 from llamatron.model.schema import limits

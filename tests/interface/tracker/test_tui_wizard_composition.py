@@ -4,6 +4,7 @@
 
 """The song wizard's Composition panels: Melody, a kind of section's melody, Riffs, Riff Assign and Section Players."""
 
+from llamatron.interface.forms.nodes import Heading
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components import button_row
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
@@ -13,7 +14,6 @@ from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
-from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.interface.tracker.screens.wizard import intro_melody_branch, section_melody_branch, solo_melody_branch
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
 from llamatron.model.schema.file_format import Row

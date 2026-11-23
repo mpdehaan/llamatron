@@ -8,12 +8,12 @@ internal_tools/key_map.sh rewrites. It's for Claude, so that a question about a 
 
 import os
 
+from llamatron.interface.forms.nodes import Button, Heading
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.pattern import patterns_page
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.pattern.patterns_page import PatternsPage
-from llamatron.interface.tracker.screens.shared.field import Button, Heading
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.list_page import ListPage
 

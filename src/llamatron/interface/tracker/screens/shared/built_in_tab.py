@@ -5,7 +5,7 @@
 built-in the clip or the track holds, the page that shows the tab asking for every dialog. ENTER on a part, such as a Chords
 generator's progression, opens that part's page on the built-in."""
 
-from llamatron.interface.tracker.screens.shared.field import Button
+from llamatron.interface.forms.nodes import Button
 from llamatron.interface.tracker.screens.shared.generator_statements_page import GeneratorStatementsPage
 from llamatron.interface.tracker.screens.shared.shared import scene_name
 from llamatron.interface.tracker.screens.shared.tab_box import TabColumn

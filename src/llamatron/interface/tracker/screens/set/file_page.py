@@ -6,14 +6,13 @@
 import os
 from rich.text import Text
 
-from llamatron.interface.forms.nodes import ChoiceField, Field, Toggle
+from llamatron.interface.forms.nodes import Button, ChoiceField, Field, Toggle
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.set.notes_page import NotesPage
 from llamatron.interface.tracker.screens.set.visualizer_fields import hidden_visualizers_field, visualizer_field
 from llamatron.interface.tracker.screens.shared.everywhere import open_set, save, save_as, unless_unsaved
-from llamatron.interface.tracker.screens.shared.field import Button
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shared import octave_moved
 from llamatron.interface.tracker.screens.shared.tab_box import Tab, TabBox, TabColumn

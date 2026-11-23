@@ -13,7 +13,7 @@ import unittest
 from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.engine.generators.chords import strings as chords_strings
 from llamatron.interface.forms import nodes
-from llamatron.interface.forms.nodes import ChoiceField, Field, NameField, NumberField, Toggle, within
+from llamatron.interface.forms.nodes import ChoiceField, Field, Heading, NameField, NumberField, Toggle, within
 from llamatron.interface.tracker import key_table, keybindings
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
@@ -27,7 +27,6 @@ from llamatron.interface.tracker.screens.set.file_page import FilePage
 from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor
 from llamatron.interface.tracker.screens.set.scale_page import ScalePage
 from llamatron.interface.tracker.screens.set.song_page import SongPage
-from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_statements_page import GeneratorStatementsPage
 from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor

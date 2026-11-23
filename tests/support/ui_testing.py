@@ -22,6 +22,7 @@ from llamatron.engine.generators.chords import model as chords_model
 from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
 from llamatron.engine.generators.hocket.model import HocketSetting
 from llamatron.engine.generators.timing import parts as timing_parts
+from llamatron.interface.forms.nodes import Button
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
@@ -33,7 +34,6 @@ import llamatron.interface.tracker.screens
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePlace
 from llamatron.interface.tracker.screens.generators import generator_pages
 from llamatron.interface.tracker.screens.shared import page as page_values
-from llamatron.interface.tracker.screens.shared.field import Button
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.list_page import ListPage
 from llamatron.interface.tracker.screens.shared.page import Page

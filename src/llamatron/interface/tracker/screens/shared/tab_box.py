@@ -12,11 +12,10 @@ wider than the box, < and > stand at the ends for the tabs hidden that way."""
 from dataclasses import dataclass, field as dataclass_field
 from rich.text import Text
 
-from llamatron.interface.forms.nodes import Field
+from llamatron.interface.forms.nodes import Field, Heading
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.renderers.fields import field_lines
-from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.user_strings import labels, marks
 
 # Space between columns side by side, and the most lines of remarks a tab shows.

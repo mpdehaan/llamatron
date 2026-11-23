@@ -6,9 +6,9 @@
 
 import functools
 
-from llamatron.interface.forms.nodes import ChoiceField, Field, NumberField
+from llamatron.interface.forms.nodes import Button, ChoiceField, Field, NumberField
 from llamatron.interface.tracker.dialogs.row_dialog import RowDialog
-from llamatron.interface.tracker.screens.shared.field import Button, gauge_shown
+from llamatron.interface.tracker.screens.shared.field import gauge_shown
 from llamatron.interface.tracker.screens.shared.kit_fields import KitFields
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.music_theory.composing import notation

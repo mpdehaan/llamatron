@@ -7,7 +7,7 @@ they are drawn: a Field is one setting, and the kinds of Field say what most set
 A Field is a label, the text of its value, and what Left and Right, Enter and Bksp do there, each a function, so any setting
 can be written as one. Most settings are one of a few kinds, each a class that is given what the setting is and works the
 functions out: a Toggle is on or off, a NameField renames, a NumberField is a whole number between two ends and a ChoiceField is one of a
-fixed list. A page makes
+fixed list. A Button is a row that acts on Enter, and a Heading opens and closes the section under it. A page makes
 its fields afresh for every key and every drawing, so a kind is given the value as it is now rather than a function that reads
 it. The tracker draws a node through its renderers (interface/tracker/renderers/), the only code that knows how it looks.
 """
@@ -21,6 +21,12 @@ from llamatron.user_strings import labels, legends, marks
 # still to move here from interface/tracker/screens/shared/field.py.
 SETTING_LINE = 'setting line'
 OWN_LINES = 'own lines'
+# A button, boxed as a page's buttons are, and a section's heading with its open or closed mark.
+BUTTON = 'button'
+HEADING = 'heading'
+# A button's value, and a heading's with nothing set inside: no text.
+NOTHING = ''
+NOTHING_SET = NOTHING
 # Where a picker opens when the value isn't one of the choices.
 FIRST_CHOICE = 0
 
@@ -220,3 +226,63 @@ class ChoiceField(Field):
         opens_on = str(self.current if self.picked is None else self.picked)
         place = self.choices.index(opens_on) if opens_on in self.choices else FIRST_CHOICE
         self.page.ask_choice(title=self.label, options=self.names or self.choices, current=place, then=lambda chosen: self.set(self.choices[chosen]))
+
+
+@dataclass(slots=True, kw_only=True)
+class Button(Field):
+    """A row that runs an action on Enter, like Save on the File page, so that nobody has to remember its key.
+
+    It shows the key it stands for the way the main screen's menu does, and nothing else: a
+    button's name says what it does, or the dialog it opens will. A button reached only with the
+    arrows has no key's name. A page's buttons always come
+    after its settings, and the page draws them below the settings after one blank line, so that
+    what edits the set and what acts on it never run together.
+    """
+
+    DRAWN_AS = BUTTON
+
+    key_name: str = NOTHING
+    value: Callable = lambda: NOTHING
+
+    # A button among a tab's columns is drawn boxed, its name on the box's middle line.
+    SELECTED_LINE = 1
+
+
+@dataclass(slots=True, kw_only=True)
+class Heading(Field):
+    """A section's heading on a settings page, like the rows view's: Space or Enter opens or closes it, and the fields after it, up to the next heading, show only while it is open.
+
+    label is the section's name, which the page draws after its open or closed mark, is_set()
+    says whether any field inside holds a value, so that a closed heading never hides one
+    silently, and toggle() opens or closes it.
+    """
+
+    DRAWN_AS = HEADING
+
+    is_set: Callable = None
+    toggle: Callable = None
+    value: Callable = None
+    enter_what: str = None
+    # A heading over the few fields a page is for starts open, and is closed by hand.
+    starts_open: bool = False
+    # What the heading says after its name in place of the mark of a value inside, as a list's heading says how many it holds.
+    said: Callable = None
+
+    def __post_init__(self):
+        self.value = self.shown
+        self.enter = self.toggle
+
+    MAY_LEAVE_A_GAP = False
+
+    def is_toggle(self):
+        return True
+
+    def get_drawn_label(self, page):
+        """Return the section's name after its open or closed mark."""
+        mark = marks.MSG_SECTION_OPEN_MARK if page.is_open(self) else marks.MSG_SECTION_CLOSED_MARK
+        return labels.MSG_SECTION_LABEL.format(mark=mark, name=self.label)
+
+    def shown(self):
+        if self.said is not None:
+            return self.said()
+        return marks.MSG_SECTION_SET if self.is_set() else NOTHING_SET
