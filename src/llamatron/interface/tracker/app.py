@@ -13,6 +13,7 @@ from textual.app import App
 import time
 import traceback
 
+from llamatron.interface.pages.wizard import starts
 from llamatron.interface.tracker import drawing, keys, launch as launch_values
 from llamatron.interface.tracker.batch_stage import BatchStage
 from llamatron.interface.tracker.components.scroll_text import scroll_seconds
@@ -29,7 +30,6 @@ from llamatron.interface.tracker.screens.set.splash import Splash
 from llamatron.interface.tracker.screens.set.start_screen import StartScreen
 from llamatron.interface.tracker.screens.shared.everywhere import offer_corrected
 from llamatron.interface.tracker.screens.shared.page import Page
-from llamatron.interface.tracker.screens.wizard import starts
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
 from llamatron.interface.tracker.silent_instruments import warn_of_silent_instruments
 from llamatron.interface.tracker.site_map import SiteMap

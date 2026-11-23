@@ -6,12 +6,12 @@
 The hook comes first, since the chorus is written around it and every other melody stays under it.
 """
 
-from llamatron.interface.tracker.screens.wizard import solo_melody_branch
-from llamatron.interface.tracker.screens.wizard.branch import Branch
-from llamatron.interface.tracker.screens.wizard.hooks_branch import HooksBranch
-from llamatron.interface.tracker.screens.wizard.intro_melody_branch import IntroMelodyBranch
-from llamatron.interface.tracker.screens.wizard.section_melody_branch import SectionMelodyBranch
-from llamatron.interface.tracker.screens.wizard.solo_melody_branch import SoloMelodyBranch
+from llamatron.interface.pages.wizard import solo_melody_branch
+from llamatron.interface.pages.wizard.branch import Branch
+from llamatron.interface.pages.wizard.hooks_branch import HooksBranch
+from llamatron.interface.pages.wizard.intro_melody_branch import IntroMelodyBranch
+from llamatron.interface.pages.wizard.section_melody_branch import SectionMelodyBranch
+from llamatron.interface.pages.wizard.solo_melody_branch import SoloMelodyBranch
 from llamatron.user_strings import labels
 
 

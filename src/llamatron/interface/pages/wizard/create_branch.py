@@ -5,7 +5,7 @@
 
 from llamatron.interface.forms.nodes import Button, Field
 from llamatron.interface.forms.text import clock
-from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.interface.pages.wizard.branch import Branch
 from llamatron.user_strings import errors, labels, legends, marks
 from llamatron.wizards.create_song.wizard_choices import genre_title
 

@@ -348,7 +348,7 @@ MSG_WIZARD_ROW_TITLE = '{row}: {player}'
 MSG_WIZARD_HOOK_MADE = 'made by the wizard'
 MSG_WIZARD_HOOK_OWN = 'your own notes'
 MSG_WIZARD_NOTES_BY_HAND = 'edited by hand'
-# interface/tracker/screens/wizard/intro_melody_branch.py: what the Intro panel says of the part its buttons act on.
+# interface/pages/wizard/intro_melody_branch.py: what the Intro panel says of the part its buttons act on.
 MSG_WIZARD_PART_NOTES = 'part {number}: {notes}'
 MSG_WIZARD_PART_NO_MELODY = 'part {number}: no melody, choose a player in Melody under Part {number}'
 MSG_WIZARD_NO_PARTS = 'the song starts straight in: Add Part gives the song an intro'
@@ -377,7 +377,7 @@ MSG_WIZARD_NOTHING_TO_UNDO = 'nothing changes until Apply, so the wizard has not
 MSG_WIZARD_SONG_NAME_PROMPT = 'Name of the new song'
 MSG_WIZARD_CHOOSE_FIRST = 'Choose a genre and a subgenre first.'
 
-# interface/tracker/screens/wizard/section_melody_branch.py, interface/tracker/screens/wizard/wizard_page.py: giving an edited tune back to the wizard, and what editing a tune did.
+# interface/pages/wizard/section_melody_branch.py, interface/tracker/screens/wizard/wizard_page.py: giving an edited tune back to the wizard, and what editing a tune did.
 MSG_WIZARD_TUNE_GIVE_BACK_TITLE = 'Wizard\'s Notes'
 MSG_WIZARD_TUNE_GIVE_BACK_QUESTION = 'Lose your notes of the {kind} melody and let the wizard write the melody?'
 MSG_WIZARD_REGENERATE_TITLE = 'Regenerate {name}?'

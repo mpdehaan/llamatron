@@ -12,7 +12,7 @@ riff the player knows. The player the genre gives the melody to rests where anot
 import functools
 
 from llamatron.interface.forms.nodes import ChoiceField
-from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.interface.pages.wizard.branch import Branch
 from llamatron.user_strings import labels
 from llamatron.wizards.create_song import wizard_limits
 

@@ -6,8 +6,8 @@
 
 from llamatron.interface.forms.nodes import ChoiceField
 from llamatron.interface.forms.remarks import blank_remark, dim_remark, remark
-from llamatron.interface.tracker.screens.wizard import song_ways_branch
-from llamatron.interface.tracker.screens.wizard.song_ways_branch import SongWaysBranch
+from llamatron.interface.pages.wizard import song_ways_branch
+from llamatron.interface.pages.wizard.song_ways_branch import SongWaysBranch
 from llamatron.model.objects.named_scale import NamedScale
 from llamatron.model.values.chords import root_name
 from llamatron.model.values.progressions import quality_of, roman_numeral

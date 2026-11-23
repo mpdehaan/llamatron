@@ -6,8 +6,8 @@
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.interface.forms.remarks import blank_remark, dim_remark, remark
-from llamatron.interface.tracker.screens.wizard.branch import Branch
-from llamatron.interface.tracker.screens.wizard.section_branch import SectionBranch
+from llamatron.interface.pages.wizard.branch import Branch
+from llamatron.interface.pages.wizard.section_branch import SectionBranch
 from llamatron.user_strings import errors, labels, legends, marks, messages
 from llamatron.wizards.create_song import wizard_limits, wizard_names
 

@@ -415,7 +415,7 @@ MSG_SOUND_NOTE_ROW = 'Note   {note}'
 MSG_SOUND_NOTE_TYPED = 'Note   {text}_'
 MSG_WIZARD_GAUGE_FULL = '█'
 MSG_WIZARD_GAUGE_EMPTY = '░'
-# interface/tracker/screens/wizard/branch.py: a gauge of a melody's writing, a block for each position above the lowest, and then its number.
+# interface/pages/wizard/branch.py: a gauge of a melody's writing, a block for each position above the lowest, and then its number.
 MSG_WIZARD_WRITING_GAUGE_SHOWN = '{gauge}  {place}'
 MSG_WIZARD_LENGTH_SHOWN = '{length}  ({form})'
 MSG_WIZARD_FORM_SHOWN = '{form}: {count} sections'
@@ -452,7 +452,7 @@ MSG_LINES_COUNT_OWN = '{count} ({own} your own)'
 MSG_WIZARD_COMPOSITION_LINE = '{name:<{width}}  {value}'
 MSG_WIZARD_SECTION_LINE = '{number:>2}  {name:<{width}}  {bars:>3} bars'
 
-# interface/tracker/screens/wizard/riffs_branch.py: a tune a person edited, a kind of section whose tune is not made, and the Composition panel's line about the tunes.
+# interface/pages/wizard/riffs_branch.py: a tune a person edited, a kind of section whose tune is not made, and the Composition panel's line about the tunes.
 MSG_WIZARD_TUNE_EDITED = '{name} (edited)'
 # A riff's row on the Riffs panel, under BARS and USED IN; a riff's row on the Riff Assign panel, under FOR and PLAYED IN; and how many a heading holds.
 MSG_WIZARD_RIFF_ROW = '{bars:>4}  {used}'

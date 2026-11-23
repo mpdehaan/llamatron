@@ -9,7 +9,7 @@ import functools
 from llamatron.interface.forms.nodes import ChoiceField, Field, Toggle
 from llamatron.interface.pages.section_fade import fade_field
 from llamatron.interface.pages.section_own_fields import SectionOwnFields
-from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.interface.pages.wizard.branch import Branch
 from llamatron.user_strings import labels, legends, marks, messages
 from llamatron.wizards.create_song import wizard_limits, wizard_names
 

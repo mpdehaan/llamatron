@@ -7,7 +7,7 @@
 
 from llamatron.interface.forms.nodes import ChoiceField
 from llamatron.interface.forms.remarks import dim_remark
-from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.interface.pages.wizard.branch import Branch
 from llamatron.user_strings import errors, messages
 
 # A field is worth showing once there is more than one way to choose.

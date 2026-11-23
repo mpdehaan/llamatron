@@ -21,6 +21,13 @@ from llamatron.engine.generators import musician as musician_plugin, phrasing as
 from llamatron.interface.forms import moves
 from llamatron.interface.forms.cursor import place_of
 from llamatron.interface.forms.text import clock
+from llamatron.interface.pages.wizard import starts
+from llamatron.interface.pages.wizard.band_branch import BandBranch
+from llamatron.interface.pages.wizard.composition_branch import CompositionBranch
+from llamatron.interface.pages.wizard.create_branch import CreateBranch
+from llamatron.interface.pages.wizard.form_branch import FormBranch
+from llamatron.interface.pages.wizard.genre_branch import GenreBranch
+from llamatron.interface.pages.wizard.subgenre_branch import SubgenreBranch
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -37,13 +44,6 @@ from llamatron.interface.tracker.screens.shared import sound_trial
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.interface.tracker.screens.shared.sound_trial import hits_of, run_of, SoundTrial
-from llamatron.interface.tracker.screens.wizard import starts
-from llamatron.interface.tracker.screens.wizard.band_branch import BandBranch
-from llamatron.interface.tracker.screens.wizard.composition_branch import CompositionBranch
-from llamatron.interface.tracker.screens.wizard.create_branch import CreateBranch
-from llamatron.interface.tracker.screens.wizard.form_branch import FormBranch
-from llamatron.interface.tracker.screens.wizard.genre_branch import GenreBranch
-from llamatron.interface.tracker.screens.wizard.subgenre_branch import SubgenreBranch
 from llamatron.model.file import version
 from llamatron.model.file.checks import listed
 from llamatron.model.file.song_file_error import SongFileError

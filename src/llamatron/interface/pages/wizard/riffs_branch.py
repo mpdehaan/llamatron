@@ -13,7 +13,7 @@ it yet: who knows it is chosen on Riff Assign, and where it is played on Section
 import functools
 
 from llamatron.interface.forms.nodes import Field
-from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.interface.pages.wizard.branch import Branch
 from llamatron.model.file.checks import listed
 from llamatron.user_strings import labels, legends, marks, messages
 

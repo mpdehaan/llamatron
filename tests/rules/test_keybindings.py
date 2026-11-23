@@ -18,6 +18,7 @@ import re
 import unittest
 
 import llamatron.interface.forms
+import llamatron.interface.pages
 import llamatron.interface.tracker
 from llamatron.interface.tracker import keybindings, keys as keys_values
 from llamatron.interface.tracker.key_table import BindsKeys, every_key, place_of
@@ -26,6 +27,7 @@ from llamatron.user_strings import legends
 
 SOURCE = pathlib.Path(llamatron.interface.tracker.__file__).parent
 FORMS = pathlib.Path(llamatron.interface.forms.__file__).parent
+PAGES = pathlib.Path(llamatron.interface.pages.__file__).parent
 PYTHON_FILES = '*.py'
 FILE_ENCODING = 'utf-8'
 # A __main__ module starts the program when it's imported, so it's left out. It defines no classes.
@@ -88,7 +90,7 @@ def is_one_of(*, binding, bindings):
 def tracker_source():
     """Return the text of every module of the tracker but the bindings module, and of the forms its pages are made of, whose
     fields bind their own keys."""
-    paths = [*sorted(SOURCE.rglob(PYTHON_FILES)), *sorted(FORMS.rglob(PYTHON_FILES))]
+    paths = [*sorted(SOURCE.rglob(PYTHON_FILES)), *sorted(FORMS.rglob(PYTHON_FILES)), *sorted(PAGES.rglob(PYTHON_FILES))]
     return '\n'.join(path.read_text(encoding=FILE_ENCODING) for path in paths if path.name != BINDINGS_FILE)
 
 

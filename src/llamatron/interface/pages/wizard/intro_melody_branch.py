@@ -16,7 +16,7 @@ the intro's melody is made from the hook and the hook from the chorus.
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, Heading, Toggle
 from llamatron.interface.forms.remarks import dim_remark
 from llamatron.interface.pages.section_fade import fade_field
-from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.interface.pages.wizard.branch import Branch
 from llamatron.model.file.checks import listed
 from llamatron.user_strings import errors, labels, legends, marks, messages
 from llamatron.wizards.create_song import wizard_limits

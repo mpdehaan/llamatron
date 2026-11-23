@@ -13,7 +13,7 @@ section under Form.
 
 from llamatron.interface.forms.nodes import Button, Field
 from llamatron.interface.forms.remarks import dim_remark
-from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.interface.pages.wizard.branch import Branch
 from llamatron.user_strings import labels, legends, messages
 from llamatron.wizards.create_song import wizard_limits
 

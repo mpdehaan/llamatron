@@ -5,7 +5,7 @@
 
 from llamatron.interface.forms.nodes import ChoiceField, Field
 from llamatron.interface.forms.text import clock
-from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.interface.pages.wizard.branch import Branch
 from llamatron.model.values import note
 from llamatron.user_strings import labels, legends, marks, messages
 from llamatron.wizards.create_song import wizard_limits

@@ -741,11 +741,11 @@ MSG_KEYSWITCH_LEAD_LABEL = 'Keyswitch lead'
 MSG_DEFAULT_VELOCITY_LABEL = 'Default velocity'
 MSG_GM_SOUND_SHOWN = '{number} {name}'
 
-# interface/tracker/screens/wizard/wizard_page.py and the branches beside it
+# interface/tracker/screens/wizard/wizard_page.py and the branches of interface/pages/wizard/
 MSG_WIZARD_CAPTION = 'NEW SONG WIZARD: {name}'
 MSG_WIZARD_REPLACE_CAPTION = 'SONG WIZARD, REPLACING: {name}'
 MSG_WIZARD_START_TITLE = 'Song Wizard'
-# The four ways a run starts when the current song was made by the wizard, by the constants of interface/tracker/screens/wizard/starts.py.
+# The four ways a run starts when the current song was made by the wizard, by the constants of interface/pages/wizard/starts.py.
 MSG_WIZARD_START_NAMES = {
     'new from last': 'New song, from last settings',
     'new from scratch': 'New song, from scratch',
@@ -780,7 +780,7 @@ MSG_WIZARD_MORE_SOUNDS_TITLE = 'More sounds'
 MSG_WIZARD_COMPOSITION_BRANCH = 'Composition'
 MSG_WIZARD_CHORDS_BRANCH = 'Chords'
 MSG_WIZARD_MELODY_BRANCH = 'Melody'
-# interface/tracker/screens/wizard/melody_branch.py, interface/tracker/screens/wizard/section_melody_branch.py: the whole song's melodies, and one kind of section's.
+# interface/pages/wizard/melody_branch.py, interface/pages/wizard/section_melody_branch.py: the whole song's melodies, and one kind of section's.
 MSG_WIZARD_MELODY_WAY_LABELS = {'busy': 'Busy', 'range': 'Range', 'repeats': 'Repeats'}
 MSG_WIZARD_CHARACTER_LABEL = 'Character'
 MSG_WIZARD_HEIGHT_LABEL = 'Height'
@@ -788,12 +788,12 @@ MSG_WIZARD_SECTION_BUSY_LABEL = 'Busy'
 MSG_WIZARD_FROM_SONG = 'from song'
 MSG_WIZARD_NOTES_EDITED = 'edited'
 MSG_WIZARD_EDIT_NOTES_BUTTON = 'Edit Notes'
-# interface/tracker/screens/wizard/solo_melody_branch.py: one solo's notes.
+# interface/pages/wizard/solo_melody_branch.py: one solo's notes.
 MSG_WIZARD_SOLO_NUMBERED = '{kind} {number}'
 MSG_WIZARD_SOLO_PLAYED_BY_LABEL = 'Played by'
 MSG_WIZARD_SOLO_SECTION_LABEL = 'Section'
 MSG_WIZARD_REGENERATE_BUTTON = 'Regenerate'
-# interface/tracker/screens/wizard/riffs_branch.py, interface/tracker/screens/wizard/riff_assign_branch.py, interface/tracker/screens/wizard/section_players_branch.py, interface/tracker/dialogs/new_riff_dialog.py: the riffs.
+# interface/pages/wizard/riffs_branch.py, interface/pages/wizard/riff_assign_branch.py, interface/pages/wizard/section_players_branch.py, interface/tracker/dialogs/new_riff_dialog.py: the riffs.
 MSG_WIZARD_RIFFS_BRANCH = 'Riffs'
 MSG_WIZARD_RIFF_ASSIGN_BRANCH = 'Riff Assign'
 MSG_WIZARD_SECTION_PLAYERS_BRANCH = 'Section Players'
@@ -806,14 +806,14 @@ MSG_NEW_RIFF_TITLE = 'New Riff for {player}'
 MSG_NEW_RIFF_LABELS = {'bars': 'Bars', 'notes': 'Made of', 'with chords': 'Follows chords', 'between': 'Gaps'}
 MSG_NEW_RIFF_VALUES = {1: '1', 2: '2', 'single notes': 'notes', 'chords on the accents': 'notes and chords', 'muted roots': 'muted roots', 'rests': 'silence'}
 MSG_NEW_RIFF_BUTTONS = ('Write Riff', 'CANCEL')
-# interface/tracker/screens/wizard/section_melody_branch.py: a kind of section's melody.
+# interface/pages/wizard/section_melody_branch.py: a kind of section's melody.
 MSG_WIZARD_LISTEN_BAND_BUTTON = 'Listen With Band'
 MSG_WIZARD_BODY_GAUGE_LABELS = {'sameness': 'Sameness', 'space': 'Space', 'lift': 'Lift', 'resolve': 'Resolve', 'call_and_answer': 'Call and answer'}
-# interface/tracker/screens/wizard/hooks_branch.py: the song's hooks.
+# interface/pages/wizard/hooks_branch.py: the song's hooks.
 MSG_WIZARD_HOOKS_BRANCH = 'Hook'
 MSG_WIZARD_BEHAVIOR_LABEL = 'Behavior'
 MSG_WIZARD_HOOK_GAUGE_LABELS = {'catchiness': 'Catchiness', 'simplicity': 'Simplicity', 'leap': 'Leap', 'height': 'Height', 'hold': 'Hold', 'bounce': 'Bounce'}
-# interface/tracker/screens/wizard/melodies_branch.py: the group of the song's melodies.
+# interface/pages/wizard/melodies_branch.py: the group of the song's melodies.
 MSG_WIZARD_MELODIES_BRANCH = 'Melodies'
 MSG_WIZARD_MAIN_HOOK_HEADING = 'Main Hook'
 MSG_WIZARD_HOOK_HEADING = 'Hook'
@@ -872,7 +872,7 @@ MSG_WIZARD_VALUE_FROM = '{value} ({origin})'
 # A fade's fields, named for its way: a section that opens the song fades in, and one that closes the song fades out.
 MSG_WIZARD_FADE_LABELS = {'in': {'fades': 'Fade in', 'fade_level': 'Fade from', 'fade_over': 'Fade over'}, 'out': {'fades': 'Fade out', 'fade_level': 'Fade to', 'fade_over': 'Fade over'}}
 MSG_WIZARD_FADE_VELOCITY = '{value}%'
-# interface/tracker/screens/wizard/intro_melody_branch.py: the intro's parts.
+# interface/pages/wizard/intro_melody_branch.py: the intro's parts.
 MSG_WIZARD_INTRO_PART = 'Part {number}'
 MSG_WIZARD_PART_MELODY_LABEL = 'Melody'
 MSG_WIZARD_ADD_PART_BUTTON = 'Add Part'

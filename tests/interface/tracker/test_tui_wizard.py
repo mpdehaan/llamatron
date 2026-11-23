@@ -8,6 +8,8 @@ from unittest import mock
 from llamatron.caching.memory import StaleAnswer
 from llamatron.interface.forms.note_names import note_shown, note_typed
 from llamatron.interface.forms.text import clock
+from llamatron.interface.pages.wizard import solo_melody_branch, starts
+from llamatron.interface.pages.wizard.hook_picture import picture_of
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.dialogs import dialog as dialog_values, row_dialog
@@ -20,8 +22,6 @@ from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.renderers.remarks import remark_lines
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.set.main_page import MainPage
-from llamatron.interface.tracker.screens.wizard import solo_melody_branch, starts
-from llamatron.interface.tracker.screens.wizard.hook_picture import picture_of
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
 from llamatron.model.file import version
 from llamatron.model.objects.naming import new_name

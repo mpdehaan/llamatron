@@ -5,13 +5,13 @@
 
 
 from llamatron.interface.forms.remarks import dim_remark, remark
-from llamatron.interface.tracker.screens.wizard.branch import Branch
-from llamatron.interface.tracker.screens.wizard.chords_branch import ChordsBranch
-from llamatron.interface.tracker.screens.wizard.melodies_branch import MelodiesBranch
-from llamatron.interface.tracker.screens.wizard.melody_branch import MelodyBranch
-from llamatron.interface.tracker.screens.wizard.riff_assign_branch import RiffAssignBranch
-from llamatron.interface.tracker.screens.wizard.riffs_branch import RiffsBranch
-from llamatron.interface.tracker.screens.wizard.section_players_branch import SectionPlayersBranch
+from llamatron.interface.pages.wizard.branch import Branch
+from llamatron.interface.pages.wizard.chords_branch import ChordsBranch
+from llamatron.interface.pages.wizard.melodies_branch import MelodiesBranch
+from llamatron.interface.pages.wizard.melody_branch import MelodyBranch
+from llamatron.interface.pages.wizard.riff_assign_branch import RiffAssignBranch
+from llamatron.interface.pages.wizard.riffs_branch import RiffsBranch
+from llamatron.interface.pages.wizard.section_players_branch import SectionPlayersBranch
 from llamatron.user_strings import errors, labels, marks, messages
 
 

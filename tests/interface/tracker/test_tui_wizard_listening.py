@@ -4,9 +4,9 @@
 
 """The song wizard's Listen: a part of the song as it would be made, heard through FluidSynth's stand-in and thrown away."""
 
+from llamatron.interface.pages.wizard import section_melody_branch
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.wizard import section_melody_branch
 from llamatron.realtime import realtime_names
 from llamatron.user_strings import errors, labels, messages
 from tests.interface.tracker.test_tui_playback import PlaybackTest

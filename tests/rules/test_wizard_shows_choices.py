@@ -13,7 +13,7 @@ import pathlib
 import re
 import unittest
 
-from llamatron.interface.pages import kit_fields, section_fade, section_own_fields
+from llamatron.interface.pages import kit_fields, section_fade, section_own_fields, wizard as wizard_panels
 from llamatron.interface.tracker.screens import wizard
 from llamatron.wizards.create_song.band_choices import BandChoices
 from llamatron.wizards.create_song.form_choices import FormChoices
@@ -69,9 +69,11 @@ def changes():
 
 
 def wizard_screens_source():
-    """Return the source of every module of the wizard's screens, and of the shared fields they show, joined."""
-    folder = pathlib.Path(wizard.__file__).parent
-    sources = [path.read_text() for path in sorted(folder.glob(SOURCE_FILES))]
+    """Return the source of every module of the wizard's screens, its page and its panels, and of the shared fields they show, joined."""
+    sources = []
+    for package in (wizard, wizard_panels):
+        folder = pathlib.Path(package.__file__).parent
+        sources += [path.read_text() for path in sorted(folder.glob(SOURCE_FILES))]
     for module in SHARED_FIELDS:
         sources.append(pathlib.Path(module.__file__).read_text())
     return ''.join(sources)

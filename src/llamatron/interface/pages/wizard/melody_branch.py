@@ -10,7 +10,7 @@ A kind of section's own melody has a panel of its own (section_melody_branch.py)
 """
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Toggle
-from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.interface.pages.wizard.branch import Branch
 from llamatron.user_strings import labels, legends, messages
 
 # The choice that leaves the character to the genre, which is no character's name.

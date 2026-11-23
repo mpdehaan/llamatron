@@ -16,8 +16,8 @@ import functools
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, Toggle
 from llamatron.interface.forms.remarks import dim_remark, remark
-from llamatron.interface.tracker.screens.wizard.branch import Branch
-from llamatron.interface.tracker.screens.wizard.hook_picture import picture_of
+from llamatron.interface.pages.wizard.branch import Branch
+from llamatron.interface.pages.wizard.hook_picture import picture_of
 from llamatron.user_strings import labels, legends, messages
 
 
