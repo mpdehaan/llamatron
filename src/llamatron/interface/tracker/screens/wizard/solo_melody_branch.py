@@ -12,10 +12,11 @@ section under Form.
 
 from rich.text import Text
 
+from llamatron.interface.forms.nodes import Field
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.drawing import Style
-from llamatron.interface.tracker.screens.shared.field import Button, Field
+from llamatron.interface.tracker.screens.shared.field import Button
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.user_strings import labels, legends, messages
 from llamatron.wizards.create_song import wizard_limits

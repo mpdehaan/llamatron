@@ -4,7 +4,8 @@
 
 """The wizard's Band branch: who is in the band, and a branch for each player who is."""
 
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, Toggle
+from llamatron.interface.forms.nodes import Field, Toggle
+from llamatron.interface.tracker.screens.shared.field import ChoiceField
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.interface.tracker.screens.wizard.player_branch import PlayerBranch
 from llamatron.user_strings import errors, labels

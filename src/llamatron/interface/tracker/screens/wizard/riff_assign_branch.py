@@ -11,10 +11,10 @@ Players offers the player in each kind of section.
 
 import functools
 
+from llamatron.interface.forms.nodes import Field
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.interface.tracker.screens.shared.field import Field
 from llamatron.interface.tracker.screens.wizard.riffs_branch import RiffsBranch
 from llamatron.model.file.checks import listed
 from llamatron.user_strings import errors, labels, legends, marks, messages

@@ -7,7 +7,7 @@ fades, the velocity it fades from or to, and the bars the fade takes."""
 
 import functools
 
-from llamatron.interface.tracker.screens.shared.field import NumberField, Toggle
+from llamatron.interface.forms.nodes import NumberField, Toggle
 from llamatron.user_strings import labels, legends
 from llamatron.wizards.create_song import wizard_names
 

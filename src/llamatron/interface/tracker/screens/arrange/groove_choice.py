@@ -8,8 +8,8 @@ the song's), False to play straight whatever else chooses, or the name of a groo
 right step through those in that order, Enter picks from a list, and Bksp goes back to None.
 """
 
+from llamatron.interface.forms.nodes import Field
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.screens.shared.field import Field
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.user_strings import labels, legends, marks
 

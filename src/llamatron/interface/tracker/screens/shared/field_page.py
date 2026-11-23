@@ -8,15 +8,17 @@ import functools
 from rich.text import Text
 
 from llamatron.caching.cached import cached_while
+from llamatron.interface.forms.nodes import Field, NameField, NumberField
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.cursor import Cursor, key_between, NoSuchPlace
 from llamatron.interface.tracker.drawing import cursor_mark, Style
 from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.renderers.fields import field_lines
 from llamatron.interface.tracker.screens.shared import tab_box as tab_box_values
 from llamatron.interface.tracker.screens.shared.drawn_lines import DrawnLines
-from llamatron.interface.tracker.screens.shared.field import Button, Cells, Field, Heading, NameField, NumberField
+from llamatron.interface.tracker.screens.shared.field import Button, Cells, Heading
 from llamatron.interface.tracker.screens.shared.kept_fields import fields_said
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.interface.tracker.screens.shared.tab_box import box_lines, TabRow
@@ -473,7 +475,7 @@ class FieldPage(Page):
                 if place:
                     drawn.blank()
             selected_at = field.SELECTED_LINE if place == cursor else None
-            drawn.add(field.lines(page=self, here=place == cursor, label_width=label_width, width=width), selected_at=selected_at)
+            drawn.add(field_lines(field, page=self, here=place == cursor, label_width=label_width, width=width), selected_at=selected_at)
             if field.MAY_LEAVE_A_GAP and self.has_gap_after(place=place, field=field, fields=fields):
                 drawn.blank()
 

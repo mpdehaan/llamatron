@@ -14,10 +14,11 @@ the intro's melody is made from the hook and the hook from the chorus.
 
 from rich.text import Text
 
+from llamatron.interface.forms.nodes import Field, Toggle
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.drawing import Style
-from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField, Field, Heading, Toggle
+from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField, Heading
 from llamatron.interface.tracker.screens.shared.section_fade import fade_field
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.model.file.checks import listed

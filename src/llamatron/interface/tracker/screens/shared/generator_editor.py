@@ -4,7 +4,7 @@
 
 """What every page of one generator shares: its settings, found one way, and a value stored one way."""
 
-from llamatron.interface.tracker.screens.shared.field import NumberField
+from llamatron.interface.forms.nodes import NumberField
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
 
 

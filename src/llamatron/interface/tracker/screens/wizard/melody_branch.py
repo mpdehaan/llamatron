@@ -9,7 +9,8 @@ and their character, each starting at what the genre does, then how the melody i
 A kind of section's own melody has a panel of its own (section_melody_branch.py).
 """
 
-from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField, Toggle
+from llamatron.interface.forms.nodes import Toggle
+from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.user_strings import labels, legends, messages
 

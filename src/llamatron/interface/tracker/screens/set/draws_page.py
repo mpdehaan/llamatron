@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Draws page: the song's eight draws, AD to HD, each a section of settings over its strip of slots."""
 
+from llamatron.interface.forms.nodes import NumberField, Toggle
 from llamatron.interface.tracker import drawing, keybindings, themes
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, NumberField, Strip, Toggle
+from llamatron.interface.tracker.screens.shared.field import ChoiceField, Strip
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import DrawSetting

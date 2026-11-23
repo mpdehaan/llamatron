@@ -6,8 +6,8 @@ chord editor."""
 
 import functools
 
+from llamatron.interface.forms.nodes import Field
 from llamatron.interface.tracker.screens.shared.chords_editor import ChordsEditor
-from llamatron.interface.tracker.screens.shared.field import Field
 from llamatron.model.values.progressions import roman_numeral
 from llamatron.user_strings import legends, marks
 

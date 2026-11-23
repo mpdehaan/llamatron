@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The fields that choose visualizer modes: the mode Arrange's visualizer key shows first, on the File/Global page and the Song page, the song's over the set's, and the File/Global page's Hide Visualizers section."""
 
+from llamatron.interface.forms.nodes import Field
 from llamatron.interface.tracker.dialogs.pick_many_dialog import PickManyDialog
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field
+from llamatron.interface.tracker.screens.shared.field import ChoiceField
 from llamatron.interface.visualizers.modes import mode_called
 from llamatron.model.schema import file_format
 from llamatron.user_strings import labels, legends, marks

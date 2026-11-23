@@ -7,7 +7,8 @@ from until it is given, and Bksp gives it back."""
 
 import functools
 
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, gauge_shown, NumberField, Toggle
+from llamatron.interface.forms.nodes import Field, NumberField, Toggle
+from llamatron.interface.tracker.screens.shared.field import ChoiceField, gauge_shown
 from llamatron.interface.tracker.screens.shared.section_fade import fade_field, give_section_own
 from llamatron.model.schema import limits
 from llamatron.model.values import note

@@ -12,9 +12,11 @@ wider than the box, < and > stand at the ends for the tabs hidden that way."""
 from dataclasses import dataclass, field as dataclass_field
 from rich.text import Text
 
+from llamatron.interface.forms.nodes import Field
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.drawing import Box, Style
-from llamatron.interface.tracker.screens.shared.field import Field, Heading
+from llamatron.interface.tracker.renderers.fields import field_lines
+from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.user_strings import labels, marks
 
 # Space between columns side by side, and the most lines of remarks a tab shows.
@@ -252,7 +254,7 @@ def _column_spots(*, page, column, band, column_place, inner):
         line += 1
     for field in column.fields:
         spots.append(Spot(band=band, column=column_place, line=line + field.SELECTED_LINE))
-        line += len(field.lines(page=page, here=False, label_width=0, width=inner))
+        line += len(field_lines(field, page=page, here=False, label_width=0, width=inner))
     return spots
 
 
@@ -284,7 +286,7 @@ def _tab_contents(*, page, tab, inner, cursor):
         here = place == cursor
         if here:
             selected = len(lines) + field.SELECTED_LINE
-        lines += field.lines(page=page, here=here, label_width=top_width, width=inner)
+        lines += field_lines(field, page=page, here=here, label_width=top_width, width=inner)
     if tab.top and tab.columns:
         lines.append(Text(drawing.NOTHING))
     bands, band_selected = _bands(page=page, columns=tab.columns, inner=inner, cursor=_after_top(cursor=cursor, top=tab.top))
@@ -358,7 +360,7 @@ def _column_lines(*, page, column, inner, cursor):
         here = place == cursor
         if here:
             selected = len(lines) + field.SELECTED_LINE
-        lines += field.lines(page=page, here=here, label_width=label_width, width=inner)
+        lines += field_lines(field, page=page, here=here, label_width=label_width, width=inner)
     return lines, selected
 
 

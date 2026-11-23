@@ -9,9 +9,10 @@ branch is added, moved or split by changing the branches alone (who expects to
 revise how the wizard is organized).
 """
 
+from llamatron.interface.forms.nodes import Field, NumberField
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NumberField
+from llamatron.interface.tracker.screens.shared.field import ChoiceField
 from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import labels, legends, marks
 
