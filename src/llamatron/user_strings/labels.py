@@ -910,11 +910,12 @@ MSG_WIZARD_GENRE_BRANCH = 'Genre'
 MSG_WIZARD_SUBGENRE_BRANCH = 'Subgenre'
 MSG_WIZARD_FORM_BRANCH = 'Form'
 MSG_WIZARD_CREATE_BRANCH = 'Apply'
-# A tab's own row in its list, at its head, before its parts, by the tab's name: the band's members, and the overview of the
-# composition and of the form.
+# A tab's own row in its list, at its head, before its parts, by the tab's name: the band's members, the summary of the
+# composition, and the shape of the form.
 MSG_WIZARD_MEMBERS_ROW = 'Members'
-MSG_WIZARD_OVERVIEW_ROW = 'Overview'
-MSG_WIZARD_TAB_OWN_ROWS = {MSG_WIZARD_BAND_BRANCH: MSG_WIZARD_MEMBERS_ROW, MSG_WIZARD_COMPOSITION_BRANCH: MSG_WIZARD_OVERVIEW_ROW, MSG_WIZARD_FORM_BRANCH: MSG_WIZARD_OVERVIEW_ROW}
+MSG_WIZARD_SUMMARY_ROW = 'Summary'
+MSG_WIZARD_SHAPE_ROW = 'Shape'
+MSG_WIZARD_TAB_OWN_ROWS = {MSG_WIZARD_BAND_BRANCH: MSG_WIZARD_MEMBERS_ROW, MSG_WIZARD_COMPOSITION_BRANCH: MSG_WIZARD_SUMMARY_ROW, MSG_WIZARD_FORM_BRANCH: MSG_WIZARD_SHAPE_ROW}
 MSG_WIZARD_SUBGENRE_LABEL = 'Subgenre'
 MSG_WIZARD_KEY_LABEL = 'Key'
 MSG_WIZARD_FORM_LABEL = 'Form'
