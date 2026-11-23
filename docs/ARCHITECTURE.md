@@ -159,6 +159,7 @@ flowchart LR
     llamatron --> realtime
     llamatron --> wizards
     model --> music_theory
+    music_theory --> model
     realtime --> engine
     realtime --> model
     wizards --> engine

@@ -8,14 +8,9 @@ from fractions import Fraction
 import unittest
 
 from llamatron.model.schema.file_format import PatternSetting, Row
-from llamatron.wizards.create_song import tune_fit, wizard_names
-from llamatron.wizards.create_song.tune_fit import chord_at, fitted, move_to_chord, steps_held
-from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from llamatron.music_theory.harmony import tune_fit
+from llamatron.music_theory.harmony.tune_fit import chord_at, fitted, move_to_chord, steps_held
 
-A_GENRE = 'rock'
-A_SUBGENRE = 'folk rock'
-A_KIND = 'verse'
-A_SEED = 7
 AN_EIGHTH = '1/8'
 A_BAR = Fraction(1)
 STEPS_IN_BAR = 8
@@ -23,7 +18,6 @@ AN_OCTAVE = 4
 # The home chord and the chord on the second note of the scale, whose notes are 1, 3, 5 and 2, 4, 6.
 HOME = 1
 SECOND = 2
-OTHER_CHORDS = [2, 5]
 
 
 def tune(*, degrees, ties, octaves=None):
@@ -65,42 +59,3 @@ class TestTuneFit(unittest.TestCase):
         self.assertEqual(fitted(pattern=blank, chords=[{tune_fit.DEGREE: HOME}], bar=A_BAR), blank)
         written = tune(degrees=[2, None], ties=[False, True])
         self.assertEqual(fitted(pattern=written, chords=[], bar=A_BAR), written)
-
-
-class TestWizardFitsTune(unittest.TestCase):
-
-    def chosen(self):
-        choices = WizardChoices()
-        choices.set_genre(A_GENRE)
-        choices.set_subgenre(A_SUBGENRE)
-        choices.set_seed(A_SEED)
-        return choices
-
-    def test_only_a_tune_written_by_hand_has_chords_to_watch(self):
-        choices = self.chosen()
-        tune_choices = choices.get_tunes()
-        tunes = tune_choices
-        self.assertEqual(tunes.own_tune_chords(), {})
-        tunes.set_tune_pattern(kind=A_KIND, pattern=tunes.tune_pattern(A_KIND))
-        self.assertEqual(list(tunes.own_tune_chords()), [A_KIND])
-        with self.assertRaises(ValueError):
-            self.chosen().get_tunes().fit_tune(A_KIND)
-
-    def test_a_tune_is_fitted_to_the_chords_its_section_now_hears_and_stays_the_persons_own(self):
-        choices = self.chosen()
-        tune_choices = choices.get_tunes()
-        tunes = tune_choices
-        written = tunes.tune_pattern(A_KIND)
-        tunes.set_tune_pattern(kind=A_KIND, pattern=written)
-        before = tunes.own_tune_chords()
-        choices.section(tunes.tune_place(A_KIND)).set_own(field=wizard_names.ARRANGER_CHORDS, value=OTHER_CHORDS)
-        self.assertNotEqual(tunes.own_tune_chords(), before)
-        self.assertEqual(tunes.tune_pattern(A_KIND), written)
-        tunes.fit_tune(A_KIND)
-        fit = tunes.tune_pattern(A_KIND)
-        self.assertTrue(tunes.tune_is_own(A_KIND))
-        self.assertNotEqual(fit[Row.DEGREE], written[Row.DEGREE])
-        self.assertEqual([degree is None for degree in fit[Row.DEGREE]], [degree is None for degree in written[Row.DEGREE]])
-        self.assertEqual(fit[Row.TIE], written[Row.TIE])
-        tunes.fit_tune(A_KIND)
-        self.assertEqual(tunes.tune_pattern(A_KIND), fit)

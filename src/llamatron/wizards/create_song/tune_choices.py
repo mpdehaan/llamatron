@@ -7,8 +7,9 @@
 import copy
 
 from llamatron.model.file.song_file_error import SongFileError
+from llamatron.music_theory.harmony import tune_fit
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, players as players_values, tune_fit, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, players as players_values, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import bar_length
 from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart
 
@@ -155,7 +156,7 @@ class TuneChoices(ChoicesPart):
 
     def fit_tune(self, kind):
         """Fit a kind of section's tune, written by hand, to the chords its section now hears: each long note that is no note of its
-        chord moves to the nearest note of the chord, and short notes stay (tune_fit.py)."""
+        chord moves to the nearest note of the chord, and short notes stay (music_theory/harmony/tune_fit.py)."""
         chords = self.own_tune_chords().get(kind)
         if chords is None:
             raise ValueError(errors.ERR_WIZARD_NO_TUNE_IN.format(value=kind))
