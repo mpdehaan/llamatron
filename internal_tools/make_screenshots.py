@@ -119,8 +119,6 @@ SHOTS = [
     # The Chord section's heading is the second: Space opens it, Down reaches the Chord row and Enter opens the Chord Selector, where Right three times reaches the scales and Down and Enter open the flyout of Common.
     Shot(name='chord_selector', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, Key.PAGE_DOWN, Key.PAGE_DOWN, Key.SPACE, Key.DOWN, Key.ENTER, Key.RIGHT, Key.RIGHT, Key.RIGHT, Key.DOWN, Key.ENTER]),
     Shot(name='pattern_editor_cc', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 5, Key.SPACE, Key.DOWN]),
-    Shot(name='pattern_editor_registers', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 6, Key.SPACE, Key.DOWN]),
-    Shot(name='pattern_editor_register_changes', keys=[keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER, keybindings.PatternEditor.TO_EDITOR, *[Key.PAGE_DOWN] * 7, Key.SPACE, Key.DOWN]),
     # With Real Time on, Up from the first scene's name reaches Arrange's corner, and Right the first track's name.
     Shot(name='track_editor', keys=[keybindings.MainPage.ARRANGE, Key.UP, Key.RIGHT, Key.ENTER]),
     # Space opens the Arpeggiator group, the first on the Generators page.

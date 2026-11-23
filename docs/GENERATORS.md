@@ -139,7 +139,7 @@ A generator that carries on keeps what it was doing: a progression runs on acros
 
 ## Bypass Generators When
 
-Every generator's page ends with a section called Bypass Generators When, a table of statements about the registers. When one is true as a clip's pattern starts over, the notes of that pass go by the generator untouched, in every chain that names the generator. See [Conditional Execution](REGISTERS.md#conditional-execution).
+Every generator's page ends with a section called Bypass Generators When, a table of statements about the draws. When one is true as a clip's pattern starts over, the notes of that pass go by the generator untouched, in every chain that names the generator. See [Conditional Execution](DRAWS.md#conditional-execution).
 
 ## Rows of Steps
 

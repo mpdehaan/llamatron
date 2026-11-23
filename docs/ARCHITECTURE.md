@@ -35,7 +35,7 @@ erDiagram
     SET ||--o{ GROOVE : "names, beside the factory ones"
     SONG ||--o{ TRACK : "has, in Live's order"
     SONG ||--o{ SCENE : "plays, top to bottom"
-    SONG ||--|| REGISTERS : "has four: AX to DX"
+    SONG ||--|| DRAWS : "has eight: AD to HD"
     SONG }o--o| SCALE : "is in"
     SONG }o--|| GROOVE : "plays with, none by default"
     SCENE }o--o| SCALE : "may be in instead"
@@ -49,14 +49,14 @@ erDiagram
     CLIP }o--o| TRACK : "may grab notes from"
     CHAIN ||--o{ GENERATOR : "runs, in order"
     PATTERN ||--|{ STEP : "has"
-    STEP }o--o{ REGISTERS : "changes and uses"
+    STEP }o--o{ DRAWS : "takes and uses"
 ```
 
 Reading it: a song picks a scale, and a scene can pick another, so a clip's degrees become notes
 in its scene's scale or else the song's. A pattern belongs to no song, so the same riff can play in
 every song of the set, on any track, through any chain. A chain is a list of generators, each
-named once in the set and usable in any chain. Registers are four numbers a song's steps change
-and use as it plays, shared by every track. The time signature and the step size are set on the
+named once in the set and usable in any chain. Draws are eight short lists of numbers a song's
+steps take from as it plays, shared by every track. The time signature and the step size are set on the
 song and can be overridden on a pattern, and the tempo on a scene. A groove is a row of timing
 amounts that moves notes off the grid when a song is exported: the song chooses one, and a scene
 or a track can choose another or switch grooving off, the track's choice winning over the scene's.
@@ -73,7 +73,7 @@ or a track can choose another or switch grooving off, the track's choice winning
 2. **The song is played.** `engine/realizer` walks each scene and plays each clip slot's pattern as many
    times as it repeats, applying everything that changes the notes on the way: the scale, the
    track's transpose, probability, ratchets, ties, glide, play directions, grabs from other
-   tracks, registers, morphs and the clip's chain of generators. The result is a `Clip` of
+   tracks, draws, morphs and the clip's chain of generators. The result is a `Clip` of
    notes, chords and rests, each with an exact length. While a song plays, each of those is
    plain data, a tuple, since a song has thousands: the `Note`, `Chord` and `Rest` classes say
    the same thing wherever a clip is built or read by hand.
@@ -179,13 +179,13 @@ A few things the picture doesn't say:
 
 - `model` is the model of what a set file holds, and it's the only part that knows the
   file format. Everything else works with its objects. The set owns the shared sections and the
-  songs, and a song owns its tracks, scenes and registers, so a rename in either updates every
+  songs, and a song owns its tracks, scenes and draws, so a rename in either updates every
   reference, wherever it is.
 - `engine/realizer` is where the musical rules live. If you want to know what a tie or a ratchet
   does, this is the place, in `PatternPlayer` for one pass through a pattern and `ClipSlotPlayer`
   for one clip.
 - `generators` work on finished clips rather than patterns, so an arpeggiator doesn't care
-  whether its chords came from degrees, grabs or registers.
+  whether its chords came from degrees, grabs or draws.
 - `exporters` know nothing about patterns or scenes as the file has them: they only see the
   grid, which is why every output kind lays the scenes out the same way. Each kind is one class
   built on `Exporter` (`src/llamatron/exporters/exporter.py`), which holds where the files go and

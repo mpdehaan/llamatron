@@ -22,7 +22,6 @@ Below the settings, each row has a value for A and for B side by side, the one L
 
 | Row | What it does at each trigger |
 | --- | --- |
-| AX+= to DX+= | Adds to the register, so that `+Note`, `+Vel`, the statements about the registers and register binding all follow the drift. |
 | Vel+= | Added to every note's velocity, kept between 1 and 127. |
 | Prob ± | Added to every step's probability, from -100 to 100; a blank Probability counts as 100, so a negative amount brings in dropouts. |
 | Degree + | Moves every note along the scale, from -7 to 7. |

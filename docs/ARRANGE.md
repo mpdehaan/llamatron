@@ -78,10 +78,10 @@ The details are also where a cell's chains are edited. With the cursor on a trac
 
 ## Scene View
 
-`P` on a scene's name opens Scene View, a window over Arrange that lays out every note the scene plays, track by track, on one piano roll: each track in a colour of its own, the drum tracks in the lanes at the foot, the chord on each beat named above, and at the right each track's chains and settings, as the details view shows them. It opens on the patterns as written, before any generator, groove or register changes them, with a purple border.
+`P` on a scene's name opens Scene View, a window over Arrange that lays out every note the scene plays, track by track, on one piano roll: each track in a colour of its own, the drum tracks in the lanes at the foot, the chord on each beat named above, and at the right each track's chains and settings, as the details view shows them. It opens on the patterns as written, before any generator, groove or draw changes them, with a purple border.
 
 ![Scene View of the intro of edm_density, as written](screenshots/scene_view.svg)
 
-`V` switches to the notes as played, after every chain, groove, strum, shape and register, with a blue border, so that the two can be compared, showing one take of the song's random parts. The arrows move the cursor, and the line under the roll names the notes under it. `PgUp` and `PgDn` jump a bar, `-` and `=` make each step narrower or wider, and `[` and `]` scroll the tracks at the right. `P` or `ESC` closes it.
+`V` switches to the notes as played, after every chain, groove, strum, shape and draw, with a blue border, so that the two can be compared, showing one take of the song's random parts. The arrows move the cursor, and the line under the roll names the notes under it. `PgUp` and `PgDn` jump a bar, `-` and `=` make each step narrower or wider, and `[` and `]` scroll the tracks at the right. `P` or `ESC` closes it.
 
 ![Scene View of the same scene, as played](screenshots/scene_view_played.svg)

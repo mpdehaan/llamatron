@@ -11,7 +11,7 @@ llamatron examples/learning/08_tie.yml         # open a set file
 
 Start llamatron from the project folder for now. The Open page starts in `examples/` when the current folder has one, and new sets are saved into `songs/` there. Exports are written beside the set's file, wherever that is.
 
-A file holds a set of songs, like the songs of one concert. The patterns, scales, generators, chains, grooves and instruments belong to the set, and every song shares them; each song has its own tempo, scale, groove, tracks, registers and scenes.
+A file holds a set of songs, like the songs of one concert. The patterns, scales, generators, chains, grooves and instruments belong to the set, and every song shares them; each song has its own tempo, scale, groove, tracks, draws and scenes.
 
 [A video of moving around the tracker](https://www.youtube.com/watch?v=JAswLZ8CGzk) is on YouTube. The video was made with an early build, so some pages look different now, and the program will go on changing.
 
@@ -48,7 +48,7 @@ These hold on every page:
 - `Q` quits, from the main screen only. With unsaved changes it asks first, and `ENTER` quits without saving.
 - A cursor stops at the edges: holding an arrow down takes you to the end and no further.
 - `[` (dec) and `]` (inc) step any value: a number down and up, a cycle of choices back and forward, a gate shorter and longer, and on the piano roll they shrink and stretch the note under the cursor. `-`, `+` and `=` do the same, off the legend, and so do Left and Right on a settings page.
-- Anything that is on or off answers to `Space` and `ENTER` alike, shown as one key, `Space/ENTER`. A row with a short cycle of choices, such as Dot or Register +Note, goes to the next choice on either too.
+- Anything that is on or off answers to `Space` and `ENTER` alike, shown as one key, `Space/ENTER`. A row with a short cycle of choices, such as Dot or Note+=AD, goes to the next choice on either too.
 - Upper and lower case are the same key, and so are `Bksp` and `Delete`.
 - Nothing is saved or exported until you ask.
 

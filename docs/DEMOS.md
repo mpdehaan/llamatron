@@ -111,7 +111,7 @@ and each demo's notes say which one it used:
 - The Entertainer: the [Mutopia Project](https://www.mutopiaproject.org)'s typesetting of the
   1902 edition, which its typesetter placed in the public domain, at its tempo of 72.
 
-`tests/data/demo_sources/make_demos.py` wrote the first version of every demo but the registers, ties
+`tests/data/demo_sources/make_demos.py` wrote the first version of every demo but the ties
 and groove demos, which were written by hand, from notes written into it and, for The Entertainer,
 from `examples/midi/entertainer.mid`, which is kept with its LilyPond source among the MIDI files
 to import, so that nothing has to be downloaded again. Running it overwrites every

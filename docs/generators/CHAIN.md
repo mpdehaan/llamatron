@@ -23,7 +23,7 @@ Make a Chain on the Generators page with `A`, choosing Chain under the Chains he
 | `A` | Add a step: any generator but a Chain, made first on the Generators page |
 | `ENTER` | Change the step to another generator |
 | `C` | Copy the step |
-| `W` | Open the Chain's Bypass Generators When statements, which say when a pass goes by the whole Chain. See [Conditional Execution](../REGISTERS.md#conditional-execution) |
+| `W` | Open the Chain's Bypass Generators When statements, which say when a pass goes by the whole Chain. See [Conditional Execution](../DRAWS.md#conditional-execution) |
 | `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it |
 | `Bksp` | Remove it |
 | `N` | Rename the Chain, which updates every list that runs it |

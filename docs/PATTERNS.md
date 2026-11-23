@@ -91,7 +91,7 @@ Digits build up a number in a cell, so `1` then `2` makes 12. A new number start
 
 ### Steps, Rests and Beats
 
-A step with no degree or note is empty, which is a rest. The rows that only a note can hold, such as Octave, Velocity and Chord, show a light `/` on an empty step, and their keys leave the legend while the cursor is there. The rows a rest can hold, Tie, CC 1 to 4, Slide and every register row, stay open; Tie shows `/` on a step with a note, which can't take a tie.
+A step with no degree or note is empty, which is a rest. The rows that only a note can hold, such as Octave, Velocity and Chord, show a light `/` on an empty step, and their keys leave the legend while the cursor is there. The rows a rest can hold, Tie, CC 1 to 4, Slide, the Use Draws rows and the statements, stay open; Tie shows `/` on a step with a note, which can't take a tie.
 
 Every step lasts the pattern's step size, shown at the top with the number of steps. The header's second line shows the time signature the pattern is drawn in, the song's unless the pattern sets its own through `R` (Reconfigure). A step that starts a beat has a bold number and a double line down its left edge, so a 16-step pattern in 4/4 is marked at 1, 5, 9 and 13, and in 6/8 at 1, 7 and 13. The beat marking changes only what is drawn. A step with a note sounds for its gate, which can run on past later steps but stops at the end of the pattern; a new note gets the song's default octave and a blank gate, which lasts one step.
 
@@ -130,11 +130,12 @@ These keys work throughout the rows view:
 
 ### Munge
 
-`M` (Munge) opens a list of ways to change the whole pattern at once, under nine headings that open and close. `Space` or `ENTER` on a heading opens it, `PgUp` and `PgDn` jump between headings, and the headings left open stay open the next time. Typing searches every choice, whatever its heading. A choice whose name ends in `(cursor)` works around the step the cursor is on, `(N)` asks for a number, and `(pattern)` asks for another pattern. Every choice is one change to undo. In the examples, a pattern's steps are written A B C D E F G H and the cursor is on C.
+`M` (Munge) opens a list of ways to change the whole pattern at once, under eight headings that open and close. `Space` or `ENTER` on a heading opens it, `PgUp` and `PgDn` jump between headings, and the headings left open stay open the next time. Typing searches every choice, whatever its heading. A choice whose name ends in `(cursor)` works around the step the cursor is on, `(N)` asks for a number, and `(pattern)` asks for another pattern. Every choice is one change to undo. In the examples, a pattern's steps are written A B C D E F G H and the cursor is on C.
 
 | Heading | Choice | What it does |
 | --- | --- | --- |
 | Clear | clear all except pitch | Blank everything but which notes play: Degree, Octave, #/b and the chord rows stay, and every note goes back to one step long |
+| Clear | clear conditions | Blank every step's Stop When, Restart When and Mute When |
 | Clear | clear chords | Blank every chord, with its tension, scale and inversion, leaving the note each chord was built on |
 | Clear | clear every Nth step (N) | Make a rest of every step that far apart, to thin a busy line: with 4, the 4th, the 8th and so on |
 | Clear | crop (cursor) | Remove every step after the cursor's step |
@@ -151,9 +152,6 @@ These keys work throughout the rows view:
 | Pitch | invert melody (cursor) | Mirror every note around the cursor's note: a note 2 scale steps above it ends 2 below, so a line that rose now falls |
 | Pitch | randomize pitches | Shuffle which pitch each note plays; the rhythm stays |
 | Pitch | reverse pitches | The pitches play in backwards order on the same rhythm |
-| Registers | clear register conditions | Blank every step's Stop When, Restart When and Mute When |
-| Registers | clear register modifications | Blank the rows that set a register and that add to one; the rows that use a register stay |
-| Registers | smooth AX=, smooth BX=, smooth CX=, smooth DX= | On the row that sets the register, fill the blank steps between two values from a straight line between them |
 | Reorder | pivot (cursor) | Swap what's before the cursor with what's after it |
 | Reorder | randomize all | Shuffle the steps into a random order. The shuffle is an ordinary edit, not seeded, so every randomize is different |
 | Reorder | randomize after (cursor), randomize before (cursor) | Shuffle the cursor's step and the steps after it, or before it, among themselves |
@@ -184,9 +182,8 @@ Basics and Timing start open, and the editor remembers which sections are open, 
 - **Keyswitch:** a row for each slot of the instrument's Keyswitch Map;
 - **Advanced:** Probability, Ratchet, Ratchet Offset, Grab;
 - **CCs:** CC 1 to CC 4, Slide;
-- **Set Registers:** the rows that change the registers;
-- **Use Registers:** the rows that use the registers;
-- **Stop When, Restart When, Mute When:** a statement about the registers on each step, which stops the clip, starts the pattern over or mutes the step.
+- **Use Draws:** the rows that use the draws, shown only for the draws that hold a value in the current song;
+- **Stop When, Restart When, Mute When:** a statement about the draws on each step, which stops the clip, starts the pattern over or mutes the step.
 
 ### Basic and Timing Rows
 
@@ -218,7 +215,7 @@ Ties win over the gate: a note with ties after it sounds to the end of its ties 
 - Ties go in the order the steps play, so with a play direction a tie holds whichever note played just before it.
 - A tie on the first step of a pattern holds the last note of the pass before it, across repeats and loops of the same clip, which a gate can't do, since gates stop at the end of the pattern. At the very start of a clip nothing comes before the tie, so the tie is silent, including at the start of a new scene.
 - A tie holds a whole chord, or the last slice of a ratchet, and glide on the note acts at the end of the held note.
-- A tied step can still send CC values and change registers, like any empty step. During a morph, a tie on the first step follows the clip's own pattern.
+- A tied step can still send CC values and take draws, like any empty step. During a morph, a tie on the first step follows the clip's own pattern.
 
 ### Glide and Probability
 
@@ -331,66 +328,54 @@ CC rows and Slide can be set on a rest, so a sweep can carry on through silence.
 
 In a Live set, each CC becomes a clip envelope, and Live draws a slide as a straight line. In MIDI files, a slide is sent as a new value every 1/64 note.
 
-## Set Registers and Use Registers
+## Use Draws
 
-The song has four registers, AX, BX, CX and DX: numbers the whole song shares, which pattern steps change and use as the song plays. Their settings are on the [Registers](REGISTERS.md) page. They're for changes that build up from bar to bar, like a note that climbs each time a riff comes round, or a fade.
+The song has eight draws, AD to HD: short lists of numbers the whole song shares, set on the [Draws](DRAWS.md) page. Each time a
+step uses a draw it takes the draw's next number and adds it to the step's note or velocity, so one pattern can play differently
+on every pass, or climb a little each time a riff comes round.
 
-The `Set Registers` section holds the rows that change the registers, and `Use Registers` the rows that use them.
-
-![The pattern editor on the register rows](screenshots/pattern_editor_registers.svg)
-
-![The pattern editor on the register change rows](screenshots/pattern_editor_register_changes.svg)
+The `Use Draws` section has three rows for each draw that holds a value in the current song, and no section at all while every
+draw is empty:
 
 | Row | Values | What it does |
 | --- | --- | --- |
-| AX+Note to DX+Note | `+`, `-` or blank | `+` moves the note up the scale by the register's value and `-` moves it down; blank leaves it. `Space` or `ENTER` cycles the three, `[` (dec) and `]` (inc) step back and forward, and `Bksp` clears. Not in drum patterns. Can be set on an empty step, where nothing moves. |
-| AX+Vel to DX+Vel | `+`, `-` or blank | `+` adds the register's value to the velocity and `-` takes it off, keeping the velocity between 1 and 127; blank leaves it. The same keys. Can be set on an empty step, where nothing changes. |
-| AX= to DX= | blank, or a value | Sets the register to this value when the step plays, before anything adds to it, held between the register's Minimum and Maximum; blank leaves it. `]` (inc) on a blank step gives the register's Minimum in the current song, `[` (dec) on the Minimum gives blank again, and `Bksp` clears. |
-| AX+= to DX+= | minus to plus the register's Allowed Inc Max | Adds this much to the register when the step plays, or takes it away. `[` (dec) and `]` (inc) stop at the register's Allowed Inc Max on the [Registers](REGISTERS.md) page, 20 unless changed, the narrowest of the songs that play the pattern. |
+| Note+=AD | `+`, `-` or blank | `+` moves the note up the scale by the draw's next value and `-` moves it down; blank leaves it. Not in drum patterns. |
+| Vel+=AD | `+`, `-` or blank | `+` adds the draw's next value to the velocity and `-` takes it off, keeping the velocity between 1 and 127. |
+| Reset AD | `●` or blank | Sends the draw back to its first slot before the step draws. |
 
-How they work:
-
-- A step sets the registers, then adds to them, then uses them, so a step's own `=` and `+=` already change its note.
-- Every step sets and adds, even an empty one or one that probability or a Mute When statement silences, so a change can go on a step with no note. Putting it on the last step of a pattern means the first time through plays as written.
-- A step that uses several registers adds all their values together, each added or subtracted as its row says. A register's value can be negative too, so `-` on a register holding -3 moves the note up three.
-- A ratcheted step adds once, and every slice uses the same value.
-- The registers are shared by every track, so one track can change a register that others use. Within a scene, steps are taken in time order, and steps at the same moment in track order. Only one track adding to a register usually makes the most sense.
-- Values carry on from scene to scene, unless a scene resets them (see [Scenes](SCENES.md)).
-- A morph's target pattern uses the registers but doesn't add to them.
-- A note pushed out of the MIDI range moves to the nearest octave that fits.
+`Space` or `ENTER` cycles `+`, `-` and blank, `[` (dec) and `]` (inc) step back and forward, and `Bksp` clears. Every row can be
+set on an empty step, and erasing a note leaves the step's Use Draws rows as they are. A step draws from a draw once, however many
+of its rows use it, and draws whether its note sounds or not. [Draws](DRAWS.md#use-draws) says more.
 
 ## Stop When, Restart When and Mute When
 
-A drummer who plays the fill only in every fourth bar, a riff that stumbles and starts again, a phrase that breaks off halfway through its third time: each is a player deciding, at one moment in the bar, by a count kept in the head. These three sections give every step of a pattern that decision, with a register as the count.
+A drummer who plays the fill only in every fourth bar, a riff that stumbles and starts again, a phrase that breaks off halfway through its third time: each is a player deciding, at one moment in the bar, by a count kept in the head. These three sections give every step of a pattern that decision, with a draw as the count.
 
-Each section holds one statement about the registers on each step, written down the step's column in five rows, `c1` to `c5`. The five rows are the five parts of a statement of [Conditional Execution](REGISTERS.md#conditional-execution), stood on end:
+Each section holds one statement about the draws on each step, written down the step's column in five rows, `c1` to `c5`. The five rows are the five parts of a statement of [Conditional Execution](DRAWS.md#conditional-execution), stood on end:
 
-| Row | Holds | Example: `AX % 4 = 3` |
+| Row | Holds | Example: `AD % 4 = 3` |
 | --- | --- | --- |
-| c1 | The register, or blank for no statement | `AX` |
+| c1 | The draw, or blank for no statement | `AD` |
 | c2 | The operator: `<`, `<=`, `=`, `>=`, `>`, `odd`, `even`, `!=`, `+`, `-`, `%`, `*` or `/` | `%` |
-| c3 | A number or a register | `4` |
+| c3 | A number or a draw | `4` |
 | c4 | After a sum, how the result is compared | `=` |
-| c5 | After a sum, the number or the register the result is compared with | `3` |
+| c5 | After a sum, the number or the draw the result is compared with | `3` |
 
-`AX >= 3` takes the first three rows and `AX odd` the first two; the rows a statement has no use for show a light `/`. `ENTER` chooses a part from a list, `Space` goes to the next choice or number, `[` (dec) and `]` (inc) step, and `Bksp` takes the step's whole statement away. A step with no note can hold a statement too.
+`AD >= 3` takes the first three rows and `AD odd` the first two; the rows a statement has no use for show a light `/`. `ENTER` chooses a part from a list, `Space` goes to the next choice or number, `[` (dec) and `]` (inc) step, and `Bksp` takes the step's whole statement away. A step with no note can hold a statement too.
 
 | Section | When the step's statement is true |
 | --- | --- |
 | Stop When | The clip is done, as if it had played every repeat: the step and everything after it are not played, and the clip's follow action takes over. The clip plays again the next time its scene or another clip launches it. |
 | Restart When | The pattern starts over from its first step, and the pass counts as one of the clip's repeats. A looping clip runs on, in passes of uneven length. The first step cannot hold one. |
-| Mute When | The step does not sound. The step still sets and adds to the registers. |
+| Mute When | The step does not sound. The step still takes its draws. |
 
 How they work:
 
-- A step's statements are read as the step is reached, before the step's own `=` and `+=`. A Stop When on the first step therefore ends the clip exactly on the edge of a pass.
+- A step's statements are read as the step is reached, after the step takes its draws, so a statement sees the value its own step drew. A Stop When on the first step ends the clip exactly on the edge of a pass.
 - When several are true on one step, Stop When acts first, then Restart When, then Mute When.
-- A step that stops the clip or starts the pattern over never makes its own register changes.
 - A looping clip whose pattern holds a Stop When ends when the statement comes true, and its scene can then end. An export gives up on a statement that never comes true after 9999 passes.
 
-In an example scenario, a pattern of 16 steps adds 1 to AX on step 8 and holds Stop When `AX >= 3` on step 9, and the scene sets AX to 0. The clip plays the pattern twice, plays the first 8 steps a third time, and is done: exactly two and a half times.
-
-The register change rows take digits, `[` (dec) and `]` (inc), or `ENTER` to type a negative number, and `Bksp` clears them, and every register row can be set on an empty step: no register setting is ever locked out for want of a note, and erasing a note leaves the step's register rows as they are. The rows that use registers are toggled with `Space` or `ENTER`.
+In an example scenario, a made-up draw AD holds the slots 1, 2 and 3 and moves forward, and the scene resets it. A pattern of 16 steps marks Vel+=AD on step 8, a rest, which takes AD's next value and has no note to change, and holds Stop When `AD >= 3` on step 9. The clip plays the pattern twice, plays the first 8 steps a third time, and is done: exactly two and a half times.
 
 ## Play Directions
 

@@ -56,7 +56,7 @@ Octaves are shown as Live labels them unless the Octave labels setting says othe
 
 ![The Songs page](screenshots/songs.svg)
 
-Press `S` on the main screen to open the Songs page. The set's songs are listed with their tempo, scale, and number of tracks and scenes, and `●` marks the current song: the song Registers and Arrange edit and `Ctrl+X` exports. Each song has its own tracks, scenes and registers, while all of them share the set's patterns, scales, generators, chains and grooves, so the same pattern can play in every song.
+Press `S` on the main screen to open the Songs page. The set's songs are listed with their tempo, scale, and number of tracks and scenes, and `●` marks the current song: the song Draws and Arrange edit and `Ctrl+X` exports. Each song has its own tracks, scenes and draws, while all of them share the set's patterns, scales, generators, chains and grooves, so the same pattern can play in every song.
 
 | Key | What it does |
 | --- | --- |
@@ -64,7 +64,7 @@ Press `S` on the main screen to open the Songs page. The set's songs are listed 
 | `ENTER` | Make it current and open its settings |
 | `A` | Add a song, asking for its name |
 | `N` | Rename it. The song's name and the set's are independent. |
-| `C` | Copy it, with its tracks, scenes and registers, named with the next free number: a copy of `verse` is `verse-2`, and a copy of `verse-2` is `verse-3`. Every copy on every page is named this way. |
+| `C` | Copy it, with its tracks, scenes and draws, named with the next free number: a copy of `verse` is `verse-2`, and a copy of `verse-2` is `verse-3`. Every copy on every page is named this way. |
 | `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it |
 | `S` | Sort the list by name |
 | `Bksp` | Delete it, after asking. The set always keeps at least one song. |
@@ -95,4 +95,4 @@ Press `S` on the main screen to open the Songs page. The set's songs are listed 
 
 Sets are saved as YAML, and each file records the version of llamatron that saved it, which the About dialog also shows. The format is mainly for llamatron to read, but it stays readable so that sets can be compared in version control, and the files in `examples/` show every part of it.
 
-The shared sections come first, `scales`, `patterns`, the generators, `chains` and `grooves`, and then `songs` holds each song by name, with its tempo, scale, groove, registers, tracks and scenes. Patterns are stored the way the editor shows them, with one list per row, so a change in the tracker makes a small change to the file. Every setting has a default, so a file can leave out anything it doesn't need, and a file written by an older version still loads: a file saved before llamatron 1.0.39 held one song and becomes a set of one song named after the file, and a file saved before llamatron 1.0.30, which stored Live's octave numbering, is moved up when it loads and written the new way when saved.
+The shared sections come first, `scales`, `patterns`, the generators, `chains` and `grooves`, and then `songs` holds each song by name, with its tempo, scale, groove, draws, tracks and scenes. Patterns are stored the way the editor shows them, with one list per row, so a change in the tracker makes a small change to the file. Every setting has a default, so a file can leave out anything it doesn't need, and a file written by an older version still loads: a file saved before llamatron 1.0.39 held one song and becomes a set of one song named after the file, and a file saved before llamatron 1.0.30, which stored Live's octave numbering, is moved up when it loads and written the new way when saved.

@@ -69,7 +69,7 @@ A Restart When or Stop When statement on a step of any pattern in the list acts 
 
 ## Morphing
 
-Morph to and Morph direction appear only when Repeat is above 1, and setting Repeat back to 1 removes the morph. The pattern being morphed to is looped or cut to the clip's length, and follows the clip's Direction when the clip has one; otherwise it follows its own pattern's direction, so a clip set to `eitherway` can finish its morph playing the second pattern backwards. A pattern with no notes morphs too, carrying its CC values and register changes across. The pattern being morphed to never grabs, and uses the registers without adding to them.
+Morph to and Morph direction appear only when Repeat is above 1, and setting Repeat back to 1 removes the morph. The pattern being morphed to is looped or cut to the clip's length, and follows the clip's Direction when the clip has one; otherwise it follows its own pattern's direction, so a clip set to `eitherway` can finish its morph playing the second pattern backwards. A pattern with no notes morphs too, carrying its CC values across. The pattern being morphed to never grabs.
 
 ## Grabbing Notes
 

@@ -253,7 +253,8 @@ each bar, though the line itself never changes.
 
 An acid house line played the whole way through, whose notes lengthen from short blips into
 long, gliding, joined notes over each scene while its filter opens, with no gate changed. The demo sets Articulate on the scenes, on the line itself and as a generator that bounces between short
-and long every bar, and a register bound to CC 74 opens the filter as the notes lengthen.
+and long every bar, and a copy of the line with a CC 74 row opens the filter in the build, the
+drop and the peak.
 
 [`examples/learning/13_acid_articulate.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/13_acid_articulate.yml) · A minor · 120 BPM · 3:00 · 9 scenes · 6 tracks
 
@@ -360,7 +361,7 @@ that changing one pattern changes every part that follows it.
 A gospel song in A flat where the bass, the piano and the lead hold no notes at all. The organ
 holds one seventh chord a bar, moved through the changes by Chords generators, and every
 other part is Grab steps that take the root of the organ's chord and build on it: the bass an
-octave down, the piano's chords from its Chord row, and the lead three ways, from the register
+octave down, the piano's chords from its Chord row, and the lead three ways, from a draw's
 rows, from an arpeggiator and from climbing and falling ratchets. The last chorus goes up a half
 step, and every part follows.
 
@@ -510,7 +511,7 @@ Draws in eleven scenes, every note written as the same C in a chromatic scale, s
 count-in plays C, C#, D and D# from a draw that moves forward. Four scenes deal twelve-tone rows from a serial draw, which plays
 every pitch of the octave once before any comes again: plainly, passed between two instruments, with rests and leaps, and in
 pairs. Four scenes over a bass add two draws on alternate steps, add them together, pull one against the other, and add all
-three. The last two scenes gate notes by draws: a melody that grows as a register counts the bars, and a bell whose rhythm
+three. The last two scenes gate notes by draws: a melody that grows as a draw counts the bars, and a bell whose rhythm
 comes from a draw that its own condition redraws.
 
 [`examples/learning/28_draws.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/28_draws.yml) · C chromatic · 108 BPM · 2:58 · 11 scenes · 6 tracks

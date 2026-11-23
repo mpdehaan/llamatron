@@ -12,7 +12,7 @@ The demo songs in the gospel style. Each is described below, with the features i
 A gospel song in A flat where the bass, the piano and the lead hold no notes at all. The organ
 holds one seventh chord a bar, moved through the changes by Chords generators, and every
 other part is Grab steps that take the root of the organ's chord and build on it: the bass an
-octave down, the piano's chords from its Chord row, and the lead three ways, from the register
+octave down, the piano's chords from its Chord row, and the lead three ways, from a draw's
 rows, from an arpeggiator and from climbing and falling ratchets. The last chorus goes up a half
 step, and every part follows.
 

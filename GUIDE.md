@@ -2,7 +2,7 @@
 
 llamatron is a tracker for the terminal: a composing environment where songs are built from shared patterns, scales and generators, arranged in scenes, and played. It plays in real time through MIDI hardware, software synthesizers or a DAW, or through FluidSynth with no setup at all, and exports to Ableton Live sets, MIDI files and WAV audio, so that a song can be finished in any DAW.
 
-A file holds a set of songs, like the songs of one concert. The patterns, scales, generators, chains, grooves and instruments belong to the set, and every song shares them; each song has its own tempo, scale, groove, tracks, registers and scenes.
+A file holds a set of songs, like the songs of one concert. The patterns, scales, generators, chains, grooves and instruments belong to the set, and every song shares them; each song has its own tempo, scale, groove, tracks, draws and scenes.
 
 ## Intro
 
@@ -84,7 +84,6 @@ Each object of a set has a page in the tracker and a page here, with its setting
 | The arrangement | `A` | [Arrange](docs/ARRANGE.md) |
 | Clips | `A`, then a clip | [Clips](docs/CLIPS.md) |
 | Scales | `Z` | [Scales](docs/SCALES.md) |
-| Registers | `R` | [Registers](docs/REGISTERS.md) |
 | Draws | `D` | [Draws](docs/DRAWS.md) |
 | Grooves | `V` | [Grooves](docs/GROOVES.md) |
 

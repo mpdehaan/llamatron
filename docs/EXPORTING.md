@@ -25,7 +25,7 @@ Every export is named `<set>_<song>`, so `songs/foo.yml` with a song called `bar
 ## Export Contents
 
 An export plays the song as written, every scene once through from the top, as Live's Arrangement View
-lays it out, with every generator, groove, register and random choice played into the notes. Every export
+lays it out, with every generator, groove, draw and random choice played into the notes. Every export
 is a new take of the song's random choices.
 
 Some things belong to real-time playback alone and no export reads them: instruments' devices, a clip's

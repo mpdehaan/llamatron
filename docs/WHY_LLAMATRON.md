@@ -63,7 +63,7 @@ The pattern editor is a Cirklon-style step grid: one row per property, one colum
 - Ties, which hold a note across the steps that follow it.
 - A text interface that is quick to move around in. The Cirklon's screens put a lot of information in a small space and reach any of it in a few presses, and llamatron's pages are built the same way.
 
-The Cirklon's accumulators are the model for llamatron's registers, four numbers the whole song shares, which any step can set, add to or subtract from, and use to move a note along the scale or change a velocity. They work a little differently from accumulators, being song-wide rather than per pattern and kept from scene to scene unless a scene resets them, but they are very much inspired by them. llamatron takes them further: a step can sound only when a condition between two registers holds, a register can say what happens past its limits (stop, start over, wrap around or land somewhere at random), an arpeggiator and a drift can add to them too, and a register can drive a track's velocity or one of its CC lanes directly.
+The Cirklon's accumulators inspired llamatron's draws, eight short lists of numbers the whole song shares, from which any step can take the next number to move a note along the scale or change a velocity. They work differently from accumulators, being song-wide rather than per pattern and dealt from a list rather than counted, in any play direction or as a serial row that uses every value once before any comes again, and kept from scene to scene unless a scene resets them. A step can also stop its clip, start its pattern over or stay silent when a condition about a draw holds.
 
 Where the Cirklon's patterns are arranged by a song mode, llamatron's are arranged on the Arrange page's grid of scenes and tracks, which comes from Live (see the text interface, below).
 
@@ -75,7 +75,7 @@ Slide on a CC row ramps a value to the next one, as the Monomachine's parameter 
 
 ## Controlled Chance
 
-llamatron has many more ways to introduce randomness than a DAW's clip editor: probability per step, random and brownian play directions, random arpeggiator orders, drifts that wander between two versions of a part, registers that can land on a random value, and chains of generators that stack all of these on a clip. Every one of them is seeded. A song with no seed renders a new take each time. A song with a seed renders the same take every time, and changing the seed gives a different one that can be kept. While a song plays in real time, one take is kept for the whole play, so that an edit changes only what was edited.
+llamatron has many more ways to introduce randomness than a DAW's clip editor: probability per step, random and brownian play directions, random arpeggiator orders, drifts that wander between two versions of a part, draws dealt in a random order, and chains of generators that stack all of these on a clip. Every one of them is seeded. A song with no seed renders a new take each time. A song with a seed renders the same take every time, and changing the seed gives a different one that can be kept. While a song plays in real time, one take is kept for the whole play, so that an edit changes only what was edited.
 
 Randomness never changes a length. A note that probability drops becomes a rest of the same length, and a random direction plays the same number of steps, so the arrangement stays as written while the notes vary.
 
