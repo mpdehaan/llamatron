@@ -16,7 +16,8 @@ cd "$(git rev-parse --show-toplevel)"
 # What a fixer changes is changed in the working tree, so the check stops for it to be looked at and staged again.
 # Only the Python files changed since the last commit are rewritten, every other file having passed when it was committed.
 before=$(git diff --stat)
-changed=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep '\.py$' | sort -u | while read -r file; do [ -f "$file" ] && echo "$file"; done)
+# A deleted file is left out, with an if rather than &&, so that a deleted file last in the list does not end the check.
+changed=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep '\.py$' | sort -u | while read -r file; do if [ -f "$file" ]; then echo "$file"; fi; done)
 if [ -n "$changed" ]; then
     # The constants fixer may add an import, which the sorter then puts in its place.
     internal_tools/constants_by_module.sh --write --only $changed > /dev/null
