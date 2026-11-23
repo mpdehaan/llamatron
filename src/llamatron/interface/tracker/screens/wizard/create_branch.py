@@ -5,10 +5,12 @@
 
 from llamatron.interface.forms.nodes import Button, Field
 from llamatron.interface.forms.text import clock
-from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.user_strings import errors, labels, legends, marks
 from llamatron.wizards.create_song.wizard_choices import genre_title
+
+# An empty line of text, or a value that shows nothing.
+NO_TEXT = ''
 
 
 class CreateBranch(Branch):
@@ -20,7 +22,7 @@ class CreateBranch(Branch):
         return labels.MSG_WIZARD_CREATE_BRANCH
 
     def note(self):
-        return drawing.NOTHING if self.get_choices().is_ready() else marks.MSG_WIZARD_NEEDS_GENRE
+        return NO_TEXT if self.get_choices().is_ready() else marks.MSG_WIZARD_NEEDS_GENRE
 
     def refusal(self):
         return None if self.get_choices().is_ready() else errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE

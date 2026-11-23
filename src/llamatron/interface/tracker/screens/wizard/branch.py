@@ -10,9 +10,11 @@ revise how the wizard is organized).
 """
 
 from llamatron.interface.forms.nodes import ChoiceField, Field, NumberField
-from llamatron.interface.tracker import drawing
 from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import labels, legends, marks
+
+# An empty line of text, or a value that shows nothing.
+NO_TEXT = ''
 
 # Where a picker opens, and what stepping picks, before anything is chosen.
 FIRST_CHOICE = 0
@@ -51,7 +53,7 @@ class Branch:
 
     def note(self):
         """Return a few words after the branch's name in the tree, such as what it waits for, or nothing."""
-        return drawing.NOTHING
+        return NO_TEXT
 
     def summary(self):
         """Return in a few words what the branch has chosen, which the branch over it lists beside the branch's name, or None for a branch with nothing to say."""

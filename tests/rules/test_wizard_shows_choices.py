@@ -13,8 +13,8 @@ import pathlib
 import re
 import unittest
 
+from llamatron.interface.pages import kit_fields, section_fade, section_own_fields
 from llamatron.interface.tracker.screens import wizard
-from llamatron.interface.tracker.screens.shared import kit_fields, section_fade, section_own_fields
 from llamatron.wizards.create_song.band_choices import BandChoices
 from llamatron.wizards.create_song.form_choices import FormChoices
 from llamatron.wizards.create_song.guitarist_choices import GuitaristChoices

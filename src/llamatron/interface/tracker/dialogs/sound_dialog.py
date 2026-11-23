@@ -20,14 +20,14 @@ the sound the dialog opened on with the note shown. The dialog then answers (val
 
 from rich.text import Text
 
-from llamatron.interface.forms import moves
+from llamatron.interface.forms import moves, note_names
 from llamatron.interface.forms.cursor import Cursor
-from llamatron.interface.tracker import drawing, keybindings, keys as keys_values, note_names
+from llamatron.interface.forms.note_names import note_shown, note_typed
+from llamatron.interface.tracker import drawing, keybindings, keys as keys_values
 from llamatron.interface.tracker.cursor import completed, places_matching
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.drawing import cursor_mark, fit, legend, Style
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.note_names import note_shown, note_typed
 from llamatron.user_strings import errors, marks
 
 # How many rows show at once, the list scrolling to keep the cursor's in view, so that the dialog fits an 80 by 24 console.

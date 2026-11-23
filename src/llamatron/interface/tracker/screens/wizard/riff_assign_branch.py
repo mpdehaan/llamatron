@@ -12,10 +12,12 @@ Players offers the player in each kind of section.
 import functools
 
 from llamatron.interface.forms.nodes import Field
-from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.screens.wizard.riffs_branch import RiffsBranch
 from llamatron.model.file.checks import listed
 from llamatron.user_strings import errors, labels, legends, marks, messages
+
+# An empty line of text, or a value that shows nothing.
+NO_TEXT = ''
 
 # Where the picker of riffs to give opens.
 FIRST_CHOICE = 0
@@ -49,7 +51,7 @@ class RiffAssignBranch(RiffsBranch):
             columns = marks.MSG_WIZARD_RIFF_KNOWN_ROW.format(player=labels.MSG_WIZARD_RIFF_FOR_COLUMN, width=self.for_width(), used=labels.MSG_WIZARD_RIFF_PLAYED_IN_COLUMN)
             fields.append(self.player_heading(role=role, count=len(known), columns=columns))
             fields += [self.known_field(role=role, riff=riff) for riff in known]
-            fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: drawing.NOTHING, enter=functools.partial(self.give, role), enter_what=legends.What.ADD))
+            fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: NO_TEXT, enter=functools.partial(self.give, role), enter_what=legends.What.ADD))
         return fields
 
     def for_width(self):
@@ -84,7 +86,7 @@ class RiffAssignBranch(RiffsBranch):
 
         def given(place):
             page.choosing(lambda riff: choices.get_riffs().give_riff(role=role, riff=riff))(offered[place])
-            page.app.open_field_sections.add(title)
+            page.open_section(title)
             page.say(messages.MSG_WIZARD_RIFF_GIVEN.format(player=title, riff=offered[place]))
         page.ask_choice(title=labels.MSG_WIZARD_GIVE_RIFF_TITLE.format(player=title), options=offered, current=FIRST_CHOICE, then=given)
 

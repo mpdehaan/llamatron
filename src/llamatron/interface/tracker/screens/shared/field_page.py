@@ -183,6 +183,14 @@ class FieldPage(Page):
     def toggle_section(self, label):
         self.app.open_field_sections ^= {label}
 
+    def is_section_open(self, label):
+        """Return whether a section, by its heading's label, has been opened this session."""
+        return label in self.app.open_field_sections
+
+    def open_section(self, label):
+        """Open a section by its heading's label, for the rest of the session."""
+        self.app.open_field_sections.add(label)
+
     def jump_section(self, direction):
         """Move the cursor to the next section's heading, or the one before, staying put past the last or the first."""
         places = [place for place, field in enumerate(self.shown_fields()) if isinstance(field, Heading)]

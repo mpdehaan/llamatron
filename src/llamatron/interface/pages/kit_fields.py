@@ -7,7 +7,7 @@
 import functools
 
 from llamatron.interface.forms.nodes import Cells, ChoiceField, Field, NumberField, Toggle
-from llamatron.interface.tracker.note_names import note_shown
+from llamatron.interface.forms.note_names import note_shown
 from llamatron.model.schema import limits
 from llamatron.user_strings import labels, legends, marks
 from llamatron.wizards.create_song import wizard_limits, wizard_names

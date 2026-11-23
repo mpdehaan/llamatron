@@ -13,10 +13,12 @@ it yet: who knows it is chosen on Riff Assign, and where it is played on Section
 import functools
 
 from llamatron.interface.forms.nodes import Field
-from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.model.file.checks import listed
 from llamatron.user_strings import labels, legends, marks, messages
+
+# An empty line of text, or a value that shows nothing.
+NO_TEXT = ''
 
 
 class RiffsBranch(Branch):
@@ -43,14 +45,14 @@ class RiffsBranch(Branch):
             riffs = choices.get_riffs().riffs_for(role)
             fields.append(self.player_heading(role=role, count=len(riffs), columns=labels.MSG_WIZARD_RIFF_COLUMNS))
             fields += [self.riff_field(riff) for riff in riffs]
-            fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: drawing.NOTHING, enter=functools.partial(self.add_riff, role), enter_what=legends.What.ADD))
+            fields.append(Field(label=marks.MSG_ADD_ROW_MARK, value=lambda: NO_TEXT, enter=functools.partial(self.add_riff, role), enter_what=legends.What.ADD))
         return fields
 
     def player_heading(self, *, role, count, columns):
         """Return a player's heading: how many it holds while closed, and the columns' names while open."""
         page = self.get_page()
         title = self.get_choices().player(role).title()
-        return page.heading(label=title, is_set=lambda: bool(count), said=lambda: columns if title in page.app.open_field_sections and count else marks.MSG_WIZARD_COUNT_SHOWN.format(count=count))
+        return page.heading(label=title, is_set=lambda: bool(count), said=lambda: columns if page.is_section_open(title) and count else marks.MSG_WIZARD_COUNT_SHOWN.format(count=count))
 
     def riff_field(self, riff):
         """Return a riff's row: its bars and the kinds of section it is used in, marked when its notes were edited; ENTER opens its
@@ -104,7 +106,7 @@ class RiffsBranch(Branch):
     def show(self, *, role, riff):
         """Open a player's heading and put the cursor on a riff under it."""
         page = self.get_page()
-        page.app.open_field_sections.add(self.get_choices().player(role).title())
+        page.open_section(self.get_choices().player(role).title())
         page.go_to_field(riff)
 
     def rename(self, riff):

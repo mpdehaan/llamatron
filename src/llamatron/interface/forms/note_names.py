@@ -4,14 +4,13 @@
 
 """A MIDI note as its name and octave, shown and typed: C3 is note 36, as a drum pattern writes its notes."""
 
-from llamatron.interface.tracker import keys
 from llamatron.model.values import note as note_values
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import marks
 
 LOWEST_NOTE = 0
 HIGHEST_NOTE = 127
-SHARP = keys.SHARP_CHARACTER
+SHARP = '#'
 FLAT = 'b'
 HALF_STEPS_OF_LETTER = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
 HALF_STEPS_OF_MARK = {SHARP: 1, FLAT: -1}

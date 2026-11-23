@@ -6,6 +6,7 @@
 from unittest import mock
 
 from llamatron.caching.memory import StaleAnswer
+from llamatron.interface.forms.note_names import note_shown, note_typed
 from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.app import LlamatronApp
@@ -16,7 +17,6 @@ from llamatron.interface.tracker.dialogs.row_dialog import RowDialog
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.note_names import note_shown, note_typed
 from llamatron.interface.tracker.renderers.remarks import remark_lines
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.set.main_page import MainPage

@@ -5,12 +5,14 @@
 
 from llamatron.interface.forms.nodes import ChoiceField, Field
 from llamatron.interface.forms.text import clock
-from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.model.values import note
 from llamatron.user_strings import labels, legends, marks, messages
 from llamatron.wizards.create_song import wizard_limits
 from llamatron.wizards.create_song.wizard_choices import genre_names, genre_title
+
+# An empty line of text, or a value that shows nothing.
+NO_TEXT = ''
 
 # How the Change Genre question words each kind of thing lost and kept.
 LOST_SHOWN = {
@@ -41,9 +43,9 @@ class GenreBranch(Branch):
             return
         said = [messages.MSG_CHANGE_GENRE_LOST, *(LOST_SHOWN[kind].format(count=count) for kind, count in lost.items())]
         if kept:
-            said += [drawing.NOTHING, messages.MSG_CHANGE_GENRE_KEPT, *(KEPT_SHOWN[kind].format(count=count) for kind, count in kept.items())]
+            said += [NO_TEXT, messages.MSG_CHANGE_GENRE_KEPT, *(KEPT_SHOWN[kind].format(count=count) for kind, count in kept.items())]
         page = self.get_page()
-        page.confirm(title=messages.MSG_CHANGE_GENRE_TITLE, lines=[*said, drawing.NOTHING, messages.MSG_CHANGE_GENRE_QUESTION], starts_on_no=True,
+        page.confirm(title=messages.MSG_CHANGE_GENRE_TITLE, lines=[*said, NO_TEXT, messages.MSG_CHANGE_GENRE_QUESTION], starts_on_no=True,
                      then=lambda: page.choosing(choices.set_genre)(genre))
 
     def fields(self):

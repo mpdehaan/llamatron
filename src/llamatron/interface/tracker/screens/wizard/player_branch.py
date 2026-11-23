@@ -8,7 +8,7 @@ import functools
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, gauge_shown, NumberField
 from llamatron.interface.pages.asking import RowAsked
-from llamatron.interface.tracker.screens.shared.kit_fields import KitFields
+from llamatron.interface.pages.kit_fields import KitFields
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.music_theory.composing import notation
 from llamatron.user_strings import labels, legends, marks, messages
