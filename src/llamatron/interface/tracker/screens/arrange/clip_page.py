@@ -9,6 +9,7 @@ import functools
 from rich.text import Text
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, NameField, NumberField, Toggle
+from llamatron.interface.forms.tab_box import TabBox
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Style
@@ -16,7 +17,6 @@ from llamatron.interface.tracker.screens.shared.arrange_tabs import ClipTabs
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.listening import listen, stop_listening
 from llamatron.interface.tracker.screens.shared.shared import columns, scene_name
-from llamatron.interface.tracker.screens.shared.tab_box import TabBox
 from llamatron.interface.tracker.text import clock, sorted_names
 from llamatron.interface.tracker.uses import loop_error_lines
 from llamatron.model.objects import clip_slot as clip_slot_values

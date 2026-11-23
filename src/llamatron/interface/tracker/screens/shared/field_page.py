@@ -8,19 +8,21 @@ import functools
 from rich.text import Text
 
 from llamatron.caching.cached import cached_while
+from llamatron.interface.forms import tab_box as tab_box_nodes
 from llamatron.interface.forms.nodes import Button, Cells, Field, Heading, NameField, NumberField
+from llamatron.interface.forms.tab_box import TabRow
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.cursor import Cursor, key_between, NoSuchPlace
 from llamatron.interface.tracker.drawing import cursor_mark, Style
 from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.renderers import tab_box as tab_box_drawing
 from llamatron.interface.tracker.renderers.fields import field_lines
-from llamatron.interface.tracker.screens.shared import tab_box as tab_box_values
+from llamatron.interface.tracker.renderers.tab_box import box_lines
 from llamatron.interface.tracker.screens.shared.drawn_lines import DrawnLines
 from llamatron.interface.tracker.screens.shared.kept_fields import fields_said
 from llamatron.interface.tracker.screens.shared.page import Page
-from llamatron.interface.tracker.screens.shared.tab_box import box_lines, TabRow
 from llamatron.model.objects import setlist
 from llamatron.user_strings import errors, labels as labels_text, legends, marks
 
@@ -167,7 +169,7 @@ class FieldPage(Page):
             return keys
         keys.append(self.bind(self.KEYS.TAB_PAGES, action=self.page_through_tabs))
         here = self.cursor.get_place() - self.box_place() - 1
-        if not isinstance(row, Cells) and tab_box_values.has_columns_beside(spots=self.box_spots(), here=here):
+        if not isinstance(row, Cells) and tab_box_nodes.has_columns_beside(spots=self.box_spots(), here=here):
             keys.append(self.bind(self.KEYS.ACROSS, action=self.move_across))
         return keys
 
@@ -180,7 +182,7 @@ class FieldPage(Page):
         if not self.box_field_count():
             self.cursor.set_place(row)
             return
-        self.cursor.set_place(row + 1 + tab_box_values.spot_like(spots=self.box_spots(), spot=spot))
+        self.cursor.set_place(row + 1 + tab_box_nodes.spot_like(spots=self.box_spots(), spot=spot))
 
     def is_open(self, heading):
         # A heading that starts open is closed by the same toggle that opens another.
@@ -296,19 +298,19 @@ class FieldPage(Page):
             return
         self.move_in_order(name)
         if name == Key.UP and place > row + count and self.cursor.get_place() == row + count:
-            self.cursor.set_place(row + 1 + tab_box_values.spot_from_below(self.box_spots()))
+            self.cursor.set_place(row + 1 + tab_box_nodes.spot_from_below(self.box_spots()))
 
     def move_inside_box(self, *, name, row, here):
         """Move with Up or Down from the field at a place among the chosen tab's: to the field it leads to, the row of tabs, or
         what is under the box, staying put where nothing is."""
         spots = self.box_spots()
         if name == Key.DOWN:
-            there = tab_box_values.spot_below(spots=spots, here=here)
+            there = tab_box_nodes.spot_below(spots=spots, here=here)
         else:
-            there = tab_box_values.spot_above(spots=spots, here=here)
-        if there == tab_box_values.ON_TAB_ROW:
+            there = tab_box_nodes.spot_above(spots=spots, here=here)
+        if there == tab_box_nodes.ON_TAB_ROW:
             self.cursor.set_place(row)
-        elif there == tab_box_values.BELOW_BOX:
+        elif there == tab_box_nodes.BELOW_BOX:
             below = row + len(spots) + 1
             if below < len(self.shown_fields()):
                 self.cursor.set_place(below)
@@ -319,7 +321,7 @@ class FieldPage(Page):
         """Move with Left or Right inside the tab box, to the field beside in the column to that side, stopping at the sides."""
         row = self.box_place()
         here = self.cursor.get_place() - row - 1
-        self.cursor.set_place(row + 1 + tab_box_values.spot_beside(spots=self.box_spots(), here=here, direction=direction))
+        self.cursor.set_place(row + 1 + tab_box_nodes.spot_beside(spots=self.box_spots(), here=here, direction=direction))
 
     def box_place(self):
         """Return the place of the row of tabs among the fields shown, or None on a page with no tab box."""
@@ -341,7 +343,7 @@ class FieldPage(Page):
     def box_spots(self):
         """Return where each field of the chosen tab is drawn, as the box was last drawn."""
         box = self.tab_box()
-        return tab_box_values.spots_of(page=self, tab=box.tabs[self.chosen_tab(box)], width=self.box_width)
+        return tab_box_drawing.spots_of(page=self, tab=box.tabs[self.chosen_tab(box)], width=self.box_width)
 
     def move_in_order(self, name):
         """Move with Up or Down through the fields in order, then the buttons."""
@@ -505,7 +507,7 @@ class FieldPage(Page):
         count = len(box.tabs[chosen].every_field())
         inside = None
         if cursor == place:
-            inside = tab_box_values.ON_TAB_ROW
+            inside = tab_box_nodes.ON_TAB_ROW
         elif place < cursor <= place + count:
             inside = cursor - place - 1
         self.box_width = width or BOX_WIDTH

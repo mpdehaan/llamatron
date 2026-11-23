@@ -7,16 +7,16 @@
 from rich.text import Text
 from typing import NamedTuple
 
+from llamatron.interface.forms.tab_box import Tab
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.cursor import Cursor, key_between, place_of
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.new_pattern_dialog import NewPatternDialog
 from llamatron.interface.tracker.drawing import Align, Style
-from llamatron.interface.tracker.screens.shared import tab_box
+from llamatron.interface.tracker.renderers import tab_box as tab_box_drawing
 from llamatron.interface.tracker.screens.shared.listening import pattern_listen_keys
 from llamatron.interface.tracker.screens.shared.named_list_page import NamedListPage
-from llamatron.interface.tracker.screens.shared.tab_box import Tab
 from llamatron.interface.tracker.text import clock
 from llamatron.interface.tracker.themes import text_style, theme_of
 from llamatron.model.objects.naming import copy_name, is_taken, name_order, new_name
@@ -180,10 +180,10 @@ class PatternsPage(NamedListPage):
 
     def body(self, *, width, height):
         """Return the row of tabs over a box holding the chosen tab's list, as a settings page's tab box is drawn."""
-        rows = super().body(width=tab_box.inner_width(width), height=height - tab_box.TAB_ROW_LINES - INSIDE_ABOVE - INSIDE_BELOW - 1)
+        rows = super().body(width=tab_box_drawing.inner_width(width), height=height - tab_box_drawing.TAB_ROW_LINES - INSIDE_ABOVE - INSIDE_BELOW - 1)
         lines = [Text(drawing.NOTHING)] * INSIDE_ABOVE + rows + [Text(drawing.NOTHING)] * INSIDE_BELOW
         tabs = [Tab(label=self.tab_label(tab)) for tab in self.tabs()]
-        return tab_box.boxed_tabs(tabs=tabs, chosen=self.tabs().index(self.chosen()), width=width, here=self.on_tabs, lines=lines)
+        return tab_box_drawing.boxed_tabs(tabs=tabs, chosen=self.tabs().index(self.chosen()), width=width, here=self.on_tabs, lines=lines)
 
     def first_pattern_place(self):
         """Return the place of the chosen tab's first pattern, or its top row when it has none."""

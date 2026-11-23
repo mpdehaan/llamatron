@@ -370,7 +370,7 @@ MSG_ACCENT_ROW_LABEL = 'Accent'
 MSG_READY_BARS_TITLE = 'Ready-made bar'
 MSG_SOURCE_TRACK_LABEL = 'Source track'
 MSG_ROOT_IN_BASS_LABEL = 'Keep the root in the bass'
-# interface/tracker/screens/shared/tab_box.py: the row of tabs, as the cursor finds it.
+# interface/forms/tab_box.py: the row of tabs, as the cursor finds it.
 MSG_TABS_LABEL = 'Tabs'
 # interface/tracker/screens/arrange/clip_page.py, the track's and scene's pages and the File/Global page: their tabs, and the Settings tab's columns.
 MSG_SETTINGS_TAB = 'Settings'

@@ -9,6 +9,7 @@ clip's or a track's page both draw them."""
 import functools
 
 from llamatron.interface.forms.nodes import ChoiceField, Field, gauge_shown, NumberField, Toggle
+from llamatron.interface.forms.tab_box import Tab, TabColumn, without_headings
 from llamatron.interface.tracker.screens.shared.drift_values import drift_value_rows
 from llamatron.interface.tracker.screens.shared.guitar_bar_editor import guitar_bar_field
 from llamatron.interface.tracker.screens.shared.octave_field import octave_field
@@ -19,7 +20,6 @@ from llamatron.interface.tracker.screens.shared.section_table import section_tab
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.shared import numbers_text
 from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
-from llamatron.interface.tracker.screens.shared.tab_box import Tab, TabColumn, without_headings
 from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import file_format

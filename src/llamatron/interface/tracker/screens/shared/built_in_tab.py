@@ -6,9 +6,9 @@ built-in the clip or the track holds, the page that shows the tab asking for eve
 generator's progression, opens that part's page on the built-in."""
 
 from llamatron.interface.forms.nodes import Button
+from llamatron.interface.forms.tab_box import TabColumn
 from llamatron.interface.tracker.screens.shared.generator_statements_page import GeneratorStatementsPage
 from llamatron.interface.tracker.screens.shared.shared import scene_name
-from llamatron.interface.tracker.screens.shared.tab_box import TabColumn
 from llamatron.interface.tracker.screens.shared.view_fields import ViewFields
 from llamatron.model.file.checks import listed
 from llamatron.model.schema import generator_plugins

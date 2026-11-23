@@ -9,151 +9,44 @@ the height of its tallest tab, so that choosing another tab moves nothing below 
 A tab of a built-in generator shows ● after its name when the generator is on, and ○, dim, when it is off. Where the tabs are
 wider than the box, < and > stand at the ends for the tabs hidden that way."""
 
-from dataclasses import dataclass, field as dataclass_field
 from rich.text import Text
 
-from llamatron.interface.forms.nodes import Field, Heading
+from llamatron.interface.forms import tab_box as tab_box_nodes
+from llamatron.interface.forms.tab_box import Spot
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.renderers.fields import field_lines
-from llamatron.user_strings import labels, marks
+from llamatron.user_strings import marks
 
 # Space between columns side by side, and the most lines of remarks a tab shows.
 COLUMN_GAP = drawing.INDENT
+COLUMN_GAP = drawing.INDENT
+MOST_REMARKS = 3
 MOST_REMARKS = 3
 # The box's sides and what stands between a side and the settings.
 SIDES = 2
+SIDES = 2
+INSET = drawing.SPACE
 INSET = drawing.SPACE
 # The tab row's lines: the tabs' tops, their names, and the box's top edge, which the tab row's names are on.
 TAB_ROW_LINES = 3
+TAB_ROW_LINES = 3
 NAME_LINE = 1
-# Where the cursor is, among the chosen tab's fields, when it is on the row of tabs.
-ON_TAB_ROW = -1
-# Where a move inside the box leads when it leaves the box downward, to what is under the box.
-BELOW_BOX = -2
-# The band of the fields across a tab's top, such as Enabled and Mode, above the columns' first band.
 TOP_BAND = -1
 # The blank line kept under the tallest tab's last line, so that nothing crowds the box's bottom edge.
 SPACE_UNDER = 1
 
 
-@dataclass(slots=True, kw_only=True)
-class TabColumn:
-    """A column of a tab: its heading, drawn bold above it, or None for none, its fields, and whether it starts a band of its
-    own under the columns before it, as a generator's Restart does, whatever room is left beside them."""
-
-    heading: object
-    fields: list
-    under: bool = False
-
-
-@dataclass(slots=True, kw_only=True)
-class Spot:
-    """Where a field of a tab is drawn: its band of columns side by side (TOP_BAND for the fields across the top), its column
-    among the band's, counted from the left, and the line its cursor stands on, counted from the top of its column."""
-
-    band: int
-    column: int
-    line: int
-
-
-@dataclass(slots=True, kw_only=True)
-class Tab:
-    """One tab of a tab box: its name, the fields across its top, its columns, whether the built-in generator it shows is on,
-    True or False, or None for a tab that shows no generator, and its remarks, dim lines under its settings."""
-
-    label: str
-    top: list = dataclass_field(default_factory=list)
-    columns: list = dataclass_field(default_factory=list)
-    on: object = None
-    remarks: list = dataclass_field(default_factory=list)
-
-    def every_field(self):
-        """Return the tab's fields in the order the cursor goes through them: across the top, then column by column."""
-        fields = list(self.top)
-        for column in self.columns:
-            fields += column.fields
-        return fields
-
-    def shown_name(self):
-        """Return the tab's name as its tab shows it, with the mark of its generator being on or off where it shows one."""
-        if self.on is None:
-            return self.label
-        mark = marks.MSG_TOGGLE_ON
-        if not self.on:
-            mark = marks.MSG_FIELD_TOGGLE_OFF
-        return marks.MSG_TAB_WITH_MARK.format(name=self.label, mark=mark)
-
-
-@dataclass(slots=True, kw_only=True)
-class TabBox:
-    """A page's tab box among its fields: its tabs, in order. The page shows the row of tabs as a field the cursor stops on,
-    then the selected tab's fields."""
-
-    tabs: list
-    label: str = labels.MSG_TABS_LABEL
-
-    IS_TAB_BOX = True
-    IS_TAB_ROW = False
-
-    def tab_named(self, name):
-        """Return the place of the tab of a name, or the first's where none has it."""
-        for place, tab in enumerate(self.tabs):
-            if tab.label == name:
-                return place
-        return 0
-
-    def place_holding(self, label):
-        """Return the place of the first tab holding a field of a label, or None where none does."""
-        for place, tab in enumerate(self.tabs):
-            if any(field.label == label for field in tab.every_field()):
-                return place
-        return None
-
-
-@dataclass(slots=True, kw_only=True)
-class TabRow(Field):
-    """The row of tabs, where the cursor stops: Left and Right, and [ and ], choose the tab before or after, stopping at the ends."""
-
-    IS_TAB_ROW = True
-
-    def row_keys(self, page):
-        """Return the keys that choose another tab."""
-        return [page.bind(page.KEYS.ALONG_TABS, action=page.step_tab)]
-
-
-def columns_of_sections(fields):
-    """Return the columns of a run of sections, each heading's fields a column under the heading's name, and any fields before
-    the first heading a column with no heading."""
-    columns = []
-    current = TabColumn(heading=None, fields=[])
-    for field in fields:
-        if isinstance(field, Heading):
-            if current.fields:
-                columns.append(current)
-            current = TabColumn(heading=field.label, fields=[])
-        else:
-            current.fields.append(field)
-    if current.fields:
-        columns.append(current)
-    return columns
-
-
-def without_headings(fields):
-    """Return a section's fields without its heading, since a tab shows its settings open, in columns of their own."""
-    return [field for field in fields if not isinstance(field, Heading)]
-
-
 def box_lines(*, page, box, chosen, cursor, width):
     """Return the box's lines, and the place among them of the line the cursor is on, or None where it is elsewhere. cursor is
-    where the cursor is: ON_TAB_ROW, the place of the field it is on among the chosen tab's fields, or None outside the box."""
+    where the cursor is: tab_box_nodes.ON_TAB_ROW, the place of the field it is on among the chosen tab's fields, or None outside the box."""
     inner = width - SIDES - len(INSET) * SIDES
     contents = [_tab_contents(page=page, tab=tab, inner=inner, cursor=None) for tab in box.tabs]
     lines, selected = _tab_contents(page=page, tab=box.tabs[chosen], inner=inner, cursor=cursor)
     height = max(len(content[0]) for content in contents) + SPACE_UNDER
     lines += [Text(drawing.NOTHING)] * (height - len(lines))
-    result = [*boxed_tabs(tabs=box.tabs, chosen=chosen, width=width, here=cursor == ON_TAB_ROW, lines=lines)]
-    if cursor == ON_TAB_ROW:
+    result = [*boxed_tabs(tabs=box.tabs, chosen=chosen, width=width, here=cursor == tab_box_nodes.ON_TAB_ROW, lines=lines)]
+    if cursor == tab_box_nodes.ON_TAB_ROW:
         return result, NAME_LINE
     if selected is None:
         return result, None
@@ -179,70 +72,12 @@ def inner_width(width):
 def spots_of(*, page, tab, width):
     """Return where each of a tab's fields is drawn in a box of a width, as Spots, in the order of the tab's fields."""
     inner = width - SIDES - len(INSET) * SIDES
-    spots = [Spot(band=TOP_BAND, column=0, line=place) for place in range(len(tab.top))]
+    spots = [Spot(band=tab_box_nodes.TOP_BAND, column=0, line=place) for place in range(len(tab.top))]
     drawn = [_column_lines(page=page, column=column, inner=inner, cursor=None)[0] for column in tab.columns]
     for band_place, band in enumerate(_bands_of(widths=[_column_width(lines) for lines in drawn], inner=inner, under=_columns_under(tab.columns))):
         for column_place, place in enumerate(band):
             spots += _column_spots(page=page, column=tab.columns[place], band=band_place, column_place=column_place, inner=inner)
     return spots
-
-
-def spot_below(*, spots, here):
-    """Return where Down leads from the field at a place: the next field down its column; at a column's foot, the first field of
-    the column below in the next band, the one in the same place or else the last; under the last band, BELOW_BOX."""
-    spot = spots[here]
-    later = [place for place in _column_places(spots=spots, band=spot.band, column=spot.column) if place > here]
-    if later:
-        return later[0]
-    bands = [band for band in _bands_in(spots) if band > spot.band]
-    if not bands:
-        return BELOW_BOX
-    return _column_places(spots=spots, band=bands[0], column=_column_near(spots=spots, band=bands[0], column=spot.column))[0]
-
-
-def spot_above(*, spots, here):
-    """Return where Up leads from the field at a place: the field above in its column; at a column's head, the last field of the
-    column above in the band before, the one in the same place or else the last; above the first band, ON_TAB_ROW."""
-    spot = spots[here]
-    earlier = [place for place in _column_places(spots=spots, band=spot.band, column=spot.column) if place < here]
-    if earlier:
-        return earlier[-1]
-    bands = [band for band in _bands_in(spots) if band < spot.band]
-    if not bands:
-        return ON_TAB_ROW
-    return _column_places(spots=spots, band=bands[-1], column=_column_near(spots=spots, band=bands[-1], column=spot.column))[-1]
-
-
-def spot_beside(*, spots, here, direction):
-    """Return where Left or Right leads from the field at a place: the field of the column beside, in the same band, whose line is
-    nearest, the upper of two as near; at the band's side, the same place."""
-    spot = spots[here]
-    places = _column_places(spots=spots, band=spot.band, column=spot.column + direction)
-    if not places:
-        return here
-    return min(places, key=lambda place: (abs(spots[place].line - spot.line), spots[place].line))
-
-
-def spot_like(*, spots, spot):
-    """Return the place of the field standing where a spot of another tab stood: in the same band and column, on the nearest
-    line; else the column of that place in the nearest band that has one; else the first field."""
-    for band in sorted(_bands_in(spots), key=lambda band: abs(band - spot.band)):
-        same = _column_places(spots=spots, band=band, column=spot.column)
-        if same:
-            return min(same, key=lambda place: (abs(spots[place].line - spot.line), spots[place].line))
-    return 0
-
-
-def has_columns_beside(*, spots, here):
-    """Return whether the field at a place shares its band with another column, so that Left and Right have somewhere to go."""
-    spot = spots[here]
-    return any(other.band == spot.band and other.column != spot.column for other in spots)
-
-
-def spot_from_below(spots):
-    """Return where Up from under the box leads: the last field of the first column of the last band."""
-    last_band = _bands_in(spots)[-1]
-    return _column_places(spots=spots, band=last_band, column=0)[-1]
 
 
 def _column_spots(*, page, column, band, column_place, inner):
@@ -255,24 +90,6 @@ def _column_spots(*, page, column, band, column_place, inner):
         spots.append(Spot(band=band, column=column_place, line=line + field.SELECTED_LINE))
         line += len(field_lines(field, page=page, here=False, label_width=0, width=inner))
     return spots
-
-
-def _column_places(*, spots, band, column):
-    """Return the places of the fields of a column of a band, top to bottom."""
-    return [place for place, spot in enumerate(spots) if spot.band == band and spot.column == column]
-
-
-def _bands_in(spots):
-    """Return the bands the fields stand in, top to bottom."""
-    return sorted({spot.band for spot in spots})
-
-
-def _column_near(*, spots, band, column):
-    """Return the column of a band in a column's place, or the band's last where it has fewer."""
-    columns = sorted({spot.column for spot in spots if spot.band == band})
-    if column in columns:
-        return column
-    return columns[-1]
 
 
 def _tab_contents(*, page, tab, inner, cursor):

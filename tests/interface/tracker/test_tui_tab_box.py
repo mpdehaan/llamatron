@@ -16,10 +16,10 @@ from llamatron.interface.forms import statement_rows
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.renderers import tab_box as tab_box_drawing
 from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
-from llamatron.interface.tracker.screens.shared import tab_box
 from llamatron.interface.tracker.screens.shared.chords_editor import ChordsEditor
 from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
 from llamatron.model.objects import conditions
@@ -230,7 +230,7 @@ class TestTheBoxesLook(UITest):
         lines = self.text().splitlines()
         tabs_tops = next(place for place, line in enumerate(lines) if line.startswith(Box.TOP_LEFT))
         bottom = next(place for place, line in enumerate(lines) if line.startswith(Box.BOTTOM_LEFT))
-        return lines[tabs_tops + tab_box.TAB_ROW_LINES:bottom]
+        return lines[tabs_tops + tab_box_drawing.TAB_ROW_LINES:bottom]
 
     def inside_of_the_box(self):
         return [line.strip(Box.BAR + drawing.SPACE) for line in self.lines_in_the_box()]
@@ -252,7 +252,7 @@ class TestTheBoxesLook(UITest):
         await self.show_the_clip()
         self.page = self.app.screen
         tab = next(tab for tab in self.page.tab_box().tabs if tab.label == guitarify_strings.MSG_TAB_LABEL)
-        spots = tab_box.spots_of(page=self.page, tab=tab, width=self.page.box_width)
+        spots = tab_box_drawing.spots_of(page=self.page, tab=tab, width=self.page.box_width)
         fields = tab.every_field()
         restart = spots[[field.label for field in fields].index(labels.MSG_RESTART_LABEL)]
         strum = spots[len(tab.top)]

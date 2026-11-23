@@ -5,4 +5,5 @@
 
 - nodes: the fields a settings page is made of.
 - statement_rows: the lines of a table of statements, Bypass When's.
+- tab_box: a settings page's tab box, its tabs and columns, and where the cursor goes between its fields.
 """

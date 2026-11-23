@@ -8,6 +8,7 @@ import functools
 from rich.text import Text
 
 from llamatron.interface.forms.nodes import Field, NameField, NumberField, Toggle
+from llamatron.interface.forms.tab_box import Tab, TabBox, TabColumn
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.document_parts import built_in_place
 from llamatron.interface.tracker.drawing import Style
@@ -18,7 +19,6 @@ from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.interface.tracker.screens.shared.octave_field import octave_field
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.interface.tracker.screens.shared.tab_box import Tab, TabBox, TabColumn
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits
 from llamatron.model.schema.file_format import Section, TrackSetting

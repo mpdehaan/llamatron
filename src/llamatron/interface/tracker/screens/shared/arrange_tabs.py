@@ -8,11 +8,11 @@ The Scene page and the clip page share the Reset Draws tab."""
 import functools
 
 from llamatron.interface.forms.nodes import Field, Toggle
+from llamatron.interface.forms.tab_box import columns_of_sections, Tab, TabColumn, without_headings
 from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
 from llamatron.interface.tracker.screens.shared.built_in_tab import BuiltInTab
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
-from llamatron.interface.tracker.screens.shared.tab_box import columns_of_sections, Tab, TabColumn, without_headings
 from llamatron.interface.tracker.screens.shared.velocity_fields import velocity_field, velocity_ramp_sections, VelocityValues
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, shape_setting

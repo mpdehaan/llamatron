@@ -5,4 +5,5 @@
 
 - fields: a settings page's fields.
 - statement_rows: a table of statements as a grid.
+- tab_box: a tab box, its row of tabs over the box and its columns, and where each field lands in it.
 """
