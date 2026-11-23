@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The song wizard's Subgenre branch, under Genre: the subgenre and the settings that are the subgenre's own."""
+"""The subgenre and the settings that are the subgenre's own, which the Genre tab shows under the genre."""
 
 from llamatron.interface.forms.nodes import ChoiceField, NumberField
 from llamatron.interface.pages.wizard.branch import Branch

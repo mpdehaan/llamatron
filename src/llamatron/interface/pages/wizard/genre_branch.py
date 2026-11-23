@@ -1,11 +1,13 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The wizard's Genre branch: the genre and the subgenre, which must be chosen, then the key, the tempo and the song's name, which arrive filled in."""
+"""The wizard's Genre tab: the genre and the subgenre, which must be chosen, with the subgenre's own settings, then the key, the
+scale, the meter, the length and the song's name, which arrive filled in: one page, as the subgenre is a choice within the genre."""
 
 from llamatron.interface.forms.nodes import ChoiceField, Field
 from llamatron.interface.forms.text import clock
 from llamatron.interface.pages.wizard.branch import Branch
+from llamatron.interface.pages.wizard.subgenre_branch import SubgenreBranch
 from llamatron.model.values import note
 from llamatron.user_strings import labels, legends, marks, messages
 from llamatron.wizards.create_song import wizard_limits
@@ -54,6 +56,7 @@ class GenreBranch(Branch):
         genres = genre_names()
         fields = [
             self.choice_from_nothing(label=labels.MSG_GENRE_LABEL, values=genres, names=[genre_title(genre) for genre in genres], current=choices.get_genre(), set_value=self.set_genre),
+            *SubgenreBranch(page=page).fields(),
         ]
         if choices.is_ready():
             fields += [

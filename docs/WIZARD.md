@@ -18,19 +18,23 @@ wizard will get a page of its own.
 
 ## Wizard Layout
 
-The tree at the left lists the wizard's panels, and the settings of the panel
-under the cursor show at the right. Up and Down move through the tree, Left
-and Right close and open a panel that has panels under it, `ENTER` or Tab
-moves into the settings, and `ESC` or Tab moves back to the tree. `L` (listen)
-plays what the panel under the cursor would make, a tune, a hook, a player or
-a section, through FluidSynth. `ESC` in the tree closes the wizard, and asks
-first.
+The wizard is a row of tabs, Genre, Band, Composition, Form and Apply, over a
+box holding the tab chosen, with `< Back` and `Next >` buttons under it, which
+open the tab before and after; on Apply, the Apply button takes Next's place.
+Tab goes between the row of tabs and the box, and `PgUp` and `PgDn` choose
+the tab before or after. A tab with parts lists them at the left of the box,
+its own settings first: Up and Down move through the list, `ENTER` or Right
+moves into the settings of the part under the cursor, at the right, and `ESC`
+or Left moves back. A tab that waits for the genre and the subgenre is dim and
+says so in its box. `L` (listen) plays what the part under the cursor would
+make, a tune, a hook, a player or a section, through FluidSynth. `ESC` outside
+the settings closes the wizard, and asks first.
 
 ## Genre
 
-The Genre panel comes first, since every other panel starts from what the
-genre usually does. Choosing a genre and then, on the Subgenre panel under
-Genre in the tree's list, a subgenre fills in the key, the scale, the tempo,
+The Genre tab comes first, since every other tab starts from what the genre
+usually does. Choosing a genre and then, on the same tab, a subgenre fills in
+the key, the scale, the tempo,
 the meter, the band and the form with what that kind of song usually has. Each
 can then be changed, and the panel shows how long the song will play.
 
@@ -54,7 +58,7 @@ lines.
 
 ## Players
 
-Each player in the band has a panel under Band in the tree. Plays chooses the
+Each player in the band has a row in the Band tab's list. Plays chooses the
 kind of part the player plays, such as a chiming arpeggio or strummed chords,
 and Sound the instrument. Comes in and Lays out say when the player joins the
 song and when the player rests, as a real player waits for the second verse or
@@ -281,7 +285,7 @@ The list at the bottom says what the plan gives each section.
 
 ## Sections
 
-Each section has a panel under Form in the tree. On a section, `I` (insert)
+Each section has a row in the Form tab's list. On a section, `I` (insert)
 adds a section before it, `A` (add) adds one at the end, `C` (copy) copies it,
 `Bksp` (delete) removes it and `M` (move) carries it to another place. The
 section's settings choose its kind, how many bars it lasts and its energy, and

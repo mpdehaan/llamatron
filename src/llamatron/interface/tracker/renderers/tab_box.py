@@ -281,7 +281,7 @@ def _joint(*, place, chosen, last, at_right):
 def _tabs_shown(*, tabs, chosen, width):
     """Return the names of the tabs that fit, each with whether it is drawn dim, < and > standing first and last for the tabs hidden
     that way, and the place of the chosen tab among them."""
-    names = [(tab.shown_name(), tab.on is False) for tab in tabs]
+    names = [(tab.shown_name(), tab.is_dim()) for tab in tabs]
     first = chosen
     last = chosen
     while True:

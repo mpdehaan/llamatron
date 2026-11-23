@@ -44,13 +44,15 @@ class Spot:
 @dataclass(slots=True, kw_only=True)
 class Tab:
     """One tab of a tab box: its name, the fields across its top, its columns, whether the built-in generator it shows is on,
-    True or False, or None for a tab that shows no generator, and its remarks, dim lines under its settings."""
+    True or False, or None for a tab that shows no generator, its remarks, dim lines under its settings, and whether it isn't
+    ready yet, as a song wizard's tab before a genre is chosen, which draws it dim."""
 
     label: str
     top: list = dataclass_field(default_factory=list)
     columns: list = dataclass_field(default_factory=list)
     on: object = None
     remarks: list = dataclass_field(default_factory=list)
+    not_ready: bool = False
 
     def every_field(self):
         """Return the tab's fields in the order the cursor goes through them: across the top, then column by column."""
@@ -58,6 +60,10 @@ class Tab:
         for column in self.columns:
             fields += column.fields
         return fields
+
+    def is_dim(self):
+        """Return whether the tab's name is drawn dim: a generator's that is off, or a tab not ready yet."""
+        return self.on is False or self.not_ready
 
     def shown_name(self):
         """Return the tab's name as its tab shows it, with the mark of its generator being on or off where it shows one."""

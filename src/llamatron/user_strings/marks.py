@@ -381,8 +381,6 @@ MSG_STROKE_MARKS = {
 # interface/tracker/screens/wizard/wizard_page.py and the branches beside it
 MSG_WIZARD_CHOOSE = '(choose)'
 MSG_WIZARD_NEEDS_GENRE = '(genre?)'
-MSG_WIZARD_BRANCH_OPEN = '▾'
-MSG_WIZARD_BRANCH_CLOSED = '▸'
 MSG_WIZARD_EDITED_BRANCH = '◀'
 MSG_WIZARD_TEMPO_SHOWN = '{tempo}  (suggested {low} to {high})'
 MSG_WIZARD_KEY_SHOWN = '{root} {scale}'

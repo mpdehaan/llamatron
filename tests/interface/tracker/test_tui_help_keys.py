@@ -18,9 +18,12 @@ Where a page takes typed text, in a list's search and the Description page's tex
 character is bound, so only the named keys bound there count: otherwise any letter would pass.
 """
 
+import functools
 import inspect
+import random
 import re
 import unittest
+from unittest import mock
 
 from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, guitarify as guitarify_plugin, timing as timing_plugin
 from llamatron.engine.generators.timing import parts as timing_parts, strings as timing_strings, view as timing_view
@@ -37,6 +40,7 @@ from llamatron.interface.tracker.screens.set.song_page import SongPage
 from llamatron.interface.tracker.screens.set.songs_page import SongsPage
 from llamatron.interface.tracker.screens.shared.list_page import ListPage
 from llamatron.user_strings import help as help_text, labels, legends
+from llamatron.wizards.create_song.wizard_choices import WizardChoices
 from tests.support import ui_testing
 from tests.support.key_map import KeyMap, should_write, write_key_map, written_key_map
 from tests.support.ui_testing import key_of, leaf_pages, UITest
@@ -123,6 +127,9 @@ def keys_named(text):
 def vars_of(kind):
     """Return everything a class of interface/tracker/keybindings.py holds, its own and what it inherits."""
     return [value for _, value in inspect.getmembers(kind)]
+# The name of the wizard's choices' method that draws the seed, and the seed the tour draws from.
+DRAW_SEED = 'draw_seed'
+TOUR_SEED = 1
 
 
 class TestKeysNamedInHelp(unittest.TestCase):
@@ -151,6 +158,12 @@ class KeyTour(UITest):
         self.strays = set()
         self.clashes = set()
         self.key_map = KeyMap()
+        # The song wizard draws a new seed each time it opens, so that every song it makes differs; the tour draws from a fixed
+        # one, so that two runs plan the same song and the wizard's panels, and so the keys and fields found, are the same.
+        seeded = functools.partialmethod(WizardChoices.draw_seed, dice=random.Random(TOUR_SEED))
+        patcher = mock.patch.object(WizardChoices, DRAW_SEED, seeded)
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def note_rules(self, page):
         """Remember every binding here that isn't one of the class it was bound for, and every key that two bindings have at once."""
@@ -221,6 +234,49 @@ class KeyTour(UITest):
             await self.press(Key.SPACE)
             if len(self.app.open_sections) < opened:
                 await self.press(Key.SPACE)
+
+    async def tour_the_wizard(self):
+        """Note the song wizard's keys at each kind of place: the row of tabs on each tab, the Genre tab's fields with a genre and
+        a subgenre chosen, so that every field shows, each row of every tab's list, a section picked up and its settings, and the
+        buttons under the box."""
+        await self.press(keybindings.MainPage.WIZARD)
+        wizard = self.app.screen
+        more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
+        self.note()
+        await self.press(keybindings.WizardPage.INTO_BOX)
+        await self.select_field(labels.MSG_GENRE_LABEL)
+        await self.press(more)
+        await self.select_field(labels.MSG_WIZARD_SUBGENRE_LABEL)
+        await self.press(more)
+        for label in [field.label for field in wizard.shown_fields() if field.enter or field.adjust]:
+            await self.select_field(label)
+            self.note()
+        await self.press(keybindings.WizardPage.TO_TREE)
+        for _ in wizard.panels.roots()[1:]:
+            await self.press(Key.RIGHT)
+            self.note()
+            if wizard.lists_parts():
+                await self.press(keybindings.WizardPage.INTO_BOX)
+                await self.note_every_row()
+                await self.press(keybindings.WizardPage.TO_TABS)
+        # The Form tab's first section, which has a list's keys; then the section picked up, and its settings.
+        await self.press(Key.LEFT, keybindings.WizardPage.INTO_BOX, Key.DOWN)
+        await self.press(keybindings.WizardPage.MOVE)
+        self.note()
+        await self.press(keybindings.WizardPage.DROP, keybindings.WizardPage.INTO_FIELDS)
+        self.note()
+        await self.press(keybindings.WizardPage.TO_TREE, *[Key.DOWN] * len(wizard.rows()))
+        self.note()
+        await self.press(keybindings.WizardPage.TO_TABS, keybindings.WizardPage.CLOSE, *ui_testing.ANSWER_YES)
+
+    async def note_every_row(self):
+        """Note the keys on each row of the wizard's list for the chosen tab, from its head to its foot."""
+        wizard = self.app.screen
+        first, end = wizard.tab_rows()
+        for _ in range(first, end):
+            self.note()
+            if wizard.tree_place < end - 1:
+                await self.press(Key.DOWN)
 
     async def tour(self):
         """Open every page, each walked on the way back out, so that a walk never leaves the cursor where the next key needs it."""
@@ -355,33 +411,7 @@ class KeyTour(UITest):
         await self.press(Key.ENTER)
         await self.press(Key.ESCAPE)
         await self.walk()
-        # The song wizard: its tree, then the fields of its Genre branch with a genre and a subgenre chosen, so that every field shows,
-        # then the tree again, where the Form branch now opens, and the fields of the Create branch, whose button is not pressed.
-        await self.press(keybindings.MainPage.WIZARD)
-        await self.walk()
-        more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
-        # The walk left the tree's cursor on its last branch, so it goes back up to Genre first.
-        await self.press(*[Key.UP] * len(self.app.screen.rows()), keybindings.WizardPage.INTO_FIELDS, more, keybindings.WizardPage.TO_TREE)
-        # The subgenre is chosen on the panel after Genre.
-        await self.press(Key.DOWN, keybindings.WizardPage.INTO_FIELDS, more)
-        await self.walk()
-        await self.press(keybindings.WizardPage.TO_TREE, Key.UP, keybindings.WizardPage.INTO_FIELDS)
-        await self.walk()
-        await self.press(keybindings.WizardPage.TO_TREE)
-        await self.walk()
-        # The Form branch opened and its first section under the cursor, which has a list's keys; then the section picked up, and
-        # its settings. No walk here, since a walk's Left closes the branch it is in.
-        form = [branch.name() for _, branch in self.app.screen.rows()].index(labels.MSG_WIZARD_FORM_BRANCH)
-        await self.press(*[Key.UP] * len(self.app.screen.rows()), *[Key.DOWN] * form, Key.RIGHT, Key.DOWN)
-        self.note()
-        await self.press(keybindings.WizardPage.MOVE)
-        self.note()
-        await self.press(keybindings.WizardPage.DROP, keybindings.WizardPage.INTO_FIELDS)
-        self.note()
-        await self.press(keybindings.WizardPage.TO_TREE, Key.LEFT, Key.LEFT)
-        await self.press(*[Key.DOWN] * len(self.app.screen.rows()), keybindings.WizardPage.INTO_FIELDS)
-        await self.walk()
-        await self.press(keybindings.WizardPage.TO_TREE, keybindings.WizardPage.CLOSE, *ui_testing.ANSWER_YES)
+        await self.tour_the_wizard()
 
 
 class TestKeyTour(KeyTour):

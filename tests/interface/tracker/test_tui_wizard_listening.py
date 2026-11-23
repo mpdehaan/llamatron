@@ -55,8 +55,10 @@ class TestWizardListening(PlaybackTest):
         return messages.MSG_WIZARD_MELODY_OF.format(kind=self.hook_kind())
 
     async def go_to_hook(self):
-        """Move the tree's cursor to the panel of the melody of the kind of section that says the hook line."""
+        """Move the list's cursor to the panel of the melody of the kind of section that says the hook line."""
         wizard = self.app.screen
+        wizard.on_tab_row = False
+        wizard.in_fields = False
         wizard.tree_place = [branch.key() for _, branch in wizard.rows()].index(section_melody_branch.MELODY_KEY.format(kind=self.hook_kind()))
         await self.press(Key.DOWN, Key.UP)
 

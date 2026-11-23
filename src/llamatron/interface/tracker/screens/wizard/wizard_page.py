@@ -1,14 +1,18 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The song wizard's page: a tree of the song's parts at the left, and at the right the fields of the part under the cursor.
+"""The song wizard's page: a row of tabs, Genre, Band, Composition, Form and Apply, over a box holding the chosen tab, and under
+the box the Back and Next buttons.
 
-The cursor is in the tree or in the fields. In the tree, Up and Down move, Left and Right
-close and open a branch, the fields of the branch under the cursor show dim, and ENTER or Tab
-moves into them. In the fields the keys are a settings page's, and ESC or Tab moves back to the
-tree. ESC in the tree closes the wizard, asking first when anything was chosen. Nothing in the
-set changes until the Create button, which adds the song with all it uses as one change, so
-that one undo takes it away again, and shows Arrange on it.
+A tab with parts lists them at the left of the box, the tab's own fields first, and shows the
+fields of the row chosen at the right; a tab of one part shows its fields alone. The cursor is
+on the row of tabs, in the list, in the fields or on the buttons, as a settings page's tab box
+has it: Tab goes between the row of tabs and the box, Left and Right between the list and the
+fields, Up from the head of the list to the row of tabs and Down from its foot to the buttons,
+and PgUp and PgDn step the tabs. A tab that isn't ready is dim and says why in its box. In the
+fields the keys are a settings page's, and ESC goes back to the list. ESC elsewhere closes the
+wizard, asking first. Nothing in the set changes until Apply, which adds the song with all it
+uses as one change, so that one undo takes it away again, and shows Arrange on it.
 
 The page knows nothing of any one branch (branch.py): it draws what the branches say.
 """
@@ -20,10 +24,12 @@ from llamatron.caching.cached import cached_while, forget_cached
 from llamatron.engine.generators import musician as musician_plugin, phrasing as phrasing_plugin
 from llamatron.interface.forms import moves
 from llamatron.interface.forms.cursor import place_of
+from llamatron.interface.forms.tab_box import Tab
 from llamatron.interface.forms.text import clock
-from llamatron.interface.pages.wizard import starts
+from llamatron.interface.pages.wizard import starts, tree as tree_values
 from llamatron.interface.pages.wizard.tree import WizardTree
 from llamatron.interface.tracker import drawing, keybindings, themes
+from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.new_riff_dialog import NewRiffDialog
@@ -33,6 +39,7 @@ from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.drawing import Box, cursor_mark, Style
 from llamatron.interface.tracker.key_table import first_key
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.renderers import tab_box as tab_box_renderer
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.instrument_editor import sound_families
 from llamatron.interface.tracker.screens.shared import sound_trial
@@ -44,11 +51,11 @@ from llamatron.model.file.checks import listed
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.naming import new_name
 from llamatron.music_theory.composing import notation
-from llamatron.user_strings import errors, help as help_text, labels, marks, messages, names, song_wizard as wizard_text
+from llamatron.user_strings import errors, help as help_text, labels, legends, marks, messages, names, song_wizard as wizard_text
 from llamatron.wizards.create_song import wizard_limits
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
-# How wide the tree is, with its cursor's mark, and the least the fields beside it are given.
+# How wide a tab's list is, with its cursor's mark, and the least the fields beside it are given.
 TREE_WIDTH = 24
 LEAST_FIELDS_WIDTH = 20
 # Where the fields' cursor is while the cursor is in the tree: on no field.
@@ -56,8 +63,15 @@ NO_PLACE = -1
 FIRST_PLACE = 0
 # What the picker of a kit piece's sound answers for the piece's own drum, which is no drum's name.
 OWN_DRUM = ''
-# The line and the space between the tree and the fields.
+# The line and the space between the list and the fields.
 DIVIDER = Box.BAR + drawing.SPACE
+# The lines under the box: a blank line and the boxed buttons, and the lines the row of tabs and the box's bottom edge take.
+BUTTON_LINES = 4
+BOX_EDGE_LINES = 4
+# The buttons' places when both show: Back, then Next or Apply.
+BACK = 0
+NEXT = 1
+FIRST_TAB = 0
 # The style of the tree's selected branch: bold, in the wizard's theme colour.
 BOLD_IN_COLOUR = '{bold} {colour}'
 
@@ -129,6 +143,10 @@ class WizardPage(FieldPage):
         self.panels = WizardTree(page=self)
         self.tree_place = FIRST_PLACE
         self.in_fields = False
+        # Where else the cursor can be: on the row of tabs, or on the buttons under the box, at one of them.
+        self.on_tab_row = False
+        self.on_buttons = False
+        self.button = NEXT
         # The part of the intro the Intro panel's buttons act on: the part the cursor was last on or in, by its number.
         self.marked_part = None
         # Move mode, the tracker's: whether M has picked up the branch under the tree's cursor.
@@ -207,9 +225,26 @@ class WizardPage(FieldPage):
         or None when the cursor is on it and in the tree."""
         if self.in_fields:
             return first_key(self.KEYS.TO_TREE)
+        if self.on_buttons:
+            return first_key(self.KEYS.TO_TABS)
         names = [branch.name() for _, branch in self.rows()]
         there = place_of(screen=self, names=names, target=name)
+        tab_there = self.tab_of(there)
+        if self.on_tab_row:
+            return self._key_along_tabs(tab_there)
+        if tab_there != self.tab():
+            return first_key(self.KEYS.TO_TABS)
         return moves.toward(here=self.tree_place, there=there)
+
+    def _key_along_tabs(self, tab):
+        """Return the key on the row of tabs toward a tab, or into the tab's list once it is chosen, or None for a tab of one panel."""
+        if tab > self.tab():
+            return Key.RIGHT
+        if tab < self.tab():
+            return Key.LEFT
+        if self.lists_parts():
+            return first_key(self.KEYS.INTO_BOX)
+        return None
 
     def label_under_cursor(self):
         """Return the label of the field the cursor is on, or None in the tree or on a field with no label."""
@@ -489,7 +524,7 @@ class WizardPage(FieldPage):
 
     def cursor_place(self):
         """Where the cursor is: the branch of the tree, and the field while the cursor is in the fields."""
-        return (self.tree_place, self.in_fields, self.cursor.get_place() if self.in_fields else NO_PLACE)
+        return (self.tree_place, self.in_fields, self.on_tab_row, self.on_buttons, self.cursor.get_place() if self.in_fields else NO_PLACE)
 
     def release_offers_once_left(self):
         """Let the held offers go once the cursor has left the cell whose change held them, and forget what the page kept, which
@@ -512,13 +547,12 @@ class WizardPage(FieldPage):
         from the choices, which made every key slow. The held offers are let go first, once the cursor has left their cell."""
         self.release_offers_once_left()
         choices = repr(self._choices.to_data())
-        open_branches = self.panels.open_keys()
         open_sections = tuple(sorted(self.app.open_field_sections))
-        return (choices, self._song_name, open_branches, self.moving, self._start, open_sections)
+        return (choices, self._song_name, self.moving, self._start, open_sections)
 
     @cached_while(shown_state, said=said_of)
     def rows(self):
-        """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one, however deep."""
+        """Return every tab's rows, one tab after another, each with how deep it is: the tab's panel and every panel under it."""
         return self.panels.rows()
 
     def row(self):
@@ -534,40 +568,118 @@ class WizardPage(FieldPage):
         """Return whether a branch of the tree is open, showing the branches under it, which a locked branch never is."""
         return self.panels.shows_children(branch)
 
-    def move_in_tree(self, name):
-        self.tree_place = moves.moved(place=self.tree_place, name=name, count=len(self.rows()))
+    def tab_starts(self):
+        """Return where each tab's rows start among the rows: at each tab's own panel."""
+        return [place for place, (depth, _branch) in enumerate(self.rows()) if depth == tree_values.TOP]
 
-    def fold(self, name):
-        """Open the branch under the cursor with Right and close it with Left; Left on a branch inside another, closed or with nothing under it, goes to the branch that holds it."""
-        depth, branch = self.row()
-        if name == Key.RIGHT:
-            if self.refusal_of(branch):
-                self.refuse(self.refusal_of(branch))
-            elif branch.children():
-                self.panels.open(branch.key())
-            return
-        if depth and not (branch.children() and self.shows_children(branch)):
-            while self.rows()[self.tree_place][0] >= depth:
-                self.tree_place -= 1
-            return
-        self.panels.close(branch.key())
+    def tab_of(self, place):
+        """Return which tab holds the row at a place."""
+        return max(tab for tab, start in enumerate(self.tab_starts()) if start <= place)
+
+    def tab(self):
+        """Return which tab is chosen: the one holding the row under the cursor."""
+        self.row()
+        return self.tab_of(self.tree_place)
+
+    def tab_rows(self):
+        """Return where the chosen tab's rows start and end among the rows."""
+        starts = [*self.tab_starts(), len(self.rows())]
+        tab = self.tab()
+        return starts[tab], starts[tab + 1]
+
+    def lists_parts(self):
+        """Return whether the chosen tab has parts to list beside its fields, which a locked tab never shows."""
+        first, end = self.tab_rows()
+        return end - first > 1
+
+    def go_to_tab(self, tab):
+        """Choose a tab, the cursor on its first row."""
+        starts = self.tab_starts()
+        self.tree_place = starts[max(min(tab, len(starts) - 1), FIRST_TAB)]
+
+    def step_tab(self, direction):
+        """Choose the tab before or after, as PgUp and PgDn and Left and Right on the row of tabs do, stopping at the ends."""
+        self.go_to_tab(self.tab() + direction)
+
+    def move_in_tree(self, name):
+        """Move the list's cursor within the chosen tab: up from its head to the row of tabs, and down from its foot to the buttons."""
+        first, end = self.tab_rows()
+        if name == Key.UP and self.tree_place == first:
+            self.on_tab_row = True
+        elif name == Key.DOWN and self.tree_place == end - 1:
+            self.to_buttons()
+        else:
+            self.tree_place = first + moves.moved(place=self.tree_place - first, name=name, count=end - first)
+
+    def into_tab(self):
+        """Move from the row of tabs into the box: into the list of a tab with parts, else into its fields."""
+        self.on_tab_row = False
+        if not self.lists_parts():
+            self.into_fields()
+
+    def to_tabs(self):
+        """Move the cursor to the row of tabs, from anywhere in the box or the buttons."""
+        self.in_fields = False
+        self.on_buttons = False
+        self.on_tab_row = True
 
     def into_fields(self):
-        """Move the cursor into the fields of the branch under it, onto the first field that does something, or say why not yet."""
+        """Move the cursor into the fields of the branch under it, onto the first field that does something, or to the buttons
+        where none does, or say why not yet."""
         branch = self.branch()
         if self.refusal_of(branch):
             self.refuse(self.refusal_of(branch))
             return
+        acting = [place for place, field in enumerate(self.shown_fields()) if field.enter or field.adjust]
+        if not acting:
+            self.to_buttons()
+            return
         self.in_fields = True
-        first = FIRST_PLACE
-        for place, field in enumerate(self.shown_fields()):
-            if field.enter or field.adjust:
-                first = place
-                break
-        self.cursor.set_place(first)
+        self.cursor.set_place(acting[0])
 
     def to_tree(self):
+        """Move the cursor out of the fields: back to the list, or to the row of tabs for a tab with no list."""
         self.in_fields = False
+        if not self.lists_parts():
+            self.on_tab_row = True
+
+    def to_buttons(self):
+        self.in_fields = False
+        self.on_buttons = True
+        self.button = min(self.button, len(self.buttons()) - 1)
+        if len(self.buttons()) > 1:
+            self.button = NEXT
+
+    def up_from_buttons(self):
+        """Move the cursor up from the buttons into the box: to the list's last row, or into the fields of a tab with no list."""
+        self.on_buttons = False
+        if self.lists_parts():
+            self.tree_place = self.tab_rows()[1] - 1
+        else:
+            self.to_tabs()
+            self.into_tab()
+
+    def buttons(self):
+        """Return the buttons under the box, each its label and what it does: Back but on the first tab, then Next, or Apply on the last."""
+        tab = self.tab()
+        last = len(self.tab_starts()) - 1
+        result = []
+        if tab > FIRST_TAB:
+            result.append((labels.MSG_WIZARD_BACK_BUTTON, functools.partial(self.go_to_tab, tab - 1)))
+        if tab < last:
+            result.append((labels.MSG_WIZARD_NEXT_BUTTON, functools.partial(self.go_to_tab, tab + 1)))
+        else:
+            result.append((labels.MSG_WIZARD_CREATE_BUTTON, self.create))
+        return result
+
+    def along_buttons(self, name):
+        self.button = moves.moved(place=self.button, name=name, count=len(self.buttons()))
+
+    def press_button(self):
+        """Press the button the cursor is on, keeping the cursor on the buttons, on the one it was on where it still shows."""
+        _label, action = self.buttons()[self.button]
+        action()
+        self.button = min(self.button, len(self.buttons()) - 1)
 
     # The fields, a settings page's, of the branch under the tree's cursor.
 
@@ -592,20 +704,49 @@ class WizardPage(FieldPage):
         return super().field() if self.in_fields else None
 
     def keys(self):
+        self.settle_cursor()
         if self.in_fields:
-            # A settings page's keys, but for ESC, which goes back to the tree here and not from the page.
-            settings_keys = super().keys()[1:]
-            branch = self.branch()
-            return [self.bind(self.KEYS.TO_TREE, action=self.to_tree), *settings_keys, *branch.field_keys(), *self.listen_keys()]
+            return self.field_zone_keys()
         if self.moving:
             # While a branch is carried, only the keys that carry and drop it work, as in every move mode.
             return [self.bind(self.KEYS.DROP, action=self.drop), self.bind(self.KEYS.CARRY, action=self.carry)]
-        depth, branch = self.row()
-        result = [self.bind(self.KEYS.CLOSE, action=self.go_back), self.bind(self.KEYS.TREE, action=self.move_in_tree, wants_key=True)]
-        if depth or branch.children():
-            result.append(self.bind(self.KEYS.FOLD, action=self.fold, wants_key=True))
+        close = self.bind(self.KEYS.CLOSE, action=self.go_back)
+        if self.on_tab_row:
+            return [close, self.bind(self.KEYS.ALONG_TABS, action=self.step_tab), self.bind(self.KEYS.INTO_BOX, action=self.into_tab)]
+        if self.on_buttons:
+            return [close, self.bind(self.KEYS.ALONG_BUTTONS, action=self.along_buttons, wants_key=True), self.bind(self.KEYS.PRESS, action=self.press_button),
+                    self.bind(self.KEYS.UP_FROM_BUTTONS, action=self.up_from_buttons), self.bind(self.KEYS.TO_TABS, action=self.to_tabs)]
+        return self.list_keys(close)
+
+    def settle_cursor(self):
+        """Keep the cursor where something shows: outside its fields, a tab with no list has the cursor on the row of tabs, where
+        ENTER goes into it, never in a list it doesn't draw."""
+        if self.in_fields or self.on_tab_row or self.on_buttons or self.lists_parts():
+            return
+        self.on_tab_row = True
+
+    def field_zone_keys(self):
+        """Return the keys in the fields: a settings page's, but for ESC, which goes back to the list here and not from the page,
+        and Tab, which goes to the row of tabs; Left goes back to the list too, where no field moves along a row with it."""
+        settings_keys = super().keys()[1:]
+        back = [Key.ESCAPE]
+        if not any(Key.LEFT in item.keys for item in settings_keys):
+            back.append(Key.LEFT)
+        branch = self.branch()
+        what = None
+        if not self.lists_parts():
+            what = legends.MSG_TO_TABS_WHAT
+        return [self.bind(self.KEYS.TO_TREE, action=self.to_tree, keys=tuple(back), what=what), self.bind(self.KEYS.TO_TABS, action=self.to_tabs), *settings_keys,
+                *branch.field_keys(), *self.listen_keys()]
+
+    def list_keys(self, close):
+        """Return the keys in a tab's list: moving, going into the fields, to the row of tabs and to the next tab, and a list's keys
+        on a part that is one of a list."""
+        _depth, branch = self.row()
+        result = [close, self.bind(self.KEYS.TREE, action=self.move_in_tree, wants_key=True)]
         if self.refusal_of(branch) or branch.can_be_edited():
             result.append(self.bind(self.KEYS.INTO_FIELDS, action=self.into_fields))
+        result += [self.bind(self.KEYS.TO_TABS, action=self.to_tabs), self.bind(self.KEYS.NEXT_TAB, action=self.step_tab)]
         if branch.is_listed():
             result.append(self.bind(self.KEYS.INSERT, action=self.insert_in_list))
         if branch.adds():
@@ -626,8 +767,6 @@ class WizardPage(FieldPage):
 
         def chosen(place):
             self.choosing(branch.add)(kinds[place])
-            if not branch.is_listed():
-                self.panels.open(branch.key())
         self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_ADD_SECTION_TITLE, options=kinds), then=chosen)
 
     def insert_in_list(self):
@@ -817,7 +956,6 @@ class WizardPage(FieldPage):
         except ValueError as problem:
             self.refuse(str(problem))
             return
-        self.panels.open(labels.MSG_WIZARD_FORM_BRANCH)
 
     def copy_listed(self):
         self.choosing(lambda branch: branch.copy())(self.branch())
@@ -897,25 +1035,23 @@ class WizardPage(FieldPage):
         return (labels.MSG_WIZARD_REPLACE_CAPTION if self.replaces() else labels.MSG_WIZARD_CAPTION).format(name=self._song_name)
 
     def tree_lines(self):
-        """Return the tree's lines: each branch after its cursor's mark, indented by its depth, with its open or closed mark, its
-        note dim, and at the line's end the mark of the branch whose fields hold the cursor."""
+        """Return the chosen tab's list: each row after its cursor's mark, indented by its depth below the tab's own row, which
+        reads Whole and the tab's name, its note dim, and at the line's end the mark of the row whose fields hold the cursor."""
+        first, end = self.tab_rows()
         lines = []
-        for place, (depth, branch) in enumerate(self.rows()):
+        for place in range(first, end):
+            depth, branch = self.rows()[place]
             lines.append(self._tree_line(depth=depth, branch=branch, under_cursor=place == self.tree_place))
         return lines
 
     def _tree_line(self, *, depth, branch, under_cursor):
-        """Return one branch's line of the tree."""
+        """Return one row of a tab's list."""
         line = Text(no_wrap=True)
-        line.append(cursor_mark(under_cursor and not self.in_fields))
+        line.append(cursor_mark(under_cursor and not (self.in_fields or self.on_tab_row or self.on_buttons)))
         line.append(drawing.INDENT * depth)
-        if not branch.children():
-            line.append(drawing.INDENT)
-        elif self.shows_children(branch):
-            line.append(marks.MSG_WIZARD_BRANCH_OPEN + drawing.SPACE)
-        else:
-            line.append(marks.MSG_WIZARD_BRANCH_CLOSED + drawing.SPACE)
         name = branch.name()
+        if depth == tree_values.TOP:
+            name = labels.MSG_WIZARD_TAB_OWN_ROW.format(name=name.lower())
         if self.moving and under_cursor:
             name = marks.MSG_WIZARD_CARRIED.format(name=name)
         line.append(name, style=self.name_style(branch=branch, under_cursor=under_cursor))
@@ -949,6 +1085,26 @@ class WizardPage(FieldPage):
         return lines
 
     def body(self, *, width, height):
+        """Return the row of tabs over the box holding the chosen tab, a tab that isn't ready dim, and the buttons under the box."""
+        self.settle_cursor()
+        inner_height = max(height - BOX_EDGE_LINES - BUTTON_LINES, 1)
+        inner = tab_box_renderer.inner_width(width)
+        tabs = [Tab(label=branch.name(), not_ready=bool(self.refusal_of(branch))) for branch in self.panels.roots()]
+        box = tab_box_renderer.boxed_tabs(tabs=tabs, chosen=self.tab(), width=width, here=self.on_tab_row, lines=self.box_lines(width=inner, height=inner_height))
+        buttons = [(drawing.NOTHING, label) for label, _action in self.buttons()]
+        row = [Text(drawing.INDENT) + line for line in button_row(buttons=buttons, selected=self.button if self.on_buttons else None)]
+        return [*box, Text(drawing.NOTHING), *row]
+
+    def box_lines(self, *, width, height):
+        """Return the lines inside the box: why the tab isn't ready yet; its fields alone; or its list, a line, and the fields of
+        the row chosen, the list scrolled to show its cursor."""
+        branch = self.panels.roots()[self.tab()]
+        refusal = self.refusal_of(branch)
+        if refusal:
+            return [Text(drawing.NOTHING), Text(drawing.SPACE + refusal), *[Text(drawing.NOTHING)] * (height - 2)]
+        if not self.lists_parts():
+            fields = self.field_lines(width=width, height=height)
+            return [*fields, *[Text(drawing.NOTHING)] * (height - len(fields))][:max(height, len(fields))]
         tree = self.window_of_tree(lines=self.tree_lines(), height=height)
         fields = self.field_lines(width=max(width - TREE_WIDTH - len(DIVIDER), LEAST_FIELDS_WIDTH), height=height)
         lines = []
@@ -970,5 +1126,6 @@ class WizardPage(FieldPage):
         """Return the tree's lines that fit the height, scrolled so that the branch under the cursor shows, a long form having more sections than a console has lines."""
         if len(lines) <= height:
             return lines
-        first = max(min(self.tree_place - height // 2, len(lines) - height), FIRST_PLACE)
+        here = self.tree_place - self.tab_rows()[0]
+        first = max(min(here - height // 2, len(lines) - height), FIRST_PLACE)
         return lines[first:first + height]

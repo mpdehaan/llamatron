@@ -62,6 +62,7 @@ class KeyName:
     # Groups of keys, where listing each key would be too long.
     ARROWS = '←↑↓→'
     UP_DOWN = '↑↓'
+    UP = '↑'
     LEFT_RIGHT = '←→'
     TO_THE_RIGHT = '→'
     TO_THE_LEFT = '←'
@@ -327,9 +328,8 @@ MSG_PICK_PROGRESSION_WHAT = 'pick progression'
 # interface/tracker/keybindings.py, on a mask's Hits field: H fills the hits and steps with a named rhythm.
 
 # interface/tracker/screens/wizard/wizard_page.py
-MSG_WIZARD_FOLD_WHAT = 'fold'
-MSG_WIZARD_TO_TREE_WHAT = 'to tree'
-MSG_WIZARD_CREATE_WHAT = 'apply'
+MSG_WIZARD_TO_TREE_WHAT = 'to list'
+MSG_WIZARD_UP_FROM_BUTTONS_WHAT = 'to list'
 MSG_WIZARD_SUGGESTED_FORM_WHAT = 'choose'
 MSG_WIZARD_FORM_QUESTIONS_WHAT = 'answer'
 MSG_WIZARD_NEW_HOOK_WHAT = 'new hook'

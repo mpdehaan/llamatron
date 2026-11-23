@@ -86,9 +86,13 @@ class WizardTest(UITest):
         return self.wizard().get_choices()
 
     async def go_to_branch(self, place):
-        """Put the tree's cursor on a branch by its place from the top and draw the page once, as the arrows would leave it, since
-        pressing an arrow for every row drew the page at each one; the arrows themselves are tested on their own."""
+        """Put the list's cursor on a panel by its place among every tab's rows, in its tab's list, and draw the page once, as the
+        arrows would leave it, since pressing an arrow for every row drew the page at each one; the arrows themselves are tested
+        on their own. A tab of one panel has the cursor on the row of tabs, as every way into it does."""
         wizard = self.wizard()
+        wizard.in_fields = False
+        wizard.on_tab_row = False
+        wizard.on_buttons = False
         wizard.tree_place = place
         wizard.draw()
         await self.settle()
@@ -113,21 +117,24 @@ class WizardTest(UITest):
         return [line.plain.strip() for line in remark_lines(self.wizard().branch().remarks(A_WIDE_PANEL))], picture_of(hook=hook.hook_section_notes(), width=A_WIDE_PANEL, lit=hook.hook_bars())
 
     async def choose_genre_and_subgenre(self):
-        """Choose the first genre and its first subgenre, each with ] (inc) from nothing chosen on its panel, and go back to the tree."""
+        """Choose the first genre and its first subgenre on the Genre tab, each with ] (inc) from nothing chosen, the cursor left
+        on the row of tabs."""
         more = key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_GENRE_BRANCH)
-        await self.press(keybindings.WizardPage.INTO_FIELDS, more, keybindings.WizardPage.TO_TREE)
-        # The subgenre is chosen on its own panel, and the cursor goes back to Genre, where the tests go on from.
-        await self.go_to_named_branch(labels_text.MSG_WIZARD_SUBGENRE_BRANCH)
-        await self.press(keybindings.WizardPage.INTO_FIELDS, more, keybindings.WizardPage.TO_TREE)
+        await self.press(keybindings.WizardPage.INTO_BOX)
+        await self.select_field(labels_text.MSG_GENRE_LABEL)
+        await self.press(more)
+        await self.select_field(labels_text.MSG_WIZARD_SUBGENRE_LABEL)
+        # Leaving the field lets go what stepping it held, as moving on would.
+        await self.press(more, keybindings.WizardPage.TO_TABS)
         await self.go_to_named_branch(labels_text.MSG_WIZARD_GENRE_BRANCH)
 
     async def create(self):
-        """Press the Create button, the last row of the Create branch."""
+        """Press the Apply button, under the Apply tab's box, where ENTER on the tab goes since no field of the tab acts."""
         await self.go_to_named_branch(labels_text.MSG_WIZARD_CREATE_BRANCH)
-        await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(labels_text.MSG_WIZARD_CREATE_BUTTON)
-        await self.press(Key.ENTER)
+        await self.press(keybindings.WizardPage.INTO_BOX)
+        self.assertTrue(self.wizard().on_buttons)
+        await self.press(keybindings.WizardPage.PRESS)
 
     async def open_wizard(self):
         """Go back to the main screen, the one page whose W opens the wizard, from wherever the last step left the tracker, and press W."""
@@ -154,34 +161,35 @@ class WizardTest(UITest):
 
 class TestWizardPage(WizardTest):
 
-    async def test_w_on_the_main_screen_opens_the_wizard_with_the_cursor_in_the_tree_on_genre(self):
+    async def test_w_on_the_main_screen_opens_the_wizard_on_the_genre_tab_with_the_cursor_on_the_row_of_tabs(self):
         self.assertIsInstance(self.wizard(), WizardPage)
-        self.assertFalse(self.wizard().in_fields)
+        self.wizard().keys()
+        self.assertTrue(self.wizard().on_tab_row)
         self.assertEqual(self.wizard().branch().name(), labels_text.MSG_WIZARD_GENRE_BRANCH)
         await self.press(Key.ESCAPE, *ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, MainPage)
         await self.open_wizard()
         self.assertIsInstance(self.wizard(), WizardPage)
 
-    async def test_the_tree_is_steered_to_a_wizard_panel_by_its_name_from_the_tree_and_from_a_panels_fields(self):
+    async def test_the_cursor_is_steered_to_a_wizard_panel_by_its_name_across_the_tabs_and_from_a_panels_fields(self):
+        await self.choose_genre_and_subgenre()
         names = [branch.name() for _, branch in self.wizard().rows()]
         await self.go_to_panel(names[-1])
         self.assertEqual(self.wizard().panel_under_cursor(), names[-1])
         await self.go_to_panel(names[0])
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         self.assertTrue(self.wizard().in_fields)
-        await self.go_to_panel(names[1])
+        player = names[2]
+        await self.go_to_panel(player)
         self.assertFalse(self.wizard().in_fields)
-        self.assertEqual(self.wizard().panel_under_cursor(), names[1])
+        self.assertEqual(self.wizard().panel_under_cursor(), player)
 
-    async def test_the_tree_lists_genre_form_and_create_and_the_fields_of_the_branch_under_the_cursor_show(self):
+    async def test_the_tabs_are_genre_band_composition_form_and_apply_and_the_genre_tabs_fields_show(self):
         text = self.text()
-        for name in (labels_text.MSG_WIZARD_GENRE_BRANCH, labels_text.MSG_WIZARD_FORM_BRANCH, labels_text.MSG_WIZARD_CREATE_BRANCH, labels_text.MSG_GENRE_LABEL, labels_text.MSG_WIZARD_SUBGENRE_BRANCH, marks.MSG_WIZARD_CHOOSE, labels_text.MSG_NAME_LABEL):
+        for name in (*[branch.name() for branch in self.wizard().panels.roots()], labels_text.MSG_GENRE_LABEL, marks.MSG_WIZARD_CHOOSE, labels_text.MSG_NAME_LABEL):
             self.assertIn(name, text)
-        self.assertIn(marks.MSG_WIZARD_NEEDS_GENRE, text)
-        await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
-        self.assertIn(messages.MSG_WIZARD_CHOOSE_FIRST, self.text())
-        self.assertNotIn(labels_text.MSG_NAME_LABEL, self.text())
+        self.assertEqual([branch.name() for branch in self.wizard().panels.roots()], [labels_text.MSG_WIZARD_GENRE_BRANCH, labels_text.MSG_WIZARD_BAND_BRANCH,
+                         labels_text.MSG_WIZARD_COMPOSITION_BRANCH, labels_text.MSG_WIZARD_FORM_BRANCH, labels_text.MSG_WIZARD_CREATE_BRANCH])
 
     async def test_the_new_song_is_named_as_the_tracker_names_a_new_thing(self):
         self.assertEqual(self.wizard().get_song_name(), new_name(word=names.MSG_NEW_SONG_WORD, taken=[names.MSG_DEFAULT_SONG_NAME]))
@@ -189,6 +197,7 @@ class TestWizardPage(WizardTest):
 
     async def test_the_rows_and_the_fields_are_kept_until_a_choice_or_the_page_changes(self):
         await self.choose_genre_and_subgenre()
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
         wizard = self.wizard()
         rows = wizard.rows()
         fields = wizard.fields()
@@ -236,12 +245,45 @@ class TestWizardPage(WizardTest):
         with mock.patch.object(WizardTree, WizardTree.roots.__name__, lambda tree: []), self.assertRaises(StaleAnswer):
             wizard.rows()
 
-    async def test_the_cursor_stops_at_both_ends_of_the_tree(self):
+    async def test_up_from_a_tabs_list_goes_to_the_row_of_tabs_and_down_from_its_foot_to_the_buttons(self):
+        await self.choose_genre_and_subgenre()
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
+        wizard = self.wizard()
+        first, end = wizard.tab_rows()
         await self.press(Key.UP)
-        self.assertEqual(self.wizard().tree_place, GENRE_PLACE)
-        await self.press(*[Key.DOWN] * (len(self.wizard().rows()) + 1))
-        self.assertEqual(self.wizard().tree_place, len(self.wizard().rows()) - 1)
-        self.assertEqual(self.wizard().branch().name(), labels_text.MSG_WIZARD_CREATE_BRANCH)
+        self.assertTrue(wizard.on_tab_row)
+        await self.press(keybindings.WizardPage.INTO_BOX, *[Key.DOWN] * (end - first - 1))
+        self.assertEqual(wizard.tree_place, end - 1)
+        await self.press(Key.DOWN)
+        self.assertTrue(wizard.on_buttons)
+        self.assertEqual(wizard.buttons()[wizard.button][0], labels_text.MSG_WIZARD_NEXT_BUTTON)
+        await self.press(keybindings.WizardPage.UP_FROM_BUTTONS)
+        self.assertEqual(wizard.tree_place, end - 1)
+
+    async def test_back_and_next_open_the_tab_before_and_after_and_apply_ends_the_row(self):
+        await self.choose_genre_and_subgenre()
+        wizard = self.wizard()
+        self.assertEqual([label for label, _ in wizard.buttons()], [labels_text.MSG_WIZARD_NEXT_BUTTON])
+        tabs = len(wizard.panels.roots())
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
+        wizard.to_buttons()
+        for tab in range(wizard.tab() + 1, tabs):
+            await self.press(keybindings.WizardPage.PRESS)
+            self.assertEqual(wizard.tab(), tab)
+        self.assertEqual([label for label, _ in wizard.buttons()], [labels_text.MSG_WIZARD_BACK_BUTTON, labels_text.MSG_WIZARD_CREATE_BUTTON])
+        await self.press(Key.LEFT, keybindings.WizardPage.PRESS)
+        self.assertEqual(wizard.tab(), tabs - 2)
+
+    async def test_pgup_and_pgdn_and_the_row_of_tabs_step_the_tabs_and_stop_at_the_ends(self):
+        await self.choose_genre_and_subgenre()
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
+        wizard = self.wizard()
+        await self.press(Key.PAGE_DOWN)
+        self.assertEqual(wizard.branch().name(), labels_text.MSG_WIZARD_COMPOSITION_BRANCH)
+        await self.press(keybindings.WizardPage.TO_TABS, *[Key.RIGHT] * len(wizard.panels.roots()))
+        self.assertEqual(wizard.branch().name(), labels_text.MSG_WIZARD_CREATE_BRANCH)
+        await self.press(*[Key.LEFT] * (len(wizard.panels.roots()) + 1))
+        self.assertEqual(wizard.branch().name(), labels_text.MSG_WIZARD_GENRE_BRANCH)
 
     async def test_the_part_under_the_cursor_is_drawn_in_the_wizards_colour_and_no_other_is(self):
         colour = themes.text_style(WizardPage.THEME)
@@ -250,50 +292,43 @@ class TestWizardPage(WizardTest):
         coloured = [place for place, line in enumerate(lines) if any(colour in str(span.style) for span in line.spans)]
         self.assertEqual(coloured, [self.wizard().tree_place])
 
-    async def test_the_subgenre_is_a_top_part_of_the_tree_after_the_genre(self):
-        names = [branch.name() for depth, branch in self.wizard().rows() if not depth]
-        self.assertEqual(names[:2], [labels_text.MSG_WIZARD_GENRE_BRANCH, labels_text.MSG_WIZARD_SUBGENRE_BRANCH])
+    async def test_the_subgenre_is_chosen_on_the_genre_tab_once_a_genre_is(self):
+        await self.press(keybindings.WizardPage.INTO_BOX)
+        self.assertNotIn(labels_text.MSG_WIZARD_SUBGENRE_LABEL, [field.label for field in self.wizard().shown_fields()])
+        await self.choose_genre_and_subgenre()
+        self.assertIn(labels_text.MSG_WIZARD_SUBGENRE_LABEL, [field.label for field in self.wizard().shown_fields()])
 
-    async def test_a_locked_part_shows_nothing_under_it_and_right_and_enter_say_what_to_choose_first(self):
+    async def test_a_tab_not_ready_is_dim_says_why_in_its_box_and_enter_says_it_again(self):
         wizard = self.wizard()
-        self.assertTrue(all(not depth for depth, _ in wizard.rows()))
         await self.go_to_named_branch(labels_text.MSG_WIZARD_COMPOSITION_BRANCH)
-        before = len(wizard.rows())
-        await self.press(Key.RIGHT)
-        self.assertEqual(len(wizard.rows()), before)
+        self.assertEqual(wizard.tab_rows()[1] - wizard.tab_rows()[0], 1)
         self.assertIn(errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, self.text())
-        await self.press(Key.DOWN, keybindings.WizardPage.INTO_FIELDS)
+        await self.press(keybindings.WizardPage.INTO_BOX)
         self.assertFalse(wizard.in_fields)
         self.assertIn(errors.ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE, self.text())
-        await self.go_to_named_branch(labels_text.MSG_WIZARD_SUBGENRE_BRANCH)
-        await self.press(keybindings.WizardPage.INTO_FIELDS)
-        self.assertFalse(wizard.in_fields)
-        self.assertIn(errors.ERR_WIZARD_CHOOSE_GENRE, self.text())
 
     async def test_choosing_the_genre_and_the_subgenre_unlocks_every_part(self):
         await self.choose_genre_and_subgenre()
         wizard = self.wizard()
         self.assertTrue(all(branch.refusal() is None for _, branch in wizard.rows()))
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
-        await self.press(Key.RIGHT)
-        self.assertTrue(any(depth for depth, _ in wizard.rows()))
+        self.assertTrue(wizard.lists_parts())
 
-    async def test_enter_and_tab_move_into_the_fields_and_esc_and_tab_move_back(self):
-        for into, back in ((Key.ENTER, Key.ESCAPE), (Key.TAB, Key.TAB)):
+    async def test_enter_and_right_move_into_the_fields_esc_and_left_move_back_and_tab_goes_to_the_row_of_tabs(self):
+        await self.choose_genre_and_subgenre()
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
+        wizard = self.wizard()
+        for into, back in ((Key.ENTER, Key.ESCAPE), (Key.RIGHT, Key.LEFT)):
             await self.press(into)
-            self.assertTrue(self.wizard().in_fields)
+            self.assertTrue(wizard.in_fields)
             self.assertIn(marks.MSG_WIZARD_EDITED_BRANCH, self.text())
             await self.press(back)
-            self.assertIsInstance(self.wizard(), WizardPage)
-            self.assertFalse(self.wizard().in_fields)
+            self.assertFalse(wizard.in_fields)
             self.assertNotIn(marks.MSG_WIZARD_EDITED_BRANCH, self.text())
-
-    async def test_the_subgenre_refuses_until_a_genre_is_chosen(self):
-        await self.go_to_named_branch(labels_text.MSG_WIZARD_SUBGENRE_BRANCH)
-        await self.press(keybindings.WizardPage.INTO_FIELDS)
-        self.assertFalse(self.wizard().in_fields)
-        self.assertIn(errors.ERR_WIZARD_CHOOSE_GENRE, self.text())
-        self.assertIsNone(self.choices().get_subgenre())
+        await self.press(Key.TAB)
+        self.assertTrue(wizard.on_tab_row)
+        await self.press(Key.TAB)
+        self.assertFalse(wizard.on_tab_row)
 
     async def test_a_genre_is_picked_from_a_list_of_every_genre_by_title(self):
         await self.press(keybindings.WizardPage.INTO_FIELDS, Key.ENTER)
@@ -310,8 +345,7 @@ class TestWizardPage(WizardTest):
         self.assertEqual(choices.get_subgenre(), choices.subgenres()[0])
         for label in (labels_text.MSG_WIZARD_KEY_LABEL, labels_text.MSG_SCALE_LABEL):
             self.assertIn(label, self.text())
-        # The tempo is the subgenre's, on the panel under Genre, with the subgenre's usual range after it.
-        await self.go_to_named_branch(labels_text.MSG_WIZARD_SUBGENRE_BRANCH)
+        # The tempo is the subgenre's, on the Genre tab, with the subgenre's usual range after it.
         text = self.text()
         self.assertIn(labels_text.MSG_TEMPO_LABEL, text)
         lowest, highest = choices.tempo_range()
@@ -358,7 +392,6 @@ class TestWizardPage(WizardTest):
         self.assertEqual(self.choices().get_genre(), genre_names()[1])
         self.assertIsNone(self.choices().get_subgenre())
         await self.press(keybindings.WizardPage.TO_TREE)
-        await self.go_to_named_branch(labels_text.MSG_WIZARD_SUBGENRE_BRANCH)
         self.assertIn(marks.MSG_WIZARD_CHOOSE, self.text())
 
     async def test_the_song_is_named_on_the_genre_branch_and_a_name_in_use_is_refused(self):
@@ -373,34 +406,23 @@ class TestWizardPage(WizardTest):
         await self.press(Key.ENTER)
         self.assertEqual(self.wizard().get_song_name(), A_SONG_NAME)
 
-    async def test_the_form_branch_picks_a_form_lists_its_sections_and_opens_to_a_branch_for_each(self):
+    async def test_the_form_tab_picks_a_form_and_lists_a_row_for_each_section(self):
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
-        choices = self.choices()
-        form_choices = choices.get_song_form()
-        song_form = form_choices
+        song_form = self.choices().get_song_form()
         sections = song_form.form_sections()
         text = self.text()
         self.assertIn(labels_text.MSG_WIZARD_FORM_LABEL, text)
-        # The Form branch starts open, so that the sections show themselves.
-        self.assertIn(marks.MSG_WIZARD_BRANCH_OPEN, text)
         self.assertIn(messages.MSG_WIZARD_SECTIONS_HINT, text)
         for name in sections:
             self.assertIn(name, text)
-        open_rows = len(self.wizard().rows())
         await self.press(Key.DOWN)
         self.assertEqual(self.wizard().branch().name(), sections[0])
         self.assertIn(labels_text.MSG_WIZARD_BARS_LABEL, self.text())
-        # ENTER moves into a section's settings and ESC back; Left goes back to the Form branch, where Left closes it.
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         self.assertTrue(self.wizard().in_fields)
-        await self.press(Key.ESCAPE, Key.DOWN, Key.LEFT)
+        await self.press(Key.ESCAPE, Key.UP)
         self.assertEqual(self.wizard().branch().name(), labels_text.MSG_WIZARD_FORM_BRANCH)
-        await self.press(Key.LEFT)
-        self.assertEqual(len(self.wizard().rows()), open_rows - len(sections))
-        self.assertIn(marks.MSG_WIZARD_BRANCH_CLOSED, self.text())
-        await self.press(Key.RIGHT)
-        self.assertEqual(len(self.wizard().rows()), open_rows)
 
     async def test_a_suggested_form_is_picked_from_a_dialog_that_says_each_forms_sections_and_length(self):
         await self.choose_genre_and_subgenre()
@@ -497,13 +519,16 @@ class TestWizardPage(WizardTest):
         await self.press(Key.ESCAPE, *ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, MainPage)
 
-    async def test_the_wizard_fits_an_80_by_24_console_with_a_long_form_open(self):
+    async def test_the_wizard_fits_an_80_by_24_console_with_a_long_form_listed(self):
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
-        await self.press(Key.RIGHT, *[Key.DOWN] * 30)
-        self.assertEqual(self.wizard().branch().name(), labels_text.MSG_WIZARD_CREATE_BRANCH)
-        self.assertIn(labels_text.MSG_WIZARD_CREATE_BRANCH, self.text())
-
+        sections = self.choices().get_song_form().form_sections()
+        await self.press(*[Key.DOWN] * len(sections))
+        self.assertEqual(self.wizard().branch().name(), sections[-1])
+        self.assertIn(sections[-1], self.text())
+        await self.press(Key.DOWN)
+        self.assertTrue(self.wizard().on_buttons)
+        self.assertIn(labels_text.MSG_WIZARD_NEXT_BUTTON, self.text())
 
 class TestWizardBand(WizardTest):
     """The Band branch: a toggle for each player, and a branch for each player who is in."""
@@ -528,12 +553,9 @@ class TestWizardBand(WizardTest):
         self.assertTrue(interplay.answerers())
         self.assertEqual([field.label for field in self.wizard().fields()],
                          [labels_text.MSG_WIZARD_SOUNDS_LABEL, labels_text.MSG_WIZARD_TUNE_LABEL, labels_text.MSG_WIZARD_ANSWERED_BY_LABEL, *(choices.player(role).title() for role in band.roles() if choices.player(role).can_play())])
-        # The Band starts open: Left closes it and Right opens it to a branch for each player who is in.
-        rows = len(self.wizard().rows())
-        await self.press(Key.LEFT)
-        self.assertEqual(len(self.wizard().rows()), rows - len(band.roles_in()))
-        await self.press(Key.RIGHT)
-        self.assertEqual(len(self.wizard().rows()), rows)
+        # The Band tab lists a row for each player who is in, under its own.
+        first, end = self.wizard().tab_rows()
+        self.assertEqual(end - first, 1 + len(band.roles_in()))
         await self.press(Key.DOWN)
         self.assertEqual(self.wizard().branch().name(), choices.player(band.roles_in()[0]).title())
 
@@ -543,7 +565,7 @@ class TestWizardBand(WizardTest):
         band_choices = choices.get_band()
         band = band_choices
         players = band.roles_in()
-        await self.press(Key.RIGHT, keybindings.WizardPage.INTO_FIELDS)
+        await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(choices.player(players[0]).title())
         await self.press(Key.SPACE)
         self.assertEqual(band.roles_in(), players[1:])
@@ -591,7 +613,7 @@ class TestWizardBand(WizardTest):
         player = next(role for role in band.roles_in() if choices.player(role).has_busy() and len(choices.player(role).traits()) == 1)
         trait = choices.player(player).traits()[0]
         ways = choices.player(player).ways(trait=trait)
-        await self.press(Key.RIGHT, *[Key.DOWN] * (band.roles_in().index(player) + 1))
+        await self.press(*[Key.DOWN] * (band.roles_in().index(player) + 1))
         self.assertEqual(self.wizard().branch().name(), choices.player(player).title())
         text = self.text()
         self.assertIn(labels_text.MSG_WIZARD_BUSY_LABEL, text)
@@ -638,7 +660,7 @@ class TestWizardSounds(WizardTest):
         sounds = sound_choices
         band = band_choices
         role = [role for role in band.roles_in() if sounds.has_sound(role)][0]
-        await self.press(Key.RIGHT, *[Key.DOWN] * (band.roles_in().index(role) + 1))
+        await self.press(*[Key.DOWN] * (band.roles_in().index(role) + 1))
         return role
 
     async def test_the_bands_sounds_are_stepped_and_a_player_shows_the_bands_sound_as_the_bands(self):
@@ -718,7 +740,6 @@ class TestWizardGuitarists(WizardTest):
         band_choices = choices.get_band()
         guitarists = choices.guitarists()
         band = band_choices
-        await self.press(Key.RIGHT)
         rows = len(self.wizard().rows())
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_GUITARISTS_LABEL)
@@ -748,7 +769,7 @@ class TestWizardKit(WizardTest):
         band_choices = choices.get_band()
         sounds = sound_choices
         band = band_choices
-        await self.press(Key.RIGHT, *[Key.DOWN] * len([role for role in band.roles_in() if role in band.roles_shown()]))
+        await self.press(*[Key.DOWN] * len([role for role in band.roles_in() if role in band.roles_shown()]))
         self.assertFalse(sounds.has_sound(band.roles_in()[-1]))
 
     async def test_a_piece_is_switched_off_and_on_and_the_last_piece_stays(self):
@@ -946,7 +967,7 @@ class TestWizardForm(WizardTest):
         """Choose a genre and a subgenre, open the Form branch and put the tree's cursor on its first section."""
         await self.choose_genre_and_subgenre()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
-        await self.press(Key.RIGHT, Key.DOWN)
+        await self.press(Key.DOWN)
 
     def sections(self):
         return self.choices().get_song_form().form_sections()
@@ -1131,7 +1152,7 @@ class TestWizardInterplay(WizardTest):
         interplay = interplay_choices
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
         shown = [role for role in band.roles_in() if role in band.roles_shown()]
-        await self.press(Key.RIGHT, *[Key.DOWN] * (shown.index(interplay.answered_by()) + 1), keybindings.WizardPage.INTO_FIELDS)
+        await self.press(*[Key.DOWN] * (shown.index(interplay.answered_by()) + 1), keybindings.WizardPage.INTO_FIELDS)
 
     async def test_the_answering_player_has_a_role_by_section_or_one_for_every_section_and_fills_busy(self):
         await self.open_the_answering_player()
@@ -1169,7 +1190,7 @@ class TestWizardInterplay(WizardTest):
         label = labels_text.MSG_WIZARD_SECTION_ROLE_LABEL.format(player=choices.player(interplay.answered_by()).title())
         planned = choices.section(place).role()
         await self.go_to_named_branch(labels_text.MSG_WIZARD_FORM_BRANCH)
-        await self.press(Key.RIGHT, *[Key.DOWN] * (place + 1), keybindings.WizardPage.INTO_FIELDS)
+        await self.press(*[Key.DOWN] * (place + 1), keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(label)
         self.assertEqual(self.wizard().field().value(), marks.MSG_WIZARD_ROLE_FROM_PLAN.format(way=planned))
         await self.press(key_of(binding=keybindings.WizardPage.MORE, key=Key.RIGHT_BRACKET))
@@ -1559,16 +1580,6 @@ class TestWizardComposition(WizardTest):
         self.assertEqual(names[start:start + len(kinds) + len(solos) + 6],
                          [labels_text.MSG_WIZARD_MELODIES_BRANCH, labels_text.MSG_WIZARD_HOOKS_BRANCH, *(kind.capitalize() for kind in kinds), *solos, wizard_limits.INTRO.capitalize(), labels_text.MSG_WIZARD_RIFFS_BRANCH,
                           labels_text.MSG_WIZARD_RIFF_ASSIGN_BRANCH, labels_text.MSG_WIZARD_SECTION_PLAYERS_BRANCH])
-
-    async def test_the_melodies_group_closes_over_its_panels_and_opens_again(self):
-        await self.choose(genre=A_GENRE_WITH_RHYTHMS)
-        await self.go_to_named_branch(labels_text.MSG_WIZARD_MELODIES_BRANCH)
-        self.assertIn(labels_text.MSG_WIZARD_HOOKS_BRANCH, [branch.name() for _, branch in self.wizard().rows()])
-        await self.press(Key.LEFT)
-        self.assertNotIn(labels_text.MSG_WIZARD_HOOKS_BRANCH, [branch.name() for _, branch in self.wizard().rows()])
-        self.assertIn(labels_text.MSG_WIZARD_RIFFS_BRANCH, [branch.name() for _, branch in self.wizard().rows()])
-        await self.press(Key.RIGHT)
-        self.assertIn(labels_text.MSG_WIZARD_HOOKS_BRANCH, [branch.name() for _, branch in self.wizard().rows()])
 
     async def go_to_the_drums(self):
         choices = self.choices()

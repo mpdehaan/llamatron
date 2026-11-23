@@ -15,15 +15,11 @@ changes, with the style beside each piece, so that a lost blank line, a column m
 The tour is run at 80 by 24, the smallest console a page must be good at, and at 160 by 50, a large one.
 """
 
-import functools
 import json
 import os
-import random
 import sys
 import unittest
-from unittest import mock
 
-from llamatron.wizards.create_song.wizard_choices import WizardChoices
 from tests.interface.tracker.test_tui_help_keys import KeyTour
 from tests.support.key_map import place_of
 
@@ -45,10 +41,6 @@ ENCODING = 'utf-8'
 TOUR_NAME = 'ScreenTour{columns}x{rows}'
 SIZE_ATTRIBUTE = 'SIZE'
 SLOTS = '__slots__'
-# The song wizard draws a new seed each time it opens, so that every song it makes differs; the tour draws from a fixed one,
-# so that two runs plan the same song and the wizard's panels compare.
-DRAW_SEED = 'draw_seed'
-TOUR_SEED = 1
 # Where a comparison's new capture is made, beside the one before.
 AGAIN = '_again'
 # The environment variable the tour's stops are written through, since unittest makes the test object itself.
@@ -71,10 +63,6 @@ class ScreenTour(KeyTour):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.stops = []
-        seeded = functools.partialmethod(WizardChoices.draw_seed, dice=random.Random(TOUR_SEED))
-        patcher = mock.patch.object(WizardChoices, DRAW_SEED, seeded)
-        patcher.start()
-        self.addCleanup(patcher.stop)
 
     def note(self):
         super().note()

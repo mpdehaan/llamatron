@@ -917,6 +917,11 @@ MSG_WIZARD_SONG_LABEL = 'Song'
 MSG_WIZARD_BARS_LABEL = 'Bars'
 MSG_WIZARD_PLAYS_LABEL = 'Plays'
 MSG_WIZARD_CREATE_BUTTON = 'Apply'
+# The buttons under the wizard's tab box, which open the tab before or after.
+MSG_WIZARD_BACK_BUTTON = '< Back'
+MSG_WIZARD_NEXT_BUTTON = 'Next >'
+# A tab's own row in its list, at its head, before its parts.
+MSG_WIZARD_TAB_OWN_ROW = 'Whole {name}'
 MSG_WIZARD_SCALE_TYPE_NAMES = {'major': 'Major', 'minor': 'Minor'}
 
 MSG_LISTED_GENERATOR = '{kind} ({name})'

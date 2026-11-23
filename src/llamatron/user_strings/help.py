@@ -329,14 +329,14 @@ A factory groove can only be looked at: copy it on the Grooves page to get one y
 HELP_WIZARD_PAGE = """
 The song wizard makes a whole song from a few choices. Nothing in the set changes until Apply.
 
-The tree at the left lists the wizard's parts. Up and down move through the tree, left and right close and open a part, and the settings of the part under the cursor show at the right.
-ENTER or Tab moves into the settings, and ESC or Tab moves back to the tree.
-Genre, then Subgenre: choose both first. A dim part of the tree is locked until then. The key, the scale, the tempo and the form take what the subgenre usually has, and each can be changed.
+The tabs, Genre, Band, Composition, Form and Apply, are the wizard's parts. Tab goes between the row of tabs and the box under it; PgUp and PgDn, and the Back and Next buttons under the box, open the tab before or after.
+A tab's parts are listed at its left: up and down move, ENTER or right moves into the settings of the part under the cursor, and ESC or left moves back.
+Genre: choose the genre and the subgenre first. A dim tab waits until then. The key, the scale, the tempo and the form take what the subgenre usually has, and each can be changed.
 Composition: Chords, the chord progression; Melody, the melody style of the tunes; Hooks, whether the song has a hook.
 Tunes: the tune of each kind of section. ENTER edits its notes in the pattern editor; edited notes are yours, and no choice changes them.
 A new take, in the legend on a tune, writes that tune again and leaves the rest of the song.
-Form: the sections the song plays, in order, listed under Form in the tree. On a section, I inserts a section before it, A adds one at the end, C copies it, Bksp removes it
+Form: the sections the song plays, in order, listed in the Form tab. On a section, I inserts a section before it, A adds one at the end, C copies it, Bksp removes it
 and M moves it, and its settings choose its kind, how many bars it lasts and who plays in it.
-Apply: ENTER on the Apply button makes the song and shows Arrange. Undo then takes the whole song away again.
-L listens to a hook, a tune or a section, and stops it. ESC in the tree closes the wizard, and asks first.
+Apply: the Apply button under the Apply tab makes the song and shows Arrange. Undo then takes the whole song away again.
+L listens to a hook, a tune or a section, and stops it. ESC outside the settings closes the wizard, and asks first.
 """

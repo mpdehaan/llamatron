@@ -270,14 +270,19 @@ class FieldPage(Page):
 
 
 class WizardPage(FieldPage):
-    """The song wizard: a tree of its parts at the left and the settings of the part under the cursor at the right.
-    In the tree, Up and Down move, Left and Right close and open a part, and ENTER or Tab moves into the settings; there the
-    settings' own keys work, and ESC or Tab moves back to the tree. ESC in the tree closes the wizard."""
+    """The song wizard: a row of tabs over a box, a tab's parts listed at the left of the box and the settings of the part under
+    the cursor at the right, and Back and Next under the box. On the row of tabs, Left and Right choose a tab, and Tab, ENTER or
+    Down goes into the box; in the list, Up and Down move, Up from the head to the row of tabs and Down from the foot to the
+    buttons, ENTER or Right moves into the settings, Tab goes to the row of tabs and PgUp and PgDn choose the tab before or after;
+    in the settings, their own keys work, and ESC or Left moves back to the list. ESC elsewhere closes the wizard."""
 
     TREE = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
-    FOLD = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_WIZARD_FOLD_WHAT)
-    INTO_FIELDS = Binding((Key.ENTER, Key.TAB), legends.KeyName.ENTER, legends.What.EDIT)
-    TO_TREE = Binding((Key.ESCAPE, Key.TAB), legends.KeyName.ESCAPE, legends.MSG_WIZARD_TO_TREE_WHAT)
+    INTO_FIELDS = Binding((Key.ENTER, Key.RIGHT), legends.KeyName.ENTER, legends.What.EDIT)
+    TO_TREE = Binding((Key.ESCAPE, Key.LEFT), legends.KeyName.ESCAPE, legends.MSG_WIZARD_TO_TREE_WHAT)
+    INTO_BOX = Binding((Key.TAB, Key.ENTER, Key.DOWN), legends.KeyName.TAB, legends.MSG_INTO_TAB_WHAT)
+    NEXT_TAB = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_TAB_WHAT)
+    PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
+    UP_FROM_BUTTONS = Binding(Key.UP, legends.KeyName.UP, legends.MSG_WIZARD_UP_FROM_BUTTONS_WHAT)
     CLOSE = Binding(Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CLOSE)
     # A part that is one of a list, as a section of the form, takes the keys every list has; A also adds from the part that holds the list.
     ADD = Binding(Key.A, legends.KeyName.A, legends.What.ADD)
@@ -293,7 +298,7 @@ class WizardPage(FieldPage):
     # On a riff or a section's melody: other notes written for it, after a question. On a riff: its name.
     REGENERATE = Binding(Key.R, legends.KeyName.R, legends.MSG_REGENERATE_WHAT)
     RENAME_RIFF = Binding(Key.N, legends.KeyName.N, legends.What.RENAME)
-    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, FOLD, INTO_FIELDS, INSERT, ADD, COPY, DELETE, MOVE, LISTEN, STOP_LISTENING, REGENERATE, RENAME_RIFF, *FieldPage.IN_HELP[1:]]
+    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, INTO_FIELDS, INTO_BOX, NEXT_TAB, PRESS, UP_FROM_BUTTONS, INSERT, ADD, COPY, DELETE, MOVE, LISTEN, STOP_LISTENING, REGENERATE, RENAME_RIFF, *FieldPage.IN_HELP[1:]]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 

@@ -19,13 +19,13 @@ NEW_LINE = '\n'
 
 
 class SubgenrePanelTest(WizardTest):
-    """What the tests of the Subgenre panel's fields share: the panel reached with a subgenre chosen, and its fields' labels."""
+    """What the tests of the subgenre's fields share: the Genre tab reached with a subgenre chosen, and its fields' labels."""
 
     async def to_genre(self, *, genre, subgenre):
         choices = self.choices()
         choices.set_genre(genre)
         choices.set_subgenre(subgenre)
-        await self.go_to_named_branch(labels_text.MSG_WIZARD_SUBGENRE_BRANCH)
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_GENRE_BRANCH)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         return choices
 
