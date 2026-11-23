@@ -53,6 +53,7 @@ patterns:
   - name: kick
     steps: 16
     drum: true
+    group: kick
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
@@ -60,6 +61,7 @@ patterns:
   - name: snare
     steps: 64
     drum: true
+    group: snare
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, D, D]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, 3]
@@ -67,6 +69,7 @@ patterns:
   - name: hat
     steps: 16
     drum: true
+    group: hat
     step_size: 1/16
     degree: [F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~, F, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
@@ -75,6 +78,7 @@ patterns:
   - name: toms
     steps: 64
     drum: true
+    group: toms
     step_size: 1/16
     degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, A, ~, A, ~, A, A, A, A]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, 3, 3, 3, 3]
@@ -82,6 +86,7 @@ patterns:
   - name: crash
     steps: 64
     drum: true
+    group: crash
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
@@ -89,18 +94,21 @@ patterns:
     velocity: [104, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
   - name: bass
     steps: 8
+    group: bass
     step_size: 1/8
     degree: [1, 1, 1, 1, 1, 1, 1, 1]
     octave: [2, 2, 2, 2, 2, 2, 2, 2]
     velocity: [114, 100, 103, 100, 105, 100, 103, 100]
   - name: broken
     steps: 16
+    group: keys
     step_size: 1/16
     degree: [1, 3, 5, 1, 1, 3, 5, 1, 1, 3, 5, 1, 1, 3, 5, 1]
     octave: [4, 4, 4, 5, 4, 4, 4, 5, 4, 4, 4, 5, 4, 4, 4, 5]
     velocity: [85, 69, 71, 69, 74, 69, 71, 69, 76, 69, 71, 69, 74, 69, 71, 69]
   - name: chords
     steps: 8
+    group: guitar
     step_size: 1/8
     degree: [1, ~, ~, 1, ~, ~, 1, ~]
     octave: [3, ~, ~, 3, ~, ~, 3, ~]
@@ -109,6 +117,7 @@ patterns:
     tie: [false, true, true, false, true, true, false, true]
   - name: tune
     steps: 64
+    group: lead
     step_size: 1/8
     degree: [5, ~, ~, 5, 1, ~, 2, ~, 3, ~, ~, ~, 1, ~, 5, ~, 6, ~, ~, 6, 1, ~, 6, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, 5, 1, ~, 2, ~, 3, ~, ~, ~, 2, ~, 1, ~, 2, ~, ~, 1, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, 4, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 4, ~, 4, ~, ~, 4, 5, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, 4, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, 5, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
@@ -116,6 +125,7 @@ patterns:
     tie: [false, true, true, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, false, false, true, false, true, false, true, true, true, true, true, false, false]
   - name: middle
     steps: 64
+    group: lead
     step_size: 1/8
     degree: [6, ~, 1, ~, 4, ~, 6, ~, 1, ~, ~, ~, ~, ~, ~, ~, 5, ~, 7, ~, 2, ~, 7, ~, 3, ~, ~, ~, ~, ~, ~, ~, 6, ~, 1, ~, 2, ~, 3, ~, 2, ~, ~, ~, 1, ~, ~, ~, 7, ~, 1, ~, 2, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, 5, ~, 4, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~, 4, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 4, ~, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
@@ -123,6 +133,7 @@ patterns:
     tie: [false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
   - name: horns
     steps: 64
+    group: horns
     step_size: 1/8
     degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, 5, 1, ~, 5, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, 1, 3, ~, 1, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, 3, 4, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 4, 4, 4, ~, 4, ~]
@@ -130,6 +141,7 @@ patterns:
     tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true]
   - name: half tune
     steps: 32
+    group: lead
     step_size: 1/8
     degree: [5, ~, ~, 5, 1, ~, 2, ~, 3, ~, ~, ~, 2, ~, 1, ~, 2, ~, ~, 1, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, 4, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, 5, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]

@@ -45,6 +45,7 @@ scales:
 patterns:
   - name: harmony
     steps: 1
+    group: organ
     step_size: 1
     degree: [1]
     octave: [4]
@@ -52,6 +53,7 @@ patterns:
     velocity: [64]
   - name: harmony turnaround
     steps: 4
+    group: organ
     step_size: 1
     degree: [1, 1, 1, 1]
     octave: [4, 4, 4, 4]
@@ -59,10 +61,12 @@ patterns:
     velocity: [64, 64, 64, 64]
   - name: bass
     steps: 8
+    group: bass
     step_size: 1/8
     grab: [true, false, false, true, true, false, true, false]
   - name: piano
     steps: 8
+    group: piano
     step_size: 1/8
     chord: [7, ~, ~, 7, ~, ~, 7, ~]
     velocity: [90, ~, ~, 90, ~, ~, 90, ~]
@@ -70,6 +74,7 @@ patterns:
     grab: [true, false, false, true, false, false, true, false]
   - name: piano turnaround
     steps: 16
+    group: piano
     step_size: 1/4
     chord: [M7, ~, ~, ~, m6, ~, ~, ~, M7, ~, ~, ~, dom7, ~, ~, ~]
     velocity: [90, ~, ~, ~, 90, ~, ~, ~, 90, ~, ~, ~, 90, ~, ~, ~]
@@ -77,18 +82,21 @@ patterns:
     grab: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
   - name: lead from a draw
     steps: 16
+    group: lead
     step_size: 1/8
     grab: [true, false, true, true, false, true, true, true, true, false, true, false, true, true, true, false]
     ad_note: [1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0]
     ad_reset: [true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
   - name: lead for the arpeggiator
     steps: 8
+    group: lead
     step_size: 1/8
     chord: [7, ~, ~, ~, 7, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true]
     grab: [true, false, false, false, true, false, false, false]
   - name: lead from ratchets
     steps: 4
+    group: lead
     step_size: 1/4
     ratchet: [4, 4, 4, 4]
     ratchet_offset: [1, 1, -1, -1]
@@ -96,18 +104,21 @@ patterns:
   - name: kick
     steps: 4
     drum: true
+    group: kick
     step_size: 1/4
     degree: [C, ~, ~, C]
     octave: [3, ~, ~, 3]
   - name: snare
     steps: 4
     drum: true
+    group: snare
     step_size: 1/4
     degree: [~, D, ~, D]
     octave: [~, 3, ~, 3]
   - name: hats
     steps: 8
     drum: true
+    group: hats
     step_size: 1/8
     degree: [F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#"]

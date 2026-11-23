@@ -28,7 +28,7 @@ On the row of tabs, the keys work on the chosen group:
 | `C` | Copies the whole group under a new name. Each copied pattern's name starts with the new group's name. |
 | `Bksp` | Takes every pattern out of the group, after asking. No pattern is deleted. |
 
-A pattern made anywhere else, such as a blank pattern on Arrange or a MIDI import, goes in the group named after its track.
+A pattern made anywhere else, such as a blank pattern on Arrange, a new pattern on the clip page or a MIDI import, goes in the group named after its track, and renaming the track renames that group. The demos' patterns are grouped the same way.
 
 ## Piano Roll
 

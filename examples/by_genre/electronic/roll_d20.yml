@@ -56,6 +56,7 @@ patterns:
   - name: timpani dance
     steps: 16
     drum: true
+    group: timpani
     step_size: 1/16
     degree: [A, ~, ~, ~, ~, ~, A, ~, A, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
@@ -63,6 +64,7 @@ patterns:
   - name: tamb
     steps: 16
     drum: true
+    group: tamb
     step_size: 1/16
     degree: [~, ~, F, ~, F, ~, ~, ~, F, ~, F, ~, F, ~, F, ~]
     accidental: [~, ~, "#", ~, "#", ~, ~, ~, "#", ~, "#", ~, "#", ~, "#", ~]
@@ -71,6 +73,7 @@ patterns:
   - name: march low
     steps: 16
     drum: true
+    group: timpani
     step_size: 1/16
     degree: [A, ~, ~, ~, A, ~, ~, ~, A, ~, ~, ~, A, ~, A, ~]
     octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, 3, ~]
@@ -78,6 +81,7 @@ patterns:
   - name: march snare
     steps: 16
     drum: true
+    group: snare
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, D, ~, ~, ~, ~, D, ~, D, D]
     octave: [~, ~, ~, ~, 3, ~, ~, 3, ~, ~, ~, ~, 3, ~, 3, 3]
@@ -85,6 +89,7 @@ patterns:
   - name: battle
     steps: 16
     drum: true
+    group: timpani
     step_size: 1/16
     degree: [A, ~, A, A, A, ~, A, ~, A, ~, A, A, A, ~, A, A]
     octave: [3, ~, 3, 3, 3, ~, 3, ~, 3, ~, 3, 3, 3, ~, 3, 3]
@@ -92,6 +97,7 @@ patterns:
   - name: battle high
     steps: 16
     drum: true
+    group: toms
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~]
@@ -99,6 +105,7 @@ patterns:
   - name: battle crash
     steps: 64
     drum: true
+    group: crash
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     accidental: ["#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
@@ -106,6 +113,7 @@ patterns:
     velocity: [96, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
   - name: theme
     steps: 64
+    group: recorder
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~, 4, ~, 3, ~, 2, ~, ~, ~, 3, ~, ~, ~, 1, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 7, ~, 5, ~, 4, ~, ~, ~, 3, ~, 2, ~, 1, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
@@ -113,6 +121,7 @@ patterns:
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
   - name: theme low
     steps: 64
+    group: horn
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~, 4, ~, 3, ~, 2, ~, ~, ~, 3, ~, ~, ~, 1, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 7, ~, 5, ~, 4, ~, ~, ~, 3, ~, 2, ~, 1, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, ~, ~, 4, ~, 4, ~, 4, ~, 3, ~, 4, ~, ~, ~, ~, ~, ~, ~]
@@ -120,6 +129,7 @@ patterns:
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
   - name: theme bells
     steps: 32
+    group: bells
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~, 4, ~, 3, ~, 2, ~, ~, ~, 3, ~, ~, ~, 1, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
@@ -127,6 +137,7 @@ patterns:
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false]
   - name: theme high
     steps: 64
+    group: recorder
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~, 4, ~, 3, ~, 2, ~, ~, ~, 3, ~, ~, ~, 1, ~, 3, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, 5, ~, ~, ~, 7, ~, 5, ~, 4, ~, ~, ~, 3, ~, 2, ~, 1, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [6, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, 5, ~, 6, ~, ~, ~, ~, ~, ~, ~]
@@ -134,6 +145,7 @@ patterns:
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
   - name: last bells
     steps: 32
+    group: bells
     step_size: 1/8
     degree: [1, ~, ~, ~, 5, ~, ~, ~, 7, ~, 5, ~, 4, ~, ~, ~, 3, ~, 2, ~, 1, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, ~, ~, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~, 5, ~, 5, ~, 5, ~, 4, ~, 5, ~, ~, ~, ~, ~, ~, ~]
@@ -141,6 +153,7 @@ patterns:
     tie: [false, true, true, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
   - name: dance
     steps: 64
+    group: recorder
     step_size: 1/8
     degree: [1, 2, 3, ~, 5, ~, 3, ~, 4, 3, 2, ~, 7, ~, 2, ~, 1, 2, 3, ~, 5, ~, 1, ~, 7, ~, 5, ~, 4, ~, ~, ~, 1, 7, 5, ~, 3, ~, 5, ~, 4, 3, 2, ~, 4, ~, 2, ~, 3, 2, 1, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 4, ~, 5, ~, 5, 5, 5, ~, 5, ~, 6, ~, 5, ~, 5, ~, 5, ~, ~, ~, 6, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, 5, 5, ~, 4, ~, 5, ~, 5, ~, ~, ~, ~, ~, ~, ~]
@@ -148,6 +161,7 @@ patterns:
     tie: [false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
   - name: dance low
     steps: 64
+    group: harpsichord
     step_size: 1/8
     degree: [1, 2, 3, ~, 5, ~, 3, ~, 4, 3, 2, ~, 7, ~, 2, ~, 1, 2, 3, ~, 5, ~, 1, ~, 7, ~, 5, ~, 4, ~, ~, ~, 1, 7, 5, ~, 3, ~, 5, ~, 4, 3, 2, ~, 4, ~, 2, ~, 3, 2, 1, ~, 7, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, 4, 4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 3, ~, 4, ~, 4, 4, 4, ~, 4, ~, 5, ~, 4, ~, 4, ~, 4, ~, ~, ~, 5, 4, 4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 4, ~, 4, ~, 4, 4, 4, ~, 3, ~, 4, ~, 4, ~, ~, ~, ~, ~, ~, ~]
@@ -155,6 +169,7 @@ patterns:
     tie: [false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, true, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, true, true, true, true, false, false]
   - name: crypt
     steps: 64
+    group: organ
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
@@ -163,6 +178,7 @@ patterns:
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
   - name: crypt choir
     steps: 64
+    group: choir
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
@@ -171,6 +187,7 @@ patterns:
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true]
   - name: dragon
     steps: 64
+    group: horn
     step_size: 1/8
     degree: [1, ~, 1, 1, 3, ~, 1, ~, 2, ~, 2, 2, 4, ~, 2, ~, 1, ~, 1, 1, 5, ~, 3, ~, 5, ~, ~, ~, 4, ~, ~, ~, 1, ~, 1, 1, 7, ~, 5, ~, 6, ~, 6, 6, 5, ~, 3, ~, 4, ~, 3, ~, 2, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, b, b, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
@@ -179,6 +196,7 @@ patterns:
     tie: [false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
   - name: dragon high
     steps: 64
+    group: strings
     step_size: 1/8
     degree: [1, ~, 1, 1, 3, ~, 1, ~, 2, ~, 2, 2, 4, ~, 2, ~, 1, ~, 1, 1, 5, ~, 3, ~, 5, ~, ~, ~, 4, ~, ~, ~, 1, ~, 1, 1, 7, ~, 5, ~, 6, ~, 6, 6, 5, ~, 3, ~, 4, ~, 3, ~, 2, ~, 7, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, b, ~, b, b, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, b, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
@@ -187,6 +205,7 @@ patterns:
     tie: [false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, true, true, false, true, true, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true, true, true, true]
   - name: counter
     steps: 64
+    group: harpsichord
     step_size: 1/8
     degree: [3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, 7, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 2, ~, ~, ~, 2, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~, 4, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 4, ~, ~, ~, ~, ~, ~, ~]
@@ -194,12 +213,14 @@ patterns:
     tie: [false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true, false, false, false, true, true, true, true, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true, true, true, true, true]
   - name: harp
     steps: 8
+    group: harp
     step_size: 1/8
     degree: [1, 5, 1, 3, 5, 3, 1, 5]
     octave: [4, 4, 5, 5, 5, 5, 5, 4]
     velocity: [82, 66, 70, 66, 73, 66, 70, 66]
   - name: pedal
     steps: 8
+    group: strings
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [2, ~, ~, ~, ~, ~, ~, ~]
@@ -207,6 +228,7 @@ patterns:
     tie: [false, true, true, true, true, true, true, true]
   - name: chord
     steps: 8
+    group: strings
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~]
@@ -215,6 +237,7 @@ patterns:
     tie: [false, true, true, true, true, true, true, true]
   - name: fifths
     steps: 8
+    group: organ
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, ~, ~]
@@ -223,6 +246,7 @@ patterns:
     tie: [false, true, true, true, true, true, true, true]
   - name: pluck chords
     steps: 8
+    group: harp
     step_size: 1/8
     degree: [1, ~, ~, ~, 1, ~, 1, ~]
     octave: [4, ~, ~, ~, 4, ~, 4, ~]
@@ -230,6 +254,7 @@ patterns:
     velocity: [84, ~, ~, ~, 75, ~, 72, ~]
   - name: toll
     steps: 32
+    group: bells
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
@@ -237,6 +262,7 @@ patterns:
     tie: [false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
   - name: stabs
     steps: 8
+    group: organ
     step_size: 1/8
     degree: [1, ~, 1, 1, ~, ~, ~, ~]
     octave: [3, ~, 3, 3, ~, ~, ~, ~]

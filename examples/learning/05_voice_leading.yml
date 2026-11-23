@@ -31,6 +31,7 @@ scales:
 patterns:
   - name: chords
     steps: 4
+    group: right hand
     step_size: 1/4
     degree: [1, ~, 1, ~]
     octave: [4, ~, 4, ~]
@@ -39,6 +40,7 @@ patterns:
     tie: [false, true, false, true]
   - name: bass
     steps: 4
+    group: left hand
     step_size: 1/4
     degree: [1, ~, ~, ~]
     octave: [3, ~, ~, ~]

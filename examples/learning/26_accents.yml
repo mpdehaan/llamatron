@@ -37,6 +37,7 @@ patterns:
   - name: hats plain
     steps: 16
     drum: true
+    group: hats
     step_size: 1/16
     degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
@@ -44,6 +45,7 @@ patterns:
   - name: hats on the beat
     steps: 16
     drum: true
+    group: hats
     step_size: 1/16
     degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
@@ -52,6 +54,7 @@ patterns:
   - name: hats off the beat
     steps: 16
     drum: true
+    group: hats
     step_size: 1/16
     degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
@@ -60,6 +63,7 @@ patterns:
   - name: hats in threes
     steps: 16
     drum: true
+    group: hats
     step_size: 1/16
     degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
@@ -68,12 +72,14 @@ patterns:
   - name: snare plain
     steps: 16
     drum: true
+    group: snare
     step_size: 1/16
     degree: [~, ~, D, ~, D, ~, ~, D, ~, D, ~, ~, D, ~, ~, D]
     octave: [~, ~, 3, ~, 3, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, 3]
   - name: snare backbeat
     steps: 16
     drum: true
+    group: snare
     step_size: 1/16
     degree: [~, ~, D, ~, D, ~, ~, D, ~, D, ~, ~, D, ~, ~, D]
     octave: [~, ~, 3, ~, 3, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, 3]
@@ -81,17 +87,20 @@ patterns:
   - name: kick
     steps: 16
     drum: true
+    group: kick
     step_size: 1/16
     degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~, ~, ~]
   - name: bass plain
     steps: 16
+    group: bass
     step_size: 1/16
     degree: [1, ~, 1, 1, ~, 1, 7, ~, 1, ~, 1, 1, ~, 5, 7, ~]
     gate: [1/16, ~, 1/16, 1/16, ~, 1/16, 1/16, ~, 1/16, ~, 1/16, 1/16, ~, 1/16, 1/16, ~]
     octave: [2, ~, 2, 2, ~, 2, 2, ~, 2, ~, 2, 2, ~, 2, 2, ~]
   - name: bass accented
     steps: 16
+    group: bass
     step_size: 1/16
     degree: [1, ~, 1, 1, ~, 1, 7, ~, 1, ~, 1, 1, ~, 5, 7, ~]
     gate: [1/16, ~, 1/16, 1/16, ~, 1/16, 1/16, ~, 1/16, ~, 1/16, 1/16, ~, 1/16, 1/16, ~]
@@ -99,6 +108,7 @@ patterns:
     accent: [true, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false]
   - name: keys plain
     steps: 16
+    group: keys
     step_size: 1/16
     degree: [~, ~, 1, ~, ~, 1, ~, ~, ~, ~, 1, ~, ~, 1, ~, 1]
     gate: [~, ~, 1/16, ~, ~, 1/16, ~, ~, ~, ~, 1/16, ~, ~, 1/16, ~, 1/16]
@@ -106,6 +116,7 @@ patterns:
     chord: [~, ~, 7, ~, ~, 7, ~, ~, ~, ~, 7, ~, ~, 7, ~, 7]
   - name: keys accented
     steps: 16
+    group: keys
     step_size: 1/16
     degree: [~, ~, 1, ~, ~, 1, ~, ~, ~, ~, 1, ~, ~, 1, ~, 1]
     gate: [~, ~, 1/16, ~, ~, 1/16, ~, ~, ~, ~, 1/16, ~, ~, 1/16, ~, 1/16]

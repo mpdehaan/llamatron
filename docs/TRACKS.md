@@ -12,7 +12,7 @@ Under the Name, a box of tabs holds the rest, as on the clip page (see [Clips](C
 
 | Setting | What it does |
 | --- | --- |
-| Name | `ENTER` renames the track, updating every scene and every clip that grabs from the track. |
+| Name | `ENTER` renames the track, updating every scene and every clip that grabs from the track. The pattern group of the track's name is renamed too, unless a group already has the new name. |
 | Drum | Marks a drum track, shown with `●`, which is never transposed. `Space` or `ENTER` toggles it. |
 | Mute | Starts the track switched off in Live, shown with `●`, so the track is silent until switched on. A muted track's clips are still written, so the track can be switched on to hear them, and other tracks can still grab notes from it. Mute is meant for tracks that only feed grabs or a hocket. `Space` or `ENTER` toggles it. |
 | Groove | A groove for the track's clips in place of the scene's or the song's, or `off` to play them straight whatever the scene and song choose, which keeps a kick straight in a swung song. `[` and `]` step through the choices, `ENTER` picks from a list, and `Bksp` goes back to the scene's or the song's. See [Grooves](GROOVES.md). |

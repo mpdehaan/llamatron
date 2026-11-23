@@ -59,10 +59,15 @@ class NamedEdits:
         return name in self.names_of(section)
 
     def rename_named(self, *, section, old, new):
-        """Rename an item of a section, which changes every reference to it by name. A renamed song stays current."""
+        """Rename an item of a section, which changes every reference to it by name. A renamed song stays current, and a renamed
+        track renames the pattern group of its name, where there is one and no group has the new name, since a track's patterns
+        are grouped under its name."""
         self.change_set(self.owner_of(section).rename_item, section=section, old=old, new=new)
         if section == Section.SONGS and old == self._current:
             self._current = new
+        groups = self._setlist.get_pattern_groups()
+        if section == Section.TRACKS and old in groups and new not in groups:
+            self.change_set(self._setlist.rename_pattern_group, old=old, new=new)
 
     def copy_named(self, *, section, name):
         """Add a copy of an item of a section and return the copy's name.

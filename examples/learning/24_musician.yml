@@ -34,24 +34,28 @@ scales:
 patterns:
   - name: chords written
     steps: 4
+    group: SILENT Chords
     step_size: 1
     degree: [1, 5, 6, 4]
     octave: [4, 4, 4, 4]
     chord: [3, 3, 3, 3]
   - name: tune
     steps: 32
+    group: tune
     step_size: 1/8
     degree: [3, ~, 3, 4, 5, ~, 5, ~, 6, ~, 5, ~, ~, ~, ~, ~, 4, ~, 4, 5, 6, ~, 6, ~, 5, ~, 3, ~, ~, ~, ~, ~]
     octave: [5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~, 5, ~, 5, 5, 5, ~, 5, ~, 5, ~, 5, ~, ~, ~, ~, ~]
     tie: [false, true, false, false, false, true, false, true, false, true, false, true, false, false, false, false, false, true, false, false, false, true, false, true, false, true, false, true, false, false, false, false]
   - name: licks
     steps: 8
+    group: lead guitar
     step_size: 1/8
     degree: [5, 6, 1, 6, 5, 3, 5, 6]
     octave: [5, 5, 6, 5, 5, 5, 5, 5]
     velocity: [100, 84, 104, 84, 96, 84, 92, 88]
   - name: strum
     steps: 8
+    group: rhythm guitar
     step_size: 1/8
     degree: [1, 1, 1, 1, 1, 1, 1, 1]
     octave: [4, 4, 4, 4, 4, 4, 4, 4]
@@ -59,6 +63,7 @@ patterns:
     velocity: [96, 70, 84, 70, 92, 70, 84, 74]
   - name: organ
     steps: 4
+    group: organ
     step_size: 1/4
     degree: [1, ~, 1, ~]
     octave: [4, ~, 4, ~]
@@ -66,6 +71,7 @@ patterns:
     velocity: [76, ~, 70, ~]
   - name: bass
     steps: 8
+    group: bass
     step_size: 1/8
     degree: [1, ~, 1, 1, 5, ~, 1, 5]
     octave: [3, ~, 3, 3, 3, ~, 3, 3]
@@ -73,18 +79,21 @@ patterns:
   - name: kick
     steps: 8
     drum: true
+    group: kick
     step_size: 1/8
     degree: [C, ~, ~, C, C, ~, ~, ~]
     octave: [3, ~, ~, 3, 3, ~, ~, ~]
   - name: snare
     steps: 4
     drum: true
+    group: snare
     step_size: 1/4
     degree: [~, D, ~, D]
     octave: [~, 3, ~, 3]
   - name: hats
     steps: 8
     drum: true
+    group: hats
     step_size: 1/8
     degree: [F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#"]

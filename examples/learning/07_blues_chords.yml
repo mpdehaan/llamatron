@@ -33,11 +33,13 @@ scales:
 patterns:
   - name: walk
     steps: 4
+    group: bass
     step_size: 1/4
     degree: [1, 3, 5, 6]
     octave: [2, 2, 2, 2]
   - name: comp
     steps: 8
+    group: comp
     step_size: 1/8
     degree: [~, ~, 1, ~, ~, ~, 1, ~]
     octave: [~, ~, 4, ~, ~, ~, 4, ~]
@@ -45,6 +47,7 @@ patterns:
     velocity: [~, ~, 90, ~, ~, ~, 80, ~]
   - name: riff
     steps: 8
+    group: riff
     step_size: 1/8
     degree: [1, 3, 3, 5, 6, 5, 3, ~]
     accidental: [~, b, ~, ~, ~, ~, b, ~]
@@ -53,18 +56,21 @@ patterns:
   - name: kick
     steps: 4
     drum: true
+    group: kick
     step_size: 1/4
     degree: [C, ~, C, ~]
     octave: [3, ~, 3, ~]
   - name: snare
     steps: 4
     drum: true
+    group: snare
     step_size: 1/4
     degree: [~, D, ~, D]
     octave: [~, 3, ~, 3]
   - name: hats
     steps: 8
     drum: true
+    group: hats
     step_size: 1/8
     degree: [F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#"]

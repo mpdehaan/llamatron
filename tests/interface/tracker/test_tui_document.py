@@ -582,6 +582,19 @@ class TestRenaming(unittest.TestCase):
                 document.rename_named(section=section, old=old, new=NEW)
                 render_song(document.song())
 
+    def test_renaming_a_track_renames_the_pattern_group_of_its_name(self):
+        document = song_with_things()
+        document.change_pattern(document.pattern(A).set_group, LEAD)
+        document.rename_named(section=Section.TRACKS, old=LEAD, new=TOP)
+        self.assertEqual(document.pattern_group(A), TOP)
+
+    def test_a_track_renamed_to_a_groups_name_leaves_both_groups_alone_rather_than_merge_them(self):
+        document = song_with_things()
+        document.change_pattern(document.pattern(A).set_group, LEAD)
+        document.change_pattern(document.pattern(B).set_group, TOP)
+        document.rename_named(section=Section.TRACKS, old=LEAD, new=TOP)
+        self.assertEqual((document.pattern_group(A), document.pattern_group(B)), (LEAD, TOP))
+
     def test_renaming_or_deleting_a_track_updates_grabs_from_it(self):
         document = song_with_things()
         document.add_clip_slot(index=0, track=BASS, pattern=A)

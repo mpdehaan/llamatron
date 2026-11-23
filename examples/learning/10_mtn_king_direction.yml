@@ -32,6 +32,7 @@ scales:
 patterns:
   - name: theme
     steps: 32
+    group: theme
     step_size: 1/8
     degree: [1, 2, 3, 4, 5, 3, 5, ~, 5, 2, 5, ~, 4, 2, 4, ~, 1, 2, 3, 4, 5, 3, 5, 1, 7, 5, 3, 5, 7, ~, ~, ~]
     gate: [~, ~, ~, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, 1/4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1/2, ~, ~, ~]
@@ -39,6 +40,7 @@ patterns:
     octave: [4, 4, 4, 4, 4, 4, 4, ~, 4, 4, 4, ~, 4, 4, 4, ~, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, ~, ~, ~]
   - name: theme_pendulum
     steps: 32
+    group: theme
     step_size: 1/8
     direction: pendulum
     degree: [1, 2, 3, 4, 5, 3, 5, ~, 5, 2, 5, ~, 4, 2, 4, ~, 1, 2, 3, 4, 5, 3, 5, 1, 7, 5, 3, 5, 7, ~, ~, ~]
@@ -47,6 +49,7 @@ patterns:
     octave: [4, 4, 4, 4, 4, 4, 4, ~, 4, 4, 4, ~, 4, 4, 4, ~, 4, 4, 4, 4, 4, 4, 4, 5, 4, 4, 4, 4, 4, ~, ~, ~]
   - name: pedal
     steps: 4
+    group: pedal
     step_size: 1/4
     degree: [1, 3, 5, 7]
     octave: [3, 3, 2, 2]

@@ -47,59 +47,69 @@ scales:
 patterns:
   - name: strummed
     steps: 16
+    group: steel
     step_size: 1/4
     degree: [1, 1, 1, 1, 4, 4, 4, 4, 5, 5, 5, 5, 1, 1, 1, 1]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     chord: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
   - name: porch
     steps: 4
+    group: steel
     step_size: 1
     degree: [1, 4, 5, 1]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, 3]
   - name: thumb and fingers
     steps: 4
+    group: steel
     step_size: 1
     degree: [1, 4, 1, 5]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, 7]
   - name: crosspick
     steps: 8
+    group: steel
     step_size: 1/2
     degree: [1, 1, 4, 4, 1, 5, 1, 1]
     octave: [3, 3, 3, 3, 3, 3, 3, 3]
     chord: [3, 3, 3, 3, 3, 3, 3, 3]
   - name: four to the bar
     steps: 4
+    group: jazz
     step_size: 1
     degree: [2, 5, 1, 6]
     octave: [3, 3, 3, 3]
     chord: [7, 7, 7, dom7]
   - name: open g
     steps: 4
+    group: steel
     step_size: 1
     degree: [1, 4, 1, 5]
     octave: [3, 3, 3, 3]
     chord: [dom7, dom7, dom7, dom7]
   - name: boogie
     steps: 4
+    group: clean
     step_size: 1
     degree: [1, 4, 1, 5]
     octave: [2, 2, 2, 2]
   - name: tremolo
     steps: 4
+    group: clean
     step_size: 1
     degree: [1, 7, 6, 5]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, M]
   - name: campfire
     steps: 4
+    group: steel
     step_size: 1
     degree: [1, 6, 4, 5]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, 3]
   - name: chime
     steps: 4
+    group: clean
     step_size: 1
     degree: [1, 7, 4, 1]
     accidental: [~, b, ~, ~]
@@ -107,18 +117,21 @@ patterns:
     chord: [3, M, 3, 3]
   - name: backbeat
     steps: 4
+    group: clean
     step_size: 1
     degree: [1, 4, 2, 5]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, 3]
   - name: scratch
     steps: 4
+    group: muted
     step_size: 1
     degree: [1, 1, 1, 1]
     octave: [3, 3, 3, 3]
     chord: [dom9, dom9, dom9, dom9]
   - name: harp
     steps: 4
+    group: nylon
     step_size: 1
     degree: [1, 5, 6, 4]
     octave: [3, 3, 3, 3]
@@ -126,46 +139,54 @@ patterns:
     inversion: [~, 1, ~, ~]
   - name: arena
     steps: 4
+    group: overdriven
     step_size: 1
     degree: [1, 3, 4, 1]
     accidental: [~, b, ~, ~]
     octave: [2, 2, 2, 2]
   - name: three chords loud
     steps: 4
+    group: distortion
     step_size: 1
     degree: [1, 4, 5, 4]
     octave: [2, 2, 2, 2]
   - name: gallop
     steps: 4
+    group: distortion
     step_size: 1
     degree: [1, 1, 6, 7]
     octave: [2, 2, 2, 2]
   - name: thrash
     steps: 8
+    group: distortion
     step_size: 1/2
     degree: [1, 1, 2, 2, 1, 1, 3, 2]
     accidental: [~, ~, b, b, ~, ~, ~, b]
     octave: [2, 2, 2, 2, 2, 2, 2, 2]
   - name: low and slow
     steps: 4
+    group: distortion
     step_size: 1
     degree: [1, 1, 3, 5]
     accidental: [~, ~, ~, b]
     octave: [2, 2, 2, 2]
   - name: quiet loud
     steps: 4
+    group: overdriven
     step_size: 1
     degree: [1, 3, 7, 4]
     octave: [3, 3, 3, 3]
     chord: [3, 3, 3, M]
   - name: shuffle
     steps: 12
+    group: clean
     step_size: 1
     degree: [1, 1, 1, 1, 4, 4, 1, 1, 5, 4, 1, 5]
     octave: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     chord: [dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7, dom7]
   - name: last chord
     steps: 4
+    group: steel
     step_size: 1
     degree: [1, 4, 5, 1]
     octave: [3, 3, 3, 3]

@@ -73,30 +73,35 @@ scales:
 patterns:
   - name: run_5_notes
     steps: 12
+    group: scale
     step_size: 1/8
     degree: [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, ~]
     gate: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1/4, ~]
     octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, ~]
   - name: run_6_notes
     steps: 14
+    group: scale
     step_size: 1/8
     degree: [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, ~]
     gate: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1/4, ~]
     octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, ~]
   - name: run_7_notes
     steps: 16
+    group: scale
     step_size: 1/8
     degree: [1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1, ~]
     gate: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1/4, ~]
     octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, ~]
   - name: run_8_notes
     steps: 18
+    group: scale
     step_size: 1/8
     degree: [1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1, ~]
     gate: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1/4, ~]
     octave: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, ~]
   - name: run_12_notes
     steps: 26
+    group: scale
     step_size: 1/8
     degree: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, ~]
     gate: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1/4, ~]

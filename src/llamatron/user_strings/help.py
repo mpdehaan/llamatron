@@ -137,7 +137,7 @@ TIME is one play at the current song's tempo. USED counts the clips, in every so
 
 # TrackEditor
 HELP_TRACK_EDITOR = """
-Name: ENTER renames the track, which updates every scene. Drum: a drum track is never transposed.
+Name: ENTER renames the track, which updates every scene and its pattern group. Drum: a drum track is never transposed.
 Mute: starts switched off in Live; its clips can still be grabbed. Groove: for its clips, instead of the scene's or song's.
 Transpose: moves its notes along the scale. Lowest and Highest octave: what its instrument plays, which the piano roll marks.
 Default velocity: a step with none typed. Accent: what an accent adds. Instrument: where it plays in real time, or none.

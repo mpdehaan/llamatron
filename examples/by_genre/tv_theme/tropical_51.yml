@@ -59,6 +59,7 @@ patterns:
   - name: kick
     steps: 16
     drum: true
+    group: kick
     step_size: 1/16
     degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
     octave: [3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~, 3, ~, ~, ~]
@@ -66,6 +67,7 @@ patterns:
   - name: snare
     steps: 16
     drum: true
+    group: snare
     step_size: 1/16
     degree: [~, ~, ~, ~, D, ~, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~]
@@ -73,6 +75,7 @@ patterns:
   - name: tamb
     steps: 16
     drum: true
+    group: tamb
     step_size: 1/16
     degree: [F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F]
     accidental: ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
@@ -81,6 +84,7 @@ patterns:
   - name: ride
     steps: 16
     drum: true
+    group: ride
     step_size: 1/16
     degree: [D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~, D, ~]
     accidental: ["#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~, "#", ~]
@@ -89,6 +93,7 @@ patterns:
   - name: toms
     steps: 16
     drum: true
+    group: toms
     step_size: 1/16
     degree: [A, ~, A, A, ~, ~, A, ~, A, ~, A, A, ~, ~, A, A]
     octave: [3, ~, 3, 3, ~, ~, 3, ~, 3, ~, 3, 3, ~, ~, 3, 3]
@@ -96,12 +101,14 @@ patterns:
   - name: toms high
     steps: 16
     drum: true
+    group: toms high
     step_size: 1/16
     degree: [~, ~, ~, ~, D, D, ~, ~, ~, ~, ~, ~, D, ~, ~, ~]
     octave: [~, ~, ~, ~, 4, 4, ~, ~, ~, ~, ~, ~, 4, ~, ~, ~]
     velocity: [~, ~, ~, ~, 104, 104, ~, ~, ~, ~, ~, ~, 104, ~, ~, ~]
   - name: timpani
     steps: 8
+    group: timpani
     step_size: 1/8
     degree: [1, ~, ~, ~, 1, 1, 5, ~]
     octave: [3, ~, ~, ~, 3, 3, 2, ~]
@@ -109,12 +116,14 @@ patterns:
     tie: [false, true, false, false, false, false, false, true]
   - name: drive
     steps: 8
+    group: bass
     step_size: 1/8
     degree: [1, 1, 1, 1, 1, 1, 5, 1]
     octave: [3, 3, 3, 3, 3, 3, 2, 3]
     velocity: [116, 102, 105, 102, 107, 102, 105, 102]
   - name: held
     steps: 8
+    group: strings
     step_size: 1/8
     degree: [1, ~, ~, ~, ~, ~, ~, ~]
     octave: [4, ~, ~, ~, ~, ~, ~, ~]
@@ -123,6 +132,7 @@ patterns:
     tie: [false, true, true, true, true, true, true, true]
   - name: offbeat
     steps: 8
+    group: stabs
     step_size: 1/8
     degree: [~, 1, ~, ~, 1, ~, 1, ~]
     octave: [~, 4, ~, ~, 4, ~, 4, ~]
@@ -130,6 +140,7 @@ patterns:
     velocity: [~, 101, ~, ~, 98, ~, 101, ~]
   - name: fanfare
     steps: 64
+    group: lead
     step_size: 1/8
     degree: [1, ~, 3, ~, 5, ~, ~, ~, 5, ~, 3, ~, 1, ~, ~, ~, 7, ~, 2, ~, 4, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~, 6, ~, 1, ~, 3, ~, ~, ~, 1, ~, ~, ~, ~, ~, 6, ~, 5, ~, 7, ~, 2, ~, ~, ~, 2, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
@@ -138,6 +149,7 @@ patterns:
     tie: [false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, false, true, false, true, true, true, false, true, true, true, true, true, false, false, false, true, false, true, false, true, true, true, false, true, true, true, true, true, false, true, false, true, false, true, false, true, true, true, false, true, true, true, true, true, false, false]
   - name: answer
     steps: 64
+    group: trombone
     step_size: 1/8
     degree: [4, ~, 6, ~, 1, ~, 6, ~, 4, ~, ~, ~, ~, ~, ~, ~, 3, ~, 5, ~, 1, ~, 5, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, 6, ~, 1, ~, 4, ~, 1, ~, ~, ~, ~, ~, ~, ~, 2, ~, 7, ~, 5, ~, 7, ~, 5, ~, ~, ~, ~, ~, ~, ~]
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~]
