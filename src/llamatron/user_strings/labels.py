@@ -558,7 +558,7 @@ MSG_CHORD_NAMES = {
 MSG_CELL_ROW_LABEL = ' Cell'
 MSG_AMOUNT_ROW_LABEL = ' Amount'
 
-# interface/tracker/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# interface/pages/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_GROOVE_LABEL = 'Groove'
 MSG_GROOVE_OFF_OPTION = '(off: no groove here, whatever else chooses one)'
 

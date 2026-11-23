@@ -316,7 +316,7 @@ MSG_OWN_GROOVE_SHOWN = 'yours'
 # interface/tracker/screens/set/groove_editor.py
 MSG_GROOVE_NAME_SHOWN = '  {label}: {name}'
 
-# interface/tracker/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# interface/pages/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_GROOVE_OFF_SHOWN = 'off'
 MSG_SONG_GROOVE_SHOWN = '{groove} (from song)'
 MSG_FROM_INSTRUMENT_SHOWN = '{value} (from instrument)'

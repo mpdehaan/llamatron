@@ -5,6 +5,7 @@
 """The Arrange page, the scene and clip pages, grabs and the Registers page."""
 
 from llamatron.interface.forms.cursor import NoSuchPlace
+from llamatron.interface.pages.generator_names import listed_generator
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -20,7 +21,6 @@ from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.generators.generator_list_page import GeneratorListPage
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.main_page import MainPage
-from llamatron.interface.tracker.screens.shared.generator_names import listed_generator
 from llamatron.model.objects import setlist
 from llamatron.model.objects.scene import TempoRamp
 from llamatron.model.schema import defaults, file_format, limits

@@ -9,11 +9,11 @@ import functools
 
 from llamatron.interface.forms.nodes import Field, Toggle
 from llamatron.interface.forms.tab_box import columns_of_sections, Tab, TabColumn, without_headings
+from llamatron.interface.pages.generators_field import generators_field
 from llamatron.interface.pages.shape_fields import shape_section
 from llamatron.interface.pages.velocity_fields import velocity_field, velocity_ramp_sections, VelocityValues
 from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
 from llamatron.interface.tracker.screens.shared.built_in_tab import BuiltInTab
-from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, shape_setting
 from llamatron.user_strings import labels as labels_text, legends, marks

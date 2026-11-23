@@ -334,7 +334,7 @@ MSG_CELL_LENGTH_WHAT = 'cell length'
 MSG_ACCENT_WHAT = 'accent'
 MSG_READY_BARS_WHAT = 'ready-made'
 
-# interface/tracker/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# interface/pages/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_USE_SONG_GROOVE_WHAT = 'use the song groove'
 MSG_USE_SCENE_GROOVE_WHAT = 'use the scene or song groove'
 

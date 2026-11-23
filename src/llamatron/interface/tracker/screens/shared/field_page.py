@@ -15,6 +15,7 @@ from llamatron.interface.forms.tab_box import TabRow
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.renderers import settings_page, tab_box as tab_box_drawing
 from llamatron.interface.tracker.renderers.settings_page import SettingsPageDrawing
+from llamatron.interface.tracker.screens.generators.generator_list_page import GeneratorListPage
 from llamatron.interface.tracker.screens.shared.kept_fields import fields_said
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.model.objects import setlist
@@ -308,6 +309,10 @@ class FieldPage(Page):
             result.append(self.bind(self.KEYS.SECTION, action=self.jump_section))
         result += self.page_keys()
         return [self.bind(self.KEYS.BACK, action=self.go_back), *result]
+
+    def edit_generators(self, *, names, store):
+        """Open the list that edits a Generators field's generators: names() gives them as they are, store(names) keeps a new list."""
+        self.show_page(GeneratorListPage(holder=self.holder, opener=self, names=names, store=store))
 
     def button(self, *, binding, label, action):
         """Return a button that runs one of the keys that work everywhere on Enter, labelled as the main screen labels it and showing the key's name."""

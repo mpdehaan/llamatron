@@ -4,6 +4,7 @@
 """The row of track names at the top of the Arrange page, where tracks are added, duplicated, inserted, moved,
 renamed and deleted since the Tracks page went, and the track editor it opens."""
 
+from llamatron.interface.pages.generator_names import generators_to_add
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
@@ -12,7 +13,6 @@ from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
 from llamatron.interface.tracker.screens.generators.generator_list_page import GeneratorListPage
-from llamatron.interface.tracker.screens.shared.generator_names import generators_to_add
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, TrackSetting
 from llamatron.user_strings import labels, marks, names as names_text

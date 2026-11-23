@@ -5,6 +5,7 @@
 
 import unittest
 
+from llamatron.interface.pages.generator_names import listed_generator
 from llamatron.interface.tracker import keybindings, themes
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Box, Style
@@ -18,7 +19,6 @@ from llamatron.interface.tracker.screens.generators.generator_pages import gener
 from llamatron.interface.tracker.screens.set.groove_editor import GrooveEditor
 from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor
 from llamatron.interface.tracker.screens.set.scale_page import ScalePage
-from llamatron.interface.tracker.screens.shared.generator_names import listed_generator
 from llamatron.interface.visualizers import modes
 from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, FollowAction, RampPart, RampWay, Shape

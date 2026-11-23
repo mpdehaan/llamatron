@@ -304,7 +304,7 @@ MSG_GROOVE_NOTE = '  Each cell is {length} of a whole note. An amount is a perce
 MSG_GROOVE_REPEATS_NOTE = '  The row repeats from the start of each scene, and a note takes the amount of the cell its time falls in.'
 MSG_FACTORY_GROOVE_NOTE = '  A factory groove, which cannot be changed. C on the Grooves page copies it to one you can edit.'
 
-# interface/tracker/screens/arrange/groove_choice.py: the Groove field on the Song, Scene and Track pages
+# interface/pages/groove_choice.py: the Groove field on the Song, Scene and Track pages
 MSG_SONG_GROOVE_TITLE = 'Song groove'
 MSG_PREVIEW_INSTRUMENT_TITLE = 'Preview instrument'
 MSG_SCENE_GROOVE_TITLE = 'Scene groove'

@@ -10,7 +10,6 @@ right step through those in that order, Enter picks from a list, and Bksp goes b
 
 from llamatron.interface.forms.nodes import Field
 from llamatron.interface.forms.text import sorted_names
-from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.user_strings import labels, legends, marks
 
 # The first two choices, before the names: take the groove from above, and off.
@@ -38,6 +37,6 @@ def groove_choice_field(*, page, title, choice, inherited_option, inherited_show
 
     def pick():
         options = [inherited_option, labels.MSG_GROOVE_OFF_OPTION, *names]
-        page.ask(dialog=ChoiceDialog(title=title, options=options, current=place_of(choice)), then=lambda place: choose(choices[place]))
+        page.ask_choice(title=title, options=options, current=place_of(choice), then=lambda place: choose(choices[place]))
 
     return Field(label=labels.MSG_GROOVE_LABEL, value=shown, adjust=adjust, enter=pick, enter_what=legends.What.CHOOSE, clear=lambda: choose(TAKE_FROM_ABOVE), clear_what=clear_what)

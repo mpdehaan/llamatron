@@ -13,5 +13,7 @@ hands it the page to ask through and what only the tracker can do, such as openi
 - song: the Song page, one song's settings.
 - time_field, octave_field, velocity_fields, shape_fields, drift_values, section_table: the fields several pages share, a
   time, an octave, a velocity and its ramps, a shape, a drift's values and a table of a section's values.
+- generator_names, generators_field, groove_choice: a generator's name as lists show it, the Generators field, which asks
+  its page to open the list that edits it, and a scene's or a track's Groove.
 - visualizer_fields: the fields that choose the visualizer's modes, which the File/Global and Song pages share.
 """
