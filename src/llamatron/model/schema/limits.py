@@ -85,10 +85,11 @@ MAX_OCTAVE = 10
 # Tempo, in quarter notes a minute, within Live's own limits, 20 to 999: no song or scene plays slower or faster.
 MIN_TEMPO = 20
 MAX_TEMPO = 999
-# A scene's tempo and each end of a tempo ramp, a percentage of the tempo it scales, since a tempo times nothing means nothing;
-# a tempo played is never below MIN_TEMPO either, so that a song at 200 can still fall to 20.
+# A scene's tempo and each end of a tempo ramp, a percentage of the tempo it scales, from a tenth, since a tempo times nothing
+# means nothing, to four times; a tempo played is never below MIN_TEMPO nor above MAX_TEMPO either, so that a song at 200 can
+# still fall to 20.
 MIN_TEMPO_PERCENT = 10
-MAX_TEMPO_PERCENT = 200
+MAX_TEMPO_PERCENT = 400
 
 # The fewest and the most notes of the scale a pattern says it was written for: a pentatonic scale to the chromatic.
 MIN_SCALE_LENGTH = 5

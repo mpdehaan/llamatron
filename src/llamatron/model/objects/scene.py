@@ -420,8 +420,8 @@ def _scaled_or_none(*, tempo, percent):
 
 
 def scaled_tempo(*, tempo, percent):
-    """Return a tempo scaled by a percentage, as an exact number, never below the slowest tempo, or the tempo itself for a
-    percentage left blank."""
+    """Return a tempo scaled by a percentage, as an exact number, held between the slowest and the fastest tempo, or the tempo
+    itself for a percentage left blank."""
     if percent is None:
         return tempo
-    return max(tempo * number(percent) / PERCENT, limits.MIN_TEMPO)
+    return min(max(tempo * number(percent) / PERCENT, limits.MIN_TEMPO), limits.MAX_TEMPO)

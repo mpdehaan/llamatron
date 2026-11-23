@@ -162,6 +162,13 @@ class TestScenes(unittest.TestCase):
         with self.assertRaises(SongFileError):
             song_from_data(with_parts(scenes=[{SceneSetting.TEMPO: limits.MIN_TEMPO_PERCENT - 1, SceneSetting.TRACKS: {}}]))
 
+    def test_a_scenes_tempo_is_at_most_four_times_the_songs_and_never_faster_than_live_allows(self):
+        data = with_parts(scenes=[{SceneSetting.TEMPO: limits.MAX_TEMPO_PERCENT, SceneSetting.TRACKS: {}}])
+        data[SongSetting.TEMPO] = limits.MAX_TEMPO
+        self.assertEqual(render_data(data).get_rows()[0].get_tempo(), limits.MAX_TEMPO)
+        with self.assertRaises(SongFileError):
+            song_from_data(with_parts(scenes=[{SceneSetting.TEMPO: limits.MAX_TEMPO_PERCENT + 1, SceneSetting.TRACKS: {}}]))
+
     def test_no_tempo_uses_the_song_tempo(self):
         self.assertIsNone(build(song_testing.BASIC).get_rows()[0].get_tempo())
         self.assertEqual(build(song_testing.BASIC).get_tempo(), 120)
