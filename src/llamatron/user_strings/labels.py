@@ -387,7 +387,7 @@ MSG_ORDER_HEADING = 'Order'
 MSG_NOTES_HEADING = 'Notes'
 MSG_PLAYING_HEADING = 'Playing'
 MSG_RESET_AS_IT_STARTS_HEADING = 'Reset As It Starts'
-MSG_CC_LANES_TAB = 'CC Lanes'
+MSG_CC_LANES_TAB = 'MIDI CCs'
 MSG_TEMPO_RAMPS_TAB = 'Tempo Ramps'
 MSG_GENERAL_HEADING = 'General'
 # interface/tracker/screens/shared/built_in_tab.py: what the crumbs call a page opened on a part of a built-in generator.

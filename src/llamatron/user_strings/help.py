@@ -140,7 +140,7 @@ Name: ENTER renames the track, which updates every scene. Drum: a drum track is 
 Mute: starts switched off in Live; its clips can still be grabbed. Groove: for its clips, instead of the scene's or song's.
 Transpose: moves its notes along the scale. Lowest and Highest octave: what its instrument plays, which the piano roll marks.
 Default velocity: a step with none typed. Accent: what an accent adds. Instrument: where it plays in real time, or none.
-CC Lanes: the CC number each of a pattern's CC rows sends here, and a register bound to each.
+MIDI CCs: the CC number each of a pattern's CC rows sends here, and a register bound to each.
 Tab goes to the tabs; Left and Right choose one. Chords, Arp, Guitarify, Timing, Phrasing: its own generators, off until Enabled.
 
 Up, down, Left and Right select a setting. [ and ] change it, ENTER types, and Space or ENTER toggles. Bksp clears.
