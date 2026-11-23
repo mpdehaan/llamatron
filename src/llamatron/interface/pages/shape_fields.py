@@ -7,7 +7,7 @@ import dataclasses
 import functools
 
 from llamatron.interface.forms.nodes import ChoiceField, NumberField
-from llamatron.interface.tracker.screens.shared.time_field import time_field
+from llamatron.interface.pages.time_field import time_field
 from llamatron.model.objects import shapes
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ShapePart

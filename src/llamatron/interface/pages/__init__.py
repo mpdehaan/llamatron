@@ -11,5 +11,7 @@ hands it the page to ask through and what only the tracker can do, such as openi
 - instrument: one instrument's page, where it plays and how loud.
 - scale: one scale's page, its name, root and kind, and its notes.
 - song: the Song page, one song's settings.
+- time_field, octave_field, velocity_fields, shape_fields, drift_values, section_table: the fields several pages share, a
+  time, an octave, a velocity and its ramps, a shape, a drift's values and a table of a section's values.
 - visualizer_fields: the fields that choose the visualizer's modes, which the File/Global and Song pages share.
 """

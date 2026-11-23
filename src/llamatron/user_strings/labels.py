@@ -301,7 +301,7 @@ MSG_NEW_GROUP_NAME_LABEL = 'New Group Name: '
 MSG_NOTES_KIND = 'notes'
 # interface/tracker/screens/generators/generator_pages.py: a chain, as the Generators page lists it beside the kinds of generator.
 MSG_CHAIN_LABEL = 'Chain'
-# interface/tracker/screens/shared/drift_values.py and the Drift's view: its own fields, then each value's two versions, A and B side by side.
+# interface/pages/drift_values.py and the Drift's view: its own fields, then each value's two versions, A and B side by side.
 MSG_EVERY_LABEL = 'Every'
 MSG_STEPS_TO_B_LABEL = 'Steps to B'
 MSG_DRIFT_DIRECTION_LABEL = 'Direction'
@@ -311,7 +311,7 @@ MSG_DRIFT_VALUE_LABELS = {
     DriftValue.SCALE_PROBABILITY: 'Scale prob', DriftValue.ROOT: 'Root', DriftValue.ROOT_PROBABILITY: 'Root prob',
 }
 # A version row's two values, the one the cursor is on marked like the offsets editor's cursor.
-# interface/tracker/screens/shared/shape_fields.py: each shape's name, which heads its section, and its parts' labels, the shape's name in front on the Scene and clip pages.
+# interface/pages/shape_fields.py: each shape's name, which heads its section, and its parts' labels, the shape's name in front on the Scene and clip pages.
 MSG_SHAPE_NAMES = {Shape.DENSITY: 'Density', Shape.SWELL: 'Swell', Shape.ARTICULATE: 'Articulate'}
 MSG_SHAPE_FIELD_LABELS = {ShapePart.START: '{shape} start', ShapePart.END: '{shape} end', ShapePart.OVER: '{shape} over', ShapePart.THEN: '{shape} then'}
 MSG_SHAPE_PART_LABELS = {ShapePart.START: 'Start', ShapePart.END: 'End', ShapePart.OVER: 'Over', ShapePart.THEN: 'Then'}
@@ -416,7 +416,7 @@ MSG_PROGRESSION_NAMES = {
     NamedProgression.LONG_TURNAROUND: 'Long turnaround', NamedProgression.CIRCLE_OF_FIFTHS: 'Circle of fifths', NamedProgression.RHYTHM_CHANGES: 'Rhythm changes',
     NamedProgression.FOLK: 'Folk, country', NamedProgression.GOSPEL: 'Gospel', NamedProgression.PACHELBEL: 'Pachelbel', NamedProgression.ANDALUSIAN: 'Andalusian', NamedProgression.MINOR: 'Minor',
 }
-# interface/tracker/screens/shared/time_field.py: what the list of times calls a dotted or triplet length, where its written fraction says nothing to a musician.
+# interface/pages/time_field.py: what the list of times calls a dotted or triplet length, where its written fraction says nothing to a musician.
 MSG_TIME_NAMES = {
     '1/24': '1/16 triplet', '3/32': 'dotted 1/16', '1/12': '1/8 triplet', '3/16': 'dotted 1/8', '1/6': '1/4 triplet',
 }

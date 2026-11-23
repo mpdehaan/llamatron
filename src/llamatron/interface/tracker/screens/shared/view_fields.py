@@ -11,17 +11,17 @@ import functools
 from llamatron.interface.forms.nodes import ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.interface.forms.tab_box import Tab, TabColumn, without_headings
 from llamatron.interface.forms.text import sorted_names
-from llamatron.interface.tracker.screens.shared.drift_values import drift_value_rows
+from llamatron.interface.pages.drift_values import drift_value_rows
+from llamatron.interface.pages.octave_field import octave_field
+from llamatron.interface.pages.section_table import section_table
+from llamatron.interface.pages.shape_fields import shape_section
+from llamatron.interface.pages.time_field import time_field
 from llamatron.interface.tracker.screens.shared.guitar_bar_editor import guitar_bar_field
-from llamatron.interface.tracker.screens.shared.octave_field import octave_field
 from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
 from llamatron.interface.tracker.screens.shared.progression_field import progression_field
 from llamatron.interface.tracker.screens.shared.restart_field import restart_field
-from llamatron.interface.tracker.screens.shared.section_table import section_table
-from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.shared import numbers_text
 from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
-from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import shape_setting
 from llamatron.model.schema.generator_views import ChoiceView, DriftValuesView, GaugeView, GuitarBarView, InheritedChoiceView, NumberView, OctaveView, OffsetsView, ProgressionView, RestartView, SectionsView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView, WhenView

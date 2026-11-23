@@ -9,7 +9,7 @@ from llamatron.engine.generators import arp as arp_plugin, drift as drift_plugin
 from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.engine.generators.drift.model import DriftSetting
 from llamatron.engine.generators.drift.play import DriftPlay
-from llamatron.interface.tracker.screens.shared.time_field import time_field
+from llamatron.interface.pages.time_field import time_field
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import Bars, in_whole_notes, time_length
 from llamatron.model.file.invalid_value import InvalidValue
