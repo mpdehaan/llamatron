@@ -15,7 +15,9 @@ from llamatron.interface.tracker.drawing import cursor_mark, Style
 from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.shared import tab_box as tab_box_values
+from llamatron.interface.tracker.screens.shared.drawn_lines import DrawnLines
 from llamatron.interface.tracker.screens.shared.field import Button, Cells, Field, Heading, NameField, NumberField
+from llamatron.interface.tracker.screens.shared.kept_fields import fields_said
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.interface.tracker.screens.shared.tab_box import box_lines, TabRow
 from llamatron.model.objects import setlist
@@ -26,8 +28,6 @@ from llamatron.user_strings import errors, labels as labels_text, legends, marks
 BOX_WIDTH = 80
 # The attribute of a page that says it is in Move mode, carrying something, which only some pages have.
 MOVING = 'moving'
-# The values a field may be built holding, rather than asking for as it is drawn, which a kept field could hold stale.
-BUILT_HOLDING = ('on', 'number', 'current', 'key_name', 'shown')
 
 
 class FieldPage(Page):
@@ -441,49 +441,60 @@ class FieldPage(Page):
         """
         fields = self.shown_fields()
         self.field()
-        label_width = max((len(field.get_drawn_label(self)) for field in self.every_field() if not isinstance(field, Button) and not field.IS_TAB_BOX), default=0) + 2
+        drawn = DrawnLines()
+        drawn.blank()
+        self.draw_settings(drawn=drawn, fields=fields, width=width)
+        self.draw_buttons(drawn=drawn, buttons=fields[self.first_button_place():], width=width)
+        remarks = self.remarks(width)
+        if remarks:
+            drawn.blank()
+            drawn.add(remarks)
+        return self.window_of_lines(lines=drawn.get_lines(), selected=drawn.get_selected(), height=height)
+
+    def draw_settings(self, *, drawn, fields, width):
+        """Add the settings to the drawing, each field's lines, a tab box with its row of tabs, and a blank line before a section's
+        heading and after a field that leaves one."""
+        label_width = self.label_width()
         cursor = self.cursor.get_place()
-        lines = [Text(drawing.NOTHING)]
-        selected = 0
         seen_heading = False
-        first_button = self.first_button_place()
-        buttons = fields[first_button:]
         inside_box = 0
-        for place, field in enumerate(fields):
-            if place >= first_button:
-                continue
+        for place, field in enumerate(fields[:self.first_button_place()]):
             if inside_box:
                 # The chosen tab's fields are drawn with the box, by its row of tabs.
                 inside_box -= 1
                 continue
             if field.IS_TAB_ROW:
                 inside_box, box, box_selected = self._box_at(place=place, cursor=cursor, width=width)
-                if box_selected is not None:
-                    selected = len(lines) + box_selected
-                lines += [*box, Text(drawing.NOTHING)]
+                drawn.add(box, selected_at=box_selected)
+                drawn.blank()
                 continue
             if isinstance(field, Heading) and (not seen_heading or self.HEADINGS_APART):
                 seen_heading = True
                 if place:
-                    lines.append(Text(drawing.NOTHING))
-            here = place == cursor
-            if here:
-                selected = len(lines) + field.SELECTED_LINE
-            lines += field.lines(page=self, here=here, label_width=label_width, width=width)
+                    drawn.blank()
+            selected_at = field.SELECTED_LINE if place == cursor else None
+            drawn.add(field.lines(page=self, here=place == cursor, label_width=label_width, width=width), selected_at=selected_at)
             if field.MAY_LEAVE_A_GAP and self.has_gap_after(place=place, field=field, fields=fields):
-                lines.append(Text(drawing.NOTHING))
-        if buttons:
-            # The buttons sit in one row under the settings after a blank line, boxed as the dialogs' are.
-            first_button = self.first_button_place()
-            lines.append(Text(drawing.NOTHING))
-            row = self.row_of_buttons(buttons=buttons, selected=cursor - first_button, width=width)
-            if cursor >= first_button:
-                selected = len(lines) + (cursor - first_button if self.buttons_stacked() else 1)
-            lines += row
-        remarks = self.remarks(width)
-        if remarks:
-            lines += [Text(drawing.NOTHING), *remarks]
-        return self.window_of_lines(lines=lines, selected=selected, height=height)
+                drawn.blank()
+
+    def label_width(self):
+        """Return how wide the settings' labels are drawn: as wide as the longest of every field, shown or not, and a space
+        either side, so that opening a section never moves the values beside them."""
+        return max((len(field.get_drawn_label(self)) for field in self.every_field() if not isinstance(field, Button) and not field.IS_TAB_BOX), default=0) + 2
+
+    def draw_buttons(self, *, drawn, buttons, width):
+        """Add the page's buttons to the drawing, in one row under the settings after a blank line, boxed as the dialogs' are."""
+        if not buttons:
+            return
+        first_button = self.first_button_place()
+        place = self.cursor.get_place() - first_button
+        drawn.blank()
+        row = self.row_of_buttons(buttons=buttons, selected=place, width=width)
+        # Whether the buttons stand one under another is known once the row is made, so the line the cursor is on is too.
+        selected_at = None
+        if place >= 0:
+            selected_at = place if self.buttons_stacked() else 1
+        drawn.add(row, selected_at=selected_at)
 
     def _box_at(self, *, place, cursor, width):
         """Return how many of the chosen tab's fields follow the row of tabs at a place, the box's lines, and the place of the
@@ -557,25 +568,3 @@ def page_buttons_start(fields):
     while start and isinstance(fields[start - 1], Button):
         start -= 1
     return start
-
-
-def fields_said(fields):
-    """Return what a page's kept fields say, to hold against the fields built again while the tests check every remembered
-    answer: each field's kind and label and the values it was built holding, and each tab of a tab box with its own fields. A
-    field's shown value is never asked, since some ask the page for its fields in turn."""
-    said = []
-    for field in fields:
-        if field.IS_TAB_BOX:
-            said.append(tuple((tab.label, tuple(fields_said(tab.every_field()))) for tab in field.tabs))
-            continue
-        held = tuple(held_value(field=field, name=name) for name in BUILT_HOLDING)
-        said.append((type(field).__name__, field.label, held))
-    return said
-
-
-def held_value(*, field, name):
-    """Return a value a field holds, as text that compares, or None where it holds none or the name is one of its methods."""
-    value = getattr(field, name, None)
-    if callable(value):
-        return None
-    return repr(value)
