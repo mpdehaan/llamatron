@@ -179,7 +179,7 @@ Basics and Timing start open, and the editor remembers which sections are open, 
 - **Basics:** #/b, Velocity, Accent;
 - **Chord:** Chord, Tension, Scale, Inversion;
 - **Timing:** Tie, Gate, Dot, Glide;
-- **Keyswitch:** a row for each slot of the instrument's Keyswitch Map;
+- **Keyswitch:** a row for each slot of the instrument's Keyswitch Map, shown only once the instrument has a Keyswitch Map or a step uses a slot;
 - **Advanced:** Probability, Ratchet, Ratchet Offset, Grab;
 - **CCs:** CC 1 to CC 4, Slide;
 - **Use Draws:** the rows that use the draws, shown only for the draws that hold a value in the current song;
@@ -280,7 +280,7 @@ Drum patterns have no Chord row.
 
 ### Keyswitches
 
-A step can name keyswitches, the notes that change how a plugin plays, from the ten slots of its instrument's Keyswitch Map, which [Instruments](INSTRUMENTS.md) describes. In the rows, the Keyswitch section has a row for each slot the instrument's Keyswitch Map gives a name or a note, labeled with the slot's name, and each step's cell is a toggle: `Space` or `ENTER` turns the slot on for the step's note, and `Bksp` turns the slot off. A step may have several slots on. The rows are the instrument's when the instrument is known for certain, as described below; otherwise the section has a row, labeled by number, for each slot a step already uses, and the line over the rows says why.
+A step can name keyswitches, the notes that change how a plugin plays, from the ten slots of its instrument's Keyswitch Map, which [Instruments](INSTRUMENTS.md) describes. In the rows, the Keyswitch section has a row for each slot the instrument's Keyswitch Map gives a name or a note, labeled with the slot's name, and each step's cell is a toggle: `Space` or `ENTER` turns the slot on for the step's note, and `Bksp` turns the slot off. A step may have several slots on. The rows are the instrument's when the instrument is known for certain, as described below; otherwise the section has a row, labeled by number, for each slot a step already uses, and the line over the rows says why. A pattern with no slot to show, because no Keyswitch Map is set up for its instrument and no step uses a slot, has no Keyswitch section at all: set up the instrument's Keyswitch Map on the Instruments page, or use `K` on the piano roll, and the section appears.
 
 On the piano roll, `K` opens a dialog of the ten slots, numbered 0 to 9:
 

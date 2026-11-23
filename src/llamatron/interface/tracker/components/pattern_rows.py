@@ -138,8 +138,9 @@ class PatternRows(BindsKeys):
         return rows
 
     def shown_sections(self):
-        """Return the sections that have rows in this pattern: a drum pattern has no Chord section, since none of its rows mean anything there."""
-        return [section for section in SECTIONS if self.section_rows(section) or self.is_empty_keyswitch_section(section)]
+        """Return the sections that have rows in this pattern: a drum pattern has no Chord section, since none of its rows mean
+        anything there, and the Keyswitch section shows only once an instrument's Keyswitch Map or a step gives it a slot."""
+        return [section for section in SECTIONS if self.section_rows(section)]
 
     def section_of(self, row):
         """Return the section a row is in, by its name or its heading's, or None for a pinned row."""
@@ -153,10 +154,6 @@ class PatternRows(BindsKeys):
         editor = self.editor
         document = editor.document()
         return document.remembered(key=(KEYSWITCH_SLOTS_KEY, editor.item, editor.opened_track), on=(document,), compute=lambda: slot_rows(editor))
-
-    def is_empty_keyswitch_section(self, section):
-        """Return whether a section is the Keyswitch section with no rows yet, whose heading still shows, so that its hint can say why, unless a drum pattern has no use for keyswitches."""
-        return section == RowSection.KEYSWITCH and (not self.editor.is_drum() or row_descriptions.ROW_DESCRIPTIONS[Row.KEYSWITCH].is_in_drum_patterns())
 
     def section_hint(self, section):
         """Return what the header says while the cursor is in a section, or None for a section with nothing to say."""

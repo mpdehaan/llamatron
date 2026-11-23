@@ -15,8 +15,9 @@ TUNE = 'tune'
 
 
 async def open_section(*, test, section):
-    """Press Tab until the cursor is on a section's heading, and Space to open it if it's closed."""
+    """Press PgDn until the cursor is on a section's heading, and Space to open it if it's closed. The section must be shown."""
     editor = test.app.screen
+    test.assertIn(section, editor.rows_view.shown_sections())
     while editor.row_name() != section:
         await test.press(Key.PAGE_DOWN)
     if not editor.rows_view.section_is_open(section):

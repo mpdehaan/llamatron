@@ -331,7 +331,7 @@ class TestSectionsOnAUsualConsole(UITest):
         await self.press(keybindings.PatternEditor.TO_EDITOR)
         # A draw with a value, so that the Use Draws section is there too.
         self.document.change_set(self.document.song().set_draw_slot, name=DrawName.AD, place=0, value=DRAWN_VALUE)
-        for section in pattern_rows.SECTIONS:
+        for section in self.app.screen.rows_view.shown_sections():
             await open_section(test=self, section=section)
             self.assert_fits()
         # Down through every row: the rows scroll so that the cursor's row, its heading included, is always on screen.
