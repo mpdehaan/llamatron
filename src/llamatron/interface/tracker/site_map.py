@@ -19,12 +19,25 @@ PART_PAGES = {
 
 
 class SiteMap:
-    """Makes the page that shows a place."""
+    """Makes the page that shows a place: editor_of(section) gives the class of the page that edits a named thing of a section."""
 
-    __slots__ = ()
+    __slots__ = ('_editor_of',)
+
+    def __init__(self, *, editor_of):
+        self._editor_of = editor_of
 
     def page_at(self, *, place, holder):
-        """Return the page that shows a place, on the set a holder holds."""
+        """Return the page that shows a place, on the set a holder holds, made by the place's kind."""
+        if place.KIND == places.ITEM:
+            return self._item_page(place=place, holder=holder)
+        return self._part_page(place=place, holder=holder)
+
+    def _item_page(self, *, place, holder):
+        """Return the page of a named thing of the set."""
+        return self._editor_of(place.section)(holder=holder, name=place.name)
+
+    def _part_page(self, *, place, holder):
+        """Return the page of a part of a generator."""
         named = {'holder': holder, 'name': place.name, 'built_in': place.built_in}
         if place.section is not None:
             named['section'] = place.section

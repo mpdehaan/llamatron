@@ -10,6 +10,7 @@ any terminal background.
 
 from rich.text import Text
 
+from llamatron.interface.forms.table import Align  # noqa: F401, the tracker draws by it as drawing.Align
 from llamatron.user_strings import legends
 
 
@@ -68,14 +69,6 @@ class Style:
     DETAILS_STOCK = 'red'
     # A key's label on the main screen's cells, bold as well as reversed.
     KEY = 'bold reverse'
-
-
-class Align:
-    """Which way text is lined up when fitted to a width."""
-
-    LEFT = 'left'
-    RIGHT = 'right'
-    CENTER = 'center'
 
 
 class Box:

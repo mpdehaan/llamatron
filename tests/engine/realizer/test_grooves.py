@@ -110,6 +110,8 @@ class TestGrooveFiles(unittest.TestCase):
         setlist = Setlist.new()
         self.assertEqual(setlist.get_groove_names(), groove_values.FACTORY_GROOVE_NAMES)
         self.assertEqual(setlist.get_own_groove_names(), [])
+        self.assertTrue(setlist.is_factory_groove(FactoryGroove.PUSH))
+        self.assertEqual(setlist.factory_groove_count(), len(groove_values.FACTORY_GROOVE_NAMES))
         self.assertTrue(setlist.get_groove(FactoryGroove.NONE).is_straight())
         self.assertFalse(setlist.get_groove(FactoryGroove.SWING_58).is_straight())
         self.assertEqual(setlist.get_groove(FactoryGroove.SWING_58).get_cells(), [groove_values.STRAIGHT, SWING_58_AMOUNT] * (groove_values.GROOVE_CELLS // 2))
@@ -117,6 +119,7 @@ class TestGrooveFiles(unittest.TestCase):
         self.assertEqual(setlist.get_groove(FactoryGroove.PUSH).get_cells()[1], groove_values.PUSH_AMOUNT)
         setlist.add_item(section=Section.GROOVES, name=LATE, item=new_groove())
         self.assertEqual(setlist.get_groove_names(), [*groove_values.FACTORY_GROOVE_NAMES, LATE])
+        self.assertFalse(setlist.is_factory_groove(LATE))
         with self.assertRaises(InvalidValue):
             setlist.add_item(section=Section.GROOVES, name=FactoryGroove.PUSH, item=new_groove())
         with self.assertRaises(InvalidValue):

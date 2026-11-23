@@ -16,7 +16,6 @@ from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.screens.shared.one_row_editor import OneRowEditor
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.model.objects import groove as groove_values
-from llamatron.model.objects.groove import is_factory_groove
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import help as help_text, labels, marks, messages
@@ -49,7 +48,8 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
         return self.cells()
 
     def is_factory(self):
-        return is_factory_groove(self.item)
+        setlist = self.document().get_setlist()
+        return setlist.is_factory_groove(self.item)
 
     def can_edit(self):
         return not self.is_factory()

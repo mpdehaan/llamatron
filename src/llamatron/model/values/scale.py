@@ -153,6 +153,11 @@ class Scale:
         return reprs.REPR_SCALE.format(root=self._root, typ=self._typ)
 
 
+def scale_type_name(kind):
+    """Return a scale type's name as a file writes it, like 'minor' for ScaleType.MINOR."""
+    return kind.name.lower()
+
+
 def note_names(*, root, half_steps):
     """Return the names of the notes a root and one octave of half steps make, like D E F G A B C."""
     start = Note(name=root, octave_number=SPELLING_OCTAVE)

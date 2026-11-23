@@ -4,15 +4,16 @@
 
 """The Instruments page: every MIDI device and channel that a track can play through in real time."""
 
+from llamatron.interface.pages.instrument_list import InstrumentListPresenter
 from llamatron.interface.tracker import keybindings
-from llamatron.interface.tracker.drawing import Align
 from llamatron.interface.tracker.screens.shared.named_list_page import NamedListPage
 from llamatron.model.schema.file_format import Section
-from llamatron.user_strings import help as help_text, labels, legends, marks, messages, names
+from llamatron.user_strings import help as help_text, labels, legends, messages
 
 
 class InstrumentsPage(NamedListPage):
-    """The set's instruments, each with its device, its channel and how many tracks play through it."""
+    """The set's instruments, each with its device, its channel and how many tracks play through it, from the Instrument list
+    presenter (interface/pages/instrument_list.py)."""
 
     KEYS = keybindings.InstrumentsPage
     LISTED_SECTION = Section.INSTRUMENTS
@@ -20,21 +21,16 @@ class InstrumentsPage(NamedListPage):
     WHAT = legends.MSG_INSTRUMENT_WHAT
     crumbs = (labels.Crumb.INSTRUMENTS,)
     HELP = help_text.HELP_INSTRUMENTS_PAGE
-    columns = ((labels.Column.SELECT_INSTRUMENT, None, Align.LEFT), (labels.Column.DEVICE, 36, Align.LEFT), (labels.Column.CHANNEL, 3, Align.RIGHT), (labels.Column.USED, 4, Align.RIGHT))
+    columns = InstrumentListPresenter.COLUMNS
+
+    def presenter(self):
+        return InstrumentListPresenter(page=self, document=self.document())
 
     def rows(self):
-        setlist = self.document().get_setlist()
-        return [
-            (name, [name, setlist.get_instrument(name).get_device() or marks.MSG_NO_DEVICE_SHOWN, setlist.get_instrument(name).get_channel(), len(self.uses(name))])
-            for name in self.names()
-        ]
+        return self.presenter().rows()
 
     def open_item(self):
-        self.open_editor(section=Section.INSTRUMENTS, name=self.current())
+        self.open_place(InstrumentListPresenter.place_of(self.current()))
 
     def add(self):
-        """Add an instrument with no device yet, numbered like new tracks and scenes, and open it."""
-        name = self.new_name(names.MSG_NEW_INSTRUMENT_WORD)
-        self.document().add_instrument(name)
-        self.put_cursor_on(name)
-        self.open_editor(section=Section.INSTRUMENTS, name=name)
+        self.presenter().add()

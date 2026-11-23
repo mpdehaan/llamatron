@@ -3,17 +3,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Songs page: the set's songs, which one is current, and each one's settings."""
 
-from llamatron.interface.forms.text import tempo_text
-from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.drawing import Align
+from llamatron.interface.pages.song_list import SongListPresenter
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.set.song_page import SongPage
 from llamatron.interface.tracker.screens.shared.named_list_page import NamedListPage
 from llamatron.model.schema.file_format import Section
-from llamatron.user_strings import errors, help as help_text, labels, legends, marks, messages
+from llamatron.user_strings import errors, help as help_text, labels, legends, messages
 
 
 class SongsPage(NamedListPage):
-    """Every song in the set, with the current one marked."""
+    """Every song in the set, with the current one marked, from the Song list presenter (interface/pages/song_list.py)."""
 
     KEYS = keybindings.SongsPage
     LISTED_SECTION = Section.SONGS
@@ -21,19 +20,13 @@ class SongsPage(NamedListPage):
     WHAT = legends.MSG_SONG_WHAT
     crumbs = (labels.Crumb.SONGS,)
     HELP = help_text.HELP_SONGS_PAGE
-    columns = (
-        (labels.Column.SELECT_SONG, None, Align.LEFT), (labels.Column.CURRENT, 7, Align.LEFT), (labels.Column.TEMPO, 7, Align.RIGHT), (labels.Column.SCALE, 14, Align.LEFT),
-        (labels.Column.TRACKS, 6, Align.RIGHT), (labels.Column.SCENES, 6, Align.RIGHT),
-    )
+    columns = SongListPresenter.COLUMNS
+
+    def presenter(self):
+        return SongListPresenter(page=self, document=self.document())
 
     def rows(self):
-        document = self.document()
-        setlist = document.get_setlist()
-        return [(name, self.row_of(name=name, song=setlist.get_song(name), current=name == document.get_current_song_name())) for name in self.names()]
-
-    def row_of(self, *, name, song, current):
-        mark = marks.MSG_CURRENT_SONG_MARK if current else drawing.NOTHING
-        return [name, mark, tempo_text(song.get_tempo()), song.get_scale_name() or marks.MSG_NONE_SHOWN, len(song.get_track_names()), len(song.get_scenes())]
+        return self.presenter().rows()
 
     def enter_binding(self):
         return self.KEYS.SETTINGS
@@ -42,7 +35,7 @@ class SongsPage(NamedListPage):
         return [self.bind(self.KEYS.CURRENT, action=self.make_current), *super().item_keys()]
 
     def make_current(self):
-        self.document().select_song(self.current())
+        self.presenter().make_current(self.current())
 
     def open_item(self):
         """Make the selected song current, so that its page and the rest of the tracker work on it, then open its settings."""
@@ -50,10 +43,7 @@ class SongsPage(NamedListPage):
         self.show_page(SongPage(self.holder))
 
     def add(self):
-        def named(text):
-            self.document().add_song(text)
-            self.put_cursor_on(text)
-        self.ask_name(title=messages.MSG_NEW_SONG_PROMPT, value=drawing.NOTHING, taken=self.names(), then=named)
+        self.presenter().add()
 
     def delete(self):
         """Delete the selected song after asking, unless it's the last, since there is always a current song."""

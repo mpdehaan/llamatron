@@ -224,6 +224,10 @@ class Page(BindsKeys, Screen):
         page = self.app.editor_of(section)(holder=self.holder, name=name, **named)
         self.show_page(page if word is None else page.opened_from(page=self, word=word))
 
+    def open_place(self, place):
+        """Open the page that shows a place (interface/pages/places.py), which the app's site map makes."""
+        self.show_page(self.app.site_map.page_at(place=place, holder=self.holder))
+
     def stop_playing(self):
         """Stop a listening page's preview, if one plays, as its page is left or another opened over it; a song played from Arrange plays on."""
         if self.app.transport.is_previewing():

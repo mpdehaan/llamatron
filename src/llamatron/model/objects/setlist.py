@@ -950,6 +950,16 @@ class Setlist(HoldsSections, HoldsSettings):
             return factory_groove(name)
         return self._section(Section.GROOVES).get(name)
 
+    @staticmethod
+    def is_factory_groove(name):
+        """Return whether a groove is one of the factory grooves, which every set has and none changes."""
+        return is_factory_groove(name)
+
+    @staticmethod
+    def factory_groove_count():
+        """Return how many factory grooves there are, which every list of grooves shows first."""
+        return len(groove.FACTORY_GROOVE_NAMES)
+
     def get_groove_names(self):
         """Return every groove a song can choose: the factory grooves, then the set's own in the set's order."""
         return [*groove.FACTORY_GROOVE_NAMES, *self.get_own_groove_names()]

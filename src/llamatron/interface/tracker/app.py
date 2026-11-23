@@ -86,7 +86,7 @@ class LlamatronApp(App, inherit_bindings=False):
         # The tab each kind of page with a tab box last showed, by the page's class, remembered for the session.
         self.chosen_tabs = {}
         # Which page shows each place a page opens by saying where it goes.
-        self.site_map = SiteMap()
+        self.site_map = SiteMap(editor_of=self.editor_of)
         # The headings open in the pattern editor's Munge dialog, kept for the session.
         self.open_munge_groups = set()
         self.on_roll = True

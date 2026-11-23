@@ -13,7 +13,7 @@ from llamatron.model.schema.file_format import Accidental, ScaleSetting
 from llamatron.model.schema.setting import check_settings, Checked, described
 from llamatron.model.values import note, scale as scale_values
 from llamatron.model.values.note import Note
-from llamatron.model.values.scale import Scale, ScaleType
+from llamatron.model.values.scale import Scale, scale_type_name, ScaleType
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
 
@@ -137,11 +137,6 @@ def is_scale_type(kind):
 
 
 # Every scale type the file accepts, aliases like aeolian included, in the order the enum lists them.
-
-
-def scale_type_name(kind):
-    """Return a scale type's name as a file writes it, like 'minor' for ScaleType.MINOR."""
-    return kind.name.lower()
 
 
 def scale_type_names():
