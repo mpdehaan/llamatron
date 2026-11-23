@@ -16,6 +16,7 @@ from unittest import mock
 from llamatron.realtime.devices import ports
 from llamatron.realtime.devices.ports import PortWatcher
 from llamatron.realtime.sender_process import coremidi
+from tests.support.coremidi_turns import CoreMidiTestCase
 
 A_PORT = 'a port'
 ANOTHER_PORT = 'another port'
@@ -81,7 +82,7 @@ class TestPortWatcher(unittest.TestCase):
 
 
 @unittest.skipUnless(sys.platform == coremidi.MACOS, 'CoreMIDI is on macOS only')
-class TestCoreMidiListing(unittest.TestCase):
+class TestCoreMidiListing(CoreMidiTestCase):
 
     def test_a_port_another_program_makes_later_is_seen_by_listing_again(self):
         watcher = PortWatcher(listing=coremidi.destination_names)

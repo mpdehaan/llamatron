@@ -42,6 +42,7 @@ from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, Shape, shape_setting, ShapePart
 from llamatron.model.values.note import NoteName
 from llamatron.realtime.devices.fluidsynth import FluidSynth
+from llamatron.realtime.render_process.playback_process import PlaybackProcess
 from llamatron.user_strings import names as names_text
 
 # Every document a test makes checks what it remembers: an answer kept after what it came from changed fails the test (caching/memory.py).
@@ -55,6 +56,7 @@ SPACE = ' '
 # pilot.pause's delay that only lets the screen handle its messages, with no wait for the process to go idle.
 SETTLED = 0
 MSG_REAL_FLUIDSYNTH = 'a test started a real FluidSynth: give its transport a stand-in, as test_tui_playback.py does'
+MSG_REAL_RENDER_PROCESS = 'a test started a real render process: give its transport a sender, as test_tui_playback.py does, or play through one only where REAL_RENDER_PROCESS says so, as test_tui_render_process.py does'
 # Where the warning of silent instruments asks whether FluidSynth is installed.
 FLUIDSYNTH_INSTALLED = 'llamatron.interface.tracker.transport.installed'
 # Where the transport asks the same.
@@ -248,6 +250,8 @@ class UITest(unittest.IsolatedAsyncioTestCase):
     """Runs the real program with no terminal, pressing keys."""
 
     SIZE = (100, 40)
+    # Whether the class plays through a real render process and its Realtime Sender Process, recording what they would send.
+    REAL_RENDER_PROCESS = False
 
     async def asyncSetUp(self):
         temporary = tempfile.TemporaryDirectory()
@@ -255,28 +259,27 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         self.addCleanup(os.chdir, os.getcwd())
         os.chdir(temporary.name)
         self.folder = temporary.name
-        # FluidSynth counts as installed, whatever this computer has, so that opening an example, whose instruments play through it,
-        # warns of nothing; tests/interface/tracker/test_tui_silent_instruments.py says otherwise where it tests the warning.
-        installed = mock.patch(FLUIDSYNTH_INSTALLED, return_value=True)
-        installed.start()
-        self.addCleanup(installed.stop)
-        # The transport and the pattern preview find FluidSynth installed too, so that Listen is offered the same on every computer.
-        found = mock.patch(TRANSPORT_FINDS_FLUIDSYNTH, return_value=True)
-        found.start()
-        self.addCleanup(found.stop)
-        # No test starts a real FluidSynth, which would load a SoundFont and open the Mac's audio: the tests of FluidSynth give the transport a stand-in.
-        refused = mock.patch.object(FluidSynth, '_popen', side_effect=AssertionError(MSG_REAL_FLUIDSYNTH))
-        refused.start()
-        self.addCleanup(refused.stop)
-        no_ports = mock.patch(PORT_LISTING, return_value=list)
-        no_ports.start()
-        self.addCleanup(no_ports.stop)
+        self.stand_in_for_the_computer()
         self.document = a_song()
         self.app = self.make_app()
         self.running = self.app.run_test(size=self.SIZE)
         self.pilot = await self.running.__aenter__()
         self.addAsyncCleanup(self.running.__aexit__, None, None, None)
         await self.pilot.pause()
+
+    def stand_in_for_the_computer(self):
+        """Keep the test from what the computer has and does in real time: FluidSynth, the MIDI ports, and the render process
+        with its Realtime Sender Process, unless the class plays through a real render process (REAL_RENDER_PROCESS)."""
+        # FluidSynth counts as installed, whatever this computer has, so that opening an example, whose instruments play through it,
+        # warns of nothing; tests/interface/tracker/test_tui_silent_instruments.py says otherwise where it tests the warning.
+        self._patched(mock.patch(FLUIDSYNTH_INSTALLED, return_value=True))
+        # The transport and the pattern preview find FluidSynth installed too, so that Listen is offered the same on every computer.
+        self._patched(mock.patch(TRANSPORT_FINDS_FLUIDSYNTH, return_value=True))
+        # No test starts a real FluidSynth, which would load a SoundFont and open the Mac's audio: the tests of FluidSynth give the transport a stand-in.
+        self._patched(mock.patch.object(FluidSynth, '_popen', side_effect=AssertionError(MSG_REAL_FLUIDSYNTH)))
+        self._patched(mock.patch(PORT_LISTING, return_value=list))
+        if not self.REAL_RENDER_PROCESS:
+            self._patched(mock.patch.object(PlaybackProcess, '_spawn', side_effect=AssertionError(MSG_REAL_RENDER_PROCESS)))
 
     def make_app(self):
         """Return the tracker the test runs, on a_song() unless a test class starts the tracker another way. The temporary folder is already the working directory."""
@@ -504,3 +507,8 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         """Move a settings page's cursor to the field with this label, wherever the page puts it, opening its section first where that is closed."""
         await UITest.go_to(self, label)
 
+
+    def _patched(self, patch):
+        """Start a stand-in for the rest of the test."""
+        patch.start()
+        self.addCleanup(patch.stop)

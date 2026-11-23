@@ -35,6 +35,8 @@ NOTES_A_PASS = 2
 class TestRenderProcessPlayback(PlaybackTest):
     """A tracker whose transport plays through a render process with a recording sender."""
 
+    REAL_RENDER_PROCESS = True
+
     def make_app(self):
         app = LlamatronApp(document=self.document)
         self.fluidsynth = FakeFluidSynth()

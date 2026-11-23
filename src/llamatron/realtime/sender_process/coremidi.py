@@ -70,9 +70,11 @@ class CoreMidi:
         self.foundation.CFStringCreateWithCString.restype = ctypes.c_void_p
         self.foundation.CFStringCreateWithCString.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_uint32]
         self.foundation.CFStringGetCString.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_long, ctypes.c_uint32]
+        self.foundation.CFRelease.argtypes = [ctypes.c_void_p]
         self.foundation.CFRunLoopRunInMode.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_ubyte]
         self.foundation.CFRunLoopRunInMode.restype = ctypes.c_int32
-        for call in (self.midi.MIDIClientCreate, self.midi.MIDIOutputPortCreate, self.midi.MIDISend, self.midi.MIDIPortDispose):
+        calls = (self.midi.MIDIClientCreate, self.midi.MIDIOutputPortCreate, self.midi.MIDISend, self.midi.MIDIPortDispose, self.midi.MIDIObjectGetStringProperty)
+        for call in calls:
             call.restype = ctypes.c_int32
         self.midi.MIDIGetDestination.restype = ctypes.c_uint32
         self.midi.MIDIPacketListInit.restype = ctypes.c_void_p
@@ -91,21 +93,37 @@ class CoreMidi:
         return ctypes.c_void_p(self.foundation.CFStringCreateWithCString(None, value.encode(), UTF8))
 
     def names_of(self, destination):
-        """Return a destination's own name and the name shown for it."""
+        """Return a destination's own name and the name shown for it, or None when the destination is gone: another program can
+        take one away between counting the destinations and reading their names, and CoreMIDI then hands back no name, which
+        Core Foundation would read at address zero and end the process."""
         names = []
         for property_name in NAME_PROPERTIES:
             found = ctypes.c_void_p()
-            self.midi.MIDIObjectGetStringProperty(destination, ctypes.c_void_p.in_dll(self.midi, property_name), ctypes.byref(found))
+            status = self.midi.MIDIObjectGetStringProperty(destination, ctypes.c_void_p.in_dll(self.midi, property_name), ctypes.byref(found))
+            if status != NO_ERROR or not found.value:
+                return None
             text = ctypes.create_string_buffer(NAME_BYTES)
             self.foundation.CFStringGetCString(found, text, NAME_BYTES, UTF8)
+            # CoreMIDI hands over a copy of the name, which is the caller's to release.
+            self.foundation.CFRelease(found)
             names.append(text.value.decode())
         return names
 
-    def destination_called(self, name):
-        """Return the destination a name picks as RtMidiOutput would pick it, the first whose name is it or starts with it."""
+    def destinations(self):
+        """Return the names of every destination still there as it is read, each its own name and the name shown for it, with
+        the destination."""
+        found = []
         for place in range(self.midi.MIDIGetNumberOfDestinations()):
             destination = self.midi.MIDIGetDestination(place)
-            if _named_like(names=self.names_of(destination), name=name):
+            names = self.names_of(destination)
+            if names is not None:
+                found.append((names, destination))
+        return found
+
+    def destination_called(self, name):
+        """Return the destination a name picks as RtMidiOutput would pick it, the first whose name is it or starts with it."""
+        for names, destination in self.destinations():
+            if _named_like(names=names, name=name):
                 return destination
         raise ValueError(errors.ERR_NO_SUCH_MIDI_PORT.format(name=name))
 
@@ -123,7 +141,7 @@ def destination_names():
     loop delivers, and without it a destination made after the first listing, such as FluidSynth's, is never seen."""
     core = core_midi()
     core.foundation.CFRunLoopRunInMode(ctypes.c_void_p.in_dll(core.foundation, DEFAULT_RUN_LOOP_MODE), NO_WAIT, False)
-    return [core.names_of(core.midi.MIDIGetDestination(place))[SHOWN_NAME] for place in range(core.midi.MIDIGetNumberOfDestinations())]
+    return [names[SHOWN_NAME] for names, _destination in core.destinations()]
 
 
 def checked(*, call, status):

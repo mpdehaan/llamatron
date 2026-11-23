@@ -6,7 +6,7 @@
 
 """The CoreMIDI port (realtime/sender_process/coremidi.py) on macOS, through a destination of the test's own that nothing else listens to, so
 nothing is heard: events handed ahead arrive at their moments, a flush takes back what is still to come, and a name that is no
-destination is refused in the program's words, and no flush ever reaches the destination as a system reset; and elsewhere, CoreMIDI is not there to use."""
+destination is refused in the program's words, a destination taken away as it is read is passed over, and no flush ever reaches the destination as a system reset; and elsewhere, CoreMIDI is not there to use."""
 
 import ctypes
 import sys
@@ -19,9 +19,11 @@ from llamatron.realtime.render_process import timeline
 from llamatron.realtime.sender_process import coremidi
 from llamatron.realtime.sender_process.coremidi import CoreMidiOutput
 from llamatron.user_strings import errors
+from tests.support.coremidi_turns import CoreMidiTestCase
 
 DESTINATION = 'llamatron test destination'
 NO_SUCH_DESTINATION = 'no such destination for llamatron'
+GONE_DESTINATION = 'a destination taken away for llamatron'
 ANOTHER_SYSTEM = 'linux'
 CHANNEL = 15
 LOWEST_NOTE = 1
@@ -60,6 +62,9 @@ class Destination:
         self._endpoint = ctypes.c_uint32()
         coremidi.checked(call=name, status=core.midi.MIDIDestinationCreate(core.client, core.text(name), self._read, None, ctypes.byref(self._endpoint)))
 
+    def get_endpoint(self):
+        return self._endpoint
+
     def close(self):
         coremidi.core_midi().midi.MIDIEndpointDispose(self._endpoint)
 
@@ -91,7 +96,7 @@ class TestElsewhere(unittest.TestCase):
 
 
 @unittest.skipUnless(sys.platform == coremidi.MACOS, 'CoreMIDI is on macOS only')
-class TestCoreMidiOutput(unittest.TestCase):
+class TestCoreMidiOutput(CoreMidiTestCase):
 
     def setUp(self):
         self.destination = Destination(DESTINATION)
@@ -125,6 +130,13 @@ class TestCoreMidiOutput(unittest.TestCase):
         with self.assertRaises(ValueError) as caught:
             CoreMidiOutput(name=NO_SUCH_DESTINATION)
         self.assertEqual(str(caught.exception), errors.ERR_NO_SUCH_MIDI_PORT.format(name=NO_SUCH_DESTINATION))
+
+    def test_a_destination_taken_away_before_its_names_are_read_has_none_and_is_not_listed(self):
+        gone = Destination(GONE_DESTINATION)
+        endpoint = gone.get_endpoint()
+        gone.close()
+        self.assertIsNone(coremidi.core_midi().names_of(endpoint))
+        self.assertNotIn(GONE_DESTINATION, coremidi.destination_names())
 
 
 if __name__ == '__main__':
