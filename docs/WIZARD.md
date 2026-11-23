@@ -19,7 +19,7 @@ wizard will get a page of its own.
 ## Wizard Layout
 
 The wizard is a row of tabs, Genre, Band, Composition, Form and Apply, over a
-box holding the tab chosen, with `< Back` and `Next >` buttons under it, which
+box holding the tab chosen, with `< Back` and `Next >` buttons at its foot, which
 open the tab before and after; on Apply, the Apply button takes Next's place.
 Tab goes between the row of tabs and the box, and `PgUp` and `PgDn` choose
 the tab before or after. A tab with parts lists them at the left of the box,

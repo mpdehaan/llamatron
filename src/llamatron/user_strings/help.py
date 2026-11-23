@@ -329,7 +329,7 @@ A factory groove can only be looked at: copy it on the Grooves page to get one y
 HELP_WIZARD_PAGE = """
 The song wizard makes a whole song from a few choices. Nothing in the set changes until Apply.
 
-The tabs, Genre, Band, Composition, Form and Apply, are the wizard's parts. Tab goes between the row of tabs and the box under it; PgUp and PgDn, and the Back and Next buttons under the box, open the tab before or after.
+The tabs, Genre, Band, Composition, Form and Apply, are the wizard's parts. Tab goes between the row of tabs and the box under it; PgUp and PgDn, and the Back and Next buttons at the foot of the box, open the tab before or after.
 A tab's parts are listed at its left: up and down move, ENTER or right moves into the settings of the part under the cursor, and ESC or left moves back.
 Genre: choose the genre and the subgenre first. A dim tab waits until then. The key, the scale, the tempo and the form take what the subgenre usually has, and each can be changed.
 Composition: Chords, the chord progression; Melody, the melody style of the tunes; Hooks, whether the song has a hook.

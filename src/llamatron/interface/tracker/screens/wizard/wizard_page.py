@@ -65,7 +65,7 @@ FIRST_PLACE = 0
 OWN_DRUM = ''
 # The line and the space between the list and the fields.
 DIVIDER = Box.BAR + drawing.SPACE
-# The lines under the box: a blank line and the boxed buttons, and the lines the row of tabs and the box's bottom edge take.
+# The lines at the foot of the box: a blank line and the boxed buttons, and the lines the row of tabs and the box's bottom edge take.
 BUTTON_LINES = 4
 BOX_EDGE_LINES = 4
 # The buttons' places when both show: Back, then Next or Apply.
@@ -1084,15 +1084,16 @@ class WizardPage(FieldPage):
         return lines
 
     def body(self, *, width, height):
-        """Return the row of tabs over the box holding the chosen tab, a tab that isn't ready dim, and the buttons under the box."""
+        """Return the row of tabs over the box holding the chosen tab, a tab that isn't ready dim, with the Back and Next buttons
+        at the foot of the box, under what the tab holds."""
         self.settle_cursor()
         inner_height = max(height - BOX_EDGE_LINES - BUTTON_LINES, 1)
         inner = tab_box_renderer.inner_width(width)
         tabs = [Tab(label=branch.name(), not_ready=bool(self.refusal_of(branch))) for branch in self.panels.roots()]
-        box = tab_box_renderer.boxed_tabs(tabs=tabs, chosen=self.tab(), width=width, here=self.on_tab_row, lines=self.box_lines(width=inner, height=inner_height))
         buttons = [(drawing.NOTHING, label) for label, _action in self.buttons()]
-        row = [Text(drawing.INDENT) + line for line in button_row(buttons=buttons, selected=self.button if self.on_buttons else None)]
-        return [*box, Text(drawing.NOTHING), *row]
+        row = button_row(buttons=buttons, selected=self.button if self.on_buttons else None)
+        lines = [*self.box_lines(width=inner, height=inner_height)[:inner_height], Text(drawing.NOTHING), *row]
+        return tab_box_renderer.boxed_tabs(tabs=tabs, chosen=self.tab(), width=width, here=self.on_tab_row, lines=lines)
 
     def box_lines(self, *, width, height):
         """Return the lines inside the box: why the tab isn't ready yet; its fields alone; or its list, a line, and the fields of
