@@ -23,7 +23,7 @@ HELLO_WORLD_SECONDS = 3
 HELLO_WORLD_SCENES = '3'
 HELLO_WORLD_TRACKS = '2'
 CHORDS_COLUMN = 'chords'
-REGISTERS_COLUMN = 'registers'
+DRAWS_COLUMN = 'draws'
 HEADING_LINES = 2
 LEARNING_FOLDER = 'examples/learning'
 # How many of the learning demos the test of what each introduces reads.
@@ -67,12 +67,12 @@ class TestDemoSummary(unittest.TestCase):
         self.assertEqual(self.cell(row=row, heading=self.tool.SCENES_HEADING), HELLO_WORLD_SCENES)
         self.assertEqual(self.cell(row=row, heading=self.tool.TRACKS_HEADING), HELLO_WORLD_TRACKS)
         self.assertEqual(self.cell(row=row, heading=CHORDS_COLUMN), self.tool.USED)
-        self.assertEqual(self.cell(row=row, heading=REGISTERS_COLUMN), self.tool.UNUSED)
+        self.assertEqual(self.cell(row=row, heading=DRAWS_COLUMN), self.tool.UNUSED)
         self.assertEqual(self.tool.UNUSED, drawing.NOTHING)
 
-    def test_a_set_that_uses_a_registers_feature_is_marked_in_that_column(self):
+    def test_a_set_that_uses_a_draws_feature_is_marked_in_that_column(self):
         row = self.tool.summary_row(path=TIE_DEMO, features=self.features)
-        self.assertEqual(self.cell(row=row, heading=REGISTERS_COLUMN), self.tool.USED)
+        self.assertEqual(self.cell(row=row, heading=DRAWS_COLUMN), self.tool.USED)
 
     def printed(self, *argv):
         with contextlib.redirect_stdout(io.StringIO()) as printed:

@@ -15,8 +15,9 @@ notes: |
   minor iv. The bass is Grab steps on a track transposed down an octave, so it plays each chord's
   root. The piano is Grab steps with 7 on the Chord row, its chords built on the grabbed root, and
   named chords in the turnaround like the organ's. The lead is grabbed three ways, one a scene:
-  - from the register rows: each step's AX= row sets AX, and its +Note row moves the grabbed root
-    that many notes up the scale, so 2 plays the chord's third and 4 its fifth;
+  - from a draw: each step's Note+=AD row moves the grabbed root up the scale by AD's next slot,
+    0, 2, 4, 5, 4, 2, 4, 2, 0, 2 and 0 on the Draws page, so 2 plays the chord's third and 4 its
+    fifth, and Reset AD on the first step starts the tune again each pass;
   - from the arpeggiator: each step builds a seventh chord on the grabbed root, and an
     arpeggiator on the clip's Arp tab plays it one note at a time;
   - from ratchets: four quick notes a beat, Ratchet Offset climbing a scale note each, then
@@ -25,7 +26,7 @@ notes: |
   and every part follows.
 
   Scene 1: intro, the organ, the piano and the bass on vi-ii-V-I.
-  Scene 2: verse, I-IV-I-V, the lead from the register rows.
+  Scene 2: verse, I-IV-I-V, the lead from a draw.
   Scene 3: chorus, vi-ii-V-I.
   Scene 4: verse, the lead from the arpeggiator.
   Scene 5: turnaround, IV-iv-I-V, the lead from ratchets.
@@ -74,12 +75,12 @@ patterns:
     velocity: [90, ~, ~, ~, 90, ~, ~, ~, 90, ~, ~, ~, 90, ~, ~, ~]
     tie: [false, true, true, true, false, true, true, true, false, true, true, true, false, true, true, true]
     grab: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
-  - name: lead from registers
+  - name: lead from a draw
     steps: 16
     step_size: 1/8
     grab: [true, false, true, true, false, true, true, true, true, false, true, false, true, true, true, false]
-    ax_note: [1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0]
-    ax_set: [0, ~, 2, 4, ~, 5, 4, 2, 4, ~, 2, ~, 0, 2, 0, ~]
+    ad_note: [1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0]
+    ad_reset: [true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
   - name: lead for the arpeggiator
     steps: 8
     step_size: 1/8
@@ -127,6 +128,9 @@ songs:
     groove: 8th swing 66
     genre: Gospel
 
+    draws:
+      AD: { slots: [0, 2, 4, 5, 4, 2, 4, 2, 0, 2, 0] }
+
     tracks:
       - { name: organ, instrument: drawbar organ }
       - { name: bass, transpose: -7, instrument: finger bass }
@@ -142,12 +146,12 @@ songs:
           - { track: organ, pattern: harmony, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1] } } }
           - { track: bass, pattern: bass, loop: true, grab_track: organ }
           - { track: piano, pattern: piano, loop: true, grab_track: organ }
-      - name: "verse, the lead from registers"
+      - name: "verse, the lead from a draw"
         clips:
           - { track: organ, pattern: harmony, repeat: 12, built_in: { chords: { enabled: true, mode: progression, chords: [1, 4, 1, 5] } } }
           - { track: bass, pattern: bass, loop: true, grab_track: organ }
           - { track: piano, pattern: piano, loop: true, grab_track: organ }
-          - { track: lead, pattern: lead from registers, loop: true, grab_track: organ }
+          - { track: lead, pattern: lead from a draw, loop: true, grab_track: organ }
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
@@ -156,7 +160,7 @@ songs:
           - { track: organ, pattern: harmony, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1] } } }
           - { track: bass, pattern: bass, loop: true, grab_track: organ }
           - { track: piano, pattern: piano, loop: true, grab_track: organ }
-          - { track: lead, pattern: lead from registers, loop: true, grab_track: organ }
+          - { track: lead, pattern: lead from a draw, loop: true, grab_track: organ }
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hats, pattern: hats, loop: true }
@@ -184,7 +188,7 @@ songs:
           - { track: organ, pattern: harmony, repeat: 12, built_in: { chords: { enabled: true, mode: progression, chords: [6, 2, 5, 1] } } }
           - { track: bass, pattern: bass, loop: true, grab_track: organ }
           - { track: piano, pattern: piano, loop: true, grab_track: organ }
-          - { track: lead, pattern: lead from registers, loop: true, grab_track: organ }
+          - { track: lead, pattern: lead from a draw, loop: true, grab_track: organ }
           - { track: kick, pattern: kick, loop: true }
           - { track: snare, pattern: snare, loop: true }
           - { track: hats, pattern: hats, loop: true }

@@ -31,9 +31,11 @@ notes: |
   - Pulling apart: DD on every note, and BD subtracted (-) on two steps, against DD.
   - All three: AD on the downbeats, BD and DD between.
 
-  Scenes 10 and 11, gates: Mute When reads a draw as it reads a register.
-  - Counted gate: the kick adds 1 to AX each bar, and the marimba's notes, Note+=AD, have Mute When:
-    AD > AX: in the first bar only a 0 gets through, and as AX counts up more of the row is heard.
+  Scenes 10 and 11, gates: Mute When reads a draw.
+  - Counted gate: the kick's downbeat takes the next of ED's slots, 0 to 11, a bar at a time, with
+    Vel+=ED, so it lands a little harder each bar, and the marimba's notes, Note+=AD, have Mute When:
+    AD > ED: in the first bar only a 0 gets through, and as ED counts up more of the row is heard.
+    The scene resets ED as it starts, so the count begins at 0 each time.
   - Redrawn gate: BD has Conditions redraw on, so the bell's Mute When: BD < 2 draws from BD itself,
     once a step. The pendulum's 1 and -1 are silent, and the steps that sound play the value too.
 
@@ -146,7 +148,7 @@ patterns:
     degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, C, ~, ~, ~, ~]
     octave: [3, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, ~, ~]
     velocity: [100, ~, ~, ~, ~, ~, 90, ~, 100, ~, ~, 90, ~, ~, ~, ~]
-    ax_add: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1]
+    ed_velocity: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   - name: counted gate
     steps: 8
     step_size: 1/8
@@ -155,7 +157,7 @@ patterns:
     ad_note: [1, 1, 1, 1, 1, 1, 1, 1]
     mute_c1: [AD, AD, AD, AD, AD, AD, AD, AD]
     mute_c2: [">", ">", ">", ">", ">", ">", ">", ">"]
-    mute_c3: [AX, AX, AX, AX, AX, AX, AX, AX]
+    mute_c3: [ED, ED, ED, ED, ED, ED, ED, ED]
   - name: redrawn gate
     steps: 16
     step_size: 1/16
@@ -180,13 +182,11 @@ songs:
     scale: C Chromatic
     genre: Exercise
 
-    registers:
-      AX: { maximum: 16, reset_behavior: clip }
-
     draws:
       AD: { direction: serial, slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], value_min: 0, value_max: 11 }
       BD: { direction: pendulum, slots: [1, 2, 3, 4, -1, 2], conditions_redraw: true }
       DD: { slots: [0, 1, 2, 3] }
+      ED: { slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }
 
     tracks:
       - { name: bell, instrument: bell }
@@ -232,7 +232,7 @@ songs:
           - { track: vibraphone, pattern: all three, repeat: 4 }
           - { track: bass, pattern: bass pulse, repeat: 8 }
       - name: counted gate
-        set_registers: { AX: 0 }
+        reset_draws: [ED]
         clips:
           - { track: kick, pattern: counting kick, repeat: 12 }
           - { track: marimba, pattern: counted gate, repeat: 12 }

@@ -174,16 +174,16 @@ thing here to a finished song.
 
 [`examples/learning/08_tie.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/08_tie.yml) · D mixolydian · 84 BPM · 2:58 · 9 scenes · 8 tracks
 
-| chords | arps | ratchets | grabs | morphs | directions | ties | probability | key changes | tempo changes | CCs | registers |
+| chords | arps | ratchets | grabs | morphs | directions | ties | probability | key changes | tempo changes | CCs | draws |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CLIPS.md#grabbing-notes) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#play-directions) | [✓](../PATTERNS.md#ties) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#ccs) | [✓](../REGISTERS.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CLIPS.md#grabbing-notes) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#play-directions) | [✓](../PATTERNS.md#ties) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../PATTERNS.md#ccs) | [✓](../DRAWS.md) |
 <!-- end of the generated summary of 08_tie -->
 
 **New Features Introduced**
 
-| arps | ratchets | grabs | morphs | directions | probability | CCs | registers |
+| arps | ratchets | grabs | morphs | directions | probability | CCs | draws |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CLIPS.md#grabbing-notes) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#play-directions) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../PATTERNS.md#ccs) | [✓](../REGISTERS.md) |
+| [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CLIPS.md#grabbing-notes) | [✓](../CLIPS.md#morphing) | [✓](../PATTERNS.md#play-directions) | [✓](../PATTERNS.md#glide-and-probability) | [✓](../PATTERNS.md#ccs) | [✓](../DRAWS.md) |
 
 <a id="groove"></a>
 ## Grooves: `09_groove.yml`
@@ -266,9 +266,9 @@ and long every bar, and a register bound to CC 74 opens the filter as the notes 
 
 **New Features Introduced**
 
-| binding | shapes |
-| :---: | :---: |
-| [✓](../REGISTERS.md) | [✓](../SCENES.md#section-shapes) |
+| registers | binding | shapes |
+| :---: | :---: | :---: |
+| [✓](../REGISTERS.md) | [✓](../REGISTERS.md) | [✓](../SCENES.md#section-shapes) |
 
 <a id="bolero_swell"></a>
 ## Swell: `14_bolero_swell.yml`
@@ -368,9 +368,9 @@ step, and every part follows.
 
 [`examples/learning/19_look_ma_no_notes.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/19_look_ma_no_notes.yml) · Ab major · 76 BPM · 2:57 · 6 scenes · 7 tracks
 
-| chords | arps | ratchets | grabs | ties | grooves | key changes | registers | progressions |
+| chords | arps | ratchets | grabs | ties | grooves | key changes | draws | progressions |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../generators/CHORDS.md) |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../DRAWS.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 19_look_ma_no_notes -->
 
 <a id="registers"></a>
@@ -560,13 +560,7 @@ comes from a draw that its own condition redraws.
 
 [`examples/learning/28_draws.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/28_draws.yml) · C chromatic · 108 BPM · 2:58 · 11 scenes · 6 tracks
 
-| registers | draws | conditional execution |
-| :---: | :---: | :---: |
-| [✓](../REGISTERS.md) | [✓](../DRAWS.md) | [✓](../PATTERNS.md#stop-when-restart-when-and-mute-when) |
+| draws | conditional execution |
+| :---: | :---: |
+| [✓](../DRAWS.md) | [✓](../PATTERNS.md#stop-when-restart-when-and-mute-when) |
 <!-- end of the generated summary of 28_draws -->
-
-**New Features Introduced**
-
-| draws |
-| :---: |
-| [✓](../DRAWS.md) |

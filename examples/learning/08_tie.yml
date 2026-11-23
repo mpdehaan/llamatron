@@ -14,8 +14,8 @@ notes: |
   same way, over a bass note drawn with ties alone, longer than any gate could make it. The bells play the same chords
   through gates, which the arpeggiator then spreads out.
 
-  Things come in one at a time and go out again. The pad swells in on its own, using register
-  AX for its velocity, then the bass and bells, then the drums, whose ghost notes come and go by
+  Things come in one at a time and go out again. The pad swells in on its own, each chord
+  louder than the last by the draw AD, whose slots 8, 16, 24 and 32 its Vel+=AD row adds in turn, then the bass and bells, then the drums, whose ghost notes come and go by
   probability. The tune arrives in the fourth scene and morphs into its answer, and an echo
   track grabs whatever it last played, three eighths later, an octave up. The sixth scene moves
   to D Minor without changing a pattern, since every note is a scale degree, while the pad's
@@ -47,8 +47,7 @@ patterns:
     velocity: [50, ~, ~, ~, ~, ~, 50, ~, 50, ~, ~, 50, ~, ~, ~, ~]
     tie: [false, true, true, true, true, true, false, true, false, true, true, false, true, true, true, true]
     cc1: [70, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
-    ax_velocity: [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0]
-    ax_add: [8, ~, ~, ~, ~, ~, 8, ~, 8, ~, ~, 8, ~, ~, ~, ~]
+    ad_velocity: [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0]
   - name: pad
     steps: 16
     step_size: 1/4
@@ -174,8 +173,8 @@ songs:
     scale: D Mixolydian
     genre: Electronic
 
-    registers:
-      AX: { maximum: 40 }
+    draws:
+      AD: { slots: [8, 16, 24, 32] }
 
     tracks:
       - { name: kick, drum: true, instrument: drum kit }
