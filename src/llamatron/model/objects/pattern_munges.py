@@ -16,8 +16,7 @@ from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Row
 from llamatron.model.schema.row_descriptions import row_described, rows_where
 from llamatron.model.values import midi
-from llamatron.model.values.chord import movement
-from llamatron.music_theory.fundamentals import intervals
+from llamatron.music_theory.fundamentals import intervals, voice_leading
 from llamatron.user_strings import errors
 
 
@@ -179,14 +178,14 @@ class PatternMunges:
                 continue
             chords += 1
             if before is None:
-                before = sorted(inverted(pitches=pitches, inversion=self._held(row=Row.INVERSION, step=step) or 0))
+                before = sorted(voice_leading.inverted(pitches=pitches, inversion=self._held(row=Row.INVERSION, step=step) or 0))
                 continue
             octave = self._octave_at(step=step, default_octave=default_octave)
             inversion, shift = self._nearest_voicing(pitches=pitches, octave=octave, octaves=octaves, before=before)
             self._hold(row=Row.INVERSION, step=step, value=inversion or blank_of(Row.INVERSION))
             if shift:
                 self._hold(row=Row.OCTAVE, step=step, value=octave + shift)
-            before = sorted(voiced(pitches=pitches, inversion=inversion, shift=shift))
+            before = sorted(voice_leading.voiced(pitches=pitches, inversion=inversion, shift=shift))
         return chords
 
     def _held(self, *, row, step):
@@ -246,7 +245,7 @@ class PatternMunges:
         choices = []
         for place, (shift, inversion) in enumerate(_voicings(octaves)):
             if inversion < len(pitches) and limits.MIN_OCTAVE <= octave + shift <= limits.MAX_OCTAVE:
-                moved = movement(pitches=voiced(pitches=pitches, inversion=inversion, shift=shift), before=before)
+                moved = voice_leading.movement(pitches=voice_leading.voiced(pitches=pitches, inversion=inversion, shift=shift), before=before)
                 choices.append((moved, place, inversion, shift))
         _, _, inversion, shift = min(choices)
         return inversion, shift
@@ -258,22 +257,6 @@ def half_steps_of(*, tone, scale):
     steps = scale.get_half_steps()
     octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
     return (octave + octaves_up) * intervals.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0)
-
-
-def inverted(*, pitches, inversion):
-    """Return a chord's pitches as an inversion plays them: so many of its first notes an octave up, never all of them."""
-    moved = min(inversion, len(pitches) - 1)
-    played = []
-    for place, pitch in enumerate(pitches):
-        if place < moved:
-            pitch += intervals.HALF_STEPS_PER_OCTAVE
-        played.append(pitch)
-    return played
-
-
-def voiced(*, pitches, inversion, shift):
-    """Return a chord's pitches in an inversion, moved so many octaves."""
-    return [pitch + shift * intervals.HALF_STEPS_PER_OCTAVE for pitch in inverted(pitches=pitches, inversion=inversion)]
 
 
 def _voicings(octaves):

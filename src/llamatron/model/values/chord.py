@@ -101,26 +101,3 @@ class Chord:
             ordered.append((note.get_midi_number(), length is None, length or NO_LENGTH))
         ordered.sort()
         return tuple(ordered)
-
-
-def movement(*, pitches, before):
-    """Return how far a voicing's notes move from the chord before, as MIDI numbers: lowest to lowest when both have as many
-    notes, and otherwise each note to the nearest of the chord before. Voice leading and the munge that voices chords nearest
-    both choose the voicing that moves least."""
-    now = sorted(pitches)
-    moved = 0
-    if len(now) == len(before):
-        for pitch, other in zip(now, before):
-            moved += abs(pitch - other)
-        return moved
-    for pitch in now:
-        moved += distance_to_nearest(pitch=pitch, others=before)
-    return moved
-
-
-def distance_to_nearest(*, pitch, others):
-    """Return how far a pitch is from the nearest of other pitches."""
-    distances = []
-    for other in others:
-        distances.append(abs(pitch - other))
-    return min(distances)

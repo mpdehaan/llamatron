@@ -14,9 +14,8 @@ is.
 
 from llamatron.engine.generators.base import ClipGenerator
 from llamatron.model.values import midi, sound as sound_values
-from llamatron.model.values.chord import movement
 from llamatron.model.values.sound import Sound
-from llamatron.music_theory.fundamentals import intervals
+from llamatron.music_theory.fundamentals import intervals, voice_leading
 
 # How many octaves either way a voicing is tried from where its chord was written.
 OCTAVES_TRIED = 4
@@ -89,12 +88,12 @@ class VoiceLeading(ClipGenerator):
         if fixed:
             floor = fixed[0][sound_values.MIDI]
         best = None
-        for shape in _inversions([note[sound_values.MIDI] for note in moving]):
+        for shape in voice_leading.inversions([note[sound_values.MIDI] for note in moving]):
             for octaves in range(-OCTAVES_TRIED, OCTAVES_TRIED + 1):
                 pitches = [pitch + octaves * intervals.HALF_STEPS_PER_OCTAVE for pitch in shape]
                 if not self._fits(pitches) or (floor is not None and min(pitches) <= floor):
                     continue
-                score = (movement(pitches=pitches, before=target), abs(octaves))
+                score = (voice_leading.movement(pitches=pitches, before=target), abs(octaves))
                 if best is None or score < best[0]:
                     best = (score, pitches)
         if best is None:
@@ -102,18 +101,3 @@ class VoiceLeading(ClipGenerator):
         moved = [Sound.half_step(note, pitch - note[sound_values.MIDI]) for note, pitch in zip(moving, best[1])]
         voiced = {id(note): placed for note, placed in zip([*fixed, *moving], [*fixed, *moved])}
         return Sound.chord([voiced[id(note)] for note in order])
-
-
-def _inversions(pitches):
-    """Return each inversion of pitches given lowest first, each lining up with the pitches as given: root position, then the lowest one, two and more moved up an octave."""
-    return [_lowest_moved_up(pitches=pitches, moved=moved) for moved in range(len(pitches))]
-
-
-def _lowest_moved_up(*, pitches, moved):
-    """Return pitches given lowest first with the lowest so many of them moved up an octave."""
-    played = []
-    for place, pitch in enumerate(pitches):
-        if place < moved:
-            pitch += intervals.HALF_STEPS_PER_OCTAVE
-        played.append(pitch)
-    return played
