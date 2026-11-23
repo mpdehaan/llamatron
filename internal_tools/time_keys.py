@@ -7,18 +7,22 @@ Run from the top folder, before and after a change that should make the tracker 
 
     .venv/bin/python internal_tools/time_keys.py            # every place in PLACES, in milliseconds a key
     .venv/bin/python internal_tools/time_keys.py --profile  # the same, then where the slowest place's time goes
+    .venv/bin/python internal_tools/time_keys.py --gc       # with the garbage collector on, as a person's key press runs
 
 `internal_tools/time_keys.sh` runs the first. It opens examples/by_genre/electronic/minimal_techno.yml in the real tracker with no
 terminal, presses the keys that reach each place, and then presses two keys that undo each other
 over and over, so that the set ends as it began: an arrow one way and back, or `]` and `[` on a
 value. Each press is handled and drawn before the next, which is everything the tracker does for
 a key except Textual putting the drawing on the terminal. The best of several runs is shown,
-since the best run is the one least disturbed by whatever else the computer was doing.
+since the best run is the one least disturbed by whatever else the computer was doing. timeit turns the garbage
+collector off while it times; --gc keeps it on, as a person's key press runs, while the plain run stays comparable with
+earlier ones.
 """
 
 import asyncio
 import cProfile
 from dataclasses import dataclass
+import gc
 import pathlib
 import pstats
 import sys
@@ -34,6 +38,9 @@ from llamatron.interface.tracker.keys import Key
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SONG = ROOT / 'examples' / 'by_genre' / 'electronic' / 'minimal_techno.yml'
 PROFILE_FLAG = '--profile'
+GC_FLAG = '--gc'
+# What timeit runs before each timing by default: nothing, leaving the garbage collector off, as earlier timings were taken.
+NO_SETUP = 'pass'
 # The terminal the keys are timed on, the same size as the screenshots.
 COLUMNS = 112
 ROWS = 32
@@ -111,7 +118,7 @@ def press_pairs(*, app, place):
         app.screen.on_key(key_event(place.back))
 
 
-async def timed(*, place, profile):
+async def timed(*, place, profile, setup=NO_SETUP):
     """Return the milliseconds one key press takes at a place, the best of several runs, profiling one more run if asked."""
     app = LlamatronApp(document=Document.load(str(SONG)))
     async with app.run_test(size=(COLUMNS, ROWS)) as pilot:
@@ -119,7 +126,7 @@ async def timed(*, place, profile):
         for name in place.reach:
             await pilot.press(name if isinstance(name, str) else first_key(name))
             await pilot.pause()
-        seconds = min(timeit.repeat(lambda: press_pairs(app=app, place=place), number=1, repeat=RUNS))
+        seconds = min(timeit.repeat(lambda: press_pairs(app=app, place=place), setup=setup, number=1, repeat=RUNS))
         if profile is not None:
             profile.runcall(press_pairs, app=app, place=place)
         return seconds * MILLISECONDS / (PAIRS * KEYS_IN_A_PAIR)
@@ -133,11 +140,11 @@ def show_profile(*, profile, name):
     statistics.sort_stats(pstats.SortKey.CUMULATIVE).print_stats(PACKAGE_MARK, FUNCTIONS_SHOWN)
 
 
-async def time_all(*, with_profile):
+async def time_all(*, with_profile, setup):
     print(HEADING.format(name=PLACE_COLUMN, time=TIME_COLUMN))
     times = {}
     for place in PLACES:
-        times[place.name] = await timed(place=place, profile=None)
+        times[place.name] = await timed(place=place, profile=None, setup=setup)
         print(ROW.format(name=place.name, time=times[place.name]))
     if with_profile:
         slowest = max(PLACES, key=lambda place: times[place.name])
@@ -147,7 +154,10 @@ async def time_all(*, with_profile):
 
 
 def main():
-    asyncio.run(time_all(with_profile=PROFILE_FLAG in sys.argv[1:]))
+    setup = NO_SETUP
+    if GC_FLAG in sys.argv[1:]:
+        setup = gc.enable
+    asyncio.run(time_all(with_profile=PROFILE_FLAG in sys.argv[1:], setup=setup))
 
 
 if __name__ == '__main__':

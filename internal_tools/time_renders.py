@@ -9,14 +9,18 @@ Run from the top folder, before and after a change that should make rendering fa
 
     .venv/bin/python internal_tools/time_renders.py            # every example, with the best of several renders each
     .venv/bin/python internal_tools/time_renders.py --profile  # the same, then where the slowest example's time goes
+    .venv/bin/python internal_tools/time_renders.py --gc       # with the garbage collector on, as a real render runs
 
 `internal_tools/time.sh` runs the first. Each example is rendered with one seed, so that the same notes are
 made every time, and the best of several runs is shown, since the best run is the one least
 disturbed by whatever else the computer was doing. The counts say how many times each kind of
-object was made during one render, which is what real-time playback has to keep small.
+object was made during one render, which is what real-time playback has to keep small. timeit turns the garbage
+collector off while it times, which leaves out what collecting costs, about a tenth of a render; --gc keeps it on, so that
+the times are what a person waits for, while the plain run stays comparable with earlier ones.
 """
 
 import cProfile
+import gc
 import os
 import pstats
 import sys
@@ -27,6 +31,9 @@ from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.setlist import Setlist
 
 PROFILE_FLAG = '--profile'
+GC_FLAG = '--gc'
+# What timeit runs before each timing by default: nothing, leaving the garbage collector off.
+NO_SETUP = 'pass'
 # The seed every timed render uses, so that probability rolls the same way each time.
 SEED = 1
 # How many times each example is rendered, the best of which is shown.
@@ -99,7 +106,7 @@ def main(arguments):
     slowest = None
     for path in example_sets():
         songs = songs_of(path)
-        best = min(timeit.repeat(lambda: render_all(songs), number=1, repeat=RUNS)) * MILLISECONDS
+        best = min(timeit.repeat(lambda: render_all(songs), setup=setup_of(arguments), number=1, repeat=RUNS)) * MILLISECONDS
         calls = profiled(songs).total_calls
         print(ROW.format(name=os.path.basename(path), time=best, calls=calls))
         total_time += best
@@ -118,6 +125,13 @@ def main(arguments):
         print(PROFILE_HEADING.format(name=os.path.basename(path)))
         for share, calls, where, function in slowest_functions(stats):
             print(PROFILE_ROW.format(share=share, calls=calls, where=where, function=function))
+
+
+def setup_of(arguments):
+    """Return what timeit runs before each timing: turning the garbage collector back on where --gc asks, and else nothing."""
+    if GC_FLAG in arguments:
+        return gc.enable
+    return NO_SETUP
 
 
 if __name__ == '__main__':
