@@ -20,7 +20,6 @@ from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import sections
 from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.draw import Draw
-from llamatron.model.objects.genres import sensible_style, style_name
 from llamatron.model.objects.groove import groove_for
 from llamatron.model.objects.llama_data import data_as_kept, data_built_anew, HoldsSettings, or_default, own_copy, written_settings
 from llamatron.model.objects.named_items import moved_in_list, NamedItems
@@ -29,6 +28,7 @@ from llamatron.model.objects.track import Track
 from llamatron.model.objects.traits import HoldsSections
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits
 from llamatron.model.schema.file_format import SceneSetting, Section, sensible_visualizer, SongSetting, StepStatement
+from llamatron.model.schema.genres import sensible_style, style_name
 from llamatron.model.schema.setting import Checked, Choice, described, settings_held, TimeLength
 from llamatron.user_strings import errors, names
 

@@ -11,10 +11,9 @@ from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.set.song_page import SongPage
 from llamatron.interface.tracker.screens.set.songs_page import SongsPage
-from llamatron.model.objects import genres
-from llamatron.model.objects.genres import subgenres_of, variants_of
-from llamatron.model.schema import defaults, file_format
+from llamatron.model.schema import defaults, file_format, genres
 from llamatron.model.schema.file_format import LiveResponsiveness, Section, SongSetting
+from llamatron.model.schema.genres import subgenres_of, variants_of
 from llamatron.model.values import time_signature
 from llamatron.user_strings import errors, labels as labels_text, legends, marks, names as names_text
 from tests.support import ui_testing

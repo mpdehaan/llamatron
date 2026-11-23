@@ -8,9 +8,9 @@ file's text is read as, and what a set calls a mashup."""
 import unittest
 
 from llamatron.model.file import version
-from llamatron.model.objects import genres
-from llamatron.model.objects.genres import sensible_style, style_name, subgenres_of, variants_of
+from llamatron.model.schema import genres
 from llamatron.model.schema.file_format import Section, SongSetting
+from llamatron.model.schema.genres import sensible_style, style_name, subgenres_of, variants_of
 from llamatron.wizards.create_song import arranger
 from llamatron.wizards.create_song.arranger import variants_of as variants_of_template
 from llamatron.wizards.create_song.wizard_choices import genre_names, style_of, WizardChoices
