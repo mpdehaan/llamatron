@@ -13,6 +13,7 @@ from llamatron.interface.tracker.dialogs.new_riff_dialog import NewRiffDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.renderers.settings_page import SettingsPageDrawing
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.wizard import intro_melody_branch, section_melody_branch, solo_melody_branch
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
@@ -216,9 +217,10 @@ class TestWizardSectionMelody(CompositionTest):
         wizard = self.wizard()
         buttons = [labels.MSG_WIZARD_EDIT_NOTES_BUTTON, labels.MSG_WIZARD_REGENERATE_BUTTON, labels.MSG_LISTEN_LABEL, labels.MSG_WIZARD_LISTEN_BAND_BUTTON]
         fields = wizard.shown_fields()[-len(buttons):]
-        self.assertEqual(len(wizard.row_of_buttons(buttons=fields, selected=0, width=A_WIDE_ROOM)), button_row.ROW_LINES)
+        drawing_of = SettingsPageDrawing(wizard)
+        self.assertEqual(len(drawing_of.row_of_buttons(buttons=fields, selected=0, width=A_WIDE_ROOM)), button_row.ROW_LINES)
         self.assertFalse(wizard.buttons_stacked())
-        lines = wizard.row_of_buttons(buttons=fields, selected=1, width=A_NARROW_ROOM)
+        lines = drawing_of.row_of_buttons(buttons=fields, selected=1, width=A_NARROW_ROOM)
         self.assertEqual([line.plain.strip() for line in lines],
                          [marks.MSG_STACKED_BUTTON.format(name=name) if place != 1 else drawing.SELECTED_MARK + marks.MSG_STACKED_BUTTON.format(name=name) for place, name in enumerate(buttons)])
         self.assertTrue(wizard.buttons_stacked())
