@@ -4,15 +4,13 @@
 
 """The Choice dialog: offers a list to pick from, and answers with the chosen item's place in it."""
 
-from rich.text import Text
-
 from llamatron.interface.forms import moves
 from llamatron.interface.forms.cursor import Cursor, place_of
-from llamatron.interface.tracker import drawing, keybindings
+from llamatron.interface.forms.dialogs import ChoiceList, ChoiceRow
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.cursor import Search, shown_around
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import cursor_mark, fit, Style
-from llamatron.user_strings import marks
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 
 
 class ChoiceDialog(Dialog):
@@ -104,13 +102,13 @@ class ChoiceDialog(Dialog):
         self.cursor.keep_among(self.matches())
 
     def lines(self, width):
+        return dialog_renderer.choice_lines(choices=self.choice_list(), width=width)
+
+    def choice_list(self):
+        """Return the list as it shows: what was typed, and the rows around the cursor, a heading among them dim."""
         matches = self.matches()
-        result = []
-        if self.search.get_typed():
-            result.append(Text(fit(text=drawing.SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.search.get_typed()), width=width), style=Style.DIM))
         shown = self.shown_places()
         at = shown.index(self.cursor.get_place()) if self.cursor.is_on_one_of(matches) else 0
-        for place in shown_around(places=shown, at=at, room=self.SHOWN):
-            text = fit(text=cursor_mark(place == self.cursor.get_place()) + str(self.options[place]), width=width)
-            result.append(Text(text, style=Style.DIM) if place in self.headings else Text(text))
-        return result
+        rows = [ChoiceRow(text=str(self.options[place]), under_cursor=place == self.cursor.get_place(), heading=place in self.headings)
+                for place in shown_around(places=shown, at=at, room=self.SHOWN)]
+        return ChoiceList(typed=self.search.get_typed(), rows=tuple(rows))

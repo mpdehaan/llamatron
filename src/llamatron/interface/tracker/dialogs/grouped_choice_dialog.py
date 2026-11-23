@@ -3,12 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Grouped Choice dialog: a picker whose choices lie under headings that open and close, and that still searches every choice as you type."""
 
-from rich.text import Text
-
 from llamatron.interface.forms import moves
+from llamatron.interface.forms.dialogs import ChoiceList, ChoiceRow
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.drawing import cursor_mark, fit
 from llamatron.user_strings import marks
 
 
@@ -101,12 +99,14 @@ class GroupedChoiceDialog(ChoiceDialog):
             first += size
         return 0
 
-    def lines(self, width):
+    def choice_list(self):
+        """Return the list as it shows: the matches while anything is typed, as any picker's; else the groups' headings, each
+        open or closed, and the choices of the open ones, around the cursor."""
         if self.search.get_typed():
-            return super().lines(width)
+            return super().choice_list()
         rows = self.rows()
         start = max(min(self.row - self.SHOWN // 2, len(rows) - self.SHOWN), 0)
-        result = []
+        shown_rows = []
         for row in range(start, min(start + self.SHOWN, len(rows))):
             number, place = rows[row]
             if place is None:
@@ -114,5 +114,5 @@ class GroupedChoiceDialog(ChoiceDialog):
                 shown = marks.MSG_GROUP_OF_CHOICES.format(mark=mark, name=self.headings[number])
             else:
                 shown = marks.MSG_GROUPED_CHOICE.format(name=self.options[place])
-            result.append(Text(fit(text=cursor_mark(row == self.row) + shown, width=width)))
-        return result
+            shown_rows.append(ChoiceRow(text=shown, under_cursor=row == self.row))
+        return ChoiceList(rows=tuple(shown_rows))

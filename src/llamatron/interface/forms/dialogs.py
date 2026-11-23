@@ -56,3 +56,20 @@ def answers(*, labels, selected, keys=None):
         keys = [NO_KEY] * len(labels)
     return Answers(buttons=tuple(zip(keys, labels)), selected=selected)
 
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ChoiceRow:
+    """One row of a picker's list: its words, whether the cursor is on it, and whether it only heads a group, which is drawn dim
+    and never chosen."""
+
+    text: str
+    under_cursor: bool = False
+    heading: bool = False
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ChoiceList:
+    """A picker's list as it shows: what was typed to search it, or NO_TEXT, and the rows shown, around the cursor."""
+
+    typed: str = NO_TEXT
+    rows: tuple = dataclass_field(default_factory=tuple)

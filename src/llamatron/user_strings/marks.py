@@ -194,6 +194,8 @@ MSG_SECTION_OPEN_MARK = '-'
 # interface/tracker/dialogs/grouped_choice_dialog.py: a heading of choices, and a choice under one.
 MSG_GROUP_OF_CHOICES = '{mark} {name}'
 MSG_GROUPED_CHOICE = '    {name}'
+# interface/tracker/dialogs/pick_many_dialog.py: a choice after its mark of being picked.
+MSG_PICKED_CHOICE = '{mark} {name}'
 # What a settings page's section heading says when a field inside it holds a value, so that a closed one never hides it.
 MSG_SECTION_SET = '(set)'
 # The header's two lines are cells laid out in columns, each column as wide as its wider cell, so that the second line's cells start under the

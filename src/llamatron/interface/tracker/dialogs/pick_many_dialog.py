@@ -6,12 +6,11 @@
 setting that holds a list, like the visualizers left out. Up and Down move, Space turns the choice under the
 cursor on or off, Enter finishes and answers with the choices picked, and Esc cancels, changing nothing."""
 
-from rich.text import Text
-
 from llamatron.interface.forms.cursor import Cursor
-from llamatron.interface.tracker import drawing, keybindings
+from llamatron.interface.forms.dialogs import ChoiceList, ChoiceRow
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import cursor_mark, fit
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.user_strings import marks
 
 
@@ -45,9 +44,13 @@ class PickManyDialog(Dialog):
         self.picked ^= {self.options[self.cursor.get_place()]}
 
     def lines(self, width):
+        return dialog_renderer.choice_lines(choices=self.choice_list(), width=width)
+
+    def choice_list(self):
+        """Return the rows around the cursor, each its mark of being picked and its name."""
         start = max(min(self.cursor.get_place() - self.SHOWN // 2, len(self.options) - self.SHOWN), 0)
-        result = []
+        rows = []
         for place in range(start, min(start + self.SHOWN, len(self.options))):
             mark = marks.MSG_TOGGLE_ON if self.options[place] in self.picked else marks.MSG_FIELD_TOGGLE_OFF
-            result.append(Text(fit(text=cursor_mark(place == self.cursor.get_place()) + mark + drawing.SPACE + self.names[place], width=width)))
-        return result
+            rows.append(ChoiceRow(text=marks.MSG_PICKED_CHOICE.format(mark=mark, name=self.names[place]), under_cursor=place == self.cursor.get_place()))
+        return ChoiceList(rows=tuple(rows))
