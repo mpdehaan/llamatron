@@ -5,10 +5,10 @@
 
 from rich.text import Text
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import cursor_mark, fit
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.user_strings import marks
 
 
@@ -63,7 +63,7 @@ class GroupedChoiceDialog(ChoiceDialog):
         ]
 
     def move_row(self, name):
-        self.row = cursor_moved(place=self.row, name=name, count=len(self.rows()))
+        self.row = moves.moved(place=self.row, name=name, count=len(self.rows()))
 
     def toggle(self):
         """Open the heading under the cursor, or close it."""

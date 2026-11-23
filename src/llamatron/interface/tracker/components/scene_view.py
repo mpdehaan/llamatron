@@ -22,8 +22,8 @@ from rich.style import Style as RichStyle
 from rich.text import Text
 
 from llamatron.caching.cached import cached_for_life
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker.components import title_card
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.scene_notes import beat_chords, effective_values, scene_notes
 from llamatron.interface.tracker.screens.arrange import arrange_details
@@ -238,9 +238,9 @@ class SceneView:
     def move_cursor(self, name):
         """Move the cursor a sixteenth left or right, or a row up or down, stopping at the edges."""
         if name in (Key.LEFT, Key.RIGHT):
-            self._column = cursor_moved(place=self._column, name=name, count=self.columns())
+            self._column = moves.moved(place=self._column, name=name, count=self.columns())
         else:
-            self._row = cursor_moved(place=self._row, name=name, count=len(self.rows()))
+            self._row = moves.moved(place=self._row, name=name, count=len(self.rows()))
 
     def caption(self):
         """Return the line that says which view shows."""

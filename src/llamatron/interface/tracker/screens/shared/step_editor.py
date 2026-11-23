@@ -10,8 +10,9 @@ window of steps that scrolls sideways so that the cursor's step is always shown,
 that say which steps are on screen. They are here once.
 """
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.key_table import cursor_moved, pressed_key
+from llamatron.interface.tracker.key_table import pressed_key
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.user_strings import marks
 
@@ -44,7 +45,7 @@ class StepEditor(Page):
 
     def move_step(self, name):
         """Move the cursor's step with an arrow, stopping at the first and the last step."""
-        self.step = cursor_moved(place=self.step, name=name, count=self.step_count())
+        self.step = moves.moved(place=self.step, name=name, count=self.step_count())
 
     def keep_step(self):
         """Keep the cursor on a step there is, since a removed step or an undo can leave the cursor past the last."""

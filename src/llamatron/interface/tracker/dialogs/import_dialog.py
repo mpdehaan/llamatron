@@ -16,11 +16,11 @@ from rich.text import Text
 from llamatron.caching.cached import cached_for_life
 from llamatron.importers import midi_import as midi_import_values
 from llamatron.importers.midi_import import ImportChoices
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.drawing import cursor_mark, padded, Style, wrapped
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.objects.naming import copy_name, default_scale_name
@@ -97,10 +97,10 @@ class ImportDialog(Dialog):
         return self.midi_import.imported(setlist=self.setlist, choices=self.choices)
 
     def move_cursor(self, name):
-        self.row = cursor_moved(place=self.row, name=name, count=ROWS)
+        self.row = moves.moved(place=self.row, name=name, count=ROWS)
 
     def choose_button(self, name):
-        self.button = cursor_moved(place=self.button, name=name, count=len(importing.MSG_IMPORT_BUTTONS))
+        self.button = moves.moved(place=self.button, name=name, count=len(importing.MSG_IMPORT_BUTTONS))
 
     def step(self, direction):
         """Step the Longest pattern or the Step size field through its choices, stopping at either end."""

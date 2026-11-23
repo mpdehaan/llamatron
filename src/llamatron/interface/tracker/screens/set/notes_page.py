@@ -7,9 +7,10 @@
 from rich.text import Text
 import textwrap
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values, themes
 from llamatron.interface.tracker.drawing import cursor_mark, padded, Style
-from llamatron.interface.tracker.key_table import cursor_moved, pressed_key, quits_at_once
+from llamatron.interface.tracker.key_table import pressed_key, quits_at_once
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.user_strings import help as help_text, labels, marks, messages
@@ -139,7 +140,7 @@ class NotesPage(Page):
         self.on_buttons = False
 
     def move_button(self, name):
-        self.button = cursor_moved(place=self.button, name=name, count=len(labels.MSG_NOTES_BUTTONS))
+        self.button = moves.moved(place=self.button, name=name, count=len(labels.MSG_NOTES_BUTTONS))
 
     def press_button(self):
         if self.button == SAVE:

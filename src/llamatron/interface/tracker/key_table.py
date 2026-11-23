@@ -140,18 +140,6 @@ class BindsKeys:
         return result + sorted(run, key=self.place_in_help)
 
 
-# The arrows that move a cursor back, towards the first place; the others move it forward.
-BACK_KEYS = (Key.UP, Key.LEFT)
-
-
-def cursor_moved(*, place, name, count):
-    """Return where a cursor at place goes when an arrow moves it among count places: back for Up and Left, forward for Down and Right, and stopping at either end.
-
-    No cursor goes round from one end to the other (.claude/UX.md):
-    an arrow held down flies to the end and stays there, which going round would break.
-    """
-    moved = place + (STEP_BACK if name in BACK_KEYS else STEP_FORWARD)
-    return max(min(moved, count - 1), 0)
 
 
 # What Textual calls the three keys whose names here are the marks themselves.

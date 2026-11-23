@@ -8,12 +8,12 @@ SAVE_THEN_QUIT, or None for Cancel."""
 
 from rich.text import Text
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs import dialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.drawing import legend
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.user_strings import labels
 
 # A width no legend reaches, to measure the keys on one line.
@@ -48,7 +48,7 @@ class QuitDialog(MessageDialog):
         return max(super().wanted_width(), keys_on_one_line + dialog.DIALOG_MARGIN)
 
     def move_cursor(self, name):
-        self.choice = cursor_moved(place=self.choice, name=name, count=len(labels.MSG_QUIT_BUTTONS))
+        self.choice = moves.moved(place=self.choice, name=name, count=len(labels.MSG_QUIT_BUTTONS))
 
     def press_selected(self):
         self.dismiss(None if self.choice == CANCEL else self.choice)

@@ -7,9 +7,10 @@
 from rich.text import Text
 from typing import NamedTuple
 
+from llamatron.interface.forms import moves
+from llamatron.interface.forms.cursor import Cursor, place_of
 from llamatron.interface.forms.tab_box import Tab
-from llamatron.interface.tracker import drawing, key_table, keybindings
-from llamatron.interface.tracker.cursor import Cursor, key_between, place_of
+from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.new_pattern_dialog import NewPatternDialog
@@ -203,7 +204,7 @@ class PatternsPage(NamedListPage):
     def key_toward(self, target):
         """Return the key that brings the cursor nearer a row of the chosen tab, named by what it lists (a Listed) or, for a pattern, by the pattern's name; None when the cursor is on it."""
         rows = [what for what, _ in self.remembered_rows()] if isinstance(target, Listed) else self.row_names()
-        return key_between(here=self.cursor.get_place(), there=place_of(screen=self, names=rows, target=target))
+        return moves.toward(here=self.cursor.get_place(), there=place_of(screen=self, names=rows, target=target))
 
     def row_names(self):
         """Return each row's pattern's name, in the rows' order, with nothing for a button."""
@@ -239,11 +240,11 @@ class PatternsPage(NamedListPage):
         """Move with Up and Down through the list, Up from its first row going to the row of tabs and Down from there coming back."""
         matches = self.matches()
         if self.on_tabs:
-            if name not in key_table.BACK_KEYS and matches:
+            if name not in moves.BACK_MOVES and matches:
                 self.on_tabs = False
                 self.cursor.set_place(matches[0])
             return
-        if name in key_table.BACK_KEYS and not self.searching and matches and self.cursor.get_place() == matches[0]:
+        if name in moves.BACK_MOVES and not self.searching and matches and self.cursor.get_place() == matches[0]:
             self.on_tabs = True
             return
         super().move_cursor(name)

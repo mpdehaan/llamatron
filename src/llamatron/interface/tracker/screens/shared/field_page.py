@@ -7,12 +7,11 @@
 import functools
 
 from llamatron.caching.cached import cached_while
-from llamatron.interface.forms import tab_box as tab_box_nodes
+from llamatron.interface.forms import moves, tab_box as tab_box_nodes
+from llamatron.interface.forms.cursor import Cursor, NoSuchPlace
 from llamatron.interface.forms.nodes import Button, Cells, Field, Heading, NameField, NumberField
 from llamatron.interface.forms.tab_box import TabRow
 from llamatron.interface.tracker import drawing, key_table, keybindings
-from llamatron.interface.tracker.cursor import Cursor, key_between, NoSuchPlace
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.renderers import settings_page, tab_box as tab_box_drawing
 from llamatron.interface.tracker.renderers.settings_page import SettingsPageDrawing
@@ -253,8 +252,8 @@ class FieldPage(Page):
             return self.key_inside_box(here=here - row - 1, there=there - row - 1)
         first_button = self.first_button_place()
         if here < first_button or there < first_button or self.buttons_stacked():
-            return key_between(here=here, there=there)
-        return key_between(here=here, there=there, back=Key.LEFT, forward=Key.RIGHT)
+            return moves.toward(here=here, there=there)
+        return moves.toward(here=here, there=there, back=Key.LEFT, forward=Key.RIGHT)
 
     def key_inside_box(self, *, here, there):
         """Return the key that brings the cursor nearer a field of the chosen tab from another: along a column, across a band, or
@@ -263,10 +262,10 @@ class FieldPage(Page):
         start = spots[here]
         end = spots[there]
         if start.band == end.band and start.column == end.column:
-            return key_between(here=start.line, there=end.line)
+            return moves.toward(here=start.line, there=end.line)
         if start.band == end.band:
             return _key_across(here=start.column, there=end.column)
-        return key_between(here=start.band, there=end.band)
+        return moves.toward(here=start.band, there=end.band)
 
     def move_cursor(self, name):
         """Move between the fields with Up and Down, Down from the last field reaching the row of buttons and Up from any button
@@ -367,7 +366,7 @@ class FieldPage(Page):
 
     def move_along_cells(self, name):
         """Move between the cells of a row with Left and Right, stopping at both ends."""
-        self.cell = cursor_moved(place=self.cell, name=name, count=len(self.field().cells))
+        self.cell = moves.moved(place=self.cell, name=name, count=len(self.field().cells))
 
     def first_button_place(self):
         """Return the place of the page's first button among the fields shown, or how many fields show when there's none: after
@@ -382,7 +381,7 @@ class FieldPage(Page):
         """Move along the row of buttons with Left and Right, stopping at both ends."""
         first_button = self.first_button_place()
         count = len(self.shown_fields()) - first_button
-        self.cursor.set_place(first_button + cursor_moved(place=self.cursor.get_place() - first_button, name=name, count=count))
+        self.cursor.set_place(first_button + moves.moved(place=self.cursor.get_place() - first_button, name=name, count=count))
 
     def remember_place(self):
         field = self.field()

@@ -24,14 +24,14 @@ from rich.text import Text
 import time
 from typing import NamedTuple
 
+from llamatron.interface.forms import moves
+from llamatron.interface.forms.cursor import NoSuchPlace
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components.inset_window import drawn_over, inside_size
 from llamatron.interface.tracker.components.scene_view import SceneView
 from llamatron.interface.tracker.components.stage_drawing import frame_box, inside_of, visualizer_area
-from llamatron.interface.tracker.cursor import key_between, NoSuchPlace
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import laid_over, padded, Style
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange import arrange_details
 from llamatron.interface.tracker.screens.arrange.arrange_details import clip_cell, scene_cell, track_cell
@@ -230,7 +230,7 @@ class ArrangePage(Page):
             return Key.UP
         if self.on_header() and row != HEADER_ROW:
             return Key.DOWN
-        return key_between(here=self.column, there=column, back=Key.LEFT, forward=Key.RIGHT) or key_between(here=self.row, there=row)
+        return moves.toward(here=self.column, there=column, back=Key.LEFT, forward=Key.RIGHT) or moves.toward(here=self.row, there=row)
 
     def clamp(self):
         self.row = max(min(self.row, len(self.scenes())), HEADER_ROW)
@@ -398,7 +398,7 @@ class ArrangePage(Page):
 
     def move_picked(self, name):
         """Move the cursor among the details of the cell locked into, stopping at each end."""
-        self.picked = cursor_moved(place=self.picked, name=name, count=len(self.pickable()))
+        self.picked = moves.moved(place=self.picked, name=name, count=len(self.pickable()))
 
     def picked_target(self):
         """Return what the picked line names, or None."""

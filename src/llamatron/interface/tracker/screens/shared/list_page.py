@@ -6,8 +6,10 @@
 
 from rich.text import Text
 
+from llamatron.interface.forms import moves
+from llamatron.interface.forms.cursor import Cursor, place_of
 from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.cursor import Cursor, key_between, place_of, Search, shown_around
+from llamatron.interface.tracker.cursor import Search, shown_around
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.drawing import cursor_mark, fit, Style
 from llamatron.interface.tracker.screens.shared.page import Page
@@ -153,7 +155,7 @@ class ListPage(Page):
 
     def key_toward(self, target):
         """Return the key that brings the cursor nearer the row that is the target, or None when the cursor is on it."""
-        return key_between(here=self.cursor.get_place(), there=place_of(screen=self, names=self.row_names(), target=target))
+        return moves.toward(here=self.cursor.get_place(), there=place_of(screen=self, names=self.row_names(), target=target))
 
     def move_cursor(self, name):
         self.cursor.move_among(name=name, places=self.matches())

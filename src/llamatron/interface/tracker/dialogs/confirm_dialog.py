@@ -6,10 +6,10 @@
 
 from rich.text import Text
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.user_strings import labels
 
 
@@ -44,7 +44,7 @@ class ConfirmDialog(MessageDialog):
         ]
 
     def move_cursor(self, name):
-        self.choice = cursor_moved(place=self.choice, name=name, count=len(labels.MSG_CONFIRM_BUTTONS))
+        self.choice = moves.moved(place=self.choice, name=name, count=len(labels.MSG_CONFIRM_BUTTONS))
 
     def answer(self):
         self.dismiss(True if self.choice == YES else None)

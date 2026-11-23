@@ -13,14 +13,14 @@ note, or on the lowest C for an empty map. Nothing changes in the set until OK.
 
 from rich.text import Text
 
+from llamatron.interface.forms import moves
+from llamatron.interface.forms.cursor import Cursor
 from llamatron.interface.tracker import drawing, key_table, keybindings, keyswitch_text
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.components.keyboard import KeyKind, one_octave_rows
-from llamatron.interface.tracker.cursor import Cursor
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.drawing import cursor_mark, fit, legend, Style
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.keyswitch_text import keyswitch_note_text, shown_name
 from llamatron.model.objects import instrument
@@ -105,7 +105,7 @@ class KeyswitchMapDialog(Dialog):
         self.cell = cell
 
     def along_buttons(self, name):
-        self.button = cursor_moved(place=self.button, name=name, count=len(labels.MSG_OK_CANCEL_BUTTONS))
+        self.button = moves.moved(place=self.button, name=name, count=len(labels.MSG_OK_CANCEL_BUTTONS))
 
     def press_button(self):
         if self.button == OK:
@@ -143,7 +143,7 @@ class KeyswitchMapDialog(Dialog):
     def pick_note(self, name):
         """Move a key along, staying within the octave shown, since the octave is picked apart from the key."""
         within = self.picking % intervals.HALF_STEPS_PER_OCTAVE
-        moved = cursor_moved(place=within, name=name, count=intervals.HALF_STEPS_PER_OCTAVE)
+        moved = moves.moved(place=within, name=name, count=intervals.HALF_STEPS_PER_OCTAVE)
         self.picking = min(self.picking - within + moved, midi.MAX_MIDI_NUMBER)
 
     def pick_octave(self, name):

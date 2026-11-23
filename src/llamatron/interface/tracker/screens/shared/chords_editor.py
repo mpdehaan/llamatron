@@ -15,6 +15,7 @@ notes added on top. On those rows [ and ] and Space step through the choices and
 pattern editor opens, on that row's list. The Name row and the status line say what the cursor's chord comes to.
 """
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing, key_table, keybindings, keys as keys_values, scale_categories
 from llamatron.interface.tracker.chord_text import ChordInWords
 from llamatron.interface.tracker.components.chord_row import quality_names
@@ -22,7 +23,6 @@ from llamatron.interface.tracker.dialogs import chord_dialog
 from llamatron.interface.tracker.dialogs.chord_dialog import ChordChoice, ChordDialog
 from llamatron.interface.tracker.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
 from llamatron.interface.tracker.drawing import Box, Style
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
 from llamatron.interface.tracker.screens.shared.step_editor import StepEditor
 from llamatron.interface.tracker.screens.shared.step_grid import StepGrid
@@ -121,7 +121,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
         if name in keys_values.ARROWS_LEFT_RIGHT:
             self.move_step(name)
         else:
-            self.edited_row = cursor_moved(place=self.edited_row, name=name, count=EDITED_ROWS)
+            self.edited_row = moves.moved(place=self.edited_row, name=name, count=EDITED_ROWS)
 
     def rows(self):
         """Return the chords and the rows beside them, in the order of the rows on screen, as lists of one length."""

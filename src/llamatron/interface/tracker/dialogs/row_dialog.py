@@ -12,9 +12,9 @@ drawn around a zero line."""
 
 from rich.text import Text
 
+from llamatron.interface.forms.cursor import Cursor
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.components.button_row import button_row
-from llamatron.interface.tracker.cursor import Cursor
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.drawing import legend, Style
 from llamatron.user_strings import labels, marks

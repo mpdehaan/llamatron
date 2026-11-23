@@ -19,12 +19,13 @@ Textual.
 
 import functools
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing as drawing_values, key_table, keybindings
 from llamatron.interface.tracker.components import degree_row
 from llamatron.interface.tracker.components.chord_row import pick_chord
 from llamatron.interface.tracker.components.keyswitch_row import pick_keyswitches
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.key_table import BindsKeys, cursor_moved
+from llamatron.interface.tracker.key_table import BindsKeys
 from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Accidental, Row
@@ -351,9 +352,9 @@ class PianoRoll(BindsKeys):
         editor = self.editor
         if name in (Key.UP, Key.DOWN):
             rows = self.rows()
-            self.pitch = rows[cursor_moved(place=rows.index(self.pitch), name=name, count=len(rows))]
+            self.pitch = rows[moves.moved(place=rows.index(self.pitch), name=name, count=len(rows))]
         else:
-            editor.step = cursor_moved(place=editor.step, name=name, count=editor.step_count())
+            editor.step = moves.moved(place=editor.step, name=name, count=editor.step_count())
 
     def place_or_erase(self):
         """Draw a note of the entry size at the cursor, or take out the note already under the cursor, from any of the cells the note covers, exactly as Bksp does."""

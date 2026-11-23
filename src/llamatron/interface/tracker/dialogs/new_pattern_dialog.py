@@ -12,11 +12,11 @@ the buttons Left and Right choose and Enter presses. Esc cancels.
 from rich.text import Text
 from typing import NamedTuple
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.drawing import cursor_mark, Style
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.model.schema import limits
 from llamatron.user_strings import labels, marks, messages
 
@@ -69,10 +69,10 @@ class NewPatternDialog(Dialog):
         return self.in_order(bound)
 
     def move_cursor(self, name):
-        self.row = cursor_moved(place=self.row, name=name, count=ROWS)
+        self.row = moves.moved(place=self.row, name=name, count=ROWS)
 
     def choose_button(self, name):
-        self.button = cursor_moved(place=self.button, name=name, count=len(labels.MSG_NEW_PATTERN_BUTTONS))
+        self.button = moves.moved(place=self.button, name=name, count=len(labels.MSG_NEW_PATTERN_BUTTONS))
 
     def step(self, direction):
         """Step the scale length, any scale below the fewest notes, stopping at either end."""

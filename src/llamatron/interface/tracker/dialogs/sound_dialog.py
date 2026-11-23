@@ -20,11 +20,12 @@ the sound the dialog opened on with the note shown. The dialog then answers (val
 
 from rich.text import Text
 
+from llamatron.interface.forms import moves
+from llamatron.interface.forms.cursor import Cursor
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values, note_names
-from llamatron.interface.tracker.cursor import completed, Cursor, places_matching
+from llamatron.interface.tracker.cursor import completed, places_matching
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.drawing import cursor_mark, fit, legend, Style
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.note_names import note_shown, note_typed
 from llamatron.user_strings import errors, marks
@@ -223,7 +224,7 @@ class SoundDialog(Dialog):
         if name == Key.LEFT:
             self.flyout = None
         elif name != Key.RIGHT:
-            self.flyout_place = cursor_moved(place=self.flyout_place, name=name, count=len(self.groups[self.flyout][1]))
+            self.flyout_place = moves.moved(place=self.flyout_place, name=name, count=len(self.groups[self.flyout][1]))
 
     # Searching every group's sounds at once.
 
@@ -254,7 +255,7 @@ class SoundDialog(Dialog):
     def move_in_found(self, name):
         found = self.found()
         if found:
-            self.found_place = cursor_moved(place=min(self.found_place, len(found) - 1), name=name, count=len(found))
+            self.found_place = moves.moved(place=min(self.found_place, len(found) - 1), name=name, count=len(found))
 
     def go_to_found(self):
         """Open the flyout of the sound the search's cursor is on, on that sound, where it can be tried and taken."""

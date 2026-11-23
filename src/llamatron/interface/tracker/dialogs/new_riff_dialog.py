@@ -12,11 +12,11 @@ chords, the one kind that has gaps between its accents.
 
 from rich.text import Text
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.drawing import cursor_mark, Style
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.user_strings import labels, marks
 from llamatron.wizards.create_song import wizard_limits, wizard_names
 
@@ -60,10 +60,10 @@ class NewRiffDialog(Dialog):
         return self.in_order(bound)
 
     def move_cursor(self, name):
-        self.row = cursor_moved(place=self.row, name=name, count=len(self.rows()) + 1)
+        self.row = moves.moved(place=self.row, name=name, count=len(self.rows()) + 1)
 
     def choose_button(self, name):
-        self.button = cursor_moved(place=self.button, name=name, count=len(labels.MSG_NEW_RIFF_BUTTONS))
+        self.button = moves.moved(place=self.button, name=name, count=len(labels.MSG_NEW_RIFF_BUTTONS))
 
     def step(self, direction):
         """Step the row's choice, stopping at either end."""

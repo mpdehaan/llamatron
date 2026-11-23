@@ -13,6 +13,7 @@ each is headed by a row (SectionRow) that Space or Enter opens or closes, PgUp a
 PgDn jump between the headings, and which sections are open is kept on the app for the session.
 """
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import key_table, keybindings
 from llamatron.interface.tracker.components import degree_row
 from llamatron.interface.tracker.components.accent_row import AccentRow
@@ -36,7 +37,7 @@ from llamatron.interface.tracker.components.slide_row import SlideRow
 from llamatron.interface.tracker.components.statement_row import StatementRow
 from llamatron.interface.tracker.components.tension_row import TensionRow
 from llamatron.interface.tracker.components.tie_row import TieRow
-from llamatron.interface.tracker.key_table import BindsKeys, cursor_moved
+from llamatron.interface.tracker.key_table import BindsKeys
 from llamatron.interface.tracker.keys import Key, RowSection
 from llamatron.model.schema import file_format, row_descriptions
 from llamatron.model.schema.file_format import Row, StepStatement
@@ -258,6 +259,6 @@ class PatternRows(BindsKeys):
         """Move the cursor a step or a row, stopping at the pattern's ends and the first and last row."""
         editor = self.editor
         if name in STEP_ARROWS:
-            editor.step = cursor_moved(place=editor.step, name=name, count=max(editor.step_count(), 1))
+            editor.step = moves.moved(place=editor.step, name=name, count=max(editor.step_count(), 1))
         else:
-            self.row = cursor_moved(place=self.row, name=name, count=len(self.reachable()))
+            self.row = moves.moved(place=self.row, name=name, count=len(self.reachable()))

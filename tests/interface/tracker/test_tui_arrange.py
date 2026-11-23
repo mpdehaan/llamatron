@@ -4,8 +4,8 @@
 
 """The Arrange page, the scene and clip pages, grabs and the Registers page."""
 
+from llamatron.interface.forms.cursor import NoSuchPlace
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values
-from llamatron.interface.tracker.cursor import NoSuchPlace
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog

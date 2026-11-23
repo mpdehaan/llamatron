@@ -18,14 +18,15 @@ from rich.text import Text
 
 from llamatron.caching.cached import cached_while, forget_cached
 from llamatron.engine.generators import musician as musician_plugin, phrasing as phrasing_plugin
+from llamatron.interface.forms import moves
+from llamatron.interface.forms.cursor import place_of
 from llamatron.interface.tracker import drawing, keybindings, themes
-from llamatron.interface.tracker.cursor import key_between, place_of
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.drawing import Box, cursor_mark, Style
-from llamatron.interface.tracker.key_table import cursor_moved, first_key
+from llamatron.interface.tracker.key_table import first_key
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.instrument_editor import sound_families
@@ -220,7 +221,7 @@ class WizardPage(FieldPage):
             return first_key(self.KEYS.TO_TREE)
         names = [branch.name() for _, branch in self.rows()]
         there = place_of(screen=self, names=names, target=name)
-        return key_between(here=self.tree_place, there=there)
+        return moves.toward(here=self.tree_place, there=there)
 
     def label_under_cursor(self):
         """Return the label of the field the cursor is on, or None in the tree or on a field with no label."""
@@ -558,7 +559,7 @@ class WizardPage(FieldPage):
         return branch.key() in self._open and not self.refusal_of(branch)
 
     def move_in_tree(self, name):
-        self.tree_place = cursor_moved(place=self.tree_place, name=name, count=len(self.rows()))
+        self.tree_place = moves.moved(place=self.tree_place, name=name, count=len(self.rows()))
 
     def fold(self, name):
         """Open the branch under the cursor with Right and close it with Left; Left on a branch inside another, closed or with nothing under it, goes to the branch that holds it."""

@@ -6,8 +6,9 @@
 
 import unittest
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import key_table, keybindings, keys
-from llamatron.interface.tracker.key_table import BindsKeys, bound, cursor_moved, every_key, first_key, key_event, keys_of, place_of, pressed_key
+from llamatron.interface.tracker.key_table import BindsKeys, bound, every_key, first_key, key_event, keys_of, place_of, pressed_key
 from llamatron.interface.tracker.keys import Binding, Key, Steps
 from llamatron.user_strings import legends
 
@@ -152,11 +153,11 @@ class TestKeyTable(unittest.TestCase):
 
     def test_a_cursor_moves_back_and_forward_and_stops_at_both_ends(self):
         for name in (Key.UP, Key.LEFT):
-            self.assertEqual(cursor_moved(place=MIDDLE_PLACE, name=name, count=PLACES), PLACE_BEFORE_MIDDLE)
-            self.assertEqual(cursor_moved(place=FIRST_PLACE, name=name, count=PLACES), FIRST_PLACE)
+            self.assertEqual(moves.moved(place=MIDDLE_PLACE, name=name, count=PLACES), PLACE_BEFORE_MIDDLE)
+            self.assertEqual(moves.moved(place=FIRST_PLACE, name=name, count=PLACES), FIRST_PLACE)
         for name in (Key.DOWN, Key.RIGHT):
-            self.assertEqual(cursor_moved(place=MIDDLE_PLACE, name=name, count=PLACES), PLACE_AFTER_MIDDLE)
-            self.assertEqual(cursor_moved(place=LAST_PLACE, name=name, count=PLACES), LAST_PLACE)
+            self.assertEqual(moves.moved(place=MIDDLE_PLACE, name=name, count=PLACES), PLACE_AFTER_MIDDLE)
+            self.assertEqual(moves.moved(place=LAST_PLACE, name=name, count=PLACES), LAST_PLACE)
 
     def test_every_key_that_works_everywhere_is_read_as_itself_when_a_terminal_sends_it(self):
         # A control key arrives with its control code as its character, which is not printable, so it is read by its name or not at all: Ctrl+T was once read as nothing.

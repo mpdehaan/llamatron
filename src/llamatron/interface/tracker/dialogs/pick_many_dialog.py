@@ -8,8 +8,8 @@ cursor on or off, Enter finishes and answers with the choices picked, and Esc ca
 
 from rich.text import Text
 
+from llamatron.interface.forms.cursor import Cursor
 from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.cursor import Cursor
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.drawing import cursor_mark, fit
 from llamatron.user_strings import marks

@@ -8,8 +8,8 @@ A adds one of a type asked for, N renames, C copies and Bksp deletes once nothin
 
 from typing import NamedTuple
 
+from llamatron.interface.forms.cursor import Cursor
 from llamatron.interface.tracker import drawing, key_table, keybindings, themes
-from llamatron.interface.tracker.cursor import Cursor
 from llamatron.interface.tracker.drawing import Align, Style
 from llamatron.interface.tracker.screens.generators import generator_pages
 from llamatron.interface.tracker.screens.generators.generator_pages import generator_page_of_kind, generator_type_dialog

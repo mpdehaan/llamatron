@@ -6,8 +6,9 @@
 
 from rich.text import Text
 
+from llamatron.interface.forms import moves
+from llamatron.interface.forms.cursor import NoSuchPlace
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values
-from llamatron.interface.tracker.cursor import key_between, NoSuchPlace
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import fit, padded, Style
 from llamatron.interface.tracker.keys import Key
@@ -134,7 +135,7 @@ class GridChoiceDialog(ChoiceDialog):
         if page != self.page:
             return Key.TAB
         row, column = self.where()
-        return key_between(here=row, there=target_row) or key_between(here=column, there=target_column, back=Key.LEFT, forward=Key.RIGHT)
+        return moves.toward(here=row, there=target_row) or moves.toward(here=column, there=target_column, back=Key.LEFT, forward=Key.RIGHT)
 
     def where(self):
         return self.find(self.cells()) or (0, 0)

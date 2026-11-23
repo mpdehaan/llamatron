@@ -18,11 +18,11 @@ dialog. After a pick the cursor goes on to the qualities, so that the next Enter
 
 from rich.text import Text
 
+from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values
 from llamatron.interface.tracker.dialogs import dialog
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.drawing import cursor_mark, fit, legend, Style
-from llamatron.interface.tracker.key_table import cursor_moved
 from llamatron.interface.tracker.keys import Key
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import file_format
@@ -144,9 +144,9 @@ class ChordDialog(Dialog):
     def move_cursor(self, name):
         """Move within the cursor's list with Up and Down and from list to list with Left and Right, stopping at every edge."""
         if name in keys_values.ARROWS_LEFT_RIGHT:
-            self.part = cursor_moved(place=self.part, name=Key.UP if name == Key.LEFT else Key.DOWN, count=LISTS)
+            self.part = moves.moved(place=self.part, name=Key.UP if name == Key.LEFT else Key.DOWN, count=LISTS)
         else:
-            self.places[self.part] = cursor_moved(place=self.places[self.part], name=name, count=self.counts()[self.part])
+            self.places[self.part] = moves.moved(place=self.places[self.part], name=name, count=self.counts()[self.part])
 
     def next_list(self):
         self.part = (self.part + 1) % LISTS
@@ -190,7 +190,7 @@ class ChordDialog(Dialog):
         if name == Key.LEFT:
             self.close_flyout()
         elif name not in keys_values.ARROWS_LEFT_RIGHT:
-            self.flyout_place = cursor_moved(place=self.flyout_place, name=name, count=len(self.kinds_of_row(self.flyout)))
+            self.flyout_place = moves.moved(place=self.flyout_place, name=name, count=len(self.kinds_of_row(self.flyout)))
 
     def pick_in_flyout(self):
         """Borrow the scale type under the flyout's cursor, close the flyout, and go on to the qualities, where Enter takes the chord."""

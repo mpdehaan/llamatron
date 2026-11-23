@@ -6,8 +6,9 @@
 
 import unittest
 
+from llamatron.interface.forms.cursor import Cursor
 from llamatron.interface.tracker import cursor as cursor_values
-from llamatron.interface.tracker.cursor import Cursor, Search, shown_around
+from llamatron.interface.tracker.cursor import Search, shown_around
 from llamatron.interface.tracker.keys import Key
 
 ROWS = 5
