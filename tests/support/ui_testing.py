@@ -59,6 +59,9 @@ MSG_REAL_FLUIDSYNTH = 'a test started a real FluidSynth: give its transport a st
 FLUIDSYNTH_INSTALLED = 'llamatron.interface.tracker.transport.installed'
 # Where the transport asks the same.
 TRANSPORT_FINDS_FLUIDSYNTH = 'llamatron.interface.tracker.transport.installed'
+# What lists the computer's MIDI ports when a test gives none of its own: a stand-in that lists none, so that no UI test opens a
+# client of the Mac's MIDI server; the tests of CoreMIDI and of the port watcher (tests/realtime/) list the real ones.
+PORT_LISTING = 'llamatron.realtime.devices.ports.default_listing'
 ROW_SHOWN = '│ {label}'
 
 
@@ -265,6 +268,9 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         refused = mock.patch.object(FluidSynth, '_popen', side_effect=AssertionError(MSG_REAL_FLUIDSYNTH))
         refused.start()
         self.addCleanup(refused.stop)
+        no_ports = mock.patch(PORT_LISTING, return_value=list)
+        no_ports.start()
+        self.addCleanup(no_ports.stop)
         self.document = a_song()
         self.app = self.make_app()
         self.running = self.app.run_test(size=self.SIZE)
