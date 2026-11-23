@@ -15,10 +15,12 @@ import random
 import unittest
 
 from llamatron.caching.memory import Memory
+from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import RegisterName, Row, Section
 from llamatron.model.values import midi
+from llamatron.model.values.scale import ScaleType
 from llamatron.realtime.render_process.score import Keeping, Score
 from llamatron.realtime.render_process.timeline import Route
 
@@ -220,6 +222,19 @@ class TestScoreTakesClips(unittest.TestCase):
         leaving_registers = edited.score(earlier=first).get_kept_clip_count()
         edited.setlist.get_pattern(REGISTERS_PATTERN).set_value(row=file_format.REGISTER_ADD_ROWS[RegisterName.AX], step=REGISTERS_ADD_STEP, value=CHANGED_ADD)
         self.assertLess(edited.score(earlier=first).get_kept_clip_count(), leaving_registers)
+
+    def test_an_edit_to_a_scales_notes_keeps_no_clip_and_plays_as_a_whole_render(self):
+        edited = Edited(GRABBING_DEMO)
+        first = edited.score()
+        self.edit_first_pattern(edited)
+        for name in edited.setlist.get_scale_names():
+            edited.setlist.get_named_scale(name).set_kind(scale_type_name(ScaleType.PHRYGIAN))
+        after = edited.score(earlier=first)
+        self.assertEqual(after.get_kept_clip_count(), 0)
+        whole = edited.score(kept=False)
+        for scene in range(after.scene_count()):
+            for track in after.get_tracks():
+                self.assertEqual(after.get_events(scene=scene, track=track), whole.get_events(scene=scene, track=track))
 
     def test_a_drift_that_draws_in_the_order_it_is_asked_keeps_no_clip_apart(self):
         edited = Edited(DRIFTING_SET)

@@ -34,15 +34,11 @@ def first_changed_scene(*, before, after, song_name, scenes):
     """Return the place of the first scene of a song, counted from 0, that may play differently in after than in before, the set's
     data on either side of an edit; FIRST_SCENE when anything changed but the song's scenes and the set's patterns, and the
     number of scenes when none changed. scenes are the song's scenes in after, whose clips say which patterns each names."""
-    if not _same_but(first=before, second=after, apart=(Section.PATTERNS, Section.SONGS)):
-        return FIRST_SCENE
-    song_before = before[Section.SONGS].get(song_name)
-    song_after = after[Section.SONGS].get(song_name)
-    if song_before is None or song_after is None or not _same_but(first=song_before, second=song_after, apart=(Section.SCENES,)):
+    if not _only_scenes_and_patterns_changed(before=before, after=after, song_name=song_name):
         return FIRST_SCENE
     changed = _changed_names(first=before.get(Section.PATTERNS, {}), second=after.get(Section.PATTERNS, {}))
-    old_scenes = song_before.get(Section.SCENES, [])
-    new_scenes = song_after.get(Section.SCENES, [])
+    old_scenes = before[Section.SONGS][song_name].get(Section.SCENES, [])
+    new_scenes = after[Section.SONGS][song_name].get(Section.SCENES, [])
     for place, scene in enumerate(scenes[:len(old_scenes)]):
         if old_scenes[place] != new_scenes[place] or _names_any(scene=scene, patterns=changed):
             return place
@@ -52,14 +48,29 @@ def first_changed_scene(*, before, after, song_name, scenes):
 def changed_clips(*, before, after, song_name, scenes):
     """Return, for each scene of a song, the tracks whose clips may play differently in after than in before, the set's data
     on either side of an edit: those whose clip changed or plays or morphs to a changed pattern, or None for a scene whose own
-    settings changed, which reach every clip in it. Return None when the song has a scene more or fewer. Asked only where
-    first_changed_scene found nothing changed but the song's scenes and the set's patterns."""
+    settings changed, which reach every clip in it. Return None when the song has a scene more or fewer, or when anything
+    changed but the song's scenes and the set's patterns, such as a scale's notes or a generator of the set's list, which can
+    reach any clip."""
+    if not _only_scenes_and_patterns_changed(before=before, after=after, song_name=song_name):
+        return None
     patterns = _changed_names(first=before.get(Section.PATTERNS, {}), second=after.get(Section.PATTERNS, {}))
     old_scenes = before[Section.SONGS][song_name].get(Section.SCENES, [])
     new_scenes = after[Section.SONGS][song_name].get(Section.SCENES, [])
     if len(old_scenes) != len(new_scenes):
         return None
     return [_scene_changes(old=old, new=new, scene=scene, patterns=patterns) for old, new, scene in zip(old_scenes, new_scenes, scenes)]
+
+
+def _only_scenes_and_patterns_changed(*, before, after, song_name):
+    """Return whether nothing changed between the set's data on either side of an edit but a song's scenes and the set's patterns:
+    no scale, generator, groove, instrument or draw, and none of the song's own settings."""
+    if not _same_but(first=before, second=after, apart=(Section.PATTERNS, Section.SONGS)):
+        return False
+    song_before = before[Section.SONGS].get(song_name)
+    song_after = after[Section.SONGS].get(song_name)
+    if song_before is None or song_after is None:
+        return False
+    return _same_but(first=song_before, second=song_after, apart=(Section.SCENES,))
 
 
 def _scene_changes(*, old, new, scene, patterns):
