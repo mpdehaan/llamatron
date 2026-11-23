@@ -9,6 +9,7 @@ from rich.text import Text
 
 from llamatron.interface.forms.nodes import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.forms.tab_box import columns_of_sections, Tab, TabBox, TabColumn
+from llamatron.interface.forms.text import clock, sorted_names, tempo_text
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.groove_choice import groove_choice_field
@@ -21,7 +22,6 @@ from llamatron.interface.tracker.screens.shared.shape_fields import shape_sectio
 from llamatron.interface.tracker.screens.shared.shared import scene_name
 from llamatron.interface.tracker.screens.shared.statements import statement_section
 from llamatron.interface.tracker.screens.shared.velocity_fields import velocity_field, velocity_ramp_sections, VelocityValues
-from llamatron.interface.tracker.text import clock, sorted_names, tempo_text
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import RampPart, Section, shape_setting
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages

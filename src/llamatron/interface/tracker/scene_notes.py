@@ -22,7 +22,7 @@ from typing import NamedTuple
 from llamatron.engine.realizer.as_written import as_written
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import timed_events
-from llamatron.interface.tracker.text import tempo_text
+from llamatron.interface.forms.text import tempo_text
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, Quality
 from llamatron.model.values import note as note_values

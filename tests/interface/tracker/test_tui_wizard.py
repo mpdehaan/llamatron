@@ -6,6 +6,7 @@
 from unittest import mock
 
 from llamatron.caching.memory import StaleAnswer
+from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.dialogs import dialog as dialog_values, row_dialog
@@ -21,7 +22,6 @@ from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.interface.tracker.screens.wizard import solo_melody_branch, starts
 from llamatron.interface.tracker.screens.wizard.hook_picture import picture_of
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
-from llamatron.interface.tracker.text import clock
 from llamatron.model.file import version
 from llamatron.model.objects.naming import new_name
 from llamatron.model.schema import limits

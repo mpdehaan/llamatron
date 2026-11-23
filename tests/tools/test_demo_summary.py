@@ -10,9 +10,9 @@ import io
 import pathlib
 import unittest
 
+from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.document import Document
-from llamatron.interface.tracker.text import clock
 from llamatron.model.file.setlist_reader import file_stem
 
 SCRIPT = pathlib.Path(__file__).resolve().parent.parent.parent / 'internal_tools' / 'demo_summary.py'

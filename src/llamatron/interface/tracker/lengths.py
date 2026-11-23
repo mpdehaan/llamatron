@@ -6,7 +6,7 @@
 from typing import NamedTuple
 
 from llamatron.engine.realizer.song_realizer import SongRealizer
-from llamatron.interface.tracker import text
+from llamatron.interface.forms import text
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 

@@ -6,6 +6,7 @@
 
 from unittest import mock
 
+from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -23,7 +24,6 @@ from llamatron.interface.tracker.screens.set.main_page import arrows_between, ce
 from llamatron.interface.tracker.screens.set.open_page import OpenPage
 from llamatron.interface.tracker.screens.set.scales_page import ScalesPage
 from llamatron.interface.tracker.screens.set.songs_page import SongsPage
-from llamatron.interface.tracker.text import clock
 from llamatron.model.file import version
 from llamatron.user_strings import labels, legends, marks, messages, names
 from tests.support.page_testing import boxed_line

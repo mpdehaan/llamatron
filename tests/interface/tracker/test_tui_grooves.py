@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Grooves page, the groove editor, and the Groove field on the Song, Scene and Track pages."""
 
+from llamatron.interface.forms.text import sorted_names
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -11,7 +12,6 @@ from llamatron.interface.tracker.key_table import first_key
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.set.groove_editor import GrooveEditor
 from llamatron.interface.tracker.screens.set.grooves_page import GroovesPage
-from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.objects import groove as groove_values
 from llamatron.model.objects.groove import FactoryGroove
 from llamatron.model.schema import defaults, limits

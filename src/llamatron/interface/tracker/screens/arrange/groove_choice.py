@@ -9,8 +9,8 @@ right step through those in that order, Enter picks from a list, and Bksp goes b
 """
 
 from llamatron.interface.forms.nodes import Field
+from llamatron.interface.forms.text import sorted_names
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.text import sorted_names
 from llamatron.user_strings import labels, legends, marks
 
 # The first two choices, before the names: take the groove from above, and off.

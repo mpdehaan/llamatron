@@ -34,8 +34,8 @@ import pathlib
 import re
 import sys
 
+from llamatron.interface.forms.text import clock, tempo_text
 from llamatron.interface.tracker.document import Document
-from llamatron.interface.tracker.text import clock, tempo_text
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.file.setlist_reader import file_stem

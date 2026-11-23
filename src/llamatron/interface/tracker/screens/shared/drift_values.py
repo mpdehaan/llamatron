@@ -9,7 +9,7 @@ import functools
 from llamatron.engine.generators.drift import model as drift_model
 from llamatron.engine.generators.drift.model import versioned
 from llamatron.interface.forms.nodes import Field, SteppedCells
-from llamatron.interface.tracker.text import sorted_names
+from llamatron.interface.forms.text import sorted_names
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import DriftValue
 from llamatron.model.values import note

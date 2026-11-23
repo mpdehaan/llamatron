@@ -14,6 +14,7 @@ from the editor.
 
 from rich.text import Text
 
+from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.components.frame import Frame
 from llamatron.interface.tracker.components.length_bar import LengthBar
@@ -21,7 +22,6 @@ from llamatron.interface.tracker.drawing import Box, Canvas, fit, laid_over, pad
 from llamatron.interface.tracker.screens.arrange import arrange_details
 from llamatron.interface.tracker.screens.arrange.arrange_details import clip_cell, detailed_clip_text, details_layout, scene_cell, track_cell
 from llamatron.interface.tracker.screens.shared.shared import scene_name
-from llamatron.interface.tracker.text import clock
 from llamatron.model.schema import defaults
 from llamatron.user_strings import legends, marks as marks_text
 

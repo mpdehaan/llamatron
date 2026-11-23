@@ -4,10 +4,10 @@
 """The wizard's Genre branch: the genre and the subgenre, which must be chosen, then the key, the tempo and the song's name, which arrive filled in."""
 
 from llamatron.interface.forms.nodes import ChoiceField, Field
+from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.screens.wizard.branch import Branch
-from llamatron.interface.tracker.text import clock
 from llamatron.model.values import note
 from llamatron.user_strings import labels, legends, marks, messages
 from llamatron.wizards.create_song import wizard_limits

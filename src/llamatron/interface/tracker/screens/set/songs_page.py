@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Songs page: the set's songs, which one is current, and each one's settings."""
 
+from llamatron.interface.forms.text import tempo_text
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.drawing import Align
 from llamatron.interface.tracker.screens.set.song_page import SongPage
 from llamatron.interface.tracker.screens.shared.named_list_page import NamedListPage
-from llamatron.interface.tracker.text import tempo_text
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import errors, help as help_text, labels, legends, marks, messages
 

@@ -16,6 +16,7 @@ from rich.text import Text
 from textual.screen import Screen
 from textual.widgets import Static
 
+from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import caption_strip, drawing, keybindings
 from llamatron.interface.tracker.dialogs.about_dialog import AboutDialog
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
@@ -27,7 +28,6 @@ from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.drawing import Box, fit, legend, Style
 from llamatron.interface.tracker.key_table import BindsKeys, pressed_key, quits_at_once
 from llamatron.interface.tracker.screens.shared.everywhere import everywhere_keys
-from llamatron.interface.tracker.text import clock
 from llamatron.interface.tracker.themes import luminance
 from llamatron.model.objects.naming import is_taken
 from llamatron.model.schema import limits

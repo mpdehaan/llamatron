@@ -4,9 +4,9 @@
 """The wizard's Create branch: what will be made, to read, and the button that makes it."""
 
 from llamatron.interface.forms.nodes import Button, Field
+from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.screens.wizard.branch import Branch
-from llamatron.interface.tracker.text import clock
 from llamatron.user_strings import errors, labels, legends, marks
 from llamatron.wizards.create_song.wizard_choices import genre_title
 

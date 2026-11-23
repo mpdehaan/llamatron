@@ -8,5 +8,6 @@
 - navigator: how the cursor goes through a settings page's form, and which move brings it nearer a field (FormNavigator).
 - nodes: the fields a settings page is made of.
 - statement_rows: the lines of a table of statements, Bypass When's.
+- text: numbers, names in order, tempos and clock times as a form shows them.
 - tab_box: a settings page's tab box, its tabs and columns, and where the cursor goes between its fields.
 """

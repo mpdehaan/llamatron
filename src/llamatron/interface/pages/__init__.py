@@ -5,6 +5,7 @@
 set as it is now, with nothing of how it looks or of Textual. The tracker shows a presenter's form on a page of its own, which
 hands it the page to ask through and what only the tracker can do, such as opening a set.
 
+- asking: asking for what a field needs beyond a line of text, such as a time signature.
 - file_global: the File/Global page, the set's own settings.
 - visualizer_fields: the fields that choose the visualizer's modes, which the File/Global and Song pages share.
 """

@@ -16,10 +16,10 @@ cursor costs nothing.
 
 from typing import NamedTuple
 
+from llamatron.interface.forms.text import tempo_text
 from llamatron.interface.tracker import themes
 from llamatron.interface.tracker.drawing import fit, Style
 from llamatron.interface.tracker.screens.shared.percentages import percent_shown
-from llamatron.interface.tracker.text import tempo_text
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.schema import defaults, file_format
 from llamatron.model.schema.file_format import Section, VelocitySetting

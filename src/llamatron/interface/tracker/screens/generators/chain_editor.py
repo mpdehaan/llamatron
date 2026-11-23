@@ -4,6 +4,7 @@
 
 """The Chain editor page: a chain's steps, each a generator chosen by name."""
 
+from llamatron.interface.forms.text import sorted_names
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Align
@@ -13,7 +14,6 @@ from llamatron.interface.tracker.screens.generators.generator_pages import gener
 from llamatron.interface.tracker.screens.shared.list_page import ListPage
 from llamatron.interface.tracker.screens.shared.shared import list_keys, move_key
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.objects.naming import suggested_word
 from llamatron.model.schema import generator_plugins
 from llamatron.model.schema.file_format import Section

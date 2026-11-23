@@ -11,9 +11,9 @@ page and the pattern editor listen to a pattern through the pattern preview (int
 which plays beside the song with one key and asks nothing.
 """
 
+from llamatron.interface.forms.text import sorted_names
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.screens.shared.shared import play_through
-from llamatron.interface.tracker.text import sorted_names
 from llamatron.user_strings import errors, messages
 
 

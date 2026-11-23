@@ -10,6 +10,7 @@ from typing import NamedTuple
 from llamatron.interface.forms import moves
 from llamatron.interface.forms.cursor import Cursor, place_of
 from llamatron.interface.forms.tab_box import Tab
+from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -18,7 +19,6 @@ from llamatron.interface.tracker.drawing import Align, Style
 from llamatron.interface.tracker.renderers import tab_box as tab_box_drawing
 from llamatron.interface.tracker.screens.shared.listening import pattern_listen_keys
 from llamatron.interface.tracker.screens.shared.named_list_page import NamedListPage
-from llamatron.interface.tracker.text import clock
 from llamatron.interface.tracker.themes import text_style, theme_of
 from llamatron.model.objects.naming import copy_name, is_taken, name_order, new_name
 from llamatron.model.schema import limits

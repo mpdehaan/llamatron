@@ -20,6 +20,7 @@ from llamatron.caching.cached import cached_while, forget_cached
 from llamatron.engine.generators import musician as musician_plugin, phrasing as phrasing_plugin
 from llamatron.interface.forms import moves
 from llamatron.interface.forms.cursor import place_of
+from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -41,7 +42,6 @@ from llamatron.interface.tracker.screens.wizard.create_branch import CreateBranc
 from llamatron.interface.tracker.screens.wizard.form_branch import FormBranch
 from llamatron.interface.tracker.screens.wizard.genre_branch import GenreBranch
 from llamatron.interface.tracker.screens.wizard.subgenre_branch import SubgenreBranch
-from llamatron.interface.tracker.text import clock
 from llamatron.model.file import version
 from llamatron.model.file.checks import listed
 from llamatron.model.file.song_file_error import SongFileError

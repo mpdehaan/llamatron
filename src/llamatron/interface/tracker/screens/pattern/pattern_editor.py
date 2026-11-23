@@ -29,6 +29,8 @@ on the rows.
 
 import functools
 
+from llamatron.interface.forms.text import fraction, sorted_names
+from llamatron.interface.pages.asking import ask_time_signature
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.components.chord_row import step_chord_in_words
 from llamatron.interface.tracker.components.pattern_rows import PatternRows
@@ -39,10 +41,9 @@ from llamatron.interface.tracker.dialogs.grouped_choice_dialog import GroupedCho
 from llamatron.interface.tracker.screens.pattern.pattern_drawing import PatternDrawing
 from llamatron.interface.tracker.screens.pattern.roll_drawing import RollDrawing
 from llamatron.interface.tracker.screens.shared.listening import pattern_listen_keys
-from llamatron.interface.tracker.screens.shared.shared import ask_time_signature, columns
+from llamatron.interface.tracker.screens.shared.shared import columns
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.interface.tracker.screens.shared.step_editor import StepEditor
-from llamatron.interface.tracker.text import fraction, sorted_names
 from llamatron.model.file.checks import fraction_text, is_written_length, listed
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.naming import words

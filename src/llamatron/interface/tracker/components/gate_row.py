@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Gate row: how long a note sounds, one step when blank, as a whole number or fraction of whole notes."""
 
+from llamatron.interface.forms.text import fraction
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components.pattern_row import PatternRow
-from llamatron.interface.tracker.text import fraction
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.schema import file_format
 from llamatron.user_strings import messages
