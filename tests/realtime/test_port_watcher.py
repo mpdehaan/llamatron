@@ -21,10 +21,11 @@ A_PORT = 'a port'
 ANOTHER_PORT = 'another port'
 HAS_LIBRARY = ports.has_midi_library.__name__
 # A port another process makes once the first listing is taken, through a CoreMIDI destination of the tests' own, and how long the
-# test looks for it.
+# test looks for it. The other process holds the port until its input ends, which happens however the test's process ends, a crash
+# included, so that a port is never left behind for the next run to find.
 LATER_PORT = 'llamatron port made later'
 MADE = 'made'
-MAKES_A_PORT = f"import time; from tests.realtime.test_coremidi import Destination; Destination({LATER_PORT!r}); print({MADE!r}, flush=True); time.sleep(60)"
+MAKES_A_PORT = f"import sys; from tests.realtime.test_coremidi import Destination; Destination({LATER_PORT!r}); print({MADE!r}, flush=True); sys.stdin.read()"
 # How long the listing may take to show a port another program made: CoreMIDI tells other programs late on a loaded
 # machine, as when the suite runs beside itself, by more than ten seconds at times, so the test looks again and again until
 # a deadline well inside a class's two minutes.
@@ -85,7 +86,7 @@ class TestCoreMidiListing(unittest.TestCase):
     def test_a_port_another_program_makes_later_is_seen_by_listing_again(self):
         watcher = PortWatcher(listing=coremidi.destination_names)
         self.assertNotIn(LATER_PORT, watcher.names())
-        other = subprocess.Popen([sys.executable, '-c', MAKES_A_PORT], stdout=subprocess.PIPE, text=True)
+        other = subprocess.Popen([sys.executable, '-c', MAKES_A_PORT], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         self.addCleanup(other.wait)
         self.addCleanup(other.kill)
         self.assertEqual(other.stdout.readline().strip(), MADE)
