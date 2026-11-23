@@ -154,8 +154,9 @@ MSG_NOT_SET = 'not set'
 MSG_CURRENT_SONG_MARK = '●'
 MSG_PARENT_ROW = '../'
 MSG_FOLDER_ROW = '{name}/'
-# A step that's off, in a row of steps written out on one line.
-MSG_STEP_OFF = '.'
+# What a settings page shows for a row of on-or-off steps, such as Rush steps, whose ENTER opens the row on a page of its own,
+# since a long row of steps written out would not fit.
+MSG_CONFIGURE_STEPS = '[configure]'
 # A number that isn't set, in a list of numbers like CC numbers or offsets.
 MSG_NO_NUMBER_MARK = '-'
 MSG_DRUM_TRACK_SHOWN = '(drum track)'

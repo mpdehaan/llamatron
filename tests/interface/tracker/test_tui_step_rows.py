@@ -137,6 +137,12 @@ class TestStepRowEditor(TimingPageTest):
     def steps(self, part):
         return self.settings().step_row(part).get_steps()
 
+    async def test_the_settings_page_shows_configure_for_a_row_whatever_its_steps(self):
+        await self.open_part(parts.GLIDE)
+        await self.select_field(part_label(label=timing_strings.MSG_STEPS_LABEL, part=parts.GLIDE))
+        self.assertEqual(self.app.screen.field().value(), marks.MSG_CONFIGURE_STEPS)
+        self.assertIn(marks.MSG_CONFIGURE_STEPS, self.text())
+
     async def test_space_turns_a_step_on_and_off(self):
         await self.open_row(parts.GLIDE)
         await self.press(keybindings.StepRowEditor.TOGGLE)

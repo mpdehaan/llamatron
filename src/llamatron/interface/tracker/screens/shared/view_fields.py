@@ -184,11 +184,6 @@ class ViewFields:
         """Open the page that edits one of the generator's rows of steps."""
         self.open_part(StepRowEditor, section=self.SECTION, steps=steps)
 
-    def steps_shown(self, steps):
-        """Return a row of steps on one line, the dot for a step that's on and a point for one that's off, like ● . ● ."""
-        values = self.settings().step_row(steps.row).get_steps()
-        return ' '.join(marks.MSG_TOGGLE_ON if value else marks.MSG_STEP_OFF for value in values)
-
     def is_section_set(self, section):
         """Return whether anything inside a section holds a value, so that its closed heading says (set)."""
         settings = self.settings()
@@ -362,9 +357,9 @@ class ViewFields:
         )
 
     def _steps_field(self, setting):
-        """Return the field that shows a row of steps on one line, ENTER opening it on its own page."""
+        """Return the field of a row of steps, which shows [configure], ENTER opening the row on its own page."""
         return Field(
-            label=setting.label, value=functools.partial(self.steps_shown, setting), adjust=None,
+            label=setting.label, value=lambda: marks.MSG_CONFIGURE_STEPS, adjust=None,
             enter=functools.partial(self.open_steps, setting), enter_what=legends.What.EDIT,
         )
 

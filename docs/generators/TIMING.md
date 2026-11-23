@@ -20,7 +20,7 @@ Each part is a section, `+ Rush`, `+ Drag`, `+ Shorten` and `+ Glide`, closed un
 | Name | `ENTER` renames it, and every chain using it follows. |
 | Step | How long each step of the part's row lasts: `(pattern)`, the clip's pattern's step size, or a time from the list every time setting shares. |
 | Amount | Rush: 15% of a step by default, up to half a step. Drag: 20% of a step by default, up to half a step. Shorten: 70% of the note's length by default, from 10% to 95%. Glide: 1/128 by default, from 1/256 to 1/16. |
-| Steps | The part's row, from 1 to 16 steps. `ENTER` opens it: Left and Right move, `Space` or `ENTER` turns a step on or off, `I` and `D` insert and remove steps. |
+| Steps | The part's row, from 1 to 16 steps, shown as `[configure]`. `ENTER` opens it: Left and Right move, `Space` or `ENTER` turns a step on or off, `I` and `D` insert and remove steps. |
 | Restart | When every row starts over, as [Generators](../GENERATORS.md#restart) describes. |
 
 ## Applying the Generator
