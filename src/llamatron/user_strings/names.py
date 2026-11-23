@@ -75,7 +75,7 @@ MSG_SCENE_DESCRIPTION = 'scene {number} ({name})'
 # exporters/exports.py
 # What each kind of export is called in a sentence, such as "exported the MIDI stems to ...".
 MSG_ABLETON_EXPORT_LABEL = 'Ableton set'
-MSG_MIDI_FILE_EXPORT_LABEL = 'MIDI file'
+MSG_MIDI_FILE_EXPORT_LABEL = 'MIDI (Multitrack)'
 MSG_GENERAL_MIDI_EXPORT_LABEL = 'MIDI (General MIDI)'
 MSG_WAV_EXPORT_LABEL = 'WAV (FluidSynth)'
 MSG_STEMS_EXPORT_LABEL = 'MIDI stems'

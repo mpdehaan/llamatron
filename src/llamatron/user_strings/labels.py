@@ -283,7 +283,7 @@ MSG_OCTAVE_LABEL_NAMES = {OctaveLabels.LIVE: 'Live (middle C is C3)', OctaveLabe
 # the notes' first line, or that there are none; ENTER opens the Notes page editing.
 MSG_DESCRIPTION_LABEL = 'Description'
 MSG_NOTES_LABEL = 'Notes'
-MSG_EXPORT_CHOICES = ['Ableton Live set', 'MIDI (Stems)', 'MIDI (Single File)', 'MIDI (Clips)', 'MIDI (General MIDI)', 'WAV (FluidSynth)']
+MSG_EXPORT_CHOICES = ['Ableton Live set', 'MIDI (Stems)', 'MIDI (Multitrack)', 'MIDI (Clips)', 'MIDI (General MIDI)', 'WAV (FluidSynth)']
 
 # interface/tracker/screens/arrange/track_editor.py
 # The two buttons under the text while editing, which Tab reaches and Left and Right move between.

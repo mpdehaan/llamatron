@@ -93,7 +93,7 @@ Public domain tunes as MIDI files, for trying the tracker's MIDI import on:
 
 - `entertainer.mid`: The Entertainer, from the Mutopia Project, with its LilyPond source
   `entertainer.ly`. The Entertainer demo was cut from it.
-- `wellerman.mid`: The Wellerman, the arrangement demo's song, exported with MIDI (Single File).
+- `wellerman.mid`: The Wellerman, the arrangement demo's song, exported with MIDI (Multitrack).
 - `pachelbel_canon.mid`: Pachelbel's Canon, the classical demo's song, exported the same way.
 
 ## Tune Sources

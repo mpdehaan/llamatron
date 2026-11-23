@@ -17,7 +17,7 @@ Every export is named `<set>_<song>`, so `songs/foo.yml` with a song called `bar
 | --- | --- | --- |
 | Ableton Live set | `songs/foo_bar.als` | The main one: each track a MIDI track, its clips in Session View and the scenes laid end to end in Arrangement View, ready for instruments, effects and mixing. |
 | MIDI (Stems) | `songs/foo_bar_stem_001-lead.mid` and so on | A file per track, each the full length of the song with the tempo changes, for hardware and samplers that take one file at a time. |
-| MIDI (Single File) | `songs/foo_bar.mid` | One file with a track per track and the tempo changes, which most DAWs import as aligned tracks in one drop. |
+| MIDI (Multitrack) | `songs/foo_bar.mid` | One file with a track per track and the tempo changes, which most DAWs import as aligned tracks in one drop. Every track is on channel 1 with no program change, so that it plays whatever instrument the DAW gives it. For MuseScore, GarageBand or another player with General MIDI's sounds, choose MIDI (General MIDI). |
 | MIDI (Clips) | `songs/foo_bar_clip_s_002-chorus-t_001-lead.mid` and so on | A file per clip, named by scene and track, to drag into a project one by one. |
 | MIDI (General MIDI) | `songs/foo_bar_gm.mid` | One file for any General MIDI player, GarageBand or a phone: drums on channel 10, every other track on a channel of its own, each with its instrument's GM sound. |
 | WAV (FluidSynth) | `songs/foo_bar.wav` | The song as audio, for anyone with no DAW: the tracks whose instrument's Device is `*FluidSynth`, played by FluidSynth faster than real time and normalized to a peak 1 dB below full scale. Choosing it says first that only those tracks are in it, and it needs FluidSynth installed. |
@@ -56,7 +56,7 @@ Ableton Live 12.3, and later versions should open it.
 
 `--to` exports a set without opening the tracker, writing every song in it beside the set's file, the
 same as `Ctrl+X`. On its own it writes Live sets, and it can name another kind: `ableton`, `midi`
-(MIDI (Single File)), `stems`, `cliptree` (MIDI (Clips)), `gm` (MIDI (General MIDI)) or `wav`
+(MIDI (Multitrack)), `stems`, `cliptree` (MIDI (Clips)), `gm` (MIDI (General MIDI)) or `wav`
 (WAV (FluidSynth)). Put it after the set's name:
 
 ```
