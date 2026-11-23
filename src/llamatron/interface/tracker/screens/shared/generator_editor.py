@@ -5,6 +5,7 @@
 """What every page of one generator shares: its settings, found one way, and a value stored one way."""
 
 from llamatron.interface.forms.nodes import NumberField
+from llamatron.interface.pages.places import GeneratorPartPlace
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
 
 
@@ -38,9 +39,10 @@ class GeneratorEditor(ShowsNamedItem):
             return self.document().has_built_in(self.built_in)
         return super().still_exists()
 
-    def open_part(self, page_class, **given):
-        """Open a page that edits a part of the generator, such as its offsets, on the same generator."""
-        page = page_class(holder=self.holder, name=self.item, built_in=self.built_in, **given)
+    def open_part(self, part, **given):
+        """Open the page that edits a part of the generator, such as its offsets, on the same generator, by its place."""
+        place = GeneratorPartPlace(part=part, name=self.item, built_in=self.built_in, **given)
+        page = self.app.site_map.page_at(place=place, holder=self.holder)
         if self.opener is not None:
             page.opened_from(page=self.opener, word=self.opener_word)
         self.show_page(page)

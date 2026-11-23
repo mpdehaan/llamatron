@@ -5,6 +5,7 @@
 set as it is now, with nothing of how it looks or of Textual. The tracker shows a presenter's form on a page of its own, which
 hands it the page to ask through and what only the tracker can do, such as opening a set.
 
+- places: where a page is, as a value, which the tracker's site map turns into its page.
 - asking: asking for what a field needs beyond a line of text, such as a time signature.
 - draws: the Draws page, the song's eight draws over their strips.
 - file_global: the File/Global page, the set's own settings.

@@ -7,7 +7,8 @@ generator's progression, opens that part's page on the built-in."""
 
 from llamatron.interface.forms.nodes import Button
 from llamatron.interface.forms.tab_box import TabColumn
-from llamatron.interface.tracker.screens.shared.generator_statements_page import GeneratorStatementsPage
+from llamatron.interface.pages import places
+from llamatron.interface.pages.places import GeneratorPartPlace
 from llamatron.interface.tracker.screens.shared.shared import scene_name
 from llamatron.interface.tracker.screens.shared.view_fields import ViewFields
 from llamatron.model.file.checks import listed
@@ -52,7 +53,7 @@ class BuiltInTab(ViewFields):
         return Button(label=labels.MSG_BYPASS_WHEN_BUTTON.format(count=count), enter=self._open_bypass_when, enter_what=legends.What.EDIT)
 
     def _open_bypass_when(self):
-        self.open_part(GeneratorStatementsPage, section=self.SECTION)
+        self.open_part(places.BYPASS_WHEN, section=self.SECTION)
 
     def _overrides(self):
         """Return the remark saying what stands in for what, or none: on a clip's tab, that it overrides the track's, both being
@@ -86,9 +87,11 @@ class BuiltInTab(ViewFields):
         document = self._page.document()
         document.change_set(self.settings().set_setting, name=setting, value=value)
 
-    def open_part(self, page_class, **given):
-        """Open the page of a part of the built-in generator, such as its offsets, its crumbs following the clip's or the track's."""
-        page = page_class(holder=self.holder, name=self.item, built_in=self._place, **given)
+    def open_part(self, part, **given):
+        """Open the page of a part of the built-in generator, such as its offsets, by its place, its crumbs following the clip's or
+        the track's."""
+        place = GeneratorPartPlace(part=part, name=self.item, built_in=self._place, **given)
+        page = self._page.app.site_map.page_at(place=place, holder=self.holder)
         self._page.show_page(page.opened_from(page=self._page, word=labels.MSG_BUILT_IN_WORD))
 
     def document(self):

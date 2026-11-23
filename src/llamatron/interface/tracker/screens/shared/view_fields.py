@@ -11,17 +11,16 @@ import functools
 from llamatron.interface.forms.nodes import ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.interface.forms.tab_box import Tab, TabColumn, without_headings
 from llamatron.interface.forms.text import sorted_names
+from llamatron.interface.pages import places
 from llamatron.interface.pages.drift_values import drift_value_rows
 from llamatron.interface.pages.octave_field import octave_field
 from llamatron.interface.pages.section_table import section_table
 from llamatron.interface.pages.shape_fields import shape_section
 from llamatron.interface.pages.time_field import time_field
 from llamatron.interface.tracker.screens.shared.guitar_bar_editor import guitar_bar_field
-from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
 from llamatron.interface.tracker.screens.shared.progression_field import progression_field
 from llamatron.interface.tracker.screens.shared.restart_field import restart_field
 from llamatron.interface.tracker.screens.shared.shared import numbers_text
-from llamatron.interface.tracker.screens.shared.step_row_editor import StepRowEditor
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import shape_setting
 from llamatron.model.schema.generator_views import ChoiceView, DriftValuesView, GaugeView, GuitarBarView, InheritedChoiceView, NumberView, OctaveView, OffsetsView, ProgressionView, RestartView, SectionsView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView, WhenView
@@ -45,7 +44,7 @@ FIELD_MAKERS = {
 
 class ViewFields:
     """What makes the fields of a generator's view. Its user gives view(), the plugin's view, settings(), the generator's
-    settings, store(setting=, value=), which keeps one of them, open_part(page_class, **given), which opens a page on a part of
+    settings, store(setting=, value=), which keeps one of them, open_part(part, **given), which opens a page on a part of
     the generator, and the dialogs every page has, which the fields ask for."""
 
     __slots__ = ()
@@ -145,7 +144,7 @@ class ViewFields:
         """Open the offsets editor, giving the generator a row of offsets of nothing first where it has none."""
         if self.settings().get_written(setting.setting) is None:
             self.store(setting=setting.setting, value=[NO_OFFSET] * NEW_OFFSET_STEPS)
-        self.open_part(OffsetsEditor)
+        self.open_part(places.OFFSETS)
 
     def offsets_shown(self, setting):
         """Return the offsets on one line, or (none) where the generator has none."""
@@ -178,7 +177,7 @@ class ViewFields:
 
     def open_steps(self, steps):
         """Open the page that edits one of the generator's rows of steps."""
-        self.open_part(StepRowEditor, section=self.SECTION, steps=steps)
+        self.open_part(places.STEP_ROW, section=self.SECTION, steps=steps)
 
     def is_section_set(self, section):
         """Return whether anything inside a section holds a value, so that its closed heading says (set)."""

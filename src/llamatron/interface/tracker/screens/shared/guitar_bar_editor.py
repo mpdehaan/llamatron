@@ -18,6 +18,7 @@ from llamatron.engine.generators import guitarify as guitarify_plugin
 from llamatron.engine.generators.guitarify import model as guitarify_settings, schema as guitar_bars
 from llamatron.engine.generators.guitarify.schema import ready_bar_matching
 from llamatron.interface.forms.nodes import Field, stepped
+from llamatron.interface.pages import places
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Box, Style
@@ -138,4 +139,4 @@ def bar_shown(guitar):
 
 def guitar_bar_field(*, page, label):
     """Return the field of the bar of strokes of the Guitarify a page shows, ENTER opening it in the bar editor."""
-    return Field(label=label, value=lambda: bar_shown(page.settings()), enter=functools.partial(page.open_part, GuitarBarEditor), enter_what=legends.What.EDIT)
+    return Field(label=label, value=lambda: bar_shown(page.settings()), enter=functools.partial(page.open_part, places.GUITAR_BAR), enter_what=legends.What.EDIT)

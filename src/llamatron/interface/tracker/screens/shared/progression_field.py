@@ -7,7 +7,7 @@ chord editor."""
 import functools
 
 from llamatron.interface.forms.nodes import Field
-from llamatron.interface.tracker.screens.shared.chords_editor import ChordsEditor
+from llamatron.interface.pages import places
 from llamatron.model.values.progressions import roman_numeral
 from llamatron.user_strings import legends, marks
 
@@ -43,4 +43,4 @@ def _numerals_on(page):
 
 def _open_chords(page):
     """Open the chord editor on the progression of the generator a page shows."""
-    page.open_part(ChordsEditor, section=page.SECTION)
+    page.open_part(places.CHORDS, section=page.SECTION)

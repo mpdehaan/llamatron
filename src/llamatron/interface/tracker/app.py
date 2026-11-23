@@ -32,6 +32,7 @@ from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.interface.tracker.screens.wizard import starts
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
 from llamatron.interface.tracker.silent_instruments import warn_of_silent_instruments
+from llamatron.interface.tracker.site_map import SiteMap
 from llamatron.interface.tracker.status_line import StatusLine
 from llamatron.interface.tracker.transport import Transport
 from llamatron.interface.visualizers.modes import mode_called
@@ -84,6 +85,8 @@ class LlamatronApp(App, inherit_bindings=False):
         self.open_field_sections = set()
         # The tab each kind of page with a tab box last showed, by the page's class, remembered for the session.
         self.chosen_tabs = {}
+        # Which page shows each place a page opens by saying where it goes.
+        self.site_map = SiteMap()
         # The headings open in the pattern editor's Munge dialog, kept for the session.
         self.open_munge_groups = set()
         self.on_roll = True
