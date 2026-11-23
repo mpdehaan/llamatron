@@ -68,12 +68,12 @@ def velocity_ramp_section(*, page, way, values):
         name = names[part]
         taken = above(name)
         return NumberField(
-            page=page, label=labels.MSG_VELOCITY_RAMP_LABELS[(way, part)], number=own(name), start=velocity_ramps.AS_WRITTEN if taken is None else taken,
+            page=page, label=labels.MSG_VELOCITY_RAMP_LABELS[(way, part)], shown_label=labels.MSG_RAMP_PART_LABELS[part], number=own(name), start=velocity_ramps.AS_WRITTEN if taken is None else taken,
             shown=end_shown(name), lowest=limits.MIN_VELOCITY_PERCENT, highest=limits.MAX_VELOCITY_PERCENT, set=lambda number: store(name, number),
             clear=lambda: store(name, None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
         )
     return [
-        page.heading(label=labels.MSG_VELOCITY_RAMP_SECTIONS[way], is_set=lambda: any(own(name) is not None for name in names.values())),
+        page.heading(label=labels.MSG_RAMP_HEADINGS[way], is_set=lambda: any(own(name) is not None for name in names.values())),
         *[end_field(part) for part in (RampPart.START, RampPart.END)],
         _over_field(page=page, way=way, values=values),
     ]
@@ -90,6 +90,6 @@ def _over_field(*, page, way, values):
     else:
         over_shown = marks.MSG_NONE_SHOWN
     return NumberField(
-        page=page, label=labels.MSG_VELOCITY_RAMP_LABELS[(way, RampPart.OVER)], number=own(over), start=limits.MIN_RAMP_BARS if above(over) is None else above(over), shown=over_shown,
+        page=page, label=labels.MSG_VELOCITY_RAMP_LABELS[(way, RampPart.OVER)], shown_label=labels.MSG_RAMP_PART_LABELS[RampPart.OVER], number=own(over), start=limits.MIN_RAMP_BARS if above(over) is None else above(over), shown=over_shown,
         lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, set=lambda number: store(over, number), clear=lambda: store(over, None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
     )

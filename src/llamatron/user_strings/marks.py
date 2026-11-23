@@ -98,7 +98,6 @@ MSG_SONG_SCALE_SHOWN = '{scale} (from song)'
 MSG_SCENE_SCALE_SHOWN = '{scale} (from scene)'
 MSG_SONG_TEMPO_SHOWN = '{tempo} BPM (from song)'
 MSG_TEMPO_SHOWN = '{tempo} BPM'
-MSG_SCENE_TEMPO_SHOWN = '{tempo} BPM (from scene)'
 MSG_RAMP_BARS_SHOWN = '{bars} bars'
 MSG_RAMP_ONE_BAR_SHOWN = '1 bar'
 # A percentage of what it scales, a velocity's or a tempo's, and one that isn't whole, to two places (percentages.py).

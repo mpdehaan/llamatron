@@ -164,13 +164,13 @@ class ScenePage(FieldPage):
         until given, and the bars it takes, with no ramp until they are given."""
         scene = self.scene()
         is_set = functools.partial(_has_ramp, scene=scene, way=way)
-        fields = [self.heading(label=labels.MSG_TEMPO_RAMP_SECTIONS[way], is_set=lambda: is_set())]
+        fields = [self.heading(label=labels.MSG_RAMP_HEADINGS[way], is_set=lambda: is_set())]
         for part in (RampPart.START, RampPart.END):
             fields.append(self._ramp_tempo_field(way=way, part=part))
         over = scene.get_tempo_ramp_setting(way=way, part=RampPart.OVER)
         store = functools.partial(self._set_ramp, way=way, part=RampPart.OVER)
         fields.append(NumberField(
-            page=self, label=labels.MSG_TEMPO_RAMP_LABELS[(way, RampPart.OVER)], number=over, start=limits.MIN_RAMP_BARS, shown=_ramp_bars_shown(over),
+            page=self, label=labels.MSG_TEMPO_RAMP_LABELS[(way, RampPart.OVER)], shown_label=labels.MSG_RAMP_PART_LABELS[RampPart.OVER], number=over, start=limits.MIN_RAMP_BARS, shown=_ramp_bars_shown(over),
             lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, set=lambda number: store(value=number), clear=functools.partial(store, value=None),
             clear_what=legends.MSG_RAMP_BLANK_WHAT,
         ))
@@ -189,7 +189,7 @@ class ScenePage(FieldPage):
             shown = marks.MSG_TEMPO_PERCENT_SHOWN.format(percent=percent_shown(number), tempo=tempo_text(reached))
         store = functools.partial(self._set_ramp, way=way, part=part)
         return NumberField(
-            page=self, label=labels.MSG_TEMPO_RAMP_LABELS[(way, part)], number=whole_or_none(number), start=percentages.UNCHANGED, shown=shown, lowest=limits.MIN_TEMPO_PERCENT,
+            page=self, label=labels.MSG_TEMPO_RAMP_LABELS[(way, part)], shown_label=labels.MSG_RAMP_PART_LABELS[part], number=whole_or_none(number), start=percentages.UNCHANGED, shown=shown, lowest=limits.MIN_TEMPO_PERCENT,
             highest=limits.MAX_TEMPO_PERCENT, set=lambda value: store(value=value), clear=functools.partial(store, value=None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
         )
 
@@ -212,11 +212,8 @@ class ScenePage(FieldPage):
         return marks.MSG_TEMPO_PERCENT_SHOWN.format(percent=percent_shown(percent), tempo=tempo_text(self.played_tempo()))
 
     def _blank_tempo_shown(self):
-        """Return what a blank end of a tempo ramp shows: the tempo the scene plays at, and where it comes from."""
-        tempo = tempo_text(self.played_tempo())
-        if self.tempo() is None:
-            return marks.MSG_SONG_TEMPO_SHOWN.format(tempo=tempo)
-        return marks.MSG_SCENE_TEMPO_SHOWN.format(tempo=tempo)
+        """Return what a blank end of a tempo ramp shows: 100%, the tempo the scene plays at, with that tempo."""
+        return marks.MSG_TEMPO_PERCENT_SHOWN.format(percent=percent_shown(percentages.UNCHANGED), tempo=tempo_text(self.played_tempo()))
 
     def fields(self):
         return [NameField(value=self._name_shown, rename=self.rename), TabBox(tabs=self._tabs())]

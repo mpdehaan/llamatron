@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The fields of a shape, Density, Swell or Articulate, which the Scene page, the clip page and the shape generators' editors share: a section heading and its start, end, over and then."""
 
+import dataclasses
 import functools
 
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, NumberField
@@ -14,6 +15,8 @@ from llamatron.user_strings import labels, marks
 
 # Where a nudge starts on a percentage left blank: 100%, which is what blank plays as.
 UNCHANGED = 100
+# A shape's fields, in the order they are made.
+SHAPE_PARTS = (ShapePart.START, ShapePart.END, ShapePart.OVER, ShapePart.THEN)
 
 
 def shape_fields(*, page, shape, value, store, prefixed=True):
@@ -37,12 +40,14 @@ def shape_fields(*, page, shape, value, store, prefixed=True):
             page=page, label=label(part), number=written, start=UNCHANGED, shown=_percent_shown(written), lowest=lowest, highest=highest,
             set=functools.partial(_store_part, store=store, part=part), clear=functools.partial(store, part, None),
         ))
-    return [
+    fields = [
         *percentages,
         time_field(page=page, label=label(ShapePart.OVER), written=over, first=labels.MSG_WHOLE_SPAN, store=lambda choice: store(ShapePart.OVER, choice)),
         ChoiceField(page=page, label=label(ShapePart.THEN), choices=file_format.SHAPE_THENS, current=then or file_format.SHAPE_THENS[0],
                     set=lambda choice: store(ShapePart.THEN, None if choice == file_format.SHAPE_THENS[0] else choice)),
     ]
+    # Under the shape's own heading a field shows its part alone, Start for Density start, keeping its full name.
+    return [dataclasses.replace(field, shown_label=labels.MSG_SHAPE_PART_LABELS[part]) for field, part in zip(fields, SHAPE_PARTS)]
 
 
 def shape_section(*, page, shape, value, store):

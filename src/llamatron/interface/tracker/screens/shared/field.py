@@ -80,6 +80,9 @@ class Field:
     enter_what: str = legends.What.EDIT
     clear: Callable = None
     clear_what: str = legends.What.CLEAR
+    # What the page draws in place of the label, where a column's heading says the rest: Start under Ramp In for Velocity in
+    # start. The label stays the field's name, which the key map, help, a typed value's prompt and the tests know it by.
+    shown_label: str = None
 
     # Which of the lines a field draws holds the cursor, and whether a blank line may follow the field.
     SELECTED_LINE = 0
@@ -93,7 +96,9 @@ class Field:
         return False
 
     def get_drawn_label(self, page):
-        """Return the label as the page draws it."""
+        """Return the label as the page draws it: its shown label where it has one."""
+        if self.shown_label is not None:
+            return self.shown_label
         return self.label
 
     def lines(self, *, page, here, label_width, width):
@@ -101,7 +106,7 @@ class Field:
         picker's dim mark after a value whose Enter opens a list of choices, so that it isn't taken for one that's typed."""
         line = Text(no_wrap=True)
         line.append(cursor_mark(here))
-        line.append(self.label.ljust(label_width), style=Style.BOLD if here else Style.PLAIN)
+        line.append(self.get_drawn_label(page).ljust(label_width), style=Style.BOLD if here else Style.PLAIN)
         line.append(padded(self.value()))
         if self.enter_what == legends.What.CHOOSE:
             line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
@@ -276,7 +281,7 @@ class Cells(Field):
         is, and a cell that opens a list with the picker's mark."""
         line = Text(no_wrap=True)
         line.append(cursor_mark(here))
-        line.append(self.label.ljust(label_width), style=Style.BOLD if here else Style.PLAIN)
+        line.append(self.get_drawn_label(page).ljust(label_width), style=Style.BOLD if here else Style.PLAIN)
         for place, cell in enumerate(self.cells):
             on_cell = here and place == min(page.cell, len(self.cells) - 1)
             line.append(padded(cell.value()), style=Style.REVERSE if on_cell else Style.PLAIN)
@@ -316,7 +321,7 @@ class TableRow(SteppedCells):
         """Return the row's line: its label, then each cell padded to its column's width, the cell under the cursor in reverse video."""
         line = Text(no_wrap=True)
         line.append(cursor_mark(here))
-        line.append(self.label.ljust(label_width), style=Style.BOLD if here else Style.PLAIN)
+        line.append(self.get_drawn_label(page).ljust(label_width), style=Style.BOLD if here else Style.PLAIN)
         for place, cell in enumerate(self.cells):
             on_cell = here and place == min(page.cell, len(self.cells) - 1)
             line.append(padded(cell.value()).ljust(self.widths[place] + len(padded(drawing.NOTHING))), style=Style.REVERSE if on_cell else Style.PLAIN)

@@ -50,14 +50,15 @@ MSG_TEMPO_LABEL = 'Tempo'
 MSG_TIME_SIGNATURE_LABEL = 'Time signature'
 # How long a note placed on the piano roll lasts, unless the pattern says otherwise: blank is one step.
 MSG_ENTRY_SIZE_LABEL = 'Entry size'
-MSG_TEMPO_RAMP_SECTIONS = {RampWay.IN: 'Tempo Ramp In', RampWay.OUT: 'Tempo Ramp Out'}
+# A ramp's column, on the Velocity tab and the Tempo Ramps tab, which say what ramps, and its fields as the column shows them.
+MSG_RAMP_HEADINGS = {RampWay.IN: 'Ramp In', RampWay.OUT: 'Ramp Out'}
+MSG_RAMP_PART_LABELS = {RampPart.START: 'Start', RampPart.END: 'End', RampPart.OVER: 'Over'}
 MSG_TEMPO_RAMP_LABELS = {
     (RampWay.IN, RampPart.START): 'Tempo in start', (RampWay.IN, RampPart.END): 'Tempo in end', (RampWay.IN, RampPart.OVER): 'Tempo in over',
     (RampWay.OUT, RampPart.START): 'Tempo out start', (RampWay.OUT, RampPart.END): 'Tempo out end', (RampWay.OUT, RampPart.OVER): 'Tempo out over',
 }
 # How loud a scene or a clip plays, and its ramps in and out, on the Scene page and the clip page (velocity_fields.py).
 MSG_VELOCITY_PERCENT_LABEL = 'Velocity'
-MSG_VELOCITY_RAMP_SECTIONS = {RampWay.IN: 'Velocity Ramp In', RampWay.OUT: 'Velocity Ramp Out'}
 MSG_VELOCITY_RAMP_LABELS = {
     (RampWay.IN, RampPart.START): 'Velocity in start', (RampWay.IN, RampPart.END): 'Velocity in end', (RampWay.IN, RampPart.OVER): 'Velocity in over',
     (RampWay.OUT, RampPart.START): 'Velocity out start', (RampWay.OUT, RampPart.END): 'Velocity out end', (RampWay.OUT, RampPart.OVER): 'Velocity out over',
