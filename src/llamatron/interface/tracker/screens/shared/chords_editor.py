@@ -137,7 +137,8 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
             chords=rows[CHORD_ROW], accidentals=rows[ACCIDENTAL_ROW], inversions=rows[INVERSION_ROW], scales=rows[SCALE_ROW],
             qualities=rows[QUALITY_ROW], tensions=rows[TENSION_ROW],
         )
-        self.document().set_progression(section=self.SECTION, name=self.item, rows=progression)
+        # Through the settings the page shows, so that a clip's or a track's built-in Chords is changed as one of the set's list is.
+        self.document().change_set(self.settings().set_progression, progression)
 
     def changed_here(self, *, row, value):
         """Store a value on the cursor's step of one of the rows."""

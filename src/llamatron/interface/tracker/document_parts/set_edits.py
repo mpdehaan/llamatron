@@ -9,7 +9,6 @@ the section. What's here is what each kind alone has: how a new one starts, and 
 """
 
 
-from llamatron.engine.generators import arp as arp_plugin
 from llamatron.model.objects.groove import new_groove
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name, is_default_scale_name, words
@@ -148,25 +147,6 @@ class SetEdits:
         kind = generator_plugins.names_by_section()[section]
         settings = generator_plugins.settings_of(kind).new()
         self.change_set(self._setlist.add_item, section=section, name=name, item=settings)
-
-    def set_progression(self, *, section, name, rows):
-        """Set a generator's progression: its chords and the rows beside them, given as ProgressionRows, a row of nothing left out."""
-        self.change_set(self.generator(section=section, name=name).set_progression, rows)
-
-    def set_arp_offset(self, *, name, step, offset):
-        """Set one step of an arp's offsets, where None is a silent step."""
-        self.change_set(self.generator(section=arp_plugin.SECTION, name=name).set_cell, step=step, value=offset)
-
-    def insert_arp_offset(self, *, name, step):
-        """Add a step of 0 before a step of an arp's offsets."""
-        self.change_set(self.generator(section=arp_plugin.SECTION, name=name).insert_cell, step)
-
-    def set_arp_step_add(self, *, name, register, step, add):
-        """Set what one step of an arp's offsets adds to a register, where None or 0 adds nothing."""
-        self.change_set(self.generator(section=arp_plugin.SECTION, name=name).set_step_add, register=register, step=step, add=add)
-
-    def remove_arp_offset(self, *, name, step):
-        self.change_set(self.generator(section=arp_plugin.SECTION, name=name).remove_cell, step)
 
     def _chain(self, name):
         return self._setlist.get_chain(name)

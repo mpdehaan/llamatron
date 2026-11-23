@@ -93,21 +93,22 @@ class OffsetsEditor(GeneratorEditor, OneRowEditor):
         return result
 
     def set_value(self, value):
+        # Through the settings the page shows, so that a clip's or a track's built-in Arp is changed as one of the set's list is.
         register = self.register_edited()
         if register is None:
-            self.document().set_arp_offset(name=self.item, step=self.step, offset=value)
+            self.document().change_set(self.settings().set_cell, step=self.step, value=value)
         else:
-            self.document().set_arp_step_add(name=self.item, register=register, step=self.step, add=value)
+            self.document().change_set(self.settings().set_step_add, register=register, step=self.step, add=value)
 
     def toggle(self):
         """Make a step that plays silent, or play a silent step again, unmoved."""
         self.set_value(PLAYS_UNMOVED if self.value_here() is None else None)
 
     def add_step(self):
-        self.document().insert_arp_offset(name=self.item, step=self.step)
+        self.document().change_set(self.settings().insert_cell, self.step)
 
     def remove_step_here(self):
-        self.document().remove_arp_offset(name=self.item, step=self.step)
+        self.document().change_set(self.settings().remove_cell, self.step)
 
     # Drawing.
 

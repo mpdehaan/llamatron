@@ -8,13 +8,15 @@ on or off and opens its parts on it."""
 
 from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin
 from llamatron.engine.generators.arp import strings as arp_strings
-from llamatron.engine.generators.chords import strings as chords_strings
+from llamatron.engine.generators.chords import model as chords_model, strings as chords_strings
+from llamatron.engine.generators.chords.model import ChordsSetting
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
 from llamatron.interface.tracker.screens.shared import statements, tab_box
+from llamatron.interface.tracker.screens.shared.chords_editor import ChordsEditor
 from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
 from llamatron.model.objects import conditions
 from llamatron.model.schema import file_format
@@ -90,6 +92,20 @@ class TestTheTabBoxOnTheClipPage(UITest):
         self.assertIsInstance(self.app.screen, OffsetsEditor)
         self.assertIsNotNone(self.clip_slot().get_built_in(arp_plugin.NAME).get_offsets())
         self.assertIn(labels.MSG_BUILT_IN_WORD, self.text())
+        # A step changes the clip's own built-in, never one of the set's list of the same name.
+        before = self.clip_slot().get_built_in(arp_plugin.NAME).get_offsets()
+        await self.press(keybindings.OffsetsEditor.MORE)
+        self.assertNotEqual(self.clip_slot().get_built_in(arp_plugin.NAME).get_offsets(), before)
+
+    async def test_a_built_in_chords_progression_is_edited_on_the_clips_own(self):
+        self.document.change_set(self.clip_slot().set_built_in_setting, kind=chords_plugin.NAME, name=ChordsSetting.MODE, value=chords_model.PROGRESSION)
+        await self.pilot.pause()
+        await self.select_field(labels.MSG_CHORDS_LABEL)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, ChordsEditor)
+        before = self.clip_slot().get_built_in(chords_plugin.NAME).get_chords()
+        await self.press(keybindings.ChordsEditor.MORE)
+        self.assertNotEqual(self.clip_slot().get_built_in(chords_plugin.NAME).get_chords(), before)
 
 
 class TestTheArrowsInTheTabBox(UITest):
