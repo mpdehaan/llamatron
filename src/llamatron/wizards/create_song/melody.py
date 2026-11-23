@@ -15,12 +15,13 @@ import functools
 import math
 import random
 
+from llamatron.music_theory.composing import notation, phrasing
+from llamatron.music_theory.composing.phrasing import breathed, ended_early, is_shorter
 from llamatron.music_theory.fundamentals import intervals, scale_shapes
 from llamatron.music_theory.hooks import hook_bars, tag_bars
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import hook_writing, notation, phrasing, wizard_names
+from llamatron.wizards.create_song import hook_writing, wizard_names
 from llamatron.wizards.create_song.operations import backwards, moved, rotated, upside_down
-from llamatron.wizards.create_song.phrasing import breathed, ended_early, is_shorter
 
 # The fields of a style's melody habits.
 GRID = 'grid'

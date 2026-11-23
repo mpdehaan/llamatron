@@ -7,8 +7,9 @@ makes it, and what a line is given of its own."""
 
 import copy
 
+from llamatron.music_theory.composing import notation as tune_notation
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, line_edits, melody as melody_writer, notation as tune_notation, own_values, song_plan, wizard_limits
+from llamatron.wizards.create_song import arranger, line_edits, melody as melody_writer, own_values, song_plan, wizard_limits
 from llamatron.wizards.create_song.choices_part import cached_until_choices_change
 from llamatron.wizards.create_song.own_values import checked_line
 

@@ -533,7 +533,7 @@ ERR_NO_CLIP_FITS = 'scene ({}) lasts {} bars, which no part it plays divides eve
 # wizards/create_song/decomposer.py
 ERR_ONE_SONG = 'a song wizard input holds one song, and the set holds {}'
 
-# wizards/create_song/notation.py
+# music_theory/composing/notation.py
 ERR_NOT_A_TUNE = 'the pattern cannot be written as a tune'
 ERR_NOT_A_BAR = 'the pattern cannot be written as a drum bar'
 

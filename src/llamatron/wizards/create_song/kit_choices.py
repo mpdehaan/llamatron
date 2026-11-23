@@ -5,6 +5,7 @@
 """The song wizard's choices of the drum kit: its pieces, what each sounds as, the fills, the snare's quiet notes and a drum break."""
 
 from llamatron.model.schema import limits
+from llamatron.music_theory.composing import notation
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, characters, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, player_of
@@ -198,7 +199,7 @@ class KitChoices(ChoicesPart):
 
     def drums(self):
         """Return the drums of the kit a piece may sound as."""
-        return list(wizard_names.NOTATION_KIT)
+        return list(notation.NOTATION_KIT)
 
     def piece_sound(self, piece):
         """Return what a piece of the kit sounds as: None for its own drum, the name of another drum of the kit, or a General MIDI sound's number."""
@@ -216,7 +217,7 @@ class KitChoices(ChoicesPart):
             raise ValueError(errors.ERR_WIZARD_NO_SUCH_PIECE.format(value=piece))
         if sound is None or sound == piece:
             self._piece_sounds.pop(piece, None)
-        elif isinstance(sound, str) and sound in wizard_names.NOTATION_KIT:
+        elif isinstance(sound, str) and sound in notation.NOTATION_KIT:
             self._piece_sounds[piece] = {arranger.PLAYED_DRUM: sound}
         elif not isinstance(sound, (bool, str)) and isinstance(sound, int) and limits.MIN_GM_SOUND <= sound <= limits.MAX_GM_SOUND:
             self._piece_sounds[piece] = {arranger.PLAYED_SOUND: sound, arranger.PLAYED_NOTE: self.piece_note(piece) or wizard_limits.USUAL_PIECE_NOTE}

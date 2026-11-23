@@ -8,7 +8,8 @@ notes, the third and the seventh flattened where the scale has them major."""
 import random
 from typing import NamedTuple
 
-from llamatron.wizards.create_song import melody, notation, riffs, wizard_names
+from llamatron.music_theory.composing import notation
+from llamatron.wizards.create_song import melody, riffs
 
 
 def riff_note(*, place, steps, flattened, **more):
@@ -37,10 +38,10 @@ def heavy_bar(*, accents, eighths, between, flattened, tail):
         if at in accents:
             # An accent off the beat rings on through the beat after it, where nothing else starts there.
             steps = 2 if at % 2 and at + 1 < body and at + 1 not in accents else 1
-            bar.append(riff_note(place=accents[at], steps=steps, flattened=flattened, **{notation.CHORD: riffs.POWER_CHORD, notation.LEVEL: wizard_names.ACCENT}))
+            bar.append(riff_note(place=accents[at], steps=steps, flattened=flattened, **{notation.CHORD: riffs.POWER_CHORD, notation.LEVEL: notation.ACCENT}))
             at += steps
         elif between == riffs.MUTED_ROOTS:
-            bar.append(riff_note(place=riffs.HOME, steps=1, flattened=flattened, **{riffs.GATE: riffs.MUTED_GATE, notation.LEVEL: wizard_names.GHOST}))
+            bar.append(riff_note(place=riffs.HOME, steps=1, flattened=flattened, **{riffs.GATE: riffs.MUTED_GATE, notation.LEVEL: notation.GHOST}))
             at += 1
         else:
             if bar and notation.REST in bar[-1]:

@@ -12,8 +12,9 @@ from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.model.values.note import NoteName
+from llamatron.music_theory.composing import notation
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, melody, notation, wizard_limits
+from llamatron.wizards.create_song import arranger, melody, wizard_limits
 from llamatron.wizards.create_song.arranger import arranged, share_in, style_named, style_names, values_of
 from llamatron.wizards.create_song.wizard_choices import genre_names, genre_title, style_of, WizardChoices
 from tests.support import wizard_testing

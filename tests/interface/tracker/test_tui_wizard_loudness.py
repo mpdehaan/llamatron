@@ -5,8 +5,8 @@
 
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
+from llamatron.music_theory.composing import loudness, notation
 from llamatron.user_strings import labels as labels_text, marks
-from llamatron.wizards.create_song import loudness, wizard_names
 from tests.interface.tracker.test_tui_wizard import WizardTest
 from tests.support.ui_testing import key_of
 
@@ -56,35 +56,35 @@ class TestWizardLoudnessFields(WizardTest):
         lead = choices.player(THE_LEAD)
         lead_loudness = lead.loudness()
         self.assertIn(labels_text.MSG_WIZARD_GROUP_LOUDNESS, self.labels())
-        self.assertNotIn(labels_text.MSG_WIZARD_LEVEL_LABELS[wizard_names.NORMAL], self.labels())
-        await self.select_field(labels_text.MSG_WIZARD_LEVEL_LABELS[wizard_names.NORMAL])
+        self.assertNotIn(labels_text.MSG_WIZARD_LEVEL_LABELS[notation.NORMAL], self.labels())
+        await self.select_field(labels_text.MSG_WIZARD_LEVEL_LABELS[notation.NORMAL])
         offered = lead_loudness.levels_offered()
         # The levels are the last settings of the panel, with only the panel's button after them.
         after_heading = self.labels()[self.labels().index(labels_text.MSG_WIZARD_GROUP_LOUDNESS) + 1:]
         self.assertEqual(after_heading, [*(labels_text.MSG_WIZARD_LEVEL_LABELS[level] for level in offered), labels_text.MSG_WIZARD_EDIT_PLAYER_BUTTON])
-        self.assertNotIn(labels_text.MSG_WIZARD_LEVEL_LABELS[wizard_names.GHOST], self.labels())
-        self.assertIn(marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=lead_loudness.levels()[wizard_names.NORMAL]), self.text())
+        self.assertNotIn(labels_text.MSG_WIZARD_LEVEL_LABELS[notation.GHOST], self.labels())
+        self.assertIn(marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=lead_loudness.levels()[notation.NORMAL]), self.text())
 
     async def test_a_level_steps_to_the_songs_own_and_backspace_gives_it_back_to_the_genre(self):
         choices = await self.to_player(THE_LEAD)
         lead = choices.player(THE_LEAD)
         lead_loudness = lead.loudness()
         usual = lead_loudness.levels()
-        await self.select_field(labels_text.MSG_WIZARD_LEVEL_LABELS[wizard_names.ACCENT])
+        await self.select_field(labels_text.MSG_WIZARD_LEVEL_LABELS[notation.ACCENT])
         await self.press(self.more())
-        self.assertTrue(lead_loudness.level_is_own(level=wizard_names.ACCENT))
-        self.assertEqual(lead_loudness.levels()[wizard_names.ACCENT], usual[wizard_names.ACCENT] + 1)
-        self.assertNotIn(marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=usual[wizard_names.ACCENT] + 1), self.text())
+        self.assertTrue(lead_loudness.level_is_own(level=notation.ACCENT))
+        self.assertEqual(lead_loudness.levels()[notation.ACCENT], usual[notation.ACCENT] + 1)
+        self.assertNotIn(marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=usual[notation.ACCENT] + 1), self.text())
         await self.press(keybindings.WizardPage.CLEAR)
-        self.assertFalse(lead_loudness.level_is_own(level=wizard_names.ACCENT))
+        self.assertFalse(lead_loudness.level_is_own(level=notation.ACCENT))
         self.assertEqual(lead_loudness.levels(), usual)
 
     async def test_the_normal_level_carries_the_accent_shown_with_it(self):
         choices = await self.to_player(THE_BASS)
         bass = choices.player(THE_BASS)
         bass_loudness = bass.loudness()
-        await self.select_field(labels_text.MSG_WIZARD_LEVEL_LABELS[wizard_names.NORMAL])
+        await self.select_field(labels_text.MSG_WIZARD_LEVEL_LABELS[notation.NORMAL])
         await self.press(key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET))
         levels = bass_loudness.levels()
-        self.assertEqual(levels[wizard_names.ACCENT] - levels[wizard_names.NORMAL], loudness.ACCENT_ABOVE)
+        self.assertEqual(levels[notation.ACCENT] - levels[notation.NORMAL], loudness.ACCENT_ABOVE)
         self.assertTrue(self.wizard().has_choices_to_lose())

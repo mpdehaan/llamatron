@@ -9,8 +9,9 @@ import copy
 
 from llamatron.model.schema import limits
 from llamatron.model.values import note as note_values
+from llamatron.music_theory.composing import notation as tune_notation, phrasing
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import line_edits, melody as melody_writer, notation as tune_notation, phrasing, wizard_limits, wizard_names
+from llamatron.wizards.create_song import line_edits, melody as melody_writer, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import chord_of, fits_by_halves, shares_a_bar
 
 # The mark typed before a degree for each sharp or flat, the other way round from the marks a person types.

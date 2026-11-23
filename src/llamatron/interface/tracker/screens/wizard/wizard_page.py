@@ -45,8 +45,9 @@ from llamatron.model.file import version
 from llamatron.model.file.checks import listed
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.naming import new_name
+from llamatron.music_theory.composing import notation
 from llamatron.user_strings import errors, help as help_text, labels, marks, messages, names, song_wizard as wizard_text
-from llamatron.wizards.create_song import wizard_limits, wizard_names
+from llamatron.wizards.create_song import wizard_limits
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 # How wide the tree is, with its cursor's mark, and the least the fields beside it are given.
@@ -743,7 +744,7 @@ class WizardPage(FieldPage):
             drum = sound
             if sound == OWN_DRUM:
                 drum = piece
-            return hits_of(wizard_names.NOTATION_KIT[drum]), sound_trial.HITS_STEP, None
+            return hits_of(notation.NOTATION_KIT[drum]), sound_trial.HITS_STEP, None
         top = [(marks.MSG_WIZARD_OWN_DRUM_SHOWN.format(piece=piece), OWN_DRUM)]
         groups = [(labels.MSG_WIZARD_KIT_DRUMS, drums), *sound_families()]
         current = kit.piece_sound(piece) or OWN_DRUM

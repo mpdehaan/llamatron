@@ -11,7 +11,7 @@ and a line an edit cannot change is returned as it was.
 
 import copy
 
-from llamatron.wizards.create_song import notation
+from llamatron.music_theory.composing import notation
 
 NOTES_IN_SCALE = 7
 # How far from the scale's first note in its own octave a note may be moved, in notes of the scale.

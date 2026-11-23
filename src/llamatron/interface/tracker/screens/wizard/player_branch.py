@@ -10,6 +10,7 @@ from llamatron.interface.tracker.dialogs.row_dialog import RowDialog
 from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField, Field, gauge_shown, NumberField
 from llamatron.interface.tracker.screens.shared.kit_fields import KitFields
 from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.music_theory.composing import notation
 from llamatron.user_strings import labels, legends, marks, messages
 from llamatron.wizards.create_song import wizard_limits, wizard_names
 
@@ -133,7 +134,7 @@ class PlayerBranch(Branch):
     @staticmethod
     def _has_own_level(loudness):
         """Return whether the player has any level of the song's own."""
-        for level in wizard_names.LOUDNESS_LEVELS:
+        for level in notation.LOUDNESS_LEVELS:
             if loudness.level_is_own(level=level):
                 return True
         return False
@@ -151,7 +152,7 @@ class PlayerBranch(Branch):
             shown = marks.MSG_WIZARD_LEVEL_FROM_GENRE.format(number=number)
         else:
             clear = functools.partial(set_level, None)
-        return NumberField(page=page, label=labels.MSG_WIZARD_LEVEL_LABELS[level], number=number, lowest=wizard_names.LOWEST_VELOCITY, highest=wizard_names.HIGHEST_VELOCITY,
+        return NumberField(page=page, label=labels.MSG_WIZARD_LEVEL_LABELS[level], number=number, lowest=notation.LOWEST_VELOCITY, highest=notation.HIGHEST_VELOCITY,
                            shown=shown, set=set_level, clear=clear, clear_what=legends.MSG_FROM_GENRE_WHAT)
 
     @staticmethod

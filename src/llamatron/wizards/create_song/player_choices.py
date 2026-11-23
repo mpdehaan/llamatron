@@ -6,8 +6,9 @@
 
 from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
 from llamatron.model.file.song_file_error import SongFileError
+from llamatron.music_theory.composing import notation as tune_notation
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, band, melody as melody_writer, notation as tune_notation, song_plan, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, band, melody as melody_writer, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import fits, share_of, values_of
 from llamatron.wizards.create_song.characters import gauges_of
 from llamatron.wizards.create_song.own_values import is_integer_between

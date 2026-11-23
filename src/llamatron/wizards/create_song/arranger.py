@@ -28,20 +28,21 @@ from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.named_scale import scale_type_called
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import ChordSymbol, PatternSetting, Row, SceneSetting, VelocitySetting
+from llamatron.music_theory.composing import joins, loudness, notation, shaping
+from llamatron.music_theory.composing.joins import with_tail
+from llamatron.music_theory.composing.loudness import drum_levels, in_proportion, note_levels, scaled, spread, with_own
+from llamatron.music_theory.composing.notation import clamped, drum_rows
+from llamatron.music_theory.composing.shaping import is_compound
 from llamatron.music_theory.fundamentals import chord_shapes
 from llamatron.user_strings import errors, labels, song_wizard as wizard_text
-from llamatron.wizards.create_song import band, breaks, characters, drum_solo, interplay, joins, loudness, melody, notation, riffs as riffs_values, shaping, song_plan, wizard_names
+from llamatron.wizards.create_song import band, breaks, characters, drum_solo, interplay, melody, riffs as riffs_values, song_plan, wizard_names
 from llamatron.wizards.create_song.characters import character_of, held_to, label_of, level_of
 from llamatron.wizards.create_song.heavy_riffs import flattened_in
 from llamatron.wizards.create_song.interplay import UnderLead
-from llamatron.wizards.create_song.joins import with_tail
-from llamatron.wizards.create_song.loudness import drum_levels, in_proportion, note_levels, scaled, spread, with_own
 from llamatron.wizards.create_song.melody import has_hook, plan_as_asked, plan_with_hook_placed, plan_with_tag, sketched
-from llamatron.wizards.create_song.notation import clamped, drum_rows
 from llamatron.wizards.create_song.players import player_name
 from llamatron.wizards.create_song.riffs import accent_bars, bars_of as riff_bars_of, bars_played, held_bar, line_of as riff_line_of, single, split_bars
 from llamatron.wizards.create_song.scene_changes import as_percentages
-from llamatron.wizards.create_song.shaping import is_compound
 from llamatron.wizards.create_song.song_plan import SongPlan
 
 # The fields of a style template.
@@ -407,10 +408,10 @@ def drum_pattern(part):
         drum=part[notation.DRUM],
         hits=part[notation.HITS],
         loud=part[notation.LOUD],
-        soft=part[wizard_names.SOFT],
+        soft=part[notation.SOFT],
         step_size=part[notation.STEP],
-        accent=part.get(wizard_names.ACCENT),
-        ghost=part.get(wizard_names.GHOST),
+        accent=part.get(notation.ACCENT),
+        ghost=part.get(notation.GHOST),
     )
 
 
@@ -479,8 +480,8 @@ def loud_role(*, role, song):
     chosen = with_own(levels=note_levels(role[notation.VELOCITY]), own=own)
     levels = spread(levels=chosen, dynamics=dynamics)
     loud = dict(role)
-    loud[notation.VELOCITY] = levels[wizard_names.NORMAL]
-    loud[LEVELS_OF_ROLE] = {level: levels[level] for level in (wizard_names.ACCENT, wizard_names.SOFT, wizard_names.GHOST)}
+    loud[notation.VELOCITY] = levels[notation.NORMAL]
+    loud[LEVELS_OF_ROLE] = {level: levels[level] for level in (notation.ACCENT, notation.SOFT, notation.GHOST)}
     return loud
 
 
@@ -491,8 +492,8 @@ def voice_of(role):
 
 def struck(*, levels, hits):
     """Return how loud a drum's part is: its normal and soft strokes, and its accent and ghost note where its hits have any."""
-    struck_levels = {notation.LOUD: levels[wizard_names.NORMAL], wizard_names.SOFT: levels[wizard_names.SOFT]}
-    for level in (wizard_names.ACCENT, wizard_names.GHOST):
+    struck_levels = {notation.LOUD: levels[notation.NORMAL], notation.SOFT: levels[notation.SOFT]}
+    for level in (notation.ACCENT, notation.GHOST):
         if level in hits:
             struck_levels[level] = levels[level]
     return struck_levels
@@ -735,7 +736,7 @@ def pieces_played(song):
 
 def _plays_another_drum(sounds_as):
     """Return whether a piece of the kit is played as another drum of the kit."""
-    return set(sounds_as) == {PLAYED_DRUM} and sounds_as[PLAYED_DRUM] in wizard_names.NOTATION_KIT
+    return set(sounds_as) == {PLAYED_DRUM} and sounds_as[PLAYED_DRUM] in notation.NOTATION_KIT
 
 
 def _plays_a_sound_on_a_note(sounds_as):
@@ -791,10 +792,10 @@ def one_hit(*, style, meter, drum, played):
     """Return one bar in which a piece of the kit is hit once, on the first beat, as the drum or the note the song has the piece play."""
     written = style[LOUDNESS]
     levels = written.get(drum, written[DRUMS])
-    loud = levels[wizard_names.NORMAL]
+    loud = levels[notation.NORMAL]
     eighths = int(bar_length(meter) * EIGHTHS_IN_WHOLE)
     hits = [notation.LOUD] + [notation.NONE] * (eighths - 1)
-    return {notation.DRUM: played.get(drum, drum), notation.STEP: EIGHTH, notation.LOUD: loud, wizard_names.SOFT: loud, notation.HITS: hits}
+    return {notation.DRUM: played.get(drum, drum), notation.STEP: EIGHTH, notation.LOUD: loud, notation.SOFT: loud, notation.HITS: hits}
 
 
 def lasts(note):
@@ -1085,7 +1086,7 @@ def _without_quiet_notes(hits):
     """Return a snare's hits with the soft strokes and ghost notes between the main ones left out."""
     kept = []
     for hit in hits:
-        if hit in (wizard_names.SOFT, wizard_names.GHOST):
+        if hit in (notation.SOFT, notation.GHOST):
             kept.append(notation.NONE)
         else:
             kept.append(hit)
@@ -2139,7 +2140,7 @@ def arranged(*, style, song):
 
 def _level_at(*, marks, place):
     """Return how loud a decoration's drum hits at a step: an accent, loud, soft, a ghost note, or none."""
-    for level in (wizard_names.ACCENT, notation.LOUD, wizard_names.SOFT, wizard_names.GHOST):
+    for level in (notation.ACCENT, notation.LOUD, notation.SOFT, notation.GHOST):
         if place in marks.get(level, []):
             return level
     return notation.NONE

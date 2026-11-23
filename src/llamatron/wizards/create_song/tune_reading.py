@@ -7,8 +7,8 @@ person wrote in the pattern editor can be given back to the song wizard."""
 
 from collections import Counter
 
+from llamatron.music_theory.composing import notation
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import notation
 
 
 def commonest(values):

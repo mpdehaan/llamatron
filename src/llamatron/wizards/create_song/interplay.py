@@ -9,8 +9,9 @@ the tune's last note of a line has landed, and ends with the line."""
 
 import random
 
+from llamatron.music_theory.composing import notation
 from llamatron.music_theory.fundamentals import intervals
-from llamatron.wizards.create_song import melody, notation, wizard_names
+from llamatron.wizards.create_song import melody, wizard_names
 from llamatron.wizards.create_song.melody import chord_notes, nearest_chord_rung, StepWalk
 
 # What a player beside the tune does in a section.

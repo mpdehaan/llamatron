@@ -22,8 +22,9 @@ import os
 
 from llamatron.model.file import files
 from llamatron.model.file.safe_yaml import load_safely
+from llamatron.music_theory.composing import notation as tune_notation
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, notation as tune_notation, song_plan, wizard_limits
+from llamatron.wizards.create_song import arranger, song_plan, wizard_limits
 from llamatron.wizards.create_song.wizard_choices import data_laid_over, WizardChoices
 
 NAME = 'name'

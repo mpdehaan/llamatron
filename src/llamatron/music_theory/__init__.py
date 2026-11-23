@@ -14,6 +14,8 @@ musical knowledge is written once. It comes in two tiers:
 
 The chapters so far:
 
+- composing: how a part is written down and made to play like a musician: the note format, loudness, feels, phrasing
+  and joins.
 - harmony: how notes sit against the chords under them.
 - hooks: the short figures a song is known by, its hook and its tag, written from a behavior and gauges.
 

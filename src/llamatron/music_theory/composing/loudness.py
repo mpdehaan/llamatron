@@ -12,8 +12,8 @@ every note is as loud as the next, and twice the style's distance at the most.
 from fractions import Fraction
 import functools
 
-from llamatron.wizards.create_song import wizard_names
-from llamatron.wizards.create_song.notation import clamped
+from llamatron.music_theory.composing import notation
+from llamatron.music_theory.composing.notation import clamped
 
 # How a drum's other levels follow from its normal stroke.
 ACCENT_ABOVE = 12
@@ -28,15 +28,15 @@ USUAL_DYNAMICS = 5
 def drum_levels(given):
     """A drum's four levels from what a style says of it: its normal stroke alone, or any of its levels by name."""
     if not isinstance(given, dict):
-        given = {wizard_names.NORMAL: given}
-    normal = given[wizard_names.NORMAL]
-    return {wizard_names.GHOST: given.get(wizard_names.GHOST, int(normal * GHOST_SHARE)), wizard_names.SOFT: given.get(wizard_names.SOFT, int(normal * SOFT_SHARE)), wizard_names.NORMAL: normal,
-            wizard_names.ACCENT: given.get(wizard_names.ACCENT, clamped(normal + ACCENT_ABOVE))}
+        given = {notation.NORMAL: given}
+    normal = given[notation.NORMAL]
+    return {notation.GHOST: given.get(notation.GHOST, int(normal * GHOST_SHARE)), notation.SOFT: given.get(notation.SOFT, int(normal * SOFT_SHARE)), notation.NORMAL: normal,
+            notation.ACCENT: given.get(notation.ACCENT, clamped(normal + ACCENT_ABOVE))}
 
 
 def note_levels(velocity):
     """A note player's four levels from the player's velocity."""
-    return {wizard_names.GHOST: clamped(velocity - GHOST_BELOW), wizard_names.SOFT: clamped(velocity - SOFT_BELOW), wizard_names.NORMAL: velocity, wizard_names.ACCENT: clamped(velocity + ACCENT_ABOVE)}
+    return {notation.GHOST: clamped(velocity - GHOST_BELOW), notation.SOFT: clamped(velocity - SOFT_BELOW), notation.NORMAL: velocity, notation.ACCENT: clamped(velocity + ACCENT_ABOVE)}
 
 
 @functools.cache
@@ -47,15 +47,15 @@ def scaled(*, move, dynamics):
 
 def spread(*, levels, dynamics):
     """Levels with each as far from the normal one as a player's dynamics say."""
-    normal = levels[wizard_names.NORMAL]
+    normal = levels[notation.NORMAL]
     return {level: clamped(normal + scaled(move=number - normal, dynamics=dynamics)) for level, number in levels.items()}
 
 
 def with_own(*, levels, own):
     """Levels with the ones a song gives of its own in their places; a normal level of the song's own carries the others with it,
     each as far from it as before, but for those the song also gives."""
-    own = {level: number for level, number in (own or {}).items() if level in wizard_names.LOUDNESS_LEVELS}
-    move = own.get(wizard_names.NORMAL, levels[wizard_names.NORMAL]) - levels[wizard_names.NORMAL]
+    own = {level: number for level, number in (own or {}).items() if level in notation.LOUDNESS_LEVELS}
+    move = own.get(notation.NORMAL, levels[notation.NORMAL]) - levels[notation.NORMAL]
     return {level: own[level] if level in own else clamped(number + move) for level, number in levels.items()}
 
 

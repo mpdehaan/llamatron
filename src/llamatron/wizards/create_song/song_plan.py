@@ -19,8 +19,9 @@ section itself is kept over what the plan would say.
 import random
 
 from llamatron.model.schema.file_format import VelocitySetting
+from llamatron.music_theory.composing import joins as joins_values
 from llamatron.user_strings import song_wizard as wizard_text
-from llamatron.wizards.create_song import hook_writing, joins as joins_values, melody as melody_values, wizard_names
+from llamatron.wizards.create_song import hook_writing, melody as melody_values, wizard_names
 
 # The fields of a song's plan, and of the plan a style gives.
 PLAN_OF_SONG = 'song_plan'

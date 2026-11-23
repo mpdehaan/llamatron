@@ -4,9 +4,10 @@
 
 """How loud one player of the band is, as the song wizard's choices hold it: the player's four levels and dynamics."""
 
+from llamatron.music_theory.composing import loudness, notation as tune_notation
+from llamatron.music_theory.composing.loudness import drum_levels, note_levels, with_own
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, loudness, notation as tune_notation, wizard_limits, wizard_names
-from llamatron.wizards.create_song.loudness import drum_levels, note_levels, with_own
+from llamatron.wizards.create_song import arranger, wizard_limits, wizard_names
 from llamatron.wizards.create_song.own_values import is_integer_between
 
 
@@ -69,7 +70,7 @@ class PlayerLoudness:
         """Return the player's levels that change the song when moved, each tried a little louder or softer than it is."""
         plain = self._parts_as_written()
         heard = []
-        for level in wizard_names.LOUDNESS_LEVELS:
+        for level in tune_notation.LOUDNESS_LEVELS:
             trial = self._choices.copied_for_trial()
             trial_loudness = PlayerLoudness(choices=trial, role=self._role)
             now = trial_loudness.levels()[level]
@@ -100,9 +101,9 @@ class PlayerLoudness:
 
     def set_level(self, *, level, number):
         """Give the player a level of the song's own, a velocity, or give the level back to the genre with None."""
-        is_number = number is None or is_integer_between(number, low=wizard_names.LOWEST_VELOCITY, high=wizard_names.HIGHEST_VELOCITY)
-        if not self.has_levels() or level not in wizard_names.LOUDNESS_LEVELS or not is_number:
-            raise ValueError(errors.ERR_WIZARD_LOUDNESS.format(low=wizard_names.LOWEST_VELOCITY, high=wizard_names.HIGHEST_VELOCITY, value=(self._role, level, number)))
+        is_number = number is None or is_integer_between(number, low=tune_notation.LOWEST_VELOCITY, high=tune_notation.HIGHEST_VELOCITY)
+        if not self.has_levels() or level not in tune_notation.LOUDNESS_LEVELS or not is_number:
+            raise ValueError(errors.ERR_WIZARD_LOUDNESS.format(low=tune_notation.LOWEST_VELOCITY, high=tune_notation.HIGHEST_VELOCITY, value=(self._role, level, number)))
         loudness_of = self._levels_copied()
         own = loudness_of.setdefault(self._role, {})
         own.pop(level, None)

@@ -9,11 +9,12 @@ import math
 import random
 from typing import NamedTuple
 
-from llamatron.wizards.create_song import arranger, characters, joins, notation
+from llamatron.music_theory.composing import joins, notation
+from llamatron.music_theory.composing.joins import drum_tail, pieces_of_tail
+from llamatron.music_theory.composing.loudness import drum_levels
+from llamatron.wizards.create_song import arranger, characters
 from llamatron.wizards.create_song.arranger import break_of, choice_that_fits, cut_of, fill_named, laid_over, step_of, struck, values_of, widened
 from llamatron.wizards.create_song.breaks import cut_up
-from llamatron.wizards.create_song.joins import drum_tail, pieces_of_tail
-from llamatron.wizards.create_song.loudness import drum_levels
 
 
 class SongDrumming(NamedTuple):

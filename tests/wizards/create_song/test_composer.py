@@ -11,7 +11,8 @@ import unittest.mock
 from llamatron.model.file import version
 from llamatron.model.file.setlist_reader import set_file_data
 from llamatron.model.objects.setlist import Setlist
-from llamatron.wizards.create_song import composer, decomposer, notation, shaping, tune_reading, wizard_names
+from llamatron.music_theory.composing import notation, shaping
+from llamatron.wizards.create_song import composer, decomposer, tune_reading
 
 FILE_ENCODING = 'utf-8'
 # Demos of three feels: dance music with a sung lead, a shanty in a minor key, and swung jazz.
@@ -36,7 +37,7 @@ HAT = 'hat'
 HAT_NOTE = 'F'
 LOUD = 72
 SOFT = 50
-HITS = [notation.LOUD, wizard_names.SOFT, notation.NONE, wizard_names.SOFT] * 4
+HITS = [notation.LOUD, notation.SOFT, notation.NONE, notation.SOFT] * 4
 FOUR_FOUR = 1
 KICK_TRACK = 'kick'
 HAT_TRACK = 'hat'

@@ -5,7 +5,8 @@
 """How each section of a planned song leaves for the next: a stop, a build, the song's one drop-out or a fill, the chord its
 last bar sets the next up with, and the drummer's fills inside a section and the markers its phrases end on."""
 
-from llamatron.wizards.create_song import joins as joins_values, song_plan, wizard_names
+from llamatron.music_theory.composing import joins as joins_values
+from llamatron.wizards.create_song import song_plan, wizard_names
 
 
 class SectionJoins:

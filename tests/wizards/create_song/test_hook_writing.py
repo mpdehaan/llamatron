@@ -7,8 +7,9 @@
 import itertools
 import unittest
 
+from llamatron.music_theory.composing import notation
 from llamatron.music_theory.hooks import hook_bars
-from llamatron.wizards.create_song import arranger, hook_writing, melody, notation, wizard_names
+from llamatron.wizards.create_song import arranger, hook_writing, melody, wizard_names
 
 ROCK = 'rock'
 COMMON_TIME = '4/4'

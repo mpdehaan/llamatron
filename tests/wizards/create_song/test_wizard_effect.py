@@ -27,8 +27,9 @@ from llamatron.engine.generators.phrasing import model as phrasing_settings, sch
 from llamatron.engine.generators.phrasing.model import PhrasingSetting
 from llamatron.model.file import version
 from llamatron.model.schema.file_format import Row, Section
+from llamatron.music_theory.composing import phrasing
 from llamatron.music_theory.hooks import hook_bars
-from llamatron.wizards.create_song import arranger, interplay, line_edits, melody, phrasing, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, interplay, line_edits, melody, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import genre_names, WizardChoices
 
 A_NAME = 'a_song'

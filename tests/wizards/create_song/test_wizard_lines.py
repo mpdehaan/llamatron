@@ -7,7 +7,8 @@
 import unittest
 
 from llamatron.model.schema.file_format import Section
-from llamatron.wizards.create_song import line_edits, melody, notation, phrasing, wizard_limits
+from llamatron.music_theory.composing import notation, phrasing
+from llamatron.wizards.create_song import line_edits, melody, wizard_limits
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 from tests.support.wizard_testing import made_data
 

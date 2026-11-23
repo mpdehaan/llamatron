@@ -7,8 +7,9 @@
 import unittest
 
 from llamatron.model.file import version
+from llamatron.music_theory.composing import notation
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, interplay, melody, notation, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, interplay, melody, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
 ROCK = 'rock'

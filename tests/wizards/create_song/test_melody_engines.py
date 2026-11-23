@@ -8,9 +8,10 @@ is made by."""
 import functools
 import unittest
 
+from llamatron.music_theory.composing import notation
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, composer, melody, notation, operations, wizard_names
+from llamatron.wizards.create_song import arranger, composer, melody, operations, wizard_names
 
 MINOR = 'minor'
 SEED = 9

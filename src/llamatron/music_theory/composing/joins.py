@@ -10,7 +10,7 @@ section comes in at full strength; stops, where the band plays a few hits togeth
 eighth. A figure a player loops is written out for the whole section, so that its last bar alone can differ.
 """
 
-from llamatron.wizards.create_song import notation, wizard_names
+from llamatron.music_theory.composing import notation
 
 FILL_OF_JOIN = 'fill'
 TAIL = 'tail'
@@ -100,7 +100,7 @@ def drum_tail(*, piece, plain, tail, eighths):
         if piece != BUILD_PIECE or grid % EIGHTHS_IN_BAR:
             return [notation.NONE] * grid
         eighth = grid // EIGHTHS_IN_BAR
-        return [(wizard_names.SOFT if place // eighth < EIGHTHS_IN_BAR // SOFT_SHARE_OF_BUILD else notation.LOUD) if place % eighth == 0 else notation.NONE for place in range(grid)]
+        return [(notation.SOFT if place // eighth < EIGHTHS_IN_BAR // SOFT_SHARE_OF_BUILD else notation.LOUD) if place % eighth == 0 else notation.NONE for place in range(grid)]
     return list(plain)
 
 

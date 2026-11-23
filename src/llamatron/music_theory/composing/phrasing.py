@@ -9,7 +9,7 @@ longer line then a shorter; and now and then a note comes an eighth early. A lin
 only where the line stops and where a note falls change.
 """
 
-from llamatron.wizards.create_song import notation
+from llamatron.music_theory.composing import notation
 
 EIGHTHS_IN_BAR = 8
 # The breath after a longer line and after a shorter one, in eighths, and the eighths of a bar a note may come early to: the third beat and the next bar's first.

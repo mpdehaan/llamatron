@@ -7,8 +7,9 @@
 import unittest
 
 from llamatron.model.schema.file_format import SectionKind
+from llamatron.music_theory.composing import notation
 from llamatron.user_strings import song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, melody, notation, wizard_limits
+from llamatron.wizards.create_song import arranger, melody, wizard_limits
 from llamatron.wizards.create_song.arranger import arranged
 from llamatron.wizards.create_song.melody import placement_of, plan_with_hook_placed, plan_with_tag
 from llamatron.wizards.create_song.wizard_choices import WizardChoices

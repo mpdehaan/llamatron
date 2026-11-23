@@ -8,11 +8,12 @@ and no record's strokes. A break may be cut up: its bar taken as slices, some of
 the cut goes, as a break is rearranged on a sampler.
 """
 
-from llamatron.wizards.create_song import notation, wizard_names
+from llamatron.music_theory.composing import notation
+from llamatron.wizards.create_song import wizard_names
 
 # A bar's hits, sixteen to the bar: loud, soft or none.
 L = notation.LOUD
-S = wizard_names.SOFT
+S = notation.SOFT
 O = notation.NONE
 KICK = 'kick'
 SNARE = 'snare'

@@ -25,9 +25,10 @@ from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.model.values import note as note_values
+from llamatron.music_theory.composing import notation as tune_notation, phrasing
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, composer as set_writer, loudness_steps, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, composer as set_writer, loudness_steps, melody as melody_writer, riffs as riffs_values, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, bar_length, chord_of, form_of, picked, share_in, style_in, style_named, style_names, values_of, variant_named, variants_of
 from llamatron.wizards.create_song.band_choices import BandChoices
 from llamatron.wizards.create_song.choices_part import cached_until_choices_change, chosen_only, SavedChoices

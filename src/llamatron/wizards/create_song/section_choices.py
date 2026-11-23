@@ -9,8 +9,9 @@ import copy
 
 from llamatron.model.file import version as version_values
 from llamatron.model.file.song_file_error import SongFileError
+from llamatron.music_theory.composing import joins as joins_values
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import arranger, interplay as interplay_values, joins as joins_values, section_fade, song_plan, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, interplay as interplay_values, section_fade, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import chord_of, picked, section_of, values_of
 from llamatron.wizards.create_song.own_values import checked_own, chords_as_text
 from llamatron.wizards.create_song.section_fade import SectionFade

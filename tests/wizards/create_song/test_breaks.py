@@ -10,9 +10,10 @@ import unittest
 from llamatron.model.file import version
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import InstrumentSetting, Section
+from llamatron.music_theory.composing import notation
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, breaks, characters, notation, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, breaks, characters, wizard_limits, wizard_names
 from llamatron.wizards.create_song.drum_writing import SectionDrums, SectionToDrum, SongDrumming
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
@@ -77,9 +78,9 @@ class TestBreaks(unittest.TestCase):
                 self.assertEqual(bars[breaks.KICK][0], notation.LOUD)
                 self.assertIn(notation.LOUD, bars[breaks.SNARE])
                 for piece, hits in bars.items():
-                    self.assertIn(piece, wizard_names.NOTATION_KIT)
+                    self.assertIn(piece, notation.NOTATION_KIT)
                     self.assertEqual(len(hits), breaks.STEPS_IN_BAR)
-                    self.assertLessEqual(set(hits), {notation.LOUD, wizard_names.SOFT, notation.NONE})
+                    self.assertLessEqual(set(hits), {notation.LOUD, notation.SOFT, notation.NONE})
         written = list(breaks.BREAKS.values())
         for place, bars in enumerate(written):
             self.assertNotIn(bars, written[:place])
@@ -160,7 +161,7 @@ class TestSongWithABreak(unittest.TestCase):
         with_percussion = next(value for value, entry in arranger.values_of(style=self.style, trait=PERCUSSION).items() if entry.get(arranger.BAR))
         piece = next(iter(arranger.values_of(style=self.style, trait=PERCUSSION)[with_percussion][arranger.BAR]))
         parts = self.parts(a_song(picks={arranger.BREAK: breaks.LAZY, PERCUSSION: with_percussion}))
-        self.assertEqual(set(parts) & set(wizard_names.NOTATION_KIT), {piece, *breaks.BREAKS[breaks.LAZY]})
+        self.assertEqual(set(parts) & set(notation.NOTATION_KIT), {piece, *breaks.BREAKS[breaks.LAZY]})
 
     def test_a_break_is_not_played_in_another_meter(self):
         self.assertEqual(self.parts(a_song(template=BALLAD)), self.parts(a_song(template=BALLAD, picks={arranger.BREAK: breaks.TUMBLING})))
@@ -289,8 +290,8 @@ class TestKitPieceSounds(unittest.TestCase):
     def test_a_piece_sounds_as_another_drum_of_the_kit_on_the_drum_kit_still(self):
         usual = self.made({})
         made = self.made({breaks.KICK: {arranger.PLAYED_DRUM: COWBELL}})
-        self.assertEqual(self.notes(made=usual, piece=breaks.KICK), {wizard_names.NOTATION_KIT[breaks.KICK]})
-        self.assertEqual(self.notes(made=made, piece=breaks.KICK), {wizard_names.NOTATION_KIT[COWBELL]})
+        self.assertEqual(self.notes(made=usual, piece=breaks.KICK), {notation.NOTATION_KIT[breaks.KICK]})
+        self.assertEqual(self.notes(made=made, piece=breaks.KICK), {notation.NOTATION_KIT[COWBELL]})
         self.assertEqual(made[arranger.TRACKS], usual[arranger.TRACKS])
         self.assertEqual(made[arranger.DRUM_TRACKS], usual[arranger.DRUM_TRACKS])
         self.assertEqual(self.rows(made=made, piece=breaks.SNARE), self.rows(made=usual, piece=breaks.SNARE))

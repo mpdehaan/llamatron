@@ -9,8 +9,9 @@ import copy
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import naming
 from llamatron.model.schema.file_format import PatternSetting
+from llamatron.music_theory.composing import notation as tune_notation
 from llamatron.user_strings import errors, names as names_text, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, notation as tune_notation, riffs as riffs_values, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, riffs as riffs_values, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, bar_length, in_octaves_of
 from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart
 from llamatron.wizards.create_song.heavy_riffs import flattened_in

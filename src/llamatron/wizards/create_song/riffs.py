@@ -20,7 +20,8 @@ more are the root. Its first player plays the chords, and whoever plays it besid
 
 import random
 
-from llamatron.wizards.create_song import notation, wizard_names
+from llamatron.music_theory.composing import notation
+from llamatron.wizards.create_song import wizard_names
 
 # What a song says of its riff.
 RIFF = 'riff'
@@ -189,7 +190,7 @@ def accent_bars(*, line, eighths):
     hits = []
     for note in line:
         length = note.get(notation.REST, note.get(notation.STEPS))
-        hits += [notation.LOUD if note.get(notation.LEVEL) == wizard_names.ACCENT else notation.NONE] + [notation.NONE] * (length - 1)
+        hits += [notation.LOUD if note.get(notation.LEVEL) == notation.ACCENT else notation.NONE] + [notation.NONE] * (length - 1)
     return [hits[start:start + eighths] for start in range(0, len(hits), eighths)]
 
 

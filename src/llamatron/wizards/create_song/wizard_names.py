@@ -48,14 +48,7 @@ INTERPLAY_MOST_BUSY = 20
 LEAST_CUT = 1
 MOST_CUT = 8
 
-# From notation.py and loudness.py, which the wizard's pages read too: the loudness levels' names, and the levels in order.
-SOFT = 'soft'
-# A stroke louder than the normal one, and one barely heard.
-ACCENT = 'accent'
-GHOST = 'ghost'
-NORMAL = 'normal'
-# The levels from the quietest up, as a person is shown them.
-LOUDNESS_LEVELS = (GHOST, SOFT, NORMAL, ACCENT)
+# A loudness level's names and the drums a bar may name are music_theory/composing/notation.py's.
 # A player's dynamics, from every note alike to twice the style's distances.
 LEAST_DYNAMICS = 0
 MOST_DYNAMICS = 10
@@ -63,15 +56,6 @@ MOST_DYNAMICS = 10
 # From characters.py,
 CHARACTERS_LOWEST = 0
 CHARACTERS_HIGHEST = 20
-
-# From notation.py,
-LOWEST_VELOCITY = 1
-HIGHEST_VELOCITY = 127
-# The General MIDI drums a bar may name.
-NOTATION_KIT = {
-    'kick': 36, 'rim': 37, 'snare': 38, 'clap': 39, 'hat': 42, 'hat by foot': 44, 'tom low': 45, 'open': 46, 'tom mid': 47, 'crash': 49, 'tom high': 50, 'ride': 51, 'splash': 55, 'bell': 53, 'tamb': 54,
-    'cowbell': 56, 'conga high': 63, 'conga low': 64, 'timbale': 65, 'maracas': 70, 'claves': 75, 'woodblock': 76, 'shaker': 82,
-}
 
 # From joins.py,
 # The fields of what a section leaves with.

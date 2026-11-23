@@ -10,7 +10,8 @@ field's choices by the same names the choices check a value against. The module 
 
 from llamatron.model.objects.groove import FactoryGroove
 from llamatron.model.schema.file_format import SectionKind
-from llamatron.wizards.create_song import arranger, joins as joins_values, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan, wizard_names
+from llamatron.music_theory.composing import joins as joins_values, notation as tune_notation, phrasing
+from llamatron.wizards.create_song import arranger, melody as melody_writer, riffs as riffs_values, song_plan, wizard_names
 
 # The fields of the choices as a song keeps them.
 SUBGENRE = 'subgenre'

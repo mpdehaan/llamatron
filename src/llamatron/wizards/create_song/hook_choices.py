@@ -7,10 +7,11 @@
 import copy
 
 from llamatron.model.schema.file_format import SectionKind
+from llamatron.music_theory.composing import notation as tune_notation
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, hook_writing, line_edits, melody as melody_writer, notation as tune_notation, tune_reading, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, hook_writing, line_edits, melody as melody_writer, tune_reading, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged
 from llamatron.wizards.create_song.choices_part import cached_until_choices_change, ChoicesPart, chosen_only
 from llamatron.wizards.create_song.melody import placement_of, plan_with_hook_placed

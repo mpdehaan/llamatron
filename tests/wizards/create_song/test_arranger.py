@@ -17,9 +17,10 @@ from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ChordSymbol, PatternSetting, Row
+from llamatron.music_theory.composing import loudness, notation
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, band, characters, composer, loudness, melody, notation, players, wizard_names
+from llamatron.wizards.create_song import arranger, band, characters, composer, melody, players, wizard_names
 
 FILE_ENCODING = 'utf-8'
 STYLE_TEMPLATES = arranger.STYLE_TEMPLATES
@@ -490,7 +491,7 @@ class TestPlayers(unittest.TestCase):
             return part[notation.HITS]
         loud = self.style[arranger.LOUDNESS][drum]
         near = [None if velocity is None else abs(velocity - loud) <= self.uneven(song) for velocity in part[arranger.RAW][notation.VELOCITY]]
-        return [notation.NONE if hit is None else notation.LOUD if hit else wizard_names.SOFT for hit in near]
+        return [notation.NONE if hit is None else notation.LOUD if hit else notation.SOFT for hit in near]
 
     def uneven(self, song):
         return self.style[arranger.PLAYERS][players.DRUMS][song[arranger.PLAYERS][players.DRUMS]].get(characters.UNEVEN, 0)

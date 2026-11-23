@@ -12,9 +12,10 @@ import unittest
 from llamatron.model.file import version
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Row, SceneSetting, Section, VelocitySetting
+from llamatron.music_theory.composing import joins, notation, phrasing
 from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import errors, song_wizard as wizard_text
-from llamatron.wizards.create_song import hook_writing, joins, notation, phrasing, song_plan, wizard_limits, wizard_names
+from llamatron.wizards.create_song import hook_writing, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import shares_a_bar as arranger_shares_a_bar
 from llamatron.wizards.create_song.own_values import chords_as_text, chords_from_text
 from llamatron.wizards.create_song.wizard_choices import WizardChoices

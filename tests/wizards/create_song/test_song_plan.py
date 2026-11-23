@@ -9,8 +9,9 @@ import unittest
 
 from llamatron.model.file import version
 from llamatron.model.objects.setlist import Setlist
+from llamatron.music_theory.composing import joins, notation, phrasing
 from llamatron.user_strings import song_wizard as wizard_text
-from llamatron.wizards.create_song import arranger, composer, drum_solo, joins, melody, notation, phrasing, song_plan, wizard_limits, wizard_names
+from llamatron.wizards.create_song import arranger, composer, drum_solo, melody, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.song_plan import level_at, loudness_at, SongPlan
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 
@@ -219,7 +220,7 @@ class TestJoins(unittest.TestCase):
         hits = joins.drum_tail(piece=CRASH, plain=[notation.NONE] * EIGHTHS, tail=joins.STOPS, eighths=0)
         self.assertEqual([place for place, hit in enumerate(hits) if hit == notation.LOUD], list(joins.STOP_PLACES))
         build = joins.drum_tail(piece=SNARE, plain=plain, tail=joins.BUILD, eighths=0)
-        self.assertEqual(build, [wizard_names.SOFT] * (EIGHTHS // 2) + [notation.LOUD] * (EIGHTHS // 2))
+        self.assertEqual(build, [notation.SOFT] * (EIGHTHS // 2) + [notation.LOUD] * (EIGHTHS // 2))
         self.assertEqual(joins.drum_tail(piece=KICK, plain=plain, tail=joins.BUILD, eighths=0), plain)
 
     def marker(self):
