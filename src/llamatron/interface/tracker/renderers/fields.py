@@ -1,17 +1,18 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""How a settings page's fields are drawn: a setting as its label and value on one line, the cursor's mark before it.
-
-A kind not yet moved to the forms (interface/forms/nodes.py) still draws itself, by its own lines().
+"""How a settings page's fields, the forms' nodes (interface/forms/), are drawn: each by what it says it is drawn as, a setting as
+its label and value on one line with the cursor's mark before it, a button boxed, a heading, a row of cells, a table's row,
+a draw's strip and a statement's line.
 """
 
 from rich.text import Text
 
-from llamatron.interface.forms import nodes
+from llamatron.interface.forms import nodes, statement_rows
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.drawing import Box, cursor_mark, padded, Style
+from llamatron.interface.tracker.renderers.statement_rows import first_statement_row_lines, statement_row_lines
 from llamatron.user_strings import labels, legends, marks
 
 # A strip's grid: how far in from the cursor's mark it starts, its label column's and each slot's room, wide enough for -99 with a
@@ -24,8 +25,6 @@ STRIP_CELL_WIDTH = 5
 
 def field_lines(field, *, page, here, label_width, width):
     """Return the lines a field is drawn as, the cursor on it where here is true, its label as wide as label_width."""
-    if field.DRAWN_AS == nodes.OWN_LINES:
-        return field.lines(page=page, here=here, label_width=label_width, width=width)
     return DRAWERS[field.DRAWN_AS](field, page=page, here=here, label_width=label_width, width=width)
 
 
@@ -143,4 +142,5 @@ def slot_text(value):
 DRAWERS = {
     nodes.SETTING_LINE: setting_line, nodes.BUTTON: button_lines, nodes.HEADING: heading_lines, nodes.CELLS: cells_lines,
     nodes.TABLE_ROW: table_row_lines, nodes.CAPTIONED_TABLE_ROW: captioned_table_row_lines, nodes.STRIP: strip_lines,
+    statement_rows.STATEMENT_ROW: statement_row_lines, statement_rows.FIRST_STATEMENT_ROW: first_statement_row_lines,
 }

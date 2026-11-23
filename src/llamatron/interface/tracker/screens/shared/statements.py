@@ -14,97 +14,23 @@ value, so that nothing moves or grows as a line changes. Left and Right move bet
 ENTER changes the one under the cursor, and Bksp sets the line back to ignored.
 """
 
-from dataclasses import dataclass
-from rich.text import Text
 
-from llamatron.interface.forms import nodes
-from llamatron.interface.forms.nodes import Cells, ChoiceField, Field
+from llamatron.interface.forms import statement_rows
+from llamatron.interface.forms.nodes import ChoiceField, Field
+from llamatron.interface.forms.statement_rows import FirstStatementRow, StatementRow
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs import grouped_choices
 from llamatron.interface.tracker.dialogs.grouped_choices import number_or_names, value_groups
-from llamatron.interface.tracker.drawing import Box, cursor_mark, padded, Style
 from llamatron.model.objects import conditions
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import StatementPart
-from llamatron.user_strings import errors, labels, legends, marks
+from llamatron.user_strings import errors, labels, legends
 
 # A page's first table, which keeps its lines' labels apart from any other's.
 FIRST_TABLE = 0
-# How wide each cell is drawn, so that the cells after it never move.
-REGISTER_WIDTH = len(labels.MSG_STATEMENT_IGNORED)
-OPERATOR_WIDTH = max(len(operator) for operator in file_format.OPERATORS)
-NUMBER_WIDTH = len(str(-limits.MAX_STATEMENT_NUMBER))
 # The number a statement divides by may not be this.
 ZERO = 0
-# How wide each column of the grid is inside its bars: the widest value a cell of it shows, a space each side, the picker's
-# mark and a space after it. A line's cells are its register, its operator, then a value or a sum's number, a comparison and a value.
-VALUE_WIDTH = max(NUMBER_WIDTH, *[len(name) for name in file_format.VALUE_NAMES])
-COMPARISON_WIDTH = max(len(comparison) for comparison in file_format.RESULT_COMPARISONS)
-CELL_WIDTHS = [len(padded(drawing.NOTHING)) + len(padded(marks.MSG_PICKER_MARK)) - 1 + width for width in (REGISTER_WIDTH, OPERATOR_WIDTH, VALUE_WIDTH, COMPARISON_WIDTH, VALUE_WIDTH)]
-COLUMNS = len(CELL_WIDTHS)
 # The first choice of a value's picker is a number to type; the registers follow.
-
-
-@dataclass(slots=True, kw_only=True)
-class StatementRow(Cells):
-    """A line of a table of statements, drawn as a row of the table's grid: its cells between bars, every column at its own
-    width whether the line fills it or not, and the rule under it, the grid's bottom edge under the last line."""
-
-    # Drawn by its own lines(), until it moves to the forms.
-    DRAWN_AS = nodes.OWN_LINES
-
-    last: bool
-
-    def lines(self, *, page, here, label_width, width):
-        """Return the row's line of cells, the cell under the cursor in reverse video, and the rule under it."""
-        return [self.cells_line(page=page, here=here), self.rule_under()]
-
-    def cells_line(self, *, page, here):
-        """Return the line of the row's cells between the grid's bars, a column the line doesn't fill left blank."""
-        line = Text(cursor_mark(here), no_wrap=True)
-        line.append(Box.BAR)
-        for place, cell_width in enumerate(CELL_WIDTHS):
-            line.append_text(self.cell_text(page=page, here=here, place=place).copy())
-            line.append(drawing.SPACE * (cell_width - self.cell_text(page=page, here=here, place=place).cell_len))
-            line.append(Box.BAR)
-        return line
-
-    def cell_text(self, *, page, here, place):
-        """Return what a cell of the row shows: its value, padded, in reverse video under the cursor, and the picker's mark where
-        it opens a list; nothing in a column the line doesn't fill."""
-        text = Text(no_wrap=True)
-        if place >= len(self.cells):
-            return text
-        cell = self.cells[place]
-        on_cell = here and place == min(page.cell, len(self.cells) - 1)
-        text.append(padded(str(cell.value()).rstrip()), style=Style.REVERSE if on_cell else Style.PLAIN)
-        if cell.enter_what == legends.What.CHOOSE:
-            text.append(marks.MSG_PICKER_MARK, style=Style.DIM)
-        return text
-
-    def rule_under(self):
-        """Return the rule under the row: between rows, or the grid's bottom edge under the last."""
-        if self.last:
-            return grid_rule(left=Box.BOTTOM_LEFT, joint=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT)
-        return grid_rule(left=Box.LEFT_TEE, joint=Box.CROSS, right=Box.RIGHT_TEE)
-
-
-@dataclass(slots=True, kw_only=True)
-class FirstStatementRow(StatementRow):
-    """The first line of a table of statements, which draws the grid's top edge above itself."""
-
-    SELECTED_LINE = 1
-
-    def lines(self, *, page, here, label_width, width):
-        """Return the grid's top edge, the row's line of cells and the rule under it."""
-        top = grid_rule(left=Box.TOP_LEFT, joint=Box.TOP_TEE, right=Box.TOP_RIGHT)
-        return [top, self.cells_line(page=page, here=here), self.rule_under()]
-
-
-def grid_rule(*, left, joint, right):
-    """Return a rule across the grid of statements, with its ends and the joints where the columns' bars meet it."""
-    rule = left + joint.join(Box.RULE * width for width in CELL_WIDTHS) + right
-    return Text(drawing.INDENT + rule, no_wrap=True)
 
 
 def statement_section(*, page, label, table, statements, store):
@@ -140,13 +66,13 @@ def _line(*, page, place, table, statements, store):
     if statement is not None:
         operator = statement[StatementPart.OPERATOR]
         cells.append(_choice_cell(
-            page=page, title=labels.MSG_STATEMENT_OPERATOR_TITLE, choices=file_format.OPERATORS, current=operator, width=OPERATOR_WIDTH,
+            page=page, title=labels.MSG_STATEMENT_OPERATOR_TITLE, choices=file_format.OPERATORS, current=operator, width=statement_rows.OPERATOR_WIDTH,
             store=lambda chosen: store(at, conditions.with_operator(statement=statement, operator=chosen)), clear=clear,
         ))
         for part in conditions.parts_of(operator):
             if part == StatementPart.COMPARISON:
                 cells.append(_choice_cell(
-                    page=page, title=labels.MSG_STATEMENT_COMPARISON_TITLE, choices=file_format.RESULT_COMPARISONS, current=statement[part], width=OPERATOR_WIDTH,
+                    page=page, title=labels.MSG_STATEMENT_COMPARISON_TITLE, choices=file_format.RESULT_COMPARISONS, current=statement[part], width=statement_rows.OPERATOR_WIDTH,
                     store=lambda chosen, part=part: changed(part, chosen), clear=clear,
                 ))
             else:
@@ -177,7 +103,7 @@ def _register_cell(*, page, statement, store, clear):
             store(conditions.new_statement(register))
         else:
             store({**statement, StatementPart.REGISTER: register})
-    return _choice_cell(page=page, title=labels.MSG_STATEMENT_REGISTER_TITLE, choices=choices, current=current, width=REGISTER_WIDTH, store=chosen, clear=clear, grouped=grouped)
+    return _choice_cell(page=page, title=labels.MSG_STATEMENT_REGISTER_TITLE, choices=choices, current=current, width=statement_rows.REGISTER_WIDTH, store=chosen, clear=clear, grouped=grouped)
 
 
 def _choice_cell(*, page, title, choices, current, width, store, clear, grouped=None):
@@ -207,4 +133,4 @@ def _value_cell(*, page, current, divides, store, clear):
 
     def pick():
         page.ask(dialog=grouped.dialog(title=labels.MSG_STATEMENT_VALUE_TITLE, current=current if current in file_format.VALUE_NAMES else grouped_choices.NUMBER_CHOSEN), then=picked)
-    return Field(label=labels.MSG_STATEMENT_VALUE_TITLE, value=lambda: str(current).ljust(NUMBER_WIDTH), enter=pick, enter_what=legends.What.CHOOSE, clear=clear)
+    return Field(label=labels.MSG_STATEMENT_VALUE_TITLE, value=lambda: str(current).ljust(statement_rows.NUMBER_WIDTH), enter=pick, enter_what=legends.What.CHOOSE, clear=clear)

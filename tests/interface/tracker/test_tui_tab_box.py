@@ -12,13 +12,14 @@ from llamatron.engine.generators.chords import model as chords_model, strings as
 from llamatron.engine.generators.chords.model import ChordsSetting
 from llamatron.engine.generators.guitarify import model as guitarify_model, strings as guitarify_strings
 from llamatron.engine.generators.guitarify.model import GuitarifySetting
+from llamatron.interface.forms import statement_rows
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
-from llamatron.interface.tracker.screens.shared import statements, tab_box
+from llamatron.interface.tracker.screens.shared import tab_box
 from llamatron.interface.tracker.screens.shared.chords_editor import ChordsEditor
 from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
 from llamatron.model.objects import conditions
@@ -279,7 +280,7 @@ class TestTheBoxesLook(UITest):
         empty = self.inside_of_the_box()
         bars = self.bars_in_the_box()
         top = next(line for line in empty if line.startswith(Box.TOP_LEFT))
-        self.assertEqual(top.count(Box.TOP_TEE), statements.COLUMNS - 1)
+        self.assertEqual(top.count(Box.TOP_TEE), statement_rows.COLUMNS - 1)
         self.assertEqual(sum(line.startswith(Box.BOTTOM_LEFT) for line in empty), 1)
         scene = self.document.song().get_scene(FIRST_SCENE)
         summing = conditions.with_operator(statement=conditions.new_statement(file_format.DRAW_NAMES[0]), operator=Operator.REMAINDER)

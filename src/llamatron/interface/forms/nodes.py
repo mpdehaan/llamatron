@@ -17,12 +17,10 @@ from typing import Callable
 
 from llamatron.user_strings import labels, legends, marks
 
-# How the tracker draws a field: the setting's label and value on one line, or by the field's own lines(), for a kind still
-# drawing itself, such as a statement's row (interface/tracker/screens/shared/statements.py).
-SETTING_LINE = 'setting line'
-OWN_LINES = 'own lines'
-# A button, boxed as a page's buttons are, a section's heading with its open or closed mark, a row of cells, a table's row and
+# How the tracker draws each kind of field (interface/tracker/renderers/fields.py): a setting's label and value on one line, a
+# button, boxed as a page's buttons are, a section's heading with its open or closed mark, a row of cells, a table's row and
 # its first row with the table's caption, and a draw's strip of slots.
+SETTING_LINE = 'setting line'
 BUTTON = 'button'
 HEADING = 'heading'
 CELLS = 'cells'
