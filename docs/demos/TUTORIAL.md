@@ -259,16 +259,16 @@ and long every bar, and a register bound to CC 74 opens the filter as the notes 
 
 [`examples/learning/13_acid_articulate.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/13_acid_articulate.yml) · A minor · 120 BPM · 3:00 · 9 scenes · 6 tracks
 
-| chords | chains | ties | CCs | registers | binding | shapes |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../TRACKS.md#track-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md) | [✓](../SCENES.md#section-shapes) |
+| chords | chains | ties | CCs | shapes |
+| :---: | :---: | :---: | :---: | :---: |
+| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../PATTERNS.md#ties) | [✓](../PATTERNS.md#ccs) | [✓](../SCENES.md#section-shapes) |
 <!-- end of the generated summary of 13_acid_articulate -->
 
 **New Features Introduced**
 
-| registers | binding | shapes |
-| :---: | :---: | :---: |
-| [✓](../REGISTERS.md) | [✓](../REGISTERS.md) | [✓](../SCENES.md#section-shapes) |
+| shapes |
+| :---: |
+| [✓](../SCENES.md#section-shapes) |
 
 <a id="bolero_swell"></a>
 ## Swell: `14_bolero_swell.yml`
@@ -386,6 +386,12 @@ at once. Then DX fades the riff, kick and hat out together over six repeats of t
 | :---: |
 | [✓](../REGISTERS.md) |
 <!-- end of the generated summary of 20_registers -->
+
+**New Features Introduced**
+
+| registers |
+| :---: |
+| [✓](../REGISTERS.md) |
 
 <a id="guitarify"></a>
 ## Guitarify: `21_guitarify.yml`
