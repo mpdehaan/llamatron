@@ -51,9 +51,14 @@ ROW = '{name:52s} {time:9.2f}'
 PLACE_COLUMN = 'one key press'
 TIME_COLUMN = 'ms'
 PROFILE_HEADING = 'where the time goes in {name}:'
-# The third pattern of the song is a bass line, with more notes and rows than a drum pattern.
-TO_BASS_PATTERN = [keybindings.MainPage.PATTERNS, Key.DOWN, Key.DOWN, Key.ENTER]
+# The song's bass line, with more notes and rows than a drum pattern, reached by searching the Patterns page for its name, so
+# that its group's tab doesn't matter.
+BASS = 'bass'
+TO_BASS_PATTERN = [keybindings.MainPage.PATTERNS, keybindings.ListPage.SEARCH, *BASS, Key.ENTER, Key.ENTER]
 TO_BASS_ROWS = [*TO_BASS_PATTERN, keybindings.PatternEditor.TO_EDITOR]
+# The first clip's page, with the cursor on the first field of its Settings tab: from Name, past the patterns and their + (New)
+# row and the row of tabs.
+TO_CLIP_SETTINGS = [keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER, Key.TAB, Key.DOWN]
 # Velocity is the fifth row under Degree: Octave, the Basics heading, #/b, Chord and then Velocity.
 ROWS_DOWN_TO_VELOCITY = 5
 
@@ -76,6 +81,12 @@ SHORTER = first_key(keybindings.PianoRoll.SHORTER)
 PLACES = [
     Place(name='main screen: move the cursor', reach=[], there=Key.RIGHT, back=Key.LEFT),
     Place(name='Patterns: move the cursor', reach=[keybindings.MainPage.PATTERNS], there=Key.DOWN, back=Key.UP),
+    Place(name='Patterns: choose the next tab', reach=[keybindings.MainPage.PATTERNS], there=Key.PAGE_DOWN, back=Key.PAGE_UP),
+    Place(name='File/Global: move the cursor in the tab box', reach=[keybindings.MainPage.FILE, Key.DOWN], there=Key.DOWN, back=Key.UP),
+    Place(name='File/Global: choose the next tab', reach=[keybindings.MainPage.FILE, Key.DOWN], there=Key.PAGE_DOWN, back=Key.PAGE_UP),
+    Place(name='clip page: move the cursor in the tab box', reach=TO_CLIP_SETTINGS, there=Key.DOWN, back=Key.UP),
+    Place(name='clip page: move the cursor across the columns', reach=TO_CLIP_SETTINGS, there=Key.RIGHT, back=Key.LEFT),
+    Place(name='clip page: choose the next tab', reach=TO_CLIP_SETTINGS, there=Key.PAGE_DOWN, back=Key.PAGE_UP),
     Place(name='Arrange: move the cursor between clips', reach=[keybindings.MainPage.ARRANGE, Key.RIGHT], there=Key.RIGHT, back=Key.LEFT),
     Place(name='Arrange: move the cursor between scenes', reach=[keybindings.MainPage.ARRANGE, Key.RIGHT], there=Key.DOWN, back=Key.UP),
     Place(name='piano roll: move the cursor a step', reach=TO_BASS_PATTERN, there=Key.RIGHT, back=Key.LEFT),
