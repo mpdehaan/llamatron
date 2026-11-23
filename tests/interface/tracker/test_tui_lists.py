@@ -9,6 +9,7 @@ from llamatron.engine.generators.arp import schema, strings as arp_strings
 from llamatron.engine.generators.arp.generator import ChordOrder, OctaveJump
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.engine.generators.timing import parts as timing_parts
+from llamatron.interface.pages.chain import step_shown
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components import keyboard
 from llamatron.interface.tracker.components.keyboard import Keyboard
@@ -17,7 +18,7 @@ from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.grid_choice_dialog import GridChoiceDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor, step_shown
+from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor
 from llamatron.interface.tracker.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.scale_page import ScalePage

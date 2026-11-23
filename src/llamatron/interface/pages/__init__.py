@@ -7,6 +7,7 @@ hands it the page to ask through and what only the tracker can do, such as openi
 
 - generators, generator_kinds: the Generators page, every generator under a heading for its type, and every kind of
   generator with its section and what it is called.
+- generator_list, chain: the list of generators a Generators field opens, and the chain editor's steps.
 - pattern_list: the Patterns page, its tabs by group and each tab's rows.
 - scale_list, instrument_list, groove_list, song_list: the Scales, Instruments, Grooves and Songs pages, each its columns,
   its rows as plain values, the place ENTER opens and what adding does.
