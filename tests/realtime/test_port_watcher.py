@@ -26,8 +26,9 @@ LATER_PORT = 'llamatron port made later'
 MADE = 'made'
 MAKES_A_PORT = f"import time; from tests.realtime.test_coremidi import Destination; Destination({LATER_PORT!r}); print({MADE!r}, flush=True); time.sleep(60)"
 # How long the listing may take to show a port another program made: CoreMIDI tells other programs late on a loaded
-# machine, as when the suite runs beside itself, so the test looks again and again until a deadline.
-WAIT_SECONDS = 10
+# machine, as when the suite runs beside itself, by more than ten seconds at times, so the test looks again and again until
+# a deadline well inside a class's two minutes.
+WAIT_SECONDS = 45
 LOOK_SECONDS = 0.1
 
 

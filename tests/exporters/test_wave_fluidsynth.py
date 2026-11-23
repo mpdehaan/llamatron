@@ -51,6 +51,7 @@ INSTALLED = 'llamatron.realtime.devices.fluidsynth.installed'
 # Where a stand-in FluidSynth and its SoundFont are said to be, which the stand-in render never looks at.
 STAND_IN_SYNTH = FluidSynthInstallation('fluidsynth', 'soundfont.sf2')
 TRACKER_INSTALLED = 'llamatron.interface.tracker.transport.installed'
+TRACKER_PORT_NAMES = 'llamatron.interface.tracker.transport.output_port_names'
 PROGRAM_CHANGE = 'program_change'
 READ_BYTES = 'rb'
 WRITE_BYTES = 'wb'
@@ -172,6 +173,11 @@ class TestWaveExportInTheTracker(UITest):
     def make_app(self):
         self.document = song_with_instruments()
         self.document.save(path=SET_FILE)
+        # The drums' port is said to be connected, so that opening the set warns of no silent instrument whatever ports this
+        # computer lists at the moment: the test is of the export, not of the ports the machine has.
+        ports = mock.patch(TRACKER_PORT_NAMES, return_value=[OTHER_PORT])
+        ports.start()
+        self.addCleanup(ports.stop)
         return super().make_app()
 
     async def choose_wav(self):
