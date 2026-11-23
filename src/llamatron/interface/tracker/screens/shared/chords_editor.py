@@ -268,13 +268,23 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
     # Drawing.
 
     def body(self, *, width, height):
+        """Return the grid: the chords, with their degrees as a gauge, their numerals and their names, then under a rule the rows
+        that write each chord out, its sharp or flat, quality, tensions, scale and inversion."""
         self.keep_step()
         first, last = self.scroll_to_cursor(width)
         places = range(first, last)
-        chords, accidentals, qualities, tensions, scales, inversions = self.rows()
         selected = {row: self.step if self.edited_row == row else None for row in range(EDITED_ROWS)}
+        rows = self.rows()
+        lines = [self.with_steps_shown(text=messages.MSG_CHORDS_NOTE, style=Style.DIM, width=width, first=first, last=last)]
+        lines += self.chord_lines(places=places, selected=selected, chords=rows[0])
+        lines.append(self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)))
+        lines += self.written_lines(places=places, selected=selected, rows=rows)
+        lines.append(self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)))
+        return lines
+
+    def chord_lines(self, *, places, selected, chords):
+        """Return the grid's top: its edge, the step numbers, the degrees as a gauge, and each chord's numeral and name."""
         lines = [
-            self.with_steps_shown(text=messages.MSG_CHORDS_NOTE, style=Style.DIM, width=width, first=first, last=last),
             self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
             self.grid_line(label=labels.MSG_CHORD_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], selected=self.step, bold=True),
         ]
@@ -282,23 +292,27 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
             lines.append(self.grid_line(label=drawing.NOTHING, cells=[(place, self.gauge_cell(degree=chords[place], line=line)) for place in places]))
         lines.append(self.grid_line(label=labels.MSG_NUMERAL_ROW_LABEL, cells=[(place, self.numeral(place)) for place in places], selected=selected[CHORD_ROW]))
         lines.append(self.grid_line(label=labels.MSG_CHORD_NAME_ROW_LABEL, cells=[(place, self.in_words(place=place).name()) for place in places]))
-        lines.append(self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)))
-        lines.append(self.grid_line(
-            label=labels.MSG_PROGRESSION_ACCIDENTAL_ROW_LABEL, cells=[(place, marks.MSG_ACCIDENTAL_MARKS.get(accidentals[place], drawing.NOTHING)) for place in places],
-            selected=selected[ACCIDENTAL_ROW],
-        ))
-        lines.append(self.grid_line(label=labels.MSG_PROGRESSION_QUALITY_ROW_LABEL, cells=[(place, qualities[place] or drawing.NOTHING) for place in places], selected=selected[QUALITY_ROW]))
-        lines.append(self.grid_line(label=labels.MSG_PROGRESSION_TENSIONS_ROW_LABEL, cells=[(place, tensions_shown(tensions[place])) for place in places], selected=selected[TENSION_ROW]))
-        lines.append(self.grid_line(
-            label=labels.MSG_PROGRESSION_SCALE_ROW_LABEL, cells=[(place, drawing.NOTHING if scales[place] is None else words(scales[place]).title()[:CELL_ROOM]) for place in places],
-            selected=selected[SCALE_ROW],
-        ))
-        lines.append(self.grid_line(
-            label=labels.MSG_INVERSION_ROW_LABEL, cells=[(place, drawing.NOTHING if inversions[place] is None else str(inversions[place])) for place in places],
-            selected=selected[INVERSION_ROW],
-        ))
-        lines.append(self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)))
         return lines
+
+    def written_lines(self, *, places, selected, rows):
+        """Return the rows that write each chord out: its sharp or flat, quality, tensions, borrowed scale and inversion."""
+        _, accidentals, qualities, tensions, scales, inversions = rows
+        return [
+            self.grid_line(
+                label=labels.MSG_PROGRESSION_ACCIDENTAL_ROW_LABEL, cells=[(place, marks.MSG_ACCIDENTAL_MARKS.get(accidentals[place], drawing.NOTHING)) for place in places],
+                selected=selected[ACCIDENTAL_ROW],
+            ),
+            self.grid_line(label=labels.MSG_PROGRESSION_QUALITY_ROW_LABEL, cells=[(place, qualities[place] or drawing.NOTHING) for place in places], selected=selected[QUALITY_ROW]),
+            self.grid_line(label=labels.MSG_PROGRESSION_TENSIONS_ROW_LABEL, cells=[(place, tensions_shown(tensions[place])) for place in places], selected=selected[TENSION_ROW]),
+            self.grid_line(
+                label=labels.MSG_PROGRESSION_SCALE_ROW_LABEL, cells=[(place, drawing.NOTHING if scales[place] is None else words(scales[place]).title()[:CELL_ROOM]) for place in places],
+                selected=selected[SCALE_ROW],
+            ),
+            self.grid_line(
+                label=labels.MSG_INVERSION_ROW_LABEL, cells=[(place, drawing.NOTHING if inversions[place] is None else str(inversions[place])) for place in places],
+                selected=selected[INVERSION_ROW],
+            ),
+        ]
 
 
 def tensions_shown(tensions):
