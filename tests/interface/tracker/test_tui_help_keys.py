@@ -248,7 +248,7 @@ class KeyTour(UITest):
         await self.walk()
         await self.press(Key.ESCAPE)
         await self.walk()
-        # The chain editor's When key opens the chain's statements about the registers.
+        # The chain editor's When key opens the chain's statements about the draws.
         await self.press(Key.ESCAPE)
         await self.open_chain(ui_testing.NAMED)
         await self.press(keybindings.ChainEditor.WHEN)
@@ -316,6 +316,11 @@ class KeyTour(UITest):
         # The track editor's Chains field opens the list of its chains, given one so that its keys show.
         await self.select_field(labels.MSG_GENERATORS_FIELD_LABEL)
         await self.press(Key.ENTER, keybindings.GeneratorListPage.ADD, Key.ENTER)
+        await self.walk()
+        await self.press(Key.ESCAPE)
+        # A built-in generator's Conditions button opens its statements.
+        await self.select_field(labels.MSG_CONDITIONS_BUTTON.format(count=0))
+        await self.press(Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE)
         await self.press(Key.ESCAPE, Key.DOWN, Key.ENTER)

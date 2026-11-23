@@ -353,7 +353,11 @@ class InstrumentEditor(FieldPage):
 
 
 class ChainStatementsPage(FieldPage):
-    """A chain's statements about the registers, with the settings keys alone."""
+    """A chain's statements about the draws, with the settings keys alone."""
+
+
+class GeneratorStatementsPage(FieldPage):
+    """A built-in generator's statements about the draws, with the settings keys alone."""
 
 
 class PluginEditor(FieldPage):

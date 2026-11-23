@@ -4,15 +4,18 @@
 
 """Conditional Execution on the pages: the table of statements about the draws on a chain's, a generator's, a scene's, a clip's and a track's page, and a scene's and a clip's sets and adds."""
 
-from llamatron.engine.generators import timing as timing_plugin
+from llamatron.engine.generators import chords as chords_plugin, timing as timing_plugin
+from llamatron.engine.generators.chords import strings as chords_strings
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
+from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor
 from llamatron.interface.tracker.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.field import Cells
+from llamatron.interface.tracker.screens.shared.generator_statements_page import GeneratorStatementsPage
 from llamatron.model.objects import conditions
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import DrawName, Operator, StatementPart
@@ -25,6 +28,7 @@ BD = DrawName.BD
 # What the tests type.
 THREE = '3'
 NOTHING_TO_DIVIDE_BY = '0'
+FIRST_SCENE = 0
 
 
 def line_label(*, table, line):
@@ -132,6 +136,31 @@ class TestChainStatementsPage(StatementsTest):
     async def test_the_heading_never_says_set(self):
         await self.write_every_third()
         self.assertNotIn(marks.MSG_SECTION_SET, self.text())
+
+
+class TestGeneratorStatementsPage(StatementsTest):
+    """A clip's built-in generator's statements, on the page its tab's Conditions button opens."""
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER)
+        self.clip_page = self.app.screen
+        self.place = BuiltInPlace(track=ui_testing.LEAD, scene=FIRST_SCENE, kind=chords_plugin.NAME)
+
+    def table(self):
+        return self.document.built_in(self.place).get_bypass_when()
+
+    async def test_the_button_says_how_many_statements_and_opens_the_generators_table(self):
+        names = [tab.label for tab in self.clip_page.tab_box().tabs]
+        await self.press(keybindings.FieldPage.TO_TABS, *[Key.RIGHT] * names.index(chords_strings.MSG_TAB_LABEL))
+        await self.select_field(labels.MSG_CONDITIONS_BUTTON.format(count=0))
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, GeneratorStatementsPage)
+        await self.write_every_third()
+        self.assertEqual(self.table(), [self.every_third()])
+        await self.press(Key.ESCAPE)
+        self.assertIs(self.app.screen, self.clip_page)
+        self.assertIn(labels.MSG_CONDITIONS_BUTTON.format(count=1), self.text())
 
 
 class TestStatementsOnOtherPages(StatementsTest):

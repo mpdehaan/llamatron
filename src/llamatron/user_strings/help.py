@@ -197,6 +197,13 @@ Conditional Execution for a whole chain. Each line is a statement about a draw, 
 Left and Right move between a line's parts and ENTER changes the part: the draw, the operator, and a number or another draw. A line set to ignored does nothing. Bksp sets a line back to ignored.
 """
 
+# GeneratorStatementsPage
+HELP_GENERATOR_STATEMENTS_PAGE = """
+Conditional Execution for one built-in generator. Each line is a statement about a draw, such as AD odd. Each time a clip's pattern starts over, the statements are read, and when any is true the clip's notes go by this generator untouched for that pass.
+
+Left and Right move between a line's parts and ENTER changes the part: the draw, the operator, and a number or another draw. A line set to ignored does nothing. Bksp sets a line back to ignored.
+"""
+
 # GeneratorsPage
 HELP_GENERATORS_PAGE = """
 Every generator of the set, under a heading for its type, the types and the generators under each sorted by name. Chains run them on clips, scenes and tracks, in the order each chain lists them.

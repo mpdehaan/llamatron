@@ -11,9 +11,11 @@ to Space and Enter alike.
 import unittest
 
 from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
+from llamatron.engine.generators.chords import strings as chords_strings
 from llamatron.interface.tracker import key_table, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
+from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
@@ -26,6 +28,7 @@ from llamatron.interface.tracker.screens.set.scale_page import ScalePage
 from llamatron.interface.tracker.screens.set.song_page import SongPage
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, Heading, NameField, NumberField, Toggle, within
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
+from llamatron.interface.tracker.screens.shared.generator_statements_page import GeneratorStatementsPage
 from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
 from llamatron.model.objects import setlist
@@ -239,7 +242,9 @@ class FieldPagesTest(UITest):
             PluginEditor(holder=holder, name=ui_testing.POP, section=chords_plugin.SECTION), PluginEditor(holder=holder, name=ui_testing.SMOOTH, section=chords_plugin.SECTION), PluginEditor(holder=holder, name=ui_testing.TRADE, section=hocket_plugin.SECTION), PluginEditor(holder=holder, name=ui_testing.FOLLOWS, section=chords_plugin.SECTION), PluginEditor(holder=holder, name=ui_testing.BREATHES, section=phrasing_plugin.SECTION), PluginEditor(holder=holder, name=ui_testing.STRUMMER, section=musician_plugin.SECTION), PluginEditor(holder=holder, name=ui_testing.PICKED, section=guitarify_plugin.SECTION),
             PluginEditor(holder=holder, name=ui_testing.LOOSE, section=timing_plugin.SECTION),
             PluginEditor(holder=holder, name=ui_testing.SHAPED, section=shapes_plugin.SECTION),
-            ScalePage(holder=holder, name=setlist.DEFAULT_SCALE), ChainStatementsPage(holder=holder, name=ui_testing.NAMED), InstrumentEditor(holder=holder, name=AN_INSTRUMENT), self.a_wizard(holder),
+            ScalePage(holder=holder, name=setlist.DEFAULT_SCALE), ChainStatementsPage(holder=holder, name=ui_testing.NAMED),
+            GeneratorStatementsPage(holder=holder, name=chords_strings.MSG_LABEL, section=chords_plugin.SECTION, built_in=BuiltInPlace(track=ui_testing.LEAD, scene=FIRST_SCENE, kind=chords_plugin.NAME)),
+            InstrumentEditor(holder=holder, name=AN_INSTRUMENT), self.a_wizard(holder),
         ]
 
     def a_wizard(self, holder):
@@ -359,7 +364,7 @@ class NumbersStopAtTheirEnds:
 
 
 # The settings pages FieldPagesTest tours.
-PAGES_TOURED = 21
+PAGES_TOURED = 22
 
 
 class TestNumbersStopAtTheirEndsOnTheSongPage(NumbersStopAtTheirEnds, FieldPagesTest):

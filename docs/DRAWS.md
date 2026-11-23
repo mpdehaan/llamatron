@@ -81,11 +81,12 @@ BD redraws, plays the rhythm its own draws make.
 
 Conditional Execution lets the draws decide what plays. A table of up to 4 statements about the draws is read each time a clip's
 pattern starts over, and when any one statement is true, the notes of that pass go by generators untouched. The table, Bypass
-Generators When, is on three pages:
+Generators When, is in four places:
 
 | Where | What a true statement leaves out |
 | --- | --- |
 | A generator's page | That generator, wherever a chain names it. |
+| `Conditions (n)` at the foot of a built-in generator's tab on a clip's or a track's page | That built-in generator. |
 | A chain's statements, `W` in the chain editor | The whole chain. |
 | The Scene page | Every chain each of the scene's clips runs. |
 

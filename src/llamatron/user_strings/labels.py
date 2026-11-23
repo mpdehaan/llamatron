@@ -378,6 +378,8 @@ MSG_ORDER_HEADING = 'Order'
 MSG_NOTES_HEADING = 'Notes'
 MSG_PLAYING_HEADING = 'Playing'
 MSG_RESET_DRAWS_TAB = 'Reset Draws'
+# interface/tracker/screens/shared/built_in_tab.py: the button that opens a built-in generator's statements, with how many it holds.
+MSG_CONDITIONS_BUTTON = 'Conditions ({count})'
 # What the Reset Draws tab says while no draw of the song holds a value.
 MSG_NO_DRAWS_CONFIGURED = 'No draws configured'
 MSG_CC_LANES_TAB = 'MIDI CCs'

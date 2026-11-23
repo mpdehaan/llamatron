@@ -43,6 +43,7 @@ ALLOWED = (
     'FilePage',
     'GateRow',
     'GeneratorListPage',
+    'GeneratorStatementsPage',
     'GeneratorsPage',
     'GlideRow',
     'GrabRow',
