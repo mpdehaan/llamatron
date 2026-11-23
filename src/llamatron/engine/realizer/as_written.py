@@ -15,8 +15,8 @@ CHANCE_AND_READING_ROWS = [Row.PROBABILITY, *file_format.STATEMENT_OF_ROW]
 
 def as_written(song):
     """Return a copy of a song, in a copy of its set, with everything that works after the patterns taken out, so that it is
-    realized as written: the chains, the grooves, the shapes, the strums and the masks, and the patterns' probability and the rows
-    that read the registers. A feature added that works after the patterns is taken out here too."""
+    realized as written: the chains, the grooves, the shapes, the strums and the masks, and the patterns' probability and the steps'
+    statements. A feature added that works after the patterns is taken out here too."""
     setlist = song.get_setlist()
     song_name = next(each for each in setlist.get_song_names() if setlist.get_song(each) is song)
     data = setlist.to_data()

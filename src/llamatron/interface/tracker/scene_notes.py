@@ -35,7 +35,6 @@ HELD_SHARE = 0.25
 # The letters of the notes, from C, which a seven-note scale's degrees take one each.
 LETTERS = 'CDEFGAB'
 ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
-# The pattern rows a written view takes out: the steps' probability and every row that reads a register.
 # A chord's root, its third and its fifth, as half steps, which say its quality.
 MINOR_THIRD = 3
 MAJOR_THIRD = 4
