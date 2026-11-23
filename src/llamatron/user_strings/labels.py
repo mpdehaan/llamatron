@@ -285,11 +285,12 @@ MSG_EXPORT_CHOICES = ['Ableton Live set', 'MIDI (Stems)', 'MIDI (Multitrack)', '
 MSG_NOTES_BUTTONS = ('Save', 'CANCEL')
 # The lists of named things.
 MSG_DRUM_KIND = 'drum'
-# interface/tracker/screens/pattern/patterns_page.py: a group's heading, the heading of the patterns in no group, the two buttons that add, and
-# the entry of the Group picker that makes a group. A button has no +, so that + and - mean only closed and open.
+# interface/tracker/screens/generators/generators_page.py: a type's heading.
 MSG_GROUP_HEADING = '{mark} {name} ({count})'
+# interface/tracker/screens/pattern/patterns_page.py: the tab of the patterns in no group, the last tab, which makes a group, its
+# button, also the entry of the Group picker that makes a group, and the prompt for a copied group's name.
 MSG_UNGROUPED = 'Ungrouped'
-MSG_NEW_PATTERN_BUTTON = '[ New Pattern ]'
+MSG_NEW_GROUP_TAB = '+ New'
 # interface/tracker/dialogs/new_pattern_dialog.py: its two rows and its buttons; the Scale length is also a choice of the pattern editor's Reconfigure.
 MSG_SCALE_LENGTH_LABEL = 'Scale length'
 MSG_DRUM_PATTERN_LABEL = 'Drum pattern'

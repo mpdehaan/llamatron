@@ -201,6 +201,10 @@ class ListPage(Page):
         """Return the style a row is drawn in, by what the row is: plain, unless the page says otherwise."""
         return Style.PLAIN
 
+    def row_selected(self, place):
+        """Return whether the row at a place is the cursor's."""
+        return place == self.cursor.get_place()
+
     def body(self, *, width, height):
         self.clamp()
         fixed = sum(size + 1 for _, size, _ in self.columns if size)
@@ -233,7 +237,7 @@ class ListPage(Page):
         room = max(height - 2, 1)
         at = matches.index(self.cursor.get_place()) if self.cursor.is_on_one_of(matches) else 0
         for place in shown_around(places=matches, at=at, room=room):
-            lines.append(cells(values=rows[place][1], style=self.row_style(rows[place][0]), selected=place == self.cursor.get_place()))
+            lines.append(cells(values=rows[place][1], style=self.row_style(rows[place][0]), selected=self.row_selected(place)))
         return lines
 
     # What many lists share.

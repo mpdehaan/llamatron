@@ -122,12 +122,13 @@ The page comes back to the folder it last showed, until llamatron is closed.
 
 # PatternsPage
 HELP_PATTERNS_PAGE = """
-Every pattern in the set, which all of its songs share, listed by group and always sorted.
-ENTER edits the selected pattern. Space or ENTER on a group opens or closes it.
+Every pattern in the set, which all of its songs share, in a tab for each group, always sorted.
+Tab goes to the row of tabs and back; Left and Right choose a tab there; PgUp and PgDn choose one from anywhere.
+ENTER edits the selected pattern; + (New) makes one in the group.
 
 A adds a pattern to the group, C copies, N renames, and renames update every clip.
 G moves the pattern to another group. Bksp deletes it, once nothing uses it.
-On a group: N renames it, C copies all of it, Bksp ungroups its patterns.
+On the row of tabs: N renames the group, C copies all of it, Bksp ungroups its patterns.
 L plays the pattern at once, again and again, and stops it.
 
 TIME is one play at the current song's tempo. USED counts the clips, in every song, and chains that use it.

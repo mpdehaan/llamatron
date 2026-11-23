@@ -38,7 +38,7 @@ from llamatron.interface.tracker.screens.arrange import arrange_page
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.pattern import patterns_page
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor, Reconfigure
-from llamatron.interface.tracker.screens.pattern.patterns_page import Listed, PatternsPage
+from llamatron.interface.tracker.screens.pattern.patterns_page import Listed, PatternsPage, PatternTab
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.main_page import cell_opened_by, MainPage
 from llamatron.interface.tracker.screens.set.scale_page import scale_label
@@ -631,7 +631,7 @@ class TutorialPlan:
         return group if group is not None else new_name(word=names_text.MSG_NEW_GROUP_WORD, taken=[])
 
     def go_to_patterns_row(self, listed):
-        """Move the Patterns page's cursor to a row by what the row is: a heading or a button."""
+        """Move the Patterns page's cursor to a row of the chosen tab by what the row is: a pattern or a button."""
         page = self.screen()
         for _ in range(MOST_MOVES):
             if page.listed() == listed:
@@ -642,18 +642,30 @@ class TutorialPlan:
             yield from self.press(_toward(here=page.cursor.get_place(), there=rows.index(listed), back=Key.UP, forward=Key.DOWN))
         raise TutorialStuck(listed.name)
 
+    def go_to_pattern_tab(self, tab):
+        """Choose a tab of the Patterns page from its row of tabs, going there first."""
+        page = self.screen()
+        if not page.on_tabs:
+            yield from self.press(keybindings.PatternsPage.TO_TABS)
+        for _ in range(MOST_MOVES):
+            tabs = page.tabs()
+            if page.chosen() == tab:
+                return
+            yield from self.press(_toward(here=tabs.index(page.chosen()), there=tabs.index(tab), back=Key.LEFT, forward=Key.RIGHT))
+        raise TutorialStuck(page.tab_label(tab))
+
     def add_to_group(self, *, name, group, scale_length):
-        """Add a pattern written for a scale of so many notes to a group on the Patterns page: on the group's heading when the
-        set has the group, and after making the group with the page's last button when it doesn't."""
+        """Add a pattern written for a scale of so many notes to a group on the Patterns page: on the + (New) row of the group's tab
+        when the set has the group, and after making the group with the button of the last tab when it doesn't."""
         if group in self.screen().groups():
-            yield from self.go_to_patterns_row(Listed(patterns_page.HEADING, group))
-            yield from self.press(keybindings.PatternsPage.ADD)
+            yield from self.go_to_pattern_tab(PatternTab(patterns_page.GROUP_TAB, group))
+            yield from self.press(keybindings.PatternsPage.INTO_TAB)
         else:
-            yield from self.go_to_patterns_row(Listed(patterns_page.NEW_GROUP, None))
+            yield from self.go_to_pattern_tab(PatternTab(patterns_page.NEW_TAB))
             yield from self.press(keybindings.PatternsPage.NEW_GROUP)
             yield from self.answer_prompt(group)
-            yield from self.go_to_patterns_row(Listed(patterns_page.NEW_PATTERN, group))
-            yield from self.press(keybindings.PatternsPage.NEW_PATTERN)
+        yield from self.go_to_patterns_row(Listed(patterns_page.NEW_PATTERN, group))
+        yield from self.press(keybindings.PatternsPage.NEW_PATTERN)
         # The New Pattern dialog's first row is stepped to the scale length wanted and takes OK; the pattern is made a drum
         # pattern later where the set says so.
         dialog = self.screen()

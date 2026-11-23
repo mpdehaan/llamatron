@@ -284,9 +284,14 @@ class UITest(unittest.IsolatedAsyncioTestCase):
             await self.settle()
 
     async def open_patterns_on(self, name):
-        """Open the Patterns page from the main screen and put its cursor on a pattern, wherever the pattern's group puts its row."""
+        """Open the Patterns page from the main screen and put its cursor on a pattern, choosing the tab of the pattern's group
+        with PgDn."""
         await self.press(keybindings.MainPage.PATTERNS)
         page = self.app.screen
+        for _ in page.tabs():
+            if name in page.row_names():
+                break
+            await self.press(forward_key(keybindings.PatternsPage.TAB_PAGES))
         names = page.row_names()
         self.assertIn(name, names)
         while page.current() != name:

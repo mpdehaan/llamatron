@@ -28,9 +28,10 @@ A_ROW = 'a row'
 THE_PLUS_ROW = 'the + row'
 A_PATTERN = 'a pattern'
 A_PATTERN_IN_NO_GROUP = 'a pattern in no group'
-A_GROUP_HEADING = "a group's heading"
-THE_UNGROUPED_HEADING = 'the Ungrouped heading'
-THE_NEW_PATTERN_BUTTON = 'the New Pattern button'
+A_GROUP_TAB = "a group's tab, on the row of tabs"
+THE_UNGROUPED_TAB = 'the Ungrouped tab, on the row of tabs'
+THE_NEW_TAB = 'the + New tab, on the row of tabs'
+THE_NEW_PATTERN_ROW = "a group's + (New) row"
 THE_NEW_GROUP_BUTTON = 'the New Pattern Group button'
 SEARCHING = 'while searching'
 MOVING = 'Move mode'
@@ -103,13 +104,17 @@ def place_of(page):
 
 
 def patterns_place(page):
-    """Return the words for where the Patterns page's cursor is: a pattern, a group's heading or one of the two buttons, and whether the group is the patterns in none."""
+    """Return the words for where the Patterns page's cursor is: a tab on the row of tabs, by its kind, or a pattern, whether in a
+    group or in none, a group's + (New) row, or the New Pattern Group button."""
+    if page.on_tabs:
+        kind = page.chosen().kind
+        if kind == patterns_page.GROUP_TAB:
+            return A_GROUP_TAB
+        return THE_UNGROUPED_TAB if kind == patterns_page.UNGROUPED_TAB else THE_NEW_TAB
     listed = page.listed()
     if listed.kind == patterns_page.PATTERN:
         return A_PATTERN_IN_NO_GROUP if page.group_under_cursor() is patterns_page.UNGROUPED else A_PATTERN
-    if listed.kind == patterns_page.HEADING:
-        return THE_UNGROUPED_HEADING if listed.name is patterns_page.UNGROUPED else A_GROUP_HEADING
-    return THE_NEW_PATTERN_BUTTON if listed.kind == patterns_page.NEW_PATTERN else THE_NEW_GROUP_BUTTON
+    return THE_NEW_PATTERN_ROW if listed.kind == patterns_page.NEW_PATTERN else THE_NEW_GROUP_BUTTON
 
 
 def arrange_place(page):

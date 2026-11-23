@@ -16,7 +16,6 @@ from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.drawing import fit
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.generators import generator_pages
-from llamatron.interface.tracker.screens.pattern import patterns_page
 from llamatron.interface.tracker.screens.set.grooves_page import GroovesPage
 from llamatron.interface.tracker.screens.shared.named_list_page import NamedListPage
 from llamatron.model.objects import groove
@@ -205,12 +204,12 @@ class TestNamesAreHeldToTheirLength(UITest):
     async def test_the_columns_after_the_names_start_right_after_the_room_a_name_has(self):
         await self.press(keybindings.MainPage.PATTERNS)
         heading = next(line for line in self.text().splitlines() if labels.Column.SELECT_PATTERN in line and labels.Column.TYPE in line)
-        self.assertEqual(heading.index(labels.Column.TYPE), heading.index(labels.Column.SELECT_PATTERN) + limits.MAX_NAME_LENGTH + len(patterns_page.INDENT) + len(drawing.SPACE))
+        self.assertEqual(heading.index(labels.Column.TYPE), heading.index(labels.Column.SELECT_PATTERN) + limits.MAX_NAME_LENGTH + len(drawing.SPACE))
 
     async def test_an_older_files_longer_name_is_shown_cut_in_the_list(self):
         self.document.rename_named(section=Section.PATTERNS, old=ui_testing.TUNE, new=A_LONG_NAME)
         await self.press(keybindings.MainPage.PATTERNS)
-        self.assertIn(fit(text=patterns_page.INDENT + A_LONG_NAME, width=limits.MAX_NAME_LENGTH + len(patterns_page.INDENT)), self.text())
+        self.assertIn(fit(text=A_LONG_NAME, width=limits.MAX_NAME_LENGTH), self.text())
         self.assertNotIn(A_LONG_NAME, self.text().split(labels.Column.SELECT_PATTERN)[-1])
         self.assertIn(A_LONG_NAME, self.document.get_setlist().get_item_names(Section.PATTERNS))
 

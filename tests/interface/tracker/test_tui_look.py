@@ -234,7 +234,7 @@ class TestArrowsAndTheMark(UITest):
         self.assertIn(TUNE, self.marked_line())
         self.assertNotIn('«', self.marked_line())
         await self.press(Key.DOWN)
-        self.assertIn(labels.MSG_NEW_PATTERN_BUTTON, self.marked_line())
+        self.assertIn(marks.MSG_NEW_ROW, self.marked_line())
 
     async def test_a_settings_page_marks_the_selected_field_and_reverses_only_a_selected_button(self):
         await self.press(keybindings.MainPage.FILE)

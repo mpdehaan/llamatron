@@ -2,8 +2,9 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The Patterns page, which lists the patterns by group."""
+"""The Patterns page, which lists the patterns in a tab for each group."""
 
+from rich.text import Text
 from typing import NamedTuple
 
 from llamatron.interface.tracker import drawing, key_table, keybindings
@@ -12,8 +13,10 @@ from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.new_pattern_dialog import NewPatternDialog
 from llamatron.interface.tracker.drawing import Align, Style
+from llamatron.interface.tracker.screens.shared import tab_box
 from llamatron.interface.tracker.screens.shared.listening import pattern_listen_keys
 from llamatron.interface.tracker.screens.shared.named_list_page import NamedListPage
+from llamatron.interface.tracker.screens.shared.tab_box import Tab
 from llamatron.interface.tracker.text import clock
 from llamatron.interface.tracker.themes import text_style, theme_of
 from llamatron.model.objects.naming import copy_name, is_taken, name_order, new_name
@@ -21,15 +24,19 @@ from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import errors, help as help_text, labels, legends, marks, messages, names as names_text
 
-# The kinds of row the page lists: a pattern, a group's heading, the button that makes a pattern in a group, and the button that makes a group.
+# The kinds of row the page lists: a pattern, the + (New) row that makes a pattern in the chosen group, and the button that makes a group.
 PATTERN = 'pattern'
-HEADING = 'heading'
 NEW_PATTERN = 'new pattern'
 NEW_GROUP = 'new group'
-# How far a group's rows stand in from its heading.
-INDENT = '    '
-# The group of the patterns in no group, which an older file's are.
+# The kinds of tab: a group's, the patterns in no group, which an older file's are, and the last, which makes a group.
+GROUP_TAB = 'group'
+UNGROUPED_TAB = 'ungrouped'
+NEW_TAB = 'new'
+# The group of the patterns in no group.
 UNGROUPED = None
+# The blank lines inside the box, above the column headings and under the last row.
+INSIDE_ABOVE = 1
+INSIDE_BELOW = 1
 
 
 class Listed(NamedTuple):
@@ -39,11 +46,19 @@ class Listed(NamedTuple):
     name: object
 
 
+class PatternTab(NamedTuple):
+    """One tab of the Patterns page: its kind, and the group it shows on a group's tab."""
+
+    kind: str
+    group: object = None
+
+
 class PatternsPage(NamedListPage):
-    """Every pattern of the set under its group's heading, the groups sorted and the patterns sorted in each, always, so that
-    nothing here moves or sorts. A heading opens and closes its group, each open group ends with a button that makes a pattern
-    in it, and the page ends with a button that makes a group. The patterns in no group, an older file's, come last under
-    Ungrouped, to which nothing can be added: a group is made before a pattern is."""
+    """Every pattern of the set in a tab of its group: a tab per group, sorted by name, then Ungrouped while a pattern is in no
+    group, then + New, which holds the button that makes a group. A group's tab lists its patterns sorted by name, always, so that
+    nothing here moves or sorts, and ends with + (New), which makes a pattern in the group. Tab goes between the row of tabs and
+    the list, Left and Right choose a tab on the row, and PgUp and PgDn choose one from the list. Nothing can be added to
+    Ungrouped: a group is made before a pattern is."""
 
     KEYS = keybindings.PatternsPage
     LISTED_SECTION = Section.PATTERNS
@@ -55,7 +70,7 @@ class PatternsPage(NamedListPage):
         (labels.Column.SELECT_PATTERN, None, Align.LEFT), (labels.Column.TYPE, 5, Align.LEFT), (labels.Column.STEPS, 5, Align.RIGHT), (labels.Column.TIME, 6, Align.RIGHT),
         (labels.Column.USED, 4, Align.RIGHT),
     )
-    NAME_COLUMN_WIDTH = limits.MAX_NAME_LENGTH + len(INDENT)
+    NAME_COLUMN_WIDTH = limits.MAX_NAME_LENGTH
 
     def __init__(self, holder):
         super().__init__(holder)
@@ -63,13 +78,56 @@ class PatternsPage(NamedListPage):
         self.new_groups = []
         # What the cursor was on when a search began, which ESC goes back to.
         self.before_search = None
-        # The page opens with the cursor on its first pattern, where one shows, so that ENTER edits at once, as on every list.
+        # Whether the cursor is on the row of tabs rather than in the list.
+        self.on_tabs = False
+        # The page opens with the cursor on the chosen tab's first pattern, where one shows, so that ENTER edits at once, as on every list.
         self.cursor = Cursor(place=self.first_pattern_place())
+
+    # The tabs.
+
+    def tabs(self):
+        """Return the page's tabs in order: each group's, sorted, then Ungrouped while a pattern is in no group, then + New."""
+        tabs = [PatternTab(GROUP_TAB, group) for group in self.groups()]
+        if self.document().get_setlist().patterns_in_group(UNGROUPED):
+            tabs.append(PatternTab(UNGROUPED_TAB))
+        return [*tabs, PatternTab(NEW_TAB)]
+
+    def chosen(self):
+        """Return the tab the page shows: the one chosen last this session while it still exists, else the first."""
+        tabs = self.tabs()
+        held = self.app.chosen_tabs.get(type(self).__name__)
+        return held if held in tabs else tabs[0]
+
+    def choose(self, tab):
+        self.app.chosen_tabs[type(self).__name__] = tab
+
+    def tab_label(self, tab):
+        """Return the name a tab shows: its group's, Ungrouped, or + New."""
+        if tab.kind == GROUP_TAB:
+            return tab.group
+        if tab.kind == UNGROUPED_TAB:
+            return labels.MSG_UNGROUPED
+        return labels.MSG_NEW_GROUP_TAB
+
+    def step_tab(self, direction):
+        """Choose the tab before or after the chosen one, stopping at the first and the last, the cursor going to the new tab's
+        first row unless it is on the row of tabs."""
+        tabs = self.tabs()
+        place = max(min(tabs.index(self.chosen()) + direction, len(tabs) - 1), 0)
+        self.choose(tabs[place])
+        self.cursor.set_place(self.first_pattern_place())
+
+    def go_to_tabs(self):
+        self.on_tabs = True
+
+    def go_into_tab(self):
+        self.on_tabs = False
+        self.cursor.set_place(self.first_pattern_place())
 
     # The rows.
 
     def can_add(self):
-        """Return that the page has no + row of its own: its buttons are rows it lists."""
+        """Return that the page has no + row of its own: a group's tab lists its own."""
         return False
 
     def groups(self):
@@ -77,35 +135,30 @@ class PatternsPage(NamedListPage):
         held = self.document().get_setlist().get_pattern_groups()
         return sorted([*held, *(group for group in self.new_groups if group not in held)], key=name_order)
 
-    def is_closed(self, group):
-        return self.document().get_page_memory().is_pattern_group_closed(group)
-
     def rows_depend_on(self):
-        """Return what the rows depend on besides the set: which groups are closed, the groups made here, and a search, which looks inside every group."""
-        return (tuple(self.is_closed(group) for group in [*self.groups(), UNGROUPED]), tuple(self.new_groups), self.searching)
+        """Return what the rows depend on besides the set: the chosen tab, the groups made here, and a search, which looks inside every group."""
+        return (self.chosen(), tuple(self.new_groups), self.searching)
 
     def rows(self):
-        rows = []
-        for group in self.groups():
-            rows += self.group_rows(group)
-        if self.document().get_setlist().patterns_in_group(UNGROUPED):
-            rows += self.group_rows(UNGROUPED)
-        rows.append((Listed(NEW_GROUP, None), self.one_cell(labels.MSG_NEW_GROUP_BUTTON)))
+        """Return the chosen tab's rows, or, while a search looks inside every group, every pattern, group by group."""
+        if self.searching:
+            rows = []
+            for tab in self.tabs():
+                rows += self.pattern_rows(tab.group)
+            return rows
+        tab = self.chosen()
+        if tab.kind == NEW_TAB:
+            return [(Listed(NEW_GROUP, None), self.one_cell(labels.MSG_NEW_GROUP_BUTTON))]
+        rows = self.pattern_rows(tab.group)
+        if tab.kind == GROUP_TAB:
+            rows.append((Listed(NEW_PATTERN, tab.group), self.one_cell(marks.MSG_NEW_ROW)))
         return rows
 
-    def group_rows(self, group):
-        """Return a group's rows: its heading, and while it is open, or a search looks inside it, its patterns and its button."""
+    def pattern_rows(self, group):
+        """Return the rows of a group's patterns, sorted by name."""
         document = self.document()
         names = document.get_setlist().patterns_in_group(group)
-        closed = self.is_closed(group) and not self.searching
-        heading = labels.MSG_GROUP_HEADING.format(mark=marks.MSG_SECTION_CLOSED_MARK if closed else marks.MSG_SECTION_OPEN_MARK, name=labels.MSG_UNGROUPED if group is UNGROUPED else group, count=len(names))
-        rows = [(Listed(HEADING, group), self.one_cell(heading))]
-        if closed:
-            return rows
-        rows += [(Listed(PATTERN, name), self.row_of(name=name, pattern=document.song().get_setlist().get_pattern(name), document=document)) for name in names]
-        if group is not UNGROUPED:
-            rows.append((Listed(NEW_PATTERN, group), self.one_cell(INDENT + labels.MSG_NEW_PATTERN_BUTTON)))
-        return rows
+        return [(Listed(PATTERN, name), self.row_of(name=name, pattern=document.song().get_setlist().get_pattern(name), document=document)) for name in names]
 
     def one_cell(self, text):
         """Return the cells of a row that holds only its first."""
@@ -113,51 +166,61 @@ class PatternsPage(NamedListPage):
 
     def row_of(self, *, name, pattern, document):
         kind = labels.MSG_DRUM_KIND if pattern.is_drum() else labels.MSG_NOTES_KIND
-        return [INDENT + name, kind, pattern.get_steps(), clock(document.lengths().pattern_seconds(name)), len(self.uses(name))]
+        return [name, kind, pattern.get_steps(), clock(document.lengths().pattern_seconds(name)), len(self.uses(name))]
 
     def row_style(self, what):
-        """Return a heading in bold and a button in the page's theme colour, so that neither is taken for the other."""
-        if what.kind == HEADING:
-            return Style.BOLD
+        """Return a button in the page's theme colour, so that it isn't taken for a pattern."""
         if what.kind in (NEW_PATTERN, NEW_GROUP):
             return text_style(theme_of(Section.PATTERNS))
         return Style.PLAIN
 
+    def row_selected(self, place):
+        """Return whether a row is the cursor's: never while the cursor is on the row of tabs."""
+        return not self.on_tabs and super().row_selected(place)
+
+    def body(self, *, width, height):
+        """Return the row of tabs over a box holding the chosen tab's list, as a settings page's tab box is drawn."""
+        rows = super().body(width=tab_box.inner_width(width), height=height - tab_box.TAB_ROW_LINES - INSIDE_ABOVE - INSIDE_BELOW - 1)
+        lines = [Text(drawing.NOTHING)] * INSIDE_ABOVE + rows + [Text(drawing.NOTHING)] * INSIDE_BELOW
+        tabs = [Tab(label=self.tab_label(tab)) for tab in self.tabs()]
+        return tab_box.boxed_tabs(tabs=tabs, chosen=self.tabs().index(self.chosen()), width=width, here=self.on_tabs, lines=lines)
+
     def first_pattern_place(self):
-        """Return the place of the first pattern showing, or the top row when none shows."""
+        """Return the place of the chosen tab's first pattern, or its top row when it has none."""
         return next((place for place, (what, _) in enumerate(self.remembered_rows()) if what.kind == PATTERN), 0)
 
     def current(self):
-        """Return the name of the pattern the cursor is on, or nothing on a heading or a button, as a list answers on its + row."""
+        """Return the name of the pattern the cursor is on, or nothing on a button or the row of tabs, as a list answers on its + row."""
+        if self.on_tabs:
+            return None
         listed = self.listed()
         return listed.name if listed.kind == PATTERN else None
 
     def under_cursor(self):
-        """Return what the cursor is on: a pattern, a group's heading or a button, as a Listed."""
+        """Return what the cursor is on: a pattern or a button, as a Listed."""
         return self.listed()
 
     def key_toward(self, target):
-        """Return the key that brings the cursor nearer a row, named by what it lists (a Listed) or, for a pattern, by the pattern's name; None when the cursor is on it."""
+        """Return the key that brings the cursor nearer a row of the chosen tab, named by what it lists (a Listed) or, for a pattern, by the pattern's name; None when the cursor is on it."""
         rows = [what for what, _ in self.remembered_rows()] if isinstance(target, Listed) else self.row_names()
         return key_between(here=self.cursor.get_place(), there=place_of(screen=self, names=rows, target=target))
 
     def row_names(self):
-        """Return each row's pattern's name, in the rows' order, with nothing for a heading or a button."""
+        """Return each row's pattern's name, in the rows' order, with nothing for a button."""
         return [what.name if what.kind == PATTERN else None for what, _ in self.remembered_rows()]
 
     def listed(self):
-        """Return what the cursor is on, which is never nothing, since the page always ends with its button."""
+        """Return what the cursor's row is, which is never nothing, since every tab holds a row."""
         self.clamp()
         return self.remembered_rows()[self.cursor.get_place()][0]
 
     def remember_place(self):
-        """Return what the cursor is on, a heading and a button included, for a redraw to find again."""
+        """Return what the cursor is on, a button included, for a redraw to find again."""
         return self.listed()
 
     def group_under_cursor(self):
-        """Return the group of the cursor's row: a pattern's own, or the heading's or button's."""
-        listed = self.listed()
-        return self.document().pattern_group(listed.name) if listed.kind == PATTERN else listed.name
+        """Return the group of the chosen tab, or nothing on Ungrouped and + New."""
+        return self.chosen().group
 
     def put_cursor_on_row(self, listed):
         rows = [what for what, _ in self.remembered_rows()]
@@ -166,24 +229,53 @@ class PatternsPage(NamedListPage):
         self.clamp()
 
     def put_cursor_on(self, name):
-        """Put the cursor on a pattern's row, opening its group if the group is closed."""
-        self.document().show_pattern_group(group=self.document().pattern_group(name), closed=False)
+        """Put the cursor on a pattern's row, choosing its group's tab."""
+        group = self.document().pattern_group(name)
+        self.choose(PatternTab(GROUP_TAB, group) if group is not UNGROUPED else PatternTab(UNGROUPED_TAB))
+        self.on_tabs = False
         self.put_cursor_on_row(Listed(PATTERN, name))
 
-    # The keys, by what the cursor is on.
+    def move_cursor(self, name):
+        """Move with Up and Down through the list, Up from its first row going to the row of tabs and Down from there coming back."""
+        matches = self.matches()
+        if self.on_tabs:
+            if name not in key_table.BACK_KEYS and matches:
+                self.on_tabs = False
+                self.cursor.set_place(matches[0])
+            return
+        if name in key_table.BACK_KEYS and not self.searching and matches and self.cursor.get_place() == matches[0]:
+            self.on_tabs = True
+            return
+        super().move_cursor(name)
+
+    # The keys, by where the cursor is.
 
     def keys(self):
-        listed = self.listed()
         result = [self.bind(self.KEYS.BACK, action=self.go_back), *self.move_keys()]
+        if self.on_tabs:
+            return [*result, *self.tab_row_keys(), self.bind(self.KEYS.TAB_PAGES, action=self.step_tab)]
+        listed = self.listed()
         if listed.kind == PATTERN:
             result += self.pattern_keys(listed.name)
-        elif listed.kind == HEADING:
-            result += self.heading_keys(listed.name)
         elif listed.kind == NEW_PATTERN:
             result.append(self.bind(self.KEYS.NEW_PATTERN, action=self.add))
         else:
             result.append(self.bind(self.KEYS.NEW_GROUP, action=self.new_group))
-        return [*result, self.bind(self.KEYS.NEXT_GROUP, action=self.jump_group)]
+        return [*result, self.bind(self.KEYS.TO_TABS, action=self.go_to_tabs), self.bind(self.KEYS.TAB_PAGES, action=self.step_tab)]
+
+    def tab_row_keys(self):
+        """Return the keys of the row of tabs: those that choose a tab, Tab into the list, and the chosen tab's own: on a group's,
+        those that add to, rename, copy and ungroup the group; on + New, the one that makes a group."""
+        result = [self.bind(self.KEYS.ALONG_TABS, action=self.step_tab), self.bind(self.KEYS.INTO_TAB, action=self.go_into_tab)]
+        tab = self.chosen()
+        if tab.kind == NEW_TAB:
+            return [*result, self.bind(self.KEYS.NEW_GROUP, action=self.new_group)]
+        if tab.kind == UNGROUPED_TAB:
+            return result
+        return [
+            *result, self.bind(self.KEYS.ADD, action=self.add), self.bind(self.KEYS.RENAME, action=self.rename_group),
+            self.bind(self.KEYS.COPY, action=self.copy_group), self.bind(self.KEYS.UNGROUP, action=self.ungroup),
+        ]
 
     def pattern_keys(self, name):
         result = [self.bind(self.KEYS.EDIT, action=self.open_item), self.bind(self.KEYS.GROUP, action=self.choose_group)]
@@ -191,22 +283,6 @@ class PatternsPage(NamedListPage):
             result.append(self.bind(self.KEYS.ADD, action=self.add))
         result += [self.bind(self.KEYS.RENAME, action=self.rename), self.bind(self.KEYS.COPY, action=self.copy), self.bind(self.KEYS.DELETE, action=self.delete)]
         return [*result, *pattern_listen_keys(page=self, pattern=name)]
-
-    def heading_keys(self, group):
-        result = [self.bind(self.KEYS.TOGGLE_GROUP, action=self.toggle_group)]
-        if group is UNGROUPED:
-            return result
-        return [
-            *result, self.bind(self.KEYS.ADD, action=self.add), self.bind(self.KEYS.RENAME, action=self.rename_group),
-            self.bind(self.KEYS.COPY, action=self.copy_group), self.bind(self.KEYS.UNGROUP, action=self.ungroup),
-        ]
-
-    def jump_group(self, direction):
-        """Move the cursor to the next group's heading, or the one before, staying put past the last or the first."""
-        places = [place for place, (what, _) in enumerate(self.remembered_rows()) if what.kind == HEADING]
-        ahead = [place for place in places if place > self.cursor.get_place()] if direction == key_table.STEP_FORWARD else [place for place in places if place < self.cursor.get_place()]
-        if ahead:
-            self.cursor.set_place(ahead[0] if direction == key_table.STEP_FORWARD else ahead[-1])
 
     # A pattern.
 
@@ -283,40 +359,37 @@ class PatternsPage(NamedListPage):
         self.ask_text(title=messages.MSG_NEW_GROUP_PROMPT, value=new_name(word=names_text.MSG_NEW_GROUP_WORD, taken=groups), then=named, is_name=True)
 
     def new_group(self):
-        """Make a group, which shows open with only its button until a pattern is made in it."""
+        """Make a group, whose tab shows with only its + (New) row until a pattern is made in it."""
         def made(group):
             self.new_groups.append(group)
-            self.document().show_pattern_group(group=group, closed=False)
+            self.choose(PatternTab(GROUP_TAB, group))
+            self.on_tabs = False
             self.put_cursor_on_row(Listed(NEW_PATTERN, group))
         self.ask_new_group(then=made)
 
-    def toggle_group(self):
-        group = self.listed().name
-        self.document().show_pattern_group(group=group, closed=not self.is_closed(group))
-
     def rename_group(self):
-        group = self.listed().name
+        group = self.chosen().group
 
         def renamed(new):
             if group in self.new_groups:
                 self.new_groups = [new if made == group else made for made in self.new_groups]
             self.document().rename_pattern_group(old=group, new=new)
-            self.put_cursor_on_row(Listed(HEADING, new))
+            self.choose(PatternTab(GROUP_TAB, new))
         self.ask_name(title=messages.MSG_RENAME_GROUP_PROMPT, value=group, taken=self.groups(), then=renamed)
 
     def ungroup(self):
         """Take every pattern out of the group after asking, deleting none; a group made here that holds none is simply gone."""
-        group = self.listed().name
+        group = self.chosen().group
 
         def confirmed(_):
             self.new_groups = [made for made in self.new_groups if made != group]
             self.document().change_set(self.document().get_setlist().ungroup_patterns, group)
-            self.put_cursor_on_row(Listed(HEADING, UNGROUPED))
+            self.choose(PatternTab(UNGROUPED_TAB))
         self.ask(dialog=ConfirmDialog(title=messages.MSG_UNGROUP_TITLE, messages=[messages.MSG_UNGROUP_QUESTION.format(name=group)]), then=confirmed)
 
     def copy_group(self):
         """Copy the whole group under a new name, asked for in a confirmation that starts from the group's name counted up."""
-        group = self.listed().name
+        group = self.chosen().group
         groups = self.groups()
 
         def named(text):
@@ -331,12 +404,11 @@ class PatternsPage(NamedListPage):
                 return
             if not copies:
                 self.new_groups.append(text)
-            self.document().show_pattern_group(group=text, closed=False)
             self.say(messages.MSG_GROUP_COPIED.format(name=text))
-            self.put_cursor_on_row(Listed(HEADING, text))
+            self.choose(PatternTab(GROUP_TAB, text))
         self.ask_text(title=messages.MSG_COPY_GROUP_TITLE, value=copy_name(name=group, taken=groups), then=named, is_name=True, label=labels.MSG_NEW_GROUP_NAME_LABEL)
 
-    # Searching, which looks at the patterns alone, inside every group, closed or open.
+    # Searching, which looks at the patterns alone, inside every group.
 
     def row_texts(self):
         return [what.name if what.kind == PATTERN else drawing.NOTHING for what, _ in self.remembered_rows()]
@@ -349,6 +421,7 @@ class PatternsPage(NamedListPage):
         return [place for place, (what, _) in enumerate(rows) if what.kind == PATTERN and typed in what.name.lower()]
 
     def start_search(self):
+        self.on_tabs = False
         self.before_search = self.listed()
         self.searching = True
         self.search.clear()
@@ -356,7 +429,7 @@ class PatternsPage(NamedListPage):
         self.settle()
 
     def keep(self):
-        """Keep the cursor on the pattern the search found, opening its group."""
+        """Keep the cursor on the pattern the search found, choosing its group's tab."""
         found = self.listed()
         self.searching = False
         if found.kind == PATTERN:

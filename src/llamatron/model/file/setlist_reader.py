@@ -58,7 +58,7 @@ def set_file_data(path):
 
 def page_record_held(data):
     """Return what a file's data holds of how the pages show the set, by the file's names, left for the pages to read."""
-    return {name: data[name] for name in (file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES) if name in data}
+    return {name: data[name] for name in (file_format.OPEN_GENERATOR_TYPES,) if name in data}
 
 
 def as_a_set_is_written(*, data, where, allowed):
@@ -70,7 +70,7 @@ def as_a_set_is_written(*, data, where, allowed):
     if not isinstance(data, dict):
         raise SongFileError(errors.ERR_NOT_A_SETLIST)
     with reading(where):
-        pass_over_unknown(data=data, allowed={*allowed, *sections.setlist_sections(), file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES, file_layout.GENERATORS_WITHOUT_PLUGIN})
+        pass_over_unknown(data=data, allowed={*allowed, *sections.setlist_sections(), file_format.OPEN_GENERATOR_TYPES, file_layout.GENERATORS_WITHOUT_PLUGIN})
         _check_generator_names(data)
     return data
 

@@ -151,15 +151,28 @@ def box_lines(*, page, box, chosen, cursor, width):
     lines, selected = _tab_contents(page=page, tab=box.tabs[chosen], inner=inner, cursor=cursor)
     height = max(len(content[0]) for content in contents) + SPACE_UNDER
     lines += [Text(drawing.NOTHING)] * (height - len(lines))
-    result = _tab_row(tabs=box.tabs, chosen=chosen, width=width, here=cursor == ON_TAB_ROW)
-    for line in lines:
-        result.append(_boxed(line=line, inner=inner))
-    result.append(Text(Box.BOTTOM_LEFT + Box.RULE * (width - SIDES) + Box.BOTTOM_RIGHT, no_wrap=True))
+    result = [*boxed_tabs(tabs=box.tabs, chosen=chosen, width=width, here=cursor == ON_TAB_ROW, lines=lines)]
     if cursor == ON_TAB_ROW:
         return result, NAME_LINE
     if selected is None:
         return result, None
     return result, TAB_ROW_LINES + selected
+
+
+def boxed_tabs(*, tabs, chosen, width, here, lines):
+    """Return a row of tabs over a box of a width holding lines, the chosen tab open into the box and reversed where the cursor
+    is on the row: what a settings page's tab box draws, and a list page that shows its rows in tabs too."""
+    inner = inner_width(width)
+    result = _tab_row(tabs=tabs, chosen=chosen, width=width, here=here)
+    for line in lines:
+        result.append(_boxed(line=line, inner=inner))
+    result.append(Text(Box.BOTTOM_LEFT + Box.RULE * (width - SIDES) + Box.BOTTOM_RIGHT, no_wrap=True))
+    return result
+
+
+def inner_width(width):
+    """Return how wide the inside of a box of a width is, between its sides and their insets."""
+    return width - SIDES - len(INSET) * SIDES
 
 
 def spots_of(*, page, tab, width):

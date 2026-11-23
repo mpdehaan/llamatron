@@ -55,10 +55,6 @@ class SetlistSetting:
     PROTECTED = 'protected'
 
 
-# The pattern groups the Patterns page shows closed, a list of names at the top of a file. It is not one of the set's settings:
-# opening or closing a group is looking, not editing, so it is no part of the set's data, of undo or of what counts as unsaved
-#, and is only written with the file and read from it.
-CLOSED_PATTERN_GROUPS = 'closed_pattern_groups'
 # The types of generator the Generators page shows open, a list of kinds at the top of a file, kept as the closed pattern groups are:
 # looking, not editing. Every type is closed until opened.
 OPEN_GENERATOR_TYPES = 'open_generator_types'

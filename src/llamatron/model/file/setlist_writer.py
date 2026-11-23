@@ -28,7 +28,7 @@ _PLAIN = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_#./ -]*')
 _SETTINGS = [
     SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION, SetlistSetting.STEP_SIZE, SetlistSetting.DEFAULT_OCTAVE,
     SetlistSetting.DEFAULT_DRUM_OCTAVE, SetlistSetting.OCTAVE_LABELS, SetlistSetting.DEFAULT_FOLLOW_ACTION, SetlistSetting.REAL_TIME,
-    SetlistSetting.VISUALIZER, SetlistSetting.HIDDEN_VISUALIZERS, SetlistSetting.GENERATOR_ORDER, SetlistSetting.PROTECTED, file_format.CLOSED_PATTERN_GROUPS, file_format.OPEN_GENERATOR_TYPES,
+    SetlistSetting.VISUALIZER, SetlistSetting.HIDDEN_VISUALIZERS, SetlistSetting.GENERATOR_ORDER, SetlistSetting.PROTECTED, file_format.OPEN_GENERATOR_TYPES,
 ]
 _BEFORE_NOTES = (SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION)
 # A song's settings, in the order they're written at the top of its entry.

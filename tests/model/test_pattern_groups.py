@@ -8,11 +8,10 @@ import os
 import tempfile
 import unittest
 
-from llamatron.interface.tracker.page_memory import PageMemory
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.naming import name_in_copied_group
 from llamatron.model.objects.setlist import new_setlist, Setlist
-from llamatron.model.schema import file_format, limits
+from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, SceneSetting, Section
 from llamatron.user_strings import errors, names as names_text
 
@@ -27,8 +26,9 @@ LOOSE = 'loose'
 UNPLAYED = 'unplayed'
 SOLO = 'solo'
 BASS_COPY = 'bass-2'
+# What an older file called the groups the Patterns page showed closed.
+OLD_CLOSED_GROUPS = 'closed_pattern_groups'
 A_NUMBER = 7
-NO_SUCH_GROUP = 'gone'
 SAVED_FILE = 'groups.yml'
 STEPS = 4
 # A group's name that leaves a copied pattern's name one character too long.
@@ -99,58 +99,18 @@ class TestAPatternsGroup(unittest.TestCase):
         self.assertEqual(copy.get_group(), DRUMS)
 
 
-class TestClosedGroups(unittest.TestCase):
-    """Which groups the Patterns page shows closed is saved with the set and is no part of the set's data."""
+class TestAnOlderFilesClosedGroups(unittest.TestCase):
+    """An older file named the groups the Patterns page showed closed; the page shows tabs now, and the name is passed over."""
 
-    def setUp(self):
-        self.setlist = Setlist.from_data(data=a_set())
-
-        self.memory = PageMemory(self.setlist.get_page_record())
-
-    def saved_and_read(self):
-        """Return the closed groups of the set saved with the pages' memory and read back."""
-        self.setlist.set_page_record(self.memory.record(self.setlist))
+    def test_an_older_files_closed_groups_open_and_are_dropped_when_saved(self):
+        data = a_set()
+        data[OLD_CLOSED_GROUPS] = [DRUMS]
+        setlist = Setlist.from_data(data=data)
         with tempfile.TemporaryDirectory() as folder:
             path = os.path.join(folder, SAVED_FILE)
-            self.setlist.write_file(path)
-            read = Setlist.read_file(path)
-        return PageMemory(read.get_page_record()).closed_pattern_groups(read)
-
-    def closed_on_opening(self, data):
-        setlist = Setlist.from_data(data=data)
-        return PageMemory(setlist.get_page_record()).closed_pattern_groups(setlist)
-
-    def test_a_closed_group_is_written_to_the_file_and_read_back_and_is_not_in_the_sets_data(self):
-        before = self.setlist.to_data()
-        self.memory.show_pattern_group(group=DRUMS, closed=True)
-        self.assertTrue(self.memory.is_pattern_group_closed(DRUMS))
-        self.assertEqual(self.setlist.to_data(), before)
-        self.assertEqual(self.saved_and_read(), [DRUMS])
-        self.memory.show_pattern_group(group=DRUMS, closed=False)
-        self.assertEqual(self.saved_and_read(), [])
-
-    def test_the_patterns_in_no_group_can_be_shown_closed_for_the_session(self):
-        self.memory.show_pattern_group(group=None, closed=True)
-        self.assertTrue(self.memory.is_pattern_group_closed(None))
-
-    def test_a_file_naming_a_group_no_pattern_is_in_opens_and_forgets_it(self):
-        data = a_set()
-        data[file_format.CLOSED_PATTERN_GROUPS] = [NO_SUCH_GROUP, DRUMS]
-        self.assertEqual(self.closed_on_opening(data), [DRUMS])
-
-    def test_a_file_holding_anything_else_there_still_opens(self):
-        for held in (A_NUMBER, [A_NUMBER, DRUMS], {DRUMS: True}):
-            data = a_set()
-            data[file_format.CLOSED_PATTERN_GROUPS] = held
-            self.assertIn(self.closed_on_opening(data), ([], [DRUMS]))
-
-    def test_a_renamed_group_stays_closed_and_an_emptied_one_is_forgotten(self):
-        self.memory.show_pattern_group(group=BASS, closed=True)
-        self.setlist.rename_pattern_group(old=BASS, new=SOLO)
-        self.memory.rename_pattern_group(old=BASS, new=SOLO)
-        self.assertEqual(self.memory.closed_pattern_groups(self.setlist), [SOLO])
-        self.setlist.ungroup_patterns(SOLO)
-        self.assertEqual(self.memory.closed_pattern_groups(self.setlist), [])
+            setlist.write_file(path)
+            with open(path, encoding='utf-8') as file:
+                self.assertNotIn(OLD_CLOSED_GROUPS, file.read())
 
 
 class TestCopyingAGroup(unittest.TestCase):

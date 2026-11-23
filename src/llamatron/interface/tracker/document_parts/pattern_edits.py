@@ -64,13 +64,8 @@ class PatternEdits:
         return self.pattern(name).get_group()
 
     def rename_pattern_group(self, *, old, new):
-        """Give a group another name, for every pattern in it, shown closed or open as it was."""
+        """Give a group another name, for every pattern in it."""
         self.change_set(self._setlist.rename_pattern_group, old=old, new=new)
-        self._pages.rename_pattern_group(old=old, new=new)
-
-    def show_pattern_group(self, *, group, closed):
-        """Show a group closed or open on the Patterns page, which is no change to the set: nothing to undo and nothing to save."""
-        self._pages.show_pattern_group(group=group, closed=closed)
 
     def step_value(self, *, name, row, step):
         return self.pattern(name).get_value(row=row, step=step)

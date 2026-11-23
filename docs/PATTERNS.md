@@ -6,23 +6,23 @@ A pattern is a row of steps that clips play, written once and shared. This page 
 
 ## Patterns Page
 
-Patterns hold the notes, and belong to the set, so every song can play them. Press `P` on the main screen to open the Patterns page. The patterns are listed by group, each group under a heading that `Space` or `ENTER` opens and closes, and the groups and the patterns in each are always sorted by name. Each open group ends with a `[ New Pattern ]` button, and the page ends with a `[ New Pattern Group ]` button. The patterns of a set saved before groups existed are listed last, under Ungrouped. The list shows each pattern's type, notes or drums, its number of steps, how long one play lasts at the current song's tempo, and how many clips use it in every song.
+Patterns hold the notes, and belong to the set, so every song can play them. Press `P` on the main screen to open the Patterns page. The patterns are listed in a tab for each group, the tabs sorted by name, and the patterns in each tab are always sorted by name too. A group's tab ends with a `+ (New)` row, which makes a pattern in the group. The patterns of a set saved before groups existed are listed in an Ungrouped tab, after the groups, and the last tab, `+ New`, holds the `[ New Pattern Group ]` button. The list shows each pattern's type, notes or drums, its number of steps, how long one play lasts at the current song's tempo, and how many clips use it in every song.
+
+`Tab` goes to the row of tabs and back into the list, Left and Right choose a tab on the row, and `PgUp` and `PgDn` choose the tab before or after from anywhere. Up from the list's first row also reaches the row of tabs.
 
 | Key | What it does |
 | --- | --- |
-| `A` | Adds a pattern to the group under the cursor and opens it. A new pattern starts one bar long in the current song's time signature at the set's step size: 16 steps in 4/4 at 1/16, 12 in 3/4 or 6/8, or 16 when a bar isn't a whole number of steps. |
+| `A` | Adds a pattern to the group and opens it. A new pattern starts one bar long in the current song's time signature at the set's step size: 16 steps in 4/4 at 1/16, 12 in 3/4 or 6/8, or 16 when a bar isn't a whole number of steps. |
 | `ENTER` | Edits the selected pattern. |
 | `N` | Renames the pattern, updating every clip that uses it. |
 | `C` | Copies the pattern into its own group. |
 | `G` | Moves the pattern to another group, picked from a list that ends with a new group. |
 | `Bksp` | Deletes the pattern, once nothing uses it. |
-| `PgUp`, `PgDn` | Jump to the heading before and the heading after. |
 
-On a group's heading, the keys work on the whole group:
+On the row of tabs, the keys work on the chosen group:
 
 | Key | What it does |
 | --- | --- |
-| `Space`, `ENTER` | Opens or closes the group. Which groups are closed is saved with the set. |
 | `A` | Adds a pattern to the group. |
 | `N` | Renames the group. |
 | `C` | Copies the whole group under a new name. Each copied pattern's name starts with the new group's name. |

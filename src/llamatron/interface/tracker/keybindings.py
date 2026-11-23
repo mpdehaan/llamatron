@@ -147,25 +147,29 @@ class SongsPage(NamedListPage):
 
 
 class PatternsPage(NamedListPage):
-    """The Patterns page, which lists the patterns by group, always sorted, so it neither moves nor sorts: the
-    list keys, G, which moves the selected pattern to another group, the keys of a group's heading and of the two buttons that
-    add, and L, which plays the selected pattern at once, again and again, until L stops it."""
+    """The Patterns page, which lists the patterns in a tab for each group, always sorted, so it neither moves nor sorts: the
+    list keys, G, which moves the selected pattern to another group, the keys of the row of tabs, which choose a tab and act on
+    the chosen group, the keys of the two buttons that add, and L, which plays the selected pattern at once, again and again,
+    until L stops it."""
 
     LISTEN = Binding(Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
     STOP_LISTENING = Binding(Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
     GROUP = Binding(Key.G, legends.KeyName.G, legends.MSG_GROUP_WHAT)
-    # A group's heading opens and closes as a settings page's section does, and PgUp and PgDn jump between the headings.
-    TOGGLE_GROUP = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
-    NEXT_GROUP = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_GROUP_WHAT)
+    # The tabs, as a settings page's: Tab goes between the row of tabs and the list, Left and Right (or [ and ]) choose a tab on
+    # the row, and PgUp and PgDn choose one from anywhere.
+    ALONG_TABS = Binding(Steps(back=(Key.LEFT, *keys.LESS_KEYS), forward=(Key.RIGHT, *keys.MORE_KEYS)), legends.KeyName.LEFT_RIGHT, legends.MSG_TAB_WHAT)
+    TO_TABS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_TABS_WHAT)
+    INTO_TAB = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_INTO_TAB_WHAT)
+    TAB_PAGES = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_TAB_WHAT)
     NEW_PATTERN = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_PATTERN_WHAT)
     NEW_GROUP = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_NEW_GROUP_WHAT)
-    # On a group's heading Bksp takes its patterns out of the group and deletes none.
+    # On a group's tab Bksp takes its patterns out of the group and deletes none.
     UNGROUP = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_UNGROUP_WHAT)
     IN_HELP = [
-        Page.BACK, ListPage.SEARCH_CANCEL, ListPage.SELECT, *ListPage.SEARCHING[1:], TOGGLE_GROUP, NEW_PATTERN, NEW_GROUP, ListPage.EDIT, GROUP, ListPage.ADD,
-        ListPage.RENAME, ListPage.COPY, ListPage.DELETE, UNGROUP, LISTEN, STOP_LISTENING, NEXT_GROUP, ListPage.SEARCH,
+        Page.BACK, ListPage.SEARCH_CANCEL, ListPage.SELECT, *ListPage.SEARCHING[1:], ALONG_TABS, NEW_PATTERN, NEW_GROUP, ListPage.EDIT, GROUP, ListPage.ADD,
+        ListPage.RENAME, ListPage.COPY, ListPage.DELETE, UNGROUP, LISTEN, STOP_LISTENING, TO_TABS, INTO_TAB, TAB_PAGES, ListPage.SEARCH,
     ]
-    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH, NEXT_GROUP])
+    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH])
 
 
 class ScalesPage(NamedListPage):

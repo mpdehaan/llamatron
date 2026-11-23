@@ -271,7 +271,6 @@ MSG_FROM_PLAN_WHAT = 'from plan'
 MSG_TYPE_NOTE_WHAT = 'type a note'
 # interface/tracker/keybindings.py: the Patterns page's groups.
 MSG_GROUP_WHAT = 'group'
-MSG_NEXT_GROUP_WHAT = 'next group'
 MSG_NEXT_TYPE_WHAT = 'next type'
 MSG_NEW_PATTERN_WHAT = 'new pattern'
 MSG_NEW_GROUP_WHAT = 'new group'
