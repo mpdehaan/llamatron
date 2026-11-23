@@ -51,16 +51,17 @@ def fields_tab(*, label, fields):
 
 
 class ClipTabs:
-    """What makes the clip page's tabs: page is the clip page, which says which clip, and asks for every dialog."""
+    """What makes the clip page's tabs, from the clip's presenter (interface/pages/clip.py), which says which clip, and whose page
+    asks for every dialog."""
 
-    __slots__ = ('_page',)
+    __slots__ = ('_presenter',)
 
-    def __init__(self, page):
-        self._page = page
+    def __init__(self, presenter):
+        self._presenter = presenter
 
     def tabs(self):
         """Return the clip's tabs: Settings, the tabs that are not generators, then the generators in the order they run."""
-        page = self._page
+        page = self._presenter.get_page()
         shapes = []
         for shape in file_format.PLACED_SHAPES:
             shapes += self._shape_section(shape)
@@ -76,13 +77,13 @@ class ClipTabs:
 
     def _basics_tab(self):
         """Return the Settings tab: Order, how the clip plays its patterns, and Playing, its scale and grab."""
-        page = self._page
-        order = [page.pattern_order_field(), *page.playing_fields(), page.follow_action_field()]
+        clip = self._presenter
+        order = [clip.pattern_order_field(), *clip.playing_fields(), clip.follow_action_field()]
         general = [
-            Field(label=labels_text.MSG_SCALE_LABEL, value=page.scale_text, adjust=None, enter=page.pick_scale, enter_what=legends.What.CHOOSE,
-                  clear=functools.partial(page.clear, ClipSlotSetting.SCALE), clear_what=legends.MSG_USE_SCENE_SCALE_WHAT),
-            Field(label=labels_text.MSG_GRAB_TRACK_LABEL, value=self._grab_shown, adjust=None, enter=page.pick_grab_track, enter_what=legends.What.CHOOSE,
-                  clear=functools.partial(page.clear, ClipSlotSetting.GRAB_TRACK), clear_what=legends.MSG_NO_GRAB_WHAT),
+            Field(label=labels_text.MSG_SCALE_LABEL, value=clip.scale_text, adjust=None, enter=clip.pick_scale, enter_what=legends.What.CHOOSE,
+                  clear=functools.partial(clip.clear, ClipSlotSetting.SCALE), clear_what=legends.MSG_USE_SCENE_SCALE_WHAT),
+            Field(label=labels_text.MSG_GRAB_TRACK_LABEL, value=self._grab_shown, adjust=None, enter=clip.pick_grab_track, enter_what=legends.What.CHOOSE,
+                  clear=functools.partial(clip.clear, ClipSlotSetting.GRAB_TRACK), clear_what=legends.MSG_NO_GRAB_WHAT),
         ]
         return Tab(label=labels_text.MSG_SETTINGS_TAB, columns=[
             TabColumn(heading=labels_text.MSG_ORDER_HEADING, fields=order), TabColumn(heading=labels_text.MSG_PLAYING_HEADING, fields=general),
@@ -90,8 +91,8 @@ class ClipTabs:
 
     def _built_in_tabs(self, kinds):
         """Return the tabs of the clip's built-in generators of some kinds, in order."""
-        page = self._page
-        return built_in_tabs(page=page, track=page.track, scene=page.index, kinds=kinds)
+        clip = self._presenter
+        return built_in_tabs(page=clip.get_page(), track=clip.get_track(), scene=clip.get_index(), kinds=kinds)
 
     def _shape_section(self, shape):
         """Return a shape's section: how busy or long the clip plays over it, over its scene's."""
@@ -102,18 +103,16 @@ class ClipTabs:
 
         def store(part, value):
             self._set_written(name=shape_setting(shape=shape, part=part), value=value)
-        return shape_section(page=self._page, shape=shape, value=value, store=store)
+        return shape_section(page=self._presenter.get_page(), shape=shape, value=value, store=store)
 
     def _velocity_values(self):
         """Return what the velocity fields read the clip's own velocity settings with, what gives a blank one from its scene,
         and what keeps one."""
-        page = self._page
-        song = page.document().song()
-        scene = song.get_scenes()[page.index]
+        scene = self._presenter.scene()
         return VelocityValues(own=self._clip_slot().get_written, above=scene.get_written, store=lambda name, value: self._set_written(name=name, value=value))
 
     def _clip_slot(self):
-        return self._page.clip_slot()
+        return self._presenter.clip_slot()
 
     def _chain_names(self):
         clip_slot = self._clip_slot()
@@ -121,7 +120,7 @@ class ClipTabs:
 
     def _set_chain_names(self, names):
         """Give the clip the chains named, or none."""
-        self._page.set_value(setting=ClipSlotSetting.CHAINS, value=names or None)
+        self._presenter.set_value(setting=ClipSlotSetting.CHAINS, value=names or None)
 
     def _grab_shown(self):
         clip_slot = self._clip_slot()
@@ -129,7 +128,8 @@ class ClipTabs:
 
     def _set_written(self, *, name, value):
         clip_slot = self._clip_slot()
-        self._page.document().change_set(clip_slot.set_written, name=name, value=value)
+        document = self._presenter.get_document()
+        document.change_set(clip_slot.set_written, name=name, value=value)
 
 
 def _set_reset_draw(on, *, page, holder, draw):

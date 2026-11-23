@@ -7,6 +7,7 @@ hands it the page to ask through and what only the tracker can do, such as openi
 
 - places: where a page is, as a value, which the tracker's site map turns into its page.
 - asking: asking for what a field needs beyond a line of text, such as a time signature.
+- clip: the clip page, one clip's patterns and settings.
 - draws: the Draws page, the song's eight draws over their strips.
 - file_global: the File/Global page, the set's own settings.
 - instrument: one instrument's page, where it plays and how loud.
@@ -22,5 +23,6 @@ hands it the page to ask through and what only the tracker can do, such as openi
 - view_fields, built_in_tab, arrange_tabs, built_in_place: a generator's settings from its view, a built-in generator's
   tab, a clip's tabs, and where a built-in generator is; progression_field, restart_field, guitar_bar_field: a generator's
   progression, Restart and guitar bar.
+- uses: what uses a pattern, a scale or a generator, what grabs, and the scenes that never end.
 - visualizer_fields: the fields that choose the visualizer's modes, which the File/Global and Song pages share.
 """

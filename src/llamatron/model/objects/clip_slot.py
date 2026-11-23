@@ -222,6 +222,16 @@ class ClipSlot(HoldsBuiltIns, RunsChains, ResetsDraws, HoldsSettings):
         """Return how it morphs as the file writes it, like 'left', or None if it doesn't morph."""
         return self._settings[ClipSlotSetting.MORPH_STYLE]
 
+    def morph_style_in_effect(self):
+        """Return how it morphs by the file's name for the style: its own, or the first style where it gives none."""
+        return self._settings[ClipSlotSetting.MORPH_STYLE] or FIRST_MORPH_STYLE
+
+    def morph_style_after(self, offset):
+        """Return the morph style a step of offset away from the one in effect, going round from the last to the first."""
+        styles = list(MORPH_STYLES)
+        place = styles.index(self.morph_style_in_effect())
+        return styles[(place + offset) % len(styles)]
+
     def get_written_follow_action(self):
         """Return what it sends down in real-time playback when its scene is done, one of FOLLOW_ACTION_CHOICES, or None when the set's default applies. No export reads it."""
         return self._settings[ClipSlotSetting.FOLLOW_ACTION]

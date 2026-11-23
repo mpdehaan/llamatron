@@ -17,9 +17,9 @@ launch driven from outside, which internal_tools/make_video_tutorial.py makes, h
 that presses keys into it, the video tutorial (interface/tutorial/runner.py), which the tracker knows nothing of.
 """
 
+from llamatron.interface.pages.uses import looping_scenes
 from llamatron.interface.tracker import batch_stage
 from llamatron.interface.tracker.components.title_card import whole_title_seconds
-from llamatron.interface.tracker.uses import looping_scenes
 from llamatron.model.file.checks import listed
 from llamatron.user_strings import errors
 

@@ -13,6 +13,7 @@ import os
 
 from llamatron.exporters import exports
 from llamatron.exporters.exports import ExportKind
+from llamatron.interface.pages.uses import loop_error_lines
 from llamatron.interface.tracker.dialogs import quit_dialog
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -21,7 +22,6 @@ from llamatron.interface.tracker.dialogs.quit_dialog import QuitDialog
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.screens.shared import shared
 from llamatron.interface.tracker.silent_instruments import warn_of_silent_instruments
-from llamatron.interface.tracker.uses import loop_error_lines
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.user_strings import errors, labels, marks, messages as messages_text
 

@@ -16,6 +16,7 @@ from unittest import mock
 
 from llamatron.engine.timing import general_midi
 from llamatron.interface.forms.text import clock, scene_name
+from llamatron.interface.pages.uses import looping_scenes
 from llamatron.interface.tracker import batch_stage, keybindings, pattern_preview
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.components.stage_drawing import Rect
@@ -32,7 +33,6 @@ from llamatron.interface.tracker.screens.set.demo_scroll import DemoScroll
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.interface.tracker.screens.set.splash import Splash
 from llamatron.interface.tracker.transport import Transport
-from llamatron.interface.tracker.uses import looping_scenes
 from llamatron.interface.visualizers import modes
 from llamatron.model.file.checks import listed
 from llamatron.model.schema import file_format

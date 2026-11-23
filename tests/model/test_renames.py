@@ -16,8 +16,8 @@ from llamatron.engine.generators import arp as arp_plugin, timing as timing_plug
 from llamatron.engine.generators.chords.model import ChordsSetting, ChordsSettings
 from llamatron.engine.generators.hocket.model import HocketSetting, HocketSettings
 from llamatron.engine.generators.musician.model import MusicianSetting, MusicianSettings
+from llamatron.interface.pages.uses import grabbers, uses_of
 from llamatron.interface.tracker.document import Document
-from llamatron.interface.tracker.uses import grabbers, uses_of
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects import sections as sections_values
 from llamatron.model.objects.chain import Chain

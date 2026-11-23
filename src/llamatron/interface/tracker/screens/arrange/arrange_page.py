@@ -28,6 +28,7 @@ from llamatron.interface.forms import moves
 from llamatron.interface.forms.cursor import NoSuchPlace
 from llamatron.interface.forms.text import scene_name, sorted_names
 from llamatron.interface.pages.generator_names import generators_to_add, listed_generator
+from llamatron.interface.pages.uses import grabbers
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components.inset_window import drawn_over, inside_size
 from llamatron.interface.tracker.components.scene_view import SceneView
@@ -43,7 +44,6 @@ from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.generators.generator_pages import generator_page_of_kind
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.interface.tracker.screens.shared.shared import play_through
-from llamatron.interface.tracker.uses import grabbers
 from llamatron.interface.visualizers import modes
 from llamatron.interface.visualizers.modes import mode_called
 from llamatron.model.objects.naming import new_name

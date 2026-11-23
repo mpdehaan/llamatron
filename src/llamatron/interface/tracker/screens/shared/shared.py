@@ -4,7 +4,7 @@
 
 """What several screens share: the scale and root pickers, the note lengths, the file suffixes and the key lists that list pages build from."""
 from llamatron.engine.generators.arp import model as arp_model
-from llamatron.user_strings import errors, marks, messages
+from llamatron.user_strings import errors, messages
 
 
 SONG_SUFFIX = '.yml'
@@ -40,9 +40,3 @@ def play_through(*, page, play, what, said):
         page.tell(errors.ERR_CANT_PLAY_TITLE, tried.refusal)
         return
     page.say(messages.MSG_STARTS_AT_NEXT_BAR.format(what=what) if tried.answer else said)
-
-
-def columns(rows):
-    """Return one line for each (name, description) pair, with the descriptions lined up, for a picker's choices on the clip page and the pattern editor."""
-    widest = max((len(name) for name, _ in rows), default=0)
-    return [marks.MSG_COLUMN_LINE.format(name=name.ljust(widest), description=description).rstrip() for name, description in rows]

@@ -30,7 +30,7 @@ from typing import NamedTuple
 
 from llamatron.engine.realizer.step_order import walk_order
 from llamatron.engine.timing.general_midi import general_midi_channels
-from llamatron.interface.tracker.uses import loop_error_lines
+from llamatron.interface.pages.uses import loop_error_lines
 from llamatron.interface.visualizers import heard as heard_values
 from llamatron.interface.visualizers.heard import FrameHearing, HeardNote
 from llamatron.model.file.song_file_error import SongFileError

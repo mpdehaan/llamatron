@@ -243,6 +243,17 @@ class TestClipSlot(SetterTestCase):
         self.assertNotIn(ClipSlotSetting.REPEAT, self.clip_slot.to_data())
         self.assertRefused(self.clip_slot, self.clip_slot.set_morph_style, FIRST_STYLE)
 
+    def test_the_morph_style_in_effect_is_the_first_until_set_and_steps_go_round(self):
+        styles = list(clip_slot.MORPH_STYLES)
+        last_style = styles[-1]
+        self.assertEqual(self.clip_slot.morph_style_in_effect(), FIRST_STYLE)
+        self.assertEqual(self.clip_slot.morph_style_after(ONE_DOWN), styles[1])
+        self.assertEqual(self.clip_slot.morph_style_after(ONE_UP), last_style)
+        self.clip_slot.set_repeat(TWO_REPEATS)
+        self.clip_slot.set_morph(target=ANSWER, style=last_style, song=self.song)
+        self.assertEqual(self.clip_slot.morph_style_in_effect(), last_style)
+        self.assertEqual(self.clip_slot.morph_style_after(ONE_DOWN), FIRST_STYLE)
+
     def test_loop_is_only_written_when_on(self):
         self.clip_slot.set_loop(True)
         self.assertTrue(self.clip_slot.loops())

@@ -8,7 +8,6 @@
 from types import MethodType
 
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects import clip_slot as clip_slot_values
 from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.naming import copy_name
 from llamatron.model.schema import limits
@@ -192,7 +191,7 @@ class SongEdits:
     def set_clip_slot_morph_target(self, *, index, track, pattern):
         """Make a clip morph to a pattern across its repeats, in the first style unless it has one."""
         clip_slot = self.clip_slot(index=index, track=track)
-        style = clip_slot.get_morph_style_name() or clip_slot_values.FIRST_MORPH_STYLE
+        style = clip_slot.morph_style_in_effect()
         self.change_set(clip_slot.set_morph, target=pattern, style=style, song=self.song())
 
     def move_clip_slot(self, *, index, track, to_index, to_track):

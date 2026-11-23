@@ -51,3 +51,9 @@ def scene_name(*, scene, index):
     """Return a scene's name, or what it's called by its place if the file gives it none."""
     name = scene.get_name()
     return names.MSG_NEW_SCENE_NAME.format(number=index + 1) if name is None else str(name)
+
+
+def columns(rows):
+    """Return one line for each (name, description) pair, with the descriptions lined up, for a picker's choices on the clip page and the pattern editor."""
+    widest = max((len(name) for name, _ in rows), default=0)
+    return [marks.MSG_COLUMN_LINE.format(name=name.ljust(widest), description=description).rstrip() for name, description in rows]

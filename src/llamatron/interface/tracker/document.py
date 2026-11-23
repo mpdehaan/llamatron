@@ -25,6 +25,7 @@ until it does.
 
 from llamatron.caching.memory import Memory
 from llamatron.caching.revised import ChangeMark, Revised
+from llamatron.interface.pages.uses import uses_of
 from llamatron.interface.tracker.document_parts import files
 from llamatron.interface.tracker.document_parts.files import DocumentFiles, file_data
 from llamatron.interface.tracker.document_parts.named_edits import NamedEdits
@@ -35,7 +36,6 @@ from llamatron.interface.tracker.document_parts.undo import DocumentUndo
 from llamatron.interface.tracker.history import History
 from llamatron.interface.tracker.lengths import Lengths, measured
 from llamatron.interface.tracker.page_memory import PageMemory
-from llamatron.interface.tracker.uses import uses_of
 from llamatron.model.objects.setlist import Setlist
 from llamatron.user_strings import names
 

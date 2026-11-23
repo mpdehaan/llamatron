@@ -8,7 +8,8 @@ import os
 
 from llamatron.exporters import exports
 from llamatron.exporters.exports import earlier_export, ExportKind, shown_export_path
-from llamatron.interface.tracker import keybindings, uses
+from llamatron.interface.pages import uses
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
