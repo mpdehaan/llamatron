@@ -38,3 +38,10 @@ class Frame:
     def bottom(self, canvas):
         canvas.write(column=self._left, text=Box.DOUBLE_BOTTOM_LEFT + Box.DOUBLE_RULE * self.inner_width() + Box.DOUBLE_BOTTOM_RIGHT, style=self._style)
 
+    def draw(self, lines, *, top, inside):
+        """Draw the whole frame over lines: its top edge on the line at top, its sides on the inside lines under it, and its bottom edge after them."""
+        self.top(lines[top])
+        for line in lines[top + 1:top + 1 + inside]:
+            self.sides(line)
+        self.bottom(lines[top + 1 + inside])
+

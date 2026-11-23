@@ -282,25 +282,32 @@ class ArrangeDrawing:
             playing = transport.is_playing()
             names.write(column=SCENE_LABEL_COLUMN, text=marks_text.MSG_SONG_BUTTON.format(mark=marks_text.MSG_STOP_MARK if playing else marks_text.MSG_PLAY_MARK), style=Style.PLAYING if playing else Style.DIM)
         for place in range(first, last):
-            column = self.cell_column(place) + FRAME_ROOM + 1
-            width = self.track_width(place)
             if place < len(tracks):
-                shown = self.shown_track_name(tracks[place])
-                if self._page.real_time_on():
-                    names.write(column=column, text=fit(text=drawing.SPACE + shown, width=width - SOUNDING_MARK_WIDTH), style=Style.BOLD)
-                    if transport.is_track_sounding(tracks[place]):
-                        names.write(column=column + width - 1, text=marks_text.MSG_SOUNDING_MARK, style=Style.SOUNDING)
-                else:
-                    names.write(column=column, text=fit(text=drawing.SPACE + shown, width=width), style=Style.BOLD)
-                if self.cell_open(track_cell(tracks[place])):
-                    here = self._page.on_track_name() and self._page.track_place() == place
-                    self.draw_details(lines[2:-2], details=self.layout().track_details[place], column=column + TRACK_DETAIL_INDENT, here=here)
+                self.draw_track_name(lines, place=place)
             else:
-                names.write(column=column, text=marks_text.MSG_ADD_ROW_MARK.center(width), style=Style.DIM)
+                names.write(column=self.cell_column(place) + FRAME_ROOM + 1, text=marks_text.MSG_ADD_ROW_MARK.center(self.track_width(place)), style=Style.DIM)
         if last < len(tracks) + 1:
             # More tracks lie to the right: the mark takes the last divider's place, which a full width leaves at the edge.
             names.write(column=self.cell_column(last), text=Box.MORE, style=Style.DIM)
         self.draw_grid_line(lines[-1], first=first, last=last)
+
+    def draw_track_name(self, lines, *, place):
+        """Draw a track's name over its column, with the light that says a note sounds on it while Real Time is on, and its
+        details under it when its cell is open."""
+        track = self._page.tracks()[place]
+        names = lines[1]
+        column = self.cell_column(place) + FRAME_ROOM + 1
+        width = self.track_width(place)
+        shown = self.shown_track_name(track)
+        if self._page.real_time_on():
+            names.write(column=column, text=fit(text=drawing.SPACE + shown, width=width - SOUNDING_MARK_WIDTH), style=Style.BOLD)
+            if self._page.transport().is_track_sounding(track):
+                names.write(column=column + width - 1, text=marks_text.MSG_SOUNDING_MARK, style=Style.SOUNDING)
+        else:
+            names.write(column=column, text=fit(text=drawing.SPACE + shown, width=width), style=Style.BOLD)
+        if self.cell_open(track_cell(track)):
+            here = self._page.on_track_name() and self._page.track_place() == place
+            self.draw_details(lines[2:-2], details=self.layout().track_details[place], column=column + TRACK_DETAIL_INDENT, here=here)
 
     def shown_track_name(self, name):
         """Return a track's name as the header shows it: whole, cut to its column, or in the details view cut at DETAIL_WIDTH, its column widened to fit."""
@@ -328,33 +335,40 @@ class ArrangeDrawing:
         if real_time:
             self.play_button(lines[2], column=SCENE_LABEL_COLUMN, playing=index in transport.playing_scenes())
         for place in range(first, min(last, len(tracks)) if clips else first):
-            column = self.cell_column(place) + FRAME_ROOM + 1
-            width = self.track_width(place)
-            details = self.cell_open(clip_cell(index=index, track=tracks[place]))
-            named = detailed_clip_text if details else clip_text
-            clip_slot = self._page.document().clip_slot(index=index, track=tracks[place])
-            if clip_slot is None:
-                if index == self._page.row and self._page.on_clip_slot() and self._page.track_place() == place:
-                    lines[1].write(column=column, text=marks_text.MSG_ADD_ROW_MARK.center(width))
-                    lines[2].write(column=column, text=legends.What.ADD.center(width))
-                continue
-            if real_time:
-                playing = transport.is_clip_playing(index=index, track=tracks[place])
-                repeats_left = transport.repeats_left(index=index, track=tracks[place]) if playing else None
-                clip_played = transport.clip_elapsed(index=index, track=tracks[place]) if playing else None
-                lines[1].write(column=column, text=fit(text=drawing.SPACE + named(clip_slot, repeats_left=repeats_left), width=width))
-                self.play_button(lines[2], column=column, playing=playing)
-                bar = CLIP_BAR_WITH_BUTTON if width == CELL_WIDTH else LengthBar(width=width - 2 - PLAY_BUTTON_WIDTH, hatched=False)
-                lines[2].write(column=column + 1 + PLAY_BUTTON_WIDTH,
-                               text=self.clip_bar(bar, lengths=lengths, clip_slot=clip_slot, index=index, track=tracks[place], played=clip_played))
-            else:
-                lines[1].write(column=column, text=fit(text=drawing.SPACE + named(clip_slot), width=width))
-                bar = CLIP_BAR if width == CELL_WIDTH else LengthBar(width=width - 2, hatched=False)
-                lines[2].write(column=column + 1, text=self.clip_bar(bar, lengths=lengths, clip_slot=clip_slot, index=index, track=tracks[place]))
-            if details:
-                indent = DETAIL_INDENT if real_time else 1
-                here = self._page.on_clip_slot() and self._page.row == index and self._page.track_place() == place
-                self.draw_details(lines[FIRST_DETAIL_LINE:-LINES_UNDER_A_SCENE], details=layout.clip_details.get((index, tracks[place]), []), column=column + indent, here=here)
+            self.draw_clip(lines, index=index, place=place, lengths=lengths)
+
+    def draw_clip(self, lines, *, index, place, lengths):
+        """Draw the clip a track plays in a scene, its name and its length bar, with its play button while Real Time is on and
+        its details when its cell is open; or, for an empty cell under the cursor, the + that adds one."""
+        track = self._page.tracks()[place]
+        column = self.cell_column(place) + FRAME_ROOM + 1
+        width = self.track_width(place)
+        clip_slot = self._page.document().clip_slot(index=index, track=track)
+        if clip_slot is None:
+            if index == self._page.row and self._page.on_clip_slot() and self._page.track_place() == place:
+                lines[1].write(column=column, text=marks_text.MSG_ADD_ROW_MARK.center(width))
+                lines[2].write(column=column, text=legends.What.ADD.center(width))
+            return
+        details = self.cell_open(clip_cell(index=index, track=track))
+        named = detailed_clip_text if details else clip_text
+        real_time = self._page.real_time_on()
+        if real_time:
+            transport = self._page.transport()
+            playing = transport.is_clip_playing(index=index, track=track)
+            repeats_left = transport.repeats_left(index=index, track=track) if playing else None
+            clip_played = transport.clip_elapsed(index=index, track=track) if playing else None
+            lines[1].write(column=column, text=fit(text=drawing.SPACE + named(clip_slot, repeats_left=repeats_left), width=width))
+            self.play_button(lines[2], column=column, playing=playing)
+            bar = CLIP_BAR_WITH_BUTTON if width == CELL_WIDTH else LengthBar(width=width - 2 - PLAY_BUTTON_WIDTH, hatched=False)
+            lines[2].write(column=column + 1 + PLAY_BUTTON_WIDTH, text=self.clip_bar(bar, lengths=lengths, clip_slot=clip_slot, index=index, track=track, played=clip_played))
+        else:
+            lines[1].write(column=column, text=fit(text=drawing.SPACE + named(clip_slot), width=width))
+            bar = CLIP_BAR if width == CELL_WIDTH else LengthBar(width=width - 2, hatched=False)
+            lines[2].write(column=column + 1, text=self.clip_bar(bar, lengths=lengths, clip_slot=clip_slot, index=index, track=track))
+        if details:
+            indent = DETAIL_INDENT if real_time else 1
+            here = self._page.on_clip_slot() and self._page.row == index and self._page.track_place() == place
+            self.draw_details(lines[FIRST_DETAIL_LINE:-LINES_UNDER_A_SCENE], details=self.layout().clip_details.get((index, track), []), column=column + indent, here=here)
 
     @staticmethod
     def clip_bar(bar, *, lengths, clip_slot, index, track, played=None):
@@ -433,11 +447,7 @@ class ArrangeDrawing:
         held = self.scene_lines(index) - 1 - LINES_UNDER_A_SCENE if inside is None else inside
         if top + 1 + held >= len(lines):
             return
-        frame = Frame(left=0, right=SCENE_FRAME_RIGHT, style=Style.PLAYING_SCENE)
-        frame.top(lines[top])
-        for line in lines[top + 1:top + 1 + held]:
-            frame.sides(line)
-        frame.bottom(lines[top + 1 + held])
+        Frame(left=0, right=SCENE_FRAME_RIGHT, style=Style.PLAYING_SCENE).draw(lines, top=top, inside=held)
 
     @staticmethod
     def with_name(*, lines, name):
@@ -471,24 +481,29 @@ class ArrangeDrawing:
             self.draw_footer(lines[-FOOTER_LINES:], first=first, last=last)
         if self._page.boxes_playing_scene():
             # A recording nobody performs has no cursor to show: the playing scene is boxed instead.
-            tops = {}
-            top = header
-            for index in shown:
-                tops[index] = top
-                top += self.scene_lines(index)
-            self.box_playing_scene(lines=lines, tops=tops, inside=None)
-            return [line.text() for line in lines]
-        placed = self.frame_place(shown=shown, first=first, last=last)
-        if placed is not None:
-            # The frame's inside is as tall as what it holds: a scene's or a clip's lines but the spacer, a name's, or the + row's one.
-            frame, top, inside = placed
-            if self._page.picking() or self._page.moving is not None:
-                frame = frame.styled(Style.DETAILS_LOCKED)
-            frame.top(lines[top])
-            for line in lines[top + 1:top + 1 + inside]:
-                frame.sides(line)
-            frame.bottom(lines[top + 1 + inside])
+            self.box_playing_scene(lines=lines, tops=self._scene_tops(shown=shown, top=header), inside=None)
+        else:
+            self._draw_cursor_frame(lines, shown=shown, first=first, last=last)
         return [line.text() for line in lines]
+
+    def _scene_tops(self, *, shown, top):
+        """Return the line each shown scene starts on, the first at top."""
+        tops = {}
+        for index in shown:
+            tops[index] = top
+            top += self.scene_lines(index)
+        return tops
+
+    def _draw_cursor_frame(self, lines, *, shown, first, last):
+        """Draw the frame around what the cursor is on, in the locked style while picking or moving, unless it is off screen."""
+        placed = self.frame_place(shown=shown, first=first, last=last)
+        if placed is None:
+            return
+        # The frame's inside is as tall as what it holds: a scene's or a clip's lines but the spacer, a name's, or the + row's one.
+        frame, top, inside = placed
+        if self._page.picking() or self._page.moving is not None:
+            frame = frame.styled(Style.DETAILS_LOCKED)
+        frame.draw(lines, top=top, inside=inside)
 
     def _row_lines(self, index):
         """Return how many lines a row takes: a scene's, or the + row's after the last scene."""
