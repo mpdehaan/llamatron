@@ -16,6 +16,7 @@ from llamatron.interface.tracker.screens.generators.generator_list_page import G
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, TrackSetting
 from llamatron.user_strings import labels, marks, names as names_text
+from tests.support import ui_testing
 from tests.support.rendering import render_song
 from tests.support.ui_testing import back_key, forward_key, key_of, UITest
 
@@ -124,7 +125,7 @@ class TestArrangeTracks(UITest):
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(ONE_CLIP, self.text())
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertEqual(self.tracks(), [DRUMS])
         self.assertIsNone(self.document.clip_slot(index=0, track=LEAD))
         self.assertTrue(self.page.on_track_name())
@@ -135,7 +136,7 @@ class TestArrangeTracks(UITest):
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(ONE_GRABBER, self.text())
         self.assertIn(STOP_GRABBING, self.text())
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsNone(self.document.clip_slot(index=0, track=LEAD).get_grab_track())
 
     async def test_an_empty_song_starts_on_the_track_plus(self):

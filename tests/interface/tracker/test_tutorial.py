@@ -26,7 +26,6 @@ from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.caption_strip import parts
 from llamatron.interface.tracker.components.pattern_rows import PatternRows
 from llamatron.interface.tracker.components.piano_roll import PianoRoll
-from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.key_table import first_key, key_event
@@ -365,8 +364,6 @@ class TestTutorialCallsKeys(unittest.TestCase):
         self.assertEqual(self.said(keybindings.ListPage.RENAME), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.N, what=keybindings.ListPage.RENAME[plan_values.WORDS])])
         self.app.screen = page_of(SongsPage)
         self.assertEqual(self.said(keybindings.ListPage.ADD), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.A, what=keybindings.ListPage.ADD[plan_values.WORDS])])
-        self.app.screen = mock.Mock(spec=ConfirmDialog)
-        self.assertEqual(self.said(keybindings.ConfirmDialog.YES), [narration.MSG_CALL_LETTER.format(key=legends.KeyName.Y, what=keybindings.ConfirmDialog.YES[plan_values.WORDS])])
 
     def test_other_keys_with_words_are_never_called(self):
         self.app.screen = page_of(PatternsPage)

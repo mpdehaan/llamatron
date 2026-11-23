@@ -13,6 +13,7 @@ from llamatron.interface.tracker.screens.pattern.pattern_editor import Munge, Re
 from llamatron.model.schema.file_format import ClipSlotSetting, Row
 from llamatron.model.values.note import NoteName
 from llamatron.user_strings import errors, legends
+from tests.support import ui_testing
 from tests.support.pattern_editor_testing import munge
 from tests.support.rendering import render_song
 from tests.support.ui_testing import UITest
@@ -123,11 +124,11 @@ class TestRearrangingAPattern(UITest):
         self.app.screen.cursor.set_place(self.app.screen.options.index(BEAT))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertEqual(self.rows(), [1, 2, 3, 4, 5])
         await self.reconfigure(Reconfigure.LOAD_OVER)
         self.app.screen.cursor.set_place(self.app.screen.options.index(BEAT))
-        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ENTER, *ui_testing.ANSWER_YES)
         song = self.document.song()
         self.assertEqual(song.get_setlist().get_pattern(LONG_PATTERN).to_data(), song.get_setlist().get_pattern(BEAT).to_data())
         self.assertEqual(self.editor.step_count(), 2)
@@ -136,7 +137,7 @@ class TestRearrangingAPattern(UITest):
     async def test_a_loaded_copy_is_separate(self):
         await self.reconfigure(Reconfigure.LOAD_OVER)
         self.app.screen.cursor.set_place(self.app.screen.options.index(BEAT))
-        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES, Key.RIGHT, NoteName.F.lower())
+        await self.press(Key.ENTER, *ui_testing.ANSWER_YES, Key.RIGHT, NoteName.F.lower())
         self.assertEqual(self.document.step_value(name=LONG_PATTERN, row=Row.DEGREE, step=1), NoteName.F)
         self.assertIsNone(self.document.step_value(name=BEAT, row=Row.DEGREE, step=1))
 
@@ -144,7 +145,7 @@ class TestRearrangingAPattern(UITest):
         self.document.set_clip_slot_setting(index=0, track=LEAD, setting=ClipSlotSetting.PATTERN, value=LONG_PATTERN)
         await self.reconfigure(Reconfigure.LOAD_OVER)
         self.app.screen.cursor.set_place(self.app.screen.options.index(OTHER))
-        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ENTER, *ui_testing.ANSWER_YES)
         self.assertEqual(self.document.song().get_scenes()[0].get_clip_slot(LEAD).get_pattern_name(), LONG_PATTERN)
         render_song(self.document.song())
 

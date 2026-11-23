@@ -10,7 +10,6 @@ from llamatron.interface.forms import moves
 from llamatron.interface.forms.cursor import Cursor, place_of
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.cursor import Search, shown_around
-from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.drawing import cursor_mark, fit, Style
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.model.schema import limits
@@ -261,7 +260,7 @@ class ListPage(Page):
         def confirmed(_):
             delete()
             self.clamp()
-        self.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=message), then=confirmed)
+        self.confirm_delete(lines=message, then=lambda: confirmed(None))
 
     def delete_after_checks(self, *, what, uses, delete, extra=None):
         """Refuse if anything still uses an item, and otherwise confirm and delete it."""
@@ -278,4 +277,4 @@ class ListPage(Page):
         def confirmed(_):
             delete()
             self.clamp()
-        self.ask(dialog=ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=message), then=confirmed)
+        self.confirm_delete(lines=message, then=lambda: confirmed(None))

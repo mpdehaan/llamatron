@@ -79,7 +79,7 @@ class NamedItemChecks:
         self.page.rename()
         await self.pilot.pause()
         self.assertIsInstance(self.app.screen, PromptDialog)
-        self.assertIn(self.page.RENAME_PROMPT, self.text())
+        self.assertIn(self.page.RENAME_PROMPT.format(name=self.page.item), self.text())
         self.app.screen.value = name
         await self.press(Key.ENTER)
 

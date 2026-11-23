@@ -66,7 +66,7 @@ class SoloMelodyBranch(Branch):
 
         def give_back():
             question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=wizard_limits.SOLO)
-            page.confirm(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, lines=[question], starts_on_no=True,
+            page.confirm(title=question, lines=[], starts_on_no=True,
                          then=lambda: page.choosing(lambda _: choices.get_solos().set_solo_pattern(place=place, pattern=None))(None))
         # On notes edited by hand, the delete key on the button gives the notes back to the wizard, after a question.
         return [Button(label=labels.MSG_WIZARD_EDIT_NOTES_BUTTON, enter=lambda: page.edit_solo(place), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=give_back if choices.get_solos().solo_is_own(place) else None,

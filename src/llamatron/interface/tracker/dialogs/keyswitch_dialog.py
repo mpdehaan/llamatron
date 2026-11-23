@@ -16,13 +16,12 @@ from rich.text import Text
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values, keyswitch_text
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.pick_many_dialog import PickManyDialog
-from llamatron.interface.tracker.drawing import cursor_mark, fit, legend, Style
+from llamatron.interface.tracker.drawing import cursor_mark, fit, Style
 from llamatron.model.schema import file_format
 from llamatron.user_strings import labels, marks
 
 # The OK button is the one Enter presses, so it is the one drawn selected.
 OK = 0
-BUTTON_BINDINGS = (keybindings.KeyswitchDialog.DONE, keybindings.KeyswitchDialog.CANCEL)
 
 
 class KeyswitchDialog(PickManyDialog):
@@ -45,10 +44,6 @@ class KeyswitchDialog(PickManyDialog):
         self.cursor.set_place(keys_values.DIGITS.index(name))
         self.toggle()
 
-    def legend_lines(self, width):
-        """Return the keys listed under the slots, leaving out OK and CANCEL, which the buttons name."""
-        return legend(keys=[item for item in self.keys() if item.shown], width=width)
-
     def slot_line(self, *, slot, width):
         picked = slot in self.picked
         start = cursor_mark(slot == self.cursor.get_place()) + marks.MSG_KEYSWITCH_SLOT_ROW.format(slot=slot, toggle=marks.MSG_TOGGLE_ON if picked else marks.MSG_FIELD_TOGGLE_OFF)
@@ -58,7 +53,7 @@ class KeyswitchDialog(PickManyDialog):
         return line
 
     def lines(self, width):
-        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(drawing.NOTHING, label) for label in labels.MSG_OK_CANCEL_BUTTONS]
         return [
             Text(fit(text=self.said, width=width), style=Style.DIM), Text(drawing.NOTHING),
             *[self.slot_line(slot=slot, width=width) for slot in self.options],

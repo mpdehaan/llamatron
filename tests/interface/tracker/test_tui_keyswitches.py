@@ -88,7 +88,7 @@ class TestKeyswitchMap(UITest):
         await self.name_slot(SUSTAIN)
         await self.press(Key.RIGHT, MAP.NOTE, Key.RIGHT, MAP.TAKE_NOTE)
         self.assertEqual(self.slots(), [instrument_values.NO_KEYSWITCH] * file_format.KEYSWITCH_SLOT_COUNT)
-        await self.press(MAP.OK)
+        await self.press(*[Key.DOWN] * keyswitch_map_dialog.BUTTONS_PLACE, MAP.PRESS)
         self.assertIsInstance(self.app.screen, InstrumentEditor)
         self.assertEqual(self.slots()[SUSTAIN_SLOT], Keyswitch(SUSTAIN, midi.MIN_MIDI_NUMBER + 1))
         await self.press(keybindings.Page.UNDO)
@@ -111,13 +111,13 @@ class TestKeyswitchMap(UITest):
         self.assertEqual(dialog.cell, keyswitch_map_dialog.NOTE_CELL)
         self.assertIn(key_name(MAP.TO_NAME), self.text())
 
-    async def test_the_cursor_is_on_the_name_where_enter_renames_or_on_the_note_where_enter_picks(self):
+    async def test_the_cursor_is_on_the_name_or_the_note_and_n_names_the_slot_and_enter_picks_its_note(self):
         dialog = await self.open_map()
         self.assertEqual(dialog.cell, keyswitch_map_dialog.NAME_CELL)
         await self.press(Key.LEFT)
         self.assertEqual(dialog.cell, keyswitch_map_dialog.NAME_CELL)
         self.assertIn(cursor_mark(True) + marks.MSG_NONE_SHOWN, self.text())
-        await self.press(MAP.RENAME_HERE)
+        await self.press(MAP.RENAME)
         self.assertIsInstance(self.app.screen, PromptDialog)
         await self.type(SUSTAIN)
         await self.press(Key.ENTER)
@@ -144,13 +144,13 @@ class TestKeyswitchMap(UITest):
             places.add((line.index(SUSTAIN), line.index(shown), len(line)))
         self.assertEqual(len(places), 1)
 
-    async def test_the_legend_says_what_enter_does_where_the_cursor_is(self):
+    async def test_enter_opens_the_note_picker_from_the_name_and_from_the_note(self):
         dialog = await self.open_map()
-        bound = [item.binding for item in dialog.keys()]
-        self.assertIn(MAP.RENAME_HERE, bound)
-        self.assertNotIn(MAP.NOTE, bound)
-        await self.press(Key.RIGHT)
-        self.assertIn(MAP.NOTE, [item.binding for item in dialog.keys()])
+        for presses in ([], [Key.RIGHT]):
+            with self.subTest(presses=presses):
+                await self.press(*presses, MAP.NOTE)
+                self.assertIsNotNone(dialog.picking)
+                await self.press(MAP.CLOSE_PICKER)
 
     async def test_cancel_changes_nothing_by_its_key_or_its_button(self):
         for presses in ([Key.ESCAPE], [*[Key.DOWN] * keyswitch_map_dialog.BUTTONS_PLACE, Key.RIGHT, MAP.PRESS]):
@@ -294,10 +294,10 @@ class TestKeyswitchRow(PatternEditorTest):
         await self.press(keybindings.Page.UNDO)
         self.assertIsNone(self.value(row=Row.KEYSWITCH))
 
-    async def test_the_legend_names_the_digits_once_and_the_buttons_name_ok_and_cancel(self):
+    async def test_the_legend_names_the_digits_once_and_the_keys_of_ok_and_cancel_whose_buttons_show_names_alone(self):
         dialog = await self.open_dialog()
         shown = [item.binding for item in dialog.keys() if item.shown]
-        self.assertEqual(shown, [PICK.MOVE, PICK.FLIP, PICK.TOGGLE_SLOT])
+        self.assertCountEqual(shown, [PICK.CANCEL, PICK.MOVE, PICK.FLIP, PICK.TOGGLE_SLOT, PICK.DONE])
         self.assertEqual(PICK.TOGGLE_SLOT[0], keys.DIGITS)
         self.assertEqual(first_key(PICK.TOGGLE_SLOT), keys.DIGITS[0])
 

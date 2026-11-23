@@ -54,7 +54,6 @@ class KeyName:
     V = 'V'
     W = 'W'
     X = 'X'
-    Y = 'Y'
     Z = 'Z'
     PERIOD = '.'
     SLASH = '/'
@@ -207,7 +206,6 @@ MSG_SAVE_AS_WHAT = 'save as'
 MSG_NEW_WHAT = 'new'
 
 # interface/tracker/dialogs/import_dialog.py
-MSG_IMPORT_WHAT = 'import'
 MSG_PRESS_WHAT = 'press'
 
 # interface/tracker/screens/arrange/arrange_page.py: the visualizer key, and ESC while it shows, which brings the clips back.
@@ -232,16 +230,16 @@ MSG_LEAVE_CELL_WHAT = 'leave cell'
 MSG_TO_CLIPS_WHAT = 'to clips'
 
 # interface/tracker/screens/arrange/track_editor.py
-MSG_SONG_WHAT = 'song {name}'
+MSG_SONG_WHAT = 'song ({name})'
 MSG_MAKE_CURRENT_WHAT = 'make current'
 # The notes page.
 MSG_NEW_LINE_WHAT = 'new line'
 MSG_TO_BUTTONS_WHAT = 'Save or CANCEL'
 MSG_TO_TEXT_WHAT = 'back to the text'
 # How an item is named when deleting it, like "pattern tune".
-MSG_PATTERN_WHAT = 'pattern {name}'
-MSG_SCALE_WHAT = 'scale {name}'
-MSG_GENERATOR_WHAT = '{label} {name}'
+MSG_PATTERN_WHAT = 'pattern ({name})'
+MSG_SCALE_WHAT = 'scale ({name})'
+MSG_GENERATOR_WHAT = '{label} ({name})'
 # The offsets editor: a one-row grid with a label column this wide, and a margin around it.
 # A settings page's tab box: on the row of tabs, the keys that choose a tab, and Tab, which goes to the row of tabs.
 MSG_TO_TABS_WHAT = 'to tabs'
@@ -314,8 +312,8 @@ MSG_LETTERS_WHAT = 'letters'
 MSG_DEGREES_WHAT = 'scale degrees'
 
 # interface/tracker/screens/set/grooves_page.py
-MSG_GROOVE_WHAT = 'groove {name}'
-MSG_INSTRUMENT_WHAT = 'instrument {name}'
+MSG_GROOVE_WHAT = 'groove ({name})'
+MSG_INSTRUMENT_WHAT = 'instrument ({name})'
 MSG_VIEW_WHAT = 'view'
 
 # interface/tracker/screens/set/groove_editor.py

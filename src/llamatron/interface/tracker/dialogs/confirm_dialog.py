@@ -13,17 +13,17 @@ from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.user_strings import labels
 
 
-# The two buttons' places, in the order MSG_CONFIRM_BUTTONS draws them, and the binding whose key each shows.
+# The two buttons' places, in the order MSG_CONFIRM_BUTTONS draws them. Each shows its name alone, with no key, since ENTER
+# presses the selected one and ESC answers No.
 YES = 0
 NO = 1
-BUTTON_BINDINGS = (keybindings.ConfirmDialog.YES, keybindings.ConfirmDialog.NO)
 
 
 class ConfirmDialog(MessageDialog):
     """Answers True for yes. Anything else that closes it counts as no.
 
     Yes and No are boxed buttons under the message, like a real window's: Left and
-    Right move between them and Enter presses the selected one, while Y and N still answer at once.
+    Right move between them, Enter presses the selected one, and Esc answers No.
     """
 
     KEYS = keybindings.ConfirmDialog
@@ -36,11 +36,9 @@ class ConfirmDialog(MessageDialog):
 
     def keys(self):
         return [
-            self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
+            self.bind(self.KEYS.NO, action=lambda: self.dismiss(None)),
             self.bind(self.KEYS.SELECT, action=self.move_cursor, wants_key=True),
             self.bind(self.KEYS.ANSWER, action=self.answer),
-            self.bind(self.KEYS.YES, action=lambda: self.dismiss(True)),
-            self.bind(self.KEYS.NO, action=lambda: self.dismiss(None)),
         ]
 
     def move_cursor(self, name):
@@ -51,5 +49,5 @@ class ConfirmDialog(MessageDialog):
 
     def lines(self, width):
         """Return the message, a blank line and Yes and No as boxed buttons, the selected one double-lined."""
-        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_CONFIRM_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(drawing.NOTHING, label) for label in labels.MSG_CONFIRM_BUTTONS]
         return [*self.message_lines(width), Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.choice)]

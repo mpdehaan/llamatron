@@ -244,6 +244,10 @@ def screen_text(app):
 NOTHING_TAKES_TEXT = 'typing {text!r} would press the keys of {screen}, which takes no text'
 # The most keys a walk to a named place may take, so that a walk that can never arrive fails rather than hangs.
 MOST_MOVES = 400
+# A Yes or No question's answers, which have no letters: Left reaches YES from either button, since a cursor stops at the edge,
+# and ENTER presses it; ESC answers NO.
+ANSWER_YES = (Key.LEFT, Key.ENTER)
+ANSWER_NO = Key.ESCAPE
 MSG_NEVER_REACHED = 'the cursor never reached {target}'
 
 class UITest(unittest.IsolatedAsyncioTestCase):

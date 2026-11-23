@@ -25,10 +25,10 @@ class ImportedDialog(MessageDialog):
 
     def __init__(self, imported):
         made = [
-            importing.MSG_IMPORTED_SONG.format(name=imported.song.name),
-            importing.MSG_IMPORTED_COUNTS.format(tracks=imported.tracks, patterns=imported.patterns, scenes=imported.scenes),
-            importing.MSG_IMPORTED_WARNINGS if imported.warnings else importing.MSG_IMPORTED_NO_WARNINGS,
+            importing.MSG_IMPORTED_SONG.format(name=imported.song.name, tracks=imported.tracks, patterns=imported.patterns, scenes=imported.scenes),
         ]
+        if imported.warnings:
+            made.append(importing.MSG_IMPORTED_WARNINGS)
         super().__init__(title=importing.MSG_IMPORTED_TITLE, messages=made)
         self.warnings = imported.warnings
 
@@ -36,4 +36,4 @@ class ImportedDialog(MessageDialog):
         lines = self.message_lines(width)
         for warning in self.warnings:
             lines += [Text(drawing.NOTHING), *wrapped(text=warning, width=width)]
-        return [*lines, Text(drawing.NOTHING), *button_row(buttons=[(self.KEYS.CLOSE.name, importing.MSG_IMPORTED_BUTTON)], selected=0)]
+        return [*lines, Text(drawing.NOTHING), *button_row(buttons=[(drawing.NOTHING, importing.MSG_IMPORTED_BUTTON)], selected=0)]

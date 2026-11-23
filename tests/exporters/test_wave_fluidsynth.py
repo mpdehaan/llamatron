@@ -24,7 +24,6 @@ from llamatron.exporters import exports, wave_fluidsynth
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.exporters.wave_level import peak_sample
-from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
@@ -193,7 +192,7 @@ class TestWaveExportInTheTracker(UITest):
             self.assertIsInstance(self.app.screen, ConfirmDialog)
             self.assertIn(messages.MSG_WAV_EXPORT_TITLE, self.text())
             self.assertIn(messages.MSG_WAV_EXPORT_NOTE, self.app.screen.messages)
-            await self.press(keybindings.ConfirmDialog.YES)
+            await self.press(*ui_testing.ANSWER_YES)
         self.assertIn(fixed_text(messages.MSG_EXPORTED), self.text())
         self.assertIn(exports.EXPORT_LABELS[ExportKind.WAV], self.text())
         self.assertTrue(os.path.exists(WaveFluidSynth.FILE.format(name=NAME)))
@@ -201,7 +200,7 @@ class TestWaveExportInTheTracker(UITest):
     async def test_no_writes_nothing(self):
         with mock.patch(TRACKER_INSTALLED, return_value=True):
             await self.choose_wav()
-            await self.press(keybindings.ConfirmDialog.NO)
+            await self.press(ui_testing.ANSWER_NO)
         self.assertFalse(os.path.exists(WaveFluidSynth.FILE.format(name=NAME)))
 
     async def test_fluidsynth_not_installed_is_told_and_nothing_is_written(self):

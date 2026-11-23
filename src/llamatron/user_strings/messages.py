@@ -7,20 +7,19 @@ Each constant starts with MSG_. A message that says what went wrong is an error,
 """
 
 from llamatron.model.schema.file_format import Section, SetlistSetting, SongSetting
-from llamatron.user_strings.labels import PageName
 
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
 MSG_NO_SCALE = 'no scale'
 
 # interface/tracker/app.py
-MSG_QUIT_UNSAVED_NOTE = 'unsaved changes'
+MSG_QUIT_WITHOUT_SAVING_TITLE = 'Quit without saving?'
 MSG_QUIT_UNSAVED_QUESTION = 'The set has unsaved changes.'
 
 # interface/tracker/screens/arrange/arrange_page.py
 # Dialogs and messages.
 MSG_DELETE_SCENE_QUESTION = 'Delete scene {name}?'
-MSG_DELETE_TRACK_QUESTION = 'Delete track {name}?'
-MSG_DELETE_CLIP_QUESTION = 'Delete the clip on track {track}?'
+MSG_DELETE_TRACK_QUESTION = 'Delete track ({name})?'
+MSG_DELETE_CLIP_QUESTION = 'Delete the clip on track ({track})?'
 MSG_GRABBERS_STOP = '{count} clip(s) that grab from it will stop grabbing.'
 MSG_PATTERN_FOR_CLIP_TITLE = 'Pattern for this clip'
 # The first choice of an empty cell's picker on Arrange, which makes a new blank pattern for the clip and opens it.
@@ -28,14 +27,14 @@ MSG_NEW_PATTERN_CHOICE = '(new pattern)'
 MSG_COPIED_CLIP = 'copied the clip: press V on another cell to paste it'
 MSG_PASTED_WITHOUT_GRAB = 'pasted without its grab from {track}, which would go round in a circle here'
 # The scene page.
-MSG_SCENE_NAME_PROMPT = 'Scene name'
+MSG_SCENE_NAME_PROMPT = 'Rename {name}'
 MSG_SCENE_SCALE_TITLE = 'Scene scale'
 MSG_CLIP_SCALE_TITLE = 'Clip scale'
 MSG_SONG_TIME_SIGNATURE_PROMPT = 'Time signature, such as 6/8'
 MSG_SCENE_LENGTH_NOTE = '  Length    {length}  (its longest clip that does not loop, with repeats)'
 MSG_PROBLEM_NOTE = '  Problem   {problem}'
 # The clip page.
-MSG_CLIP_NAME_PROMPT = 'Clip name'
+MSG_CLIP_NAME_PROMPT = 'Rename the clip on track ({track})'
 MSG_CLIP_LENGTH_NOTE = '  Length    {length}  of a {scene} scene'
 MSG_LOOP_NOTE = '  Plays until the other clips are done. One clip in a scene must not loop.'
 MSG_MORPH_HINT_NOTE = '  Set Repeat above 1 to choose a pattern to morph to.'
@@ -61,10 +60,8 @@ MSG_USE_SONG = 'song {name}'
 MSG_USE_SONG_TRACK = 'song {song}, track {track}'
 
 # interface/tracker/screens/shared/list_page.py and interface/tracker/screens/shared/field_page.py
-MSG_DELETE_TITLE = 'Delete'
 # Fracture, on Arrange: every clip of the song given a pattern of its own.
-MSG_FRACTURE_TITLE = 'Fracture'
-MSG_FRACTURE_QUESTION = 'Do you really want to give all clips unique patterns?'
+MSG_FRACTURE_TITLE = 'Give every clip a pattern of its own?'
 MSG_FRACTURED = 'fractured: {count} patterns copied'
 MSG_NOTHING_TO_FRACTURE = 'every clip already has its own pattern'
 # interface/tracker/screens/arrange/arrange_page.py: the picker of chains to add to a cell from its details.
@@ -75,23 +72,22 @@ MSG_TAKEN_OUT_OF = 'It is taken out of:'
 MSG_ALSO_DELETES_CLIPS = 'This also deletes its {count} clip(s).'
 
 # interface/tracker/screens/set/main_page.py, interface/tracker/screens/set/file_page.py and interface/tracker/screens/shared/everywhere.py
-MSG_QUIT_TITLE = PageName.QUIT
 MSG_SONG_SCALE_TITLE = 'Song scale'
 # The notes under the File/Global page's fields.
 MSG_FILE_NOTE = '  Path          {path}'
 MSG_EXPORTS_NOTE = '  Exports to    {where}'
 # Opening, saving and exporting, from any page.
-MSG_UNSAVED_TITLE = 'Unsaved changes'
-MSG_UNSAVED_CONTINUE = 'This set has unsaved changes, which will be lost. Continue?'
+MSG_UNSAVED_TITLE = 'Continue without saving?'
+MSG_UNSAVED_CONTINUE = 'This set has unsaved changes, which will be lost.'
 MSG_STARTED_NEW = 'started a new set'
 MSG_OPENED = 'opened {path}'
 MSG_SAVE_AS_PROMPT = 'Save as'
-MSG_REPLACE_FILE_TITLE = 'Replace file'
-MSG_REPLACE_FILE_QUESTION = 'Replace {path}?'
+MSG_REPLACE_FILE_TITLE = 'Replace the file?'
+MSG_REPLACE_FILE_QUESTION = '{path} is there already.'
 MSG_SAVED = 'saved {path}'
 MSG_FILE_UNCHANGED = 'no changes to save: {path} is up to date'
-MSG_FILE_CHANGED_ELSEWHERE_TITLE = 'File changed'
-MSG_FILE_CHANGED_ELSEWHERE_QUESTION = '{path} has changed since it was opened or saved here. Write over it?'
+MSG_FILE_CHANGED_ELSEWHERE_TITLE = 'Write over the changed file?'
+MSG_FILE_CHANGED_ELSEWHERE_QUESTION = '{path} has changed since it was opened or saved here.'
 # A protected set, like the demos, is never saved over: Ctrl+S offers a copy, and the File/Global page turns the protection off.
 MSG_PROTECTED_TITLE = 'Protected set'
 MSG_PROTECTED_EXPLAINED = '{path} is protected, so it is not written over. Protected on the File/Global page turns that off.'
@@ -103,22 +99,21 @@ MSG_CORRECTED = '{where}: {name} {found} becomes {used}'
 MSG_CORRECTED_TO_DEFAULT = '{where}: {name} {found} becomes the default'
 MSG_CORRECTED_NO_PLUGIN = 'generator ({name}): no plugin of kind ({kind}), removed with every use'
 MSG_CORRECTED_SEVERAL = '{where}: {name}, {count} out of range, nearest allowed used'
-MSG_CORRECTIONS_TITLE = 'Values that cannot be used'
+MSG_CORRECTIONS_TITLE = 'Open the set with these changes?'
 MSG_CORRECTIONS_INTRO = '{file} holds values that cannot be used. Opening the set changes each one:'
 MSG_CORRECTIONS_MORE = 'and {count} more'
 MSG_CORRECTIONS_WARNING = 'The composition may sound different. The file stays as it is until the set is saved.'
-MSG_CORRECTIONS_QUESTION = 'Open the set with these changes?'
 # Exports are named after the set's file and written beside it, so an unsaved set is saved first.
-MSG_SAVE_BEFORE_EXPORT_TITLE = 'Save first'
-MSG_SAVE_BEFORE_EXPORT = 'Exports are named after the set and written beside its file, so the set has to be saved first.'
+MSG_SAVE_BEFORE_EXPORT_TITLE = 'Save the set first?'
+MSG_SAVE_BEFORE_EXPORT = 'Exports are named after the set and written beside its file.'
 # What X offers, in the order of EXPORT_KINDS: a Live set, then the three kinds of MIDI files.
 MSG_EXPORT_TITLE = 'Export song {name}'
 # Only a Live set asks before it's written over, and only the first time in a session.
-MSG_REPLACE_EXPORT_TITLE = 'Overwrite'
+MSG_REPLACE_EXPORT_TITLE = 'Overwrite the export?'
 # Choosing the WAV export, which plays only the tracks whose instrument plays through FluidSynth.
-MSG_WAV_EXPORT_TITLE = 'WAV export'
-MSG_WAV_EXPORT_NOTE = 'Only the tracks whose instrument plays through FluidSynth are in the WAV export. Export it?'
-MSG_REPLACE_EXPORT_QUESTION = 'Are you sure you want to overwrite {path}?'
+MSG_WAV_EXPORT_TITLE = 'Export WAV?'
+MSG_WAV_EXPORT_NOTE = 'Only the tracks whose instrument plays through FluidSynth are in the WAV export.'
+MSG_REPLACE_EXPORT_QUESTION = '{path} is there already.'
 MSG_EXPORT_REPLACES_LIVE_WORK = 'Anything saved over it in Live is lost. Save your own work under another name.'
 MSG_EXPORTED = 'exported the {name} to {path}'
 
@@ -144,29 +139,29 @@ MSG_CHANGED_WORDS = {
 }
 
 # The Songs page.
-MSG_NEW_SONG_PROMPT = 'New song name'
-MSG_RENAME_SONG_PROMPT = 'Rename song'
+MSG_NEW_SONG_PROMPT = 'New song'
+MSG_RENAME_SONG_PROMPT = 'Rename song ({name})'
 
 # interface/tracker/screens/arrange/track_editor.py
-MSG_RENAME_TRACK_PROMPT = 'Rename track'
+MSG_RENAME_TRACK_PROMPT = 'Rename track ({name})'
 MSG_EDITING = 'editing: Tab reaches Save and CANCEL, ESC cancels'
-MSG_CLEAR_NOTES_TITLE = 'Clear the notes'
-MSG_CLEAR_NOTES_QUESTION = 'Delete all of the notes?'
+MSG_CLEAR_NOTES_TITLE = 'Delete all of the notes?'
 MSG_NO_NOTES_NOTE = '  No notes yet. Press E to write some.'
 # A protected set's notes can only be read, since the set is kept as it is.
 MSG_NO_NOTES_PROTECTED = '  No notes. The set is protected, so they cannot be written here.'
 MSG_NOTES_PROTECTED = 'the set is protected, so its notes can only be read'
-MSG_NEW_PATTERN_PROMPT = 'New pattern name'
+MSG_NEW_PATTERN_PROMPT = 'New pattern'
 # interface/tracker/screens/pattern/patterns_page.py: the pattern groups.
-MSG_NEW_GROUP_PROMPT = 'New pattern group name'
-MSG_RENAME_GROUP_PROMPT = 'Rename pattern group'
+MSG_NEW_GROUP_PROMPT = 'New group'
+MSG_RENAME_GROUP_PROMPT = 'Rename group ({name})'
 MSG_GROUP_TITLE = 'Group'
-MSG_COPY_GROUP_TITLE = 'Confirm copying the entire pattern group'
+MSG_COPY_GROUP_TITLE = 'Copy group ({name}) as'
 MSG_GROUP_COPIED = 'copied to group {name}'
-MSG_UNGROUP_TITLE = 'Ungroup'
-MSG_UNGROUP_QUESTION = 'Take every pattern out of the group ({name})? No pattern is deleted.'
-MSG_RENAME_CHAIN_PROMPT = 'Rename chain'
-MSG_RENAME_GENERATOR_PROMPT = 'Rename {label}'
+MSG_UNGROUP_TITLE = 'Take every pattern out of the group ({name})?'
+MSG_UNGROUP_QUESTION = 'No pattern is deleted.'
+MSG_RENAME_CHAIN_PROMPT = 'Rename chain ({name})'
+# Filled twice: with the kind's label when the page opens, then with the name.
+MSG_RENAME_GENERATOR_PROMPT = 'Rename {label} ({{name}})'
 MSG_COPIED_TO = 'copied to {name}'
 MSG_CC_PROMPT = 'CC {number} number'
 MSG_TRANSPOSE_NOTE = '  Transpose counts notes of the scale, so 7 is an octave in a seven-note scale.'
@@ -176,7 +171,7 @@ MSG_NEW_GENERATOR_KIND_TITLE = 'New generator: choose type'
 MSG_ADD_TO_CHAIN_TITLE = 'Add to chain'
 MSG_CHANGE_STEP_TITLE = 'Change step'
 MSG_OFFSETS_NOTE = '  Steps start again with each chord. A blank step is silent.'
-MSG_RENAME_SCALE_PROMPT = 'Rename scale'
+MSG_RENAME_SCALE_PROMPT = 'Rename scale ({name})'
 
 # interface/tracker/screens/set/scale_page.py
 MSG_ROOT_TITLE = 'Root note'
@@ -234,16 +229,14 @@ MSG_SCALE_LENGTH_TITLE = 'Scale length: notes in the scale the pattern is writte
 # Prompts, dialogs and messages.
 MSG_NUMBER_PROMPT = '{row} ({low} to {high})'
 MSG_PLAY_DIRECTION_TITLE = 'Play direction'
-MSG_LOAD_OVER_TITLE = 'Load over'
 MSG_LOAD_OVER_CHOICE_TITLE = 'Load over {name}'
-MSG_LOAD_OVER_QUESTION = 'Replace everything in {name} with a copy of {other}?'
+MSG_LOAD_OVER_QUESTION = 'Replace everything in ({name}) with a copy of ({other})?'
 MSG_STEPS_PROMPT = 'Number of steps'
-MSG_SHORTEN_TITLE = 'Shorten pattern'
-MSG_SHORTEN_QUESTION = 'This removes {count} step(s) that hold something. Continue?'
-MSG_CHANGE_TYPE_TITLE = 'Change pattern type'
-MSG_CHANGE_TYPE_QUESTION = 'This pattern will use {what}, which clears the notes it has now. Continue?'
+MSG_SHORTEN_QUESTION = 'Remove {count} step(s) that hold something?'
+MSG_CHANGE_TYPE_TITLE = 'Change the pattern type?'
+MSG_CHANGE_TYPE_QUESTION = 'The pattern will use {what}, which clears the notes it has now.'
 MSG_CHANGE_TYPE_EMPTY_QUESTION = 'This pattern will use {what}. Continue?'
-MSG_RENAME_PATTERN_PROMPT = 'Rename pattern'
+MSG_RENAME_PATTERN_PROMPT = 'Rename pattern ({name})'
 # interface/tracker/dialogs/chord_dialog.py and interface/tracker/chord_text.py: the Chord dialog, shared by the pattern editor and a progression's chord editor.
 MSG_CHORD_DIALOG_TITLE = 'Chord: {where}'
 MSG_CHORD_OF_STEP = 'step {step} of {pattern}'
@@ -263,10 +256,10 @@ MSG_RESTING_STEP = 'step {step}'
 MSG_RESTING_CHORD = 'chord {chord}'
 
 # interface/tracker/screens/set/grooves_page.py
-MSG_RENAME_GROOVE_PROMPT = 'Rename groove'
+MSG_RENAME_GROOVE_PROMPT = 'Rename groove ({name})'
 
 # interface/tracker/screens/set/instruments_page.py and interface/tracker/screens/set/instrument_editor.py
-MSG_RENAME_INSTRUMENT_PROMPT = 'Rename instrument'
+MSG_RENAME_INSTRUMENT_PROMPT = 'Rename instrument ({name})'
 MSG_DEVICE_TITLE = 'MIDI device'
 MSG_GM_SOUND_TITLE = 'General MIDI sound'
 MSG_CHANNEL_PROMPT = 'Channel ({lowest} to {highest})'
@@ -329,8 +322,7 @@ MSG_GUITAR_CELL_NOTE = 'cell {number}: {stroke}'
 MSG_GUITAR_CELL_ACCENTED_NOTE = 'cell {number}: {stroke}, accented'
 
 # interface/tracker/screens/wizard/wizard_page.py and the branches beside it
-MSG_WIZARD_CLOSE_TITLE = 'Close the wizard'
-MSG_CHANGE_GENRE_TITLE = 'Change Genre'
+MSG_CHANGE_GENRE_TITLE = 'Change the genre?'
 MSG_CHANGE_GENRE_LOST = 'LOST'
 MSG_CHANGE_GENRE_KEPT = 'KEPT'
 MSG_CHANGE_GENRE_BAND_SETTINGS = 'band settings changed: {count}'
@@ -339,7 +331,6 @@ MSG_CHANGE_GENRE_FORM = 'the form'
 MSG_CHANGE_GENRE_TUNE_TAKES = 'new takes of tunes: {count}'
 MSG_CHANGE_GENRE_RIFFS = 'riffs: {count}'
 MSG_CHANGE_GENRE_OWN_TUNES = 'edited tunes: {count}'
-MSG_CHANGE_GENRE_QUESTION = 'Change the genre?'
 MSG_WIZARD_CLOSE_QUESTION = 'Close the wizard and lose these choices?'
 MSG_WIZARD_CLOSE_UNCHANGED_QUESTION = 'Close the wizard?'
 MSG_WIZARD_CREATED = 'created song ({name})'
@@ -374,11 +365,10 @@ MSG_WIZARD_SECTIONS_HINT = 'Sections are in the tree at the left.'
 MSG_WIZARD_MOVING = 'moving ({name}): ↑↓ carry it, ENTER, ESC or M drops it'
 MSG_WIZARD_REPLACED = 'replaced song ({name})'
 MSG_WIZARD_NOTHING_TO_UNDO = 'nothing changes until Apply, so the wizard has nothing to undo'
-MSG_WIZARD_SONG_NAME_PROMPT = 'Name of the new song'
+MSG_WIZARD_SONG_NAME_PROMPT = 'New song'
 MSG_WIZARD_CHOOSE_FIRST = 'Choose a genre and a subgenre first.'
 
 # interface/pages/wizard/section_melody_branch.py, interface/tracker/screens/wizard/wizard_page.py: giving an edited tune back to the wizard, and what editing a tune did.
-MSG_WIZARD_TUNE_GIVE_BACK_TITLE = 'Wizard\'s Notes'
 MSG_WIZARD_TUNE_GIVE_BACK_QUESTION = 'Lose your notes of the {kind} melody and let the wizard write the melody?'
 MSG_WIZARD_REGENERATE_TITLE = 'Regenerate {name}?'
 MSG_WIZARD_REGENERATE_SAYS = 'New notes replace the notes of {name}.'
@@ -389,16 +379,16 @@ MSG_WIZARD_RIFF_USED_IN = 'Used in: {kinds}.'
 MSG_WIZARD_RIFF_DELETED = '{riff} deleted'
 MSG_WIZARD_RIFF_WRITTEN = '{riff} written for {player}'
 MSG_WIZARD_RIFF_COPIED = '{riff} copied to {copy} for {player}'
-MSG_WIZARD_RIFF_RENAME_PROMPT = 'Rename riff'
+MSG_WIZARD_RIFF_RENAME_PROMPT = 'Rename riff ({name})'
 MSG_WIZARD_RIFF_GIVEN = '{player} knows {riff}'
 MSG_WIZARD_RIFF_TAKEN_FROM = '{player} no longer knows {riff}'
 MSG_WIZARD_TAKE_RIFF_TITLE = 'Remove {riff} from {player}?'
-MSG_WIZARD_FIT_TUNE_TITLE = 'Chords Changed'
 MSG_WIZARD_PHRASING_KEPT = 'phrasing kept'
 MSG_WIZARD_PHRASING_UNCHANGED = 'phrasing unchanged'
 MSG_WIZARD_PLAYER_KEPT = 'player kept'
 MSG_WIZARD_PLAYER_UNCHANGED = 'player unchanged'
-MSG_WIZARD_FIT_TUNE_QUESTION = 'The chords changed under your tune: {kinds}. Fit the tune to the chords?'
+MSG_WIZARD_FIT_TUNE_QUESTION = 'Fit the tune to the chords?'
+MSG_WIZARD_FIT_TUNE_CHANGED = 'The chords changed under your tune: {kinds}.'
 MSG_WIZARD_FIT_TUNE_SAYS = 'YES moves long notes that clash to the nearest chord note. NO keeps the tune as written.'
 MSG_WIZARD_TUNES_FITTED = 'tune fitted to the chords: {kinds}'
 MSG_WIZARD_RIFF_KEPT = '{riff} is yours: no choice changes its notes'

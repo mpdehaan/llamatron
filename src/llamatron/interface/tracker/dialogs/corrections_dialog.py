@@ -40,5 +40,4 @@ class CorrectionsDialog(ConfirmDialog):
             lines.append(Text(messages.MSG_CORRECTIONS_MORE.format(count=more), style=Style.DIM))
         lines.append(Text(drawing.NOTHING))
         lines += wrapped(text=messages.MSG_CORRECTIONS_WARNING, width=width)
-        lines += wrapped(text=messages.MSG_CORRECTIONS_QUESTION, width=width)
         return lines

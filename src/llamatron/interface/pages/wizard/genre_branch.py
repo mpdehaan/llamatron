@@ -45,7 +45,7 @@ class GenreBranch(Branch):
         if kept:
             said += [NO_TEXT, messages.MSG_CHANGE_GENRE_KEPT, *(KEPT_SHOWN[kind].format(count=count) for kind, count in kept.items())]
         page = self.get_page()
-        page.confirm(title=messages.MSG_CHANGE_GENRE_TITLE, lines=[*said, NO_TEXT, messages.MSG_CHANGE_GENRE_QUESTION], starts_on_no=True,
+        page.confirm(title=messages.MSG_CHANGE_GENRE_TITLE, lines=said, starts_on_no=True, deletes=True,
                      then=lambda: page.choosing(choices.set_genre)(genre))
 
     def fields(self):

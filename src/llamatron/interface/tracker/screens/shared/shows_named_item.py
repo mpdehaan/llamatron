@@ -110,4 +110,4 @@ class ShowsNamedItem:
         def renamed(new):
             self.document().rename_named(section=self.SECTION, old=name, new=new)
             self.show_item(new)
-        self.ask_name(title=self.RENAME_PROMPT, value=name, taken=self.document().names_of(self.SECTION), then=renamed)
+        self.ask_name(title=self.RENAME_PROMPT.format(name=name), value=name, taken=self.document().names_of(self.SECTION), then=renamed)

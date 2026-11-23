@@ -134,7 +134,7 @@ class TestNotesPage(UITest):
         self.document.change_set(self.document.get_setlist().set_notes, ONE)
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertFalse(self.document.get_setlist().has_notes())
 
     async def test_long_notes_scroll(self):

@@ -381,7 +381,7 @@ class KeyTour(UITest):
         await self.press(keybindings.WizardPage.TO_TREE, Key.LEFT, Key.LEFT)
         await self.press(*[Key.DOWN] * len(self.app.screen.rows()), keybindings.WizardPage.INTO_FIELDS)
         await self.walk()
-        await self.press(keybindings.WizardPage.TO_TREE, keybindings.WizardPage.CLOSE, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.WizardPage.TO_TREE, keybindings.WizardPage.CLOSE, *ui_testing.ANSWER_YES)
 
 
 class TestKeyTour(KeyTour):

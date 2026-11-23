@@ -116,7 +116,7 @@ class RiffsBranch(Branch):
         def renamed(name):
             page.choosing(lambda new: choices.get_riffs().rename_riff(riff=riff, name=new))(name)
             page.go_to_field(name)
-        page.ask_name(title=messages.MSG_WIZARD_RIFF_RENAME_PROMPT, value=riff, taken=choices.get_riffs().riff_names(), then=renamed)
+        page.ask_name(title=messages.MSG_WIZARD_RIFF_RENAME_PROMPT.format(name=riff), value=riff, taken=choices.get_riffs().riff_names(), then=renamed)
 
     def copy_riff(self, riff):
         """Ask which player the copy is for, the riff's own first, and copy the riff: a copy for another player keeps the notes in that player's octave."""

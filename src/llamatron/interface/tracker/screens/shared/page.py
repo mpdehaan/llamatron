@@ -31,7 +31,7 @@ from llamatron.interface.tracker.screens.shared.everywhere import everywhere_key
 from llamatron.interface.tracker.themes import luminance
 from llamatron.model.objects.naming import is_taken
 from llamatron.model.schema import limits
-from llamatron.user_strings import errors, help as help_text, labels, marks as marks_text, messages as messages_text
+from llamatron.user_strings import errors, help as help_text, labels, marks as marks_text
 
 
 PROGRAM_NAME = 'llamatron'
@@ -297,8 +297,10 @@ class Page(BindsKeys, Screen):
         self.ask(dialog=ConfirmDialog(title=title, messages=list(lines), starts_on_no=starts_on_no, deletes=deletes), then=lambda _: then())
 
     def confirm_delete(self, *, lines, then):
-        """Ask whether to delete something, under the one title every deletion is asked under, and run a function on yes alone."""
-        self.confirm(title=messages_text.MSG_DELETE_TITLE, lines=lines, then=then)
+        """Ask whether to delete something, the first line being the question, drawn as the title in the colour of a warning,
+        and the rest what else goes with it, and run a function on yes alone."""
+        question, *said = lines
+        self.confirm(title=question, lines=said, deletes=True, then=then)
 
     def tell(self, title, *lines):
         self.app.push_screen(MessageDialog(title=title, messages=list(lines)))

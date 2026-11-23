@@ -10,9 +10,8 @@ from textual.screen import ModalScreen
 from textual.widgets import Static
 
 from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.drawing import Box, legend, Style
+from llamatron.interface.tracker.drawing import Box, legend, Style, wrapped
 from llamatron.interface.tracker.key_table import BindsKeys, pressed_key, quits_at_once
-from llamatron.user_strings import messages
 
 
 DIALOG_ID = 'dialog'
@@ -25,7 +24,6 @@ DIALOG_MARGIN = 4
 # How far down and to the right a flyout's box is drawn from its dialog's, so that the two read as a stack.
 FLYOUT_SHIFT = 2
 # The titles drawn in red: questions whose yes gives something up, so that none is answered by habit.
-TITLES_IN_RED = (messages.MSG_DELETE_TITLE, messages.MSG_CHANGE_GENRE_TITLE)
 
 
 class Dialog(BindsKeys, ModalScreen):
@@ -60,7 +58,7 @@ class Dialog(BindsKeys, ModalScreen):
 
     def heading(self, width):
         """Return the dialog's top line, in red for a question whose yes gives something up, so that it isn't answered by habit."""
-        return Text(self.title, style=Style.DELETE_TITLE if self.deletes or self.title in TITLES_IN_RED else Style.BOLD)
+        return Text(self.title, style=Style.DELETE_TITLE if self.deletes else Style.BOLD)
 
     def draw(self):
         if not self.is_attached or not self.query(DIALOG_VIEW_SELECTOR):
@@ -94,7 +92,7 @@ class Dialog(BindsKeys, ModalScreen):
 
     def contents(self, inner):
         """Return the lines inside the box at a width: the heading, the dialog's own lines, and its keys."""
-        result = [self.heading(inner), Text(drawing.NOTHING)]
+        result = [*heading_lines(heading=self.heading(inner), width=inner), Text(drawing.NOTHING)]
         result += self.lines(inner)
         if self.shows_legend:
             result += [Text(drawing.NOTHING), *self.legend_lines(inner)]
@@ -105,8 +103,9 @@ class Dialog(BindsKeys, ModalScreen):
         return DIALOG_WIDTH
 
     def legend_lines(self, width):
-        """Return the lines listing the keys under the dialog."""
-        return legend(keys=self.keys(), width=width)
+        """Return the lines listing the keys under the dialog, leaving out those its class keeps to the F1 list, such as the keys
+        a dialog's buttons name."""
+        return legend(keys=[item for item in self.keys() if item.shown], width=width)
 
     def flyout_lines(self, width):
         """Return the lines of the flyout open over this dialog, or None: a flyout is drawn as a box of the dialog's size over it, a little down and to the right."""
@@ -162,3 +161,11 @@ class Dialog(BindsKeys, ModalScreen):
 
     def other_key(self, event):
         pass
+
+
+def heading_lines(*, heading, width):
+    """Return a dialog's title as lines of a width, wrapped where a question in the title is longer than the box, each line in
+    the title's style."""
+    if heading.cell_len <= width:
+        return [heading]
+    return [Text(line.plain, style=heading.style) for line in wrapped(text=heading.plain, width=width)]

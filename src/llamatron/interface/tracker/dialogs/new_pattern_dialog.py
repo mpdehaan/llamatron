@@ -30,7 +30,6 @@ LABEL_WIDTH = max(len(label) for label in LABELS) + 4
 # The buttons, in the order drawn, and the binding whose key each shows.
 OK_BUTTON = 0
 CANCEL_BUTTON = 1
-BUTTON_BINDINGS = (keybindings.NewPatternDialog.OK, keybindings.Dialog.CANCEL)
 NO_BUTTON = -1
 # What the Scale length steps through: any scale, then each number of notes.
 SCALE_LENGTHS = (None, *range(limits.MIN_SCALE_LENGTH, limits.MAX_SCALE_LENGTH + 1))
@@ -103,5 +102,5 @@ class NewPatternDialog(Dialog):
             blocked = row == SCALE_LENGTH and self.drum
             line.append(value, style=Style.DIM if blocked else Style.BOLD if row == self.row else Style.PLAIN)
             lines.append(line)
-        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_NEW_PATTERN_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(drawing.NOTHING, label) for label in labels.MSG_NEW_PATTERN_BUTTONS]
         return [*lines, Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.button if self.row == BUTTONS else NO_BUTTON)]

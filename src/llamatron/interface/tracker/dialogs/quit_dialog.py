@@ -44,7 +44,8 @@ class QuitDialog(MessageDialog):
 
     def wanted_width(self):
         """Return a width that holds the dialog's keys on one line, where the console has the room, since they are too many for the usual width."""
-        keys_on_one_line = max(line.cell_len for line in legend(keys=self.keys(), width=UNLIMITED_WIDTH))
+        shown = [item for item in self.keys() if item.shown]
+        keys_on_one_line = max(line.cell_len for line in legend(keys=shown, width=UNLIMITED_WIDTH))
         return max(super().wanted_width(), keys_on_one_line + dialog.DIALOG_MARGIN)
 
     def move_cursor(self, name):

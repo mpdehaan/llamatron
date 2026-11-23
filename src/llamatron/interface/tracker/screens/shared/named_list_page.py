@@ -47,8 +47,9 @@ class NamedListPage(ListPage):
     def uses(self, name):
         return self.document().uses(section=self.LISTED_SECTION, name=name)
 
-    def rename_title(self):
-        return self.RENAME_PROMPT
+    def rename_title(self, name):
+        """Return the title of the dialog that renames one of the page's things."""
+        return self.RENAME_PROMPT.format(name=name)
 
     def what_is(self, name):
         """Return the words for one of the page's things in a question, like pattern (bass)."""
@@ -83,7 +84,7 @@ class NamedListPage(ListPage):
     def rename(self):
         name = self.current()
         self.ask_name(
-            title=self.rename_title(), value=name, taken=self.names(),
+            title=self.rename_title(name), value=name, taken=self.names(),
             then=lambda new: self.document().rename_named(section=self.LISTED_SECTION, old=name, new=new),
         )
 

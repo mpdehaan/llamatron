@@ -29,7 +29,6 @@ from llamatron.user_strings import errors, labels, marks, messages as messages_t
 DEFAULT_SAVE_FOLDER = 'songs'
 DEFAULT_SAVE_NAME = 'untitled.yml'
 # How the quit dialog's title says there's something to lose.
-UNSAVED_TITLE = '{title} ({note})'
 
 
 def everywhere_actions(page):
@@ -300,11 +299,9 @@ def quit_program(page):
     if not page.document().is_dirty():
         page.app.exit()
         return
-    title = UNSAVED_TITLE.format(title=messages_text.MSG_QUIT_TITLE, note=messages_text.MSG_QUIT_UNSAVED_NOTE)
-
     def chosen(answer):
         if answer == quit_dialog.SAVE_THEN_QUIT:
             save(page, then=page.app.exit)
         else:
             page.app.exit()
-    page.ask(dialog=QuitDialog(title=title, messages=[messages_text.MSG_QUIT_UNSAVED_QUESTION]), then=chosen)
+    page.ask(dialog=QuitDialog(title=messages_text.MSG_QUIT_WITHOUT_SAVING_TITLE, messages=[messages_text.MSG_QUIT_UNSAVED_QUESTION]), then=chosen)

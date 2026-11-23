@@ -35,6 +35,7 @@ from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import PatternSetting, Row, Section, SetlistSetting
 from llamatron.model.values import midi
 from llamatron.user_strings import errors as errors_text, labels, marks, messages
+from tests.support import ui_testing
 from tests.support.ui_testing import a_song, UITest
 
 # The two sets made for these tests, and the names their copies go by in a test's own folder.
@@ -111,7 +112,7 @@ class TestCorrectionsDialog(CorrectionsTest):
         self.assertIsInstance(self.app.screen, CorrectionsDialog)
         self.assertIs(self.app.get_document(), before)
         said = self.said()
-        for sentence in [messages.MSG_CORRECTIONS_TITLE, messages.MSG_CORRECTIONS_INTRO.format(file=SAMPLE), messages.MSG_CORRECTIONS_WARNING, messages.MSG_CORRECTIONS_QUESTION]:
+        for sentence in [messages.MSG_CORRECTIONS_TITLE, messages.MSG_CORRECTIONS_INTRO.format(file=SAMPLE), messages.MSG_CORRECTIONS_WARNING]:
             self.assertIn(sentence, said)
 
     async def test_only_the_first_few_are_listed_with_a_count_of_the_rest(self):
@@ -150,12 +151,12 @@ class TestCorrectionsDialog(CorrectionsTest):
         self.assertLessEqual(len(lines), rows)
         self.assertTrue(any(Box.HEAVY_TOP_LEFT in line for line in lines))
         self.assertTrue(any(Box.HEAVY_BOTTOM_LEFT in line for line in lines))
-        self.assertIn(messages.MSG_CORRECTIONS_QUESTION, self.text())
+        self.assertIn(messages.MSG_CORRECTIONS_TITLE, self.text())
 
     async def test_yes_opens_the_set_corrected_and_unsaved_and_leaves_the_file_alone(self):
         before = file_bytes(copy_of(SAMPLE))
         await self.choose(SAMPLE)
-        await self.press(keybindings.CorrectionsDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, MainPage)
         document = self.app.get_document()
         self.assertEqual(document.get_path(), SAMPLE)
@@ -174,7 +175,7 @@ class TestCorrectionsDialog(CorrectionsTest):
         before = self.app.get_document()
         contents = file_bytes(copy_of(SAMPLE))
         await self.choose(SAMPLE)
-        await self.press(keybindings.CorrectionsDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertIsInstance(self.app.screen, OpenPage)
         self.assertIs(self.app.get_document(), before)
         self.assertEqual(file_bytes(SAMPLE), contents)
@@ -192,7 +193,7 @@ class TestCorrectionsDialog(CorrectionsTest):
 
     async def test_saving_the_opened_set_writes_the_corrected_values_to_the_file(self):
         await self.choose(copy_of(SAMPLE))
-        await self.press(keybindings.CorrectionsDialog.YES, keybindings.Page.SAVE)
+        await self.press(*ui_testing.ANSWER_YES, keybindings.Page.SAVE)
         self.assertIn(messages.MSG_SAVED.format(path=SAMPLE), self.text())
         self.assertFalse(self.app.get_document().is_dirty())
         self.assertEqual(Setlist.read_file(SAMPLE).get_default_octave(), limits.MIN_OCTAVE)
@@ -200,7 +201,7 @@ class TestCorrectionsDialog(CorrectionsTest):
 
     async def test_undoing_an_edit_made_after_opening_leaves_the_set_unsaved(self):
         await self.choose(copy_of(SAMPLE))
-        await self.press(keybindings.CorrectionsDialog.YES, keybindings.MainPage.FILE)
+        await self.press(*ui_testing.ANSWER_YES, keybindings.MainPage.FILE)
         await self.select_field(labels.MSG_PROTECTED_LABEL)
         await self.press(Key.ENTER, keybindings.Page.UNDO)
         self.assertFalse(self.app.get_document().get_setlist().is_protected())
@@ -235,7 +236,7 @@ class TestStartingTheTrackerOnSuchAFile(CorrectionsTest):
         self.assertIn(messages.MSG_CORRECTIONS_INTRO.format(file=SAMPLE), self.said())
 
     async def test_yes_opens_the_set_corrected_and_unsaved(self):
-        await self.press(keybindings.CorrectionsDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, MainPage)
         self.assertIs(self.app.get_document(), self.offered)
         self.assertTrue(self.app.get_document().is_dirty())
@@ -245,7 +246,7 @@ class TestStartingTheTrackerOnSuchAFile(CorrectionsTest):
         self.assertIn(marks.MSG_UNSAVED_CHANGES_MARK, header)
 
     async def test_no_leaves_a_new_set_with_no_file(self):
-        await self.press(keybindings.CorrectionsDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertIsInstance(self.app.screen, MainPage)
         document = self.app.get_document()
         self.assertIsNone(document.get_path())

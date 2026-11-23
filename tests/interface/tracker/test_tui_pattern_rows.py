@@ -203,10 +203,10 @@ class TestDrumPatterns(UITest):
     async def test_the_toggle_asks_before_clearing_notes(self):
         await self.reconfigure(Reconfigure.DRUM)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertTrue(self.document.get_setlist().get_pattern(BEAT).is_drum())
         await self.reconfigure(Reconfigure.DRUM)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertFalse(self.document.get_setlist().get_pattern(BEAT).is_drum())
         self.assertFalse(self.document.has_notes(BEAT))
 

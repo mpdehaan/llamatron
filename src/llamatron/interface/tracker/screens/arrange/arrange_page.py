@@ -297,7 +297,7 @@ class ArrangePage(Page):
 
     def ask_to_fracture(self):
         """Ask before giving every clip of the song a pattern of its own, which a finished song wants so that its sections can be edited apart."""
-        self.confirm(title=messages.MSG_FRACTURE_TITLE, lines=[messages.MSG_FRACTURE_QUESTION], then=self.fracture)
+        self.confirm(title=messages.MSG_FRACTURE_TITLE, lines=[], then=self.fracture)
 
     def fracture(self):
         document = self.document()

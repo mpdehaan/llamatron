@@ -34,7 +34,6 @@ from llamatron.user_strings import labels, marks, messages
 BUTTONS_PLACE = file_format.KEYSWITCH_SLOT_COUNT
 OK = 0
 CANCEL = 1
-BUTTON_BINDINGS = (keybindings.KeyswitchMapDialog.OK, keybindings.KeyswitchMapDialog.CANCEL)
 # The styles of the picker's keys: the key picked filled in the Chord dialog's green, the rest dim.
 KEY_STYLES = {KeyKind.CHORD: Style.CHORD_KEY, KeyKind.OUTSIDE: Style.DIM}
 ONE_HALF_STEP = 1
@@ -81,16 +80,14 @@ class KeyswitchMapDialog(Dialog):
         shared = [
             self.bind(self.KEYS.CANCEL, action=lambda: self.dismiss(None)),
             self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True),
-            self.bind(self.KEYS.OK, action=self.finish),
         ]
         if self.on_buttons():
             return [*shared, self.bind(self.KEYS.ALONG_BUTTONS, action=self.along_buttons, wants_key=True), self.bind(self.KEYS.PRESS, action=self.press_button)]
-        enter = self.bind(self.KEYS.RENAME_HERE, action=self.rename) if self.cell == NAME_CELL else self.bind(self.KEYS.NOTE, action=self.open_picker)
         return [
             *shared,
             self.bind(self.KEYS.TO_NOTE, action=lambda: self.go_to_cell(NOTE_CELL)) if self.cell == NAME_CELL else self.bind(self.KEYS.TO_NAME, action=lambda: self.go_to_cell(NAME_CELL)),
             self.bind(self.KEYS.RENAME, action=self.rename),
-            enter,
+            self.bind(self.KEYS.NOTE, action=self.open_picker),
             self.bind(self.KEYS.CLEAR, action=self.clear),
         ]
 
@@ -180,16 +177,12 @@ class KeyswitchMapDialog(Dialog):
         return line
 
     def lines(self, width):
-        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(drawing.NOTHING, label) for label in labels.MSG_OK_CANCEL_BUTTONS]
         return [
             self.heading_line(width),
             *[self.slot_line(slot=slot, width=width) for slot in range(file_format.KEYSWITCH_SLOT_COUNT)],
             Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.button if self.on_buttons() else None),
         ]
-
-    def legend_lines(self, width):
-        """Return the keys under the map, leaving out the two the buttons name; while the picker is open they are the picker's, which the picker lists itself."""
-        return legend(keys=[item for item in self.keys() if item.shown], width=width)
 
     def flyout_lines(self, width):
         """Return the note picker's lines while it is open: the slot, one octave of keys with the key picked filled and named, the note and its octave, and the picker's keys."""

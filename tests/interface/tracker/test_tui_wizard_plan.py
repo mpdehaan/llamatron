@@ -8,10 +8,11 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import limits
 from llamatron.music_theory.hooks import hook_bars
-from llamatron.user_strings import errors, labels, marks
+from llamatron.user_strings import errors, labels, marks, messages
 from llamatron.wizards.create_song import song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.own_values import chords_as_text
 from tests.interface.tracker.test_tui_wizard import WizardTest
+from tests.support import ui_testing
 from tests.support.ui_testing import key_of
 
 A_PLANNED_GENRE = 'rock'
@@ -284,8 +285,8 @@ class TestWizardFormQuestions(WizardTest):
         await self.press(Key.ENTER)
         for _ in song_form.form_questions():
             await self.press(Key.ENTER)
-        self.assertIn(labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, self.text())
-        await self.press(keybindings.ConfirmDialog.NO)
+        self.assertIn(messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION, self.text())
+        await self.press(ui_testing.ANSWER_NO)
         self.assertEqual(song_form.section_kinds_in_form(), before)
 
     async def test_a_genre_with_no_verse_and_chorus_has_no_questions(self):

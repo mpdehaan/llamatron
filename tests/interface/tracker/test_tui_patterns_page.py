@@ -6,7 +6,7 @@
 
 from llamatron.interface.pages import pattern_list
 from llamatron.interface.pages.pattern_list import Listed, PatternTab
-from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
@@ -157,9 +157,9 @@ class TestPatternsPage(PatternsPageTest):
         await self.go_to_pattern(ui_testing.OTHER)
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertIn(ui_testing.OTHER, self.names())
-        await self.press(Key.BACKSPACE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.BACKSPACE, *ui_testing.ANSWER_YES)
         self.assertNotIn(ui_testing.OTHER, self.names())
 
     async def test_a_duplicate_name_is_refused(self):
@@ -381,9 +381,9 @@ class TestPatternGroups(PatternsPageTest):
         await self.go_to_tab(self.tab_of(ui_testing.MELODIES))
         await self.press(keybindings.PatternsPage.UNGROUP)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertEqual(self.group_of(ui_testing.TUNE), ui_testing.MELODIES)
-        await self.press(keybindings.PatternsPage.UNGROUP, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.PatternsPage.UNGROUP, *ui_testing.ANSWER_YES)
         self.assertIsNone(self.group_of(ui_testing.TUNE))
         self.assertEqual(self.names(), names)
         self.assertEqual(self.page.chosen(), PatternTab(pattern_list.UNGROUPED_TAB))
@@ -397,8 +397,7 @@ class TestPatternGroups(PatternsPageTest):
         await self.press(keybindings.PatternsPage.COPY)
         dialog = self.app.screen
         self.assertIsInstance(dialog, PromptDialog)
-        self.assertEqual((dialog.title, dialog.label, dialog.value), (messages.MSG_COPY_GROUP_TITLE, labels.MSG_NEW_GROUP_NAME_LABEL, MELODIES_COPY))
-        self.assertIn(labels.MSG_NEW_GROUP_NAME_LABEL + MELODIES_COPY, self.text())
+        self.assertEqual((dialog.title, dialog.label, dialog.value), (messages.MSG_COPY_GROUP_TITLE.format(name=ui_testing.MELODIES), drawing.NOTHING, MELODIES_COPY))
         await self.press(Key.ENTER)
         # The new group's name goes at the front: joined to a name that lacked the old group's, and in its place where the name began with it.
         self.assertEqual(self.document.get_setlist().patterns_in_group(MELODIES_COPY), [MELODIES_COPY + MELODIES_RIFF[len(ui_testing.MELODIES):], TUNE_IN_COPY])

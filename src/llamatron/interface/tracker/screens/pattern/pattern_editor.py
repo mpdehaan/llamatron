@@ -761,7 +761,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             name = others[place]
             if self.document().has_notes(self.item):
                 question = messages.MSG_LOAD_OVER_QUESTION.format(name=self.item, other=name)
-                self.confirm(title=messages.MSG_LOAD_OVER_TITLE, lines=[question], then=functools.partial(load, name))
+                self.confirm(title=question, lines=[], then=functools.partial(load, name))
             else:
                 load(name)
         title = messages.MSG_LOAD_OVER_CHOICE_TITLE.format(name=self.item)
@@ -782,7 +782,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             lost = self.document().steps_with_anything_past(name=self.item, steps=steps)
             if lost:
                 question = messages.MSG_SHORTEN_QUESTION.format(count=lost)
-                self.confirm(title=messages.MSG_SHORTEN_TITLE, lines=[question], then=functools.partial(self.set_steps, steps))
+                self.confirm(title=question, lines=[], then=functools.partial(self.set_steps, steps))
             else:
                 self.set_steps(steps)
         self.ask_text(title=messages.MSG_STEPS_PROMPT, value=self.step_count(), then=answered)

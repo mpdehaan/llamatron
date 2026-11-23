@@ -51,7 +51,7 @@ class SongPage(FieldPage):
         def renamed(new):
             document.rename_named(section=Section.SONGS, old=name, new=new)
             self.crumbs = (labels.Crumb.SONGS, new)
-        self.ask_name(title=messages.MSG_RENAME_SONG_PROMPT, value=name, taken=document.song_names(), then=renamed)
+        self.ask_name(title=messages.MSG_RENAME_SONG_PROMPT.format(name=name), value=name, taken=document.song_names(), then=renamed)
 
     def presenter(self):
         """Return what the page shows, for the song as it is now."""

@@ -20,6 +20,7 @@ from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEd
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.model.schema.file_format import ClipSlotSetting
 from llamatron.user_strings import errors, labels, messages, names
+from tests.support import ui_testing
 from tests.support.ui_testing import fixed_text, UITest
 
 SET_FILE = 'my_set.yml'
@@ -70,7 +71,7 @@ class TestExporting(UITest):
         await self.press(Key.CTRL_X)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(messages.MSG_SAVE_BEFORE_EXPORT_TITLE, self.text())
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, PromptDialog)
         self.app.screen.value = ''
         await self.type(OTHER_SET_FILE)
@@ -84,7 +85,7 @@ class TestExporting(UITest):
 
     async def test_declining_to_save_exports_nothing(self):
         self.app.set_document(Document())
-        await self.press(Key.CTRL_X, keybindings.ConfirmDialog.NO)
+        await self.press(Key.CTRL_X, ui_testing.ANSWER_NO)
         self.assertIsInstance(self.app.screen, MainPage)
         self.assertEqual(os.listdir(self.folder), [SET_FILE])
 
@@ -94,7 +95,7 @@ class TestExporting(UITest):
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(OVERWRITE, self.text().lower())
         self.assertIn(LIVE_SET, self.text())
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, MainPage)
         self.assertIn(fixed_text(messages.MSG_EXPORTED), self.text())
         await self.export(EXPORT_LIVE)

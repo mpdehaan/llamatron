@@ -75,7 +75,7 @@ class TestPatternEditorRefusals(UITest):
         self.app.screen.cursor.set_place(self.app.screen.options.index(OTHER))
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertEqual(self.document.get_setlist().get_pattern(TUNE).get_row(Row.DEGREE), [5])
 
     async def test_the_step_count_must_be_a_sensible_number(self):
@@ -93,7 +93,7 @@ class TestPatternEditorRefusals(UITest):
         self.app.screen.value = '1'
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertEqual(self.document.get_setlist().get_pattern(TUNE).get_steps(), 1)
 
     async def test_a_typed_velocity_must_be_in_range(self):
@@ -113,7 +113,7 @@ class TestPatternEditorRefusals(UITest):
         await self.reconfigure(Reconfigure.DRUM)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(fixed_text(messages.MSG_CHANGE_TYPE_EMPTY_QUESTION), self.text())
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertTrue(self.document.get_setlist().get_pattern(NEW_PATTERN).is_drum())
 
     async def test_turning_a_pattern_with_notes_into_drums_asks_first(self):
@@ -121,7 +121,7 @@ class TestPatternEditorRefusals(UITest):
         await self.reconfigure(Reconfigure.DRUM)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(LETTERS, self.text())
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertTrue(self.document.get_setlist().get_pattern(TUNE).is_drum())
         self.assertIsNone(self.document.get_setlist().get_pattern(TUNE).get_row(Row.DEGREE))
 

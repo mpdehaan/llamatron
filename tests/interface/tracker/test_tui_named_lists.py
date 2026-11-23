@@ -90,7 +90,7 @@ class NamedListChecks:
         before = self.own_names()
         await self.press(self.PAGE.KEYS.RENAME)
         self.assertIsInstance(self.app.screen, PromptDialog)
-        self.assertIn(self.page_under().rename_title(), self.text())
+        self.assertIn(self.page_under().rename_title(self.page_under().current()), self.text())
         self.app.screen.value = RENAMED
         await self.press(Key.ENTER)
         self.assertEqual(self.own_names(), [RENAMED if name == self.FIRST else name for name in before])
@@ -112,9 +112,9 @@ class NamedListChecks:
         await self.press(self.PAGE.KEYS.DELETE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(messages.MSG_DELETE_QUESTION.format(what=self.page_under().what_is(new)), self.text())
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertEqual(self.own_names(), [*before, new])
-        await self.press(self.PAGE.KEYS.DELETE, keybindings.ConfirmDialog.YES)
+        await self.press(self.PAGE.KEYS.DELETE, *ui_testing.ANSWER_YES)
         self.assertEqual(self.own_names(), before)
         self.assertIsInstance(self.app.screen, self.PAGE)
 

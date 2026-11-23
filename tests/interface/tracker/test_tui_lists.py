@@ -110,7 +110,7 @@ class TestScalesPage(UITest):
         self.assertIn(THE_SONG, self.text())
         await self.press(Key.ENTER, Key.ESCAPE, keybindings.MainPage.SONGS, Key.ENTER)
         await self.select_field(labels.MSG_SCALE_LABEL)
-        await self.press(Key.BACKSPACE, Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.SCALES, Key.BACKSPACE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.BACKSPACE, Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.SCALES, Key.BACKSPACE, *ui_testing.ANSWER_YES)
         self.assertEqual(self.document.get_setlist().get_scale_names(), [])
 
     async def test_a_is_the_add_key_and_plus_adds_only_from_its_row(self):
@@ -418,10 +418,10 @@ class TestGeneratorsPage(UITest):
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(messages.MSG_TAKEN_OUT_OF, self.text())
         self.assertIn(CHAIN_NAMED, self.text())
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertIn(UP, self.document.get_setlist().get_generator_names(arp_plugin.NAME))
         steps = self.chain_steps(NAMED)
-        await self.press(Key.BACKSPACE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.BACKSPACE, *ui_testing.ANSWER_YES)
         self.assertNotIn(UP, self.document.get_setlist().get_generator_names(arp_plugin.NAME))
         self.assertNotIn((arp_plugin.NAME, UP), self.chain_steps(NAMED))
         await self.press(keybindings.Page.UNDO)
@@ -439,7 +439,7 @@ class TestGeneratorsPage(UITest):
         name = await self.add_generator(arp_plugin.SECTION)
         await self.press(Key.ESCAPE, Key.BACKSPACE)
         self.assertNotIn(messages.MSG_TAKEN_OUT_OF, self.text())
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertNotIn(name, self.document.get_setlist().get_generator_names(arp_plugin.NAME))
 
     async def test_renaming_updates_its_chains_and_keeps_the_cursor_on_it(self):

@@ -18,9 +18,10 @@ from llamatron.importers import midi_import as midi_import_values
 from llamatron.importers.midi_import import ImportChoices
 from llamatron.interface.forms import moves
 from llamatron.interface.tracker import drawing, key_table, keybindings
+from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
-from llamatron.interface.tracker.drawing import cursor_mark, padded, Style, wrapped
+from llamatron.interface.tracker.drawing import cursor_mark, Style, wrapped
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.objects.naming import copy_name, default_scale_name
@@ -41,7 +42,6 @@ LABEL_WIDTH = max(len(label) for label in LABELS) + 2
 # The buttons, in the order drawn, and the binding whose key each shows.
 IMPORT_BUTTON = 0
 CANCEL_BUTTON = 1
-BUTTON_BINDINGS = (keybindings.ImportDialog.IMPORT, keybindings.Dialog.CANCEL)
 # The step sizes the Step size field steps through, auto first: auto, then 1/32 to 1/4.
 STEP_SIZES = (None, Rational(1, 32), Rational(1, 16), Rational(1, 8), Rational(1, 4))
 # How many keys the found line names before it counts the rest.
@@ -82,7 +82,6 @@ class ImportDialog(Dialog):
             bound.append(self.bind(self.KEYS.TOGGLE, action=self.toggle))
         else:
             bound += [self.bind(self.KEYS.CHOOSE_BUTTON, action=self.choose_button, wants_key=True), self.bind(self.KEYS.PRESS, action=self.press)]
-        bound.append(self.bind(self.KEYS.IMPORT, action=self.import_now))
         return self.in_order(bound)
 
     def made(self):
@@ -175,17 +174,13 @@ class ImportDialog(Dialog):
             lines.append(Text(importing.MSG_IMPORT_SHARED.format(count=made.song.shared), style=Style.DIM))
         for warning in made.warnings:
             lines += dimmed(wrapped(text=warning, width=width))
-        lines += [Text(drawing.NOTHING), self.buttons_line()]
+        lines += [Text(drawing.NOTHING), *self.buttons_line()]
         return lines
 
     def buttons_line(self):
-        """Return Import and Cancel side by side, each its key reversed and then its name, the selected one marked when the cursor is on the buttons."""
-        line = Text(no_wrap=True)
-        for place, (label, binding) in enumerate(zip(importing.MSG_IMPORT_BUTTONS, BUTTON_BINDINGS)):
-            selected = self.row == BUTTONS and place == self.button
-            line.append(cursor_mark(selected))
-            line.append(padded(binding.name), style=Style.REVERSE)
-            line.append(drawing.SPACE)
-            line.append(label, style=Style.BOLD if selected else Style.PLAIN)
-            line.append(marks.MSG_CONFIRM_BUTTON_GAP)
-        return line
+        """Return Import and CANCEL as boxed buttons, each its name alone, the selected one double-lined when the cursor is on
+        the buttons."""
+        selected = None
+        if self.row == BUTTONS:
+            selected = self.button
+        return button_row(buttons=[(drawing.NOTHING, label) for label in importing.MSG_IMPORT_BUTTONS], selected=selected)

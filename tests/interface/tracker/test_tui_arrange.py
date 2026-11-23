@@ -244,14 +244,14 @@ class TestArrangePage(UITest):
         self.assertIn(arrange_drawing.CLIP_BAR.full(), self.grid_lines()[self.line_with(BEAT) + 1])
 
     async def test_the_last_scene_and_the_last_track_cannot_be_deleted(self):
-        await self.press(Key.BACKSPACE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.BACKSPACE, *ui_testing.ANSWER_YES)
         self.assertEqual(len(self.scenes()), 1)
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn(drawing.SPACE.join(errors.ERR_LAST_SCENE_SHOWN.split()[:FIRST_WORDS]), self.text())
         await self.press(Key.ENTER)
         self.assertEqual(len(self.scenes()), 1)
-        await self.press(Key.UP, Key.BACKSPACE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.UP, Key.BACKSPACE, *ui_testing.ANSWER_YES)
         self.assertEqual(len(self.document.song().get_track_names()), 1)
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, MessageDialog)
@@ -351,7 +351,7 @@ class TestArrangePage(UITest):
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn('clip(s)', self.text())
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertEqual(self.scenes(), [ONE, TWO])
 
     async def test_enter_on_a_blank_clip_offers_a_new_pattern_first_which_opens_in_the_pattern_editor(self):
@@ -389,7 +389,7 @@ class TestArrangePage(UITest):
         # Esc comes back to the cell, and the next blank pattern on the track takes the next number.
         await self.press(Key.ESCAPE)
         self.assertIs(self.app.screen, self.page)
-        await self.press(keybindings.ArrangePage.DELETE_CLIP, keybindings.ConfirmDialog.YES, keybindings.ArrangePage.BLANK_PATTERN)
+        await self.press(keybindings.ArrangePage.DELETE_CLIP, *ui_testing.ANSWER_YES, keybindings.ArrangePage.BLANK_PATTERN)
         self.assertEqual(self.app.screen.item, names.MSG_NUMBERED_NAME.format(base=LEAD, number=2))
 
     async def test_with_no_patterns_enter_on_an_empty_cell_still_offers_a_new_one(self):
@@ -418,7 +418,7 @@ class TestArrangePage(UITest):
     async def test_delete_a_clip_confirms(self):
         await self.press(Key.RIGHT, Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsNone(self.document.clip_slot(index=0, track=LEAD))
 
     async def test_scrolls_to_keep_the_cursor_on_screen(self):
@@ -962,7 +962,7 @@ class TestScenesAndClipsEdges(UITest):
     async def test_deleting_a_clip_asks_first(self):
         await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsNone(self.document.clip_slot(index=0, track=LEAD))
 
 

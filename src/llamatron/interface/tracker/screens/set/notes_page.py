@@ -167,7 +167,7 @@ class NotesPage(Page):
 
     def clear(self):
         if self.document().get_setlist().has_notes():
-            self.confirm(title=messages.MSG_CLEAR_NOTES_TITLE, lines=[messages.MSG_CLEAR_NOTES_QUESTION], then=lambda: self.store([drawing.NOTHING]))
+            self.confirm(title=messages.MSG_CLEAR_NOTES_TITLE, lines=[], then=lambda: self.store([drawing.NOTHING]))
 
     def move_cursor(self, name):
         lines = self.text_lines()

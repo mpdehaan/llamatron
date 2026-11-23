@@ -109,7 +109,7 @@ class TestGroovesPage(UITest):
         self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, SHUFFLE, GROOVE_1])
         await self.press(Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertEqual(self.grooves(), [*groove_values.FACTORY_GROOVE_NAMES, GROOVE_1])
 
     async def test_a_groove_cannot_take_a_factory_name(self):

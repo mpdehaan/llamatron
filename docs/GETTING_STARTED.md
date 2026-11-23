@@ -121,8 +121,7 @@ page.
 `Tab` completes. In a text prompt, Left and Right move the cursor, `Bksp`
 erases before it, `ENTER` finishes and `ESC` cancels; the cursor starts at the
 end. In a question, `YES` and `NO` are buttons that Left and Right move
-between, `ENTER` presses the marked one, `Y` and `N` answer at once, and `ESC`
-means no.
+between, `ENTER` presses the marked one, and `ESC` means no.
 
 ## Main Screen
 

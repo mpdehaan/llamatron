@@ -25,7 +25,6 @@ ROWS = (wizard_names.RIFF_BAR_COUNT, wizard_names.RIFF_NOTES, wizard_names.RIFF_
 LABEL_WIDTH = max(len(labels.MSG_NEW_RIFF_LABELS[row]) for row in ROWS) + 4
 # The buttons, in the order drawn, and the binding whose key each shows.
 WRITE_BUTTON = 0
-BUTTON_BINDINGS = (keybindings.NewRiffDialog.WRITE, keybindings.Dialog.CANCEL)
 NO_BUTTON = -1
 
 
@@ -95,5 +94,5 @@ class NewRiffDialog(Dialog):
             line = Text(cursor_mark(place == self.row) + labels.MSG_NEW_RIFF_LABELS[row].ljust(LABEL_WIDTH))
             line.append(self.shown(row), style=Style.BOLD if place == self.row else Style.PLAIN)
             lines.append(line)
-        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_NEW_RIFF_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(drawing.NOTHING, label) for label in labels.MSG_NEW_RIFF_BUTTONS]
         return [*lines, Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.button if self.on_buttons() else NO_BUTTON)]

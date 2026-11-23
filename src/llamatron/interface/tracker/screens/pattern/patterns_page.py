@@ -255,7 +255,7 @@ class PatternsPage(NamedListPage):
         def renamed(new):
             self.document().rename_named(section=self.LISTED_SECTION, old=name, new=new)
             self.put_cursor_on(new)
-        self.ask_name(title=self.rename_title(), value=name, taken=self.names(), then=renamed)
+        self.ask_name(title=self.rename_title(name), value=name, taken=self.names(), then=renamed)
 
     def copy(self):
         """Copy the selected pattern into its own group, say what the copy is called and put the cursor on it."""
@@ -316,7 +316,7 @@ class PatternsPage(NamedListPage):
                 self.new_groups = [new if made == group else made for made in self.new_groups]
             self.document().rename_pattern_group(old=group, new=new)
             self.choose(PatternTab(pattern_list.GROUP_TAB, new))
-        self.ask_name(title=messages.MSG_RENAME_GROUP_PROMPT, value=group, taken=self.groups(), then=renamed)
+        self.ask_name(title=messages.MSG_RENAME_GROUP_PROMPT.format(name=group), value=group, taken=self.groups(), then=renamed)
 
     def ungroup(self):
         """Take every pattern out of the group after asking, deleting none; a group made here that holds none is simply gone."""
@@ -326,7 +326,7 @@ class PatternsPage(NamedListPage):
             self.new_groups = [made for made in self.new_groups if made != group]
             self.document().change_set(self.document().get_setlist().ungroup_patterns, group)
             self.choose(PatternTab(pattern_list.UNGROUPED_TAB))
-        self.ask(dialog=ConfirmDialog(title=messages.MSG_UNGROUP_TITLE, messages=[messages.MSG_UNGROUP_QUESTION.format(name=group)]), then=confirmed)
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_UNGROUP_TITLE.format(name=group), messages=[messages.MSG_UNGROUP_QUESTION]), then=confirmed)
 
     def copy_group(self):
         """Copy the whole group under a new name, asked for in a confirmation that starts from the group's name counted up."""
@@ -347,7 +347,7 @@ class PatternsPage(NamedListPage):
                 self.new_groups.append(text)
             self.say(messages.MSG_GROUP_COPIED.format(name=text))
             self.choose(PatternTab(pattern_list.GROUP_TAB, text))
-        self.ask_text(title=messages.MSG_COPY_GROUP_TITLE, value=copy_name(name=group, taken=groups), then=named, is_name=True, label=labels.MSG_NEW_GROUP_NAME_LABEL)
+        self.ask_text(title=messages.MSG_COPY_GROUP_TITLE.format(name=group), value=copy_name(name=group, taken=groups), then=named, is_name=True)
 
     # Searching, which looks at the patterns alone, inside every group.
 

@@ -184,7 +184,7 @@ class TestOpenPageUndo(UndoTest):
         await self.select_field(labels.MSG_PROTECTED_LABEL)
         await self.press(Key.ENTER)
         self.assertTrue(self.app.get_document().can_undo())
-        await self.press(Key.CTRL_O, keybindings.ConfirmDialog.YES)
+        await self.press(Key.CTRL_O, *ui_testing.ANSWER_YES)
         rows = [row[0] for row in self.app.screen.rows()]
         self.app.screen.cursor.set_place(rows.index(OTHER_FILE))
         await self.press(Key.ENTER)
@@ -209,7 +209,7 @@ class TestSongsPageUndo(UndoTest):
         await self.add_second_song()
         await self.press(keybindings.SongsPage.CURRENT)
         self.assertEqual(self.document.get_current_song_name(), SECOND_SONG)
-        await self.press(Key.BACKSPACE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.BACKSPACE, *ui_testing.ANSWER_YES)
         self.assertEqual(self.document.get_current_song_name(), names_text.MSG_DEFAULT_SONG_NAME)
         await self.undo()
         self.assertEqual(self.document.get_current_song_name(), SECOND_SONG)
@@ -404,7 +404,7 @@ class TestArrangePageUndo(UndoTest):
 
     async def test_deleting_a_scene_with_its_clips_is_one_step(self):
         before = self.data()
-        await self.press(Key.BACKSPACE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.BACKSPACE, *ui_testing.ANSWER_YES)
         self.assertEqual(len(self.document.song().get_scenes()), 1)
         await self.check_undo_and_redo(before=before, after=self.data())
 

@@ -181,7 +181,7 @@ class IntroMelodyBranch(Branch):
         if place is None or not choices.intro_is_own(place=place):
             return
         question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=wizard_limits.INTRO)
-        page.confirm(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, lines=[question], starts_on_no=True, then=lambda: page.choosing(lambda _: choices.set_intro_pattern(place=place, pattern=None))(None))
+        page.confirm(title=question, lines=[], starts_on_no=True, then=lambda: page.choosing(lambda _: choices.set_intro_pattern(place=place, pattern=None))(None))
 
     def add_part(self):
         choices = self.get_choices()

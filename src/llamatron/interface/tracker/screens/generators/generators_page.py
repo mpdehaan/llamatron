@@ -142,7 +142,8 @@ class GeneratorsPage(ListPage):
         def renamed(new):
             self.document().rename_named(section=section, old=name, new=new)
             self.put_cursor_on(kind=kind, name=new)
-        self.ask_name(title=messages.MSG_RENAME_GENERATOR_PROMPT.format(label=generator_page_of_kind(kind).label), value=name, taken=self.document().names_of(section), then=renamed)
+        prompt = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=generator_page_of_kind(kind).label)
+        self.ask_name(title=prompt.format(name=name), value=name, taken=self.document().names_of(section), then=renamed)
 
     def copy(self):
         """Copy the selected generator, say what the copy is called and put the cursor on it."""

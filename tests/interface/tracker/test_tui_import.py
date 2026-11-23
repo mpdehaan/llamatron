@@ -56,9 +56,13 @@ class TestImportDialog(UITest):
         patcher.start()
         self.addCleanup(patcher.stop)
 
+    async def press_import(self):
+        """Press the Import button, below the fields, which has no key."""
+        await self.press(*[Key.DOWN] * import_dialog.BUTTONS, keybindings.ImportDialog.PRESS)
+
     async def import_and_close(self):
         """Press Import, and then OK on the dialog that says what was imported."""
-        await self.press(keybindings.ImportDialog.IMPORT)
+        await self.press_import()
         self.assertIsInstance(self.app.screen, ImportedDialog)
         await self.press(Key.ENTER)
 
@@ -147,12 +151,13 @@ class TestImportDialog(UITest):
         self.assertIn(SAMPLE_SONG, self.document.get_setlist().get_song_names())
         self.assertNotEqual(self.document.get_current_song_name(), SAMPLE_SONG)
 
-    async def test_after_an_import_a_dialog_says_the_songs_name_and_that_there_were_no_warnings(self):
+    async def test_after_an_import_a_dialog_says_the_songs_name_and_what_it_made_and_no_warnings(self):
         await self.open_the_dialog()
-        await self.press(keybindings.ImportDialog.IMPORT)
+        await self.press_import()
         self.assertIsInstance(self.app.screen, ImportedDialog)
-        self.assertIn(importing.MSG_IMPORTED_SONG.format(name=SAMPLE_SONG), self.text())
-        self.assertIn(importing.MSG_IMPORTED_NO_WARNINGS, self.text())
+        # One sentence says the song's name and what it made, and with no warnings nothing follows it.
+        (made,) = self.app.screen.messages
+        self.assertIn(SAMPLE_SONG, made)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MainPage)
 
@@ -165,7 +170,7 @@ class TestImportDialog(UITest):
         await self.open_the_dialog(file_name=WARNED_FILE)
         warnings = self.app.screen.made().warnings
         self.assertTrue(warnings)
-        await self.press(keybindings.ImportDialog.IMPORT)
+        await self.press_import()
         self.assertIn(importing.MSG_IMPORTED_WARNINGS, self.text())
         self.assertIn(warnings[0][:WARNING_SHOWN], self.text())
 

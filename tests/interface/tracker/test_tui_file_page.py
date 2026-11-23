@@ -167,7 +167,7 @@ class TestFilePage(UITest):
         await self.press(Key.CTRL_S)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(messages.MSG_PROTECTED_TITLE, self.text())
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, PromptDialog)
         self.app.screen.value = 'copy.yml'
         await self.press(Key.ENTER)
@@ -180,7 +180,7 @@ class TestFilePage(UITest):
         self.document.change_set(self.document.get_setlist().set_protected, True)
         self.document.save(path='second.yml')
         self.document.change_set(self.document.song().set_tempo, OTHER_TEMPO + 1)
-        await self.press(Key.CTRL_S, keybindings.ConfirmDialog.NO)
+        await self.press(Key.CTRL_S, ui_testing.ANSWER_NO)
         self.assertTrue(self.document.is_dirty())
         self.assertEqual(Document.load('second.yml').song().get_tempo(), OTHER_TEMPO)
         # Turning protection off on the File page lets Ctrl+S write the file again.
@@ -196,7 +196,7 @@ class TestFilePage(UITest):
         await self.press(Key.CTRL_S)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(messages.MSG_PROTECTED_TITLE, self.text())
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         before = os.stat('demo.yml').st_mtime_ns
         await press_save_as(self)
         self.assertIsInstance(self.app.screen, PromptDialog)
@@ -232,9 +232,9 @@ class TestFilePage(UITest):
         await self.press(Key.CTRL_S)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(messages.MSG_FILE_CHANGED_ELSEWHERE_TITLE, self.text())
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertEqual(Document.load('tune.yml').song().get_tempo(), OTHER_TEMPO)
-        await self.press(Key.CTRL_S, keybindings.ConfirmDialog.YES)
+        await self.press(Key.CTRL_S, *ui_testing.ANSWER_YES)
         self.assertNotEqual(Document.load('tune.yml').song().get_tempo(), OTHER_TEMPO)
         self.assertFalse(self.document.is_dirty())
 
@@ -254,7 +254,7 @@ class TestFilePage(UITest):
         self.app.screen.value = 'taken.yml'
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         with open('taken.yml') as file:
             self.assertEqual(file.read(), KEEP)
 
@@ -263,7 +263,7 @@ class TestFilePage(UITest):
         await self.select_field(labels_text.MSG_NEW_SET_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertEqual(self.app.get_document().get_setlist().get_pattern_names(), [names.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)])
         self.assertEqual(self.app.get_document().song().get_scale_name(), setlist_values.DEFAULT_SCALE)
         self.assertEqual(self.app.get_document().song_names(), [names.MSG_DEFAULT_SONG_NAME])
@@ -295,7 +295,7 @@ class TestFilePageEdges(UITest):
         self.app.screen.value = 'taken.yml'
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, MessageDialog)
         self.assertIn(errors.ERR_CANT_SAVE_TITLE, self.text())
 
@@ -307,7 +307,7 @@ class TestFilePageEdges(UITest):
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(Key.ESCAPE, Key.CTRL_O)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, OpenPage)
 
     async def test_choosing_a_scale_needs_one_first(self):

@@ -76,9 +76,11 @@ class TestQuitting(UITest):
         for label in labels.MSG_QUIT_BUTTONS:
             self.assertTrue(any(label in line for line in lines), label)
         self.assertLessEqual(len(lines[0]), self.app.size.width)
-        # The console has the room, so the keys under the buttons are on one line: the first key and the last share it.
-        first = legends.MSG_QUIT_WITHOUT_SAVING_WHAT
-        self.assertTrue(any(key_name(keybindings.QuitDialog.CANCEL) in line and first in line and key_name(keybindings.QuitDialog.SELECT) in line for line in lines[-3:]))
+        # The buttons name their own keys, so the line under them holds only the keys that choose and press one.
+        legend_line = lines[-2]
+        self.assertIn(key_name(keybindings.QuitDialog.SELECT), legend_line)
+        self.assertIn(key_name(keybindings.QuitDialog.PRESS), legend_line)
+        self.assertNotIn(legends.MSG_QUIT_WITHOUT_SAVING_WHAT, legend_line)
 
 
 class TestACrash(unittest.TestCase):

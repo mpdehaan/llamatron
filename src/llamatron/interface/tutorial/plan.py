@@ -377,7 +377,7 @@ class TutorialPlan:
 
     def confirm(self):
         self.expect(ConfirmDialog)
-        yield from self.press(keybindings.ConfirmDialog.YES)
+        yield from self.press(keybindings.ConfirmDialog.ANSWER)
 
     def go_to_list_row(self, key):
         """Move a list page's cursor to the row keyed by a name."""
@@ -410,6 +410,7 @@ class TutorialPlan:
                 self.left_out.append(narration.MSG_LEFT_OUT_SCALE.format(name=name))
                 continue
             yield from self.open_page(keybindings.MainPage.SCALES)
+            yield Say(narration.MSG_NARRATE_DELETING.format(kind=narration.MSG_A_SCALE, name=name))
             yield from self.go_to_list_row(name)
             yield from self.press(keybindings.ListPage.DELETE)
             yield from self.confirm()

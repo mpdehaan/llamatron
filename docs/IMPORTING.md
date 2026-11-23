@@ -31,10 +31,10 @@ step. When many notes sit a little off the steps, as a swing, a groove or a
 live performance plays them, the warning says so; the import moves them to the
 nearest step and makes no groove.
 
-`I`, or `ENTER` on Import, imports, and `ESC` or CANCEL leaves the set as it
-was. The new song becomes the current song, and a dialog says what it was
-imported as, what it holds, and every warning, or "Import complete with no
-warnings.", with one OK button. `Ctrl+Z` takes the whole import away again.
+`ENTER` on the Import button, below the settings, imports, and `ESC` or CANCEL
+leaves the set as it was. The new song becomes the current song, and a dialog
+says what it was imported as, what it holds, and every warning, with one OK
+button. `Ctrl+Z` takes the whole import away again.
 
 ## What an Import Makes
 

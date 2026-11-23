@@ -71,11 +71,11 @@ class TestInstrumentsPage(UITest):
         self.assertFalse(self.document.get_setlist().is_real_time())
         await self.press(keybindings.InstrumentsPage.ADD, Key.ESCAPE, keybindings.InstrumentsPage.ADD, Key.ESCAPE)
         self.assertTrue(self.document.get_setlist().is_real_time())
-        await self.press(keybindings.InstrumentsPage.DELETE, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.InstrumentsPage.DELETE, *ui_testing.ANSWER_YES)
         self.assertEqual(self.instruments(), [INSTRUMENT_1])
         self.assertTrue(self.document.get_setlist().is_real_time())
         self.app.screen.put_cursor_on(INSTRUMENT_1)
-        await self.press(keybindings.InstrumentsPage.DELETE, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.InstrumentsPage.DELETE, *ui_testing.ANSWER_YES)
         self.assertEqual(self.instruments(), [])
         self.assertFalse(self.document.get_setlist().is_real_time())
 

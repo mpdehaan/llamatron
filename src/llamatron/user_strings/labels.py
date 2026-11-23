@@ -297,7 +297,6 @@ MSG_SCALE_LENGTH_LABEL = 'Scale length'
 MSG_DRUM_PATTERN_LABEL = 'Drum pattern'
 MSG_NEW_PATTERN_BUTTONS = ('OK', 'CANCEL')
 MSG_NEW_GROUP_BUTTON = '[ New Pattern Group ]'
-MSG_NEW_GROUP_NAME_LABEL = 'New Group Name: '
 MSG_NOTES_KIND = 'notes'
 # interface/tracker/screens/generators/generator_pages.py: a chain, as the Generators page lists it beside the kinds of generator.
 MSG_CHAIN_LABEL = 'Chain'
@@ -903,7 +902,6 @@ MSG_WIZARD_FORM_QUESTION_TITLES = {
 }
 MSG_WIZARD_ROW_LABELS = {'lengths': 'Lengths', 'loudness': 'Loudness', 'articulation': 'Articulation'}
 MSG_WIZARD_SUGGESTED_FORM_TITLE = 'Suggested forms'
-MSG_WIZARD_REPLACE_SECTIONS_TITLE = 'Replace sections'
 MSG_WIZARD_BUSY_LABEL = 'Busy'
 # A player's own gauges, under the Busy field, which is a preset of them all.
 MSG_WIZARD_PLAYER_GAUGE_LABELS = {'notes': 'Notes', 'variety': 'Variety', 'touch': 'Touch', 'timing': 'Loose timing', 'fills': 'Fill size', 'strumming': 'Strumming', 'range': 'Range'}

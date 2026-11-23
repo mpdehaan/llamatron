@@ -11,7 +11,6 @@ from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.status_line import StatusLine
-from llamatron.user_strings import messages
 
 SAID = 'cannot delete a track while the song plays'
 WIDTH = 60
@@ -44,5 +43,5 @@ class TestRefusalsAndDeletes(unittest.TestCase):
         self.assertFalse(line.is_refusal())
 
     def test_a_delete_question_has_a_red_title(self):
-        self.assertEqual(ConfirmDialog(title=messages.MSG_DELETE_TITLE, messages=[SAID]).heading(WIDTH).style, Style.DELETE_TITLE)
+        self.assertEqual(ConfirmDialog(title=SAID, messages=[SAID], deletes=True).heading(WIDTH).style, Style.DELETE_TITLE)
         self.assertEqual(ConfirmDialog(title=SAID, messages=[SAID]).heading(WIDTH).style, Style.BOLD)

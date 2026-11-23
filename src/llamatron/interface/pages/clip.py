@@ -97,7 +97,7 @@ class ClipPresenter:
     def rename(self):
         """Give the clip a name of its own; a blank goes back to its pattern's name."""
         clip_slot = self.clip_slot()
-        self._page.ask_text(title=messages.MSG_CLIP_NAME_PROMPT, value=clip_slot.get_name() or NO_NAME, then=self._renamed, is_name=True)
+        self._page.ask_text(title=messages.MSG_CLIP_NAME_PROMPT.format(track=self.get_track()), value=clip_slot.get_name() or NO_NAME, then=self._renamed, is_name=True)
 
     def pattern_rows(self):
         """Return the clip's list of patterns as rows, the first with the list's label, and the + row that adds one."""

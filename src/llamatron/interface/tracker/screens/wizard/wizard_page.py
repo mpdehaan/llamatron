@@ -195,8 +195,8 @@ class WizardPage(FieldPage):
                     self.refuse(str(problem))
                     return
             self.say(messages.MSG_WIZARD_TUNES_FITTED.format(kinds=listed(kinds)))
-        question = messages.MSG_WIZARD_FIT_TUNE_QUESTION.format(kinds=listed(kinds))
-        self.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_FIT_TUNE_TITLE, messages=[question, messages.MSG_WIZARD_FIT_TUNE_SAYS]), then=fit)
+        changed = messages.MSG_WIZARD_FIT_TUNE_CHANGED.format(kinds=listed(kinds))
+        self.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_FIT_TUNE_QUESTION, messages=[changed, messages.MSG_WIZARD_FIT_TUNE_SAYS]), then=fit)
 
     def panel_under_cursor(self):
         """Return the name of the wizard panel the tree's cursor is on."""
@@ -753,7 +753,7 @@ class WizardPage(FieldPage):
 
     def _replace_sections_dialog(self):
         """Return the dialog that asks whether the person's own sections may be replaced."""
-        return ConfirmDialog(title=labels.MSG_WIZARD_REPLACE_SECTIONS_TITLE, messages=[messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION])
+        return ConfirmDialog(title=messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION, messages=[])
 
     def _pick_form_if_yes(self, yes):
         if yes:
@@ -858,7 +858,7 @@ class WizardPage(FieldPage):
             if yes:
                 FieldPage.go_back(self)
         question = messages.MSG_WIZARD_CLOSE_QUESTION if self.has_choices_to_lose() else messages.MSG_WIZARD_CLOSE_UNCHANGED_QUESTION
-        self.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_CLOSE_TITLE, messages=[question], starts_on_no=True), then=answered)
+        self.ask(dialog=ConfirmDialog(title=question, messages=[], starts_on_no=True), then=answered)
 
     def steps_history(self):
         return False

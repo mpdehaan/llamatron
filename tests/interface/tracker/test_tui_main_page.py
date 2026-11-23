@@ -142,7 +142,7 @@ class TestMainPage(UITest):
         self.assertIsInstance(self.app.screen, QuitDialog)
         for button in labels.MSG_QUIT_BUTTONS:
             self.assertIn(button, self.text())
-        self.assertIn(messages.MSG_QUIT_UNSAVED_NOTE, self.text())
+        self.assertIn(messages.MSG_QUIT_WITHOUT_SAVING_TITLE, self.text())
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, MainPage)
         self.assertTrue(self.app.is_running)

@@ -32,6 +32,7 @@ from llamatron.user_strings import errors, labels as labels_text, legends, marks
 from llamatron.wizards.create_song import arranger, melody, wizard_limits, wizard_names
 from llamatron.wizards.create_song.breaks import break_names
 from llamatron.wizards.create_song.wizard_choices import genre_names, genre_title, WizardChoices
+from tests.support import ui_testing
 from tests.support.ui_testing import back_key, first_key, fixed_text, forward_key, key_of, UITest
 
 # The tree's first branch, by its place from the top.
@@ -157,7 +158,7 @@ class TestWizardPage(WizardTest):
         self.assertIsInstance(self.wizard(), WizardPage)
         self.assertFalse(self.wizard().in_fields)
         self.assertEqual(self.wizard().branch().name(), labels_text.MSG_WIZARD_GENRE_BRANCH)
-        await self.press(Key.ESCAPE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ESCAPE, *ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, MainPage)
         await self.open_wizard()
         self.assertIsInstance(self.wizard(), WizardPage)
@@ -482,7 +483,7 @@ class TestWizardPage(WizardTest):
         self.assertIsInstance(self.app.screen, WizardPage)
         await self.press(Key.ESCAPE, Key.ESCAPE)
         self.assertIsInstance(self.app.screen, WizardPage)
-        await self.press(Key.ESCAPE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ESCAPE, *ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, MainPage)
 
     async def test_esc_in_the_tree_asks_once_something_is_chosen_and_no_keeps_the_wizard(self):
@@ -490,10 +491,10 @@ class TestWizardPage(WizardTest):
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(messages.MSG_WIZARD_CLOSE_QUESTION, self.text())
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertIsInstance(self.app.screen, WizardPage)
         self.assertEqual(self.choices().get_genre(), genre_names()[0])
-        await self.press(Key.ESCAPE, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ESCAPE, *ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, MainPage)
 
     async def test_the_wizard_fits_an_80_by_24_console_with_a_long_form_open(self):
@@ -1069,9 +1070,9 @@ class TestWizardForm(WizardTest):
         await self.select_field(labels_text.MSG_WIZARD_SUGGESTED_FORM_BUTTON)
         await self.press(Key.ENTER)
         self.assertIn(messages.MSG_WIZARD_REPLACE_SECTIONS_QUESTION, self.text())
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertTrue(self.choices().get_song_form().has_own_form())
-        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES, Key.ENTER)
+        await self.press(Key.ENTER, *ui_testing.ANSWER_YES, Key.ENTER)
         self.assertFalse(self.choices().get_song_form().has_own_form())
         self.assertEqual(self.sections(), suggested)
 
@@ -1435,7 +1436,7 @@ class TestWizardComposition(WizardTest):
         first = hook.hook_notes()
         await self.press(keybindings.WizardPage.INTO_FIELDS)
         await self.select_field(labels_text.MSG_WIZARD_REGENERATE_BUTTON)
-        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ENTER, *ui_testing.ANSWER_YES)
         self.assertNotEqual(hook.hook_notes(), first)
         drawn, picture = self.hook_picture()
         for line in picture:
@@ -1636,7 +1637,7 @@ class TestWizardStart(WizardTest):
         self.assertIsInstance(self.app.screen, WizardPage)
         await self.press(Key.ESCAPE)
         self.assertIn(messages.MSG_WIZARD_CLOSE_UNCHANGED_QUESTION, self.text())
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertIsInstance(self.app.screen, MainPage)
 
     async def test_a_new_song_from_the_last_settings_starts_with_the_songs_choices_and_a_name_of_its_own(self):

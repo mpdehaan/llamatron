@@ -15,6 +15,7 @@ MSG_NARRATE_SONG = 'First the song itself: its name and its settings.'
 # Each with the word for the thing that follows.
 MSG_NARRATE_MAKING = 'And now we are making {kind} called ({name}).'
 MSG_NARRATE_RENAMING = 'There is already {kind}, so we are going to rename it.'
+MSG_NARRATE_DELETING = 'The song does not need {kind} called ({name}), so we are deleting it.'
 MSG_A_SONG = 'a song'
 MSG_A_SCALE = 'a scale'
 MSG_A_TRACK = 'a track'

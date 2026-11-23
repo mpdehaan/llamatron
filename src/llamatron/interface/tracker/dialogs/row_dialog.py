@@ -16,12 +16,11 @@ from llamatron.interface.forms.cursor import Cursor
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import legend, Style
+from llamatron.interface.tracker.drawing import Style
 from llamatron.user_strings import labels, marks
 
 # The OK button is the one Enter presses, so it is the one drawn selected.
 OK = 0
-BUTTON_BINDINGS = (keybindings.RowDialog.DONE, keybindings.RowDialog.CANCEL)
 # The most levels a bar is drawn with either side of zero: a row with a wider range has several numbers to a level.
 MOST_LEVELS = 8
 # A cell is wide enough for the longest number and a space, so that the longest row fits an 80 by 24 console.
@@ -79,10 +78,6 @@ class RowDialog(Dialog):
         self.values = list(self.usual)
         self.cursor.set_place(min(self.cursor.get_place(), len(self.values) - 1))
 
-    def legend_lines(self, width):
-        """Return the keys listed under the row, leaving out OK and CANCEL, which the buttons name."""
-        return legend(keys=[item for item in self.keys() if item.shown], width=width)
-
     def wanted_width(self):
         return max(super().wanted_width(), self.most * CELL_WIDTH + len(self.level_label(self.highest)) + CELL_WIDTH)
 
@@ -123,7 +118,7 @@ class RowDialog(Dialog):
 
     def lines(self, width):
         above, below = self.levels()
-        buttons = [(binding.name, label) for label, binding in zip(labels.MSG_OK_CANCEL_BUTTONS, BUTTON_BINDINGS)]
+        buttons = [(drawing.NOTHING, label) for label in labels.MSG_OK_CANCEL_BUTTONS]
         zero = [Text(self.level_label(ZERO) + marks.MSG_ROW_DIALOG_ZERO * (len(self.values) * CELL_WIDTH), style=Style.DIM)] if below else []
         return [*[self.bar_line(level) for level in above], *zero, *[self.bar_line(level) for level in below], self.number_line(),
                 Text(drawing.NOTHING), *button_row(buttons=buttons, selected=OK)]

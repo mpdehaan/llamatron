@@ -298,7 +298,7 @@ class TestSongsPage(UITest):
         self.document.add_song(SECOND_SONG)
         await self.press(Key.DOWN, Key.BACKSPACE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertEqual(self.document.song_names(), [names_text.MSG_DEFAULT_SONG_NAME])
         self.assertEqual(self.document.get_current_song_name(), names_text.MSG_DEFAULT_SONG_NAME)
 

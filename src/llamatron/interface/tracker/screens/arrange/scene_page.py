@@ -65,7 +65,7 @@ class ScenePage(FieldPage):
 
     def rename(self):
         scene = self.scene()
-        self.ask_text(title=messages.MSG_SCENE_NAME_PROMPT, value=scene.get_name() or drawing.NOTHING, then=self._renamed, is_name=True)
+        self.ask_text(title=messages.MSG_SCENE_NAME_PROMPT.format(name=scene_name(scene=scene, index=self.index)), value=scene.get_name() or drawing.NOTHING, then=self._renamed, is_name=True)
 
     def remarks(self, width):
         lengths = self.document().lengths()

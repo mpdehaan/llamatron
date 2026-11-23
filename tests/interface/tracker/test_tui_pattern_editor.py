@@ -262,7 +262,7 @@ class TestPatternEditor(PatternEditorTest):
         self.assertEqual(dialog.search.get_typed(), SEARCH_HIT)
         await self.press(Key.BACKSPACE, Key.BACKSPACE)
         self.assertEqual(dialog.search.get_typed(), SEARCH_HIT[:-2])
-        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ENTER, *ui_testing.ANSWER_YES)
         self.assertEqual(self.document.get_setlist().get_pattern(TUNE).get_steps(), 1)
 
     async def test_esc_cancels_the_picker_with_or_without_text_typed(self):
@@ -629,7 +629,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.app.screen.value = '1'
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertEqual(self.document.get_setlist().get_pattern(TUNE).get_steps(), 4)
         await self.press(keybindings.PatternEditor.RESIZE)
         self.app.screen.value = '9'
@@ -648,7 +648,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         self.assertIn(FROM_1_TO_4096, self.text())
         await self.press(keybindings.PatternEditor.RESIZE)
         self.app.screen.value = '1'
-        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ENTER, *ui_testing.ANSWER_YES)
         if self.app.screen.view() is self.app.screen.roll:
             await self.press(keybindings.PatternEditor.TO_EDITOR)
         await self.press(keybindings.PatternRows.REMOVE_STEP)

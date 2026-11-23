@@ -22,6 +22,7 @@ from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import errors, labels, marks, messages, names
 from llamatron.wizards.create_song import hook_writing, melody, riffs, wizard_limits, wizard_names
 from tests.interface.tracker.test_tui_wizard import WizardTest
+from tests.support import ui_testing
 from tests.support.ui_testing import key_name, key_of
 
 A_GENRE = 'rock'
@@ -185,7 +186,7 @@ class TestWizardSectionMelody(CompositionTest):
         self.assertEqual(self.wizard().field().label, labels.MSG_WIZARD_EDIT_NOTES_BUTTON)
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertFalse(tunes.tune_is_own(A_KIND))
 
     async def test_regenerate_asks_first_starting_on_no_and_writes_another_melody_with_nothing_kept(self):
@@ -201,7 +202,7 @@ class TestWizardSectionMelody(CompositionTest):
         await self.press(Key.ENTER)
         self.assertEqual(tunes.tune_pattern(A_KIND), first)
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
-        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ENTER, *ui_testing.ANSWER_YES)
         self.assertNotEqual(tunes.tune_pattern(A_KIND), first)
         self.assertIn(messages.MSG_WIZARD_REGENERATED.format(name=name), self.text())
 
@@ -369,7 +370,7 @@ class TestWizardIntroMelody(CompositionTest):
         await self.select_field(self.part(ONE_PART + 1))
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertEqual(len(choices.intro_parts()), ONE_PART)
 
     async def test_a_parts_notes_open_in_the_pattern_editor_are_kept_when_edited_and_given_back_with_bksp(self):
@@ -386,7 +387,7 @@ class TestWizardIntroMelody(CompositionTest):
         self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertFalse(choices.intro_is_own(place=place))
 
     async def test_the_hook_panel_no_longer_holds_who_says_the_hook_in_the_intro(self):
@@ -434,7 +435,7 @@ class TestWizardSoloMelody(CompositionTest):
         self.assertIn(messages.MSG_WIZARD_NOTES_BY_HAND, self.text())
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertFalse(solos.solo_is_own(place))
 
 
@@ -448,9 +449,9 @@ class TestWizardSoloMelody(CompositionTest):
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertEqual(solos.solo_pattern(place), written)
-        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ENTER, *ui_testing.ANSWER_YES)
         self.assertNotEqual(solos.solo_pattern(place), written)
         self.assertFalse(solos.solo_is_own(place))
         self.assertEqual(solos.solo_take(place), wizard_limits.FIRST_TUNE_TAKE + 1)
@@ -554,9 +555,9 @@ class TestWizardHooks(CompositionTest):
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertEqual(hook.hook_notes(), before)
-        await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
+        await self.press(Key.ENTER, *ui_testing.ANSWER_YES)
         self.assertNotEqual(hook.hook_notes(), before)
         self.assertEqual(hook.get_hook_gauge(hook_bars.HOLD), hook_bars.LOWEST_GAUGE)
         self.assertIn(messages.MSG_WIZARD_REGENERATED.format(name=messages.MSG_WIZARD_HOOK_NAME), self.text())
@@ -684,7 +685,7 @@ class TestWizardRiffs(CompositionTest):
         self.assertEqual(self.app.screen.title, messages.MSG_WIZARD_REGENERATE_TITLE.format(name=copy))
         await self.press(Key.ENTER)
         self.assertEqual(choices.get_riffs().riff_heard(copy)[0].to_data(), before)
-        await self.press(keybindings.WizardPage.REGENERATE, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.WizardPage.REGENERATE, *ui_testing.ANSWER_YES)
         self.assertNotEqual(choices.get_riffs().riff_heard(copy)[0].to_data(), before)
 
     async def test_delete_asks_in_red_saying_where_the_riff_is_used_and_starts_on_no(self):
@@ -699,7 +700,7 @@ class TestWizardRiffs(CompositionTest):
         self.assertEqual(dialog.messages, [messages.MSG_WIZARD_RIFF_USED_IN.format(kinds=A_KIND)])
         await self.press(Key.ENTER)
         self.assertEqual(choices.get_riffs().riff_names(), [FIRST_RIFF])
-        await self.press(keybindings.WizardPage.CLEAR, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.WizardPage.CLEAR, *ui_testing.ANSWER_YES)
         self.assertEqual(choices.get_riffs().riff_names(), [])
         self.assertEqual(choices.section_part(kind=A_KIND, role=THE_GUITAR), wizard_limits.ACCOMPANIMENT)
 
@@ -784,7 +785,7 @@ class TestWizardRiffAssign(CompositionTest):
         await self.select_under(heading=self.title(THE_GUITAR), label=self.riff)
         await self.press(keybindings.WizardPage.CLEAR)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
-        await self.press(keybindings.ConfirmDialog.YES)
+        await self.press(*ui_testing.ANSWER_YES)
         self.assertEqual(choices.get_riffs().riffs_known_by(THE_GUITAR), [])
         self.assertEqual(choices.get_riffs().riff_names(), [self.riff])
 

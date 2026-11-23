@@ -826,13 +826,13 @@ class MessageDialog(Dialog):
 
 
 class ConfirmDialog(MessageDialog):
-    """A Yes or No question: Left and Right move between the buttons, Enter presses one, and Y and N answer at once."""
+    """A Yes or No question: Left and Right move between the buttons, Enter presses the selected one, and Esc answers No. A
+    dialog of two buttons and nothing else to do has no letters: its buttons show their names alone."""
 
+    NO = Binding(keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.NO)
     SELECT = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     ANSWER = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
-    YES = Binding(Key.Y, legends.KeyName.Y, legends.What.YES)
-    NO = Binding(Key.N, legends.KeyName.N, legends.What.NO)
-    IN_HELP = [Dialog.CANCEL, SELECT, ANSWER, YES, NO]
+    IN_HELP = [NO, SELECT, ANSWER]
     IN_LEGEND = IN_HELP
 
 
@@ -844,7 +844,8 @@ class QuitDialog(MessageDialog):
     QUIT = Binding(Key.Q, legends.KeyName.Q, legends.MSG_QUIT_WITHOUT_SAVING_WHAT)
     SAVE = Binding(Key.S, legends.KeyName.S, legends.MSG_SAVE_THEN_QUIT_WHAT)
     IN_HELP = [Dialog.CANCEL, SELECT, PRESS, QUIT, SAVE]
-    IN_LEGEND = IN_HELP
+    # The buttons name their own keys, so the line under them lists only the keys that choose and press one.
+    IN_LEGEND = [SELECT, PRESS]
 
 
 class CorrectionsDialog(ConfirmDialog):
@@ -862,7 +863,7 @@ class ImportedDialog(MessageDialog):
 
 
 class ImportDialog(Dialog):
-    """The MIDI import's dialog of fields: Up and Down pick a field, [ and ] step one, Space or Enter flips a toggle, Enter renames the song, and on the buttons Left and Right choose and Enter presses; I imports from anywhere."""
+    """The MIDI import's dialog of fields: Up and Down pick a field, [ and ] step one, Space or Enter flips a toggle, Enter renames the song, and on the buttons Left and Right choose and Enter presses."""
 
     SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
     CHOOSE_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
@@ -871,8 +872,7 @@ class ImportDialog(Dialog):
     TOGGLE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
     RENAME = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.RENAME)
     PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
-    IMPORT = Binding(Key.I, legends.KeyName.I, legends.MSG_IMPORT_WHAT)
-    IN_HELP = [Dialog.CANCEL, SELECT, CHOOSE_BUTTON, LESS, MORE, TOGGLE, RENAME, PRESS, IMPORT]
+    IN_HELP = [Dialog.CANCEL, SELECT, CHOOSE_BUTTON, LESS, MORE, TOGGLE, RENAME, PRESS]
     IN_LEGEND = IN_HELP
 
 
@@ -974,7 +974,7 @@ class PickManyDialog(Dialog):
 
 
 class KeyswitchMapDialog(Dialog):
-    """An instrument's Keyswitch Map: Up and Down move through the ten slots and down to the buttons, Left and Right move between the slot's name, where Enter renames, and its note, N names the slot from either, Enter opens its note picker, Bksp empties it, O is OK and Esc is CANCEL.
+    """An instrument's Keyswitch Map: Up and Down move through the ten slots and down to the buttons, Left and Right move between the slot's name and its note, N names the slot, Enter opens its note picker, Bksp empties it, and Esc is CANCEL; OK is Enter on its button.
 
     On the buttons, Left and Right choose one and Enter presses it. In the note picker, drawn over the map, Left and Right move along the octave's keys, Up and Down change the octave, Enter takes the note and Esc closes the picker with nothing changed.
     """
@@ -982,20 +982,18 @@ class KeyswitchMapDialog(Dialog):
     MOVE = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
     RENAME = Binding((Key.N, Key.F2), legends.KeyName.N_F2, legends.What.RENAME)
     NOTE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_KEYSWITCH_NOTE_WHAT)
-    # The cursor is on a slot's name or its note: Enter renames on the name and opens the note picker on the note, and the legend says which arrow reaches the other.
+    # The cursor is on a slot's name or its note, and the legend says which arrow reaches the other.
     TO_NOTE = Binding(Key.RIGHT, legends.KeyName.TO_THE_RIGHT, legends.MSG_KEYSWITCH_NOTE_WHAT)
     TO_NAME = Binding(Key.LEFT, legends.KeyName.TO_THE_LEFT, legends.MSG_KEYSWITCH_NAME_WHAT)
-    RENAME_HERE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.RENAME)
     CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
-    OK = Binding(Key.O, legends.KeyName.O, legends.MSG_OK_WHAT)
     ALONG_BUTTONS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
     PICK_NOTE = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_KEYSWITCH_NOTE_WHAT)
     PICK_OCTAVE = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.MSG_KEYSWITCH_OCTAVE_WHAT)
     TAKE_NOTE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
     CLOSE_PICKER = Binding(keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.CLOSE)
-    IN_HELP = [Dialog.CANCEL, MOVE, TO_NOTE, TO_NAME, RENAME, RENAME_HERE, NOTE, CLEAR, OK, ALONG_BUTTONS, PRESS, PICK_NOTE, PICK_OCTAVE, TAKE_NOTE, CLOSE_PICKER]
-    IN_LEGEND = all_but(bindings=IN_HELP, hidden=[Dialog.CANCEL, OK])
+    IN_HELP = [Dialog.CANCEL, MOVE, TO_NOTE, TO_NAME, RENAME, NOTE, CLEAR, ALONG_BUTTONS, PRESS, PICK_NOTE, PICK_OCTAVE, TAKE_NOTE, CLOSE_PICKER]
+    IN_LEGEND = IN_HELP
 
 
 class RowDialog(Dialog):
@@ -1009,7 +1007,7 @@ class RowDialog(Dialog):
     USUAL = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.MSG_USUAL_ROW_WHAT)
     DONE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.DONE)
     IN_HELP = [Dialog.CANCEL, MOVE, LESS, MORE, INSERT_CELL, REMOVE_CELL, USUAL, DONE]
-    IN_LEGEND = [MOVE, LESS, MORE, INSERT_CELL, REMOVE_CELL, USUAL]
+    IN_LEGEND = IN_HELP
 
 
 class KeyswitchDialog(PickManyDialog):
@@ -1017,7 +1015,7 @@ class KeyswitchDialog(PickManyDialog):
 
     TOGGLE_SLOT = Binding(keys.DIGITS, legends.KeyName.DIGITS, legends.What.TOGGLE)
     IN_HELP = [Dialog.CANCEL, PickManyDialog.MOVE, PickManyDialog.FLIP, TOGGLE_SLOT, PickManyDialog.DONE]
-    IN_LEGEND = [PickManyDialog.MOVE, PickManyDialog.FLIP, TOGGLE_SLOT]
+    IN_LEGEND = IN_HELP
 
 
 class ChordDialog(Dialog):

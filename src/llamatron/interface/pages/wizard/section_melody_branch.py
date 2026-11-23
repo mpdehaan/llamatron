@@ -207,7 +207,7 @@ class SectionMelodyBranch(Branch):
         """Ask whether the notes edited by hand go back to the wizard's, and give them back on yes."""
         page = self.get_page()
         question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=self._kind)
-        page.confirm(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, lines=[question], starts_on_no=True, then=lambda: page.choosing(self._give_back)(None))
+        page.confirm(title=question, lines=[], starts_on_no=True, then=lambda: page.choosing(self._give_back)(None))
 
     def _give_back(self, _):
         self._tunes().set_tune_pattern(kind=self._kind, pattern=None)

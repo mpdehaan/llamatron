@@ -46,13 +46,12 @@ class TestFracture(UITest):
         await self.press(keybindings.ArrangePage.FRACTURE)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         self.assertIn(messages.MSG_FRACTURE_TITLE, self.text())
-        self.assertIn(messages.MSG_FRACTURE_QUESTION, self.text())
-        await self.press(keybindings.ConfirmDialog.NO)
+        await self.press(ui_testing.ANSWER_NO)
         self.assertIsInstance(self.app.screen, ArrangePage)
         self.assertEqual(self.patterns_played(), [ui_testing.TUNE, ui_testing.BEAT, ui_testing.TUNE, ui_testing.TUNE])
 
     async def test_yes_gives_every_clip_a_pattern_of_its_own_numbered_from_the_first(self):
-        await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.ArrangePage.FRACTURE, *ui_testing.ANSWER_YES)
         self.assertEqual(self.patterns_played(), [ui_testing.TUNE, ui_testing.BEAT, TUNE_2, TUNE_3])
         self.assertIn(messages.MSG_FRACTURED.format(count=COPIES), self.text())
         setlist = self.document.get_setlist()
@@ -66,22 +65,22 @@ class TestFracture(UITest):
         self.document.set_clip_slot_setting(index=SECOND, track=LEAD, setting=ClipSlotSetting.PATTERNS, value=[ui_testing.TUNE, ui_testing.OTHER, ui_testing.TUNE])
         self.document.set_clip_slot_setting(index=SECOND, track=DRUMS, setting=ClipSlotSetting.PATTERNS, value=[ui_testing.OTHER, ui_testing.TUNE])
         self.document.record_edit()
-        await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.ArrangePage.FRACTURE, *ui_testing.ANSWER_YES)
         scene = self.document.song().get_scenes()[SECOND]
         # The first scene's clip keeps the pattern; a later clip plays a copy, the same copy each time its own list names the pattern.
         self.assertEqual(scene.get_clip_slot(LEAD).get_pattern_names(), [TUNE_2, ui_testing.OTHER, TUNE_2])
         self.assertEqual(scene.get_clip_slot(DRUMS).get_pattern_names(), [OTHER_2, TUNE_3])
 
     async def test_a_song_with_nothing_shared_says_so(self):
-        await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.ArrangePage.FRACTURE, *ui_testing.ANSWER_YES)
         before = self.patterns_played()
-        await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.ArrangePage.FRACTURE, *ui_testing.ANSWER_YES)
         self.assertEqual(self.patterns_played(), before)
         self.assertIn(messages.MSG_NOTHING_TO_FRACTURE, self.text())
 
     async def test_one_undo_puts_every_clip_back_on_the_shared_pattern(self):
         names = self.document.get_setlist().get_pattern_names()
-        await self.press(keybindings.ArrangePage.FRACTURE, keybindings.ConfirmDialog.YES)
+        await self.press(keybindings.ArrangePage.FRACTURE, *ui_testing.ANSWER_YES)
         await self.press(keybindings.Page.UNDO)
         self.assertEqual(self.patterns_played(), [ui_testing.TUNE, ui_testing.BEAT, ui_testing.TUNE, ui_testing.TUNE])
         self.assertEqual(self.document.get_setlist().get_pattern_names(), names)
