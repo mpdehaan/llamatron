@@ -15,7 +15,7 @@ import functools
 import math
 import random
 
-from llamatron.music_theory.fundamentals import intervals
+from llamatron.music_theory.fundamentals import intervals, scale_shapes
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import hook_kinds, hook_writing, notation, phrasing, wizard_names
 from llamatron.wizards.create_song.operations import backwards, moved, rotated, upside_down
@@ -169,8 +169,10 @@ STREAM_SEED = 'stream {} {}'
 # The half steps of each scale type's notes above its root.
 MAJOR = 'major'
 MINOR = 'minor'
+DORIAN = 'dorian'
+MIXOLYDIAN = 'mixolydian'
 HALF_STEPS = {
-    MAJOR: (0, 2, 4, 5, 7, 9, 11), MINOR: (0, 2, 3, 5, 7, 8, 10), 'dorian': (0, 2, 3, 5, 7, 9, 10), 'mixolydian': (0, 2, 4, 5, 7, 9, 10),
+    MAJOR: scale_shapes.MAJOR, MINOR: scale_shapes.MINOR, DORIAN: scale_shapes.DORIAN, MIXOLYDIAN: scale_shapes.MIXOLYDIAN,
 }
 HALF_STEPS_OF_MARK = {notation.SHARP: 1, notation.FLAT: -1}
 NOTES_IN_SCALE = 7
