@@ -17,6 +17,8 @@ These come before every other rule, whatever the task, mode or tool permits.
   - `/tmp/claude/llamatron` (the same as `/private/tmp/claude/llamatron`): every temporary file of Claude's work MUST go here,
     in subfolders by purpose, such as demo sets for the user in `/tmp/claude/llamatron/demos`.
   - The folders under `/private/tmp` whose names start with `claude`, where Claude Code keeps session scratch files.
+  - `~/.claude/projects/-Users-michaeldehaan-Devel-llamatron/`, this project's session transcripts: read only, to recover
+    what a summary dropped, such as an agreed mockup.
 - Status of work and lists of planned work MUST NOT go into source control: what is done, partly done or next, a queue, a plan's
   state, or a record of a conversation. They live in git-ignored files (`.claude/QUEUE.md`, `.claude/DESIGNS.md`,
   `.claude/features/WIZARD_DESIGNS.md`, `.claude/features/REFACTORING.md`, `.claude/features/REFACTORING_LOG.md`). A commit
