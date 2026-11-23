@@ -22,7 +22,7 @@ class GroovesPage(NamedListPage):
     WHAT = legends.MSG_GROOVE_WHAT
     crumbs = (labels.Crumb.GROOVES,)
     HELP = help_text.HELP_GROOVES_PAGE
-    columns = ((labels.Column.SELECT_GROOVE, None, Align.LEFT), (labels.Column.FROM, 7, Align.LEFT), (labels.Column.CELLS, 40, Align.LEFT), (labels.Column.CELL, 5, Align.RIGHT), (labels.Column.USED, 4, Align.RIGHT))
+    columns = ((labels.Column.SELECT_GROOVE, None, Align.LEFT), (labels.Column.FROM, 9, Align.LEFT), (labels.Column.CELLS, 40, Align.LEFT), (labels.Column.CELL, 5, Align.RIGHT), (labels.Column.USED, 4, Align.RIGHT))
 
     def rows(self):
         document = self.document()
