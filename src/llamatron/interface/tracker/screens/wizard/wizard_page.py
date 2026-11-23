@@ -22,12 +22,7 @@ from llamatron.interface.forms import moves
 from llamatron.interface.forms.cursor import place_of
 from llamatron.interface.forms.text import clock
 from llamatron.interface.pages.wizard import starts
-from llamatron.interface.pages.wizard.band_branch import BandBranch
-from llamatron.interface.pages.wizard.composition_branch import CompositionBranch
-from llamatron.interface.pages.wizard.create_branch import CreateBranch
-from llamatron.interface.pages.wizard.form_branch import FormBranch
-from llamatron.interface.pages.wizard.genre_branch import GenreBranch
-from llamatron.interface.pages.wizard.subgenre_branch import SubgenreBranch
+from llamatron.interface.pages.wizard.tree import WizardTree
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -71,15 +66,6 @@ LABEL_OF_FIELD = 'label'
 CHOICES_OF_FIELD = 'choices'
 # What the page keeps the tree's rows and a branch's fields under.
 
-# The branches that start open: the Band and Form branches among them, so that the players and the sections, and the keys that
-# add, copy, remove and move a section, show themselves with no key to learn.
-OPEN_AT_START = (
-    labels.MSG_WIZARD_GENRE_BRANCH,
-    labels.MSG_WIZARD_BAND_BRANCH,
-    labels.MSG_WIZARD_COMPOSITION_BRANCH,
-    labels.MSG_WIZARD_MELODIES_BRANCH,
-    labels.MSG_WIZARD_FORM_BRANCH,
-)
 
 
 def said_of(answer):
@@ -140,7 +126,7 @@ class WizardPage(FieldPage):
         song = self.document().song()
         self._last = song.get_wizard_choices()
         self._start = None
-        self._open = set(OPEN_AT_START)
+        self.panels = WizardTree(page=self)
         self.tree_place = FIRST_PLACE
         self.in_fields = False
         # The part of the intro the Intro panel's buttons act on: the part the cursor was last on or in, by its number.
@@ -501,17 +487,6 @@ class WizardPage(FieldPage):
 
     # The tree.
 
-    def roots(self):
-        """Return the tree's top branches, in the order a song is thought through: each is a page of the wizard, the genre and then the subgenre unlocking the rest."""
-        return [
-            GenreBranch(page=self),
-            SubgenreBranch(page=self),
-            BandBranch(page=self),
-            CompositionBranch(page=self),
-            FormBranch(page=self),
-            CreateBranch(page=self),
-        ]
-
     def cursor_place(self):
         """Where the cursor is: the branch of the tree, and the field while the cursor is in the fields."""
         return (self.tree_place, self.in_fields, self.cursor.get_place() if self.in_fields else NO_PLACE)
@@ -537,24 +512,14 @@ class WizardPage(FieldPage):
         from the choices, which made every key slow. The held offers are let go first, once the cursor has left their cell."""
         self.release_offers_once_left()
         choices = repr(self._choices.to_data())
-        open_branches = tuple(sorted(self._open))
+        open_branches = self.panels.open_keys()
         open_sections = tuple(sorted(self.app.open_field_sections))
         return (choices, self._song_name, open_branches, self.moving, self._start, open_sections)
 
     @cached_while(shown_state, said=said_of)
     def rows(self):
         """Return the branches the tree shows, each with how deep it is: every top branch, and the branches under each open one, however deep."""
-        rows = []
-
-        def listed(*, branch, depth):
-            rows.append((depth, branch))
-            # A locked branch shows nothing under it, whatever was open before the choice that locked it.
-            if branch.key() in self._open and not self.refusal_of(branch):
-                for child in branch.children():
-                    listed(branch=child, depth=depth + 1)
-        for root in self.roots():
-            listed(branch=root, depth=0)
-        return rows
+        return self.panels.rows()
 
     def row(self):
         """Return the depth and the branch under the tree's cursor, the cursor held within the tree, which a choice can shorten."""
@@ -567,7 +532,7 @@ class WizardPage(FieldPage):
 
     def shows_children(self, branch):
         """Return whether a branch of the tree is open, showing the branches under it, which a locked branch never is."""
-        return branch.key() in self._open and not self.refusal_of(branch)
+        return self.panels.shows_children(branch)
 
     def move_in_tree(self, name):
         self.tree_place = moves.moved(place=self.tree_place, name=name, count=len(self.rows()))
@@ -579,13 +544,13 @@ class WizardPage(FieldPage):
             if self.refusal_of(branch):
                 self.refuse(self.refusal_of(branch))
             elif branch.children():
-                self._open.add(branch.key())
+                self.panels.open(branch.key())
             return
         if depth and not (branch.children() and self.shows_children(branch)):
             while self.rows()[self.tree_place][0] >= depth:
                 self.tree_place -= 1
             return
-        self._open.discard(branch.key())
+        self.panels.close(branch.key())
 
     def into_fields(self):
         """Move the cursor into the fields of the branch under it, onto the first field that does something, or say why not yet."""
@@ -662,7 +627,7 @@ class WizardPage(FieldPage):
         def chosen(place):
             self.choosing(branch.add)(kinds[place])
             if not branch.is_listed():
-                self._open.add(branch.key())
+                self.panels.open(branch.key())
         self.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_ADD_SECTION_TITLE, options=kinds), then=chosen)
 
     def insert_in_list(self):
@@ -852,7 +817,7 @@ class WizardPage(FieldPage):
         except ValueError as problem:
             self.refuse(str(problem))
             return
-        self._open.add(labels.MSG_WIZARD_FORM_BRANCH)
+        self.panels.open(labels.MSG_WIZARD_FORM_BRANCH)
 
     def copy_listed(self):
         self.choosing(lambda branch: branch.copy())(self.branch())

@@ -10,6 +10,7 @@ from llamatron.interface.forms.note_names import note_shown, note_typed
 from llamatron.interface.forms.text import clock
 from llamatron.interface.pages.wizard import solo_melody_branch, starts
 from llamatron.interface.pages.wizard.hook_picture import picture_of
+from llamatron.interface.pages.wizard.tree import WizardTree
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.dialogs import dialog as dialog_values, row_dialog
@@ -231,7 +232,7 @@ class TestWizardPage(WizardTest):
         wizard = self.wizard()
         wizard.rows()
         # Rows made from nothing, the way a key that left something out would find them, differ from the rows kept.
-        with mock.patch.object(WizardPage, WizardPage.roots.__name__, lambda page: []), self.assertRaises(StaleAnswer):
+        with mock.patch.object(WizardTree, WizardTree.roots.__name__, lambda tree: []), self.assertRaises(StaleAnswer):
             wizard.rows()
 
     async def test_the_cursor_stops_at_both_ends_of_the_tree(self):
