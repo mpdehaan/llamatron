@@ -105,7 +105,7 @@ class TestFilePage(UITest):
         text = self.text()
         self.assertIn('not saved yet', text)
         self.assertIn(marks.MSG_EXPORTS_AFTER_SAVING, text)
-        self.assertIn(marks.MSG_NOT_SET, text)
+        self.assertIn(marks.MSG_NONE_SHOWN, text)
         self.document.save(path=SET_FILE)
         await self.press(Key.ESCAPE, keybindings.MainPage.FILE)
         self.assertIn(EXPORT, self.text())

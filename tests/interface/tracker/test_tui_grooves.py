@@ -248,6 +248,13 @@ class TestGrooveChoices(UITest):
     async def test_the_track_editor_takes_the_scene_or_song_groove_or_chooses(self):
         await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)
         await self.select_field(labels.MSG_GROOVE_LABEL)
+        # While no scene has a groove of its own, the track takes the song's, named; once one has, it is the scene's or the song's.
+        song = self.document.song()
+        self.assertIn(marks.MSG_SONG_GROOVE_SHOWN.format(groove=song.get_groove_name()), self.text())
+        await self.press(Key.ESCAPE)
+        self.document.change_set(song.get_scenes()[0].set_groove_choice, choice=FactoryGroove.PUSH, song=song)
+        await self.press(Key.ENTER)
+        await self.select_field(labels.MSG_GROOVE_LABEL)
         self.assertIn(marks.MSG_SCENE_OR_SONG_GROOVE_SHOWN, self.text())
         await self.press(keybindings.FieldPage.MORE)
         self.assertIs(self.track(ui_testing.LEAD).get_groove_choice(), False)

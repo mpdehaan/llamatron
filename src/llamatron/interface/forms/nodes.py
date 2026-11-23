@@ -386,7 +386,8 @@ class Strip(SteppedCells):
 
 @dataclass(slots=True, kw_only=True)
 class TextField(Field):
-    """A line of text, like a set's title: Enter asks the page for it, starting from what it says now, and Bksp blanks it.
+    """A line of text, like a set's title: Enter asks the page for it, starting from what it says now, and Bksp blanks it; a
+    blank one shows (none), as every empty field does.
 
     current() reads the text, set_text(text) stores it, blank text clearing it, and blank is what a cleared field stores.
     """
@@ -397,11 +398,15 @@ class TextField(Field):
     blank: str = NOTHING
     value: Callable = None
     enter_what: str = legends.What.EDIT
+    clear_what: str = marks.MSG_NONE_SHOWN
 
     def __post_init__(self):
-        self.value = self.current
+        self.value = self.shown
         self.enter = self.ask
         self.clear = self.blanked
+
+    def shown(self):
+        return self.current() or marks.MSG_NONE_SHOWN
 
     def ask(self):
         self.page.ask_text(title=self.label, value=self.current(), then=self.set_text)

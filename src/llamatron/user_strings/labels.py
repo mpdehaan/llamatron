@@ -146,7 +146,6 @@ class PageName:
     DRAWS = 'Draws'
     ARRANGE = 'Arrange'
     # What the main screen's Arrange cell is called while the set's Real Time switch is on, since Arrange then plays the song too.
-    ARRANGE_PLAY = 'Arrange/Play'
     # The main screen's switch for real-time playback, beside the pages: a cell with a mark in place of a count.
     REAL_TIME = 'Real Time'
     SAVE = 'Save'
@@ -241,7 +240,6 @@ class Column:
     SELECT_GROOVE = 'SELECT GROOVE'
     SELECT_INSTRUMENT = 'SELECT INSTRUMENT'
     SELECT_ANY_GENERATOR = 'SELECT GENERATOR'
-    SELECT_CHAIN_LINKS = 'SELECT CHAIN LINKS (generators)'
     SELECT_FILE = 'SELECT FILE'
     # A generator page's first column, with the kind's name, like SELECT ARPEGGIATOR.
 
@@ -921,5 +919,5 @@ MSG_WIZARD_PLAYS_LABEL = 'Plays'
 MSG_WIZARD_CREATE_BUTTON = 'Apply'
 MSG_WIZARD_SCALE_TYPE_NAMES = {'major': 'Major', 'minor': 'Minor'}
 
-MSG_LISTED_GENERATOR = '{kind}: {name}'
+MSG_LISTED_GENERATOR = '{kind} ({name})'
 MSG_GENERATORS_FIELD_LABEL = 'Generators'

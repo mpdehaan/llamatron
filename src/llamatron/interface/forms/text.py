@@ -5,7 +5,10 @@
 
 from llamatron.math.rational import Rational
 from llamatron.model.objects.naming import name_order
-from llamatron.user_strings import marks, names
+from llamatron.user_strings import marks, messages, names
+
+# A count of one, which takes the singular.
+ONE = 1
 
 SECONDS_PER_MINUTE = 60
 # A whole number has this denominator.
@@ -57,3 +60,18 @@ def columns(rows):
     """Return one line for each (name, description) pair, with the descriptions lined up, for a picker's choices on the clip page and the pattern editor."""
     widest = max((len(name) for name, _ in rows), default=0)
     return [marks.MSG_COLUMN_LINE.format(name=name.ljust(widest), description=description).rstrip() for name, description in rows]
+
+
+def counted(*, count, words):
+    """Return a count in words, words being the singular and the plural template, each filled with {count}: 1 song, 2 songs."""
+    one, many = words
+    if count == ONE:
+        return one.format(count=count)
+    return many.format(count=count)
+
+
+def in_a_sentence(parts):
+    """Return things listed as a sentence lists them: a, b and c."""
+    if len(parts) <= ONE:
+        return messages.MSG_LIST_JOIN.join(parts)
+    return messages.MSG_LIST_JOIN.join(parts[:-1]) + messages.MSG_LIST_LAST_JOIN + parts[-1]

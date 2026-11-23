@@ -90,7 +90,7 @@ class TestSongPage(UITest):
     async def test_the_genre_is_undefined_until_chosen_from_the_genres_and_bksp_clears_it(self):
         song = self.document.song()
         for label in (labels_text.MSG_GENRE_LABEL, labels_text.MSG_SUBGENRE_LABEL, labels_text.MSG_VARIANT_LABEL):
-            self.assertIn(marks.MSG_UNDEFINED_SHOWN, self.shown_on(label))
+            self.assertIn(marks.MSG_NONE_SHOWN, self.shown_on(label))
         await self.select_field(labels_text.MSG_GENRE_LABEL)
         await self.press(key_of(binding=keybindings.FieldPage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(song.get_genre(), genres.GENRES[0])

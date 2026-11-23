@@ -76,11 +76,17 @@ class TrackPresenter:
         return str(number)
 
     def groove_field(self):
-        """Return the Groove field: the scene's or the song's by default, off to play straight, or one by name."""
+        """Return the Groove field: the scene's or the song's by default, off to play straight, or one by name. A track plays in
+        every scene, so what it takes from above is the song's groove, named, only while no scene sets one of its own."""
+        song = self._document.song()
+        inherited = marks.MSG_SCENE_OR_SONG_GROOVE_SHOWN
+        cleared = legends.MSG_FROM_SCENE_OR_SONG_WHAT
+        if all(scene.get_groove_choice() is None for scene in song.get_scenes()):
+            inherited = marks.MSG_SONG_GROOVE_SHOWN.format(groove=song.get_groove_name())
+            cleared = legends.MSG_FROM_SONG_WHAT
         return groove_choice_field(
             page=self._page, title=messages.MSG_TRACK_GROOVE_TITLE, choice=self.track().get_groove_choice(),
-            inherited_option=marks.MSG_SCENE_OR_SONG_GROOVE_SHOWN, inherited_shown=marks.MSG_SCENE_OR_SONG_GROOVE_SHOWN,
-            choose=self._set_groove, clear_what=legends.MSG_FROM_SCENE_OR_SONG_WHAT,
+            inherited_option=marks.MSG_SCENE_OR_SONG_GROOVE_SHOWN, inherited_shown=inherited, choose=self._set_groove, clear_what=cleared,
         )
 
     def instrument_field(self):

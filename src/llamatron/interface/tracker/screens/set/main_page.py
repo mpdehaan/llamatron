@@ -378,14 +378,6 @@ class MainPage(Page):
             left += width + CELL_GAP
         return lefts
 
-    def shown_name(self, item):
-        """Return the name drawn on a cell: its own, but Arrange/Play on the Arrange cell while the set's Real Time switch is on,
-        so that the cell says where a song is played."""
-        setlist = self.document().get_setlist()
-        if item.binding is self.KEYS.ARRANGE and setlist.is_real_time():
-            return labels_text.PageName.ARRANGE_PLAY
-        return cell_name(item)
-
     def edge_style(self, item):
         """Return the style a cell's box is drawn in: its page's theme toned to the edges' brightness, or dim for a cell with none."""
         theme = CELL_THEMES.get(cell_name(item))
@@ -419,7 +411,7 @@ class MainPage(Page):
         middle = canvases[1]
         right = left + width - 1
         label = padded(item.shown_label())
-        name = self.shown_name(item)
+        name = cell_name(item)
         start = left + 1 + len(EDGE_GAP)
         middle.write(column=start, text=label, style=Style.KEY)
         middle.write(column=start + len(label), text=NAME_GAP + name, style=name_style)
@@ -449,7 +441,7 @@ class MainPage(Page):
                 item = row[column]
                 canvas.write(column=start, text=label, style=Style.KEY)
                 # The chosen action's name is reversed with a space after it, so that the reversed block stands clear of the name.
-                text = NAME_GAP + self.shown_name(item)
+                text = NAME_GAP + cell_name(item)
                 style = Style.PLAIN
                 if item.binding is selected.binding:
                     text += drawing.SPACE

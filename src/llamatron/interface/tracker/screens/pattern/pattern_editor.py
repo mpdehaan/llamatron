@@ -29,7 +29,7 @@ on the rows.
 
 import functools
 
-from llamatron.interface.forms.text import columns, fraction, sorted_names
+from llamatron.interface.forms.text import columns, counted, fraction, sorted_names
 from llamatron.interface.pages.asking import ask_time_signature
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.components.chord_row import step_chord_in_words
@@ -781,7 +781,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 return
             lost = self.document().steps_with_anything_past(name=self.item, steps=steps)
             if lost:
-                question = messages.MSG_SHORTEN_QUESTION.format(count=lost)
+                question = counted(count=lost, words=messages.MSG_SHORTEN_QUESTION)
                 self.confirm(title=question, lines=[], then=functools.partial(self.set_steps, steps))
             else:
                 self.set_steps(steps)

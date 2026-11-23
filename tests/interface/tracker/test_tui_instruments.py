@@ -235,21 +235,6 @@ class TestRealTimeSwitch(UITest):
         await self.press(Key.ESCAPE)
         self.assertFalse(self.document.get_setlist().is_real_time())
 
-    def arrange_name(self):
-        page = self.app.screen
-        return page.shown_name(next(item for item in page.menu_items() if item.binding is keybindings.MainPage.ARRANGE))
-
-    async def test_the_arrange_cell_reads_arrange_and_play_only_while_real_time_is_on(self):
-        self.assertEqual(self.arrange_name(), labels.PageName.ARRANGE)
-        self.assertNotIn(labels.PageName.ARRANGE_PLAY, self.text())
-        self.document.add_instrument(SYNTH)
-        await self.press(Key.RIGHT, Key.LEFT)
-        self.assertEqual(self.arrange_name(), labels.PageName.ARRANGE_PLAY)
-        self.assertIn(labels.PageName.ARRANGE_PLAY, self.text())
-        await self.press(keybindings.MainPage.REAL_TIME)
-        self.assertEqual(self.arrange_name(), labels.PageName.ARRANGE)
-        self.assertNotIn(labels.PageName.ARRANGE_PLAY, self.text())
-
     async def test_it_turns_real_time_off_and_on_and_says_so(self):
         self.document.add_instrument(SYNTH)
         await self.press(Key.RIGHT, Key.LEFT)

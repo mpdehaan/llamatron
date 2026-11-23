@@ -50,7 +50,7 @@ class TestNotesPage(UITest):
         self.assertIn(NO_NOTES_YET, self.text())
         await self.press(Key.ESCAPE)
         self.assertIsInstance(self.app.screen, FilePage)
-        self.assertIn(marks.MSG_NOT_SET, self.text())
+        self.assertIn(marks.MSG_NONE_SHOWN, self.text())
 
     async def test_esc_and_the_cancel_button_throw_the_typing_away_and_save_keeps_it(self):
         await self.type(ONE)

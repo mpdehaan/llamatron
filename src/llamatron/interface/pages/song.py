@@ -223,18 +223,18 @@ class SongPresenter:
 
 
     def style_field(self, *, label, choices, current, set_choice):
-        """Return a field for the song's genre, its subgenre or its variant: one of the choices, or undefined, which is all a field with no choices offers."""
-        offered = [marks.MSG_UNDEFINED_SHOWN, *choices]
+        """Return a field for the song's genre, its subgenre or its variant: one of the choices, or (none), which is all a field with no choices offers."""
+        offered = [marks.MSG_NONE_SHOWN, *choices]
         return ChoiceField(
-            page=self._page, label=label, choices=offered, current=current or marks.MSG_UNDEFINED_SHOWN, set=functools.partial(self._set_style, set_choice=set_choice),
-            clear=functools.partial(set_choice, None), clear_what=marks.MSG_UNDEFINED_SHOWN,
+            page=self._page, label=label, choices=offered, current=current or marks.MSG_NONE_SHOWN, set=functools.partial(self._set_style, set_choice=set_choice),
+            clear=functools.partial(set_choice, None), clear_what=marks.MSG_NONE_SHOWN,
         )
 
 
     @staticmethod
     def _set_style(choice, *, set_choice):
         """Set a genre, a subgenre or a variant to the choice, or to none for undefined."""
-        if choice == marks.MSG_UNDEFINED_SHOWN:
+        if choice == marks.MSG_NONE_SHOWN:
             choice = None
         set_choice(choice)
 

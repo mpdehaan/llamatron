@@ -15,7 +15,7 @@ def kind_label(kind):
 
 
 def listed_generator(*, setlist, name):
-    """Return a generator of a list as the page shows it, its kind before its name, as Chain: fills."""
+    """Return a generator of a list as the page shows it, its kind before its name, as Chain (fills)."""
     return labels.MSG_LISTED_GENERATOR.format(kind=kind_label(setlist.generator_kind(name)), name=name)
 
 

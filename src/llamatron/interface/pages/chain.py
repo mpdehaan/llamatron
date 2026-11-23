@@ -16,7 +16,7 @@ FIRST_REPEAT = 2
 
 
 def step_shown(*, kind, name, number=None):
-    """Return a step as the chain editor shows it: the generator's name, numbered when number is given, then its kind by the name its page gives it."""
+    """Return a step as the chain editor shows it: the generator's kind by the name its page gives it, then its name in parentheses, numbered when number is given."""
     label = generator_kinds.kind_listed(kind).label
     if number is None:
         return marks.MSG_CHAIN_STEP_SHOWN.format(name=name, kind=label)
@@ -37,7 +37,7 @@ def steps_shown(steps):
 class ChainPresenter:
     """What the chain editor shows and does, for one of the set's chains by name."""
 
-    COLUMNS = (ListColumn(heading=labels.Column.SELECT_CHAIN_LINKS, width=None, align=Align.LEFT),)
+    COLUMNS = (ListColumn(heading=labels.Column.SELECT_ANY_GENERATOR, width=None, align=Align.LEFT),)
 
     __slots__ = ('_document', '_name')
 

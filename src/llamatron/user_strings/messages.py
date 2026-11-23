@@ -176,7 +176,15 @@ MSG_RENAME_SCALE_PROMPT = 'Rename scale ({name})'
 # interface/tracker/screens/set/scale_page.py
 MSG_ROOT_TITLE = 'Root note'
 MSG_KIND_TITLE = 'Kind of {root} scale'
-MSG_SCALE_USES_NOTE = '  Used by {count} song(s) and scene(s).'
+MSG_SCALE_USES_NOTE = '  Used by {uses}.'
+MSG_SCALE_UNUSED_NOTE = '  Not used.'
+# What uses a scale, counted: one of a kind, or several.
+MSG_SONGS_COUNTED = ('{count} song', '{count} songs')
+MSG_SCENES_COUNTED = ('{count} scene', '{count} scenes')
+MSG_CLIPS_COUNTED = ('{count} clip', '{count} clips')
+# Things listed in a sentence: each but the last after a comma, the last after "and".
+MSG_LIST_JOIN = ', '
+MSG_LIST_LAST_JOIN = ' and '
 MSG_SCALE_NOTES_DETAIL = '{root} {kind}: {notes}'
 
 # interface/tracker/screens/pattern/pattern_editor.py, its two drawings and the rows in interface/tracker/components/
@@ -232,7 +240,8 @@ MSG_PLAY_DIRECTION_TITLE = 'Play direction'
 MSG_LOAD_OVER_CHOICE_TITLE = 'Load over {name}'
 MSG_LOAD_OVER_QUESTION = 'Replace everything in ({name}) with a copy of ({other})?'
 MSG_STEPS_PROMPT = 'Number of steps'
-MSG_SHORTEN_QUESTION = 'Remove {count} step(s) that hold something?'
+# Shortening a pattern past steps that hold anything: one step, or several.
+MSG_SHORTEN_QUESTION = ('Remove 1 step that holds an item?', 'Remove {count} steps that hold items?')
 MSG_CHANGE_TYPE_TITLE = 'Change the pattern type?'
 MSG_CHANGE_TYPE_QUESTION = 'The pattern will use {what}, which clears the notes it has now.'
 MSG_CHANGE_TYPE_EMPTY_QUESTION = 'This pattern will use {what}. Continue?'

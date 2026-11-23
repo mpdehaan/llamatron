@@ -9,6 +9,7 @@ from llamatron.engine.generators.arp import schema, strings as arp_strings
 from llamatron.engine.generators.arp.generator import ChordOrder, OctaveJump
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
 from llamatron.engine.generators.timing import parts as timing_parts
+from llamatron.interface.forms.text import counted, in_a_sentence
 from llamatron.interface.pages.chain import step_shown
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components import keyboard
@@ -162,6 +163,14 @@ class TestScalePage(UITest):
         self.assertEqual(self.root_and_kind(setlist.DEFAULT_SCALE), (NoteName.D, scale_type_name(ScaleType.MAJOR)))
         self.assertEqual(self.document.get_setlist().get_scale_names(), [setlist.DEFAULT_SCALE])
 
+    async def test_the_scale_page_counts_what_uses_the_scale_in_words(self):
+        song = self.document.song()
+        for scene in song.get_scenes():
+            self.document.change_set(scene.set_scale_name, name=setlist.DEFAULT_SCALE, song=song)
+        await self.press(keybindings.MainPage.SCALES, Key.ENTER)
+        uses = in_a_sentence([counted(count=1, words=messages.MSG_SONGS_COUNTED), counted(count=len(song.get_scenes()), words=messages.MSG_SCENES_COUNTED)])
+        self.assertIn(messages.MSG_SCALE_USES_NOTE.format(uses=uses), self.text())
+
     async def test_the_scale_page_steps_the_root_and_kind_and_shows_the_notes(self):
         self.name_the_scale_after_its_notes()
         await self.press(keybindings.MainPage.SCALES, Key.ENTER)
@@ -175,7 +184,7 @@ class TestScalePage(UITest):
         await self.press(key_of(binding=keybindings.ScalePage.MORE, key=Key.RIGHT_BRACKET), key_of(binding=keybindings.ScalePage.MORE, key=Key.RIGHT_BRACKET))
         self.assertEqual(self.root_and_kind(D_DORIAN), (NoteName.D, scale_type_name(ScaleType.DORIAN)))
         self.assertIn(D_DORIAN_NOTES, self.text())
-        self.assertIn(messages.MSG_SCALE_USES_NOTE.format(count=1), self.text())
+        self.assertIn(messages.MSG_SCALE_USES_NOTE.format(uses=counted(count=1, words=messages.MSG_SONGS_COUNTED)), self.text())
         self.assertEqual(self.document.get_setlist().get_scale_names(), [D_DORIAN])
         self.assertEqual(self.document.song().get_scale_name(), D_DORIAN)
         render_song(self.document.song())

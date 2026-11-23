@@ -106,4 +106,5 @@ class FileGlobalPresenter:
     def notes_first_line(self):
         """Return the notes' first line, which is what fits on the field, or that there are none."""
         text = self._document.get_setlist().get_notes()
-        return text.split(LINE_BREAK)[0].strip() or marks.MSG_NOT_SET if text else marks.MSG_NOT_SET
+        first = text.split(LINE_BREAK)[0].strip()
+        return first or marks.MSG_NONE_SHOWN

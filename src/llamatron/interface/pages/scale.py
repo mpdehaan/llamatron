@@ -6,6 +6,7 @@ things use it. The root and the kind step through their lists; Enter opens a pic
 or the pages of kinds."""
 
 from llamatron.interface.forms.nodes import Field, NameField, stepped
+from llamatron.interface.forms.text import counted, in_a_sentence
 from llamatron.model.objects.naming import words
 from llamatron.model.schema.file_format import Section
 from llamatron.model.values import note, scale as scale_values
@@ -66,8 +67,17 @@ class ScalePresenter:
         return messages.MSG_SCALE_NOTES_DETAIL.format(root=self.root(), kind=scale_label(self.kind()), notes=scale_notes(root=self.root(), kind=self.kind()))
 
     def uses_line(self):
-        """Return how many things of the set use the scale."""
-        return messages.MSG_SCALE_USES_NOTE.format(count=len(self._document.uses(section=Section.SCALES, name=self._name)))
+        """Return how many songs, scenes and clips of the set use the scale, each counted in words, or that nothing does."""
+        setlist = self._document.get_setlist()
+        counts = (
+            (len(setlist.songs_naming(section=Section.SCALES, name=self._name)), messages.MSG_SONGS_COUNTED),
+            (len(setlist.scenes_naming(section=Section.SCALES, name=self._name)), messages.MSG_SCENES_COUNTED),
+            (len(setlist.clip_slots_naming(section=Section.SCALES, name=self._name)), messages.MSG_CLIPS_COUNTED),
+        )
+        parts = [counted(count=count, words=words) for count, words in counts if count]
+        if not parts:
+            return messages.MSG_SCALE_UNUSED_NOTE
+        return messages.MSG_SCALE_USES_NOTE.format(uses=in_a_sentence(parts))
 
 
 def scale_label(kind):

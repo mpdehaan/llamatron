@@ -14,8 +14,6 @@ MSG_CIRCLE_ARROW = ' → '
 
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
 MSG_NONE_SHOWN = '(none)'
-# What a field shows for a genre, subgenre or variant a song doesn't say.
-MSG_UNDEFINED_SHOWN = '(undefined)'
 MSG_ANY_SCALE_LENGTH = '(any)'
 
 # interface/tracker/app.py
@@ -111,7 +109,7 @@ MSG_FROM_SCENE_SHOWN = '{value} (from scene)'
 MSG_DETAILS_VELOCITY = 'velocity: {percent}'
 MSG_DETAILS_VELOCITY_RAMPS = 'velocity: {percent}*'
 MSG_ONE_STEP_SHOWN = '(one step)'
-MSG_CLIP_NAMED_FOR_PATTERN = '(pattern: {pattern})'
+MSG_CLIP_NAMED_FOR_PATTERN = '{pattern} (from pattern)'
 # A clip of several patterns on Arrange: its first pattern and how many more follow.
 MSG_CLIP_PATTERNS_COUNTED = '{name} +{more}'
 MSG_EACH_PATTERN_DIRECTION_SHOWN = '(from each pattern)'
@@ -147,7 +145,6 @@ MSG_CLOCK = '{minutes}:{seconds:02}'
 MSG_NOT_SAVED_YET = '(not saved yet)'
 MSG_EXPORTS_BESIDE = '{prefix}.als and the MIDI files beside it'
 MSG_EXPORTS_AFTER_SAVING = '(save the set first)'
-MSG_NOT_SET = 'not set'
 
 # interface/tracker/screens/arrange/track_editor.py
 MSG_CURRENT_SONG_MARK = '●'
@@ -162,8 +159,8 @@ MSG_DRUM_TRACK_SHOWN = '(drum track)'
 MSG_SIGNED_NUMBER = '{number:+d}'
 # The chain editor.
 # A step of a chain, the generator's name and then its kind, and a generator listed again in one chain numbered on screen only.
-MSG_CHAIN_STEP_SHOWN = '{name} ({kind})'
-MSG_CHAIN_STEP_AGAIN = '{name} {number} ({kind})'
+MSG_CHAIN_STEP_SHOWN = '{kind} ({name})'
+MSG_CHAIN_STEP_AGAIN = '{kind} ({name}) {number}'
 # The arp pages: how they show settings a file leaves out, and what they start from.
 # A generator's step left as the step size of the pattern each clip plays.
 MSG_PATTERN_STEP_SHOWN = '(from pattern)'
