@@ -81,7 +81,7 @@ class GeneratorsPage(ListPage):
         rows = []
         for kind in self.kinds():
             rows += self.kind_rows(kind)
-        rows.append((Listed(NEW_GENERATOR), self.one_cell(marks.MSG_ADD_ROW_MARK)))
+        rows.append((Listed(NEW_GENERATOR), self.one_cell(marks.MSG_NEW_ROW)))
         return rows
 
     def kind_rows(self, kind):

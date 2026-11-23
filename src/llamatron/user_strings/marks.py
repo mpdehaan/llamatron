@@ -328,6 +328,9 @@ MSG_SCENE_OR_SONG_GROOVE_SHOWN = '(scene or song)'
 # interface/tracker/screens/shared/list_page.py and interface/tracker/screens/arrange/arrange_page.py
 # The row at the bottom of a list that adds to it, and the cell on Arrange that adds a scene or a track.
 MSG_ADD_ROW_MARK = '+'
+# interface/tracker/screens/shared/list_page.py and interface/tracker/screens/generators/generators_page.py
+# The row at the bottom of a list page that adds to it, saying what it does.
+MSG_NEW_ROW = '+ (New)'
 
 
 # model/values/progressions.py: the marks of a chord's Roman numeral: a sharp or flat in front, and after it what its quality adds.

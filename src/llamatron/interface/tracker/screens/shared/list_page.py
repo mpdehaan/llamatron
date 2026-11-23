@@ -66,7 +66,7 @@ class ListPage(Page):
     def rows_with_plus(self):
         rows = self.remembered_rows()
         if self.can_add():
-            return [*rows, (None, [marks.MSG_ADD_ROW_MARK, *[drawing.NOTHING] * (len(self.columns) - 1)])]
+            return [*rows, (None, [marks.MSG_NEW_ROW, *[drawing.NOTHING] * (len(self.columns) - 1)])]
         return rows
 
     def page_key_table(self):
