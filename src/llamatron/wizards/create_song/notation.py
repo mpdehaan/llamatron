@@ -29,6 +29,8 @@ from llamatron.wizards.create_song import wizard_names
 # The rows of a pattern, as a set file names them.
 STEPS = 'steps'
 STEP_SIZE = 'step_size'
+# The pattern group the Patterns page lists a pattern in, which is no part of the music a part writes.
+GROUP = 'group'
 DRUM = 'drum'
 DEGREE = 'degree'
 ACCIDENTAL = 'accidental'

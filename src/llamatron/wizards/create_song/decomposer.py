@@ -29,8 +29,9 @@ SMALLEST_BAND = 2
 
 
 def normal(pattern):
-    """A pattern with only the rows that say anything and its step size written, so that two can be compared."""
-    rows = {name: value for name, value in pattern.items() if not isinstance(value, list)}
+    """A pattern with only the rows that say anything and its step size written, so that two can be compared: its group is
+    left out, since a group says only where the Patterns page lists a pattern."""
+    rows = {name: value for name, value in pattern.items() if not isinstance(value, list) and name != notation.GROUP}
     rows.setdefault(notation.STEP_SIZE, notation.DEFAULT_STEP_SIZE)
     rows[notation.STEP_SIZE] = str(rows[notation.STEP_SIZE])
     rows.update(kept_rows({name: value for name, value in pattern.items() if isinstance(value, list)}))
