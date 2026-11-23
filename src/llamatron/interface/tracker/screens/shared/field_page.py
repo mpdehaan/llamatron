@@ -7,6 +7,7 @@
 import functools
 from rich.text import Text
 
+from llamatron.caching.cached import cached_while
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.cursor import Cursor, key_between, NoSuchPlace
@@ -23,6 +24,10 @@ from llamatron.user_strings import errors, labels as labels_text, legends, marks
 
 # How wide a tab box is drawn where a page is drawn with no width, as a test draws it.
 BOX_WIDTH = 80
+# The attribute of a page that says it is in Move mode, carrying something, which only some pages have.
+MOVING = 'moving'
+# The values a field may be built holding, rather than asking for as it is drawn, which a kept field could hold stale.
+BUILT_HOLDING = ('on', 'number', 'current', 'key_name', 'shown')
 
 
 class FieldPage(Page):
@@ -39,6 +44,8 @@ class FieldPage(Page):
         self.cell = 0
         # How wide the tab box was last drawn, which decides how its columns stand and so where the arrows lead in it.
         self.box_width = BOX_WIDTH
+        # The page's fields, built once for as long as nothing they are made from changes (cached_while).
+        self._cached = {}
 
     def fields(self):
         return []
@@ -47,6 +54,21 @@ class FieldPage(Page):
         """Return the sections every page of its kind shows after its own fields, such as a generator's statements about the registers; none unless a page says."""
         return []
 
+    def fields_state(self):
+        """Return everything the page's fields are built from besides the page's own code, the key they are kept by: the
+        document's revision, which moves with every change to the set, the sections open, the tabs chosen, where the cursor is and whether it carries something, and what the
+        page itself says its fields read. A key asks for the fields dozens of times, to find the cursor, list the keys and draw,
+        and each asking built every field and tab again: the clip page's took 13 ms a key."""
+        moving = getattr(self, MOVING, False)
+        shared = (self.document().get_revision(), tuple(sorted(self.app.open_field_sections)), tuple(self.app.chosen_tabs.items()))
+        return (*shared, self.cursor.get_place(), self.cell, moving, self.fields_depend_on())
+
+    def fields_depend_on(self):
+        """Return what else a page's fields are built from, outside the set and the page's cursor: nothing, unless a page says."""
+        return ()
+
+    # The key is asked of the page, so that a page of its own kind can say it keeps nothing, as the wizard does.
+    @cached_while(lambda page: page.fields_state(), said=lambda fields: fields_said(fields))
     def every_field(self):
         """Return the page's fields with the sections every page of its kind shares put after them, before the page's buttons, which always come last."""
         fields = self.fields()
@@ -535,3 +557,25 @@ def page_buttons_start(fields):
     while start and isinstance(fields[start - 1], Button):
         start -= 1
     return start
+
+
+def fields_said(fields):
+    """Return what a page's kept fields say, to hold against the fields built again while the tests check every remembered
+    answer: each field's kind and label and the values it was built holding, and each tab of a tab box with its own fields. A
+    field's shown value is never asked, since some ask the page for its fields in turn."""
+    said = []
+    for field in fields:
+        if field.IS_TAB_BOX:
+            said.append(tuple((tab.label, tuple(fields_said(tab.every_field()))) for tab in field.tabs))
+            continue
+        held = tuple(held_value(field=field, name=name) for name in BUILT_HOLDING)
+        said.append((type(field).__name__, field.label, held))
+    return said
+
+
+def held_value(*, field, name):
+    """Return a value a field holds, as text that compares, or None where it holds none or the name is one of its methods."""
+    value = getattr(field, name, None)
+    if callable(value):
+        return None
+    return repr(value)

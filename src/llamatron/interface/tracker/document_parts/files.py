@@ -121,6 +121,8 @@ class DocumentFiles:
         """Save the set under a new name: a copy of a protected set is theirs, so the copy isn't protected."""
         if self._setlist.is_protected() and self._path is not None and path != self._path:
             self._setlist.set_protected(False)
+            # The set changed, so whatever was worked out from it is worked out again.
+            self._forget()
         self.save(path=path)
 
     def file_is_protected(self, *, path=None):

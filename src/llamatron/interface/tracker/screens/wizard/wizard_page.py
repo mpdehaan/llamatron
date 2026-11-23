@@ -596,6 +596,11 @@ class WizardPage(FieldPage):
     def fields(self):
         return self.fields_at(place=self.tree_place)
 
+    def fields_state(self):
+        """Return no key, so that a settings page's keeping of its fields keeps nothing here: the wizard keeps its own, by the
+        choices and the tree (fields_at), which a settings page's key knows nothing of."""
+        return None
+
     @cached_while(shown_state, said=said_of)
     def fields_at(self, *, place):
         """Return the fields of the branch at a place of the tree, the branch under the cursor."""

@@ -93,6 +93,10 @@ class ClipPage(FieldPage):
             result.append(self.bind(self.KEYS.MOVE_PATTERN, action=self.start_moving))
         return [*result, self.bind(self.KEYS.OPEN_PATTERN, action=self.open_pattern), listening]
 
+    def fields_depend_on(self):
+        """Return what the fields read besides the set: whether the clip plays on its own, which names the Listen button."""
+        return (self.is_listening(),)
+
     def is_listening(self):
         """Return whether the clip plays on its own: through its track's instrument, or through General MIDI while Real Time is
         off."""
