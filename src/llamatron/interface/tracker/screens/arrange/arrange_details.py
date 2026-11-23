@@ -174,8 +174,6 @@ def scene_details(*, song, scene):
     elif scene.get_tempo_setting() is not None:
         lines.append(detail(marks_text.MSG_DETAILS_TEMPO.format(tempo=scene.get_tempo_setting())))
     lines += groove_lines(scene.get_groove_choice())
-    if scene.get_reset_names():
-        lines.append(detail(marks_text.MSG_DETAILS_RESET.format(registers=marks_text.MSG_DETAILS_LIST_SEPARATOR.join(scene.get_reset_names()))))
     return lines + velocity_lines(scene) + shape_lines(scene)
 
 

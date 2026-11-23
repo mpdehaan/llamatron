@@ -23,7 +23,7 @@ from llamatron.engine.realizer.modulations import modulates
 from llamatron.engine.realizer.pass_memory import PassMemory
 from llamatron.engine.realizer.pattern_player import check_pattern_has_a_scale
 from llamatron.engine.realizer.realization import Realization
-from llamatron.engine.realizer.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, scene_change, starting_values, with_resets
+from llamatron.engine.realizer.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, starting_values, with_resets
 from llamatron.engine.realizer.scene_reuse import changed_clips, first_changed_scene
 from llamatron.engine.realizer.song_state import SongState
 from llamatron.engine.realizer.tempo_ramps import ramped_tempos, tempos_within
@@ -801,8 +801,8 @@ class SongRealizer:
         return draws
 
     def _resets_of(self, written):
-        """Return the registers a written-out scene sets back to their defaults as it starts: its own resets, and on its first play every register that resets each scene."""
-        names = written.get_reset_names()
+        """Return the registers a written-out scene sets back to their defaults as it starts: on its first play every register that resets each scene."""
+        names = []
         if written.is_first_play():
             names += [name for name, register in self._state.get_registers().items() if register.resets_each_scene() and name not in names]
         return names
@@ -1053,13 +1053,8 @@ def _share_of_whole_note(*, milliseconds, tempo):
 
 
 def _own_change(scene):
-    """Return what a written-out scene changes of the registers itself: it sets them only as it first starts, and adds to them
-    on every play, its repeats too."""
-    written_scene = scene.get_scene()
-    sets = {}
-    if scene.is_first_play():
-        sets = written_scene.get_register_sets()
-    return scene_change(sets=sets, adds=written_scene.get_register_adds())
+    """Return what a written-out scene changes of the registers itself: nothing, since a scene sets and adds to none."""
+    return None
 
 
 def _through_scene(*, entries, count, number_of):

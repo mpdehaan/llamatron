@@ -12,7 +12,7 @@ A scene starts all of its clips together and has no length of its own: a scene l
 
 On Arrange, `ENTER` on a scene's name opens the Scene page.
 
-Under the Name, a box of tabs holds the rest, as on the clip page (see [Clips](CLIPS.md#clip-settings) for the keys): Settings, with Playing (Section, Repeat, Launch together, Scale, Groove, Tempo) and Reset As It Starts (the registers' and draws' resets); Generators, the Generators field; Shapes; Velocity, the Velocity field and the two ramps; Tempo Ramps; Registers; Bypass When. A scene has no built-in generators.
+Under the Name, a box of tabs holds the rest, as on the clip page (see [Clips](CLIPS.md#clip-settings) for the keys): Settings, with Playing (Section, Repeat, Launch together, Scale, Groove, Tempo) and Reset As It Starts (the draws' resets); Generators, the Generators field; Shapes; Velocity, the Velocity field and the two ramps; Tempo Ramps; Bypass When. A scene has no built-in generators.
 
 | Setting | What it does |
 | --- | --- |
@@ -25,8 +25,6 @@ Under the Name, a box of tabs holds the rest, as on the clip page (see [Clips](C
 | Repeat | Plays the whole scene this many times, from 1 to 999. |
 | Generators | The generators every clip of the scene runs, after each clip's own, edited as a clip's are. See [Generators](GENERATORS.md). |
 | Launch together | For real-time playback only, and on by default: when a clip above sends a start to any clip of this scene, every clip of the scene starts together. When off, each clip starts only when the clip directly above it sends a start, and Arrange marks the scene with `┆` after its name. `Space` or `ENTER` toggles it. See [Playing Live](PLAYING_LIVE.md). |
-| Reset AX to Reset DX | Sets that register back to its default as the scene starts. `Space` or `ENTER` toggles it. A scene that repeats resets only as it first starts, so a register can keep changing across the repeats. |
-| Set Registers, Increment Registers | On the Registers tab, columns that set each register to a value as the scene first starts and add an amount every time the scene plays. See [Set Registers and Increment Registers](REGISTERS.md#set-registers-and-increment-registers). |
 | Tempo Ramp In, Tempo Ramp Out | On the Tempo Ramps tab, columns that move the tempo gradually at the scene's start and at its end. See [Tempo Ramps](#tempo-ramps). |
 | Velocity Ramp In, Velocity Ramp Out | On the Velocity tab, columns that fade the scene in from its start and out to its end. See [Velocity and Velocity Ramps](#velocity-and-velocity-ramps). |
 | Bypass When | A tab of statements about the registers. When one is true as a clip's pattern starts over, that pass goes by the clip's generators untouched. See [Conditional Execution](REGISTERS.md#conditional-execution). |

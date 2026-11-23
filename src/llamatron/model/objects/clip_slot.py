@@ -18,10 +18,10 @@ from llamatron.model.file.checks import check_name, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.built_ins import built_ins_setting, HoldsBuiltIns, pass_over_unknown_built_ins
 from llamatron.model.objects.chain import check_chain_names
-from llamatron.model.objects.conditions import register_values_setting, statements_setting, with_statement
+from llamatron.model.objects.conditions import statements_setting, with_statement
 from llamatron.model.objects.llama_data import HoldsSettings, own_copy, settings_by_name, written_settings
 from llamatron.model.objects.shapes import shape_settings, shape_values
-from llamatron.model.objects.traits import RunsChains, SetsRegisters
+from llamatron.model.objects.traits import RunsChains
 from llamatron.model.objects.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternOrder, Section
@@ -91,15 +91,13 @@ SETTINGS = described(
     Checked(name=ClipSlotSetting.SCALE, check=_check_scale_name, needs_song=True),
     *velocity_setting_descriptions(),
     *shape_settings(),
-    register_values_setting(ClipSlotSetting.SET_REGISTERS),
-    register_values_setting(ClipSlotSetting.ADD_REGISTERS),
     statements_setting(ClipSlotSetting.BYPASS_WHEN),
     statements_setting(ClipSlotSetting.SKIP_WHEN),
     built_ins_setting(ClipSlotSetting.BUILT_IN),
 )
 
 
-class ClipSlot(HoldsBuiltIns, RunsChains, SetsRegisters, HoldsSettings):
+class ClipSlot(HoldsBuiltIns, RunsChains, HoldsSettings):
     """A pattern to play, and how: its chain, repeats or loop, direction, morph and grab, and its own name if it has one.
 
     Settings the file leaves out are kept as None, meaning their defaults. A clip with no name of
@@ -112,8 +110,6 @@ class ClipSlot(HoldsBuiltIns, RunsChains, SetsRegisters, HoldsSettings):
     SETTINGS = SETTINGS
     CHAINS_SETTING = ClipSlotSetting.CHAINS
     BUILT_IN_SETTING = ClipSlotSetting.BUILT_IN
-    SET_REGISTERS_SETTING = ClipSlotSetting.SET_REGISTERS
-    ADD_REGISTERS_SETTING = ClipSlotSetting.ADD_REGISTERS
 
     # A clip names the pattern it plays and the one it morphs to, the chain it runs and the track it grabs from.
     REFERENCES = {

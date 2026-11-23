@@ -21,7 +21,7 @@ from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs import grouped_choices
 from llamatron.interface.tracker.dialogs.grouped_choices import number_or_names, value_groups
 from llamatron.interface.tracker.drawing import Box, cursor_mark, padded, Style
-from llamatron.interface.tracker.screens.shared.field import Cells, ChoiceField, Field, NumberField
+from llamatron.interface.tracker.screens.shared.field import Cells, ChoiceField, Field
 from llamatron.model.objects import conditions
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import StatementPart
@@ -113,23 +113,6 @@ def statement_section(*, page, label, table, statements, store):
     heading = page.heading(label=label, is_set=None, said=lambda: drawing.NOTHING)
     lines = [_line(page=page, place=place, table=table, statements=statements, store=store) for place in range(limits.MAX_STATEMENTS)]
     return [heading, *lines]
-
-
-def register_fields(*, page, label, name_label, values, store, lowest=limits.MIN_REGISTER_VALUE):
-    """Return a section of one number for each register, blank until typed: what a scene or a clip sets the registers to, or adds to them.
-
-    values() is what each register is given, and store(register, value) gives one a value, or none for None.
-    """
-    heading = page.heading(label=label, is_set=lambda: bool(values()))
-    return [heading, *[_register_field(page=page, label=name_label.format(name=register), register=register, values=values, store=store, lowest=lowest) for register in file_format.REGISTER_NAMES]]
-
-
-def _register_field(*, page, label, register, values, store, lowest):
-    held = values().get(register)
-    return NumberField(
-        page=page, label=label, number=held, start=ZERO, shown=marks.MSG_NONE_SHOWN if held is None else str(held),
-        lowest=lowest, highest=limits.MAX_REGISTER_VALUE, set=lambda number: store(register, number), clear=lambda: store(register, None),
-    )
 
 
 def _line(*, page, place, table, statements, store):

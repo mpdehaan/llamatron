@@ -202,7 +202,6 @@ songs:
 
     scenes:
       - name: counting
-        set_registers: { AX: 0, BX: 0 }
         clips:
           - { track: every bar, pattern: every bar, repeat: 24 }
           - { track: every second, pattern: every second, repeat: 24 }
@@ -212,29 +211,24 @@ songs:
         repeat: 8
         scale: G Major
         tempo: 100
-        set_registers: { AX: 0 }
         clips:
           - { track: guitar, pattern: four chords, generators: [{ name: four ways }] }
       - name: fill every fourth bar
         scale: A Minor Pentatonic
-        set_registers: { AX: 0 }
         clips:
           - { track: every bar, pattern: fill, repeat: 8 }
           - { track: counted, pattern: answers, repeat: 8 }
       - name: false start
         scale: A Minor Pentatonic
-        set_registers: { BX: 0 }
         clips:
           - { track: every bar, pattern: pulse, repeat: 8 }
           - { track: counted, pattern: riff, loop: true }
       - name: up and down
         scale: A Minor Pentatonic
-        set_registers: { CX: 0, DX: 0 }
         clips:
           - { track: counted, pattern: climb, repeat: 20 }
           - { track: every bar, pattern: scramble, repeat: 20 }
       - name: two and a half
         scale: A Minor Pentatonic
-        set_registers: { AX: 0 }
         clips:
           - { track: counted, pattern: phrase, loop: true }

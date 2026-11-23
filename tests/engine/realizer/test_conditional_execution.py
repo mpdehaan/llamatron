@@ -16,15 +16,14 @@ from llamatron.engine.generators.chords import model as chords_model
 from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import conditions
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting
+from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
-from tests.support.rendering import render_data, setlist_from_data, song_from_data
+from tests.support.rendering import render_data, setlist_from_data
 
 AX = RegisterName.AX
 BX = RegisterName.BX
@@ -37,6 +36,8 @@ LEAD = 'lead'
 OTHER = 'other'
 MAIN = 'main'
 X = 'x'
+# The other track's pattern: one note a pass, changing nothing.
+PLAIN = 'plain'
 TWICE = 'up'
 DOUBLED = 'moved'
 PARTS_AS_READ = (StatementPart.REGISTER, StatementPart.OPERATOR, StatementPart.VALUE, StatementPart.COMPARISON, StatementPart.AGAINST)
@@ -45,6 +46,10 @@ MOVED_BY = 1
 CHORD_II = 2
 # AX is free to count well past the passes any test plays.
 ROOMY = {AX: {RegisterSetting.MAXIMUM: 100}, BX: {RegisterSetting.MAXIMUM: 100}}
+# A pattern's step that adds 1 to AX, and AX starting at 1, so that the passes start with AX 1, 2, 3 and 4 and their notes, moved
+# after the add, are a note higher.
+COUNTING_ROW = {file_format.REGISTER_ADD_ROWS[AX]: [1]}
+COUNTING_REGISTERS = {AX: {RegisterSetting.MAXIMUM: 100, RegisterSetting.DEFAULT: 1}, BX: {RegisterSetting.MAXIMUM: 100}}
 
 
 def scale_note(value):
@@ -57,24 +62,28 @@ def statement(*parts):
     return dict(zip(PARTS_AS_READ, parts))
 
 
-def song(*, clip=None, scene=None, track=None, chain=None, generator=None, chained=False, registers=None, other=None):
-    """Return a song whose lead plays one note a pass, moved by AX, with what is given added to its clip, scene, track, chain and generator."""
+def song(*, clip=None, scene=None, track=None, chain=None, generator=None, chained=False, registers=None, other=None, counting=False):
+    """Return a song whose lead plays one note a pass, moved by AX, with what is given added to its clip, scene, track, chain and
+    generator; counting, AX starts at 1 and the note's step adds 1 to it, so that each pass starts with AX one more than the last."""
     tracks = {LEAD: dict(track or {})}
     clips = {LEAD: {ClipSlotSetting.PATTERN: X, **(clip or {})}}
     if chained:
         clips[LEAD][ClipSlotSetting.CHAINS] = [DOUBLED]
     if other is not None:
         tracks[OTHER] = {}
-        clips[OTHER] = {ClipSlotSetting.PATTERN: X, **other}
+        clips[OTHER] = {ClipSlotSetting.PATTERN: PLAIN, **other}
     steps = [{chords_plugin.NAME: TWICE}]
     return {
         Section.SCALES: {MAIN: {ScaleSetting.ROOT: NoteName.C, ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}}, SongSetting.SCALE: MAIN,
         Section.PATTERNS: {X: {
             PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: STEP_SIZE, Row.DEGREE: [1], Row.OCTAVE: [OCTAVE], file_format.REGISTER_NOTE_ROWS[AX]: [RegisterUse.ADD],
+            **(COUNTING_ROW if counting else {}),
+        }, PLAIN: {
+            PatternSetting.STEPS: 1, PatternSetting.STEP_SIZE: STEP_SIZE, Row.DEGREE: [1], Row.OCTAVE: [OCTAVE],
         }},
         chords_plugin.SECTION: {TWICE: {ChordsSetting.MODE: chords_model.PROGRESSION, ProgressionSetting.CHORDS: [CHORD_II], **(generator or {})}},
         Section.CHAINS: {DOUBLED: steps if chain is None else {ChainSetting.STEPS: steps, **chain}},
-        Section.REGISTERS: registers or ROOMY,
+        Section.REGISTERS: registers or (COUNTING_REGISTERS if counting else ROOMY),
         Section.TRACKS: tracks,
         Section.SCENES: [{**(scene or {}), SceneSetting.TRACKS: clips}],
     }
@@ -175,93 +184,57 @@ class TestStatements(unittest.TestCase):
         self.assertEqual(parity, statement(AX, Operator.EVEN))
 
 
-class TestRegistersSetAndAdded(unittest.TestCase):
-    """A scene and a clip set registers once and add to them every time round."""
-
-    def test_a_scene_adds_on_every_play_and_sets_only_as_it_first_starts(self):
-        data = song(scene={SceneSetting.REPEAT: 3, SceneSetting.SET_REGISTERS: {AX: 4}, SceneSetting.ADD_REGISTERS: {AX: 1}})
-        self.assertEqual([heard(data, scene=number) for number in (1, 2, 3)], [notes_at([5]), notes_at([6]), notes_at([7])])
-
-    def test_a_clip_sets_as_it_launches_and_adds_every_time_its_pattern_starts_over(self):
-        data = song(clip={ClipSlotSetting.REPEAT: 3, ClipSlotSetting.SET_REGISTERS: {AX: 2}, ClipSlotSetting.ADD_REGISTERS: {AX: 1}})
-        self.assertEqual(heard(data), notes_at([3, 4, 5]))
-
-    def test_the_scene_acts_before_its_clips_and_a_clip_before_any_step(self):
-        data = song(
-            scene={SceneSetting.SET_REGISTERS: {AX: 10}}, clip={ClipSlotSetting.ADD_REGISTERS: {AX: 1}}, other={ClipSlotSetting.ADD_REGISTERS: {AX: 2}},
-        )
-        self.assertEqual(heard(data), notes_at([13]))
-        self.assertEqual(heard(data, track=OTHER), notes_at([13]))
-
-    def test_an_add_past_the_limit_does_what_the_register_says(self):
-        registers = {AX: {RegisterSetting.MAXIMUM: 3, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW}}
-        data = song(clip={ClipSlotSetting.REPEAT: 5, ClipSlotSetting.ADD_REGISTERS: {AX: 1}}, registers=registers)
-        self.assertEqual(heard(data), notes_at([1, 2, 3, 0, 1]))
-
-    def test_a_song_with_only_a_scene_or_a_clip_changing_registers_counts_as_changing_them(self):
-        self.assertFalse(song_from_data(song()).get_setlist().changes_registers())
-        self.assertTrue(song_from_data(song(scene={SceneSetting.ADD_REGISTERS: {AX: 1}})).get_setlist().changes_registers())
-        self.assertTrue(song_from_data(song(clip={ClipSlotSetting.SET_REGISTERS: {AX: 1}})).get_setlist().changes_registers())
-
-    def test_what_a_file_refuses(self):
-        for wrong in ({LEAD: 1}, {AX: limits.MAX_REGISTER_VALUE + 1}, {AX: None}, [AX]):
-            with self.assertRaises(SongFileError):
-                setlist_from_data(song(scene={SceneSetting.SET_REGISTERS: wrong}))
-            with self.assertRaises(SongFileError):
-                setlist_from_data(song(clip={ClipSlotSetting.ADD_REGISTERS: wrong}))
-
-
 class TestSittingOut(unittest.TestCase):
     """A clip sits a pass out while a statement of its own or its track's holds."""
 
-    COUNTING = {ClipSlotSetting.REPEAT: 4, ClipSlotSetting.ADD_REGISTERS: {AX: 1}}
+    COUNTING = {ClipSlotSetting.REPEAT: 4}
 
     def test_a_clip_plays_every_other_pass_and_lasts_as_long(self):
-        data = song(clip={**self.COUNTING, ClipSlotSetting.SKIP_WHEN: [statement(AX, Operator.EVEN)]})
-        self.assertEqual(heard(data), notes_at([1, 3]))
-        self.assertEqual(length_of(data), length_of(song(clip=self.COUNTING)))
+        data = song(clip={**self.COUNTING, ClipSlotSetting.SKIP_WHEN: [statement(AX, Operator.EVEN)]}, counting=True)
+        self.assertEqual(heard(data), notes_at([2, 4]))
+        self.assertEqual(length_of(data), length_of(song(clip=self.COUNTING, counting=True)))
 
     def test_a_track_table_silences_its_clip_and_no_other_track(self):
-        data = song(clip=self.COUNTING, track={TrackSetting.SKIP_WHEN: [statement(AX, Operator.MORE, 2)]}, other={ClipSlotSetting.REPEAT: 4})
-        self.assertEqual(heard(data), notes_at([1, 2]))
+        data = song(clip=self.COUNTING, track={TrackSetting.SKIP_WHEN: [statement(AX, Operator.MORE, 2)]}, other={ClipSlotSetting.REPEAT: 4}, counting=True)
+        self.assertEqual(heard(data), notes_at([2, 3]))
         self.assertEqual(len(heard(data, track=OTHER)), 4)
 
     def test_a_pass_that_sits_out_still_adds_to_the_registers(self):
-        data = song(clip={**self.COUNTING, ClipSlotSetting.SKIP_WHEN: [statement(AX, Operator.SAME, 2)]})
-        self.assertEqual(heard(data), notes_at([1, 3, 4]))
+        data = song(clip={**self.COUNTING, ClipSlotSetting.SKIP_WHEN: [statement(AX, Operator.SAME, 2)]}, counting=True)
+        self.assertEqual(heard(data), notes_at([2, 4, 5]))
 
 
 class TestBypassingGenerators(unittest.TestCase):
     """A pass goes by a generator, a chain or every chain while a statement holds where it is written."""
 
-    COUNTING = {ClipSlotSetting.REPEAT: 4, ClipSlotSetting.ADD_REGISTERS: {AX: 1}}
-    EVERY_PASS_MOVED = [value + MOVED_BY for value in (1, 2, 3, 4)]
-    # AX is odd on the first and third passes, which go by the generator, and even on the others, which it moves.
-    ODD_PASSES_UNMOVED = [1, 2 + MOVED_BY, 3, 4 + MOVED_BY]
+    COUNTING = {ClipSlotSetting.REPEAT: 4}
+    EVERY_PASS_MOVED = [value + MOVED_BY for value in (2, 3, 4, 5)]
+    # AX is odd as the first and third passes start, which go by the generator, and even as the others start, which it moves.
+    ODD_PASSES_UNMOVED = [2, 3 + MOVED_BY, 4, 5 + MOVED_BY]
     TABLE = [statement(AX, Operator.ODD)]
 
     def test_the_generator_runs_on_every_pass_with_no_statement(self):
-        self.assertEqual(heard(song(clip=self.COUNTING, chained=True)), notes_at(self.EVERY_PASS_MOVED))
+        self.assertEqual(heard(song(clip=self.COUNTING, chained=True, counting=True)), notes_at(self.EVERY_PASS_MOVED))
 
     def test_a_statement_on_the_generator(self):
-        data = song(clip=self.COUNTING, chained=True, generator={file_format.BYPASS_WHEN: self.TABLE})
+        data = song(clip=self.COUNTING, chained=True, counting=True, generator={file_format.BYPASS_WHEN: self.TABLE})
         self.assertEqual(heard(data), notes_at(self.ODD_PASSES_UNMOVED))
 
     def test_a_statement_on_the_chain(self):
-        data = song(clip=self.COUNTING, chained=True, chain={ChainSetting.BYPASS_WHEN: self.TABLE})
+        data = song(clip=self.COUNTING, chained=True, counting=True, chain={ChainSetting.BYPASS_WHEN: self.TABLE})
         self.assertEqual(heard(data), notes_at(self.ODD_PASSES_UNMOVED))
 
     def test_a_statement_on_the_clip_the_scene_and_the_track(self):
-        on_clip = song(clip={**self.COUNTING, ClipSlotSetting.BYPASS_WHEN: self.TABLE}, chained=True)
-        on_scene = song(clip=self.COUNTING, chained=True, scene={SceneSetting.BYPASS_WHEN: self.TABLE})
-        on_track = song(clip=self.COUNTING, chained=True, track={TrackSetting.BYPASS_WHEN: self.TABLE})
+        on_clip = song(clip={**self.COUNTING, ClipSlotSetting.BYPASS_WHEN: self.TABLE}, chained=True, counting=True)
+        on_scene = song(clip=self.COUNTING, chained=True, counting=True, scene={SceneSetting.BYPASS_WHEN: self.TABLE})
+        on_track = song(clip=self.COUNTING, chained=True, counting=True, track={TrackSetting.BYPASS_WHEN: self.TABLE})
         for data in (on_clip, on_scene, on_track):
             self.assertEqual(heard(data), notes_at(self.ODD_PASSES_UNMOVED))
 
     def test_a_statement_true_on_every_pass_and_on_none(self):
-        always = song(clip=self.COUNTING, chained=True, generator={file_format.BYPASS_WHEN: [statement(AX, Operator.MORE, 0)]})
-        never = song(clip=self.COUNTING, chained=True, generator={file_format.BYPASS_WHEN: [statement(AX, Operator.LESS, 0)]})
-        self.assertEqual(heard(always), notes_at([1, 2, 3, 4]))
+        always = song(clip=self.COUNTING, chained=True, counting=True, generator={file_format.BYPASS_WHEN: [statement(AX, Operator.MORE, 0)]})
+        never = song(clip=self.COUNTING, chained=True, counting=True, generator={file_format.BYPASS_WHEN: [statement(AX, Operator.LESS, 0)]})
+        self.assertEqual(heard(always), notes_at([2, 3, 4, 5]))
         self.assertEqual(heard(never), notes_at(self.EVERY_PASS_MOVED))
 
     def test_a_chain_and_a_generator_keep_their_statements_through_a_save(self):

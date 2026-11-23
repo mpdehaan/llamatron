@@ -295,17 +295,6 @@ class TestLimits(unittest.TestCase):
         data = one_clip(steps=6, rows=rows, registers=registers)
         self.assertEqual(pitches(data), scale_notes([1, 2, 1, 1, 2, 1]))
 
-    def test_a_reversed_register_keeps_counting_the_other_way_into_the_next_scene_unless_the_scene_resets_it(self):
-        registers = {AX: {RegisterSetting.MAXIMUM: 2, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.REVERSE}}
-        slot = {ClipSlotSetting.PATTERN: X, ClipSlotSetting.REPEAT: 3}
-        for resets, heard in (([], [0, 1, 2]), ([AX], [1, 2, 1])):
-            with self.subTest(resets=resets):
-                scenes = [{SceneSetting.TRACKS: {LEAD: slot}}, {SceneSetting.TRACKS: {LEAD: slot}, SceneSetting.RESET: resets}]
-                data = song(patterns={X: pattern(1, **{ADDS: [1], USES_NOTE: [ADDS_IT]})}, scenes=scenes, registers=registers)
-                self.assertEqual(pitches(data), scale_notes([1, 2, 1]))
-                self.assertEqual(pitches(data, scene=2), scale_notes(heard))
-
-
 class TestVelocity(unittest.TestCase):
 
     LOWEST = {AX: {RegisterSetting.MINIMUM: limits.MIN_REGISTER_VALUE}}
@@ -363,25 +352,6 @@ class TestSharing(unittest.TestCase):
         expected = [self.ADD * count for count in range(self.STEPS)]
         self.assertEqual(pitches(self.counted((LEAD, COUNTER))), scale_notes(expected))
 
-    def test_values_carry_into_the_next_scene_unless_it_resets(self):
-        data = song(patterns=self.ONE_STEP, scenes=[self.scene(), self.scene(), self.scene(**{SceneSetting.RESET: [AX]})])
-        found = [pitches(data, scene=number) for number in (1, 2, 3)]
-        self.assertEqual(found, [scale_notes([self.ADD]), scale_notes([2 * self.ADD]), scale_notes([self.ADD])])
-
-    def test_a_repeating_scene_resets_only_as_it_first_starts(self):
-        repeat = 3
-        data = song(patterns=self.ONE_STEP, scenes=[self.scene(repeat=repeat, **{SceneSetting.RESET: [AX]})])
-        found = [pitches(data, scene=number) for number in range(1, repeat + 1)]
-        self.assertEqual(found, [scale_notes([self.ADD * count]) for count in range(1, repeat + 1)])
-
-    def test_a_reset_only_resets_the_registers_it_names(self):
-        patterns = {
-            X: pattern(1, **{ADDS: [self.ADD], file_format.REGISTER_ADD_ROWS[BX]: [self.ADD]}),
-            Y: pattern(1, **{file_format.REGISTER_NOTE_ROWS[BX]: [ADDS_IT]}),
-        }
-        scenes = [self.scene(), {SceneSetting.RESET: [AX], SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: Y}}}]
-        self.assertEqual(pitches(song(patterns=patterns, scenes=scenes), scene=2), scale_notes([self.ADD]))
-
     def test_a_morph_target_uses_the_registers_but_does_not_add(self):
         target_add = 5
         patterns = {**self.ONE_STEP, Y: pattern(1, **{ADDS: [target_add], USES_NOTE: [ADDS_IT]})}
@@ -391,14 +361,6 @@ class TestSharing(unittest.TestCase):
 
 
 class TestTheFile(unittest.TestCase):
-
-    def test_settings_and_resets_save_and_load(self):
-        registers = {AX: {RegisterSetting.MAXIMUM: 3, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW}, DX: {RegisterSetting.MINIMUM: -100}}
-        data = one_clip(rows={ADDS: [1], USES_NOTE: [ADDS_IT]}, registers=registers)
-        data[Section.SCENES][0][SceneSetting.RESET] = [AX, DX]
-        saved = song_from_data(data).to_data()
-        self.assertEqual(saved[Section.REGISTERS], registers)
-        self.assertEqual(saved[Section.SCENES][0][SceneSetting.RESET], [AX, DX])
 
     def test_registers_the_file_leaves_out_have_their_defaults(self):
         register = song_from_data({}).get_register(CX)
@@ -416,13 +378,6 @@ class TestTheFile(unittest.TestCase):
         ]:
             with self.subTest(registers=registers), self.assertRaises(SongFileError):
                 song_from_data(one_clip(rows={}, registers=registers))
-
-    def test_bad_resets_are_refused(self):
-        for reset in [[EX], AX, [AX, AX]]:
-            data = one_clip(rows={})
-            data[Section.SCENES][0][SceneSetting.RESET] = reset
-            with self.subTest(reset=reset), self.assertRaises(SongFileError):
-                song_from_data(data)
 
     def test_bad_rows_are_refused(self):
         for rows in [

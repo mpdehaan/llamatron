@@ -261,7 +261,6 @@ class TestScene(SetterTestCase):
     def test_settings_are_checked(self):
         self.assertRefused(self.scene, self.scene.set_scale_name, name=NOT_A_NAME, song=self.song)
         self.assertRefused(self.scene, self.scene.set_repeat, limits.MIN_REPEAT - 1)
-        self.assertRefused(self.scene, self.scene.set_reset, register=NOT_A_NAME, on=True)
         self.assertRefused(self.scene, self.scene.set_clip_slot, track=NOT_A_NAME, clip_slot=ClipSlot(), song=self.song)
         self.assertRefused(self.scene, self.scene.remove_clip_slot, NOT_A_NAME)
         self.scene.set_repeat(limits.MIN_REPEAT)
@@ -285,14 +284,6 @@ class TestScene(SetterTestCase):
         self.assertFalse(self.scene.has_tempo_ramp())
         self.scene.clear_tempo()
         self.assertNotIn(SceneSetting.TEMPO, self.scene.to_data())
-
-    def test_resets_stay_in_register_order(self):
-        self.scene.set_reset(register=RegisterName.DX, on=True)
-        self.scene.set_reset(register=RegisterName.AX, on=True)
-        self.assertEqual(self.scene.get_reset_names(), [RegisterName.AX, RegisterName.DX])
-        self.scene.set_reset(register=RegisterName.AX, on=False)
-        self.scene.set_reset(register=RegisterName.DX, on=False)
-        self.assertNotIn(SceneSetting.RESET, self.scene.to_data())
 
     def test_a_grab_circle_is_found(self):
         self.assertEqual(self.scene.grab_circle(track=LEAD, other=BASS), [LEAD, BASS, LEAD])

@@ -16,23 +16,21 @@ REPEAT_NAME = '{name} {repeat}'
 class WrittenScene:
     """A scene's place in the song, counted from 1, with the name, scale and tempo it plays with."""
 
-    __slots__ = ('_number', '_name', '_scale_name', '_tempo', '_scene', '_resets', '_first_play')
+    __slots__ = ('_number', '_name', '_scale_name', '_tempo', '_scene', '_first_play')
 
-    def __init__(self, *, number, name, scale_name, tempo, scene, resets, first_play=True):
+    def __init__(self, *, number, name, scale_name, tempo, scene, first_play=True):
         self._number = number
         self._name = name
         self._scale_name = scale_name
         self._tempo = tempo
         self._scene = scene
-        self._resets = resets
         self._first_play = first_play
 
     @classmethod
     def write_out(cls, song):
         """Return every scene of a song in order, with a scene that repeats written out once for each repeat.
 
-        A scene uses its own scale, or else the song's, and a repeat's name gets its number. A
-        scene resets its registers only as it first starts, not on every repeat.
+        A scene uses its own scale, or else the song's, and a repeat's name gets its number.
         """
         written = []
         for scene in song.get_scenes():
@@ -43,11 +41,8 @@ class WrittenScene:
                 name = _scene_name(name=scene.get_name(), number=number)
                 if repeat > 1:
                     name = REPEAT_NAME.format(name=name, repeat=place + FIRST_NUMBER)
-                resets = []
-                if place == FIRST_REPEAT:
-                    resets = scene.get_reset_names()
                 written.append(cls(
-                    number=number, name=name, scale_name=scale, tempo=scene.get_tempo(), scene=scene, resets=resets, first_play=place == FIRST_REPEAT,
+                    number=number, name=name, scale_name=scale, tempo=scene.get_tempo(), scene=scene, first_play=place == FIRST_REPEAT,
                 ))
         return written
 
@@ -78,10 +73,6 @@ class WrittenScene:
 
     def every_clip_loops(self):
         return self._scene.every_clip_loops()
-
-    def get_reset_names(self):
-        """Return the registers it sets back to their defaults as it starts."""
-        return list(self._resets)
 
     def is_first_play(self):
         """Return whether it is the scene's first play, rather than one of its repeats."""

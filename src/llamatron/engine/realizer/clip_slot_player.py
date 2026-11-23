@@ -53,6 +53,8 @@ NO_OFFSET = 0
 # The shapes laid over a finished clip, by a generator its chains name or by the clip's or its scene's own settings.
 SHAPES = (Shape.DENSITY, Shape.SWELL, Shape.ARTICULATE)
 NO_SETS = {}
+# A clip's pass adds nothing to the registers as it starts.
+NO_ADDS = {}
 # The pass a clip launches on, when it sets registers, and the pass whose statements speak for a shape, which works on the whole clip.
 FIRST_PASS = 0
 
@@ -353,13 +355,10 @@ class ClipSlotPlayer:
 
         Each pass is (start, end, values): when it starts and ends in the clip, and the
         registers' values as it started, or None while the clip is only played to count its
-        changes. As a pass starts the clip adds to the registers, and on its first pass sets
-        them. A pass on which a statement that makes the clip sit out holds is silence of the
+        changes. A pass on which a statement that makes the clip sit out holds is silence of the
         pass's length: it is still played, so that every random choice and every register
         change is what it would have been, and what it played is dropped.
         """
-        sets = self._clip_slot.get_register_sets()
-        adds = self._clip_slot.get_register_adds()
         skips = [table for table in self._skip_tables() if table]
         pass_draws = self._pass_draws()
         passes = []
@@ -379,12 +378,9 @@ class ClipSlotPlayer:
         switched = []
         total = Rational(0)
         place = 0
-        # A clip plays up to its most passes, or, filling its scene, until it reaches the scene's end; it sets the registers as its
-        # first pass starts.
-        pass_sets = sets
+        # A clip plays up to its most passes, or, filling its scene, until it reaches the scene's end.
         while (fill is None and place < most) or (fill is not None and total < fill):
-            values = registers.at_pass(time=total, sets=pass_sets, adds=adds)
-            pass_sets = NO_SETS
+            values = registers.at_pass(time=total, sets=NO_SETS, adds=NO_ADDS)
             played = self._play_pass(player=player, grab=grab, scale=scale, place=place % repeat, repeat=repeat, where=where, rolls=rolls, order=order, target_order=target_order, registers=registers, start=total, turn=place, pattern_rolls=pattern_rolls, pass_draws=pass_draws)
             length = played.length
             if length == NO_LENGTH:

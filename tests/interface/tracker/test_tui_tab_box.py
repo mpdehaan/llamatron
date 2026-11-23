@@ -22,7 +22,7 @@ from llamatron.interface.tracker.screens.shared.chords_editor import ChordsEdito
 from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor
 from llamatron.model.objects import conditions
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, Operator
+from llamatron.model.schema.file_format import ClipSlotSetting, Operator, RampPart, RampWay
 from llamatron.user_strings import labels, marks, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import back_key, forward_key, UITest
@@ -73,8 +73,8 @@ class TestTheTabBoxOnTheClipPage(UITest):
 
     async def test_a_field_in_another_tab_is_reached_by_choosing_its_tab(self):
         await self.select_field(labels.MSG_REPEAT_LABEL)
-        await self.select_field(labels.MSG_SET_REGISTER_LABEL.format(name=file_format.REGISTER_NAMES[0]))
-        self.assertEqual(self.chosen(), labels.MSG_REGISTERS_TAB)
+        await self.select_field(labels.MSG_VELOCITY_RAMP_LABELS[(RampWay.IN, RampPart.START)])
+        self.assertEqual(self.chosen(), labels.MSG_VELOCITY_TAB)
 
     async def test_a_built_in_tab_switches_the_clips_own_on_and_marks_its_tab(self):
         chords = marks.MSG_TAB_WITH_MARK.format(name=chords_strings.MSG_TAB_LABEL, mark=marks.MSG_FIELD_TOGGLE_OFF)

@@ -723,11 +723,8 @@ class Song(HoldsSections, HoldsSettings):
                 holder.set_chain_names(names=kept, song=self)
 
     def scenes_change_registers(self):
-        """Return whether any of its scenes, or any clip of one, sets a register or adds to one, or whether a draw that holds a
-        value redraws in conditions, which a statement of a scene, a clip, a track, a chain or a generator can draw from."""
-        for scene in self.get_scenes():
-            if scene.changes_registers():
-                return True
+        """Return whether a draw that holds a value redraws in conditions, which a statement of a scene, a clip, a track, a chain
+        or a generator can draw from."""
         for draw in self._written_draws():
             if draw.redraws_in_conditions() and draw.filled_places():
                 return True

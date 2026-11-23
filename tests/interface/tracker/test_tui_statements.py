@@ -27,7 +27,6 @@ BX = RegisterName.BX
 # What the tests type.
 THREE = '3'
 NOTHING_TO_DIVIDE_BY = '0'
-SEVEN = '7'
 
 
 def line_label(*, table, line):
@@ -152,16 +151,6 @@ class TestStatementsOnOtherPages(StatementsTest):
         await self.write_every_third()
         scene = self.document.song().get_scenes()[0]
         self.assertEqual(scene.get_bypass_when(), [self.every_third()])
-        await self.select_field(labels.MSG_SET_REGISTER_LABEL.format(name=AX))
-        await self.press(Key.ENTER)
-        self.app.screen.value = SEVEN
-        await self.press(Key.ENTER)
-        await self.select_field(labels.MSG_ADD_REGISTER_LABEL.format(name=BX))
-        await self.press(keybindings.ScenePage.MORE)
-        self.assertEqual(scene.get_register_sets(), {AX: int(SEVEN)})
-        self.assertEqual(scene.get_register_adds(), {BX: 1})
-        await self.press(Key.BACKSPACE)
-        self.assertEqual(scene.get_register_adds(), {})
 
     async def test_a_clip_has_two_tables(self):
         await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER)
@@ -170,9 +159,6 @@ class TestStatementsOnOtherPages(StatementsTest):
         clip_slot = self.document.clip_slot(index=0, track=ui_testing.LEAD)
         self.assertEqual(clip_slot.get_statements(ClipSlotSetting.SKIP_WHEN), [self.every_third()])
         self.assertEqual(clip_slot.get_statements(ClipSlotSetting.BYPASS_WHEN), [])
-        await self.select_field(labels.MSG_ADD_REGISTER_LABEL.format(name=AX))
-        await self.press(keybindings.ClipPage.MORE)
-        self.assertEqual(clip_slot.get_register_adds(), {AX: 1})
 
     async def test_a_track_has_two_tables(self):
         await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)

@@ -139,33 +139,6 @@ def statements_setting(name):
     return Checked(name=name, check=check)
 
 
-def register_values_setting(name):
-    """Return the description of a setting that gives some of the registers an integer each: what to set them to, or what to add to them."""
-    def check(value):
-        if not _is_register_values(value):
-            raise InvalidValue(errors.ERR_BAD_REGISTER_VALUES.format(
-                name=name, names=listed(file_format.REGISTER_NAMES), lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, value=value))
-    return Checked(name=name, check=check)
-
-
-def with_register_value(*, values, register, value):
-    """Return what a setting of register values holds once one register is given a value, or None for the register to be left out; None when nothing is left."""
-    if register not in file_format.REGISTER_NAMES:
-        raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=register, names=listed(file_format.REGISTER_NAMES)))
-    held = dict(values or {})
-    if value is None:
-        held.pop(register, None)
-    else:
-        held[register] = value
-    ordered = {}
-    for name in file_format.REGISTER_NAMES:
-        if name in held:
-            ordered[name] = held[name]
-    if not ordered:
-        return None
-    return ordered
-
-
 def with_statement(*, statements, place, statement):
     """Return a table with the statement at a place replaced, or removed for None; a place just past the last adds one. None when no statement is left."""
     table = [dict(each) for each in statements or []]

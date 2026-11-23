@@ -875,14 +875,6 @@ class TestScenePage(UITest):
         self.assertEqual(self.scene().get_name(), INTRO)
 
 
-    async def test_it_can_reset_each_register(self):
-        label = labels_text.MSG_RESET_LABEL.format(name=RegisterName.BX)
-        await self.go_to(label)
-        await self.press(Key.ENTER)
-        self.assertEqual(self.scene().get_reset_names(), [RegisterName.BX])
-        await self.press(Key.SPACE)
-        self.assertEqual(self.scene().get_reset_names(), [])
-
     async def test_it_can_reset_each_draw_as_it_first_starts(self):
         await self.go_to(labels_text.MSG_RESET_LABEL.format(name=DrawName.CD))
         await self.press(Key.ENTER)

@@ -11,7 +11,7 @@ setting it keeps its value under, which every class with the trait writes under 
 
 from llamatron.caching.revised import notes_change
 from llamatron.model.objects import sections
-from llamatron.model.objects.conditions import with_register_value, with_statement
+from llamatron.model.objects.conditions import with_statement
 from llamatron.model.objects.llama_data import own_copy
 from llamatron.model.objects.named_items import NamedItems
 
@@ -51,33 +51,6 @@ class BypassedWhen:
     def set_bypass_statement(self, *, place, statement):
         """Write the statement at a place of its table, add one just past the last, or remove one with None."""
         self.set_written(name=self.BYPASS_SETTING, value=with_statement(statements=self.get_written(self.BYPASS_SETTING), place=place, statement=statement))
-
-
-class SetsRegisters:
-    """Something that sets registers to values as it starts and adds amounts to registers each time it plays: a scene and a clip."""
-
-    __slots__ = ()
-
-    # The name its class writes the setting under.
-    SET_REGISTERS_SETTING = None
-    # The name its class writes the setting under.
-    ADD_REGISTERS_SETTING = None
-
-    def get_register_sets(self):
-        """Return what it sets registers to as it starts, a value for each register it sets."""
-        return dict(self.get_written(self.SET_REGISTERS_SETTING) or {})
-
-    def get_register_adds(self):
-        """Return what it adds to registers every time it plays, an amount for each register it adds to."""
-        return dict(self.get_written(self.ADD_REGISTERS_SETTING) or {})
-
-    def set_register_set(self, *, register, value):
-        """Make it set a register to a value as it starts, or None to leave the register alone."""
-        self.set_written(name=self.SET_REGISTERS_SETTING, value=with_register_value(values=self.get_written(self.SET_REGISTERS_SETTING), register=register, value=value))
-
-    def set_register_add(self, *, register, value):
-        """Make it add an amount to a register every time it plays, or None or 0 to add nothing."""
-        self.set_written(name=self.ADD_REGISTERS_SETTING, value=with_register_value(values=self.get_written(self.ADD_REGISTERS_SETTING), register=register, value=value or None))
 
 
 class HasCells:

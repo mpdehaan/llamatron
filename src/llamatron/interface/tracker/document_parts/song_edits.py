@@ -150,12 +150,6 @@ class SongEdits:
             return str(problem)
         return None
 
-    def resets(self, *, index, register):
-        """Return whether a scene sets a register back to its default as it starts."""
-        return self._scene(index).resets(register)
-
-    # Clips, of the current song.
-
     def clip_slot(self, *, index, track):
         """Return the ClipSlot a track plays in a scene, or None if it plays nothing there."""
         return self._scene(index).get_clip_slot(track)

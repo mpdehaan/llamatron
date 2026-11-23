@@ -18,11 +18,11 @@ from llamatron.model.file.checks import listed, number, pass_over_unknown, readi
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.clip_slot import ClipSlot
-from llamatron.model.objects.conditions import register_values_setting, statements_setting
+from llamatron.model.objects.conditions import statements_setting
 from llamatron.model.objects.groove import check_groove_choice
 from llamatron.model.objects.llama_data import data_as_kept, data_built_anew, HoldsSettings, own_copy, written_settings
 from llamatron.model.objects.shapes import shape_settings, shape_values
-from llamatron.model.objects.traits import BypassedWhen, RunsChains, SetsRegisters
+from llamatron.model.objects.traits import BypassedWhen, RunsChains
 from llamatron.model.objects.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import RampPart, SceneSetting, Section
@@ -72,11 +72,6 @@ def _is_list_of(*, value, names):
     return True
 
 
-def _check_reset(value):
-    if not _is_list_of(value=value, names=file_format.REGISTER_NAMES) or len(set(value)) != len(value):
-        raise InvalidValue(errors.ERR_BAD_RESET.format(names=listed(file_format.REGISTER_NAMES), value=value))
-
-
 def _check_reset_draws(value):
     if not _is_list_of(value=value, names=file_format.DRAW_NAMES):
         raise InvalidValue(errors.ERR_BAD_RESET_DRAWS.format(names=listed(file_format.DRAW_NAMES), value=value))
@@ -95,15 +90,12 @@ SETTINGS = described(
     Checked(name=SceneSetting.TEMPO_OUT_START, check=number),
     Checked(name=SceneSetting.TEMPO_OUT_END, check=number),
     WholeNumber(name=SceneSetting.TEMPO_OUT_OVER, lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, error=errors.ERR_BAD_RAMP_BARS),
-    Checked(name=SceneSetting.RESET, check=_check_reset),
     Checked(name=SceneSetting.RESET_DRAWS, check=_check_reset_draws),
     Checked(name=SceneSetting.GROOVE, check=check_groove_choice, needs_song=True),
     Flag(name=SceneSetting.LAUNCH_TOGETHER, error=errors.ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE),
     Checked(name=SceneSetting.CHAINS, check=check_chain_names, needs_song=True),
     *velocity_setting_descriptions(),
     *shape_settings(),
-    register_values_setting(SceneSetting.SET_REGISTERS),
-    register_values_setting(SceneSetting.ADD_REGISTERS),
     statements_setting(SceneSetting.BYPASS_WHEN),
 )
 # The settings a file is read without the plain check of: a name is kept as the file writes it, a number too, and
@@ -111,7 +103,7 @@ SETTINGS = described(
 READ_ANOTHER_WAY = (SceneSetting.NAME, SceneSetting.TEMPO, *RAMP_TEMPOS)
 
 
-class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
+class Scene(RunsChains, BypassedWhen, HoldsSettings):
     """A name, how many times it repeats, an optional scale and tempo, and a clip slot for each track it plays.
 
     Settings the file leaves out are kept as None, meaning their defaults. Its scale is kept as
@@ -123,8 +115,6 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
     SETTINGS = SETTINGS
     CHAINS_SETTING = SceneSetting.CHAINS
     BYPASS_SETTING = SceneSetting.BYPASS_WHEN
-    SET_REGISTERS_SETTING = SceneSetting.SET_REGISTERS
-    ADD_REGISTERS_SETTING = SceneSetting.ADD_REGISTERS
 
     # A scene names the scale and the groove it chooses. Its clips name things too, and are its referring parts.
     REFERENCES = {Section.SCALES: (SceneSetting.SCALE,), Section.GROOVES: (SceneSetting.GROOVE,)}
@@ -227,24 +217,10 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         """Return one part of one of its tempo ramps as written, or None where it is blank."""
         return self._settings[file_format.TEMPO_RAMP_SETTINGS[(way, part)]]
 
-    def get_reset_names(self):
-        """Return the registers it sets back to their defaults as it starts, in the order the registers come."""
-        reset = self._settings[SceneSetting.RESET] or []
-        return [name for name in file_format.REGISTER_NAMES if name in reset]
-
     def get_reset_draw_names(self):
         """Return the draws it sends back to their start, or a serial draw to a new round, as it first starts, in the order the draws come."""
         reset = self._settings[SceneSetting.RESET_DRAWS] or []
         return [name for name in file_format.DRAW_NAMES if name in reset]
-
-    def changes_registers(self):
-        """Return whether it, or any of its clips, sets a register or adds to one."""
-        if self._settings[SceneSetting.SET_REGISTERS] or self._settings[SceneSetting.ADD_REGISTERS]:
-            return True
-        for clip_slot in self._held_clip_slots().values():
-            if clip_slot.get_register_sets() or clip_slot.get_register_adds():
-                return True
-        return False
 
     def get_track_names(self):
         """Return the tracks it plays a clip slot on, in the order the file lists them."""
@@ -259,10 +235,6 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
 
     def has_clip_slot(self, track):
         return self._clip_slots is not None and track in self._clip_slots
-
-    def resets(self, register):
-        """Return whether it sets a register back to its default as it starts."""
-        return register in self.get_reset_names()
 
     def copy(self):
         """Return a scene just like this one, with clip slots of its own."""
@@ -334,14 +306,6 @@ class Scene(RunsChains, BypassedWhen, SetsRegisters, HoldsSettings):
         """Set one part of one of its tempo ramps, or None to leave it blank."""
         name = file_format.TEMPO_RAMP_SETTINGS[(way, part)]
         self.set_written(name=name, value=value)
-
-    @notes_change
-    def set_reset(self, *, register, on):
-        """Make it set a register back to its default as it starts, or stop it, keeping the registers in order."""
-        if register not in file_format.REGISTER_NAMES:
-            raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=register, names=listed(file_format.REGISTER_NAMES)))
-        reset = _switched_in_order(chosen=self.get_reset_names(), name=register, on=on, order=file_format.REGISTER_NAMES)
-        self._settings[SceneSetting.RESET] = reset
 
     @notes_change
     def set_reset_draw(self, *, draw, on):

@@ -21,7 +21,7 @@ from llamatron.interface.tracker.screens.set.scale_page import ScalePage
 from llamatron.interface.tracker.screens.shared.generator_names import listed_generator
 from llamatron.interface.visualizers import modes
 from llamatron.model.schema import generator_plugins
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, FollowAction, RampPart, RampWay, RegisterName, Shape
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, FollowAction, RampPart, RampWay, Shape
 from llamatron.user_strings import labels, legends, marks, names
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, UITest
@@ -115,18 +115,15 @@ class TestDetails(unittest.TestCase):
             marks.MSG_DETAILS_SHAPE.format(shape=marks.MSG_DETAILS_SHAPE_NAMES[Shape.DENSITY], start=DENSITY_START, end=DENSITY_END),
         ])
 
-    def test_a_scene_shows_its_tempo_or_its_ramp_its_groove_and_its_resets(self):
+    def test_a_scene_shows_its_tempo_or_its_ramp_and_its_groove(self):
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_tempo, SCENE_TEMPO)
         self.assertEqual(self.scene_lines(), [marks.MSG_DETAILS_TEMPO.format(tempo=SCENE_TEMPO)])
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_tempo_ramp_setting, way=RampWay.IN, part=RampPart.END, value=RAMP_END)
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_tempo_ramp_setting, way=RampWay.IN, part=RampPart.OVER, value=RAMP_BARS)
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_groove_choice, choice=False, song=self.document.song())
-        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_reset, register=RegisterName.AX, on=True)
-        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_reset, register=RegisterName.DX, on=True)
         self.assertEqual(self.scene_lines(), [
             marks.MSG_DETAILS_TEMPO_RAMPS.format(tempo=SCENE_TEMPO),
             marks.MSG_DETAILS_NO_GROOVE,
-            marks.MSG_DETAILS_RESET.format(registers=RegisterName.AX + ', ' + RegisterName.DX),
         ])
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_groove_choice, choice=SONG_GROOVE, song=self.document.song())
         self.assertIn(marks.MSG_DETAILS_GROOVE.format(name=SONG_GROOVE), self.scene_lines())

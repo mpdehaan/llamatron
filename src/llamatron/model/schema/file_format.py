@@ -303,9 +303,6 @@ class ClipSlotSetting:
     FOLLOW_ACTION = 'follow_action'
     # A scale of the clip's own, which wins over the scene's and the song's.
     SCALE = 'scale'
-    # What the clip sets each register to as it launches, and adds to each register every time its pattern starts over.
-    SET_REGISTERS = 'set_registers'
-    ADD_REGISTERS = 'add_registers'
     # The register statements that bypass its generators, and that make it sit out a pass.
     BYPASS_WHEN = 'bypass_when'
     SKIP_WHEN = 'skip_when'
@@ -327,7 +324,6 @@ class SceneSetting:
     TEMPO_OUT_START = 'tempo_out_start'
     TEMPO_OUT_END = 'tempo_out_end'
     TEMPO_OUT_OVER = 'tempo_out_over'
-    RESET = 'reset'
     # The draws the scene sends back to their start, or a serial draw to a new round, as it first starts.
     RESET_DRAWS = 'reset_draws'
     GROOVE = 'groove'
@@ -345,9 +341,6 @@ class SceneSetting:
     ARTICULATE_END = 'articulate_end'
     ARTICULATE_OVER = 'articulate_over'
     ARTICULATE_THEN = 'articulate_then'
-    # What the scene sets each register to as it first starts, and adds to each register every time it plays.
-    SET_REGISTERS = 'set_registers'
-    ADD_REGISTERS = 'add_registers'
     # The register statements that bypass the generators of its clips.
     BYPASS_WHEN = 'bypass_when'
     TRACKS = 'tracks'

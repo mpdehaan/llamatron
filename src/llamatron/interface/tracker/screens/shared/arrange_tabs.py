@@ -13,7 +13,7 @@ from llamatron.interface.tracker.screens.shared.built_in_tab import BuiltInTab
 from llamatron.interface.tracker.screens.shared.field import Field
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
-from llamatron.interface.tracker.screens.shared.statements import register_fields, statement_section
+from llamatron.interface.tracker.screens.shared.statements import statement_section
 from llamatron.interface.tracker.screens.shared.tab_box import columns_of_sections, Tab, TabColumn, without_headings
 from llamatron.interface.tracker.screens.shared.velocity_fields import velocity_field, velocity_ramp_sections
 from llamatron.model.schema import file_format, generator_plugins
@@ -65,7 +65,6 @@ class ClipTabs:
             *self._built_in_tabs(generator_plugins.built_ins_after_list()),
             Tab(label=labels_text.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
             Tab(label=labels_text.MSG_VELOCITY_TAB, columns=columns_of_sections(velocity_ramp_sections(page=page, own=own, above=above, store=store))),
-            Tab(label=labels_text.MSG_REGISTERS_TAB, columns=columns_of_sections(self._register_sections())),
             *[self._statements_tab(tab=tab, label=label, table=table, name=name, statements=clip_slot.get_statements) for tab, label, table, name in STATEMENT_TABLES],
         ]
 
@@ -96,21 +95,6 @@ class ClipTabs:
         fields = statement_section(page=self._page, label=label, table=table, statements=functools.partial(statements, name),
                                    store=lambda place, statement: store(place=place, statement=statement))
         return fields_tab(label=tab, fields=fields)
-
-    def _register_sections(self):
-        """Return the clip's sections about the registers: what it sets them to as it launches, and what it adds every time its
-        pattern starts over."""
-        clip_slot = self._clip_slot()
-        return [
-            *register_fields(
-                page=self._page, label=labels_text.MSG_SET_REGISTERS_LABEL, name_label=labels_text.MSG_SET_REGISTER_LABEL, values=clip_slot.get_register_sets,
-                store=lambda register, value: self._set_register_set(register=register, value=value),
-            ),
-            *register_fields(
-                page=self._page, label=labels_text.MSG_ADD_REGISTERS_LABEL, name_label=labels_text.MSG_ADD_REGISTER_LABEL, values=clip_slot.get_register_adds,
-                store=lambda register, value: self._set_register_add(register=register, value=value),
-            ),
-        ]
 
     def _shape_section(self, shape):
         """Return a shape's section: how busy or long the clip plays over it, over its scene's."""
@@ -149,14 +133,6 @@ class ClipTabs:
     def _set_written(self, *, name, value):
         clip_slot = self._clip_slot()
         self._page.document().change_set(clip_slot.set_written, name=name, value=value)
-
-    def _set_register_set(self, *, register, value):
-        clip_slot = self._clip_slot()
-        self._page.document().change_set(clip_slot.set_register_set, register=register, value=value)
-
-    def _set_register_add(self, *, register, value):
-        clip_slot = self._clip_slot()
-        self._page.document().change_set(clip_slot.set_register_add, register=register, value=value)
 
     def _set_statement(self, *, name, place, statement):
         clip_slot = self._clip_slot()

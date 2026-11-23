@@ -121,32 +121,27 @@ songs:
 
     scenes:
       - name: AX moves the third note
-        reset: [AX]
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: acid, pattern: riff_ax, repeat: 8 }
       - name: BX moves the fifth note
-        reset: [BX]
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: acid, pattern: riff_bx, repeat: 12 }
       - name: CX moves the second note down
-        reset: [CX]
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: acid, pattern: riff_cx, repeat: 10 }
       - name: "AX, BX and CX together"
-        reset: [AX, BX, CX]
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: hat, pattern: hat, loop: true }
           - { track: acid, pattern: riff_abc, repeat: 16 }
       - name: DX fades out
         repeat: 6
-        reset: [DX]
         clips:
           - { track: kick, pattern: kick, loop: true }
           - { track: hat, pattern: hat, loop: true }

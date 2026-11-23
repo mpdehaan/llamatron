@@ -54,7 +54,6 @@ MSG_DETAILS_TEMPO = 'tempo: {tempo}'
 MSG_DETAILS_TEMPO_RAMPS = 'tempo: {tempo}*'
 MSG_DETAILS_GROOVE = 'groove: {name}'
 MSG_DETAILS_NO_GROOVE = 'groove: off'
-MSG_DETAILS_RESET = 'reset: {registers}'
 MSG_DETAILS_SHAPE = '{shape}: {start}→{end}'
 MSG_DETAILS_SHAPE_NAMES = {Shape.DENSITY: 'density', Shape.SWELL: 'swell', Shape.ARTICULATE: 'articulate'}
 MSG_DETAILS_GRAB = 'grab: {track}'
