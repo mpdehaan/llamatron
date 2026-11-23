@@ -204,8 +204,8 @@ class ScenePage(FieldPage):
         return [NameField(value=self._name_shown, rename=self.rename), TabBox(tabs=self._tabs())]
 
     def _tabs(self):
-        """Return the scene's tabs: Settings, its list of generators, Shapes, Velocity, Tempo Ramps and Bypass When. A scene holds
-        no built-in generator."""
+        """Return the scene's tabs: Settings, then the tabs that are not generators, Velocity, Tempo Ramps and Shapes, then its
+        list of generators and the statements that bypass the generators of its clips. A scene holds no built-in generator."""
         own, above, store = self.velocity_values()
         shapes = []
         for shape in file_format.PLACED_SHAPES:
@@ -217,10 +217,10 @@ class ScenePage(FieldPage):
         bypass = self.bypass_section()
         return [
             self._basics_tab(),
-            fields_tab(label=labels.MSG_USER_TAB, fields=[generators_field(page=self, names=self._chain_names, store=self._set_chain_names)]),
-            Tab(label=labels.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
             Tab(label=labels.MSG_VELOCITY_TAB, columns=[velocity, *columns_of_sections(velocity_ramp_sections(page=self, own=own, above=above, store=store))]),
             Tab(label=labels.MSG_TEMPO_RAMPS_TAB, columns=columns_of_sections(tempo_ramps)),
+            Tab(label=labels.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
+            fields_tab(label=labels.MSG_USER_TAB, fields=[generators_field(page=self, names=self._chain_names, store=self._set_chain_names)]),
             fields_tab(label=labels.MSG_BYPASS_WHEN_TAB, fields=bypass),
         ]
 

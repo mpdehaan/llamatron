@@ -11,7 +11,7 @@ from llamatron.engine.generators.timing.controller import TimingController
 from llamatron.engine.generators.timing.model import TimingSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-# Where the built-in timing every clip and track holds runs: below generator_plugins.LIST_PLACE before their own lists of generators, above it after.
+# Where the built-in timing every clip and track holds runs among the built-ins, lower first, all before their own lists of generators.
 TIMING_PLACE = 60
 
 PLUGIN = GeneratorPlugin(name=timing.NAME, section=timing.SECTION, settings=TimingSettings, strings=strings, controller=TimingController(), view=view.VIEW, built_in_place=TIMING_PLACE)

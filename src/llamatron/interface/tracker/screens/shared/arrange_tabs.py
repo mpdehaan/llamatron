@@ -1,9 +1,8 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The boxes of tabs of the pages of Arrange's things. The clip page's are in the order the clip applies what they hold: Basics,
-the built-in generators that run before the clip's list of generators, the list under User, the built-ins after it, then
-Shapes, Velocity, Registers, Bypass When and Skip When."""
+"""The boxes of tabs of the pages of Arrange's things. The clip page's: Settings, then the tabs that are not generators,
+Velocity first, then the generators in the order they run, the built-ins and last the clip's own list under Generators."""
 
 import functools
 
@@ -44,7 +43,7 @@ class ClipTabs:
         self._page = page
 
     def tabs(self):
-        """Return the clip's tabs, in the order they apply."""
+        """Return the clip's tabs: Settings, the tabs that are not generators, then the generators in the order they run."""
         page = self._page
         shapes = []
         for shape in file_format.PLACED_SHAPES:
@@ -52,11 +51,10 @@ class ClipTabs:
         own, above, store = self._velocity_values()
         return [
             self._basics_tab(),
-            *self._built_in_tabs(generator_plugins.built_ins_before_list()),
-            fields_tab(label=labels_text.MSG_USER_TAB, fields=[generators_field(page=page, names=self._chain_names, store=self._set_chain_names)]),
-            *self._built_in_tabs(generator_plugins.built_ins_after_list()),
-            Tab(label=labels_text.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
             Tab(label=labels_text.MSG_VELOCITY_TAB, columns=columns_of_sections(velocity_ramp_sections(page=page, own=own, above=above, store=store))),
+            Tab(label=labels_text.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
+            *self._built_in_tabs(generator_plugins.built_in_kinds()),
+            fields_tab(label=labels_text.MSG_USER_TAB, fields=[generators_field(page=page, names=self._chain_names, store=self._set_chain_names)]),
         ]
 
     def _basics_tab(self):

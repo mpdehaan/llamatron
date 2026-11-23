@@ -10,7 +10,7 @@ A clip sits where a scene's row and a track's column meet on Arrange, so the cli
 
 ## Clip Settings
 
-The clip page shows the clip's Name and its list of Patterns, then a box of tabs holding the rest of its settings, then Play and Stop. The tabs are in the order the clip applies them: Settings, Chords, Arp and Guitarify, Generators, Timing and Phrasing, then Shapes and Velocity.
+The clip page shows the clip's Name and its list of Patterns, then a box of tabs holding the rest of its settings, then Play and Stop. The tabs are Settings, then Velocity and Shapes, then the generators in the order the clip runs them: Chords, Arp, Guitarify, Timing and Phrasing, the built-in generators, and last Generators, whose generators run after every built-in, on what the built-ins made.
 
 On the row of tabs, `←` and `→`, or `[` and `]`, choose a tab, stopping at the first and the last; `↓` goes into the tab. Inside it, `↑` and `↓` keep to a column: at a column's foot `↓` leaves the box for what is below it, and `↑` from below comes back in at the foot of the first column; `←` and `→` go to the setting beside in the next column, the nearest by line, and change nothing. `[` and `]` change a value, and `ENTER` types or chooses one. `Tab` goes to the row of tabs from anywhere on the page. The tab chosen stays chosen on the next clip page until another is chosen. Where the tabs are wider than the box, `<` and `>` stand at the ends for the tabs hidden that way. The box keeps the height of its tallest tab, so choosing a tab moves nothing below it.
 
@@ -44,10 +44,10 @@ The other tabs:
 
 | Tab | What it holds |
 | --- | --- |
-| Chords, Arp, Guitarify, Timing, Phrasing | The clip's built-in generators, one of each, with the settings of the generator's own page: Enabled first, then its Mode where it has one, then its columns. A built-in is off until Enabled is switched on; its tab shows `●` after its name while on and `○`, dim, while off. A clip's built-in that is on stands in for its track's of the same kind. Chords, Arp and Guitarify run before the clip's list of generators, Timing and Phrasing after it. `ENTER` on a part, such as the Arp's Offsets, opens that part's page on the clip's built-in. See [Generators](GENERATORS.md). |
-| Generators | The Generators field: the generators of the set the clip runs, in order, each shown with its kind, such as `Chain: fills, Timing: rolls`. `ENTER` opens the list, where `A` adds any of the set's generators, a chain among them, `M` moves one and `Bksp` takes one out; `Bksp` on the field clears them all. A clip runs its own list first, then its scene's, then its track's. See [Generators](GENERATORS.md) and [Chain](generators/CHAIN.md). |
-| Shapes | Density and Articulate, like the Scene page's, shaping this clip across its own length. A shape set here wins over the scene's, and a generator the clip runs wins over both. |
 | Velocity | Velocity Ramp In and Velocity Ramp Out, like the Scene page's, which fade this clip in and out. Each field set here wins over the scene's. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
+| Shapes | Density and Articulate, like the Scene page's, shaping this clip across its own length. A shape set here wins over the scene's, and a generator the clip runs wins over both. |
+| Chords, Arp, Guitarify, Timing, Phrasing | The clip's built-in generators, one of each, with the settings of the generator's own page: Enabled first, then its Mode where it has one, then its columns. A built-in is off until Enabled is switched on; its tab shows `●` after its name while on and `○`, dim, while off. A clip's built-in that is on stands in for its track's of the same kind. They run in that order, all before the clip's list of generators. `ENTER` on a part, such as the Arp's Offsets, opens that part's page on the clip's built-in. See [Generators](GENERATORS.md). |
+| Generators | The Generators field: the generators of the set the clip runs, in order, each shown with its kind, such as `Chain: fills, Timing: rolls`. `ENTER` opens the list, where `A` adds any of the set's generators, a chain among them, `M` moves one and `Bksp` takes one out; `Bksp` on the field clears them all. A clip runs its own list first, then its scene's, then its track's. See [Generators](GENERATORS.md) and [Chain](generators/CHAIN.md). |
 
 ## Pattern Lists
 

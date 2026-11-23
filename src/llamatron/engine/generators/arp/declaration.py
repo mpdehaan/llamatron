@@ -11,7 +11,7 @@ from llamatron.engine.generators.arp.controller import ArpController
 from llamatron.engine.generators.arp.model import ArpSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-# Where the built-in arp every clip and track holds runs: below generator_plugins.LIST_PLACE before their own lists of generators, above it after.
+# Where the built-in arp every clip and track holds runs among the built-ins, lower first, all before their own lists of generators.
 ARP_PLACE = 20
 
 PLUGIN = GeneratorPlugin(name=arp.NAME, section=arp.SECTION, settings=ArpSettings, strings=strings, controller=ArpController(), view=view.VIEW, built_in_place=ARP_PLACE)

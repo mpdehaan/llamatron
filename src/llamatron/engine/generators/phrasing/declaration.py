@@ -11,7 +11,7 @@ from llamatron.engine.generators.phrasing.controller import PhrasingController
 from llamatron.engine.generators.phrasing.model import PhrasingSettings
 from llamatron.model.schema.generator_plugins import GeneratorPlugin
 
-# Where the built-in phrasing every clip and track holds runs: below generator_plugins.LIST_PLACE before their own lists of generators, above it after.
+# Where the built-in phrasing every clip and track holds runs among the built-ins, lower first, all before their own lists of generators.
 PHRASING_PLACE = 70
 
 PLUGIN = GeneratorPlugin(name=phrasing.NAME, section=phrasing.SECTION, settings=PhrasingSettings, strings=strings, controller=PhrasingController(), view=view.VIEW, built_in_place=PHRASING_PLACE)

@@ -46,12 +46,14 @@ class TestTheTabBoxOnTheClipPage(UITest):
         box = self.page.tab_box()
         return box.tabs[self.page.chosen_tab(box)].label
 
-    async def test_basics_is_chosen_first_and_the_tabs_are_in_the_order_they_apply(self):
+    async def test_settings_is_chosen_first_then_the_other_tabs_then_the_generators_in_the_order_they_run(self):
         box = self.page.tab_box()
         names = [tab.label for tab in box.tabs]
         self.assertEqual(self.chosen(), labels.MSG_BASICS_TAB)
+        self.assertEqual(names[1], labels.MSG_VELOCITY_TAB)
+        self.assertLess(names.index(labels.MSG_SHAPES_TAB), names.index(chords_strings.MSG_TAB_LABEL))
         self.assertLess(names.index(chords_strings.MSG_TAB_LABEL), names.index(labels.MSG_USER_TAB))
-        self.assertEqual(names[-1], labels.MSG_VELOCITY_TAB)
+        self.assertEqual(names[-1], labels.MSG_USER_TAB)
         self.assertIn(labels.MSG_BASICS_TAB, self.text())
 
     async def test_tab_goes_to_the_row_of_tabs_whose_keys_choose_a_tab_and_stop_at_the_ends(self):
@@ -60,9 +62,9 @@ class TestTheTabBoxOnTheClipPage(UITest):
         await self.press(back_key(keybindings.FieldPage.ALONG_TABS))
         self.assertEqual(self.chosen(), labels.MSG_BASICS_TAB)
         await self.press(Key.RIGHT, forward_key(keybindings.FieldPage.ALONG_TABS))
-        self.assertEqual(self.chosen(), arp_strings.MSG_TAB_LABEL)
+        self.assertEqual(self.chosen(), labels.MSG_SHAPES_TAB)
         await self.press(*[Key.RIGHT] * len(self.page.tab_box().tabs))
-        self.assertEqual(self.chosen(), labels.MSG_VELOCITY_TAB)
+        self.assertEqual(self.chosen(), labels.MSG_USER_TAB)
 
     async def test_the_box_keeps_its_height_whichever_tab_is_chosen(self):
         heights = set()
@@ -80,7 +82,8 @@ class TestTheTabBoxOnTheClipPage(UITest):
     async def test_a_built_in_tab_switches_the_clips_own_on_and_marks_its_tab(self):
         chords = marks.MSG_TAB_WITH_MARK.format(name=chords_strings.MSG_TAB_LABEL, mark=marks.MSG_FIELD_TOGGLE_OFF)
         self.assertIn(chords, self.text())
-        await self.press(keybindings.FieldPage.TO_TABS, Key.RIGHT, Key.DOWN)
+        names = [tab.label for tab in self.page.tab_box().tabs]
+        await self.press(keybindings.FieldPage.TO_TABS, *[Key.RIGHT] * names.index(chords_strings.MSG_TAB_LABEL), Key.DOWN)
         self.assertEqual(self.page.field().label, labels.MSG_ENABLED_LABEL)
         await self.press(Key.SPACE)
         self.assertEqual(self.clip_slot().to_data()[ClipSlotSetting.BUILT_IN], {chords_plugin.NAME: {file_format.GENERATOR_ENABLED: True}})

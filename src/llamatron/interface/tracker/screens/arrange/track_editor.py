@@ -141,10 +141,9 @@ class TrackEditor(ShowsNamedItem, FieldPage):
             Tab(label=labels.MSG_BASICS_TAB, columns=[
                 TabColumn(heading=labels.MSG_GENERAL_HEADING, fields=general), TabColumn(heading=labels.MSG_NOTES_HEADING, fields=notes),
             ]),
-            *built_in_tabs(page=self, track=self.item, scene=built_in_place.OF_THE_TRACK, kinds=generator_plugins.built_ins_before_list()),
-            fields_tab(label=labels.MSG_USER_TAB, fields=[generators_field(page=self, names=self._chain_names, store=self._set_chain_names)]),
-            *built_in_tabs(page=self, track=self.item, scene=built_in_place.OF_THE_TRACK, kinds=generator_plugins.built_ins_after_list()),
             Tab(label=labels.MSG_CC_LANES_TAB, columns=[TabColumn(heading=None, fields=numbers)]),
+            *built_in_tabs(page=self, track=self.item, scene=built_in_place.OF_THE_TRACK, kinds=generator_plugins.built_in_kinds()),
+            fields_tab(label=labels.MSG_USER_TAB, fields=[generators_field(page=self, names=self._chain_names, store=self._set_chain_names)]),
         ]
 
     def _item_name(self):

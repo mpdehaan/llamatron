@@ -53,18 +53,16 @@ class BuiltInChain:
 
 
 def chain_runs(*, setlist, clip_slot, scene, track):
-    """Return the ChainRuns of a clip in a scene on a track, in order: its built-ins before the lists, the chains of its own, its
-    scene's and its track's lists, then its built-ins after them."""
+    """Return the ChainRuns of a clip in a scene on a track, in order: its built-ins, then the chains of its own, its scene's
+    and its track's lists, which run last so that they work on what the built-ins made."""
     on_clip = clip_slot.built_ins_on()
     on_track = track.built_ins_on()
     lists = [*clip_slot.get_chain_names(), *scene.get_chain_names(), *track.get_chain_names()]
     runs = []
     if on_clip or on_track:
-        runs += _built_in_runs(kinds=generator_plugins.built_ins_before_list(), clip_slot=clip_slot, track=track, on_clip=on_clip, on_track=on_track)
+        runs += _built_in_runs(kinds=generator_plugins.built_in_kinds(), clip_slot=clip_slot, track=track, on_clip=on_clip, on_track=on_track)
     for name in lists:
         runs.append(ChainRun(name, setlist.chain_run(name)))
-    if on_clip or on_track:
-        runs += _built_in_runs(kinds=generator_plugins.built_ins_after_list(), clip_slot=clip_slot, track=track, on_clip=on_clip, on_track=on_track)
     return runs
 
 

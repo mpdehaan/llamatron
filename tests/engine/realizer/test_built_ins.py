@@ -18,7 +18,7 @@ from llamatron.engine.realizer import chain_runs as chain_runs_values
 from llamatron.engine.realizer.chain_runs import chain_runs
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.schema import file_format, generator_plugins
+from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, Section, TrackSetting
 from tests.engine.realizer import test_conditional_execution
 from tests.engine.realizer.test_conditional_execution import heard, notes_at, song
@@ -59,17 +59,15 @@ class TestBuiltInsPlay(unittest.TestCase):
     def test_a_built_in_plays_beside_the_lists(self):
         self.assertEqual(heard(song(chained=True, clip={ClipSlotSetting.BUILT_IN: CHORDS_ON})), notes_at(MOVED_TWICE))
 
-    def test_the_built_ins_before_the_lists_run_before_them_and_the_others_after(self):
+    def test_every_built_in_runs_in_its_place_and_the_lists_run_after_them_all(self):
         built_ins = {chords_plugin.NAME: ON, timing_plugin.NAME: ON}
         setlist = setlist_from_data(song(chained=True, clip={ClipSlotSetting.BUILT_IN: built_ins}))
         song_read = setlist.get_song(setlist.first_song_name())
         scene = song_read.get_scenes()[0]
         runs = chain_runs(setlist=setlist, clip_slot=scene.get_clip_slot(test_conditional_execution.LEAD), scene=scene, track=song_read.get_track(test_conditional_execution.LEAD))
         kinds = [step.kind for run in runs for step in run.chain.get_steps()]
-        self.assertEqual(kinds, [chords_plugin.NAME, chords_plugin.NAME, timing_plugin.NAME])
-        self.assertEqual([run.name for run in runs], [chain_runs_values.BUILT_IN_NAME, test_conditional_execution.DOUBLED, chain_runs_values.BUILT_IN_NAME])
-        self.assertIn(chords_plugin.NAME, generator_plugins.built_ins_before_list())
-        self.assertIn(timing_plugin.NAME, generator_plugins.built_ins_after_list())
+        self.assertEqual(kinds, [chords_plugin.NAME, timing_plugin.NAME, chords_plugin.NAME])
+        self.assertEqual([run.name for run in runs], [chain_runs_values.BUILT_IN_NAME, chain_runs_values.BUILT_IN_NAME, test_conditional_execution.DOUBLED])
 
 
 class TestBuiltInsAsStored(unittest.TestCase):

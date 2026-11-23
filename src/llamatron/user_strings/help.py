@@ -46,8 +46,8 @@ Up, down, Left and Right select a setting. [ and ] change it, and ENTER types or
 # ClipPage
 HELP_CLIP_PAGE = """
 Name: what the grid and exports call it, else its pattern's name. Patterns: what it plays; A adds, M moves, Bksp removes.
-Tab goes to the tabs; Left and Right choose one. Basics: Repeat, Loop, the orders, Morph to, Advance, Scale, Velocity, Grab.
-Chords, Arp, Guitarify, Timing, Phrasing: its own generators, off until Enabled. User: the set's generators it runs.
+Tab goes to the tabs; Left and Right choose one. Settings: Repeat, Loop, the orders, Morph to, Advance, Scale, Velocity, Grab.
+Chords to Phrasing: its own generators, off until Enabled. Generators: the set's generators it runs, after its own.
 One clip in each scene must not loop, or exporting stops. Advance is for real-time playback only.
 
 Up, down, Left and Right select. [ and ] change. ENTER chooses. J jumps to the pattern. L plays the clip and stops it.
