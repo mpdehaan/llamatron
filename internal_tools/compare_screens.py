@@ -31,6 +31,18 @@ SIZES = ((80, 24), (160, 50))
 FILE_NAME = 'screens_{columns}x{rows}.json'
 # What the test's folder is written as.
 FOLDER = 'FOLDER'
+# What each stop of the tour records.
+PAGE = 'page'
+PLACE = 'place'
+SCREEN = 'screen'
+WRITE = 'w'
+ENCODING = 'utf-8'
+# The name of the screen tour at a size, and the class attribute that holds a test's size.
+TOUR_NAME = 'ScreenTour{columns}x{rows}'
+SIZE_ATTRIBUTE = 'SIZE'
+SLOTS = '__slots__'
+# Where a comparison's second capture is made, beside the first.
+AGAIN = '_again'
 # The environment variable the tour's stops are written through, since unittest makes the test object itself.
 OUTPUT_SETTING = 'LLAMATRON_SCREENS_OUTPUT'
 # How many differences are shown in full before the rest are only counted.
@@ -56,11 +68,11 @@ class ScreenTour(KeyTour):
         super().note()
         page = self.app.screen
         screen = screen_pieces(app=self.app, folders=(os.path.realpath(self.folder), self.folder))
-        self.stops.append({'page': type(page).__name__, 'place': place_of(page), 'screen': screen})
+        self.stops.append({PAGE: type(page).__name__, PLACE: place_of(page), SCREEN: screen})
 
     async def test_the_tour(self):
         await self.tour()
-        with open(os.environ[OUTPUT_SETTING], 'w', encoding='utf-8') as file:
+        with open(os.environ[OUTPUT_SETTING], WRITE, encoding=ENCODING) as file:
             json.dump(self.stops, file, indent=0)
 
 
@@ -82,7 +94,7 @@ def without_folders(*, text, folders):
 
 def tour_class(size):
     """Return the screen tour at a size, as a class of its own, since a test's size is its class's."""
-    return type(f'ScreenTour{size[0]}x{size[1]}', (ScreenTour,), {'SIZE': size, '__slots__': ()})
+    return type(TOUR_NAME.format(columns=size[0], rows=size[1]), (ScreenTour,), {SIZE_ATTRIBUTE: size, SLOTS: ()})
 
 
 def capture(directory):
@@ -91,7 +103,8 @@ def capture(directory):
     for size in SIZES:
         os.environ[OUTPUT_SETTING] = os.path.join(directory, FILE_NAME.format(columns=size[0], rows=size[1]))
         suite = unittest.defaultTestLoader.loadTestsFromTestCase(tour_class(size))
-        result = unittest.TextTestRunner(stream=open(os.devnull, 'w')).run(suite)
+        with open(os.devnull, WRITE) as nowhere:
+            result = unittest.TextTestRunner(stream=nowhere).run(suite)
         if not result.wasSuccessful():
             print(MSG_TOUR_FAILED.format(size=size))
             for _, trace in result.errors + result.failures:
@@ -102,7 +115,7 @@ def capture(directory):
 
 def compare(directory):
     """Capture again beside the directory's capture and print where any stop's screen differs; return whether all are the same."""
-    again = directory.rstrip(os.sep) + '_again'
+    again = directory.rstrip(os.sep) + AGAIN
     if not capture(again):
         return False
     differing = []
@@ -126,14 +139,14 @@ def compare(directory):
 
 
 def read_stops(path):
-    with open(path, encoding='utf-8') as file:
+    with open(path, encoding=ENCODING) as file:
         return json.load(file)
 
 
 def show_difference(*, size, number, old, new):
     """Print a stop that differs and its first line that differs, as text with each piece's style."""
-    print(MSG_STOP.format(size=size, number=number, page=new['page'], place=new['place']))
-    for line, (before, after) in enumerate(zip(old['screen'], new['screen'])):
+    print(MSG_STOP.format(size=size, number=number, page=new[PAGE], place=new[PLACE]))
+    for line, (before, after) in enumerate(zip(old[SCREEN], new[SCREEN])):
         if before != after:
             print(MSG_LINE.format(line=line, before=before, after=after))
             return
