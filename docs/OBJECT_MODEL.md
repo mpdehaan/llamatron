@@ -45,8 +45,8 @@ from the last setting reaches them, `←` and `→` choose, and `ENTER` on
 **Save** saves the set, as `Ctrl+S` does, and `ENTER` on **Open** opens
 another set, as `Ctrl+O` does. Below the buttons, the page shows the path of
 the set's file and where the current song exports. [Opening and
-Saving](GETTING_STARTED.md#opening-and-saving) describes the keys `N` (New)
-and `W` (Save As).
+Saving](GETTING_STARTED.md#opening-and-saving) describes the **New** and
+**Save As** buttons.
 
 ### Description and Notes
 

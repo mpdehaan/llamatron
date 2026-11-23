@@ -66,7 +66,7 @@ class TrackPresenter:
         return NumberField(
             page=self._page, label=label, number=self.track().get_cc_numbers()[lane], start=midi.MIN_CC_NUMBER, shown=self.cc_text(lane),
             lowest=midi.MIN_CC_NUMBER, highest=midi.MAX_CC_NUMBER, title=title, set=functools.partial(self._set_cc_number, lane=lane),
-            clear=functools.partial(self._set_cc_number, None, lane=lane), clear_what=legends.MSG_NO_CC_WHAT,
+            clear=functools.partial(self._set_cc_number, None, lane=lane), clear_what=marks.MSG_NONE_SHOWN,
         )
 
     def cc_text(self, lane):
@@ -80,14 +80,14 @@ class TrackPresenter:
         return groove_choice_field(
             page=self._page, title=messages.MSG_TRACK_GROOVE_TITLE, choice=self.track().get_groove_choice(),
             inherited_option=marks.MSG_SCENE_OR_SONG_GROOVE_SHOWN, inherited_shown=marks.MSG_SCENE_OR_SONG_GROOVE_SHOWN,
-            choose=self._set_groove, clear_what=legends.MSG_USE_SCENE_GROOVE_WHAT,
+            choose=self._set_groove, clear_what=legends.MSG_FROM_SCENE_OR_SONG_WHAT,
         )
 
     def instrument_field(self):
         """Return the Instrument field: the instrument the track plays through in real time, chosen from the set's, or none."""
         return Field(
             label=labels.MSG_INSTRUMENT_LABEL, value=self._instrument_shown, adjust=None, enter=self.pick_instrument, enter_what=legends.What.CHOOSE,
-            clear=functools.partial(self.set_instrument, None), clear_what=legends.MSG_NO_INSTRUMENT_WHAT,
+            clear=functools.partial(self.set_instrument, None), clear_what=marks.MSG_NONE_SHOWN,
         )
 
     def pick_instrument(self):
@@ -111,20 +111,23 @@ class TrackPresenter:
             shown = marks.MSG_FROM_INSTRUMENT_SHOWN.format(value=above)
         else:
             shown = above
-        return self._setting_field(label=labels.MSG_DEFAULT_VELOCITY_LABEL, name=TrackSetting.DEFAULT_VELOCITY, start=above, shown=shown, typed=above, clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT)
+        cleared = str(defaults.DEFAULT_VELOCITY)
+        if song.instrument_of(track) is not None:
+            cleared = legends.MSG_FROM_INSTRUMENT_WHAT
+        return self._setting_field(label=labels.MSG_DEFAULT_VELOCITY_LABEL, name=TrackSetting.DEFAULT_VELOCITY, start=above, shown=shown, typed=above, clear_what=cleared)
 
     def velocity_change_field(self):
         """Return the Velocity field: the percentage of its written velocity every clip of the track plays, stacking with the
         instrument's, the scene's and the clip's, 100% until set."""
         percent = self.track().get_velocity_percent()
         shown = percentages.percent_shown(percentages.UNCHANGED if percent is None else percent)
-        return self._setting_field(label=labels.MSG_VELOCITY_PERCENT_LABEL, name=TrackSetting.VELOCITY, shown=shown, start=percentages.UNCHANGED, clear_what=legends.MSG_RAMP_BLANK_WHAT)
+        return self._setting_field(label=labels.MSG_VELOCITY_PERCENT_LABEL, name=TrackSetting.VELOCITY, shown=shown, start=percentages.UNCHANGED, clear_what=percentages.percent_shown(percentages.UNCHANGED))
 
     def accent_field(self):
         """Return the Accent field: what a step with its Accent on adds to its velocity on the track, on top of its instrument's accent."""
         accent = self.track().get_accent()
         shown = marks.MSG_ACCENT_SHOWN.format(accent=accent)
-        return self._setting_field(label=labels.MSG_ACCENT_LABEL, name=TrackSetting.ACCENT, in_effect=accent, shown=shown, clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT)
+        return self._setting_field(label=labels.MSG_ACCENT_LABEL, name=TrackSetting.ACCENT, in_effect=accent, shown=shown, clear_what=marks.MSG_ACCENT_SHOWN.format(accent=defaults.DEFAULT_TRACK_ACCENT))
 
     def transpose_field(self, track):
         """Return the Transpose field, which a drum track only shows, since its notes are drums."""
@@ -133,7 +136,7 @@ class TrackPresenter:
         return NumberField(
             page=self._page, label=labels.MSG_TRANSPOSE_LABEL, number=track.get_transpose(), shown=self.transpose_text(), lowest=-limits.MAX_TRANSPOSE,
             highest=limits.MAX_TRANSPOSE, set=self._set_transpose, clear=functools.partial(self._set_transpose, defaults.DEFAULT_TRANSPOSE),
-            clear_what=legends.MSG_NO_TRANSPOSE_WHAT,
+            clear_what=str(defaults.DEFAULT_TRANSPOSE),
         )
 
     def transpose_text(self):

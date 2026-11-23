@@ -114,15 +114,12 @@ MSG_COPY_CLIP_WHAT = 'copy clip'
 MSG_DELETE_CLIP_WHAT = 'delete clip'
 MSG_PASTE_CLIP_WHAT = 'paste clip'
 MSG_ONE_STEP_WHAT = 'one step'
-MSG_USE_SONG_SCALE_WHAT = 'use the song scale'
-MSG_USE_SCENE_SCALE_WHAT = 'use the scene scale'
-MSG_USE_SONG_TEMPO_WHAT = 'use the song tempo'
-MSG_RAMP_BLANK_WHAT = 'leave blank'
-MSG_USE_PATTERN_NAME_WHAT = 'use pattern name'
-MSG_NO_GENERATOR_WHAT = 'no generator'
-MSG_USE_PATTERN_DIRECTION_WHAT = "use the pattern's"
-MSG_NO_MORPH_WHAT = 'no morph'
-MSG_NO_GRAB_WHAT = 'no grab'
+# What Bksp brings back on a settings page, where that is a value from above: the field then shows where it comes from.
+MSG_FROM_SONG_WHAT = 'from song'
+MSG_FROM_SCENE_WHAT = 'from scene'
+MSG_FROM_SCENE_OR_SONG_WHAT = 'from scene or song'
+MSG_FROM_PATTERN_WHAT = 'from pattern'
+MSG_FROM_INSTRUMENT_WHAT = 'from instrument'
 
 # interface/tracker/key_table.py and interface/tracker/keybindings.py: the key names, and the words every page shares
 
@@ -142,7 +139,6 @@ class What:
     CARRY = 'carry'
     DROP = 'drop'
     ENDS = 'ends'
-    SELECT = 'select'
     SCROLL = 'scroll'
     CHOOSE = 'choose'
     CANCEL = 'CANCEL'
@@ -203,9 +199,12 @@ class What:
 # The main screen's footer says help and about in lower case like the rest of a legend, where the F1 dialog's capitals would shout.
 MSG_HELP_FOOTER_WHAT = 'help'
 MSG_ABOUT_FOOTER_WHAT = 'about'
+# interface/tracker/screens/generators/chain_editor.py: N renames the chain itself, not the step under the cursor.
+MSG_RENAME_CHAIN_WHAT = 'rename chain'
+
 # What the File/Global page's keys do.
-MSG_NEW_WHAT = 'new'
 MSG_SAVE_AS_WHAT = 'save as'
+MSG_NEW_WHAT = 'new'
 
 # interface/tracker/dialogs/import_dialog.py
 MSG_IMPORT_WHAT = 'import'
@@ -243,17 +242,11 @@ MSG_TO_TEXT_WHAT = 'back to the text'
 MSG_PATTERN_WHAT = 'pattern {name}'
 MSG_SCALE_WHAT = 'scale {name}'
 MSG_GENERATOR_WHAT = '{label} {name}'
-MSG_NO_DEFAULT_VELOCITY_WHAT = 'default'
-MSG_NO_TRANSPOSE_WHAT = 'no transpose'
-MSG_WHOLE_RANGE_WHAT = 'whole range'
-MSG_NO_CC_WHAT = 'none'
 # The offsets editor: a one-row grid with a label column this wide, and a margin around it.
 # A settings page's tab box: on the row of tabs, the keys that choose a tab, and Tab, which goes to the row of tabs.
-MSG_TAB_WHAT = 'tab'
 MSG_TO_TABS_WHAT = 'to tabs'
 MSG_INTO_TAB_WHAT = 'into tab'
 MSG_NEXT_TAB_WHAT = 'next tab'
-MSG_COLUMN_WHAT = 'column'
 MSG_SILENT_WHAT = 'silent'
 MSG_PLAY_WHAT = 'play'
 
@@ -323,20 +316,12 @@ MSG_DEGREES_WHAT = 'scale degrees'
 # interface/tracker/screens/set/grooves_page.py
 MSG_GROOVE_WHAT = 'groove {name}'
 MSG_INSTRUMENT_WHAT = 'instrument {name}'
-MSG_NO_INSTRUMENT_WHAT = 'no instrument'
-MSG_NO_DEVICE_WHAT = 'no device'
-MSG_NO_GM_SOUND_WHAT = 'no sound'
-MSG_NO_TRACK_WHAT = 'no track'
 MSG_VIEW_WHAT = 'view'
 
 # interface/tracker/screens/set/groove_editor.py
 MSG_CELL_LENGTH_WHAT = 'cell length'
 MSG_ACCENT_WHAT = 'accent'
 MSG_READY_BARS_WHAT = 'ready-made'
-
-# interface/pages/groove_choice.py: the Groove field on the Song, Scene and Track pages
-MSG_USE_SONG_GROOVE_WHAT = 'use the song groove'
-MSG_USE_SCENE_GROOVE_WHAT = 'use the scene or song groove'
 
 # interface/tracker/keybindings.py, the chord editor: H fills it with a named progression.
 MSG_PICK_PROGRESSION_WHAT = 'pick progression'

@@ -271,6 +271,7 @@ class ViewFields:
         return ChoiceField(
             page=self, label=setting.label, choices=[setting.inherited_choice, *setting.choices], current=current, shown=shown,
             set=functools.partial(self.store_inherited, setting=setting), clear=functools.partial(self.store, setting=setting.setting, value=None),
+            clear_what=setting.inherited_what,
         )
 
     def _gauge(self, setting):
@@ -297,10 +298,13 @@ class ViewFields:
             start = setting.default
         if number is not None:
             shown = _number_shown(number=number, setting=setting)
+        cleared = marks.MSG_NONE_SHOWN
+        if setting.default is not None:
+            cleared = _number_shown(number=setting.default, setting=setting) or str(setting.default)
         return NumberField(
             page=self, label=setting.label, number=number, start=start, shown=shown, lowest=described.get_lowest(),
             highest=described.get_highest(), set=functools.partial(self.store_number, setting=setting),
-            clear=functools.partial(self.store, setting=setting.setting, value=None),
+            clear=functools.partial(self.store, setting=setting.setting, value=None), clear_what=cleared,
         )
 
     def _time_field(self, setting):
@@ -329,7 +333,7 @@ class ViewFields:
         """Return the field of an arpeggiator's offsets, ENTER opening the offsets editor and Bksp removing them."""
         return Field(
             label=setting.label, value=functools.partial(self.offsets_shown, setting), adjust=None, enter=functools.partial(self.open_offsets, setting),
-            enter_what=legends.What.EDIT, clear=functools.partial(self.store, setting=setting.setting, value=None), clear_what=legends.What.REMOVE,
+            enter_what=legends.What.EDIT, clear=functools.partial(self.store, setting=setting.setting, value=None), clear_what=marks.MSG_NONE_SHOWN,
         )
 
     def _track_field(self, setting):
@@ -338,7 +342,7 @@ class ViewFields:
         return ChoiceField(
             page=self, label=setting.label, choices=[marks.MSG_NONE_SHOWN, *self.tracks(setting)], current=named,
             set=functools.partial(self.store_track, setting=setting), clear=functools.partial(self.store_track, None, setting=setting),
-            clear_what=legends.MSG_NO_TRACK_WHAT,
+            clear_what=marks.MSG_NONE_SHOWN,
         )
 
     def _steps_field(self, setting):

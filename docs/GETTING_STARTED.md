@@ -91,7 +91,7 @@ These hold on every page:
 - Upper and lower case are the same key, and so are `Bksp` and `Delete`.
 - Nothing is saved or exported until you ask.
 
-**Lists.** Up and Down select. A list you can add to has a `+ (New)` row at
+**Lists.** Up and Down move. A list you can add to has a `+ (New)` row at
 the bottom, where `ENTER` adds, as `A` does. `/` searches the list as you
 type: the rows shrink to those containing the text, `Tab` completes, `ENTER`
 keeps your place and `ESC` returns to the whole list. Deleting something still
@@ -99,9 +99,11 @@ in use is refused, with a list of what uses it; otherwise it asks first. Every
 list you pick from is sorted by name, while the pages keep the file's order
 until `S` sorts them for good.
 
-**Settings pages.** Up and Down select a setting, `[` and `]` change it,
+**Settings pages.** Up and Down move to a setting, `[` and `]` change it,
 `ENTER` types a value or opens a list to choose from, and `Bksp` clears it
-where that makes sense. A page with many settings groups some into sections: a
+where that makes sense. The legend says what `Bksp` brings back, as the
+setting then shows it: `from song` where the song's value takes over, `(none)`
+or the setting's default value. A page with many settings groups some into sections: a
 heading reads `+ Density` while closed and `- Density` while open, `Space` or
 `ENTER` toggles it, and `PgUp` and `PgDn` jump between headings. Sections
 start closed and stay as you leave them, by name, for as long as the tracker
@@ -182,8 +184,8 @@ flowchart TD
   off. Saving writes nothing when the file already holds exactly what it would
   save, and asks before writing over a file something else has changed since
   it was opened.
-- **`W` saves as** a new name, on the File/Global page, asking before
-  replacing another file.
+- **Save As** saves under a new name: the button on the File/Global page,
+  which asks before replacing another file.
 - **`Ctrl+O` opens** a set file. The Open page starts in `examples/`, where
   folders show with a trailing slash, such as `learning/`: `ENTER` opens a
   file or goes into a folder, and `../` goes up. Opened again, the page comes

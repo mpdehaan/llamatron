@@ -17,5 +17,5 @@ def generators_field(*, page, names, store):
     return Field(
         label=labels.MSG_GENERATORS_FIELD_LABEL, value=lambda: marks.MSG_CHAIN_JOIN.join(listed_generator(setlist=page.document().get_setlist(), name=name) for name in names()) or marks.MSG_NONE_SHOWN, adjust=None,
         enter=lambda: page.edit_generators(names=names, store=store), enter_what=legends.What.EDIT,
-        clear=lambda: store([]), clear_what=legends.MSG_NO_GENERATOR_WHAT,
+        clear=lambda: store([]), clear_what=marks.MSG_NONE_SHOWN,
     )

@@ -43,7 +43,7 @@ class InstrumentPresenter:
     def default_velocity_field(self):
         """Return the Default velocity field: what a step with no velocity typed plays at on the instrument's tracks, the loudest until set."""
         velocity = self.instrument().get_default_velocity()
-        return SettingNumberField(page=self._page, document=self._document, label=labels.MSG_DEFAULT_VELOCITY_LABEL, holder=self.instrument(), name=InstrumentSetting.DEFAULT_VELOCITY, in_effect=velocity, start=defaults.DEFAULT_VELOCITY, clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT)
+        return SettingNumberField(page=self._page, document=self._document, label=labels.MSG_DEFAULT_VELOCITY_LABEL, holder=self.instrument(), name=InstrumentSetting.DEFAULT_VELOCITY, in_effect=velocity, start=defaults.DEFAULT_VELOCITY, clear_what=str(defaults.DEFAULT_VELOCITY))
 
     def velocity_change_field(self):
         """Return the Velocity field: the percentage of its written velocity every clip of the instrument's tracks plays, stacking with the
@@ -51,12 +51,12 @@ class InstrumentPresenter:
         holder = self.instrument()
         percent = holder.get_velocity_percent()
         shown = percentages.percent_shown(percentages.UNCHANGED if percent is None else percent)
-        return SettingNumberField(page=self._page, document=self._document, label=labels.MSG_VELOCITY_PERCENT_LABEL, holder=holder, name=InstrumentSetting.VELOCITY, shown=shown, start=percentages.UNCHANGED, clear_what=legends.MSG_RAMP_BLANK_WHAT)
+        return SettingNumberField(page=self._page, document=self._document, label=labels.MSG_VELOCITY_PERCENT_LABEL, holder=holder, name=InstrumentSetting.VELOCITY, shown=shown, start=percentages.UNCHANGED, clear_what=percentages.percent_shown(percentages.UNCHANGED))
 
     def accent_field(self):
         """Return the Accent field: what a step with its Accent on adds to its velocity on the instrument's tracks, before each track's own accent."""
         accent = self.instrument().get_accent()
-        return SettingNumberField(page=self._page, document=self._document, label=labels.MSG_ACCENT_LABEL, holder=self.instrument(), name=InstrumentSetting.ACCENT, in_effect=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT)
+        return SettingNumberField(page=self._page, document=self._document, label=labels.MSG_ACCENT_LABEL, holder=self.instrument(), name=InstrumentSetting.ACCENT, in_effect=accent, shown=marks.MSG_ACCENT_SHOWN.format(accent=accent), clear_what=marks.MSG_ACCENT_SHOWN.format(accent=defaults.DEFAULT_INSTRUMENT_ACCENT))
 
     def lead_field(self):
         """Return the Keyswitch lead field: how many milliseconds before its note a keyswitch is sent, for a plugin that needs it early, nothing unless set."""
@@ -85,10 +85,10 @@ class InstrumentPresenter:
         return [
             NameField(value=lambda: self._name, rename=self._page.rename),
             Field(label=labels.MSG_DEVICE_LABEL, value=lambda: instrument.get_device() or marks.MSG_NO_DEVICE_SHOWN, adjust=None, enter=self._page.pick_device, enter_what=legends.What.CHOOSE,
-                  clear=lambda: self.set_device(None), clear_what=legends.MSG_NO_DEVICE_WHAT),
+                  clear=lambda: self.set_device(None), clear_what=marks.MSG_NONE_SHOWN),
             self.channel_field(),
             Field(label=labels.MSG_GM_SOUND_LABEL, value=lambda: sound_text(instrument.get_gm_sound()), adjust=self.step_gm_sound, enter=self._page.pick_gm_sound, enter_what=legends.What.CHOOSE,
-                  clear=lambda: self.set_gm_sound(None), clear_what=legends.MSG_NO_GM_SOUND_WHAT),
+                  clear=lambda: self.set_gm_sound(None), clear_what=marks.MSG_NONE_SHOWN),
             self.default_velocity_field(),
             self.accent_field(),
             self.velocity_change_field(),

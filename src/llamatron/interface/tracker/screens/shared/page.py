@@ -26,7 +26,7 @@ from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.drawing import Box, fit, legend, Style
-from llamatron.interface.tracker.key_table import BindsKeys, pressed_key, quits_at_once
+from llamatron.interface.tracker.key_table import arrows_joined, BindsKeys, pressed_key, quits_at_once
 from llamatron.interface.tracker.screens.shared.everywhere import everywhere_keys
 from llamatron.interface.tracker.themes import luminance
 from llamatron.model.objects.naming import is_taken
@@ -406,7 +406,7 @@ class Page(BindsKeys, Screen):
     def page_lines(self, *, width, height):
         """Return the page's lines at a size: the header, the body, the status line, the rule and the legend, which draw shows and a batch video's stage draws again smaller inside its frame."""
         top = self.header(width)
-        bottom = legend(keys=self.shown_keys(), width=width) if self.shows_legend else []
+        bottom = legend(keys=arrows_joined(self.shown_keys()), width=width) if self.shows_legend else []
         rule = [Text(Box.RULE * width, style=Style.DIM)] if bottom else []
         # The status line is dim, so that it reads as a note rather than part of the page.
         line = self.holder.get_status_line()

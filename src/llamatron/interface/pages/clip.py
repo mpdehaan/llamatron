@@ -76,7 +76,7 @@ class ClipPresenter:
     def form(self):
         """Return the page's form: the clip's name, its list of patterns, its tabs, then the Listen button."""
         return [
-            NameField(value=self.name_text, rename=self.rename, clear=functools.partial(self.clear, ClipSlotSetting.NAME), clear_what=legends.MSG_USE_PATTERN_NAME_WHAT),
+            NameField(value=self.name_text, rename=self.rename, clear=functools.partial(self.clear, ClipSlotSetting.NAME), clear_what=legends.MSG_FROM_PATTERN_WHAT),
             *self.pattern_rows(),
             TabBox(tabs=ClipTabs(self).tabs()),
             self._page.listen_button(),
@@ -170,14 +170,14 @@ class ClipPresenter:
         result = [
             Field(label=labels_text.MSG_DIRECTION_LABEL, value=self.direction_text, adjust=self.step_direction, enter=self.pick_direction,
                   enter_what=legends.What.CHOOSE, clear=functools.partial(self.clear, ClipSlotSetting.DIRECTION),
-                  clear_what=legends.MSG_USE_PATTERN_DIRECTION_WHAT),
+                  clear_what=legends.MSG_FROM_PATTERN_WHAT),
             NumberField(page=self._page, label=labels_text.MSG_REPEAT_LABEL, number=repeat, lowest=limits.MIN_REPEAT, highest=limits.MAX_CLIP_REPEAT,
                         set=self.set_repeat),
             Toggle(label=labels_text.MSG_LOOP_LABEL, on=clip_slot.loops(), set=self.set_loop),
         ]
         if repeat > defaults.DEFAULT_REPEAT:
             result.append(Field(label=labels_text.MSG_MORPH_TO_LABEL, value=self._morph_shown, adjust=None, enter=self._pick_morph_target,
-                                enter_what=legends.What.CHOOSE, clear=self.clear_morph, clear_what=legends.MSG_NO_MORPH_WHAT))
+                                enter_what=legends.What.CHOOSE, clear=self.clear_morph, clear_what=marks.MSG_NONE_SHOWN))
             if clip_slot.get_morph_target():
                 result.append(Field(label=labels_text.MSG_MORPH_DIRECTION_LABEL, value=self.morph_style, adjust=self.step_style,
                                     enter=functools.partial(self.step_style, 1), enter_what=legends.What.NEXT))

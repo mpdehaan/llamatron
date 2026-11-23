@@ -9,7 +9,7 @@ that plays pitches), and the table of what the musician does in each kind of sec
 from llamatron.engine.generators.musician import model, schema, strings
 from llamatron.engine.generators.musician.model import MusicianSetting
 from llamatron.model.schema.generator_views import ChoiceView, ColumnView, GaugeView, GeneratorView, InheritedChoiceView, SectionsView, TrackView, WhenView
-from llamatron.user_strings import labels, marks
+from llamatron.user_strings import labels, legends, marks
 
 
 def _choice(*, setting, label, choices):
@@ -21,7 +21,7 @@ def _from_instrument(*, setting, label, choices):
     """Return a choice the instrument makes until the musician is told otherwise."""
     return InheritedChoiceView(
         setting=setting, label=label, choices=tuple(choices), inherited_choice=labels.MSG_MUSICIAN_INSTRUMENT_CHOICE,
-        inherited_shown=marks.MSG_FROM_INSTRUMENT_SHOWN,
+        inherited_shown=marks.MSG_FROM_INSTRUMENT_SHOWN, inherited_what=legends.MSG_FROM_INSTRUMENT_WHAT,
     )
 
 

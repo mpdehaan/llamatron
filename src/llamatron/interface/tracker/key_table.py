@@ -4,12 +4,14 @@
 
 """How a page, dialog or component binds the keys its class in interface/tracker/keybindings.py lists, and how a key press is read as one name."""
 
+import dataclasses
 from dataclasses import dataclass
 from textual import events
 from typing import Callable
 
 from llamatron.interface.tracker import keys as keys_values
 from llamatron.interface.tracker.keys import Key, Steps
+from llamatron.user_strings import legends
 
 # The keys matched by name rather than by the character they type: a control key's character is an
 # unprintable control code, and a function key has none, so neither can be matched any other way.
@@ -52,6 +54,17 @@ class KeyBinding:
             self.action(name)
         else:
             self.action()
+
+
+def arrows_joined(items):
+    """Return a legend's keys with Up and Down and Left and Right shown as one entry of all four arrows where both do the same,
+    as both move the cursor on a settings page, so that the legend says it once."""
+    up_down = _shown_with(items=items, label=legends.KeyName.UP_DOWN)
+    left_right = _shown_with(items=items, label=legends.KeyName.LEFT_RIGHT)
+    if up_down is None or left_right is None or up_down.what != left_right.what:
+        return items
+    joined = dataclasses.replace(up_down, label=legends.KeyName.ARROWS)
+    return [joined if item is up_down else item for item in items if item is not left_right]
 
 
 def keys_of(which):
@@ -178,3 +191,11 @@ def pressed_key(event):
 def quits_at_once(name):
     """Return whether a pressed key quits the tracker at once, whatever has the keys: Ctrl+C, which closes FluidSynth and the MIDI sender as quitting does."""
     return name == Key.CTRL_C
+
+
+def _shown_with(*, items, label):
+    """Return the legend's entry with a label, or None."""
+    for item in items:
+        if item.label == label:
+            return item
+    return None

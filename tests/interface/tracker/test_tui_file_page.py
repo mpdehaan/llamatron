@@ -111,7 +111,7 @@ class TestFilePage(UITest):
         self.assertIn(EXPORT, self.text())
 
     async def test_the_prompt_cursor_moves_with_the_arrows_and_types_and_erases_where_it_is(self):
-        await self.press(keybindings.FilePage.SAVE_AS)
+        await press_save_as(self)
         self.assertIsInstance(self.app.screen, PromptDialog)
         self.app.screen.value = ''
         await self.type(FOO_YML)
@@ -133,7 +133,7 @@ class TestFilePage(UITest):
         self.assertEqual(self.document.get_path(), FOO2_YML)
 
     async def test_save_as_then_save(self):
-        await self.press(keybindings.FilePage.SAVE_AS)
+        await press_save_as(self)
         self.assertIsInstance(self.app.screen, PromptDialog)
         self.app.screen.value = ''
         await self.type('tune')
@@ -198,7 +198,7 @@ class TestFilePage(UITest):
         self.assertIn(messages.MSG_PROTECTED_TITLE, self.text())
         await self.press(keybindings.ConfirmDialog.NO)
         before = os.stat('demo.yml').st_mtime_ns
-        await self.press(keybindings.FilePage.SAVE_AS)
+        await press_save_as(self)
         self.assertIsInstance(self.app.screen, PromptDialog)
         self.assertEqual(self.app.screen.value, 'demo.yml')
         await self.press(Key.ENTER)
@@ -209,7 +209,7 @@ class TestFilePage(UITest):
         self.assertEqual(self.document.get_path(), 'demo.yml')
 
     async def test_saving_an_unchanged_set_writes_nothing_and_says_so(self):
-        await self.press(keybindings.FilePage.SAVE_AS)
+        await press_save_as(self)
         self.app.screen.value = 'tune.yml'
         await self.press(Key.ENTER)
         before = os.stat('tune.yml').st_mtime_ns
@@ -220,7 +220,7 @@ class TestFilePage(UITest):
         self.assertFalse(self.document.is_dirty())
 
     async def test_saving_over_a_file_changed_elsewhere_asks_first(self):
-        await self.press(keybindings.FilePage.SAVE_AS)
+        await press_save_as(self)
         self.app.screen.value = 'tune.yml'
         await self.press(Key.ENTER)
         other = Document.load('tune.yml')
@@ -250,7 +250,7 @@ class TestFilePage(UITest):
     async def test_save_as_asks_before_replacing_another_file(self):
         with open('taken.yml', WRITE_TEXT) as file:
             file.write(KEEP)
-        await self.press(keybindings.FilePage.SAVE_AS)
+        await press_save_as(self)
         self.app.screen.value = 'taken.yml'
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
@@ -290,7 +290,8 @@ class TestFilePageEdges(UITest):
 
     async def test_a_save_that_fails_is_explained(self):
         os.mkdir('taken.yml')
-        await self.press(keybindings.MainPage.FILE, keybindings.FilePage.SAVE_AS)
+        await self.press(keybindings.MainPage.FILE)
+        await press_save_as(self)
         self.app.screen.value = 'taken.yml'
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
@@ -317,3 +318,9 @@ class TestFilePageEdges(UITest):
         await self.select_field(labels_text.MSG_SCALE_LABEL)
         await self.press(Key.ENTER)
         self.assertIn(errors.ERR_ADD_A_SCALE_FIRST, self.text())
+
+
+async def press_save_as(test):
+    """Press the File/Global page's Save As button, which has no key."""
+    await test.select_field(labels_text.MSG_SAVE_AS_BUTTON)
+    await test.press(Key.ENTER)

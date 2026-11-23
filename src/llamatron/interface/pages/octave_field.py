@@ -18,5 +18,5 @@ def octave_field(*, page, label, current, lowest, highest, default, set_octave):
         adjust=lambda offset: set_octave(within(octave_moved(octave=current(), offset=offset))),
         enter=lambda: page.ask_number(title=label, value=song.get_setlist().shown_octave(current()), then=lambda shown: set_octave(song.get_setlist().stored_octave(shown)),
                                       low=song.get_setlist().shown_octave(lowest()), high=song.get_setlist().shown_octave(highest())),
-        enter_what=legends.What.EDIT, clear=lambda: set_octave(default), clear_what=legends.MSG_WHOLE_RANGE_WHAT,
+        enter_what=legends.What.EDIT, clear=lambda: set_octave(default), clear_what=song.get_setlist().shown_octave(default),
     )

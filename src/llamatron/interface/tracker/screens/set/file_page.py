@@ -46,7 +46,7 @@ class FilePage(FieldPage):
             Button(label=labels.MSG_NEW_SET_BUTTON, enter=self.new, enter_what=legends.MSG_NEW_WHAT),
             self.button(binding=self.KEYS.OPEN_SET, label=labels.PageName.OPEN, action=lambda: open_set(self)),
             self.button(binding=self.KEYS.SAVE, label=labels.PageName.SAVE, action=lambda: save(self)),
-            self.button(binding=self.KEYS.SAVE_AS, label=labels.MSG_SAVE_AS_BUTTON, action=lambda: save_as(self)),
+            Button(label=labels.MSG_SAVE_AS_BUTTON, enter=lambda: save_as(self), enter_what=legends.MSG_SAVE_AS_WHAT),
         ]
 
     def remarks(self, width):
@@ -55,9 +55,6 @@ class FilePage(FieldPage):
     def edit_notes(self):
         """Open the Notes page editing, so that Enter on the field starts typing and Tab comes back; a protected set's opens for reading."""
         self.show_page(NotesPage(self.holder, editing=True))
-
-    def page_keys(self):
-        return [self.bind(self.KEYS.SAVE_AS, action=lambda: save_as(self))]
 
     def new(self):
         unless_unsaved(self, then=self.start_new)

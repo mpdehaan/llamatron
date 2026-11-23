@@ -73,7 +73,7 @@ Step size: each step's length, unless a pattern sets its own. Default octaves: w
 Default follow action: a clip's Follow action unless it sets its own.
 Visualizer: Arrange shows it first. Hide Visualizers: not shown.
 Protected: the file is never saved over, like the demos.
-New starts a new set; Save As (W) saves under a new name.
+New starts a new set; Save As saves under a new name.
 Ctrl+X exports the current song beside the set's file as <set>_<song> files.
 """
 

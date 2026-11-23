@@ -89,7 +89,7 @@ class MainPage(Page):
     # Import MIDI, in the row of actions after Export.
     IMPORT_HERE = Binding(Key.L, legends.KeyName.L, legends.What.IMPORT_MIDI)
     QUIT = Binding(Key.Q, legends.KeyName.Q, legends.What.QUIT)
-    SELECT = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.SELECT)
+    SELECT = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     OPEN = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.OPEN)
     # Help and About work everywhere and have no cell, so the main screen's legend reminds of them, in lower case.
     FOOTER_HELP = Binding(Key.F1, legends.KeyName.F1, legends.MSG_HELP_FOOTER_WHAT)
@@ -103,7 +103,7 @@ class MainPage(Page):
 class ListPage(Page):
     """A page of rows with a + row at the bottom: the keys every list of named things shares, and the keys of a search."""
 
-    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
     ADD = Binding(Key.A, legends.KeyName.A, legends.What.ADD)
     # Enter on the + row adds, as A does on any row.
     ADD_HERE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.ADD)
@@ -157,7 +157,7 @@ class PatternsPage(NamedListPage):
     GROUP = Binding(Key.G, legends.KeyName.G, legends.MSG_GROUP_WHAT)
     # The tabs, as a settings page's: Tab goes between the row of tabs and the list, Left and Right (or [ and ]) choose a tab on
     # the row, and PgUp and PgDn choose one from anywhere.
-    ALONG_TABS = Binding(Steps(back=(Key.LEFT, *keys.LESS_KEYS), forward=(Key.RIGHT, *keys.MORE_KEYS)), legends.KeyName.LEFT_RIGHT, legends.MSG_TAB_WHAT)
+    ALONG_TABS = Binding(Steps(back=(Key.LEFT, *keys.LESS_KEYS), forward=(Key.RIGHT, *keys.MORE_KEYS)), legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     TO_TABS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_TABS_WHAT)
     INTO_TAB = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_INTO_TAB_WHAT)
     TAB_PAGES = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_TAB_WHAT)
@@ -218,16 +218,17 @@ class ChainEditor(ListPage):
 
     CHANGE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHANGE)
     REMOVE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.REMOVE)
+    RENAME = Binding((Key.N, Key.F2), legends.KeyName.N_F2, legends.MSG_RENAME_CHAIN_WHAT)
     WHEN = Binding(Key.W, Key.W.upper(), legends.What.WHEN)
     IN_HELP = [
         Page.BACK, ListPage.DROP, ListPage.SEARCH_CANCEL, ListPage.ADD_HERE, ListPage.SELECT, ListPage.CARRY, *ListPage.SEARCHING[1:], ListPage.ADD, CHANGE, ListPage.COPY, REMOVE,
-        ListPage.MOVE, ListPage.RENAME, WHEN, ListPage.SEARCH,
+        ListPage.MOVE, RENAME, WHEN, ListPage.SEARCH,
     ]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[ListPage.SEARCH])
 
 
 class GeneratorListPage(ListPage):
-    """The chains a clip, a scene or a track runs: A adds one, U and D move it, Bksp takes it out of the list."""
+    """The chains a clip, a scene or a track runs: A adds one, M moves it, Bksp takes it out of the list."""
 
     REMOVE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.REMOVE)
     IN_HELP = [Page.BACK, ListPage.DROP, ListPage.SEARCH_CANCEL, ListPage.ADD_HERE, ListPage.SELECT, ListPage.CARRY, *ListPage.SEARCHING[1:], ListPage.ADD, REMOVE, ListPage.MOVE, ListPage.SEARCH]
@@ -238,7 +239,7 @@ class FieldPage(Page):
     """A page of settings: Up and Down pick a field, [ and ] change its value, Left and Right only ever move, and what Enter and
     Bksp do is said by the field."""
 
-    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
     # [ dec and ] inc, the one adjust system, named the same way everywhere. Left and Right step nothing: they move.
     LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
     MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
@@ -252,18 +253,18 @@ class FieldPage(Page):
     # F2 renames from any field of a page that has a Name, as on Windows; off the legend, where Enter on Name says rename.
     RENAME = Binding(Key.F2, legends.KeyName.F2, legends.What.RENAME)
     # On the row of buttons under the settings, Left and Right move along it.
-    ALONG_BUTTONS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    ALONG_BUTTONS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     # In a row of cells side by side, Left and Right move between the cells, and step nothing.
     ALONG_CELLS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     # On a page with a tab box: on the row of tabs, Left and Right, and [ and ], choose the tab before or after; Tab goes to the row.
-    ALONG_TABS = Binding(Steps(back=(Key.LEFT, *keys.LESS_KEYS), forward=(Key.RIGHT, *keys.MORE_KEYS)), legends.KeyName.LEFT_RIGHT, legends.MSG_TAB_WHAT)
+    ALONG_TABS = Binding(Steps(back=(Key.LEFT, *keys.LESS_KEYS), forward=(Key.RIGHT, *keys.MORE_KEYS)), legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     TO_TABS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_TABS_WHAT)
     # On the row of tabs, Tab goes back into the box, so that Tab toggles between the two.
     INTO_TAB = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_INTO_TAB_WHAT)
     # Inside the tab box, PgUp and PgDn choose the tab before or after, keeping the cursor's column where they can.
     TAB_PAGES = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_TAB_WHAT)
     # Inside the tab box, Left and Right go to the field beside in the column to the left or right, stopping at the sides.
-    ACROSS = Binding(Steps(back=(Key.LEFT,), forward=(Key.RIGHT,)), legends.KeyName.LEFT_RIGHT, legends.MSG_COLUMN_WHAT)
+    ACROSS = Binding(Steps(back=(Key.LEFT,), forward=(Key.RIGHT,)), legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     IN_HELP = [Page.BACK, SELECT, ALONG_BUTTONS, ALONG_CELLS, ALONG_TABS, ACROSS, LESS, MORE, TOGGLE, ENTER, CLEAR, SECTION, TAB_PAGES, TO_TABS, INTO_TAB, RENAME]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[RENAME])
 
@@ -297,10 +298,9 @@ class WizardPage(FieldPage):
 
 
 class FilePage(FieldPage):
-    """The File page: W saves the set under another name, as its Save As button does; its New button has no key."""
+    """The File page: its New and Save As buttons have no key."""
 
-    SAVE_AS = Binding(Key.W, legends.KeyName.W, legends.MSG_SAVE_AS_WHAT)
-    IN_HELP = [*FieldPage.IN_HELP, SAVE_AS]
+    IN_HELP = [*FieldPage.IN_HELP]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
@@ -390,7 +390,7 @@ class NotesPage(Page):
     ERASE = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.ERASE)
     TO_BUTTONS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_BUTTONS_WHAT)
     # On the Save and Cancel buttons.
-    SELECT_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    SELECT_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     PRESS_BUTTON = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
     TO_TEXT = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_TO_TEXT_WHAT)
     IN_HELP = [Page.BACK, CANCEL, SCROLL, MOVE, SELECT_BUTTON, NEW_LINE, PRESS_BUTTON, EDIT, CLEAR, ERASE, TO_BUTTONS, TO_TEXT]
@@ -545,7 +545,7 @@ class ArrangePage(Page):
     # and Tab again or Esc leaves, closing the cell's details in the usual view, Esc closing the topmost thing as everywhere.
     INTO_DETAILS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_INTO_DETAILS_WHAT)
     OUT_OF_DETAILS = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_OUT_OF_DETAILS_WHAT)
-    PICK_DETAIL = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
+    PICK_DETAIL = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
     OPEN_DETAIL = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_OPEN_DETAIL_WHAT)
     # On the + under a cell's chains Enter adds a chain to the cell, and on a chain's line Bksp takes it out of the cell.
     ADD_CHAIN = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_ADD_CHAIN_WHAT)
@@ -828,7 +828,7 @@ class MessageDialog(Dialog):
 class ConfirmDialog(MessageDialog):
     """A Yes or No question: Left and Right move between the buttons, Enter presses one, and Y and N answer at once."""
 
-    SELECT = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    SELECT = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     ANSWER = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
     YES = Binding(Key.Y, legends.KeyName.Y, legends.What.YES)
     NO = Binding(Key.N, legends.KeyName.N, legends.What.NO)
@@ -839,7 +839,7 @@ class ConfirmDialog(MessageDialog):
 class QuitDialog(MessageDialog):
     """Quitting with unsaved changes: Left and Right choose a button, Enter presses it, Q quits without saving, S saves and then quits, and Esc cancels."""
 
-    SELECT = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    SELECT = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
     QUIT = Binding(Key.Q, legends.KeyName.Q, legends.MSG_QUIT_WITHOUT_SAVING_WHAT)
     SAVE = Binding(Key.S, legends.KeyName.S, legends.MSG_SAVE_THEN_QUIT_WHAT)
@@ -864,8 +864,8 @@ class ImportedDialog(MessageDialog):
 class ImportDialog(Dialog):
     """The MIDI import's dialog of fields: Up and Down pick a field, [ and ] step one, Space or Enter flips a toggle, Enter renames the song, and on the buttons Left and Right choose and Enter presses; I imports from anywhere."""
 
-    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    CHOOSE_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    CHOOSE_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     LESS = Binding((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
     MORE = Binding((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     TOGGLE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
@@ -879,8 +879,8 @@ class ImportDialog(Dialog):
 class NewPatternDialog(Dialog):
     """The New Pattern dialog: Up and Down pick a row, [ and ] step the scale length, where Enter is OK, Space or Enter flips the drum toggle, and on the buttons Left and Right choose and Enter presses."""
 
-    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    CHOOSE_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    CHOOSE_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     LESS = Binding((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
     MORE = Binding((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     TOGGLE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
@@ -893,8 +893,8 @@ class NewPatternDialog(Dialog):
 class NewRiffDialog(Dialog):
     """The New Riff dialog: Up and Down pick a row, [ and ] step a choice, where Enter writes the riff, Space or Enter flips the toggle, and on the buttons Left and Right choose and Enter presses."""
 
-    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.SELECT)
-    CHOOSE_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    SELECT = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.What.MOVE)
+    CHOOSE_BUTTON = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     LESS = Binding((Key.LEFT, *keys.LESS_KEYS), legends.KeyName.LEFT_BRACKET, legends.What.LESS)
     MORE = Binding((Key.RIGHT, *keys.MORE_KEYS), legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
     TOGGLE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.TOGGLE)
@@ -988,7 +988,7 @@ class KeyswitchMapDialog(Dialog):
     RENAME_HERE = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.RENAME)
     CLEAR = Binding(Key.BACKSPACE, legends.KeyName.BACKSPACE, legends.What.CLEAR)
     OK = Binding(Key.O, legends.KeyName.O, legends.MSG_OK_WHAT)
-    ALONG_BUTTONS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.SELECT)
+    ALONG_BUTTONS = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.What.MOVE)
     PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.ANSWER)
     PICK_NOTE = Binding(keys.ARROWS_LEFT_RIGHT, legends.KeyName.LEFT_RIGHT, legends.MSG_KEYSWITCH_NOTE_WHAT)
     PICK_OCTAVE = Binding(keys.ARROWS_UP_DOWN, legends.KeyName.UP_DOWN, legends.MSG_KEYSWITCH_OCTAVE_WHAT)

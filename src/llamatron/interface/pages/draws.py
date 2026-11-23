@@ -66,7 +66,7 @@ class DrawsPresenter:
         return NumberField(
             page=self._page, label=label, number=number, lowest=lowest, highest=highest,
             set=lambda value: self.change(name=name, setting=setting, value=None if value == default else value),
-            clear=lambda: self.change(name=name, setting=setting, value=None),
+            clear=lambda: self.change(name=name, setting=setting, value=None), clear_what=str(default),
         )
 
     def slot_field(self, *, name, place, value, lowest, highest):

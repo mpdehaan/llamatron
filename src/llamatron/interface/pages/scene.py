@@ -66,7 +66,7 @@ class ScenePresenter:
         inherited = marks.MSG_SONG_GROOVE_SHOWN.format(groove=song.get_groove_name())
         return groove_choice_field(
             page=self._page, title=messages.MSG_SCENE_GROOVE_TITLE, choice=self.scene().get_groove_choice(), inherited_option=labels.MSG_SONG_OPTION,
-            inherited_shown=inherited, choose=self._set_groove, clear_what=legends.MSG_USE_SONG_GROOVE_WHAT,
+            inherited_shown=inherited, choose=self._set_groove, clear_what=legends.MSG_FROM_SONG_WHAT,
         )
 
     def clear_scale(self):
@@ -100,7 +100,7 @@ class ScenePresenter:
         fields.append(NumberField(
             page=self._page, label=labels.MSG_TEMPO_RAMP_LABELS[(way, RampPart.OVER)], shown_label=labels.MSG_RAMP_PART_LABELS[RampPart.OVER], number=over, start=limits.MIN_RAMP_BARS, shown=_ramp_bars_shown(over),
             lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, set=lambda number: store(value=number), clear=functools.partial(store, value=None),
-            clear_what=legends.MSG_RAMP_BLANK_WHAT,
+            clear_what=marks.MSG_NONE_SHOWN,
         ))
         return fields
 
@@ -195,7 +195,7 @@ class ScenePresenter:
         store = functools.partial(self._set_ramp, way=way, part=part)
         return NumberField(
             page=self._page, label=labels.MSG_TEMPO_RAMP_LABELS[(way, part)], shown_label=labels.MSG_RAMP_PART_LABELS[part], number=whole_or_none(number), start=percentages.UNCHANGED, shown=shown, lowest=limits.MIN_TEMPO_PERCENT,
-            highest=limits.MAX_TEMPO_PERCENT, set=lambda value: store(value=value), clear=functools.partial(store, value=None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
+            highest=limits.MAX_TEMPO_PERCENT, set=lambda value: store(value=value), clear=functools.partial(store, value=None), clear_what=self._blank_tempo_shown(),
         )
 
     def _set_ramp(self, *, way, part, value):
@@ -213,11 +213,11 @@ class ScenePresenter:
             NumberField(page=self._page, label=labels.MSG_REPEAT_LABEL, number=scene.get_repeat(), lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT, set=self._set_repeat),
             Toggle(label=labels.MSG_LAUNCH_TOGETHER_LABEL, on=scene.launches_together(), set=self._set_launch_together),
             Field(label=labels.MSG_SCALE_LABEL, value=self.scale_text, adjust=None, enter=self.pick_scale, enter_what=legends.What.CHOOSE,
-                  clear=self.clear_scale, clear_what=legends.MSG_USE_SONG_SCALE_WHAT),
+                  clear=self.clear_scale, clear_what=legends.MSG_FROM_SONG_WHAT),
             self.groove_field(),
             NumberField(
                 page=self._page, label=labels.MSG_TEMPO_LABEL, number=whole_or_none(self.tempo()), start=percentages.UNCHANGED, shown=self.tempo_text(),
-                lowest=limits.MIN_TEMPO_PERCENT, highest=limits.MAX_TEMPO_PERCENT, set=self.set_tempo, clear=self.clear_tempo, clear_what=legends.MSG_USE_SONG_TEMPO_WHAT,
+                lowest=limits.MIN_TEMPO_PERCENT, highest=limits.MAX_TEMPO_PERCENT, set=self.set_tempo, clear=self.clear_tempo, clear_what=legends.MSG_FROM_SONG_WHAT,
             ),
         ]
         return Tab(label=labels.MSG_SETTINGS_TAB, columns=[TabColumn(heading=labels.MSG_PLAYING_HEADING, fields=playing)])

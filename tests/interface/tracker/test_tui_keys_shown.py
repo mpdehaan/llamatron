@@ -2,12 +2,13 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Every key of every page is shown in its legend or in the F1 dialog, on a large console and a usual one."""
+"""Every key of every page is shown in its legend, where Up and Down and Left and Right that do the same are one entry, or in the F1 dialog, on a large console and a usual one."""
 
 from llamatron.engine.generators import arp as arp_plugin
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.dialogs.help_dialog import HelpDialog
+from llamatron.interface.tracker.key_table import arrows_joined
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, Section, SetlistSetting
@@ -54,7 +55,7 @@ class EveryKeyIsShownTests:
         async for where in self.visit():
             page = self.app.screen
             text = self.text()
-            for item in page.shown_keys():
+            for item in arrows_joined(page.shown_keys()):
                 with self.subTest(where=where, label=item.shown_label()):
                     self.assertIn(f'« {item.shown_label()} »', text)
             if not any(item.binding is keybindings.Page.HELP for item in page.key_table()):

@@ -23,5 +23,5 @@ def time_field(*, page, label, written, first, store):
     choices = [first, *times]
     return ChoiceField(
         page=page, label=label, choices=choices, current=current, names=[labels.MSG_TIME_NAMES.get(choice, choice) for choice in choices],
-        shown=labels.MSG_TIME_NAMES.get(current, current), set=lambda choice: store(None if choice == first else choice), clear=lambda: store(None),
+        shown=labels.MSG_TIME_NAMES.get(current, current), set=lambda choice: store(None if choice == first else choice), clear=lambda: store(None), clear_what=labels.MSG_TIME_NAMES.get(first, first),
     )

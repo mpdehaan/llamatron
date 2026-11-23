@@ -42,7 +42,7 @@ def velocity_field(*, page, values):
     shown = percent_shown(velocity_ramps.AS_WRITTEN if level is None else level)
     return NumberField(
         page=page, label=labels.MSG_VELOCITY_PERCENT_LABEL, number=level, start=velocity_ramps.AS_WRITTEN, shown=shown,
-        lowest=limits.MIN_VELOCITY_PERCENT, highest=limits.MAX_VELOCITY_PERCENT, set=lambda number: store(name, number), clear=lambda: store(name, None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
+        lowest=limits.MIN_VELOCITY_PERCENT, highest=limits.MAX_VELOCITY_PERCENT, set=lambda number: store(name, number), clear=lambda: store(name, None), clear_what=percent_shown(velocity_ramps.AS_WRITTEN),
     )
 
 
@@ -70,7 +70,7 @@ def velocity_ramp_section(*, page, way, values):
         return NumberField(
             page=page, label=labels.MSG_VELOCITY_RAMP_LABELS[(way, part)], shown_label=labels.MSG_RAMP_PART_LABELS[part], number=own(name), start=velocity_ramps.AS_WRITTEN if taken is None else taken,
             shown=end_shown(name), lowest=limits.MIN_VELOCITY_PERCENT, highest=limits.MAX_VELOCITY_PERCENT, set=lambda number: store(name, number),
-            clear=lambda: store(name, None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
+            clear=lambda: store(name, None), clear_what=_cleared(taken=taken, otherwise=percent_shown(velocity_ramps.AS_WRITTEN)),
         )
     return [
         page.heading(label=labels.MSG_RAMP_HEADINGS[way], is_set=lambda: any(own(name) is not None for name in names.values())),
@@ -91,5 +91,12 @@ def _over_field(*, page, way, values):
         over_shown = marks.MSG_NONE_SHOWN
     return NumberField(
         page=page, label=labels.MSG_VELOCITY_RAMP_LABELS[(way, RampPart.OVER)], shown_label=labels.MSG_RAMP_PART_LABELS[RampPart.OVER], number=own(over), start=limits.MIN_RAMP_BARS if above(over) is None else above(over), shown=over_shown,
-        lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, set=lambda number: store(over, number), clear=lambda: store(over, None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
+        lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, set=lambda number: store(over, number), clear=lambda: store(over, None), clear_what=_cleared(taken=above(over), otherwise=marks.MSG_NONE_SHOWN),
     )
+
+
+def _cleared(*, taken, otherwise):
+    """Return what Bksp brings back to a clip's end of a ramp, as its field then shows it: the scene's, where the scene has one."""
+    if taken is not None:
+        return legends.MSG_FROM_SCENE_WHAT
+    return otherwise

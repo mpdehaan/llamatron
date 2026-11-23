@@ -98,13 +98,15 @@ class WhenView(NamedTuple):
 class InheritedChoiceView(NamedTuple):
     """A choice whose value comes from above until chosen, as a Musician's Notes from its instrument: the settings answer
     inherits(setting) and get_own(setting). The setting's file name, its label, its choices, the first choice, which gives the
-    value back to what is above, and how a value taken from above shows, a template filled with {value}."""
+    value back to what is above, how a value taken from above shows, a template filled with {value}, and what Bksp's legend says
+    it brings back, where the value comes from."""
 
     setting: str
     label: str
     choices: tuple
     inherited_choice: str
     inherited_shown: str
+    inherited_what: str
 
 
 class GaugeView(NamedTuple):

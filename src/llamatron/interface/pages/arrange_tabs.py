@@ -81,9 +81,9 @@ class ClipTabs:
         order = [clip.pattern_order_field(), *clip.playing_fields(), clip.follow_action_field()]
         general = [
             Field(label=labels_text.MSG_SCALE_LABEL, value=clip.scale_text, adjust=None, enter=clip.pick_scale, enter_what=legends.What.CHOOSE,
-                  clear=functools.partial(clip.clear, ClipSlotSetting.SCALE), clear_what=legends.MSG_USE_SCENE_SCALE_WHAT),
+                  clear=functools.partial(clip.clear, ClipSlotSetting.SCALE), clear_what=legends.MSG_FROM_SCENE_WHAT),
             Field(label=labels_text.MSG_GRAB_TRACK_LABEL, value=self._grab_shown, adjust=None, enter=clip.pick_grab_track, enter_what=legends.What.CHOOSE,
-                  clear=functools.partial(clip.clear, ClipSlotSetting.GRAB_TRACK), clear_what=legends.MSG_NO_GRAB_WHAT),
+                  clear=functools.partial(clip.clear, ClipSlotSetting.GRAB_TRACK), clear_what=marks.MSG_NONE_SHOWN),
         ]
         return Tab(label=labels_text.MSG_SETTINGS_TAB, columns=[
             TabColumn(heading=labels_text.MSG_ORDER_HEADING, fields=order), TabColumn(heading=labels_text.MSG_PLAYING_HEADING, fields=general),

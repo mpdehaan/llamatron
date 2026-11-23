@@ -39,9 +39,9 @@ class SongPresenter:
             self.tempo_field(song),
             Field(label=labels.MSG_TIME_SIGNATURE_LABEL, value=self.time_signature_text, adjust=self.step_time_signature, enter=self.ask_time_signature),
             Field(label=labels.MSG_ENTRY_SIZE_LABEL, value=self.entry_size_shown, adjust=self.step_entry_size, enter=self.pick_entry_size, enter_what=legends.What.CHOOSE,
-                  clear=functools.partial(self.set_entry_size, None), clear_what=legends.MSG_ONE_STEP_WHAT),
+                  clear=functools.partial(self.set_entry_size, None), clear_what=marks.MSG_ONE_STEP_SHOWN),
             Field(label=labels.MSG_SCALE_LABEL, value=self.scale_shown, adjust=self.step_scale, enter=self.pick_scale, enter_what=legends.What.CHOOSE,
-                  clear=functools.partial(self.set_scale_name, None), clear_what=messages.MSG_NO_SCALE),
+                  clear=functools.partial(self.set_scale_name, None), clear_what=marks.MSG_NONE_SHOWN),
             Field(label=labels.MSG_GROOVE_LABEL, value=song.get_groove_name, adjust=self.step_groove, enter=self.pick_groove, enter_what=legends.What.CHOOSE),
             *self.style_fields(song),
             self.live_responsiveness_field(song),
@@ -227,7 +227,7 @@ class SongPresenter:
         offered = [marks.MSG_UNDEFINED_SHOWN, *choices]
         return ChoiceField(
             page=self._page, label=label, choices=offered, current=current or marks.MSG_UNDEFINED_SHOWN, set=functools.partial(self._set_style, set_choice=set_choice),
-            clear=functools.partial(set_choice, None), clear_what=legends.What.CLEAR,
+            clear=functools.partial(set_choice, None), clear_what=marks.MSG_UNDEFINED_SHOWN,
         )
 
 
