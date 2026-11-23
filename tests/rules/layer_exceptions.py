@@ -112,7 +112,6 @@ ALLOWED = {
         'interface/tracker/screens/set/main_page.py imports interface.tracker.screens.set.instruments_page',
         'interface/tracker/screens/set/main_page.py imports interface.tracker.screens.set.scales_page',
         'interface/tracker/screens/set/main_page.py imports interface.tracker.screens.set.songs_page',
-        'interface/tracker/screens/set/scale_page.py imports model.objects.naming',
         'interface/tracker/screens/set/scales_page.py imports model.objects.named_scale',
         'interface/tracker/screens/set/songs_page.py imports interface.tracker.screens.set.song_page',
         'interface/tracker/screens/set/start_screen.py imports interface.tracker.screens.set.splash',

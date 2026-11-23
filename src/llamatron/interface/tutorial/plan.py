@@ -19,6 +19,7 @@ Arrange. Whatever the plan can't set yet is reported as left out, so a demo that
 the plan knows still builds the rest.
 """
 
+from llamatron.interface.pages.scale import scale_label
 from llamatron.interface.tracker import keybindings, keys as keys_values
 from llamatron.interface.tracker.components.chord_row import chord_text, ChordRow
 from llamatron.interface.tracker.components.cycle_row import CycleRow
@@ -41,7 +42,6 @@ from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEd
 from llamatron.interface.tracker.screens.pattern.patterns_page import Listed, PatternsPage, PatternTab
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.main_page import cell_opened_by, MainPage
-from llamatron.interface.tracker.screens.set.scale_page import scale_label
 from llamatron.interface.tracker.screens.set.scales_page import ScalesPage
 from llamatron.interface.tracker.screens.set.songs_page import SongsPage
 from llamatron.interface.tutorial.steps import Gap, Press, Say, Wait

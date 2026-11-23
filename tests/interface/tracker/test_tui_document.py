@@ -964,7 +964,7 @@ class TestPickerLayouts(unittest.TestCase):
         self.assertEqual(sorted(flat), sorted(note_values.ROOT_NAMES))
 
     def test_scale_notes(self):
-        from llamatron.interface.tracker.screens.set.scale_page import scale_label, scale_notes
+        from llamatron.interface.pages.scale import scale_label, scale_notes
         self.assertEqual(scale_notes(root=NoteName.D, kind=scale_type_name(ScaleType.DORIAN)), D_E_F_G_A_B_C)
         self.assertEqual(scale_notes(root=NoteName.A, kind=scale_type_name(ScaleType.MINOR_PENTATONIC)), A_C_D_E_G)
         self.assertEqual(scale_label(scale_type_name(ScaleType.WHOLE_HALF_DIMINISHED)), WHOLE_HALF_DIM)

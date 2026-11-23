@@ -6,22 +6,19 @@
 It replaced the Scales page's two pickers in a row: left and right
 step the root and the kind, and Enter opens the root keyboard or the pages of kinds.
 """
-
 from rich.text import Text
 
-from llamatron.interface.forms.nodes import Field, NameField, stepped
+from llamatron.interface.pages.scale import scale_label, scale_notes, ScalePresenter
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components.keyboard import Keyboard
 from llamatron.interface.tracker.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.model.objects.naming import words
 from llamatron.model.schema.file_format import ScaleKind, Section
 from llamatron.model.values import note, scale as scale_values
 from llamatron.model.values.note import NoteName
-from llamatron.model.values.scale import ScaleType
-from llamatron.user_strings import help as help_text, labels, legends, messages
+from llamatron.user_strings import help as help_text, labels, messages
 
 
 # The kinds of scale, in two pages of grouped columns, as the picker lays them out.
@@ -64,16 +61,6 @@ ROOT_KEYBOARD = [
 ]
 
 
-def scale_label(kind):
-    """Return a kind of scale as the picker shows it, shortened where the long name wouldn't fit."""
-    return labels.MSG_SHORT_SCALE_NAMES.get(kind, words(kind))
-
-
-def scale_notes(*, root, kind):
-    """Return a scale's notes as one line, like D E F G A B C, spelled as the rest of the program spells them."""
-    return drawing.SPACE.join(scale_values.note_names(root=root, half_steps=ScaleType[kind.upper()].value))
-
-
 def kind_pages():
     """Return the picker's pages of kinds, each a grid of places in SCALE_TYPE_NAMES under its headings."""
     return [(page, kinds_grid(columns)) for page, columns in SCALE_PAGES]
@@ -100,7 +87,8 @@ def root_grid():
 
 
 class ScalePage(ShowsNamedItem, FieldPage):
-    """A scale's name, root and kind, with the notes they make underneath."""
+    """A scale's name, root and kind, with the notes they make underneath: the Scale presenter's form (interface/pages/scale.py),
+    with the root keyboard, the pages of kinds and the keyboard drawn under it, which only the tracker has."""
 
     KEYS = keybindings.ScalePage
 
@@ -109,60 +97,38 @@ class ScalePage(ShowsNamedItem, FieldPage):
     CRUMBS_BEFORE = (labels.Crumb.SCALES,)
     RENAME_PROMPT = messages.MSG_RENAME_SCALE_PROMPT
 
-    def scale(self):
-        return self.document().song().get_setlist().get_named_scale(self.item)
+    def presenter(self):
+        """Return what the page shows, for the scale as it is now."""
+        return ScalePresenter(page=self, document=self.document(), name=self.item)
 
-    def root(self):
-        return self.scale().get_root()
-
-    def kind(self):
-        return self.scale().get_kind()
-
-    def set_root(self, root):
-        # A scale still named after its root and kind is renamed with them, so the page shows the scale under the name the change left.
-        self.show_item(self.document().set_scale_root(name=self.item, root=root))
-
-    def set_kind(self, kind):
-        self.show_item(self.document().set_scale_kind(name=self.item, kind=kind))
-
-    def step_root(self, offset):
-        """Move the root up or down a half step, keeping flats flat and anything else sharp."""
-        root = self.root()
-        names = note.FLAT_NAMES if root in note.FLAT_NAMES and root not in note.SHARP_NAMES else note.SHARP_NAMES
-        self.set_root(stepped(values=names, current=root, offset=offset))
+    def fields(self):
+        return self.presenter().form()
 
     def pick_root(self):
         """Choose the root on a keyboard."""
-        place = note.ROOT_NAMES.index(self.root())
-        self.ask(dialog=GridChoiceDialog(title=messages.MSG_ROOT_TITLE, options=note.ROOT_NAMES, grid=root_grid(), current=place), then=lambda chosen: self.set_root(note.ROOT_NAMES[chosen]))
+        presenter = self.presenter()
+        place = note.ROOT_NAMES.index(presenter.root())
+        self.ask(dialog=GridChoiceDialog(title=messages.MSG_ROOT_TITLE, options=note.ROOT_NAMES, grid=root_grid(), current=place), then=lambda chosen: presenter.set_root(note.ROOT_NAMES[chosen]))
 
     def pick_kind(self):
         """Choose the kind from its pages, with the notes of the one under the cursor shown underneath."""
-        root = self.root()
+        presenter = self.presenter()
+        root = presenter.root()
         kinds = [scale_label(text) for text in scale_values.SCALE_TYPE_NAMES]
 
         def notes(place):
             return messages.MSG_SCALE_NOTES_DETAIL.format(root=root, kind=kinds[place], notes=scale_notes(root=root, kind=scale_values.SCALE_TYPE_NAMES[place]))
-        place = scale_values.SCALE_TYPE_NAMES.index(self.kind())
+        place = scale_values.SCALE_TYPE_NAMES.index(presenter.kind())
         dialog = GridChoiceDialog(title=messages.MSG_KIND_TITLE.format(root=root), options=kinds, grid=None, current=place, details=notes, pages=kind_pages())
-        self.ask(dialog=dialog, then=lambda chosen: self.set_kind(scale_values.SCALE_TYPE_NAMES[chosen]))
-
-    def fields(self):
-        return [
-            NameField(value=lambda: self.item, rename=self.rename),
-            Field(label=labels.MSG_ROOT_LABEL, value=self.root, adjust=self.step_root,
-                  enter=self.pick_root, enter_what=legends.What.CHOOSE),
-            Field(label=labels.MSG_KIND_LABEL, value=lambda: words(self.kind()), adjust=lambda d: self.set_kind(stepped(values=scale_values.SCALE_TYPE_NAMES, current=self.kind(), offset=d)),
-                  enter=self.pick_kind, enter_what=legends.What.CHOOSE),
-        ]
+        self.ask(dialog=dialog, then=lambda chosen: presenter.set_kind(scale_values.SCALE_TYPE_NAMES[chosen]))
 
     def remarks(self, width):
         """Return the scale's notes and uses, then a keyboard with the scale's keys filled and the root bracketed."""
-        uses = len(self.document().uses(section=Section.SCALES, name=self.item))
-        keyboard = Keyboard(root=self.root(), half_steps=self.scale().get_half_steps())
+        presenter = self.presenter()
+        keyboard = Keyboard(root=presenter.root(), half_steps=presenter.scale().get_half_steps())
         return [
-            Text(drawing.INDENT + messages.MSG_SCALE_NOTES_DETAIL.format(root=self.root(), kind=scale_label(self.kind()), notes=scale_notes(root=self.root(), kind=self.kind())), style=Style.DIM),
-            Text(messages.MSG_SCALE_USES_NOTE.format(count=uses), style=Style.DIM),
+            Text(drawing.INDENT + presenter.notes_line(), style=Style.DIM),
+            Text(presenter.uses_line(), style=Style.DIM),
             Text(drawing.NOTHING),
             *[Text(line, no_wrap=True) for line in keyboard.lines()],
         ]
