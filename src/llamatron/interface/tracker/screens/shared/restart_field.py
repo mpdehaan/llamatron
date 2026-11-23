@@ -5,7 +5,7 @@
 
 import functools
 
-from llamatron.interface.tracker.screens.shared.field import ChoiceField
+from llamatron.interface.forms.nodes import ChoiceField
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Restart
 from llamatron.user_strings import labels

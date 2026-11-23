@@ -8,9 +8,9 @@ clip's or a track's page both draw them."""
 
 import functools
 
-from llamatron.interface.forms.nodes import Field, NumberField, Toggle
+from llamatron.interface.forms.nodes import ChoiceField, Field, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.drift_values import drift_value_rows
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, gauge_shown
+from llamatron.interface.tracker.screens.shared.field import gauge_shown
 from llamatron.interface.tracker.screens.shared.guitar_bar_editor import guitar_bar_field
 from llamatron.interface.tracker.screens.shared.octave_field import octave_field
 from llamatron.interface.tracker.screens.shared.offsets_editor import OffsetsEditor

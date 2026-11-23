@@ -6,8 +6,7 @@
 
 import functools
 
-from llamatron.interface.forms.nodes import Field, Toggle
-from llamatron.interface.tracker.screens.shared.field import ChoiceField
+from llamatron.interface.forms.nodes import ChoiceField, Field, Toggle
 from llamatron.interface.tracker.screens.shared.section_fade import fade_field
 from llamatron.interface.tracker.screens.shared.section_own_fields import SectionOwnFields
 from llamatron.interface.tracker.screens.wizard.branch import Branch

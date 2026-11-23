@@ -10,10 +10,10 @@ that the one-row editors could share OneRowEditor (one_row_editor.py).
 
 from rich.text import Text
 
+from llamatron.interface.forms.nodes import stepped
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.screens.shared.one_row_editor import OneRowEditor
-from llamatron.interface.tracker.screens.shared.shared import stepped
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.model.objects import groove as groove_values
 from llamatron.model.objects.groove import is_factory_groove

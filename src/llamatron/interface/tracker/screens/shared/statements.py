@@ -17,12 +17,12 @@ ENTER changes the one under the cursor, and Bksp sets the line back to ignored.
 from dataclasses import dataclass
 from rich.text import Text
 
-from llamatron.interface.forms.nodes import Field
+from llamatron.interface.forms.nodes import ChoiceField, Field
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs import grouped_choices
 from llamatron.interface.tracker.dialogs.grouped_choices import number_or_names, value_groups
 from llamatron.interface.tracker.drawing import Box, cursor_mark, padded, Style
-from llamatron.interface.tracker.screens.shared.field import Cells, ChoiceField
+from llamatron.interface.tracker.screens.shared.field import Cells
 from llamatron.model.objects import conditions
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import StatementPart

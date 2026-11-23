@@ -5,13 +5,12 @@
 
 import functools
 
-from llamatron.interface.forms.nodes import Field, NameField, NumberField
+from llamatron.interface.forms.nodes import ChoiceField, Field, NameField, NumberField, stepped
 from llamatron.interface.tracker import keybindings, themes
 from llamatron.interface.tracker.screens.set.visualizer_fields import visualizer_field
 from llamatron.interface.tracker.screens.shared.everywhere import export
-from llamatron.interface.tracker.screens.shared.field import ChoiceField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
-from llamatron.interface.tracker.screens.shared.shared import ask_time_signature, stepped
+from llamatron.interface.tracker.screens.shared.shared import ask_time_signature
 from llamatron.interface.tracker.text import sorted_names, tempo_text
 from llamatron.model.objects import genres
 from llamatron.model.objects.genres import subgenres_of, variants_of

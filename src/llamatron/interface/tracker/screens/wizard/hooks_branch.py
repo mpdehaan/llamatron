@@ -15,11 +15,11 @@ written unlike the hook and under its top, sung in another kind of section.
 import functools
 from rich.text import Text
 
-from llamatron.interface.forms.nodes import Field, Toggle
+from llamatron.interface.forms.nodes import ChoiceField, Field, Toggle
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.drawing import Style
-from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField
+from llamatron.interface.tracker.screens.shared.field import Button
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.interface.tracker.screens.wizard.hook_picture import picture_of
 from llamatron.user_strings import labels, legends, messages

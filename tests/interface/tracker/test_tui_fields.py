@@ -12,9 +12,9 @@ import unittest
 
 from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.engine.generators.chords import strings as chords_strings
-from llamatron.interface.forms.nodes import Field, NameField, NumberField, Toggle, within
+from llamatron.interface.forms import nodes
+from llamatron.interface.forms.nodes import ChoiceField, Field, NameField, NumberField, Toggle, within
 from llamatron.interface.tracker import key_table, keybindings
-from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
 from llamatron.interface.tracker.keys import Key
@@ -27,7 +27,7 @@ from llamatron.interface.tracker.screens.set.file_page import FilePage
 from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor
 from llamatron.interface.tracker.screens.set.scale_page import ScalePage
 from llamatron.interface.tracker.screens.set.song_page import SongPage
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, Heading
+from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_statements_page import GeneratorStatementsPage
 from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
@@ -60,13 +60,15 @@ STEPS_PAST_THE_END = 3
 class Kept:
     """What a field stored and what the field asked the page for, for a test to read."""
 
-    __slots__ = ('stored', 'asked', 'dialog', 'answer')
+    __slots__ = ('stored', 'asked', 'dialog', 'answer', 'options', 'opens_on')
 
     def __init__(self):
         self.stored = []
         self.asked = None
         self.dialog = None
         self.answer = None
+        self.options = None
+        self.opens_on = None
 
     def set(self, value):
         self.stored.append(value)
@@ -77,6 +79,11 @@ class Kept:
 
     def ask(self, *, dialog, then):
         self.dialog = dialog
+        self.answer = then
+
+    def ask_choice(self, *, title, options, current, then):
+        self.options = options
+        self.opens_on = current
         self.answer = then
 
 
@@ -208,8 +215,7 @@ class TestChoiceField(unittest.TestCase):
         field = self.field(kept=kept, current=CHOICES[2])
         self.assertEqual(field.enter_what, legends.What.CHOOSE)
         field.enter()
-        self.assertIsInstance(kept.dialog, ChoiceDialog)
-        self.assertEqual(kept.dialog.cursor.get_place(), 2)
+        self.assertEqual((kept.options, kept.opens_on), (CHOICES, 2))
         kept.answer(0)
         self.assertEqual(kept.stored, [CHOICES[0]])
 
@@ -218,13 +224,12 @@ class TestChoiceField(unittest.TestCase):
         field = self.field(kept=kept, current=None, names=CHOICE_NAMES, shown=SHOWN, picked=CHOICES[1])
         self.assertEqual(field.value(), SHOWN)
         field.enter()
-        self.assertEqual(kept.dialog.options, CHOICE_NAMES)
-        self.assertEqual(kept.dialog.cursor.get_place(), 1)
+        self.assertEqual((kept.options, kept.opens_on), (CHOICE_NAMES, 1))
 
     def test_a_value_outside_the_list_opens_the_picker_on_the_first_choice(self):
         kept = Kept()
         self.field(kept=kept, current=NOT_A_CHOICE).enter()
-        self.assertEqual(kept.dialog.cursor.get_place(), 0)
+        self.assertEqual(kept.opens_on, nodes.FIRST_CHOICE)
 
 
 AN_INSTRUMENT = 'synth'

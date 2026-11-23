@@ -17,12 +17,11 @@ from rich.text import Text
 from llamatron.engine.generators import guitarify as guitarify_plugin
 from llamatron.engine.generators.guitarify import model as guitarify_settings, schema as guitar_bars
 from llamatron.engine.generators.guitarify.schema import ready_bar_matching
-from llamatron.interface.forms.nodes import Field
+from llamatron.interface.forms.nodes import Field, stepped
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
-from llamatron.interface.tracker.screens.shared.shared import stepped
 from llamatron.interface.tracker.screens.shared.step_editor import StepEditor
 from llamatron.interface.tracker.screens.shared.step_grid import StepGrid
 from llamatron.model.schema import file_format

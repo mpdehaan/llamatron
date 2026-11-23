@@ -6,9 +6,9 @@
 
 from rich.text import Text
 
+from llamatron.interface.forms.nodes import ChoiceField
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.drawing import Style
-from llamatron.interface.tracker.screens.shared.field import ChoiceField
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.user_strings import errors, messages
 

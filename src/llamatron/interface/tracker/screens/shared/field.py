@@ -23,13 +23,9 @@ from llamatron.interface.forms import nodes
 from llamatron.interface.forms.nodes import Field
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.components.button_row import button_row
-from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Box, cursor_mark, padded, Style
-from llamatron.interface.tracker.screens.shared.shared import stepped
 from llamatron.user_strings import labels, legends, marks
 
-# Where a picker opens when the value isn't one of the choices.
-FIRST_CHOICE = 0
 
 
 # A heading with nothing set inside shows no value.
@@ -60,48 +56,6 @@ def slot_style(*, on_cursor, lit):
 def slot_text(value):
     """Return a slot's number or value as its cell of a strip shows it, right-justified with a space after it."""
     return marks.MSG_DRAW_STRIP_CELL.format(value=value)
-
-
-@dataclass(slots=True, kw_only=True)
-class ChoiceField(Field):
-    """One of a fixed list of choices: Left and Right step through them, stopping at both ends, and Enter picks from a list.
-
-    current is the choice now, and set(choice) stores one. names are what the picker calls the
-    choices where those aren't the choices themselves, shown the text of the value where that
-    isn't the choice, and picked the choice the picker opens on where that isn't the current one.
-    grouped, a GroupedChoices, is the picker's list in groups under headings, where the choices are offered so.
-    """
-
-    page: object
-    choices: list
-    current: object
-    set: Callable
-    names: list = None
-    shown: object = None
-    picked: object = None
-    grouped: object = None
-    value: Callable = None
-    enter_what: str = legends.What.CHOOSE
-
-    def __post_init__(self):
-        self.value = self.text
-        self.adjust = self.step
-        self.enter = self.pick
-
-    def text(self):
-        return self.current if self.shown is None else self.shown
-
-    def step(self, offset):
-        self.set(stepped(values=self.choices, current=self.current, offset=offset))
-
-    def pick(self):
-        if self.grouped is not None:
-            self.page.ask(dialog=self.grouped.dialog(title=self.label, current=self.current), then=lambda place: self.set(self.grouped.value_at(place)))
-            return
-        opens_on = str(self.current if self.picked is None else self.picked)
-        place = self.choices.index(opens_on) if opens_on in self.choices else FIRST_CHOICE
-        dialog = ChoiceDialog(title=self.label, options=self.names or self.choices, current=place)
-        self.page.ask(dialog=dialog, then=lambda chosen: self.set(self.choices[chosen]))
 
 
 @dataclass(slots=True, kw_only=True)

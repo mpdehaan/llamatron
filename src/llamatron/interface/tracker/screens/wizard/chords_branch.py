@@ -5,9 +5,9 @@
 
 from rich.text import Text
 
+from llamatron.interface.forms.nodes import ChoiceField
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.drawing import Style
-from llamatron.interface.tracker.screens.shared.field import ChoiceField
 from llamatron.interface.tracker.screens.wizard import song_ways_branch
 from llamatron.interface.tracker.screens.wizard.song_ways_branch import SongWaysBranch
 from llamatron.model.objects.named_scale import NamedScale

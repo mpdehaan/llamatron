@@ -6,7 +6,8 @@ they are drawn: a Field is one setting, and the kinds of Field say what most set
 
 A Field is a label, the text of its value, and what Left and Right, Enter and Bksp do there, each a function, so any setting
 can be written as one. Most settings are one of a few kinds, each a class that is given what the setting is and works the
-functions out: a Toggle is on or off, a NameField renames, and a NumberField is a whole number between two ends. A page makes
+functions out: a Toggle is on or off, a NameField renames, a NumberField is a whole number between two ends and a ChoiceField is one of a
+fixed list. A page makes
 its fields afresh for every key and every drawing, so a kind is given the value as it is now rather than a function that reads
 it. The tracker draws a node through its renderers (interface/tracker/renderers/), the only code that knows how it looks.
 """
@@ -20,6 +21,15 @@ from llamatron.user_strings import labels, legends, marks
 # still to move here from interface/tracker/screens/shared/field.py.
 SETTING_LINE = 'setting line'
 OWN_LINES = 'own lines'
+# Where a picker opens when the value isn't one of the choices.
+FIRST_CHOICE = 0
+
+
+def stepped(*, values, current, offset):
+    """Return the next value in a list, starting from the middle if the current one isn't there."""
+    text = str(current)
+    place = values.index(text) if text in values else len(values) // 2
+    return values[max(min(place + offset, len(values) - 1), 0)]
 
 
 def within(*, number, lowest, highest):
@@ -169,3 +179,44 @@ class NumberField(Field):
     def ask(self):
         value = self.counted_from() if self.typed is None else self.typed
         self.page.ask_number(title=self.title or self.label, value=value, then=self.set, low=self.lowest, high=self.highest)
+
+
+@dataclass(slots=True, kw_only=True)
+class ChoiceField(Field):
+    """One of a fixed list of choices: Left and Right step through them, stopping at both ends, and Enter picks from a list.
+
+    current is the choice now, and set(choice) stores one. names are what the picker calls the
+    choices where those aren't the choices themselves, shown the text of the value where that
+    isn't the choice, and picked the choice the picker opens on where that isn't the current one.
+    grouped, a GroupedChoices, is the picker's list in groups under headings, where the choices are offered so.
+    """
+
+    page: object
+    choices: list
+    current: object
+    set: Callable
+    names: list = None
+    shown: object = None
+    picked: object = None
+    grouped: object = None
+    value: Callable = None
+    enter_what: str = legends.What.CHOOSE
+
+    def __post_init__(self):
+        self.value = self.text
+        self.adjust = self.step
+        self.enter = self.pick
+
+    def text(self):
+        return self.current if self.shown is None else self.shown
+
+    def step(self, offset):
+        self.set(stepped(values=self.choices, current=self.current, offset=offset))
+
+    def pick(self):
+        if self.grouped is not None:
+            self.page.ask(dialog=self.grouped.dialog(title=self.label, current=self.current), then=lambda place: self.set(self.grouped.value_at(place)))
+            return
+        opens_on = str(self.current if self.picked is None else self.picked)
+        place = self.choices.index(opens_on) if opens_on in self.choices else FIRST_CHOICE
+        self.page.ask_choice(title=self.label, options=self.names or self.choices, current=place, then=lambda chosen: self.set(self.choices[chosen]))

@@ -229,6 +229,10 @@ class Page(BindsKeys, Screen):
             self.app.transport.stop_all()
         self.app.pattern_preview().stop()
 
+    def ask_choice(self, *, title, options, current, then):
+        """Open a picker of options on the one at current, passing the place chosen to then unless it is cancelled."""
+        self.ask(dialog=ChoiceDialog(title=title, options=options, current=current), then=then)
+
     def ask(self, *, dialog, then):
         """Show a dialog, and pass its answer to a function unless it was cancelled."""
         def answered(result):

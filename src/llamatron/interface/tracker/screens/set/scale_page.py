@@ -9,13 +9,12 @@ step the root and the kind, and Enter opens the root keyboard or the pages of ki
 
 from rich.text import Text
 
-from llamatron.interface.forms.nodes import Field, NameField
+from llamatron.interface.forms.nodes import Field, NameField, stepped
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components.keyboard import Keyboard
 from llamatron.interface.tracker.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
-from llamatron.interface.tracker.screens.shared.shared import stepped
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.model.objects import named_scale
 from llamatron.model.objects.named_scale import note_names

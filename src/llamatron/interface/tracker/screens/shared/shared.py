@@ -25,13 +25,6 @@ def octave_moved(*, octave, offset):
     return max(min(octave + offset, limits.MAX_OCTAVE), limits.MIN_OCTAVE)
 
 
-def stepped(*, values, current, offset):
-    """Return the next value in a list, starting from the middle if the current one isn't there."""
-    text = str(current)
-    place = values.index(text) if text in values else len(values) // 2
-    return values[max(min(place + offset, len(values) - 1), 0)]
-
-
 def numbers_text(numbers):
     """Return numbers with a space between them and a dash for each that isn't set, like 74 - - 1."""
     return drawing.SPACE.join(marks.MSG_NO_NUMBER_MARK if number is None else str(number) for number in numbers)
