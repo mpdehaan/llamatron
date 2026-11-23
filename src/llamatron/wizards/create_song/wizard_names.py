@@ -11,16 +11,7 @@ wizard_limits.py, it imports nothing of the wizard, so that every part of it can
 # The habits a style or a song says its hook and its chorus's body are written by.
 HOOK_WRITING = 'hook_writing'
 BODY_WRITING = 'body_writing'
-# The behaviors of a hook: one or two pitches whose rhythm does the work; up and back; a leap to the top and a fall by step; a
-# short cell, a silence and the cell again; one shape said again a step higher.
-CHANT = 'chant'
-ARCH = 'arch'
-LEAP_AND_FALL = 'leap and fall'
-CALL = 'call'
-LADDER = 'ladder'
-BEHAVIORS = (CHANT, ARCH, LEAP_AND_FALL, CALL, LADDER)
-HOOK_WRITING_LOWEST = 0
-HOOK_WRITING_HIGHEST = 9
+# A hook's behaviors and gauges are music_theory/hooks/hook_bars.py's.
 
 # From song_plan.py,
 SONG_PLAN_ENERGY = 'energy'

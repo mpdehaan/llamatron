@@ -17,6 +17,7 @@ from llamatron.interface.tracker.screens.shared.field import Heading
 from llamatron.interface.tracker.screens.wizard import intro_melody_branch, section_melody_branch, solo_melody_branch
 from llamatron.interface.tracker.screens.wizard.wizard_page import WizardPage
 from llamatron.model.schema.file_format import Row
+from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import errors, labels, marks, messages, names
 from llamatron.wizards.create_song import hook_writing, melody, riffs, wizard_limits, wizard_names
 from tests.interface.tracker.test_tui_wizard import WizardTest
@@ -532,8 +533,8 @@ class TestWizardHooks(CompositionTest):
         await self.select_field(labels.MSG_WIZARD_BEHAVIOR_LABEL)
         self.assertEqual(self.wizard().field().value(), usual)
         await self.press(Key.ENTER)
-        self.assertEqual(list(self.app.screen.options), [usual if behavior == hook.genre_hook_behavior() else behavior for behavior in wizard_names.BEHAVIORS])
-        other = next(behavior for behavior in wizard_names.BEHAVIORS if behavior != hook.genre_hook_behavior())
+        self.assertEqual(list(self.app.screen.options), [usual if behavior == hook.genre_hook_behavior() else behavior for behavior in hook_bars.BEHAVIORS])
+        other = next(behavior for behavior in hook_bars.BEHAVIORS if behavior != hook.genre_hook_behavior())
         await self.pick(other)
         self.assertEqual(hook.get_hook_behavior(), other)
         self.assertNotEqual(hook.hook_notes(), before)
@@ -545,7 +546,7 @@ class TestWizardHooks(CompositionTest):
         choices = self.choices()
         hook_choices = choices.get_hook()
         hook = hook_choices
-        hook.set_hook_gauge(name=hook_writing.HOLD, position=wizard_names.HOOK_WRITING_LOWEST)
+        hook.set_hook_gauge(name=hook_bars.HOLD, position=hook_bars.LOWEST_GAUGE)
         await self.press(Key.DOWN, Key.UP)
         before = hook.hook_notes()
         await self.select_field(labels.MSG_WIZARD_REGENERATE_BUTTON)
@@ -555,7 +556,7 @@ class TestWizardHooks(CompositionTest):
         self.assertEqual(hook.hook_notes(), before)
         await self.press(Key.ENTER, keybindings.ConfirmDialog.YES)
         self.assertNotEqual(hook.hook_notes(), before)
-        self.assertEqual(hook.get_hook_gauge(hook_writing.HOLD), wizard_names.HOOK_WRITING_LOWEST)
+        self.assertEqual(hook.get_hook_gauge(hook_bars.HOLD), hook_bars.LOWEST_GAUGE)
         self.assertIn(messages.MSG_WIZARD_REGENERATED.format(name=messages.MSG_WIZARD_HOOK_NAME), self.text())
 
     async def test_the_second_hook_is_switched_on_names_its_kind_of_section_and_has_a_button_of_its_own(self):

@@ -27,6 +27,7 @@ from llamatron.engine.generators.phrasing import model as phrasing_settings, sch
 from llamatron.engine.generators.phrasing.model import PhrasingSetting
 from llamatron.model.file import version
 from llamatron.model.schema.file_format import Row, Section
+from llamatron.music_theory.hooks import hook_bars
 from llamatron.wizards.create_song import arranger, interplay, line_edits, melody, phrasing, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import genre_names, WizardChoices
 
@@ -210,8 +211,8 @@ def first_sounding_step(line):
 
 def far_end(position):
     """The end of a gauge's scale farther from a position."""
-    middle = (wizard_names.HOOK_WRITING_LOWEST + wizard_names.HOOK_WRITING_HIGHEST) / 2
-    return wizard_names.HOOK_WRITING_LOWEST if position > middle else wizard_names.HOOK_WRITING_HIGHEST
+    middle = (hook_bars.LOWEST_GAUGE + hook_bars.HIGHEST_GAUGE) / 2
+    return hook_bars.LOWEST_GAUGE if position > middle else hook_bars.HIGHEST_GAUGE
 
 
 def every_choice(choices):
@@ -356,7 +357,7 @@ def every_choice(choices):
                         yield PHRASING_WAY, (name, value), lambda made, name=name, value=value: made.set_phrasing_way(name=name, value=value), [planned]
     if hook.writes_hook():
         # How the hook is written: every other behavior, and each gauge of the song's behavior moved to the end of its scale farther away.
-        for behavior in wizard_names.BEHAVIORS:
+        for behavior in hook_bars.BEHAVIORS:
             if behavior != hook.get_hook_behavior():
                 yield HOOK_BEHAVIOR, behavior, lambda made, behavior=behavior: made.get_hook().set_hook_behavior(behavior), [nothing_first]
         for name in hook.hook_gauges():

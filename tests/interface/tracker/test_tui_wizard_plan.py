@@ -7,8 +7,9 @@
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import limits
+from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import errors, labels, marks
-from llamatron.wizards.create_song import hook_writing, song_plan, wizard_limits, wizard_names
+from llamatron.wizards.create_song import song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.own_values import chords_as_text
 from tests.interface.tracker.test_tui_wizard import WizardTest
 from tests.support.ui_testing import key_of
@@ -107,27 +108,27 @@ class TestWizardPlan(WizardTest):
         hook_choices = choices.get_hook()
         hook = hook_choices
         before = hook.hook_notes()
-        usual = hook.genre_hook_gauge(hook_writing.SIMPLICITY)
+        usual = hook.genre_hook_gauge(hook_bars.SIMPLICITY)
         await self.press(keybindings.WizardPage.INTO_FIELDS)
-        await self.select_field(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.SIMPLICITY])
+        await self.select_field(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_bars.SIMPLICITY])
         less = key_of(binding=keybindings.WizardPage.LESS, key=Key.LEFT_BRACKET)
-        for _ in range(usual - wizard_names.HOOK_WRITING_LOWEST):
+        for _ in range(usual - hook_bars.LOWEST_GAUGE):
             await self.press(less)
-        self.assertEqual(hook.get_hook_gauge(hook_writing.SIMPLICITY), wizard_names.HOOK_WRITING_LOWEST)
+        self.assertEqual(hook.get_hook_gauge(hook_bars.SIMPLICITY), hook_bars.LOWEST_GAUGE)
         self.assertNotEqual(hook.hook_notes(), before)
         await self.press(less)
-        self.assertEqual(hook.get_hook_gauge(hook_writing.SIMPLICITY), wizard_names.HOOK_WRITING_LOWEST)
+        self.assertEqual(hook.get_hook_gauge(hook_bars.SIMPLICITY), hook_bars.LOWEST_GAUGE)
         await self.press(keybindings.FieldPage.CLEAR)
-        self.assertEqual(hook.get_hook_gauge(hook_writing.SIMPLICITY), usual)
+        self.assertEqual(hook.get_hook_gauge(hook_bars.SIMPLICITY), usual)
         self.assertEqual(hook.hook_notes(), before)
 
     async def test_choosing_a_behavior_leaves_only_its_gauges(self):
         await self.choose()
-        self.choices().get_hook().set_hook_behavior(wizard_names.CHANT)
+        self.choices().get_hook().set_hook_behavior(hook_bars.CHANT)
         await self.press(Key.DOWN, Key.UP)
         await self.go_to_hook_writing()
-        self.assertIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.HOLD], self.text())
-        self.assertNotIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_writing.LEAP], self.text())
+        self.assertIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_bars.HOLD], self.text())
+        self.assertNotIn(labels.MSG_WIZARD_HOOK_GAUGE_LABELS[hook_bars.LEAP], self.text())
 
 
 THE_GROUPS = (labels.MSG_WIZARD_GROUP_TUNE, labels.MSG_WIZARD_GROUP_HARMONY, labels.MSG_WIZARD_GROUP_SHAPE, labels.MSG_WIZARD_GROUP_JOINS, labels.MSG_WIZARD_GROUP_PLAYERS)

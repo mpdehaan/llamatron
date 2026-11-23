@@ -20,6 +20,7 @@ from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField
 from llamatron.interface.tracker.screens.wizard.branch import Branch
+from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import labels, legends, messages
 from llamatron.wizards.create_song import wizard_limits, wizard_names
 
@@ -110,7 +111,7 @@ class SectionMelodyBranch(Branch):
             return []
         page = self.get_page()
         hook = self._hook()
-        values = list(wizard_names.BEHAVIORS)
+        values = list(hook_bars.BEHAVIORS)
         names = _marked_names(values, usual=hook.genre_hook_behavior(), origin=labels.MSG_WIZARD_USUAL_MELODY)
         behavior = self._marked_choice(label=labels.MSG_WIZARD_BEHAVIOR_LABEL, values=values, names=names, now=hook.get_hook_behavior(),
                                        set=page.choosing(hook.set_hook_behavior))

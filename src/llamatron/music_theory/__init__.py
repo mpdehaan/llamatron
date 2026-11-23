@@ -12,6 +12,10 @@ musical knowledge is written once. It comes in two tiers:
 - the chapters above the model, which understand patterns, clips, scenes and songs, and which the generators, the song
   wizard and later features ask: added as code moves into them.
 
+The chapters so far:
+
+- hooks: the short figures a song is known by, its hook and its tag, written from a behavior and gauges.
+
 What a musician decides, and the reasons a principle holds, are written in Claude's notes (.claude/music_theory_notes/); the
 code says what it knows plainly, and the notes keep what is not built yet.
 """

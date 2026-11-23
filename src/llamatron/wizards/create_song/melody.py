@@ -16,8 +16,9 @@ import math
 import random
 
 from llamatron.music_theory.fundamentals import intervals, scale_shapes
+from llamatron.music_theory.hooks import hook_bars, tag_bars
 from llamatron.user_strings import errors
-from llamatron.wizards.create_song import hook_kinds, hook_writing, notation, phrasing, wizard_names
+from llamatron.wizards.create_song import hook_writing, notation, phrasing, wizard_names
 from llamatron.wizards.create_song.operations import backwards, moved, rotated, upside_down
 from llamatron.wizards.create_song.phrasing import breathed, ended_early, is_shorter
 
@@ -64,7 +65,7 @@ TAG_SEED = '{} tag {}'
 # A tag's top sits this far under the lowest place the main hook's top may sit, so that the main hook keeps the song's top.
 TAG_BELOW = 2
 # The rhythms a tag may take, each short and choppy against a hook's long note.
-TAG_RHYTHMS = (hook_kinds.EIGHTHS_WITH_A_GAP, hook_kinds.THREE_THREE_TWO, hook_kinds.AFTER_ONE)
+TAG_RHYTHMS = (tag_bars.EIGHTHS_WITH_A_GAP, tag_bars.THREE_THREE_TWO, tag_bars.AFTER_ONE)
 # A line of a chorus's body, which is no hook: the line before a hook leads to it, and the section's last line closes.
 BODY = 'body'
 LEADS_TO_HOOK = 'leads_to_hook'
@@ -960,12 +961,12 @@ class Hooks(Smart):
     def written(self):
         """The hook as a behavior and gauges write it (hook_writing.py), where the habits say so and the bar is counted in
         eighths: the behavior, the gauges, and the bar's lengths and depths; else None."""
-        if wizard_names.HOOK_WRITING not in self._habits or self._grid % hook_writing.UNITS:
+        if wizard_names.HOOK_WRITING not in self._habits or self._grid % hook_bars.UNITS:
             return None
         behavior, gauges = hook_writing.hook_ways(self._habits)
         writing_dice = random.Random(WRITING_SEED.format(self._song_seed))
-        order = writing_dice.randrange(hook_writing.RHYTHM_DECK)
-        return behavior, gauges, hook_writing.bar_of(behavior=behavior, gauges=gauges, order=order, take=getattr(self, '_take', FIRST_HOOK_TAKE))
+        order = writing_dice.randrange(hook_bars.RHYTHM_DECK)
+        return behavior, gauges, hook_bars.bar_of(behavior=behavior, gauges=gauges, order=order, take=getattr(self, '_take', FIRST_HOOK_TAKE))
 
     def peak(self, chord):
         """Where a written hook's top sits over a chord: the note of the chord nearest the hook's floor and no lower."""
@@ -999,11 +1000,11 @@ class Hooks(Smart):
         the hook: on a plainer rhythm, on the hook's rhythm, or the hook's own notes a place lower."""
         _, gauges, (lengths, depths) = self.written()
         peak = self.peak(under[0])
-        unit = self._grid // hook_writing.UNITS
+        unit = self._grid // hook_bars.UNITS
         places = [self.within(peak - depth) for depth in depths]
-        places[-1] = self.chord_place(chord=under[0], lowest=max(self._low, peak - hook_writing.DEEPEST), highest=peak, toward=places[-1])
-        catchiness = gauges[hook_writing.CATCHINESS]
-        rhythm = hook_writing.plainer(lengths)
+        places[-1] = self.chord_place(chord=under[0], lowest=max(self._low, peak - hook_bars.DEEPEST), highest=peak, toward=places[-1])
+        catchiness = gauges[hook_bars.CATCHINESS]
+        rhythm = hook_bars.plainer(lengths)
         if catchiness >= hook_writing.SAME_RHYTHM_FROM:
             rhythm = lengths
         answer = self.with_breath(lengths=rhythm, unit=unit)
@@ -1033,7 +1034,7 @@ class Hooks(Smart):
     def _hook_lowered(self, *, places, peak, chord):
         """Return the hook's places a place lower, its last on a note of the chord under the answer."""
         lower = [self.within(place - 1) for place in places]
-        lowest = max(self._low, peak - hook_writing.DEEPEST - 1)
+        lowest = max(self._low, peak - hook_bars.DEEPEST - 1)
         highest = max(self._low, peak - 1)
         lower[-1] = self.chord_place(chord=chord, lowest=lowest, highest=highest, toward=lower[-1])
         return lower
@@ -1049,7 +1050,7 @@ class Hooks(Smart):
         written = self.written()
         if written is None:
             return self.within(self._home + round(self._habits[SPAN] * HOOK_FLOOR_SHARE))
-        share = LOWEST_FLOOR_SHARE + hook_writing.share(written[1][hook_writing.HEIGHT]) * (HIGHEST_FLOOR_SHARE - LOWEST_FLOOR_SHARE)
+        share = LOWEST_FLOOR_SHARE + hook_bars.share(written[1][hook_bars.HEIGHT]) * (HIGHEST_FLOOR_SHARE - LOWEST_FLOOR_SHARE)
         # However low the hook is set, the melodies under it keep room to move.
         return self.within(max(self._home + round(self._habits[SPAN] * share), self._low + VERSE_ROOM))
 
@@ -1142,21 +1143,21 @@ class Tags(Hooks):
         """The tag's bar of lengths: the next of the choppy rhythms that the main hook does not have, each take another."""
         written = self.written()
         taken = tuple(written[2][0]) if written is not None else None
-        free = [name for name in TAG_RHYTHMS if hook_kinds.RHYTHMS[name] != taken]
+        free = [name for name in TAG_RHYTHMS if tag_bars.RHYTHMS[name] != taken]
         tag_dice = random.Random(TAG_SEED.format(self._song_seed, 'rhythms'))
         order = tag_dice.sample(free, len(free))
-        return hook_kinds.RHYTHMS[order[self._tag_take % len(order)]]
+        return tag_bars.RHYTHMS[order[self._tag_take % len(order)]]
 
     def tag_line(self, *, under):
         """A tag: its bar in every bar of the line, the last note of each bar cut for a breath."""
-        unit = self._grid // hook_kinds.UNITS
+        unit = self._grid // tag_bars.UNITS
         lengths = self.tag_rhythm()
         top = self.chord_place(chord=under[0], lowest=self._low, highest=max(self._low, self.hook_floor() - TAG_BELOW), toward=self.hook_floor() - TAG_BELOW)
         # The main hook chants where its behavior is a chant, and the tag then rocks between two notes; under any other hook the tag chants.
         written = self.written()
-        chants = written is not None and written[0] == wizard_names.CHANT
-        contour = hook_kinds.ROCKING if chants else hook_kinds.CHANT
-        depths = iter(hook_kinds.depths_of(contour=contour, count=_sounding_count(lengths)))
+        chants = written is not None and written[0] == hook_bars.CHANT
+        contour = tag_bars.ROCKING if chants else tag_bars.CHANT
+        depths = iter(tag_bars.depths_of(contour=contour, count=_sounding_count(lengths)))
         last = _last_sounding(lengths)
         bar = []
         for place, length in enumerate(lengths):
@@ -1183,16 +1184,16 @@ class Bodies(Hooks):
 
     def ceiling(self, gauges):
         """The highest place a line of the body reaches: under the hook's floor, and lower the lower the Lift gauge stands."""
-        return max(self._low, self.hook_floor() - 1 - round((1 - hook_writing.share(gauges[hook_writing.LIFT])) * hook_writing.LIFT_ROOM))
+        return max(self._low, self.hook_floor() - 1 - round((1 - hook_bars.share(gauges[hook_writing.LIFT])) * hook_writing.LIFT_ROOM))
 
     def body_rhythm(self, *, bars, gauges):
         """A line's rhythm: the hook's bar in as many of its bars as the Sameness gauge says, and a plainer form of it in the rest."""
         lengths = self.written()[2][0]
-        unit = self._grid // hook_writing.UNITS
-        same = round(hook_writing.share(gauges[hook_writing.SAMENESS]) * bars)
+        unit = self._grid // hook_bars.UNITS
+        same = round(hook_bars.share(gauges[hook_writing.SAMENESS]) * bars)
         rhythm = []
         for bar in range(bars):
-            written = hook_writing.plainer(lengths)
+            written = hook_bars.plainer(lengths)
             if bar < same:
                 written = lengths
             rhythm += _cells_of(lengths=written, unit=unit)
@@ -1200,7 +1201,7 @@ class Bodies(Hooks):
 
     def breath(self):
         """The silence a line of the body ends in, in eighths of a bar, as the Space gauge says."""
-        return round(hook_writing.share(hook_writing.body_ways(self._habits)[hook_writing.SPACE]) * hook_writing.MOST_SPACE)
+        return round(hook_bars.share(hook_writing.body_ways(self._habits)[hook_writing.SPACE]) * hook_writing.MOST_SPACE)
 
     def home_under(self, *, highest, toward):
         """Where a section comes to rest: the note of the home chord nearest a place wanted and no higher than a place."""
@@ -1315,7 +1316,7 @@ LEADING_DEGREES = (2, 5, 6, 7)
 
 def can_tag(grid):
     """Whether a tag can be written on a bar counted in so many steps: its rhythms are of eight units."""
-    return grid % hook_kinds.UNITS == 0
+    return grid % tag_bars.UNITS == 0
 
 
 class Hooked(StepWalk):

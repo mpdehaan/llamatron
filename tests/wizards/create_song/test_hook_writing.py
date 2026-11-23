@@ -7,6 +7,7 @@
 import itertools
 import unittest
 
+from llamatron.music_theory.hooks import hook_bars
 from llamatron.wizards.create_song import arranger, hook_writing, melody, notation, wizard_names
 
 ROCK = 'rock'
@@ -23,7 +24,7 @@ FREE_PLAN = [{melody.LINE: 'hook', melody.HOOK: True, melody.HIGHER: True}, {mel
 A_FEW = 3
 AN_ORDER = 1
 HOME_CHORD_DEGREES = (1, 3, 5)
-EVERY_SECOND_POSITION = range(wizard_names.HOOK_WRITING_LOWEST, wizard_names.HOOK_WRITING_HIGHEST + 1, 3)
+EVERY_SECOND_POSITION = range(hook_bars.LOWEST_GAUGE, hook_bars.HIGHEST_GAUGE + 1, 3)
 
 
 def habits_with(*, behavior=hook_writing.DEFAULT_BEHAVIOR, hook=None, body=None):
@@ -77,48 +78,48 @@ class TestBars(unittest.TestCase):
     __slots__ = ()
 
     def test_every_behavior_fills_a_bar_at_every_position_of_every_gauge(self):
-        for behavior in wizard_names.BEHAVIORS:
-            names = hook_writing.HOOK_GAUGES_OF[behavior]
+        for behavior in hook_bars.BEHAVIORS:
+            names = hook_bars.GAUGES_OF[behavior]
             for positions in itertools.product(EVERY_SECOND_POSITION, repeat=len(names)):
                 gauges = {**hook_writing.HOOK_GAUGES, **dict(zip(names, positions))}
                 for take in range(A_FEW):
-                    lengths, depths = hook_writing.bar_of(behavior=behavior, gauges=gauges, order=AN_ORDER, take=take)
-                    self.assertEqual(sum(abs(length) for length in lengths), hook_writing.UNITS, (behavior, gauges))
+                    lengths, depths = hook_bars.bar_of(behavior=behavior, gauges=gauges, order=AN_ORDER, take=take)
+                    self.assertEqual(sum(abs(length) for length in lengths), hook_bars.UNITS, (behavior, gauges))
                     self.assertEqual(len(depths), sum(1 for length in lengths if length > 0), (behavior, gauges))
                     self.assertTrue(all(depth >= 0 for depth in depths), (behavior, gauges))
 
     def test_a_chant_stays_on_its_note_and_a_ladder_only_climbs_by_rungs_as_wide_as_leap_says(self):
         spans = []
         for take in range(A_FEW):
-            _, chant = hook_writing.bar_of(behavior=wizard_names.CHANT, gauges=hook_writing.HOOK_GAUGES, order=AN_ORDER, take=take)
+            _, chant = hook_bars.bar_of(behavior=hook_bars.CHANT, gauges=hook_writing.HOOK_GAUGES, order=AN_ORDER, take=take)
             self.assertLessEqual(max(chant) - min(chant), 1)
-        for position in (wizard_names.HOOK_WRITING_LOWEST, wizard_names.HOOK_WRITING_HIGHEST):
-            _, ladder = hook_writing.bar_of(behavior=wizard_names.LADDER, gauges={**hook_writing.HOOK_GAUGES, hook_writing.LEAP: position}, order=AN_ORDER, take=0)
+        for position in (hook_bars.LOWEST_GAUGE, hook_bars.HIGHEST_GAUGE):
+            _, ladder = hook_bars.bar_of(behavior=hook_bars.LADDER, gauges={**hook_writing.HOOK_GAUGES, hook_bars.LEAP: position}, order=AN_ORDER, take=0)
             self.assertEqual(ladder[-1], 0)
-            self.assertLessEqual(max(ladder), hook_writing.LADDER_DEEPEST)
+            self.assertLessEqual(max(ladder), hook_bars.LADDER_DEEPEST)
             spans.append(max(ladder))
         self.assertLess(spans[0], spans[1])
-        self.assertIn(hook_writing.LEAP, hook_writing.HOOK_GAUGES_OF[wizard_names.LADDER])
-        self.assertNotIn(hook_writing.LEAP, hook_writing.HOOK_GAUGES_OF[wizard_names.CHANT])
+        self.assertIn(hook_bars.LEAP, hook_bars.GAUGES_OF[hook_bars.LADDER])
+        self.assertNotIn(hook_bars.LEAP, hook_bars.GAUGES_OF[hook_bars.CHANT])
 
     def test_a_plainer_bar_has_no_more_notes_and_fills_the_bar(self):
-        lengths, _ = hook_writing.bar_of(behavior=wizard_names.ARCH, gauges={**hook_writing.HOOK_GAUGES, hook_writing.SIMPLICITY: wizard_names.HOOK_WRITING_LOWEST}, order=AN_ORDER, take=0)
-        plain = hook_writing.plainer(lengths)
-        self.assertEqual(sum(abs(length) for length in plain), hook_writing.UNITS)
+        lengths, _ = hook_bars.bar_of(behavior=hook_bars.ARCH, gauges={**hook_writing.HOOK_GAUGES, hook_bars.SIMPLICITY: hook_bars.LOWEST_GAUGE}, order=AN_ORDER, take=0)
+        plain = hook_bars.plainer(lengths)
+        self.assertEqual(sum(abs(length) for length in plain), hook_bars.UNITS)
         self.assertLessEqual(len(plain), len(lengths))
 
     def test_what_is_no_position_is_not_one(self):
-        for value in (wizard_names.HOOK_WRITING_LOWEST - 1, wizard_names.HOOK_WRITING_HIGHEST + 1, True, None, '5'):
-            self.assertFalse(hook_writing.is_position(value))
-        self.assertTrue(hook_writing.is_position(wizard_names.HOOK_WRITING_LOWEST))
-        self.assertTrue(hook_writing.is_position(wizard_names.HOOK_WRITING_HIGHEST))
+        for value in (hook_bars.LOWEST_GAUGE - 1, hook_bars.HIGHEST_GAUGE + 1, True, None, '5'):
+            self.assertFalse(hook_bars.is_position(value))
+        self.assertTrue(hook_bars.is_position(hook_bars.LOWEST_GAUGE))
+        self.assertTrue(hook_bars.is_position(hook_bars.HIGHEST_GAUGE))
 
     def test_a_song_s_ways_are_laid_over_the_gauges_every_hook_starts_from(self):
         self.assertEqual(hook_writing.hook_ways({}), (hook_writing.DEFAULT_BEHAVIOR, hook_writing.HOOK_GAUGES))
-        behavior, gauges = hook_writing.hook_ways({wizard_names.HOOK_WRITING: {hook_writing.BEHAVIOR: wizard_names.CHANT, hook_writing.GAUGES: {hook_writing.HOLD: wizard_names.HOOK_WRITING_LOWEST}}})
-        self.assertEqual(behavior, wizard_names.CHANT)
-        self.assertEqual(gauges, {**hook_writing.HOOK_GAUGES, hook_writing.HOLD: wizard_names.HOOK_WRITING_LOWEST})
-        self.assertEqual(hook_writing.body_ways({wizard_names.BODY_WRITING: {hook_writing.GAUGES: {hook_writing.SPACE: wizard_names.HOOK_WRITING_HIGHEST}}}), {**hook_writing.BODY_GAUGES, hook_writing.SPACE: wizard_names.HOOK_WRITING_HIGHEST})
+        behavior, gauges = hook_writing.hook_ways({wizard_names.HOOK_WRITING: {hook_writing.BEHAVIOR: hook_bars.CHANT, hook_writing.GAUGES: {hook_bars.HOLD: hook_bars.LOWEST_GAUGE}}})
+        self.assertEqual(behavior, hook_bars.CHANT)
+        self.assertEqual(gauges, {**hook_writing.HOOK_GAUGES, hook_bars.HOLD: hook_bars.LOWEST_GAUGE})
+        self.assertEqual(hook_writing.body_ways({wizard_names.BODY_WRITING: {hook_writing.GAUGES: {hook_writing.SPACE: hook_bars.HIGHEST_GAUGE}}}), {**hook_writing.BODY_GAUGES, hook_writing.SPACE: hook_bars.HIGHEST_GAUGE})
 
 
 class TestWrittenHook(unittest.TestCase):
@@ -127,7 +128,7 @@ class TestWrittenHook(unittest.TestCase):
     __slots__ = ()
 
     def test_the_hook_s_bar_returns_note_for_note_and_the_hook_line_returns_the_same(self):
-        for behavior in wizard_names.BEHAVIORS:
+        for behavior in hook_bars.BEHAVIORS:
             habits = habits_with(behavior=behavior)
             grid = habits[melody.GRID]
             for seed in SEEDS:
@@ -147,8 +148,8 @@ class TestWrittenHook(unittest.TestCase):
 
     def test_height_sets_the_hook_higher_and_the_other_lines_stay_under_it(self):
         tops = []
-        for position in (wizard_names.HOOK_WRITING_LOWEST, wizard_names.HOOK_WRITING_HIGHEST):
-            habits = habits_with(hook={hook_writing.HEIGHT: position})
+        for position in (hook_bars.LOWEST_GAUGE, hook_bars.HIGHEST_GAUGE):
+            habits = habits_with(hook={hook_bars.HEIGHT: position})
             verse, chorus = sections(habits=habits, seed=SEEDS[0])
             tops.append(max(places_of(line=chorus[0], habits=habits)))
             self.assertLess(max(place for line in verse for place in places_of(line=line, habits=habits)), tops[-1])
@@ -156,34 +157,34 @@ class TestWrittenHook(unittest.TestCase):
 
     def test_catchiness_brings_the_answer_nearer_the_hook(self):
         grid = habits_with()[melody.GRID]
-        plain = bars_of(line=sections(habits=habits_with(hook={hook_writing.CATCHINESS: wizard_names.HOOK_WRITING_LOWEST}), seed=SEEDS[0])[1][0], grid=grid)
-        same = bars_of(line=sections(habits=habits_with(hook={hook_writing.CATCHINESS: wizard_names.HOOK_WRITING_HIGHEST}), seed=SEEDS[0])[1][0], grid=grid)
+        plain = bars_of(line=sections(habits=habits_with(hook={hook_bars.CATCHINESS: hook_bars.LOWEST_GAUGE}), seed=SEEDS[0])[1][0], grid=grid)
+        same = bars_of(line=sections(habits=habits_with(hook={hook_bars.CATCHINESS: hook_bars.HIGHEST_GAUGE}), seed=SEEDS[0])[1][0], grid=grid)
         self.assertEqual(rhythm_of(plain[0]), rhythm_of(same[0]))
         self.assertNotEqual(plain[1], same[1])
         self.assertLessEqual(len([note for note in plain[1] if notation.REST not in note]), len([note for note in same[1] if notation.REST not in note]))
 
     def test_the_answer_leaves_room_a_breath_or_a_held_last_note_and_leaves_no_note_out(self):
-        for behavior in wizard_names.BEHAVIORS:
+        for behavior in hook_bars.BEHAVIORS:
             habits = habits_with(behavior=behavior)
             grid = habits[melody.GRID]
             for seed in SEEDS:
                 line = sections(habits=habits, seed=seed)[1][0]
                 last = [note for note in line if notation.REST not in note][-1]
-                self.assertGreaterEqual(silence_at_end(line) + last[notation.STEPS], grid * melody.ANSWER_BREATH // hook_writing.UNITS, behavior)
+                self.assertGreaterEqual(silence_at_end(line) + last[notation.STEPS], grid * melody.ANSWER_BREATH // hook_bars.UNITS, behavior)
                 figure, answer = bars_of(line=line, grid=grid)[:2]
-                if hook_writing.HOOK_GAUGES[hook_writing.CATCHINESS] >= hook_writing.SAME_RHYTHM_FROM:
+                if hook_writing.HOOK_GAUGES[hook_bars.CATCHINESS] >= hook_writing.SAME_RHYTHM_FROM:
                     self.assertEqual(len([note for note in answer if notation.REST not in note]), len([note for note in figure if notation.REST not in note]), behavior)
 
     def test_a_held_last_note_is_left_whole(self):
-        habits = habits_with(hook={hook_writing.HOLD: wizard_names.HOOK_WRITING_HIGHEST, hook_writing.SIMPLICITY: wizard_names.HOOK_WRITING_HIGHEST})
+        habits = habits_with(hook={hook_bars.HOLD: hook_bars.HIGHEST_GAUGE, hook_bars.SIMPLICITY: hook_bars.HIGHEST_GAUGE})
         line = sections(habits=habits, seed=SEEDS[0])[1][0]
         figure, answer = bars_of(line=line, grid=habits[melody.GRID])[:2]
         self.assertEqual(lasts([note for note in answer if notation.REST not in note][-1]), lasts([note for note in figure if notation.REST not in note][-1]))
 
     def test_the_same_seed_writes_the_same_hook_and_each_behavior_another(self):
         self.assertEqual(sections(habits=habits_with(), seed=SEEDS[0]), sections(habits=habits_with(), seed=SEEDS[0]))
-        hooks = {repr(sections(habits=habits_with(behavior=behavior), seed=SEEDS[0])[1][0]) for behavior in wizard_names.BEHAVIORS}
-        self.assertEqual(len(hooks), len(wizard_names.BEHAVIORS))
+        hooks = {repr(sections(habits=habits_with(behavior=behavior), seed=SEEDS[0])[1][0]) for behavior in hook_bars.BEHAVIORS}
+        self.assertEqual(len(hooks), len(hook_bars.BEHAVIORS))
 
     def test_a_bar_not_counted_in_eight_keeps_the_hook_of_a_kind(self):
         habits = {**habits_with(), melody.GRID: 12}
@@ -206,20 +207,20 @@ class TestBody(unittest.TestCase):
 
     def test_space_never_leaves_fewer_than_half_of_a_line_s_notes(self):
         for seed in SEEDS:
-            none = sections(habits=habits_with(body={hook_writing.SPACE: wizard_names.HOOK_WRITING_LOWEST}), seed=seed)[1][1]
-            most = sections(habits=habits_with(body={hook_writing.SPACE: wizard_names.HOOK_WRITING_HIGHEST}), seed=seed)[1][1]
+            none = sections(habits=habits_with(body={hook_writing.SPACE: hook_bars.LOWEST_GAUGE}), seed=seed)[1][1]
+            most = sections(habits=habits_with(body={hook_writing.SPACE: hook_bars.HIGHEST_GAUGE}), seed=seed)[1][1]
             self.assertGreaterEqual(2 * len([note for note in most if notation.REST not in note]), len([note for note in none if notation.REST not in note]))
 
     def test_space_is_the_silence_a_line_ends_in(self):
         silences = []
-        for position in (wizard_names.HOOK_WRITING_LOWEST, wizard_names.HOOK_WRITING_HIGHEST):
+        for position in (hook_bars.LOWEST_GAUGE, hook_bars.HIGHEST_GAUGE):
             _, chorus = sections(habits=habits_with(body={hook_writing.SPACE: position}), seed=SEEDS[0])
             silences.append(silence_at_end(chorus[1]))
         self.assertLess(silences[0], silences[1])
 
     def test_lift_raises_every_line_of_the_body_and_none_reaches_the_hook(self):
         tops = []
-        for position in (wizard_names.HOOK_WRITING_LOWEST, wizard_names.HOOK_WRITING_HIGHEST):
+        for position in (hook_bars.LOWEST_GAUGE, hook_bars.HIGHEST_GAUGE):
             habits = habits_with(body={hook_writing.LIFT: position})
             _, chorus = sections(habits=habits, seed=SEEDS[0])
             tops.append(max(places_of(line=chorus[1], habits=habits)))
@@ -229,28 +230,28 @@ class TestBody(unittest.TestCase):
     def test_sameness_gives_the_body_the_hook_s_rhythm_in_more_of_its_bars(self):
         grid = habits_with()[melody.GRID]
         alike = []
-        for position in (wizard_names.HOOK_WRITING_LOWEST, wizard_names.HOOK_WRITING_HIGHEST):
+        for position in (hook_bars.LOWEST_GAUGE, hook_bars.HIGHEST_GAUGE):
             # With no silence asked for, a bar of the body is the hook's bar or a plainer one, whole.
-            _, chorus = sections(habits=habits_with(body={hook_writing.SAMENESS: position, hook_writing.SPACE: wizard_names.HOOK_WRITING_LOWEST}), seed=SEEDS[0])
+            _, chorus = sections(habits=habits_with(body={hook_writing.SAMENESS: position, hook_writing.SPACE: hook_bars.LOWEST_GAUGE}), seed=SEEDS[0])
             hook_bar = rhythm_of(bars_of(line=chorus[0], grid=grid)[0])
             alike.append(sum(1 for bar in bars_of(line=chorus[1], grid=grid)[:1] if rhythm_of(bar) == hook_bar))
         self.assertLess(alike[0], alike[1])
 
     def test_resolve_settles_a_free_line_on_the_chord_or_leaves_it_off_the_chord(self):
         endings = []
-        for position in (wizard_names.HOOK_WRITING_LOWEST, wizard_names.HOOK_WRITING_HIGHEST):
+        for position in (hook_bars.LOWEST_GAUGE, hook_bars.HIGHEST_GAUGE):
             _, chorus = sections(habits=habits_with(body={hook_writing.RESOLVE: position}), seed=SEEDS[0], plans=(VERSE_PLAN, FREE_PLAN))
             endings.append([note for note in chorus[1] if notation.REST not in note][-1])
         self.assertNotEqual(endings[0], endings[1])
 
     def test_call_and_answer_decides_whether_a_line_that_returns_keeps_its_notes(self):
         kept = []
-        for position in (wizard_names.HOOK_WRITING_LOWEST, wizard_names.HOOK_WRITING_HIGHEST):
-            _, chorus = sections(habits=habits_with(body={hook_writing.CALL_AND_ANSWER: position, hook_writing.RESOLVE: wizard_names.HOOK_WRITING_LOWEST}), seed=SEEDS[0], plans=(VERSE_PLAN, FREE_PLAN))
+        for position in (hook_bars.LOWEST_GAUGE, hook_bars.HIGHEST_GAUGE):
+            _, chorus = sections(habits=habits_with(body={hook_writing.CALL_AND_ANSWER: position, hook_writing.RESOLVE: hook_bars.LOWEST_GAUGE}), seed=SEEDS[0], plans=(VERSE_PLAN, FREE_PLAN))
             first = [note for note in chorus[1] if notation.REST not in note]
             again = [note for note in chorus[2] if notation.REST not in note]
             kept.append(first[:-1] == again[:-1])
-            if position == wizard_names.HOOK_WRITING_HIGHEST:
+            if position == hook_bars.HIGHEST_GAUGE:
                 # An answer settles where the line it answers was left open.
                 self.assertNotEqual(first[-1], again[-1])
         self.assertEqual(kept, [False, True])
@@ -259,5 +260,5 @@ class TestBody(unittest.TestCase):
         letters = [entry[melody.LINE] for entry in VERSE_PLAN + CHORUS_PLAN]
         for engine in (melody.SERIAL, melody.EVOLVING):
             given = dict(chords=CHORDS, scale_type=melody.MAJOR, seed=SEEDS[0], answers=False, engine=engine, letters=letters, hook=True, plan=CHORUS_PLAN)
-            with_body = melody.sketched(habits=habits_with(body={hook_writing.SPACE: wizard_names.HOOK_WRITING_HIGHEST}), **given)
-            self.assertEqual(with_body[1], melody.sketched(habits=habits_with(body={hook_writing.SPACE: wizard_names.HOOK_WRITING_LOWEST}), **given)[1], engine)
+            with_body = melody.sketched(habits=habits_with(body={hook_writing.SPACE: hook_bars.HIGHEST_GAUGE}), **given)
+            self.assertEqual(with_body[1], melody.sketched(habits=habits_with(body={hook_writing.SPACE: hook_bars.LOWEST_GAUGE}), **given)[1], engine)

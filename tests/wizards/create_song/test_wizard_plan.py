@@ -12,6 +12,7 @@ import unittest
 from llamatron.model.file import version
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Row, SceneSetting, Section, VelocitySetting
+from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import hook_writing, joins, notation, phrasing, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import shares_a_bar as arranger_shares_a_bar
@@ -123,24 +124,24 @@ class TestWizardSongPlan(unittest.TestCase):
         hook = hook_choices
         choices.set_contrast(A_HIGH_CONTRAST)
         choices.set_phrasing(False)
-        hook.set_hook_behavior(wizard_names.CHANT)
+        hook.set_hook_behavior(hook_bars.CHANT)
         again = WizardChoices.from_data(choices.to_data())
         self.assertTrue(again.has_song_plan())
         self.assertEqual(again.get_contrast(), A_HIGH_CONTRAST)
         self.assertFalse(again.has_phrasing())
-        self.assertEqual(again.get_hook().get_hook_behavior(), wizard_names.CHANT)
+        self.assertEqual(again.get_hook().get_hook_behavior(), hook_bars.CHANT)
         self.assertEqual(made_data(again), made_data(choices))
 
     def test_switching_the_plan_off_or_choosing_another_genre_drops_it(self):
         choices = chosen()
         hook_choices = choices.get_hook()
         hook = hook_choices
-        hook.set_hook_behavior(wizard_names.CHANT)
+        hook.set_hook_behavior(hook_bars.CHANT)
         choices.set_song_plan(False)
         self.assertFalse(choices.has_song_plan())
         choices.set_song_plan(True)
         # How the hook is written is the song's, with a plan or without one, and one genre's.
-        self.assertEqual(hook.get_hook_behavior(), wizard_names.CHANT)
+        self.assertEqual(hook.get_hook_behavior(), hook_bars.CHANT)
         choices.set_genre(AN_UNPLANNED_GENRE)
         choices.set_subgenre(choices.subgenres()[0])
         self.assertFalse(choices.has_song_plan())
@@ -191,14 +192,14 @@ class TestWizardHookKind(unittest.TestCase):
         hook_choices = choices.get_hook()
         hook = hook_choices
         usual = hook.genre_hook_behavior()
-        other = next(behavior for behavior in wizard_names.BEHAVIORS if behavior != usual)
+        other = next(behavior for behavior in hook_bars.BEHAVIORS if behavior != usual)
         hook.set_hook_behavior(other)
         self.assertEqual(hook.get_hook_behavior(), other)
         hook.set_hook_behavior(usual)
         self.assertEqual(choices.to_data().get(wizard_limits.WRITING_SAVED), None)
         for name in hook.hook_gauges():
             position = hook.genre_hook_gauge(name)
-            moved = wizard_names.HOOK_WRITING_LOWEST if position != wizard_names.HOOK_WRITING_LOWEST else wizard_names.HOOK_WRITING_HIGHEST
+            moved = hook_bars.LOWEST_GAUGE if position != hook_bars.LOWEST_GAUGE else hook_bars.HIGHEST_GAUGE
             self.assertFalse(hook.writing_gauge_is_moved(part=wizard_names.HOOK_WRITING, name=name))
             hook.set_hook_gauge(name=name, position=moved)
             self.assertTrue(hook.writing_gauge_is_moved(part=wizard_names.HOOK_WRITING, name=name))
@@ -211,14 +212,14 @@ class TestWizardHookKind(unittest.TestCase):
         choices = chosen()
         hook_choices = choices.get_hook()
         hook = hook_choices
-        hook.set_hook_behavior(wizard_names.CHANT)
-        hook.set_hook_gauge(name=hook_writing.HOLD, position=wizard_names.HOOK_WRITING_LOWEST)
-        hook.set_body_gauge(name=hook_writing.SPACE, position=wizard_names.HOOK_WRITING_HIGHEST)
+        hook.set_hook_behavior(hook_bars.CHANT)
+        hook.set_hook_gauge(name=hook_bars.HOLD, position=hook_bars.LOWEST_GAUGE)
+        hook.set_body_gauge(name=hook_writing.SPACE, position=hook_bars.HIGHEST_GAUGE)
         hook.new_hook()
         again = WizardChoices.from_data(choices.to_data())
-        self.assertEqual(again.get_hook().get_hook_behavior(), wizard_names.CHANT)
-        self.assertEqual(again.get_hook().get_hook_gauge(hook_writing.HOLD), wizard_names.HOOK_WRITING_LOWEST)
-        self.assertEqual(again.get_hook().get_body_gauge(hook_writing.SPACE), wizard_names.HOOK_WRITING_HIGHEST)
+        self.assertEqual(again.get_hook().get_hook_behavior(), hook_bars.CHANT)
+        self.assertEqual(again.get_hook().get_hook_gauge(hook_bars.HOLD), hook_bars.LOWEST_GAUGE)
+        self.assertEqual(again.get_hook().get_body_gauge(hook_writing.SPACE), hook_bars.HIGHEST_GAUGE)
         self.assertEqual(again.get_hook().hook_notes(), hook.hook_notes())
 
     def test_each_behavior_is_another_hook_and_each_take_of_one_another(self):
@@ -226,10 +227,10 @@ class TestWizardHookKind(unittest.TestCase):
         hook_choices = choices.get_hook()
         hook = hook_choices
         hooks = set()
-        for behavior in wizard_names.BEHAVIORS:
+        for behavior in hook_bars.BEHAVIORS:
             hook.set_hook_behavior(behavior)
             hooks.add(repr(hook.hook_notes()))
-        self.assertEqual(len(hooks), len(wizard_names.BEHAVIORS))
+        self.assertEqual(len(hooks), len(hook_bars.BEHAVIORS))
         before = hook.hook_notes()
         hook.new_hook()
         self.assertNotEqual(hook.hook_notes(), before)
@@ -238,13 +239,13 @@ class TestWizardHookKind(unittest.TestCase):
         choices = chosen()
         hook_choices = choices.get_hook()
         hook = hook_choices
-        for behavior in wizard_names.BEHAVIORS:
+        for behavior in hook_bars.BEHAVIORS:
             hook.set_hook_behavior(behavior)
-            self.assertEqual(hook.hook_gauges(), list(hook_writing.HOOK_GAUGES_OF[behavior]))
-        hook.set_hook_behavior(wizard_names.CHANT)
-        self.assertNotIn(hook_writing.LEAP, hook.hook_gauges())
-        hook.set_hook_behavior(wizard_names.LADDER)
-        self.assertIn(hook_writing.LEAP, hook.hook_gauges())
+            self.assertEqual(hook.hook_gauges(), list(hook_bars.GAUGES_OF[behavior]))
+        hook.set_hook_behavior(hook_bars.CHANT)
+        self.assertNotIn(hook_bars.LEAP, hook.hook_gauges())
+        hook.set_hook_behavior(hook_bars.LADDER)
+        self.assertIn(hook_bars.LEAP, hook.hook_gauges())
 
     def test_what_is_no_behavior_no_gauge_or_off_the_scale_is_refused(self):
         choices = chosen()
@@ -253,10 +254,10 @@ class TestWizardHookKind(unittest.TestCase):
         with self.assertRaises(ValueError):
             hook.set_hook_behavior(NOT_A_PART)
         with self.assertRaises(ValueError):
-            hook.set_hook_gauge(name=NOT_A_PART, position=wizard_names.HOOK_WRITING_LOWEST)
-        for position in (wizard_names.HOOK_WRITING_LOWEST - 1, wizard_names.HOOK_WRITING_HIGHEST + 1, True):
+            hook.set_hook_gauge(name=NOT_A_PART, position=hook_bars.LOWEST_GAUGE)
+        for position in (hook_bars.LOWEST_GAUGE - 1, hook_bars.HIGHEST_GAUGE + 1, True):
             with self.assertRaises(ValueError):
-                hook.set_hook_gauge(name=hook_writing.HOLD, position=position)
+                hook.set_hook_gauge(name=hook_bars.HOLD, position=position)
             with self.assertRaises(ValueError):
                 hook.set_body_gauge(name=hook_writing.SPACE, position=position)
 

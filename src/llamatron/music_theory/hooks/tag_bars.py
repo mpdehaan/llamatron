@@ -6,7 +6,7 @@
 
 A bar is counted in eight units. A rhythm is the lengths of its notes, a silence written as a length below zero; a contour is
 how far below the top each note sits, the top being none. A song's main hook is written by a behavior and gauges
-(hook_writing.py); a tag, the song's second hook, takes one of the choppy rhythms here that the main hook does not have.
+(hook_bars.py); a tag, the song's second hook, takes one of the choppy rhythms here that the main hook does not have.
 """
 
 UNITS = 8
