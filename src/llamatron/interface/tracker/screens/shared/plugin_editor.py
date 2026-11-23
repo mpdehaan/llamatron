@@ -6,8 +6,7 @@ settings, drawn from the description alone, so that the plugin's page needs no c
 
 import functools
 
-from llamatron.interface.forms.nodes import NameField
-from llamatron.interface.pages.view_fields import ViewFields
+from llamatron.interface.pages.generator import GeneratorPresenter
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
@@ -20,8 +19,9 @@ def plugin_editor_of(section):
     return functools.partial(PluginEditor, section=section)
 
 
-class PluginEditor(GeneratorEditor, ViewFields, FieldPage):
-    """The page that edits a generator of any plugin that describes its view: its Name, then the view's settings, column by column."""
+class PluginEditor(GeneratorEditor, FieldPage):
+    """The page that edits a generator of any plugin that describes its view: the Generator presenter's form
+    (interface/pages/generator.py), its Name, then the view's settings, column by column."""
 
     KEYS = keybindings.PluginEditor
     # The help every such page shares, which each page replaces with its plugin's own.
@@ -34,14 +34,11 @@ class PluginEditor(GeneratorEditor, ViewFields, FieldPage):
         plugin = generator_plugins.plugins_by_section()[section]
         self.HELP = plugin.view.help
         self.RENAME_PROMPT = messages.MSG_RENAME_GENERATOR_PROMPT.format(label=plugin.strings.MSG_LABEL)
-        self._view = plugin.view
         super().__init__(holder=holder, name=name)
 
+    def presenter(self):
+        """Return what the page shows and does, for its generator as it is now."""
+        return GeneratorPresenter(page=self, section=self.SECTION, name=self.item)
+
     def fields(self):
-        return [NameField(value=self.shown_name, rename=self.rename), *self.view_fields()]
-
-    def view(self):
-        return self._view
-
-    def shown_name(self):
-        return self.item
+        return self.presenter().form()

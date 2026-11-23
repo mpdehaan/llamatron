@@ -10,6 +10,8 @@ hands it the page to ask through and what only the tracker can do, such as openi
 - clip: the clip page, one clip's patterns and settings.
 - draws: the Draws page, the song's eight draws over their strips.
 - file_global: the File/Global page, the set's own settings.
+- generator, page_view_fields: one of the set's generators' page, its view's settings, and those fields made for a page that
+  asks for their dialogs.
 - instrument: one instrument's page, where it plays and how loud.
 - scale: one scale's page, its name, root and kind, and its notes.
 - scene: the Scene page, one scene's settings.

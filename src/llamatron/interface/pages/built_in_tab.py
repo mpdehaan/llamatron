@@ -9,8 +9,8 @@ from llamatron.interface.forms.nodes import Button
 from llamatron.interface.forms.tab_box import TabColumn
 from llamatron.interface.forms.text import scene_name
 from llamatron.interface.pages import places
+from llamatron.interface.pages.page_view_fields import PageViewFields
 from llamatron.interface.pages.places import GeneratorPartPlace
-from llamatron.interface.pages.view_fields import ViewFields
 from llamatron.model.file.checks import listed
 from llamatron.model.schema import generator_plugins
 from llamatron.user_strings import labels, legends, messages
@@ -19,15 +19,15 @@ from llamatron.user_strings import labels, legends, messages
 MOST_NAMED = 3
 
 
-class BuiltInTab(ViewFields):
+class BuiltInTab(PageViewFields):
     """What makes a built-in generator's tab: page is the clip's or the track's page that shows it, and place the BuiltInPlace of
     the generator. SECTION, item and holder are what the fields and the parts' pages ask of a generator's page: the section of the
     generator's kind, what the kind is called, and the page's holder."""
 
-    __slots__ = ('_page', '_place', '_plugin', 'SECTION', 'item', 'holder')
+    __slots__ = ('_place', '_plugin', 'SECTION', 'item', 'holder')
 
     def __init__(self, *, page, place):
-        self._page = page
+        super().__init__(page)
         self._place = place
         self._plugin = generator_plugins.plugins()[place.kind]
         self.SECTION = self._plugin.section
@@ -93,33 +93,3 @@ class BuiltInTab(ViewFields):
         place = GeneratorPartPlace(part=part, name=self.item, built_in=self._place, **given)
         page = self._page.app.site_map.page_at(place=place, holder=self.holder)
         self._page.show_page(page.opened_from(page=self._page, word=labels.MSG_BUILT_IN_WORD))
-
-    def document(self):
-        return self._page.document()
-
-    def heading(self, **given):
-        return self._page.heading(**given)
-
-    def ask(self, **given):
-        return self._page.ask(**given)
-
-    def ask_choice(self, **given):
-        return self._page.ask_choice(**given)
-
-    def ask_grouped(self, **given):
-        return self._page.ask_grouped(**given)
-
-    def ask_many(self, **given):
-        return self._page.ask_many(**given)
-
-    def ask_number(self, **given):
-        return self._page.ask_number(**given)
-
-    def ask_text(self, **given):
-        return self._page.ask_text(**given)
-
-    def refuse(self, text):
-        return self._page.refuse(text)
-
-    def show_page(self, page):
-        return self._page.show_page(page)
