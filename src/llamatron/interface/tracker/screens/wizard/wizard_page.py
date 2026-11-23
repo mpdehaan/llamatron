@@ -24,6 +24,8 @@ from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.interface.tracker.dialogs.new_riff_dialog import NewRiffDialog
+from llamatron.interface.tracker.dialogs.row_dialog import RowDialog
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.drawing import Box, cursor_mark, Style
@@ -399,6 +401,15 @@ class WizardPage(FieldPage):
         self.say(kept)
 
     # Listening: a part of the song as it would be made, heard through FluidSynth and thrown away.
+
+    def ask_row(self, *, title, row, then):
+        """Ask for a row of numbers, edited cell by cell (a RowAsked), and pass the row typed to then unless it is cancelled."""
+        dialog = RowDialog(title=title, values=row.values, lowest=row.lowest, highest=row.highest, fewest=row.fewest, most=row.most, usual=row.usual)
+        self.ask(dialog=dialog, then=then)
+
+    def ask_new_riff(self, *, player, then):
+        """Ask how a new riff for a player is written, and pass the settings chosen to then, or None where it is cancelled."""
+        self.ask(dialog=NewRiffDialog(player=player), then=then)
 
     def listen_keys(self):
         """Return the key that listens to what the branch under the cursor has to hear, or stops it while it plays, and none for a branch with nothing to hear."""

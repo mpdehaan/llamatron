@@ -13,11 +13,12 @@ import functools
 
 from llamatron.interface.forms.nodes import Field
 from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.screens.wizard.riffs_branch import RiffsBranch
 from llamatron.model.file.checks import listed
 from llamatron.user_strings import errors, labels, legends, marks, messages
+
+# Where the picker of riffs to give opens.
+FIRST_CHOICE = 0
 
 # What a riff's row is known by: the player and the riff, since two players may know one riff.
 KNOWN_KEY = '{player}: {riff}'
@@ -85,7 +86,7 @@ class RiffAssignBranch(RiffsBranch):
             page.choosing(lambda riff: choices.get_riffs().give_riff(role=role, riff=riff))(offered[place])
             page.app.open_field_sections.add(title)
             page.say(messages.MSG_WIZARD_RIFF_GIVEN.format(player=title, riff=offered[place]))
-        page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_GIVE_RIFF_TITLE.format(player=title), options=offered), then=given)
+        page.ask_choice(title=labels.MSG_WIZARD_GIVE_RIFF_TITLE.format(player=title), options=offered, current=FIRST_CHOICE, then=given)
 
     def take(self, *, role, riff):
         """Take a riff from a player, asking first where the player plays it."""
@@ -94,11 +95,11 @@ class RiffAssignBranch(RiffsBranch):
         title = choices.player(role).title()
         used = choices.get_riffs().kinds_playing(role=role, riff=riff)
 
-        def taken(_=None):
+        def taken():
             page.choosing(lambda name: choices.get_riffs().take_riff_from(role=role, riff=name))(riff)
             page.say(messages.MSG_WIZARD_RIFF_TAKEN_FROM.format(player=title, riff=riff))
         if not used:
             taken()
             return
-        page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TAKE_RIFF_TITLE.format(riff=riff, player=title), messages=[messages.MSG_WIZARD_RIFF_USED_IN.format(kinds=listed(used))], starts_on_no=True, deletes=True),
-                 then=taken)
+        page.confirm(title=messages.MSG_WIZARD_TAKE_RIFF_TITLE.format(riff=riff, player=title), lines=[messages.MSG_WIZARD_RIFF_USED_IN.format(kinds=listed(used))], starts_on_no=True, deletes=True,
+                     then=taken)

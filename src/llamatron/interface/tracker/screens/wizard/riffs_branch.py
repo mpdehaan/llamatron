@@ -14,9 +14,6 @@ import functools
 
 from llamatron.interface.forms.nodes import Field
 from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.interface.tracker.dialogs.new_riff_dialog import NewRiffDialog
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.model.file.checks import listed
 from llamatron.user_strings import labels, legends, marks, messages
@@ -102,7 +99,7 @@ class RiffsBranch(Branch):
                 return
             self.show(role=role, riff=riff)
             page.say(messages.MSG_WIZARD_RIFF_WRITTEN.format(riff=riff, player=title))
-        page.ask(dialog=NewRiffDialog(player=title), then=written)
+        page.ask_new_riff(player=title, then=written)
 
     def show(self, *, role, riff):
         """Open a player's heading and put the cursor on a riff under it."""
@@ -130,17 +127,19 @@ class RiffsBranch(Branch):
             made = page.choosing(lambda player: choices.get_riffs().copy_riff(riff=riff, role=player))(role)
             self.show(role=role, riff=made)
             page.say(messages.MSG_WIZARD_RIFF_COPIED.format(riff=riff, copy=made, player=choices.player(role).title()))
-        page.ask(dialog=ChoiceDialog(title=labels.MSG_WIZARD_COPY_RIFF_TITLE.format(riff=riff), options=[choices.player(role).title() for role in players], current=players.index(choices.get_riffs().riff_written_for(riff))), then=copied)
+        titles = [choices.player(role).title() for role in players]
+        written_for = players.index(choices.get_riffs().riff_written_for(riff))
+        page.ask_choice(title=labels.MSG_WIZARD_COPY_RIFF_TITLE.format(riff=riff), options=titles, current=written_for, then=copied)
 
     def regenerate(self, riff):
         """Have other notes written for a riff, with nothing kept of the old ones, after asking."""
         choices = self.get_choices()
         page = self.get_page()
 
-        def written(_):
+        def written():
             page.choosing(choices.get_riffs().regenerate_riff)(riff)
             page.say(messages.MSG_WIZARD_REGENERATED.format(name=riff))
-        page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=riff), messages=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=riff)], starts_on_no=True), then=written)
+        page.confirm(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=riff), lines=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=riff)], starts_on_no=True, then=written)
 
     def delete(self, riff):
         """Ask before deleting a riff, saying where it is used; whoever played it then plays the accompaniment again."""
@@ -148,11 +147,11 @@ class RiffsBranch(Branch):
         page = self.get_page()
         used = choices.get_riffs().riff_kinds_used(riff)
 
-        def deleted(_):
+        def deleted():
             page.choosing(choices.get_riffs().delete_riff)(riff)
             page.say(messages.MSG_WIZARD_RIFF_DELETED.format(riff=riff))
         said = [messages.MSG_WIZARD_RIFF_USED_IN.format(kinds=listed(used))] if used else []
-        page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_DELETE_RIFF_TITLE.format(riff=riff), messages=said, starts_on_no=True, deletes=True), then=deleted)
+        page.confirm(title=messages.MSG_WIZARD_DELETE_RIFF_TITLE.format(riff=riff), lines=said, starts_on_no=True, deletes=True, then=deleted)
 
     def listens(self):
         """Listen plays the riff under the cursor alone, in the sound of the player it was written for, played anywhere or not."""

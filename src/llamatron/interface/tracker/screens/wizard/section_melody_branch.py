@@ -16,7 +16,6 @@ import functools
 
 from llamatron.interface.forms.nodes import Button, ChoiceField
 from llamatron.interface.forms.remarks import dim_remark
-from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import labels, legends, messages
@@ -208,8 +207,7 @@ class SectionMelodyBranch(Branch):
         """Ask whether the notes edited by hand go back to the wizard's, and give them back on yes."""
         page = self.get_page()
         question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=self._kind)
-        dialog = ConfirmDialog(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, messages=[question], starts_on_no=True)
-        page.ask(dialog=dialog, then=page.choosing(self._give_back))
+        page.confirm(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, lines=[question], starts_on_no=True, then=lambda: page.choosing(self._give_back)(None))
 
     def _give_back(self, _):
         self._tunes().set_tune_pattern(kind=self._kind, pattern=None)
@@ -240,11 +238,10 @@ class SectionMelodyBranch(Branch):
         """Have the kind's melody written again, with nothing kept of the old one, after asking."""
         page = self.get_page()
         name = messages.MSG_WIZARD_MELODY_OF.format(kind=self._kind)
-        dialog = ConfirmDialog(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), messages=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)],
-                               starts_on_no=True)
-        page.ask(dialog=dialog, then=functools.partial(self._write_again, name=name))
+        page.confirm(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), lines=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)],
+                     starts_on_no=True, then=functools.partial(self._write_again, name=name))
 
-    def _write_again(self, _, *, name):
+    def _write_again(self, *, name):
         """Have the kind's melody written again, and say so."""
         page = self.get_page()
         write = page.choosing(self._tunes().new_tune_take)

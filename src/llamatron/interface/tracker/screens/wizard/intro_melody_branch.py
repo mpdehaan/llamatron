@@ -15,7 +15,6 @@ the intro's melody is made from the hook and the hook from the chorus.
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, Heading, Toggle
 from llamatron.interface.forms.remarks import dim_remark
-from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.screens.shared.section_fade import fade_field
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.model.file.checks import listed
@@ -182,7 +181,7 @@ class IntroMelodyBranch(Branch):
         if place is None or not choices.intro_is_own(place=place):
             return
         question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=wizard_limits.INTRO)
-        page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, messages=[question], starts_on_no=True), then=page.choosing(lambda _: choices.set_intro_pattern(place=place, pattern=None)))
+        page.confirm(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, lines=[question], starts_on_no=True, then=lambda: page.choosing(lambda _: choices.set_intro_pattern(place=place, pattern=None))(None))
 
     def add_part(self):
         choices = self.get_choices()
@@ -199,7 +198,7 @@ class IntroMelodyBranch(Branch):
         page = self.get_page()
         place = self.place_of(number)
 
-        def removed(_=None):
+        def removed():
             try:
                 page.choosing(choices.remove_intro_part)(place)
             except ValueError as problem:
@@ -207,8 +206,8 @@ class IntroMelodyBranch(Branch):
                 return
             page.marked_part = None
             page.say(messages.MSG_WIZARD_PART_REMOVED.format(number=number))
-        page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_REMOVE_PART_TITLE.format(number=number), messages=[messages.MSG_WIZARD_REMOVE_PART_SAYS.format(number=number)], starts_on_no=True, deletes=True),
-                 then=removed)
+        page.confirm(title=messages.MSG_WIZARD_REMOVE_PART_TITLE.format(number=number), lines=[messages.MSG_WIZARD_REMOVE_PART_SAYS.format(number=number)], starts_on_no=True, deletes=True,
+                     then=removed)
 
     def field_keys(self):
         """Return the list's key: A adds a part. Asking for the keys also marks the part the cursor is on, which the buttons then act on."""

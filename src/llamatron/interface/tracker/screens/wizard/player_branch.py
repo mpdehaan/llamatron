@@ -7,7 +7,7 @@
 import functools
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, gauge_shown, NumberField
-from llamatron.interface.tracker.dialogs.row_dialog import RowDialog
+from llamatron.interface.pages.asking import RowAsked
 from llamatron.interface.tracker.screens.shared.kit_fields import KitFields
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.music_theory.composing import notation
@@ -267,9 +267,11 @@ class PlayerBranch(Branch):
         choices = self.get_choices()
         page = self.get_page()
         lowest, highest = wizard_limits.ROW_LIMITS[name]
-        dialog = RowDialog(title=messages.MSG_WIZARD_ROW_TITLE.format(row=labels.MSG_WIZARD_ROW_LABELS[name], player=self.name()), values=choices.player(self._role).get_row(name=name),
-                           lowest=lowest, highest=highest, fewest=wizard_limits.FEWEST_ROW_CELLS, most=wizard_limits.MOST_ROW_CELLS, usual=choices.player(self._role).genre_row(name=name))
-        page.ask(dialog=dialog, then=page.choosing(lambda values: choices.player(self._role).set_row(name=name, values=values)))
+        player = choices.player(self._role)
+        row = RowAsked(values=player.get_row(name=name), lowest=lowest, highest=highest, fewest=wizard_limits.FEWEST_ROW_CELLS, most=wizard_limits.MOST_ROW_CELLS,
+                       usual=player.genre_row(name=name))
+        title = messages.MSG_WIZARD_ROW_TITLE.format(row=labels.MSG_WIZARD_ROW_LABELS[name], player=self.name())
+        page.ask_row(title=title, row=row, then=page.choosing(lambda values: choices.player(self._role).set_row(name=name, values=values)))
 
     def player_gauge_field(self, gauge):
         """Return the field of one of the player's own gauges: a number stepped or typed, drawn as a horizontal gauge beside the number."""

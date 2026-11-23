@@ -11,7 +11,6 @@ revise how the wizard is organized).
 
 from llamatron.interface.forms.nodes import ChoiceField, Field, NumberField
 from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import labels, legends, marks
 
@@ -79,7 +78,7 @@ class Branch:
             return ChoiceField(page=page, label=label, choices=values, names=names, current=current, shown=names[values.index(current)], set=chosen)
 
         def pick():
-            page.ask(dialog=ChoiceDialog(title=label, options=names, current=FIRST_CHOICE), then=lambda place: chosen(values[place]))
+            page.ask_choice(title=label, options=names, current=FIRST_CHOICE, then=lambda place: chosen(values[place]))
         return Field(label=label, value=lambda: marks.MSG_WIZARD_CHOOSE, adjust=lambda offset: chosen(values[FIRST_CHOICE]), enter=pick, enter_what=legends.What.CHOOSE)
 
     def writing_gauge_field(self, *, label, position, moved, set_position):

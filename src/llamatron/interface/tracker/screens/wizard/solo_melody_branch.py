@@ -13,7 +13,6 @@ section under Form.
 
 from llamatron.interface.forms.nodes import Button, Field
 from llamatron.interface.forms.remarks import dim_remark
-from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.user_strings import labels, legends, messages
 from llamatron.wizards.create_song import wizard_limits
@@ -67,8 +66,8 @@ class SoloMelodyBranch(Branch):
 
         def give_back():
             question = messages.MSG_WIZARD_TUNE_GIVE_BACK_QUESTION.format(kind=wizard_limits.SOLO)
-            page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, messages=[question], starts_on_no=True),
-                     then=page.choosing(lambda _: choices.get_solos().set_solo_pattern(place=place, pattern=None)))
+            page.confirm(title=messages.MSG_WIZARD_TUNE_GIVE_BACK_TITLE, lines=[question], starts_on_no=True,
+                         then=lambda: page.choosing(lambda _: choices.get_solos().set_solo_pattern(place=place, pattern=None))(None))
         # On notes edited by hand, the delete key on the button gives the notes back to the wizard, after a question.
         return [Button(label=labels.MSG_WIZARD_EDIT_NOTES_BUTTON, enter=lambda: page.edit_solo(place), enter_what=legends.MSG_WIZARD_EDIT_NOTES_WHAT, clear=give_back if choices.get_solos().solo_is_own(place) else None,
                        clear_what=legends.MSG_TUNE_USUAL_WHAT),
@@ -83,10 +82,10 @@ class SoloMelodyBranch(Branch):
         place = self.place()
         name = messages.MSG_WIZARD_MELODY_OF.format(kind=wizard_limits.SOLO)
 
-        def written(_):
+        def written():
             page.choosing(choices.get_solos().new_solo_take)(place)
             page.say(messages.MSG_WIZARD_REGENERATED.format(name=name))
-        page.ask(dialog=ConfirmDialog(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), messages=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)], starts_on_no=True), then=written)
+        page.confirm(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), lines=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)], starts_on_no=True, then=written)
 
     def listens_alone(self):
         return True

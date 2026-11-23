@@ -16,7 +16,6 @@ import functools
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, Toggle
 from llamatron.interface.forms.remarks import dim_remark, remark
-from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.interface.tracker.screens.wizard.hook_picture import picture_of
 from llamatron.user_strings import labels, legends, messages
@@ -161,11 +160,10 @@ class HooksBranch(Branch):
         """Have another hook written, with the behavior and the gauges as they stand, after asking."""
         page = self.get_page()
         name = messages.MSG_WIZARD_HOOK_NAME
-        dialog = ConfirmDialog(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), messages=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)],
-                               starts_on_no=True)
-        page.ask(dialog=dialog, then=self._write_new_hook)
+        page.confirm(title=messages.MSG_WIZARD_REGENERATE_TITLE.format(name=name), lines=[messages.MSG_WIZARD_REGENERATE_SAYS.format(name=name)],
+                     starts_on_no=True, then=self._write_new_hook)
 
-    def _write_new_hook(self, _):
+    def _write_new_hook(self):
         """Have another hook written, and say so."""
         page = self.get_page()
         write = page.choosing(self._new_hook)
