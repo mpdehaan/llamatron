@@ -111,12 +111,7 @@ class ClipSlotPlayer:
             else:
                 end = clip.total_length()
             # A looping clip is cut where its scene ends. One that doesn't loop plays the whole of what it played, so nothing is cut, and sectioning it to its own length would only rebuild every position.
-            if loop:
-                sounds = []
-                if fill > NO_LENGTH:
-                    sounds = clip.section(start=NO_LENGTH, end=fill).get_sounds()
-            else:
-                sounds = clip.played_sounds()
+            sounds = finished_sounds(clip=clip, loop=loop, fill=fill)
             controls = self._sent_controls(controls=controls, end=end)
             # A clip is named after the pattern it plays unless it has a name of its own, while its scene keeps
             # the scene's name, and it carries the pattern's own time signature, if it has one, for the bars a DAW draws.
@@ -466,6 +461,19 @@ class ClipSlotPlayer:
                 done = played.done
                 break
         return Pass(clip=Clip(sounds=sounds, scale=scale, controls=controls), tied_from_before=tied_from_before, length=total, keyswitches=switched, done=done)
+
+
+def finished_sounds(*, clip, loop, fill):
+    """Return the sounds a clip finishes with: a looping clip's cut where its scene ends, fill, unless its passes were cut there
+    already and its chain left its length alone, since cutting again only rebuilds every sound; and the whole of what any other
+    clip played, which nothing cuts."""
+    if not loop:
+        return clip.played_sounds()
+    if fill <= NO_LENGTH:
+        return []
+    if clip.total_length() == fill:
+        return clip.played_sounds()
+    return clip.section(start=NO_LENGTH, end=fill).get_sounds()
 
 
 def _tripped(*, passes, tables):
