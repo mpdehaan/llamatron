@@ -120,7 +120,7 @@ class PatternPlayer:
     the track's transpose and the register the track's velocity is bound to, if any.
     """
 
-    __slots__ = ('_song', '_setlist', '_scene', '_scale', '_scale_name', '_transpose', '_velocity_register', '_default_velocity', '_accent', '_default_octaves', '_transposes', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
+    __slots__ = ('_song', '_setlist', '_scene', '_scale', '_scale_name', '_transpose', '_default_velocity', '_accent', '_default_octaves', '_transposes', '_scales_by_octave', '_scale_size', '_played_patterns', '_modulations', '_passes', '_context')
 
     def __init__(self, *, song, scene, scale, track, scale_name=None, modulations=None, passes=None):
         """scale_name is the scale the clip's degrees take their notes from: the clip's own, or the scene's when it's None.
@@ -137,7 +137,6 @@ class PatternPlayer:
         self._scale = scale
         self._scale_name = scale_name or scene.get_scale_name()
         self._transpose = track.get_transpose()
-        self._velocity_register = track.get_velocity_register()
         # What a step with no velocity typed plays at on this track, and what an accented step adds.
         self._default_velocity = song.default_velocity_of(track)
         self._accent = song.accent_of(track)
@@ -154,9 +153,9 @@ class PatternPlayer:
         self._played_patterns = {}
         if passes is not None:
             self._played_patterns = passes.get_played_patterns()
-        # A clip that hears a drift or binds a register to its velocity reads what carries between passes in every pass.
+        # A clip that hears a drift reads what carries between passes in every pass.
         self._passes = None
-        if modulations is None and self._velocity_register is None:
+        if modulations is None:
             self._passes = passes
         # What the player's passes are remembered by besides their patterns, worked out the first time a pass is remembered.
         self._context = None
@@ -298,7 +297,6 @@ class PatternPlayer:
         changes = changes_registers and played.changes_registers
         draws = changes_registers and played.uses_draws
         uses_registers = played.uses_registers or draws
-        reads_registers = uses_registers or self._velocity_register is not None
         counting = registers.is_counting()
         drum = pattern.is_drum()
         steps = order.next_steps(key=(PATTERN_STEPS, pattern_name), count=pattern.get_steps(), direction=direction or pattern.get_direction())
@@ -330,7 +328,7 @@ class PatternPlayer:
             step_draws is not None,  # a step draws
             bool(pass_draws) and changes_registers,  # the clip draws as the pass starts
             stops is not None or restarts is not None or mutes is not None,  # a step's statement reads the registers
-            changes or reads_registers,  # a step changes or reads the registers
+            changes or uses_registers,  # a step changes or reads the registers
             grab is not None,  # a step grabs
             self._modulations is not None,  # the clip hears a modulation
         ))
@@ -361,7 +359,7 @@ class PatternPlayer:
             # A step with no note can send CC values and add to the registers too.
             if played.sends_controls:
                 controls += _controls_sent(values=values, time=slot * step_size)
-            if changes or reads_registers:
+            if changes or uses_registers:
                 sets = NO_SETS
                 adds = NO_ADDS
                 if changes:
@@ -393,8 +391,6 @@ class PatternPlayer:
                 moved, added = _moved_by_values(values=values, current=current, drum=drum, draws=draws)
                 note_moved += moved
                 velocity_added += added
-            if velocity is None and self._velocity_register is not None:
-                velocity = current[self._velocity_register]
             effects = step_effects.NO_EFFECTS
             if self._modulations is not None:
                 heard, scene_start = self._modulations

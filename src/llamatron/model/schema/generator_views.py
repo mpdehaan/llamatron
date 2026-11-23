@@ -74,15 +74,6 @@ class GuitarBarView(NamedTuple):
     label: str
 
 
-class RegisterAddView(NamedTuple):
-    """What every note the generator plays adds to a register, stepped within the current song's Allowed Inc Max for that register,
-    nothing left out of the file: the setting's file name, its label and the register."""
-
-    setting: str
-    label: str
-    register: str
-
-
 class OffsetsView(NamedTuple):
     """An arpeggiator's offsets, a row of steps each moving its note along the scale or silent, shown on one line, ENTER opening
     them in the offsets editor: the setting's file name and its label."""

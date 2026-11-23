@@ -18,8 +18,6 @@ from llamatron.user_strings import errors
 
 # How many steps an arpeggiator's offsets can have, as on a groovebox.
 MIN_OFFSETS = 1
-# The registers, in order, as the arp's settings name their adds (model/schema/file_format.py's REGISTER_NAMES, which the generators don't import).
-REGISTERS = ('AX', 'BX', 'CX', 'DX')
 # An offset of nothing leaves a note where it is, and so does a step with no offsets at all.
 NO_OFFSET = 0
 
@@ -102,17 +100,11 @@ class Arp(ClipGenerator):
     step of None is silent. A silent step doesn't use up a note of the chord, and the offsets
     start again with each chord. With offsets or an octave range, a single note is played as a
     chord of one note, so that one note can make a melody. Without them it's left as it is.
-
-    The ax_add to dx_add settings add to a register on every note it plays, and ax_step_adds to
-    dx_step_adds on each step of the offsets, silent ones too, since registers follow time and
-    not sound. register_adds() says what the last clip it made
-    added and when, for the render's register timeline.
     """
 
-    __slots__ = ('_step', '_order', '_seed', '_octave_range', '_octave_jump', '_offsets', '_note_adds', '_step_adds', '_adds', '_start_state', '_random_state')
+    __slots__ = ('_step', '_order', '_seed', '_octave_range', '_octave_jump', '_offsets', '_start_state', '_random_state')
 
-    def __init__(self, *, step, order=ChordOrder.UP, seed=None, octave_range=1, octave_jump=OctaveJump.AFTER_CHORD, offsets=None,
-                 ax_add=None, bx_add=None, cx_add=None, dx_add=None, ax_step_adds=None, bx_step_adds=None, cx_step_adds=None, dx_step_adds=None, continuation=None):
+    def __init__(self, *, step, order=ChordOrder.UP, seed=None, octave_range=1, octave_jump=OctaveJump.AFTER_CHORD, offsets=None, continuation=None):
         _check_length(step)
         _check_order(order)
         _check_seed(seed)
@@ -127,9 +119,6 @@ class Arp(ClipGenerator):
         self._offsets = None
         if offsets is not None:
             self._offsets = list(offsets)
-        self._note_adds = {name: amount for name, amount in zip(REGISTERS, (ax_add, bx_add, cx_add, dx_add)) if amount}
-        self._step_adds = {name: list(adds) for name, adds in zip(REGISTERS, (ax_step_adds, bx_step_adds, cx_step_adds, dx_step_adds)) if adds}
-        self._adds = []
         # Where its random choices carry on from, the same track's clip before's, when its Restart carries on.
         self._start_state = None
         if continuation is not None:
@@ -160,16 +149,12 @@ class Arp(ClipGenerator):
         _check_seed(seed)
         self._seed = seed
 
-    def register_adds(self):
-        return [(Length.rational(time), adds) for time, adds in self._adds]
-
     def _generate(self, clip):
         generator = random_source(self._seed)
         # Unseeded, the draws come from Python's own stream, which carries on by itself and is never set.
         if self._start_state is not None and self._seed is not None:
             generator.setstate(self._start_state)
         original = clip.resolved_sounds()
-        self._adds = []
         positions = self._arpeggiate(positions=original, generator=generator, scale=clip.get_scale(), start=length_values.ZERO)
         if clip.get_length() is None:
             self._random_state = None
@@ -183,7 +168,6 @@ class Arp(ClipGenerator):
             more = self._arpeggiate(positions=original, generator=generator, scale=clip.get_scale(), start=total)
             positions += more
             total = Length.add(total, Length.total([position[sound.LENGTH] for position in more]))
-        self._adds = [(time, adds) for time, adds in self._adds if Length.less(time, wanted)]
         self._random_state = None
         if self._seed is not None:
             self._random_state = generator.getstate()
@@ -193,7 +177,7 @@ class Arp(ClipGenerator):
         return self._offsets is not None or self._octave_range > schema.MIN_OCTAVE_RANGE
 
     def _arpeggiate(self, *, positions, generator, scale, start):
-        """Return the positions arpeggiated, the first starting at start, a length as a pair, which the register adds are timed from."""
+        """Return the positions arpeggiated, the first starting at start, a length as a pair."""
         result = []
         now = start
         for position in positions:
@@ -231,7 +215,6 @@ class Arp(ClipGenerator):
             offset = NO_OFFSET
             if self._offsets is not None:
                 offset = self._offsets[place % len(self._offsets)]
-            self._note_step_adds(time=now, place=place, plays=offset is not None)
             place += 1
             if offset is None:
                 result.append(Sound.rest(length))
@@ -245,19 +228,6 @@ class Arp(ClipGenerator):
             remaining = Length.subtract(remaining, length)
             now = Length.add(now, length)
         return result
-
-    def _note_step_adds(self, *, time, place, plays):
-        """Note what a step of the arp adds to the registers: its offsets step's adds, and each note's adds when it plays a note."""
-        adds = {}
-        if plays:
-            adds = dict(self._note_adds)
-        if self._offsets is not None:
-            for name, row in self._step_adds.items():
-                amount = row[place % len(self._offsets) % len(row)]
-                if amount:
-                    adds[name] = adds.get(name, 0) + amount
-        if adds:
-            self._adds.append((time, adds))
 
     def _climb(self, notes):
         """Return the chord's notes going up through the octave range, in the octave jump's order."""

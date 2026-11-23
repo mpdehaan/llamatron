@@ -422,9 +422,7 @@ class OffsetsEditor(OneRowEditor):
     PLAY = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.MSG_PLAY_WHAT)
     INSERT_STEP = Binding(Key.I, legends.KeyName.I, legends.What.INSERT_STEP)
     REMOVE_STEP = Binding(Key.D, legends.KeyName.D, legends.What.REMOVE_STEP)
-    # Tab moves between the Offset row and the register add rows under it.
-    NEXT_ROW = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_NEXT_ROW_WHAT)
-    IN_HELP = [*OneRowEditor.IN_HELP, NEXT_ROW, SILENT, PLAY, INSERT_STEP, REMOVE_STEP]
+    IN_HELP = [*OneRowEditor.IN_HELP, SILENT, PLAY, INSERT_STEP, REMOVE_STEP]
     IN_LEGEND = IN_HELP
 
 

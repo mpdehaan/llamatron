@@ -11,20 +11,15 @@ the clip's start and whenever it changes, with the clip's own value winning at t
 
 import unittest
 
-from llamatron.engine.generators import arp as arp_plugin
-from llamatron.engine.generators.arp import generator as arp_values, model as arp_settings
-from llamatron.engine.generators.arp.model import ArpSetting, ArpSettings
 from llamatron.math.rational import Rational
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.register import Register
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.objects.track import Track
 from llamatron.model.schema import defaults as set_defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, RegisterSetting, ResetBehavior, Row, SceneSetting, Section, TrackSetting
-from llamatron.model.values import midi
+from llamatron.model.schema.file_format import ClipSlotSetting, RegisterSetting, ResetBehavior, SceneSetting
 from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import every_step, one_clip, pattern, pitches, scale_notes, song, velocities
+from tests.engine.realizer.test_registers import one_clip, pitches, scale_notes, song
 from tests.support.rendering import as_setlist, render_data
 
 # The other track the tests use, which changes the registers the lead or the pad reads.
@@ -104,104 +99,8 @@ class TestSetRows(unittest.TestCase):
         self.assertEqual(pitches(data), scale_notes([10]))
 
 
-class TestBoundVelocity(unittest.TestCase):
-
-    def test_a_blank_velocity_plays_at_the_bound_register_and_a_steps_own_velocity_wins(self):
-        rows = {Row.VELOCITY: [None, OWN_VELOCITY]}
-        data = one_clip(steps=2, rows=rows, registers=registers(BX=VELOCITY_HELD))
-        data['tracks'][test_registers.LEAD] = {TrackSetting.VELOCITY_REGISTER: test_registers.BX}
-        self.assertEqual(velocities(data), [VELOCITY_HELD, OWN_VELOCITY])
-
-    def test_vel_adds_to_the_bound_velocity(self):
-        data = one_clip(rows={file_format.REGISTER_VELOCITY_ROWS[test_registers.AX]: [1]}, registers=registers(AX=ADDED, BX=VELOCITY_HELD))
-        data['tracks'][test_registers.LEAD] = {TrackSetting.VELOCITY_REGISTER: test_registers.BX}
-        self.assertEqual(velocities(data), [VELOCITY_HELD + ADDED])
-
-    def test_a_bound_velocity_below_one_plays_at_the_lowest_velocity_rather_than_silencing(self):
-        data = one_clip(rows={}, registers=registers(BX=BELOW_THE_FLOOR))
-        data['tracks'][test_registers.LEAD] = {TrackSetting.VELOCITY_REGISTER: test_registers.BX}
-        self.assertEqual(velocities(data), [midi.MIN_VELOCITY])
-
-    def test_an_unbound_track_plays_at_the_default(self):
-        self.assertEqual(velocities(one_clip(rows={}, registers=registers(BX=VELOCITY_HELD))), [set_defaults.DEFAULT_VELOCITY])
-
-
-class TestBoundControls(unittest.TestCase):
-
-    BOUND = {TrackSetting.CC: [BRIGHTNESS, None, None, None], TrackSetting.CC1_REGISTER: test_registers.AX}
-
-    def driven(self, *, lead_rows=None, driver_add=DRIVER_ADDS, registers_=None):
-        lead = pattern(STEPS, **(lead_rows or {}))
-        driver = pattern(STEPS, **{file_format.REGISTER_ADD_ROWS[test_registers.AX]: every_step(value=driver_add, steps=STEPS)})
-        return two_tracks(lead=lead, driver=driver, lead_track=dict(self.BOUND), registers_=registers_ or registers(AX=0))
-
-    def test_a_bound_lane_sends_the_register_at_the_start_and_at_every_change(self):
-        expected = [(QUARTER * step, BRIGHTNESS, DRIVER_ADDS * (step + 1)) for step in range(STEPS)]
-        self.assertEqual(controls_of(self.driven()), expected)
-
-    def test_the_clips_own_value_wins_at_the_same_moment(self):
-        sent = controls_of(self.driven(lead_rows={Row.CC1: [None, OWN_VALUE, None, None]}))
-        self.assertEqual(sent[1], (QUARTER, BRIGHTNESS, OWN_VALUE))
-        self.assertEqual(len(sent), STEPS)
-
-    def test_a_change_that_sends_the_same_value_sends_nothing(self):
-        # AX stops at its maximum without wrap, so after it gets there nothing changes what the lane would send.
-        data = self.driven(registers_={test_registers.AX: {RegisterSetting.MAXIMUM: DRIVER_ADDS * 2}})
-        self.assertEqual([value for _, _, value in controls_of(data)], [DRIVER_ADDS, DRIVER_ADDS * 2])
-
-    def test_a_register_below_zero_sends_the_lowest_cc_value(self):
-        data = self.driven(driver_add=0, registers_=registers(AX=BELOW_ZERO))
-        self.assertEqual(controls_of(data), [(Rational(0), BRIGHTNESS, midi.MIN_CC_VALUE)])
-
-    def test_a_bound_lane_with_no_cc_number_sends_nothing(self):
-        data = self.driven()
-        data['tracks'][test_registers.LEAD] = {TrackSetting.CC1_REGISTER: test_registers.AX}
-        self.assertEqual(controls_of(data), [])
-
-    def test_a_track_with_nothing_in_the_scene_sends_nothing(self):
-        data = self.driven()
-        del data['scenes'][0][SceneSetting.TRACKS][test_registers.LEAD]
-        grid = render_data(data)
-        column = [column for column in grid.get_columns() if column.get_name() == test_registers.LEAD][0]
-        self.assertIsNone(grid.get_clip(row=grid.get_rows()[0], column=column))
-
-    def test_an_unbound_lane_sends_nothing(self):
-        data = self.driven()
-        data['tracks'][test_registers.LEAD] = {TrackSetting.CC: [BRIGHTNESS, None, None, None]}
-        self.assertEqual(controls_of(data), [])
-
-    def test_a_reset_scene_sends_the_default_again(self):
-        data = self.driven()
-        data['scenes'].append({SceneSetting.RESET: [test_registers.AX, test_registers.CX], SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: test_registers.X}}})
-        grid = render_data(data)
-        column = [column for column in grid.get_columns() if column.get_name() == test_registers.LEAD][0]
-        second = grid.get_clip(row=grid.get_rows()[1], column=column)
-        self.assertEqual([control.get_value() for control in second.get_controls()], [0])
-
-
 class TestTheSettings(unittest.TestCase):
     """The track's bindings and the register's Allowed Inc Max, as a file holds them and as their setters change them."""
-
-    def test_a_track_binds_each_lane_and_its_velocity_and_writes_only_what_is_bound(self):
-        track = Track()
-        self.assertFalse(track.binds_registers())
-        track.set_cc_register(lane=2, register=test_registers.CX)
-        track.set_velocity_register(test_registers.BX)
-        self.assertEqual(track.get_cc_registers(), [None, None, test_registers.CX, None])
-        self.assertEqual(track.get_velocity_register(), test_registers.BX)
-        self.assertEqual(track.to_data(), {TrackSetting.CC3_REGISTER: test_registers.CX, TrackSetting.VELOCITY_REGISTER: test_registers.BX})
-        self.assertEqual(track.copy().to_data(), track.to_data())
-        track.set_cc_register(lane=2, register=None)
-        track.set_velocity_register(None)
-        self.assertEqual(track.to_data(), {})
-
-    def test_a_track_refuses_a_register_that_doesnt_exist_from_a_file_and_from_its_setters(self):
-        with self.assertRaises(SongFileError):
-            Track.from_data(data={TrackSetting.CC1_REGISTER: test_registers.EX}, where=test_registers.LEAD)
-        with self.assertRaises(InvalidValue):
-            Track().set_cc_register(lane=0, register=test_registers.EX)
-        with self.assertRaises(InvalidValue):
-            Track().set_velocity_register(test_registers.EX)
 
     def test_a_file_whose_adds_pass_the_limit_is_refused_and_opens_corrected_within_it(self):
         past = set_defaults.DEFAULT_ALLOWED_INC_MAX + ADDED
@@ -221,51 +120,6 @@ class TestTheSettings(unittest.TestCase):
         for wrong in (limits.MIN_ALLOWED_INC_MAX - 1, limits.MAX_REGISTER_VALUE + 1):
             with self.subTest(value=wrong), self.assertRaises(InvalidValue):
                 register.set_setting(name=RegisterSetting.ALLOWED_INC_MAX, value=wrong)
-
-
-
-class TestArpAdds(unittest.TestCase):
-    """An arpeggiator adds to the registers on every note it plays and on each step of its offsets, silent ones too, and its adds count whether or not the notes are heard."""
-
-    def driven_by_an_arp(self, *, arp, driver_rows=None):
-        """Return a song whose driver plays a quarter-note chord through an arp, and whose lead's CC 1 lane is bound to AX, the lead's clip a quarter note long."""
-        driver = pattern(1, **{Row.CHORD: [CHORD], **(driver_rows or {})})
-        data = two_tracks(lead=pattern(1), driver=driver, lead_track=dict(TestBoundControls.BOUND), registers_=registers(AX=0))
-        data[arp_plugin.SECTION] = {ARP: {ArpSetting.STEP: SIXTEENTH, **arp}}
-        data[Section.CHAINS] = {ARP_CHAIN: [{arp_plugin.NAME: ARP}]}
-        data[Section.SCENES][0][SceneSetting.TRACKS][DRIVER][ClipSlotSetting.CHAINS] = [ARP_CHAIN]
-        return data
-
-    def sent(self, data):
-        return [(time, value) for time, _, value in controls_of(data)]
-
-    def test_every_note_the_arp_plays_adds(self):
-        data = self.driven_by_an_arp(arp={arp_settings.ARP_NOTE_ADDS[test_registers.AX]: ADDED})
-        self.assertEqual(self.sent(data), [(SIXTEENTH_TIME * place, ADDED * (place + 1)) for place in range(ARP_NOTES)])
-
-    def test_each_step_of_the_offsets_adds_silent_ones_too(self):
-        data = self.driven_by_an_arp(arp={ArpSetting.OFFSETS: [0, None], arp_settings.ARP_STEP_ADDS[test_registers.AX]: STEP_ADDS})
-        self.assertEqual([value for _, value in self.sent(data)], RUNNING_STEP_ADDS)
-
-    def test_an_arps_adds_count_even_when_probability_silences_its_notes(self):
-        data = self.driven_by_an_arp(arp={arp_settings.ARP_NOTE_ADDS[test_registers.AX]: ADDED}, driver_rows={Row.PROBABILITY: [0]})
-        self.assertEqual([value for _, value in self.sent(data)], [ADDED * (place + 1) for place in range(ARP_NOTES)])
-
-    def test_an_arp_with_adds_counts_among_what_changes_the_registers(self):
-        data = as_setlist(self.driven_by_an_arp(arp={arp_settings.ARP_NOTE_ADDS[test_registers.AX]: ADDED}))
-        self.assertTrue(Setlist.from_data(data=data).changes_registers())
-        self.assertFalse(Setlist.from_data(data=as_setlist(self.driven_by_an_arp(arp={}))).changes_registers())
-
-    def test_the_arp_names_the_registers_as_the_format_does(self):
-        self.assertEqual(list(arp_values.REGISTERS), file_format.REGISTER_NAMES)
-
-    def test_inserting_and_removing_an_offset_keeps_the_step_adds_lined_up(self):
-        settings = ArpSettings({ArpSetting.STEP: SIXTEENTH, ArpSetting.OFFSETS: [0, 0], arp_settings.ARP_STEP_ADDS[test_registers.AX]: [ADDED, None]})
-        settings.insert_cell(0)
-        self.assertEqual(settings.get_step_adds(test_registers.AX), [None, ADDED, None])
-        settings.remove_cell(1)
-        self.assertEqual(settings.get_step_adds(test_registers.AX), [None, None])
-        self.assertNotIn(arp_settings.ARP_STEP_ADDS[test_registers.AX], settings.to_data())
 
 
 if __name__ == '__main__':

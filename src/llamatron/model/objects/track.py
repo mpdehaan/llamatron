@@ -5,7 +5,6 @@
 """A track: a column of the song, with settings that apply to every clip on it."""
 
 from llamatron.caching.revised import notes_change
-from llamatron.model.file import corrections
 from llamatron.model.file.checks import is_whole_number_from, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.built_ins import built_ins_setting, HoldsBuiltIns, pass_over_unknown_built_ins
@@ -16,7 +15,7 @@ from llamatron.model.objects.llama_data import HoldsSettings, left_out_if_defaul
 from llamatron.model.objects.traits import RunsChains
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import Section, TrackSetting
-from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
+from llamatron.model.schema.setting import check_settings, Checked, described, Flag, WholeNumber
 from llamatron.model.values import midi
 from llamatron.user_strings import errors
 
@@ -58,8 +57,6 @@ SETTINGS = described(
     Checked(name=TrackSetting.CC, check=_check_cc_numbers),
     Checked(name=TrackSetting.GROOVE, check=check_groove_choice, needs_song=True),
     Checked(name=TrackSetting.INSTRUMENT, check=_check_instrument_name, needs_song=True),
-    *[Choice(name=name, choices=file_format.REGISTER_NAMES, default=corrections.LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER) for name in file_format.CC_REGISTER_SETTINGS],
-    Choice(name=TrackSetting.VELOCITY_REGISTER, choices=file_format.REGISTER_NAMES, default=corrections.LEFT_OUT, error=errors.ERR_BAD_BOUND_REGISTER),
     WholeNumber(name=TrackSetting.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, error=errors.ERR_BAD_DEFAULT_VELOCITY),
     WholeNumber(name=TrackSetting.ACCENT, lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT, error=errors.ERR_BAD_ACCENT),
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
@@ -70,7 +67,7 @@ SETTINGS = described(
 
 
 class Track(HoldsBuiltIns, RunsChains, HoldsSettings):
-    """A track's settings: whether it's a drum track, whether it's muted, its transpose, octave range, CC numbers, groove and instrument, and the registers bound to its CC lanes and its velocity.
+    """A track's settings: whether it's a drum track, whether it's muted, its transpose, octave range, CC numbers, groove and instrument.
 
     A setting the file leaves out is kept as None and means its default, so that saving writes
     back only what was set.
@@ -88,15 +85,14 @@ class Track(HoldsBuiltIns, RunsChains, HoldsSettings):
 
     def __init__(
         self, *, drum=None, mute=None, transpose=None, lowest_octave=None, highest_octave=None, cc=None, groove=None, instrument=None,
-        cc1_register=None, cc2_register=None, cc3_register=None, cc4_register=None, velocity_register=None, default_velocity=None, accent=None, chains=None,
+        default_velocity=None, accent=None, chains=None,
         bypass_when=None, skip_when=None, built_in=None,
     ):
         self.note_change()
         self._settings = {
             TrackSetting.DRUM: drum, TrackSetting.MUTE: mute, TrackSetting.TRANSPOSE: transpose,
             TrackSetting.LOWEST_OCTAVE: lowest_octave, TrackSetting.HIGHEST_OCTAVE: highest_octave, TrackSetting.CC: own_copy(cc), TrackSetting.GROOVE: groove,
-            TrackSetting.INSTRUMENT: instrument, TrackSetting.CC1_REGISTER: cc1_register, TrackSetting.CC2_REGISTER: cc2_register,
-            TrackSetting.CC3_REGISTER: cc3_register, TrackSetting.CC4_REGISTER: cc4_register, TrackSetting.VELOCITY_REGISTER: velocity_register, TrackSetting.DEFAULT_VELOCITY: default_velocity, TrackSetting.ACCENT: accent,
+            TrackSetting.INSTRUMENT: instrument, TrackSetting.DEFAULT_VELOCITY: default_velocity, TrackSetting.ACCENT: accent,
             TrackSetting.CHAINS: own_copy(chains),
             TrackSetting.BYPASS_WHEN: own_copy(bypass_when), TrackSetting.SKIP_WHEN: own_copy(skip_when), TrackSetting.BUILT_IN: own_copy(built_in),
         }
@@ -196,32 +192,6 @@ class Track(HoldsBuiltIns, RunsChains, HoldsSettings):
         if numbers is None:
             return _no_cc_numbers()
         return list(numbers)
-
-    def get_cc_registers(self):
-        """Return the register each CC lane is bound to, in lane order, or None for a lane that isn't bound."""
-        return [self._settings[name] for name in file_format.CC_REGISTER_SETTINGS]
-
-    def binds_registers(self):
-        """Return whether any CC lane or the velocity is bound to a register."""
-        return any(self.get_cc_registers()) or self.get_velocity_register() is not None
-
-    @notes_change
-    def set_cc_register(self, *, lane, register):
-        """Bind one of the four CC lanes to a register by name, or None to bind it to nothing."""
-        if not is_whole_number_from(value=lane, lowest=0, highest=len(file_format.CC_ROWS) - 1):
-            raise InvalidValue(errors.ERR_NO_SUCH_LANE.format(lane=lane, last=len(file_format.CC_ROWS) - 1))
-        name = file_format.CC_REGISTER_SETTINGS[lane]
-        if register is not None:
-            SETTINGS[name].check(register)
-        self._settings[name] = register
-
-    def get_velocity_register(self):
-        """Return the register a note with no velocity of its own plays at, or None for none."""
-        return self._settings[TrackSetting.VELOCITY_REGISTER]
-
-    def set_velocity_register(self, register):
-        """Bind the velocity to a register by name, or None to bind it to nothing."""
-        self.set_written(name=TrackSetting.VELOCITY_REGISTER, value=register)
 
     def get_statements(self, name):
         """Return one of its tables of statements about the registers, by the setting's name: the one that bypasses its clips' generators or the one that makes its clips sit out."""

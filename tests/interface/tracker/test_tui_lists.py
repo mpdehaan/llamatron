@@ -511,15 +511,6 @@ class TestArpEditorFields(UITest):
     def up(self):
         return self.arp(UP)
 
-    async def test_each_registers_add_per_note_steps_and_clears(self):
-        for register in file_format.REGISTER_NAMES:
-            with self.subTest(register=register):
-                await self.select_field(labels.MSG_ARP_NOTE_ADD_LABEL.format(name=register))
-                await self.press(key_of(binding=keybindings.PluginEditor.MORE, key=Key.RIGHT_BRACKET))
-                self.assertEqual(self.up().get_note_add(register), 1)
-                await self.press(Key.BACKSPACE)
-                self.assertIsNone(self.up().get_note_add(register))
-
     async def test_the_name_field_renames_the_arpeggiator_and_its_chains(self):
         await self.select_field(labels.MSG_NAME_LABEL)
         await self.press(Key.ENTER)
@@ -654,22 +645,6 @@ class TestOffsetsEditor(UITest):
         await self.select_field(labels.MSG_OFFSETS_LABEL)
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, OffsetsEditor)
-
-    async def test_tab_moves_to_a_registers_add_row_where_steps_add_within_its_limit(self):
-        await self.open_offsets([0, 2])
-        self.assertNotIn(labels.MSG_STEP_ADD_ROW_LABEL.format(name=file_format.REGISTER_NAMES[0]), self.text())
-        await self.press(keybindings.OffsetsEditor.NEXT_ROW)
-        self.assertIn(labels.MSG_STEP_ADD_ROW_LABEL.format(name=file_format.REGISTER_NAMES[0]), self.text())
-        await self.press(keybindings.OffsetsEditor.MORE, Key.RIGHT, keybindings.OffsetsEditor.LESS)
-        self.assertEqual(self.arp(UP).get_step_adds(file_format.REGISTER_NAMES[0]), [1, -1])
-        self.assertEqual(self.app.screen.offsets(), [0, 2])
-        most = self.document.song().get_register(file_format.REGISTER_NAMES[0]).get_allowed_inc_max()
-        for _ in range(most + 1):
-            await self.press(keybindings.OffsetsEditor.LESS)
-        self.assertEqual(self.arp(UP).get_step_adds(file_format.REGISTER_NAMES[0])[1], -most)
-        for _ in file_format.REGISTER_NAMES:
-            await self.press(keybindings.OffsetsEditor.NEXT_ROW)
-        self.assertIsNone(self.app.screen.register_edited())
 
     async def test_up_and_down_nudge_the_offset_like_plus_and_minus(self):
         await self.open_offsets([0, 2])

@@ -15,7 +15,6 @@ MSG_CHANGED_WORD = 'arp'
 
 # The headings of its columns.
 MSG_NOTES_HEADING = 'Notes'
-MSG_REGISTERS_HEADING = 'Registers'
 
 # Its page's help.
 HELP_PAGE = """
@@ -23,7 +22,7 @@ Step: how long each note of the chord plays, the pattern's step size unless set.
 Order: which way it goes through the chord. Random uses the seed.
 Octave range: plays the chord again in up to 4 octaves. Octave jump: up after the whole chord, or after each note.
 Offsets: the arp's own steps, like a groovebox's. Each moves its note along the scale, and a blank step is silent.
-ENTER on Offsets opens them, and Bksp removes them. Each register's field: what every note adds to it.
+ENTER on Offsets opens them, and Bksp removes them.
 """
 
 # The name of the tab of the built-in one every clip and track holds.

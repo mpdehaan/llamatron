@@ -162,11 +162,6 @@ def repeats(*, items, setting):
     return any(item.get(setting, limits.MIN_REPEAT) > limits.MIN_REPEAT for item in items)
 
 
-def binds_registers(data):
-    """Return whether any track binds a CC lane or its velocity to a register."""
-    return any(any_track_setting(setting)(data) for setting in (*file_format.CC_REGISTER_SETTINGS, TrackSetting.VELOCITY_REGISTER))
-
-
 def uses_another_time_signature(data):
     return any(song.get(SongSetting.TIME_SIGNATURE, defaults.DEFAULT_TIME_SIGNATURE) != defaults.DEFAULT_TIME_SIGNATURE for song in songs(data))
 
@@ -198,7 +193,6 @@ FEATURES = [
     ('stop when', any_pattern_rows(file_format.STATEMENT_ROWS[StepStatement.STOP])),
     ('restart when', any_pattern_rows(file_format.STATEMENT_ROWS[StepStatement.RESTART])),
     ('mute when', any_pattern_rows(file_format.STATEMENT_ROWS[StepStatement.MUTE])),
-    ('register binding', binds_registers),
     ('drum patterns', any_pattern_setting(PatternSetting.DRUM)),
     ('pattern step size', any_pattern_setting(PatternSetting.STEP_SIZE)),
     ('pattern time signature', any_pattern_setting(PatternSetting.TIME_SIGNATURE)),

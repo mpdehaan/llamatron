@@ -148,12 +148,6 @@ class TrackSetting:
     CC = 'cc'
     GROOVE = 'groove'
     INSTRUMENT = 'instrument'
-    # The register each CC lane is bound to, which sends the register's value on the lane whenever it changes, and the register bound to the velocity.
-    CC1_REGISTER = 'cc1_register'
-    CC2_REGISTER = 'cc2_register'
-    CC3_REGISTER = 'cc3_register'
-    CC4_REGISTER = 'cc4_register'
-    VELOCITY_REGISTER = 'velocity_register'
     # The velocity a step with none typed plays at, over the track's instrument's, and what an accented step adds, on top of the instrument's.
     DEFAULT_VELOCITY = 'default_velocity'
     ACCENT = 'accent'
@@ -799,8 +793,6 @@ PATTERN_ROWS = [
 ]
 # A pattern's CC lanes, whose numbers each track sets for itself.
 CC_ROWS = (Row.CC1, Row.CC2, Row.CC3, Row.CC4)
-# The track's setting that binds each CC lane to a register, in the order of the lanes.
-CC_REGISTER_SETTINGS = (TrackSetting.CC1_REGISTER, TrackSetting.CC2_REGISTER, TrackSetting.CC3_REGISTER, TrackSetting.CC4_REGISTER)
 FORWARD = Direction.FORWARD
 DIRECTIONS = [
     Direction.FORWARD, Direction.REVERSE_A, Direction.REVERSE_B, Direction.ALTERNATE, Direction.PENDULUM,

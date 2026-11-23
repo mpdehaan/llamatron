@@ -13,7 +13,7 @@ from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.groove_choice import groove_choice_field
 from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.arrange_tabs import built_in_tabs, fields_tab
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
+from llamatron.interface.tracker.screens.shared.field import Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.interface.tracker.screens.shared.octave_field import octave_field
@@ -99,21 +99,6 @@ class TrackEditor(ShowsNamedItem, FieldPage):
     def set_instrument(self, instrument):
         self.document().set_track_instrument(name=self.item, instrument=instrument)
 
-    def register_field(self, *, label, current, bind):
-        """Return a field binding a CC lane or the velocity to a register, (none) first and then AX to DX."""
-        choices = [marks.MSG_NONE_SHOWN, *file_format.REGISTER_NAMES]
-        return ChoiceField(
-            page=self, label=label, choices=choices, current=current or marks.MSG_NONE_SHOWN,
-            set=functools.partial(self._bind_register, bind=bind), clear=functools.partial(bind, None), clear_what=legends.MSG_UNBIND_WHAT,
-        )
-
-    @staticmethod
-    def _bind_register(choice, *, bind):
-        """Bind the register chosen, or none for (none)."""
-        if choice == marks.MSG_NONE_SHOWN:
-            choice = None
-        bind(choice)
-
     def default_velocity_field(self):
         """Return the Default velocity field: what a step with no velocity typed plays at on the track, shown as its instrument's until the track has its own."""
         track = self.track()
@@ -161,9 +146,7 @@ class TrackEditor(ShowsNamedItem, FieldPage):
             *built_in_tabs(page=self, track=self.item, scene=built_in_place.OF_THE_TRACK, kinds=generator_plugins.built_ins_before_list()),
             fields_tab(label=labels.MSG_USER_TAB, fields=[generators_field(page=self, names=self._chain_names, store=self._set_chain_names)]),
             *built_in_tabs(page=self, track=self.item, scene=built_in_place.OF_THE_TRACK, kinds=generator_plugins.built_ins_after_list()),
-            Tab(label=labels.MSG_CC_LANES_TAB, columns=[
-                TabColumn(heading=None, fields=numbers), TabColumn(heading=None, fields=self._cc_register_fields(track)),
-            ]),
+            Tab(label=labels.MSG_CC_LANES_TAB, columns=[TabColumn(heading=None, fields=numbers)]),
             *[fields_tab(label=tab, fields=fields) for tab, fields in self._statement_sections(track)],
         ]
 
@@ -210,24 +193,6 @@ class TrackEditor(ShowsNamedItem, FieldPage):
 
     def _set_highest_octave(self, octave):
         self._change(self.track().set_highest_octave, octave)
-
-    def _cc_register_fields(self, track):
-        """Return a field for each CC lane's register, then the velocity's register."""
-        lanes = range(len(file_format.CC_ROWS))
-        result = []
-        registers = track.get_cc_registers()
-        for lane in lanes:
-            label = labels.MSG_CC_REGISTER_LABEL.format(number=lane + 1)
-            result.append(self.register_field(label=label, current=registers[lane], bind=functools.partial(self._bind_cc_register, lane=lane)))
-        velocity_register = track.get_velocity_register()
-        result.append(self.register_field(label=labels.MSG_VELOCITY_REGISTER_LABEL, current=velocity_register, bind=self._bind_velocity_register))
-        return result
-
-    def _bind_cc_register(self, register, *, lane):
-        self._change(self.track().set_cc_register, lane=lane, register=register)
-
-    def _bind_velocity_register(self, register):
-        self._change(self.track().set_velocity_register, register)
 
     def _chain_names(self):
         return self.track().get_chain_names()

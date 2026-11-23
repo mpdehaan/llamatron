@@ -247,9 +247,7 @@ MSG_NO_DEFAULT_VELOCITY_WHAT = 'default'
 MSG_NO_TRANSPOSE_WHAT = 'no transpose'
 MSG_WHOLE_RANGE_WHAT = 'whole range'
 MSG_NO_CC_WHAT = 'none'
-MSG_UNBIND_WHAT = 'unbind'
 # The offsets editor: a one-row grid with a label column this wide, and a margin around it.
-MSG_NEXT_ROW_WHAT = 'next row'
 # A settings page's tab box: on the row of tabs, the keys that choose a tab, and Tab, which goes to the row of tabs.
 MSG_TAB_WHAT = 'tab'
 MSG_TO_TABS_WHAT = 'to tabs'

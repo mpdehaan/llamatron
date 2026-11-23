@@ -2,24 +2,17 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The Arpeggiator's page: the Notes column (Step, Order, Octave range, Octave jump, Offsets, Restart) and the Registers column,
-what every note adds to each register."""
+"""The Arpeggiator's page: the Notes column (Step, Order, Octave range, Octave jump, Offsets, Restart)."""
 
 from llamatron.engine.generators.arp import model, schema, strings
 from llamatron.engine.generators.arp.model import ArpSetting
 from llamatron.model.objects.naming import words
-from llamatron.model.schema import file_format
-from llamatron.model.schema.generator_views import ChoiceView, ColumnView, GeneratorView, NumberView, OffsetsView, RegisterAddView, RestartView, TimeView
+from llamatron.model.schema.generator_views import ChoiceView, ColumnView, GeneratorView, NumberView, OffsetsView, RestartView, TimeView
 from llamatron.user_strings import labels
 
 ORDERS = tuple(model.ORDERS)
 JUMPS = tuple(model.OCTAVE_JUMPS)
 JUMP_NAMES = {jump: words(jump) for jump in JUMPS}
-
-
-def _register_add(register):
-    """Return how what every note adds to a register is edited."""
-    return RegisterAddView(setting=model.ARP_NOTE_ADDS[register], label=labels.MSG_ARP_NOTE_ADD_LABEL.format(name=register), register=register)
 
 
 VIEW = GeneratorView(
@@ -32,7 +25,6 @@ VIEW = GeneratorView(
             OffsetsView(setting=ArpSetting.OFFSETS, label=labels.MSG_OFFSETS_LABEL),
             RestartView(),
         )),
-        ColumnView(heading=strings.MSG_REGISTERS_HEADING, settings=tuple(_register_add(register) for register in file_format.REGISTER_NAMES)),
     ),
     help=strings.HELP_PAGE,
 )

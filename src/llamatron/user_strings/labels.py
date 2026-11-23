@@ -431,8 +431,6 @@ MSG_LOWEST_OCTAVE_LABEL = 'Lowest octave'
 MSG_HIGHEST_OCTAVE_LABEL = 'Highest octave'
 MSG_CC_LABEL = 'CC {number}'
 # The track editor's register bindings: a CC lane's register, and the velocity's.
-MSG_CC_REGISTER_LABEL = 'CC{number} Reg'
-MSG_VELOCITY_REGISTER_LABEL = 'Vel Reg'
 MSG_STEP_LABEL = 'Step'
 MSG_ORDER_LABEL = 'Order'
 MSG_OCTAVE_RANGE_LABEL = 'Octave range'
@@ -441,8 +439,6 @@ MSG_OFFSETS_LABEL = 'Offsets'
 MSG_STEP_ROW_LABEL = ' Step'
 MSG_OFFSET_ROW_LABEL = ' Offset'
 # The offsets editor's rows of register adds, under the Offset row, and the arp editor's adds on every note.
-MSG_STEP_ADD_ROW_LABEL = ' {name}+='
-MSG_ARP_NOTE_ADD_LABEL = '{name}+= per note'
 
 # interface/tracker/screens/set/scale_page.py
 MSG_ROOT_LABEL = 'Root'

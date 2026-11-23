@@ -24,7 +24,7 @@ from llamatron.interface.tracker.screens.shared.time_field import time_field
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import shape_setting
-from llamatron.model.schema.generator_views import ChoiceView, DriftValuesView, GaugeView, GuitarBarView, InheritedChoiceView, NumberView, OctaveView, OffsetsView, ProgressionView, RegisterAddView, RestartView, SectionsView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView, WhenView
+from llamatron.model.schema.generator_views import ChoiceView, DriftValuesView, GaugeView, GuitarBarView, InheritedChoiceView, NumberView, OctaveView, OffsetsView, ProgressionView, RestartView, SectionsView, SectionView, ShapeView, StepsView, TimeView, ToggleView, TrackView, WhenView
 from llamatron.user_strings import labels, legends, marks
 
 # What a register add left out of the file is, and the offsets an arpeggiator starts its editor with where it has none.
@@ -36,7 +36,7 @@ NEW_OFFSET_STEPS = 8
 FIELD_MAKERS = {
     ChoiceView: '_choice_field', NumberView: '_number_field', ShapeView: '_shape_fields', RestartView: '_restart_field', TimeView: '_time_field',
     StepsView: '_steps_field', SectionView: '_section_fields', ToggleView: '_toggle', OctaveView: '_octave_field', TrackView: '_track_field',
-    ProgressionView: '_progression_field', GuitarBarView: '_guitar_bar_field', RegisterAddView: '_register_add_field', OffsetsView: '_offsets_field',
+    ProgressionView: '_progression_field', GuitarBarView: '_guitar_bar_field', OffsetsView: '_offsets_field',
     DriftValuesView: '_drift_value_rows', WhenView: '_when_fields', InheritedChoiceView: '_inherited_choice', GaugeView: '_gauge',
     SectionsView: '_section_table',
 }
@@ -171,10 +171,6 @@ class ViewFields:
         if chosen == setting.inherited_choice:
             chosen = None
         self.store(setting=setting.setting, value=chosen)
-
-    def store_register_add(self, number, *, setting):
-        """Keep what every note adds to a register, left out of the file where it adds nothing."""
-        self.store(setting=setting, value=number or None)
 
     def store_time(self, value, *, setting):
         """Keep a step length, None leaving the pattern's step size."""
@@ -329,15 +325,6 @@ class ViewFields:
         return octave_field(
             page=self, label=setting.label, current=functools.partial(self.octave_of, setting), lowest=functools.partial(self.lowest_of, setting),
             highest=functools.partial(self.highest_of, setting), default=setting.default, set_octave=functools.partial(self.store_octave, setting=setting),
-        )
-
-    def _register_add_field(self, setting):
-        """Return the field for what every note adds to a register, within the current song's Allowed Inc Max for it."""
-        most = self.document().song().get_register(setting.register).get_allowed_inc_max()
-        number = self.settings().get_written(setting.setting) or NO_ADD
-        return NumberField(
-            page=self, label=setting.label, number=number, lowest=-most, highest=most,
-            set=functools.partial(self.store_register_add, setting=setting.setting), clear=functools.partial(self.store, setting=setting.setting, value=None),
         )
 
     def _offsets_field(self, setting):

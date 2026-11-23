@@ -15,7 +15,6 @@ from llamatron.engine.clips.row_clock import RowClock
 from llamatron.engine.generators import registry
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.realizer import registers as registers_values
-from llamatron.engine.realizer.bound_controls import bound_controls
 from llamatron.engine.realizer.chain_runs import chain_runs
 from llamatron.engine.realizer.chain_step_place import ChainStepPlace, ClipBeingMade, StepInChains
 from llamatron.engine.realizer.clip_slot_player import ClipSlotPlayer
@@ -585,12 +584,6 @@ class SongRealizer:
             registers = RegisterReader(timeline=self.get_timeline(scene), place=self._track_place(track))
             player = ClipSlotPlayer(realizer=self, song=self._song, scene=scene, track_name=track)
             clip = player.play(grabbing=clip_slot.get_grab_track() is not None, registers=registers)
-            settings = self._song.get_track(track)
-            bound = [(number, name) for number, name in zip(settings.get_cc_numbers(), settings.get_cc_registers()) if number is not None and name is not None]
-            if bound:
-                clip.add_controls(bound_controls(
-                    bound=bound, timeline=self.get_timeline(scene), own=clip.get_controls(), end=self.get_clip_length(scene=scene, track=track),
-                ))
             self._clips[key] = clip
         return self._clips[key]
 

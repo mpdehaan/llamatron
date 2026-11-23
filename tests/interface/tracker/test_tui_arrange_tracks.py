@@ -13,7 +13,7 @@ from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
 from llamatron.interface.tracker.screens.generators.generator_list_page import GeneratorListPage
 from llamatron.interface.tracker.screens.shared.generator_names import generators_to_add
-from llamatron.model.schema import defaults, file_format, limits
+from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, TrackSetting
 from llamatron.user_strings import labels, marks, names as names_text
 from tests.support.rendering import render_song
@@ -238,20 +238,6 @@ class TestTrackEditor(UITest):
         await self.press(Key.ESCAPE)
         self.assertIn(PatternSetting.DRUM, self.text())
         render_song(self.document.song())
-
-    async def test_a_lane_and_the_velocity_bind_to_registers_and_unbind(self):
-        more = key_of(binding=keybindings.TrackEditor.MORE, key=Key.RIGHT_BRACKET)
-        await self.select_field(labels.MSG_CC_REGISTER_LABEL.format(number=2))
-        await self.press(more, more)
-        self.assertEqual(self.track(LEAD).get_cc_registers(), [None, file_format.REGISTER_NAMES[1], None, None])
-        await self.press(Key.BACKSPACE)
-        self.assertEqual(self.track(LEAD).get_cc_registers(), [None] * len(file_format.REGISTER_NAMES))
-        await self.select_field(labels.MSG_VELOCITY_REGISTER_LABEL)
-        await self.press(more)
-        self.assertEqual(self.track(LEAD).get_velocity_register(), file_format.REGISTER_NAMES[0])
-        self.assertEqual(self.track(LEAD).to_data(), {TrackSetting.VELOCITY_REGISTER: file_format.REGISTER_NAMES[0]})
-        await self.press(Key.BACKSPACE)
-        self.assertIsNone(self.track(LEAD).get_velocity_register())
 
     async def test_a_tracks_octave_range_in_the_sets_octave_labels(self):
         song = self.document.song()
