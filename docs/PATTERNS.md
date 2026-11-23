@@ -351,7 +351,7 @@ of its rows use it, and draws whether its note sounds or not. [Draws](DRAWS.md#u
 
 A drummer who plays the fill only in every fourth bar, a riff that stumbles and starts again, a phrase that breaks off halfway through its third time: each is a player deciding, at one moment in the bar, by a count kept in the head. These three sections give every step of a pattern that decision, with a draw as the count.
 
-Each section holds one statement about the draws on each step, written down the step's column in five rows, `c1` to `c5`. The five rows are the five parts of a statement of [Conditional Execution](DRAWS.md#conditional-execution), stood on end:
+Each section holds one statement about the draws on each step, written down the step's column in five rows, `c1` to `c5`. The five rows are the five parts of a [Bypass When](DRAWS.md#bypass-when) statement, stood on end:
 
 | Row | Holds | Example: `AD % 4 = 3` |
 | --- | --- | --- |

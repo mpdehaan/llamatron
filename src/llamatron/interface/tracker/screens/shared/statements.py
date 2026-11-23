@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Conditional Execution on a settings page: a table of statements about the registers, and a scene's or a clip's sets and adds.
+"""Bypass When on a settings page: a table of statements about the registers, and a scene's or a clip's sets and adds.
 
 One table serves every page that has one, a generator's, a chain's, a scene's, a clip's and a
 track's: a heading, and under it a line for each statement the table may hold. A line is a row

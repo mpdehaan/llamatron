@@ -643,7 +643,7 @@ class FileLayout:
     TRACK = 'track'
 
 DRAW_NAMES = [DrawName.AD, DrawName.BD, DrawName.CD, DrawName.DD, DrawName.ED, DrawName.FD, DrawName.GD, DrawName.HD]
-# Every value a statement of Conditional Execution can read, by name: the draws.
+# Every value a statement of Bypass When can read, by name: the draws.
 VALUE_NAMES = list(DRAW_NAMES)
 # Each draw's rows in a pattern, the Use Draws section: whether its value moves the note, whether it changes the velocity, and
 # whether the step resets the draw.

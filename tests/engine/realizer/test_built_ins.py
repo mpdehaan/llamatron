@@ -5,7 +5,7 @@
 """The built-in generators every clip and track holds: one of each kind a plugin builds in, switched off until switched on, a
 clip's standing in for its track's, the ones before the lists running before them and the others after.
 
-The songs are those of test_conditional_execution: the lead plays one note, and a Chords generator moving every note to chord
+The songs are those of test_bypass_when: the lead plays one note, and a Chords generator moving every note to chord
 II puts it one scale note higher, so a note a step higher is one a Chords generator ran on, and two steps higher one two ran on.
 """
 
@@ -20,17 +20,17 @@ from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, Section, TrackSetting
-from tests.engine.realizer import test_conditional_execution
-from tests.engine.realizer.test_conditional_execution import heard, notes_at, song
+from tests.engine.realizer import test_bypass_when
+from tests.engine.realizer.test_bypass_when import heard, notes_at, song
 from tests.support.rendering import setlist_from_data
 
 ON = {file_format.GENERATOR_ENABLED: True}
-TO_CHORD_II = {ChordsSetting.MODE: chords_model.PROGRESSION, ProgressionSetting.CHORDS: [test_conditional_execution.CHORD_II]}
+TO_CHORD_II = {ChordsSetting.MODE: chords_model.PROGRESSION, ProgressionSetting.CHORDS: [test_bypass_when.CHORD_II]}
 CHORDS_ON = {chords_plugin.NAME: {**ON, **TO_CHORD_II}}
 CHORDS_OFF = {chords_plugin.NAME: TO_CHORD_II}
 UNMOVED = [0]
-MOVED_ONCE = [test_conditional_execution.MOVED_BY]
-MOVED_TWICE = [test_conditional_execution.MOVED_BY * 2]
+MOVED_ONCE = [test_bypass_when.MOVED_BY]
+MOVED_TWICE = [test_bypass_when.MOVED_BY * 2]
 RENAMED = 'melody'
 
 
@@ -38,7 +38,7 @@ def lead_of(data):
     """Return the lead track of a song's data, as the set reads it."""
     setlist = setlist_from_data(data)
     song_read = setlist.get_song(setlist.first_song_name())
-    return song_read, song_read.get_track(test_conditional_execution.LEAD)
+    return song_read, song_read.get_track(test_bypass_when.LEAD)
 
 
 class TestBuiltInsPlay(unittest.TestCase):
@@ -64,10 +64,10 @@ class TestBuiltInsPlay(unittest.TestCase):
         setlist = setlist_from_data(song(chained=True, clip={ClipSlotSetting.BUILT_IN: built_ins}))
         song_read = setlist.get_song(setlist.first_song_name())
         scene = song_read.get_scenes()[0]
-        runs = chain_runs(setlist=setlist, clip_slot=scene.get_clip_slot(test_conditional_execution.LEAD), scene=scene, track=song_read.get_track(test_conditional_execution.LEAD))
+        runs = chain_runs(setlist=setlist, clip_slot=scene.get_clip_slot(test_bypass_when.LEAD), scene=scene, track=song_read.get_track(test_bypass_when.LEAD))
         kinds = [step.kind for run in runs for step in run.chain.get_steps()]
         self.assertEqual(kinds, [chords_plugin.NAME, timing_plugin.NAME, chords_plugin.NAME])
-        self.assertEqual([run.name for run in runs], [chain_runs_values.BUILT_IN_NAME, chain_runs_values.BUILT_IN_NAME, test_conditional_execution.DOUBLED])
+        self.assertEqual([run.name for run in runs], [chain_runs_values.BUILT_IN_NAME, chain_runs_values.BUILT_IN_NAME, test_bypass_when.DOUBLED])
 
 
 class TestBuiltInsAsStored(unittest.TestCase):
@@ -102,16 +102,16 @@ class TestBuiltInsAsStored(unittest.TestCase):
     def test_a_file_naming_no_built_in_kind_is_refused_and_an_unknown_setting_passed_over(self):
         with self.assertRaises(SongFileError):
             setlist_from_data(song(track={TrackSetting.BUILT_IN: {Section.CHAINS: ON}}))
-        song_read, lead = lead_of(song(track={TrackSetting.BUILT_IN: {chords_plugin.NAME: {**ON, RENAMED: test_conditional_execution.CHORD_II}}}))
+        song_read, lead = lead_of(song(track={TrackSetting.BUILT_IN: {chords_plugin.NAME: {**ON, RENAMED: test_bypass_when.CHORD_II}}}))
         self.assertEqual(lead.to_data()[TrackSetting.BUILT_IN], {chords_plugin.NAME: ON})
 
     def test_renaming_a_track_a_built_in_follows_renames_it_there(self):
-        following = {chords_plugin.NAME: {ChordsSetting.MODE: chords_model.FOLLOW_PROGRESSION, ChordsSetting.CHORDS_FROM: test_conditional_execution.LEAD}}
+        following = {chords_plugin.NAME: {ChordsSetting.MODE: chords_model.FOLLOW_PROGRESSION, ChordsSetting.CHORDS_FROM: test_bypass_when.LEAD}}
         song_read, lead = lead_of(song(other={ClipSlotSetting.BUILT_IN: following}))
         other = song_read.get_scenes()[0].get_clip_slot(song_read.get_track_names()[1])
         revision = other.get_revision()
-        self.assertTrue(other.names_item(section=Section.TRACKS, name=test_conditional_execution.LEAD))
-        song_read.rename_item(section=Section.TRACKS, old=test_conditional_execution.LEAD, new=RENAMED)
+        self.assertTrue(other.names_item(section=Section.TRACKS, name=test_bypass_when.LEAD))
+        song_read.rename_item(section=Section.TRACKS, old=test_bypass_when.LEAD, new=RENAMED)
         self.assertEqual(other.get_built_in(chords_plugin.NAME).get_written(ChordsSetting.CHORDS_FROM), RENAMED)
         self.assertNotEqual(other.get_revision(), revision)
 

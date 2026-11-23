@@ -319,7 +319,7 @@ class KeyTour(UITest):
         await self.walk()
         await self.press(Key.ESCAPE)
         # A built-in generator's Conditions button opens its statements.
-        await self.select_field(labels.MSG_CONDITIONS_BUTTON.format(count=0))
+        await self.select_field(labels.MSG_BYPASS_WHEN_BUTTON.format(count=0))
         await self.press(Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE)

@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Conditional Execution: statements about the draws that stop a thing while any of them is true.
+"""Bypass When: statements about the draws that stop a thing while any of them is true.
 
 A table is a short list of statements, each written as a file writes it, a dictionary of its
 parts. One of three shapes: a draw compared with a number or another draw, AD < 3; a draw asked

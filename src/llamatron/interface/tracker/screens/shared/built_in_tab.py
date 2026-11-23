@@ -38,20 +38,20 @@ class BuiltInTab(ViewFields):
         that opens its statements, with what stands in for what: a clip's built-in that is on over its track's, and a track's
         under its clips' that are on."""
         tab = self.view_tab(label=self._plugin.strings.MSG_TAB_LABEL)
-        tab.columns.append(TabColumn(heading=None, fields=[self._conditions_button()], under=True))
+        tab.columns.append(TabColumn(heading=None, fields=[self._bypass_when_button()], under=True))
         tab.remarks = self._overrides()
         return tab
 
     def view(self):
         return self._plugin.view
 
-    def _conditions_button(self):
+    def _bypass_when_button(self):
         """Return the button that opens the generator's statements about the draws, saying how many it holds."""
         settings = self.settings()
         count = len(settings.get_bypass_when())
-        return Button(label=labels.MSG_CONDITIONS_BUTTON.format(count=count), enter=self._open_conditions, enter_what=legends.What.EDIT)
+        return Button(label=labels.MSG_BYPASS_WHEN_BUTTON.format(count=count), enter=self._open_bypass_when, enter_what=legends.What.EDIT)
 
-    def _open_conditions(self):
+    def _open_bypass_when(self):
         self.open_part(GeneratorStatementsPage, section=self.SECTION)
 
     def _overrides(self):

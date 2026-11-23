@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """The page of a built-in generator's statements about the draws, which say when a clip's pass goes by the generator,
-opened from the Conditions button on the generator's tab of a clip's or a track's page."""
+opened from the Bypass When button on the generator's tab of a clip's or a track's page."""
 
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.shared import statements

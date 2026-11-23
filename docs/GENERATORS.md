@@ -137,9 +137,9 @@ Every generator ends its settings with Restart, which says when it starts over:
 
 A generator that carries on keeps what it was doing: a progression runs on across scenes, a shape's ramp can last the whole song, a voice leading voices a scene's first chord near the last chord before, and an arpeggiator goes on with its random choices. A generator painted on several tracks gives each track a copy of its own, so that tracks line up when their patterns do.
 
-## Bypass Generators When
+## Bypass When
 
-Every generator's page ends with a section called Bypass Generators When, a table of statements about the draws. When one is true as a clip's pattern starts over, the notes of that pass go by the generator untouched, in every chain that names the generator. See [Conditional Execution](DRAWS.md#conditional-execution).
+Every generator's page ends with a section called Bypass When, a table of statements about the draws. When one is true as a clip's pattern starts over, the notes of that pass go by the generator untouched, in every chain that names the generator. See [Bypass When](DRAWS.md#bypass-when).
 
 ## Rows of Steps
 

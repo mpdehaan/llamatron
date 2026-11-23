@@ -47,7 +47,7 @@ Up, down, Left and Right select a setting. [ and ] change it, and ENTER types or
 HELP_CLIP_PAGE = """
 Name: what the grid and exports call it, else its pattern's name. Patterns: what it plays; A adds, M moves, Bksp removes.
 Tab goes to the tabs; Left and Right choose one. Settings: Repeat, Loop, the orders, Morph to, Follow action, Scale, Velocity, Grab.
-Chords to Phrasing: its own generators, off until Enabled; each tab's Conditions button opens when a pass bypasses it.
+Chords to Phrasing: its own generators, off until Enabled; each tab's Bypass When button opens when a pass bypasses it.
 More Generators: the set's generators it runs, after its own. PgUp and PgDn choose the tab before or after.
 One clip in each scene must not loop, or exporting stops. Follow action is for real-time playback only.
 
@@ -143,7 +143,7 @@ Transpose: moves its notes along the scale. Lowest and Highest octave: what its 
 Default velocity: a step with none typed. Accent: what an accent adds. Instrument: where it plays in real time, or none.
 MIDI CCs: the CC number each of a pattern's CC rows sends here.
 Tab goes to the tabs; Left and Right choose one. Chords, Arp, Guitarify, Timing, Phrasing: its own generators, off until Enabled;
-each tab's Conditions button opens when a pass bypasses it. More Generators: the set's generators it runs, after the built-ins.
+each tab's Bypass When button opens when a pass bypasses it. More Generators: the set's generators it runs, after the built-ins.
 
 Up, down, Left and Right select a setting. [ and ] change it, ENTER types, and Space or ENTER toggles. Bksp clears.
 """
@@ -194,14 +194,14 @@ N renames the chain, and every clip using it follows. W opens the chain's statem
 
 # ChainStatementsPage
 HELP_CHAIN_STATEMENTS_PAGE = """
-Conditional Execution for a whole chain. Each line is a statement about a draw, such as AD odd. Each time a clip's pattern starts over, the statements are read, and when any is true the clip's notes go by this chain untouched for that pass.
+Bypass When for a whole chain. Each line is a statement about a draw, such as AD odd. Each time a clip's pattern starts over, the statements are read, and when any is true the clip's notes go by this chain untouched for that pass.
 
 Left and Right move between a line's parts and ENTER changes the part: the draw, the operator, and a number or another draw. A line set to ignored does nothing. Bksp sets a line back to ignored.
 """
 
 # GeneratorStatementsPage
 HELP_GENERATOR_STATEMENTS_PAGE = """
-Conditional Execution for one built-in generator. Each line is a statement about a draw, such as AD odd. Each time a clip's pattern starts over, the statements are read, and when any is true the clip's notes go by this generator untouched for that pass.
+Bypass When for one built-in generator. Each line is a statement about a draw, such as AD odd. Each time a clip's pattern starts over, the statements are read, and when any is true the clip's notes go by this generator untouched for that pass.
 
 Left and Right move between a line's parts and ENTER changes the part: the draw, the operator, and a number or another draw. A line set to ignored does nothing. Bksp sets a line back to ignored.
 """

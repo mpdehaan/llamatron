@@ -96,7 +96,7 @@ SCENE_SETTINGS_DOC = '../SCENES.md#scene-settings'
 SECTION_SHAPES_DOC = '../SCENES.md#section-shapes'
 TRACK_SETTINGS_DOC = '../TRACKS.md#track-settings'
 DRAWS_DOC = '../DRAWS.md'
-CONDITIONAL_EXECUTION_DOC = '../DRAWS.md#conditional-execution'
+BYPASS_WHEN_DOC = '../DRAWS.md#bypass-when'
 STEP_STATEMENTS_DOC = '../PATTERNS.md#stop-when-restart-when-and-mute-when'
 GROOVES_DOC = '../GROOVES.md'
 CHAINS_DOC = '../generators/CHAIN.md'
@@ -139,7 +139,7 @@ FEATURE_LINKS = {
     'stop when': STEP_STATEMENTS_DOC,
     'restart when': STEP_STATEMENTS_DOC,
     'mute when': STEP_STATEMENTS_DOC,
-    'bypass generators when': CONDITIONAL_EXECUTION_DOC,
+    'bypass generators when': BYPASS_WHEN_DOC,
     'clip shapes': SECTION_SHAPES_DOC,
     'scene shapes': SECTION_SHAPES_DOC,
     'Shapes': GENERATOR_DOC.format(page='SHAPES'),

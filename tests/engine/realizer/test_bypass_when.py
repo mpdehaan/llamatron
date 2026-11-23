@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Conditional Execution: the statements, about the draws, that bypass generators.
+"""Bypass When: the statements, about the draws, that bypass generators.
 
 Every song here plays one note a pass, moved up C major by the draw AD where the song counts, so that the notes heard say
 what AD was as each pass started, and a Chords generator that moves every note to chord II, one

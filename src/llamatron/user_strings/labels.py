@@ -28,8 +28,8 @@ MSG_OK_CANCEL_BUTTONS = ('OK', 'CANCEL')
 # The confirm dialog's two buttons, in the order they're drawn and the arrows move: yes first, since ENTER presses the selected one.
 MSG_CONFIRM_BUTTONS = ('YES', 'NO')
 
-# interface/tracker/screens/shared/statements.py: Conditional Execution, the table of statements about the draws
-MSG_BYPASS_WHEN_LABEL = 'Bypass Generators When'
+# interface/tracker/screens/shared/statements.py: Bypass When, the table of statements about the draws
+MSG_BYPASS_WHEN_LABEL = 'Bypass When'
 MSG_STATEMENT_IGNORED = 'ignored'
 MSG_STATEMENT_REGISTER_TITLE = 'Draw'
 MSG_STATEMENT_OPERATOR_TITLE = 'Operator'
@@ -176,7 +176,7 @@ class Crumb:
     STEPS = 'STEPS'
     STROKES = 'STROKES'
     OFFSETS = 'OFFSETS'
-    STATEMENTS = 'WHEN'
+    STATEMENTS = 'BYPASS WHEN'
     SCALES = 'SCALES'
     GROOVES = 'GROOVES'
     INSTRUMENTS = 'INSTRUMENTS'
@@ -382,7 +382,7 @@ MSG_NOTES_HEADING = 'Notes'
 MSG_PLAYING_HEADING = 'Playing'
 MSG_RESET_DRAWS_TAB = 'Reset Draws'
 # interface/tracker/screens/shared/built_in_tab.py: the button that opens a built-in generator's statements, with how many it holds.
-MSG_CONDITIONS_BUTTON = 'Conditions ({count})'
+MSG_BYPASS_WHEN_BUTTON = 'Bypass When ({count})'
 # What the Reset Draws tab says while no draw of the song holds a value.
 MSG_NO_DRAWS_CONFIGURED = 'No draws configured'
 MSG_CC_LANES_TAB = 'MIDI CCs'

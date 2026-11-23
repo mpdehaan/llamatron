@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Conditional Execution on the pages: the table of statements about the draws on a chain's, a generator's, a scene's, a clip's and a track's page, and a scene's and a clip's sets and adds."""
+"""Bypass When on the pages: the table of statements about the draws on a chain's, a generator's, a scene's, a clip's and a track's page, and a scene's and a clip's sets and adds."""
 
 from llamatron.engine.generators import chords as chords_plugin, timing as timing_plugin
 from llamatron.engine.generators.chords import strings as chords_strings
@@ -154,7 +154,7 @@ class TestGeneratorStatementsPage(StatementsTest):
     async def test_the_button_says_how_many_statements_and_opens_the_generators_table(self):
         names = [tab.label for tab in self.clip_page.tab_box().tabs]
         await self.press(keybindings.FieldPage.TO_TABS, *[Key.RIGHT] * names.index(chords_strings.MSG_TAB_LABEL))
-        button = labels.MSG_CONDITIONS_BUTTON.format(count=0)
+        button = labels.MSG_BYPASS_WHEN_BUTTON.format(count=0)
         await self.select_field(button)
         # The button is drawn boxed inside its tab, once: the page's own row of buttons below the box never repeats it.
         self.assertEqual(self.text().count(button), 1)
@@ -167,7 +167,7 @@ class TestGeneratorStatementsPage(StatementsTest):
         self.assertEqual(self.table(), [self.every_third()])
         await self.press(Key.ESCAPE)
         self.assertIs(self.app.screen, self.clip_page)
-        self.assertIn(labels.MSG_CONDITIONS_BUTTON.format(count=1), self.text())
+        self.assertIn(labels.MSG_BYPASS_WHEN_BUTTON.format(count=1), self.text())
 
 
 class TestStatementsOnOtherPages(StatementsTest):

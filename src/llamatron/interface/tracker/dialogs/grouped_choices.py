@@ -8,7 +8,7 @@ from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.model.schema import file_format
 from llamatron.user_strings import labels
 
-# The names a statement of Conditional Execution can read, in the order its pickers list them and its keys step through them: the
+# The names a statement of Bypass When can read, in the order its pickers list them and its keys step through them: the
 # draws.
 VALUE_NAMES_IN_ORDER = list(file_format.DRAW_NAMES)
 # What choosing a number to type stands for in a value's picker.
