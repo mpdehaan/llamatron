@@ -12,23 +12,17 @@ and what to do with the file chosen, until the file picker is designed for the w
 import os
 from rich.text import Text
 
+from llamatron.interface.pages.folder_list import FolderListPresenter
 from llamatron.interface.tracker import drawing, keybindings, themes
-from llamatron.interface.tracker.drawing import Align, Style
+from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.shared import shared
 from llamatron.interface.tracker.screens.shared.everywhere import open_file
 from llamatron.interface.tracker.screens.shared.list_page import ListPage
-from llamatron.user_strings import help as help_text, labels, marks
-
-
-# The file picker.
-EXAMPLES_FOLDER = 'examples'
-HERE = '.'
-PARENT = '..'
-HIDDEN_PREFIX = '.'
+from llamatron.user_strings import help as help_text, labels
 
 
 class OpenPage(ListPage):
-    """Picks a set file, starting in the examples folder."""
+    """Picks a set file, starting in the examples folder, from the folder list presenter (interface/pages/folder_list.py)."""
 
     THEME = themes.SET_FILE
 
@@ -36,7 +30,7 @@ class OpenPage(ListPage):
 
     crumbs = (labels.Crumb.FILE, labels.Crumb.OPEN)
     HELP = help_text.HELP_OPEN_PAGE
-    columns = ((labels.Column.SELECT_FILE, None, Align.LEFT),)
+    columns = FolderListPresenter.COLUMNS
     # Files' names are as long as they are.
     NAME_COLUMN_WIDTH = None
 
@@ -48,12 +42,7 @@ class OpenPage(ListPage):
         self.chosen = chosen
         if crumbs is not None:
             self.crumbs = crumbs
-        self.folder = self.remembered_folder() or folder or (EXAMPLES_FOLDER if os.path.isdir(EXAMPLES_FOLDER) else HERE)
-
-    def remembered_folder(self):
-        """Return the directory a picker of these files last showed in this session, while it is still there, or None."""
-        folder = self.holder.last_folders.get(self.suffixes)
-        return folder if folder is not None and os.path.isdir(folder) else None
+        self.folder = FolderListPresenter.starting_folder(remembered=self.holder.last_folders.get(self.suffixes), given=folder)
 
     def remember_folder(self):
         """Keep the directory shown, for the session, so that the next picker of these files starts in it."""
@@ -62,20 +51,11 @@ class OpenPage(ListPage):
     def duration(self):
         return False
 
-    def is_folder(self, name):
-        return os.path.isdir(os.path.join(self.folder, name)) and not name.startswith(HIDDEN_PREFIX)
+    def presenter(self):
+        return FolderListPresenter(folder=self.folder, suffixes=self.suffixes)
 
     def rows(self):
-        try:
-            names = sorted(os.listdir(self.folder), key=str.lower)
-        except OSError:
-            names = []
-        folders = [name for name in names if self.is_folder(name)]
-        files = [name for name in names if name.lower().endswith(self.suffixes)]
-        rows = [(PARENT, [marks.MSG_PARENT_ROW])]
-        rows += [(name, [marks.MSG_FOLDER_ROW.format(name=name)]) for name in folders]
-        rows += [(name, [name]) for name in files]
-        return rows
+        return self.presenter().rows()
 
     def rows_depend_on(self):
         """The rows are the directory's, of the files shown, which no change to the set moves: going into a directory must list it afresh."""
@@ -85,11 +65,11 @@ class OpenPage(ListPage):
         return [self.bind(self.KEYS.BACK, action=self.go_back), *self.move_keys(), self.bind(self.KEYS.OPEN, action=self.open)]
 
     def body(self, *, width, height):
-        return [Text(drawing.INDENT + os.path.abspath(self.folder), style=Style.DIM), Text(drawing.NOTHING), *super().body(width=width, height=height - 2)]
+        return [Text(drawing.INDENT + self.presenter().shown_path(), style=Style.DIM), Text(drawing.NOTHING), *super().body(width=width, height=height - 2)]
 
     def open(self):
         name = self.current()
-        path = os.path.normpath(os.path.join(self.folder, name))
+        path = self.presenter().path_of(name)
         if os.path.isdir(path):
             self.folder = path
             self.cursor.set_place(0)
