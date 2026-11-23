@@ -6,7 +6,7 @@ screens alone, such as moving pages to declarative forms, is proved to leave eve
 
 Run from the top folder:
 
-    .venv/bin/python internal_tools/compare_screens.py capture DIRECTORY   # every stop of the tour, at each size, twice, into DIRECTORY
+    .venv/bin/python internal_tools/compare_screens.py capture DIRECTORY   # every stop of the tour, at each size, into DIRECTORY
     .venv/bin/python internal_tools/compare_screens.py compare DIRECTORY   # capture again, and say where anything differs
 
 The key tour (tests/interface/tracker/test_tui_help_keys.py) opens every page and walks its cursor to every place it can stand.
@@ -15,11 +15,15 @@ changes, with the style beside each piece, so that a lost blank line, a column m
 The tour is run at 80 by 24, the smallest console a page must be good at, and at 160 by 50, a large one.
 """
 
+import functools
 import json
 import os
+import random
 import sys
 import unittest
+from unittest import mock
 
+from llamatron.wizards.create_song.wizard_choices import WizardChoices
 from tests.interface.tracker.test_tui_help_keys import KeyTour
 from tests.support.key_map import place_of
 
@@ -41,9 +45,12 @@ ENCODING = 'utf-8'
 TOUR_NAME = 'ScreenTour{columns}x{rows}'
 SIZE_ATTRIBUTE = 'SIZE'
 SLOTS = '__slots__'
-# Where a comparison's new capture is made, beside the one before, and where a capture's second run is kept, inside it.
+# The song wizard draws a new seed each time it opens, so that every song it makes differs; the tour draws from a fixed one,
+# so that two runs plan the same song and the wizard's panels compare.
+DRAW_SEED = 'draw_seed'
+TOUR_SEED = 1
+# Where a comparison's new capture is made, beside the one before.
 AGAIN = '_again'
-SECOND = 'second'
 # The environment variable the tour's stops are written through, since unittest makes the test object itself.
 OUTPUT_SETTING = 'LLAMATRON_SCREENS_OUTPUT'
 # How many differences are shown in full before the rest are only counted.
@@ -54,7 +61,6 @@ MSG_STOP = '{size} stop {number}: {page}, {place}'
 MSG_LINE = '  line {line}:\n    before: {before}\n    after:  {after}'
 MSG_STOPS_DIFFER = 'the tour stopped {before} times before and {after} times after at {size}: a page was added, removed or walked differently'
 MSG_TOUR_FAILED = 'the tour failed at {size}, so the screens were not captured'
-MSG_UNSTEADY = '{count} stops differ between two runs of the same code and are left out: {stops}'
 SUCCESS = 0
 FAILURE = 1
 
@@ -65,6 +71,10 @@ class ScreenTour(KeyTour):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.stops = []
+        seeded = functools.partialmethod(WizardChoices.draw_seed, dice=random.Random(TOUR_SEED))
+        patcher = mock.patch.object(WizardChoices, DRAW_SEED, seeded)
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def note(self):
         super().note()
@@ -100,12 +110,6 @@ def tour_class(size):
 
 
 def capture(directory):
-    """Run the screen tour twice at every size, into the directory and into its second folder, so that a later comparison can
-    tell a screen that changed from one that is not the same from run to run; return whether every tour finished."""
-    return capture_once(directory) and capture_once(second_of(directory))
-
-
-def capture_once(directory):
     """Run the screen tour at every size, writing each size's stops into the directory; return whether every tour finished."""
     os.makedirs(directory, exist_ok=True)
     for size in SIZES:
@@ -122,17 +126,10 @@ def capture_once(directory):
 
 
 def compare(directory):
-    """Capture again beside the directory's capture and print where any stop's screen differs; return whether all are the same.
-    The directory holds two captures of the code before, and a stop that differs between those two is unsteady, its screen not
-    the same from one run to the next, and is said so and left out, so that only a change of the code is found."""
-    unsteady, _ = differences(before=directory, after=second_of(directory), capture_after=False)
-    differing, stops = differences(before=directory, after=directory.rstrip(os.sep) + AGAIN, capture_after=True)
-    if differing is None or unsteady is None:
+    """Capture again beside the directory's capture and print where any stop's screen differs; return whether all are the same."""
+    differing, stops = differences(before=directory, after=directory.rstrip(os.sep) + AGAIN)
+    if differing is None:
         return False
-    unsteady_stops = {(size, number) for size, number, _, _ in unsteady}
-    if unsteady_stops:
-        print(MSG_UNSTEADY.format(count=len(unsteady_stops), stops=sorted(unsteady_stops)))
-    differing = [difference for difference in differing if (difference[0], difference[1]) not in unsteady_stops]
     if not differing:
         print(MSG_SAME.format(stops=stops, sizes=len(SIZES)))
         return True
@@ -142,16 +139,10 @@ def compare(directory):
     return False
 
 
-def second_of(directory):
-    """Return where a capture's second run is kept, beside the first."""
-    return os.path.join(directory, SECOND)
-
-
-def differences(*, before, after, capture_after):
-    """Return the stops whose screens differ between two captures, each (size, number, old, new), and how many stops a size has,
-    capturing into after first where asked; or None for the differences where a capture failed or the tour stopped a different
-    number of times."""
-    if capture_after and not capture_once(after):
+def differences(*, before, after):
+    """Capture into after, then return the stops whose screens differ from before's, each (size, number, old, new), and how
+    many stops a size has; or None for the differences where the capture failed or the tour stopped a different number of times."""
+    if not capture(after):
         return None, 0
     differing = []
     stops = 0
