@@ -36,7 +36,7 @@ With Real Time on, Space plays what the cursor is on, the song from the corner, 
 HELP_SCENE_PAGE = """
 A scene starts all of its clips together, and lasts as long as its longest clip that does not loop.
 Scale, Tempo, Groove: for its clips, instead of the song's; a Groove of off plays them straight. Repeat: plays it that many times.
-Reset AD to HD: starts that draw over from its first slot as the scene starts, but not on its repeats.
+Reset Draws: starts a draw over from its first slot as the scene starts, but not on its repeats.
 Launch together: in real-time playback only, a start reaching any clip launches them all; off, each waits for the clip above.
 Tab goes to the tabs, where Left and Right choose one. Tempo Ramps move the tempo over bars from its start and before its end.
 

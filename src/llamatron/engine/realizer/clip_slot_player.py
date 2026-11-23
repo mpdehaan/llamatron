@@ -82,6 +82,9 @@ class ClipSlotPlayer:
         clip_slot = self._clip_slot
         scene = self._scene
         where = errors.ERR_CLIP_SLOT_PLAYER_WHERE.format(scene=scene.get_number(), track=self._track_name)
+        resets = clip_slot.get_reset_draw_names()
+        if resets and scene.is_first_play():
+            registers.as_clip_starts(resets)
         scale = self._clip_scale()
         modulators = self._realizer.modulators_of(scene=scene, track=self._track_name)
         hearing = None

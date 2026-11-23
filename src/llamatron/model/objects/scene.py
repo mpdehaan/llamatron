@@ -14,7 +14,7 @@ from typing import NamedTuple
 
 from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
-from llamatron.model.file.checks import listed, number, pass_over_unknown, reading
+from llamatron.model.file.checks import number, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.clip_slot import ClipSlot
@@ -22,7 +22,7 @@ from llamatron.model.objects.conditions import statements_setting
 from llamatron.model.objects.groove import check_groove_choice
 from llamatron.model.objects.llama_data import data_as_kept, data_built_anew, HoldsSettings, own_copy, written_settings
 from llamatron.model.objects.shapes import shape_settings, shape_values
-from llamatron.model.objects.traits import BypassedWhen, RunsChains
+from llamatron.model.objects.traits import BypassedWhen, reset_draws_setting, ResetsDraws, RunsChains
 from llamatron.model.objects.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import RampPart, SceneSetting, Section
@@ -62,21 +62,6 @@ def _check_scale_name(*, value, song):
         raise InvalidValue(errors.ERR_SCENE_NO_SUCH_SCALE.format(scale=value))
 
 
-def _is_list_of(*, value, names):
-    """Return whether a value is a list holding only some of the names."""
-    if not isinstance(value, list):
-        return False
-    for name in value:
-        if name not in names:
-            return False
-    return True
-
-
-def _check_reset_draws(value):
-    if not _is_list_of(value=value, names=file_format.DRAW_NAMES):
-        raise InvalidValue(errors.ERR_BAD_RESET_DRAWS.format(names=listed(file_format.DRAW_NAMES), value=value))
-
-
 # A scene's settings, each described once, in the order they're written to a file, before its tracks.
 SETTINGS = described(
     Checked(name=SceneSetting.NAME, check=_check_scene_name),
@@ -90,7 +75,7 @@ SETTINGS = described(
     Checked(name=SceneSetting.TEMPO_OUT_START, check=number),
     Checked(name=SceneSetting.TEMPO_OUT_END, check=number),
     WholeNumber(name=SceneSetting.TEMPO_OUT_OVER, lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, error=errors.ERR_BAD_RAMP_BARS),
-    Checked(name=SceneSetting.RESET_DRAWS, check=_check_reset_draws),
+    reset_draws_setting(SceneSetting.RESET_DRAWS),
     Checked(name=SceneSetting.GROOVE, check=check_groove_choice, needs_song=True),
     Flag(name=SceneSetting.LAUNCH_TOGETHER, error=errors.ERR_LAUNCH_TOGETHER_NOT_TRUE_OR_FALSE),
     Checked(name=SceneSetting.CHAINS, check=check_chain_names, needs_song=True),
@@ -103,7 +88,7 @@ SETTINGS = described(
 READ_ANOTHER_WAY = (SceneSetting.NAME, SceneSetting.TEMPO, *RAMP_TEMPOS)
 
 
-class Scene(RunsChains, BypassedWhen, HoldsSettings):
+class Scene(RunsChains, BypassedWhen, ResetsDraws, HoldsSettings):
     """A name, how many times it repeats, an optional scale and tempo, and a clip slot for each track it plays.
 
     Settings the file leaves out are kept as None, meaning their defaults. Its scale is kept as
@@ -115,6 +100,7 @@ class Scene(RunsChains, BypassedWhen, HoldsSettings):
     SETTINGS = SETTINGS
     CHAINS_SETTING = SceneSetting.CHAINS
     BYPASS_SETTING = SceneSetting.BYPASS_WHEN
+    RESET_DRAWS_SETTING = SceneSetting.RESET_DRAWS
 
     # A scene names the scale and the groove it chooses. Its clips name things too, and are its referring parts.
     REFERENCES = {Section.SCALES: (SceneSetting.SCALE,), Section.GROOVES: (SceneSetting.GROOVE,)}
@@ -217,11 +203,6 @@ class Scene(RunsChains, BypassedWhen, HoldsSettings):
         """Return one part of one of its tempo ramps as written, or None where it is blank."""
         return self._settings[file_format.TEMPO_RAMP_SETTINGS[(way, part)]]
 
-    def get_reset_draw_names(self):
-        """Return the draws it sends back to their start, or a serial draw to a new round, as it first starts, in the order the draws come."""
-        reset = self._settings[SceneSetting.RESET_DRAWS] or []
-        return [name for name in file_format.DRAW_NAMES if name in reset]
-
     def get_track_names(self):
         """Return the tracks it plays a clip slot on, in the order the file lists them."""
         return list(self._held_clip_slots())
@@ -306,14 +287,6 @@ class Scene(RunsChains, BypassedWhen, HoldsSettings):
         """Set one part of one of its tempo ramps, or None to leave it blank."""
         name = file_format.TEMPO_RAMP_SETTINGS[(way, part)]
         self.set_written(name=name, value=value)
-
-    @notes_change
-    def set_reset_draw(self, *, draw, on):
-        """Make it reset a draw as it first starts, or stop it, keeping the draws in order."""
-        if draw not in file_format.DRAW_NAMES:
-            raise InvalidValue(errors.ERR_NO_SUCH_DRAW.format(name=draw, names=listed(file_format.DRAW_NAMES)))
-        reset = _switched_in_order(chosen=self.get_reset_draw_names(), name=draw, on=on, order=file_format.DRAW_NAMES)
-        self._settings[SceneSetting.RESET_DRAWS] = reset
 
     @notes_change
     def set_clip_slot(self, *, track, clip_slot, song):
@@ -419,15 +392,3 @@ def _number_or_none(written):
         return None
     return number(written)
 
-
-def _switched_in_order(*, chosen, name, on, order):
-    """Return the names chosen with one switched on or off, in the order given, or None when none is left."""
-    switched = set(chosen)
-    if on:
-        switched.add(name)
-    else:
-        switched.discard(name)
-    in_order = [each for each in order if each in switched]
-    if not in_order:
-        return None
-    return in_order

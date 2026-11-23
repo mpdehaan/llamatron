@@ -20,7 +20,7 @@ from llamatron.model.objects.built_ins import built_ins_setting, HoldsBuiltIns, 
 from llamatron.model.objects.chain import check_chain_names
 from llamatron.model.objects.llama_data import HoldsSettings, own_copy, settings_by_name, written_settings
 from llamatron.model.objects.shapes import shape_settings, shape_values
-from llamatron.model.objects.traits import RunsChains
+from llamatron.model.objects.traits import reset_draws_setting, ResetsDraws, RunsChains
 from llamatron.model.objects.velocity_ramps import velocity_of, velocity_setting_descriptions
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternOrder, Section
@@ -91,10 +91,11 @@ SETTINGS = described(
     *velocity_setting_descriptions(),
     *shape_settings(),
     built_ins_setting(ClipSlotSetting.BUILT_IN),
+    reset_draws_setting(ClipSlotSetting.RESET_DRAWS),
 )
 
 
-class ClipSlot(HoldsBuiltIns, RunsChains, HoldsSettings):
+class ClipSlot(HoldsBuiltIns, RunsChains, ResetsDraws, HoldsSettings):
     """A pattern to play, and how: its chain, repeats or loop, direction, morph and grab, and its own name if it has one.
 
     Settings the file leaves out are kept as None, meaning their defaults. A clip with no name of
@@ -106,6 +107,7 @@ class ClipSlot(HoldsBuiltIns, RunsChains, HoldsSettings):
 
     SETTINGS = SETTINGS
     CHAINS_SETTING = ClipSlotSetting.CHAINS
+    RESET_DRAWS_SETTING = ClipSlotSetting.RESET_DRAWS
     BUILT_IN_SETTING = ClipSlotSetting.BUILT_IN
 
     # A clip names the pattern it plays and the one it morphs to, the chain it runs and the track it grabs from.

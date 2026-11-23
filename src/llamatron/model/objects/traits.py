@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""What several kinds of stored object do alike, each said once: running chains, being bypassed by statements, setting registers, holding a row of cells, holding sections of named things.
+"""What several kinds of stored object do alike, each said once: running chains, being bypassed by statements, resetting draws, holding a row of cells, holding sections of named things.
 
 Each is a trait, a class with no data of its own that a holder of settings (HoldsSettings) lists
 before it, and that reads and stores through get_written() and set_written(). A trait names the
@@ -10,10 +10,15 @@ setting it keeps its value under, which every class with the trait writes under 
 """
 
 from llamatron.caching.revised import notes_change
+from llamatron.model.file.checks import listed
+from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import sections
 from llamatron.model.objects.conditions import with_statement
 from llamatron.model.objects.llama_data import own_copy
 from llamatron.model.objects.named_items import NamedItems
+from llamatron.model.schema import file_format
+from llamatron.model.schema.setting import Checked
+from llamatron.user_strings import errors
 
 
 class RunsChains:
@@ -37,7 +42,7 @@ class RunsChains:
 
 
 class BypassedWhen:
-    """Something a table of statements about the registers leaves out: while any statement is true as a clip's pattern starts over, it is bypassed for that pass."""
+    """Something a table of statements about the draws leaves out: while any statement is true as a clip's pattern starts over, it is bypassed for that pass."""
 
     __slots__ = ()
 
@@ -45,12 +50,44 @@ class BypassedWhen:
     BYPASS_SETTING = None
 
     def get_bypass_when(self):
-        """Return its statements about the registers, in order; none when it has none."""
+        """Return its statements about the draws, in order; none when it has none."""
         return own_copy(self.get_written(self.BYPASS_SETTING) or [])
 
     def set_bypass_statement(self, *, place, statement):
         """Write the statement at a place of its table, add one just past the last, or remove one with None."""
         self.set_written(name=self.BYPASS_SETTING, value=with_statement(statements=self.get_written(self.BYPASS_SETTING), place=place, statement=statement))
+
+
+class ResetsDraws:
+    """Something that sends draws back to their first slot, or a serial draw to a new round, as it first starts: a scene, and a
+    clip, each on its scene's first play alone."""
+
+    __slots__ = ()
+
+    # The name its class writes the setting under.
+    RESET_DRAWS_SETTING = None
+
+    def get_reset_draw_names(self):
+        """Return the draws it resets as it first starts, in the order the draws come."""
+        reset = self.get_written(self.RESET_DRAWS_SETTING) or []
+        return [name for name in file_format.DRAW_NAMES if name in reset]
+
+    def set_reset_draw(self, *, draw, on):
+        """Make it reset a draw as it first starts, or stop it, keeping the draws in order."""
+        if draw not in file_format.DRAW_NAMES:
+            raise InvalidValue(errors.ERR_NO_SUCH_DRAW.format(name=draw, names=listed(file_format.DRAW_NAMES)))
+        switched = set(self.get_reset_draw_names())
+        if on:
+            switched.add(draw)
+        else:
+            switched.discard(draw)
+        in_order = [name for name in file_format.DRAW_NAMES if name in switched]
+        self.set_written(name=self.RESET_DRAWS_SETTING, value=in_order or None)
+
+
+def reset_draws_setting(name):
+    """Return the description of the setting a ResetsDraws writes its draws under, by its name."""
+    return Checked(name=name, check=_check_reset_draws)
 
 
 class HasCells:
@@ -120,3 +157,9 @@ class HoldsSections:
     def sort_items(self, section):
         """Put a section's items in alphabetical order, ignoring case."""
         self._section(section).sort()
+
+
+def _check_reset_draws(value):
+    """Refuse anything but a list of some of the draws' names."""
+    if not isinstance(value, list) or not set(value) <= set(file_format.DRAW_NAMES):
+        raise InvalidValue(errors.ERR_BAD_RESET_DRAWS.format(names=listed(file_format.DRAW_NAMES), value=value))

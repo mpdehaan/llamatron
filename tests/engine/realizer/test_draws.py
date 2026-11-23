@@ -40,6 +40,8 @@ QUARTER = '1/4'
 # The chord the clip's built-in Chords moves every note to, and how far that moves a note of degree 1 in C chromatic.
 CHORD_II = 2
 MOVED = 1
+# The value of AD a stopping step's statement waits for.
+STOP_AT = 2
 
 
 def song_data(*, draws, rows, repeat=1, steps=STEPS, scenes=None, tracks=(LEAD,)):
@@ -168,6 +170,29 @@ class TestResets(unittest.TestCase):
         scenes = [{SceneSetting.TRACKS: played}, {SceneSetting.TRACKS: played}, {SceneSetting.RESET_DRAWS: [DrawName.AD], SceneSetting.TRACKS: played}]
         song = render_data(song_data(draws={DrawName.AD: a_draw(slots=list(range(8)))}, rows={Row.AD_NOTE: every_step(steps=2)}, steps=2, scenes=scenes))
         self.assertEqual(pitches_of(song=song, scenes=3), [[MIDDLE_C, MIDDLE_C + 1], [MIDDLE_C + 2, MIDDLE_C + 3], [MIDDLE_C, MIDDLE_C + 1]])
+
+    def test_a_clip_resets_its_draws_as_it_starts_on_its_scenes_first_play_alone(self):
+        played = {LEAD: {ClipSlotSetting.PATTERN: TUNE}}
+        resetting = {LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.RESET_DRAWS: [DrawName.AD]}}
+        scenes = [{SceneSetting.TRACKS: played}, {SceneSetting.REPEAT: 2, SceneSetting.TRACKS: resetting}]
+        song = render_data(song_data(draws={DrawName.AD: a_draw(slots=list(range(8)))}, rows={Row.AD_NOTE: every_step(steps=2)}, steps=2, scenes=scenes))
+        self.assertEqual(pitches_of(song=song, scenes=3), [[MIDDLE_C, MIDDLE_C + 1], [MIDDLE_C, MIDDLE_C + 1], [MIDDLE_C + 2, MIDDLE_C + 3]])
+
+    def test_a_clips_reset_comes_after_the_draws_of_the_tracks_before_it_and_before_its_own(self):
+        # At the start, the lead draws 0, then the other track's clip resets AD and draws 0 again; then the lead draws 1 and the other 2.
+        played = {LEAD: {ClipSlotSetting.PATTERN: TUNE}, OTHER: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.RESET_DRAWS: [DrawName.AD]}}
+        song = render_data(song_data(draws={DrawName.AD: a_draw(slots=list(range(8)))}, rows={Row.AD_NOTE: every_step(steps=2)}, steps=2, tracks=(LEAD, OTHER), scenes=[{SceneSetting.TRACKS: played}]))
+        self.assertEqual(pitches_of(song=song, scenes=1, track=LEAD), [[MIDDLE_C, MIDDLE_C + 1]])
+        self.assertEqual(pitches_of(song=song, scenes=1, track=OTHER), [[MIDDLE_C, MIDDLE_C + 2]])
+
+    def test_a_clip_whose_statement_stops_it_counts_from_its_reset(self):
+        # Every step draws AD and stops the clip once it draws STOP_AT: the second scene's clip stops as soon as the first's did
+        # only because it resets AD as it starts.
+        stopping = {Row.STOP_C1: [DrawName.AD] * STEPS, Row.STOP_C2: [Operator.SAME] * STEPS, Row.STOP_C3: [STOP_AT] * STEPS}
+        resetting = {LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.RESET_DRAWS: [DrawName.AD]}}
+        scenes = [{SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: TUNE}}}, {SceneSetting.TRACKS: resetting}]
+        song = render_data(song_data(draws={DrawName.AD: a_draw(slots=list(range(8)))}, rows={Row.AD_NOTE: every_step(), **stopping}, scenes=scenes))
+        self.assertEqual(pitches_of(song=song, scenes=2), [[MIDDLE_C, MIDDLE_C + 1], [MIDDLE_C, MIDDLE_C + 1]])
 
 
 def muted_when_equal(*, draw, value, steps=STEPS):

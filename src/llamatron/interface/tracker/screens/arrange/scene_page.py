@@ -11,7 +11,7 @@ from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.groove_choice import groove_choice_field
 from llamatron.interface.tracker.screens.shared import statements
-from llamatron.interface.tracker.screens.shared.arrange_tabs import fields_tab
+from llamatron.interface.tracker.screens.shared.arrange_tabs import fields_tab, reset_draws_tab
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
@@ -204,8 +204,9 @@ class ScenePage(FieldPage):
         return [NameField(value=self._name_shown, rename=self.rename), TabBox(tabs=self._tabs())]
 
     def _tabs(self):
-        """Return the scene's tabs: Settings, then the tabs that are not generators, Velocity, Tempo Ramps and Shapes, then its
-        list of generators and the statements that bypass the generators of its clips. A scene holds no built-in generator."""
+        """Return the scene's tabs: Settings, then the tabs that are not generators, Velocity, Tempo Ramps, Shapes and Reset Draws,
+        then its list of generators and the statements that bypass the generators of its clips. A scene holds no built-in
+        generator."""
         own, above, store = self.velocity_values()
         shapes = []
         for shape in file_format.PLACED_SHAPES:
@@ -220,12 +221,13 @@ class ScenePage(FieldPage):
             Tab(label=labels.MSG_VELOCITY_TAB, columns=[velocity, *columns_of_sections(velocity_ramp_sections(page=self, own=own, above=above, store=store))]),
             Tab(label=labels.MSG_TEMPO_RAMPS_TAB, columns=columns_of_sections(tempo_ramps)),
             Tab(label=labels.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
+            reset_draws_tab(page=self, holder=self.scene()),
             fields_tab(label=labels.MSG_USER_TAB, fields=[generators_field(page=self, names=self._chain_names, store=self._set_chain_names)]),
             fields_tab(label=labels.MSG_BYPASS_WHEN_TAB, fields=bypass),
         ]
 
     def _basics_tab(self):
-        """Return the Settings tab: Playing, how the scene plays, and Reset As It Starts, the draws it starts afresh."""
+        """Return the Settings tab: how the scene plays."""
         scene = self.scene()
         song = self.document().song()
         playing = [
@@ -240,10 +242,7 @@ class ScenePage(FieldPage):
                 lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=self.set_tempo, clear=self.clear_tempo, clear_what=legends.MSG_USE_SONG_TEMPO_WHAT,
             ),
         ]
-        resets = [self.reset_draw_field(name) for name in file_format.DRAW_NAMES]
-        return Tab(label=labels.MSG_BASICS_TAB, columns=[
-            TabColumn(heading=labels.MSG_PLAYING_HEADING, fields=playing), TabColumn(heading=labels.MSG_RESET_AS_IT_STARTS_HEADING, fields=resets),
-        ])
+        return Tab(label=labels.MSG_BASICS_TAB, columns=[TabColumn(heading=labels.MSG_PLAYING_HEADING, fields=playing)])
 
     def _name_shown(self):
         return self.scene().get_name() or drawing.NOTHING
@@ -288,16 +287,6 @@ class ScenePage(FieldPage):
         def store(part, value):
             self._set_written(name=shape_setting(shape=shape, part=part), value=value)
         return shape_section(page=self, shape=shape, value=value, store=store)
-
-    def reset_draw_field(self, draw):
-        """Return the field that makes the scene reset a draw as it first starts: back to its first slot, or a serial draw to a
-        new round."""
-        scene = self.scene()
-        return Toggle(label=labels.MSG_RESET_LABEL.format(name=draw), on=draw in scene.get_reset_draw_names(),
-                      set=functools.partial(self._set_reset_draw, draw=draw))
-
-    def _set_reset_draw(self, on, *, draw):
-        self._change(self.scene().set_reset_draw, draw=draw, on=on)
 
     def remarks(self, width):
         lengths = self.document().lengths()

@@ -281,6 +281,8 @@ class ClipSlotSetting:
     SCALE = 'scale'
     # Its built-in generators' settings, by kind, each switched off until switched on.
     BUILT_IN = 'built_in'
+    # The draws the clip sends back to their start, or a serial draw to a new round, as it starts on its scene's first play.
+    RESET_DRAWS = 'reset_draws'
 
 
 class SceneSetting:

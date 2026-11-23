@@ -2,13 +2,14 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The boxes of tabs of the pages of Arrange's things. The clip page's: Settings, then the tabs that are not generators,
-Velocity first, then the generators in the order they run, the built-ins and last the clip's own list under Generators."""
+Velocity first, then the generators in the order they run, the built-ins and last the clip's own list under Generators.
+The Scene page and the clip page share the Reset Draws tab."""
 
 import functools
 
 from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
 from llamatron.interface.tracker.screens.shared.built_in_tab import BuiltInTab
-from llamatron.interface.tracker.screens.shared.field import Field
+from llamatron.interface.tracker.screens.shared.field import Field, Toggle
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.tab_box import columns_of_sections, Tab, TabColumn, without_headings
@@ -27,6 +28,21 @@ def built_in_tabs(*, page, track, scene, kinds):
         place = BuiltInPlace(track=track, scene=scene, kind=kind)
         tabs.append(BuiltInTab(page=page, place=place).tab())
     return tabs
+
+
+def reset_draws_tab(*, page, holder):
+    """Return the Reset Draws tab of a scene or a clip, holder, which resets draws as it first starts: a toggle for each draw
+    that holds a value in the song, or a remark that none does."""
+    song = page.document().song()
+    names = song.draws_with_values()
+    toggles = []
+    for name in names:
+        toggles.append(Toggle(label=labels_text.MSG_RESET_LABEL.format(name=name), on=name in holder.get_reset_draw_names(),
+                              set=functools.partial(_set_reset_draw, page=page, holder=holder, draw=name)))
+    remarks = []
+    if not names:
+        remarks.append(labels_text.MSG_NO_DRAWS_CONFIGURED)
+    return Tab(label=labels_text.MSG_RESET_DRAWS_TAB, columns=[TabColumn(heading=None, fields=toggles)], remarks=remarks)
 
 
 def fields_tab(*, label, fields):
@@ -53,6 +69,7 @@ class ClipTabs:
             self._basics_tab(),
             Tab(label=labels_text.MSG_VELOCITY_TAB, columns=columns_of_sections(velocity_ramp_sections(page=page, own=own, above=above, store=store))),
             Tab(label=labels_text.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
+            reset_draws_tab(page=page, holder=self._clip_slot()),
             *self._built_in_tabs(generator_plugins.built_in_kinds()),
             fields_tab(label=labels_text.MSG_USER_TAB, fields=[generators_field(page=page, names=self._chain_names, store=self._set_chain_names)]),
         ]
@@ -116,3 +133,7 @@ class ClipTabs:
         clip_slot = self._clip_slot()
         self._page.document().change_set(clip_slot.set_written, name=name, value=value)
 
+
+def _set_reset_draw(on, *, page, holder, draw):
+    """Make a scene or a clip reset a draw as it first starts, or stop it, as one edit of the set."""
+    page.document().change_set(holder.set_reset_draw, draw=draw, on=on)

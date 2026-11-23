@@ -40,7 +40,7 @@ MSG_STATEMENT_NUMBER_CHOICE = 'number'
 MSG_STATEMENT_LINE_LABEL = ' '
 
 # interface/tracker/screens/arrange/arrange_page.py
-# A scene's field for each draw it can start over, like "Reset AD".
+# A scene's or a clip's field for each draw it can start over, like "Reset AD".
 MSG_RESET_LABEL = 'Reset {name}'
 MSG_SONG_OPTION = '(song)'
 MSG_SCENE_OPTION = '(scene)'
@@ -377,7 +377,9 @@ MSG_BYPASS_WHEN_TAB = 'Bypass When'
 MSG_ORDER_HEADING = 'Order'
 MSG_NOTES_HEADING = 'Notes'
 MSG_PLAYING_HEADING = 'Playing'
-MSG_RESET_AS_IT_STARTS_HEADING = 'Reset As It Starts'
+MSG_RESET_DRAWS_TAB = 'Reset Draws'
+# What the Reset Draws tab says while no draw of the song holds a value.
+MSG_NO_DRAWS_CONFIGURED = 'No draws configured'
 MSG_CC_LANES_TAB = 'MIDI CCs'
 MSG_TEMPO_RAMPS_TAB = 'Tempo Ramps'
 MSG_GENERAL_HEADING = 'General'

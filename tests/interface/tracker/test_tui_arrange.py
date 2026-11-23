@@ -78,6 +78,9 @@ CONTROL_KEYS_SHOWN = [key_name(keybindings.Page.SAVE), key_name(keybindings.Page
 CLIP_SCALE = 'D Dorian'
 CLIP_SCALE_ROOT = 'D'
 CLIP_SCALE_KIND = 'dorian'
+# A value put in a draw's slot, so that the draw shows on the Reset Draws tab.
+DRAWN = 3
+
 
 class TestArrangePage(UITest):
 
@@ -471,6 +474,12 @@ class TestClipPage(UITest):
 
     def clip_slot(self):
         return self.document.clip_slot(index=0, track=LEAD)
+
+    async def test_its_reset_draws_tab_resets_a_draw_with_a_value_as_the_clip_starts(self):
+        self.document.change_set(self.document.song().set_draw_slot, name=DrawName.BD, place=0, value=DRAWN)
+        await self.select_field(labels_text.MSG_RESET_LABEL.format(name=DrawName.BD))
+        await self.press(Key.SPACE)
+        self.assertEqual(self.clip_slot().get_reset_draw_names(), [DrawName.BD])
 
     def labels(self):
         return [field.label for field in self.page.every_setting()]
@@ -874,12 +883,20 @@ class TestScenePage(UITest):
         self.assertEqual(self.scene().get_name(), INTRO)
 
 
-    async def test_it_can_reset_each_draw_as_it_first_starts(self):
+    async def test_its_reset_draws_tab_lists_only_the_draws_with_a_value_and_resets_one_as_it_first_starts(self):
+        await self.press(keybindings.FieldPage.TO_TABS, *[Key.RIGHT] * self.tab_place(labels_text.MSG_RESET_DRAWS_TAB))
+        self.assertIn(labels_text.MSG_NO_DRAWS_CONFIGURED, self.text())
+        self.document.change_set(self.document.song().set_draw_slot, name=DrawName.CD, place=0, value=DRAWN)
         await self.go_to(labels_text.MSG_RESET_LABEL.format(name=DrawName.CD))
+        self.assertNotIn(labels_text.MSG_NO_DRAWS_CONFIGURED, self.text())
+        self.assertNotIn(labels_text.MSG_RESET_LABEL.format(name=DrawName.AD), self.text())
         await self.press(Key.ENTER)
         self.assertEqual(self.scene().get_reset_draw_names(), [DrawName.CD])
         await self.press(Key.SPACE)
         self.assertEqual(self.scene().get_reset_draw_names(), [])
+
+    def tab_place(self, label):
+        return [tab.label for tab in self.page.tab_box().tabs].index(label)
 
 
 class TestScenesAndClipsEdges(UITest):

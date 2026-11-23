@@ -31,6 +31,11 @@ CONDITION_DRAWS = 0.75
 # reads them, which a Restart When can make a step at the same moment, so that a restarting step never reads the next pass's draw.
 PASS_START_DRAWS = 0.4
 PASS_START_READS = 0.3
+# How far before a track's own change a clip resets the draws it resets as it starts: after every track before it, before any of
+# its own steps draws. A clip starts with its scene.
+CLIP_RESETS = 0.9
+CLIP_START = 0
+NO_DRAWS = ()
 
 
 class RegisterChange(NamedTuple):
@@ -138,6 +143,10 @@ class RegisterRecorder:
         """Return None: nothing is known of the values while a clip is only played to count changes that depend on none of them."""
         return None
 
+    def as_clip_starts(self, draw_resets):
+        """Note the draws a clip resets as it starts."""
+        self._changes.append(RegisterChange(CLIP_START, self._place - CLIP_RESETS, NO_DRAWS, tuple(draw_resets)))
+
     def before_statements(self, *, time, draws, draw_resets, first=False):
         """Note the draws a step resets and then takes at a time in the scene, just before its statements read the values; first
         says it is the first step of a pass."""
@@ -181,6 +190,9 @@ class RegisterReader:
     def before_step(self, time, *, first=False):
         """Return the values as a step's statements read them at a time in the scene, after its own draws and every earlier track's then."""
         return self._timeline.values_at(time=time, place=self._place - _reads_place(first))
+
+    def as_clip_starts(self, draw_resets):
+        """Do nothing: what the clip resets is already in the timeline."""
 
     def before_statements(self, *, time, draws, draw_resets, first=False):
         """Do nothing: what a step draws is already in the timeline, and before_step sees it."""
@@ -229,6 +241,14 @@ class RegisterSolo(RegisterRecorder):
     def before_step(self, time, *, first=False):
         """Return the values as a step's statements read them, after its own draws."""
         return self._values
+
+    def as_clip_starts(self, draw_resets):
+        """Note the draws the clip resets as it starts, and reset them."""
+        super().as_clip_starts(draw_resets)
+        if self._draws is None:
+            return
+        for name in draw_resets:
+            self._draws.reset(name)
 
     def before_statements(self, *, time, draws, draw_resets, first=False):
         """Note the draws a step resets and takes, and take them, so that the step's statements read what it drew."""

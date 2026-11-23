@@ -111,10 +111,13 @@ then a number or a draw. `Bksp` sets the line back to `ignored`.
 A step of a pattern can hold a statement of its own, which is read as the step is reached and stops the clip, starts the pattern
 over or mutes the step: see [Stop When, Restart When and Mute When](PATTERNS.md#stop-when-restart-when-and-mute-when).
 
-## A Scene's Reset Draws
+## Reset Draws on a Scene and a Clip
 
-On the Scene page, a Reset toggle for each draw makes the scene reset the draw as it first starts, not on its repeats, sending it back to its first slot or a serial draw to a new
-round, so that a verse's melody starts the same way every time the verse comes round.
+The Scene page and the clip page each have a Reset Draws tab, with a Reset toggle for each draw that holds a value in the song,
+and the line "No draws configured" while none does. A scene resets a draw as it first starts, not on its repeats, sending it back
+to its first slot, or a serial draw to a new round, so that a verse's melody starts the same way every time the verse comes
+round. A clip resets a draw as it starts, on its scene's first play alone, after the tracks to its left have taken their draws at
+that moment and before any of its own steps draws, so that one part can start a draw afresh while the others carry on.
 
 The demo [`examples/learning/28_draws.yml`](../examples/learning/28_draws.yml) plays draws from a count-in to twelve-tone rows,
 melodies and gates.

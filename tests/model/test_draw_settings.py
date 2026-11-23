@@ -7,17 +7,21 @@
 import unittest
 
 from llamatron.model.file.checks import listed
+from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.draw import Draw
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import DrawDirection, DrawName, DrawSetting, SceneSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, DrawDirection, DrawName, DrawSetting, SceneSetting, Section
 from llamatron.user_strings import errors
+from tests.support import song_testing
 from tests.support.rendering import as_setlist, setlist_from_data
 from tests.support.song_testing import with_parts
 
 SLOTS = [3, None, -2]
 NOT_A_DIRECTION = 'sideways'
 NOT_A_DRAW = 'JD'
+# A pattern of the tests' basic set.
+A = 'a'
 
 
 def song_of(**parts):
@@ -55,6 +59,25 @@ class TestDrawSettings(unittest.TestCase):
         with self.assertRaises(SongFileError) as refused:
             song_of(scenes=[{SceneSetting.RESET_DRAWS: [NOT_A_DRAW], SceneSetting.TRACKS: {}}])
         self.assertIn(errors.ERR_BAD_RESET_DRAWS.format(names=listed(file_format.DRAW_NAMES), value=[NOT_A_DRAW]), str(refused.exception))
+
+    def test_a_scene_and_a_clip_reset_draws_in_the_draws_order_and_write_none_when_none_is_left(self):
+        song = song_of(scenes=[{SceneSetting.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}}])
+        scene = song.get_scenes()[0]
+        for holder in (scene, scene.get_clip_slot(song_testing.LEAD)):
+            with self.subTest(holder=type(holder).__name__):
+                holder.set_reset_draw(draw=DrawName.CD, on=True)
+                holder.set_reset_draw(draw=DrawName.AD, on=True)
+                self.assertEqual(holder.get_reset_draw_names(), [DrawName.AD, DrawName.CD])
+                self.assertEqual(holder.to_data()[holder.RESET_DRAWS_SETTING], [DrawName.AD, DrawName.CD])
+                holder.set_reset_draw(draw=DrawName.AD, on=False)
+                holder.set_reset_draw(draw=DrawName.CD, on=False)
+                self.assertNotIn(holder.RESET_DRAWS_SETTING, holder.to_data())
+                with self.assertRaises(InvalidValue):
+                    holder.set_reset_draw(draw=NOT_A_DRAW, on=True)
+
+    def test_a_clip_refuses_to_reset_a_draw_the_song_has_not(self):
+        with self.assertRaises(SongFileError):
+            song_of(scenes=[{SceneSetting.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A, ClipSlotSetting.RESET_DRAWS: [NOT_A_DRAW]}}}])
 
     def test_moving_an_end_of_the_range_moves_every_slot_past_it(self):
         song = song_of(**{Section.DRAWS: {DrawName.AD: {DrawSetting.SLOTS: [-5, 0, 9]}}})
