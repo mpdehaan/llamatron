@@ -2,8 +2,12 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Quitting: Ctrl+C at once, and Q with its question."""
+"""Quitting: Ctrl+C at once, Q with its question, and a crash, whose traceback is printed as plain text."""
 
+import os
+import subprocess
+import sys
+import unittest
 from unittest import mock
 
 from llamatron.interface.tracker import keybindings
@@ -16,6 +20,12 @@ from llamatron.user_strings import labels, legends
 from tests.support.ui_testing import key_name, UITest
 
 EXIT = 'exit'
+# A tracker that raises an error nothing catches once it is open, run headless in a process of its own.
+CRASH_MESSAGE = 'a crash on purpose'
+CRASHING_TRACKER = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'crashing_tracker.py')
+# What a coloured or boxed traceback holds and a plain one never does: an escape code, and the corner of Rich's box.
+ESCAPE = '\x1b'
+BOX_CORNER = '╭'
 
 
 class TestQuitNow(UITest):
@@ -69,3 +79,15 @@ class TestQuitting(UITest):
         # The console has the room, so the keys under the buttons are on one line: the first key and the last share it.
         first = legends.MSG_QUIT_WITHOUT_SAVING_WHAT
         self.assertTrue(any(key_name(keybindings.QuitDialog.CANCEL) in line and first in line and key_name(keybindings.QuitDialog.SELECT) in line for line in lines[-3:]))
+
+
+class TestACrash(unittest.TestCase):
+    """An error nothing catches closes the tracker with Python's own plain traceback, which reads well when saved to a file."""
+
+    def test_the_traceback_is_plain_text_with_no_colour_box_or_locals(self):
+        ran = subprocess.run([sys.executable, CRASHING_TRACKER, CRASH_MESSAGE], capture_output=True, text=True, timeout=60)
+        self.assertNotEqual(ran.returncode, 0)
+        self.assertIn(CRASH_MESSAGE, ran.stderr)
+        self.assertTrue(ran.stderr.splitlines()[0].startswith('Traceback'))
+        self.assertNotIn(ESCAPE, ran.stderr)
+        self.assertNotIn(BOX_CORNER, ran.stderr)

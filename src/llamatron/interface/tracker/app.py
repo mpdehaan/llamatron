@@ -11,8 +11,9 @@
 import sys
 from textual.app import App
 import time
+import traceback
 
-from llamatron.interface.tracker import keys, launch as launch_values
+from llamatron.interface.tracker import drawing, keys, launch as launch_values
 from llamatron.interface.tracker.batch_stage import BatchStage
 from llamatron.interface.tracker.components.scroll_text import scroll_seconds
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
@@ -103,6 +104,8 @@ class LlamatronApp(App, inherit_bindings=False):
         # The song wizard's preview, made when first asked for, beside the same transport.
         self._made_preview = None
         self._made_beside = None
+        # The plain traceback of an error nothing caught, printed as the tracker closes (_handle_exception).
+        self._crash_report = None
 
     def get_document(self):
         return self._document
@@ -249,6 +252,24 @@ class LlamatronApp(App, inherit_bindings=False):
         self._begin_launch(page)
         if self._start_screen:
             self.push_screen(StartScreen(ready=self.transport.prepare()))
+
+    def _handle_exception(self, error):
+        """Keep the traceback of an error nothing caught as plain text, printed as the tracker closes in place of Textual's boxed
+        and coloured traceback with every frame's locals, which is hard to read once saved to a file or pasted."""
+        self._crash_report = drawing.NOTHING.join(traceback.format_exception(error))
+        super()._handle_exception(error)
+
+    def _fatal_error(self):
+        """Close the tracker after an error nothing caught, whose traceback _print_error_renderables prints."""
+        self.bell()
+        self._close_messages_no_wait()
+
+    def _print_error_renderables(self):
+        """Print a crash's traceback as plain text, straight to the terminal, so that no line is wrapped or coloured."""
+        if self._crash_report is not None:
+            sys.stderr.write(self._crash_report)
+            self._crash_report = None
+        super()._print_error_renderables()
 
     def _opened(self, *, page, document):
         """Hold the set the Corrections dialog was answered Yes for, and warn of its instruments that will not sound."""
