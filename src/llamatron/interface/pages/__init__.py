@@ -5,6 +5,7 @@
 set as it is now, with nothing of how it looks or of Textual. The tracker shows a presenter's form on a page of its own, which
 hands it the page to ask through and what only the tracker can do, such as opening a set.
 
+- pattern_list: the Patterns page, its tabs by group and each tab's rows.
 - scale_list, instrument_list, groove_list, song_list: the Scales, Instruments, Grooves and Songs pages, each its columns,
   its rows as plain values, the place ENTER opens and what adding does.
 - places: where a page is, as a value, which the tracker's site map turns into its page.

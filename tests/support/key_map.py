@@ -9,9 +9,9 @@ internal_tools/key_map.sh rewrites. It's for Claude, so that a question about a 
 import os
 
 from llamatron.interface.forms.nodes import Button, Heading
+from llamatron.interface.pages import pattern_list
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
-from llamatron.interface.tracker.screens.pattern import patterns_page
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.pattern.patterns_page import PatternsPage
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
@@ -108,13 +108,13 @@ def patterns_place(page):
     group or in none, a group's + (New) row, or the New Pattern Group button."""
     if page.on_tabs:
         kind = page.chosen().kind
-        if kind == patterns_page.GROUP_TAB:
+        if kind == pattern_list.GROUP_TAB:
             return A_GROUP_TAB
-        return THE_UNGROUPED_TAB if kind == patterns_page.UNGROUPED_TAB else THE_NEW_TAB
+        return THE_UNGROUPED_TAB if kind == pattern_list.UNGROUPED_TAB else THE_NEW_TAB
     listed = page.listed()
-    if listed.kind == patterns_page.PATTERN:
-        return A_PATTERN_IN_NO_GROUP if page.group_under_cursor() is patterns_page.UNGROUPED else A_PATTERN
-    return THE_NEW_PATTERN_ROW if listed.kind == patterns_page.NEW_PATTERN else THE_NEW_GROUP_BUTTON
+    if listed.kind == pattern_list.PATTERN:
+        return A_PATTERN_IN_NO_GROUP if page.group_under_cursor() is pattern_list.UNGROUPED else A_PATTERN
+    return THE_NEW_PATTERN_ROW if listed.kind == pattern_list.NEW_PATTERN else THE_NEW_GROUP_BUTTON
 
 
 def arrange_place(page):

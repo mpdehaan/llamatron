@@ -19,6 +19,8 @@ Arrange. Whatever the plan can't set yet is reported as left out, so a demo that
 the plan knows still builds the rest.
 """
 
+from llamatron.interface.pages import pattern_list
+from llamatron.interface.pages.pattern_list import Listed, PatternTab
 from llamatron.interface.pages.scale import scale_label
 from llamatron.interface.tracker import keybindings, keys as keys_values
 from llamatron.interface.tracker.components.chord_row import chord_text, ChordRow
@@ -37,9 +39,8 @@ from llamatron.interface.tracker.key_table import first_key
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange import arrange_page
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
-from llamatron.interface.tracker.screens.pattern import patterns_page
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor, Reconfigure
-from llamatron.interface.tracker.screens.pattern.patterns_page import Listed, PatternsPage, PatternTab
+from llamatron.interface.tracker.screens.pattern.patterns_page import PatternsPage
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.main_page import cell_opened_by, MainPage
 from llamatron.interface.tracker.screens.set.scales_page import ScalesPage
@@ -658,13 +659,13 @@ class TutorialPlan:
         """Add a pattern written for a scale of so many notes to a group on the Patterns page: on the + (New) row of the group's tab
         when the set has the group, and after making the group with the button of the last tab when it doesn't."""
         if group in self.screen().groups():
-            yield from self.go_to_pattern_tab(PatternTab(patterns_page.GROUP_TAB, group))
+            yield from self.go_to_pattern_tab(PatternTab(pattern_list.GROUP_TAB, group))
             yield from self.press(keybindings.PatternsPage.INTO_TAB)
         else:
-            yield from self.go_to_pattern_tab(PatternTab(patterns_page.NEW_TAB))
+            yield from self.go_to_pattern_tab(PatternTab(pattern_list.NEW_TAB))
             yield from self.press(keybindings.PatternsPage.NEW_GROUP)
             yield from self.answer_prompt(group)
-        yield from self.go_to_patterns_row(Listed(patterns_page.NEW_PATTERN, group))
+        yield from self.go_to_patterns_row(Listed(pattern_list.NEW_PATTERN, group))
         yield from self.press(keybindings.PatternsPage.NEW_PATTERN)
         # The New Pattern dialog's first row is stepped to the scale length wanted and takes OK; the pattern is made a drum
         # pattern later where the set says so.
