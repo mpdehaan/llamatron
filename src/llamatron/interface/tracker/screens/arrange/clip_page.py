@@ -386,10 +386,15 @@ class ClipPage(FieldPage):
             *self.pattern_rows(),
             TabBox(tabs=ClipTabs(self).tabs()),
         ]
-        # Real-time playback's buttons, which do what L does, drawn below the settings after a blank line as every page's buttons are.
-        result.append(Button(label=labels_text.MSG_PLAY_LABEL, key_name=legends.KeyName.L, enter=self.listen, enter_what=legends.MSG_LISTEN_WHAT))
-        result.append(Button(label=labels_text.MSG_STOP_LABEL, key_name=legends.KeyName.L, enter=self.stop, enter_what=legends.MSG_STOP_WHAT))
+        result.append(self.listen_button())
         return result
+
+    def listen_button(self):
+        """Return the Listen button, drawn below the settings after a blank line as every page's buttons are, which does what L
+        does: it starts listening to the clip, or stops it while the clip plays."""
+        if self.is_listening():
+            return Button(label=labels_text.MSG_LISTEN_LABEL, key_name=legends.KeyName.L, enter=self.stop, enter_what=legends.MSG_STOP_LISTENING_WHAT)
+        return Button(label=labels_text.MSG_LISTEN_LABEL, key_name=legends.KeyName.L, enter=self.listen, enter_what=legends.MSG_LISTEN_WHAT)
 
     def playing_fields(self):
         """Return the fields of how the clip plays its patterns: the direction, the repeats, the loop, and the morph where the

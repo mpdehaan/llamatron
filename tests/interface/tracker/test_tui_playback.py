@@ -680,13 +680,12 @@ class TestClipPagePlayback(PlaybackTest):
         await self.press(Key.ESCAPE)
         self.assertFalse(self.transport().is_playing())
 
-    async def test_the_play_and_stop_buttons_do_the_same(self):
+    async def test_the_listen_button_starts_and_stops_listening_as_the_key_does(self):
         self.give_lead_an_instrument()
         await self.open_clip(track_steps=1)
-        await self.select_field(labels.MSG_PLAY_LABEL)
+        await self.select_field(labels.MSG_LISTEN_LABEL)
         await self.press(Key.ENTER)
         self.assertTrue(self.page.is_listening())
-        await self.select_field(labels.MSG_STOP_LABEL)
         await self.press(Key.ENTER)
         self.assertFalse(self.page.is_listening())
         self.assertIn(messages.MSG_STOPPED, self.text())

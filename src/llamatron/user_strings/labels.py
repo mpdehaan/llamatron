@@ -89,8 +89,7 @@ MSG_DEVICE_LABEL = 'Device'
 MSG_CHANNEL_LABEL = 'Channel'
 MSG_INSTRUMENT_LABEL = 'Instrument'
 # The clip page's buttons for real-time playback.
-MSG_PLAY_LABEL = 'Play'
-MSG_STOP_LABEL = 'Stop'
+MSG_LISTEN_LABEL = 'Listen'
 # What a clip does in real-time playback when its scene is done, which no export reads, and the set's default for it.
 MSG_FOLLOW_ACTION_LABEL = 'Advance'
 MSG_DEFAULT_FOLLOW_ACTION_LABEL = 'Default follow action'
