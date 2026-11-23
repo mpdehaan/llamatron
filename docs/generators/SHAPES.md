@@ -12,7 +12,7 @@ A shape whose Start and End are both blank does nothing, so a Shapes generator t
 
 ![A Shapes generator's settings](../screenshots/shapes_editor.svg)
 
-Each shape is a section, `+ Density`, `+ Swell` and `+ Articulate`, closed until opened and saying `(set)` when anything inside holds a value, with the Start, End, Over and Then every shape shares. Swell accent follows the Swell, and Restart, when the ramps start over, ends the page.
+Each shape is a section, `+ Density`, `+ Swell` and `+ Articulate`, closed until opened and saying `(set)` when anything inside holds a value, with the Start, End, Over and Then every shape shares; a Start or an End shows as a percentage, such as `50%`, once set, and as `(none)` while blank. The Scene page's and the clip page's Shapes tabs show them the same way. Swell accent follows the Swell, and Restart, when the ramps start over, ends the page.
 
 ## Applying the Generator
 

@@ -30,10 +30,15 @@ def shape_fields(*, page, shape, value, store, prefixed=True):
 
     over = value(ShapePart.OVER)
     then = value(ShapePart.THEN)
+    percentages = []
+    for part in (ShapePart.START, ShapePart.END):
+        written = value(part)
+        percentages.append(NumberField(
+            page=page, label=label(part), number=written, start=UNCHANGED, shown=_percent_shown(written), lowest=lowest, highest=highest,
+            set=functools.partial(_store_part, store=store, part=part), clear=functools.partial(store, part, None),
+        ))
     return [
-        *[NumberField(page=page, label=label(part), number=value(part), start=UNCHANGED, shown=marks.MSG_NONE_SHOWN if value(part) is None else None,
-                      lowest=lowest, highest=highest, set=lambda number, part=part: store(part, number), clear=functools.partial(store, part, None))
-          for part in (ShapePart.START, ShapePart.END)],
+        *percentages,
         time_field(page=page, label=label(ShapePart.OVER), written=over, first=labels.MSG_WHOLE_SPAN, store=lambda choice: store(ShapePart.OVER, choice)),
         ChoiceField(page=page, label=label(ShapePart.THEN), choices=file_format.SHAPE_THENS, current=then or file_format.SHAPE_THENS[0],
                     set=lambda choice: store(ShapePart.THEN, None if choice == file_format.SHAPE_THENS[0] else choice)),
@@ -44,3 +49,14 @@ def shape_section(*, page, shape, value, store):
     """Return a shape's section on the Scene page or the clip page: its heading, closed until opened, saying when any part is set, and its four fields."""
     heading = page.heading(label=labels.MSG_SHAPE_NAMES[shape], is_set=lambda: any(value(part) is not None for part in file_format.SHAPE_PARTS))
     return [heading, *shape_fields(page=page, shape=shape, value=value, store=store)]
+
+
+def _percent_shown(written):
+    """Return how a start or an end shows: as a percentage once set, and as none while blank."""
+    if written is None:
+        return marks.MSG_NONE_SHOWN
+    return marks.MSG_SHAPE_PERCENT_SHOWN.format(percent=written)
+
+
+def _store_part(number, *, store, part):
+    store(part, number)

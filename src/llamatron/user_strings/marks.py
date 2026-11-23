@@ -103,6 +103,8 @@ MSG_RAMP_BARS_SHOWN = '{bars} bars'
 MSG_RAMP_ONE_BAR_SHOWN = '1 bar'
 # A velocity as a percentage, and a value the clip page takes from the clip's scene or a ramp takes from the Velocity field.
 MSG_VELOCITY_PERCENT_SHOWN = '{percent}%'
+# A shape's start or end, Density, Swell or Articulate, as a percentage once set.
+MSG_SHAPE_PERCENT_SHOWN = '{percent}%'
 MSG_FROM_SCENE_SHOWN = '{value} (from scene)'
 MSG_FROM_VELOCITY_SHOWN = '{value} (from Velocity)'
 MSG_DETAILS_VELOCITY = 'velocity: {percent}%'

@@ -134,3 +134,7 @@ class TestShapeSectionsOnTheClipPage(UITest):
         clip_slot = self.document.song().get_scenes()[0].get_clip_slot(ui_testing.LEAD)
         self.assertEqual(clip_slot.get_written(shape_setting(shape=Shape.DENSITY, part=ShapePart.END)), HALF)
         self.assertIsNone(self.document.song().get_scenes()[0].get_shape(Shape.DENSITY))
+        # Once set, it shows as a percentage, and a part left blank shows none.
+        self.assertEqual(self.app.screen.field().value(), marks.MSG_SHAPE_PERCENT_SHOWN.format(percent=HALF))
+        await self.select_field(labels_text.MSG_SHAPE_FIELD_LABELS[ShapePart.START].format(shape=labels_text.MSG_SHAPE_NAMES[Shape.DENSITY]))
+        self.assertEqual(self.app.screen.field().value(), marks.MSG_NONE_SHOWN)
