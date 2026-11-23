@@ -27,6 +27,7 @@ from llamatron.model.objects.naming import copy_name, unique_name
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Direction, FileLayout, OctaveLabels, PatternSetting, Row, SceneSetting, Section, SetlistSetting, TrackSetting
+from llamatron.model.values import scale as scale_values
 from llamatron.model.values.blend_mode import BlendMode
 from llamatron.model.values.note import Note, NoteName
 from llamatron.model.values.scale import ScaleType
@@ -944,11 +945,10 @@ class TestPickerLayouts(unittest.TestCase):
         self.assertEqual(set(marks_text.MSG_CHORD_SUFFIXES), set(file_format.FIXED_CHORDS))
 
     def test_scale_pages_hold_every_kind_once_except_melodic_minor(self):
-        from llamatron.model.objects import named_scale
         from llamatron.interface.tracker.screens.set import scale_page
         flat = [kind for _, columns in scale_page.SCALE_PAGES for groups in columns for _, kinds in groups for kind in kinds]
         flat.remove(scale_type_name(ScaleType.MELODIC_MINOR))
-        self.assertEqual(sorted(flat), sorted(named_scale.SCALE_TYPE_NAMES))
+        self.assertEqual(sorted(flat), sorted(scale_values.SCALE_TYPE_NAMES))
 
     def test_a_paged_grid_opens_on_the_page_of_the_current_option(self):
         from llamatron.interface.tracker.dialogs.grid_choice_dialog import GridChoiceDialog

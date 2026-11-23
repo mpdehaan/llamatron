@@ -75,6 +75,11 @@ class ScaleType(Enum):
     TODI = scale_shapes.TODI
     MARWA = scale_shapes.MARWA
     PURVI = scale_shapes.PURVI
+# Any octave does for spelling a scale's notes, since names don't change with the octave.
+SPELLING_OCTAVE = 4
+SCALE_TYPE_NAMES = [member_name.lower() for member_name in ScaleType.__members__]
+
+
 class Scale:
     """A scale that runs upward from its root to the top of the MIDI range.
 
@@ -146,3 +151,9 @@ class Scale:
 
     def __repr__(self):
         return reprs.REPR_SCALE.format(root=self._root, typ=self._typ)
+
+
+def note_names(*, root, half_steps):
+    """Return the names of the notes a root and one octave of half steps make, like D E F G A B C."""
+    start = Note(name=root, octave_number=SPELLING_OCTAVE)
+    return [start.half_step(step).get_name() for step in half_steps]

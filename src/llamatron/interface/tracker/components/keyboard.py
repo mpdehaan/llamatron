@@ -15,8 +15,7 @@ colour. chord_keys() says which keys a chord's notes are, from its root up.
 """
 
 from llamatron.interface.tracker import drawing
-from llamatron.model.objects import named_scale
-from llamatron.model.values import note
+from llamatron.model.values import note, scale as scale_values
 from llamatron.model.values.note import Note
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import marks
@@ -81,7 +80,7 @@ class Keyboard:
         self.chord = set(chord)
 
     def root_pitch_class(self):
-        return Note(name=self.root, octave_number=named_scale.SPELLING_OCTAVE).get_midi_number() % intervals.HALF_STEPS_PER_OCTAVE
+        return Note(name=self.root, octave_number=scale_values.SPELLING_OCTAVE).get_midi_number() % intervals.HALF_STEPS_PER_OCTAVE
 
     def pitch_classes(self):
         """Return the half steps above C of every note in the scale."""

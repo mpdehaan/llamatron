@@ -16,11 +16,9 @@ from llamatron.interface.tracker.dialogs.grid_choice_dialog import GridChoiceDia
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.model.objects import named_scale
-from llamatron.model.objects.named_scale import note_names
 from llamatron.model.objects.naming import words
 from llamatron.model.schema.file_format import ScaleKind, Section
-from llamatron.model.values import note
+from llamatron.model.values import note, scale as scale_values
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import help as help_text, labels, legends, messages
@@ -73,7 +71,7 @@ def scale_label(kind):
 
 def scale_notes(*, root, kind):
     """Return a scale's notes as one line, like D E F G A B C, spelled as the rest of the program spells them."""
-    return drawing.SPACE.join(note_names(root=root, half_steps=ScaleType[kind.upper()].value))
+    return drawing.SPACE.join(scale_values.note_names(root=root, half_steps=ScaleType[kind.upper()].value))
 
 
 def kind_pages():
@@ -93,7 +91,7 @@ def headed_places(groups):
 
 def scale_type_places(names):
     """Return where each scale type named is in SCALE_TYPE_NAMES."""
-    return [named_scale.SCALE_TYPE_NAMES.index(name) for name in names]
+    return [scale_values.SCALE_TYPE_NAMES.index(name) for name in names]
 
 
 def root_grid():
@@ -141,20 +139,20 @@ class ScalePage(ShowsNamedItem, FieldPage):
     def pick_kind(self):
         """Choose the kind from its pages, with the notes of the one under the cursor shown underneath."""
         root = self.root()
-        kinds = [scale_label(text) for text in named_scale.SCALE_TYPE_NAMES]
+        kinds = [scale_label(text) for text in scale_values.SCALE_TYPE_NAMES]
 
         def notes(place):
-            return messages.MSG_SCALE_NOTES_DETAIL.format(root=root, kind=kinds[place], notes=scale_notes(root=root, kind=named_scale.SCALE_TYPE_NAMES[place]))
-        place = named_scale.SCALE_TYPE_NAMES.index(self.kind())
+            return messages.MSG_SCALE_NOTES_DETAIL.format(root=root, kind=kinds[place], notes=scale_notes(root=root, kind=scale_values.SCALE_TYPE_NAMES[place]))
+        place = scale_values.SCALE_TYPE_NAMES.index(self.kind())
         dialog = GridChoiceDialog(title=messages.MSG_KIND_TITLE.format(root=root), options=kinds, grid=None, current=place, details=notes, pages=kind_pages())
-        self.ask(dialog=dialog, then=lambda chosen: self.set_kind(named_scale.SCALE_TYPE_NAMES[chosen]))
+        self.ask(dialog=dialog, then=lambda chosen: self.set_kind(scale_values.SCALE_TYPE_NAMES[chosen]))
 
     def fields(self):
         return [
             NameField(value=lambda: self.item, rename=self.rename),
             Field(label=labels.MSG_ROOT_LABEL, value=self.root, adjust=self.step_root,
                   enter=self.pick_root, enter_what=legends.What.CHOOSE),
-            Field(label=labels.MSG_KIND_LABEL, value=lambda: words(self.kind()), adjust=lambda d: self.set_kind(stepped(values=named_scale.SCALE_TYPE_NAMES, current=self.kind(), offset=d)),
+            Field(label=labels.MSG_KIND_LABEL, value=lambda: words(self.kind()), adjust=lambda d: self.set_kind(stepped(values=scale_values.SCALE_TYPE_NAMES, current=self.kind(), offset=d)),
                   enter=self.pick_kind, enter_what=legends.What.CHOOSE),
         ]
 

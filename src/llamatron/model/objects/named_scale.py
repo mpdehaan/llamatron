@@ -11,7 +11,7 @@ from llamatron.model.objects.llama_data import LlamaData
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Accidental, ScaleSetting
 from llamatron.model.schema.setting import check_settings, Checked, described
-from llamatron.model.values import note
+from llamatron.model.values import note, scale as scale_values
 from llamatron.model.values.note import Note
 from llamatron.model.values.scale import Scale, ScaleType
 from llamatron.music_theory.fundamentals import intervals
@@ -24,14 +24,6 @@ WORD_GAP = ' '
 MEMBER_WORD_GAP = '_'
 
 
-# Any octave does for spelling a scale's notes, since names don't change with the octave.
-SPELLING_OCTAVE = 4
-
-
-def note_names(*, root, half_steps):
-    """Return the names of the notes a root and one octave of half steps make, like D E F G A B C."""
-    start = Note(name=root, octave_number=SPELLING_OCTAVE)
-    return [start.half_step(step).get_name() for step in half_steps]
 
 
 class NamedScale(LlamaData):
@@ -111,12 +103,12 @@ class NamedScale(LlamaData):
 
     def get_note_names(self):
         """Return the name of each degree's note, from the root up, spelled as the rest of the program spells them."""
-        return note_names(root=self._root, half_steps=self.get_half_steps())
+        return scale_values.note_names(root=self._root, half_steps=self.get_half_steps())
 
     def octave_of_degree(self, *, octave, place):
         """Return the octave a degree sounds in when the root is in an octave: the same one, or the next where the degree crosses C, since octaves are numbered from C."""
-        root = Note(name=self._root, octave_number=SPELLING_OCTAVE)
-        return octave + (root.get_midi_number() + self.get_half_steps()[place]) // intervals.HALF_STEPS_PER_OCTAVE - SPELLING_OCTAVE
+        root = Note(name=self._root, octave_number=scale_values.SPELLING_OCTAVE)
+        return octave + (root.get_midi_number() + self.get_half_steps()[place]) // intervals.HALF_STEPS_PER_OCTAVE - scale_values.SPELLING_OCTAVE
 
     def copy(self):
         return NamedScale(root=self._root, kind=self._kind)
@@ -145,7 +137,6 @@ def is_scale_type(kind):
 
 
 # Every scale type the file accepts, aliases like aeolian included, in the order the enum lists them.
-SCALE_TYPE_NAMES = [member_name.lower() for member_name in ScaleType.__members__]
 
 
 def scale_type_name(kind):
