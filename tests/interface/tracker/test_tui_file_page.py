@@ -8,12 +8,13 @@ from fractions import Fraction
 import os
 from unittest import mock
 
-from llamatron.interface.tracker import keybindings
+from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.document import Document
+from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.open_page import OpenPage
@@ -51,7 +52,13 @@ class TestFilePage(UITest):
     async def test_save_and_open_buttons_come_after_a_blank_line_and_do_what_their_keys_do(self):
         labels = [field.label for field in self.app.screen.fields()]
         self.assertEqual(labels[-2:], [labels_text.PageName.SAVE, labels_text.PageName.OPEN])
-        self.assert_buttons_come_last_after_a_blank_line()
+        # The buttons sit in one row under the tab box, with blank lines and the top of their boxes between.
+        lines = self.text().splitlines()
+        row = next(index for index, line in enumerate(lines) if labels_text.PageName.SAVE in line)
+        self.assertIn(labels_text.PageName.OPEN, lines[row])
+        self.assertEqual(lines[row - 2].strip(), drawing.NOTHING)
+        above = next(line for line in reversed(lines[:row - 1]) if line.strip())
+        self.assertTrue(above.startswith(Box.BOTTOM_LEFT))
         await self.select_field(labels_text.PageName.SAVE)
         self.assertIn(key_name(keybindings.Page.SAVE), self.text())
         self.assertIn(key_name(keybindings.Page.OPEN_SET), self.text())
@@ -63,9 +70,11 @@ class TestFilePage(UITest):
         self.assertIsInstance(self.app.screen, OpenPage)
 
     async def test_the_loose_settings_come_alphabetically_and_title_and_author_start_blank(self):
-        # The loose settings alphabetically, then the Notes & Octaves and Visualizers sections.
-        labels = [field.label for field in self.app.screen.fields()]
-        self.assertEqual(labels[:6], [AUTHOR, labels_text.MSG_DEFAULT_FOLLOW_ACTION_LABEL, labels_text.MSG_DESCRIPTION_LABEL, labels_text.MSG_NOTES_LABEL, labels_text.MSG_PROTECTED_LABEL, TITLE])
+        # The General tab's settings alphabetically, before the Notes & Octaves and Visualizers tabs.
+        tabs = self.app.screen.tab_box().tabs
+        self.assertEqual([tab.label for tab in tabs], [labels_text.MSG_FILE_GENERAL_TAB, labels_text.MSG_NOTES_AND_OCTAVES_TAB, labels_text.MSG_VISUALIZERS_TAB])
+        labels = [field.label for field in tabs[0].every_field()]
+        self.assertEqual(labels, [AUTHOR, labels_text.MSG_DEFAULT_FOLLOW_ACTION_LABEL, labels_text.MSG_DESCRIPTION_LABEL, labels_text.MSG_NOTES_LABEL, labels_text.MSG_PROTECTED_LABEL, TITLE])
         self.assertEqual(self.document.get_setlist().get_title(), setlist_values.NO_TEXT)
         await self.select_field(TITLE)
         await self.press(Key.ENTER)

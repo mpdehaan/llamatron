@@ -264,9 +264,10 @@ MSG_OCTAVE_LABELS_LABEL = 'Octave labels'
 # interface/tracker/screens/set/visualizer_fields.py: the visualizer mode Arrange shows first, what none of a song's own is called, and the section that hides modes.
 MSG_VISUALIZER_LABEL = 'Visualizer'
 MSG_SETS_VISUALIZER_CHOICE = "(set's)"
-# The File/Global page's sections.
-MSG_NOTES_AND_OCTAVES_SECTION = 'Notes & Octaves'
-MSG_VISUALIZERS_SECTION = 'Visualizers'
+# The File/Global page's tabs.
+MSG_FILE_GENERAL_TAB = 'General'
+MSG_NOTES_AND_OCTAVES_TAB = 'Notes & Octaves'
+MSG_VISUALIZERS_TAB = 'Visualizers'
 MSG_HIDE_VISUALIZERS_LABEL = 'Hide Visualizers'
 MSG_PROTECTED_LABEL = 'Protected'
 # How each choice of octave labels is shown, saying where middle C, MIDI note 60, falls in it.

@@ -8,7 +8,7 @@ A file is a set of songs, which share its patterns, scales, generators, chains a
 
 Press `F` on the main screen to open the File/Global page, which holds the set itself: what the file says about the set, the defaults every song starts from, and the keys that start a new set or save under a new name.
 
-The loose settings come first, in alphabetical order, then two sections, closed until opened with `Space` or `ENTER`: Notes & Octaves, the defaults every pattern starts from, and Visualizers.
+A box of tabs holds the settings, each tab's in alphabetical order: General, what the file says about the set; Notes & Octaves, the defaults every pattern starts from; and Visualizers. Save and Open follow as buttons.
 
 | Setting | What it does |
 | --- | --- |
