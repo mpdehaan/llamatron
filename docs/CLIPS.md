@@ -37,14 +37,13 @@ Playing holds the rest:
 | Setting | What it does |
 | --- | --- |
 | Scale | A scale of the clip's own, which wins over the scene's and the song's, so that one track can play in another key or mode. `ENTER` picks one, and `Bksp` goes back to the scene's, shown with where it comes from, such as `A Minor (from scene)`. |
-| Velocity | How loud the clip plays, as a percentage of each note's written velocity, over its scene's Velocity. Blank takes the scene's, shown as `80% (from scene)`, or 100%. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
 | Grab track | Another track in the scene, whose notes the pattern's Grab steps play. `Bksp` sets none. |
 
 The other tabs:
 
 | Tab | What it holds |
 | --- | --- |
-| Velocity | Velocity Ramp In and Velocity Ramp Out, like the Scene page's, which fade this clip in and out. Each field set here wins over the scene's. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
+| Velocity | Across its top, the clip's Velocity: how loud it plays, as a percentage, stacking on its scene's, its track's and its instrument's, blank being 100%. Under it, Velocity Ramp In and Velocity Ramp Out, like the Scene page's, which fade this clip in and out; each ramp field set here wins over the scene's. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
 | Shapes | Density and Articulate, like the Scene page's, shaping this clip across its own length. A shape set here wins over the scene's, and a generator the clip runs wins over both. |
 | Reset Draws | A Reset toggle for each draw that holds a value in the song, which sends the draw back to its first slot as the clip starts, on its scene's first play alone. See [Draws](DRAWS.md#reset-draws-on-a-scene-and-a-clip). |
 | Chords, Arp, Guitarify, Timing, Phrasing | The clip's built-in generators, one of each, with the settings of the generator's own page: Enabled first, then its Mode where it has one, then its columns. A built-in is off until Enabled is switched on; its tab shows `●` after its name while on and `○`, dim, while off. A clip's built-in that is on stands in for its track's of the same kind. They run in that order, all before the clip's list of generators. At the foot of each, the button `Bypass When (n)`, n being how many statements it holds, opens the generator's Bypass When table, which says when a pass of the clip goes by that generator: see [Bypass When](DRAWS.md#bypass-when). `ENTER` on a part, such as the Arp's Offsets, opens that part's page on the clip's built-in. See [Generators](GENERATORS.md). |

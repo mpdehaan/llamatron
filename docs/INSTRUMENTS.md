@@ -46,6 +46,7 @@ Press `I` on the main screen to open the Instruments page. The list shows each i
 | GM sound | One of General MIDI's 128 sounds, or `(none)`. `ENTER` opens a picker of General MIDI's sixteen families with `(none)` above them, where `Space` or `ENTER` on a family opens its eight sounds, `/` searches every sound, and `L` (listen) plays the sound under the cursor as a scale through FluidSynth, or, where FluidSynth is not installed, through the song's Preview instrument in that device's own sound; `[` and `]` step through the sounds by number, and `Bksp` sets none. A drum track always plays channel 10's drum kit. |
 | Default velocity | The velocity a step with none typed plays at on the instrument's tracks, 1 to 127, 127 unless set. A track's own Default velocity wins. An instrument that sounds harsh at full velocity is set once here. |
 | Accent | What a step with its Accent on adds to its velocity on the instrument's tracks, 0 to 127, `+0` unless set. Each track's own Accent is added to it. See [Tracks](TRACKS.md). |
+| Velocity | How loud every clip of the instrument's tracks plays, as a percentage, from 0% to 200%, 100% unless set, stacking with each track's, scene's and clip's. An instrument that is too loud beside the others is set once here. |
 | Keyswitch lead | How many milliseconds before its note a keyswitch is sent, 0 to 500, `0 ms` unless set. `[` and `]` step it, and `ENTER` types it. See Keyswitches below. |
 | Keyswitch Map | A button: `ENTER` on it, or `K` from any field, opens the instrument's Keyswitch Map. See Keyswitches below. |
 

@@ -383,7 +383,7 @@ strum, funk scratching, a singer's rolled chords, metal gallops and a twelve bar
 pattern is only a row of chords or low notes, and the Guitarify generator of each scene does the
 playing, so the demo shows what its Strum mode and its Shape and Strokes halves do to the same kind of pattern.
 
-[`examples/learning/21_guitarify.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/21_guitarify.yml) · G major · 96 BPM · 3:19 · 21 scenes · 7 tracks
+[`examples/learning/21_guitarify.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/21_guitarify.yml) · G major · 104 BPM · 3:19 · 21 scenes · 7 tracks
 
 | chords | guitarify | key changes | tempo changes | progressions | strum |
 | :---: | :---: | :---: | :---: | :---: | :---: |
