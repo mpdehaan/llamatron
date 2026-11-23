@@ -19,7 +19,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import pattern as pattern_values, pattern_munges
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults, file_format, limits, row_descriptions
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, GateModifier, PatternSetting, RegisterName, RegisterUse, Row, Section, Tension
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, DrawName, GateModifier, PatternSetting, RegisterUse, Row, Section, Tension
 from llamatron.model.schema.row_descriptions import is_note_letter, row_described, RowOfChoices, RowOfChords, RowOfDegrees, RowOfKeyswitches, RowOfLengths, RowOfNoteMoves, RowOfNumbers, RowOfOctaves, RowOfRegisterUses, RowOfStatementValues, RowOfTensions, RowOfToggles, rows_where
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
@@ -42,7 +42,7 @@ A_BARE_NUMBER_CHORD = 7
 # What each number row's blank step plays as, where the tests can name it from the program's own defaults.
 DEFAULTS = {Row.VELOCITY: defaults.DEFAULT_VELOCITY, Row.PROBABILITY: defaults.DEFAULT_PROBABILITY, Row.RATCHET: defaults.DEFAULT_RATCHET}
 # The rows a blank step changes nothing on, which the editor shows as a dot until they're set.
-QUIET = (Row.RATCHET, Row.RATCHET_OFFSET, *file_format.CC_ROWS, *file_format.REGISTER_ADD_ROWS.values(), *file_format.REGISTER_SET_ROWS.values())
+QUIET = (Row.RATCHET, Row.RATCHET_OFFSET, *file_format.CC_ROWS)
 
 
 def rows_of(kind):
@@ -169,16 +169,16 @@ class TestRowsOfToggles(unittest.TestCase):
         self.assertEqual(set(rows_where(lambda row: row.is_on_or_off())), toggles)
 
 
-class TestRowsOfRegisterUses(unittest.TestCase):
-    """The +Note and +Vel rows: 1 adds the register, -1 subtracts it and 0 does neither, where the rows were toggles."""
+class TestRowsOfDrawUses(unittest.TestCase):
+    """The Note+= and Vel+= rows: 1 adds the draw, -1 subtracts it and 0 does neither, where the rows were toggles."""
 
-    def test_the_rows_that_use_a_register(self):
-        uses = {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values(), *file_format.DRAW_NOTE_ROWS.values(), *file_format.DRAW_VELOCITY_ROWS.values()}
+    def test_the_rows_that_use_a_draw(self):
+        uses = {*file_format.DRAW_NOTE_ROWS.values(), *file_format.DRAW_VELOCITY_ROWS.values()}
         self.assertEqual(set(rows_of(RowOfRegisterUses)) | set(rows_of(RowOfNoteMoves)), uses)
-        self.assertEqual(set(rows_of(RowOfNoteMoves)), {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.DRAW_NOTE_ROWS.values()})
+        self.assertEqual(set(rows_of(RowOfNoteMoves)), set(file_format.DRAW_NOTE_ROWS.values()))
 
     def test_add_subtract_and_off_are_allowed_and_so_are_true_and_false_from_an_older_file(self):
-        for name in (*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values()):
+        for name in (*file_format.DRAW_NOTE_ROWS.values(), *file_format.DRAW_VELOCITY_ROWS.values()):
             row = row_descriptions.ROW_DESCRIPTIONS[name]
             with self.subTest(row=name):
                 for allowed in (RegisterUse.ADD, RegisterUse.SUBTRACT, RegisterUse.OFF, True, False):
@@ -190,7 +190,7 @@ class TestRowsOfRegisterUses(unittest.TestCase):
                 self.assertTrue(row.is_kept_by_a_rest())
 
     def test_a_blank_step_is_off_and_a_file_holds_the_numbers_with_true_and_false_read_as_add_and_off(self):
-        row = row_descriptions.ROW_DESCRIPTIONS[file_format.REGISTER_VELOCITY_ROWS[RegisterName.AX]]
+        row = row_descriptions.ROW_DESCRIPTIONS[file_format.DRAW_VELOCITY_ROWS[DrawName.AD]]
         self.assertEqual(row.blank(), RegisterUse.OFF)
         self.assertEqual(row.get_choices(), [RegisterUse.ADD, RegisterUse.SUBTRACT])
         values = [RegisterUse.ADD, RegisterUse.SUBTRACT, RegisterUse.OFF, None, True, False]
@@ -202,7 +202,7 @@ class TestRowsOfRegisterUses(unittest.TestCase):
             self.assertIs(type(value), int)
 
     def test_a_file_holding_true_reads_as_add_and_is_written_as_1(self):
-        row = file_format.REGISTER_NOTE_ROWS[RegisterName.BX]
+        row = file_format.DRAW_NOTE_ROWS[DrawName.BD]
         pattern = a_pattern(rows={row: [True, False]})
         self.assertEqual(pattern.get_value(row=row, step=FIRST_STEP), RegisterUse.ADD)
         self.assertIs(type(pattern.get_value(row=row, step=FIRST_STEP)), int)
@@ -213,8 +213,8 @@ class TestRowsOfRegisterUses(unittest.TestCase):
         pattern.set_value(row=row, step=SECOND_STEP, value=RegisterUse.SUBTRACT)
         self.assertEqual(pattern.to_data()[row], [RegisterUse.OFF, RegisterUse.SUBTRACT])
 
-    def test_a_registers_note_row_can_only_be_off_in_a_drum_pattern_which_does_not_have_the_row(self):
-        for name in file_format.REGISTER_NOTE_ROWS.values():
+    def test_a_draws_note_row_can_only_be_off_in_a_drum_pattern_which_does_not_have_the_row(self):
+        for name in file_format.DRAW_NOTE_ROWS.values():
             row = row_descriptions.ROW_DESCRIPTIONS[name]
             for on in (RegisterUse.ADD, RegisterUse.SUBTRACT, True):
                 self.assertEqual(row.problem_with(on, drum=True), errors.ERR_REGISTER_NOTE_ON_DRUMS)
@@ -222,7 +222,7 @@ class TestRowsOfRegisterUses(unittest.TestCase):
             self.assertIsNone(row.problem_with(False, drum=True))
             self.assertEqual(row.problem_with(2, drum=True), errors.ERR_NOT_REGISTER_USE)
             self.assertFalse(row.is_in_drum_patterns())
-        for name in file_format.REGISTER_VELOCITY_ROWS.values():
+        for name in file_format.DRAW_VELOCITY_ROWS.values():
             self.assertIsNone(row_descriptions.ROW_DESCRIPTIONS[name].problem_with(RegisterUse.SUBTRACT, drum=True))
             self.assertTrue(row_descriptions.ROW_DESCRIPTIONS[name].is_in_drum_patterns())
 
@@ -337,12 +337,11 @@ class TestEveryRowIsDescribedOnce(unittest.TestCase):
         self.assertEqual(numbers, set(rows_of(RowOfNumbers)))
 
     def test_what_a_rest_keeps_and_what_changes_with_drums_come_from_the_descriptions(self):
-        # A rest can hold every register row that changes or uses a register, so erasing a note keeps +Note and +Vel with = and +=, and a step's statements, which a step with no note can hold.
-        # The Use Draws rows are kept the same way, the draws being used and reset by a step as the registers are.
-        register_rows = {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values(), *file_format.REGISTER_ADD_ROWS.values(), *file_format.REGISTER_SET_ROWS.values()}
+        # A rest can hold every row of the Use Draws section and a step's statements, which a step with no note can hold, so erasing a
+        # note keeps them.
         draw_rows = {*file_format.DRAW_NOTE_ROWS.values(), *file_format.DRAW_VELOCITY_ROWS.values(), *file_format.DRAW_RESET_ROWS.values()}
-        note_moves = {*file_format.REGISTER_NOTE_ROWS.values(), *file_format.DRAW_NOTE_ROWS.values()}
-        self.assertEqual(set(pattern_munges.REST_ROWS), {*file_format.CC_ROWS, Row.SLIDE, *register_rows, *draw_rows, *file_format.STATEMENT_OF_ROW})
+        note_moves = set(file_format.DRAW_NOTE_ROWS.values())
+        self.assertEqual(set(pattern_munges.REST_ROWS), {*file_format.CC_ROWS, Row.SLIDE, *draw_rows, *file_format.STATEMENT_OF_ROW})
         self.assertEqual(set(pattern_values.NOTE_ROWS), {Row.DEGREE, Row.ACCIDENTAL, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, *note_moves})
         self.assertEqual(set(rows_where(lambda row: not row.is_in_drum_patterns())), {Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, *note_moves})
 
@@ -413,7 +412,7 @@ class TestAPatternAsksTheDescriptions(unittest.TestCase):
     def test_a_drum_pattern_takes_a_note_letter_and_refuses_a_chord_and_a_note_move(self):
         pattern = a_pattern(drum=True)
         pattern.set_value(row=Row.DEGREE, step=SECOND_STEP, value=a_value_of(Row.DEGREE, drum=True))
-        for name in (Row.CHORD, *file_format.REGISTER_NOTE_ROWS.values()):
+        for name in (Row.CHORD, *file_format.DRAW_NOTE_ROWS.values()):
             with self.assertRaises(InvalidValue):
                 pattern.set_value(row=name, step=FIRST_STEP, value=a_value_of(name))
 

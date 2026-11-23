@@ -2,22 +2,18 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Conditional Execution: statements about the registers that stop a thing while any of them is true.
+"""Conditional Execution: statements about the draws that stop a thing while any of them is true.
 
 A table is a short list of statements, each written as a file writes it, a dictionary of its
-parts. One of three shapes: a register compared with a number or another register, AX < 3; a
-register asked whether it is odd or even; or a sum worked out first and its result compared,
-AX % 3 = 0, where each number may be another register. The same table is kept by a generator, a
-chain, a scene, a clip and a track, so the check, the reading and the answer are all here.
+parts. One of three shapes: a draw compared with a number or another draw, AD < 3; a draw asked
+whether it is odd or even; or a sum worked out first and its result compared, AD % 3 = 0, where
+each number may be another draw. The same table is kept by a generator, a chain and a scene, and a
+pattern's step holds one of each kind, so the check, the reading and the answer are all here.
 
 Every sum is in integers: a division rounds down and a remainder takes the sign of what divides.
-A written 0 is refused after a division or a remainder. A register that divides and holds 0 as
-the song plays is never divided by: the statement counts as true, so the thing it is on is stopped.
-
-A scene's and a clip's sets and adds of the registers are checked here too, since they are what
-the statements are usually written against.
+A written 0 is refused after a division or a remainder. A draw that divides and holds 0 as the
+song plays is never divided by: the statement counts as true, so the thing it is on is stopped.
 """
-
 import operator as operations
 
 from llamatron.model.file.checks import is_whole_number, listed
@@ -197,18 +193,6 @@ def _check_number(*, name, part, value):
     if value not in file_format.VALUE_NAMES and not _is_number(value):
         raise InvalidValue(errors.ERR_STATEMENT_BAD_NUMBER.format(
             name=name, part=part, lowest=-limits.MAX_STATEMENT_NUMBER, highest=limits.MAX_STATEMENT_NUMBER, value=value))
-
-
-def _is_register_values(value):
-    """Return whether a setting gives registers an integer each, within the registers' limits."""
-    if not isinstance(value, dict):
-        return False
-    for register, amount in value.items():
-        if register not in file_format.REGISTER_NAMES or not is_whole_number(amount):
-            return False
-        if not limits.MIN_REGISTER_VALUE <= amount <= limits.MAX_REGISTER_VALUE:
-            return False
-    return True
 
 
 def _number(*, written, values):

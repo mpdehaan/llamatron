@@ -135,7 +135,7 @@ MSG_CHANGED_SCENE = 'scene {number}'
 MSG_CHANGED_THE_SET = 'the set'
 MSG_CHANGED_WORDS = {
     Section.SCALES: 'scale', Section.PATTERNS: 'pattern',
-    Section.CHAINS: 'chain', Section.GROOVES: 'groove', Section.INSTRUMENTS: 'instrument', Section.SONGS: 'song', Section.TRACKS: 'track', Section.REGISTERS: 'register', Section.DRAWS: 'draw',
+    Section.CHAINS: 'chain', Section.GROOVES: 'groove', Section.INSTRUMENTS: 'instrument', Section.SONGS: 'song', Section.TRACKS: 'track', Section.DRAWS: 'draw',
     SetlistSetting.TITLE: 'title', SetlistSetting.AUTHOR: 'author', SetlistSetting.DESCRIPTION: 'description', SetlistSetting.NOTES: 'notes',
     SetlistSetting.STEP_SIZE: 'step size', SetlistSetting.DEFAULT_OCTAVE: 'default octave', SetlistSetting.DEFAULT_DRUM_OCTAVE: 'default drum octave',
     SetlistSetting.OCTAVE_LABELS: 'octave labels', SetlistSetting.PROTECTED: 'protected',

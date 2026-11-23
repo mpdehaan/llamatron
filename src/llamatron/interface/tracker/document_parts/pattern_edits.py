@@ -168,13 +168,6 @@ class PatternEdits:
         numbers = [self._setlist.get_song(song).get_track(track).get_cc_numbers()[lane] for song, track in plays]
         return list(dict.fromkeys(numbers))
 
-    def allowed_inc_max(self, *, pattern, register):
-        """Return the most a step of a pattern may add to a register or take from it: the narrowest of the songs that play the pattern, or the current song's when none does."""
-        return self.remembered(
-            key=(PatternEdits.allowed_inc_max.__name__, pattern, register), on=(self.get_outside_patterns(),),
-            compute=lambda: self._setlist.allowed_inc_max_for_pattern(name=pattern, register=register) or self.song().get_register(register).get_allowed_inc_max(),
-        )
-
     def steps_with_anything_past(self, *, name, steps):
         """Return how many steps from a position onward hold a note or a CC value."""
         return self.pattern(name).steps_with_anything_from(steps)

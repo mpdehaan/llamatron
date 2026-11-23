@@ -1,13 +1,13 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""One song of a set: its tempo, scale, seed, registers, tracks and scenes.
+"""One song of a set: its tempo, scale, seed, draws, tracks and scenes.
 
 A song arranges the set's patterns on its own tracks, scene by scene, and plays them in its own
 scale and tempo. What it shares with the other songs in the set (the scales, patterns,
 generators, chains and the settings for reading and showing patterns) it reads through its
 setlist, so everything that plays or edits a song asks the song, and needn't know which object
-holds what. Its tracks and registers are changed the same way as the set's sections: add_item,
+holds what. Its tracks and draws are changed the same way as the set's sections: add_item,
 remove_item, rename_item and so on, and renaming or removing a track tells the scenes.
 """
 
@@ -24,7 +24,6 @@ from llamatron.model.objects.genres import sensible_style, style_name
 from llamatron.model.objects.groove import groove_for
 from llamatron.model.objects.llama_data import data_as_kept, data_built_anew, HoldsSettings, or_default, own_copy, written_settings
 from llamatron.model.objects.named_items import moved_in_list, NamedItems
-from llamatron.model.objects.register import Register
 from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.track import Track
 from llamatron.model.objects.traits import HoldsSections
@@ -114,7 +113,7 @@ WHOLE_STEPS = 1
 
 
 class Song(HoldsSections, HoldsSettings):
-    """One song: its settings, registers, tracks and scenes, reading what it shares from its setlist.
+    """One song: its settings, draws, tracks and scenes, reading what it shares from its setlist.
 
     Settings the file leaves out are kept as None and mean their defaults, and so do sections it
     leaves out, so that saving writes back only what was there.
@@ -155,7 +154,6 @@ class Song(HoldsSections, HoldsSettings):
             pass_over_unknown(data=data, allowed={*SETTINGS, *sections.SONG_SECTIONS, Section.SCENES})
         song = cls(setlist=setlist)
         song._read_settings(data=data, where=where)
-        song._read_registers(data=data, where=where)
         song._read_draws(data=data, where=where)
         song._read_tracks(data=data, where=where)
         song._read_scenes(data=data, where=where)
@@ -182,17 +180,8 @@ class Song(HoldsSections, HoldsSettings):
         self._settings[SongSetting.SUBGENRE] = subgenre
         self._settings[SongSetting.VARIANT] = variant
 
-    def _read_registers(self, *, data, where):
-        """Read the registers' settings. There are always four, so the file only names those it changes."""
-        registers = data.get(Section.REGISTERS) or {}
-        with reading(where):
-            if not isinstance(registers, dict) or not set(registers) <= set(file_format.REGISTER_NAMES):
-                raise InvalidValue(errors.ERR_REGISTERS_NOT_NAMED.format(names=listed(file_format.REGISTER_NAMES)))
-        if Section.REGISTERS in data:
-            self._read_items(section=Section.REGISTERS, data=registers, where=where, label=names.MSG_REGISTER_WORD, read=Register.from_data)
-
     def _read_draws(self, *, data, where):
-        """Read the draws' settings. There are always four, so the file only names those it changes."""
+        """Read the draws' settings. There are always eight, so the file only names those it changes."""
         draws = data.get(Section.DRAWS) or {}
         with reading(where):
             if not isinstance(draws, dict) or not set(draws) <= set(file_format.DRAW_NAMES):
@@ -239,7 +228,7 @@ class Song(HoldsSections, HoldsSettings):
         return self._data_from(data_built_anew)
 
     def kept_data(self):
-        """Return the song's data with each track's, register's and scene's as that part keeps it, put together each time, since a part changes without its song changing."""
+        """Return the song's data with each track's, draw's and scene's as that part keeps it, put together each time, since a part changes without its song changing."""
         return self._data_from(data_as_kept)
 
     def _data_from(self, part_data):
@@ -429,7 +418,7 @@ class Song(HoldsSections, HoldsSettings):
         SETTINGS[SongSetting.WIZARD].check(choices)
         self._settings[SongSetting.WIZARD] = own_copy(choices)
 
-    # Changing the tracks and registers, the same way the set changes its sections.
+    # Changing the tracks and draws, the same way the set changes its sections.
 
     def add_new_track(self, *, name, drum=False, place=None):
         """Add a new track with no clips, a drum track if drum, at the end or before the track at a place, and return it."""
@@ -504,22 +493,7 @@ class Song(HoldsSections, HoldsSettings):
             if clip_slot is not None:
                 scene.set_clip_slot(track=new, clip_slot=clip_slot.copy(), song=self)
 
-    # The registers. There are always four, and the file names only those with settings changed.
-
-    def get_register(self, name):
-        """Return a register by its name, AX to DX, with its default settings if the file leaves it out."""
-        return self._section(Section.REGISTERS).find(name) or Register()
-
-    def set_register_setting(self, *, name, setting, value):
-        """Change one setting of a register, AX to DX, by its file name, or None for its default."""
-        if name not in file_format.REGISTER_NAMES:
-            raise InvalidValue(errors.ERR_NO_SUCH_REGISTER.format(name=name, names=listed(file_format.REGISTER_NAMES)))
-        register = self.get_register(name).copy()
-        register.set_setting(name=setting, value=value)
-        changed = self._section(Section.REGISTERS).changed_with(name=name, item=register, order=file_format.REGISTER_NAMES)
-        self._set_section(section=Section.REGISTERS, items=changed or None)
-
-    # The draws. There are always four, and the file names only those with settings changed.
+    # The draws. There are always eight, and the file names only those with settings changed.
 
     def get_draw(self, name):
         """Return a draw by its name, AD to HD, with its default settings if the file leaves it out."""
@@ -722,7 +696,7 @@ class Song(HoldsSections, HoldsSettings):
                 kept = [each for each in chain_names if each != name]
                 holder.set_chain_names(names=kept, song=self)
 
-    def scenes_change_registers(self):
+    def redraws_in_conditions(self):
         """Return whether a draw that holds a value redraws in conditions, which a statement of a scene, a clip, a track, a chain
         or a generator can draw from."""
         for draw in self._written_draws():

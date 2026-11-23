@@ -26,9 +26,8 @@ MIN_RAMP_BARS = 1
 MAX_RAMP_BARS = 9999
 MAX_CLIP_REPEAT = 9999
 
-# The range of a register's settings, and of what a step can add to one.
-MIN_REGISTER_VALUE = -127
-MAX_REGISTER_VALUE = 127
+# How far either way a drift's version moves a step's velocity.
+MAX_DRIFT_VELOCITY = 127
 # The range of a draw's values, and how many slots a draw may hold.
 MIN_DRAW_VALUE = -99
 MAX_DRAW_VALUE = 99

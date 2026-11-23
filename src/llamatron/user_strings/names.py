@@ -62,7 +62,6 @@ MSG_GROOVE_WORD = 'groove'
 MSG_INSTRUMENT_WORD = 'instrument'
 MSG_SCALE_WORD = 'scale'
 MSG_TRACK_WORD = 'track'
-MSG_REGISTER_WORD = 'register'
 MSG_DRAW_WORD = 'draw'
 MSG_SONG_WORD = 'song'
 

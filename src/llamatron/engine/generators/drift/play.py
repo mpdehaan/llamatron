@@ -88,11 +88,6 @@ class DriftPlay:
             self._triggers[key] = self._pick(name=name, trigger=trigger)
         return self._triggers[key]
 
-    def adds_at(self, *, name, trigger):
-        """Return what a drift adds to each register at a trigger, by register name, leaving out nothing added."""
-        numbers = self.picked(name=name, trigger=trigger).numbers
-        return {register: numbers[value] for register, value in drift_settings.DRIFT_ADDS.items() if numbers[value]}
-
     def effects(self, *, names, time, origins=None):
         """Return what the drifts named do to a step at a song time, their numbers added together and the last one's overrides winning.
 
@@ -111,16 +106,6 @@ class DriftPlay:
             scale = picked.scale or scale
             root = picked.root or root
         return StepEffects(velocity, probability, degree, scale, root)
-
-    def adds_between(self, *, name, start, end, origin):
-        """Return what a drift adds to the registers at each of its triggers from start to before end, song times, its clock
-        starting at origin: (time, adds by register) for each trigger that adds anything."""
-        found = []
-        for time in self.trigger_times(name=name, start=start, end=end, origin=origin):
-            adds = self.adds_at(name=name, trigger=self.trigger_at(name=name, time=time - origin))
-            if adds:
-                found.append((time, adds))
-        return found
 
     def draws_in_order(self, name):
         """Return whether a drift draws a random number as a trigger is first picked, a degree's random part or a scale or root
@@ -184,8 +169,7 @@ class DriftPlay:
         position = self.position(name=name, trigger=trigger)
         chooser = self._chooser(name)
         numbers = {}
-        for value in (*drift_settings.DRIFT_ADDS.values(), DriftValue.VELOCITY, DriftValue.PROBABILITY, DriftValue.DEGREE, DriftValue.DEGREE_RANDOM,
-                      DriftValue.SCALE_PROBABILITY, DriftValue.ROOT_PROBABILITY):
+        for value, _, _ in drift_settings.DRIFT_NUMBERS:
             first = settings.get_value(version=DriftVersion.A, value=value) or step_effects.NOTHING_ADDED
             second = settings.get_value(version=DriftVersion.B, value=value) or step_effects.NOTHING_ADDED
             numbers[value] = round(first + (second - first) * position)

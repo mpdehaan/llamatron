@@ -218,8 +218,6 @@ def _song_groups(song):
     settings = _setting_lines(data=song, keys=_SONG_SETTINGS)
     if settings:
         groups.append(settings)
-    if song.get(Section.REGISTERS):
-        groups.append(_keyed(section=Section.REGISTERS, items=song[Section.REGISTERS]))
     if song.get(Section.DRAWS):
         groups.append(_keyed(section=Section.DRAWS, items=song[Section.DRAWS]))
     groups.append(_items(section=Section.TRACKS, items=song.get(Section.TRACKS)))

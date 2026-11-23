@@ -8,8 +8,8 @@ from llamatron.interface.tracker import drawing, keybindings, keys
 from llamatron.interface.tracker.components import pattern_rows
 from llamatron.interface.tracker.drawing import Box, fit
 from llamatron.interface.tracker.keys import Key, RowSection
-from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import DrawName, RegisterName, RegisterUse, Row
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import DrawName, RegisterUse, Row
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.user_strings import labels as labels_text, legends, marks
@@ -247,33 +247,11 @@ class TestSections(UITest):
         self.assertEqual(self.document.step_value(name=TUNE, row=Row.RATCHET_OFFSET, step=0), typed - presses)
         self.assertEqual(self.editor.cell_text(name=Row.RATCHET_OFFSET, step=0), str(typed - presses))
 
-    async def test_unset_register_changes_show_a_dot(self):
-        await open_section(test=self, section=RowSection.REGISTER_MOD)
-        for row in file_format.REGISTER_ADD_ROWS.values():
-            self.assertEqual(self.editor.cell_text(name=row, step=0), ui_testing.QUIET_VALUE)
-
-    async def test_register_changes_take_typed_values_including_negative_ones_even_on_a_rest(self):
-        await open_section(test=self, section=RowSection.REGISTER_MOD)
-        rest = 2
-        typed = -3
-        row = file_format.REGISTER_ADD_ROWS[RegisterName.BX]
-        await self.press(Key.RIGHT, Key.RIGHT)
-        while self.editor.row_name() != row:
-            await self.press(Key.DOWN)
-        await self.press(Key.ENTER)
-        self.app.screen.value = str(typed)
-        await self.press(Key.ENTER)
-        self.assertEqual(self.document.step_value(name=TUNE, row=row, step=rest), typed)
-        await self.press(Key.ENTER)
-        self.app.screen.value = str(limits.MAX_REGISTER_VALUE + 1)
-        await self.press(Key.ENTER)
-        self.assertEqual(self.document.step_value(name=TUNE, row=row, step=rest), typed)
-        render_song(self.document.song())
-
-    async def test_register_uses_cycle_add_subtract_and_off_on_notes_and_on_empty_steps_alike(self):
+    async def test_draw_uses_cycle_add_subtract_and_off_on_notes_and_on_empty_steps_alike(self):
         # Space or Enter cycles +, - and blank, where the rows were toggles.
-        await open_section(test=self, section=RowSection.REGISTER_APPLY)
-        row = file_format.REGISTER_VELOCITY_ROWS[RegisterName.CX]
+        self.document.change_set(self.document.song().set_draw_slot, name=DrawName.CD, place=0, value=DRAWN_VALUE)
+        await open_section(test=self, section=RowSection.DRAW_APPLY)
+        row = file_format.DRAW_VELOCITY_ROWS[DrawName.CD]
         while self.editor.row_name() != row:
             await self.press(Key.DOWN)
         self.assertEqual(self.editor.cell_text(name=row, step=0), marks.MSG_TOGGLE_OFF)
@@ -295,9 +273,9 @@ class TestSections(UITest):
         await self.press(keybindings.RegisterRow.CLEAR)
         self.assertEqual(self.document.step_value(name=TUNE, row=row, step=0), RegisterUse.OFF)
         self.assertIn(f'« {key_name(keybindings.RegisterRow.NEXT)} »', self.text())
-        # No register setting is locked out for want of a note: every register row works on an empty step, where the render has nothing to move.
+        # No draw's row is locked out for want of a note: every one works on an empty step, where the render has nothing to move.
         await self.press(*[Key.RIGHT] * EMPTY_STEP)
-        for name in (*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values()):
+        for name in (file_format.DRAW_NOTE_ROWS[DrawName.CD], file_format.DRAW_VELOCITY_ROWS[DrawName.CD]):
             self.assertTrue(self.editor.row_for(name).editable(), name)
             self.assertNotEqual(self.editor.row_for(name).cell_lines(step=EMPTY_STEP), [marks.MSG_BLOCKED_CELL], name)
         await self.press(keybindings.RegisterRow.NEXT)
@@ -306,15 +284,14 @@ class TestSections(UITest):
         render_song(self.document.song())
 
     async def test_a_drum_pattern_has_no_rows_that_move_notes(self):
-        await open_section(test=self, section=RowSection.REGISTER_APPLY)
+        self.document.change_set(self.document.song().set_draw_slot, name=DrawName.AD, place=0, value=DRAWN_VALUE)
+        await open_section(test=self, section=RowSection.DRAW_APPLY)
         await self.press(Key.ESCAPE, Key.ESCAPE)
         await self.open_patterns_on(BEAT)
         await self.press(Key.ENTER)
         rows = [row.name for row in self.app.screen.rows_view.reachable()]
-        for name in file_format.REGISTER_NOTE_ROWS.values():
-            self.assertNotIn(name, rows)
-        for name in file_format.REGISTER_VELOCITY_ROWS.values():
-            self.assertIn(name, rows)
+        self.assertNotIn(file_format.DRAW_NOTE_ROWS[DrawName.AD], rows)
+        self.assertIn(file_format.DRAW_VELOCITY_ROWS[DrawName.AD], rows)
 
     async def test_on_a_drum_note_row_a_and_f_are_notes(self):
         await self.press(Key.ESCAPE, Key.ESCAPE)

@@ -8,7 +8,7 @@ Every setting has a default, so that a file written by an older version of llama
 loads, and an empty file is an empty song.
 """
 
-from llamatron.model.schema.file_format import FollowAction, OctaveLabels, ResetBehavior
+from llamatron.model.schema.file_format import FollowAction, OctaveLabels
 
 DEFAULT_TEMPO = 120
 FIRST_NUMBER = 1
@@ -44,16 +44,9 @@ DEFAULT_PROBABILITY = 100
 DEFAULT_RATCHET = 1
 DEFAULT_REPEAT = 1
 DEFAULT_TRANSPOSE = 0
-# A register runs from its minimum to its maximum, starts at its default, and stops at the ends
-# unless it's set to wrap.
-DEFAULT_REGISTER_MINIMUM = 0
-DEFAULT_REGISTER_MAXIMUM = 10
-DEFAULT_REGISTER_VALUE = 0
 # A new draw: eight blank slots moving forward, its values bounded by the widest range, its conditions only looking at it.
 DEFAULT_DRAW_SLOT_COUNT = 8
 DEFAULT_DRAW_CONDITIONS_REDRAW = False
-DEFAULT_RESET_BEHAVIOR = ResetBehavior.CLIP
-DEFAULT_RESET_EACH_SCENE = False
 # The most a step may add to a register or take from it, unless the register says otherwise: enough for every example written before the limit came.
 DEFAULT_ALLOWED_INC_MAX = 20
 DEFAULT_GROOVE_CELL_LENGTH = '1/16'

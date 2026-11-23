@@ -10,7 +10,7 @@ from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed, time_length
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import DriftValue, RegisterName
+from llamatron.model.schema.file_format import DriftValue
 from llamatron.model.schema.setting import Checked, Choice, described, WholeNumber
 from llamatron.model.values import note
 from llamatron.user_strings import errors
@@ -25,14 +25,10 @@ class DriftSetting:
     DIRECTION = 'direction'
 
 
-# Each register's add at a drift's trigger, by register.
-DRIFT_ADDS = {RegisterName.AX: DriftValue.AX_ADD, RegisterName.BX: DriftValue.BX_ADD, RegisterName.CX: DriftValue.CX_ADD, RegisterName.DX: DriftValue.DX_ADD}
-
 
 # A version's values, in the order the editor lists them: (name, lowest, highest) for each number, and the two choices.
 DRIFT_NUMBERS = [
-    *[(name, limits.MIN_REGISTER_VALUE, limits.MAX_REGISTER_VALUE) for name in DRIFT_ADDS.values()],
-    (DriftValue.VELOCITY, -limits.MAX_REGISTER_VALUE, limits.MAX_REGISTER_VALUE),
+    (DriftValue.VELOCITY, -limits.MAX_DRIFT_VELOCITY, limits.MAX_DRIFT_VELOCITY),
     (DriftValue.PROBABILITY, -limits.MAX_PROBABILITY, limits.MAX_PROBABILITY),
     (DriftValue.DEGREE, -limits.MAX_DRIFT_DEGREE, limits.MAX_DRIFT_DEGREE),
     (DriftValue.DEGREE_RANDOM, limits.MIN_PROBABILITY, limits.MAX_DRIFT_DEGREE),
@@ -42,7 +38,7 @@ DRIFT_NUMBERS = [
 
 
 DRIFT_VALUES = [
-    *DRIFT_ADDS.values(), DriftValue.VELOCITY, DriftValue.PROBABILITY, DriftValue.DEGREE, DriftValue.DEGREE_RANDOM,
+    DriftValue.VELOCITY, DriftValue.PROBABILITY, DriftValue.DEGREE, DriftValue.DEGREE_RANDOM,
     DriftValue.SCALE, DriftValue.SCALE_PROBABILITY, DriftValue.ROOT, DriftValue.ROOT_PROBABILITY,
 ]
 
@@ -108,8 +104,6 @@ class DriftSettings(GeneratorSettings):
 
     __slots__ = ()
 
-    MAY_ADD_TO_REGISTERS = True
-
     GENERATOR = None
     SETTINGS = _drift_settings()
 
@@ -131,7 +125,3 @@ class DriftSettings(GeneratorSettings):
     def get_value(self, *, version, value):
         """Return one version's value as the file writes it, or None when the version leaves it out."""
         return self.get_written(versioned(version=version, value=value))
-
-    def adds_to_registers(self):
-        """Return whether either version adds to a register at its triggers."""
-        return any(self.get_value(version=version, value=value) for version in file_format.DRIFT_VERSIONS for value in DRIFT_ADDS.values())

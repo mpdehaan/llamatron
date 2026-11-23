@@ -13,7 +13,7 @@ from llamatron.engine.realizer.pattern_order import ordered_patterns
 from llamatron.math.random_source import random_source
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, Operator, PatternOrder, PatternSetting, RegisterName, Section, StatementPart, StepStatement
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DrawName, DrawSetting, Operator, PatternOrder, PatternSetting, RegisterUse, Row, Section, StatementPart, StepStatement
 from tests.support import song_testing
 from tests.support.rendering import render_data
 from tests.support.song_testing import clip, pat, pitches, with_parts
@@ -30,6 +30,8 @@ PLAYED = {A: [48, 50], B: [52, 53], C: [55, 57]}
 SEED = 'a seed'
 TRIES = 20
 RESTARTS_UNDER = 2
+# The slots of the draw that counts the passes.
+COUNTING = [1, 2, 3, 4, 5, 6, 7, 8]
 
 
 def patterns(**changed):
@@ -39,7 +41,7 @@ def patterns(**changed):
     return made
 
 
-def played(*, names=None, repeat=1, order=None, direction=None, changed=None, slot=None):
+def played(*, names=None, repeat=1, order=None, direction=None, changed=None, slot=None, draws=None):
     """Return the MIDI numbers a clip of a list of patterns plays."""
     clip_slot = {ClipSlotSetting.PATTERNS: names or LIST, ClipSlotSetting.REPEAT: repeat, **(slot or {})}
     if order:
@@ -47,6 +49,8 @@ def played(*, names=None, repeat=1, order=None, direction=None, changed=None, sl
     if direction:
         clip_slot[ClipSlotSetting.DIRECTION] = direction
     data = with_parts(patterns=patterns(**(changed or {})), scenes=[{Section.TRACKS: {song_testing.LEAD: clip_slot}}])
+    if draws:
+        data[Section.DRAWS] = draws
     return pitches(clip(song=render_data(data), scene=1, track=song_testing.LEAD))
 
 
@@ -86,11 +90,12 @@ class TestAClipOfSeveralPatterns(unittest.TestCase):
             render_data(with_parts(patterns=made, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERNS: [A, HIT]}}}]))
 
     def test_a_step_that_starts_the_pattern_over_starts_the_whole_list_over(self):
-        statement = {StatementPart.REGISTER: RegisterName.AX, StatementPart.OPERATOR: Operator.LESS, StatementPart.VALUE: RESTARTS_UNDER}
+        statement = {StatementPart.REGISTER: DrawName.AD, StatementPart.OPERATOR: Operator.LESS, StatementPart.VALUE: RESTARTS_UNDER}
         rows = {row: [None, statement.get(part)] for row, part in zip(file_format.STATEMENT_ROWS[StepStatement.RESTART], file_format.STATEMENT_PARTS)}
-        # The first pattern counts the passes, and the second starts over on its second step while the count is low.
-        counted = {file_format.REGISTER_ADD_ROWS[RegisterName.AX]: [1, 0]}
-        notes = played(repeat=4, changed={A: counted, B: rows})
+        # The first pattern counts the passes, taking AD's next slot, 1, 2 and on, and the second starts over on its second step
+        # while the count is low.
+        counted = {Row.AD_VELOCITY: [RegisterUse.ADD, 0]}
+        notes = played(repeat=4, changed={A: counted, B: rows}, draws={DrawName.AD: {DrawSetting.SLOTS: COUNTING}})
         cut = [*PLAYED[A], PLAYED[B][0]]
         self.assertEqual(notes[:len(cut) + len(PLAYED[A])], [*cut, *PLAYED[A]])
         self.assertEqual(notes[-len(notes_of(A, B, C)):], notes_of(A, B, C))

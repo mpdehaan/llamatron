@@ -7,11 +7,11 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.interface.tracker.keys import RowSection
-from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, REGISTER_ADD_ROWS, REGISTER_NOTE_ROWS, REGISTER_SET_ROWS, REGISTER_VELOCITY_ROWS, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, Tuning
+from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, Tuning
 
 
-def register_labels(*, rows, label):
-    """Return each register's row in a group of register rows with its label, like ax_note with AX+Note."""
+def draw_labels(*, rows, label):
+    """Return each draw's row in a group of draw rows with its label, like ad_note with Note+=AD."""
     return {row: label.format(name=name) for name, row in rows.items()}
 
 
@@ -28,10 +28,10 @@ MSG_OK_CANCEL_BUTTONS = ('OK', 'CANCEL')
 # The confirm dialog's two buttons, in the order they're drawn and the arrows move: yes first, since ENTER presses the selected one.
 MSG_CONFIRM_BUTTONS = ('YES', 'NO')
 
-# interface/tracker/screens/shared/statements.py: Conditional Execution, the table of statements about the registers, and a scene's and a clip's sets and adds
+# interface/tracker/screens/shared/statements.py: Conditional Execution, the table of statements about the draws
 MSG_BYPASS_WHEN_LABEL = 'Bypass Generators When'
 MSG_STATEMENT_IGNORED = 'ignored'
-MSG_STATEMENT_REGISTER_TITLE = 'Register'
+MSG_STATEMENT_REGISTER_TITLE = 'Draw'
 MSG_STATEMENT_OPERATOR_TITLE = 'Operator'
 MSG_STATEMENT_VALUE_TITLE = 'Value'
 MSG_STATEMENT_COMPARISON_TITLE = 'Comparison'
@@ -40,7 +40,7 @@ MSG_STATEMENT_NUMBER_CHOICE = 'number'
 MSG_STATEMENT_LINE_LABEL = ' '
 
 # interface/tracker/screens/arrange/arrange_page.py
-# A scene's field for each register it can reset, like "Reset AX".
+# A scene's field for each draw it can start over, like "Reset AD".
 MSG_RESET_LABEL = 'Reset {name}'
 MSG_SONG_OPTION = '(song)'
 MSG_SCENE_OPTION = '(scene)'
@@ -180,7 +180,6 @@ class Crumb:
     SCALES = 'SCALES'
     GROOVES = 'GROOVES'
     INSTRUMENTS = 'INSTRUMENTS'
-    REGISTERS = 'REGISTERS'
     DRAWS = 'DRAWS'
     ARRANGE = 'ARRANGE'
 
@@ -303,7 +302,7 @@ MSG_EVERY_LABEL = 'Every'
 MSG_STEPS_TO_B_LABEL = 'Steps to B'
 MSG_DRIFT_DIRECTION_LABEL = 'Direction'
 MSG_DRIFT_VALUE_LABELS = {
-    DriftValue.AX_ADD: 'AX+=', DriftValue.BX_ADD: 'BX+=', DriftValue.CX_ADD: 'CX+=', DriftValue.DX_ADD: 'DX+=', DriftValue.VELOCITY: 'Vel+=',
+    DriftValue.VELOCITY: 'Vel+=',
     DriftValue.PROBABILITY: 'Prob \u00b1', DriftValue.DEGREE: 'Degree +', DriftValue.DEGREE_RANDOM: 'Degree random', DriftValue.SCALE: 'Scale',
     DriftValue.SCALE_PROBABILITY: 'Scale prob', DriftValue.ROOT: 'Root', DriftValue.ROOT_PROBABILITY: 'Root prob',
 }
@@ -422,7 +421,6 @@ MSG_TRANSPOSE_LABEL = 'Transpose'
 MSG_LOWEST_OCTAVE_LABEL = 'Lowest octave'
 MSG_HIGHEST_OCTAVE_LABEL = 'Highest octave'
 MSG_CC_LABEL = 'CC {number}'
-# The track editor's register bindings: a CC lane's register, and the velocity's.
 MSG_STEP_LABEL = 'Step'
 MSG_ORDER_LABEL = 'Order'
 MSG_OCTAVE_RANGE_LABEL = 'Octave range'
@@ -430,7 +428,6 @@ MSG_OCTAVE_JUMP_LABEL = 'Octave jump'
 MSG_OFFSETS_LABEL = 'Offsets'
 MSG_STEP_ROW_LABEL = ' Step'
 MSG_OFFSET_ROW_LABEL = ' Offset'
-# The offsets editor's rows of register adds, under the Offset row, and the arp editor's adds on every note.
 
 # interface/tracker/screens/set/scale_page.py
 MSG_ROOT_LABEL = 'Root'
@@ -442,10 +439,6 @@ MSG_SHORT_SCALE_NAMES = {
 }
 
 # interface/tracker/screens/pattern/pattern_editor.py, its two drawings and the rows in interface/tracker/components/
-# How each register's rows are labelled: AX+Note moves the note by AX, AX+Vel adds AX to the
-# velocity, and AX+= adds to AX.
-MSG_REGISTER_NOTE_LABEL = '{name}+Note'
-MSG_REGISTER_VELOCITY_LABEL = '{name}+Vel'
 # The Use Draws section's rows, by the draw they use.
 MSG_DRAW_NOTE_LABEL = 'Note+={name}'
 MSG_DRAW_VELOCITY_LABEL = 'Vel+={name}'
@@ -462,12 +455,9 @@ MSG_DRAW_STRIP_LABEL = 'Strip'
 # interface/tracker/dialogs/grouped_choices.py: the headings of a statement's pickers.
 MSG_PICKER_CONSTANT_HEADING = '--Constant--'
 MSG_PICKER_DRAWS_HEADING = '--Draws--'
-MSG_PICKER_REGISTERS_HEADING = '--Registers--'
 # The strip's two rows, as a grid's label column shows them.
 MSG_DRAW_STRIP_SLOT_ROW = 'slot'
 MSG_DRAW_STRIP_VALUE_ROW = 'value'
-MSG_REGISTER_ADD_LABEL = '{name}+='
-MSG_REGISTER_SET_LABEL = '{name}='
 # A row of a step's statement is labelled by its place among the statement's five parts, c for condition.
 MSG_STATEMENT_ROW_LABEL = 'c{place}'
 # The rows on screen. Degree always shows, and the rest depend on the set of rows showing.
@@ -477,19 +467,15 @@ MSG_ROW_LABELS = {
     Row.VELOCITY: 'Velocity', Row.ACCENT: 'Accent', Row.PROBABILITY: 'Probability', Row.GLIDE: 'Glide', Row.TIE: 'Tie', Row.RATCHET: 'Ratchet',
     Row.RATCHET_OFFSET: 'Ratchet Offset', Row.GRAB: 'Grab', Row.KEYSWITCH: 'Keyswitch',
     Row.CC1: 'CC 1', Row.CC2: 'CC 2', Row.CC3: 'CC 3', Row.CC4: 'CC 4', Row.SLIDE: 'Slide',
-    **register_labels(rows=REGISTER_NOTE_ROWS, label=MSG_REGISTER_NOTE_LABEL),
-    **register_labels(rows=REGISTER_VELOCITY_ROWS, label=MSG_REGISTER_VELOCITY_LABEL),
-    **register_labels(rows=REGISTER_ADD_ROWS, label=MSG_REGISTER_ADD_LABEL),
-    **register_labels(rows=REGISTER_SET_ROWS, label=MSG_REGISTER_SET_LABEL),
-    **register_labels(rows=DRAW_NOTE_ROWS, label=MSG_DRAW_NOTE_LABEL),
-    **register_labels(rows=DRAW_VELOCITY_ROWS, label=MSG_DRAW_VELOCITY_LABEL),
-    **register_labels(rows=DRAW_RESET_ROWS, label=MSG_DRAW_RESET_LABEL),
+    **draw_labels(rows=DRAW_NOTE_ROWS, label=MSG_DRAW_NOTE_LABEL),
+    **draw_labels(rows=DRAW_VELOCITY_ROWS, label=MSG_DRAW_VELOCITY_LABEL),
+    **draw_labels(rows=DRAW_RESET_ROWS, label=MSG_DRAW_RESET_LABEL),
     **{row: MSG_STATEMENT_ROW_LABEL.format(place=place) for rows in STATEMENT_ROWS.values() for place, row in enumerate(rows, start=1)},
 }
 # The sections of rows under Octave, each a row of the grid: its name after a mark saying whether it's closed (+) or open (-), chosen over triangles, which were hard to tell apart at a distance.
 MSG_SECTION_NAMES = {
     RowSection.BASICS: 'Basics', RowSection.CHORD: 'Chord', RowSection.TIMING: 'Timing', RowSection.KEYSWITCH: 'Keyswitch', RowSection.ADVANCED: 'Advanced', RowSection.CC: 'CCs',
-    RowSection.REGISTER_MOD: 'Set Registers', RowSection.REGISTER_APPLY: 'Use Registers', RowSection.DRAW_APPLY: 'Use Draws', RowSection.STOP_WHEN: 'Stop When',
+    RowSection.DRAW_APPLY: 'Use Draws', RowSection.STOP_WHEN: 'Stop When',
     RowSection.RESTART_WHEN: 'Restart When', RowSection.MUTE_WHEN: 'Mute When',
 }
 MSG_SECTION_LABEL = '{mark} {name}'
@@ -497,8 +483,6 @@ MSG_SECTION_LABEL = '{mark} {name}'
 MSG_SECTION_HINTS = {
     RowSection.ADVANCED: "Advanced: Grab plays the Grab track's last note",
     RowSection.CC: "CCs: the track sets each row's CC number",
-    RowSection.REGISTER_MOD: 'Set Registers: = sets, then += adds, even on an empty step',
-    RowSection.REGISTER_APPLY: 'Use Registers: +Note and +Vel add (+) or subtract (-) a register',
     RowSection.DRAW_APPLY: "Use Draws: Note+= and Vel+= add (+) or subtract (-) a draw's next value",
     RowSection.STOP_WHEN: 'Stop When: the clip is done at a step whose statement is true',
     RowSection.RESTART_WHEN: 'Restart When: the pattern starts over at a step whose statement is true',
@@ -525,7 +509,6 @@ class MungeGroup:
     COPY = 'Copy'
     OTHER_PATTERNS = 'Other Patterns'
     PITCH = 'Pitch'
-    REGISTERS = 'Registers'
     REORDER = 'Reorder'
     RHYTHM = 'Rhythm'
     ROLL = 'Roll'
@@ -534,16 +517,14 @@ class MungeGroup:
 
 MSG_MUNGE_CHOICES = [
     'reverse after (cursor)', 'reverse before (cursor)', 'reverse all', 'pivot (cursor)', 'randomize all',
-    'copy before to end (cursor)', 'copy after to end (cursor)', 'copy before to start (cursor)', 'copy after to start (cursor)',
-    'randomize after (cursor)', 'randomize before (cursor)',
-    'clear all except pitch', 'clear register modifications', 'clear register conditions',
-    'roll left (N)', 'roll right (N)', 'clear chords',
-    'mirror', 'interleave (pattern)', 'smooth CCs', 'smooth velocity', 'smooth AX=', 'smooth BX=', 'smooth CX=', 'smooth DX=',
-    'splice after (pattern)', 'splice before (pattern)', 'split into new patterns (N)', 'splice (pattern, cursor)',
-    'roll left (cursor)', 'roll right (cursor)',
-    'join repeated notes', 'divide long notes', 'randomize rhythm', 'randomize pitches', 'reverse pitches',
-    'clear every Nth step (N)', 'crop (cursor)', 'humanize velocity (N)',
-    'invert melody (cursor)', 'apply voice leading (no octave shift)', 'apply voice leading (octave shift)',
+    'copy before to end (cursor)', 'copy after to end (cursor)', 'copy before to start (cursor)',
+    'copy after to start (cursor)', 'randomize after (cursor)', 'randomize before (cursor)', 'clear all except pitch',
+    'clear conditions', 'roll left (N)', 'roll right (N)', 'clear chords', 'mirror', 'interleave (pattern)', 'smooth CCs',
+    'smooth velocity', 'splice after (pattern)', 'splice before (pattern)', 'split into new patterns (N)',
+    'splice (pattern, cursor)', 'roll left (cursor)', 'roll right (cursor)', 'join repeated notes', 'divide long notes',
+    'randomize rhythm', 'randomize pitches', 'reverse pitches', 'clear every Nth step (N)', 'crop (cursor)',
+    'humanize velocity (N)', 'invert melody (cursor)', 'apply voice leading (no octave shift)',
+    'apply voice leading (octave shift)',
 ]
 # The clip page's extra choice, for a clip that follows its pattern's direction.
 MSG_PATTERN_DIRECTION_OPTION = '(pattern)'

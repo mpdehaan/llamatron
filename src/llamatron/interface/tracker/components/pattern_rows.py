@@ -17,7 +17,6 @@ from llamatron.interface.tracker import key_table, keybindings
 from llamatron.interface.tracker.components import degree_row
 from llamatron.interface.tracker.components.accent_row import AccentRow
 from llamatron.interface.tracker.components.accidental_row import AccidentalRow
-from llamatron.interface.tracker.components.add_row import AddRow
 from llamatron.interface.tracker.components.cc_row import CcRow
 from llamatron.interface.tracker.components.chord_row import ChordRow
 from llamatron.interface.tracker.components.chord_scale_row import ChordScaleRow
@@ -33,7 +32,6 @@ from llamatron.interface.tracker.components.number_row import NumberRow
 from llamatron.interface.tracker.components.octave_row import OctaveRow
 from llamatron.interface.tracker.components.register_row import RegisterRow
 from llamatron.interface.tracker.components.section_row import SectionRow
-from llamatron.interface.tracker.components.set_row import SetRow
 from llamatron.interface.tracker.components.slide_row import SlideRow
 from llamatron.interface.tracker.components.statement_row import StatementRow
 from llamatron.interface.tracker.components.tension_row import TensionRow
@@ -56,9 +54,6 @@ SECTIONS = {
     RowSection.KEYSWITCH: [Row.KEYSWITCH],
     RowSection.ADVANCED: [Row.PROBABILITY, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB],
     RowSection.CC: [*file_format.CC_ROWS, Row.SLIDE],
-    # The register sections read in the order a step works them out: sets, then adds, then the uses.
-    RowSection.REGISTER_MOD: [*file_format.REGISTER_SET_ROWS.values(), *file_format.REGISTER_ADD_ROWS.values()],
-    RowSection.REGISTER_APPLY: [*file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values()],
     # The draws a step adds to its note and velocity, and the draws it resets first.
     RowSection.DRAW_APPLY: [*file_format.DRAW_NOTE_ROWS.values(), *file_format.DRAW_VELOCITY_ROWS.values(), *file_format.DRAW_RESET_ROWS.values()],
     # A step's statements, in the order a step reads them.
@@ -72,10 +67,6 @@ ROW_CLASSES = {
     Row.CHORD: ChordRow, Row.TENSION: TensionRow, Row.CHORD_SCALE: ChordScaleRow, Row.INVERSION: InversionRow, Row.VELOCITY: NumberRow, Row.ACCENT: AccentRow, Row.PROBABILITY: NumberRow, Row.GLIDE: GlideRow, Row.TIE: TieRow,
     Row.RATCHET: NumberRow, Row.RATCHET_OFFSET: NumberRow, Row.GRAB: GrabRow, Row.KEYSWITCH: KeyswitchSlotRow, Row.SLIDE: SlideRow,
     **dict.fromkeys(file_format.CC_ROWS, CcRow),
-    **dict.fromkeys(file_format.REGISTER_NOTE_ROWS.values(), RegisterRow),
-    **dict.fromkeys(file_format.REGISTER_VELOCITY_ROWS.values(), RegisterRow),
-    **dict.fromkeys(file_format.REGISTER_ADD_ROWS.values(), AddRow),
-    **dict.fromkeys(file_format.REGISTER_SET_ROWS.values(), SetRow),
     **dict.fromkeys(file_format.DRAW_NOTE_ROWS.values(), RegisterRow),
     **dict.fromkeys(file_format.DRAW_VELOCITY_ROWS.values(), RegisterRow),
     **dict.fromkeys(file_format.DRAW_RESET_ROWS.values(), DrawResetRow),

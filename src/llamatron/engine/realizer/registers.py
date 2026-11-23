@@ -62,7 +62,7 @@ def starting_values(registers):
 
     registers is the song's Register for each name. Every draw is there too, as having drawn nothing yet.
     """
-    return {**{name: registers[name].get_default() for name in file_format.REGISTER_NAMES}, **dict.fromkeys(file_format.DRAW_NAMES, NO_VALUE)}
+    return {**dict.fromkeys(file_format.DRAW_NAMES, NO_VALUE)}
 
 
 def with_resets(*, values, registers, names):
@@ -365,7 +365,7 @@ def scene_change(*, sets, adds):
 
 def no_values():
     """Return a value of nothing for every register and every draw."""
-    return dict.fromkeys((*file_format.REGISTER_NAMES, *file_format.DRAW_NAMES), NO_VALUE)
+    return dict.fromkeys(file_format.DRAW_NAMES, NO_VALUE)
 
 
 def _moment_of(change):

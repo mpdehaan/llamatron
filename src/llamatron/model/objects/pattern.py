@@ -31,7 +31,7 @@ from llamatron.user_strings import errors
 
 # Steps are counted from 1 in messages, as the editor shows them.
 FIRST_STEP_NUMBER = 1
-# The first step, which cannot start the pattern over, since that would take no time, and where a statement's register stands among its rows.
+# The first step, which cannot start the pattern over, since that would take no time, and where a statement's draw stands among its rows.
 FIRST_STEP = 0
 # What is added before rounding down, so that a value halfway between two whole numbers goes up.
 HALF = 0.5
@@ -57,8 +57,6 @@ def _changes_with_drums(row):
 # The rows that mean something else in a drum pattern, so they're cleared when a pattern changes kind. What a rest keeps when a
 # note is cleared from a step is pattern_munges.REST_ROWS.
 NOTE_ROWS = rows_where(_changes_with_drums)
-# A register change of nothing, which is the same as none.
-NO_CHANGE = 0
 # No accidental, as a note name is written.
 NO_ACCIDENTAL = ''
 # The octave notes are built in before being moved to the step's, which keeps them inside the MIDI range.
@@ -200,39 +198,8 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
             every.append(values)
         return every
 
-    def adds_to_registers(self):
-        """Return whether any step adds to a register, which is a non-zero value on a register change row."""
-        return self._adds_on_any(file_format.REGISTER_ADD_ROWS.values())
-
-    def adds_anything(self, row):
-        """Return whether any step of a register's += row adds or takes away anything at all: most patterns add nothing, and
-        whoever checks a limit asks this first, since finding the limit means searching every clip of every song."""
-        return any(self._rows[row] or [])
-
-    def adds_past(self, *, row, most):
-        """Return whether any step of a register's += row adds or takes away more than most."""
-        for value in self._rows[row] or []:
-            if value and abs(value) > most:
-                return True
-        return False
-
-    @notes_change
-    def hold_adds(self, *, row, most):
-        """Bring every step of a register's += row within most either way, as lowering the register's Allowed Inc Max does."""
-        self._rows[row] = [held_add(value=value, most=most) for value in self._rows[row]]
-
-    def sets_registers(self):
-        """Return whether any step sets a register to a value, which is a value on a register's = row, 0 included."""
-        return self._holds_a_value_on(file_format.REGISTER_SET_ROWS.values())
-
-    def changes_registers(self):
-        """Return whether any step sets a register or adds to one, so that playing the pattern changes the registers' values."""
-        return self.adds_to_registers() or self.sets_registers()
-
-    def uses_registers(self):
-        """Return whether any step reads a register: a row of +Note or +Vel switched on there, or a statement about the registers."""
-        if self._adds_on_any(file_format.REGISTER_NOTE_ROWS.values()) or self._adds_on_any(file_format.REGISTER_VELOCITY_ROWS.values()):
-            return True
+    def has_any_statement(self):
+        """Return whether any step holds a statement, of any kind, which reads the draws as the step is reached."""
         return self._has_statements_of_any(file_format.STATEMENT_ROWS)
 
     def uses_draws(self):
@@ -251,7 +218,7 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
         return False
 
     def has_statements(self, kind):
-        """Return whether any step holds a statement of a kind about the registers: one that stops the clip, starts the pattern over or mutes the step."""
+        """Return whether any step holds a statement of a kind about the draws: one that stops the clip, starts the pattern over or mutes the step."""
         return any(self._rows[file_format.STATEMENT_ROWS[kind][REGISTER_PART]] or [])
 
     def cuts_passes_short(self):
@@ -329,15 +296,12 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
         return any(self._rows[Row.GRAB] or [])
 
     def holds_anything(self, step):
-        """Return whether a step plays a note, holds one with a tie, sends a CC value or adds to a register."""
+        """Return whether a step plays a note, holds one with a tie or sends a CC value."""
         self._check_step(step)
         if self.has_sound(step) or self.get_value(row=Row.TIE, step=step):
             return True
         for row in file_format.CC_ROWS:
             if self.get_value(row=row, step=step) is not None:
-                return True
-        for row in file_format.REGISTER_ADD_ROWS.values():
-            if self.get_value(row=row, step=step) not in (None, NO_CHANGE):
                 return True
         return False
 
@@ -394,7 +358,7 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     @notes_change
     def set_statement(self, *, kind, step, statement):
-        """Give a step a statement of a kind about the registers, written across the kind's five rows, or None to take the step's away."""
+        """Give a step a statement of a kind about the draws, written across the kind's five rows, or None to take the step's away."""
         self._check_step(step)
         if statement is not None:
             check_statement(name=kind, statement=statement)
@@ -412,12 +376,11 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
 
     @notes_change
     def clear_sound(self, step):
-        """Empty a step of its note, keeping only what a rest can hold: CC values, slides and every register row.
+        """Empty a step of its note, keeping only what a rest can hold: CC values, slides and the draws' rows.
 
         The ties on the steps right after it go too, since they held this note and would be left
-        hanging onto an earlier one. A register's +Note and
-        +Vel rows stay with its += row: erasing takes the note and the ties
-        that drew it, and nothing a rest can hold.
+        hanging onto an earlier one: erasing takes the note and the ties that drew it, and nothing a
+        rest can hold.
         """
         self._check_step(step)
         for row in file_format.PATTERN_ROWS:
@@ -607,12 +570,8 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
         """Blank every step's chord, with its tensions, borrowed scale and inversion, leaving the note each chord was built on."""
         self.clear_rows(file_format.CHORD_ROWS)
 
-    def clear_register_changes(self):
-        """Blank the rows that set a register and that add to one."""
-        self.clear_rows([*file_format.REGISTER_SET_ROWS.values(), *file_format.REGISTER_ADD_ROWS.values()])
-
     def clear_statements(self):
-        """Blank every step's statements about the registers: what stops the clip, starts the pattern over and mutes the step."""
+        """Blank every step's statements about the draws: what stops the clip, starts the pattern over and mutes the step."""
         self.clear_rows(list(file_format.STATEMENT_OF_ROW))
 
     def mirror(self):
@@ -683,10 +642,6 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
     def smooth_velocity(self):
         """Fill the blank velocities between two typed ones, on the steps that play a note."""
         self.smooth_rows(rows=[Row.VELOCITY], notes_only=True)
-
-    def smooth_register_sets(self, register):
-        """Fill the blank steps between two values of the row that sets a register."""
-        self.smooth_rows(rows=[file_format.REGISTER_SET_ROWS[register]])
 
     def reverse_after(self, step):
         """Reverse every step after a step, leaving it and the steps before it where they are."""
@@ -798,15 +753,6 @@ def nearest_step_value(*, row, value, drum):
         return None
     description = row_descriptions.ROW_DESCRIPTIONS[row]
     return description.nearest(value, drum=drum)
-
-
-def held_add(*, value, most):
-    """Return a step's add on a += row held within most either way, or a blank as it is."""
-    if not value or abs(value) <= most:
-        return value
-    if value > 0:
-        return most
-    return -most
 
 
 def _row_correction(*, data, row, drum):

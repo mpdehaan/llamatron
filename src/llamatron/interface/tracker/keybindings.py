@@ -689,14 +689,6 @@ class CcRow(ControlRow):
     """A CC row."""
 
 
-class AddRow(ControlRow):
-    """A register's += row, held within the register's Allowed Inc Max."""
-
-
-class SetRow(ControlRow):
-    """A register's = row, whose number line starts at blank just below the register's minimum."""
-
-
 class CycleRow(PatternRow):
     """A row with a cycle of choices, like Dot: Space or Enter goes to the next, and [ and ] step back and forward as on every row, the one adjust system."""
 

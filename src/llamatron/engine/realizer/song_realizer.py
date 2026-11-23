@@ -23,7 +23,7 @@ from llamatron.engine.realizer.modulations import modulates
 from llamatron.engine.realizer.pass_memory import PassMemory
 from llamatron.engine.realizer.pattern_player import check_pattern_has_a_scale
 from llamatron.engine.realizer.realization import Realization
-from llamatron.engine.realizer.registers import RegisterChange, RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, starting_values, with_resets
+from llamatron.engine.realizer.registers import RegisterReader, RegisterRecorder, RegisterSolo, RegisterTimeline, RegisterTrial, starting_values, with_resets
 from llamatron.engine.realizer.scene_reuse import changed_clips, first_changed_scene
 from llamatron.engine.realizer.song_state import SongState
 from llamatron.engine.realizer.tempo_ramps import ramped_tempos, tempos_within
@@ -48,8 +48,6 @@ MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE = 240_000
 # Turning a length in whole notes into seconds, at a tempo in quarter notes a minute.
 SECONDS_PER_MINUTE = 60
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
-# A modulation's register adds come before every track's at the same moment, from a place before the first track's.
-MODULATION_PLACE = -1
 # The seed of the random values a register draws while a scene's first guess is played, which the plays after it replace.
 GUESS_SEED = 0
 # Where a pattern's two answers about cutting stand: whether a step can cut a pass short, and whether one can stop the clip.
@@ -122,7 +120,7 @@ class SongRealizer:
         self._scenes = WrittenScene.write_out(song)
         # Whether playing changes the registers, which every scene asks and which looks through every pattern of the set, asked
         # once, since nothing changes the song while it renders.
-        self._changes_registers = self._setlist.changes_registers()
+        self._changes_registers = self._setlist.takes_draws()
         self._clips = {}
         # What each clip runs its notes through, by written scene and track, asked many times a clip and worked out once, since
         # nothing changes the song while it renders.
@@ -441,7 +439,7 @@ class SongRealizer:
 
     def _song_flags(self):
         """Return what the song as a whole says about how every scene renders: whether anything changes a register, whether a draw holds a value, and whether a scene changes registers."""
-        return (self._changes_registers, self._song.uses_draws(), self._song.scenes_change_registers())
+        return (self._changes_registers, self._song.uses_draws(), self._song.redraws_in_conditions())
 
     def _settles_any(self):
         """Return whether any written scene is played to find how long it lasts."""
@@ -806,11 +804,7 @@ class SongRealizer:
         return names
 
     def _scene_changes(self, scene):
-        """Return every change a scene's clips make to the registers before the scene ends, and the adds at the triggers of the drifts its clips name.
-
-        A modulation is one process for the song, so it adds once a trigger however many clips name
-        it, before every track's change at that moment.
-        """
+        """Return every change a scene's clips make before the scene ends: the draws they take."""
         if not self._changes_registers:
             return []
         length = self.get_scene_length(scene)
@@ -821,13 +815,6 @@ class SongRealizer:
             changes.append(own)
         for track in scene.get_track_names():
             changes += _before(changes=self.counted_clip(scene=scene, track=track)[1], end=length)
-        start = self.scene_start(scene)
-        modulations = self._state.get_modulations()
-        for step in self._modulators_in(scene):
-            origin = self.modulation_origin(scene=scene, step=step)
-            play = modulations.play_of(step.kind)
-            for time, adds in play.adds_between(name=step.name, start=start, end=start + length, origin=origin):
-                changes.append(RegisterChange(time - start, MODULATION_PLACE, {}, adds))
         return changes
 
     def chains_of(self, *, scene, track):
@@ -1023,16 +1010,6 @@ class SongRealizer:
                 if found is not None:
                     strum, restart = found
         return strum, restart
-
-    def _modulators_in(self, scene):
-        """Return every step whose generator changes values as the song plays that the clips of a scene name, each once, in order."""
-        steps = {}
-        for track in scene.get_track_names():
-            for step in self.modulators_of(scene=scene, track=track):
-                steps[step] = None
-        return list(steps)
-
-
 
 def _tracks_named(settings):
     """Return the tracks a generator's settings name."""

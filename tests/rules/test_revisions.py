@@ -202,7 +202,7 @@ class TestEveryChangeIsMarked(unittest.TestCase):
 
     def test_there_are_classes_to_check(self):
         names = {kind.__name__ for kind in revised_classes()}
-        self.assertTrue({'Pattern', 'Scene', 'Song', 'Setlist', 'NamedItems', 'ClipSlot', 'Track', 'Chain', 'Groove', 'NamedScale', 'Register'} <= names, names)
+        self.assertTrue({'Pattern', 'Scene', 'Song', 'Setlist', 'NamedItems', 'ClipSlot', 'Track', 'Chain', 'Groove', 'NamedScale', 'Draw'} <= names, names)
 
     def test_every_method_that_changes_a_stored_object_is_marked_and_every_constructor_notes_its_making(self):
         for kind in revised_classes():

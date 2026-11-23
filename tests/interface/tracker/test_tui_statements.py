@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Conditional Execution on the pages: the table of statements about the registers on a chain's, a generator's, a scene's, a clip's and a track's page, and a scene's and a clip's sets and adds."""
+"""Conditional Execution on the pages: the table of statements about the draws on a chain's, a generator's, a scene's, a clip's and a track's page, and a scene's and a clip's sets and adds."""
 
 from llamatron.engine.generators import timing as timing_plugin
 from llamatron.interface.tracker import keybindings
@@ -15,13 +15,13 @@ from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.field import Cells
 from llamatron.model.objects import conditions
 from llamatron.model.schema import limits
-from llamatron.model.schema.file_format import Operator, RegisterName, StatementPart
+from llamatron.model.schema.file_format import DrawName, Operator, StatementPart
 from llamatron.user_strings import errors, labels, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 
-AX = RegisterName.AX
-BX = RegisterName.BX
+AD = DrawName.AD
+BD = DrawName.BD
 # What the tests type.
 THREE = '3'
 NOTHING_TO_DIVIDE_BY = '0'
@@ -33,7 +33,7 @@ def line_label(*, table, line):
 
 
 class StatementsTest(UITest):
-    """What every test of a table shares: reaching a line, and writing AX % 3 = 0 on it by pressing keys."""
+    """What every test of a table shares: reaching a line, and writing AD % 3 = 0 on it by pressing keys."""
 
     async def to_line(self, *, table=statements.FIRST_TABLE, line=0):
         await self.select_field(line_label(table=table, line=line))
@@ -46,9 +46,9 @@ class StatementsTest(UITest):
         await self.pick(option)
 
     async def write_every_third(self, **where):
-        """Write AX % 3 = 0 on a line: the register, the operator, and the number typed."""
+        """Write AD % 3 = 0 on a line: the draw, the operator, and the number typed."""
         await self.to_line(**where)
-        await self.choose(AX)
+        await self.choose(AD)
         await self.press(Key.RIGHT)
         await self.choose(Operator.REMAINDER)
         await self.press(Key.RIGHT)
@@ -58,7 +58,7 @@ class StatementsTest(UITest):
 
     def every_third(self):
         return {
-            StatementPart.REGISTER: AX, StatementPart.OPERATOR: Operator.REMAINDER, StatementPart.VALUE: int(THREE),
+            StatementPart.REGISTER: AD, StatementPart.OPERATOR: Operator.REMAINDER, StatementPart.VALUE: int(THREE),
             StatementPart.COMPARISON: Operator.SAME, StatementPart.AGAINST: 0,
         }
 
@@ -77,12 +77,12 @@ class TestChainStatementsPage(StatementsTest):
     def table(self):
         return self.document.get_setlist().get_chain(self.chain).get_bypass_when()
 
-    async def test_a_line_starts_ignored_and_a_register_makes_it_a_statement(self):
+    async def test_a_line_starts_ignored_and_a_draw_makes_it_a_statement(self):
         self.assertEqual(self.table(), [])
         self.assertIn(labels.MSG_STATEMENT_IGNORED, self.text())
         await self.to_line()
-        await self.choose(BX)
-        self.assertEqual(self.table(), [conditions.new_statement(BX)])
+        await self.choose(BD)
+        self.assertEqual(self.table(), [conditions.new_statement(BD)])
 
     async def test_a_sum_is_written_cell_by_cell(self):
         await self.write_every_third()
@@ -92,18 +92,18 @@ class TestChainStatementsPage(StatementsTest):
         await self.write_every_third()
         await self.press(Key.LEFT)
         await self.choose(Operator.ODD)
-        self.assertEqual(self.table(), [{StatementPart.REGISTER: AX, StatementPart.OPERATOR: Operator.ODD}])
+        self.assertEqual(self.table(), [{StatementPart.REGISTER: AD, StatementPart.OPERATOR: Operator.ODD}])
         await self.press(Key.RIGHT, Key.RIGHT)
         self.assertEqual(len(self.app.screen.field().cells), 2)
         self.assertEqual(self.app.screen.cell, 1)
 
-    async def test_a_register_stands_for_a_number(self):
+    async def test_a_draw_stands_for_a_number(self):
         await self.write_every_third()
-        await self.choose(BX)
-        self.assertEqual(self.table()[0][StatementPart.VALUE], BX)
+        await self.choose(BD)
+        self.assertEqual(self.table()[0][StatementPart.VALUE], BD)
         await self.press(Key.RIGHT, Key.RIGHT)
-        await self.choose(RegisterName.CX)
-        self.assertEqual(self.table()[0][StatementPart.AGAINST], RegisterName.CX)
+        await self.choose(DrawName.CD)
+        self.assertEqual(self.table()[0][StatementPart.AGAINST], DrawName.CD)
 
     async def test_dividing_by_a_typed_zero_is_refused(self):
         await self.write_every_third()
@@ -124,10 +124,10 @@ class TestChainStatementsPage(StatementsTest):
 
     async def test_a_line_past_the_last_statement_writes_the_next_one(self):
         await self.to_line(line=2)
-        await self.choose(AX)
+        await self.choose(AD)
         await self.to_line(line=3)
-        await self.choose(BX)
-        self.assertEqual([statement[StatementPart.REGISTER] for statement in self.table()], [AX, BX])
+        await self.choose(BD)
+        self.assertEqual([statement[StatementPart.REGISTER] for statement in self.table()], [AD, BD])
 
     async def test_the_heading_never_says_set(self):
         await self.write_every_third()

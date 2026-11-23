@@ -24,18 +24,17 @@ from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects import chain, clip_slot, draw, groove, instrument, named_scale, pattern, register, scene, setlist, song, track
+from llamatron.model.objects import chain, clip_slot, draw, groove, instrument, named_scale, pattern, scene, setlist, song, track
 from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.groove import Groove, new_groove
 from llamatron.model.objects.instrument import Instrument
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.pattern import Pattern
-from llamatron.model.objects.register import Register
 from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.track import Track
 from llamatron.model.schema import file_format, generator_plugins, limits
-from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, DrawSetting, DriftValue, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, PatternSetting, RegisterSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, VelocitySetting
+from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, DrawSetting, DriftValue, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, VelocitySetting
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, Setting, Text, WholeNumber
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
@@ -115,7 +114,6 @@ DESCRIBED = [
     (VelocitySetting, {name: scene.SETTINGS[name] for name in file_format.VELOCITY_SETTINGS}, ()),
     # A chain's steps are its generators, read one by one.
     (ChainSetting, {ChainSetting.BYPASS_WHEN: chain.BYPASS_WHEN}, (ChainSetting.STEPS,)),
-    (RegisterSetting, register.SETTINGS, ()),
     (DrawSetting, draw.SETTINGS, ()),
     (ArpSetting, ArpSettings.SETTINGS, ()),
     # A drift's own settings; each version's values are named from DriftValue, which the test below holds them to.
@@ -439,14 +437,6 @@ class TestReadingAndSettingAgree(unittest.TestCase):
             with self.subTest(name=name):
                 self.assert_same_refusal(read=lambda: Pattern.from_data(data={PatternSetting.STEPS: STEPS, name: value}, where=HERE), change=change)
 
-    def test_a_register(self):
-        for name, value in [(RegisterSetting.MAXIMUM, limits.MAX_REGISTER_VALUE + 1), (RegisterSetting.RESET_EACH_SCENE, 1)]:
-            with self.subTest(name=name):
-                self.assert_same_refusal(
-                    read=lambda: Register.from_data(data={name: value}, where=HERE),
-                    change=lambda: Register().set_setting(name=name, value=value),
-                )
-
     def test_a_scale(self):
         scale = NamedScale(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR))
         self.assert_same_refusal(
@@ -512,7 +502,6 @@ class TestAChoiceKeepsItsFileNames(unittest.TestCase):
         self.assertEqual(clip_slot.SETTINGS[ClipSlotSetting.REPEAT].nearest(limits.MIN_REPEAT - 1), limits.MIN_REPEAT)
         self.assertEqual(scene.SETTINGS[SceneSetting.REPEAT].nearest(limits.MIN_REPEAT - 1), limits.MIN_REPEAT)
         self.assertEqual(setlist.SETTINGS[SetlistSetting.DEFAULT_OCTAVE].nearest(limits.MAX_OCTAVE + 1), limits.MAX_OCTAVE)
-        self.assertEqual(register.SETTINGS[RegisterSetting.MAXIMUM].nearest(limits.MAX_REGISTER_VALUE + 1), limits.MAX_REGISTER_VALUE)
         self.assertEqual(ArpSettings.SETTINGS[ArpSetting.OCTAVE_RANGE].nearest(schema.MAX_OCTAVE_RANGE + 1), schema.MAX_OCTAVE_RANGE)
 
 

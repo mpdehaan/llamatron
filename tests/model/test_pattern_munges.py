@@ -15,7 +15,7 @@ from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.schema import limits
-from llamatron.model.schema.file_format import ChordSymbol, Operator, PatternSetting, RegisterName, Row, StatementPart, StepStatement
+from llamatron.model.schema.file_format import ChordSymbol, DrawName, Operator, PatternSetting, Row, StatementPart, StepStatement
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
@@ -36,7 +36,7 @@ QUARTER = '1/4'
 MAJOR_SEVENTH = 7
 LOW = 20
 HIGH = 100
-A_STATEMENT = {StatementPart.REGISTER: RegisterName.AX, StatementPart.OPERATOR: Operator.LESS, StatementPart.VALUE: 1}
+A_STATEMENT = {StatementPart.REGISTER: DrawName.AD, StatementPart.OPERATOR: Operator.LESS, StatementPart.VALUE: 1}
 FIFTH = 4
 FOURTH = 4
 HALF_STEP = '1/32'
@@ -176,12 +176,12 @@ class TestInterleaving(unittest.TestCase):
 class TestClearing(unittest.TestCase):
 
     def test_everything_but_pitch_is_cleared(self):
-        pattern = pattern_of(**{Row.VELOCITY: VELOCITIES, Row.GATE: [QUARTER] * STEPS, Row.CHORD: [MAJOR_SEVENTH] * STEPS, Row.OCTAVE: [4] * STEPS, Row.CC1: VELOCITIES, Row.AX_ADD: [1] * STEPS})
+        pattern = pattern_of(**{Row.VELOCITY: VELOCITIES, Row.GATE: [QUARTER] * STEPS, Row.CHORD: [MAJOR_SEVENTH] * STEPS, Row.OCTAVE: [4] * STEPS, Row.CC1: VELOCITIES, Row.CC2: [1] * STEPS})
         pattern.clear_all_but_pitch()
         self.assertEqual(pattern.get_row(Row.DEGREE), DEGREES)
         self.assertEqual(pattern.get_row(Row.CHORD), [MAJOR_SEVENTH] * STEPS)
         self.assertEqual(pattern.get_row(Row.OCTAVE), [4] * STEPS)
-        for row in (Row.VELOCITY, Row.GATE, Row.CC1, Row.AX_ADD):
+        for row in (Row.VELOCITY, Row.GATE, Row.CC1, Row.CC2):
             with self.subTest(row=row):
                 self.assertFalse(any(pattern.get_row(row)))
 
@@ -193,20 +193,14 @@ class TestClearing(unittest.TestCase):
         self.assertEqual(pattern.get_row(Row.DEGREE), DEGREES)
         self.assertEqual(pattern.get_row(Row.VELOCITY), VELOCITIES)
 
-    def test_register_changes_are_cleared_and_the_rows_that_use_a_register_stay(self):
-        pattern = pattern_of(**{Row.AX_ADD: [1] * STEPS, Row.BX_SET: [5] * STEPS, Row.AX_NOTE: [1] * STEPS})
-        pattern.clear_register_changes()
-        self.assertFalse(pattern.changes_registers())
-        self.assertEqual(pattern.get_row(Row.AX_NOTE), [1] * STEPS)
-
-    def test_statements_are_cleared_and_register_changes_stay(self):
-        pattern = pattern_of(**{Row.AX_ADD: [1] * STEPS})
+    def test_statements_are_cleared_and_the_draws_rows_stay(self):
+        pattern = pattern_of(**{Row.AD_NOTE: [1] * STEPS})
         pattern.set_statement(kind=StepStatement.MUTE, step=THIRD, statement=A_STATEMENT)
         pattern.set_statement(kind=StepStatement.STOP, step=THIRD, statement=A_STATEMENT)
         pattern.clear_statements()
         self.assertFalse(pattern.has_statements(StepStatement.MUTE))
         self.assertFalse(pattern.has_statements(StepStatement.STOP))
-        self.assertTrue(pattern.changes_registers())
+        self.assertTrue(pattern.uses_draws())
 
 
 class TestSmoothing(unittest.TestCase):
@@ -223,13 +217,6 @@ class TestSmoothing(unittest.TestCase):
         pattern = pattern_of(degrees=[1, 2, None, 4, 5], **{Row.VELOCITY: [40, None, None, None, 120]})
         pattern.smooth_velocity()
         self.assertEqual(pattern.get_row(Row.VELOCITY), [40, 60, None, 100, 120])
-
-    def test_one_register_s_sets_are_smoothed_and_another_s_are_left(self):
-        sets = [0, None, None, None, 8, None, None, None]
-        pattern = pattern_of(**{Row.AX_SET: sets, Row.BX_SET: sets})
-        pattern.smooth_register_sets(RegisterName.AX)
-        self.assertEqual(pattern.get_row(Row.AX_SET)[:FIFTH + 1], [0, 2, 4, 6, 8])
-        self.assertEqual(pattern.get_row(Row.BX_SET), sets)
 
 
 class TestMungesOfNotes(unittest.TestCase):

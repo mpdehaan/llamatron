@@ -41,7 +41,8 @@ class SongState:
         if takes is not None:
             self._takes = dict(takes)
         self._song_places = {id(scene): place for place, scene in enumerate(song.get_scenes())}
-        self._registers = {name: song.get_register(name) for name in file_format.REGISTER_NAMES}
+        # No song holds registers any more, so the timeline that carries the draws carries no register.
+        self._registers = {}
         self._draws = {name: song.get_draw(name) for name in file_format.DRAW_NAMES}
         register_seed = None
         strum_seed = None

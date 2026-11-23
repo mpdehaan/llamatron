@@ -29,9 +29,8 @@ NOTE_LETTER_LENGTH = 1
 # What a blank step holds on a row of numbers, lengths or choices, and on a row that is on or off.
 BLANK = None
 OFF = False
-# A ratchet offset or a register change of nothing, which is what a blank step has.
+# A ratchet offset of nothing, which is what a blank step has.
 NO_RATCHET_OFFSET = 0
-NO_REGISTER_CHANGE = 0
 # A row whose blank step has no number to play as: a blank CC step sends nothing, so the last value holds.
 NO_DEFAULT = None
 
@@ -464,16 +463,6 @@ def control_row(name):
     return RowOfNumbers(name=name, lowest=midi.MIN_CC_VALUE, highest=midi.MAX_CC_VALUE, default=NO_DEFAULT, quiet=True, kept_by_a_rest=True)
 
 
-def register_change_row(name):
-    """Return the description of one register's += row: how much a step adds to the register, which a rest can do too."""
-    return RowOfNumbers(name=name, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, default=NO_REGISTER_CHANGE, quiet=True, kept_by_a_rest=True)
-
-
-def register_set_row(name):
-    """Return the description of one register's = row: the value a step sets the register to before anything adds to it, or blank to leave it, which a rest can do too."""
-    return RowOfNumbers(name=name, lowest=limits.MIN_REGISTER_VALUE, highest=limits.MAX_REGISTER_VALUE, default=NO_DEFAULT, quiet=True, kept_by_a_rest=True)
-
-
 class RowOfStatementValues(RowDescription):
     """A row that holds a number or a register's name: what a step's statement about the registers compares with, or reckons with. A rest holds one too."""
 
@@ -532,10 +521,6 @@ ROW_DESCRIPTIONS = described_rows(
     RowOfKeyswitches(name=Row.KEYSWITCH, choices=file_format.KEYSWITCH_SLOTS),
     *[control_row(name) for name in file_format.CC_ROWS],
     RowOfToggles(name=Row.SLIDE, kept_by_a_rest=True),
-    *[RowOfNoteMoves(name=name) for name in file_format.REGISTER_NOTE_ROWS.values()],
-    *[RowOfRegisterUses(name=name) for name in file_format.REGISTER_VELOCITY_ROWS.values()],
-    *[register_change_row(name) for name in file_format.REGISTER_ADD_ROWS.values()],
-    *[register_set_row(name) for name in file_format.REGISTER_SET_ROWS.values()],
     *[RowOfNoteMoves(name=name) for name in file_format.DRAW_NOTE_ROWS.values()],
     *[RowOfRegisterUses(name=name) for name in file_format.DRAW_VELOCITY_ROWS.values()],
     *[RowOfToggles(name=name, kept_by_a_rest=True) for name in file_format.DRAW_RESET_ROWS.values()],

@@ -27,7 +27,7 @@ from llamatron.model.objects import clip_slot
 from llamatron.model.objects.pattern import nearest_step_value
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, RegisterName, RegisterSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, GrooveSetting, PatternSetting, Row, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.model.values import midi
 from llamatron.user_strings import errors, messages, names
 from tests.support.rendering import as_setlist
@@ -89,10 +89,6 @@ def with_clip(settings):
     return {**with_pattern({}), **with_song({Section.TRACKS: {LEAD: {}}, Section.SCENES: [{SceneSetting.TRACKS: {LEAD: clip}}]})}
 
 
-def with_register(settings):
-    return with_song({Section.REGISTERS: {RegisterName.AX: settings}})
-
-
 def with_groove(settings):
     return {Section.GROOVES: {SHUFFLE: {GrooveSetting.CELLS: [STRAIGHT, STRAIGHT], **settings}}}
 
@@ -115,10 +111,8 @@ SONG = (Section.SONGS, VERSE)
 TRACK = (*SONG, Section.TRACKS, LEAD)
 SCENE = (*SONG, Section.SCENES, FIRST_SCENE)
 CLIP = (*SCENE, SceneSetting.TRACKS, LEAD)
-REGISTER = (*SONG, Section.REGISTERS, RegisterName.AX)
 GROOVE = (Section.GROOVES, SHUFFLE)
 ARP = (arp_plugin.SECTION, UP)
-AX_ADD = file_format.REGISTER_ADD_ROWS[RegisterName.AX]
 FIRST_CC = file_format.CC_ROWS[0]
 # Every value a file can hold that has an allowed value near it: the data that holds the wrong value, where the
 # value is in the set's data, and what is there once the set is read corrected. LEFT_OUT is a setting taken out.
@@ -181,13 +175,6 @@ CORRECTED = [
         (*PATTERN, Row.GATE), [QUARTER, limits.MAX_GATE, None, None],
     ),
     (with_pattern({FIRST_CC: [midi.MAX_CC_VALUE + 1, midi.MIN_CC_VALUE - 1, None, None]}), (*PATTERN, FIRST_CC), [midi.MAX_CC_VALUE, midi.MIN_CC_VALUE, None, None]),
-    (
-        with_pattern({AX_ADD: [limits.MAX_REGISTER_VALUE + 1, limits.MIN_REGISTER_VALUE - 1, None, None]}),
-        (*PATTERN, AX_ADD), [limits.MAX_REGISTER_VALUE, limits.MIN_REGISTER_VALUE, None, None],
-    ),
-    # A register.
-    (with_register({RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE + 1}), (*REGISTER, RegisterSetting.MAXIMUM), limits.MAX_REGISTER_VALUE),
-    (with_register({RegisterSetting.MINIMUM: limits.MIN_REGISTER_VALUE - 1}), (*REGISTER, RegisterSetting.MINIMUM), limits.MIN_REGISTER_VALUE),
     # A groove.
     (
         with_groove({GrooveSetting.CELLS: [limits.MAX_GROOVE_AMOUNT + 1, STRAIGHT, limits.MIN_GROOVE_AMOUNT - 1]}),

@@ -9,12 +9,12 @@ from llamatron.model.schema import file_format
 from llamatron.user_strings import labels
 
 # The names a statement of Conditional Execution can read, in the order its pickers list them and its keys step through them: the
-# draws, then the registers.
-VALUE_NAMES_IN_ORDER = [*file_format.DRAW_NAMES, *file_format.REGISTER_NAMES]
+# draws.
+VALUE_NAMES_IN_ORDER = list(file_format.DRAW_NAMES)
 # What choosing a number to type stands for in a value's picker.
 NUMBER_CHOSEN = 'number'
 # Those names in their groups, each under its heading.
-VALUE_GROUPS = [(labels.MSG_PICKER_DRAWS_HEADING, file_format.DRAW_NAMES), (labels.MSG_PICKER_REGISTERS_HEADING, file_format.REGISTER_NAMES)]
+VALUE_GROUPS = [(labels.MSG_PICKER_DRAWS_HEADING, file_format.DRAW_NAMES)]
 
 
 class GroupedChoices:

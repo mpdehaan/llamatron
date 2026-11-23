@@ -23,7 +23,9 @@ from tests.support.ui_testing import back_key, forward_key, UITest
 
 DENSITY = 'edm_density.yml'
 HALF_TIME = 4
-REGISTERS = '20_registers.yml'
+# A demo whose counted gate scene plays a pattern whose steps hold statements.
+DRAWS = '28_draws.yml'
+COUNTED_GATE = 'counted gate'
 NOT_WEREWOLVES = 'not_werewolves.yml'
 G_MAJOR = 'G Major'
 # The demo's first scene with the whole verse, whose chords a Progression moves, so they are heard in the notes as played.
@@ -88,11 +90,12 @@ class TestSceneNotes(unittest.TestCase):
         self.assertTrue(all(not scene.get_chain_names() for scene in copy.get_scenes()))
         self.assertTrue(all(not slot.get_chain_names() for scene in copy.get_scenes() for slot in (scene.get_clip_slot(name) for name in copy.get_track_names()) if slot))
 
-    def test_clips_that_read_the_registers_are_marked_in_both_views(self):
-        song = example(REGISTERS).get_songs()[0]
-        self.assertTrue(marked_tracks(song=song, index=0))
+    def test_clips_whose_statements_read_the_draws_are_marked_in_both_views(self):
+        song = example(DRAWS).get_songs()[0]
+        index = [scene.get_name() for scene in song.get_scenes()].index(COUNTED_GATE)
+        self.assertTrue(marked_tracks(song=song, index=index))
         for written in (False, True):
-            notes = scene_notes(song=song, index=0, written=written)
+            notes = scene_notes(song=song, index=index, written=written)
             self.assertTrue(notes.marked_tracks)
             self.assertTrue(any(note.marked for note in notes.notes))
 

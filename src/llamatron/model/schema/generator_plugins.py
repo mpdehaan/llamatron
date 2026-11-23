@@ -130,16 +130,6 @@ def sensible_generator_order(value):
 
 
 @functools.cache
-def sections_adding_to_registers():
-    """Return the sections of the plugins whose generators may add to the registers as they play."""
-    sections = []
-    for plugin in plugins().values():
-        if plugin.settings.MAY_ADD_TO_REGISTERS:
-            sections.append(plugin.section)
-    return tuple(sections)
-
-
-@functools.cache
 def names_naming(section):
     """Return the names of the plugins whose generators' settings name an item of a section, as a Hocket names a track."""
     names = []

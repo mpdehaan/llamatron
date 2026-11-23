@@ -84,12 +84,12 @@ class BeatChord(NamedTuple):
 
 
 def marked_tracks(*, song, index):
-    """Return the names of the tracks whose clip in a scene plays a pattern that reads the registers."""
+    """Return the names of the tracks whose clip in a scene plays a pattern whose statements read the draws."""
     scene = song.get_scenes()[index]
     marked = set()
     for name in song.get_track_names():
         clip_slot = scene.get_clip_slot(name)
-        if clip_slot is not None and song.get_setlist().get_pattern(clip_slot.get_pattern_name()).uses_registers():
+        if clip_slot is not None and song.get_setlist().get_pattern(clip_slot.get_pattern_name()).has_any_statement():
             marked.add(name)
     return marked
 

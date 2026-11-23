@@ -29,7 +29,7 @@ SET_ENDING = '.yml'
 # holds and nothing but these helpers reads, since every play and export of a song draws its random parts afresh.
 TEST_SEED = 'seed'
 # The keys of one song's data that belong to the song when it is wrapped as a set, the rest being the set's.
-SONG_KEYS = (SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.GROOVE, Section.REGISTERS, Section.DRAWS, Section.TRACKS, Section.SCENES)
+SONG_KEYS = (SongSetting.TEMPO, SongSetting.TIME_SIGNATURE, SongSetting.ENTRY_SIZE, SongSetting.SCALE, SongSetting.GROOVE, Section.DRAWS, Section.TRACKS, Section.SCENES)
 
 
 def as_setlist(data, *, song_name=names.MSG_DEFAULT_SONG_NAME):

@@ -18,13 +18,12 @@ from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.pattern import Pattern
-from llamatron.model.objects.register import Register
 from llamatron.model.objects.scene import Scene, TempoRamp
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.song import Song
 from llamatron.model.objects.track import Track
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, PatternSetting, RampPart, RampWay, RegisterName, RegisterSetting, Row, SceneSetting, Section, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DrawName, PatternSetting, RampPart, RampWay, Row, SceneSetting, Section, TrackSetting
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
@@ -66,10 +65,8 @@ TOO_FAR = limits.MAX_TRANSPOSE + 1
 NOT_A_CC_NUMBER = midi.MAX_CC_NUMBER + 1
 NO_SUCH_LANE = len(file_format.CC_ROWS)
 FIRST_LANE = 0
-# Register settings in and out of order.
+# A value put in a draw's slot.
 LOW = 2
-HIGH = 5
-TOO_HIGH = limits.MAX_REGISTER_VALUE + 1
 AN_OFFSET = 1
 ANOTHER_OFFSET = -1
 PAST_THE_OFFSETS = 2
@@ -170,18 +167,18 @@ class TestPattern(SetterTestCase):
         self.assertEqual(self.pattern.get_value(row=Row.CC1, step=FIRST), A_CC_VALUE)
         self.assertTrue(self.pattern.holds_anything(FIRST))
 
-    def test_clearing_a_steps_sound_keeps_every_register_row_and_takes_what_only_a_note_holds(self):
-        register_rows = [Row.AX_NOTE, Row.BX_VELOCITY]
+    def test_clearing_a_steps_sound_keeps_every_draws_row_and_takes_what_only_a_note_holds(self):
+        draw_rows = [Row.AD_NOTE, Row.BD_VELOCITY]
         self.pattern.set_value(row=Row.DEGREE, step=FIRST, value=DEGREE)
         self.pattern.set_value(row=Row.VELOCITY, step=FIRST, value=VELOCITY)
-        self.pattern.set_value(row=Row.CX_ADD, step=FIRST, value=1)
-        for row in register_rows:
+        self.pattern.set_value(row=Row.CD_RESET, step=FIRST, value=True)
+        for row in draw_rows:
             self.pattern.set_value(row=row, step=FIRST, value=True)
         self.pattern.clear_sound(FIRST)
         self.assertIsNone(self.pattern.get_value(row=Row.DEGREE, step=FIRST))
         self.assertIsNone(self.pattern.get_value(row=Row.VELOCITY, step=FIRST))
-        self.assertEqual(self.pattern.get_value(row=Row.CX_ADD, step=FIRST), 1)
-        for row in register_rows:
+        self.assertEqual(self.pattern.get_value(row=Row.CD_RESET, step=FIRST), True)
+        for row in draw_rows:
             self.assertTrue(self.pattern.get_value(row=row, step=FIRST), row)
         self.assertFalse(self.pattern.holds_anything(LAST))
 
@@ -356,23 +353,6 @@ class TestChain(SetterTestCase):
         self.assertFalse(self.chain.names_item(section=timing_plugin.SECTION, name=ROLLS))
 
 
-class TestRegister(SetterTestCase):
-
-    def test_settings_are_checked_together(self):
-        register = Register()
-        self.assertTrue(register.is_default())
-        register.set_setting(name=RegisterSetting.MAXIMUM, value=HIGH)
-        register.set_setting(name=RegisterSetting.DEFAULT, value=LOW)
-        self.assertFalse(register.is_default())
-        self.assertRefused(register, register.set_setting, name=RegisterSetting.DEFAULT, value=HIGH + 1)
-        self.assertRefused(register, register.set_setting, name=RegisterSetting.MAXIMUM, value=TOO_HIGH)
-        self.assertRefused(register, register.set_setting, name=RegisterSetting.RESET_BEHAVIOR, value=NOT_A_NAME)
-        self.assertRefused(register, register.set_setting, name=NOT_A_NAME, value=LOW)
-        register.set_setting(name=RegisterSetting.MAXIMUM, value=None)
-        register.set_setting(name=RegisterSetting.DEFAULT, value=None)
-        self.assertTrue(register.is_default())
-
-
 class TestGeneratorSettings(SetterTestCase):
 
     def setUp(self):
@@ -454,17 +434,6 @@ class TestSong(SetterTestCase):
         self.song.get_setlist().copy_item(section=Section.PATTERNS, name=TUNE, new=NOT_A_NAME)
         self.assertEqual(self.song.get_setlist().get_pattern_names()[-1], NOT_A_NAME)
 
-    def test_registers_are_written_in_order_and_only_when_changed(self):
-        self.song.set_register_setting(name=RegisterName.DX, setting=RegisterSetting.MAXIMUM, value=HIGH)
-        self.song.set_register_setting(name=RegisterName.AX, setting=RegisterSetting.MAXIMUM, value=HIGH)
-        self.assertEqual(list(self.song.to_data()[Section.REGISTERS]), [RegisterName.AX, RegisterName.DX])
-        self.assertEqual(self.song.get_register(RegisterName.DX).get_maximum(), HIGH)
-        self.assertRefused(self.song, self.song.set_register_setting, name=RegisterName.AX, setting=RegisterSetting.DEFAULT, value=TOO_HIGH)
-        self.assertRefused(self.song, self.song.set_register_setting, name=NOT_A_NAME, setting=RegisterSetting.DEFAULT, value=LOW)
-        for name in file_format.REGISTER_NAMES:
-            self.song.set_register_setting(name=name, setting=RegisterSetting.MAXIMUM, value=None)
-        self.assertNotIn(Section.REGISTERS, self.song.to_data())
-
     def test_scenes_are_added_copied_moved_and_removed_within_bounds(self):
         self.song.copy_scene(index=FIRST, name=NOT_A_NAME)
         self.assertEqual([scene.get_name() for scene in self.song.get_scenes()], [VERSE, NOT_A_NAME])
@@ -477,7 +446,7 @@ class TestSong(SetterTestCase):
         self.assertEqual(len(self.song.get_scenes()), 1)
 
     def test_every_change_still_reads_back_as_a_file(self):
-        self.song.set_register_setting(name=RegisterName.AX, setting=RegisterSetting.MAXIMUM, value=HIGH)
+        self.song.set_draw_slot(name=DrawName.AD, place=0, value=LOW)
         self.song.copy_track(name=LEAD, new=NOT_A_NAME)
         self.song.get_scene(FIRST).get_clip_slot(LEAD).set_repeat(FOUR_REPEATS)
         data = self.song.get_setlist().to_data()

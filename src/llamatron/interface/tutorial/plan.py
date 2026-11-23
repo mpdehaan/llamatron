@@ -58,7 +58,7 @@ SONG_FIELDS = {
     SongSetting.GENRE: (labels_text.MSG_GENRE_LABEL, False),
 }
 # The parts of a song's data that aren't settings of the Song page.
-SONG_SECTIONS_BUILT = (Section.TRACKS, Section.SCENES, Section.REGISTERS)
+SONG_SECTIONS_BUILT = (Section.TRACKS, Section.SCENES, Section.DRAWS)
 # What the first Space says on each kind of page that has a sentence of its own, every other kind saying that Space toggles.
 SPACE_EXPLAINED = {
     PianoRoll: (narration.MSG_EXPLAIN_SPACE_ON_ROLL, narration.MSG_EXPLAIN_BACKSPACE_ON_ROLL),

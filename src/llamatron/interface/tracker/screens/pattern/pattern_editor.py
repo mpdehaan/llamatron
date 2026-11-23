@@ -76,45 +76,39 @@ class Munge:
     RANDOMIZE_AFTER = 9
     RANDOMIZE_BEFORE = 10
     CLEAR_ALL_BUT_PITCH = 11
-    CLEAR_REGISTER_CHANGES = 12
-    CLEAR_STATEMENTS = 13
-    ROLL_LEFT = 14
-    ROLL_RIGHT = 15
-    CLEAR_CHORDS = 16
-    MIRROR = 17
-    INTERLEAVE = 18
-    SMOOTH_CCS = 19
-    SMOOTH_VELOCITY = 20
-    SMOOTH_AX = 21
-    SMOOTH_BX = 22
-    SMOOTH_CX = 23
-    SMOOTH_DX = 24
-    SPLICE = 25
-    SPLICE_BEFORE = 26
-    SPLIT = 27
-    SPLICE_AT_CURSOR = 28
-    ROLL_LEFT_AT_CURSOR = 29
-    ROLL_RIGHT_AT_CURSOR = 30
-    JOIN_NOTES = 31
-    DIVIDE_NOTES = 32
-    RANDOMIZE_RHYTHM = 33
-    RANDOMIZE_PITCHES = 34
-    REVERSE_PITCHES = 35
-    CLEAR_EVERY = 36
-    CROP = 37
-    HUMANIZE_VELOCITY = 38
-    INVERT_MELODY = 39
-    VOICE_LEADING = 40
-    VOICE_LEADING_OCTAVES = 41
+    CLEAR_STATEMENTS = 12
+    ROLL_LEFT = 13
+    ROLL_RIGHT = 14
+    CLEAR_CHORDS = 15
+    MIRROR = 16
+    INTERLEAVE = 17
+    SMOOTH_CCS = 18
+    SMOOTH_VELOCITY = 19
+    SPLICE = 20
+    SPLICE_BEFORE = 21
+    SPLIT = 22
+    SPLICE_AT_CURSOR = 23
+    ROLL_LEFT_AT_CURSOR = 24
+    ROLL_RIGHT_AT_CURSOR = 25
+    JOIN_NOTES = 26
+    DIVIDE_NOTES = 27
+    RANDOMIZE_RHYTHM = 28
+    RANDOMIZE_PITCHES = 29
+    REVERSE_PITCHES = 30
+    CLEAR_EVERY = 31
+    CROP = 32
+    HUMANIZE_VELOCITY = 33
+    INVERT_MELODY = 34
+    VOICE_LEADING = 35
+    VOICE_LEADING_OCTAVES = 36
 
 
 # The heading each munge is listed under.
 MUNGE_GROUPS = {
-    labels.MungeGroup.CLEAR: [Munge.CLEAR_ALL_BUT_PITCH, Munge.CLEAR_CHORDS, Munge.CLEAR_EVERY, Munge.CROP],
+    labels.MungeGroup.CLEAR: [Munge.CLEAR_ALL_BUT_PITCH, Munge.CLEAR_CHORDS, Munge.CLEAR_STATEMENTS, Munge.CLEAR_EVERY, Munge.CROP],
     labels.MungeGroup.COPY: [Munge.COPY_BEFORE_TO_END, Munge.COPY_AFTER_TO_END, Munge.COPY_BEFORE_TO_START, Munge.COPY_AFTER_TO_START, Munge.MIRROR],
     labels.MungeGroup.OTHER_PATTERNS: [Munge.INTERLEAVE, Munge.SPLICE, Munge.SPLICE_BEFORE, Munge.SPLICE_AT_CURSOR, Munge.SPLIT],
     labels.MungeGroup.PITCH: [Munge.REVERSE_PITCHES, Munge.RANDOMIZE_PITCHES, Munge.INVERT_MELODY, Munge.VOICE_LEADING, Munge.VOICE_LEADING_OCTAVES],
-    labels.MungeGroup.REGISTERS: [Munge.CLEAR_REGISTER_CHANGES, Munge.CLEAR_STATEMENTS, Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX],
     labels.MungeGroup.REORDER: [Munge.REVERSE_AFTER, Munge.REVERSE_BEFORE, Munge.REVERSE, Munge.PIVOT, Munge.RANDOMIZE, Munge.RANDOMIZE_AFTER, Munge.RANDOMIZE_BEFORE],
     labels.MungeGroup.RHYTHM: [Munge.JOIN_NOTES, Munge.DIVIDE_NOTES, Munge.RANDOMIZE_RHYTHM],
     labels.MungeGroup.ROLL: [Munge.ROLL_LEFT, Munge.ROLL_RIGHT, Munge.ROLL_LEFT_AT_CURSOR, Munge.ROLL_RIGHT_AT_CURSOR],
@@ -166,7 +160,6 @@ FIRST_ROLL = 1
 # The munges that blank or fill rows of every step and need nothing else, each with the method of Pattern that does it.
 CLEARING = {
     Munge.CLEAR_ALL_BUT_PITCH: Pattern.clear_all_but_pitch,
-    Munge.CLEAR_REGISTER_CHANGES: Pattern.clear_register_changes,
     Munge.CLEAR_STATEMENTS: Pattern.clear_statements,
     Munge.CLEAR_CHORDS: Pattern.clear_chords,
     Munge.SMOOTH_CCS: Pattern.smooth_ccs,
@@ -183,8 +176,6 @@ OTHER_PATTERN_TITLES = {
     Munge.SPLICE_BEFORE: messages.MSG_SPLICE_BEFORE_CHOICE_TITLE,
     Munge.SPLICE_AT_CURSOR: messages.MSG_SPLICE_AT_CURSOR_CHOICE_TITLE,
 }
-# The munges that smooth the row setting one register.
-SMOOTHED_REGISTERS = dict(zip((Munge.SMOOTH_AX, Munge.SMOOTH_BX, Munge.SMOOTH_CX, Munge.SMOOTH_DX), file_format.REGISTER_NAMES))
 
 
 class Reconfigure:
@@ -585,8 +576,6 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             self.ask_split()
         elif choice in OTHER_PATTERN_TITLES:
             self.pick_other_pattern(choice)
-        elif choice in SMOOTHED_REGISTERS:
-            document.munge_pattern(name=name, way=Pattern.smooth_register_sets, register=SMOOTHED_REGISTERS[choice])
         else:
             document.munge_pattern(name=name, way=CLEARING[choice])
 

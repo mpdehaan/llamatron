@@ -14,7 +14,7 @@ from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DrawDirection, DrawName, DrawSetting, Operator, PatternSetting, RegisterName, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DrawDirection, DrawName, DrawSetting, Operator, PatternSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.realtime.render_process.score import Score
@@ -206,10 +206,10 @@ class TestConditions(unittest.TestCase):
         # Each step draws 0, 1, 2, 3 in turn, so the third step of every pass is muted; the first step's Note+=AD hears the 0 its statement drew.
         self.assertEqual(pitches_of(song=song, scenes=2), [[MIDDLE_C, MIDDLE_C, MIDDLE_C]] * 2)
 
-    def test_a_statement_compares_a_register_with_a_draw(self):
-        rows = {Row.AD_NOTE: every_step(), Row.MUTE_C1: [RegisterName.AX] * STEPS, Row.MUTE_C2: [Operator.LESS] * STEPS, Row.MUTE_C3: [DrawName.AD] * STEPS}
+    def test_a_statement_compares_a_draw_with_a_draw(self):
+        rows = {Row.AD_NOTE: every_step(), Row.MUTE_C1: [DrawName.BD] * STEPS, Row.MUTE_C2: [Operator.LESS] * STEPS, Row.MUTE_C3: [DrawName.AD] * STEPS}
         song = render_data(song_data(draws={DrawName.AD: a_draw(slots=COUNT_IN)}, rows=rows))
-        # AX stays 0, and each step draws AD before its condition compares: 0, 1, 2, 3, so only the first step sounds.
+        # BD, empty, reads 0, and each step draws AD before its condition compares: 0, 1, 2, 3, so only the first step sounds.
         self.assertEqual(pitches_of(song=song, scenes=1), [[MIDDLE_C]])
 
     def test_bypass_when_reads_what_the_passs_first_step_draws(self):

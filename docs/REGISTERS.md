@@ -39,8 +39,6 @@ A register set to "reverse" bounces off each end. Once past Maximum, every add t
 
 "overflow" keeps what is left over, so a step that adds 3 to a register of 5 values visits all 5 in a shuffled order before the cycle repeats.
 
-`examples/learning/20_registers.yml` shows every register at work.
-
 ## Set Registers and Increment Registers
 
 A band counts. A drummer plays a fill every fourth bar, and a guitarist changes the strum the second time through a verse. A register does the counting, and a scene or a clip can move a register without a pattern step doing so. The Scene page and the clip page each have two sections, closed until opened:

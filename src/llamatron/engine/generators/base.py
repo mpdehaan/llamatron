@@ -44,10 +44,6 @@ class ClipGenerator(ABC):
         """Return the state the clip it last made left it in, for the same track's next clip to carry on from when its Restart says so. Most keep none."""
         return None
 
-    def register_adds(self):
-        """Return what the clip it last made adds to the registers, as (time from the clip's start, adds by register) in time order. Most generators add nothing."""
-        return []
-
     def _new_scale(self, clip):
         """Return the new clip's scale, which is the original's unless a generator changes it."""
         return clip.get_scale()

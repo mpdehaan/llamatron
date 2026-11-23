@@ -18,7 +18,7 @@ class Section:
     """The sections of a set file that hold named objects, and a song's list of scenes.
 
     Scales, patterns, generators, chains and the songs belong to the set, and every song shares
-    them. Tracks, registers and scenes belong to one song.
+    them. Tracks, draws and scenes belong to one song.
     """
 
     SCALES = 'scales'
@@ -27,7 +27,6 @@ class Section:
     CHAINS = 'chains'
     GROOVES = 'grooves'
     INSTRUMENTS = 'instruments'
-    REGISTERS = 'registers'
     DRAWS = 'draws'
     SONGS = 'songs'
     SCENES = 'scenes'
@@ -205,26 +204,6 @@ class Row:
     CC3 = 'cc3'
     CC4 = 'cc4'
     SLIDE = 'slide'
-    # Whether each register's value moves the step's note along the scale.
-    AX_NOTE = 'ax_note'
-    BX_NOTE = 'bx_note'
-    CX_NOTE = 'cx_note'
-    DX_NOTE = 'dx_note'
-    # Whether each register's value is added to the step's velocity.
-    AX_VELOCITY = 'ax_velocity'
-    BX_VELOCITY = 'bx_velocity'
-    CX_VELOCITY = 'cx_velocity'
-    DX_VELOCITY = 'dx_velocity'
-    # How much the step adds to each register, which can be negative.
-    AX_ADD = 'ax_add'
-    BX_ADD = 'bx_add'
-    CX_ADD = 'cx_add'
-    DX_ADD = 'dx_add'
-    # What the step sets each register to before anything adds to it, or blank to leave it.
-    AX_SET = 'ax_set'
-    BX_SET = 'bx_set'
-    CX_SET = 'cx_set'
-    DX_SET = 'dx_set'
     # Whether each draw's value moves the step's note along the scale, added (1) or subtracted (-1), and the same for its velocity.
     AD_NOTE = 'ad_note'
     BD_NOTE = 'bd_note'
@@ -251,8 +230,8 @@ class Row:
     FD_RESET = 'fd_reset'
     GD_RESET = 'gd_reset'
     HD_RESET = 'hd_reset'
-    # A step's statements about the registers, one of each kind, each written across five rows: the register, the operator,
-    # a number or a register, and after a sum the comparison of the result and what it is compared with.
+    # A step's statements about the draws, one of each kind, each written across five rows: the draw, the operator, a number or
+    # a draw, and after a sum the comparison of the result and what it is compared with.
     STOP_C1 = 'stop_c1'
     STOP_C2 = 'stop_c2'
     STOP_C3 = 'stop_c3'
@@ -335,7 +314,7 @@ class SceneSetting:
     ARTICULATE_END = 'articulate_end'
     ARTICULATE_OVER = 'articulate_over'
     ARTICULATE_THEN = 'articulate_then'
-    # The register statements that bypass the generators of its clips.
+    # The statements about the draws that bypass the generators of its clips.
     BYPASS_WHEN = 'bypass_when'
     TRACKS = 'tracks'
 
@@ -393,15 +372,6 @@ TEMPO_RAMP_SETTINGS = {
 }
 
 
-class RegisterName:
-    """The song's four registers, whose names are fixed."""
-
-    AX = 'AX'
-    BX = 'BX'
-    CX = 'CX'
-    DX = 'DX'
-
-
 class DrawName:
     """The song's eight draws, whose names are fixed."""
 
@@ -436,7 +406,7 @@ class DrawDirection:
 
 
 class RegisterUse:
-    """What a step does with a register on a +Note or +Vel row: adds the register's value, subtracts it, or neither. A file holds the number."""
+    """What a step does with a draw on a Note+= or Vel+= row: adds the draw's value, subtracts it, or neither. A file holds the number."""
 
     ADD = 1
     SUBTRACT = -1
@@ -448,8 +418,9 @@ REGISTER_USES = [RegisterUse.ADD, RegisterUse.SUBTRACT]
 
 
 class StatementPart:
-    """The parts of one statement about a register, as a file names them: AX % 3 = 0 is a register, an operator, a value, a comparison and what the result is compared with."""
+    """The parts of one statement about a draw, as a file names them: AD % 3 = 0 is a draw, an operator, a value, a comparison and what the result is compared with."""
 
+    # The draw the statement reads, which a file writes under the word register, the name the statements were first written with.
     REGISTER = 'register'
     OPERATOR = 'operator'
     VALUE = 'value'
@@ -458,7 +429,7 @@ class StatementPart:
 
 
 class Operator:
-    """What a statement does with its register: compares it, asks whether it is odd or even, or works a sum out to compare."""
+    """What a statement does with its draw: compares it, asks whether it is odd or even, or works a sum out to compare."""
 
     LESS = '<'
     AT_MOST = '<='
@@ -497,41 +468,7 @@ class ChainSetting:
     BYPASS_WHEN = BYPASS_WHEN
 
 
-class RegisterSetting:
-    """A register's settings."""
 
-    DEFAULT = 'default'
-    MINIMUM = 'minimum'
-    MAXIMUM = 'maximum'
-    RESET_BEHAVIOR = 'reset_behavior'
-    RESET_EACH_SCENE = 'reset_each_scene'
-    # The most a step may add to the register or take from it, so that entry stays short.
-    ALLOWED_INC_MAX = 'allowed_inc_max'
-
-
-class ResetBehavior:
-    """What a register does when an add or a subtraction would take it past its minimum or maximum. A set is never governed by it."""
-
-    # Hold at the end it reached.
-    CLIP = 'clip'
-    # Go to the minimum past the maximum, and hold at the minimum below it.
-    RESET_CLIP = 'reset_clip'
-    # Go to the maximum past the minimum, and hold at the maximum above it.
-    CLIP_RESET = 'clip_reset'
-    # Go back to the register's default.
-    RESET_TO_DEFAULT = 'reset_to_default'
-    # Turn round at the end, what is left over carrying on the other way, and every change after it counting the other way until the other end turns it round again.
-    REVERSE = 'reverse'
-    # Roll round to the other end, keeping what is left over.
-    OVERFLOW = 'overflow'
-    # Land on a random value from the minimum to the maximum.
-    PICK_RANDOM = 'pick_random'
-
-
-RESET_BEHAVIORS = [
-    ResetBehavior.CLIP, ResetBehavior.RESET_CLIP, ResetBehavior.CLIP_RESET, ResetBehavior.RESET_TO_DEFAULT, ResetBehavior.REVERSE, ResetBehavior.OVERFLOW,
-    ResetBehavior.PICK_RANDOM,
-]
 
 
 class Direction:
@@ -707,27 +644,9 @@ class FileLayout:
     CLIPS = 'clips'
     TRACK = 'track'
 
-# The registers, in the order the Registers page and the pattern editor show them.
-REGISTER_NAMES = [RegisterName.AX, RegisterName.BX, RegisterName.CX, RegisterName.DX]
-# Each register's rows in a pattern: whether it moves the note, whether it changes the velocity,
-# and how much a step adds to it.
-REGISTER_NOTE_ROWS = {
-    RegisterName.AX: Row.AX_NOTE, RegisterName.BX: Row.BX_NOTE, RegisterName.CX: Row.CX_NOTE, RegisterName.DX: Row.DX_NOTE,
-}
-REGISTER_VELOCITY_ROWS = {
-    RegisterName.AX: Row.AX_VELOCITY, RegisterName.BX: Row.BX_VELOCITY,
-    RegisterName.CX: Row.CX_VELOCITY, RegisterName.DX: Row.DX_VELOCITY,
-}
-REGISTER_ADD_ROWS = {
-    RegisterName.AX: Row.AX_ADD, RegisterName.BX: Row.BX_ADD, RegisterName.CX: Row.CX_ADD, RegisterName.DX: Row.DX_ADD,
-}
-# What a step sets each register to, which comes before what it adds.
-REGISTER_SET_ROWS = {
-    RegisterName.AX: Row.AX_SET, RegisterName.BX: Row.BX_SET, RegisterName.CX: Row.CX_SET, RegisterName.DX: Row.DX_SET,
-}
 DRAW_NAMES = [DrawName.AD, DrawName.BD, DrawName.CD, DrawName.DD, DrawName.ED, DrawName.FD, DrawName.GD, DrawName.HD]
-# Every value a statement of Conditional Execution can read, by name: the registers and the draws.
-VALUE_NAMES = [*REGISTER_NAMES, *DRAW_NAMES]
+# Every value a statement of Conditional Execution can read, by name: the draws.
+VALUE_NAMES = list(DRAW_NAMES)
 # Each draw's rows in a pattern, the Use Draws section: whether its value moves the note, whether it changes the velocity, and
 # whether the step resets the draw.
 DRAW_NOTE_ROWS = {
@@ -745,13 +664,13 @@ DRAW_RESET_ROWS = {
 
 
 class StepStatement:
-    """The kinds of statement about the registers a step of a pattern can hold, each read as the step is reached, in this order."""
+    """The kinds of statement about the draws a step of a pattern can hold, each read as the step is reached, in this order."""
 
     # The clip is done, as if every repeat had been played.
     STOP = 'stop'
     # The pattern starts over from its first step, which uses one repeat.
     RESTART = 'restart'
-    # The step does not sound, and still changes the registers.
+    # The step does not sound, and still takes its draws.
     MUTE = 'mute'
 
 
@@ -764,7 +683,7 @@ STATEMENT_ROWS = {
 }
 # The kind of statement and the part each such row holds.
 STATEMENT_OF_ROW = {row: (kind, part) for kind, rows in STATEMENT_ROWS.items() for row, part in zip(rows, STATEMENT_PARTS)}
-# The kinds that change how long a pass lasts, so that what the clip plays and changes is known only by playing it with the registers.
+# The kinds that change how long a pass lasts, so that what the clip plays and draws is known only by playing it.
 STATEMENTS_CUTTING_A_PASS = (StepStatement.STOP, StepStatement.RESTART)
 
 # The rows that say which notes a step plays, which clearing a pattern down to its pitch keeps, and those of them that make a note a chord.
@@ -775,8 +694,7 @@ PATTERN_ROWS = [
     Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.ACCENT, Row.PROBABILITY, Row.GLIDE,
     Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.KEYSWITCH,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
-    *REGISTER_NOTE_ROWS.values(), *REGISTER_VELOCITY_ROWS.values(), *REGISTER_ADD_ROWS.values(),
-    *REGISTER_SET_ROWS.values(), *DRAW_NOTE_ROWS.values(), *DRAW_VELOCITY_ROWS.values(), *DRAW_RESET_ROWS.values(), *STATEMENT_OF_ROW,
+    *DRAW_NOTE_ROWS.values(), *DRAW_VELOCITY_ROWS.values(), *DRAW_RESET_ROWS.values(), *STATEMENT_OF_ROW,
 ]
 # A pattern's CC lanes, whose numbers each track sets for itself.
 CC_ROWS = (Row.CC1, Row.CC2, Row.CC3, Row.CC4)
@@ -1150,10 +1068,6 @@ DRIFT_VERSIONS = [DriftVersion.A, DriftVersion.B]
 class DriftValue:
     """What each version of a drift sets, as the file names it after the version's letter, like a_velocity."""
 
-    AX_ADD = 'ax_add'
-    BX_ADD = 'bx_add'
-    CX_ADD = 'cx_add'
-    DX_ADD = 'dx_add'
     VELOCITY = 'velocity'
     PROBABILITY = 'probability'
     DEGREE = 'degree'

@@ -10,7 +10,6 @@ data is refused with a message that says where it is.
 """
 
 from fractions import Fraction
-import random
 import re
 import unittest
 
@@ -26,13 +25,12 @@ from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.clip_slot import ClipSlot, morph_style_name
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.pattern import Pattern
-from llamatron.model.objects.register import Bounced, Register
 from llamatron.model.objects.scene import Scene, TempoRamp
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.song import Song
 from llamatron.model.objects.track import Track
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import Accidental, ClipSlotSetting, Direction, PatternSetting, RampWay, RegisterName, RegisterSetting, ResetBehavior, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import Accidental, ClipSlotSetting, Direction, DrawName, Operator, PatternSetting, RampWay, Row, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting
 from llamatron.model.values.blend_mode import BlendMode
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
@@ -160,86 +158,6 @@ class TestNamedScale(RoundTrip):
         self.assert_refused('unknown scale type (wobbly)', NamedScale, {ScaleSetting.ROOT: NoteName.C, ScaleSetting.TYPE: WOBBLY})
 
 
-# A seed for a register's random picks, and enough picks to land on every value of a small range.
-SEED = 5
-RANDOM_TRIES = 200
-
-
-class TestRegister(RoundTrip):
-
-    def test_round_trip_and_defaults(self):
-        self.assert_round_trip(Register, {RegisterSetting.DEFAULT: 1, RegisterSetting.MINIMUM: -3, RegisterSetting.MAXIMUM: 3, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW})
-        self.assert_round_trip(Register, {})
-        plain = Register.from_data(data={}, where=HERE)
-        self.assertEqual(
-            (plain.get_default(), plain.get_minimum(), plain.get_maximum(), plain.get_reset_behavior(), plain.resets_each_scene()),
-            (defaults.DEFAULT_REGISTER_VALUE, defaults.DEFAULT_REGISTER_MINIMUM, defaults.DEFAULT_REGISTER_MAXIMUM, defaults.DEFAULT_RESET_BEHAVIOR, defaults.DEFAULT_RESET_EACH_SCENE),
-        )
-
-    def test_adding_holds_at_the_ends_or_rolls_round_keeping_what_is_left_over(self):
-        lowest = 0
-        highest = 3
-        stops = Register.from_data(data={RegisterSetting.MINIMUM: lowest, RegisterSetting.MAXIMUM: highest}, where=HERE)
-        self.assertEqual([stops.added(value=highest - 1, amount=1), stops.added(value=highest - 1, amount=highest), stops.added(value=lowest, amount=-1)], [highest, highest, lowest])
-        rolls = Register.from_data(data={RegisterSetting.MINIMUM: lowest, RegisterSetting.MAXIMUM: highest, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.OVERFLOW}, where=HERE)
-        # One past the top is the bottom, two past is one above it, and the same downward.
-        self.assertEqual([rolls.added(value=highest - 1, amount=1), rolls.added(value=highest, amount=1), rolls.added(value=highest, amount=2)], [highest, lowest, lowest + 1])
-        self.assertEqual([rolls.added(value=lowest, amount=-1), rolls.added(value=lowest, amount=-2), rolls.added(value=lowest, amount=highest + 1)], [highest, highest - 1, lowest])
-
-    def test_each_reset_behavior_does_its_own_thing_past_each_end(self):
-        lowest = 0
-        default = 1
-        highest = 3
-        # What each Reset behavior gives one past the top and one past the bottom.
-        expected = {
-            ResetBehavior.CLIP: (highest, lowest), ResetBehavior.RESET_TO_DEFAULT: (default, default), ResetBehavior.OVERFLOW: (lowest, highest),
-            ResetBehavior.RESET_CLIP: (lowest, lowest), ResetBehavior.CLIP_RESET: (highest, highest),
-        }
-        for behavior, (past_the_top, past_the_bottom) in expected.items():
-            with self.subTest(behavior=behavior):
-                register = Register.from_data(data={
-                    RegisterSetting.MINIMUM: lowest, RegisterSetting.DEFAULT: default, RegisterSetting.MAXIMUM: highest, RegisterSetting.RESET_BEHAVIOR: behavior,
-                }, where=HERE)
-                self.assertFalse(register.reverses())
-                self.assertEqual(register.added(value=highest, amount=1), past_the_top)
-                self.assertEqual(register.added(value=lowest, amount=-1), past_the_bottom)
-                self.assertEqual(register.added(value=lowest, amount=1), lowest + 1)
-        picks = Register.from_data(data={RegisterSetting.MINIMUM: lowest, RegisterSetting.MAXIMUM: highest, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.PICK_RANDOM}, where=HERE)
-        chooser = random.Random(SEED)
-        landed = {picks.added(value=highest, amount=1, chooser=chooser) for _ in range(RANDOM_TRIES)}
-        self.assertEqual(landed, set(range(lowest, highest + 1)))
-
-    def test_a_register_that_reverses_bounces_off_each_end_and_counts_the_other_way(self):
-        lowest = 0
-        highest = 4
-        register = Register.from_data(data={RegisterSetting.MINIMUM: lowest, RegisterSetting.MAXIMUM: highest, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.REVERSE}, where=HERE)
-        self.assertTrue(register.reverses())
-        value = lowest
-        turned = False
-        seen = []
-        for _ in range(2 * highest + 1):
-            value, turned = register.reversed(value=value, amount=1, turned=turned)
-            seen.append(value)
-        self.assertEqual(seen, [1, 2, 3, 4, 3, 2, 1, 0, 1])
-        # What is left over carries on back the other way: 3 and 3 more is 4 and 2 back down.
-        self.assertEqual(register.reversed(value=3, amount=3, turned=False), Bounced(value=2, turned=True))
-        # While turned a subtraction adds, and bounces off the top the same way.
-        self.assertEqual(register.reversed(value=3, amount=-3, turned=True), Bounced(value=2, turned=False))
-        # An amount longer than the range bounces off both ends.
-        self.assertEqual(register.reversed(value=lowest, amount=2 * highest + 1, turned=False), Bounced(value=1, turned=False))
-
-    def test_a_register_of_one_value_that_reverses_stays_there(self):
-        register = Register.from_data(data={RegisterSetting.MINIMUM: 0, RegisterSetting.MAXIMUM: 0, RegisterSetting.RESET_BEHAVIOR: ResetBehavior.REVERSE}, where=HERE)
-        self.assertEqual(register.reversed(value=0, amount=3, turned=False), Bounced(value=0, turned=False))
-
-    def test_refusals(self):
-        too_high = limits.MAX_REGISTER_VALUE + 1
-        self.assert_refused(f'maximum must be an integer from {limits.MIN_REGISTER_VALUE} to {limits.MAX_REGISTER_VALUE}', Register, {RegisterSetting.MAXIMUM: too_high})
-        above = defaults.DEFAULT_REGISTER_MAXIMUM + 1
-        expected = f'needs minimum ({defaults.DEFAULT_REGISTER_MINIMUM}) <= default ({above}) <= maximum ({defaults.DEFAULT_REGISTER_MAXIMUM})'
-        self.assert_refused(expected, Register, {RegisterSetting.DEFAULT: above})
-
-
 class TestTrack(RoundTrip):
 
     def test_round_trip(self):
@@ -284,7 +202,7 @@ class TestTrack(RoundTrip):
 class TestPattern(RoundTrip):
 
     DATA = {
-        'steps': 3, 'drum': False, 'direction': 'pendulum', 'ax_add': [1, None, -2], 'bx_note': [False, False, True],
+        'steps': 3, 'drum': False, 'direction': 'pendulum', 'cc1': [1, None, 2], 'bd_note': [0, 0, 1],
         'degree': [1, None, 5], 'gate': ['1/4', None, 1], 'dot': ['d', None, None], 'glide': [True, False, False],
         'tie': [False, True, False],
     }
@@ -296,7 +214,7 @@ class TestPattern(RoundTrip):
     def test_values_and_defaults(self):
         pattern = Pattern.from_data(data=self.DATA, where=HERE)
         self.assertEqual((pattern.get_steps(), pattern.get_direction()), (3, Direction.PENDULUM))
-        self.assertEqual([pattern.get_value(row=Row.AX_ADD, step=step) for step in range(3)], [1, None, -2])
+        self.assertEqual([pattern.get_value(row=Row.CC1, step=step) for step in range(3)], [1, None, 2])
         self.assertEqual([pattern.get_value(row=Row.DEGREE, step=step) for step in range(3)], [1, None, 5])
         self.assertIsNone(pattern.get_value(row=Row.VELOCITY, step=0))
         self.assertEqual(pattern.get_note_steps(), [0, 2])
@@ -307,11 +225,11 @@ class TestPattern(RoundTrip):
 
     def test_every_step_values_are_each_steps_values_with_none_where_it_is_blank(self):
         pattern = Pattern.from_data(data=self.DATA, where=HERE)
-        rows = [Row.DEGREE, Row.AX_ADD, Row.VELOCITY, Row.TIE]
+        rows = [Row.DEGREE, Row.CC1, Row.VELOCITY, Row.TIE]
         self.assertEqual(pattern.get_every_step_values(rows=rows), [
-            {Row.DEGREE: 1, Row.AX_ADD: 1, Row.VELOCITY: None, Row.TIE: False},
-            {Row.DEGREE: None, Row.AX_ADD: None, Row.VELOCITY: None, Row.TIE: True},
-            {Row.DEGREE: 5, Row.AX_ADD: -2, Row.VELOCITY: None, Row.TIE: False},
+            {Row.DEGREE: 1, Row.CC1: 1, Row.VELOCITY: None, Row.TIE: False},
+            {Row.DEGREE: None, Row.CC1: None, Row.VELOCITY: None, Row.TIE: True},
+            {Row.DEGREE: 5, Row.CC1: 2, Row.VELOCITY: None, Row.TIE: False},
         ])
 
     def test_every_step_values_agree_with_get_value_on_every_row_before_and_after_an_edit(self):
@@ -347,18 +265,16 @@ class TestPattern(RoundTrip):
         emptied.set_value(row=Row.CC1, step=0, value=None)
         self.assertFalse(emptied.sends_controls())
 
-    def test_a_pattern_uses_registers_when_any_step_switches_a_note_or_velocity_row_on(self):
+    def test_a_pattern_has_a_statement_when_any_step_holds_one_of_any_kind(self):
         def pattern_with(**rows):
             return Pattern.from_data(data={PatternSetting.STEPS: 2, Row.DEGREE: [1, 2], **rows}, where=HERE)
 
-        self.assertFalse(pattern_with().uses_registers())
-        # Adding to a register is not using one.
-        self.assertFalse(pattern_with(**{file_format.REGISTER_ADD_ROWS[RegisterName.AX]: [1, 1]}).uses_registers())
-        for rows in (file_format.REGISTER_NOTE_ROWS, file_format.REGISTER_VELOCITY_ROWS):
-            for name, row in rows.items():
-                with self.subTest(register=name, row=row):
-                    self.assertTrue(pattern_with(**{row: [False, True]}).uses_registers())
-                    self.assertFalse(pattern_with(**{row: [False, False]}).uses_registers())
+        self.assertFalse(pattern_with().has_any_statement())
+        # Using a draw is not holding a statement.
+        self.assertFalse(pattern_with(**{Row.AD_NOTE: [1, 1]}).has_any_statement())
+        for kind, rows in file_format.STATEMENT_ROWS.items():
+            with self.subTest(kind=kind):
+                self.assertTrue(pattern_with(**{rows[0]: [None, DrawName.AD], rows[1]: [None, Operator.ODD]}).has_any_statement())
 
     def test_holding_note_and_tied_end_follow_the_ties(self):
         pattern = Pattern.from_data(data={PatternSetting.STEPS: 5, Row.DEGREE: [1, None, None, 3, None], Row.TIE: [False, True, True, False, False]}, where=HERE)

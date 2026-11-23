@@ -9,8 +9,8 @@ from llamatron.model.objects.shapes import shape_settings
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, Row, SceneSetting, Section, SongSetting, TrackSetting
 
-# The rows of a pattern that change what plays by chance or by the registers.
-CHANCE_AND_READING_ROWS = [Row.PROBABILITY, *file_format.REGISTER_NOTE_ROWS.values(), *file_format.REGISTER_VELOCITY_ROWS.values(), *file_format.STATEMENT_OF_ROW]
+# The rows of a pattern that change what plays by chance or by a statement.
+CHANCE_AND_READING_ROWS = [Row.PROBABILITY, *file_format.STATEMENT_OF_ROW]
 
 
 def as_written(song):

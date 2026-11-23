@@ -17,10 +17,10 @@ from llamatron.user_strings import names
 # How error messages name one object in each section of named objects.
 SECTION_LABELS = {
     Section.PATTERNS: names.MSG_PATTERN_WORD, Section.CHAINS: names.MSG_CHAIN_WORD, Section.GROOVES: names.MSG_GROOVE_WORD, Section.INSTRUMENTS: names.MSG_INSTRUMENT_WORD, Section.SCALES: names.MSG_SCALE_WORD, Section.TRACKS: names.MSG_TRACK_WORD,
-    Section.REGISTERS: names.MSG_REGISTER_WORD, Section.DRAWS: names.MSG_DRAW_WORD, Section.SONGS: names.MSG_SONG_WORD,
+    Section.DRAWS: names.MSG_DRAW_WORD, Section.SONGS: names.MSG_SONG_WORD,
 }
 # A song's sections, in the order they're written, before its scenes.
-SONG_SECTIONS = [Section.REGISTERS, Section.DRAWS, Section.TRACKS]
+SONG_SECTIONS = [Section.DRAWS, Section.TRACKS]
 
 
 def section_label(section):

@@ -22,7 +22,6 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Hocketing](#hocket_shanty): `17_hocket_shanty.yml`
 - [Few Patterns](#arrangement_shanty): `18_arrangement_shanty.yml`
 - [Grabbed Parts](#look_ma_no_notes): `19_look_ma_no_notes.yml`
-- [Registers](#registers): `20_registers.yml`
 - [Guitarify](#guitarify): `21_guitarify.yml`
 - [Follow Chords](#follow_chords): `22_follow_chords.yml`
 - [Phrasing](#phrasing): `23_phrasing.yml`
@@ -371,26 +370,6 @@ step, and every part follows.
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | [✓](../PATTERNS.md#chords) | [✓](../generators/ARPEGGIATOR.md) | [✓](../PATTERNS.md#advanced) | [✓](../CLIPS.md#grabbing-notes) | [✓](../PATTERNS.md#ties) | [✓](../GROOVES.md) | [✓](../SCENES.md#scene-settings) | [✓](../DRAWS.md) | [✓](../generators/CHORDS.md) |
 <!-- end of the generated summary of 19_look_ma_no_notes -->
-
-<a id="registers"></a>
-## Registers: `20_registers.yml`
-
-An acid techno riff of five notes, changed bar by bar by the four registers, AX to DX. AX, BX
-and CX each move a different note of the riff, in cycles of 4, 6 and 5 bars, then all three
-at once. Then DX fades the riff, kick and hat out together over six repeats of the last scene.
-
-[`examples/learning/20_registers.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/20_registers.yml) · A minor · 132 BPM · 1:35 · 5 scenes · 3 tracks
-
-| registers |
-| :---: |
-| [✓](../REGISTERS.md) |
-<!-- end of the generated summary of 20_registers -->
-
-**New Features Introduced**
-
-| registers |
-| :---: |
-| [✓](../REGISTERS.md) |
 
 <a id="guitarify"></a>
 ## Guitarify: `21_guitarify.yml`

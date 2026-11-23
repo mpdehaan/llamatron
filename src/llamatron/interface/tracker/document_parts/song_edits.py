@@ -12,7 +12,7 @@ from llamatron.model.objects import clip_slot as clip_slot_values
 from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.naming import copy_name
 from llamatron.model.schema import limits
-from llamatron.model.schema.file_format import ClipSlotSetting, RegisterSetting, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, Section
 from llamatron.user_strings import names as names_text
 
 
@@ -107,24 +107,6 @@ class SongEdits:
         return True
 
     # Registers, of the current song. There are always four, and the file only holds the settings that differ from the defaults.
-
-    def register(self, name):
-        """Return a register, AX to DX, as a Register, with its defaults for anything not set."""
-        return self.song().get_register(name)
-
-    def set_register_setting(self, *, name, setting, value):
-        """Change one setting of a register, or return why it can't change, like a default above the maximum.
-
-        A value of None goes back to the setting's default. A lower Allowed Inc Max brings every add
-        to that register within it, in every pattern the song plays, as one change.
-        """
-        try:
-            self.change_set(self.song().set_register_setting, name=name, setting=setting, value=value)
-        except InvalidValue as problem:
-            return str(problem)
-        if setting == RegisterSetting.ALLOWED_INC_MAX:
-            self.change_set(self._setlist.hold_adds_within_limits)
-        return None
 
     def draw(self, name):
         """Return a draw, AD to HD, as a Draw, with its defaults for anything not set."""

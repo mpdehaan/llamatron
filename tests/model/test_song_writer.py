@@ -20,16 +20,16 @@ SONG = {
             'octave': [3, None, 2], 'chord': ['M7', None, 3], 'velocity': [100, None, 90],
             'probability': [50, None, 100], 'ratchet': [2, None, None], 'glide': [True, False, False],
         },
-        'hit': {'steps': 1, 'drum': True, 'direction': 'pendulum', 'degree': ['C'], 'grab': [True], 'ratchet_offset': [1], 'ax_velocity': [1], 'bx_add': [-3]},
+        'hit': {'steps': 1, 'drum': True, 'direction': 'pendulum', 'degree': ['C'], 'grab': [True], 'ratchet_offset': [1], 'ad_velocity': [1], 'bd_reset': [True]},
         'rests': {'steps': 2},
     },
     'tracks': {'lead': {'transpose': 2, 'cc': [74, None, None, 1]}, 'kick': {'drum': True}, 'plain': {}},
     'arps': {'bells': {'step': '1/8', 'order': 'up'}},
     'timings': {'rolls': {'rush_steps': [True, False]}},
     'chains': {'x': [{'timing': 'rolls'}, {'arp': 'bells'}], 'nothing': [], 'named': [{'arp': 'bells'}]},
-    'registers': {'AX': {'maximum': 3, 'wrap': True}, 'DX': {'minimum': -100, 'default': -5}},
+    'draws': {'AD': {'direction': 'serial', 'slots': [1, 2]}, 'DD': {'slots': [0, None, 3]}},
     'scenes': [
-        {'name': 'one', 'repeat': 3, 'reset': ['AX', 'DX'], 'scale': 'A Minor', 'tempo_in_start': 120, 'tempo_in_end': 130, 'tempo_in_over': 2, 'tracks': {'lead': {'pattern': 'a', 'chain': 'x', 'loop': True, 'repeat': 2, 'morph_to': 'hit', 'morph_style': 'left', 'grab_track': 'kick'}}},
+        {'name': 'one', 'repeat': 3, 'reset_draws': ['AD', 'DD'], 'scale': 'A Minor', 'tempo_in_start': 120, 'tempo_in_end': 130, 'tempo_in_over': 2, 'tracks': {'lead': {'pattern': 'a', 'chain': 'x', 'loop': True, 'repeat': 2, 'morph_to': 'hit', 'morph_style': 'left', 'grab_track': 'kick'}}},
         {'tracks': {}},
     ],
 }
@@ -91,7 +91,7 @@ class TestDumpSetlist(unittest.TestCase):
     def test_each_song_is_indented_under_songs_with_its_own_settings_first(self):
         text = dump_setlist(SETLIST)
         self.assertIn('\nsongs:\n  - name: untitled\n    tempo: 120\n    scale: main\n', text)
-        self.assertIn('\n    registers:\n      AX: { maximum: 3, wrap: true }\n', text)
+        self.assertIn('\n    draws:\n      AD: { direction: serial, slots: [1, 2] }\n', text)
         self.assertIn('\n    tracks:\n      - { name: lead, transpose: 2, cc: [74, ~, ~, 1] }\n', text)
         self.assertIn('\n    scenes:\n      - name: one\n        repeat: 3\n', text)
 
@@ -114,15 +114,15 @@ class TestDumpSetlist(unittest.TestCase):
         self.assertIn('    accidental: ["#", ~, b]\n', text)
         self.assertIn('    glide: [true, false, false]\n', text)
         self.assertIn('    drum: true\n    direction: pendulum\n', text)
-        self.assertIn('    ax_velocity: [1]\n    bx_add: [-3]\n', text)
+        self.assertIn('    ad_velocity: [1]\n    bd_reset: [true]\n', text)
 
     def test_follows_the_format_rules(self):
         text = dump_setlist(SETLIST)
         self.assertIn('    tracks:\n      - { name: lead, transpose: 2, cc: [74, ~, ~, 1] }\n      - { name: kick, drum: true }\n      - { name: plain }\n', text)
         self.assertIn('          - { track: lead, pattern: a, chain: x, loop: true, repeat: 2, morph_to: hit, morph_style: left, grab_track: kick }', text)
         self.assertIn('generators:\n  - { name: bells, kind: arp, step: 1/8, order: up }', text)
-        self.assertIn('    registers:\n      AX: { maximum: 3, wrap: true }\n      DX: { minimum: -100, default: -5 }\n\n    tracks:', text)
-        self.assertIn("      - name: one\n        repeat: 3\n        reset: [AX, DX]\n", text)
+        self.assertIn('    draws:\n      AD: { direction: serial, slots: [1, 2] }\n      DD: { slots: [0, ~, 3] }\n\n    tracks:', text)
+        self.assertIn("      - name: one\n        repeat: 3\n        reset_draws: [AD, DD]\n", text)
         self.assertIn('  - { name: rolls, kind: timing, rush_steps: [true, false] }', text)
         self.assertIn('  - { name: x, kind: chain, generators: [{ name: rolls }, { name: bells }] }', text)
         self.assertIn('  - { name: nothing, kind: chain, generators: [] }', text)

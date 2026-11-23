@@ -29,7 +29,7 @@ from llamatron.model.values.blend_mode import BlendMode
 from llamatron.user_strings import errors, labels as labels_text, legends, marks, messages, names
 from tests.support import ui_testing
 from tests.support.rendering import render_song
-from tests.support.ui_testing import back_key, fixed_text, forward_key, key_name, key_of, UITest
+from tests.support.ui_testing import back_key, forward_key, key_name, key_of, UITest
 
 # Names the tests give to their own things, and other values they use.
 # How many words of a dialog's message to look for, since the dialog wraps it.
@@ -943,6 +943,5 @@ class TestScenesAndClipsEdges(UITest):
 
 
 # What shows when a register's settings would be out of order.
-OUT_OF_ORDER_START = fixed_text(errors.ERR_OUT_OF_ORDER)
 
 

@@ -4,7 +4,7 @@
 """The setlist: everything a set file holds, as objects that save and load themselves.
 
 A set is what llamatron edits and saves: the scales, patterns, generators and chains that every
-song in it shares, and its songs, each with its own tempo, scale, seed, tracks, registers and
+song in it shares, and its songs, each with its own tempo, scale, seed, tracks, draws and
 scenes, like the songs played in one concert. It isn't a Live set: each song exports to a Live
 set, or to MIDI files, of its own.
 
@@ -20,7 +20,6 @@ import os
 from llamatron.caching.revised import notes_change
 from llamatron.model.file import checks, corrections as corrections_values, file_layout, files, version as version_values
 from llamatron.model.file.checks import reading, written_length
-from llamatron.model.file.corrections import Correction
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.migrations import Conversion
 from llamatron.model.file.setlist_reader import as_a_set_is_written, page_record_held, read_corrected, set_file_data
@@ -35,7 +34,7 @@ from llamatron.model.objects.llama_data import data_as_kept, data_built_anew, Ho
 from llamatron.model.objects.named_items import NamedItems
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import copy_name, is_taken, name_in_copied_group, name_order, split_part_names, unique_name
-from llamatron.model.objects.pattern import held_add, Pattern
+from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.song import Song, started_song
 from llamatron.model.objects.traits import HoldsSections
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits as set_limits
@@ -317,24 +316,6 @@ class Setlist(HoldsSections, HoldsSettings):
         self._read_grooves(data)
         self._read_instruments(data)
         self._read_songs(data)
-        self._check_adds_within_limits(data)
-
-    def _check_adds_within_limits(self, data):
-        """Refuse a pattern whose += rows add more than the narrowest Allowed Inc Max of the songs that play it, with the correction that brings them within it."""
-        for name in self.get_pattern_names():
-            pattern = self.get_pattern(name)
-            for register, row in file_format.REGISTER_ADD_ROWS.items():
-                if not pattern.adds_anything(row):
-                    continue
-                most = self.allowed_inc_max_for_pattern(name=name, register=register)
-                if most is None or not pattern.adds_past(row=row, most=most):
-                    continue
-                holder = data[Section.PATTERNS][name]
-                found = holder[row]
-                used = [held_add(value=value, most=most) for value in found]
-                with reading(self._where(section=Section.PATTERNS, name=name)):
-                    raise InvalidValue(errors.ERR_ADD_PAST_ALLOWED.format(row=row, register=register, most=most),
-                                       correction=Correction(holder=holder, key=row, name=row, found=found, used=used))
 
     @notes_change
     def _read_settings(self, data):
@@ -454,19 +435,14 @@ class Setlist(HoldsSections, HoldsSettings):
         """
         return pattern.get_steps() * self.get_pattern_step_size(pattern)
 
-    def changes_registers(self):
-        """Return whether any pattern sets a register, adds to one or uses a draw, any arpeggiator adds to one, or any scene or
-        clip sets or adds to one, so that playing changes the registers' values; a draw's uses are counted with the registers'
-        changes."""
+    def takes_draws(self):
+        """Return whether playing any song can take a draw: a pattern that uses a draw or whose statement reads one, or a song whose
+        draw redraws in conditions, which a scene's, a chain's or a generator's statement can read."""
         for pattern in self._section(Section.PATTERNS).values():
-            if pattern.changes_registers() or pattern.uses_draws() or pattern.reads_draws():
+            if pattern.uses_draws() or pattern.reads_draws():
                 return True
-        for section in generator_plugins.sections_adding_to_registers():
-            for generator in self._section(section).values():
-                if generator.adds_to_registers():
-                    return True
         for song in self._section(Section.SONGS).values():
-            if song.scenes_change_registers():
+            if song.redraws_in_conditions():
                 return True
         return False
 
@@ -942,28 +918,6 @@ class Setlist(HoldsSections, HoldsSettings):
     def chains_naming(self, *, section, name):
         """Return the name of each chain that runs a generator of a section."""
         return [chain for chain in self.get_chain_names() if self.get_chain(chain).names_item(section=section, name=name)]
-
-    def allowed_inc_max_for_pattern(self, *, name, register):
-        """Return the narrowest Allowed Inc Max a register has in the songs that play a pattern, or None when no song plays it."""
-        narrowest = None
-        for song_name, _, _, _ in self.clip_slots_naming(section=Section.PATTERNS, name=name):
-            song = self.get_song(song_name)
-            held = song.get_register(register)
-            allowed = held.get_allowed_inc_max()
-            if narrowest is None or allowed < narrowest:
-                narrowest = allowed
-        return narrowest
-
-    def hold_adds_within_limits(self):
-        """Bring every pattern's += rows within the narrowest Allowed Inc Max of the songs that play it: lowering a limit changes what used it."""
-        for name in self.get_pattern_names():
-            pattern = self.get_pattern(name)
-            for register, row in file_format.REGISTER_ADD_ROWS.items():
-                if not pattern.adds_anything(row):
-                    continue
-                most = self.allowed_inc_max_for_pattern(name=name, register=register)
-                if most is not None and pattern.adds_past(row=row, most=most):
-                    pattern.hold_adds(row=row, most=most)
 
     def scales_for_pattern(self, name):
         """Return the name of every scale a pattern can play in: each clip's own that plays it, or else its scene's, or else its

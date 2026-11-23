@@ -183,7 +183,6 @@ class ClipSlotPlayer:
                     generator = self._realizer.make_generator(step=step, scene=self._scene, track=self._track_name, chain=run.name, index=index, key=key, counting=counting)
                     generated = generator.generate(clip)
                     self._realizer.keep_end_state(scene=self._scene, track=self._track_name, key=key, counting=counting, state=generator.end_state())
-                    adds += generator.register_adds()
                     own = step.settings_in(self._setlist).get_bypass_when()
                     clip = _kept_where(tripped=_tripped(passes=passes, tables=[own]), before=clip, after=generated, passes=passes)
                 index += 1

@@ -75,7 +75,7 @@ class PlayedPattern(NamedTuple):
     values: list
     sends_controls: bool
     sends_keyswitches: bool
-    changes_registers: bool
+    # Whether any step holds a statement, which reads the draws' values as the step is reached.
     uses_registers: bool
     # Whether any step uses a draw or resets one, which is counted with the registers' changes.
     uses_draws: bool
@@ -93,7 +93,7 @@ class PlayedPattern(NamedTuple):
     def is_plain(self):
         """Return whether no step reads or changes anything that carries from pass to pass, so that a pass is decided by its
         pattern and the order its steps play in alone."""
-        return not (self.changes_registers or self.uses_registers or self.uses_draws or self.rolls or self.grabs) and self.stops is None and self.restarts is None and self.mutes is None
+        return not (self.uses_registers or self.uses_draws or self.rolls or self.grabs) and self.stops is None and self.restarts is None and self.mutes is None
 
 
 class StepDraws(NamedTuple):
@@ -167,7 +167,7 @@ class PatternPlayer:
             step_draws = self._step_draws(pattern=pattern, values=values)
             self._played_patterns[pattern_name] = PlayedPattern(
                 values, pattern.sends_controls(), pattern.sends_keyswitches(),
-                pattern.changes_registers(), pattern.uses_registers(), step_draws is not None,
+                pattern.has_any_statement(), step_draws is not None,
                 pattern.get_statements(StepStatement.STOP), pattern.get_statements(StepStatement.RESTART), pattern.get_statements(StepStatement.MUTE),
                 step_draws, _any_by_chance(values), _any_grabs(values),
             )
@@ -294,7 +294,6 @@ class PatternPlayer:
         tied_to = None
         leading_ties = 0
         played = self._played(pattern_name=pattern_name, pattern=pattern)
-        changes = changes_registers and played.changes_registers
         draws = changes_registers and played.uses_draws
         uses_registers = played.uses_registers or draws
         counting = registers.is_counting()
@@ -328,7 +327,7 @@ class PatternPlayer:
             step_draws is not None,  # a step draws
             bool(pass_draws) and changes_registers,  # the clip draws as the pass starts
             stops is not None or restarts is not None or mutes is not None,  # a step's statement reads the registers
-            changes or uses_registers,  # a step changes or reads the registers
+            uses_registers,  # a step reads the values
             grab is not None,  # a step grabs
             self._modulations is not None,  # the clip hears a modulation
         ))
@@ -359,13 +358,8 @@ class PatternPlayer:
             # A step with no note can send CC values and add to the registers too.
             if played.sends_controls:
                 controls += _controls_sent(values=values, time=slot * step_size)
-            if changes or uses_registers:
-                sets = NO_SETS
-                adds = NO_ADDS
-                if changes:
-                    sets = _register_sets(values)
-                    adds = _register_adds(values)
-                current = registers.at_step(time=moment, sets=sets, adds=adds)
+            if uses_registers:
+                current = registers.at_step(time=moment, sets=NO_SETS, adds=NO_ADDS)
             if values[Row.TIE]:
                 if tied_to is not None:
                     sounding[tied_to] = _tied_to(sounding=sounding[tied_to], end=Length.add(time, step_length))
@@ -706,18 +700,11 @@ def _rests(*, start, end, step_length):
     return rests
 
 
-def _register_adds(values):
-    """Return what a step adds to each register it adds to, by register name."""
-    return {name: values[row] for name, row in file_format.REGISTER_ADD_ROWS.items() if values[row]}
-
-
 def _moved_by_values(*, values, current, drum, draws):
-    """Return how far a step's +Note and +Vel rows move its note and its velocity by the registers' values, and by the draws'
-    where the pattern uses draws. A drum pattern has no scale to move a note along, so only its velocity moves."""
+    """Return how far a step's Note+= and Vel+= rows move its note and its velocity by the draws' values, where the pattern uses
+    draws. A drum pattern has no scale to move a note along, so only its velocity moves."""
     note_moved = NOTHING_ADDED
-    if not drum:
-        note_moved = _used_values(values=values, current=current, rows=file_format.REGISTER_NOTE_ROWS)
-    velocity_added = _used_values(values=values, current=current, rows=file_format.REGISTER_VELOCITY_ROWS)
+    velocity_added = NOTHING_ADDED
     if draws:
         if not drum:
             note_moved += _used_values(values=values, current=current, rows=file_format.DRAW_NOTE_ROWS)
@@ -752,11 +739,6 @@ def _draws_reset(values):
         if values[row]:
             reset.append(name)
     return tuple(reset)
-
-
-def _register_sets(values):
-    """Return what a step sets each register to, by register name, for each register it sets."""
-    return {name: values[row] for name, row in file_format.REGISTER_SET_ROWS.items() if values[row] is not None}
 
 
 def _used_values(*, values, current, rows):

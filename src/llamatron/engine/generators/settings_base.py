@@ -40,8 +40,6 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
     SETTINGS = {}
     # What turns a setting as the file writes it into what the generator takes, for the settings where the two differ.
     TAKEN_AS = {}
-    # Whether its generators may add to the registers as they play, which a plugin whose settings answer adds_to_registers() says.
-    MAY_ADD_TO_REGISTERS = False
 
     def __init_subclass__(cls, **named):
         """Give every kind of settings its switch, as its first setting, and the table of statements that bypasses its generator,
@@ -50,10 +48,6 @@ class GeneratorSettings(BypassedWhen, HoldsSettings):
         shared = (file_format.BYPASS_WHEN, file_format.GENERATOR_ENABLED)
         settings = {name: description for name, description in cls.SETTINGS.items() if name not in shared}
         cls.SETTINGS = {file_format.GENERATOR_ENABLED: ENABLED_SETTING, **settings, file_format.BYPASS_WHEN: BYPASS_STATEMENTS}
-
-    def adds_to_registers(self):
-        """Return whether its generator adds to the registers as it plays: no, unless a plugin's settings say otherwise."""
-        return False
 
     def __init__(self, settings, *, built_in=False, keeper=None):
         """built_in says whether these are the settings of a clip's or a track's built-in generator, which is switched off until

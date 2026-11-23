@@ -36,7 +36,7 @@ With Real Time on, Space plays what the cursor is on, the song from the corner, 
 HELP_SCENE_PAGE = """
 A scene starts all of its clips together, and lasts as long as its longest clip that does not loop.
 Scale, Tempo, Groove: for its clips, instead of the song's; a Groove of off plays them straight. Repeat: plays it that many times.
-Reset AX to DX: sets that register back to its default as the scene starts, but not on its repeats.
+Reset AD to HD: starts that draw over from its first slot as the scene starts, but not on its repeats.
 Launch together: in real-time playback only, a start reaching any clip launches them all; off, each waits for the clip above.
 Tab goes to the tabs, where Left and Right choose one. Tempo Ramps move the tempo over bars from its start and before its end.
 
@@ -58,7 +58,7 @@ HELP_MAIN_PAGE = """
 This is the way into every page. Press a letter to open one, or move the box with the arrows and press ENTER.
 The number on a button says how many of its things the set has: songs, patterns, chains, generators, scales and grooves of its own.
 
-A file is a set of songs. Patterns, scales, generators, chains and grooves belong to the set, and every song shares them. Each song has its own tracks, registers and scenes, and one song is current: Songs picks it, and Registers and Arrange work on it.
+A file is a set of songs. Patterns, scales, generators, chains and grooves belong to the set, and every song shares them. Each song has its own tracks, draws and scenes, and one song is current: Songs picks it, and Draws and Arrange work on it.
 
 Ctrl+S saves, Ctrl+O opens a file, Ctrl+X exports the current song, Ctrl+Z undoes the last change and Ctrl+Y redoes it, F1 lists every key and F3 is about llamatron, on every page. Here O opens and X exports too, and Q quits, from this screen only, asking first only when there are unsaved changes. ESC goes back, and cancels a dialog.
 Nothing is saved or exported until you ask.
@@ -79,9 +79,9 @@ Ctrl+X exports the current song beside the set's file as <set>_<song> files, ask
 
 # SongsPage
 HELP_SONGS_PAGE = """
-The songs in the set, like the songs of one concert. Each has its own tempo, scale, seed, tracks, registers and scenes, and they all share the set's patterns, scales, generators and chains.
+The songs in the set, like the songs of one concert. Each has its own tempo, scale, seed, tracks, draws and scenes, and they all share the set's patterns, scales, generators and chains.
 
-The marked song is current: Tracks, Registers and Arrange edit it, and Ctrl+X exports it, beside the set's file as <set>_<song>. Space makes the selected song current, and ENTER does too, then opens its settings.
+The marked song is current: Tracks, Draws and Arrange edit it, and Ctrl+X exports it, beside the set's file as <set>_<song>. Space makes the selected song current, and ENTER does too, then opens its settings.
 
 A adds one, C copies it, N renames it, M moves it, and S sorts them by name. Bksp deletes it, but the set keeps at least one song.
 / searches the list as you type: Tab completes, ENTER keeps your place, ESC goes back to the whole list.
@@ -186,15 +186,15 @@ HELP_CHAIN_EDITOR = """
 The steps run from top to bottom, each working on what the last one made.
 
 A adds a generator, which you make on the Generators page. ENTER changes one, C copies it, and Bksp removes it. M picks up a step, Up and Down carry it, and ENTER drops it.
-N renames the chain, and every clip using it follows. W opens the chain's statements about the registers, which say when a pass goes by the whole chain.
+N renames the chain, and every clip using it follows. W opens the chain's statements about the draws, which say when a pass goes by the whole chain.
 / searches the list as you type: Tab completes, ENTER keeps your place, ESC goes back to the whole list.
 """
 
 # ChainStatementsPage
 HELP_CHAIN_STATEMENTS_PAGE = """
-Conditional Execution for a whole chain. Each line is a statement about a register, such as AX odd. Each time a clip's pattern starts over, the statements are read, and when any is true the clip's notes go by this chain untouched for that pass.
+Conditional Execution for a whole chain. Each line is a statement about a draw, such as AD odd. Each time a clip's pattern starts over, the statements are read, and when any is true the clip's notes go by this chain untouched for that pass.
 
-Left and Right move between a line's parts and ENTER changes the part: the register, the operator, and a number or another register. A line set to ignored does nothing. Bksp sets a line back to ignored.
+Left and Right move between a line's parts and ENTER changes the part: the draw, the operator, and a number or another draw. A line set to ignored does nothing. Bksp sets a line back to ignored.
 """
 
 # GeneratorsPage
@@ -248,7 +248,7 @@ HELP_PATTERN_EDITOR = """
 Each column is a step, as long as the step size. Tab switches between the piano roll and the rows. Home/End jump to the ends.
 Roll: Space or ENTER draws a note of the entry size (E picks); [ and ] drag its end, X splits it, . sharpens or flattens it, G grabs, Bksp erases it, H picks its chord, K its keyswitches.
 Rows: Degree is a gauge: digits set it, [ and ] nudge it, as they adjust every number, Bksp empties the step. The rows under Octave come in sections headed by a row marked + (closed) or - (open): Space or ENTER opens or closes it, PgUp/PgDn jump between them.
-Basics: #/b, Velocity, Keyswitch. Chord: Chord, Tension, Scale (ENTER picks), Inv. Timing: Tie (Space after a note holds it), Gate (ENTER types one), Dot (d, t), Glide. Advanced: Probability, Ratchet, Ratchet Offset, Grab. CCs and Slide work on rests too. Use Registers uses the registers; Set Registers sets them.
+Basics: #/b, Velocity, Keyswitch. Chord: Chord, Tension, Scale (ENTER picks), Inv. Timing: Tie (Space after a note holds it), Gate (ENTER types one), Dot (d, t), Glide. Advanced: Probability, Ratchet, Ratchet Offset, Grab. CCs and Slide work on rests too. Use Draws adds the draws to notes and velocities.
 S sizes the pattern, and on the rows I inserts a step and D removes one. M munges it. R reconfigures it: load over, step size, time signature, drum on or off, direction, rename. L plays it at once, again and again, and stops it.
 """
 
