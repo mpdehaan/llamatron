@@ -4,8 +4,7 @@
 
 """The page of a chain's statements about the draws, which say when a clip's pass goes by the whole chain."""
 
-from llamatron.interface.pages import statements
-from llamatron.interface.pages.statements import statement_lines
+from llamatron.interface.pages.statements import BypassWhenPresenter
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
@@ -14,7 +13,8 @@ from llamatron.user_strings import help as help_text, labels
 
 
 class ChainStatementsPage(ShowsNamedItem, FieldPage):
-    """One chain's table of statements, opened from the chain's editor, whose list of steps has no room for it."""
+    """One chain's table of statements, opened from the chain's editor, whose list of steps has no room for it: the Bypass When
+    presenter's form (interface/pages/statements.py)."""
 
     KEYS = keybindings.ChainStatementsPage
     HELP = help_text.HELP_CHAIN_STATEMENTS_PAGE
@@ -23,9 +23,8 @@ class ChainStatementsPage(ShowsNamedItem, FieldPage):
     CRUMBS_AFTER = (labels.Crumb.STATEMENTS,)
 
     def fields(self):
-        """Return the table's lines with no heading, since the table is all the page holds."""
-        document = self.document()
-        return statement_lines(
-            page=self, table=statements.FIRST_TABLE, statements=lambda: document.song().get_setlist().get_chain(self.item).get_bypass_when(),
-            store=lambda place, statement: document.change_set(document.get_setlist().get_chain(self.item).set_bypass_statement, place=place, statement=statement),
-        )
+        return BypassWhenPresenter(page=self, document=self.document(), holder=self._chain).form()
+
+    def _chain(self):
+        setlist = self.document().get_setlist()
+        return setlist.get_chain(self.item)

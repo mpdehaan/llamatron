@@ -33,10 +33,35 @@ NOTHING_SAID = ''
 # The first choice of a value's picker is a number to type; the registers follow.
 
 
+class BypassWhenPresenter:
+    """A page of its own holding one table of Bypass When statements, which a chain's or a generator's page has no room for:
+    holder() returns what holds the statements as it is now, a chain or a generator's settings, and the page asks for every
+    dialog the table's cells need."""
+
+    __slots__ = ('_page', '_document', '_holder')
+
+    def __init__(self, *, page, document, holder):
+        self._page = page
+        self._document = document
+        self._holder = holder
+
+    def form(self):
+        """Return the table's lines with no heading, since the table is all the page holds."""
+        return statement_lines(page=self._page, table=FIRST_TABLE, statements=self._statements, store=self._store)
+
+    def _statements(self):
+        holder = self._holder()
+        return holder.get_bypass_when()
+
+    def _store(self, *, place, statement):
+        holder = self._holder()
+        self._document.change_set(holder.set_bypass_statement, place=place, statement=statement)
+
+
 def statement_section(*, page, label, table, statements, store):
     """Return a table's section: its heading and a line for each statement it may hold.
 
-    statements() is the table as its object keeps it, and store(place, statement) writes one
+    statements() is the table as its object keeps it, and store(place=, statement=) writes one
     statement, or removes it for None. table is the table's place among the page's tables.
     """
     heading = page.heading(label=label, is_set=None, said=lambda: NOTHING_SAID)
@@ -57,17 +82,17 @@ def _line(*, page, place, table, statements, store):
 
     def clear():
         if statement is not None:
-            store(at, None)
+            store(place=at, statement=None)
 
     def changed(part, value):
-        store(at, {**statement, part: value})
+        store(place=at, statement={**statement, part: value})
 
-    cells = [_register_cell(page=page, statement=statement, store=lambda written: store(at, written), clear=clear)]
+    cells = [_register_cell(page=page, statement=statement, store=lambda written: store(place=at, statement=written), clear=clear)]
     if statement is not None:
         operator = statement[StatementPart.OPERATOR]
         cells.append(_choice_cell(
             page=page, title=labels.MSG_STATEMENT_OPERATOR_TITLE, choices=file_format.OPERATORS, current=operator, width=statement_rows.OPERATOR_WIDTH,
-            store=lambda chosen: store(at, conditions.with_operator(statement=statement, operator=chosen)), clear=clear,
+            store=lambda chosen: store(place=at, statement=conditions.with_operator(statement=statement, operator=chosen)), clear=clear,
         ))
         for part in conditions.parts_of(operator):
             if part == StatementPart.COMPARISON:

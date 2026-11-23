@@ -5,8 +5,7 @@
 """The page of a built-in generator's statements about the draws, which say when a clip's pass goes by the generator,
 opened from the Bypass When button on the generator's tab of a clip's or a track's page."""
 
-from llamatron.interface.pages import statements
-from llamatron.interface.pages.statements import statement_lines
+from llamatron.interface.pages.statements import BypassWhenPresenter
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
@@ -14,7 +13,8 @@ from llamatron.user_strings import help as help_text, labels
 
 
 class GeneratorStatementsPage(GeneratorEditor, FieldPage):
-    """One built-in generator's table of statements, which its tab has no room for."""
+    """One built-in generator's table of statements, which its tab has no room for: the Bypass When presenter's form
+    (interface/pages/statements.py)."""
 
     KEYS = keybindings.GeneratorStatementsPage
     HELP = help_text.HELP_GENERATOR_STATEMENTS_PAGE
@@ -27,17 +27,8 @@ class GeneratorStatementsPage(GeneratorEditor, FieldPage):
         super().__init__(holder=holder, name=name, built_in=built_in)
 
     def fields(self):
-        """Return the table's lines with no heading, since the table is all the page holds."""
-        document = self.document()
-        return statement_lines(
-            page=self, table=statements.FIRST_TABLE, statements=self._statements,
-            store=lambda place, statement: document.change_set(self.settings().set_bypass_statement, place=place, statement=statement),
-        )
+        return BypassWhenPresenter(page=self, document=self.document(), holder=self.settings).form()
 
     def shared_sections(self):
         """Return nothing more: the generator's table, which a generator's page adds after its settings, is this page's own."""
         return []
-
-    def _statements(self):
-        settings = self.settings()
-        return settings.get_bypass_when()
