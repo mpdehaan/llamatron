@@ -6,6 +6,7 @@
 
 from llamatron.engine.generators import chords as chords_plugin, timing as timing_plugin
 from llamatron.engine.generators.chords import strings as chords_strings
+from llamatron.interface.forms.nodes import Cells
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
@@ -15,7 +16,6 @@ from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor
 from llamatron.interface.tracker.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.interface.tracker.screens.shared import statements
-from llamatron.interface.tracker.screens.shared.field import Cells
 from llamatron.interface.tracker.screens.shared.generator_statements_page import GeneratorStatementsPage
 from llamatron.model.objects import conditions
 from llamatron.model.schema import limits

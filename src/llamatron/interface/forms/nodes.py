@@ -17,13 +17,22 @@ from typing import Callable
 
 from llamatron.user_strings import labels, legends, marks
 
-# How the tracker draws a field: the setting's label and value on one line, or by the field's own lines(), for the kinds
-# still to move here from interface/tracker/screens/shared/field.py.
+# How the tracker draws a field: the setting's label and value on one line, or by the field's own lines(), for a kind still
+# drawing itself, such as a statement's row (interface/tracker/screens/shared/statements.py).
 SETTING_LINE = 'setting line'
 OWN_LINES = 'own lines'
-# A button, boxed as a page's buttons are, and a section's heading with its open or closed mark.
+# A button, boxed as a page's buttons are, a section's heading with its open or closed mark, a row of cells, a table's row and
+# its first row with the table's caption, and a draw's strip of slots.
 BUTTON = 'button'
 HEADING = 'heading'
+CELLS = 'cells'
+TABLE_ROW = 'table row'
+CAPTIONED_TABLE_ROW = 'captioned table row'
+STRIP = 'strip'
+# What stands between two cells of a row of cells.
+CELL_GAP = '  '
+# Which of the five lines of a strip's grid holds its values, where the cursor is.
+STRIP_VALUE_LINE = 3
 # A button's value, and a heading's with nothing set inside: no text.
 NOTHING = ''
 NOTHING_SET = NOTHING
@@ -46,6 +55,13 @@ def within(*, number, lowest, highest):
         number = min(number, highest)
     return number
 
+
+
+def gauge_shown(*, place, lowest, highest, said=None):
+    """Return a number drawn as a horizontal gauge with the number after it, as the players' gauges are: a block for each place up to the number's,
+    and what is said of the number, such as where it comes from, in place of the bare number."""
+    drawn = marks.MSG_WIZARD_GAUGE_FULL * (place - lowest + 1) + marks.MSG_WIZARD_GAUGE_EMPTY * (highest - place)
+    return marks.MSG_WIZARD_PLAYER_GAUGE_SHOWN.format(gauge=drawn, place=place if said is None else said)
 
 
 @dataclass(slots=True, kw_only=True)
@@ -286,3 +302,79 @@ class Heading(Field):
         if self.said is not None:
             return self.said()
         return marks.MSG_SECTION_SET if self.is_set() else NOTHING_SET
+
+
+@dataclass(slots=True, kw_only=True)
+class Cells(Field):
+    """A row of settings side by side under one label, as a piece of the kit's on or off and its sound: Left and Right move
+    between the cells, and each cell answers Space, Enter and Bksp as the field it is would. A cell is never stepped, since
+    Left and Right move here."""
+
+    DRAWN_AS = CELLS
+
+    cells: list
+    value: Callable = None
+
+    def __post_init__(self):
+        self.value = self.shown
+
+    MAY_LEAVE_A_GAP = False
+
+    def shown(self):
+        """Return every cell's value, in order, as the row reads."""
+        return CELL_GAP.join(str(cell.value()) for cell in self.cells)
+
+    def row_keys(self, page):
+        """Return Left and Right, which move between the cells; a cell is never stepped, since they move here."""
+        return [page.bind(page.KEYS.ALONG_CELLS, action=page.move_along_cells, wants_key=True)]
+
+
+@dataclass(slots=True, kw_only=True)
+class SteppedCells(Cells):
+    """A row of settings side by side under one label whose cells step: Left and Right move between the cells, and [ and ] step
+    the cell under the cursor, which answers Enter and Bksp as the field it is, as a drift's two versions of one value. The page's
+    keys say SLOT_LESS and SLOT_MORE for [ and ]."""
+
+    def row_keys(self, page):
+        """Return Left and Right, which move between the cells, and [ and ], which step the cell under the cursor."""
+        bound = Cells.row_keys(self, page)
+        cell = page.cell_field()
+        if cell is not None and cell.adjust:
+            bound += [page.bind(page.KEYS.SLOT_MORE, action=lambda: cell.adjust(1)), page.bind(page.KEYS.SLOT_LESS, action=lambda: cell.adjust(-1))]
+        return bound
+
+
+@dataclass(slots=True, kw_only=True)
+class TableRow(SteppedCells):
+    """A row of a table of settings: SteppedCells whose every cell takes its column's width, the room of the column's heading or
+    its widest value, so that the table's rows line up and its columns never move."""
+
+    widths: list
+
+    DRAWN_AS = TABLE_ROW
+
+
+@dataclass(slots=True, kw_only=True)
+class CaptionedTableRow(TableRow):
+    """A table's first row, which draws the table's caption above itself: the caption at the labels' place, in bold, and each
+    column's heading over its column."""
+
+    caption: str
+    headings: list
+
+    SELECTED_LINE = 1
+    DRAWN_AS = CAPTIONED_TABLE_ROW
+
+
+@dataclass(slots=True, kw_only=True)
+class Strip(SteppedCells):
+    """A strip of numbered slots, a draw's, drawn after a blank line as a grid boxed in dim lines with a row numbering the slots
+    over a row of their values: Left and Right move between the slots, and [ and ] step the slot under the cursor, which answers
+    Enter and Bksp as the NumberField it is. The grid scrolls to keep the cursor's slot in view. lit is the place of the slot
+    to light while a song plays, the one the draw last took its value from, or None."""
+
+    lit: object = None
+
+    # The strip is drawn after a blank line, and the cursor is on its row of values, the fourth of the grid's five lines.
+    SELECTED_LINE = 1 + STRIP_VALUE_LINE
+    DRAWN_AS = STRIP

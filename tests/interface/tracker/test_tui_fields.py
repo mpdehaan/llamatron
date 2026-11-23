@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The kinds of field a settings page is made of (interface/tracker/screens/shared/field.py): a toggle, a name, a number and a choice.
+"""The kinds of field a settings page is made of (interface/forms/nodes.py, drawn by interface/tracker/renderers/fields.py): a toggle, a name, a number and a choice.
 
 Each kind is tested on its own, with a stand-in for the page, and then on the real pages: every
 number field stops at both of its ends whether it is stepped or typed, and every toggle answers

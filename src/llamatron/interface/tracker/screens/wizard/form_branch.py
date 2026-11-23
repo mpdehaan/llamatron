@@ -5,10 +5,9 @@
 
 from rich.text import Text
 
-from llamatron.interface.forms.nodes import Button, ChoiceField, Field, NumberField, Toggle
+from llamatron.interface.forms.nodes import Button, ChoiceField, Field, gauge_shown, NumberField, Toggle
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.drawing import Style
-from llamatron.interface.tracker.screens.shared.field import gauge_shown
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.interface.tracker.screens.wizard.section_branch import SectionBranch
 from llamatron.user_strings import errors, labels, legends, marks, messages

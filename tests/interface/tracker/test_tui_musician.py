@@ -7,10 +7,10 @@
 from llamatron.engine.generators import musician as musician_plugin
 from llamatron.engine.generators.musician import generator as musician, schema, strings as musician_strings
 from llamatron.engine.generators.musician.model import MusicianSetting
+from llamatron.interface.forms.nodes import gauge_shown
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.shared.field import gauge_shown
 from llamatron.interface.tracker.screens.shared.plugin_editor import PluginEditor
 from llamatron.model.schema.file_format import SectionKind
 from llamatron.user_strings import labels, marks

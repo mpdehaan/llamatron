@@ -7,8 +7,7 @@ them. A kind the generator holds a setting for stays, so that the setting is see
 
 import functools
 
-from llamatron.interface.forms.nodes import Field, Toggle
-from llamatron.interface.tracker.screens.shared.field import CaptionedTableRow, TableRow
+from llamatron.interface.forms.nodes import CaptionedTableRow, Field, TableRow, Toggle
 from llamatron.model.schema import file_format
 from llamatron.user_strings import legends, marks
 
