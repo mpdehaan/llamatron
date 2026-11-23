@@ -20,7 +20,7 @@ wizard will get a page of its own.
 
 The wizard is a row of tabs, Genre, Band, Composition, Form and Apply, over a
 box holding the tab chosen, with `< Back` and `Next >` buttons at its foot, which
-open the tab before and after; on Apply, the Apply button takes Next's place.
+open the tab before and after; the Apply tab has its own Apply button, after its summary.
 Tab goes between the row of tabs and the box, and `PgUp` and `PgDn` choose
 the tab before or after. A tab with parts lists them at the left of the box,
 its own settings first: Up and Down move through the list, `ENTER` or Right

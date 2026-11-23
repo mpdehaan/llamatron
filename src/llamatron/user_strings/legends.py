@@ -73,6 +73,8 @@ class KeyName:
     BRACKETS = '[/]'
     HOME_END = 'Home/End'
     PAGE_UP_DOWN = 'PgUp/PgDn'
+    PAGE_UP = 'PgUp'
+    PAGE_DOWN = 'PgDn'
     TAB_ARROWS = 'Tab/←→'
     ENTER_ESCAPE = 'ENTER/ESC'
     # The keys that type into a search, in a picker or on a list page, and the keys that type a number or a note.
@@ -329,6 +331,9 @@ MSG_PICK_PROGRESSION_WHAT = 'pick progression'
 
 # interface/tracker/screens/wizard/wizard_page.py
 MSG_WIZARD_TO_TREE_WHAT = 'to list'
+MSG_WIZARD_CREATE_WHAT = 'apply'
+MSG_WIZARD_BACK_WHAT = 'back'
+MSG_WIZARD_NEXT_WHAT = 'next'
 MSG_WIZARD_UP_FROM_BUTTONS_WHAT = 'to list'
 MSG_WIZARD_SUGGESTED_FORM_WHAT = 'choose'
 MSG_WIZARD_FORM_QUESTIONS_WHAT = 'answer'

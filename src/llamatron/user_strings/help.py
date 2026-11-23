@@ -337,6 +337,6 @@ Tunes: the tune of each kind of section. ENTER edits its notes in the pattern ed
 A new take, in the legend on a tune, writes that tune again and leaves the rest of the song.
 Form: the sections the song plays, in order, listed in the Form tab. On a section, I inserts a section before it, A adds one at the end, C copies it, Bksp removes it
 and M moves it, and its settings choose its kind, how many bars it lasts and who plays in it.
-Apply: the Apply button under the Apply tab makes the song and shows Arrange. Undo then takes the whole song away again.
+Apply: the Apply button after the summary on the Apply tab makes the song and shows Arrange. Undo then takes the whole song away again.
 L listens to a hook, a tune or a section, and stops it. ESC outside the settings closes the wizard, and asks first.
 """

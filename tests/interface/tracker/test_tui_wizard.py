@@ -130,11 +130,11 @@ class WizardTest(UITest):
         await self.go_to_named_branch(labels_text.MSG_WIZARD_GENRE_BRANCH)
 
     async def create(self):
-        """Press the Apply button, under the Apply tab's box, where ENTER on the tab goes since no field of the tab acts."""
+        """Press the Apply button, after the Apply tab's summary, where ENTER on the tab puts the cursor."""
         await self.go_to_named_branch(labels_text.MSG_WIZARD_CREATE_BRANCH)
         await self.press(keybindings.WizardPage.INTO_BOX)
-        self.assertTrue(self.wizard().on_buttons)
-        await self.press(keybindings.WizardPage.PRESS)
+        self.assertEqual(self.wizard().label_under_cursor(), labels_text.MSG_WIZARD_CREATE_BUTTON)
+        await self.press(Key.ENTER)
 
     async def open_wizard(self):
         """Go back to the main screen, the one page whose W opens the wizard, from wherever the last step left the tracker, and press W."""
@@ -256,22 +256,22 @@ class TestWizardPage(WizardTest):
         self.assertEqual(wizard.tree_place, end - 1)
         await self.press(Key.DOWN)
         self.assertTrue(wizard.on_buttons)
-        self.assertEqual(wizard.buttons()[wizard.button][0], labels_text.MSG_WIZARD_NEXT_BUTTON)
+        self.assertEqual(wizard.buttons()[wizard.button][1], labels_text.MSG_WIZARD_NEXT_BUTTON)
         await self.press(keybindings.WizardPage.UP_FROM_BUTTONS)
         self.assertEqual(wizard.tree_place, end - 1)
 
-    async def test_back_and_next_open_the_tab_before_and_after_and_apply_ends_the_row(self):
+    async def test_back_and_next_open_the_tab_before_and_after_and_the_last_tab_has_back_alone(self):
         await self.choose_genre_and_subgenre()
         wizard = self.wizard()
-        self.assertEqual([label for label, _ in wizard.buttons()], [labels_text.MSG_WIZARD_NEXT_BUTTON])
+        self.assertEqual([label for _key, label, _action in wizard.buttons()], [labels_text.MSG_WIZARD_NEXT_BUTTON])
         tabs = len(wizard.panels.roots())
         await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
         wizard.to_buttons()
         for tab in range(wizard.tab() + 1, tabs):
             await self.press(keybindings.WizardPage.PRESS)
             self.assertEqual(wizard.tab(), tab)
-        self.assertEqual([label for label, _ in wizard.buttons()], [labels_text.MSG_WIZARD_BACK_BUTTON, labels_text.MSG_WIZARD_CREATE_BUTTON])
-        await self.press(Key.LEFT, keybindings.WizardPage.PRESS)
+        self.assertEqual([label for _key, label, _action in wizard.buttons()], [labels_text.MSG_WIZARD_BACK_BUTTON])
+        await self.press(keybindings.WizardPage.PRESS)
         self.assertEqual(wizard.tab(), tabs - 2)
 
     async def test_pgup_and_pgdn_and_the_row_of_tabs_step_the_tabs_and_stop_at_the_ends(self):
@@ -284,6 +284,12 @@ class TestWizardPage(WizardTest):
         self.assertEqual(wizard.branch().name(), labels_text.MSG_WIZARD_CREATE_BRANCH)
         await self.press(*[Key.LEFT] * (len(wizard.panels.roots()) + 1))
         self.assertEqual(wizard.branch().name(), labels_text.MSG_WIZARD_GENRE_BRANCH)
+        # In a panel's fields too, PgUp and PgDn choose the tab, as inside a settings page's tab box, and not a section.
+        await self.go_to_named_branch(labels_text.MSG_WIZARD_BAND_BRANCH)
+        await self.press(keybindings.WizardPage.INTO_FIELDS, Key.PAGE_DOWN)
+        self.assertEqual(wizard.branch().name(), labels_text.MSG_WIZARD_COMPOSITION_BRANCH)
+        await self.press(Key.PAGE_UP)
+        self.assertEqual(wizard.branch().name(), labels_text.MSG_WIZARD_BAND_BRANCH)
 
     async def test_the_part_under_the_cursor_is_drawn_in_the_wizards_colour_and_no_other_is(self):
         colour = themes.text_style(WizardPage.THEME)

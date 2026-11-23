@@ -226,14 +226,14 @@ class WizardPage(FieldPage):
         if self.in_fields:
             return first_key(self.KEYS.TO_TREE)
         if self.on_buttons:
-            return first_key(self.KEYS.TO_TABS)
+            return first_key(self.KEYS.UP_FROM_BUTTONS)
         names = [branch.name() for _, branch in self.rows()]
         there = place_of(screen=self, names=names, target=name)
         tab_there = self.tab_of(there)
         if self.on_tab_row:
             return self._key_along_tabs(tab_there)
         if tab_there != self.tab():
-            return first_key(self.KEYS.TO_TABS)
+            return Key.PAGE_DOWN if tab_there > self.tab() else Key.PAGE_UP
         return moves.toward(here=self.tree_place, there=there)
 
     def _key_along_tabs(self, tab):
@@ -646,7 +646,7 @@ class WizardPage(FieldPage):
     def to_buttons(self):
         self.in_fields = False
         self.on_buttons = True
-        self.button = min(self.button, len(self.buttons()) - 1)
+        self.button = BACK
         if len(self.buttons()) > 1:
             self.button = NEXT
 
@@ -660,16 +660,15 @@ class WizardPage(FieldPage):
             self.into_tab()
 
     def buttons(self):
-        """Return the buttons under the box, each its label and what it does: Back but on the first tab, then Next, or Apply on the last."""
+        """Return the buttons at the foot of the box, each its key's name, its label and what it does: Back, PgUp, but on the first
+        tab, and Next, PgDn, but on the last, Apply, whose own button follows the Apply tab's summary."""
         tab = self.tab()
         last = len(self.tab_starts()) - 1
         result = []
         if tab > FIRST_TAB:
-            result.append((labels.MSG_WIZARD_BACK_BUTTON, functools.partial(self.go_to_tab, tab - 1)))
+            result.append((self.KEYS.BACK.name, labels.MSG_WIZARD_BACK_BUTTON, functools.partial(self.go_to_tab, tab - 1)))
         if tab < last:
-            result.append((labels.MSG_WIZARD_NEXT_BUTTON, functools.partial(self.go_to_tab, tab + 1)))
-        else:
-            result.append((labels.MSG_WIZARD_CREATE_BUTTON, self.create))
+            result.append((self.KEYS.NEXT.name, labels.MSG_WIZARD_NEXT_BUTTON, functools.partial(self.go_to_tab, tab + 1)))
         return result
 
     def along_buttons(self, name):
@@ -677,7 +676,7 @@ class WizardPage(FieldPage):
 
     def press_button(self):
         """Press the button the cursor is on, keeping the cursor on the buttons, on the one it was on where it still shows."""
-        _label, action = self.buttons()[self.button]
+        _key, _label, action = self.buttons()[self.button]
         action()
         self.button = min(self.button, len(self.buttons()) - 1)
 
@@ -712,23 +711,33 @@ class WizardPage(FieldPage):
             return [self.bind(self.KEYS.DROP, action=self.drop), self.bind(self.KEYS.CARRY, action=self.carry)]
         close = self.bind(self.KEYS.CLOSE, action=self.go_back)
         if self.on_tab_row:
-            return [close, self.bind(self.KEYS.ALONG_TABS, action=self.step_tab), self.bind(self.KEYS.INTO_BOX, action=self.into_tab)]
+            return [close, self.bind(self.KEYS.ALONG_TABS, action=self.step_tab), self.bind(self.KEYS.INTO_BOX, action=self.into_tab), *self.tab_keys()]
         if self.on_buttons:
             return [close, self.bind(self.KEYS.ALONG_BUTTONS, action=self.along_buttons, wants_key=True), self.bind(self.KEYS.PRESS, action=self.press_button),
-                    self.bind(self.KEYS.UP_FROM_BUTTONS, action=self.up_from_buttons), self.bind(self.KEYS.TO_TABS, action=self.to_tabs)]
+                    self.bind(self.KEYS.UP_FROM_BUTTONS, action=self.up_from_buttons), self.bind(self.KEYS.TO_TABS, action=self.to_tabs), *self.tab_keys()]
         return self.list_keys(close)
+
+    def tab_keys(self):
+        """Return the keys that open another tab from anywhere in the wizard: PgUp and PgDn, the Back and Next buttons' keys,
+        the tab before or after."""
+        tab = self.tab()
+        return [self.bind(self.KEYS.BACK, action=functools.partial(self.go_to_tab, tab - 1)), self.bind(self.KEYS.NEXT, action=functools.partial(self.go_to_tab, tab + 1))]
 
     def settle_cursor(self):
         """Keep the cursor where something shows: outside its fields, a tab with no list has the cursor on the row of tabs, where
-        ENTER goes into it, never in a list it doesn't draw."""
+        ENTER goes into it, never in a list it doesn't draw; and a tab chosen from its fields keeps the cursor in the new tab's
+        fields only where one of them acts."""
+        if self.in_fields and (self.refusal_of(self.branch()) or not any(field.enter or field.adjust for field in self.shown_fields())):
+            self.in_fields = False
         if self.in_fields or self.on_tab_row or self.on_buttons or self.lists_parts():
             return
         self.on_tab_row = True
 
     def field_zone_keys(self):
         """Return the keys in the fields: a settings page's, but for ESC, which goes back to the list here and not from the page,
-        and Tab, which goes to the row of tabs; Left goes back to the list too, where no field moves along a row with it."""
-        settings_keys = super().keys()[1:]
+        and PgUp and PgDn, which choose a tab here, as inside a settings page's tab box, and not a section; Left goes back to the
+        list too, where no field moves along a row with it."""
+        settings_keys = [item for item in super().keys()[1:] if item.binding is not self.KEYS.SECTION]
         back = [Key.ESCAPE]
         if not any(Key.LEFT in item.keys for item in settings_keys):
             back.append(Key.LEFT)
@@ -737,7 +746,7 @@ class WizardPage(FieldPage):
         if not self.lists_parts():
             what = legends.MSG_TO_TABS_WHAT
         return [self.bind(self.KEYS.TO_TREE, action=self.to_tree, keys=tuple(back), what=what), self.bind(self.KEYS.TO_TABS, action=self.to_tabs), *settings_keys,
-                *branch.field_keys(), *self.listen_keys()]
+                *branch.field_keys(), *self.tab_keys(), *self.listen_keys()]
 
     def list_keys(self, close):
         """Return the keys in a tab's list: moving, going into the fields, to the row of tabs and to the next tab, and a list's keys
@@ -746,7 +755,7 @@ class WizardPage(FieldPage):
         result = [close, self.bind(self.KEYS.TREE, action=self.move_in_tree, wants_key=True)]
         if self.refusal_of(branch) or branch.can_be_edited():
             result.append(self.bind(self.KEYS.INTO_FIELDS, action=self.into_fields))
-        result += [self.bind(self.KEYS.TO_TABS, action=self.to_tabs), self.bind(self.KEYS.NEXT_TAB, action=self.step_tab)]
+        result += [self.bind(self.KEYS.TO_TABS, action=self.to_tabs), *self.tab_keys()]
         if branch.is_listed():
             result.append(self.bind(self.KEYS.INSERT, action=self.insert_in_list))
         if branch.adds():
@@ -1090,7 +1099,7 @@ class WizardPage(FieldPage):
         inner_height = max(height - BOX_EDGE_LINES - BUTTON_LINES, 1)
         inner = tab_box_renderer.inner_width(width)
         tabs = [Tab(label=branch.name(), not_ready=bool(self.refusal_of(branch))) for branch in self.panels.roots()]
-        buttons = [(drawing.NOTHING, label) for label, _action in self.buttons()]
+        buttons = [(key, label) for key, label, _action in self.buttons()]
         row = button_row(buttons=buttons, selected=self.button if self.on_buttons else None)
         lines = [*self.box_lines(width=inner, height=inner_height)[:inner_height], Text(drawing.NOTHING), *row]
         return tab_box_renderer.boxed_tabs(tabs=tabs, chosen=self.tab(), width=width, here=self.on_tab_row, lines=lines)

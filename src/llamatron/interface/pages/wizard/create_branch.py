@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The wizard's Create branch: what will be made, to read, and the button that makes it."""
 
-from llamatron.interface.forms.nodes import Field
+from llamatron.interface.forms.nodes import Button, Field
 from llamatron.interface.forms.text import clock
 from llamatron.interface.pages.wizard.branch import Branch
-from llamatron.user_strings import errors, labels, marks
+from llamatron.user_strings import errors, labels, legends, marks
 from llamatron.wizards.create_song.wizard_choices import genre_title
 
 # An empty line of text, or a value that shows nothing.
@@ -14,7 +14,7 @@ NO_TEXT = ''
 
 
 class CreateBranch(Branch):
-    """A summary of the choices, which the Apply button under the tab box makes into the song once a genre and a subgenre are chosen."""
+    """A summary of the choices and the Apply button after it, which makes the song once a genre and a subgenre are chosen."""
 
     __slots__ = ()
 
@@ -39,4 +39,4 @@ class CreateBranch(Branch):
                 Field(label=labels.MSG_WIZARD_FORM_LABEL, value=lambda: marks.MSG_WIZARD_FORM_SHOWN.format(form=marks.MSG_WIZARD_OWN_FORM if choices.get_song_form().has_own_form() else choices.get_song_form().get_form(), count=len(choices.get_song_form().form_sections()))),
                 Field(label=labels.MSG_WIZARD_LENGTH_LABEL, value=lambda: clock(choices.get_song_form().form_seconds())),
             ]
-        return fields
+        return [*fields, Button(label=labels.MSG_WIZARD_CREATE_BUTTON, enter=page.create, enter_what=legends.MSG_WIZARD_CREATE_WHAT)]

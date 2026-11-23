@@ -280,7 +280,9 @@ class WizardPage(FieldPage):
     INTO_FIELDS = Binding((Key.ENTER, Key.RIGHT), legends.KeyName.ENTER, legends.What.EDIT)
     TO_TREE = Binding((Key.ESCAPE, Key.LEFT), legends.KeyName.ESCAPE, legends.MSG_WIZARD_TO_TREE_WHAT)
     INTO_BOX = Binding((Key.TAB, Key.ENTER, Key.DOWN), legends.KeyName.TAB, legends.MSG_INTO_TAB_WHAT)
-    NEXT_TAB = Binding(Steps(back=(Key.PAGE_UP,), forward=(Key.PAGE_DOWN,)), legends.KeyName.PAGE_UP_DOWN, legends.MSG_NEXT_TAB_WHAT)
+    # The Back and Next buttons' keys, which open the tab before and after from anywhere in the wizard.
+    BACK = Binding(Key.PAGE_UP, legends.KeyName.PAGE_UP, legends.MSG_WIZARD_BACK_WHAT)
+    NEXT = Binding(Key.PAGE_DOWN, legends.KeyName.PAGE_DOWN, legends.MSG_WIZARD_NEXT_WHAT)
     PRESS = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_PRESS_WHAT)
     UP_FROM_BUTTONS = Binding(Key.UP, legends.KeyName.UP, legends.MSG_WIZARD_UP_FROM_BUTTONS_WHAT)
     CLOSE = Binding(Key.ESCAPE, legends.KeyName.ESCAPE, legends.What.CLOSE)
@@ -298,7 +300,7 @@ class WizardPage(FieldPage):
     # On a riff or a section's melody: other notes written for it, after a question. On a riff: its name.
     REGENERATE = Binding(Key.R, legends.KeyName.R, legends.MSG_REGENERATE_WHAT)
     RENAME_RIFF = Binding(Key.N, legends.KeyName.N, legends.What.RENAME)
-    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, INTO_FIELDS, INTO_BOX, NEXT_TAB, PRESS, UP_FROM_BUTTONS, INSERT, ADD, COPY, DELETE, MOVE, LISTEN, STOP_LISTENING, REGENERATE, RENAME_RIFF, *FieldPage.IN_HELP[1:]]
+    IN_HELP = [CLOSE, TO_TREE, DROP, TREE, CARRY, INTO_FIELDS, INTO_BOX, BACK, NEXT, PRESS, UP_FROM_BUTTONS, INSERT, ADD, COPY, DELETE, MOVE, LISTEN, STOP_LISTENING, REGENERATE, RENAME_RIFF, *FieldPage.IN_HELP[1:]]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 
