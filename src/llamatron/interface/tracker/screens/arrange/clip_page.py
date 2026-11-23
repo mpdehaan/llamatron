@@ -407,8 +407,7 @@ class ClipPage(FieldPage):
                   clear_what=legends.MSG_USE_PATTERN_DIRECTION_WHAT),
             NumberField(page=self, label=labels_text.MSG_REPEAT_LABEL, number=repeat, lowest=limits.MIN_REPEAT, highest=limits.MAX_CLIP_REPEAT,
                         set=self.set_repeat),
-            Toggle(label=labels_text.MSG_LOOP_LABEL, on=clip_slot.loops(), set=self.set_loop, shown_on=marks.MSG_LOOP_ON_SHOWN,
-                   shown_off=marks.MSG_LOOP_OFF_SHOWN),
+            Toggle(label=labels_text.MSG_LOOP_LABEL, on=clip_slot.loops(), set=self.set_loop),
         ]
         if repeat > defaults.DEFAULT_REPEAT:
             result.append(Field(label=labels_text.MSG_MORPH_TO_LABEL, value=self._morph_shown, adjust=None, enter=self._pick_morph_target,

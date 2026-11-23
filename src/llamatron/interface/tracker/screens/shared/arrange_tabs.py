@@ -86,8 +86,8 @@ class ClipTabs:
             Field(label=labels_text.MSG_GRAB_TRACK_LABEL, value=self._grab_shown, adjust=None, enter=page.pick_grab_track, enter_what=legends.What.CHOOSE,
                   clear=functools.partial(page.clear, ClipSlotSetting.GRAB_TRACK), clear_what=legends.MSG_NO_GRAB_WHAT),
         ]
-        return Tab(label=labels_text.MSG_BASICS_TAB, columns=[
-            TabColumn(heading=labels_text.MSG_ORDER_HEADING, fields=order), TabColumn(heading=labels_text.MSG_GENERAL_HEADING, fields=general),
+        return Tab(label=labels_text.MSG_SETTINGS_TAB, columns=[
+            TabColumn(heading=labels_text.MSG_ORDER_HEADING, fields=order), TabColumn(heading=labels_text.MSG_PLAYING_HEADING, fields=general),
         ])
 
     def _built_in_tabs(self, kinds):

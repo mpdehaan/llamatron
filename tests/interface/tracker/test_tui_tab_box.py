@@ -49,18 +49,18 @@ class TestTheTabBoxOnTheClipPage(UITest):
     async def test_settings_is_chosen_first_then_the_other_tabs_then_the_generators_in_the_order_they_run(self):
         box = self.page.tab_box()
         names = [tab.label for tab in box.tabs]
-        self.assertEqual(self.chosen(), labels.MSG_BASICS_TAB)
+        self.assertEqual(self.chosen(), labels.MSG_SETTINGS_TAB)
         self.assertEqual(names[1], labels.MSG_VELOCITY_TAB)
         self.assertLess(names.index(labels.MSG_SHAPES_TAB), names.index(chords_strings.MSG_TAB_LABEL))
         self.assertLess(names.index(chords_strings.MSG_TAB_LABEL), names.index(labels.MSG_USER_TAB))
         self.assertEqual(names[-1], labels.MSG_USER_TAB)
-        self.assertIn(labels.MSG_BASICS_TAB, self.text())
+        self.assertIn(labels.MSG_SETTINGS_TAB, self.text())
 
     async def test_tab_goes_to_the_row_of_tabs_whose_keys_choose_a_tab_and_stop_at_the_ends(self):
         await self.press(keybindings.FieldPage.TO_TABS)
         self.assertEqual(self.page.field().label, labels.MSG_TABS_LABEL)
         await self.press(back_key(keybindings.FieldPage.ALONG_TABS))
-        self.assertEqual(self.chosen(), labels.MSG_BASICS_TAB)
+        self.assertEqual(self.chosen(), labels.MSG_SETTINGS_TAB)
         await self.press(Key.RIGHT, forward_key(keybindings.FieldPage.ALONG_TABS))
         self.assertEqual(self.chosen(), labels.MSG_SHAPES_TAB)
         await self.press(*[Key.RIGHT] * len(self.page.tab_box().tabs))

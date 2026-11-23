@@ -10,7 +10,7 @@ A clip sits where a scene's row and a track's column meet on Arrange, so the cli
 
 ## Clip Settings
 
-The clip page shows the clip's Name and its list of Patterns, then a box of tabs holding the rest of its settings, then a Listen button. The tabs are Settings, then Velocity, Shapes and Reset Draws, then the generators in the order the clip runs them: Chords, Arp, Guitarify, Timing and Phrasing, the built-in generators, and last Generators, whose generators run after every built-in, on what the built-ins made.
+The clip page shows the clip's Name and its list of Patterns, then a box of tabs holding the rest of its settings, then a Listen button. The tabs are Settings, then Velocity, Shapes and Reset Draws, then the generators in the order the clip runs them: Chords, Arp, Guitarify, Timing and Phrasing, the built-in generators, and last More Generators, whose generators run after every built-in, on what the built-ins made.
 
 On the row of tabs, `←` and `→`, or `[` and `]`, choose a tab, stopping at the first and the last; `↓` goes into the tab. Inside it, `↑` and `↓` keep to a column: at a column's foot `↓` leaves the box for what is below it, and `↑` from below comes back in at the foot of the first column; `←` and `→` go to the setting beside in the next column, the nearest by line, and change nothing. `[` and `]` change a value, and `ENTER` types or chooses one. `Tab` goes to the row of tabs from anywhere on the page. The tab chosen stays chosen on the next clip page until another is chosen. Where the tabs are wider than the box, `<` and `>` stand at the ends for the tabs hidden that way. The box keeps the height of its tallest tab, so choosing a tab moves nothing below it.
 
@@ -30,9 +30,9 @@ The Settings tab has two columns. Order says how the clip plays its patterns:
 | Loop | Plays the clip until the scene's longest clip that doesn't loop is done. `Space` or `ENTER` toggles it. |
 | Morph to | With Repeat above 1, a second pattern to change into across the repeats. |
 | Morph direction | `left`, `right` or `middle`: where the change sweeps in from. |
-| Advance | What the clip does in real-time playback when it finishes, as described under Advance below. `ENTER` chooses. A clip that sets none shows the set's default, such as `With Scene (from set)`. |
+| Follow action | What the clip does in real-time playback when it finishes, as described under Follow Action below. `ENTER` chooses. A clip that sets none shows the set's default, such as `With Scene (from set)`. |
 
-General holds the rest:
+Playing holds the rest:
 
 | Setting | What it does |
 | --- | --- |
@@ -48,7 +48,7 @@ The other tabs:
 | Shapes | Density and Articulate, like the Scene page's, shaping this clip across its own length. A shape set here wins over the scene's, and a generator the clip runs wins over both. |
 | Reset Draws | A Reset toggle for each draw that holds a value in the song, which sends the draw back to its first slot as the clip starts, on its scene's first play alone. See [Draws](DRAWS.md#reset-draws-on-a-scene-and-a-clip). |
 | Chords, Arp, Guitarify, Timing, Phrasing | The clip's built-in generators, one of each, with the settings of the generator's own page: Enabled first, then its Mode where it has one, then its columns. A built-in is off until Enabled is switched on; its tab shows `●` after its name while on and `○`, dim, while off. A clip's built-in that is on stands in for its track's of the same kind. They run in that order, all before the clip's list of generators. At the foot of each, the button `Conditions (n)`, n being how many statements it holds, opens the generator's Bypass Generators When table, which says when a pass of the clip goes by that generator: see [Conditional Execution](DRAWS.md#conditional-execution). `ENTER` on a part, such as the Arp's Offsets, opens that part's page on the clip's built-in. See [Generators](GENERATORS.md). |
-| Generators | The Generators field: the generators of the set the clip runs, in order, each shown with its kind, such as `Chain: fills, Timing: rolls`. `ENTER` opens the list, where `A` adds any of the set's generators, a chain among them, `M` moves one and `Bksp` takes one out; `Bksp` on the field clears them all. A clip runs its own list first, then its scene's, then its track's. See [Generators](GENERATORS.md) and [Chain](generators/CHAIN.md). |
+| Generators | On the More Generators tab, the Generators field: the generators of the set the clip runs, in order, each shown with its kind, such as `Chain: fills, Timing: rolls`. `ENTER` opens the list, where `A` adds any of the set's generators, a chain among them, `M` moves one and `Bksp` takes one out; `Bksp` on the field clears them all. A clip runs its own list first, then its scene's, then its track's. See [Generators](GENERATORS.md) and [Chain](generators/CHAIN.md). |
 
 ## Pattern Lists
 
@@ -80,9 +80,9 @@ When the other track plays a chord, the step takes the chord's root, the note th
 
 Because grabbing is set on the clip, one pattern can grab from different tracks in different clips. A clip can grab from a track that grabs from another, but never in a circle: the clip page refuses a grab that would close a circle and says which clips to change, pasting a clip drops such a grab, and a set file with a circle stops exporting with a message naming the tracks.
 
-## Advance
+## Follow Action
 
-Advance is Live's follow action: what a clip does in real-time playback when it finishes. No export reads it.
+Follow action is Live's word: what a clip does in real-time playback when it finishes. No export reads it.
 
 - "With Scene" starts the clip directly below when the whole scene is done.
 - "Next" starts the clip directly below as soon as this clip's own repeats end, whatever the rest of the scene is doing.

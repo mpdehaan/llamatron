@@ -289,11 +289,10 @@ class WizardPage(FieldPage):
 
 
 class FilePage(FieldPage):
-    """The File page: N starts a new set and W saves the set under another name."""
+    """The File page: W saves the set under another name, as its Save As button does; its New button has no key."""
 
-    NEW = Binding(Key.N, legends.KeyName.N, legends.MSG_NEW_WHAT)
     SAVE_AS = Binding(Key.W, legends.KeyName.W, legends.MSG_SAVE_AS_WHAT)
-    IN_HELP = [*FieldPage.IN_HELP, NEW, SAVE_AS]
+    IN_HELP = [*FieldPage.IN_HELP, SAVE_AS]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 

@@ -6,14 +6,14 @@ A file is a set of songs, which share its patterns, scales, generators, chains a
 
 ![The File/Global page](screenshots/file.svg)
 
-Press `F` on the main screen to open the File/Global page, which holds the set itself: what the file says about the set, the defaults every song starts from, and the keys that start a new set or save under a new name.
+Press `F` on the main screen to open the File/Global page, which holds the set itself: what the file says about the set, the defaults every song starts from, and the buttons New, Open, Save and Save As.
 
-A box of tabs holds the settings, each tab's in alphabetical order: General, what the file says about the set; Notes & Octaves, the defaults every pattern starts from; and Visualizers. Save and Open follow as buttons.
+A box of tabs holds the settings, each tab's in alphabetical order: General, what the file says about the set; Notes & Octaves, the defaults every pattern starts from; and Visualizers. The buttons New, Open, Save and Save As follow.
 
 | Setting | What it does |
 | --- | --- |
 | Author | Who wrote the set, also only for people reading the file. |
-| Default follow action | What a clip's Advance does in real-time playback, unless the clip sets its own: "With Scene", "Next" or "Off". No export reads it. `ENTER` chooses. |
+| Default follow action | What a clip's Follow action does in real-time playback, unless the clip sets its own: "With Scene", "Next" or "Off". No export reads it. `ENTER` chooses. |
 | Description, Notes | What the set is, in a line, and anything else to say about it; see Description and Notes below. |
 | Protected | Whether the file is protected from being saved over. `Space` or `ENTER` turns it on or off. Every set in `examples/` is protected, so trying things in a demo can't spoil the demo: `Ctrl+S` offers to save a copy under another name instead, and the copy is yours and isn't protected. A set you start yourself isn't protected unless you turn this on. |
 | Title | The set's name, for anyone reading or sharing the file, such as in git. It doesn't change how anything plays, and `Bksp` clears it. |

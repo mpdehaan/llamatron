@@ -263,7 +263,9 @@ class TestArrowsAndTheMark(UITest):
 
     async def test_yes_and_no_are_buttons_that_the_arrows_move_between_and_enter_presses(self):
         self.document.changed()
-        await self.press(keybindings.MainPage.FILE, keybindings.FilePage.NEW)
+        await self.press(keybindings.MainPage.FILE)
+        await self.select_field(labels.MSG_NEW_SET_BUTTON)
+        await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         # The buttons are boxed, the selected one double-lined: its box's side comes just before its key.
         self.assertEqual(self.app.screen.choice, YES_BUTTON)
@@ -274,7 +276,7 @@ class TestArrowsAndTheMark(UITest):
         # No: the set is kept.
         self.assertIsInstance(self.app.screen, FilePage)
         self.assertTrue(self.document.is_dirty())
-        await self.press(keybindings.FilePage.NEW, Key.RIGHT, Key.RIGHT, Key.LEFT, Key.LEFT, Key.ENTER)
+        await self.press(Key.ENTER, Key.RIGHT, Key.RIGHT, Key.LEFT, Key.LEFT, Key.ENTER)
         # Right from No stays on No and Left from Yes stays on Yes, since no cursor goes round: Yes is pressed, and the set is replaced.
         self.assertFalse(self.app.get_document().is_dirty())
 

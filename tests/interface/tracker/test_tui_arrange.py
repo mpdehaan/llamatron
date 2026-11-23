@@ -723,7 +723,7 @@ class TestRhythmAndNotesFromOnAClip(UITest):
         self.document.set_clip_slot_morph_target(index=0, track=LEAD, pattern=OTHER)
         # The Basics tab's Order says how the clip plays its patterns, Follow action last, and General its scale, velocity and grab.
         basics = self.page.tab_box().tabs[0]
-        self.assertEqual([column.heading for column in basics.columns], [labels_text.MSG_ORDER_HEADING, labels_text.MSG_GENERAL_HEADING])
+        self.assertEqual([column.heading for column in basics.columns], [labels_text.MSG_ORDER_HEADING, labels_text.MSG_PLAYING_HEADING])
         order, general = basics.columns
         self.assertEqual(order.fields[-1].label, labels_text.MSG_FOLLOW_ACTION_LABEL)
         self.assertEqual(general.fields[-1].label, GRAB_TRACK)

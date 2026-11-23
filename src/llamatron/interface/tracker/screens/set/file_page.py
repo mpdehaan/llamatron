@@ -12,7 +12,7 @@ from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.set.notes_page import NotesPage
 from llamatron.interface.tracker.screens.set.visualizer_fields import hidden_visualizers_field, visualizer_field
 from llamatron.interface.tracker.screens.shared.everywhere import open_set, save, save_as, unless_unsaved
-from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, Toggle
+from llamatron.interface.tracker.screens.shared.field import Button, ChoiceField, Field, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shared import octave_moved
 from llamatron.interface.tracker.screens.shared.tab_box import Tab, TabBox, TabColumn
@@ -37,35 +37,51 @@ class FilePage(FieldPage):
         return self.document().get_setlist()
 
     def fields(self):
+        # The settings in their order inside each tab, alphabetically, then the buttons.
+        return [
+            TabBox(tabs=[
+                Tab(label=labels.MSG_SETTINGS_TAB, columns=[TabColumn(heading=None, fields=self.settings_fields())]),
+                Tab(label=labels.MSG_NOTES_AND_OCTAVES_TAB, columns=[TabColumn(heading=None, fields=self.notes_and_octaves_fields())]),
+                Tab(label=labels.MSG_VISUALIZERS_TAB, columns=[TabColumn(heading=None, fields=self.visualizer_fields())]),
+            ]),
+            *self.buttons(),
+        ]
+
+    def settings_fields(self):
+        """Return the Settings tab's fields: what the file says about the set, its default follow action and its protection."""
         document = self.document()
         setlist = self.get_setlist()
+        # What a clip sends down in real-time playback when its scene is done, unless the clip says otherwise. No export reads it.
         follow = ChoiceField(
             page=self, label=labels.MSG_DEFAULT_FOLLOW_ACTION_LABEL, choices=file_format.FOLLOW_ACTION_CHOICES, current=setlist.get_default_follow_action(),
             names=[labels.MSG_FOLLOW_ACTION_NAMES[choice] for choice in file_format.FOLLOW_ACTION_CHOICES], shown=labels.MSG_FOLLOW_ACTION_NAMES[setlist.get_default_follow_action()],
             set=lambda advance: document.change_set(document.get_setlist().set_default_follow_action, advance),
         )
-        general = [
+        return [
             self.text_field(label=labels.MSG_AUTHOR_LABEL, current=setlist.get_author, set_text=lambda text: document.change_set(document.get_setlist().set_author, text)),
-            # What a clip sends down in real-time playback when its scene is done, unless the clip says otherwise. No export reads it.
             follow,
             self.text_field(label=labels.MSG_DESCRIPTION_LABEL, current=setlist.get_description, set_text=lambda text: document.change_set(document.get_setlist().set_description, text)),
             Field(label=labels.MSG_NOTES_LABEL, value=self.notes_first_line, adjust=None, enter=self.edit_notes, enter_what=legends.What.EDIT),
             Toggle(label=labels.MSG_PROTECTED_LABEL, on=setlist.is_protected(), set=lambda value: document.change_set(document.get_setlist().set_protected, value)),
             self.text_field(label=labels.MSG_TITLE_LABEL, current=setlist.get_title, set_text=lambda text: document.change_set(document.get_setlist().set_title, text)),
         ]
-        visualizers = [
-            visualizer_field(page=self, current=setlist.get_visualizer(), set_name=lambda name: document.change_set(document.get_setlist().set_visualizer, name), first=marks.MSG_NONE_SHOWN),
+
+    def visualizer_fields(self):
+        """Return the Visualizers tab's fields: the mode Arrange shows first, and the modes it hides."""
+        document = self.document()
+        current = self.get_setlist().get_visualizer()
+        return [
+            visualizer_field(page=self, current=current, set_name=lambda name: document.change_set(document.get_setlist().set_visualizer, name), first=marks.MSG_NONE_SHOWN),
             hidden_visualizers_field(page=self),
         ]
-        # The settings in their order inside each tab, alphabetically.
+
+    def buttons(self):
+        """Return the page's buttons, in order: New, Open, Save and Save As."""
         return [
-            TabBox(tabs=[
-                Tab(label=labels.MSG_FILE_GENERAL_TAB, columns=[TabColumn(heading=None, fields=general)]),
-                Tab(label=labels.MSG_NOTES_AND_OCTAVES_TAB, columns=[TabColumn(heading=None, fields=self.notes_and_octaves_fields())]),
-                Tab(label=labels.MSG_VISUALIZERS_TAB, columns=[TabColumn(heading=None, fields=visualizers)]),
-            ]),
-            self.button(binding=self.KEYS.SAVE, label=labels.PageName.SAVE, action=lambda: save(self)),
+            Button(label=labels.MSG_NEW_SET_BUTTON, enter=self.new, enter_what=legends.MSG_NEW_WHAT),
             self.button(binding=self.KEYS.OPEN_SET, label=labels.PageName.OPEN, action=lambda: open_set(self)),
+            self.button(binding=self.KEYS.SAVE, label=labels.PageName.SAVE, action=lambda: save(self)),
+            self.button(binding=self.KEYS.SAVE_AS, label=labels.MSG_SAVE_AS_BUTTON, action=lambda: save_as(self)),
         ]
 
     def notes_and_octaves_fields(self):
@@ -109,10 +125,7 @@ class FilePage(FieldPage):
         self.show_page(NotesPage(self.holder, editing=True))
 
     def page_keys(self):
-        return [
-            self.bind(self.KEYS.NEW, action=self.new),
-            self.bind(self.KEYS.SAVE_AS, action=lambda: save_as(self)),
-        ]
+        return [self.bind(self.KEYS.SAVE_AS, action=lambda: save_as(self))]
 
     def new(self):
         unless_unsaved(self, then=self.start_new)

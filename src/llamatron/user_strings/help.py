@@ -46,9 +46,9 @@ Up, down, Left and Right select a setting. [ and ] change it, and ENTER types or
 # ClipPage
 HELP_CLIP_PAGE = """
 Name: what the grid and exports call it, else its pattern's name. Patterns: what it plays; A adds, M moves, Bksp removes.
-Tab goes to the tabs; Left and Right choose one. Settings: Repeat, Loop, the orders, Morph to, Advance, Scale, Velocity, Grab.
+Tab goes to the tabs; Left and Right choose one. Settings: Repeat, Loop, the orders, Morph to, Follow action, Scale, Velocity, Grab.
 Chords to Phrasing: its own generators, off until Enabled. Generators: the set's generators it runs, after its own.
-One clip in each scene must not loop, or exporting stops. Advance is for real-time playback only.
+One clip in each scene must not loop, or exporting stops. Follow action is for real-time playback only.
 
 Up, down, Left and Right select. [ and ] change. ENTER chooses. J jumps to the pattern. L plays the clip and stops it.
 """
@@ -66,15 +66,14 @@ Nothing is saved or exported until you ask.
 
 # FilePage
 HELP_FILE_PAGE = """
-The set's own settings, and its file. Up and down select one. [ and ] change it, and ENTER types or chooses.
-Title, Author, Description and Notes: only for people reading or sharing the file. Description is one line saying what the
-set is; Bksp clears the first three. ENTER on Notes opens them for editing, as long as you like; Tab reaches Save and CANCEL. Step size: how long each step of a pattern is, unless the pattern sets its own. Default octaves: what a new note or drum hit gets.
-Octave labels: as Live numbers octaves on screen (middle C is C3) or from 0 (middle C is C5).
-Default follow action: a clip's Advance unless it sets its own.
+The set's own settings, and its file. Tab goes to the tabs; Left and Right choose one.
+Title, Author, Description and Notes are for people reading the file; Bksp clears the first three. ENTER on Notes opens them; Tab reaches Save and CANCEL.
+Step size: each step's length, unless a pattern sets its own. Default octaves: what a new note or drum hit gets. Octave labels: middle C as C3, as Live has it, or as C5.
+Default follow action: a clip's Follow action unless it sets its own.
 Visualizer: Arrange shows it first. Hide Visualizers: not shown.
-Protected: the file is never saved over, like the demos; Ctrl+S offers to save a copy instead.
-N starts a new set, and W saves under a new name. The Save and Open buttons do what Ctrl+S and Ctrl+O do.
-Ctrl+X exports the current song beside the set's file as <set>_<song> files, asking before it replaces a Live set.
+Protected: the file is never saved over, like the demos.
+New starts a new set; Save As (W) saves under a new name.
+Ctrl+X exports the current song beside the set's file as <set>_<song> files.
 """
 
 # SongsPage

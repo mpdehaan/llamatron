@@ -51,7 +51,7 @@ class TestFilePage(UITest):
 
     async def test_save_and_open_buttons_come_after_a_blank_line_and_do_what_their_keys_do(self):
         labels = [field.label for field in self.app.screen.fields()]
-        self.assertEqual(labels[-2:], [labels_text.PageName.SAVE, labels_text.PageName.OPEN])
+        self.assertEqual(labels[-4:], [labels_text.MSG_NEW_SET_BUTTON, labels_text.PageName.OPEN, labels_text.PageName.SAVE, labels_text.MSG_SAVE_AS_BUTTON])
         # The buttons sit in one row under the tab box, with blank lines and the top of their boxes between.
         lines = self.text().splitlines()
         row = next(index for index, line in enumerate(lines) if labels_text.PageName.SAVE in line)
@@ -72,7 +72,7 @@ class TestFilePage(UITest):
     async def test_the_loose_settings_come_alphabetically_and_title_and_author_start_blank(self):
         # The General tab's settings alphabetically, before the Notes & Octaves and Visualizers tabs.
         tabs = self.app.screen.tab_box().tabs
-        self.assertEqual([tab.label for tab in tabs], [labels_text.MSG_FILE_GENERAL_TAB, labels_text.MSG_NOTES_AND_OCTAVES_TAB, labels_text.MSG_VISUALIZERS_TAB])
+        self.assertEqual([tab.label for tab in tabs], [labels_text.MSG_SETTINGS_TAB, labels_text.MSG_NOTES_AND_OCTAVES_TAB, labels_text.MSG_VISUALIZERS_TAB])
         labels = [field.label for field in tabs[0].every_field()]
         self.assertEqual(labels, [AUTHOR, labels_text.MSG_DEFAULT_FOLLOW_ACTION_LABEL, labels_text.MSG_DESCRIPTION_LABEL, labels_text.MSG_NOTES_LABEL, labels_text.MSG_PROTECTED_LABEL, TITLE])
         self.assertEqual(self.document.get_setlist().get_title(), setlist_values.NO_TEXT)
@@ -260,7 +260,8 @@ class TestFilePage(UITest):
 
     async def test_new_asks_if_there_are_unsaved_changes(self):
         self.document.changed()
-        await self.press(keybindings.FilePage.NEW)
+        await self.select_field(labels_text.MSG_NEW_SET_BUTTON)
+        await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(keybindings.ConfirmDialog.YES)
         self.assertEqual(self.app.get_document().get_setlist().get_pattern_names(), [names.MSG_NEW_PATTERN_NAME.format(number=defaults.FIRST_NUMBER)])
@@ -299,7 +300,9 @@ class TestFilePageEdges(UITest):
 
     async def test_new_and_load_ask_first_with_unsaved_changes(self):
         self.document.changed()
-        await self.press(keybindings.MainPage.FILE, keybindings.FilePage.NEW)
+        await self.press(keybindings.MainPage.FILE)
+        await self.select_field(labels_text.MSG_NEW_SET_BUTTON)
+        await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, ConfirmDialog)
         await self.press(Key.ESCAPE, Key.CTRL_O)
         self.assertIsInstance(self.app.screen, ConfirmDialog)

@@ -91,7 +91,7 @@ MSG_INSTRUMENT_LABEL = 'Instrument'
 # The clip page's buttons for real-time playback.
 MSG_LISTEN_LABEL = 'Listen'
 # What a clip does in real-time playback when its scene is done, which no export reads, and the set's default for it.
-MSG_FOLLOW_ACTION_LABEL = 'Advance'
+MSG_FOLLOW_ACTION_LABEL = 'Follow action'
 MSG_DEFAULT_FOLLOW_ACTION_LABEL = 'Default follow action'
 MSG_FOLLOW_ACTION_NAMES = {FollowAction.WITH_SCENE: 'With Scene', FollowAction.NEXT: 'Next', FollowAction.OFF: 'Off'}
 MSG_LAUNCH_TOGETHER_LABEL = 'Launch together'
@@ -264,8 +264,9 @@ MSG_OCTAVE_LABELS_LABEL = 'Octave labels'
 # interface/tracker/screens/set/visualizer_fields.py: the visualizer mode Arrange shows first, what none of a song's own is called, and the section that hides modes.
 MSG_VISUALIZER_LABEL = 'Visualizer'
 MSG_SETS_VISUALIZER_CHOICE = "(set's)"
-# The File/Global page's tabs.
-MSG_FILE_GENERAL_TAB = 'General'
+# The File/Global page's tabs, after its first, MSG_SETTINGS_TAB, and its buttons beside Save and Open.
+MSG_NEW_SET_BUTTON = 'New'
+MSG_SAVE_AS_BUTTON = 'Save As'
 MSG_NOTES_AND_OCTAVES_TAB = 'Notes & Octaves'
 MSG_VISUALIZERS_TAB = 'Visualizers'
 MSG_HIDE_VISUALIZERS_LABEL = 'Hide Visualizers'
@@ -368,9 +369,9 @@ MSG_SOURCE_TRACK_LABEL = 'Source track'
 MSG_ROOT_IN_BASS_LABEL = 'Keep the root in the bass'
 # interface/tracker/screens/shared/tab_box.py: the row of tabs, as the cursor finds it.
 MSG_TABS_LABEL = 'Tabs'
-# interface/tracker/screens/arrange/clip_page.py and the track's and scene's pages: their tabs, and the Basics tab's columns.
-MSG_BASICS_TAB = 'Settings'
-MSG_USER_TAB = 'Generators'
+# interface/tracker/screens/arrange/clip_page.py, the track's and scene's pages and the File/Global page: their tabs, and the Settings tab's columns.
+MSG_SETTINGS_TAB = 'Settings'
+MSG_USER_TAB = 'More Generators'
 MSG_SHAPES_TAB = 'Shapes'
 MSG_VELOCITY_TAB = 'Velocity'
 MSG_BYPASS_WHEN_TAB = 'Bypass When'
@@ -384,9 +385,9 @@ MSG_CONDITIONS_BUTTON = 'Conditions ({count})'
 MSG_NO_DRAWS_CONFIGURED = 'No draws configured'
 MSG_CC_LANES_TAB = 'MIDI CCs'
 MSG_TEMPO_RAMPS_TAB = 'Tempo Ramps'
-MSG_GENERAL_HEADING = 'General'
+MSG_ROUTING_HEADING = 'Routing'
 # interface/tracker/screens/shared/built_in_tab.py: what the crumbs call a page opened on a part of a built-in generator.
-MSG_BUILT_IN_WORD = 'built in'
+MSG_BUILT_IN_WORD = 'built-in'
 # interface/tracker/screens/shared/plugin_editor.py: every generator's switch, first after its name.
 MSG_ENABLED_LABEL = 'Enabled'
 # interface/tracker/screens/shared/restart_field.py: when a generator starts over, as its editor names the choices.

@@ -242,7 +242,7 @@ class ScenePage(FieldPage):
                 lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=self.set_tempo, clear=self.clear_tempo, clear_what=legends.MSG_USE_SONG_TEMPO_WHAT,
             ),
         ]
-        return Tab(label=labels.MSG_BASICS_TAB, columns=[TabColumn(heading=labels.MSG_PLAYING_HEADING, fields=playing)])
+        return Tab(label=labels.MSG_SETTINGS_TAB, columns=[TabColumn(heading=labels.MSG_PLAYING_HEADING, fields=playing)])
 
     def _name_shown(self):
         return self.scene().get_name() or drawing.NOTHING
