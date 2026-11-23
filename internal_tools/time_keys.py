@@ -59,8 +59,8 @@ TO_BASS_ROWS = [*TO_BASS_PATTERN, keybindings.PatternEditor.TO_EDITOR]
 # The first clip's page, with the cursor on the first field of its Settings tab: from Name, past the patterns and their + (New)
 # row and the row of tabs.
 TO_CLIP_SETTINGS = [keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER, Key.TAB, Key.DOWN]
-# Velocity is the fifth row under Degree: Octave, the Basics heading, #/b, Chord and then Velocity.
-ROWS_DOWN_TO_VELOCITY = 5
+# Velocity is the fourth row under Degree: Octave, the Basics heading, #/b and then Velocity.
+ROWS_DOWN_TO_VELOCITY = 4
 
 
 @dataclass(slots=True, kw_only=True)
