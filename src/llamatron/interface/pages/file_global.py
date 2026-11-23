@@ -53,13 +53,14 @@ class FileGlobalPresenter:
             names=[labels.MSG_FOLLOW_ACTION_NAMES[choice] for choice in file_format.FOLLOW_ACTION_CHOICES], shown=labels.MSG_FOLLOW_ACTION_NAMES[setlist.get_default_follow_action()],
             set=lambda advance: document.change_set(document.get_setlist().set_default_follow_action, advance),
         )
+        # What describes the set, in the order a reader meets it, then how the set behaves.
         return [
+            TextField(page=self._page, label=labels.MSG_TITLE_LABEL, current=setlist.get_title, set_text=lambda text: document.change_set(document.get_setlist().set_title, text)),
             TextField(page=self._page, label=labels.MSG_AUTHOR_LABEL, current=setlist.get_author, set_text=lambda text: document.change_set(document.get_setlist().set_author, text)),
-            follow,
             TextField(page=self._page, label=labels.MSG_DESCRIPTION_LABEL, current=setlist.get_description, set_text=lambda text: document.change_set(document.get_setlist().set_description, text)),
             Field(label=labels.MSG_NOTES_LABEL, value=self.notes_first_line, adjust=None, enter=self._edit_notes, enter_what=legends.What.EDIT),
+            follow,
             Toggle(label=labels.MSG_PROTECTED_LABEL, on=setlist.is_protected(), set=lambda value: document.change_set(document.get_setlist().set_protected, value)),
-            TextField(page=self._page, label=labels.MSG_TITLE_LABEL, current=setlist.get_title, set_text=lambda text: document.change_set(document.get_setlist().set_title, text)),
         ]
 
     def visualizer_fields(self):

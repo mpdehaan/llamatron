@@ -69,12 +69,12 @@ class TestFilePage(UITest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, OpenPage)
 
-    async def test_the_loose_settings_come_alphabetically_and_title_and_author_start_blank(self):
-        # The General tab's settings alphabetically, before the Notes & Octaves and Visualizers tabs.
+    async def test_the_settings_tab_describes_the_set_first_and_title_and_author_start_blank(self):
+        # The Settings tab's settings, what describes the set first, before the Notes & Octaves and Visualizers tabs.
         tabs = self.app.screen.tab_box().tabs
         self.assertEqual([tab.label for tab in tabs], [labels_text.MSG_SETTINGS_TAB, labels_text.MSG_NOTES_AND_OCTAVES_TAB, labels_text.MSG_VISUALIZERS_TAB])
         labels = [field.label for field in tabs[0].every_field()]
-        self.assertEqual(labels, [AUTHOR, labels_text.MSG_DEFAULT_FOLLOW_ACTION_LABEL, labels_text.MSG_DESCRIPTION_LABEL, labels_text.MSG_NOTES_LABEL, labels_text.MSG_PROTECTED_LABEL, TITLE])
+        self.assertEqual(labels, [TITLE, AUTHOR, labels_text.MSG_DESCRIPTION_LABEL, labels_text.MSG_NOTES_LABEL, labels_text.MSG_DEFAULT_FOLLOW_ACTION_LABEL, labels_text.MSG_PROTECTED_LABEL])
         self.assertEqual(self.document.get_setlist().get_title(), setlist_values.NO_TEXT)
         await self.select_field(TITLE)
         await self.press(Key.ENTER)
