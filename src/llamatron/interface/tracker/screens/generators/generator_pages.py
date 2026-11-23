@@ -5,11 +5,11 @@
 
 from typing import NamedTuple
 
+from llamatron.interface.pages import generator_kinds
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.screens.shared.plugin_editor import plugin_editor_of
-from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import Section
-from llamatron.user_strings import labels, messages
+from llamatron.user_strings import messages
 
 
 class GeneratorListing(NamedTuple):
@@ -21,32 +21,19 @@ class GeneratorListing(NamedTuple):
     EDITOR: type
 
 
-def _in_shown_order(listings):
-    """Return the kinds of generator as they are offered: by name, capitals ignored."""
-    return sorted(listings, key=lambda listing: listing.label.casefold())
-
-
-def _listing_of(plugin):
-    """Return how the tracker lists a generator plugin: its name, its section, its own label, and its editor, the page drawn
-    from its view."""
-    editor = plugin_editor_of(plugin.section)
-    return GeneratorListing(kind=plugin.name, section=plugin.section, label=plugin.strings.MSG_LABEL, EDITOR=editor)
-
-
-def _plugin_listings():
-    """Return how the tracker lists every generator plugin found."""
-    return [_listing_of(plugin) for plugin in generator_plugins.plugins().values()]
+def _listing_of(listed):
+    """Return how the tracker lists a kind of generator: its kind, its section and its label, and its editor, a plugin's page
+    drawn from its view, or none for a chain, whose editor is the chain editor (interface/tracker/screens/editors.py)."""
+    editor = None
+    if listed.section != Section.CHAINS:
+        editor = plugin_editor_of(listed.section)
+    return GeneratorListing(kind=listed.kind, section=listed.section, label=listed.label, EDITOR=editor)
 
 
 # Every kind of generator, in the order the Generators page offers them when adding one, from the plugins found.
-GENERATOR_PAGES = {listing.section: listing for listing in _in_shown_order(_plugin_listings())}
-
-
-# A chain, which a clip, a scene and a track list beside the generators and the Generators page lists as one more kind; its
-# editor is the chain editor (interface/tracker/screens/editors.py), and a chain's own steps are never chains.
-CHAIN_LISTING = GeneratorListing(kind=file_format.CHAIN_KIND, section=Section.CHAINS, label=labels.MSG_CHAIN_LABEL, EDITOR=None)
+GENERATOR_PAGES = {section: _listing_of(listed) for section, listed in generator_kinds.GENERATOR_KINDS.items()}
 # Every kind the Generators page lists and offers to make, the chain among them, in the order it offers them.
-LISTED_PAGES = {listing.section: listing for listing in _in_shown_order((CHAIN_LISTING, *GENERATOR_PAGES.values()))}
+LISTED_PAGES = {section: _listing_of(listed) for section, listed in generator_kinds.LISTED_KINDS.items()}
 
 
 def generator_type_dialog(*, listings=GENERATOR_PAGES):
