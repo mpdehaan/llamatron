@@ -16,7 +16,7 @@ from typing import NamedTuple
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Accidental, NamedProgression, Quality
 from llamatron.model.values.scale import ScaleType
-from llamatron.music_theory.fundamentals import intervals
+from llamatron.music_theory.fundamentals import chord_shapes, intervals
 from llamatron.user_strings import marks
 
 # The half steps without a scale: the major scale's, as a song with no scale places degrees.
@@ -24,7 +24,7 @@ SHAPE_WITHOUT_A_SCALE = ScaleType.MAJOR.value
 
 
 # Each triad's third and fifth above its root, and the quality they make.
-QUALITIES = {(4, 7): Quality.MAJOR, (3, 7): Quality.MINOR, (3, 6): Quality.DIMINISHED, (4, 8): Quality.AUGMENTED}
+QUALITIES = {chord_shapes.MAJOR: Quality.MAJOR, chord_shapes.MINOR: Quality.MINOR, chord_shapes.DIMINISHED: Quality.DIMINISHED, chord_shapes.AUGMENTED: Quality.AUGMENTED}
 # A chord the scale can't build as a triad, like one of a pentatonic's, reads as major.
 OTHER_QUALITY = Quality.MAJOR
 UPPER_CASE_QUALITIES = (Quality.MAJOR, Quality.AUGMENTED)

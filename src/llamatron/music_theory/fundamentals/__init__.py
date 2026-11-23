@@ -5,4 +5,5 @@
 
 - intervals: the distances between pitches, counted in half steps, the octave first.
 - scale_shapes: each scale as one octave of half steps above its root.
+- chord_shapes: each chord as its notes above the root, in half steps.
 """

@@ -28,6 +28,7 @@ from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.named_scale import scale_type_called
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import ChordSymbol, PatternSetting, Row, SceneSetting, VelocitySetting
+from llamatron.music_theory.fundamentals import chord_shapes
 from llamatron.user_strings import errors, labels, song_wizard as wizard_text
 from llamatron.wizards.create_song import band, breaks, characters, drum_solo, interplay, joins, loudness, melody, notation, riffs as riffs_values, shaping, song_plan, wizard_names
 from llamatron.wizards.create_song.characters import character_of, held_to, label_of, level_of
@@ -158,7 +159,7 @@ HOME_DEGREE = 1
 NOTES_OF_A_SCALE_WITH_TRIADS = 7
 THIRD_PLACE = 2
 FIFTH_PLACE = 4
-HOME_CHORDS = {(4, 7): ChordSymbol.MAJOR, (3, 7): ChordSymbol.MINOR, (3, 6): ChordSymbol.DIMINISHED, (4, 8): ChordSymbol.AUGMENTED}
+HOME_CHORDS = {chord_shapes.MAJOR: ChordSymbol.MAJOR, chord_shapes.MINOR: ChordSymbol.MINOR, chord_shapes.DIMINISHED: ChordSymbol.DIMINISHED, chord_shapes.AUGMENTED: ChordSymbol.AUGMENTED}
 FOLLOWS_THE_CHORDS = {chords_plugin.NAME: wizard_text.MSG_FOLLOW_CHORDS_NAME}
 # How the tune is delivered, where a song says: the settings of the one Phrasing its tune's clips then run.
 TUNE_PHRASING = 'tune_phrasing'

@@ -5,6 +5,7 @@
 from enum import Enum
 
 from llamatron.model.values.note import Note
+from llamatron.music_theory.fundamentals import chord_shapes
 from llamatron.user_strings import errors, reprs
 
 # A note with no length yet sorts as if it had none, after the ones that have one.
@@ -12,48 +13,43 @@ NO_LENGTH = 0
 
 
 class ChordType(Enum):
-    """Each value is the chord's notes as half steps above the root."""
+    """Each chord llamatron names; each value is the chord's shape, its notes above the root as half steps
+    (music_theory/fundamentals/chord_shapes.py), in the order and the groups of the shapes."""
 
-    # Two notes
-    POWER = (7,)
+    POWER = chord_shapes.POWER
 
-    # Triads
-    MAJOR = (4, 7)
-    MINOR = (3, 7)
-    DIMINISHED = (3, 6)
-    AUGMENTED = (4, 8)
-    SUS2 = (2, 7)
-    SUS4 = (5, 7)
+    MAJOR = chord_shapes.MAJOR
+    MINOR = chord_shapes.MINOR
+    DIMINISHED = chord_shapes.DIMINISHED
+    AUGMENTED = chord_shapes.AUGMENTED
+    SUS2 = chord_shapes.SUS2
+    SUS4 = chord_shapes.SUS4
 
-    # Sixths
-    MAJOR6 = (4, 7, 9)
-    MINOR6 = (3, 7, 9)
+    MAJOR6 = chord_shapes.MAJOR6
+    MINOR6 = chord_shapes.MINOR6
 
-    # Sevenths
-    DOMINANT7 = (4, 7, 10)
-    MAJOR7 = (4, 7, 11)
-    MINOR7 = (3, 7, 10)
-    MINOR_MAJOR7 = (3, 7, 11)
-    DIMINISHED7 = (3, 6, 9)
-    HALF_DIMINISHED7 = (3, 6, 10)
-    AUGMENTED7 = (4, 8, 10)
-    AUGMENTED_MAJOR7 = (4, 8, 11)
-    DOMINANT7_SUS4 = (5, 7, 10)
+    DOMINANT7 = chord_shapes.DOMINANT7
+    MAJOR7 = chord_shapes.MAJOR7
+    MINOR7 = chord_shapes.MINOR7
+    MINOR_MAJOR7 = chord_shapes.MINOR_MAJOR7
+    DIMINISHED7 = chord_shapes.DIMINISHED7
+    HALF_DIMINISHED7 = chord_shapes.HALF_DIMINISHED7
+    AUGMENTED7 = chord_shapes.AUGMENTED7
+    AUGMENTED_MAJOR7 = chord_shapes.AUGMENTED_MAJOR7
+    DOMINANT7_SUS4 = chord_shapes.DOMINANT7_SUS4
 
-    # Added notes
-    ADD9 = (4, 7, 14)
-    MINOR_ADD9 = (3, 7, 14)
+    ADD9 = chord_shapes.ADD9
+    MINOR_ADD9 = chord_shapes.MINOR_ADD9
 
-    # Extended chords
-    DOMINANT9 = (4, 7, 10, 14)
-    MAJOR9 = (4, 7, 11, 14)
-    MINOR9 = (3, 7, 10, 14)
-    DOMINANT11 = (4, 7, 10, 14, 17)
-    MAJOR11 = (4, 7, 11, 14, 17)
-    MINOR11 = (3, 7, 10, 14, 17)
-    DOMINANT13 = (4, 7, 10, 14, 17, 21)
-    MAJOR13 = (4, 7, 11, 14, 17, 21)
-    MINOR13 = (3, 7, 10, 14, 17, 21)
+    DOMINANT9 = chord_shapes.DOMINANT9
+    MAJOR9 = chord_shapes.MAJOR9
+    MINOR9 = chord_shapes.MINOR9
+    DOMINANT11 = chord_shapes.DOMINANT11
+    MAJOR11 = chord_shapes.MAJOR11
+    MINOR11 = chord_shapes.MINOR11
+    DOMINANT13 = chord_shapes.DOMINANT13
+    MAJOR13 = chord_shapes.MAJOR13
+    MINOR13 = chord_shapes.MINOR13
 
 
 class Chord:
