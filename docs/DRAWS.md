@@ -27,7 +27,7 @@ one moment take two values, in the order of the tracks, and a draw carries on fr
 
 ## The Draws Page
 
-Press `D` on the main screen to open the Draws page. Each draw is a section, closed until `Space` or `ENTER` opens it, with these
+Press `D` on the main screen to open the Draws page. Each draw is a section, a blank line apart, closed until `Space` or `ENTER` opens it, with these
 settings and, after them, its strip:
 
 | Setting | Default | What it does |
@@ -45,7 +45,10 @@ the slot each draw last took its value from is lit in violet, and a closed draw'
 
 ## Use Draws
 
-In the pattern editor, the section Use Draws, after Use Registers, has three rows for each draw:
+In the pattern editor, the section Use Draws, after Use Registers, has three rows for each draw that holds a value in the current
+song: every draw starts empty, so a song using no draws has no Use Draws section at all, and the section and a draw's rows appear
+as soon as a value is put in the draw's strip on the Draws page. Marks on the rows of a draw emptied again stay in the pattern and
+come back with the rows. The rows of each draw shown are:
 
 | Row | What a step does |
 | --- | --- |

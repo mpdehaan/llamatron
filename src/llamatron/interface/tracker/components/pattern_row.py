@@ -32,6 +32,10 @@ class PatternRow(BindsKeys):
     def label(self):
         return labels_text.MSG_ROW_LABELS[self.name]
 
+    def drawn_key(self):
+        """Return what tells this row's drawn lines from every other row's, which the rows view keeps them under: its name."""
+        return self.name
+
     def labels(self):
         """Return the label of each line the row takes, top to bottom, which is one line unless a subclass draws more."""
         return [self.label()]

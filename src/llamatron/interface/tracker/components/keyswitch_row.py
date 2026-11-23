@@ -69,6 +69,10 @@ class KeyswitchSlotRow(ToggleRow):
         super().__init__(editor=editor, name=Row.KEYSWITCH)
         self.slot = slot
 
+    def drawn_key(self):
+        """Return the row's name and its slot, since every slot's row has the Keyswitch row's name but draws its own lines."""
+        return (self.name, self.slot)
+
     def label(self):
         return slot_name(keyswitches=keyswitches_of(self.editor.keyswitch_instrument()[0]), slot=self.slot)
 

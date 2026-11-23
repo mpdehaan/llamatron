@@ -55,7 +55,9 @@ C_MAJOR_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
 # The step of tune that holds nothing.
 EMPTY_STEP = 2
 # The rows open when the editor opens: the pinned rows, then each section's heading with its rows where the section starts open.
-ROWS_AT_START = [*pattern_rows.PINNED_ROWS, *[name for section in pattern_rows.SECTIONS for name in (section, *(pattern_rows.SECTIONS[section] if section in keys.OPEN_AT_START else []))]]
+# Every section but Use Draws, which a song whose draws are all empty, as a new song's are, leaves out.
+SECTIONS_AT_START = [section for section in pattern_rows.SECTIONS if section != RowSection.DRAW_APPLY]
+ROWS_AT_START = [*pattern_rows.PINNED_ROWS, *[name for section in SECTIONS_AT_START for name in (section, *(pattern_rows.SECTIONS[section] if section in keys.OPEN_AT_START else []))]]
 SIXTEENTH = '1/16'
 
 

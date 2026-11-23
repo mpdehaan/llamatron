@@ -9,7 +9,7 @@ from llamatron.interface.tracker.components import pattern_rows
 from llamatron.interface.tracker.drawing import Box, fit
 from llamatron.interface.tracker.keys import Key, RowSection
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import RegisterName, RegisterUse, Row
+from llamatron.model.schema.file_format import DrawName, RegisterName, RegisterUse, Row
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.user_strings import labels as labels_text, legends, marks
@@ -26,6 +26,8 @@ LEAD = 'lead'
 MOD_WHEEL = 1
 BRIGHTNESS = 74
 SECOND_TRACK = 'second'
+# A value put in a draw's first slot, which switches the draw on.
+DRAWN_VALUE = 3
 # The step of tune that holds nothing.
 EMPTY_STEP = 2
 
@@ -100,7 +102,8 @@ class TestSections(UITest):
         self.assertEqual(self.app.open_sections, set(keys.OPEN_AT_START))
         text = self.text()
         names = [row.name for row in self.editor.rows_view.reachable()]
-        for section, rows in pattern_rows.SECTIONS.items():
+        for section in self.editor.rows_view.shown_sections():
+            rows = pattern_rows.SECTIONS[section]
             self.assertIn(section, names)
             for row in rows:
                 if section in keys.OPEN_AT_START:
@@ -111,22 +114,37 @@ class TestSections(UITest):
         self.assertIn(self.heading_shown(RowSection.BASICS), text)
 
     async def test_page_down_goes_from_heading_to_heading_and_stops_at_the_last_and_page_up_goes_back_and_stops_at_the_first(self):
-        for section in pattern_rows.SECTIONS:
+        sections = self.editor.rows_view.shown_sections()
+        for section in sections:
             await self.press(Key.PAGE_DOWN)
             self.assertEqual(self.editor.row_name(), section)
         await self.press(Key.PAGE_DOWN)
-        self.assertEqual(self.editor.row_name(), list(pattern_rows.SECTIONS)[-1])
-        for section in reversed(list(pattern_rows.SECTIONS)[:-1]):
+        self.assertEqual(self.editor.row_name(), sections[-1])
+        for section in reversed(sections[:-1]):
             await self.press(Key.PAGE_UP)
             self.assertEqual(self.editor.row_name(), section)
         await self.press(Key.PAGE_UP)
-        self.assertEqual(self.editor.row_name(), list(pattern_rows.SECTIONS)[0])
+        self.assertEqual(self.editor.row_name(), sections[0])
         # From the Degree row, above every heading, PgUp stays put and PgDn reaches the first heading.
         await self.press(Key.UP, Key.UP, Key.PAGE_UP)
         self.assertEqual(self.editor.row_name(), Row.DEGREE)
         await self.press(Key.PAGE_DOWN)
-        self.assertEqual(self.editor.row_name(), list(pattern_rows.SECTIONS)[0])
+        self.assertEqual(self.editor.row_name(), sections[0])
         self.assertFalse(self.editor.on_roll())
+
+    async def test_use_draws_shows_only_the_rows_of_the_draws_with_a_value_and_is_left_out_while_every_draw_is_empty(self):
+        rows_view = self.editor.rows_view
+        self.assertNotIn(RowSection.DRAW_APPLY, rows_view.shown_sections())
+        song = self.document.song()
+        for name in (DrawName.CD, DrawName.AD):
+            self.document.change_set(song.set_draw_slot, name=name, place=0, value=DRAWN_VALUE)
+        self.assertIn(RowSection.DRAW_APPLY, rows_view.shown_sections())
+        by_draw = (file_format.DRAW_NOTE_ROWS, file_format.DRAW_VELOCITY_ROWS, file_format.DRAW_RESET_ROWS)
+        self.assertEqual(rows_view.section_rows(RowSection.DRAW_APPLY), [rows[name] for rows in by_draw for name in (DrawName.AD, DrawName.CD)])
+        # A draw emptied again takes its rows away, and the last one the section.
+        for name in (DrawName.CD, DrawName.AD):
+            self.document.change_set(song.set_draw_slot, name=name, place=0, value=None)
+        self.assertNotIn(RowSection.DRAW_APPLY, rows_view.shown_sections())
 
     async def test_space_and_enter_open_and_close_a_section_and_the_cursor_stays_on_its_heading(self):
         await open_section(test=self, section=RowSection.ADVANCED)
@@ -334,6 +352,8 @@ class TestSectionsOnAUsualConsole(UITest):
         await self.press(keybindings.MainPage.PATTERNS, Key.ENTER)
         self.assert_fits()
         await self.press(keybindings.PatternEditor.TO_EDITOR)
+        # A draw with a value, so that the Use Draws section is there too.
+        self.document.change_set(self.document.song().set_draw_slot, name=DrawName.AD, place=0, value=DRAWN_VALUE)
         for section in pattern_rows.SECTIONS:
             await open_section(test=self, section=section)
             self.assert_fits()

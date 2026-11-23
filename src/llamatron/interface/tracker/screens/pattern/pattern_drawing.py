@@ -141,7 +141,7 @@ class PatternDrawing(GridDrawing):
             return self.drawn_row_lines(row=row, first=first, last=last)
         editor = self._editor
         document = editor.document()
-        key = (PatternDrawing.row_lines.__name__, editor.item, row.name, first, last, self.label_width(), self.rows().gauge_rows)
+        key = (PatternDrawing.row_lines.__name__, editor.item, row.drawn_key(), first, last, self.label_width(), self.rows().gauge_rows)
         return document.remembered(key=key, on=(document,), compute=lambda: self.drawn_row_lines(row=row, first=first, last=last))
 
     def drawn_row_lines(self, *, row, first, last):

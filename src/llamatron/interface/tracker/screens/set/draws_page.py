@@ -17,6 +17,8 @@ class DrawsPage(FieldPage):
     THEME = themes.DRAWS
 
     KEYS = keybindings.DrawsPage
+    # A blank line between one draw's section and the next.
+    HEADINGS_APART = True
 
     crumbs = (labels.Crumb.DRAWS,)
     HELP = help_text.HELP_DRAWS_PAGE

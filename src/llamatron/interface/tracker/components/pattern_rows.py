@@ -131,9 +131,20 @@ class PatternRows(BindsKeys):
         if section == RowSection.KEYSWITCH:
             return [] if self.editor.is_drum() and not row_descriptions.ROW_DESCRIPTIONS[Row.KEYSWITCH].is_in_drum_patterns() else [slot_row_name(slot) for slot in self.keyswitch_slots()[0]]
         names = SECTIONS[section]
+        if section == RowSection.DRAW_APPLY:
+            names = self.rows_of_draws_with_values()
         if self.editor.is_drum():
             names = [name for name in names if row_descriptions.ROW_DESCRIPTIONS[name].is_in_drum_patterns()]
         return names
+
+    def rows_of_draws_with_values(self):
+        """Return the Use Draws rows of the current song's draws that hold a value, the Note+= rows, then Vel+= and Reset: none,
+        and so no Use Draws section, while every draw is empty, as a new song's are."""
+        draws = self.editor.document().song().draws_with_values()
+        rows = []
+        for by_draw in (file_format.DRAW_NOTE_ROWS, file_format.DRAW_VELOCITY_ROWS, file_format.DRAW_RESET_ROWS):
+            rows += [by_draw[name] for name in draws]
+        return rows
 
     def shown_sections(self):
         """Return the sections that have rows in this pattern: a drum pattern has no Chord section, since none of its rows mean anything there."""

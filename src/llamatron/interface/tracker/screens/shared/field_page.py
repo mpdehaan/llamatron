@@ -29,6 +29,8 @@ class FieldPage(Page):
     """Settings in a column, where the keys depend on the setting under the cursor."""
 
     KEYS = keybindings.FieldPage
+    # Whether a blank line comes before every section's heading, as on the Draws page, rather than before the first alone.
+    HEADINGS_APART = False
 
     def __init__(self, holder):
         super().__init__(holder)
@@ -405,7 +407,7 @@ class FieldPage(Page):
                     selected = len(lines) + box_selected
                 lines += [*box, Text(drawing.NOTHING)]
                 continue
-            if isinstance(field, Heading) and not seen_heading:
+            if isinstance(field, Heading) and (not seen_heading or self.HEADINGS_APART):
                 seen_heading = True
                 if place:
                     lines.append(Text(drawing.NOTHING))

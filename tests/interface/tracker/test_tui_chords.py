@@ -353,6 +353,9 @@ class TestPatternEditorChords(UITest):
 
     async def test_no_keyboard_where_the_patterns_uses_play_it_under_more_than_one_scale(self):
         with mock.patch.object(type(self.document), SCALES_OF_PATTERN, return_value=[setlist.DEFAULT_SCALE, C_MINOR]):
+            # The stand-in says what an edit of the set would, so the set is marked changed, as that edit would mark it, and
+            # nothing remembered from before it is used.
+            self.document.changed()
             await self.open_on_the_chord()
             self.assertEqual(self.keyboard_lines(), ([], None))
 

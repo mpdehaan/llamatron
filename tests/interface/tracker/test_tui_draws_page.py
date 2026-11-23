@@ -11,7 +11,7 @@ from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.set.draws_page import DrawsPage
 from llamatron.interface.tracker.transport import Transport
-from llamatron.model.schema import defaults, limits
+from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import DrawDirection, DrawName, DrawSetting
 from llamatron.user_strings import labels as labels_text, marks
 from tests.support.ui_testing import key_of, UITest
@@ -38,10 +38,15 @@ class TestDrawsPage(UITest):
     def draw(self, *, name=DrawName.AD):
         return self.document.song().get_draw(name)
 
-    async def test_the_main_screen_opens_it_and_every_draw_is_a_section_closed_at_first(self):
+    async def test_the_main_screen_opens_it_and_every_draw_is_a_section_closed_at_first_a_blank_line_apart(self):
         await self.open_draws()
-        for name in (DrawName.AD, DrawName.BD, DrawName.CD, DrawName.DD):
-            self.assertIn(name, self.text())
+        lines = self.text().splitlines()
+        places = []
+        for name in file_format.DRAW_NAMES:
+            places.append(next(place for place, line in enumerate(lines) if line.rstrip().endswith(name)))
+        for place, after in zip(places, places[1:]):
+            self.assertEqual(after - place, 2)
+            self.assertFalse(lines[place + 1].strip())
         self.assertNotIn(labels_text.MSG_DRAW_STRIP_SLOT_ROW, self.text())
 
     async def test_an_open_draw_shows_its_settings_and_its_strip_boxed_with_its_slots_numbered(self):
