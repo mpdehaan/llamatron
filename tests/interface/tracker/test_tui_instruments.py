@@ -5,12 +5,13 @@
 
 from unittest import mock
 
+from llamatron.interface.pages.instrument import sound_text
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor, sound_text
+from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.model.schema import defaults, file_format, limits

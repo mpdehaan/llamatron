@@ -6,13 +6,14 @@
 import unittest
 
 from llamatron.engine.timing import general_midi
+from llamatron.interface.pages.instrument import sound_text
 from llamatron.interface.tracker import drawing, keybindings, note_names, pattern_preview
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.note_names import note_shown, note_typed
 from llamatron.interface.tracker.pattern_preview import trial_pattern
-from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor, sound_families, sound_text
+from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor, sound_families
 from llamatron.interface.tracker.screens.shared import sound_trial
 from llamatron.interface.tracker.screens.shared.sound_trial import hits_of, run_of, SoundTrial
 from llamatron.model.schema import file_format, limits

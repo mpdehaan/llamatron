@@ -100,7 +100,6 @@ ALLOWED = {
         'interface/tracker/screens/set/groove_editor.py imports model.schema.limits',
         'interface/tracker/screens/set/grooves_page.py imports model.objects.groove',
         'interface/tracker/screens/set/importing.py imports interface.tracker.screens.set.open_page',
-        'interface/tracker/screens/set/instrument_editor.py imports model.schema.defaults',
         'interface/tracker/screens/set/instrument_editor.py imports model.schema.limits',
         'interface/tracker/screens/set/main_page.py imports model.objects.sections',
         'interface/tracker/screens/set/main_page.py imports interface.tracker.screens.arrange.arrange_page',

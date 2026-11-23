@@ -7,6 +7,7 @@ hands it the page to ask through and what only the tracker can do, such as openi
 
 - asking: asking for what a field needs beyond a line of text, such as a time signature.
 - file_global: the File/Global page, the set's own settings.
+- instrument: one instrument's page, where it plays and how loud.
 - scale: one scale's page, its name, root and kind, and its notes.
 - song: the Song page, one song's settings.
 - visualizer_fields: the fields that choose the visualizer's modes, which the File/Global and Song pages share.
