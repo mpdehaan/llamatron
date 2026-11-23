@@ -6,6 +6,7 @@ set as it is now, with nothing of how it looks or of Textual. The tracker shows 
 hands it the page to ask through and what only the tracker can do, such as opening a set.
 
 - asking: asking for what a field needs beyond a line of text, such as a time signature.
+- draws: the Draws page, the song's eight draws over their strips.
 - file_global: the File/Global page, the set's own settings.
 - instrument: one instrument's page, where it plays and how loud.
 - scale: one scale's page, its name, root and kind, and its notes.
