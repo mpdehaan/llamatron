@@ -20,12 +20,15 @@ from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.exporters import ableton_project
 from llamatron.exporters.ableton_project import AbletonProject, Attribute, ElementPath, LiveTag
+from llamatron.model.schema import limits
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Degree, Note, NoteName, Rest
 from llamatron.model.values.scale import Scale, ScaleType
 from llamatron.model.values.time_signature import TimeSignature
 
 QUARTER = 0.25
+# A tenth of a beat a minute, which a tempo just under the slowest is short by.
+TENTH = 0.1
 C4 = Note(name='C', octave_number=4, length=QUARTER)
 D4 = Note(name='D', octave_number=4, length=QUARTER)
 C_MAJOR = Scale(root=Note(name='C', octave_number=4), typ=ScaleType.MAJOR)
@@ -255,16 +258,18 @@ class TestTempo(ProjectTestCase):
     def test_rejects_tempos_live_cannot_use(self):
         self.song.add_column(ClipColumn())
         self.song.add_row(ClipRow())
-        for tempo in [10, 19.9, 1000]:
-            with self.subTest(tempo=tempo):
+        # A tempo under Live's slowest is refused as soon as it is set, since no song plays slower; a faster one at the export.
+        for tempo in (limits.MIN_TEMPO - 1, limits.MIN_TEMPO - TENTH):
+            with self.subTest(tempo=tempo), self.assertRaises(ValueError):
                 self.song.set_tempo(tempo)
-                with self.assertRaises(ValueError):
-                    self.export()
+        self.song.set_tempo(limits.MAX_TEMPO + 1)
+        with self.assertRaises(ValueError):
+            self.export()
         self.assertFalse(os.path.exists(os.path.join(self.directory, 'my_song.als')))
 
     def test_rejects_scene_tempos_live_cannot_use(self):
         self.song.add_column(ClipColumn())
-        self.song.add_row(ClipRow(tempo=10))
+        self.song.add_row(ClipRow(tempo=limits.MAX_TEMPO + 1))
         with self.assertRaises(ValueError):
             self.export()
 

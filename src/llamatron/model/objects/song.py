@@ -673,6 +673,15 @@ class Song(HoldsSections, HoldsSettings):
             return defaults.DEFAULT_VELOCITY
         return of_instrument
 
+    def velocity_percents_of(self, track):
+        """Return the velocity percentages every clip of a track plays with before its scene's and its own: its
+        instrument's and its own, each None where blank."""
+        instrument = self.instrument_of(track)
+        of_instrument = None
+        if instrument is not None:
+            of_instrument = instrument.get_velocity_percent()
+        return (of_instrument, track.get_velocity_percent())
+
     def accent_of(self, track):
         """Return what an accented step adds to its velocity on a track: the track's accent on top of its instrument's."""
         instrument = self.instrument_of(track)

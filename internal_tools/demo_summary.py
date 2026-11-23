@@ -35,7 +35,7 @@ import re
 import sys
 
 from llamatron.interface.tracker.document import Document
-from llamatron.interface.tracker.text import clock
+from llamatron.interface.tracker.text import clock, tempo_text
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.file.setlist_reader import file_stem
@@ -200,8 +200,8 @@ PAGE_SUFFIX = '.md'
 NOT_A_NAME_CHARACTER = r'[^A-Za-z0-9]+'
 NAME_JOIN = '_'
 NO_GENRE = 'Other'
-# Each demo's file links to the file on GitHub, so that people can read how the set file says it, then its starting key
-# and tempo, the first scene's or else the song's, and its length.
+# Each demo's file links to the file on GitHub, so that people can read how the set file says it, then its starting key,
+# its song's tempo, which every scene's tempo is a percentage of, and its length.
 FACTS_LINE = '[`{path}`]({link}) · {key} · {tempo} BPM · {length} · {scenes} scenes · {tracks} tracks'
 GITHUB_FILE = 'https://github.com/mpdehaan/llamatron/blob/main/{path}'
 KEY_TEXT = '{root} {kind}'
@@ -446,13 +446,14 @@ def with_new_features(*, section, cells, used, new):
     return LINE.join([section, NOTHING, NEW_FEATURES_TITLE, NOTHING, *feature_table(cells, used=used, only=new)])
 
 
-def starting_key_and_tempo(path):
-    """Return the key a set's first song starts in, as its root and scale type, and its tempo there: the first scene's own, or else the song's."""
+def starting_key_and_song_tempo(path):
+    """Return the key a set's first song starts in, as its root and scale type, and the song's tempo, which its scenes'
+    tempos are percentages of."""
     song = loaded(path).song()
     scenes = song.get_scenes()
     first = scenes[0] if scenes else None
     scale_name = (first.get_scale_name() if first else None) or song.get_scale_name()
-    tempo = (first.get_tempo() if first else None) or song.get_tempo()
+    tempo = song.get_tempo()
     if scale_name is None:
         return NO_KEY, tempo
     scale = song.get_setlist().get_named_scale(scale_name)
@@ -463,8 +464,8 @@ def demo_summary(*, path, cells, links, used=None):
     """Return the lines of one demo's summary on its genre's page: its file, starting key and tempo, length, scenes, tracks and video, then the features it uses."""
     _, _, _, length, scenes, tracks = cells[:len(LEFT_HEADINGS) + len(NUMBER_HEADINGS)]
     shown = pathlib.Path(path).as_posix()
-    key, tempo = starting_key_and_tempo(path)
-    facts = FACTS_LINE.format(path=shown, link=GITHUB_FILE.format(path=shown), key=key, tempo=tempo, length=length, scenes=scenes, tracks=tracks)
+    key, tempo = starting_key_and_song_tempo(path)
+    facts = FACTS_LINE.format(path=shown, link=GITHUB_FILE.format(path=shown), key=key, tempo=tempo_text(tempo), length=length, scenes=scenes, tracks=tracks)
     if file_stem(path) in links:
         facts += FACTS_VIDEO.format(url=links[file_stem(path)])
     return [facts, NOTHING, *feature_table(cells, used=used)]

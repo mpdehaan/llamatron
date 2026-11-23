@@ -27,13 +27,15 @@ from llamatron.model.objects.named_scale import NamedScale
 from llamatron.model.objects.naming import copy_name, default_scale_name, is_default_scale_name, new_name, unique_name
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.song import Song
-from llamatron.model.schema import defaults, file_format
+from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.time_signature import TimeSignature
 from llamatron.user_strings import importing
 
 FIRST_BAR_NUMBER = 1
 NO_REPEAT = 1
+# A scene's tempo is a percentage of the song's, and the song's own is 100.
+PERCENT = 100
 MICROSECONDS_PER_MINUTE = 60000000
 # What a pattern, scale or song the import made is placed by in an error, which only a fault of the import's own can raise.
 WHERE_IMPORTED = importing.MSG_WHERE_IMPORTED
@@ -102,6 +104,14 @@ def as_the_set_writes(data):
     return Pattern.from_data(data=data, where=WHERE_IMPORTED).to_data()
 
 
+def tempo_percent_of(*, microseconds, song_microseconds):
+    """Return a scene's MIDI tempo as a scene holds it: its exact percentage of the song's tempo, a whole number or text like
+    900/11, held to a scene's range."""
+    percent = Rational(song_microseconds * PERCENT, microseconds)
+    held = max(Rational(limits.MIN_TEMPO_PERCENT), min(percent, Rational(limits.MAX_TEMPO_PERCENT)))
+    return fraction_text(held)
+
+
 def tempo_of(microseconds):
     """Return a MIDI tempo as a song or scene holds it: a whole number of quarter notes a minute when one writes back the same, and the exact fraction otherwise."""
     exact = Rational(MICROSECONDS_PER_MINUTE, microseconds)
@@ -156,7 +166,7 @@ class SongWriter:
         patterns, shared, pattern_names = self.patterns()
         scales, scale_names = self.scales()
         first = self._cut.scenes[0]
-        song = {SongSetting.TEMPO: tempo_of(first.tempo)}
+        song = {SongSetting.TEMPO: tempo_of(self.song_microseconds())}
         if time_signature is not None:
             song[SongSetting.TIME_SIGNATURE] = time_signature
         song[SongSetting.SCALE] = scale_names[first.key]
@@ -224,6 +234,12 @@ class SongWriter:
                 return name
         return None
 
+    def song_microseconds(self):
+        """Return the song's tempo, as MIDI writes one: the first scene's, so that it plays exactly as written, made faster where
+        a later scene would otherwise play at more than the most a scene may, so that every scene is a percentage of it."""
+        tempos = [scene.tempo for scene in self._cut.scenes]
+        return min(tempos[0], min(tempos) * limits.MAX_TEMPO_PERCENT // PERCENT)
+
     def scene_data(self, *, scene, song, pattern_names, scale_names):
         """Return one scene's data: its name, its repeat, its scale and tempo where they differ from the song's, and its clips."""
         data = {SceneSetting.NAME: self.scene_name(scene)}
@@ -231,8 +247,9 @@ class SongWriter:
             data[SceneSetting.REPEAT] = scene.repeat
         if scale_names[scene.key] != song[SongSetting.SCALE]:
             data[SceneSetting.SCALE] = scale_names[scene.key]
-        if tempo_of(scene.tempo) != song[SongSetting.TEMPO]:
-            data[SceneSetting.TEMPO] = tempo_of(scene.tempo)
+        percent = tempo_percent_of(microseconds=scene.tempo, song_microseconds=self.song_microseconds())
+        if percent != PERCENT:
+            data[SceneSetting.TEMPO] = percent
         clips = {}
         for clip in scene.clips:
             clip_data = {ClipSlotSetting.PATTERN: pattern_names[clip.pattern]}

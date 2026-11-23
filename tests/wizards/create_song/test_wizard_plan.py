@@ -40,6 +40,8 @@ A_BAR_OF_STEPS = 16
 MANY_SEEDS = 40
 A_SLOW_TEMPO = 90
 A_FAST_TEMPO = 150
+# A scene holds its tempo as a whole percent of the song's, and a ramp's as one of the scene's.
+PERCENT = 100
 ANOTHER_ROOT = 'D'
 SOME_CHORDS = '6 4 1 b7'
 CHORDS_SHARING_A_BAR = '1 4 1 1-5'
@@ -318,11 +320,12 @@ class TestWizardSectionOwn(unittest.TestCase):
         choices = chosen()
         verse_section = choices.section(A_VERSE)
         verse_section.set_own(field=wizard_names.TEMPO_OF_PLACE, value=A_SLOW_TEMPO)
-        self.assertEqual(self.scene(choices=choices).get_tempo_setting(), A_SLOW_TEMPO)
+        self.assertEqual(self.scene(choices=choices).get_tempo_setting(), percent_of(value=A_SLOW_TEMPO, base=choices.get_tempo()))
         verse_section.set_own(field=wizard_names.TEMPO_END_OF_PLACE, value=A_FAST_TEMPO)
         data = made_data(choices)[Section.SONGS][wizard_testing.SONG_NAME][Section.SCENES][A_VERSE]
         # The scene keeps its tempo and ramps in to the tempo at its end, over every bar of the section.
-        self.assertEqual((data[SceneSetting.TEMPO], data[SceneSetting.TEMPO_IN_END]), (A_SLOW_TEMPO, A_FAST_TEMPO))
+        written = (percent_of(value=A_SLOW_TEMPO, base=choices.get_tempo()), percent_of(value=A_FAST_TEMPO, base=A_SLOW_TEMPO))
+        self.assertEqual((data[SceneSetting.TEMPO], data[SceneSetting.TEMPO_IN_END]), written)
         self.assertEqual(data[SceneSetting.TEMPO_IN_OVER], verse_section.bars())
         verse_section.set_own(field=wizard_names.ROOT_OF_PLACE, value=ANOTHER_ROOT)
         verse_section.set_own(field=wizard_names.TYPE_OF_PLACE, value=wizard_limits.MINOR)
@@ -338,7 +341,7 @@ class TestWizardSectionOwn(unittest.TestCase):
         verse_section = choices.section(A_VERSE)
         verse_section.set_own(field=wizard_names.TEMPO_END_OF_PLACE, value=A_SLOW_TEMPO)
         data = made_data(choices)[Section.SONGS][wizard_testing.SONG_NAME][Section.SCENES][A_VERSE]
-        self.assertEqual(data[SceneSetting.TEMPO_IN_END], A_SLOW_TEMPO)
+        self.assertEqual(data[SceneSetting.TEMPO_IN_END], percent_of(value=A_SLOW_TEMPO, base=choices.get_tempo()))
         self.assertNotIn(SceneSetting.TEMPO, data)
 
     def test_each_way_of_leaving_is_what_the_plan_says_of_the_section(self):
@@ -404,7 +407,7 @@ class TestWizardSectionOwn(unittest.TestCase):
             verse_section.set_own(field=wizard_names.TYPE_OF_PLACE, value=wizard_limits.MINOR)
             made = made_set(choices)
             scene = made.get_song(wizard_testing.SONG_NAME).get_scenes()[A_VERSE]
-            self.assertEqual(scene.get_tempo_setting(), A_SLOW_TEMPO)
+            self.assertEqual(scene.get_tempo_setting(), percent_of(value=A_SLOW_TEMPO, base=choices.get_tempo()))
             scale = made.to_data()[Section.SCALES][scene.get_scale_name()]
             self.assertEqual((scale[wizard_names.ROOT_OF_PLACE], scale[wizard_names.TYPE_OF_PLACE]), (ANOTHER_ROOT, wizard_limits.MINOR))
             # The sections beside it keep the song's.
@@ -669,3 +672,8 @@ class TestWizardListeningPlaces(unittest.TestCase):
         self.assertIn(band.tune_player(), choices.section(choices.tune_scene()).plays())
         setlist, name = choices.made_for_listening()
         self.assertEqual(len(setlist.get_song(name).get_scenes()), len(kinds))
+
+
+def percent_of(*, value, base):
+    """Return a tempo as the whole percent of another a scene holds."""
+    return round(value * PERCENT / base)

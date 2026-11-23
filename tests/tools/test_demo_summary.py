@@ -140,7 +140,7 @@ class TestDemoSummary(unittest.TestCase):
         stem = file_stem(HELLO_WORLD)
         summary = page.read_text().split(self.tool.SUMMARY_START.format(stem=stem))[1].split(self.tool.SUMMARY_END.format(stem=stem))[0]
         self.assertIn(pathlib.Path(HELLO_WORLD).as_posix(), summary)
-        key, tempo = self.tool.starting_key_and_tempo(HELLO_WORLD)
+        key, tempo = self.tool.starting_key_and_song_tempo(HELLO_WORLD)
         self.assertIn(key, summary)
         self.assertIn(str(tempo), summary)
 

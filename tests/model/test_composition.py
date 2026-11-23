@@ -449,12 +449,14 @@ class TestScene(RoundTrip):
 
     def test_values_and_defaults(self):
         scene = Scene.from_data(data={SceneSetting.REPEAT: 3, SceneSetting.TEMPO: 100, SceneSetting.TEMPO_IN_END: 120, SceneSetting.TEMPO_IN_OVER: 3, SceneSetting.TRACKS: {LEAD: {ClipSlotSetting.PATTERN: A}}}, where=HERE, song=a_song())
-        self.assertEqual((scene.get_tempo(), scene.get_tempo_ramp(RampWay.IN), scene.get_tempo_ramp(RampWay.OUT)), (100, TempoRamp(None, 120, 3), None))
+        # At a tempo of 100 a ramp's percentages are its tempos.
+        ramps = (scene.get_tempo_ramp(way=RampWay.IN, base=100), scene.get_tempo_ramp(way=RampWay.OUT, base=100))
+        self.assertEqual((scene.get_tempo_setting(), *ramps), (100, TempoRamp(None, 120, 3), None))
         self.assertEqual(scene.get_track_names(), [LEAD])
         self.assertEqual(scene.get_clip_slot(LEAD).get_pattern_name(), A)
         self.assertIsNone(scene.get_clip_slot(BASS))
         plain = Scene.from_data(data={}, where=HERE, song=a_song())
-        self.assertEqual((plain.get_name(), plain.get_repeat(), plain.get_scale_name(), plain.get_tempo()), (None, 1, None, None))
+        self.assertEqual((plain.get_name(), plain.get_repeat(), plain.get_scale_name(), plain.has_own_tempo()), (None, 1, None, False))
 
     def test_refusals(self):
         song = a_song()

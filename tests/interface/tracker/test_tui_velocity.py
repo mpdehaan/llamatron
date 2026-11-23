@@ -7,6 +7,7 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.arrange.arrange_details import clip_details, scene_details
 from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
+from llamatron.math.rational import Rational
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import RampPart, RampWay, VelocitySetting
@@ -25,7 +26,7 @@ OUT_END = labels_text.MSG_VELOCITY_RAMP_LABELS[(RampWay.OUT, RampPart.END)]
 
 
 def percent(value):
-    return marks.MSG_VELOCITY_PERCENT_SHOWN.format(percent=value)
+    return marks.MSG_PERCENT_SHOWN.format(percent=value)
 
 
 class VelocityTest(UITest):
@@ -69,9 +70,9 @@ class TestVelocityOnTheScenePage(VelocityTest):
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.scene().get_velocity().level, limits.MAX_VELOCITY_PERCENT)
 
-    async def test_a_ramps_blank_start_shows_the_velocity(self):
+    async def test_a_ramps_blank_start_is_the_whole_velocity(self):
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
-        self.assertEqual(self.shown(IN_START), marks.MSG_FROM_VELOCITY_SHOWN.format(value=percent(SCENE_LEVEL)))
+        self.assertEqual(self.shown(IN_START), percent(velocity_ramps.AS_WRITTEN))
         self.assertEqual(self.shown(IN_OVER), marks.MSG_NONE_SHOWN)
 
     async def test_a_ramp_is_made_by_stepping_its_start_and_its_bars(self):
@@ -107,25 +108,26 @@ class TestVelocityOnTheClipPage(VelocityTest):
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.IN_OVER, value=RAMP_BARS)
         await self.show(ClipPage(holder=self.app.screen.holder, index=FIRST_SCENE, track=ui_testing.LEAD))
 
-    async def test_a_blank_field_shows_its_scenes_value_and_says_so(self):
-        self.assertEqual(self.shown(labels_text.MSG_VELOCITY_PERCENT_LABEL), marks.MSG_FROM_SCENE_SHOWN.format(value=percent(SCENE_LEVEL)))
+    async def test_a_blank_ramp_field_shows_its_scenes_value_and_a_blank_velocity_stacks_nothing(self):
+        self.assertEqual(self.shown(labels_text.MSG_VELOCITY_PERCENT_LABEL), percent(velocity_ramps.AS_WRITTEN))
         self.assertEqual(self.shown(IN_START), marks.MSG_FROM_SCENE_SHOWN.format(value=percent(RAMP_START)))
         self.assertEqual(self.shown(IN_OVER), marks.MSG_FROM_SCENE_SHOWN.format(value=marks.MSG_RAMP_BARS_SHOWN.format(bars=RAMP_BARS)))
 
-    async def test_a_step_starts_from_the_scenes_value_and_the_clips_own_then_wins(self):
+    async def test_a_clips_velocity_steps_from_the_whole_and_stacks_on_its_scenes(self):
         await self.select_field(labels_text.MSG_VELOCITY_PERCENT_LABEL)
         await self.press(keybindings.FieldPage.LESS)
-        self.assertEqual(self.clip_slot().get_velocity_settings()[VelocitySetting.LEVEL], SCENE_LEVEL - 1)
-        self.assertEqual(self.clip_slot().get_velocity(self.scene()).level, SCENE_LEVEL - 1)
+        self.assertEqual(self.clip_slot().get_velocity_settings()[VelocitySetting.LEVEL], velocity_ramps.AS_WRITTEN - 1)
+        self.assertEqual(self.clip_slot().get_velocity(scene=self.scene()).level, Rational(SCENE_LEVEL * (velocity_ramps.AS_WRITTEN - 1), velocity_ramps.AS_WRITTEN))
         self.assertEqual(self.scene().get_velocity().level, SCENE_LEVEL)
         await self.press(keybindings.FieldPage.CLEAR)
-        self.assertEqual(self.clip_slot().get_velocity(self.scene()).level, SCENE_LEVEL)
+        self.assertEqual(self.clip_slot().get_velocity(scene=self.scene()).level, SCENE_LEVEL)
 
     async def test_a_clips_own_bars_make_the_ramp_the_clips(self):
         await self.select_field(IN_OVER)
         await self.press(keybindings.FieldPage.MORE)
-        ramp = self.clip_slot().get_velocity(self.scene()).ramp_in
-        self.assertEqual((ramp.start, ramp.over, ramp.of_clip), (RAMP_START, RAMP_BARS + 1, True))
+        ramp = self.clip_slot().get_velocity(scene=self.scene()).ramp_in
+        # The scene's start is a percentage of the scene's level.
+        self.assertEqual((ramp.start, ramp.over, ramp.of_clip), (Rational(SCENE_LEVEL * RAMP_START, velocity_ramps.AS_WRITTEN), RAMP_BARS + 1, True))
 
 
 class TestVelocityInTheDetailsView(VelocityTest):
@@ -139,8 +141,8 @@ class TestVelocityInTheDetailsView(VelocityTest):
         song = self.document.song()
         self.assertEqual(self.lines(scene_details(song=song, scene=self.scene())), [])
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_written, name=VelocitySetting.LEVEL, value=SCENE_LEVEL)
-        self.assertEqual(self.lines(scene_details(song=song, scene=self.scene())), [marks.MSG_DETAILS_VELOCITY.format(percent=SCENE_LEVEL)])
+        self.assertEqual(self.lines(scene_details(song=song, scene=self.scene())), [marks.MSG_DETAILS_VELOCITY.format(percent=percent(SCENE_LEVEL))])
         self.assertEqual(self.lines(clip_details(setlist=setlist, song=song, clip_slot=self.clip_slot())), [])
         self.document.change_set(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=VelocitySetting.LEVEL, value=CLIP_LEVEL)
         self.document.change_set(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).set_written, name=VelocitySetting.OUT_END, value=RAMP_START)
-        self.assertEqual(self.lines(clip_details(setlist=setlist, song=song, clip_slot=self.clip_slot())), [marks.MSG_DETAILS_VELOCITY_RAMPS.format(percent=CLIP_LEVEL)])
+        self.assertEqual(self.lines(clip_details(setlist=setlist, song=song, clip_slot=self.clip_slot())), [marks.MSG_DETAILS_VELOCITY_RAMPS.format(percent=percent(CLIP_LEVEL))])

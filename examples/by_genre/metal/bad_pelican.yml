@@ -349,13 +349,13 @@ songs:
           - { track: lead, pattern: chorus tune, loop: true }
           - { track: crash, pattern: crash, loop: true }
       - name: becalmed
-        tempo: 80
+        tempo: 53
         clips:
           - { track: bass, pattern: calm bass, repeat: 2 }
           - { track: clean, pattern: calm guitar, loop: true }
           - { track: pad, pattern: drone, loop: true }
       - name: the wind rises
-        tempo: 120
+        tempo: 79
         clips:
           - { track: toms, pattern: toms, repeat: 8 }
           - { track: toms high, pattern: toms high, loop: true }
@@ -363,7 +363,7 @@ songs:
           - { track: clean, pattern: build guitar, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
           - { track: pad, pattern: drone, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 6, 7] } } }
       - name: storm
-        tempo: 168
+        tempo: 111
         clips:
           - { track: kick, pattern: kick fast, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }
@@ -374,7 +374,7 @@ songs:
           - { track: guitar 1, pattern: fast, loop: true }
           - { track: guitar 2, pattern: fast above, loop: true }
       - name: solo
-        tempo: 168
+        tempo: 111
         clips:
           - { track: kick, pattern: kick fast, repeat: 8 }
           - { track: snare, pattern: snare, loop: true }

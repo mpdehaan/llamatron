@@ -312,13 +312,13 @@ songs:
           - { track: lead, pattern: stairs, repeat: 1 }
       - name: dungeon
         scale: D Minor
-        tempo: 120
+        tempo: 86
         clips:
           - { track: pulse, pattern: figure, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
           - { track: bass, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
       - name: "dungeon, deeper"
         scale: D Minor
-        tempo: 120
+        tempo: 86
         clips:
           - { track: pulse, pattern: figure, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
           - { track: bass, pattern: low, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
@@ -326,7 +326,7 @@ songs:
           - { track: heart, pattern: heart, loop: true }
       - name: "dungeon, deepest"
         scale: D Minor
-        tempo: 120
+        tempo: 86
         clips:
           - { track: pulse, pattern: figure, repeat: 16, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
           - { track: chip, pattern: figure high, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 5], qualities: [~, ~, ~, M] } } }
@@ -335,7 +335,7 @@ songs:
           - { track: harmony, pattern: deep high, loop: true }
           - { track: heart, pattern: heart, loop: true }
       - name: up the stairs
-        tempo: 120
+        tempo: 86
         clips:
           - { track: lead, pattern: climb, repeat: 1 }
       - name: daylight

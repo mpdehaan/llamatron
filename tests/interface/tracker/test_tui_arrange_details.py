@@ -32,6 +32,8 @@ SOME_REPEATS = 4
 OWN_SCALE = 'D Dorian'
 OWN_SCALE_ROOT = 'D'
 OWN_SCALE_KIND = 'dorian'
+# A scene's percentage of the song's 120, and the tempo it plays at.
+SCENE_TEMPO_PERCENT = 110
 SCENE_TEMPO = 132
 RAMP_END = 140
 RAMP_BARS = 2
@@ -116,7 +118,7 @@ class TestDetails(unittest.TestCase):
         ])
 
     def test_a_scene_shows_its_tempo_or_its_ramp_and_its_groove(self):
-        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_tempo, SCENE_TEMPO)
+        self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_tempo, SCENE_TEMPO_PERCENT)
         self.assertEqual(self.scene_lines(), [marks.MSG_DETAILS_TEMPO.format(tempo=SCENE_TEMPO)])
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_tempo_ramp_setting, way=RampWay.IN, part=RampPart.END, value=RAMP_END)
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_tempo_ramp_setting, way=RampWay.IN, part=RampPart.OVER, value=RAMP_BARS)

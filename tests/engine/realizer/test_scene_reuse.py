@@ -25,6 +25,8 @@ SECOND = 'two'
 THIRD = 'three'
 CHANGED_VELOCITY = 33
 CHANGED_TEMPO = 133
+# A percentage of the song's tempo given to a scene.
+CHANGED_SCENE_TEMPO = 110
 CHANGED_TITLE = 'another title'
 
 
@@ -62,7 +64,7 @@ class TestFirstChangedScene(unittest.TestCase):
         self.assertEqual(first_changed(setlist=self.setlist, before=self.before), scene_reuse.FIRST_SCENE)
 
     def test_a_changed_scene_is_the_first_changed(self):
-        self.setlist.get_song(SONG).get_scenes()[2].set_tempo(CHANGED_TEMPO)
+        self.setlist.get_song(SONG).get_scenes()[2].set_tempo(CHANGED_SCENE_TEMPO)
         self.assertEqual(first_changed(setlist=self.setlist, before=self.before), 2)
 
     def test_anything_of_the_song_but_its_scenes_changes_everything(self):

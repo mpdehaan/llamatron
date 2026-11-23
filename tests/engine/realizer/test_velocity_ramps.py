@@ -1,11 +1,12 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""How loud a scene and a clip play: the velocity that holds, the ramp in and the ramp out.
+"""How loud a scene and a clip play: the velocity that holds, stacked on the track's and the instrument's, the ramp in and the ramp out.
 
-The lead plays a bar of sixteen sixteenth notes, each written at a velocity of 100, so that a
-percentage is the velocity heard. Where a scene has to be longer than the lead's clip, a second
-track plays two bars.
+The lead plays a bar of sixteen sixteenth notes, each written at a velocity of 100, so that the
+velocity heard is the percentage of the written velocity a clip plays at. Each setting is a
+percentage of what it scales: 50 plays at half. Where a scene has to be longer than the lead's clip, a second track
+plays two bars.
 """
 
 import unittest
@@ -18,20 +19,28 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.objects.velocity_ramps import Velocity, velocity_of, VelocityRamp
 from llamatron.model.schema import limits
-from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, Shape, VelocitySetting
+from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, Shape, TrackSetting, VelocitySetting
 from llamatron.model.values import midi
 from tests.engine.realizer import test_shapes
 from tests.engine.realizer.test_shapes import bar_of_sixteenths, one_scene
 from tests.support import song_playing
 from tests.support.rendering import render_data, setlist_from_data
 
+# The velocities heard, and the percentages of the written 100 that play them.
 WRITTEN = 100
 HALF = 50
 QUARTER = 25
 LOW = 20
+EIGHTY_EIGHT = 88
+HALVED = 50
+QUARTERED = 25
+TO_LOW = 20
+LOUDER = 110
+QUIETER = 80
 # A bar of sixteenths from 20% to 100% rises 5 a note, and two bars from 36% rise 2 a note.
 A_NOTE_OF_ONE_BAR = 5
 TWO_BAR_START = 36
+TO_TWO_BAR_START = 36
 A_NOTE_OF_TWO_BARS = 2
 ONE_BAR = 1
 TWO_BARS = 2
@@ -66,13 +75,24 @@ def beside_two_bars(*, scene=None, clip=None):
 class TestTheVelocityThatHolds(unittest.TestCase):
 
     def test_a_scenes_velocity_scales_every_note(self):
-        self.assertEqual(set(played(lead_of(scene={VelocitySetting.LEVEL: HALF}))), {HALF})
+        self.assertEqual(set(played(lead_of(scene={VelocitySetting.LEVEL: HALVED}))), {HALF})
 
     def test_nothing_set_plays_as_written(self):
         self.assertEqual(played(lead_of()), HELD)
 
-    def test_a_clips_velocity_wins_over_its_scenes(self):
-        self.assertEqual(set(played(lead_of(scene={VelocitySetting.LEVEL: HALF}, clip={VelocitySetting.LEVEL: QUARTER}))), {QUARTER})
+    def test_a_clips_velocity_stacks_on_its_scenes(self):
+        self.assertEqual(set(played(lead_of(scene={VelocitySetting.LEVEL: HALVED}, clip={VelocitySetting.LEVEL: HALVED}))), {QUARTER})
+
+    def test_a_tracks_velocity_stacks_with_its_scenes(self):
+        data = lead_of(scene={VelocitySetting.LEVEL: HALVED})
+        data[Section.TRACKS][song_playing.LEAD] = {TrackSetting.VELOCITY: HALVED}
+        self.assertEqual(set(played(data)), {QUARTER})
+
+    def test_every_velocity_scales_the_others(self):
+        velocity = velocity_of(scene_settings={VelocitySetting.LEVEL: LOUDER}, clip_settings={VelocitySetting.LEVEL: QUIETER}, outer_levels=(None, None))
+        self.assertEqual(velocity.level, EIGHTY_EIGHT)
+        silenced = velocity_of(scene_settings={VelocitySetting.LEVEL: limits.MAX_VELOCITY_PERCENT}, outer_levels=(limits.MIN_VELOCITY_PERCENT, None))
+        self.assertEqual(silenced.level, 0)
 
     def test_a_note_stops_at_the_loudest_and_the_softest_velocity(self):
         self.assertEqual(set(played(lead_of(scene={VelocitySetting.LEVEL: limits.MAX_VELOCITY_PERCENT}))), {midi.MAX_VELOCITY})
@@ -80,7 +100,7 @@ class TestTheVelocityThatHolds(unittest.TestCase):
 
     def test_a_shapes_generators_swell_scales_what_the_scene_already_scaled(self):
         swell = test_shapes.steady(shape=Shape.SWELL, percent=HALF)
-        data = one_scene(rows=ROWS, scene={VelocitySetting.LEVEL: HALF}, chain=[{shapes_plugin.NAME: test_shapes.SHAPED}],
+        data = one_scene(rows=ROWS, scene={VelocitySetting.LEVEL: HALVED}, chain=[{shapes_plugin.NAME: test_shapes.SHAPED}],
                          generators={shapes_plugin.SECTION: {test_shapes.SHAPED: swell}})
         self.assertEqual(set(played(data)), {QUARTER})
 
@@ -88,75 +108,78 @@ class TestTheVelocityThatHolds(unittest.TestCase):
 class TestTheRampIn(unittest.TestCase):
 
     def test_it_climbs_from_its_start_to_the_velocity_over_its_bars_and_then_holds(self):
-        data = lead_of(scene={VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}, repeat=TWO_BARS)
+        data = lead_of(scene={VelocitySetting.IN_START: TO_LOW, VelocitySetting.IN_OVER: ONE_BAR}, repeat=TWO_BARS)
         self.assertEqual(played(data), RISING + HELD)
 
     def test_a_blank_start_is_the_velocity_and_an_end_is_where_it_arrives(self):
-        data = lead_of(scene={VelocitySetting.LEVEL: LOW, VelocitySetting.IN_END: WRITTEN, VelocitySetting.IN_OVER: ONE_BAR}, repeat=TWO_BARS)
-        self.assertEqual(played(data), RISING + [LOW] * test_shapes.STEPS)
+        data = lead_of(scene={VelocitySetting.IN_END: TO_LOW, VelocitySetting.IN_OVER: ONE_BAR}, repeat=TWO_BARS)
+        self.assertEqual(played(data), FALLING + HELD)
 
     def test_it_needs_its_bars(self):
-        self.assertEqual(played(lead_of(scene={VelocitySetting.IN_START: LOW})), HELD)
+        self.assertEqual(played(lead_of(scene={VelocitySetting.IN_START: TO_LOW})), HELD)
 
     def test_bars_alone_change_nothing(self):
         self.assertEqual(played(lead_of(scene={VelocitySetting.IN_OVER: ONE_BAR})), HELD)
 
     def test_a_scenes_ramp_goes_on_through_the_scenes_repeats(self):
-        data = lead_of(scene={VelocitySetting.IN_START: TWO_BAR_START, VelocitySetting.IN_OVER: TWO_BARS}, scene_repeat=TWO_BARS)
+        data = lead_of(scene={VelocitySetting.IN_START: TO_TWO_BAR_START, VelocitySetting.IN_OVER: TWO_BARS}, scene_repeat=TWO_BARS)
         self.assertEqual(played(data, row=0), [TWO_BAR_START + A_NOTE_OF_TWO_BARS * note for note in range(test_shapes.STEPS)])
         self.assertEqual(played(data, row=1), [TWO_BAR_START + A_NOTE_OF_TWO_BARS * (test_shapes.STEPS + note) for note in range(test_shapes.STEPS)])
 
     def test_a_ramp_whose_bars_the_clip_gives_starts_again_with_the_clip(self):
-        data = lead_of(clip={VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}, scene_repeat=TWO_BARS)
+        data = lead_of(clip={VelocitySetting.IN_START: TO_LOW, VelocitySetting.IN_OVER: ONE_BAR}, scene_repeat=TWO_BARS)
         self.assertEqual((played(data, row=0), played(data, row=1)), (RISING, RISING))
 
 
 class TestTheRampOut(unittest.TestCase):
 
     def test_it_falls_from_the_velocity_to_its_end_over_the_last_bars(self):
-        data = lead_of(scene={VelocitySetting.OUT_END: LOW, VelocitySetting.OUT_OVER: ONE_BAR}, repeat=TWO_BARS)
+        data = lead_of(scene={VelocitySetting.OUT_END: TO_LOW, VelocitySetting.OUT_OVER: ONE_BAR}, repeat=TWO_BARS)
         self.assertEqual(played(data), HELD + FALLING)
 
     def test_the_ramp_in_wins_where_the_two_overlap(self):
-        scene = {VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR, VelocitySetting.OUT_END: LOW, VelocitySetting.OUT_OVER: ONE_BAR}
+        scene = {VelocitySetting.IN_START: TO_LOW, VelocitySetting.IN_OVER: ONE_BAR, VelocitySetting.OUT_END: TO_LOW, VelocitySetting.OUT_OVER: ONE_BAR}
         self.assertEqual(played(lead_of(scene=scene)), RISING)
 
     def test_a_scenes_ramp_out_is_counted_back_from_the_scenes_end(self):
         # The lead's one bar is over before the scene's last bar, where the scene's ramp out is.
-        data = beside_two_bars(scene={VelocitySetting.OUT_END: LOW, VelocitySetting.OUT_OVER: ONE_BAR})
+        data = beside_two_bars(scene={VelocitySetting.OUT_END: TO_LOW, VelocitySetting.OUT_OVER: ONE_BAR})
         self.assertEqual(played(data), HELD)
 
     def test_a_ramp_out_whose_bars_the_clip_gives_is_counted_back_from_the_clips_end(self):
-        data = beside_two_bars(clip={VelocitySetting.OUT_END: LOW, VelocitySetting.OUT_OVER: ONE_BAR})
+        data = beside_two_bars(clip={VelocitySetting.OUT_END: TO_LOW, VelocitySetting.OUT_OVER: ONE_BAR})
         self.assertEqual(played(data), FALLING)
 
     def test_a_looping_clips_own_ramp_out_is_counted_back_from_its_scenes_end(self):
-        data = beside_two_bars(clip={ClipSlotSetting.LOOP: True, VelocitySetting.OUT_END: LOW, VelocitySetting.OUT_OVER: ONE_BAR})
+        data = beside_two_bars(clip={ClipSlotSetting.LOOP: True, VelocitySetting.OUT_END: TO_LOW, VelocitySetting.OUT_OVER: ONE_BAR})
         self.assertEqual(played(data), HELD + FALLING)
 
 
 class TestAClipOverItsScene(unittest.TestCase):
-    """A clip's own settings win over its scene's one field at a time, and whoever gives a ramp its bars says what the bars are counted over."""
+    """A clip's own ramp fields win over its scene's one field at a time, its level stacks on its scene's, and whoever gives a
+    ramp its bars says what the bars are counted over."""
 
     def test_a_clip_takes_each_blank_field_from_its_scene(self):
-        scene = {VelocitySetting.LEVEL: HALF, VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}
-        self.assertEqual(velocity_of(scene_settings=scene, clip_settings={VelocitySetting.IN_START: QUARTER}), Velocity(HALF, VelocityRamp(QUARTER, HALF, ONE_BAR, False), None))
+        scene = {VelocitySetting.LEVEL: HALVED, VelocitySetting.IN_START: TO_LOW, VelocitySetting.IN_OVER: ONE_BAR}
+        # The clip's start is a percentage of the scene's level: a quarter of half.
+        start = Rational(HALF * QUARTER, WRITTEN)
+        self.assertEqual(velocity_of(scene_settings=scene, clip_settings={VelocitySetting.IN_START: QUARTERED}), Velocity(HALF, VelocityRamp(start, HALF, ONE_BAR, False), None))
 
     def test_a_clips_own_bars_make_the_ramp_the_clips(self):
-        scene = {VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}
+        scene = {VelocitySetting.IN_START: TO_LOW, VelocitySetting.IN_OVER: ONE_BAR}
         self.assertEqual(velocity_of(scene_settings=scene, clip_settings={VelocitySetting.IN_OVER: TWO_BARS}).ramp_in, VelocityRamp(LOW, velocity_ramps.AS_WRITTEN, TWO_BARS, True))
 
-    def test_a_clips_velocity_is_where_its_scenes_ramp_ends(self):
-        scene = {VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}
-        data = lead_of(scene=scene, clip={VelocitySetting.LEVEL: HALF}, repeat=TWO_BARS)
+    def test_a_scenes_ramp_moves_the_level_its_clip_stacks(self):
+        scene = {VelocitySetting.IN_START: TO_LOW, VelocitySetting.IN_OVER: ONE_BAR}
+        data = lead_of(scene=scene, clip={VelocitySetting.LEVEL: HALVED}, repeat=TWO_BARS)
         self.assertEqual(played(data)[test_shapes.STEPS:], [HALF] * test_shapes.STEPS)
-        self.assertEqual(played(data)[0], LOW)
+        self.assertEqual(played(data)[0], LOW * HALF // WRITTEN)
 
     def test_a_scene_alone_says_how_its_clips_play_and_what_stands_for_it(self):
         still = velocity_of(scene_settings={})
         self.assertTrue(still.changes_nothing())
         self.assertEqual(still.typical(), velocity_ramps.AS_WRITTEN)
-        ramped = velocity_of(scene_settings={VelocitySetting.LEVEL: WRITTEN, VelocitySetting.IN_START: HALF, VelocitySetting.IN_OVER: ONE_BAR})
+        ramped = velocity_of(scene_settings={VelocitySetting.IN_START: HALVED, VelocitySetting.IN_OVER: ONE_BAR})
         self.assertFalse(ramped.changes_nothing())
         self.assertEqual(ramped.typical(), (HALF + WRITTEN) / 2)
 
@@ -186,8 +209,8 @@ class TestVelocitySettingsInAFile(unittest.TestCase):
             setlist_from_data(lead_of(clip={VelocitySetting.OUT_OVER: limits.MAX_RAMP_BARS + 1}))
 
     def test_they_are_written_back_as_read(self):
-        scene = {VelocitySetting.LEVEL: HALF, VelocitySetting.IN_START: LOW, VelocitySetting.IN_OVER: ONE_BAR}
-        clip = {VelocitySetting.OUT_END: QUARTER, VelocitySetting.OUT_OVER: TWO_BARS}
+        scene = {VelocitySetting.LEVEL: HALVED, VelocitySetting.IN_START: TO_LOW, VelocitySetting.IN_OVER: ONE_BAR}
+        clip = {VelocitySetting.OUT_END: QUARTERED, VelocitySetting.OUT_OVER: TWO_BARS}
         written = next(iter(setlist_from_data(lead_of(scene=scene, clip=clip)).to_data()[Section.SONGS].values()))[Section.SCENES][0]
         self.assertEqual({name: written[name] for name in scene}, scene)
         self.assertEqual({name: written[SceneSetting.TRACKS][song_playing.LEAD][name] for name in clip}, clip)
@@ -199,7 +222,7 @@ class TestVelocitySettingsInAFile(unittest.TestCase):
             scene.set_written(name=VelocitySetting.LEVEL, value=limits.MAX_VELOCITY_PERCENT + 1)
         with self.assertRaises(ValueError):
             scene.get_clip_slot(song_playing.LEAD).set_written(name=VelocitySetting.IN_OVER, value=limits.MIN_RAMP_BARS - 1)
-        scene.set_written(name=VelocitySetting.LEVEL, value=HALF)
+        scene.set_written(name=VelocitySetting.LEVEL, value=HALVED)
         scene.set_written(name=VelocitySetting.LEVEL, value=None)
         self.assertTrue(scene.get_velocity().changes_nothing())
 

@@ -146,6 +146,8 @@ class TrackSetting:
     # The velocity a step with none typed plays at, over the track's instrument's, and what an accented step adds, on top of the instrument's.
     DEFAULT_VELOCITY = 'default_velocity'
     ACCENT = 'accent'
+    # The percentage of its written velocity every clip of the track plays at, stacking with its instrument's, scene's and clip's.
+    VELOCITY = 'velocity'
     # The chains every clip of the track runs, after the clip's and the scene's.
     CHAINS = 'chains'
     # Its built-in generators' settings, by kind, each switched off until switched on.
@@ -550,6 +552,8 @@ class InstrumentSetting:
     # The velocity a step with none typed plays at on the instrument's tracks, and what an accented step adds there.
     DEFAULT_VELOCITY = 'default_velocity'
     ACCENT = 'accent'
+    # The percentage of its written velocity every clip of the instrument's tracks plays at, stacking with the track's, scene's and clip's.
+    VELOCITY = 'velocity'
 
 
 class KeyswitchSetting:

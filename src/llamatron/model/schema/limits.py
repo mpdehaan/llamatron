@@ -67,7 +67,8 @@ MAX_KEYSWITCH_LEAD = 500
 # The percentages each shape runs between: the share of notes that play, how loud they play, and how long, as a share of what's written.
 MIN_DENSITY = 0
 MAX_DENSITY = 100
-# A scene's or a clip's velocity, and each end of a velocity ramp, a percentage of the velocity written.
+# A velocity of an instrument, a track, a scene or a clip, and each end of a velocity ramp, a percentage of what it scales:
+# 0 silences, 100 changes nothing, 200 doubles.
 MIN_VELOCITY_PERCENT = 0
 MAX_VELOCITY_PERCENT = 200
 MIN_SWELL = 0
@@ -81,9 +82,13 @@ MAX_ACCENT = 50
 # Octaves as song files number them, from C0, which is MIDI note 0, to the octave of G10, the top note.
 MIN_OCTAVE = 0
 MAX_OCTAVE = 10
-# Tempo, in quarter notes a minute. Live's own limit is 999.
-MIN_TEMPO = 10
+# Tempo, in quarter notes a minute, within Live's own limits, 20 to 999: no song or scene plays slower or faster.
+MIN_TEMPO = 20
 MAX_TEMPO = 999
+# A scene's tempo and each end of a tempo ramp, a percentage of the tempo it scales, the same range as a velocity's; a tempo
+# played is never below MIN_TEMPO.
+MIN_TEMPO_PERCENT = 0
+MAX_TEMPO_PERCENT = 200
 
 # The fewest and the most notes of the scale a pattern says it was written for: a pentatonic scale to the chromatic.
 MIN_SCALE_LENGTH = 5

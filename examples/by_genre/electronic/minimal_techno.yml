@@ -118,7 +118,7 @@ songs:
           - { track: bass, pattern: bass, loop: true }
       - name: drift
         repeat: 3
-        tempo_in_end: 128
+        tempo_in_end: 102
         tempo_in_over: 24
         clips:
           - { track: kick, pattern: kick, repeat: 32 }
@@ -127,8 +127,8 @@ songs:
           - { track: stab, pattern: stab, loop: true }
           - { track: lead, pattern: a, loop: true }
       - name: turn
-        tempo: 128
-        tempo_in_end: 130
+        tempo: 102
+        tempo_in_end: 102
         tempo_in_over: 24
         clips:
           - { track: kick, pattern: kick, repeat: 96 }
@@ -138,8 +138,8 @@ songs:
           - { track: lead, pattern: a, repeat: 24, morph_to: b, morph_style: left }
       - name: lift
         scale: F Dorian
-        tempo: 130
-        tempo_in_end: 131
+        tempo: 103
+        tempo_in_end: 101
         tempo_in_over: 8
         clips:
           - { track: kick, pattern: kick, repeat: 32 }
@@ -149,8 +149,8 @@ songs:
           - { track: stab, pattern: stab, loop: true }
           - { track: lead, pattern: b_up, loop: true }
       - name: tumble
-        tempo: 131
-        tempo_in_end: 132
+        tempo: 104
+        tempo_in_end: 101
         tempo_in_over: 8
         clips:
           - { track: kick, pattern: kick, repeat: 32 }
@@ -159,8 +159,8 @@ songs:
           - { track: bass, pattern: bass, loop: true }
           - { track: lead, pattern: b tumble, loop: true }
       - name: strip
-        tempo: 132
-        tempo_out_end: 100
+        tempo: 105
+        tempo_out_end: 76
         tempo_out_over: 2
         clips:
           - { track: kick, pattern: kick, repeat: 32 }

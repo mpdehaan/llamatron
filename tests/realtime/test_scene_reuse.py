@@ -30,8 +30,9 @@ SEED = 5
 ANOTHER_SEED = 6
 FUZZ_SEED = 2026
 EDITS = 8
-LOWEST_TEMPO = 70
-HIGHEST_TEMPO = 170
+# The percentages of the song's tempo an edit gives a scene.
+LOWEST_TEMPO_PERCENT = 60
+HIGHEST_TEMPO_PERCENT = 140
 HIGHEST_REPEAT = 3
 # Every score that takes scenes is held to a whole render as it is made, as in every test that renders (tests/support/rendering.py).
 Memory.check_every_answer()
@@ -259,7 +260,7 @@ def edit_a_clip_direction(*, edited, chooser):
 
 def edit_a_scene_tempo(*, edited, chooser):
     """Change the tempo of one of the song's scenes."""
-    chooser.choice(edited.song().get_scenes()).set_tempo(chooser.randint(LOWEST_TEMPO, HIGHEST_TEMPO))
+    chooser.choice(edited.song().get_scenes()).set_tempo(chooser.randint(LOWEST_TEMPO_PERCENT, HIGHEST_TEMPO_PERCENT))
 
 
 def edit_a_scene_repeat(*, edited, chooser):

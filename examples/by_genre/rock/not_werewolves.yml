@@ -314,7 +314,7 @@ songs:
           - { track: hat, pattern: hat, loop: true }
           - { track: bass, pattern: bass, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [4, 5, 1, 1], every: 1/2 } } }
       - name: ballad
-        tempo: 84
+        tempo: 79
         clips:
           - { track: left hand, pattern: bar low, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [6, 1, 5, 1, 6, 5, 4, 1] } } }
           - { track: left chords, pattern: bar chord, generators: [{ name: ballad keys }], loop: true }

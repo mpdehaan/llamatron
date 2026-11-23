@@ -7,6 +7,7 @@
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.keyswitch_map_dialog import KeyswitchMapDialog
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
+from llamatron.interface.tracker.screens.shared import percentages
 from llamatron.interface.tracker.screens.shared.field import Button, Field, NameField, NumberField
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
@@ -92,6 +93,14 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         velocity = self.instrument().get_default_velocity()
         return self.setting_number_field(label=labels.MSG_DEFAULT_VELOCITY_LABEL, holder=self.instrument(), name=InstrumentSetting.DEFAULT_VELOCITY, in_effect=velocity, start=defaults.DEFAULT_VELOCITY, clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT)
 
+    def velocity_change_field(self):
+        """Return the Velocity field: the percentage of its written velocity every clip of the instrument's tracks plays, stacking with the
+        track's, the scene's and the clip's, 100% until set."""
+        holder = self.instrument()
+        percent = holder.get_velocity_percent()
+        shown = percentages.percent_shown(percentages.UNCHANGED if percent is None else percent)
+        return self.setting_number_field(label=labels.MSG_VELOCITY_PERCENT_LABEL, holder=holder, name=InstrumentSetting.VELOCITY, shown=shown, start=percentages.UNCHANGED, clear_what=legends.MSG_RAMP_BLANK_WHAT)
+
     def accent_field(self):
         """Return the Accent field: what a step with its Accent on adds to its velocity on the instrument's tracks, before each track's own accent."""
         accent = self.instrument().get_accent()
@@ -129,6 +138,7 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
                   clear=lambda: self.set_gm_sound(None), clear_what=legends.MSG_NO_GM_SOUND_WHAT),
             self.default_velocity_field(),
             self.accent_field(),
+            self.velocity_change_field(),
             self.lead_field(),
             Button(label=labels.MSG_KEYSWITCH_MAP_LABEL, key_name=self.KEYS.KEYSWITCH_MAP.name, enter=self.open_keyswitch_map, enter_what=self.KEYS.KEYSWITCH_MAP[2]),
         ]

@@ -32,6 +32,7 @@ A_LITTLE = 0.01
 NEAR = 0.3
 A_QUARTER = '1/4'
 A_BAR = Rational(1)
+HALF_A_PERCENT = 0.005
 
 
 def part(*, notes=SOME_NOTES, loudness=SOME_LOUDNESS):
@@ -165,7 +166,7 @@ class TestTheWizardsSong(unittest.TestCase):
         self.assertGreater(written, loudness_steps.LARGEST_STEP)
         self.assertLess(made, written)
 
-    def test_a_traded_clip_plays_at_its_scenes_loudness_lowered_and_no_melody_trades(self):
+    def test_a_traded_clip_plays_its_scenes_loudness_lowered_and_no_melody_trades(self):
         choices = arena_rock()
         melody_choices = choices.melody()
         melody = melody_choices
@@ -174,11 +175,12 @@ class TestTheWizardsSong(unittest.TestCase):
         melodies = melody.players()
         for scene_name, track in self.clips_with_a_velocity(setlist):
             scene = [scene for scene in song.get_scenes() if scene.get_name() == scene_name][0]
-            own = scene.get_clip_slot(track).get_velocity(scene)
+            own = scene.get_clip_slot(track).get_velocity(scene=scene)
             of_scene = scene.get_velocity()
             self.assertNotIn(track, melodies)
             self.assertLess(own.level, of_scene.level)
-            self.assertGreaterEqual(own.level, round(of_scene.level * loudness_steps.LEAST_KEPT))
+            # A clip's own velocity is a whole percent, so its share of the scene's may be half a percent under the least kept.
+            self.assertGreaterEqual(own.level, of_scene.level * (loudness_steps.LEAST_KEPT - HALF_A_PERCENT))
 
     def test_the_count_from_what_is_written_is_near_what_is_played(self):
         song = arena_rock().written_setlist(name=A_NAME, version=version.VERSION).get_song(A_NAME)

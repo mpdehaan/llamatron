@@ -464,11 +464,9 @@ class SongRealizer:
             rows = [written for written in self._scenes if written.get_scene() is played]
             lengths = [self.get_scene_length(written) for written in rows]
             signature = self._song.get_time_signature()
-            base = played.get_tempo()
-            if base is None:
-                base = self._song.get_tempo()
+            base = played.tempo_in(self._song.get_tempo())
             tempos = ramped_tempos(
-                base=base, ramp_in=played.get_tempo_ramp(RampWay.IN), ramp_out=played.get_tempo_ramp(RampWay.OUT),
+                base=base, ramp_in=played.get_tempo_ramp(way=RampWay.IN, base=base), ramp_out=played.get_tempo_ramp(way=RampWay.OUT, base=base),
                 length=sum(lengths, START), bar=signature.bar_length(), step=self._setlist.get_step_size(),
             )
             start = START

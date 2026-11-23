@@ -39,7 +39,9 @@ DRONE_STEPS = 1
 HALF = '1/2'
 TEMPO = 120
 SLOW_TEMPO = 60
-FAST_TEMPO = 240
+# A scene's percentage of the song's tempo that doubles it, and the slow song's tempo doubled.
+DOUBLING = 200
+FAST_TEMPO = SLOW_TEMPO * 2
 FIRST = 0
 SECOND = 1
 FIRST_SCENE_NAME = 'one'
@@ -129,7 +131,7 @@ class TestLengthsWithoutPlaying(unittest.TestCase):
         self.assertEqual(self.document.lengths().song_seconds(), seconds(whole_notes=both_scenes + ONE_PASS))
         self.document.change_set(self.document.song().set_tempo, SLOW_TEMPO)
         self.assertEqual(self.document.lengths().song_seconds(), seconds(whole_notes=both_scenes + ONE_PASS, tempo=SLOW_TEMPO))
-        self.document.change_set(self.document.song().get_scene(SECOND).set_tempo, FAST_TEMPO)
+        self.document.change_set(self.document.song().get_scene(SECOND).set_tempo, DOUBLING)
         self.assertEqual(self.document.lengths().scene_seconds(SECOND), seconds(whole_notes=ONE_PASS * LEAD_REPEATS, tempo=FAST_TEMPO))
         self.assertEqual(self.document.lengths().song_seconds(), seconds(whole_notes=ONE_PASS * LEAD_REPEATS, tempo=SLOW_TEMPO) + seconds(whole_notes=ONE_PASS * LEAD_REPEATS, tempo=FAST_TEMPO))
 

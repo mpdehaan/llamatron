@@ -26,6 +26,7 @@ from llamatron.interface.tracker import app as tui_app
 from llamatron.interface.tracker.document import Document
 from llamatron.math.length import Length
 from llamatron.model.file.song_file_error import SongFileError
+from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, Section, SongSetting, TrackSetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName
@@ -218,7 +219,7 @@ class TestDocumentEdges(unittest.TestCase):
         self.assertEqual(document.export_path(ExportKind.CLIP_TREE), os.path.join(SONGS, f'{TUNE}_{names.MSG_DEFAULT_SONG_NAME}_clip_*.mid'))
 
     def test_an_export_that_live_refuses_is_explained(self):
-        document = Document(setlist=setlist_from_data(changed(tempo=15)), path='tune.yml')
+        document = Document(setlist=setlist_from_data(changed(tempo=limits.MAX_TEMPO + 1)), path='tune.yml')
         with self.assertRaises(SongFileError) as raised:
             document.export(ExportKind.ABLETON)
         self.assertIn(SongSetting.TEMPO, str(raised.exception))

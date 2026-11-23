@@ -18,6 +18,7 @@ from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.engine.timing import sounding
 from llamatron.exporters import midi_messages
 from llamatron.exporters.clip_tree import clip_file_name, ClipTree
+from llamatron.model.schema import limits
 from llamatron.model.values.chord import Chord, ChordType
 from llamatron.model.values.note import Note, NoteName, Rest
 from llamatron.model.values.time_signature import TimeSignature
@@ -388,8 +389,8 @@ class TestFileContents(ExportTestCase):
         self.assertEqual(self.tempo(self.export_clip(Clip())), mido.bpm2tempo(90))
 
     def test_minimum_tempo_can_be_written(self):
-        self.song.set_tempo(10)
-        self.assertEqual(self.tempo(self.export_clip(Clip())), mido.bpm2tempo(10))
+        self.song.set_tempo(limits.MIN_TEMPO)
+        self.assertEqual(self.tempo(self.export_clip(Clip())), mido.bpm2tempo(limits.MIN_TEMPO))
 
     def track_name(self, filename):
         messages = mido.MidiFile(self.path(filename)).tracks[0]

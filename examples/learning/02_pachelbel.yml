@@ -126,7 +126,7 @@ songs:
           - { track: violin 2, pattern: canon_falling_quarters }
           - { track: violin 3, pattern: canon_flowing_eighths }
       - name: "Final chord, slower"
-        tempo: 36
+        tempo: 82
         clips:
           - { track: violin 1, pattern: ending_top }
           - { track: violin 2, pattern: ending_middle }

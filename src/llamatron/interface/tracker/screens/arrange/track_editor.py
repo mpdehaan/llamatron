@@ -11,6 +11,7 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.document_parts import built_in_place
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.groove_choice import groove_choice_field
+from llamatron.interface.tracker.screens.shared import percentages
 from llamatron.interface.tracker.screens.shared.arrange_tabs import built_in_tabs, fields_tab
 from llamatron.interface.tracker.screens.shared.field import Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
@@ -110,6 +111,14 @@ class TrackEditor(ShowsNamedItem, FieldPage):
             shown = above
         return self.setting_number_field(label=labels.MSG_DEFAULT_VELOCITY_LABEL, holder=track, name=TrackSetting.DEFAULT_VELOCITY, start=above, shown=shown, typed=above, clear_what=legends.MSG_NO_DEFAULT_VELOCITY_WHAT)
 
+    def velocity_change_field(self):
+        """Return the Velocity field: the percentage of its written velocity every clip of the track plays, stacking with the
+        instrument's, the scene's and the clip's, 100% until set."""
+        holder = self.track()
+        percent = holder.get_velocity_percent()
+        shown = percentages.percent_shown(percentages.UNCHANGED if percent is None else percent)
+        return self.setting_number_field(label=labels.MSG_VELOCITY_PERCENT_LABEL, holder=holder, name=TrackSetting.VELOCITY, shown=shown, start=percentages.UNCHANGED, clear_what=legends.MSG_RAMP_BLANK_WHAT)
+
     def accent_field(self):
         """Return the Accent field: what a step with its Accent on adds to its velocity on the track, on top of its instrument's accent."""
         track = self.track()
@@ -135,7 +144,7 @@ class TrackEditor(ShowsNamedItem, FieldPage):
             self.instrument_field(), Toggle(label=labels.MSG_DRUM_LABEL, on=track.is_drum(), set=self._set_drum),
             Toggle(label=labels.MSG_MUTE_LABEL, on=track.is_muted(), set=self._set_mute), self.groove_field(),
         ]
-        notes = [self._transpose_field(track), *self._octave_fields(track), self.default_velocity_field(), self.accent_field()]
+        notes = [self._transpose_field(track), *self._octave_fields(track), self.default_velocity_field(), self.accent_field(), self.velocity_change_field()]
         numbers = [self.cc_field(lane) for lane in range(len(file_format.CC_ROWS))]
         return [
             Tab(label=labels.MSG_SETTINGS_TAB, columns=[

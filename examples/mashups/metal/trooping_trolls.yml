@@ -1165,7 +1165,7 @@ songs:
           - { track: tom low, pattern: tom low 2, loop: true }
           - { track: crash, pattern: crash 2, loop: true }
       - name: gallop
-        tempo: 146
+        tempo: 106
         clips:
           - { track: lead 1, pattern: lead 1 5, repeat: 1 }
           - { track: lead 2, pattern: lead 2 5, loop: true }
@@ -1178,7 +1178,7 @@ songs:
           - { track: tom low, pattern: tom low 2, loop: true }
           - { track: crash, pattern: crash 2, loop: true }
       - name: theme at a gallop
-        tempo: 152
+        tempo: 110
         clips:
           - { track: lead 1, pattern: lead 1 6, repeat: 1 }
           - { track: lead 2, pattern: lead 2 6, loop: true }
@@ -1191,7 +1191,7 @@ songs:
           - { track: tom low, pattern: tom low 3, loop: true }
           - { track: crash, pattern: crash 3, loop: true }
       - name: guitars trade
-        tempo: 152
+        tempo: 110
         clips:
           - { track: lead 1, pattern: lead 1 7, repeat: 1 }
           - { track: lead 2, pattern: lead 2 7, loop: true }
@@ -1204,7 +1204,7 @@ songs:
           - { track: tom low, pattern: tom low 3, loop: true }
           - { track: crash, pattern: crash 3, loop: true }
       - name: second phrase at a gallop
-        tempo: 152
+        tempo: 110
         clips:
           - { track: lead 1, pattern: lead 1 8, repeat: 1 }
           - { track: lead 2, pattern: lead 2 8, loop: true }
@@ -1217,7 +1217,7 @@ songs:
           - { track: tom low, pattern: tom low 2, loop: true }
           - { track: crash, pattern: crash 2, loop: true }
       - name: theme in thirds
-        tempo: 156
+        tempo: 113
         clips:
           - { track: lead 1, pattern: lead 1 9, repeat: 1 }
           - { track: lead 2, pattern: lead 2 9, loop: true }
@@ -1230,7 +1230,7 @@ songs:
           - { track: tom low, pattern: tom low 2, loop: true }
           - { track: crash, pattern: crash 2, loop: true }
       - name: solos over the theme
-        tempo: 160
+        tempo: 116
         clips:
           - { track: lead 1, pattern: lead 1 10, repeat: 1 }
           - { track: lead 2, pattern: lead 2 10, loop: true }
@@ -1243,7 +1243,7 @@ songs:
           - { track: tom low, pattern: tom low 1, loop: true }
           - { track: crash, pattern: crash 2, loop: true }
       - name: solos over the second phrase
-        tempo: 160
+        tempo: 116
         clips:
           - { track: lead 1, pattern: lead 1 11, repeat: 1 }
           - { track: lead 2, pattern: lead 2 11, loop: true }
@@ -1256,7 +1256,7 @@ songs:
           - { track: tom low, pattern: tom low 4, loop: true }
           - { track: crash, pattern: crash 2, loop: true }
       - name: breakdown
-        tempo: 160
+        tempo: 116
         clips:
           - { track: lead 1, pattern: lead 1 12, repeat: 1 }
           - { track: lead 2, pattern: lead 2 12, loop: true }
@@ -1269,7 +1269,7 @@ songs:
           - { track: tom low, pattern: tom low 3, loop: true }
           - { track: crash, pattern: crash 3, loop: true }
       - name: drums
-        tempo: 160
+        tempo: 116
         clips:
           - { track: kick, pattern: kick 9, repeat: 1 }
           - { track: snare, pattern: snare 8, loop: true }
@@ -1278,7 +1278,7 @@ songs:
           - { track: tom low, pattern: tom low 5, loop: true }
           - { track: crash, pattern: crash 4, loop: true }
       - name: everything
-        tempo: 168
+        tempo: 122
         clips:
           - { track: lead 1, pattern: lead 1 13, repeat: 1 }
           - { track: lead 2, pattern: lead 2 13, loop: true }
@@ -1292,7 +1292,7 @@ songs:
           - { track: tom low, pattern: tom low 2, loop: true }
           - { track: crash, pattern: crash 2, loop: true }
       - name: "second phrase, everything"
-        tempo: 168
+        tempo: 122
         clips:
           - { track: lead 1, pattern: lead 1 14, repeat: 1 }
           - { track: lead 2, pattern: lead 2 14, loop: true }
@@ -1306,7 +1306,7 @@ songs:
           - { track: tom low, pattern: tom low 2, loop: true }
           - { track: crash, pattern: crash 2, loop: true }
       - name: theme over a pedal
-        tempo: 172
+        tempo: 125
         clips:
           - { track: lead 1, pattern: lead 1 15, repeat: 1 }
           - { track: lead 2, pattern: lead 2 15, loop: true }
@@ -1320,7 +1320,7 @@ songs:
           - { track: tom low, pattern: tom low 2, loop: true }
           - { track: crash, pattern: crash 2, loop: true }
       - name: crashes
-        tempo: 176
+        tempo: 128
         clips:
           - { track: lead 1, pattern: lead 1 16, repeat: 1 }
           - { track: lead 2, pattern: lead 2 16, loop: true }
@@ -1334,7 +1334,7 @@ songs:
           - { track: tom low, pattern: tom low 6, loop: true }
           - { track: crash, pattern: crash 5, loop: true }
       - name: crashes again
-        tempo: 176
+        tempo: 128
         clips:
           - { track: lead 1, pattern: lead 1 16, repeat: 1 }
           - { track: lead 2, pattern: lead 2 17, loop: true }
@@ -1348,7 +1348,7 @@ songs:
           - { track: tom low, pattern: tom low 7, loop: true }
           - { track: crash, pattern: crash 5, loop: true }
       - name: the end
-        tempo: 176
+        tempo: 128
         clips:
           - { track: lead 1, pattern: lead 1 17, repeat: 1 }
           - { track: lead 2, pattern: lead 2 18, loop: true }

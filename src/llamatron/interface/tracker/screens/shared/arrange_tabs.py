@@ -13,7 +13,7 @@ from llamatron.interface.tracker.screens.shared.field import Field, Toggle
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.tab_box import columns_of_sections, Tab, TabColumn, without_headings
-from llamatron.interface.tracker.screens.shared.velocity_fields import velocity_field, velocity_ramp_sections
+from llamatron.interface.tracker.screens.shared.velocity_fields import velocity_field, velocity_ramp_sections, VelocityValues
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, shape_setting
 from llamatron.user_strings import labels as labels_text, legends, marks
@@ -64,10 +64,10 @@ class ClipTabs:
         shapes = []
         for shape in file_format.PLACED_SHAPES:
             shapes += self._shape_section(shape)
-        own, above, store = self._velocity_values()
+        values = self._velocity_values()
         return [
             self._basics_tab(),
-            Tab(label=labels_text.MSG_VELOCITY_TAB, columns=columns_of_sections(velocity_ramp_sections(page=page, own=own, above=above, store=store))),
+            Tab(label=labels_text.MSG_VELOCITY_TAB, top=[velocity_field(page=page, values=values)], columns=columns_of_sections(velocity_ramp_sections(page=page, values=values))),
             Tab(label=labels_text.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
             reset_draws_tab(page=page, holder=self._clip_slot()),
             *self._built_in_tabs(generator_plugins.built_in_kinds()),
@@ -75,14 +75,12 @@ class ClipTabs:
         ]
 
     def _basics_tab(self):
-        """Return the Basics tab: Order, how the clip plays its patterns, and General, its scale, velocity and grab."""
+        """Return the Settings tab: Order, how the clip plays its patterns, and Playing, its scale and grab."""
         page = self._page
-        own, above, store = self._velocity_values()
         order = [page.pattern_order_field(), *page.playing_fields(), page.follow_action_field()]
         general = [
             Field(label=labels_text.MSG_SCALE_LABEL, value=page.scale_text, adjust=None, enter=page.pick_scale, enter_what=legends.What.CHOOSE,
                   clear=functools.partial(page.clear, ClipSlotSetting.SCALE), clear_what=legends.MSG_USE_SCENE_SCALE_WHAT),
-            velocity_field(page=page, own=own, above=above, store=store),
             Field(label=labels_text.MSG_GRAB_TRACK_LABEL, value=self._grab_shown, adjust=None, enter=page.pick_grab_track, enter_what=legends.What.CHOOSE,
                   clear=functools.partial(page.clear, ClipSlotSetting.GRAB_TRACK), clear_what=legends.MSG_NO_GRAB_WHAT),
         ]
@@ -112,7 +110,7 @@ class ClipTabs:
         page = self._page
         song = page.document().song()
         scene = song.get_scenes()[page.index]
-        return self._clip_slot().get_written, scene.get_written, lambda name, value: self._set_written(name=name, value=value)
+        return VelocityValues(own=self._clip_slot().get_written, above=scene.get_written, store=lambda name, value: self._set_written(name=name, value=value))
 
     def _clip_slot(self):
         return self._page.clip_slot()

@@ -131,6 +131,7 @@ ERR_BAD_PROGRESSION_CHORDS = 'chords must be a list of 1 to {most} degrees from 
 ERR_BAD_PROGRESSION_TENSIONS = '{name} must be a list as long as the chords, each a list of some of {choices} or nothing, got {value!r}'
 ERR_BAD_PROGRESSION_ROW = '{name} must be a list as long as the chords, each {choices} or nothing, got {value!r}'
 ERR_BAD_SHAPE_PERCENT = '{name} must be an integer from {lowest} to {highest}, got {value!r}'
+ERR_BAD_TEMPO_PERCENT = 'a percentage of a tempo must be a number from {lowest} to {highest}, got {value!r}'
 ERR_BAD_SHAPE_THEN = '{name} must be one of: {choices}, got {value!r}'
 ERR_GENERATOR_BAD_ADD = '{name} must be an integer from {lowest} to {highest}, got {value!r}'
 ERR_GENERATOR_NO_SUCH_SETTING = 'unknown setting ({name}), expected one of: {names}'

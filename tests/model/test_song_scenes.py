@@ -34,6 +34,9 @@ X_2 = 'x 2'
 X_3 = 'x 3'
 BAD = 'bad'
 WOBBLY = 'wobbly'
+# Percentages of the song's tempo a scene plays at.
+HALF_TEMPO = 50
+THREE_QUARTERS_TEMPO = 75
 
 
 class TestClipsInAScene(unittest.TestCase):
@@ -93,7 +96,7 @@ class TestClipsInAScene(unittest.TestCase):
         self.assertEqual(clips, {song_testing.LEAD: 4, KICK: Fraction(1, 2)})
 
     def test_estimate_uses_the_scene_tempo(self):
-        estimates = estimate_data(with_parts(scenes=[{SceneSetting.TEMPO: 60, SceneSetting.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}}]))
+        estimates = estimate_data(with_parts(scenes=[{SceneSetting.TEMPO: HALF_TEMPO, SceneSetting.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERN: A}}}]))
         self.assertEqual(estimates[0].seconds, 4)
 
     def test_estimate_reports_a_problem_in_only_that_scene(self):
@@ -147,7 +150,8 @@ class TestScenes(unittest.TestCase):
 
 
     def test_a_scene_can_set_a_tempo(self):
-        data = with_parts(scenes=[{SceneSetting.TEMPO: 90, SceneSetting.TRACKS: {}}])
+        # Three quarters of the song's 120.
+        data = with_parts(scenes=[{SceneSetting.TEMPO: THREE_QUARTERS_TEMPO, SceneSetting.TRACKS: {}}])
         self.assertEqual(render_data(data).get_rows()[0].get_tempo(), 90)
 
     def test_no_tempo_uses_the_song_tempo(self):

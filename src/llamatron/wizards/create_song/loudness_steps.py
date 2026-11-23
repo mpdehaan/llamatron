@@ -22,13 +22,13 @@ drummer moves from one to another. The trade is written as each clip's own veloc
 from llamatron.engine.generators import arp as arp_plugin, guitarify as guitarify_plugin
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.file.checks import time_length
-from llamatron.model.objects import velocity_ramps
 from llamatron.model.schema import defaults, file_format
 from llamatron.model.schema.file_format import ChordSymbol, Row, Stroke, VelocitySetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.held import Held
 from llamatron.model.values.note import Note
 from llamatron.wizards.create_song import breaks
+from llamatron.wizards.create_song.scene_changes import percent_of
 
 # The drummer's cymbals that keep time, one player between them.
 TIMEKEEPERS = (breaks.HAT, breaks.OPEN, breaks.RIDE)
@@ -280,18 +280,15 @@ def trades(*, scenes, kept=()):
 
 
 def with_trades(*, song, kept=()):
-    """Write a song's trades into the song: each clip of a player who trades gets a velocity of its own, its scene's lowered, and each end its scene's ramps give lowered the same."""
+    """Write a song's trades into the song: each clip of a player who trades gets a velocity of its own, lowering what its
+    scene plays it at, which its scene's ramps then move as they move the scene."""
     for scene, shares in zip(song.get_scenes(), trades(scenes=counted(song=song), kept=kept)):
-        of_scene = scene.get_velocity_settings()
         for track in scene.get_track_names():
             share = shares.get(player_of(track))
             if share is None:
                 continue
             slot = scene.get_clip_slot(track)
-            for name in file_format.VELOCITY_SETTINGS:
-                percent = velocity_ramps.AS_WRITTEN if name == VelocitySetting.LEVEL and of_scene[name] is None else of_scene[name]
-                if name not in velocity_ramps.BAR_COUNTS and percent is not None:
-                    slot.set_written(name=name, value=round(percent * share))
+            slot.set_written(name=VelocitySetting.LEVEL, value=percent_of(value=share, base=1))
 
 
 def whole_band(players):

@@ -42,7 +42,7 @@ class WrittenScene:
                 if repeat > 1:
                     name = REPEAT_NAME.format(name=name, repeat=place + FIRST_NUMBER)
                 written.append(cls(
-                    number=number, name=name, scale_name=scale, tempo=scene.get_tempo(), scene=scene, first_play=place == FIRST_REPEAT,
+                    number=number, name=name, scale_name=scale, tempo=_own_tempo(scene=scene, song=song), scene=scene, first_play=place == FIRST_REPEAT,
                 ))
         return written
 
@@ -92,3 +92,10 @@ def _scene_name(*, name, number):
     if name is None:
         return names.MSG_UNNAMED_SCENE.format(number=number)
     return str(name)
+
+
+def _own_tempo(*, scene, song):
+    """Return the tempo a scene plays at where it changes the song's, or None where it plays at the song's."""
+    if not scene.has_own_tempo():
+        return None
+    return scene.tempo_in(song.get_tempo())

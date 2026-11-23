@@ -101,14 +101,16 @@ MSG_TEMPO_SHOWN = '{tempo} BPM'
 MSG_SCENE_TEMPO_SHOWN = '{tempo} BPM (from scene)'
 MSG_RAMP_BARS_SHOWN = '{bars} bars'
 MSG_RAMP_ONE_BAR_SHOWN = '1 bar'
-# A velocity as a percentage, and a value the clip page takes from the clip's scene or a ramp takes from the Velocity field.
-MSG_VELOCITY_PERCENT_SHOWN = '{percent}%'
+# A percentage of what it scales, a velocity's or a tempo's, and one that isn't whole, to two places (percentages.py).
+MSG_PERCENT_SHOWN = '{percent}%'
+MSG_PART_PERCENT_SHOWN = '{percent:.2f}%'
+# A tempo's percentage with the tempo it makes.
+MSG_TEMPO_PERCENT_SHOWN = '{percent} ({tempo} BPM)'
 # A shape's start or end, Density, Swell or Articulate, as a percentage once set.
 MSG_SHAPE_PERCENT_SHOWN = '{percent}%'
 MSG_FROM_SCENE_SHOWN = '{value} (from scene)'
-MSG_FROM_VELOCITY_SHOWN = '{value} (from velocity)'
-MSG_DETAILS_VELOCITY = 'velocity: {percent}%'
-MSG_DETAILS_VELOCITY_RAMPS = 'velocity: {percent}%*'
+MSG_DETAILS_VELOCITY = 'velocity: {percent}'
+MSG_DETAILS_VELOCITY_RAMPS = 'velocity: {percent}*'
 MSG_ONE_STEP_SHOWN = '(one step)'
 MSG_CLIP_NAMED_FOR_PATTERN = '(pattern: {pattern})'
 # A clip of several patterns on Arrange: its first pattern and how many more follow.

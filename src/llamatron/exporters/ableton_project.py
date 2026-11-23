@@ -15,13 +15,12 @@ from llamatron.engine.timing.timing import control_points, keyswitch_events, tim
 from llamatron.exporters.exporter import Exporter, ExportKind, WritesOneFile
 from llamatron.math.rational import Rational
 from llamatron.model.file import files
+from llamatron.model.schema import limits
 from llamatron.user_strings import errors, names
 
 # Installed along with the code, so that a set can be written from anywhere.
 DEFAULT_TEMPLATE = Path(__file__).resolve().parents[1] / 'templates' / 'live12.als'
 
-MIN_LIVE_TEMPO = 20
-MAX_LIVE_TEMPO = 999
 EMPTY_CLIP_BEATS = 4
 NOTE_OFF_VELOCITY = 64
 NO_GROOVE = '-1'
@@ -276,8 +275,8 @@ class AbletonProject(WritesOneFile, Exporter):
         if not self._grid.get_rows() or not self._grid.get_columns():
             raise ValueError(errors.ERR_EMPTY_SONG)
         for tempo in self._tempos():
-            if tempo is not None and not MIN_LIVE_TEMPO <= tempo <= MAX_LIVE_TEMPO:
-                raise ValueError(errors.ERR_BAD_TEMPO.format(lowest=MIN_LIVE_TEMPO, highest=MAX_LIVE_TEMPO, value=tempo))
+            if tempo is not None and not limits.MIN_TEMPO <= tempo <= limits.MAX_TEMPO:
+                raise ValueError(errors.ERR_BAD_TEMPO.format(lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, value=tempo))
 
     def _scene_starts(self):
         """Return when each scene starts in Arrangement View, in fractions of a whole note."""

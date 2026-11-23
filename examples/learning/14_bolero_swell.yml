@@ -8,20 +8,22 @@ notes: |
   Run it with: llamatron examples/learning/14_bolero_swell.yml --to ableton --replace
 
   A scene's Velocity scales each note's velocity by a percentage, and a scene's Velocity Ramp In
-  climbs to it from a start across its bars. The crescendo is a table of the scenes' own
-  velocities, set on the Scene page, each scene starting where the one before ended. It starts soft but audible and climbs evenly in loudness,
-  each scene about 2 dB louder than the last: most instruments turn velocity into loudness on a
-  curve, so equal steps of velocity would sound slow at the start and sudden at the end.
+  climbs to it across its bars from a start, itself a percentage of the scene's Velocity, so that
+  88% starts at 88% of it. The crescendo is a table of the scenes' own velocities, set on the Scene
+  page, each scene starting near where the one before ended. It starts soft but audible and climbs
+  evenly in loudness, each scene about 2 dB louder than the last: most instruments turn velocity
+  into loudness on a curve, so equal steps of velocity would sound slow at the start and sudden at
+  the end.
 
-    scene  what plays                                       velocity
-    1      the snare's ostinato alone                        35% to 40%
-    2      the snare, and the tune on a flute                40% to 46%
-    3      the same two                                      46% to 52%
-    4      the same, and a bass on the beats                 52% to 59%
-    5      the tune moves to a clarinet, an octave lower     59% to 67%
-    6      strings join the tune                             67% to 76%
-    7      brass joins with the chords                       76% to 87%
-    8      everyone                                          87% to 100%
+    scene  what plays                                       Velocity  Ramp In Start
+    1      the snare's ostinato alone                        40%       88%
+    2      the snare, and the tune on a flute                46%       87%
+    3      the same two                                      52%       88%
+    4      the same, and a bass on the beats                 59%       88%
+    5      the tune moves to a clarinet, an octave lower     67%       88%
+    6      strings join the tune                             76%       88%
+    7      brass joins with the chords                       87%       87%
+    8      everyone                                          100%      87%
     9      the final chords                                  100%
 
   The first three scenes keep the same instruments while only the loudness climbs, so you can
@@ -35,7 +37,7 @@ notes: |
 
   When changing this demo:
   - Keep every pattern's velocity as written, so that every change of loudness is a scene's velocity or the Swell.
-  - Keep the table: each scene's Velocity Ramp In starts where the scene before ended.
+  - Keep the table: each scene's Velocity Ramp In starts near where the scene before ended.
   - Keep the first three scenes' instruments the same.
 real_time: true
 protected: true
@@ -134,27 +136,27 @@ songs:
     scenes:
       - name: the snare alone
         velocity: 40
-        velocity_in_start: 35
+        velocity_in_start: 88
         velocity_in_over: 8
         clips:
           - { track: snare, pattern: snare, repeat: 4 }
       - name: the flute
         velocity: 46
-        velocity_in_start: 40
+        velocity_in_start: 87
         velocity_in_over: 8
         clips:
           - { track: snare, pattern: snare, repeat: 4 }
           - { track: flute, pattern: tune, loop: true }
       - name: louder
         velocity: 52
-        velocity_in_start: 46
+        velocity_in_start: 88
         velocity_in_over: 8
         clips:
           - { track: snare, pattern: snare, repeat: 4 }
           - { track: flute, pattern: tune, loop: true }
       - name: the bass
         velocity: 59
-        velocity_in_start: 52
+        velocity_in_start: 88
         velocity_in_over: 8
         clips:
           - { track: snare, pattern: snare, repeat: 4 }
@@ -162,7 +164,7 @@ songs:
           - { track: bass, pattern: bass, loop: true }
       - name: the clarinet
         velocity: 67
-        velocity_in_start: 59
+        velocity_in_start: 88
         velocity_in_over: 8
         clips:
           - { track: snare, pattern: snare, repeat: 4 }
@@ -170,7 +172,7 @@ songs:
           - { track: bass, pattern: bass, loop: true }
       - name: strings
         velocity: 76
-        velocity_in_start: 67
+        velocity_in_start: 88
         velocity_in_over: 8
         clips:
           - { track: snare, pattern: snare, repeat: 4 }
@@ -179,7 +181,7 @@ songs:
           - { track: bass, pattern: bass, loop: true }
       - name: brass
         velocity: 87
-        velocity_in_start: 76
+        velocity_in_start: 87
         velocity_in_over: 8
         clips:
           - { track: snare, pattern: snare, repeat: 4 }

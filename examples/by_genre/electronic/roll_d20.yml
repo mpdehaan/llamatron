@@ -320,7 +320,7 @@ songs:
           - { track: harp, pattern: harp, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] } } }
           - { track: strings, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] } } }
       - name: the tavern
-        tempo: 100
+        tempo: 139
         clips:
           - { track: harpsichord, pattern: dance low, repeat: 2 }
           - { track: recorder, pattern: dance, loop: true }
@@ -329,7 +329,7 @@ songs:
           - { track: tamb, pattern: tamb, loop: true }
           - { track: strings, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 1, 7, 1, 7, 5, 1] } } }
       - name: the road
-        tempo: 84
+        tempo: 117
         clips:
           - { track: horn, pattern: theme low, repeat: 2 }
           - { track: strings, pattern: chord, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 7, 6, 7, 1, 7, 5, 1] } } }
@@ -338,14 +338,14 @@ songs:
           - { track: timpani, pattern: march low, loop: true }
           - { track: snare, pattern: march snare, loop: true }
       - name: the crypt
-        tempo: 60
+        tempo: 83
         clips:
           - { track: organ, pattern: crypt, repeat: 2 }
           - { track: choir, pattern: crypt choir, loop: true }
           - { track: strings, pattern: pedal, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1] } } }
           - { track: bells, pattern: toll, loop: true }
       - name: the dragon
-        tempo: 104
+        tempo: 144
         clips:
           - { track: horn, pattern: dragon, repeat: 2 }
           - { track: strings, pattern: dragon high, loop: true }
@@ -355,7 +355,7 @@ songs:
           - { track: toms, pattern: battle high, loop: true }
           - { track: crash, pattern: battle crash, loop: true }
       - name: the return
-        tempo: 76
+        tempo: 106
         clips:
           - { track: horn, pattern: theme low, repeat: 2 }
           - { track: recorder, pattern: theme high, loop: true }
@@ -367,7 +367,7 @@ songs:
           - { track: timpani, pattern: march low, loop: true }
           - { track: bells, pattern: toll, loop: true }
       - name: epilogue
-        tempo: 60
+        tempo: 83
         clips:
           - { track: organ, pattern: fifths, generators: [{ name: fade swell }], repeat: 4 }
           - { track: bells, pattern: last bells, loop: true }

@@ -256,7 +256,7 @@ songs:
           - { track: echo, pattern: echo, loop: true, grab_track: keys }
       - name: slow
         repeat: 2
-        tempo_in_end: 72
+        tempo_in_end: 86
         tempo_in_over: 8
         clips:
           - { track: bass, pattern: bass }
@@ -264,7 +264,7 @@ songs:
           - { track: bells, pattern: bells, loop: true, built_in: { arp: { enabled: true, step: 1/8, order: up_down } } }
       - name: home
         scale: D Major
-        tempo: 72
+        tempo: 86
         clips:
           - { track: bass, pattern: bass_end }
           - { track: pad, pattern: pad_end, loop: true }

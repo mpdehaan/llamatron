@@ -69,6 +69,8 @@ HIGHEST_PITCH = 127
 QUARTER = Rational(1, 4)
 SIXTEENTH_NOTE = Rational(1, 16)
 SIXTEENTHS_IN_A_WHOLE_NOTE = 16
+# A scene's tempo is held as a percentage of the song's.
+PERCENT = 100
 TEMPO = 120
 FASTER = 150
 LONGEST = 8
@@ -298,7 +300,8 @@ class TestScenesAndPatterns(unittest.TestCase):
     def test_a_tempo_change_starts_a_scene_at_the_new_tempo(self):
         notes = melody(pitches=C_MAJOR_SCALE[:4] * 2)
         imported = self.assert_plays_the_same(midi_of(tracks=[('lead', 0, notes)], tempos=((0, TEMPO), (SIXTEENTHS_IN_A_BAR, FASTER))))
-        self.assertEqual([scene.get(SceneSetting.TEMPO) for scene in imported.song.song[Section.SCENES]][-1], FASTER)
+        # The last scene plays at its percentage of the song's tempo.
+        self.assertEqual([scene.get(SceneSetting.TEMPO) for scene in imported.song.song[Section.SCENES]][-1], FASTER * PERCENT // TEMPO)
         self.assertFalse(imported.warnings)
 
     def test_a_tempo_change_under_a_held_note_is_moved_and_said(self):

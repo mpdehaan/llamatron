@@ -45,6 +45,8 @@ LAST = STEPS - 1
 PAST_THE_END = STEPS
 TEMPO = 100
 FASTER = 140
+# A tempo at which a ramp's percentages are its tempos.
+AT_A_HUNDRED = 100
 STEP_SIZE = '1/8'
 MAJOR = scale_type_name(ScaleType.MAJOR)
 MINOR = scale_type_name(ScaleType.MINOR)
@@ -268,14 +270,14 @@ class TestScene(SetterTestCase):
         self.assertFalse(self.scene.has_tempo_ramp())
         self.scene.set_tempo_ramp_setting(way=RampWay.IN, part=RampPart.OVER, value=limits.MIN_RAMP_BARS)
         # Bars alone change nothing: a ramp needs a start or an end.
-        self.assertIsNone(self.scene.get_tempo_ramp(RampWay.IN))
+        self.assertIsNone(self.scene.get_tempo_ramp(way=RampWay.IN, base=AT_A_HUNDRED))
         # And a start or an end alone changes nothing: a ramp needs its bars.
         self.scene.set_tempo_ramp_setting(way=RampWay.OUT, part=RampPart.END, value=FASTER)
-        self.assertIsNone(self.scene.get_tempo_ramp(RampWay.OUT))
+        self.assertIsNone(self.scene.get_tempo_ramp(way=RampWay.OUT, base=AT_A_HUNDRED))
         self.scene.set_tempo_ramp_setting(way=RampWay.OUT, part=RampPart.END, value=None)
         self.scene.set_tempo_ramp_setting(way=RampWay.IN, part=RampPart.END, value=FASTER)
-        self.assertEqual((self.scene.get_tempo_setting(), self.scene.get_tempo_ramp(RampWay.IN)), (TEMPO, TempoRamp(None, FASTER, limits.MIN_RAMP_BARS)))
-        self.assertIsNone(self.scene.get_tempo_ramp(RampWay.OUT))
+        self.assertEqual((self.scene.get_tempo_setting(), self.scene.get_tempo_ramp(way=RampWay.IN, base=AT_A_HUNDRED)), (TEMPO, TempoRamp(None, FASTER, limits.MIN_RAMP_BARS)))
+        self.assertIsNone(self.scene.get_tempo_ramp(way=RampWay.OUT, base=AT_A_HUNDRED))
         self.assertRefused(self.scene, self.scene.set_tempo_ramp_setting, way=RampWay.OUT, part=RampPart.OVER, value=limits.MAX_RAMP_BARS + 1)
         self.scene.set_tempo_ramp_setting(way=RampWay.IN, part=RampPart.END, value=None)
         self.assertFalse(self.scene.has_tempo_ramp())

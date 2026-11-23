@@ -630,12 +630,12 @@ songs:
 
     scenes:
       - name: drums to the graveyard
-        tempo: 60
+        tempo: 39
         clips:
           - { track: kick, pattern: kick 1, repeat: 1 }
           - { track: snare, pattern: snare 1, loop: true }
       - name: dirge
-        tempo: 60
+        tempo: 39
         clips:
           - { track: trumpet, pattern: trumpet 1, repeat: 1 }
           - { track: trombone, pattern: trombone 1, loop: true }
@@ -645,7 +645,7 @@ songs:
           - { track: snare, pattern: snare 2, loop: true }
           - { track: crash, pattern: crash 1, loop: true }
       - name: "dirge, both horns"
-        tempo: 60
+        tempo: 39
         clips:
           - { track: trumpet, pattern: trumpet 2, repeat: 1 }
           - { track: trombone, pattern: trombone 2, loop: true }

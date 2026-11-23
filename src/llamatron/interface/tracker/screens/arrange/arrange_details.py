@@ -18,7 +18,8 @@ from typing import NamedTuple
 
 from llamatron.interface.tracker import themes
 from llamatron.interface.tracker.drawing import fit, Style
-from llamatron.interface.tracker.text import plain_number
+from llamatron.interface.tracker.screens.shared.percentages import percent_shown
+from llamatron.interface.tracker.text import tempo_text
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.schema import defaults, file_format
 from llamatron.model.schema.file_format import Section, VelocitySetting
@@ -118,7 +119,7 @@ def velocity_lines(owner):
     level = settings[VelocitySetting.LEVEL]
     ramps = any(settings[name] is not None for name in file_format.VELOCITY_SETTINGS if name != VelocitySetting.LEVEL)
     line = marks_text.MSG_DETAILS_VELOCITY_RAMPS if ramps else marks_text.MSG_DETAILS_VELOCITY
-    return [detail(line.format(percent=velocity_ramps.AS_WRITTEN if level is None else level))]
+    return [detail(line.format(percent=percent_shown(velocity_ramps.AS_WRITTEN if level is None else level)))]
 
 
 def shape_lines(owner):
@@ -167,12 +168,13 @@ def scene_details(*, song, scene):
     """Return a scene's lines of details: its chains, its scale, its tempo or tempo ramp, its groove, the registers it resets and its shapes."""
     lines = chain_lines(song=song, names=scene.get_chain_names())
     lines += scale_lines(song=song, name=scene.get_scale_name())
+    # The tempo the scene plays at, its change of the song's applied; a ramp in and a ramp out are too much for a cell, so a mark
+    # says that it moves.
+    tempo = tempo_text(scene.tempo_in(song.get_tempo()))
     if scene.has_tempo_ramp():
-        # A ramp in and a ramp out are too much for a cell: the scene's tempo with a mark says that it moves.
-        tempo = plain_number(song.get_tempo()) if scene.get_tempo_setting() is None else scene.get_tempo_setting()
         lines.append(detail(marks_text.MSG_DETAILS_TEMPO_RAMPS.format(tempo=tempo)))
-    elif scene.get_tempo_setting() is not None:
-        lines.append(detail(marks_text.MSG_DETAILS_TEMPO.format(tempo=scene.get_tempo_setting())))
+    elif scene.has_own_tempo():
+        lines.append(detail(marks_text.MSG_DETAILS_TEMPO.format(tempo=tempo)))
     lines += groove_lines(scene.get_groove_choice())
     return lines + velocity_lines(scene) + shape_lines(scene)
 

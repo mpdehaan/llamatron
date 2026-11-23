@@ -31,24 +31,29 @@ from llamatron.user_strings import errors
 
 
 
-def _ramp_tempos():
-    """Return the settings of a scene's tempo ramps that are tempos, which a file writes as it writes a scene's tempo."""
-    tempos = []
-    for way in file_format.RAMP_WAYS:
-        tempos.append(file_format.TEMPO_RAMP_SETTINGS[(way, RampPart.START)])
-        tempos.append(file_format.TEMPO_RAMP_SETTINGS[(way, RampPart.END)])
-    return tuple(tempos)
-
-
-RAMP_TEMPOS = _ramp_tempos()
+PERCENT = 100
 
 
 class TempoRamp(NamedTuple):
-    """One tempo ramp of a scene as written: the tempo it starts from and the tempo it reaches, either None for the tempo there would have been, and the bars it takes."""
+    """One tempo ramp of a scene as it plays: the tempo it starts from and the tempo it reaches, in quarter notes a minute,
+    either None for the tempo there would have been, and the bars it takes."""
 
     start: object
     end: object
     over: object
+
+
+def _check_tempo_percent(value):
+    """Refuse a percentage of a tempo that isn't a number, such as 110 or the exact 900/11 an import writes, or lies outside a
+    scene's range."""
+    percent = number(value)
+    if not limits.MIN_TEMPO_PERCENT <= percent <= limits.MAX_TEMPO_PERCENT:
+        raise InvalidValue(errors.ERR_BAD_TEMPO_PERCENT.format(lowest=limits.MIN_TEMPO_PERCENT, highest=limits.MAX_TEMPO_PERCENT, value=value))
+
+
+def _nearest_tempo_percent(value):
+    """Return the percentage of a tempo in a scene's range nearest one outside it."""
+    return max(limits.MIN_TEMPO_PERCENT, min(number(value), limits.MAX_TEMPO_PERCENT))
 
 
 def _check_scene_name(name):
@@ -68,12 +73,12 @@ SETTINGS = described(
     Choice(name=SceneSetting.SECTION, choices=file_format.SECTION_KINDS, default=corrections.LEFT_OUT, error=errors.ERR_BAD_SECTION),
     WholeNumber(name=SceneSetting.REPEAT, lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT, error=errors.ERR_BAD_REPEAT),
     Checked(name=SceneSetting.SCALE, check=_check_scale_name, needs_song=True),
-    Checked(name=SceneSetting.TEMPO, check=number),
-    Checked(name=SceneSetting.TEMPO_IN_START, check=number),
-    Checked(name=SceneSetting.TEMPO_IN_END, check=number),
+    Checked(name=SceneSetting.TEMPO, check=_check_tempo_percent, nearest=_nearest_tempo_percent),
+    Checked(name=SceneSetting.TEMPO_IN_START, check=_check_tempo_percent, nearest=_nearest_tempo_percent),
+    Checked(name=SceneSetting.TEMPO_IN_END, check=_check_tempo_percent, nearest=_nearest_tempo_percent),
     WholeNumber(name=SceneSetting.TEMPO_IN_OVER, lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, error=errors.ERR_BAD_RAMP_BARS),
-    Checked(name=SceneSetting.TEMPO_OUT_START, check=number),
-    Checked(name=SceneSetting.TEMPO_OUT_END, check=number),
+    Checked(name=SceneSetting.TEMPO_OUT_START, check=_check_tempo_percent, nearest=_nearest_tempo_percent),
+    Checked(name=SceneSetting.TEMPO_OUT_END, check=_check_tempo_percent, nearest=_nearest_tempo_percent),
     WholeNumber(name=SceneSetting.TEMPO_OUT_OVER, lowest=limits.MIN_RAMP_BARS, highest=limits.MAX_RAMP_BARS, error=errors.ERR_BAD_RAMP_BARS),
     reset_draws_setting(SceneSetting.RESET_DRAWS),
     Checked(name=SceneSetting.GROOVE, check=check_groove_choice, needs_song=True),
@@ -83,9 +88,8 @@ SETTINGS = described(
     *shape_settings(),
     statements_setting(SceneSetting.BYPASS_WHEN),
 )
-# The settings a file is read without the plain check of: a name is kept as the file writes it, a number too, and
-# so are the tempos of its ramps (_check_tempo).
-READ_ANOTHER_WAY = (SceneSetting.NAME, SceneSetting.TEMPO, *RAMP_TEMPOS)
+# The settings a file is read without the plain check of: a name is kept as the file writes it.
+READ_ANOTHER_WAY = (SceneSetting.NAME,)
 
 
 class Scene(RunsChains, BypassedWhen, ResetsDraws, HoldsSettings):
@@ -121,7 +125,6 @@ class Scene(RunsChains, BypassedWhen, ResetsDraws, HoldsSettings):
                 raise InvalidValue(errors.ERR_SCENE_EXPECTED_SETTINGS)
             pass_over_unknown(data=data, allowed={*SETTINGS, SceneSetting.TRACKS})
             check_settings(settings=SETTINGS, data=data, song=song, leaving_out=READ_ANOTHER_WAY)
-            _check_tempo(data)
             clip_slots = None
             if SceneSetting.TRACKS in data:
                 clip_slots = _clip_slots_from(data=data[SceneSetting.TRACKS] or {}, where=where, song=song)
@@ -172,32 +175,55 @@ class Scene(RunsChains, BypassedWhen, ResetsDraws, HoldsSettings):
         """Return the name of the scale it sets, or None to use the song's."""
         return self._settings[SceneSetting.SCALE]
 
-    def get_tempo(self):
-        """Return the tempo it sets, or None to use the song's. Its ramps move away from this tempo and back to it."""
-        tempo = self._settings[SceneSetting.TEMPO]
-        if tempo is None:
-            return None
-        return number(tempo)
+    def tempo_in(self, song_tempo):
+        """Return the tempo it plays at, in quarter notes a minute: the song's, scaled by its own percentage where it has one.
+        Its ramps move away from this tempo and back to it."""
+        return scaled_tempo(tempo=song_tempo, percent=self._settings[SceneSetting.TEMPO])
+
+    def has_own_tempo(self):
+        """Return whether it scales the song's tempo."""
+        return self._settings[SceneSetting.TEMPO] is not None
+
+    def tempo_percent(self):
+        """Return the percentage of the song's tempo it plays at, as an exact number, or None if it plays at the song's."""
+        return _number_or_none(self._settings[SceneSetting.TEMPO])
+
+    def ramp_end_percent(self, *, way, part):
+        """Return the percentage of its tempo the start or the end of one of its tempo ramps plays at, as an exact number, or None where blank."""
+        return _number_or_none(self.get_tempo_ramp_setting(way=way, part=part))
 
     def get_tempo_setting(self):
-        """Return the tempo it sets, as written, or None if it has none."""
+        """Return the percentage of the song's tempo it plays at, as written, or None if it plays at the song's."""
         return self._settings[SceneSetting.TEMPO]
 
-    def get_tempo_ramp(self, way):
-        """Return its tempo ramp in or out as a TempoRamp, or None when the ramp changes nothing: it gives no bars, or neither a start nor an end."""
+    def get_tempo_ramp(self, *, way, base):
+        """Return its tempo ramp in or out as a TempoRamp of tempos, each end a percentage of base, the tempo the scene plays
+        at; or None when the ramp changes nothing: it gives no bars, or neither a start nor an end."""
+        if not self.ramps_tempo(way):
+            return None
         start = self.get_tempo_ramp_setting(way=way, part=RampPart.START)
         end = self.get_tempo_ramp_setting(way=way, part=RampPart.END)
         over = self.get_tempo_ramp_setting(way=way, part=RampPart.OVER)
-        if over is None or (start is None and end is None):
-            return None
-        return TempoRamp(start=_number_or_none(start), end=_number_or_none(end), over=over)
+        return TempoRamp(start=_scaled_or_none(tempo=base, percent=start), end=_scaled_or_none(tempo=base, percent=end), over=over)
 
     def has_tempo_ramp(self):
         """Return whether either of its tempo ramps changes its tempo."""
         for way in file_format.RAMP_WAYS:
-            if self.get_tempo_ramp(way) is not None:
+            if self.ramps_tempo(way):
                 return True
         return False
+
+    def ramps_tempo(self, way):
+        """Return whether its tempo ramp one way changes its tempo: it gives its bars, and a start or an end."""
+        over = self.get_tempo_ramp_setting(way=way, part=RampPart.OVER)
+        start = self.get_tempo_ramp_setting(way=way, part=RampPart.START)
+        end = self.get_tempo_ramp_setting(way=way, part=RampPart.END)
+        return over is not None and (start is not None or end is not None)
+
+    def ramp_end_tempo(self, *, way, part, song_tempo):
+        """Return the tempo the start or the end of one of its tempo ramps gives, its percentage of the tempo the scene plays
+        at, or None where it is blank."""
+        return _scaled_or_none(tempo=self.tempo_in(song_tempo), percent=self.get_tempo_ramp_setting(way=way, part=part))
 
     def get_tempo_ramp_setting(self, *, way, part):
         """Return one part of one of its tempo ramps as written, or None where it is blank."""
@@ -274,7 +300,7 @@ class Scene(RunsChains, BypassedWhen, ResetsDraws, HoldsSettings):
 
     @notes_change
     def set_tempo(self, tempo):
-        """Set its tempo."""
+        """Set the percentage of the song's tempo it plays at."""
         SETTINGS[SceneSetting.TEMPO].check(tempo)
         self._settings[SceneSetting.TEMPO] = tempo
 
@@ -369,13 +395,6 @@ class Scene(RunsChains, BypassedWhen, ResetsDraws, HoldsSettings):
         self._clip_slots = moved
 
 
-def _check_tempo(data):
-    """Refuse a tempo that isn't a number, the scene's own or one of its ramps'."""
-    for name in (SceneSetting.TEMPO, *RAMP_TEMPOS):
-        if name in data:
-            SETTINGS[name].check_held(data)
-
-
 def _clip_slots_from(*, data, where, song):
     """Return a scene's clip slots read from the file's data, by track, refusing a track the song doesn't have."""
     clip_slots = {}
@@ -387,8 +406,22 @@ def _clip_slots_from(*, data, where, song):
 
 
 def _number_or_none(written):
-    """Return a tempo as written as a number, or None where it is blank."""
+    """Return a percentage of a tempo as written as an exact number, or None where it is blank."""
     if written is None:
         return None
     return number(written)
 
+
+def _scaled_or_none(*, tempo, percent):
+    """Return a tempo scaled by a percentage, or None where the percentage is blank."""
+    if percent is None:
+        return None
+    return scaled_tempo(tempo=tempo, percent=percent)
+
+
+def scaled_tempo(*, tempo, percent):
+    """Return a tempo scaled by a percentage, as an exact number, never below the slowest tempo, or the tempo itself for a
+    percentage left blank."""
+    if percent is None:
+        return tempo
+    return max(tempo * number(percent) / PERCENT, limits.MIN_TEMPO)

@@ -219,106 +219,106 @@ songs:
     scenes:
       - name: "strum: as written"
         scale: G Major
-        tempo: 96
+        tempo: 92
         clips:
           - { track: steel, pattern: strummed, built_in: { guitarify: { enabled: true, mode: strum, spread: 15 } } }
       - name: "country: porch"
         scale: G Major
-        tempo: 104
+        tempo: 100
         clips:
           - { track: steel, pattern: porch, built_in: { guitarify: { enabled: true, bar: [bass, nothing, down, nothing, alt_bass, nothing, down, nothing], accents: [true, false, false, false, true, false, false, false], cell: 1/8 } } }
       - name: "country: thumb and fingers"
         scale: C Major
-        tempo: 96
+        tempo: 92
         clips:
           - { track: steel, pattern: thumb and fingers, built_in: { guitarify: { enabled: true, bar: [bass, string_2, alt_bass, string_1, bass, string_3, alt_bass, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true } } }
       - name: "bluegrass: crosspick"
         scale: G Major
-        tempo: 126
+        tempo: 121
         clips:
           - { track: steel, pattern: crosspick, built_in: { guitarify: { enabled: true, bar: [string_3, string_2, string_1, string_3, string_2, string_1, string_3, string_2], accents: [true, false, false, true, false, false, true, false], cell: 1/8, let_ring: true } } }
       - name: "jazz: four to the bar"
         scale: C Major
-        tempo: 132
+        tempo: 127
         clips:
           - { track: jazz, pattern: four to the bar, built_in: { guitarify: { enabled: true, bar: [down, down, down, down], accents: [false, true, false, true], cell: 1/4, position: 3, strings: 4, spread: 4 } } }
       - name: "blues: open g"
         scale: G Major
-        tempo: 84
+        tempo: 81
         clips:
           - { track: steel, pattern: open g, built_in: { guitarify: { enabled: true, bar: [down, nothing, down, up, nothing, up, down, up], accents: [true, false, false, false, false, false, true, false], cell: 1/8, tuning: open_g, let_ring: true, spread: 14 } } }
       - name: "rock and roll: boogie"
         scale: A Major
-        tempo: 152
+        tempo: 146
         clips:
           - { track: clean, pattern: boogie, built_in: { guitarify: { enabled: true, bar: [down, down, down, down, down, down, down, down], accents: [false, false, true, false, false, false, true, false], cell: 1/8, single_notes: power_chord, spread: 2 } } }
       - name: "surf: tremolo"
         scale: A Minor
-        tempo: 150
+        tempo: 144
         clips:
           - { track: clean, pattern: tremolo, built_in: { guitarify: { enabled: true, bar: [string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1, string_1], accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false], cell: 1/16, position: 5 } } }
       - name: "folk: campfire"
         scale: G Major
-        tempo: 96
+        tempo: 92
         clips:
           - { track: steel, pattern: campfire, built_in: { guitarify: { enabled: true, bar: [down, nothing, down, up, nothing, up, down, up], accents: [true, false, false, false, false, false, true, false], cell: 1/8 } } }
       - name: "folk rock: chime"
         scale: D Major
-        tempo: 116
+        tempo: 112
         clips:
           - { track: clean, pattern: chime, built_in: { guitarify: { enabled: true, bar: [string_4, string_2, string_1, string_3, string_2, string_1, string_3, string_2], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true } } }
       - name: "soul: backbeat"
         scale: E Major
-        tempo: 104
+        tempo: 100
         clips:
           - { track: clean, pattern: backbeat, built_in: { guitarify: { enabled: true, bar: [nothing, nothing, stab, nothing, nothing, nothing, stab, nothing], accents: [false, false, true, false, false, false, true, false], cell: 1/8, position: 4, strings: 4, spread: 3 } } }
       - name: "funk: scratch"
         scale: E Major
-        tempo: 100
+        tempo: 96
         clips:
           - { track: muted, pattern: scratch, built_in: { guitarify: { enabled: true, bar: [down, mute, mute, up, mute, mute, down, mute, mute, up, down, mute, mute, up, mute, mute], accents: [true, false, false, false, false, false, true, false, false, false, true, false, false, false, false, false], cell: 1/16, position: 6, strings: 4, spread: 2 } } }
       - name: "singer-songwriter: harp"
         scale: D Major
-        tempo: 80
+        tempo: 77
         clips:
           - { track: nylon, pattern: harp, built_in: { guitarify: { enabled: true, bar: [bass, string_4, string_3, string_2, string_1, nothing, nothing, nothing], accents: [false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true } } }
       - name: "hard rock: arena"
         scale: A Major
-        tempo: 120
+        tempo: 115
         clips:
           - { track: overdriven, pattern: arena, built_in: { guitarify: { enabled: true, bar: [down, nothing, nothing, down, nothing, down, nothing, nothing], accents: [true, false, false, false, false, false, false, false], cell: 1/8, single_notes: power_chord, let_ring: true, spread: 2 } } }
       - name: "punk: three chords loud"
         scale: G Major
-        tempo: 184
+        tempo: 177
         clips:
           - { track: distortion, pattern: three chords loud, built_in: { guitarify: { enabled: true, bar: [down, down, down, down, down, down, down, down], accents: [false, false, false, false, false, false, false, false], cell: 1/8, single_notes: power_chord, spread: 2, fade: 0 } } }
       - name: "metal: gallop"
         scale: E Minor
-        tempo: 150
+        tempo: 144
         clips:
           - { track: distortion, pattern: gallop, built_in: { guitarify: { enabled: true, bar: [muted_bass, nothing, muted_bass, muted_bass, muted_bass, nothing, muted_bass, muted_bass, muted_bass, nothing, muted_bass, muted_bass, down, nothing, muted_bass, muted_bass], accents: [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false], cell: 1/16, single_notes: power_chord, spread: 2, fade: 0 } } }
       - name: "metal: thrash"
         scale: E Minor
-        tempo: 190
+        tempo: 183
         clips:
           - { track: distortion, pattern: thrash, built_in: { guitarify: { enabled: true, bar: [down, muted_bass, muted_bass, muted_bass, muted_bass, muted_bass, down, muted_bass, muted_bass, muted_bass, down, muted_bass, muted_bass, muted_bass, muted_bass, muted_bass], accents: [true, false, false, false, false, false, true, false, false, false, true, false, false, false, false, false], cell: 1/16, single_notes: power_chord, spread: 2, fade: 0 } } }
       - name: "metal: low and slow"
         scale: D Minor
-        tempo: 70
+        tempo: 67
         clips:
           - { track: distortion, pattern: low and slow, built_in: { guitarify: { enabled: true, bar: [down, nothing, nothing, nothing], accents: [false, false, false, false], cell: 1/4, tuning: drop_d, single_notes: power_chord, let_ring: true, spread: 2, fade: 0 } } }
       - name: "alternative: quiet loud"
         scale: A Minor
-        tempo: 110
+        tempo: 106
         clips:
           - { track: overdriven, pattern: quiet loud, built_in: { guitarify: { enabled: true, bar: [bass, string_3, string_2, string_1, string_2, string_3, string_2, string_1, bass, string_3, string_2, string_1, string_2, string_3, string_2, string_1, down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up], accents: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, true, false, true, false, true, false, false, false, true, false], cell: 1/8, let_ring: true } } }
       - name: "blues: shuffle"
         scale: E Major
-        tempo: 120
+        tempo: 115
         clips:
           - { track: clean, pattern: shuffle, built_in: { guitarify: { enabled: true, bar: [down, nothing, down, down, nothing, down, down, nothing, down, down, nothing, down], accents: [false, false, false, true, false, false, false, false, false, true, false, false], cell: 1/12, strings: 4, spread: 4 } } }
       - name: "finale: last chord"
         scale: G Major
-        tempo: 92
+        tempo: 88
         clips:
           - { track: steel, pattern: last chord, built_in: { guitarify: { enabled: true, bar: [down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up, down, nothing, down, up, nothing, up, down, up, bass, string_4, string_3, string_2, string_1, nothing, nothing, nothing], accents: [true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], cell: 1/8, let_ring: true } } }

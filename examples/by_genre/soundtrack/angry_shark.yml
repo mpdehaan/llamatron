@@ -199,16 +199,16 @@ songs:
 
     scenes:
       - name: lurking
-        tempo: 70
+        tempo: 47
         clips:
           - { track: basses, pattern: cell slow, repeat: 2 }
       - name: nearer
-        tempo: 90
+        tempo: 60
         clips:
           - { track: basses, pattern: cell, repeat: 8 }
           - { track: cellos, pattern: cell slow, loop: true }
       - name: approach
-        tempo: 120
+        tempo: 80
         clips:
           - { track: basses, pattern: cell, repeat: 8 }
           - { track: cellos, pattern: cell, loop: true }
@@ -230,13 +230,13 @@ songs:
           - { track: timpani, pattern: timpani, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] } } }
           - { track: snare, pattern: snare, loop: true }
       - name: calm
-        tempo: 80
+        tempo: 53
         clips:
           - { track: strings, pattern: held high, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 6, 3] } } }
           - { track: harp, pattern: held, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [3, 7, 6, 3] }, arp: { enabled: true, step: 1/8, order: up, octave_range: 2 } } }
           - { track: flute, pattern: calm tune, loop: true }
       - name: lurking again
-        tempo: 70
+        tempo: 47
         clips:
           - { track: basses, pattern: cell slow, repeat: 2 }
           - { track: tuba, pattern: tuba tune, loop: true }
@@ -250,7 +250,7 @@ songs:
           - { track: cymbal, pattern: cymbal, loop: true }
           - { track: strings, pattern: stab, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 4, 5], qualities: [~, ~, ~, M] } } }
       - name: ending
-        tempo: 70
+        tempo: 47
         clips:
           - { track: basses, pattern: cell slow, loop: true }
           - { track: cymbal, pattern: cymbal, repeat: 1 }

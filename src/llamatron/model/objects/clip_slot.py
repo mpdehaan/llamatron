@@ -185,9 +185,10 @@ class ClipSlot(HoldsBuiltIns, RunsChains, ResetsDraws, HoldsSettings):
         """Return its velocity settings as written, each by its file name: the level that holds and the parts of its two ramps, None where one is blank."""
         return {name: self._settings[name] for name in file_format.VELOCITY_SETTINGS}
 
-    def get_velocity(self, scene):
-        """Return how loud the clip plays in its scene, as a Velocity: its own settings over the scene's, field by field."""
-        return velocity_of(scene_settings=scene.get_velocity_settings(), clip_settings=self.get_velocity_settings())
+    def get_velocity(self, *, scene, outer_levels=()):
+        """Return how loud the clip plays in its scene, as a Velocity: its level stacked on its scene's and on outer_levels, its
+        instrument's and track's, and its own ramp fields over the scene's, field by field."""
+        return velocity_of(scene_settings=scene.get_velocity_settings(), clip_settings=self.get_velocity_settings(), outer_levels=outer_levels)
 
     def get_shape(self, shape):
         """Return how a shape, Density or Articulate, runs over the clip, or None when the clip sets neither its start nor its end and takes its scene's."""

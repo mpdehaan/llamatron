@@ -40,6 +40,7 @@ from llamatron.wizards.create_song.melody import has_hook, plan_as_asked, plan_w
 from llamatron.wizards.create_song.notation import clamped, drum_rows
 from llamatron.wizards.create_song.players import player_name
 from llamatron.wizards.create_song.riffs import accent_bars, bars_of as riff_bars_of, bars_played, held_bar, line_of as riff_line_of, single, split_bars
+from llamatron.wizards.create_song.scene_changes import as_percentages
 from llamatron.wizards.create_song.shaping import is_compound
 from llamatron.wizards.create_song.song_plan import SongPlan
 
@@ -1659,7 +1660,7 @@ class Arrangement:
             settings.setdefault(VelocitySetting.OUT_OVER, at.bars)
         if SceneSetting.TEMPO_IN_END in settings:
             settings.setdefault(SceneSetting.TEMPO_IN_OVER, at.bars)
-        return settings
+        return as_percentages(settings=settings, song_tempo=self._tempo)
 
     def _said_of_scene(self, at):
         """Return what the notes say of a section's scene: its count, its name and its bars, and what the plan said of it."""

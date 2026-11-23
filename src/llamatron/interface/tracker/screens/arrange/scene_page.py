@@ -10,17 +10,18 @@ from rich.text import Text
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.groove_choice import groove_choice_field
-from llamatron.interface.tracker.screens.shared import statements
+from llamatron.interface.tracker.screens.shared import percentages, statements
 from llamatron.interface.tracker.screens.shared.arrange_tabs import fields_tab, reset_draws_tab
 from llamatron.interface.tracker.screens.shared.field import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
+from llamatron.interface.tracker.screens.shared.percentages import percent_shown
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
 from llamatron.interface.tracker.screens.shared.shared import scene_name
 from llamatron.interface.tracker.screens.shared.statements import statement_section
 from llamatron.interface.tracker.screens.shared.tab_box import columns_of_sections, Tab, TabBox, TabColumn
-from llamatron.interface.tracker.screens.shared.velocity_fields import velocity_field, velocity_ramp_sections
-from llamatron.interface.tracker.text import clock, plain_number, sorted_names, tempo_text
+from llamatron.interface.tracker.screens.shared.velocity_fields import velocity_field, velocity_ramp_sections, VelocityValues
+from llamatron.interface.tracker.text import clock, sorted_names, tempo_text
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import RampPart, Section, shape_setting
 from llamatron.user_strings import help as help_text, labels, legends, marks, messages
@@ -28,7 +29,14 @@ from llamatron.user_strings import help as help_text, labels, legends, marks, me
 
 def _has_ramp(*, scene, way):
     """Return whether a scene ramps its tempo one way."""
-    return scene.get_tempo_ramp(way) is not None
+    return scene.ramps_tempo(way)
+
+
+def whole_or_none(percent):
+    """Return a percentage as the nearest whole number a field steps and types from, or None for none."""
+    if percent is None:
+        return None
+    return round(percent)
 
 
 def _ramp_bars_shown(over):
@@ -137,8 +145,13 @@ class ScenePage(FieldPage):
         self._set_scale(None)
 
     def tempo(self):
-        """Return the tempo the scene sets, or None if it uses the song's."""
-        return self.scene().get_tempo_setting()
+        """Return the percentage of the song's tempo the scene plays at, as an exact number, or None if it plays at the song's."""
+        return self.scene().tempo_percent()
+
+    def played_tempo(self):
+        """Return the tempo the scene plays at, its percentage of the song's."""
+        song = self.document().song()
+        return self.scene().tempo_in(song.get_tempo())
 
     def set_tempo(self, value):
         self._change(self.scene().set_tempo, value)
@@ -147,8 +160,8 @@ class ScenePage(FieldPage):
         self._change(self.scene().clear_tempo)
 
     def tempo_ramp_section(self, way):
-        """Return a tempo ramp's section, closed until opened: the tempo it starts from, the tempo it reaches, each the scene's
-        tempo until given, and the bars it takes, with no ramp until they are given."""
+        """Return a tempo ramp's section: the percentage of the scene's tempo it starts from and the one it reaches, each 100%
+        until given, and the bars it takes, with no ramp until they are given."""
         scene = self.scene()
         is_set = functools.partial(_has_ramp, scene=scene, way=way)
         fields = [self.heading(label=labels.MSG_TEMPO_RAMP_SECTIONS[way], is_set=lambda: is_set())]
@@ -164,23 +177,20 @@ class ScenePage(FieldPage):
         return fields
 
     def _ramp_tempo_field(self, *, way, part):
-        """Return the field of the tempo a ramp starts from or reaches, the scene's or the song's tempo until given."""
+        """Return the field of the percentage of the scene's tempo a ramp starts from or reaches, shown with the tempo it makes,
+        and the scene's tempo until given."""
         scene = self.scene()
-        number = scene.get_tempo_ramp_setting(way=way, part=part)
-        here = self.tempo()
-        if here is None:
-            song = self.document().song()
-            base = plain_number(song.get_tempo())
-            shown = marks.MSG_SONG_TEMPO_SHOWN.format(tempo=base)
+        number = scene.ramp_end_percent(way=way, part=part)
+        if number is None:
+            shown = self._blank_tempo_shown()
         else:
-            base = here
-            shown = marks.MSG_SCENE_TEMPO_SHOWN.format(tempo=base)
-        if number is not None:
-            shown = marks.MSG_TEMPO_SHOWN.format(tempo=number)
+            song = self.document().song()
+            reached = scene.ramp_end_tempo(way=way, part=part, song_tempo=song.get_tempo())
+            shown = marks.MSG_TEMPO_PERCENT_SHOWN.format(percent=percent_shown(number), tempo=tempo_text(reached))
         store = functools.partial(self._set_ramp, way=way, part=part)
         return NumberField(
-            page=self, label=labels.MSG_TEMPO_RAMP_LABELS[(way, part)], number=number, start=base, shown=shown, lowest=limits.MIN_TEMPO,
-            highest=limits.MAX_TEMPO, set=lambda value: store(value=value), clear=functools.partial(store, value=None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
+            page=self, label=labels.MSG_TEMPO_RAMP_LABELS[(way, part)], number=whole_or_none(number), start=percentages.UNCHANGED, shown=shown, lowest=limits.MIN_TEMPO_PERCENT,
+            highest=limits.MAX_TEMPO_PERCENT, set=lambda value: store(value=value), clear=functools.partial(store, value=None), clear_what=legends.MSG_RAMP_BLANK_WHAT,
         )
 
     def _set_ramp(self, *, way, part, value):
@@ -194,11 +204,19 @@ class ScenePage(FieldPage):
         return marks.MSG_SONG_SCALE_SHOWN.format(scale=song.get_scale_name() or messages.MSG_NO_SCALE)
 
     def tempo_text(self):
-        tempo = self.tempo()
-        if tempo is not None:
-            return marks.MSG_TEMPO_SHOWN.format(tempo=tempo)
-        song = self.document().song()
-        return marks.MSG_SONG_TEMPO_SHOWN.format(tempo=tempo_text(song.get_tempo()))
+        """Return the scene's Tempo as its field shows it: its percentage of the song's tempo with the tempo it makes, or the song's."""
+        percent = self.tempo()
+        if percent is None:
+            song = self.document().song()
+            return marks.MSG_SONG_TEMPO_SHOWN.format(tempo=tempo_text(song.get_tempo()))
+        return marks.MSG_TEMPO_PERCENT_SHOWN.format(percent=percent_shown(percent), tempo=tempo_text(self.played_tempo()))
+
+    def _blank_tempo_shown(self):
+        """Return what a blank end of a tempo ramp shows: the tempo the scene plays at, and where it comes from."""
+        tempo = tempo_text(self.played_tempo())
+        if self.tempo() is None:
+            return marks.MSG_SONG_TEMPO_SHOWN.format(tempo=tempo)
+        return marks.MSG_SCENE_TEMPO_SHOWN.format(tempo=tempo)
 
     def fields(self):
         return [NameField(value=self._name_shown, rename=self.rename), TabBox(tabs=self._tabs())]
@@ -207,18 +225,17 @@ class ScenePage(FieldPage):
         """Return the scene's tabs: Settings, then the tabs that are not generators, Velocity, Tempo Ramps, Shapes and Reset Draws,
         then its list of generators and the statements that bypass the generators of its clips. A scene holds no built-in
         generator."""
-        own, above, store = self.velocity_values()
+        values = self.velocity_values()
         shapes = []
         for shape in file_format.PLACED_SHAPES:
             shapes += self.shape_section(shape)
         tempo_ramps = []
         for way in file_format.RAMP_WAYS:
             tempo_ramps += self.tempo_ramp_section(way)
-        velocity = TabColumn(heading=None, fields=[velocity_field(page=self, own=own, above=above, store=store)])
         bypass = self.bypass_section()
         return [
             self._basics_tab(),
-            Tab(label=labels.MSG_VELOCITY_TAB, columns=[velocity, *columns_of_sections(velocity_ramp_sections(page=self, own=own, above=above, store=store))]),
+            Tab(label=labels.MSG_VELOCITY_TAB, top=[velocity_field(page=self, values=values)], columns=columns_of_sections(velocity_ramp_sections(page=self, values=values))),
             Tab(label=labels.MSG_TEMPO_RAMPS_TAB, columns=columns_of_sections(tempo_ramps)),
             Tab(label=labels.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
             reset_draws_tab(page=self, holder=self.scene()),
@@ -229,7 +246,6 @@ class ScenePage(FieldPage):
     def _basics_tab(self):
         """Return the Settings tab: how the scene plays."""
         scene = self.scene()
-        song = self.document().song()
         playing = [
             self.section_field(),
             NumberField(page=self, label=labels.MSG_REPEAT_LABEL, number=scene.get_repeat(), lowest=limits.MIN_REPEAT, highest=limits.MAX_SCENE_REPEAT, set=self._set_repeat),
@@ -238,8 +254,8 @@ class ScenePage(FieldPage):
                   clear=self.clear_scale, clear_what=legends.MSG_USE_SONG_SCALE_WHAT),
             self.groove_field(),
             NumberField(
-                page=self, label=labels.MSG_TEMPO_LABEL, number=self.tempo(), start=plain_number(song.get_tempo()), shown=self.tempo_text(),
-                lowest=limits.MIN_TEMPO, highest=limits.MAX_TEMPO, set=self.set_tempo, clear=self.clear_tempo, clear_what=legends.MSG_USE_SONG_TEMPO_WHAT,
+                page=self, label=labels.MSG_TEMPO_LABEL, number=whole_or_none(self.tempo()), start=percentages.UNCHANGED, shown=self.tempo_text(),
+                lowest=limits.MIN_TEMPO_PERCENT, highest=limits.MAX_TEMPO_PERCENT, set=self.set_tempo, clear=self.clear_tempo, clear_what=legends.MSG_USE_SONG_TEMPO_WHAT,
             ),
         ]
         return Tab(label=labels.MSG_SETTINGS_TAB, columns=[TabColumn(heading=labels.MSG_PLAYING_HEADING, fields=playing)])
@@ -267,7 +283,7 @@ class ScenePage(FieldPage):
         """Return what the velocity fields read the scene's own velocity settings with, what gives a blank one from above,
         which nothing does for a scene, and what keeps one."""
         scene = self.scene()
-        return scene.get_written, lambda name: None, lambda name, value: self._set_written(name=name, value=value)
+        return VelocityValues(own=scene.get_written, above=lambda name: None, store=lambda name, value: self._set_written(name=name, value=value))
 
     def bypass_section(self):
         """Return the statements that bypass the generators of the scene's clips."""

@@ -22,6 +22,7 @@ from typing import NamedTuple
 from llamatron.engine.realizer.as_written import as_written
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import timed_events
+from llamatron.interface.tracker.text import tempo_text
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, Quality
 from llamatron.model.values import note as note_values
@@ -274,10 +275,8 @@ NO_GROOVE = marks.MSG_SCENE_VIEW_NO_GROOVE
 def effective_values(*, song, index):
     """Return the tempo, scale and groove a scene plays with and where each comes from, and the tracks whose clips take scales of their own."""
     scene = song.get_scenes()[index]
-    if scene.get_tempo_setting() is not None:
-        tempo, tempo_source = str(scene.get_tempo_setting()), SCENE_SOURCE
-    else:
-        tempo, tempo_source = str(song.get_tempo()), SONG_SOURCE
+    tempo = tempo_text(scene.tempo_in(song.get_tempo()))
+    tempo_source = SCENE_SOURCE if scene.has_own_tempo() else SONG_SOURCE
     if scene.has_tempo_ramp():
         tempo, tempo_source = marks.MSG_SCENE_VIEW_TEMPO_RAMPS.format(tempo=tempo), SCENE_SOURCE
     scale_name = scene.get_scale_name() or song.get_scale_name()

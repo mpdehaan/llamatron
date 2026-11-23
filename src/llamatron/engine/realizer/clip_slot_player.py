@@ -275,7 +275,7 @@ class ClipSlotPlayer:
         together. A ramp whose bars the clip gives counts them over the clip's own play: from the
         clip's start, and back from its end, which for a looping clip is its scene's end.
         """
-        velocity = self._clip_slot.get_velocity(self._scene.get_scene())
+        velocity = self._clip_slot.get_velocity(scene=self._scene.get_scene(), outer_levels=self._song.velocity_percents_of(self._track))
         if velocity.changes_nothing():
             return None
         bar = self._song.get_time_signature().bar_length()

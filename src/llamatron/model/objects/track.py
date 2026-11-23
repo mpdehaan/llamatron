@@ -58,6 +58,7 @@ SETTINGS = described(
     Checked(name=TrackSetting.INSTRUMENT, check=_check_instrument_name, needs_song=True),
     WholeNumber(name=TrackSetting.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, error=errors.ERR_BAD_DEFAULT_VELOCITY),
     WholeNumber(name=TrackSetting.ACCENT, lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT, error=errors.ERR_BAD_ACCENT),
+    WholeNumber(name=TrackSetting.VELOCITY, lowest=limits.MIN_VELOCITY_PERCENT, highest=limits.MAX_VELOCITY_PERCENT, error=errors.ERR_BAD_SHAPE_PERCENT),
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
     built_ins_setting(TrackSetting.BUILT_IN),
 )
@@ -82,7 +83,7 @@ class Track(HoldsBuiltIns, RunsChains, HoldsSettings):
 
     def __init__(
         self, *, drum=None, mute=None, transpose=None, lowest_octave=None, highest_octave=None, cc=None, groove=None, instrument=None,
-        default_velocity=None, accent=None, chains=None,
+        default_velocity=None, accent=None, velocity=None, chains=None,
         built_in=None,
     ):
         self.note_change()
@@ -90,6 +91,7 @@ class Track(HoldsBuiltIns, RunsChains, HoldsSettings):
             TrackSetting.DRUM: drum, TrackSetting.MUTE: mute, TrackSetting.TRANSPOSE: transpose,
             TrackSetting.LOWEST_OCTAVE: lowest_octave, TrackSetting.HIGHEST_OCTAVE: highest_octave, TrackSetting.CC: own_copy(cc), TrackSetting.GROOVE: groove,
             TrackSetting.INSTRUMENT: instrument, TrackSetting.DEFAULT_VELOCITY: default_velocity, TrackSetting.ACCENT: accent,
+            TrackSetting.VELOCITY: velocity,
             TrackSetting.CHAINS: own_copy(chains),
             TrackSetting.BUILT_IN: own_copy(built_in),
         }
@@ -126,6 +128,10 @@ class Track(HoldsBuiltIns, RunsChains, HoldsSettings):
     def get_default_velocity(self):
         """Return the velocity a step with none typed plays at on the track, or None where the track leaves that to its instrument."""
         return self._settings[TrackSetting.DEFAULT_VELOCITY]
+
+    def get_velocity_percent(self):
+        """Return the percentage of its written velocity every clip of the track plays, or None for 100%."""
+        return self._settings[TrackSetting.VELOCITY]
 
     def get_accent(self):
         """Return what an accented step adds to its velocity on the track, on top of its instrument's accent."""

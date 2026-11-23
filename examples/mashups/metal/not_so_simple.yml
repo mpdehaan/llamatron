@@ -819,7 +819,7 @@ songs:
           - { track: toms, pattern: toms 1, loop: true }
           - { track: tom low, pattern: tom low 1, loop: true }
       - name: the riff
-        tempo: 132
+        tempo: 138
         clips:
           - { track: lead, pattern: lead 1, repeat: 1 }
           - { track: keys, pattern: keys 1, loop: true }
@@ -832,7 +832,7 @@ songs:
           - { track: tom low, pattern: tom low 2, loop: true }
           - { track: crash, pattern: crash 1, loop: true }
       - name: the tune over the riff
-        tempo: 132
+        tempo: 138
         clips:
           - { track: lead, pattern: lead 2, repeat: 1 }
           - { track: keys, pattern: keys 2, loop: true }
@@ -845,7 +845,7 @@ songs:
           - { track: tom low, pattern: tom low 2, loop: true }
           - { track: crash, pattern: crash 1, loop: true }
       - name: twice as fast
-        tempo: 144
+        tempo: 150
         clips:
           - { track: lead, pattern: lead 3, repeat: 1 }
           - { track: keys, pattern: lead 3, loop: true }
@@ -858,7 +858,7 @@ songs:
           - { track: tom low, pattern: tom low 3, loop: true }
           - { track: crash, pattern: crash 1, loop: true }
       - name: "guitar solo, keys solo"
-        tempo: 144
+        tempo: 150
         clips:
           - { track: lead, pattern: lead 4, repeat: 1 }
           - { track: keys, pattern: keys 3, loop: true }
@@ -871,7 +871,7 @@ songs:
           - { track: tom low, pattern: tom low 1, loop: true }
           - { track: crash, pattern: crash 1, loop: true }
       - name: trading
-        tempo: 144
+        tempo: 150
         clips:
           - { track: lead, pattern: lead 5, repeat: 1 }
           - { track: keys, pattern: keys 4, loop: true }
@@ -884,7 +884,7 @@ songs:
           - { track: tom low, pattern: tom low 3, loop: true }
           - { track: crash, pattern: crash 1, loop: true }
       - name: breakdown
-        tempo: 144
+        tempo: 150
         clips:
           - { track: keys, pattern: keys 5, repeat: 1 }
           - { track: rhythm, pattern: rhythm 4, loop: true }
@@ -896,7 +896,7 @@ songs:
           - { track: tom low, pattern: tom low 4, loop: true }
           - { track: crash, pattern: crash 2, loop: true }
       - name: drums
-        tempo: 144
+        tempo: 150
         clips:
           - { track: kick, pattern: kick 7, repeat: 1 }
           - { track: snare, pattern: snare 7, loop: true }
@@ -905,7 +905,7 @@ songs:
           - { track: tom low, pattern: tom low 5, loop: true }
           - { track: crash, pattern: crash 3, loop: true }
       - name: in a new key
-        tempo: 144
+        tempo: 150
         clips:
           - { track: lead, pattern: lead 6, repeat: 1 }
           - { track: keys, pattern: keys 6, loop: true }
@@ -918,7 +918,7 @@ songs:
           - { track: tom low, pattern: tom low 1, loop: true }
           - { track: crash, pattern: crash 1, loop: true }
       - name: unison
-        tempo: 144
+        tempo: 150
         clips:
           - { track: lead, pattern: lead 7, repeat: 1 }
           - { track: keys, pattern: keys 7, loop: true }
@@ -928,7 +928,7 @@ songs:
           - { track: snare, pattern: snare 9, loop: true }
           - { track: crash, pattern: crash 4, loop: true }
       - name: grand
-        tempo: 108
+        tempo: 112
         clips:
           - { track: lead, pattern: lead 8, repeat: 1 }
           - { track: keys, pattern: keys 8, loop: true }
@@ -942,7 +942,7 @@ songs:
           - { track: tom low, pattern: tom low 2, loop: true }
           - { track: crash, pattern: crash 1, loop: true }
       - name: runs over the tune
-        tempo: 132
+        tempo: 138
         clips:
           - { track: lead, pattern: lead 9, repeat: 1 }
           - { track: keys, pattern: keys 9, loop: true }

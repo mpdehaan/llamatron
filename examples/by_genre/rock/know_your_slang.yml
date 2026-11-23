@@ -233,7 +233,7 @@ songs:
           - { track: bass, pattern: bass run, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 } } }
           - { track: lead, pattern: chorus tune, loop: true }
       - name: jangle
-        tempo: 140
+        tempo: 106
         clips:
           - { track: kick, pattern: kick full, loop: true }
           - { track: snare, pattern: snare, loop: true }
@@ -244,7 +244,7 @@ songs:
           - { track: bass, pattern: bass run, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] } } }
           - { track: lead, pattern: jangle tune, loop: true }
       - name: jangle chorus
-        tempo: 140
+        tempo: 106
         clips:
           - { track: kick, pattern: kick full, loop: true }
           - { track: snare, pattern: snare, loop: true }
@@ -273,7 +273,7 @@ songs:
           - { track: bass, pattern: bass run, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [5, 5, 1, 1, 4, 1, 5, 5], every: 1/2 } } }
           - { track: lead, pattern: chorus tune, loop: true }
       - name: jangle 2
-        tempo: 140
+        tempo: 106
         clips:
           - { track: kick, pattern: kick full, loop: true }
           - { track: snare, pattern: snare, loop: true }
@@ -284,7 +284,7 @@ songs:
           - { track: bass, pattern: bass run, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 5, 1, 5, 1, 5, 4, 5] } } }
           - { track: lead, pattern: jangle tune, loop: true }
       - name: jangle chorus 2
-        tempo: 140
+        tempo: 106
         clips:
           - { track: kick, pattern: kick full, loop: true }
           - { track: snare, pattern: snare, loop: true }

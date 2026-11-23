@@ -134,10 +134,11 @@ class TestTheArrowsInTheTabBox(UITest):
         self.assertEqual(self.under_cursor(), labels.MSG_GRAB_TRACK_LABEL)
         await self.press(Key.RIGHT)
         self.assertEqual(self.under_cursor(), labels.MSG_GRAB_TRACK_LABEL)
+        # Back to the left, the nearest field is the one on Grab track's line, which the Playing column's shortness put above Repeat.
         await self.press(Key.LEFT)
-        self.assertEqual(self.under_cursor(), labels.MSG_REPEAT_LABEL)
+        self.assertEqual(self.under_cursor(), labels.MSG_DIRECTION_LABEL)
         await self.press(Key.LEFT)
-        self.assertEqual(self.under_cursor(), labels.MSG_REPEAT_LABEL)
+        self.assertEqual(self.under_cursor(), labels.MSG_DIRECTION_LABEL)
         self.assertEqual(self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD).to_data(), before)
 
     async def test_the_shorter_columns_last_field_is_the_nearest_from_further_down(self):

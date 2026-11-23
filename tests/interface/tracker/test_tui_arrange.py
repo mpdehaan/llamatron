@@ -34,6 +34,10 @@ from tests.support.ui_testing import back_key, forward_key, key_name, key_of, UI
 # Names the tests give to their own things, and other values they use.
 # How many words of a dialog's message to look for, since the dialog wraps it.
 FIRST_WORDS = 5
+# A scene's tempo and a ramp's, percentages of the tempo they scale: 100 is the whole of it, and at a tempo of 100 a
+# percentage is the tempo.
+WHOLE_TEMPO = 100
+RAMPED_TEMPO = 120
 LEAD = 'lead'
 NEW_LINE = '\n'
 T19 = 't19'
@@ -852,23 +856,24 @@ class TestScenePage(UITest):
         self.assertIsNone(self.scene().get_scale_name())
 
     async def test_tempo_and_ramp(self):
+        # A blank Tempo is the song's, 100% of it, and steps from there.
         await self.go_to(TEMPO)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.scene().get_tempo_setting(), 121)
-        # A ramp is on the Tempo Ramps tab, and a blank part steps from the scene's tempo.
+        self.assertEqual(self.scene().get_tempo_setting(), WHOLE_TEMPO + 1)
+        # A ramp is on the Tempo Ramps tab, and a blank part steps from 100% of the scene's tempo.
         end = labels_text.MSG_TEMPO_RAMP_LABELS[(RampWay.IN, RampPart.END)]
         await self.go_to(end)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
         # With no bars given there is no ramp yet.
-        self.assertIsNone(self.scene().get_tempo_ramp(RampWay.IN))
-        self.assertEqual(self.scene().get_tempo_setting(), 121)
+        self.assertIsNone(self.scene().get_tempo_ramp(way=RampWay.IN, base=WHOLE_TEMPO))
+        self.assertEqual(self.scene().get_tempo_setting(), WHOLE_TEMPO + 1)
         await self.go_to(labels_text.MSG_TEMPO_RAMP_LABELS[(RampWay.IN, RampPart.OVER)])
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual(self.scene().get_tempo_ramp(RampWay.IN), TempoRamp(None, 122, limits.MIN_RAMP_BARS + 1))
+        self.assertEqual(self.scene().get_tempo_ramp(way=RampWay.IN, base=WHOLE_TEMPO), TempoRamp(None, WHOLE_TEMPO + 1, limits.MIN_RAMP_BARS + 1))
         render_song(self.document.song())
         await self.press(Key.BACKSPACE)
-        self.assertIsNone(self.scene().get_tempo_ramp(RampWay.IN))
-        self.assertEqual(self.scene().get_tempo_setting(), 121)
+        self.assertIsNone(self.scene().get_tempo_ramp(way=RampWay.IN, base=WHOLE_TEMPO))
+        self.assertEqual(self.scene().get_tempo_setting(), WHOLE_TEMPO + 1)
 
     async def test_repeat(self):
         await self.go_to(REPEAT)
@@ -913,15 +918,16 @@ class TestScenesAndClipsEdges(UITest):
         return self.document.song().get_scenes()[0]
 
     async def test_a_scenes_tempo_and_its_ramp_are_set_and_cleared_apart(self):
-        self.document.change_set(self.document.song().get_scene(0).set_tempo, 100)
-        self.document.change_set(self.document.song().get_scene(0).set_tempo_ramp_setting, way=RampWay.OUT, part=RampPart.END, value=120)
+        self.document.change_set(self.document.song().get_scene(0).set_tempo, WHOLE_TEMPO)
+        self.document.change_set(self.document.song().get_scene(0).set_tempo_ramp_setting, way=RampWay.OUT, part=RampPart.END, value=RAMPED_TEMPO)
         self.document.change_set(self.document.song().get_scene(0).set_tempo_ramp_setting, way=RampWay.OUT, part=RampPart.OVER, value=limits.MIN_RAMP_BARS)
         page = await self.scene_page()
         await self.go_to(page, TEMPO)
         await self.press(key_of(binding=keybindings.ScenePage.MORE, key=Key.RIGHT_BRACKET))
-        self.assertEqual((self.scene().get_tempo_setting(), self.scene().get_tempo_ramp(RampWay.OUT)), (101, TempoRamp(None, 120, limits.MIN_RAMP_BARS)))
+        ramp = TempoRamp(None, RAMPED_TEMPO, limits.MIN_RAMP_BARS)
+        self.assertEqual((self.scene().get_tempo_setting(), self.scene().get_tempo_ramp(way=RampWay.OUT, base=WHOLE_TEMPO)), (WHOLE_TEMPO + 1, ramp))
         await self.press(Key.BACKSPACE)
-        self.assertEqual((self.scene().get_tempo_setting(), self.scene().get_tempo_ramp(RampWay.OUT)), (None, TempoRamp(None, 120, limits.MIN_RAMP_BARS)))
+        self.assertEqual((self.scene().get_tempo_setting(), self.scene().get_tempo_ramp(way=RampWay.OUT, base=WHOLE_TEMPO)), (None, ramp))
 
     async def test_choosing_the_songs_scale_clears_the_scenes(self):
         self.document.change_set(self.document.song().get_scene(0).set_scale_name, name=setlist.DEFAULT_SCALE, song=self.document.song())

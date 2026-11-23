@@ -27,6 +27,8 @@ NOT_BARS = 3
 FIRST = 0
 A_VERSE = 1
 # A fade's level, a percentage of each note's written velocity.
+# A ramp's ends are percentages of the scene's velocity.
+PERCENT = 100
 HALF_VELOCITY = 50
 TWO_BARS = 2
 
@@ -258,7 +260,8 @@ class TestWizardEnds(unittest.TestCase):
             first_section.set_own(field=wizard_names.FADE_LEVEL, value=HALF_VELOCITY)
             first_section.set_own(field=wizard_names.FADE_OVER, value=TWO_BARS)
             scene = made(choices).get_song(wizard_testing.SONG_NAME).get_scenes()[FIRST].to_data()
-            self.assertEqual(scene[VelocitySetting.IN_START], HALF_VELOCITY)
+            # The fade's level is written as a percentage of the scene's own velocity.
+            self.assertEqual(scene[VelocitySetting.IN_START], round(HALF_VELOCITY * PERCENT / scene[VelocitySetting.LEVEL]))
             self.assertEqual(scene[VelocitySetting.IN_OVER], TWO_BARS)
             with self.assertRaises(ValueError):
                 first_section.set_own(field=wizard_names.FADE_OVER, value=first_section.bars() + 1)
@@ -270,7 +273,7 @@ class TestWizardEnds(unittest.TestCase):
             self.assertEqual(section_fade.fields(), [wizard_names.SONG_PLAN_FADES, wizard_names.FADE_LEVEL, wizard_names.FADE_OVER])
             section.set_own(field=wizard_names.FADE_LEVEL, value=HALF_VELOCITY)
             scene = made(choices).get_song(wizard_testing.SONG_NAME).get_scenes()[last].to_data()
-            self.assertEqual(scene[VelocitySetting.OUT_END], HALF_VELOCITY)
+            self.assertEqual(scene[VelocitySetting.OUT_END], round(HALF_VELOCITY * PERCENT / scene[VelocitySetting.LEVEL]))
             self.assertEqual(scene[VelocitySetting.OUT_OVER], section.bars())
             section.set_own(field=wizard_names.FADE_OVER, value=1)
             self.assertEqual(made(choices).get_song(wizard_testing.SONG_NAME).get_scenes()[last].to_data()[VelocitySetting.OUT_OVER], 1)
