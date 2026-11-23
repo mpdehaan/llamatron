@@ -195,10 +195,10 @@ def slowest_first(*, names, times):
     return sorted(names, key=lambda name: -times.get(name, NOT_TIMED))
 
 
-def remember_times(*, path, times, results):
-    """Keep the seconds each class just took beside those of the classes that didn't run, for the next run's order."""
-    kept = dict(times)
-    kept.update({result[0]: round(result[-1], 2) for result in results})
+def remember_times(*, path, results):
+    """Keep the seconds each class just took, for the next run's order. Only a run of every class writes them, so a class that
+    no longer exists drops out."""
+    kept = {result[0]: round(result[-1], 2) for result in results}
     try:
         with open(path, 'w', encoding='utf-8') as file:
             json.dump(kept, file, indent=0, sort_keys=True)
@@ -225,7 +225,7 @@ def main(filters):
     with ThreadPoolExecutor(max_workers=workers) as pool:
         results = list(pool.map(lambda name: run_class(name=name, root=root, filters=filters, context=context), slowest_first(names=names, times=times)))
     if not filters:
-        remember_times(path=times_path, times=times, results=results)
+        remember_times(path=times_path, results=results)
     failed = []
     for name, passed, output, count, _ in results:
         if not passed:

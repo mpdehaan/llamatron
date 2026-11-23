@@ -143,7 +143,7 @@ class TestKeysNamedInHelp(unittest.TestCase):
 
 
 class KeyTour(UITest):
-    """Tours every page, noting the keys bound wherever the cursor can go. Each check of the tour is a class of its own, so that the two tours run side by side."""
+    """Tours every page, noting the keys bound wherever the cursor can go."""
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -384,20 +384,25 @@ class KeyTour(UITest):
         await self.press(keybindings.WizardPage.TO_TREE, keybindings.WizardPage.CLOSE, keybindings.ConfirmDialog.YES)
 
 
-class TestBoundKeysAreTheirClassesAndDistinct(KeyTour):
+class TestKeyTour(KeyTour):
+    """Tours every page once and makes three checks of what it found, each a subtest, so that one failing never hides another."""
 
-    async def test_every_bound_key_is_one_of_its_class_and_no_key_does_two_things_in_one_place(self):
-        """A page binds only the bindings of its own class in interface/tracker/keybindings.py, and where the cursor is, a key reaches one binding, so that the first to be listed never hides another."""
+    async def test_the_keys_the_tour_finds_are_their_classes_named_in_help_and_in_the_key_map(self):
         await self.tour()
+        with self.subTest(check=self.check_bound_keys_are_their_classes_and_distinct.__name__):
+            self.check_bound_keys_are_their_classes_and_distinct()
+        self.check_help_names_only_bound_keys()
+        with self.subTest(check=self.check_key_map_is_current.__name__):
+            self.check_key_map_is_current()
+
+    def check_bound_keys_are_their_classes_and_distinct(self):
+        """A page binds only the bindings of its own class in interface/tracker/keybindings.py, and where the cursor is, a key
+        reaches one binding, so that the first to be listed never hides another."""
         self.assertEqual(sorted(self.strays), [])
         self.assertEqual(sorted(self.clashes), [])
 
-
-class TestHelpNamesOnlyBoundKeys(KeyTour):
-    """Checks each page's help against the keys the tour found bound on it."""
-
-    async def test_every_key_a_pages_help_names_is_bound_on_that_page(self):
-        await self.tour()
+    def check_help_names_only_bound_keys(self):
+        """Every key a page's help names is bound on that page."""
         for page in leaf_pages():
             if page.HELP == help_text.HELP_NONE:
                 continue
@@ -408,12 +413,9 @@ class TestHelpNamesOnlyBoundKeys(KeyTour):
                 with self.subTest(page=page.__name__, key=name):
                     self.assertIn(name, self.bound.get(where, ()), MSG_NOT_BOUND.format(page=page.__name__, key=name, where=where.__name__))
 
-
-class TestKeyMapIsCurrent(KeyTour):
-    """.claude/KEYMAP.md says what the tour finds, so that a question about a key is one lookup; internal_tools/key_map.sh rewrites it."""
-
-    async def test_the_key_map_says_what_the_tour_finds(self):
-        await self.tour()
+    def check_key_map_is_current(self):
+        """.claude/KEYMAP.md says what the tour finds, so that a question about a key is one lookup; internal_tools/key_map.sh
+        rewrites it."""
         everywhere = '\n'.join(EVERYWHERE_ENTRY.format(key=binding.name, what=binding.what) for binding in keybindings.Page.EVERYWHERE)
         text = self.key_map.text(everywhere=everywhere)
         if should_write():
