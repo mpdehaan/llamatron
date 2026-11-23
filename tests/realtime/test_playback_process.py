@@ -66,7 +66,7 @@ def a_set(*, grabs_in_a_circle=False):
 
 def wanted_of(setlist, *, revision=FIRST_REVISION):
     """Return what a score of the set's song is made from, the lead through the test's port and the kick through nothing."""
-    return Wanted(revision, setlist.first_song_name(), ((LEAD, Route(PORT, 0)),), SEED)
+    return Wanted(revision, setlist.first_song_name(), frozendict({LEAD: Route(PORT, 0)}), SEED)
 
 
 def note_ons(sent):

@@ -45,7 +45,8 @@ def cached_while(key_of, *, said=None):
             if held is None or held[0] != key:
                 held = (key, {})
                 answers[name] = held
-            asked = tuple(sorted(named.items())) if named else ()
+            # The keywords asked with, in any order, as one key.
+            asked = frozendict(named)
             found = held[1].get(asked, MISSING)
             if found is MISSING:
                 found = method(self, **named)

@@ -60,7 +60,7 @@ class FieldPage(Page):
         page itself says its fields read. A key asks for the fields dozens of times, to find the cursor, list the keys and draw,
         and each asking built every field and tab again: the clip page's took 13 ms a key."""
         moving = getattr(self, MOVING, False)
-        shared = (self.document().get_revision(), tuple(sorted(self.app.open_field_sections)), tuple(self.app.chosen_tabs.items()))
+        shared = (self.document().get_revision(), tuple(sorted(self.app.open_field_sections)), frozendict(self.app.chosen_tabs))
         return (*shared, self.cursor.get_place(), self.cell, moving, self.fields_depend_on())
 
     def fields_depend_on(self):

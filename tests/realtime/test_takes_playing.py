@@ -93,7 +93,7 @@ class TakesTest(unittest.TestCase):
         self.sender = RecordingSender()
         self.playback = LocalPlayback(make_sender=lambda ports: self.sender, clock=self.clock, lead=NO_LEAD, at_once=True)
         self.playback.take_set(setlist.kept_data())
-        self.wanted = Wanted(REVISION, setlist.first_song_name(), ((LEAD, Route(PORT, 0)),), SEED)
+        self.wanted = Wanted(REVISION, setlist.first_song_name(), frozendict({LEAD: Route(PORT, 0)}), SEED)
         self.playback.launch(wanted=self.wanted, launch=PlayRequest(realtime_names.LAUNCH_SCENE, FIRST_SCENE), ports=[PORT])
 
     def run_for(self, seconds):

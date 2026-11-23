@@ -17,7 +17,7 @@ def cached_until_choices_change(method):
     @functools.wraps(method)
     def kept(self, *arguments, **named):
         choices, asker = self.answers_kept_by()
-        key = (name, asker, arguments, tuple(sorted(named.items())))
+        key = (name, asker, arguments, frozendict(named))
         return choices.remembered(key=key, compute=lambda: method(self, *arguments, **named))
     return kept
 

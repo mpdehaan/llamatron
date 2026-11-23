@@ -121,6 +121,8 @@ WITHOUT = 'without'
 KEY = 'key'
 ROOT = 'root'
 TYPE = 'type'
+# A drum set's key where the section changes none of the drummer's picks.
+NO_DRUM_CHANGES = frozendict()
 TEMPO = 'tempo'
 SEED = 'seed'
 FORM = 'form'
@@ -1382,12 +1384,12 @@ class Arrangement:
         solo = bool(section.get(DRUM_SOLO)) and self._meter == COMMON_TIME
         over, riff_key = self._kicked_riff_in(section=section, solo=solo)
         phrase = plays.get(characters.FILL_EVERY, self._phrase_bars) or self._phrase_bars
-        key = (level, tuple(sorted(changed.items())), math.gcd(phrase, section[BARS]))
+        key = (level, frozendict(changed), math.gcd(phrase, section[BARS]))
         key = self._drum_set_key(key=key, section=section, solo=solo, riff_key=riff_key)
         if key not in drum_sets:
             made = self._written_drums(section=section, changed=changed, plays=plays, solo=solo, over=over)
             leaves = section.get(wizard_names.JOINS_LEAVES)
-            plain = leaves is None and not over and key[:2] == (self._usual_drummer(), ())
+            plain = leaves is None and not over and key[:2] == (self._usual_drummer(), NO_DRUM_CHANGES)
             named_by = section[KIND]
             if leaves is not None or over:
                 named_by = name

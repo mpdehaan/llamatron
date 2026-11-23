@@ -591,7 +591,7 @@ class Transport:
     def _wanted_now(self, *, routes, seed):
         """Return what a score of the current song as it is now is made from: the set's revision, the song, the routes and the seed."""
         document = self.document()
-        return Wanted(document.get_revision(), document.get_current_song_name(), tuple(sorted(routes.items())), seed)
+        return Wanted(document.get_revision(), document.get_current_song_name(), frozendict(routes), seed)
 
     def _request(self, wanted):
         """Ask for a score of the current song to be built off the screen's thread, from the set's data as its objects keep it now,

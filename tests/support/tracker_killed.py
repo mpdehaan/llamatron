@@ -41,7 +41,7 @@ def main():
     }}]))
     playback = PlaybackProcess(lead=NO_LEAD, recording=True)
     playback.take_set(setlist.kept_data())
-    wanted = Wanted(FIRST_REVISION, setlist.first_song_name(), ((song_testing.LEAD, Route(PORT, 0)),), SEED)
+    wanted = Wanted(FIRST_REVISION, setlist.first_song_name(), frozendict({song_testing.LEAD: Route(PORT, 0)}), SEED)
     playback.launch(wanted=wanted, launch=PlayRequest(realtime_names.LAUNCH_SCENE, 0), ports=[PORT])
     print(playback.get_process_id(), flush=True)
     threading.Event().wait(WAIT_SECONDS)

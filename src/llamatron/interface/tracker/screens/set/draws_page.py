@@ -34,7 +34,7 @@ class DrawsPage(FieldPage):
 
     def fields_depend_on(self):
         """Return what the fields read besides the set: the slot each draw last took a value from while a song plays."""
-        return tuple(sorted(self.app.transport.draw_places().items()))
+        return frozendict(self.app.transport.draw_places())
 
     def lit_said(self, *, name, lit):
         """Return what a draw's heading says while a song plays, its mark of a value inside and the slot it last took a value from, or None to say only the mark."""

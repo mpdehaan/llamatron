@@ -24,11 +24,11 @@ from llamatron.realtime.render_process.score_builder import ScoreBuilder
 
 
 class Wanted(NamedTuple):
-    """What a score is made from: the set's revision, the song's name, each track's Route as (track, Route) in order, and the seed of the play's random parts."""
+    """What a score is made from: the set's revision, the song's name, each track's Route by its name, a frozendict, and the seed of the play's random parts."""
 
     revision: int
     song_name: str
-    routes: tuple
+    routes: object
     seed: int
 
 
@@ -323,7 +323,7 @@ class LocalPlayback:
 
 def _key_of(*, wanted, takes):
     """Return what a score is built and found by: what is wanted and the takes it plays."""
-    return (wanted, frozenset(takes.items()))
+    return (wanted, frozendict(takes))
 
 
 def score_of(*, wanted, data, earlier, takes=None):
