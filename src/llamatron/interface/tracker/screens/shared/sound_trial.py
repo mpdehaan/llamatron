@@ -10,12 +10,13 @@ whatever the song plays: a run of notes for a sound that plays notes, and
 four quarter notes for a drum of the kit or for a sound that stands in for one.
 """
 
+from llamatron.music_theory.fundamentals import intervals
+
 
 # A run is played in eighth notes, and a drum's four hits in quarters.
 RUN_STEP = '1/8'
 HITS_STEP = '1/4'
 HITS = 4
-NOTES_IN_OCTAVE = 12
 # A run where no song gives a scale: the major scale from the C of the fourth octave.
 MAJOR_STEPS = (0, 2, 4, 5, 7, 9, 11)
 USUAL_OCTAVE = 4
@@ -24,8 +25,8 @@ C = 0
 
 def run_of(*, root=C, steps=MAJOR_STEPS, octave=USUAL_OCTAVE):
     """Return the MIDI notes of a scale played up an octave and back down, from a root, as half steps above C, in an octave."""
-    low = octave * NOTES_IN_OCTAVE + root
-    up = [low + step for step in steps] + [low + NOTES_IN_OCTAVE]
+    low = octave * intervals.HALF_STEPS_PER_OCTAVE + root
+    up = [low + step for step in steps] + [low + intervals.HALF_STEPS_PER_OCTAVE]
     return up + up[-2::-1]
 
 

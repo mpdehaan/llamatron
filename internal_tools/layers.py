@@ -38,7 +38,11 @@ DOT = '.'
 WILDCARD = '*'
 TOP = '(top)'
 # The packages from the bottom up: each imports only those before it. The strings package is text every layer may name.
-LAYERS = ('math', 'caching', 'user_strings', 'model', 'engine', 'exporters', 'importers', 'realtime',
+# music_theory comes in two tiers: its fundamentals, facts that know nothing of llamatron's objects, under the model; the rest,
+# which understands patterns and songs, over the model and under the engine, whose generators ask it.
+FUNDAMENTALS = 'music_theory.fundamentals'
+MUSIC_THEORY = 'music_theory'
+LAYERS = ('math', FUNDAMENTALS, 'caching', 'user_strings', 'model', MUSIC_THEORY, 'engine', 'exporters', 'importers', 'realtime',
           'wizards', 'interface', TOP)
 VOCABULARY_PACKAGES = ('user_strings',)
 # The modules of a package that the packages above it may import.
@@ -102,7 +106,10 @@ def door_pattern(door):
 
 
 def package_of(parts):
-    """Return the package a file or a module of the program is in, from its parts under the program: its first folder, or the top."""
+    """Return the package a file or a module of the program is in, from its parts under the program: its first folder, or the
+    top; music_theory's fundamentals are a layer of their own."""
+    if len(parts) > 2 and DOT.join(parts[:2]) == FUNDAMENTALS:
+        return FUNDAMENTALS
     return parts[0] if len(parts) > 1 else TOP
 
 

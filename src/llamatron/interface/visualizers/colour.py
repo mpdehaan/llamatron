@@ -12,6 +12,8 @@ the rule that the visualizer never strobes or flashes brightly (.claude/UX.md, "
 
 import numpy
 
+from llamatron.music_theory.fundamentals import intervals
+
 # The tracks' colours, in the order tracks take them, going round after the last.
 TRACK_COLOURS = (
     (226, 42, 48), (36, 96, 232), (246, 196, 36), (36, 186, 92), (186, 56, 216), (36, 196, 206), (240, 118, 30), (118, 80, 236),
@@ -25,7 +27,6 @@ DIMMEST = 0.55
 BRIGHTEST = 1.15
 LOWEST_PITCH = 24
 HIGHEST_PITCH = 96
-HALF_STEPS = 12
 
 
 def track_colour(track):
@@ -38,7 +39,7 @@ def note_colour(*, track, pitch, drum):
         return numpy.array(DRUM_COLOUR, dtype=numpy.int32)
     base = numpy.array(track_colour(track), dtype=numpy.float32)
     lean = numpy.array(track_colour(track + 1), dtype=numpy.float32)
-    mixed = base + (lean - base) * PITCH_LEAN * (pitch % HALF_STEPS) / HALF_STEPS
+    mixed = base + (lean - base) * PITCH_LEAN * (pitch % intervals.HALF_STEPS_PER_OCTAVE) / intervals.HALF_STEPS_PER_OCTAVE
     height = min(max((pitch - LOWEST_PITCH) / (HIGHEST_PITCH - LOWEST_PITCH), 0.0), 1.0)
     return (mixed * (DIMMEST + (BRIGHTEST - DIMMEST) * height)).astype(numpy.int32)
 

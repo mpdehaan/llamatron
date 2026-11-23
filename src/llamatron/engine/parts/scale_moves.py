@@ -4,8 +4,9 @@
 
 """A note moved along a scale, which the pattern player's chords and several generators share."""
 
-from llamatron.model.values import midi, sound
+from llamatron.model.values import sound
 from llamatron.model.values.sound import Sound
+from llamatron.music_theory.fundamentals import intervals
 
 
 def along_scale(*, note, steps, scale):
@@ -19,11 +20,11 @@ def along_scale(*, note, steps, scale):
         return Sound.half_step(note, steps)
     shape = scale.get_type().value
     above_root = note[sound.MIDI] - scale.get_root().get_midi_number()
-    octaves, within = divmod(above_root, midi.HALF_STEPS_PER_OCTAVE)
+    octaves, within = divmod(above_root, intervals.HALF_STEPS_PER_OCTAVE)
     place = _scale_note_at_or_below(shape=shape, half_steps=within)
     extra = within - shape[place]
     more, place = divmod(place + steps, len(shape))
-    return Sound.half_step(note, (octaves + more) * midi.HALF_STEPS_PER_OCTAVE + shape[place] + extra - above_root)
+    return Sound.half_step(note, (octaves + more) * intervals.HALF_STEPS_PER_OCTAVE + shape[place] + extra - above_root)
 
 
 def _scale_note_at_or_below(*, shape, half_steps):

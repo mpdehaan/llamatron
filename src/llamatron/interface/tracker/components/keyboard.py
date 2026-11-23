@@ -16,8 +16,9 @@ colour. chord_keys() says which keys a chord's notes are, from its root up.
 
 from llamatron.interface.tracker import drawing
 from llamatron.model.objects import named_scale
-from llamatron.model.values import midi, note
+from llamatron.model.values import note
 from llamatron.model.values.note import Note
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import marks
 
 # The white keys of an octave as half steps above C, and the black key after each white key that has one.
@@ -31,7 +32,7 @@ KEY_STRIDE = KEY_WIDTH + KEY_GAP
 WHITE_ROW_INDENT = 4
 BLACK_KEY_SHIFT = 2
 # How many keys the keyboard has, numbered from its lowest C.
-KEY_COUNT = OCTAVES * midi.HALF_STEPS_PER_OCTAVE
+KEY_COUNT = OCTAVES * intervals.HALF_STEPS_PER_OCTAVE
 # The natural notes as half steps above C, and the marks that raise and lower one, for reading a note's name.
 NATURAL_HALF_STEPS = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
 SHARP_MARK = '#'
@@ -48,7 +49,7 @@ class KeyKind:
 
 def pitch_class_of(name):
     """Return a note name's half steps above C, such as 1 for C# and 10 for Bb, whatever sharps and flats spell it."""
-    return (NATURAL_HALF_STEPS[name[0]] + name.count(SHARP_MARK) - name[1:].count(FLAT_MARK)) % midi.HALF_STEPS_PER_OCTAVE
+    return (NATURAL_HALF_STEPS[name[0]] + name.count(SHARP_MARK) - name[1:].count(FLAT_MARK)) % intervals.HALF_STEPS_PER_OCTAVE
 
 
 def chord_keys(*, note_names, inversion=None):
@@ -60,12 +61,12 @@ def chord_keys(*, note_names, inversion=None):
     for name in note_names:
         key = pitch_class_of(name)
         while key <= last:
-            key += midi.HALF_STEPS_PER_OCTAVE
+            key += intervals.HALF_STEPS_PER_OCTAVE
         last = key
         keys.append(key)
     for place in range(min(inversion or 0, len(keys))):
-        keys[place] += midi.HALF_STEPS_PER_OCTAVE
-    return {key if key < KEY_COUNT else key % midi.HALF_STEPS_PER_OCTAVE + midi.HALF_STEPS_PER_OCTAVE for key in keys}
+        keys[place] += intervals.HALF_STEPS_PER_OCTAVE
+    return {key if key < KEY_COUNT else key % intervals.HALF_STEPS_PER_OCTAVE + intervals.HALF_STEPS_PER_OCTAVE for key in keys}
 
 
 class Keyboard:
@@ -80,12 +81,12 @@ class Keyboard:
         self.chord = set(chord)
 
     def root_pitch_class(self):
-        return Note(name=self.root, octave_number=named_scale.SPELLING_OCTAVE).get_midi_number() % midi.HALF_STEPS_PER_OCTAVE
+        return Note(name=self.root, octave_number=named_scale.SPELLING_OCTAVE).get_midi_number() % intervals.HALF_STEPS_PER_OCTAVE
 
     def pitch_classes(self):
         """Return the half steps above C of every note in the scale."""
         root = self.root_pitch_class()
-        return {(root + step) % midi.HALF_STEPS_PER_OCTAVE for step in self.half_steps}
+        return {(root + step) % intervals.HALF_STEPS_PER_OCTAVE for step in self.half_steps}
 
     def key_text(self, pitch_class):
         return marks.MSG_KEY_IN_SCALE if pitch_class in self.pitch_classes() else marks.MSG_KEY_OUT_OF_SCALE
@@ -136,7 +137,7 @@ class Keyboard:
         """Return what a key is, by its number from the lowest C."""
         if key in self.chord:
             return KeyKind.CHORD
-        return KeyKind.SCALE if key % midi.HALF_STEPS_PER_OCTAVE in self.pitch_classes() else KeyKind.OUTSIDE
+        return KeyKind.SCALE if key % intervals.HALF_STEPS_PER_OCTAVE in self.pitch_classes() else KeyKind.OUTSIDE
 
     def key_piece(self, key):
         """Return a key as a piece, its text and its kind: a chord's key filled, a scale's outlined and one outside the scale hatched."""
@@ -150,7 +151,7 @@ class Keyboard:
         white = [(drawing.SPACE * WHITE_ROW_INDENT, None)]
         for octave in range(OCTAVES):
             for pitch_class in WHITE_KEYS:
-                first = octave * midi.HALF_STEPS_PER_OCTAVE
+                first = octave * intervals.HALF_STEPS_PER_OCTAVE
                 after = BLACK_KEY_AFTER.get(pitch_class)
                 black.append(self.key_piece(first + after) if after is not None else (drawing.SPACE * KEY_WIDTH, None))
                 black.append((drawing.SPACE * KEY_GAP, None))

@@ -25,9 +25,9 @@ from llamatron.engine.timing.timing import timed_events
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, Quality
 from llamatron.model.values import note as note_values
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import marks
 
-HALF_STEPS_PER_OCTAVE = 12
 # How many pitch classes may sound in a beat besides its chord, as a melody's passing notes.
 MOST_OUTSIDE = 2
 # A note of the chord sounds through more than this share of the beat, more than a sixteenth of a quarter, so that a passing note can't be one.
@@ -145,7 +145,7 @@ def chord_of(*, weights, bass):
     best = None
     for root in held:
         for symbol, shape in chord_shapes().items():
-            members = {(root + step) % HALF_STEPS_PER_OCTAVE for step in shape}
+            members = {(root + step) % intervals.HALF_STEPS_PER_OCTAVE for step in shape}
             outside = classes - members
             if not members <= held or len(outside) > MOST_OUTSIDE:
                 continue
@@ -175,8 +175,8 @@ def letter_spelled(scale):
     names = []
     for place, step in enumerate(shape):
         letter = LETTERS[(start + place) % len(LETTERS)]
-        wanted = (note_values.SEMITONES_ABOVE_C[root] + step) % HALF_STEPS_PER_OCTAVE
-        name = next((name for name in [*note_values.SHARP_NAMES, *note_values.FLAT_NAMES] if name[0] == letter and note_values.SEMITONES_ABOVE_C[name] % HALF_STEPS_PER_OCTAVE == wanted), None)
+        wanted = (note_values.SEMITONES_ABOVE_C[root] + step) % intervals.HALF_STEPS_PER_OCTAVE
+        name = next((name for name in [*note_values.SHARP_NAMES, *note_values.FLAT_NAMES] if name[0] == letter and note_values.SEMITONES_ABOVE_C[name] % intervals.HALF_STEPS_PER_OCTAVE == wanted), None)
         if name is None:
             return None
         names.append(name)
@@ -189,7 +189,7 @@ def spelled(*, pitch_class, scale):
         return note_values.SHARP_NAMES[pitch_class]
     names = letter_spelled(scale) or scale.get_note_names()
     for name in names:
-        if note_values.SEMITONES_ABOVE_C[name] % HALF_STEPS_PER_OCTAVE == pitch_class:
+        if note_values.SEMITONES_ABOVE_C[name] % intervals.HALF_STEPS_PER_OCTAVE == pitch_class:
             return name
     flats = any(name in note_values.FLAT_NAMES and name not in note_values.SHARP_NAMES for name in names)
     return (note_values.FLAT_NAMES if flats else note_values.SHARP_NAMES)[pitch_class]
@@ -203,10 +203,10 @@ def chord_texts(*, root, symbol, scale, bass=None):
     if scale is None:
         return name, NO_SYMBOL
     shape = scale.get_half_steps()
-    above = (root - note_values.SEMITONES_ABOVE_C[scale.get_root()]) % HALF_STEPS_PER_OCTAVE
+    above = (root - note_values.SEMITONES_ABOVE_C[scale.get_root()]) % intervals.HALF_STEPS_PER_OCTAVE
     accidental = NO_SYMBOL
     if above not in shape:
-        above = (above + 1) % HALF_STEPS_PER_OCTAVE
+        above = (above + 1) % intervals.HALF_STEPS_PER_OCTAVE
         accidental = marks.MSG_ACCIDENTAL_MARKS[Accidental.FLAT]
         if above not in shape:
             return name, NO_SYMBOL
@@ -243,10 +243,10 @@ def beat_chords(*, notes, scale):
         for note in notes.notes:
             if note.drum or note.end <= start or note.start >= end:
                 continue
-            spans.setdefault(note.pitch % HALF_STEPS_PER_OCTAVE, []).append((max(note.start, start), min(note.end, end)))
+            spans.setdefault(note.pitch % intervals.HALF_STEPS_PER_OCTAVE, []).append((max(note.start, start), min(note.end, end)))
             lowest = note.pitch if lowest is None else min(lowest, note.pitch)
         weights = {pitch_class: covered(pieces) / beat for pitch_class, pieces in spans.items()}
-        found = chord_of(weights=weights, bass=None if lowest is None else lowest % HALF_STEPS_PER_OCTAVE)
+        found = chord_of(weights=weights, bass=None if lowest is None else lowest % intervals.HALF_STEPS_PER_OCTAVE)
         if found is not None:
             name, numeral = chord_texts(root=found[0], symbol=found[1], scale=scale, bass=found[2])
             chords.append(BeatChord(start=start, name=name, numeral=numeral))
@@ -298,4 +298,4 @@ def effective_values(*, song, index):
 
 def chord_shape(kind):
     """Return a kind of chord's notes as half steps above the root, within one octave, the root among them."""
-    return frozenset({0, *[step % HALF_STEPS_PER_OCTAVE for step in kind.value]})
+    return frozenset({0, *[step % intervals.HALF_STEPS_PER_OCTAVE for step in kind.value]})

@@ -34,6 +34,7 @@ from llamatron.interface.visualizers.colour_styles import colour_style
 from llamatron.interface.visualizers.piano_roll import drum_lane
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.values import note as note_values
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import marks, visualizers
 
 # Each column of the roll is a sixteenth note, in whole notes, drawn as many cells wide as the zoom, from FEWEST_CELLS to MOST_CELLS.
@@ -54,7 +55,6 @@ SIDEBAR_SCROLL = 6
 # The keys the roll shows beyond its highest and lowest notes, and the fewest it shows.
 MARGIN_KEYS = 2
 FEWEST_KEYS = 24
-HALF_STEPS_PER_OCTAVE = 12
 LOWEST_PITCH = 0
 HIGHEST_PITCH = 127
 FIRST_NUMBER = 1
@@ -381,8 +381,8 @@ class SceneView:
             return list(text), [colour_style(colour=LABEL_COLOUR)] * LABEL_COLUMNS
         characters = [SPACE] * LABEL_COLUMNS
         styles = [None] * LABEL_COLUMNS
-        if key % HALF_STEPS_PER_OCTAVE == 0:
-            octave = self._document.get_setlist().shown_octave(key // HALF_STEPS_PER_OCTAVE)
+        if key % intervals.HALF_STEPS_PER_OCTAVE == 0:
+            octave = self._document.get_setlist().shown_octave(key // intervals.HALF_STEPS_PER_OCTAVE)
             for place, character in enumerate(visualizers.MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=octave)[:NOTE_LABEL_COLUMN]):
                 characters[place] = character
                 styles[place] = colour_style(colour=LABEL_COLOUR)
@@ -402,7 +402,7 @@ class SceneView:
             colour = self.track_colour(note.track)
             character = READING_CHARACTER if note.marked else NOTE_CHARACTER
             return character, colour_style(colour=colour)
-        if not isinstance(key, tuple) and key % HALF_STEPS_PER_OCTAVE == 0:
+        if not isinstance(key, tuple) and key % intervals.HALF_STEPS_PER_OCTAVE == 0:
             return LINE_CHARACTER, colour_style(colour=LINE_COLOUR)
         if column % bar_columns == 0:
             return BAR_CHARACTER, colour_style(colour=LINE_COLOUR)
@@ -463,4 +463,4 @@ class SceneView:
 
     def note_name(self, pitch):
         """Return a pitch's name with its octave in the set's octave labels."""
-        return note_values.SHARP_NAMES[pitch % HALF_STEPS_PER_OCTAVE] + str(self._document.get_setlist().shown_octave(pitch // HALF_STEPS_PER_OCTAVE))
+        return note_values.SHARP_NAMES[pitch % intervals.HALF_STEPS_PER_OCTAVE] + str(self._document.get_setlist().shown_octave(pitch // intervals.HALF_STEPS_PER_OCTAVE))

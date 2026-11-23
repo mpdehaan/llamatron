@@ -24,8 +24,8 @@ from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text, written_length
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Row
-from llamatron.model.values import midi
 from llamatron.model.values.chords import borrowed, chord_half_steps
+from llamatron.music_theory.fundamentals import intervals
 
 # What a note's second half keeps of it when the piano roll's knife splits it: its pitch, chord and velocity.
 SPLIT_ROWS = (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.VELOCITY)
@@ -285,11 +285,11 @@ def _tones_leaving_the_scale(*, scale, degree, octave, accidental, symbol, tensi
     source = borrowed(scale=scale, kind=kind)
     steps = source.get_half_steps()
     octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
-    root = octaves_up * midi.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0)
+    root = octaves_up * intervals.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0)
     above = list(chord_half_steps(scale=source, degree=degree, symbol=symbol, tensions=tensions))
     own_steps = scale.get_half_steps()
     own_octaves_up, own_place = divmod(degree - limits.MIN_DEGREE, len(own_steps))
-    if root != own_octaves_up * midi.HALF_STEPS_PER_OCTAVE + own_steps[own_place] + file_format.ACCIDENTALS.get(accidental, 0):
+    if root != own_octaves_up * intervals.HALF_STEPS_PER_OCTAVE + own_steps[own_place] + file_format.ACCIDENTALS.get(accidental, 0):
         above.insert(0, 0)
     tones = [scale.degree_above(degree=limits.MIN_DEGREE, octave=octave, accidental=None, half_steps=root + half_steps) for half_steps in above]
     return [tone for tone in tones if tone is not None]

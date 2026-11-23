@@ -7,6 +7,7 @@ from math import isfinite
 
 from llamatron.math.rational import Rational
 from llamatron.model.values import midi
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, reprs
 
 class NoteName:
@@ -199,7 +200,7 @@ class Degree:
         """Return the Note that this degree plays in a scale, spelled as the root's half_step spells it."""
         return scale.note_at(
             degree=self._number, scale_notes=self._scale_notes, length=self._length,
-            half_steps=self._octave * midi.HALF_STEPS_PER_OCTAVE + self._half_steps,
+            half_steps=self._octave * intervals.HALF_STEPS_PER_OCTAVE + self._half_steps,
         )
 
     def _as_tuple(self):
@@ -241,7 +242,7 @@ class Note:
         # bool is a subclass of int, but Note('C', True) is not a real octave.
         if type(octave_number) is not int or not MIN_OCTAVE <= octave_number <= MAX_OCTAVE:
             raise ValueError(errors.ERR_NOTE_BAD_OCTAVE.format(value=octave_number, lowest=MIN_OCTAVE, highest=MAX_OCTAVE))
-        midi_number = octave_number * midi.HALF_STEPS_PER_OCTAVE + SEMITONES_ABOVE_C[name]
+        midi_number = octave_number * intervals.HALF_STEPS_PER_OCTAVE + SEMITONES_ABOVE_C[name]
         if not midi.MIN_MIDI_NUMBER <= midi_number <= midi.MAX_MIDI_NUMBER:
             raise ValueError(errors.ERR_OUTSIDE_MIDI.format(name=name, octave=octave_number, number=midi_number))
         self._name = name
@@ -296,7 +297,7 @@ class Note:
         names = SHARP_NAMES
         if self._name.endswith(FLAT_SIGN):
             names = FLAT_NAMES
-        octave_number, semitones = divmod(self._midi_number + n, midi.HALF_STEPS_PER_OCTAVE)
+        octave_number, semitones = divmod(self._midi_number + n, intervals.HALF_STEPS_PER_OCTAVE)
         return names[semitones], octave_number
 
     def with_length(self, length):

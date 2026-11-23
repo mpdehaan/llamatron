@@ -13,7 +13,7 @@ from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SectionKind, TrackSetting
-from llamatron.model.values import midi
+from llamatron.music_theory.fundamentals import intervals
 from tests.support import song_playing
 from tests.support.rendering import render_song, setlist_from_data, song_from_data
 from tests.support.song_playing import pattern, song
@@ -198,8 +198,8 @@ class TestMusicianTouch(unittest.TestCase):
         written = heard(band_data(settings=piano))
         high = heard(band_data(settings={**piano, MusicianSetting.RANGE: schema.HIGH}))
         low = heard(band_data(settings={**piano, MusicianSetting.RANGE: schema.LOW}))
-        self.assertEqual([note[MIDI] for note in high], [note[MIDI] + midi.HALF_STEPS_PER_OCTAVE for note in written])
-        self.assertEqual([note[MIDI] for note in low], [note[MIDI] - midi.HALF_STEPS_PER_OCTAVE for note in written])
+        self.assertEqual([note[MIDI] for note in high], [note[MIDI] + intervals.HALF_STEPS_PER_OCTAVE for note in written])
+        self.assertEqual([note[MIDI] for note in low], [note[MIDI] - intervals.HALF_STEPS_PER_OCTAVE for note in written])
         lowest = musician.MUSICIANS[schema.LEAD_GUITARIST].LOWEST
         guitar = heard(band_data(settings={MusicianSetting.INSTRUMENT: schema.LEAD_GUITARIST, MusicianSetting.RANGE: schema.LOW}))
         self.assertTrue(all(note[MIDI] >= lowest for note in guitar))

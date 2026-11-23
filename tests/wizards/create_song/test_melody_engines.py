@@ -8,6 +8,7 @@ is made by."""
 import functools
 import unittest
 
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, composer, melody, notation, operations, wizard_names
 
@@ -23,7 +24,6 @@ ROW_BACKWARDS = [3, 5, 6, 4, 1, 2, 0]
 ROW_MOVED_UP_TWO = [2, 4, 3, 6, 1, 0, 5]
 ROW_BEGUN_TWO_LATER = [1, 4, 6, 5, 3, 0, 2]
 NOTES_IN_SCALE = 7
-NOTES_IN_OCTAVE = 12
 CHORDS = [{notation.DEGREE: 1}]
 HABITS = {
     melody.GRID: GRID, melody.LINE_BARS: LINE_BARS, melody.SPAN: 4, melody.HOME: {notation.DEGREE: 1},
@@ -120,8 +120,8 @@ class TestSerial(unittest.TestCase):
 
     def test_the_row_is_every_note_of_the_scale_once_and_all_twelve_when_chromatic(self):
         self.assertEqual(sorted(serial().row()), list(range(NOTES_IN_SCALE)))
-        self.assertEqual(sorted(serial(**{melody.CHROMATIC: True}).row()), list(range(NOTES_IN_OCTAVE)))
-        self.assertEqual(len({pitch_of(note) for note in melody.twelve_notes(MINOR)}), NOTES_IN_OCTAVE)
+        self.assertEqual(sorted(serial(**{melody.CHROMATIC: True}).row()), list(range(intervals.HALF_STEPS_PER_OCTAVE)))
+        self.assertEqual(len({pitch_of(note) for note in melody.twelve_notes(MINOR)}), intervals.HALF_STEPS_PER_OCTAVE)
 
     def test_no_note_returns_until_the_others_have_sounded(self):
         for habits in ({}, {melody.CHROMATIC: True}, {melody.LEAPS: True}):
@@ -348,7 +348,7 @@ class TestHooks(unittest.TestCase):
             self.assertEqual(peak, max(place for line in chorus[:1] for place in places_of(line=line, habits=habits)))
             self.assertLess(max(place for line in verse for place in places_of(line=line, habits=habits)), peak)
             ladder = melody.ladder_of(notes=habits[melody.LADDER], scale_type=melody.MAJOR)
-            self.assertIn(ladder[peak][0] % melody.NOTES_IN_OCTAVE, melody.chord_notes(chord=SMART_CHORDS[0], scale_type=melody.MAJOR))
+            self.assertIn(ladder[peak][0] % intervals.HALF_STEPS_PER_OCTAVE, melody.chord_notes(chord=SMART_CHORDS[0], scale_type=melody.MAJOR))
 
     def test_a_varied_hook_changes_only_its_last_note_which_ends_no_lower_than_the_peak(self):
         for seed in SEEDS:
@@ -459,7 +459,7 @@ class TestSmart(unittest.TestCase):
         for seed in SEEDS:
             for line in smart_lines(seed=seed, habits=habits):
                 last = [note for note in line if notation.REST not in note][-1]
-                ends.append(melody.half_steps_of(note=last, scale_type=melody.MAJOR) % NOTES_IN_OCTAVE not in wanted)
+                ends.append(melody.half_steps_of(note=last, scale_type=melody.MAJOR) % intervals.HALF_STEPS_PER_OCTAVE not in wanted)
         return share(of=[hangs for hangs in ends if hangs], among=ends)
 
     def test_the_leaning_gauge_leaves_a_lines_last_note_hanging(self):

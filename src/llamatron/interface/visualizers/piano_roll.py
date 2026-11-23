@@ -19,6 +19,7 @@ from llamatron.interface.visualizers.cells import styled_line
 from llamatron.interface.visualizers.colour_styles import colour_style
 from llamatron.interface.visualizers.visualizer import Visualizer
 from llamatron.model.schema import file_format
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import visualizers
 
 # How fast the notes roll, in columns a beat, so a sixteenth is one column.
@@ -32,7 +33,6 @@ CENTRE_EASE_PER_SECOND = 0.2
 START_CENTRE = 60
 LOWEST_PITCH = 0
 HIGHEST_PITCH = 127
-HALF_STEPS_PER_OCTAVE = 12
 # The colours: black behind everything, each track's bold colour on it in turn, the attack of a note this much nearer white, the octave lines and labels dim.
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -76,7 +76,7 @@ def drum_lane(pitch):
 
 
 def is_octave_line(pitch):
-    return pitch % HALF_STEPS_PER_OCTAVE == 0
+    return pitch % intervals.HALF_STEPS_PER_OCTAVE == 0
 
 
 class RolledNote:
@@ -210,7 +210,7 @@ class PianoRollVisualizer(Visualizer):
             pitch = top - offset
             row = LEGEND_ROWS + offset
             if is_octave_line(pitch):
-                label = visualizers.MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=pitch // HALF_STEPS_PER_OCTAVE - file_format.LIVE_OCTAVE_OFFSET)
+                label = visualizers.MSG_PIANO_ROLL_OCTAVE_LABEL.format(octave=pitch // intervals.HALF_STEPS_PER_OCTAVE - file_format.LIVE_OCTAVE_OFFSET)
                 for column in range(width):
                     characters[row][column] = label[column] if column < len(label) else LINE_CHARACTER
                     colours[row][column] = LABEL_COLOUR if column < len(label) else LINE_COLOUR

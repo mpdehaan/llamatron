@@ -28,7 +28,8 @@ from llamatron.interface.tracker.key_table import BindsKeys, cursor_moved
 from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Accidental, Row
-from llamatron.model.values import midi, note as note_values
+from llamatron.model.values import note as note_values
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, labels, marks
 
 # A natural note has no symbol in its bar.
@@ -102,7 +103,7 @@ class PianoRoll(BindsKeys):
 
     def per_octave(self):
         """Return how many pitches an octave has: twelve half steps when the scale is known, so that a sharp or flat has a row between two degrees, and otherwise one per row."""
-        return midi.HALF_STEPS_PER_OCTAVE if self.scale_name() is not None else self.size()
+        return intervals.HALF_STEPS_PER_OCTAVE if self.scale_name() is not None else self.size()
 
     def scale_steps(self):
         """Return the pitches within an octave that are the scale's degrees, in degree order: its half steps, or every pitch when the scale isn't known."""

@@ -20,6 +20,7 @@ from llamatron.model.objects.instrument import Keyswitch
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Row
 from llamatron.model.values import midi
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, labels, marks, messages
 from tests.support import ui_testing
 from tests.support.pattern_editor_testing import open_section, PatternEditorTest
@@ -183,23 +184,23 @@ class TestKeyswitchMap(UITest):
         await self.press(Key.RIGHT, MAP.NOTE)
         self.assertEqual(dialog.picking, midi.MIN_MIDI_NUMBER)
         await self.press(Key.UP, Key.UP, MAP.TAKE_NOTE, Key.DOWN, MAP.NOTE)
-        self.assertEqual(dialog.picking, 2 * midi.HALF_STEPS_PER_OCTAVE + 1)
+        self.assertEqual(dialog.picking, 2 * intervals.HALF_STEPS_PER_OCTAVE + 1)
         await self.press(MAP.CLOSE_PICKER)
         self.assertIsNone(dialog.picking)
         self.assertEqual(dialog.keyswitches[STACCATO_SLOT], instrument_values.NO_KEYSWITCH)
         await self.press(Key.UP, MAP.NOTE)
-        self.assertEqual(dialog.picking, 2 * midi.HALF_STEPS_PER_OCTAVE)
+        self.assertEqual(dialog.picking, 2 * intervals.HALF_STEPS_PER_OCTAVE)
         self.assertEqual(first_note_offered([Keyswitch(None, midi.MAX_MIDI_NUMBER)]), midi.MAX_MIDI_NUMBER)
 
     async def test_the_picker_moves_within_its_octave_and_by_octaves_and_stops_at_every_edge(self):
         dialog = await self.open_map()
         await self.press(Key.RIGHT, MAP.NOTE, Key.LEFT, Key.DOWN)
         self.assertEqual(dialog.picking, midi.MIN_MIDI_NUMBER)
-        await self.press(*[Key.RIGHT] * (midi.HALF_STEPS_PER_OCTAVE + 1))
-        self.assertEqual(dialog.picking, midi.HALF_STEPS_PER_OCTAVE - 1)
-        await self.press(*[Key.UP] * (midi.MAX_MIDI_NUMBER // midi.HALF_STEPS_PER_OCTAVE + 1))
+        await self.press(*[Key.RIGHT] * (intervals.HALF_STEPS_PER_OCTAVE + 1))
+        self.assertEqual(dialog.picking, intervals.HALF_STEPS_PER_OCTAVE - 1)
+        await self.press(*[Key.UP] * (midi.MAX_MIDI_NUMBER // intervals.HALF_STEPS_PER_OCTAVE + 1))
         self.assertLessEqual(dialog.picking, midi.MAX_MIDI_NUMBER)
-        self.assertGreater(dialog.picking + midi.HALF_STEPS_PER_OCTAVE, midi.MAX_MIDI_NUMBER)
+        self.assertGreater(dialog.picking + intervals.HALF_STEPS_PER_OCTAVE, midi.MAX_MIDI_NUMBER)
         self.assertIn(keyswitch_note_text(setlist=self.document.get_setlist(), note=dialog.picking), self.text())
 
     async def test_the_map_shows_each_slots_note_in_the_sets_octave_labels_with_its_number(self):

@@ -26,7 +26,6 @@ from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import defaults, file_format, limits, row_descriptions
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, Direction, Row
-from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import errors, labels, legends, marks
@@ -38,11 +37,12 @@ from llamatron.interface.tracker.key_table import first_key
 from tests.support.rendering import render_song
 from tests.support import ui_testing
 from tests.support.ui_testing import fixed_text, UITest, key_name, key_of
+from llamatron.music_theory.fundamentals import intervals
 
 # The tune's notes, as the roll numbers its rows: degree 1 and 3 of a seven-note scale in octave 5.
 SCALE_SIZE = 7
 # Rows are half steps when the scale is known, so an octave is twelve rows and E is four above C.
-C_PITCH = defaults.DEFAULT_OCTAVE * midi.HALF_STEPS_PER_OCTAVE
+C_PITCH = defaults.DEFAULT_OCTAVE * intervals.HALF_STEPS_PER_OCTAVE
 E_PITCH = C_PITCH + 4
 D_PITCH = C_PITCH + 2
 D_SHARP_PITCH = C_PITCH + 3

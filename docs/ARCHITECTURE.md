@@ -129,6 +129,7 @@ flowchart LR
     engine["engine"]
     exporters["exporters"]
     importers["importers"]
+    music_theory["music_theory"]
     realtime["realtime"]
     wizards["wizards"]
     subgraph everywhere ["used by every other part"]
@@ -137,15 +138,18 @@ flowchart LR
     user_strings["user_strings"]
     end
     engine --> model
+    engine --> music_theory
     exporters --> engine
     exporters --> model
     importers --> engine
     importers --> exporters
     importers --> model
+    importers --> music_theory
     interface --> engine
     interface --> exporters
     interface --> importers
     interface --> model
+    interface --> music_theory
     interface --> realtime
     interface --> wizards
     llamatron --> engine
@@ -154,10 +158,12 @@ flowchart LR
     llamatron --> model
     llamatron --> realtime
     llamatron --> wizards
+    model --> music_theory
     realtime --> engine
     realtime --> model
     wizards --> engine
     wizards --> model
+    wizards --> music_theory
 ```
 
 | Package | What it holds |
@@ -168,6 +174,7 @@ flowchart LR
 | `engine` | The Engine: what makes a song into music. clips/ holds the finished clips a song is realized into and the grid that maps |
 | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
 | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
+| `music_theory` | llamatron's musicianship: what the program understands about music, apart from how it stores, plays or shows it. |
 | `realtime` | Real-time playback: the timeline of MIDI events a rendered grid becomes, the score of a song with each clip's events from its scene's start, the player that launches scenes and clips as the follow actions say, the engine that sends the events on time, the ports they go out of, the Realtime Sender Process, which runs the engine apart from the tracker, and FluidSynth, which the tracker starts when something plays through it. |
 | `wizards` | Wizards: whole pieces of work made from a few choices. create_song/ is the song wizard, which creates a new song from a |
 | `math` | Math: exact arithmetic for lengths and times, Rationals and the pairs a realization uses, and where random numbers come |

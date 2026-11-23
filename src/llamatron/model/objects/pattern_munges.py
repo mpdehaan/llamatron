@@ -17,8 +17,8 @@ from llamatron.model.schema.file_format import Row
 from llamatron.model.schema.row_descriptions import row_described, rows_where
 from llamatron.model.values import midi
 from llamatron.model.values.chord import movement
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
-
 
 
 def _is_kept_by_a_rest(row):
@@ -257,7 +257,7 @@ def half_steps_of(*, tone, scale):
     degree, octave, accidental = tone
     steps = scale.get_half_steps()
     octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
-    return (octave + octaves_up) * midi.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0)
+    return (octave + octaves_up) * intervals.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0)
 
 
 def inverted(*, pitches, inversion):
@@ -266,14 +266,14 @@ def inverted(*, pitches, inversion):
     played = []
     for place, pitch in enumerate(pitches):
         if place < moved:
-            pitch += midi.HALF_STEPS_PER_OCTAVE
+            pitch += intervals.HALF_STEPS_PER_OCTAVE
         played.append(pitch)
     return played
 
 
 def voiced(*, pitches, inversion, shift):
     """Return a chord's pitches in an inversion, moved so many octaves."""
-    return [pitch + shift * midi.HALF_STEPS_PER_OCTAVE for pitch in inverted(pitches=pitches, inversion=inversion)]
+    return [pitch + shift * intervals.HALF_STEPS_PER_OCTAVE for pitch in inverted(pitches=pitches, inversion=inversion)]
 
 
 def _voicings(octaves):

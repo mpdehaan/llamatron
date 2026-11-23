@@ -16,8 +16,8 @@ from llamatron.engine.generators.base import ClipGenerator
 from llamatron.model.values import midi, sound as sound_values
 from llamatron.model.values.chord import movement
 from llamatron.model.values.sound import Sound
+from llamatron.music_theory.fundamentals import intervals
 
-HALF_STEPS_PER_OCTAVE = 12
 # How many octaves either way a voicing is tried from where its chord was written.
 OCTAVES_TRIED = 4
 
@@ -63,8 +63,8 @@ class VoiceLeading(ClipGenerator):
 
     def _fits(self, pitches):
         """Return whether a voicing's notes all lie within the range and within MIDI's."""
-        lowest = max(self._lowest_octave * HALF_STEPS_PER_OCTAVE, midi.MIN_MIDI_NUMBER)
-        highest = min((self._highest_octave + 1) * HALF_STEPS_PER_OCTAVE - 1, midi.MAX_MIDI_NUMBER)
+        lowest = max(self._lowest_octave * intervals.HALF_STEPS_PER_OCTAVE, midi.MIN_MIDI_NUMBER)
+        highest = min((self._highest_octave + 1) * intervals.HALF_STEPS_PER_OCTAVE - 1, midi.MAX_MIDI_NUMBER)
         for pitch in pitches:
             if not lowest <= pitch <= highest:
                 return False
@@ -91,7 +91,7 @@ class VoiceLeading(ClipGenerator):
         best = None
         for shape in _inversions([note[sound_values.MIDI] for note in moving]):
             for octaves in range(-OCTAVES_TRIED, OCTAVES_TRIED + 1):
-                pitches = [pitch + octaves * HALF_STEPS_PER_OCTAVE for pitch in shape]
+                pitches = [pitch + octaves * intervals.HALF_STEPS_PER_OCTAVE for pitch in shape]
                 if not self._fits(pitches) or (floor is not None and min(pitches) <= floor):
                     continue
                 score = (movement(pitches=pitches, before=target), abs(octaves))
@@ -114,6 +114,6 @@ def _lowest_moved_up(*, pitches, moved):
     played = []
     for place, pitch in enumerate(pitches):
         if place < moved:
-            pitch += HALF_STEPS_PER_OCTAVE
+            pitch += intervals.HALF_STEPS_PER_OCTAVE
         played.append(pitch)
     return played

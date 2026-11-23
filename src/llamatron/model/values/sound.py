@@ -27,6 +27,7 @@ from llamatron.model.values import midi as midi_numbers, note as note_values
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.held import Held, is_phrase, phrase
 from llamatron.model.values.note import Degree, Note, Rest
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
 
 # The kinds of sound, the first thing in every tuple.
@@ -72,7 +73,7 @@ class Sound:
 
     def named_note(*, name, octave, length, velocity, glide):
         """Return the note a name and an octave spell, or raise what a Note would for one outside the octaves or the MIDI range."""
-        midi = octave * midi_numbers.HALF_STEPS_PER_OCTAVE + note_values.SEMITONES_ABOVE_C[name]
+        midi = octave * intervals.HALF_STEPS_PER_OCTAVE + note_values.SEMITONES_ABOVE_C[name]
         if note_values.MIN_OCTAVE <= octave <= note_values.MAX_OCTAVE and midi_numbers.MIN_MIDI_NUMBER <= midi <= midi_numbers.MAX_MIDI_NUMBER:
             return (NOTE, length, midi, velocity, glide, name)
         # The class says what is wrong with the note, in the words it always has.
@@ -130,7 +131,7 @@ class Sound:
         kind = sound[KIND]
         if kind == NOTE:
             name = sound[NAME]
-            octave = (sound[MIDI] - note_values.SEMITONES_ABOVE_C[name]) // midi_numbers.HALF_STEPS_PER_OCTAVE
+            octave = (sound[MIDI] - note_values.SEMITONES_ABOVE_C[name]) // intervals.HALF_STEPS_PER_OCTAVE
             return Note(name=name, octave_number=octave, length=_as_number(sound[LENGTH]), velocity=sound[VELOCITY], glide=sound[GLIDE])
         if kind == REST:
             return Rest(Length.rational(sound[LENGTH]))
@@ -187,7 +188,7 @@ class Sound:
             names = note_values.SHARP_NAMES
             if note[NAME].endswith(note_values.FLAT_SIGN):
                 names = note_values.FLAT_NAMES
-            return (NOTE, note[LENGTH], midi, note[VELOCITY], note[GLIDE], names[midi % midi_numbers.HALF_STEPS_PER_OCTAVE])
+            return (NOTE, note[LENGTH], midi, note[VELOCITY], note[GLIDE], names[midi % intervals.HALF_STEPS_PER_OCTAVE])
         return Sound.of(Sound.position(note).half_step(steps))
 
     def inverted(chord, inversion):
@@ -202,7 +203,7 @@ class Sound:
         moved = min(inversion, len(notes) - 1)
         for place in by_pitch[:moved]:
             try:
-                notes[place] = Sound.half_step(notes[place], midi_numbers.HALF_STEPS_PER_OCTAVE)
+                notes[place] = Sound.half_step(notes[place], intervals.HALF_STEPS_PER_OCTAVE)
             except ValueError:
                 pass
         return Sound.chord(notes)
@@ -216,7 +217,7 @@ class Sound:
         """Return the note a degree plays in a scale, which is the note the Degree class would give."""
         return scale.sound_at(
             degree=sound[NUMBER], scale_notes=sound[SCALE_NOTES], length=sound[LENGTH],
-            half_steps=sound[OCTAVE] * midi_numbers.HALF_STEPS_PER_OCTAVE + sound[HALF_STEPS],
+            half_steps=sound[OCTAVE] * intervals.HALF_STEPS_PER_OCTAVE + sound[HALF_STEPS],
         )
 
 

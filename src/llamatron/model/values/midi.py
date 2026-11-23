@@ -15,4 +15,3 @@ MAX_CC_VALUE = 127
 # Channels as people and devices number them; the byte sent is one less.
 MIN_CHANNEL = 1
 MAX_CHANNEL = 16
-HALF_STEPS_PER_OCTAVE = 12

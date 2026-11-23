@@ -9,6 +9,7 @@ the tune's last note of a line has landed, and ends with the line."""
 
 import random
 
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.wizards.create_song import melody, notation, wizard_names
 from llamatron.wizards.create_song.melody import chord_notes, nearest_chord_rung, StepWalk
 
@@ -137,7 +138,7 @@ class UnderLead:
         for chord in chords:
             wanted = chord_notes(chord=chord, scale_type=self._scale_type)
             low = self._walk.within(self._home - RIFF_BELOW)
-            rungs = [place for place in range(low, len(self._ladder)) if self._ladder[place][0] % melody.NOTES_IN_OCTAVE in wanted] or [low]
+            rungs = [place for place in range(low, len(self._ladder)) if self._ladder[place][0] % intervals.HALF_STEPS_PER_OCTAVE in wanted] or [low]
             for up in bar:
                 if up is None and notes and notation.STEPS in notes[-1]:
                     notes[-1][notation.STEPS] += unit

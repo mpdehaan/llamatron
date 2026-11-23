@@ -15,6 +15,7 @@ import functools
 import math
 import random
 
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import hook_kinds, hook_writing, notation, phrasing, wizard_names
 from llamatron.wizards.create_song.operations import backwards, moved, rotated, upside_down
@@ -172,7 +173,6 @@ HALF_STEPS = {
     MAJOR: (0, 2, 4, 5, 7, 9, 11), MINOR: (0, 2, 3, 5, 7, 8, 10), 'dorian': (0, 2, 3, 5, 7, 9, 10), 'mixolydian': (0, 2, 4, 5, 7, 9, 10),
 }
 HALF_STEPS_OF_MARK = {notation.SHARP: 1, notation.FLAT: -1}
-NOTES_IN_OCTAVE = 12
 NOTES_IN_SCALE = 7
 OCTAVES_OF_LADDER = (-1, 0, 1)
 # A long note lasts at least this share of a bar, and lands on a note of the chord.
@@ -200,7 +200,7 @@ def ladder_of(*, notes, scale_type):
             rung = dict(note)
             if octave:
                 rung[notation.OCTAVE] = octave
-            rungs.append((octave * NOTES_IN_OCTAVE + half_steps_of(note=note, scale_type=scale_type), rung))
+            rungs.append((octave * intervals.HALF_STEPS_PER_OCTAVE + half_steps_of(note=note, scale_type=scale_type), rung))
     return sorted(rungs, key=height_of)
 
 
@@ -212,7 +212,7 @@ def chord_notes(*, chord, scale_type):
     """The pitch classes of the chord on a degree of the scale; a chord with a sharp or flat is a major chord."""
     if notation.ACCIDENTAL in chord:
         root = half_steps_of(note=chord, scale_type=scale_type)
-        return {root % NOTES_IN_OCTAVE, (root + MAJOR_THIRD) % NOTES_IN_OCTAVE, (root + PERFECT_FIFTH) % NOTES_IN_OCTAVE}
+        return {root % intervals.HALF_STEPS_PER_OCTAVE, (root + MAJOR_THIRD) % intervals.HALF_STEPS_PER_OCTAVE, (root + PERFECT_FIFTH) % intervals.HALF_STEPS_PER_OCTAVE}
     steps = HALF_STEPS[scale_type]
     return {steps[(chord[notation.DEGREE] - 1 + more) % NOTES_IN_SCALE] for more in (0, THIRD, FIFTH)}
 
@@ -220,7 +220,7 @@ def chord_notes(*, chord, scale_type):
 def nearest_chord_rung(*, ladder, place, wanted):
     """The place on the ladder nearest a place whose note is in the chord, or the place itself when none is near."""
     for away in (0, -1, 1):
-        if 0 <= place + away < len(ladder) and ladder[place + away][0] % NOTES_IN_OCTAVE in wanted:
+        if 0 <= place + away < len(ladder) and ladder[place + away][0] % intervals.HALF_STEPS_PER_OCTAVE in wanted:
             return place + away
     return place
 
@@ -803,7 +803,7 @@ class Smart(StepWalk):
         return self.within(self._home + lifted_by(entry=entry, by=lift))
 
     def in_chord(self, *, place, chord):
-        return self._ladder[place][0] % NOTES_IN_OCTAVE in chord_notes(chord=chord, scale_type=self._scale_type)
+        return self._ladder[place][0] % intervals.HALF_STEPS_PER_OCTAVE in chord_notes(chord=chord, scale_type=self._scale_type)
 
     def weight(self, *, move, place, before, aim, chord, lands):
         """How likely a move is from a place, after the move before it, toward the height the line's shape aims at; a note
@@ -1411,7 +1411,7 @@ def twelve_notes(scale_type):
     """All twelve notes within an octave, each written as a note of the scale or as the scale note below it, sharpened."""
     steps = HALF_STEPS[scale_type]
     notes = []
-    for half_steps in range(NOTES_IN_OCTAVE):
+    for half_steps in range(intervals.HALF_STEPS_PER_OCTAVE):
         if half_steps in steps:
             notes.append({notation.DEGREE: steps.index(half_steps) + 1})
         else:

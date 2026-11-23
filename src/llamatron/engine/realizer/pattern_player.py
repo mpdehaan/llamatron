@@ -23,6 +23,7 @@ from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import Row, StepStatement
 from llamatron.model.values import midi, note as note_values, sound as sound_values
 from llamatron.model.values.sound import Sound
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
 
 # How many octaves away a moved note can go to find one that fits the MIDI range. A move of
@@ -460,7 +461,7 @@ class PatternPlayer:
         A note moved outside the MIDI range stays where it was grabbed. chord is the symbol on
         the step's Chord row, or None for a step that plays the one note.
         """
-        note = Sound.note(length=length, midi=number_grabbed, velocity=velocity, glide=glide, name=note_values.SHARP_NAMES[number_grabbed % midi.HALF_STEPS_PER_OCTAVE])
+        note = Sound.note(length=length, midi=number_grabbed, velocity=velocity, glide=glide, name=note_values.SHARP_NAMES[number_grabbed % intervals.HALF_STEPS_PER_OCTAVE])
         try:
             scale = self._scale
             if drum:
@@ -532,7 +533,7 @@ class PatternPlayer:
     def _notes_per_octave(self, drum):
         """Return how many notes a move needs to go up an octave: the size of the scene's scale, or 12 half steps for drums."""
         if drum or self._scale_name is None:
-            return midi.HALF_STEPS_PER_OCTAVE
+            return intervals.HALF_STEPS_PER_OCTAVE
         if self._scale_size is None:
             self._scale_size = len(self._scene_scale_at(note_values.MIN_OCTAVE).get_type().value)
         return self._scale_size

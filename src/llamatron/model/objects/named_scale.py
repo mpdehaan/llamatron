@@ -11,9 +11,10 @@ from llamatron.model.objects.llama_data import LlamaData
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Accidental, ScaleSetting
 from llamatron.model.schema.setting import check_settings, Checked, described
-from llamatron.model.values import midi, note
+from llamatron.model.values import note
 from llamatron.model.values.note import Note
 from llamatron.model.values.scale import Scale, ScaleType
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
 
 # Scale type names, as error messages list them.
@@ -90,8 +91,8 @@ class NamedScale(LlamaData):
         """
         steps = self.get_half_steps()
         octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
-        total = (octave + octaves_up) * midi.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0) + half_steps
-        tone_octave, within = divmod(total, midi.HALF_STEPS_PER_OCTAVE)
+        total = (octave + octaves_up) * intervals.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0) + half_steps
+        tone_octave, within = divmod(total, intervals.HALF_STEPS_PER_OCTAVE)
         below = 0
         for index, step in enumerate(steps):
             if step <= within:
@@ -100,7 +101,7 @@ class NamedScale(LlamaData):
             return below + limits.MIN_DEGREE, tone_octave, None
         if within - steps[below] == 1:
             return below + limits.MIN_DEGREE, tone_octave, Accidental.SHARP
-        above = midi.HALF_STEPS_PER_OCTAVE
+        above = intervals.HALF_STEPS_PER_OCTAVE
         if below + 1 < len(steps):
             above = steps[below + 1]
         if above - within == 1:
@@ -115,7 +116,7 @@ class NamedScale(LlamaData):
     def octave_of_degree(self, *, octave, place):
         """Return the octave a degree sounds in when the root is in an octave: the same one, or the next where the degree crosses C, since octaves are numbered from C."""
         root = Note(name=self._root, octave_number=SPELLING_OCTAVE)
-        return octave + (root.get_midi_number() + self.get_half_steps()[place]) // midi.HALF_STEPS_PER_OCTAVE - SPELLING_OCTAVE
+        return octave + (root.get_midi_number() + self.get_half_steps()[place]) // intervals.HALF_STEPS_PER_OCTAVE - SPELLING_OCTAVE
 
     def copy(self):
         return NamedScale(root=self._root, kind=self._kind)

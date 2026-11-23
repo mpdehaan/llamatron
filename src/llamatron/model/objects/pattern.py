@@ -25,8 +25,8 @@ from llamatron.model.schema import file_format, limits, row_descriptions
 from llamatron.model.schema.file_format import Direction, PatternSetting, Row, StepStatement
 from llamatron.model.schema.row_descriptions import row_described, rows_where
 from llamatron.model.schema.setting import Checked, Choice, described, Flag, settings_held, Text, TimeLength, WholeNumber
-from llamatron.model.values import midi
 from llamatron.model.values.note import Note
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
 
 # Steps are counted from 1 in messages, as the editor shows them.
@@ -335,7 +335,7 @@ class Pattern(PatternNotes, PatternMunges, HoldsSettings):
             octave = default_octave
         half_steps = scale.get_half_steps()
         octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(half_steps))
-        moved = half_steps[place] + octaves_up * midi.HALF_STEPS_PER_OCTAVE + file_format.ACCIDENTALS.get(accidental, 0)
+        moved = half_steps[place] + octaves_up * intervals.HALF_STEPS_PER_OCTAVE + file_format.ACCIDENTALS.get(accidental, 0)
         note = Note(name=scale.get_root(), octave_number=REFERENCE_OCTAVE).half_step(moved)
         return NOTE_NAME.format(name=note.get_name(), octave=note.get_octave_number() - REFERENCE_OCTAVE + octave - octave_label_offset)
 

@@ -16,9 +16,9 @@ from typing import NamedTuple
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Accidental, NamedProgression, Quality
 from llamatron.model.values.scale import ScaleType
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import marks
 
-HALF_STEPS_PER_OCTAVE = 12
 # The half steps without a scale: the major scale's, as a song with no scale places degrees.
 SHAPE_WITHOUT_A_SCALE = ScaleType.MAJOR.value
 
@@ -54,7 +54,7 @@ def half_steps_to(*, scale, degree, accidental=None):
     """Return how many half steps a chord's root is above the scale's root: its degree's, and one more for a sharp or one less for a flat."""
     shape = shape_of(scale)
     octaves, place = divmod(degree - 1, len(shape))
-    return octaves * HALF_STEPS_PER_OCTAVE + shape[place] + file_format.ACCIDENTALS.get(accidental, 0)
+    return octaves * intervals.HALF_STEPS_PER_OCTAVE + shape[place] + file_format.ACCIDENTALS.get(accidental, 0)
 
 
 def quality_of(*, scale, degree, accidental=None):
@@ -64,8 +64,8 @@ def quality_of(*, scale, degree, accidental=None):
     if not accidental:
         place = (degree - 1) % len(shape)
     root = shape[place]
-    third = (shape[(place + 2) % len(shape)] - root) % HALF_STEPS_PER_OCTAVE
-    fifth = (shape[(place + 4) % len(shape)] - root) % HALF_STEPS_PER_OCTAVE
+    third = (shape[(place + 2) % len(shape)] - root) % intervals.HALF_STEPS_PER_OCTAVE
+    fifth = (shape[(place + 4) % len(shape)] - root) % intervals.HALF_STEPS_PER_OCTAVE
     return QUALITIES.get((third, fifth), OTHER_QUALITY)
 
 
@@ -88,7 +88,7 @@ def matched_to(*, scale, chords):
     degrees = []
     accidentals = []
     for half_steps in chords:
-        within = half_steps % HALF_STEPS_PER_OCTAVE
+        within = half_steps % intervals.HALF_STEPS_PER_OCTAVE
         if within in shape:
             degrees.append(shape.index(within) + 1)
             accidentals.append(None)

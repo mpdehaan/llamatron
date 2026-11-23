@@ -32,6 +32,7 @@ from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import LiveResponsiveness, PatternSetting, Row, Section, SongSetting
 from llamatron.model.values import note
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.realtime import realtime_names
 from llamatron.realtime.playback_service import Route
 from llamatron.user_strings import errors, names as names_text
@@ -47,7 +48,6 @@ PIANO_PROGRAM = 0
 CHOSEN_PASSES = 1
 # A sound is tried once through.
 TRIAL_PASSES = 1
-NOTES_IN_OCTAVE = 12
 # How loud the notes of a sound's trial are.
 TRIAL_VELOCITY = 100
 
@@ -55,10 +55,10 @@ TRIAL_VELOCITY = 100
 def trial_pattern(*, numbers, step_size):
     """Return the data of a pattern that plays some MIDI notes one after another, a step each, written as a drum pattern's
     notes are, by name and octave, so that no scale moves them."""
-    names = [note.SHARP_NAMES[number % NOTES_IN_OCTAVE] for number in numbers]
+    names = [note.SHARP_NAMES[number % intervals.HALF_STEPS_PER_OCTAVE] for number in numbers]
     return {PatternSetting.STEPS: len(numbers), PatternSetting.STEP_SIZE: step_size, PatternSetting.DRUM: True,
             Row.DEGREE: [name[0] for name in names], Row.ACCIDENTAL: [name[1:] or None for name in names],
-            Row.OCTAVE: [number // NOTES_IN_OCTAVE for number in numbers], Row.VELOCITY: [TRIAL_VELOCITY] * len(numbers)}
+            Row.OCTAVE: [number // intervals.HALF_STEPS_PER_OCTAVE for number in numbers], Row.VELOCITY: [TRIAL_VELOCITY] * len(numbers)}
 
 
 def passes_to_come_round(*, steps, direction):

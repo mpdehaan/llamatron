@@ -28,6 +28,7 @@ from llamatron.math.rational import Rational
 from llamatron.model.schema.file_format import Approach, ChordColor, SingleNotes, Stroke, Tuning
 from llamatron.model.values import midi as midi_numbers, sound as sound_values
 from llamatron.model.values.sound import Sound
+from llamatron.music_theory.fundamentals import intervals
 
 
 # Each tuning's open strings as MIDI numbers, the lowest string first.
@@ -70,8 +71,8 @@ SHORT_LENGTH = Rational(1, 2)
 # A muted bass note without an accent plays at this share: the body of a riff, louder than a scratch.
 MUTED_BASS_VELOCITY = Rational(4, 5)
 # A squeal sounds this far above the chord's lowest note.
-SQUEAL_ABOVE = 2 * midi_numbers.HALF_STEPS_PER_OCTAVE
-OCTAVE_ABOVE = (midi_numbers.HALF_STEPS_PER_OCTAVE,)
+SQUEAL_ABOVE = 2 * intervals.HALF_STEPS_PER_OCTAVE
+OCTAVE_ABOVE = (intervals.HALF_STEPS_PER_OCTAVE,)
 # A double stop adds the note this far below.
 FOURTH_BELOW = 5
 # A chord's third is this far above its lowest note, minor or major.
@@ -172,7 +173,7 @@ class Guitarify(ClipGenerator):
             above = _triad_above(note=note, scale=scale)
             if above:
                 return self._voiced(Sound.chord_above(note, above))
-        if self._single_notes == SingleNotes.OCTAVE and note[sound_values.MIDI] + midi_numbers.HALF_STEPS_PER_OCTAVE <= midi_numbers.MAX_MIDI_NUMBER:
+        if self._single_notes == SingleNotes.OCTAVE and note[sound_values.MIDI] + intervals.HALF_STEPS_PER_OCTAVE <= midi_numbers.MAX_MIDI_NUMBER:
             return Sound.chord_above(note, OCTAVE_ABOVE)
         if self._single_notes == SingleNotes.THIRD_ABOVE and scale is not None:
             above = _triad_above(note=note, scale=scale)
@@ -194,7 +195,7 @@ class Guitarify(ClipGenerator):
             return [*notes, _moved(note=root, midi=ninth)]
         colored = []
         for note in notes:
-            above = (note[sound_values.MIDI] - root[sound_values.MIDI]) % midi_numbers.HALF_STEPS_PER_OCTAVE
+            above = (note[sound_values.MIDI] - root[sound_values.MIDI]) % intervals.HALF_STEPS_PER_OCTAVE
             if above not in THIRDS:
                 colored.append(note)
             elif self._color in THIRD_MOVED_TO:
@@ -206,7 +207,7 @@ class Guitarify(ClipGenerator):
         lowest = self._open[0]
         if self._position != OPEN_POSITION:
             lowest += self._position
-        root = lowest + (note[sound_values.MIDI] - lowest) % midi_numbers.HALF_STEPS_PER_OCTAVE
+        root = lowest + (note[sound_values.MIDI] - lowest) % intervals.HALF_STEPS_PER_OCTAVE
         notes = []
         for above in POWER_CHORD:
             if root + above <= midi_numbers.MAX_MIDI_NUMBER:
@@ -216,13 +217,13 @@ class Guitarify(ClipGenerator):
     def _voiced(self, chord):
         """Return a chord as a hand holds it on the strings: its root first, then the rest from the lowest string up, every note as long and as loud as the chord's own."""
         notes = self._colored(sorted(chord[sound_values.NOTES], key=_pitch_of))
-        classes = tuple(sorted({note[sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE for note in notes}))
-        root = notes[0][sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE
+        classes = tuple(sorted({note[sound_values.MIDI] % intervals.HALF_STEPS_PER_OCTAVE for note in notes}))
+        root = notes[0][sound_values.MIDI] % intervals.HALF_STEPS_PER_OCTAVE
         pitches = best_voicing(strings=self._open, position=self._position, classes=classes, root=root)
         if not pitches:
             return chord
-        by_class = {note[sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE: note for note in reversed(notes)}
-        return Sound.chord([_moved(note=by_class[pitch % midi_numbers.HALF_STEPS_PER_OCTAVE], midi=pitch) for pitch in pitches])
+        by_class = {note[sound_values.MIDI] % intervals.HALF_STEPS_PER_OCTAVE: note for note in reversed(notes)}
+        return Sound.chord([_moved(note=by_class[pitch % intervals.HALF_STEPS_PER_OCTAVE], midi=pitch) for pitch in pitches])
 
     # Strokes: the other hand.
 
@@ -341,8 +342,8 @@ class Guitarify(ClipGenerator):
                 return strings[-1:]
             return [_moved(note=strings[0], midi=high)]
         if stroke == Stroke.ALT_BASS:
-            fifth = (strings[0][sound_values.MIDI] + FIFTH) % midi_numbers.HALF_STEPS_PER_OCTAVE
-            fifths = [note for note in strings[1:] if note[sound_values.MIDI] % midi_numbers.HALF_STEPS_PER_OCTAVE == fifth]
+            fifth = (strings[0][sound_values.MIDI] + FIFTH) % intervals.HALF_STEPS_PER_OCTAVE
+            fifths = [note for note in strings[1:] if note[sound_values.MIDI] % intervals.HALF_STEPS_PER_OCTAVE == fifth]
             return fifths[:1] or strings[1:2] or strings[:1]
         # A string the chord lacks is the nearest it has.
         return [strings[max(len(strings) - STRING_OF[stroke], 0)]]
@@ -412,14 +413,14 @@ def _softened(*, note, share):
 def _triad_above(*, note, scale):
     """Return how many half steps above a note the third and the fifth of the chord its place in a scale builds are, or nothing for a note outside the scale."""
     steps = scale.get_type().value
-    place = (note[sound_values.MIDI] - scale.get_root().get_midi_number()) % midi_numbers.HALF_STEPS_PER_OCTAVE
+    place = (note[sound_values.MIDI] - scale.get_root().get_midi_number()) % intervals.HALF_STEPS_PER_OCTAVE
     if place not in steps:
         return ()
     index = steps.index(place)
     above = []
     for along in TRIAD_STEPS:
         octaves, wrapped = divmod(index + along, len(steps))
-        above.append(octaves * midi_numbers.HALF_STEPS_PER_OCTAVE + steps[wrapped] - place)
+        above.append(octaves * intervals.HALF_STEPS_PER_OCTAVE + steps[wrapped] - place)
     return tuple(above)
 
 
@@ -431,7 +432,7 @@ def best_voicing(*, strings, position, classes, root):
     out again."""
     choices = []
     for open_pitch in strings:
-        frets = [fret for fret in _frets(position) if (open_pitch + fret) % midi_numbers.HALF_STEPS_PER_OCTAVE in classes and open_pitch + fret <= midi_numbers.MAX_MIDI_NUMBER]
+        frets = [fret for fret in _frets(position) if (open_pitch + fret) % intervals.HALF_STEPS_PER_OCTAVE in classes and open_pitch + fret <= midi_numbers.MAX_MIDI_NUMBER]
         choices.append([None, *frets])
     best = None
     for held in _every_way(choices):
@@ -479,9 +480,9 @@ def _cost(*, strings, held, classes, root):
     """Return how poor a way of holding a chord is, lower being better, with the way itself last so that two equal ways always choose the same."""
     sounding = [place for place, fret in enumerate(held) if fret is not None]
     pitches = [strings[place] + held[place] for place in sounding]
-    played = {pitch % midi_numbers.HALF_STEPS_PER_OCTAVE for pitch in pitches}
+    played = {pitch % intervals.HALF_STEPS_PER_OCTAVE for pitch in pitches}
     cost = sum(_missing_cost(missing=missing, root=root) for missing in set(classes) - played)
-    if pitches[0] % midi_numbers.HALF_STEPS_PER_OCTAVE != root:
+    if pitches[0] % intervals.HALF_STEPS_PER_OCTAVE != root:
         cost += WRONG_BASS_COST
     cost += INSIDE_MUTE_COST * (sounding[-1] - sounding[0] + 1 - len(sounding))
     cost += MUTED_STRING_COST * (len(held) - len(sounding))
@@ -498,7 +499,7 @@ def _missing_cost(*, missing, root):
     """Return what leaving one note of a chord out costs: the root most, the fifth least."""
     if missing == root:
         return MISSING_ROOT_COST
-    if missing == (root + FIFTH) % midi_numbers.HALF_STEPS_PER_OCTAVE:
+    if missing == (root + FIFTH) % intervals.HALF_STEPS_PER_OCTAVE:
         return MISSING_FIFTH_COST
     return MISSING_NOTE_COST
 

@@ -25,6 +25,7 @@ from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.model.values import note as note_values
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, composer as set_writer, loudness_steps, melody as melody_writer, notation as tune_notation, phrasing, riffs as riffs_values, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged, bar_length, chord_of, form_of, picked, share_in, style_in, style_named, style_names, values_of, variant_named, variants_of
@@ -191,7 +192,6 @@ def _seconds_of_bars(*, style, song, bars, tempo):
     meter = picks.get(arranger.METER, arranger.COMMON_TIME)
     whole_notes = bars * bar_length(str(meter))
     return float(whole_notes * wizard_limits.QUARTERS_IN_WHOLE * wizard_limits.SECONDS_IN_MINUTE / tempo)
-
 
 
 def style_key(choices):
@@ -808,7 +808,7 @@ class WizardChoices:
 
     def root_half_steps(self):
         """Return the song's root as half steps above C, within an octave."""
-        return note_values.SEMITONES_ABOVE_C[self._root] % melody_writer.NOTES_IN_OCTAVE
+        return note_values.SEMITONES_ABOVE_C[self._root] % intervals.HALF_STEPS_PER_OCTAVE
 
     def scale_half_steps(self):
         """Return the notes of the song's scale as half steps above its root, the major scale's where the melody engines know none for the scale type."""
@@ -822,12 +822,6 @@ class WizardChoices:
         return share_in(style=self.style(), entry=entry, template=self._subgenre)
 
     # The melody style, which every tune of the song is sketched by.
-
-
-
-
-
-
 
 
     # The meter and the length, which follow from the subgenre, the tempo and the form.

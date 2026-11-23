@@ -20,8 +20,9 @@ from llamatron.engine.generators.chords.following import FollowChords
 from llamatron.engine.generators.musician import schema
 from llamatron.engine.generators.parts import parts_of
 from llamatron.math.rational import Rational
-from llamatron.model.values import midi, sound as sound_values
+from llamatron.model.values import sound as sound_values
 from llamatron.model.values.sound import Sound
+from llamatron.music_theory.fundamentals import intervals
 
 # How far a note wanders with no reach to wander in.
 NO_WANDER = 0
@@ -39,7 +40,7 @@ SOFTER_UNDER_TUNE = {schema.GIVES_WAY_SOME: 12, schema.GIVES_WAY_OFTEN: 22}
 ACCENT_DEPTH = 12
 # The longest a short note sounds.
 SHORT_NOTE = EIGHTH
-OCTAVE = midi.HALF_STEPS_PER_OCTAVE
+OCTAVE = intervals.HALF_STEPS_PER_OCTAVE
 RANGE_SHIFTS = {schema.LOW: -OCTAVE, schema.AS_WRITTEN: 0, schema.HIGH: OCTAVE}
 SOFTER_DEPTH = 18
 MUTED_DEPTH = 10

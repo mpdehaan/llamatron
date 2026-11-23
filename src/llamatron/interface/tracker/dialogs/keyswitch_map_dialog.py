@@ -27,6 +27,7 @@ from llamatron.model.objects import instrument
 from llamatron.model.objects.instrument import Keyswitch
 from llamatron.model.schema import file_format, limits
 from llamatron.model.values import midi
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import labels, marks, messages
 
 # The place of the row of buttons, under the last slot, and the buttons' places in the order of MSG_OK_CANCEL_BUTTONS.
@@ -141,13 +142,13 @@ class KeyswitchMapDialog(Dialog):
 
     def pick_note(self, name):
         """Move a key along, staying within the octave shown, since the octave is picked apart from the key."""
-        within = self.picking % midi.HALF_STEPS_PER_OCTAVE
-        moved = cursor_moved(place=within, name=name, count=midi.HALF_STEPS_PER_OCTAVE)
+        within = self.picking % intervals.HALF_STEPS_PER_OCTAVE
+        moved = cursor_moved(place=within, name=name, count=intervals.HALF_STEPS_PER_OCTAVE)
         self.picking = min(self.picking - within + moved, midi.MAX_MIDI_NUMBER)
 
     def pick_octave(self, name):
         """Up is an octave higher and Down an octave lower, stopping where MIDI's notes end."""
-        moved = self.picking + midi.HALF_STEPS_PER_OCTAVE * (key_table.STEP_FORWARD if name == Key.UP else key_table.STEP_BACK)
+        moved = self.picking + intervals.HALF_STEPS_PER_OCTAVE * (key_table.STEP_FORWARD if name == Key.UP else key_table.STEP_BACK)
         if midi.MIN_MIDI_NUMBER <= moved <= midi.MAX_MIDI_NUMBER:
             self.picking = moved
 
@@ -197,12 +198,12 @@ class KeyswitchMapDialog(Dialog):
         keyswitch = self.current()
         title = messages.MSG_KEYSWITCH_NOTE_TITLE.format(slot=self.cursor.get_place()) if keyswitch.name is None else messages.MSG_KEYSWITCH_NOTE_NAMED_TITLE.format(slot=self.cursor.get_place(), name=keyswitch.name)
         lines = [Text(fit(text=title, width=width), style=Style.BOLD), Text(drawing.NOTHING)]
-        for row in one_octave_rows(self.picking % midi.HALF_STEPS_PER_OCTAVE):
+        for row in one_octave_rows(self.picking % intervals.HALF_STEPS_PER_OCTAVE):
             line = Text(drawing.NOTHING, no_wrap=True)
             for text, kind in row:
                 line.append(text, style=KEY_STYLES.get(kind, Style.PLAIN))
             lines.append(line)
-        octave = self.setlist.shown_octave(self.picking // midi.HALF_STEPS_PER_OCTAVE)
+        octave = self.setlist.shown_octave(self.picking // intervals.HALF_STEPS_PER_OCTAVE)
         lines += [
             Text(drawing.NOTHING), Text(messages.MSG_KEYSWITCH_PICKED_NOTE.format(note=self.note_text(self.picking))), Text(messages.MSG_KEYSWITCH_PICKED_OCTAVE.format(octave=octave)),
             Text(drawing.NOTHING), *legend(keys=self.keys(), width=width),

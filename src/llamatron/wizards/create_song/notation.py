@@ -22,6 +22,7 @@ A drum's bar is a list with one of accent, loud, soft, ghost and none for every 
 
 from fractions import Fraction
 
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import wizard_names
 
@@ -69,7 +70,6 @@ LEVEL = 'level'
 NOTE_NAMES = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B']
 SHARP_MARK = '#'
 SHARPS = [None, SHARP_MARK, None, SHARP_MARK, None, None, SHARP_MARK, None, SHARP_MARK, None, SHARP_MARK, None]
-NOTES_IN_OCTAVE = 12
 NAME_OF_DRUM = {number: name for name, number in wizard_names.NOTATION_KIT.items()}
 
 
@@ -155,10 +155,6 @@ def _add_note_rows(*, rows, note, octave, loud):
         rows[name] += [note.get(name)] + held
 
 
-
-
-
-
 def drum_rows(*, drum, hits, loud, soft, step_size, accent=None, ghost=None):
     """Return a drum's bar as a pattern; drum is a name of the kit or a General MIDI note number. An accent with no velocity
     of its own is a loud stroke, and a ghost note with none a soft one."""
@@ -168,11 +164,11 @@ def drum_rows(*, drum, hits, loud, soft, step_size, accent=None, ghost=None):
     if ghost is not None:
         velocities[wizard_names.GHOST] = ghost
     number = wizard_names.NOTATION_KIT.get(drum, drum)
-    sharp = SHARPS[number % NOTES_IN_OCTAVE]
+    sharp = SHARPS[number % intervals.HALF_STEPS_PER_OCTAVE]
     on = [hit != NONE for hit in hits]
     pattern = {STEPS: len(hits), DRUM: True, STEP_SIZE: step_size}
-    pattern[DEGREE] = _where_on(on=on, value=NOTE_NAMES[number % NOTES_IN_OCTAVE])
-    pattern[OCTAVE] = _where_on(on=on, value=number // NOTES_IN_OCTAVE)
+    pattern[DEGREE] = _where_on(on=on, value=NOTE_NAMES[number % intervals.HALF_STEPS_PER_OCTAVE])
+    pattern[OCTAVE] = _where_on(on=on, value=number // intervals.HALF_STEPS_PER_OCTAVE)
     pattern[VELOCITY] = [velocities.get(hit) for hit in hits]
     if sharp:
         pattern[ACCIDENTAL] = _where_on(on=on, value=sharp)
@@ -215,7 +211,7 @@ def drum_hits(*, pattern, velocities=None):
 
 def _note_number(*, name, accidental, octave):
     """Return the MIDI note number of a note's name, its sharp and its octave."""
-    number = NOTE_NAMES.index(name) + octave * NOTES_IN_OCTAVE
+    number = NOTE_NAMES.index(name) + octave * intervals.HALF_STEPS_PER_OCTAVE
     if accidental == SHARP_MARK:
         number += 1
     return number
@@ -236,8 +232,6 @@ def says_anything(values):
         if value not in (None, False):
             return True
     return False
-
-
 
 
 def copied_line(line):

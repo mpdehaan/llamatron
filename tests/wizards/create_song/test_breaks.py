@@ -10,6 +10,7 @@ import unittest
 from llamatron.model.file import version
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import InstrumentSetting, Section
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, breaks, characters, notation, wizard_limits, wizard_names
 from llamatron.wizards.create_song.drum_writing import SectionDrums, SectionToDrum, SongDrumming
@@ -283,7 +284,7 @@ class TestKitPieceSounds(unittest.TestCase):
         """The MIDI notes a piece's part plays."""
         rows = self.rows(made=made, piece=piece)
         marks = rows.get(notation.ACCIDENTAL) or [None] * rows[notation.STEPS]
-        return {notation.NOTE_NAMES.index(name) + (1 if mark else 0) + octave * notation.NOTES_IN_OCTAVE for name, mark, octave in zip(rows[notation.DEGREE], marks, rows[notation.OCTAVE]) if name is not None}
+        return {notation.NOTE_NAMES.index(name) + (1 if mark else 0) + octave * intervals.HALF_STEPS_PER_OCTAVE for name, mark, octave in zip(rows[notation.DEGREE], marks, rows[notation.OCTAVE]) if name is not None}
 
     def test_a_piece_sounds_as_another_drum_of_the_kit_on_the_drum_kit_still(self):
         usual = self.made({})

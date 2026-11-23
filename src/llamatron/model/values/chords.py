@@ -16,7 +16,8 @@ from dataclasses import dataclass
 from llamatron.model.objects.named_scale import NamedScale
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, Tension
-from llamatron.model.values import midi, note
+from llamatron.model.values import note
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import labels, marks
 
 # The place of each of a chord's notes among the notes of a scale of seven, counted up from the chord's root at 0: the notes a
@@ -53,7 +54,7 @@ SYMBOLS_BY_HALF_STEPS = {kind.value: symbol for symbol, kind in file_format.FIXE
 LETTER_STEPS_PAST_THE_OCTAVE = {1: 1, 2: 1, 3: 1, 5: 3, 6: 3, 8: 5, 9: 5}
 # How many letters above its root a note within the octave is spelled, by its half steps.
 LETTER_STEPS_WITHIN_THE_OCTAVE = (0, 1, 1, 2, 2, 3, 4, 4, 4, 5, 6, 6)
-HALF_OCTAVE = midi.HALF_STEPS_PER_OCTAVE // 2
+HALF_OCTAVE = intervals.HALF_STEPS_PER_OCTAVE // 2
 NO_TEXT = ''
 WORD_GAP = ' '
 # A chord's long names are listed with commas, the first the one shown.
@@ -79,8 +80,8 @@ def borrowed(*, scale, kind):
 
 def letter_steps(half_steps):
     """Return how many letters above its root a chord's note is spelled, by its half steps above the root: a third two, a flat ninth one."""
-    within = half_steps % midi.HALF_STEPS_PER_OCTAVE
-    if half_steps > midi.HALF_STEPS_PER_OCTAVE and within in LETTER_STEPS_PAST_THE_OCTAVE:
+    within = half_steps % intervals.HALF_STEPS_PER_OCTAVE
+    if half_steps > intervals.HALF_STEPS_PER_OCTAVE and within in LETTER_STEPS_PAST_THE_OCTAVE:
         return LETTER_STEPS_PAST_THE_OCTAVE[within]
     return LETTER_STEPS_WITHIN_THE_OCTAVE[within]
 
@@ -88,7 +89,7 @@ def letter_steps(half_steps):
 def spelled_note(*, root, half_steps):
     """Return the name of the note some half steps above a root's name, on the letter a chord spells it with: Ab's third is C, A's flat ninth is Bb."""
     letter = LETTERS[(LETTERS.index(root[0]) + letter_steps(half_steps)) % len(LETTERS)]
-    pitch = (note.SEMITONES_ABOVE_C[root] + half_steps) % midi.HALF_STEPS_PER_OCTAVE
+    pitch = (note.SEMITONES_ABOVE_C[root] + half_steps) % intervals.HALF_STEPS_PER_OCTAVE
     signs = _signs_between(pitch=pitch, letter=letter)
     if abs(signs) > MOST_SIGNS:
         return _pitch_name(pitch=pitch, flat=marks.MSG_FLAT_SPELLED in root)
@@ -103,7 +104,7 @@ def root_name(*, scale, degree, accidental):
     shape = _shape_of(scale)
     place = (degree - 1) % len(shape)
     half_steps = shape[place] + file_format.ACCIDENTALS.get(accidental, 0)
-    pitch = (note.SEMITONES_ABOVE_C[root] + half_steps) % midi.HALF_STEPS_PER_OCTAVE
+    pitch = (note.SEMITONES_ABOVE_C[root] + half_steps) % intervals.HALF_STEPS_PER_OCTAVE
     flat = accidental == Accidental.FLAT
     if len(shape) != PLACED_SCALE_SIZE:
         return _pitch_name(pitch=pitch, flat=flat or marks.MSG_FLAT_SPELLED in root)
@@ -121,7 +122,7 @@ def scale_chord_half_steps(*, scale, degree, places):
     result = []
     for above in places:
         octaves, place = divmod(start + above, len(shape))
-        result.append(octaves * midi.HALF_STEPS_PER_OCTAVE + shape[place] - shape[start])
+        result.append(octaves * intervals.HALF_STEPS_PER_OCTAVE + shape[place] - shape[start])
     return tuple(result)
 
 
@@ -187,8 +188,8 @@ def replaced_places(*, symbol, tensions):
     places = {}
     if symbol is not None:
         for half_steps in file_format.FIXED_CHORDS[str(symbol)].value:
-            within = half_steps % midi.HALF_STEPS_PER_OCTAVE
-            if half_steps > midi.HALF_STEPS_PER_OCTAVE:
+            within = half_steps % intervals.HALF_STEPS_PER_OCTAVE
+            if half_steps > intervals.HALF_STEPS_PER_OCTAVE:
                 places[{2: NINTH_PLACE, 5: ELEVENTH_PLACE, 9: THIRTEENTH_PLACE}[within]] = within
             elif within in THIRDS:
                 places[THIRD_PLACE] = within
@@ -197,7 +198,7 @@ def replaced_places(*, symbol, tensions):
             elif within in SEVENTHS:
                 places[SEVENTH_PLACE] = within
     for tension in tensions or ():
-        places[TENSION_PLACES[tension]] = file_format.TENSIONS[tension] % midi.HALF_STEPS_PER_OCTAVE
+        places[TENSION_PLACES[tension]] = file_format.TENSIONS[tension] % intervals.HALF_STEPS_PER_OCTAVE
     return places
 
 
@@ -233,7 +234,7 @@ def _own_half_steps(*, scale, degree, symbol, own_degree):
 
 def _signs_between(*, pitch, letter):
     """Return how many sharps, or flats as a negative count, turn a letter into a pitch, the nearer way round the octave."""
-    return (pitch - note.SEMITONES_ABOVE_C[letter] + HALF_OCTAVE) % midi.HALF_STEPS_PER_OCTAVE - HALF_OCTAVE
+    return (pitch - note.SEMITONES_ABOVE_C[letter] + HALF_OCTAVE) % intervals.HALF_STEPS_PER_OCTAVE - HALF_OCTAVE
 
 
 def _with_signs(*, letter, signs):

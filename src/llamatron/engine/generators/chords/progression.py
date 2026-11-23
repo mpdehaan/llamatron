@@ -29,8 +29,8 @@ from llamatron.model.values import chords as chords_values, sound as sound_value
 from llamatron.model.values.chords import replaced_places
 from llamatron.model.values.scale import Scale, ScaleType
 from llamatron.model.values.sound import Sound
+from llamatron.music_theory.fundamentals import intervals
 
-HALF_STEPS_PER_OCTAVE = 12
 ZERO_OFFSET = 0
 # The scale whose half steps place a degree with a sharp or flat when a clip has no scale.
 SHAPE_WITHOUT_A_SCALE = ScaleType.MAJOR.value
@@ -149,7 +149,7 @@ class Progression(ClipGenerator):
 def _place_in(*, note, scale):
     """Return which note of a scale's octave, counted from 0, a note is at or just above, and how many half steps above it."""
     shape = scale.get_type().value
-    within = (note[sound_values.MIDI] - scale.get_root().get_midi_number()) % HALF_STEPS_PER_OCTAVE
+    within = (note[sound_values.MIDI] - scale.get_root().get_midi_number()) % intervals.HALF_STEPS_PER_OCTAVE
     place = 0
     for index, step in enumerate(shape):
         if step <= within:
@@ -168,10 +168,10 @@ def _carried(*, note, scale, drawn_from):
 def _with_tensions(*, notes, tensions):
     """Return a chord's notes with its tensions added above its lowest note, each left out where a note of the chord already has its pitch or it would leave the MIDI range."""
     lowest = min(notes, key=lambda note: note[sound_values.MIDI])
-    held = {note[sound_values.MIDI] % HALF_STEPS_PER_OCTAVE for note in notes}
+    held = {note[sound_values.MIDI] % intervals.HALF_STEPS_PER_OCTAVE for note in notes}
     result = list(notes)
     for tension in tensions:
-        if (lowest[sound_values.MIDI] + file_format.TENSIONS[tension]) % HALF_STEPS_PER_OCTAVE in held:
+        if (lowest[sound_values.MIDI] + file_format.TENSIONS[tension]) % intervals.HALF_STEPS_PER_OCTAVE in held:
             continue
         try:
             result.append(Sound.half_step(lowest, file_format.TENSIONS[tension]))
@@ -186,5 +186,5 @@ def _half_steps_to(*, degree, scale):
     if scale is not None:
         shape = scale.get_type().value
     octaves, place = divmod(degree - 1, len(shape))
-    return octaves * HALF_STEPS_PER_OCTAVE + shape[place]
+    return octaves * intervals.HALF_STEPS_PER_OCTAVE + shape[place]
 

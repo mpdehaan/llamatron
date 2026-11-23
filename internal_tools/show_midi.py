@@ -24,7 +24,8 @@ import mido
 import sys
 
 from llamatron.model.schema import file_format
-from llamatron.model.values import midi as midi_numbers, note
+from llamatron.model.values import note
+from llamatron.music_theory.fundamentals import intervals
 
 QUARTER_NOTES_PER_WHOLE_NOTE = 4
 # Lengths are shown as fractions no finer than this, so rounding in the file doesn't show.
@@ -49,7 +50,7 @@ TEMPO_PLACES = 1
 
 def note_name(number):
     """Return a MIDI note number as a name with its octave as Live numbers them, like C3 for 60."""
-    octave, place = divmod(number, midi_numbers.HALF_STEPS_PER_OCTAVE)
+    octave, place = divmod(number, intervals.HALF_STEPS_PER_OCTAVE)
     return note.SHARP_NAMES[place], octave - file_format.LIVE_OCTAVE_OFFSET
 
 

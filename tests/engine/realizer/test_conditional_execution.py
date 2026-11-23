@@ -20,9 +20,9 @@ from llamatron.model.objects import conditions
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, DrawName, DrawSetting, Operator, PatternSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart
-from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
+from llamatron.music_theory.fundamentals import intervals
 from tests.support.rendering import render_data, setlist_from_data
 
 AD = DrawName.AD
@@ -51,7 +51,7 @@ COUNTING_ROW = {Row.AD_NOTE: [RegisterUse.ADD]}
 
 def scale_note(value):
     octaves, place = divmod(value, len(C_MAJOR_STEPS))
-    return ROOT + octaves * midi.HALF_STEPS_PER_OCTAVE + C_MAJOR_STEPS[place]
+    return ROOT + octaves * intervals.HALF_STEPS_PER_OCTAVE + C_MAJOR_STEPS[place]
 
 
 def statement(*parts):
@@ -218,7 +218,6 @@ class TestBypassingGenerators(unittest.TestCase):
         self.assertEqual(setlist.get_chain(DOUBLED).to_data()[ChainSetting.BYPASS_WHEN], self.TABLE)
         self.assertEqual(setlist.get_generator_settings(kind=chords_plugin.NAME, name=TWICE).get_bypass_when(), self.TABLE)
         self.assertIsInstance(setlist_from_data(song(chained=True)).get_chain(DOUBLED).to_data(), list)
-
 
 
 class TestASwitchedOffGenerator(unittest.TestCase):

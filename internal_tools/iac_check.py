@@ -38,7 +38,8 @@ import time
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import Row
-from llamatron.model.values import midi, note
+from llamatron.model.values import note
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.realtime.devices.ports import midi_library, output_port_names
 from llamatron.realtime.render_process import timeline
 from llamatron.realtime.render_process.timeline import Route, song_timeline
@@ -171,7 +172,7 @@ def first_song_events(*, path, seconds):
 
 def note_name(number):
     """Return a MIDI number as a note name in llamatron's own octaves, where C0 is 0, spelled with sharps."""
-    return NOTE_NAME.format(name=note.SHARP_NAMES[number % midi.HALF_STEPS_PER_OCTAVE], octave=number // midi.HALF_STEPS_PER_OCTAVE)
+    return NOTE_NAME.format(name=note.SHARP_NAMES[number % intervals.HALF_STEPS_PER_OCTAVE], octave=number // intervals.HALF_STEPS_PER_OCTAVE)
 
 
 def said(event):

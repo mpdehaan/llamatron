@@ -17,6 +17,7 @@ from llamatron.model.file.safe_yaml import load_safely
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ChordSymbol, PatternSetting, Row
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, band, characters, composer, loudness, melody, notation, players, wizard_names
 
@@ -746,7 +747,7 @@ class TestSketchedTune(unittest.TestCase):
         home = melody.home_place(ladder=ladder, home=self.habits[melody.HOME])
         wanted = melody.chord_notes(chord={notation.DEGREE: 1}, scale_type=MAJOR)
         place = melody.nearest_chord_rung(ladder=ladder, place=home + 1, wanted=wanted)
-        self.assertIn(ladder[place][0] % melody.NOTES_IN_OCTAVE, wanted)
+        self.assertIn(ladder[place][0] % intervals.HALF_STEPS_PER_OCTAVE, wanted)
 
 
 if __name__ == '__main__':

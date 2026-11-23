@@ -11,9 +11,10 @@ from llamatron.engine.parts.scale_moves import along_scale
 from llamatron.math import length as length_values
 from llamatron.math.length import Length
 from llamatron.math.random_source import random_source
-from llamatron.model.values import midi, sound
+from llamatron.model.values import sound
 from llamatron.model.values.note import _check_length
 from llamatron.model.values.sound import Sound
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
 
 # How many steps an arpeggiator's offsets can have, as on a groovebox.
@@ -253,7 +254,7 @@ class Arp(ClipGenerator):
 
 def _up_octaves(*, note, octaves):
     """Return a note moved up a number of octaves."""
-    return Sound.half_step(note, midi.HALF_STEPS_PER_OCTAVE * octaves)
+    return Sound.half_step(note, intervals.HALF_STEPS_PER_OCTAVE * octaves)
 
 
 def _back_without_ends(notes):

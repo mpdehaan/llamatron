@@ -11,9 +11,9 @@ step is easy to tell apart; scale_notes turns how far each note moved along C ma
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting
-from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
+from llamatron.music_theory.fundamentals import intervals
 from tests.support.rendering import render_data
 
 OCTAVE = 5
@@ -35,7 +35,7 @@ def scale_notes(values):
 
 def scale_note(value):
     octaves, place = divmod(value, len(C_MAJOR_STEPS))
-    return ROOT + octaves * midi.HALF_STEPS_PER_OCTAVE + C_MAJOR_STEPS[place]
+    return ROOT + octaves * intervals.HALF_STEPS_PER_OCTAVE + C_MAJOR_STEPS[place]
 
 
 def pattern(steps, **rows):

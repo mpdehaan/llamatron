@@ -18,6 +18,7 @@ from llamatron.interface.tracker.screens.shared.sound_trial import hits_of, run_
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import PatternSetting, Row
 from llamatron.model.values.note import NoteName
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.realtime import realtime_names
 from llamatron.realtime.render_process import timeline
 from llamatron.user_strings import errors, labels, legends, marks
@@ -54,10 +55,10 @@ class TestSoundTrialNotes(unittest.TestCase):
 
     def test_a_run_goes_up_an_octave_of_the_scale_from_the_root_and_back_down(self):
         run = run_of(root=A_ROOT, steps=MINOR_STEPS, octave=AN_OCTAVE)
-        low = AN_OCTAVE * sound_trial.NOTES_IN_OCTAVE + A_ROOT
-        up = [low + step for step in MINOR_STEPS] + [low + sound_trial.NOTES_IN_OCTAVE]
+        low = AN_OCTAVE * intervals.HALF_STEPS_PER_OCTAVE + A_ROOT
+        up = [low + step for step in MINOR_STEPS] + [low + intervals.HALF_STEPS_PER_OCTAVE]
         self.assertEqual(run, up + up[-2::-1])
-        self.assertEqual(run_of()[0], sound_trial.USUAL_OCTAVE * sound_trial.NOTES_IN_OCTAVE)
+        self.assertEqual(run_of()[0], sound_trial.USUAL_OCTAVE * intervals.HALF_STEPS_PER_OCTAVE)
         self.assertEqual(len(run_of()), 2 * len(sound_trial.MAJOR_STEPS) + 1)
 
     def test_a_drum_is_hit_four_times(self):
@@ -70,7 +71,7 @@ class TestSoundTrialNotes(unittest.TestCase):
         self.assertTrue(data[PatternSetting.DRUM])
         self.assertEqual(data[Row.DEGREE], ['C', 'C'])
         self.assertEqual(data[Row.ACCIDENTAL], [None, SHARP])
-        self.assertEqual(data[Row.OCTAVE], [MIDDLE_C // sound_trial.NOTES_IN_OCTAVE] * 2)
+        self.assertEqual(data[Row.OCTAVE], [MIDDLE_C // intervals.HALF_STEPS_PER_OCTAVE] * 2)
         self.assertEqual(data[Row.VELOCITY], [pattern_preview.TRIAL_VELOCITY] * 2)
 
 
@@ -268,8 +269,8 @@ class TestNoteNames(unittest.TestCase):
     """A MIDI note shown by name and octave, and a typed name read back."""
 
     def test_a_note_is_shown_by_its_name_and_octave_a_black_key_as_a_sharp(self):
-        self.assertEqual(note_shown(MIDDLE_C), marks.MSG_NOTE_NAME_SHOWN.format(name=NoteName.C, octave=MIDDLE_C // sound_trial.NOTES_IN_OCTAVE))
-        self.assertEqual(note_shown(C_SHARP), marks.MSG_NOTE_NAME_SHOWN.format(name=NoteName.C_SHARP, octave=C_SHARP // sound_trial.NOTES_IN_OCTAVE))
+        self.assertEqual(note_shown(MIDDLE_C), marks.MSG_NOTE_NAME_SHOWN.format(name=NoteName.C, octave=MIDDLE_C // intervals.HALF_STEPS_PER_OCTAVE))
+        self.assertEqual(note_shown(C_SHARP), marks.MSG_NOTE_NAME_SHOWN.format(name=NoteName.C_SHARP, octave=C_SHARP // intervals.HALF_STEPS_PER_OCTAVE))
 
     def test_every_note_typed_as_shown_is_that_note_in_capitals_or_not(self):
         for note in range(note_names.LOWEST_NOTE, note_names.HIGHEST_NOTE + 1):

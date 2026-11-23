@@ -20,7 +20,7 @@ from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Approach, ChordColor, ClipSlotSetting, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning
-from llamatron.model.values import midi
+from llamatron.music_theory.fundamentals import intervals
 from tests.support import song_playing
 from tests.support.rendering import render_data, setlist_from_data, song_from_data
 from tests.support.song_playing import pattern, song
@@ -104,7 +104,7 @@ def pitches(data):
 
 
 def classes(data):
-    return {pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in pitches(data)}
+    return {pitch % intervals.HALF_STEPS_PER_OCTAVE for pitch in pitches(data)}
 
 
 def starting(data, *, start, before):
@@ -128,21 +128,21 @@ class TestShape(unittest.TestCase):
         for position in (5, 7, 9, 12):
             with self.subTest(position=position):
                 played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.POSITION: position}))
-                self.assertEqual({pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
+                self.assertEqual({pitch % intervals.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
                 for pitch in played:
                     self.assertTrue(any(position <= pitch - string < position + guitarify.REACH for string in guitarify.OPEN_STRINGS[Tuning.STANDARD]), pitch)
 
     def test_a_capo_raises_the_open_strings(self):
         capo = 3
         played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.CAPO: capo}))
-        self.assertEqual({pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
+        self.assertEqual({pitch % intervals.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
         self.assertGreaterEqual(min(played), guitarify.OPEN_STRINGS[Tuning.STANDARD][0] + capo)
 
     def test_fewer_strings_are_the_highest_ones(self):
         played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.STRINGS: guitarify_settings.MIN_GUITAR_STRINGS}))
         self.assertLessEqual(len(played), guitarify_settings.MIN_GUITAR_STRINGS)
         self.assertGreaterEqual(min(played), guitarify.OPEN_STRINGS[Tuning.STANDARD][-guitarify_settings.MIN_GUITAR_STRINGS])
-        self.assertEqual({pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
+        self.assertEqual({pitch % intervals.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
 
     def test_a_tuning_changes_the_strings(self):
         # D major, the second degree made major, reaches the low D string only in drop D.
@@ -154,13 +154,13 @@ class TestShape(unittest.TestCase):
         for tuning, strings in guitarify.OPEN_STRINGS.items():
             with self.subTest(tuning=tuning):
                 played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.TUNING: tuning}))
-                self.assertEqual({pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
+                self.assertEqual({pitch % intervals.HALF_STEPS_PER_OCTAVE for pitch in played}, C_MAJOR)
                 self.assertLessEqual(len(played), len(strings))
                 self.assertGreaterEqual(min(played), strings[0])
 
     def test_the_root_is_in_the_bass_where_a_string_can_reach_it(self):
         played = pitches(guitar(settings={**SHAPE_ONLY, GuitarifySetting.TUNING: Tuning.STANDARD}))
-        self.assertEqual(min(played) % midi.HALF_STEPS_PER_OCTAVE, C % midi.HALF_STEPS_PER_OCTAVE)
+        self.assertEqual(min(played) % intervals.HALF_STEPS_PER_OCTAVE, C % intervals.HALF_STEPS_PER_OCTAVE)
 
     def test_a_hand_short_of_strings_leaves_the_fifth_out_before_the_root(self):
         # A seventh chord has four notes, and three strings hold three of them: the root, the third and the seventh.
@@ -173,7 +173,7 @@ class TestShape(unittest.TestCase):
 
     def test_an_inverted_chord_keeps_its_lowest_note_in_the_bass(self):
         played = pitches(guitar(settings=SHAPE_ONLY, rows={Row.INVERSION: [1]}))
-        self.assertEqual(min(played) % midi.HALF_STEPS_PER_OCTAVE, E % midi.HALF_STEPS_PER_OCTAVE)
+        self.assertEqual(min(played) % intervals.HALF_STEPS_PER_OCTAVE, E % intervals.HALF_STEPS_PER_OCTAVE)
 
     def test_a_single_note_is_left_alone_unless_asked(self):
         self.assertEqual(pitches(guitar(settings=SHAPE_ONLY, rows={Row.CHORD: [None]})), [C])
@@ -337,7 +337,7 @@ class TestSingleNoteChoices(unittest.TestCase):
         return pitches(guitar(settings=settings, rows={Row.CHORD: [None]}))
 
     def test_an_octave_a_third_above_and_a_double_stop(self):
-        self.assertEqual(self.single(SingleNotes.OCTAVE), [C, C + midi.HALF_STEPS_PER_OCTAVE])
+        self.assertEqual(self.single(SingleNotes.OCTAVE), [C, C + intervals.HALF_STEPS_PER_OCTAVE])
         self.assertEqual(self.single(SingleNotes.THIRD_ABOVE), [C, E])
         self.assertEqual(self.single(SingleNotes.DOUBLE_STOP), [C - guitarify.FOURTH_BELOW, C])
 
@@ -345,7 +345,7 @@ class TestSingleNoteChoices(unittest.TestCase):
 class TestChordColor(unittest.TestCase):
 
     def classes(self, color):
-        return {pitch % midi.HALF_STEPS_PER_OCTAVE for pitch in pitches(guitar(settings={GuitarifySetting.STROKES: False, GuitarifySetting.COLOR: color}))}
+        return {pitch % intervals.HALF_STEPS_PER_OCTAVE for pitch in pitches(guitar(settings={GuitarifySetting.STROKES: False, GuitarifySetting.COLOR: color}))}
 
     def test_each_color_of_a_c_major_chord(self):
         self.assertEqual(self.classes(ChordColor.AS_WRITTEN), C_MAJOR)

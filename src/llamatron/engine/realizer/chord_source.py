@@ -10,8 +10,7 @@ from llamatron.engine.timing.timing import as_note, clip_end
 from llamatron.math import length
 from llamatron.math.length import Length
 from llamatron.model.values import sound as sound_values
-
-HALF_STEPS_PER_OCTAVE = 12
+from llamatron.music_theory.fundamentals import intervals
 
 
 class ChordSource:
@@ -68,4 +67,4 @@ def _chord_of(*, sound, scale):
     if sound[sound_values.KIND] == sound_values.CHORD:
         notes = sound[sound_values.NOTES]
     numbers = [as_note(position=note, scale=scale)[sound_values.MIDI] for note in notes]
-    return numbers[0], frozenset(number % HALF_STEPS_PER_OCTAVE for number in numbers)
+    return numbers[0], frozenset(number % intervals.HALF_STEPS_PER_OCTAVE for number in numbers)

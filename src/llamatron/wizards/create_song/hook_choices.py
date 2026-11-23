@@ -7,6 +7,7 @@
 import copy
 
 from llamatron.model.schema.file_format import SectionKind
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, hook_writing, line_edits, melody as melody_writer, notation as tune_notation, tune_reading, wizard_limits, wizard_names
 from llamatron.wizards.create_song.arranger import arranged
@@ -310,7 +311,7 @@ class HookChoices(ChoicesPart):
         """Return lines of a tune as how many steps they last and each note as where it starts, how many steps it lasts and its
         MIDI note, in the song's key, octave being the octave the lines are written against."""
         scale = self._choices.scale_half_steps()
-        lowest = octave * melody_writer.NOTES_IN_OCTAVE + self._choices.root_half_steps()
+        lowest = octave * intervals.HALF_STEPS_PER_OCTAVE + self._choices.root_half_steps()
         notes = []
         at = 0
         for line in lines:
@@ -526,8 +527,8 @@ class HookChoices(ChoicesPart):
         scale = self._choices.scale_half_steps()
         octaves, degree = divmod(place, len(scale))
         part, _ = self._hook_part()
-        lowest = part[tune_notation.OCTAVE] * melody_writer.NOTES_IN_OCTAVE + self._choices.root_half_steps()
-        return lowest + scale[degree] + octaves * melody_writer.NOTES_IN_OCTAVE
+        lowest = part[tune_notation.OCTAVE] * intervals.HALF_STEPS_PER_OCTAVE + self._choices.root_half_steps()
+        return lowest + scale[degree] + octaves * intervals.HALF_STEPS_PER_OCTAVE
 
     def set_hook_line(self, line):
         """Write the hook's notes by hand, or give the hook back to the wizard with None. A line that is not as long as the hook's, or that the
@@ -587,4 +588,4 @@ def _pitch_of(*, note, scale, lowest):
     octaves, place = divmod(note[tune_notation.DEGREE] - 1, len(scale))
     octaves += note.get(tune_notation.OCTAVE, 0)
     accidental = wizard_limits.HALF_STEPS_OF_ACCIDENTAL.get(note.get(tune_notation.ACCIDENTAL), 0)
-    return lowest + scale[place] + octaves * melody_writer.NOTES_IN_OCTAVE + accidental
+    return lowest + scale[place] + octaves * intervals.HALF_STEPS_PER_OCTAVE + accidental

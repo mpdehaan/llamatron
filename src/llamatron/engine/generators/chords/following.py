@@ -21,8 +21,8 @@ from llamatron.math import length
 from llamatron.math.length import Length
 from llamatron.model.values import sound as sound_values
 from llamatron.model.values.sound import Sound
+from llamatron.music_theory.fundamentals import intervals
 
-HALF_STEPS_PER_OCTAVE = 12
 # The half steps above a chord's root that its third, its fifth and its seventh can be, by the place above a figure's root, counted in notes of the scale from 0, that is the figure's.
 KINDS_OF_CHORD_NOTE = {2: (3, 4), 4: (6, 7, 8), 6: (9, 10, 11)}
 # How many notes a scale has when its thirds, fifths and sevenths lie at those places.
@@ -83,7 +83,7 @@ def _to_chord(*, note, chord, scale):
     steps, extra = _place_in(midi=root, scale=scale)
     try:
         if extra:
-            moved = Sound.half_step(note, (root - scale.get_root().get_midi_number()) % HALF_STEPS_PER_OCTAVE)
+            moved = Sound.half_step(note, (root - scale.get_root().get_midi_number()) % intervals.HALF_STEPS_PER_OCTAVE)
         else:
             moved = along_scale(note=note, steps=steps, scale=scale)
         return _as_the_chord_has_it(note=note, moved=moved, chord=chord, scale=scale)
@@ -103,8 +103,8 @@ def _as_the_chord_has_it(*, note, moved, chord, scale):
     if extra or above not in KINDS_OF_CHORD_NOTE or len(scale.get_type().value) != PLACED_SCALE_SIZE:
         return moved
     kind = KINDS_OF_CHORD_NOTE[above]
-    own = (moved[sound_values.MIDI] - root) % HALF_STEPS_PER_OCTAVE
-    has = [interval for interval in kind if (root + interval) % HALF_STEPS_PER_OCTAVE in held]
+    own = (moved[sound_values.MIDI] - root) % intervals.HALF_STEPS_PER_OCTAVE
+    has = [interval for interval in kind if (root + interval) % intervals.HALF_STEPS_PER_OCTAVE in held]
     if own not in kind or own in has or len(has) != 1:
         return moved
     return Sound.half_step(moved, has[0] - own)
@@ -113,6 +113,6 @@ def _as_the_chord_has_it(*, note, moved, chord, scale):
 def _place_in(*, midi, scale):
     """Return which note of a scale's octave, counted from 0, a MIDI number is at or just above, and how many half steps above it."""
     shape = scale.get_type().value
-    within = (midi - scale.get_root().get_midi_number()) % HALF_STEPS_PER_OCTAVE
+    within = (midi - scale.get_root().get_midi_number()) % intervals.HALF_STEPS_PER_OCTAVE
     place = max(index for index, step in enumerate(shape) if step <= within)
     return place, within - shape[place]

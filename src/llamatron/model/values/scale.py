@@ -8,6 +8,7 @@ from llamatron.math.length import Length
 from llamatron.model.values import midi as midi_numbers, note
 from llamatron.model.values.note import Note
 from llamatron.model.values.sound import Sound
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, reprs
 
 
@@ -121,7 +122,7 @@ class Scale:
             raise ValueError(errors.ERR_BAD_DEGREE.format(value=degree, lowest=note.FIRST_DEGREE))
         steps = self._typ.value
         octaves, index = divmod(degree - note.FIRST_DEGREE + scale_notes, len(steps))
-        name, octave_number = self._root.spelled_half_step(octaves * midi_numbers.HALF_STEPS_PER_OCTAVE + steps[index] + half_steps)
+        name, octave_number = self._root.spelled_half_step(octaves * intervals.HALF_STEPS_PER_OCTAVE + steps[index] + half_steps)
         return Note(name=name, octave_number=octave_number, length=length, velocity=velocity, glide=glide)
 
     def sound_at(self, *, degree, scale_notes, half_steps, length, velocity=None, glide=False):
@@ -134,12 +135,12 @@ class Scale:
         steps = self._typ.value
         octaves, index = divmod(degree - note.FIRST_DEGREE + scale_notes, len(steps))
         root = self._root
-        midi = root.get_midi_number() + octaves * midi_numbers.HALF_STEPS_PER_OCTAVE + steps[index] + half_steps
+        midi = root.get_midi_number() + octaves * intervals.HALF_STEPS_PER_OCTAVE + steps[index] + half_steps
         if midi_numbers.MIN_MIDI_NUMBER <= midi <= midi_numbers.MAX_MIDI_NUMBER:
             names = note.SHARP_NAMES
             if root.get_name().endswith(note.FLAT_SIGN):
                 names = note.FLAT_NAMES
-            return Sound.note(length=length, midi=midi, velocity=velocity, glide=glide, name=names[midi % midi_numbers.HALF_STEPS_PER_OCTAVE])
+            return Sound.note(length=length, midi=midi, velocity=velocity, glide=glide, name=names[midi % intervals.HALF_STEPS_PER_OCTAVE])
         # The class says what is wrong with the note, in the words it always has.
         number = None
         if length is not None:
