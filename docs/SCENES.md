@@ -20,7 +20,7 @@ Under the Name, a box of tabs holds the rest, as on the clip page (see [Clips](C
 | Section | The kind of section the scene is, such as verse, chorus or solo, chosen from a list, or `(none)`. It changes nothing about how the scene plays. |
 | Scale | A scale for the scene's clips in place of the song's. `Bksp` goes back to the song's. |
 | Groove | A groove for the scene's clips in place of the song's, or `off` to play them straight whatever the song or a track chooses. A track's own groove still wins over the scene's, but not over the scene's `off`. `Bksp` goes back to the song's. |
-| Tempo | The percentage of the song's tempo the scene plays at, from 0% to 200%, shown with the tempo it makes, such as `125% (150 BPM)`. 100% is the song's tempo; no tempo is slower than 20 BPM. `Bksp` goes back to the song's. Changing the song's tempo moves every scene with it. |
+| Tempo | The percentage of the song's tempo the scene plays at, from 10% to 200%, shown with the tempo it makes, such as `125% (150 BPM)`. 100% is the song's tempo; no tempo is slower than 20 BPM. `Bksp` goes back to the song's. Changing the song's tempo moves every scene with it. |
 | Repeat | Plays the whole scene this many times, from 1 to 999. |
 | Generators | The generators every clip of the scene runs, after each clip's own, edited as a clip's are. See [Generators](GENERATORS.md). |
 | Launch together | For real-time playback only, and on by default: when a clip above sends a start to any clip of this scene, every clip of the scene starts together. When off, each clip starts only when the clip directly above it sends a start, and Arrange marks the scene with `┆` after its name. `Space` or `ENTER` toggles it. See [Playing Live](PLAYING_LIVE.md). |
@@ -38,7 +38,7 @@ A band that eases into a song, a DJ set that creeps a few beats a minute faster 
 
 | Setting | What it does |
 | --- | --- |
-| Tempo in start, Tempo out start | The percentage of the scene's tempo the ramp starts from, 0% to 200%, shown with the tempo it makes. The scene's tempo is the Tempo field's, or else the song's. Blank is 100%, the scene's tempo. |
+| Tempo in start, Tempo out start | The percentage of the scene's tempo the ramp starts from, 10% to 200%, shown with the tempo it makes. The scene's tempo is the Tempo field's, or else the song's. Blank is 100%, the scene's tempo. |
 | Tempo in end, Tempo out end | The percentage of the scene's tempo the ramp reaches. Blank is 100%. |
 | Tempo in over, Tempo out over | How many bars the ramp takes, from 1 to 9999. Blank, there is no ramp. |
 

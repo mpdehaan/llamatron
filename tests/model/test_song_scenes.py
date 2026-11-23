@@ -9,6 +9,7 @@ import unittest
 
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
@@ -153,6 +154,13 @@ class TestScenes(unittest.TestCase):
         # Three quarters of the song's 120.
         data = with_parts(scenes=[{SceneSetting.TEMPO: THREE_QUARTERS_TEMPO, SceneSetting.TRACKS: {}}])
         self.assertEqual(render_data(data).get_rows()[0].get_tempo(), 90)
+
+    def test_a_scenes_tempo_is_at_least_a_tenth_of_the_songs_and_never_slower_than_live_allows(self):
+        # A tenth of the song's 120 would be 12, which no song plays at: the scene plays at the slowest there is.
+        data = with_parts(scenes=[{SceneSetting.TEMPO: limits.MIN_TEMPO_PERCENT, SceneSetting.TRACKS: {}}])
+        self.assertEqual(render_data(data).get_rows()[0].get_tempo(), limits.MIN_TEMPO)
+        with self.assertRaises(SongFileError):
+            song_from_data(with_parts(scenes=[{SceneSetting.TEMPO: limits.MIN_TEMPO_PERCENT - 1, SceneSetting.TRACKS: {}}]))
 
     def test_no_tempo_uses_the_song_tempo(self):
         self.assertIsNone(build(song_testing.BASIC).get_rows()[0].get_tempo())
