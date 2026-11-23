@@ -47,7 +47,8 @@ Up, down, Left and Right select a setting. [ and ] change it, and ENTER types or
 HELP_CLIP_PAGE = """
 Name: what the grid and exports call it, else its pattern's name. Patterns: what it plays; A adds, M moves, Bksp removes.
 Tab goes to the tabs; Left and Right choose one. Settings: Repeat, Loop, the orders, Morph to, Follow action, Scale, Velocity, Grab.
-Chords to Phrasing: its own generators, off until Enabled. Generators: the set's generators it runs, after its own.
+Chords to Phrasing: its own generators, off until Enabled; each tab's Conditions button opens when a pass bypasses it.
+More Generators: the set's generators it runs, after its own. PgUp and PgDn choose the tab before or after.
 One clip in each scene must not loop, or exporting stops. Follow action is for real-time playback only.
 
 Up, down, Left and Right select. [ and ] change. ENTER chooses. J jumps to the pattern. L plays the clip and stops it.
@@ -140,7 +141,8 @@ Mute: starts switched off in Live; its clips can still be grabbed. Groove: for i
 Transpose: moves its notes along the scale. Lowest and Highest octave: what its instrument plays, which the piano roll marks.
 Default velocity: a step with none typed. Accent: what an accent adds. Instrument: where it plays in real time, or none.
 MIDI CCs: the CC number each of a pattern's CC rows sends here.
-Tab goes to the tabs; Left and Right choose one. Chords, Arp, Guitarify, Timing, Phrasing: its own generators, off until Enabled.
+Tab goes to the tabs; Left and Right choose one. Chords, Arp, Guitarify, Timing, Phrasing: its own generators, off until Enabled;
+each tab's Conditions button opens when a pass bypasses it. More Generators: the set's generators it runs, after the built-ins.
 
 Up, down, Left and Right select a setting. [ and ] change it, ENTER types, and Space or ENTER toggles. Bksp clears.
 """
