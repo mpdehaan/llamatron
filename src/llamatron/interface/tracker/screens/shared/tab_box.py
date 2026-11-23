@@ -38,10 +38,12 @@ SPACE_UNDER = 1
 
 @dataclass(slots=True, kw_only=True)
 class TabColumn:
-    """A column of a tab: its heading, drawn bold above it, or None for none, and its fields."""
+    """A column of a tab: its heading, drawn bold above it, or None for none, its fields, and whether it starts a band of its
+    own under the columns before it, as a generator's Restart does, whatever room is left beside them."""
 
     heading: object
     fields: list
+    under: bool = False
 
 
 @dataclass(slots=True, kw_only=True)
@@ -165,7 +167,7 @@ def spots_of(*, page, tab, width):
     inner = width - SIDES - len(INSET) * SIDES
     spots = [Spot(band=TOP_BAND, column=0, line=place) for place in range(len(tab.top))]
     drawn = [_column_lines(page=page, column=column, inner=inner, cursor=None)[0] for column in tab.columns]
-    for band_place, band in enumerate(_bands_of(widths=[_column_width(lines) for lines in drawn], inner=inner)):
+    for band_place, band in enumerate(_bands_of(widths=[_column_width(lines) for lines in drawn], inner=inner, under=_columns_under(tab.columns))):
         for column_place, place in enumerate(band):
             spots += _column_spots(page=page, column=tab.columns[place], band=band_place, column_place=column_place, inner=inner)
     return spots
@@ -283,24 +285,29 @@ def _bands(*, page, columns, inner, cursor):
         first += len(column.fields)
     lines = []
     selected = None
-    for band in _bands_of(widths=[_column_width(column_lines) for column_lines, _ in drawn], inner=inner):
+    for band in _bands_of(widths=[_column_width(column_lines) for column_lines, _ in drawn], inner=inner, under=_columns_under(columns)):
         lines, selected = _band_added(lines=lines, band=[drawn[place] for place in band], selected=selected)
     return lines, selected
 
 
-def _bands_of(*, widths, inner):
+def _bands_of(*, widths, inner, under=()):
     """Return the bands columns of some widths stand in, each the places of the columns side by side in it: as many as fit the
-    box's inside, the rest in the bands below."""
+    box's inside, the rest in the bands below, and each column whose place is among under starting a band of its own."""
     bands = []
     band = []
     for place, width in enumerate(widths):
-        if band and _band_width([*[widths[each] for each in band], width]) > inner:
+        if band and (place in under or _band_width([*[widths[each] for each in band], width]) > inner):
             bands.append(band)
             band = []
         band.append(place)
     if band:
         bands.append(band)
     return bands
+
+
+def _columns_under(columns):
+    """Return the places of the columns that start a band of their own."""
+    return {place for place, column in enumerate(columns) if column.under}
 
 
 def _within(*, cursor, first, count):

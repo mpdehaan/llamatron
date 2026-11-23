@@ -46,7 +46,7 @@ VIEW = GeneratorView(
             SPREAD, FADE, LOOSE_TIMING, UPSTROKE,
             ChoiceView(setting=GuitarifySetting.APPROACH, label=labels.MSG_GUITAR_APPROACH_LABEL, choices=tuple(file_format.APPROACHES), default=Approach.OFF, names=labels.MSG_GUITAR_APPROACH_NAMES),
         )),
-        ColumnView(heading=None, settings=(RestartView(),)),
+        ColumnView(heading=None, settings=(RestartView(),), under=True),
     ),
     help=strings.HELP_PAGE,
 )

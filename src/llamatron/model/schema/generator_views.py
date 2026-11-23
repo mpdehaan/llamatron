@@ -183,12 +183,13 @@ class SectionView(NamedTuple):
 
 
 class ColumnView(NamedTuple):
-    """A column of a generator's tab: its heading, or None for a column without one, its settings from the top, and the modes it
-    shows in, or none for every mode."""
+    """A column of a generator's tab: its heading, or None for a column without one, its settings from the top, the modes it
+    shows in, or none for every mode, and whether it stands under the columns before it, on a line of its own, as Restart does."""
 
     heading: object
     settings: tuple
     modes: tuple = ()
+    under: bool = False
 
 
 class GeneratorView(NamedTuple):

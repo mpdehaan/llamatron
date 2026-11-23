@@ -6,10 +6,12 @@ stopping at the ends, Tab going to the row, the box keeping its tallest tab's he
 inside the box, the grid of a table of statements, and a built-in generator's tab, which edits the clip's own built-in, marks it
 on or off and opens its parts on it."""
 
-from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin
+from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, guitarify as guitarify_plugin
 from llamatron.engine.generators.arp import strings as arp_strings
 from llamatron.engine.generators.chords import model as chords_model, strings as chords_strings
 from llamatron.engine.generators.chords.model import ChordsSetting
+from llamatron.engine.generators.guitarify import model as guitarify_model, strings as guitarify_strings
+from llamatron.engine.generators.guitarify.model import GuitarifySetting
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
@@ -177,9 +179,25 @@ class TestTheBoxesLook(UITest):
         """Return where each line inside the box has a bar, the box's own sides among them."""
         return [[place for place, character in enumerate(line) if character == Box.BAR] for line in self.lines_in_the_box()]
 
+    def clip_slot(self):
+        return self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD)
+
     async def show_the_clip(self):
         self.app.screen.show_page(ClipPage(holder=self.app.screen.holder, index=FIRST_SCENE, track=ui_testing.LEAD))
         await self.pilot.pause()
+
+    async def test_a_column_that_stands_under_the_others_starts_a_band_of_its_own_whatever_room_is_beside(self):
+        # Guitarify's Restart, in Strum mode, where its one column leaves room beside it.
+        self.document.change_set(self.clip_slot().set_built_in_setting, kind=guitarify_plugin.NAME, name=GuitarifySetting.MODE, value=guitarify_model.STRUM)
+        await self.show_the_clip()
+        self.page = self.app.screen
+        tab = next(tab for tab in self.page.tab_box().tabs if tab.label == guitarify_strings.MSG_TAB_LABEL)
+        spots = tab_box.spots_of(page=self.page, tab=tab, width=self.page.box_width)
+        fields = tab.every_field()
+        restart = spots[[field.label for field in fields].index(labels.MSG_RESTART_LABEL)]
+        strum = spots[len(tab.top)]
+        self.assertGreater(restart.band, strum.band)
+        self.assertEqual(restart.column, 0)
 
     async def test_the_tallest_tab_ends_with_a_blank_line(self):
         await self.press(keybindings.FieldPage.TO_TABS)

@@ -216,7 +216,7 @@ class ViewFields:
             else:
                 own += without_headings(self._fields_of(setting))
         if own:
-            return [TabColumn(heading=column.heading, fields=own), *sections]
+            return [TabColumn(heading=column.heading, fields=own, under=column.under), *sections]
         return sections
 
     def _enabled_field(self):
