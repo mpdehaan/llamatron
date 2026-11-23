@@ -14,8 +14,8 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.instrument import Instrument
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, InstrumentSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
-from tests.engine.realizer.test_registers import pattern, song
 from tests.support.rendering import setlist_from_data, song_from_data
+from tests.support.song_playing import pattern, song
 
 TUNE = 'tune'
 BEAT = 'beat'

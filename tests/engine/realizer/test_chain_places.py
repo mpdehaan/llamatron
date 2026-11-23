@@ -10,9 +10,9 @@ from llamatron.engine.generators.chords import model as chords_model
 from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.model.schema.file_format import ClipSlotSetting, SceneSetting, Section, TrackSetting
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, pitches, song
+from tests.support import song_playing
 from tests.support.rendering import song_from_data
+from tests.support.song_playing import pattern, pitches, song
 
 TWICE = 'twice'
 OTHER_CHAIN = 'other'
@@ -27,17 +27,17 @@ MOVED_TWICE = 64
 
 def chained(*, clip_chains=None, scene_chains=None, track_chains=None):
     """Return a song whose lead plays one C, with a chain that moves each note up one note of the scale, named wherever the test says."""
-    clip = {ClipSlotSetting.PATTERN: test_registers.X}
+    clip = {ClipSlotSetting.PATTERN: song_playing.X}
     if clip_chains:
         clip[ClipSlotSetting.CHAINS] = clip_chains
-    scene = {SceneSetting.TRACKS: {test_registers.LEAD: clip}}
+    scene = {SceneSetting.TRACKS: {song_playing.LEAD: clip}}
     if scene_chains:
         scene[SceneSetting.CHAINS] = scene_chains
-    data = song(patterns={test_registers.X: pattern(1)}, scenes=[scene])
+    data = song(patterns={song_playing.X: pattern(1)}, scenes=[scene])
     data[chords_plugin.SECTION] = {CHOP: {ChordsSetting.MODE: chords_model.PROGRESSION, ProgressionSetting.CHORDS: [2]}}
     data[Section.CHAINS] = {TWICE: [{chords_plugin.NAME: CHOP}], OTHER_CHAIN: []}
     if track_chains:
-        data[Section.TRACKS][test_registers.LEAD] = {TrackSetting.CHAINS: track_chains}
+        data[Section.TRACKS][song_playing.LEAD] = {TrackSetting.CHAINS: track_chains}
     return data
 
 
@@ -54,7 +54,7 @@ class TestChainPlaces(unittest.TestCase):
         self.assertIn(chords_plugin.SECTION, [section for section, name in setlist.everything_named() if name == CHOP])
         setlist.rename_item(section=chords_plugin.SECTION, old=CHOP, new=RENAMED_CHOP)
         scene = built.get_scenes()[0]
-        self.assertEqual((scene.get_clip_slot(test_registers.LEAD).get_chain_names(), scene.get_chain_names()), ([RENAMED_CHOP], [RENAMED_CHOP]))
+        self.assertEqual((scene.get_clip_slot(song_playing.LEAD).get_chain_names(), scene.get_chain_names()), ([RENAMED_CHOP], [RENAMED_CHOP]))
         self.assertEqual([(step.kind, step.name) for step in setlist.get_chain(TWICE).get_steps()], [(chords_plugin.NAME, RENAMED_CHOP)])
 
     def test_a_scenes_chain_and_a_tracks_chain_each_run_on_a_clip_with_none_of_its_own(self):
@@ -70,7 +70,7 @@ class TestChainPlaces(unittest.TestCase):
         data = chained(clip_chains=[OTHER_CHAIN], scene_chains=[TWICE], track_chains=[OTHER_CHAIN, TWICE])
         realizer = SongRealizer(song_from_data(data))
         scene = realizer.get_scenes()[0]
-        runs = realizer.chains_of(scene=scene, track=test_registers.LEAD)
+        runs = realizer.chains_of(scene=scene, track=song_playing.LEAD)
         self.assertEqual([run.name for run in runs], [OTHER_CHAIN, TWICE, OTHER_CHAIN, TWICE])
 
     def test_deleting_a_generator_takes_it_out_of_every_chain_and_every_list(self):
@@ -78,7 +78,7 @@ class TestChainPlaces(unittest.TestCase):
         built.get_setlist().delete_generator(section=chords_plugin.SECTION, name=CHOP)
         scene = built.get_scenes()[0]
         self.assertEqual(built.get_setlist().get_chain(TWICE).get_steps(), [])
-        self.assertEqual((scene.get_clip_slot(test_registers.LEAD).get_chain_names(), scene.get_chain_names(), built.get_track(test_registers.LEAD).get_chain_names()), ([TWICE], [], []))
+        self.assertEqual((scene.get_clip_slot(song_playing.LEAD).get_chain_names(), scene.get_chain_names(), built.get_track(song_playing.LEAD).get_chain_names()), ([TWICE], [], []))
 
     def test_renaming_a_chain_renames_it_in_every_list(self):
         renamed = 'renamed'
@@ -86,9 +86,9 @@ class TestChainPlaces(unittest.TestCase):
         built = song_from_data(data)
         built.get_setlist().rename_item(section=Section.CHAINS, old=TWICE, new=renamed)
         scene = built.get_scenes()[0]
-        self.assertEqual(scene.get_clip_slot(test_registers.LEAD).get_chain_names(), [renamed])
+        self.assertEqual(scene.get_clip_slot(song_playing.LEAD).get_chain_names(), [renamed])
         self.assertEqual(scene.get_chain_names(), [renamed])
-        self.assertEqual(built.get_track(test_registers.LEAD).get_chain_names(), [OTHER_CHAIN, renamed])
+        self.assertEqual(built.get_track(song_playing.LEAD).get_chain_names(), [OTHER_CHAIN, renamed])
 
 
 if __name__ == '__main__':

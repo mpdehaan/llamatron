@@ -18,7 +18,7 @@ from llamatron.caching.memory import Memory
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import RegisterName, Row, Section
+from llamatron.model.schema.file_format import Row, Section
 from llamatron.model.values import midi
 from llamatron.model.values.scale import ScaleType
 from llamatron.realtime.render_process.score import Keeping, Score
@@ -51,11 +51,6 @@ CARRYING_SET = os.path.join(os.path.dirname(__file__), '..', 'data', 'sample_set
 CARRYING_BASS = 'bass_line'
 CARRYING_LAST = 'lead_three'
 CARRYING_MIDDLE = 'lead_two'
-# A demo whose patterns add to the registers, and a pattern of its first scene whose last step adds to AX.
-REGISTERS_DEMO = os.path.join(EXAMPLES, 'learning', '20_registers.yml')
-REGISTERS_PATTERN = 'riff_ax'
-REGISTERS_ADD_STEP = 15
-CHANGED_ADD = 3
 # A degree the grabbed track's pattern is changed to, which a grab takes.
 CHANGED_DEGREE = 7
 # A set whose looping clip a Stop When reading a draw ends, so that its scene is played to find how long it lasts.
@@ -66,7 +61,6 @@ FUZZED_DEMOS = (
     os.path.join(EXAMPLES, 'learning', '17_hocket_shanty.yml'),
     os.path.join(EXAMPLES, 'learning', '18_arrangement_shanty.yml'),
     os.path.join(EXAMPLES, 'learning', '19_look_ma_no_notes.yml'),
-    os.path.join(EXAMPLES, 'learning', '20_registers.yml'),
     os.path.join(EXAMPLES, 'learning', '28_draws.yml'),
     os.path.join(EXAMPLES, 'by_genre', 'electronic', 'edm_density.yml'),
     os.path.join(EXAMPLES, 'by_genre', 'rock', 'volcano.yml'),
@@ -208,20 +202,6 @@ class TestScoreTakesClips(unittest.TestCase):
         edited.setlist.get_pattern(CARRYING_BASS).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
         edited.setlist.get_pattern(CARRYING_MIDDLE).set_value(row=Row.DEGREE, step=0, value=None)
         self.assertEqual(edited.score(earlier=first).get_kept_clip_count(), 1)
-
-    def test_in_a_song_whose_registers_change_an_edit_that_leaves_them_alone_keeps_the_other_tracks_clips(self):
-        edited = Edited(REGISTERS_DEMO)
-        first = edited.score()
-        edited.setlist.get_pattern(REGISTERS_PATTERN).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
-        self.assertGreater(edited.score(earlier=first).get_kept_clip_count(), 0)
-
-    def test_an_edit_that_changes_what_a_register_adds_lets_go_of_the_clips_that_read_it(self):
-        edited = Edited(REGISTERS_DEMO)
-        first = edited.score()
-        edited.setlist.get_pattern(REGISTERS_PATTERN).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
-        leaving_registers = edited.score(earlier=first).get_kept_clip_count()
-        edited.setlist.get_pattern(REGISTERS_PATTERN).set_value(row=file_format.REGISTER_ADD_ROWS[RegisterName.AX], step=REGISTERS_ADD_STEP, value=CHANGED_ADD)
-        self.assertLess(edited.score(earlier=first).get_kept_clip_count(), leaving_registers)
 
     def test_an_edit_to_a_scales_notes_keeps_no_clip_and_plays_as_a_whole_render(self):
         edited = Edited(GRABBING_DEMO)

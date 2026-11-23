@@ -21,9 +21,9 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Approach, ChordColor, ClipSlotSetting, GuitarifySetting, PatternSetting, ReadyBar, Restart, Row, SceneSetting, Section, SingleNotes, SongSetting, Stroke, Tuning
 from llamatron.model.values import midi
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, song
+from tests.support import song_playing
 from tests.support.rendering import render_data, setlist_from_data, song_from_data
+from tests.support.song_playing import pattern, song
 
 TRIAD = '3'
 MAJOR = 'M'
@@ -77,8 +77,8 @@ STROKES_ONLY = {GuitarifySetting.SHAPE: False, **PLAIN}
 def guitar(*, settings=None, rows=None, steps=1, step_size=WHOLE, repeat=1):
     """Return a song whose lead plays C major triads, one a step, through a Guitarify with these settings."""
     made = dict(pattern(steps, **{Row.CHORD: [TRIAD] * steps, Row.VELOCITY: [VELOCITY] * steps, **(rows or {})}), **{PatternSetting.STEP_SIZE: step_size})
-    clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.CHAINS: [PLAYED_CHAIN], ClipSlotSetting.REPEAT: repeat}
-    data = song(patterns={test_registers.X: made}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: clip_slot}}])
+    clip_slot = {ClipSlotSetting.PATTERN: song_playing.X, ClipSlotSetting.CHAINS: [PLAYED_CHAIN], ClipSlotSetting.REPEAT: repeat}
+    data = song(patterns={song_playing.X: made}, scenes=[{SceneSetting.TRACKS: {song_playing.LEAD: clip_slot}}])
     data[SongSetting.TEMPO] = TEMPO
     data[guitarify_plugin.SECTION] = {PLAYED: dict(settings or {})}
     data[Section.CHAINS] = {PLAYED_CHAIN: [{guitarify_plugin.NAME: PLAYED}]}
@@ -315,7 +315,7 @@ class TestTheBarFollowsTheSongsBars(unittest.TestCase):
         if restart is not None:
             settings[file_format.GENERATOR_RESTART] = restart
         data = guitar(settings=settings, steps=3, step_size=QUARTER)
-        data[Section.SCENES].append({SceneSetting.TRACKS: {test_registers.LEAD: dict(data[Section.SCENES][0][SceneSetting.TRACKS][test_registers.LEAD])}})
+        data[Section.SCENES].append({SceneSetting.TRACKS: {song_playing.LEAD: dict(data[Section.SCENES][0][SceneSetting.TRACKS][song_playing.LEAD])}})
         return data
 
     def second_clip(self, data):

@@ -18,10 +18,10 @@ from llamatron.model.objects.named_scale import NamedScale
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, NamedProgression, PatternSetting, Row, SceneSetting, Section, SongSetting, Tension
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.progressions import named_progression_in, roman_numeral
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, song
 from tests.engine.realizer.test_shapes import notes
+from tests.support import song_playing
 from tests.support.rendering import setlist_from_data
+from tests.support.song_playing import pattern, song
 
 PROGRESSION = 'changes'
 CHAIN = 'chords'
@@ -39,7 +39,7 @@ def through(progression, *, repeat=BARS, rows=None, drum=False, time_signature=N
     made = dict(pattern(STEPS, **{Row.DEGREE: list(FIGURE), **(rows or {})}), **{PatternSetting.STEP_SIZE: '1/4'})
     if drum:
         made.update({PatternSetting.DRUM: True, Row.DEGREE: [NoteName.C] * STEPS})
-    data = song(patterns={test_registers.X: made}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat, ClipSlotSetting.CHAINS: [CHAIN]}}}])
+    data = song(patterns={song_playing.X: made}, scenes=[{SceneSetting.TRACKS: {song_playing.LEAD: {ClipSlotSetting.PATTERN: song_playing.X, ClipSlotSetting.REPEAT: repeat, ClipSlotSetting.CHAINS: [CHAIN]}}}])
     data[chords_plugin.SECTION] = {PROGRESSION: {ChordsSetting.MODE: chords_model.PROGRESSION, **progression}}
     data[Section.CHAINS] = {CHAIN: [{chords_plugin.NAME: PROGRESSION}]}
     if time_signature:

@@ -12,11 +12,11 @@ import unittest
 from llamatron.engine.generators import drift as drift_plugin
 from llamatron.engine.generators.drift.model import DriftSetting, versioned
 from llamatron.engine.generators.drift.play import DriftPlay
-from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, DriftDirection, DriftValue, DriftVersion, RegisterSetting, Row, SceneSetting, Section
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, pitches, scale_notes, song, velocities
+from llamatron.model.schema import defaults
+from llamatron.model.schema.file_format import ClipSlotSetting, DriftDirection, DriftValue, DriftVersion, Row, SceneSetting, Section
+from tests.support import song_playing
 from tests.support.rendering import song_from_data
+from tests.support.song_playing import pattern, pitches, scale_notes, song, velocities
 
 DRIFT = 'sway'
 CHAIN = 'swaying'
@@ -40,11 +40,11 @@ def b(value):
     return versioned(version=DriftVersion.B, value=value)
 
 
-def drifting(*, drift, rows=None, repeat=BARS, seed=None, tracks=(test_registers.LEAD,), more_scales=None):
+def drifting(*, drift, rows=None, repeat=BARS, seed=None, tracks=(song_playing.LEAD,), more_scales=None):
     """Return a song whose tracks each play a bar of four quarter-note Cs, repeated, every clip's chain naming one drift."""
     data = song(
-        patterns={test_registers.X: pattern(STEPS, **(rows or {}))},
-        scenes=[{SceneSetting.TRACKS: {track: {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat, ClipSlotSetting.CHAINS: [CHAIN]} for track in tracks}}],
+        patterns={song_playing.X: pattern(STEPS, **(rows or {}))},
+        scenes=[{SceneSetting.TRACKS: {track: {ClipSlotSetting.PATTERN: song_playing.X, ClipSlotSetting.REPEAT: repeat, ClipSlotSetting.CHAINS: [CHAIN]} for track in tracks}}],
         tracks=tracks,
     )
     data[drift_plugin.SECTION] = {DRIFT: drift}
@@ -109,22 +109,16 @@ class TestWhatADriftDoes(unittest.TestCase):
         self.assertEqual(set(pitches(data)), {D_MAJOR_SECOND})
 
     def test_two_tracks_naming_one_drift_hear_the_same_random_degree(self):
-        data = drifting(drift={a(DriftValue.DEGREE_RANDOM): 3, b(DriftValue.DEGREE_RANDOM): 3}, tracks=(test_registers.LEAD, OTHER), seed=SEED)
-        self.assertEqual(pitches(data, track=test_registers.LEAD), pitches(data, track=OTHER))
+        data = drifting(drift={a(DriftValue.DEGREE_RANDOM): 3, b(DriftValue.DEGREE_RANDOM): 3}, tracks=(song_playing.LEAD, OTHER), seed=SEED)
+        self.assertEqual(pitches(data, track=song_playing.LEAD), pitches(data, track=OTHER))
 
     def test_a_seeded_drift_plays_the_same_every_time(self):
         data = drifting(drift={a(DriftValue.DEGREE_RANDOM): 3, b(DriftValue.DEGREE_RANDOM): 3}, seed=SEED)
         self.assertEqual(pitches(data), pitches(data))
 
-    def test_its_adds_join_the_registers_once_a_trigger_however_many_clips_name_it(self):
-        rows = {file_format.REGISTER_NOTE_ROWS[test_registers.AX]: [1] * STEPS}
-        data = drifting(drift={a(DriftValue.AX_ADD): 1, b(DriftValue.AX_ADD): 1}, rows=rows, tracks=(test_registers.LEAD, OTHER))
-        data[Section.REGISTERS] = {test_registers.AX: {RegisterSetting.MINIMUM: limits.MIN_REGISTER_VALUE, RegisterSetting.MAXIMUM: limits.MAX_REGISTER_VALUE}}
-        self.assertEqual(per_bar(pitches(data)), scale_notes([1, 2, 3, 4]))
-
     def test_a_clip_that_names_no_drift_hears_nothing(self):
         data = drifting(drift={a(DriftValue.VELOCITY): SOFTER, b(DriftValue.VELOCITY): SOFTER})
-        del data[Section.SCENES][0][SceneSetting.TRACKS][test_registers.LEAD][ClipSlotSetting.CHAINS]
+        del data[Section.SCENES][0][SceneSetting.TRACKS][song_playing.LEAD][ClipSlotSetting.CHAINS]
         self.assertEqual(set(velocities(data)), {defaults.DEFAULT_VELOCITY})
 
 

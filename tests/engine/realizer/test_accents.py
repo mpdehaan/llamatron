@@ -16,9 +16,9 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import InstrumentSetting, Row, Section, TrackSetting, VelocitySetting
 from llamatron.model.values import midi
-from tests.engine.realizer import test_registers, test_shapes
+from tests.engine.realizer import test_shapes
 from tests.engine.realizer.test_shapes import one_scene
-from tests.support import song_testing
+from tests.support import song_playing, song_testing
 from tests.support.rendering import as_setlist, render_data, setlist_from_data
 
 SYNTH = 'synth'
@@ -38,10 +38,10 @@ def with_accents(*, track=None, instrument=None, rows=None, scene=None):
     """Return a set whose lead plays a bar of sixteenths accented on the beats, with settings for the track and, where given, an instrument the track plays."""
     data = as_setlist(one_scene(rows={Row.ACCENT: ON_THE_BEATS, **(rows or {})}, scene=scene))
     song = next(iter(data[Section.SONGS].values()))
-    song[Section.TRACKS][test_registers.LEAD] = dict(track or {})
+    song[Section.TRACKS][song_playing.LEAD] = dict(track or {})
     if instrument is not None:
         data[Section.INSTRUMENTS] = {SYNTH: instrument}
-        song[Section.TRACKS][test_registers.LEAD][TrackSetting.INSTRUMENT] = SYNTH
+        song[Section.TRACKS][song_playing.LEAD][TrackSetting.INSTRUMENT] = SYNTH
     return data
 
 
@@ -82,7 +82,7 @@ class TestDefaultVelocity(unittest.TestCase):
     def test_the_song_answers_a_track_s_default_velocity(self):
         setlist = setlist_from_data(with_accents(instrument={InstrumentSetting.DEFAULT_VELOCITY: QUIETER}))
         song = setlist.get_songs()[0]
-        track = song.get_track(test_registers.LEAD)
+        track = song.get_track(song_playing.LEAD)
         self.assertEqual(song.default_velocity_of(track), QUIETER)
         track.set_default_velocity(QUIET)
         self.assertEqual(song.default_velocity_of(track), QUIET)
@@ -97,9 +97,9 @@ class TestAccents(unittest.TestCase):
     def test_a_track_starts_with_an_accent_and_an_instrument_with_none(self):
         setlist = setlist_from_data(with_accents(instrument={}))
         song = setlist.get_songs()[0]
-        self.assertEqual(song.get_track(test_registers.LEAD).get_accent(), defaults.DEFAULT_TRACK_ACCENT)
+        self.assertEqual(song.get_track(song_playing.LEAD).get_accent(), defaults.DEFAULT_TRACK_ACCENT)
         self.assertEqual(setlist.get_instrument(SYNTH).get_accent(), defaults.DEFAULT_INSTRUMENT_ACCENT)
-        self.assertEqual(song.accent_of(song.get_track(test_registers.LEAD)), defaults.DEFAULT_TRACK_ACCENT)
+        self.assertEqual(song.accent_of(song.get_track(song_playing.LEAD)), defaults.DEFAULT_TRACK_ACCENT)
 
     def test_an_accented_step_adds_the_track_s_accent_to_the_default_velocity(self):
         data = with_accents(track={TrackSetting.DEFAULT_VELOCITY: QUIET, TrackSetting.ACCENT: TRACK_ACCENT})
@@ -144,7 +144,7 @@ class TestAccentsInAFile(unittest.TestCase):
 
     def test_what_is_set_is_written_and_what_is_cleared_is_not(self):
         setlist = setlist_from_data(with_accents(track={TrackSetting.DEFAULT_VELOCITY: QUIET, TrackSetting.ACCENT: TRACK_ACCENT}, instrument={InstrumentSetting.ACCENT: INSTRUMENT_ACCENT}))
-        track = setlist.get_songs()[0].get_track(test_registers.LEAD)
+        track = setlist.get_songs()[0].get_track(song_playing.LEAD)
         instrument = setlist.get_instrument(SYNTH)
         self.assertEqual(track.to_data()[TrackSetting.DEFAULT_VELOCITY], QUIET)
         self.assertEqual(track.to_data()[TrackSetting.ACCENT], TRACK_ACCENT)

@@ -26,9 +26,9 @@ from llamatron.model.values import midi
 from llamatron.realtime.render_process import timeline as timeline_values
 from llamatron.realtime.render_process.clip_notes import ClipNotes
 from llamatron.realtime.render_process.timeline import Route, song_timeline
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, song
+from tests.support import song_playing
 from tests.support.rendering import song_from_data
+from tests.support.song_playing import pattern, song
 
 TUNE = 'tune'
 VIOLIN = 'violin'
@@ -82,10 +82,10 @@ def switched(*, keyswitch, rows=None, repeat=1, instrument=None, track=None, cli
     """Return a song's data whose lead plays one pattern with a Keyswitch row, a step a quarter note, through the violin unless told otherwise."""
     steps = len(keyswitch)
     figure = pattern(steps, **{Row.KEYSWITCH: keyswitch, **(rows or {})})
-    data = song(patterns={TUNE: figure}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.REPEAT: repeat, **(clip or {})}}}])
+    data = song(patterns={TUNE: figure}, scenes=[{SceneSetting.TRACKS: {song_playing.LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.REPEAT: repeat, **(clip or {})}}}])
     data[SongSetting.TEMPO] = TEMPO
     data[Section.INSTRUMENTS] = {VIOLIN: violin() if instrument is None else instrument}
-    data[Section.TRACKS][test_registers.LEAD] = {TrackSetting.INSTRUMENT: VIOLIN, **(track or {})}
+    data[Section.TRACKS][song_playing.LEAD] = {TrackSetting.INSTRUMENT: VIOLIN, **(track or {})}
     data.update(extra or {})
     return data
 
@@ -239,7 +239,7 @@ class TestKeyswitchesPlayed(unittest.TestCase):
 
     def test_a_track_with_no_instrument_sends_none(self):
         data = switched(keyswitch=[[SUSTAIN_SLOT]])
-        del data[Section.TRACKS][test_registers.LEAD][TrackSetting.INSTRUMENT]
+        del data[Section.TRACKS][song_playing.LEAD][TrackSetting.INSTRUMENT]
         self.assertEqual(sent(data), [])
 
     def test_an_instrument_through_fluidsynth_sends_none(self):
@@ -326,7 +326,7 @@ class TestKeyswitchesInRealTime(unittest.TestCase):
 
     def timeline(self, route):
         grid = rendered(switched(keyswitch=[[STACCATO_SLOT], None]))[0]
-        return song_timeline(grid=grid, routes={test_registers.LEAD: route})
+        return song_timeline(grid=grid, routes={song_playing.LEAD: route})
 
     def test_a_midi_port_is_sent_the_keyswitch_before_its_note(self):
         ons = [event for event in self.timeline(Route(PORT, 0)) if event.kind == timeline_values.NOTE_ON]

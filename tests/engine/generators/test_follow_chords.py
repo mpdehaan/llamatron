@@ -14,9 +14,9 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
 from llamatron.model.values.note import NoteName
 from llamatron.user_strings import errors
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, song
+from tests.support import song_playing
 from tests.support.rendering import render_data, setlist_from_data
+from tests.support.song_playing import pattern, song
 from tests.support.ui_testing import fixed_text
 
 CHORDS = 'Chords'
@@ -188,7 +188,7 @@ class TestFollowChordsSettings(unittest.TestCase):
         self.assertEqual(setlist.get_generator_settings(kind=chords_plugin.NAME, name=FOLLOW).get_chords_from(), RENAMED)
 
     def test_the_steps_here_are_a_quarter_each(self):
-        self.assertEqual(test_registers.STEP_SIZE, ONE_STEP_EACH)
+        self.assertEqual(song_playing.STEP_SIZE, ONE_STEP_EACH)
 
 
 if __name__ == '__main__':

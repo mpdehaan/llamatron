@@ -15,9 +15,9 @@ from llamatron.engine.timing.timing import timed_events
 from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import ClipSlotSetting, GuitarifySetting, PatternSetting, Row, SceneSetting, Section, SongSetting, StrumDirection
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, song
+from tests.support import song_playing
 from tests.support.rendering import render_song, setlist_from_data, song_from_data
+from tests.support.song_playing import pattern, song
 
 TRIAD = '3'
 SEVENTH = '7'
@@ -44,8 +44,8 @@ def chords(*, settings=None, steps=STEPS, step_size='1/4', rows=None, guitars=No
     """Return a song whose lead plays triads on every step through one chain of Guitarify generators, each (name, settings); by
     default one Guitarify in Strum mode with the settings given, its fade and loose timing none and every string on an upstroke."""
     made = dict(pattern(steps, **{Row.CHORD: [TRIAD] * steps, Row.VELOCITY: [VELOCITY] * steps, **(rows or {})}), **{PatternSetting.STEP_SIZE: step_size})
-    clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.CHAINS: [STRUMMED_CHAIN]}
-    data = song(patterns={test_registers.X: made}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: clip_slot}}])
+    clip_slot = {ClipSlotSetting.PATTERN: song_playing.X, ClipSlotSetting.CHAINS: [STRUMMED_CHAIN]}
+    data = song(patterns={song_playing.X: made}, scenes=[{SceneSetting.TRACKS: {song_playing.LEAD: clip_slot}}])
     data[SongSetting.TEMPO] = TEMPO
     if guitars is None:
         guitars = [(STRUMMED, strum_mode(**(settings or {})))]

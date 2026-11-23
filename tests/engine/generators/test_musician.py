@@ -14,9 +14,9 @@ from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SectionKind, TrackSetting
 from llamatron.model.values import midi
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, song
+from tests.support import song_playing
 from tests.support.rendering import render_song, setlist_from_data, song_from_data
+from tests.support.song_playing import pattern, song
 
 BAND = 'band'
 CHORDS = 'chords'
@@ -63,8 +63,8 @@ def band_data(*, settings, rows=None, section=None, tune=False, chords=False, dr
     tracks = [BAND]
     if tune:
         patterns[TUNE] = {**pattern(STEPS, **TUNE_ROWS), PatternSetting.STEP_SIZE: EIGHTH_STEP}
-        slots[test_registers.LEAD] = {ClipSlotSetting.PATTERN: TUNE}
-        tracks.append(test_registers.LEAD)
+        slots[song_playing.LEAD] = {ClipSlotSetting.PATTERN: TUNE}
+        tracks.append(song_playing.LEAD)
     if chords:
         patterns[CHANGES] = {**pattern(len(CHORD_DEGREES), **{Row.DEGREE: CHORD_DEGREES, Row.CHORD: [TRIAD] * len(CHORD_DEGREES)}), PatternSetting.STEP_SIZE: WHOLE_STEP}
         slots[CHORDS] = {ClipSlotSetting.PATTERN: CHANGES}
@@ -208,22 +208,22 @@ class TestMusicianTouch(unittest.TestCase):
 class TestMusicianRoundTheBand(unittest.TestCase):
 
     def test_a_player_in_the_gaps_is_silent_while_the_tune_sounds(self):
-        notes = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.GIVES_WAY: schema.IN_THE_GAPS}), tune=True))
+        notes = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: song_playing.LEAD, MusicianSetting.GIVES_WAY: schema.IN_THE_GAPS}), tune=True))
         self.assertEqual(starts(notes), [bar * BAR + HALF + step * EIGHTH for bar in range(2) for step in range(4)])
 
     def test_a_lead_guitarist_plays_in_the_gaps_unasked_and_a_bassist_gives_way_to_nobody(self):
-        guitar = heard(band_data(settings={MusicianSetting.INSTRUMENT: schema.LEAD_GUITARIST, MusicianSetting.TUNE_FROM: test_registers.LEAD}, rows={Row.OCTAVE: [5] * STEPS}, tune=True))
+        guitar = heard(band_data(settings={MusicianSetting.INSTRUMENT: schema.LEAD_GUITARIST, MusicianSetting.TUNE_FROM: song_playing.LEAD}, rows={Row.OCTAVE: [5] * STEPS}, tune=True))
         self.assertEqual(len(guitar), STEPS // 2)
-        self.assertEqual(len(heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD}), tune=True))), STEPS)
+        self.assertEqual(len(heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: song_playing.LEAD}), tune=True))), STEPS)
 
     def test_giving_way_a_little_is_softer_under_the_tune_and_a_lot_also_leaves_the_beats_alone(self):
-        little = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.GIVES_WAY: schema.GIVES_WAY_SOME}), tune=True))
+        little = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: song_playing.LEAD, MusicianSetting.GIVES_WAY: schema.GIVES_WAY_SOME}), tune=True))
         self.assertEqual(len(little), STEPS)
         under = [note[VELOCITY] for note in little if note[START] - (note[START] // BAR) * BAR < HALF]
         clear = [note[VELOCITY] for note in little if note[START] - (note[START] // BAR) * BAR >= HALF]
         self.assertEqual(set(under), {WRITTEN_VELOCITY - musician.SOFTER_UNDER_TUNE[schema.GIVES_WAY_SOME]})
         self.assertEqual(set(clear), {WRITTEN_VELOCITY})
-        lot = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.GIVES_WAY: schema.GIVES_WAY_OFTEN}), tune=True))
+        lot = heard(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: song_playing.LEAD, MusicianSetting.GIVES_WAY: schema.GIVES_WAY_OFTEN}), tune=True))
         self.assertEqual(starts(lot)[:6], [0, QUARTER, HALF, HALF + EIGHTH, HALF + QUARTER, HALF + QUARTER + EIGHTH])
 
     def test_with_no_tune_track_named_nobody_gives_way(self):
@@ -244,9 +244,9 @@ class TestMusicianRoundTheBand(unittest.TestCase):
         self.assertEqual(len(notes), STEPS)
 
     def test_renaming_the_tune_track_is_followed(self):
-        setlist = setlist_from_data(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: test_registers.LEAD, MusicianSetting.CHORDS_FROM: CHORDS}), tune=True, chords=True))
+        setlist = setlist_from_data(band_data(settings=plain(**{MusicianSetting.TUNE_FROM: song_playing.LEAD, MusicianSetting.CHORDS_FROM: CHORDS}), tune=True, chords=True))
         made = setlist.get_songs()[0]
-        made.rename_item(section=Section.TRACKS, old=test_registers.LEAD, new=RENAMED)
+        made.rename_item(section=Section.TRACKS, old=song_playing.LEAD, new=RENAMED)
         settings = made.get_setlist().get_generator_settings(kind=musician_plugin.NAME, name=PLAYER)
         self.assertEqual(settings.get_tune_from(), RENAMED)
         self.assertEqual(settings.get_chords_from(), CHORDS)

@@ -18,10 +18,10 @@ from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen, SongSetting
 from llamatron.user_strings import labels
 from tests.engine.generators.test_drift import drifting
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, song
 from tests.engine.realizer.test_shapes import notes, one_scene
+from tests.support import song_playing
 from tests.support.rendering import setlist_from_data, song_from_data
+from tests.support.song_playing import pattern, song
 
 TWO_BARS = '2 bars'
 THREE_FOUR = '3/4'
@@ -90,8 +90,8 @@ class TestBarsInTheRender(unittest.TestCase):
 
     def test_an_arps_step_in_bars(self):
         data = song(
-            patterns={test_registers.X: dict(pattern(STEPS, chord=[CHORD] * STEPS), **{PatternSetting.STEP_SIZE: '1/4'})},
-            scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.CHAINS: [ARPEGGIATED]}}}],
+            patterns={song_playing.X: dict(pattern(STEPS, chord=[CHORD] * STEPS), **{PatternSetting.STEP_SIZE: '1/4'})},
+            scenes=[{SceneSetting.TRACKS: {song_playing.LEAD: {ClipSlotSetting.PATTERN: song_playing.X, ClipSlotSetting.CHAINS: [ARPEGGIATED]}}}],
         )
         data[arp_plugin.SECTION] = {ARP: {ArpSetting.STEP: file_format.ONE_BAR_WRITTEN}}
         data[Section.CHAINS] = {ARPEGGIATED: [{arp_plugin.NAME: ARP}]}

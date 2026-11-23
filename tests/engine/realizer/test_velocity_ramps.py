@@ -20,8 +20,9 @@ from llamatron.model.objects.velocity_ramps import Velocity, velocity_of, Veloci
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, Shape, VelocitySetting
 from llamatron.model.values import midi
-from tests.engine.realizer import test_registers, test_shapes
+from tests.engine.realizer import test_shapes
 from tests.engine.realizer.test_shapes import bar_of_sixteenths, one_scene
+from tests.support import song_playing
 from tests.support.rendering import render_data, setlist_from_data
 
 WRITTEN = 100
@@ -189,7 +190,7 @@ class TestVelocitySettingsInAFile(unittest.TestCase):
         clip = {VelocitySetting.OUT_END: QUARTER, VelocitySetting.OUT_OVER: TWO_BARS}
         written = next(iter(setlist_from_data(lead_of(scene=scene, clip=clip)).to_data()[Section.SONGS].values()))[Section.SCENES][0]
         self.assertEqual({name: written[name] for name in scene}, scene)
-        self.assertEqual({name: written[SceneSetting.TRACKS][test_registers.LEAD][name] for name in clip}, clip)
+        self.assertEqual({name: written[SceneSetting.TRACKS][song_playing.LEAD][name] for name in clip}, clip)
 
     def test_the_setters_refuse_what_a_file_refuses(self):
         song = next(iter(setlist_from_data(lead_of()).get_songs()))
@@ -197,7 +198,7 @@ class TestVelocitySettingsInAFile(unittest.TestCase):
         with self.assertRaises(ValueError):
             scene.set_written(name=VelocitySetting.LEVEL, value=limits.MAX_VELOCITY_PERCENT + 1)
         with self.assertRaises(ValueError):
-            scene.get_clip_slot(test_registers.LEAD).set_written(name=VelocitySetting.IN_OVER, value=limits.MIN_RAMP_BARS - 1)
+            scene.get_clip_slot(song_playing.LEAD).set_written(name=VelocitySetting.IN_OVER, value=limits.MIN_RAMP_BARS - 1)
         scene.set_written(name=VelocitySetting.LEVEL, value=HALF)
         scene.set_written(name=VelocitySetting.LEVEL, value=None)
         self.assertTrue(scene.get_velocity().changes_nothing())

@@ -17,10 +17,10 @@ from llamatron.model.values.chords import chord_half_steps, replaced_places, spe
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from tests.engine.generators import test_progression
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, song
 from tests.engine.realizer.test_shapes import notes
+from tests.support import song_playing
 from tests.support.rendering import setlist_from_data
+from tests.support.song_playing import pattern, song
 
 MINOR = scale_type_name(ScaleType.MINOR)
 C_MAJOR = NamedScale(root=NoteName.C, kind=scale_type_name(ScaleType.MAJOR))
@@ -33,7 +33,7 @@ NO_SUCH_SCALE = 'nonsense'
 
 def stepped(**rows):
     """Return a song whose lead plays a pattern of two steps with the rows given."""
-    return song(patterns={test_registers.X: pattern(STEPS, **rows)}, scenes=[{SceneSetting.TRACKS: {test_registers.LEAD: {ClipSlotSetting.PATTERN: test_registers.X}}}])
+    return song(patterns={song_playing.X: pattern(STEPS, **rows)}, scenes=[{SceneSetting.TRACKS: {song_playing.LEAD: {ClipSlotSetting.PATTERN: song_playing.X}}}])
 
 
 def sounding(data):
@@ -55,7 +55,7 @@ class TestAStepsTensions(unittest.TestCase):
         self.assertEqual(sounding(data), [['G', 'B', 'D', 'F', 'A'], ['G']])
 
     def test_a_pattern_keeps_a_steps_tensions_lowest_first_and_writes_a_list(self):
-        made = setlist_from_data(stepped(**{Row.DEGREE: [5, 5], Row.CHORD: [ChordSymbol.DOMINANT7] * STEPS, Row.TENSION: [None, OUT_OF_ORDER]})).get_pattern(test_registers.X)
+        made = setlist_from_data(stepped(**{Row.DEGREE: [5, 5], Row.CHORD: [ChordSymbol.DOMINANT7] * STEPS, Row.TENSION: [None, OUT_OF_ORDER]})).get_pattern(song_playing.X)
         self.assertEqual(made.get_value(row=Row.TENSION, step=1), ALTERED)
         made.set_value(row=Row.TENSION, step=0, value=OUT_OF_ORDER)
         self.assertEqual(made.get_value(row=Row.TENSION, step=0), ALTERED)

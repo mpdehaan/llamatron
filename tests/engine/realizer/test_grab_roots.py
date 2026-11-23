@@ -10,8 +10,8 @@ from llamatron.engine.generators.chords import model as chords_model
 from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, TrackSetting
-from tests.engine.realizer.test_registers import song
 from tests.support.rendering import render_data
+from tests.support.song_playing import song
 
 CHORDS = 'chords'
 BASS = 'bass'

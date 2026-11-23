@@ -22,9 +22,9 @@ from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Restart, Row, SceneSetting, Section, Shape, shape_setting, ShapePart
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, song
+from tests.support import song_playing
 from tests.support.rendering import render_data
+from tests.support.song_playing import pattern, song
 
 CHAIN = 'chain'
 NAME = 'generator'
@@ -41,10 +41,10 @@ QUARTER = Rational(1, 4)
 def two_scenes(*, section, kind, settings, restart=None, first_repeat=1, rows=None):
     """Return a song of two scenes, the lead playing the figure for two bars in each, through one generator with a Restart."""
     figure = dict(pattern(STEPS, **{Row.DEGREE: list(FIGURE), **(rows or {})}), **{PatternSetting.STEP_SIZE: '1/4'})
-    clip = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: BARS, ClipSlotSetting.CHAINS: [CHAIN]}
-    data = song(patterns={test_registers.X: figure}, scenes=[
-        {SceneSetting.REPEAT: first_repeat, SceneSetting.TRACKS: {test_registers.LEAD: dict(clip)}},
-        {SceneSetting.TRACKS: {test_registers.LEAD: dict(clip)}},
+    clip = {ClipSlotSetting.PATTERN: song_playing.X, ClipSlotSetting.REPEAT: BARS, ClipSlotSetting.CHAINS: [CHAIN]}
+    data = song(patterns={song_playing.X: figure}, scenes=[
+        {SceneSetting.REPEAT: first_repeat, SceneSetting.TRACKS: {song_playing.LEAD: dict(clip)}},
+        {SceneSetting.TRACKS: {song_playing.LEAD: dict(clip)}},
     ])
     data[section] = {NAME: dict(settings, **({} if restart is None else {file_format.GENERATOR_RESTART: restart}))}
     data[Section.CHAINS] = {CHAIN: [{kind: NAME}]}

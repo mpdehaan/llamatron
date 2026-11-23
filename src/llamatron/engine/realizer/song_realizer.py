@@ -734,10 +734,8 @@ class SongRealizer:
         own_changes = []
         if own:
             own_changes.append(own)
-        alone = RegisterTimeline(registers=self._state.get_registers(), start=start, changes=own_changes, chooser=guess, turned=turned)
-        self._guesses[number] = lambda track: RegisterSolo(
-            place=self._track_place(track), registers=self._state.get_registers(), start=alone.end_values(), chooser=guess, turned=alone.get_end_turned(),
-        )
+        alone = RegisterTimeline(registers=self._state.get_registers(), start=start, changes=own_changes, chooser=guess, turned=turned, draws=draws)
+        self._guesses[number] = lambda track: RegisterSolo(place=self._track_place(track), registers=self._state.get_registers(), before=alone, chooser=guess)
         # Until the first play is in, the scene is taken to last as long as the clips nothing can cut.
         self._lengths[number] = max(fixed, default=NO_LENGTH)
         drawn = self._state.get_register_chooser().getstate()
@@ -1134,8 +1132,14 @@ def _grab_circle(scene):
 
 
 def _before(*, changes, end):
-    """Return the register changes made before a time, the end of their scene."""
-    return [change for change in changes if change.time < end]
+    """Return the register changes made before a time, the end of their scene, and the draws taken at that very time: a step
+    that stops its clip, ending the scene, takes its draws before its statements stop it, so its draws belong to the scene."""
+    return [change for change in changes if change.time < end or (change.time == end and _only_draws(change))]
+
+
+def _only_draws(change):
+    """Return whether a change takes or resets draws and sets and adds to no register."""
+    return not change.sets and not change.adds and bool(change.draws or change.draw_resets)
 
 
 def _chords_in(clip):

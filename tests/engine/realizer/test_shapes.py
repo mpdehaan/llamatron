@@ -21,9 +21,9 @@ from llamatron.model.objects.shapes import ShapeValues
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, Shape, shape_setting, ShapePart, ShapeThen
 from llamatron.model.values import midi
-from tests.engine.realizer import test_registers
-from tests.engine.realizer.test_registers import pattern, song
+from tests.support import song_playing
 from tests.support.rendering import render_data, setlist_from_data
+from tests.support.song_playing import pattern, song
 
 SIXTEENTH = '1/16'
 STEPS = 16
@@ -55,10 +55,10 @@ def bar_of_sixteenths(**rows):
 
 def one_scene(*, scene=None, clip=None, rows=None, repeat=1, chain=None, generators=None):
     """Return a song whose lead plays a bar of sixteenths, the scene and the clip given settings of their own, and the clip's chains naming generators."""
-    clip_slot = {ClipSlotSetting.PATTERN: test_registers.X, ClipSlotSetting.REPEAT: repeat, **(clip or {})}
+    clip_slot = {ClipSlotSetting.PATTERN: song_playing.X, ClipSlotSetting.REPEAT: repeat, **(clip or {})}
     if chain:
         clip_slot[ClipSlotSetting.CHAINS] = [SHAPED_CHAIN]
-    data = song(patterns={test_registers.X: bar_of_sixteenths(**(rows or {}))}, scenes=[{**(scene or {}), SceneSetting.TRACKS: {test_registers.LEAD: clip_slot}}])
+    data = song(patterns={song_playing.X: bar_of_sixteenths(**(rows or {}))}, scenes=[{**(scene or {}), SceneSetting.TRACKS: {song_playing.LEAD: clip_slot}}])
     if chain:
         data[Section.CHAINS] = {SHAPED_CHAIN: chain}
     data.update(generators or {})
@@ -161,7 +161,7 @@ class TestDensity(unittest.TestCase):
 
     def test_a_drum_pattern_is_thinned_too(self):
         data = one_scene(scene=steady(shape=Shape.DENSITY, percent=QUARTER))
-        data[Section.PATTERNS][test_registers.X].update({PatternSetting.DRUM: True, Row.DEGREE: ['C'] * STEPS})
+        data[Section.PATTERNS][song_playing.X].update({PatternSetting.DRUM: True, Row.DEGREE: ['C'] * STEPS})
         self.assertEqual(len(notes(data)), 4)
 
     def test_a_dropped_note_keeps_its_place(self):

@@ -37,6 +37,10 @@ NO_CHANGES = {}
 BEFORE_OWN_CHANGE = 0.5
 # How far before a track's own change a step resets and takes its draws: just before its statements read them.
 CONDITION_DRAWS = 0.75
+# How far before a track's own change the first step of a pass takes its draws and reads the values: after the step before it
+# reads them, which a Restart When can make a step at the same moment, so that a restarting step never reads the next pass's draw.
+PASS_START_DRAWS = 0.4
+PASS_START_READS = 0.3
 # When a scene's own changes happen: as it starts.
 SCENE_START = 0
 
@@ -226,13 +230,14 @@ class RegisterRecorder:
             self._changes.append(RegisterChange(time, self._place - CLIPS_BEFORE_STEPS, sets, adds))
         return None
 
-    def before_step(self, time):
+    def before_step(self, time, *, first=False):
         """Return None: nothing is known of the values while a clip is only played to count changes that depend on none of them."""
         return None
 
-    def before_statements(self, *, time, draws, draw_resets):
-        """Note the draws a step resets and then takes at a time in the scene, just before its statements read the values."""
-        self._changes.append(RegisterChange(time, self._place - CONDITION_DRAWS, NO_CHANGES, NO_CHANGES, draws, draw_resets))
+    def before_statements(self, *, time, draws, draw_resets, first=False):
+        """Note the draws a step resets and then takes at a time in the scene, just before its statements read the values; first
+        says it is the first step of a pass."""
+        self._changes.append(RegisterChange(time, self._place - _draws_place(first), NO_CHANGES, NO_CHANGES, draws, draw_resets))
 
     def is_counting(self):
         """Return true: a clip played to count its changes plays every note, as if neither probability nor a condition silenced one, so that what an arpeggiator adds for its notes is counted the same in every take."""
@@ -260,7 +265,7 @@ class RegisterReader:
         """Return the values a clip sees as its pattern starts over at a time in the scene, after every clip's own sets and adds then, which are already in the timeline."""
         values = self._timeline.values_at(time=time, place=AS_A_PASS_STARTS)
         # The pass's first step draws before anything reads the values, and the clip's statements read what it drew.
-        taken = self._timeline.draws_taken(time=time, place=self._place - CONDITION_DRAWS)
+        taken = self._timeline.draws_taken(time=time, place=self._place - PASS_START_DRAWS)
         if not taken:
             return values
         return {**values, **taken}
@@ -269,11 +274,11 @@ class RegisterReader:
         """Return the values a step sees at a time in the scene, the draws' among them. What it sets, adds and draws is already in the timeline."""
         return self._timeline.values_at(time=time, place=self._place)
 
-    def before_step(self, time):
+    def before_step(self, time, *, first=False):
         """Return the values as a step is reached at a time in the scene, before the step's own sets and adds, after every earlier track's then."""
-        return self._timeline.values_at(time=time, place=self._place - BEFORE_OWN_CHANGE)
+        return self._timeline.values_at(time=time, place=self._place - _reads_place(first))
 
-    def before_statements(self, *, time, draws, draw_resets):
+    def before_statements(self, *, time, draws, draw_resets, first=False):
         """Do nothing: what a step draws is already in the timeline, and before_step sees it."""
 
 
@@ -293,27 +298,33 @@ class RegisterTrial(RegisterRecorder):
         super().__init__(place)
         self._timeline = timeline
 
-    def before_step(self, time):
+    def before_step(self, time, *, first=False):
         """Return the values as a step is reached at a time in the scene, before the step's own sets and adds, by the guess."""
-        return self._timeline.values_at(time=time, place=self._place - BEFORE_OWN_CHANGE)
+        return self._timeline.values_at(time=time, place=self._place - _reads_place(first))
 
 
 class RegisterSolo(RegisterRecorder):
     """The first guess for a clip whose statements can end it: the clip played as if no other track changed a register.
 
     It keeps the registers' values itself, from the values its scene starts with, changing
-    them by what its own steps set and add. With one track counting, the usual case, the guess
-    is already right; where other tracks count too, the trials after it put that right.
+    them by what its own steps set and add, and the draws too, taking each value its steps draw,
+    so that a statement reading a draw sees what the step drew. With one track counting, the usual
+    case, the guess is already right; where other tracks count too, the trials after it put that right.
     """
 
-    __slots__ = ('_registers', '_values', '_chooser', '_turned')
+    __slots__ = ('_registers', '_values', '_chooser', '_turned', '_draws')
 
-    def __init__(self, *, place, registers, start, chooser, turned=NOT_TURNED):
+    def __init__(self, *, place, registers, before, chooser):
+        """before is the timeline of what the scene itself changes as it starts, whose end values, registers counting the
+        other way and draws the guess starts from, carrying on without changing them."""
         super().__init__(place)
         self._registers = registers
-        self._values = dict(start)
+        self._values = dict(before.end_values())
         self._chooser = chooser
-        self._turned = Turned(registers=registers, turned=turned)
+        self._turned = Turned(registers=registers, turned=before.get_end_turned())
+        self._draws = None
+        if before.get_end_draws() is not None:
+            self._draws = before.get_end_draws().copy()
 
     def at_step(self, *, time, sets, adds):
         self._change(sets=sets, adds=adds)
@@ -323,9 +334,19 @@ class RegisterSolo(RegisterRecorder):
         self._change(sets=sets, adds=adds)
         return super().at_pass(time=time, sets=sets, adds=adds)
 
-    def before_step(self, time):
+    def before_step(self, time, *, first=False):
         """Return the values as a step is reached, before the step's own sets and adds."""
         return self._values
+
+    def before_statements(self, *, time, draws, draw_resets, first=False):
+        """Note the draws a step resets and takes, and take them, so that the step's statements read what it drew."""
+        super().before_statements(time=time, draws=draws, draw_resets=draw_resets, first=first)
+        if self._draws is None:
+            return
+        for name in draw_resets:
+            self._draws.reset(name)
+        for name in draws:
+            self._values[name] = self._draws.draw(name=name, chooser=self._chooser)
 
     def _change(self, *, sets, adds):
         for name, value in sets.items():
@@ -357,3 +378,17 @@ def _places_of(draws):
     if draws is None:
         return None
     return draws.places()
+
+
+def _draws_place(first):
+    """Return how far before a track's own change a step takes its draws: the first step of a pass after any step before it reads."""
+    if first:
+        return PASS_START_DRAWS
+    return CONDITION_DRAWS
+
+
+def _reads_place(first):
+    """Return how far before a track's own change a step's statements read the values: the first step of a pass after its own draws."""
+    if first:
+        return PASS_START_READS
+    return BEFORE_OWN_CHANGE

@@ -343,17 +343,17 @@ class PatternPlayer:
             if not slot and pass_draws and changes_registers:
                 drawing = _with_pass_draws(drawing=drawing, names=pass_draws)
             if drawing is not None and (drawing.drawn or drawing.resets):
-                registers.before_statements(time=moment, draws=drawing.drawn, draw_resets=drawing.resets)
+                registers.before_statements(time=moment, draws=drawing.drawn, draw_resets=drawing.resets, first=not slot)
             # A step's statements are read first of all, before the step changes anything, in the order stop, restart, mute.
-            if stops is not None and stops[step] is not None and _holds(statement=stops[step], values=registers.before_step(moment)):
+            if stops is not None and stops[step] is not None and _holds(statement=stops[step], values=registers.before_step(moment, first=not slot)):
                 cut_at = slot
                 done = True
                 break
             # The first step played never starts the pattern over, which would take no time.
-            if restarts is not None and slot and restarts[step] is not None and _holds(statement=restarts[step], values=registers.before_step(moment)):
+            if restarts is not None and slot and restarts[step] is not None and _holds(statement=restarts[step], values=registers.before_step(moment, first=not slot)):
                 cut_at = slot
                 break
-            muted = mutes is not None and mutes[step] is not None and _holds(statement=mutes[step], values=registers.before_step(moment))
+            muted = mutes is not None and mutes[step] is not None and _holds(statement=mutes[step], values=registers.before_step(moment, first=not slot))
             time = Length.times(step_length, slot)
             values = played.values[step]
             # A step with no note can send CC values and add to the registers too.
