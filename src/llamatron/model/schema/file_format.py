@@ -153,9 +153,6 @@ class TrackSetting:
     ACCENT = 'accent'
     # The chains every clip of the track runs, after the clip's and the scene's.
     CHAINS = 'chains'
-    # The register statements that bypass the generators of the track's clips, and that make its clips sit out a pass.
-    BYPASS_WHEN = 'bypass_when'
-    SKIP_WHEN = 'skip_when'
     # Its built-in generators' settings, by kind, each switched off until switched on.
     BUILT_IN = 'built_in'
 
@@ -303,9 +300,6 @@ class ClipSlotSetting:
     FOLLOW_ACTION = 'follow_action'
     # A scale of the clip's own, which wins over the scene's and the song's.
     SCALE = 'scale'
-    # The register statements that bypass its generators, and that make it sit out a pass.
-    BYPASS_WHEN = 'bypass_when'
-    SKIP_WHEN = 'skip_when'
     # Its built-in generators' settings, by kind, each switched off until switched on.
     BUILT_IN = 'built_in'
 

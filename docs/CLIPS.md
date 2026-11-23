@@ -10,7 +10,7 @@ A clip sits where a scene's row and a track's column meet on Arrange, so the cli
 
 ## Clip Settings
 
-The clip page shows the clip's Name and its list of Patterns, then a box of tabs holding the rest of its settings, then Play and Stop. The tabs are in the order the clip applies them: Settings, Chords, Arp and Guitarify, Generators, Timing and Phrasing, then Shapes, Velocity, Bypass When and Skip When.
+The clip page shows the clip's Name and its list of Patterns, then a box of tabs holding the rest of its settings, then Play and Stop. The tabs are in the order the clip applies them: Settings, Chords, Arp and Guitarify, Generators, Timing and Phrasing, then Shapes and Velocity.
 
 On the row of tabs, `←` and `→`, or `[` and `]`, choose a tab, stopping at the first and the last; `↓` goes into the tab. Inside it, `↑` and `↓` keep to a column: at a column's foot `↓` leaves the box for what is below it, and `↑` from below comes back in at the foot of the first column; `←` and `→` go to the setting beside in the next column, the nearest by line, and change nothing. `[` and `]` change a value, and `ENTER` types or chooses one. `Tab` goes to the row of tabs from anywhere on the page. The tab chosen stays chosen on the next clip page until another is chosen. Where the tabs are wider than the box, `<` and `>` stand at the ends for the tabs hidden that way. The box keeps the height of its tallest tab, so choosing a tab moves nothing below it.
 
@@ -48,7 +48,6 @@ The other tabs:
 | Generators | The Generators field: the generators of the set the clip runs, in order, each shown with its kind, such as `Chain: fills, Timing: rolls`. `ENTER` opens the list, where `A` adds any of the set's generators, a chain among them, `M` moves one and `Bksp` takes one out; `Bksp` on the field clears them all. A clip runs its own list first, then its scene's, then its track's. See [Generators](GENERATORS.md) and [Chain](generators/CHAIN.md). |
 | Shapes | Density and Articulate, like the Scene page's, shaping this clip across its own length. A shape set here wins over the scene's, and a generator the clip runs wins over both. |
 | Velocity | Velocity Ramp In and Velocity Ramp Out, like the Scene page's, which fade this clip in and out. Each field set here wins over the scene's. See [Velocity and Velocity Ramps](SCENES.md#velocity-and-velocity-ramps). |
-| Bypass When, Skip When | Statements about the registers, read each time the clip's pattern starts over: the first lets a pass go by the clip's generators untouched, and the second makes the clip sit a pass out. See [Conditional Execution](REGISTERS.md#conditional-execution). |
 
 ## Pattern Lists
 

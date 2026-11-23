@@ -22,7 +22,7 @@ from llamatron.model.file.checks import in_whole_notes
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.conditions import any_true, draws_read
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, Restart, Shape, TrackSetting
+from llamatron.model.schema.file_format import Restart, Shape
 from llamatron.model.values import sound as sound_values
 from llamatron.model.values.sound import Sound
 from llamatron.user_strings import errors
@@ -208,16 +208,13 @@ class ClipSlotPlayer:
         return {step.name: self._realizer.modulation_origin(scene=self._scene, step=step) for step in steps}
 
     def _bypass_tables(self):
-        """Return the tables of statements that bypass every generator of the clip: its scene's, its own and its track's."""
-        return [
-            self._scene.get_scene().get_bypass_when(), self._clip_slot.get_statements(ClipSlotSetting.BYPASS_WHEN),
-            self._track.get_statements(TrackSetting.BYPASS_WHEN),
-        ]
+        """Return the tables of statements that bypass every generator of the clip: its scene's."""
+        return [self._scene.get_scene().get_bypass_when()]
 
     def _pass_draws(self):
-        """Return the draws the clip's statements read as a pass starts, those that make it sit out and those that bypass its
-        generators, that redraw in conditions: the pass's first step takes them, so that the pass starts from one value of each."""
-        statements = [*self._skip_tables(), *self._bypass_tables()]
+        """Return the draws the clip's statements read as a pass starts, those that bypass its generators, that redraw in
+        conditions: the pass's first step takes them, so that the pass starts from one value of each."""
+        statements = list(self._bypass_tables())
         for run in self._realizer.chains_of(scene=self._scene, track=self._track_name):
             written = run.chain
             statements.append(written.get_bypass_when())
@@ -231,10 +228,6 @@ class ClipSlotPlayer:
             if draw.redraws_in_conditions():
                 redrawing.add(name)
         return frozenset(redrawing)
-
-    def _skip_tables(self):
-        """Return the tables of statements that make the clip sit a pass out: its own and its track's."""
-        return [self._clip_slot.get_statements(ClipSlotSetting.SKIP_WHEN), self._track.get_statements(TrackSetting.SKIP_WHEN)]
 
     def _shape_is_bypassed(self, *, run, step, passes):
         """Return whether a shape a chain's step names is left out of the clip. A shape works on the whole clip at once, so the registers as the clip's first pass starts speak for all of it."""
@@ -355,11 +348,8 @@ class ClipSlotPlayer:
 
         Each pass is (start, end, values): when it starts and ends in the clip, and the
         registers' values as it started, or None while the clip is only played to count its
-        changes. A pass on which a statement that makes the clip sit out holds is silence of the
-        pass's length: it is still played, so that every random choice and every register
-        change is what it would have been, and what it played is dropped.
+        changes.
         """
-        skips = [table for table in self._skip_tables() if table]
         pass_draws = self._pass_draws()
         passes = []
         # Each random choice has a stream of its own, seeded only when it is first drawn from, which most clips never do.
@@ -385,10 +375,6 @@ class ClipSlotPlayer:
             length = played.length
             if length == NO_LENGTH:
                 break
-            if values is not None and _any_holds(tables=skips, values=values):
-                played.clip = Clip(sounds=[Sound.rest(Length.of(length))], scale=scale)
-                played.tied_from_before = NO_LENGTH
-                played.keyswitches = []
             passes.append((total, total + length, values))
             # Ties at the start of this pass hold the note the passes so far ended with.
             if played.tied_from_before > NO_LENGTH:

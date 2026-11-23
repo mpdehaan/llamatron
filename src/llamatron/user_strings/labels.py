@@ -30,7 +30,6 @@ MSG_CONFIRM_BUTTONS = ('YES', 'NO')
 
 # interface/tracker/screens/shared/statements.py: Conditional Execution, the table of statements about the registers, and a scene's and a clip's sets and adds
 MSG_BYPASS_WHEN_LABEL = 'Bypass Generators When'
-MSG_SKIP_WHEN_LABEL = 'Skip Playback When'
 MSG_STATEMENT_IGNORED = 'ignored'
 MSG_STATEMENT_REGISTER_TITLE = 'Register'
 MSG_STATEMENT_OPERATOR_TITLE = 'Operator'
@@ -377,7 +376,6 @@ MSG_USER_TAB = 'Generators'
 MSG_SHAPES_TAB = 'Shapes'
 MSG_VELOCITY_TAB = 'Velocity'
 MSG_BYPASS_WHEN_TAB = 'Bypass When'
-MSG_SKIP_WHEN_TAB = 'Skip When'
 MSG_ORDER_HEADING = 'Order'
 MSG_NOTES_HEADING = 'Notes'
 MSG_PLAYING_HEADING = 'Playing'

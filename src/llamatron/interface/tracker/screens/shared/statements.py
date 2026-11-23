@@ -27,9 +27,8 @@ from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import StatementPart
 from llamatron.user_strings import errors, labels, legends, marks
 
-# A page's first table and its second, which keep their lines' labels apart.
+# A page's first table, which keeps its lines' labels apart from any other's.
 FIRST_TABLE = 0
-SECOND_TABLE = 1
 # How wide each cell is drawn, so that the cells after it never move.
 REGISTER_WIDTH = len(labels.MSG_STATEMENT_IGNORED)
 OPERATOR_WIDTH = max(len(operator) for operator in file_format.OPERATORS)

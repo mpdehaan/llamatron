@@ -7,9 +7,13 @@ a step's and a scene's resets, and every track drawing from one draw in track or
 
 import unittest
 
+from llamatron.engine.generators import chords as chords_plugin
+from llamatron.engine.generators.chords import model as chords_model
+from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
 from llamatron.engine.timing.timing import timed_events
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.objects.named_scale import scale_type_name
+from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DrawDirection, DrawName, DrawSetting, Operator, PatternSetting, RegisterName, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
@@ -33,6 +37,9 @@ TWELVE_TONES = list(range(12))
 BEATS_A_MINUTE = 60
 HALF_A_SECOND = 0.5
 QUARTER = '1/4'
+# The chord the clip's built-in Chords moves every note to, and how far that moves a note of degree 1 in C chromatic.
+CHORD_II = 2
+MOVED = 1
 
 
 def song_data(*, draws, rows, repeat=1, steps=STEPS, scenes=None, tracks=(LEAD,)):
@@ -168,11 +175,19 @@ def muted_when_equal(*, draw, value, steps=STEPS):
     return {Row.MUTE_C1: [draw] * steps, Row.MUTE_C2: [Operator.SAME] * steps, Row.MUTE_C3: [value] * steps}
 
 
-def skipped_when_ad_is_one(*, draw, rows):
-    """Return a song whose one clip plays its pattern four times and sits out each pass that starts with AD at 1."""
-    skip = [{StatementPart.REGISTER: DrawName.AD, StatementPart.OPERATOR: Operator.SAME, StatementPart.VALUE: 1}]
-    played = {LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.REPEAT: 4, ClipSlotSetting.SKIP_WHEN: skip}}
-    return song_data(draws={DrawName.AD: draw}, rows=rows, scenes=[{SceneSetting.TRACKS: played}])
+def bypassed_when_ad_is_one(*, draw, rows):
+    """Return a song whose one clip plays its pattern four times through its built-in Chords, which moves every note to chord
+    II, a half step up in C chromatic, and whose scene bypasses the clip's generators on each pass that starts with AD at 1."""
+    bypass = [{StatementPart.REGISTER: DrawName.AD, StatementPart.OPERATOR: Operator.SAME, StatementPart.VALUE: 1}]
+    moving = {chords_plugin.NAME: {file_format.GENERATOR_ENABLED: True, ChordsSetting.MODE: chords_model.PROGRESSION, ProgressionSetting.CHORDS: [CHORD_II]}}
+    played = {LEAD: {ClipSlotSetting.PATTERN: TUNE, ClipSlotSetting.REPEAT: 4, ClipSlotSetting.BUILT_IN: moving}}
+    return song_data(draws={DrawName.AD: draw}, rows=rows, scenes=[{SceneSetting.BYPASS_WHEN: bypass, SceneSetting.TRACKS: played}])
+
+
+def moved_passes(song):
+    """Return, pass by pass, whether the clip's built-in Chords moved the pass, read from each pass's second note, which no draw moves."""
+    pitches = pitches_of(song=song, scenes=1)[0]
+    return [pitches[start + 1] == MIDDLE_C + MOVED for start in range(0, len(pitches), STEPS)]
 
 
 class TestConditions(unittest.TestCase):
@@ -197,24 +212,26 @@ class TestConditions(unittest.TestCase):
         # AX stays 0, and each step draws AD before its condition compares: 0, 1, 2, 3, so only the first step sounds.
         self.assertEqual(pitches_of(song=song, scenes=1), [[MIDDLE_C]])
 
-    def test_skip_playback_when_reads_what_the_passs_first_step_draws(self):
-        song = render_data(skipped_when_ad_is_one(draw=a_draw(slots=COUNT_IN), rows={Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0]}))
-        # Each pass's first step draws 0, 1, 2, 3 before Skip Playback When reads AD, which sits the second pass out.
-        self.assertEqual(pitches_of(song=song, scenes=1), [[MIDDLE_C, MIDDLE_C, MIDDLE_C, MIDDLE_C] + [MIDDLE_C + 2, MIDDLE_C, MIDDLE_C, MIDDLE_C] + [MIDDLE_C + 3, MIDDLE_C, MIDDLE_C, MIDDLE_C]])
+    def test_bypass_when_reads_what_the_passs_first_step_draws(self):
+        song = render_data(bypassed_when_ad_is_one(draw=a_draw(slots=COUNT_IN), rows={Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0]}))
+        # Each pass's first step draws 0, 1, 2, 3 before the scene's Bypass When reads AD, which passes the second pass by.
+        self.assertEqual(moved_passes(song), [True, False, True, True])
 
-    def test_skip_playback_when_draws_a_draw_that_redraws_as_each_pass_starts(self):
-        song = render_data(skipped_when_ad_is_one(draw={**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: True}, rows={}))
-        # No step uses AD, and the pass's first step draws it for Skip Playback When: 0, 1, 2, 3, the second pass sat out.
-        self.assertEqual(len(pitches_of(song=song, scenes=1)[0]), 3 * STEPS)
+    def test_bypass_when_draws_a_draw_that_redraws_as_each_pass_starts(self):
+        song = render_data(bypassed_when_ad_is_one(draw={**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: True}, rows={}))
+        # No step uses AD, and the pass's first step draws it for Bypass When: 0, 1, 2, 3, the second pass passed by.
+        self.assertEqual(moved_passes(song), [True, False, True, True])
 
-    def test_the_first_step_and_skip_playback_when_share_one_draw(self):
-        song = render_data(skipped_when_ad_is_one(draw={**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: True}, rows={Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0]}))
-        self.assertEqual(pitches_of(song=song, scenes=1), [[MIDDLE_C, MIDDLE_C, MIDDLE_C, MIDDLE_C] + [MIDDLE_C + 2, MIDDLE_C, MIDDLE_C, MIDDLE_C] + [MIDDLE_C + 3, MIDDLE_C, MIDDLE_C, MIDDLE_C]])
+    def test_the_first_step_and_bypass_when_share_one_draw(self):
+        song = render_data(bypassed_when_ad_is_one(draw={**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: True}, rows={Row.AD_NOTE: [RegisterUse.ADD, 0, 0, 0]}))
+        # One value a pass, which the first step adds and Bypass When reads: a second draw would leave no pass passed by.
+        self.assertEqual(moved_passes(song), [True, False, True, True])
+        self.assertEqual([pitches_of(song=song, scenes=1)[0][start] for start in range(0, 4 * STEPS, STEPS)], [MIDDLE_C + MOVED, MIDDLE_C + 1, MIDDLE_C + 2 + MOVED, MIDDLE_C + 3 + MOVED])
 
-    def test_skip_playback_when_draws_nothing_from_a_draw_that_does_not_redraw_when_no_step_uses_it(self):
+    def test_bypass_when_draws_nothing_from_a_draw_that_does_not_redraw_when_no_step_uses_it(self):
         for redraws, found in ((False, {}), (True, {DrawName.AD: 0})):
             with self.subTest(redraws=redraws):
-                data = skipped_when_ad_is_one(draw={**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: redraws}, rows={PatternSetting.STEP_SIZE: QUARTER})
+                data = bypassed_when_ad_is_one(draw={**a_draw(slots=COUNT_IN), DrawSetting.CONDITIONS_REDRAW: redraws}, rows={PatternSetting.STEP_SIZE: QUARTER})
                 data[SongSetting.TEMPO] = BEATS_A_MINUTE
                 score = Score(song=song_from_data(data), routes={})
                 self.assertEqual(score.draw_places_at(scene=0, seconds=HALF_A_SECOND), found)

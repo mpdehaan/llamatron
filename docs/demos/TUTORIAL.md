@@ -27,7 +27,6 @@ The demos in `examples/learning/`, in the order to learn them, each teaching one
 - [Follow Chords](#follow_chords): `22_follow_chords.yml`
 - [Phrasing](#phrasing): `23_phrasing.yml`
 - [Musician](#musician): `24_musician.yml`
-- [Advanced Conditionals](#advanced_conditionals): `25_advanced_conditionals.yml`
 - [Accents](#accents): `26_accents.yml`
 - [Pattern Lists](#pattern_lists): `27_pattern_lists.yml`
 - [Draws](#draws): `28_draws.yml`
@@ -483,35 +482,6 @@ breakdown the bass plays one hit a bar and the rhythm guitar is muted.
 | :---: |
 | [✓](../generators/MUSICIAN.md) |
 
-<a id="advanced_conditionals"></a>
-## Advanced Conditionals: `25_advanced_conditionals.yml`
-
-Conditional Execution in six scenes. In the first, four tracks each play one note a bar, each at a
-different place in the bar: one in every bar, one in every second bar, one in every third bar, and
-one whose pitch climbs with the count of the bars, so that the counting is heard. In the second, one
-pattern of four chords plays eight times on one guitar, and the chain's four Guitarify generators
-take turns, so the same chords are strummed, then picked, then chugged, then rolled, twice round.
-The last three scenes show the statements a step of a pattern can hold: Mute When plays a bass fill
-only in every fourth bar while two notes take turns bar by bar, Restart When makes a riff start over
-after half a bar twice before playing whole, and Stop When ends the song after a phrase has played
-exactly two and a half times. Before that last scene, two registers show their Reset behavior: one
-reverses, so a single note walks up the scale and back down, and one overflows, so a single note
-visits the same five pitches in a shuffled order.
-
-[`examples/learning/25_advanced_conditionals.yml`](https://github.com/mpdehaan/llamatron/blob/main/examples/learning/25_advanced_conditionals.yml) · A minor pentatonic · 112 BPM · 3:09 · 6 scenes · 5 tracks
-
-| chords | chains | guitarify | key changes | tempo changes | registers | conditional execution |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [✓](../PATTERNS.md#chords) | [✓](../generators/CHAIN.md) | [✓](../generators/GUITARIFY.md) | [✓](../SCENES.md#scene-settings) | [✓](../SCENES.md#scene-settings) | [✓](../REGISTERS.md) | [✓](../REGISTERS.md#conditional-execution) |
-
-[![The Advanced Conditionals demo, 25_advanced_conditionals.yml, on YouTube](https://img.youtube.com/vi/SnS48Tv6RUw/hqdefault.jpg)](https://www.youtube.com/watch?v=SnS48Tv6RUw)
-
-**New Features Introduced**
-
-| conditional execution |
-| :---: |
-| [✓](../REGISTERS.md#conditional-execution) |
-
 <a id="accents"></a>
 ## Accents: `26_accents.yml`
 
@@ -570,3 +540,9 @@ comes from a draw that its own condition redraws.
 | :---: | :---: |
 | [✓](../DRAWS.md) | [✓](../PATTERNS.md#stop-when-restart-when-and-mute-when) |
 <!-- end of the generated summary of 28_draws -->
+
+**New Features Introduced**
+
+| conditional execution |
+| :---: |
+| [✓](../PATTERNS.md#stop-when-restart-when-and-mute-when) |

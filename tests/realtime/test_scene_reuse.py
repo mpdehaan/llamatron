@@ -58,8 +58,8 @@ REGISTERS_ADD_STEP = 15
 CHANGED_ADD = 3
 # A degree the grabbed track's pattern is changed to, which a grab takes.
 CHANGED_DEGREE = 7
-# A demo whose registers can cut a clip short, so that a scene is played to find how long it lasts.
-CUT_SHORT_DEMO = os.path.join(EXAMPLES, 'learning', '25_advanced_conditionals.yml')
+# A set whose looping clip a Stop When reading a draw ends, so that its scene is played to find how long it lasts.
+CUT_SHORT_SET = os.path.join(os.path.dirname(__file__), '..', 'data', 'sample_sets', 'scene_reuse_cut_short.yml')
 # Demos that use what carries from scene to scene: registers, draws, drifts, a hocket, grabs, morphs and generators whose run reaches across scenes.
 FUZZED_DEMOS = (
     os.path.join(EXAMPLES, 'learning', '16_techno_morph.yml'),
@@ -157,8 +157,8 @@ class TestScoreTakesScenes(unittest.TestCase):
         edited.setlist.get_pattern(edited.last_pattern()).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
         self.assertEqual(reused(edited.score(earlier=first)), len(edited.song().get_scenes()) - 1)
 
-    def test_a_song_whose_registers_cut_a_clip_short_takes_nothing(self):
-        edited = Edited(CUT_SHORT_DEMO)
+    def test_a_song_whose_statements_cut_a_clip_short_takes_nothing(self):
+        edited = Edited(CUT_SHORT_SET)
         first = edited.score()
         edited.setlist.get_pattern(edited.last_pattern()).set_value(row=Row.VELOCITY, step=0, value=midi.MIN_VELOCITY)
         self.assertEqual(reused(edited.score(earlier=first)), 0)

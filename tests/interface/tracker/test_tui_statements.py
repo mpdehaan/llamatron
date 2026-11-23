@@ -8,16 +8,14 @@ from llamatron.engine.generators import timing as timing_plugin
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
 from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
-from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
 from llamatron.interface.tracker.screens.generators.chain_editor import ChainEditor
 from llamatron.interface.tracker.screens.generators.chain_statements_page import ChainStatementsPage
 from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.field import Cells
 from llamatron.model.objects import conditions
 from llamatron.model.schema import limits
-from llamatron.model.schema.file_format import ClipSlotSetting, Operator, RegisterName, StatementPart, TrackSetting
+from llamatron.model.schema.file_format import Operator, RegisterName, StatementPart
 from llamatron.user_strings import errors, labels, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import UITest
@@ -137,7 +135,7 @@ class TestChainStatementsPage(StatementsTest):
 
 
 class TestStatementsOnOtherPages(StatementsTest):
-    """The same table on a generator's, a scene's, a clip's and a track's page, and a scene's and a clip's sets and adds."""
+    """The same table on a generator's page and a scene's."""
 
     async def test_a_generator(self):
         await self.open_generator(section=timing_plugin.SECTION)
@@ -152,18 +150,3 @@ class TestStatementsOnOtherPages(StatementsTest):
         scene = self.document.song().get_scenes()[0]
         self.assertEqual(scene.get_bypass_when(), [self.every_third()])
 
-    async def test_a_clip_has_two_tables(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.RIGHT, Key.ENTER)
-        self.assertIsInstance(self.app.screen, ClipPage)
-        await self.write_every_third(table=statements.SECOND_TABLE)
-        clip_slot = self.document.clip_slot(index=0, track=ui_testing.LEAD)
-        self.assertEqual(clip_slot.get_statements(ClipSlotSetting.SKIP_WHEN), [self.every_third()])
-        self.assertEqual(clip_slot.get_statements(ClipSlotSetting.BYPASS_WHEN), [])
-
-    async def test_a_track_has_two_tables(self):
-        await self.press(keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER)
-        self.assertIsInstance(self.app.screen, TrackEditor)
-        await self.write_every_third()
-        track = self.document.song().get_track(self.app.screen.item)
-        self.assertEqual(track.get_statements(TrackSetting.BYPASS_WHEN), [self.every_third()])
-        self.assertEqual(track.get_statements(TrackSetting.SKIP_WHEN), [])

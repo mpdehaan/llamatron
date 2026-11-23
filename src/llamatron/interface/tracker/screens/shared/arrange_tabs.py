@@ -8,23 +8,16 @@ Shapes, Velocity, Registers, Bypass When and Skip When."""
 import functools
 
 from llamatron.interface.tracker.document_parts.built_in_place import BuiltInPlace
-from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.built_in_tab import BuiltInTab
 from llamatron.interface.tracker.screens.shared.field import Field
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.interface.tracker.screens.shared.shape_fields import shape_section
-from llamatron.interface.tracker.screens.shared.statements import statement_section
 from llamatron.interface.tracker.screens.shared.tab_box import columns_of_sections, Tab, TabColumn, without_headings
 from llamatron.interface.tracker.screens.shared.velocity_fields import velocity_field, velocity_ramp_sections
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, shape_setting
 from llamatron.user_strings import labels as labels_text, legends, marks
 
-# The clip's two tables of statements: their tabs, their labels, where each sits on the page and the setting each is.
-STATEMENT_TABLES = (
-    (labels_text.MSG_BYPASS_WHEN_TAB, labels_text.MSG_BYPASS_WHEN_LABEL, statements.FIRST_TABLE, ClipSlotSetting.BYPASS_WHEN),
-    (labels_text.MSG_SKIP_WHEN_TAB, labels_text.MSG_SKIP_WHEN_LABEL, statements.SECOND_TABLE, ClipSlotSetting.SKIP_WHEN),
-)
 
 
 def built_in_tabs(*, page, track, scene, kinds):
@@ -57,7 +50,6 @@ class ClipTabs:
         for shape in file_format.PLACED_SHAPES:
             shapes += self._shape_section(shape)
         own, above, store = self._velocity_values()
-        clip_slot = self._clip_slot()
         return [
             self._basics_tab(),
             *self._built_in_tabs(generator_plugins.built_ins_before_list()),
@@ -65,7 +57,6 @@ class ClipTabs:
             *self._built_in_tabs(generator_plugins.built_ins_after_list()),
             Tab(label=labels_text.MSG_SHAPES_TAB, columns=columns_of_sections(shapes)),
             Tab(label=labels_text.MSG_VELOCITY_TAB, columns=columns_of_sections(velocity_ramp_sections(page=page, own=own, above=above, store=store))),
-            *[self._statements_tab(tab=tab, label=label, table=table, name=name, statements=clip_slot.get_statements) for tab, label, table, name in STATEMENT_TABLES],
         ]
 
     def _basics_tab(self):
@@ -88,13 +79,6 @@ class ClipTabs:
         """Return the tabs of the clip's built-in generators of some kinds, in order."""
         page = self._page
         return built_in_tabs(page=page, track=page.track, scene=page.index, kinds=kinds)
-
-    def _statements_tab(self, *, tab, label, table, name, statements):
-        """Return the tab of one of the clip's tables of statements."""
-        store = functools.partial(self._set_statement, name=name)
-        fields = statement_section(page=self._page, label=label, table=table, statements=functools.partial(statements, name),
-                                   store=lambda place, statement: store(place=place, statement=statement))
-        return fields_tab(label=tab, fields=fields)
 
     def _shape_section(self, shape):
         """Return a shape's section: how busy or long the clip plays over it, over its scene's."""
@@ -134,6 +118,3 @@ class ClipTabs:
         clip_slot = self._clip_slot()
         self._page.document().change_set(clip_slot.set_written, name=name, value=value)
 
-    def _set_statement(self, *, name, place, statement):
-        clip_slot = self._clip_slot()
-        self._page.document().change_set(clip_slot.set_statement, name=name, place=place, statement=statement)

@@ -1,0 +1,39 @@
+version: 1.0.591
+title: Scene Reuse Cut Short
+description: "a looping clip that a Stop When reading a draw ends, so that its scene is played to find how long it lasts, after a scene of its own, for tests/realtime/test_scene_reuse.py"
+
+scales:
+  - { name: C Major, root: C, type: major }
+
+patterns:
+  - name: opening
+    steps: 8
+    step_size: 1/8
+    degree: [1, 2, 3, 4, 5, 4, 3, 2]
+  - name: phrase
+    steps: 16
+    step_size: 1/16
+    degree: [1, 3, 5, 3, 6, 5, 3, 2, 1, 2, 3, 5, 6, 5, 3, 1]
+    stop_c1: [~, ~, ~, ~, ~, ~, ~, ~, AD, ~, ~, ~, ~, ~, ~, ~]
+    stop_c2: [~, ~, ~, ~, ~, ~, ~, ~, "=", ~, ~, ~, ~, ~, ~, ~]
+    stop_c3: [~, ~, ~, ~, ~, ~, ~, ~, 0, ~, ~, ~, ~, ~, ~, ~]
+
+songs:
+  - name: cut short
+    tempo: 120
+    scale: C Major
+
+    draws:
+      AD: { slots: [1, 2, 0], conditions_redraw: true }
+
+    tracks:
+      - { name: lead }
+
+    scenes:
+      - name: opening
+        clips:
+          - { track: lead, pattern: opening, repeat: 2 }
+      - name: cut short
+        reset_draws: [AD]
+        clips:
+          - { track: lead, pattern: phrase, loop: true }

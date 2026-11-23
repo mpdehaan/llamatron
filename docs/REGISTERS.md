@@ -41,7 +41,7 @@ A register set to "reverse" bounces off each end. Once past Maximum, every add t
 
 "overflow" keeps what is left over, so a step that adds 3 to a register of 5 values visits all 5 in a shuffled order before the cycle repeats.
 
-`examples/learning/20_registers.yml` shows every register at work, and the scene called up and down in `examples/learning/25_advanced_conditionals.yml` plays "reverse" beside "overflow".
+`examples/learning/20_registers.yml` shows every register at work.
 
 ## Set Registers and Increment Registers
 
@@ -80,7 +80,3 @@ The sums are in whole numbers: a division rounds down, and a remainder is counte
 The lines are drawn as a grid of five columns, one a part, each as wide as its widest value, so the table keeps its size as a line fills. Left and Right move between the parts of a line and `ENTER` changes the part under the cursor: the register, the operator, and then a number or a register. `Bksp` sets the line back to `ignored`.
 
 A step of a pattern can hold a statement of its own, which is read as the step is reached and stops the clip, starts the pattern over or mutes the step: see [Stop When, Restart When and Mute When](PATTERNS.md#stop-when-restart-when-and-mute-when).
-
-`examples/learning/25_advanced_conditionals.yml` shows both tables and the three kinds of statement on a step: single notes that come and go by counting, one pattern of chords played four ways by one chain, a fill in every fourth bar, a riff that starts over, and a phrase played two and a half times.
-
-[![The Advanced Conditionals demo, 25_advanced_conditionals.yml, on YouTube](https://img.youtube.com/vi/SnS48Tv6RUw/hqdefault.jpg)](https://www.youtube.com/watch?v=SnS48Tv6RUw)

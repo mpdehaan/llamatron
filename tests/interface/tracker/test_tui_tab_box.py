@@ -16,6 +16,7 @@ from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange.clip_page import ClipPage
+from llamatron.interface.tracker.screens.arrange.scene_page import ScenePage
 from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
 from llamatron.interface.tracker.screens.shared import statements, tab_box
 from llamatron.interface.tracker.screens.shared.chords_editor import ChordsEditor
@@ -50,7 +51,7 @@ class TestTheTabBoxOnTheClipPage(UITest):
         names = [tab.label for tab in box.tabs]
         self.assertEqual(self.chosen(), labels.MSG_BASICS_TAB)
         self.assertLess(names.index(chords_strings.MSG_TAB_LABEL), names.index(labels.MSG_USER_TAB))
-        self.assertEqual(names[-2:], [labels.MSG_BYPASS_WHEN_TAB, labels.MSG_SKIP_WHEN_TAB])
+        self.assertEqual(names[-1], labels.MSG_VELOCITY_TAB)
         self.assertIn(labels.MSG_BASICS_TAB, self.text())
 
     async def test_tab_goes_to_the_row_of_tabs_whose_keys_choose_a_tab_and_stop_at_the_ends(self):
@@ -61,7 +62,7 @@ class TestTheTabBoxOnTheClipPage(UITest):
         await self.press(Key.RIGHT, forward_key(keybindings.FieldPage.ALONG_TABS))
         self.assertEqual(self.chosen(), arp_strings.MSG_TAB_LABEL)
         await self.press(*[Key.RIGHT] * len(self.page.tab_box().tabs))
-        self.assertEqual(self.chosen(), labels.MSG_SKIP_WHEN_TAB)
+        self.assertEqual(self.chosen(), labels.MSG_VELOCITY_TAB)
 
     async def test_the_box_keeps_its_height_whichever_tab_is_chosen(self):
         heights = set()
@@ -209,18 +210,23 @@ class TestTheBoxesLook(UITest):
             await self.press(Key.RIGHT)
         self.assertEqual(max(lasts), len(inside) - 2)
 
+    async def show_the_scene(self):
+        self.app.screen.show_page(ScenePage(holder=self.app.screen.holder, index=FIRST_SCENE))
+        await self.pilot.pause()
+
     async def test_the_statements_are_a_grid_that_keeps_its_size(self):
-        self.app.chosen_tabs[ClipPage.__name__] = labels.MSG_BYPASS_WHEN_TAB
-        await self.show_the_clip()
+        # On the Scene page's Bypass When.
+        self.app.chosen_tabs[ScenePage.__name__] = labels.MSG_BYPASS_WHEN_TAB
+        await self.show_the_scene()
         empty = self.inside_of_the_box()
         bars = self.bars_in_the_box()
         top = next(line for line in empty if line.startswith(Box.TOP_LEFT))
         self.assertEqual(top.count(Box.TOP_TEE), statements.COLUMNS - 1)
         self.assertEqual(sum(line.startswith(Box.BOTTOM_LEFT) for line in empty), 1)
-        clip_slot = self.document.clip_slot(index=FIRST_SCENE, track=ui_testing.LEAD)
-        summing = conditions.with_operator(statement=conditions.new_statement(file_format.REGISTER_NAMES[0]), operator=Operator.REMAINDER)
-        self.document.change_set(clip_slot.set_statement, name=ClipSlotSetting.BYPASS_WHEN, place=0, statement=summing)
-        await self.show_the_clip()
+        scene = self.document.song().get_scene(FIRST_SCENE)
+        summing = conditions.with_operator(statement=conditions.new_statement(file_format.DRAW_NAMES[0]), operator=Operator.REMAINDER)
+        self.document.change_set(scene.set_bypass_statement, place=0, statement=summing)
+        await self.show_the_scene()
         self.assertEqual(self.bars_in_the_box(), bars)
         self.assertIn(Operator.REMAINDER, self.text())
 

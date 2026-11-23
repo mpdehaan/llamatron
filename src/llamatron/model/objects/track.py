@@ -9,7 +9,6 @@ from llamatron.model.file.checks import is_whole_number_from, pass_over_unknown,
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.built_ins import built_ins_setting, HoldsBuiltIns, pass_over_unknown_built_ins
 from llamatron.model.objects.chain import check_chain_names
-from llamatron.model.objects.conditions import statements_setting, with_statement
 from llamatron.model.objects.groove import check_groove_choice
 from llamatron.model.objects.llama_data import HoldsSettings, left_out_if_default, or_default, own_copy
 from llamatron.model.objects.traits import RunsChains
@@ -60,8 +59,6 @@ SETTINGS = described(
     WholeNumber(name=TrackSetting.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, error=errors.ERR_BAD_DEFAULT_VELOCITY),
     WholeNumber(name=TrackSetting.ACCENT, lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT, error=errors.ERR_BAD_ACCENT),
     Checked(name=TrackSetting.CHAINS, check=check_chain_names, needs_song=True),
-    statements_setting(TrackSetting.BYPASS_WHEN),
-    statements_setting(TrackSetting.SKIP_WHEN),
     built_ins_setting(TrackSetting.BUILT_IN),
 )
 
@@ -86,7 +83,7 @@ class Track(HoldsBuiltIns, RunsChains, HoldsSettings):
     def __init__(
         self, *, drum=None, mute=None, transpose=None, lowest_octave=None, highest_octave=None, cc=None, groove=None, instrument=None,
         default_velocity=None, accent=None, chains=None,
-        bypass_when=None, skip_when=None, built_in=None,
+        built_in=None,
     ):
         self.note_change()
         self._settings = {
@@ -94,7 +91,7 @@ class Track(HoldsBuiltIns, RunsChains, HoldsSettings):
             TrackSetting.LOWEST_OCTAVE: lowest_octave, TrackSetting.HIGHEST_OCTAVE: highest_octave, TrackSetting.CC: own_copy(cc), TrackSetting.GROOVE: groove,
             TrackSetting.INSTRUMENT: instrument, TrackSetting.DEFAULT_VELOCITY: default_velocity, TrackSetting.ACCENT: accent,
             TrackSetting.CHAINS: own_copy(chains),
-            TrackSetting.BYPASS_WHEN: own_copy(bypass_when), TrackSetting.SKIP_WHEN: own_copy(skip_when), TrackSetting.BUILT_IN: own_copy(built_in),
+            TrackSetting.BUILT_IN: own_copy(built_in),
         }
 
     @classmethod
@@ -192,18 +189,6 @@ class Track(HoldsBuiltIns, RunsChains, HoldsSettings):
         if numbers is None:
             return _no_cc_numbers()
         return list(numbers)
-
-    def get_statements(self, name):
-        """Return one of its tables of statements about the registers, by the setting's name: the one that bypasses its clips' generators or the one that makes its clips sit out."""
-        return own_copy(self._settings[name] or [])
-
-    @notes_change
-    def set_statement(self, *, name, place, statement):
-        """Write the statement at a place of one of its tables, add one just past the last, or remove one with None."""
-        table = with_statement(statements=self._settings[name], place=place, statement=statement)
-        if table is not None:
-            SETTINGS[name].check(table)
-        self._settings[name] = table
 
     def copy(self):
         settings = dict(self._settings)

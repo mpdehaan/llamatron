@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Conditional Execution: a scene's and a clip's sets and adds of the registers, and the statements about the registers that bypass generators or make a clip sit out.
+"""Conditional Execution: the statements about the registers that bypass generators.
 
 Every song here plays one note a pass, moved up C major by AX, so that the notes heard say
 what AX was as each pass started, and a Chords generator that moves every note to chord II, one
@@ -19,7 +19,7 @@ from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import conditions
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart, TrackSetting
+from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, Operator, PatternSetting, RegisterName, RegisterSetting, RegisterUse, Row, ScaleSetting, SceneSetting, Section, SongSetting, StatementPart
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
@@ -184,26 +184,6 @@ class TestStatements(unittest.TestCase):
         self.assertEqual(parity, statement(AX, Operator.EVEN))
 
 
-class TestSittingOut(unittest.TestCase):
-    """A clip sits a pass out while a statement of its own or its track's holds."""
-
-    COUNTING = {ClipSlotSetting.REPEAT: 4}
-
-    def test_a_clip_plays_every_other_pass_and_lasts_as_long(self):
-        data = song(clip={**self.COUNTING, ClipSlotSetting.SKIP_WHEN: [statement(AX, Operator.EVEN)]}, counting=True)
-        self.assertEqual(heard(data), notes_at([2, 4]))
-        self.assertEqual(length_of(data), length_of(song(clip=self.COUNTING, counting=True)))
-
-    def test_a_track_table_silences_its_clip_and_no_other_track(self):
-        data = song(clip=self.COUNTING, track={TrackSetting.SKIP_WHEN: [statement(AX, Operator.MORE, 2)]}, other={ClipSlotSetting.REPEAT: 4}, counting=True)
-        self.assertEqual(heard(data), notes_at([2, 3]))
-        self.assertEqual(len(heard(data, track=OTHER)), 4)
-
-    def test_a_pass_that_sits_out_still_adds_to_the_registers(self):
-        data = song(clip={**self.COUNTING, ClipSlotSetting.SKIP_WHEN: [statement(AX, Operator.SAME, 2)]}, counting=True)
-        self.assertEqual(heard(data), notes_at([2, 4, 5]))
-
-
 class TestBypassingGenerators(unittest.TestCase):
     """A pass goes by a generator, a chain or every chain while a statement holds where it is written."""
 
@@ -224,12 +204,9 @@ class TestBypassingGenerators(unittest.TestCase):
         data = song(clip=self.COUNTING, chained=True, counting=True, chain={ChainSetting.BYPASS_WHEN: self.TABLE})
         self.assertEqual(heard(data), notes_at(self.ODD_PASSES_UNMOVED))
 
-    def test_a_statement_on_the_clip_the_scene_and_the_track(self):
-        on_clip = song(clip={**self.COUNTING, ClipSlotSetting.BYPASS_WHEN: self.TABLE}, chained=True, counting=True)
-        on_scene = song(clip=self.COUNTING, chained=True, counting=True, scene={SceneSetting.BYPASS_WHEN: self.TABLE})
-        on_track = song(clip=self.COUNTING, chained=True, counting=True, track={TrackSetting.BYPASS_WHEN: self.TABLE})
-        for data in (on_clip, on_scene, on_track):
-            self.assertEqual(heard(data), notes_at(self.ODD_PASSES_UNMOVED))
+    def test_a_statement_on_the_scene(self):
+        data = song(clip=self.COUNTING, chained=True, counting=True, scene={SceneSetting.BYPASS_WHEN: self.TABLE})
+        self.assertEqual(heard(data), notes_at(self.ODD_PASSES_UNMOVED))
 
     def test_a_statement_true_on_every_pass_and_on_none(self):
         always = song(clip=self.COUNTING, chained=True, counting=True, generator={file_format.BYPASS_WHEN: [statement(AX, Operator.MORE, 0)]})

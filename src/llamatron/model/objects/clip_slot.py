@@ -18,7 +18,6 @@ from llamatron.model.file.checks import check_name, pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects.built_ins import built_ins_setting, HoldsBuiltIns, pass_over_unknown_built_ins
 from llamatron.model.objects.chain import check_chain_names
-from llamatron.model.objects.conditions import statements_setting, with_statement
 from llamatron.model.objects.llama_data import HoldsSettings, own_copy, settings_by_name, written_settings
 from llamatron.model.objects.shapes import shape_settings, shape_values
 from llamatron.model.objects.traits import RunsChains
@@ -91,8 +90,6 @@ SETTINGS = described(
     Checked(name=ClipSlotSetting.SCALE, check=_check_scale_name, needs_song=True),
     *velocity_setting_descriptions(),
     *shape_settings(),
-    statements_setting(ClipSlotSetting.BYPASS_WHEN),
-    statements_setting(ClipSlotSetting.SKIP_WHEN),
     built_ins_setting(ClipSlotSetting.BUILT_IN),
 )
 
@@ -313,15 +310,6 @@ class ClipSlot(HoldsBuiltIns, RunsChains, HoldsSettings):
     def set_scale_name(self, *, name, song):
         """Give it one of the song's scales of its own, which wins over its scene's and its song's, or None to take theirs."""
         self.set_written(name=ClipSlotSetting.SCALE, value=name, song=song)
-
-    def get_statements(self, name):
-        """Return one of its tables of statements about the registers, by the setting's name: the one that bypasses its generators or the one that makes it sit out."""
-        return own_copy(self._settings[name] or [])
-
-    @notes_change
-    def set_statement(self, *, name, place, statement):
-        """Write the statement at a place of one of its tables, add one just past the last, or remove one with None."""
-        self.set_written(name=name, value=with_statement(statements=self._settings[name], place=place, statement=statement))
 
     def set_follow_action(self, advance):
         """Set what it sends down in real-time playback when its scene is done, or None to take the set's default."""

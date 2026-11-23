@@ -215,7 +215,6 @@ FEATURES = [
     ('scene scale', any_scene_setting(SceneSetting.SCALE)),
     ('scene tempo', any_scene_setting(SceneSetting.TEMPO)),
     ('tempo ramps', lambda data: any(any_scene_setting(setting)(data) for setting in (SceneSetting.TEMPO_IN_START, SceneSetting.TEMPO_IN_END, SceneSetting.TEMPO_OUT_START, SceneSetting.TEMPO_OUT_END))),
-    ('skip playback when', lambda data: any_track_setting(TrackSetting.SKIP_WHEN)(data) or any_clip_slot_setting(ClipSlotSetting.SKIP_WHEN)(data)),
     ('bypass generators when', bypasses_generators),
     ('scene groove', any_scene_setting(SceneSetting.GROOVE)),
     ('drum tracks', any_track_setting(TrackSetting.DRUM)),

@@ -11,14 +11,12 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.document_parts import built_in_place
 from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.arrange.groove_choice import groove_choice_field
-from llamatron.interface.tracker.screens.shared import statements
 from llamatron.interface.tracker.screens.shared.arrange_tabs import built_in_tabs, fields_tab
 from llamatron.interface.tracker.screens.shared.field import Field, NameField, NumberField, Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.generators_field import generators_field
 from llamatron.interface.tracker.screens.shared.octave_field import octave_field
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.interface.tracker.screens.shared.statements import statement_section
 from llamatron.interface.tracker.screens.shared.tab_box import Tab, TabBox, TabColumn
 from llamatron.interface.tracker.text import sorted_names
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits
@@ -147,7 +145,6 @@ class TrackEditor(ShowsNamedItem, FieldPage):
             fields_tab(label=labels.MSG_USER_TAB, fields=[generators_field(page=self, names=self._chain_names, store=self._set_chain_names)]),
             *built_in_tabs(page=self, track=self.item, scene=built_in_place.OF_THE_TRACK, kinds=generator_plugins.built_ins_after_list()),
             Tab(label=labels.MSG_CC_LANES_TAB, columns=[TabColumn(heading=None, fields=numbers)]),
-            *[fields_tab(label=tab, fields=fields) for tab, fields in self._statement_sections(track)],
         ]
 
     def _item_name(self):
@@ -200,26 +197,6 @@ class TrackEditor(ShowsNamedItem, FieldPage):
     def _set_chain_names(self, names):
         song = self.document().song()
         self._change(self.track().set_chain_names, names=names, song=song)
-
-    def _statement_sections(self, track):
-        """Return the tables of statements about the registers that bypass the generators of the track's clips, and that make its
-        clips sit out, each its tab's name and its fields."""
-        tables = (
-            (labels.MSG_BYPASS_WHEN_TAB, labels.MSG_BYPASS_WHEN_LABEL, statements.FIRST_TABLE, TrackSetting.BYPASS_WHEN),
-            (labels.MSG_SKIP_WHEN_TAB, labels.MSG_SKIP_WHEN_LABEL, statements.SECOND_TABLE, TrackSetting.SKIP_WHEN),
-        )
-        result = []
-        for tab, label, table, name in tables:
-            fields = statement_section(page=self, label=label, table=table, statements=functools.partial(track.get_statements, name),
-                                       store=self._statement_store(name))
-            result.append((tab, fields))
-        return result
-
-    def _statement_store(self, name):
-        """Return what stores a statement of one of the track's tables, at its place."""
-        def store(place, statement):
-            self._change(self.track().set_statement, name=name, place=place, statement=statement)
-        return store
 
     def remarks(self, width):
         return [Text(messages.MSG_TRANSPOSE_NOTE, style=Style.DIM)]
