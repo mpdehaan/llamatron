@@ -206,30 +206,10 @@ class ListPage(Page):
         return place == self.cursor.get_place()
 
     def body(self, *, width, height):
+        """Return the list: its column headings in bold, a blank line, then as many rows as fit, around the cursor's."""
         self.clamp()
-        fixed = sum(size + 1 for _, size, _ in self.columns if size)
-        flexible = max(width - fixed - 3, 8)
-        if self.NAME_COLUMN_WIDTH is not None and len(self.columns) > 1:
-            flexible = min(flexible, self.NAME_COLUMN_WIDTH)
-        sizes = [size or flexible for _, size, _ in self.columns]
-
-        def cells(*, values, style=Style.PLAIN, selected=False):
-            line = Text(no_wrap=True, style=style)
-            carried = selected and self.moving
-            # A row Move mode carries has its name between < and >, put where the spaces beside it were, so that nothing shifts.
-            mark = cursor_mark(selected)
-            line.append(mark[:-1] + marks.MSG_MOVING_OPEN if carried else mark)
-            for column, (value, size, (_, _, align)) in enumerate(zip(values, sizes, self.columns)):
-                shown = fit(text=value, width=size, align=align)
-                if carried and column == 0:
-                    end = len(shown.rstrip())
-                    shown = shown[:end] + marks.MSG_MOVING_CLOSE + shown[end + 1:] if end < size else shown + marks.MSG_MOVING_CLOSE
-                    line.append(shown if end >= size else shown + drawing.SPACE, style=Style.BOLD)
-                    continue
-                line.append(shown + drawing.SPACE)
-            return line
-
-        lines = [cells(values=[name for name, _, _ in self.columns], style=Style.BOLD), Text(drawing.NOTHING)]
+        sizes = self.column_sizes(width)
+        lines = [self.row_line(values=[name for name, _, _ in self.columns], sizes=sizes, style=Style.BOLD), Text(drawing.NOTHING)]
         rows = self.rows_with_plus()
         matches = self.matches()
         if not matches:
@@ -237,8 +217,33 @@ class ListPage(Page):
         room = max(height - 2, 1)
         at = matches.index(self.cursor.get_place()) if self.cursor.is_on_one_of(matches) else 0
         for place in shown_around(places=matches, at=at, room=room):
-            lines.append(cells(values=rows[place][1], style=self.row_style(rows[place][0]), selected=self.row_selected(place)))
+            lines.append(self.row_line(values=rows[place][1], sizes=sizes, style=self.row_style(rows[place][0]), selected=self.row_selected(place)))
         return lines
+
+    def column_sizes(self, width):
+        """Return each column's width: its own where it has one, and what is left for the names', held to a name's room."""
+        fixed = sum(size + 1 for _, size, _ in self.columns if size)
+        flexible = max(width - fixed - 3, 8)
+        if self.NAME_COLUMN_WIDTH is not None and len(self.columns) > 1:
+            flexible = min(flexible, self.NAME_COLUMN_WIDTH)
+        return [size or flexible for _, size, _ in self.columns]
+
+    def row_line(self, *, values, sizes, style=Style.PLAIN, selected=False):
+        """Return one row's line: the cursor's mark, then each column's value fitted to its width."""
+        line = Text(no_wrap=True, style=style)
+        carried = selected and self.moving
+        # A row Move mode carries has its name between < and >, put where the spaces beside it were, so that nothing shifts.
+        mark = cursor_mark(selected)
+        line.append(mark[:-1] + marks.MSG_MOVING_OPEN if carried else mark)
+        for column, (value, size, (_, _, align)) in enumerate(zip(values, sizes, self.columns)):
+            shown = fit(text=value, width=size, align=align)
+            if carried and column == 0:
+                end = len(shown.rstrip())
+                shown = shown[:end] + marks.MSG_MOVING_CLOSE + shown[end + 1:] if end < size else shown + marks.MSG_MOVING_CLOSE
+                line.append(shown if end >= size else shown + drawing.SPACE, style=Style.BOLD)
+                continue
+            line.append(shown + drawing.SPACE)
+        return line
 
     # What many lists share.
 
