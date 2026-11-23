@@ -4,6 +4,7 @@
 """The forms: what a page shows, as a tree of plain nodes, apart from how the tracker draws it and from Textual.
 
 - grouped_choices: a picker's choices in groups under headings, which a page shows (Page.ask_grouped).
+- remarks: the lines under a page's settings as plain values, each its words and whether it is dim.
 - moves: the moves a person makes through a form, up, down, left, right and choose, and how a cursor goes.
 - cursor: a place among a number of places, which the moves move.
 - navigator: how the cursor goes through a settings page's form, and which move brings it nearer a field (FormNavigator).

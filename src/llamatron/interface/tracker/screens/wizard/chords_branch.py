@@ -3,11 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The wizard's Chords branch, under Composition: the chord progression the song is built on, with its numerals and its chords in the song's key."""
 
-from rich.text import Text
 
 from llamatron.interface.forms.nodes import ChoiceField
-from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.drawing import Style
+from llamatron.interface.forms.remarks import blank_remark, dim_remark, remark
 from llamatron.interface.tracker.screens.wizard import song_ways_branch
 from llamatron.interface.tracker.screens.wizard.song_ways_branch import SongWaysBranch
 from llamatron.model.objects.named_scale import NamedScale
@@ -91,11 +89,11 @@ class ChordsBranch(SongWaysBranch):
             return super().remarks(width)
         choices = self.get_choices()
         if choices.has_any_progression():
-            return [Text(), Text(drawing.INDENT + messages.MSG_WIZARD_CHORDS_DRAWN_LATER, style=Style.DIM)]
+            return [blank_remark(), dim_remark(messages.MSG_WIZARD_CHORDS_DRAWN_LATER)]
         sections = choices.progression_chords(self.progression())
         if not sections:
             return []
         longest = max(len(kind) for kind, _ in sections)
         key = marks.MSG_WIZARD_CHORDS_KEY.format(root=choices.get_root(), scale=labels.MSG_WIZARD_SCALE_TYPE_NAMES[choices.get_scale_type()])
-        return [Text(), Text(drawing.INDENT + key, style=Style.DIM),
-                *(Text(drawing.INDENT + marks.MSG_WIZARD_CHORDS_LINE.format(kind=kind, width=longest, chords=self.chord_names(chords))) for kind, chords in sections)]
+        return [blank_remark(), dim_remark(key),
+                *(remark(marks.MSG_WIZARD_CHORDS_LINE.format(kind=kind, width=longest, chords=self.chord_names(chords))) for kind, chords in sections)]

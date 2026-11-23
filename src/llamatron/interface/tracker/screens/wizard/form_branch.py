@@ -3,11 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The wizard's Form branch: which of the subgenre's forms the song takes, with a branch under it for each section in order."""
 
-from rich.text import Text
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, gauge_shown, NumberField, Toggle
-from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.drawing import Style
+from llamatron.interface.forms.remarks import blank_remark, dim_remark, remark
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.interface.tracker.screens.wizard.section_branch import SectionBranch
 from llamatron.user_strings import errors, labels, legends, marks, messages
@@ -81,8 +79,8 @@ class FormBranch(Branch):
         """Return the form's sections in order, each with its bars, so that the whole form reads at a glance; or what to choose first."""
         choices = self.get_choices()
         if not choices.is_ready():
-            return [Text(drawing.INDENT + messages.MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
-        hint = [Text(drawing.INDENT + messages.MSG_WIZARD_SECTIONS_HINT, style=Style.DIM), Text()]
+            return [dim_remark(messages.MSG_WIZARD_CHOOSE_FIRST)]
+        hint = [dim_remark(messages.MSG_WIZARD_SECTIONS_HINT), blank_remark()]
         sections = choices.get_song_form().section_labels()
         longest = max((len(name) for name in sections), default=0)
         if choices.has_song_plan():
@@ -92,8 +90,8 @@ class FormBranch(Branch):
             except (ValueError, KeyError, IndexError):
                 said = []
             if len(said) == len(sections):
-                return hint + [Text(drawing.INDENT + labels.MSG_WIZARD_PLAN_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, said=said[place])) for place, name in enumerate(sections)]
-        return hint + [Text(drawing.INDENT + marks.MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section(place).bars()))
+                return hint + [remark(labels.MSG_WIZARD_PLAN_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, said=said[place])) for place, name in enumerate(sections)]
+        return hint + [remark(marks.MSG_WIZARD_SECTION_LINE.format(number=place + FIRST_SECTION_NUMBER, name=name, width=longest, bars=choices.section(place).bars()))
                 for place, name in enumerate(sections)]
 
     # A new section is added at the end of the form from here, and after a section from the section.

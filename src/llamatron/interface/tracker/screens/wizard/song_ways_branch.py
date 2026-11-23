@@ -4,11 +4,9 @@
 
 """A branch of the wizard for what the whole song has a way of, each a field: the branches under Composition are three."""
 
-from rich.text import Text
 
 from llamatron.interface.forms.nodes import ChoiceField
-from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.drawing import Style
+from llamatron.interface.forms.remarks import dim_remark
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.user_strings import errors, messages
 
@@ -49,5 +47,5 @@ class SongWaysBranch(Branch):
     def remarks(self, width):
         """Say so where the subgenre leaves nothing to choose, so that an empty branch explains itself."""
         if self.get_choices().is_ready() and not self.fields():
-            return [Text(drawing.INDENT + messages.MSG_WIZARD_NOTHING_TO_CHOOSE, style=Style.DIM)]
+            return [dim_remark(messages.MSG_WIZARD_NOTHING_TO_CHOOSE)]
         return []

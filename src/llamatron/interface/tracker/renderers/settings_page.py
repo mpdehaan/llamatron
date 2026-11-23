@@ -17,6 +17,7 @@ from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.drawing import cursor_mark, Style
 from llamatron.interface.tracker.renderers.drawn_lines import DrawnLines
 from llamatron.interface.tracker.renderers.fields import field_lines
+from llamatron.interface.tracker.renderers.remarks import remark_lines
 from llamatron.interface.tracker.renderers.tab_box import box_lines
 from llamatron.user_strings import labels as labels_text, marks
 
@@ -47,7 +48,7 @@ class SettingsPageDrawing:
         remarks = self._page.remarks(width)
         if remarks:
             drawn.blank()
-            drawn.add(remarks)
+            drawn.add(remark_lines(remarks))
         return self.window_of_lines(lines=drawn.get_lines(), selected=drawn.get_selected(), height=height)
 
     def draw_settings(self, *, drawn, fields, width):

@@ -10,12 +10,10 @@ and to hear the solo, its player alone and with the band. What shapes a solo, it
 section under Form.
 """
 
-from rich.text import Text
 
 from llamatron.interface.forms.nodes import Button, Field
-from llamatron.interface.tracker import drawing
+from llamatron.interface.forms.remarks import dim_remark
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.user_strings import labels, legends, messages
 from llamatron.wizards.create_song import wizard_limits
@@ -108,4 +106,4 @@ class SoloMelodyBranch(Branch):
         choices = self.get_choices()
         if not choices.is_ready() or self.place() is None:
             return []
-        return [Text(drawing.INDENT + (messages.MSG_WIZARD_NOTES_BY_HAND if choices.get_solos().solo_is_own(self.place()) else messages.MSG_WIZARD_HOOK_MADE), style=Style.DIM)]
+        return [dim_remark(messages.MSG_WIZARD_NOTES_BY_HAND if choices.get_solos().solo_is_own(self.place()) else messages.MSG_WIZARD_HOOK_MADE)]

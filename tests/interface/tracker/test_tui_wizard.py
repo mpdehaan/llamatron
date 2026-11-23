@@ -17,6 +17,7 @@ from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.note_names import note_shown, note_typed
+from llamatron.interface.tracker.renderers.remarks import remark_lines
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.interface.tracker.screens.wizard import solo_melody_branch, starts
@@ -107,7 +108,7 @@ class WizardTest(UITest):
         choices = self.choices()
         hook_choices = choices.get_hook()
         hook = hook_choices
-        return [line.plain.strip() for line in self.wizard().branch().remarks(A_WIDE_PANEL)], picture_of(hook=hook.hook_section_notes(), width=A_WIDE_PANEL, lit=hook.hook_bars())
+        return [line.plain.strip() for line in remark_lines(self.wizard().branch().remarks(A_WIDE_PANEL))], picture_of(hook=hook.hook_section_notes(), width=A_WIDE_PANEL, lit=hook.hook_bars())
 
     async def choose_genre_and_subgenre(self):
         """Choose the first genre and its first subgenre, each with ] (inc) from nothing chosen on its panel, and go back to the tree."""

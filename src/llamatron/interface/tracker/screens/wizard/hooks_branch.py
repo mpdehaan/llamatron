@@ -13,12 +13,10 @@ written unlike the hook and under its top, sung in another kind of section.
 """
 
 import functools
-from rich.text import Text
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, Toggle
-from llamatron.interface.tracker import drawing
+from llamatron.interface.forms.remarks import dim_remark, remark
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.interface.tracker.screens.wizard.hook_picture import picture_of
 from llamatron.user_strings import labels, legends, messages
@@ -28,7 +26,7 @@ def _indented(lines):
     """Return lines of a picture, each indented as the panel's notes are."""
     indented = []
     for line in lines:
-        indented.append(Text(drawing.INDENT + line))
+        indented.append(remark(line))
     return indented
 
 
@@ -232,11 +230,11 @@ class HooksBranch(Branch):
         bars = hook.hook_bars()
         if notes is None and section is None:
             return []
-        made = Text(drawing.INDENT + self._whose_notes(kind), style=Style.DIM)
+        made = dim_remark(self._whose_notes(kind))
         if notes is not None and (section is None or bars is None or hook.hook_is_own()):
             return [*_indented(picture_of(hook=notes, width=width)), made]
         first, last = bars
-        said = Text(drawing.INDENT + messages.MSG_WIZARD_HOOK_IS_BARS.format(first=first, last=last, kind=kind), style=Style.DIM)
+        said = dim_remark(messages.MSG_WIZARD_HOOK_IS_BARS.format(first=first, last=last, kind=kind))
         # The two lines that say which bars and whose notes come first, so that a tall picture never pushes them off the page.
         return [said, made, *_indented(picture_of(hook=section, width=width, lit=bars))]
 

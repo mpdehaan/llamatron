@@ -13,12 +13,10 @@ hook and who else plays them is on the Hook panel (hooks_branch.py).
 """
 
 import functools
-from rich.text import Text
 
 from llamatron.interface.forms.nodes import Button, ChoiceField
-from llamatron.interface.tracker import drawing
+from llamatron.interface.forms.remarks import dim_remark
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.music_theory.hooks import hook_bars
 from llamatron.user_strings import labels, legends, messages
@@ -231,7 +229,7 @@ class SectionMelodyBranch(Branch):
         whose = messages.MSG_WIZARD_HOOK_MADE
         if tunes.tune_is_own(self._kind):
             whose = messages.MSG_WIZARD_NOTES_BY_HAND
-        return [Text(drawing.INDENT + whose, style=Style.DIM)]
+        return [dim_remark(whose)]
 
     def heard_with_band(self):
         """Return what Listen With Band plays: everybody in the first section of the kind."""

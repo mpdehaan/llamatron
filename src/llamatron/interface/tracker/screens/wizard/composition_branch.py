@@ -3,10 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The wizard's Composition branch: what the song is written from, each a branch under it: its chords, its melody and its hooks."""
 
-from rich.text import Text
 
-from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.drawing import Style
+from llamatron.interface.forms.remarks import dim_remark, remark
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.interface.tracker.screens.wizard.chords_branch import ChordsBranch
 from llamatron.interface.tracker.screens.wizard.melodies_branch import MelodiesBranch
@@ -35,7 +33,7 @@ class CompositionBranch(Branch):
     def remarks(self, width):
         """Return each branch under this one with what it is set to, leaving out a branch the subgenre has nothing to choose in; or what to choose first."""
         if not self.get_choices().is_ready():
-            return [Text(drawing.INDENT + messages.MSG_WIZARD_CHOOSE_FIRST, style=Style.DIM)]
+            return [dim_remark(messages.MSG_WIZARD_CHOOSE_FIRST)]
         shown = [(child.name(), child.summary()) for child in self.children() if child.summary() is not None]
         longest = max((len(name) for name, _ in shown), default=0)
-        return [Text(drawing.INDENT + marks.MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=longest, value=value)) for name, value in shown]
+        return [remark(marks.MSG_WIZARD_COMPOSITION_LINE.format(name=name, width=longest, value=value)) for name, value in shown]

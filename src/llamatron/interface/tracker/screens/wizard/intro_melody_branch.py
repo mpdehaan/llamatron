@@ -12,12 +12,10 @@ while a player is chosen to say the hook in it. The panel comes after the other 
 the intro's melody is made from the hook and the hook from the chorus.
 """
 
-from rich.text import Text
 
 from llamatron.interface.forms.nodes import Button, ChoiceField, Field, Heading, Toggle
-from llamatron.interface.tracker import drawing
+from llamatron.interface.forms.remarks import dim_remark
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.shared.section_fade import fade_field
 from llamatron.interface.tracker.screens.wizard.branch import Branch
 from llamatron.model.file.checks import listed
@@ -251,4 +249,4 @@ class IntroMelodyBranch(Branch):
             said = messages.MSG_WIZARD_PART_NO_MELODY.format(number=number)
         else:
             said = messages.MSG_WIZARD_PART_NOTES.format(number=number, notes=messages.MSG_WIZARD_NOTES_BY_HAND if choices.intro_is_own(place=place) else messages.MSG_WIZARD_HOOK_MADE)
-        return [Text(drawing.INDENT + said, style=Style.DIM)]
+        return [dim_remark(said)]
