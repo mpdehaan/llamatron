@@ -3,11 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Corrections dialog: lists the values of a set file that can't be used, each with the value that takes its place, and asks whether to open the set that way."""
 
-from rich.text import Text
-
-from llamatron.interface.tracker import drawing, keybindings
+from llamatron.interface.forms.dialogs import blank, said, said_in_passing, said_on_one_line
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
-from llamatron.interface.tracker.drawing import fit, Style, wrapped
 from llamatron.user_strings import messages
 
 # The most corrections listed, so that the dialog fits an 80 by 24 console with its sentences and its buttons. The rest are counted on one line.
@@ -31,13 +29,12 @@ class CorrectionsDialog(ConfirmDialog):
         self.file = file
         self.corrections = corrections
 
-    def message_lines(self, width):
+    def paragraphs(self):
+        """Return what opening the set changes: a sentence, each correction on a line of its own, the rest counted in passing,
+        and what opening means."""
         shown = self.corrections[:MOST_SHOWN]
         more = len(self.corrections) - len(shown)
-        lines = [*wrapped(text=messages.MSG_CORRECTIONS_INTRO.format(file=self.file), width=width), Text(drawing.NOTHING)]
-        lines += [Text(fit(text=correction, width=width).rstrip()) for correction in shown]
+        paragraphs = [said(messages.MSG_CORRECTIONS_INTRO.format(file=self.file)), blank(), *[said_on_one_line(correction) for correction in shown]]
         if more:
-            lines.append(Text(messages.MSG_CORRECTIONS_MORE.format(count=more), style=Style.DIM))
-        lines.append(Text(drawing.NOTHING))
-        lines += wrapped(text=messages.MSG_CORRECTIONS_WARNING, width=width)
-        return lines
+            paragraphs.append(said_in_passing(messages.MSG_CORRECTIONS_MORE.format(count=more)))
+        return [*paragraphs, blank(), said(messages.MSG_CORRECTIONS_WARNING)]

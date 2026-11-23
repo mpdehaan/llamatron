@@ -13,15 +13,28 @@ The key tour (tests/interface/tracker/test_tui_help_keys.py) opens every page an
 At each stop the screen is recorded as Textual composed it, dialogs over pages included: every line's text, cut where its style
 changes, with the style beside each piece, so that a lost blank line, a column moved by one, or a word no longer dim is found.
 The tour is run at 80 by 24, the smallest console a page must be good at, and at 160 by 50, a large one.
+
+The dialogs are captured too, since the tour opens few of them: the UI tests that open dialogs are run, and the screen is
+recorded the first time each test shows a dialog of each kind and title after a key, the dialog's own drawing alone, since a
+page behind it may differ from run to run, so that moving a dialog to declarative forms is proved the same way.
 """
 
+import functools
 import json
 import os
+import random
 import sys
+from textual.widgets import Static
 import unittest
+from unittest import mock
 
+from llamatron.interface.tracker.dialogs import dialog as dialog_values
+from llamatron.interface.tracker.dialogs.dialog import Dialog
+from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.interface.tracker import test_tui_help_keys
 from tests.interface.tracker.test_tui_help_keys import KeyTour
 from tests.support.key_map import place_of
+from tests.support.ui_testing import UITest
 
 CAPTURE = 'capture'
 COMPARE = 'compare'
@@ -29,6 +42,23 @@ USAGE = 'usage: compare_screens.py capture|compare DIRECTORY'
 # The sizes the tour is run at: the smallest console a page must be good at, and a large one.
 SIZES = ((80, 24), (160, 50))
 FILE_NAME = 'screens_{columns}x{rows}.json'
+# The dialogs' capture: the test modules that open dialogs, what each dialog's screen is kept by, the method of the tests that
+# presses keys, after which a dialog on top is recorded, and what a comparison says of them.
+DIALOGS_FILE = 'dialogs.json'
+DIALOG_MODULES = (
+    'tests.interface.tracker.test_tui_notes_page', 'tests.interface.tracker.test_tui_quitting', 'tests.interface.tracker.test_tui_settings_rows',
+    'tests.interface.tracker.test_tui_progressions', 'tests.interface.visualizers.test_visualizer_choices', 'tests.interface.tracker.test_tui_piano_roll',
+    'tests.interface.tracker.test_tui_keyswitches', 'tests.interface.tracker.test_tui_import', 'tests.interface.tracker.test_tui_corrections',
+    'tests.interface.tracker.test_tui_lists', 'tests.interface.tracker.test_tui_arrange', 'tests.interface.tracker.test_tui_wizard',
+    'tests.interface.tracker.test_tui_wizard_composition', 'tests.interface.tracker.test_tui_generator_type_picker', 'tests.interface.tracker.test_tui_patterns_page',
+    'tests.interface.tracker.test_tui_file_page', 'tests.interface.tracker.test_tui_munge', 'tests.interface.tracker.test_tui_exporting',
+)
+DIALOG_KEY = '{test} | {dialog} | {title}'
+PRESS = 'press'
+MSG_DIALOGS_SAME = 'every dialog is the same: {count} dialogs'
+MSG_DIALOGS_DIFFERENT = '{count} dialogs differ; the first are:'
+MSG_DIALOGS_KEPT = 'the dialogs captured differ: {before} before and {after} after, and only in one: {only}'
+MSG_DIALOG = 'dialog {key}'
 # What the test's folder is written as.
 FOLDER = 'FOLDER'
 # What each stop of the tour records.
@@ -85,6 +115,13 @@ def screen_pieces(*, app, folders):
     return lines
 
 
+def dialog_pieces(*, dialog, folders):
+    """Return the dialog's own drawing, its box and what is inside it, without the page behind it, which a test may draw
+    differently each run: every line's text with each style and where it starts and ends, the test's folder written as FOLDER."""
+    drawn = dialog.query_one(dialog_values.DIALOG_VIEW_SELECTOR, Static).content
+    return [[without_folders(text=line.plain, folders=folders), [[span.start, span.end, str(span.style)] for span in line.spans]] for line in drawn.split()]
+
+
 def without_folders(*, text, folders):
     """Return text with each of the test's folders written as FOLDER, so that two runs compare."""
     for folder in folders:
@@ -98,8 +135,10 @@ def tour_class(size):
 
 
 def capture(directory):
-    """Run the screen tour at every size, writing each size's stops into the directory; return whether every tour finished."""
+    """Run the screen tour at every size, writing each size's stops into the directory, and capture the dialogs; return whether
+    every tour finished."""
     os.makedirs(directory, exist_ok=True)
+    capture_dialogs(directory)
     for size in SIZES:
         os.environ[OUTPUT_SETTING] = os.path.join(directory, FILE_NAME.format(columns=size[0], rows=size[1]))
         suite = unittest.defaultTestLoader.loadTestsFromTestCase(tour_class(size))
@@ -113,14 +152,61 @@ def capture(directory):
     return True
 
 
+def capture_dialogs(directory):
+    """Run the tests that open dialogs, recording the screen the first time each test shows a dialog of each kind and title
+    after a key, the wizard's seed drawn from the tour's, and write them into the directory."""
+    seen = {}
+    pressed = UITest.press
+
+    async def press(test, *keys):
+        result = await pressed(test, *keys)
+        screen = test.app.screen
+        if isinstance(screen, Dialog):
+            key = DIALOG_KEY.format(test=test.id(), dialog=type(screen).__name__, title=getattr(screen, 'title', None))
+            if key not in seen:
+                seen[key] = dialog_pieces(dialog=screen, folders=(os.path.realpath(test.folder), test.folder))
+        return result
+    seeded = functools.partialmethod(WizardChoices.draw_seed, dice=random.Random(test_tui_help_keys.TOUR_SEED))
+    with mock.patch.object(UITest, PRESS, press), mock.patch.object(WizardChoices, test_tui_help_keys.DRAW_SEED, seeded):
+        suite = unittest.defaultTestLoader.loadTestsFromNames(DIALOG_MODULES)
+        with open(os.devnull, WRITE) as nowhere:
+            unittest.TextTestRunner(stream=nowhere).run(suite)
+    with open(os.path.join(directory, DIALOGS_FILE), WRITE, encoding=ENCODING) as file:
+        json.dump(seen, file, indent=0, sort_keys=True)
+
+
+def compare_dialogs(*, before, after):
+    """Print the dialogs that differ between two captures; return whether every dialog is the same."""
+    old = read_stops(os.path.join(before, DIALOGS_FILE))
+    new = read_stops(os.path.join(after, DIALOGS_FILE))
+    if set(old) != set(new):
+        print(MSG_DIALOGS_KEPT.format(before=len(old), after=len(new), only=sorted(set(old) ^ set(new))[:MOST_SHOWN]))
+        return False
+    differing = [key for key in sorted(old) if old[key] != new[key]]
+    if not differing:
+        print(MSG_DIALOGS_SAME.format(count=len(old)))
+        return True
+    print(MSG_DIALOGS_DIFFERENT.format(count=len(differing)))
+    for key in differing[:MOST_SHOWN]:
+        print(MSG_DIALOG.format(key=key))
+        for line, (was, now) in enumerate(zip(old[key], new[key])):
+            if was != now:
+                print(MSG_LINE.format(line=line, before=was, after=now))
+                break
+    return False
+
+
 def compare(directory):
-    """Capture again beside the directory's capture and print where any stop's screen differs; return whether all are the same."""
-    differing, stops = differences(before=directory, after=directory.rstrip(os.sep) + AGAIN)
+    """Capture again beside the directory's capture and print where any stop's or dialog's screen differs; return whether all
+    are the same."""
+    again = directory.rstrip(os.sep) + AGAIN
+    differing, stops = differences(before=directory, after=again)
     if differing is None:
         return False
+    dialogs_same = compare_dialogs(before=directory, after=again)
     if not differing:
         print(MSG_SAME.format(stops=stops, sizes=len(SIZES)))
-        return True
+        return dialogs_same
     print(MSG_DIFFERENT.format(count=len(differing)))
     for size, number, old, new in differing[:MOST_SHOWN]:
         show_difference(size=size, number=number, old=old, new=new)

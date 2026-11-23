@@ -8,12 +8,9 @@ import had to change, like CCs left out or notes moved to a step, is seen before
 or Esc closes it.
 """
 
-from rich.text import Text
-
-from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.components.button_row import button_row
+from llamatron.interface.forms.dialogs import answers, blank, said
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
-from llamatron.interface.tracker.drawing import wrapped
 from llamatron.user_strings import importing
 
 
@@ -32,8 +29,12 @@ class ImportedDialog(MessageDialog):
         super().__init__(title=importing.MSG_IMPORTED_TITLE, messages=made)
         self.warnings = imported.warnings
 
-    def lines(self, width):
-        lines = self.message_lines(width)
+    def paragraphs(self):
+        """Return what the import made, then each warning after a blank line."""
+        paragraphs = [said(message) for message in self.messages]
         for warning in self.warnings:
-            lines += [Text(drawing.NOTHING), *wrapped(text=warning, width=width)]
-        return [*lines, Text(drawing.NOTHING), *button_row(buttons=[(drawing.NOTHING, importing.MSG_IMPORTED_BUTTON)], selected=0)]
+            paragraphs += [blank(), said(warning)]
+        return paragraphs
+
+    def answers(self):
+        return answers(labels=[importing.MSG_IMPORTED_BUTTON], selected=0)

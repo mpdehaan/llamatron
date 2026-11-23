@@ -4,11 +4,9 @@
 
 """The Confirm dialog: answers True for yes. Anything else that closes it counts as no."""
 
-from rich.text import Text
-
 from llamatron.interface.forms import moves
-from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.components.button_row import button_row
+from llamatron.interface.forms.dialogs import answers
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.user_strings import labels
 
@@ -47,7 +45,6 @@ class ConfirmDialog(MessageDialog):
     def answer(self):
         self.dismiss(True if self.choice == YES else None)
 
-    def lines(self, width):
-        """Return the message, a blank line and Yes and No as boxed buttons, the selected one double-lined."""
-        buttons = [(drawing.NOTHING, label) for label in labels.MSG_CONFIRM_BUTTONS]
-        return [*self.message_lines(width), Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.choice)]
+    def answers(self):
+        """Return Yes and No as boxed buttons, the selected one double-lined, each its name alone."""
+        return answers(labels=labels.MSG_CONFIRM_BUTTONS, selected=self.choice)

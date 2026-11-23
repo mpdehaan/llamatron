@@ -6,11 +6,9 @@
 Left and Right choose, Enter presses, Q and S answer at once and Esc cancels. It answers QUIT_WITHOUT_SAVING,
 SAVE_THEN_QUIT, or None for Cancel."""
 
-from rich.text import Text
-
 from llamatron.interface.forms import moves
-from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.components.button_row import button_row
+from llamatron.interface.forms.dialogs import answers
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs import dialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.drawing import legend
@@ -54,7 +52,7 @@ class QuitDialog(MessageDialog):
     def press_selected(self):
         self.dismiss(None if self.choice == CANCEL else self.choice)
 
-    def lines(self, width):
+    def answers(self):
+        """Return the three answers as boxed buttons, each its key and its name, the selected one double-lined."""
         keys = (self.KEYS.QUIT.name, self.KEYS.SAVE.name, self.KEYS.CANCEL.name)
-        buttons = list(zip(keys, labels.MSG_QUIT_BUTTONS))
-        return [*self.message_lines(width), Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.choice)]
+        return answers(labels=labels.MSG_QUIT_BUTTONS, keys=keys, selected=self.choice)

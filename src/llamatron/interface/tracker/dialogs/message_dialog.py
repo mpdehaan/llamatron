@@ -2,14 +2,12 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The Message dialog dialog."""
+"""The Message dialog: a title, what it says, and one OK button."""
 
-from rich.text import Text
-
-from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.components.button_row import button_row
+from llamatron.interface.forms.dialogs import answers, said
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import wrapped
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.user_strings import labels
 
 
@@ -28,13 +26,13 @@ class MessageDialog(Dialog):
         return [self.bind(self.KEYS.CLOSE, action=lambda: self.dismiss(None))]
 
     def lines(self, width):
-        """Return the messages, a blank line and the one OK button, boxed as a real window's, showing its name alone, since ENTER
-        or ESC closes the dialog."""
-        return [*self.message_lines(width), Text(drawing.NOTHING), *button_row(buttons=[(drawing.NOTHING, labels.MSG_OK_BUTTON)], selected=0)]
+        """Return what the dialog says, a blank line and its answers, drawn from its nodes."""
+        return dialog_renderer.message_lines(paragraphs=self.paragraphs(), answers=self.answers(), width=width)
 
-    def message_lines(self, width):
-        """Return the messages as lines, each wrapped to the dialog's width. A dialog that says more than its messages draws them here."""
-        result = []
-        for message in self.messages:
-            result += wrapped(text=message, width=width)
-        return result
+    def paragraphs(self):
+        """Return what the dialog says, each message a paragraph wrapped to the dialog."""
+        return [said(message) for message in self.messages]
+
+    def answers(self):
+        """Return the one OK button, boxed as a real window's, its name alone, since ENTER or ESC closes the dialog."""
+        return answers(labels=[labels.MSG_OK_BUTTON], selected=0)
