@@ -169,7 +169,7 @@ class MidiImport:
         naming = None
         if choices.numbered:
             naming = Naming(scale_per_scene=choices.scale_per_scene)
-        writer = SongWriter(setlist=setlist, voices=voices, cut=cut, bars=bars, step_size=step_size, share=not choices.unique_names, naming=naming)
+        writer = SongWriter(setlist=setlist, voices=voices, cut=cut, bars=bars, step_size=grid, share=not choices.unique_names, naming=naming)
         song = writer.written(name=choices.song_name, time_signature=time_signature_text(contents.time_signatures[0].value))
         track_names = writer.track_names()
         control_tracks = [(place, track_names[first], voices[first].lanes) for place, first in enumerate(firsts) if voices[first].lanes]

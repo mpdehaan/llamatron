@@ -314,6 +314,15 @@ class TestScenesAndPatterns(unittest.TestCase):
         self.assertIn(F_MAJOR, scales)
         self.assertEqual(imported.song.song[SongSetting.SCALE], C_MAJOR)
 
+    def test_scenes_are_named_after_their_bars_when_the_ccs_need_a_finer_grid_than_the_notes(self):
+        # Quarter notes over two bars, with a CC every sixty-fourth, which the scenes split on, and a key change at bar 2.
+        notes = melody(pitches=C_MAJOR_SCALE[:4]) + melody(pitches=[65, 67, B_FLAT, 72], start=SIXTEENTHS_IN_A_BAR)
+        sixty_fourth = SIXTEENTH // 4
+        sweep = [(tick, EXPRESSION, tick // sixty_fourth % 128) for tick in range(0, 2 * SIXTEENTHS_IN_A_BAR * SIXTEENTH, sixty_fourth)]
+        imported = self.assert_plays_the_same(midi_of(tracks=[('lead', 0, notes, sweep)], keys=((0, 'C'), (SIXTEENTHS_IN_A_BAR, 'F'))))
+        names = [scene[SceneSetting.NAME] for scene in imported.song.song[Section.SCENES]]
+        self.assertEqual(sorted(set(names)), [importing.MSG_SCENE_BAR.format(first=1), importing.MSG_SCENE_BAR.format(first=2)])
+
     def test_a_tempo_change_starts_a_scene_at_the_new_tempo(self):
         notes = melody(pitches=C_MAJOR_SCALE[:4] * 2)
         imported = self.assert_plays_the_same(midi_of(tracks=[('lead', 0, notes)], tempos=((0, TEMPO), (SIXTEENTHS_IN_A_BAR, FASTER))))

@@ -176,7 +176,7 @@ class Naming(NamedTuple):
 
 
 class SongWriter:
-    """What writes one cut song into a set's terms: the set it goes into, the voices, the cut, the bar lines, the step size and whether patterns may be shared."""
+    """What writes one cut song into a set's terms: the set it goes into, the voices, the cut, the bar lines, the grid the cut counts its steps in and whether patterns may be shared."""
 
     __slots__ = ('_setlist', '_voices', '_cut', '_bars', '_step_size', '_share', '_naming', '_track_names')
 
