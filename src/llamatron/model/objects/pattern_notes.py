@@ -25,12 +25,17 @@ from llamatron.model.file.checks import fraction_text, written_length
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Row
 from llamatron.model.values.chords import borrowed, chord_half_steps
-from llamatron.music_theory.fundamentals import intervals
+from llamatron.music_theory.fundamentals import chord_shapes, intervals
 
 # What a note's second half keeps of it when the piano roll's knife splits it: its pitch, chord and velocity.
 SPLIT_ROWS = (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.VELOCITY)
 # A note covers at least the step it's on.
 ONE_STEP = 1
+# A scale chord's notes by how many scale steps above its root they are, and what each is to the chord, for its Omit row.
+SCALE_CHORD_ROLES = {2: chord_shapes.THIRD, 4: chord_shapes.FIFTH}
+# A Bass's sharp or flat by its half steps off the scale's note, and the notes of a scale where the roll's scale isn't known.
+BASS_ACCIDENTALS = {-1: file_format.Accidental.FLAT, 0: None, 1: file_format.Accidental.SHARP}
+DIATONIC_NOTES = 7
 
 
 def whole_steps_up(*, length, step_size):
@@ -134,29 +139,63 @@ class PatternNotes:
         """
         symbol = self.get_value(row=Row.CHORD, step=step)
         degree = self.get_value(row=Row.DEGREE, step=step)
-        doubling = self.get_value(row=Row.DOUBLE, step=step)
         if degree is None or self.is_drum():
             return []
         accidental = self.get_value(row=Row.ACCIDENTAL, step=step)
         root = (degree, octave, accidental)
         if symbol is None:
-            return _doubled_tones(root=root, tones=[], inverted=False, doubling=doubling)
-        symbol = str(symbol)
+            tones = []
+            inverted = False
+        else:
+            tones = self._chord_tones_above(step=step, root=root, symbol=str(symbol), scale=scale)
+            if tones is None:
+                return []
+            inversion = self.get_value(row=Row.INVERSION, step=step)
+            if chord_shapes.ROOT in file_format.OMITTED_ROLES.get(self.get_value(row=Row.OMIT, step=step), ()):
+                # A rootless chord sounds as its tones alone, which its inversion and doubling then voice.
+                tones = _inverted_rootless_tones(tones=tones, inversion=inversion)
+                inverted = True
+            else:
+                # An inversion moves a chord's lowest notes, never all, so a chord of two notes or more is inverted wherever it asks.
+                inverted = bool(inversion) and bool(tones)
+                tones = _inverted_tones(root=root, tones=tones, inversion=inversion)
+        tones = _doubled_tones(root=root, tones=tones, inverted=inverted, doubling=self.get_value(row=Row.DOUBLE, step=step))
+        return _with_bass_tones(root=root, tones=tones, inverted=inverted, bass=self._bass_tones(step=step, root=root, scale=scale))
+
+    def _chord_tones_above(self, *, step, root, symbol, scale):
+        """Return the tones a step's chord adds above its root, its Omit row's roles left out, or None where the scale a named
+        chord needs isn't known."""
+        degree, octave, accidental = root
         tensions = self.get_value(row=Row.TENSION, step=step)
         kind = self.get_value(row=Row.CHORD_SCALE, step=step)
+        omitted = file_format.OMITTED_ROLES.get(self.get_value(row=Row.OMIT, step=step), ())
         if scale is not None and (tensions or kind):
-            tones = _tones_leaving_the_scale(scale=scale, degree=degree, octave=octave, accidental=accidental, symbol=symbol, tensions=tensions, kind=kind)
-        elif symbol in file_format.SCALE_CHORDS:
-            tones = [(degree + above, octave, accidental) for above in file_format.SCALE_CHORDS[symbol] if above]
-        elif scale is None:
+            return _tones_leaving_the_scale(scale=scale, degree=degree, octave=octave, accidental=accidental, symbol=symbol, tensions=tensions, kind=kind, omitted=omitted)
+        if symbol in file_format.SCALE_CHORDS:
+            return [(degree + above, octave, accidental) for above in file_format.SCALE_CHORDS[symbol] if above and SCALE_CHORD_ROLES.get(above) not in omitted]
+        if scale is None:
+            return None
+        tones = []
+        for half_steps in file_format.FIXED_CHORDS[symbol].value:
+            tone = scale.degree_above(degree=degree, octave=octave, accidental=accidental, half_steps=half_steps)
+            if tone is not None and chord_shapes.role_of(half_steps) not in omitted:
+                tones.append(tone)
+        return tones
+
+    def _bass_tones(self, *, step, root, scale):
+        """Return a step's Bass as the tones the roll draws for it, the bass and with Bass Octave the octave below it, each
+        at the octave of the step's own note for now, or none: the scale steps above the root, sharpened or flattened."""
+        bass = self.get_value(row=Row.BASS, step=step)
+        if bass is None:
             return []
-        else:
-            tones = [scale.degree_above(degree=degree, octave=octave, accidental=accidental, half_steps=half_steps) for half_steps in file_format.FIXED_CHORDS[symbol].value]
-            tones = [tone for tone in tones if tone is not None]
-        inversion = self.get_value(row=Row.INVERSION, step=step)
-        voiced = _inverted_tones(root=root, tones=tones, inversion=inversion)
-        # An inversion moves a chord's lowest notes, never all, so a chord of two notes or more is inverted wherever it asks.
-        return _doubled_tones(root=root, tones=voiced, inverted=bool(inversion) and bool(tones), doubling=doubling)
+        degree, octave, _ = root
+        steps, half_steps = file_format.BASS_NOTES[bass]
+        size = len(scale.get_half_steps()) if scale is not None else DIATONIC_NOTES
+        octaves_up, place = divmod(degree - limits.MIN_DEGREE + steps, size)
+        tone = (place + limits.MIN_DEGREE, octave + octaves_up, BASS_ACCIDENTALS[half_steps])
+        if self.get_value(row=Row.BASS_OCTAVE, step=step):
+            return [tone, (tone[0], tone[1] - 1, tone[2])]
+        return [tone]
 
     # Changing the notes.
 
@@ -282,7 +321,7 @@ class PatternNotes:
         self.set_value(row=Row.ACCIDENTAL, step=start, value=following)
 
 
-def _tones_leaving_the_scale(*, scale, degree, octave, accidental, symbol, tensions, kind):
+def _tones_leaving_the_scale(*, scale, degree, octave, accidental, symbol, tensions, kind, omitted=()):
     """Return the tones of a chord with tensions or a borrowed scale type, each placed in the scale the roll draws.
 
     The chord is worked out in the scale it borrows, as half steps from that scale's first note, and each note is then
@@ -293,13 +332,33 @@ def _tones_leaving_the_scale(*, scale, degree, octave, accidental, symbol, tensi
     steps = source.get_half_steps()
     octaves_up, place = divmod(degree - limits.MIN_DEGREE, len(steps))
     root = octaves_up * intervals.HALF_STEPS_PER_OCTAVE + steps[place] + file_format.ACCIDENTALS.get(accidental, 0)
-    above = list(chord_half_steps(scale=source, degree=degree, symbol=symbol, tensions=tensions))
+    own = len(chord_half_steps(scale=source, degree=degree, symbol=symbol))
+    above = [half_steps for place, half_steps in enumerate(chord_half_steps(scale=source, degree=degree, symbol=symbol, tensions=tensions))
+             if place >= own or chord_shapes.role_of(half_steps) not in omitted]
     own_steps = scale.get_half_steps()
     own_octaves_up, own_place = divmod(degree - limits.MIN_DEGREE, len(own_steps))
     if root != own_octaves_up * intervals.HALF_STEPS_PER_OCTAVE + own_steps[own_place] + file_format.ACCIDENTALS.get(accidental, 0):
         above.insert(0, 0)
     tones = [scale.degree_above(degree=limits.MIN_DEGREE, octave=octave, accidental=None, half_steps=root + half_steps) for half_steps in above]
     return [tone for tone in tones if tone is not None]
+
+
+def _with_bass_tones(*, root, tones, inverted, bass):
+    """Return a chord's tones with its bass tones moved to the nearest octave below the chord's lowest, as the Realizer plays
+    the Bass, the bass's octave the octave below that; tones are ordered by octave and then degree, as the roll draws them."""
+    if not bass:
+        return tones
+    sounding = list(tones) if inverted else [root, *tones]
+    lowest = min((octave, degree) for degree, octave, _ in sounding)
+    degree, octave, accidental = bass[0]
+    while (octave, degree) >= lowest:
+        octave -= 1
+    while (octave + 1, degree) < lowest:
+        octave += 1
+    placed = [(degree, octave, accidental)]
+    if len(bass) > 1:
+        placed.append((degree, octave - 1, accidental))
+    return [*tones, *placed]
 
 
 def _doubled_tones(*, root, tones, inverted, doubling):
@@ -317,6 +376,16 @@ def _doubled_tones(*, root, tones, inverted, doubling):
         if tone not in sounding and tone not in added:
             added.append(tone)
     return [*tones, *added]
+
+
+def _inverted_rootless_tones(*, tones, inversion):
+    """Return the tones of a chord whose root is left out, lowest first, as its inversion plays them: its lowest tones an
+    octave up, never all of them."""
+    moved = min(inversion or 0, len(tones) - 1)
+    if moved <= 0:
+        return list(tones)
+    lifted = [(degree, octave + 1, accidental) for degree, octave, accidental in tones[:moved]]
+    return [*tones[moved:], *lifted]
 
 
 def _inverted_tones(*, root, tones, inversion):

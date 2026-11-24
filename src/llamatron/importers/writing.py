@@ -46,6 +46,9 @@ PERCENT = 100
 MICROSECONDS_PER_MINUTE = 60000000
 # What a pattern, scale or song the import made is placed by in an error, which only a fault of the import's own can raise.
 WHERE_IMPORTED = importing.MSG_WHERE_IMPORTED
+# The rows a note's step writes, written where any step holds a value, and the switches, written where any step is on.
+NOTE_ROWS = (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.DOUBLE, Row.OMIT, Row.BASS, Row.GATE, Row.VELOCITY)
+SWITCH_ROWS = (Row.TIE, Row.GLIDE, Row.BASS_OCTAVE)
 # What an instrument's name leaves out of its General MIDI sound's, like the brackets of Electric Guitar (clean).
 LEFT_OUT_OF_NAMES = str.maketrans('', '', '()')
 
@@ -72,34 +75,34 @@ def pattern_data(*, pattern, set_step_size):
     """Return a pattern's data from whether it is a drum's, its step size, its steps and its CC steps: the rows that hold anything, its own step size where the set's differs, and whether it is a drum's."""
     drum, step_size, steps, controls = pattern
     count = len(steps)
-    rows = {row: [None] * count for row in (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.DOUBLE, Row.GATE, Row.VELOCITY)}
-    ties = [False] * count
-    glides = [False] * count
+    rows = {row: [None] * count for row in NOTE_ROWS}
+    rows.update({row: [False] * count for row in SWITCH_ROWS})
     for place, step in enumerate(steps):
         if step == steps_values.TIED:
-            ties[place] = True
+            rows[Row.TIE][place] = True
         elif step is not None:
-            rows[Row.DEGREE][place] = step.degree
-            rows[Row.ACCIDENTAL][place] = step.accidental
-            rows[Row.OCTAVE][place] = step.octave
-            rows[Row.CHORD][place] = step.chord
-            rows[Row.INVERSION][place] = step.inversion or None
-            rows[Row.DOUBLE][place] = step.doubling
-            rows[Row.GATE][place] = step.gate
-            rows[Row.VELOCITY][place] = None if step.velocity == defaults.DEFAULT_VELOCITY else step.velocity
-            glides[place] = step.glide
+            for row, value in step_rows(step).items():
+                rows[row][place] = value
     data = {PatternSetting.STEPS: count}
     if step_size != set_step_size:
         data[PatternSetting.STEP_SIZE] = fraction_text(step_size)
     if drum:
         data[PatternSetting.DRUM] = True
-    data.update({row: values for row, values in rows.items() if has_a_value(values)})
-    if any(ties):
-        data[Row.TIE] = ties
-    if any(glides):
-        data[Row.GLIDE] = glides
+    data.update({row: values for row, values in rows.items() if row in NOTE_ROWS and has_a_value(values)})
+    data.update({row: values for row, values in rows.items() if row in SWITCH_ROWS and any(values)})
     data.update(control_rows(controls))
     return data
+
+
+def step_rows(step):
+    """Return what a note's step writes on each of its rows, by the row: its pitch, its chord rows, its gate, its velocity
+    where it isn't the default, and its switches."""
+    return {
+        Row.DEGREE: step.degree, Row.ACCIDENTAL: step.accidental, Row.OCTAVE: step.octave, Row.CHORD: step.chord,
+        Row.INVERSION: step.inversion or None, Row.DOUBLE: step.doubling, Row.OMIT: step.omission, Row.BASS: step.bass,
+        Row.GATE: step.gate, Row.VELOCITY: None if step.velocity == defaults.DEFAULT_VELOCITY else step.velocity,
+        Row.GLIDE: step.glide, Row.BASS_OCTAVE: step.bass_octave,
+    }
 
 
 def control_rows(controls):

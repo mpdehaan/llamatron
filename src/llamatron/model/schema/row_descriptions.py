@@ -394,6 +394,18 @@ class RowOfToggles(RowDescription):
         return errors.ERR_PATTERN_NOT_TRUE_OR_FALSE
 
 
+class RowOfChordToggles(RowOfToggles):
+    """A row whose steps are each on or off and that only a chord's step holds, which a drum pattern has none of: Bass Octave."""
+
+    __slots__ = ()
+
+    def __init__(self, *, name):
+        super().__init__(name=name, changes_with_drums=True)
+
+    def is_in_drum_patterns(self):
+        return False
+
+
 class RowOfRegisterUses(RowDescription):
     """A register's +Vel row: each step adds the register's value (1), subtracts it (-1) or does neither (0).
 
@@ -511,6 +523,9 @@ ROW_DESCRIPTIONS = described_rows(
     RowOfChords(name=Row.CHORD, symbols=file_format.CHORD_SYMBOLS),
     RowOfVoicings(name=Row.INVERSION, choices=limits.INVERSIONS, problem=errors.ERR_NOT_INVERSION.format(choices=listed(limits.INVERSIONS)), drum_problem=errors.ERR_INVERSION_ON_DRUMS),
     RowOfVoicings(name=Row.DOUBLE, choices=file_format.DOUBLINGS, problem=errors.ERR_NOT_DOUBLING.format(choices=listed(file_format.DOUBLINGS)), drum_problem=errors.ERR_DOUBLING_ON_DRUMS),
+    RowOfVoicings(name=Row.OMIT, choices=file_format.OMISSIONS, problem=errors.ERR_NOT_OMISSION.format(choices=listed(file_format.OMISSIONS)), drum_problem=errors.ERR_OMISSION_ON_DRUMS),
+    RowOfVoicings(name=Row.BASS, choices=list(file_format.BASS_NOTES), problem=errors.ERR_NOT_BASS_NOTE.format(choices=listed(file_format.BASS_NOTES)), drum_problem=errors.ERR_BASS_NOTE_ON_DRUMS),
+    RowOfChordToggles(name=Row.BASS_OCTAVE),
     RowOfTensions(name=Row.TENSION, choices=file_format.TENSIONS),
     RowOfChordScales(name=Row.CHORD_SCALE, choices=scale_type_names()),
     RowOfNumbers(name=Row.VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, default=defaults.DEFAULT_VELOCITY),

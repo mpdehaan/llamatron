@@ -38,6 +38,7 @@ from llamatron.interface.tracker.components.slide_row import SlideRow
 from llamatron.interface.tracker.components.statement_row import StatementRow
 from llamatron.interface.tracker.components.tension_row import TensionRow
 from llamatron.interface.tracker.components.tie_row import TieRow
+from llamatron.interface.tracker.components.toggle_row import ToggleRow
 from llamatron.interface.tracker.key_table import BindsKeys
 from llamatron.interface.tracker.keys import Key, RowSection
 from llamatron.model.schema import file_format, row_descriptions
@@ -50,7 +51,7 @@ PINNED_ROWS = [Row.DEGREE, Row.OCTAVE]
 SECTIONS = {
     RowSection.BASICS: [Row.ACCIDENTAL, Row.VELOCITY, Row.ACCENT],
     # Everything about a step's chord together, in the order that is the same wherever a chord is chosen: the chord, its tensions, the scale it borrows and its inversion.
-    RowSection.CHORD: [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION, Row.DOUBLE],
+    RowSection.CHORD: [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION, Row.DOUBLE, Row.OMIT, Row.BASS, Row.BASS_OCTAVE],
     RowSection.TIMING: [Row.TIE, Row.GATE, Row.DOT, Row.GLIDE],
     # The Keyswitch row is shown as a row for each slot of the instrument's Keyswitch Map, which the pattern and its instrument decide (section_rows).
     RowSection.KEYSWITCH: [Row.KEYSWITCH],
@@ -66,7 +67,7 @@ SECTIONS = {
 # The component that draws and edits each row.
 ROW_CLASSES = {
     Row.DEGREE: DegreeRow, Row.GATE: GateRow, Row.DOT: DotRow, Row.ACCIDENTAL: AccidentalRow, Row.OCTAVE: OctaveRow,
-    Row.CHORD: ChordRow, Row.TENSION: TensionRow, Row.CHORD_SCALE: ChordScaleRow, Row.INVERSION: InversionRow, Row.DOUBLE: CycleRow, Row.VELOCITY: NumberRow, Row.ACCENT: AccentRow, Row.PROBABILITY: NumberRow, Row.GLIDE: GlideRow, Row.TIE: TieRow,
+    Row.CHORD: ChordRow, Row.TENSION: TensionRow, Row.CHORD_SCALE: ChordScaleRow, Row.INVERSION: InversionRow, Row.DOUBLE: CycleRow, Row.OMIT: CycleRow, Row.BASS: CycleRow, Row.BASS_OCTAVE: ToggleRow, Row.VELOCITY: NumberRow, Row.ACCENT: AccentRow, Row.PROBABILITY: NumberRow, Row.GLIDE: GlideRow, Row.TIE: TieRow,
     Row.RATCHET: NumberRow, Row.RATCHET_OFFSET: NumberRow, Row.GRAB: GrabRow, Row.KEYSWITCH: KeyswitchSlotRow, Row.SLIDE: SlideRow,
     **dict.fromkeys(file_format.CC_ROWS, CcRow),
     **dict.fromkeys(file_format.DRAW_NOTE_ROWS.values(), RegisterRow),

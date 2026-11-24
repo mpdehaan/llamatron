@@ -16,7 +16,7 @@ import os
 import unittest
 
 from llamatron.exporters.midi_arrangement import MidiSong
-from llamatron.importers import cutting, phrase_cut, voices as voices_values
+from llamatron.importers import chord_naming, cutting, phrase_cut, voices as voices_values
 from llamatron.importers.comparison import round_trip
 from llamatron.importers.keys import degree_of, drum_note_of, key_of_notes, key_of_signature, MusicalKey
 from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
@@ -29,7 +29,7 @@ from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Doubling, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Doubling, Omission, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import errors, importing, labels
 from tests.support.example_renders import example_setlist, first_song_grid
@@ -276,8 +276,26 @@ class TestVoices(unittest.TestCase):
         }
         for pitches, (symbol, doubling) in shapes.items():
             with self.subTest(pitches=pitches):
-                named = voices_values.chord_named(list(pitches))
+                named = chord_naming.chord_named(list(pitches))
                 self.assertEqual((named.symbol, named.doubling), (symbol, doubling))
+
+    def test_chords_with_notes_left_out_and_slash_chords_are_named_as_players_name_them(self):
+        # The Entertainer's three-finger sevenths, and F over G, which a long single name would call G11 less its 3rd and 5th.
+        shapes = {
+            (55, 58, 60): (ChordSymbol.DOMINANT7, Omission.NO_THIRD, None), (53, 55, 59): (ChordSymbol.DOMINANT7, Omission.NO_FIFTH, None),
+            (66, 72, 78): (ChordSymbol.DOMINANT7, Omission.NO_ROOT_FIFTH, None), (43, 53, 57, 60): (ChordSymbol.MAJOR, None, 43),
+        }
+        for pitches, (symbol, omission, bass) in shapes.items():
+            with self.subTest(pitches=pitches):
+                named = chord_naming.chord_named(list(pitches))
+                self.assertEqual((named.symbol, named.omission, named.bass), (symbol, omission, bass))
+
+    def test_chords_with_notes_left_out_and_over_a_bass_imported_play_the_same_notes_as_the_file(self):
+        # Two three-finger sevenths and D major over G, all within one hand's reach.
+        notes = [(0, 4, pitch) for pitch in (55, 58, 60)] + [(4, 4, pitch) for pitch in (53, 55, 59)] + [(8, 4, pitch) for pitch in (55, 62, 66, 69)]
+        trip = round_trip(midi_file=midi_of(tracks=[('keys', 0, notes)]), choices=ImportChoices(song_name='tune'))
+        self.assertTrue(trip.comparison.is_same(), trip.comparison)
+        self.assertEqual(trip.imported.tracks, 1)
 
     def test_a_doubled_chord_imported_is_one_track_and_plays_the_same_notes_as_the_file(self):
         notes = [(0, 4, pitch) for pitch in (60, 64, 67, 72)] + [(4, 4, pitch) for pitch in (57, 69)]

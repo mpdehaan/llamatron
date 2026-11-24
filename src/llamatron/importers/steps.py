@@ -30,10 +30,15 @@ from llamatron.engine.timing.timing import value_on_the_way
 from llamatron.importers.keys import degree_of, drum_note_of
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text
-from llamatron.model.schema import limits
+from llamatron.model.schema import file_format, limits
 
 # What a step holds when it ties the note before it on.
 TIED = 'tied'
+# A key's scale's notes, by which a bass's scale steps from a chord's root are counted; a Bass by its steps and half steps;
+# and an accidental's half steps off the scale's note.
+SCALE_DEGREES = 7
+BASS_NOTES_BY_STEPS = {steps: name for name, steps in file_format.BASS_NOTES.items()}
+ACCIDENTAL_HALF_STEPS = {file_format.Accidental.SHARP: 1, file_format.Accidental.FLAT: -1}
 # A value on a slide is its line's value rounded, so within half of one of it, and the slopes a slide may take are widened by a
 # margin far above floating point's error so that none that fits is ruled out before it is checked exactly.
 ROUNDING = 0.5
@@ -52,6 +57,9 @@ class NoteStep(NamedTuple):
     inversion: int = 0
     glide: bool = False
     doubling: object = None
+    omission: object = None
+    bass: object = None
+    bass_octave: bool = False
 
 
 class ControlStep(NamedTuple):
@@ -96,13 +104,27 @@ def scene_steps(*, voice, start, end, key, step_size):
                 gated.append((place, place + length))
             else:
                 lengths_changed += 1
-        steps[place] = NoteStep(degree, accidental, octave, played.chord, gate, played.velocity, played.inversion, played.glide, played.doubling)
+        steps[place] = NoteStep(
+            degree, accidental, octave, played.chord, gate, played.velocity, played.inversion, played.glide, played.doubling,
+            played.omission, bass_note_of(played=played, key=key), played.bass_octave,
+        )
         if gate is None:
             for tied in range(place + 1, min(place + max(int(length), 1), len(steps))):
                 steps[tied] = TIED
     lanes = tuple(lane_values(voice=voice, number=number, start=start, end=end, step_size=step_size) for number in voice.lanes)
     changes = any(lane_changes(values=values, before=value_in_force(voice=voice, number=number, time=start * step_size, before=True)) for number, values in zip(voice.lanes, lanes))
     return SceneSteps(steps=steps, gated=gated, lanes=lanes, changes=changes, lengths_changed=lengths_changed, too_low=too_low)
+
+
+def bass_note_of(*, played, key):
+    """Return a chord's Bass as its row holds it, the scale steps from the chord's root to the bass in the key and the bass's
+    sharp or flat (file_format.BassNote), or None where it has no bass."""
+    if played.bass is None:
+        return None
+    root_degree, _, _ = degree_of(pitch=played.written_pitch(), key=key)
+    bass_degree, bass_accidental, _ = degree_of(pitch=played.bass, key=key)
+    steps = (bass_degree - root_degree) % SCALE_DEGREES
+    return BASS_NOTES_BY_STEPS.get((steps, ACCIDENTAL_HALF_STEPS.get(bass_accidental, 0)))
 
 
 def held_on_steps(*, voice, start, end, step_size):

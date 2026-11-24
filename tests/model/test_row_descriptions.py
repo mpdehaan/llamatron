@@ -165,7 +165,7 @@ class TestRowsOfToggles(unittest.TestCase):
         self.assertEqual(row.written([True, False, None]), [True, False, False])
 
     def test_the_rows_that_are_on_or_off(self):
-        toggles = {Row.ACCENT, Row.GLIDE, Row.TIE, Row.GRAB, Row.SLIDE, *file_format.DRAW_RESET_ROWS.values()}
+        toggles = {Row.ACCENT, Row.GLIDE, Row.TIE, Row.GRAB, Row.SLIDE, Row.BASS_OCTAVE, *file_format.DRAW_RESET_ROWS.values()}
         self.assertEqual(set(rows_where(lambda row: row.is_on_or_off())), toggles)
 
 
@@ -342,8 +342,8 @@ class TestEveryRowIsDescribedOnce(unittest.TestCase):
         draw_rows = {*file_format.DRAW_NOTE_ROWS.values(), *file_format.DRAW_VELOCITY_ROWS.values(), *file_format.DRAW_RESET_ROWS.values()}
         note_moves = set(file_format.DRAW_NOTE_ROWS.values())
         self.assertEqual(set(pattern_munges.REST_ROWS), {*file_format.CC_ROWS, Row.SLIDE, *draw_rows, *file_format.STATEMENT_OF_ROW})
-        self.assertEqual(set(pattern_values.NOTE_ROWS), {Row.DEGREE, Row.ACCIDENTAL, Row.CHORD, Row.INVERSION, Row.DOUBLE, Row.TENSION, Row.CHORD_SCALE, *note_moves})
-        self.assertEqual(set(rows_where(lambda row: not row.is_in_drum_patterns())), {Row.CHORD, Row.INVERSION, Row.DOUBLE, Row.TENSION, Row.CHORD_SCALE, *note_moves})
+        self.assertEqual(set(pattern_values.NOTE_ROWS), {Row.DEGREE, Row.ACCIDENTAL, Row.CHORD, Row.INVERSION, Row.DOUBLE, Row.OMIT, Row.BASS, Row.BASS_OCTAVE, Row.TENSION, Row.CHORD_SCALE, *note_moves})
+        self.assertEqual(set(rows_where(lambda row: not row.is_in_drum_patterns())), {Row.CHORD, Row.INVERSION, Row.DOUBLE, Row.OMIT, Row.BASS, Row.BASS_OCTAVE, Row.TENSION, Row.CHORD_SCALE, *note_moves})
 
 
 class TestAPatternAsksTheDescriptions(unittest.TestCase):

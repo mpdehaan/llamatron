@@ -12,6 +12,7 @@ holds.
 
 from llamatron.math.rational import Rational
 from llamatron.model.values.chord import ChordType
+from llamatron.music_theory.fundamentals import chord_shapes
 
 
 class Section:
@@ -182,6 +183,12 @@ class Row:
     INVERSION = 'inversion'
     # The notes a step's chord, or its one note, plays again an octave away (Doubling), after its inversion, or blank for none.
     DOUBLE = 'double'
+    # The chord's own notes a step leaves out by their role (Omission), after its tensions and before its inversion.
+    OMIT = 'omit'
+    # The note a step plays under its chord, a slash chord's bass (BassNote), as scale steps from the chord's root, and whether
+    # that bass plays in octaves, its octave below it too.
+    BASS = 'bass'
+    BASS_OCTAVE = 'bass_octave'
     # The notes added on top of a step's chord, like a flat ninth: a list of tensions, or blank for none.
     TENSION = 'tension'
     # The scale type a step's degree and chord are drawn from, on the clip's root, or blank for the clip's own: a borrowed chord.
@@ -691,11 +698,11 @@ STATEMENT_OF_ROW = {row: (kind, part) for kind, rows in STATEMENT_ROWS.items() f
 STATEMENTS_CUTTING_A_PASS = (StepStatement.STOP, StepStatement.RESTART)
 
 # The rows that say which notes a step plays, which clearing a pattern down to its pitch keeps, and those of them that make a note a chord.
-CHORD_ROWS = [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION, Row.DOUBLE]
+CHORD_ROWS = [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION, Row.DOUBLE, Row.OMIT, Row.BASS, Row.BASS_OCTAVE]
 PITCH_ROWS = [Row.DEGREE, Row.OCTAVE, Row.ACCIDENTAL, *CHORD_ROWS]
 
 PATTERN_ROWS = [
-    Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.DOUBLE, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.ACCENT, Row.PROBABILITY, Row.GLIDE,
+    Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.DOUBLE, Row.OMIT, Row.BASS, Row.BASS_OCTAVE, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.ACCENT, Row.PROBABILITY, Row.GLIDE,
     Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.KEYSWITCH,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
     *DRAW_NOTE_ROWS.values(), *DRAW_VELOCITY_ROWS.values(), *DRAW_RESET_ROWS.values(), *STATEMENT_OF_ROW,
@@ -769,22 +776,23 @@ class ChordSymbol:
 
 
 # The named chord symbols, in the order the editor offers them, and the chords they make.
-# In the order the Chord dialog lists them: the intervals first, two notes each, then the chords.
+# In the order the Chord dialog lists them, as players reach for them: the triads, the sixes and sevens, the 9ths to 13ths,
+# and last the intervals, two notes each, which the MIDI import writes far more than a person does.
 FIXED_CHORDS = {
-    ChordSymbol.OCTAVE: ChordType.OCTAVE, ChordSymbol.MINOR_THIRD: ChordType.MINOR_THIRD, ChordSymbol.MAJOR_THIRD: ChordType.MAJOR_THIRD,
-    ChordSymbol.FOURTH: ChordType.FOURTH, ChordSymbol.MINOR_SIXTH: ChordType.MINOR_SIXTH, ChordSymbol.MAJOR_SIXTH: ChordType.MAJOR_SIXTH,
     ChordSymbol.MAJOR: ChordType.MAJOR, ChordSymbol.MINOR: ChordType.MINOR,
-    ChordSymbol.DIMINISHED: ChordType.DIMINISHED, ChordSymbol.AUGMENTED: ChordType.AUGMENTED,
-    ChordSymbol.SUS2: ChordType.SUS2, ChordSymbol.SUS4: ChordType.SUS4, ChordSymbol.POWER: ChordType.POWER,
+    ChordSymbol.SUS2: ChordType.SUS2, ChordSymbol.SUS4: ChordType.SUS4,
+    ChordSymbol.DIMINISHED: ChordType.DIMINISHED, ChordSymbol.AUGMENTED: ChordType.AUGMENTED, ChordSymbol.POWER: ChordType.POWER,
     ChordSymbol.MAJOR6: ChordType.MAJOR6, ChordSymbol.MINOR6: ChordType.MINOR6,
     ChordSymbol.DOMINANT7: ChordType.DOMINANT7, ChordSymbol.MAJOR7: ChordType.MAJOR7, ChordSymbol.MINOR7: ChordType.MINOR7,
     ChordSymbol.MINOR_MAJOR7: ChordType.MINOR_MAJOR7, ChordSymbol.DIMINISHED7: ChordType.DIMINISHED7,
     ChordSymbol.HALF_DIMINISHED7: ChordType.HALF_DIMINISHED7, ChordSymbol.AUGMENTED7: ChordType.AUGMENTED7,
     ChordSymbol.AUGMENTED_MAJOR7: ChordType.AUGMENTED_MAJOR7, ChordSymbol.DOMINANT7_SUS4: ChordType.DOMINANT7_SUS4,
-    ChordSymbol.DOMINANT9: ChordType.DOMINANT9, ChordSymbol.MAJOR9: ChordType.MAJOR9, ChordSymbol.MINOR9: ChordType.MINOR9,
     ChordSymbol.ADD9: ChordType.ADD9, ChordSymbol.MINOR_ADD9: ChordType.MINOR_ADD9,
+    ChordSymbol.DOMINANT9: ChordType.DOMINANT9, ChordSymbol.MAJOR9: ChordType.MAJOR9, ChordSymbol.MINOR9: ChordType.MINOR9,
     ChordSymbol.DOMINANT11: ChordType.DOMINANT11, ChordSymbol.MAJOR11: ChordType.MAJOR11, ChordSymbol.MINOR11: ChordType.MINOR11,
     ChordSymbol.DOMINANT13: ChordType.DOMINANT13, ChordSymbol.MAJOR13: ChordType.MAJOR13, ChordSymbol.MINOR13: ChordType.MINOR13,
+    ChordSymbol.OCTAVE: ChordType.OCTAVE, ChordSymbol.MINOR_THIRD: ChordType.MINOR_THIRD, ChordSymbol.MAJOR_THIRD: ChordType.MAJOR_THIRD,
+    ChordSymbol.FOURTH: ChordType.FOURTH, ChordSymbol.MINOR_SIXTH: ChordType.MINOR_SIXTH, ChordSymbol.MAJOR_SIXTH: ChordType.MAJOR_SIXTH,
 }
 # The chord symbols that stack notes of the scale, and how many scale degrees above the step's
 # degree each of their notes is. A scale fifth is the root and the fifth, and each of the others
@@ -801,7 +809,8 @@ SCALE_CHORDS = {
     ChordSymbol.SCALE_ELEVENTH: (0, 2, 4, 6, 8, 10),
     ChordSymbol.SCALE_THIRTEENTH: (0, 2, 4, 6, 8, 10, 12),
 }
-CHORD_SYMBOLS = [*FIXED_CHORDS, *SCALE_CHORDS]
+# Every symbol the Chord row takes, in the Chord dialog's order: the named chords, the scale's chords, and last the intervals.
+CHORD_SYMBOLS = [*PROGRESSION_CHORDS, *SCALE_CHORDS, *INTERVAL_CHORDS]
 
 
 class Doubling:
@@ -819,6 +828,61 @@ DOUBLINGS = (Doubling.LOW_UP, Doubling.ALL_UP, Doubling.ALL_DOWN, Doubling.TOP_D
 # away; the Realizer, the editor's chord tones, the keyboard and the MIDI import all read it.
 DOUBLED_NOTES = {
     Doubling.LOW_UP: (0, 1, 1), Doubling.ALL_UP: (0, None, 1), Doubling.ALL_DOWN: (0, None, -1), Doubling.TOP_DOWN: (-1, None, -1),
+}
+
+
+class Omission:
+    """Which of a step's chord's own notes its Omit row leaves out, by their role, as a file writes it: the 3rd, the 5th
+    (a shell voicing), the root (a rootless voicing), the 3rd and 5th (root and 7th), or the root and 5th (the guide tones,
+    the 3rd and the 7th). A tension is never left out."""
+
+    NO_THIRD = 'no3'
+    NO_FIFTH = 'no5'
+    NO_ROOT = 'no1'
+    NO_THIRD_FIFTH = 'no35'
+    NO_ROOT_FIFTH = 'no15'
+
+
+OMISSIONS = (Omission.NO_THIRD, Omission.NO_FIFTH, Omission.NO_ROOT, Omission.NO_THIRD_FIFTH, Omission.NO_ROOT_FIFTH)
+OMITTED_ROLES = {
+    Omission.NO_THIRD: (chord_shapes.THIRD,), Omission.NO_FIFTH: (chord_shapes.FIFTH,), Omission.NO_ROOT: (chord_shapes.ROOT,),
+    Omission.NO_THIRD_FIFTH: (chord_shapes.THIRD, chord_shapes.FIFTH), Omission.NO_ROOT_FIFTH: (chord_shapes.ROOT, chord_shapes.FIFTH),
+}
+
+
+class BassNote:
+    """The note a step's Bass row plays under its chord, as a file writes it: a scale step above the chord's root, 2 to 7,
+    with a flat or a sharp, as players say "the 3rd in the bass" or "flat 7 in the bass", played below the chord. Held as
+    scale steps, it moves with the chord and follows the key, so C/B in C major is C/Bb in C minor."""
+
+    FLAT_SECOND = 'b2'
+    SECOND = '2'
+    SHARP_SECOND = '#2'
+    FLAT_THIRD = 'b3'
+    THIRD = '3'
+    SHARP_THIRD = '#3'
+    FLAT_FOURTH = 'b4'
+    FOURTH = '4'
+    SHARP_FOURTH = '#4'
+    FLAT_FIFTH = 'b5'
+    FIFTH = '5'
+    SHARP_FIFTH = '#5'
+    FLAT_SIXTH = 'b6'
+    SIXTH = '6'
+    SHARP_SIXTH = '#6'
+    FLAT_SEVENTH = 'b7'
+    SEVENTH = '7'
+    SHARP_SEVENTH = '#7'
+
+
+# Each bass note as scale steps above the chord's root and half steps off the scale's note there.
+BASS_NOTES = {
+    BassNote.FLAT_SECOND: (1, -1), BassNote.SECOND: (1, 0), BassNote.SHARP_SECOND: (1, 1),
+    BassNote.FLAT_THIRD: (2, -1), BassNote.THIRD: (2, 0), BassNote.SHARP_THIRD: (2, 1),
+    BassNote.FLAT_FOURTH: (3, -1), BassNote.FOURTH: (3, 0), BassNote.SHARP_FOURTH: (3, 1),
+    BassNote.FLAT_FIFTH: (4, -1), BassNote.FIFTH: (4, 0), BassNote.SHARP_FIFTH: (4, 1),
+    BassNote.FLAT_SIXTH: (5, -1), BassNote.SIXTH: (5, 0), BassNote.SHARP_SIXTH: (5, 1),
+    BassNote.FLAT_SEVENTH: (6, -1), BassNote.SEVENTH: (6, 0), BassNote.SHARP_SEVENTH: (6, 1),
 }
 
 

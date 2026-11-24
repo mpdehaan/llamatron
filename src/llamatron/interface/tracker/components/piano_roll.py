@@ -30,7 +30,7 @@ from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Accidental, Row
 from llamatron.model.values import note as note_values
-from llamatron.music_theory.fundamentals import intervals
+from llamatron.music_theory.fundamentals import chord_shapes, intervals
 from llamatron.user_strings import errors, labels, marks
 
 # A natural note has no symbol in its bar.
@@ -265,9 +265,14 @@ class PianoRoll(BindsKeys):
         return ghosts
 
     def root_is_lifted(self, step):
-        """Return whether a step's note doesn't sound where it is written: its chord has an inversion, which plays the root an octave up."""
+        """Return whether a step's note doesn't sound where it is written: its chord has an inversion, which plays the root an
+        octave up, or its Omit row leaves the root out."""
         document = self.document()
-        return bool(document.step_value(name=self.name(), row=Row.INVERSION, step=step)) and document.step_value(name=self.name(), row=Row.CHORD, step=step) is not None
+        if document.step_value(name=self.name(), row=Row.CHORD, step=step) is None:
+            return False
+        if bool(document.step_value(name=self.name(), row=Row.INVERSION, step=step)):
+            return True
+        return chord_shapes.ROOT in file_format.OMITTED_ROLES.get(document.step_value(name=self.name(), row=Row.OMIT, step=step), ())
 
     def grabs(self, step):
         """Return whether a step takes its note from the clip's grab track, which the roll marks with G in place of the accidental."""

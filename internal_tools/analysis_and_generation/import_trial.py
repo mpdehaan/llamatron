@@ -31,12 +31,13 @@ import traceback
 
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters.midi_arrangement import MidiSong
-from llamatron.importers import midi_import as midi_import_values, voices
+from llamatron.importers import chord_naming, midi_import as midi_import_values
 from llamatron.importers.comparison import compared
 from llamatron.importers.midi_import import ImportChoices, MidiImport
 from llamatron.importers.writing import add_imported
 from llamatron.math.rational import Rational
 from llamatron.model.objects.setlist import Setlist
+from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Section
 
 TRIALS = os.path.join('/tmp', 'claude', 'llamatron', 'import_trials')
@@ -98,7 +99,7 @@ def shapes_struck(midi_import):
             together[(note.start, note.end, note.velocity)].append(note.pitch)
         for pitches in together.values():
             pitches = sorted(set(pitches))
-            if len(pitches) < 2 or voices.chord_named(pitches) is not None:
+            if len(pitches) < 2 or chord_naming.chord_named(pitches) is not None:
                 continue
             found[(shape_kind(pitches), tuple(pitch - pitches[0] for pitch in pitches[1:]))] += 1
     return found
@@ -108,7 +109,7 @@ def shape_kind(pitches):
     classes = {pitch % OCTAVE for pitch in pitches}
     if len(classes) == 1:
         return OCTAVE_KIND
-    for shape in voices.SHAPES:
+    for shape in [chord_type.value for chord_type in file_format.FIXED_CHORDS.values()]:
         for root in range(OCTAVE):
             named = {(root + step) % OCTAVE for step in (0, *shape)}
             if classes == named:

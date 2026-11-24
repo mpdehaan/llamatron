@@ -19,7 +19,7 @@ from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEd
 from llamatron.model.objects import setlist
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, GateModifier, OctaveLabels, Row
+from llamatron.model.schema.file_format import Accidental, GateModifier, OctaveLabels, Row
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import errors, labels as labels_text, legends, marks, messages
@@ -410,12 +410,12 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         for _ in range(4):
             await self.press(keybindings.ChordRow.MORE)
             seen.append(self.value(row=Row.CHORD))
-        self.assertEqual(seen, [ChordSymbol.OCTAVE, ChordSymbol.MINOR_THIRD, ChordSymbol.MAJOR_THIRD, ChordSymbol.FOURTH])
+        self.assertEqual(seen, [chord_value(symbol) for symbol in file_format.CHORD_SYMBOLS[:4]])
         # [ goes back to none, the first choice, and stops there, never round to the last.
         await self.press(*[keybindings.ChordRow.LESS] * 5)
         self.assertIsNone(self.value(row=Row.CHORD))
         await self.press(keybindings.ChordRow.MORE)
-        self.assertEqual(self.value(row=Row.CHORD), ChordSymbol.OCTAVE)
+        self.assertEqual(self.value(row=Row.CHORD), chord_value(file_format.CHORD_SYMBOLS[0]))
         # ] stops at the last symbol, and [ goes back from the last.
         last = chord_value(file_format.CHORD_SYMBOLS[-1])
         before_last = chord_value(file_format.CHORD_SYMBOLS[-2])

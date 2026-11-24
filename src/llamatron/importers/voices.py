@@ -23,9 +23,9 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
+from llamatron.importers.chord_naming import chord_named
 from llamatron.math.rational import Rational
 from llamatron.model.schema import file_format, limits
-from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import importing
 
 # Middle C, where a part that plays both hands is split. A part plays both hands when enough of its
@@ -42,18 +42,6 @@ MONOPHONIC_SOUNDS = (range(33, 41), range(57, 62), range(65, 89))
 # The General MIDI sound a part's tracks get where the file sets no program: a piano, which the user can change.
 DEFAULT_SOUND = limits.MIN_GM_SOUND
 # A chord in root position, which writes no Inversion.
-NO_INVERSION = 0
-
-
-def chord_shapes():
-    """Return the chord symbols by the half steps of their notes above the lowest, the first symbol for a shape winning."""
-    shapes = {}
-    for symbol, chord_type in file_format.FIXED_CHORDS.items():
-        shapes.setdefault(chord_type.value, symbol)
-    return shapes
-
-
-SHAPES = chord_shapes()
 
 
 # The CC numbers a track's lanes take first, in this order, each only if the part sends it: the mod wheel, volume and
@@ -79,8 +67,12 @@ class Played(NamedTuple):
     root: object = None
     # Whether it runs on into the next note with Glide, as a legato line played on purpose does (legato_line).
     glide: bool = False
-    # What its Double row plays again an octave away (file_format.DOUBLINGS), or None.
+    # What its Double row plays again an octave away (file_format.DOUBLINGS), or None, the chord tones its Omit row leaves
+    # out, or None, and its Bass as a MIDI number under the chord, or None, with whether the Bass Octave plays.
     doubling: object = None
+    omission: object = None
+    bass: object = None
+    bass_octave: bool = False
 
     def written_pitch(self):
         """Return the MIDI number a step's degree is written from: a chord's root, or the note itself."""
@@ -170,7 +162,11 @@ def legato_line(*, units, monophonic):
     joined = []
     for earlier, later in zip(ordered, [*ordered[1:], None]):
         if later is not None and earlier.end > later.start:
-            earlier = Played(earlier.start, later.start, earlier.pitches, earlier.velocity, earlier.chord, earlier.inversion, earlier.root, True, earlier.doubling)
+            earlier = Played(
+                start=earlier.start, end=later.start, pitches=earlier.pitches, velocity=earlier.velocity, chord=earlier.chord,
+                inversion=earlier.inversion, root=earlier.root, glide=True, doubling=earlier.doubling, omission=earlier.omission,
+                bass=earlier.bass, bass_octave=earlier.bass_octave,
+            )
         joined.append(earlier)
     return joined
 
@@ -251,95 +247,19 @@ def chord_units(notes):
     for note in notes:
         together.setdefault((note.start, note.end, note.velocity), []).append(note.pitch)
     units = []
-    for (start, end, velocity), pitches in together.items():
+    before = None
+    for (start, end, velocity), pitches in sorted(together.items()):
         pitches = sorted(pitches)
-        named = chord_named(pitches)
+        named = chord_named(pitches, before=before)
         if named is None:
             units += [Played(start, end, (pitch,), velocity, None) for pitch in pitches]
-        else:
-            units.append(Played(start, end, tuple(pitches), velocity, named.symbol, named.inversion, named.root, doubling=named.doubling))
+            continue
+        before = named
+        units.append(Played(
+            start=start, end=end, pitches=tuple(pitches), velocity=velocity, chord=named.symbol, inversion=named.inversion,
+            root=named.root, doubling=named.doubling, omission=named.omission, bass=named.bass, bass_octave=named.bass_octave,
+        ))
     return sorted(units)
-
-
-class NamedChord(NamedTuple):
-    """How a step plays notes struck together: its chord symbol, or None for one note doubled, its inversion, its root, the
-    MIDI number its degree is written from, and what its Double row plays again an octave away, or None."""
-
-    symbol: object
-    inversion: int
-    root: int
-    doubling: object = None
-
-
-def chord_named(pitches):
-    """Return how a step plays exactly these MIDI numbers, lowest first (NamedChord), or None: a chord in root position or
-    an inversion, and failing that a chord or one note with notes doubled an octave away, as the Double row plays them."""
-    named = voiced_chord(pitches)
-    if named is not None:
-        return named
-    for doubling in file_format.DOUBLINGS:
-        undoubled = undoubled_pitches(pitches=pitches, doubling=doubling)
-        if undoubled is None or doubled_pitches(pitches=undoubled, doubling=doubling) != list(pitches):
-            continue
-        if len(undoubled) == 1:
-            return NamedChord(None, NO_INVERSION, undoubled[0], doubling)
-        named = voiced_chord(undoubled)
-        if named is not None:
-            return NamedChord(named.symbol, named.inversion, named.root, doubling)
-    return None
-
-
-def undoubled_pitches(*, pitches, doubling):
-    """Return the MIDI numbers, lowest first, that a doubling would make these from, or None where it couldn't: the lowest
-    note's or the top note's octave taken away, or, for every note doubled, the notes no octave of a note kept covers."""
-    first, last, octaves = file_format.DOUBLED_NOTES[doubling]
-    half_steps = octaves * intervals.HALF_STEPS_PER_OCTAVE
-    if last is not None or first:
-        copied = pitches[first:last][0] + half_steps
-        if copied not in pitches:
-            return None
-        return [pitch for pitch in pitches if pitch != copied]
-    kept = []
-    covered = set()
-    for pitch in sorted(pitches, reverse=half_steps < 0):
-        if pitch not in covered:
-            kept.append(pitch)
-            covered.add(pitch + half_steps)
-    return sorted(kept)
-
-
-def doubled_pitches(*, pitches, doubling):
-    """Return MIDI numbers, lowest first, with those a doubling plays again an octave away added, each once, as the
-    Realizer plays a step's Double row."""
-    first, last, octaves = file_format.DOUBLED_NOTES[doubling]
-    half_steps = octaves * intervals.HALF_STEPS_PER_OCTAVE
-    return sorted({*pitches, *[pitch + half_steps for pitch in pitches[first:last]]})
-
-
-def voiced_chord(pitches):
-    """Return the chord symbol, inversion and root whose chord plays exactly these MIDI numbers, lowest first, or None: root
-    position first, then each inversion the Inversion row has, which moves so many of a chord's lowest notes up an octave."""
-    symbol = chord_symbol(pitches)
-    if symbol is not None:
-        return NamedChord(symbol, NO_INVERSION, pitches[0])
-    for inversion in limits.INVERSIONS:
-        if inversion >= len(pitches):
-            break
-        # The chord in root position: the notes moved up, brought back down under the others.
-        rooted = [pitch - intervals.HALF_STEPS_PER_OCTAVE for pitch in pitches[-inversion:]] + list(pitches[:-inversion])
-        if rooted != sorted(rooted):
-            continue
-        symbol = chord_symbol(rooted)
-        if symbol is not None:
-            return NamedChord(symbol, inversion, rooted[0])
-    return None
-
-
-def chord_symbol(pitches):
-    """Return the chord symbol whose notes are these MIDI numbers above the lowest, or None for one note or a shape no symbol has."""
-    if len(pitches) < 2 or len(set(pitches)) != len(pitches):
-        return None
-    return SHAPES.get(tuple(pitch - pitches[0] for pitch in pitches[1:]))
 
 
 def lines_of(*, units, from_top):

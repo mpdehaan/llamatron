@@ -23,7 +23,7 @@ from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import Row, StepStatement
 from llamatron.model.values import midi, note as note_values, sound as sound_values
 from llamatron.model.values.sound import Sound
-from llamatron.music_theory.fundamentals import intervals
+from llamatron.music_theory.fundamentals import chord_shapes, intervals
 from llamatron.user_strings import errors
 
 # How many octaves away a moved note can go to find one that fits the MIDI range. A move of
@@ -448,13 +448,58 @@ class PatternPlayer:
                 )
             else:
                 sound = self._sound(values=values, drum=drum, length=slice_length, velocity=velocity, glide=glide, octave=octave, shift=shift, where=where, effects=effects)
-            # Most steps play one note as it is, so only a step with tensions, an inversion or a doubling is voiced.
-            if values[Row.TENSION] or values[Row.INVERSION] or values[Row.DOUBLE]:
-                sound = _voiced(sound=sound, values=values)
+            # Most steps play one note as it is, so only a step with tensions, an omission, an inversion, a doubling or a bass is voiced.
+            if values[Row.TENSION] or values[Row.OMIT] or values[Row.INVERSION] or values[Row.DOUBLE] or values[Row.BASS]:
+                sound = self._voiced(sound=sound, values=values, octave=octave, shift=shift, effects=effects)
             slices.append(sound)
         if not heard:
             return [Sound.rest(piece[sound_values.LENGTH]) for piece in slices]
         return _played_by_chance(slices=slices, probability=values[Row.PROBABILITY], effects=effects, rolls=rolls, counting=counting)
+
+    def _voiced(self, *, sound, values, octave, shift, effects):
+        """Return a step's note or chord as its chord rows voice it, in this order: its tensions added, the notes its Omit
+        row names left out, its Inversion, its Double, and last its Bass under it all."""
+        chord_tones = 1
+        if sound[sound_values.KIND] == sound_values.CHORD:
+            chord_tones = len(sound[sound_values.NOTES])
+        if values[Row.TENSION]:
+            sound = _with_tensions(chord=sound, tensions=values[Row.TENSION])
+        if values[Row.OMIT]:
+            sound = _omitted(sound=sound, chord_tones=chord_tones, omission=values[Row.OMIT])
+        sound = Sound.inverted(sound, values[Row.INVERSION])
+        if values[Row.DOUBLE]:
+            sound = _doubled(sound=sound, doubling=values[Row.DOUBLE])
+        if values[Row.BASS] and values[Row.DEGREE] is not None and self._scale_name is not None:
+            sound = self._with_bass(sound=sound, values=values, octave=octave, shift=shift, effects=effects)
+        return sound
+
+    def _with_bass(self, *, sound, values, octave, shift, effects):
+        """Return a step's note or chord with its Bass under it: the scale note some steps above the chord's root, off it by
+        its sharp or flat, in the nearest octave below the lowest note, and with Bass Octave the octave below that too. A bass
+        that would leave the MIDI range is left out; anything but a note or a chord is as it is."""
+        kind = sound[sound_values.KIND]
+        if kind == sound_values.NOTE:
+            notes = [sound]
+        elif kind == sound_values.CHORD:
+            notes = list(sound[sound_values.NOTES])
+        else:
+            return sound
+        steps, half_steps = file_format.BASS_NOTES[values[Row.BASS]]
+        scale = self._scene_scale_at(octave, effects=effects, kind=values[Row.CHORD_SCALE])
+        first = notes[0]
+        bass = scale.sound_at(
+            degree=values[Row.DEGREE] + steps, scale_notes=shift, half_steps=half_steps, length=first[sound_values.LENGTH],
+            velocity=first[sound_values.VELOCITY], glide=False,
+        )
+        lowest = min(note[sound_values.MIDI] for note in notes)
+        try:
+            bass = Sound.half_step(bass, (lowest - 1 - bass[sound_values.MIDI]) // intervals.HALF_STEPS_PER_OCTAVE * intervals.HALF_STEPS_PER_OCTAVE)
+            under = [bass]
+            if values[Row.BASS_OCTAVE]:
+                under.insert(0, Sound.half_step(bass, -intervals.HALF_STEPS_PER_OCTAVE))
+        except ValueError:
+            return sound
+        return Sound.chord([*under, *notes])
 
     def _grabbed_sound(self, *, number_grabbed, chord, length, velocity, glide, shift, drum, where):
         """Return a grabbed note, moved along this clip's scale, or by half steps for drums, with the step's chord built on it.
@@ -560,14 +605,21 @@ class PatternPlayer:
         return Sound.chord_above(root, file_format.FIXED_CHORDS[symbol].value)
 
 
-def _voiced(*, sound, values):
-    """Return a step's note or chord with its tensions added, voiced by its Inversion row and then doubled by its Double row."""
-    if values[Row.TENSION]:
-        sound = _with_tensions(chord=sound, tensions=values[Row.TENSION])
-    sound = Sound.inverted(sound, values[Row.INVERSION])
-    if values[Row.DOUBLE]:
-        return _doubled(sound=sound, doubling=values[Row.DOUBLE])
-    return sound
+def _omitted(*, sound, chord_tones, omission):
+    """Return a chord with the notes its Omit row names left out by their role, the root, the 3rd or the 5th, among its first
+    chord_tones notes, its own, built up from the root; a tension is never left out. A chord that would be left with no
+    note at all, and anything but a chord, is as it is."""
+    if sound[sound_values.KIND] != sound_values.CHORD:
+        return sound
+    notes = sound[sound_values.NOTES]
+    root = notes[0][sound_values.MIDI]
+    roles = file_format.OMITTED_ROLES[omission]
+    kept = [note for place, note in enumerate(notes) if place >= chord_tones or chord_shapes.role_of(note[sound_values.MIDI] - root) not in roles]
+    if not kept:
+        return sound
+    if len(kept) == 1:
+        return kept[0]
+    return Sound.chord(kept)
 
 
 def _doubled(*, sound, doubling):

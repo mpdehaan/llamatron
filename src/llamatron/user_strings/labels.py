@@ -468,7 +468,7 @@ MSG_DRAW_STRIP_VALUE_ROW = 'value'
 MSG_STATEMENT_ROW_LABEL = 'c{place}'
 # The rows on screen. Degree always shows, and the rest depend on the set of rows showing.
 MSG_ROW_LABELS = {
-    Row.DEGREE: 'Degree', Row.GATE: 'Gate', Row.DOT: 'Dot', Row.ACCIDENTAL: '#/b', Row.OCTAVE: 'Octave', Row.CHORD: 'Chord', Row.INVERSION: 'Inversion', Row.DOUBLE: 'Double',
+    Row.DEGREE: 'Degree', Row.GATE: 'Gate', Row.DOT: 'Dot', Row.ACCIDENTAL: '#/b', Row.OCTAVE: 'Octave', Row.CHORD: 'Chord', Row.INVERSION: 'Inversion', Row.DOUBLE: 'Double', Row.OMIT: 'Omit', Row.BASS: 'Bass', Row.BASS_OCTAVE: 'Bass Octave',
     Row.TENSION: 'Tension', Row.CHORD_SCALE: 'Scale',
     Row.VELOCITY: 'Velocity', Row.ACCENT: 'Accent', Row.PROBABILITY: 'Probability', Row.GLIDE: 'Glide', Row.TIE: 'Tie', Row.RATCHET: 'Ratchet',
     Row.RATCHET_OFFSET: 'Ratchet Offset', Row.GRAB: 'Grab', Row.KEYSWITCH: 'Keyswitch',

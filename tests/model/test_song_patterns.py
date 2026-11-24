@@ -17,7 +17,7 @@ from llamatron.exporters import midi_messages
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, Doubling, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
+from llamatron.model.schema.file_format import BassNote, ChordSymbol, ClipSlotSetting, Doubling, GateModifier, OctaveLabels, Omission, PatternSetting, Row, Section, SetlistSetting, Tension
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName, Rest
 from tests.support import song_testing
@@ -209,6 +209,23 @@ class TestChordRow(unittest.TestCase):
         self.assertEqual(sorted(n.get_midi_number() for n in octaves.get_notes()), [48, 60])
         stacked = self.chord(ChordSymbol.OCTAVE, **{Row.DOUBLE: [Doubling.ALL_UP]})
         self.assertEqual(sorted(n.get_midi_number() for n in stacked.get_notes()), [48, 60, 72])
+
+    def test_omit_leaves_chord_tones_out_by_role_after_the_tensions_and_before_the_inversion(self):
+        # On C, 48 here: C7 without its 3rd, inverted once, plays G B flat C; D7's 3rd and 7th with its 13th, inverted once,
+        # plays C F sharp B, the 13th a tension kept.
+        no_third = self.chord(ChordSymbol.DOMINANT7, **{Row.OMIT: [Omission.NO_THIRD], Row.INVERSION: [1]})
+        self.assertEqual(sorted(n.get_midi_number() for n in no_third.get_notes()), [55, 58, 60])
+        guide_tones = self.chord(ChordSymbol.DOMINANT7, degree=2, **{Row.OMIT: [Omission.NO_ROOT_FIFTH], Row.TENSION: [[Tension.THIRTEENTH]], Row.INVERSION: [1]})
+        self.assertEqual(sorted(n.get_midi_number() for n in guide_tones.get_notes()), [60, 66, 71])
+
+    def test_a_bass_plays_its_scale_step_in_the_nearest_octave_below_the_chord_and_its_octave_with_bass_octave(self):
+        # F major over G in C major, and C major over E with the E's octave too, and C major over B flat.
+        over_g = self.chord(ChordSymbol.MAJOR, degree=4, **{Row.BASS: [BassNote.SECOND]})
+        self.assertEqual(sorted(n.get_midi_number() for n in over_g.get_notes()), [43, 53, 57, 60])
+        over_e = self.chord(ChordSymbol.MAJOR, **{Row.BASS: [BassNote.THIRD], Row.BASS_OCTAVE: [True]})
+        self.assertEqual(sorted(n.get_midi_number() for n in over_e.get_notes()), [28, 40, 48, 52, 55])
+        over_b_flat = self.chord(ChordSymbol.MAJOR, **{Row.BASS: [BassNote.FLAT_SEVENTH]})
+        self.assertEqual(sorted(n.get_midi_number() for n in over_b_flat.get_notes()), [46, 48, 52, 55])
 
     def test_a_doubling_that_is_not_one_is_refused(self):
         with self.assertRaises(SongFileError):

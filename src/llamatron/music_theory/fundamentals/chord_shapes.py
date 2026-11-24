@@ -11,6 +11,21 @@ alone, neither major nor minor.
 """
 
 
+# What a chord's note is to the chord, by its half steps above the root within an octave: the root, the 3rd (a minor or a
+# major 3rd) and the 5th (diminished, perfect or augmented), which a chord voiced with a note left out names; a 2nd or a 4th
+# of a suspended chord, a 6th or a 7th has no such role.
+ROOT = 'root'
+THIRD = 'third'
+FIFTH = 'fifth'
+ROLES_BY_HALF_STEPS = {0: ROOT, 3: THIRD, 4: THIRD, 6: FIFTH, 7: FIFTH, 8: FIFTH}
+HALF_STEPS_PER_OCTAVE = 12
+
+
+def role_of(half_steps):
+    """Return what a chord's note some half steps above its root is to the chord: ROOT, THIRD, FIFTH, or None."""
+    return ROLES_BY_HALF_STEPS.get(half_steps % HALF_STEPS_PER_OCTAVE)
+
+
 # Two notes: the power chord, and the intervals a pianist doubles a line in, the octave, the thirds, the fourth and the sixths
 POWER = (7,)
 OCTAVE = (12,)
