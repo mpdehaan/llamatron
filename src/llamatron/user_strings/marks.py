@@ -6,7 +6,7 @@
 Each constant starts with MSG_.
 """
 
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, Direction, Quality, Shape, Stroke
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, Direction, Doubling, Quality, Row, Shape, Stroke
 
 # engine/realizer/track_output.py, engine/realizer/song_realizer.py and interface/tracker/screens/arrange/clip_page.py: how a circle of tracks reading
 # each other is joined in its message, like a → b → a.
@@ -335,6 +335,9 @@ MSG_ACCIDENTAL_MARKS = {Accidental.SHARP: '♯', Accidental.FLAT: '♭'}
 MSG_QUALITY_MARKS = {Quality.MAJOR: '', Quality.MINOR: '', Quality.DIMINISHED: '°', Quality.AUGMENTED: '+'}
 # model/values/chords.py: what follows a chord's root in its short name, by its symbol, and how its tensions are shown after that.
 MSG_CHORD_SUFFIXES = {
+    # An interval keeps its own symbol after a space, C +M6, so that it is never read as a chord, C+ being augmented.
+    ChordSymbol.OCTAVE: ' +P8', ChordSymbol.MINOR_THIRD: ' +m3', ChordSymbol.MAJOR_THIRD: ' +M3', ChordSymbol.FOURTH: ' +P4',
+    ChordSymbol.MINOR_SIXTH: ' +m6', ChordSymbol.MAJOR_SIXTH: ' +M6',
     ChordSymbol.MAJOR: '', ChordSymbol.MINOR: 'm', ChordSymbol.DIMINISHED: '°', ChordSymbol.AUGMENTED: '+', ChordSymbol.SUS2: 'sus2',
     ChordSymbol.SUS4: 'sus4', ChordSymbol.POWER: '5', ChordSymbol.MAJOR6: '6', ChordSymbol.MINOR6: 'm6', ChordSymbol.DOMINANT7: '7',
     ChordSymbol.MAJOR7: 'M7', ChordSymbol.MINOR7: 'm7', ChordSymbol.MINOR_MAJOR7: 'mM7', ChordSymbol.DIMINISHED7: '°7',
@@ -461,3 +464,9 @@ MSG_WIZARD_PART_BARS = '{bars} bars'
 MSG_WIZARD_PART_ONE_BAR = '1 bar'
 MSG_WIZARD_PART_MELODY = 'melody {player}'
 MSG_WIZARD_PART_NO_MELODY = 'no melody'
+
+# interface/tracker/components/pattern_row.py: what a step's cell shows for a row whose values' words a cell has no room for,
+# by the row and the value: the Double row's lowest, every and top notes, an octave up or down.
+MSG_CELL_MARKS = {
+    Row.DOUBLE: {Doubling.LOW_UP: 'L+8', Doubling.ALL_UP: 'A+8', Doubling.ALL_DOWN: 'A-8', Doubling.TOP_DOWN: 'T-8'},
+}

@@ -29,7 +29,7 @@ from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Doubling, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import errors, importing, labels
 from tests.support.example_renders import example_setlist, first_song_grid
@@ -265,6 +265,25 @@ class TestVoices(unittest.TestCase):
         second_inversion = (67, 72, 76)
         played = voices_of(part=self.part(notes=[(0, 4, pitch) for pitch in second_inversion]), chords=True, controls=True)[0].played[0]
         self.assertEqual((played.chord, played.inversion, played.root), (ChordSymbol.MAJOR, 2, MIDDLE_C))
+
+    def test_intervals_and_doubled_chords_are_named_as_one_step_with_their_double_row(self):
+        # On C4: an octave, a major 6th, C major with its C again on top, a 6th with an octave over it, and C major with every
+        # note again an octave up.
+        shapes = {
+            (60, 72): (ChordSymbol.OCTAVE, None), (60, 69): (ChordSymbol.MAJOR_SIXTH, None),
+            (60, 64, 67, 72): (ChordSymbol.MAJOR, Doubling.LOW_UP), (60, 69, 72): (ChordSymbol.MAJOR_SIXTH, Doubling.LOW_UP),
+            (60, 64, 67, 72, 76, 79): (ChordSymbol.MAJOR, Doubling.ALL_UP),
+        }
+        for pitches, (symbol, doubling) in shapes.items():
+            with self.subTest(pitches=pitches):
+                named = voices_values.chord_named(list(pitches))
+                self.assertEqual((named.symbol, named.doubling), (symbol, doubling))
+
+    def test_a_doubled_chord_imported_is_one_track_and_plays_the_same_notes_as_the_file(self):
+        notes = [(0, 4, pitch) for pitch in (60, 64, 67, 72)] + [(4, 4, pitch) for pitch in (57, 69)]
+        trip = round_trip(midi_file=midi_of(tracks=[('keys', 0, notes)]), choices=ImportChoices(song_name='tune'))
+        self.assertTrue(trip.comparison.is_same(), trip.comparison)
+        self.assertEqual(trip.imported.tracks, 1)
 
     def test_an_inverted_chord_imported_plays_the_same_notes_as_the_file(self):
         first_inversion = (64, 67, 72)

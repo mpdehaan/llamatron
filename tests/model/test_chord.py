@@ -53,6 +53,12 @@ def notes(text):
 # in ChordType fails here.
 C4_CHORDS = {
     ChordType.POWER: 'C4 G4',
+    ChordType.OCTAVE: 'C4 C5',
+    ChordType.MINOR_THIRD: 'C4 Eb4',
+    ChordType.MAJOR_THIRD: 'C4 E4',
+    ChordType.FOURTH: 'C4 F4',
+    ChordType.MINOR_SIXTH: 'C4 Ab4',
+    ChordType.MAJOR_SIXTH: 'C4 A4',
     ChordType.MAJOR: 'C4 E4 G4',
     ChordType.MINOR: 'C4 Eb4 G4',
     ChordType.DIMINISHED: 'C4 Eb4 Gb4',

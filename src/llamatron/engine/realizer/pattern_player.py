@@ -448,9 +448,10 @@ class PatternPlayer:
                 )
             else:
                 sound = self._sound(values=values, drum=drum, length=slice_length, velocity=velocity, glide=glide, octave=octave, shift=shift, where=where, effects=effects)
-            if values[Row.TENSION]:
-                sound = _with_tensions(chord=sound, tensions=values[Row.TENSION])
-            slices.append(Sound.inverted(sound, values[Row.INVERSION]))
+            # Most steps play one note as it is, so only a step with tensions, an inversion or a doubling is voiced.
+            if values[Row.TENSION] or values[Row.INVERSION] or values[Row.DOUBLE]:
+                sound = _voiced(sound=sound, values=values)
+            slices.append(sound)
         if not heard:
             return [Sound.rest(piece[sound_values.LENGTH]) for piece in slices]
         return _played_by_chance(slices=slices, probability=values[Row.PROBABILITY], effects=effects, rolls=rolls, counting=counting)
@@ -557,6 +558,43 @@ class PatternPlayer:
         if symbol is None:
             return root
         return Sound.chord_above(root, file_format.FIXED_CHORDS[symbol].value)
+
+
+def _voiced(*, sound, values):
+    """Return a step's note or chord with its tensions added, voiced by its Inversion row and then doubled by its Double row."""
+    if values[Row.TENSION]:
+        sound = _with_tensions(chord=sound, tensions=values[Row.TENSION])
+    sound = Sound.inverted(sound, values[Row.INVERSION])
+    if values[Row.DOUBLE]:
+        return _doubled(sound=sound, doubling=values[Row.DOUBLE])
+    return sound
+
+
+def _doubled(*, sound, doubling):
+    """Return a step's note or chord with the notes its Double row names played again an octave away: the lowest note an
+    octave up, every note an octave up or down, or the top note an octave down. A note the chord holds already, or one that
+    would leave the MIDI range, is left out; anything but a note or a chord is as it is."""
+    kind = sound[sound_values.KIND]
+    if kind == sound_values.NOTE:
+        notes = [sound]
+    elif kind == sound_values.CHORD:
+        notes = list(sound[sound_values.NOTES])
+    else:
+        return sound
+    by_pitch = sorted(notes, key=lambda note: note[sound_values.MIDI])
+    first, last, octaves = file_format.DOUBLED_NOTES[doubling]
+    copied = by_pitch[first:last]
+    half_steps = octaves * intervals.HALF_STEPS_PER_OCTAVE
+    held = {note[sound_values.MIDI] for note in notes}
+    for note in copied:
+        if note[sound_values.MIDI] + half_steps in held:
+            continue
+        try:
+            notes.append(Sound.half_step(note, half_steps))
+        except ValueError:
+            continue
+        held.add(note[sound_values.MIDI] + half_steps)
+    return Sound.chord(notes)
 
 
 def _with_tensions(*, chord, tensions):

@@ -11,8 +11,14 @@ alone, neither major nor minor.
 """
 
 
-# Two notes
+# Two notes: the power chord, and the intervals a pianist doubles a line in, the octave, the thirds, the fourth and the sixths
 POWER = (7,)
+OCTAVE = (12,)
+MINOR_THIRD = (3,)
+MAJOR_THIRD = (4,)
+FOURTH = (5,)
+MINOR_SIXTH = (8,)
+MAJOR_SIXTH = (9,)
 
 # Triads
 MAJOR = (4, 7)

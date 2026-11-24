@@ -51,6 +51,7 @@ class NoteStep(NamedTuple):
     velocity: int
     inversion: int = 0
     glide: bool = False
+    doubling: object = None
 
 
 class ControlStep(NamedTuple):
@@ -95,7 +96,7 @@ def scene_steps(*, voice, start, end, key, step_size):
                 gated.append((place, place + length))
             else:
                 lengths_changed += 1
-        steps[place] = NoteStep(degree, accidental, octave, played.chord, gate, played.velocity, played.inversion, played.glide)
+        steps[place] = NoteStep(degree, accidental, octave, played.chord, gate, played.velocity, played.inversion, played.glide, played.doubling)
         if gate is None:
             for tied in range(place + 1, min(place + max(int(length), 1), len(steps))):
                 steps[tied] = TIED

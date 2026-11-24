@@ -7,7 +7,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.interface.tracker.keys import RowSection
-from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, Tuning
+from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, Tuning
 
 
 def draw_labels(*, rows, label):
@@ -201,10 +201,11 @@ class Column:
     # interface/tracker/dialogs/keyswitch_map_dialog.py: the note each slot sends.
     NOTE = 'NOTE'
     TYPE = 'TYPE'
-    # interface/tracker/dialogs/chord_dialog.py: the Chord dialog's four lists.
+    # interface/tracker/dialogs/chord_dialog.py: the Chord dialog's five lists.
     SELECT_QUALITY = 'SELECT QUALITY'
     INVERSION = 'INV.'
-    TENSIONS = 'TENSIONS'
+    DOUBLE = 'DOUBLE'
+    TENSIONS = 'TENS.'
     BORROW_SCALE = 'BORROW FROM SCALE'
     STEPS = 'STEPS'
     TRACKS = 'TRACKS'
@@ -467,7 +468,7 @@ MSG_DRAW_STRIP_VALUE_ROW = 'value'
 MSG_STATEMENT_ROW_LABEL = 'c{place}'
 # The rows on screen. Degree always shows, and the rest depend on the set of rows showing.
 MSG_ROW_LABELS = {
-    Row.DEGREE: 'Degree', Row.GATE: 'Gate', Row.DOT: 'Dot', Row.ACCIDENTAL: '#/b', Row.OCTAVE: 'Octave', Row.CHORD: 'Chord', Row.INVERSION: 'Inversion',
+    Row.DEGREE: 'Degree', Row.GATE: 'Gate', Row.DOT: 'Dot', Row.ACCIDENTAL: '#/b', Row.OCTAVE: 'Octave', Row.CHORD: 'Chord', Row.INVERSION: 'Inversion', Row.DOUBLE: 'Double',
     Row.TENSION: 'Tension', Row.CHORD_SCALE: 'Scale',
     Row.VELOCITY: 'Velocity', Row.ACCENT: 'Accent', Row.PROBABILITY: 'Probability', Row.GLIDE: 'Glide', Row.TIE: 'Tie', Row.RATCHET: 'Ratchet',
     Row.RATCHET_OFFSET: 'Ratchet Offset', Row.GRAB: 'Grab', Row.KEYSWITCH: 'Keyswitch',
@@ -533,19 +534,25 @@ MSG_MUNGE_CHOICES = [
 ]
 # The clip page's extra choice, for a clip that follows its pattern's direction.
 MSG_PATTERN_DIRECTION_OPTION = 'from pattern'
+# What a step's Double row plays again an octave away, as a cell and the Chord dialog show it.
+MSG_DOUBLINGS = {Doubling.LOW_UP: 'low +8', Doubling.ALL_UP: 'all +8', Doubling.ALL_DOWN: 'all -8', Doubling.TOP_DOWN: 'top -8'}
 # What each chord symbol means, as the editor describes it.
 MSG_CHORD_NAMES = {
+    # As players say them: a chord with spoken numbers, an interval with written ordinals, and the word chord only on the two
+    # sixes, since a minor six chord holds a major 6th; each fits the Chord dialog's quality list whole.
+    ChordSymbol.OCTAVE: 'octave', ChordSymbol.MINOR_THIRD: 'minor 3rd', ChordSymbol.MAJOR_THIRD: 'major 3rd',
+    ChordSymbol.FOURTH: 'perfect 4th', ChordSymbol.MINOR_SIXTH: 'minor 6th', ChordSymbol.MAJOR_SIXTH: 'major 6th',
     ChordSymbol.MAJOR: 'major', ChordSymbol.MINOR: 'minor', ChordSymbol.DIMINISHED: 'diminished',
-    ChordSymbol.AUGMENTED: 'augmented', ChordSymbol.SUS2: 'suspended second', ChordSymbol.SUS4: 'suspended fourth',
-    ChordSymbol.POWER: 'power, root and fifth', ChordSymbol.MAJOR6: 'major sixth', ChordSymbol.MINOR6: 'minor sixth',
-    ChordSymbol.DOMINANT7: 'dominant seventh', ChordSymbol.MAJOR7: 'major seventh', ChordSymbol.MINOR7: 'minor seventh',
-    ChordSymbol.MINOR_MAJOR7: 'minor-major seventh', ChordSymbol.DIMINISHED7: 'diminished seventh',
-    ChordSymbol.HALF_DIMINISHED7: 'half-diminished', ChordSymbol.AUGMENTED7: 'augmented seventh',
-    ChordSymbol.AUGMENTED_MAJOR7: 'augmented major seventh', ChordSymbol.DOMINANT7_SUS4: 'seventh, suspended fourth',
-    ChordSymbol.ADD9: 'added ninth', ChordSymbol.MINOR_ADD9: 'minor added ninth',
-    ChordSymbol.DOMINANT9: 'dominant ninth', ChordSymbol.MAJOR9: 'major ninth', ChordSymbol.MINOR9: 'minor ninth',
-    ChordSymbol.DOMINANT11: 'dominant eleventh', ChordSymbol.MAJOR11: 'major eleventh', ChordSymbol.MINOR11: 'minor eleventh',
-    ChordSymbol.DOMINANT13: 'dominant thirteenth', ChordSymbol.MAJOR13: 'major thirteenth', ChordSymbol.MINOR13: 'minor thirteenth',
+    ChordSymbol.AUGMENTED: 'augmented', ChordSymbol.SUS2: 'sus2', ChordSymbol.SUS4: 'sus4',
+    ChordSymbol.POWER: 'power chord', ChordSymbol.MAJOR6: 'six chord', ChordSymbol.MINOR6: 'minor six chord',
+    ChordSymbol.DOMINANT7: 'dominant seven', ChordSymbol.MAJOR7: 'major seven', ChordSymbol.MINOR7: 'minor seven',
+    ChordSymbol.MINOR_MAJOR7: 'minor-maj seven', ChordSymbol.DIMINISHED7: 'dim seven',
+    ChordSymbol.HALF_DIMINISHED7: 'half-diminished', ChordSymbol.AUGMENTED7: 'augmented seven',
+    ChordSymbol.AUGMENTED_MAJOR7: 'aug major seven', ChordSymbol.DOMINANT7_SUS4: 'seven sus4',
+    ChordSymbol.ADD9: 'add nine', ChordSymbol.MINOR_ADD9: 'minor add nine',
+    ChordSymbol.DOMINANT9: 'dominant nine', ChordSymbol.MAJOR9: 'major nine', ChordSymbol.MINOR9: 'minor nine',
+    ChordSymbol.DOMINANT11: 'dominant eleven', ChordSymbol.MAJOR11: 'major eleven', ChordSymbol.MINOR11: 'minor eleven',
+    ChordSymbol.DOMINANT13: 'dom. thirteen', ChordSymbol.MAJOR13: 'major thirteen', ChordSymbol.MINOR13: 'minor thirteen',
     ChordSymbol.SCALE_FIFTH: 'root and fifth from the scale', ChordSymbol.SCALE_TRIAD: 'triad from the scale',
     ChordSymbol.SCALE_SEVENTH: 'seventh from the scale', ChordSymbol.SCALE_NINTH: 'ninth from the scale',
     ChordSymbol.SCALE_ELEVENTH: 'eleventh from the scale', ChordSymbol.SCALE_THIRTEENTH: 'thirteenth from the scale',
@@ -563,11 +570,11 @@ MSG_GROOVE_OFF_OPTION = '(off: no groove here, whatever else chooses one)'
 # interface/tracker/scale_categories.py: the categories of scale type the Chord dialog lists, each opening a flyout.
 MSG_SCALE_CATEGORY_COMMON = 'Common'
 MSG_SCALE_CATEGORY_MODES = 'Modes'
-MSG_SCALE_CATEGORY_HARMONIC_AND_MELODIC = 'Harmonic & Melodic'
-MSG_SCALE_CATEGORY_PENTATONIC_AND_BLUES = 'Pentatonic & Blues'
+MSG_SCALE_CATEGORY_HARMONIC_AND_MELODIC = 'Harm. & Melodic'
+MSG_SCALE_CATEGORY_PENTATONIC_AND_BLUES = 'Pent. & Blues'
 MSG_SCALE_CATEGORY_SYMMETRIC = 'Symmetric'
 MSG_SCALE_CATEGORY_JAZZ = 'Jazz'
-MSG_SCALE_CATEGORY_MIDDLE_EAST_AND_EUROPE = 'Mid. East & Europe'
+MSG_SCALE_CATEGORY_MIDDLE_EAST_AND_EUROPE = 'Mid-East/Europe'
 MSG_SCALE_CATEGORY_EAST_ASIA = 'East Asia'
 MSG_SCALE_CATEGORY_INDIA = 'India'
 MSG_SCALE_PAGE_COMMON = 'COMMON'

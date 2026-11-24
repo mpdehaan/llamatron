@@ -97,11 +97,11 @@ class TestSpelling(unittest.TestCase):
     def test_the_scales_own_chords(self):
         self.assertEqual(self.spelled(degree=2), ('Dm', 'D Minor', 'D F A'))
         self.assertEqual(self.spelled(degree=7), ('B°', 'B Diminished', 'B D F'))
-        self.assertEqual(self.spelled(degree=2, symbol=7), ('Dm7', 'D Minor Seventh', 'D F A C'))
+        self.assertEqual(self.spelled(degree=2, symbol=7), ('Dm7', 'D Minor Seven', 'D F A C'))
 
     def test_a_named_quality_and_its_tensions(self):
         self.assertEqual(self.spelled(degree=3, symbol=ChordSymbol.MAJOR), ('E', 'E Major', 'E G# B'))
-        self.assertEqual(self.spelled(degree=6, symbol=ChordSymbol.DOMINANT7, tensions=(Tension.FLAT_NINTH,)), ('A7(b9)', 'A Dominant Seventh (b9)', 'A C# E G Bb'))
+        self.assertEqual(self.spelled(degree=6, symbol=ChordSymbol.DOMINANT7, tensions=(Tension.FLAT_NINTH,)), ('A7(b9)', 'A Dominant Seven (b9)', 'A C# E G Bb'))
         self.assertEqual(self.spelled(degree=5, symbol=ChordSymbol.DOMINANT7, tensions=ALTERED)[2], 'G B D F Ab E')
 
     def test_a_borrowed_chord_is_spelled_on_its_scales_letters(self):

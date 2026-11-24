@@ -17,7 +17,7 @@ from llamatron.exporters import midi_messages
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
+from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, Doubling, GateModifier, OctaveLabels, PatternSetting, Row, Section, SetlistSetting
 from llamatron.model.values.chord import Chord
 from llamatron.model.values.note import Note, NoteName, Rest
 from tests.support import song_testing
@@ -134,7 +134,8 @@ class TestChordRow(unittest.TestCase):
         # Half steps above C for each symbol, written out rather than read from ChordType.
         expected = {
             'M': [0, 4, 7], 'm': [0, 3, 7], ChordSymbol.DIMINISHED: [0, 3, 6], ChordSymbol.AUGMENTED: [0, 4, 8], ChordSymbol.SUS2: [0, 2, 7], ChordSymbol.SUS4: [0, 5, 7],
-            ChordSymbol.POWER: [0, 7], ChordSymbol.MAJOR6: [0, 4, 7, 9], ChordSymbol.MINOR6: [0, 3, 7, 9],
+            ChordSymbol.POWER: [0, 7], ChordSymbol.OCTAVE: [0, 12], ChordSymbol.MINOR_THIRD: [0, 3], ChordSymbol.MAJOR_THIRD: [0, 4],
+            ChordSymbol.FOURTH: [0, 5], ChordSymbol.MINOR_SIXTH: [0, 8], ChordSymbol.MAJOR_SIXTH: [0, 9], ChordSymbol.MAJOR6: [0, 4, 7, 9], ChordSymbol.MINOR6: [0, 3, 7, 9],
             ChordSymbol.DOMINANT7: [0, 4, 7, 10], ChordSymbol.MAJOR7: [0, 4, 7, 11], ChordSymbol.MINOR7: [0, 3, 7, 10], ChordSymbol.MINOR_MAJOR7: [0, 3, 7, 11],
             ChordSymbol.DIMINISHED7: [0, 3, 6, 9], ChordSymbol.HALF_DIMINISHED7: [0, 3, 6, 10], ChordSymbol.AUGMENTED7: [0, 4, 8, 10], ChordSymbol.AUGMENTED_MAJOR7: [0, 4, 8, 11],
             ChordSymbol.DOMINANT7_SUS4: [0, 5, 7, 10], ChordSymbol.ADD9: [0, 4, 7, 14], ChordSymbol.MINOR_ADD9: [0, 3, 7, 14],
@@ -187,6 +188,31 @@ class TestChordRow(unittest.TestCase):
         for symbol in [DOM, M5, 6, MAJ7]:
             with self.subTest(symbol=symbol), self.assertRaises(SongFileError):
                 self.chord(symbol)
+
+    def test_every_doubling_plays_its_notes_again_an_octave_away_after_the_inversion(self):
+        # C major is 48, 52 and 55 here; each doubling adds its notes an octave from those, and Inversion 1 voices it first.
+        triad = [48, 52, 55]
+        expected = {
+            Doubling.LOW_UP: [*triad, 60], Doubling.ALL_UP: [*triad, 60, 64, 67],
+            Doubling.ALL_DOWN: [36, 40, 43, *triad], Doubling.TOP_DOWN: [43, *triad],
+        }
+        self.assertEqual(set(expected), set(file_format.DOUBLINGS))
+        for doubling, notes in expected.items():
+            with self.subTest(doubling=doubling):
+                found = self.chord(ChordSymbol.MAJOR, **{Row.DOUBLE: [doubling]})
+                self.assertEqual(sorted(n.get_midi_number() for n in found.get_notes()), notes)
+        inverted = self.chord(ChordSymbol.MAJOR, **{Row.INVERSION: [1], Row.DOUBLE: [Doubling.LOW_UP]})
+        self.assertEqual(sorted(n.get_midi_number() for n in inverted.get_notes()), [52, 55, 60, 64])
+
+    def test_a_single_note_is_doubled_and_a_note_playing_already_is_not_added_twice(self):
+        octaves = lead([1, 1], rows={Row.DOUBLE: [Doubling.ALL_UP]}).get_notes()[0]
+        self.assertEqual(sorted(n.get_midi_number() for n in octaves.get_notes()), [48, 60])
+        stacked = self.chord(ChordSymbol.OCTAVE, **{Row.DOUBLE: [Doubling.ALL_UP]})
+        self.assertEqual(sorted(n.get_midi_number() for n in stacked.get_notes()), [48, 60, 72])
+
+    def test_a_doubling_that_is_not_one_is_refused(self):
+        with self.assertRaises(SongFileError):
+            self.chord(ChordSymbol.MAJOR, **{Row.DOUBLE: [ChordSymbol.MAJOR]})
 
     def test_a_chord_uses_the_octave_and_accidental(self):
         found = self.chord('M', octave=[5], accidental=['#'])

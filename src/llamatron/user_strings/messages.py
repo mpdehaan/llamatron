@@ -6,7 +6,7 @@
 Each constant starts with MSG_. A message that says what went wrong is an error, in errors.py.
 """
 
-from llamatron.model.schema.file_format import Section, SetlistSetting, SongSetting
+from llamatron.model.schema.file_format import Doubling, Section, SetlistSetting, SongSetting
 
 # Shared by several pages: a field with no value, and a song or scene with no scale in a sentence.
 MSG_NO_SCALE = 'no scale'
@@ -257,6 +257,12 @@ MSG_CHORD_SENTENCE = 'In {scale}, the chord on {degree} is {name}.'
 MSG_CHORD_OWN_SENTENCE = "In {scale}, the clip's own, the chord is {name}."
 MSG_NOTE_SENTENCE = 'In {scale}, the note on {degree} is {name}.'
 MSG_CHORD_NOTES = 'Notes: {notes}'
+# A step's Double row, said after the chord or the note it doubles.
+MSG_DOUBLED_SENTENCE = 'Doubled: {doubled}.'
+MSG_DOUBLINGS_SAID = {
+    Doubling.LOW_UP: 'the lowest note again an octave up', Doubling.ALL_UP: 'every note again an octave up',
+    Doubling.ALL_DOWN: 'every note again an octave down', Doubling.TOP_DOWN: 'the top note again an octave down',
+}
 MSG_CHORD_NO_SCALE_KNOWN = 'No scale is known here, so the chord has no name yet.'
 # What the status line says of the chord under the cursor while nothing else is said.
 MSG_CHORD_RESTING = '{where}: in {scale}, the chord on {degree} is {name} ({notes})'

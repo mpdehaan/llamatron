@@ -17,6 +17,12 @@ class ChordType(Enum):
     (music_theory/fundamentals/chord_shapes.py), in the order and the groups of the shapes."""
 
     POWER = chord_shapes.POWER
+    OCTAVE = chord_shapes.OCTAVE
+    MINOR_THIRD = chord_shapes.MINOR_THIRD
+    MAJOR_THIRD = chord_shapes.MAJOR_THIRD
+    FOURTH = chord_shapes.FOURTH
+    MINOR_SIXTH = chord_shapes.MINOR_SIXTH
+    MAJOR_SIXTH = chord_shapes.MAJOR_SIXTH
 
     MAJOR = chord_shapes.MAJOR
     MINOR = chord_shapes.MINOR

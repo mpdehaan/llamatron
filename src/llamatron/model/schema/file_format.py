@@ -180,6 +180,8 @@ class Row:
     CHORD = 'chord'
     # Which of a chord's notes is at the bottom: blank for root position, or how many of its lowest notes move up an octave.
     INVERSION = 'inversion'
+    # The notes a step's chord, or its one note, plays again an octave away (Doubling), after its inversion, or blank for none.
+    DOUBLE = 'double'
     # The notes added on top of a step's chord, like a flat ninth: a list of tensions, or blank for none.
     TENSION = 'tension'
     # The scale type a step's degree and chord are drawn from, on the clip's root, or blank for the clip's own: a borrowed chord.
@@ -689,11 +691,11 @@ STATEMENT_OF_ROW = {row: (kind, part) for kind, rows in STATEMENT_ROWS.items() f
 STATEMENTS_CUTTING_A_PASS = (StepStatement.STOP, StepStatement.RESTART)
 
 # The rows that say which notes a step plays, which clearing a pattern down to its pitch keeps, and those of them that make a note a chord.
-CHORD_ROWS = [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION]
+CHORD_ROWS = [Row.CHORD, Row.TENSION, Row.CHORD_SCALE, Row.INVERSION, Row.DOUBLE]
 PITCH_ROWS = [Row.DEGREE, Row.OCTAVE, Row.ACCIDENTAL, *CHORD_ROWS]
 
 PATTERN_ROWS = [
-    Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.ACCENT, Row.PROBABILITY, Row.GLIDE,
+    Row.DEGREE, Row.GATE, Row.DOT, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.DOUBLE, Row.TENSION, Row.CHORD_SCALE, Row.VELOCITY, Row.ACCENT, Row.PROBABILITY, Row.GLIDE,
     Row.TIE, Row.RATCHET, Row.RATCHET_OFFSET, Row.GRAB, Row.KEYSWITCH,
     Row.CC1, Row.CC2, Row.CC3, Row.CC4, Row.SLIDE,
     *DRAW_NOTE_ROWS.values(), *DRAW_VELOCITY_ROWS.values(), *DRAW_RESET_ROWS.values(), *STATEMENT_OF_ROW,
@@ -723,6 +725,14 @@ class ChordSymbol:
 
     MAJOR = 'M'
     MINOR = 'm'
+    # Two notes, the step's and one interval above it, written with a + and the interval's quality, so that +M6, the major 6th
+    # alone, is plainly not M6, the six chord, and +P4 is read neither as four half steps nor as a raised fourth.
+    OCTAVE = '+P8'
+    MINOR_THIRD = '+m3'
+    MAJOR_THIRD = '+M3'
+    FOURTH = '+P4'
+    MINOR_SIXTH = '+m6'
+    MAJOR_SIXTH = '+M6'
     DIMINISHED = 'dim'
     AUGMENTED = 'aug'
     SUS2 = 'sus2'
@@ -759,7 +769,10 @@ class ChordSymbol:
 
 
 # The named chord symbols, in the order the editor offers them, and the chords they make.
+# In the order the Chord dialog lists them: the intervals first, two notes each, then the chords.
 FIXED_CHORDS = {
+    ChordSymbol.OCTAVE: ChordType.OCTAVE, ChordSymbol.MINOR_THIRD: ChordType.MINOR_THIRD, ChordSymbol.MAJOR_THIRD: ChordType.MAJOR_THIRD,
+    ChordSymbol.FOURTH: ChordType.FOURTH, ChordSymbol.MINOR_SIXTH: ChordType.MINOR_SIXTH, ChordSymbol.MAJOR_SIXTH: ChordType.MAJOR_SIXTH,
     ChordSymbol.MAJOR: ChordType.MAJOR, ChordSymbol.MINOR: ChordType.MINOR,
     ChordSymbol.DIMINISHED: ChordType.DIMINISHED, ChordSymbol.AUGMENTED: ChordType.AUGMENTED,
     ChordSymbol.SUS2: ChordType.SUS2, ChordSymbol.SUS4: ChordType.SUS4, ChordSymbol.POWER: ChordType.POWER,
@@ -776,6 +789,10 @@ FIXED_CHORDS = {
 # The chord symbols that stack notes of the scale, and how many scale degrees above the step's
 # degree each of their notes is. A scale fifth is the root and the fifth, and each of the others
 # adds every other scale note above the root.
+# The symbols of two notes, the step's and one interval above, which a pattern's step plays and a progression's chords leave out.
+INTERVAL_CHORDS = (ChordSymbol.OCTAVE, ChordSymbol.MINOR_THIRD, ChordSymbol.MAJOR_THIRD, ChordSymbol.FOURTH, ChordSymbol.MINOR_SIXTH, ChordSymbol.MAJOR_SIXTH)
+# The named chords a progression's chords may be: all but the intervals, since a progression moves chords, not doublings.
+PROGRESSION_CHORDS = [symbol for symbol in FIXED_CHORDS if symbol not in INTERVAL_CHORDS]
 SCALE_CHORDS = {
     ChordSymbol.SCALE_FIFTH: (0, 4),
     ChordSymbol.SCALE_TRIAD: (0, 2, 4),
@@ -785,6 +802,24 @@ SCALE_CHORDS = {
     ChordSymbol.SCALE_THIRTEENTH: (0, 2, 4, 6, 8, 10, 12),
 }
 CHORD_SYMBOLS = [*FIXED_CHORDS, *SCALE_CHORDS]
+
+
+class Doubling:
+    """What a step's Double row plays again an octave away, as a file writes it: the lowest note an octave up, every note an
+    octave up, every note an octave down, or the top note an octave down, as a pianist doubles a chord or a line."""
+
+    LOW_UP = 'low_up'
+    ALL_UP = 'all_up'
+    ALL_DOWN = 'all_down'
+    TOP_DOWN = 'top_down'
+
+
+DOUBLINGS = (Doubling.LOW_UP, Doubling.ALL_UP, Doubling.ALL_DOWN, Doubling.TOP_DOWN)
+# What each doubling plays again, as the notes from lowest to highest it copies, a slice's two ends, and how many octaves
+# away; the Realizer, the editor's chord tones, the keyboard and the MIDI import all read it.
+DOUBLED_NOTES = {
+    Doubling.LOW_UP: (0, 1, 1), Doubling.ALL_UP: (0, None, 1), Doubling.ALL_DOWN: (0, None, -1), Doubling.TOP_DOWN: (-1, None, -1),
+}
 
 
 class Tension:

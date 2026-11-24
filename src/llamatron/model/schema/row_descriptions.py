@@ -243,20 +243,22 @@ class RowOfChords(RowOfChoices):
         return self._problem
 
 
-class RowOfInversions(RowOfChoices):
-    """The Inversion row: how many of a chord's lowest notes move up an octave, or blank for root position. A drum pattern has no chords, so no inversions."""
+class RowOfVoicings(RowOfChoices):
+    """A row that voices a step's chord, which a drum pattern has none of: the Inversion row, how many of a chord's lowest
+    notes move up an octave, and the Double row, which notes play again an octave away; blank for neither."""
 
-    __slots__ = ()
+    __slots__ = ('_drum_problem',)
 
-    def __init__(self, *, name, choices):
-        super().__init__(name=name, choices=choices, problem=errors.ERR_NOT_INVERSION.format(choices=listed(choices)), changes_with_drums=True)
+    def __init__(self, *, name, choices, problem, drum_problem):
+        super().__init__(name=name, choices=choices, problem=problem, changes_with_drums=True)
+        self._drum_problem = drum_problem
 
     def is_in_drum_patterns(self):
         return False
 
     def problem_with(self, value, *, drum):
         if drum:
-            return errors.ERR_INVERSION_ON_DRUMS
+            return self._drum_problem
         return super().problem_with(value, drum=drum)
 
 
@@ -507,7 +509,8 @@ ROW_DESCRIPTIONS = described_rows(
     RowOfChoices(name=Row.ACCIDENTAL, choices=file_format.ACCIDENTALS, problem=errors.ERR_NOT_ACCIDENTAL, changes_with_drums=True),
     RowOfOctaves(name=Row.OCTAVE, lowest=limits.MIN_OCTAVE, highest=limits.MAX_OCTAVE, default=NO_DEFAULT),
     RowOfChords(name=Row.CHORD, symbols=file_format.CHORD_SYMBOLS),
-    RowOfInversions(name=Row.INVERSION, choices=limits.INVERSIONS),
+    RowOfVoicings(name=Row.INVERSION, choices=limits.INVERSIONS, problem=errors.ERR_NOT_INVERSION.format(choices=listed(limits.INVERSIONS)), drum_problem=errors.ERR_INVERSION_ON_DRUMS),
+    RowOfVoicings(name=Row.DOUBLE, choices=file_format.DOUBLINGS, problem=errors.ERR_NOT_DOUBLING.format(choices=listed(file_format.DOUBLINGS)), drum_problem=errors.ERR_DOUBLING_ON_DRUMS),
     RowOfTensions(name=Row.TENSION, choices=file_format.TENSIONS),
     RowOfChordScales(name=Row.CHORD_SCALE, choices=scale_type_names()),
     RowOfNumbers(name=Row.VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, default=defaults.DEFAULT_VELOCITY),

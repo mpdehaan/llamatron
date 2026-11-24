@@ -134,9 +134,13 @@ class PatternNotes:
         """
         symbol = self.get_value(row=Row.CHORD, step=step)
         degree = self.get_value(row=Row.DEGREE, step=step)
-        if symbol is None or degree is None or self.is_drum():
+        doubling = self.get_value(row=Row.DOUBLE, step=step)
+        if degree is None or self.is_drum():
             return []
         accidental = self.get_value(row=Row.ACCIDENTAL, step=step)
+        root = (degree, octave, accidental)
+        if symbol is None:
+            return _doubled_tones(root=root, tones=[], inverted=False, doubling=doubling)
         symbol = str(symbol)
         tensions = self.get_value(row=Row.TENSION, step=step)
         kind = self.get_value(row=Row.CHORD_SCALE, step=step)
@@ -149,7 +153,10 @@ class PatternNotes:
         else:
             tones = [scale.degree_above(degree=degree, octave=octave, accidental=accidental, half_steps=half_steps) for half_steps in file_format.FIXED_CHORDS[symbol].value]
             tones = [tone for tone in tones if tone is not None]
-        return _inverted_tones(root=(degree, octave, accidental), tones=tones, inversion=self.get_value(row=Row.INVERSION, step=step))
+        inversion = self.get_value(row=Row.INVERSION, step=step)
+        voiced = _inverted_tones(root=root, tones=tones, inversion=inversion)
+        # An inversion moves a chord's lowest notes, never all, so a chord of two notes or more is inverted wherever it asks.
+        return _doubled_tones(root=root, tones=voiced, inverted=bool(inversion) and bool(tones), doubling=doubling)
 
     # Changing the notes.
 
@@ -293,6 +300,23 @@ def _tones_leaving_the_scale(*, scale, degree, octave, accidental, symbol, tensi
         above.insert(0, 0)
     tones = [scale.degree_above(degree=limits.MIN_DEGREE, octave=octave, accidental=None, half_steps=root + half_steps) for half_steps in above]
     return [tone for tone in tones if tone is not None]
+
+
+def _doubled_tones(*, root, tones, inverted, doubling):
+    """Return the tones a step adds above its own note with those its Double row plays again an octave away, as
+    pattern_player._doubled plays them: the lowest an octave up, every one an octave up or down, or the top one an octave
+    down, a tone already sounding left out. The chord sounds as its root and tones from the lowest up, or, inverted, as its
+    tones alone, the root among them."""
+    if not doubling:
+        return tones
+    sounding = list(tones) if inverted else [root, *tones]
+    first, last, octaves = file_format.DOUBLED_NOTES[doubling]
+    added = []
+    for degree, octave, accidental in sounding[first:last]:
+        tone = (degree, octave + octaves, accidental)
+        if tone not in sounding and tone not in added:
+            added.append(tone)
+    return [*tones, *added]
 
 
 def _inverted_tones(*, root, tones, inversion):

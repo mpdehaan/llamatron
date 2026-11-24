@@ -116,7 +116,7 @@ class ChordsSettings(GeneratorSettings):
         Checked(name=ProgressionSetting.ACCIDENTALS, check=_row_of(name=ProgressionSetting.ACCIDENTALS, allowed=PROGRESSION_ACCIDENTALS)),
         Checked(name=ProgressionSetting.INVERSIONS, check=_row_of(name=ProgressionSetting.INVERSIONS, allowed=PROGRESSION_INVERSIONS)),
         Checked(name=ProgressionSetting.SCALES, check=_row_of(name=ProgressionSetting.SCALES, allowed=scale_type_names())),
-        Checked(name=ProgressionSetting.QUALITIES, check=_row_of(name=ProgressionSetting.QUALITIES, allowed=list(file_format.FIXED_CHORDS))),
+        Checked(name=ProgressionSetting.QUALITIES, check=_row_of(name=ProgressionSetting.QUALITIES, allowed=file_format.PROGRESSION_CHORDS)),
         Checked(name=ProgressionSetting.TENSIONS, check=_tensions_row),
         Text(name=ChordsSetting.CHORDS_FROM, error=errors.ERR_NOT_TEXT),
         Flag(name=ChordsSetting.VOICE_LEADING, error=errors.ERR_VOICE_LEADING_NOT_TRUE_OR_FALSE),
