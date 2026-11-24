@@ -295,7 +295,7 @@ the screen, they scroll to keep the cursor's row in view. The sections, in the
 order a step works them out, are:
 
 - **Basics:** #/b, Velocity, Accent;
-- **Chord:** Chord, Tension, Scale, Inversion;
+- **Chord:** Chord, Tension, Scale, Inversion, Double;
 - **Timing:** Tie, Gate, Dot, Glide;
 - **Keyswitch:** a row for each slot of the instrument's Keyswitch Map, shown
   only once the instrument has a Keyswitch Map or a step uses a slot;
@@ -319,6 +319,7 @@ order a step works them out, are:
 | #/b | Sharp or flat: moves the note a half step up or down | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
 | Chord | Builds a chord on the note | `ENTER` to choose from the list, `Space` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
 | Inversion | Which of the chord's notes is at the bottom: blank for root position, `1` moves the chord's lowest note up an octave, `2` the lowest two and `3` the lowest three, which only a chord of four notes or more has, so a triad plays `3` as `2`. A step with no chord shows `/`, and the piano roll draws the chord's other notes where the inversion plays them. | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
+| Double | Plays notes of the step's chord, or its one note, again an octave away, after the Inversion: `L+8` the lowest note an octave up, `A+8` every note an octave up, `A-8` every note an octave down, `T-8` the top note an octave down. See Doubling below. | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
 | Velocity | 1 to 127. A blank step plays at the Default velocity of the track that plays the pattern, 127 unless the track or its instrument says otherwise. | Digits, `[` `]`, `ENTER` to type, `Bksp` sets the default |
 | Accent | `●` makes the step louder by the Accent of the track that plays the pattern, added to the step's velocity, typed or default, and stopping at 127. A blank is off. See [Tracks](TRACKS.md). | `Space` or `ENTER` toggles, `Bksp` turns it off |
 | Glide | `●` makes the note run slightly into the next one, which a synth with glide turned on slides across. A blank is off. | `Space` or `ENTER` toggles, `Bksp` turns it off |
@@ -379,7 +380,7 @@ rolled.
 ### Chords
 
 The Chord section holds everything about a step's chord: the Chord row, the
-Tension row, the Scale row and the Inversion row. `ENTER` on the Chord,
+Tension row, the Scale row, the Inversion row and the Double row. `ENTER` on the Chord,
 Tension or Scale row opens the [Chord Selector](#chord-selector), and on each
 of the three rows `[`, `]` and `Space` step through the choices, stopping at
 the first and the last; the Scale row steps through every scale type in the
@@ -400,35 +401,61 @@ major, which includes G#. The notes shown are on C:
 
 | Chord | What it builds | On C |
 | --- | --- | --- |
+| `+P8` | Octave | C, the C above |
+| `+m3` | Minor 3rd | C E♭ |
+| `+M3` | Major 3rd | C E |
+| `+P4` | Perfect 4th | C F |
+| `+m6` | Minor 6th | C A♭ |
+| `+M6` | Major 6th | C A |
 | `M` | Major | C E G |
 | `m` | Minor | C E♭ G |
 | `dim` | Diminished | C E♭ G♭ |
 | `aug` | Augmented | C E G♯ |
-| `sus2` | Suspended second | C D G |
-| `sus4` | Suspended fourth | C F G |
+| `sus2` | Sus2 | C D G |
+| `sus4` | Sus4 | C F G |
 | `pow` | Power chord | C G |
-| `M6` | Major sixth | C E G A |
-| `m6` | Minor sixth | C E♭ G A |
-| `dom7` | Dominant seventh | C E G B♭ |
-| `M7` | Major seventh | C E G B |
-| `m7` | Minor seventh | C E♭ G B♭ |
-| `mM7` | Minor-major seventh | C E♭ G B |
-| `dim7` | Diminished seventh | C E♭ G♭ A |
+| `M6` | Six chord | C E G A |
+| `m6` | Minor six chord | C E♭ G A |
+| `dom7` | Dominant seven | C E G B♭ |
+| `M7` | Major seven | C E G B |
+| `m7` | Minor seven | C E♭ G B♭ |
+| `mM7` | Minor-major seven | C E♭ G B |
+| `dim7` | Dim seven | C E♭ G♭ A |
 | `m7b5` | Half-diminished | C E♭ G♭ B♭ |
-| `aug7` | Augmented seventh | C E G♯ B♭ |
-| `augM7` | Augmented major seventh | C E G♯ B |
-| `7sus4` | Seventh, suspended fourth | C F G B♭ |
-| `dom9` | Dominant ninth | C E G B♭ D |
-| `M9` | Major ninth | C E G B D |
-| `m9` | Minor ninth | C E♭ G B♭ D |
-| `add9` | Added ninth | C E G D |
-| `madd9` | Minor added ninth | C E♭ G D |
-| `dom11` | Dominant eleventh | C E G B♭ D F |
-| `M11` | Major eleventh | C E G B D F |
-| `m11` | Minor eleventh | C E♭ G B♭ D F |
-| `dom13` | Dominant thirteenth | C E G B♭ D F A |
-| `M13` | Major thirteenth | C E G B D F A |
-| `m13` | Minor thirteenth | C E♭ G B♭ D F A |
+| `aug7` | Augmented seven | C E G♯ B♭ |
+| `augM7` | Augmented major seven | C E G♯ B |
+| `7sus4` | Seven sus4 | C F G B♭ |
+| `dom9` | Dominant nine | C E G B♭ D |
+| `M9` | Major nine | C E G B D |
+| `m9` | Minor nine | C E♭ G B♭ D |
+| `add9` | Add nine | C E G D |
+| `madd9` | Minor add nine | C E♭ G D |
+| `dom11` | Dominant eleven | C E G B♭ D F |
+| `M11` | Major eleven | C E G B D F |
+| `m11` | Minor eleven | C E♭ G B♭ D F |
+| `dom13` | Dominant thirteen | C E G B♭ D F A |
+| `M13` | Major thirteen | C E G B D F A |
+| `m13` | Minor thirteen | C E♭ G B♭ D F A |
+
+The first six are **intervals**, two notes each, for a line played in octaves,
+3rds or 6ths, as a pianist doubles a melody. They are written with a `+` and
+the interval's quality, so `+M6`, the major 6th alone, is never mistaken for
+`M6`, the six chord. A chord progression's chords leave them out.
+
+**Doubling.** The Double row plays notes again an octave away, after the
+Inversion, so octaves under a melody or a chord with its root on top are one
+step. A note already playing isn't added twice. On C major, C4 E4 G4:
+
+| Double | Plays |
+| --- | --- |
+| blank | C4 E4 G4 |
+| `L+8` | C4 E4 G4 C5 |
+| `A+8` | C4 E4 G4 C5 E5 G5 |
+| `A-8` | C3 E3 G3 C4 E4 G4 |
+| `T-8` | G3 C4 E4 G4 |
+
+With Inversion 1 the chord plays E4 G4 C5, so `L+8` plays E4 G4 C5 E5. A
+single note doubles too: degree 1 with `A+8` plays C4 and C5.
 
 **Scale chords** are the plain numbers. Scale chords stack every other note of
 the scale, so they use only notes in it. The scale decides whether each one is
@@ -638,10 +665,14 @@ open](screenshots/chord_selector.svg)
 
 The Chord Selector chooses a step's chord in one place. `ENTER` on the Chord,
 Tension or Scale row of the rows view opens it, and so does `H` on a note of
-the piano roll. It holds four lists side by side: the chord's quality, with
-`(single note)` at the top; its inversion, with `(none)` for root position at
-the top; its tensions, the notes added on top, such as a flat ninth; and the
-scale the step borrows its notes from, with `(the clip's own)` at the top.
+the piano roll. It holds five lists side by side: the chord's quality, with
+`(single note)` at the top and then the intervals; its inversion, with
+`(none)` for root position at the top; its doubling, the notes played again an
+octave away, with `(none)` at the top; its tensions, the notes added on top,
+such as a flat ninth; and the scale the step borrows its notes from, with
+`(the clip's own)` at the top. Under the lists it says the chord, its notes
+and its doubling, and the keyboard marks every note it plays. A chord
+progression's chord editor opens the same selector with no doubling list.
 
 | Key | What it does |
 | --- | --- |
@@ -649,11 +680,11 @@ scale the step borrows its notes from, with `(the clip's own)` at the top.
 | `Tab` | Goes to the next list, and round to the first. |
 | `Space` | On a tension, turns it on or off. |
 | `Space`, `ENTER` | On a category of scales, opens its flyout; on `(the clip's own)`, borrows no scale. |
-| `ENTER` | On a quality, an inversion or a tension, takes the chord. |
+| `ENTER` | On a quality, an inversion, a doubling or a tension, takes the chord. |
 | `ESC` | Cancels, changing nothing. |
 
-The scale list, the last of the four, holds categories: Common, Modes,
-Harmonic & Melodic, Pentatonic & Blues, Symmetric, Jazz, Mid. East & Europe,
+The scale list, the last of the five, holds categories: Common, Modes,
+Harm. & Melodic, Pent. & Blues, Symmetric, Jazz, Mid-East/Europe,
 East Asia and India. A category opens a flyout of its scale types, a box drawn
 over the Chord Selector, a little down and to the right. In the flyout, Up and
 Down move, `ENTER` picks a scale type and closes the flyout, and `ESC` or Left
