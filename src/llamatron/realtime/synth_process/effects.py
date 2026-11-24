@@ -2,7 +2,8 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The effects an instrument's four blocks hold, each applied to the instrument's mix a chunk at a time, keeping what it
-needs from one chunk to the next, so that nothing restarts at a chunk's edge.
+needs from one chunk to the next, so that nothing restarts at a chunk's edge, and each blended into what came before it by its
+Mix. A filter is in filters.py.
 
 The bitcrusher holds each sample for as long as its rate gives, by a phase that runs on across chunks, then rounds to its
 bits. Drive shapes the mix by a curve: soft and warm saturate, warm leaning to one side for even harmonics, hard clips,
@@ -13,8 +14,11 @@ this module, as it does the engine (the user's yes).
 import math
 import numpy
 
+from llamatron.realtime.synth_process.filters import Filter
+
 BITCRUSH = 'bitcrush'
 DRIVE = 'drive'
+FILTER = 'filter'
 SOFT = 'soft'
 WARM = 'warm'
 HARD = 'hard'
@@ -28,13 +32,27 @@ MOST_FOLDING_GAIN = 4.0
 WARM_LEAN = 0.3
 
 
-class Bitcrush:
+class SoundEffect:
+    """What every effect but the filter (filters.py, which does the same itself) does beside shaping a chunk: note when a note starts, which only a filter's envelope needs, and how
+    much of it is mixed in, from 0 to 1."""
+
+    __slots__ = ('mix',)
+
+    def __init__(self, *, mix=1.0):
+        self.mix = mix
+
+    def note_on(self, *, sample, pitch):
+        """Do nothing: only a filter's envelope fires on a note."""
+
+
+class Bitcrush(SoundEffect):
     """The bitcrusher: its bits, 16 for none, and the rate it holds samples at, 0 for none, with the phase of its hold and
     the sample it holds, carried from chunk to chunk."""
 
     __slots__ = ('levels', 'step', 'phase', 'held')
 
-    def __init__(self, *, bits, hold_rate, rate):
+    def __init__(self, *, bits, hold_rate, rate, mix=1.0):
+        super().__init__(mix=mix)
         self.levels = 0
         if bits < 16:
             self.levels = 2 ** (bits - 1)
@@ -44,7 +62,7 @@ class Bitcrush:
         self.phase = 0.0
         self.held = 0.0
 
-    def apply(self, buffer):
+    def apply(self, buffer, *, start=0):
         if self.step:
             buffer = self._held(buffer)
         if self.levels:
@@ -68,12 +86,13 @@ class Bitcrush:
         return out.astype(numpy.float32)
 
 
-class Drive:
+class Drive(SoundEffect):
     """Drive: its curve and its gain from its amount."""
 
     __slots__ = ('curve', 'gain', 'scale', 'offset')
 
-    def __init__(self, *, curve, amount):
+    def __init__(self, *, curve, amount, mix=1.0):
+        super().__init__(mix=mix)
         self.curve = curve
         most = MOST_FOLDING_GAIN if curve in (FOLD, WRAP) else MOST_GAIN
         self.gain = 1.0 + amount * most
@@ -85,7 +104,7 @@ class Drive:
             self.offset = math.tanh(WARM_LEAN)
             self.scale = 1.0 / max(math.tanh(self.gain + WARM_LEAN) - self.offset, self.offset - math.tanh(WARM_LEAN - self.gain))
 
-    def apply(self, buffer):
+    def apply(self, buffer, *, start=0):
         driven = buffer * self.gain
         if self.curve == SOFT:
             return numpy.tanh(driven) * self.scale
@@ -99,18 +118,25 @@ class Drive:
 
 
 def compiled_effects(*, effects, rate):
-    """Return an instrument's effects in order, compiled from (kind, settings...) as the set gives them."""
+    """Return an instrument's effects in order, compiled from their settings as llamatron gives them (model/objects/built_in_sound.py)."""
     compiled = []
     for effect in effects:
-        if effect[0] == BITCRUSH:
-            compiled.append(Bitcrush(bits=effect[1], hold_rate=effect[2], rate=rate))
-        elif effect[0] == DRIVE:
-            compiled.append(Drive(curve=effect[1], amount=effect[2]))
+        kind = effect['effect']
+        if kind == BITCRUSH:
+            compiled.append(Bitcrush(bits=effect['bits'], hold_rate=effect['rate'], rate=rate, mix=effect['mix']))
+        elif kind == DRIVE:
+            compiled.append(Drive(curve=effect['curve'], amount=effect['amount'], mix=effect['mix']))
+        elif kind == FILTER:
+            compiled.append(Filter(spec=effect, rate=rate))
     return compiled
 
 
-def through_effects(*, buffer, effects):
-    """Return an instrument's mix through its effects in order, as float32."""
+def through_effects(*, buffer, effects, start):
+    """Return an instrument's mix through its effects in order, each blended into what came before by its Mix, as float32; the
+    chunk's first sample is start."""
     for effect in effects:
-        buffer = effect.apply(buffer)
+        shaped = effect.apply(buffer, start=start)
+        if effect.mix < 1.0:
+            shaped = buffer + (shaped - buffer) * effect.mix
+        buffer = shaped
     return buffer.astype(numpy.float32, copy=False)

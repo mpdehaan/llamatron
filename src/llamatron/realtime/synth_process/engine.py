@@ -155,7 +155,7 @@ class SynthEngine:
         self.voices = alive
         for number, buffer in by_instrument.items():
             patch = self.instruments[number]
-            mix += effects.through_effects(buffer=buffer, effects=patch.effects) * patch.volume
+            mix += effects.through_effects(buffer=buffer, effects=patch.effects, start=start) * patch.volume
         # The output guard: a soft knee that reaches full scale, flat, at half again as loud, so that instruments turned up
         # past full never clip harshly, and anything louder is held at full scale.
         numpy.clip(mix, -GUARD_LIMIT, GUARD_LIMIT, out=mix)
@@ -180,6 +180,8 @@ class SynthEngine:
         # A voice keeps the patch it began with, so that a sound changed while the note sounds, even to another engine, lets the
         # note finish as it began and gives the change to the next note.
         voice.patch = patch
+        for effect in patch.effects:
+            effect.note_on(sample=sample, pitch=pitch)
         if isinstance(patch, DrumPatch):
             self._cut_drums(patch=patch, instrument=instrument, sample=sample)
             voice.hit = self._hit(patch=patch, pitch=pitch, velocity=velocity)

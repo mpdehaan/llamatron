@@ -76,8 +76,9 @@ class TestBuiltInSound(unittest.TestCase):
     def test_a_sounds_effect_blocks_reach_the_synthesis_process_in_order_the_empty_left_out(self):
         blocks = [{EffectSetting.EFFECT: Effect.DRIVE, EffectSetting.AMOUNT: DRIVE_PERCENT}, {}, {EffectSetting.EFFECT: Effect.BITCRUSH, EffectSetting.BITS: BITS}]
         spec = built_in_sound.synth_spec({SoundSetting.EFFECTS: blocks})
-        self.assertEqual(spec['effects'], [(Effect.DRIVE, built_in_sound.EFFECT_DEFAULTS[EffectSetting.CURVE], DRIVE_PERCENT / 100),
-                                           (Effect.BITCRUSH, BITS, defaults.DEFAULT_CRUSH_RATE)])
+        kinds = [(effect[EffectSetting.EFFECT], effect[EffectSetting.AMOUNT], effect[EffectSetting.BITS]) for effect in spec['effects']]
+        self.assertEqual(kinds, [(Effect.DRIVE, DRIVE_PERCENT / 100, defaults.DEFAULT_CRUSH_BITS), (Effect.BITCRUSH, defaults.DEFAULT_DRIVE_AMOUNT / 100, BITS)])
+        self.assertEqual(spec['effects'][0][EffectSetting.MIX], defaults.DEFAULT_MIX / 100)
         with self.assertRaises(InvalidValue):
             Instrument(kind=InstrumentKind.BUILT_IN).set_sound(name=SoundSetting.EFFECTS, value=[{}] * (limits.EFFECT_BLOCKS + 1))
 

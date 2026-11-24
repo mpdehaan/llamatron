@@ -7,7 +7,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.interface.tracker.keys import RowSection
-from llamatron.model.schema.file_format import Approach, ChipDirection, ChipVoice, ChordColor, ChordSymbol, Curve, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, DrumMachine, Duty, Effect, FollowAction, GateModifier, LiveResponsiveness, Modulation, NamedProgression, Noise, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SidWave, SingleNotes, SoundEngine, STATEMENT_ROWS, Stroke, Tuning, Waveform, WaveShape
+from llamatron.model.schema.file_format import Approach, ChipDirection, ChipVoice, ChordColor, ChordSymbol, Curve, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, DrumMachine, Duty, Effect, FilterMode, FilterType, FollowAction, GateModifier, LiveResponsiveness, Modulation, NamedProgression, Noise, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SidWave, SingleNotes, SoundEngine, STATEMENT_ROWS, Stroke, Tuning, Waveform, WaveShape
 
 
 def draw_labels(*, rows, label):
@@ -813,10 +813,28 @@ MSG_EFFECT_BITS_LABEL = 'Block {number} bits'
 MSG_EFFECT_RATE_LABEL = 'Block {number} rate'
 MSG_EFFECT_CURVE_LABEL = 'Block {number} curve'
 MSG_EFFECT_AMOUNT_LABEL = 'Block {number} amount'
+MSG_EFFECT_MIX_LABEL = 'Block {number} mix'
+MSG_EFFECT_FILTER_TYPE_LABEL = 'Block {number} type'
+MSG_EFFECT_FILTER_MODE_LABEL = 'Block {number} mode'
+MSG_EFFECT_CUTOFF_LABEL = 'Block {number} cutoff'
+MSG_EFFECT_RESONANCE_LABEL = 'Block {number} resonance'
+MSG_EFFECT_ENVELOPE_AMOUNT_LABEL = 'Block {number} envelope'
+MSG_EFFECT_ENVELOPE_ATTACK_LABEL = 'Block {number} attack'
+MSG_EFFECT_ENVELOPE_DECAY_LABEL = 'Block {number} decay'
+MSG_EFFECT_KEY_TRACK_LABEL = 'Block {number} key track'
+MSG_EFFECT_FILTER_DRIVE_LABEL = 'Block {number} drive'
 MSG_BITS_LABEL = 'Bits'
 MSG_RATE_LABEL = 'Rate'
 MSG_CURVE_LABEL = 'Curve'
 MSG_AMOUNT_LABEL = 'Amount'
+# A block's field labels as its box shows them, without the block's number.
+MSG_EFFECT_SHOWN_LABELS = {
+    MSG_EFFECT_BITS_LABEL: MSG_BITS_LABEL, MSG_EFFECT_RATE_LABEL: MSG_RATE_LABEL, MSG_EFFECT_CURVE_LABEL: MSG_CURVE_LABEL,
+    MSG_EFFECT_AMOUNT_LABEL: MSG_AMOUNT_LABEL, MSG_EFFECT_MIX_LABEL: 'Mix', MSG_EFFECT_FILTER_TYPE_LABEL: 'Type', MSG_EFFECT_FILTER_MODE_LABEL: 'Mode',
+    MSG_EFFECT_CUTOFF_LABEL: 'Cutoff', MSG_EFFECT_RESONANCE_LABEL: 'Resonance', MSG_EFFECT_ENVELOPE_AMOUNT_LABEL: 'Envelope',
+    MSG_EFFECT_ENVELOPE_ATTACK_LABEL: 'Attack', MSG_EFFECT_ENVELOPE_DECAY_LABEL: 'Decay', MSG_EFFECT_KEY_TRACK_LABEL: 'Key track',
+    MSG_EFFECT_FILTER_DRIVE_LABEL: 'Drive',
+}
 # How the Instruments page shows a built-in instrument where a MIDI one shows its device.
 MSG_BUILT_IN_SHOWN = 'Synth: {engine}'
 MSG_ENGINE_NAMES = {SoundEngine.BASIC: 'Basic', SoundEngine.DRUM: 'MechaDrum', SoundEngine.SID: 'SID', SoundEngine.POCKET: 'Pocket'}
@@ -833,7 +851,10 @@ MSG_DUTY_NAMES = {Duty.EIGHTH: '12.5%', Duty.QUARTER: '25%', Duty.HALF: '50%', D
 MSG_CHIP_DIRECTION_NAMES = {ChipDirection.DOWN: 'Down', ChipDirection.UP: 'Up'}
 MSG_WAVE_SHAPE_NAMES = {WaveShape.TRIANGLE: 'Triangle', WaveShape.SAW: 'Saw', WaveShape.SQUARE: 'Square', WaveShape.SINE: 'Sine', WaveShape.ORGAN: 'Organ'}
 MSG_NOISE_NAMES = {Noise.LONG: 'Long', Noise.SHORT: 'Short'}
-MSG_EFFECT_NAMES = {Effect.NONE: '(empty)', Effect.BITCRUSH: 'Bitcrush', Effect.DRIVE: 'Drive'}
+MSG_EFFECT_NAMES = {Effect.NONE: '(empty)', Effect.BITCRUSH: 'Bitcrush', Effect.DRIVE: 'Drive', Effect.FILTER: 'Filter'}
+MSG_FILTER_TYPE_NAMES = {FilterType.LADDER: 'Ladder', FilterType.MULTIMODE: 'Multimode', FilterType.SALLEN_KEY: 'Sallen-Key', FilterType.DIODE: 'Diode',
+                         FilterType.OTA: 'OTA'}
+MSG_FILTER_MODE_NAMES = {FilterMode.LOW: 'Low-pass', FilterMode.BAND: 'Band-pass', FilterMode.HIGH: 'High-pass', FilterMode.NOTCH: 'Notch'}
 MSG_CURVE_NAMES = {Curve.SOFT: 'Soft', Curve.WARM: 'Warm', Curve.HARD: 'Hard', Curve.FOLD: 'Fold', Curve.WRAP: 'Wrap'}
 # What a step with no velocity typed plays at, on an instrument and on a track.
 MSG_DEFAULT_VELOCITY_LABEL = 'Default velocity'

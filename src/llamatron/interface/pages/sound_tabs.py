@@ -1,35 +1,27 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The Instrument page's Synth and Effects tabs, as plain nodes, for one instrument by name.
+"""The Instrument page's Synth tab, as plain nodes, for one instrument by name.
 
 The Synth tab starts with On, which makes the instrument built in, and its Engine, then the engine's own settings in columns:
 Basic's voices, volume, envelope and three oscillators; a drum's machine, volume, choke group, overlap and five knobs; SID's
 wave, pulse width and its sweep, ring or sync and its interval, arpeggio, glide, voices, volume and envelope; Pocket's voice,
 duty, drawn wave, noise, stepped envelope and pitch sweep. Every share or time is a gauge, stepped by [ and ]. The Effects
-tab holds the four effect blocks, two over two, each choosing its effect and showing that effect's settings; it is drawn dim
-while the instrument isn't built in.
+tab is in effect_blocks.py.
 """
 
 from llamatron.interface.forms.nodes import ChoiceField, Field, GaugeField, NumberField, Toggle
 from llamatron.interface.forms.tab_box import Tab, TabColumn
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import Effect, EffectSetting, InstrumentKind, OscillatorSetting, SoundEngine, SoundSetting
+from llamatron.model.schema.file_format import InstrumentKind, OscillatorSetting, SoundEngine, SoundSetting
 from llamatron.user_strings import errors, labels, marks, messages
 
-# The rates a bitcrusher holds samples at, in hertz, 0 for none, as its picker offers them.
-CRUSH_RATES = (0, 32000, 22050, 16000, 11025, 8000, 6000, 4000, 3000, 2000, 1000)
 KNOB_PLACES = range(limits.KNOB_COUNT)
 OSCILLATOR_NUMBERS = range(1, limits.MAX_OSCILLATORS + 1)
-EFFECT_NUMBERS = range(1, limits.EFFECT_BLOCKS + 1)
-# The blocks that start a new band, so that the four are drawn two over two, and how many cells a block's gauge has, so
-# that two boxed blocks stand side by side at 80 columns.
-SECOND_ROW_BLOCK = 3
-BLOCK_GAUGE_CELLS = 8
 
 
 class SoundTabs:
-    """The Synth and Effects tabs of an instrument of the set, by name: page is what fields ask through, document what every
+    """The Synth tab of an instrument of the set, by name: page is what fields ask through, document what every
     change goes through, as one undo step each."""
 
     __slots__ = ('_page', '_document', '_name')
@@ -51,11 +43,6 @@ class SoundTabs:
             SoundEngine.BASIC: self.basic_columns, SoundEngine.DRUM: self.drum_columns, SoundEngine.SID: self.sid_columns, SoundEngine.POCKET: self.pocket_columns,
         }[instrument.get_sound(SoundSetting.ENGINE)]()
         return Tab(label=labels.MSG_SYNTH_TAB, top=[on, engine], columns=columns, on=instrument.is_built_in())
-
-    def effects_tab(self):
-        """Return the Effects tab: the four blocks two over two, dim while the instrument isn't built in."""
-        columns = [TabColumn(heading=None, fields=self.block_fields(number), under=number == SECOND_ROW_BLOCK, boxed=True) for number in EFFECT_NUMBERS]
-        return Tab(label=labels.MSG_EFFECTS_TAB, columns=columns, not_ready=not self.instrument().is_built_in())
 
     # Each engine's columns.
 
@@ -80,7 +67,7 @@ class SoundTabs:
             self.choice(label=labels.MSG_MODULATION_LABEL, name=SoundSetting.MODULATION, choices=file_format.MODULATIONS, names=labels.MSG_MODULATION_NAMES),
             self.number(label=labels.MSG_INTERVAL_LABEL, name=SoundSetting.INTERVAL, lowest=-limits.MAX_INTERVAL, highest=limits.MAX_INTERVAL, unit=marks.MSG_SEMITONES_SHOWN),
             self.arpeggio_field(),
-            self.gauge(label=labels.MSG_GLIDE_LABEL, name=SoundSetting.GLIDE, highest=limits.MAX_GLIDE_MS, timed=True),
+            self.gauge(label=labels.MSG_GLIDE_LABEL, name=SoundSetting.GLIDE, highest=limits.MAX_GLIDE_MS, logarithmic=True),
         ]
         return [TabColumn(heading=labels.MSG_SOUND_HEADING, fields=[self.voices_field(), self.volume_field()]), TabColumn(heading=labels.MSG_WAVE_LABEL, fields=wave),
                 TabColumn(heading=labels.MSG_ENVELOPE_HEADING, fields=self.envelope_fields())]
@@ -105,10 +92,10 @@ class SoundTabs:
 
     def envelope_fields(self):
         return [
-            self.gauge(label=labels.MSG_ATTACK_LABEL, name=SoundSetting.ATTACK, highest=limits.MAX_ENVELOPE_MS, timed=True),
-            self.gauge(label=labels.MSG_DECAY_LABEL, name=SoundSetting.DECAY, highest=limits.MAX_ENVELOPE_MS, timed=True),
+            self.gauge(label=labels.MSG_ATTACK_LABEL, name=SoundSetting.ATTACK, highest=limits.MAX_ENVELOPE_MS, logarithmic=True),
+            self.gauge(label=labels.MSG_DECAY_LABEL, name=SoundSetting.DECAY, highest=limits.MAX_ENVELOPE_MS, logarithmic=True),
             self.gauge(label=labels.MSG_SUSTAIN_LABEL, name=SoundSetting.SUSTAIN, highest=limits.MAX_PERCENT),
-            self.gauge(label=labels.MSG_RELEASE_LABEL, name=SoundSetting.RELEASE, highest=limits.MAX_ENVELOPE_MS, timed=True),
+            self.gauge(label=labels.MSG_RELEASE_LABEL, name=SoundSetting.RELEASE, highest=limits.MAX_ENVELOPE_MS, logarithmic=True),
         ]
 
     def oscillator_fields(self, number):
@@ -183,49 +170,6 @@ class SoundTabs:
         shown = marks.MSG_PACE_HELD_SHOWN if pace == 0 else marks.MSG_PACE_SHOWN.format(number=pace)
         return NumberField(page=self._page, label=label, number=pace, lowest=0, highest=limits.MAX_CHIP_PACE, shown=shown, set=self.setter(name))
 
-    # The effect blocks.
-
-    def block_fields(self, number):
-        """Return an effect block's fields: its effect, then that effect's own settings."""
-        instrument = self.instrument()
-        effect = instrument.get_effect(number=number, name=EffectSetting.EFFECT)
-        chosen = ChoiceField(page=self._page, label=labels.MSG_EFFECT_BLOCK_LABEL.format(number=number), choices=list(file_format.EFFECTS), current=effect,
-                             names=[labels.MSG_EFFECT_NAMES[choice] for choice in file_format.EFFECTS], shown=labels.MSG_EFFECT_NAMES[effect],
-                             set=self.effect_setter(number=number, name=EffectSetting.EFFECT))
-        if effect == Effect.BITCRUSH:
-            return [chosen, *self.bitcrush_fields(number)]
-        if effect == Effect.DRIVE:
-            return [chosen, *self.drive_fields(number)]
-        return [chosen]
-
-    def bitcrush_fields(self, number):
-        instrument = self.instrument()
-        rate = instrument.get_effect(number=number, name=EffectSetting.RATE)
-        rates = [str(choice) for choice in CRUSH_RATES]
-        return [
-            NumberField(page=self._page, label=labels.MSG_EFFECT_BITS_LABEL.format(number=number), shown_label=labels.MSG_BITS_LABEL,
-                        number=instrument.get_effect(number=number, name=EffectSetting.BITS), lowest=limits.MIN_BITS, highest=limits.MAX_BITS,
-                        set=self.effect_setter(number=number, name=EffectSetting.BITS)),
-            ChoiceField(page=self._page, label=labels.MSG_EFFECT_RATE_LABEL.format(number=number), shown_label=labels.MSG_RATE_LABEL, choices=rates, current=str(rate),
-                        names=[rate_shown(choice) for choice in CRUSH_RATES], shown=rate_shown(rate),
-                        set=lambda chosen: self._document.change_set(self.instrument().set_effect, number=number, name=EffectSetting.RATE, value=int(chosen))),
-        ]
-
-    def drive_fields(self, number):
-        instrument = self.instrument()
-        curve = instrument.get_effect(number=number, name=EffectSetting.CURVE)
-        return [
-            ChoiceField(page=self._page, label=labels.MSG_EFFECT_CURVE_LABEL.format(number=number), shown_label=labels.MSG_CURVE_LABEL, choices=list(file_format.CURVES),
-                        current=curve, names=[labels.MSG_CURVE_NAMES[choice] for choice in file_format.CURVES], shown=labels.MSG_CURVE_NAMES[curve],
-                        set=self.effect_setter(number=number, name=EffectSetting.CURVE)),
-            GaugeField(page=self._page, label=labels.MSG_EFFECT_AMOUNT_LABEL.format(number=number), shown_label=labels.MSG_AMOUNT_LABEL,
-                       number=instrument.get_effect(number=number, name=EffectSetting.AMOUNT), lowest=0, highest=limits.MAX_PERCENT, cells=BLOCK_GAUGE_CELLS,
-                       set=self.effect_setter(number=number, name=EffectSetting.AMOUNT)),
-        ]
-
-    def effect_setter(self, *, number, name):
-        return lambda value: self._document.change_set(self.instrument().set_effect, number=number, name=name, value=value)
-
     # Making fields, and storing what they set.
 
     def set_built_in(self, on):
@@ -245,9 +189,9 @@ class SoundTabs:
         return ChoiceField(page=self._page, label=label, choices=list(choices), current=current, names=[names[choice] for choice in choices], shown=names[current],
                            set=self.setter(name))
 
-    def gauge(self, *, label, name, highest, timed=False):
-        unit = marks.MSG_MILLISECONDS_SHOWN if timed else marks.MSG_SOUND_PERCENT_SHOWN
-        return GaugeField(page=self._page, label=label, number=self.instrument().get_sound(name), lowest=0, highest=highest, unit=unit, timed=timed,
+    def gauge(self, *, label, name, highest, logarithmic=False):
+        unit = marks.MSG_MILLISECONDS_SHOWN if logarithmic else marks.MSG_SOUND_PERCENT_SHOWN
+        return GaugeField(page=self._page, label=label, number=self.instrument().get_sound(name), lowest=0, highest=highest, unit=unit, logarithmic=logarithmic,
                           set=self.setter(name))
 
     def number(self, *, label, name, lowest, highest, unit=None):
@@ -258,9 +202,3 @@ class SoundTabs:
     def toggle(self, *, label, name):
         return Toggle(label=label, on=self.instrument().get_sound(name), set=self.setter(name))
 
-
-def rate_shown(rate):
-    """Return how a bitcrusher's rate is shown: off, or its hertz."""
-    if rate == 0:
-        return marks.MSG_RATE_OFF_SHOWN
-    return marks.MSG_HERTZ_SHOWN.format(number=rate)

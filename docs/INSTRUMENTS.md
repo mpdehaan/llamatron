@@ -59,8 +59,23 @@ grows, and `ENTER` types it. Volume goes up to 150%, and the mix is kept from
 clipping.
 
 The Effects tab holds four blocks, each empty, Bitcrush (Bits, and the Rate it
-holds samples at) or Drive (a Curve, Soft, Warm, Hard, Fold or Wrap, and an
-Amount), applied in order. The tab is dim while the instrument isn't built in.
+holds samples at), Drive (a Curve, Soft, Warm, Hard, Fold or Wrap, and an
+Amount) or Filter, applied in order. Each block's Mix says how much of the
+effect is heard against the sound coming into it. The tab is dim while the
+instrument isn't built in.
+
+A Filter takes away part of the sound, as the knob that makes a synth darker
+or brighter does. Its Type is the circuit: Ladder, the warm four-pole filter
+of the classic monosynths, which whistles on its own at full Resonance;
+Multimode, a clean two-pole filter that passes the lows, a band, the highs or
+all but a notch, chosen by its Mode; Sallen-Key, two-pole, low or high, which
+screams as its Resonance rises; Diode, the squelchy filter of acid bass lines;
+and OTA, a creamier four-pole. Cutoff is where it starts cutting, in hertz.
+Each note opens it by its Envelope, a share of four octaves (below zero it
+closes instead), over the Attack, then lets it fall back over the Decay, so a
+bass line with a short Decay and a high Resonance goes "yow" on every note.
+Key track moves the cutoff with the note, so high notes stay as bright as low
+ones, and Drive pushes the sound into the filter for grit.
 
 ## Missing Devices
 

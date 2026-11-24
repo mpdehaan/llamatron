@@ -32,6 +32,11 @@ def drum(*, machine, knobs, choke=None, volume=0.8, effects=()):
     return {'kind': 'drum', 'machine': machine, 'knobs': list(knobs), 'choke': choke, 'volume': volume, 'effects': list(effects)}
 
 
+def effects_of(*blocks):
+    """Return effect blocks, given as the set stores them, as llamatron gives them to the Synthesis Process."""
+    return synth_spec({SoundSetting.EFFECTS: list(blocks)})['effects']
+
+
 def chip(*, engine, **settings):
     """Return a SID or Pocket sound as the set would store it, given by its settings' names, compiled as llamatron gives it."""
     sound = {SoundSetting.ENGINE: engine}
@@ -81,9 +86,9 @@ TOUR = [
     ('Three detuned saws, a lo-fi pad', basic(oscillators=[['saw', 0, 0.45], ['saw', 9, 0.45], ['saw', -7, 0.45]], envelope=[0.6, 1.5, 0.75, 1.4], volume=0.22),
      lambda t: chords(start=t, chords_list=[(57, 60, 64), (53, 57, 60), (55, 59, 62), (52, 55, 59)])),
     ('The same pad, bitcrushed to six bits at eight kilohertz',
-     basic(oscillators=[['saw', 0, 0.45], ['saw', 9, 0.45], ['saw', -7, 0.45]], envelope=[0.6, 1.5, 0.75, 1.4], volume=0.22, effects=[('bitcrush', 6, 8000)]),
+     basic(oscillators=[['saw', 0, 0.45], ['saw', 9, 0.45], ['saw', -7, 0.45]], envelope=[0.6, 1.5, 0.75, 1.4], volume=0.22, effects=effects_of({'effect': 'bitcrush', 'bits': 6, 'rate': 8000})),
      lambda t: chords(start=t, chords_list=[(57, 60, 64), (53, 57, 60)])),
-    ('A driven square bass', basic(oscillators=[['square', 0, 0.7], ['saw', -5, 0.5]], envelope=[0.002, 0.15, 0.5, 0.05], voices=1, effects=[('drive', 'warm', 0.5)]),
+    ('A driven square bass', basic(oscillators=[['square', 0, 0.7], ['saw', -5, 0.5]], envelope=[0.002, 0.15, 0.5, 0.05], voices=1, effects=effects_of({'effect': 'drive', 'curve': 'warm', 'amount': 50})),
      lambda t: run(start=t, root=36, steps=MINOR_PENTATONIC, length=0.16)),
     ('Kick', drum(machine='kick', knobs=(28, 70, 40, 30, 50)), lambda t: hits(start=t, pattern='x...x...x..xx...', step=0.12)),
     ('Hard kick', drum(machine='hard_kick', knobs=(30, 45, 64, 50, 40)), lambda t: hits(start=t, pattern='x...x...x...x...', step=0.12)),
@@ -97,7 +102,7 @@ TOUR = [
     ('Acoustic tom, played as a melody', drum(machine='acoustic_tom', knobs=(50, 64, 80, 40, 50)),
      lambda t: hits(start=t, pattern='x.x.x.x.x.x.x.x.', step=0.12, pitches=(60, 62, 64, 67, 69, 67, 64, 62))),
     ('Karplus drum', drum(machine='karplus_drum', knobs=(40, 60, 70, 90, 20)), lambda t: hits(start=t, pattern='x.x.xx.xx.x.x.xx', step=0.12, pitches=(48, 55, 52, 60))),
-    ('Karplus drum, crushed to four bits', drum(machine='karplus_drum', knobs=(50, 50, 90, 110, 40), effects=[('bitcrush', 4, 11000)]),
+    ('Karplus drum, crushed to four bits', drum(machine='karplus_drum', knobs=(50, 50, 90, 110, 40), effects=effects_of({'effect': 'bitcrush', 'bits': 4, 'rate': 11000})),
      lambda t: hits(start=t, pattern='xx.xx.x.xx.x.xxx', step=0.1, pitches=(55, 50, 60, 48))),
     ('SID pulse, its width sweeping', chip(engine='sid', pulse_sweep=40, decay=400, sustain=40), lambda t: run(start=t, root=48, steps=MINOR_PENTATONIC, length=0.15)),
     ('SID chord arpeggio, one voice', chip(engine='sid', arpeggio=[0, 3, 7, 12], sustain=80), lambda t: chords(start=t, chords_list=[(57,), (53,), (55,), (52,)], length=0.8)),

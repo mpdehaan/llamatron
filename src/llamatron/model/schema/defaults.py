@@ -75,3 +75,13 @@ DEFAULT_SWEEP_STEP = 3
 DEFAULT_CRUSH_BITS = 8
 DEFAULT_CRUSH_RATE = 0
 DEFAULT_DRIVE_AMOUNT = 33
+# A filter chosen starts a ladder low-pass at 1200 Hz, a little resonance, its envelope opening it two octaves and falling over
+# a quarter second, half key tracking, no drive; every effect starts fully mixed in.
+DEFAULT_CUTOFF = 1200
+DEFAULT_RESONANCE = 25
+DEFAULT_ENVELOPE_AMOUNT = 50
+DEFAULT_ENVELOPE_ATTACK = 2
+DEFAULT_ENVELOPE_DECAY = 250
+DEFAULT_KEY_TRACK = 50
+DEFAULT_FILTER_DRIVE = 0
+DEFAULT_MIX = 100

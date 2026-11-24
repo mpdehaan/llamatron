@@ -15,7 +15,7 @@ from llamatron.interface.tracker.screens.set.instrument_editor import Instrument
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import Effect, EffectSetting, InstrumentKind, InstrumentSetting, OscillatorSetting, Section, SetlistSetting, SoundEngine, SoundSetting, TrackSetting
+from llamatron.model.schema.file_format import Effect, EffectSetting, FilterType, InstrumentKind, InstrumentSetting, OscillatorSetting, Section, SetlistSetting, SoundEngine, SoundSetting, TrackSetting
 from llamatron.model.values import midi
 from llamatron.realtime import realtime_names
 from llamatron.user_strings import errors, labels, marks, messages, names
@@ -35,6 +35,8 @@ SEED = 1
 ARPEGGIO = [0, 4, 7]
 ARPEGGIO_TYPED = '0 4 7'
 # How far ] steps a time of 300 ms.
+# How far ] steps the default cutoff, 1200 Hz, which steps by 50 between 1000 and 2000.
+CUTOFF_STRIDE = 50
 DECAY_STRIDE = 10
 
 
@@ -320,6 +322,20 @@ class TestInstrumentTabs(UITest):
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_effect(number=3, name=EffectSetting.EFFECT), Effect.BITCRUSH)
         self.assertIn(labels.MSG_EFFECT_BITS_LABEL.format(number=3), self.shown_labels())
+
+    async def test_a_filter_block_shows_its_mode_only_where_its_type_has_several_and_its_cutoff_steps_by_hertz(self):
+        self.document.change_set(self.instrument().set_effect, number=1, name=EffectSetting.EFFECT, value=Effect.FILTER)
+        await self.select_field(labels.MSG_EFFECT_BLOCK_LABEL.format(number=1))
+        self.assertIn(labels.MSG_EFFECT_CUTOFF_LABEL.format(number=1), self.shown_labels())
+        self.assertIn(labels.MSG_EFFECT_MIX_LABEL.format(number=1), self.shown_labels())
+        self.assertNotIn(labels.MSG_EFFECT_FILTER_MODE_LABEL.format(number=1), self.shown_labels())
+        await self.select_field(labels.MSG_EFFECT_FILTER_TYPE_LABEL.format(number=1))
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_effect(number=1, name=EffectSetting.FILTER_TYPE), FilterType.MULTIMODE)
+        self.assertIn(labels.MSG_EFFECT_FILTER_MODE_LABEL.format(number=1), self.shown_labels())
+        await self.select_field(labels.MSG_EFFECT_CUTOFF_LABEL.format(number=1))
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_effect(number=1, name=EffectSetting.CUTOFF), defaults.DEFAULT_CUTOFF + CUTOFF_STRIDE)
 
     async def test_an_arpeggio_is_typed_and_one_out_of_range_refused(self):
         await self.select_field(labels.MSG_ENGINE_LABEL)

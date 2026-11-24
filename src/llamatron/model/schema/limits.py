@@ -146,6 +146,10 @@ MAX_CHIP_PACE = 7
 MIN_SWEEP_STEP = 1
 MAX_SWEEP_STEP = 7
 EFFECT_BLOCKS = 4
+# A filter's cutoff in hertz, and its envelope's amount in percent of four octaves either way.
+MIN_CUTOFF = 20
+MAX_CUTOFF = 18000
+MAX_ENVELOPE_AMOUNT = 100
 MIN_BITS = 1
 MAX_BITS = 16
 MAX_HOLD_RATE = 48000

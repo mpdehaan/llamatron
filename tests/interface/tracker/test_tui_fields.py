@@ -164,7 +164,7 @@ class TestGaugeField(unittest.TestCase):
     def test_a_time_steps_by_more_as_it_grows(self):
         kept = Kept()
         for number, stride in ((LONG_TIME_MS, nodes.LONGEST_TIME_STRIDE), (SHORT_TIME_MS, 1)):
-            field = GaugeField(page=kept, label=A_LABEL, number=number, set=kept.set, lowest=0, highest=MORE_THAN_ANY_RANGE, timed=True)
+            field = GaugeField(page=kept, label=A_LABEL, number=number, set=kept.set, lowest=0, highest=MORE_THAN_ANY_RANGE, logarithmic=True)
             kept.now += PAUSE_SECONDS
             field.adjust(key_table.STEP_FORWARD)
             self.assertEqual(kept.stored[-1], number + stride)

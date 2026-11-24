@@ -9,6 +9,7 @@ the other off, and then the Keyswitch Map button."""
 from llamatron.interface.forms import percentages
 from llamatron.interface.forms.nodes import Field, NameField, NumberField, SettingNumberField, Toggle
 from llamatron.interface.forms.tab_box import Tab, TabBox, TabColumn
+from llamatron.interface.pages.effect_blocks import EffectBlocks
 from llamatron.interface.pages.sound_tabs import SoundTabs
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import InstrumentKind, InstrumentSetting
@@ -92,7 +93,7 @@ class InstrumentPresenter:
             self.default_velocity_field(),
             self.accent_field(),
             self.velocity_change_field(),
-            TabBox(tabs=[self.midi_tab(), tabs.synth_tab(), tabs.effects_tab()]),
+            TabBox(tabs=[self.midi_tab(), tabs.synth_tab(), EffectBlocks(page=self._page, document=self._document, name=self._name).effects_tab()]),
             self._page.keyswitch_map_button(),
             self._page.listen_button(),
         ]

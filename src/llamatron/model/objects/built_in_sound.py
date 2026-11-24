@@ -18,7 +18,7 @@ stores only what differs from it and older sets load as they are.
 from llamatron.model.file import corrections
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ChipDirection, ChipVoice, Curve, DrumMachine, Duty, Effect, EffectSetting, Modulation, Noise, OscillatorSetting, SidWave, SoundEngine, SoundSetting, Waveform, WaveShape
+from llamatron.model.schema.file_format import ChipDirection, ChipVoice, Curve, DrumMachine, Duty, Effect, EffectSetting, FilterMode, FilterType, Modulation, Noise, OscillatorSetting, SidWave, SoundEngine, SoundSetting, Waveform, WaveShape
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.user_strings import errors
 
@@ -26,6 +26,9 @@ MILLISECONDS = 1000.0
 # The note a drum plays at its own pitch on where nothing says otherwise.
 MIDDLE_C = 60
 PERCENT = 100.0
+# An effect block's settings given as fractions and as seconds.
+FRACTIONS = (EffectSetting.AMOUNT, EffectSetting.RESONANCE, EffectSetting.ENVELOPE_AMOUNT, EffectSetting.KEY_TRACK, EffectSetting.FILTER_DRIVE, EffectSetting.MIX)
+SECONDS = (EffectSetting.ENVELOPE_ATTACK, EffectSetting.ENVELOPE_DECAY)
 # A chip pulse's duty as the share of each cycle it is high.
 DUTY_SHARES = {Duty.EIGHTH: 0.125, Duty.QUARTER: 0.25, Duty.HALF: 0.5, Duty.THREE_QUARTERS: 0.75}
 
@@ -85,10 +88,26 @@ EFFECT_SETTINGS = described(
     WholeNumber(name=EffectSetting.RATE, lowest=0, highest=limits.MAX_HOLD_RATE, error=errors.ERR_SOUND_NUMBER),
     chosen(EffectSetting.CURVE, choices=file_format.CURVES),
     percent(EffectSetting.AMOUNT),
+    chosen(EffectSetting.FILTER_TYPE, choices=file_format.FILTER_TYPES),
+    chosen(EffectSetting.FILTER_MODE, choices=file_format.FILTER_MODES),
+    WholeNumber(name=EffectSetting.CUTOFF, lowest=limits.MIN_CUTOFF, highest=limits.MAX_CUTOFF, error=errors.ERR_SOUND_NUMBER),
+    percent(EffectSetting.RESONANCE),
+    WholeNumber(name=EffectSetting.ENVELOPE_AMOUNT, lowest=-limits.MAX_ENVELOPE_AMOUNT, highest=limits.MAX_ENVELOPE_AMOUNT, error=errors.ERR_SOUND_NUMBER),
+    milliseconds(EffectSetting.ENVELOPE_ATTACK),
+    milliseconds(EffectSetting.ENVELOPE_DECAY),
+    percent(EffectSetting.KEY_TRACK),
+    percent(EffectSetting.FILTER_DRIVE),
+    percent(EffectSetting.MIX),
 )
 # What each setting of an effect block is where the block leaves it out.
-EFFECT_DEFAULTS = {EffectSetting.EFFECT: Effect.NONE, EffectSetting.BITS: defaults.DEFAULT_CRUSH_BITS, EffectSetting.RATE: defaults.DEFAULT_CRUSH_RATE,
-                   EffectSetting.CURVE: Curve.WARM, EffectSetting.AMOUNT: defaults.DEFAULT_DRIVE_AMOUNT}
+EFFECT_DEFAULTS = {
+    EffectSetting.EFFECT: Effect.NONE, EffectSetting.BITS: defaults.DEFAULT_CRUSH_BITS, EffectSetting.RATE: defaults.DEFAULT_CRUSH_RATE,
+    EffectSetting.CURVE: Curve.WARM, EffectSetting.AMOUNT: defaults.DEFAULT_DRIVE_AMOUNT, EffectSetting.FILTER_TYPE: FilterType.LADDER,
+    EffectSetting.FILTER_MODE: FilterMode.LOW, EffectSetting.CUTOFF: defaults.DEFAULT_CUTOFF, EffectSetting.RESONANCE: defaults.DEFAULT_RESONANCE,
+    EffectSetting.ENVELOPE_AMOUNT: defaults.DEFAULT_ENVELOPE_AMOUNT, EffectSetting.ENVELOPE_ATTACK: defaults.DEFAULT_ENVELOPE_ATTACK,
+    EffectSetting.ENVELOPE_DECAY: defaults.DEFAULT_ENVELOPE_DECAY, EffectSetting.KEY_TRACK: defaults.DEFAULT_KEY_TRACK,
+    EffectSetting.FILTER_DRIVE: defaults.DEFAULT_FILTER_DRIVE, EffectSetting.MIX: defaults.DEFAULT_MIX,
+}
 
 # A sound's settings, each described once, in the order they're written to a file.
 SOUND_SETTINGS = described(
@@ -241,11 +260,16 @@ class SoundSpec:
                 'wave_shape': self.value(SoundSetting.WAVE_SHAPE), 'noise': self.value(SoundSetting.NOISE)}
 
     def effects(self):
+        """Return the effects in order, each a mapping of its settings, every setting given, shares as fractions and times in
+        seconds, the empty blocks left out."""
         effects = []
         for block in self.value(SoundSetting.EFFECTS):
-            effect = effect_value(block=block, name=EffectSetting.EFFECT)
-            if effect == Effect.BITCRUSH:
-                effects.append((Effect.BITCRUSH, effect_value(block=block, name=EffectSetting.BITS), effect_value(block=block, name=EffectSetting.RATE)))
-            elif effect == Effect.DRIVE:
-                effects.append((Effect.DRIVE, effect_value(block=block, name=EffectSetting.CURVE), effect_value(block=block, name=EffectSetting.AMOUNT) / PERCENT))
+            if effect_value(block=block, name=EffectSetting.EFFECT) == Effect.NONE:
+                continue
+            effect = {name: effect_value(block=block, name=name) for name in EFFECT_DEFAULTS}
+            for name in FRACTIONS:
+                effect[name] = effect[name] / PERCENT
+            for name in SECONDS:
+                effect[name] = effect[name] / MILLISECONDS
+            effects.append(effect)
         return effects

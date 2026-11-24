@@ -626,14 +626,25 @@ class OscillatorSetting:
 
 
 class EffectSetting:
-    """One effect block of a built-in sound: which effect, or none, and its settings: the bitcrusher's bits and the rate it
-    holds samples at, drive's curve and amount."""
+    """One effect block of a built-in sound: which effect, or none, its settings, and how much of it is mixed in: the
+    bitcrusher's bits and the rate it holds samples at; drive's curve and amount; a filter's type and mode, cutoff in hertz,
+    resonance, its envelope's amount in percent of four octaves either way, attack and decay, key tracking and drive."""
 
     EFFECT = 'effect'
     BITS = 'bits'
     RATE = 'rate'
     CURVE = 'curve'
     AMOUNT = 'amount'
+    FILTER_TYPE = 'filter_type'
+    FILTER_MODE = 'filter_mode'
+    CUTOFF = 'cutoff'
+    RESONANCE = 'resonance'
+    ENVELOPE_AMOUNT = 'envelope_amount'
+    ENVELOPE_ATTACK = 'envelope_attack'
+    ENVELOPE_DECAY = 'envelope_decay'
+    KEY_TRACK = 'key_track'
+    FILTER_DRIVE = 'filter_drive'
+    MIX = 'mix'
 
 
 class SoundEngine:
@@ -715,11 +726,33 @@ class Noise:
 
 
 class Effect:
-    """What an effect block holds: nothing, the bitcrusher, or drive."""
+    """What an effect block holds: nothing, the bitcrusher, drive, or a filter."""
 
     NONE = 'none'
     BITCRUSH = 'bitcrush'
     DRIVE = 'drive'
+    FILTER = 'filter'
+
+
+class FilterType:
+    """A filter effect's circuit: the four-pole transistor ladder, the clean two-pole multimode (a state-variable filter), the
+    screaming Sallen-Key, the acid diode ladder, or the creamy four-pole OTA."""
+
+    LADDER = 'ladder'
+    MULTIMODE = 'multimode'
+    SALLEN_KEY = 'sallen_key'
+    DIODE = 'diode'
+    OTA = 'ota'
+
+
+class FilterMode:
+    """What a filter passes: the lows, a band, the highs, or all but a notch. Only the multimode has all four, the Sallen-Key
+    low and high, and the ladders the lows alone."""
+
+    LOW = 'low'
+    BAND = 'band'
+    HIGH = 'high'
+    NOTCH = 'notch'
 
 
 class Curve:
@@ -758,7 +791,12 @@ DUTIES = (Duty.EIGHTH, Duty.QUARTER, Duty.HALF, Duty.THREE_QUARTERS)
 CHIP_DIRECTIONS = (ChipDirection.DOWN, ChipDirection.UP)
 WAVE_SHAPES = (WaveShape.TRIANGLE, WaveShape.SAW, WaveShape.SQUARE, WaveShape.SINE, WaveShape.ORGAN)
 NOISES = (Noise.LONG, Noise.SHORT)
-EFFECTS = (Effect.NONE, Effect.BITCRUSH, Effect.DRIVE)
+EFFECTS = (Effect.NONE, Effect.BITCRUSH, Effect.DRIVE, Effect.FILTER)
+FILTER_TYPES = (FilterType.LADDER, FilterType.MULTIMODE, FilterType.SALLEN_KEY, FilterType.DIODE, FilterType.OTA)
+FILTER_MODES = (FilterMode.LOW, FilterMode.BAND, FilterMode.HIGH, FilterMode.NOTCH)
+# The modes each filter type has.
+MODES_OF_FILTER = {FilterType.LADDER: (FilterMode.LOW,), FilterType.MULTIMODE: FILTER_MODES, FilterType.SALLEN_KEY: (FilterMode.LOW, FilterMode.HIGH),
+                   FilterType.DIODE: (FilterMode.LOW,), FilterType.OTA: (FilterMode.LOW,)}
 CURVES = (Curve.SOFT, Curve.WARM, Curve.HARD, Curve.FOLD, Curve.WRAP)
 DRUM_MACHINES = (DrumMachine.KICK, DrumMachine.HARD_KICK, DrumMachine.SYNTH_KICK, DrumMachine.SNARE, DrumMachine.CLAP, DrumMachine.RIM,
                  DrumMachine.HATS, DrumMachine.COWBELL, DrumMachine.ACOUSTIC_TOM, DrumMachine.KARPLUS_DRUM)

@@ -216,13 +216,16 @@ class NumberField(Field):
 @dataclass(slots=True, kw_only=True)
 class GaugeField(NumberField):
     """A number of a built-in sound drawn as a horizontal gauge, of GAUGE_CELLS cells unless it says, then its value in its unit, a format
-    of number: [ and ] step it, by more as it grows where it is a time in milliseconds, whose gauge then fills by the
-    logarithm of the time so that short times can be told apart; Enter types it. Both ends are needed."""
+    of number: [ and ] step it, by more as it grows where it is logarithmic, a time in milliseconds or a frequency in hertz,
+    whose gauge then fills by the logarithm so that small values can be told apart; Enter types it. Both ends are needed."""
 
     unit: str = marks.MSG_SOUND_PERCENT_SHOWN
-    timed: bool = False
+    logarithmic: bool = False
     # How many cells the gauge has: fewer where it stands in a narrow box, as an effect block's do.
     cells: int = GAUGE_CELLS
+    # How far a logarithmic gauge steps below each bound, and above the last: a time's strides unless it says.
+    strides: tuple = TIME_STRIDES
+    longest_stride: int = LONGEST_TIME_STRIDE
 
     def __post_init__(self):
         self.value = self.drawn
@@ -237,7 +240,7 @@ class GaugeField(NumberField):
 
     def share(self, number):
         """Return how much of the gauge a number fills, from 0 to 1."""
-        if self.timed:
+        if self.logarithmic:
             return math.log1p(number - self.lowest) / math.log1p(self.highest - self.lowest)
         return (number - self.lowest) / (self.highest - self.lowest)
 
@@ -248,12 +251,12 @@ class GaugeField(NumberField):
     def stride(self):
         """Return how far [ and ] step: one, or for a time a step that grows with it, so that a long time is reached in few presses."""
         number = self.counted_from()
-        if not self.timed:
+        if not self.logarithmic:
             return 1
-        for below, stride in TIME_STRIDES:
+        for below, stride in self.strides:
             if number < below:
                 return stride
-        return LONGEST_TIME_STRIDE
+        return self.longest_stride
 
 
 @dataclass(slots=True, kw_only=True)

@@ -374,6 +374,8 @@ MSG_INSTRUMENT_OFF_SHOWN = '(off)'
 MSG_NO_CHANNEL_SHOWN = ''
 MSG_SOUND_GAUGE_EMPTY = '░'
 MSG_SOUND_PERCENT_SHOWN = '{number}%'
+# A share that may go below zero, such as a filter envelope's amount.
+MSG_SIGNED_PERCENT_SHOWN = '{number:+}%'
 MSG_NUMBER_SHOWN = '{number}'
 MSG_MILLISECONDS_SHOWN = '{number} ms'
 MSG_CENTS_SHOWN = '{number:+d} c'

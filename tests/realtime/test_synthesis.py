@@ -12,7 +12,7 @@ from unittest import mock
 from llamatron.model.objects.built_in_sound import synth_spec
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, Modulation, Noise, SidWave, SoundEngine, SoundSetting, Waveform
+from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, EffectSetting, FilterMode, FilterType, Modulation, Noise, SidWave, SoundEngine, SoundSetting, Waveform
 from llamatron.realtime.synth_process import drums, effects as effect_values, engine as engine_values, process, tables
 from llamatron.realtime.synth_process.effects import Bitcrush, compiled_effects
 from llamatron.realtime.synth_process.engine import DrumPatch, SynthEngine
@@ -33,6 +33,7 @@ LINUX = 'linux'
 MACOS = 'darwin'
 YES = '1'
 QUIET = 0.01
+LOW_CUTOFF = 500
 # Long enough for the default release, 200 ms, to fall below silence.
 SECONDS_TO_FALL_SILENT = 3
 PULSE_SWEEP = 40
@@ -51,6 +52,19 @@ def drum_patch(*, machine, choke=None):
     def render(*, pitch, velocity, rate):
         return drums.render_hit(machine=machine, knobs=KNOBS, pitch=pitch, velocity=velocity, rate=rate)
     return DrumPatch(render_hit=render, spec={'choke': choke, 'volume': 1.0})
+
+
+def rendered_saw():
+    """Return a held saw with no effects, played a while."""
+    engine = SynthEngine(rate=RATE)
+    engine.set_instrument(number=SYNTH, patch=saw_patch())
+    engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=LOUD)
+    return rendered(engine, chunks=40)
+
+
+def effects_of(*blocks):
+    """Return effect blocks as llamatron gives them to the Synthesis Process, every setting given."""
+    return synth_spec({SoundSetting.EFFECTS: list(blocks)})['effects']
 
 
 def rendered(engine, *, chunks):
@@ -105,7 +119,7 @@ class TestSynthesisEngine(unittest.TestCase):
 
     def test_the_bitcrusher_holds_samples_and_reduces_bits(self):
         crushed = SynthEngine(rate=RATE)
-        crushed.set_instrument(number=SYNTH, patch=saw_patch(effects=[(Effect.BITCRUSH, 2, RATE // 8)]))
+        crushed.set_instrument(number=SYNTH, patch=saw_patch(effects=effects_of({EffectSetting.EFFECT: Effect.BITCRUSH, EffectSetting.BITS: 2, EffectSetting.RATE: RATE // 8})))
         crushed.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=127)
         mix = rendered(crushed, chunks=4)
         self.assertLessEqual(len(numpy.unique(numpy.round(mix, 4))), 8)
@@ -188,6 +202,53 @@ class TestEffects(unittest.TestCase):
             engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C + offset * 7, velocity=127)
         mix = rendered(engine, chunks=20)
         self.assertLessEqual(float(numpy.abs(mix).max()), 1.0 + 1e-6)
+
+
+class TestFilters(unittest.TestCase):
+
+    def filtered(self, *, block, chunks=40, pitch=MIDDLE_C):
+        """Return a held saw through a filter block, played a while."""
+        engine = SynthEngine(rate=RATE)
+        engine.set_instrument(number=SYNTH, patch=saw_patch(effects=effects_of({EffectSetting.EFFECT: Effect.FILTER, **block})))
+        engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=pitch, velocity=LOUD)
+        return rendered(engine, chunks=chunks)
+
+    def brightness(self, mix):
+        """Return how much of a mix lies above 4 kHz against below."""
+        # A Hann window, so that how the window happens to cut the saw's cycle doesn't leak into the measure.
+        window = mix[-CHUNK * 16:]
+        spectrum = numpy.abs(numpy.fft.rfft(window * numpy.hanning(len(window))))
+        cut = len(spectrum) * 4000 // (RATE // 2)
+        return spectrum[cut:].sum() / spectrum[:cut].sum()
+
+    def test_every_type_sounds_and_a_low_pass_darkens_the_saw(self):
+        open_saw = self.brightness(rendered_saw())
+        for kind in (FilterType.LADDER, FilterType.MULTIMODE, FilterType.SALLEN_KEY, FilterType.DIODE, FilterType.OTA):
+            with self.subTest(kind=kind):
+                mix = self.filtered(block={EffectSetting.FILTER_TYPE: kind, EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 0})
+                self.assertTrue(numpy.isfinite(mix).all())
+                self.assertGreater(numpy.abs(mix).max(), QUIET)
+                self.assertLess(self.brightness(mix), open_saw)
+
+    def test_the_multimode_high_pass_keeps_the_highs(self):
+        low = self.filtered(block={EffectSetting.FILTER_TYPE: FilterType.MULTIMODE, EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 0})
+        high = self.filtered(block={EffectSetting.FILTER_TYPE: FilterType.MULTIMODE, EffectSetting.FILTER_MODE: FilterMode.HIGH, EffectSetting.CUTOFF: LOW_CUTOFF,
+                                    EffectSetting.ENVELOPE_AMOUNT: 0})
+        self.assertGreater(self.brightness(high), self.brightness(low))
+
+    def test_the_envelope_opens_the_filter_at_a_note_and_it_falls_after(self):
+        block = {EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 100, EffectSetting.ENVELOPE_DECAY: 50}
+        mix = self.filtered(block=block, chunks=200)
+        early = self.brightness(mix[CHUNK * 2:CHUNK * 18])
+        late = self.brightness(mix)
+        self.assertGreater(early, late)
+
+    def test_a_half_mix_lies_between_the_dry_and_the_filtered(self):
+        block = {EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 0}
+        full = self.brightness(self.filtered(block=block))
+        half = self.brightness(self.filtered(block={**block, EffectSetting.MIX: 50}))
+        self.assertLess(full, half)
+        self.assertLess(half, self.brightness(rendered_saw()))
 
 
 class TestDrumsAndTables(unittest.TestCase):
