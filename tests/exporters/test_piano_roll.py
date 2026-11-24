@@ -49,9 +49,9 @@ class TestPianoRoll(unittest.TestCase):
 
     def test_lanes_narrow_so_that_two_rows_fit_a_page(self):
         wide = piano_roll.PrintedRollRow(start=0 * BAR, end=BAR, bars=(0 * BAR,), low=36, high=96)
-        self.assertEqual(piano_roll.lane_height([wide]), piano_roll.NARROWEST_LANE)
+        self.assertEqual(piano_roll.lane_height(rows=[wide], room=piano_roll.ChordRoom(row=piano_roll.CHORD_HEIGHT, strip=piano_roll.STRIP_HEIGHT)), piano_roll.NARROWEST_LANE)
         narrow = piano_roll.PrintedRollRow(start=0 * BAR, end=BAR, bars=(0 * BAR,), low=60, high=72)
-        self.assertEqual(piano_roll.lane_height([narrow]), piano_roll.LANE_HEIGHT)
+        self.assertEqual(piano_roll.lane_height(rows=[narrow], room=piano_roll.ChordRoom(row=piano_roll.CHORD_HEIGHT, strip=piano_roll.STRIP_HEIGHT)), piano_roll.LANE_HEIGHT)
 
     def test_the_strip_shows_each_change_once_and_starts_afresh_after_one_left_out(self):
         chords = [chord(start=0 * BAR, name=NoteName.C, root=C), chord(start=BAR, name=NoteName.F, root=F), chord(start=2 * BAR, name=NoteName.C, root=C),
@@ -65,4 +65,13 @@ class TestPianoRoll(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             page = NumberedCanvas(os.path.join(folder, PDF_FILE), pagesize=letter)
             piano_roll.draw_piano_roll(page=page, printed=printed())
+            self.assertEqual(page.page_count(), 1)
+
+    def test_a_song_printed_without_chords_leaves_no_room_for_them(self):
+        song = song_printing.printed_song(song=Setlist.read_file(test_song_printing.SET_FILE).get_song(test_song_printing.SONG), title=test_song_printing.SONG, parts={test_song_printing.LEAD: song_printing.PrintedPart.MELODY})
+        self.assertEqual(song.chords, ())
+        self.assertEqual(piano_roll.chord_room(song), piano_roll.ChordRoom(row=0, strip=0))
+        with tempfile.TemporaryDirectory() as folder:
+            page = NumberedCanvas(os.path.join(folder, PDF_FILE), pagesize=letter)
+            piano_roll.draw_piano_roll(page=page, printed=song)
             self.assertEqual(page.page_count(), 1)

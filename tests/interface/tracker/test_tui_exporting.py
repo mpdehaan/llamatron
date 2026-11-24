@@ -7,7 +7,7 @@
 import os
 
 from llamatron.exporters import exports
-from llamatron.exporters.exports import earlier_export, ExportKind, pdf_options, pdf_path, PdfKind, PrintedPart, shown_export_path
+from llamatron.exporters.exports import earlier_export, ExportKind, PacketPage, pdf_options, pdf_path, PdfKind, PrintedPart, shown_export_path
 from llamatron.interface.pages import uses
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs import export_dialog
@@ -252,3 +252,18 @@ class TestPdfExportPage(UITest):
         page.place = page.level_place()
         await self.press(keybindings.PdfExportPage.LESS)
         self.assertEqual(page.level, pdf_options().chord_levels[0])
+
+    async def test_with_no_chords_track_the_chord_pages_dim_and_the_piano_roll_alone_exports(self):
+        page = self.app.screen
+        for track in page.tracks:
+            if page.parts[track.name] == PrintedPart.CHORDS:
+                page.parts[track.name] = PrintedPart.LEFT_OUT
+        chart = pdf_options().packet_pages.index(PacketPage.CHORD_CHART)
+        page.place = chart
+        await self.press(Key.SPACE)
+        self.assertIn(errors.ERR_PDF_NEEDS_CHORDS, self.text())
+        self.assertEqual(page.choices().packet_pages, (PacketPage.PIANO_ROLL,))
+        page.place = page.first_button_place()
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, MainPage)
+        self.assertTrue(os.path.exists(pdf_path(directory=self.folder, name=self.document.export_name(), kind=PdfKind.PACKET)))

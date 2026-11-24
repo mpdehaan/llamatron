@@ -7,7 +7,8 @@ and Roman numeral.
 
 Each row holds as many bars as fill ROW_BEATS beats, its lanes spanning the melody's notes in it; each section begins with
 its name over its first bar, and a section played several times in a row is drawn once, its name saying how many times.
-Along the foot of every page runs the strip of the chord changes on it, each chord on a small keyboard, the keys that stay
+A song printed without chords has no chord lane and no strip. Along the foot of every page runs the strip of the chord
+changes on it, each chord on a small keyboard, the keys that stay
 from the chord before blue and those that move red.
 """
 
@@ -115,7 +116,7 @@ def draw_piano_roll(*, page, printed):
 class PrintedRollDrawing:
     """The piano roll of one song being drawn: the page, the song, the rows, how wide a whole note is and how tall a lane."""
 
-    __slots__ = ('_page', '_printed', '_rows', '_whole_width', '_lane')
+    __slots__ = ('_page', '_printed', '_rows', '_whole_width', '_lane', '_room')
 
     def __init__(self, *, page, printed):
         self._page = page
@@ -124,7 +125,8 @@ class PrintedRollDrawing:
         width, _ = PAGE_SIZE
         longest = max((row.end - row.start for row in self._rows), default=printed.bar_length())
         self._whole_width = (width - 2 * MARGIN - LABEL_WIDTH) / float(longest)
-        self._lane = lane_height(self._rows)
+        self._room = chord_room(printed)
+        self._lane = lane_height(rows=self._rows, room=self._room)
 
     def draw(self):
         """Draw every row, as many to a page as fit above the strip, numbering the pages."""
@@ -134,22 +136,23 @@ class PrintedRollDrawing:
             top = draw_heading(page=self._page, title=self._printed.title, detail=printing.MSG_PAGE_OF.format(page=printing.MSG_PIANO_ROLL, index=index, total=len(pages))) - HEADING_GAP
             for row in rows:
                 self._draw_row(row=row, top=top)
-                top -= row_height(row=row, lane=self._lane)
-            self._draw_strip(start=rows[0].start, end=rows[-1].end)
+                top -= row_height(row=row, lane=self._lane, room=self._room)
+            if self._printed.chords:
+                self._draw_strip(start=rows[0].start, end=rows[-1].end)
             self._page.showPage()
 
     def _pages(self):
         """Return the rows in pages, as many to a page as fit between the heading and the strip."""
         _, height = PAGE_SIZE
-        room = height - 2 * MARGIN - STRIP_HEIGHT - TOP_HEIGHT * 2
+        room = height - 2 * MARGIN - self._room.strip - TOP_HEIGHT * 2
         pages = [[]]
         used = 0
         for row in self._rows:
-            if pages[-1] and used + row_height(row=row, lane=self._lane) > room:
+            if pages[-1] and used + row_height(row=row, lane=self._lane, room=self._room) > room:
                 pages.append([])
                 used = 0
             pages[-1].append(row)
-            used += row_height(row=row, lane=self._lane)
+            used += row_height(row=row, lane=self._lane, room=self._room)
         return [rows for rows in pages if rows]
 
     def _x(self, *, row, time):
@@ -285,18 +288,33 @@ class PrintedRollDrawing:
             self._page.drawCentredString(left - STRIP_ARROW_WIDTH / 2, top - STRIP_KEYBOARD_HEIGHT / 2 - HALF, printing.MSG_ARROW)
 
 
-def row_height(*, row, lane):
+class ChordRoom(NamedTuple):
+    """The room a roll leaves for its chords: under each row, and for the strip at each page's foot, none for a song printed
+    without chords."""
+
+    row: float
+    strip: float
+
+
+def chord_room(printed):
+    """Return the room a printed song's roll leaves for its chords (ChordRoom), none where it has none."""
+    if printed.chords:
+        return ChordRoom(row=CHORD_HEIGHT, strip=STRIP_HEIGHT)
+    return ChordRoom(row=0, strip=0)
+
+
+def row_height(*, row, lane, room):
     """Return how much of a page a row takes, its lanes, counting, chords and the gap after it."""
-    return TOP_HEIGHT + (row.high - row.low + 1) * lane + COUNT_HEIGHT + CHORD_HEIGHT + ROW_GAP
+    return TOP_HEIGHT + (row.high - row.low + 1) * lane + COUNT_HEIGHT + room.row + ROW_GAP
 
 
-def lane_height(rows):
+def lane_height(*, rows, room):
     """Return how tall a lane is drawn: LANE_HEIGHT, or less, down to NARROWEST_LANE, so that ROWS_PER_PAGE rows of the
     widest range fit on a page."""
     _, height = PAGE_SIZE
-    room = (height - 2 * MARGIN - STRIP_HEIGHT - TOP_HEIGHT * 2) / ROWS_PER_PAGE - TOP_HEIGHT - COUNT_HEIGHT - CHORD_HEIGHT - ROW_GAP
+    free = (height - 2 * MARGIN - room.strip - TOP_HEIGHT * 2) / ROWS_PER_PAGE - TOP_HEIGHT - COUNT_HEIGHT - room.row - ROW_GAP
     lanes = max((row.high - row.low + 1 for row in rows), default=FEWEST_LANES)
-    return max(NARROWEST_LANE, min(LANE_HEIGHT, room / lanes))
+    return max(NARROWEST_LANE, min(LANE_HEIGHT, free / lanes))
 
 
 class StripChord(NamedTuple):
