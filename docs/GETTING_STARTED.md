@@ -170,6 +170,46 @@ an item, or in more than one way. The map is generated from the code by
 ```mermaid
 flowchart TD
     MainPage["Main screen"]
+    ArrangePage["Arrange"]
+    DrawsPage["Draws"]
+    FilePage["File/Global"]
+    GeneratorsPage["Generators"]
+    GroovesPage["Grooves"]
+    InstrumentsPage["Instruments"]
+    OpenPage["Open"]
+    PatternsPage["Patterns"]
+    ScalesPage["Scales"]
+    SongsPage["Songs"]
+    ClipPage["Clip"]
+    PatternEditor["Pattern editor"]
+    ScenePage["Scene"]
+    TrackEditor["Track editor"]
+    NotesPage["Notes"]
+    GrooveEditor["Groove editor"]
+    InstrumentEditor["Instrument editor"]
+    ScalePage["Scale"]
+    SongPage["Song"]
+    ArrangePage --> ClipPage
+    ArrangePage --> PatternEditor
+    ArrangePage --> ScenePage
+    ArrangePage --> TrackEditor
+    ClipPage --> PatternEditor
+    FilePage --> NotesPage
+    GroovesPage --> GrooveEditor
+    InstrumentsPage --> InstrumentEditor
+    MainPage -- "A" --> ArrangePage
+    MainPage --> DrawsPage
+    MainPage -- "F" --> FilePage
+    MainPage -- "G" --> GeneratorsPage
+    MainPage -- "V" --> GroovesPage
+    MainPage -- "I" --> InstrumentsPage
+    MainPage -- "Ctrl+O" --> OpenPage
+    MainPage -- "P" --> PatternsPage
+    MainPage -- "Z" --> ScalesPage
+    MainPage -- "S" --> SongsPage
+    PatternsPage --> PatternEditor
+    ScalesPage --> ScalePage
+    SongsPage --> SongPage
 ```
 <!-- end of the generated diagram -->
 

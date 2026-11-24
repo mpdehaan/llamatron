@@ -30,7 +30,7 @@ SOURCE = ROOT / 'src' / 'llamatron'
 ARCHITECTURE = ROOT / 'docs' / 'ARCHITECTURE.md'
 GETTING_STARTED = ROOT / 'docs' / 'GETTING_STARTED.md'
 PACKAGE = 'llamatron'
-SCREENS_PACKAGE = 'tui.screens'
+SCREENS_PACKAGE = 'interface.tracker.screens'
 PACKAGE_FILE = '__init__.py'
 PYTHON_SUFFIX = '.py'
 PYTHON_FILES = '*' + PYTHON_SUFFIX
@@ -62,8 +62,13 @@ EVERYWHERE_MODULE = 'everywhere'
 # The class every screen descends from, which is how the screens are told from the other classes beside them.
 SCREEN_BASE = 'Page'
 # The registry of editors, and how a page opens one by its section.
-EDITORS_MODULE = 'tui.screens.editors'
+EDITORS_MODULE = 'interface.tracker.screens.editors'
 OPEN_EDITOR_METHOD = 'open_editor'
+# A page opened by its place: open_place(a presenter's place_of(...)), the presenters in the pages' package.
+OPEN_PLACE_METHOD = 'open_place'
+PLACE_OF_METHOD = 'place_of'
+PAGES_PACKAGE = 'interface.pages'
+SECTION_CLASS = 'Section'
 # The program's answer of the page that shows the whole of a section, section_page_of(Section.NAME), whose class a page then builds.
 SECTION_PAGE_METHOD = 'section_page_of'
 SECTION_ARGUMENT = 'section'
@@ -329,10 +334,38 @@ def editor_opened(call):
 
 
 def screens_built(*, node, screens):
-    """Return the screen classes a piece of code opens: those it builds, and the editors it opens by their section."""
+    """Return the screen classes a piece of code opens: those it builds, those it hands a call to build, as
+    functools.partial(self.open_page, SongsPage) does, the editors it opens by their section, and the pages of the places it
+    opens, as open_place(ScaleListPresenter.place_of(name)) does."""
     calls = [call for call in ast.walk(node) if isinstance(call, ast.Call)]
-    built = {call.func.id for call in calls if isinstance(call.func, ast.Name) and call.func.id in screens}
-    return built | {editor for editor in map(editor_opened, calls) if editor in screens}
+    named = {name.id for call in calls for name in ast.walk(call) if isinstance(name, ast.Name) and name.id in screens}
+    by_section = {editor for editor in map(editor_opened, calls) if editor in screens}
+    by_place = {editor for editor in map(place_opened, calls) if editor in screens}
+    return named | by_section | by_place
+
+
+def place_opened(call):
+    """Return the class of the page a call opens by its place, open_place(SomePresenter.place_of(...)), the presenter's
+    place_of naming the section whose editor shows it, or None for any other call."""
+    if not (isinstance(call.func, ast.Attribute) and call.func.attr == OPEN_PLACE_METHOD and call.args):
+        return None
+    made = call.args[0]
+    if not (isinstance(made, ast.Call) and isinstance(made.func, ast.Attribute) and isinstance(made.func.value, ast.Name)):
+        return None
+    section = presenter_sections().get(made.func.value.id)
+    return editors_by_section().get(section)
+
+
+def presenter_sections():
+    """Return the section each of the pages' presenters gives a place in, by the presenter's name, read from its place_of."""
+    sections = {}
+    for path in sorted(SOURCE.joinpath(*PAGES_PACKAGE.split(DOT)).rglob(PYTHON_FILES)):
+        for class_node in [node for node in parsed(path).body if isinstance(node, ast.ClassDef)]:
+            for method in [node for node in class_node.body if isinstance(node, ast.FunctionDef) and node.name == PLACE_OF_METHOD]:
+                found = [node.attr for node in ast.walk(method) if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id == SECTION_CLASS]
+                if found:
+                    sections[class_node.name] = found[0]
+    return sections
 
 
 def keyword(*, call, name):
