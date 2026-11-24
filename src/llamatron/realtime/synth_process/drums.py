@@ -7,7 +7,7 @@ Sweep, each 0 to 127, a note's pitch tuning it in half steps from middle C and i
 The recipes are the professor's (.claude/synthesis_techniques/DRUMS.md), honoring the classic drum machines' circuits:
 a sine resonator swept down in pitch for the kicks, detuned tones and snapped noise for the snare, noise bursts for the
 clap, six clashing squares for the hats, two squares through a band-pass for the cowbell, and a struck membrane's modes for
-the acoustic tom. A hit is rendered once, when its note first arrives, in a few milliseconds, and kept; every hit starts at
+the acoustic tom, and Karplus and Strong's plucked drum. A hit is rendered once, when its note first arrives, in a few milliseconds, and kept; every hit starts at
 phase zero and its noise is seeded by what it is, so that replays and WAV exports match to the sample. Every machine ends
 alike: a DC-blocking high-pass, a fade where it falls silent, and a gain so that its loudest default hit peaks near -3 dB.
 """
@@ -46,10 +46,11 @@ class Machine:
     HATS = 'hats'
     COWBELL = 'cowbell'
     ACOUSTIC_TOM = 'acoustic_tom'
+    KARPLUS_DRUM = 'karplus_drum'
 
 
 MACHINES = (Machine.KICK, Machine.HARD_KICK, Machine.SYNTH_KICK, Machine.SNARE, Machine.CLAP, Machine.RIM, Machine.HATS,
-            Machine.COWBELL, Machine.ACOUSTIC_TOM)
+            Machine.COWBELL, Machine.ACOUSTIC_TOM, Machine.KARPLUS_DRUM)
 
 
 def render_hit(*, machine, knobs, pitch, velocity, rate):
@@ -233,9 +234,42 @@ def acoustic_tom(*, x, tuning, hardness, rate, noise):
     return body + shell
 
 
+def karplus_drum(*, x, tuning, hardness, rate, noise):
+    """Karplus and Strong's drum: a burst of noise circulating in a delay line a period long, each pass averaged with its
+    neighbor, which dulls and fades it, and each sample's sign flipped at random by Shape, the blend, which turns a plucked
+    string into a drum; Color brightens the burst and the averaging, Sweep drops the pitch at the start."""
+    pitch_x, decay_x, color_x, shape_x, sweep_x = x
+    frequency = 50 * 16 ** pitch_x * tuning
+    decay = 0.05 * 40 ** decay_x
+    t = _times(decay, rate=rate)
+    total = len(t)
+    period = max(2, int(round(rate / frequency)))
+    burst = noise.standard_normal(period)
+    if color_x < 1:
+        burst = signal.sosfilt(_low_pass(rate=rate, cutoff=min(500 + 15000 * color_x * (0.6 + 0.4 * hardness), rate * 0.45)), burst)
+    out = numpy.empty(total)
+    loss = 10 ** (-3 * period / (decay * rate))
+    blend = 1.0 - shape_x * 0.5
+    bright = 0.5 + 0.45 * color_x
+    line = burst
+    place = 0
+    while place < total:
+        since = place / rate
+        length = max(2, int(round(period / (1 + sweep_x * numpy.exp(-since / 0.03)))))
+        if length != len(line):
+            line = numpy.interp(numpy.linspace(0, len(line) - 1, length), numpy.arange(len(line)), line)
+        averaged = bright * line + (1 - bright) * numpy.roll(line, 1)
+        signs = numpy.where(noise.random(length) < blend, 1.0, -1.0)
+        line = averaged * signs * loss
+        take = min(length, total - place)
+        out[place:place + take] = line[:take]
+        place += take
+    return out
+
+
 RECIPES = {
     Machine.KICK: kick, Machine.HARD_KICK: hard_kick, Machine.SYNTH_KICK: synth_kick, Machine.SNARE: snare, Machine.CLAP: clap,
-    Machine.RIM: rim, Machine.HATS: hats, Machine.COWBELL: cowbell, Machine.ACOUSTIC_TOM: acoustic_tom,
+    Machine.RIM: rim, Machine.HATS: hats, Machine.COWBELL: cowbell, Machine.ACOUSTIC_TOM: acoustic_tom, Machine.KARPLUS_DRUM: karplus_drum,
 }
 
 
