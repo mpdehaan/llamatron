@@ -15,14 +15,13 @@ notes added on top. On those rows [ and ] and Space step through the choices and
 pattern editor opens, on that row's list. The Name row and the status line say what the cursor's chord comes to.
 """
 
-from llamatron.interface.forms import moves
+from llamatron.interface.forms import moves, step_grid as step_grid_nodes
 from llamatron.interface.tracker import drawing, key_table, keybindings, keys as keys_values, scale_categories
 from llamatron.interface.tracker.chord_text import ChordInWords
 from llamatron.interface.tracker.components.chord_row import quality_names
 from llamatron.interface.tracker.dialogs import chord_dialog
 from llamatron.interface.tracker.dialogs.chord_dialog import ChordChoice, ChordDialog
 from llamatron.interface.tracker.dialogs.grid_choice_dialog import GridChoiceDialog, grouped_grid
-from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
 from llamatron.interface.tracker.screens.shared.step_editor import StepEditor
 from llamatron.interface.tracker.screens.shared.step_grid import StepGrid
@@ -275,17 +274,17 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
         places = range(first, last)
         selected = {row: self.step if self.edited_row == row else None for row in range(EDITED_ROWS)}
         rows = self.rows()
-        lines = [self.with_steps_shown(text=messages.MSG_CHORDS_NOTE, style=Style.DIM, width=width, first=first, last=last)]
+        lines = [self.with_steps_shown(text=messages.MSG_CHORDS_NOTE, dim=True, first=first, last=last)]
         lines += self.chord_lines(places=places, selected=selected, chords=rows[0])
-        lines.append(self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)))
+        lines.append(self.grid_rule(edge=step_grid_nodes.ACROSS, count=len(places)))
         lines += self.written_lines(places=places, selected=selected, rows=rows)
-        lines.append(self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)))
-        return lines
+        lines.append(self.grid_rule(edge=step_grid_nodes.BOTTOM, count=len(places)))
+        return self.drawn(lines=lines, width=width)
 
     def chord_lines(self, *, places, selected, chords):
         """Return the grid's top: its edge, the step numbers, the degrees as a gauge, and each chord's numeral and name."""
         lines = [
-            self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
+            self.grid_rule(edge=step_grid_nodes.TOP, count=len(places)),
             self.grid_line(label=labels.MSG_CHORD_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], selected=self.step, bold=True),
         ]
         for line in range(GAUGE_LINES - 1, -1, -1):

@@ -11,8 +11,8 @@ video, as in the offsets editor, and the line above the grid says what a step th
 
 from rich.text import Text
 
+from llamatron.interface.forms import step_grid as step_grid_nodes
 from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
 from llamatron.interface.tracker.screens.shared.step_editor import StepEditor
 from llamatron.interface.tracker.screens.shared.step_grid import StepGrid
@@ -75,12 +75,12 @@ class StepRowEditor(GeneratorEditor, StepGrid, StepEditor):
         first, last = self.scroll_to_cursor(width)
         places = range(first, last)
         values = self.values()
-        return [
-            self.with_steps_shown(text=self._steps.note, style=Style.DIM, width=width, first=first, last=last),
+        return self.drawn(width=width, lines=[
+            self.with_steps_shown(text=self._steps.note, dim=True, first=first, last=last),
             Text(drawing.NOTHING),
-            self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
+            self.grid_rule(edge=step_grid_nodes.TOP, count=len(places)),
             self.grid_line(label=labels.MSG_STEP_NUMBER_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], selected=self.step, bold=True),
-            self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)),
+            self.grid_rule(edge=step_grid_nodes.ACROSS, count=len(places)),
             self.grid_line(label=self._steps.row_name, cells=[(place, marks.MSG_TOGGLE_ON if values[place] else marks.MSG_TOGGLE_OFF) for place in places], selected=self.step),
-            self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)),
-        ]
+            self.grid_rule(edge=step_grid_nodes.BOTTOM, count=len(places)),
+        ])

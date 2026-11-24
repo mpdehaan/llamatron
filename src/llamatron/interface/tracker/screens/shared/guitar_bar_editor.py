@@ -15,10 +15,10 @@ from rich.text import Text
 from llamatron.engine.generators import guitarify as guitarify_plugin
 from llamatron.engine.generators.guitarify import model as guitarify_settings, schema as guitar_bars
 from llamatron.engine.generators.guitarify.schema import ready_bar_matching
+from llamatron.interface.forms import step_grid as step_grid_nodes
 from llamatron.interface.forms.nodes import stepped
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
 from llamatron.interface.tracker.screens.shared.step_editor import StepEditor
 from llamatron.interface.tracker.screens.shared.step_grid import StepGrid
@@ -112,14 +112,14 @@ class GuitarBarEditor(GeneratorEditor, StepGrid, StepEditor):
         strokes = self.strokes()
         accents = self.accents()
         note = messages.MSG_GUITAR_CELL_ACCENTED_NOTE if accents[self.step] else messages.MSG_GUITAR_CELL_NOTE
-        return [
-            self.with_steps_shown(text=messages.MSG_GUITAR_BAR_NOTE.format(cell=self.settings().get_cell()), style=Style.DIM, width=width, first=first, last=last),
+        return self.drawn(width=width, lines=[
+            self.with_steps_shown(text=messages.MSG_GUITAR_BAR_NOTE.format(cell=self.settings().get_cell()), dim=True, first=first, last=last),
             Text(note.format(number=self.step + 1, stroke=labels.MSG_GUITAR_STROKE_NAMES[strokes[self.step]])),
             Text(drawing.NOTHING),
-            self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
+            self.grid_rule(edge=step_grid_nodes.TOP, count=len(places)),
             self.grid_line(label=labels.MSG_CELL_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], bold=True),
-            self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)),
+            self.grid_rule(edge=step_grid_nodes.ACROSS, count=len(places)),
             self.grid_line(label=labels.MSG_STROKE_ROW_LABEL, cells=[(place, marks.MSG_STROKE_MARKS[strokes[place]]) for place in places], selected=self.step),
             self.grid_line(label=labels.MSG_ACCENT_ROW_LABEL, cells=[(place, marks.MSG_TOGGLE_ON if accents[place] else marks.MSG_TOGGLE_OFF) for place in places]),
-            self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)),
-        ]
+            self.grid_rule(edge=step_grid_nodes.BOTTOM, count=len(places)),
+        ])

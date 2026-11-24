@@ -15,9 +15,9 @@ from rich.text import Text
 
 from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp import schema
+from llamatron.interface.forms import step_grid as step_grid_nodes
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.components.signed_gauge import SignedGauge
-from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.screens.shared.generator_editor import GeneratorEditor
 from llamatron.interface.tracker.screens.shared.one_row_editor import OneRowEditor
 from llamatron.user_strings import help as help_text, labels, messages
@@ -91,16 +91,16 @@ class OffsetsEditor(GeneratorEditor, OneRowEditor):
         places = range(first, last)
         gauge = SignedGauge(values=self.offsets(), levels=self.gauge_levels(height), cursor=self.step)
         lines = [
-            self.with_steps_shown(text=messages.MSG_OFFSETS_NOTE, style=Style.DIM, width=width, first=first, last=last),
+            self.with_steps_shown(text=messages.MSG_OFFSETS_NOTE, dim=True, first=first, last=last),
             Text(drawing.NOTHING),
-            self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
+            self.grid_rule(edge=step_grid_nodes.TOP, count=len(places)),
         ]
         lines.append(self.grid_line(label=labels.MSG_STEP_ROW_LABEL, cells=[(place, gauge.step_text(place)) for place in places], selected=self.step, bold=True))
         for level in gauge.levels_above():
             lines.append(self.grid_line(label=drawing.NOTHING, cells=[(place, gauge.cell(place=place, level=level)) for place in places]))
-        lines.append(self.grid_rule(left=Box.LEFT_TEE, middle=Box.CROSS, right=Box.RIGHT_TEE, count=len(places)))
+        lines.append(self.grid_rule(edge=step_grid_nodes.ACROSS, count=len(places)))
         for level in gauge.levels_below():
             lines.append(self.grid_line(label=drawing.NOTHING, cells=[(place, gauge.cell(place=place, level=level)) for place in places]))
         lines.append(self.grid_line(label=labels.MSG_OFFSET_ROW_LABEL, cells=[(place, gauge.value_text(place)) for place in places], selected=self.step))
-        lines.append(self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)))
-        return lines
+        lines.append(self.grid_rule(edge=step_grid_nodes.BOTTOM, count=len(places)))
+        return self.drawn(lines=lines, width=width)

@@ -10,9 +10,10 @@ that the one-row editors could share OneRowEditor (one_row_editor.py).
 
 from rich.text import Text
 
+from llamatron.interface.forms import step_grid as step_grid_nodes
 from llamatron.interface.forms.nodes import stepped
 from llamatron.interface.tracker import drawing, keybindings
-from llamatron.interface.tracker.drawing import Box, Style
+from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.screens.shared.one_row_editor import OneRowEditor
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
 from llamatron.model.objects import groove as groove_values
@@ -79,7 +80,7 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
         places = range(first, last)
         cells = self.cells()
         lines = [
-            self.with_steps_shown(text=marks.MSG_GROOVE_NAME_SHOWN.format(label=labels.MSG_NAME_LABEL, name=self.item), style=Style.BOLD, width=width, first=first, last=last),
+            self.with_steps_shown(text=marks.MSG_GROOVE_NAME_SHOWN.format(label=labels.MSG_NAME_LABEL, name=self.item), bold=True, first=first, last=last),
             Text(messages.MSG_GROOVE_NOTE.format(length=self.groove().get_cell_length_text()), style=Style.DIM),
             Text(messages.MSG_GROOVE_REPEATS_NOTE, style=Style.DIM),
         ]
@@ -87,9 +88,9 @@ class GrooveEditor(ShowsNamedItem, OneRowEditor):
             lines.append(Text(messages.MSG_FACTORY_GROOVE_NOTE, style=Style.DIM))
         lines += [
             Text(drawing.NOTHING),
-            self.grid_rule(left=Box.TOP_LEFT, middle=Box.TOP_TEE, right=Box.TOP_RIGHT, count=len(places)),
+            self.grid_rule(edge=step_grid_nodes.TOP, count=len(places)),
             self.grid_line(label=labels.MSG_CELL_ROW_LABEL, cells=[(place, str(place + 1)) for place in places], bold=True),
             self.grid_line(label=labels.MSG_AMOUNT_ROW_LABEL, cells=[(place, str(cells[place])) for place in places], selected=self.step),
-            self.grid_rule(left=Box.BOTTOM_LEFT, middle=Box.BOTTOM_TEE, right=Box.BOTTOM_RIGHT, count=len(places)),
+            self.grid_rule(edge=step_grid_nodes.BOTTOM, count=len(places)),
         ]
-        return lines
+        return self.drawn(lines=lines, width=width)
