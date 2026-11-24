@@ -29,7 +29,7 @@ from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Doubling, Omission, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Doubling, Omission, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, Tension, TrackSetting
 from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import errors, importing, labels
 from tests.support.example_renders import example_setlist, first_song_grid
@@ -293,6 +293,20 @@ class TestVoices(unittest.TestCase):
             with self.subTest(pitches=pitches):
                 named = chord_naming.chord_named(list(pitches))
                 self.assertEqual((named.symbol, named.omission, named.bass), (symbol, omission, bass))
+
+    def test_a_tension_is_read_with_the_guide_tones_and_a_root_in_the_key_wins_a_tie(self):
+        # In C major: D7's 3rd, 7th and 13th, C F# B, inverted once; G7's, F B E; and F B alone, G7's guide tones rather than
+        # C#7's, whose root is outside the key.
+        in_c = chord_naming.Hearing(in_key=frozenset({0, 2, 4, 5, 7, 9, 11}))
+        shapes = {(72, 78, 83): (2, Tension.THIRTEENTH), (65, 71, 76): (7, Tension.THIRTEENTH), (65, 71): (7, None)}
+        for pitches, (root_place, tension) in shapes.items():
+            with self.subTest(pitches=pitches):
+                named = chord_naming.chord_named(list(pitches), hearing=in_c)
+                self.assertEqual((named.symbol, named.omission, named.tension, named.root % 12), (ChordSymbol.DOMINANT7, Omission.NO_ROOT_FIFTH, tension, root_place))
+        notes = [(0, 4, pitch) for pitch in (72, 78, 83)] + [(4, 4, pitch) for pitch in (65, 71, 76)]
+        trip = round_trip(midi_file=midi_of(tracks=[('keys', 0, notes)], keys=((0, 'C'),)), choices=ImportChoices(song_name='tune'))
+        self.assertTrue(trip.comparison.is_same(), trip.comparison)
+        self.assertEqual(trip.imported.tracks, 1)
 
     def test_chords_with_notes_left_out_and_over_a_bass_imported_play_the_same_notes_as_the_file(self):
         # Two three-finger sevenths and D major over G, all within one hand's reach.

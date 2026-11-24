@@ -60,6 +60,7 @@ class NoteStep(NamedTuple):
     omission: object = None
     bass: object = None
     bass_octave: bool = False
+    tension: object = None
 
 
 class ControlStep(NamedTuple):
@@ -119,7 +120,7 @@ def note_step(*, played, written, gate, key):
     degree, accidental, octave = written
     return NoteStep(
         degree, accidental, octave, played.chord, gate, played.velocity, played.inversion, played.glide, played.doubling,
-        played.omission, bass_note_of(played=played, key=key), played.bass_octave,
+        played.omission, bass_note_of(played=played, key=key), played.bass_octave, played.tension,
     )
 
 

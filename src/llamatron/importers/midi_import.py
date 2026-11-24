@@ -149,9 +149,11 @@ class MidiImport:
         parts, moved = snapped(parts=contents.parts, step_size=step_size)
         voices = []
         firsts = []
+        # Notes struck together that read as two chords equally are read as the one rooted in the song's first key.
+        in_key = self.keys()[0].value.places()
         for part in parts:
             firsts.append(len(voices))
-            voices += voices_of(part=part, chords=choices.chords, controls=choices.controls)
+            voices += voices_of(part=part, chords=choices.chords, controls=choices.controls, in_key=in_key)
         bars = bar_lines(
             time_signatures=contents.time_signatures, end=max(note.end for part in parts for note in part.notes),
             holding=max((control.time for voice in voices for control in voice.controls), default=None),

@@ -45,6 +45,10 @@ class MusicalKey(NamedTuple):
         """Return the root's place in the octave, 0 for C."""
         return pitch_class_of(self.root)
 
+    def places(self):
+        """Return the key's notes as places in the octave, 0 for C."""
+        return frozenset((self.root_place() + half_steps) % intervals.HALF_STEPS_PER_OCTAVE for half_steps in self.half_steps())
+
 
 def pitch_class_of(name):
     """Return a note name's place in the octave, 0 for C, whether it is spelled with a sharp or a flat."""

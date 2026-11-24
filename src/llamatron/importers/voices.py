@@ -23,7 +23,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
-from llamatron.importers.chord_naming import chord_named
+from llamatron.importers.chord_naming import chord_named, Hearing
 from llamatron.math.rational import Rational
 from llamatron.model.schema import file_format, limits
 from llamatron.user_strings import importing
@@ -74,6 +74,8 @@ class Played(NamedTuple):
     omission: object = None
     bass: object = None
     bass_octave: bool = False
+    # Its one tension, which the import reads from notes struck together, or None.
+    tension: object = None
     # Whether it rings on with its gate under the next notes its voice plays, as a pianist holds a chord with some fingers
     # and plays a line with the others (lines_of), so that it is written with a gate rather than ties.
     rings: bool = False
@@ -117,7 +119,7 @@ def start_of(played):
     return played.start
 
 
-def voices_of(*, part, chords, controls):
+def voices_of(*, part, chords, controls, in_key=None):
     """Return the voices a part splits into, in the order their tracks go: drums by sound, and otherwise each hand's voices from the outside in.
 
     With controls, the first voice takes the part's CC messages of the numbers the import brings
@@ -128,7 +130,7 @@ def voices_of(*, part, chords, controls):
     else:
         voices = []
         for name, notes, from_top in hands(part):
-            units = chord_units(notes) if chords else [single(note) for note in notes]
+            units = chord_units(notes=notes, in_key=in_key) if chords else [single(note) for note in notes]
             units = legato_line(units=units, monophonic=plays_one_note_at_a_time(part))
             # A hand's held notes ring with their gate under its next notes, but a line of one note at a time stays one.
             may_ring = not plays_one_note_at_a_time(part)
@@ -171,7 +173,7 @@ def legato_line(*, units, monophonic):
             earlier = Played(
                 start=earlier.start, end=later.start, pitches=earlier.pitches, velocity=earlier.velocity, chord=earlier.chord,
                 inversion=earlier.inversion, root=earlier.root, glide=True, doubling=earlier.doubling, omission=earlier.omission,
-                bass=earlier.bass, bass_octave=earlier.bass_octave, rings=earlier.rings,
+                bass=earlier.bass, bass_octave=earlier.bass_octave, tension=earlier.tension, rings=earlier.rings,
             )
         joined.append(earlier)
     return joined
@@ -247,23 +249,24 @@ def beyond_one_hand(notes):
     return len(far)
 
 
-def chord_units(notes):
+def chord_units(*, notes, in_key=None):
     """Return the notes as what voices play, where notes that start and end together at one velocity in a chord symbol's shape are one chord."""
     together = {}
     for note in notes:
         together.setdefault((note.start, note.end, note.velocity), []).append(note.pitch)
     units = []
-    before = None
+    hearing = Hearing(in_key=in_key)
     for (start, end, velocity), pitches in sorted(together.items()):
         pitches = sorted(pitches)
-        named = chord_named(pitches, before=before)
+        named = chord_named(pitches, hearing=hearing)
         if named is None:
             units += [Played(start, end, (pitch,), velocity, None) for pitch in pitches]
             continue
-        before = named
+        hearing = hearing.after(named)
         units.append(Played(
             start=start, end=end, pitches=tuple(pitches), velocity=velocity, chord=named.symbol, inversion=named.inversion,
             root=named.root, doubling=named.doubling, omission=named.omission, bass=named.bass, bass_octave=named.bass_octave,
+            tension=named.tension,
         ))
     return sorted(units)
 
@@ -324,7 +327,7 @@ def rung(unit):
     return Played(
         start=unit.start, end=unit.end, pitches=unit.pitches, velocity=unit.velocity, chord=unit.chord, inversion=unit.inversion,
         root=unit.root, glide=unit.glide, doubling=unit.doubling, omission=unit.omission, bass=unit.bass,
-        bass_octave=unit.bass_octave, rings=True,
+        bass_octave=unit.bass_octave, tension=unit.tension, rings=True,
     )
 
 

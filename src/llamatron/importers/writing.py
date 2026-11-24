@@ -47,7 +47,7 @@ MICROSECONDS_PER_MINUTE = 60000000
 # What a pattern, scale or song the import made is placed by in an error, which only a fault of the import's own can raise.
 WHERE_IMPORTED = importing.MSG_WHERE_IMPORTED
 # The rows a note's step writes, written where any step holds a value, and the switches, written where any step is on.
-NOTE_ROWS = (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.DOUBLE, Row.OMIT, Row.BASS, Row.GATE, Row.VELOCITY)
+NOTE_ROWS = (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.TENSION, Row.INVERSION, Row.DOUBLE, Row.OMIT, Row.BASS, Row.GATE, Row.VELOCITY)
 SWITCH_ROWS = (Row.TIE, Row.GLIDE, Row.BASS_OCTAVE)
 # What an instrument's name leaves out of its General MIDI sound's, like the brackets of Electric Guitar (clean).
 LEFT_OUT_OF_NAMES = str.maketrans('', '', '()')
@@ -94,11 +94,19 @@ def pattern_data(*, pattern, set_step_size):
     return data
 
 
+def tensions_of(step):
+    """Return a step's tensions as its Tension row holds them, a list of its one tension, or None."""
+    if step.tension is None:
+        return None
+    return [step.tension]
+
+
 def step_rows(step):
     """Return what a note's step writes on each of its rows, by the row: its pitch, its chord rows, its gate, its velocity
     where it isn't the default, and its switches."""
     return {
         Row.DEGREE: step.degree, Row.ACCIDENTAL: step.accidental, Row.OCTAVE: step.octave, Row.CHORD: step.chord,
+        Row.TENSION: tensions_of(step),
         Row.INVERSION: step.inversion or None, Row.DOUBLE: step.doubling, Row.OMIT: step.omission, Row.BASS: step.bass,
         Row.GATE: step.gate, Row.VELOCITY: None if step.velocity == defaults.DEFAULT_VELOCITY else step.velocity,
         Row.GLIDE: step.glide, Row.BASS_OCTAVE: step.bass_octave,
