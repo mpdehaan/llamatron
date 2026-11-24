@@ -852,8 +852,6 @@ MSG_WAVEFORM_NAMES = {Waveform.OFF: 'Off', Waveform.SQUARE: 'Square', Waveform.S
 MSG_DRUM_MACHINE_NAMES = {
     DrumMachine.KICK: 'Kick', DrumMachine.HARD_KICK: 'Hard Kick', DrumMachine.SYNTH_KICK: 'Synth Kick', DrumMachine.SNARE: 'Snare', DrumMachine.CLAP: 'Clap',
     DrumMachine.RIM: 'Rim', DrumMachine.HATS: 'Hats', DrumMachine.COWBELL: 'Cowbell', DrumMachine.ACOUSTIC_TOM: 'Acoustic Tom', DrumMachine.KARPLUS_DRUM: 'Karplus Drum',
-    DrumMachine.PING: 'Ping', DrumMachine.SWEEP_DRUM: 'Sweep Drum', DrumMachine.ELECTRONIC_TOM: 'Electronic Tom', DrumMachine.FM_KICK: 'FM Kick',
-    DrumMachine.FM_SNARE: 'FM Snare', DrumMachine.FM_TOM: 'FM Tom', DrumMachine.FM_METAL: 'FM Metal', DrumMachine.FM_BELL: 'FM Bell',
 }
 MSG_SID_WAVE_NAMES = {SidWave.TRIANGLE: 'Triangle', SidWave.SAW: 'Saw', SidWave.PULSE: 'Pulse', SidWave.NOISE: 'Noise'}
 MSG_MODULATION_NAMES = {Modulation.OFF: 'Off', Modulation.RING: 'Ring', Modulation.SYNC: 'Sync'}

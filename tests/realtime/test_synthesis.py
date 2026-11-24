@@ -13,7 +13,7 @@ from llamatron.model.objects.built_in_sound import synth_spec
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, EffectSetting, FilterMode, FilterType, LfoSetting, LfoShape, Modulation, Noise, SidWave, SoundEngine, SoundSetting, SynthControl, Waveform
-from llamatron.realtime.synth_process import drums, effects as effect_values, engine as engine_values, fm_drums, process, tables
+from llamatron.realtime.synth_process import drums, effects as effect_values, engine as engine_values, process, tables
 from llamatron.realtime.synth_process.effects import Bitcrush, compiled_effects
 from llamatron.realtime.synth_process.engine import DrumPatch, SynthEngine
 from llamatron.realtime.synth_process.modulation import LfoBank
@@ -38,8 +38,6 @@ LOW_CUTOFF = 500
 # A fast LFO in hertz, a trill's in tenths of a hertz as the set stores it, and a depth of a whole octave of pitch.
 FAST_LFO_HERTZ = 80.0
 TRILL_TENTHS = 50
-# How long the start and the next stretch of a sweep drum are, to compare its pitch early and late.
-EARLY_SAMPLES = 2048
 OCTAVE_DEPTH = 100
 # Between an octave up and an octave down, the pitch is four times as high.
 TWO_OCTAVES = 4.0
@@ -314,30 +312,6 @@ class TestDrumsAndTables(unittest.TestCase):
                 again = drums.render_hit(machine=machine, knobs=KNOBS, pitch=MIDDLE_C, velocity=LOUD, rate=RATE)
                 self.assertTrue(numpy.array_equal(first, again))
                 self.assertAlmostEqual(float(numpy.abs(first).max()), drums.PEAK, places=4)
-
-    def test_the_sweep_drum_falls_into_its_note_below_the_middle_of_sweep_and_rises_into_it_above(self):
-        def crossings(hit):
-            early = hit[:EARLY_SAMPLES]
-            late = hit[EARLY_SAMPLES:2 * EARLY_SAMPLES]
-            return numpy.count_nonzero(numpy.diff(numpy.sign(early))), numpy.count_nonzero(numpy.diff(numpy.sign(late)))
-        falling = drums.render_hit(machine=DrumMachine.SWEEP_DRUM, knobs=(64, 100, 0, 0, 0), pitch=MIDDLE_C, velocity=LOUD, rate=RATE)
-        rising = drums.render_hit(machine=DrumMachine.SWEEP_DRUM, knobs=(64, 100, 0, 0, 127), pitch=MIDDLE_C, velocity=LOUD, rate=RATE)
-        early, late = crossings(falling)
-        self.assertGreater(early, late)
-        early, late = crossings(rising)
-        self.assertLess(early, late)
-
-    def test_ping_rings_on_longer_as_its_shape_turns_from_bonk_to_ring(self):
-        bonk = drums.render_hit(machine=DrumMachine.PING, knobs=(64, 64, 64, 0, 64), pitch=MIDDLE_C, velocity=LOUD, rate=RATE)
-        ring = drums.render_hit(machine=DrumMachine.PING, knobs=(64, 64, 64, 127, 64), pitch=MIDDLE_C, velocity=LOUD, rate=RATE)
-        tail = len(bonk) // 2
-        self.assertGreater(numpy.abs(ring[tail:]).sum(), numpy.abs(bonk[tail:]).sum())
-
-    def test_shape_snaps_an_fm_bells_ratio_through_plateaus(self):
-        self.assertEqual(fm_drums.plateau(share=0.0, ratios=fm_drums.GOOD_RATIOS), fm_drums.GOOD_RATIOS[0])
-        self.assertAlmostEqual(fm_drums.plateau(share=1.0, ratios=fm_drums.GOOD_RATIOS), fm_drums.GOOD_RATIOS[-1])
-        held = 1.5 / (len(fm_drums.GOOD_RATIOS) - 1)
-        self.assertEqual(fm_drums.plateau(share=held, ratios=fm_drums.GOOD_RATIOS), fm_drums.GOOD_RATIOS[1])
 
     def test_a_drums_note_tunes_it_from_middle_c(self):
         low = drums.render_hit(machine=DrumMachine.ACOUSTIC_TOM, knobs=KNOBS, pitch=MIDDLE_C, velocity=LOUD, rate=RATE)

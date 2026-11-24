@@ -7,8 +7,7 @@ Sweep, each 0 to 127, a note's pitch tuning it in half steps from middle C and i
 The recipes are the professor's (.claude/notes/synthesis/DRUMS.md), honoring the classic drum machines' circuits:
 a sine resonator swept down in pitch for the kicks, detuned tones and snapped noise for the snare, noise bursts for the
 clap, six clashing squares for the hats, two squares through a band-pass for the cowbell, and a struck membrane's modes for
-the acoustic tom, Karplus and Strong's plucked drum, a struck resonator behind a low-pass gate (Ping), the late-seventies sweep
-drum and the pad tom (SWEEP_DRUMS.md, WEST_COAST.md); the five FM machines are in fm_drums.py. A hit is rendered once, when its note first arrives, in a few milliseconds, and kept; every hit starts at
+the acoustic tom, and Karplus and Strong's plucked drum. A hit is rendered once, when its note first arrives, in a few milliseconds, and kept; every hit starts at
 phase zero and its noise is seeded by what it is, so that replays and WAV exports match to the sample. Every machine ends
 alike: a DC-blocking high-pass, a fade where it falls silent, and a gain so that its loudest default hit peaks near -3 dB.
 """
@@ -20,7 +19,6 @@ from scipy import signal
 import zlib
 
 from llamatron.model.schema.file_format import DrumMachine
-from llamatron.realtime.synth_process import fm_drums
 
 KNOB_TOP = 127.0
 MIDDLE_C = 60
@@ -37,12 +35,6 @@ HAT_PITCHES = (205.3, 304.4, 369.6, 522.7, 540.0, 800.0)
 # A circular membrane's mode ratios, and those a center strike rings most.
 MEMBRANE_RATIOS = (1.000, 1.594, 2.136, 2.296, 2.653, 2.918, 3.156, 3.501, 3.600, 4.060)
 CENTER_MODES = (1.000, 2.296, 3.600)
-# A struck bar's second partial, which Ping adds as Color rises, and the sweep drum's ratios: the second triangle's beating,
-# its FM modulator's, and the highest a sweep may reach.
-PING_PARTIAL = 2.76
-BEATING = 1.012
-SWEEP_FM_RATIO = 1.41
-MOST_SWEPT_HZ = 12000.0
 
 
 
@@ -264,75 +256,9 @@ def karplus_drum(*, x, tuning, hardness, rate, noise):
     return out
 
 
-def ping(*, x, tuning, hardness, rate, noise):
-    """A resonator struck by a short pulse, behind a low-pass gate closing as a vactrol does: Shape from the gate's woody
-    bonk to the pure ring, the classic both between; Color the strike's shortness and brightness, with a bar's second
-    partial above two thirds; Sweep the gate's memory and a small dip in pitch at the strike."""
-    pitch_x, decay_x, color_x, shape_x, sweep_x = x
-    f = 110 * 2 ** (4 * pitch_x) * tuning
-    decay = 0.05 * 80 ** decay_x
-    t = _times(decay, rate=rate)
-    strike = 0.0002 + 0.0048 * (1 - color_x)
-    attack = 0.5 * (1 - numpy.cos(math.pi * numpy.minimum(t / strike, 1.0)))
-    phase = _phase(f * (1 - 0.06 * sweep_x * numpy.exp(-t / 0.01)), rate=rate)
-    ring = numpy.sin(phase) * numpy.exp(-T60 * t / decay)
-    second = max(0.0, (color_x - 0.66) / 0.34)
-    if second:
-        ring += 0.5 * second * numpy.sin(PING_PARTIAL * phase) * numpy.exp(-T60 * t / (decay * 0.5))
-    ring *= attack
-    # The gate's light falls by the vactrol's release, a share of Decay that Sweep's memory lengthens, so that the gate closes
-    # behind the ring.
-    memory = decay * (0.3 + 0.6 * sweep_x)
-    light = numpy.exp(-T60 * t / memory)
-    gated = _gliding_low_pass(ring * light, sweep=(300 + 9000 * color_x * (0.5 + 0.5 * hardness), 120.0, memory), t=t, rate=rate)
-    if shape_x < 0.5:
-        bonk = _gliding_low_pass(numpy.sin(phase) * attack * light ** 2, sweep=(200 + 4000 * color_x, 100.0, memory * 0.5), t=t, rate=rate)
-        return bonk + (gated - bonk) * (shape_x / 0.5)
-    return gated + (ring - gated) * ((shape_x - 0.5) / 0.5)
-
-
-def sweep_drum(*, x, tuning, hardness, rate, noise):
-    """The late-seventies sweep drum: a triangle, beating against a second, frequency modulated by one or turned to noise by
-    Color, its pitch falling into the note below the middle of Sweep and rising into it above, warbled or trilled by Shape,
-    its filter following the pitch and the velocity."""
-    pitch_x, decay_x, color_x, shape_x, sweep_x = x
-    f = 40 * 2 ** (6 * pitch_x) * tuning
-    decay = 0.03 * 133 ** decay_x * (0.9 + 0.2 * hardness)
-    t = _times(decay, rate=rate)
-    frequency = numpy.minimum(f * 2 ** (_swept_octaves(sweep_x=sweep_x, t=t) + _warble(shape_x=shape_x, t=t) / 12), MOST_SWEPT_HZ)
-    phase = _phase(frequency, rate=rate)
-    tone = _triangle(phase)
-    if color_x < 0.33:
-        tone = tone + (color_x / 0.33) * _triangle(phase * BEATING)
-    elif color_x < 0.75:
-        index = 3 * (color_x - 0.33) / 0.42
-        tone = _triangle(phase + index * _triangle(phase * SWEEP_FM_RATIO))
-    else:
-        share = (color_x - 0.75) / 0.25
-        tone = tone * (1 - share) + share * noise.standard_normal(len(t))
-    body = tone * numpy.exp(-T60 * t / decay)
-    return signal.sosfilt(_low_pass(rate=rate, cutoff=min(f * 12 * (0.5 + hardness), rate * 0.45)), body)
-
-
-def electronic_tom(*, x, tuning, hardness, rate, noise):
-    """The pad tom: a sine bending down into its pitch by Sweep, with noise by Color, a click and the noise's brightness by
-    Shape, the noise lasting a third of the tone."""
-    pitch_x, decay_x, color_x, shape_x, sweep_x = x
-    f = 50 * 10 ** pitch_x * tuning
-    decay = 0.08 * 25 ** decay_x
-    t = _times(decay, rate=rate)
-    bend = 2 * sweep_x * (0.7 + 0.3 * hardness)
-    phase = _phase(f * 2 ** (bend * numpy.exp(-t / ((0.03 + 0.27 * sweep_x) / 3))), rate=rate)
-    body = (1 - 0.6 * color_x) * numpy.sin(phase) * numpy.exp(-T60 * t / decay)
-    hiss = noise.standard_normal(len(t)) * numpy.exp(-T60 * t / (decay / 3)) * 0.8 * color_x
-    body += signal.sosfilt(_low_pass(rate=rate, cutoff=1000 + 9000 * shape_x * (0.6 + 0.4 * hardness)), hiss)
-    return body + _click(t, rate=rate, level=shape_x * (0.5 + 0.5 * hardness))
-
-
 RECIPES = {
     DrumMachine.KICK: kick, DrumMachine.HARD_KICK: hard_kick, DrumMachine.SYNTH_KICK: synth_kick, DrumMachine.SNARE: snare, DrumMachine.CLAP: clap,
     DrumMachine.RIM: rim, DrumMachine.HATS: hats, DrumMachine.COWBELL: cowbell, DrumMachine.ACOUSTIC_TOM: acoustic_tom, DrumMachine.KARPLUS_DRUM: karplus_drum,
-    DrumMachine.PING: ping, DrumMachine.SWEEP_DRUM: sweep_drum, DrumMachine.ELECTRONIC_TOM: electronic_tom, **fm_drums.RECIPES,
 }
 
 
@@ -400,31 +326,6 @@ def _gliding_low_pass(body, *, sweep, t, rate):
             state = numpy.zeros((sos.shape[0], 2))
         out[first:first + block], state = signal.sosfilt(sos, body[first:first + block], zi=state)
     return out
-
-
-def _swept_octaves(*, sweep_x, t):
-    """Return how many octaves off its note a sweep drum is over time: below the middle of Sweep falling into the note from up
-    to four octaves above, above it rising into the note from up to three below, the farther the slower, 10 to 400 ms."""
-    amount = (sweep_x - 0.5) / 0.5
-    if abs(amount) < 0.02:
-        return 0.0
-    tau = 0.01 + 0.39 * abs(amount)
-    octaves = 4 * -amount if amount < 0 else -3 * amount
-    return octaves * numpy.exp(-t / tau)
-
-
-def _warble(*, shape_x, t):
-    """Return a sweep drum's pitch movement in semitones: none at 0, a triangle warble in the lower half of Shape, a square
-    trill in the upper, each zone's rate rising from 2 to 40 Hz and depth from a semitone to an octave."""
-    if shape_x <= 0:
-        return 0.0
-    zone = min(shape_x / 0.5, 1.0) if shape_x < 0.5 else (shape_x - 0.5) / 0.5
-    rate = 2 * 20 ** zone
-    depth = 12 ** zone
-    place = (t * rate) % 1.0
-    if shape_x < 0.5:
-        return depth * (1 - 4 * numpy.abs(place - 0.5))
-    return depth * numpy.where(place < 0.5, 1.0, 0.0)
 
 
 @functools.cache

@@ -829,14 +829,6 @@ class DrumMachine:
     COWBELL = 'cowbell'
     ACOUSTIC_TOM = 'acoustic_tom'
     KARPLUS_DRUM = 'karplus_drum'
-    PING = 'ping'
-    SWEEP_DRUM = 'sweep_drum'
-    ELECTRONIC_TOM = 'electronic_tom'
-    FM_KICK = 'fm_kick'
-    FM_SNARE = 'fm_snare'
-    FM_TOM = 'fm_tom'
-    FM_METAL = 'fm_metal'
-    FM_BELL = 'fm_bell'
 
 
 INSTRUMENT_KINDS = (InstrumentKind.OFF, InstrumentKind.MIDI, InstrumentKind.BUILT_IN)
@@ -884,8 +876,7 @@ MODES_OF_FILTER = {FilterType.LADDER: (FilterMode.LOW,), FilterType.MULTIMODE: F
                    FilterType.DIODE: (FilterMode.LOW,), FilterType.OTA: (FilterMode.LOW,)}
 CURVES = (Curve.SOFT, Curve.WARM, Curve.HARD, Curve.FOLD, Curve.WRAP)
 DRUM_MACHINES = (DrumMachine.KICK, DrumMachine.HARD_KICK, DrumMachine.SYNTH_KICK, DrumMachine.SNARE, DrumMachine.CLAP, DrumMachine.RIM,
-                 DrumMachine.HATS, DrumMachine.COWBELL, DrumMachine.ACOUSTIC_TOM, DrumMachine.KARPLUS_DRUM, DrumMachine.PING, DrumMachine.SWEEP_DRUM,
-                 DrumMachine.ELECTRONIC_TOM, DrumMachine.FM_KICK, DrumMachine.FM_SNARE, DrumMachine.FM_TOM, DrumMachine.FM_METAL, DrumMachine.FM_BELL)
+                 DrumMachine.HATS, DrumMachine.COWBELL, DrumMachine.ACOUSTIC_TOM, DrumMachine.KARPLUS_DRUM)
 
 
 class KeyswitchSetting:
