@@ -141,7 +141,7 @@ class TestDemoSources(unittest.TestCase):
     def test_the_entertainer_plays_the_notes_of_its_midi_file(self):
         song = self.made('entertainer.yml')
         played = collections.Counter()
-        # The scenes are laid end to end, eight bars each but for the four-bar Intro and Bridge.
+        # The scenes are laid end to end, as the import cut the piece.
         for scene, start in zip(song.get_rows(), song.row_starts()):
             for track in song.get_columns():
                 for time, number in onsets(song=song, scene=scene, track_name=track.get_name()):
@@ -149,9 +149,10 @@ class TestDemoSources(unittest.TestCase):
         source = collections.Counter(
             (time, number) for hand in (1, 2) for time, number, _, _ in self.generator.entertainer_notes(hand)
         )
+        # Every note plays, each hand's chords as chords, and nothing else.
         self.assertEqual(sum((played - source).values()), 0)
-        # A fourth note sounding at once in one hand has no voice to go to, and that happens 19 times.
-        self.assertEqual(sum((source - played).values()), 19)
+        self.assertEqual(sum((source - played).values()), 0)
+        self.assertEqual([track.get_name() for track in song.get_columns()], ['up a', 'up b', 'down'])
 
     def test_the_hocketing_voices_add_up_to_the_melody(self):
         song = self.made('17_hocket_shanty.yml')

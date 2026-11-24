@@ -9,11 +9,10 @@ Run it from the repository root with: .venv/bin/python tests/data/demo_sources/m
 It overwrites every demo, including any changes made to them by hand since, so it's only for
 starting again. tests/app/test_demos.py also runs it into a temporary folder, to check the tune data
 against its sources. The tunes are written here as notes, taken from the transcriptions named in each
-demo, except for The Entertainer, which is read from entertainer.mid next to this file: the
+demo, except for The Entertainer, which the MIDI import makes from entertainer.mid next to this file: the
 Mutopia Project's public domain typesetting, kept here with its LilyPond source so that nothing
 has to be downloaded again. Nothing here uses the network.
 """
-import collections
 from fractions import Fraction as F
 import mido
 import os
@@ -21,8 +20,12 @@ from pathlib import Path
 import re
 import sys
 
+from llamatron.importers import midi_import as midi_import_values
+from llamatron.importers.midi_import import ImportChoices, MidiImport
+from llamatron.importers.writing import add_imported
 from llamatron.interface.tracker.screens.set import scale_page
 from llamatron.model.file.setlist_writer import dump_setlist
+from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format, generator_plugins, row_descriptions
 from llamatron.model.values import note as note_values
 from llamatron.model.values.scale import ScaleType
@@ -173,8 +176,8 @@ EDITING = {
     'entertainer': [
         'This is the long piece, for getting a feel of a full composition, so keep every bar and',
         'the eight-bar phrases that line up with the sheet music. The patterns were cut from',
-        'examples/midi/entertainer.mid by tests/data/demo_sources/make_demos.py, which overwrites',
-        'changes made by hand.',
+        'examples/midi/entertainer.mid by the MIDI import, which tests/data/demo_sources/make_demos.py',
+        'runs; running it overwrites changes made by hand, so improve the import instead.',
     ],
 }
 
@@ -812,16 +815,7 @@ def pachelbel():
 # ---------------------------------------------------------------------------------------------
 # The Entertainer, from the Mutopia Project's public domain typesetting of the 1902 edition.
 
-MEASURE = F(1, 2)
-# A scene is an eight-bar phrase, half a strain, chosen over four bars, which made over a hundred patterns; the Intro and the Bridge are four bars on their own.
-PHRASE_BARS = 8
-VOICES = 3
-# Each strain in the order the piece plays, with its repeats written out, as (name, bars, scale).
-STRAINS = [
-    ('Intro', 4, 'C Major'), ('A', 16, 'C Major'), ('A repeat', 16, 'C Major'), ('B', 16, 'C Major'),
-    ('B repeat', 16, 'C Major'), ('A return', 16, 'C Major'), ('C trio', 16, 'F Major'), ('C repeat', 16, 'F Major'),
-    ('Bridge', 4, 'C Major'), ('D', 16, 'C Major'), ('D repeat', 16, 'C Major'),
-]
+ENTERTAINER_GENRE = 'Ragtime'
 
 
 def entertainer_notes(track):
@@ -838,101 +832,45 @@ def entertainer_notes(track):
     return notes
 
 
-def split_voices(*, notes, from_top):
-    """Split a hand into voices by rank at each onset: from the top for treble, the bottom for bass.
-
-    A fourth note at the same moment, which happens 19 times in the piece, is left out.
-    """
-    onsets = collections.defaultdict(list)
-    for start, number, length, velocity in notes:
-        onsets[start].append((number, length, velocity))
-    voices = [[] for _ in range(VOICES)]
-    for start in sorted(onsets):
-        ranked = sorted(onsets[start], reverse=from_top)
-        for rank, (number, length, velocity) in enumerate(ranked[:VOICES]):
-            voices[rank].append((start, number, length, velocity))
-    return voices
-
-
-def phrase_steps(*, voice, begin, end):
-    """Return one voice's steps in one phrase, from a time to a time, with notes cut at the next note or the phrase's end."""
-    starts = [note for note in voice if begin <= note[0] < end]
-    steps, time = [], begin
-    for index, (start, number, length, velocity) in enumerate(starts):
-        if start > time:
-            steps.append((None, start - time))
-        following = starts[index + 1][0] if index + 1 < len(starts) else end
-        played = min(start + length, following)
-        steps.append((number, played - start, {'velocity': max(1, min(127, velocity))}))
-        if played < following:
-            steps.append((None, following - played))
-        time = following
-    if not starts:
-        return None
-    if time < end:
-        steps.append((None, end - time))
-    return steps
-
-
 def entertainer():
-    parts = {'treble': split_voices(notes=entertainer_notes(1), from_top=True), 'bass': split_voices(notes=entertainer_notes(2), from_top=False)}
-    scales = {'C Major': {'root': 'C', 'type': 'major'}, 'F Major': {'root': 'F', 'type': 'major'}}
-    tracks = {f'{hand} {rank + 1}': {} for hand in parts for rank in range(VOICES)}
-    patterns, seen, scenes = {}, {}, []
-    time = 0
-    for strain, strain_bars, scale in STRAINS:
-        count = max(strain_bars // PHRASE_BARS, 1)
-        for number in range(count):
-            phrase_bars = min(PHRASE_BARS, strain_bars)
-            bars = f'{number * phrase_bars + 1}-{(number + 1) * phrase_bars}'
-            clip_slots = {}
-            for hand, voices in parts.items():
-                for rank, voice in enumerate(voices):
-                    steps = phrase_steps(voice=voice, begin=time, end=time + phrase_bars * MEASURE)
-                    if steps is None:
-                        continue
-                    track = f'{hand} {rank + 1}'
-                    data = pattern(steps, scales[scale]['root'], 'major')
-                    key = (track, repr(data))
-                    if key not in seen:
-                        base = strain.split()[0]
-                        name = f'{base} {bars} {track}' if count > 1 else f'{base} {track}'
-                        while name in patterns:
-                            name += "'"
-                        patterns[name] = data
-                        seen[key] = name
-                    clip_slots[track] = {'pattern': seen[key]}
-            scene = {'name': f'{strain}, bars {bars}' if count > 1 else strain}
-            if scale != 'C Major':
-                scene['scale'] = scale
-            scene['tracks'] = clip_slots
-            scenes.append(scene)
-            time += phrase_bars * MEASURE
-    write(file_name='entertainer.yml', header=[
-        'The Entertainer: the whole of Scott Joplin\'s 1902 rag, eight bars at a time.',
+    """Write The Entertainer as the MIDI import makes it from entertainer.mid, with the Import Wizard's cut, as a person
+    importing the file gets it, its title, author, description and notes added."""
+    setlist = Setlist.new()
+    starter = setlist.first_song_name()
+    midi = mido.MidiFile(os.path.join(MIDI_FILES, 'entertainer.mid'))
+    choices = ImportChoices(song_name='entertainer', longest_bars=midi_import_values.WIZARD_LONGEST_BARS, numbered=True)
+    song = add_imported(setlist=setlist, imported=MidiImport(midi_file=midi).imported(setlist=setlist, choices=choices).song)
+    # The genre places the demo on the Ragtime page of the demos; nothing else of the import is changed.
+    song.set_genre(ENTERTAINER_GENRE)
+    setlist.remove_item(section=file_format.Section.SONGS, name=starter)
+    setlist.remove_unused()
+    header = [
+        'The Entertainer: the whole of Scott Joplin\'s 1902 rag, as the MIDI import makes it.',
         'Run it with: llamatron examples/by_genre/ragtime/entertainer.yml --to ableton --replace',
         '',
         'This is a longer piece, to get a feel for a full composition in the tracker. The notes,',
         'velocities and tempo come from the Mutopia Project\'s public domain typesetting of the',
-        'original 1902 edition, at its marking of 72 quarter notes a minute ("Not fast"). Put a',
-        'piano on all six tracks.',
+        'original 1902 edition, at its marking of 72 quarter notes a minute ("Not fast").',
         '',
-        'Each scene is one eight-bar phrase, half a strain, so its patterns line up with eight bars',
-        'of the sheet music, and the four-bar Intro and Bridge are scenes of their own. The scenes',
-        'play the strains in order with their repeats written out: Intro, A twice, B twice, A again,',
-        'the C trio twice (in F major, set on those scenes), a bridge, and D twice. A phrase that',
-        'comes back exactly reuses its pattern, so the repeats add scenes but few patterns. A',
-        'pattern whose name ends in \' differs from the one before it, usually at a repeat\'s second',
-        'ending.',
-        '',
-        'A pattern plays one note or one chord symbol at a time, and a piano part has chords that',
-        'no symbol fits, so each hand is split into voices. "treble 1" is the top note of the right',
-        'hand, the melody, and "treble 2" and "treble 3" are the notes under it. "bass 1" is the',
-        'lowest note of the left hand, and "bass 2" and "bass 3" are the notes above it. A voice',
-        'with nothing to play in a phrase has no clip there. No note in the piece is held over the',
-        'end of a phrase, so the phrases cut nothing, and the rare fourth note of a chord is left',
-        'out.',
-    ], song=song('The Entertainer', 72, 'C Major', scales, patterns, tracks, scenes, author='Scott Joplin'))
+        'It is exactly what importing examples/midi/entertainer.mid with the Import Wizard\'s cut',
+        'makes, and plays exactly the file\'s notes. The import finds the piece\'s form: scenes are',
+        'numbered and lettered by their material, S01 A, S02 B, a section heard again taking its',
+        'letter, and patterns are eight-bar phrases grouped by those letters. Each hand is one track,',
+        '"up" the right and "down" the left, as the file names its staves, playing its chords as',
+        'chords: a step\'s Chord, Tension, Inversion, Double and Omit rows say how the pianist',
+        'voices it, such as the left hand\'s three-finger sevenths and the right hand\'s octaves. A',
+        'note held while the hand plays on rings with its gate under the next notes. "up b" holds',
+        'the few notes the right hand keeps down after the others struck with them are let go.',
+    ]
+    setlist.set_title('The Entertainer')
+    setlist.set_author('Scott Joplin')
+    setlist.set_description(DESCRIPTIONS['entertainer'])
+    setlist.set_notes('\n'.join([*header, '', 'When changing this demo:', *EDITING['entertainer']]) + '\n')
+    setlist.set_real_time(True)
+    setlist.set_protected(True)
+    folder = os.path.join(OUTPUT, FOLDERS['entertainer.yml'])
+    os.makedirs(folder, exist_ok=True)
+    setlist.write_file(os.path.join(folder, 'entertainer.yml'))
 
 
 def main(*, output=OUTPUT):

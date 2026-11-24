@@ -15,8 +15,11 @@ from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.scene_notes import beat_chords, chord_of, chord_texts, effective_values, marked_tracks, scene_notes
 from llamatron.model.file.example_sets import example_sets
+from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, RampPart, RampWay
+from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, RampPart, RampWay, ScaleSetting
+from llamatron.model.values.note import NoteName
+from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import marks
 from tests.support import ui_testing
 from tests.support.ui_testing import back_key, forward_key, UITest
@@ -31,8 +34,7 @@ G_MAJOR = 'G Major'
 # The demo's first scene with the whole verse, whose chords a Progression moves, so they are heard in the notes as played.
 VERSE = 0
 # A demo in a flat key, for how a chord is spelled, and the name of its scale.
-IN_A_FLAT_KEY = 'entertainer.yml'
-F_MAJOR = 'F Major'
+F_MAJOR = 'F major, for the test'
 C = 0
 D = 2
 E = 4
@@ -112,7 +114,7 @@ class TestChords(unittest.TestCase):
         self.assertIsNone(chord_of(weights={C: LONG, C + 1: LONG, D: LONG, D + 1: LONG, E: LONG}, bass=C))
 
     def test_a_chord_is_spelled_and_numbered_as_the_scale_spells_and_numbers_it(self):
-        scale = example(IN_A_FLAT_KEY).get_named_scale(F_MAJOR)
+        scale = NamedScale.from_data(data={ScaleSetting.ROOT: NoteName.F, ScaleSetting.TYPE: scale_type_name(ScaleType.MAJOR)}, where=F_MAJOR)
         self.assertEqual(chord_texts(root=B_FLAT, symbol=ChordSymbol.MAJOR, scale=scale), ('Bb', 'IV'))
         self.assertEqual(chord_texts(root=D, symbol=ChordSymbol.MINOR, scale=scale), ('Dm', 'vi'))
         self.assertEqual(chord_texts(root=C, symbol=ChordSymbol.DOMINANT7, scale=scale), ('C7', 'V'))
