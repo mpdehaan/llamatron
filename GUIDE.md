@@ -183,6 +183,7 @@ generator has a page of its own, grouped by what it changes.
 | Page | What it covers |
 | --- | --- |
 | [Exporting](docs/EXPORTING.md) | Ableton Live sets, MIDI files and WAV audio, from the tracker and the command line. |
+| [Sheet Music and Learning Packets](docs/EXPORTING_PDF.md) | A song printed as a learning packet: its piano roll, chord changes, chord chart and chord sequence. |
 
 ## MIDI & Performance
 

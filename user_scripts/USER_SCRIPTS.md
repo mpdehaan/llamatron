@@ -12,6 +12,7 @@ are in `internal_tools/`.
 | Hear the demos | `demos_to_wavs.sh`, then `play_demo.sh` |
 | Take the demos elsewhere | `demos_to_midi.sh`, `demos_to_live_sets.sh` |
 | See what the demos hold | `demo_report.sh` |
+| Print a song to learn at the piano | `export_pdf.sh` |
 | Import many MIDI files at once | `batch_importer.sh` |
 | Record a video | `record.sh`, `record_all.sh` |
 
@@ -118,6 +119,20 @@ demo.
 sh user_scripts/demo_report.sh > demos.csv
 sh user_scripts/demo_report.sh --features > features.csv
 sh user_scripts/demo_report.sh examples/by_genre/rock/*.yml
+```
+
+## Printing a Song
+
+### `export_pdf.sh`
+
+Makes a song of a set into its learning packet, a PDF beside the set: its
+piano roll, chord changes, chord chart and chord sequence. `--song`,
+`--output-dir`, `--pages`, `--melody`, `--chords` and `--chords-level` choose
+what goes in; `--help` lists them.
+
+```
+sh user_scripts/export_pdf.sh examples/by_genre/ragtime/entertainer.yml
+sh user_scripts/export_pdf.sh my_song.yml --pages piano_roll,chord_chart --chords-level triads
 ```
 
 ## Importing MIDI Files

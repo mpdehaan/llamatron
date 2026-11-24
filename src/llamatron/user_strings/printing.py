@@ -52,3 +52,31 @@ MSG_SECTION_TIMES = '{section} ×{times}'
 MSG_AND = '&'
 MSG_STRIP_HEADING = 'Chord changes'
 MSG_STRIP_KEY = 'blue stays, red moves'
+
+# exporters/pdf/chord_sequence.py
+# The Chord Sequence page: each section's key where it changes, with what it is in the main key, and a bar that holds on.
+MSG_CHORD_SEQUENCE = 'Chord Sequence'
+MSG_KEY = 'Key: {key}'
+MSG_KEY_IN = '{key} ({numeral} of {main})'
+MSG_KEY_NAME = '{root} {kind}'
+MSG_HOLDS = '·'
+MSG_NO_KEY_CHANGE = ''
+MSG_NO_SECTION_NAME = ''
+
+# exporters/pdf/pdf_export.py
+# The title a packet's file carries, which a PDF reader shows.
+MSG_PACKET_TITLE = '{song} - learning packet'
+
+# exporters/pdf/pdf_script.py
+# The PDF export from the command line: what it says it does, its options' help, and what it says it wrote.
+MSG_SCRIPT_DESCRIPTION = 'Make a song of a set into its learning packet, a PDF beside the set.'
+MSG_SCRIPT_HELP_SET = 'the set file'
+MSG_SCRIPT_HELP_SONG = "the song's name; the set's first song if not given"
+MSG_SCRIPT_HELP_OUTPUT = "the folder the PDF goes in; the set's folder if not given"
+MSG_SCRIPT_HELP_PAGES = "the packet's pages, comma-separated, from: {pages}; all of them if not given"
+MSG_SCRIPT_HELP_MELODY = "the tracks merged into the melody, comma-separated; by each track's role if neither this nor --chords is given"
+MSG_SCRIPT_HELP_CHORDS = 'the tracks heard together as the chords, comma-separated'
+MSG_SCRIPT_HELP_LEVEL = 'how simply the chords are printed'
+MSG_SCRIPT_BAD_PAGE = 'no packet page called ({page}), expected one of: {pages}'
+MSG_SCRIPT_NO_SONG = 'no song called ({song})'
+MSG_SCRIPT_WROTE = 'wrote {path}'
