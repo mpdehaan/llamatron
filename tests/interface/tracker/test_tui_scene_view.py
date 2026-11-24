@@ -13,13 +13,14 @@ from llamatron.interface.tracker.components.inset_window import drawn_over, insi
 from llamatron.interface.tracker.components.scene_view import coloured, SceneView, track_label
 from llamatron.interface.tracker.drawing import Box
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.scene_notes import beat_chords, chord_of, chord_texts, effective_values, marked_tracks, scene_notes
+from llamatron.interface.tracker.scene_notes import effective_values, marked_tracks, scene_notes
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import ChordSymbol, ClipSlotSetting, RampPart, RampWay, ScaleSetting
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
+from llamatron.music_theory.harmony.heard_chords import beat_chords, chord_of, chord_texts
 from llamatron.user_strings import marks
 from tests.support import ui_testing
 from tests.support.ui_testing import back_key, forward_key, UITest

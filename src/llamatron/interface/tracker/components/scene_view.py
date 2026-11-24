@@ -26,7 +26,7 @@ from llamatron.interface.forms import moves
 from llamatron.interface.tracker.components import title_card
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.renderers import arrange as arrange_renderer
-from llamatron.interface.tracker.scene_notes import beat_chords, effective_values, scene_notes
+from llamatron.interface.tracker.scene_notes import effective_values, scene_notes
 from llamatron.interface.tracker.screens.arrange import arrange_details
 from llamatron.interface.tracker.screens.arrange.arrange_details import clip_details, or_stock, track_details
 from llamatron.interface.visualizers import piano_roll
@@ -36,6 +36,7 @@ from llamatron.interface.visualizers.piano_roll import drum_lane
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.values import note as note_values
 from llamatron.music_theory.fundamentals import intervals
+from llamatron.music_theory.harmony.heard_chords import beat_chords
 from llamatron.user_strings import marks, visualizers
 
 # Each column of the roll is a sixteenth note, in whole notes, drawn as many cells wide as the zoom, from FEWEST_CELLS to MOST_CELLS.

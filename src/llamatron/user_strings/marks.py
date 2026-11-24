@@ -63,7 +63,7 @@ MSG_DETAILS_LIST_SEPARATOR = ', '
 # Around the line of details Tab picked, which ENTER opens, chosen over the triangle, which marks play.
 MSG_DETAILS_STOCK = 'stock'
 
-# interface/tracker/components/scene_view.py and interface/tracker/scene_notes.py: Scene View, an inset window over Arrange showing
+# interface/tracker/components/scene_view.py, interface/tracker/scene_notes.py and music_theory/harmony/heard_chords.py: Scene View, an inset window over Arrange showing
 # every track's notes in a scene laid over each other, its caption saying which view shows, as written or as played.
 MSG_SCENE_VIEW_TITLE = ' SCENE VIEW FOR SCENE: {scene} '
 MSG_SCENE_VIEW_CLOSING = ' {key} {what} '
