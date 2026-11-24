@@ -7,9 +7,10 @@ the rows of a dialog's settings."""
 
 from rich.text import Text
 
+from llamatron.interface.forms import dialogs
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.components.button_row import button_row
-from llamatron.interface.tracker.drawing import cursor_mark, fit, Style, wrapped
+from llamatron.interface.tracker.drawing import cursor_mark, fit, padded, Style, wrapped
 from llamatron.user_strings import marks
 
 
@@ -85,6 +86,58 @@ def column_headings(*, names, widths, chosen, gap):
     return line
 
 
+def grid_cells_line(cells):
+    """Return one line of a grid of choices: each choice's name after its key-like padding, reversed under the cursor and
+    padded out to its column's width, each heading bold in its column, and each gap blank across its column."""
+    line = Text(no_wrap=True)
+    for cell in cells:
+        if cell.kind == dialogs.GAP_CELL:
+            line.append(drawing.SPACE * cell.width)
+        elif cell.kind == dialogs.HEADING_CELL:
+            line.append(fit(text=drawing.SPACE + cell.text, width=cell.width), style=Style.BOLD)
+        else:
+            line.append(padded(cell.text), style=Style.REVERSE if cell.selected else Style.PLAIN)
+            line.append(drawing.SPACE * max(cell.width - len(cell.text) - 2, 0))
+    return line
+
+
+def bar_level_line(level):
+    """Return one level of a row of bars: its label dim, then each cell's piece of bar centred."""
+    line = Text(level.label, style=Style.DIM)
+    for cell in level.cells:
+        line.append(cell.center(level.cell_width))
+    return line
+
+
+def number_cells_line(numbers):
+    """Return the numbers under a row of bars, the cursor's reversed, as the cursor's cell of the step editors is."""
+    line = Text(drawing.SPACE * numbers.indent)
+    for place, number in enumerate(numbers.numbers):
+        if place == numbers.selected:
+            line.append(str(number).center(numbers.cell_width), style=Style.REVERSE)
+        else:
+            line.append(str(number).center(numbers.cell_width))
+    return line
+
+
+def dim_line(text):
+    """Return a line said in passing, dim, as it is: no wrapping and no cutting, as a rule of marks is."""
+    return Text(text, style=Style.DIM)
+
+
+def pieces_line(pieces):
+    """Return a line of pieces, each drawn dim, bold or plain."""
+    line = Text(no_wrap=True)
+    for part in pieces:
+        if part.dim:
+            line.append(part.text, style=Style.DIM)
+        elif part.bold:
+            line.append(part.text, style=Style.BOLD)
+        else:
+            line.append(part.text, style=Style.PLAIN)
+    return line
+
+
 def filled(*, lines, height):
     """Return lines made up to a height with blank ones, so that a list keeps its height as it scrolls or shrinks."""
     return [*lines, *[Text(drawing.NOTHING)] * (height - len(lines))]
@@ -122,8 +175,14 @@ def row_lines(*, rows, label_width):
 def _paragraph_lines(*, paragraph, width):
     if paragraph.refusal:
         return [Text(paragraph.text, style=Style.REFUSAL)]
+    if paragraph.heading and paragraph.fills_width:
+        return [Text(fit(text=paragraph.text, width=width), style=Style.BOLD)]
     if paragraph.heading:
         return [Text(paragraph.text, style=Style.BOLD)]
+    if paragraph.as_it_is:
+        return [Text(paragraph.text)]
+    if paragraph.one_line and paragraph.fills_width:
+        return [Text(fit(text=paragraph.text, width=width))]
     if paragraph.one_line and paragraph.dim:
         return [Text(fit(text=paragraph.text, width=width), style=Style.DIM)]
     if paragraph.one_line:
@@ -131,3 +190,27 @@ def _paragraph_lines(*, paragraph, width):
     if paragraph.dim:
         return [Text(line.plain, style=Style.DIM) for line in wrapped(text=paragraph.text, width=width)]
     return wrapped(text=paragraph.text, width=width)
+
+def key_columns(*, items, width, columns):
+    """Return the keys as lines of so many columns, filled down one column and then the next, each key as the main menu draws one."""
+    rows = -(-len(items) // columns)
+    column_width = width // columns
+    lines = []
+    for row in range(rows):
+        line = Text(no_wrap=True)
+        for column in range(columns):
+            at = row + column * rows
+            if at < len(items):
+                line.append_text(key_cell(item=items[at], width=column_width))
+        lines.append(line)
+    return lines
+
+
+def key_cell(*, item, width):
+    """Return one key as a cell of the given width: its label in reverse video, then what it does."""
+    cell = Text(no_wrap=True)
+    cell.append(padded(item.shown_label()), style=Style.REVERSE)
+    cell.append(drawing.SPACE + item.what)
+    cell.truncate(width)
+    cell.append(drawing.SPACE * (width - cell.cell_len))
+    return cell

@@ -22,6 +22,10 @@ class Said:
     dim: bool = False
     refusal: bool = False
     heading: bool = False
+    # Whether a line kept to one line fills the dialog's width, as a line under a grid does, rather than ending at its words, and
+    # whether a line is said as it is, neither wrapped nor cut.
+    fills_width: bool = False
+    as_it_is: bool = False
 
 
 def said(text):
@@ -52,6 +56,21 @@ def heading_said(text):
 def refused(text):
     """Return why something did not happen, drawn as a refusal, on one line."""
     return Said(text=text, refusal=True)
+
+
+def said_across(text):
+    """Return a line kept to the dialog's width and filling it, cut short where it is wider."""
+    return Said(text=text, one_line=True, fills_width=True)
+
+
+def heading_across(text):
+    """Return a heading inside a dialog, bold, kept to the dialog's width and filling it."""
+    return Said(text=text, heading=True, one_line=True, fills_width=True)
+
+
+def said_as_it_is(text):
+    """Return a line said as it is, neither wrapped nor cut."""
+    return Said(text=text, as_it_is=True)
 
 
 def blank():
@@ -113,3 +132,56 @@ class DialogRow:
     value: str
     under_cursor: bool = False
     blocked: bool = False
+
+
+# What a cell of a grid of choices holds: a choice, a heading over a column's group, or nothing, a gap.
+CHOICE_CELL = 'choice'
+HEADING_CELL = 'heading'
+GAP_CELL = 'gap'
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class GridCell:
+    """One cell of a grid of choices: what it holds (CHOICE_CELL, HEADING_CELL or GAP_CELL), its words, how wide its column
+    is, and whether the cursor is on it."""
+
+    kind: str
+    text: str = NO_TEXT
+    width: int = 0
+    selected: bool = False
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class BarLevel:
+    """One level of a row of bars, as the Row dialog draws its numbers: the level's label, said in passing, and each cell's
+    piece of its bar at that level, or NO_TEXT where the bar does not reach it, each centred in a cell of a width."""
+
+    label: str
+    cells: tuple = dataclass_field(default_factory=tuple)
+    cell_width: int = 0
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class NumberCells:
+    """The numbers under a row of bars: the room the labels take, each number centred in a cell of a width, and the cursor's
+    place among them, reversed."""
+
+    indent: int
+    numbers: tuple = dataclass_field(default_factory=tuple)
+    cell_width: int = 0
+    selected: object = None
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Piece:
+    """A piece of a line made of pieces, as a row of a table of slots is: its words, laid out already to their place, and
+    whether it is drawn dim or bold."""
+
+    text: str
+    dim: bool = False
+    bold: bool = False
+
+
+def piece(text, *, dim=False, bold=False):
+    """Return a piece of a line."""
+    return Piece(text=text, dim=dim, bold=bold)

@@ -6,12 +6,14 @@
 
 from rich.text import Text
 
-from llamatron.interface.forms import moves
+from llamatron.interface.forms import dialogs, moves
 from llamatron.interface.forms.cursor import NoSuchPlace
+from llamatron.interface.forms.dialogs import blank, GridCell, said_across
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
-from llamatron.interface.tracker.drawing import fit, padded, Style
+from llamatron.interface.tracker.drawing import fit, Style
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.user_strings import marks
 
 
@@ -204,38 +206,33 @@ class GridChoiceDialog(ChoiceDialog):
                         sizes[column] = max(sizes[column], len(cell if isinstance(cell, Heading) else str(self.options[cell])))
         return [size + 3 for size in sizes]
 
-    def option_text(self, *, place, size):
-        text = Text(no_wrap=True)
-        text.append(padded(self.options[place]), style=Style.REVERSE if place == self.cursor.get_place() else Style.PLAIN)
-        text.append(drawing.SPACE * max(size - len(str(self.options[place])) - 2, 0))
-        return text
+    def option_cell(self, *, place, size):
+        """Return the cell of a choice in a column of a size, under the cursor where it is the cursor's."""
+        return GridCell(kind=dialogs.CHOICE_CELL, text=str(self.options[place]), width=size, selected=place == self.cursor.get_place())
 
     def lines(self, width):
         sizes = self.column_widths()
         result = []
         if self.top:
-            line = Text(no_wrap=True)
+            top = []
             for place in self.top:
-                line.append_text(self.option_text(place=place, size=0))
-                line.append(drawing.SPACE)
-            result += [line, Text(drawing.NOTHING)]
+                top += [self.option_cell(place=place, size=0), GridCell(kind=dialogs.GAP_CELL, width=1)]
+            result += [dialog_renderer.grid_cells_line(top), *dialog_renderer.said_lines(paragraphs=[blank()], width=width)]
         for cells in self.grid():
-            line = Text(no_wrap=True)
-            for column, cell in enumerate(cells):
-                size = sizes[column]
-                if cell is None:
-                    line.append(drawing.SPACE * size)
-                elif isinstance(cell, Heading):
-                    line.append(fit(text=drawing.SPACE + cell, width=size), style=Style.BOLD)
-                else:
-                    line.append_text(self.option_text(place=cell, size=size))
-            result.append(line)
+            result.append(dialog_renderer.grid_cells_line([self.grid_cell(cell=cell, size=sizes[column]) for column, cell in enumerate(cells)]))
         # Shorter pages are padded to the height of the tallest.
-        result += [Text(drawing.NOTHING)] * (max(len(grid) for _, grid in self.pages) - len(self.grid()))
+        result = dialog_renderer.filled(lines=result, height=len(result) + max(len(grid) for _, grid in self.pages) - len(self.grid()))
         if self.details is not None:
-            result += [Text(drawing.NOTHING), Text(fit(text=self.details(self.cursor.get_place()), width=width))]
+            result += dialog_renderer.said_lines(paragraphs=[blank(), said_across(self.details(self.cursor.get_place()))], width=width)
         return result
 
+    def grid_cell(self, *, cell, size):
+        """Return a place of the grid as a cell: a gap, a column's heading, or a choice."""
+        if cell is None:
+            return GridCell(kind=dialogs.GAP_CELL, width=size)
+        if isinstance(cell, Heading):
+            return GridCell(kind=dialogs.HEADING_CELL, text=cell, width=size)
+        return self.option_cell(place=cell, size=size)
 
 def row_across(*, columns, row):
     """Return one row of the grid across its columns, None where a column is shorter."""

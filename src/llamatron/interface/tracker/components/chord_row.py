@@ -3,15 +3,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Chord row: a chord symbol on a note, picked from a grid or cycled through."""
 
-from rich.text import Text
 
-from llamatron.interface.tracker import drawing, key_table, keybindings, scale_categories
+from llamatron.interface.tracker import key_table, keybindings, scale_categories
 from llamatron.interface.tracker.chord_text import ChordInWords
-from llamatron.interface.tracker.components.keyboard import chord_keys, Keyboard, KeyKind
+from llamatron.interface.tracker.components.keyboard import chord_keys, Keyboard
 from llamatron.interface.tracker.components.pattern_row import PatternRow
 from llamatron.interface.tracker.dialogs import chord_dialog
 from llamatron.interface.tracker.dialogs.chord_dialog import ChordChoice, ChordDialog
-from llamatron.interface.tracker.drawing import Style
+from llamatron.interface.tracker.renderers import keyboard as keyboard_renderer
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Row
 from llamatron.user_strings import labels, marks, messages
@@ -25,8 +24,6 @@ def chord_value(text):
     return int(text) if text and text.isdigit() else text
 
 
-# The style of each kind of key on the Chord dialog's keyboard.
-KEY_STYLES = {KeyKind.CHORD: Style.CHORD_KEY, KeyKind.SCALE: Style.SCALE_KEY, KeyKind.OUTSIDE: Style.DIM}
 # The rows the Chord dialog edits together, and the list it opens on from each.
 OPENS_ON = {Row.CHORD: chord_dialog.QUALITY_LIST, Row.TENSION: chord_dialog.TENSION_LIST, Row.CHORD_SCALE: chord_dialog.SCALE_LIST}
 
@@ -58,18 +55,7 @@ def step_keyboard(*, editor, step, choice):
         return None
     scale = editor.known_scale()
     keyboard = Keyboard(root=scale.get_root(), half_steps=scale.get_half_steps(), chord=chord_keys(note_names=names, inversion=choice.inversion if choice.quality is not None else None))
-    return keyboard_lines(keyboard)
-
-
-def keyboard_lines(keyboard):
-    """Return a keyboard's lines as the Chord dialog draws them, each kind of key in its style."""
-    lines = []
-    for row in keyboard.rows():
-        line = Text(drawing.NOTHING, no_wrap=True)
-        for text, kind in row:
-            line.append(text, style=KEY_STYLES.get(kind, Style.PLAIN))
-        lines.append(line)
-    return lines
+    return keyboard_renderer.keyboard_lines(rows=keyboard.rows(), styles=keyboard_renderer.CHORD_KEY_STYLES)
 
 
 def step_choice(*, editor, step):

@@ -6,10 +6,10 @@
 
 from rich.text import Text
 
-from llamatron.interface.forms.dialogs import said
-from llamatron.interface.tracker import drawing, keybindings
+from llamatron.interface.forms.dialogs import blank, said
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import padded, Style
+from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.user_strings import labels, messages
 
@@ -50,30 +50,6 @@ class HelpDialog(Dialog):
 
     def lines(self, width):
         if self.panel == KEYS_PANEL:
-            return [*key_columns(items=self.everywhere, width=width), Text(drawing.NOTHING), *key_columns(items=self.own, width=width)]
+            return [*dialog_renderer.key_columns(items=self.everywhere, width=width, columns=COLUMNS), *dialog_renderer.said_lines(paragraphs=[blank()], width=width),
+                    *dialog_renderer.key_columns(items=self.own, width=width, columns=COLUMNS)]
         return dialog_renderer.said_lines(paragraphs=[said(line) for line in self.about], width=width)
-
-
-def key_columns(*, items, width):
-    """Return the keys as lines of COLUMNS columns, filled down one column and then the next, each key as the main menu draws one."""
-    rows = -(-len(items) // COLUMNS)
-    column_width = width // COLUMNS
-    lines = []
-    for row in range(rows):
-        line = Text(no_wrap=True)
-        for column in range(COLUMNS):
-            at = row + column * rows
-            if at < len(items):
-                line.append_text(key_cell(item=items[at], width=column_width))
-        lines.append(line)
-    return lines
-
-
-def key_cell(*, item, width):
-    """Return one key as a cell of the given width: its label in reverse video, then what it does."""
-    cell = Text(no_wrap=True)
-    cell.append(padded(item.shown_label()), style=Style.REVERSE)
-    cell.append(drawing.SPACE + item.what)
-    cell.truncate(width)
-    cell.append(drawing.SPACE * (width - cell.cell_len))
-    return cell

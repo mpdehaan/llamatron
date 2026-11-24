@@ -10,13 +10,11 @@ the cursor's, Bksp puts back the row the dialog was told is the usual one, Enter
 with the row, and Esc is CANCEL, changing nothing. A row whose numbers go either side of zero is
 drawn around a zero line."""
 
-from rich.text import Text
 
 from llamatron.interface.forms.cursor import Cursor
-from llamatron.interface.forms.dialogs import answers
+from llamatron.interface.forms.dialogs import answers, BarLevel, blank, NumberCells
 from llamatron.interface.tracker import drawing, key_table, keybindings
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.user_strings import labels, marks
 
@@ -101,25 +99,20 @@ class RowDialog(Dialog):
     def bar_line(self, level):
         """Return one level of every cell's bar: filled where the cell's number reaches the level, on the level's side of zero."""
         size = self.numbers_to_a_level()
-        line = Text(self.level_label(level), style=Style.DIM)
+        cells = []
         for value in self.values:
             reaches = value > level - size if level > ZERO else value < level + size
-            line.append((marks.MSG_ROW_DIALOG_BAR if reaches and (value > ZERO) == (level > ZERO) and value != ZERO else drawing.NOTHING).center(CELL_WIDTH))
-        return line
+            cells.append(marks.MSG_ROW_DIALOG_BAR if reaches and (value > ZERO) == (level > ZERO) and value != ZERO else drawing.NOTHING)
+        return dialog_renderer.bar_level_line(BarLevel(label=self.level_label(level), cells=tuple(cells), cell_width=CELL_WIDTH))
 
     def number_line(self):
-        line = Text(drawing.SPACE * len(self.level_label(ZERO)))
-        for place, value in enumerate(self.values):
-            if place == self.cursor.get_place():
-                # The cursor's number is in reverse video, as the cursor's cell of the pattern and groove editors is.
-                line.append(str(value).center(CELL_WIDTH), style=Style.REVERSE)
-            else:
-                line.append(str(value).center(CELL_WIDTH))
-        return line
+        """Return the numbers, the cursor's reversed, as the cursor's cell of the pattern and groove editors is."""
+        numbers = NumberCells(indent=len(self.level_label(ZERO)), numbers=tuple(self.values), cell_width=CELL_WIDTH, selected=self.cursor.get_place())
+        return dialog_renderer.number_cells_line(numbers)
 
     def lines(self, width):
         above, below = self.levels()
-        zero = [Text(self.level_label(ZERO) + marks.MSG_ROW_DIALOG_ZERO * (len(self.values) * CELL_WIDTH), style=Style.DIM)] if below else []
+        zero = [dialog_renderer.dim_line(self.level_label(ZERO) + marks.MSG_ROW_DIALOG_ZERO * (len(self.values) * CELL_WIDTH))] if below else []
         answered = answers(labels=labels.MSG_OK_CANCEL_BUTTONS, selected=OK)
         return [*[self.bar_line(level) for level in above], *zero, *[self.bar_line(level) for level in below], self.number_line(),
-                Text(drawing.NOTHING), *dialog_renderer.answer_lines(answered)]
+                *dialog_renderer.said_lines(paragraphs=[blank()], width=width), *dialog_renderer.answer_lines(answered)]

@@ -11,12 +11,11 @@ instrument gives it, where the instrument is known for certain, and a line above
 the instrument or says why none is named. A slot with no note can still be picked: it plays
 nothing until the instrument gives it one."""
 
-from rich.text import Text
 
-from llamatron.interface.forms.dialogs import answers, blank, said_on_one_line_in_passing
-from llamatron.interface.tracker import drawing, keybindings, keys as keys_values, keyswitch_text
+from llamatron.interface.forms.dialogs import answers, blank, piece, said_on_one_line_in_passing
+from llamatron.interface.tracker import keybindings, keys as keys_values, keyswitch_text
 from llamatron.interface.tracker.dialogs.pick_many_dialog import PickManyDialog
-from llamatron.interface.tracker.drawing import cursor_mark, fit, Style
+from llamatron.interface.tracker.drawing import cursor_mark, fit
 from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.model.schema import file_format
 from llamatron.user_strings import labels, marks
@@ -48,15 +47,15 @@ class KeyswitchDialog(PickManyDialog):
     def slot_line(self, *, slot, width):
         picked = slot in self.picked
         start = cursor_mark(slot == self.cursor.get_place()) + marks.MSG_KEYSWITCH_SLOT_ROW.format(slot=slot, toggle=marks.MSG_TOGGLE_ON if picked else marks.MSG_FIELD_TOGGLE_OFF)
-        line = Text(start, style=Style.BOLD if picked else Style.PLAIN, no_wrap=True)
-        line.append(fit(text=self.names[slot], width=max(width - len(start) - keyswitch_text.KEYSWITCH_NOTE_WIDTH, 0)), style=Style.PLAIN if self.notes[slot] or picked else Style.DIM)
-        line.append(fit(text=self.notes[slot], width=keyswitch_text.KEYSWITCH_NOTE_WIDTH), style=Style.DIM)
-        return line
+        name = fit(text=self.names[slot], width=max(width - len(start) - keyswitch_text.KEYSWITCH_NOTE_WIDTH, 0))
+        return dialog_renderer.pieces_line([
+            piece(start, bold=picked), piece(name, dim=not (self.notes[slot] or picked)), piece(fit(text=self.notes[slot], width=keyswitch_text.KEYSWITCH_NOTE_WIDTH), dim=True),
+        ])
 
     def lines(self, width):
         answered = answers(labels=labels.MSG_OK_CANCEL_BUTTONS, selected=OK)
         return [
             *dialog_renderer.said_lines(paragraphs=[said_on_one_line_in_passing(self.said), blank()], width=width),
             *[self.slot_line(slot=slot, width=width) for slot in self.options],
-            Text(drawing.NOTHING), *dialog_renderer.answer_lines(answered),
+            *dialog_renderer.said_lines(paragraphs=[blank()], width=width), *dialog_renderer.answer_lines(answered),
         ]

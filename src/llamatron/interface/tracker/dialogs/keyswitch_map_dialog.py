@@ -11,19 +11,18 @@ picker opens on the slot's note, or, for a slot with none, a half step above the
 note, or on the lowest C for an empty map. Nothing changes in the set until OK.
 """
 
-from rich.text import Text
 
 from llamatron.interface.forms import moves
 from llamatron.interface.forms.cursor import Cursor
-from llamatron.interface.forms.dialogs import answers
+from llamatron.interface.forms.dialogs import answers, blank, heading_across, piece, said_as_it_is
 from llamatron.interface.tracker import drawing, key_table, keybindings, keyswitch_text
-from llamatron.interface.tracker.components.keyboard import KeyKind, one_octave_rows
+from llamatron.interface.tracker.components.keyboard import one_octave_rows
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
-from llamatron.interface.tracker.drawing import cursor_mark, fit, legend, Style
+from llamatron.interface.tracker.drawing import cursor_mark, fit, legend
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.keyswitch_text import keyswitch_note_text, shown_name
-from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer, keyboard as keyboard_renderer
 from llamatron.model.objects import instrument
 from llamatron.model.objects.instrument import Keyswitch
 from llamatron.model.schema import file_format, limits
@@ -36,7 +35,6 @@ BUTTONS_PLACE = file_format.KEYSWITCH_SLOT_COUNT
 OK = 0
 CANCEL = 1
 # The styles of the picker's keys: the key picked filled in the Chord dialog's green, the rest dim.
-KEY_STYLES = {KeyKind.CHORD: Style.CHORD_KEY, KeyKind.OUTSIDE: Style.DIM}
 ONE_HALF_STEP = 1
 # Where the cursor is along a slot's row: on the name, where Enter renames, or on the note, where Enter opens the note picker; the slot's number is only text at the left.
 NAME_CELL = 0
@@ -158,24 +156,21 @@ class KeyswitchMapDialog(Dialog):
         on_name = slot == self.cursor.get_place() and self.cell == NAME_CELL
         on_note = slot == self.cursor.get_place() and self.cell == NOTE_CELL
         # The triangle stands before the name or the note, in a place each keeps for it, so that nothing shifts as the cursor moves.
-        line = Text(marks.MSG_KEYSWITCH_MAP_ROW.format(slot=slot), no_wrap=True)
+        start = marks.MSG_KEYSWITCH_MAP_ROW.format(slot=slot)
         name_mark = cursor_mark(on_name)
         note_mark = cursor_mark(on_note)
-        room = max(width - line.cell_len - len(name_mark) - len(note_mark) - keyswitch_text.KEYSWITCH_NOTE_WIDTH, 0)
-        line.append(name_mark)
-        line.append(fit(text=shown_name(keyswitch), width=room), style=Style.DIM if keyswitch.name is None else Style.PLAIN)
-        line.append(note_mark)
-        line.append(fit(text=marks.MSG_KEYSWITCH_NOTE_CELL.format(note=self.note_text(keyswitch.note)), width=keyswitch_text.KEYSWITCH_NOTE_WIDTH - len(marks.MSG_PICKER_MARK)), style=Style.DIM if keyswitch.note is None else Style.PLAIN)
-        line.append(marks.MSG_PICKER_MARK, style=Style.DIM)
-        return line
+        room = max(width - len(start) - len(name_mark) - len(note_mark) - keyswitch_text.KEYSWITCH_NOTE_WIDTH, 0)
+        note = fit(text=marks.MSG_KEYSWITCH_NOTE_CELL.format(note=self.note_text(keyswitch.note)), width=keyswitch_text.KEYSWITCH_NOTE_WIDTH - len(marks.MSG_PICKER_MARK))
+        return dialog_renderer.pieces_line([
+            piece(start + name_mark), piece(fit(text=shown_name(keyswitch), width=room), dim=keyswitch.name is None), piece(note_mark),
+            piece(note, dim=keyswitch.note is None), piece(marks.MSG_PICKER_MARK, dim=True),
+        ])
 
     def heading_line(self, width):
         """Return the headings over the slots' two cells, each over the place its cell starts."""
         gap = len(marks.MSG_KEYSWITCH_MAP_ROW.format(slot=0)) + len(cursor_mark(False))
         room = max(width - gap - len(cursor_mark(False)) - keyswitch_text.KEYSWITCH_NOTE_WIDTH, 0)
-        line = Text(SPACE * gap, no_wrap=True)
-        line.append(fit(text=labels.Column.NAME, width=room) + SPACE * len(cursor_mark(False)) + labels.Column.NOTE, style=Style.DIM)
-        return line
+        return dialog_renderer.pieces_line([piece(SPACE * gap), piece(fit(text=labels.Column.NAME, width=room) + SPACE * len(cursor_mark(False)) + labels.Column.NOTE, dim=True)])
 
     def lines(self, width):
         selected = None
@@ -185,7 +180,7 @@ class KeyswitchMapDialog(Dialog):
         return [
             self.heading_line(width),
             *[self.slot_line(slot=slot, width=width) for slot in range(file_format.KEYSWITCH_SLOT_COUNT)],
-            Text(drawing.NOTHING), *dialog_renderer.answer_lines(answered),
+            *dialog_renderer.said_lines(paragraphs=[blank()], width=width), *dialog_renderer.answer_lines(answered),
         ]
 
     def flyout_lines(self, width):
@@ -194,15 +189,11 @@ class KeyswitchMapDialog(Dialog):
             return None
         keyswitch = self.current()
         title = messages.MSG_KEYSWITCH_NOTE_TITLE.format(slot=self.cursor.get_place()) if keyswitch.name is None else messages.MSG_KEYSWITCH_NOTE_NAMED_TITLE.format(slot=self.cursor.get_place(), name=keyswitch.name)
-        lines = [Text(fit(text=title, width=width), style=Style.BOLD), Text(drawing.NOTHING)]
-        for row in one_octave_rows(self.picking % intervals.HALF_STEPS_PER_OCTAVE):
-            line = Text(drawing.NOTHING, no_wrap=True)
-            for text, kind in row:
-                line.append(text, style=KEY_STYLES.get(kind, Style.PLAIN))
-            lines.append(line)
+        keys = keyboard_renderer.keyboard_lines(rows=one_octave_rows(self.picking % intervals.HALF_STEPS_PER_OCTAVE), styles=keyboard_renderer.NOTE_PICKER_KEY_STYLES)
         octave = self.setlist.shown_octave(self.picking // intervals.HALF_STEPS_PER_OCTAVE)
-        lines += [
-            Text(drawing.NOTHING), Text(messages.MSG_KEYSWITCH_PICKED_NOTE.format(note=self.note_text(self.picking))), Text(messages.MSG_KEYSWITCH_PICKED_OCTAVE.format(octave=octave)),
-            Text(drawing.NOTHING), *legend(keys=self.keys(), width=width),
+        said = [
+            blank(), said_as_it_is(messages.MSG_KEYSWITCH_PICKED_NOTE.format(note=self.note_text(self.picking))),
+            said_as_it_is(messages.MSG_KEYSWITCH_PICKED_OCTAVE.format(octave=octave)), blank(),
         ]
-        return lines
+        return [*dialog_renderer.said_lines(paragraphs=[heading_across(title), blank()], width=width), *keys, *dialog_renderer.said_lines(paragraphs=said, width=width),
+                *legend(keys=self.keys(), width=width)]
