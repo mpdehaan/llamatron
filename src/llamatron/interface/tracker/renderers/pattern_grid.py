@@ -15,7 +15,7 @@ from rich.text import Text
 from llamatron.interface.forms import pattern_grid
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.drawing import Align, Box, fit, Style
-from llamatron.user_strings import labels
+from llamatron.user_strings import labels, marks
 
 # Each kind of rule's pieces: its left end, its joint, its joint at a beat, its right end, its line, and where it edges the
 # cursor's box, the joint at the box's ends and the right end where the box's right bar is the grid's border.
@@ -63,15 +63,10 @@ def rule_line(*, rule, label_width):
     return line
 
 
-def append_edge(*, line, step, beats, replaced=None):
+def append_edge(*, line, step, beats):
     """Add a step's left edge to a line: a plain double line where the step starts a beat, beside the dim single lines, so the
-    beats stand out as columns, unless a bar runs through it. Never bold, since many fonts draw bold double lines short of the
-    next line."""
-    if isinstance(replaced, Text):
-        line.append_text(replaced)
-    elif replaced is not None:
-        line.append(replaced)
-    elif step in beats:
+    beats stand out as columns. Never bold, since many fonts draw bold double lines short of the next line."""
+    if step in beats:
         line.append(Box.DOUBLE_BAR, style=Style.PLAIN)
     else:
         line.append(Box.BAR, style=Style.DIM)
@@ -113,3 +108,124 @@ def row_lines(*, row, label_width):
         line.append(Box.BAR, style=Style.DIM)
         lines.append(line)
     return lines
+
+
+# The piano roll's rows.
+
+# The blocks of a note's bar, which the read head never draws over.
+NOTE_BLOCKS = (marks.MSG_NOTE_EDGE, marks.MSG_CURSOR_BLOCK, marks.MSG_NOTE_HOLLOW, marks.MSG_NOTE_HOLLOW_UNDER_CURSOR)
+# What a solid bar's blocks become in a hollow one.
+HOLLOW = str.maketrans({marks.MSG_NOTE_EDGE: marks.MSG_NOTE_HOLLOW, marks.MSG_CURSOR_BLOCK: marks.MSG_NOTE_HOLLOW_UNDER_CURSOR})
+ROLL_LABEL_STYLES = {pattern_grid.BOLD_LABEL: Style.BOLD, pattern_grid.PLAIN_LABEL: Style.PLAIN, pattern_grid.DIM_LABEL: Style.DIM}
+
+
+def roll_row_line(*, row, label_width):
+    """Return a row of the piano roll: its label, then each step's edge and cell, then the right border."""
+    line = Text(no_wrap=True)
+    line.append(Box.BAR, style=Style.DIM)
+    line.append(fit(text=drawing.SPACE + row.label, width=label_width), style=ROLL_LABEL_STYLES[row.label_kind])
+    beats = row.beats
+    blank = drawing.SPACE * pattern_grid.CELL_WIDTH
+    # Most of the roll is dividers and blank cells, drawn here without a call each, since every row is drawn again whenever
+    # the set changes and the calls were measured at a tenth of a millisecond a key.
+    for step, (edge, cell) in row.steps:
+        if edge != pattern_grid.DIVIDER_EDGE:
+            _append_roll_edge(line=line, edge=edge)
+        elif step in beats:
+            line.append(Box.DOUBLE_BAR, style=Style.PLAIN)
+        else:
+            line.append(Box.BAR, style=Style.DIM)
+        if cell is pattern_grid.EMPTY:
+            line.append(blank)
+        else:
+            _append_roll_cell(line=line, cell=cell)
+    if row.last_edge == pattern_grid.CURSOR_EDGE:
+        line.append(Box.DOUBLE_BAR, style=Style.SELECTED_EDGE)
+    else:
+        line.append(Box.BAR, style=Style.DIM)
+    return line
+
+
+def roll_cell(cell):
+    """Return a cell of the roll: a note's bar, shaded under the cursor, its mark reversed in the middle so that it reads against
+    the bar, and hollow for a note an inversion plays an octave up; a chord's added note's thin dim line; a blank, reversed under
+    the cursor; or the mark of a place outside the track's range."""
+    if cell.kind == pattern_grid.NOTE_CELL:
+        bar = _solid_note_cell(cell)
+        return Text(bar.plain.translate(HOLLOW), spans=bar.spans, no_wrap=True) if cell.hollow else bar
+    if cell.kind == pattern_grid.GHOST_CELL:
+        return Text(fit(text=marks.MSG_GHOST_LINE * cell.columns, width=pattern_grid.CELL_WIDTH), style=Style.REVERSE if cell.selected else Style.CHORD_NOTE, no_wrap=True)
+    if cell.kind == pattern_grid.OUT_OF_RANGE_CELL:
+        return Text(marks.MSG_OUT_OF_RANGE_CELL, style=Style.DIM)
+    if cell.selected:
+        return Text(drawing.SPACE * pattern_grid.CELL_WIDTH, style=Style.REVERSE)
+    return Text(drawing.SPACE * pattern_grid.CELL_WIDTH)
+
+
+def with_keyswitch_lights(*, line, columns):
+    """Return a line with a keyswitch's light at each of the columns, over a note's bar where one is there; the line drawn is
+    kept as it is, and the lights go on a copy."""
+    if not columns:
+        return line
+    marked = line.copy()
+    for column in columns:
+        after = marked[column + 1:]
+        marked = marked[:column]
+        marked.append(marks.MSG_KEYSWITCH_LIGHT, style=Style.KEYSWITCH_LIGHT)
+        marked.append_text(after)
+    return marked
+
+
+def with_read_head(*, lines, column):
+    """Return lines with the read head down them at a column, a thin light line, left off wherever a note's bar runs through
+    the edge; the lines drawn are kept as they are, and the read head goes on copies."""
+    return [_read_head_on(line=line, column=column) for line in lines]
+
+
+def _append_roll_cell(*, line, cell):
+    # The plain cells are added as text, without a Text of their own, since most of the roll is blank.
+    if cell.kind == pattern_grid.OUT_OF_RANGE_CELL:
+        line.append(marks.MSG_OUT_OF_RANGE_CELL, style=Style.DIM)
+    else:
+        line.append_text(roll_cell(cell))
+
+
+def _solid_note_cell(cell):
+    # A cell the note only partly fills, where its gate ends inside the step, is that many columns of bar and then blank, with
+    # the mark in the bar's last column when the middle is past its end.
+    mark = cell.mark
+    if cell.columns == pattern_grid.CELL_WIDTH and mark is None:
+        return Text(marks.MSG_NOTE_UNDER_CURSOR if cell.selected else marks.MSG_NOTE_CELL, no_wrap=True)
+    if cell.columns == pattern_grid.CELL_WIDTH:
+        bar = Text((marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK if cell.selected else marks.MSG_NOTE_CELL_WITH_MARK).format(mark=mark), no_wrap=True)
+        bar.stylize(Style.REVERSE, pattern_grid.MARK_COLUMN, pattern_grid.MARK_COLUMN + len(mark))
+        return bar
+    block = marks.MSG_CURSOR_BLOCK if cell.selected else marks.MSG_NOTE_EDGE
+    text = block * cell.columns
+    column = min(pattern_grid.MARK_COLUMN, cell.columns - 1)
+    if mark is not None:
+        text = text[:column] + mark + text[column + 1:]
+    bar = Text(fit(text=text, width=pattern_grid.CELL_WIDTH), no_wrap=True)
+    if mark is not None:
+        bar.stylize(Style.REVERSE, column, column + len(mark))
+    return bar
+
+
+def _append_roll_edge(*, line, edge):
+    if edge == pattern_grid.NOTE_EDGE:
+        line.append(marks.MSG_NOTE_EDGE)
+    elif edge == pattern_grid.HOLLOW_EDGE:
+        line.append(marks.MSG_NOTE_HOLLOW)
+    elif edge == pattern_grid.GHOST_EDGE:
+        line.append(marks.MSG_GHOST_LINE, style=Style.CHORD_NOTE)
+    else:
+        line.append(Box.DOUBLE_BAR, style=Style.SELECTED_EDGE)
+
+
+def _read_head_on(*, line, column):
+    if column >= len(line.plain) or line.plain[column] in NOTE_BLOCKS:
+        return line
+    marked = line[:column]
+    marked.append(marks.MSG_READ_HEAD, style=Style.READ_HEAD)
+    marked.append_text(line[column + 1:])
+    return marked

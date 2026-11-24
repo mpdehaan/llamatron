@@ -26,6 +26,7 @@ from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.launch import Launch, recording_problem
 from llamatron.interface.tracker.pattern_preview import passes_to_come_round
+from llamatron.interface.tracker.renderers import pattern_grid as grid_renderer
 from llamatron.interface.tracker.screens.arrange import arrange_page
 from llamatron.interface.tracker.screens.arrange.arrange_page import announced, ArrangePage
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
@@ -954,9 +955,9 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.press(keybindings.PatternEditor.LISTEN)
         await self.let_the_preview_play(PAST_THE_SECOND_NOTE)
         self.assertGreater(self.read_head_cells(), 0)
-        drawing = self.page.roll_drawing
-        self.assertEqual(drawing.read_head_on(line=Text(marks.MSG_NOTE_EDGE), column=FIRST_INDEX).plain, marks.MSG_NOTE_EDGE)
-        self.assertEqual(drawing.read_head_on(line=Text(SPACE), column=FIRST_INDEX).plain, marks.MSG_READ_HEAD)
+        on_a_bar, on_a_blank = grid_renderer.with_read_head(lines=[Text(marks.MSG_NOTE_EDGE), Text(SPACE)], column=FIRST_INDEX)
+        self.assertEqual(on_a_bar.plain, marks.MSG_NOTE_EDGE)
+        self.assertEqual(on_a_blank.plain, marks.MSG_READ_HEAD)
 
     async def test_the_rows_view_shows_the_number_of_the_step_that_sounds_in_the_read_heads_colour(self):
         self.name_a_preview_instrument()

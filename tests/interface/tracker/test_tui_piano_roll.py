@@ -11,6 +11,7 @@ alone under C Major, so the roll knows its scale and its track.
 import re
 
 from llamatron.interface.forms import pattern_grid
+from llamatron.interface.forms.pattern_grid import RollCell
 from llamatron.interface.tracker import drawing, keys
 from llamatron.interface.tracker.components.chord_row import chord_value
 from llamatron.interface.tracker.dialogs import chord_dialog
@@ -18,7 +19,7 @@ from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.chord_dialog import ChordDialog
 from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.pattern import roll_drawing
+from llamatron.interface.tracker.renderers import pattern_grid as grid_renderer
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.pattern.roll_drawing import filled_columns
 from llamatron.math.rational import Rational
@@ -434,8 +435,8 @@ class TestShapingNotes(RollTest):
         await self.press(Key.UP)
         self.assertIn(marks.MSG_NOTE_CELL_WITH_MARK.format(mark=ui_testing.REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C}{SHOWN_OCTAVE}'))
         # The mark is in reverse video so that it reads against the bar, and it stays on the note when a sharp moves it to a row of its own.
-        cell = self.editor.roll_drawing.note_cell(mark=marks.MSG_GRAB_NOTE_MARK, selected=False)
-        self.assertEqual([(span.start, span.end, span.style) for span in cell.spans], [(roll_drawing.MARK_COLUMN, roll_drawing.MARK_COLUMN + 1, Style.REVERSE)])
+        cell = grid_renderer.roll_cell(RollCell(kind=pattern_grid.NOTE_CELL, mark=marks.MSG_GRAB_NOTE_MARK))
+        self.assertEqual([(span.start, span.end, span.style) for span in cell.spans], [(pattern_grid.MARK_COLUMN, pattern_grid.MARK_COLUMN + 1, Style.REVERSE)])
         await self.press(Key.DOWN, keybindings.PianoRoll.ACCIDENTAL)
         self.assertIn(marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK.format(mark=ui_testing.REVERSED.format(text=marks.MSG_GRAB_NOTE_MARK)), self.roll_line(f'{NoteName.C_SHARP}{SHOWN_OCTAVE}'))
         # G again unmarks it, leaving a plain bar, and G on an empty cell says so.
