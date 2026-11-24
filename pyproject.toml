@@ -1,0 +1,42 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Installs llamatron, including the Live set template the renderer builds from:
+#
+#     pip install -e .
+#
+# This adds the llamatron command. The version is read from src/llamatron/model/file/version.py, without running it, and the
+# pinned dependencies from requirements.txt, the one list of them.
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llamatron"
+dynamic = ["version", "dependencies"]
+description = "A tracker for writing MIDI clips and Ableton Live sets"
+readme = "README.md"
+authors = [{ name = "Michael DeHaan" }]
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+requires-python = ">=3.15"
+
+[project.scripts]
+llamatron = "llamatron.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+# The template is read from a real file next to the code.
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+llamatron = ["templates/*.als"]
+
+[tool.setuptools.dynamic]
+version = { attr = "llamatron.model.file.version.VERSION" }
+dependencies = { file = ["requirements.txt"] }

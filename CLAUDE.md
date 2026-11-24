@@ -30,7 +30,7 @@ These come before every other rule, whatever the task, mode or tool permits.
 llamatron is a text UI for composing electronic music in MIDI, for Ableton Live and later other DAWs, inspired by Ableton's
 Session View, the Elektron Monomachine, the Sequentix Cirklon and software trackers. `docs/WHY_LLAMATRON.md` defines what it is
 for, and features are judged against it. The Python classes are internal, not an API, and change freely to suit the tracker.
-Dependencies: `mido`, `python-rtmidi`, `PyYAML`, `textual`, `reportlab` and `music21` (PDF export), `sounddevice` and `scipy` (the built-in synths), pinned in `requirements.txt`, which `setup.py` reads. The package is
+Dependencies: `mido`, `python-rtmidi`, `PyYAML`, `textual`, `reportlab` and `music21` (PDF export), `sounddevice` and `scipy` (the built-in synths), pinned in `requirements.txt`, which `pyproject.toml` reads. The package is
 `llamatron` in `src/llamatron`, and must be installed (below) before anything runs.
 
 ## Where everything is
@@ -91,7 +91,7 @@ internal_tools/song_wizard_compose.sh                           # the song wizar
 
 ## Version
 
-`src/llamatron/model/file/version.py` holds `VERSION` (three numbers, like `1.0.2`), read by `setup.py`, shown by About and
+`src/llamatron/model/file/version.py` holds `VERSION` (three numbers, like `1.0.2`), read by `pyproject.toml`, shown by About and
 written into every set file. Compare with `version_numbers()`, never as decimals. The last number is raised once per push by
 `internal_tools/push_all.sh` (via `internal_tools/bump_version.py --before-push`) when Python under `src/` changed; by hand only
 with `internal_tools/bump.sh`, never a hand edit. The first two numbers are the user's. `BUILD_DATE` and `BUILD_TIME` are written

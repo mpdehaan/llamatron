@@ -47,7 +47,7 @@ class TestWhatAChangeNeeds(unittest.TestCase):
     def test_a_file_the_map_cannot_place_needs_everything(self):
         self.assertEqual(needed([NEW_SOURCE_FILE]), test_map.EVERYTHING)
         self.assertEqual(needed(['tests/support/ui_testing.py']), test_map.EVERYTHING)
-        self.assertEqual(needed(['setup.py']), test_map.EVERYTHING)
+        self.assertEqual(needed(['pyproject.toml']), test_map.EVERYTHING)
 
 
 class TestImportLines(unittest.TestCase):
