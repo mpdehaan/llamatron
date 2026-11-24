@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Chains list page: the chains a clip, a scene or a track runs, in the order they run, which the page that opened it reads and stores."""
 
+import functools
+
 from llamatron.interface.pages.generator_list import GeneratorListPresenter
 from llamatron.interface.tracker import keybindings, themes
 from llamatron.interface.tracker.screens.shared.list_page import ListPage
@@ -56,8 +58,7 @@ class GeneratorListPage(ListPage):
         self.ask_choice(title=messages.MSG_ADD_GENERATOR_TITLE, options=shown, current=FIRST_CHOICE, then=lambda item: self.cursor.set_place(presenter.add(offered[item])))
 
     def remove_chain(self):
-        self.presenter().remove(self.cursor.get_place())
-        self.clamp()
+        self.take_out(functools.partial(self.presenter().remove, self.cursor.get_place()))
 
     def shift(self, offset):
         if self.presenter().swap(place=self.cursor.get_place(), offset=offset):

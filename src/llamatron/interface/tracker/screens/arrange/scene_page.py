@@ -81,6 +81,10 @@ class ScenePage(FieldPage):
         text = text.strip()
         if not text:
             return
-        self.document().change_set(self.scene().set_name, text)
-        self.shown_name = text
-        self.crumbs = (labels.Crumb.ARRANGE, labels.MSG_SCENE_CRUMB.format(name=text))
+        self.name_scene(text)
+
+    def name_scene(self, name):
+        """Give the scene a name and follow it: the page knows its scene by the name it last showed, so the two go together, and
+        a name stored without the other would make the page take its own scene for one taken away."""
+        self.document().change_set(self.scene().set_name, name)
+        self.shown_name = name

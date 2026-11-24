@@ -4,6 +4,8 @@
 
 """The Chain editor page: a chain's steps, each a generator chosen by name."""
 
+import functools
+
 from llamatron.interface.pages.chain import ChainPresenter
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.screens.generators.chain_statements_page import ChainStatementsPage
@@ -93,8 +95,7 @@ class ChainEditor(ShowsNamedItem, ListPage):
         self.cursor.shift(1)
 
     def remove_step(self):
-        self.presenter().remove_step(self.cursor.get_place())
-        self.clamp()
+        self.take_out(functools.partial(self.presenter().remove_step, self.cursor.get_place()))
 
     def shift(self, offset):
         if self.presenter().move_step(place=self.cursor.get_place(), offset=offset):

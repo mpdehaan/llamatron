@@ -4,6 +4,7 @@
 
 """The List page: a table with a cursor, where each page adds its own keys."""
 
+import functools
 from rich.text import Text
 
 from llamatron.interface.forms import moves
@@ -164,6 +165,12 @@ class ListPage(Page):
     def clamp(self):
         self.cursor.keep_within(len(self.rows_with_plus()))
 
+    def take_out(self, remove):
+        """Take a row out of the list by running remove, and keep the cursor on a row that is still there: the two go together,
+        since a cursor past the end of the list stands on nothing."""
+        remove()
+        self.clamp()
+
     def remember_place(self):
         return self.current()
 
@@ -257,10 +264,7 @@ class ListPage(Page):
             if len(uses) > MOST_USES_SHOWN:
                 message.append(errors.ERR_AND_MORE.format(count=len(uses) - MOST_USES_SHOWN))
 
-        def confirmed(_):
-            delete()
-            self.clamp()
-        self.confirm_delete(lines=message, then=lambda: confirmed(None))
+        self.confirm_delete(lines=message, then=functools.partial(self.take_out, delete))
 
     def delete_after_checks(self, *, what, uses, delete, extra=None):
         """Refuse if anything still uses an item, and otherwise confirm and delete it."""
@@ -274,7 +278,4 @@ class ListPage(Page):
         if extra:
             message.append(extra)
 
-        def confirmed(_):
-            delete()
-            self.clamp()
-        self.confirm_delete(lines=message, then=lambda: confirmed(None))
+        self.confirm_delete(lines=message, then=functools.partial(self.take_out, delete))

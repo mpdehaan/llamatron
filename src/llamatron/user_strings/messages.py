@@ -17,7 +17,7 @@ MSG_QUIT_UNSAVED_QUESTION = 'The set has unsaved changes.'
 
 # interface/tracker/screens/arrange/arrange_page.py
 # Dialogs and messages.
-MSG_DELETE_SCENE_QUESTION = 'Delete scene {name}?'
+MSG_DELETE_SCENE_QUESTION = 'Delete scene ({name})?'
 MSG_DELETE_TRACK_QUESTION = 'Delete track ({name})?'
 MSG_DELETE_CLIP_QUESTION = 'Delete the clip on track ({track})?'
 MSG_GRABBERS_STOP = '{count} clip(s) that grab from it will stop grabbing.'
@@ -27,7 +27,7 @@ MSG_NEW_PATTERN_CHOICE = '(new pattern)'
 MSG_COPIED_CLIP = 'copied the clip: press V on another cell to paste it'
 MSG_PASTED_WITHOUT_GRAB = 'pasted without its grab from {track}, which would go round in a circle here'
 # The scene page.
-MSG_SCENE_NAME_PROMPT = 'Rename {name}'
+MSG_SCENE_NAME_PROMPT = 'Rename scene ({name})'
 MSG_SCENE_SCALE_TITLE = 'Scene scale'
 MSG_CLIP_SCALE_TITLE = 'Clip scale'
 MSG_SONG_TIME_SIGNATURE_PROMPT = 'Time signature, such as 6/8'
