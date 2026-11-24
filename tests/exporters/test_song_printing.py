@@ -115,3 +115,12 @@ class TestSongPrinting(unittest.TestCase):
         parts = song_printing.default_parts(tracks=[tune, line, bass], signature=signature)
         self.assertEqual(parts[LEAD], PrintedPart.MELODY)
         self.assertEqual({parts[FIDDLE], parts[PIANO]}, {PrintedPart.CHORDS})
+
+    def test_a_track_whose_patterns_write_chords_is_a_chord_track_whatever_its_notes_sound_like(self):
+        song = the_song()
+        self.assertEqual(song_printing.written_chord_tracks(song), {PIANO})
+        tracks = song_printing.track_notes(song_printing.rendered(song))
+        parts = song_printing.default_parts(tracks=tracks, signature=song.get_time_signature(), chord_tracks={PIANO, FIDDLE})
+        # The fiddle writes no chord here, but a track named as writing them is the chords unless it is the melody.
+        self.assertEqual(parts[FIDDLE], PrintedPart.CHORDS)
+        self.assertEqual(parts[LEAD], PrintedPart.MELODY)

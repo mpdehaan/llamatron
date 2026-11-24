@@ -91,7 +91,7 @@ def pdf_options():
 def default_parts(song):
     """Return the part each of a song's tracks plays by default, by its name: the role its notes play."""
     tracks = song_printing.track_notes(song_printing.rendered(song))
-    return song_printing.default_parts(tracks=tracks, signature=song.get_time_signature())
+    return song_printing.default_parts(tracks=tracks, signature=song.get_time_signature(), chord_tracks=song_printing.written_chord_tracks(song))
 
 
 def track_parts(song):
@@ -99,7 +99,7 @@ def track_parts(song):
     part it plays by default, as TrackPart."""
     tracks = song_printing.track_notes(song_printing.rendered(song))
     found, _, _ = song_printing.track_roles(tracks=tracks, signature=song.get_time_signature())
-    parts = song_printing.default_parts(tracks=tracks, signature=song.get_time_signature())
+    parts = song_printing.default_parts(tracks=tracks, signature=song.get_time_signature(), chord_tracks=song_printing.written_chord_tracks(song))
     return [TrackPart(name=track.name, role=found.get(track.name), part=parts.get(track.name, song_printing.PrintedPart.LEFT_OUT)) for track in tracks]
 
 

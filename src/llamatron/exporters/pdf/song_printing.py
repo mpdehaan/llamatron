@@ -11,7 +11,9 @@ beats in a row is one chord. A song whose scenes set their Section has a section
 one at every scene, a scene played again in a row counted rather than repeated.
 
 Each track's default part is the role its notes play (music_theory/analysis/roles.py): the
-melody, the chords for harmony and pads, and left out for the rest; where no track plays chords, as in a canon, the
+melody, the chords for harmony and pads, and left out for the rest; a track whose patterns write chords on the Chord row
+is always the chords, unless it is the melody, since a strum or an arpeggio hides its chords from the notes; where no
+track plays chords, as in a canon, the
 chords are heard from the counter lines and the bass together.
 """
 
@@ -21,6 +23,8 @@ from typing import NamedTuple
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters.pdf.printed_song import KeyStart, PrintedChord, PrintedNote, PrintedSong, SectionStart
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import Row
 from llamatron.music_theory.analysis import roles
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.music_theory.harmony import chord_charts
@@ -123,10 +127,29 @@ def track_roles(*, tracks, signature):
     return {part.name: found.get(part) for part in parts}, parts, bars
 
 
-def default_parts(*, tracks, signature):
-    """Return the part each track plays by default, by its name: the role its notes play, as PARTS_OF_ROLES gives it."""
+def written_chord_tracks(song):
+    """Return the names of a song's tracks whose clips play patterns that write chords on their Chord row, two-note intervals
+    aside, whatever their notes sound like once strummed or spread."""
+    setlist = song.get_setlist()
+    names = set()
+    for scene in song.get_scenes():
+        for track in song.get_track_names():
+            clip_slot = scene.get_clip_slot(track)
+            if clip_slot is None or track in names:
+                continue
+            if any(_writes_chords(setlist.get_pattern(name)) for name in clip_slot.get_pattern_names()):
+                names.add(track)
+    return names
+
+
+def default_parts(*, tracks, signature, chord_tracks=frozenset()):
+    """Return the part each track plays by default, by its name: the role its notes play, as PARTS_OF_ROLES gives it, and the
+    chords for every track named as writing chords that isn't the melody."""
     found, parts, bars = track_roles(tracks=tracks, signature=signature)
     chosen = {name: PARTS_OF_ROLES.get(role, PrintedPart.LEFT_OUT) for name, role in found.items()}
+    for name in chord_tracks:
+        if chosen.get(name, PrintedPart.LEFT_OUT) != PrintedPart.MELODY:
+            chosen[name] = PrintedPart.CHORDS
     melody = [part for part in parts if found[part.name] == roles.MELODY]
     if melody and roles.shape_of(part=melody[0], bars=bars, beats_per_bar=signature.get_beats()).presence < LEAST_MELODY_PRESENCE:
         chosen[melody[0].name] = PrintedPart.LEFT_OUT
@@ -230,6 +253,12 @@ def _clips_of(*, song, scene):
         if clip_slot is not None:
             played.append((track, tuple(clip_slot.get_pattern_names())))
     return tuple(played)
+
+
+def _writes_chords(pattern):
+    """Return whether a pattern writes a chord on any step, a two-note interval aside."""
+    chords = pattern.get_row(Row.CHORD) or []
+    return any(value is not None and value not in file_format.INTERVAL_CHORDS for value in chords)
 
 
 def _chords_from_lines(*, chosen, found):

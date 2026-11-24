@@ -25,7 +25,8 @@ Several melody tracks are merged into one line, the highest note at each
 moment, and several chord tracks are heard together, so that a tune or its
 chords passed from one instrument to another across the song still read as
 one part. Each track starts in the part its notes play: the most tune-like
-line is the melody, chordal tracks are the chords, and the bass, the drums and
+line is the melody, chordal tracks and every track whose patterns write chords on
+the Chord row are the chords, and the bass, the drums and
 the other lines are left out. Where the tune line plays only a few notes, the
 highest chord track carries the tune instead, as a pianist's right hand does.
 Where no track plays chords, as in a canon, the other lines and the bass are
