@@ -115,7 +115,7 @@ flowchart TD
     engine_timing["engine/timing"]
     end
     subgraph files ["Files In and Out"]
-    exporters_exporters["exporters"]
+    exporters_pdf["exporters/pdf"]
     importers_importers["importers"]
     end
     subgraph realtime ["Real Time"]
@@ -172,7 +172,7 @@ flowchart TD
 | The Engine | `engine/parts` | Parts: pieces of music-making that the generator plugins and the clips' and tracks' own settings share, such as a note moved along a scale, so that no plugin's code is reached into from outside it. |
 | The Engine | `engine/realizer` | The Realizer: playing a song's composition objects into finished clips, which the exporters and real-time playback then read. |
 | The Engine | `engine/timing` | Timing: finished clips turned into timed notes, in ticks: each note sounded once with its groove, strum, nudges and keyswitches (clip_ticks.py, sounding.py, timing.py and the plans beside them), the one place the exporters and real-time playback both take their notes from. |
-| Files In and Out | `exporters` | The exporters of a played song: a Live set, one MIDI file, a file per track, a file per clip, a General MIDI file, or a WAV file played through FluidSynth. |
+| Files In and Out | `exporters/pdf` | The PDF export: a song printed as sheet music and as the pages of a learning packet, from its melody and its chords. |
 | Files In and Out | `importers` | The importers: a file from outside llamatron made into what a set holds, so far a MIDI file made into a song. |
 | Real Time | `realtime/devices` | The devices real-time playback sends to: the MIDI output ports found, watched while FluidSynth's port is awaited, and FluidSynth itself, started, waited for and ended. |
 | Real Time | `realtime/render_process` | The render process's part of real-time playback: the score a song is realized into, built ahead and changed as the set changes, and the player that launches scenes and clips and hands each clip's events to the sender. |

@@ -30,29 +30,35 @@ MINOR_THIRD = 3
 MAJOR_THIRD = 4
 DIMINISHED_FIFTH = 6
 AUGMENTED_FIFTH = 8
-# How a chord symbol is shown: as llamatron writes it, but a major triad as its root alone and a dominant chord by its number alone, as lead sheets write them.
+# How a chord symbol is shown: as llamatron writes it, but a major triad as its root alone, a dominant chord by its number alone and a power chord as 5, as lead sheets write them.
 NO_SYMBOL = ''
 DOMINANT_SEVENTH = '7'
 DOMINANT_NINTH = '9'
 DOMINANT_ELEVENTH = '11'
 DOMINANT_THIRTEENTH = '13'
+POWER_CHORD = '5'
 PLAIN_SYMBOLS = {
     ChordSymbol.MAJOR: NO_SYMBOL, ChordSymbol.DOMINANT7: DOMINANT_SEVENTH, ChordSymbol.DOMINANT9: DOMINANT_NINTH, ChordSymbol.DOMINANT11: DOMINANT_ELEVENTH,
-    ChordSymbol.DOMINANT13: DOMINANT_THIRTEENTH,
+    ChordSymbol.DOMINANT13: DOMINANT_THIRTEENTH, ChordSymbol.POWER: POWER_CHORD,
 }
 
 
 class BeatChord(NamedTuple):
-    """The chord heard on a beat: when the beat starts, the chord's name and its Roman numeral in the scene's scale."""
+    """The chord heard on a beat: when the beat starts, the chord's name and its Roman numeral in the scene's scale, and its
+    root's pitch class, its symbol and its bass's pitch class, or None where the bass is its root."""
 
     start: object
     name: str
     numeral: str
+    root: int
+    symbol: str
+    bass: object
 
 
 def chord_shapes():
-    """Return each fixed chord symbol with its notes as half steps above the root, within one octave, the root among them."""
-    return {symbol: chord_shape(kind) for symbol, kind in file_format.FIXED_CHORDS.items()}
+    """Return each fixed chord symbol with its notes as half steps above the root, within one octave, the root among them,
+    but for the intervals, which are two notes played together rather than a chord a beat could be heard as."""
+    return {symbol: chord_shape(kind) for symbol, kind in file_format.FIXED_CHORDS.items() if symbol not in file_format.INTERVAL_CHORDS}
 
 
 def chord_of(*, weights, bass):
@@ -176,7 +182,7 @@ def beat_chords(*, notes, scale):
         found = chord_of(weights=weights, bass=None if lowest is None else lowest % intervals.HALF_STEPS_PER_OCTAVE)
         if found is not None:
             name, numeral = chord_texts(root=found[0], symbol=found[1], scale=scale, bass=found[2])
-            chords.append(BeatChord(start=start, name=name, numeral=numeral))
+            chords.append(BeatChord(start=start, name=name, numeral=numeral, root=found[0], symbol=found[1], bass=found[2]))
         start = end
     return chords
 
