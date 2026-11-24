@@ -295,7 +295,7 @@ the screen, they scroll to keep the cursor's row in view. The sections, in the
 order a step works them out, are:
 
 - **Basics:** #/b, Velocity, Accent;
-- **Chord:** Chord, Tension, Scale, Inversion, Double;
+- **Chord:** Chord, Tension, Scale, Inversion, Double, Omit, Bass, Bass Octave;
 - **Timing:** Tie, Gate, Dot, Glide;
 - **Keyswitch:** a row for each slot of the instrument's Keyswitch Map, shown
   only once the instrument has a Keyswitch Map or a step uses a slot;
@@ -320,6 +320,9 @@ order a step works them out, are:
 | Chord | Builds a chord on the note | `ENTER` to choose from the list, `Space` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
 | Inversion | Which of the chord's notes is at the bottom: blank for root position, `1` moves the chord's lowest note up an octave, `2` the lowest two and `3` the lowest three, which only a chord of four notes or more has, so a triad plays `3` as `2`. A step with no chord shows `/`, and the piano roll draws the chord's other notes where the inversion plays them. | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
 | Double | Plays notes of the step's chord, or its one note, again an octave away, after the Inversion: `L+8` the lowest note an octave up, `A+8` every note an octave up, `A-8` every note an octave down, `T-8` the top note an octave down. See Doubling below. | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
+| Omit | Leaves the chord's own notes out by their role, after its tensions and before its Inversion: `no3` the 3rd, `no5` the 5th (a shell), `no1` the root (rootless), `no35` the 3rd and 5th (root and 7th), `no15` the root and 5th (the guide tones, 3rd and 7th). A tension is never left out. See Leaving notes out below. | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
+| Bass | A note under the chord, a slash chord's bass, as the scale step from the chord's root with a flat or a sharp: `3` is C/E on C, `b7` is C/B♭, `2` on F is F/G. It plays once, in the nearest octave below the chord's lowest note, and moves with the chord and the key. See Slash chords below. | `Space` or `ENTER` goes to the next one, `[` (dec) and `]` (inc) step back and forward, `Bksp` clears |
+| Bass Octave | `●` plays the Bass's octave below it too, as stride and gospel pianists play the bass. A blank is off. | `Space` or `ENTER` toggles, `Bksp` turns it off |
 | Velocity | 1 to 127. A blank step plays at the Default velocity of the track that plays the pattern, 127 unless the track or its instrument says otherwise. | Digits, `[` `]`, `ENTER` to type, `Bksp` sets the default |
 | Accent | `●` makes the step louder by the Accent of the track that plays the pattern, added to the step's velocity, typed or default, and stopping at 127. A blank is off. See [Tracks](TRACKS.md). | `Space` or `ENTER` toggles, `Bksp` turns it off |
 | Glide | `●` makes the note run slightly into the next one, which a synth with glide turned on slides across. A blank is off. | `Space` or `ENTER` toggles, `Bksp` turns it off |
@@ -401,18 +404,12 @@ major, which includes G#. The notes shown are on C:
 
 | Chord | What it builds | On C |
 | --- | --- | --- |
-| `+P8` | Octave | C, the C above |
-| `+m3` | Minor 3rd | C E♭ |
-| `+M3` | Major 3rd | C E |
-| `+P4` | Perfect 4th | C F |
-| `+m6` | Minor 6th | C A♭ |
-| `+M6` | Major 6th | C A |
 | `M` | Major | C E G |
 | `m` | Minor | C E♭ G |
-| `dim` | Diminished | C E♭ G♭ |
-| `aug` | Augmented | C E G♯ |
 | `sus2` | Sus2 | C D G |
 | `sus4` | Sus4 | C F G |
+| `dim` | Diminished | C E♭ G♭ |
+| `aug` | Augmented | C E G♯ |
 | `pow` | Power chord | C G |
 | `M6` | Six chord | C E G A |
 | `m6` | Minor six chord | C E♭ G A |
@@ -425,19 +422,25 @@ major, which includes G#. The notes shown are on C:
 | `aug7` | Augmented seven | C E G♯ B♭ |
 | `augM7` | Augmented major seven | C E G♯ B |
 | `7sus4` | Seven sus4 | C F G B♭ |
+| `add9` | Add nine | C E G D |
+| `madd9` | Minor add nine | C E♭ G D |
 | `dom9` | Dominant nine | C E G B♭ D |
 | `M9` | Major nine | C E G B D |
 | `m9` | Minor nine | C E♭ G B♭ D |
-| `add9` | Add nine | C E G D |
-| `madd9` | Minor add nine | C E♭ G D |
 | `dom11` | Dominant eleven | C E G B♭ D F |
 | `M11` | Major eleven | C E G B D F |
 | `m11` | Minor eleven | C E♭ G B♭ D F |
 | `dom13` | Dominant thirteen | C E G B♭ D F A |
 | `M13` | Major thirteen | C E G B D F A |
 | `m13` | Minor thirteen | C E♭ G B♭ D F A |
+| `+P8` | Octave | C, the C above |
+| `+m3` | Minor 3rd | C E♭ |
+| `+M3` | Major 3rd | C E |
+| `+P4` | Perfect 4th | C F |
+| `+m6` | Minor 6th | C A♭ |
+| `+M6` | Major 6th | C A |
 
-The first six are **intervals**, two notes each, for a line played in octaves,
+The last six are **intervals**, two notes each, for a line played in octaves,
 3rds or 6ths, as a pianist doubles a melody. They are written with a `+` and
 the interval's quality, so `+M6`, the major 6th alone, is never mistaken for
 `M6`, the six chord. A chord progression's chords leave them out.
@@ -456,6 +459,31 @@ step. A note already playing isn't added twice. On C major, C4 E4 G4:
 
 With Inversion 1 the chord plays E4 G4 C5, so `L+8` plays E4 G4 C5 E5. A
 single note doubles too: degree 1 with `A+8` plays C4 and C5.
+
+**Leaving notes out.** A pianist often plays a seventh chord with three
+fingers, leaving a note out. On C7, C4 E4 G4 B♭4:
+
+| Omit | Plays | Called |
+| --- | --- | --- |
+| `no3` | C4 G4 B♭4 | C7(no3) |
+| `no5` | C4 E4 B♭4 | a shell |
+| `no1` | E4 G4 B♭4 | rootless |
+| `no35` | C4 B♭4 | root and 7th |
+| `no15` | E4 B♭4 | the guide tones |
+
+**Slash chords.** The Bass row plays a note under the chord, as a chart
+writes F/G or C/E. On C major in C major, C3 E3 G3:
+
+| Bass | Plays | Chart |
+| --- | --- | --- |
+| `7` | B2 C3 E3 G3 | C/B |
+| `b7` | B♭2 C3 E3 G3 | C/B♭ |
+| `5` | G2 C3 E3 G3 | C/G |
+| `3` | E2 C3 E3 G3 | C/E |
+| `3` with Bass Octave | E1 E2 C3 E3 G3 | C/E, the bass in octaves |
+
+The Inversion still shapes the chord above the bass: C/E with Inversion 2
+plays E2 G3 C4 E4.
 
 **Scale chords** are the plain numbers. Scale chords stack every other note of
 the scale, so they use only notes in it. The scale decides whether each one is
