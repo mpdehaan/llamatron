@@ -19,7 +19,9 @@ from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters.pdf.printed_song import KeyStart, PrintedChord, PrintedNote, PrintedSong, SectionStart
 from llamatron.music_theory.analysis import roles
-from llamatron.music_theory.harmony.heard_chords import beat_chords
+from llamatron.music_theory.fundamentals import intervals
+from llamatron.music_theory.harmony import chord_charts
+from llamatron.music_theory.harmony.heard_chords import beat_chords, chord_texts
 
 
 class PrintedPart:
@@ -120,16 +122,16 @@ def default_parts(*, tracks, signature):
     return chosen
 
 
-def printed_song(*, song, title, parts):
+def printed_song(*, song, title, parts, level=chord_charts.DEFAULT_CHORD_LEVEL):
     """Return a song as the PDF export prints it, its tracks playing the parts given by name (PrintedPart), any track not
-    named left out."""
+    named left out, its chords printed at a level (chord_charts.ChordLevel)."""
     render = rendered(song)
     tracks = track_notes(render)
     melody = top_line([note for track in tracks if parts.get(track.name) == PrintedPart.MELODY for note in track.notes])
     chord_tracks = {track.name for track in tracks if parts.get(track.name) == PrintedPart.CHORDS}
     keys = key_starts(song=song, render=render)
     return PrintedSong(
-        title=title, melody=tuple(melody), chords=tuple(chords_heard(song=song, render=render, names=chord_tracks)), keys=tuple(keys),
+        title=title, melody=tuple(melody), chords=tuple(chords_heard(song=song, render=render, names=chord_tracks, level=level, melody=melody)), keys=tuple(keys),
         sections=tuple(section_starts(render=render, keys=keys)), signature=song.get_time_signature(), tempo=song.get_tempo(),
         length=render.grid.song_length(),
     )
@@ -179,21 +181,22 @@ def section_starts(*, render, keys):
     return sections
 
 
-def chords_heard(*, song, render, names):
-    """Return the chords the named tracks play together, one chord a beat as heard in each row's key, a chord heard on beats
-    in a row joined into one where it keeps its numeral, so that a key change starts a chord anew."""
+def chords_heard(*, song, render, names, level, melody):
+    """Return the chords the named tracks play together, heard a beat at a time in each row's key and printed at a level
+    (music_theory/harmony/chord_charts.py), the melody's notes supplying a power chord's third."""
     grid = render.grid
     beat = grid.get_time_signature().beat_length()
+    span = chord_charts.chord_span(grid.get_time_signature())
     chords = []
     for row, start, scene in zip(grid.get_rows(), render.starts, render.scenes):
-        heard = HeardNotes(notes=_row_notes(grid=grid, row=row, names=names), length=grid.row_length(row), beat=beat)
-        for found in beat_chords(notes=heard, scale=_scene_scale(song=song, scene=scene)):
-            chord = PrintedChord(start=start + found.start, end=start + found.start + beat, name=found.name, numeral=found.numeral,
-                                 root=found.root, symbol=found.symbol, bass=found.bass)
-            if chords and chords[-1].end == chord.start and (chords[-1].name, chords[-1].numeral) == (chord.name, chord.numeral):
-                chord = chords.pop()._replace(end=chord.end)
-            chords.append(chord)
-    return chords
+        scale = _scene_scale(song=song, scene=scene)
+        length = grid.row_length(row)
+        heard = HeardNotes(notes=_row_notes(grid=grid, row=row, names=names), length=length, beat=beat)
+        beats = [chord_charts.HeardBeat(start=found.start, root=found.root, symbol=found.symbol, bass=found.bass) for found in beat_chords(notes=heard, scale=scale)]
+        sounding = _melody_at_beats(melody=melody, start=start, length=length, beat=beat)
+        charted = chord_charts.charted_chords(beats=beats, stretch=chord_charts.Stretch(length=length, beat=beat, span=span), level=level, melody=sounding)
+        chords += [_printed(chord=chord, start=start, scale=scale) for chord in charted]
+    return _joined_across_rows(chords)
 
 
 def _melody_from_chords(*, chosen, parts, found):
@@ -202,6 +205,38 @@ def _melody_from_chords(*, chosen, parts, found):
     if chordal:
         highest = max(chordal, key=lambda part: median(note.pitch for note in part.notes))
         chosen[highest.name] = PrintedPart.MELODY
+
+
+def _melody_at_beats(*, melody, start, length, beat):
+    """Return the pitch classes the melody sounds at the start of each beat of a row, by the beat's start from the row's."""
+    sounding = {}
+    for note in melody:
+        if note.end <= start or note.start >= start + length:
+            continue
+        first = max(note.start - start, 0 * beat)
+        place = (first // beat) * beat
+        if place < first:
+            place += beat
+        while place < min(note.end - start, length):
+            sounding.setdefault(place, set()).add(note.pitch % intervals.HALF_STEPS_PER_OCTAVE)
+            place += beat
+    return sounding
+
+
+def _printed(*, chord, start, scale):
+    """Return a chart's chord as printed, named and numbered in its scale, placed from its row's start."""
+    name, numeral = chord_texts(root=chord.root, symbol=chord.symbol, scale=scale, bass=chord.bass)
+    return PrintedChord(start=start + chord.start, end=start + chord.end, name=name, numeral=numeral, root=chord.root, symbol=chord.symbol, bass=chord.bass)
+
+
+def _joined_across_rows(chords):
+    """Return chords with one that carries on, end to end and unchanged in name and numeral, into the next row joined."""
+    runs = []
+    for chord in chords:
+        if runs and runs[-1].end == chord.start and (runs[-1].name, runs[-1].numeral) == (chord.name, chord.numeral):
+            chord = runs.pop()._replace(end=chord.end)
+        runs.append(chord)
+    return runs
 
 
 def _in_beats(*, note, beat):
