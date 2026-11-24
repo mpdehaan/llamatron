@@ -19,7 +19,17 @@ from llamatron.exporters.ableton_project import AbletonProject
 from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
+# The PDF export, which the UI reaches through this front door like every other export.
+from llamatron.exporters.pdf.pdf_export import export_pdfs, PacketPage, pdf_options, pdf_path, PdfChoices, PdfKind, track_parts
+from llamatron.exporters.pdf.song_printing import PrintedPart
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
+
+# Everything the UI and the command line may take from here, the PDF export's names among them.
+__all__ = [
+    'EXPORT_NAME', 'EXPORTERS', 'EXPORT_KINDS_IN_HELP', 'EXPORT_LABELS', 'ExportKind', 'ExportResources', 'export_name', 'make_exporter',
+    'shown_export_path', 'earlier_export', 'remove_earlier_export',
+    'export_pdfs', 'PacketPage', 'pdf_options', 'pdf_path', 'PdfChoices', 'PdfKind', 'track_parts', 'PrintedPart',
+]
 
 # What a song's exports are named: the set's name, then the song's.
 EXPORT_NAME = '{setlist}_{song}'
@@ -27,8 +37,6 @@ EXPORT_NAME = '{setlist}_{song}'
 # Every exporter, by the kind --to names, in the order --to's help lists them, with Live first because it's the default. A new kind of export is added here.
 EXPORTERS = {exporter.KIND: exporter for exporter in (AbletonProject, MidiSong, MidiStems, ClipTree, MidiGeneralMidi, WaveFluidSynth)}
 EXPORT_KINDS_IN_HELP = list(EXPORTERS)
-# Every kind in the order the tracker's X key offers them: the Live set, then stems, one file and a file per clip.
-EXPORT_KINDS = [ExportKind.ABLETON, ExportKind.STEMS, ExportKind.MIDI_FILE, ExportKind.CLIP_TREE, ExportKind.GENERAL_MIDI, ExportKind.WAV]
 # How each kind is described to people.
 EXPORT_LABELS = {kind: exporter.LABEL for kind, exporter in EXPORTERS.items()}
 

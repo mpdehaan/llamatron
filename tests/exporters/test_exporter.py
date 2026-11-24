@@ -110,10 +110,9 @@ class TestEveryExporterIsListed(unittest.TestCase):
             with self.subTest(kind=kind):
                 self.assertEqual(exporter.KIND, kind)
 
-    def test_every_kind_is_offered_by_the_command_line_and_the_tracker_and_has_a_label(self):
+    def test_every_kind_is_offered_by_the_command_line_and_has_a_label(self):
         named = {value for name, value in vars(ExportKind).items() if not name.startswith('_')}
         self.assertEqual(set(exports.EXPORT_KINDS_IN_HELP), named)
-        self.assertEqual(sorted(exports.EXPORT_KINDS), sorted(exports.EXPORT_KINDS_IN_HELP))
         for kind in exports.EXPORT_KINDS_IN_HELP:
             with self.subTest(kind=kind):
                 self.assertTrue(exports.EXPORT_LABELS[kind])
@@ -121,7 +120,6 @@ class TestEveryExporterIsListed(unittest.TestCase):
 
     def test_the_live_set_comes_first_since_it_is_the_default(self):
         self.assertEqual(exports.EXPORT_KINDS_IN_HELP[0], ExportKind.ABLETON)
-        self.assertEqual(exports.EXPORT_KINDS[0], ExportKind.ABLETON)
 
     def test_every_exporter_says_where_its_files_are(self):
         for exporter in exports.EXPORTERS.values():

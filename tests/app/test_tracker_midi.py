@@ -18,7 +18,7 @@ import xml.etree.ElementTree as ET
 from llamatron.engine.generators import arp as arp_plugin
 from llamatron.engine.generators.arp.generator import ChordOrder
 from llamatron.engine.generators.arp.model import ArpSetting, written_name
-from llamatron.exporters import exports, midi_messages
+from llamatron.exporters import midi_messages
 from llamatron.exporters.exports import ExportKind
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.document import Document
@@ -27,6 +27,7 @@ from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, SongSetting
 from llamatron.model.values.note import NoteName
 from llamatron.user_strings import names as names_text
+from tests.interface.tracker.test_tui_exporting import export_keys
 from tests.support.gate_conversion import to_gates
 from tests.support.rendering import bare_document
 from tests.support.ui_testing import UITest
@@ -176,7 +177,7 @@ class TestTypedInTheUI(UITest):
         for name in FIRST_VERSE:
             await self.press(str(DEGREES[name]), Key.RIGHT)
         # X asks what to export from any page, and the clips kind gives one file for the one clip.
-        await self.press(keybindings.PatternEditor.EXPORT, *([Key.DOWN] * exports.EXPORT_KINDS.index(ExportKind.CLIP_TREE)), Key.ENTER, Key.ENTER)
+        await self.press(keybindings.PatternEditor.EXPORT, *export_keys(ExportKind.CLIP_TREE), Key.ENTER)
         files = glob.glob(self.document.export_path(ExportKind.CLIP_TREE))
         self.assertEqual(len(files), 1)
         self.assertEqual(played(files[0]), FIRST_VERSE)

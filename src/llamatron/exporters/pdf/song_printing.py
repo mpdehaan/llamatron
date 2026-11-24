@@ -106,8 +106,9 @@ def track_notes(render):
     return tracks
 
 
-def default_parts(*, tracks, signature):
-    """Return the part each track plays by default, by its name: the role its notes play, as PARTS_OF_ROLES gives it."""
+def track_roles(*, tracks, signature):
+    """Return the role each track's notes play (music_theory/analysis/roles.py), by its name, a track playing no notes having
+    none, and the parts in beats the roles were read from."""
     beat = signature.beat_length()
     parts = []
     for track in tracks:
@@ -116,11 +117,17 @@ def default_parts(*, tracks, signature):
     length = max((note.end for part in parts for note in part.notes), default=0)
     bars = max(1, int(length // signature.get_beats()) + 1)
     found = roles.roles_of(parts=parts, bars=bars, beats_per_bar=signature.get_beats())
-    chosen = {part.name: PARTS_OF_ROLES.get(found.get(part), PrintedPart.LEFT_OUT) for part in parts}
-    melody = [part for part in parts if found.get(part) == roles.MELODY]
+    return {part.name: found.get(part) for part in parts}, parts, bars
+
+
+def default_parts(*, tracks, signature):
+    """Return the part each track plays by default, by its name: the role its notes play, as PARTS_OF_ROLES gives it."""
+    found, parts, bars = track_roles(tracks=tracks, signature=signature)
+    chosen = {name: PARTS_OF_ROLES.get(role, PrintedPart.LEFT_OUT) for name, role in found.items()}
+    melody = [part for part in parts if found[part.name] == roles.MELODY]
     if melody and roles.shape_of(part=melody[0], bars=bars, beats_per_bar=signature.get_beats()).presence < LEAST_MELODY_PRESENCE:
         chosen[melody[0].name] = PrintedPart.LEFT_OUT
-        _melody_from_chords(chosen=chosen, parts=parts, found=found)
+        _melody_from_chords(chosen=chosen, parts=parts)
     return chosen
 
 
@@ -220,7 +227,7 @@ def _clips_of(*, song, scene):
     return tuple(played)
 
 
-def _melody_from_chords(*, chosen, parts, found):
+def _melody_from_chords(*, chosen, parts):
     """Make the highest of the parts playing chords the melody, its top line the tune, as a pianist's right hand plays it."""
     chordal = [part for part in parts if chosen[part.name] == PrintedPart.CHORDS]
     if chordal:

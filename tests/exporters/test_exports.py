@@ -17,6 +17,7 @@ from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.exporters import exports
 from llamatron.exporters.exports import earlier_export, export_name, ExportKind, make_exporter, remove_earlier_export, shown_export_path
+from llamatron.interface.tracker.dialogs import export_dialog
 from llamatron.model.values.note import Note
 
 QUARTER = 0.25
@@ -51,10 +52,11 @@ class TestExports(unittest.TestCase):
         with open(shown_export_path(kind=ExportKind.WAV, directory=self.directory, name=EXPORT), WRITE_TEXT) as file:
             file.write(AN_EXISTING_FILE)
 
-    def test_every_kind_has_a_name_and_the_tracker_offers_them_all_with_live_first(self):
+    def test_every_kind_has_a_name_and_the_export_dialog_offers_them_all_with_live_first(self):
         self.assertEqual(sorted(exports.EXPORT_LABELS), sorted(exports.EXPORT_KINDS_IN_HELP))
-        self.assertEqual(sorted(exports.EXPORT_KINDS), sorted(exports.EXPORT_KINDS_IN_HELP))
-        self.assertEqual(exports.EXPORT_KINDS[0], ExportKind.ABLETON)
+        offered = [kind for kind in export_dialog.CATEGORIES if kind in exports.EXPORTERS] + list(export_dialog.MIDI_KINDS)
+        self.assertEqual(sorted(offered), sorted(exports.EXPORT_KINDS_IN_HELP))
+        self.assertEqual(export_dialog.CATEGORIES[0], ExportKind.ABLETON)
 
     def test_nothing_is_found_before_a_export(self):
         for kind in exports.EXPORT_KINDS_IN_HELP:

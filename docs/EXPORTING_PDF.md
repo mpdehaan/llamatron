@@ -60,6 +60,23 @@ wherever the setting changes, named after it. Any other song has a section at
 every scene, named after the scene, and a scene played again in a row is
 counted rather than printed again.
 
+## From the UI
+
+`Ctrl+X`, then `PDF …`, opens the PDF page for the current song:
+
+- The packet's pages, in two columns, each ticked with `Space` or `ENTER`.
+- Chords, the level the chords are printed at: `[` and `]` step it, `ENTER`
+  picks.
+- Every track in a row with its role, and a dot under MELODY, CHORDS or LEFT
+  OUT: `Left` and `Right` choose the column, `Space` or `ENTER` takes it.
+- The export directory and the file it writes, saying when it replaces one.
+- Export and CANCEL.
+
+`Tab` goes to the next part. Export refuses, saying why, while nothing is
+ticked or no track plays a part a page needs, and warns when a drums track is
+chosen as chords. The page remembers its choices for each song until
+llamatron quits.
+
 ## From the Command Line
 
 `user_scripts/export_pdf.sh` makes a song's packet:

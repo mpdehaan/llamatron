@@ -24,13 +24,14 @@ from llamatron.exporters import exports, wave_fluidsynth
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 from llamatron.exporters.wave_level import peak_sample
-from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.interface.tracker.dialogs.export_dialog import ExportDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import file_format
 from llamatron.realtime.devices.fluidsynth import FluidSynthInstallation
-from llamatron.user_strings import errors, labels, messages
+from llamatron.user_strings import errors, messages
+from tests.interface.tracker.test_tui_exporting import export_keys
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, fixed_text, UITest
 
@@ -181,9 +182,8 @@ class TestWaveExportInTheTracker(UITest):
 
     async def choose_wav(self):
         await self.press(Key.CTRL_X)
-        self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options[exports.EXPORT_KINDS.index(ExportKind.WAV)], labels.MSG_EXPORT_CHOICES[exports.EXPORT_KINDS.index(ExportKind.WAV)])
-        await self.press(*([Key.DOWN] * exports.EXPORT_KINDS.index(ExportKind.WAV)), Key.ENTER)
+        self.assertIsInstance(self.app.screen, ExportDialog)
+        await self.press(*export_keys(ExportKind.WAV))
 
     async def test_the_note_is_shown_first_and_yes_exports(self):
         with mock.patch(TRACKER_INSTALLED, return_value=True), mock.patch(INSTALLED, return_value=True), \

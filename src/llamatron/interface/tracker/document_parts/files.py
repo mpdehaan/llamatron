@@ -10,7 +10,7 @@ import io
 import os
 
 from llamatron.engine.realizer.song_realizer import SongRealizer
-from llamatron.exporters.exports import earlier_export, export_name, ExportResources, make_exporter, remove_earlier_export, shown_export_path
+from llamatron.exporters.exports import earlier_export, export_name, export_pdfs, ExportResources, make_exporter, pdf_path, PdfKind, remove_earlier_export, shown_export_path, track_parts
 from llamatron.interface.tracker import transport
 from llamatron.model.file.checks import listed
 from llamatron.model.file.ordered_data import same_in_order
@@ -215,6 +215,29 @@ class DocumentFiles:
     def export_exists(self, to):
         """Return whether exporting would replace an earlier export of the same kind."""
         return bool(earlier_export(kind=to, directory=self.export_directory(), name=self.export_name()))
+
+    def pdf_tracks(self):
+        """Return the current song's tracks as the PDF page lists them, each with its role and its part by default (TrackPart)."""
+        return track_parts(self.song())
+
+    def pdf_paths(self, choices):
+        """Return the PDFs an export of the current song would write with the choices given, for people, and which of them
+        are there already, so that the page can say what it replaces."""
+        paths = []
+        if choices.packet_pages:
+            paths.append(os.path.normpath(pdf_path(directory=self.export_directory(), name=self.export_name(), kind=PdfKind.PACKET)))
+        return paths, [path for path in paths if os.path.exists(path)]
+
+    def export_pdf(self, choices):
+        """Write the current song's PDFs beside the set's file, replacing earlier ones, and return where they went, or raise
+        SongFileError if they can't be."""
+        if not self.can_export():
+            raise SongFileError(errors.ERR_SAVE_BEFORE_EXPORT)
+        try:
+            written = export_pdfs(song=self.song(), title=self._current, directory=self.export_directory(), name=self.export_name(), choices=choices)
+        except (ValueError, OSError) as error:
+            raise SongFileError(str(error)) from error
+        return [os.path.normpath(path) for path in written]
 
     def export(self, to):
         """Export the current song beside the set's file, replacing an earlier export, and return where it went, or raise SongFileError if it can't be."""

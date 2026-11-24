@@ -279,6 +279,10 @@ MSG_CLOSE_SECTION_WHAT = 'close section'
 MSG_NEXT_SECTION_WHAT = 'next section'
 MSG_CHORD_WHAT = 'chord'
 MSG_NEXT_LIST_WHAT = 'next list'
+# interface/tracker/dialogs/export_dialog.py: ENTER in MIDI's flyout writes the kind of export under the cursor.
+MSG_EXPORT_WHAT = 'export'
+# interface/tracker/screens/set/pdf_export_page.py: Tab goes to the page's next part.
+MSG_NEXT_PART_WHAT = 'next part'
 # What the piano roll's keys do.
 MSG_PLACE_NOTE_WHAT = 'note'
 MSG_SPLIT_WHAT = 'split'

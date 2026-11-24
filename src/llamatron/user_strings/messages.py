@@ -106,7 +106,7 @@ MSG_CORRECTIONS_WARNING = 'The composition may sound different. The file stays a
 # Exports are named after the set's file and written beside it, so an unsaved set is saved first.
 MSG_SAVE_BEFORE_EXPORT_TITLE = 'Save the set first?'
 MSG_SAVE_BEFORE_EXPORT = 'Exports are named after the set and written beside its file.'
-# What X offers, in the order of EXPORT_KINDS: a Live set, then the three kinds of MIDI files.
+# The Export dialog's title, naming the song.
 MSG_EXPORT_TITLE = 'Export song {name}'
 # Only a Live set asks before it's written over, and only the first time in a session.
 MSG_REPLACE_EXPORT_TITLE = 'Overwrite the export?'
@@ -116,6 +116,10 @@ MSG_WAV_EXPORT_NOTE = 'Only the tracks whose instrument plays through FluidSynth
 MSG_REPLACE_EXPORT_QUESTION = '{path} is there already.'
 MSG_EXPORT_REPLACES_LIVE_WORK = 'Anything saved over it in Live is lost. Save your own work under another name.'
 MSG_EXPORTED = 'exported the {name} to {path}'
+# interface/tracker/screens/set/pdf_export_page.py: where the PDFs went, and a drums track chosen as chords.
+MSG_EXPORTED_PDFS = 'exported {count} PDF to {paths}'
+MSG_PATHS_JOIN = ', '
+MSG_PDF_DRUMS_AS_CHORDS = '{track} is a drums track: its notes make no chords'
 
 # interface/tracker/history.py: what the status line says after an undo or a redo, and how it names what changed.
 MSG_UNDONE = 'undone: {what}'

@@ -11,6 +11,7 @@ come in PdfChoices.
 from dataclasses import dataclass
 import os
 from reportlab.lib.pagesizes import letter
+from typing import NamedTuple
 
 from llamatron.exporters.pdf import song_printing
 from llamatron.exporters.pdf.canvas import NumberedCanvas
@@ -18,6 +19,7 @@ from llamatron.exporters.pdf.chord_changes import draw_chord_changes
 from llamatron.exporters.pdf.chord_chart import draw_chord_chart
 from llamatron.exporters.pdf.chord_sequence import draw_chord_sequence
 from llamatron.exporters.pdf.piano_roll import draw_piano_roll
+from llamatron.music_theory.analysis import roles
 from llamatron.music_theory.harmony import chord_charts
 from llamatron.user_strings import printing
 
@@ -47,6 +49,16 @@ DRAWN_BY = {
     PacketPage.CHORD_SEQUENCE: draw_chord_sequence,
 }
 DEFAULT_PACKET_PAGES = PACKET_PAGES
+# The roles a track's notes may play, in the order the PDF page's words for them are listed, the drums last.
+TRACK_ROLES = (roles.MELODY, roles.HARMONY, roles.PAD, roles.BASS, roles.COUNTER, roles.DRUMS)
+
+
+class TrackPart(NamedTuple):
+    """A track as the PDF page lists it: its name, the role its notes play or None, and the part it plays by default."""
+
+    name: str
+    role: object
+    part: str
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)
@@ -59,10 +71,36 @@ class PdfChoices:
     level: str = chord_charts.DEFAULT_CHORD_LEVEL
 
 
+class PdfOptions(NamedTuple):
+    """What the PDF page offers: the packet's pages in order, the chord levels and the default, the parts a track may play,
+    and the roles a track's notes may play, the drums last."""
+
+    packet_pages: tuple
+    chord_levels: tuple
+    default_level: str
+    printed_parts: tuple
+    track_roles: tuple
+
+
+def pdf_options():
+    """Return what the PDF page offers (PdfOptions)."""
+    return PdfOptions(packet_pages=PACKET_PAGES, chord_levels=chord_charts.CHORD_LEVELS, default_level=chord_charts.DEFAULT_CHORD_LEVEL,
+                      printed_parts=song_printing.PRINTED_PARTS, track_roles=TRACK_ROLES)
+
+
 def default_parts(song):
     """Return the part each of a song's tracks plays by default, by its name: the role its notes play."""
     tracks = song_printing.track_notes(song_printing.rendered(song))
     return song_printing.default_parts(tracks=tracks, signature=song.get_time_signature())
+
+
+def track_parts(song):
+    """Return each of a song's tracks in order with the role its notes play, or None for a track that plays none, and the
+    part it plays by default, as TrackPart."""
+    tracks = song_printing.track_notes(song_printing.rendered(song))
+    found, _, _ = song_printing.track_roles(tracks=tracks, signature=song.get_time_signature())
+    parts = song_printing.default_parts(tracks=tracks, signature=song.get_time_signature())
+    return [TrackPart(name=track.name, role=found.get(track.name), part=parts.get(track.name, song_printing.PrintedPart.LEFT_OUT)) for track in tracks]
 
 
 def pdf_path(*, directory, name, kind):

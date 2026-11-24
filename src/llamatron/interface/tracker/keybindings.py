@@ -933,6 +933,30 @@ class ChoiceDialog(Dialog):
     IN_LEGEND = IN_HELP
 
 
+class PdfExportPage(Page):
+    """The PDF export page: the arrows move, Space or ENTER ticks a page, chooses a track's column or presses a button, [ and ]
+    step the Chords field and ENTER picks it, and Tab goes to the next part."""
+
+    MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
+    CHOOSE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.CHOOSE)
+    LESS = Binding(keys.LESS_KEYS, legends.KeyName.LEFT_BRACKET, legends.What.LESS)
+    MORE = Binding(keys.MORE_KEYS, legends.KeyName.RIGHT_BRACKET, legends.What.MORE)
+    PICK = Binding(Key.ENTER, legends.KeyName.ENTER, legends.What.CHOOSE)
+    NEXT_PART = Binding(Key.TAB, legends.KeyName.TAB, legends.MSG_NEXT_PART_WHAT)
+    IN_HELP = [Page.BACK, MOVE, CHOOSE, LESS, MORE, PICK, NEXT_PART]
+    IN_LEGEND = IN_HELP
+
+
+class ExportDialog(ChoiceDialog):
+    """The Export dialog: the kinds of export by category, ENTER on MIDI opening a flyout of its kinds, where ENTER exports."""
+
+    # While MIDI's flyout is open, Esc closes the flyout alone, the topmost thing, and Enter exports the kind under the cursor.
+    CLOSE_FLYOUT = Binding(keys.CANCEL_KEYS, legends.KeyName.ESCAPE, legends.What.BACK)
+    EXPORT = Binding(Key.ENTER, legends.KeyName.ENTER, legends.MSG_EXPORT_WHAT)
+    IN_HELP = [Dialog.CANCEL, CLOSE_FLYOUT, ChoiceDialog.MOVE, ChoiceDialog.CHOOSE, EXPORT, ChoiceDialog.SEARCH, ChoiceDialog.ERASE, ChoiceDialog.COMPLETE]
+    IN_LEGEND = IN_HELP
+
+
 class GroupedChoiceDialog(ChoiceDialog):
     """A picker under headings: Space or Enter opens and closes a heading, PgUp and PgDn jump between headings, and typing searches every choice."""
 

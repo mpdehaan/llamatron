@@ -8,7 +8,11 @@ Saving](GETTING_STARTED.md#opening-and-saving) covers saving the set itself.
 
 ## Tracker Export
 
-`Ctrl+X`, on any page, exports the current song and asks which kind first. A
+`Ctrl+X`, on any page, exports the current song and asks which kind first:
+Ableton Live set, `MIDI …`, WAV (FluidSynth) or `PDF …`. `MIDI …` opens a
+small window of its four kinds over the list, where `ENTER` exports the one
+chosen and `ESC` goes back to the list; `PDF …` opens the PDF page, covered
+in [Sheet Music and Learning Packets](EXPORTING_PDF.md). A
 set that hasn't been saved yet is saved first, since an export is named after
 the set's file and written beside it. When the export is written, the status
 line says where it went.

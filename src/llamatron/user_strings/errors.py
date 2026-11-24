@@ -653,3 +653,8 @@ ERR_WIZARD_BAD_SECTIONS = 'sections must be a list of sections of the genre, got
 # interface/tracker/screens/wizard/wizard_page.py and the branches beside it
 ERR_WIZARD_CHOOSE_GENRE = 'choose a genre first'
 ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE = 'choose a genre and a subgenre first'
+
+# interface/tracker/screens/set/pdf_export_page.py: why Export refuses.
+ERR_PDF_NOTHING_TICKED = 'tick at least one page to make'
+ERR_PDF_NEEDS_MELODY = 'the piano roll needs a melody track'
+ERR_PDF_NEEDS_CHORDS = 'the packet needs a chords track'

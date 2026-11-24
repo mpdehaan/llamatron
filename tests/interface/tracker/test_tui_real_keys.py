@@ -6,7 +6,7 @@
 
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.about_dialog import AboutDialog
-from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
+from llamatron.interface.tracker.dialogs.export_dialog import ExportDialog
 from llamatron.interface.tracker.dialogs.help_dialog import HelpDialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.dialogs.quit_dialog import QuitDialog
@@ -95,8 +95,8 @@ class TestRealKeys(UITest):
         self.document.save(path=SET_FILE)
         await self.pilot.press(Key.ESCAPE, Key.CTRL_X)
         await self.pilot.pause()
-        self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, labels.MSG_EXPORT_CHOICES)
+        self.assertIsInstance(self.app.screen, ExportDialog)
+        self.assertEqual(self.app.screen.options, labels.MSG_EXPORT_CATEGORIES)
         await self.pilot.press(Key.ESCAPE, Key.F1)
         await self.pilot.pause()
         self.assertIsInstance(self.app.screen, HelpDialog)

@@ -8,6 +8,7 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs import dialog
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
+from llamatron.interface.tracker.dialogs.export_dialog import ExportDialog
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.set.song_page import SongPage
 from llamatron.interface.tracker.screens.set.songs_page import SongsPage
@@ -159,8 +160,8 @@ class TestSongPage(UITest):
         self.document.save(path=SET_FILE)
         await self.select_field(labels_text.PageName.EXPORT)
         await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, ChoiceDialog)
-        self.assertEqual(self.app.screen.options, labels_text.MSG_EXPORT_CHOICES)
+        self.assertIsInstance(self.app.screen, ExportDialog)
+        self.assertEqual(self.app.screen.options, labels_text.MSG_EXPORT_CATEGORIES)
         self.assertIn(names_text.MSG_DEFAULT_SONG_NAME, self.text())
 
     async def test_the_time_signature_steps_through_common_ones_and_enter_types_any(self):

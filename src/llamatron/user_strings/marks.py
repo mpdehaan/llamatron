@@ -478,3 +478,7 @@ MSG_NAME_CUT = '…'
 MSG_CELL_MARKS = {
     Row.DOUBLE: {Doubling.LOW_UP: 'L+8', Doubling.ALL_UP: 'A+8', Doubling.ALL_DOWN: 'A-8', Doubling.TOP_DOWN: 'T-8'},
 }
+
+# interface/tracker/screens/set/pdf_export_page.py: a packet's page with its tick, and which of the tracks show when they don't fit.
+MSG_TICKED_PAGE = '{mark} {page}'
+MSG_ROWS_SHOWN = '  {first}-{last} of {total}'

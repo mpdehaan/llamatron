@@ -14,16 +14,16 @@ import os
 from llamatron.exporters import exports
 from llamatron.exporters.exports import ExportKind
 from llamatron.interface.pages.uses import loop_error_lines
-from llamatron.interface.tracker.dialogs import quit_dialog
-from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
+from llamatron.interface.tracker.dialogs import export_dialog, quit_dialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.dialogs.corrections_dialog import CorrectionsDialog
+from llamatron.interface.tracker.dialogs.export_dialog import ExportDialog
 from llamatron.interface.tracker.dialogs.quit_dialog import QuitDialog
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.screens.shared import shared
 from llamatron.interface.tracker.silent_instruments import warn_of_silent_instruments
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.user_strings import errors, labels, marks, messages as messages_text
+from llamatron.user_strings import errors, marks, messages as messages_text
 
 # Where Save as starts when the set has no file yet.
 DEFAULT_SAVE_FOLDER = 'songs'
@@ -246,12 +246,16 @@ def export(page):
 def choose_export(page):
     """Ask which kind of export to write for the current song, and write it."""
     title = messages_text.MSG_EXPORT_TITLE.format(name=page.document().get_current_song_name())
-    page.ask(dialog=ChoiceDialog(title=title, options=labels.MSG_EXPORT_CHOICES), then=lambda place: export_chosen(page, to=exports.EXPORT_KINDS[place]))
+    page.ask(dialog=ExportDialog(title=title), then=lambda kind: export_chosen(page, to=kind))
 
 
 def export_chosen(page, *, to):
     """Write the kind of export chosen. The WAV export says first that only the tracks playing through FluidSynth are in it, or that FluidSynth isn't installed."""
-    if to != ExportKind.WAV:
+    if to == export_dialog.PDF:
+        # Imported here because pdf_export_page.py descends from Page, which imports this module.
+        from llamatron.interface.tracker.screens.set.pdf_export_page import PdfExportPage
+        page.show_page(PdfExportPage(holder=page.holder))
+    elif to != ExportKind.WAV:
         export_as(page, to=to)
     elif not page.app.transport.fluidsynth_installed():
         page.tell(errors.ERR_CANT_EXPORT_TITLE, errors.ERR_WAV_NEEDS_FLUIDSYNTH)
@@ -280,6 +284,16 @@ def export_as(page, *, to):
         page.ask(dialog=ConfirmDialog(title=messages_text.MSG_REPLACE_EXPORT_TITLE, messages=[question, messages_text.MSG_EXPORT_REPLACES_LIVE_WORK]), then=confirmed)
     else:
         write_export(page, to=to)
+
+
+def write_pdfs(page, *, choices):
+    """Write the current song's PDFs with the choices given and return where they went, or say why they couldn't be and
+    return None."""
+    try:
+        return page.document().export_pdf(choices)
+    except SongFileError as error:
+        page.tell(errors.ERR_CANT_EXPORT_TITLE, str(error))
+        return None
 
 
 def write_export(page, *, to):

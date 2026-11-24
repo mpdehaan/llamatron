@@ -29,6 +29,7 @@ from llamatron.engine.generators import arp as arp_plugin, chords as chords_plug
 from llamatron.engine.generators.timing import parts as timing_parts, strings as timing_strings, view as timing_view
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.components import pattern_rows
+from llamatron.interface.tracker.dialogs import export_dialog
 from llamatron.interface.tracker.key_table import first_key
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.screens.arrange import arrange_page
@@ -41,6 +42,7 @@ from llamatron.interface.tracker.screens.set.songs_page import SongsPage
 from llamatron.interface.tracker.screens.shared.list_page import ListPage
 from llamatron.user_strings import help as help_text, labels, legends
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.interface.tracker.test_tui_exporting import export_keys
 from tests.support import ui_testing
 from tests.support.key_map import KeyMap, should_write, write_key_map, written_key_map
 from tests.support.ui_testing import key_of, leaf_pages, UITest
@@ -81,6 +83,8 @@ ELSEWHERE = {
     (FilePage, Key.TAB): NotesPage,
     (MainPage, Key.ESCAPE): SongsPage,
 }
+# What the tour saves the set as, so that the PDF export page opens.
+TOUR_SET_FILE = 'tour.yml'
 # The most presses a walk makes in one direction before giving up on reaching an edge.
 MAX_WALK = 90
 MSG_NOT_BOUND = "{page}'s help names {key!r}, which {where} never binds"
@@ -280,6 +284,11 @@ class KeyTour(UITest):
 
     async def tour(self):
         """Open every page, each walked on the way back out, so that a walk never leaves the cursor where the next key needs it."""
+        # The Export dialog's PDF opens the PDF export page, once the set has a file to export beside.
+        self.document.save(path=TOUR_SET_FILE)
+        await self.press(Key.CTRL_X, *export_keys(export_dialog.PDF))
+        await self.walk()
+        await self.press(Key.ESCAPE)
         await self.press(keybindings.MainPage.FILE)
         await self.select_field(labels.MSG_NOTES_LABEL)
         await self.press(Key.ENTER)

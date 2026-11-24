@@ -93,6 +93,8 @@ class LlamatronApp(App, inherit_bindings=False):
         self.last_folders = {}
         # The Live sets the user has agreed to write over, so that exporting asks only the first time.
         self._confirmed_overwrites = set()
+        # What the PDF export page last held, by the set's file and the song, kept for the session.
+        self._pdf_choices = {}
         # Real-time playback, which ticks on a timer of the app's while anything plays and redraws the page on top for its lights.
         self.transport = Transport(document_holder=self, set_timer=self.playback_timer, set_once=self.timer_once)
         # The pattern preview, made when first asked for, beside the transport it shares a clock and FluidSynth with.
@@ -185,6 +187,10 @@ class LlamatronApp(App, inherit_bindings=False):
         self.made_preview().close()
         self.transport.close()
         super().exit(*arguments, **named)
+
+    def get_pdf_choices(self):
+        """Return what the PDF export page last held, by the set's file and the song, kept for the session."""
+        return self._pdf_choices
 
     def get_status_line(self):
         return self._status_line

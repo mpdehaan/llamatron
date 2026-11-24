@@ -182,6 +182,8 @@ class Crumb:
     INSTRUMENTS = 'INSTRUMENTS'
     DRAWS = 'DRAWS'
     ARRANGE = 'ARRANGE'
+    EXPORT = 'EXPORT'
+    PDF = 'PDF'
 
 
 # interface/tracker/document.py
@@ -278,7 +280,26 @@ MSG_OCTAVE_LABEL_NAMES = {OctaveLabels.LIVE: 'Live (middle C is C3)', OctaveLabe
 # the notes' first line, or that there are none; ENTER opens the Notes page editing.
 MSG_DESCRIPTION_LABEL = 'Description'
 MSG_NOTES_LABEL = 'Notes'
-MSG_EXPORT_CHOICES = ['Ableton Live set', 'MIDI (Stems)', 'MIDI (Multitrack)', 'MIDI (Clips)', 'MIDI (General MIDI)', 'WAV (FluidSynth)']
+# interface/tracker/dialogs/export_dialog.py: the kinds of export by category, MIDI's kinds in a flyout of their own, and PDF's
+# page; … says a choice opens more choices.
+MSG_EXPORT_CATEGORIES = ['Ableton Live set', 'MIDI …', 'WAV (FluidSynth)', 'PDF …']
+MSG_MIDI_EXPORT_HEADING = 'MIDI'
+# interface/tracker/screens/set/pdf_export_page.py: the PDF export page's parts, the packet's pages, the chord levels and
+# the tracks' parts in the order the exports list them, each role in TRACK_ROLES' order, and the buttons.
+MSG_PACKET_HEADING = 'PACKET, one PDF of the pages ticked'
+MSG_PACKET_PAGE_NAMES = ('Piano roll', 'Chord changes', 'Chord chart', 'Chord sequence')
+MSG_PDF_CHORDS_LABEL = 'Chords'
+MSG_CHORD_LEVEL_NAMES = ('Triads', 'Sevenths', 'As played')
+MSG_PDF_TRACK = 'TRACK'
+MSG_PDF_ROLE = 'ROLE'
+MSG_PRINTED_PART_NAMES = ('MELODY', 'CHORDS', 'LEFT OUT')
+MSG_TRACK_ROLE_NAMES = ('lead', 'harmony', 'pad', 'bass', 'counter', 'drums')
+MSG_NO_ROLE = 'silent'
+MSG_EXPORT_DIRECTORY = 'Export directory: {directory}   writes {files}'
+MSG_NO_FILES = 'nothing'
+MSG_REPLACES_FILES = ', replacing {count}'
+MSG_PDF_EXPORT_BUTTONS = ('Export', 'CANCEL')
+MSG_MIDI_EXPORT_CHOICES = ['Stems, a file for each track', 'Multitrack, one file', 'Clips, a file for each clip', 'General MIDI, one file with sounds']
 
 # interface/tracker/screens/arrange/track_editor.py
 # The two buttons under the text while editing, which Tab reaches and Left and Right move between.
