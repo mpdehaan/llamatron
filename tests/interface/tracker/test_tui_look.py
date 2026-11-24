@@ -6,6 +6,7 @@
 
 from fractions import Fraction
 import pathlib
+from rich.text import Text
 from textual.app import App
 from textual.screen import Screen
 import unittest
@@ -25,6 +26,7 @@ from llamatron.interface.tracker.screens.set import main_page
 from llamatron.interface.tracker.screens.set.file_page import FilePage
 from llamatron.interface.tracker.screens.set.songs_page import SongsPage
 from llamatron.interface.tracker.screens.shared import page as page_values
+from llamatron.interface.tracker.screens.shared.page_view import line_key, PageView
 from llamatron.model.objects.named_scale import scale_type_name
 from llamatron.model.objects.setlist import new_setlist
 from llamatron.model.schema.file_format import ChordSymbol, PatternSetting, Row, Section
@@ -36,6 +38,10 @@ from tests.support.page_testing import boxed_line
 from tests.support.rendering import render_song
 from tests.support.ui_testing import key_name, UITest
 
+# Lines a page's view is given to show.
+FIRST_WORD = 'first'
+SECOND_WORD = 'second'
+THIRD_WORD = 'third'
 # A word repeated into a set's crumb too long to share the header's line with the program's name.
 LONG_SONG_WORD = 'x'
 TUNE = 'tune'
@@ -404,3 +410,39 @@ def screens_of_ours():
             if kind.__module__.startswith(OUR_PACKAGE):
                 found.append(kind)
     return found
+
+
+class TestPageViewSendsOnlyChangedLines(UITest):
+    """The page's view makes again, and sends the terminal, only the lines that differ from those it shows, a style alone
+    included, so that a key or a tick that changes little sends little."""
+
+    def view(self):
+        return self.app.screen.query_one(page_values.VIEW_SELECTOR, PageView)
+
+    async def test_a_line_drawn_the_same_again_is_not_made_again(self):
+        self.app.screen.draw()
+        self.app.screen.draw()
+        self.assertEqual(self.view().changed_lines(), ())
+
+    async def test_only_the_line_that_changed_is_made_again(self):
+        self.view().show([Text(FIRST_WORD), Text(SECOND_WORD)])
+        self.view().show([Text(FIRST_WORD), Text(THIRD_WORD)])
+        self.assertEqual(self.view().changed_lines(), (1,))
+
+    async def test_a_line_whose_style_alone_changed_is_made_again(self):
+        self.view().show([Text(FIRST_WORD, style=Style.DIM)])
+        self.view().show([Text(FIRST_WORD, style=Style.REFUSAL)])
+        self.assertEqual(self.view().changed_lines(), (0,))
+
+    async def test_lines_no_longer_drawn_are_cleared(self):
+        self.view().show([Text(FIRST_WORD), Text(SECOND_WORD)])
+        self.view().show([Text(FIRST_WORD)])
+        self.assertEqual(self.view().changed_lines(), (1,))
+        self.assertEqual(self.view().shown(), (line_key(Text(FIRST_WORD)),))
+
+    async def test_a_line_shown_before_is_not_made_again_when_it_comes_back(self):
+        self.view().show([Text(FIRST_WORD)])
+        first = self.view().render_line(0)
+        self.view().show([Text(SECOND_WORD)])
+        self.view().show([Text(FIRST_WORD)])
+        self.assertIs(self.view().render_line(0), first)

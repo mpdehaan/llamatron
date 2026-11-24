@@ -14,7 +14,6 @@ from rich.color import Color
 from rich.style import Style as RichStyle
 from rich.text import Text
 from textual.screen import Screen
-from textual.widgets import Static
 
 from llamatron.interface.forms.text import clock
 from llamatron.interface.tracker import drawing, keybindings, keys
@@ -28,6 +27,7 @@ from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.drawing import Box, fit, legend, Style
 from llamatron.interface.tracker.key_table import arrows_joined, BindsKeys, pressed_key, quits_at_once
 from llamatron.interface.tracker.screens.shared.everywhere import everywhere_keys
+from llamatron.interface.tracker.screens.shared.page_view import PageView
 from llamatron.interface.tracker.themes import luminance
 from llamatron.model.objects.naming import is_taken
 from llamatron.model.schema import limits
@@ -124,7 +124,7 @@ class Page(BindsKeys, Screen):
         """
 
     def compose(self):
-        yield Static(id=VIEW_ID)
+        yield PageView(id=VIEW_ID)
 
     def on_mount(self):
         self.draw()
@@ -397,7 +397,7 @@ class Page(BindsKeys, Screen):
         self.screen_height = height
         lines = self.page_lines(width=width, height=height)
         screen = self.staged_screen(screen=lines, width=width, height=height)
-        self.query_one(VIEW_SELECTOR, Static).update(Text(drawing.LINE_BREAK).join(screen))
+        self.query_one(VIEW_SELECTOR, PageView).show(screen)
 
     def page_lines(self, *, width, height):
         """Return the page's lines at a size: the header, the body, the status line, the rule and the legend, which draw shows and a batch video's stage draws again smaller inside its frame."""

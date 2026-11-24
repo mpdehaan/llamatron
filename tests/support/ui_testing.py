@@ -10,7 +10,6 @@ import os
 import pkgutil
 import string
 import tempfile
-from textual.widgets import Static
 import unittest
 from unittest import mock
 
@@ -37,6 +36,7 @@ from llamatron.interface.tracker.screens.shared import page as page_values
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.list_page import ListPage
 from llamatron.interface.tracker.screens.shared.page import Page
+from llamatron.interface.tracker.screens.shared.page_view import PageView
 from llamatron.model.objects.setlist import new_setlist, Setlist
 from llamatron.model.schema import file_format, generator_plugins
 from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, SceneSetting, Section, Shape, shape_setting, ShapePart
@@ -325,7 +325,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
 
     def drawn(self):
         """Return what the page on screen last drew, to compare before and after a key: two drawings are equal when their text and styles are."""
-        return self.app.screen.query_one(page_values.VIEW_SELECTOR, Static).content
+        return self.app.screen.query_one(page_values.VIEW_SELECTOR, PageView).shown()
 
     async def type(self, text):
         """Type text into the prompt, the picker's search, the list's search or the description that is open, and fail when none is.

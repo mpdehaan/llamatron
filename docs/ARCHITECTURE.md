@@ -338,6 +338,10 @@ and says what it shows as grid nodes
 (`src/llamatron/interface/forms/pattern_grid.py`,
 `src/llamatron/interface/forms/arrange.py`,
 `src/llamatron/interface/forms/step_grid.py`), which their renderers draw.
+A page shows its lines in one view
+(`src/llamatron/interface/tracker/screens/shared/page_view.py`), which keeps
+each line it showed and sends the terminal only the lines that changed, since
+a page draws itself after every key and ten times a second while a song plays.
 
 The tracker holds one `Setlist` in a `Document`
 (`src/llamatron/interface/tracker/document.py`), which knows the file the set
