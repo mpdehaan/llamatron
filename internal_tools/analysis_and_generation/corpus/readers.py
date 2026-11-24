@@ -10,7 +10,6 @@ from corpus.piece import CorpusNote, Piece
 import csv
 import json
 from music21 import converter, harmony, key as m21key, meter as m21meter
-import numpy
 import pathlib
 import pretty_midi
 import re
@@ -105,35 +104,6 @@ def read_kern(*, source, limit=DEFAULT_LIMIT):
                              creator=None if source == 'essen' else source.split('-')[0])
 
 
-def read_weimar(*, limit=DEFAULT_LIMIT):
-    """Read the Weimar Jazz Database's solos, each note's seconds turned into beats by the solo's own beat times."""
-    connection = sqlite3.connect('file:{}?mode=ro'.format(ROOT / 'weimar-jazz' / 'wjazzd.db'), uri=True)
-    beats = {}
-    for melid, onset in connection.execute('select melid, onset from beats order by melid, onset'):
-        beats.setdefault(melid, []).append(onset)
-    melodies = {}
-    for melid, onset, pitch, duration, loudness in connection.execute('select melid, onset, pitch, duration, loud_med from melody order by melid, onset'):
-        melodies.setdefault(melid, []).append((onset, pitch, duration, loudness))
-    # The year a solo was recorded, not the year its record was released, which for early jazz is a reissue decades later.
-    rows = list(connection.execute('select s.melid, s.performer, s.title, s.style, s.avgtempo, s.signature, s.instrument, s.rhythmfeel, t.recordingdate '
-                                   'from solo_info s left join track_info t on s.trackid = t.trackid order by s.melid'))
-    for melid, performer, title, style, tempo, signature, instrument, feel, released in spread(rows, limit=limit):
-        times = beats.get(melid)
-        if not times or len(times) < 2 or melid not in melodies:
-            continue
-        places = numpy.arange(len(times), dtype=float)
-        notes = []
-        for onset, pitch, duration, loudness in melodies[melid]:
-            start = float(numpy.interp(onset, times, places))
-            end = float(numpy.interp(onset + duration, times, places))
-            velocity = int(max(1, min(127, (loudness or 60) + 40)))
-            notes.append(CorpusNote(start=start, length=max(end - start, 0.05), pitch=int(pitch), velocity=velocity))
-        found = re.search(r'(1[89]|20)\d\d', released or '')
-        year = int(found.group(0)) if found else None
-        yield Piece(source='weimar-jazz', identity=str(melid), title=title, creator=performer, year=year, style=style, meter=signature or '4/4',
-                    tempo=tempo or 120, notes=tuple(notes), extra={'instrument': instrument, 'feel': feel})
-
-
 def read_billboard(*, limit=DEFAULT_LIMIT):
     """Read the Billboard songs' chords as degrees of their key and their sections, with their chart years."""
     folder = ROOT / 'billboard'
@@ -183,7 +153,7 @@ def midi_notes(path):
 
 
 def read_midi_folder(*, source, limit=DEFAULT_LIMIT, metadata=None):
-    """Read a folder of MIDI files: Lakh's clean subset, its artist and title from its folders."""
+    """Read a folder of MIDI files, each piece's creator its folder's name and its title its file's, unless metadata says otherwise."""
     folder = ROOT / source
     for path in spread(sorted(folder.rglob('*.mid')), limit=limit):
         try:
@@ -196,10 +166,6 @@ def read_midi_folder(*, source, limit=DEFAULT_LIMIT, metadata=None):
         yield Piece(source=source, identity=str(path.relative_to(folder)), title=known.get('title', path.stem), creator=known.get('creator', path.parent.name),
                     style=known.get('style'), tempo=tempo, meter=meter, beats_per_bar=beats_per_bar, notes=notes, drum_parts=drum_parts,
                     drums=known.get('drums', False), extra=known.get('extra', {}))
-
-
-def read_lakh(*, limit=DEFAULT_LIMIT):
-    return read_midi_folder(source='lakh-clean', limit=limit)
 
 
 def read_groove(*, limit=DEFAULT_LIMIT):
@@ -313,11 +279,9 @@ def read_maestro(*, limit=DEFAULT_LIMIT):
 
 READERS = {
     'essen': lambda limit: read_kern(source='essen', limit=limit),
-    'weimar-jazz': lambda limit: read_weimar(limit=limit),
     'billboard': lambda limit: read_billboard(limit=limit),
     'rock-corpus': lambda limit: read_rock_corpus(limit=limit),
     'groove-midi': lambda limit: read_groove(limit=limit),
-    'lakh-clean': lambda limit: read_lakh(limit=limit),
     'openewld': lambda limit: read_openewld(limit=limit),
     'song-anthology': lambda limit: read_anthology(limit=limit),
     'nottingham': lambda limit: read_nottingham(limit=limit),

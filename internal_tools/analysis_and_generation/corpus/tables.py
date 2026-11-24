@@ -50,11 +50,8 @@ WRITTEN_AS_TEXT = (BASS_MOTION, SOUND_ROLES, KEY_MOVES, ENERGY_ARC)
 FILE_ROOTS = {'mutopia': ROOT / 'mutopia', 'maestro': ROOT / 'maestro' / 'maestro-v3.0.0'}
 TEST = 'test'
 # How many pieces of each source to measure by default.
-LIMITS = {'essen': 1200, 'weimar-jazz': 456, 'joplin': 47, 'chopin-mazurkas': 52, 'haydn-piano-sonatas': 25, 'mozart-piano-sonatas': 69,
-          'thesession': 1200, 'nottingham': 500, 'openewld': 502, 'song-anthology': 348, 'lakh-clean': 600, 'mutopia': 133, 'maestro': 400}
-# The library styles the Weimar Jazz Database's styles are labelled as.
-JAZZ_LABELS = {'TRADITIONAL': N.NEW_ORLEANS, 'SWING': N.SWING, 'BEBOP': N.BEBOP, 'COOL': N.COOL_JAZZ, 'HARDBOP': N.HARD_BOP, 'POSTBOP': N.MODAL_JAZZ,
-               'FUSION': N.JAZZ_FUSION}
+LIMITS = {'essen': 1200, 'joplin': 47, 'chopin-mazurkas': 52, 'haydn-piano-sonatas': 25, 'mozart-piano-sonatas': 69,
+          'thesession': 1200, 'nottingham': 500, 'openewld': 502, 'song-anthology': 348, 'mutopia': 133, 'maestro': 400}
 # The dance types of the Session and Nottingham that the library's Celtic style holds.
 CELTIC_TYPES = ('reel', 'jig', 'hornpipe', 'slip jig', 'strathspey', 'polka', 'slide', 'barndance', 'jigs', 'reelsa-c', 'reelsd-g', 'reelsh-l',
                 'reelsm-q', 'reelsr-t', 'reelsu-z', 'hpps', 'slip')
@@ -69,8 +66,6 @@ def label_of(piece):
     library has a style for."""
     if piece.source in FIXED_LABELS:
         return FIXED_LABELS[piece.source]
-    if piece.source == 'weimar-jazz':
-        return JAZZ_LABELS.get(piece.style)
     if piece.source == 'essen':
         if (piece.region or '').startswith(CHINA):
             return N.CHINESE_FOLK

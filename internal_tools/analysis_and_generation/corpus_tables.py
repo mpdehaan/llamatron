@@ -22,8 +22,8 @@ REBUILD_HELP = 'measure afresh even when a table is current'
 MEASURED = '{source}: {rows} pieces measured ({seconds}s)'
 NOT_FETCHED = '{source}: not fetched, passed over (fetch_corpus.sh fetches it)'
 # The sources whose pieces are notes to measure; the chord annotations and drums have studies of their own.
-MEASURED_SOURCES = ('joplin', 'chopin-mazurkas', 'haydn-piano-sonatas', 'mozart-piano-sonatas', 'weimar-jazz', 'essen', 'thesession', 'nottingham',
-                    'mutopia', 'maestro', 'openewld', 'song-anthology', 'lakh-clean') + COMPOSER_COLLECTIONS
+MEASURED_SOURCES = ('joplin', 'chopin-mazurkas', 'haydn-piano-sonatas', 'mozart-piano-sonatas', 'essen', 'thesession', 'nottingham',
+                    'mutopia', 'maestro', 'openewld', 'song-anthology') + COMPOSER_COLLECTIONS
 
 
 def main(*, argv=None):

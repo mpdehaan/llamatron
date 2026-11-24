@@ -62,7 +62,7 @@ class TestReading(unittest.TestCase):
 
     def test_a_piece_becomes_the_analyzers_notes_part_by_part_with_drums_apart(self):
         notes = (CorpusNote(start=0, length=1, pitch=60), CorpusNote(start=1, length=1, pitch=62), CorpusNote(start=0, length=0.5, pitch=36, part=DRUM_PART))
-        performance = Piece(source='lakh-clean', identity='made up', notes=notes, drum_parts=frozenset({DRUM_PART})).performance()
+        performance = Piece(source='maestro', identity='made up', notes=notes, drum_parts=frozenset({DRUM_PART})).performance()
         self.assertEqual(len(performance.tracks), 2)
         self.assertEqual([track.drum for track in performance.tracks], [False, True])
         self.assertEqual(float(performance.length), BEATS)

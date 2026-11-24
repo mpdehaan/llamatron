@@ -4,9 +4,9 @@
 
 """Fetch the public-domain scores the genre library's corpus study reads beyond music21's own (internal_tools/analysis_and_generation/fetch_corpus.sh):
 the Humdrum collections KernScores serves, from their maintainers' repositories on GitHub (chosen when KernScores was
-down), and the research datasets allowed: the Weimar Jazz Database of transcribed solos, the McGill Billboard
+down), and the research datasets allowed: the McGill Billboard
 chord annotations, de Clercq and Temperley's rock corpus and Google Magenta's Groove MIDI drums; and the popular-music and folk
-sources of 113 A: Lakh MIDI's clean subset, the open part of the Enhanced Wikifonia lead sheets, the Public Domain Song
+sources of 113 A: the open part of the Enhanced Wikifonia lead sheets, the Public Domain Song
 Anthology and the Session's and Nottingham's folk tunes; all into .corpus/, which git ignores, for analysis only: nothing fetched
 is committed or passed on, and only measurements leave .corpus/ (the use the EU's text-and-data-mining exceptions and American
 fair use cover; each source's terms are noted beside it). Only the files a collection needs are kept, sparing the connection: an archive comes in one download
@@ -67,13 +67,10 @@ COLLECTIONS = (
 # Each research dataset: its folder under .corpus/, how it comes, its address, the endings of the files kept, the most it may come
 # to in megabytes, and its terms.
 DATASETS = (
-    ('weimar-jazz', SINGLE, 'https://jazzomat.hfm-weimar.de/download/downloads/wjazzd.db', ('.db',), 50, 'Open Database License, with credit'),
     ('billboard', ARCHIVE, 'https://www.dropbox.com/s/2lvny9ves8kns4o/billboard-2.0-salami_chords.tar.gz?dl=1', ('.txt',), 5, 'CC0'),
     ('billboard', SINGLE, 'https://www.dropbox.com/s/o0olz0uwl9z9stb/billboard-2.0-index.csv?dl=1', ('.csv',), 1, 'CC0'),
     ('rock-corpus', ZIP, 'https://rockcorpus.midside.com/versions/rock_corpus_v2-1.zip', ('.txt', '.har', '.mel', '.clt', '.nlt', '.csv', '.tsv'), 5, 'CC BY 4.0'),
     ('groove-midi', ZIP, 'https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip', ('.mid', '.midi', '.csv'), 10, 'CC BY 4.0'),
-    ('lakh-clean', ARCHIVE, 'http://hog.ee.columbia.edu/craffel/lmd/clean_midi.tar.gz', ('.mid', '.midi'), 250,
-     'CC BY 4.0 for the collection; the songs are copyrighted transcriptions, analysed only'),
     ('openewld', ARCHIVE, 'https://codeload.github.com/00sapo/OpenEWLD/tar.gz/master', ('.mxl', '.xml', '.db', '.csv', '.json'), 10, 'public domain scores, MIT for the rest'),
     ('song-anthology', DATAVERSE, 'https://dataverse.lib.virginia.edu doi:10.18130/V3/C4RD06', ('.xml',), 30, 'CC0, waived by David Berger and Chuck Israels'),
     ('thesession', SINGLE, 'https://raw.githubusercontent.com/adactio/TheSession-data/main/json/tunes.json', ('.json',), 30, 'published openly by the Session for reuse'),
@@ -105,12 +102,10 @@ CATEGORIES = (
     ('Public-domain chamber, choral and keyboard scores', 'string quartets, four-part chorales, fugues and concertos, so that the classical corpus is not all piano',
      ('beethoven-string-quartets', 'beethoven-piano-sonatas', 'bach-chorales', 'bach-art-of-fugue', 'vivaldi-op6')),
     ('Folk tunes', 'single-line traditional tunes, many transcribed by players', ('essen', 'thesession', 'nottingham')),
-    ('Research annotations', 'experts\' transcriptions and labels: jazz solos, chart songs\' chords, rock harmony, drummers',
-     ('weimar-jazz', 'billboard', 'rock-corpus', 'groove-midi')),
+    ('Research annotations', 'experts\' labels: chart songs\' chords, rock harmony, drummers',
+     ('billboard', 'rock-corpus', 'groove-midi')),
     ('Recorded piano performances', 'competition performances as MIDI, for non-commercial use', ('maestro',)),
     ('Chords of popular songs', 'the chords and sections of a great many songs with a genre and a decade for each, measured only', ('chordonomicon',)),
-    ('Popular songs', 'MIDI transcriptions of copyrighted songs, analysed only and never passed on; much the largest download',
-     ('lakh-clean',)),
 )
 EVERYTHING = '--all'
 YES = ('y', 'yes')
