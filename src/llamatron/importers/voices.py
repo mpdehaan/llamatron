@@ -36,9 +36,10 @@ HAND_SHARE = 0.1
 FIRST_DRUM_NUMBER = 1
 # A note held into the next by less than this share of itself is slurred into it on purpose, a legato line (legato_line).
 LEGATO_SHARE = Rational(1, 2)
-# The General MIDI sounds, numbered from 1, of instruments that play one note at a time: the basses, the solo brass, the
-# reeds, the pipes and the synth leads. The brass section and the synth brass play chords, and are left out.
-MONOPHONIC_SOUNDS = (range(33, 41), range(57, 62), range(65, 89))
+# The General MIDI sounds, numbered from 1, of instruments that play one note at a time: the basses, the solo strings
+# (violin, viola, cello, contrabass), the voices, the solo brass, the reeds, the pipes and the synth leads. The brass section
+# and the synth brass play chords, and are left out; a part that plays chords is never read as a line, whatever its sound.
+MONOPHONIC_SOUNDS = (range(33, 45), range(53, 56), range(57, 62), range(65, 89))
 # The General MIDI sound a part's tracks get where the file sets no program: a piano, which the user can change.
 DEFAULT_SOUND = limits.MIN_GM_SOUND
 # A chord in root position, which writes no Inversion.
@@ -73,6 +74,9 @@ class Played(NamedTuple):
     omission: object = None
     bass: object = None
     bass_octave: bool = False
+    # Whether it rings on with its gate under the next notes its voice plays, as a pianist holds a chord with some fingers
+    # and plays a line with the others (lines_of), so that it is written with a gate rather than ties.
+    rings: bool = False
 
     def written_pitch(self):
         """Return the MIDI number a step's degree is written from: a chord's root, or the note itself."""
@@ -126,7 +130,9 @@ def voices_of(*, part, chords, controls):
         for name, notes, from_top in hands(part):
             units = chord_units(notes) if chords else [single(note) for note in notes]
             units = legato_line(units=units, monophonic=plays_one_note_at_a_time(part))
-            voices += named_voices(name=name, drum=False, lines=lines_of(units=units, from_top=from_top))
+            # A hand's held notes ring with their gate under its next notes, but a line of one note at a time stays one.
+            may_ring = not plays_one_note_at_a_time(part)
+            voices += named_voices(name=name, drum=False, lines=lines_of(units=units, from_top=from_top, may_ring=may_ring))
     if not part.is_drums():
         for voice in voices:
             voice.sound = sound_of(part)
@@ -165,7 +171,7 @@ def legato_line(*, units, monophonic):
             earlier = Played(
                 start=earlier.start, end=later.start, pitches=earlier.pitches, velocity=earlier.velocity, chord=earlier.chord,
                 inversion=earlier.inversion, root=earlier.root, glide=True, doubling=earlier.doubling, omission=earlier.omission,
-                bass=earlier.bass, bass_octave=earlier.bass_octave,
+                bass=earlier.bass, bass_octave=earlier.bass_octave, rings=earlier.rings,
             )
         joined.append(earlier)
     return joined
@@ -180,8 +186,8 @@ def is_short_slur(*, earlier, later, after):
 
 
 def plays_one_note_at_a_time(part):
-    """Return whether a part's General MIDI sound is an instrument that plays one note at a time, a bass, a solo brass
-    instrument, a reed, a pipe or a synth lead, so that its overlapping notes are slurs (MONOPHONIC_SOUNDS)."""
+    """Return whether a part's General MIDI sound is an instrument that plays one note at a time, a bass, a solo string, a
+    voice, a solo brass instrument, a reed, a pipe or a synth lead, so that its overlapping notes are slurs (MONOPHONIC_SOUNDS)."""
     return part.program is not None and any(part.program + limits.MIN_GM_SOUND in sounds for sounds in MONOPHONIC_SOUNDS)
 
 
@@ -262,26 +268,64 @@ def chord_units(notes):
     return sorted(units)
 
 
-def lines_of(*, units, from_top):
-    """Return what each voice plays, the units shared out by rank at each moment into the first voices free then, new voices made as more are needed."""
+def lines_of(*, units, from_top, may_ring=False):
+    """Return what each voice plays, the units shared out by rank at each moment into the first voices free then, new voices
+    made as more are needed. Where may_ring, a voice is free too while what it plays still sounds, if that rings on with its
+    gate, no longer than a gate can be, and shares no note with what comes, as a pianist holds a chord under a moving line;
+    what rings is marked so (Played.rings), to be written with its gate."""
     lines = []
-    ends = []
+    sounding = []
     by_start = {}
     for unit in units:
         by_start.setdefault(unit.start, []).append(unit)
+    ringing = set()
     for start in sorted(by_start):
         ranked = sorted(by_start[start], key=lambda unit: unit.pitches[-1] if from_top else unit.pitches[0], reverse=from_top)
-        free = [place for place, end in enumerate(ends) if end <= start]
+        for place in range(len(sounding)):
+            sounding[place] = [unit for unit in sounding[place] if unit.end > start]
+        taken = set()
         for unit in ranked:
-            if free:
-                place = free.pop(0)
-            else:
+            place = free_voice(sounding=sounding, unit=unit, taken=taken, may_ring=may_ring)
+            if place is None:
                 lines.append([])
-                ends.append(start)
+                sounding.append([])
                 place = len(lines) - 1
+            taken.add(place)
+            ringing.update(id(held) for held in sounding[place])
             lines[place].append(unit)
-            ends[place] = unit.end
-    return lines
+            sounding[place].append(unit)
+    marked = []
+    for line in lines:
+        marked.append([rung(unit) if id(unit) in ringing else unit for unit in line])
+    return marked
+
+
+def free_voice(*, sounding, unit, taken, may_ring):
+    """Return the first voice, by its place, that can take a unit now: one nothing sounds in, or where may_ring, one whose
+    sounding notes can ring under it; or None."""
+    for place, held in enumerate(sounding):
+        if place in taken:
+            continue
+        if not held:
+            return place
+        if may_ring and all(can_ring(held=other, under=unit) for other in held):
+            return place
+    return None
+
+
+def can_ring(*, held, under):
+    """Return whether a note or chord can ring with its gate under another its voice plays: no longer than a gate can be,
+    and sharing no note with it."""
+    return held.end - held.start <= limits.MAX_GATE and not set(held.pitches) & set(under.pitches)
+
+
+def rung(unit):
+    """Return a unit marked as ringing on under what its voice plays next, to be written with its gate."""
+    return Played(
+        start=unit.start, end=unit.end, pitches=unit.pitches, velocity=unit.velocity, chord=unit.chord, inversion=unit.inversion,
+        root=unit.root, glide=unit.glide, doubling=unit.doubling, omission=unit.omission, bass=unit.bass,
+        bass_octave=unit.bass_octave, rings=True,
+    )
 
 
 def voice_letter(place):

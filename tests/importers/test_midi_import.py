@@ -235,7 +235,7 @@ class TestVoices(unittest.TestCase):
         self.assertEqual([voice.name for voice in voices], [importing.MSG_UNNAMED_DRUM.format(number=1), importing.MSG_DRUM_NAMES[KICK], importing.MSG_DRUM_NAMES[SNARE]])
         self.assertTrue(all(voice.drum for voice in voices))
 
-    def test_a_slurred_line_on_an_instrument_of_one_note_is_one_voice_with_glide_and_a_keyboards_two_voices_stay_apart(self):
+    def test_a_slurred_line_on_an_instrument_of_one_note_is_one_voice_with_glide_and_on_a_keyboard_rings(self):
         # Each note held past the next note's start, one of them past the note after too.
         slurred = [(0, 6, 60), (4, 3, 62), (6, 5, 64), (8, 4, 65)]
         alto_sax = 66
@@ -245,7 +245,11 @@ class TestVoices(unittest.TestCase):
         self.assertEqual(len(voices), 1)
         self.assertEqual([played.glide for played in voices[0].played], [True, True, True, False])
         self.assertEqual([played.end for played in voices[0].played[:-1]], [played.start for played in voices[0].played[1:]])
-        self.assertEqual(len(voices_of(part=self.part(notes=slurred), chords=True, controls=True)), 2)
+        # On a keyboard the same notes are held under the next ones, ringing with their gates, never glided.
+        keys = voices_of(part=self.part(notes=slurred), chords=True, controls=True)
+        self.assertEqual(len(keys), 1)
+        self.assertFalse(any(played.glide for played in keys[0].played))
+        self.assertTrue(all(played.rings for played in keys[0].played[:-1]))
 
     def test_a_slurred_line_imported_says_how_many_notes_glide(self):
         notes = [(0, 5, 60), (4, 5, 62), (8, 5, 64), (12, 4, 65)]
@@ -310,13 +314,20 @@ class TestVoices(unittest.TestCase):
         self.assertEqual([data[Row.INVERSION][0] for data in trip.imported.song.patterns.values()], [1])
         self.assertTrue(trip.comparison.is_same())
 
-    def test_no_voice_plays_two_notes_at_once_and_none_is_left_out(self):
+    def test_a_voice_plays_over_a_held_note_only_where_it_rings_and_none_is_left_out(self):
         part = self.part(notes=[(0, 8, 60), (2, 2, 64), (4, 8, 67), (6, 4, 72), (8, 2, 62)])
         voices = voices_of(part=part, chords=True, controls=True)
         for voice in voices:
-            for before, after in zip(voice.played, voice.played[1:]):
-                self.assertLessEqual(before.end, after.start)
+            for place, after in enumerate(voice.played):
+                for before in voice.played[:place]:
+                    if before.end > after.start:
+                        self.assertTrue(before.rings)
+                        self.assertFalse(set(before.pitches) & set(after.pitches))
         self.assertEqual(sum(len(voice.played) for voice in voices), len(part.notes))
+        # A line of one note at a time never rings: its held notes are slurs, or go to a voice of their own.
+        flute = self.part(notes=[(0, 8, 72), (2, 2, 76), (4, 2, 79)])
+        flute.program = 74 - limits.MIN_GM_SOUND
+        self.assertFalse(any(played.rings for voice in voices_of(part=flute, chords=True, controls=True) for played in voice.played))
 
     def test_a_part_that_plays_both_hands_is_split_and_one_hand_is_not(self):
         both = self.part(notes=[(start, 4, pitch) for start in range(0, 16, 4) for pitch in (36, 76)])

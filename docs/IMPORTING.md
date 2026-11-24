@@ -47,7 +47,9 @@ The song plays every note the file plays, for as long as the file plays it.
 - **Tracks** come from the file's tracks: drums become a track for each sound,
   named such as `kick` and `closed hat`; a track that plays both hands splits
   into its treble and bass; and overlapping notes within a track spread over
-  tracks lettered `a`, `b` and so on. A line played legato, each note held a
+  tracks lettered `a`, `b` and so on, except that a note or chord held while
+  the same hand plays on rings under the next notes with its Gate, so a
+  pianist's hand stays one track. A line played legato, each note held a
   little into the next, as a horn or a voice slurs, stays one track, each
   slurred note with Glide, so a monosynth slides across it; the dialog says
   how many notes glide, since Glide runs a note on by its own small amount

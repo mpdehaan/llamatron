@@ -275,7 +275,7 @@ class Cutter:
                 last = played.end / self._step_size
                 across = range(int(first) + 1, ceil(last))
                 blocked.update(across)
-                if not first.is_whole() or not last.is_whole():
+                if not first.is_whole() or not last.is_whole() or played.rings:
                     untieable.update(across)
         return blocked, untieable
 

@@ -95,25 +95,32 @@ def scene_steps(*, voice, start, end, key, step_size):
         if written is None:
             too_low += 1
             continue
-        degree, accidental, octave = written
         length = (played.end - played.start) / step_size
         gate = None
-        if not length.is_whole():
+        # A note that rings on under its voice's next notes is held by its gate, since a tie would need the steps after it empty.
+        if not length.is_whole() or played.rings:
             if played.end - played.start <= limits.MAX_GATE:
                 gate = fraction_text(played.end - played.start)
                 gated.append((place, place + length))
             else:
                 lengths_changed += 1
-        steps[place] = NoteStep(
-            degree, accidental, octave, played.chord, gate, played.velocity, played.inversion, played.glide, played.doubling,
-            played.omission, bass_note_of(played=played, key=key), played.bass_octave,
-        )
+        steps[place] = note_step(played=played, written=written, gate=gate, key=key)
         if gate is None:
             for tied in range(place + 1, min(place + max(int(length), 1), len(steps))):
                 steps[tied] = TIED
     lanes = tuple(lane_values(voice=voice, number=number, start=start, end=end, step_size=step_size) for number in voice.lanes)
     changes = any(lane_changes(values=values, before=value_in_force(voice=voice, number=number, time=start * step_size, before=True)) for number, values in zip(voice.lanes, lanes))
     return SceneSteps(steps=steps, gated=gated, lanes=lanes, changes=changes, lengths_changed=lengths_changed, too_low=too_low)
+
+
+def note_step(*, played, written, gate, key):
+    """Return the step a note or chord starts on: its degree, or drum letter, accidental and octave as written, its chord
+    rows, its gate or None for whole steps, its velocity and its glide."""
+    degree, accidental, octave = written
+    return NoteStep(
+        degree, accidental, octave, played.chord, gate, played.velocity, played.inversion, played.glide, played.doubling,
+        played.omission, bass_note_of(played=played, key=key), played.bass_octave,
+    )
 
 
 def bass_note_of(*, played, key):
