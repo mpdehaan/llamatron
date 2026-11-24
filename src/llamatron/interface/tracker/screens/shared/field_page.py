@@ -9,6 +9,7 @@ import functools
 from llamatron.caching.cached import cached_while
 from llamatron.interface.forms import moves, tab_box as tab_box_nodes
 from llamatron.interface.forms.cursor import Cursor, NoSuchPlace
+from llamatron.interface.forms.held_steps import HeldSteps
 from llamatron.interface.forms.navigator import FormNavigator, page_buttons_start
 from llamatron.interface.forms.nodes import Button, Cells, Heading, NameField, SettingNumberField, TextField
 from llamatron.interface.forms.tab_box import TabRow
@@ -43,6 +44,8 @@ class FieldPage(Page):
         self.box_width = settings_page.BOX_WIDTH
         # The page's fields, built once for as long as nothing they are made from changes (cached_while).
         self._cached = {}
+        # How far a held [ or ] steps a gauge, which grows the longer it is held.
+        self.held_steps = HeldSteps()
 
     def fields(self):
         return []

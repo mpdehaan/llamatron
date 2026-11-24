@@ -369,6 +369,9 @@ MSG_KEYSWITCH_LEAD_SHOWN = '{milliseconds} ms'
 # interface/pages/sound_tabs.py: a built-in sound's gauge, twelve cells then its value in its unit, and the units.
 MSG_SOUND_GAUGE = '▕{gauge}▏ {value:>7}'
 MSG_SOUND_GAUGE_FULL = '█'
+# interface/pages/instrument_list.py: an instrument switched off, and the channel of one that isn't MIDI.
+MSG_INSTRUMENT_OFF_SHOWN = '(off)'
+MSG_NO_CHANNEL_SHOWN = ''
 MSG_SOUND_GAUGE_EMPTY = '░'
 MSG_SOUND_PERCENT_SHOWN = '{number}%'
 MSG_NUMBER_SHOWN = '{number}'

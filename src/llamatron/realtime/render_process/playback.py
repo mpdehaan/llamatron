@@ -344,5 +344,5 @@ def built_in_sounds(*, setlist, routes):
     sounds = {}
     for route in routes.values():
         if route.sound is not None and setlist.has_instrument(route.sound):
-            sounds[(route.port, route.channel)] = setlist.get_instrument(route.sound).synth_spec()
+            sounds[(route.port, route.channel)] = setlist.get_instrument(route.sound).synth_spec(drums_from=setlist.drum_tuning_note())
     return sounds

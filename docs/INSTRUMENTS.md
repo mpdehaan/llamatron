@@ -51,7 +51,7 @@ unless `ATTEMPT_SYNTHESIS_ANYWAY=1` is set in the environment.
 | --- | --- |
 | Basic | Up to three oscillators, each Square, Saw, Sine, Triangle, Pulse or Off, detuned in cents and given a level, through an envelope of Attack, Decay, Sustain and Release, playing up to 8 notes at once. |
 | Drum | A drum machine, Kick, Hard Kick, Synth Kick, Snare, Clap, Rim, Hats, Cowbell, Acoustic Tom or Karplus Drum, shaped by five knobs, Pitch, Decay, Color, Shape and Sweep, 0 to 127. The note tunes the drum from middle C, and a harder hit is brighter. A drum cuts its own last hit unless Overlap is on, and drums of one Choke group cut each other, as a closed hat cuts an open one. |
-| SID | A voice of the classic home computer's sound chip: a Triangle, Saw, Pulse or Noise wave, the pulse's width and how fast it sweeps, Ring or Sync from a second oscillator an Interval away, an Arpeggio of semitones stepped 50 times a second, Glide, and the envelope. |
+| SID | A voice of the classic home computer's sound chip: a Triangle, Saw, Pulse or Noise wave, the pulse's width and its PWM speed, the width bouncing between 10% and 90%, Ring or Sync from a second oscillator an Interval away, an Arpeggio of semitones stepped 50 times a second, Glide, and the envelope. |
 | Pocket | A voice of the handheld console's sound chip: a Pulse of one of four duties, the drawn Wave of 32 steps in one of five shapes, or Noise, long or short, through the chip's envelope, a Start level of 15 stepped up or down at a pace, and its pitch sweep. |
 
 A setting shown as a bar is a gauge: `[` and `]` step it, by more as a time

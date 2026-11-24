@@ -23,6 +23,8 @@ from llamatron.model.schema.setting import check_settings, Checked, Choice, desc
 from llamatron.user_strings import errors
 
 MILLISECONDS = 1000.0
+# The note a drum plays at its own pitch on where nothing says otherwise.
+MIDDLE_C = 60
 PERCENT = 100.0
 # A chip pulse's duty as the share of each cycle it is high.
 DUTY_SHARES = {Duty.EIGHTH: 0.125, Duty.QUARTER: 0.25, Duty.HALF: 0.5, Duty.THREE_QUARTERS: 0.75}
@@ -176,19 +178,21 @@ def effect_value(*, block, name):
 OSCILLATOR_DEFAULTS = {OscillatorSetting.WAVEFORM: Waveform.OFF, OscillatorSetting.DETUNE: 0, OscillatorSetting.LEVEL: defaults.DEFAULT_OSCILLATOR_LEVEL}
 
 
-def synth_spec(sound):
+def synth_spec(sound, *, drums_from=MIDDLE_C):
     """Return a stored sound as the Synthesis Process compiles it: its engine's settings, times in seconds and levels as
-    fractions, and its effects in order, the empty blocks left out."""
-    return SoundSpec(sound).spec()
+    fractions, and its effects in order, the empty blocks left out; a drum plays at its own pitch on the note drums_from,
+    the set's drum tuning note, and its other notes tune it from there."""
+    return SoundSpec(sound=sound, drums_from=drums_from).spec()
 
 
 class SoundSpec:
     """A stored sound read for the Synthesis Process, a setting at a time."""
 
-    __slots__ = ('_sound',)
+    __slots__ = ('_sound', '_drums_from')
 
-    def __init__(self, sound):
+    def __init__(self, *, sound, drums_from):
         self._sound = sound
+        self._drums_from = drums_from
 
     def value(self, name):
         return sound_value(sound=self._sound, name=name)
@@ -221,7 +225,7 @@ class SoundSpec:
 
     def drum(self):
         return {'machine': self.value(SoundSetting.MACHINE), 'knobs': list(self.value(SoundSetting.KNOBS)), 'choke': self.value(SoundSetting.CHOKE) or None,
-                'overlap': self.value(SoundSetting.OVERLAP)}
+                'overlap': self.value(SoundSetting.OVERLAP), 'tuned_from': self._drums_from}
 
     def sid(self):
         return {'wave': self.value(SoundSetting.WAVE), 'pulse_width': self.value(SoundSetting.PULSE_WIDTH) / PERCENT,

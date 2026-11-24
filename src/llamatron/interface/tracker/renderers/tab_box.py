@@ -73,7 +73,7 @@ def spots_of(*, page, tab, width):
     """Return where each of a tab's fields is drawn in a box of a width, as Spots, in the order of the tab's fields."""
     inner = width - SIDES - len(INSET) * SIDES
     spots = [Spot(band=tab_box_nodes.TOP_BAND, column=0, line=place) for place in range(len(tab.top))]
-    drawn = [_column_lines(page=page, column=column, inner=inner, cursor=None)[0] for column in tab.columns]
+    drawn = [lines for lines, _ in _drawn_columns(page=page, columns=tab.columns, inner=inner, cursor=None)]
     for band_place, band in enumerate(_bands_of(widths=[_column_width(lines) for lines in drawn], inner=inner, under=_columns_under(tab.columns))):
         for column_place, place in enumerate(band):
             spots += _column_spots(page=page, column=tab.columns[place], band=band_place, column_place=column_place, inner=inner)
@@ -84,6 +84,8 @@ def _column_spots(*, page, column, band, column_place, inner):
     """Return the Spots of a column's fields, each line counted from the column's top, its heading's line included."""
     spots = []
     line = 0
+    if column.boxed:
+        line += 1
     if column.heading is not None:
         line += 1
     for field in column.fields:
@@ -125,16 +127,48 @@ def _after_top(*, cursor, top):
 def _bands(*, page, columns, inner, cursor):
     """Return the columns' lines, as many side by side as fit the box's inside, the rest in bands below after a blank line, and the
     place of the cursor's line among them, or None."""
-    drawn = []
-    first = 0
-    for column in columns:
-        drawn.append(_column_lines(page=page, column=column, inner=inner, cursor=_within(cursor=cursor, first=first, count=len(column.fields))))
-        first += len(column.fields)
+    drawn = _drawn_columns(page=page, columns=columns, inner=inner, cursor=cursor)
     lines = []
     selected = None
     for band in _bands_of(widths=[_column_width(column_lines) for column_lines, _ in drawn], inner=inner, under=_columns_under(columns)):
         lines, selected = _band_added(lines=lines, band=[drawn[place] for place in band], selected=selected)
     return lines, selected
+
+
+def _drawn_columns(*, page, columns, inner, cursor):
+    """Return each column's lines and the place of the cursor's line among them, or None, the boxed ones each in its box, as wide
+    and as tall as the widest and tallest boxed column of the tab."""
+    drawn = []
+    first = 0
+    for column in columns:
+        drawn.append(_column_lines(page=page, column=column, inner=inner, cursor=_within(cursor=cursor, first=first, count=len(column.fields))))
+        first += len(column.fields)
+    boxed = [place for place, column in enumerate(columns) if column.boxed]
+    if not boxed:
+        return drawn
+    width = max(_column_width(drawn[place][0]) for place in boxed)
+    height = max(len(drawn[place][0]) for place in boxed)
+    for place in boxed:
+        drawn[place] = _in_a_box(lines=drawn[place][0], selected=drawn[place][1], width=width, height=height)
+    return drawn
+
+
+def _in_a_box(*, lines, selected, width, height):
+    """Return a column's lines in a light box around lines of a width, padded to a height, and the cursor's line, moved down
+    past the box's top edge."""
+    edge = Box.RULE * (width + len(INSET) * SIDES)
+    boxed = [Text(Box.TOP_LEFT + edge + Box.TOP_RIGHT, style=Style.DIM, no_wrap=True)]
+    for row in range(height):
+        line = Text(Box.BAR + INSET, style=Style.DIM, no_wrap=True)
+        part = lines[row] if row < len(lines) else Text(drawing.NOTHING)
+        line.append_text(part)
+        line.append(drawing.SPACE * (width - part.cell_len) + INSET)
+        line.append(Box.BAR, style=Style.DIM)
+        boxed.append(line)
+    boxed.append(Text(Box.BOTTOM_LEFT + edge + Box.BOTTOM_RIGHT, style=Style.DIM, no_wrap=True))
+    if selected is not None:
+        selected += 1
+    return boxed, selected
 
 
 def _bands_of(*, widths, inner, under=()):

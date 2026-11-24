@@ -42,6 +42,7 @@ from llamatron.model.schema.file_format import ClipSlotSetting, FileLayout, Inst
 from llamatron.model.schema.setting import Checked, Choice, described, Flag, settings_held, Text, TimeLength, WholeNumber
 from llamatron.model.values import note
 from llamatron.model.values.scale import ScaleType
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, names as names_text
 
 
@@ -451,6 +452,11 @@ class Setlist(HoldsSections, HoldsSettings):
 
     def get_default_drum_octave(self):
         return self._setting(name=SetlistSetting.DEFAULT_DRUM_OCTAVE, default=defaults.DEFAULT_DRUM_OCTAVE)
+
+    def drum_tuning_note(self):
+        """Return the MIDI number of the C of the default drum octave, which a built-in drum plays at its own pitch, so that a
+        drum pattern written from that C sounds as its knobs say on a built-in drum."""
+        return self.get_default_drum_octave() * intervals.HALF_STEPS_PER_OCTAVE
 
     def get_octave_labels(self):
         """Return how the tracker numbers octaves on screen: Live's labels, or llamatron's own from C0."""

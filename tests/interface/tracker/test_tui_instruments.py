@@ -67,9 +67,14 @@ class TestInstrumentsPage(UITest):
         await self.press(Key.DOWN, Key.UP)
         rows = dict(self.app.screen.rows())
         self.assertEqual(rows[SYNTH], [SYNTH, PORTS[0], midi.MAX_CHANNEL, 1])
+        # A new instrument is off, with no channel; one made built in shows its engine.
         self.document.add_instrument(INSTRUMENT_1)
         await self.press(Key.DOWN, Key.UP)
-        self.assertEqual(dict(self.app.screen.rows())[INSTRUMENT_1], [INSTRUMENT_1, marks.MSG_NO_DEVICE_SHOWN, defaults.DEFAULT_CHANNEL, 0])
+        self.assertEqual(dict(self.app.screen.rows())[INSTRUMENT_1], [INSTRUMENT_1, marks.MSG_INSTRUMENT_OFF_SHOWN, marks.MSG_NO_CHANNEL_SHOWN, 0])
+        self.document.change_set(self.document.get_setlist().get_instrument(INSTRUMENT_1).set_kind, InstrumentKind.BUILT_IN)
+        await self.press(Key.DOWN, Key.UP)
+        engine = labels.MSG_ENGINE_NAMES[SoundEngine.BASIC]
+        self.assertEqual(dict(self.app.screen.rows())[INSTRUMENT_1][1], labels.MSG_BUILT_IN_SHOWN.format(engine=engine))
 
     async def test_the_first_instrument_turns_real_time_on_and_deleting_the_last_turns_it_off(self):
         self.assertFalse(self.document.get_setlist().is_real_time())

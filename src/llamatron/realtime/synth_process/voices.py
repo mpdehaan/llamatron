@@ -25,10 +25,16 @@ A_FREQUENCY = 440.0
 SILENT = 1e-4
 # How long a note takes to reach full level from silence at the least, so that no start clicks.
 SHORTEST_ATTACK_SECONDS = 0.001
+# How narrow and how wide a pulse's width goes, between which pulse-width modulation bounces.
+NARROWEST = 0.1
+WIDEST = 0.9
 # The SID-style chip steps its arpeggio at the frame rate of the computers it was in.
 FRAMES_PER_SECOND = 50.0
-# How fast noise is clocked against the pitch: a step of noise each sixteenth of a cycle.
+# How fast noise is clocked against the pitch: the handheld's a step each sixteenth of a cycle; the SID-style voice's four
+# times as fast as the real chip's, so that middle C gives a bright noise and lower notes darken it, the real chip's rate
+# sounding sample-held below the high notes players give its noise.
 NOISE_STEPS_PER_CYCLE = 16
+SID_NOISE_STEPS_PER_CYCLE = 64
 # The handheld chip's clocks: its envelope steps 64 times a second, its sweep 128, and its period register is eleven bits
 # of a 131072 Hz clock, a pulse's frequency 131072 / (2048 - period).
 ENVELOPE_TICKS = 64.0
@@ -91,7 +97,7 @@ class SidPatch:
         self.wave = spec['wave']
         self.saw = tables.waveform_tables(waveform='saw', rate=rate)
         self.triangle = tables.waveform_tables(waveform='triangle', rate=rate)
-        self.noise = tables.shift_register_noise(short=False)
+        self.noise = tables.sid_noise()
         self.pulse_width = spec['pulse_width']
         self.pulse_sweep = spec['pulse_sweep']
         self.modulation = spec['modulation']
@@ -143,7 +149,7 @@ class SidPatch:
         if self.wave == 'triangle':
             return self.triangle[band][indexes & tables.TABLE_MASK].copy()
         if self.wave == 'noise':
-            return self.noise[(positions * NOISE_STEPS_PER_CYCLE / tables.TABLE_SIZE).astype(numpy.int64) % len(self.noise)]
+            return self.noise[(positions * SID_NOISE_STEPS_PER_CYCLE / tables.TABLE_SIZE).astype(numpy.int64) % len(self.noise)]
         # A band-limited pulse is one saw less another shifted by its width, which also leaves it with no offset.
         width = self._width(seconds)
         shifted = (indexes + int(width * tables.TABLE_SIZE)) & tables.TABLE_MASK
@@ -157,8 +163,15 @@ class SidPatch:
         return numpy.where(cycles % 1.0 < 0.5, numpy.float32(1.0), numpy.float32(-1.0))
 
     def _width(self, seconds):
-        """Return the pulse's width a time into the note, swept from its start and kept from the very edges."""
-        return min(0.98, max(0.02, self.pulse_width + self.pulse_sweep * seconds))
+        """Return the pulse's width a time into the note: pulse-width modulation, the width moving from where it starts at the
+        sweep's rate and bouncing back at NARROWEST and WIDEST, as players sweep the chip's width up and down."""
+        if not self.pulse_sweep:
+            return min(WIDEST, max(NARROWEST, self.pulse_width))
+        span = WIDEST - NARROWEST
+        moved = (self.pulse_width - NARROWEST + self.pulse_sweep * seconds) % (2 * span)
+        if moved > span:
+            moved = 2 * span - moved
+        return NARROWEST + moved
 
     def _synced(self, *, voice, ratio, second_step, steps, width):
         """Return the wave restarted at each cycle of the second oscillator, ratio times slower than the wave and stepping

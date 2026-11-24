@@ -22,8 +22,10 @@ CRUSH_RATES = (0, 32000, 22050, 16000, 11025, 8000, 6000, 4000, 3000, 2000, 1000
 KNOB_PLACES = range(limits.KNOB_COUNT)
 OSCILLATOR_NUMBERS = range(1, limits.MAX_OSCILLATORS + 1)
 EFFECT_NUMBERS = range(1, limits.EFFECT_BLOCKS + 1)
-# The blocks that start a new band, so that the four are drawn two over two.
+# The blocks that start a new band, so that the four are drawn two over two, and how many cells a block's gauge has, so
+# that two boxed blocks stand side by side at 80 columns.
 SECOND_ROW_BLOCK = 3
+BLOCK_GAUGE_CELLS = 8
 
 
 class SoundTabs:
@@ -52,7 +54,7 @@ class SoundTabs:
 
     def effects_tab(self):
         """Return the Effects tab: the four blocks two over two, dim while the instrument isn't built in."""
-        columns = [TabColumn(heading=None, fields=self.block_fields(number), under=number == SECOND_ROW_BLOCK) for number in EFFECT_NUMBERS]
+        columns = [TabColumn(heading=None, fields=self.block_fields(number), under=number == SECOND_ROW_BLOCK, boxed=True) for number in EFFECT_NUMBERS]
         return Tab(label=labels.MSG_EFFECTS_TAB, columns=columns, not_ready=not self.instrument().is_built_in())
 
     # Each engine's columns.
@@ -217,7 +219,7 @@ class SoundTabs:
                         current=curve, names=[labels.MSG_CURVE_NAMES[choice] for choice in file_format.CURVES], shown=labels.MSG_CURVE_NAMES[curve],
                         set=self.effect_setter(number=number, name=EffectSetting.CURVE)),
             GaugeField(page=self._page, label=labels.MSG_EFFECT_AMOUNT_LABEL.format(number=number), shown_label=labels.MSG_AMOUNT_LABEL,
-                       number=instrument.get_effect(number=number, name=EffectSetting.AMOUNT), lowest=0, highest=limits.MAX_PERCENT,
+                       number=instrument.get_effect(number=number, name=EffectSetting.AMOUNT), lowest=0, highest=limits.MAX_PERCENT, cells=BLOCK_GAUGE_CELLS,
                        set=self.effect_setter(number=number, name=EffectSetting.AMOUNT)),
         ]
 

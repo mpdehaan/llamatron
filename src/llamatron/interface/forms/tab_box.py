@@ -23,12 +23,15 @@ TOP_BAND = -1
 
 @dataclass(slots=True, kw_only=True)
 class TabColumn:
-    """A column of a tab: its heading, drawn bold above it, or None for none, its fields, and whether it starts a band of its
-    own under the columns before it, as a generator's Restart does, whatever room is left beside them."""
+    """A column of a tab: its heading, drawn bold above it, or None for none, its fields, whether it starts a band of its own
+    under the columns before it, as a generator's Restart does, whatever room is left beside them, and whether it is boxed."""
 
     heading: object
     fields: list
     under: bool = False
+    # Whether it is drawn in a light box of its own, as an effect block is, every boxed column of a tab as wide and as tall as
+    # the widest and tallest, so that they line up.
+    boxed: bool = False
 
 
 @dataclass(slots=True, kw_only=True)

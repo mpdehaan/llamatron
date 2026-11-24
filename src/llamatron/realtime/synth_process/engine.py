@@ -31,23 +31,34 @@ FORGET = 3
 GUARD_LIMIT = 1.5
 GUARD_CURVE = 4.0 / 27.0
 # A drum's tone is rendered for each sixteenth of the velocities, its level following the exact velocity.
+# The note the drum recipes play at their own pitch on (drums.py).
+RECIPES_TUNED_AT = 60
 VELOCITY_STEP = 8
 
 
 class DrumPatch:
     """A compiled drum instrument: a function rendering one hit from (pitch, velocity, rate) as float32, its choke group or
-    None, whether its hits overlap rather than cutting the last, its volume and its effects in order; its hits are rendered
-    once each and kept."""
+    None, whether its hits overlap rather than cutting the last, its volume and its effects in order, and the note it plays at
+    its own pitch on; its hits are rendered once each and kept."""
 
-    __slots__ = ('render_hit', 'choke', 'overlap', 'volume', 'effects', 'hits')
+    __slots__ = ('render_hit', 'choke', 'overlap', 'volume', 'effects', 'hits', 'tuned_from')
 
-    def __init__(self, *, render_hit, choke=None, overlap=False, volume=0.8, effects=()):
+    def __init__(self, *, render_hit, spec, effects=()):
+        """render_hit renders a hit, spec is the sound as llamatron gives it (model/objects/built_in_sound.py), each setting it
+        leaves out its default, and effects are its effects compiled."""
         self.render_hit = render_hit
-        self.choke = choke
-        self.overlap = overlap
-        self.volume = volume
+        # The note it plays at its own pitch on: the set's drum tuning note, so that a drum pattern written there sounds as
+        # its knobs say.
+        self.tuned_from = spec.get('tuned_from', RECIPES_TUNED_AT)
+        self.choke = spec.get('choke')
+        self.overlap = spec.get('overlap', False)
+        self.volume = spec.get('volume', 0.8)
         self.effects = list(effects)
         self.hits = {}
+
+    def recipe_pitch(self, pitch):
+        """Return the note a recipe renders for a note played, the recipes playing at their own pitch on middle C."""
+        return pitch - self.tuned_from + RECIPES_TUNED_AT
 
 
 class SynthVoice:
@@ -57,7 +68,7 @@ class SynthVoice:
     begins."""
 
     __slots__ = ('instrument', 'pitch', 'start', 'age', 'release_at', 'level', 'oscillators', 'hit', 'cut_at', 'silent', 'phase', 'second_phase',
-                 'glide_from', 'period', 'ticks')
+                 'glide_from', 'period', 'ticks', 'patch')
 
     def __init__(self, *, instrument, pitch, start, level):
         self.instrument = instrument
@@ -76,6 +87,8 @@ class SynthVoice:
         self.glide_from = pitch
         self.period = 0
         self.ticks = 0
+        # The patch the voice began with (SynthEngine._begin).
+        self.patch = None
 
 
 class SynthEngine:
@@ -164,6 +177,9 @@ class SynthEngine:
             return
         level = velocity / 127.0
         voice = SynthVoice(instrument=instrument, pitch=pitch, start=sample, level=level)
+        # A voice keeps the patch it began with, so that a sound changed while the note sounds, even to another engine, lets the
+        # note finish as it began and gives the change to the next note.
+        voice.patch = patch
         if isinstance(patch, DrumPatch):
             self._cut_drums(patch=patch, instrument=instrument, sample=sample)
             voice.hit = self._hit(patch=patch, pitch=pitch, velocity=velocity)
@@ -188,7 +204,7 @@ class SynthEngine:
         key = (pitch, step)
         hit = patch.hits.get(key)
         if hit is None:
-            hit = patch.render_hit(pitch=pitch, velocity=step * VELOCITY_STEP + VELOCITY_STEP // 2, rate=self.rate)
+            hit = patch.render_hit(pitch=patch.recipe_pitch(pitch), velocity=step * VELOCITY_STEP + VELOCITY_STEP // 2, rate=self.rate)
             patch.hits[key] = hit
         return hit
 
@@ -197,7 +213,7 @@ class SynthEngine:
         for voice in self.voices:
             if voice.cut_at is not None or voice.hit is None:
                 continue
-            other = self.instruments[voice.instrument]
+            other = voice.patch
             same = voice.instrument == instrument and not patch.overlap
             choked = patch.choke is not None and isinstance(other, DrumPatch) and other.choke == patch.choke and voice.instrument != instrument
             if same or choked:
@@ -223,7 +239,7 @@ class SynthEngine:
             out = samples * voice.level
             count = len(out)
         else:
-            out = self.instruments[voice.instrument].sound(voice=voice, first=start + offset, count=count, rate=self.rate)
+            out = voice.patch.sound(voice=voice, first=start + offset, count=count, rate=self.rate)
         alive = True
         if voice.cut_at is not None:
             fade = int(CUT_FADE_SECONDS * self.rate)

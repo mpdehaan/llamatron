@@ -31,6 +31,7 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.objects import built_in_sound
 from llamatron.model.objects.built_in_sound import check_sound, effect_value, oscillator_value, sound_value, synth_spec
 from llamatron.model.objects.llama_data import HoldsSettings, or_default, own_copy, settings_by_name, written_settings
 from llamatron.model.schema import defaults, file_format, limits
@@ -231,9 +232,9 @@ class Instrument(HoldsSettings):
         blocks[number - 1][name] = value
         self.set_sound(name=SoundSetting.EFFECTS, value=blocks)
 
-    def synth_spec(self):
-        """Return its built-in sound as the Synthesis Process compiles it."""
-        return synth_spec(self._settings[InstrumentSetting.SOUND])
+    def synth_spec(self, *, drums_from=built_in_sound.MIDDLE_C):
+        """Return its built-in sound as the Synthesis Process compiles it, a drum playing at its own pitch on drums_from."""
+        return synth_spec(self._settings[InstrumentSetting.SOUND], drums_from=drums_from)
 
     def get_device(self):
         """Return the name of its MIDI output port, or None until one is chosen."""

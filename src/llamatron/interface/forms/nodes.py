@@ -215,12 +215,14 @@ class NumberField(Field):
 
 @dataclass(slots=True, kw_only=True)
 class GaugeField(NumberField):
-    """A number of a built-in sound drawn as a horizontal gauge of GAUGE_CELLS cells, then its value in its unit, a format
+    """A number of a built-in sound drawn as a horizontal gauge, of GAUGE_CELLS cells unless it says, then its value in its unit, a format
     of number: [ and ] step it, by more as it grows where it is a time in milliseconds, whose gauge then fills by the
     logarithm of the time so that short times can be told apart; Enter types it. Both ends are needed."""
 
     unit: str = marks.MSG_SOUND_PERCENT_SHOWN
     timed: bool = False
+    # How many cells the gauge has: fewer where it stands in a narrow box, as an effect block's do.
+    cells: int = GAUGE_CELLS
 
     def __post_init__(self):
         self.value = self.drawn
@@ -229,8 +231,8 @@ class GaugeField(NumberField):
 
     def drawn(self):
         number = self.counted_from()
-        cells = round(self.share(number) * GAUGE_CELLS)
-        gauge = marks.MSG_SOUND_GAUGE_FULL * cells + marks.MSG_SOUND_GAUGE_EMPTY * (GAUGE_CELLS - cells)
+        filled = round(self.share(number) * self.cells)
+        gauge = marks.MSG_SOUND_GAUGE_FULL * filled + marks.MSG_SOUND_GAUGE_EMPTY * (self.cells - filled)
         return marks.MSG_SOUND_GAUGE.format(gauge=gauge, value=self.unit.format(number=number))
 
     def share(self, number):
@@ -240,7 +242,8 @@ class GaugeField(NumberField):
         return (number - self.lowest) / (self.highest - self.lowest)
 
     def step(self, offset):
-        self.set_within(self.counted_from() + offset * self.stride())
+        """Step by the gauge's stride, by more while [ or ] is held down."""
+        self.set_within(self.counted_from() + offset * self.stride() * self.page.held_steps.times(self.label))
 
     def stride(self):
         """Return how far [ and ] step: one, or for a time a step that grows with it, so that a long time is reached in few presses."""

@@ -13,7 +13,8 @@ import unittest
 from llamatron.engine.generators import arp as arp_plugin, chords as chords_plugin, drift as drift_plugin, guitarify as guitarify_plugin, hocket as hocket_plugin, musician as musician_plugin, phrasing as phrasing_plugin, shapes as shapes_plugin, timing as timing_plugin
 from llamatron.engine.generators.chords import strings as chords_strings
 from llamatron.interface.forms import nodes
-from llamatron.interface.forms.nodes import ChoiceField, Field, Heading, NameField, NumberField, Toggle, within
+from llamatron.interface.forms.held_steps import HeldSteps
+from llamatron.interface.forms.nodes import ChoiceField, Field, GaugeField, Heading, NameField, NumberField, Toggle, within
 from llamatron.interface.pages.built_in_place import BuiltInPlace
 from llamatron.interface.tracker import key_table, keybindings
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
@@ -54,14 +55,25 @@ FIRST_SCENE = 0
 # How many presses of Left or Right are more than enough to reach an end of any stepped number.
 MORE_THAN_ANY_RANGE = 12000
 STEPS_PAST_THE_END = 3
+GAUGE_HALF = 50
+GAUGE_FULL = 100
+LONG_TIME_MS = 3000
+SHORT_TIME_MS = 10
+# A keyboard's repeat, a pause longer than a held key leaves, and presses enough for a held key to speed up.
+REPEAT_SECONDS = 0.04
+PAUSE_SECONDS = 1.0
+HELD_PRESSES = 20
 
 
 class Kept:
     """What a field stored and what the field asked the page for, for a test to read."""
 
-    __slots__ = ('stored', 'asked', 'dialog', 'answer', 'options', 'opens_on')
+    __slots__ = ('stored', 'asked', 'dialog', 'answer', 'options', 'opens_on', 'held_steps', 'now')
 
     def __init__(self):
+        # A clock the test moves by hand, for how long [ or ] is held.
+        self.now = 0.0
+        self.held_steps = HeldSteps(clock=lambda: self.now)
         self.stored = []
         self.asked = None
         self.dialog = None
@@ -138,6 +150,35 @@ class TestNameField(unittest.TestCase):
         self.assertFalse(field.is_toggle())
         field.enter()
         self.assertEqual(kept.stored, [SHOWN])
+
+
+class TestGaugeField(unittest.TestCase):
+
+    def test_it_draws_a_gauge_of_its_share_with_its_value_in_its_unit(self):
+        kept = Kept()
+        field = GaugeField(page=kept, label=A_LABEL, number=GAUGE_HALF, set=kept.set, lowest=0, highest=GAUGE_FULL)
+        drawn = field.value()
+        self.assertEqual(drawn.count(marks.MSG_SOUND_GAUGE_FULL), nodes.GAUGE_CELLS // 2)
+        self.assertIn(marks.MSG_SOUND_PERCENT_SHOWN.format(number=GAUGE_HALF), drawn)
+
+    def test_a_time_steps_by_more_as_it_grows(self):
+        kept = Kept()
+        for number, stride in ((LONG_TIME_MS, nodes.LONGEST_TIME_STRIDE), (SHORT_TIME_MS, 1)):
+            field = GaugeField(page=kept, label=A_LABEL, number=number, set=kept.set, lowest=0, highest=MORE_THAN_ANY_RANGE, timed=True)
+            kept.now += PAUSE_SECONDS
+            field.adjust(key_table.STEP_FORWARD)
+            self.assertEqual(kept.stored[-1], number + stride)
+
+    def test_a_held_key_steps_by_more_and_a_pause_starts_again_at_one(self):
+        kept = Kept()
+        field = GaugeField(page=kept, label=A_LABEL, number=GAUGE_HALF, set=kept.set, lowest=0, highest=MORE_THAN_ANY_RANGE)
+        for _ in range(HELD_PRESSES):
+            kept.now += REPEAT_SECONDS
+            field.adjust(key_table.STEP_FORWARD)
+        self.assertGreater(kept.stored[-1], GAUGE_HALF + 1)
+        kept.now += PAUSE_SECONDS
+        field.adjust(key_table.STEP_FORWARD)
+        self.assertEqual(kept.stored[-1], GAUGE_HALF + 1)
 
 
 class TestNumberField(unittest.TestCase):

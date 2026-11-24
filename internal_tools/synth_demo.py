@@ -18,6 +18,8 @@ from llamatron.realtime.synth_process import engine
 from llamatron.realtime.synth_process.process import SynthesisProcess
 
 LEAD_IN = 0.15
+# The exit code of a tour stopped with Ctrl+C, as the shell gives a program it interrupts.
+STOPPED_BY_HAND = 130
 MAJOR = (0, 2, 4, 5, 7, 9, 11, 12)
 MINOR_PENTATONIC = (0, 3, 5, 7, 10, 12, 15, 17)
 
@@ -116,18 +118,29 @@ def main(*, arguments=None):
     options = made.parse_args(arguments)
     synthesis = SynthesisProcess(block=128)
     synthesis.start()
+    stopped = False
     try:
-        for number, (name, spec, notes_of) in enumerate(TOUR, start=1):
-            if options.only and options.only.lower() not in name.lower():
-                continue
-            synthesis.set_instrument(number=number, spec=spec)
-            subprocess.run(['say', name], check=False)
-            notes, seconds = notes_of(time.perf_counter() + LEAD_IN)
-            synthesis.notes([(when, kind, number, pitch, velocity) for when, kind, _, pitch, velocity in notes])
-            time.sleep(seconds + LEAD_IN + 0.3)
+        play_the_tour(synthesis=synthesis, only=options.only)
+    except KeyboardInterrupt:
+        # Ctrl+C ends the tour where it is, quietly: the synthesis is closed below all the same.
+        stopped = True
     finally:
         statistics = synthesis.close()
-    print('dropouts {underflows}, late notes {late_notes}, slowest callback {longest_callback_ms:.2f} ms of {budget_ms:.2f}'.format(**statistics))
+    if statistics:
+        print('dropouts {underflows}, late notes {late_notes}, slowest callback {longest_callback_ms:.2f} ms of {budget_ms:.2f}'.format(**statistics))
+    return STOPPED_BY_HAND if stopped else 0
+
+
+def play_the_tour(*, synthesis, only):
+    """Announce and play each sound of the tour, or those whose names hold only."""
+    for number, (name, spec, notes_of) in enumerate(TOUR, start=1):
+        if only and only.lower() not in name.lower():
+            continue
+        synthesis.set_instrument(number=number, spec=spec)
+        subprocess.run(['say', name], check=False)
+        notes, seconds = notes_of(time.perf_counter() + LEAD_IN)
+        synthesis.notes([(when, kind, number, pitch, velocity) for when, kind, _, pitch, velocity in notes])
+        time.sleep(seconds + LEAD_IN + 0.3)
 
 
 if __name__ == '__main__':

@@ -16,6 +16,7 @@ import functools
 import math
 import numpy
 from scipy import signal
+import zlib
 
 from llamatron.model.schema.file_format import DrumMachine
 
@@ -40,11 +41,14 @@ CENTER_MODES = (1.000, 2.296, 3.600)
 
 def render_hit(*, machine, knobs, pitch, velocity, rate):
     """Return one hit of a machine, its knobs (Pitch, Decay, Color, Shape, Sweep, each 0 to 127), at a note's pitch and
-    velocity and a sample rate, as float32."""
+    velocity and a sample rate, as float32: on middle C it plays at the pitch its knobs give, and other notes tune it by
+    their distance from there (a drum tuned from another note is moved by its patch, DrumPatch.recipe_pitch)."""
     pitch_x, decay_x, color_x, shape_x, sweep_x = (knob / KNOB_TOP for knob in knobs)
     tuning = 2.0 ** ((pitch - MIDDLE_C) / 12.0)
     hardness = velocity / 127.0
-    seed = hash((machine, knobs, pitch, velocity)) & 0xFFFFFFFF
+    # A checksum, not hash(), which Python seeds afresh in every process for text, so that a hit's noise is the same in every
+    # run and every export.
+    seed = zlib.crc32(repr((machine, tuple(knobs), pitch, velocity)).encode())
     made = RECIPES[machine](x=(pitch_x, decay_x, color_x, shape_x, sweep_x), tuning=tuning, hardness=hardness, rate=rate,
                             noise=numpy.random.default_rng(seed))
     return finished(made, rate=rate)

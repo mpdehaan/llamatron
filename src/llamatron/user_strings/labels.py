@@ -790,7 +790,7 @@ MSG_CHOKE_LABEL = 'Choke'
 MSG_OVERLAP_LABEL = 'Overlap'
 MSG_WAVE_LABEL = 'Wave'
 MSG_PULSE_WIDTH_LABEL = 'Pulse width'
-MSG_PULSE_SWEEP_LABEL = 'Width sweep'
+MSG_PULSE_SWEEP_LABEL = 'PWM speed'
 MSG_MODULATION_LABEL = 'Modulation'
 MSG_INTERVAL_LABEL = 'Interval'
 MSG_ARPEGGIO_LABEL = 'Arpeggio'
@@ -817,6 +817,8 @@ MSG_BITS_LABEL = 'Bits'
 MSG_RATE_LABEL = 'Rate'
 MSG_CURVE_LABEL = 'Curve'
 MSG_AMOUNT_LABEL = 'Amount'
+# How the Instruments page shows a built-in instrument where a MIDI one shows its device.
+MSG_BUILT_IN_SHOWN = 'Synth: {engine}'
 MSG_ENGINE_NAMES = {SoundEngine.BASIC: 'Basic', SoundEngine.DRUM: 'Drum', SoundEngine.SID: 'SID', SoundEngine.POCKET: 'Pocket'}
 MSG_WAVEFORM_NAMES = {Waveform.OFF: 'Off', Waveform.SQUARE: 'Square', Waveform.SAW: 'Saw', Waveform.SINE: 'Sine', Waveform.TRIANGLE: 'Triangle',
                       Waveform.PULSE: 'Pulse'}

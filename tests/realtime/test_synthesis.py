@@ -10,6 +10,7 @@ import unittest
 from unittest import mock
 
 from llamatron.model.objects.built_in_sound import synth_spec
+from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, Modulation, Noise, SidWave, SoundEngine, SoundSetting, Waveform
 from llamatron.realtime.synth_process import drums, effects as effect_values, engine as engine_values, process, tables
@@ -49,7 +50,7 @@ def drum_patch(*, machine, choke=None):
     """Return a drum patch of a machine at its middle knobs."""
     def render(*, pitch, velocity, rate):
         return drums.render_hit(machine=machine, knobs=KNOBS, pitch=pitch, velocity=velocity, rate=rate)
-    return DrumPatch(render_hit=render, choke=choke, volume=1.0)
+    return DrumPatch(render_hit=render, spec={'choke': choke, 'volume': 1.0})
 
 
 def rendered(engine, *, chunks):
@@ -140,6 +141,19 @@ class TestEngines(unittest.TestCase):
                 self.assertGreater(numpy.abs(mix[:CHUNK * 8]).max(), QUIET)
                 self.assertEqual(engine.voices, [])
 
+    def test_a_sound_changed_to_another_engine_while_its_note_sounds_lets_the_note_finish_and_plays_on(self):
+        engines = (SoundEngine.BASIC, SoundEngine.DRUM, SoundEngine.SID, SoundEngine.POCKET)
+        for first in engines:
+            for second in engines:
+                with self.subTest(first=first, second=second):
+                    engine = SynthEngine(rate=RATE)
+                    engine.set_instrument(number=SYNTH, patch=compiled(spec=synth_spec({SoundSetting.ENGINE: first}), rate=RATE))
+                    engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=LOUD)
+                    rendered(engine, chunks=1)
+                    engine.set_instrument(number=SYNTH, patch=compiled(spec=synth_spec({SoundSetting.ENGINE: second}), rate=RATE))
+                    engine.schedule(sample=CHUNK * 2, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C + 4, velocity=LOUD)
+                    self.assertTrue(rendered(engine, chunks=8).any())
+
     def test_a_pocket_envelope_steps_down_to_silence_at_its_pace(self):
         sound = {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.LEVEL_PACE: 1, SoundSetting.START_LEVEL: 2}
         engine = SynthEngine(rate=RATE)
@@ -190,6 +204,17 @@ class TestDrumsAndTables(unittest.TestCase):
         low = drums.render_hit(machine=DrumMachine.ACOUSTIC_TOM, knobs=KNOBS, pitch=MIDDLE_C, velocity=LOUD, rate=RATE)
         high = drums.render_hit(machine=DrumMachine.ACOUSTIC_TOM, knobs=KNOBS, pitch=MIDDLE_C + 12, velocity=LOUD, rate=RATE)
         self.assertFalse(numpy.array_equal(low[:1000], high[:1000]))
+
+    def test_a_drum_plays_at_its_own_pitch_on_the_note_it_is_tuned_from(self):
+        drum_c = Setlist().drum_tuning_note()
+        spec = synth_spec({SoundSetting.ENGINE: SoundEngine.DRUM, SoundSetting.KNOBS: list(KNOBS)}, drums_from=drum_c)
+        patch = compiled(spec=spec, rate=RATE)
+        self.assertEqual(patch.recipe_pitch(drum_c), MIDDLE_C)
+        engine = SynthEngine(rate=RATE)
+        engine.set_instrument(number=KICK, patch=patch)
+        engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=KICK, pitch=drum_c, velocity=LOUD)
+        at_middle_c = drums.render_hit(machine=DrumMachine.KICK, knobs=KNOBS, pitch=MIDDLE_C, velocity=LOUD // engine_values.VELOCITY_STEP * engine_values.VELOCITY_STEP + engine_values.VELOCITY_STEP // 2, rate=RATE)
+        self.assertTrue(numpy.array_equal(next(iter(patch.hits.values())), at_middle_c))
 
     def test_a_table_holds_no_harmonic_above_half_the_rate_for_its_band(self):
         top_band = tables.waveform_tables(waveform=Waveform.SAW, rate=RATE)[-1]

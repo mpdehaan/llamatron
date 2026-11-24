@@ -38,7 +38,7 @@ def compiled(*, spec, rate):
     kind = spec['kind']
     if kind == DRUM:
         render = functools.partial(drums.render_hit, machine=spec['machine'], knobs=tuple(spec['knobs']))
-        return DrumPatch(render_hit=render, choke=spec.get('choke'), overlap=spec.get('overlap', False), volume=volume, effects=effects)
+        return DrumPatch(render_hit=render, spec=spec, effects=effects)
     if kind == SID:
         return SidPatch(spec=spec, rate=rate, effects=effects)
     if kind == POCKET:

@@ -17,6 +17,8 @@ from llamatron.model.schema.file_format import Waveform
 
 TABLE_SIZE = 2048
 TABLE_MASK = TABLE_SIZE - 1
+# How many steps of the SID-style chip's noise are kept.
+SID_NOISE_STEPS = 32768
 # The lowest note a table band serves, as a frequency, and how many octave bands there are above it.
 LOWEST_FREQUENCY = 8.0
 OCTAVE_BANDS = 12
@@ -111,6 +113,22 @@ def shift_register_noise(*, short):
         bit = (register ^ (register >> 1)) & 1
         register = (register >> 1) | (bit << (width - 1))
         values.append(1.0 if register & 1 else -1.0)
+    return numpy.array(values, dtype=numpy.float32)
+
+
+@functools.cache
+def sid_noise():
+    """Return the SID-style chip's noise: the values its 23-bit shift register gives in turn, each step read as an eight-bit
+    word of its bits, -1 to 1, as the chip outputs it, so that its noise has 256 levels, smoother than the one-bit noise of
+    the handheld's chip. 32768 steps, the register's own sequence being far longer than any note's need."""
+    register = 0x7FFFF8
+    values = []
+    for _ in range(SID_NOISE_STEPS):
+        bit = ((register >> 22) ^ (register >> 17)) & 1
+        register = ((register << 1) | bit) & 0x7FFFFF
+        word = (((register >> 20) & 1) << 7 | ((register >> 18) & 1) << 6 | ((register >> 14) & 1) << 5 | ((register >> 11) & 1) << 4
+                | ((register >> 9) & 1) << 3 | ((register >> 5) & 1) << 2 | ((register >> 2) & 1) << 1 | (register & 1))
+        values.append(word / 127.5 - 1.0)
     return numpy.array(values, dtype=numpy.float32)
 
 
