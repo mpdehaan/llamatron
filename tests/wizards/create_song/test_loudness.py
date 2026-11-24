@@ -13,6 +13,7 @@ from llamatron.music_theory.composing.notation import drum_rows, tune_rows
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, wizard_names
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support import wizard_testing
 from tests.support.ui_testing import fixed_text
 
 A_NAME = 'a_song'
@@ -163,8 +164,8 @@ class TestLean(unittest.TestCase):
         self.assertEqual(leant[notation.VELOCITY], [A_VELOCITY + A_LEAN, A_VELOCITY, A_VELOCITY, A_VELOCITY] * 2)
 
     def test_funk_lands_on_the_one_and_disco_does_not(self):
-        funk = arranger.style_in(style=arranger.style_named(SOUL_FUNK), template=FUNK)
-        disco = arranger.style_in(style=arranger.style_named(SOUL_FUNK), template=DISCO)
+        funk = arranger.style_in(style=wizard_testing.style_template(SOUL_FUNK), template=FUNK)
+        disco = arranger.style_in(style=wizard_testing.style_template(SOUL_FUNK), template=DISCO)
         self.assertGreater(funk[arranger.BEAT_LOUDNESS][0], 0)
         self.assertNotIn(arranger.BEAT_LOUDNESS, disco)
         kick = next(pattern for name, pattern in patterns(chosen(genre=SOUL_FUNK, subgenre=FUNK)).items() if name.startswith(A_KICK))

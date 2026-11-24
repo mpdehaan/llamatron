@@ -10,6 +10,7 @@ from llamatron.model.objects.groove import FactoryGroove
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, wizard_limits
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support import wizard_testing
 from tests.support.ui_testing import fixed_text
 
 SONG_NAME = 'a_song'
@@ -53,7 +54,7 @@ class TestSwing(unittest.TestCase):
 
     def test_every_groove_a_template_names_is_one_every_set_has(self):
         for name in arranger.style_names():
-            style = arranger.style_named(name)
+            style = wizard_testing.style_template(name)
             for template in style[arranger.TEMPLATES]:
                 swing = arranger.style_in(style=style, template=template).get(arranger.GROOVE, arranger.NO_GROOVE)
                 self.assertIn(swing, wizard_limits.SWINGS)

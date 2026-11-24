@@ -16,6 +16,7 @@ from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, breaks, characters, wizard_limits, wizard_names
 from llamatron.wizards.create_song.drum_writing import SectionDrums, SectionToDrum, SongDrumming
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support import wizard_testing
 
 ROCK = 'rock'
 ROCK_KIND = 'british invasion'
@@ -113,7 +114,7 @@ class TestSongWithABreak(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.style = arranger.style_named(ROCK)
+        cls.style = wizard_testing.style_template(ROCK)
 
     def parts(self, song):
         return arranger.arranged(style=self.style, song=song)[arranger.PARTS]
@@ -272,7 +273,7 @@ class TestKitPieceSounds(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.style = arranger.style_named(ROCK)
+        cls.style = wizard_testing.style_template(ROCK)
 
     def made(self, sounds):
         return arranger.arranged(style=self.style, song={**a_song(), arranger.PIECE_SOUNDS: sounds})

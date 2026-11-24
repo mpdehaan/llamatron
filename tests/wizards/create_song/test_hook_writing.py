@@ -10,6 +10,7 @@ import unittest
 from llamatron.music_theory.composing import notation
 from llamatron.music_theory.hooks import hook_bars
 from llamatron.wizards.create_song import arranger, hook_writing, melody, wizard_names
+from tests.support import wizard_testing
 
 ROCK = 'rock'
 COMMON_TIME = '4/4'
@@ -30,7 +31,7 @@ EVERY_SECOND_POSITION = range(hook_bars.LOWEST_GAUGE, hook_bars.HIGHEST_GAUGE + 
 
 def habits_with(*, behavior=hook_writing.DEFAULT_BEHAVIOR, hook=None, body=None):
     """A real style's habits with a behavior and gauges set over the gauges every hook and every body starts from."""
-    style = arranger.style_named(ROCK)
+    style = wizard_testing.style_template(ROCK)
     return {**style[arranger.MELODY][COMMON_TIME],
             wizard_names.HOOK_WRITING: {hook_writing.BEHAVIOR: behavior, hook_writing.GAUGES: {**hook_writing.HOOK_GAUGES, **(hook or {})}},
             wizard_names.BODY_WRITING: {hook_writing.GAUGES: {**hook_writing.BODY_GAUGES, **(body or {})}}}

@@ -10,6 +10,7 @@ from llamatron.model.file import version
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, characters, players, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support import wizard_testing
 
 ROCK = 'rock'
 SONG_NAME = 'anthem'
@@ -56,14 +57,14 @@ class TestCharacters(unittest.TestCase):
 
     def test_every_preset_puts_together_the_level_as_every_style_writes_it(self):
         for name in arranger.style_names():
-            style = arranger.style_named(name)
+            style = wizard_testing.style_template(name)
             for instrument, levels in style.get(arranger.PLAYERS, {}).items():
                 for level in levels:
                     with self.subTest(style=name, instrument=instrument, level=level):
                         self.assertEqual(arranger.player_of(style=style, instrument=instrument, character=characters.preset(level)), levels[level])
 
     def test_a_gauge_moved_takes_its_own_fields_from_another_level_and_leaves_the_rest(self):
-        levels = arranger.style_named(ROCK)[arranger.PLAYERS][players.DRUMS]
+        levels = wizard_testing.style_template(ROCK)[arranger.PLAYERS][players.DRUMS]
         moved = {**characters.preset(PLAIN), characters.VARIETY: characters.PRESET_PLACE[HIGHEST_LEVEL]}
         player = characters.player_of(levels=levels, character=moved)
         self.assertEqual(player[characters.VARIES], levels[HIGHEST_LEVEL][characters.VARIES])
@@ -83,7 +84,7 @@ class TestCharacters(unittest.TestCase):
         self.assertEqual(characters.blended(low=HIGH, high=LOW, share=HIGH), 0)
 
     def test_a_blended_field_rises_through_its_gauge_and_is_the_levels_own_at_each_preset(self):
-        levels = arranger.style_named(ROCK)[arranger.PLAYERS][players.DRUMS]
+        levels = wizard_testing.style_template(ROCK)[arranger.PLAYERS][players.DRUMS]
         uneven = [characters.blend_at(levels=levels, field=characters.UNEVEN, place=place) for place in range(wizard_names.CHARACTERS_LOWEST, wizard_names.CHARACTERS_HIGHEST + 1)]
         self.assertEqual(uneven, sorted(uneven))
         self.assertEqual(uneven[wizard_names.CHARACTERS_LOWEST], 0)
@@ -100,14 +101,14 @@ class TestCharacters(unittest.TestCase):
         self.assertEqual(characters.held_to(character=characters.preset(HIGHEST_LEVEL), allowed=2), characters.preset(2))
 
     def test_an_instrument_has_the_gauges_its_levels_say_anything_by(self):
-        style_players = arranger.style_named(ROCK)[arranger.PLAYERS]
+        style_players = wizard_testing.style_template(ROCK)[arranger.PLAYERS]
         self.assertEqual(characters.gauges_of(style_players[players.DRUMS]), [characters.NOTES, characters.VARIETY, characters.TOUCH, characters.LOOSE, characters.FILLS])
         self.assertEqual(characters.gauges_of(style_players[players.BASS]), [characters.VARIETY, characters.LOOSE])
         self.assertEqual(characters.gauges_of(style_players[players.RHYTHM]), [characters.VARIETY, characters.STRUMMING])
 
     def test_no_player_where_the_style_has_no_levels_or_the_song_names_no_player(self):
         self.assertEqual(characters.player_of(levels={}, character=characters.preset(PLAIN)), {})
-        self.assertEqual(characters.player_of(levels=arranger.style_named(ROCK)[arranger.PLAYERS][players.DRUMS], character=None), {})
+        self.assertEqual(characters.player_of(levels=wizard_testing.style_template(ROCK)[arranger.PLAYERS][players.DRUMS], character=None), {})
 
 
 class TestWizardPlayerGauges(unittest.TestCase):

@@ -12,6 +12,7 @@ from llamatron.music_theory.composing import notation
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger, composer, melody, operations, wizard_names
+from tests.support import wizard_testing
 
 MINOR = 'minor'
 SEED = 9
@@ -271,7 +272,7 @@ class TestEvolving(unittest.TestCase):
 
 def smart_habits(**gauges):
     """A real style's habits with the smart engine's gauges set, the others where they stand until a style says."""
-    style = arranger.style_named(ROCK)
+    style = wizard_testing.style_template(ROCK)
     habits = {**style[arranger.MELODY][COMMON_TIME], melody.SMART: {**melody.DEFAULT_GAUGES, **gauges}}
     # These tests hold the hook of a kind and the lines beside it; the written hook and body have tests of their own (test_hook_writing.py).
     return {field: value for field, value in habits.items() if field not in (wizard_names.HOOK_WRITING, wizard_names.BODY_WRITING)}
@@ -482,7 +483,7 @@ class TestSmart(unittest.TestCase):
 
     def test_a_chorus_is_unlike_its_verse_in_rhythm_and_higher_in_every_style_with_both(self):
         for name in arranger.style_names():
-            style = arranger.style_named(name)
+            style = wizard_testing.style_template(name)
             sections = style[arranger.SECTIONS]
             if not sections.get(VERSE, {}).get(arranger.PLAN) or not sections.get(CHORUS, {}).get(arranger.PLAN):
                 continue
@@ -534,7 +535,7 @@ class TestSmart(unittest.TestCase):
 class TestEngineChosen(unittest.TestCase):
 
     def lead(self, song):
-        made = arranger.arranged(style=arranger.style_named(song[arranger.STYLE]), song=song)
+        made = arranger.arranged(style=wizard_testing.style_template(song[arranger.STYLE]), song=song)
         return [part for name, part in made[composer.PARTS].items() if notation.LINES in part and name.endswith(LEAD)]
 
     def song(self, **more):
@@ -547,7 +548,7 @@ class TestEngineChosen(unittest.TestCase):
         self.assertNotEqual(usual, self.lead(self.song(**{arranger.MELODY_ENGINE: melody.SERIAL})))
 
     def test_a_style_may_name_its_engine_and_every_voice_plays_the_row(self):
-        style = arranger.style_named(EXPERIMENTAL)
+        style = wizard_testing.style_template(EXPERIMENTAL)
         song = {**self.song(), arranger.STYLE: EXPERIMENTAL, arranger.TEMPLATE: SERIAL_TRIO, arranger.FORM: [THREE]}
         made = arranger.arranged(style=style, song=song)
         self.assertEqual(style[arranger.MELODY][melody.ENGINE], melody.SERIAL)

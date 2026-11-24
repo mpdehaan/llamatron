@@ -11,6 +11,7 @@ from llamatron.music_theory.composing import notation
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, interplay, melody, wizard_limits, wizard_names
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support import wizard_testing
 
 ROCK = 'rock'
 BLUES = 'blues'
@@ -60,7 +61,7 @@ def wizard(*, genre=ROCK, subgenre=ARENA_ROCK):
 
 
 def made(choices):
-    return arranger.arranged(style=arranger.style_named(choices.get_genre()), song=choices.song_picks(SONG_NAME))
+    return arranger.arranged(style=wizard_testing.style_template(choices.get_genre()), song=choices.song_picks(SONG_NAME))
 
 
 def place_of(*, choices, kind, which=0):
@@ -92,7 +93,7 @@ class TestUnderLead(unittest.TestCase):
     """The lines a player plays beside a tune's lines."""
 
     def setUp(self):
-        style = arranger.style_named(ROCK)
+        style = wizard_testing.style_template(ROCK)
         self.habits = style[arranger.MELODY]['4/4']
         self.chords = [{'degree': 1}, {'degree': 4}, {'degree': 5}, {'degree': 1}]
         self.tune = [[dict(note) for note in A_LINE] for _ in range(4)]
@@ -182,7 +183,7 @@ class TestArrangedBesideTheTune(unittest.TestCase):
         waiting = made(choices)
         song = choices.song_picks(SONG_NAME)
         del song[arranger.BESIDE]
-        self.assertEqual(waiting, arranger.arranged(style=arranger.style_named(ROCK), song=song))
+        self.assertEqual(waiting, arranger.arranged(style=wizard_testing.style_template(ROCK), song=song))
         interplay_choices.set_answered_by(None)
         self.assertEqual(made(choices), waiting)
 
@@ -193,7 +194,7 @@ class TestArrangedBesideTheTune(unittest.TestCase):
         song = choices.song_picks(SONG_NAME)
         as_planned = made(choices)
         del song[arranger.BESIDE]
-        self.assertEqual(as_planned, arranger.arranged(style=arranger.style_named(BLUES), song=song))
+        self.assertEqual(as_planned, arranger.arranged(style=wizard_testing.style_template(BLUES), song=song))
         interplay_choices.set_role_plan(interplay.WAITS)
         waiting = made(choices)
         chorus = next(scene for scene in waiting[arranger.FORM] if scene[arranger.SCENE] == CHORUS)
@@ -207,7 +208,7 @@ class TestArrangedBesideTheTune(unittest.TestCase):
         song = choices.song_picks(SONG_NAME)
         song[arranger.BESIDE][arranger.BESIDE_WAYS] = [NO_SUCH] * len(song[arranger.BESIDE][arranger.BESIDE_WAYS])
         with self.assertRaises(ValueError) as refused:
-            arranger.arranged(style=arranger.style_named(ROCK), song=song)
+            arranger.arranged(style=wizard_testing.style_template(ROCK), song=song)
         self.assertEqual(str(refused.exception), errors.ERR_NO_SUCH_WAY_BESIDE.format(NO_SUCH))
 
 

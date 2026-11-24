@@ -9,8 +9,9 @@ import unittest
 from llamatron.model.file import version
 from llamatron.user_strings import errors
 from llamatron.wizards.create_song import arranger
-from llamatron.wizards.create_song.arranger import style_in, style_named, style_names
+from llamatron.wizards.create_song.arranger import style_in, style_names
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support import wizard_testing
 from tests.support.ui_testing import fixed_text
 
 SONG_NAME = 'a_song'
@@ -40,7 +41,7 @@ class TestVariants(unittest.TestCase):
 
     def test_a_subgenre_starts_on_its_commonest_kind_and_says_what_the_kind_is(self):
         choices = chosen()
-        kinds = style_named(ROCK)[arranger.VARIANTS][HARD_ROCK]
+        kinds = wizard_testing.style_template(ROCK)[arranger.VARIANTS][HARD_ROCK]
         commonest = max(kinds, key=lambda kind: kind[arranger.SHARE])
         self.assertEqual(choices.variants()[0], commonest[arranger.NAME])
         self.assertEqual(choices.get_variant(), commonest[arranger.NAME])
@@ -100,12 +101,12 @@ class TestVariants(unittest.TestCase):
 
     def test_the_shares_of_a_subgenre_s_kinds_add_to_all(self):
         for name in style_names():
-            for subgenre, kinds in style_named(name).get(arranger.VARIANTS, {}).items():
+            for subgenre, kinds in wizard_testing.style_template(name).get(arranger.VARIANTS, {}).items():
                 self.assertEqual(sum(kind[arranger.SHARE] for kind in kinds), ALL_SHARES, (name, subgenre))
-                self.assertIn(subgenre, style_named(name)[arranger.TEMPLATES])
+                self.assertIn(subgenre, wizard_testing.style_template(name)[arranger.TEMPLATES])
 
     def test_a_kind_s_words_are_laid_over_the_subgenre_s_and_a_kind_unknown_changes_nothing(self):
-        style = style_named(ROCK)
+        style = wizard_testing.style_template(ROCK)
         usual = style_in(style=style, template=HARD_ROCK)
         self.assertIs(style_in(style=style, template=HARD_ROCK, variant=NOT_A_VARIANT), usual)
         for kind in style[arranger.VARIANTS][HARD_ROCK]:

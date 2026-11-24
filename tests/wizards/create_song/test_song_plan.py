@@ -14,6 +14,7 @@ from llamatron.user_strings import song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, composer, drum_solo, melody, song_plan, wizard_limits, wizard_names
 from llamatron.wizards.create_song.song_plan import level_at, loudness_at, SongPlan
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
+from tests.support import wizard_testing
 
 ROCK = 'rock'
 ARENA = 'arena rock'
@@ -80,7 +81,7 @@ def song(*, form=FORM, template=ARENA, plan=True, seed=SEED, sections=None):
 
 def planned(given_song):
     """A song's plan, made as the arranger makes one."""
-    style = arranger.style_named(ROCK)
+    style = wizard_testing.style_template(ROCK)
     picks = arranger.picked(style=style, song=given_song)
     chord_entry = arranger.values_of(style=style, trait=arranger.CHORD_TRAIT)[picks[arranger.CHORD_TRAIT]]
 
@@ -145,7 +146,7 @@ class TestWhatFollowsFromEnergy(unittest.TestCase):
 
     def test_the_kit_s_percussion_comes_in_from_an_energy_up_and_a_song_s_own_plays_all_through(self):
         given = song(form=[VERSE, CHORUS])
-        starts = arranger.style_named(ROCK)[song_plan.PLAN_OF_SONG][song_plan.PERCUSSION_FROM]
+        starts = wizard_testing.style_template(ROCK)[song_plan.PLAN_OF_SONG][song_plan.PERCUSSION_FROM]
         energies = planned(given).energies()
         self.assertLess(energies[0], starts)
         self.assertGreaterEqual(energies[1], starts)
@@ -156,7 +157,7 @@ class TestWhatFollowsFromEnergy(unittest.TestCase):
         self.assertTrue(all(song_plan.PERCUSSION not in section[arranger.PICKS] for section in own))
 
     def test_a_tambourine_is_heard_in_the_chorus_and_not_in_the_verse(self):
-        style = arranger.style_named(ROCK)
+        style = wizard_testing.style_template(ROCK)
         style = {**style, arranger.TEMPLATES: {**style[arranger.TEMPLATES], ARENA: {**style[arranger.TEMPLATES][ARENA], song_plan.PERCUSSION: A_TAMBOURINE}}}
         given = arranger.arranged(style=style, song=song(form=[VERSE, CHORUS]))
         verse, chorus = (entry[composer.PLAY] for entry in given[composer.FORM])
@@ -224,7 +225,7 @@ class TestJoins(unittest.TestCase):
         self.assertEqual(joins.drum_tail(piece=KICK, plain=plain, tail=joins.BUILD, eighths=0), plain)
 
     def marker(self):
-        return arranger.style_named(ROCK)[song_plan.PLAN_OF_SONG][song_plan.MARKER]
+        return wizard_testing.style_template(ROCK)[song_plan.PLAN_OF_SONG][song_plan.MARKER]
 
     def test_a_phrase_inside_a_section_ends_on_the_marker_and_a_section_of_one_phrase_has_none(self):
         made = sections_of(song(form=[INTRO, VERSE, CHORUS, ENDING], sections={INTRO: {arranger.BARS: song_plan.MARKER_BARS}, VERSE: {arranger.BARS: TWO_PHRASES}}))
@@ -239,7 +240,7 @@ class TestJoins(unittest.TestCase):
             self.assertTrue(all(song_plan.MARKER not in section for section in sections_of(given)))
 
     def test_the_kit_plays_the_marker_over_the_last_bar_of_a_phrase_and_never_over_the_section_s_last(self):
-        style = arranger.style_named(ROCK)
+        style = wizard_testing.style_template(ROCK)
         given = arranger.arranged(style=style, song=song(form=[VERSE, CHORUS], sections={VERSE: {arranger.BARS: TWO_PHRASES}}))
         part = given[composer.PARTS][given[composer.FORM][0][composer.PLAY][TOM_LOW][composer.PART]]
         hits = part[notation.HITS]
@@ -250,7 +251,7 @@ class TestJoins(unittest.TestCase):
         self.assertTrue(all(hit == notation.NONE for hit in hits[:(song_plan.MARKER_BARS - 1) * grid]))
 
     def test_the_last_chorus_is_come_into_on_the_big_fill_whatever_the_rise(self):
-        style = arranger.style_named(ROCK)
+        style = wizard_testing.style_template(ROCK)
         big = style[song_plan.PLAN_OF_SONG][arranger.FILLS][song_plan.BIG]
         form = [VERSE, CHORUS, VERSE, BRIDGE, CHORUS]
         # A song with no tail allowed before its last chorus and no rise into it still takes the big fill there.
@@ -263,10 +264,10 @@ class TestStagedSolos(unittest.TestCase):
     """A kind of section that is staged, as a solo: each time after a song's first it takes another of its shapes."""
 
     def shapes(self):
-        return arranger.style_named(ROCK)[arranger.SECTIONS][SOLO][song_plan.SHAPES]
+        return wizard_testing.style_template(ROCK)[arranger.SECTIONS][SOLO][song_plan.SHAPES]
 
     def test_the_first_solo_plays_its_own_plan_and_each_after_takes_the_next_shape_in_turn(self):
-        self.assertTrue(arranger.style_named(ROCK)[arranger.SECTIONS][SOLO][song_plan.STAGED])
+        self.assertTrue(wizard_testing.style_template(ROCK)[arranger.SECTIONS][SOLO][song_plan.STAGED])
         names = list(self.shapes())
         form = [VERSE, SOLO, VERSE, *[SOLO] * (MANY_SOLOS - 1)]
         found = planned(song(form=form)).shapes()
@@ -297,7 +298,7 @@ class TestStagedSolos(unittest.TestCase):
         self.assertEqual(made[1][song_plan.SECTION_PLAN], own)
 
     def test_solos_in_a_row_play_tunes_of_their_own(self):
-        given = arranger.arranged(style=arranger.style_named(ROCK), song=song(form=[INTRO, SOLO, SOLO, SOLO, ENDING], template=A_KIND_WITH_SOLOS))
+        given = arranger.arranged(style=wizard_testing.style_template(ROCK), song=song(form=[INTRO, SOLO, SOLO, SOLO, ENDING], template=A_KIND_WITH_SOLOS))
         solos = [entry[composer.PLAY][THE_SOLOIST][composer.PART] for entry in given[composer.FORM] if entry[composer.SCENE].startswith(SOLO)]
         self.assertEqual(len(solos), 3)
         self.assertEqual(len(set(solos)), 3)
@@ -305,7 +306,7 @@ class TestStagedSolos(unittest.TestCase):
 
     def test_every_solo_of_every_kind_of_band_music_has_a_player_of_a_tune(self):
         for name in (ROCK, 'sixties_pop', 'soul_funk', 'blues'):
-            style = arranger.style_named(name)
+            style = wizard_testing.style_template(name)
             tunes = {role[arranger.ROLE] for role in style[arranger.ROLES] if not role.get(arranger.DRUMS)}
             for template in style[arranger.TEMPLATES]:
                 # A kind with no soloist, as punk, plays a solo as the band alone, and disco has no shape with a solo.
@@ -355,13 +356,13 @@ class TestDrumSolo(unittest.TestCase):
         self.assertTrue(all(len(hits) == SOLO_BARS * A_BAR for hits in drum_solo.solo_hits(bars=SOLO_BARS, seed=SEED).values()))
 
     def test_only_the_drummer_plays_a_drum_solo_in_a_song(self):
-        given = arranger.arranged(style=arranger.style_named(ROCK), song=song())
+        given = arranger.arranged(style=wizard_testing.style_template(ROCK), song=song())
         played = given[arranger.FORM][DRUM_SOLO_PLACE][arranger.PLAY]
         self.assertTrue(all(given[arranger.TRACKS][track] == arranger.DRUM_KIT for track in played if track != wizard_text.MSG_CHORDS_TRACK))
         self.assertIn(drum_solo.TOM_LOW, played)
 
     def test_a_drum_solo_in_another_meter_is_the_drummer_alone(self):
-        given = arranger.arranged(style=arranger.style_named(ROCK), song=song(template=BALLAD, form=[VERSE, DRUM_SOLO, CHORUS, ENDING], plan=False))
+        given = arranger.arranged(style=wizard_testing.style_template(ROCK), song=song(template=BALLAD, form=[VERSE, DRUM_SOLO, CHORUS, ENDING], plan=False))
         Setlist.from_data(data=composer.composed(given=given, version=version.VERSION))
 
 
@@ -387,7 +388,7 @@ class TestPhrasing(unittest.TestCase):
         self.assertEqual(phrasing.breathed(line=LINE[:3], grid=6, count=0, dice=random.Random(SEED)), LINE[:3])
 
     def test_a_planned_song_loads_for_every_subgenre_and_seed(self):
-        style = arranger.style_named(ROCK)
+        style = wizard_testing.style_template(ROCK)
         for template in style[arranger.TEMPLATES]:
             for seed in SEEDS:
                 with self.subTest(template=template, seed=seed):

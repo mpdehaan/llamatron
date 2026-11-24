@@ -15,7 +15,7 @@ from llamatron.model.values.note import NoteName
 from llamatron.music_theory.composing import notation
 from llamatron.user_strings import errors, song_wizard as wizard_text
 from llamatron.wizards.create_song import arranger, melody, wizard_limits
-from llamatron.wizards.create_song.arranger import arranged, share_in, style_named, style_names, values_of
+from llamatron.wizards.create_song.arranger import arranged, share_in, style_names, values_of
 from llamatron.wizards.create_song.wizard_choices import genre_names, genre_title, style_of, WizardChoices
 from tests.support import wizard_testing
 from tests.support.wizard_testing import made_data, made_set, made_song
@@ -812,7 +812,7 @@ class TestWizardGuitarists(unittest.TestCase):
         return choices
 
     def one(self, choices):
-        return style_named(choices.get_genre())[wizard_limits.ONE_GUITARIST]
+        return wizard_testing.style_template(choices.get_genre())[wizard_limits.ONE_GUITARIST]
 
     def players_by_scene(self, choices):
         """Which tracks play in each scene of the song made, by the scene's name."""
