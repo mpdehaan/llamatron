@@ -30,7 +30,7 @@ import traceback
 
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters.midi_arrangement import MidiSong
-from llamatron.importers import voices
+from llamatron.importers import midi_import as midi_import_values, voices
 from llamatron.importers.comparison import compared
 from llamatron.importers.midi_import import ImportChoices, MidiImport
 from llamatron.importers.writing import add_imported
@@ -120,7 +120,7 @@ def tried(path):
     midi_file = mido.MidiFile(path, clip=True)
     setlist = Setlist.new()
     midi_import = MidiImport(midi_file=midi_file)
-    imported = midi_import.imported(setlist=setlist, choices=ImportChoices(song_name=SONG_NAME))
+    imported = midi_import.imported(setlist=setlist, choices=ImportChoices(song_name=SONG_NAME, longest_bars=midi_import_values.WIZARD_LONGEST_BARS))
     shapes = shapes_struck(midi_import)
     song = add_imported(setlist=setlist, imported=imported.song)
     again = MidiSong(directory=os.curdir, grid=SongRealizer(song).render(), name=SONG_NAME).midi_file()

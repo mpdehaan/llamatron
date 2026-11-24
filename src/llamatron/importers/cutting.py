@@ -63,15 +63,16 @@ CONTROL_TOLERANCE = 4
 
 
 class SceneClip(NamedTuple):
-    """A clip of an imported scene: the voice that plays it, the pattern as whether it is a drum's, its step size, its steps and its CC steps, and how many times it repeats."""
+    """A clip of an imported scene: the voice that plays it, the patterns it plays one after another, each as whether it is a
+    drum's, its step size, its steps and its CC steps, and how many times it repeats them."""
 
     voice: int
-    pattern: tuple
+    patterns: tuple
     repeats: int
 
 
 class VoiceClip(NamedTuple):
-    """A voice's clip in one scene: its step size, its steps, its pattern as (steps, CC steps), how many times it repeats, how many CC messages it can't send as the file does, and the most any is off by."""
+    """A voice's clip in one scene: its step size, its steps, its pattern as (steps, CC steps), how many times it repeats, how many CC messages it can't send as the file does, the most any is off by, and the grid steps it starts and ends at."""
 
     size: object
     found: object
@@ -79,6 +80,8 @@ class VoiceClip(NamedTuple):
     repeats: int
     controls_moved: int
     error: int
+    start: int = 0
+    end: int = 0
 
 
 @dataclass(slots=True, kw_only=True)
@@ -209,6 +212,27 @@ def bar_lines(*, time_signatures, end, holding=None):
     return lines
 
 
+class Longest(NamedTuple):
+    """The longest pattern asked for: a count of steps, as the import dialog asks, or a count of bars, as the Import Wizard does,
+    which then wins, and the length of a bar in whole notes."""
+
+    steps: int
+    bars: object
+    bar: object
+
+    def is_passed_by(self, *, steps, size):
+        """Return whether a pattern of so many steps of a size is longer than the longest asked for."""
+        if self.bars is None:
+            return steps > self.steps
+        return steps * size > self.bars * self.bar
+
+    def steps_at(self, size):
+        """Return the longest pattern in steps of a size, the length a phrase is tried at where a bar has no whole number of them."""
+        if self.bars is None:
+            return self.steps
+        return int(self.bars * self.bar / size)
+
+
 class Cutter:
     """What cuts one song: its voices on a grid of steps, the step sizes its patterns may take, the bar lines, its keys and tempos, and the longest pattern asked for."""
 
@@ -266,7 +290,7 @@ class Cutter:
         """Return the phrase lengths to try, in steps of the grid: whole bars, and then parts of a bar, which the cost of a long pattern chooses between."""
         bar_steps = (self._bars[1] - self._bars[0]) / self._step_size
         if not bar_steps.is_whole():
-            return [self._longest]
+            return [self._longest.steps_at(self._step_size)]
         lengths = [int(bar_steps) * bars for bars in PHRASE_BARS]
         lengths += [int(bar_steps / parts) for parts in PARTS_OF_A_BAR if (bar_steps / parts).is_whole()]
         return lengths
@@ -321,7 +345,7 @@ class Cutter:
         last = int(end / ratio)
         moved = controls_between_steps(voice=self._voices[voice], start=first, end=last, step_size=size, controls=pattern[1])
         error = control_error(voice=self._voices[voice], start=first, end=last, step_size=size, found=found) if moved else 0
-        return VoiceClip(size=size, found=found, pattern=pattern, repeats=repeats, controls_moved=moved, error=error)
+        return VoiceClip(size=size, found=found, pattern=pattern, repeats=repeats, controls_moved=moved, error=error, start=start, end=end)
 
     def clip_step_sizes(self, *, voice, start, end):
         """Return the step sizes a voice's clip from grid step start to grid step end can take, longest first: the scene's ends and every note's start fall on their steps."""
@@ -350,12 +374,12 @@ class Cutter:
                 # A voice that plays nothing in a scene has no clip there, unless one of its CC lanes changes, which a pattern of rests then sends.
                 if found.changes or any(isinstance(step, NoteStep) for step in found.steps):
                     sounds, controls = clip.pattern
-                    clips.append(SceneClip(voice, (self._voices[voice].drum, clip.size, sounds, controls), clip.repeats))
+                    clips.append(SceneClip(voice, ((self._voices[voice].drum, clip.size, sounds, controls),), clip.repeats))
                     controls_moved += clip.controls_moved
             if not clips:
                 # A scene where nothing plays is a pattern of rests, which lasts as long as the scene.
                 (sounds, controls), repeats = repeated_pattern(steps=[None] * (end - start), gated=[])
-                clips.append(SceneClip(FIRST_STEP, (self._voices[FIRST_STEP].drum, self._step_size, sounds, controls), repeats))
+                clips.append(SceneClip(FIRST_STEP, ((self._voices[FIRST_STEP].drum, self._step_size, sounds, controls),), repeats))
             scene = CutScene(start=start, end=end, key=key, tempo=value_at(changes=self._tempos, time=self.time_of(start)), clips=clips)
             if scenes and scenes[-1].same_music(scene):
                 scenes[-1].repeat += 1
@@ -367,8 +391,8 @@ class Cutter:
         """Return the cut for phrases of a length, with what it costs."""
         cuts, off = self.cuts(length)
         scenes, lengths_changed, too_low, controls_moved = self.scenes_of(cuts)
-        patterns = list(dict.fromkeys(clip.pattern for scene in scenes for clip in scene.clips))
-        long_patterns = sum(1 for _, _, steps, _ in patterns if len(steps) > self._longest)
+        patterns = patterns_of(scenes)
+        long_patterns = sum(1 for _, size, steps, _ in patterns if self._longest.is_passed_by(steps=len(steps), size=size))
         cost = (long_patterns, len(patterns) + SCENE_COST * len(scenes) + OFF_THE_BAR_COST * off)
         return Cut(
             scenes=scenes, patterns=patterns, lengths_changed=lengths_changed, too_low=too_low, controls_moved=controls_moved,
@@ -378,6 +402,20 @@ class Cutter:
     def best_cut(self):
         """Return the cheapest cut of every phrase length tried, the first tried winning a tie."""
         return min((self.cut(length) for length in self.phrase_lengths()), key=lambda cut: cut.cost)
+
+def sounds_in(found):
+    """Return whether a voice's steps across a stretch play anything, a note or a change of a CC lane."""
+    return found.changes or any(isinstance(step, NoteStep) for step in found.steps)
+
+
+def patterns_of(scenes):
+    """Return the patterns scenes play, each once, in the order first met."""
+    patterns = {}
+    for scene in scenes:
+        for clip in scene.clips:
+            for pattern in clip.patterns:
+                patterns.setdefault(pattern, None)
+    return list(patterns)
 
 
 def all_on_steps(*, times, size):

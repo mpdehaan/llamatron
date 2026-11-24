@@ -16,7 +16,7 @@ import os
 import unittest
 
 from llamatron.exporters.midi_arrangement import MidiSong
-from llamatron.importers import cutting, voices as voices_values
+from llamatron.importers import cutting, phrase_cut, voices as voices_values
 from llamatron.importers.comparison import round_trip
 from llamatron.importers.keys import degree_of, drum_note_of, key_of_notes, key_of_signature, MusicalKey
 from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
@@ -68,6 +68,9 @@ KICK_OCTAVE = 3
 HIGHEST_PITCH = 127
 QUARTER = Rational(1, 4)
 SIXTEENTH_NOTE = Rational(1, 16)
+# Quarter notes in sixteenths, and the phrase the Import Wizard's cut asks for, in bars.
+QUARTER_NOTE = 4
+PHRASE_BARS = 8
 SIXTEENTHS_IN_A_WHOLE_NOTE = 16
 # A scene's tempo is held as a percentage of the song's.
 PERCENT = 100
@@ -365,6 +368,58 @@ class TestQuantizing(unittest.TestCase):
         free = [101, 263, 397, 589, 701, 853, 977, 1123]
         self.assertEqual(self.step_size_of(played(free)).step_size, cutting.FINEST_STEP_SIZE)
         self.assertEqual(self.step_size_of(played(free), finest_step=SIXTEENTH_NOTE).step_size, SIXTEENTH_NOTE)
+
+
+def phrase(*, pitches, bars, start_bar):
+    """Return a tune of quarter notes from a bar on, the pitches round and round for so many bars."""
+    count = bars * SIXTEENTHS_IN_A_BAR // QUARTER_NOTE
+    return melody(pitches=[pitches[place % len(pitches)] for place in range(count)], start=start_bar * SIXTEENTHS_IN_A_BAR)
+
+
+class TestPhrasesAndSections(unittest.TestCase):
+    """The Import Wizard's cut, asked for by a longest pattern in bars: phrases of that many bars, each a pattern every phrase
+    alike shares, gathered into sections, and figures that keep returning made patterns of their own; each checked to play the
+    same as its file."""
+
+    def imported(self, tracks):
+        trip = round_trip(midi_file=midi_of(tracks=tracks), choices=ImportChoices(song_name='tune', longest_bars=PHRASE_BARS))
+        self.assertTrue(trip.comparison.is_same(), trip.comparison)
+        return trip.imported
+
+    def lists(self, imported):
+        """Return each scene's clip of the lead as the list of patterns it plays."""
+        lists = []
+        for scene in imported.song.song[Section.SCENES]:
+            clip = scene[SceneSetting.TRACKS]['lead']
+            lists.append(clip.get(ClipSlotSetting.PATTERNS, [clip.get(ClipSlotSetting.PATTERN)]))
+        return lists
+
+    def test_a_refrain_that_returns_starts_a_section_and_plays_the_patterns_it_played_before(self):
+        refrain = phrase(pitches=[60, 62, 64, 65, 67], bars=PHRASE_BARS, start_bar=0)
+        verse = phrase(pitches=[69, 67, 65], bars=PHRASE_BARS, start_bar=PHRASE_BARS)
+        again = phrase(pitches=[60, 62, 64, 65, 67], bars=PHRASE_BARS, start_bar=2 * PHRASE_BARS)
+        lists = self.lists(self.imported([('lead', 0, refrain + verse + again)]))
+        self.assertEqual(len(lists), 2)
+        self.assertEqual(lists[1], lists[0][:1])
+
+    def test_a_section_holds_at_most_four_phrases(self):
+        notes = []
+        for place in range(phrase_cut.MOST_PHRASES_A_SECTION + 1):
+            # Each phrase a run of its own, no bar of it heard anywhere else.
+            notes += phrase(pitches=list(range(40 + place, 72 + place)), bars=PHRASE_BARS, start_bar=place * PHRASE_BARS)
+        lists = self.lists(self.imported([('lead', 0, notes)]))
+        self.assertEqual([len(listed) for listed in lists], [phrase_cut.MOST_PHRASES_A_SECTION, 1])
+
+    def test_a_figure_that_keeps_returning_inside_other_phrases_is_a_pattern_of_its_own(self):
+        figure = [64, 67]
+        notes = []
+        for place in range(3):
+            notes += phrase(pitches=figure, bars=2, start_bar=place * PHRASE_BARS)
+            notes += phrase(pitches=[60 + place, 62, 65 + place], bars=PHRASE_BARS - 2, start_bar=place * PHRASE_BARS + 2)
+        lists = self.lists(self.imported([('lead', 0, notes)]))
+        first_pieces = [listed for listed in lists[0]]
+        self.assertGreater(len(first_pieces), 3)
+        self.assertEqual(sum(listed.count(first_pieces[0]) for listed in lists), 3)
 
 
 class TestControls(unittest.TestCase):

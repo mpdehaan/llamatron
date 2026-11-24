@@ -206,7 +206,8 @@ class SongWriter:
         first = {}
         for scene in self._cut.scenes:
             for clip in scene.clips:
-                first.setdefault(clip.pattern, self._track_names[clip.voice])
+                for pattern in clip.patterns:
+                    first.setdefault(pattern, self._track_names[clip.voice])
         return first
 
     def scales(self):
@@ -253,7 +254,10 @@ class SongWriter:
             data[SceneSetting.TEMPO] = percent
         clips = {}
         for clip in scene.clips:
-            clip_data = {ClipSlotSetting.PATTERN: pattern_names[clip.pattern]}
+            names = [pattern_names[pattern] for pattern in clip.patterns]
+            clip_data = {ClipSlotSetting.PATTERN: names[0]}
+            if len(names) > 1:
+                clip_data = {ClipSlotSetting.PATTERNS: names}
             if clip.repeats > NO_REPEAT:
                 clip_data[ClipSlotSetting.REPEAT] = clip.repeats
             clips[self._track_names[clip.voice]] = clip_data

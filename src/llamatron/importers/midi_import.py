@@ -18,6 +18,7 @@ from llamatron.importers import cutting
 from llamatron.importers.cutting import bar_lines, Cutter, grid_for, snapped, step_size_for
 from llamatron.importers.keys import key_of_notes, key_of_signature
 from llamatron.importers.midi_reading import MidiFileChange, read_midi
+from llamatron.importers.phrase_cut import PhraseCutter
 from llamatron.importers.voices import voices_of
 from llamatron.importers.writing import SongWriter, tempo_of, time_signature_text
 from llamatron.math.rational import Rational
@@ -29,6 +30,9 @@ SWING_SHARE = 0.1
 # The longest pattern the import may make, in steps, as the import dialog offers it, and the one it starts on.
 LONGEST_PATTERN_CHOICES = (8, 16, 32, 64, 128)
 DEFAULT_LONGEST_PATTERN = 32
+# The longest pattern the Import Wizard asks for, in bars: eight bars is one whole musical thought, a phrase and its answer,
+# where four make the pattern editor tiresome and hold only half a thought.
+WIZARD_LONGEST_BARS = 8
 
 
 class Found(NamedTuple):
@@ -56,6 +60,8 @@ class ImportChoices:
     controls: bool = True
     step_size: object = None
     finest_step: object = cutting.FINEST_STEP_SIZE
+    # The longest pattern in bars, which the Import Wizard asks for in place of a count of steps, or None for longest_pattern.
+    longest_bars: object = None
 
 
 @dataclass(slots=True, kw_only=True)
@@ -136,7 +142,11 @@ class MidiImport:
             holding=max((control.time for voice in voices for control in voice.controls), default=None),
         )
         grid = step_size if choices.step_size else grid_for(voices=voices, step_size=step_size)
-        cutter = Cutter(voices=voices, step_size=grid, clip_step_sizes=clip_step_sizes, bars=bars, keys=self.keys(), tempos=contents.tempos, longest=choices.longest_pattern)
+        longest = cutting.Longest(steps=choices.longest_pattern, bars=choices.longest_bars, bar=bars[1] - bars[0])
+        making = Cutter
+        if choices.longest_bars is not None:
+            making = PhraseCutter
+        cutter = making(voices=voices, step_size=grid, clip_step_sizes=clip_step_sizes, bars=bars, keys=self.keys(), tempos=contents.tempos, longest=longest)
         cut = cutter.best_cut()
         writer = SongWriter(setlist=setlist, voices=voices, cut=cut, bars=bars, step_size=step_size, share=not choices.unique_names)
         song = writer.written(name=choices.song_name, time_signature=time_signature_text(contents.time_signatures[0].value))
