@@ -13,6 +13,8 @@ import functools
 import math
 import numpy
 
+from llamatron.model.schema.file_format import Waveform
+
 TABLE_SIZE = 2048
 TABLE_MASK = TABLE_SIZE - 1
 # The lowest note a table band serves, as a frequency, and how many octave bands there are above it.
@@ -20,17 +22,6 @@ LOWEST_FREQUENCY = 8.0
 OCTAVE_BANDS = 12
 
 
-class Waveform:
-    """A basic waveform's name, as an instrument stores it."""
-
-    SINE = 'sine'
-    TRIANGLE = 'triangle'
-    SAW = 'saw'
-    SQUARE = 'square'
-    PULSE = 'pulse'
-
-
-WAVEFORMS = (Waveform.SQUARE, Waveform.SAW, Waveform.SINE, Waveform.TRIANGLE, Waveform.PULSE)
 
 
 def harmonic_amplitudes(*, waveform, count):

@@ -17,6 +17,8 @@ import math
 import numpy
 from scipy import signal
 
+from llamatron.model.schema.file_format import DrumMachine
+
 KNOB_TOP = 127.0
 MIDDLE_C = 60
 # What a hit's end and start do: the level it fades out below, the length of that fade, the DC-blocking cutoff, its peak.
@@ -34,23 +36,6 @@ MEMBRANE_RATIOS = (1.000, 1.594, 2.136, 2.296, 2.653, 2.918, 3.156, 3.501, 3.600
 CENTER_MODES = (1.000, 2.296, 3.600)
 
 
-class Machine:
-    """A drum machine's name, as an instrument stores it."""
-
-    KICK = 'kick'
-    HARD_KICK = 'hard_kick'
-    SYNTH_KICK = 'synth_kick'
-    SNARE = 'snare'
-    CLAP = 'clap'
-    RIM = 'rim'
-    HATS = 'hats'
-    COWBELL = 'cowbell'
-    ACOUSTIC_TOM = 'acoustic_tom'
-    KARPLUS_DRUM = 'karplus_drum'
-
-
-MACHINES = (Machine.KICK, Machine.HARD_KICK, Machine.SYNTH_KICK, Machine.SNARE, Machine.CLAP, Machine.RIM, Machine.HATS,
-            Machine.COWBELL, Machine.ACOUSTIC_TOM, Machine.KARPLUS_DRUM)
 
 
 def render_hit(*, machine, knobs, pitch, velocity, rate):
@@ -268,8 +253,8 @@ def karplus_drum(*, x, tuning, hardness, rate, noise):
 
 
 RECIPES = {
-    Machine.KICK: kick, Machine.HARD_KICK: hard_kick, Machine.SYNTH_KICK: synth_kick, Machine.SNARE: snare, Machine.CLAP: clap,
-    Machine.RIM: rim, Machine.HATS: hats, Machine.COWBELL: cowbell, Machine.ACOUSTIC_TOM: acoustic_tom, Machine.KARPLUS_DRUM: karplus_drum,
+    DrumMachine.KICK: kick, DrumMachine.HARD_KICK: hard_kick, DrumMachine.SYNTH_KICK: synth_kick, DrumMachine.SNARE: snare, DrumMachine.CLAP: clap,
+    DrumMachine.RIM: rim, DrumMachine.HATS: hats, DrumMachine.COWBELL: cowbell, DrumMachine.ACOUSTIC_TOM: acoustic_tom, DrumMachine.KARPLUS_DRUM: karplus_drum,
 }
 
 

@@ -54,3 +54,18 @@ DEFAULT_GROOVE_CELL_LENGTH = '1/16'
 DEFAULT_GROOVE = 'none'
 # When an edit made while a song plays is heard, unless the song says: at the next bar, as a launch by hand waits for it.
 DEFAULT_LIVE_RESPONSIVENESS = 'next_bar'
+
+# A new built-in instrument's sound: a Basic sound of one saw, a short pluck of an envelope, four voices, at half volume, with
+# no bitcrushing or drive; a drum's knobs all in the middle until its machine's defaults are chosen.
+DEFAULT_INSTRUMENT_LATENCY = 0
+DEFAULT_ATTACK_MS = 5
+DEFAULT_DECAY_MS = 300
+DEFAULT_SUSTAIN_PERCENT = 60
+DEFAULT_RELEASE_MS = 200
+DEFAULT_VOICES = 4
+DEFAULT_SOUND_VOLUME = 50
+DEFAULT_KNOB = 64
+DEFAULT_BITS = 16
+DEFAULT_HOLD_RATE = 0
+DEFAULT_DRIVE = 0
+DEFAULT_OSCILLATOR_LEVEL = 100

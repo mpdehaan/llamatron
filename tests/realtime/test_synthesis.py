@@ -9,11 +9,11 @@ import numpy
 import unittest
 from unittest import mock
 
+from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import DrumMachine, Waveform
 from llamatron.realtime.synth_process import drums, engine as engine_values, process, tables
-from llamatron.realtime.synth_process.drums import Machine
 from llamatron.realtime.synth_process.engine import BasicPatch, DrumPatch, SynthEngine
 from llamatron.realtime.synth_process.process import SynthesisNotStarted, SynthesisProcess
-from llamatron.realtime.synth_process.tables import Waveform
 
 RATE = 44100
 CHUNK = 128
@@ -75,9 +75,9 @@ class TestSynthesisEngine(unittest.TestCase):
         self.assertEqual([voice.pitch for voice in self.engine.voices], [MIDDLE_C + 7])
 
     def test_a_drum_cuts_its_own_last_hit_and_a_closed_hat_chokes_the_open(self):
-        self.engine.set_instrument(number=KICK, patch=drum_patch(machine=Machine.KICK))
-        self.engine.set_instrument(number=CLOSED_HAT, patch=drum_patch(machine=Machine.HATS, choke=1))
-        self.engine.set_instrument(number=OPEN_HAT, patch=drum_patch(machine=Machine.HATS, choke=1))
+        self.engine.set_instrument(number=KICK, patch=drum_patch(machine=DrumMachine.KICK))
+        self.engine.set_instrument(number=CLOSED_HAT, patch=drum_patch(machine=DrumMachine.HATS, choke=1))
+        self.engine.set_instrument(number=OPEN_HAT, patch=drum_patch(machine=DrumMachine.HATS, choke=1))
         self.engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=KICK, pitch=MIDDLE_C)
         self.engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=OPEN_HAT, pitch=MIDDLE_C)
         self.engine.schedule(sample=CHUNK * 4, kind=engine_values.NOTE_ON, instrument=KICK, pitch=MIDDLE_C)
@@ -87,7 +87,7 @@ class TestSynthesisEngine(unittest.TestCase):
         self.assertEqual(sounding, [KICK, CLOSED_HAT])
 
     def test_a_drum_hit_is_rendered_when_scheduled_never_in_the_callback(self):
-        patch = drum_patch(machine=Machine.SNARE)
+        patch = drum_patch(machine=DrumMachine.SNARE)
         self.engine.set_instrument(number=KICK, patch=patch)
         self.engine.schedule(sample=CHUNK * 100, kind=engine_values.NOTE_ON, instrument=KICK, pitch=MIDDLE_C, velocity=LOUD)
         self.assertEqual(len(patch.hits), 1)
@@ -110,7 +110,7 @@ class TestSynthesisEngine(unittest.TestCase):
 class TestDrumsAndTables(unittest.TestCase):
 
     def test_every_drum_renders_alike_each_time_and_peaks_below_full_scale(self):
-        for machine in drums.MACHINES:
+        for machine in file_format.DRUM_MACHINES:
             with self.subTest(machine=machine):
                 first = drums.render_hit(machine=machine, knobs=KNOBS, pitch=MIDDLE_C, velocity=LOUD, rate=RATE)
                 again = drums.render_hit(machine=machine, knobs=KNOBS, pitch=MIDDLE_C, velocity=LOUD, rate=RATE)
@@ -118,8 +118,8 @@ class TestDrumsAndTables(unittest.TestCase):
                 self.assertAlmostEqual(float(numpy.abs(first).max()), drums.PEAK, places=4)
 
     def test_a_drums_note_tunes_it_from_middle_c(self):
-        low = drums.render_hit(machine=Machine.ACOUSTIC_TOM, knobs=KNOBS, pitch=MIDDLE_C, velocity=LOUD, rate=RATE)
-        high = drums.render_hit(machine=Machine.ACOUSTIC_TOM, knobs=KNOBS, pitch=MIDDLE_C + 12, velocity=LOUD, rate=RATE)
+        low = drums.render_hit(machine=DrumMachine.ACOUSTIC_TOM, knobs=KNOBS, pitch=MIDDLE_C, velocity=LOUD, rate=RATE)
+        high = drums.render_hit(machine=DrumMachine.ACOUSTIC_TOM, knobs=KNOBS, pitch=MIDDLE_C + 12, velocity=LOUD, rate=RATE)
         self.assertFalse(numpy.array_equal(low[:1000], high[:1000]))
 
     def test_a_table_holds_no_harmonic_above_half_the_rate_for_its_band(self):

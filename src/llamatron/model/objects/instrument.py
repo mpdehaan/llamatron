@@ -19,17 +19,23 @@ Its keyswitches are for a plugin whose articulations a note switches: ten slots,
 numbered from 0, each with a name and a MIDI note, either of which may be missing. A pattern's
 Keyswitch row names slots, and a slot with no note plays nothing until it has one. Its keyswitch
 lead is how many milliseconds before its note a keyswitch is sent, nothing unless set.
+
+An instrument's kind is MIDI unless it is Built-in, a sound llamatron makes itself through the Synthesis Process
+(realtime/synth_process/), its sound's settings stored under it (model/objects/built_in_sound.py). A MIDI instrument's latency
+is how many milliseconds earlier its notes are sent, for a synth slow to sound, 0 unless set.
 """
 
 from typing import NamedTuple
 
 from llamatron.caching.revised import notes_change
+from llamatron.model.file import corrections
 from llamatron.model.file.checks import pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
+from llamatron.model.objects.built_in_sound import check_sound, sound_value, synth_spec
 from llamatron.model.objects.llama_data import HoldsSettings, or_default, own_copy, settings_by_name, written_settings
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import InstrumentSetting, KeyswitchSetting
-from llamatron.model.schema.setting import check_settings, Checked, described, Text, WholeNumber
+from llamatron.model.schema.file_format import InstrumentKind, InstrumentSetting, KeyswitchSetting
+from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Text, WholeNumber
 from llamatron.model.values import midi
 from llamatron.user_strings import errors
 
@@ -105,7 +111,14 @@ SETTINGS = described(
     WholeNumber(name=InstrumentSetting.DEFAULT_VELOCITY, lowest=midi.MIN_VELOCITY, highest=midi.MAX_VELOCITY, error=errors.ERR_BAD_DEFAULT_VELOCITY),
     WholeNumber(name=InstrumentSetting.ACCENT, lowest=limits.MIN_STEP_ACCENT, highest=limits.MAX_STEP_ACCENT, error=errors.ERR_BAD_ACCENT),
     WholeNumber(name=InstrumentSetting.VELOCITY, lowest=limits.MIN_VELOCITY_PERCENT, highest=limits.MAX_VELOCITY_PERCENT, error=errors.ERR_BAD_SHAPE_PERCENT),
+    Choice(name=InstrumentSetting.KIND, choices=file_format.INSTRUMENT_KINDS, default=corrections.LEFT_OUT, error=errors.ERR_BAD_INSTRUMENT_KIND),
+    WholeNumber(name=InstrumentSetting.LATENCY, lowest=limits.MIN_INSTRUMENT_LATENCY, highest=limits.MAX_INSTRUMENT_LATENCY, error=errors.ERR_BAD_LATENCY),
+    Checked(name=InstrumentSetting.SOUND, check=check_sound),
 )
+
+
+# The settings a built-in instrument adds, passed to the constructor by name.
+BUILT_IN_SETTINGS = (InstrumentSetting.KIND, InstrumentSetting.LATENCY, InstrumentSetting.SOUND)
 
 
 class Instrument(HoldsSettings):
@@ -115,12 +128,15 @@ class Instrument(HoldsSettings):
 
     SETTINGS = SETTINGS
 
-    def __init__(self, *, device=None, channel=None, gm_sound=None, keyswitches=None, keyswitch_lead=None, default_velocity=None, accent=None, velocity=None):
+    def __init__(self, *, device=None, channel=None, gm_sound=None, keyswitches=None, keyswitch_lead=None, default_velocity=None, accent=None, velocity=None, **built_in):
+        """built_in holds a built-in instrument's kind, latency and sound, by their setting names."""
         self.note_change()
         self._settings = settings_by_name(names=SETTINGS, given={
             InstrumentSetting.DEVICE: device, InstrumentSetting.CHANNEL: channel, InstrumentSetting.GM_SOUND: gm_sound,
             InstrumentSetting.KEYSWITCHES: own_copy(keyswitches), InstrumentSetting.KEYSWITCH_LEAD: keyswitch_lead,
             InstrumentSetting.DEFAULT_VELOCITY: default_velocity, InstrumentSetting.ACCENT: accent, InstrumentSetting.VELOCITY: velocity,
+            InstrumentSetting.KIND: built_in.get(InstrumentSetting.KIND), InstrumentSetting.LATENCY: built_in.get(InstrumentSetting.LATENCY),
+            InstrumentSetting.SOUND: own_copy(built_in.get(InstrumentSetting.SOUND)),
         })
         check_settings(settings=SETTINGS, data=written_settings(self._settings))
 
@@ -134,7 +150,7 @@ class Instrument(HoldsSettings):
                 device=data.get(InstrumentSetting.DEVICE), channel=data.get(InstrumentSetting.CHANNEL), gm_sound=data.get(InstrumentSetting.GM_SOUND),
                 keyswitches=data.get(InstrumentSetting.KEYSWITCHES), keyswitch_lead=data.get(InstrumentSetting.KEYSWITCH_LEAD),
                 default_velocity=data.get(InstrumentSetting.DEFAULT_VELOCITY), accent=data.get(InstrumentSetting.ACCENT),
-                velocity=data.get(InstrumentSetting.VELOCITY),
+                velocity=data.get(InstrumentSetting.VELOCITY), **{name: data.get(name) for name in BUILT_IN_SETTINGS},
             )
 
     def copy(self):
@@ -142,7 +158,45 @@ class Instrument(HoldsSettings):
             device=self.get_device(), channel=self.get_written_channel(), gm_sound=self.get_gm_sound(),
             keyswitches=self._settings[InstrumentSetting.KEYSWITCHES], keyswitch_lead=self.get_written_keyswitch_lead(),
             default_velocity=self.get_default_velocity(), accent=self.get_written_accent(), velocity=self.get_velocity_percent(),
+            **{name: self._settings[name] for name in BUILT_IN_SETTINGS},
         )
+
+    def get_kind(self):
+        """Return what it is: a MIDI device and channel, or a sound llamatron makes itself (InstrumentKind)."""
+        return or_default(value=self._settings[InstrumentSetting.KIND], default=InstrumentKind.MIDI)
+
+    def is_built_in(self):
+        return self.get_kind() == InstrumentKind.BUILT_IN
+
+    @notes_change
+    def set_kind(self, kind):
+        SETTINGS[InstrumentSetting.KIND].check(kind)
+        self._settings[InstrumentSetting.KIND] = None if kind == InstrumentKind.MIDI else kind
+
+    def get_latency(self):
+        """Return how many milliseconds earlier its notes are sent, for a MIDI synth slow to sound."""
+        return or_default(value=self._settings[InstrumentSetting.LATENCY], default=defaults.DEFAULT_INSTRUMENT_LATENCY)
+
+    @notes_change
+    def set_latency(self, milliseconds):
+        SETTINGS[InstrumentSetting.LATENCY].check(milliseconds)
+        self._settings[InstrumentSetting.LATENCY] = None if milliseconds == defaults.DEFAULT_INSTRUMENT_LATENCY else milliseconds
+
+    def get_sound(self, name):
+        """Return one of its built-in sound's settings (SoundSetting), the default where it has none."""
+        return sound_value(sound=self._settings[InstrumentSetting.SOUND], name=name)
+
+    @notes_change
+    def set_sound(self, *, name, value):
+        """Store one of its built-in sound's settings, refusing a value out of range."""
+        sound = dict(self._settings[InstrumentSetting.SOUND] or {})
+        sound[name] = own_copy(value)
+        check_sound(sound)
+        self._settings[InstrumentSetting.SOUND] = sound
+
+    def synth_spec(self):
+        """Return its built-in sound as the Synthesis Process compiles it."""
+        return synth_spec(self._settings[InstrumentSetting.SOUND])
 
     def get_device(self):
         """Return the name of its MIDI output port, or None until one is chosen."""

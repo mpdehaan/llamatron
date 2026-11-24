@@ -118,3 +118,20 @@ MAX_GROOVE_AMOUNT = 50
 MIN_GROOVE_CELLS = 1
 MAX_GROOVE_CELLS = 32
 MAX_GROOVE_CELL_LENGTH = 1
+
+# A MIDI instrument's own delay, in milliseconds, its notes sent that much earlier.
+MIN_INSTRUMENT_LATENCY = 0
+MAX_INSTRUMENT_LATENCY = 500
+# A built-in sound's ranges: up to three oscillators, each detuned up to a semitone in cents either way, its levels and the
+# envelope's times in milliseconds, its voices, a drum's five knobs and its choke groups, and the bitcrusher's bits and rate.
+MAX_OSCILLATORS = 3
+MAX_DETUNE_CENTS = 100
+MAX_PERCENT = 100
+MAX_ENVELOPE_MS = 10000
+MAX_VOICES = 8
+KNOB_COUNT = 5
+MAX_KNOB = 127
+MAX_CHOKE = 16
+MIN_BITS = 1
+MAX_BITS = 16
+MAX_HOLD_RATE = 48000

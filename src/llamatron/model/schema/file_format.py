@@ -563,6 +563,86 @@ class InstrumentSetting:
     ACCENT = 'accent'
     # The percentage of its written velocity every clip of the instrument's tracks plays at, stacking with the track's, scene's and clip's.
     VELOCITY = 'velocity'
+    # Whether the instrument is a MIDI device or a sound llamatron makes itself, and a MIDI one's own delay in milliseconds,
+    # its notes sent that much earlier; a built-in one's sound.
+    KIND = 'kind'
+    LATENCY = 'latency'
+    SOUND = 'sound'
+
+
+class InstrumentKind:
+    """What an instrument is: a MIDI device and channel, or a sound llamatron makes itself."""
+
+    MIDI = 'midi'
+    BUILT_IN = 'built_in'
+
+
+class SoundSetting:
+    """A built-in instrument's sound: its family, then a Basic sound's oscillators, envelope and voices, or a drum's machine,
+    knobs, choke group and overlap, and every sound's volume and effects."""
+
+    FAMILY = 'family'
+    OSCILLATORS = 'oscillators'
+    ATTACK = 'attack'
+    DECAY = 'decay'
+    SUSTAIN = 'sustain'
+    RELEASE = 'release'
+    VOICES = 'voices'
+    MACHINE = 'machine'
+    KNOBS = 'knobs'
+    CHOKE = 'choke'
+    OVERLAP = 'overlap'
+    VOLUME = 'volume'
+    BITS = 'bits'
+    RATE = 'rate'
+    DRIVE = 'drive'
+
+
+class OscillatorSetting:
+    """One oscillator of a Basic sound: its waveform, its detune in cents and its level in percent."""
+
+    WAVEFORM = 'waveform'
+    DETUNE = 'detune'
+    LEVEL = 'level'
+
+
+class SoundFamily:
+    """A built-in sound's family."""
+
+    BASIC = 'basic'
+    DRUM = 'drum'
+
+
+class Waveform:
+    """A Basic oscillator's waveform."""
+
+    SQUARE = 'square'
+    SAW = 'saw'
+    SINE = 'sine'
+    TRIANGLE = 'triangle'
+    PULSE = 'pulse'
+
+
+class DrumMachine:
+    """A built-in drum's machine, named plainly, never after a maker's product."""
+
+    KICK = 'kick'
+    HARD_KICK = 'hard_kick'
+    SYNTH_KICK = 'synth_kick'
+    SNARE = 'snare'
+    CLAP = 'clap'
+    RIM = 'rim'
+    HATS = 'hats'
+    COWBELL = 'cowbell'
+    ACOUSTIC_TOM = 'acoustic_tom'
+    KARPLUS_DRUM = 'karplus_drum'
+
+
+INSTRUMENT_KINDS = (InstrumentKind.MIDI, InstrumentKind.BUILT_IN)
+SOUND_FAMILIES = (SoundFamily.BASIC, SoundFamily.DRUM)
+WAVEFORMS = (Waveform.SQUARE, Waveform.SAW, Waveform.SINE, Waveform.TRIANGLE, Waveform.PULSE)
+DRUM_MACHINES = (DrumMachine.KICK, DrumMachine.HARD_KICK, DrumMachine.SYNTH_KICK, DrumMachine.SNARE, DrumMachine.CLAP, DrumMachine.RIM,
+                 DrumMachine.HATS, DrumMachine.COWBELL, DrumMachine.ACOUSTIC_TOM, DrumMachine.KARPLUS_DRUM)
 
 
 class KeyswitchSetting:

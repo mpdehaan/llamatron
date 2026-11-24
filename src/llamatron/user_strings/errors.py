@@ -663,3 +663,13 @@ ERR_SYNTHESIS_OFF = 'built-in sound is off on this system'
 ERR_SYNTHESIS_TOO_SLOW = 'the synthesis process did not start in time'
 ERR_SYNTHESIS_ENDED = 'the synthesis process ended while starting, exit code {code}'
 ERR_SYNTHESIS_FAILED = 'built-in sound could not start: {kind}: {problem}'
+
+# model/objects/built_in_sound.py and model/objects/instrument.py: what a built-in instrument's sound refuses.
+ERR_SOUND_CHOICE = '{name} must be one of: {choices}, got {value!r}'
+ERR_SOUND_NUMBER = '{name} must be a whole number from {lowest} to {highest}, got {value!r}'
+ERR_SOUND_FLAG = '{name} must be true or false, got {value!r}'
+ERR_BAD_OSCILLATORS = 'oscillators must be a list of 1 to {most}, each a waveform, a detune and a level, got {value!r}'
+ERR_BAD_KNOBS = 'knobs must be {count} whole numbers from 0 to {most}, got {value!r}'
+ERR_BAD_BUILT_IN_SOUND = "a built-in sound must be a mapping of a sound's settings, got {value!r}"
+ERR_BAD_INSTRUMENT_KIND = 'kind must be one of: {choices}, got {value!r}'
+ERR_BAD_LATENCY = 'latency must be a whole number of milliseconds from {lowest} to {highest}, got {value!r}'
