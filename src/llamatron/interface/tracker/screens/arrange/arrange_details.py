@@ -19,7 +19,7 @@ from typing import NamedTuple
 from llamatron.interface.forms import arrange
 from llamatron.interface.forms.arrange import DetailLine
 from llamatron.interface.forms.percentages import percent_shown
-from llamatron.interface.forms.text import tempo_text
+from llamatron.interface.forms.text import shown_name, tempo_text
 from llamatron.interface.tracker.drawing import fit
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.schema import defaults, file_format
@@ -78,15 +78,18 @@ def clip_cell(*, index, track):
 
 
 def detailed_clip_text(clip_slot, *, repeats_left=None):
-    """Return what a clip shows on its name line in the details view: its name, never cut, then its loop or repeat mark; its morph and its direction are lines of their own."""
+    """Return what a clip shows on its name line in the details view: its name, whole up to the most characters a name is
+    shown with and cut there, as a clip's longer name is, then its loop or repeat mark; its morph and its direction are lines of
+    their own."""
     marks = []
     if clip_slot.loops():
         marks.append(marks_text.MSG_LOOP_MARK)
     if clip_slot.get_repeat() > defaults.DEFAULT_REPEAT:
         marks.append(marks_text.MSG_REPEAT_MARK.format(repeat=clip_slot.get_repeat() if repeats_left is None else repeats_left))
+    name = shown_name(clip_slot.get_display_name())
     if not marks:
-        return clip_slot.get_display_name()
-    return marks_text.MSG_CLIP_WITH_MARKS.format(name=clip_slot.get_display_name(), marks=marks_text.MSG_DETAILS_MARKS_SEPARATOR.join(marks))
+        return name
+    return marks_text.MSG_CLIP_WITH_MARKS.format(name=name, marks=marks_text.MSG_DETAILS_MARKS_SEPARATOR.join(marks))
 
 
 def detail(text, *, kind=arrange.PLAIN, target=None):

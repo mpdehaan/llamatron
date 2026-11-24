@@ -9,7 +9,7 @@ import functools
 
 from llamatron.interface.forms.nodes import ChoiceField, Field, NameField, NumberField, Toggle
 from llamatron.interface.forms.tab_box import TabBox
-from llamatron.interface.forms.text import columns, sorted_names
+from llamatron.interface.forms.text import columns, shown_name, sorted_names
 from llamatron.interface.pages.arrange_tabs import ClipTabs
 from llamatron.interface.pages.uses import loop_error_lines
 from llamatron.model.objects.naming import words
@@ -92,12 +92,15 @@ class ClipPresenter:
     def name_text(self):
         """Return the clip's own name, or which pattern it's named for."""
         clip_slot = self.clip_slot()
-        return clip_slot.get_name() or marks.MSG_CLIP_NAMED_FOR_PATTERN.format(pattern=clip_slot.get_pattern_name())
+        name = clip_slot.get_name()
+        if name:
+            return shown_name(name)
+        return marks.MSG_CLIP_NAMED_FOR_PATTERN.format(pattern=clip_slot.get_pattern_name())
 
     def rename(self):
         """Give the clip a name of its own; a blank goes back to its pattern's name."""
         clip_slot = self.clip_slot()
-        self._page.ask_text(title=messages.MSG_CLIP_NAME_PROMPT.format(track=self.get_track()), value=clip_slot.get_name() or NO_NAME, then=self._renamed, is_name=True)
+        self._page.ask_long_name(title=messages.MSG_CLIP_NAME_PROMPT.format(track=self.get_track()), value=clip_slot.get_name() or NO_NAME, then=self._renamed, longest=limits.MAX_CLIP_NAME_LENGTH)
 
     def pattern_rows(self):
         """Return the clip's list of patterns as rows, the first with the list's label, and the + row that adds one."""

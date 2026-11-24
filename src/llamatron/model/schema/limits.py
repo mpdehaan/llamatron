@@ -12,6 +12,8 @@ MAX_PROBABILITY = 100
 # The longest name the tracker lets a person type for anything named, and the room a list keeps for a name; a
 # longer name in an older file still loads, and is shown cut.
 MAX_NAME_LENGTH = 30
+# A clip's name may be longer, such as the import's S14:i'1,i'2,i'3,i'4,i'5, and is shown cut to MAX_NAME_LENGTH.
+MAX_CLIP_NAME_LENGTH = 60
 
 # Counts that start at one.
 MIN_STEPS = 1

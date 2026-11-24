@@ -546,15 +546,16 @@ class TestInstruments(unittest.TestCase):
 
 
 class TestTheWizardsNames(unittest.TestCase):
-    """The Import Wizard numbers its scenes, S01, with the letter of each section's material, gives each scene a numbered scale,
-    or each run of scenes in one key one scale, and groups patterns by the letter of the sections they are heard in."""
+    """The Import Wizard numbers its scenes, S01, with the letter of each section's material, gives each run of scenes in one key
+    a scale named after the scene that begins it, names each pattern after the letter of the first scene that plays it, a1,
+    grouped there, and each clip after its scene's number and its patterns, S01:a1."""
 
-    def refrain_verse_refrain(self, **choices):
+    def refrain_verse_refrain(self, *, keys=()):
         refrain = phrase(pitches=[60, 62, 64, 65, 67], bars=PHRASE_BARS, start_bar=0)
         verse = phrase(pitches=[69, 67, 65], bars=PHRASE_BARS, start_bar=PHRASE_BARS)
         again = phrase(pitches=[60, 62, 64, 65, 67], bars=PHRASE_BARS, start_bar=2 * PHRASE_BARS)
-        trip = round_trip(midi_file=midi_of(tracks=[('lead', 0, refrain + verse + again)]), choices=ImportChoices(
-            song_name='tune', longest_bars=PHRASE_BARS, numbered=True, **choices))
+        trip = round_trip(midi_file=midi_of(tracks=[('lead', 0, refrain + verse + again)], keys=keys), choices=ImportChoices(
+            song_name='tune', longest_bars=PHRASE_BARS, numbered=True))
         self.assertTrue(trip.comparison.is_same(), trip.comparison)
         return trip.imported.song
 
@@ -563,15 +564,21 @@ class TestTheWizardsNames(unittest.TestCase):
         names = [scene[SceneSetting.NAME] for scene in song.song[Section.SCENES]]
         self.assertEqual([name.split(',')[0] for name in names], ['S01 A', 'S02 B', 'S03 A'])
 
-    def test_every_scene_has_a_numbered_scale_of_its_own_unless_runs_of_one_key_share_one(self):
-        apart = [scene[SceneSetting.SCALE] for scene in self.refrain_verse_refrain().song[Section.SCENES]]
-        shared = [scene[SceneSetting.SCALE] for scene in self.refrain_verse_refrain(scale_per_scene=False).song[Section.SCENES]]
-        self.assertEqual([name.split('_')[0] for name in apart], ['S01', 'S02', 'S03'])
-        self.assertEqual(len(set(shared)), 1)
+    def test_each_run_of_scenes_in_a_key_shares_a_scale_and_every_key_change_makes_another(self):
+        one_key = [scene[SceneSetting.SCALE] for scene in self.refrain_verse_refrain(keys=((0, 'C'),)).song[Section.SCENES]]
+        self.assertEqual(len(set(one_key)), 1)
+        self.assertTrue(one_key[0].startswith('S01'))
+        # C, then F for the verse, then C again: three scales, the return to C a scale of its own.
+        changes = [(0, 'C'), (PHRASE_BARS * SIXTEENTHS_IN_A_BAR, 'F'), (2 * PHRASE_BARS * SIXTEENTHS_IN_A_BAR, 'C')]
+        changing = [scene[SceneSetting.SCALE] for scene in self.refrain_verse_refrain(keys=changes).song[Section.SCENES]]
+        self.assertEqual([name.split('_')[0] for name in changing], ['S01', 'S02', 'S03'])
 
-    def test_patterns_are_grouped_by_the_letter_of_their_sections(self):
+    def test_patterns_are_named_and_grouped_after_the_first_scene_letter_that_plays_them_and_clips_after_their_scene(self):
         song = self.refrain_verse_refrain()
-        self.assertEqual(sorted({data[PatternSetting.GROUP] for data in song.patterns.values()}), ['A', 'B'])
+        self.assertEqual(sorted(song.patterns), ['a1', 'b1'])
+        self.assertEqual({name: data[PatternSetting.GROUP] for name, data in song.patterns.items()}, {'a1': 'A', 'b1': 'B'})
+        clips = [scene[SceneSetting.TRACKS]['lead'][ClipSlotSetting.NAME] for scene in song.song[Section.SCENES]]
+        self.assertEqual(clips, ['S01:a1', 'S02:b1', 'S03:a1'])
 
 
 class TestControls(unittest.TestCase):

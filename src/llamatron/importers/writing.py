@@ -28,7 +28,7 @@ from llamatron.importers.steps import has_a_value
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.objects.named_scale import NamedScale
-from llamatron.model.objects.naming import copy_name, default_scale_name, is_default_scale_name, new_name, suggested_word, unique_name
+from llamatron.model.objects.naming import copy_name, default_scale_name, is_default_scale_name, is_taken, new_name, suggested_word, unique_name
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.song import Song
 from llamatron.model.schema import defaults, file_format, limits
@@ -39,6 +39,8 @@ from llamatron.user_strings import importing, labels
 FIRST_BAR_NUMBER = 1
 # The Import Wizard numbers scenes from S01; a scene of a cut that letters nothing shows no letter.
 FIRST_SCENE_NUMBER = 1
+# The Import Wizard's patterns are numbered from 1 in their group, a1, a2.
+FIRST_PATTERN_NUMBER = 1
 NO_LETTER = ''
 NO_REPEAT = 1
 # A scene's tempo is a percentage of the song's, and the song's own is 100.
@@ -185,10 +187,9 @@ def track_data(voice):
 
 
 class Naming(NamedTuple):
-    """How the Import Wizard names what it makes: scenes and their scales numbered, S01, S02, patterns grouped by the letter of
-    the section they come from, and whether every scene has a scale of its own or each run of scenes in one key shares one."""
-
-    scale_per_scene: bool = True
+    """How the Import Wizard names what it makes: scenes numbered and lettered, S01 A, a scale for each run of scenes in one key
+    named after the scene that begins it, S01_C_major, patterns grouped by the letter of the first scene that plays them and
+    named after it, a1, a2, and each clip after its scene's number and its patterns, S01:a1,a2."""
 
 
 class SongWriter:
@@ -260,7 +261,7 @@ class SongWriter:
                 names[pattern] = same
                 shared += 1
                 continue
-            name = new_name(word=first_track[pattern], taken=taken)
+            name = self.pattern_name(pattern=pattern, first_track=first_track, groups=groups, taken=taken)
             taken.add(name)
             if pattern in groups:
                 data[PatternSetting.GROUP] = groups[pattern]
@@ -268,22 +269,28 @@ class SongWriter:
             names[pattern] = name
         return added, shared, names
 
+    def pattern_name(self, *, pattern, first_track, groups, taken):
+        """Return a new pattern's name: after its group's letter as the Import Wizard names them, a1, a2, numbered through the
+        group across the tracks, or for the import dialog after the first track that plays it, lead-1."""
+        if pattern not in groups:
+            return new_name(word=first_track[pattern], taken=taken)
+        letter = groups[pattern].lower()
+        number = FIRST_PATTERN_NUMBER
+        while is_taken(name=importing.MSG_LETTERED_PATTERN.format(letter=letter, number=number), taken=taken):
+            number += 1
+        return importing.MSG_LETTERED_PATTERN.format(letter=letter, number=number)
+
     def pattern_groups(self, first_track):
         """Return the group each pattern goes in as the Import Wizard groups them, by the pattern, or none for the import
-        dialog, whose patterns go in their tracks' groups: the letter of the sections it is heard in, so that a theme that
-        returns has one home, or, for a figure heard in sections of more than one letter, its track's figures."""
+        dialog, whose patterns go in their tracks' groups: the letter of the first scene that plays it, so that a lick a later
+        section plays again is found where it is first heard."""
         if self._naming is None:
             return {}
-        letters = {}
+        groups = {}
         for scene in self._cut.scenes:
             for clip in scene.clips:
                 for pattern in clip.patterns:
-                    letters.setdefault(pattern, set()).add(scene.letter or NO_LETTER)
-        groups = {}
-        for pattern, heard_in in letters.items():
-            groups[pattern] = next(iter(heard_in))
-            if len(heard_in) > 1:
-                groups[pattern] = importing.MSG_FIGURES_GROUP.format(track=first_track[pattern])
+                    groups.setdefault(pattern, scene.letter or NO_LETTER)
         return groups
 
     def first_track_of_patterns(self):
@@ -318,13 +325,14 @@ class SongWriter:
 
     def numbered_scales(self):
         """Return the scales the song adds, each named after the number of the scene it begins, S01_C_major, and each scene's
-        scale's name: a scale for each scene, or one for each run of scenes in the same key, as the Import Wizard is asked."""
+        scale's name: a scale for each run of scenes in one key, so that a block's key is changed in one place, and a new
+        one wherever the key changes, a return to an earlier key too."""
         taken = set(self._setlist.get_item_names(Section.SCALES))
         added = {}
         names = []
         for place, scene in enumerate(self._cut.scenes):
             key = scene.key
-            if names and not self._naming.scale_per_scene and self._cut.scenes[place - 1].key == key:
+            if names and self._cut.scenes[place - 1].key == key:
                 names.append(names[-1])
                 continue
             scale = default_scale_name(root=key.root, kind=key.kind)
@@ -368,6 +376,8 @@ class SongWriter:
                 clip_data = {ClipSlotSetting.PATTERNS: names}
             if clip.repeats > NO_REPEAT:
                 clip_data[ClipSlotSetting.REPEAT] = clip.repeats
+            if self._naming is not None:
+                clip_data[ClipSlotSetting.NAME] = clip_name(place=place, names=names)
             clips[self._track_names[clip.voice]] = clip_data
         data[SceneSetting.TRACKS] = clips
         return data
@@ -393,6 +403,15 @@ class SongWriter:
     def bar_number(self, time):
         """Return the number of the bar a time falls in, counted from 1."""
         return sum(1 for line in self._bars[:-1] if line <= time) - 1 + FIRST_BAR_NUMBER
+
+
+def clip_name(*, place, names):
+    """Return the name the Import Wizard gives a clip: its scene's number and the patterns it plays, S01:a1,a2, cut at the
+    most characters a clip's name may have."""
+    text = importing.MSG_CLIP_NAME.format(number=place + FIRST_SCENE_NUMBER, patterns=importing.MSG_CLIP_PATTERNS_JOIN.join(names))
+    if len(text) <= limits.MAX_CLIP_NAME_LENGTH:
+        return text
+    return text[:limits.MAX_CLIP_NAME_LENGTH - 1] + importing.MSG_CLIP_NAME_CUT
 
 
 def without_group(data):

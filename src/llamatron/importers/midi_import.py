@@ -62,10 +62,9 @@ class ImportChoices:
     finest_step: object = cutting.FINEST_STEP_SIZE
     # The longest pattern in bars, which the Import Wizard asks for in place of a count of steps, or None for longest_pattern.
     longest_bars: object = None
-    # Whether scenes and their scales are numbered, S01, and patterns grouped by their sections' letters, as the Import Wizard
-    # names them, and whether each scene then has a scale of its own or each run of scenes in one key shares one.
+    # Whether scenes, their scales and clips are numbered, S01, and patterns grouped and named by their sections' letters,
+    # as the Import Wizard names them (writing.Naming).
     numbered: bool = False
-    scale_per_scene: bool = True
 
 
 @dataclass(slots=True, kw_only=True)
@@ -170,7 +169,7 @@ class MidiImport:
         cut = cutter.best_cut()
         naming = None
         if choices.numbered:
-            naming = Naming(scale_per_scene=choices.scale_per_scene)
+            naming = Naming()
         writer = SongWriter(setlist=setlist, voices=voices, cut=cut, bars=bars, step_size=grid, share=not choices.unique_names, naming=naming)
         song = writer.written(name=choices.song_name, time_signature=time_signature_text(contents.time_signatures[0].value))
         track_names = writer.track_names()

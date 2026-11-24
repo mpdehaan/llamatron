@@ -467,6 +467,8 @@ MSG_WIZARD_PART_NO_MELODY = 'no melody'
 
 # interface/tracker/components/pattern_row.py: what a step's cell shows for a row whose values' words a cell has no room for,
 # by the row and the value: the Double row's lowest, every and top notes, an octave up or down.
+# interface/forms/text.py: what ends a name cut to the most characters a name is shown with.
+MSG_NAME_CUT = '…'
 MSG_CELL_MARKS = {
     Row.DOUBLE: {Doubling.LOW_UP: 'L+8', Doubling.ALL_UP: 'A+8', Doubling.ALL_DOWN: 'A-8', Doubling.TOP_DOWN: 'T-8'},
 }

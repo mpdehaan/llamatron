@@ -5,6 +5,7 @@
 
 from llamatron.math.rational import Rational
 from llamatron.model.objects.naming import name_order
+from llamatron.model.schema import limits
 from llamatron.user_strings import marks, messages, names
 
 # A count of one, which takes the singular.
@@ -20,6 +21,14 @@ NUMBER_GAP = ' '
 def fraction(value):
     """Return a duration from a file as an exact fraction."""
     return Rational(str(value))
+
+
+def shown_name(name):
+    """Return a name as a page shows it: whole, or cut to the most characters a name is shown with and ended with an
+    ellipsis, as a clip's longer name is."""
+    if len(name) <= limits.MAX_NAME_LENGTH:
+        return name
+    return name[:limits.MAX_NAME_LENGTH - 1] + marks.MSG_NAME_CUT
 
 
 def sorted_names(names):

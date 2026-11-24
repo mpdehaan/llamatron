@@ -43,8 +43,12 @@ MSG_SCENE_BAR = 'bar {first}'
 # find: a scene by its number, the letter of its material and its bars; a scale by its scene's number and its key.
 MSG_NUMBERED_SCENE = 'S{number:02} {letter}, {bars}'
 MSG_NUMBERED_SCALE = 'S{number:02}_{scale}'
-# A pattern heard in sections of more than one letter goes in a group of the figures its track keeps returning to.
-MSG_FIGURES_GROUP = '{track} figures'
+# The Import Wizard names a pattern after its group's letter and a number, a1, and a clip after its scene's number and the
+# patterns it plays, S01:a1,a2, cut with an ellipsis at the most a clip's name may hold.
+MSG_LETTERED_PATTERN = '{letter}{number}'
+MSG_CLIP_NAME = 'S{number:02}:{patterns}'
+MSG_CLIP_PATTERNS_JOIN = ','
+MSG_CLIP_NAME_CUT = '…'
 
 # importers/phrase_cut.py
 # A section is lettered by its material, A, B, and one that begins as an earlier one did and then goes elsewhere with a prime.

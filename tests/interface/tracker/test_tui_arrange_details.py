@@ -21,7 +21,7 @@ from llamatron.interface.tracker.screens.set.groove_editor import GrooveEditor
 from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor
 from llamatron.interface.tracker.screens.set.scale_page import ScalePage
 from llamatron.interface.visualizers import modes
-from llamatron.model.schema import generator_plugins
+from llamatron.model.schema import generator_plugins, limits
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, FollowAction, RampPart, RampWay, Shape
 from llamatron.user_strings import labels, legends, marks, names
 from tests.support import ui_testing
@@ -156,14 +156,14 @@ class TestDetails(unittest.TestCase):
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.DIRECTION, value=Direction.FORWARD)
         self.assertEqual(self.clip_lines(), [])
 
-    def test_a_long_detail_is_cut_but_a_clips_name_never_is_and_its_column_widens_to_fit(self):
+    def test_a_long_detail_is_cut_and_a_clips_name_is_shown_to_its_most_its_column_widening_to_fit(self):
         self.document.add_chain(LONG_CHAIN)
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.CHAINS, value=[LONG_CHAIN])
         self.document.set_clip_slot_setting(index=FIRST_SCENE, track=ui_testing.LEAD, setting=ClipSlotSetting.NAME, value=A_LONG_NAME)
         self.assertTrue(all(len(line) <= arrange_details.DETAIL_WIDTH for line in self.clip_lines()))
         layout = details_layout(document=self.document, least_width=arrange_drawing.CELL_WIDTH, name_room=NO_ROOM, detail_room=ROOM, track_name_room=ROOM)
         lead = self.document.track_names().index(ui_testing.LEAD)
-        self.assertEqual(layout.track_widths[lead], len(A_LONG_NAME) + NO_ROOM)
+        self.assertEqual(layout.track_widths[lead], limits.MAX_NAME_LENGTH + NO_ROOM)
         self.assertEqual(layout.track_widths[self.document.track_names().index(ui_testing.DRUMS)], arrange_drawing.CELL_WIDTH)
         self.assertEqual(layout.scene_extra_lines[FIRST_SCENE], 2)
         # The second scene holds nothing but its own stock line and the + that adds a chain.

@@ -289,6 +289,10 @@ class Page(BindsKeys, Screen):
         """
         self.ask(dialog=PromptDialog(title=title, value=value, max_length=limits.MAX_NAME_LENGTH if is_name else None, label=label), then=then)
 
+    def ask_long_name(self, *, title, then, value, longest):
+        """Ask for the name of a thing whose name may be longer than most, as a clip's may, held to longest characters."""
+        self.ask(dialog=PromptDialog(title=title, value=value, max_length=longest), then=then)
+
     def confirm(self, *, title, lines, then, starts_on_no=False, deletes=False):
         """Ask a question that yes or no answers, and run a function on yes alone.
 

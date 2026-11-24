@@ -40,6 +40,9 @@ class PageViewFields(ViewFields):
     def ask_text(self, **given):
         return self._page.ask_text(**given)
 
+    def ask_long_name(self, **given):
+        return self._page.ask_long_name(**given)
+
     def pick(self, **given):
         return self._page.pick(**given)
 
