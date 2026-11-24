@@ -365,6 +365,25 @@ MSG_KEYSWITCH_NOTE_CELL = '{note} '
 MSG_KEYSWITCH_MAP_ROW = ' {slot:>2}  '
 # interface/tracker/screens/set/instrument_editor.py: how many of an instrument's keyswitch slots hold anything, and its keyswitch lead.
 MSG_KEYSWITCH_LEAD_SHOWN = '{milliseconds} ms'
+
+# interface/pages/sound_tabs.py: a built-in sound's gauge, twelve cells then its value in its unit, and the units.
+MSG_SOUND_GAUGE = '▕{gauge}▏ {value:>7}'
+MSG_SOUND_GAUGE_FULL = '█'
+MSG_SOUND_GAUGE_EMPTY = '░'
+MSG_SOUND_PERCENT_SHOWN = '{number}%'
+MSG_NUMBER_SHOWN = '{number}'
+MSG_MILLISECONDS_SHOWN = '{number} ms'
+MSG_CENTS_SHOWN = '{number:+d} c'
+MSG_SEMITONES_SHOWN = '{number:+d} st'
+MSG_SWEEP_SHOWN = '{number:+d}%/s'
+MSG_HERTZ_SHOWN = '{number} Hz'
+MSG_RATE_OFF_SHOWN = 'off'
+MSG_CHOKE_NONE_SHOWN = 'none'
+MSG_PACE_HELD_SHOWN = 'held'
+MSG_PACE_SHOWN = 'every {number}'
+MSG_LEVEL_SHOWN = '{number}/15'
+MSG_ARPEGGIO_NONE_SHOWN = '(none)'
+MSG_ARPEGGIO_SEPARATOR = ' '
 # An accent, what an accented step adds to its velocity.
 MSG_ACCENT_SHOWN = '+{accent}'
 

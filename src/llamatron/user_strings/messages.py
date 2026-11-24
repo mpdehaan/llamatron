@@ -210,6 +210,9 @@ MSG_KEYSWITCH_NOTE_NAMED_TITLE = 'Note of slot {slot}: {name}'
 MSG_KEYSWITCH_PICKED_NOTE = 'Note    {note}'
 MSG_KEYSWITCH_PICKED_OCTAVE = 'Octave  {octave}'
 MSG_KEYSWITCH_LEAD_PROMPT = 'Keyswitch lead in milliseconds ({lowest} to {highest})'
+# interface/pages/sound_tabs.py: a built-in sound's prompts.
+MSG_ARPEGGIO_PROMPT = 'Arpeggio: up to {most} semitones apart from the note, such as 0 4 7, blank for none'
+MSG_LATENCY_PROMPT = 'Latency in milliseconds ({lowest} to {highest})'
 MSG_KEYSWITCH_SEVERAL_INSTRUMENTS = 'This pattern plays on more than one instrument.'
 # The hint over the rows while the cursor is in the Keyswitch section, when one instrument's Keyswitch Map names the rows.
 MSG_KEYSWITCH_SECTION_HINT = 'Keyswitch: the slots of the Keyswitch Map of ({instrument})'

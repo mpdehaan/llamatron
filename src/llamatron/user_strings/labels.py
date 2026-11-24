@@ -7,7 +7,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.interface.tracker.keys import RowSection
-from llamatron.model.schema.file_format import Approach, ChordColor, ChordSymbol, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, FollowAction, GateModifier, LiveResponsiveness, NamedProgression, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SingleNotes, STATEMENT_ROWS, Stroke, Tuning
+from llamatron.model.schema.file_format import Approach, ChipDirection, ChipVoice, ChordColor, ChordSymbol, Curve, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, DrumMachine, Duty, Effect, FollowAction, GateModifier, LiveResponsiveness, Modulation, NamedProgression, Noise, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SidWave, SingleNotes, SoundEngine, STATEMENT_ROWS, Stroke, Tuning, Waveform, WaveShape
 
 
 def draw_labels(*, rows, label):
@@ -762,6 +762,77 @@ MSG_GM_FAMILIES = [
 MSG_GM_SOUND_LABEL = 'GM sound'
 MSG_KEYSWITCH_MAP_LABEL = 'Keyswitch Map'
 MSG_KEYSWITCH_LEAD_LABEL = 'Keyswitch lead'
+MSG_LATENCY_LABEL = 'Latency'
+
+# interface/pages/instrument.py and interface/pages/sound_tabs.py: the Instrument page's tabs, each tab's On, and a built-in
+# sound's settings, each engine's choices named as the page shows them.
+MSG_MIDI_TAB = 'MIDI'
+MSG_SYNTH_TAB = 'Synth'
+MSG_EFFECTS_TAB = 'Effects'
+MSG_ON_LABEL = 'On'
+MSG_MIDI_ON_LABEL = 'MIDI on'
+MSG_SYNTH_ON_LABEL = 'Synth on'
+MSG_ENGINE_LABEL = 'Engine'
+MSG_VOICES_LABEL = 'Voices'
+MSG_VOLUME_LABEL = 'Volume'
+MSG_OSCILLATOR_LABEL = 'OSC {number}'
+MSG_OSCILLATOR_DETUNE_LABEL = 'OSC {number} detune'
+MSG_OSCILLATOR_LEVEL_LABEL = 'OSC {number} level'
+MSG_DETUNE_LABEL = 'Detune'
+MSG_LEVEL_LABEL = 'Level'
+MSG_ATTACK_LABEL = 'Attack'
+MSG_DECAY_LABEL = 'Decay'
+MSG_SUSTAIN_LABEL = 'Sustain'
+MSG_RELEASE_LABEL = 'Release'
+MSG_MACHINE_LABEL = 'Machine'
+MSG_KNOB_LABELS = ['Pitch', 'Decay', 'Color', 'Shape', 'Sweep']
+MSG_CHOKE_LABEL = 'Choke'
+MSG_OVERLAP_LABEL = 'Overlap'
+MSG_WAVE_LABEL = 'Wave'
+MSG_PULSE_WIDTH_LABEL = 'Pulse width'
+MSG_PULSE_SWEEP_LABEL = 'Width sweep'
+MSG_MODULATION_LABEL = 'Modulation'
+MSG_INTERVAL_LABEL = 'Interval'
+MSG_ARPEGGIO_LABEL = 'Arpeggio'
+MSG_GLIDE_LABEL = 'Glide'
+MSG_CHIP_VOICE_LABEL = 'Voice'
+MSG_DUTY_LABEL = 'Duty'
+MSG_WAVE_SHAPE_LABEL = 'Wave shape'
+MSG_NOISE_LABEL = 'Noise'
+MSG_START_LEVEL_LABEL = 'Start level'
+MSG_LEVEL_PACE_LABEL = 'Level pace'
+MSG_LEVEL_DIRECTION_LABEL = 'Level goes'
+MSG_SWEEP_PACE_LABEL = 'Sweep pace'
+MSG_SWEEP_DIRECTION_LABEL = 'Sweep goes'
+MSG_SWEEP_STEP_LABEL = 'Sweep step'
+MSG_ENVELOPE_HEADING = 'Envelope'
+MSG_SOUND_HEADING = 'Sound'
+MSG_SWEEP_HEADING = 'Sweep'
+MSG_EFFECT_BLOCK_LABEL = 'Block {number}'
+MSG_EFFECT_BITS_LABEL = 'Block {number} bits'
+MSG_EFFECT_RATE_LABEL = 'Block {number} rate'
+MSG_EFFECT_CURVE_LABEL = 'Block {number} curve'
+MSG_EFFECT_AMOUNT_LABEL = 'Block {number} amount'
+MSG_BITS_LABEL = 'Bits'
+MSG_RATE_LABEL = 'Rate'
+MSG_CURVE_LABEL = 'Curve'
+MSG_AMOUNT_LABEL = 'Amount'
+MSG_ENGINE_NAMES = {SoundEngine.BASIC: 'Basic', SoundEngine.DRUM: 'Drum', SoundEngine.SID: 'SID', SoundEngine.POCKET: 'Pocket'}
+MSG_WAVEFORM_NAMES = {Waveform.OFF: 'Off', Waveform.SQUARE: 'Square', Waveform.SAW: 'Saw', Waveform.SINE: 'Sine', Waveform.TRIANGLE: 'Triangle',
+                      Waveform.PULSE: 'Pulse'}
+MSG_DRUM_MACHINE_NAMES = {
+    DrumMachine.KICK: 'Kick', DrumMachine.HARD_KICK: 'Hard Kick', DrumMachine.SYNTH_KICK: 'Synth Kick', DrumMachine.SNARE: 'Snare', DrumMachine.CLAP: 'Clap',
+    DrumMachine.RIM: 'Rim', DrumMachine.HATS: 'Hats', DrumMachine.COWBELL: 'Cowbell', DrumMachine.ACOUSTIC_TOM: 'Acoustic Tom', DrumMachine.KARPLUS_DRUM: 'Karplus Drum',
+}
+MSG_SID_WAVE_NAMES = {SidWave.TRIANGLE: 'Triangle', SidWave.SAW: 'Saw', SidWave.PULSE: 'Pulse', SidWave.NOISE: 'Noise'}
+MSG_MODULATION_NAMES = {Modulation.OFF: 'Off', Modulation.RING: 'Ring', Modulation.SYNC: 'Sync'}
+MSG_CHIP_VOICE_NAMES = {ChipVoice.PULSE: 'Pulse', ChipVoice.WAVE: 'Wave', ChipVoice.NOISE: 'Noise'}
+MSG_DUTY_NAMES = {Duty.EIGHTH: '12.5%', Duty.QUARTER: '25%', Duty.HALF: '50%', Duty.THREE_QUARTERS: '75%'}
+MSG_CHIP_DIRECTION_NAMES = {ChipDirection.DOWN: 'Down', ChipDirection.UP: 'Up'}
+MSG_WAVE_SHAPE_NAMES = {WaveShape.TRIANGLE: 'Triangle', WaveShape.SAW: 'Saw', WaveShape.SQUARE: 'Square', WaveShape.SINE: 'Sine', WaveShape.ORGAN: 'Organ'}
+MSG_NOISE_NAMES = {Noise.LONG: 'Long', Noise.SHORT: 'Short'}
+MSG_EFFECT_NAMES = {Effect.NONE: '(empty)', Effect.BITCRUSH: 'Bitcrush', Effect.DRIVE: 'Drive'}
+MSG_CURVE_NAMES = {Curve.SOFT: 'Soft', Curve.WARM: 'Warm', Curve.HARD: 'Hard', Curve.FOLD: 'Fold', Curve.WRAP: 'Wrap'}
 # What a step with no velocity typed plays at, on an instrument and on a track.
 MSG_DEFAULT_VELOCITY_LABEL = 'Default velocity'
 MSG_GM_SOUND_SHOWN = '{number} {name}'

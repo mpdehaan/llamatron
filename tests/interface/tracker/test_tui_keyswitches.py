@@ -80,7 +80,8 @@ class TestKeyswitchMap(UITest):
         self.assertIn(messages.MSG_KEYSWITCH_MAP_TITLE.format(instrument=VIOLIN), self.text())
         self.assertEqual(dialog.keyswitches, [instrument_values.NO_KEYSWITCH] * file_format.KEYSWITCH_SLOT_COUNT)
         await self.press(Key.ESCAPE)
-        await self.press(*[Key.DOWN] * len(self.app.screen.fields()), Key.ENTER)
+        await self.select_field(labels.MSG_KEYSWITCH_MAP_LABEL)
+        await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, KeyswitchMapDialog)
 
     async def test_a_slot_is_named_given_a_note_and_stored_on_ok_as_one_undo_step(self):

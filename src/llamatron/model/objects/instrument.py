@@ -31,10 +31,10 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects.built_in_sound import check_sound, sound_value, synth_spec
+from llamatron.model.objects.built_in_sound import check_sound, effect_value, oscillator_value, sound_value, synth_spec
 from llamatron.model.objects.llama_data import HoldsSettings, or_default, own_copy, settings_by_name, written_settings
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import InstrumentKind, InstrumentSetting, KeyswitchSetting
+from llamatron.model.schema.file_format import InstrumentKind, InstrumentSetting, KeyswitchSetting, OscillatorSetting, SoundSetting, Waveform
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Text, WholeNumber
 from llamatron.model.values import midi
 from llamatron.user_strings import errors
@@ -194,6 +194,43 @@ class Instrument(HoldsSettings):
         check_sound(sound)
         self._settings[InstrumentSetting.SOUND] = sound
 
+    def get_oscillator(self, *, number, name):
+        """Return one setting (OscillatorSetting) of its Basic sound's oscillator by number from 1, off where it has none."""
+        oscillators = self.get_sound(SoundSetting.OSCILLATORS)
+        oscillator = oscillators[number - 1] if number <= len(oscillators) else {}
+        return oscillator_value(oscillator=oscillator, name=name)
+
+    def set_oscillator(self, *, number, name, value):
+        """Store one setting of an oscillator by number from 1, the oscillators before it made, off, where it has none."""
+        oscillators = [dict(oscillator) for oscillator in self.get_sound(SoundSetting.OSCILLATORS)]
+        while len(oscillators) < number:
+            oscillators.append({OscillatorSetting.WAVEFORM: Waveform.OFF})
+        oscillators[number - 1][name] = value
+        self.set_sound(name=SoundSetting.OSCILLATORS, value=oscillators)
+
+    def get_knob(self, place):
+        """Return a drum's knob by its place, from 0, Pitch, Decay, Color, Shape, then Sweep."""
+        return self.get_sound(SoundSetting.KNOBS)[place]
+
+    def set_knob(self, *, place, value):
+        knobs = list(self.get_sound(SoundSetting.KNOBS))
+        knobs[place] = value
+        self.set_sound(name=SoundSetting.KNOBS, value=knobs)
+
+    def get_effect(self, *, number, name):
+        """Return one setting (EffectSetting) of an effect block by number from 1, its default where the block has none."""
+        blocks = self.get_sound(SoundSetting.EFFECTS)
+        block = blocks[number - 1] if number <= len(blocks) else {}
+        return effect_value(block=block, name=name)
+
+    def set_effect(self, *, number, name, value):
+        """Store one setting of an effect block by number from 1, the blocks before it made, empty, where it has none."""
+        blocks = [dict(block) for block in self.get_sound(SoundSetting.EFFECTS)]
+        while len(blocks) < number:
+            blocks.append({})
+        blocks[number - 1][name] = value
+        self.set_sound(name=SoundSetting.EFFECTS, value=blocks)
+
     def synth_spec(self):
         """Return its built-in sound as the Synthesis Process compiles it."""
         return synth_spec(self._settings[InstrumentSetting.SOUND])
@@ -220,7 +257,10 @@ class Instrument(HoldsSettings):
         return self.get_device() == file_format.FLUIDSYNTH_DEVICE
 
     def set_device(self, device):
-        """Name its MIDI output port, or None to choose none."""
+        """Name its MIDI output port, or None to choose none. Choosing a port for an instrument switched off turns its MIDI
+        on, since that is what choosing one asks for."""
+        if device is not None and self.get_kind() == InstrumentKind.OFF:
+            self.set_kind(InstrumentKind.MIDI)
         self.set_written(name=InstrumentSetting.DEVICE, value=device)
 
     def get_gm_sound(self):

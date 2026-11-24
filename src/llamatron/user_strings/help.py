@@ -314,16 +314,16 @@ that no track uses.
 
 # InstrumentEditor
 HELP_INSTRUMENT_EDITOR = """
-Name: ENTER renames the instrument, and every track that chose it follows.
-Device: the MIDI output port, chosen from the ports this computer has now, or *FluidSynth, the software
-synthesizer the tracker starts itself. A track on an instrument with no device cannot play. A port that
-has gone is still shown.
-Channel: 1 to 16, as the device numbers them, or (auto) with FluidSynth, which gives each track its own.
-GM sound: one of General MIDI's 128 sounds, which the MIDI (General MIDI) export gives this instrument's tracks and
-FluidSynth plays. ENTER chooses it from the families, each opening its sounds, where a sound can be heard.
-Default velocity: a step with none typed. Accent: an accent adds.
+Name: ENTER renames the instrument, and every track that chose it follows. Default velocity, Accent and
+Velocity apply however it plays. A new instrument is off until its MIDI or Synth tab's On is set; setting
+one switches the other off, and choosing a device turns MIDI on.
+MIDI: Device, the MIDI output port this computer has now, or *FluidSynth, which the tracker starts itself;
+Channel, 1 to 16, or (auto) with FluidSynth; GM sound, which the General MIDI export and FluidSynth use;
+Latency, how much earlier its notes are sent, for a device slow to sound.
+Synth: a built-in sound, its Engine Basic, Drum, SID or Pocket, and each engine's own settings; a bar is a
+gauge. Effects: four blocks, each empty, Bitcrush or Drive.
 
-Up and down select a setting. [ and ] change it, and ENTER types or chooses. Bksp clears the device or sound.
+Tab goes to the row of tabs and back. [ and ] change a setting, ENTER types or chooses, Bksp clears.
 """
 
 # GrooveEditor

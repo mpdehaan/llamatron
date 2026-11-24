@@ -13,6 +13,7 @@ it. The tracker draws a node through its renderers (interface/tracker/renderers/
 """
 
 from dataclasses import dataclass
+import math
 from typing import Callable
 
 from llamatron.model.schema import limits
@@ -59,6 +60,11 @@ def within(*, number, lowest, highest):
         number = min(number, highest)
     return number
 
+
+# A built-in sound's gauge: how many cells it has, and how far [ and ] step a time in milliseconds below each length.
+GAUGE_CELLS = 12
+TIME_STRIDES = ((20, 1), (100, 5), (500, 10), (2000, 50))
+LONGEST_TIME_STRIDE = 100
 
 
 def gauge_shown(*, place, lowest, highest, said=None):
@@ -205,6 +211,46 @@ class NumberField(Field):
     def ask(self):
         value = self.counted_from() if self.typed is None else self.typed
         self.page.ask_number(title=self.title or self.label, value=value, then=self.set, low=self.lowest, high=self.highest)
+
+
+@dataclass(slots=True, kw_only=True)
+class GaugeField(NumberField):
+    """A number of a built-in sound drawn as a horizontal gauge of GAUGE_CELLS cells, then its value in its unit, a format
+    of number: [ and ] step it, by more as it grows where it is a time in milliseconds, whose gauge then fills by the
+    logarithm of the time so that short times can be told apart; Enter types it. Both ends are needed."""
+
+    unit: str = marks.MSG_SOUND_PERCENT_SHOWN
+    timed: bool = False
+
+    def __post_init__(self):
+        self.value = self.drawn
+        self.adjust = self.step
+        self.enter = self.ask
+
+    def drawn(self):
+        number = self.counted_from()
+        cells = round(self.share(number) * GAUGE_CELLS)
+        gauge = marks.MSG_SOUND_GAUGE_FULL * cells + marks.MSG_SOUND_GAUGE_EMPTY * (GAUGE_CELLS - cells)
+        return marks.MSG_SOUND_GAUGE.format(gauge=gauge, value=self.unit.format(number=number))
+
+    def share(self, number):
+        """Return how much of the gauge a number fills, from 0 to 1."""
+        if self.timed:
+            return math.log1p(number - self.lowest) / math.log1p(self.highest - self.lowest)
+        return (number - self.lowest) / (self.highest - self.lowest)
+
+    def step(self, offset):
+        self.set_within(self.counted_from() + offset * self.stride())
+
+    def stride(self):
+        """Return how far [ and ] step: one, or for a time a step that grows with it, so that a long time is reached in few presses."""
+        number = self.counted_from()
+        if not self.timed:
+            return 1
+        for below, stride in TIME_STRIDES:
+            if number < below:
+                return stride
+        return LONGEST_TIME_STRIDE
 
 
 @dataclass(slots=True, kw_only=True)

@@ -15,7 +15,7 @@ from llamatron.interface.tracker.screens.set.instrument_editor import Instrument
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import Section, SetlistSetting, TrackSetting
+from llamatron.model.schema.file_format import Effect, EffectSetting, InstrumentKind, InstrumentSetting, OscillatorSetting, Section, SetlistSetting, SoundEngine, SoundSetting, TrackSetting
 from llamatron.model.values import midi
 from llamatron.realtime import realtime_names
 from llamatron.user_strings import errors, labels, marks, messages, names
@@ -32,6 +32,10 @@ GONE_PORT = 'Old Synth'
 # Where the editor asks for the ports.
 PORT_NAMES = 'llamatron.interface.tracker.transport.output_port_names'
 SEED = 1
+ARPEGGIO = [0, 4, 7]
+ARPEGGIO_TYPED = '0 4 7'
+# How far ] steps a time of 300 ms.
+DECAY_STRIDE = 10
 
 
 class TestInstrumentsPage(UITest):
@@ -107,7 +111,7 @@ class TestInstrumentEditor(UITest):
         return self.document.get_setlist().get_instrument(SYNTH)
 
     def field_text(self, label):
-        return next(field.value() for field in self.app.screen.fields() if field.label == label)
+        return next(field.value() for field in self.app.screen.shown_fields() if field.label == label)
 
     async def test_the_default_velocity_and_the_accent_are_stepped_and_cleared(self):
         self.assertEqual(self.field_text(labels.MSG_DEFAULT_VELOCITY_LABEL), defaults.DEFAULT_VELOCITY)
@@ -189,7 +193,8 @@ class TestInstrumentEditor(UITest):
         await self.type(str(defaults.DEFAULT_CHANNEL + 2))
         await self.press(Key.ENTER)
         self.assertEqual(self.instrument().get_channel(), defaults.DEFAULT_CHANNEL + 2)
-        self.assertEqual(self.document.get_setlist().to_data()[Section.INSTRUMENTS][SYNTH], {'channel': defaults.DEFAULT_CHANNEL + 2})
+        # A new instrument starts switched off, neither MIDI nor built in, until one is chosen.
+        self.assertEqual(self.document.get_setlist().to_data()[Section.INSTRUMENTS][SYNTH], {InstrumentSetting.CHANNEL: defaults.DEFAULT_CHANNEL + 2, InstrumentSetting.KIND: InstrumentKind.OFF})
 
 
 class TestTrackInstrumentField(UITest):
@@ -255,3 +260,69 @@ class TestRealTimeSwitch(UITest):
         self.assertIn(labels.PageName.REAL_TIME, self.text())
         await self.press(Key.ENTER)
         self.assertFalse(self.document.get_setlist().is_real_time())
+
+
+class TestInstrumentTabs(UITest):
+    """An instrument's MIDI, Synth and Effects tabs: each On switches the other off, the engine chosen shows its own settings, a
+    gauge steps its setting, an oscillator and an effect block are chosen, and a typed arpeggio out of range is refused."""
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        self.document.add_instrument(SYNTH)
+        await self.press(keybindings.MainPage.INSTRUMENTS, Key.ENTER)
+
+    def instrument(self):
+        return self.document.get_setlist().get_instrument(SYNTH)
+
+    def shown_labels(self):
+        return [field.label for field in self.app.screen.shown_fields()]
+
+    async def test_a_new_instrument_is_off_and_each_tabs_on_switches_the_other_off(self):
+        self.assertEqual(self.instrument().get_kind(), InstrumentKind.OFF)
+        await self.select_field(labels.MSG_MIDI_ON_LABEL)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.instrument().get_kind(), InstrumentKind.MIDI)
+        await self.select_field(labels.MSG_SYNTH_ON_LABEL)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.instrument().get_kind(), InstrumentKind.BUILT_IN)
+        self.assertFalse(self.instrument().has_device())
+        await self.press(Key.ENTER)
+        self.assertEqual(self.instrument().get_kind(), InstrumentKind.OFF)
+
+    async def test_the_engine_chosen_shows_its_own_settings(self):
+        await self.select_field(labels.MSG_ENGINE_LABEL)
+        self.assertIn(labels.MSG_OSCILLATOR_LABEL.format(number=1), self.shown_labels())
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_sound(SoundSetting.ENGINE), SoundEngine.DRUM)
+        self.assertIn(labels.MSG_MACHINE_LABEL, self.shown_labels())
+        self.assertNotIn(labels.MSG_OSCILLATOR_LABEL.format(number=1), self.shown_labels())
+
+    async def test_a_gauge_steps_its_setting_and_a_time_steps_by_more_as_it_grows(self):
+        await self.select_field(labels.MSG_VOLUME_LABEL)
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_sound(SoundSetting.VOLUME), defaults.DEFAULT_SOUND_VOLUME + 1)
+        await self.select_field(labels.MSG_DECAY_LABEL)
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_sound(SoundSetting.DECAY), defaults.DEFAULT_DECAY_MS + DECAY_STRIDE)
+
+    async def test_an_oscillator_and_an_effect_block_are_chosen(self):
+        await self.select_field(labels.MSG_OSCILLATOR_LABEL.format(number=2))
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_oscillator(number=2, name=OscillatorSetting.WAVEFORM), file_format.WAVEFORMS[0])
+        await self.select_field(labels.MSG_EFFECT_BLOCK_LABEL.format(number=3))
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_effect(number=3, name=EffectSetting.EFFECT), Effect.BITCRUSH)
+        self.assertIn(labels.MSG_EFFECT_BITS_LABEL.format(number=3), self.shown_labels())
+
+    async def test_an_arpeggio_is_typed_and_one_out_of_range_refused(self):
+        await self.select_field(labels.MSG_ENGINE_LABEL)
+        self.document.change_set(self.instrument().set_sound, name=SoundSetting.ENGINE, value=SoundEngine.SID)
+        await self.select_field(labels.MSG_ARPEGGIO_LABEL)
+        await self.press(Key.ENTER)
+        await self.type(ARPEGGIO_TYPED)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.instrument().get_sound(SoundSetting.ARPEGGIO), ARPEGGIO)
+        await self.press(Key.ENTER, *[Key.BACKSPACE] * len(ARPEGGIO_TYPED))
+        await self.type(str(limits.MAX_INTERVAL + 1))
+        await self.press(Key.ENTER)
+        self.assertEqual(self.instrument().get_sound(SoundSetting.ARPEGGIO), ARPEGGIO)

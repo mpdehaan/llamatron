@@ -38,7 +38,7 @@ from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.song import Song, started_song
 from llamatron.model.objects.traits import HoldsSections
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits as set_limits
-from llamatron.model.schema.file_format import ClipSlotSetting, FileLayout, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, FileLayout, InstrumentKind, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
 from llamatron.model.schema.setting import Checked, Choice, described, Flag, settings_held, Text, TimeLength, WholeNumber
 from llamatron.model.values import note
 from llamatron.model.values.scale import ScaleType
@@ -856,8 +856,9 @@ class Setlist(HoldsSections, HoldsSettings):
         return chain
 
     def add_new_instrument(self, name):
-        """Add an instrument with no device yet at the end of the set's instruments, and return it."""
-        instrument = Instrument()
+        """Add an instrument at the end of the set's instruments, switched off, neither MIDI nor built in, until one is chosen,
+        and return it."""
+        instrument = Instrument(kind=InstrumentKind.OFF)
         self.add_item(section=Section.INSTRUMENTS, name=name, item=instrument)
         return instrument
 

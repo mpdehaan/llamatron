@@ -10,6 +10,7 @@ import unittest
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import built_in_sound
 from llamatron.model.objects.instrument import Instrument
+from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import DrumMachine, Effect, EffectSetting, InstrumentKind, InstrumentSetting, OscillatorSetting, SoundEngine, SoundSetting, Waveform
 
@@ -20,6 +21,8 @@ CHOKE = 1
 KNOBS = [30, 64, 64, 40, 60]
 DRIVE_PERCENT = 40
 BITS = 6
+KNOB_PLACE = 2
+DEVICE = 'IAC Driver Bus 1'
 
 
 class TestBuiltInSound(unittest.TestCase):
@@ -77,3 +80,28 @@ class TestBuiltInSound(unittest.TestCase):
                                            (Effect.BITCRUSH, BITS, defaults.DEFAULT_CRUSH_RATE)])
         with self.assertRaises(InvalidValue):
             Instrument(kind=InstrumentKind.BUILT_IN).set_sound(name=SoundSetting.EFFECTS, value=[{}] * (limits.EFFECT_BLOCKS + 1))
+
+    def test_oscillators_knobs_and_effect_blocks_are_set_one_at_a_time_the_ones_before_made(self):
+        instrument = Instrument(kind=InstrumentKind.BUILT_IN)
+        instrument.set_oscillator(number=limits.MAX_OSCILLATORS, name=OscillatorSetting.WAVEFORM, value=Waveform.SQUARE)
+        self.assertEqual(instrument.get_oscillator(number=2, name=OscillatorSetting.WAVEFORM), Waveform.OFF)
+        self.assertEqual(instrument.get_oscillator(number=limits.MAX_OSCILLATORS, name=OscillatorSetting.WAVEFORM), Waveform.SQUARE)
+        instrument.set_knob(place=KNOB_PLACE, value=KNOBS[0])
+        self.assertEqual(instrument.get_knob(KNOB_PLACE), KNOBS[0])
+        instrument.set_effect(number=limits.EFFECT_BLOCKS, name=EffectSetting.EFFECT, value=Effect.DRIVE)
+        self.assertEqual(instrument.get_effect(number=1, name=EffectSetting.EFFECT), Effect.NONE)
+        self.assertEqual(len(instrument.get_sound(SoundSetting.EFFECTS)), limits.EFFECT_BLOCKS)
+
+    def test_a_new_instrument_is_off_until_a_device_is_chosen_which_makes_it_midi(self):
+        setlist = Setlist()
+        instrument = setlist.add_new_instrument(WHERE)
+        self.assertEqual(instrument.get_kind(), InstrumentKind.OFF)
+        instrument.set_device(DEVICE)
+        self.assertEqual(instrument.get_kind(), InstrumentKind.MIDI)
+        self.assertTrue(instrument.has_device())
+        instrument.set_kind(InstrumentKind.BUILT_IN)
+        self.assertFalse(instrument.has_device())
+
+    def test_a_chip_engine_plays_one_note_at_once_unless_it_says_otherwise(self):
+        self.assertEqual(built_in_sound.sound_value(sound={SoundSetting.ENGINE: SoundEngine.SID}, name=SoundSetting.VOICES), 1)
+        self.assertEqual(built_in_sound.sound_value(sound={}, name=SoundSetting.VOICES), defaults.DEFAULT_VOICES)

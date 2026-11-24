@@ -50,6 +50,8 @@ KEEP_READY_SECONDS = 0.25
 LAUNCH_LEAD_SECONDS = 0.003
 # MIDI channels are sent one less than people number them.
 CHANNEL_OFFSET = 1
+# A MIDI instrument's Latency is in milliseconds, and a route's early in seconds.
+MILLISECONDS = 1000.0
 # How long after the last edit made while playing the edit is heard, so that typed digits, 1 then 12 then 120, are heard as 120 alone.
 LIVE_SETTLE_SECONDS = 0.15
 # How long after a key that edits by itself, such as stretching a note, the edit is heard: no other key is waited for.
@@ -304,10 +306,10 @@ class Transport:
         routes = {}
         for track, instrument in instruments.items():
             if not instrument.uses_fluidsynth():
-                routes[track] = Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET)
+                routes[track] = Route(instrument.get_device(), instrument.get_channel() - CHANNEL_OFFSET, early=instrument.get_latency() / MILLISECONDS)
             elif track in channels:
                 sound = None if song.get_track(track).is_drum() or instrument.get_gm_sound() is None else instrument.get_gm_sound() - limits.MIN_GM_SOUND
-                routes[track] = Route(realtime_names.FLUIDSYNTH_PORT, channels[track], sound, keyswitches=False)
+                routes[track] = Route(realtime_names.FLUIDSYNTH_PORT, channels[track], sound, keyswitches=False, early=instrument.get_latency() / MILLISECONDS)
         routes.update(built_in_routes(built_in))
         return routes
 

@@ -44,6 +44,8 @@ from tests.support.rendering import song_from_data, song_from_file
 
 EXAMPLES = example_sets()
 SEED = 1
+# A device's latency, which its events are sent that much earlier for.
+LATENCY_SECONDS = 0.012
 PORT = 'test port'
 OTHER_PORT = 'other port'
 # The export writes every track on channel 0, so the timeline is compared on that channel.
@@ -107,6 +109,7 @@ def described(*, place, tick, kind, number, value):
     return (place, tick, kind, number, value)
 
 
+
 def timeline_events(*, grid, timeline):
     """Return a timeline's events described like the export's, with the track's place among the unmuted tracks."""
     places = {track.get_name(): place for place, track in enumerate(track for track in grid.get_columns() if not track.get_mute())}
@@ -126,6 +129,14 @@ class TestTimeline(unittest.TestCase):
         self.assertTrue(timeline)
         self.assertNotIn(left_out, {event.tag.track for event in timeline})
         self.assertTrue(set(routes) >= {event.tag.track for event in timeline})
+
+    def test_a_device_slow_to_sound_has_every_event_sent_its_latency_earlier(self):
+        grid = SongRealizer(song_from_file(LAG_SONG), seed=SEED).render()
+        routes = routes_on_one_channel(grid)
+        on_time = song_timeline(grid=grid, routes=routes)
+        early = song_timeline(grid=grid, routes={track: route._replace(early=LATENCY_SECONDS) for track, route in routes.items()})
+        self.assertEqual([event.seconds - LATENCY_SECONDS for event in on_time], [event.seconds for event in early])
+        self.assertEqual([event.whole for event in on_time], [event.whole for event in early])
 
 
 def note(*, seconds, number, tag, kind=timeline_values.NOTE_ON, port=PORT, channel=0):

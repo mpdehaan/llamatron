@@ -42,6 +42,8 @@ class Route(NamedTuple):
     keyswitches: bool = True
     # The name of the built-in instrument whose sound plays the track, through the Synthesis Process, or None for MIDI.
     sound: str = None
+    # How many seconds earlier the track's events are sent: a MIDI instrument's Latency, for a device slow to sound.
+    early: float = 0.0
 
 
 class ClipTag(NamedTuple):
@@ -109,13 +111,15 @@ def clip_timeline(*, clip, scale, route, tag, scene_start, scene_seconds, clock)
     events = []
     # A score counts each clip's events from its scene's start, which is zero, and adding a zero to every moment cost a Rational a moment.
     starts_at_zero = not scene_start
+    # Every event of a device slow to sound is sent its latency earlier, worked out once for the clip.
+    sent_from = scene_seconds - route.early
 
     def at(time, kind, number, value):
         # Made with _make, which costs about half what the NamedTuple's constructor does by name, every field given: a score makes about 600,000 events.
         whole = time
         if not starts_at_zero:
             whole = scene_start + time
-        return Playing._make((whole, scene_seconds + clock.seconds_at(time), route.port, route.channel, kind, number, value, tag, NOT_A_SWITCH))
+        return Playing._make((whole, sent_from + clock.seconds_at(time), route.port, route.channel, kind, number, value, tag, NOT_A_SWITCH))
     if route.program is not None:
         events.append(at(Rational(0), PROGRAM_CHANGE, route.program, NO_VELOCITY))
     notes, clip_length = timed_events(clip=clip, scale=scale)

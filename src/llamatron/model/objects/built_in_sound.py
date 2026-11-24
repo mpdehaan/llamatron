@@ -146,10 +146,17 @@ def check_sound(value):
 
 
 def sound_value(*, sound, name):
-    """Return one of a stored sound's settings, its default where the sound leaves it out."""
+    """Return one of a stored sound's settings, its default where the sound leaves it out: a chip engine plays one note at
+    once unless it says otherwise, as the chips' voices do, and every other engine four."""
     if sound is not None and name in sound:
         return sound[name]
+    if name == SoundSetting.VOICES and sound_value(sound=sound, name=SoundSetting.ENGINE) in CHIP_ENGINES:
+        return 1
     return SOUND_DEFAULTS[name]
+
+
+# The engines that play one note at once unless they say otherwise.
+CHIP_ENGINES = (SoundEngine.SID, SoundEngine.POCKET)
 
 
 def oscillator_value(*, oscillator, name):
