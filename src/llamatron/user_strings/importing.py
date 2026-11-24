@@ -34,6 +34,8 @@ MSG_DRUM_NAMES = {
 MSG_UNNAMED_MIDI_TRACK = 'track {number}'
 
 # importers/writing.py
+# The instrument a drum track plays through; every other track's instrument is named after its General MIDI sound.
+MSG_DRUMS_INSTRUMENT = 'drums'
 # A scene is named after the bars it plays, counted from 1, or the one bar.
 MSG_SCENE_BARS = 'bars {first}-{last}'
 MSG_SCENE_BAR = 'bar {first}'

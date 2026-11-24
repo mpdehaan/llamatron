@@ -33,6 +33,8 @@ MIDDLE_C = 60
 HAND_REACH = 16
 HAND_SHARE = 0.1
 FIRST_DRUM_NUMBER = 1
+# The General MIDI sound a part's tracks get where the file sets no program: a piano, which the user can change.
+DEFAULT_SOUND = limits.MIN_GM_SOUND
 # A chord in root position, which writes no Inversion.
 NO_INVERSION = 0
 
@@ -86,6 +88,16 @@ class Voice:
     played: list
     lanes: list = field(default_factory=list)
     controls: list = field(default_factory=list)
+    # The General MIDI sound its track's instrument plays, numbered 1 to 128 as people number them, or None for a drum's.
+    sound: object = None
+
+    def carried_into(self, time):
+        """Return what the voice plays that starts before a time and is still held at it, or None: a note a pattern of a clip's
+        list holds on with a tie from the pattern before."""
+        place = bisect.bisect_left(self.played, time, key=start_of)
+        if place and self.played[place - 1].end > time:
+            return self.played[place - 1]
+        return None
 
     def played_between(self, *, begin, end):
         """Return what the voice plays starting at or after one time and before another, found by halving, since what it plays is
@@ -112,11 +124,21 @@ def voices_of(*, part, chords, controls):
         for name, notes, from_top in hands(part):
             units = chord_units(notes) if chords else [single(note) for note in notes]
             voices += named_voices(name=name, drum=False, lines=lines_of(units=units, from_top=from_top))
+    if not part.is_drums():
+        for voice in voices:
+            voice.sound = sound_of(part)
     lanes = control_lanes(part) if controls else []
     if lanes:
         voices[0].lanes = lanes
         voices[0].controls = [control for control in part.controls if control.number in lanes]
     return voices
+
+
+def sound_of(part):
+    """Return the General MIDI sound a part's program sets, numbered from 1, or the piano where the file sets none."""
+    if part.program is None:
+        return DEFAULT_SOUND
+    return part.program + limits.MIN_GM_SOUND
 
 
 def control_lanes(part):

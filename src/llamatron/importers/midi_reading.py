@@ -7,7 +7,9 @@ A part is what one channel of one MIDI track plays, so that a file of type 0, wh
 channel in one track, still comes apart into its instruments. Times are whole notes from the
 start of the song, exact, worked out from the file's ticks, as every length in llamatron is.
 A note the file starts and never ends lasts until its track ends, and is counted. A part keeps its
-channel's CC messages, which the import may bring in (voices.py).
+channel's CC messages, which the import may bring in (voices.py), and the General MIDI program its channel is set to: the
+first program change on the channel in its own track, or where its track sends none, anywhere in the file, since many files
+set every channel's program in a track of their own.
 """
 
 from dataclasses import dataclass
@@ -26,6 +28,7 @@ KEY_SIGNATURE = 'key_signature'
 # A CC message, which a part keeps, and the messages that change how a note sounds that llamatron has no
 # way to send, which the import leaves out and counts: pitch bend is a message of its own, not a CC.
 CONTROL_CHANGE = 'control_change'
+PROGRAM_CHANGE = 'program_change'
 LEFT_OUT_MESSAGES = ('pitchwheel', 'aftertouch', 'polytouch')
 # Channel 10 as people count, General MIDI's drums; mido counts channels from 0.
 DRUM_CHANNEL = 9
@@ -74,6 +77,8 @@ class MidiPart:
     channel: int
     notes: list
     controls: list
+    # The General MIDI program, 0 to 127 as MIDI sends it, or None where the file sets none for the channel.
+    program: object = None
 
     def is_drums(self):
         return self.channel == DRUM_CHANNEL
@@ -136,12 +141,14 @@ def read_midi(midi_file):
     left_out = 0
     controls_without_notes = 0
     numbered = FIRST_TRACK_NUMBER
+    programs_in_file = {}
     for track in midi_file.tracks:
         tick = FIRST_TICK
         name = None
         held = {}
         notes_by_channel = {}
         controls_by_channel = {}
+        programs = {}
         for message in track:
             tick += message.time
             time = whole_notes(tick=tick, ticks_per_beat=ticks_per_beat)
@@ -155,6 +162,9 @@ def read_midi(midi_file):
                 keys.append(MidiFileChange(time, message.key))
             elif message.type in LEFT_OUT_MESSAGES:
                 left_out += 1
+            elif message.type == PROGRAM_CHANGE:
+                programs.setdefault(message.channel, message.program)
+                programs_in_file.setdefault(message.channel, message.program)
             elif message.type == CONTROL_CHANGE:
                 controls_by_channel.setdefault(message.channel, []).append(HeardControl(time, message.control, message.value))
             elif message.type == NOTE_ON and message.velocity > SILENT_VELOCITY:
@@ -175,7 +185,10 @@ def read_midi(midi_file):
         name = name or importing.MSG_UNNAMED_MIDI_TRACK.format(number=numbered)
         numbered += 1
         for channel in sorted(notes_by_channel):
-            parts.append(MidiPart(name=name, channel=channel, notes=sorted(notes_by_channel[channel]), controls=controls_by_channel.get(channel, [])))
+            parts.append(MidiPart(name=name, channel=channel, notes=sorted(notes_by_channel[channel]), controls=controls_by_channel.get(channel, []), program=programs.get(channel)))
+    for part in parts:
+        if part.program is None:
+            part.program = programs_in_file.get(part.channel)
     return MidiContents(
         parts=parts, tempos=from_the_start(changes=tempos, default=DEFAULT_TEMPO),
         time_signatures=from_the_start(changes=time_signatures, default=DEFAULT_TIME_SIGNATURE),

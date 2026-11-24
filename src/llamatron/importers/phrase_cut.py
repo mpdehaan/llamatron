@@ -69,6 +69,12 @@ class PhraseCutter(Cutter):
 
     __slots__ = ()
 
+    def can_cut(self, step):
+        """Return whether a phrase may end at a step: anywhere but across a note that doesn't last whole steps, since the
+        phrases of a section are patterns of one clip's list, and a tie at the start of the next carries a held note on. A
+        section, a scene of its own, still starts only where no note is held across (is_clean)."""
+        return step not in self._untieable
+
     def best_cut(self):
         """Return the song cut into phrases of the longest pattern's length, each voice's phrase a pattern that every phrase
         playing the same notes shares, and the phrases gathered into sections, each a scene whose clips play their phrases' patterns
@@ -78,7 +84,7 @@ class PhraseCutter(Cutter):
         pieces = self.phrase_pieces(phrases)
         scenes = []
         totals = Changed()
-        for section in sections_of(phrases=phrases, boundaries=set(self.boundaries()), families=phrase_families(phrases)):
+        for section in sections_of(phrases=phrases, boundaries=set(self.boundaries()), families=phrase_families(phrases), can_start=self.is_clean):
             scene = self.section_scene(section=section, totals=totals, pieces=pieces)
             if scenes and scenes[-1].same_music(scene):
                 scenes[-1].repeat += 1
@@ -101,7 +107,7 @@ class PhraseCutter(Cutter):
         bar = self.step_of(self._bars[1] - self._bars[0])
         best = None
         for lead in range(0, length, bar):
-            if lead and not self.is_clean(lead):
+            if lead and not self.can_cut(lead):
                 continue
             cuts, off = self.cuts(length, lead=lead)
             phrases = [self.phrase_at(start=start, end=end) for start, end in zip(cuts, cuts[1:])]
@@ -163,15 +169,18 @@ class PhraseCutter(Cutter):
             return None
         size = length // parts
         edges = [phrase.start + size * place for place in range(parts + 1)]
-        if not all(self.is_clean(edge) for edge in edges[1:-1]):
+        if not all(self.can_cut(edge) for edge in edges[1:-1]):
             return None
         return [self.voice_clip(voice=voice, start=start, end=end, key=phrase.key) for start, end in zip(edges, edges[1:])]
 
     def phrase_at(self, *, start, end):
-        """Return one phrase of the song: where it starts and ends, its key and tempo, and each voice's clip across it."""
-        key = value_at(changes=self._keys, time=self.time_of(start))
+        """Return one phrase of the song: where it starts and ends, its key and tempo, and each voice's clip across it. The key
+        and tempo are those from the song's last boundary at or before the phrase, where a scene could start, since a phrase
+        that starts across a held note shares the scene before it, written in that scene's key."""
+        since = max(boundary for boundary in self.boundaries() if boundary <= start)
+        key = value_at(changes=self._keys, time=self.time_of(since))
         clips = [self.voice_clip(voice=voice, start=start, end=end, key=key) for voice in range(len(self._voices))]
-        return Phrase(start=start, end=end, key=key, tempo=value_at(changes=self._tempos, time=self.time_of(start)), clips=tuple(clips))
+        return Phrase(start=start, end=end, key=key, tempo=value_at(changes=self._tempos, time=self.time_of(since)), clips=tuple(clips))
 
     def section_scene(self, *, section, totals, pieces):
         """Return the scene of a section, its phrases one after another: each voice that plays in it a clip of one pattern
@@ -256,12 +265,13 @@ def section_letter(place):
     return section_letter(place // len(importing.MSG_SECTION_LETTERS) - 1) + importing.MSG_SECTION_LETTERS[place % len(importing.MSG_SECTION_LETTERS)]
 
 
-def sections_of(*, phrases, boundaries, families):
+def sections_of(*, phrases, boundaries, families, can_start):
     """Return the phrases gathered into sections, each phrase with its family: a section ends at a key or tempo change, where
     music the song plays more than once begins, the first time as every time after, as a refrain or a verse does, where that
     music gives way to music heard once, and after MOST_PHRASES_A_SECTION phrases, so that a section is a part of the form a
     person would name. Music begins where a phrase of a family the song plays again follows one it never followed before; a run
-    of phrases heard together before stays together."""
+    of phrases heard together before stays together. A section starts only at a phrase can_start allows, where no note is held
+    across, since a tie carries a note on only within a clip."""
     recurring = {family for family, count in Counter(families).items() if count > 1}
     sections = []
     followed = set()
@@ -269,7 +279,9 @@ def sections_of(*, phrases, boundaries, families):
     for phrase, family in zip(phrases, families):
         begins = family in recurring and (before, family) not in followed
         gives_way = before in recurring and family not in recurring
-        if not sections or phrase.start in boundaries or len(sections[-1]) >= MOST_PHRASES_A_SECTION or begins or gives_way:
+        if not sections:
+            sections.append([])
+        elif can_start(phrase.start) and (phrase.start in boundaries or len(sections[-1]) >= MOST_PHRASES_A_SECTION or begins or gives_way):
             sections.append([])
         sections[-1].append((phrase, family))
         followed.add((before, family))

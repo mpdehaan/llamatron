@@ -197,7 +197,7 @@ def snapped(*, parts, step_size):
             if start != note.start:
                 moved += 1
             notes.append(PartNote(start, note.end + start - note.start, note.pitch, note.velocity))
-        snapped_parts.append(MidiPart(name=part.name, channel=part.channel, notes=sorted(notes), controls=part.controls))
+        snapped_parts.append(MidiPart(name=part.name, channel=part.channel, notes=sorted(notes), controls=part.controls, program=part.program))
     return snapped_parts, moved
 
 
@@ -241,7 +241,7 @@ class Longest(NamedTuple):
 class Cutter:
     """What cuts one song: its voices on a grid of steps, the step sizes its patterns may take, the bar lines, its keys and tempos, and the longest pattern asked for."""
 
-    __slots__ = ('_voices', '_step_size', '_clip_step_sizes', '_bars', '_keys', '_tempos', '_longest', '_end', '_blocked', '_cached')
+    __slots__ = ('_voices', '_step_size', '_clip_step_sizes', '_bars', '_keys', '_tempos', '_longest', '_end', '_blocked', '_untieable', '_cached')
 
     def __init__(self, *, voices, step_size, clip_step_sizes, bars, keys, tempos, longest):
         self._voices = voices
@@ -253,7 +253,7 @@ class Cutter:
         self._tempos = tempos
         self._longest = longest
         self._end = self.step_of(bars[-1])
-        self._blocked = self.held_across()
+        self._blocked, self._untieable = self.held_across()
         # Each voice's clip in a scene, worked out once whichever cuts ask for that scene.
         self._cached = {}
 
@@ -265,17 +265,32 @@ class Cutter:
         return step * self._step_size
 
     def held_across(self):
-        """Return the steps some note is held across, which no scene can split at."""
+        """Return the steps some note is held across, which no scene can split at, and of those the steps a note is held across
+        that a tie can't carry on into the next pattern of a clip's list, since the note doesn't last whole steps."""
         blocked = set()
+        untieable = set()
         for voice in self._voices:
             for played in voice.played:
                 first = played.start / self._step_size
                 last = played.end / self._step_size
-                blocked.update(range(int(first) + 1, ceil(last)))
-        return blocked
+                across = range(int(first) + 1, ceil(last))
+                blocked.update(across)
+                if not first.is_whole() or not last.is_whole():
+                    untieable.update(across)
+        return blocked, untieable
 
     def is_clean(self, step):
         return step not in self._blocked
+
+    def can_cut(self, step):
+        """Return whether the song's cuts may fall at a step: where no note is held across, since each cut is a scene's edge."""
+        return self.is_clean(step)
+
+    def cut_after(self, step):
+        """Return the first step at or after a step that a cut may fall at, or the song's end."""
+        while step < self._end and not self.can_cut(step):
+            step += 1
+        return min(step, self._end)
 
     def clean_after(self, step):
         """Return the first clean step at or after a step, or the song's end."""
@@ -316,12 +331,12 @@ class Cutter:
                 start = lead
                 line = lead + length
             while line < end:
-                if self.is_clean(line):
+                if self.can_cut(line):
                     cuts.append(line)
                     line += length
                     continue
-                before = next((step for step in range(line - 1, cuts[-1], -1) if self.is_clean(step)), None)
-                after = self.clean_after(line + 1)
+                before = next((step for step in range(line - 1, cuts[-1], -1) if self.can_cut(step)), None)
+                after = self.cut_after(line + 1)
                 for step in (before, after):
                     if step is not None and cuts[-1] < step < end:
                         cuts.append(step)
@@ -360,9 +375,14 @@ class Cutter:
         return VoiceClip(size=size, found=found, pattern=pattern, repeats=repeats, controls_moved=moved, error=error, start=start, end=end)
 
     def clip_step_sizes(self, *, voice, start, end):
-        """Return the step sizes a voice's clip from grid step start to grid step end can take, longest first: the scene's ends and every note's start fall on their steps."""
+        """Return the step sizes a voice's clip from grid step start to grid step end can take, longest first: the scene's ends,
+        every note's start and the end of a note carried into it from the piece before, which a tie holds, fall on their steps."""
         begin = self.time_of(start)
-        starts = [played.start - begin for played in self._voices[voice].played_between(begin=start * self._step_size, end=end * self._step_size)]
+        played = self._voices[voice]
+        starts = [each.start - begin for each in played.played_between(begin=start * self._step_size, end=end * self._step_size)]
+        carried = played.carried_into(begin)
+        if carried is not None and carried.end < self.time_of(end):
+            starts.append(carried.end - begin)
         sizes = [
             size for size in self._clip_step_sizes
             if (begin / size).is_whole() and (self.time_of(end - start) / size).is_whole() and all_on_steps(times=starts, size=size)

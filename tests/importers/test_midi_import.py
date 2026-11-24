@@ -24,13 +24,14 @@ from llamatron.importers.midi_reading import MidiPart, PartNote, read_midi
 from llamatron.importers.voices import Played, Voice, voices_of
 from llamatron.importers.writing import add_imported
 from llamatron.math.rational import Rational
+from llamatron.model.objects import naming
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name
 from llamatron.model.objects.setlist import Setlist
-from llamatron.model.schema import file_format
+from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.scale import ScaleType
-from llamatron.user_strings import errors, importing
+from llamatron.user_strings import errors, importing, labels
 from tests.support.example_renders import example_setlist, first_song_grid
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -82,6 +83,7 @@ NO_HALF_STEPS = 0
 NOTE_ON = 'note_on'
 NOTE_OFF = 'note_off'
 CONTROL_CHANGE = 'control_change'
+PROGRAM_CHANGE = 'program_change'
 SET_TEMPO = 'set_tempo'
 KEY_SIGNATURE = 'key_signature'
 TRACK_NAME = 'track_name'
@@ -420,6 +422,36 @@ class TestPhrasesAndSections(unittest.TestCase):
         first_pieces = [listed for listed in lists[0]]
         self.assertGreater(len(first_pieces), 3)
         self.assertEqual(sum(listed.count(first_pieces[0]) for listed in lists), 3)
+
+    def test_a_chord_held_across_phrase_lines_is_tied_on_and_no_pattern_passes_the_longest(self):
+        # A pad's chord held for twenty bars under a tune, which no scene may start inside, so the phrases are one clip's list.
+        held_bars = 20
+        pad = [(0, held_bars * SIXTEENTHS_IN_A_BAR, pitch) for pitch in C_MAJOR_TRIAD]
+        tune = phrase(pitches=list(C_MAJOR_SCALE), bars=held_bars + 4, start_bar=0)
+        imported = self.imported([('lead', 0, tune), ('pad', 1, pad)])
+        self.assertEqual(len(imported.song.song[Section.SCENES]), 1)
+        for data in imported.song.patterns.values():
+            self.assertLessEqual(data[PatternSetting.STEPS], PHRASE_BARS * SIXTEENTHS_IN_A_BAR)
+
+
+class TestInstruments(unittest.TestCase):
+    """Every imported track plays through an instrument named after the General MIDI sound its channel's program sets, a piano
+    where the file sets none, played through FluidSynth; a drum track through the drums instrument."""
+
+    def test_each_track_gets_its_sounds_instrument_a_piano_by_default_and_drums_their_own(self):
+        midi = midi_of(tracks=[('lead', 0, melody(pitches=[60, 62])), ('organ', 1, melody(pitches=[48, 50])), ('kit', DRUM_CHANNEL, melody(pitches=[KICK]))])
+        program_of_the_organ = 16
+        midi.tracks[2].insert(1, mido.Message(PROGRAM_CHANGE, channel=1, program=program_of_the_organ))
+        setlist = Setlist.new()
+        _, song = imported_into(setlist=setlist, midi=midi)
+        organ_name = labels.MSG_GM_SOUNDS[program_of_the_organ]
+        instruments = {track: song.get_track(track).get_instrument_name() for track in song.get_track_names()}
+        self.assertEqual(instruments['lead'], naming.suggested_word(labels.MSG_GM_SOUNDS[0]))
+        self.assertEqual(instruments['organ'], naming.suggested_word(organ_name))
+        self.assertEqual(instruments[importing.MSG_DRUM_NAMES[KICK]], importing.MSG_DRUMS_INSTRUMENT)
+        organ = setlist.get_item(section=Section.INSTRUMENTS, name=instruments['organ'])
+        self.assertEqual(organ.get_gm_sound(), program_of_the_organ + limits.MIN_GM_SOUND)
+        self.assertEqual(organ.get_device(), file_format.FLUIDSYNTH_DEVICE)
 
 
 class TestTheWizardsNames(unittest.TestCase):

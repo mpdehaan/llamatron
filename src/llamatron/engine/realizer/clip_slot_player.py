@@ -15,6 +15,7 @@ from llamatron.engine.realizer.pattern_player import Pass, PatternPlayer
 from llamatron.engine.realizer.shapes import PlacedRamp, PlacedVelocity, reshaped
 from llamatron.engine.realizer.step_order import StepOrder
 from llamatron.engine.timing.keyswitch import SwitchNote
+from llamatron.math import length as length_values
 from llamatron.math.length import Length
 from llamatron.math.random_source import drawn_from_when_asked
 from llamatron.math.rational import Rational
@@ -511,9 +512,11 @@ def _kept_where(*, tripped, before, after, passes):
 def _tied_on(*, sounds, extra):
     """Return a clip's sounds with the note still sounding at their end held for extra longer, for ties that follow.
 
-    The last sound is that note if it's a note or chord, or a held one whose sound reaches the end.
-    Anything else, like a rest, means nothing is sounding, so the ties are silence and nothing
-    changes. The note becomes a held one, so that the next positions still start on time.
+    The last sound is that note if it's a note or chord, or a held one whose sound reaches the end,
+    or the rest of a pass of ties alone after a held note that sounds through to the rest's end, as
+    a note tied on through a pattern of ties in a clip's list does. Anything else, like a rest,
+    means nothing is sounding, so the ties are silence and nothing changes. The note becomes a held
+    one, so that the next positions still start on time.
     """
     if not sounds:
         return sounds
@@ -525,9 +528,31 @@ def _tied_on(*, sounds, extra):
     elif kind == sound_values.HELD and Length.at_most(place, last[sound_values.HELD_SOUND][sound_values.LENGTH]):
         sound = last[sound_values.HELD_SOUND]
         held = Sound.held(Sound.lasting(sound, Length.add(sound[sound_values.LENGTH], extra)), place)
+    elif kind == sound_values.REST:
+        return _held_through_rests(sounds=sounds, extra=extra)
     else:
         return sounds
     return [*sounds[:-1], held]
+
+
+def _held_through_rests(*, sounds, extra):
+    """Return a clip's sounds ending in rests with the held note before the rests held for extra longer, where it sounds exactly
+    through them, as a note tied on through a pattern of ties alone in a clip's list does; otherwise as they are."""
+    first_rest = len(sounds)
+    resting = length_values.ZERO
+    while first_rest and sounds[first_rest - 1][sound_values.KIND] == sound_values.REST:
+        first_rest -= 1
+        resting = Length.add(resting, sounds[first_rest][sound_values.LENGTH])
+    if not first_rest:
+        return sounds
+    before = sounds[first_rest - 1]
+    if before[sound_values.KIND] != sound_values.HELD:
+        return sounds
+    sound = before[sound_values.HELD_SOUND]
+    if sound[sound_values.LENGTH] != Length.add(before[sound_values.LENGTH], resting):
+        return sounds
+    held = Sound.held(Sound.lasting(sound, Length.add(sound[sound_values.LENGTH], extra)), before[sound_values.LENGTH])
+    return [*sounds[:first_rest - 1], held, *sounds[first_rest:]]
 
 
 def _moved_later(*, controls, time):

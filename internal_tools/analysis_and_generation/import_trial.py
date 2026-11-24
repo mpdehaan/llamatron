@@ -37,6 +37,7 @@ from llamatron.importers.midi_import import ImportChoices, MidiImport
 from llamatron.importers.writing import add_imported
 from llamatron.math.rational import Rational
 from llamatron.model.objects.setlist import Setlist
+from llamatron.model.schema.file_format import Section
 
 TRIALS = os.path.join('/tmp', 'claude', 'llamatron', 'import_trials')
 SUFFIXES = ('.mid', '.midi')
@@ -125,8 +126,12 @@ def tried(*, path, set_path=None):
     midi_import = MidiImport(midi_file=midi_file)
     imported = midi_import.imported(setlist=setlist, choices=ImportChoices(song_name=SONG_NAME, longest_bars=midi_import_values.WIZARD_LONGEST_BARS, numbered=True))
     shapes = shapes_struck(midi_import)
+    starter = setlist.first_song_name()
     song = add_imported(setlist=setlist, imported=imported.song)
     if set_path is not None:
+        # A new set's empty song, and the scale and pattern it plays, are left out, so that the set holds the imported song alone.
+        setlist.remove_item(section=Section.SONGS, name=starter)
+        setlist.remove_unused()
         setlist.write_file(set_path)
     again = MidiSong(directory=os.curdir, grid=SongRealizer(song).render(), name=SONG_NAME).midi_file()
     comparison = compared(first=midi_file, second=again)

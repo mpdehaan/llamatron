@@ -14,6 +14,9 @@ Names follow these rules:
 - A key uses one of the set's scales only when that scale is still named after its root and kind,
   like C Major, and otherwise a scale named that way is added.
 - A scene is named after the bars it plays, like bars 1-4.
+- A track plays through an instrument named after its General MIDI sound, like acoustic_grand_piano, a piano where the
+  file sets none, played through FluidSynth until the user chooses a device; a drum track through drums. An instrument the
+  set has by that name already is used as it is, so that a device the user chose for it stays.
 """
 
 from dataclasses import dataclass
@@ -25,13 +28,13 @@ from llamatron.importers.steps import has_a_value
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.objects.named_scale import NamedScale
-from llamatron.model.objects.naming import copy_name, default_scale_name, is_default_scale_name, new_name, unique_name
+from llamatron.model.objects.naming import copy_name, default_scale_name, is_default_scale_name, new_name, suggested_word, unique_name
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.song import Song
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, InstrumentSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.time_signature import TimeSignature
-from llamatron.user_strings import importing
+from llamatron.user_strings import importing, labels
 
 FIRST_BAR_NUMBER = 1
 # The Import Wizard numbers scenes from S01; a scene of a cut that letters nothing shows no letter.
@@ -43,6 +46,8 @@ PERCENT = 100
 MICROSECONDS_PER_MINUTE = 60000000
 # What a pattern, scale or song the import made is placed by in an error, which only a fault of the import's own can raise.
 WHERE_IMPORTED = importing.MSG_WHERE_IMPORTED
+# What an instrument's name leaves out of its General MIDI sound's, like the brackets of Electric Guitar (clean).
+LEFT_OUT_OF_NAMES = str.maketrans('', '', '()')
 
 
 @dataclass(slots=True, kw_only=True)
@@ -53,6 +58,8 @@ class ImportedSong:
     song: dict
     patterns: dict
     scales: dict
+    # The instruments it adds, by name, those the set has already left out.
+    instruments: dict
     # How many of the song's patterns the set already had, which the song uses rather than making them again.
     shared: int
 
@@ -135,9 +142,25 @@ def time_signature_text(beats_and_unit):
         return None
 
 
+def instrument_name(voice):
+    """Return the name of the instrument a voice's track plays through: drums for a drum's, and otherwise its General MIDI sound's name as the tracker writes a name."""
+    if voice.sound is None:
+        return importing.MSG_DRUMS_INSTRUMENT
+    sound = labels.MSG_GM_SOUNDS[voice.sound - limits.MIN_GM_SOUND]
+    return suggested_word(sound.translate(LEFT_OUT_OF_NAMES))
+
+
+def instrument_data(voice):
+    """Return the data of the instrument a voice's track plays through: FluidSynth, until the user chooses a device, with the voice's General MIDI sound."""
+    data = {InstrumentSetting.DEVICE: file_format.FLUIDSYNTH_DEVICE}
+    if voice.sound is not None:
+        data[InstrumentSetting.GM_SOUND] = voice.sound
+    return data
+
+
 def track_data(voice):
-    """Return a voice's track settings: drum where it is a drum's, and the CC numbers of its lanes, the rest of the four lanes sending nothing."""
-    data = {}
+    """Return a voice's track settings: its instrument, drum where it is a drum's, and the CC numbers of its lanes, the rest of the four lanes sending nothing."""
+    data = {TrackSetting.INSTRUMENT: instrument_name(voice)}
     if voice.drum:
         data[TrackSetting.DRUM] = True
     if voice.lanes:
@@ -184,12 +207,22 @@ class SongWriter:
             song[SongSetting.TIME_SIGNATURE] = time_signature
         song[SongSetting.SCALE] = scale_names[0]
         song[Section.TRACKS] = {track: track_data(voice) for track, voice in zip(self._track_names, self._voices)}
+        instruments = self.instruments()
         song[Section.SCENES] = [
             self.scene_data(place=place, scene=scene, song=song, pattern_names=pattern_names, scale_name=scale_names[place])
             for place, scene in enumerate(self._cut.scenes)
         ]
         song_name = name if not self._setlist.has_song(name) else copy_name(name=name, taken=set(self._setlist.get_song_names()))
-        return ImportedSong(name=song_name, song=song, patterns=patterns, scales=scales, shared=shared)
+        return ImportedSong(name=song_name, song=song, patterns=patterns, scales=scales, instruments=instruments, shared=shared)
+
+    def instruments(self):
+        """Return the instruments the song's tracks play through that the set doesn't have yet, by name."""
+        made = {}
+        for voice in self._voices:
+            name = instrument_name(voice)
+            if not self._setlist.has_item(section=Section.INSTRUMENTS, name=name):
+                made[name] = instrument_data(voice)
+        return made
 
     def patterns(self):
         """Return the patterns the song adds by name, how many it shares with the set instead, and every pattern's name."""
@@ -352,7 +385,9 @@ def without_group(data):
 
 
 def add_imported(*, setlist, imported):
-    """Add an imported song to a set, with its scales and patterns first, since the song names them, and return the song."""
+    """Add an imported song to a set, with its instruments, scales and patterns first, since the song names them, and return the song."""
+    for name, data in imported.instruments.items():
+        setlist.add_read_item(section=Section.INSTRUMENTS, name=name, data=data)
     for name, data in imported.scales.items():
         setlist.add_item(section=Section.SCALES, name=name, item=NamedScale.from_data(data=data, where=WHERE_IMPORTED, song=setlist))
     for name, data in imported.patterns.items():

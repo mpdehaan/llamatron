@@ -21,6 +21,7 @@ A value that comes and goes between two steps is not heard, which the comparison
 """
 
 from bisect import bisect_right
+from math import ceil
 from typing import NamedTuple
 
 from llamatron.engine.timing import timing
@@ -68,7 +69,7 @@ class SceneSteps(NamedTuple):
 
 def scene_steps(*, voice, start, end, key, step_size):
     """Return a voice's steps from step start to step end, in a key, where every note starts on a step and none crosses either end."""
-    steps = [None] * (end - start)
+    steps = held_on_steps(voice=voice, start=start, end=end, step_size=step_size)
     gated = []
     lengths_changed = 0
     too_low = 0
@@ -90,11 +91,22 @@ def scene_steps(*, voice, start, end, key, step_size):
                 lengths_changed += 1
         steps[place] = NoteStep(degree, accidental, octave, played.chord, gate, played.velocity, played.inversion)
         if gate is None:
-            for tied in range(place + 1, place + max(int(length), 1)):
+            for tied in range(place + 1, min(place + max(int(length), 1), len(steps))):
                 steps[tied] = TIED
     lanes = tuple(lane_values(voice=voice, number=number, start=start, end=end, step_size=step_size) for number in voice.lanes)
     changes = any(lane_changes(values=values, before=value_in_force(voice=voice, number=number, time=start * step_size, before=True)) for number, values in zip(voice.lanes, lanes))
     return SceneSteps(steps=steps, gated=gated, lanes=lanes, changes=changes, lengths_changed=lengths_changed, too_low=too_low)
+
+
+def held_on_steps(*, voice, start, end, step_size):
+    """Return a voice's empty steps from step start to step end, but for a note held on into them from the pattern before in a
+    clip's list, which ties hold to the note's end or the steps' end."""
+    steps = [None] * (end - start)
+    carried = voice.carried_into(start * step_size)
+    if carried is not None:
+        for tied in range(min(ceil(carried.end / step_size), end) - start):
+            steps[tied] = TIED
+    return steps
 
 
 def lane_changes(*, values, before):

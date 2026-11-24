@@ -10,7 +10,9 @@ Three patterns of two quarter notes each: a plays C and D, b plays E and F, and 
 import unittest
 
 from llamatron.engine.realizer.pattern_order import ordered_patterns
+from llamatron.engine.timing.timing import timed_events
 from llamatron.math.random_source import random_source
+from llamatron.math.rational import Rational
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import ClipSlotSetting, Direction, DrawName, DrawSetting, Operator, PatternOrder, PatternSetting, RegisterUse, Row, Section, StatementPart, StepStatement
@@ -24,6 +26,7 @@ A = 'a'
 B = 'b'
 C = 'c'
 HIT = 'hit'
+TIES = 'ties'
 LIST = [A, B, C]
 # The MIDI numbers each pattern plays.
 PLAYED = {A: [48, 50], B: [52, 53], C: [55, 57]}
@@ -99,6 +102,19 @@ class TestAClipOfSeveralPatterns(unittest.TestCase):
         cut = [*PLAYED[A], PLAYED[B][0]]
         self.assertEqual(notes[:len(cut) + len(PLAYED[A])], [*cut, *PLAYED[A]])
         self.assertEqual(notes[-len(notes_of(A, B, C)):], notes_of(A, B, C))
+
+    def test_a_note_tied_on_through_patterns_of_ties_alone_lasts_through_them_all(self):
+        # A chord of four quarter steps held by ties, two patterns of ties alone, and a pattern whose ties end it before a note.
+        held = {PatternSetting.STEPS: 4, PatternSetting.STEP_SIZE: QUARTER, Row.DEGREE: [1, None, None, None], Row.CHORD: [file_format.ChordSymbol.MAJOR, None, None, None], Row.TIE: [False, True, True, True]}
+        ties = {PatternSetting.STEPS: 4, PatternSetting.STEP_SIZE: QUARTER, Row.TIE: [True, True, True, True]}
+        ending = {PatternSetting.STEPS: 4, PatternSetting.STEP_SIZE: QUARTER, Row.DEGREE: [None, None, 3, None], Row.TIE: [True, True, False, False]}
+        made = {A: held, TIES: ties, B: ending}
+        data = with_parts(patterns=made, scenes=[{Section.TRACKS: {song_testing.LEAD: {ClipSlotSetting.PATTERNS: [A, TIES, TIES, B]}}}])
+        a_clip = clip(song=render_data(data), scene=1, track=song_testing.LEAD)
+        events = sorted(timed_events(clip=a_clip, scale=a_clip.get_scale())[0])
+        held_quarters = 4 + 4 + 4 + 2
+        self.assertEqual({event.end for event in events[:-1]}, {Rational(held_quarters, 4)})
+        self.assertEqual(events[-1].start, Rational(held_quarters, 4))
 
 
 class TestPatternOrder(unittest.TestCase):

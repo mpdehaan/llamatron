@@ -47,7 +47,11 @@ The song plays every note the file plays, for as long as the file plays it.
 - **Tracks** come from the file's tracks: drums become a track for each sound,
   named such as `kick` and `closed hat`; a track that plays both hands splits
   into its treble and bass; and overlapping notes within a track spread over
-  tracks lettered `a`, `b` and so on.
+  tracks lettered `a`, `b` and so on. Each track plays through an instrument
+  named after the General MIDI sound the file sets for it, such as
+  `drawbar_organ`, or `acoustic_grand_piano` where the file sets none, played
+  through FluidSynth until you choose a device on the Instruments page; drum
+  tracks play through `drums`.
 - **Patterns** are reused: a phrase that returns uses its pattern again, and a
   bar played several times becomes one pattern with the clip's Repeat set.
   Patterns are named after their track and numbered, such as `lead-1`.

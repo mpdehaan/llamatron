@@ -586,6 +586,10 @@ class Setlist(HoldsSections, HoldsSettings):
     # Changing the named sections, all the same way. An item is a Pattern, NamedScale, Chain,
     # generator settings object or Song, and the set keeps the names in it right.
 
+    def add_read_item(self, *, section, name, data):
+        """Add an item of a section read from its data, as a file holds it, such as an instrument an import makes."""
+        self.add_item(section=section, name=name, item=self._item(section=section, name=name, data=data))
+
     def add_item(self, *, section, name, item, after=None):
         """Add a named item to a section, at the end, or right after another item. A groove can't take a factory groove's name."""
         if section == Section.GROOVES:
