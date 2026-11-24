@@ -10,7 +10,7 @@ starts a whole new Python instead, since coverage has to be running before anyth
 
 The tests don't depend on each other, and the slow ones are the text UI tests, so this finishes
 in about the time of the slowest class rather than of all of them together. The slowest classes
-start first, by the seconds each took last time, kept in .test_times.json (which git ignores), and
+start first, by the seconds each took last time, kept in tests/.cache/test_times.json (which git ignores), and
 a class with no time yet starts before them all, so that no slow class is left to start last. Every result is
 still reported: a class with a failure prints unittest's whole output for it, and the total
 counts every test. It finds the tests just as `python -m unittest discover -s test` does, and
@@ -61,7 +61,9 @@ MSG_OK = 'OK'
 MSG_FAILED = 'FAILED: {count} of {classes} classes had failures or errors: {names}'
 NAME_SEPARATOR = ', '
 # Where the seconds each class took are kept between runs, to start the slowest first.
-TIMES_FILE = '.test_times.json'
+# Where the test runs keep what they learn, out of the top folder: each class's last time, the test map and its coverage.
+CACHE_FOLDER = os.path.join('tests', '.cache')
+TIMES_FILE = os.path.join(CACHE_FOLDER, 'test_times.json')
 # A class with no time yet counts as slower than any, so that it starts first.
 NOT_TIMED = float('inf')
 SUCCESS = 0
@@ -200,6 +202,7 @@ def remember_times(*, path, results):
     no longer exists drops out."""
     kept = {result[0]: round(result[-1], 2) for result in results}
     try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w', encoding='utf-8') as file:
             json.dump(kept, file, indent=0, sort_keys=True)
     except OSError:

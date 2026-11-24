@@ -5,7 +5,7 @@
 """The map of which test classes run which source files, from the coverage data internal_tools/test_map.sh gathers, and the
 classes a set of changed files needs, which internal_tools/test_changed.sh runs.
 
-    internal_tools/test_map.py build              # turn .test_coverage/ into .test_map.json
+    internal_tools/test_map.py build              # turn tests/.cache/coverage/ into tests/.cache/test_map.json
     internal_tools/test_map.py changed FILE...    # print the classes the files need, one a line, or ALL for the whole suite
 """
 
@@ -16,8 +16,8 @@ import pathlib
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-COVERAGE_FOLDER = ROOT / '.test_coverage'
-MAP_FILE = ROOT / '.test_map.json'
+COVERAGE_FOLDER = ROOT / 'tests' / '.cache' / 'coverage'
+MAP_FILE = ROOT / 'tests' / '.cache' / 'test_map.json'
 SOURCE = 'src/llamatron/'
 TESTS = 'tests/'
 # The rules about the code's shape, which read every file and so run for any change.
