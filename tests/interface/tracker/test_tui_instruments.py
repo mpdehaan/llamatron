@@ -339,8 +339,12 @@ class TestInstrumentTabs(UITest):
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_effect(number=1, name=EffectSetting.CUTOFF), defaults.DEFAULT_CUTOFF + CUTOFF_STRIDE)
 
-    async def test_an_lfo_offers_its_engines_controls_and_its_rate_steps_in_tenths_of_a_hertz(self):
+    async def test_an_lfo_starts_off_offers_its_engines_controls_and_its_rate_steps_in_tenths_of_a_hertz(self):
         await self.select_field(labels.MSG_LFO_LABEL.format(number=1))
+        self.assertFalse(self.instrument().get_lfo(number=1, name=LfoSetting.ON))
+        await self.press(Key.ENTER)
+        self.assertTrue(self.instrument().get_lfo(number=1, name=LfoSetting.ON))
+        await self.select_field(labels.MSG_LFO_TARGET_LABEL.format(number=1))
         self.assertNotIn(labels.MSG_LFO_RATE_LABEL.format(number=1), self.shown_labels())
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_lfo(number=1, name=LfoSetting.TARGET), file_format.LFO_TARGETS[SoundEngine.BASIC][1])
@@ -348,7 +352,7 @@ class TestInstrumentTabs(UITest):
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_lfo(number=1, name=LfoSetting.RATE), defaults.DEFAULT_LFO_RATE + LFO_RATE_STRIDE)
         self.document.change_set(self.instrument().set_sound, name=SoundSetting.ENGINE, value=SoundEngine.DRUM)
-        await self.select_field(labels.MSG_LFO_LABEL.format(number=1))
+        await self.select_field(labels.MSG_LFO_TARGET_LABEL.format(number=1))
         self.assertNotIn(labels.MSG_LFO_RATE_LABEL.format(number=1), self.shown_labels())
 
     async def test_an_arpeggio_is_typed_and_one_out_of_range_refused(self):

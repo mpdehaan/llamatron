@@ -88,13 +88,14 @@ def chosen(name, *, choices):
 
 
 LFO_SETTINGS = described(
+    Flag(name=LfoSetting.ON, error=errors.ERR_SOUND_FLAG),
     chosen(LfoSetting.TARGET, choices=file_format.SYNTH_CONTROLS),
     chosen(LfoSetting.SHAPE, choices=file_format.LFO_SHAPES),
     WholeNumber(name=LfoSetting.RATE, lowest=limits.MIN_LFO_RATE, highest=limits.MAX_LFO_RATE, error=errors.ERR_SOUND_NUMBER),
     WholeNumber(name=LfoSetting.DEPTH, lowest=-limits.MAX_LFO_DEPTH, highest=limits.MAX_LFO_DEPTH, error=errors.ERR_SOUND_NUMBER),
     Flag(name=LfoSetting.RETRIGGER, error=errors.ERR_SOUND_FLAG),
 )
-LFO_DEFAULTS = {LfoSetting.TARGET: SynthControl.NONE, LfoSetting.SHAPE: LfoShape.SINE, LfoSetting.RATE: defaults.DEFAULT_LFO_RATE,
+LFO_DEFAULTS = {LfoSetting.ON: False, LfoSetting.TARGET: SynthControl.NONE, LfoSetting.SHAPE: LfoShape.SINE, LfoSetting.RATE: defaults.DEFAULT_LFO_RATE,
                 LfoSetting.DEPTH: defaults.DEFAULT_LFO_DEPTH, LfoSetting.RETRIGGER: True}
 # An LFO's rate is stored in tenths of a hertz.
 TENTHS = 10.0
@@ -292,12 +293,13 @@ class SoundSpec:
                 'wave_shape': self.value(SoundSetting.WAVE_SHAPE), 'noise': self.value(SoundSetting.NOISE)}
 
     def lfos(self, engine):
-        """Return the LFOs that move something on the engine, each its target, shape, rate in hertz, depth as a fraction either
-        way and whether each note starts it again; an LFO whose target the engine lacks, or that has none, left out."""
+        """Return the LFOs that are on and move something on the engine, each its target, shape, rate in hertz, depth as a
+        fraction either way and whether each note starts it again; an LFO that is off, whose target the engine lacks, or that
+        has none, left out."""
         lfos = []
         for lfo in self.value(SoundSetting.LFOS):
             target = lfo_value(lfo=lfo, name=LfoSetting.TARGET)
-            if target not in file_format.LFO_TARGETS[engine] or target == SynthControl.NONE:
+            if not lfo_value(lfo=lfo, name=LfoSetting.ON) or target not in file_format.LFO_TARGETS[engine] or target == SynthControl.NONE:
                 continue
             lfos.append({'target': target, 'shape': lfo_value(lfo=lfo, name=LfoSetting.SHAPE), 'rate': lfo_value(lfo=lfo, name=LfoSetting.RATE) / TENTHS,
                          'depth': lfo_value(lfo=lfo, name=LfoSetting.DEPTH) / PERCENT, 'retrigger': lfo_value(lfo=lfo, name=LfoSetting.RETRIGGER)})

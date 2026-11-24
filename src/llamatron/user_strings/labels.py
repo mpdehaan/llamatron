@@ -829,12 +829,13 @@ MSG_RATE_LABEL = 'Rate'
 MSG_CURVE_LABEL = 'Curve'
 MSG_AMOUNT_LABEL = 'Amount'
 MSG_LFO_LABEL = 'LFO {number}'
+MSG_LFO_TARGET_LABEL = 'LFO {number} moves'
 MSG_LFO_SHAPE_LABEL = 'LFO {number} shape'
 MSG_LFO_RATE_LABEL = 'LFO {number} rate'
 MSG_LFO_DEPTH_LABEL = 'LFO {number} depth'
 MSG_LFO_RETRIGGER_LABEL = 'LFO {number} retrigger'
 # An LFO's field labels as its box shows them, without the LFO's number.
-MSG_LFO_SHOWN_LABELS = {MSG_LFO_SHAPE_LABEL: 'Shape', MSG_LFO_RATE_LABEL: 'Rate', MSG_LFO_DEPTH_LABEL: 'Depth', MSG_LFO_RETRIGGER_LABEL: 'Retrigger'}
+MSG_LFO_SHOWN_LABELS = {MSG_LFO_TARGET_LABEL: 'Moves', MSG_LFO_SHAPE_LABEL: 'Shape', MSG_LFO_RATE_LABEL: 'Rate', MSG_LFO_DEPTH_LABEL: 'Depth', MSG_LFO_RETRIGGER_LABEL: 'Retrigger'}
 # A block's field labels as its box shows them, without the block's number.
 MSG_EFFECT_SHOWN_LABELS = {
     MSG_EFFECT_BITS_LABEL: MSG_BITS_LABEL, MSG_EFFECT_RATE_LABEL: MSG_RATE_LABEL, MSG_EFFECT_CURVE_LABEL: MSG_CURVE_LABEL,

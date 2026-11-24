@@ -282,7 +282,7 @@ class TestLfos(unittest.TestCase):
         self.assertGreater(moved.max() - moved.min(), 1.0)
 
     def test_a_square_lfo_on_pitch_trills_every_tonal_engine_an_octave_either_way(self):
-        lfo = {LfoSetting.TARGET: SynthControl.PITCH, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.RATE: TRILL_TENTHS, LfoSetting.DEPTH: OCTAVE_DEPTH}
+        lfo = {LfoSetting.ON: True, LfoSetting.TARGET: SynthControl.PITCH, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.RATE: TRILL_TENTHS, LfoSetting.DEPTH: OCTAVE_DEPTH}
         half = RATE * 10 // TRILL_TENTHS // 2
         for engine in (SoundEngine.BASIC, SoundEngine.SID, SoundEngine.POCKET):
             with self.subTest(engine=engine):
@@ -291,15 +291,16 @@ class TestLfos(unittest.TestCase):
                 low = self.crossings(mix[half:2 * half])
                 self.assertAlmostEqual(high / low, TWO_OCTAVES, delta=0.3)
 
-    def test_an_lfo_with_nothing_to_move_on_its_engine_is_left_out(self):
-        lfo = {LfoSetting.TARGET: SynthControl.PULSE_WIDTH}
+    def test_an_lfo_that_is_off_or_has_nothing_to_move_on_its_engine_is_left_out(self):
+        lfo = {LfoSetting.ON: True, LfoSetting.TARGET: SynthControl.PULSE_WIDTH}
         self.assertEqual(synth_spec({SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.LFOS: [lfo]})['lfos'], [])
+        self.assertEqual(synth_spec({SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.LFOS: [{**lfo, LfoSetting.ON: False}]})['lfos'], [])
         self.assertEqual(len(synth_spec({SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.LFOS: [lfo]})['lfos']), 1)
 
     def test_an_lfo_on_the_filter_cutoff_moves_the_first_filter(self):
         block = {EffectSetting.EFFECT: Effect.FILTER, EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 0}
         still = self.played(sound={SoundSetting.EFFECTS: [block]})
-        lfo = {LfoSetting.TARGET: SynthControl.FILTER_CUTOFF, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.DEPTH: OCTAVE_DEPTH}
+        lfo = {LfoSetting.ON: True, LfoSetting.TARGET: SynthControl.FILTER_CUTOFF, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.DEPTH: OCTAVE_DEPTH}
         moved = self.played(sound={SoundSetting.EFFECTS: [block], SoundSetting.LFOS: [lfo]})
         self.assertGreater(numpy.abs(moved - still).max(), QUIET)
 

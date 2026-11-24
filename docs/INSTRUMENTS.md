@@ -79,7 +79,9 @@ ones, and Drive pushes the sound into the filter for grit.
 
 The LFOs tab holds four LFOs, each a slow or fast wobble that moves one of the
 sound's settings while it plays, as a player's hand shaking the pitch for
-vibrato or turning a knob back and forth. Each LFO chooses what it moves: the
+vibrato or turning a knob back and forth. Each LFO is off until switched on,
+and switching it off again keeps its settings, so the sound can be heard with
+and without it. Moves chooses what it moves: the
 Pitch, for vibrato and, with a Square shape and a large Depth, a chip trill;
 Pulse width on SID, for the classic wobbling pulse; Detune spread on Basic;
 or Filter cutoff, which moves the first Filter effect. Shape is Sine,
@@ -140,7 +142,7 @@ Right choose a tab.
 | MIDI: Latency | How many milliseconds earlier the instrument's notes are sent, 0 to 500, `0 ms` unless set, for a device that is slow to sound. |
 | Synth: On, Engine | Makes the instrument built in, and chooses its engine; the engine's settings follow. See Built-in Instruments above. |
 | Effects: Block 1 to 4 | Each block's effect and its settings. See Built-in Instruments above. |
-| LFOs: LFO 1 to 4 | What each LFO moves, its Shape, Rate, Depth and Retrigger. See Built-in Instruments above. |
+| LFOs: LFO 1 to 4 | Whether each LFO is on, what it moves, its Shape, Rate, Depth and Retrigger. See Built-in Instruments above. |
 | Listen | A button: `ENTER` on it, or `L` from any field, plays the instrument again and again until `L` again: a scale up an octave and back, or, for a built-in drum, its tuning note four times. Edits to the instrument are heard as it plays. Leaving the page stops it. An instrument that plays nothing, with neither its MIDI nor its Synth on, is refused. |
 | Keyswitch Map | A button: `ENTER` on it, or `K` from any field, opens the instrument's Keyswitch Map. See Keyswitches below. |
 

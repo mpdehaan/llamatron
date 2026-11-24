@@ -736,9 +736,11 @@ class Effect:
 
 
 class LfoSetting:
-    """One LFO of a built-in sound: the Synth Control it moves, or none, its shape, its rate in tenths of a hertz, its depth in
+    """One LFO of a built-in sound: whether it is on, off for a new one, so that an LFO costs nothing until wanted and can be
+    switched off to hear the sound without it; the Synth Control it moves, or none, its shape, its rate in tenths of a hertz, its depth in
     percent of the control's range either way, and whether each note starts it again."""
 
+    ON = 'on'
     TARGET = 'target'
     SHAPE = 'shape'
     RATE = 'rate'

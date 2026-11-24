@@ -1,8 +1,8 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The Instrument page's LFOs tab, as plain nodes, for one instrument by name: four LFOs, two over two, each choosing the
-Synth Control it moves, then its shape, its rate in hertz, its depth either way and whether each note starts it again.
+"""The Instrument page's LFOs tab, as plain nodes, for one instrument by name: four LFOs, two over two, each switched on or off,
+off for a new one, choosing the Synth Control it moves, then its shape, its rate in hertz, its depth either way and whether each note starts it again.
 
 An LFO offers the controls its engine lets an LFO move; one whose control the engine lacks, after the engine is changed,
 shows and moves nothing. The tab is drawn dim while the instrument isn't built in.
@@ -44,17 +44,21 @@ class LfoBlocks:
         return Tab(label=labels.MSG_LFOS_TAB, columns=columns, not_ready=not self.instrument().is_built_in())
 
     def lfo_fields(self, number):
-        """Return an LFO's fields: the control it moves, then, where it moves one, its shape, rate, depth and retrigger."""
+        """Return an LFO's fields: whether it is on, the control it moves, then, where it moves one, its shape, rate, depth and
+        retrigger."""
         targets = file_format.LFO_TARGETS[self.instrument().get_sound(SoundSetting.ENGINE)]
         target = self.instrument().get_lfo(number=number, name=LfoSetting.TARGET)
         if target not in targets:
             target = SynthControl.NONE
-        chosen = ChoiceField(page=self._page, label=labels.MSG_LFO_LABEL.format(number=number), choices=list(targets), current=target,
+        on = Toggle(label=labels.MSG_LFO_LABEL.format(number=number), on=self.instrument().get_lfo(number=number, name=LfoSetting.ON),
+                    set=self.setter(number=number, name=LfoSetting.ON))
+        chosen = ChoiceField(page=self._page, label=labels.MSG_LFO_TARGET_LABEL.format(number=number), shown_label=shown_label(labels.MSG_LFO_TARGET_LABEL),
+                             choices=list(targets), current=target,
                              names=[labels.MSG_SYNTH_CONTROL_NAMES[choice] for choice in targets], shown=labels.MSG_SYNTH_CONTROL_NAMES[target],
                              set=self.setter(number=number, name=LfoSetting.TARGET))
         if target == SynthControl.NONE:
-            return [chosen]
-        return [chosen, self.shape_field(number), self.rate_field(number), self.depth_field(number), self.retrigger_field(number)]
+            return [on, chosen]
+        return [on, chosen, self.shape_field(number), self.rate_field(number), self.depth_field(number), self.retrigger_field(number)]
 
     def shape_field(self, number):
         shape = self.instrument().get_lfo(number=number, name=LfoSetting.SHAPE)
