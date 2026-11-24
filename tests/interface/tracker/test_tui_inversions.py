@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The pattern editor's Inversion row, in Basics under Chord: blocked on a step with no chord, cycling blank, 1, 2 and 3 on one with a chord."""
 
+from llamatron.interface.forms import pattern_grid
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key, RowSection
-from llamatron.interface.tracker.screens.pattern import grid_drawing
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.model.schema.file_format import Row
 from llamatron.user_strings import marks
@@ -60,9 +60,9 @@ class TestInversionRow(UITest):
         self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=FIRST_STEP, value=TRIAD)
         self.assertTrue(roll.root_is_lifted(FIRST_STEP))
         self.editor.draw()
-        self.assertIn(marks.MSG_NOTE_HOLLOW_UNDER_CURSOR * grid_drawing.CELL_WIDTH, self.text())
+        self.assertIn(marks.MSG_NOTE_HOLLOW_UNDER_CURSOR * pattern_grid.CELL_WIDTH, self.text())
         await self.press(Key.RIGHT)
-        self.assertIn(marks.MSG_NOTE_HOLLOW * grid_drawing.CELL_WIDTH, self.text())
+        self.assertIn(marks.MSG_NOTE_HOLLOW * pattern_grid.CELL_WIDTH, self.text())
         # Root position again, and the bar is solid.
         self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.INVERSION, step=FIRST_STEP, value=None)
         self.editor.draw()

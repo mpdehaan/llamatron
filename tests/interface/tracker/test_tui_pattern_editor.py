@@ -6,6 +6,7 @@
 
 from fractions import Fraction
 
+from llamatron.interface.forms import pattern_grid
 from llamatron.interface.tracker import drawing as drawing_values, keybindings, keys
 from llamatron.interface.tracker.components import degree_row, pattern_rows
 from llamatron.interface.tracker.components.chord_row import chord_value
@@ -14,7 +15,6 @@ from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
 from llamatron.interface.tracker.document import Document
 from llamatron.interface.tracker.drawing import Align, Box, fit, Style
 from llamatron.interface.tracker.keys import Key, RowSection
-from llamatron.interface.tracker.screens.pattern import grid_drawing
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor, Reconfigure, reconfigure_choices
 from llamatron.model.objects import setlist
 from llamatron.model.objects.named_scale import scale_type_name
@@ -490,7 +490,7 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
             await self.press(Key.DOWN)
         self.assertFalse(self.editor.row_for(Row.VELOCITY).editable())
         self.assertNotIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.RIGHT_BRACKET), self.text())
-        self.assertIn(ui_testing.REVERSED.format(text=fit(text=marks.MSG_BLOCKED_CELL, width=grid_drawing.CELL_WIDTH, align=Align.CENTER)), self.text())
+        self.assertIn(ui_testing.REVERSED.format(text=fit(text=marks.MSG_BLOCKED_CELL, width=pattern_grid.CELL_WIDTH, align=Align.CENTER)), self.text())
         # Marking the step to grab opens Octave, Velocity and Chord, since the step's chord is built on the grabbed note.
         self.document.change_pattern(self.document.pattern(TUNE).set_value, row=Row.GRAB, step=EMPTY_STEP, value=True)
         self.document.change_pattern(self.document.pattern(TUNE).set_value, row=Row.DEGREE, step=EMPTY_STEP, value=limits.MIN_DEGREE)
@@ -575,11 +575,9 @@ class TestPatternEditorOtherRowsAndSize(PatternEditorTest):
         await self.press(Key.SPACE)
         self.assertIs(self.value(row=Row.GLIDE), True)
         self.assertEqual(glide.cell_text(step=0), marks.MSG_TOGGLE_ON)
-        self.assertIsNone(glide.edge_text(step=1))
         await self.press(Key.SPACE)
         self.assertIs(self.value(row=Row.GLIDE), False)
         self.assertEqual(glide.cell_text(step=0), marks.MSG_TOGGLE_OFF)
-        self.assertIsNone(glide.edge_text(step=1))
         # Enter toggles like Space, and the legend shows the two as one key.
         self.assertIn(ui_testing.KEY_SHOWN.format(label=legends.KeyName.SPACE_ENTER), self.text())
         await self.press(Key.ENTER)

@@ -12,16 +12,17 @@ piano roll (RollDrawing) and the rows (PatternDrawing) draw their own cells betw
 
 from rich.text import Text
 
+from llamatron.interface.forms import pattern_grid
+from llamatron.interface.forms.pattern_grid import PatternRule, StepNumbers
 from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.drawing import Align, Box, fit, Style
+from llamatron.interface.tracker.drawing import fit, Style
 from llamatron.interface.tracker.keyswitch_text import keyswitches_of, slots_in_words
+from llamatron.interface.tracker.renderers import pattern_grid as grid_renderer
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.objects.naming import words
 from llamatron.model.schema.file_format import Row
 from llamatron.user_strings import labels, marks, messages
 
-# How wide a cell of the grid is, which every value fits.
-CELL_WIDTH = 5
 # The lines after the grid: a blank line and the description.
 LINES_AFTER_GRID = 2
 
@@ -44,7 +45,7 @@ class GridDrawing:
 
     def steps_shown(self, width):
         """Return how many steps fit across the screen beside the labels."""
-        return max((width - self.label_width() - 2) // (CELL_WIDTH + 1), 1)
+        return max((width - self.label_width() - 2) // (pattern_grid.CELL_WIDTH + 1), 1)
 
     def scroll_to_cursor(self, width):
         """Move the window of steps so that the cursor's step is on it, and return its first and last steps (the last excluded)."""
@@ -122,96 +123,35 @@ class GridDrawing:
 
     # The rules and the Step row.
 
-    def rule(self, *, left, tee, beat_tee, right, first, last, line_character=Box.RULE, boxed=None, boxed_tee=None, boxed_right=None, joints=True):
-        """Return a rule across the grid, with a double tee where a step starts a beat, or an unbroken line when joints is false, for a rule with no dividers on either side.
-
-        When boxed names a step, the rule is the edge of the cursor's cell on that step: the piece
-        under or over the cell is a bold double rule, joined to the cell's double bars by boxed_tee
-        at both ends, or boxed_right where the cell's right bar is the grid's border, so that the
-        cursor's cell is boxed on that side too, since the single
-        rule between the double joints read as the wrong corners.
-
-        A joint where the bold beat edge crosses the dim rule is plain, between the two, so that
-        neither line reads as broken: a bold cross showed as a break in the rule at every beat,
-        and a dim one as a break in the beat edge at every rule and section heading, both of which
-        were seen once. Every crossing is read after a change to a drawing (.claude/UX.md).
-        """
-        # The line has no style of its own, so that a plain joint stays plain among the dim pieces.
-        line = Text(no_wrap=True)
-        line.append(left + line_character * self.label_width(), style=Style.DIM)
-        beats = self.beat_steps()
-        for step in range(first, last):
-            if boxed is not None and step in (boxed, boxed + 1):
-                line.append(boxed_tee, style=Style.PLAIN)
-            elif not joints:
-                line.append(line_character, style=Style.DIM)
-            elif step in beats:
-                line.append(beat_tee, style=Style.PLAIN)
-            else:
-                line.append(tee, style=Style.DIM)
-            if step == boxed:
-                line.append(Box.DOUBLE_RULE * CELL_WIDTH, style=Style.SELECTED_EDGE)
-            else:
-                line.append(line_character * CELL_WIDTH, style=Style.DIM)
-        if boxed is not None and boxed + 1 == last:
-            line.append(boxed_right, style=Style.PLAIN)
-        else:
-            line.append(right, style=Style.DIM)
-        return line
+    def drawn_rule(self, *, kind, first, last, boxed=None, joints=True):
+        """Return a rule across the grid of a kind (forms/pattern_grid.py), edging the cursor's cell on the step boxed names."""
+        rule = PatternRule(kind=kind, first=first, last=last, beats=self.beat_steps(), boxed=boxed, joints=joints)
+        return grid_renderer.rule_line(rule=rule, label_width=self.label_width())
 
     def top_rule(self, *, first, last):
-        return self.rule(left=Box.TOP_LEFT, tee=Box.TOP_TEE, beat_tee=Box.DOUBLE_TOP_TEE, right=Box.TOP_RIGHT, first=first, last=last)
+        return self.drawn_rule(kind=pattern_grid.TOP, first=first, last=last)
 
     def inner_rule(self, *, first, last, boxed=None):
-        return self.rule(
-            left=Box.LEFT_TEE, tee=Box.CROSS, beat_tee=Box.DOUBLE_CROSS, right=Box.RIGHT_TEE, first=first, last=last,
-            boxed=boxed, boxed_tee=Box.DOUBLE_RULE_DOUBLE_CROSS, boxed_right=Box.DOUBLE_RULE_DOUBLE_RIGHT_TEE,
-        )
+        return self.drawn_rule(kind=pattern_grid.INNER, first=first, last=last, boxed=boxed)
 
     def bottom_rule(self, *, first, last, boxed=None, joints=True):
-        return self.rule(
-            left=Box.BOTTOM_LEFT, tee=Box.BOTTOM_TEE, beat_tee=Box.DOUBLE_BOTTOM_TEE, right=Box.BOTTOM_RIGHT, first=first, last=last,
-            boxed=boxed, boxed_tee=Box.DOUBLE_RULE_DOUBLE_BOTTOM_TEE, boxed_right=Box.DOUBLE_BOTTOM_RIGHT, joints=joints,
-        )
+        return self.drawn_rule(kind=pattern_grid.BOTTOM, first=first, last=last, boxed=boxed, joints=joints)
 
     # The rules around a row with no dividers, like a section heading: the dividers above end in bottom tees, the ones below start in top tees, and between two such rows the rule is unbroken.
 
     def closing_rule(self, *, first, last):
-        return self.rule(left=Box.LEFT_TEE, tee=Box.BOTTOM_TEE, beat_tee=Box.DOUBLE_BOTTOM_TEE, right=Box.RIGHT_TEE, first=first, last=last)
+        return self.drawn_rule(kind=pattern_grid.CLOSING, first=first, last=last)
 
     def opening_rule(self, *, first, last):
-        return self.rule(left=Box.LEFT_TEE, tee=Box.TOP_TEE, beat_tee=Box.DOUBLE_TOP_TEE, right=Box.RIGHT_TEE, first=first, last=last)
+        return self.drawn_rule(kind=pattern_grid.OPENING, first=first, last=last)
 
     def plain_rule(self, *, first, last):
-        return self.rule(left=Box.LEFT_TEE, tee=Box.CROSS, beat_tee=Box.DOUBLE_CROSS, right=Box.RIGHT_TEE, first=first, last=last, joints=False)
-
-    def append_edge(self, *, line, step, beats, single, double, replaced=None):
-        """Add a step's left edge to a line: a plain double line where the step starts a beat, beside the dim single lines, so the beats stand
-        out as columns, unless a bar runs through it. Never bold, since many fonts draw bold double lines short of the next line.
-
-        beats is beat_steps(), which whoever draws the line asks for once rather than once for every step.
-        """
-        if isinstance(replaced, Text):
-            line.append_text(replaced)
-        elif replaced is not None:
-            line.append(replaced)
-        elif step in beats:
-            line.append(double, style=Style.PLAIN)
-        else:
-            line.append(single, style=Style.DIM)
+        return self.drawn_rule(kind=pattern_grid.PLAIN, first=first, last=last, joints=False)
 
     def step_line(self, *, first, last, sounding=None):
-        """Return the line of step numbers, with the number of the step that sounds, if one is given, in the read head's light yellow, as the rows view shows it."""
-        head = Text(no_wrap=True)
-        head.append(Box.BAR, style=Style.DIM)
-        head.append(fit(text=labels.MSG_STEP_HEADING, width=self.label_width()), style=Style.BOLD)
-        beats = self.beat_steps()
-        for step in range(first, last):
-            self.append_edge(line=head, step=step, beats=beats, single=Box.BAR, double=Box.DOUBLE_BAR)
-            style = Style.READ_HEAD if step == sounding else (Style.BOLD if step in beats else Style.PLAIN)
-            head.append(fit(text=str(step + 1), width=CELL_WIDTH, align=Align.CENTER), style=style)
-        head.append(Box.BAR, style=Style.DIM)
-        return head
+        """Return the line of step numbers, with the number of the step that sounds, if one is given, in the read head's light, as the rows view shows it."""
+        numbers = StepNumbers(first=first, last=last, beats=self.beat_steps(), sounding=sounding)
+        return grid_renderer.step_numbers_line(numbers=numbers, label_width=self.label_width())
 
     # The description of the step under the cursor.
 

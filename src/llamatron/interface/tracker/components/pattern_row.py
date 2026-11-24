@@ -60,10 +60,6 @@ class PatternRow(BindsKeys):
         """Return whether the cursor on this row is shown on its label rather than on a cell, which a section's row does, since it has no cells of its own."""
         return False
 
-    def edge_text(self, *, step):
-        """Return what takes the place of the divider before a step's cell, or None to draw the divider, which a bar can run through."""
-        return None
-
     def on_rests(self):
         """Return whether a rest can hold this row's value, so that its keys work on an empty step and a cell there shows it."""
         return False

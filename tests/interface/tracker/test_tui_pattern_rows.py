@@ -238,10 +238,8 @@ class TestTieRow(UITest):
         # The tied step shows the toggle mark, the dividers stay, and a note's own step draws no tie: it can't take one.
         tie = self.editor.row_for(Row.TIE)
         self.assertEqual(tie.cell_text(step=self.EMPTY_STEP), marks.MSG_TOGGLE_ON)
-        self.assertIsNone(tie.edge_text(step=self.EMPTY_STEP))
         self.assertEqual(tie.cell_lines(step=self.EMPTY_STEP - 1), [marks.MSG_BLOCKED_CELL])
         self.assertEqual(tie.cell_lines(step=0), [marks.MSG_BLOCKED_CELL])
-        self.assertIsNone(tie.edge_text(step=self.EMPTY_STEP - 1))
         self.assertIn(messages.MSG_DESCRIBE_TIED.format(step=self.EMPTY_STEP + 1), self.text())
         render_song(self.document.song())
         await self.press(Key.BACKSPACE)

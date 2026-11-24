@@ -17,9 +17,10 @@ and the entry size.
 from rich.text import Text
 from typing import NamedTuple
 
+from llamatron.interface.forms import pattern_grid
 from llamatron.interface.tracker import drawing
 from llamatron.interface.tracker.drawing import Box, fit, Style
-from llamatron.interface.tracker.screens.pattern import grid_drawing
+from llamatron.interface.tracker.renderers import pattern_grid as grid_renderer
 from llamatron.interface.tracker.screens.pattern.grid_drawing import GridDrawing
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.schema.file_format import Row
@@ -36,15 +37,15 @@ LINES_AROUND_ROWS = 7
 # The fewest pitch rows drawn, however short the screen.
 MIN_ROWS = 1
 # The column of a cell that holds a note's mark, its sharp, flat or G, in the middle, or the bar's last column when the bar is shorter.
-MARK_COLUMN = grid_drawing.CELL_WIDTH // 2
+MARK_COLUMN = pattern_grid.CELL_WIDTH // 2
 # Which of the grid's lines is the roll's top row, under the top rule, the step numbers and the heading's rule: where the keyswitch lights go.
 TOP_PITCH_LINE = 3
 
 
 def filled_columns(part):
     """Return how many of a cell's columns a part of a step fills, rounded to the nearest, and never none or all, so that a short note is seen to be short."""
-    columns = (part.numerator * grid_drawing.CELL_WIDTH * 2 + part.denominator) // (part.denominator * 2)
-    return max(min(columns, grid_drawing.CELL_WIDTH - 1), 1)
+    columns = (part.numerator * pattern_grid.CELL_WIDTH * 2 + part.denominator) // (part.denominator * 2)
+    return max(min(columns, pattern_grid.CELL_WIDTH - 1), 1)
 
 
 class DrawnNotes(NamedTuple):
@@ -121,7 +122,7 @@ class RollDrawing(GridDrawing):
         # A sharp or flat has a row of its own when the scale is known, so the mark is only for numbered rows.
         return roll.accidental_symbol(start) if roll.scale_name() is None else None
 
-    def note_cell(self, *, mark, selected, columns=grid_drawing.CELL_WIDTH, hollow=False):
+    def note_cell(self, *, mark, selected, columns=pattern_grid.CELL_WIDTH, hollow=False):
         """Return a note's cell, shaded under the cursor, with its mark in reverse video in the middle so that it reads against the bar, and hollow for a note an inversion
         plays an octave up.
         """
@@ -135,9 +136,9 @@ class RollDrawing(GridDrawing):
         columns of bar and then blank, with the mark in the bar's last column when the middle is
         past its end.
         """
-        if columns == grid_drawing.CELL_WIDTH and mark is None:
+        if columns == pattern_grid.CELL_WIDTH and mark is None:
             return Text(marks.MSG_NOTE_UNDER_CURSOR if selected else marks.MSG_NOTE_CELL, no_wrap=True)
-        if columns == grid_drawing.CELL_WIDTH:
+        if columns == pattern_grid.CELL_WIDTH:
             cell = Text((marks.MSG_NOTE_UNDER_CURSOR_WITH_MARK if selected else marks.MSG_NOTE_CELL_WITH_MARK).format(mark=mark), no_wrap=True)
             cell.stylize(Style.REVERSE, MARK_COLUMN, MARK_COLUMN + len(mark))
             return cell
@@ -146,7 +147,7 @@ class RollDrawing(GridDrawing):
         if mark is not None:
             column = min(MARK_COLUMN, columns - 1)
             bar = bar[:column] + mark + bar[column + 1:]
-        cell = Text(fit(text=bar, width=grid_drawing.CELL_WIDTH), no_wrap=True)
+        cell = Text(fit(text=bar, width=pattern_grid.CELL_WIDTH), no_wrap=True)
         if mark is not None:
             cell.stylize(Style.REVERSE, column, column + len(mark))
         return cell
@@ -156,9 +157,9 @@ class RollDrawing(GridDrawing):
         start = notes.covering.get(step)
         roll = self.roll()
         if step != start + roll.note_span(start) - 1:
-            return grid_drawing.CELL_WIDTH
+            return pattern_grid.CELL_WIDTH
         part = roll.partial_cell(start)
-        return grid_drawing.CELL_WIDTH if part is None else filled_columns(part)
+        return pattern_grid.CELL_WIDTH if part is None else filled_columns(part)
 
     def continues(self, *, notes, pitch, step):
         """Return whether a note at this pitch runs from the step before into this one, so the bar replaces the divider."""
@@ -194,7 +195,7 @@ class RollDrawing(GridDrawing):
     def ghost_cell(self, *, notes, step, selected):
         """Return the thin dim line of a chord's added note over one step, as far as the chord's note fills the cell."""
         columns = self.columns_filled(notes=notes, step=step)
-        return Text(fit(text=marks.MSG_GHOST_LINE * columns, width=grid_drawing.CELL_WIDTH), style=Style.REVERSE if selected else Style.CHORD_NOTE, no_wrap=True)
+        return Text(fit(text=marks.MSG_GHOST_LINE * columns, width=pattern_grid.CELL_WIDTH), style=Style.REVERSE if selected else Style.CHORD_NOTE, no_wrap=True)
 
     def cursor_edges(self):
         """Return the edges the cursor's bold double bars stand on: the left edge of the cursor's step and of the step after it, which is the right border on the last step."""
@@ -240,16 +241,16 @@ class RollDrawing(GridDrawing):
                 replaced = Text(Box.DOUBLE_BAR, style=Style.SELECTED_EDGE)
             else:
                 replaced = None
-            self.append_edge(line=line, step=step, beats=beats, single=Box.BAR, double=Box.DOUBLE_BAR, replaced=replaced)
+            grid_renderer.append_edge(line=line, step=step, beats=beats, replaced=replaced)
             selected = on_row and step == editor.step
             if mark is not False:
                 line.append_text(self.note_cell(mark=mark, selected=selected, columns=self.columns_filled(notes=notes, step=step), hollow=hollow))
             elif ghost:
                 line.append_text(self.ghost_cell(notes=notes, step=step, selected=selected))
             elif selected:
-                line.append(drawing.SPACE * grid_drawing.CELL_WIDTH, style=Style.REVERSE)
+                line.append(drawing.SPACE * pattern_grid.CELL_WIDTH, style=Style.REVERSE)
             elif in_range:
-                line.append(drawing.SPACE * grid_drawing.CELL_WIDTH)
+                line.append(drawing.SPACE * pattern_grid.CELL_WIDTH)
             else:
                 line.append(marks.MSG_OUT_OF_RANGE_CELL, style=Style.DIM)
         if last in cursor_edges:
@@ -260,10 +261,7 @@ class RollDrawing(GridDrawing):
 
     def heading_rule(self, *, first, last, boxed=None):
         """Return the double rule under the step numbers."""
-        return self.rule(
-            left=Box.DOUBLE_RULE_LEFT_TEE, tee=Box.DOUBLE_RULE_CROSS, beat_tee=Box.DOUBLE_RULE_DOUBLE_CROSS, right=Box.DOUBLE_RULE_RIGHT_TEE,
-            first=first, last=last, line_character=Box.DOUBLE_RULE, boxed=boxed, boxed_tee=Box.DOUBLE_RULE_DOUBLE_CROSS, boxed_right=Box.DOUBLE_RULE_DOUBLE_RIGHT_TEE,
-        )
+        return self.drawn_rule(kind=pattern_grid.HEADING, first=first, last=last, boxed=boxed)
 
     def boxed_beside(self, *pitches):
         """Return the cursor's step when one of the rows beside a rule is the cursor's, so that the rule boxes the cursor's cell on that side, and None otherwise."""
@@ -290,7 +288,7 @@ class RollDrawing(GridDrawing):
             return line
         marked = line.copy()
         for step in steps:
-            column = EDGE_WIDTH + self.label_width() + (step - first) * (grid_drawing.CELL_WIDTH + EDGE_WIDTH) + EDGE_WIDTH + MARK_COLUMN
+            column = EDGE_WIDTH + self.label_width() + (step - first) * (pattern_grid.CELL_WIDTH + EDGE_WIDTH) + EDGE_WIDTH + MARK_COLUMN
             after = marked[column + 1:]
             marked = marked[:column]
             marked.append(marks.MSG_KEYSWITCH_LIGHT, style=Style.KEYSWITCH_LIGHT)
@@ -303,7 +301,7 @@ class RollDrawing(GridDrawing):
         step = self._editor.playing_step()
         if step is None or not first <= step < last:
             return lines
-        column = EDGE_WIDTH + self.label_width() + (step - first) * (grid_drawing.CELL_WIDTH + EDGE_WIDTH)
+        column = EDGE_WIDTH + self.label_width() + (step - first) * (pattern_grid.CELL_WIDTH + EDGE_WIDTH)
         return [self.read_head_on(line=line, column=column) for line in lines]
 
     def read_head_on(self, *, line, column):

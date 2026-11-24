@@ -10,6 +10,7 @@ alone under C Major, so the roll knows its scale and its track.
 
 import re
 
+from llamatron.interface.forms import pattern_grid
 from llamatron.interface.tracker import drawing, keys
 from llamatron.interface.tracker.components.chord_row import chord_value
 from llamatron.interface.tracker.dialogs import chord_dialog
@@ -17,7 +18,7 @@ from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.chord_dialog import ChordDialog
 from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.keys import Key
-from llamatron.interface.tracker.screens.pattern import grid_drawing, roll_drawing
+from llamatron.interface.tracker.screens.pattern import roll_drawing
 from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.pattern.roll_drawing import filled_columns
 from llamatron.math.rational import Rational
@@ -355,17 +356,17 @@ class TestPlacingNotes(RollTest):
         self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.GATE, step=E_STEP, value=THREE_SIXTEENTHS)
         self.document.changed()
         await self.press(Key.RIGHT, Key.LEFT)
-        self.assertIn(marks.MSG_NOTE_CELL + marks.MSG_NOTE_EDGE + marks.MSG_NOTE_EDGE * columns + drawing.SPACE * (grid_drawing.CELL_WIDTH - columns), self.roll_line(f'{NoteName.E}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_NOTE_CELL + marks.MSG_NOTE_EDGE + marks.MSG_NOTE_EDGE * columns + drawing.SPACE * (pattern_grid.CELL_WIDTH - columns), self.roll_line(f'{NoteName.E}{SHOWN_OCTAVE}'))
         # A 1/16 note on 1/8 steps fills half its cell, shaded under the cursor, and cuts E's gate to the step.
         await self.pick_entry_size(SIXTEENTH)
         await self.press(Key.RIGHT, Key.RIGHT, Key.UP, keybindings.PianoRoll.PLACE)
-        self.assertIn(marks.MSG_CURSOR_BLOCK * columns + drawing.SPACE * (grid_drawing.CELL_WIDTH - columns), self.roll_line(f'{NoteName.D}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_CURSOR_BLOCK * columns + drawing.SPACE * (pattern_grid.CELL_WIDTH - columns), self.roll_line(f'{NoteName.D}{SHOWN_OCTAVE}'))
         self.assertEqual(self.value(row=Row.GATE, step=E_STEP), EIGHTH)
         await self.press(Key.UP)
-        self.assertIn(marks.MSG_NOTE_EDGE * columns + drawing.SPACE * (grid_drawing.CELL_WIDTH - columns), self.roll_line(f'{NoteName.D}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_NOTE_EDGE * columns + drawing.SPACE * (pattern_grid.CELL_WIDTH - columns), self.roll_line(f'{NoteName.D}{SHOWN_OCTAVE}'))
         # The bar is never empty and never full, so that a short note is seen to be short.
         self.assertEqual(filled_columns(Rational(1, 100)), 1)
-        self.assertEqual(filled_columns(Rational(99, 100)), grid_drawing.CELL_WIDTH - 1)
+        self.assertEqual(filled_columns(Rational(99, 100)), pattern_grid.CELL_WIDTH - 1)
 
     async def test_the_rows_show_what_was_painted(self):
         await self.pick_entry_size(QUARTER)
@@ -488,7 +489,7 @@ class TestChordsOnTheRoll(RollTest):
 
     def ghost(self):
         """Return the thin line of a chord's note over one step."""
-        return marks.MSG_GHOST_LINE * grid_drawing.CELL_WIDTH
+        return marks.MSG_GHOST_LINE * pattern_grid.CELL_WIDTH
 
     async def test_a_scale_chords_other_notes_are_thin_lines_on_their_degrees(self):
         # The C on step 1 as a scale triad: lines on E and G, over that step alone, and the C itself stays solid.
@@ -553,7 +554,7 @@ class TestChordsOnTheRoll(RollTest):
         self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.TIE, step=LAST_STEP, value=True)
         self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=EMPTY_STEP, value=chord_value(ChordSymbol.SCALE_FIFTH))
         await self.press(Key.RIGHT, Key.LEFT)
-        self.assertIn(marks.MSG_GHOST_LINE * (grid_drawing.CELL_WIDTH * 2 + 1), self.roll_line(f'{NoteName.G}{SHOWN_OCTAVE}'))
+        self.assertIn(marks.MSG_GHOST_LINE * (pattern_grid.CELL_WIDTH * 2 + 1), self.roll_line(f'{NoteName.G}{SHOWN_OCTAVE}'))
 
     async def test_a_named_chord_has_no_ghosts_when_the_scale_is_not_known_and_a_scale_chord_still_has(self):
         self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.CHORD, step=C_STEP, value=ChordSymbol.MINOR)

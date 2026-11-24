@@ -9,11 +9,10 @@ drawing shares; this draws the pinned rows and the scrolled rows between them, w
 and under each section's heading, two neighbouring rules drawn as one.
 """
 
-from rich.text import Text
 
-from llamatron.interface.tracker import drawing
-from llamatron.interface.tracker.drawing import Align, Box, fit, Style
-from llamatron.interface.tracker.screens.pattern import grid_drawing
+from llamatron.interface.forms import pattern_grid
+from llamatron.interface.forms.pattern_grid import RowLines
+from llamatron.interface.tracker.renderers import pattern_grid as grid_renderer
 from llamatron.interface.tracker.screens.pattern.grid_drawing import GridDrawing
 from llamatron.model.schema.file_format import Row
 
@@ -123,11 +122,11 @@ class PatternDrawing(GridDrawing):
 
     # The grid.
 
-    def label_style(self, *, row, on_row, number):
-        """Return a label's style: reverse video for the cursor on a section's heading, bold on the cursor's row, and plain elsewhere."""
+    def label_kind(self, *, row, on_row, number):
+        """Return how a label is drawn: reversed for the cursor on a section's heading, bold on the cursor's row, and plain elsewhere."""
         if not (on_row and number == row.cursor_line()):
-            return Style.PLAIN
-        return Style.REVERSE if row.marks_label() else Style.BOLD
+            return pattern_grid.PLAIN_LABEL
+        return pattern_grid.REVERSED_LABEL if row.marks_label() else pattern_grid.BOLD_LABEL
 
     def row_lines(self, *, row, first, last):
         """Return a row's lines, drawn once and kept until the set changes, unless the cursor is on the row or the row is a section's heading.
@@ -146,31 +145,20 @@ class PatternDrawing(GridDrawing):
 
     def drawn_row_lines(self, *, row, first, last):
         """Draw a row's lines: its labels, bold on the cursor's row, and each step's cells, the cursor's reversed on the line that holds the value."""
-        editor = self._editor
+        return grid_renderer.row_lines(row=self.row_node(row=row, first=first, last=last), label_width=self.label_width())
+
+    def row_node(self, *, row, first, last):
+        """Return a row as the grid shows it from the first step to the last."""
         on_row = self.rows().current_row() is row
-        labels = row.labels()
-        cells = [row.cell_lines(step=step) for step in range(first, last)]
-        lines = []
-        beats = self.beat_steps()
-        for number, label in enumerate(labels):
-            line = Text(no_wrap=True)
-            line.append(Box.BAR, style=Style.DIM)
-            line.append(fit(text=drawing.SPACE + label, width=self.label_width()), style=self.label_style(row=row, on_row=on_row, number=number))
-            if row.marks_label():
-                # A section heading has no cells, so no divider crosses it: the dividers above end in the rule over it and the ones below start in the rule under it.
-                line.append(drawing.SPACE * ((last - first) * (grid_drawing.CELL_WIDTH + 1)))
-                line.append(Box.BAR, style=Style.DIM)
-                lines.append(line)
-                continue
-            for step in range(first, last):
-                self.append_edge(line=line, step=step, beats=beats, single=Box.BAR, double=Box.DOUBLE_BAR, replaced=row.edge_text(step=step))
-                text = fit(text=cells[step - first][number], width=grid_drawing.CELL_WIDTH, align=Align.CENTER)
-                selected = on_row and not row.marks_label() and step == editor.step and number == row.cursor_line()
-                # A blocked cell's mark is dim, so that the values stand out from the places that can't hold one.
-                line.append(text, style=Style.REVERSE if selected else (Style.DIM if row.blocked(step=step) else Style.PLAIN))
-            line.append(Box.BAR, style=Style.DIM)
-            lines.append(line)
-        return lines
+        kinds = tuple(self.label_kind(row=row, on_row=on_row, number=number) for number in range(len(row.labels())))
+        if row.marks_label():
+            return RowLines(labels=tuple(row.labels()), label_kinds=kinds, heading=True, first=first, last=last)
+        selected = None
+        if on_row:
+            selected = (self._editor.step, row.cursor_line())
+        cells = tuple(row.cell_lines(step=step) for step in range(first, last))
+        blocked = frozenset(step for step in range(first, last) if row.blocked(step=step))
+        return RowLines(labels=tuple(row.labels()), label_kinds=kinds, cells=cells, first=first, last=last, beats=self.beat_steps(), selected=selected, blocked=blocked)
 
     def grid_lines(self, *, first, last, rows=None):
         """Return the grid: the rules, the Step row, the pinned rows and the scrolled rows given, or all of them, with a rule where a row asks for one and never two together."""
