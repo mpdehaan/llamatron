@@ -60,7 +60,7 @@ DIALOG_MODULES = (
 )
 DIALOG_KEY = '{test} | {dialog} | {title}'
 PRESS = 'press'
-MSG_DIALOGS_SAME = 'every dialog is the same: {count} dialogs'
+MSG_DIALOGS_SAME = 'every dialog both captures hold is the same: {count} dialogs'
 MSG_DIALOGS_DIFFERENT = '{count} dialogs differ; the first are:'
 MSG_DIALOGS_KEPT = 'the dialogs captured differ: {before} before and {after} after, and only in one: {only}'
 MSG_DIALOG = 'dialog {key}'
@@ -189,13 +189,14 @@ def compare_dialogs(*, before, after):
     """Print the dialogs that differ between two captures; return whether every dialog is the same."""
     old = read_stops(os.path.join(before, DIALOGS_FILE))
     new = read_stops(os.path.join(after, DIALOGS_FILE))
-    if set(old) != set(new):
-        print(MSG_DIALOGS_KEPT.format(before=len(old), after=len(new), only=sorted(set(old) ^ set(new))[:MOST_SHOWN]))
-        return False
-    differing = [key for key in sorted(old) if old[key] != new[key]]
+    only = sorted(set(old) ^ set(new))
+    if only:
+        # A dialog whose title changed is kept under another name; the rest are still compared.
+        print(MSG_DIALOGS_KEPT.format(before=len(old), after=len(new), only=only[:MOST_SHOWN]))
+    differing = [key for key in sorted(set(old) & set(new)) if old[key] != new[key]]
     if not differing:
-        print(MSG_DIALOGS_SAME.format(count=len(old)))
-        return True
+        print(MSG_DIALOGS_SAME.format(count=len(set(old) & set(new))))
+        return not only
     print(MSG_DIALOGS_DIFFERENT.format(count=len(differing)))
     for key in differing[:MOST_SHOWN]:
         print(MSG_DIALOG.format(key=key))

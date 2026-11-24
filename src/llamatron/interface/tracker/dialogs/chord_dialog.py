@@ -16,14 +16,14 @@ closes the flyout, and Esc or Left closes it with nothing changed. A flyout is n
 dialog. After a pick the cursor goes on to the qualities, so that the next Enter takes the chord.
 """
 
-from rich.text import Text
-
 from llamatron.interface.forms import moves
+from llamatron.interface.forms.dialogs import blank, ChoiceRow, heading_said, said_on_one_line
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values
 from llamatron.interface.tracker.dialogs import dialog
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import cursor_mark, fit, legend, Style
+from llamatron.interface.tracker.drawing import cursor_mark, fit, legend
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.model.objects.naming import words
 from llamatron.model.schema import file_format
 from llamatron.user_strings import labels, marks, messages
@@ -241,33 +241,26 @@ class ChordDialog(Dialog):
         count = self.counts()[part]
         cursor = self.places[part]
         start = max(min(cursor - self.SHOWN // 2, count - self.SHOWN), 0)
-        width = LIST_WIDTHS[part]
-        lines = []
-        for place in range(start, start + self.SHOWN):
-            if place >= count:
-                lines.append(Text(drawing.SPACE * width))
-                continue
-            text = fit(text=cursor_mark(place == cursor) + self.row_text(part=part, place=place), width=width)
-            lines.append(Text(text, style=Style.BOLD if place == cursor and part == self.part else drawing.NOTHING))
-        return lines
+        rows = [ChoiceRow(text=self.row_text(part=part, place=place), under_cursor=place == cursor, bold=place == cursor and part == self.part)
+                for place in range(start, min(start + self.SHOWN, count))]
+        return dialog_renderer.column_lines(rows=rows, width=LIST_WIDTHS[part], height=self.SHOWN)
 
     def flyout_lines(self, width):
         """Return the open flyout's lines, or None: its category as the heading, a scale type a row with the cursor's marked, what the chord comes to, and its own keys."""
         if self.flyout is None:
             return None
         name, kinds = self.categories[self.flyout - 1]
-        lines = [Text(marks.MSG_FLYOUT_TITLE.format(name=name), style=Style.BOLD), Text(drawing.NOTHING)]
-        for place, kind in enumerate(kinds):
-            lines.append(Text(cursor_mark(place == self.flyout_place) + words(kind).title(), style=Style.BOLD if place == self.flyout_place else drawing.NOTHING))
+        rows = [ChoiceRow(text=words(kind).title(), under_cursor=place == self.flyout_place, bold=place == self.flyout_place) for place, kind in enumerate(kinds)]
+        lines = [*dialog_renderer.said_lines(paragraphs=[heading_said(marks.MSG_FLYOUT_TITLE.format(name=name)), blank()], width=width), *dialog_renderer.row_lines_of(rows=rows, width=None)]
         # The scale types take the room the lists take underneath, so that the sentences and the keys sit where the dialog's do.
-        lines += [Text(drawing.NOTHING)] * (self.SHOWN + 2 - len(kinds))
-        return [*lines, *self.sentences(width), Text(drawing.NOTHING), *legend(keys=self.keys(), width=width)]
+        lines = dialog_renderer.filled(lines=lines, height=self.SHOWN + 4)
+        return [*lines, *self.sentences(width), *dialog_renderer.said_lines(paragraphs=[blank()], width=width), *legend(keys=self.keys(), width=width)]
 
     def legend_lines(self, width):
         """Return the keys of the cursor's list, in as many lines as the list with the most keys takes, so that the dialog keeps its height from list to list."""
         most = max(len(legend(keys=self.list_keys(part), width=width)) for part in range(LISTS))
         lines = legend(keys=self.list_keys(self.part), width=width)
-        return [*lines, *[Text(drawing.NOTHING)] * (most - len(lines))]
+        return dialog_renderer.filled(lines=lines, height=most)
 
     def wanted_width(self):
         """Return the width at which every list's keys fit on one line, so that the dialog is one size on every list."""
@@ -275,25 +268,15 @@ class ChordDialog(Dialog):
 
     def sentences(self, width):
         """Return what is said of the choice, as SENTENCE_LINES lines."""
-        said = [fit(text=text, width=width).rstrip() for text in self.said(self.choice())][:SENTENCE_LINES]
-        return [*[Text(text) for text in said], *[Text(drawing.NOTHING) for _ in range(SENTENCE_LINES - len(said))]]
+        said = [said_on_one_line(text) for text in self.said(self.choice())][:SENTENCE_LINES]
+        return dialog_renderer.filled(lines=dialog_renderer.said_lines(paragraphs=said, width=width), height=SENTENCE_LINES)
 
     def lines(self, width):
         headings = (labels.Column.SELECT_QUALITY, labels.Column.INVERSION, labels.Column.TENSIONS, labels.Column.BORROW_SCALE)
-        heading = Text(drawing.NOTHING)
-        for part, name in enumerate(headings):
-            heading.append(fit(text=drawing.SPACE * len(cursor_mark(False)) + name, width=LIST_WIDTHS[part]), style=Style.BOLD if part == self.part else Style.DIM)
-            heading.append(drawing.SPACE * LIST_GAP if part < LISTS - 1 else drawing.NOTHING)
-        result = [heading]
+        heading = dialog_renderer.column_headings(names=headings, widths=LIST_WIDTHS, chosen=self.part, gap=LIST_GAP)
         columns = [self.list_lines(part) for part in range(LISTS)]
-        for row in range(self.SHOWN):
-            line = Text(drawing.NOTHING)
-            for part in range(LISTS):
-                line.append_text(columns[part][row])
-                line.append(drawing.SPACE * LIST_GAP if part < LISTS - 1 else drawing.NOTHING)
-            result.append(line)
-        result.append(Text(drawing.NOTHING))
-        return [*result, *self.sentences_and_keyboard(width)]
+        lists = dialog_renderer.side_by_side(columns=columns, gap=LIST_GAP)
+        return [heading, *lists, *dialog_renderer.said_lines(paragraphs=[blank()], width=width), *self.sentences_and_keyboard(width)]
 
     def has_room_for_keyboard(self, width):
         """Return whether the console is tall enough for the dialog with the keyboard under its sentences."""
@@ -307,5 +290,5 @@ class ChordDialog(Dialog):
         keyboard = self.keyboard(self.choice()) if self.keyboard is not None and self.has_room_for_keyboard(width) else None
         if keyboard is None:
             return self.sentences(width)
-        said = [Text(fit(text=text, width=width).rstrip()) for text in self.said(self.choice())][:SENTENCE_LINES]
-        return [*said, *[Text(drawing.NOTHING)] * KEYBOARD_GAP, *keyboard, *[Text(drawing.NOTHING)] * (SENTENCE_LINES - len(said))]
+        said = dialog_renderer.said_lines(paragraphs=[said_on_one_line(text) for text in self.said(self.choice())][:SENTENCE_LINES], width=width)
+        return [*said, *dialog_renderer.said_lines(paragraphs=[blank()] * KEYBOARD_GAP, width=width), *keyboard, *dialog_renderer.said_lines(paragraphs=[blank()] * (SENTENCE_LINES - len(said)), width=width)]

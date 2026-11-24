@@ -36,13 +36,58 @@ def choice_lines(*, choices, width):
     lines = []
     if choices.typed:
         lines.append(Text(fit(text=drawing.SPACE + marks.MSG_SEARCH_SHOWN.format(text=choices.typed), width=width), style=Style.DIM))
-    for row in choices.rows:
-        text = fit(text=cursor_mark(row.under_cursor) + row.text, width=width)
+    return [*lines, *row_lines_of(rows=choices.rows, width=width)]
+
+
+def row_lines_of(*, rows, width):
+    """Return a list's rows, each after its cursor's mark and cut to the width, or as it is with no width: a heading dim, a bold
+    row bold."""
+    lines = []
+    for row in rows:
+        text = cursor_mark(row.under_cursor) + row.text
+        if width is not None:
+            text = fit(text=text, width=width)
         if row.heading:
             lines.append(Text(text, style=Style.DIM))
+        elif row.bold:
+            lines.append(Text(text, style=Style.BOLD))
         else:
             lines.append(Text(text))
     return lines
+
+
+def column_lines(*, rows, width, height):
+    """Return one list of several side by side: its rows cut to the column's width, and blank ones of that width under them up
+    to a height, so that the columns beside it line up."""
+    lines = row_lines_of(rows=rows, width=width)
+    return [*lines, *[Text(drawing.SPACE * width)] * (height - len(lines))]
+
+
+def side_by_side(*, columns, gap):
+    """Return lists drawn side by side, their lines joined across, a gap between one list and the next."""
+    lines = []
+    for row in range(len(columns[0])):
+        line = Text(drawing.NOTHING)
+        for place, column in enumerate(columns):
+            line.append_text(column[row])
+            line.append(drawing.SPACE * gap if place < len(columns) - 1 else drawing.NOTHING)
+        lines.append(line)
+    return lines
+
+
+def column_headings(*, names, widths, chosen, gap):
+    """Return the headings over lists side by side, each over its list after the room a cursor's mark takes, the chosen list's
+    bold and the others dim."""
+    line = Text(drawing.NOTHING)
+    for place, name in enumerate(names):
+        line.append(fit(text=drawing.SPACE * len(cursor_mark(False)) + name, width=widths[place]), style=Style.BOLD if place == chosen else Style.DIM)
+        line.append(drawing.SPACE * gap if place < len(names) - 1 else drawing.NOTHING)
+    return line
+
+
+def filled(*, lines, height):
+    """Return lines made up to a height with blank ones, so that a list keeps its height as it scrolls or shrinks."""
+    return [*lines, *[Text(drawing.NOTHING)] * (height - len(lines))]
 
 
 def typed_line(*, typed, width):
@@ -75,6 +120,10 @@ def row_lines(*, rows, label_width):
 
 
 def _paragraph_lines(*, paragraph, width):
+    if paragraph.refusal:
+        return [Text(paragraph.text, style=Style.REFUSAL)]
+    if paragraph.heading:
+        return [Text(paragraph.text, style=Style.BOLD)]
     if paragraph.one_line and paragraph.dim:
         return [Text(fit(text=paragraph.text, width=width), style=Style.DIM)]
     if paragraph.one_line:

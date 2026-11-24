@@ -18,16 +18,16 @@ groups: [ and ] step the note, typing a note's name and Enter sets it, and Enter
 the sound the dialog opened on with the note shown. The dialog then answers (value, note).
 """
 
-from rich.text import Text
-
 from llamatron.interface.forms import moves, note_names
 from llamatron.interface.forms.cursor import Cursor
+from llamatron.interface.forms.dialogs import blank, ChoiceList, ChoiceRow, heading_said, refused
 from llamatron.interface.forms.note_names import note_shown, note_typed
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values
 from llamatron.interface.tracker.cursor import completed, places_matching
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import cursor_mark, fit, legend, Style
+from llamatron.interface.tracker.drawing import legend
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.user_strings import errors, marks
 
 # How many rows show at once, the list scrolling to keep the cursor's in view, so that the dialog fits an 80 by 24 console.
@@ -285,7 +285,7 @@ class SoundDialog(Dialog):
 
     def padded(self, lines, *, rows=SHOWN):
         """Return lines made up to so many rows with blank ones, and under them the line that says why a sound did not play, blank while there is nothing to say."""
-        return [*lines, *[Text(drawing.NOTHING)] * (rows - len(lines)), Text(self.said, style=Style.REFUSAL)]
+        return [*dialog_renderer.filled(lines=lines, height=rows), *dialog_renderer.said_lines(paragraphs=[refused(self.said)], width=None)]
 
     def on_key(self, event):
         """Clear what was said at the next key, as the status line is cleared."""
@@ -297,8 +297,8 @@ class SoundDialog(Dialog):
             found = self.found()
             at = min(self.found_place, max(len(found) - 1, 0))
             rows = [marks.MSG_SOUND_FOUND.format(sound=label, group=self.groups[group][0]) for group, _, label in found]
-            shown = [Text(fit(text=cursor_mark(place == at) + row, width=width), style=Style.BOLD if place == at else drawing.NOTHING) for place, row in self.windowed(rows=rows, at=at)]
-            return [Text(fit(text=drawing.SPACE + marks.MSG_SEARCH_SHOWN.format(text=self.typed), width=width), style=Style.DIM), *self.padded(shown[:SHOWN - 1], rows=SHOWN - 1)]
+            shown = dialog_renderer.row_lines_of(rows=[cursor_row(text=row, here=place == at) for place, row in self.windowed(rows=rows, at=at)], width=width)
+            return [*dialog_renderer.choice_lines(choices=ChoiceList(typed=self.typed), width=width), *self.padded(shown[:SHOWN - 1], rows=SHOWN - 1)]
         rows = [self.row_text(row) for row in range(len(self.top) + len(self.groups))]
         if self.note is None:
             return self.padded([self.row_line(row=row, selected=place == self.cursor.get_place(), width=width) for place, row in self.windowed(rows=rows, at=self.cursor.get_place())])
@@ -307,11 +307,11 @@ class SoundDialog(Dialog):
         on_note = self.cursor.get_place() == len(rows)
         note = marks.MSG_SOUND_NOTE_ROW.format(note=note_shown(self.note)) if self.note_typed is None else marks.MSG_SOUND_NOTE_TYPED.format(text=self.note_typed)
         lines = [self.row_line(row=row, selected=place == self.cursor.get_place(), width=width) for place, row in self.windowed(rows=rows, at=min(self.cursor.get_place(), len(rows) - 1), shown=listed)]
-        return self.padded([*lines, *[Text(drawing.NOTHING)] * (listed - len(lines)), Text(drawing.NOTHING), self.row_line(row=note, selected=on_note, width=width)])
+        return self.padded([*dialog_renderer.filled(lines=lines, height=listed), *dialog_renderer.said_lines(paragraphs=[blank()], width=width), self.row_line(row=note, selected=on_note, width=width)])
 
     def row_line(self, *, row, selected, width):
         """Return a row as drawn: the cursor's with the triangle, in bold."""
-        return Text(fit(text=cursor_mark(selected) + row, width=width), style=Style.BOLD if selected else drawing.NOTHING)
+        return dialog_renderer.row_lines_of(rows=[cursor_row(text=row, here=selected)], width=width)[0]
 
     def flyout_lines(self, width):
         """Return the open flyout's lines, or None: its group as the heading, a sound a row with the cursor's marked, and its own keys."""
@@ -319,11 +319,16 @@ class SoundDialog(Dialog):
             return None
         name, sounds = self.groups[self.flyout]
         rows = [label for label, _ in sounds]
-        shown = [Text(fit(text=cursor_mark(place == self.flyout_place) + row, width=width), style=Style.BOLD if place == self.flyout_place else drawing.NOTHING)
-                 for place, row in self.windowed(rows=rows, at=self.flyout_place)]
-        return [Text(name, style=Style.BOLD), Text(drawing.NOTHING), *self.padded(shown), Text(drawing.NOTHING), *legend(keys=self.keys(), width=width)]
+        shown = dialog_renderer.row_lines_of(rows=[cursor_row(text=row, here=place == self.flyout_place) for place, row in self.windowed(rows=rows, at=self.flyout_place)], width=width)
+        return [*dialog_renderer.said_lines(paragraphs=[heading_said(name), blank()], width=width), *self.padded(shown), *dialog_renderer.said_lines(paragraphs=[blank()], width=width),
+                *legend(keys=self.keys(), width=width)]
 
 
 def holds_sound(*, sounds, value):
     """Return whether a group's sounds, each (label, value), hold a value."""
     return any(value == held for _, held in sounds)
+
+
+def cursor_row(*, text, here):
+    """Return a row of the sound picker's lists, the cursor's marked and bold."""
+    return ChoiceRow(text=text, under_cursor=here, bold=here)

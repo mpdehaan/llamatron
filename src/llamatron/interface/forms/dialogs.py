@@ -14,11 +14,14 @@ NO_KEY = ''
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Said:
     """One paragraph a dialog says: its words, wrapped to the dialog's width, or kept to one line and cut short where it is too
-    wide; drawn dim where it is said in passing. A paragraph with no words is a blank line."""
+    wide; drawn dim where it is said in passing, or as a refusal or a heading, each said as it is. A paragraph with no words is a blank
+    line."""
 
     text: str = NO_TEXT
     one_line: bool = False
     dim: bool = False
+    refusal: bool = False
+    heading: bool = False
 
 
 def said(text):
@@ -39,6 +42,16 @@ def said_in_passing(text):
 def said_on_one_line_in_passing(text):
     """Return a line said in passing, dim, kept to the dialog's width."""
     return Said(text=text, one_line=True, dim=True)
+
+
+def heading_said(text):
+    """Return a heading inside a dialog, as a flyout's, said as it is in bold."""
+    return Said(text=text, heading=True)
+
+
+def refused(text):
+    """Return why something did not happen, drawn as a refusal, on one line."""
+    return Said(text=text, refusal=True)
 
 
 def blank():
@@ -64,12 +77,13 @@ def answers(*, labels, selected, keys=None):
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ChoiceRow:
-    """One row of a picker's list: its words, whether the cursor is on it, and whether it only heads a group, which is drawn dim
-    and never chosen."""
+    """One row of a picker's list: its words, whether the cursor is on it, whether it only heads a group, which is drawn dim and
+    never chosen, and whether it is drawn bold, as the cursor's row is in a list that holds the cursor."""
 
     text: str
     under_cursor: bool = False
     heading: bool = False
+    bold: bool = False
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
