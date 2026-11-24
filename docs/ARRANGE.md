@@ -145,4 +145,10 @@ under the roll names the notes under it. `PgUp` and `PgDn` jump a bar, `-` and
 `=` make each step narrower or wider, and `[` and `]` scroll the tracks at the
 right. `P` or `ESC` closes it.
 
+Each chord heard is named in the scene's scale with its Roman numeral. A chord
+that leads to another chord of the key is numbered by the chord it leads to: in
+C major, D7 is V7/V, E7 is V7/vi and F#dim7 is vii°7/V. A chord borrowed from
+the minor key is numbered by its root and spelled with a flat, such as iv for
+Fm and ♭VII for Bb.
+
 ![Scene View of the same scene, as played](screenshots/scene_view_played.svg)

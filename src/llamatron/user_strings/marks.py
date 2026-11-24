@@ -73,6 +73,12 @@ MSG_SCENE_VIEW_PLAYED = 'PLAYED: after every generator, groove and draw, one tak
 MSG_SCENE_VIEW_EFFECTIVE = 'tempo {tempo} ({tempo_source})  ·  {signature}  ·  scale {scale} ({scale_source})  ·  groove {groove} ({groove_source})'
 MSG_SCENE_VIEW_TEMPO_RAMPS = '{tempo}*'
 MSG_SCENE_VIEW_SLASH_CHORD = '{chord}/{bass}'
+# An applied chord's Roman numeral: a secondary dominant or leading-tone chord, then the numeral of the chord it leads to, as V7/V.
+MSG_SECONDARY_DOMINANT = '{dominant}/{target}'
+MSG_DOMINANT_NUMERAL = 'V'
+MSG_DOMINANT_SEVENTH_NUMERAL = 'V7'
+MSG_LEADING_TONE_NUMERAL = 'vii°'
+MSG_LEADING_TONE_SEVENTH_NUMERAL = 'vii°7'
 MSG_SCENE_VIEW_FROM_SONG = 'song'
 MSG_SCENE_VIEW_FROM_SCENE = 'scene'
 MSG_SCENE_VIEW_NO_GROOVE = 'none'

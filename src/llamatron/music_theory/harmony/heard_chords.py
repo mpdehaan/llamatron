@@ -55,6 +55,23 @@ class BeatChord(NamedTuple):
     bass: object
 
 
+class AppliedKind(NamedTuple):
+    """A kind of applied chord: its numeral, how many half steps its root is above the chord it leads to, and how many
+    letters."""
+
+    numeral: str
+    below: int
+    letters: int
+
+
+# The applied chords: a secondary dominant a fifth above the chord it leads to, a leading-tone chord a half step below.
+DOMINANT = AppliedKind(numeral=marks.MSG_DOMINANT_NUMERAL, below=7, letters=4)
+DOMINANT_SEVENTH = AppliedKind(numeral=marks.MSG_DOMINANT_SEVENTH_NUMERAL, below=7, letters=4)
+LEADING_TONE = AppliedKind(numeral=marks.MSG_LEADING_TONE_NUMERAL, below=-1, letters=6)
+LEADING_TONE_SEVENTH = AppliedKind(numeral=marks.MSG_LEADING_TONE_SEVENTH_NUMERAL, below=-1, letters=6)
+APPLIED_KINDS = {ChordSymbol.MAJOR: DOMINANT, ChordSymbol.DOMINANT7: DOMINANT_SEVENTH, ChordSymbol.DIMINISHED: LEADING_TONE, ChordSymbol.DIMINISHED7: LEADING_TONE_SEVENTH}
+
+
 def chord_shapes():
     """Return each fixed chord symbol with its notes as half steps above the root, within one octave, the root among them,
     but for the intervals, which are two notes played together rather than a chord a beat could be heard as."""
@@ -129,12 +146,48 @@ def spelled(*, pitch_class, scale):
 
 
 def chord_texts(*, root, symbol, scale, bass=None):
-    """Return a chord's name, its root spelled as the scale spells, its symbol, and its bass after a slash when the bass isn't its root, and its Roman numeral in the scale, a flat in front for a root between two of its notes."""
-    name = spelled(pitch_class=root, scale=scale) + PLAIN_SYMBOLS.get(symbol, symbol)
+    """Return a chord's name, its root spelled in the scale, its symbol, and its bass after a slash when the bass isn't its
+    root, and its Roman numeral in the scale: an applied chord's by the chord it leads to, as V7/V, and any other's by its
+    root, a flat in front for a root between two of its notes."""
+    applied = applied_chord(root=root, symbol=symbol, scale=scale)
+    name = root_name(root=root, applied=applied, scale=scale) + PLAIN_SYMBOLS.get(symbol, symbol)
     if bass is not None:
         name = marks.MSG_SCENE_VIEW_SLASH_CHORD.format(chord=name, bass=spelled(pitch_class=bass, scale=scale))
     if scale is None:
         return name, NO_SYMBOL
+    if applied is not None:
+        return name, applied.numeral
+    return name, root_numeral(root=root, symbol=symbol, scale=scale)
+
+
+def root_name(*, root, applied, scale):
+    """Return a chord's root as the key spells it: its note of the scale; an applied chord's on the letter its function
+    gives it, a fifth above or a step below the chord it leads to, as F# in D7 in C; any other with a flat, as a chord
+    borrowed from the minor is, Bb in C rather than A#."""
+    names = scale_names(scale)
+    for name in names:
+        if note_values.SEMITONES_ABOVE_C[name] % intervals.HALF_STEPS_PER_OCTAVE == root:
+            return name
+    if applied is not None:
+        letter = LETTERS[(LETTERS.index(names[applied.degree][0]) + applied.letters) % len(LETTERS)]
+        for name in [*note_values.SHARP_NAMES, *note_values.FLAT_NAMES]:
+            if name[0] == letter and note_values.SEMITONES_ABOVE_C[name] % intervals.HALF_STEPS_PER_OCTAVE == root:
+                return name
+    if scale is None:
+        return note_values.SHARP_NAMES[root]
+    return note_values.FLAT_NAMES[root]
+
+
+def scale_names(scale):
+    """Return a scale's notes as spelled, a degree on each letter where it can be, or no notes for no scale."""
+    if scale is None:
+        return []
+    return letter_spelled(scale) or scale.get_note_names()
+
+
+def root_numeral(*, root, symbol, scale):
+    """Return a chord's Roman numeral by its root's degree in the scale, a flat in front for a root between two of its
+    notes, or nothing for a root a flat can't place."""
     shape = scale.get_half_steps()
     above = (root - note_values.SEMITONES_ABOVE_C[scale.get_root()]) % intervals.HALF_STEPS_PER_OCTAVE
     accidental = NO_SYMBOL
@@ -142,12 +195,52 @@ def chord_texts(*, root, symbol, scale, bass=None):
         above = (above + 1) % intervals.HALF_STEPS_PER_OCTAVE
         accidental = marks.MSG_ACCIDENTAL_MARKS[Accidental.FLAT]
         if above not in shape:
-            return name, NO_SYMBOL
+            return NO_SYMBOL
     numeral = ROMAN_NUMERALS[shape.index(above) % len(ROMAN_NUMERALS)]
     quality = quality_of_shape(chord_shapes()[symbol])
     if quality in (Quality.MINOR, Quality.DIMINISHED):
         numeral = numeral.lower()
-    return name, accidental + numeral + marks.MSG_QUALITY_MARKS[quality]
+    return accidental + numeral + marks.MSG_QUALITY_MARKS[quality]
+
+
+class Applied(NamedTuple):
+    """An applied chord, one leading to a chord of the key other than its first: its numeral, as V7/V, the degree of the
+    chord it leads to, counted from 0, and how many letters above that chord's root its own root is spelled."""
+
+    numeral: str
+    degree: int
+    letters: int
+
+
+def applied_chord(*, root, symbol, scale):
+    """Return how a chord leads to another chord of a seven-note scale (Applied), or None: a major or dominant seventh chord
+    rooted a fifth above it, or a diminished chord a half step below it, with a note outside the scale, leading to a degree
+    whose chord is major or minor, other than the first, so that D7 in C is V7/V and F#dim7 vii°7/V, while G7, all in the
+    key, is plain V."""
+    if scale is None or symbol not in APPLIED_KINDS or len(scale.get_half_steps()) != len(ROMAN_NUMERALS):
+        return None
+    shape = scale.get_half_steps()
+    kind = APPLIED_KINDS[symbol]
+    tonic = note_values.SEMITONES_ABOVE_C[scale.get_root()]
+    notes = {(root + step - tonic) % intervals.HALF_STEPS_PER_OCTAVE for step in chord_shapes()[symbol]}
+    target = (root - kind.below - tonic) % intervals.HALF_STEPS_PER_OCTAVE
+    if notes <= set(shape) or target not in shape or target == 0:
+        return None
+    degree = shape.index(target)
+    quality = quality_of_shape(degree_triad(shape=shape, degree=degree))
+    if quality not in (Quality.MAJOR, Quality.MINOR):
+        return None
+    numeral = ROMAN_NUMERALS[degree]
+    if quality == Quality.MINOR:
+        numeral = numeral.lower()
+    return Applied(numeral=marks.MSG_SECONDARY_DOMINANT.format(dominant=kind.numeral, target=numeral), degree=degree, letters=kind.letters)
+
+
+def degree_triad(*, shape, degree):
+    """Return the triad a seven-note scale builds on one of its degrees, as half steps above the degree's note."""
+    third = (shape[(degree + 2) % len(shape)] - shape[degree]) % intervals.HALF_STEPS_PER_OCTAVE
+    fifth = (shape[(degree + 4) % len(shape)] - shape[degree]) % intervals.HALF_STEPS_PER_OCTAVE
+    return frozenset({0, third, fifth})
 
 
 def covered(spans):
