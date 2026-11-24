@@ -151,7 +151,8 @@ def save_as(page, *, then=None):
     default = document.get_path() or os.path.join(DEFAULT_SAVE_FOLDER, DEFAULT_SAVE_NAME)
 
     def chosen(path):
-        path = path.strip()
+        # A path typed from the home folder, ~/songs/a.yml, means the home folder, as it does in a terminal.
+        path = os.path.expanduser(path.strip())
         if not path:
             return
         if not path.endswith(shared.SONG_SUFFIXES):

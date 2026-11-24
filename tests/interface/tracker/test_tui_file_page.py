@@ -26,6 +26,11 @@ from llamatron.user_strings import errors, labels as labels_text, legends, marks
 from tests.support import ui_testing
 from tests.support.ui_testing import key_name, key_of, UITest
 
+# A home folder of the test's own, a path typed from it, and the folder a path not expanded would have made.
+HOME_FOLDER = 'home'
+HOME = 'HOME'
+HOME_TUNE = '~/tune'
+TILDE = '~'
 SET_FILE = 'my_set.yml'
 # A file name the prompt test changes into another by moving the cursor.
 FOO_YML = 'foo.yml'
@@ -150,6 +155,17 @@ class TestFilePage(UITest):
         with open('tune.yml') as file:
             self.assertNotEqual(file.read(), before)
         self.assertFalse(self.document.is_dirty())
+
+    async def test_save_as_takes_a_path_from_the_home_folder_as_a_terminal_does(self):
+        home = os.path.join(self.folder, HOME_FOLDER)
+        os.makedirs(home)
+        with mock.patch.dict(os.environ, {HOME: home}):
+            await press_save_as(self)
+            self.app.screen.value = ''
+            await self.type(HOME_TUNE)
+            await self.press(Key.ENTER)
+        self.assertTrue(os.path.exists(os.path.join(home, 'tune.yml')))
+        self.assertFalse(os.path.exists(TILDE))
 
     async def test_a_protected_set_offers_a_copy_and_the_file_page_turns_protection_off(self):
         self.assertFalse(self.document.get_setlist().is_protected())
