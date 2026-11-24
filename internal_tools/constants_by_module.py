@@ -53,7 +53,7 @@ SUMMARY = '{names} names in {files} files'
 CALLABLE = 'callable'
 # What every module defines and imports, by its path, with the file's time and size when read, so that a run that rewrites only a
 # few files reads only the files changed since (ignored by git).
-CACHE_FILE = ROOT / '.constants_by_module.json'
+CACHE_FILE = ROOT / '.cache' / 'constants_by_module.json'
 KEPT_DEFINED = 'defined'
 KEPT_IMPORTED = 'imported'
 KEPT_STAMP = 'stamp'
@@ -143,6 +143,7 @@ def read_cache():
 
 
 def write_cache(kept):
+    CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
     CACHE_FILE.write_text(json.dumps(kept), encoding=FILE_ENCODING)
 
 

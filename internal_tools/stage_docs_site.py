@@ -4,7 +4,7 @@
 
 """Stage llamatron's guide and its chapters for the documentation website, which VitePress builds into web_docs/.
 
-    .venv/bin/python internal_tools/stage_docs_site.py --out .docs_site/site
+    .venv/bin/python internal_tools/stage_docs_site.py --out .cache/docs_site/site
 
 internal_tools/build_docs.sh runs it before each build. It copies GUIDE.md as the site's front page,
 index.md, every chapter in docs/ beside it, in the subfolders docs/ has them in, and docs/screenshots/,

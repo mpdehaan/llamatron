@@ -13,16 +13,13 @@ dist/
 *.egg-info/
 # The public domain MIDI files to import, which the demo generator and the tests read too, kept so nothing is downloaded again.
 !examples/midi/*.mid
-.compare_exports/
+# Every cache a tool keeps, rebuilt by the tool: compare_exports/, constants_by_module.json, docs_site/.
+.cache/
 previews/
 recordings/
 # What the test runs keep: how long each test class took, which tests/support/parallel.py starts the slowest first by, and
 # which classes run which source files, made by internal_tools/test_map.sh, with the coverage data it is made from.
 tests/.cache/
-# What each module defines and imports, kept by internal_tools/constants_by_module.py so that the commit check reads only changed files.
-.constants_by_module.json
-# Where internal_tools/build_docs.sh installs VitePress and stages the pages; the site itself is web_docs/.
-.docs_site/
 examples/**/*.wav
 # The public-domain scores internal_tools/analysis_and_generation/fetch_corpus.sh fetches for the corpus study, kept out of the repository.
 .corpus/

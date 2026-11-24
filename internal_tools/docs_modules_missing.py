@@ -5,7 +5,7 @@
 """Exit 0 when a module the documentation website's package.json pins is missing from node_modules or at another version, so that
 internal_tools/build_docs.sh runs npm then, and 1 when every one is there at its version, so that it runs nothing.
 
-    internal_tools/docs_modules_missing.py .docs_site
+    internal_tools/docs_modules_missing.py .cache/docs_site
 """
 
 import json

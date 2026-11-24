@@ -2,7 +2,7 @@
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// The documentation website's VitePress config. internal_tools/build_docs.sh copies it into .docs_site/site,
+// The documentation website's VitePress config. internal_tools/build_docs.sh copies it into .cache/docs_site/site,
 // the staging folder, beside the pages internal_tools/stage_docs_site.py stages, with the sidebar it writes from GUIDE.md.
 
 import { readFileSync } from 'node:fs'

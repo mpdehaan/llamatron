@@ -8,7 +8,7 @@
 # The site is VitePress (https://vitepress.dev), which needs Node.js 18 or later. On a Mac it uses the
 # Homebrew that matches the machine, /opt/homebrew on Apple Silicon and /usr/local on Intel, and when its
 # Node.js is missing or too old it offers to install it with Homebrew, installing nothing without a yes.
-# Then, in .docs_site/ (ignored by git, and outside internal_tools/ so that the tests' walks of its Python
+# Then, in .cache/docs_site/ (ignored by git, and outside internal_tools/ so that the tests' walks of its Python
 # never reach node_modules), it installs VitePress and its plugins at the versions
 # internal_tools/docs_site/package.json and package-lock.json pin, only when one is missing or at another version, stages the pages
 # (internal_tools/stage_docs_site.py), and builds the site into web_docs/, replacing what was there.
@@ -20,7 +20,7 @@ set -eu
 cd "$(dirname "$0")/.."
 
 SOURCES='internal_tools/docs_site'
-SITE='.docs_site'
+SITE='.cache/docs_site'
 STAGING="$SITE/site"
 OUT="$(pwd)/web_docs"
 PYTHON='.venv/bin/python'
