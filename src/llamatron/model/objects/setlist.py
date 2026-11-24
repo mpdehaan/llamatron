@@ -26,7 +26,7 @@ from llamatron.model.file.setlist_reader import as_a_set_is_written, page_record
 from llamatron.model.file.setlist_writer import dump_setlist
 from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.file.version import is_version
-from llamatron.model.objects import groove, sections
+from llamatron.model.objects import groove, instrument_previews, sections
 from llamatron.model.objects.chain import Chain
 from llamatron.model.objects.groove import check_groove_name, factory_groove, Groove, is_factory_groove
 from llamatron.model.objects.instrument import Instrument
@@ -77,6 +77,8 @@ SETTINGS = described(
 )
 # The settings whose message names the setting itself, so that a file's problem with one has no place in front of it.
 NAMED_BY_THEIR_MESSAGE = (SetlistSetting.VERSION, SetlistSetting.TITLE, SetlistSetting.AUTHOR, SetlistSetting.DESCRIPTION, SetlistSetting.NOTES)
+# The hidden chromatic scale on C a tonal instrument's preview pattern plays under.
+PREVIEW_SCALE = NamedScale(root=note.NoteName.C, kind=scale_type_name(ScaleType.CHROMATIC))
 # What a text setting is when the file leaves it out.
 NO_TEXT = ''
 # The class that reads each item of a section of the set, but for the generators, whose plugins say (item_class).
@@ -949,6 +951,9 @@ class Setlist(HoldsSections, HoldsSettings):
         return self._section(Section.SCALES).names()
 
     def get_named_scale(self, name):
+        """Return the scale of a name, or the hidden chromatic scale on C a tonal preview pattern plays under, by its key."""
+        if instrument_previews.is_preview_scale(name):
+            return PREVIEW_SCALE
         return self._section(Section.SCALES).get(name)
 
     def has_groove(self, name):
@@ -983,6 +988,10 @@ class Setlist(HoldsSections, HoldsSettings):
         return self._section(Section.PATTERNS).has(name)
 
     def get_pattern(self, name):
+        """Return the pattern of a name, or an instrument's preview pattern by its key (PreviewOf), None until one is made, which
+        no list of the set's patterns holds."""
+        if instrument_previews.is_preview(name):
+            return self._section(Section.INSTRUMENTS).get(name.instrument).get_preview()
         return self._section(Section.PATTERNS).get(name)
 
     def get_pattern_names(self):

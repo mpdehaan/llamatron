@@ -31,11 +31,12 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects import built_in_sound
+from llamatron.model.objects import built_in_sound, instrument_previews
 from llamatron.model.objects.built_in_sound import check_sound, effect_value, lfo_value, oscillator_value, sound_value, synth_spec
 from llamatron.model.objects.llama_data import HoldsSettings, or_default, own_copy, settings_by_name, written_settings
+from llamatron.model.objects.pattern import Pattern
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import InstrumentKind, InstrumentSetting, KeyswitchSetting, OscillatorSetting, SoundSetting, Waveform
+from llamatron.model.schema.file_format import InstrumentKind, InstrumentSetting, KeyswitchSetting, OscillatorSetting, SoundEngine, SoundSetting, Waveform
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Text, WholeNumber
 from llamatron.model.values import midi
 from llamatron.user_strings import errors
@@ -103,6 +104,11 @@ def _slot_data(keyswitch):
 
 
 # An instrument's settings, each described once, in the order they're written to a file.
+
+def check_preview(value):
+    """Refuse a preview pattern that isn't a pattern's data."""
+    Pattern.from_data(data=value, where=InstrumentSetting.PREVIEW)
+
 SETTINGS = described(
     Text(name=InstrumentSetting.DEVICE, error=errors.ERR_DEVICE_NOT_TEXT),
     WholeNumber(name=InstrumentSetting.CHANNEL, lowest=midi.MIN_CHANNEL, highest=midi.MAX_CHANNEL, error=errors.ERR_BAD_CHANNEL),
@@ -115,6 +121,7 @@ SETTINGS = described(
     Choice(name=InstrumentSetting.KIND, choices=file_format.INSTRUMENT_KINDS, default=corrections.LEFT_OUT, error=errors.ERR_BAD_INSTRUMENT_KIND),
     WholeNumber(name=InstrumentSetting.LATENCY, lowest=limits.MIN_INSTRUMENT_LATENCY, highest=limits.MAX_INSTRUMENT_LATENCY, error=errors.ERR_BAD_LATENCY),
     Checked(name=InstrumentSetting.SOUND, check=check_sound),
+    Checked(name=InstrumentSetting.PREVIEW, check=check_preview),
 )
 
 
@@ -123,9 +130,10 @@ BUILT_IN_SETTINGS = (InstrumentSetting.KIND, InstrumentSetting.LATENCY, Instrume
 
 
 class Instrument(HoldsSettings):
-    """A MIDI device, by its port's name, and a channel from 1 to 16."""
+    """A MIDI device, by its port's name, and a channel from 1 to 16, or a built-in sound, and its preview pattern or None,
+    which it holds as a pattern of its own, written inside it under preview, never in its settings."""
 
-    __slots__ = ()
+    __slots__ = ('_preview',)
 
     SETTINGS = SETTINGS
 
@@ -140,6 +148,10 @@ class Instrument(HoldsSettings):
             InstrumentSetting.SOUND: own_copy(built_in.get(InstrumentSetting.SOUND)),
         })
         check_settings(settings=SETTINGS, data=written_settings(self._settings))
+        self._preview = None
+        preview = built_in.get(InstrumentSetting.PREVIEW)
+        if preview is not None:
+            self._preview = Pattern.from_data(data=preview, where=InstrumentSetting.PREVIEW)
 
     @classmethod
     def from_data(cls, *, data, where, song=None):
@@ -151,7 +163,7 @@ class Instrument(HoldsSettings):
                 device=data.get(InstrumentSetting.DEVICE), channel=data.get(InstrumentSetting.CHANNEL), gm_sound=data.get(InstrumentSetting.GM_SOUND),
                 keyswitches=data.get(InstrumentSetting.KEYSWITCHES), keyswitch_lead=data.get(InstrumentSetting.KEYSWITCH_LEAD),
                 default_velocity=data.get(InstrumentSetting.DEFAULT_VELOCITY), accent=data.get(InstrumentSetting.ACCENT),
-                velocity=data.get(InstrumentSetting.VELOCITY), **{name: data.get(name) for name in BUILT_IN_SETTINGS},
+                velocity=data.get(InstrumentSetting.VELOCITY), preview=data.get(InstrumentSetting.PREVIEW), **{name: data.get(name) for name in BUILT_IN_SETTINGS},
             )
 
     def copy(self):
@@ -159,8 +171,35 @@ class Instrument(HoldsSettings):
             device=self.get_device(), channel=self.get_written_channel(), gm_sound=self.get_gm_sound(),
             keyswitches=self._settings[InstrumentSetting.KEYSWITCHES], keyswitch_lead=self.get_written_keyswitch_lead(),
             default_velocity=self.get_default_velocity(), accent=self.get_written_accent(), velocity=self.get_velocity_percent(),
-            **{name: self._settings[name] for name in BUILT_IN_SETTINGS},
+            preview=self._preview.to_data() if self._preview is not None else None, **{name: self._settings[name] for name in BUILT_IN_SETTINGS},
         )
+
+    def to_data(self):
+        """Return the settings the file writes, and the preview pattern's data under preview when it has one."""
+        data = written_settings(self._settings)
+        if self._preview is not None:
+            data[InstrumentSetting.PREVIEW] = self._preview.to_data()
+        return data
+
+    def kept_data(self):
+        """Return the data as kept: the settings, kept until the instrument changes, with the preview's own kept data, which
+        moves whenever the pattern is edited, put in afresh each time."""
+        if self._cached is None:
+            self._cached = written_settings(self._settings)
+        if self._preview is None:
+            return self._cached
+        return {**self._cached, InstrumentSetting.PREVIEW: self._preview.kept_data()}
+
+    def get_preview(self):
+        """Return the instrument's preview pattern, or None until one is made."""
+        return self._preview
+
+    @notes_change
+    def make_preview(self):
+        """Give the instrument its starting preview pattern: a drum's C on each quarter, in the set's default drum octave, for a drum engine, a run up and down C
+        major for any other."""
+        drum = self.is_built_in() and self.get_sound(SoundSetting.ENGINE) == SoundEngine.DRUM
+        self._preview = Pattern.from_data(data=instrument_previews.starting_preview(drum=drum), where=InstrumentSetting.PREVIEW)
 
     def get_kind(self):
         """Return what it is: a MIDI device and channel, or a sound llamatron makes itself (InstrumentKind)."""

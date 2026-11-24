@@ -568,6 +568,8 @@ class InstrumentSetting:
     KIND = 'kind'
     LATENCY = 'latency'
     SOUND = 'sound'
+    # The instrument's own preview pattern, for designing its sound before any music exists (model/objects/instrument_previews.py).
+    PREVIEW = 'preview'
 
 
 class InstrumentKind:
