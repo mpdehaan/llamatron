@@ -43,3 +43,12 @@ MSG_NOTHING_STAYS = 'none'
 MSG_NOTHING_MOVES = 'nothing'
 MSG_ADD_NOTE = 'add {note}'
 MSG_LIFT_NOTE = 'lift {note}'
+
+# exporters/pdf/piano_roll.py
+# The piano roll's pages, a section's name with how many times it plays, the counting's "and", and the strip of chord
+# changes along each page's foot.
+MSG_PIANO_ROLL = 'Piano Roll'
+MSG_SECTION_TIMES = '{section} ×{times}'
+MSG_AND = '&'
+MSG_STRIP_HEADING = 'Chord changes'
+MSG_STRIP_KEY = 'blue stays, red moves'

@@ -51,9 +51,9 @@ def keyboard_range(pitches):
     return low, max(high, low + FEWEST_KEYS - 1)
 
 
-def draw_keyboard(*, page, keyboard, pressed, labels):
-    """Draw a keyboard on a page with the keys pressed, a colour by MIDI number, filled, and each label, by MIDI number,
-    written on its key."""
+def draw_keyboard(*, page, keyboard, pressed, labels, octaves=True):
+    """Draw a keyboard on a page with the keys pressed, a colour by MIDI number, filled, each label, by MIDI number, written
+    on its key, and each C named under it with its octave unless told not to."""
     whites = [pitch for pitch in range(keyboard.low, keyboard.high + 1) if pitch % OCTAVE not in BLACK_KEYS]
     white_width = keyboard.width / len(whites)
     page.setLineWidth(LINE_WIDTH)
@@ -64,7 +64,7 @@ def draw_keyboard(*, page, keyboard, pressed, labels):
         lefts[pitch] = left
         page.setFillColor(pressed.get(pitch, palette.WHITE))
         page.rect(left, keyboard.y, white_width, keyboard.height, stroke=1, fill=1)
-        if pitch % OCTAVE == 0:
+        if octaves and pitch % OCTAVE == 0:
             _draw_octave(page=page, x=left + white_width / 2, y=keyboard.y, pitch=pitch)
         if pitch in labels:
             _draw_label(page=page, x=left + white_width / 2, y=keyboard.y, text=labels[pitch], size=min(LARGEST_LABEL, white_width * LABEL_SHARE))
