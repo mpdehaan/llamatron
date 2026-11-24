@@ -33,11 +33,12 @@ from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEd
 from llamatron.interface.tracker.screens.set.demo_scroll import DemoScroll
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.interface.tracker.screens.set.splash import Splash
+from llamatron.interface.tracker.screens.shared import sound_trial
 from llamatron.interface.tracker.transport import Transport
 from llamatron.interface.visualizers import modes
 from llamatron.model.file.checks import listed
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, InstrumentKind, LiveResponsiveness, Row, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, InstrumentKind, LiveResponsiveness, Row, Section, SoundEngine, SoundSetting
 from llamatron.realtime import realtime_names
 from llamatron.realtime.render_process import playback as playback_values, timeline
 from llamatron.realtime.render_process.timeline import Route
@@ -129,6 +130,10 @@ RENAMED_PATTERN = 'another'
 
 # A line of a dialog has its two sides.
 DIALOG_SIDES = 2
+
+
+# Long enough for a scale run of eighths, up an octave and back, at the song's tempo.
+SCALE_RUN_SECONDS = 8.0
 
 
 class FakeFluidSynth:
@@ -1067,6 +1072,46 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.press(Key.ESCAPE)
         await self.open_pattern(ui_testing.OTHER)
         self.assertIsNone(self.page.playing_step())
+
+
+class TestInstrumentListen(PatternPreviewTest):
+    """Listen on an instrument's page: a scale through a MIDI instrument, a drum's tuning note through a built-in drum, again and
+    again until L again; an instrument that plays nothing is refused."""
+
+    async def open_instrument(self):
+        await self.press(keybindings.MainPage.INSTRUMENTS, Key.ENTER)
+        self.page = self.app.screen
+
+    async def test_l_plays_a_scale_through_the_instrument_again_and_again_and_l_again_stops(self):
+        self.give_lead_an_instrument()
+        await self.open_instrument()
+        await self.press(keybindings.InstrumentEditor.LISTEN)
+        self.assertTrue(self.page.is_listening())
+        self.assertIn(messages.MSG_LISTENING_TO_INSTRUMENT.format(name=SYNTH), self.text())
+        await self.let_the_preview_play(SCALE_RUN_SECONDS * 2)
+        self.assertEqual(self.pitches_on(SYNTH_PORT)[:len(sound_trial.run_of())], sound_trial.run_of())
+        self.assertGreater(len(self.pitches_on(SYNTH_PORT)), len(sound_trial.run_of()))
+        await self.press(keybindings.InstrumentEditor.STOP_LISTENING)
+        self.assertFalse(self.page.is_listening())
+
+    async def test_a_built_in_drum_plays_its_tuning_note(self):
+        self.document.add_instrument(SYNTH)
+        instrument = self.document.get_setlist().get_instrument(SYNTH)
+        self.document.change_set(instrument.set_kind, InstrumentKind.BUILT_IN)
+        self.document.change_set(instrument.set_sound, name=SoundSetting.ENGINE, value=SoundEngine.DRUM)
+        await self.open_instrument()
+        with mock.patch.object(tracker_transport, tracker_transport.synthesis_available.__name__, return_value=True):
+            await self.press(keybindings.InstrumentEditor.LISTEN)
+        await self.let_the_preview_play(SCALE_RUN_SECONDS)
+        port = next(name for name in self.outputs if name.startswith(realtime_names.BUILT_IN_PORT_PREFIX))
+        self.assertEqual(set(self.pitches_on(port)), {self.document.get_setlist().drum_tuning_note()})
+
+    async def test_an_instrument_that_plays_nothing_is_refused(self):
+        self.document.add_instrument(SYNTH)
+        await self.open_instrument()
+        await self.press(keybindings.InstrumentEditor.LISTEN)
+        self.assertFalse(self.page.is_listening())
+        self.assertIn(errors.ERR_INSTRUMENT_PLAYS_NOTHING.format(name=SYNTH), self.text())
 
 
 class TestPatternsPagePlayback(PatternPreviewTest):

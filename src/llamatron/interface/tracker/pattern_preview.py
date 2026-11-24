@@ -164,7 +164,7 @@ class PreviewSet:
 class PatternPreview(Transport):
     """Plays one pattern again and again beside whatever the song's transport plays, and answers which step sounds."""
 
-    __slots__ = ('_set', '_pattern', '_clip', '_trial')
+    __slots__ = ('_set', '_pattern', '_clip', '_trial', '_instrument')
 
     def __init__(self, *, beside):
         """beside is the song's transport, whose clock, FluidSynth and way of making a sender the preview shares."""
@@ -175,6 +175,8 @@ class PatternPreview(Transport):
         self._clip = None
         # The sound being tried, as (the program byte, or None for the drum kit; what the asker tells the trial by), while one is.
         self._trial = None
+        # The instrument of the set being listened to on an instrument's page, by name, while one is.
+        self._instrument = None
 
     def real(self):
         """Return the document the tracker edits, where document() is the copy the preview plays."""
@@ -239,6 +241,8 @@ class PatternPreview(Transport):
 
     def _route(self):
         real = self.real()
+        if self._instrument is not None:
+            return self._instrument_route()
         if self._trial is not None:
             program, _ = self._trial
             if not self._fluidsynth_installed():
@@ -254,6 +258,16 @@ class PatternPreview(Transport):
         if name is None:
             return Route(realtime_names.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, PIANO_PROGRAM, keyswitches=False)
         instrument = real.get_setlist().get_instrument(name)
+        if instrument.uses_fluidsynth():
+            sound = instrument.get_gm_sound()
+            return Route(realtime_names.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
+        return Route(instrument.get_device(), instrument.get_channel() - transport.CHANNEL_OFFSET)
+
+    def _instrument_route(self):
+        """Return the route of the instrument being listened to: its built-in port, FluidSynth in its sound, or its device."""
+        instrument = self.real().get_setlist().get_instrument(self._instrument)
+        if instrument.is_built_in():
+            return transport.built_in_routes({self._set.track(): self._instrument})[self._set.track()]
         if instrument.uses_fluidsynth():
             sound = instrument.get_gm_sound()
             return Route(realtime_names.FLUIDSYNTH_PORT, PREVIEW_CHANNEL_BYTE, None if sound is None else sound - limits.MIN_GM_SOUND, keyswitches=False)
@@ -318,6 +332,39 @@ class PatternPreview(Transport):
             self.stop()
             raise
 
+    def play_instrument(self, *, instrument, numbers, step_size):
+        """Play some MIDI notes, a step each, through one of the set's instruments, again and again until stopped: what Listen
+        plays on an instrument's page, edits to the instrument heard on the next pass."""
+        self.stop()
+        self._instrument = instrument
+        self._set = PreviewSet(holder=self._document_holder, trial=trial_pattern(numbers=numbers, step_size=step_size))
+        started = False
+        try:
+            self.play_clip(index=self._set.scene(), track=self._set.track(), forever=True)
+            started = True
+        finally:
+            # A play that fails to start, for whatever reason, leaves nothing half begun, and its error goes on to the caller.
+            if not started:
+                self.stop()
+
+    def playing_instrument(self):
+        """Return the name of the instrument being listened to while it plays, or None."""
+        return self._instrument if self.is_playing() else None
+
+    def instrument_refusal(self, name):
+        """Return why an instrument cannot be listened to, for the status line, or None when it can: it is off, its device is
+        missing or not connected, FluidSynth is not installed for it, or built-in sound is off on this computer."""
+        instrument = self.real().get_setlist().get_instrument(name)
+        if instrument.is_built_in():
+            return None if transport.synthesis_available() else errors.ERR_SYNTHESIS_OFF
+        if not instrument.has_device():
+            return errors.ERR_INSTRUMENT_PLAYS_NOTHING.format(name=name)
+        if instrument.uses_fluidsynth():
+            return None if self._fluidsynth_installed() else errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=name)
+        if not self.is_connected(instrument.get_device()):
+            return errors.ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=name, device=instrument.get_device())
+        return None
+
     def playing_sound(self):
         """Return the key of the sound being tried while its notes play, or None."""
         return self._trial[1] if self._trial is not None and self.is_playing() else None
@@ -332,6 +379,7 @@ class PatternPreview(Transport):
         self._pattern = None
         self._clip = None
         self._trial = None
+        self._instrument = None
         self._set = None
         self._drop_score()
 
@@ -356,11 +404,14 @@ class PatternPreview(Transport):
             self.stop()
 
     def _has_gone(self):
-        """Return whether what plays is no longer in the set: the pattern, the song's Preview instrument, or the clip."""
+        """Return whether what plays is no longer in the set: the pattern, the song's Preview instrument, the clip, or the
+        instrument listened to."""
         real = self.real()
         song = real.song()
         if self._trial is not None:
             return False
+        if self._instrument is not None:
+            return not real.get_setlist().has_instrument(self._instrument)
         if self._clip is not None:
             index, track = self._clip
             return index >= len(song.get_scenes()) or not song.has_item(section=Section.TRACKS, name=track) or song.get_scenes()[index].get_clip_slot(track) is None

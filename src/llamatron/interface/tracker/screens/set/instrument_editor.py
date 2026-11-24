@@ -10,12 +10,13 @@ from llamatron.interface.pages.instrument import InstrumentPresenter
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.keyswitch_map_dialog import KeyswitchMapDialog
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
+from llamatron.interface.tracker.screens.shared import sound_trial
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.interface.tracker.screens.shared.sound_trial import run_in_sound, SoundTrial
+from llamatron.interface.tracker.screens.shared.sound_trial import hits_of, run_in_sound, run_of, SoundTrial
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import Section
-from llamatron.user_strings import help as help_text, labels, marks, messages
+from llamatron.model.schema.file_format import Section, SoundEngine, SoundSetting
+from llamatron.user_strings import errors, help as help_text, labels, legends, marks, messages
 
 
 
@@ -80,7 +81,47 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         self.presenter().set_device(device)
 
     def page_keys(self):
-        return [self.bind(self.KEYS.KEYSWITCH_MAP, action=self.open_keyswitch_map)]
+        listening = self.bind(self.KEYS.LISTEN, action=self.listen)
+        if self.is_listening():
+            listening = self.bind(self.KEYS.STOP_LISTENING, action=self.stop_listening)
+        return [self.bind(self.KEYS.KEYSWITCH_MAP, action=self.open_keyswitch_map), listening]
+
+    def fields_depend_on(self):
+        """Return what the fields read besides the set: whether the instrument is being listened to, which names the Listen button."""
+        return (self.is_listening(),)
+
+    def listen_button(self):
+        """Return the Listen button, which does what L does: it starts listening to the instrument, or stops it while it plays."""
+        # Both names take the room of the longer, so that the button never changes its width as it changes its name.
+        width = max(len(labels.MSG_LISTEN_LABEL), len(labels.MSG_STOP_LISTENING_LABEL))
+        if self.is_listening():
+            return Button(label=labels.MSG_STOP_LISTENING_LABEL.center(width), key_name=legends.KeyName.L, enter=self.stop_listening, enter_what=legends.MSG_STOP_LISTENING_WHAT)
+        return Button(label=labels.MSG_LISTEN_LABEL.center(width), key_name=legends.KeyName.L, enter=self.listen, enter_what=legends.MSG_LISTEN_WHAT)
+
+    def is_listening(self):
+        return self.app.pattern_preview().playing_instrument() == self.item
+
+    def listen(self):
+        """Play the instrument again and again until stopped: a drum its tuning note four times, any other sound a scale up an
+        octave and back; an edit to the instrument is heard on the next pass."""
+        preview = self.app.pattern_preview()
+        refusal = preview.instrument_refusal(self.item)
+        if refusal is not None:
+            self.refuse(refusal)
+            return
+        instrument = self.instrument()
+        numbers, step = run_of(), sound_trial.RUN_STEP
+        if instrument.is_built_in() and instrument.get_sound(SoundSetting.ENGINE) == SoundEngine.DRUM:
+            numbers, step = hits_of(self.document().get_setlist().drum_tuning_note()), sound_trial.HITS_STEP
+        refusal = self.app.transport.try_play(lambda: preview.play_instrument(instrument=self.item, numbers=numbers, step_size=step)).refusal
+        if refusal is not None:
+            self.tell(errors.ERR_CANT_PLAY_TITLE, refusal)
+            return
+        self.say(messages.MSG_LISTENING_TO_INSTRUMENT.format(name=self.item))
+
+    def stop_listening(self):
+        self.app.pattern_preview().stop()
+        self.say(messages.MSG_STOPPED)
 
     def open_keyswitch_map(self):
         """Open the Keyswitch Map, whose ten slots go into the instrument together on OK, as one undo step."""

@@ -94,6 +94,7 @@ class InstrumentPresenter:
             self.velocity_change_field(),
             TabBox(tabs=[self.midi_tab(), tabs.synth_tab(), tabs.effects_tab()]),
             self._page.keyswitch_map_button(),
+            self._page.listen_button(),
         ]
 
     def midi_tab(self):

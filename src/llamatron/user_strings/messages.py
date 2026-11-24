@@ -210,6 +210,8 @@ MSG_KEYSWITCH_NOTE_NAMED_TITLE = 'Note of slot {slot}: {name}'
 MSG_KEYSWITCH_PICKED_NOTE = 'Note    {note}'
 MSG_KEYSWITCH_PICKED_OCTAVE = 'Octave  {octave}'
 MSG_KEYSWITCH_LEAD_PROMPT = 'Keyswitch lead in milliseconds ({lowest} to {highest})'
+# interface/tracker/screens/set/instrument_editor.py: what the status line says while an instrument is listened to.
+MSG_LISTENING_TO_INSTRUMENT = 'listening to ({name}); L stops'
 # interface/pages/sound_tabs.py: a built-in sound's prompts.
 MSG_ARPEGGIO_PROMPT = 'Arpeggio: up to {most} semitones apart from the note, such as 0 4 7, blank for none'
 MSG_LATENCY_PROMPT = 'Latency in milliseconds ({lowest} to {highest})'

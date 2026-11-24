@@ -359,10 +359,13 @@ class TrackEditor(FieldPage):
 
 
 class InstrumentEditor(FieldPage):
-    """The instrument editor: the settings keys, and K, which opens the Keyswitch Map from any field, as its button does."""
+    """The instrument editor: the settings keys, K, which opens the Keyswitch Map from any field, as its button does, and L, which
+    listens to the instrument, or stops it, as its Listen button does."""
 
     KEYSWITCH_MAP = Binding(Key.K, legends.KeyName.K, legends.MSG_KEYSWITCH_MAP_WHAT)
-    IN_HELP = [*FieldPage.IN_HELP, KEYSWITCH_MAP]
+    LISTEN = Binding(Key.L, legends.KeyName.L, legends.MSG_LISTEN_WHAT)
+    STOP_LISTENING = Binding(Key.L, legends.KeyName.L, legends.MSG_STOP_LISTENING_WHAT)
+    IN_HELP = [*FieldPage.IN_HELP, KEYSWITCH_MAP, LISTEN, STOP_LISTENING]
     IN_LEGEND = all_but(bindings=IN_HELP, hidden=[FieldPage.RENAME])
 
 

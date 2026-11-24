@@ -113,6 +113,7 @@ Right choose a tab.
 | MIDI: Latency | How many milliseconds earlier the instrument's notes are sent, 0 to 500, `0 ms` unless set, for a device that is slow to sound. |
 | Synth: On, Engine | Makes the instrument built in, and chooses its engine; the engine's settings follow. See Built-in Instruments above. |
 | Effects: Block 1 to 4 | Each block's effect and its settings. See Built-in Instruments above. |
+| Listen | A button: `ENTER` on it, or `L` from any field, plays the instrument again and again until `L` again: a scale up an octave and back, or, for a built-in drum, its tuning note four times. Edits to the instrument are heard as it plays. Leaving the page stops it. An instrument that plays nothing, with neither its MIDI nor its Synth on, is refused. |
 | Keyswitch Map | A button: `ENTER` on it, or `K` from any field, opens the instrument's Keyswitch Map. See Keyswitches below. |
 
 ## Keyswitches

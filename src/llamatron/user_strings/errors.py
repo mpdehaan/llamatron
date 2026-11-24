@@ -674,4 +674,5 @@ ERR_BAD_ARPEGGIO = 'arpeggio must be a list of up to {most} whole numbers of sem
 ERR_BAD_EFFECTS = 'effects must be a list of up to {most} effect blocks, each an effect and its settings, got {value!r}'
 ERR_BAD_BUILT_IN_SOUND = "a built-in sound must be a mapping of a sound's settings, got {value!r}"
 ERR_BAD_INSTRUMENT_KIND = 'kind must be one of: {choices}, got {value!r}'
+ERR_INSTRUMENT_PLAYS_NOTHING = 'instrument ({name}) plays nothing: switch on its MIDI or its Synth'
 ERR_BAD_LATENCY = 'latency must be a whole number of milliseconds from {lowest} to {highest}, got {value!r}'
