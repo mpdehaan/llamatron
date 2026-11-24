@@ -25,6 +25,7 @@ from llamatron.caching.cached import cached_for_life
 from llamatron.interface.forms import moves
 from llamatron.interface.tracker.components import title_card
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.renderers import arrange as arrange_renderer
 from llamatron.interface.tracker.scene_notes import beat_chords, effective_values, scene_notes
 from llamatron.interface.tracker.screens.arrange import arrange_details
 from llamatron.interface.tracker.screens.arrange.arrange_details import clip_details, or_stock, track_details
@@ -430,7 +431,7 @@ class SceneView:
             # Scene View only shows, so the + that adds a chain on Arrange is left out, and stock stands for a track with nothing.
             details = [detail for detail in details if detail.target is None or detail.target.kind != arrange_details.ADD_CHAIN]
             for detail in details or or_stock([]):
-                lines.append(Text(SPACE + detail.text, style=detail.style))
+                lines.append(Text(SPACE + detail.text, style=arrange_renderer.detail_style(detail)))
             lines.append(Text())
         return lines
 

@@ -16,10 +16,11 @@ cursor costs nothing.
 
 from typing import NamedTuple
 
+from llamatron.interface.forms import arrange
+from llamatron.interface.forms.arrange import DetailLine
 from llamatron.interface.forms.percentages import percent_shown
 from llamatron.interface.forms.text import tempo_text
-from llamatron.interface.tracker import themes
-from llamatron.interface.tracker.drawing import fit, Style
+from llamatron.interface.tracker.drawing import fit
 from llamatron.model.objects import velocity_ramps
 from llamatron.model.schema import defaults, file_format
 from llamatron.model.schema.file_format import Section, VelocitySetting
@@ -34,14 +35,6 @@ NO_TRANSPOSE = 0
 
 # What the + line under a cell's chains names, which Enter answers by asking for a chain to add.
 ADD_CHAIN = 'add chain'
-
-
-class DetailLine(NamedTuple):
-    """One line of details: its text, cut to DETAIL_WIDTH, its style, in its kind's theme colour for a line naming a thing, and what it names that Enter opens, a Target, or None for a line that names nothing with a page of its own."""
-
-    text: str
-    style: str
-    target: object
 
 
 class Target(NamedTuple):
@@ -96,19 +89,16 @@ def detailed_clip_text(clip_slot, *, repeats_left=None):
     return marks_text.MSG_CLIP_WITH_MARKS.format(name=clip_slot.get_display_name(), marks=marks_text.MSG_DETAILS_MARKS_SEPARATOR.join(marks))
 
 
-def detail(text, *, style=Style.PLAIN, target=None):
-    """Return a line of details, cut to DETAIL_WIDTH, naming a Target that Enter opens, or nothing; a line naming a thing is drawn in the colour of its kind's pages."""
-    colour = themes.target_theme(target.kind) if target else None
-    if colour is not None:
-        style = themes.text_style(colour)
-    return DetailLine(text=fit(text=text, width=DETAIL_WIDTH).rstrip() if len(text) > DETAIL_WIDTH else text, style=style, target=target)
+def detail(text, *, kind=arrange.PLAIN, target=None):
+    """Return a line of details, cut to DETAIL_WIDTH, naming a Target that ENTER opens, or nothing."""
+    return DetailLine(text=fit(text=text, width=DETAIL_WIDTH).rstrip() if len(text) > DETAIL_WIDTH else text, kind=kind, target=target)
 
 
 def chain_lines(*, song, names):
     """Return a line for each chain the cell runs, chain: name, in the order they run, in the chains' theme colour, then the +
     line that adds one: a cell holds chains, and a chain's generators are seen on the chain's own page."""
     lines = [detail(marks_text.MSG_DETAILS_CHAIN.format(name=name), target=Target(kind=Section.CHAINS, name=name, place=place)) for place, name in enumerate(names)]
-    return lines + [detail(marks_text.MSG_DETAILS_ADD_CHAIN, style=Style.DIM, target=Target(kind=ADD_CHAIN, name=None))]
+    return lines + [detail(marks_text.MSG_DETAILS_ADD_CHAIN, kind=arrange.FAINT, target=Target(kind=ADD_CHAIN, name=None))]
 
 
 def velocity_lines(owner):
@@ -195,7 +185,7 @@ def track_details(*, song, track):
 def or_stock(lines):
     """Return a cell's lines of details, with the one word stock, in red, above the + of a cell with nothing else."""
     if all(line.target is not None and line.target.kind == ADD_CHAIN for line in lines):
-        return [detail(marks_text.MSG_DETAILS_STOCK, style=Style.DETAILS_STOCK), *lines]
+        return [detail(marks_text.MSG_DETAILS_STOCK, kind=arrange.STOCK), *lines]
     return lines
 
 

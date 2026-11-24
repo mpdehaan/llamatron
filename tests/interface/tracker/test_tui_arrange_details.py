@@ -10,6 +10,7 @@ from llamatron.interface.tracker import keybindings, themes
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.drawing import Box, Style
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.renderers import arrange as arrange_renderer
 from llamatron.interface.tracker.screens.arrange import arrange_details, arrange_drawing, arrange_page
 from llamatron.interface.tracker.screens.arrange.arrange_details import clip_details, detailed_clip_text, details_layout, scene_details, track_details
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
@@ -89,7 +90,7 @@ class TestDetails(unittest.TestCase):
         self.assertEqual(texts(clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot()))[1], marks.MSG_DETAILS_ADD_CHAIN)
         # A chain is drawn in the chains' theme colour and a generator in the generators', since a kind has one colour everywhere.
         lines = clip_details(setlist=self.setlist, song=self.song, clip_slot=self.clip_slot())
-        self.assertEqual(lines[0].style, themes.text_style(themes.GENERATORS))
+        self.assertEqual(arrange_renderer.detail_style(lines[0]), themes.text_style(themes.GENERATORS))
         self.assertEqual(lines[1].target.kind, arrange_details.ADD_CHAIN)
         self.document.change_set(self.document.song().get_scene(FIRST_SCENE).set_chain_names, names=[ui_testing.NAMED, ui_testing.NAMED], song=self.document.song())
         self.assertEqual(self.scene_lines().count(marks.MSG_DETAILS_CHAIN.format(name=ui_testing.NAMED)), 2)
