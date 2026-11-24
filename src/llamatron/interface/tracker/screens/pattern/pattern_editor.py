@@ -157,6 +157,8 @@ MOST = 'most'
 FEWEST_CHORDS_TO_LEAD = 2
 # The fewest steps a pattern is rolled.
 FIRST_ROLL = 1
+# How long after a step starts the page draws the read head on it, so that the step has surely begun when it is asked which plays.
+STEP_LANDING_SECONDS = 0.002
 # The munges that blank or fill rows of every step and need nothing else, each with the method of Pattern that does it.
 CLEARING = {
     Munge.CLEAR_ALL_BUT_PITCH: Pattern.clear_all_but_pitch,
@@ -224,6 +226,8 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         self.rows_view = PatternRows(editor=self, drawing=self.drawing)
         self.roll_drawing = RollDrawing(self)
         self.roll = PianoRoll(editor=self, drawing=self.roll_drawing)
+        # The timer that draws the page again as the next step starts, while the pattern plays, or None.
+        self._step_timer = None
 
     def label_width(self):
         """Return the label column's width, one for both views: the wider of the rows' and the roll's, so that the step columns stay put when Tab switches views."""
@@ -389,6 +393,19 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         ]
         return result + view.keys()
 
+    def draw(self):
+        """Draw the page, and while the pattern plays, draw it again as its next step starts, so that the read head moves with the
+        music rather than on the tracker's tenth-of-a-second ticks, which at most tempos fall unevenly against the steps."""
+        super().draw()
+        self._time_the_read_head()
+
+    def seconds_to_next_step(self):
+        """Return how long until the pattern's playing step, in its preview or else in a clip of the song, gives way to the next, or None while it doesn't play."""
+        seconds = self.app.pattern_preview().seconds_to_next_step(self.item)
+        if seconds is None:
+            return self.app.transport.seconds_to_next_step(self.item)
+        return seconds
+
     def playing_step(self):
         """Return the step of the pattern that sounds now, in its preview or else in a clip of the song that plays, for the piano roll's read head, or None."""
         preview = self.app.pattern_preview()
@@ -453,6 +470,18 @@ class PatternEditor(ShowsNamedItem, StepEditor):
     def ask_step_size(self):
         current = self.pattern().get_written_step_size() or drawing.NOTHING
         self.ask_length(title=messages.MSG_STEP_SIZE_PROMPT, current=current, most=limits.MAX_STEP_SIZE, then=self._set_step_size, blank_allowed=True)
+
+    def _time_the_read_head(self):
+        """Set the timer that draws the page as the playing step gives way to the next, in place of any set before, while this
+        page is the one shown and its pattern plays."""
+        if self._step_timer is not None:
+            self._step_timer.stop()
+            self._step_timer = None
+        if not self.is_attached or self.app.screen is not self:
+            return
+        seconds = self.seconds_to_next_step()
+        if seconds is not None:
+            self._step_timer = self.set_timer(seconds + STEP_LANDING_SECONDS, self.draw)
 
     def _set_step_size(self, text):
         self._change(self.pattern().set_step_size, text)

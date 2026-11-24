@@ -981,6 +981,15 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.let_the_preview_play(A_MOMENT)
         self.assertIsNone(self.page.playing_step())
 
+    async def test_the_page_knows_when_the_read_head_moves_next_so_that_it_moves_with_the_music(self):
+        eighth_seconds = 0.25
+        self.name_a_preview_instrument()
+        await self.open_pattern(ui_testing.TUNE)
+        self.assertIsNone(self.page.seconds_to_next_step())
+        await self.press(keybindings.PatternEditor.LISTEN)
+        await self.let_the_preview_play(PAST_THE_SECOND_NOTE)
+        self.assertAlmostEqual(self.page.seconds_to_next_step(), 2 * eighth_seconds - PAST_THE_SECOND_NOTE, places=2)
+
     async def test_the_roll_draws_the_read_head_as_a_thin_line_and_never_over_a_notes_bar(self):
         self.name_a_preview_instrument()
         await self.open_pattern(ui_testing.TUNE)

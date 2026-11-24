@@ -60,12 +60,21 @@ BUILT_LOOK_SECONDS = 0.01
 SEED_RANGE = 2 ** 31
 
 
-def step_sounding(*, elapsed, quarter, step_size, steps, direction):
+class StepsPlaying(NamedTuple):
+    """How a playing clip goes through its pattern's steps: how long it has played, how long a step lasts, both in seconds, and
+    the pattern's steps and the direction they go in."""
+
+    elapsed: float
+    step_seconds: float
+    steps: int
+    direction: str
+
+
+def step_sounding(*, elapsed, step_seconds, steps, direction):
     """Return the step that sounds a time into a clip's play, by the direction's order, or None for a direction that chooses its steps as it goes."""
     order = walk_order(count=steps, direction=direction)
     if order is None:
         return None
-    step_seconds = float(step_size) * realtime_names.QUARTERS_PER_WHOLE * quarter
     return order[int(elapsed / step_seconds) % len(order)]
 
 
@@ -485,6 +494,36 @@ class Transport:
     def playing_step(self, pattern):
         """Return the step of a pattern that sounds now, for the piano roll's read head: the step of the first playing clip that plays the pattern, in the clip's
         direction, or None when no playing clip plays the pattern or the direction chooses its steps as it goes. What a generator or a morph does to the clip is not followed."""
+        steps = self._steps_playing(pattern)
+        if steps is None:
+            return None
+        return step_sounding(elapsed=steps.elapsed, step_seconds=steps.step_seconds, steps=steps.steps, direction=steps.direction)
+
+    def seconds_to_next_step(self, pattern):
+        """Return how long until the pattern's playing step gives way to the next, so that the read head is moved as the music
+        moves, or None when no playing clip plays the pattern."""
+        steps = self._steps_playing(pattern)
+        if steps is None:
+            return None
+        return steps.step_seconds - steps.elapsed % steps.step_seconds
+
+    def draw_places(self):
+        """Return where every draw stands in what plays now, by name, the place of the slot each last took its value from, for the
+        Draws page's lights: in the first scene that plays, and none while nothing plays."""
+        scenes = self.playing_scenes()
+        if not scenes:
+            return {}
+        elapsed = self.scene_elapsed(scenes[0])
+        return {} if elapsed is None else self._playback.draw_places(scene=scenes[0], seconds=elapsed)
+
+    def get_player(self):
+        """Return the player, for the tests."""
+        return self._playback.get_player()
+
+    # Underneath.
+
+    def _steps_playing(self, pattern):
+        """Return how the first playing clip that plays a pattern goes through its steps (StepsPlaying), or None."""
         if not self.is_playing() or self._song is None or not self._song.get_setlist().has_pattern(pattern):
             return None
         song = self._song
@@ -501,26 +540,9 @@ class Transport:
                 elapsed = self.clip_elapsed(index=index, track=track)
                 if elapsed is None:
                     continue
-                return step_sounding(
-                    elapsed=elapsed, quarter=quarter, step_size=song.get_setlist().get_pattern_step_size(played), steps=played.get_steps(),
-                    direction=clip_slot.get_direction() or played.get_direction(),
-                )
+                step_seconds = float(song.get_setlist().get_pattern_step_size(played)) * realtime_names.QUARTERS_PER_WHOLE * quarter
+                return StepsPlaying(elapsed=elapsed, step_seconds=step_seconds, steps=played.get_steps(), direction=clip_slot.get_direction() or played.get_direction())
         return None
-
-    def draw_places(self):
-        """Return where every draw stands in what plays now, by name, the place of the slot each last took its value from, for the
-        Draws page's lights: in the first scene that plays, and none while nothing plays."""
-        scenes = self.playing_scenes()
-        if not scenes:
-            return {}
-        elapsed = self.scene_elapsed(scenes[0])
-        return {} if elapsed is None else self._playback.draw_places(scene=scenes[0], seconds=elapsed)
-
-    def get_player(self):
-        """Return the player, for the tests."""
-        return self._playback.get_player()
-
-    # Underneath.
 
     def _launch(self, *, launch, instead):
         """Play what a launch names on a score of the current song as it is now, through the sender for the routes' ports, and run
