@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Naming notes struck together as one step's chord, as the Chord rows play it, so that a hand's chords are one track.
+"""Naming notes struck together as one chord, as the Chord rows play it: what the MIDI import writes a hand's chords as, and what a printed song names its chords.
 
 The readings are tried in the order a player names a chord, plainest first, so that a chord is never given a wrong name
 (the user's order, with the professor's one exception):

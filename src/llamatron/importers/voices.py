@@ -23,9 +23,9 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
-from llamatron.importers.chord_naming import chord_named, Hearing
 from llamatron.math.rational import Rational
 from llamatron.model.schema import file_format, limits
+from llamatron.music_theory.harmony.chord_naming import chord_named, Hearing
 from llamatron.user_strings import importing
 
 # Middle C, where a part that plays both hands is split. A part plays both hands when enough of its

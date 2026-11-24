@@ -31,7 +31,7 @@ import traceback
 
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters.midi_arrangement import MidiSong
-from llamatron.importers import chord_naming, midi_import as midi_import_values
+from llamatron.importers import midi_import as midi_import_values
 from llamatron.importers.comparison import compared
 from llamatron.importers.midi_import import ImportChoices, MidiImport
 from llamatron.importers.writing import add_imported
@@ -39,6 +39,7 @@ from llamatron.math.rational import Rational
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import Section
+from llamatron.music_theory.harmony import chord_naming
 
 TRIALS = os.path.join('/tmp', 'claude', 'llamatron', 'import_trials')
 SUFFIXES = ('.mid', '.midi')

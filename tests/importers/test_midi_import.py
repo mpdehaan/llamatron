@@ -16,7 +16,7 @@ import os
 import unittest
 
 from llamatron.exporters.midi_arrangement import MidiSong
-from llamatron.importers import chord_naming, cutting, licks, phrase_cut, voices as voices_values
+from llamatron.importers import cutting, licks, phrase_cut, voices as voices_values
 from llamatron.importers.comparison import round_trip
 from llamatron.importers.keys import degree_of, drum_note_of, key_of_notes, key_of_signature, MusicalKey
 from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
@@ -31,6 +31,7 @@ from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, Doubling, Omission, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, Tension, TrackSetting
 from llamatron.model.values.scale import ScaleType
+from llamatron.music_theory.harmony import chord_naming
 from llamatron.user_strings import errors, importing, labels
 from tests.support.example_renders import example_setlist, first_song_grid
 
