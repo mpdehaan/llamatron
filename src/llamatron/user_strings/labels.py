@@ -7,7 +7,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.interface.tracker.keys import RowSection
-from llamatron.model.schema.file_format import Approach, ChipDirection, ChipVoice, ChordColor, ChordSymbol, Curve, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, DrumMachine, Duty, Effect, FilterMode, FilterType, FollowAction, GateModifier, LiveResponsiveness, Modulation, NamedProgression, Noise, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SidWave, SingleNotes, SoundEngine, STATEMENT_ROWS, Stroke, Tuning, Waveform, WaveShape
+from llamatron.model.schema.file_format import Approach, ChipDirection, ChipVoice, ChordColor, ChordSymbol, Curve, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, DrumMachine, Duty, Effect, FilterMode, FilterType, FollowAction, GateModifier, LfoShape, LiveResponsiveness, Modulation, NamedProgression, Noise, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SidWave, SingleNotes, SoundEngine, STATEMENT_ROWS, Stroke, SynthControl, Tuning, Waveform, WaveShape
 
 
 def draw_labels(*, rows, label):
@@ -769,6 +769,7 @@ MSG_LATENCY_LABEL = 'Latency'
 MSG_MIDI_TAB = 'MIDI'
 MSG_SYNTH_TAB = 'Synth'
 MSG_EFFECTS_TAB = 'Effects'
+MSG_LFOS_TAB = 'LFOs'
 MSG_ON_LABEL = 'On'
 MSG_MIDI_ON_LABEL = 'MIDI on'
 MSG_SYNTH_ON_LABEL = 'Synth on'
@@ -827,6 +828,13 @@ MSG_BITS_LABEL = 'Bits'
 MSG_RATE_LABEL = 'Rate'
 MSG_CURVE_LABEL = 'Curve'
 MSG_AMOUNT_LABEL = 'Amount'
+MSG_LFO_LABEL = 'LFO {number}'
+MSG_LFO_SHAPE_LABEL = 'LFO {number} shape'
+MSG_LFO_RATE_LABEL = 'LFO {number} rate'
+MSG_LFO_DEPTH_LABEL = 'LFO {number} depth'
+MSG_LFO_RETRIGGER_LABEL = 'LFO {number} retrigger'
+# An LFO's field labels as its box shows them, without the LFO's number.
+MSG_LFO_SHOWN_LABELS = {MSG_LFO_SHAPE_LABEL: 'Shape', MSG_LFO_RATE_LABEL: 'Rate', MSG_LFO_DEPTH_LABEL: 'Depth', MSG_LFO_RETRIGGER_LABEL: 'Retrigger'}
 # A block's field labels as its box shows them, without the block's number.
 MSG_EFFECT_SHOWN_LABELS = {
     MSG_EFFECT_BITS_LABEL: MSG_BITS_LABEL, MSG_EFFECT_RATE_LABEL: MSG_RATE_LABEL, MSG_EFFECT_CURVE_LABEL: MSG_CURVE_LABEL,
@@ -854,6 +862,15 @@ MSG_NOISE_NAMES = {Noise.LONG: 'Long', Noise.SHORT: 'Short'}
 MSG_EFFECT_NAMES = {Effect.NONE: '(empty)', Effect.BITCRUSH: 'Bitcrush', Effect.DRIVE: 'Drive', Effect.FILTER: 'Filter'}
 MSG_FILTER_TYPE_NAMES = {FilterType.LADDER: 'Ladder', FilterType.MULTIMODE: 'Multimode', FilterType.SALLEN_KEY: 'Sallen-Key', FilterType.DIODE: 'Diode',
                          FilterType.OTA: 'OTA'}
+MSG_LFO_SHAPE_NAMES = {LfoShape.SINE: 'Sine', LfoShape.TRIANGLE: 'Triangle', LfoShape.SAW_UP: 'Saw up', LfoShape.SAW_DOWN: 'Saw down', LfoShape.SQUARE: 'Square',
+                       LfoShape.SAMPLE_AND_HOLD: 'Sample & Hold'}
+MSG_SYNTH_CONTROL_NAMES = {
+    SynthControl.NONE: '(none)', SynthControl.PITCH: 'Pitch', SynthControl.ATTACK: 'Attack', SynthControl.DECAY: 'Decay', SynthControl.SUSTAIN: 'Sustain',
+    SynthControl.RELEASE: 'Release', SynthControl.DETUNE_SPREAD: 'Detune spread', SynthControl.PULSE_WIDTH: 'Pulse width', SynthControl.PAN: 'Pan',
+    SynthControl.FILTER_CUTOFF: 'Filter cutoff', SynthControl.FINE_TUNE: 'Fine tune', SynthControl.COLOR: 'Color', SynthControl.SHAPE: 'Shape',
+    SynthControl.SWEEP: 'Sweep', SynthControl.WAVE: 'Wave', SynthControl.RING_SYNC: 'Ring/Sync', SynthControl.ENVELOPE_RATE: 'Envelope rate',
+    SynthControl.DUTY: 'Duty', SynthControl.NOISE_MODE: 'Noise mode',
+}
 MSG_FILTER_MODE_NAMES = {FilterMode.LOW: 'Low-pass', FilterMode.BAND: 'Band-pass', FilterMode.HIGH: 'High-pass', FilterMode.NOTCH: 'Notch'}
 MSG_CURVE_NAMES = {Curve.SOFT: 'Soft', Curve.WARM: 'Warm', Curve.HARD: 'Hard', Curve.FOLD: 'Fold', Curve.WRAP: 'Wrap'}
 # What a step with no velocity typed plays at, on an instrument and on a track.

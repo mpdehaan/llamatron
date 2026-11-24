@@ -18,7 +18,7 @@ stores only what differs from it and older sets load as they are.
 from llamatron.model.file import corrections
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ChipDirection, ChipVoice, Curve, DrumMachine, Duty, Effect, EffectSetting, FilterMode, FilterType, Modulation, Noise, OscillatorSetting, SidWave, SoundEngine, SoundSetting, Waveform, WaveShape
+from llamatron.model.schema.file_format import ChipDirection, ChipVoice, Curve, DrumMachine, Duty, Effect, EffectSetting, FilterMode, FilterType, LfoSetting, LfoShape, Modulation, Noise, OscillatorSetting, SidWave, SoundEngine, SoundSetting, SynthControl, Waveform, WaveShape
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.user_strings import errors
 
@@ -65,6 +65,16 @@ def check_effects(value):
         check_settings(settings=EFFECT_SETTINGS, data=block)
 
 
+def check_lfos(value):
+    """Refuse LFOs that aren't a list of up to four, each a mapping of an LFO's settings."""
+    if not isinstance(value, list) or len(value) > limits.LFO_COUNT:
+        raise InvalidValue(errors.ERR_BAD_LFOS.format(most=limits.LFO_COUNT, value=value))
+    for lfo in value:
+        if not isinstance(lfo, dict) or not set(lfo) <= set(LFO_SETTINGS):
+            raise InvalidValue(errors.ERR_BAD_LFOS.format(most=limits.LFO_COUNT, value=value))
+        check_settings(settings=LFO_SETTINGS, data=lfo)
+
+
 def percent(name, *, highest=limits.MAX_PERCENT):
     return WholeNumber(name=name, lowest=0, highest=highest, error=errors.ERR_SOUND_NUMBER)
 
@@ -75,6 +85,19 @@ def milliseconds(name, *, highest=limits.MAX_ENVELOPE_MS):
 
 def chosen(name, *, choices):
     return Choice(name=name, choices=choices, default=corrections.LEFT_OUT, error=errors.ERR_SOUND_CHOICE)
+
+
+LFO_SETTINGS = described(
+    chosen(LfoSetting.TARGET, choices=file_format.SYNTH_CONTROLS),
+    chosen(LfoSetting.SHAPE, choices=file_format.LFO_SHAPES),
+    WholeNumber(name=LfoSetting.RATE, lowest=limits.MIN_LFO_RATE, highest=limits.MAX_LFO_RATE, error=errors.ERR_SOUND_NUMBER),
+    WholeNumber(name=LfoSetting.DEPTH, lowest=-limits.MAX_LFO_DEPTH, highest=limits.MAX_LFO_DEPTH, error=errors.ERR_SOUND_NUMBER),
+    Flag(name=LfoSetting.RETRIGGER, error=errors.ERR_SOUND_FLAG),
+)
+LFO_DEFAULTS = {LfoSetting.TARGET: SynthControl.NONE, LfoSetting.SHAPE: LfoShape.SINE, LfoSetting.RATE: defaults.DEFAULT_LFO_RATE,
+                LfoSetting.DEPTH: defaults.DEFAULT_LFO_DEPTH, LfoSetting.RETRIGGER: True}
+# An LFO's rate is stored in tenths of a hertz.
+TENTHS = 10.0
 
 
 OSCILLATOR_SETTINGS = described(
@@ -141,6 +164,7 @@ SOUND_SETTINGS = described(
     chosen(SoundSetting.WAVE_SHAPE, choices=file_format.WAVE_SHAPES),
     chosen(SoundSetting.NOISE, choices=file_format.NOISES),
     Checked(name=SoundSetting.EFFECTS, check=check_effects),
+    Checked(name=SoundSetting.LFOS, check=check_lfos),
 )
 DEFAULT_OSCILLATORS = [{OscillatorSetting.WAVEFORM: Waveform.SAW}]
 DEFAULT_KNOBS = [defaults.DEFAULT_KNOB] * limits.KNOB_COUNT
@@ -156,6 +180,7 @@ SOUND_DEFAULTS = {
     SoundSetting.LEVEL_DIRECTION: ChipDirection.DOWN, SoundSetting.SWEEP_PACE: 0, SoundSetting.SWEEP_DIRECTION: ChipDirection.DOWN,
     SoundSetting.SWEEP_STEP: defaults.DEFAULT_SWEEP_STEP, SoundSetting.WAVE_SHAPE: WaveShape.TRIANGLE, SoundSetting.NOISE: Noise.LONG,
     SoundSetting.EFFECTS: [],
+    SoundSetting.LFOS: [],
 }
 
 
@@ -185,6 +210,13 @@ def oscillator_value(*, oscillator, name):
     if name in oscillator:
         return oscillator[name]
     return OSCILLATOR_DEFAULTS[name]
+
+
+def lfo_value(*, lfo, name):
+    """Return one of an LFO's settings, its default where it leaves it out."""
+    if name in lfo:
+        return lfo[name]
+    return LFO_DEFAULTS[name]
 
 
 def effect_value(*, block, name):
@@ -218,7 +250,7 @@ class SoundSpec:
 
     def spec(self):
         engine = self.value(SoundSetting.ENGINE)
-        spec = {'kind': engine, 'volume': self.value(SoundSetting.VOLUME) / PERCENT, 'voices': self.value(SoundSetting.VOICES), 'effects': self.effects()}
+        spec = {'kind': engine, 'volume': self.value(SoundSetting.VOLUME) / PERCENT, 'voices': self.value(SoundSetting.VOICES), 'effects': self.effects(), 'lfos': self.lfos(engine)}
         if engine == SoundEngine.DRUM:
             spec.update(self.drum())
         elif engine == SoundEngine.SID:
@@ -258,6 +290,18 @@ class SoundSpec:
                 'level_up': self.value(SoundSetting.LEVEL_DIRECTION) == ChipDirection.UP, 'sweep_pace': self.value(SoundSetting.SWEEP_PACE),
                 'sweep_up': self.value(SoundSetting.SWEEP_DIRECTION) == ChipDirection.UP, 'sweep_step': self.value(SoundSetting.SWEEP_STEP),
                 'wave_shape': self.value(SoundSetting.WAVE_SHAPE), 'noise': self.value(SoundSetting.NOISE)}
+
+    def lfos(self, engine):
+        """Return the LFOs that move something on the engine, each its target, shape, rate in hertz, depth as a fraction either
+        way and whether each note starts it again; an LFO whose target the engine lacks, or that has none, left out."""
+        lfos = []
+        for lfo in self.value(SoundSetting.LFOS):
+            target = lfo_value(lfo=lfo, name=LfoSetting.TARGET)
+            if target not in file_format.LFO_TARGETS[engine] or target == SynthControl.NONE:
+                continue
+            lfos.append({'target': target, 'shape': lfo_value(lfo=lfo, name=LfoSetting.SHAPE), 'rate': lfo_value(lfo=lfo, name=LfoSetting.RATE) / TENTHS,
+                         'depth': lfo_value(lfo=lfo, name=LfoSetting.DEPTH) / PERCENT, 'retrigger': lfo_value(lfo=lfo, name=LfoSetting.RETRIGGER)})
+        return lfos
 
     def effects(self):
         """Return the effects in order, each a mapping of its settings, every setting given, shares as fractions and times in

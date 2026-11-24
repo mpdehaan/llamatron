@@ -10,6 +10,7 @@ from llamatron.interface.forms import percentages
 from llamatron.interface.forms.nodes import Field, NameField, NumberField, SettingNumberField, Toggle
 from llamatron.interface.forms.tab_box import Tab, TabBox, TabColumn
 from llamatron.interface.pages.effect_blocks import EffectBlocks
+from llamatron.interface.pages.lfo_blocks import LfoBlocks
 from llamatron.interface.pages.sound_tabs import SoundTabs
 from llamatron.model.schema import defaults, limits
 from llamatron.model.schema.file_format import InstrumentKind, InstrumentSetting
@@ -85,7 +86,7 @@ class InstrumentPresenter:
         )
 
     def form(self):
-        """Return the page's form: the instrument's name, how its steps' velocities play, its MIDI, Synth and Effects tabs, then the
+        """Return the page's form: the instrument's name, how its steps' velocities play, its MIDI, Synth, Effects and LFOs tabs, then the
         Keyswitch Map button."""
         tabs = SoundTabs(page=self._page, document=self._document, name=self._name)
         return [
@@ -93,7 +94,8 @@ class InstrumentPresenter:
             self.default_velocity_field(),
             self.accent_field(),
             self.velocity_change_field(),
-            TabBox(tabs=[self.midi_tab(), tabs.synth_tab(), EffectBlocks(page=self._page, document=self._document, name=self._name).effects_tab()]),
+            TabBox(tabs=[self.midi_tab(), tabs.synth_tab(), EffectBlocks(page=self._page, document=self._document, name=self._name).effects_tab(),
+                          LfoBlocks(page=self._page, document=self._document, name=self._name).lfos_tab()]),
             self._page.keyswitch_map_button(),
             self._page.listen_button(),
         ]

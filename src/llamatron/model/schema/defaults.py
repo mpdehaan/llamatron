@@ -85,3 +85,7 @@ DEFAULT_ENVELOPE_DECAY = 250
 DEFAULT_KEY_TRACK = 50
 DEFAULT_FILTER_DRIVE = 0
 DEFAULT_MIX = 100
+# An LFO chosen starts a gentle sine vibrato: five hertz, a twentieth of its range (about half a semitone of pitch), each note
+# starting it again.
+DEFAULT_LFO_RATE = 50
+DEFAULT_LFO_DEPTH = 5

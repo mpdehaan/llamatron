@@ -376,6 +376,8 @@ MSG_SOUND_GAUGE_EMPTY = '░'
 MSG_SOUND_PERCENT_SHOWN = '{number}%'
 # A share that may go below zero, such as a filter envelope's amount.
 MSG_SIGNED_PERCENT_SHOWN = '{number:+}%'
+# An LFO's rate, in hertz to a tenth.
+MSG_LFO_RATE_SHOWN = '{number:.1f} Hz'
 MSG_NUMBER_SHOWN = '{number}'
 MSG_MILLISECONDS_SHOWN = '{number} ms'
 MSG_CENTS_SHOWN = '{number:+d} c'

@@ -17,7 +17,7 @@ chunk in whole-array numpy reads, its values held in plain attributes, never a l
 import math
 import numpy
 
-from llamatron.realtime.synth_process import tables
+from llamatron.realtime.synth_process import modulation as modulation_values, tables
 
 MIDDLE_A = 69
 A_FREQUENCY = 440.0
@@ -56,7 +56,7 @@ class BasicPatch:
     """A compiled Basic instrument: its oscillators, each (tables by octave band, detune in cents, level), its envelope in
     seconds and its sustain level, how many notes it plays at once, its volume, and its effects in order."""
 
-    __slots__ = ('oscillators', 'attack', 'decay', 'sustain', 'release', 'voices', 'volume', 'effects')
+    __slots__ = ('oscillators', 'attack', 'decay', 'sustain', 'release', 'voices', 'volume', 'effects', 'modulation')
 
     def __init__(self, *, oscillators, envelope, voices=4, volume=0.5, effects=()):
         self.oscillators = oscillators
@@ -64,21 +64,31 @@ class BasicPatch:
         self.voices = voices
         self.volume = volume
         self.effects = list(effects)
+        self.modulation = modulation_values.NO_MODULATION
 
     def begin(self, *, voice, rate):
         for oscillator_tables, cents, oscillator_level in self.oscillators:
             frequency = frequency_of(voice.pitch) * 2.0 ** (cents / 1200.0)
             speed = frequency * tables.TABLE_SIZE / rate
-            voice.oscillators.append((oscillator_tables[tables.band_of(frequency)], speed, 0.0, oscillator_level))
+            voice.oscillators.append((oscillator_tables[tables.band_of(frequency)], speed, 0.0, oscillator_level, cents))
 
     def sound(self, *, voice, first, count, rate):
         out = numpy.zeros(count, dtype=numpy.float32)
-        steps = numpy.arange(count, dtype=numpy.float64)
+        now = self.modulation.now
+        pitch = now.get(modulation_values.PITCH)
+        spread = now.get(modulation_values.DETUNE_SPREAD)
+        steps = None
+        if pitch is None and spread is None:
+            steps = numpy.arange(count, dtype=numpy.float64)
         read = []
-        for table, speed, phase, oscillator_level in voice.oscillators:
-            positions = phase + speed * steps
+        for table, speed, phase, oscillator_level, cents in voice.oscillators:
+            if steps is not None:
+                positions = phase + speed * steps
+                after = phase + speed * count
+            else:
+                positions, after = modulation_values.phases(phase=phase, speeds=speed * moved_speed(pitch=pitch, spread=spread, cents=cents))
             out += table[positions.astype(numpy.int64) & tables.TABLE_MASK] * oscillator_level
-            read.append((table, speed, (phase + speed * count) % tables.TABLE_SIZE, oscillator_level))
+            read.append((table, speed, after % tables.TABLE_SIZE, oscillator_level, cents))
         voice.oscillators = read
         out *= envelope(patch=self, voice=voice, first=first, count=count, rate=rate)
         return out
@@ -89,8 +99,8 @@ class SidPatch:
     modulation, ring or sync, and the interval of the oscillator that does it, its arpeggio in semitones, its glide in
     seconds, its envelope as Basic's, voices, volume and effects, and the pitch it last played, which a glide starts from."""
 
-    __slots__ = ('wave', 'saw', 'triangle', 'noise', 'pulse_width', 'pulse_sweep', 'modulation', 'interval', 'arpeggio', 'glide', 'attack',
-                 'decay', 'sustain', 'release', 'voices', 'volume', 'effects', 'last_pitch')
+    __slots__ = ('wave', 'saw', 'triangle', 'noise', 'pulse_width', 'pulse_sweep', 'interaction', 'interval', 'arpeggio', 'glide', 'attack',
+                 'decay', 'sustain', 'release', 'voices', 'volume', 'effects', 'last_pitch', 'modulation')
 
     def __init__(self, *, spec, rate, effects):
         """spec is the sound as llamatron gives it (model/objects/built_in_sound.py), effects its effects compiled."""
@@ -100,7 +110,7 @@ class SidPatch:
         self.noise = tables.sid_noise()
         self.pulse_width = spec['pulse_width']
         self.pulse_sweep = spec['pulse_sweep']
-        self.modulation = spec['modulation']
+        self.interaction = spec['modulation']
         self.interval = spec['interval']
         self.arpeggio = tuple(spec['arpeggio'])
         self.glide = spec['glide']
@@ -109,6 +119,7 @@ class SidPatch:
         self.volume = spec['volume']
         self.effects = list(effects)
         self.last_pitch = None
+        self.modulation = modulation_values.NO_MODULATION
 
     def begin(self, *, voice, rate):
         voice.glide_from = voice.pitch
@@ -125,23 +136,28 @@ class SidPatch:
             pitch += (voice.glide_from - voice.pitch) * math.exp(-seconds / self.glide)
         if self.arpeggio:
             pitch += self.arpeggio[int(seconds * FRAMES_PER_SECOND) % len(self.arpeggio)]
+        now = self.modulation.now
+        moved = now.get(modulation_values.PITCH)
+        if moved is not None and self.interaction != 'off':
+            # Ring and sync follow the pitch's movement a chunk at a time.
+            pitch += float(moved.mean())
+            moved = None
         frequency = frequency_of(pitch)
         steps = numpy.arange(count, dtype=numpy.float64)
-        if self.modulation == 'sync':
+        if self.interaction == 'sync':
             second = frequency_of(pitch + self.interval)
             out = self._synced(voice=voice, ratio=frequency / second, second_step=second / rate, steps=steps, width=self._width(seconds))
         else:
-            out = self._wave(voice=voice, frequency=frequency, steps=steps, rate=rate, seconds=seconds)
-            if self.modulation == 'ring':
+            positions = read_positions(voice=voice, speed=frequency * tables.TABLE_SIZE / rate, count=count, moved=moved)
+            voice.phase %= tables.TABLE_SIZE
+            out = self._wave(frequency=frequency, positions=positions, seconds=seconds)
+            if self.interaction == 'ring':
                 out *= self._ring(voice=voice, pitch=pitch, steps=steps, rate=rate)
         out *= envelope(patch=self, voice=voice, first=first, count=count, rate=rate)
         return out
 
-    def _wave(self, *, voice, frequency, steps, rate, seconds):
-        """Return the wave read for a chunk from the voice's phase, band-limited but for noise, as the chip's own noise is."""
-        speed = frequency * tables.TABLE_SIZE / rate
-        positions = voice.phase + speed * steps
-        voice.phase = (voice.phase + speed * len(steps)) % tables.TABLE_SIZE
+    def _wave(self, *, frequency, positions, seconds):
+        """Return the wave read at a chunk's positions, band-limited but for noise, as the chip's own noise is."""
         band = tables.band_of(frequency)
         indexes = positions.astype(numpy.int64)
         if self.wave == 'saw':
@@ -152,7 +168,12 @@ class SidPatch:
             return self.noise[(positions * SID_NOISE_STEPS_PER_CYCLE / tables.TABLE_SIZE).astype(numpy.int64) % len(self.noise)]
         # A band-limited pulse is one saw less another shifted by its width, which also leaves it with no offset.
         width = self._width(seconds)
-        shifted = (indexes + int(width * tables.TABLE_SIZE)) & tables.TABLE_MASK
+        wobble = self.modulation.now.get(modulation_values.PULSE_WIDTH)
+        if wobble is None:
+            shifted = (indexes + int(width * tables.TABLE_SIZE)) & tables.TABLE_MASK
+        else:
+            widths = numpy.clip(width + wobble, NARROWEST, WIDEST)
+            shifted = (indexes + (widths * tables.TABLE_SIZE).astype(numpy.int64)) & tables.TABLE_MASK
         saw = self.saw[band]
         return (saw[indexes & tables.TABLE_MASK] - saw[shifted]) * numpy.float32(0.5)
 
@@ -194,7 +215,7 @@ class PocketPatch:
     step, its voices, volume and effects."""
 
     __slots__ = ('chip_voice', 'tables', 'noise', 'start_level', 'level_pace', 'level_up', 'sweep_pace', 'sweep_up', 'sweep_step', 'voices',
-                 'volume', 'effects')
+                 'volume', 'effects', 'modulation')
 
     def __init__(self, *, spec, rate, effects):
         """spec is the sound as llamatron gives it (model/objects/built_in_sound.py), effects its effects compiled."""
@@ -216,6 +237,7 @@ class PocketPatch:
         self.voices = spec['voices']
         self.volume = spec['volume']
         self.effects = list(effects)
+        self.modulation = modulation_values.NO_MODULATION
 
     def begin(self, *, voice, rate):
         voice.phase = 0.0
@@ -227,17 +249,17 @@ class PocketPatch:
         if self.sweep_pace:
             self._sweep(voice=voice, seconds=seconds)
         frequency = CHIP_CLOCK / (PERIODS - voice.period)
-        steps = numpy.arange(count, dtype=numpy.float64)
+        moved = self.modulation.now.get(modulation_values.PITCH)
         if self.noise is not None:
             # Noise is clocked by the pitch, a step of the register each sixteenth of the note's cycle.
-            speed = frequency * NOISE_STEPS_PER_CYCLE / rate
-            out = self.noise[(voice.phase + speed * steps).astype(numpy.int64) % len(self.noise)]
-            voice.phase = (voice.phase + speed * count) % len(self.noise)
+            positions = read_positions(voice=voice, speed=frequency * NOISE_STEPS_PER_CYCLE / rate, count=count, moved=moved)
+            out = self.noise[positions.astype(numpy.int64) % len(self.noise)]
+            voice.phase %= len(self.noise)
         else:
-            speed = frequency * tables.TABLE_SIZE / rate
             table = self.tables[tables.band_of(frequency)]
-            out = table[(voice.phase + speed * steps).astype(numpy.int64) & tables.TABLE_MASK].copy()
-            voice.phase = (voice.phase + speed * count) % tables.TABLE_SIZE
+            positions = read_positions(voice=voice, speed=frequency * tables.TABLE_SIZE / rate, count=count, moved=moved)
+            out = table[positions.astype(numpy.int64) & tables.TABLE_MASK].copy()
+            voice.phase %= tables.TABLE_SIZE
         out *= numpy.float32(self._level(voice=voice, seconds=seconds) * voice.level)
         if voice.release_at is not None:
             out *= self._fade(voice=voice, first=first, count=count, rate=rate)
@@ -274,6 +296,28 @@ class PocketPatch:
         if since[-1] >= CHIP_FADE_SECONDS * rate:
             voice.silent = True
         return fade.astype(numpy.float32)
+
+
+def read_positions(*, voice, speed, count, moved):
+    """Return a chunk's read positions from the voice's phase, moving the phase on, the pitch moved sample by sample by an LFO
+    where moved holds semitones."""
+    if moved is None:
+        positions = voice.phase + speed * numpy.arange(count, dtype=numpy.float64)
+        voice.phase += speed * count
+        return positions
+    positions, voice.phase = modulation_values.phases(phase=voice.phase, speeds=speed * numpy.exp2(moved / 12.0))
+    return positions
+
+
+def moved_speed(*, pitch, spread, cents):
+    """Return how much faster an oscillator reads each sample of a chunk, its pitch moved by an LFO in semitones and its detune
+    spread by a share of itself."""
+    octaves = 0.0
+    if pitch is not None:
+        octaves = pitch / 12.0
+    if spread is not None and cents:
+        octaves = octaves + spread * (cents / 1200.0)
+    return numpy.exp2(octaves)
 
 
 def envelope(*, patch, voice, first, count, rate):

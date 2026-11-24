@@ -146,6 +146,12 @@ MAX_CHIP_PACE = 7
 MIN_SWEEP_STEP = 1
 MAX_SWEEP_STEP = 7
 EFFECT_BLOCKS = 4
+# An instrument's LFOs, their rate in tenths of a hertz, from a tenth to a hundred hertz, fast enough for a chip's vibrato and
+# trills, and their depth in percent either way.
+LFO_COUNT = 4
+MIN_LFO_RATE = 1
+MAX_LFO_RATE = 1000
+MAX_LFO_DEPTH = 100
 # A filter's cutoff in hertz, and its envelope's amount in percent of four octaves either way.
 MIN_CUTOFF = 20
 MAX_CUTOFF = 18000

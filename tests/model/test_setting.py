@@ -34,7 +34,7 @@ from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.track import Track
 from llamatron.model.schema import file_format, generator_plugins, limits
-from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, DrawSetting, DriftValue, EffectSetting, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, OscillatorSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, SoundSetting, TrackSetting, VelocitySetting
+from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, DrawSetting, DriftValue, EffectSetting, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, LfoSetting, OscillatorSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, SoundSetting, TrackSetting, VelocitySetting
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, Setting, Text, WholeNumber
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
@@ -108,6 +108,7 @@ DESCRIBED = [
     (SoundSetting, built_in_sound.SOUND_SETTINGS, ()),
     (OscillatorSetting, built_in_sound.OSCILLATOR_SETTINGS, ()),
     (EffectSetting, built_in_sound.EFFECT_SETTINGS, ()),
+    (LfoSetting, built_in_sound.LFO_SETTINGS, ()),
     (TrackSetting, track.SETTINGS, ()),
     (PatternSetting, pattern.SETTINGS, (PatternSetting.STEPS,)),
     # chain is only read, from a file saved before a clip held a list of chains.

@@ -583,7 +583,7 @@ class SoundSetting:
     """A built-in instrument's sound: its engine, volume and voices; a Basic sound's oscillators and the envelope a Basic or
     SID sound shares; a drum's machine, knobs, choke group and overlap; a SID sound's wave, pulse width and its sweep, ring or
     sync and its interval, arpeggio and glide; a Pocket sound's voice, duty, stepped envelope, pitch sweep, wave and noise;
-    and every sound's four effect blocks."""
+    every sound's four effect blocks, and its four LFOs."""
 
     ENGINE = 'engine'
     VOLUME = 'volume'
@@ -615,6 +615,7 @@ class SoundSetting:
     WAVE_SHAPE = 'wave_shape'
     NOISE = 'noise'
     EFFECTS = 'effects'
+    LFOS = 'lfos'
 
 
 class OscillatorSetting:
@@ -734,6 +735,54 @@ class Effect:
     FILTER = 'filter'
 
 
+class LfoSetting:
+    """One LFO of a built-in sound: the Synth Control it moves, or none, its shape, its rate in tenths of a hertz, its depth in
+    percent of the control's range either way, and whether each note starts it again."""
+
+    TARGET = 'target'
+    SHAPE = 'shape'
+    RATE = 'rate'
+    DEPTH = 'depth'
+    RETRIGGER = 'retrigger'
+
+
+class LfoShape:
+    """The shape an LFO moves in: a sine, a triangle, a saw rising or falling, a square, or sample and hold, a new random value
+    each cycle."""
+
+    SINE = 'sine'
+    TRIANGLE = 'triangle'
+    SAW_UP = 'saw_up'
+    SAW_DOWN = 'saw_down'
+    SQUARE = 'square'
+    SAMPLE_AND_HOLD = 'sample_and_hold'
+
+
+class SynthControl:
+    """A setting of a built-in sound that can move while it plays, by an LFO now and by the pattern's Synth Control rows later:
+    each engine has eight, its own six, Pan, and the first Filter effect's cutoff."""
+
+    NONE = 'none'
+    PITCH = 'pitch'
+    ATTACK = 'attack'
+    DECAY = 'decay'
+    SUSTAIN = 'sustain'
+    RELEASE = 'release'
+    DETUNE_SPREAD = 'detune_spread'
+    PULSE_WIDTH = 'pulse_width'
+    PAN = 'pan'
+    FILTER_CUTOFF = 'filter_cutoff'
+    FINE_TUNE = 'fine_tune'
+    COLOR = 'color'
+    SHAPE = 'shape'
+    SWEEP = 'sweep'
+    WAVE = 'wave'
+    RING_SYNC = 'ring_sync'
+    ENVELOPE_RATE = 'envelope_rate'
+    DUTY = 'duty'
+    NOISE_MODE = 'noise_mode'
+
+
 class FilterType:
     """A filter effect's circuit: the four-pole transistor ladder, the clean two-pole multimode (a state-variable filter), the
     screaming Sallen-Key, the acid diode ladder, or the creamy four-pole OTA."""
@@ -791,6 +840,32 @@ DUTIES = (Duty.EIGHTH, Duty.QUARTER, Duty.HALF, Duty.THREE_QUARTERS)
 CHIP_DIRECTIONS = (ChipDirection.DOWN, ChipDirection.UP)
 WAVE_SHAPES = (WaveShape.TRIANGLE, WaveShape.SAW, WaveShape.SQUARE, WaveShape.SINE, WaveShape.ORGAN)
 NOISES = (Noise.LONG, Noise.SHORT)
+LFO_SHAPES = (LfoShape.SINE, LfoShape.TRIANGLE, LfoShape.SAW_UP, LfoShape.SAW_DOWN, LfoShape.SQUARE, LfoShape.SAMPLE_AND_HOLD)
+# Each engine's eight Synth Controls, in the user's order: pitch first, then the envelope's, then the rest, then Pan and the
+# first Filter effect's cutoff.
+ENGINE_CONTROLS = {
+    SoundEngine.BASIC: (SynthControl.PITCH, SynthControl.ATTACK, SynthControl.DECAY, SynthControl.RELEASE, SynthControl.DETUNE_SPREAD, SynthControl.PULSE_WIDTH,
+                        SynthControl.PAN, SynthControl.FILTER_CUTOFF),
+    SoundEngine.DRUM: (SynthControl.PITCH, SynthControl.FINE_TUNE, SynthControl.DECAY, SynthControl.COLOR, SynthControl.SHAPE, SynthControl.SWEEP,
+                       SynthControl.PAN, SynthControl.FILTER_CUTOFF),
+    SoundEngine.SID: (SynthControl.PITCH, SynthControl.SUSTAIN, SynthControl.RELEASE, SynthControl.PULSE_WIDTH, SynthControl.WAVE, SynthControl.RING_SYNC,
+                      SynthControl.PAN, SynthControl.FILTER_CUTOFF),
+    SoundEngine.POCKET: (SynthControl.PITCH, SynthControl.ENVELOPE_RATE, SynthControl.DUTY, SynthControl.WAVE, SynthControl.NOISE_MODE, SynthControl.SWEEP,
+                         SynthControl.PAN, SynthControl.FILTER_CUTOFF),
+}
+# Every Synth Control of any engine, none first, as a stored LFO's target may name.
+SYNTH_CONTROLS = (
+    SynthControl.NONE, SynthControl.PITCH, SynthControl.ATTACK, SynthControl.DECAY, SynthControl.SUSTAIN, SynthControl.RELEASE, SynthControl.DETUNE_SPREAD,
+    SynthControl.PULSE_WIDTH, SynthControl.PAN, SynthControl.FILTER_CUTOFF, SynthControl.FINE_TUNE, SynthControl.COLOR, SynthControl.SHAPE, SynthControl.SWEEP,
+    SynthControl.WAVE, SynthControl.RING_SYNC, SynthControl.ENVELOPE_RATE, SynthControl.DUTY, SynthControl.NOISE_MODE,
+)
+# The controls an LFO can move on each engine so far, none first: the ones that change smoothly while a note sounds.
+LFO_TARGETS = {
+    SoundEngine.BASIC: (SynthControl.NONE, SynthControl.PITCH, SynthControl.DETUNE_SPREAD, SynthControl.FILTER_CUTOFF),
+    SoundEngine.DRUM: (SynthControl.NONE, SynthControl.FILTER_CUTOFF),
+    SoundEngine.SID: (SynthControl.NONE, SynthControl.PITCH, SynthControl.PULSE_WIDTH, SynthControl.FILTER_CUTOFF),
+    SoundEngine.POCKET: (SynthControl.NONE, SynthControl.PITCH, SynthControl.FILTER_CUTOFF),
+}
 EFFECTS = (Effect.NONE, Effect.BITCRUSH, Effect.DRIVE, Effect.FILTER)
 FILTER_TYPES = (FilterType.LADDER, FilterType.MULTIMODE, FilterType.SALLEN_KEY, FilterType.DIODE, FilterType.OTA)
 FILTER_MODES = (FilterMode.LOW, FilterMode.BAND, FilterMode.HIGH, FilterMode.NOTCH)

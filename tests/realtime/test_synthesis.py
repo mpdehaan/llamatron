@@ -12,10 +12,11 @@ from unittest import mock
 from llamatron.model.objects.built_in_sound import synth_spec
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, EffectSetting, FilterMode, FilterType, Modulation, Noise, SidWave, SoundEngine, SoundSetting, Waveform
+from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, EffectSetting, FilterMode, FilterType, LfoSetting, LfoShape, Modulation, Noise, SidWave, SoundEngine, SoundSetting, SynthControl, Waveform
 from llamatron.realtime.synth_process import drums, effects as effect_values, engine as engine_values, process, tables
 from llamatron.realtime.synth_process.effects import Bitcrush, compiled_effects
 from llamatron.realtime.synth_process.engine import DrumPatch, SynthEngine
+from llamatron.realtime.synth_process.modulation import LfoBank
 from llamatron.realtime.synth_process.player import compiled
 from llamatron.realtime.synth_process.process import SynthesisNotStarted, SynthesisProcess
 from llamatron.realtime.synth_process.voices import BasicPatch
@@ -34,6 +35,12 @@ MACOS = 'darwin'
 YES = '1'
 QUIET = 0.01
 LOW_CUTOFF = 500
+# A fast LFO in hertz, a trill's in tenths of a hertz as the set stores it, and a depth of a whole octave of pitch.
+FAST_LFO_HERTZ = 80.0
+TRILL_TENTHS = 50
+OCTAVE_DEPTH = 100
+# Between an octave up and an octave down, the pitch is four times as high.
+TWO_OCTAVES = 4.0
 # Long enough for the default release, 200 ms, to fall below silence.
 SECONDS_TO_FALL_SILENT = 3
 PULSE_SWEEP = 40
@@ -249,6 +256,50 @@ class TestFilters(unittest.TestCase):
         half = self.brightness(self.filtered(block={**block, EffectSetting.MIX: 50}))
         self.assertLess(full, half)
         self.assertLess(half, self.brightness(rendered_saw()))
+
+
+class TestLfos(unittest.TestCase):
+
+    def played(self, *, sound, chunks=120):
+        """Return a held middle C of a sound as llamatron gives it, played a while."""
+        engine = SynthEngine(rate=RATE)
+        engine.set_instrument(number=SYNTH, patch=compiled(spec=synth_spec(sound), rate=RATE))
+        engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=LOUD)
+        return rendered(engine, chunks=chunks)
+
+    def crossings(self, mix):
+        """Return how many times a stretch of sound rises through zero."""
+        return int(numpy.count_nonzero((mix[:-1] <= 0) & (mix[1:] > 0)))
+
+    def test_a_fast_lfo_moves_within_a_chunk(self):
+        lfo = {'target': SynthControl.PITCH, 'shape': LfoShape.SINE, 'rate': FAST_LFO_HERTZ, 'depth': 1.0, 'retrigger': True}
+        modulation = LfoBank(lfos=[lfo], rate=RATE)
+        modulation.advance(numpy.arange(CHUNK, dtype=numpy.float64))
+        moved = modulation.now[SynthControl.PITCH]
+        self.assertEqual(len(numpy.unique(moved)), CHUNK)
+        self.assertGreater(moved.max() - moved.min(), 1.0)
+
+    def test_a_square_lfo_on_pitch_trills_every_tonal_engine_an_octave_either_way(self):
+        lfo = {LfoSetting.TARGET: SynthControl.PITCH, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.RATE: TRILL_TENTHS, LfoSetting.DEPTH: OCTAVE_DEPTH}
+        half = RATE * 10 // TRILL_TENTHS // 2
+        for engine in (SoundEngine.BASIC, SoundEngine.SID, SoundEngine.POCKET):
+            with self.subTest(engine=engine):
+                mix = self.played(sound={SoundSetting.ENGINE: engine, SoundSetting.SUSTAIN: 100, SoundSetting.LFOS: [lfo]})
+                high = self.crossings(mix[:half])
+                low = self.crossings(mix[half:2 * half])
+                self.assertAlmostEqual(high / low, TWO_OCTAVES, delta=0.3)
+
+    def test_an_lfo_with_nothing_to_move_on_its_engine_is_left_out(self):
+        lfo = {LfoSetting.TARGET: SynthControl.PULSE_WIDTH}
+        self.assertEqual(synth_spec({SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.LFOS: [lfo]})['lfos'], [])
+        self.assertEqual(len(synth_spec({SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.LFOS: [lfo]})['lfos']), 1)
+
+    def test_an_lfo_on_the_filter_cutoff_moves_the_first_filter(self):
+        block = {EffectSetting.EFFECT: Effect.FILTER, EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 0}
+        still = self.played(sound={SoundSetting.EFFECTS: [block]})
+        lfo = {LfoSetting.TARGET: SynthControl.FILTER_CUTOFF, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.DEPTH: OCTAVE_DEPTH}
+        moved = self.played(sound={SoundSetting.EFFECTS: [block], SoundSetting.LFOS: [lfo]})
+        self.assertGreater(numpy.abs(moved - still).max(), QUIET)
 
 
 class TestDrumsAndTables(unittest.TestCase):

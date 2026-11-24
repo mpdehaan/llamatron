@@ -15,7 +15,7 @@ paths keep plain attributes, local names and few calls.
 import heapq
 import numpy
 
-from llamatron.realtime.synth_process import effects
+from llamatron.realtime.synth_process import effects, modulation as modulation_values
 
 # A voice whose envelope has fallen below this is silent and is dropped.
 SILENT = 1e-4
@@ -41,7 +41,7 @@ class DrumPatch:
     None, whether its hits overlap rather than cutting the last, its volume and its effects in order, and the note it plays at
     its own pitch on; its hits are rendered once each and kept."""
 
-    __slots__ = ('render_hit', 'choke', 'overlap', 'volume', 'effects', 'hits', 'tuned_from')
+    __slots__ = ('render_hit', 'choke', 'overlap', 'volume', 'effects', 'hits', 'tuned_from', 'modulation')
 
     def __init__(self, *, render_hit, spec, effects=()):
         """render_hit renders a hit, spec is the sound as llamatron gives it (model/objects/built_in_sound.py), each setting it
@@ -55,6 +55,7 @@ class DrumPatch:
         self.volume = spec.get('volume', 0.8)
         self.effects = list(effects)
         self.hits = {}
+        self.modulation = modulation_values.NO_MODULATION
 
     def recipe_pitch(self, pitch):
         """Return the note a recipe renders for a note played, the recipes playing at their own pitch on middle C."""
@@ -95,7 +96,7 @@ class SynthEngine:
     """The engine: the instruments by number, the events still to play in time order, the voices sounding, and the sample
     rate; render() makes each chunk of the mix."""
 
-    __slots__ = ('rate', 'instruments', 'events', 'voices', 'order', 'played', 'late')
+    __slots__ = ('rate', 'instruments', 'events', 'voices', 'order', 'played', 'late', 'places')
 
     def __init__(self, *, rate):
         self.rate = rate
@@ -105,6 +106,8 @@ class SynthEngine:
         self.order = 0
         self.played = 0
         self.late = 0
+        # 0 to a chunk's length, made once for the chunks the sound card asks for.
+        self.places = numpy.arange(0, dtype=numpy.float64)
 
     def set_instrument(self, *, number, patch):
         self.instruments[number] = patch
@@ -147,6 +150,7 @@ class SynthEngine:
                     self.late += 1
                 sample = start
             self._begin(sample=sample, kind=kind, instrument=instrument, pitch=pitch, velocity=velocity)
+        self._modulate(frames)
         by_instrument = {}
         alive = []
         for voice in self.voices:
@@ -162,6 +166,20 @@ class SynthEngine:
         mix -= GUARD_CURVE * mix * mix * mix
         self.played = end
         return mix
+
+    def _modulate(self, frames):
+        """Move every instrument's LFOs on over the chunk, and hand the first filter of each its cutoff's movement."""
+        if len(self.places) != frames:
+            self.places = numpy.arange(frames, dtype=numpy.float64)
+        for patch in self.instruments.values():
+            modulation = patch.modulation
+            if not modulation.lfos:
+                continue
+            modulation.advance(self.places)
+            for effect in patch.effects:
+                if effect.moves_cutoff:
+                    effect.octaves = modulation.now.get(modulation_values.FILTER_CUTOFF)
+                    break
 
     def _begin(self, *, sample, kind, instrument, pitch, velocity):
         patch = self.instruments.get(instrument)
@@ -182,6 +200,7 @@ class SynthEngine:
         voice.patch = patch
         for effect in patch.effects:
             effect.note_on(sample=sample, pitch=pitch)
+        patch.modulation.note_on()
         if isinstance(patch, DrumPatch):
             self._cut_drums(patch=patch, instrument=instrument, sample=sample)
             voice.hit = self._hit(patch=patch, pitch=pitch, velocity=velocity)

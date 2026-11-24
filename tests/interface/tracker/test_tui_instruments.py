@@ -15,7 +15,7 @@ from llamatron.interface.tracker.screens.set.instrument_editor import Instrument
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import Effect, EffectSetting, FilterType, InstrumentKind, InstrumentSetting, OscillatorSetting, Section, SetlistSetting, SoundEngine, SoundSetting, TrackSetting
+from llamatron.model.schema.file_format import Effect, EffectSetting, FilterType, InstrumentKind, InstrumentSetting, LfoSetting, OscillatorSetting, Section, SetlistSetting, SoundEngine, SoundSetting, TrackSetting
 from llamatron.model.values import midi
 from llamatron.realtime import realtime_names
 from llamatron.user_strings import errors, labels, marks, messages, names
@@ -37,6 +37,8 @@ ARPEGGIO_TYPED = '0 4 7'
 # How far ] steps a time of 300 ms.
 # How far ] steps the default cutoff, 1200 Hz, which steps by 50 between 1000 and 2000.
 CUTOFF_STRIDE = 50
+# How far ] steps the default LFO rate, 5 Hz, stored as 50 tenths, which steps by 5 tenths between 50 and 100.
+LFO_RATE_STRIDE = 5
 DECAY_STRIDE = 10
 
 
@@ -336,6 +338,18 @@ class TestInstrumentTabs(UITest):
         await self.select_field(labels.MSG_EFFECT_CUTOFF_LABEL.format(number=1))
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_effect(number=1, name=EffectSetting.CUTOFF), defaults.DEFAULT_CUTOFF + CUTOFF_STRIDE)
+
+    async def test_an_lfo_offers_its_engines_controls_and_its_rate_steps_in_tenths_of_a_hertz(self):
+        await self.select_field(labels.MSG_LFO_LABEL.format(number=1))
+        self.assertNotIn(labels.MSG_LFO_RATE_LABEL.format(number=1), self.shown_labels())
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_lfo(number=1, name=LfoSetting.TARGET), file_format.LFO_TARGETS[SoundEngine.BASIC][1])
+        await self.select_field(labels.MSG_LFO_RATE_LABEL.format(number=1))
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_lfo(number=1, name=LfoSetting.RATE), defaults.DEFAULT_LFO_RATE + LFO_RATE_STRIDE)
+        self.document.change_set(self.instrument().set_sound, name=SoundSetting.ENGINE, value=SoundEngine.DRUM)
+        await self.select_field(labels.MSG_LFO_LABEL.format(number=1))
+        self.assertNotIn(labels.MSG_LFO_RATE_LABEL.format(number=1), self.shown_labels())
 
     async def test_an_arpeggio_is_typed_and_one_out_of_range_refused(self):
         await self.select_field(labels.MSG_ENGINE_LABEL)

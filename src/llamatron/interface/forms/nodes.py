@@ -226,6 +226,8 @@ class GaugeField(NumberField):
     # How far a logarithmic gauge steps below each bound, and above the last: a time's strides unless it says.
     strides: tuple = TIME_STRIDES
     longest_stride: int = LONGEST_TIME_STRIDE
+    # What the stored number is divided by to be shown in its unit, such as an LFO's rate, stored in tenths of a hertz.
+    divisor: int = 1
 
     def __post_init__(self):
         self.value = self.drawn
@@ -236,7 +238,7 @@ class GaugeField(NumberField):
         number = self.counted_from()
         filled = round(self.share(number) * self.cells)
         gauge = marks.MSG_SOUND_GAUGE_FULL * filled + marks.MSG_SOUND_GAUGE_EMPTY * (self.cells - filled)
-        return marks.MSG_SOUND_GAUGE.format(gauge=gauge, value=self.unit.format(number=number))
+        return marks.MSG_SOUND_GAUGE.format(gauge=gauge, value=self.unit.format(number=number / self.divisor if self.divisor != 1 else number))
 
     def share(self, number):
         """Return how much of the gauge a number fills, from 0 to 1."""

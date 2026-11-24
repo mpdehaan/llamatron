@@ -32,7 +32,7 @@ from llamatron.model.file import corrections
 from llamatron.model.file.checks import pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.objects import built_in_sound
-from llamatron.model.objects.built_in_sound import check_sound, effect_value, oscillator_value, sound_value, synth_spec
+from llamatron.model.objects.built_in_sound import check_sound, effect_value, lfo_value, oscillator_value, sound_value, synth_spec
 from llamatron.model.objects.llama_data import HoldsSettings, or_default, own_copy, settings_by_name, written_settings
 from llamatron.model.schema import defaults, file_format, limits
 from llamatron.model.schema.file_format import InstrumentKind, InstrumentSetting, KeyswitchSetting, OscillatorSetting, SoundSetting, Waveform
@@ -231,6 +231,20 @@ class Instrument(HoldsSettings):
             blocks.append({})
         blocks[number - 1][name] = value
         self.set_sound(name=SoundSetting.EFFECTS, value=blocks)
+
+    def get_lfo(self, *, number, name):
+        """Return one setting (LfoSetting) of an LFO by number from 1, its default where the LFO has none."""
+        lfos = self.get_sound(SoundSetting.LFOS)
+        lfo = lfos[number - 1] if number <= len(lfos) else {}
+        return lfo_value(lfo=lfo, name=name)
+
+    def set_lfo(self, *, number, name, value):
+        """Store one setting of an LFO by number from 1, the LFOs before it made, with nothing to move, where it has none."""
+        lfos = [dict(lfo) for lfo in self.get_sound(SoundSetting.LFOS)]
+        while len(lfos) < number:
+            lfos.append({})
+        lfos[number - 1][name] = value
+        self.set_sound(name=SoundSetting.LFOS, value=lfos)
 
     def synth_spec(self, *, drums_from=built_in_sound.MIDDLE_C):
         """Return its built-in sound as the Synthesis Process compiles it, a drum playing at its own pitch on drums_from."""

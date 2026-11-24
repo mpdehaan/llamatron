@@ -37,6 +37,8 @@ class SoundEffect:
     much of it is mixed in, from 0 to 1."""
 
     __slots__ = ('mix',)
+    # Only a filter's cutoff is moved by an LFO.
+    moves_cutoff = False
 
     def __init__(self, *, mix=1.0):
         self.mix = mix

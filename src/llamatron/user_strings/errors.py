@@ -672,6 +672,7 @@ ERR_SOUND_FLAG = '{name} must be true or false, got {value!r}'
 ERR_BAD_OSCILLATORS = 'oscillators must be a list of 1 to {most}, each a waveform or off, a detune and a level, got {value!r}'
 ERR_BAD_KNOBS = 'knobs must be {count} whole numbers from 0 to {most}, got {value!r}'
 ERR_BAD_ARPEGGIO = 'arpeggio must be a list of up to {most} whole numbers of semitones from -{highest} to {highest}, got {value!r}'
+ERR_BAD_LFOS = 'lfos must be a list of up to {most} LFOs, each its settings, got {value!r}'
 ERR_BAD_EFFECTS = 'effects must be a list of up to {most} effect blocks, each an effect and its settings, got {value!r}'
 ERR_BAD_BUILT_IN_SOUND = "a built-in sound must be a mapping of a sound's settings, got {value!r}"
 ERR_BAD_INSTRUMENT_KIND = 'kind must be one of: {choices}, got {value!r}'

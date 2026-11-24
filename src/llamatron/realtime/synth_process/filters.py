@@ -59,7 +59,10 @@ class Filter:
     four octaves, attack and decay in seconds, key tracking and drive from 0 to 1, the sample rate, and what it keeps from chunk
     to chunk: the state of its lfilter, the sample its envelope last fired at and the pitch it fired for."""
 
-    __slots__ = ('kind', 'mode', 'cutoff', 'resonance', 'amount', 'attack', 'decay', 'key_track', 'drive', 'rate', 'state', 'fired_at', 'pitch', 'mix')
+    __slots__ = ('kind', 'mode', 'cutoff', 'resonance', 'amount', 'attack', 'decay', 'key_track', 'drive', 'rate', 'state', 'fired_at', 'pitch', 'mix',
+                 'octaves')
+    # The first filter of an instrument is the one its LFOs' Filter cutoff moves.
+    moves_cutoff = True
 
     def __init__(self, *, spec, rate):
         self.kind = spec['filter_type']
@@ -76,6 +79,8 @@ class Filter:
         self.state = None
         self.fired_at = None
         self.pitch = MIDDLE_C
+        # How far LFOs move the cutoff over the chunk, in octaves a sample, or None (engine.py).
+        self.octaves = None
 
     def note_on(self, *, sample, pitch):
         """Fire the envelope at a note's first sample, and track the note's pitch."""
@@ -89,7 +94,10 @@ class Filter:
         part = -(-size // SUB_BLOCKS)
         out = numpy.empty(size, dtype=numpy.float64)
         for first in range(0, size, part):
-            numerator, denominator = self._coefficients(self._cutoff_at(start + first))
+            cutoff = self._cutoff_at(start + first)
+            if self.octaves is not None:
+                cutoff = min(max(cutoff * 2.0 ** float(self.octaves[first]), LOWEST_CUTOFF), HIGHEST_SHARE * self.rate)
+            numerator, denominator = self._coefficients(cutoff)
             if self.state is None or len(self.state) != len(denominator) - 1:
                 self.state = numpy.zeros(len(denominator) - 1)
             out[first:first + part], self.state = signal.lfilter(numerator, denominator, buffer[first:first + part], zi=self.state)

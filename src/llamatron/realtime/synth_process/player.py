@@ -18,6 +18,7 @@ import time
 from llamatron.realtime.synth_process import drums, engine as engine_values, tables
 from llamatron.realtime.synth_process.effects import compiled_effects
 from llamatron.realtime.synth_process.engine import DrumPatch, SynthEngine
+from llamatron.realtime.synth_process.modulation import LfoBank
 from llamatron.realtime.synth_process.voices import BasicPatch, PocketPatch, SidPatch
 
 DRUM = 'drum'
@@ -30,21 +31,12 @@ MILLISECONDS = 1000.0
 
 
 def compiled(*, spec, rate):
-    """Return an instrument's patch from its settings, a dict of its engine, volume, voices, effects and the engine's own
+    """Return an instrument's patch from its settings, a dict of its engine, volume, voices, effects, LFOs and the engine's own
     settings (model/objects/built_in_sound.py); its tables or hits made now, not playing."""
-    effects = compiled_effects(effects=spec.get('effects', ()), rate=rate)
-    volume = spec.get('volume', 0.8)
-    voices = spec.get('voices', 1)
-    kind = spec['kind']
-    if kind == DRUM:
-        render = functools.partial(drums.render_hit, machine=spec['machine'], knobs=tuple(spec['knobs']))
-        return DrumPatch(render_hit=render, spec=spec, effects=effects)
-    if kind == SID:
-        return SidPatch(spec=spec, rate=rate, effects=effects)
-    if kind == POCKET:
-        return PocketPatch(spec=spec, rate=rate, effects=effects)
-    oscillators = [(tables.waveform_tables(waveform=waveform, rate=rate), cents, level) for waveform, cents, level in spec['oscillators']]
-    return BasicPatch(oscillators=oscillators, envelope=tuple(spec['envelope']), voices=voices, volume=volume, effects=effects)
+    patch = _patch(spec=spec, rate=rate)
+    if spec.get('lfos'):
+        patch.modulation = LfoBank(lfos=spec['lfos'], rate=rate)
+    return patch
 
 
 class SynthPlayer:
@@ -135,3 +127,19 @@ class SynthPlayer:
             self.longest = took
         if len(self.durations) < 100000:
             self.durations.append(took)
+
+def _patch(*, spec, rate):
+    effects = compiled_effects(effects=spec.get('effects', ()), rate=rate)
+    volume = spec.get('volume', 0.8)
+    voices = spec.get('voices', 1)
+    kind = spec['kind']
+    if kind == DRUM:
+        render = functools.partial(drums.render_hit, machine=spec['machine'], knobs=tuple(spec['knobs']))
+        return DrumPatch(render_hit=render, spec=spec, effects=effects)
+    if kind == SID:
+        return SidPatch(spec=spec, rate=rate, effects=effects)
+    if kind == POCKET:
+        return PocketPatch(spec=spec, rate=rate, effects=effects)
+    oscillators = [(tables.waveform_tables(waveform=waveform, rate=rate), cents, level) for waveform, cents, level in spec['oscillators']]
+    return BasicPatch(oscillators=oscillators, envelope=tuple(spec['envelope']), voices=voices, volume=volume, effects=effects)
+
