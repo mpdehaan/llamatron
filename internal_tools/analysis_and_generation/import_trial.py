@@ -8,6 +8,7 @@
     internal_tools/analysis_and_generation/import_trial.sh FOLDER                  # every .mid and .midi under FOLDER
     internal_tools/analysis_and_generation/import_trial.sh FOLDER --limit 40       # the first 40, in name order
     internal_tools/analysis_and_generation/import_trial.sh FOLDER --name classical # the report's name, by default the folder's
+    internal_tools/analysis_and_generation/import_trial.sh FOLDER --sets OUT       # also write each imported set, flat, into OUT
 
 It judges every step of the Import Wizard (.claude/DESIGNS.md, "The Import Wizard") before and after, on the corpus's scores
 and on the user's own folders of files, which are for private testing only: nothing it reads or writes enters the repository,
@@ -39,6 +40,7 @@ from llamatron.model.objects.setlist import Setlist
 
 TRIALS = os.path.join('/tmp', 'claude', 'llamatron', 'import_trials')
 SUFFIXES = ('.mid', '.midi')
+SET_SUFFIX = '.yml'
 SONG_NAME = 'trial'
 SUMMARY = 'summary.txt'
 # A cut with more scenes than this, or with more than this share of its scenes an odd length, is flagged as likely wrong.
@@ -115,14 +117,17 @@ def shape_kind(pitches):
     return OTHER_KIND
 
 
-def tried(path):
-    """Return what importing one file came to: the measures of the song it made, or the problem that stopped it."""
+def tried(*, path, set_path=None):
+    """Return what importing one file came to: the measures of the song it made, or the problem that stopped it, writing the
+    imported set to set_path when one is given."""
     midi_file = mido.MidiFile(path, clip=True)
     setlist = Setlist.new()
     midi_import = MidiImport(midi_file=midi_file)
     imported = midi_import.imported(setlist=setlist, choices=ImportChoices(song_name=SONG_NAME, longest_bars=midi_import_values.WIZARD_LONGEST_BARS, numbered=True))
     shapes = shapes_struck(midi_import)
     song = add_imported(setlist=setlist, imported=imported.song)
+    if set_path is not None:
+        setlist.write_file(set_path)
     again = MidiSong(directory=os.curdir, grid=SongRealizer(song).render(), name=SONG_NAME).midi_file()
     comparison = compared(first=midi_file, second=again)
     measures = measures_of(song=song, setlist=setlist, imported=imported, seconds=again.length, same=comparison.is_same())
@@ -218,6 +223,7 @@ def main(arguments):
     parser.add_argument('folder')
     parser.add_argument('--limit', type=int, default=None)
     parser.add_argument('--name', default=None)
+    parser.add_argument('--sets', default=None)
     options = parser.parse_args(arguments)
     name = options.name or os.path.basename(os.path.normpath(options.folder))
     out = os.path.join(TRIALS, name)
@@ -228,18 +234,22 @@ def main(arguments):
     failed = 0
     for path in files:
         shown = os.path.relpath(path, options.folder)
+        flat = shown.replace(os.sep, '__')
+        set_path = None
+        if options.sets is not None:
+            set_path = os.path.join(options.sets, os.path.splitext(flat)[0] + SET_SUFFIX)
         try:
-            measures = tried(path)
+            measures = tried(path=path, set_path=set_path)
         # A file of anyone's making can fail in ways no list foresees, and one such file must not end the trial of the rest.
         except Exception as problem:
             failed += 1
             lines.append(FAILED_LINE.format(flag=FLAG, file=shown[-44:], problem=repr(problem)[:80]))
-            with open(os.path.join(out, shown.replace(os.sep, '__') + JSON_SUFFIX), 'w') as file:
+            with open(os.path.join(out, flat + JSON_SUFFIX), 'w') as file:
                 json.dump({'problem': traceback.format_exc()}, file, indent=1)
             continue
         results.append(measures)
         lines.append(summary_line(name=shown, measures=measures))
-        with open(os.path.join(out, shown.replace(os.sep, '__') + JSON_SUFFIX), 'w') as file:
+        with open(os.path.join(out, flat + JSON_SUFFIX), 'w') as file:
             json.dump(measures, file, indent=1, default=str)
         print(lines[-1], flush=True)
     lines.append(totals_line(results=results, failed=failed))
