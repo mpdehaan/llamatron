@@ -47,7 +47,7 @@ class MidiImportProblem(ValueError):
 
 @dataclass(slots=True, kw_only=True)
 class ImportChoices:
-    """What the import dialog asks: the song's name, the longest pattern, whether every pattern gets a name of its own, chords as chords, whether CCs come in, and the step size, or None to work it out."""
+    """What the import dialog asks: the song's name, the longest pattern, whether every pattern gets a name of its own, chords as chords, whether CCs come in, and the step size, or None to work it out, no finer than the finest step it may quantize to."""
 
     song_name: str
     longest_pattern: int = DEFAULT_LONGEST_PATTERN
@@ -55,6 +55,7 @@ class ImportChoices:
     chords: bool = True
     controls: bool = True
     step_size: object = None
+    finest_step: object = cutting.FINEST_STEP_SIZE
 
 
 @dataclass(slots=True, kw_only=True)
@@ -121,7 +122,7 @@ class MidiImport:
         """Return the song this file makes for a set, with the choices given, leaving the set as it is."""
         contents = self._contents
         warnings = []
-        found_size, fits = step_size_for(contents.parts)
+        found_size, fits = step_size_for(contents.parts, finest=choices.finest_step)
         step_size = choices.step_size or found_size
         clip_step_sizes = [step_size] if choices.step_size else cutting.AUTO_STEP_SIZES
         parts, moved = snapped(parts=contents.parts, step_size=step_size)

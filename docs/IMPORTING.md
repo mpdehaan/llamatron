@@ -22,7 +22,7 @@ time signature, tempo and keys, and asks how to import it.
 | Use unique names | On to begin with, so every pattern the import makes gets a name of its own. When off, a pattern the set already has, the same in every setting but its name, is used rather than making another. `Space` or `ENTER` toggles it. |
 | Chords | "as chords" puts notes that start and end together, in a chord's shape, on the Chord row; "as extra tracks" gives each such note a track of its own. |
 | Import CCs | On to begin with. Each track of the file brings in up to four CCs, one for each of a track's CC lanes: first the mod wheel (CC 1), volume (CC 7) and the sustain pedal (CC 64), in that order and only those the track sends, then the track's other CCs, the most sent first, such as a filter sweep. A sweep comes in as values with Slide on. CCs past the fourth are left out, as is pitch bend, which isn't a CC and which llamatron can't send; the dialog says what was left out. When off, no CC comes in. |
-| Step size | "auto", the longest step the file's notes fit, worked out for each pattern, or a fixed size from 1/32 to 1/4 for every pattern. |
+| Step size | "auto", the longest step the file's notes fit, worked out for each pattern, or a fixed size from 1/32 to 1/4 for every pattern. On "auto", a file played by hand, whose notes sit a little either side of the beat, goes on the longest step nearly all of them fall near, and a file played too freely for any on 1/64 notes. |
 
 The dialog works the import out again whenever a setting changes, so the line
 under the settings always says how many tracks, patterns and scenes the import

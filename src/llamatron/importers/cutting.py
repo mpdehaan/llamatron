@@ -42,7 +42,12 @@ AUTO_STEP_SIZES = (
     Rational(1, 4), Rational(1, 8), Rational(1, 12), Rational(1, 16), Rational(1, 24), Rational(1, 32), Rational(1, 48), Rational(1, 64),
     Rational(1, 96), Rational(1, 192),
 )
-FALLBACK_STEP_SIZE = Rational(1, 16)
+# The finest step the import quantizes a file played freely to, unless asked for another, llamatron's finest step size.
+FINEST_STEP_SIZE = Rational(1, 64)
+# A note counts as on a grid when it starts within this share of a step of one of the grid's lines, and a grid is a file's when
+# this share of its notes start on it: played notes stray a little either side of the beat, and a few strays don't decide.
+NEAR_A_STEP = Rational(1, 8)
+MOST_NOTES = Rational(98, 100)
 # The phrase lengths tried, in bars and then in parts of a bar, in the order a tie between them goes, the four-bar phrase first.
 PHRASE_BARS = (4, 8, 2, 16, 1, 32)
 PARTS_OF_A_BAR = (2, 4, 8)
@@ -105,10 +110,32 @@ class Cut:
     cost: tuple = field(default=())
 
 
-def step_size_for(parts):
-    """Return the longest step size every note starts on, and whether there was one: if not, the fallback, which the notes are moved to."""
-    size = longest_step_for({note.start for part in parts for note in part.notes})
-    return (size, True) if size is not None else (FALLBACK_STEP_SIZE, False)
+def step_size_for(parts, *, finest=FINEST_STEP_SIZE):
+    """Return the step size the notes are written on, and whether every note starts on it: the longest step every note starts
+    on, as a score's do; or else, for notes played by hand, the longest step nearly all of them start near, which they are
+    moved to; or else, for notes played too freely for any, the finest step allowed."""
+    starts = [note.start for part in parts for note in part.notes]
+    size = longest_step_for(set(starts))
+    if size is not None:
+        return size, True
+    return nearest_step_for(times=starts, finest=finest), False
+
+
+def nearest_step_for(*, times, finest):
+    """Return the longest step size, no finer than finest, that nearly every time starts near (NEAR_A_STEP, MOST_NOTES), or
+    finest where none does. A shuffle played on triplets lands on a triplet grid, being tried before the shorter straight ones."""
+    for size in AUTO_STEP_SIZES:
+        if size < finest:
+            break
+        near = sum(1 for time in times if distance_to_grid(time=time, step_size=size) <= NEAR_A_STEP * size)
+        if near >= MOST_NOTES * len(times):
+            return size
+    return finest
+
+
+def distance_to_grid(*, time, step_size):
+    """Return how far a time is from the nearest line of a grid of a step size."""
+    return abs(time - round(time / step_size) * step_size)
 
 
 def longest_step_for(times):

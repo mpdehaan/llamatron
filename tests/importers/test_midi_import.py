@@ -317,6 +317,44 @@ class TestScenesAndPatterns(unittest.TestCase):
         self.assertIn(importing.MSG_WARN_SWUNG.format(count=2), imported.warnings)
 
 
+def played(ticks, *, length=SIXTEENTH):
+    """Return a mido file of one part playing middle C at each tick, as a person plays, a little either side of the beat."""
+    midi = mido.MidiFile(type=1, ticks_per_beat=TICKS_PER_BEAT)
+    midi.tracks.append(track_of(timed=[(0, mido.MetaMessage(SET_TEMPO, tempo=mido.bpm2tempo(TEMPO)))]))
+    timed = [(0, mido.MetaMessage(TRACK_NAME, name=A_VOICE))]
+    for tick in ticks:
+        timed.append((tick, mido.Message(NOTE_ON, channel=0, note=MIDDLE_C, velocity=VELOCITY)))
+        timed.append((tick + length, mido.Message(NOTE_OFF, channel=0, note=MIDDLE_C)))
+    midi.tracks.append(track_of(timed=timed))
+    return midi
+
+
+class TestQuantizing(unittest.TestCase):
+    """A file played by hand is put on the longest grid nearly all its notes start near, and one played too freely for any on the
+    finest step allowed; a score's notes, all on a grid, are moved by nothing (TestScenesAndPatterns)."""
+
+    def step_size_of(self, midi, **choices):
+        return MidiImport(midi_file=midi).imported(setlist=Setlist.new(), choices=ImportChoices(song_name='tune', **choices))
+
+    def test_eighths_played_a_little_early_and_late_are_put_on_eighths(self):
+        eighth = TICKS_PER_BEAT // 2
+        strays = [6, -5, 4, 0, -6, 3, 5, -4]
+        imported = self.step_size_of(played([eighth * (place + 1) + stray for place, stray in enumerate(strays)]))
+        self.assertEqual(imported.step_size, Rational(1, 8))
+        self.assertEqual(imported.moved, sum(1 for stray in strays if stray))
+
+    def test_thirty_seconds_played_by_hand_keep_their_own_grid(self):
+        thirty_second = TICKS_PER_BEAT // 8
+        strays = [3, -2, 0, 2, -3, 1, 0, -1]
+        imported = self.step_size_of(played([thirty_second * (place + 4) + stray for place, stray in enumerate(strays)], length=thirty_second // 2))
+        self.assertEqual(imported.step_size, Rational(1, 32))
+
+    def test_notes_played_too_freely_for_any_grid_go_on_the_finest_step_allowed(self):
+        free = [101, 263, 397, 589, 701, 853, 977, 1123]
+        self.assertEqual(self.step_size_of(played(free)).step_size, cutting.FINEST_STEP_SIZE)
+        self.assertEqual(self.step_size_of(played(free), finest_step=SIXTEENTH_NOTE).step_size, SIXTEENTH_NOTE)
+
+
 class TestControls(unittest.TestCase):
     """The CCs the import brings in: the mod wheel, volume and sustain first, in that order, then the most sent others, on a part's first track, each at the value the file holds at every moment."""
 
