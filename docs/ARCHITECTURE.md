@@ -333,8 +333,11 @@ each keeps its cursor and its keys and hands the rest to its presenter and the
 renderers. It is built on Textual, which is kept to the app, the screens and
 the dialogs, so the same pages could be drawn by something else. The things
 drawn as grids, the pattern editor's rows and piano roll, Arrange and the
-step editors, are a family of their own, each a component with its own cursor,
-keys and drawing.
+step editors, are a family of their own: each keeps its own cursor and keys,
+and says what it shows as grid nodes
+(`src/llamatron/interface/forms/pattern_grid.py`,
+`src/llamatron/interface/forms/arrange.py`,
+`src/llamatron/interface/forms/step_grid.py`), which their renderers draw.
 
 The tracker holds one `Setlist` in a `Document`
 (`src/llamatron/interface/tracker/document.py`), which knows the file the set
