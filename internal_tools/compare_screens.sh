@@ -3,7 +3,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# What it does: capture every page as the key tour draws it, at 80x24 and 160x50, into a directory (capture DIR), or capture again and say where any screen differs from one made before (compare DIR), so that a change meant to leave the screens alone is proved to
+# What it does: capture every page as the key tour draws it, at 80x24 and 160x50, into a directory (capture DIR), or capture again and say where any screen differs from one made before (compare DIR), the dialogs the UI tests show among them, or the dialogs alone (capture-dialogs DIR, compare-dialogs DIR), so that a change meant to leave the screens alone is proved to
 
 set -eu
 # Run from the top folder, the one above this script's, wherever it is started from.

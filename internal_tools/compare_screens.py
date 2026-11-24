@@ -8,6 +8,8 @@ Run from the top folder:
 
     .venv/bin/python internal_tools/compare_screens.py capture DIRECTORY   # every stop of the tour, at each size, into DIRECTORY
     .venv/bin/python internal_tools/compare_screens.py compare DIRECTORY   # capture again, and say where anything differs
+    .venv/bin/python internal_tools/compare_screens.py capture-dialogs DIRECTORY   # the dialogs alone, for a change to dialogs
+    .venv/bin/python internal_tools/compare_screens.py compare-dialogs DIRECTORY   # the dialogs alone again, and what differs
 
 The key tour (tests/interface/tracker/test_tui_help_keys.py) opens every page and walks its cursor to every place it can stand.
 At each stop the screen is recorded as Textual composed it, dialogs over pages included: every line's text, cut where its style
@@ -23,6 +25,7 @@ import functools
 import json
 import os
 import random
+from rich.console import Console
 import sys
 from textual.widgets import Static
 import unittest
@@ -38,7 +41,9 @@ from tests.support.ui_testing import UITest
 
 CAPTURE = 'capture'
 COMPARE = 'compare'
-USAGE = 'usage: compare_screens.py capture|compare DIRECTORY'
+CAPTURE_DIALOGS = 'capture-dialogs'
+COMPARE_DIALOGS = 'compare-dialogs'
+USAGE = 'usage: compare_screens.py capture|compare|capture-dialogs|compare-dialogs DIRECTORY'
 # The sizes the tour is run at: the smallest console a page must be good at, and a large one.
 SIZES = ((80, 24), (160, 50))
 FILE_NAME = 'screens_{columns}x{rows}.json'
@@ -117,9 +122,14 @@ def screen_pieces(*, app, folders):
 
 def dialog_pieces(*, dialog, folders):
     """Return the dialog's own drawing, its box and what is inside it, without the page behind it, which a test may draw
-    differently each run: every line's text with each style and where it starts and ends, the test's folder written as FOLDER."""
+    differently each run: every line's pieces of text, each with the style it is drawn in, whether the style is the line's or a
+    stretch's, the test's folder written as FOLDER."""
     drawn = dialog.query_one(dialog_values.DIALOG_VIEW_SELECTOR, Static).content
-    return [[without_folders(text=line.plain, folders=folders), [[span.start, span.end, str(span.style)] for span in line.spans]] for line in drawn.split()]
+    console = Console()
+    lines = []
+    for line in drawn.split():
+        lines.append([[without_folders(text=segment.text, folders=folders), str(segment.style) if segment.style else ''] for segment in line.render(console)])
+    return lines
 
 
 def without_folders(*, text, folders):
@@ -247,12 +257,29 @@ def show_difference(*, size, number, old, new):
 
 
 def main(arguments):
-    if len(arguments) != 2 or arguments[0] not in (CAPTURE, COMPARE):
+    if len(arguments) != 2 or arguments[0] not in ACTIONS:
         print(USAGE)
         return FAILURE
     action, directory = arguments
-    worked = capture(directory) if action == CAPTURE else compare(directory)
-    return SUCCESS if worked else FAILURE
+    return SUCCESS if ACTIONS[action](directory) else FAILURE
+
+
+def capture_dialogs_alone(directory):
+    """Capture the dialogs alone, with no tour of the pages, for a change that touches only dialogs."""
+    os.makedirs(directory, exist_ok=True)
+    capture_dialogs(directory)
+    return True
+
+
+def compare_dialogs_alone(directory):
+    """Capture the dialogs again beside the directory's capture, with no tour of the pages, and say where any differs."""
+    again = directory.rstrip(os.sep) + AGAIN
+    capture_dialogs_alone(again)
+    return compare_dialogs(before=directory, after=again)
+
+
+# What each action of the command line does.
+ACTIONS = {CAPTURE: capture, COMPARE: compare, CAPTURE_DIALOGS: capture_dialogs_alone, COMPARE_DIALOGS: compare_dialogs_alone}
 
 
 if __name__ == '__main__':
