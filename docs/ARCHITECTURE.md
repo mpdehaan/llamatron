@@ -122,6 +122,7 @@ flowchart TD
     realtime_devices["realtime/devices"]
     realtime_render_process["realtime/render_process"]
     realtime_sender_process["realtime/sender_process"]
+    realtime_synth_process["realtime/synth_process"]
     end
     subgraph composer ["The Song Wizard"]
     wizards_create_song["wizards/create_song"]
@@ -177,6 +178,7 @@ flowchart TD
 | Real Time | `realtime/devices` | The devices real-time playback sends to: the MIDI output ports found, watched while FluidSynth's port is awaited, and FluidSynth itself, started, waited for and ended. |
 | Real Time | `realtime/render_process` | The render process's part of real-time playback: the score a song is realized into, built ahead and changed as the set changes, and the player that launches scenes and clips and hands each clip's events to the sender. |
 | Real Time | `realtime/sender_process` | The sender process's part of real-time playback: the engines that send each event at its moment, the outputs they send through, timestamped by CoreMIDI or sent at once by python-rtmidi, and the process that holds them apart from the tracker. |
+| Real Time | `realtime/synth_process` | The Synthesis Process: llamatron's built-in instruments played as audio, in a process of its own beside the Realtime Sender Process, built for exact timing above all: every sound prepared ahead in memory, every note placed at its exact sample, nothing made or collected while it plays. |
 | The Song Wizard | `wizards/create_song` | The song wizard: a set made from structured data that says what to play. |
 | The Interface | `interface/forms` | The forms: what a page shows, as a tree of plain nodes, apart from how the tracker draws it and from Textual. |
 | The Interface | `interface/pages` | The pages as presenters: what each page shows and does, as a form of the forms' nodes (interface/forms/), built from the set as it is now, with nothing of how it looks or of Textual. |

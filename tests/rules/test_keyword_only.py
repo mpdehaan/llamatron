@@ -25,7 +25,8 @@ SOURCE_ROOTS = [ROOT / 'src' / 'llamatron', ROOT / 'tests', ROOT / 'internal_too
 # Classes whose constructor and methods stay positional for speed.
 FAST_CLASSES = {'Rational', 'Length', 'Sound'}
 # Methods that a library calls with its own positional arguments.
-LIBRARY_METHODS = {'on_key', 'on_mount', 'on_resize', 'on_screen_resume', 'compose', 'render', 'check_action'}
+# Methods a library calls positionally: Textual's, and PortAudio's audio callback in the Synthesis Process.
+LIBRARY_METHODS = {'on_key', 'on_mount', 'on_resize', 'on_screen_resume', 'compose', 'render', 'check_action', 'audio_callback'}
 LIBRARY_PREFIXES = ('watch_', 'action_')
 SELF_NAMES = {'self', 'cls'}
 SPECIAL_EDGES = '__'

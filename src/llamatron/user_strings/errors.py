@@ -657,3 +657,9 @@ ERR_WIZARD_CHOOSE_GENRE_AND_SUBGENRE = 'choose a genre and a subgenre first'
 # interface/tracker/screens/set/pdf_export_page.py: why Export refuses.
 ERR_PDF_NOTHING_TICKED = 'tick at least one page to make'
 ERR_PDF_NO_TRACKS = 'choose at least one track to print'
+
+# realtime/synth_process/process.py: why built-in sound could not start.
+ERR_SYNTHESIS_OFF = 'built-in sound is off on this system'
+ERR_SYNTHESIS_TOO_SLOW = 'the synthesis process did not start in time'
+ERR_SYNTHESIS_ENDED = 'the synthesis process ended while starting, exit code {code}'
+ERR_SYNTHESIS_FAILED = 'built-in sound could not start: {kind}: {problem}'
