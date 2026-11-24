@@ -18,7 +18,7 @@ stores only what differs from it and older sets load as they are.
 from llamatron.model.file import corrections
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import ChipDirection, ChipVoice, Curve, DrumMachine, Duty, Effect, EffectSetting, FilterMode, FilterType, LfoSetting, LfoShape, Modulation, Noise, OscillatorSetting, SidWave, SoundEngine, SoundSetting, SynthControl, Waveform, WaveShape
+from llamatron.model.schema.file_format import AcidWave, ChipDirection, ChipVoice, Curve, DrumMachine, Duty, Effect, EffectSetting, FilterMode, FilterType, LfoSetting, LfoShape, Modulation, Noise, OscillatorSetting, SidWave, SoundEngine, SoundSetting, SynthControl, Waveform, WaveShape
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.user_strings import errors
 
@@ -94,9 +94,10 @@ LFO_SETTINGS = described(
     WholeNumber(name=LfoSetting.RATE, lowest=limits.MIN_LFO_RATE, highest=limits.MAX_LFO_RATE, error=errors.ERR_SOUND_NUMBER),
     WholeNumber(name=LfoSetting.DEPTH, lowest=-limits.MAX_LFO_DEPTH, highest=limits.MAX_LFO_DEPTH, error=errors.ERR_SOUND_NUMBER),
     Flag(name=LfoSetting.RETRIGGER, error=errors.ERR_SOUND_FLAG),
+    Flag(name=LfoSetting.EACH_SCENE, error=errors.ERR_SOUND_FLAG),
 )
 LFO_DEFAULTS = {LfoSetting.ON: False, LfoSetting.TARGET: SynthControl.NONE, LfoSetting.SHAPE: LfoShape.SINE, LfoSetting.RATE: defaults.DEFAULT_LFO_RATE,
-                LfoSetting.DEPTH: defaults.DEFAULT_LFO_DEPTH, LfoSetting.RETRIGGER: True}
+                LfoSetting.DEPTH: defaults.DEFAULT_LFO_DEPTH, LfoSetting.RETRIGGER: True, LfoSetting.EACH_SCENE: False}
 # An LFO's rate is stored in tenths of a hertz.
 TENTHS = 10.0
 
@@ -164,6 +165,21 @@ SOUND_SETTINGS = described(
     WholeNumber(name=SoundSetting.SWEEP_STEP, lowest=limits.MIN_SWEEP_STEP, highest=limits.MAX_SWEEP_STEP, error=errors.ERR_SOUND_NUMBER),
     chosen(SoundSetting.WAVE_SHAPE, choices=file_format.WAVE_SHAPES),
     chosen(SoundSetting.NOISE, choices=file_format.NOISES),
+    chosen(SoundSetting.ACID_WAVE, choices=file_format.ACID_WAVES),
+    WholeNumber(name=SoundSetting.TUNING, lowest=-limits.MAX_TUNING, highest=limits.MAX_TUNING, error=errors.ERR_SOUND_NUMBER),
+    Flag(name=SoundSetting.FILTER_ON, error=errors.ERR_SOUND_FLAG),
+    WholeNumber(name=SoundSetting.CUTOFF, lowest=limits.MIN_CUTOFF, highest=limits.MAX_CUTOFF, error=errors.ERR_SOUND_NUMBER),
+    percent(SoundSetting.RESONANCE),
+    percent(SoundSetting.ENV_MOD),
+    WholeNumber(name=SoundSetting.FILTER_DECAY, lowest=limits.MIN_FILTER_DECAY_MS, highest=limits.MAX_FILTER_DECAY_MS, error=errors.ERR_SOUND_NUMBER),
+    percent(SoundSetting.ACCENT),
+    WholeNumber(name=SoundSetting.ACCENT_THRESHOLD, lowest=1, highest=limits.MAX_VELOCITY_THRESHOLD, error=errors.ERR_SOUND_NUMBER),
+    percent(SoundSetting.ACCENT_SWEEP),
+    WholeNumber(name=SoundSetting.SLIDE, lowest=limits.MIN_SLIDE_MS, highest=limits.MAX_SLIDE_MS, error=errors.ERR_SOUND_NUMBER),
+    percent(SoundSetting.DRIVE),
+    WholeNumber(name=SoundSetting.AMP_DECAY, lowest=limits.MIN_AMP_DECAY_MS, highest=limits.MAX_AMP_DECAY_MS, error=errors.ERR_SOUND_NUMBER),
+    WholeNumber(name=SoundSetting.SOFT_ATTACK, lowest=limits.MIN_SOFT_ATTACK, highest=limits.MAX_SOFT_ATTACK, error=errors.ERR_SOUND_NUMBER),
+    WholeNumber(name=SoundSetting.ACCENT_DECAY, lowest=limits.MIN_ACCENT_DECAY_MS, highest=limits.MAX_ACCENT_DECAY_MS, error=errors.ERR_SOUND_NUMBER),
     Checked(name=SoundSetting.EFFECTS, check=check_effects),
     Checked(name=SoundSetting.LFOS, check=check_lfos),
 )
@@ -180,6 +196,11 @@ SOUND_DEFAULTS = {
     SoundSetting.DUTY: Duty.QUARTER, SoundSetting.START_LEVEL: defaults.DEFAULT_START_LEVEL, SoundSetting.LEVEL_PACE: 0,
     SoundSetting.LEVEL_DIRECTION: ChipDirection.DOWN, SoundSetting.SWEEP_PACE: 0, SoundSetting.SWEEP_DIRECTION: ChipDirection.DOWN,
     SoundSetting.SWEEP_STEP: defaults.DEFAULT_SWEEP_STEP, SoundSetting.WAVE_SHAPE: WaveShape.TRIANGLE, SoundSetting.NOISE: Noise.LONG,
+    SoundSetting.ACID_WAVE: AcidWave.SAW, SoundSetting.TUNING: 0, SoundSetting.FILTER_ON: True, SoundSetting.CUTOFF: defaults.DEFAULT_ACID_CUTOFF,
+    SoundSetting.RESONANCE: defaults.DEFAULT_ACID_RESONANCE, SoundSetting.ENV_MOD: defaults.DEFAULT_ENV_MOD, SoundSetting.FILTER_DECAY: defaults.DEFAULT_FILTER_DECAY_MS,
+    SoundSetting.ACCENT: defaults.DEFAULT_ACCENT, SoundSetting.ACCENT_THRESHOLD: defaults.DEFAULT_ACCENT_THRESHOLD, SoundSetting.ACCENT_SWEEP: defaults.DEFAULT_ACCENT_SWEEP,
+    SoundSetting.SLIDE: defaults.DEFAULT_SLIDE_MS, SoundSetting.DRIVE: defaults.DEFAULT_ACID_DRIVE, SoundSetting.AMP_DECAY: defaults.DEFAULT_AMP_DECAY_MS,
+    SoundSetting.SOFT_ATTACK: defaults.DEFAULT_SOFT_ATTACK, SoundSetting.ACCENT_DECAY: defaults.DEFAULT_ACCENT_DECAY_MS,
     SoundSetting.EFFECTS: [],
     SoundSetting.LFOS: [],
 }
@@ -258,6 +279,8 @@ class SoundSpec:
             spec.update(self.sid())
         elif engine == SoundEngine.POCKET:
             spec.update(self.pocket())
+        elif engine == SoundEngine.FISHLINE:
+            spec.update(self.fishline())
         else:
             spec.update(self.basic())
         return spec
@@ -292,6 +315,16 @@ class SoundSpec:
                 'sweep_up': self.value(SoundSetting.SWEEP_DIRECTION) == ChipDirection.UP, 'sweep_step': self.value(SoundSetting.SWEEP_STEP),
                 'wave_shape': self.value(SoundSetting.WAVE_SHAPE), 'noise': self.value(SoundSetting.NOISE)}
 
+    def fishline(self):
+        """Return Fishline's settings, always one voice, shares as fractions and times in seconds."""
+        return {'voices': 1, 'acid_wave': self.value(SoundSetting.ACID_WAVE), 'tuning': self.value(SoundSetting.TUNING), 'filter_on': self.value(SoundSetting.FILTER_ON),
+                'cutoff': self.value(SoundSetting.CUTOFF), 'resonance': self.value(SoundSetting.RESONANCE) / PERCENT, 'env_mod': self.value(SoundSetting.ENV_MOD) / PERCENT,
+                'filter_decay': self.value(SoundSetting.FILTER_DECAY) / MILLISECONDS, 'accent': self.value(SoundSetting.ACCENT) / PERCENT,
+                'accent_threshold': self.value(SoundSetting.ACCENT_THRESHOLD), 'accent_sweep': self.value(SoundSetting.ACCENT_SWEEP) / PERCENT,
+                'slide': self.value(SoundSetting.SLIDE) / MILLISECONDS, 'drive': self.value(SoundSetting.DRIVE) / PERCENT,
+                'amp_decay': self.value(SoundSetting.AMP_DECAY) / MILLISECONDS, 'soft_attack': self.value(SoundSetting.SOFT_ATTACK) / TENTHS / MILLISECONDS,
+                'accent_decay': self.value(SoundSetting.ACCENT_DECAY) / MILLISECONDS}
+
     def lfos(self, engine):
         """Return the LFOs that are on and move something on the engine, each its target, shape, rate in hertz, depth as a
         fraction either way and whether each note starts it again; an LFO that is off, whose target the engine lacks, or that
@@ -302,7 +335,8 @@ class SoundSpec:
             if not lfo_value(lfo=lfo, name=LfoSetting.ON) or target not in file_format.LFO_TARGETS[engine] or target == SynthControl.NONE:
                 continue
             lfos.append({'target': target, 'shape': lfo_value(lfo=lfo, name=LfoSetting.SHAPE), 'rate': lfo_value(lfo=lfo, name=LfoSetting.RATE) / TENTHS,
-                         'depth': lfo_value(lfo=lfo, name=LfoSetting.DEPTH) / PERCENT, 'retrigger': lfo_value(lfo=lfo, name=LfoSetting.RETRIGGER)})
+                         'depth': lfo_value(lfo=lfo, name=LfoSetting.DEPTH) / PERCENT, 'retrigger': lfo_value(lfo=lfo, name=LfoSetting.RETRIGGER),
+                         'each_scene': lfo_value(lfo=lfo, name=LfoSetting.EACH_SCENE)})
         return lfos
 
     def effects(self):

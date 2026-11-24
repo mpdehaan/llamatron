@@ -62,4 +62,6 @@ def synth_note(*, data, when, first):
         return (when, synth_engine.NOTE_OFF, instrument, data[1], 0)
     if kind == timeline.CONTROL_CHANGE and data[1] in ENDING_CONTROLS:
         return (when, synth_engine.ALL_OFF, instrument, 0, 0)
+    if kind == timeline.CONTROL_CHANGE and data[1] == timeline.SCENE_STARTED:
+        return (when, synth_engine.SCENE_STARTED, instrument, 0, 0)
     return None

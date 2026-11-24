@@ -9,6 +9,7 @@ than one, its cutoff in hertz, resonance, its envelope's amount, attack and deca
 while the instrument isn't built in.
 """
 
+from llamatron.interface.forms import nodes
 from llamatron.interface.forms.nodes import ChoiceField, GaugeField, NumberField
 from llamatron.interface.forms.tab_box import Tab, TabColumn
 from llamatron.model.schema import file_format, limits
@@ -22,9 +23,6 @@ EFFECT_NUMBERS = range(1, limits.EFFECT_BLOCKS + 1)
 # that two boxed blocks stand side by side at 80 columns.
 SECOND_ROW_BLOCK = 3
 BLOCK_GAUGE_CELLS = 8
-# How far [ and ] step a cutoff, by how high it is, so that the whole range of hearing is crossed in few presses.
-HERTZ_STRIDES = ((100, 5), (500, 10), (1000, 25), (2000, 50), (5000, 100), (10000, 250))
-LONGEST_HERTZ_STRIDE = 500
 
 
 class EffectBlocks:
@@ -98,8 +96,8 @@ class EffectBlocks:
         """Return a filter's cutoff, a gauge filling by the logarithm of its hertz, as an ear hears it."""
         field = self.gauge(number=number, label=labels.MSG_EFFECT_CUTOFF_LABEL, name=EffectSetting.CUTOFF, highest=limits.MAX_CUTOFF, unit=marks.MSG_HERTZ_SHOWN)
         field.lowest = limits.MIN_CUTOFF
-        field.strides = HERTZ_STRIDES
-        field.longest_stride = LONGEST_HERTZ_STRIDE
+        field.strides = nodes.HERTZ_STRIDES
+        field.longest_stride = nodes.LONGEST_HERTZ_STRIDE
         return field
 
     def envelope_amount_field(self, number):

@@ -27,6 +27,8 @@ NOTE_OFF = 1
 ALL_OFF = 2
 # Not a note: the notes of a run of instruments still to come from a moment on are taken back (player.py).
 FORGET = 3
+# An instrument's clip starts with its scene: its LFOs that restart each scene start again (modulation.py).
+SCENE_STARTED = 4
 # The output guard's knee: x - (4/27)x³ is flat and at full scale where x is 1.5.
 GUARD_LIMIT = 1.5
 GUARD_CURVE = 4.0 / 27.0
@@ -42,6 +44,8 @@ class DrumPatch:
     its own pitch on; its hits are rendered once each and kept."""
 
     __slots__ = ('render_hit', 'choke', 'overlap', 'volume', 'effects', 'hits', 'tuned_from', 'modulation')
+    # Only Fishline slides from a held note to the next (acid.py).
+    slides = False
 
     def __init__(self, *, render_hit, spec, effects=()):
         """render_hit renders a hit, spec is the sound as llamatron gives it (model/objects/built_in_sound.py), each setting it
@@ -185,13 +189,10 @@ class SynthEngine:
         patch = self.instruments.get(instrument)
         if patch is None:
             return
-        if kind == NOTE_OFF:
-            for voice in self.voices:
-                if voice.instrument == instrument and voice.pitch == pitch and voice.release_at is None and voice.hit is None:
-                    voice.release_at = sample
+        if kind != NOTE_ON:
+            self._other_event(kind=kind, instrument=instrument, pitch=pitch, sample=sample)
             return
-        if kind == ALL_OFF:
-            self._end_every_note(instrument=instrument, sample=sample)
+        if patch.slides and self._slid(patch=patch, instrument=instrument, pitch=pitch, sample=sample):
             return
         level = velocity / 127.0
         voice = SynthVoice(instrument=instrument, pitch=pitch, start=sample, level=level)
@@ -208,6 +209,25 @@ class SynthEngine:
             self._steal(patch=patch, instrument=instrument, sample=sample)
             patch.begin(voice=voice, rate=self.rate)
         self.voices.append(voice)
+
+    def _other_event(self, *, kind, instrument, pitch, sample):
+        """Play an event that starts no note: a note's end, every note of an instrument ending, or its scene starting."""
+        if kind == NOTE_OFF:
+            for voice in self.voices:
+                if voice.instrument == instrument and voice.pitch == pitch and voice.release_at is None and voice.hit is None:
+                    voice.release_at = sample
+        elif kind == ALL_OFF:
+            self._end_every_note(instrument=instrument, sample=sample)
+        elif kind == SCENE_STARTED:
+            self.instruments[instrument].modulation.scene_started()
+
+    def _slid(self, *, patch, instrument, pitch, sample):
+        """Slide a note of a sliding instrument still held to a new pitch, legato, and return whether one was held."""
+        for voice in self.voices:
+            if voice.instrument == instrument and voice.patch is patch and voice.release_at is None and voice.cut_at is None:
+                patch.slide_to(voice=voice, pitch=pitch, sample=sample)
+                return True
+        return False
 
     def _end_every_note(self, *, instrument, sample):
         """End every note of an instrument at a sample: a drum's hit fades out, any other note releases."""

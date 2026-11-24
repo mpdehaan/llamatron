@@ -58,7 +58,8 @@ class LfoBlocks:
                              set=self.setter(number=number, name=LfoSetting.TARGET))
         if target == SynthControl.NONE:
             return [on, chosen]
-        return [on, chosen, self.shape_field(number), self.rate_field(number), self.depth_field(number), self.retrigger_field(number)]
+        return [on, chosen, self.shape_field(number), self.rate_field(number), self.depth_field(number), self.retrigger_field(number),
+                self.toggle(number=number, label=labels.MSG_LFO_EACH_SCENE_LABEL, name=LfoSetting.EACH_SCENE)]
 
     def shape_field(self, number):
         shape = self.instrument().get_lfo(number=number, name=LfoSetting.SHAPE)
@@ -81,8 +82,11 @@ class LfoBlocks:
                            set=self.setter(number=number, name=LfoSetting.DEPTH))
 
     def retrigger_field(self, number):
-        return Toggle(label=labels.MSG_LFO_RETRIGGER_LABEL.format(number=number), shown_label=shown_label(labels.MSG_LFO_RETRIGGER_LABEL),
-                      on=self.instrument().get_lfo(number=number, name=LfoSetting.RETRIGGER), set=self.setter(number=number, name=LfoSetting.RETRIGGER))
+        return self.toggle(number=number, label=labels.MSG_LFO_RETRIGGER_LABEL, name=LfoSetting.RETRIGGER)
+
+    def toggle(self, *, number, label, name):
+        return Toggle(label=label.format(number=number), shown_label=shown_label(label), on=self.instrument().get_lfo(number=number, name=name),
+                      set=self.setter(number=number, name=name))
 
     def setter(self, *, number, name):
         """Return what stores a value of one of an LFO's settings, as a field sets it."""

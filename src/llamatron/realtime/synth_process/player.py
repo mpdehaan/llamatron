@@ -16,6 +16,7 @@ import functools
 import time
 
 from llamatron.realtime.synth_process import drums, engine as engine_values, tables
+from llamatron.realtime.synth_process.acid import FishlinePatch
 from llamatron.realtime.synth_process.effects import compiled_effects
 from llamatron.realtime.synth_process.engine import DrumPatch, SynthEngine
 from llamatron.realtime.synth_process.modulation import LfoBank
@@ -24,6 +25,7 @@ from llamatron.realtime.synth_process.voices import BasicPatch, PocketPatch, Sid
 DRUM = 'drum'
 SID = 'sid'
 POCKET = 'pocket'
+FISHLINE = 'fishline'
 LOW_LATENCY = 'low'
 FLOAT32 = 'float32'
 CHANNELS = 2
@@ -140,6 +142,8 @@ def _patch(*, spec, rate):
         return SidPatch(spec=spec, rate=rate, effects=effects)
     if kind == POCKET:
         return PocketPatch(spec=spec, rate=rate, effects=effects)
+    if kind == FISHLINE:
+        return FishlinePatch(spec=spec, rate=rate, effects=effects)
     oscillators = [(tables.waveform_tables(waveform=waveform, rate=rate), cents, level) for waveform, cents, level in spec['oscillators']]
     return BasicPatch(oscillators=oscillators, envelope=tuple(spec['envelope']), voices=voices, volume=volume, effects=effects)
 

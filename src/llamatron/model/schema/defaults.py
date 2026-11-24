@@ -88,4 +88,18 @@ DEFAULT_MIX = 100
 # An LFO chosen starts a gentle sine vibrato: five hertz, a twentieth of its range (about half a semitone of pitch), each note
 # starting it again.
 DEFAULT_LFO_RATE = 50
+# Fishline starts as the classic squelch: its cutoff low, its resonance high, a strong envelope over 400 ms, notes accented
+# at a velocity of 110 or more, a 60 ms slide and a little drive.
+DEFAULT_ACID_CUTOFF = 400
+DEFAULT_ACID_RESONANCE = 70
+DEFAULT_ENV_MOD = 60
+DEFAULT_FILTER_DECAY_MS = 400
+DEFAULT_ACCENT = 60
+DEFAULT_ACCENT_THRESHOLD = 110
+DEFAULT_ACCENT_SWEEP = 50
+DEFAULT_SLIDE_MS = 60
+DEFAULT_ACID_DRIVE = 30
+DEFAULT_AMP_DECAY_MS = 1500
+DEFAULT_SOFT_ATTACK = 30
+DEFAULT_ACCENT_DECAY_MS = 200
 DEFAULT_LFO_DEPTH = 5

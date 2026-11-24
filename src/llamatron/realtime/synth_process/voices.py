@@ -57,6 +57,8 @@ class BasicPatch:
     seconds and its sustain level, how many notes it plays at once, its volume, and its effects in order."""
 
     __slots__ = ('oscillators', 'attack', 'decay', 'sustain', 'release', 'voices', 'volume', 'effects', 'modulation')
+    # Only Fishline slides from a held note to the next (acid.py).
+    slides = False
 
     def __init__(self, *, oscillators, envelope, voices=4, volume=0.5, effects=()):
         self.oscillators = oscillators
@@ -101,6 +103,8 @@ class SidPatch:
 
     __slots__ = ('wave', 'saw', 'triangle', 'noise', 'pulse_width', 'pulse_sweep', 'interaction', 'interval', 'arpeggio', 'glide', 'attack',
                  'decay', 'sustain', 'release', 'voices', 'volume', 'effects', 'last_pitch', 'modulation')
+    # Only Fishline slides from a held note to the next (acid.py).
+    slides = False
 
     def __init__(self, *, spec, rate, effects):
         """spec is the sound as llamatron gives it (model/objects/built_in_sound.py), effects its effects compiled."""
@@ -216,6 +220,8 @@ class PocketPatch:
 
     __slots__ = ('chip_voice', 'tables', 'noise', 'start_level', 'level_pace', 'level_up', 'sweep_pace', 'sweep_up', 'sweep_step', 'voices',
                  'volume', 'effects', 'modulation')
+    # Only Fishline slides from a held note to the next (acid.py).
+    slides = False
 
     def __init__(self, *, spec, rate, effects):
         """spec is the sound as llamatron gives it (model/objects/built_in_sound.py), effects its effects compiled."""

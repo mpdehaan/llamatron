@@ -38,6 +38,12 @@ LOW_CUTOFF = 500
 # A fast LFO in hertz, a trill's in tenths of a hertz as the set stores it, and a depth of a whole octave of pitch.
 FAST_LFO_HERTZ = 80.0
 TRILL_TENTHS = 50
+# An acid note, a plain and an accented velocity either side of the default threshold, a sixteenth at 120, and the swell's span.
+ACID_NOTE = 36
+PLAIN_VELOCITY = 100
+ACCENT_VELOCITY = 120
+STEP_SAMPLES = RATE // 8
+SWELL_SAMPLES = 2048
 OCTAVE_DEPTH = 100
 # Between an octave up and an octave down, the pitch is four times as high.
 TWO_OCTAVES = 4.0
@@ -289,6 +295,16 @@ class TestLfos(unittest.TestCase):
                 low = self.crossings(mix[half:2 * half])
                 self.assertAlmostEqual(high / low, TWO_OCTAVES, delta=0.3)
 
+    def test_an_lfo_restarts_on_a_note_when_it_retriggers_and_on_a_scene_when_it_restarts_each_scene(self):
+        lfo = {'target': SynthControl.PITCH, 'shape': LfoShape.SINE, 'rate': FAST_LFO_HERTZ, 'depth': 1.0}
+        bank = LfoBank(lfos=[{**lfo, 'retrigger': True}, {**lfo, 'retrigger': False, 'each_scene': True}], rate=RATE)
+        bank.advance(numpy.arange(CHUNK, dtype=numpy.float64))
+        bank.note_on()
+        self.assertEqual([each.cycles for each in bank.lfos][0], 0.0)
+        self.assertNotEqual(bank.lfos[1].cycles, 0.0)
+        bank.scene_started()
+        self.assertEqual(bank.lfos[1].cycles, 0.0)
+
     def test_an_lfo_that_is_off_or_has_nothing_to_move_on_its_engine_is_left_out(self):
         lfo = {LfoSetting.ON: True, LfoSetting.TARGET: SynthControl.PULSE_WIDTH}
         self.assertEqual(synth_spec({SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.LFOS: [lfo]})['lfos'], [])
@@ -301,6 +317,35 @@ class TestLfos(unittest.TestCase):
         lfo = {LfoSetting.ON: True, LfoSetting.TARGET: SynthControl.FILTER_CUTOFF, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.DEPTH: OCTAVE_DEPTH}
         moved = self.played(sound={SoundSetting.EFFECTS: [block], SoundSetting.LFOS: [lfo]})
         self.assertGreater(numpy.abs(moved - still).max(), QUIET)
+
+
+class TestFishline(unittest.TestCase):
+
+    def played(self, *, events, sound=None, chunks=150):
+        """Return Fishline playing notes given as (sample, kind, pitch, velocity), and the engine after them."""
+        engine = SynthEngine(rate=RATE)
+        engine.set_instrument(number=SYNTH, patch=compiled(spec=synth_spec({SoundSetting.ENGINE: SoundEngine.FISHLINE, **(sound or {})}), rate=RATE))
+        for sample, kind, pitch, velocity in events:
+            engine.schedule(sample=sample, kind=kind, instrument=SYNTH, pitch=pitch, velocity=velocity)
+        return rendered(engine, chunks=chunks), engine
+
+    def test_an_accent_swells_the_start_of_a_note(self):
+        plain, _ = self.played(events=[(0, engine_values.NOTE_ON, ACID_NOTE, PLAIN_VELOCITY), (STEP_SAMPLES, engine_values.NOTE_OFF, ACID_NOTE, 0)])
+        accented, _ = self.played(events=[(0, engine_values.NOTE_ON, ACID_NOTE, ACCENT_VELOCITY), (STEP_SAMPLES, engine_values.NOTE_OFF, ACID_NOTE, 0)])
+        self.assertTrue(numpy.isfinite(accented).all())
+        self.assertGreater(numpy.sqrt((accented[:SWELL_SAMPLES] ** 2).mean()), numpy.sqrt((plain[:SWELL_SAMPLES] ** 2).mean()))
+
+    def test_a_note_starting_while_the_last_is_held_slides_to_it_on_one_voice(self):
+        events = [(0, engine_values.NOTE_ON, ACID_NOTE, PLAIN_VELOCITY), (STEP_SAMPLES, engine_values.NOTE_ON, ACID_NOTE + 12, PLAIN_VELOCITY),
+                  (STEP_SAMPLES + 50, engine_values.NOTE_OFF, ACID_NOTE, 0)]
+        _, engine = self.played(events=events, chunks=STEP_SAMPLES // CHUNK + 20)
+        self.assertEqual([voice.pitch for voice in engine.voices], [ACID_NOTE + 12])
+
+    def test_with_its_filter_off_fishline_is_brighter(self):
+        events = [(0, engine_values.NOTE_ON, ACID_NOTE, PLAIN_VELOCITY)]
+        filtered, _ = self.played(events=events)
+        open_saw, _ = self.played(events=events, sound={SoundSetting.FILTER_ON: False})
+        self.assertGreater(TestFilters().brightness(open_saw), TestFilters().brightness(filtered))
 
 
 class TestDrumsAndTables(unittest.TestCase):

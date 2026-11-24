@@ -39,6 +39,8 @@ ARPEGGIO_TYPED = '0 4 7'
 CUTOFF_STRIDE = 50
 # How far ] steps the default LFO rate, 5 Hz, stored as 50 tenths, which steps by 5 tenths between 50 and 100.
 LFO_RATE_STRIDE = 5
+# How far ] steps Fishline's default cutoff, 400 Hz, which steps by 10 between 100 and 500.
+ACID_CUTOFF_STRIDE = 10
 DECAY_STRIDE = 10
 
 
@@ -354,6 +356,16 @@ class TestInstrumentTabs(UITest):
         self.document.change_set(self.instrument().set_sound, name=SoundSetting.ENGINE, value=SoundEngine.DRUM)
         await self.select_field(labels.MSG_LFO_TARGET_LABEL.format(number=1))
         self.assertNotIn(labels.MSG_LFO_RATE_LABEL.format(number=1), self.shown_labels())
+
+    async def test_fishline_shows_its_own_filter_and_accent_and_its_cutoff_steps_by_hertz(self):
+        self.document.change_set(self.instrument().set_sound, name=SoundSetting.ENGINE, value=SoundEngine.FISHLINE)
+        await self.select_field(labels.MSG_ENGINE_LABEL)
+        for label in (labels.MSG_CUTOFF_LABEL, labels.MSG_ENV_MOD_LABEL, labels.MSG_ACCENT_AT_LABEL, labels.MSG_SLIDE_LABEL, labels.MSG_AMP_DECAY_LABEL):
+            self.assertIn(label, self.shown_labels())
+        self.assertNotIn(labels.MSG_VOICES_LABEL, self.shown_labels())
+        await self.select_field(labels.MSG_CUTOFF_LABEL)
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_sound(SoundSetting.CUTOFF), defaults.DEFAULT_ACID_CUTOFF + ACID_CUTOFF_STRIDE)
 
     async def test_an_arpeggio_is_typed_and_one_out_of_range_refused(self):
         await self.select_field(labels.MSG_ENGINE_LABEL)

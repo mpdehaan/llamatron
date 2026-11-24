@@ -65,6 +65,9 @@ def within(*, number, lowest, highest):
 GAUGE_CELLS = 12
 TIME_STRIDES = ((20, 1), (100, 5), (500, 10), (2000, 50))
 LONGEST_TIME_STRIDE = 100
+# How far [ and ] step a frequency in hertz, by how high it is, so that the whole range of hearing is crossed in few presses.
+HERTZ_STRIDES = ((100, 5), (500, 10), (1000, 25), (2000, 50), (5000, 100), (10000, 250))
+LONGEST_HERTZ_STRIDE = 500
 
 
 def gauge_shown(*, place, lowest, highest, said=None):

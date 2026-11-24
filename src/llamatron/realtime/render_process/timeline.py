@@ -26,6 +26,9 @@ PROGRAM_CHANGE = 0xC0
 CHANNEL_MASK = 0x0F
 KIND_MASK = 0xF0
 NO_VELOCITY = 0
+# A controller no MIDI device is sent and the built-in instruments read as their clip starting: an undefined number, so that
+# nothing else ever means it. It restarts the LFOs that restart each scene.
+SCENE_STARTED = 102
 # Where a sound event's order is settled when two fall at the same instant: note offs first, so that a repeated pitch is never cut by the off of the note before.
 OFFS_FIRST = 0
 ONS_AFTER = 1
@@ -107,7 +110,7 @@ def song_timeline(*, grid, routes):
 
 
 def clip_timeline(*, clip, scale, route, tag, scene_start, scene_seconds, clock):
-    """Return one clip's notes and CC values as events, placed at its scene's start and timed by its row's clock, in no particular order, after the route's program change when it has one."""
+    """Return one clip's notes and CC values as events, placed at its scene's start and timed by its row's clock, in no particular order, after the route's program change when it has one; a built-in instrument's clip starts with SCENE_STARTED."""
     events = []
     # A score counts each clip's events from its scene's start, which is zero, and adding a zero to every moment cost a Rational a moment.
     starts_at_zero = not scene_start
@@ -120,8 +123,8 @@ def clip_timeline(*, clip, scale, route, tag, scene_start, scene_seconds, clock)
         if not starts_at_zero:
             whole = scene_start + time
         return Playing._make((whole, sent_from + clock.seconds_at(time), route.port, route.channel, kind, number, value, tag, NOT_A_SWITCH))
-    if route.program is not None:
-        events.append(at(Rational(0), PROGRAM_CHANGE, route.program, NO_VELOCITY))
+    for kind, number in openings(route):
+        events.append(at(Rational(0), kind, number, NO_VELOCITY))
     notes, clip_length = timed_events(clip=clip, scale=scale)
     # Keyswitches go to a plugin through a MIDI port, never to FluidSynth, which would sound each as a note, and come before the notes they change at the same instant.
     switches = ()
@@ -137,3 +140,13 @@ def clip_timeline(*, clip, scale, route, tag, scene_start, scene_seconds, clock)
     for control in control_events(clip=clip, length=clip_length):
         events.append(at(control.time, CONTROL_CHANGE, control.number, control.value))
     return events
+
+
+def openings(route):
+    """Return what a clip of a route starts with, as (kind, number): its program change, and a built-in instrument's SCENE_STARTED."""
+    found = []
+    if route.program is not None:
+        found.append((PROGRAM_CHANGE, route.program))
+    if route.sound is not None:
+        found.append((CONTROL_CHANGE, SCENE_STARTED))
+    return found

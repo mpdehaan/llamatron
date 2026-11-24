@@ -114,6 +114,9 @@ class Filter:
         if self.fired_at is None:
             return 0.0
         age = (sample - self.fired_at) / self.rate
+        if age < 0.0:
+            # The part of a chunk before the note it fires for.
+            return 0.0
         if age < self.attack:
             return age / self.attack
         return math.exp(-FALL * (age - self.attack) / max(self.decay, 1e-3))

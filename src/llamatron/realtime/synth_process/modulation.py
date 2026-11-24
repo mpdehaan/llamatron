@@ -34,9 +34,9 @@ HELD_SEED = 224
 
 class Lfo:
     """An LFO: the control it moves, its shape, its rate in hertz, its depth from -1 to 1 times the control's range, whether a
-    note starts it again, and where it is in its cycle, counted in cycles."""
+    note starts it again and whether each scene does, and where it is in its cycle, counted in cycles."""
 
-    __slots__ = ('target', 'shape', 'step', 'amount', 'retrigger', 'cycles', 'held')
+    __slots__ = ('target', 'shape', 'step', 'amount', 'retrigger', 'each_scene', 'cycles', 'held')
 
     def __init__(self, *, spec, rate, held):
         self.target = spec['target']
@@ -44,6 +44,7 @@ class Lfo:
         self.step = spec['rate'] / rate
         self.amount = spec['depth'] * RANGES[self.target]
         self.retrigger = spec['retrigger']
+        self.each_scene = spec.get('each_scene', False)
         self.cycles = 0.0
         self.held = held
 
@@ -93,6 +94,12 @@ class LfoBank:
         """Start again every LFO that retriggers, as a note begins."""
         for lfo in self.lfos:
             if lfo.retrigger:
+                lfo.cycles = 0.0
+
+    def scene_started(self):
+        """Start again every LFO that restarts each scene, as the instrument's clip starts with its scene."""
+        for lfo in self.lfos:
+            if lfo.each_scene:
                 lfo.cycles = 0.0
 
 

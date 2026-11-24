@@ -378,6 +378,10 @@ MSG_SOUND_PERCENT_SHOWN = '{number}%'
 MSG_SIGNED_PERCENT_SHOWN = '{number:+}%'
 # An LFO's rate, in hertz to a tenth.
 MSG_LFO_RATE_SHOWN = '{number:.1f} Hz'
+# A time shown to a tenth of a millisecond, such as Fishline's soft attack.
+MSG_TENTH_MILLISECONDS_SHOWN = '{number:.1f} ms'
+# The velocity at or above which Fishline accents a note.
+MSG_VELOCITY_AT_SHOWN = 'velocity {number}'
 MSG_NUMBER_SHOWN = '{number}'
 MSG_MILLISECONDS_SHOWN = '{number} ms'
 MSG_CENTS_SHOWN = '{number:+d} c'

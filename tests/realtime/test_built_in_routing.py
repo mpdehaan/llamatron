@@ -27,6 +27,9 @@ from llamatron.realtime.synth_process import engine as synth_engine
 from llamatron.realtime.synth_process.process import SynthesisNotStarted
 from tests.realtime import test_synthesis
 from tests.realtime.test_synthesis import rendered, saw_patch
+from tests.support import song_playing
+from tests.support.rendering import render_data
+from tests.support.song_playing import one_clip
 
 DELAY = 0.008
 A_MOMENT = 10.0
@@ -89,6 +92,14 @@ class TestBuiltInRoutes(unittest.TestCase):
         self.assertEqual(sounds, {(built_in_port(0), CHANNEL): instrument.synth_spec()})
 
 
+    def test_a_built_in_instruments_clip_starts_with_its_scene_and_a_midi_ones_does_not(self):
+        grid = render_data(one_clip(rows={}))
+        for route, expected in ((Route(built_in_port(0), CHANNEL, keyswitches=False, sound='synth'), 1), (Route(MIDI_PORT, CHANNEL), 0)):
+            with self.subTest(route=route):
+                events = timeline.song_timeline(grid=grid, routes={song_playing.LEAD: route})
+                started = [event for event in events if event.kind == timeline.CONTROL_CHANGE and event.number == timeline.SCENE_STARTED]
+                self.assertEqual(len(started), expected)
+
 class TestSynthOutput(unittest.TestCase):
 
     def setUp(self):
@@ -106,6 +117,10 @@ class TestSynthOutput(unittest.TestCase):
     def test_all_notes_off_ends_every_note_of_the_instrument(self):
         note = synth_note(data=[timeline.CONTROL_CHANGE | CHANNEL, sender_engine.ALL_NOTES_OFF, 0], when=A_MOMENT, first=0)
         self.assertEqual(note, (A_MOMENT, synth_engine.ALL_OFF, CHANNEL, 0, 0))
+
+    def test_a_scene_starting_reaches_its_instrument(self):
+        note = synth_note(data=[timeline.CONTROL_CHANGE | CHANNEL, timeline.SCENE_STARTED, 0], when=A_MOMENT, first=0)
+        self.assertEqual(note, (A_MOMENT, synth_engine.SCENE_STARTED, CHANNEL, 0, 0))
 
     def test_a_flush_takes_back_the_ports_instruments_and_a_sound_goes_to_its_instrument(self):
         self.output.flush()

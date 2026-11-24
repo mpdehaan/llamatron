@@ -10,6 +10,7 @@ duty, drawn wave, noise, stepped envelope and pitch sweep. Every share or time i
 tab is in effect_blocks.py.
 """
 
+from llamatron.interface.forms import nodes
 from llamatron.interface.forms.nodes import ChoiceField, Field, GaugeField, NumberField, Toggle
 from llamatron.interface.forms.tab_box import Tab, TabColumn
 from llamatron.model.schema import file_format, limits
@@ -17,6 +18,8 @@ from llamatron.model.schema.file_format import InstrumentKind, OscillatorSetting
 from llamatron.user_strings import errors, labels, marks, messages
 
 KNOB_PLACES = range(limits.KNOB_COUNT)
+# Fishline's soft attack is stored in tenths of a millisecond.
+TENTHS = 10
 OSCILLATOR_NUMBERS = range(1, limits.MAX_OSCILLATORS + 1)
 
 
@@ -41,6 +44,7 @@ class SoundTabs:
         engine = self.choice(label=labels.MSG_ENGINE_LABEL, name=SoundSetting.ENGINE, choices=file_format.SOUND_ENGINES, names=labels.MSG_ENGINE_NAMES)
         columns = {
             SoundEngine.BASIC: self.basic_columns, SoundEngine.DRUM: self.drum_columns, SoundEngine.SID: self.sid_columns, SoundEngine.POCKET: self.pocket_columns,
+            SoundEngine.FISHLINE: self.fishline_columns,
         }[instrument.get_sound(SoundSetting.ENGINE)]()
         return Tab(label=labels.MSG_SYNTH_TAB, top=[on, engine], columns=columns, on=instrument.is_built_in())
 
@@ -81,6 +85,40 @@ class SoundTabs:
         ]
         return [TabColumn(heading=labels.MSG_SOUND_HEADING, fields=[self.voices_field(), self.volume_field(), *voice]),
                 TabColumn(heading=labels.MSG_ENVELOPE_HEADING, fields=self.chip_level_fields()), TabColumn(heading=labels.MSG_SWEEP_HEADING, fields=self.chip_sweep_fields())]
+
+    def fishline_columns(self):
+        """Return Fishline's columns: its sound, its own filter, and its accent, slide and drive; always one voice."""
+        sound = [
+            self.volume_field(),
+            self.choice(label=labels.MSG_WAVE_LABEL, name=SoundSetting.ACID_WAVE, choices=file_format.ACID_WAVES, names=labels.MSG_ACID_WAVE_NAMES),
+            self.number(label=labels.MSG_TUNING_LABEL, name=SoundSetting.TUNING, lowest=-limits.MAX_TUNING, highest=limits.MAX_TUNING, unit=marks.MSG_SEMITONES_SHOWN),
+            self.gauge(label=labels.MSG_AMP_DECAY_LABEL, name=SoundSetting.AMP_DECAY, highest=limits.MAX_AMP_DECAY_MS, logarithmic=True),
+            GaugeField(page=self._page, label=labels.MSG_SOFT_ATTACK_LABEL, number=self.instrument().get_sound(SoundSetting.SOFT_ATTACK), lowest=limits.MIN_SOFT_ATTACK,
+                       highest=limits.MAX_SOFT_ATTACK, unit=marks.MSG_TENTH_MILLISECONDS_SHOWN, divisor=TENTHS, logarithmic=True, set=self.setter(SoundSetting.SOFT_ATTACK)),
+        ]
+        acid_filter = [
+            self.toggle(label=labels.MSG_FILTER_ON_LABEL, name=SoundSetting.FILTER_ON), self.cutoff_field(),
+            self.gauge(label=labels.MSG_RESONANCE_LABEL, name=SoundSetting.RESONANCE, highest=limits.MAX_PERCENT),
+            self.gauge(label=labels.MSG_ENV_MOD_LABEL, name=SoundSetting.ENV_MOD, highest=limits.MAX_PERCENT),
+            self.gauge(label=labels.MSG_DECAY_LABEL, name=SoundSetting.FILTER_DECAY, highest=limits.MAX_FILTER_DECAY_MS, logarithmic=True),
+        ]
+        accent = [
+            self.gauge(label=labels.MSG_ACCENT_LEVEL_LABEL, name=SoundSetting.ACCENT, highest=limits.MAX_PERCENT),
+            self.number(label=labels.MSG_ACCENT_AT_LABEL, name=SoundSetting.ACCENT_THRESHOLD, lowest=1, highest=limits.MAX_VELOCITY_THRESHOLD,
+                        unit=marks.MSG_VELOCITY_AT_SHOWN),
+            self.gauge(label=labels.MSG_ACCENT_SWEEP_LABEL, name=SoundSetting.ACCENT_SWEEP, highest=limits.MAX_PERCENT),
+            self.gauge(label=labels.MSG_ACCENT_DECAY_LABEL, name=SoundSetting.ACCENT_DECAY, highest=limits.MAX_ACCENT_DECAY_MS, logarithmic=True),
+            self.gauge(label=labels.MSG_SLIDE_LABEL, name=SoundSetting.SLIDE, highest=limits.MAX_SLIDE_MS, logarithmic=True),
+            self.gauge(label=labels.MSG_DRIVE_LABEL, name=SoundSetting.DRIVE, highest=limits.MAX_PERCENT),
+        ]
+        return [TabColumn(heading=labels.MSG_SOUND_HEADING, fields=sound), TabColumn(heading=labels.MSG_FILTER_HEADING, fields=acid_filter),
+                TabColumn(heading=labels.MSG_ACCENT_HEADING, fields=accent)]
+
+    def cutoff_field(self):
+        """Return an engine's own filter cutoff, a gauge filling by the logarithm of its hertz, as an ear hears it."""
+        return GaugeField(page=self._page, label=labels.MSG_CUTOFF_LABEL, number=self.instrument().get_sound(SoundSetting.CUTOFF), lowest=limits.MIN_CUTOFF,
+                          highest=limits.MAX_CUTOFF, unit=marks.MSG_HERTZ_SHOWN, logarithmic=True, strides=nodes.HERTZ_STRIDES,
+                          longest_stride=nodes.LONGEST_HERTZ_STRIDE, set=self.setter(SoundSetting.CUTOFF))
 
     # Fields shared by several engines.
 

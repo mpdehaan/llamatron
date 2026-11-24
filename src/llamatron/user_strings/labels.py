@@ -7,7 +7,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.interface.tracker.keys import RowSection
-from llamatron.model.schema.file_format import Approach, ChipDirection, ChipVoice, ChordColor, ChordSymbol, Curve, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, DrumMachine, Duty, Effect, FilterMode, FilterType, FollowAction, GateModifier, LfoShape, LiveResponsiveness, Modulation, NamedProgression, Noise, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SidWave, SingleNotes, SoundEngine, STATEMENT_ROWS, Stroke, SynthControl, Tuning, Waveform, WaveShape
+from llamatron.model.schema.file_format import AcidWave, Approach, ChipDirection, ChipVoice, ChordColor, ChordSymbol, Curve, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, DrumMachine, Duty, Effect, FilterMode, FilterType, FollowAction, GateModifier, LfoShape, LiveResponsiveness, Modulation, NamedProgression, Noise, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SidWave, SingleNotes, SoundEngine, STATEMENT_ROWS, Stroke, SynthControl, Tuning, Waveform, WaveShape
 
 
 def draw_labels(*, rows, label):
@@ -808,6 +808,21 @@ MSG_SWEEP_DIRECTION_LABEL = 'Sweep goes'
 MSG_SWEEP_STEP_LABEL = 'Sweep step'
 MSG_ENVELOPE_HEADING = 'Envelope'
 MSG_SOUND_HEADING = 'Sound'
+MSG_FILTER_HEADING = 'Filter'
+MSG_ACCENT_HEADING = 'Accent'
+MSG_TUNING_LABEL = 'Tuning'
+MSG_FILTER_ON_LABEL = 'Filter on'
+MSG_CUTOFF_LABEL = 'Cutoff'
+MSG_RESONANCE_LABEL = 'Resonance'
+MSG_ENV_MOD_LABEL = 'Env mod'
+MSG_ACCENT_LEVEL_LABEL = 'Accent level'
+MSG_ACCENT_AT_LABEL = 'Accent at'
+MSG_ACCENT_SWEEP_LABEL = 'Accent sweep'
+MSG_SLIDE_LABEL = 'Slide'
+MSG_DRIVE_LABEL = 'Drive'
+MSG_AMP_DECAY_LABEL = 'Amp decay'
+MSG_SOFT_ATTACK_LABEL = 'Soft attack'
+MSG_ACCENT_DECAY_LABEL = 'Accent decay'
 MSG_SWEEP_HEADING = 'Sweep'
 MSG_EFFECT_BLOCK_LABEL = 'Block {number}'
 MSG_EFFECT_BITS_LABEL = 'Block {number} bits'
@@ -834,8 +849,10 @@ MSG_LFO_SHAPE_LABEL = 'LFO {number} shape'
 MSG_LFO_RATE_LABEL = 'LFO {number} rate'
 MSG_LFO_DEPTH_LABEL = 'LFO {number} depth'
 MSG_LFO_RETRIGGER_LABEL = 'LFO {number} retrigger'
+MSG_LFO_EACH_SCENE_LABEL = 'LFO {number} each scene'
 # An LFO's field labels as its box shows them, without the LFO's number.
-MSG_LFO_SHOWN_LABELS = {MSG_LFO_TARGET_LABEL: 'Moves', MSG_LFO_SHAPE_LABEL: 'Shape', MSG_LFO_RATE_LABEL: 'Rate', MSG_LFO_DEPTH_LABEL: 'Depth', MSG_LFO_RETRIGGER_LABEL: 'Retrigger'}
+MSG_LFO_SHOWN_LABELS = {MSG_LFO_TARGET_LABEL: 'Moves', MSG_LFO_SHAPE_LABEL: 'Shape', MSG_LFO_RATE_LABEL: 'Rate', MSG_LFO_DEPTH_LABEL: 'Depth', MSG_LFO_RETRIGGER_LABEL: 'Retrigger',
+                        MSG_LFO_EACH_SCENE_LABEL: 'Each scene'}
 # A block's field labels as its box shows them, without the block's number.
 MSG_EFFECT_SHOWN_LABELS = {
     MSG_EFFECT_BITS_LABEL: MSG_BITS_LABEL, MSG_EFFECT_RATE_LABEL: MSG_RATE_LABEL, MSG_EFFECT_CURVE_LABEL: MSG_CURVE_LABEL,
@@ -846,7 +863,7 @@ MSG_EFFECT_SHOWN_LABELS = {
 }
 # How the Instruments page shows a built-in instrument where a MIDI one shows its device.
 MSG_BUILT_IN_SHOWN = 'Synth: {engine}'
-MSG_ENGINE_NAMES = {SoundEngine.BASIC: 'Basic', SoundEngine.DRUM: 'MechaDrum', SoundEngine.SID: 'SID', SoundEngine.POCKET: 'Pocket'}
+MSG_ENGINE_NAMES = {SoundEngine.BASIC: 'Basic', SoundEngine.DRUM: 'MechaDrum', SoundEngine.SID: 'SID', SoundEngine.POCKET: 'Pocket', SoundEngine.FISHLINE: 'Fishline'}
 MSG_WAVEFORM_NAMES = {Waveform.OFF: 'Off', Waveform.SQUARE: 'Square', Waveform.SAW: 'Saw', Waveform.SINE: 'Sine', Waveform.TRIANGLE: 'Triangle',
                       Waveform.PULSE: 'Pulse'}
 MSG_DRUM_MACHINE_NAMES = {
@@ -870,8 +887,10 @@ MSG_SYNTH_CONTROL_NAMES = {
     SynthControl.RELEASE: 'Release', SynthControl.DETUNE_SPREAD: 'Detune spread', SynthControl.PULSE_WIDTH: 'Pulse width', SynthControl.PAN: 'Pan',
     SynthControl.FILTER_CUTOFF: 'Filter cutoff', SynthControl.FINE_TUNE: 'Fine tune', SynthControl.COLOR: 'Color', SynthControl.SHAPE: 'Shape',
     SynthControl.SWEEP: 'Sweep', SynthControl.WAVE: 'Wave', SynthControl.RING_SYNC: 'Ring/Sync', SynthControl.ENVELOPE_RATE: 'Envelope rate',
-    SynthControl.DUTY: 'Duty', SynthControl.NOISE_MODE: 'Noise mode',
+    SynthControl.DUTY: 'Duty', SynthControl.NOISE_MODE: 'Noise mode', SynthControl.ENV_MOD: 'Env mod', SynthControl.CUTOFF: 'Cutoff',
+    SynthControl.RESONANCE: 'Resonance', SynthControl.ACCENT: 'Accent',
 }
+MSG_ACID_WAVE_NAMES = {AcidWave.SAW: 'Saw', AcidWave.SQUARE: 'Square'}
 MSG_FILTER_MODE_NAMES = {FilterMode.LOW: 'Low-pass', FilterMode.BAND: 'Band-pass', FilterMode.HIGH: 'High-pass', FilterMode.NOTCH: 'Notch'}
 MSG_CURVE_NAMES = {Curve.SOFT: 'Soft', Curve.WARM: 'Warm', Curve.HARD: 'Hard', Curve.FOLD: 'Fold', Curve.WRAP: 'Wrap'}
 # What a step with no velocity typed plays at, on an instrument and on a track.

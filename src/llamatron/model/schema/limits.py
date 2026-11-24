@@ -149,6 +149,20 @@ EFFECT_BLOCKS = 4
 # An instrument's LFOs, their rate in tenths of a hertz, from a tenth to a hundred hertz, fast enough for a chip's vibrato and
 # trills, and their depth in percent either way.
 LFO_COUNT = 4
+# Fishline's tuning in semitones either way, its filter's decay and its slide in milliseconds.
+MAX_TUNING = 12
+MIN_FILTER_DECAY_MS = 30
+MAX_FILTER_DECAY_MS = 3000
+MIN_SLIDE_MS = 10
+MAX_SLIDE_MS = 360
+# Fishline's amp fall and accent envelope in milliseconds, and its soft attack in tenths of a millisecond, 0.3 to 30 ms.
+MIN_AMP_DECAY_MS = 200
+MAX_AMP_DECAY_MS = 8000
+MIN_ACCENT_DECAY_MS = 30
+MAX_ACCENT_DECAY_MS = 1000
+MIN_SOFT_ATTACK = 3
+MAX_SOFT_ATTACK = 300
+MAX_VELOCITY_THRESHOLD = 127
 MIN_LFO_RATE = 1
 MAX_LFO_RATE = 1000
 MAX_LFO_DEPTH = 100

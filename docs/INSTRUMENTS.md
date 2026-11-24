@@ -53,6 +53,7 @@ unless `ATTEMPT_SYNTHESIS_ANYWAY=1` is set in the environment.
 | MechaDrum | A drum machine, Kick, Hard Kick, Synth Kick, Snare, Clap, Rim, Hats, Cowbell, Acoustic Tom or Karplus Drum, shaped by five knobs, Pitch, Decay, Color, Shape and Sweep, 0 to 127. The note tunes the drum from middle C, and a harder hit is brighter. A drum cuts its own last hit unless Overlap is on, and drums of one Choke group cut each other, as a closed hat cuts an open one. |
 | SID | A voice of the classic home computer's sound chip: a Triangle, Saw, Pulse or Noise wave, the pulse's width and its PWM speed, the width bouncing between 10% and 90%, Ring or Sync from a second oscillator an Interval away, an Arpeggio of semitones stepped 50 times a second, Glide, and the envelope. |
 | Pocket | A voice of the handheld console's sound chip: a Pulse of one of four duties, the drawn Wave of 32 steps in one of five shapes, or Noise, long or short, through the chip's envelope, a Start level of 15 stepped up or down at a pace, and its pitch sweep. |
+| Fishline | The acid bass: one voice of a saw, or the square a transistor shapes from it, through its own squelchy diode filter (Cutoff, Resonance, Env mod and Decay, which Filter on can switch off) and a pedal's Drive after it. A note at Accent at's velocity or louder is accented: its filter opens further and falls fast over Accent decay, it swells for a moment, and a run of accents climbs higher, by Accent sweep and as far as Resonance lets it. A note that starts while the last is held, as a step with Glide does, slides to it over Slide without starting again. Amp decay is the long fall of a held note, Soft attack the start of a plain one. |
 
 A setting shown as a bar is a gauge: `[` and `]` step it, by more as a time
 grows, and `ENTER` types it. Volume goes up to 150%, and the mix is kept from
@@ -89,7 +90,9 @@ Triangle, Saw up, Saw down, Square or Sample & Hold, a new random value each
 cycle. Rate goes from 0.1 Hz to 100 Hz, fast enough for chip vibrato and
 trills. Depth is a share of the setting's range either way: an octave of
 pitch, four octaves of cutoff, two fifths of a pulse's cycle; below zero it
-moves the other way. Retrigger starts the LFO's cycle again with each note.
+moves the other way. Retrigger starts the LFO's cycle again with each note,
+and Each scene starts it again whenever a scene starts, so a slow sweep begins
+the same way in every scene.
 
 ## Missing Devices
 
@@ -142,7 +145,7 @@ Right choose a tab.
 | MIDI: Latency | How many milliseconds earlier the instrument's notes are sent, 0 to 500, `0 ms` unless set, for a device that is slow to sound. |
 | Synth: On, Engine | Makes the instrument built in, and chooses its engine; the engine's settings follow. See Built-in Instruments above. |
 | Effects: Block 1 to 4 | Each block's effect and its settings. See Built-in Instruments above. |
-| LFOs: LFO 1 to 4 | Whether each LFO is on, what it moves, its Shape, Rate, Depth and Retrigger. See Built-in Instruments above. |
+| LFOs: LFO 1 to 4 | Whether each LFO is on, what it moves, its Shape, Rate, Depth, Retrigger and Each scene. See Built-in Instruments above. |
 | Listen | A button: `ENTER` on it, or `L` from any field, plays the instrument again and again until `L` again: a scale up an octave and back, or, for a built-in drum, its tuning note four times. Edits to the instrument are heard as it plays. Leaving the page stops it. An instrument that plays nothing, with neither its MIDI nor its Synth on, is refused. |
 | Keyswitch Map | A button: `ENTER` on it, or `K` from any field, opens the instrument's Keyswitch Map. See Keyswitches below. |
 

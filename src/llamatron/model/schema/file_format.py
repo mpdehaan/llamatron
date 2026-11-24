@@ -614,6 +614,25 @@ class SoundSetting:
     SWEEP_STEP = 'sweep_step'
     WAVE_SHAPE = 'wave_shape'
     NOISE = 'noise'
+    # Fishline's: its wave, tuning in semitones, its own diode filter, switched on or off, with cutoff, resonance, the amount
+    # and decay of its envelope, its accent's amount, the velocity that accents a note and how far a run of accents climbs,
+    # its slide's time and its drive; its amp's long fall, the soft attack of a plain note in tenths of a millisecond, and the
+    # accented note's short envelope.
+    ACID_WAVE = 'acid_wave'
+    TUNING = 'tuning'
+    FILTER_ON = 'filter_on'
+    CUTOFF = 'cutoff'
+    RESONANCE = 'resonance'
+    ENV_MOD = 'env_mod'
+    FILTER_DECAY = 'filter_decay'
+    ACCENT = 'accent'
+    ACCENT_THRESHOLD = 'accent_threshold'
+    ACCENT_SWEEP = 'accent_sweep'
+    SLIDE = 'slide'
+    DRIVE = 'drive'
+    AMP_DECAY = 'amp_decay'
+    SOFT_ATTACK = 'soft_attack'
+    ACCENT_DECAY = 'accent_decay'
     EFFECTS = 'effects'
     LFOS = 'lfos'
 
@@ -649,12 +668,21 @@ class EffectSetting:
 
 
 class SoundEngine:
-    """A built-in sound's engine: a Basic synth, a drum, a SID-style voice, or a Pocket-style voice of the handheld's chip."""
+    """A built-in sound's engine: a Basic synth, a drum, a SID-style voice, a Pocket-style voice of the handheld's chip, or
+    Fishline, the acid bass."""
 
     BASIC = 'basic'
     DRUM = 'drum'
     SID = 'sid'
     POCKET = 'pocket'
+    FISHLINE = 'fishline'
+
+
+class AcidWave:
+    """Fishline's wave: the saw, or the square a transistor shapes from it."""
+
+    SAW = 'saw'
+    SQUARE = 'square'
 
 
 class Waveform:
@@ -738,7 +766,7 @@ class Effect:
 class LfoSetting:
     """One LFO of a built-in sound: whether it is on, off for a new one, so that an LFO costs nothing until wanted and can be
     switched off to hear the sound without it; the Synth Control it moves, or none, its shape, its rate in tenths of a hertz, its depth in
-    percent of the control's range either way, and whether each note starts it again."""
+    percent of the control's range either way, whether each note starts it again, and whether each scene does."""
 
     ON = 'on'
     TARGET = 'target'
@@ -746,6 +774,7 @@ class LfoSetting:
     RATE = 'rate'
     DEPTH = 'depth'
     RETRIGGER = 'retrigger'
+    EACH_SCENE = 'each_scene'
 
 
 class LfoShape:
@@ -783,6 +812,10 @@ class SynthControl:
     ENVELOPE_RATE = 'envelope_rate'
     DUTY = 'duty'
     NOISE_MODE = 'noise_mode'
+    ENV_MOD = 'env_mod'
+    CUTOFF = 'cutoff'
+    RESONANCE = 'resonance'
+    ACCENT = 'accent'
 
 
 class FilterType:
@@ -832,7 +865,8 @@ class DrumMachine:
 
 
 INSTRUMENT_KINDS = (InstrumentKind.OFF, InstrumentKind.MIDI, InstrumentKind.BUILT_IN)
-SOUND_ENGINES = (SoundEngine.BASIC, SoundEngine.DRUM, SoundEngine.SID, SoundEngine.POCKET)
+SOUND_ENGINES = (SoundEngine.BASIC, SoundEngine.DRUM, SoundEngine.SID, SoundEngine.POCKET, SoundEngine.FISHLINE)
+ACID_WAVES = (AcidWave.SAW, AcidWave.SQUARE)
 WAVEFORMS = (Waveform.SQUARE, Waveform.SAW, Waveform.SINE, Waveform.TRIANGLE, Waveform.PULSE)
 OSCILLATOR_WAVEFORMS = (Waveform.OFF, *WAVEFORMS)
 SID_WAVES = (SidWave.TRIANGLE, SidWave.SAW, SidWave.PULSE, SidWave.NOISE)
@@ -854,12 +888,16 @@ ENGINE_CONTROLS = {
                       SynthControl.PAN, SynthControl.FILTER_CUTOFF),
     SoundEngine.POCKET: (SynthControl.PITCH, SynthControl.ENVELOPE_RATE, SynthControl.DUTY, SynthControl.WAVE, SynthControl.NOISE_MODE, SynthControl.SWEEP,
                          SynthControl.PAN, SynthControl.FILTER_CUTOFF),
+    # Fishline's own filter is its first, so the eighth is left blank.
+    SoundEngine.FISHLINE: (SynthControl.PITCH, SynthControl.DECAY, SynthControl.ENV_MOD, SynthControl.CUTOFF, SynthControl.RESONANCE, SynthControl.ACCENT,
+                           SynthControl.PAN, SynthControl.NONE),
 }
 # Every Synth Control of any engine, none first, as a stored LFO's target may name.
 SYNTH_CONTROLS = (
     SynthControl.NONE, SynthControl.PITCH, SynthControl.ATTACK, SynthControl.DECAY, SynthControl.SUSTAIN, SynthControl.RELEASE, SynthControl.DETUNE_SPREAD,
     SynthControl.PULSE_WIDTH, SynthControl.PAN, SynthControl.FILTER_CUTOFF, SynthControl.FINE_TUNE, SynthControl.COLOR, SynthControl.SHAPE, SynthControl.SWEEP,
-    SynthControl.WAVE, SynthControl.RING_SYNC, SynthControl.ENVELOPE_RATE, SynthControl.DUTY, SynthControl.NOISE_MODE,
+    SynthControl.WAVE, SynthControl.RING_SYNC, SynthControl.ENVELOPE_RATE, SynthControl.DUTY, SynthControl.NOISE_MODE, SynthControl.ENV_MOD,
+    SynthControl.CUTOFF, SynthControl.RESONANCE, SynthControl.ACCENT,
 )
 # The controls an LFO can move on each engine so far, none first: the ones that change smoothly while a note sounds.
 LFO_TARGETS = {
@@ -867,6 +905,8 @@ LFO_TARGETS = {
     SoundEngine.DRUM: (SynthControl.NONE, SynthControl.FILTER_CUTOFF),
     SoundEngine.SID: (SynthControl.NONE, SynthControl.PITCH, SynthControl.PULSE_WIDTH, SynthControl.FILTER_CUTOFF),
     SoundEngine.POCKET: (SynthControl.NONE, SynthControl.PITCH, SynthControl.FILTER_CUTOFF),
+    # Fishline's Filter cutoff moves its own filter while it is on, which is its first.
+    SoundEngine.FISHLINE: (SynthControl.NONE, SynthControl.PITCH, SynthControl.FILTER_CUTOFF),
 }
 EFFECTS = (Effect.NONE, Effect.BITCRUSH, Effect.DRIVE, Effect.FILTER)
 FILTER_TYPES = (FilterType.LADDER, FilterType.MULTIMODE, FilterType.SALLEN_KEY, FilterType.DIODE, FilterType.OTA)
