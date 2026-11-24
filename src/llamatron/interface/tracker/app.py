@@ -14,7 +14,7 @@ import time
 import traceback
 
 from llamatron.interface.pages.wizard import starts
-from llamatron.interface.tracker import drawing, keys, launch as launch_values
+from llamatron.interface.tracker import drawing, garbage, keys, launch as launch_values
 from llamatron.interface.tracker.batch_stage import BatchStage
 from llamatron.interface.tracker.components.scroll_text import scroll_seconds
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
@@ -129,6 +129,7 @@ class LlamatronApp(App, inherit_bindings=False):
         self.pattern_preview().forget()
         self.made_preview().forget()
         self._document = document
+        self._hold_long_lived()
 
     def open_draft(self, document):
         """Hold a draft set over the set being edited, until close_draft: every page opened meanwhile edits and plays the draft, as
@@ -240,6 +241,7 @@ class LlamatronApp(App, inherit_bindings=False):
         if self._cursor_on_open:
             page.select_open()
         self.push_screen(page)
+        self._hold_long_lived()
         if self._offered is not None:
             offer_corrected(page=page, document=self._offered, corrections=self._corrections, then=lambda document: self._opened(page=page, document=document))
         elif self._document.get_path() is not None:
@@ -267,6 +269,12 @@ class LlamatronApp(App, inherit_bindings=False):
             sys.stderr.write(self._crash_report)
             self._crash_report = None
         super()._print_error_renderables()
+
+    def _hold_long_lived(self):
+        """Freeze what the tracker keeps, so that the collector's full passes leave it alone (interface/tracker/garbage.py); not
+        under the tests, which make many trackers one after another in one process and need each collected once it is done."""
+        if not self.is_headless:
+            garbage.hold_long_lived()
 
     def _opened(self, *, page, document):
         """Hold the set the Corrections dialog was answered Yes for, and warn of its instruments that will not sound."""
