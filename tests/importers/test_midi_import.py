@@ -16,7 +16,7 @@ import os
 import unittest
 
 from llamatron.exporters.midi_arrangement import MidiSong
-from llamatron.importers import chord_naming, cutting, phrase_cut, voices as voices_values
+from llamatron.importers import chord_naming, cutting, licks, phrase_cut, voices as voices_values
 from llamatron.importers.comparison import round_trip
 from llamatron.importers.keys import degree_of, drum_note_of, key_of_notes, key_of_signature, MusicalKey
 from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
@@ -500,8 +500,11 @@ class TestPhrasesAndSections(unittest.TestCase):
         for place in range(phrase_cut.MOST_PHRASES_A_SECTION + 1):
             # Each phrase a run of its own, no bar of it heard anywhere else.
             notes += phrase(pitches=list(range(40 + place, 72 + place)), bars=PHRASE_BARS, start_bar=place * PHRASE_BARS)
-        lists = self.lists(self.imported([('lead', 0, notes)]))
-        self.assertEqual([len(listed) for listed in lists], [phrase_cut.MOST_PHRASES_A_SECTION, 1])
+        imported = self.imported([('lead', 0, notes)])
+        names = [scene[SceneSetting.NAME] for scene in imported.song.song[Section.SCENES]]
+        last_bar_of_the_first = phrase_cut.MOST_PHRASES_A_SECTION * PHRASE_BARS
+        self.assertEqual(len(names), 2)
+        self.assertTrue(names[0].endswith(importing.MSG_SCENE_BARS.format(first=1, last=last_bar_of_the_first)), names)
 
     def test_a_figure_that_keeps_returning_inside_other_phrases_is_a_pattern_of_its_own(self):
         figure = [64, 67]
@@ -509,10 +512,12 @@ class TestPhrasesAndSections(unittest.TestCase):
         for place in range(3):
             notes += phrase(pitches=figure, bars=2, start_bar=place * PHRASE_BARS)
             notes += phrase(pitches=[60 + place, 62, 65 + place], bars=PHRASE_BARS - 2, start_bar=place * PHRASE_BARS + 2)
-        lists = self.lists(self.imported([('lead', 0, notes)]))
-        first_pieces = [listed for listed in lists[0]]
-        self.assertGreater(len(first_pieces), 3)
-        self.assertEqual(sum(listed.count(first_pieces[0]) for listed in lists), 3)
+        imported = self.imported([('lead', 0, notes)])
+        lists = self.lists(imported)
+        # The figure is a lick of its own, a bar long, every phrase listing it first, twice, before what follows.
+        figure_lick = lists[0][0]
+        self.assertTrue(all(listed[:2] == [figure_lick, figure_lick] for listed in lists))
+        self.assertEqual(imported.song.patterns[figure_lick][PatternSetting.STEPS] * Rational(imported.song.patterns[figure_lick].get(PatternSetting.STEP_SIZE, '1/16')), Rational(1))
 
     def test_a_chord_held_across_phrase_lines_is_tied_on_and_no_pattern_passes_the_longest(self):
         # A pad's chord held for twenty bars under a tune, which no scene may start inside, so the phrases are one clip's list.
@@ -575,10 +580,16 @@ class TestTheWizardsNames(unittest.TestCase):
 
     def test_patterns_are_named_and_grouped_after_the_first_scene_letter_that_plays_them_and_clips_after_their_scene(self):
         song = self.refrain_verse_refrain()
-        self.assertEqual(sorted(song.patterns), ['a1', 'b1'])
-        self.assertEqual({name: data[PatternSetting.GROUP] for name, data in song.patterns.items()}, {'a1': 'A', 'b1': 'B'})
-        clips = [scene[SceneSetting.TRACKS]['lead'][ClipSlotSetting.NAME] for scene in song.song[Section.SCENES]]
-        self.assertEqual(clips, ['S01:a1', 'S02:b1', 'S03:a1'])
+        for name, data in song.patterns.items():
+            self.assertEqual(name[0], data[PatternSetting.GROUP].lower())
+            self.assertLessEqual(data[PatternSetting.STEPS] * Rational(data.get(PatternSetting.STEP_SIZE, '1/16')), licks.MOST_BARS * Rational(1))
+        self.assertEqual({data[PatternSetting.GROUP] for data in song.patterns.values()}, {'A', 'B'})
+        for number, scene in enumerate(song.song[Section.SCENES], start=1):
+            clip = scene[SceneSetting.TRACKS]['lead']
+            listed = clip.get(ClipSlotSetting.PATTERNS, [clip.get(ClipSlotSetting.PATTERN)])
+            self.assertEqual(clip[ClipSlotSetting.NAME], importing.MSG_CLIP_NAME.format(number=number, patterns=importing.MSG_CLIP_PATTERNS_JOIN.join(listed)))
+        # The refrain that returns plays the licks it played the first time.
+        self.assertEqual(song.song[Section.SCENES][2][SceneSetting.TRACKS]['lead'].get(ClipSlotSetting.PATTERNS), song.song[Section.SCENES][0][SceneSetting.TRACKS]['lead'].get(ClipSlotSetting.PATTERNS))
 
 
 class TestControls(unittest.TestCase):

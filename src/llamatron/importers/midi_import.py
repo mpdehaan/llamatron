@@ -17,6 +17,7 @@ from typing import NamedTuple
 from llamatron.importers import cutting
 from llamatron.importers.cutting import bar_lines, Cutter, grid_for, snapped, step_size_for
 from llamatron.importers.keys import key_of_notes, key_of_signature, keys_by_phrase
+from llamatron.importers.licks import licked
 from llamatron.importers.midi_reading import MidiFileChange, read_midi
 from llamatron.importers.phrase_cut import PhraseCutter
 from llamatron.importers.voices import voices_of
@@ -167,6 +168,9 @@ class MidiImport:
             keys = self.keys_heard(bars=bars, phrase_bars=choices.longest_bars)
         cutter = making(voices=voices, step_size=grid, clip_step_sizes=clip_step_sizes, bars=bars, keys=keys, tempos=contents.tempos, longest=longest)
         cut = cutter.best_cut()
+        # The Import Wizard's song is rewritten as the fewest short licks it is built from, where its bars are all one length.
+        if choices.longest_bars is not None and len({later - earlier for earlier, later in zip(bars, bars[1:])}) == 1:
+            cut = licked(cut=cut, bar=bars[1] - bars[0])
         naming = None
         if choices.numbered:
             naming = Naming()
