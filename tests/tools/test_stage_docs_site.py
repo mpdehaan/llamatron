@@ -21,20 +21,20 @@ GUIDE_TEXT = """# A guide
 
 | Page | What it covers |
 | --- | --- |
-| [Concepts](docs/CONCEPTS.md) | The ideas. |
-| [Demo Songs](docs/DEMOS.md) | Every demo, with [a link again](docs/CONCEPTS.md). |
-| [Arpeggiator](docs/generators/ARPEGGIATOR.md) | One in a subfolder. |
+| [Concepts](CONCEPTS.md) | The ideas. |
+| [Demo Songs](DEMOS.md) | Every demo, with [a link again](CONCEPTS.md). |
+| [Arpeggiator](generators/ARPEGGIATOR.md) | One in a subfolder. |
 
 ## Objects
 
 | Object | Page |
 | --- | --- |
-| Patterns | [Patterns](docs/PATTERNS.md) |
-| Arrange | [Arrange](docs/ARRANGE.md), with [Tracks](docs/TRACKS.md) |
+| Patterns | [Patterns](PATTERNS.md) |
+| Arrange | [Arrange](ARRANGE.md), with [Tracks](TRACKS.md) |
 """
-CHAPTER_TEXT = "See [the guide](../GUIDE.md) and [Scenes](SCENES.md)."
+CHAPTER_TEXT = "See [the guide](GUIDE.md) and [Scenes](SCENES.md)."
 SHOWN_CHAPTER_TEXT = "See [the guide](index.md) and [Scenes](SCENES.md)."
-DEEPER_TEXT = "See [the guide](../../GUIDE.md) and [Patterns](../PATTERNS.md)."
+DEEPER_TEXT = "See [the guide](../GUIDE.md) and [Patterns](../PATTERNS.md)."
 SHOWN_DEEPER_TEXT = "See [the guide](../index.md) and [Patterns](../PATTERNS.md)."
 GROUP = 'Objects'
 INNER_GROUP = 'Melody'
@@ -42,13 +42,13 @@ GROUPED_TEXT = """## Generators
 
 | What | Page |
 | --- | --- |
-| The overview | [Generators](docs/GENERATORS.md) |
+| The overview | [Generators](GENERATORS.md) |
 
 ### Melody
 
 | What | Page |
 | --- | --- |
-| Chords one note at a time | [Arpeggiator](docs/generators/ARPEGGIATOR.md) |
+| Chords one note at a time | [Arpeggiator](generators/ARPEGGIATOR.md) |
 """
 # A group whose subheadings are pages: one over the page of its name alone, one over the page of its name and others.
 BASICS_TEXT = """## Intro
@@ -57,14 +57,14 @@ BASICS_TEXT = """## Intro
 
 | Page | What |
 | --- | --- |
-| [Why llamatron](docs/WHY_LLAMATRON.md) | Why |
+| [Why llamatron](WHY_LLAMATRON.md) | Why |
 
 ### Installing
 
 | Page | What |
 | --- | --- |
-| [Installing](docs/INSTALLING.md) | Installing |
-| [FluidSynth](docs/FLUIDSYNTH.md) | FluidSynth |
+| [Installing](INSTALLING.md) | Installing |
+| [FluidSynth](FLUIDSYNTH.md) | FluidSynth |
 """
 LEFT_OVER = 'LEFT_OVER.md'
 LEFT_OVER_FOLDER = 'old'
@@ -75,7 +75,6 @@ class TestStagedPages(unittest.TestCase):
     def test_the_guide_links_its_chapters_beside_it(self):
         shown = stage_docs_site.site_guide(GUIDE_TEXT)
         self.assertIn('[Patterns](PATTERNS.md)', shown)
-        self.assertNotIn('](docs/', shown)
 
     def test_a_chapter_links_the_guide_as_the_front_page_and_keeps_its_other_links(self):
         self.assertEqual(stage_docs_site.site_chapter(text=CHAPTER_TEXT), SHOWN_CHAPTER_TEXT)

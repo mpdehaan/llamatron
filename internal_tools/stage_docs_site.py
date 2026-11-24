@@ -6,15 +6,15 @@
 
     .venv/bin/python internal_tools/stage_docs_site.py --out .cache/docs_site/site
 
-internal_tools/build_docs.sh runs it before each build. It copies GUIDE.md as the site's front page,
+internal_tools/build_docs.sh runs it before each build. It copies docs/GUIDE.md as the site's front page,
 index.md, every chapter in docs/ beside it, in the subfolders docs/ has them in, and docs/screenshots/,
-rewriting the links to the guide: the guide's docs/X.md becomes X.md, and a chapter's ../GUIDE.md becomes
-index.md (../../GUIDE.md becoming ../index.md a folder down). It writes sidebar.json, the site's sidebar, from
+rewriting the links to the guide: a chapter's GUIDE.md becomes index.md (../GUIDE.md becoming ../index.md a
+folder down). It writes sidebar.json, the site's sidebar, from
 the guide's own tables of chapters, in their order: each chapter a page of its own, except that the tables
 under the headings GROUPED names make groups that open and close, a group opening the page of
 its own name and a ### heading making a group within a group.
 So the site lists exactly what the guide does, and the guide stays the one place a chapter is added. The Markdown
-in docs/ and GUIDE.md is never changed; the staging folder is built afresh each time, and git ignores it.
+in docs/ is never changed; the staging folder is built afresh each time, and git ignores it.
 """
 
 import argparse
@@ -25,21 +25,19 @@ import shutil
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-GUIDE = ROOT / 'GUIDE.md'
 DOCS = ROOT / 'docs'
+GUIDE = DOCS / 'GUIDE.md'
 SCREENSHOTS = 'screenshots'
 INDEX = 'index.md'
 SIDEBAR = 'sidebar.json'
 CHAPTER_FILES = '*.md'
 ENCODING = 'utf-8'
-# The links the site's one folder needs in place of the repository's.
-GUIDE_TO_CHAPTER = '](docs/'
-SAME_FOLDER = ']('
+# The links the site's one folder needs in place of the repository's: a chapter's link to the guide becomes one to the front page.
 CHAPTER_TO_GUIDE = ']({up}GUIDE.md'
 TO_INDEX = ']({up}index.md'
 UP = '../'
 # The guide's tables of chapters: a row's first link to a chapter names it, and a heading starts each table's group.
-CHAPTER_LINK = re.compile(r'\[([^\]]+)\]\(docs/([A-Za-z_/]+)\.md\)')
+CHAPTER_LINK = re.compile(r'\[([^\]]+)\]\(([A-Za-z_/]+)\.md\)')
 HEADING = re.compile(r'^## (.+)$')
 SUBHEADING = re.compile(r'^### (.+)$')
 TABLE_ROW = '|'
@@ -61,13 +59,13 @@ MSG_STAGED = 'staged {count} pages into {folder}'
 
 
 def site_guide(text):
-    """Return the guide as the site's front page, its links to docs/ made links beside it."""
-    return text.replace(GUIDE_TO_CHAPTER, SAME_FOLDER)
+    """Return the guide as the site's front page: as it is, its links to the chapters already beside it in docs/."""
+    return text
 
 
 def site_chapter(*, text, depth=0):
     """Return a chapter as the site shows it, its links to the guide made links to the front page; depth is how many folders below docs/ it lies, as the site keeps them."""
-    return text.replace(CHAPTER_TO_GUIDE.format(up=UP * (depth + 1)), TO_INDEX.format(up=UP * depth))
+    return text.replace(CHAPTER_TO_GUIDE.format(up=UP * depth), TO_INDEX.format(up=UP * depth))
 
 
 def sidebar(guide_text):
@@ -128,8 +126,8 @@ def with_single_pages(entry):
 
 
 def chapter_paths():
-    """Return every chapter in docs/, its subfolders' too."""
-    return sorted(DOCS.rglob(CHAPTER_FILES))
+    """Return every chapter in docs/, its subfolders' too, the guide aside, which is the front page."""
+    return sorted(path for path in DOCS.rglob(CHAPTER_FILES) if path != GUIDE)
 
 
 def stage(*, out):

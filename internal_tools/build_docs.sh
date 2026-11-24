@@ -3,7 +3,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# What it does: build the documentation website from GUIDE.md and docs/ into web_docs/, with VitePress, installing what it needs
+# What it does: build the documentation website from docs/GUIDE.md and docs/ into web_docs/, with VitePress, installing what it needs
 
 # The site is VitePress (https://vitepress.dev), which needs Node.js 18 or later. On a Mac it uses the
 # Homebrew that matches the machine, /opt/homebrew on Apple Silicon and /usr/local on Intel, and when its

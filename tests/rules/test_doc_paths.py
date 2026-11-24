@@ -16,16 +16,14 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 DOCUMENTS = [
     ROOT / 'CLAUDE.md',
-    ROOT / 'GUIDE.md',
-    ROOT / 'INSTALL.md',
     ROOT / 'README.md',
     *sorted((ROOT / 'docs').rglob('*.md')),
     *sorted((ROOT / '.claude').rglob('*.md')),
 ]
 # The guide, whose table of guides links every chapter in docs/.
-GUIDE = ROOT / 'GUIDE.md'
 DOCS = ROOT / 'docs'
-GUIDE_LINK = '](docs/{name})'
+GUIDE = DOCS / 'GUIDE.md'
+GUIDE_LINK = ']({name})'
 TABLE_ROW = '|'
 # A path in backticks that starts in one of the repository's folders and ends in a file suffix.
 PATH_IN_BACKTICKS = re.compile(r'`((?:src|test|internal_tools|user_scripts|examples|docs)/[A-Za-z0-9_./-]+\.(?:py|yml|svg|sh|md|mid|als|ly))`')
@@ -66,11 +64,11 @@ class TestDocumentPaths(unittest.TestCase):
 
 
 class TestEveryChapterIsInTheGuide(unittest.TestCase):
-    """Every guide in docs/ and its subfolders is linked from a row of one of GUIDE.md's tables, so that the guide is the way in to all of them and the website's sidebar lists them."""
+    """Every guide in docs/ and its subfolders is linked from a row of one of docs/GUIDE.md's tables, so that the guide is the way in to all of them and the website's sidebar lists them."""
 
     def test_every_markdown_file_in_docs_is_linked_from_a_table_row_of_the_guide(self):
         rows = [line for line in GUIDE.read_text(encoding='utf-8').splitlines() if line.startswith(TABLE_ROW)]
-        chapters = sorted(path.relative_to(DOCS).as_posix() for path in DOCS.rglob('*.md'))
+        chapters = sorted(path.relative_to(DOCS).as_posix() for path in DOCS.rglob('*.md') if path != GUIDE)
         self.assertTrue(chapters)
         for name in chapters:
             with self.subTest(chapter=name):

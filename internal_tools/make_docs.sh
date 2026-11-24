@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # Regenerates everything in the documents that comes from the code: the diagrams in
-# docs/ARCHITECTURE.md and GUIDE.md, and the tracker's screenshots in docs/screenshots/.
+# docs/ARCHITECTURE.md and docs/GUIDE.md, and the tracker's screenshots in docs/screenshots/.
 # Run it from the top folder after the virtual environment is set up:
 #
 #     internal_tools/make_docs.sh

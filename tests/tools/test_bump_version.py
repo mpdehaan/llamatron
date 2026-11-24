@@ -19,7 +19,7 @@ NOW_DATE = '2031-02-03'
 NOW_TIME = '04:05'
 A_SOURCE_FILE = 'src/llamatron/interface/tracker/keys.py'
 A_TEST_FILE = 'tests/model/test_note.py'
-A_DOCUMENT = 'GUIDE.md'
+A_DOCUMENT = 'docs/GUIDE.md'
 A_TEMPLATE_IN_SOURCE = 'src/llamatron/templates/live12.als'
 # What `git diff --cached --unified=0` shows of the version module when a commit bumps it, and when it only moves the build time.
 BUMP_DIFF = "-VERSION = '1.0.1'\n+VERSION = '1.0.2'\n"

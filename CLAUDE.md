@@ -57,7 +57,7 @@ Read when the work needs them:
   `README.md` has the rules). Read the subject's file before building in its area; add to it as the work teaches.
 - `.claude/IDEAS.yml`: the user's only ideas file, for every kind of idea.
 - `src/llamatron/user_strings/`: every piece of text the program shows or raises.
-- `README.md`, `GUIDE.md`, `INSTALL.md`, `docs/`: for people; the user edits them too (`.claude/DOCS.md`).
+- `README.md`, `docs/GUIDE.md`, `docs/INSTALLING.md`, `docs/`: for people; the user edits them too (`.claude/DOCS.md`).
 
 `tests/rules/test_doc_paths.py` checks that every source path these documents name exists.
 

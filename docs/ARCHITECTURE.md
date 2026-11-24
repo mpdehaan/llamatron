@@ -2,7 +2,7 @@
 
 This is a tour of llamatron's code for people who want to understand how it
 works without editing it: what the parts are, how a song travels through them,
-and the rules the code keeps. The [guide](../GUIDE.md) says how to use the
+and the rules the code keeps. The [guide](GUIDE.md) says how to use the
 program, and `CLAUDE.md` holds the rules whoever edits the code follows, with
 the detailed notes beside it in `.claude/`.
 

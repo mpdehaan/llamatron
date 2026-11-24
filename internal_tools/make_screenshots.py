@@ -2,7 +2,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Takes the tracker's screenshots for GUIDE.md and README.md, as SVG files that GitHub shows.
+"""Takes the tracker's screenshots for docs/GUIDE.md and README.md, as SVG files that GitHub shows.
 
 Run from the top folder:
 
