@@ -7,7 +7,7 @@
 from typing import NamedTuple
 import unittest
 
-from llamatron.music_theory.analysis import chords, keys
+from llamatron.music_theory.analysis import chords, keys, roles
 
 C = 0
 A = 9
@@ -19,6 +19,12 @@ class Heard(NamedTuple):
     start: float
     end: float
     pitch: int
+
+
+class Part(NamedTuple):
+    name: str
+    drum: bool
+    notes: tuple
 
 
 def held(pitches, *, length=WHOLE):
@@ -57,3 +63,52 @@ class TestChords(unittest.TestCase):
     def test_one_note_alone_and_silence_are_no_chord(self):
         self.assertIsNone(chords.chord_of(self.weights([48, 60])))
         self.assertIsNone(chords.chord_of([0.0] * 12))
+
+
+BEATS_PER_BAR = 4
+BARS = 4
+
+
+def timed(pairs):
+    """Return notes from (start, length, pitch), one after another as written."""
+    return tuple(Heard(start=start, end=start + length, pitch=pitch) for start, length, pitch in pairs)
+
+
+def tune_low():
+    """A singable tune in the middle register: steps and one leap, notes of several lengths, through all four bars."""
+    pitches = [60, 62, 64, 62, 60, 65, 64, 62, 64, 65, 67, 65, 64, 62, 60, 59, 60, 62]
+    lengths = [1, 0.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 2, 2]
+    start = 0
+    pairs = []
+    for pitch, length in zip(pitches, lengths):
+        pairs.append((start, length, pitch))
+        start += length
+    return timed(pairs)
+
+
+def arpeggio_high():
+    """An even arpeggio above it: the same three notes in leaps, every one half a beat, a sequence rather than a tune."""
+    return timed([(place * 0.5, 0.5, [72, 76, 79, 84][place % 4]) for place in range(BARS * BEATS_PER_BAR * 2)])
+
+
+def bass_line():
+    return timed([(bar * BEATS_PER_BAR, BEATS_PER_BAR, [36, 41, 43, 36][bar]) for bar in range(BARS)])
+
+
+def held_chords():
+    return timed([(bar * BEATS_PER_BAR, BEATS_PER_BAR, pitch) for bar in range(BARS) for pitch in (60, 64, 67)])
+
+
+class TestRoles(unittest.TestCase):
+
+    def roles(self, parts):
+        found = roles.roles_of(parts=parts, bars=BARS, beats_per_bar=BEATS_PER_BAR)
+        return {part.name: role for part, role in found.items()}
+
+    def test_the_melody_is_the_line_that_moves_like_one_not_the_highest(self):
+        found = self.roles([Part('tune', False, tune_low()), Part('arpeggio', False, arpeggio_high()), Part('bass', False, bass_line())])
+        self.assertEqual(found, {'tune': roles.MELODY, 'arpeggio': roles.COUNTER, 'bass': roles.BASS})
+
+    def test_long_chords_are_a_pad_and_drums_are_drums(self):
+        found = self.roles([Part('tune', False, tune_low()), Part('chords', False, held_chords()), Part('kit', True, bass_line())])
+        self.assertEqual(found, {'tune': roles.MELODY, 'chords': roles.PAD, 'kit': roles.DRUMS})

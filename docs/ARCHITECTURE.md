@@ -163,7 +163,7 @@ flowchart TD
 | The Set | `model/objects` | Objects: what a set file stores: the set, its songs, their tracks, scenes and clips, and the shared patterns, scales, generators, chains and grooves. |
 | The Set | `model/schema` | Schema: what a set file may hold: every name the file uses and its fixed lists of words, the range each value must fall in, the value a setting takes when the file leaves it out, and one description of each setting and of each row of a pattern, which holds the one check that reading a file and a setter share. |
 | The Set | `model/values` | Values: the musical values every part of llamatron works with: notes, chords, scales, time signatures, held notes, MIDI numbers, the sounds a clip plays as plain data, and what a chord and a progression are in a scale. |
-| Musicianship | `music_theory/analysis` | Analysis: what music is, found from its notes alone: its keys and its chords, for the MIDI import and the genre library's listening tools alike, which hand it notes, anything with a start, an end and a pitch, and never a rendered song. |
+| Musicianship | `music_theory/analysis` | Analysis: what music is, found from its notes alone: its keys, its chords and the part each of its parts plays, for the MIDI import and the genre library's listening tools alike, which hand it notes, anything with a start, an end and a pitch, and never a rendered song. |
 | Musicianship | `music_theory/composing` | Composing: how a part is written down and made to play like a musician, which the song wizard asks for every part it writes. |
 | Musicianship | `music_theory/harmony` | Harmony: how notes sit against the chords under them. |
 | Musicianship | `music_theory/hooks` | Hooks: the short figures a song is known by. |
