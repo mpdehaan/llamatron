@@ -18,7 +18,7 @@ from llamatron.interface.tracker.screens.set.instrument_editor import Instrument
 from llamatron.interface.tracker.screens.shared import sound_trial
 from llamatron.interface.tracker.screens.shared.sound_trial import hits_of, run_of, SoundTrial
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import PatternSetting, Row
+from llamatron.model.schema.file_format import InstrumentKind, PatternSetting, Row
 from llamatron.model.values.note import NoteName
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.realtime import realtime_names
@@ -237,6 +237,7 @@ class TestSoundDialog(PatternPreviewTest):
         self.fluidsynth_installed = False
         self.document.add_instrument(PREVIEW)
         self.document.change_set(self.document.get_setlist().get_instrument(PREVIEW).set_device, test_tui_playback.SYNTH_PORT)
+        self.document.change_set(self.document.get_setlist().get_instrument(PREVIEW).set_kind, InstrumentKind.MIDI)
         self.document.change_set(self.document.song().set_preview_instrument_name, PREVIEW)
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
         self.assertEqual(self.preview().playing_sound(), limits.MIN_GM_SOUND)
@@ -252,9 +253,11 @@ class TestSoundDialog(PatternPreviewTest):
         await self.press(Key.DOWN, keybindings.SoundDialog.OPEN, keybindings.SoundDialog.LISTEN)
         self.assertIn(errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=PREVIEW), drawing.SPACE.join(self.text().replace(Box.HEAVY_BAR, drawing.SPACE).split()))
         self.document.change_set(self.document.get_setlist().get_instrument(PREVIEW).set_device, NOT_CONNECTED)
+        self.document.change_set(self.document.get_setlist().get_instrument(PREVIEW).set_kind, InstrumentKind.MIDI)
         await self.press(keybindings.SoundDialog.LISTEN)
         self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_DEVICE_NOT_CONNECTED.format(name=PREVIEW, device=NOT_CONNECTED))
         self.document.change_set(self.document.get_setlist().get_instrument(PREVIEW).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change_set(self.document.get_setlist().get_instrument(PREVIEW).set_kind, InstrumentKind.MIDI)
         self.assertEqual(self.preview().sound_refusal(), errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=PREVIEW))
         self.fluidsynth_installed = True
         self.assertIsNone(self.preview().sound_refusal())

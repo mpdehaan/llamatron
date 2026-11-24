@@ -258,10 +258,9 @@ class Instrument(HoldsSettings):
         return self.get_device() == file_format.FLUIDSYNTH_DEVICE
 
     def set_device(self, device):
-        """Name its MIDI output port, or None to choose none. Choosing a port for an instrument switched off turns its MIDI
-        on, since that is what choosing one asks for."""
-        if device is not None and self.get_kind() == InstrumentKind.OFF:
-            self.set_kind(InstrumentKind.MIDI)
+        """Name its MIDI output port, or None to choose none. Only MIDI's On makes it play through the port: an instrument off or
+        built in keeps the port named for when it is MIDI again, and plays nothing through it, so that nothing of MIDI need
+        start for it."""
         self.set_written(name=InstrumentSetting.DEVICE, value=device)
 
     def get_gm_sound(self):

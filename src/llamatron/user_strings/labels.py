@@ -819,7 +819,7 @@ MSG_CURVE_LABEL = 'Curve'
 MSG_AMOUNT_LABEL = 'Amount'
 # How the Instruments page shows a built-in instrument where a MIDI one shows its device.
 MSG_BUILT_IN_SHOWN = 'Synth: {engine}'
-MSG_ENGINE_NAMES = {SoundEngine.BASIC: 'Basic', SoundEngine.DRUM: 'Drum', SoundEngine.SID: 'SID', SoundEngine.POCKET: 'Pocket'}
+MSG_ENGINE_NAMES = {SoundEngine.BASIC: 'Basic', SoundEngine.DRUM: 'MechaDrum', SoundEngine.SID: 'SID', SoundEngine.POCKET: 'Pocket'}
 MSG_WAVEFORM_NAMES = {Waveform.OFF: 'Off', Waveform.SQUARE: 'Square', Waveform.SAW: 'Saw', Waveform.SINE: 'Sine', Waveform.TRIANGLE: 'Triangle',
                       Waveform.PULSE: 'Pulse'}
 MSG_DRUM_MACHINE_NAMES = {

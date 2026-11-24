@@ -92,15 +92,18 @@ class TestBuiltInSound(unittest.TestCase):
         self.assertEqual(instrument.get_effect(number=1, name=EffectSetting.EFFECT), Effect.NONE)
         self.assertEqual(len(instrument.get_sound(SoundSetting.EFFECTS)), limits.EFFECT_BLOCKS)
 
-    def test_a_new_instrument_is_off_until_a_device_is_chosen_which_makes_it_midi(self):
+    def test_a_new_instrument_is_off_and_plays_through_its_device_only_once_it_is_midi(self):
         setlist = Setlist()
         instrument = setlist.add_new_instrument(WHERE)
         self.assertEqual(instrument.get_kind(), InstrumentKind.OFF)
         instrument.set_device(DEVICE)
-        self.assertEqual(instrument.get_kind(), InstrumentKind.MIDI)
+        self.assertEqual(instrument.get_kind(), InstrumentKind.OFF)
+        self.assertFalse(instrument.has_device())
+        instrument.set_kind(InstrumentKind.MIDI)
         self.assertTrue(instrument.has_device())
         instrument.set_kind(InstrumentKind.BUILT_IN)
         self.assertFalse(instrument.has_device())
+        self.assertEqual(instrument.get_device(), DEVICE)
 
     def test_a_chip_engine_plays_one_note_at_once_unless_it_says_otherwise(self):
         self.assertEqual(built_in_sound.sound_value(sound={SoundSetting.ENGINE: SoundEngine.SID}, name=SoundSetting.VOICES), 1)

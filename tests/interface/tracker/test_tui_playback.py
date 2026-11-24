@@ -37,7 +37,7 @@ from llamatron.interface.tracker.transport import Transport
 from llamatron.interface.visualizers import modes
 from llamatron.model.file.checks import listed
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ClipSlotSetting, Direction, LiveResponsiveness, Row, Section
+from llamatron.model.schema.file_format import ClipSlotSetting, Direction, InstrumentKind, LiveResponsiveness, Row, Section
 from llamatron.realtime import realtime_names
 from llamatron.realtime.render_process import playback as playback_values, timeline
 from llamatron.realtime.render_process.timeline import Route
@@ -200,6 +200,7 @@ class PlaybackTest(UITest):
         """Add an instrument on a device, which turns Real Time on, and give the lead track it."""
         self.document.add_instrument(SYNTH)
         self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_device, device)
+        self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_kind, InstrumentKind.MIDI)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=SYNTH)
 
     def transport(self):
@@ -237,9 +238,11 @@ class TestFluidSynthPlayback(PlaybackTest):
         await super().asyncSetUp()
         self.document.add_instrument(FLUID)
         self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_kind, InstrumentKind.MIDI)
         self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
         self.document.add_instrument(DRUM_KIT)
         self.document.change_set(self.document.get_setlist().get_instrument(DRUM_KIT).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change_set(self.document.get_setlist().get_instrument(DRUM_KIT).set_kind, InstrumentKind.MIDI)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
         self.document.set_track_instrument(name=ui_testing.DRUMS, instrument=DRUM_KIT)
         self.document.change_set(self.document.song().get_track(ui_testing.DRUMS).set_drum, True)
@@ -348,6 +351,7 @@ class TestArrangePlayback(PlaybackTest):
     async def test_an_instrument_no_track_uses_and_a_device_not_connected_are_told_too(self):
         self.document.add_instrument(SYNTH)
         self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_device, SYNTH_PORT)
+        self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_kind, InstrumentKind.MIDI)
         await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         self.assertIn(errors.ERR_CANT_PLAY_TITLE, self.text())
         self.assert_told(errors.ERR_NO_TRACK_HAS_AN_INSTRUMENT)
@@ -358,6 +362,7 @@ class TestArrangePlayback(PlaybackTest):
         self.assert_told(errors.ERR_NO_TRACK_HAS_A_DEVICE)
         await self.press(Key.ENTER)
         self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_device, UNPLUGGED_PORT)
+        self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_kind, InstrumentKind.MIDI)
         await self.press(keybindings.ArrangePage.PLAY_SONG)
         self.assert_told(errors.ERR_DEVICE_NOT_CONNECTED.format(instrument=SYNTH, device=UNPLUGGED_PORT))
         await self.press(Key.ENTER)
@@ -733,6 +738,7 @@ class TestClipPagePlayback(PlaybackTest):
         self.give_lead_an_instrument()
         self.document.add_instrument(DRUM_MACHINE)
         self.document.change_set(self.document.get_setlist().get_instrument(DRUM_MACHINE).set_device, DRUM_PORT)
+        self.document.change_set(self.document.get_setlist().get_instrument(DRUM_MACHINE).set_kind, InstrumentKind.MIDI)
         await self.open_clip(track_steps=2)
         await self.press(keybindings.ClipPage.LISTEN)
         self.assertIn(messages.MSG_LISTEN_INSTRUMENT_TITLE, self.text())
@@ -790,6 +796,7 @@ class PatternPreviewTest(PlaybackTest):
         """Add an instrument on a device, which turns Real Time on, and make it the song's Preview instrument."""
         self.document.add_instrument(SYNTH)
         self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_device, device)
+        self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_kind, InstrumentKind.MIDI)
         self.document.change_set(self.document.song().set_preview_instrument_name, SYNTH)
 
     async def let_the_preview_play(self, seconds):
@@ -857,6 +864,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
     async def test_a_preview_instrument_through_fluidsynth_sends_its_sound(self):
         self.document.add_instrument(FLUID)
         self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_kind, InstrumentKind.MIDI)
         self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
         self.document.change_set(self.document.song().set_preview_instrument_name, FLUID)
         await self.open_pattern(ui_testing.TUNE)
@@ -900,6 +908,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         await self.press(keybindings.PatternEditor.LISTEN)
         self.assertIn(errors.ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE.format(name=SYNTH), self.words_shown())
         self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_kind, InstrumentKind.MIDI)
         self.fluidsynth_installed = False
         await self.press(keybindings.PatternEditor.LISTEN)
         self.assertIn(errors.ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED.format(name=SYNTH), self.words_shown())
@@ -916,6 +925,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
         self.give_lead_an_instrument()
         self.document.add_instrument(DRUM_MACHINE)
         self.document.change_set(self.document.get_setlist().get_instrument(DRUM_MACHINE).set_device, DRUM_PORT)
+        self.document.change_set(self.document.get_setlist().get_instrument(DRUM_MACHINE).set_kind, InstrumentKind.MIDI)
         self.document.change_set(self.document.song().set_preview_instrument_name, DRUM_MACHINE)
         await self.press(keybindings.MainPage.ARRANGE, *CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
         await self.let_time_pass(BRIEFLY)
@@ -1019,6 +1029,7 @@ class TestPatternEditorPlayback(PatternPreviewTest):
     async def test_a_song_whose_track_has_the_previews_channel_is_stopped_before_the_preview_plays(self):
         self.document.add_instrument(FLUID)
         self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_kind, InstrumentKind.MIDI)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
         preview = self.preview()
         # The lead plays on FluidSynth's first channel, not the preview's, so nothing is shared.
@@ -1130,6 +1141,7 @@ class LaunchTest(PlaybackTest):
             self.document.set_clip_slot_setting(index=FIRST_INDEX, track=ui_testing.DRUMS, setting=ClipSlotSetting.LOOP, value=False)
         self.document.add_instrument(SYNTH)
         self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_device, SYNTH_PORT)
+        self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_kind, InstrumentKind.MIDI)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=SYNTH)
         app = super().make_app()
         app.launch = self.LAUNCH

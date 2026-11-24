@@ -16,6 +16,7 @@ from unittest import mock
 from llamatron.interface.tracker import launch as launch_values
 from llamatron.interface.visualizers import modes
 from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import InstrumentKind
 from llamatron.realtime.devices import fluidsynth
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song
@@ -147,4 +148,5 @@ class TestRecordDemo(unittest.TestCase):
     def give_lead_fluidsynth(self):
         self.document.add_instrument(FLUID)
         self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_device, file_format.FLUIDSYNTH_DEVICE)
+        self.document.change_set(self.document.get_setlist().get_instrument(FLUID).set_kind, InstrumentKind.MIDI)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)

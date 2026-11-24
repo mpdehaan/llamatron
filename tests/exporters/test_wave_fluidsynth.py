@@ -29,6 +29,7 @@ from llamatron.interface.tracker.dialogs.export_dialog import ExportDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.keys import Key
 from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import InstrumentKind
 from llamatron.realtime.devices.fluidsynth import FluidSynthInstallation
 from llamatron.user_strings import errors, messages
 from tests.interface.tracker.test_tui_exporting import export_keys
@@ -68,6 +69,7 @@ def song_with_instruments():
     for name, device in ((FLUID, file_format.FLUIDSYNTH_DEVICE), (KEYS, OTHER_PORT)):
         document.add_instrument(name)
         document.change_set(document.get_setlist().get_instrument(name).set_device, device)
+        document.change_set(document.get_setlist().get_instrument(name).set_kind, InstrumentKind.MIDI)
     document.change_set(document.get_setlist().get_instrument(FLUID).set_gm_sound, VIOLIN)
     document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
     document.set_track_instrument(name=ui_testing.DRUMS, instrument=KEYS)

@@ -62,6 +62,7 @@ class TestInstrumentsPage(UITest):
     async def test_the_list_shows_each_instruments_device_channel_and_uses(self):
         self.document.add_instrument(SYNTH)
         self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_device, PORTS[0])
+        self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_kind, InstrumentKind.MIDI)
         self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_channel, midi.MAX_CHANNEL)
         self.document.set_track_instrument(name=ui_testing.LEAD, instrument=SYNTH)
         await self.press(Key.DOWN, Key.UP)
@@ -162,6 +163,7 @@ class TestInstrumentEditor(UITest):
 
     async def test_a_device_that_has_gone_is_still_offered_so_that_it_can_be_kept(self):
         self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_device, GONE_PORT)
+        self.document.change_set(self.document.get_setlist().get_instrument(SYNTH).set_kind, InstrumentKind.MIDI)
         with mock.patch(PORT_NAMES, return_value=list(PORTS)):
             await self.select_field(labels.MSG_DEVICE_LABEL)
             await self.press(Key.ENTER)

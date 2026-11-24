@@ -18,7 +18,7 @@ from llamatron.interface.tracker.screens.set.instrument_editor import Instrument
 from llamatron.model.objects import instrument as instrument_values
 from llamatron.model.objects.instrument import Keyswitch
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import Row
+from llamatron.model.schema.file_format import InstrumentKind, Row
 from llamatron.model.values import midi
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import errors, labels, marks, messages
@@ -49,6 +49,7 @@ def add_violin(document):
     """Give a document a violin with sustain on slot 0 and staccato on slot 1, which the lead plays through."""
     document.add_instrument(VIOLIN)
     document.change_set(document.get_setlist().get_instrument(VIOLIN).set_device, PORT)
+    document.change_set(document.get_setlist().get_instrument(VIOLIN).set_kind, InstrumentKind.MIDI)
     document.change_set(document.get_setlist().get_instrument(VIOLIN).set_keyswitches, [Keyswitch(SUSTAIN, SUSTAIN_NOTE), Keyswitch(STACCATO, STACCATO_NOTE), *[instrument_values.NO_KEYSWITCH] * (file_format.KEYSWITCH_SLOT_COUNT - 2)])
     document.set_track_instrument(name=ui_testing.LEAD, instrument=VIOLIN)
 

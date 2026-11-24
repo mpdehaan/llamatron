@@ -14,6 +14,7 @@ from llamatron.interface.tracker.launch import Launch
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.interface.tracker.silent_instruments import silent_instrument_lines
 from llamatron.model.schema import file_format
+from llamatron.model.schema.file_format import InstrumentKind
 from llamatron.user_strings import errors
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, UITest
@@ -35,6 +36,7 @@ def with_instruments(document, *, keys_device=GONE_PORT):
     for name, device in ((FLUID, file_format.FLUIDSYNTH_DEVICE), (KEYS, keys_device), (UNUSED, GONE_PORT)):
         document.add_instrument(name)
         document.change_set(document.get_setlist().get_instrument(name).set_device, device)
+        document.change_set(document.get_setlist().get_instrument(name).set_kind, InstrumentKind.MIDI)
     document.set_track_instrument(name=ui_testing.LEAD, instrument=FLUID)
     document.set_track_instrument(name=ui_testing.DRUMS, instrument=KEYS)
     return document
@@ -59,6 +61,7 @@ class TestSilentInstrumentLines(unittest.TestCase):
     def test_fluidsynth_is_told_once_however_many_instruments_use_it(self):
         document = with_instruments(a_song())
         document.change_set(document.get_setlist().get_instrument(KEYS).set_device, file_format.FLUIDSYNTH_DEVICE)
+        document.change_set(document.get_setlist().get_instrument(KEYS).set_kind, InstrumentKind.MIDI)
         self.assertEqual(silent_instrument_lines(setlist=document.get_setlist(), installed=False, connected=set()), [errors.ERR_FLUIDSYNTH_WILL_NOT_SOUND])
 
 

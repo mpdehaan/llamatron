@@ -316,11 +316,11 @@ that no track uses.
 HELP_INSTRUMENT_EDITOR = """
 Name: ENTER renames the instrument, and every track that chose it follows. Default velocity, Accent and
 Velocity apply however it plays. A new instrument is off until its MIDI or Synth tab's On is set; setting
-one switches the other off, and choosing a device turns MIDI on.
+one switches the other off.
 MIDI: Device, the MIDI output port this computer has now, or *FluidSynth, which the tracker starts itself;
 Channel, 1 to 16, or (auto) with FluidSynth; GM sound, which the General MIDI export and FluidSynth use;
 Latency, how much earlier its notes are sent, for a device slow to sound.
-Synth: a built-in sound, its Engine Basic, Drum, SID or Pocket, and each engine's own settings; a bar is a
+Synth: a built-in sound, its Engine Basic, MechaDrum, SID or Pocket, and each engine's own settings; a bar is a
 gauge. Effects: four blocks, each empty, Bitcrush or Drive.
 
 Tab goes to the row of tabs and back. [ and ] change a setting, ENTER types or chooses, Bksp clears.
