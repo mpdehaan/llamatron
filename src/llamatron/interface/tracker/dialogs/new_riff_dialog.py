@@ -13,10 +13,10 @@ chords, the one kind that has gaps between its accents.
 from rich.text import Text
 
 from llamatron.interface.forms import moves
+from llamatron.interface.forms.dialogs import answers, DialogRow
 from llamatron.interface.tracker import drawing, key_table, keybindings
-from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import cursor_mark, Style
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.user_strings import labels, marks
 from llamatron.wizards.create_song import wizard_limits, wizard_names
 
@@ -89,10 +89,9 @@ class NewRiffDialog(Dialog):
         return labels.MSG_NEW_RIFF_VALUES[self.settings[row]]
 
     def lines(self, width):
-        lines = []
-        for place, row in enumerate(self.rows()):
-            line = Text(cursor_mark(place == self.row) + labels.MSG_NEW_RIFF_LABELS[row].ljust(LABEL_WIDTH))
-            line.append(self.shown(row), style=Style.BOLD if place == self.row else Style.PLAIN)
-            lines.append(line)
-        buttons = [(drawing.NOTHING, label) for label in labels.MSG_NEW_RIFF_BUTTONS]
-        return [*lines, Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.button if self.on_buttons() else NO_BUTTON)]
+        rows = [DialogRow(label=labels.MSG_NEW_RIFF_LABELS[row], value=self.shown(row), under_cursor=place == self.row) for place, row in enumerate(self.rows())]
+        selected = NO_BUTTON
+        if self.on_buttons():
+            selected = self.button
+        answered = answers(labels=labels.MSG_NEW_RIFF_BUTTONS, selected=selected)
+        return [*dialog_renderer.row_lines(rows=rows, label_width=LABEL_WIDTH), Text(drawing.NOTHING), *dialog_renderer.answer_lines(answered)]

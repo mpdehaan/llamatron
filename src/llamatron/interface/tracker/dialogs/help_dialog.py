@@ -6,9 +6,11 @@
 
 from rich.text import Text
 
+from llamatron.interface.forms.dialogs import said
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import padded, Style, wrapped
+from llamatron.interface.tracker.drawing import padded, Style
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.user_strings import labels, messages
 
 
@@ -49,7 +51,7 @@ class HelpDialog(Dialog):
     def lines(self, width):
         if self.panel == KEYS_PANEL:
             return [*key_columns(items=self.everywhere, width=width), Text(drawing.NOTHING), *key_columns(items=self.own, width=width)]
-        return [wrapped_line for line in self.about for wrapped_line in wrapped(text=line, width=width)]
+        return dialog_renderer.said_lines(paragraphs=[said(line) for line in self.about], width=width)
 
 
 def key_columns(*, items, width):

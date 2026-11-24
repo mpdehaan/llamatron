@@ -13,10 +13,10 @@ from rich.text import Text
 from typing import NamedTuple
 
 from llamatron.interface.forms import moves
+from llamatron.interface.forms.dialogs import answers, DialogRow
 from llamatron.interface.tracker import drawing, key_table, keybindings
-from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import cursor_mark, Style
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.model.schema import limits
 from llamatron.user_strings import labels, marks, messages
 
@@ -96,11 +96,10 @@ class NewPatternDialog(Dialog):
         return (marks.MSG_BLOCKED_CELL if self.drum else length, marks.MSG_TOGGLE_ON if self.drum else drawing.NOTHING)
 
     def lines(self, width):
-        lines = []
-        for row, (label, value) in enumerate(zip(LABELS, self.values())):
-            line = Text(cursor_mark(row == self.row) + label.ljust(LABEL_WIDTH))
-            blocked = row == SCALE_LENGTH and self.drum
-            line.append(value, style=Style.DIM if blocked else Style.BOLD if row == self.row else Style.PLAIN)
-            lines.append(line)
-        buttons = [(drawing.NOTHING, label) for label in labels.MSG_NEW_PATTERN_BUTTONS]
-        return [*lines, Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.button if self.row == BUTTONS else NO_BUTTON)]
+        rows = [DialogRow(label=label, value=value, under_cursor=row == self.row, blocked=row == SCALE_LENGTH and self.drum)
+                for row, (label, value) in enumerate(zip(LABELS, self.values()))]
+        selected = NO_BUTTON
+        if self.row == BUTTONS:
+            selected = self.button
+        answered = answers(labels=labels.MSG_NEW_PATTERN_BUTTONS, selected=selected)
+        return [*dialog_renderer.row_lines(rows=rows, label_width=LABEL_WIDTH), Text(drawing.NOTHING), *dialog_renderer.answer_lines(answered)]

@@ -3,14 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The Prompt dialog: asks for a line of text, and answers with it."""
 
-from rich.text import Text
-
+from llamatron.interface.forms.dialogs import TypedText
 from llamatron.interface.tracker import drawing, keybindings
 from llamatron.interface.tracker.dialogs.dialog import Dialog
-from llamatron.interface.tracker.drawing import Style
 from llamatron.interface.tracker.key_table import pressed_key, quits_at_once
 from llamatron.interface.tracker.keys import Key
-from llamatron.user_strings import marks
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 
 # How far the cursor moves for one arrow press.
 ONE_CHARACTER = 1
@@ -68,17 +66,7 @@ class PromptDialog(Dialog):
         self._cursor = cursor + len(character)
 
     def lines(self, width):
-        # The text scrolls so that the cursor always shows, with the cursor drawn in reverse video
-        # over the character it's before, or over a space when it's at the end.
-        shown = width - len(marks.MSG_PROMPT_MARK) - len(self.label) - 1
-        cursor = self.cursor()
-        start = max(cursor - shown + 1, 0)
-        text = self.value[start:start + shown]
-        at = cursor - start
-        line = Text(marks.MSG_PROMPT_MARK + self.label + text[:at])
-        line.append(text[at:at + 1] or drawing.SPACE, style=Style.REVERSE)
-        line.append(text[at + 1:])
-        return [line]
+        return [dialog_renderer.typed_line(typed=TypedText(label=self.label, text=self.value, cursor=self.cursor()), width=width)]
 
     def other_key(self, event):
         if event.character and event.character.isprintable():

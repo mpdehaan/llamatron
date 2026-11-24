@@ -2,7 +2,8 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 """How the tracker draws what a dialog shows (interface/forms/dialogs.py): its paragraphs, wrapped or cut to the dialog's width,
-dim where said in passing, its answers as a row of boxed buttons, and a picker's list."""
+dim where said in passing, its answers as a row of boxed buttons, a picker's list, a line being typed and
+the rows of a dialog's settings."""
 
 from rich.text import Text
 
@@ -44,7 +45,38 @@ def choice_lines(*, choices, width):
     return lines
 
 
+def typed_line(*, typed, width):
+    """Return a line being typed, scrolled so that the cursor always shows, the cursor drawn in reverse video over the
+    character it is before, or over a space at the end."""
+    shown = width - len(marks.MSG_PROMPT_MARK) - len(typed.label) - 1
+    start = max(typed.cursor - shown + 1, 0)
+    text = typed.text[start:start + shown]
+    at = typed.cursor - start
+    line = Text(marks.MSG_PROMPT_MARK + typed.label + text[:at])
+    line.append(text[at:at + 1] or drawing.SPACE, style=Style.REVERSE)
+    line.append(text[at + 1:])
+    return line
+
+
+def row_lines(*, rows, label_width):
+    """Return a dialog's settings, each its cursor's mark, its label padded to the labels' width and its value, bold under the
+    cursor and dim where it cannot be set."""
+    lines = []
+    for row in rows:
+        line = Text(cursor_mark(row.under_cursor) + row.label.ljust(label_width))
+        style = Style.PLAIN
+        if row.blocked:
+            style = Style.DIM
+        elif row.under_cursor:
+            style = Style.BOLD
+        line.append(row.value, style=style)
+        lines.append(line)
+    return lines
+
+
 def _paragraph_lines(*, paragraph, width):
+    if paragraph.one_line and paragraph.dim:
+        return [Text(fit(text=paragraph.text, width=width), style=Style.DIM)]
     if paragraph.one_line:
         return [Text(fit(text=paragraph.text, width=width).rstrip())]
     if paragraph.dim:

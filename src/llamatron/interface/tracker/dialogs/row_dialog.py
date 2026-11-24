@@ -13,10 +13,11 @@ drawn around a zero line."""
 from rich.text import Text
 
 from llamatron.interface.forms.cursor import Cursor
+from llamatron.interface.forms.dialogs import answers
 from llamatron.interface.tracker import drawing, key_table, keybindings
-from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.drawing import Style
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.user_strings import labels, marks
 
 # The OK button is the one Enter presses, so it is the one drawn selected.
@@ -118,7 +119,7 @@ class RowDialog(Dialog):
 
     def lines(self, width):
         above, below = self.levels()
-        buttons = [(drawing.NOTHING, label) for label in labels.MSG_OK_CANCEL_BUTTONS]
         zero = [Text(self.level_label(ZERO) + marks.MSG_ROW_DIALOG_ZERO * (len(self.values) * CELL_WIDTH), style=Style.DIM)] if below else []
+        answered = answers(labels=labels.MSG_OK_CANCEL_BUTTONS, selected=OK)
         return [*[self.bar_line(level) for level in above], *zero, *[self.bar_line(level) for level in below], self.number_line(),
-                Text(drawing.NOTHING), *button_row(buttons=buttons, selected=OK)]
+                Text(drawing.NOTHING), *dialog_renderer.answer_lines(answered)]

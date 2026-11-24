@@ -36,6 +36,11 @@ def said_in_passing(text):
     return Said(text=text, dim=True)
 
 
+def said_on_one_line_in_passing(text):
+    """Return a line said in passing, dim, kept to the dialog's width."""
+    return Said(text=text, one_line=True, dim=True)
+
+
 def blank():
     """Return an empty line between paragraphs."""
     return Said()
@@ -73,3 +78,24 @@ class ChoiceList:
 
     typed: str = NO_TEXT
     rows: tuple = dataclass_field(default_factory=tuple)
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class TypedText:
+    """A line being typed: the word before it, where the title alone does not say what is typed, the text, and where the cursor
+    is in it, from 0 to the text's length."""
+
+    label: str = NO_TEXT
+    text: str = NO_TEXT
+    cursor: int = 0
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class DialogRow:
+    """One row of a dialog's settings: its label, its value as shown, whether the cursor is on it, drawing the value bold, and
+    whether the value cannot be set now, drawing it dim."""
+
+    label: str
+    value: str
+    under_cursor: bool = False
+    blocked: bool = False

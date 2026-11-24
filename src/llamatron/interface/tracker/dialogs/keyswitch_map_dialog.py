@@ -15,14 +15,15 @@ from rich.text import Text
 
 from llamatron.interface.forms import moves
 from llamatron.interface.forms.cursor import Cursor
+from llamatron.interface.forms.dialogs import answers
 from llamatron.interface.tracker import drawing, key_table, keybindings, keyswitch_text
-from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.components.keyboard import KeyKind, one_octave_rows
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
 from llamatron.interface.tracker.drawing import cursor_mark, fit, legend, Style
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.keyswitch_text import keyswitch_note_text, shown_name
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.model.objects import instrument
 from llamatron.model.objects.instrument import Keyswitch
 from llamatron.model.schema import file_format, limits
@@ -177,11 +178,14 @@ class KeyswitchMapDialog(Dialog):
         return line
 
     def lines(self, width):
-        buttons = [(drawing.NOTHING, label) for label in labels.MSG_OK_CANCEL_BUTTONS]
+        selected = None
+        if self.on_buttons():
+            selected = self.button
+        answered = answers(labels=labels.MSG_OK_CANCEL_BUTTONS, selected=selected)
         return [
             self.heading_line(width),
             *[self.slot_line(slot=slot, width=width) for slot in range(file_format.KEYSWITCH_SLOT_COUNT)],
-            Text(drawing.NOTHING), *button_row(buttons=buttons, selected=self.button if self.on_buttons() else None),
+            Text(drawing.NOTHING), *dialog_renderer.answer_lines(answered),
         ]
 
     def flyout_lines(self, width):

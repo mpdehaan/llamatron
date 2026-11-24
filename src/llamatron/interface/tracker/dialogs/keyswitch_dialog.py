@@ -13,10 +13,11 @@ nothing until the instrument gives it one."""
 
 from rich.text import Text
 
+from llamatron.interface.forms.dialogs import answers, blank, said_on_one_line_in_passing
 from llamatron.interface.tracker import drawing, keybindings, keys as keys_values, keyswitch_text
-from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.pick_many_dialog import PickManyDialog
 from llamatron.interface.tracker.drawing import cursor_mark, fit, Style
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.model.schema import file_format
 from llamatron.user_strings import labels, marks
 
@@ -53,9 +54,9 @@ class KeyswitchDialog(PickManyDialog):
         return line
 
     def lines(self, width):
-        buttons = [(drawing.NOTHING, label) for label in labels.MSG_OK_CANCEL_BUTTONS]
+        answered = answers(labels=labels.MSG_OK_CANCEL_BUTTONS, selected=OK)
         return [
-            Text(fit(text=self.said, width=width), style=Style.DIM), Text(drawing.NOTHING),
+            *dialog_renderer.said_lines(paragraphs=[said_on_one_line_in_passing(self.said), blank()], width=width),
             *[self.slot_line(slot=slot, width=width) for slot in self.options],
-            Text(drawing.NOTHING), *button_row(buttons=buttons, selected=OK),
+            Text(drawing.NOTHING), *dialog_renderer.answer_lines(answered),
         ]

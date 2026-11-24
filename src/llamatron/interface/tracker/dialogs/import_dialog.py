@@ -11,17 +11,15 @@ what it makes, and anything it would have to change, is always for the choices s
 is added to the set until Import, which dismisses the dialog with what the import made.
 """
 
-from rich.text import Text
-
 from llamatron.caching.cached import cached_for_life
 from llamatron.importers import midi_import as midi_import_values
 from llamatron.importers.midi_import import ImportChoices
 from llamatron.interface.forms import moves
+from llamatron.interface.forms.dialogs import answers, blank, DialogRow, said, said_in_passing
 from llamatron.interface.tracker import drawing, key_table, keybindings
-from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.tracker.dialogs.prompt_dialog import PromptDialog
-from llamatron.interface.tracker.drawing import cursor_mark, Style, wrapped
+from llamatron.interface.tracker.renderers import dialogs as dialog_renderer
 from llamatron.math.rational import Rational
 from llamatron.model.file.checks import fraction_text
 from llamatron.model.objects.naming import copy_name, default_scale_name
@@ -46,13 +44,6 @@ CANCEL_BUTTON = 1
 STEP_SIZES = (None, Rational(1, 32), Rational(1, 16), Rational(1, 8), Rational(1, 4))
 # How many keys the found line names before it counts the rest.
 KEYS_NAMED = 2
-
-
-def dimmed(lines):
-    """Return lines of text drawn dim, as what the dialog only tells is."""
-    for line in lines:
-        line.stylize(Style.DIM)
-    return lines
 
 
 class ImportDialog(Dialog):
@@ -162,25 +153,26 @@ class ImportDialog(Dialog):
         return importing.MSG_IMPORT_MAKES.format(tracks=made.tracks, patterns=made.patterns, scenes=made.scenes)
 
     def lines(self, width):
-        made = self.made()
-        lines = [*dimmed(wrapped(text=self.found_text(), width=width)), Text(drawing.NOTHING)]
-        for row, (label, value) in enumerate(zip(LABELS, self.values())):
-            line = Text(cursor_mark(row == self.row) + label.ljust(LABEL_WIDTH))
-            line.append(value, style=Style.BOLD if row == self.row else Style.PLAIN)
-            lines.append(line)
-        lines.append(Text(drawing.NOTHING))
-        lines += wrapped(text=self.makes_text(), width=width)
-        if made.song.shared:
-            lines.append(Text(importing.MSG_IMPORT_SHARED.format(count=made.song.shared), style=Style.DIM))
-        for warning in made.warnings:
-            lines += dimmed(wrapped(text=warning, width=width))
-        lines += [Text(drawing.NOTHING), *self.buttons_line()]
-        return lines
+        """Return what the file holds, dim, the choices, what the import makes and its warnings, and the Import and CANCEL buttons."""
+        rows = [DialogRow(label=label, value=value, under_cursor=row == self.row) for row, (label, value) in enumerate(zip(LABELS, self.values()))]
+        return [
+            *dialog_renderer.said_lines(paragraphs=[said_in_passing(self.found_text()), blank()], width=width),
+            *dialog_renderer.row_lines(rows=rows, label_width=LABEL_WIDTH),
+            *dialog_renderer.message_lines(paragraphs=self.made_paragraphs(), answers=self.answers(), width=width),
+        ]
 
-    def buttons_line(self):
+    def made_paragraphs(self):
+        """Return what the import makes, after a blank line, with how many patterns it shares, and its warnings, dim."""
+        made = self.made()
+        paragraphs = [blank(), said(self.makes_text())]
+        if made.song.shared:
+            paragraphs.append(said_in_passing(importing.MSG_IMPORT_SHARED.format(count=made.song.shared)))
+        return [*paragraphs, *[said_in_passing(warning) for warning in made.warnings]]
+
+    def answers(self):
         """Return Import and CANCEL as boxed buttons, each its name alone, the selected one double-lined when the cursor is on
         the buttons."""
         selected = None
         if self.row == BUTTONS:
             selected = self.button
-        return button_row(buttons=[(drawing.NOTHING, label) for label in importing.MSG_IMPORT_BUTTONS], selected=selected)
+        return answers(labels=importing.MSG_IMPORT_BUTTONS, selected=selected)
