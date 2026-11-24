@@ -15,7 +15,7 @@ from llamatron.math.rational import Rational
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import ChordSymbol
 from llamatron.model.values.note import NoteName
-from llamatron.music_theory.harmony import heard_chords
+from llamatron.music_theory.harmony import chord_estimate, heard_chords
 from llamatron.user_strings import printing
 from tests.exporters import test_song_printing
 
@@ -27,8 +27,10 @@ FOUR = heard_chords.ROMAN_NUMERALS[3]
 
 
 def printed():
-    """Return the test set's song as printed."""
-    return song_printing.printed_song(song=Setlist.read_file(test_song_printing.SET_FILE).get_song(test_song_printing.SONG), title=test_song_printing.SONG, parts=test_song_printing.PARTS)
+    """Return the test set's piano as printed at Triads, whose chords are C and F in each bar of C major, then F and B flat in
+    the chorus's F major."""
+    song = Setlist.read_file(test_song_printing.SET_FILE).get_song(test_song_printing.SONG)
+    return song_printing.printed_song(song=song, title=test_song_printing.SONG, tracks=frozenset({test_song_printing.PIANO}), level=chord_estimate.ChordLevel.TRIADS)
 
 
 class TestChordChart(unittest.TestCase):

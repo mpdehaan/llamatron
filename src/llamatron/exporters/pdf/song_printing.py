@@ -1,51 +1,36 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""A song made into the PrintedSong the PDF export draws, from the song's own render, so that every chain, groove and draw
-prints as it plays.
+"""A song made into the PrintedSong the PDF export draws, read as a lead sheet is from a MIDI file of the song.
 
-The tracks chosen as the melody are merged into one line: where they overlap, the highest note struck at a moment is printed,
-and a note still sounding when the next is struck ends there. The tracks chosen as the chords are heard together, one chord a
-beat as Scene View hears it (music_theory/harmony/heard_chords.py), in the key of the scene playing, and a chord heard on
-beats in a row is one chord. A song whose scenes set their Section has a section wherever that setting changes; any other has
-one at every scene, a scene played again in a row counted rather than repeated.
-
-Each track's default part is the role its notes play (music_theory/analysis/roles.py): the
-melody, the chords for harmony and pads, and left out for the rest; a track whose patterns write chords on the Chord row
-is always the chords, unless it is the melody, since a strum or an arpeggio hides its chords from the notes; where no
-track plays chords, as in a canon, the
-chords are heard from the counter lines and the bass together.
+The tracks chosen are played from the song's own render, so that every chain, groove and draw prints as it plays, and merged
+into one track, whatever llamatron's tracks hold: a lead sheet thinks of one tune and the chords under it, and the hands of
+a piece may each hold some of both. The tune is that track's skyline, the highest note at each moment, each note ending where
+the next begins, a low cluster the top line drops into while the tune rests cut off. The chords are estimated from all of
+its notes a bar or half bar at a time (music_theory/harmony/chord_estimate.py), or at As played heard a beat at a time as
+Scene View hears them (music_theory/harmony/heard_chords.py), named in the key of the scene playing. A song whose scenes set
+their Section has a section wherever that setting changes; any other has one at every scene, a scene played again in a row
+counted rather than repeated. Every track that plays pitched notes is chosen by default, the drums never.
 """
 
-from statistics import median
 from typing import NamedTuple
 
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.engine.timing.timing import timed_events
 from llamatron.exporters.pdf.printed_song import KeyStart, PrintedChord, PrintedNote, PrintedSong, SectionStart
-from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import Row
 from llamatron.music_theory.analysis import roles
 from llamatron.music_theory.fundamentals import intervals
-from llamatron.music_theory.harmony import chord_charts
+from llamatron.music_theory.harmony import chord_estimate
 from llamatron.music_theory.harmony.heard_chords import beat_chords, chord_texts
 
-
-class PrintedPart:
-    """The part a track plays in a PDF: the melody, the chords, or left out."""
-
-    MELODY = 'melody'
-    CHORDS = 'chords'
-    LEFT_OUT = 'left_out'
-
-
-PRINTED_PARTS = (PrintedPart.MELODY, PrintedPart.CHORDS, PrintedPart.LEFT_OUT)
-# A line heard in fewer than this share of the bars is too seldom there to be the tune, which the highest chords then carry.
-LEAST_MELODY_PRESENCE = 0.25
-# The roles whose tracks are heard as the chords together where no track plays chords, as the voices of a canon are.
-LINES_THAT_MAKE_CHORDS = (roles.COUNTER, roles.BASS)
-# The part each role a track's notes play takes by default.
-PARTS_OF_ROLES = {roles.MELODY: PrintedPart.MELODY, roles.HARMONY: PrintedPart.CHORDS, roles.PAD: PrintedPart.CHORDS}
+# A low cluster is cut from the tune where enough notes fall in it: at least so many, the cluster an octave or more below the
+# tune's middle, a fourth or more below the tune's lowest note, holding no more than this share of the notes.
+FEWEST_FOR_A_CLUSTER = 16
+FEWEST_IN_A_CLUSTER = 4
+MOST_IN_A_CLUSTER = 0.4
+CLUSTER_GAP = 5
+CLUSTER_DEPTH = 12
+OCTAVE = intervals.HALF_STEPS_PER_OCTAVE
 
 
 class TrackNotes(NamedTuple):
@@ -56,8 +41,8 @@ class TrackNotes(NamedTuple):
     notes: tuple
 
 
-class ChordNote(NamedTuple):
-    """A note of the chord tracks as heard_chords reads it, in whole notes from its scene's start."""
+class MergedNote(NamedTuple):
+    """A note of the merged track as heard_chords reads it, in whole notes from its scene's start."""
 
     start: object
     end: object
@@ -127,51 +112,35 @@ def track_roles(*, tracks, signature):
     return {part.name: found.get(part) for part in parts}, parts, bars
 
 
-def written_chord_tracks(song):
-    """Return the names of a song's tracks whose clips play patterns that write chords on their Chord row, two-note intervals
-    aside, whatever their notes sound like once strummed or spread."""
-    setlist = song.get_setlist()
-    names = set()
-    for scene in song.get_scenes():
-        for track in song.get_track_names():
-            clip_slot = scene.get_clip_slot(track)
-            if clip_slot is None or track in names:
-                continue
-            if any(_writes_chords(setlist.get_pattern(name)) for name in clip_slot.get_pattern_names()):
-                names.add(track)
-    return names
+def default_tracks(tracks):
+    """Return the names of the tracks a PDF takes by default: every track that plays pitched notes, the drums never."""
+    return {track.name for track in tracks if not track.drum and track.notes}
 
 
-def default_parts(*, tracks, signature, chord_tracks=frozenset()):
-    """Return the part each track plays by default, by its name: the role its notes play, as PARTS_OF_ROLES gives it, and the
-    chords for every track named as writing chords that isn't the melody."""
-    found, parts, bars = track_roles(tracks=tracks, signature=signature)
-    chosen = {name: PARTS_OF_ROLES.get(role, PrintedPart.LEFT_OUT) for name, role in found.items()}
-    for name in chord_tracks:
-        if chosen.get(name, PrintedPart.LEFT_OUT) != PrintedPart.MELODY:
-            chosen[name] = PrintedPart.CHORDS
-    melody = [part for part in parts if found[part.name] == roles.MELODY]
-    if melody and roles.shape_of(part=melody[0], bars=bars, beats_per_bar=signature.get_beats()).presence < LEAST_MELODY_PRESENCE:
-        chosen[melody[0].name] = PrintedPart.LEFT_OUT
-        _melody_from_chords(chosen=chosen, parts=parts)
-    if PrintedPart.CHORDS not in chosen.values():
-        _chords_from_lines(chosen=chosen, found=found)
-    return chosen
-
-
-def printed_song(*, song, title, parts, level=chord_charts.DEFAULT_CHORD_LEVEL):
-    """Return a song as the PDF export prints it, its tracks playing the parts given by name (PrintedPart), any track not
-    named left out, its chords printed at a level (chord_charts.ChordLevel)."""
+def printed_song(*, song, title, tracks, level=chord_estimate.DEFAULT_CHORD_LEVEL):
+    """Return a song as the PDF export prints it, the named tracks merged into one and read as a lead sheet: the tune its
+    skyline, the chords estimated at a level (chord_estimate.ChordLevel)."""
     render = rendered(song)
-    tracks = track_notes(render)
-    melody = top_line([note for track in tracks if parts.get(track.name) == PrintedPart.MELODY for note in track.notes])
-    chord_tracks = {track.name for track in tracks if parts.get(track.name) == PrintedPart.CHORDS}
+    merged = merged_notes(render=render, names=tracks)
     keys = key_starts(song=song, render=render)
-    return PrintedSong(
-        title=title, melody=tuple(melody), chords=tuple(chords_heard(song=song, render=render, names=chord_tracks, level=level, melody=melody)), keys=tuple(keys),
-        sections=tuple(section_starts(song=song, render=render)), signature=song.get_time_signature(), tempo=song.get_tempo(),
-        length=render.grid.song_length(),
+    melody = without_low_cluster(top_line(merged))
+    printed = PrintedSong(
+        title=title, melody=tuple(melody), chords=(), keys=tuple(keys), sections=tuple(section_starts(song=song, render=render)),
+        signature=song.get_time_signature(), tempo=song.get_tempo(), length=render.grid.song_length(),
     )
+    return PrintedSong(
+        title=printed.title, melody=printed.melody, chords=tuple(lead_sheet_chords(printed=printed, merged=merged, render=render, level=level)),
+        keys=printed.keys, sections=printed.sections, signature=printed.signature, tempo=printed.tempo, length=printed.length,
+    )
+
+
+def merged_notes(*, render, names):
+    """Return the named tracks' notes over the whole song merged into one, the drums aside, in order."""
+    merged = []
+    for track in track_notes(render):
+        if track.name in names and not track.drum:
+            merged += track.notes
+    return sorted(merged)
 
 
 def top_line(notes):
@@ -188,6 +157,63 @@ def top_line(notes):
             note = note._replace(end=following.start)
         merged.append(note)
     return merged
+
+
+def without_low_cluster(line):
+    """Return a tune's line without the low cluster it drops into where the tune rests and a bass or an accompaniment is the
+    highest note, as a MIDI file's melody often does: a separate group of low pitches, a fourth or more below the rest and
+    an octave or more below the tune's middle, holding a minority of its notes."""
+    pitches = sorted(note.pitch for note in line)
+    if len(pitches) < FEWEST_FOR_A_CLUSTER:
+        return line
+    middle = pitches[len(pitches) // 2]
+    distinct = sorted(set(pitches))
+    cutoff = None
+    for low, high in zip(distinct, distinct[1:]):
+        if high > middle:
+            break
+        if high - low >= CLUSTER_GAP and low <= middle - CLUSTER_DEPTH:
+            cutoff = high
+    if cutoff is None:
+        return line
+    below = sum(1 for pitch in pitches if pitch < cutoff)
+    if not FEWEST_IN_A_CLUSTER <= below <= MOST_IN_A_CLUSTER * len(pitches):
+        return line
+    return [note for note in line if note.pitch >= cutoff]
+
+
+def lead_sheet_chords(*, printed, merged, render, level):
+    """Return the chords under the tune: estimated a bar or half bar at a time, or at As played heard a beat at a time."""
+    if level == chord_estimate.ChordLevel.AS_PLAYED:
+        return heard_chords(printed=printed, merged=merged, render=render)
+    bars = [(start, min(start + printed.bar_length(), printed.length)) for start in printed.bar_starts()]
+    music = chord_estimate.Music(notes=tuple(merged), tune=frozenset(doubled_tune(merged=merged, melody=printed.melody)))
+    estimated = chord_estimate.estimated_chords(music=music, bars=bars, scale_at=printed.key_at, level=level)
+    return [_printed(chord=chord, scale=printed.key_at(chord.start)) for chord in estimated]
+
+
+def doubled_tune(*, merged, melody):
+    """Return the tune's notes and every note that doubles one at an octave, struck with it, as a right hand playing the
+    tune in octaves does, so that the doubling counts as the tune and not as the chord."""
+    struck = {(note.start, note.pitch % OCTAVE) for note in melody}
+    return [note for note in merged if (note.start, note.pitch % OCTAVE) in struck]
+
+
+def heard_chords(*, printed, merged, render):
+    """Return the chord heard on each beat of each row, a chord heard on beats in a row joined into one while its numeral
+    holds."""
+    beat = printed.signature.beat_length()
+    chords = []
+    for row, start in zip(render.grid.get_rows(), render.starts):
+        length = render.grid.row_length(row)
+        notes = [MergedNote(start=note.start - start, end=note.end - start, pitch=note.pitch, drum=False) for note in merged if note.end > start and note.start < start + length]
+        for found in beat_chords(notes=HeardNotes(notes=notes, length=length, beat=beat), scale=printed.key_at(start)):
+            name, numeral = found.name, found.numeral
+            chord = PrintedChord(start=start + found.start, end=start + found.start + beat, name=name, numeral=numeral, root=found.root, symbol=found.symbol, bass=found.bass)
+            if chords and chords[-1].end == chord.start and (chords[-1].name, chords[-1].numeral) == (name, numeral):
+                chord = chords.pop()._replace(end=chord.end)
+            chords.append(chord)
+    return chords
 
 
 def key_starts(*, song, render):
@@ -217,24 +243,6 @@ def section_starts(*, song, render):
     return sections
 
 
-def chords_heard(*, song, render, names, level, melody):
-    """Return the chords the named tracks play together, heard a beat at a time in each row's key and printed at a level
-    (music_theory/harmony/chord_charts.py), the melody's notes supplying a power chord's third."""
-    grid = render.grid
-    beat = grid.get_time_signature().beat_length()
-    span = chord_charts.chord_span(grid.get_time_signature())
-    chords = []
-    for row, start, scene in zip(grid.get_rows(), render.starts, render.scenes):
-        scale = _scene_scale(song=song, scene=scene)
-        length = grid.row_length(row)
-        heard = HeardNotes(notes=_row_notes(grid=grid, row=row, names=names), length=length, beat=beat)
-        beats = [chord_charts.HeardBeat(start=found.start, root=found.root, symbol=found.symbol, bass=found.bass) for found in beat_chords(notes=heard, scale=scale)]
-        sounding = _melody_at_beats(melody=melody, start=start, length=length, beat=beat)
-        charted = chord_charts.charted_chords(beats=beats, stretch=chord_charts.Stretch(length=length, beat=beat, span=span), level=level, melody=sounding)
-        chords += [_printed(chord=chord, start=start, scale=scale) for chord in charted]
-    return _joined_across_rows(chords)
-
-
 def _sections_by_setting(render):
     """Return a section wherever the scenes' Section setting changes, named after it, a scene that sets none carrying on the
     section before."""
@@ -255,58 +263,10 @@ def _clips_of(*, song, scene):
     return tuple(played)
 
 
-def _writes_chords(pattern):
-    """Return whether a pattern writes a chord on any step, a two-note interval aside."""
-    chords = pattern.get_row(Row.CHORD) or []
-    return any(value is not None and value not in file_format.INTERVAL_CHORDS for value in chords)
-
-
-def _chords_from_lines(*, chosen, found):
-    """Make the chords of a song no track plays chords in, such as a canon, heard from its other lines and its bass together,
-    where its harmony is."""
-    for name, role in found.items():
-        if role in LINES_THAT_MAKE_CHORDS and chosen[name] == PrintedPart.LEFT_OUT:
-            chosen[name] = PrintedPart.CHORDS
-
-
-def _melody_from_chords(*, chosen, parts):
-    """Make the highest of the parts playing chords the melody, its top line the tune, as a pianist's right hand plays it."""
-    chordal = [part for part in parts if chosen[part.name] == PrintedPart.CHORDS]
-    if chordal:
-        highest = max(chordal, key=lambda part: median(note.pitch for note in part.notes))
-        chosen[highest.name] = PrintedPart.MELODY
-
-
-def _melody_at_beats(*, melody, start, length, beat):
-    """Return the pitch classes the melody sounds at the start of each beat of a row, by the beat's start from the row's."""
-    sounding = {}
-    for note in melody:
-        if note.end <= start or note.start >= start + length:
-            continue
-        first = max(note.start - start, 0 * beat)
-        place = (first // beat) * beat
-        if place < first:
-            place += beat
-        while place < min(note.end - start, length):
-            sounding.setdefault(place, set()).add(note.pitch % intervals.HALF_STEPS_PER_OCTAVE)
-            place += beat
-    return sounding
-
-
-def _printed(*, chord, start, scale):
-    """Return a chart's chord as printed, named and numbered in its scale, placed from its row's start."""
-    name, numeral = chord_texts(root=chord.root, symbol=chord.symbol, scale=scale, bass=chord.bass)
-    return PrintedChord(start=start + chord.start, end=start + chord.end, name=name, numeral=numeral, root=chord.root, symbol=chord.symbol, bass=chord.bass)
-
-
-def _joined_across_rows(chords):
-    """Return chords with one that carries on, end to end and unchanged in name and numeral, into the next row joined."""
-    runs = []
-    for chord in chords:
-        if runs and runs[-1].end == chord.start and (runs[-1].name, runs[-1].numeral) == (chord.name, chord.numeral):
-            chord = runs.pop()._replace(end=chord.end)
-        runs.append(chord)
-    return runs
+def _printed(*, chord, scale):
+    """Return an estimated chord as printed, named and numbered in its scale."""
+    name, numeral = chord_texts(root=chord.root, symbol=chord.symbol, scale=scale)
+    return PrintedChord(start=chord.start, end=chord.end, name=name, numeral=numeral, root=chord.root, symbol=chord.symbol, bass=None)
 
 
 def _in_beats(*, note, beat):
@@ -328,15 +288,3 @@ def _scene_scale(*, song, scene):
     if name is None:
         return None
     return song.get_setlist().get_named_scale(name)
-
-
-def _row_notes(*, grid, row, names):
-    """Return the notes the named tracks play in a row, as ChordNotes from the row's start."""
-    notes = []
-    for column in grid.get_columns():
-        clip = grid.get_clip(row=row, column=column)
-        if clip is None or column.get_name() not in names:
-            continue
-        events, _ = timed_events(clip=clip, scale=grid.scale_at(row=row, column=column))
-        notes += [ChordNote(start=event.start, end=event.end, pitch=event.midi_number, drum=column.is_drum()) for event in events]
-    return notes

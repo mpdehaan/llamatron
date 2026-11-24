@@ -934,8 +934,8 @@ class ChoiceDialog(Dialog):
 
 
 class PdfExportPage(Page):
-    """The PDF export page: the arrows move, Space or ENTER ticks a page, chooses a track's column or presses a button, [ and ]
-    step the Chords field and ENTER picks it, and Tab goes to the next part."""
+    """The PDF export page: the arrows move, Space or ENTER ticks a page or a track or presses a button, [ and ] step the
+    Chords field and ENTER picks it, and Tab goes to the next part."""
 
     MOVE = Binding(keys.ARROWS, legends.KeyName.ARROWS, legends.What.MOVE)
     CHOOSE = Binding(keys.TOGGLE_KEYS, legends.KeyName.SPACE_ENTER, legends.What.CHOOSE)

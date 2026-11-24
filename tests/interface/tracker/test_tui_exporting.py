@@ -7,7 +7,7 @@
 import os
 
 from llamatron.exporters import exports
-from llamatron.exporters.exports import earlier_export, ExportKind, PacketPage, pdf_options, pdf_path, PdfKind, PrintedPart, shown_export_path
+from llamatron.exporters.exports import earlier_export, ExportKind, pdf_options, pdf_path, PdfKind, shown_export_path
 from llamatron.interface.pages import uses
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs import export_dialog
@@ -219,10 +219,10 @@ class TestPdfExportPage(UITest):
         self.document.save(path=SET_FILE)
         await self.press(Key.CTRL_X, *export_keys(export_dialog.PDF))
 
-    async def test_each_track_starts_in_the_part_its_role_gives_and_export_writes_the_packet(self):
+    async def test_every_pitched_track_starts_chosen_and_export_writes_the_packet(self):
         page = self.app.screen
-        self.assertEqual(page.parts[PRINTED_LEAD], PrintedPart.MELODY)
-        self.assertEqual(page.parts[PRINTED_KICK], PrintedPart.LEFT_OUT)
+        self.assertIn(PRINTED_LEAD, page.chosen)
+        self.assertNotIn(PRINTED_KICK, page.chosen)
         page.place = page.first_button_place()
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, MainPage)
@@ -239,13 +239,22 @@ class TestPdfExportPage(UITest):
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PdfExportPage)
 
-    async def test_a_track_takes_the_column_under_the_cursor_and_the_choices_are_remembered(self):
+    async def test_space_takes_a_track_out_and_the_choices_are_remembered(self):
         page = self.app.screen
-        page.place = page.first_track_place()
-        await self.press(Key.RIGHT, Key.RIGHT, Key.SPACE)
-        self.assertEqual(page.parts[page.tracks[0].name], PrintedPart.LEFT_OUT)
+        lead = [track.name for track in page.tracks].index(PRINTED_LEAD)
+        page.place = page.first_track_place() + lead
+        await self.press(Key.SPACE)
+        self.assertNotIn(PRINTED_LEAD, page.chosen)
         await self.press(Key.ESCAPE, Key.CTRL_X, *export_keys(export_dialog.PDF))
-        self.assertEqual(self.app.screen.parts[page.tracks[0].name], PrintedPart.LEFT_OUT)
+        self.assertNotIn(PRINTED_LEAD, self.app.screen.chosen)
+
+    async def test_a_drums_track_cannot_go_in(self):
+        page = self.app.screen
+        kick = [track.name for track in page.tracks].index(PRINTED_KICK)
+        page.place = page.first_track_place() + kick
+        await self.press(Key.SPACE)
+        self.assertNotIn(PRINTED_KICK, page.chosen)
+        self.assertIn(messages.MSG_PDF_NO_DRUMS.format(track=PRINTED_KICK), self.text())
 
     async def test_the_chords_level_steps_with_the_brackets(self):
         page = self.app.screen
@@ -253,17 +262,8 @@ class TestPdfExportPage(UITest):
         await self.press(keybindings.PdfExportPage.LESS)
         self.assertEqual(page.level, pdf_options().chord_levels[0])
 
-    async def test_with_no_chords_track_the_chord_pages_dim_and_the_piano_roll_alone_exports(self):
+    async def test_no_track_chosen_says_why_above_the_dim_export_button(self):
         page = self.app.screen
-        for track in page.tracks:
-            if page.parts[track.name] == PrintedPart.CHORDS:
-                page.parts[track.name] = PrintedPart.LEFT_OUT
-        chart = pdf_options().packet_pages.index(PacketPage.CHORD_CHART)
-        page.place = chart
-        await self.press(Key.SPACE)
-        self.assertIn(errors.ERR_PDF_NEEDS_CHORDS, self.text())
-        self.assertEqual(page.choices().packet_pages, (PacketPage.PIANO_ROLL,))
-        page.place = page.first_button_place()
-        await self.press(Key.ENTER)
-        self.assertIsInstance(self.app.screen, MainPage)
-        self.assertTrue(os.path.exists(pdf_path(directory=self.folder, name=self.document.export_name(), kind=PdfKind.PACKET)))
+        page.chosen.clear()
+        page.draw()
+        self.assertIn(errors.ERR_PDF_NO_TRACKS, self.text())

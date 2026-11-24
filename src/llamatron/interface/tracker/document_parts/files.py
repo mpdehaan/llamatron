@@ -10,7 +10,7 @@ import io
 import os
 
 from llamatron.engine.realizer.song_realizer import SongRealizer
-from llamatron.exporters.exports import earlier_export, export_name, export_pdfs, ExportResources, make_exporter, pdf_path, PdfKind, remove_earlier_export, shown_export_path, track_parts
+from llamatron.exporters.exports import earlier_export, export_name, export_pdfs, ExportResources, make_exporter, pdf_path, pdf_tracks, PdfKind, remove_earlier_export, shown_export_path
 from llamatron.interface.tracker import transport
 from llamatron.model.file.checks import listed
 from llamatron.model.file.ordered_data import same_in_order
@@ -217,8 +217,8 @@ class DocumentFiles:
         return bool(earlier_export(kind=to, directory=self.export_directory(), name=self.export_name()))
 
     def pdf_tracks(self):
-        """Return the current song's tracks as the PDF page lists them, each with its role and its part by default (TrackPart)."""
-        return track_parts(self.song())
+        """Return the current song's tracks as the PDF page lists them, each with its role and whether a PDF takes it by default (PdfTrack)."""
+        return pdf_tracks(self.song())
 
     def pdf_paths(self, choices):
         """Return the PDFs an export of the current song would write with the choices given, for people, and which of them

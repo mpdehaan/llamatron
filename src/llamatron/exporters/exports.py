@@ -20,15 +20,14 @@ from llamatron.exporters.clip_tree import ClipTree
 from llamatron.exporters.exporter import ExportKind
 from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
 # The PDF export, which the UI reaches through this front door like every other export.
-from llamatron.exporters.pdf.pdf_export import export_pdfs, PacketPage, pdf_options, pdf_path, PdfChoices, PdfKind, track_parts
-from llamatron.exporters.pdf.song_printing import PrintedPart
+from llamatron.exporters.pdf.pdf_export import export_pdfs, PacketPage, pdf_options, pdf_path, PdfChoices, PdfKind, pdf_tracks
 from llamatron.exporters.wave_fluidsynth import WaveFluidSynth
 
 # Everything the UI and the command line may take from here, the PDF export's names among them.
 __all__ = [
     'EXPORT_NAME', 'EXPORTERS', 'EXPORT_KINDS_IN_HELP', 'EXPORT_LABELS', 'ExportKind', 'ExportResources', 'export_name', 'make_exporter',
     'shown_export_path', 'earlier_export', 'remove_earlier_export',
-    'export_pdfs', 'PacketPage', 'pdf_options', 'pdf_path', 'PdfChoices', 'PdfKind', 'track_parts', 'PrintedPart',
+    'export_pdfs', 'PacketPage', 'pdf_options', 'pdf_path', 'PdfChoices', 'PdfKind', 'pdf_tracks',
 ]
 
 # What a song's exports are named: the set's name, then the song's.

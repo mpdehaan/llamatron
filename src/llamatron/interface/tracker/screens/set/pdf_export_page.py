@@ -5,18 +5,17 @@
 """The PDF export page, which PDF in the Export dialog opens: what goes in the current song's PDFs, and Export.
 
 The packet's pages are ticked in two columns; the Chords field says how simply the chords are printed; each track is a row
-with its role and a dot in one of three columns, MELODY, CHORDS and LEFT OUT, its part, starting from what its notes' role
-gives it; the export directory and the file's name follow, saying what an export would replace; then Export and CANCEL. The
-cursor moves through them with the arrows, Space or ENTER ticks a page, chooses a column or presses a button, [ and ] step
-the Chords field and ENTER opens its picker, and Tab goes to the next part. A page the tracks' parts can't make, the chord pages while no track plays chords and the piano roll while none plays the
-melody, is dim and can't be ticked, Space saying why; Export is dim and refuses, the line above it saying why in amber,
-while nothing is ticked, or a page ticked needs a melody or chords that no track plays; a drums track among the chords is
-warned of. The choices are remembered for the session, by the set and the song.
+with its role and a dot under IN where its notes go into the PDF, merged with the other tracks chosen and read as a lead
+sheet, every track that plays pitched notes chosen to start with and a drums track never; the export directory and the
+file's name follow, saying what an export would replace; then Export and CANCEL. The cursor moves through them with the
+arrows, Space or ENTER ticks a page or a track or presses a button, [ and ] step the Chords field and ENTER opens its
+picker, and Tab goes to the next part. Export is dim and refuses while no page or no track is chosen, the line above it
+saying why in amber. The choices are remembered for the session, by the set and the song.
 """
 
 from rich.text import Text
 
-from llamatron.exporters.exports import PacketPage, pdf_options, PdfChoices, PrintedPart
+from llamatron.exporters.exports import pdf_options, PdfChoices
 from llamatron.interface.tracker import drawing, keybindings, themes
 from llamatron.interface.tracker.components.button_row import button_row
 from llamatron.interface.tracker.drawing import cursor_mark, Style
@@ -25,7 +24,7 @@ from llamatron.interface.tracker.screens.shared.everywhere import write_pdfs
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.user_strings import errors, help as help_text, labels, marks, messages
 
-# What the page offers: the packet's pages, the chord levels, the parts a track plays and the roles its notes may play.
+# What the page offers: the packet's pages, the chord levels and the roles a track's notes may play.
 OPTIONS = pdf_options()
 # The places the cursor stands on, in order: the packet's pages, the Chords field, the tracks, and the buttons.
 PAGE_PLACES = len(OPTIONS.packet_pages)
@@ -36,14 +35,13 @@ CANCEL_BUTTON = 1
 NAME_WIDTH = 14
 ROLE_WIDTH = 10
 COLUMN_WIDTH = 8
+# The drums, whose notes are no pitches, never go into a PDF.
+DRUMS = OPTIONS.track_roles[-1]
 PAGE_NAME_WIDTH = 22
 # The lines the page takes besides the tracks' rows: the gap, the packet's heading and its two lines, the Chords field, a
 # gap, the tracks' heading, a gap, the export directory, a gap and the three lines of the buttons.
 LINES_BESIDES_TRACKS = 12
 FEWEST_TRACK_ROWS = 1
-# The pages that draw the melody, and those that draw the chords.
-NEEDS_MELODY = frozenset({PacketPage.PIANO_ROLL})
-NEEDS_CHORDS = frozenset({PacketPage.CHORD_CHANGES, PacketPage.CHORD_CHART, PacketPage.CHORD_SEQUENCE})
 
 
 class PdfExportPage(Page):
@@ -59,12 +57,11 @@ class PdfExportPage(Page):
         self.tracks = holder.get_document().pdf_tracks()
         remembered = holder.get_pdf_choices().get(self.choices_key())
         if remembered is None:
-            remembered = PdfChoices(parts={track.name: track.part for track in self.tracks}, level=OPTIONS.default_level)
+            remembered = PdfChoices(tracks=frozenset(track.name for track in self.tracks if track.chosen), level=OPTIONS.default_level)
         self.ticked = set(remembered.packet_pages)
-        self.parts = dict(remembered.parts)
+        self.chosen = set(remembered.tracks)
         self.level = remembered.level
         self.place = 0
-        self.column = 0
         self.top_track = 0
 
     def choices_key(self):
@@ -74,17 +71,8 @@ class PdfExportPage(Page):
 
     def choices(self):
         """Return the choices as the page holds them now."""
-        pages = tuple(page for page in OPTIONS.packet_pages if page in self.ticked and self.unavailable(page) is None)
-        return PdfChoices(packet_pages=pages, parts=dict(self.parts), level=self.level)
-
-    def unavailable(self, page):
-        """Return why a page of the packet can't be made, or None: no track plays the melody it draws, or the chords."""
-        parts = set(self.parts.values())
-        if page in NEEDS_MELODY and PrintedPart.MELODY not in parts:
-            return errors.ERR_PDF_NEEDS_MELODY
-        if page in NEEDS_CHORDS and PrintedPart.CHORDS not in parts:
-            return errors.ERR_PDF_NEEDS_CHORDS
-        return None
+        pages = tuple(page for page in OPTIONS.packet_pages if page in self.ticked)
+        return PdfChoices(packet_pages=pages, tracks=frozenset(self.chosen), level=self.level)
 
     def keys(self):
         result = [self.bind(self.KEYS.BACK, action=self.go_back), self.bind(self.KEYS.MOVE, action=self.move_cursor, wants_key=True)]
@@ -123,14 +111,12 @@ class PdfExportPage(Page):
         self.holder.get_pdf_choices()[self.choices_key()] = self.choices()
 
     def move_cursor(self, name):
-        """Move between the places: Up and Down one place, Left and Right between the pages' columns, a track's three columns
-        and the buttons, stopping at every edge."""
+        """Move between the places: Up and Down one place, Left and Right between the pages' columns and the buttons,
+        stopping at every edge."""
         if name in (Key.UP, Key.DOWN):
             self.place = self._place_above_or_below(name)
         elif self.place < PAGE_PLACES:
             self.place = self._page_beside(name)
-        elif self.on_track():
-            self.column = min(max(self.column + (1 if name == Key.RIGHT else -1), 0), len(OPTIONS.printed_parts) - 1)
         elif self.place >= self.first_button_place():
             self.place = min(max(self.place + (1 if name == Key.RIGHT else -1), self.first_button_place()), self.place_count() - 1)
         self._keep_track_in_view()
@@ -145,13 +131,11 @@ class PdfExportPage(Page):
         self.draw()
 
     def choose(self):
-        """Tick or untick a page, give the track the column under the cursor, or press the button."""
+        """Tick or untick a page or a track, or press the button."""
         if self.place < PAGE_PLACES:
-            self._tick(OPTIONS.packet_pages[self.place])
+            self.ticked ^= {OPTIONS.packet_pages[self.place]}
         elif self.on_track():
-            track = self.tracks[self.place - self.first_track_place()]
-            self.parts[track.name] = OPTIONS.printed_parts[self.column]
-            self._warn_of_drums(track)
+            self._choose_track(self.tracks[self.place - self.first_track_place()])
         elif self.place == self.first_button_place() + EXPORT_BUTTON:
             self.export()
             return
@@ -171,9 +155,11 @@ class PdfExportPage(Page):
         self.ask_choice(title=labels.MSG_PDF_CHORDS_LABEL, options=names, current=OPTIONS.chord_levels.index(self.level), then=self._take_level)
 
     def refusal(self):
-        """Return why Export can't go on, or None: no page ticked that the tracks' parts can make."""
-        if not self.choices().packet_pages:
+        """Return why Export can't go on, or None: no page ticked, or no track chosen."""
+        if not self.ticked:
             return errors.ERR_PDF_NOTHING_TICKED
+        if not self.chosen:
+            return errors.ERR_PDF_NO_TRACKS
         return None
 
     def export(self):
@@ -228,9 +214,12 @@ class PdfExportPage(Page):
         rows = max(self.size.height - LINES_BESIDES_TRACKS - 6, FEWEST_TRACK_ROWS) if self.size.height else len(self.tracks)
         self.top_track = min(max(self.top_track, track - rows + 1), track)
 
-    def _warn_of_drums(self, track):
-        if track.role == OPTIONS.track_roles[-1] and self.parts[track.name] == PrintedPart.CHORDS:
-            self.refuse(messages.MSG_PDF_DRUMS_AS_CHORDS.format(track=track.name))
+    def _choose_track(self, track):
+        """Put a track in the PDF or take it out, or say a drums track can't go in."""
+        if track.role == DRUMS:
+            self.refuse(messages.MSG_PDF_NO_DRUMS.format(track=track.name))
+            return
+        self.chosen ^= {track.name}
 
     def _step_level(self, step):
         place = min(max(OPTIONS.chord_levels.index(self.level) + step, 0), len(OPTIONS.chord_levels) - 1)
@@ -239,14 +228,6 @@ class PdfExportPage(Page):
 
     def _take_level(self, place):
         self.level = OPTIONS.chord_levels[place]
-
-    def _tick(self, page):
-        """Tick or untick a page of the packet, or say why it can't be made."""
-        reason = self.unavailable(page)
-        if reason is not None:
-            self.refuse(reason)
-            return
-        self.ticked ^= {page}
 
     def _page_lines(self):
         """Return the packet's pages in two columns, each ticked or not."""
@@ -259,8 +240,6 @@ class PdfExportPage(Page):
                 mark = marks.MSG_TOGGLE_ON if page in self.ticked else marks.MSG_FIELD_TOGGLE_OFF
                 here = place == self.place
                 style = Style.BOLD if here else Style.PLAIN
-                if self.unavailable(page) is not None:
-                    style = Style.DIM
                 line.append(cursor_mark(here))
                 line.append(marks.MSG_TICKED_PAGE.format(mark=mark, page=labels.MSG_PACKET_PAGE_NAMES[place]).ljust(PAGE_NAME_WIDTH), style=style)
             lines.append(line)
@@ -276,7 +255,7 @@ class PdfExportPage(Page):
 
     def _tracks_heading(self, rows):
         heading = drawing.INDENT + labels.MSG_PDF_TRACK.ljust(NAME_WIDTH) + labels.MSG_PDF_ROLE.ljust(ROLE_WIDTH)
-        heading += drawing.NOTHING.join(name.ljust(COLUMN_WIDTH) for name in labels.MSG_PRINTED_PART_NAMES)
+        heading += labels.MSG_PDF_IN
         if len(self.tracks) > rows:
             heading += marks.MSG_ROWS_SHOWN.format(first=self.top_track + 1, last=min(self.top_track + rows, len(self.tracks)), total=len(self.tracks))
         return Text(heading, style=Style.BOLD)
@@ -289,10 +268,8 @@ class PdfExportPage(Page):
             line = Text(cursor_mark(here), no_wrap=True)
             line.append(track.name[:NAME_WIDTH - 1].ljust(NAME_WIDTH), style=Style.BOLD if here else Style.PLAIN)
             line.append(role_name(track.role).ljust(ROLE_WIDTH), style=Style.DIM)
-            for column, part in enumerate(OPTIONS.printed_parts):
-                mark = marks.MSG_TOGGLE_ON if self.parts.get(track.name, PrintedPart.LEFT_OUT) == part else marks.MSG_FIELD_TOGGLE_OFF
-                line.append(drawing.INDENT + mark, style=Style.REVERSE if here and column == self.column else Style.PLAIN)
-                line.append(drawing.SPACE * (COLUMN_WIDTH - len(drawing.INDENT) - len(mark)))
+            mark = marks.MSG_TOGGLE_ON if track.name in self.chosen else marks.MSG_FIELD_TOGGLE_OFF
+            line.append(drawing.INDENT + mark, style=Style.DIM if track.role == DRUMS else Style.PLAIN)
             lines.append(line)
         return lines
 

@@ -285,14 +285,14 @@ MSG_NOTES_LABEL = 'Notes'
 MSG_EXPORT_CATEGORIES = ['Ableton Live set', 'MIDI …', 'WAV (FluidSynth)', 'PDF …']
 MSG_MIDI_EXPORT_HEADING = 'MIDI'
 # interface/tracker/screens/set/pdf_export_page.py: the PDF export page's parts, the packet's pages, the chord levels and
-# the tracks' parts in the order the exports list them, each role in TRACK_ROLES' order, and the buttons.
+# each role in TRACK_ROLES' order, and the buttons.
 MSG_PACKET_HEADING = 'PACKET, one PDF of the pages ticked'
 MSG_PACKET_PAGE_NAMES = ('Piano roll', 'Chord changes', 'Chord chart', 'Chord sequence')
 MSG_PDF_CHORDS_LABEL = 'Chords'
 MSG_CHORD_LEVEL_NAMES = ('Triads', 'Sevenths', 'As played')
 MSG_PDF_TRACK = 'TRACK'
 MSG_PDF_ROLE = 'ROLE'
-MSG_PRINTED_PART_NAMES = ('MELODY', 'CHORDS', 'LEFT OUT')
+MSG_PDF_IN = 'IN'
 MSG_TRACK_ROLE_NAMES = ('lead', 'harmony', 'pad', 'bass', 'counter', 'drums')
 MSG_NO_ROLE = 'silent'
 MSG_EXPORT_DIRECTORY = 'Export directory: {directory}   writes {files}'

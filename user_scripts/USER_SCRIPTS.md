@@ -127,7 +127,7 @@ sh user_scripts/demo_report.sh examples/by_genre/rock/*.yml
 
 Makes a song of a set into its learning packet, a PDF beside the set: its
 piano roll, chord changes, chord chart and chord sequence. `--song`,
-`--output-dir`, `--pages`, `--melody`, `--chords` and `--chords-level` choose
+`--output-dir`, `--pages`, `--tracks` and `--chords-level` choose
 what goes in; `--help` lists them.
 
 ```

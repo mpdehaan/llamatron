@@ -4,8 +4,8 @@
 """The PDF export: a song made into the PDFs chosen, beside its set as every export is, named <set>_<song>__<kind>.pdf.
 
 The packet is one PDF of the pages ticked, in the order a learner reads them: the piano roll, the chord changes, the chord
-chart and the chord sequence. The tracks chosen as the melody and the chords, and the level the chords are printed at,
-come in PdfChoices.
+chart and the chord sequence. The tracks chosen, merged into one and read as a lead sheet, and the level the chords are
+printed at, come in PdfChoices.
 """
 
 from dataclasses import dataclass
@@ -20,7 +20,7 @@ from llamatron.exporters.pdf.chord_chart import draw_chord_chart
 from llamatron.exporters.pdf.chord_sequence import draw_chord_sequence
 from llamatron.exporters.pdf.piano_roll import draw_piano_roll
 from llamatron.music_theory.analysis import roles
-from llamatron.music_theory.harmony import chord_charts
+from llamatron.music_theory.harmony import chord_estimate
 from llamatron.user_strings import printing
 
 PDF_SUFFIX = '.pdf'
@@ -53,54 +53,52 @@ DEFAULT_PACKET_PAGES = PACKET_PAGES
 TRACK_ROLES = (roles.MELODY, roles.HARMONY, roles.PAD, roles.BASS, roles.COUNTER, roles.DRUMS)
 
 
-class TrackPart(NamedTuple):
-    """A track as the PDF page lists it: its name, the role its notes play or None, and the part it plays by default."""
+class PdfTrack(NamedTuple):
+    """A track as the PDF page lists it: its name, the role its notes play or None, and whether a PDF takes it by default."""
 
     name: str
     role: object
-    part: str
+    chosen: bool
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)
 class PdfChoices:
-    """What a PDF export makes: the packet's pages ticked, the part each track plays by name (song_printing.PrintedPart),
-    a track not named left out, and the level the chords are printed at."""
+    """What a PDF export makes: the packet's pages ticked, the names of the tracks merged into the PDF, and the level the
+    chords are printed at."""
 
     packet_pages: tuple = DEFAULT_PACKET_PAGES
-    parts: dict
-    level: str = chord_charts.DEFAULT_CHORD_LEVEL
+    tracks: frozenset
+    level: str = chord_estimate.DEFAULT_CHORD_LEVEL
 
 
 class PdfOptions(NamedTuple):
-    """What the PDF page offers: the packet's pages in order, the chord levels and the default, the parts a track may play,
-    and the roles a track's notes may play, the drums last."""
+    """What the PDF page offers: the packet's pages in order, the chord levels and the default, and the roles a track's
+    notes may play, the drums last."""
 
     packet_pages: tuple
     chord_levels: tuple
     default_level: str
-    printed_parts: tuple
     track_roles: tuple
 
 
 def pdf_options():
     """Return what the PDF page offers (PdfOptions)."""
-    return PdfOptions(packet_pages=PACKET_PAGES, chord_levels=chord_charts.CHORD_LEVELS, default_level=chord_charts.DEFAULT_CHORD_LEVEL,
-                      printed_parts=song_printing.PRINTED_PARTS, track_roles=TRACK_ROLES)
+    return PdfOptions(packet_pages=PACKET_PAGES, chord_levels=chord_estimate.CHORD_LEVELS, default_level=chord_estimate.DEFAULT_CHORD_LEVEL,
+                      track_roles=TRACK_ROLES)
 
 
-def default_parts(song):
-    """Return the part each of a song's tracks plays by default, by its name: the role its notes play."""
-    tracks = song_printing.track_notes(song_printing.rendered(song))
-    return song_printing.default_parts(tracks=tracks, signature=song.get_time_signature(), chord_tracks=song_printing.written_chord_tracks(song))
+def default_tracks(song):
+    """Return the names of a song's tracks a PDF takes by default: every track that plays pitched notes."""
+    return song_printing.default_tracks(song_printing.track_notes(song_printing.rendered(song)))
 
 
-def track_parts(song):
-    """Return each of a song's tracks in order with the role its notes play, or None for a track that plays none, and the
-    part it plays by default, as TrackPart."""
+def pdf_tracks(song):
+    """Return each of a song's tracks in order, with the role its notes play, or None, and whether a PDF takes it by
+    default, as PdfTrack."""
     tracks = song_printing.track_notes(song_printing.rendered(song))
     found, _, _ = song_printing.track_roles(tracks=tracks, signature=song.get_time_signature())
-    parts = song_printing.default_parts(tracks=tracks, signature=song.get_time_signature(), chord_tracks=song_printing.written_chord_tracks(song))
-    return [TrackPart(name=track.name, role=found.get(track.name), part=parts.get(track.name, song_printing.PrintedPart.LEFT_OUT)) for track in tracks]
+    chosen = song_printing.default_tracks(tracks)
+    return [PdfTrack(name=track.name, role=found.get(track.name), chosen=track.name in chosen) for track in tracks]
 
 
 def pdf_path(*, directory, name, kind):
@@ -114,7 +112,7 @@ def export_pdfs(*, song, title, directory, name, choices):
     written = []
     if not choices.packet_pages:
         return written
-    printed = song_printing.printed_song(song=song, title=title, parts=choices.parts, level=choices.level)
+    printed = song_printing.printed_song(song=song, title=title, tracks=choices.tracks, level=choices.level)
     path = pdf_path(directory=directory, name=name, kind=PdfKind.PACKET)
     write_packet(path=path, printed=printed, pages=choices.packet_pages)
     written.append(path)

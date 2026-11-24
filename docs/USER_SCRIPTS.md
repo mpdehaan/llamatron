@@ -178,7 +178,7 @@ to print a song to learn or teach at the piano.
 ```
 sh user_scripts/export_pdf.sh examples/by_genre/ragtime/entertainer.yml
 sh user_scripts/export_pdf.sh my_song.yml --song chorus_idea --pages piano_roll,chord_chart --chords-level triads
-sh user_scripts/export_pdf.sh my_song.yml --melody lead,fiddle --chords piano,guitar --output-dir ~/printouts
+sh user_scripts/export_pdf.sh my_song.yml --tracks lead,piano --output-dir ~/printouts
 sh user_scripts/export_pdf.sh --help
 ```
 
@@ -189,10 +189,8 @@ Parameters:
 - `--output-dir FOLDER`: where the PDF goes, the set's folder if not given.
 - `--pages PAGES`: the packet's pages, comma-separated, from `piano_roll`,
   `chord_changes`, `chord_chart` and `chord_sequence`; all of them if not given.
-- `--melody TRACKS`: the tracks merged into the melody, comma-separated.
-- `--chords TRACKS`: the tracks heard together as the chords, comma-separated.
-  Without `--melody` and `--chords`, each track plays the part its notes'
-  role gives it; naming either leaves every track not named out.
+- `--tracks TRACKS`: the tracks merged and read as a lead sheet,
+  comma-separated; every track with pitched notes if not given.
 - `--chords-level LEVEL`: `sevenths` (the default), `triads` or `as_played`.
 
 ## Importing MIDI Files

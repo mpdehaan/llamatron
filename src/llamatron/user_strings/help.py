@@ -117,11 +117,11 @@ A protected set's notes can only be read, so they open reading, with no E or Bks
 HELP_PDF_EXPORT_PAGE = """
 What goes in the current song's learning packet, a PDF written beside the set as
 <set>_<song>__packet.pdf. Space or ENTER ticks the packet's pages. Chords says how
-simply the chords are printed: [ and ] step it, ENTER picks. Each track plays one
-part, a dot under MELODY, CHORDS or LEFT OUT: the melody tracks are merged into one
-line, and the chord tracks heard together. Left and Right choose the column and
-Space or ENTER takes it. Tab goes to the next part. Export writes the PDF; it
-refuses while nothing is ticked or no track plays a part a page needs.
+simply the chords are printed: [ and ] step it, ENTER picks. A dot under IN puts
+a track in the PDF, Space or ENTER to choose: the tracks chosen are merged into one
+and read as a lead sheet, the tune its top line and the chords worked out under it.
+Tab goes to the next part. Export writes the PDF; it refuses while no page is
+ticked or no track is chosen.
 """
 
 # OpenPage

@@ -38,7 +38,7 @@ class TestPianoRoll(unittest.TestCase):
         for scene in song.get_scenes():
             scene.set_section(None)
         song.get_scenes()[1].set_repeat(2)
-        repeated = song_printing.printed_song(song=song, title=test_song_printing.SONG, parts=test_song_printing.PARTS)
+        repeated = song_printing.printed_song(song=song, title=test_song_printing.SONG, tracks=test_song_printing.TRACKS)
         self.assertEqual(piano_roll.printed_spans(repeated), [(0 * BAR, BAR), (BAR, 2 * BAR), (3 * BAR, 4 * BAR)])
 
     def test_rows_hold_sixteen_beats_and_their_lanes_span_the_melody_an_octave_at_least(self):
@@ -68,8 +68,9 @@ class TestPianoRoll(unittest.TestCase):
             self.assertEqual(page.page_count(), 1)
 
     def test_a_song_printed_without_chords_leaves_no_room_for_them(self):
-        song = song_printing.printed_song(song=Setlist.read_file(test_song_printing.SET_FILE).get_song(test_song_printing.SONG), title=test_song_printing.SONG, parts={test_song_printing.LEAD: song_printing.PrintedPart.MELODY})
-        self.assertEqual(song.chords, ())
+        with_chords = printed()
+        song = PrintedSong(title=with_chords.title, melody=with_chords.melody, chords=(), keys=with_chords.keys, sections=with_chords.sections,
+                           signature=with_chords.signature, tempo=with_chords.tempo, length=with_chords.length)
         self.assertEqual(piano_roll.chord_room(song), piano_roll.ChordRoom(row=0, strip=0))
         with tempfile.TemporaryDirectory() as folder:
             page = NumberedCanvas(os.path.join(folder, PDF_FILE), pagesize=letter)

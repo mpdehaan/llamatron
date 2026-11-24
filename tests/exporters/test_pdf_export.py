@@ -12,7 +12,6 @@ import unittest
 
 from llamatron.exporters.pdf import chord_sequence, pdf_export, pdf_script
 from llamatron.exporters.pdf.pdf_export import PacketPage, PdfChoices, PdfKind
-from llamatron.exporters.pdf.song_printing import PrintedPart
 from llamatron.model.objects.named_scale import NamedScale
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema.file_format import ScaleKind
@@ -34,12 +33,12 @@ class TestPdfExport(unittest.TestCase):
         self.song = Setlist.read_file(test_song_printing.SET_FILE).get_song(test_song_printing.SONG)
 
     def test_the_packet_is_one_pdf_named_after_the_set_and_song(self):
-        written = pdf_export.export_pdfs(song=self.song, title=test_song_printing.SONG, directory=self.temporary.name, name=NAME, choices=PdfChoices(parts=test_song_printing.PARTS))
+        written = pdf_export.export_pdfs(song=self.song, title=test_song_printing.SONG, directory=self.temporary.name, name=NAME, choices=PdfChoices(tracks=test_song_printing.TRACKS))
         self.assertEqual(written, [pdf_export.pdf_path(directory=self.temporary.name, name=NAME, kind=PdfKind.PACKET)])
         self.assertTrue(os.path.getsize(written[0]))
 
     def test_nothing_ticked_writes_nothing(self):
-        choices = PdfChoices(packet_pages=(), parts=test_song_printing.PARTS)
+        choices = PdfChoices(packet_pages=(), tracks=test_song_printing.TRACKS)
         self.assertEqual(pdf_export.export_pdfs(song=self.song, title=test_song_printing.SONG, directory=self.temporary.name, name=NAME, choices=choices), [])
         self.assertEqual(os.listdir(self.temporary.name), [])
 
@@ -56,15 +55,14 @@ class TestPdfExport(unittest.TestCase):
         said = io.StringIO()
         with contextlib.redirect_stdout(said):
             pdf_script.main(arguments=[test_song_printing.SET_FILE, pdf_script.OPTION_OUTPUT, self.temporary.name, pdf_script.OPTION_PAGES, PacketPage.CHORD_CHART,
-                                       pdf_script.OPTION_MELODY, test_song_printing.LEAD, pdf_script.OPTION_CHORDS, test_song_printing.PIANO])
+                                       pdf_script.OPTION_TRACKS, test_song_printing.LEAD + pdf_script.LIST_JOIN + test_song_printing.PIANO])
         self.assertEqual(len(os.listdir(self.temporary.name)), 1)
         self.assertIn(self.temporary.name, said.getvalue())
 
-    def test_the_script_takes_each_tracks_role_unless_tracks_are_named(self):
-        named = pdf_script.parser().parse_args([test_song_printing.SET_FILE, pdf_script.OPTION_MELODY, test_song_printing.FIDDLE])
-        self.assertEqual(pdf_script.parts_of(options=named, song=self.song), {test_song_printing.FIDDLE: PrintedPart.MELODY})
-        unnamed = pdf_script.parser().parse_args([test_song_printing.SET_FILE])
-        self.assertEqual(pdf_script.parts_of(options=unnamed, song=self.song)[test_song_printing.LEAD], PrintedPart.MELODY)
+    def test_the_script_takes_the_tracks_named_or_every_pitched_track(self):
+        named = pdf_script.parser().parse_args([test_song_printing.SET_FILE, pdf_script.OPTION_TRACKS, test_song_printing.FIDDLE])
+        self.assertEqual(named.tracks, [test_song_printing.FIDDLE])
+        self.assertEqual(pdf_export.default_tracks(self.song), {test_song_printing.LEAD, test_song_printing.FIDDLE, test_song_printing.PIANO})
 
     def test_the_script_refuses_a_page_the_packet_has_not(self):
         with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):

@@ -116,10 +116,10 @@ MSG_WAV_EXPORT_NOTE = 'Only the tracks whose instrument plays through FluidSynth
 MSG_REPLACE_EXPORT_QUESTION = '{path} is there already.'
 MSG_EXPORT_REPLACES_LIVE_WORK = 'Anything saved over it in Live is lost. Save your own work under another name.'
 MSG_EXPORTED = 'exported the {name} to {path}'
-# interface/tracker/screens/set/pdf_export_page.py: where the PDFs went, and a drums track chosen as chords.
+# interface/tracker/screens/set/pdf_export_page.py: where the PDFs went, and a drums track, which can't go in.
 MSG_EXPORTED_PDFS = 'exported {count} PDF to {paths}'
 MSG_PATHS_JOIN = ', '
-MSG_PDF_DRUMS_AS_CHORDS = '{track} is a drums track: its notes make no chords'
+MSG_PDF_NO_DRUMS = '{track} is a drums track: its notes have no pitches to print'
 
 # interface/tracker/history.py: what the status line says after an undo or a redo, and how it names what changed.
 MSG_UNDONE = 'undone: {what}'
