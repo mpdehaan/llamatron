@@ -53,15 +53,18 @@ class FieldPage(Page):
 
     def fields_state(self):
         """Return everything the page's fields are built from besides the page's own code, the key they are kept by: the
-        document's revision, which moves with every change to the set, the sections open, the tabs chosen, where the cursor is and whether it carries something, and what the
+        document's revision, which moves with every change to the set, the sections open, the tabs chosen, whether the cursor carries something, and what the
         page itself says its fields read. A key asks for the fields dozens of times, to find the cursor, list the keys and draw,
-        and each asking built every field and tab again: the clip page's took 13 ms a key."""
+        and each asking built every field and tab again: the clip page's took 13 ms a key. Where the cursor is, is not part of
+        it: a field reads the cursor as it is drawn, and a page whose fields are built from it says so in fields_depend_on, so
+        that moving the cursor builds nothing again."""
         moving = getattr(self, MOVING, False)
         shared = (self.document().get_revision(), tuple(sorted(self.app.open_field_sections)), frozendict(self.app.chosen_tabs))
-        return (*shared, self.cursor.get_place(), self.cell, moving, self.fields_depend_on())
+        return (*shared, moving, self.fields_depend_on())
 
     def fields_depend_on(self):
-        """Return what else a page's fields are built from, outside the set and the page's cursor: nothing, unless a page says."""
+        """Return what else a page's fields are built from, outside the set: nothing, unless a page says, as one whose fields are
+        built from where the cursor is."""
         return ()
 
     # The key is asked of the page, so that a page of its own kind can say it keeps nothing, as the wizard does.
