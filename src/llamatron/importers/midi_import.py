@@ -68,6 +68,8 @@ class Imported:
     scenes: int
     long_patterns: int
     warnings: list = field(default_factory=list)
+    # How many notes were moved to a step, which the Song tab says beside the grid.
+    moved: int = 0
     # Each part whose CC messages came in, by its place among the file's parts, with the track that sends them and the CC numbers.
     control_tracks: list = field(default_factory=list)
 
@@ -154,7 +156,7 @@ class MidiImport:
                 warnings.append(message.format(count=count, numbers=numbers))
         return Imported(
             song=song, step_size=step_size, tracks=len(voices), patterns=len(song.patterns), scenes=len(cut.scenes),
-            long_patterns=cut.long_patterns, warnings=warnings, control_tracks=control_tracks,
+            long_patterns=cut.long_patterns, warnings=warnings, moved=moved, control_tracks=control_tracks,
         )
 
 
