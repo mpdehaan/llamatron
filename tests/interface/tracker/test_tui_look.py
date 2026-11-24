@@ -46,7 +46,7 @@ THIRD_WORD = 'third'
 LONG_SONG_WORD = 'x'
 TUNE = 'tune'
 SIXTEENTH = '1/16'
-MINOR_SEVENTH = 'Minor seventh'
+MINOR_SEVENTH = 'Minor seven'
 EXIT = 'exit'
 # Every Python file of the tracker, which the design tests read.
 TRACKER_FILES = '**/*.py'

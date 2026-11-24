@@ -101,7 +101,17 @@ class PatternRow(BindsKeys):
         if not self.is_note(step=step) and not self.on_rests():
             return drawing.NOTHING
         value = self.value(step=step)
-        return marks.MSG_UNSET_MARK if value is None else str(value)
+        if value is None:
+            return marks.MSG_UNSET_MARK
+        return self.shown_value(value)
+
+    def shown_value(self, value):
+        """Return a value as a cell shows it: as the file writes it, or by its cell mark where the row has marks for its
+        values, whose words a cell has no room for (MSG_CELL_MARKS)."""
+        row_marks = marks.MSG_CELL_MARKS.get(self.name)
+        if row_marks is None:
+            return str(value)
+        return row_marks[value]
 
     def cell_lines(self, *, step):
         """Return what a step's cell shows on each of the row's lines, top to bottom: its text, or the blocked mark on the value's line where the step can't take one."""

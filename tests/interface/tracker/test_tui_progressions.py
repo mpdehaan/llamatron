@@ -135,9 +135,9 @@ class TestChordsEditor(UITest):
         self.assertEqual(dialog.part, chord_dialog.QUALITY_LIST)
         dialog.places[chord_dialog.QUALITY_LIST] = dialog.qualities.index(ChordSymbol.DOMINANT7)
         # Right stops at the scales, the last list, and Left goes back and stops at the qualities, the first.
-        await self.press(*[Key.RIGHT] * chord_dialog.LISTS)
+        await self.press(*[Key.RIGHT] * len(dialog.parts))
         self.assertEqual(dialog.part, chord_dialog.SCALE_LIST)
-        await self.press(*[Key.LEFT] * chord_dialog.LISTS)
+        await self.press(*[Key.LEFT] * len(dialog.parts))
         self.assertEqual(dialog.part, chord_dialog.QUALITY_LIST)
         # The inversions come next, where Down picks the first inversion, and then the tensions.
         await self.press(Key.RIGHT, Key.DOWN)

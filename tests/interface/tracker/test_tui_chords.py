@@ -18,7 +18,7 @@ from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEd
 from llamatron.model.objects import setlist
 from llamatron.model.objects.named_scale import scale_type_name, scale_type_names
 from llamatron.model.objects.naming import words
-from llamatron.model.schema import limits
+from llamatron.model.schema import file_format, limits
 from llamatron.model.schema.file_format import ChordSymbol, Row, ScaleKind, Tension
 from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import labels, marks, messages
@@ -130,7 +130,7 @@ class TestPatternEditorChords(UITest):
         self.assertEqual((self.value(Row.CHORD), self.value(Row.TENSION), self.value(Row.CHORD_SCALE)), (ChordSymbol.DOMINANT7, ALTERED, MINOR))
         resting = self.editor.resting_status()
         self.assertTrue(resting.startswith(messages.MSG_RESTING_STEP.format(step=FIRST_STEP + 1)))
-        for part in (C_MINOR, C_MAJOR, 'Dominant Seventh', 'b9'):
+        for part in (C_MINOR, C_MAJOR, 'Dominant Seven', 'b9'):
             self.assertIn(part, resting)
         self.assertIn(resting[:30], self.text())
 
@@ -215,7 +215,7 @@ class TestPatternEditorChords(UITest):
     async def test_the_dialog_is_one_size_on_every_list_wide_enough_for_the_most_keys_on_one_line(self):
         dialog = await self.open_on_scales()
         sizes = set()
-        for _ in range(chord_dialog.LISTS):
+        for _ in range(len(dialog.parts)):
             lines = self.dialog_text().splitlines()
             sizes.add((len(lines), len(lines[0])))
             await self.press(keybindings.ChordDialog.NEXT_LIST)
@@ -236,7 +236,7 @@ class TestPatternEditorChords(UITest):
         self.assertNotEqual(moved_to, ChordSymbol.MAJOR)
         self.assertEqual(self.value(Row.CHORD), moved_to)
         # The flyout's cursor is shown too, before anything is picked.
-        await self.press(*[Key.RIGHT] * chord_dialog.LISTS, *[Key.UP] * len(dialog.categories), Key.DOWN, keybindings.ChordDialog.OPEN)
+        await self.press(*[Key.RIGHT] * len(dialog.parts), *[Key.UP] * len(dialog.categories), Key.DOWN, keybindings.ChordDialog.OPEN)
         self.assertEqual(self.value(Row.CHORD_SCALE), scale_categories.COMMON_SCALE_TYPES[0])
         await self.press(keybindings.ChordDialog.CLOSE_FLYOUT)
         self.assertIsNone(self.value(Row.CHORD_SCALE))
@@ -244,6 +244,26 @@ class TestPatternEditorChords(UITest):
         self.assertIsInstance(self.app.screen, PatternEditor)
         self.assertEqual((self.value(Row.CHORD), self.value(Row.CHORD_SCALE)), (ChordSymbol.MAJOR, None))
         self.assertFalse(self.document.can_undo())
+
+    async def test_the_double_row_cycles_its_doublings_and_shows_each_by_its_cell_mark(self):
+        await self.go_to_row(Row.DOUBLE)
+        await self.press(keybindings.CycleRow.NEXT)
+        self.assertEqual(self.value(Row.DOUBLE), file_format.DOUBLINGS[0])
+        self.assertIn(marks.MSG_CELL_MARKS[Row.DOUBLE][file_format.DOUBLINGS[0]], self.editor.cell_text(name=Row.DOUBLE, step=FIRST_STEP))
+        await self.press(keybindings.CycleRow.CLEAR)
+        self.assertIsNone(self.value(Row.DOUBLE))
+
+    async def test_a_doubling_is_chosen_in_the_dialog_beside_the_inversion_and_said_under_the_lists(self):
+        self.set(row=Row.CHORD, value=ChordSymbol.MAJOR)
+        await self.go_to_row(Row.CHORD)
+        await self.press(keybindings.ChordRow.CHOOSE)
+        dialog = self.app.screen
+        self.assertEqual(dialog.parts.index(chord_dialog.DOUBLE_LIST), dialog.parts.index(chord_dialog.INVERSION_LIST) + 1)
+        await self.press(Key.RIGHT, Key.RIGHT, Key.DOWN)
+        self.assertEqual((dialog.part, dialog.choice().doubling), (chord_dialog.DOUBLE_LIST, file_format.DOUBLINGS[0]))
+        self.assertIn(messages.MSG_DOUBLINGS_SAID[file_format.DOUBLINGS[0]], self.dialog_text())
+        await self.press(keybindings.ChordDialog.CHOOSE)
+        self.assertEqual((self.value(Row.CHORD), self.value(Row.DOUBLE)), (ChordSymbol.MAJOR, file_format.DOUBLINGS[0]))
 
     async def test_an_inversion_is_chosen_in_the_dialog_with_the_chord_and_a_single_note_takes_none(self):
         self.set(row=Row.CHORD, value=ChordSymbol.MAJOR)
@@ -342,7 +362,7 @@ class TestPatternEditorChords(UITest):
         self.assertEqual(lines[first - 1].strip(Box.HEAVY_BAR + drawing.SPACE), drawing.NOTHING)
         self.assertNotEqual(lines[first - 2].strip(Box.HEAVY_BAR + drawing.SPACE), drawing.NOTHING)
         # Major: three keys filled, and the dialog is as tall as it was, the keyboard still one blank line under the last sentence.
-        await self.press(Key.DOWN)
+        await self.press(*[Key.DOWN] * dialog.qualities.index(ChordSymbol.MAJOR))
         keyboard, first = self.keyboard_lines()
         self.assertEqual(drawing.NOTHING.join(keyboard).count(marks.MSG_KEY_IN_CHORD), MAJOR_TRIAD_NOTES)
         lines = self.dialog_text().splitlines()
@@ -376,7 +396,7 @@ class TestChordDialogOnASmallConsole(TestPatternEditorChords):
     async def test_the_dialog_is_one_size_on_every_list_and_every_flyout_is_whole_on_the_console(self):
         dialog = await self.open_on_scales()
         sizes = set()
-        for _ in range(chord_dialog.LISTS):
+        for _ in range(len(dialog.parts)):
             lines = self.dialog_text().splitlines()
             sizes.add((len(lines), len(lines[0])))
             await self.press(keybindings.ChordDialog.NEXT_LIST)

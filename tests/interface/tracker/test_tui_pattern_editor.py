@@ -410,12 +410,12 @@ class TestPatternEditorLengthsAndPitches(PatternEditorTest):
         for _ in range(4):
             await self.press(keybindings.ChordRow.MORE)
             seen.append(self.value(row=Row.CHORD))
-        self.assertEqual(seen, ['M', 'm', ChordSymbol.DIMINISHED, ChordSymbol.AUGMENTED])
+        self.assertEqual(seen, [ChordSymbol.OCTAVE, ChordSymbol.MINOR_THIRD, ChordSymbol.MAJOR_THIRD, ChordSymbol.FOURTH])
         # [ goes back to none, the first choice, and stops there, never round to the last.
         await self.press(*[keybindings.ChordRow.LESS] * 5)
         self.assertIsNone(self.value(row=Row.CHORD))
         await self.press(keybindings.ChordRow.MORE)
-        self.assertEqual(self.value(row=Row.CHORD), 'M')
+        self.assertEqual(self.value(row=Row.CHORD), ChordSymbol.OCTAVE)
         # ] stops at the last symbol, and [ goes back from the last.
         last = chord_value(file_format.CHORD_SYMBOLS[-1])
         before_last = chord_value(file_format.CHORD_SYMBOLS[-2])

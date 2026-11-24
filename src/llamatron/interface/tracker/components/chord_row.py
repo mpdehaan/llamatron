@@ -40,7 +40,7 @@ def step_chord_in_words(*, editor, step, choice=None):
     return ChordInWords(
         # A step that grabs its note has no degree of its own, so its chord has no name.
         scale=editor.known_scale() if isinstance(degree, int) else None, degree=degree, accidental=editor.value(row=Row.ACCIDENTAL, step=step),
-        kind=current.kind, symbol=current.quality, tensions=current.tensions, single_note=True,
+        kind=current.kind, symbol=current.quality, tensions=current.tensions, single_note=True, doubling=current.doubling,
     )
 
 
@@ -54,7 +54,7 @@ def step_keyboard(*, editor, step, choice):
     if not names:
         return None
     scale = editor.known_scale()
-    keyboard = Keyboard(root=scale.get_root(), half_steps=scale.get_half_steps(), chord=chord_keys(note_names=names, inversion=choice.inversion if choice.quality is not None else None))
+    keyboard = Keyboard(root=scale.get_root(), half_steps=scale.get_half_steps(), chord=chord_keys(note_names=names, inversion=choice.inversion if choice.quality is not None else None, doubling=choice.doubling))
     return keyboard_renderer.keyboard_lines(rows=keyboard.rows(), styles=keyboard_renderer.CHORD_KEY_STYLES)
 
 
@@ -62,6 +62,7 @@ def step_choice(*, editor, step):
     """Return a step's quality, tensions and scale type as a ChordChoice."""
     return ChordChoice(
         quality=chord_text(editor.value(row=Row.CHORD, step=step)), inversion=editor.value(row=Row.INVERSION, step=step), tensions=editor.value(row=Row.TENSION, step=step), kind=editor.value(row=Row.CHORD_SCALE, step=step),
+        doubling=editor.value(row=Row.DOUBLE, step=step),
     )
 
 
@@ -74,6 +75,7 @@ def pick_chord(*, editor, step, opens_on=chord_dialog.QUALITY_LIST):
         editor.set_value(value=None if choice.quality is None else choice.tensions, row=Row.TENSION, step=step)
         editor.set_value(value=None if choice.quality is None else choice.inversion, row=Row.INVERSION, step=step)
         editor.set_value(value=choice.kind, row=Row.CHORD_SCALE, step=step)
+        editor.set_value(value=choice.doubling, row=Row.DOUBLE, step=step)
 
     def moved(choice):
         # The chord is written as the choice moves, so that the editor underneath shows it, and written back when the dialog is cancelled; the whole is one undo step,
@@ -84,7 +86,7 @@ def pick_chord(*, editor, step, opens_on=chord_dialog.QUALITY_LIST):
     dialog = ChordDialog(
         title=messages.MSG_CHORD_DIALOG_TITLE.format(where=messages.MSG_CHORD_OF_STEP.format(step=step + 1, pattern=editor.item)),
         qualities=[None, *file_format.CHORD_SYMBOLS], quality_names=[messages.MSG_QUALITY_SINGLE_NOTE, *quality_names(file_format.CHORD_SYMBOLS)], inversions=[None, *limits.INVERSIONS], categories=scale_categories.SCALE_CATEGORIES,
-        current=step_choice(editor=editor, step=step), opens_on=opens_on, moved=moved,
+        doublings=[None, *file_format.DOUBLINGS], current=step_choice(editor=editor, step=step), opens_on=opens_on, moved=moved,
         said=lambda choice: step_chord_in_words(editor=editor, step=step, choice=choice).sentences(),
         keyboard=lambda choice: step_keyboard(editor=editor, step=step, choice=choice),
     )

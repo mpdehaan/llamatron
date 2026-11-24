@@ -46,7 +46,7 @@ EDITED_ROWS = 6
 # The rows the Chord dialog edits together, and the list it opens on from each.
 DIALOG_ROWS = {SCALE_ROW: chord_dialog.SCALE_LIST, QUALITY_ROW: chord_dialog.QUALITY_LIST, TENSION_ROW: chord_dialog.TENSION_LIST}
 # What each of those rows steps through, nothing first.
-QUALITY_CYCLE = [None, *file_format.FIXED_CHORDS]
+QUALITY_CYCLE = [None, *file_format.PROGRESSION_CHORDS]
 SCALE_CYCLE = [None, *scale_categories.SCALE_TYPES_IN_ORDER]
 TENSION_CYCLE = [None, *[(tension,) for tension in file_format.TENSIONS]]
 # The Degree gauge is drawn two degrees a line, a half block for the odd one, so that the page fits 24 lines with the three rows added.
@@ -212,7 +212,7 @@ class ChordsEditor(GeneratorEditor, StepGrid, StepEditor):
 
         dialog = ChordDialog(
             title=messages.MSG_CHORD_DIALOG_TITLE.format(where=messages.MSG_CHORD_OF_PROGRESSION.format(chord=place + 1, progression=self.item)),
-            qualities=QUALITY_CYCLE, quality_names=[messages.MSG_QUALITY_FROM_SCALE, *quality_names(file_format.FIXED_CHORDS)], inversions=INVERSION_CYCLE, categories=scale_categories.SCALE_CATEGORIES,
+            qualities=QUALITY_CYCLE, quality_names=[messages.MSG_QUALITY_FROM_SCALE, *quality_names(file_format.PROGRESSION_CHORDS)], inversions=INVERSION_CYCLE, categories=scale_categories.SCALE_CATEGORIES,
             current=self.choice_at(place), opens_on=DIALOG_ROWS[self.edited_row], said=lambda choice: self.in_words(place=place, choice=choice).sentences(),
         )
         self.ask(dialog=dialog, then=chosen)

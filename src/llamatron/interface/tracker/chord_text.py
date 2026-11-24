@@ -29,9 +29,9 @@ class ChordInWords:
     pattern's step is, where a progression's chord with no quality is the scale's triad.
     """
 
-    __slots__ = ('_scale', '_degree', '_accidental', '_kind', '_symbol', '_tensions', '_own_degree', '_single_note')
+    __slots__ = ('_scale', '_degree', '_accidental', '_kind', '_symbol', '_tensions', '_own_degree', '_single_note', '_doubling')
 
-    def __init__(self, *, scale, degree, accidental=None, kind=None, symbol=None, tensions=None, own_degree=None, single_note=False):
+    def __init__(self, *, scale, degree, accidental=None, kind=None, symbol=None, tensions=None, own_degree=None, single_note=False, doubling=None):
         self._scale = scale
         self._degree = degree
         self._accidental = accidental
@@ -40,6 +40,8 @@ class ChordInWords:
         self._tensions = tensions
         self._own_degree = own_degree
         self._single_note = single_note
+        # What a pattern's step plays again an octave away (its Double row), or None.
+        self._doubling = doubling
 
     def is_one_note(self):
         return self._single_note and self._symbol is None
@@ -73,12 +75,15 @@ class ChordInWords:
             return [messages.MSG_CHORD_NO_SCALE_KNOWN]
         degree = degree_shown(degree=self._degree, accidental=self._accidental)
         drawn_from = borrowed(scale=self._scale, kind=self._kind)
+        doubled = []
+        if self._doubling is not None:
+            doubled = [messages.MSG_DOUBLED_SENTENCE.format(doubled=messages.MSG_DOUBLINGS_SAID[self._doubling])]
         if self.is_one_note():
-            return [messages.MSG_NOTE_SENTENCE.format(scale=scale_shown(drawn_from), degree=degree, name=self.name())]
+            return [messages.MSG_NOTE_SENTENCE.format(scale=scale_shown(drawn_from), degree=degree, name=self.name()), *doubled]
         lines = [messages.MSG_CHORD_SENTENCE.format(scale=scale_shown(drawn_from), degree=degree, name=self.spelled(kind=self._kind).long_name)]
         if self._kind is not None:
             lines.append(messages.MSG_CHORD_OWN_SENTENCE.format(scale=scale_shown(self._scale), name=self.spelled(kind=None).long_name))
-        return [*lines, messages.MSG_CHORD_NOTES.format(notes=self.notes())]
+        return [*lines, messages.MSG_CHORD_NOTES.format(notes=self.notes()), *doubled]
 
     def resting(self, *, where):
         """Return what the status line says of the chord while the cursor rests on it, or nothing for one note or a scale that isn't known."""

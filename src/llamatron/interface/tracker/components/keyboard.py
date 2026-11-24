@@ -15,6 +15,7 @@ colour. chord_keys() says which keys a chord's notes are, from its root up.
 """
 
 from llamatron.interface.tracker import drawing
+from llamatron.model.schema import file_format
 from llamatron.model.values import note, scale as scale_values
 from llamatron.model.values.note import Note
 from llamatron.music_theory.fundamentals import intervals
@@ -51,7 +52,7 @@ def pitch_class_of(name):
     return (NATURAL_HALF_STEPS[name[0]] + name.count(SHARP_MARK) - name[1:].count(FLAT_MARK)) % intervals.HALF_STEPS_PER_OCTAVE
 
 
-def chord_keys(*, note_names, inversion=None):
+def chord_keys(*, note_names, inversion=None, doubling=None):
     """Return the keys of the keyboard a chord's notes are, as numbers from the lowest C: the root in the first octave and each
     note after it the next key up of its name, an inversion's lowest notes an octave higher, and a note past the last key an
     octave lower, so that every note of the chord has a key."""
@@ -65,7 +66,21 @@ def chord_keys(*, note_names, inversion=None):
         keys.append(key)
     for place in range(min(inversion or 0, len(keys))):
         keys[place] += intervals.HALF_STEPS_PER_OCTAVE
+    if doubling is not None:
+        keys = doubled_keys(keys=keys, doubling=doubling)
     return {key if key < KEY_COUNT else key % intervals.HALF_STEPS_PER_OCTAVE + intervals.HALF_STEPS_PER_OCTAVE for key in keys}
+
+
+def doubled_keys(*, keys, doubling):
+    """Return a chord's keys with those its Double row plays again an octave away, as the Realizer plays them, the whole
+    moved up an octave where a note doubled down would fall below the keyboard's lowest C."""
+    first, last, octaves = file_format.DOUBLED_NOTES[doubling]
+    by_pitch = sorted(keys)
+    added = [key + octaves * intervals.HALF_STEPS_PER_OCTAVE for key in by_pitch[first:last]]
+    every = sorted({*keys, *added})
+    if every[0] < 0:
+        every = [key + intervals.HALF_STEPS_PER_OCTAVE for key in every]
+    return every
 
 
 class Keyboard:
