@@ -5,7 +5,7 @@
 
 from unittest import mock
 
-from llamatron.caching.memory import StaleAnswer
+from llamatron.caching.memory import Memory, StaleAnswer
 from llamatron.interface.forms.note_names import note_shown, note_typed
 from llamatron.interface.forms.text import clock
 from llamatron.interface.pages.wizard import solo_melody_branch, starts
@@ -241,7 +241,9 @@ class TestWizardPage(WizardTest):
         await self.choose_genre_and_subgenre()
         wizard = self.wizard()
         wizard.rows()
-        # Rows made from nothing, the way a key that left something out would find them, differ from the rows kept.
+        # Rows made from nothing, the way a key that left something out would find them, differ from the rows kept; the check
+        # is made at the first ask after a key, as the next key would.
+        Memory.key_pressed()
         with mock.patch.object(WizardTree, WizardTree.roots.__name__, lambda tree: []), self.assertRaises(StaleAnswer):
             wizard.rows()
 

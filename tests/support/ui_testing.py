@@ -293,6 +293,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         # Pressing keys through the terminal driver takes a tenth of a second each, so these go
         # straight to the screen. TestRealKeys checks the same keys through the driver.
         for key in keys:
+            Memory.key_pressed()
             self.app.screen.on_key(key_event(pressed(key)))
             await self.settle()
 
@@ -321,6 +322,7 @@ class UITest(unittest.IsolatedAsyncioTestCase):
         The page handles the key and draws before this returns, so drawn() is current, though
         text() is not until the next press(). A key that opens a page or a dialog needs press().
         """
+        Memory.key_pressed()
         self.app.screen.on_key(key_event(pressed(key)))
 
     def drawn(self):

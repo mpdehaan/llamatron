@@ -49,6 +49,8 @@ class Memory:
 
     # Whether a new memory checks every answer unless told otherwise, which the tests turn on.
     _checks_by_default = False
+    # How many keys the tests have pressed, which with the latest revision makes the check round cached answers are checked in.
+    _keys_pressed = 0
 
     @classmethod
     def check_every_answer(cls, *, checks=True):
@@ -62,6 +64,17 @@ class Memory:
     def checks_by_default(cls):
         """Whether memories made now check their answers, which whatever keeps answers of its own asks, to check them too."""
         return cls._checks_by_default
+
+    @classmethod
+    def key_pressed(cls):
+        """Start a new check round, for the tests, which call this as they press a key, so that every cached answer asked after
+        it is worked out again once (caching/cached.py)."""
+        cls._keys_pressed += 1
+
+    @classmethod
+    def check_round(cls):
+        """Return the check round now, which moves whenever anything changes or the tests press a key."""
+        return (latest_revision(), cls._keys_pressed)
 
     def __init__(self, *, checks=None):
         self._cached = {}

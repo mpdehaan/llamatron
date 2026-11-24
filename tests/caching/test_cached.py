@@ -100,7 +100,8 @@ class TestKeptWhile(unittest.TestCase):
 
 
 class TestKeptChecked(unittest.TestCase):
-    """A method given said is worked out again on every call while the tests check every remembered answer, as a Memory is."""
+    """A method given said is worked out again while the tests check every remembered answer, as a Memory is: at its first
+    call after anything changed or the tests pressed a key."""
 
     def setUp(self):
         self.checked_before = Memory.checks_by_default()
@@ -113,6 +114,16 @@ class TestKeptChecked(unittest.TestCase):
         checked = Checked()
         checked.values()
         checked.value = 2
+        with self.assertRaises(StaleAnswer):
+            checked.values()
+
+    def test_an_answer_is_checked_once_a_round_and_again_after_a_key(self):
+        checked = Checked()
+        checked.values()
+        checked.values()
+        checked.value = 2
+        self.assertEqual(checked.values(), [1])
+        Memory.key_pressed()
         with self.assertRaises(StaleAnswer):
             checked.values()
 
