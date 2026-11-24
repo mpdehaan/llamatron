@@ -7,7 +7,7 @@ view's rows, a label column and a cell per step, the cursor's cell reversed and 
 
 A joint where the beat edge crosses a dim rule is plain, between the two, so that neither line reads as broken: a bold cross
 showed as a break in the rule at every beat, and a dim one as a break in the beat edge at every rule and section heading, both
-of which were seen once. Every crossing is read after a change to a drawing (.claude/UX.md).
+of which were seen once. Every crossing is read after a change to a drawing (.claude/rules/UX.md).
 """
 
 from rich.text import Text

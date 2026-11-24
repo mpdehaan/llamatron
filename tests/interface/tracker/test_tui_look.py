@@ -287,7 +287,7 @@ class TestArrowsAndTheMark(UITest):
         self.assertFalse(self.app.get_document().is_dirty())
 
     async def test_no_cursor_goes_round_from_one_end_to_the_other(self):
-        """Up on the first row and Down on the last stay put on a list page, a settings page and a picker, and so do Left and Right in the pattern editor and the one-row editors (.claude/UX.md)."""
+        """Up on the first row and Down on the last stay put on a list page, a settings page and a picker, and so do Left and Right in the pattern editor and the one-row editors (.claude/rules/UX.md)."""
         names = self.document.get_setlist().get_scale_names()
         await self.press(keybindings.MainPage.SCALES, Key.UP)
         self.assertEqual(self.app.screen.current(), names[0])

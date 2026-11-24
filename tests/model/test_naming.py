@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The names the tracker makes up itself: one rule for the whole tracker (.claude/UX.md, "Names the tracker makes")."""
+"""The names the tracker makes up itself: one rule for the whole tracker (.claude/rules/UX.md, "Names the tracker makes")."""
 
 import unittest
 

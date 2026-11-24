@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""internal_tools/monotony_report.py, one quick check of its main path: a subgenre is reported as a table of players by kinds of section. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
+"""internal_tools/monotony_report.py, one quick check of its main path: a subgenre is reported as a table of players by kinds of section. A tool fails loudly when it is run, so one check is enough (.claude/rules/TESTING.md)."""
 
 import importlib.util
 import pathlib

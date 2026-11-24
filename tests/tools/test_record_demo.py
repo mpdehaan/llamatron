@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""internal_tools/record_demo.py, one quick check of its main path: a take is the splash the lead in the song the lead out the splash again the hold and a margin or the limit. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
+"""internal_tools/record_demo.py, one quick check of its main path: a take is the splash the lead in the song the lead out the splash again the hold and a margin or the limit. A tool fails loudly when it is run, so one check is enough (.claude/rules/TESTING.md)."""
 
 import contextlib
 import importlib.util

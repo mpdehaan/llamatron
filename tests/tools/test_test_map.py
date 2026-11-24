@@ -42,7 +42,7 @@ class TestWhatAChangeNeeds(unittest.TestCase):
         self.assertIn(EXAMPLES_CLASS, needed(['examples/learning/01_hello_world.yml']))
 
     def test_notes_only_for_claude_need_only_the_rule_tests(self):
-        self.assertEqual(needed(['.claude/QUEUE.md']), [RULE_CLASS])
+        self.assertEqual(needed(['.claude/planning/QUEUE.md']), [RULE_CLASS])
 
     def test_a_file_the_map_cannot_place_needs_everything(self):
         self.assertEqual(needed([NEW_SOURCE_FILE]), test_map.EVERYTHING)

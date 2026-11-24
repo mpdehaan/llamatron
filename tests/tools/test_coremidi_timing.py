@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-"""internal_tools/coremidi_timing.py, one quick check of its main path: each note is a note on and a note off after zero. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
+"""internal_tools/coremidi_timing.py, one quick check of its main path: each note is a note on and a note off after zero. A tool fails loudly when it is run, so one check is enough (.claude/rules/TESTING.md)."""
 
 import importlib.util
 import pathlib

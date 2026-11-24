@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-"""The research tools of internal_tools/analysis_and_generation/, one quick check of each tool's main path: the chord files' readers, the corpus layer, the corpus fetcher's refusal of a member that climbs out of its folder, the genre analysis, the MIDI cleaning, two drum grooves compared, and the genre measures. A research tool fails loudly when it is run, so one check each is enough (.claude/TESTING.md)."""
+"""The research tools of internal_tools/analysis_and_generation/, one quick check of each tool's main path: the chord files' readers, the corpus layer, the corpus fetcher's refusal of a member that climbs out of its folder, the genre analysis, the MIDI cleaning, two drum grooves compared, and the genre measures. A research tool fails loudly when it is run, so one check each is enough (.claude/rules/TESTING.md)."""
 
 from corpus import chord_files
 from measuring.hearing.cleaning import KICK, tidied

@@ -4,7 +4,7 @@
 
 """Keep the ideas files sorted by priority: 1 first, then by the order the ideas already have.
 
-    .venv/bin/python internal_tools/sort_ideas.py            # sort .claude/IDEAS.yml in place
+    .venv/bin/python internal_tools/sort_ideas.py            # sort .claude/planning/IDEAS.yml in place
     .venv/bin/python internal_tools/sort_ideas.py --check    # say which are out of order, change nothing, and fail if any is
 
 An ideas file is a YAML list of ideas, each with a title, a priority and a text. The user's words for a
@@ -22,7 +22,7 @@ import sys
 from llamatron.model.file.safe_yaml import load_safely
 
 ROOT = Path(__file__).resolve().parent.parent
-IDEAS_FILES = (ROOT / '.claude' / 'IDEAS.yml',)
+IDEAS_FILES = (ROOT / '.claude' / 'planning' / 'IDEAS.yml',)
 
 # The fields of an idea, as the file writes them.
 TITLE = 'title'

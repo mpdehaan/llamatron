@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""internal_tools/serve_docs.py, one quick check of its main path: a page is found with or without its suffix. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
+"""internal_tools/serve_docs.py, one quick check of its main path: a page is found with or without its suffix. A tool fails loudly when it is run, so one check is enough (.claude/rules/TESTING.md)."""
 
 import pathlib
 import sys

@@ -4,7 +4,7 @@
 """The moves a person makes through a form, whatever key makes them: up, down, left and right, and choose.
 
 Each is named as the tracker names the key that makes it, so that a key's name is the move it makes. A cursor stops at every
-edge and never goes round from one end to the other (.claude/UX.md): an arrow held down flies to the end and stays there,
+edge and never goes round from one end to the other (.claude/rules/UX.md): an arrow held down flies to the end and stays there,
 which going round would break.
 """
 

@@ -10,7 +10,7 @@
     internal_tools/analysis_and_generation/import_trial.sh FOLDER --name classical # the report's name, by default the folder's
     internal_tools/analysis_and_generation/import_trial.sh FOLDER --sets OUT       # also write each imported set, flat, into OUT
 
-It judges every step of the Import Wizard (.claude/DESIGNS.md, "The Import Wizard") before and after, on the corpus's scores
+It judges every step of the Import Wizard (.claude/planning/DESIGNS.md, "The Import Wizard") before and after, on the corpus's scores
 and on the user's own folders of files, which are for private testing only: nothing it reads or writes enters the repository,
 and no file, folder or work it meets is named in a document, a commit or a test. The reports go to
 /tmp/claude/llamatron/import_trials/NAME/: one JSON file per MIDI file and summary.txt, a line per file and the totals.

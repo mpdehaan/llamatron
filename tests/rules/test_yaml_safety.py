@@ -38,7 +38,7 @@ UNSAFE = re.compile(r'yaml\.(load|load_all|full_load|full_load_all|unsafe_load|u
 WRITE_TEXT = 'w'
 # The program's modules that may import yaml: reading a file, writing one, and the loader. In
 # memory the set is objects, and nothing between key presses parses or dumps YAML
-# (.claude/STYLE.md, "Performance matters"), so no other module under src/ gets to import it.
+# (.claude/rules/STYLE.md, "Performance matters"), so no other module under src/ gets to import it.
 YAML_MODULES = ('model/file/setlist_reader.py', 'model/file/setlist_writer.py', 'model/file/safe_yaml.py')
 IMPORTS_YAML = re.compile(r'^\s*(import yaml\b|from yaml\b)')
 FILE_ENCODING = 'utf-8'

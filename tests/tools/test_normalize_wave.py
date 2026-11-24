@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""internal_tools/normalize_wave.py, one quick check of its main path: a quiet file is raised until its peak is one decibel below full scale. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
+"""internal_tools/normalize_wave.py, one quick check of its main path: a quiet file is raised until its peak is one decibel below full scale. A tool fails loudly when it is run, so one check is enough (.claude/rules/TESTING.md)."""
 
 import contextlib
 import importlib.util

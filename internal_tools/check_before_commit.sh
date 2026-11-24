@@ -7,7 +7,7 @@
 
 # There is no git hook, so that a person editing documents commits at once; Claude
 # stages its files and runs this before committing anything that changes code, tests, examples or
-# tools, and commits only when it passes (.claude/TESTING.md).
+# tools, and commits only when it passes (.claude/rules/TESTING.md).
 
 set -e
 # Run from the repository's top folder, wherever it is started.

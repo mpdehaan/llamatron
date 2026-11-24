@@ -7,7 +7,7 @@ The colours are primaries and their neighbours, saturated but never full, so tha
 and mix into clean secondaries rather than mud. A note's pitch leans its track's colour toward the
 next in the cycle a little, and its octave sets how bright it is. The limiter holds the picture's
 mean brightness under a level, changing its gain only slowly, and caps every channel below white,
-the rule that the visualizer never strobes or flashes brightly (.claude/UX.md, "Drawing").
+the rule that the visualizer never strobes or flashes brightly (.claude/rules/UX.md, "Drawing").
 """
 
 import numpy

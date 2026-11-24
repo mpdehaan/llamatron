@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""internal_tools/loudness_steps.py, one quick check of its main path: the step into a chorus is said as written and as made. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
+"""internal_tools/loudness_steps.py, one quick check of its main path: the step into a chorus is said as written and as made. A tool fails loudly when it is run, so one check is enough (.claude/rules/TESTING.md)."""
 
 import importlib.util
 import pathlib

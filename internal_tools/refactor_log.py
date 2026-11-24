@@ -4,7 +4,7 @@
 
 """Measure the program after a step of the refactoring and add a row to the log, so that the whole can be read end to end.
 
-    internal_tools/refactor_log.sh "the step's name"     # measure, and add a row to .claude/features/REFACTORING_LOG.md
+    internal_tools/refactor_log.sh "the step's name"     # measure, and add a row to .claude/planning/REFACTORING_LOG.md
     internal_tools/refactor_log.sh --show                # measure and print the row, changing nothing
 
 A row holds how fast the program is (every example rendered, the function calls that took, the
@@ -24,7 +24,7 @@ import sys
 import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-LOG = ROOT / '.claude' / 'features' / 'REFACTORING_LOG.md'
+LOG = ROOT / '.claude' / 'planning' / 'REFACTORING_LOG.md'
 SOURCE = ROOT / 'src' / 'llamatron'
 TESTS = ROOT / 'tests'
 TOOLS = ROOT / 'internal_tools'
@@ -62,7 +62,7 @@ CELL_SEPARATOR = ' | '
 RULE_CELL = '---'
 LOG_HEADING = """# The Refactoring's Log
 
-A row for each step of the refactoring (`.claude/features/REFACTORING.md`), written by `internal_tools/refactor_log.sh`: how fast
+A row for each step of the refactoring (`.claude/planning/REFACTORING.md`), written by `internal_tools/refactor_log.sh`: how fast
 the program is, how large and how shaped, after the step. Every step is committed only with every export byte for byte the same.
 
 """

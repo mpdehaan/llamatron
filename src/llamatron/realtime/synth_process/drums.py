@@ -4,7 +4,7 @@
 """The built-in drum machines: each renders one whole hit, as float32, from its five knobs, Pitch, Decay, Color, Shape and
 Sweep, each 0 to 127, a note's pitch tuning it in half steps from middle C and its velocity brightening it a little.
 
-The recipes are the professor's (.claude/synthesis_techniques/DRUMS.md), honoring the classic drum machines' circuits:
+The recipes are the professor's (.claude/notes/synthesis/DRUMS.md), honoring the classic drum machines' circuits:
 a sine resonator swept down in pitch for the kicks, detuned tones and snapped noise for the snare, noise bursts for the
 clap, six clashing squares for the hats, two squares through a band-pass for the cowbell, and a struck membrane's modes for
 the acoustic tom, and Karplus and Strong's plucked drum. A hit is rendered once, when its note first arrives, in a few milliseconds, and kept; every hit starts at

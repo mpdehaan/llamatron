@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """The key map: what every key does on every page, with the cursor at each kind of place, gathered by the key tour of
-tests/interface/tracker/test_tui_help_keys.py and written into .claude/KEYMAP.md, which TestKeyTour keeps current and
+tests/interface/tracker/test_tui_help_keys.py and written into .claude/reference/KEYMAP.md, which TestKeyTour keeps current and
 internal_tools/key_map.sh rewrites. It's for Claude, so that a question about a key is one lookup."""
 
 import os
@@ -18,7 +18,7 @@ from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.list_page import ListPage
 
 
-KEY_MAP_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), '.claude', 'KEYMAP.md')
+KEY_MAP_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), '.claude', 'reference', 'KEYMAP.md')
 WRITE_KEY_MAP = 'LLAMATRON_WRITE_KEY_MAP'
 FILE_ENCODING = 'utf-8'
 
@@ -186,7 +186,7 @@ def field_shown(field):
 
 
 def written_key_map():
-    """Return what .claude/KEYMAP.md holds, or None when it doesn't exist yet."""
+    """Return what .claude/reference/KEYMAP.md holds, or None when it doesn't exist yet."""
     if not os.path.exists(KEY_MAP_PATH):
         return None
     with open(KEY_MAP_PATH, encoding=FILE_ENCODING) as handle:

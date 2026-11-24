@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""internal_tools/play_demo.py, one quick check of its main path: the list numbers the wave files by name and plays the one typed. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
+"""internal_tools/play_demo.py, one quick check of its main path: the list numbers the wave files by name and plays the one typed. A tool fails loudly when it is run, so one check is enough (.claude/rules/TESTING.md)."""
 
 import contextlib
 import importlib.util

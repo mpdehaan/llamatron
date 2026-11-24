@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""internal_tools/window_region.py, one quick check of its main path: the cells leave out the title bar the margins and the rounded corners. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
+"""internal_tools/window_region.py, one quick check of its main path: the cells leave out the title bar the margins and the rounded corners. A tool fails loudly when it is run, so one check is enough (.claude/rules/TESTING.md)."""
 
 import numpy
 import os

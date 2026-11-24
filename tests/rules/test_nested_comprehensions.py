@@ -4,7 +4,7 @@
 """No comprehension holds another comprehension or three loops.
 
 A comprehension that is more than a plain copy, filter or one flattening reads only when its inner layer has a name: the inner
-layer becomes a comprehension calling a small function whose name says what it builds (.claude/STYLE.md, "A line whose purpose
+layer becomes a comprehension calling a small function whose name says what it builds (.claude/rules/STYLE.md, "A line whose purpose
 isn't obvious gets a name"). Two loops in one comprehension, such as every note of every bar, still read as one thought.
 The program holds the rule; the tests and the tools follow once their comprehensions are cleaned up.
 """

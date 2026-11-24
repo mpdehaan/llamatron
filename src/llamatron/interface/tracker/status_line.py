@@ -6,7 +6,7 @@
 A page says something with `say`, like what was saved and where, what an undo undid, or why a key
 did nothing, and the line keeps it until the next key press clears it, even across a change of
 page, so that a message set as a page closes is still read on the page underneath. Its messages
-are lower-case fragments with no full stop, as `.claude/STYLE.md` says, since they aren't sentences.
+are lower-case fragments with no full stop, as `.claude/rules/STYLE.md` says, since they aren't sentences.
 """
 
 from llamatron.interface.tracker import drawing

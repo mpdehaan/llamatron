@@ -453,7 +453,7 @@ class TestKeyTour(KeyTour):
                     self.assertIn(name, self.bound.get(where, ()), MSG_NOT_BOUND.format(page=page.__name__, key=name, where=where.__name__))
 
     def check_key_map_is_current(self):
-        """.claude/KEYMAP.md says what the tour finds, so that a question about a key is one lookup; internal_tools/key_map.sh
+        """.claude/reference/KEYMAP.md says what the tour finds, so that a question about a key is one lookup; internal_tools/key_map.sh
         rewrites it."""
         everywhere = '\n'.join(EVERYWHERE_ENTRY.format(key=binding.name, what=binding.what) for binding in keybindings.Page.EVERYWHERE)
         text = self.key_map.text(everywhere=everywhere)

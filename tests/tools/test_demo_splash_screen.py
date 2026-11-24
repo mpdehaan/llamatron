@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""internal_tools/demo_splash_screen.py, one quick check of its main path: scroll text shows the words given after the title. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
+"""internal_tools/demo_splash_screen.py, one quick check of its main path: scroll text shows the words given after the title. A tool fails loudly when it is run, so one check is enough (.claude/rules/TESTING.md)."""
 
 import importlib.util
 import pathlib

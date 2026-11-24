@@ -31,7 +31,7 @@ FOLDERS_READ = {
     '.claude/': ('tests/rules/', 'tests/interface/tracker/test_tui_help_keys.py'),
 }
 # Changes that need nothing run: notes only for Claude that no test reads.
-NOTHING_NEEDED = ('.claude/QUEUE.md', '.claude/DESIGNS.md', '.claude/IDEAS.yml', '.claude/features/')
+NOTHING_NEEDED = ('.claude/planning/QUEUE.md', '.claude/planning/DESIGNS.md', '.claude/planning/IDEAS.yml', '.claude/features/')
 EVERYTHING = 'ALL'
 # The long sweeps the commit check leaves out, each with the folders of the program whose change brings it back, since a sweep
 # tries every example, every subgenre or every page and the map finds that nearly every change ran it: they run before every

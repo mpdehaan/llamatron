@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""internal_tools/preview_midi.py, one quick check of its main path: drum tracks play on channel 10 and every other track on a channel of its own. A tool fails loudly when it is run, so one check is enough (.claude/TESTING.md)."""
+"""internal_tools/preview_midi.py, one quick check of its main path: drum tracks play on channel 10 and every other track on a channel of its own. A tool fails loudly when it is run, so one check is enough (.claude/rules/TESTING.md)."""
 
 import contextlib
 import importlib.util
