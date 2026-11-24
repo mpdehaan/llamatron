@@ -13,9 +13,13 @@ at once, in the request, so that what they press is heard at the moment it would
 """
 
 import functools
+import gc
 import threading
 
 from llamatron.model.file.song_file_error import SongFileError
+
+# The generations a build's leftovers are collected from once it ends: the young ones, where nearly all of them are.
+YOUNG_GENERATIONS = 1
 
 
 class Built:
@@ -80,10 +84,24 @@ class ScoreBuilder:
 
     def _made(self, build):
         """Return what a request came to, handing it the last score built, and keep the score it made for the next."""
-        result = made(functools.partial(build, earlier=self._last))
+        result = made_without_collecting(functools.partial(build, earlier=self._last))
         if result.score is not None:
             self._last = result.score
         return result
+
+
+def made_without_collecting(build):
+    """Return what building a score came to, with the garbage collector held off while it builds and the young objects collected
+    after: a render makes several hundred thousand objects that live until it ends, which the collector otherwise walks again
+    and again as it goes, a quarter of a render's time. Where the collector was already off, it stays off."""
+    collecting = gc.isenabled()
+    gc.disable()
+    try:
+        return made(build)
+    finally:
+        if collecting:
+            gc.enable()
+            gc.collect(YOUNG_GENERATIONS)
 
 
 def made(build):

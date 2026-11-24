@@ -4,6 +4,7 @@
 """Scores built off the screen's thread (realtime/render_process/score_builder.py): at once for the tests, in a thread otherwise, a song's problem kept
 in place of a score, and a newer request replacing one not yet started."""
 
+import gc
 import threading
 import unittest
 
@@ -80,3 +81,28 @@ class TestScoreBuilder(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestCollectorHeldOffWhileBuilding(unittest.TestCase):
+    """The garbage collector is off while a score is built and on again after, unless it was off already."""
+
+    def tearDown(self):
+        gc.enable()
+
+    def build_watching_the_collector(self):
+        """Build a score, and return whether the collector was on while it built and after."""
+        seen = []
+
+        def build(earlier):
+            seen.append(gc.isenabled())
+            return A_SCORE
+        ScoreBuilder(at_once=True).request(key=A_KEY, build=build)
+        return seen[0], gc.isenabled()
+
+    def test_the_collector_is_off_while_building_and_on_after(self):
+        gc.enable()
+        self.assertEqual(self.build_watching_the_collector(), (False, True))
+
+    def test_a_collector_already_off_stays_off(self):
+        gc.disable()
+        self.assertEqual(self.build_watching_the_collector(), (False, False))
