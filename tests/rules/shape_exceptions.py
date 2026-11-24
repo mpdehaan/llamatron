@@ -188,4 +188,7 @@ WITH_REASON = {'catches': {'realtime/devices/ports.py:PortWatcher._serve': 'the 
              'interface/tracker/pattern_preview.py:PatternPreview.play': 'stops the preview and raises the same error again, so that nothing is left sounding',
              'interface/tracker/pattern_preview.py:PatternPreview.play_clip_of_song': 'stops the preview and raises the same error again, so that nothing is left sounding',
              'interface/tracker/pattern_preview.py:PatternPreview.play_sound': 'stops the preview and raises the same error again, so that nothing is left sounding'},
- 'deep': {}}
+ 'deep': {},
+ 'long': {'realtime/synth_process/player.py:SynthPlayer.audio_callback': 'the audio callback of the Synthesis Process, which must finish each chunk well inside its 2.9 ms: every step is spelled out '
+                                                                         'in one body with its values bound to locals, since a call per step costs time the chunk cannot spare (the user allowed this '
+                                                                         'process to break the rules for timing)'}}

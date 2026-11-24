@@ -61,6 +61,9 @@ class RecordingSender:
     def silence(self, *, channels):
         pass
 
+    def set_sounds(self, sounds):
+        pass
+
     def close(self):
         return None
 

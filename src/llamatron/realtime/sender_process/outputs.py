@@ -19,6 +19,9 @@ class MidiOutput:
     def send(self, data):
         raise NotImplementedError
 
+    def set_sound(self, *, channel, spec):
+        """Do nothing: only a built-in port has sounds to set (synth_output.py)."""
+
     def close(self):
         raise NotImplementedError
 

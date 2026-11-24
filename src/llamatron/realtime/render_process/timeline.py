@@ -40,6 +40,8 @@ class Route(NamedTuple):
     program: int = None
     # Whether keyswitch notes go this way: to a plugin through a MIDI port, never to FluidSynth, which would sound each as a note.
     keyswitches: bool = True
+    # The name of the built-in instrument whose sound plays the track, through the Synthesis Process, or None for MIDI.
+    sound: str = None
 
 
 class ClipTag(NamedTuple):

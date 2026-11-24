@@ -112,6 +112,9 @@ class SynthPlayer:
                 engine.silence()
                 continue
             when, kind, instrument, pitch, velocity = note
+            if kind == engine_values.FORGET:
+                engine.forget(first=instrument, last=pitch, sample=played + int(round((when + delay - dac) * rate)))
+                continue
             engine.schedule(sample=played + int(round((when + delay - dac) * rate)), kind=kind, instrument=instrument, pitch=pitch,
                             velocity=velocity)
         mix = engine.render(start=played, frames=frames)

@@ -38,7 +38,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.realtime import realtime_names
-from llamatron.realtime.playback_service import FluidSynth, installation, installed, LocalPlayback, MonotonicClock, output_port_names, PlaybackProcess, PlayRequest, RealtimeMIDISenderProcess, Route, SenderNotStarted, Wanted
+from llamatron.realtime.playback_service import FluidSynth, installation, installed, LocalPlayback, MonotonicClock, output_port_names, PlaybackProcess, PlayRequest, RealtimeMIDISenderProcess, Route, SenderNotStarted, synthesis_available, Wanted
 from llamatron.user_strings import errors, messages
 
 # How often the player plans ahead and the page redraws while something plays.
@@ -76,6 +76,19 @@ def step_sounding(*, elapsed, step_seconds, steps, direction):
     if order is None:
         return None
     return order[int(elapsed / step_seconds) % len(order)]
+
+
+def built_in_routes(instruments):
+    """Return the Route of each track whose instrument is built in, from a mapping of the track to the instrument's name: each
+    built-in instrument a channel of the built-in ports, in the order the tracks first name them, sixteen a port."""
+    numbers = {}
+    routes = {}
+    for track, name in instruments.items():
+        number = numbers.setdefault(name, len(numbers))
+        group, channel = divmod(number, realtime_names.INSTRUMENTS_PER_PORT)
+        port = realtime_names.BUILT_IN_PORT.format(prefix=realtime_names.BUILT_IN_PORT_PREFIX, group=group)
+        routes[track] = Route(port, channel, keyswitches=False, sound=name)
+    return routes
 
 
 def fluidsynth_is_installed():
@@ -235,6 +248,8 @@ class Transport:
             return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_DEVICE_NOT_CONNECTED.format(instrument=name, device=device) for name, device in missing])
         if self.uses_fluidsynth() and not self._fluidsynth_installed():
             return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_FLUIDSYNTH_NOT_INSTALLED])
+        if self.uses_built_in_sound() and not synthesis_available():
+            return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_SYNTHESIS_OFF])
         lines = loop_error_lines(song)
         if lines:
             return Problem(title=errors.ERR_LOOP_SCENES_TITLE, lines=lines)
@@ -244,7 +259,9 @@ class Transport:
         """Return whether a track of the current song plays through an instrument that has a device."""
         name = self.document().song().get_track(track).get_instrument_name()
         setlist = self.document().get_setlist()
-        return name is not None and setlist.has_item(section=Section.INSTRUMENTS, name=name) and setlist.get_instrument(name).has_device()
+        if name is None or not setlist.has_item(section=Section.INSTRUMENTS, name=name):
+            return False
+        return setlist.get_instrument(name).has_device() or setlist.get_instrument(name).is_built_in()
 
     def missing_devices(self):
         """Return (instrument, device) for each instrument whose MIDI port this computer doesn't list now. FluidSynth is no port, and the tracker starts it."""
@@ -258,6 +275,10 @@ class Transport:
         """Return whether some track of the current song plays through FluidSynth."""
         return any(route.port == realtime_names.FLUIDSYNTH_PORT for route in self.routes(instead=instead).values())
 
+    def uses_built_in_sound(self, *, instead=None):
+        """Return whether some track of the current song plays through a built-in instrument."""
+        return any(route.sound is not None for route in self.routes(instead=instead).values())
+
     def routes(self, *, instead=None):
         """Return each track's Route, by the track's name, for the tracks whose instrument has a device. instead maps a track to an instrument to play through for one preview.
 
@@ -268,9 +289,14 @@ class Transport:
         setlist = self.document().get_setlist()
         song = self.document().song()
         instruments = {}
+        built_in = {}
         for track in song.get_track_names():
             name = (instead or {}).get(track) or song.get_track(track).get_instrument_name()
-            if name and setlist.has_instrument(name) and setlist.get_instrument(name).has_device():
+            if not name or not setlist.has_instrument(name):
+                continue
+            if setlist.get_instrument(name).is_built_in():
+                built_in[track] = name
+            elif setlist.get_instrument(name).has_device():
                 instruments[track] = setlist.get_instrument(name)
         # The tracks through FluidSynth take General MIDI's channels in order: every drum track, and the unmuted others.
         through_fluidsynth = [track for track, instrument in instruments.items() if instrument.uses_fluidsynth() and (song.get_track(track).is_drum() or not song.get_track(track).is_muted())]
@@ -282,6 +308,7 @@ class Transport:
             elif track in channels:
                 sound = None if song.get_track(track).is_drum() or instrument.get_gm_sound() is None else instrument.get_gm_sound() - limits.MIN_GM_SOUND
                 routes[track] = Route(realtime_names.FLUIDSYNTH_PORT, channels[track], sound, keyswitches=False)
+        routes.update(built_in_routes(built_in))
         return routes
 
     def channels_in_use(self):

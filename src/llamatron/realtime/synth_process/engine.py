@@ -28,6 +28,10 @@ CUT_FADE_SECONDS = 0.003
 SHORTEST_ATTACK_SECONDS = 0.001
 NOTE_ON = 0
 NOTE_OFF = 1
+# Every note of an instrument ends: a drum's hits fade out, the others release.
+ALL_OFF = 2
+# Not a note: the notes of a run of instruments still to come from a moment on are taken back (player.py).
+FORGET = 3
 FULL_SCALE = 1.0
 # A drum's tone is rendered for each sixteenth of the velocities, its level following the exact velocity.
 VELOCITY_STEP = 8
@@ -122,6 +126,11 @@ class SynthEngine:
         if isinstance(patch, DrumPatch):
             self._hit(patch=patch, pitch=pitch, velocity=velocity)
 
+    def forget(self, *, first, last, sample):
+        """Take back every event still to play from a sample on, of the instruments numbered first to last."""
+        self.events = [event for event in self.events if not (first <= event[4] <= last and event[0] >= sample)]
+        heapq.heapify(self.events)
+
     def silence(self):
         """Forget every event still to play and stop every voice at once."""
         self.events.clear()
@@ -135,7 +144,9 @@ class SynthEngine:
         while events and events[0][0] < end:
             sample, _, _, kind, instrument, pitch, velocity = heapq.heappop(events)
             if sample < start:
-                self.late += 1
+                # Only a late start is counted: a stop is sent the moment it is asked for, and always lands a little after.
+                if kind == NOTE_ON:
+                    self.late += 1
                 sample = start
             self._begin(sample=sample, kind=kind, instrument=instrument, pitch=pitch, velocity=velocity)
         by_instrument = {}
@@ -160,6 +171,9 @@ class SynthEngine:
                 if voice.instrument == instrument and voice.pitch == pitch and voice.release_at is None and voice.hit is None:
                     voice.release_at = sample
             return
+        if kind == ALL_OFF:
+            self._end_every_note(instrument=instrument, sample=sample)
+            return
         level = velocity / 127.0
         voice = SynthVoice(instrument=instrument, pitch=pitch, start=sample, level=level)
         if isinstance(patch, DrumPatch):
@@ -172,6 +186,16 @@ class SynthEngine:
                 speed = frequency * tables.TABLE_SIZE / self.rate
                 voice.oscillators.append((oscillator_tables[tables.band_of(frequency)], speed, 0.0, oscillator_level))
         self.voices.append(voice)
+
+    def _end_every_note(self, *, instrument, sample):
+        """End every note of an instrument at a sample: a drum's hit fades out, any other note releases."""
+        for voice in self.voices:
+            if voice.instrument != instrument:
+                continue
+            if voice.hit is not None and voice.cut_at is None:
+                voice.cut_at = sample
+            elif voice.hit is None and voice.release_at is None:
+                voice.release_at = sample
 
     def _hit(self, *, patch, pitch, velocity):
         """Return a drum's hit at a pitch, its tone rendered at the middle of the velocity's eighth, rendered once and kept."""

@@ -67,7 +67,7 @@ NOT_KEEPING = Keeping(None, None)
 class Score:
     """What the player knows about a song: each scene's length and launch settings, and each clip's events from its scene's start."""
 
-    __slots__ = ('_realization', '_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_realizer', '_routes', '_taken_tracks')
+    __slots__ = ('_realization', '_tracks', '_scene_seconds', '_scene_starts', '_rows', '_events', '_loops', '_follow_actions', '_launches_together', '_repeats', '_clip_seconds', '_notes', '_bar', '_draw_lights', '_realizer', '_routes', '_taken_tracks', '_sounds')
 
     def __init__(self, *, song, routes, seed=None, keeping=None, takes=None):
         """Render a song and read it into the score. routes maps a track's name to its Route, and a track with none has no events, since it has nothing to play through.
@@ -77,6 +77,8 @@ class Score:
         scenes (score_records.py).
         takes gives clips new random choices, by (the scene's place in the song, the track), as SongRealizer's does.
         """
+        # The sound the Synthesis Process plays at each built-in route's (port, channel), given once the score is made (set_sounds).
+        self._sounds = {}
         data, earlier = keeping or NOT_KEEPING
         if earlier is not None and earlier._routes != routes:
             earlier = None
@@ -169,6 +171,14 @@ class Score:
             song_start += scene_start
         if realization.has_taken_anything() and memory.Memory.checks_by_default():
             score_records.check(kept=self._records(), again=Score(song=song, routes=routes, seed=seed, takes=takes)._records())
+
+    def set_sounds(self, sounds):
+        """Keep the sound each built-in route's (port, channel) plays (Instrument.synth_spec), which the sender hands on."""
+        self._sounds = dict(sounds)
+
+    def get_sounds(self):
+        """Return the sound each built-in route's (port, channel) plays, which the sender hands the Synthesis Process."""
+        return self._sounds
 
     def get_realizer(self):
         """Return the Realizer that rendered the score, whose clips a later score's render takes up where nothing changed."""

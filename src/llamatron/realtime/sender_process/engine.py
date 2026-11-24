@@ -159,6 +159,13 @@ class PlaybackEngine:
             for number in SILENCING_CONTROLS:
                 output.send([timeline.CONTROL_CHANGE | channel, number, CONTROL_OFF_VALUE])
 
+    def set_sounds(self, sounds):
+        """Give each built-in port's channel its sound, from a mapping of (port, channel) to the sound."""
+        for (port, channel), spec in sounds.items():
+            output = self._outputs.get(port)
+            if output is not None:
+                output.set_sound(channel=channel, spec=spec)
+
     def sounding(self):
         """Return the (port, channel, number) of every note that has started and not ended."""
         return sorted(self._sounding)

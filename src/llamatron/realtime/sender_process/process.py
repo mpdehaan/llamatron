@@ -25,12 +25,15 @@ import sys
 import time
 from typing import NamedTuple
 
+from llamatron.realtime import realtime_names
 from llamatron.realtime.render_process import timeline
 from llamatron.realtime.sender_process import coremidi
 from llamatron.realtime.sender_process.coremidi import CoreMidiOutput
 from llamatron.realtime.sender_process.engine import MonotonicClock, PlaybackEngine
 from llamatron.realtime.sender_process.outputs import RecordingOutput, RtMidiOutput, ScheduledRecordingOutput
 from llamatron.realtime.sender_process.scheduled_engine import ScheduledPlaybackEngine
+from llamatron.realtime.sender_process.synth_output import SynthOutput
+from llamatron.realtime.synth_process.process import SynthesisNotStarted, SynthesisProcess
 from llamatron.user_strings import errors
 
 SPAWN = 'spawn'
@@ -54,7 +57,10 @@ FORGET = 'forget'
 STOP_TAG = 'stop_tag'
 STOP_ALL = 'stop_all'
 SILENCE = 'silence'
+SOUNDS = 'sounds'
 CLOSE = 'close'
+# What the process answers in place of READY when the Synthesis Process its built-in ports need could not start, with why.
+NOT_STARTED = 'not_started'
 # How long the tracker waits for the process to end before ending it itself.
 CLOSE_TIMEOUT_SECONDS = 2.0
 # How long the process may take to import and open its ports before start gives up on it.
@@ -110,7 +116,7 @@ class SenderNotStarted(RuntimeError):
 class RealtimeMIDISenderProcess:
     """The tracker's side of the sender: starts the process on the ports named, and sends it the messages above."""
 
-    __slots__ = ('_ports', '_recording', '_driver', '_connection', '_process', '_port_places', '_tag_numbers')
+    __slots__ = ('_ports', '_recording', '_driver', '_connection', '_process', '_port_places', '_tag_numbers', '_sounds')
 
     def __init__(self, *, ports, recording=False, driver=None):
         """ports are the names of the output ports to open. With recording, the process opens recording outputs in their place and
@@ -125,6 +131,8 @@ class RealtimeMIDISenderProcess:
         self._port_places = {name: place for place, name in enumerate(self._ports)}
         # Each play's tag as the number its records carry, given the first time the tag is sent.
         self._tag_numbers = {}
+        # The sound last sent for each built-in (port, channel), so that only a changed one crosses again.
+        self._sounds = {}
 
     def start(self, *, at=None):
         """Start the process, which opens the ports, and take this moment, or a reading of the clock given, as the timeline's zero."""
@@ -134,10 +142,23 @@ class RealtimeMIDISenderProcess:
         with real_standard_error():
             self._process.start()
         # Wait until the process has opened its ports, so that the first event is not sent late while it starts up, which measured about 150 ms on the IAC bus.
-        if not self._connection.poll(START_TIMEOUT_SECONDS) or self._connection.recv() != READY:
+        answer = self._answer_to_starting()
+        if answer != READY:
             self.close()
-            raise SenderNotStarted(errors.ERR_SENDER_DID_NOT_START)
+            reason = errors.ERR_SENDER_DID_NOT_START
+            if isinstance(answer, tuple) and answer[0] == NOT_STARTED:
+                reason = answer[1]
+            raise SenderNotStarted(reason)
         self._connection.send((START, at))
+
+    def _answer_to_starting(self):
+        """Return what the process answered as it started, or None when it ended or said nothing in time."""
+        try:
+            if self._connection.poll(START_TIMEOUT_SECONDS):
+                return self._connection.recv()
+        except (EOFError, OSError):
+            return None
+        return None
 
     def add(self, events):
         self._connection.send((ADD_RECORDS, records_of(events=events, place_of_port=self._port_places.__getitem__, number_of_tag=self.tag_number)))
@@ -158,6 +179,16 @@ class RealtimeMIDISenderProcess:
 
     def stop_all(self):
         self._connection.send((STOP_ALL,))
+
+    def set_sounds(self, sounds):
+        """Give the built-in ports' channels their sounds, a mapping of (port, channel) to the sound, sending only what changed."""
+        changed = []
+        for (port, channel), spec in sounds.items():
+            if self._sounds.get((port, channel)) != spec and port in self._port_places:
+                self._sounds[(port, channel)] = spec
+                changed.append((self._port_places[port], channel, spec))
+        if changed:
+            self._connection.send((SOUNDS, changed))
 
     def silence(self, *, channels):
         self._connection.send((SILENCE, list(channels)))
@@ -185,14 +216,17 @@ def default_driver():
     return IMMEDIATE
 
 
-def engine_for(*, driver, ports, recording):
-    """Return the engine a driver sends through, on the real clock, with its outputs opened: recording ones with recording."""
+def engine_for(*, driver, ports, recording, synthesis=None):
+    """Return the engine a driver sends through, on the real clock, with its outputs opened: recording ones with recording,
+    and a built-in port's through the Synthesis Process given."""
     clock = MonotonicClock()
     if driver == TIMESTAMPED:
         outputs = {}
         for name in ports:
             if recording:
                 outputs[name] = ScheduledRecordingOutput(clock=clock)
+            elif is_built_in_port(name):
+                outputs[name] = SynthOutput(synthesis=synthesis, group=built_in_group(name))
             else:
                 outputs[name] = CoreMidiOutput(name=name)
         return ScheduledPlaybackEngine(clock=clock, outputs=outputs)
@@ -200,9 +234,31 @@ def engine_for(*, driver, ports, recording):
     for name in ports:
         if recording:
             outputs[name] = RecordingOutput()
+        elif is_built_in_port(name):
+            outputs[name] = SynthOutput(synthesis=synthesis, group=built_in_group(name))
         else:
             outputs[name] = RtMidiOutput(name=name)
     return PlaybackEngine(clock=clock, outputs=outputs)
+
+
+def is_built_in_port(name):
+    """Return whether a port is a built-in one, whose notes go to the Synthesis Process."""
+    return name.startswith(realtime_names.BUILT_IN_PORT_PREFIX)
+
+
+def built_in_group(name):
+    """Return which sixteen built-in instruments a built-in port carries, from the number its name ends with."""
+    return int(name.rsplit(' ', 1)[-1])
+
+
+def started_synthesis(*, ports, recording):
+    """Return the Synthesis Process the built-in ports among the ports play through, started, or None where there are none
+    or the sender records; raise SynthesisNotStarted with why it could not start."""
+    if recording or not any(is_built_in_port(name) for name in ports):
+        return None
+    synthesis = SynthesisProcess()
+    synthesis.start()
+    return synthesis
 
 
 @contextlib.contextmanager
@@ -236,6 +292,10 @@ def _silence(*, engine, message):
     engine.silence(channels=message[1])
 
 
+def _set_sounds(*, engine, message, ports):
+    engine.set_sounds({(ports[place], channel): spec for place, channel, spec in message[1]})
+
+
 # The messages that only hand the engine something: each kind, and what passes it on.
 FORWARDED = {FORGET: _forget, STOP_TAG: _stop_tag, STOP_ALL: _stop_all, SILENCE: _silence}
 
@@ -262,7 +322,16 @@ def ask_to_be_urgent():
 def run_sender(*, connection, ports, recording, driver):
     """The process: an engine on the real clock, fed by the pipe, sending each event when its time comes."""
     try:
-        engine = engine_for(driver=driver, ports=ports, recording=recording)
+        synthesis = started_synthesis(ports=ports, recording=recording)
+    except SynthesisNotStarted as problem:
+        connection.send((NOT_STARTED, str(problem)))
+        return
+    # Every port's timeline starts the Synthesis Process's delay later, so that MIDI waits for built-in sound (synth_output.py).
+    delay = 0.0
+    if synthesis is not None:
+        delay = synthesis.delay
+    try:
+        engine = engine_for(driver=driver, ports=ports, recording=recording, synthesis=synthesis)
     except Exception:  # noqa: BLE001, the process boundary: a port that cannot be opened, for whatever reason the library gives, ends the process quietly, and the tracker's side raises SenderNotStarted when the pipe closes without READY, rather than a traceback written over the tracker's screen.
         return
     hold_garbage_back()
@@ -301,12 +370,14 @@ def run_sender(*, connection, ports, recording, driver):
             return
         kind = message[0]
         if kind == START:
-            engine.start(at=message[1])
             started = message[1]
             if started is None:
                 started = time.perf_counter()
+            engine.start(at=started + delay)
         elif kind == ADD_RECORDS:
             _add_records(engine=engine, message=message, ports=ports)
+        elif kind == SOUNDS:
+            _set_sounds(engine=engine, message=message, ports=ports)
         elif kind in FORWARDED:
             FORWARDED[kind](engine=engine, message=message)
         elif kind == CLOSE:

@@ -22,6 +22,7 @@ import os
 import sys
 import traceback
 
+from llamatron.realtime.synth_process import engine as engine_values
 from llamatron.user_strings import errors
 
 SPAWN = 'spawn'
@@ -99,6 +100,10 @@ class SynthesisProcess:
     def notes(self, notes):
         """Send notes, each (perf_counter seconds, kind, instrument, pitch, velocity)."""
         self._send((NOTES, notes))
+
+    def forget(self, *, first, last, after):
+        """Take back the notes still to come from a perf_counter moment on, of the instruments numbered first to last."""
+        self._send((NOTES, [(after, engine_values.FORGET, first, last, 0)]))
 
     def silence(self):
         self._send((SILENCE,))

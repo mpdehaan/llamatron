@@ -157,6 +157,7 @@ class LocalPlayback:
             else:
                 self._player.set_score(score)
             self._playing = wanted
+        sender.set_sounds(self._player.get_score().get_sounds())
         if launch.kind == realtime_names.LAUNCH_SCENE:
             at = self._player.play_scene(launch.scene)
         elif launch.kind == realtime_names.LAUNCH_CLIP:
@@ -173,7 +174,9 @@ class LocalPlayback:
 
     def apply(self, *, wanted, responsiveness, scene_map, track_map):
         """Hand the score built for an edit to the player, which takes it from the moment the song's Live response says."""
-        self._player.update_score(score=self.built(wanted).score, responsiveness=responsiveness, scene_map=scene_map, track_map=track_map)
+        score = self.built(wanted).score
+        self._sender.set_sounds(score.get_sounds())
+        self._player.update_score(score=score, responsiveness=responsiveness, scene_map=scene_map, track_map=track_map)
         self._playing = wanted
 
     def use_ports(self, ports, *, renewed=()):
@@ -329,5 +332,17 @@ def _key_of(*, wanted, takes):
 def score_of(*, wanted, data, earlier, takes=None):
     """Return the score of a song made from the set's data: from a copy of the set, so that nothing the render reads changes
     while it renders, and from the earlier score where an edit leaves scenes or clips of it as they were."""
-    song = Setlist.from_data(data=data).get_song(wanted.song_name)
-    return Score(song=song, routes=dict(wanted.routes), seed=wanted.seed, keeping=Keeping(data, earlier), takes=takes)
+    setlist = Setlist.from_data(data=data)
+    song = setlist.get_song(wanted.song_name)
+    score = Score(song=song, routes=dict(wanted.routes), seed=wanted.seed, keeping=Keeping(data, earlier), takes=takes)
+    score.set_sounds(built_in_sounds(setlist=setlist, routes=wanted.routes))
+    return score
+
+
+def built_in_sounds(*, setlist, routes):
+    """Return the sound of each built-in route's instrument, by the route's (port, channel), as the Synthesis Process compiles it."""
+    sounds = {}
+    for route in routes.values():
+        if route.sound is not None and setlist.has_instrument(route.sound):
+            sounds[(route.port, route.channel)] = setlist.get_instrument(route.sound).synth_spec()
+    return sounds
