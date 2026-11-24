@@ -6,6 +6,7 @@ from fractions import Fraction
 import os
 import tempfile
 import unittest
+from unittest import mock
 import yaml
 
 from llamatron.engine.generators import arp as arp_plugin, timing as timing_plugin
@@ -15,7 +16,7 @@ from llamatron.exporters.exports import export_name, ExportKind
 from llamatron.interface.forms.text import clock
 from llamatron.interface.pages.uses import grabbers, uses_of
 from llamatron.interface.tracker.document import Document
-from llamatron.interface.tracker.document_parts import pattern_edits
+from llamatron.interface.tracker.document_parts import files, pattern_edits
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.file.file_layout import as_object_layout
 from llamatron.model.file.invalid_value import InvalidValue
@@ -276,6 +277,27 @@ class TestSaving(unittest.TestCase):
         self.assertFalse(document.file_holds_this_set(held=held))
         self.assertFalse(document.file_holds_this_set())
         self.assertEqual(document.file_changed_elsewhere(held=held), document.file_changed_elsewhere())
+
+    def test_a_file_untouched_since_it_was_saved_is_not_read_as_a_set_again(self):
+        path = os.path.join(self.folder, 'x.yml')
+        document = Document(path=path)
+        document.add_track(LEAD)
+        document.save()
+        read = files.file_data(path)
+        with mock.patch.object(Setlist, 'read_file', side_effect=AssertionError):
+            self.assertEqual(document.file_now(), read)
+            self.assertTrue(document.file_holds_this_set())
+            self.assertFalse(document.file_changed_elsewhere())
+
+    def test_a_file_written_by_something_else_is_read_again(self):
+        path = os.path.join(self.folder, 'x.yml')
+        document = Document(path=path)
+        document.save()
+        other = Document(path=path)
+        other.add_track(LEAD)
+        other.save()
+        self.assertEqual(document.file_now(), files.file_data(path))
+        self.assertTrue(document.file_changed_elsewhere())
 
     def test_only_writes_when_asked(self):
         path = os.path.join(self.folder, 'x.yml')

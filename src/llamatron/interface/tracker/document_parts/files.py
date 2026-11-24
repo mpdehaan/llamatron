@@ -5,6 +5,7 @@
 """The Document's file: opening and saving the set, noticing what changed on disk, and exporting the current song."""
 
 import contextlib
+import hashlib
 import io
 import os
 
@@ -30,6 +31,16 @@ NOT_READ = object()
 def comparable(data):
     """Return a set's data without its version, which is the one thing saving changes on its own."""
     return {key: value for key, value in data.items() if key != SetlistSetting.VERSION}
+
+
+def file_digest(path):
+    """Return a digest of a file's bytes, which tells whether it still holds what it did when last read or written without
+    reading it as a set, or None if it can't be read."""
+    try:
+        with open(path, 'rb') as file:
+            return hashlib.sha256(file.read()).digest()
+    except OSError:
+        return None
 
 
 def file_data(path):
@@ -111,6 +122,7 @@ class DocumentFiles:
         self._path = path
         self._dirty = False
         self._saved_data = self._own_data()
+        self._saved_digest = file_digest(path)
         self._clean_data = self._saved_data
 
     def _own_data(self):
@@ -132,8 +144,14 @@ class DocumentFiles:
 
     def file_now(self):
         """Return what the set's file holds at this moment, or None with no file or one that can't be read: read once and handed to
-        the questions about the file, since reading a large set takes a noticeable time."""
-        return file_data(self._path) if self._path is not None else None
+        the questions about the file, since reading a large set takes a noticeable time, up to half a second. A file whose bytes
+        are those it held when opened or last saved holds what it held then, so it is not read as a set again."""
+        if self._path is None:
+            return None
+        digest = file_digest(self._path)
+        if digest is not None and digest == self._saved_digest:
+            return self._saved_data
+        return file_data(self._path)
 
     def file_holds_this_set(self, *, held=NOT_READ):
         """Return whether the set's file already holds exactly what saving would write, so that saving would change nothing.
