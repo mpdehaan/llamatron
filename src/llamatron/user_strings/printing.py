@@ -25,3 +25,21 @@ MSG_INVERSIONS = ('root position', '1st inversion', '2nd inversion', '3rd invers
 MSG_ONE_BAR = '1 bar'
 MSG_BARS = '{bars} bars'
 MSG_NO_THIRD = 'no third'
+
+# exporters/pdf/chord_changes.py
+# The Chord Changes pages: each move between chords, its numerals and how often the song makes it, and which notes stay
+# under the fingers and which move.
+MSG_CHORD_CHANGES = 'Chord Changes'
+MSG_CHORD_CHANGES_INTRODUCTION = ('Each move between chords, in the order the song first makes it. Blue keys stay under your '
+                                  'fingers; red keys move to the next chord.')
+MSG_CHANGE = '{before}  →  {after}'
+MSG_CHANGE_NUMERALS = '{before} → {after}   ·   {times}× in the song'
+MSG_ARROW = '→'
+MSG_STAY = 'stay: {notes}'
+MSG_MOVE = 'move: {notes}'
+MSG_MOVE_TO = '{before}→{after}'
+MSG_NAMES_JOIN = ', '
+MSG_NOTHING_STAYS = 'none'
+MSG_NOTHING_MOVES = 'nothing'
+MSG_ADD_NOTE = 'add {note}'
+MSG_LIFT_NOTE = 'lift {note}'
