@@ -172,10 +172,17 @@ generator has a page of its own, grouped by what it changes.
 
 ## File Operations
 
+### Import
+
 | Page | What it covers |
 | --- | --- |
-| [Exporting](docs/EXPORTING.md) | Every kind of export: Ableton Live sets, MIDI files and WAV audio, from the tracker and the command line. |
 | [Importing](docs/IMPORTING.md) | A MIDI file made into a new song of the set. |
+
+### Export
+
+| Page | What it covers |
+| --- | --- |
+| [Exporting](docs/EXPORTING.md) | Ableton Live sets, MIDI files and WAV audio, from the tracker and the command line. |
 
 ## MIDI & Performance
 
