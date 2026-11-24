@@ -17,7 +17,7 @@ from textual.screen import Screen
 from textual.widgets import Static
 
 from llamatron.interface.forms.text import clock
-from llamatron.interface.tracker import drawing, keybindings
+from llamatron.interface.tracker import drawing, keybindings, keys
 from llamatron.interface.tracker.dialogs.about_dialog import AboutDialog
 from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -196,7 +196,7 @@ class Page(BindsKeys, Screen):
             if name in item.keys:
                 self.holder.get_status_line().clear()
                 item.press(name)
-                self.document().record_edit()
+                self._record_edit(typed=name in keys.DIGITS)
                 # An undo can have closed this page, and a closed page has nothing to draw on.
                 if self.app.is_open(self):
                     self.draw()
@@ -254,7 +254,7 @@ class Page(BindsKeys, Screen):
             if result is not None:
                 then(result)
             # An answer that changed the set is one undo step, like the key press that asked.
-            self.document().record_edit()
+            self._record_edit(typed=False)
             if self.app.is_open(self):
                 self.draw()
         self.app.push_screen(dialog, answered)
@@ -414,3 +414,9 @@ class Page(BindsKeys, Screen):
         for line in lines:
             line.truncate(width, overflow=OVERFLOW_ELLIPSIS)
         return [*top, *lines, status, *rule, *bottom]
+
+    def _record_edit(self, *, typed):
+        """Make what a key or a dialog's answer changed one undo step, and tell what plays, so that an edit made while a song plays
+        is heard as soon as it settles; typed says whether the key typed a digit, which another digit may follow."""
+        self.document().record_edit()
+        self.app.edit_made(typed=typed)

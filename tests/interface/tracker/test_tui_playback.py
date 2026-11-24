@@ -17,7 +17,7 @@ from unittest import mock
 from llamatron.engine.timing import general_midi
 from llamatron.interface.forms.text import clock, scene_name
 from llamatron.interface.pages.uses import looping_scenes
-from llamatron.interface.tracker import batch_stage, keybindings, pattern_preview
+from llamatron.interface.tracker import batch_stage, keybindings, pattern_preview, transport as tracker_transport
 from llamatron.interface.tracker.app import LlamatronApp
 from llamatron.interface.tracker.components.stage_drawing import Rect
 from llamatron.interface.tracker.dialogs.confirm_dialog import ConfirmDialog
@@ -174,9 +174,21 @@ class PlaybackTest(UITest):
             return PlaybackEngine(clock=self.clock, outputs={port: self.outputs[port] for port in ports})
         self.fluidsynth = FakeFluidSynth()
         self.fluidsynth_installed = True
-        app.transport = Transport(document_holder=app, clock=self.clock, make_sender=make_sender, set_timer=app.playback_timer, lead=NO_LEAD,
-                                  fluidsynth=self.fluidsynth, fluidsynth_installed=lambda: self.fluidsynth_installed)
+        # The calls the transport asks for once, after a time, each with when it falls due on the stepped clock, made by call_due.
+        self.calls_once = []
+        app.transport = Transport(document_holder=app, clock=self.clock, make_sender=make_sender, set_timer=app.playback_timer, set_once=self.call_once,
+                                  lead=NO_LEAD, fluidsynth=self.fluidsynth, fluidsynth_installed=lambda: self.fluidsynth_installed)
         return app
+
+    def call_once(self, *, seconds, then):
+        self.calls_once.append((self.clock.now() + seconds, then))
+
+    def call_due(self):
+        """Make the calls asked for once that have fallen due on the stepped clock, as the tracker's timers would."""
+        due = [then for at, then in self.calls_once if at <= self.clock.now()]
+        self.calls_once = [(at, then) for at, then in self.calls_once if at > self.clock.now()]
+        for then in due:
+            then()
 
     async def asyncSetUp(self):
         patcher = mock.patch(PORT_NAMES, return_value=list(CONNECTED_PORTS))
@@ -599,6 +611,28 @@ class TestLiveEditing(PlaybackTest):
         self.document.change_pattern(self.document.pattern(ui_testing.TUNE).set_value, row=Row.DEGREE, step=1, value=EDITED_DEGREE)
         await self.play_for(SONG_SECONDS)
         self.assertEqual(self.second_notes(), [FIFTH, FIFTH, FIFTH])
+
+    def second_note_playing(self):
+        """Return the pitch of the tune's second note in the score that plays now."""
+        events = self.transport().get_player().get_score().get_events(scene=FIRST_INDEX, track=ui_testing.LEAD)
+        return [event.number for event in events][1]
+
+    async def test_an_edit_a_key_made_is_heard_once_it_settles_with_no_tick(self):
+        await self.start_and_edit(LiveResponsiveness.ASAP)
+        self.app.edit_made(typed=False)
+        self.clock.advance(tracker_transport.KEY_SETTLE_SECONDS)
+        self.call_due()
+        self.assertEqual(self.second_note_playing(), FIFTH)
+
+    async def test_a_typed_digit_waits_for_the_next_digit_before_it_is_heard(self):
+        await self.start_and_edit(LiveResponsiveness.ASAP)
+        self.app.edit_made(typed=True)
+        self.clock.advance(tracker_transport.KEY_SETTLE_SECONDS)
+        self.call_due()
+        self.assertEqual(self.second_note_playing(), THIRD)
+        self.clock.advance(tracker_transport.LIVE_SETTLE_SECONDS - tracker_transport.KEY_SETTLE_SECONDS)
+        self.call_due()
+        self.assertEqual(self.second_note_playing(), FIFTH)
 
     async def test_a_clip_made_to_loop_while_it_plays_keeps_its_scene_playing(self):
         self.document.set_clip_slot_setting(index=FIRST_INDEX, track=ui_testing.LEAD, setting=ClipSlotSetting.REPEAT, value=1)

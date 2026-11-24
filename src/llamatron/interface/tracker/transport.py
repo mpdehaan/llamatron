@@ -24,6 +24,7 @@ give the transport a stepped clock, an engine in place of the process and a Flui
 nothing, so that nothing sleeps.
 """
 
+import functools
 import random
 import threading
 from typing import NamedTuple
@@ -51,6 +52,10 @@ LAUNCH_LEAD_SECONDS = 0.003
 CHANNEL_OFFSET = 1
 # How long after the last edit made while playing the edit is heard, so that typed digits, 1 then 12 then 120, are heard as 120 alone.
 LIVE_SETTLE_SECONDS = 0.15
+# How long after a key that edits by itself, such as stretching a note, the edit is heard: no other key is waited for.
+KEY_SETTLE_SECONDS = 0.05
+# How often, once an edit's score has been asked for, the tracker looks whether it is ready, so that it is heard as soon as it is.
+BUILT_LOOK_SECONDS = 0.01
 # The seeds a play draws its random parts from, for a song with no seed of its own, one seed for the whole play so that an edit re-rolls nothing.
 SEED_RANGE = 2 ** 31
 
@@ -99,11 +104,11 @@ class Transport:
     """Plays the current song through the Realtime Sender Process, and answers what is playing."""
 
     __slots__ = ('_playback', '_lead', '_next_seed', '_pending', '_requested', '_closing', '_document_holder', '_clock', '_make_sender', '_set_timer', '_wanted', '_ports', '_timer',
-                 '_fluidsynth', '_fluidsynth_installed', '_song', '_song_name', '_instead', '_seed', '_seen_revision', '_changed_at',
+                 '_fluidsynth', '_fluidsynth_installed', '_song', '_song_name', '_instead', '_seed', '_seen_revision', '_changed_at', '_settle', '_set_once',
                  '_scenes', '_tracks', '_previewing', '_live_message')
 
-    def __init__(self, *, document_holder, clock=None, make_sender=None, set_timer=None, fluidsynth=None, fluidsynth_installed=None, lead=LAUNCH_LEAD_SECONDS, playback=None):
-        """document_holder answers get_document(). clock and make_sender(ports) are for the tests, which give a stepped clock and an engine; set_timer(seconds, callback) starts a repeating timer and returns something with stop(). fluidsynth and fluidsynth_installed() are for the tests too, which start no real FluidSynth, and playback is a player's side a test gives, a render process with a recording sender."""
+    def __init__(self, *, document_holder, clock=None, make_sender=None, set_timer=None, set_once=None, fluidsynth=None, fluidsynth_installed=None, lead=LAUNCH_LEAD_SECONDS, playback=None):
+        """document_holder answers get_document(). clock and make_sender(ports) are for the tests, which give a stepped clock and an engine; set_timer(seconds, callback) starts a repeating timer and returns something with stop(), and set_once(seconds, callback) calls a callback once, after a time. fluidsynth and fluidsynth_installed() are for the tests too, which start no real FluidSynth, and playback is a player's side a test gives, a render process with a recording sender."""
         self._document_holder = document_holder
         # Whether the tracker is quitting, so that a sender started under the start screen meanwhile is closed rather than left behind.
         self._closing = False
@@ -123,6 +128,7 @@ class Transport:
             self._playback = LocalPlayback(make_sender=self._make_sender, clock=self._clock, lead=lead, at_once=True)
         self._build_ahead()
         self._set_timer = set_timer
+        self._set_once = set_once
         # What the player's score was made from (Wanted), and the ports the sender was last asked to open.
         self._wanted = None
         self._ports = []
@@ -142,6 +148,7 @@ class Transport:
         self._seed = None
         self._seen_revision = None
         self._changed_at = None
+        self._settle = LIVE_SETTLE_SECONDS
         self._scenes = []
         self._tracks = {}
 
@@ -159,7 +166,7 @@ class Transport:
     def shared(self):
         """Return what a second transport beside this one is made with, the pattern preview's: the same document, clock, timer, FluidSynth and way of making a sender."""
         return dict(
-            document_holder=self._document_holder, clock=self._clock, make_sender=self._make_sender, set_timer=self._set_timer,
+            document_holder=self._document_holder, clock=self._clock, make_sender=self._make_sender, set_timer=self._set_timer, set_once=self._set_once,
             fluidsynth=self._fluidsynth, fluidsynth_installed=self._fluidsynth_installed,
         )
 
@@ -398,6 +405,20 @@ class Transport:
         self._live_message = None
         return message
 
+    def edit_made(self, *, typed):
+        """Hear at once of an edit a key or a dialog's answer made while something plays, rather than at the next tick, and follow
+        it as soon as it has settled: after LIVE_SETTLE_SECONDS where the key typed a digit, which another digit may follow, and
+        after KEY_SETTLE_SECONDS for any other key, which edits by itself. An edit made otherwise is still noticed at a tick."""
+        if self._wanted is None or not self._playback.is_playing():
+            return
+        revision = self.document().get_revision()
+        if revision == self._wanted.revision or self._set_once is None:
+            return
+        self._seen_revision = revision
+        self._changed_at = self._clock.now()
+        self._settle = LIVE_SETTLE_SECONDS if typed else KEY_SETTLE_SECONDS
+        self._set_once(seconds=self._settle, then=functools.partial(self._follow_soon, revision))
+
     def tick(self):
         """Plan ahead, follow any edit made while playing, and stop the timer once the last clip has ended."""
         if self._wanted is None:
@@ -536,7 +557,7 @@ class Transport:
         return self.document().song()
 
     def _follow_edits(self):
-        """Hear an edit made while playing, once the edits have settled for LIVE_SETTLE_SECONDS: render the song again with this play's seed and hand the score to the player, which takes it from the moment the song's Live response says."""
+        """Hear an edit made while playing, once the edits have settled (edit_made): render the song again with this play's seed and hand the score to the player, which takes it from the moment the song's Live response says."""
         if not self._playback.is_playing():
             return
         if self._playing_song() is None:
@@ -550,8 +571,9 @@ class Transport:
         if revision != self._seen_revision:
             self._seen_revision = revision
             self._changed_at = now
+            self._settle = LIVE_SETTLE_SECONDS
             return
-        if self._changed_at is not None and now - self._changed_at < LIVE_SETTLE_SECONDS:
+        if self._changed_at is not None and now - self._changed_at < self._settle:
             return
         song = self._playing_song()
         routes = self.routes(instead=self._instead)
@@ -576,6 +598,15 @@ class Transport:
         self._playback.apply(wanted=wanted, responsiveness=song.get_live_responsiveness(), scene_map=scene_map, track_map=track_map)
         self._wanted = wanted
         self._remember_song(song=song, instead=self._instead)
+
+    def _follow_soon(self, revision):
+        """Follow an edit once it has settled, and look again shortly while its score is being built, until it is heard, or a
+        later edit, or a stop, takes its place."""
+        if self._wanted is None or self.document().get_revision() != revision:
+            return
+        self._follow_edits()
+        if self._wanted is not None and self._wanted.revision != revision and self._pending is not None:
+            self._set_once(seconds=BUILT_LOOK_SECONDS, then=functools.partial(self._follow_soon, revision))
 
     def keep_ready(self):
         """Ask for the current song's score to be built ahead, off the screen's thread, whenever the set has changed since the last

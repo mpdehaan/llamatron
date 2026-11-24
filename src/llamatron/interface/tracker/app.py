@@ -94,7 +94,7 @@ class LlamatronApp(App, inherit_bindings=False):
         # The Live sets the user has agreed to write over, so that exporting asks only the first time.
         self._confirmed_overwrites = set()
         # Real-time playback, which ticks on a timer of the app's while anything plays and redraws the page on top for its lights.
-        self.transport = Transport(document_holder=self, set_timer=self.playback_timer)
+        self.transport = Transport(document_holder=self, set_timer=self.playback_timer, set_once=self.timer_once)
         # The pattern preview, made when first asked for, beside the transport it shares a clock and FluidSynth with.
         self._pattern_preview = None
         self._preview_beside = None
@@ -166,6 +166,17 @@ class LlamatronApp(App, inherit_bindings=False):
                     self.screen.tell(problem.title, *problem.lines)
                 self.screen.draw()
         return self.set_interval(seconds, ticked)
+
+    def timer_once(self, *, seconds, then):
+        """Call a function once, after a time, for the transport, which follows an edit made while playing once it has settled."""
+        self.set_timer(seconds, then)
+
+    def edit_made(self, *, typed):
+        """Tell what plays, the song and the pattern preview alike, that a key or a dialog's answer may have edited the set, so that
+        an edit is heard as soon as it settles; typed says whether the key typed a digit, which another may follow."""
+        self.transport.edit_made(typed=typed)
+        if self._pattern_preview is not None:
+            self._pattern_preview.edit_made(typed=typed)
 
     def exit(self, *arguments, **named):
         """Quit, silencing and ending the Realtime Sender Process first."""
