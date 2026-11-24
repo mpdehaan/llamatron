@@ -16,11 +16,11 @@ from typing import NamedTuple
 
 from llamatron.importers import cutting
 from llamatron.importers.cutting import bar_lines, Cutter, grid_for, snapped, step_size_for
-from llamatron.importers.keys import key_of_notes, key_of_signature
+from llamatron.importers.keys import key_of_notes, key_of_signature, keys_by_phrase
 from llamatron.importers.midi_reading import MidiFileChange, read_midi
 from llamatron.importers.phrase_cut import PhraseCutter
 from llamatron.importers.voices import voices_of
-from llamatron.importers.writing import SongWriter, tempo_of, time_signature_text
+from llamatron.importers.writing import Naming, SongWriter, tempo_of, time_signature_text
 from llamatron.math.rational import Rational
 from llamatron.user_strings import errors, importing
 
@@ -62,6 +62,10 @@ class ImportChoices:
     finest_step: object = cutting.FINEST_STEP_SIZE
     # The longest pattern in bars, which the Import Wizard asks for in place of a count of steps, or None for longest_pattern.
     longest_bars: object = None
+    # Whether scenes and their scales are numbered, S01, and patterns grouped by their sections' letters, as the Import Wizard
+    # names them, and whether each scene then has a scale of its own or each run of scenes in one key shares one.
+    numbered: bool = False
+    scale_per_scene: bool = True
 
 
 @dataclass(slots=True, kw_only=True)
@@ -114,6 +118,17 @@ class MidiImport:
             keys.insert(0, MidiFileChange(Rational(0), first))
         return keys
 
+    def keys_heard(self, *, bars, phrase_bars):
+        """Return the song's keys as the Import Wizard takes them: the file's key signatures where it has any, as a score's are
+        written; or else, as most played files have none, the keys its notes are in phrase by phrase (keys_by_phrase), so that
+        a section in a new key is a scene in its own scale."""
+        if self._contents.keys:
+            return self.keys()
+        notes = [note for part in self._contents.parts if not part.is_drums() for note in part.notes]
+        if not notes:
+            return self.keys()
+        return [MidiFileChange(time, key) for time, key in keys_by_phrase(notes=notes, bars=bars, phrase_bars=phrase_bars)]
+
     def found(self):
         """Return what the file holds: its MIDI tracks that play notes, its bars, its first time signature and tempo, and its keys."""
         contents = self._contents
@@ -146,9 +161,15 @@ class MidiImport:
         making = Cutter
         if choices.longest_bars is not None:
             making = PhraseCutter
-        cutter = making(voices=voices, step_size=grid, clip_step_sizes=clip_step_sizes, bars=bars, keys=self.keys(), tempos=contents.tempos, longest=longest)
+        keys = self.keys()
+        if choices.longest_bars is not None:
+            keys = self.keys_heard(bars=bars, phrase_bars=choices.longest_bars)
+        cutter = making(voices=voices, step_size=grid, clip_step_sizes=clip_step_sizes, bars=bars, keys=keys, tempos=contents.tempos, longest=longest)
         cut = cutter.best_cut()
-        writer = SongWriter(setlist=setlist, voices=voices, cut=cut, bars=bars, step_size=step_size, share=not choices.unique_names)
+        naming = None
+        if choices.numbered:
+            naming = Naming(scale_per_scene=choices.scale_per_scene)
+        writer = SongWriter(setlist=setlist, voices=voices, cut=cut, bars=bars, step_size=step_size, share=not choices.unique_names, naming=naming)
         song = writer.written(name=choices.song_name, time_signature=time_signature_text(contents.time_signatures[0].value))
         track_names = writer.track_names()
         control_tracks = [(place, track_names[first], voices[first].lanes) for place, first in enumerate(firsts) if voices[first].lanes]

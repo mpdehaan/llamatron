@@ -94,6 +94,11 @@ class CutScene:
     tempo: int
     clips: list
     repeat: int = NO_REPEAT
+    # What the scene's phrases play, one after another, and the letter its material goes by, A, B, A', where the cut says.
+    material: tuple = ()
+    letter: object = None
+    # The families of the scene's phrases, which phrases a person hears as the same part, for its letter.
+    families: tuple = ()
 
     def same_music(self, other):
         """Return whether another scene plays exactly what this one does, so that the two can be one scene played twice."""
@@ -295,14 +300,21 @@ class Cutter:
         lengths += [int(bar_steps / parts) for parts in PARTS_OF_A_BAR if (bar_steps / parts).is_whole()]
         return lengths
 
-    def cuts(self, length):
-        """Return the steps the song splits at for phrases of a length, from its start to its end, and how many fall away from the phrases' lines."""
+    def cuts(self, length, *, lead=0):
+        """Return the steps the song splits at for phrases of a length, from its start to its end, and how many fall away from the phrases' lines.
+
+        lead, where given, is a first stretch shorter than a phrase, an introduction or a pickup, after which the phrases start.
+        """
         cuts = []
         off = 0
         edges = self.boundaries()
         for start, end in zip(edges, edges[1:]):
             cuts.append(start)
             line = start + length
+            if lead and start == FIRST_STEP and lead < end:
+                cuts.append(lead)
+                start = lead
+                line = lead + length
             while line < end:
                 if self.is_clean(line):
                     cuts.append(line)

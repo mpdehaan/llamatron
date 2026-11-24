@@ -18,6 +18,7 @@ Names follow these rules:
 
 from dataclasses import dataclass
 import mido
+from typing import NamedTuple
 
 from llamatron.importers import steps as steps_values
 from llamatron.importers.steps import has_a_value
@@ -33,6 +34,9 @@ from llamatron.model.values.time_signature import TimeSignature
 from llamatron.user_strings import importing
 
 FIRST_BAR_NUMBER = 1
+# The Import Wizard numbers scenes from S01; a scene of a cut that letters nothing shows no letter.
+FIRST_SCENE_NUMBER = 1
+NO_LETTER = ''
 NO_REPEAT = 1
 # A scene's tempo is a percentage of the song's, and the song's own is 100.
 PERCENT = 100
@@ -141,18 +145,27 @@ def track_data(voice):
     return data
 
 
+class Naming(NamedTuple):
+    """How the Import Wizard names what it makes: scenes and their scales numbered, S01, S02, patterns grouped by the letter of
+    the section they come from, and whether every scene has a scale of its own or each run of scenes in one key shares one."""
+
+    scale_per_scene: bool = True
+
+
 class SongWriter:
     """What writes one cut song into a set's terms: the set it goes into, the voices, the cut, the bar lines, the step size and whether patterns may be shared."""
 
-    __slots__ = ('_setlist', '_voices', '_cut', '_bars', '_step_size', '_share', '_track_names')
+    __slots__ = ('_setlist', '_voices', '_cut', '_bars', '_step_size', '_share', '_naming', '_track_names')
 
-    def __init__(self, *, setlist, voices, cut, bars, step_size, share):
+    def __init__(self, *, setlist, voices, cut, bars, step_size, share, naming=None):
         self._setlist = setlist
         self._voices = voices
         self._cut = cut
         self._bars = bars
         self._step_size = step_size
         self._share = share
+        # How the Import Wizard names what it makes (Naming), or None for the import dialog's names.
+        self._naming = naming
         self._track_names = self.track_names()
 
     def track_names(self):
@@ -166,13 +179,15 @@ class SongWriter:
         """Return the imported song, named name, with the patterns and scales it adds to the set."""
         patterns, shared, pattern_names = self.patterns()
         scales, scale_names = self.scales()
-        first = self._cut.scenes[0]
         song = {SongSetting.TEMPO: tempo_of(self.song_microseconds())}
         if time_signature is not None:
             song[SongSetting.TIME_SIGNATURE] = time_signature
-        song[SongSetting.SCALE] = scale_names[first.key]
+        song[SongSetting.SCALE] = scale_names[0]
         song[Section.TRACKS] = {track: track_data(voice) for track, voice in zip(self._track_names, self._voices)}
-        song[Section.SCENES] = [self.scene_data(scene=scene, song=song, pattern_names=pattern_names, scale_names=scale_names) for scene in self._cut.scenes]
+        song[Section.SCENES] = [
+            self.scene_data(place=place, scene=scene, song=song, pattern_names=pattern_names, scale_name=scale_names[place])
+            for place, scene in enumerate(self._cut.scenes)
+        ]
         song_name = name if not self._setlist.has_song(name) else copy_name(name=name, taken=set(self._setlist.get_song_names()))
         return ImportedSong(name=song_name, song=song, patterns=patterns, scales=scales, shared=shared)
 
@@ -185,6 +200,7 @@ class SongWriter:
             for name in self._setlist.get_item_names(Section.PATTERNS):
                 existing.setdefault(repr(without_group(self._setlist.get_item(section=Section.PATTERNS, name=name).to_data())), name)
         first_track = self.first_track_of_patterns()
+        groups = self.pattern_groups(first_track)
         added = {}
         names = {}
         shared = 0
@@ -197,9 +213,29 @@ class SongWriter:
                 continue
             name = new_name(word=first_track[pattern], taken=taken)
             taken.add(name)
+            if pattern in groups:
+                data[PatternSetting.GROUP] = groups[pattern]
             added[name] = data
             names[pattern] = name
         return added, shared, names
+
+    def pattern_groups(self, first_track):
+        """Return the group each pattern goes in as the Import Wizard groups them, by the pattern, or none for the import
+        dialog, whose patterns go in their tracks' groups: the letter of the sections it is heard in, so that a theme that
+        returns has one home, or, for a figure heard in sections of more than one letter, its track's figures."""
+        if self._naming is None:
+            return {}
+        letters = {}
+        for scene in self._cut.scenes:
+            for clip in scene.clips:
+                for pattern in clip.patterns:
+                    letters.setdefault(pattern, set()).add(scene.letter or NO_LETTER)
+        groups = {}
+        for pattern, heard_in in letters.items():
+            groups[pattern] = next(iter(heard_in))
+            if len(heard_in) > 1:
+                groups[pattern] = importing.MSG_FIGURES_GROUP.format(track=first_track[pattern])
+        return groups
 
     def first_track_of_patterns(self):
         """Return the name of the first track to play each pattern."""
@@ -211,7 +247,11 @@ class SongWriter:
         return first
 
     def scales(self):
-        """Return the scales the song adds by name, and the name of the scale each of its keys uses."""
+        """Return the scales the song adds by name, and the name of the scale each scene plays in, by its place: one scale for
+        each key, shared with the set where it has one, or, as the Import Wizard names them, a numbered scale for each scene
+        (numbered_scales)."""
+        if self._naming is not None:
+            return self.numbered_scales()
         taken = set(self._setlist.get_item_names(Section.SCALES))
         added = {}
         names = {}
@@ -225,6 +265,24 @@ class SongWriter:
                 taken.add(name)
                 added[name] = {ScaleSetting.ROOT: key.root, ScaleSetting.TYPE: key.kind}
                 names[key] = name
+        return added, [names[scene.key] for scene in self._cut.scenes]
+
+    def numbered_scales(self):
+        """Return the scales the song adds, each named after the number of the scene it begins, S01_C_major, and each scene's
+        scale's name: a scale for each scene, or one for each run of scenes in the same key, as the Import Wizard is asked."""
+        taken = set(self._setlist.get_item_names(Section.SCALES))
+        added = {}
+        names = []
+        for place, scene in enumerate(self._cut.scenes):
+            key = scene.key
+            if names and not self._naming.scale_per_scene and self._cut.scenes[place - 1].key == key:
+                names.append(names[-1])
+                continue
+            scale = default_scale_name(root=key.root, kind=key.kind)
+            name = unique_name(base=importing.MSG_NUMBERED_SCALE.format(number=place + FIRST_SCENE_NUMBER, scale=scale), taken=taken)
+            taken.add(name)
+            added[name] = {ScaleSetting.ROOT: key.root, ScaleSetting.TYPE: key.kind}
+            names.append(name)
         return added, names
 
     def scale_already_named(self, key):
@@ -242,13 +300,14 @@ class SongWriter:
         tempos = [scene.tempo for scene in self._cut.scenes]
         return min(tempos[0], min(tempos) * limits.MAX_TEMPO_PERCENT // PERCENT)
 
-    def scene_data(self, *, scene, song, pattern_names, scale_names):
+    def scene_data(self, *, place, scene, song, pattern_names, scale_name):
         """Return one scene's data: its name, its repeat, its scale and tempo where they differ from the song's, and its clips."""
-        data = {SceneSetting.NAME: self.scene_name(scene)}
+        data = {SceneSetting.NAME: self.scene_name(place=place, scene=scene)}
         if scene.repeat > NO_REPEAT:
             data[SceneSetting.REPEAT] = scene.repeat
-        if scale_names[scene.key] != song[SongSetting.SCALE]:
-            data[SceneSetting.SCALE] = scale_names[scene.key]
+        # The Import Wizard gives every scene its numbered scale, the first's too, so that each scene's is there to edit.
+        if scale_name != song[SongSetting.SCALE] or self._naming is not None:
+            data[SceneSetting.SCALE] = scale_name
         percent = tempo_percent_of(microseconds=scene.tempo, song_microseconds=self.song_microseconds())
         if percent != PERCENT:
             data[SceneSetting.TEMPO] = percent
@@ -264,8 +323,16 @@ class SongWriter:
         data[SceneSetting.TRACKS] = clips
         return data
 
-    def scene_name(self, scene):
-        """Return a scene's name from the bars it plays, all its repeats together, counted from 1."""
+    def scene_name(self, *, place, scene):
+        """Return a scene's name from the bars it plays, all its repeats together, counted from 1, and, as the Import Wizard
+        names scenes, its number, S01, and the letter of its material before them."""
+        bars = self.bars_named(scene)
+        if self._naming is None:
+            return bars
+        return importing.MSG_NUMBERED_SCENE.format(number=place + FIRST_SCENE_NUMBER, letter=scene.letter or NO_LETTER, bars=bars)
+
+    def bars_named(self, scene):
+        """Return the bars a scene plays, all its repeats together, counted from 1: bars 9-16, or bar 9."""
         start = scene.start * self._step_size
         last = (scene.start + (scene.end - scene.start) * scene.repeat - 1) * self._step_size
         first_bar = self.bar_number(start)

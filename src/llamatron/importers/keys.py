@@ -65,6 +65,34 @@ def key_of_signature(text):
     return MusicalKey(root=root, kind=kind, flats=flats)
 
 
+class HeardSpan(NamedTuple):
+    """The part of a note inside a stretch of time, for weighing which key the stretch is in."""
+
+    start: object
+    end: object
+    pitch: int
+
+
+def keys_by_phrase(*, notes, bars, phrase_bars):
+    """Return the keys of a song whose file names none, worked out phrase by phrase, each a (time, key): the key of each phrase
+    of so many bars, by its notes, a new key taken only where it holds for two phrases running, so that a passing chromatic
+    phrase is not taken for a change of key; the first phrase's key from the start."""
+    starts = bars[:-1:phrase_bars]
+    ends = [*starts[1:], bars[-1]]
+    found = [key_of_notes(spans_between(notes=notes, start=start, end=end)) for start, end in zip(starts, ends)]
+    changes = [(starts[0], found[0])]
+    for place in range(1, len(found)):
+        held = place + 1 < len(found) and found[place + 1] == found[place]
+        if found[place] != changes[-1][1] and held:
+            changes.append((starts[place], found[place]))
+    return changes
+
+
+def spans_between(*, notes, start, end):
+    """Return the parts of the notes sounding between two times."""
+    return [HeardSpan(max(note.start, start), min(note.end, end), note.pitch) for note in notes if note.start < end and note.end > start]
+
+
 def key_of_notes(notes):
     """Return the key the notes are most likely in (music_theory/analysis/keys.py), C major for no notes."""
     fit = keys.key_of_notes(notes)

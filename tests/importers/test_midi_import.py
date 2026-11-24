@@ -381,8 +381,8 @@ class TestPhrasesAndSections(unittest.TestCase):
     alike shares, gathered into sections, and figures that keep returning made patterns of their own; each checked to play the
     same as its file."""
 
-    def imported(self, tracks):
-        trip = round_trip(midi_file=midi_of(tracks=tracks), choices=ImportChoices(song_name='tune', longest_bars=PHRASE_BARS))
+    def imported(self, tracks, **choices):
+        trip = round_trip(midi_file=midi_of(tracks=tracks), choices=ImportChoices(song_name='tune', longest_bars=PHRASE_BARS, **choices))
         self.assertTrue(trip.comparison.is_same(), trip.comparison)
         return trip.imported
 
@@ -399,8 +399,8 @@ class TestPhrasesAndSections(unittest.TestCase):
         verse = phrase(pitches=[69, 67, 65], bars=PHRASE_BARS, start_bar=PHRASE_BARS)
         again = phrase(pitches=[60, 62, 64, 65, 67], bars=PHRASE_BARS, start_bar=2 * PHRASE_BARS)
         lists = self.lists(self.imported([('lead', 0, refrain + verse + again)]))
-        self.assertEqual(len(lists), 2)
-        self.assertEqual(lists[1], lists[0][:1])
+        self.assertEqual(len(lists), 3)
+        self.assertEqual(lists[2], lists[0])
 
     def test_a_section_holds_at_most_four_phrases(self):
         notes = []
@@ -420,6 +420,35 @@ class TestPhrasesAndSections(unittest.TestCase):
         first_pieces = [listed for listed in lists[0]]
         self.assertGreater(len(first_pieces), 3)
         self.assertEqual(sum(listed.count(first_pieces[0]) for listed in lists), 3)
+
+
+class TestTheWizardsNames(unittest.TestCase):
+    """The Import Wizard numbers its scenes, S01, with the letter of each section's material, gives each scene a numbered scale,
+    or each run of scenes in one key one scale, and groups patterns by the letter of the sections they are heard in."""
+
+    def refrain_verse_refrain(self, **choices):
+        refrain = phrase(pitches=[60, 62, 64, 65, 67], bars=PHRASE_BARS, start_bar=0)
+        verse = phrase(pitches=[69, 67, 65], bars=PHRASE_BARS, start_bar=PHRASE_BARS)
+        again = phrase(pitches=[60, 62, 64, 65, 67], bars=PHRASE_BARS, start_bar=2 * PHRASE_BARS)
+        trip = round_trip(midi_file=midi_of(tracks=[('lead', 0, refrain + verse + again)]), choices=ImportChoices(
+            song_name='tune', longest_bars=PHRASE_BARS, numbered=True, **choices))
+        self.assertTrue(trip.comparison.is_same(), trip.comparison)
+        return trip.imported.song
+
+    def test_scenes_are_numbered_and_lettered_by_their_material(self):
+        song = self.refrain_verse_refrain()
+        names = [scene[SceneSetting.NAME] for scene in song.song[Section.SCENES]]
+        self.assertEqual([name.split(',')[0] for name in names], ['S01 A', 'S02 B', 'S03 A'])
+
+    def test_every_scene_has_a_numbered_scale_of_its_own_unless_runs_of_one_key_share_one(self):
+        apart = [scene[SceneSetting.SCALE] for scene in self.refrain_verse_refrain().song[Section.SCENES]]
+        shared = [scene[SceneSetting.SCALE] for scene in self.refrain_verse_refrain(scale_per_scene=False).song[Section.SCENES]]
+        self.assertEqual([name.split('_')[0] for name in apart], ['S01', 'S02', 'S03'])
+        self.assertEqual(len(set(shared)), 1)
+
+    def test_patterns_are_grouped_by_the_letter_of_their_sections(self):
+        song = self.refrain_verse_refrain()
+        self.assertEqual(sorted({data[PatternSetting.GROUP] for data in song.patterns.values()}), ['A', 'B'])
 
 
 class TestControls(unittest.TestCase):

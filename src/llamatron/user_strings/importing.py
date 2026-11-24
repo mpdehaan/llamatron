@@ -37,6 +37,17 @@ MSG_UNNAMED_MIDI_TRACK = 'track {number}'
 # A scene is named after the bars it plays, counted from 1, or the one bar.
 MSG_SCENE_BARS = 'bars {first}-{last}'
 MSG_SCENE_BAR = 'bar {first}'
+# The Import Wizard numbers its scenes and their scales, S01, S02, so that they sort in order and a scene's scale is plain to
+# find: a scene by its number, the letter of its material and its bars; a scale by its scene's number and its key.
+MSG_NUMBERED_SCENE = 'S{number:02} {letter}, {bars}'
+MSG_NUMBERED_SCALE = 'S{number:02}_{scale}'
+# A pattern heard in sections of more than one letter goes in a group of the figures its track keeps returning to.
+MSG_FIGURES_GROUP = '{track} figures'
+
+# importers/phrase_cut.py
+# A section is lettered by its material, A, B, and one that begins as an earlier one did and then goes elsewhere with a prime.
+MSG_SECTION_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+MSG_SECTION_PRIME = "'"
 # Where an error places what the import made, which only a fault of the import's own can raise.
 MSG_WHERE_IMPORTED = 'imported song'
 

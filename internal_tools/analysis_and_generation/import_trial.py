@@ -120,7 +120,7 @@ def tried(path):
     midi_file = mido.MidiFile(path, clip=True)
     setlist = Setlist.new()
     midi_import = MidiImport(midi_file=midi_file)
-    imported = midi_import.imported(setlist=setlist, choices=ImportChoices(song_name=SONG_NAME, longest_bars=midi_import_values.WIZARD_LONGEST_BARS))
+    imported = midi_import.imported(setlist=setlist, choices=ImportChoices(song_name=SONG_NAME, longest_bars=midi_import_values.WIZARD_LONGEST_BARS, numbered=True))
     shapes = shapes_struck(midi_import)
     song = add_imported(setlist=setlist, imported=imported.song)
     again = MidiSong(directory=os.curdir, grid=SongRealizer(song).render(), name=SONG_NAME).midi_file()
