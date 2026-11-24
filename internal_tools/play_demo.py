@@ -6,8 +6,8 @@
 
 Run it from the top folder (sh user_scripts/play_demo.sh), after sh user_scripts/demos_to_wavs.sh has made the WAV files:
 
-    .venv/bin/python internal_tools/play_demo.py             # lists previews/*.wav, numbered, and asks which
-    .venv/bin/python internal_tools/play_demo.py classic_strum       # plays previews/classic_strum.wav straight away
+    .venv/bin/python internal_tools/play_demo.py             # lists output/previews/*.wav, numbered, and asks which
+    .venv/bin/python internal_tools/play_demo.py classic_strum       # plays output/previews/classic_strum.wav straight away
     .venv/bin/python internal_tools/play_demo.py 12                  # plays the twelfth of the list straight away
     .venv/bin/python internal_tools/play_demo.py --list              # only prints the numbered list
 
@@ -32,7 +32,7 @@ import wave
 from llamatron.model.file.example_sets import example_sets
 from llamatron.model.objects.setlist import Setlist
 
-PREVIEWS = 'previews'
+PREVIEWS = 'output/previews'
 WAVE_SUFFIX = '.wav'
 WAVE_FILES = '*' + WAVE_SUFFIX
 PLAYER = 'afplay'

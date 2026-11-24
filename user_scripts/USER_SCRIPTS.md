@@ -62,14 +62,14 @@ sh user_scripts/launch_docs.sh --port 5000 --no-browser
 
 ### `demos_to_wavs.sh`
 
-Turns every demo into a WAV file in `previews/`, in one go: it makes the
+Turns every demo into a WAV file in `output/previews/`, in one go: it makes the
 General MIDI previews first, plays each through FluidSynth (installing it the
 first time), and evens out the loudness. Run it once, and again after the
 demos change.
 
 ```
 sh user_scripts/demos_to_wavs.sh
-sh user_scripts/demos_to_wavs.sh previews/entertainer.mid      # only the previews named, not made afresh
+sh user_scripts/demos_to_wavs.sh output/previews/entertainer.mid      # only the previews named, not made afresh
 ```
 
 ### `play_demo.sh`
@@ -89,7 +89,7 @@ sh user_scripts/play_demo.sh                   # the list, then type a number
 
 ### `demos_to_midi.sh`
 
-Exports every demo as one General MIDI file in `previews/`, for any MIDI
+Exports every demo as one General MIDI file in `output/previews/`, for any MIDI
 player. `demos_to_wavs.sh` runs it for you.
 
 ```

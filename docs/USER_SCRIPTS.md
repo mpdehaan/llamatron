@@ -81,7 +81,7 @@ Parameters:
 
 ### `demos_to_midi.sh`
 
-Exports every example as one General MIDI file in `previews/`, playable in any
+Exports every example as one General MIDI file in `output/previews/`, playable in any
 MIDI player, such as GarageBand. Use it to hear the demos on a computer
 without llamatron, or to share them.
 
@@ -96,14 +96,14 @@ Parameters:
 
 ### `demos_to_wavs.sh`
 
-Turns every demo into a WAV file in `previews/` in one go: it makes the
+Turns every demo into a WAV file in `output/previews/` in one go: it makes the
 previews first, plays each through FluidSynth, which it installs the first
 time, and evens out their loudness. Use it to have every demo as audio to play
 or share.
 
 ```
 sh user_scripts/demos_to_wavs.sh
-sh user_scripts/demos_to_wavs.sh previews/pachelbel.mid
+sh user_scripts/demos_to_wavs.sh output/previews/pachelbel.mid
 ```
 
 Parameters:
@@ -131,7 +131,7 @@ Parameters:
   `pachelbel`, or by the path of a WAV file; a numbered list to pick from
   unless given.
 - `--list`: print the numbered list and play nothing.
-- `--folder FOLDER`: where the WAV files are, `previews/` unless given.
+- `--folder FOLDER`: where the WAV files are, `output/previews/` unless given.
 
 ### `demos_to_live_sets.sh`
 

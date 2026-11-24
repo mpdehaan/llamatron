@@ -104,6 +104,6 @@ These only work with `--to`.
 | Script | What it does |
 | --- | --- |
 | `sh user_scripts/demos_to_live_sets.sh` | Every example as a Live set beside it, replacing earlier exports. |
-| `sh user_scripts/demos_to_midi.sh` | Every example as one General MIDI file in `previews/`, for any MIDI player. |
+| `sh user_scripts/demos_to_midi.sh` | Every example as one General MIDI file in `output/previews/`, for any MIDI player. |
 | `sh user_scripts/demos_to_wavs.sh` | Those previews as WAV files through FluidSynth, installing it the first time. |
 | `sh user_scripts/play_demo.sh` | Pick one of those WAV files from a list and hear it. |

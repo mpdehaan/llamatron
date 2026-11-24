@@ -3,27 +3,27 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# What it does: turn every demo into a WAV file in previews/ in one go, making the General MIDI previews first and playing them through FluidSynth, which it installs the first time
+# What it does: turn every demo into a WAV file in output/previews/ in one go, making the General MIDI previews first and playing them through FluidSynth, which it installs the first time
 
 # Turn llamatron's General MIDI previews into WAV audio files with FluidSynth, to listen to anywhere
 # or share, with no MIDI player needed. It sets up everything it needs the first time:
 #
 #     sh user_scripts/demos_to_wavs.sh                        # every demo, its preview made first
-#     sh user_scripts/demos_to_wavs.sh previews/classic_strum.mid   # only the files named
+#     sh user_scripts/demos_to_wavs.sh output/previews/classic_strum.mid   # only the files named
 #
 # Each time, it:
 #   1. runs user_scripts/install_fluidsynth.sh, which installs FluidSynth with Homebrew and downloads the free
 #      GeneralUser GS SoundFont into ~/soundfonts, each only if it isn't there;
 #   2. checks for the virtual environment that user_scripts/setup.sh makes;
 #   3. with no files named, makes the preview MIDI files first, with user_scripts/demos_to_midi.sh;
-#   4. writes a WAV file beside each preview, like previews/classic_strum.wav, writing over the ones
+#   4. writes a WAV file beside each preview, like output/previews/classic_strum.wav, writing over the ones
 #      it made before, and normalizes each (internal_tools/normalize_wave.py): the whole file raised until its
 #      loudest moment is 1 dB below the most a WAV holds, the usual headroom for streaming, so that
 #      every demo is about as loud as the next and none distorts.
 #
 # sh user_scripts/play_demo.sh lists the WAV files and plays the one picked with afplay, macOS's own command line
 # audio player, which plays it and exits without opening Music or adding the file to a library
-# (Ctrl+C stops it); afplay previews/classic_strum.wav plays one directly.
+# (Ctrl+C stops it); afplay output/previews/classic_strum.wav plays one directly.
 #
 # It is careful by design. It never deletes anything, and it writes only .wav files beside the .mid
 # files it reads, besides what user_scripts/install_fluidsynth.sh installs. It changes no configuration file.
@@ -33,7 +33,7 @@
 
 set -eu
 
-PREVIEWS='previews'
+PREVIEWS='output/previews'
 SOUNDFONT="$HOME/soundfonts/GeneralUser-GS.sf2"
 SAMPLE_RATE='44100'
 PYTHON='.venv/bin/python'

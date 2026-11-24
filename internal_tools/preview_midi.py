@@ -6,7 +6,7 @@
 
 Run it from the top folder (sh user_scripts/demos_to_midi.sh):
 
-    .venv/bin/python internal_tools/preview_midi.py              # every set in examples/ into previews/
+    .venv/bin/python internal_tools/preview_midi.py              # every set in examples/ into output/previews/
     .venv/bin/python internal_tools/preview_midi.py some.yml     # only the sets named
 
 Each song is written as the General MIDI export writes it (--to gm): a track per llamatron track,
@@ -35,13 +35,13 @@ from llamatron.interface.tracker.document import Document
 from llamatron.model.objects.setlist import Setlist
 
 EXAMPLES = os.path.join('examples', '*.yml')
-PREVIEWS = 'previews'
+PREVIEWS = 'output/previews'
 SET_SUFFIX = '.yml'
 NAME_JOIN = '{set}_{song}'
 # Each preview is named after the set and the song, as the plain MIDI export names its file, or after
 # the set alone when the song has the set's name, as every demo's one song has, a space in the song's
 # name counting as the underscore a file name holds, so that the song minimal techno of
-# minimal_techno.yml is previews/minimal_techno.mid.
+# minimal_techno.yml is output/previews/minimal_techno.mid.
 PREVIEW_FILE = '{name}.mid'
 WROTE = 'wrote {path}'
 FEATURES_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'demo_features.py')

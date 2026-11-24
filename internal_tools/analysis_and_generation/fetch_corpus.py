@@ -7,8 +7,8 @@ the Humdrum collections KernScores serves, from their maintainers' repositories 
 down), and the research datasets allowed: the McGill Billboard
 chord annotations, de Clercq and Temperley's rock corpus and Google Magenta's Groove MIDI drums; and the popular-music and folk
 sources of 113 A: the open part of the Enhanced Wikifonia lead sheets, the Public Domain Song
-Anthology and the Session's and Nottingham's folk tunes; all into .corpus/, which git ignores, for analysis only: nothing fetched
-is committed or passed on, and only measurements leave .corpus/ (the use the EU's text-and-data-mining exceptions and American
+Anthology and the Session's and Nottingham's folk tunes; all into output/library/, which git ignores, for analysis only: nothing fetched
+is committed or passed on, and only measurements leave output/library/ (the use the EU's text-and-data-mining exceptions and American
 fair use cover; each source's terms are noted beside it). Only the files a collection needs are kept, sparing the connection: an archive comes in one download
 with its other files dropped, the smaller Humdrum collections a file at a time with a pause between, a database as one file. A
 file already fetched isn't fetched again, a download past the size allowed is refused, and no archive member may land outside its
@@ -31,7 +31,7 @@ import urllib.error
 import urllib.request
 import zipfile
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent.parent / '.corpus'
+ROOT = pathlib.Path(__file__).resolve().parent.parent.parent / 'output' / 'library'
 SCORE_SUFFIX = '.krn'
 # The most one download may come to, in bytes.
 ALLOWED_BYTES = 50 * 1000 * 1000
@@ -51,7 +51,7 @@ DATAVERSE_FILE = '{server}/api/access/datafile/{id}'
 TREE = 'https://api.github.com/repos/{repository}/git/trees/{branch}?recursive=1'
 RAW = 'https://raw.githubusercontent.com/{repository}/{branch}/{path}'
 TARBALL = 'https://codeload.github.com/{repository}/tar.gz/{branch}'
-# Each Humdrum collection on GitHub: its folder under .corpus/, how it comes, its repository and branch.
+# Each Humdrum collection on GitHub: its folder under output/library/, how it comes, its repository and branch.
 COLLECTIONS = (
     ('essen', ARCHIVE, 'ccarh/essen-folksong-collection', 'main'),
     ('joplin', FILES, 'craigsapp/joplin', 'main'),
@@ -64,7 +64,7 @@ COLLECTIONS = (
     ('bach-art-of-fugue', FILES, 'craigsapp/art-of-the-fugue', 'main'),
     ('vivaldi-op6', FILES, 'craigsapp/vivaldi-op6', 'main'),
 )
-# Each research dataset: its folder under .corpus/, how it comes, its address, the endings of the files kept, the most it may come
+# Each research dataset: its folder under output/library/, how it comes, its address, the endings of the files kept, the most it may come
 # to in megabytes, and its terms.
 DATASETS = (
     ('billboard', ARCHIVE, 'https://www.dropbox.com/s/2lvny9ves8kns4o/billboard-2.0-salami_chords.tar.gz?dl=1', ('.txt',), 5, 'CC0'),
@@ -113,7 +113,7 @@ NO = 'n'
 JOIN = ', '
 HAVE = 'already here'
 HAVE_NOT = 'not here yet'
-INTRODUCTION = ('The genre library\'s corpus, downloaded into .corpus/ (which git ignores) for analysis on this computer only.\n'
+INTRODUCTION = ('The genre library\'s corpus, downloaded into output/library/ (which git ignores) for analysis on this computer only.\n'
                 'Each category is asked about; a part left out is passed over when the corpus is recalculated.\n')
 CATEGORY_HEADING = '{title} (up to {megabytes} MB)'
 CATEGORY_ABOUT = '  {about}'
@@ -321,7 +321,7 @@ def asked(*, ask=input, say=print):
 
 
 def fetch_named(wanted):
-    """Fetch the named sources, each into its folder under .corpus/."""
+    """Fetch the named sources, each into its folder under output/library/."""
     for name, kind, repository, branch in COLLECTIONS:
         if name not in wanted:
             continue

@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Every source the corpus reads: where it lives under .corpus/, what kind of music data it holds, how far it can be trusted, and
+"""Every source the corpus reads: where it lives under output/library/, what kind of music data it holds, how far it can be trusted, and
 its terms, so that a generator can use only knowledge whose sources allow what the person intends and print the credits owed."""
 
 from dataclasses import dataclass
@@ -43,7 +43,7 @@ class Terms:
 
 @dataclass(slots=True, kw_only=True, frozen=True)
 class Source:
-    """One source: its name, its folder under .corpus/, its kind, its quality, its terms, and the library style its pieces are
+    """One source: its name, its folder under output/library/, its kind, its quality, its terms, and the library style its pieces are
     compared with when they share one."""
 
     name: str

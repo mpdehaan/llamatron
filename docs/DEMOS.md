@@ -95,7 +95,7 @@ values, and `internal_tools/demo_table.sh` keeps these pages current.
 
 The demos can be heard without opening llamatron. `sh
 user_scripts/demos_to_midi.sh` exports every demo as a General MIDI file in
-`previews/`, which any MIDI player plays; `sh user_scripts/demos_to_wavs.sh`
+`output/previews/`, which any MIDI player plays; `sh user_scripts/demos_to_wavs.sh`
 turns every demo into a WAV file there, through FluidSynth; and `sh
 user_scripts/play_demo.sh` lists the WAV files and plays the one chosen in the
 terminal. [User Scripts](USER_SCRIPTS.md#listening-to-the-demos) describes

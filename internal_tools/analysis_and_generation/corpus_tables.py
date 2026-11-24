@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Measure the corpus into its tables (internal_tools/analysis_and_generation/corpus_tables.sh): every source's pieces, or the
-named sources, profiled in every numeric field the library compares and cached in .corpus/tables/, rebuilt when llamatron's
+named sources, profiled in every numeric field the library compares and cached in output/library/tables/, rebuilt when llamatron's
 version has changed since a table was measured, or always with --rebuild (114 C: re-analysed as the analyzers improve).
 
     internal_tools/analysis_and_generation/corpus_tables.sh                 every source, the stale ones measured

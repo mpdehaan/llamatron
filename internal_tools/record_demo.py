@@ -40,7 +40,7 @@ and the audio output device, and waits for ENTER after its last line, "Ready? Pr
 NOT MOVE YOUR MOUSE CURSOR", unless --go says to start at once. A scene whose
 every clip loops is refused, since the song would wait there forever, and every take ends at
 --max-seconds, fifteen minutes unless told otherwise. The
-video is written as recordings/<set>.mov, a second take writing over the first, with the screen's own
+video is written as output/recordings/<set>.mov, a second take writing over the first, with the screen's own
 recording of the terminal window this is run from, so size the window first: 16 by 9 is what video
 sites expect.
 """
@@ -69,7 +69,7 @@ from llamatron.realtime.devices import fluidsynth as fluidsynth_values
 from llamatron.realtime.devices.fluidsynth import fluidsynth_path, is_installed, soundfont_path
 from llamatron.realtime.devices.ports import output_port_names
 
-RECORDINGS = 'recordings'
+RECORDINGS = 'output/recordings'
 VIDEO_SUFFIX = '.mov'
 DEFAULT_DRIVER = 'IAC'
 DEFAULT_AUDIO_DEVICE = 'BlackHole'
@@ -427,7 +427,7 @@ def region_tools():
 
 
 def batch_video_path(*, path, mode):
-    """Return where a set's batch video of a mode is written: recordings/<set>_<mode>.mov."""
+    """Return where a set's batch video of a mode is written: output/recordings/<set>_<mode>.mov."""
     return os.path.join(RECORDINGS, BATCH_VIDEO.format(stem=file_stem(path), mode=mode) + VIDEO_SUFFIX)
 
 

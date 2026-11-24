@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Each piece's measures as a table row, cached per source in .corpus/tables/, for meta-analysis and calibration: every numeric
+"""Each piece's measures as a table row, cached per source in output/library/tables/, for meta-analysis and calibration: every numeric
 field the library compares, under its trait's name and field's name joined by a dot, with the piece's source, identity, creator,
 year and the library style it is labelled as, where its source says (a rag is ragtime, a reel is Celtic, a bebop solo is
 bebop). A table records a fingerprint of the analyzer that measured it (the source of measuring/hearing/ and the traits), so that a table

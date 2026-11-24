@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""A reader for every source in .corpus/, each yielding the corpus's pieces: up to a limit, taken evenly through the source so a
+"""A reader for every source in output/library/, each yielding the corpus's pieces: up to a limit, taken evenly through the source so a
 sample spans it, in the same order every time; a file that can't be read is passed over (the data isn't assumed to be good)."""
 
 from corpus.chord_files import billboard_song, billboard_years, expanded_rules, numeral_root
@@ -15,7 +15,7 @@ import pretty_midi
 import re
 import sqlite3
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent / '.corpus'
+ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent / 'output' / 'library'
 KERN = '*.krn'
 DEFAULT_LIMIT = 500
 SECONDS_IN_A_MINUTE = 60.0
@@ -301,7 +301,7 @@ READERS = {name: (lambda reader: lambda limit: readable(reader(limit)))(reader) 
 
 
 def is_fetched(source):
-    """Return whether a source's files are at hand in .corpus/, fetched by fetch_corpus.sh."""
+    """Return whether a source's files are at hand in output/library/, fetched by fetch_corpus.sh."""
     folder = ROOT / source
     return folder.is_dir() and any(folder.iterdir())
 

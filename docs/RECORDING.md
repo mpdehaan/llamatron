@@ -50,10 +50,10 @@ sound is recorded from (BlackHole 2ch)
   track (lead) plays through (RECORDER 1) on channel 1
   track (bass) plays through (RECORDER 2) on channel 2
 recording window 72 for up to 52 s: 6 s of splash, 1 s on Arrange, the song (42 s), 2 s to ring out
-wrote recordings/sailor_arpeggiator.mov (18.3 MB)
+wrote output/recordings/sailor_arpeggiator.mov (18.3 MB)
 ```
 
-The video is `recordings/<set>.mov` in the project folder, which git ignores,
+The video is `output/recordings/<set>.mov` in the project folder, which git ignores,
 and a second take of the same set replaces the first. The video is an H.264
 QuickTime file, which YouTube accepts as it is.
 
@@ -154,7 +154,7 @@ video by default: the video opens on the title on black, shows Arrange with
 READY, and then the clips and the visualizer take turns filling the screen
 inside a frame whose pulse changes colour at each scene, ten seconds each with
 a fade through black between, starting on the clips, recorded from the
-terminal's cells alone and written as `recordings/<set>_<mode>.mov`. Batch
+terminal's cells alone and written as `output/recordings/<set>_<mode>.mov`. Batch
 Recording below describes the same staging for every demo at once.
 `--no-alternate` shows the visualizer alone in the frame, and `--plain`
 records the older style instead, the visualizer over Arrange's clip area
@@ -186,8 +186,8 @@ FluidSynth, shortest first, each with the visualizer mode
 on black, shows Arrange with READY, and then the clips and the visualizer take
 turns inside a frame whose pulse changes colour at each scene, as Visualizer
 Takes above describes. The batch records the terminal's cells alone, with no
-window around them, as `recordings/<set>_<mode>.mov`. A demo whose video is
-already in `recordings/` is left out, so running it again records only what is
+window around them, as `output/recordings/<set>_<mode>.mov`. A demo whose video is
+already in `output/recordings/` is left out, so running it again records only what is
 missing; delete a video to record it again. Set up as for `record.sh --sound
 fluidsynth` above, and turn on Do Not Disturb, since anything that appears
 over the window is recorded. `LLAMATRON_BATCH_RECORD_MAX=2` records only the

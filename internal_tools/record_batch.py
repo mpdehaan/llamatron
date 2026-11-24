@@ -9,9 +9,9 @@
 
 Each take is internal_tools/record_demo.py's batch video (interface/tracker/batch_stage.py): the
 title on black, Arrange with READY, then the song with its mode filling the scene frame, recorded from
-the rectangle the terminal window's cells cover alone, written as recordings/<set>_<mode>.mov. The
+the rectangle the terminal window's cells cover alone, written as output/recordings/<set>_<mode>.mov. The
 examples go shortest first, so that a problem shows in the first minute; an example that has any video in
-recordings/ already, its plain take or a take of any mode (has_a_video), is left out, so that running it again records only what is
+output/recordings/ already, its plain take or a take of any mode (has_a_video), is left out, so that running it again records only what is
 missing; and LLAMATRON_BATCH_RECORD_MAX stops after that many. An example the pairings don't list gets the mode
 they use least, which tells a new demo what is seen less. It lists the takes and the time they need
 and asks once before starting, unless --go, and stops at the first take that fails. The screen and
@@ -51,8 +51,8 @@ BAD_PAIRING = 'internal_tools/visualizer_pairings.yml gives {stem} the mode {mod
 BAD_MOST = '{variable} must be a whole number, got {value}'
 TAKE_FAILED = 'stopped: the take of {stem} failed'
 ALREADY_RECORDED = 'left out, recorded already: {stem} with {mode}'
-NOTHING_TO_RECORD = 'every example has its video in recordings/ already'
-ALL_DONE = 'recorded {count} videos into recordings/'
+NOTHING_TO_RECORD = 'every example has its video in output/recordings/ already'
+ALL_DONE = 'recorded {count} videos into output/recordings/'
 LENGTH = '{minutes}:{seconds:02d}'
 SECONDS_IN_A_MINUTE = 60
 # What a take adds to its song, in seconds, for the total: the title, READY, the box growing, the lead-out and the hold.
@@ -99,7 +99,7 @@ def most_takes(environment):
 
 
 def has_a_video(*, path, recorder):
-    """Return whether the set at path has any video in the recordings folder: its plain take, recordings/<set>.mov, or a take of any mode, recordings/<set>_<mode>.mov, whatever mode the pairings now give it."""
+    """Return whether the set at path has any video in the recordings folder: its plain take, output/recordings/<set>.mov, or a take of any mode, output/recordings/<set>_<mode>.mov, whatever mode the pairings now give it."""
     videos = [os.path.join(recorder.RECORDINGS, file_stem(path) + recorder.VIDEO_SUFFIX)]
     videos += [recorder.batch_video_path(path=path, mode=option) for option in mode_options()]
     return any(os.path.exists(video) for video in videos)

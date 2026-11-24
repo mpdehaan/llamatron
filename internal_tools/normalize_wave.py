@@ -4,7 +4,7 @@
 
 """Raise or lower a WAV file so that its loudest moment is 1 dB below the most a WAV can hold.
 
-    .venv/bin/python internal_tools/normalize_wave.py previews/classic_strum.wav ...
+    .venv/bin/python internal_tools/normalize_wave.py output/previews/classic_strum.wav ...
 
 user_scripts/demos_to_wavs.sh runs it on every WAV file it writes, since FluidSynth's files
 come out quiet. It is peak normalization, the usual best practice when music is prepared for
