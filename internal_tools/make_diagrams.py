@@ -98,7 +98,7 @@ ACTION_ARGUMENT = 'action'
 # words' imports of the names they build their tables from.
 SUBSYSTEMS = (
     ('set', 'The Set', ('model',)),
-    ('musicianship', 'Musicianship', ('music_theory/composing', 'music_theory/harmony', 'music_theory/hooks')),
+    ('musicianship', 'Musicianship', ('music_theory/analysis', 'music_theory/composing', 'music_theory/harmony', 'music_theory/hooks')),
     ('engine', 'The Engine', ('engine',)),
     ('files', 'Files In and Out', ('exporters', 'importers')),
     ('realtime', 'Real Time', ('realtime',)),

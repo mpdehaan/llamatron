@@ -11,19 +11,15 @@ from collections import Counter
 from dataclasses import dataclass
 from measuring.measures.traits import Harmony, Modulation
 
+from llamatron.music_theory.analysis import keys
+from llamatron.music_theory.analysis.chords import chord_of
+
 PITCH_CLASSES = 12
-MAJOR_PROFILE = (6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88)
-MINOR_PROFILE = (6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17)
-MAJOR = 'major'
-MINOR = 'minor'
+MAJOR = keys.MAJOR
+MINOR = keys.MINOR
 KEY_WINDOW_BARS = 8
 # How much a note may overlap the next and still count as one line, in beats.
 OVERLAP_ALLOWED = 0.05
-# The chord shapes matched on each beat, as half steps above the root, by the quality the library writes.
-CHORD_SHAPES = {
-    'M': (0, 4, 7), 'm': (0, 3, 7), '7': (0, 4, 7, 10), 'M7': (0, 4, 7, 11), 'm7': (0, 3, 7, 10), 'dim': (0, 3, 6), 'm7b5': (0, 3, 6, 10),
-    'aug': (0, 4, 8), 'sus4': (0, 5, 7), 'sus2': (0, 2, 7), '5': (0, 7),
-}
 NUMERALS = ('I', 'bII', 'II', 'bIII', 'III', 'IV', 'bV', 'V', 'bVI', 'VI', 'bVII', 'VII')
 MAJOR_SCALE = (0, 2, 4, 5, 7, 9, 11)
 MINOR_SCALE = (0, 2, 3, 5, 7, 8, 10)
@@ -40,9 +36,6 @@ PHRASE_START_WEIGHT = 100
 MOST_QUALITIES = 5
 RELATIVE_MINOR_BELOW = 3
 FIFTH = 7
-# A pitch class counts as sounding in a beat when it carries this share of the beat's weight, and a chord needs two.
-LONE_NOTE_SHARE = 0.05
-FEWEST_CHORD_NOTES = 2
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)
@@ -53,27 +46,10 @@ class Key:
     mode: str
 
 
-def correlation(*, left, right):
-    count = len(left)
-    left_mean = sum(left) / count
-    right_mean = sum(right) / count
-    top = sum((a - left_mean) * (b - right_mean) for a, b in zip(left, right))
-    bottom = (sum((a - left_mean) ** 2 for a in left) * sum((b - right_mean) ** 2 for b in right)) ** 0.5
-    return top / bottom if bottom else 0.0
-
-
 def key_of(weights):
-    """Return the key whose profile best matches how long each pitch class sounds."""
-    best = None
-    best_score = None
-    for tonic in range(PITCH_CLASSES):
-        rotated = [weights[(tonic + step) % PITCH_CLASSES] for step in range(PITCH_CLASSES)]
-        for mode, profile in ((MAJOR, MAJOR_PROFILE), (MINOR, MINOR_PROFILE)):
-            score = correlation(left=rotated, right=profile)
-            if best_score is None or score > best_score:
-                best = Key(tonic=tonic, mode=mode)
-                best_score = score
-    return best
+    """Return the key whose profile best matches how long each pitch class sounds (music_theory/analysis/keys.py)."""
+    fit = keys.best_key(weights)
+    return Key(tonic=fit.tonic, mode=fit.mode)
 
 
 def harmonic_notes(*, performance, roles, lead):
@@ -90,25 +66,6 @@ def keys_by_window(*, performance, notes):
     for weights in weights_by_span(notes=notes, span=window, count=count):
         keys.append(key_of(weights) if any(weights) else (keys[-1] if keys else None))
     return keys
-
-
-def chord_of(weights):
-    """Return the chord (root, quality) whose shape best covers the pitch classes sounding, or None in silence and where one
-    pitch class sounds alone, as under a bass playing by itself: a single note is no chord, and was once heard as a power
-    chord."""
-    total = sum(weights)
-    if total == 0 or sum(1 for weight in weights if weight / total >= LONE_NOTE_SHARE) < FEWEST_CHORD_NOTES:
-        return None
-    best = None
-    best_score = None
-    for root in range(PITCH_CLASSES):
-        for quality, shape in CHORD_SHAPES.items():
-            inside = sum(weights[(root + step) % PITCH_CLASSES] for step in shape)
-            score = inside / total - 0.06 * len(shape) + 0.5 * weights[root] / total
-            if best_score is None or score > best_score:
-                best = (root, quality)
-                best_score = score
-    return best
 
 
 def numeral(*, chord, key):

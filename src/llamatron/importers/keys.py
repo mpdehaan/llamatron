@@ -6,7 +6,7 @@
 A MIDI file says its key with a key signature, like Bb or F#m, which the import takes as a major
 or minor scale. A file that says none has its key worked out from its notes, by how long each
 note of the octave sounds against the Krumhansl-Kessler profiles of the major and minor keys,
-the usual way. A note outside the scale is a degree with a sharp or a flat, sharps unless the
+the usual way (music_theory/analysis/keys.py). A note outside the scale is a degree with a sharp or a flat, sharps unless the
 key's signature has flats, so every note keeps its pitch whatever the key.
 """
 
@@ -17,6 +17,7 @@ from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Accidental
 from llamatron.model.values import note as note_values
 from llamatron.model.values.scale import ScaleType
+from llamatron.music_theory.analysis import keys
 from llamatron.music_theory.fundamentals import intervals
 
 # A key signature as mido writes it ends in m for a minor key.
@@ -24,9 +25,6 @@ MINOR_MARK = 'm'
 # The keys whose signatures have flats though their roots don't, which spell notes outside the scale with flats.
 FLAT_KEYS = ('F', 'Dm', 'Gm', 'Cm', 'Fm')
 FIRST_DEGREE = 1
-# The Krumhansl-Kessler profiles: how well each note of the octave, from the root, fits a major and a minor key.
-MAJOR_PROFILE = (6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88)
-MINOR_PROFILE = (6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17)
 # How a worked-out key's root is spelled, by the root's place in the octave, as its signature spells it.
 MAJOR_ROOTS = ('C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B')
 MINOR_ROOTS = ('C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B')
@@ -68,28 +66,15 @@ def key_of_signature(text):
 
 
 def key_of_notes(notes):
-    """Return the key the notes are most likely in, by how long each note of the octave sounds, C major for no notes."""
-    weights = [0.0] * intervals.HALF_STEPS_PER_OCTAVE
-    for note in notes:
-        weights[note.pitch % intervals.HALF_STEPS_PER_OCTAVE] += float(note.end - note.start)
-    best = None
-    for root in range(intervals.HALF_STEPS_PER_OCTAVE):
-        for profile, kind, names in ((MAJOR_PROFILE, ScaleType.MAJOR, MAJOR_ROOTS), (MINOR_PROFILE, ScaleType.MINOR, MINOR_ROOTS)):
-            fit = correlation(first=[weights[(root + place) % intervals.HALF_STEPS_PER_OCTAVE] for place in range(intervals.HALF_STEPS_PER_OCTAVE)], second=profile)
-            if best is None or fit > best[0]:
-                best = (fit, names[root], kind)
-    _, root, kind = best
+    """Return the key the notes are most likely in (music_theory/analysis/keys.py), C major for no notes."""
+    fit = keys.key_of_notes(notes)
+    roots = MAJOR_ROOTS
+    kind = ScaleType.MAJOR
+    if fit.mode == keys.MINOR:
+        roots = MINOR_ROOTS
+        kind = ScaleType.MINOR
+    root = roots[fit.tonic]
     return MusicalKey(root=root, kind=scale_type_name(kind), flats=root.endswith(note_values.FLAT_SIGN))
-
-
-def correlation(*, first, second):
-    """Return how closely two lists of numbers rise and fall together, from -1 to 1, or 0 when either is flat."""
-    count = len(first)
-    first_mean = sum(first) / count
-    second_mean = sum(second) / count
-    together = sum((a - first_mean) * (b - second_mean) for a, b in zip(first, second))
-    spread = (sum((a - first_mean) ** 2 for a in first) * sum((b - second_mean) ** 2 for b in second)) ** 0.5
-    return together / spread if spread else 0.0
 
 
 def degree_of(*, pitch, key):

@@ -8,7 +8,9 @@ how the harmony moves) and what prepares it (a fill, a pickup stepping across th
 section, a drop-out, a build towards the new level), as songwriters and arrangers join sections."""
 
 from dataclasses import dataclass
-from measuring.hearing.harmony import chord_of, PITCH_CLASSES, weights_by_span
+from measuring.hearing.harmony import PITCH_CLASSES, weights_by_span
+
+from llamatron.music_theory.analysis.chords import chord_of
 
 WINDOW_BARS = 2
 REGISTER_SCALE = 12
