@@ -28,6 +28,8 @@ one part. Each track starts in the part its notes play: the most tune-like
 line is the melody, chordal tracks are the chords, and the bass, the drums and
 the other lines are left out. Where the tune line plays only a few notes, the
 highest chord track carries the tune instead, as a pianist's right hand does.
+Where no track plays chords, as in a canon, the other lines and the bass are
+heard together as the chords, since that is where its harmony is.
 
 ## How the Chords Are Read
 
@@ -72,7 +74,8 @@ counted rather than printed again.
 - The export directory and the file it writes, saying when it replaces one.
 - Export and CANCEL.
 
-`Tab` goes to the next part. Export refuses, saying why, while nothing is
+`Tab` goes to the next part. While Export can't go on, it is dim and the line
+above it says why: nothing is
 ticked or no track plays a part a page needs, and warns when a drums track is
 chosen as chords. The page remembers its choices for each song until
 llamatron quits.

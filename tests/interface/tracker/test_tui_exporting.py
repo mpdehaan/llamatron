@@ -228,15 +228,16 @@ class TestPdfExportPage(UITest):
         self.assertIsInstance(self.app.screen, MainPage)
         self.assertTrue(os.path.exists(pdf_path(directory=self.folder, name=self.document.export_name(), kind=PdfKind.PACKET)))
 
-    async def test_nothing_ticked_refuses_and_saying_why(self):
+    async def test_nothing_ticked_says_why_above_the_dim_export_button_and_refuses(self):
         page = self.app.screen
         for place in range(len(pdf_options().packet_pages)):
             page.place = place
             await self.press(Key.SPACE)
+        # The line above the dim Export button says why before it is pressed, and pressing it refuses.
+        self.assertIn(errors.ERR_PDF_NOTHING_TICKED, self.text())
         page.place = page.first_button_place()
         await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, PdfExportPage)
-        self.assertIn(errors.ERR_PDF_NOTHING_TICKED, self.text())
 
     async def test_a_track_takes_the_column_under_the_cursor_and_the_choices_are_remembered(self):
         page = self.app.screen

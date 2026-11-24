@@ -105,3 +105,13 @@ class TestSongPrinting(unittest.TestCase):
         right_hand = TrackNotes(name=PIANO, drum=False, notes=tuple(chords))
         parts = song_printing.default_parts(tracks=[rare, right_hand], signature=signature)
         self.assertEqual(parts, {FIDDLE: PrintedPart.LEFT_OUT, PIANO: PrintedPart.MELODY})
+
+    def test_where_no_track_plays_chords_the_other_lines_and_the_bass_are_heard_as_them(self):
+        bars = 4
+        signature = TimeSignature(beats=4, unit=4)
+        tune = TrackNotes(name=LEAD, drum=False, notes=tuple(PrintedNote(start=step * QUARTER, end=(step + 1) * QUARTER, pitch=C5 + step % 5) for step in range(bars * 4)))
+        line = TrackNotes(name=FIDDLE, drum=False, notes=tuple(PrintedNote(start=step * HALF, end=(step + 1) * HALF, pitch=C4 + 7 * (step % 2)) for step in range(bars * 2)))
+        bass = TrackNotes(name=PIANO, drum=False, notes=tuple(PrintedNote(start=bar * BAR, end=(bar + 1) * BAR, pitch=F3 - 12 + bar) for bar in range(bars)))
+        parts = song_printing.default_parts(tracks=[tune, line, bass], signature=signature)
+        self.assertEqual(parts[LEAD], PrintedPart.MELODY)
+        self.assertEqual({parts[FIDDLE], parts[PIANO]}, {PrintedPart.CHORDS})

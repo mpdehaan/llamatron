@@ -11,7 +11,8 @@ beats in a row is one chord. A song whose scenes set their Section has a section
 one at every scene, a scene played again in a row counted rather than repeated.
 
 Each track's default part is the role its notes play (music_theory/analysis/roles.py): the
-melody, the chords for harmony and pads, and left out for the rest.
+melody, the chords for harmony and pads, and left out for the rest; where no track plays chords, as in a canon, the
+chords are heard from the counter lines and the bass together.
 """
 
 from statistics import median
@@ -37,6 +38,8 @@ class PrintedPart:
 PRINTED_PARTS = (PrintedPart.MELODY, PrintedPart.CHORDS, PrintedPart.LEFT_OUT)
 # A line heard in fewer than this share of the bars is too seldom there to be the tune, which the highest chords then carry.
 LEAST_MELODY_PRESENCE = 0.25
+# The roles whose tracks are heard as the chords together where no track plays chords, as the voices of a canon are.
+LINES_THAT_MAKE_CHORDS = (roles.COUNTER, roles.BASS)
 # The part each role a track's notes play takes by default.
 PARTS_OF_ROLES = {roles.MELODY: PrintedPart.MELODY, roles.HARMONY: PrintedPart.CHORDS, roles.PAD: PrintedPart.CHORDS}
 
@@ -128,6 +131,8 @@ def default_parts(*, tracks, signature):
     if melody and roles.shape_of(part=melody[0], bars=bars, beats_per_bar=signature.get_beats()).presence < LEAST_MELODY_PRESENCE:
         chosen[melody[0].name] = PrintedPart.LEFT_OUT
         _melody_from_chords(chosen=chosen, parts=parts)
+    if PrintedPart.CHORDS not in chosen.values():
+        _chords_from_lines(chosen=chosen, found=found)
     return chosen
 
 
@@ -225,6 +230,14 @@ def _clips_of(*, song, scene):
         if clip_slot is not None:
             played.append((track, tuple(clip_slot.get_pattern_names())))
     return tuple(played)
+
+
+def _chords_from_lines(*, chosen, found):
+    """Make the chords of a song no track plays chords in, such as a canon, heard from its other lines and its bass together,
+    where its harmony is."""
+    for name, role in found.items():
+        if role in LINES_THAT_MAKE_CHORDS and chosen[name] == PrintedPart.LEFT_OUT:
+            chosen[name] = PrintedPart.CHORDS
 
 
 def _melody_from_chords(*, chosen, parts):

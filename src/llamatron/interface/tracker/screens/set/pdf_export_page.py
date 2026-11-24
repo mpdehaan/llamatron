@@ -8,7 +8,7 @@ The packet's pages are ticked in two columns; the Chords field says how simply t
 with its role and a dot in one of three columns, MELODY, CHORDS and LEFT OUT, its part, starting from what its notes' role
 gives it; the export directory and the file's name follow, saying what an export would replace; then Export and CANCEL. The
 cursor moves through them with the arrows, Space or ENTER ticks a page, chooses a column or presses a button, [ and ] step
-the Chords field and ENTER opens its picker, and Tab goes to the next part. Export refuses, saying why on the status line,
+the Chords field and ENTER opens its picker, and Tab goes to the next part. Export is dim and refuses, the line above it saying why in amber,
 while nothing is ticked, or a page ticked needs a melody or chords that no track plays; a drums track among the chords is
 warned of. The choices are remembered for the session, by the set and the song.
 """
@@ -189,7 +189,7 @@ class PdfExportPage(Page):
         rows = max(height - LINES_BESIDES_TRACKS, FEWEST_TRACK_ROWS)
         lines = [Text(drawing.NOTHING), Text(drawing.INDENT + labels.MSG_PACKET_HEADING, style=Style.BOLD), *self._page_lines()]
         lines += [self._level_line(), Text(drawing.NOTHING), self._tracks_heading(rows), *self._track_lines(rows), Text(drawing.NOTHING)]
-        lines += [self._directory_line(), Text(drawing.NOTHING), *self._button_lines()]
+        lines += [self._directory_line(), self._refusal_line(), *self._button_lines()]
         return lines
 
     def _place_above_or_below(self, name):
@@ -285,6 +285,13 @@ class PdfExportPage(Page):
         if replaced:
             text += labels.MSG_REPLACES_FILES.format(count=len(replaced))
         return Text(drawing.INDENT + text, no_wrap=True)
+
+    def _refusal_line(self):
+        """Return the line above the buttons: why Export can't go on, in amber, while it can't, else nothing."""
+        refusal = self.refusal()
+        if refusal is None:
+            return Text(drawing.NOTHING)
+        return Text(drawing.INDENT + refusal, style=Style.REFUSAL)
 
     def _button_lines(self):
         selected = None
