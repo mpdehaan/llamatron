@@ -2,12 +2,15 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The Chords plugin's model: its Mode, Voicing, Progression or Follow Progression; a progression's chords, each with a sharp or
+"""The Chords plugin's model: its Mode, Voicing, Progression, Follow Progression or AutoChord; a progression's chords, each with a sharp or
 flat, an inversion, a borrowed scale type, a quality and tensions, and how long each lasts; the track whose chords it follows; and
-its Voicing, voice leading on or off, its octaves and whether the root stays in the bass, which every mode has."""
+AutoChord's chord and whether the note ends it; its Voicing, voice leading on or off, its octaves and whether the root stays in
+the bass, which every mode has."""
 
 from llamatron.caching.revised import notes_change
 from llamatron.engine.generators import settings_base
+from llamatron.engine.generators.chords import auto_chord
+from llamatron.engine.generators.chords.auto_chord import AutoChord
 from llamatron.engine.generators.chords.following import FollowChords
 from llamatron.engine.generators.chords.progression import Progression
 from llamatron.engine.generators.chords.voicing import VoiceLeading
@@ -27,7 +30,8 @@ from llamatron.user_strings import errors
 VOICING = 'voicing'
 PROGRESSION = 'progression'
 FOLLOW_PROGRESSION = 'follow_progression'
-MODES = [VOICING, PROGRESSION, FOLLOW_PROGRESSION]
+AUTO_CHORD = 'auto_chord'
+MODES = [VOICING, PROGRESSION, FOLLOW_PROGRESSION, AUTO_CHORD]
 DEFAULT_MODE = VOICING
 
 
@@ -37,6 +41,9 @@ class ChordsSetting:
 
     MODE = 'mode'
     CHORDS_FROM = 'chords_from'
+    # AutoChord's chord, and whether the note ends the chord.
+    CHORD = 'chord'
+    NOTE_ON_TOP = 'note_on_top'
     VOICE_LEADING = 'voice_leading'
     LOWEST_OCTAVE = 'lowest_octave'
     HIGHEST_OCTAVE = 'highest_octave'
@@ -119,6 +126,8 @@ class ChordsSettings(GeneratorSettings):
         Checked(name=ProgressionSetting.QUALITIES, check=_row_of(name=ProgressionSetting.QUALITIES, allowed=file_format.PROGRESSION_CHORDS)),
         Checked(name=ProgressionSetting.TENSIONS, check=_tensions_row),
         Text(name=ChordsSetting.CHORDS_FROM, error=errors.ERR_NOT_TEXT),
+        Choice(name=ChordsSetting.CHORD, choices=list(auto_chord.CHORDS), default=corrections.LEFT_OUT, error=errors.ERR_BAD_CHORDS_MODE),
+        Flag(name=ChordsSetting.NOTE_ON_TOP, error=errors.ERR_NOTE_ON_TOP_NOT_TRUE_OR_FALSE),
         Flag(name=ChordsSetting.VOICE_LEADING, error=errors.ERR_VOICE_LEADING_NOT_TRUE_OR_FALSE),
         WholeNumber(name=ChordsSetting.LOWEST_OCTAVE, lowest=note.MIN_OCTAVE, highest=note.MAX_OCTAVE, error=errors.ERR_BAD_SHAPE_PERCENT),
         WholeNumber(name=ChordsSetting.HIGHEST_OCTAVE, lowest=note.MIN_OCTAVE, highest=note.MAX_OCTAVE, error=errors.ERR_BAD_SHAPE_PERCENT),
@@ -173,6 +182,17 @@ class ChordsSettings(GeneratorSettings):
     def following(self, chords):
         """Return the generator that moves a part along the chords another track plays, given them."""
         return FollowChords(chords=chords)
+
+    def auto_chord(self):
+        """Return the generator that turns each single note into its chord."""
+        return AutoChord(chord=self.get_chord(), on_top=self.is_note_on_top())
+
+    def get_chord(self):
+        """Return AutoChord's chord, From scale unless set."""
+        return or_default(value=self.get_written(ChordsSetting.CHORD), default=auto_chord.DEFAULT_CHORD)
+
+    def is_note_on_top(self):
+        return bool(self.get_written(ChordsSetting.NOTE_ON_TOP))
 
     def voicing(self, continuation):
         """Return the generator that voices each chord nearest the one before, within its octaves."""

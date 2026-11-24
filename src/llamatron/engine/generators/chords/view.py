@@ -6,13 +6,14 @@
 Follow Progression mode (Chords from), and in every mode the Voicing column (Voice leading, the octaves, the root in the bass)
 and the generator's Restart."""
 
-from llamatron.engine.generators.chords import model, strings
+from llamatron.engine.generators.chords import auto_chord, model, strings
 from llamatron.engine.generators.chords.model import ChordsSetting, ProgressionSetting
 from llamatron.model.schema import file_format
 from llamatron.model.schema.generator_views import ChoiceView, ColumnView, GeneratorView, OctaveView, ProgressionView, RestartView, TimeView, ToggleView, TrackView
 from llamatron.user_strings import labels
 
-MODE_NAMES = {model.VOICING: strings.MSG_VOICING_MODE, model.PROGRESSION: strings.MSG_PROGRESSION_MODE, model.FOLLOW_PROGRESSION: strings.MSG_FOLLOW_MODE}
+MODE_NAMES = {model.VOICING: strings.MSG_VOICING_MODE, model.PROGRESSION: strings.MSG_PROGRESSION_MODE, model.FOLLOW_PROGRESSION: strings.MSG_FOLLOW_MODE,
+              model.AUTO_CHORD: strings.MSG_AUTO_CHORD_MODE}
 
 VIEW = GeneratorView(
     mode=ChoiceView(setting=ChordsSetting.MODE, label=strings.MSG_MODE_LABEL, choices=tuple(model.MODES), default=model.DEFAULT_MODE, names=MODE_NAMES),
@@ -23,6 +24,10 @@ VIEW = GeneratorView(
         )),
         ColumnView(heading=strings.MSG_FOLLOW_HEADING, modes=(model.FOLLOW_PROGRESSION,), settings=(
             TrackView(setting=ChordsSetting.CHORDS_FROM, label=labels.MSG_CHORDS_FROM_LABEL),
+        )),
+        ColumnView(heading=strings.MSG_AUTO_CHORD_HEADING, modes=(model.AUTO_CHORD,), settings=(
+            ChoiceView(setting=ChordsSetting.CHORD, label=strings.MSG_CHORD_LABEL, choices=auto_chord.CHORDS, default=auto_chord.DEFAULT_CHORD, names=strings.MSG_CHORD_NAMES),
+            ToggleView(setting=ChordsSetting.NOTE_ON_TOP, label=strings.MSG_NOTE_ON_TOP_LABEL),
         )),
         ColumnView(heading=strings.MSG_VOICING_HEADING, settings=(
             ToggleView(setting=ChordsSetting.VOICE_LEADING, label=strings.MSG_VOICE_LEADING_LABEL, by_mode={model.VOICING: True}),

@@ -22,6 +22,7 @@ from fractions import Fraction
 import functools
 
 from llamatron.engine.generators.base import ClipGenerator
+from llamatron.engine.parts.chords_on_notes import triad_above
 from llamatron.math.length import Length
 from llamatron.math.random_source import random_source
 from llamatron.math.rational import Rational
@@ -51,7 +52,6 @@ UNPLAYED_STRING = -1
 POWER_CHORD = (0, 7, 12)
 FIFTH = 7
 # The steps of a scale from a chord's root to its third and its fifth.
-TRIAD_STEPS = (2, 4)
 # How a voicing is scored, lower being better: each note of the chord no string plays (the root costing most and the fifth least,
 # since a hand short of strings leaves the fifth out first), the bass not being the root, a silent string between two that sound,
 # each silent string, and each fret of distance from the position, the least of all.
@@ -170,13 +170,13 @@ class Guitarify(ClipGenerator):
         if self._single_notes == SingleNotes.POWER_CHORD:
             return self._power_chord(note)
         if self._single_notes == SingleNotes.SCALE_CHORD and scale is not None:
-            above = _triad_above(note=note, scale=scale)
+            above = triad_above(note=note, scale=scale)
             if above:
                 return self._voiced(Sound.chord_above(note, above))
         if self._single_notes == SingleNotes.OCTAVE and note[sound_values.MIDI] + intervals.HALF_STEPS_PER_OCTAVE <= midi_numbers.MAX_MIDI_NUMBER:
             return Sound.chord_above(note, OCTAVE_ABOVE)
         if self._single_notes == SingleNotes.THIRD_ABOVE and scale is not None:
-            above = _triad_above(note=note, scale=scale)
+            above = triad_above(note=note, scale=scale)
             if above and note[sound_values.MIDI] + above[0] <= midi_numbers.MAX_MIDI_NUMBER:
                 return Sound.chord_above(note, above[:1])
         if self._single_notes == SingleNotes.DOUBLE_STOP and note[sound_values.MIDI] >= FOURTH_BELOW:
@@ -408,20 +408,6 @@ def _softened(*, note, share):
         velocity = FULL_VELOCITY
     softer = max(round(velocity * share), LOWEST_VELOCITY)
     return (sound_values.NOTE, note[sound_values.LENGTH], note[sound_values.MIDI], softer, note[sound_values.GLIDE], note[sound_values.NAME])
-
-
-def _triad_above(*, note, scale):
-    """Return how many half steps above a note the third and the fifth of the chord its place in a scale builds are, or nothing for a note outside the scale."""
-    steps = scale.get_type().value
-    place = (note[sound_values.MIDI] - scale.get_root().get_midi_number()) % intervals.HALF_STEPS_PER_OCTAVE
-    if place not in steps:
-        return ()
-    index = steps.index(place)
-    above = []
-    for along in TRIAD_STEPS:
-        octaves, wrapped = divmod(index + along, len(steps))
-        above.append(octaves * intervals.HALF_STEPS_PER_OCTAVE + steps[wrapped] - place)
-    return tuple(above)
 
 
 @functools.cache

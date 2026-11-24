@@ -10,8 +10,8 @@ from llamatron.engine.generators.controller import GeneratorController
 
 
 class ChordsController(GeneratorController):
-    """What a Chords generator does: moves a clip's notes through its progression, or along the chords another track plays, then
-    voices them, sparing a drum pattern, whose notes are drums."""
+    """What a Chords generator does: moves a clip's notes through its progression, or along the chords another track plays, or turns
+    each single note into a chord, then voices them, sparing a drum pattern, whose notes are drums."""
 
     __slots__ = ()
 
@@ -27,6 +27,8 @@ class ChordsController(GeneratorController):
             moving = settings.progression(bar=place.bar(), continuation=continuation)
         elif mode == model.FOLLOW_PROGRESSION:
             moving = settings.following(place.chords_followed(settings.get_chords_from()))
+        elif mode == model.AUTO_CHORD:
+            moving = settings.auto_chord()
         voicing = None
         if settings.voices():
             voicing = settings.voicing(continuation)

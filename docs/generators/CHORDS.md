@@ -12,6 +12,14 @@ its Mode decides where the chords come from:
 - **Follow Progression** moves the clip's notes to the chords another track
   plays, so that a song's chords are written once, in one place, and
   everything else follows them.
+- **AutoChord** turns each single note into a chord, so that any instrument,
+  a built-in synth too, plays chords from a line of single notes. From scale,
+  the default, builds the triad the clip's scale builds on the note, major,
+  minor, diminished or augmented as the scale says, and leaves a note outside
+  the scale a single note; Major, Minor, Augmented, Diminished and Power build
+  that chord on the note whatever the scale. A chord already written is left
+  as it is. As the Chords tab of every track and clip, it runs before every
+  other generator.
 
 Every mode then voices the chords if Voice leading is on: on by default in
 Voicing mode, off in the others until switched on. A drum pattern is left
@@ -24,10 +32,12 @@ alone.
 | Setting | What it does |
 | --- | --- |
 | Name | `ENTER` renames it, and every chain using it follows. |
-| Mode | Voicing, Progression or Follow Progression. The columns below it change with the mode. |
+| Mode | Voicing, Progression, Follow Progression or AutoChord. The columns below it change with the mode. |
 | Every | Progression mode: how long each chord lasts, `1 bar` by default. |
 | Chords | Progression mode: the chords as Roman numerals in the song's scale. `ENTER` opens the chord editor. |
 | Chords from | Follow Progression mode: the track whose chords are followed, a track of the current song. Renaming the track renames this too, and a track the song doesn't have moves nothing. |
+| Chord | AutoChord mode: From scale, the default, Major, Minor, Augmented, Diminished or Power. |
+| Note on top | AutoChord mode: off by default. On, the chord ends on the note, its other notes an octave below, so that a melody keeps its line. |
 | Voice leading | Every mode: on, each chord after the first takes the inversion and octave whose notes move least from the chord before. On by default in Voicing mode alone. |
 | Lowest octave, Highest octave | The chords stay within these octaves, shown in the set's octave labels, so that they don't drift up or down over a long piece. A chord no voicing fits plays as written. |
 | Keep the root in the bass | Off by default. On, each chord's lowest written note stays where it is and only the notes above it are voiced, always above it, as a keyboard player plays beside a bass player. `Space` or `ENTER` toggles it. |
