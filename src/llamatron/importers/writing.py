@@ -61,7 +61,7 @@ def pattern_data(*, pattern, set_step_size):
     """Return a pattern's data from whether it is a drum's, its step size, its steps and its CC steps: the rows that hold anything, its own step size where the set's differs, and whether it is a drum's."""
     drum, step_size, steps, controls = pattern
     count = len(steps)
-    rows = {row: [None] * count for row in (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.GATE, Row.VELOCITY)}
+    rows = {row: [None] * count for row in (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.GATE, Row.VELOCITY)}
     ties = [False] * count
     for place, step in enumerate(steps):
         if step == steps_values.TIED:
@@ -71,6 +71,7 @@ def pattern_data(*, pattern, set_step_size):
             rows[Row.ACCIDENTAL][place] = step.accidental
             rows[Row.OCTAVE][place] = step.octave
             rows[Row.CHORD][place] = step.chord
+            rows[Row.INVERSION][place] = step.inversion or None
             rows[Row.GATE][place] = step.gate
             rows[Row.VELOCITY][place] = None if step.velocity == defaults.DEFAULT_VELOCITY else step.velocity
     data = {PatternSetting.STEPS: count}

@@ -28,7 +28,7 @@ from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
+from llamatron.model.schema.file_format import Accidental, ChordSymbol, ClipSlotSetting, PatternSetting, Row, ScaleSetting, SceneSetting, Section, SongSetting, TrackSetting
 from llamatron.model.values.scale import ScaleType
 from llamatron.user_strings import errors, importing
 from tests.support.example_renders import example_setlist, first_song_grid
@@ -235,6 +235,18 @@ class TestVoices(unittest.TestCase):
         chords = voices_of(part=part, chords=True, controls=True)
         self.assertEqual([[played.chord for played in voice.played] for voice in chords], [[ChordSymbol.MAJOR]])
         self.assertEqual(len(voices_of(part=part, chords=False, controls=True)), len(C_MAJOR_TRIAD))
+
+    def test_a_chord_in_an_inversion_is_its_chord_with_the_inversion_written_from_its_root(self):
+        second_inversion = (67, 72, 76)
+        played = voices_of(part=self.part(notes=[(0, 4, pitch) for pitch in second_inversion]), chords=True, controls=True)[0].played[0]
+        self.assertEqual((played.chord, played.inversion, played.root), (ChordSymbol.MAJOR, 2, MIDDLE_C))
+
+    def test_an_inverted_chord_imported_plays_the_same_notes_as_the_file(self):
+        first_inversion = (64, 67, 72)
+        midi = midi_of(tracks=[('keys', 0, [(start, 4, pitch) for start in (0, 4) for pitch in first_inversion])])
+        trip = round_trip(midi_file=midi, choices=ImportChoices(song_name='tune'))
+        self.assertEqual([data[Row.INVERSION][0] for data in trip.imported.song.patterns.values()], [1])
+        self.assertTrue(trip.comparison.is_same())
 
     def test_no_voice_plays_two_notes_at_once_and_none_is_left_out(self):
         part = self.part(notes=[(0, 8, 60), (2, 2, 64), (4, 8, 67), (6, 4, 72), (8, 2, 62)])

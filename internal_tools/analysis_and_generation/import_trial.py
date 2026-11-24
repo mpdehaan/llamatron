@@ -30,6 +30,7 @@ import traceback
 
 from llamatron.engine.realizer.song_realizer import SongRealizer
 from llamatron.exporters.midi_arrangement import MidiSong
+from llamatron.importers import voices
 from llamatron.importers.comparison import compared
 from llamatron.importers.midi_import import ImportChoices, MidiImport
 from llamatron.importers.writing import add_imported
@@ -59,6 +60,16 @@ ONE_PLACE = '{:.1f}'
 YES = 'yes'
 NO = 'no'
 JSON_SUFFIX = '.json'
+SHAPES_REPORT = 'unnamed_shapes.txt'
+SHAPES_SHOWN = 40
+SHAPE_LINE = '{count:>7} {files:>5}  {kind:<20} {shape}'
+KIND_LINE = '{count:>7}  {kind}'
+OCTAVE = 12
+FIFTH = 7
+OCTAVE_KIND = 'octave'
+SPREAD_KIND = 'inversion or spread'
+NO_FIFTH_KIND = 'no fifth'
+OTHER_KIND = 'other'
 
 
 def midi_files(folder):
@@ -69,15 +80,54 @@ def midi_files(folder):
     return sorted(found)
 
 
+def shapes_struck(midi_import):
+    """Return the shapes of the notes struck together in a file that no chord symbol names, by kind: each group of notes that
+    start and end together at one velocity, as the import's chords are found, named neither in root position nor in an
+    inversion, written as half steps above its lowest note,
+    and its kind: "inversion or spread" where its notes are a named chord's in another order or octave (doublings left out),
+    "no fifth" where they are a named chord's but for its fifth, "octave" for a note and its octaves, else "other"."""
+    found = collections.Counter()
+    for part in midi_import.get_contents().parts:
+        if part.is_drums():
+            continue
+        together = collections.defaultdict(list)
+        for note in part.notes:
+            together[(note.start, note.end, note.velocity)].append(note.pitch)
+        for pitches in together.values():
+            pitches = sorted(set(pitches))
+            if len(pitches) < 2 or voices.chord_named(pitches) is not None:
+                continue
+            found[(shape_kind(pitches), tuple(pitch - pitches[0] for pitch in pitches[1:]))] += 1
+    return found
+
+
+def shape_kind(pitches):
+    classes = {pitch % OCTAVE for pitch in pitches}
+    if len(classes) == 1:
+        return OCTAVE_KIND
+    for shape in voices.SHAPES:
+        for root in range(OCTAVE):
+            named = {(root + step) % OCTAVE for step in (0, *shape)}
+            if classes == named:
+                return SPREAD_KIND
+            if len(shape) >= 2 and classes == named - {(root + FIFTH) % OCTAVE}:
+                return NO_FIFTH_KIND
+    return OTHER_KIND
+
+
 def tried(path):
     """Return what importing one file came to: the measures of the song it made, or the problem that stopped it."""
     midi_file = mido.MidiFile(path, clip=True)
     setlist = Setlist.new()
-    imported = MidiImport(midi_file=midi_file).imported(setlist=setlist, choices=ImportChoices(song_name=SONG_NAME))
+    midi_import = MidiImport(midi_file=midi_file)
+    imported = midi_import.imported(setlist=setlist, choices=ImportChoices(song_name=SONG_NAME))
+    shapes = shapes_struck(midi_import)
     song = add_imported(setlist=setlist, imported=imported.song)
     again = MidiSong(directory=os.curdir, grid=SongRealizer(song).render(), name=SONG_NAME).midi_file()
     comparison = compared(first=midi_file, second=again)
-    return measures_of(song=song, setlist=setlist, imported=imported, seconds=again.length, same=comparison.is_same())
+    measures = measures_of(song=song, setlist=setlist, imported=imported, seconds=again.length, same=comparison.is_same())
+    measures['unnamed_shapes'] = [[kind, list(shape), count] for (kind, shape), count in shapes.most_common()]
+    return measures
 
 
 def measures_of(*, song, setlist, imported, seconds, same):
@@ -147,6 +197,22 @@ def totals_line(*, results, failed):
     )
 
 
+def write_shapes(*, out, results):
+    """Write how often each unnamed shape was struck across the files, and in how many files, the commonest first, and each kind's total."""
+    counts = collections.Counter()
+    files = collections.Counter()
+    kinds = collections.Counter()
+    for measures in results:
+        for kind, shape, count in measures['unnamed_shapes']:
+            counts[(kind, tuple(shape))] += count
+            files[(kind, tuple(shape))] += 1
+            kinds[kind] += count
+    lines = [KIND_LINE.format(count=count, kind=kind) for kind, count in kinds.most_common()]
+    lines += [SHAPE_LINE.format(count=count, files=files[key], kind=key[0], shape=list(key[1])) for key, count in counts.most_common(SHAPES_SHOWN)]
+    with open(os.path.join(out, SHAPES_REPORT), 'w') as file:
+        file.write('\n'.join(lines) + '\n')
+
+
 def main(arguments):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('folder')
@@ -177,6 +243,7 @@ def main(arguments):
             json.dump(measures, file, indent=1, default=str)
         print(lines[-1], flush=True)
     lines.append(totals_line(results=results, failed=failed))
+    write_shapes(out=out, results=results)
     with open(os.path.join(out, SUMMARY), 'w') as file:
         file.write('\n'.join(lines) + '\n')
     print(lines[-1])

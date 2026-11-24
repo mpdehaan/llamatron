@@ -11,7 +11,8 @@ out:
 - A part that plays both hands, notes together on both sides of middle C, is split into its
   treble and its bass.
 - Notes that start and end together, at one velocity, in a shape a chord symbol has, like a
-  major triad, are one chord, when chords are asked for.
+  major triad, are one chord, when chords are asked for, in root position or in an inversion,
+  which the Inversion row plays exactly as the file does.
 - Whatever still overlaps goes into voices by rank at each moment: the top note first for a
   treble, the bottom note first for a bass, each into the first voice that is free then, so a
   melody keeps to its voice as long as it can.
@@ -22,7 +23,8 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
-from llamatron.model.schema import file_format
+from llamatron.model.schema import file_format, limits
+from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import importing
 
 # Middle C, where a part that plays both hands is split. A part plays both hands when enough of its
@@ -31,6 +33,8 @@ MIDDLE_C = 60
 HAND_REACH = 16
 HAND_SHARE = 0.1
 FIRST_DRUM_NUMBER = 1
+# A chord in root position, which writes no Inversion.
+NO_INVERSION = 0
 
 
 def chord_shapes():
@@ -55,13 +59,22 @@ FIRST_CHANNEL_MODE = 120
 
 
 class Played(NamedTuple):
-    """What a voice plays at one time: when it starts and ends, its MIDI numbers from the lowest, its velocity, and its chord symbol if it is a chord."""
+    """What a voice plays at one time: when it starts and ends, its MIDI numbers from the lowest, its velocity, its chord symbol
+    if it is a chord, the chord's inversion, 0 for root position, and the chord's root, which its step's degree is written from."""
 
     start: object
     end: object
     pitches: tuple
     velocity: int
     chord: object
+    inversion: int = 0
+    root: object = None
+
+    def written_pitch(self):
+        """Return the MIDI number a step's degree is written from: a chord's root, or the note itself."""
+        if self.root is None:
+            return self.pitches[0]
+        return self.root
 
 
 @dataclass(slots=True, kw_only=True)
@@ -164,12 +177,32 @@ def chord_units(notes):
     units = []
     for (start, end, velocity), pitches in together.items():
         pitches = sorted(pitches)
-        symbol = chord_symbol(pitches)
-        if symbol is None:
+        named = chord_named(pitches)
+        if named is None:
             units += [Played(start, end, (pitch,), velocity, None) for pitch in pitches]
         else:
-            units.append(Played(start, end, tuple(pitches), velocity, symbol))
+            symbol, inversion, root = named
+            units.append(Played(start, end, tuple(pitches), velocity, symbol, inversion, root))
     return sorted(units)
+
+
+def chord_named(pitches):
+    """Return the chord symbol, inversion and root whose chord plays exactly these MIDI numbers, lowest first, or None: root
+    position first, then each inversion the Inversion row has, which moves so many of a chord's lowest notes up an octave."""
+    symbol = chord_symbol(pitches)
+    if symbol is not None:
+        return symbol, NO_INVERSION, pitches[0]
+    for inversion in limits.INVERSIONS:
+        if inversion >= len(pitches):
+            break
+        # The chord in root position: the notes moved up, brought back down under the others.
+        rooted = [pitch - intervals.HALF_STEPS_PER_OCTAVE for pitch in pitches[-inversion:]] + list(pitches[:-inversion])
+        if rooted != sorted(rooted):
+            continue
+        symbol = chord_symbol(rooted)
+        if symbol is not None:
+            return symbol, inversion, rooted[0]
+    return None
 
 
 def chord_symbol(pitches):
