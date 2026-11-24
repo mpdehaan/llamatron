@@ -68,3 +68,62 @@ def band_of(frequency):
     if frequency <= LOWEST_FREQUENCY:
         return 0
     return min(OCTAVE_BANDS - 1, int(math.log2(frequency / LOWEST_FREQUENCY)))
+
+
+def cycle_tables(*, cycle, rate):
+    """Return the tables of any one cycle, such as a chip's duty pulse or its 32 steps of drawn wave, one for each octave
+    band, lowest first: its harmonics measured by one Fourier transform, then each band keeping those under half the rate,
+    so that a stepped chip wave keeps its steps up to where they would alias, and no further."""
+    spectrum = numpy.fft.rfft(numpy.repeat(numpy.asarray(cycle, dtype=numpy.float64), TABLE_SIZE // len(cycle)))
+    spectrum[0] = 0.0
+    tables = []
+    for band in range(OCTAVE_BANDS):
+        top = LOWEST_FREQUENCY * 2 ** (band + 1)
+        kept = numpy.zeros_like(spectrum)
+        highest = max(1, min(int(rate / 2 / top), TABLE_SIZE // 2 - 1))
+        kept[1:highest + 1] = spectrum[1:highest + 1]
+        table = numpy.fft.irfft(kept, n=TABLE_SIZE)
+        tables.append((table / max(numpy.abs(table).max(), 1e-9)).astype(numpy.float32))
+    return tuple(tables)
+
+
+@functools.cache
+def duty_tables(*, duty, rate):
+    """Return the tables of a chip's pulse of a duty, the share of its eight steps it is high."""
+    high = int(round(duty * 8))
+    return cycle_tables(cycle=[1.0] * high + [-1.0] * (8 - high), rate=rate)
+
+
+@functools.cache
+def shape_tables(*, shape, rate):
+    """Return the tables of a drawn wave of 32 steps of four bits, by its shape's name."""
+    return cycle_tables(cycle=[step / 7.5 - 1.0 for step in WAVE_SHAPE_STEPS[shape]], rate=rate)
+
+
+@functools.cache
+def shift_register_noise(*, short):
+    """Return a chip's noise as the values a shift register gives in turn, -1 or 1: 32767 of the long hiss from 15 bits, or
+    127 of the short metallic buzz from 7, the register's two lowest bits made one by exclusive or and fed back at the top."""
+    width = 7 if short else 15
+    register = (1 << width) - 1
+    values = []
+    for _ in range((1 << width) - 1):
+        bit = (register ^ (register >> 1)) & 1
+        register = (register >> 1) | (bit << (width - 1))
+        values.append(1.0 if register & 1 else -1.0)
+    return numpy.array(values, dtype=numpy.float32)
+
+
+def _drawn(function):
+    """Return 32 steps of four bits, 0 to 15, drawing a function of the cycle's place from 0 to 1 that answers -1 to 1."""
+    return tuple(int(round((function(place / 32.0) + 1.0) * 7.5)) for place in range(32))
+
+
+# The drawn waves a Pocket sound's wave voice offers, each 32 steps of 0 to 15, as the chip's wave memory holds them.
+WAVE_SHAPE_STEPS = {
+    'triangle': _drawn(lambda x: 1.0 - 4.0 * abs(x - 0.5)),
+    'saw': _drawn(lambda x: 2.0 * x - 1.0),
+    'square': _drawn(lambda x: 1.0 if x < 0.5 else -1.0),
+    'sine': _drawn(lambda x: math.sin(2.0 * math.pi * x)),
+    'organ': _drawn(lambda x: (math.sin(2.0 * math.pi * x) + 0.5 * math.sin(4.0 * math.pi * x) + 0.33 * math.sin(6.0 * math.pi * x)) / 1.5),
+}

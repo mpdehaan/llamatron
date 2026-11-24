@@ -9,11 +9,15 @@ import numpy
 import unittest
 from unittest import mock
 
+from llamatron.model.objects.built_in_sound import synth_spec
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import DrumMachine, Waveform
-from llamatron.realtime.synth_process import drums, engine as engine_values, process, tables
-from llamatron.realtime.synth_process.engine import BasicPatch, DrumPatch, SynthEngine
+from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, Modulation, Noise, SidWave, SoundEngine, SoundSetting, Waveform
+from llamatron.realtime.synth_process import drums, effects as effect_values, engine as engine_values, process, tables
+from llamatron.realtime.synth_process.effects import Bitcrush, compiled_effects
+from llamatron.realtime.synth_process.engine import DrumPatch, SynthEngine
+from llamatron.realtime.synth_process.player import compiled
 from llamatron.realtime.synth_process.process import SynthesisNotStarted, SynthesisProcess
+from llamatron.realtime.synth_process.voices import BasicPatch
 
 RATE = 44100
 CHUNK = 128
@@ -27,12 +31,18 @@ KNOBS = (64, 64, 64, 64, 64)
 LINUX = 'linux'
 MACOS = 'darwin'
 YES = '1'
+QUIET = 0.01
+# Long enough for the default release, 200 ms, to fall below silence.
+SECONDS_TO_FALL_SILENT = 3
+PULSE_SWEEP = 40
+ARPEGGIO = [0, 4, 7]
+GLIDE_MS = 50
 
 
-def saw_patch(*, voices=4, effects=(16, 0, 0.0)):
+def saw_patch(*, voices=4, effects=()):
     """Return a Basic patch of one saw with a short envelope."""
     saw = tables.waveform_tables(waveform=Waveform.SAW, rate=RATE)
-    return BasicPatch(oscillators=[(saw, 0, 1.0)], envelope=(0.001, 0.05, 0.5, 0.01), voices=voices, volume=1.0, effects=effects)
+    return BasicPatch(oscillators=[(saw, 0, 1.0)], envelope=(0.001, 0.05, 0.5, 0.01), voices=voices, volume=1.0, effects=compiled_effects(effects=effects, rate=RATE))
 
 
 def drum_patch(*, machine, choke=None):
@@ -94,7 +104,7 @@ class TestSynthesisEngine(unittest.TestCase):
 
     def test_the_bitcrusher_holds_samples_and_reduces_bits(self):
         crushed = SynthEngine(rate=RATE)
-        crushed.set_instrument(number=SYNTH, patch=saw_patch(effects=(2, RATE // 8, 0.0)))
+        crushed.set_instrument(number=SYNTH, patch=saw_patch(effects=[(Effect.BITCRUSH, 2, RATE // 8)]))
         crushed.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=127)
         mix = rendered(crushed, chunks=4)
         self.assertLessEqual(len(numpy.unique(numpy.round(mix, 4))), 8)
@@ -105,6 +115,65 @@ class TestSynthesisEngine(unittest.TestCase):
         self.engine.schedule(sample=10, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C)
         self.assertTrue(self.engine.render(start=CHUNK, frames=CHUNK)[:8].any())
         self.assertEqual(self.engine.late, 1)
+
+
+class TestEngines(unittest.TestCase):
+
+    def test_every_engine_sounds_its_note_and_falls_silent_after_it(self):
+        sounds = {
+            'basic': {},
+            'sid pulse sweeping, arpeggiated': {SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.PULSE_SWEEP: PULSE_SWEEP, SoundSetting.ARPEGGIO: ARPEGGIO},
+            'sid ring': {SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.WAVE: SidWave.TRIANGLE, SoundSetting.MODULATION: Modulation.RING},
+            'sid sync gliding': {SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.WAVE: SidWave.SAW, SoundSetting.MODULATION: Modulation.SYNC, SoundSetting.GLIDE: GLIDE_MS},
+            'sid noise': {SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.WAVE: SidWave.NOISE},
+            'pocket pulse': {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.SWEEP_PACE: 1},
+            'pocket wave': {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.CHIP_VOICE: ChipVoice.WAVE},
+            'pocket short noise': {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.CHIP_VOICE: ChipVoice.NOISE, SoundSetting.NOISE: Noise.SHORT},
+        }
+        for name, sound in sounds.items():
+            with self.subTest(sound=name):
+                engine = SynthEngine(rate=RATE)
+                engine.set_instrument(number=SYNTH, patch=compiled(spec=synth_spec(sound), rate=RATE))
+                engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=LOUD)
+                engine.schedule(sample=CHUNK * 8, kind=engine_values.NOTE_OFF, instrument=SYNTH, pitch=MIDDLE_C)
+                mix = rendered(engine, chunks=SECONDS_TO_FALL_SILENT * RATE // CHUNK)
+                self.assertGreater(numpy.abs(mix[:CHUNK * 8]).max(), QUIET)
+                self.assertEqual(engine.voices, [])
+
+    def test_a_pocket_envelope_steps_down_to_silence_at_its_pace(self):
+        sound = {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.LEVEL_PACE: 1, SoundSetting.START_LEVEL: 2}
+        engine = SynthEngine(rate=RATE)
+        engine.set_instrument(number=SYNTH, patch=compiled(spec=synth_spec(sound), rate=RATE))
+        engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=LOUD)
+        # Two levels a sixty-fourth of a second each: silent within a twentieth of a second, the note still held.
+        rendered(engine, chunks=int(RATE / 20 / CHUNK))
+        self.assertEqual(engine.voices, [])
+
+
+class TestEffects(unittest.TestCase):
+
+    def test_the_hold_carries_across_chunks_so_a_held_sample_never_restarts_at_an_edge(self):
+        ramp = numpy.arange(CHUNK * 2, dtype=numpy.float32)
+        whole = Bitcrush(bits=16, hold_rate=RATE // 10, rate=RATE).apply(ramp.copy())
+        crusher = Bitcrush(bits=16, hold_rate=RATE // 10, rate=RATE)
+        halves = numpy.concatenate([crusher.apply(ramp[:CHUNK].copy()), crusher.apply(ramp[CHUNK:].copy())])
+        self.assertTrue(numpy.array_equal(whole, halves))
+        self.assertLessEqual(len(numpy.unique(whole)), CHUNK * 2 // 10 + 2)
+
+    def test_every_drive_curve_keeps_within_full_scale(self):
+        loud = numpy.linspace(-2.0, 2.0, CHUNK, dtype=numpy.float32)
+        for curve in (Curve.SOFT, Curve.WARM, Curve.HARD, Curve.FOLD, Curve.WRAP):
+            with self.subTest(curve=curve):
+                driven = effect_values.Drive(curve=curve, amount=0.5).apply(loud)
+                self.assertLessEqual(float(numpy.abs(driven).max()), 1.0 + 1e-6)
+
+    def test_the_output_guard_holds_a_mix_turned_up_past_full_at_full_scale(self):
+        engine = SynthEngine(rate=RATE)
+        engine.set_instrument(number=SYNTH, patch=saw_patch())
+        for offset in range(4):
+            engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C + offset * 7, velocity=127)
+        mix = rendered(engine, chunks=20)
+        self.assertLessEqual(float(numpy.abs(mix).max()), 1.0 + 1e-6)
 
 
 class TestDrumsAndTables(unittest.TestCase):

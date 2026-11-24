@@ -16,10 +16,13 @@ import functools
 import time
 
 from llamatron.realtime.synth_process import drums, engine as engine_values, tables
-from llamatron.realtime.synth_process.engine import BasicPatch, DrumPatch, SynthEngine
+from llamatron.realtime.synth_process.effects import compiled_effects
+from llamatron.realtime.synth_process.engine import DrumPatch, SynthEngine
+from llamatron.realtime.synth_process.voices import BasicPatch, PocketPatch, SidPatch
 
-BASIC = 'basic'
 DRUM = 'drum'
+SID = 'sid'
+POCKET = 'pocket'
 LOW_LATENCY = 'low'
 FLOAT32 = 'float32'
 CHANNELS = 2
@@ -27,16 +30,21 @@ MILLISECONDS = 1000.0
 
 
 def compiled(*, spec, rate):
-    """Return an instrument's patch from its settings, a dict: a Basic one's oscillators, envelope, voices, volume and
-    effects, or a drum's machine, knobs, choke group, overlap, volume and effects; its tables or hits made now, not playing."""
-    effects = tuple(spec.get('effects', (16, 0, 0.0)))
-    if spec['kind'] == DRUM:
+    """Return an instrument's patch from its settings, a dict of its engine, volume, voices, effects and the engine's own
+    settings (model/objects/built_in_sound.py); its tables or hits made now, not playing."""
+    effects = compiled_effects(effects=spec.get('effects', ()), rate=rate)
+    volume = spec.get('volume', 0.8)
+    voices = spec.get('voices', 1)
+    kind = spec['kind']
+    if kind == DRUM:
         render = functools.partial(drums.render_hit, machine=spec['machine'], knobs=tuple(spec['knobs']))
-        return DrumPatch(render_hit=render, choke=spec.get('choke'), overlap=spec.get('overlap', False), volume=spec.get('volume', 0.8),
-                         effects=effects)
+        return DrumPatch(render_hit=render, choke=spec.get('choke'), overlap=spec.get('overlap', False), volume=volume, effects=effects)
+    if kind == SID:
+        return SidPatch(spec=spec, rate=rate, effects=effects)
+    if kind == POCKET:
+        return PocketPatch(spec=spec, rate=rate, effects=effects)
     oscillators = [(tables.waveform_tables(waveform=waveform, rate=rate), cents, level) for waveform, cents, level in spec['oscillators']]
-    return BasicPatch(oscillators=oscillators, envelope=tuple(spec['envelope']), voices=spec.get('voices', 4), volume=spec.get('volume', 0.5),
-                      effects=effects)
+    return BasicPatch(oscillators=oscillators, envelope=tuple(spec['envelope']), voices=voices, volume=volume, effects=effects)
 
 
 class SynthPlayer:

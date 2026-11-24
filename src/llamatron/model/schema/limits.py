@@ -123,15 +123,29 @@ MAX_GROOVE_CELL_LENGTH = 1
 MIN_INSTRUMENT_LATENCY = 0
 MAX_INSTRUMENT_LATENCY = 500
 # A built-in sound's ranges: up to three oscillators, each detuned up to a semitone in cents either way, its levels and the
-# envelope's times in milliseconds, its voices, a drum's five knobs and its choke groups, and the bitcrusher's bits and rate.
+# envelope's times in milliseconds, its volume up to half again as loud as full (the output guard keeps the mix from
+# clipping), its voices, a drum's five knobs and its choke groups; a SID voice's pulse sweep in percent of width a second
+# either way, its interval in semitones either way, up to eight steps of arpeggio and two seconds of glide; a Pocket voice's
+# sixteen levels, its envelope and sweep paces in the chip's ticks, 0 holding still, and its sweep's step; the four effect
+# blocks, the bitcrusher's bits and rate.
 MAX_OSCILLATORS = 3
 MAX_DETUNE_CENTS = 100
 MAX_PERCENT = 100
+MAX_VOLUME_PERCENT = 150
 MAX_ENVELOPE_MS = 10000
 MAX_VOICES = 8
 KNOB_COUNT = 5
 MAX_KNOB = 127
 MAX_CHOKE = 16
+MAX_PULSE_SWEEP = 100
+MAX_INTERVAL = 24
+MAX_ARPEGGIO_STEPS = 8
+MAX_GLIDE_MS = 2000
+MAX_CHIP_LEVEL = 15
+MAX_CHIP_PACE = 7
+MIN_SWEEP_STEP = 1
+MAX_SWEEP_STEP = 7
+EFFECT_BLOCKS = 4
 MIN_BITS = 1
 MAX_BITS = 16
 MAX_HOLD_RATE = 48000

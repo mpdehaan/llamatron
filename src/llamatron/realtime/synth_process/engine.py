@@ -13,72 +13,51 @@ paths keep plain attributes, local names and few calls.
 """
 
 import heapq
-import math
 import numpy
 
-from llamatron.realtime.synth_process import tables
+from llamatron.realtime.synth_process import effects
 
-MIDDLE_A = 69
-A_FREQUENCY = 440.0
 # A voice whose envelope has fallen below this is silent and is dropped.
 SILENT = 1e-4
 # A drum cut short by its next hit, or choked, fades out over this long rather than clicking.
 CUT_FADE_SECONDS = 0.003
-# How long a note takes to reach full level from silence at the least, so that no start clicks.
-SHORTEST_ATTACK_SECONDS = 0.001
 NOTE_ON = 0
 NOTE_OFF = 1
 # Every note of an instrument ends: a drum's hits fade out, the others release.
 ALL_OFF = 2
 # Not a note: the notes of a run of instruments still to come from a moment on are taken back (player.py).
 FORGET = 3
-FULL_SCALE = 1.0
+# The output guard's knee: x - (4/27)x³ is flat and at full scale where x is 1.5.
+GUARD_LIMIT = 1.5
+GUARD_CURVE = 4.0 / 27.0
 # A drum's tone is rendered for each sixteenth of the velocities, its level following the exact velocity.
 VELOCITY_STEP = 8
 
 
-def frequency_of(pitch):
-    """Return a MIDI number's frequency in hertz, equal tempered from A 440."""
-    return A_FREQUENCY * 2.0 ** ((pitch - MIDDLE_A) / 12.0)
-
-
-class BasicPatch:
-    """A compiled Basic instrument: its oscillators, each (tables by octave band, detune in cents, level), its envelope in
-    seconds and its sustain level, how many notes it plays at once, its volume, and its effects: bits (16 none), the rate
-    it holds samples at (0 none) and drive (0 none)."""
-
-    __slots__ = ('oscillators', 'attack', 'decay', 'sustain', 'release', 'voices', 'volume', 'bits', 'hold_rate', 'drive')
-
-    def __init__(self, *, oscillators, envelope, voices=4, volume=0.5, effects=(16, 0, 0.0)):
-        self.oscillators = oscillators
-        self.attack, self.decay, self.sustain, self.release = envelope
-        self.voices = voices
-        self.volume = volume
-        self.bits, self.hold_rate, self.drive = effects
-
-
 class DrumPatch:
     """A compiled drum instrument: a function rendering one hit from (pitch, velocity, rate) as float32, its choke group or
-    None, whether its hits overlap rather than cutting the last, its volume and its effects as BasicPatch has them; its hits
-    are rendered once each and kept."""
+    None, whether its hits overlap rather than cutting the last, its volume and its effects in order; its hits are rendered
+    once each and kept."""
 
-    __slots__ = ('render_hit', 'choke', 'overlap', 'volume', 'bits', 'hold_rate', 'drive', 'hits')
+    __slots__ = ('render_hit', 'choke', 'overlap', 'volume', 'effects', 'hits')
 
-    def __init__(self, *, render_hit, choke=None, overlap=False, volume=0.8, effects=(16, 0, 0.0)):
+    def __init__(self, *, render_hit, choke=None, overlap=False, volume=0.8, effects=()):
         self.render_hit = render_hit
         self.choke = choke
         self.overlap = overlap
         self.volume = volume
-        self.bits, self.hold_rate, self.drive = effects
+        self.effects = list(effects)
         self.hits = {}
 
 
 class SynthVoice:
     """A sounding note: its instrument, its pitch, the sample it starts at, how many of its samples have played, the sample
     its release begins at or None, its level, and for a Basic note each oscillator's (table, read speed, phase), for a drum
-    its hit; a voice being cut fades out from the sample its cut begins."""
+    its hit, and what a SID or Pocket voice keeps from chunk to chunk; a voice being cut fades out from the sample its cut
+    begins."""
 
-    __slots__ = ('instrument', 'pitch', 'start', 'age', 'release_at', 'level', 'oscillators', 'hit', 'cut_at', 'silent')
+    __slots__ = ('instrument', 'pitch', 'start', 'age', 'release_at', 'level', 'oscillators', 'hit', 'cut_at', 'silent', 'phase', 'second_phase',
+                 'glide_from', 'period', 'ticks')
 
     def __init__(self, *, instrument, pitch, start, level):
         self.instrument = instrument
@@ -91,6 +70,12 @@ class SynthVoice:
         self.hit = None
         self.cut_at = None
         self.silent = False
+        # What a SID or Pocket voice keeps from chunk to chunk (voices.py).
+        self.phase = 0.0
+        self.second_phase = 0.0
+        self.glide_from = pitch
+        self.period = 0
+        self.ticks = 0
 
 
 class SynthEngine:
@@ -157,8 +142,11 @@ class SynthEngine:
         self.voices = alive
         for number, buffer in by_instrument.items():
             patch = self.instruments[number]
-            mix += _effects(buffer=buffer, patch=patch, rate=self.rate) * patch.volume
-        numpy.clip(mix, -FULL_SCALE, FULL_SCALE, out=mix)
+            mix += effects.through_effects(buffer=buffer, effects=patch.effects) * patch.volume
+        # The output guard: a soft knee that reaches full scale, flat, at half again as loud, so that instruments turned up
+        # past full never clip harshly, and anything louder is held at full scale.
+        numpy.clip(mix, -GUARD_LIMIT, GUARD_LIMIT, out=mix)
+        mix -= GUARD_CURVE * mix * mix * mix
         self.played = end
         return mix
 
@@ -181,10 +169,7 @@ class SynthEngine:
             voice.hit = self._hit(patch=patch, pitch=pitch, velocity=velocity)
         else:
             self._steal(patch=patch, instrument=instrument, sample=sample)
-            for oscillator_tables, cents, oscillator_level in patch.oscillators:
-                frequency = frequency_of(pitch) * 2.0 ** (cents / 1200.0)
-                speed = frequency * tables.TABLE_SIZE / self.rate
-                voice.oscillators.append((oscillator_tables[tables.band_of(frequency)], speed, 0.0, oscillator_level))
+            patch.begin(voice=voice, rate=self.rate)
         self.voices.append(voice)
 
     def _end_every_note(self, *, instrument, sample):
@@ -238,8 +223,7 @@ class SynthEngine:
             out = samples * voice.level
             count = len(out)
         else:
-            out = self._oscillators(voice=voice, count=count)
-            out *= self._envelope(voice=voice, first=start + offset, count=count)
+            out = self.instruments[voice.instrument].sound(voice=voice, first=start + offset, count=count, rate=self.rate)
         alive = True
         if voice.cut_at is not None:
             fade = int(CUT_FADE_SECONDS * self.rate)
@@ -255,53 +239,3 @@ class SynthEngine:
         if voice.hit is not None and voice.age >= len(voice.hit):
             return False
         return alive and not voice.silent
-
-    def _oscillators(self, *, voice, count):
-        """Return a Basic voice's oscillators read for a stretch of samples, each table read at its speed from its phase."""
-        out = numpy.zeros(count, dtype=numpy.float32)
-        steps = numpy.arange(count, dtype=numpy.float64)
-        read = []
-        for table, speed, phase, oscillator_level in voice.oscillators:
-            positions = phase + speed * steps
-            out += table[positions.astype(numpy.int64) & tables.TABLE_MASK] * oscillator_level
-            read.append((table, speed, (phase + speed * count) % tables.TABLE_SIZE, oscillator_level))
-        voice.oscillators = read
-        return out
-
-    def _envelope(self, *, voice, first, count):
-        """Return a Basic voice's envelope over a stretch of samples: a linear attack, an exponential fall to its sustain,
-        and after its release an exponential fall to silence, the voice marked silent once below SILENT."""
-        patch = self.instruments[voice.instrument]
-        rate = self.rate
-        ages = (numpy.arange(count, dtype=numpy.float64) + (first - voice.start))
-        attack = max(patch.attack, SHORTEST_ATTACK_SECONDS) * rate
-        decay = max(patch.decay, SHORTEST_ATTACK_SECONDS) * rate
-        level = numpy.where(ages < attack, ages / attack, patch.sustain + (1.0 - patch.sustain) * numpy.exp(-(ages - attack) / decay))
-        if voice.release_at is not None:
-            release = max(patch.release, SHORTEST_ATTACK_SECONDS) * rate
-            since = numpy.arange(first, first + count, dtype=numpy.float64) - voice.release_at
-            at_release_age = voice.release_at - voice.start
-            if at_release_age < attack:
-                released_from = at_release_age / attack
-            else:
-                released_from = patch.sustain + (1.0 - patch.sustain) * math.exp(-(at_release_age - attack) / decay)
-            falling = released_from * numpy.exp(-numpy.maximum(since, 0.0) / release)
-            level = numpy.where(since >= 0, falling, level)
-            if since[-1] >= 0 and falling[-1] < SILENT:
-                voice.silent = True
-        return (level * voice.level).astype(numpy.float32)
-
-
-def _effects(*, buffer, patch, rate):
-    """Return an instrument's mix through its effects: the bitcrusher's sample-rate reduction, holding each sample for as long
-    as its rate gives, then its bit reduction, then drive."""
-    if patch.hold_rate and patch.hold_rate < rate:
-        hold = max(1, int(rate / patch.hold_rate))
-        buffer = numpy.repeat(buffer[::hold], hold)[:len(buffer)]
-    if patch.bits < 16:
-        levels = 2 ** (patch.bits - 1)
-        buffer = numpy.round(buffer * levels) / levels
-    if patch.drive > 0:
-        gain = 1.0 + patch.drive * 20.0
-        buffer = numpy.tanh(buffer * gain) / math.tanh(gain)
-    return buffer.astype(numpy.float32, copy=False)

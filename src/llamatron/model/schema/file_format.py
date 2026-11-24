@@ -571,56 +571,165 @@ class InstrumentSetting:
 
 
 class InstrumentKind:
-    """What an instrument is: a MIDI device and channel, or a sound llamatron makes itself."""
+    """What an instrument is: off, playing nothing, a MIDI device and channel, or a sound llamatron makes itself. A file that
+    leaves it out means MIDI, as every instrument was before built-in sound; a new instrument starts off."""
 
+    OFF = 'off'
     MIDI = 'midi'
     BUILT_IN = 'built_in'
 
 
 class SoundSetting:
-    """A built-in instrument's sound: its family, then a Basic sound's oscillators, envelope and voices, or a drum's machine,
-    knobs, choke group and overlap, and every sound's volume and effects."""
+    """A built-in instrument's sound: its engine, volume and voices; a Basic sound's oscillators and the envelope a Basic or
+    SID sound shares; a drum's machine, knobs, choke group and overlap; a SID sound's wave, pulse width and its sweep, ring or
+    sync and its interval, arpeggio and glide; a Pocket sound's voice, duty, stepped envelope, pitch sweep, wave and noise;
+    and every sound's four effect blocks."""
 
-    FAMILY = 'family'
+    ENGINE = 'engine'
+    VOLUME = 'volume'
+    VOICES = 'voices'
     OSCILLATORS = 'oscillators'
     ATTACK = 'attack'
     DECAY = 'decay'
     SUSTAIN = 'sustain'
     RELEASE = 'release'
-    VOICES = 'voices'
     MACHINE = 'machine'
     KNOBS = 'knobs'
     CHOKE = 'choke'
     OVERLAP = 'overlap'
-    VOLUME = 'volume'
-    BITS = 'bits'
-    RATE = 'rate'
-    DRIVE = 'drive'
+    WAVE = 'wave'
+    PULSE_WIDTH = 'pulse_width'
+    PULSE_SWEEP = 'pulse_sweep'
+    MODULATION = 'modulation'
+    INTERVAL = 'interval'
+    ARPEGGIO = 'arpeggio'
+    GLIDE = 'glide'
+    CHIP_VOICE = 'chip_voice'
+    DUTY = 'duty'
+    START_LEVEL = 'start_level'
+    LEVEL_PACE = 'level_pace'
+    LEVEL_DIRECTION = 'level_direction'
+    SWEEP_PACE = 'sweep_pace'
+    SWEEP_DIRECTION = 'sweep_direction'
+    SWEEP_STEP = 'sweep_step'
+    WAVE_SHAPE = 'wave_shape'
+    NOISE = 'noise'
+    EFFECTS = 'effects'
 
 
 class OscillatorSetting:
-    """One oscillator of a Basic sound: its waveform, its detune in cents and its level in percent."""
+    """One oscillator of a Basic sound: its waveform, or off, its detune in cents and its level in percent."""
 
     WAVEFORM = 'waveform'
     DETUNE = 'detune'
     LEVEL = 'level'
 
 
-class SoundFamily:
-    """A built-in sound's family."""
+class EffectSetting:
+    """One effect block of a built-in sound: which effect, or none, and its settings: the bitcrusher's bits and the rate it
+    holds samples at, drive's curve and amount."""
+
+    EFFECT = 'effect'
+    BITS = 'bits'
+    RATE = 'rate'
+    CURVE = 'curve'
+    AMOUNT = 'amount'
+
+
+class SoundEngine:
+    """A built-in sound's engine: a Basic synth, a drum, a SID-style voice, or a Pocket-style voice of the handheld's chip."""
 
     BASIC = 'basic'
     DRUM = 'drum'
+    SID = 'sid'
+    POCKET = 'pocket'
 
 
 class Waveform:
-    """A Basic oscillator's waveform."""
+    """A Basic oscillator's waveform, or off for an oscillator that does not sound."""
 
+    OFF = 'off'
     SQUARE = 'square'
     SAW = 'saw'
     SINE = 'sine'
     TRIANGLE = 'triangle'
     PULSE = 'pulse'
+
+
+class SidWave:
+    """A SID-style voice's wave."""
+
+    TRIANGLE = 'triangle'
+    SAW = 'saw'
+    PULSE = 'pulse'
+    NOISE = 'noise'
+
+
+class Modulation:
+    """How a SID-style voice is shaped by a second oscillator an interval away: not at all, ring modulated, or synced."""
+
+    OFF = 'off'
+    RING = 'ring'
+    SYNC = 'sync'
+
+
+class ChipVoice:
+    """Which of the handheld chip's voices a Pocket sound is: a pulse, the drawn wave, or noise."""
+
+    PULSE = 'pulse'
+    WAVE = 'wave'
+    NOISE = 'noise'
+
+
+class Duty:
+    """A chip pulse's duty, the share of each cycle it is high, in eighths: 12.5, 25, 50 or 75 percent."""
+
+    EIGHTH = 'eighth'
+    QUARTER = 'quarter'
+    HALF = 'half'
+    THREE_QUARTERS = 'three_quarters'
+
+
+class ChipDirection:
+    """Which way a chip's stepped envelope or pitch sweep goes."""
+
+    UP = 'up'
+    DOWN = 'down'
+
+
+class WaveShape:
+    """The 32 steps of four bits a Pocket sound's wave voice plays."""
+
+    TRIANGLE = 'triangle'
+    SAW = 'saw'
+    SQUARE = 'square'
+    SINE = 'sine'
+    ORGAN = 'organ'
+
+
+class Noise:
+    """A chip's noise: long, the hiss of a 15-bit shift register, or short, the metallic buzz of a 7-bit one."""
+
+    LONG = 'long'
+    SHORT = 'short'
+
+
+class Effect:
+    """What an effect block holds: nothing, the bitcrusher, or drive."""
+
+    NONE = 'none'
+    BITCRUSH = 'bitcrush'
+    DRIVE = 'drive'
+
+
+class Curve:
+    """Drive's curve: soft, warm, hard clipping, folding back, or wrapping round."""
+
+    SOFT = 'soft'
+    WARM = 'warm'
+    HARD = 'hard'
+    FOLD = 'fold'
+    WRAP = 'wrap'
 
 
 class DrumMachine:
@@ -638,9 +747,19 @@ class DrumMachine:
     KARPLUS_DRUM = 'karplus_drum'
 
 
-INSTRUMENT_KINDS = (InstrumentKind.MIDI, InstrumentKind.BUILT_IN)
-SOUND_FAMILIES = (SoundFamily.BASIC, SoundFamily.DRUM)
+INSTRUMENT_KINDS = (InstrumentKind.OFF, InstrumentKind.MIDI, InstrumentKind.BUILT_IN)
+SOUND_ENGINES = (SoundEngine.BASIC, SoundEngine.DRUM, SoundEngine.SID, SoundEngine.POCKET)
 WAVEFORMS = (Waveform.SQUARE, Waveform.SAW, Waveform.SINE, Waveform.TRIANGLE, Waveform.PULSE)
+OSCILLATOR_WAVEFORMS = (Waveform.OFF, *WAVEFORMS)
+SID_WAVES = (SidWave.TRIANGLE, SidWave.SAW, SidWave.PULSE, SidWave.NOISE)
+MODULATIONS = (Modulation.OFF, Modulation.RING, Modulation.SYNC)
+CHIP_VOICES = (ChipVoice.PULSE, ChipVoice.WAVE, ChipVoice.NOISE)
+DUTIES = (Duty.EIGHTH, Duty.QUARTER, Duty.HALF, Duty.THREE_QUARTERS)
+CHIP_DIRECTIONS = (ChipDirection.DOWN, ChipDirection.UP)
+WAVE_SHAPES = (WaveShape.TRIANGLE, WaveShape.SAW, WaveShape.SQUARE, WaveShape.SINE, WaveShape.ORGAN)
+NOISES = (Noise.LONG, Noise.SHORT)
+EFFECTS = (Effect.NONE, Effect.BITCRUSH, Effect.DRIVE)
+CURVES = (Curve.SOFT, Curve.WARM, Curve.HARD, Curve.FOLD, Curve.WRAP)
 DRUM_MACHINES = (DrumMachine.KICK, DrumMachine.HARD_KICK, DrumMachine.SYNTH_KICK, DrumMachine.SNARE, DrumMachine.CLAP, DrumMachine.RIM,
                  DrumMachine.HATS, DrumMachine.COWBELL, DrumMachine.ACOUSTIC_TOM, DrumMachine.KARPLUS_DRUM)
 

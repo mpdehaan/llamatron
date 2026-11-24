@@ -37,8 +37,8 @@ def main(*, arguments=None):
     began = time.perf_counter()
     rate, delay = synthesis.start()
     print('started in {:.0f} ms at {} Hz, MIDI held back {:.1f} ms'.format((time.perf_counter() - began) * 1000, rate, delay * 1000))
-    synthesis.set_instrument(number=KICK, spec={'kind': 'drum', 'machine': 'synth_kick', 'knobs': [30, 64, 64, 40, 60]})
-    synthesis.set_instrument(number=HATS, spec={'kind': 'drum', 'machine': 'hats', 'knobs': [64, 20, 90, 70, 10], 'choke': 1})
+    synthesis.set_instrument(number=KICK, spec={'kind': 'drum', 'machine': 'synth_kick', 'knobs': [30, 64, 64, 40, 60], 'volume': 0.8, 'voices': 1})
+    synthesis.set_instrument(number=HATS, spec={'kind': 'drum', 'machine': 'hats', 'knobs': [64, 20, 90, 70, 10], 'choke': 1, 'volume': 0.8, 'voices': 1})
     synthesis.set_instrument(number=PAD, spec={'kind': 'basic', 'oscillators': [['saw', 0, 0.4], ['saw', 8, 0.4], ['saw', -6, 0.4]],
                                                'envelope': [0.4, 1.0, 0.7, 1.2], 'voices': 4, 'volume': 0.25})
     synthesis.notes(trial_notes(start=time.perf_counter() + LEAD_IN_SECONDS, seconds=options.seconds))

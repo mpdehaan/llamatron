@@ -211,7 +211,9 @@ class Instrument(HoldsSettings):
         return self._settings[InstrumentSetting.CHANNEL]
 
     def has_device(self):
-        return self.get_device() is not None
+        """Return whether it plays through a MIDI device: a MIDI instrument whose device is chosen. One switched off, or built in,
+        keeps its device for when it is MIDI again, but plays nothing through it."""
+        return self.get_kind() == InstrumentKind.MIDI and self.get_device() is not None
 
     def uses_fluidsynth(self):
         """Return whether it plays through FluidSynth, which the tracker starts, rather than through a MIDI port: its channel is then chosen for each track and its General MIDI sound sent."""

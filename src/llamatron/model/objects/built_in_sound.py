@@ -3,27 +3,33 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """A built-in instrument's sound, as a set stores it under the instrument: what the Synthesis Process compiles and plays.
 
-A sound has a family. A Basic sound has up to three oscillators, each a waveform, a detune in cents and a level, an envelope
-of attack, decay and release in milliseconds and a sustain level in percent, and how many notes it plays at once. A drum has
-a machine and its five knobs, Pitch, Decay, Color, Shape and Sweep, each 0 to 127, a choke group, 0 for none, and whether its
-hits ring over each other rather than cutting the last. Every sound has a volume in percent and its effects: the
-bitcrusher's bits, 16 for none, and the rate it holds samples at, 0 for none, and drive in percent. Every setting has a
-default, so a sound stores only what differs from it and older sets load as they are.
+A sound has an engine, a volume in percent, up to half again as loud as full, and how many notes it plays at once. A Basic
+sound has three oscillators, each a waveform or off, a detune in cents and a level, and an envelope of attack, decay and
+release in milliseconds and a sustain level in percent, which a SID sound shares. A drum has a machine and its five knobs,
+Pitch, Decay, Color, Shape and Sweep, each 0 to 127, a choke group, 0 for none, and whether its hits ring over each other
+rather than cutting the last. A SID sound has a wave, a pulse width and its sweep, ring modulation or sync from a second
+oscillator an interval away, an arpeggio of semitones stepped at the chip's frame rate, and glide. A Pocket sound is one of
+the handheld chip's voices, a pulse of a duty, the drawn wave of a shape, or noise, long or short, with the chip's stepped
+envelope, a start level of sixteen that steps up or down at a pace, and its pitch sweep. Every sound has four effect
+blocks, each empty, a bitcrusher of bits and rate, or drive of a curve and amount. Every setting has a default, so a sound
+stores only what differs from it and older sets load as they are.
 """
 
 from llamatron.model.file import corrections
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import DrumMachine, OscillatorSetting, SoundFamily, SoundSetting, Waveform
+from llamatron.model.schema.file_format import ChipDirection, ChipVoice, Curve, DrumMachine, Duty, Effect, EffectSetting, Modulation, Noise, OscillatorSetting, SidWave, SoundEngine, SoundSetting, Waveform, WaveShape
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, WholeNumber
 from llamatron.user_strings import errors
 
 MILLISECONDS = 1000.0
 PERCENT = 100.0
+# A chip pulse's duty as the share of each cycle it is high.
+DUTY_SHARES = {Duty.EIGHTH: 0.125, Duty.QUARTER: 0.25, Duty.HALF: 0.5, Duty.THREE_QUARTERS: 0.75}
 
 
 def check_oscillators(value):
-    """Refuse oscillators that aren't a list of one to three, each a waveform, a detune and a level."""
+    """Refuse oscillators that aren't a list of one to three, each a waveform or off, a detune and a level."""
     if not isinstance(value, list) or not 1 <= len(value) <= limits.MAX_OSCILLATORS:
         raise InvalidValue(errors.ERR_BAD_OSCILLATORS.format(most=limits.MAX_OSCILLATORS, value=value))
     for oscillator in value:
@@ -38,39 +44,97 @@ def check_knobs(value):
         raise InvalidValue(errors.ERR_BAD_KNOBS.format(count=limits.KNOB_COUNT, most=limits.MAX_KNOB, value=value))
 
 
+def check_arpeggio(value):
+    """Refuse an arpeggio that isn't a list of up to eight whole numbers of semitones within two octaves either way."""
+    if not isinstance(value, list) or len(value) > limits.MAX_ARPEGGIO_STEPS or any(type(step) is not int or abs(step) > limits.MAX_INTERVAL for step in value):
+        raise InvalidValue(errors.ERR_BAD_ARPEGGIO.format(most=limits.MAX_ARPEGGIO_STEPS, highest=limits.MAX_INTERVAL, value=value))
+
+
+def check_effects(value):
+    """Refuse effect blocks that aren't a list of up to four, each a mapping of an effect block's settings."""
+    if not isinstance(value, list) or len(value) > limits.EFFECT_BLOCKS:
+        raise InvalidValue(errors.ERR_BAD_EFFECTS.format(most=limits.EFFECT_BLOCKS, value=value))
+    for block in value:
+        if not isinstance(block, dict) or not set(block) <= set(EFFECT_SETTINGS):
+            raise InvalidValue(errors.ERR_BAD_EFFECTS.format(most=limits.EFFECT_BLOCKS, value=value))
+        check_settings(settings=EFFECT_SETTINGS, data=block)
+
+
+def percent(name, *, highest=limits.MAX_PERCENT):
+    return WholeNumber(name=name, lowest=0, highest=highest, error=errors.ERR_SOUND_NUMBER)
+
+
+def milliseconds(name, *, highest=limits.MAX_ENVELOPE_MS):
+    return WholeNumber(name=name, lowest=0, highest=highest, error=errors.ERR_SOUND_NUMBER)
+
+
+def chosen(name, *, choices):
+    return Choice(name=name, choices=choices, default=corrections.LEFT_OUT, error=errors.ERR_SOUND_CHOICE)
+
+
 OSCILLATOR_SETTINGS = described(
-    Choice(name=OscillatorSetting.WAVEFORM, choices=file_format.WAVEFORMS, default=corrections.LEFT_OUT, error=errors.ERR_SOUND_CHOICE),
+    chosen(OscillatorSetting.WAVEFORM, choices=file_format.OSCILLATOR_WAVEFORMS),
     WholeNumber(name=OscillatorSetting.DETUNE, lowest=-limits.MAX_DETUNE_CENTS, highest=limits.MAX_DETUNE_CENTS, error=errors.ERR_SOUND_NUMBER),
-    WholeNumber(name=OscillatorSetting.LEVEL, lowest=0, highest=limits.MAX_PERCENT, error=errors.ERR_SOUND_NUMBER),
+    percent(OscillatorSetting.LEVEL),
 )
+EFFECT_SETTINGS = described(
+    chosen(EffectSetting.EFFECT, choices=file_format.EFFECTS),
+    WholeNumber(name=EffectSetting.BITS, lowest=limits.MIN_BITS, highest=limits.MAX_BITS, error=errors.ERR_SOUND_NUMBER),
+    WholeNumber(name=EffectSetting.RATE, lowest=0, highest=limits.MAX_HOLD_RATE, error=errors.ERR_SOUND_NUMBER),
+    chosen(EffectSetting.CURVE, choices=file_format.CURVES),
+    percent(EffectSetting.AMOUNT),
+)
+# What each setting of an effect block is where the block leaves it out.
+EFFECT_DEFAULTS = {EffectSetting.EFFECT: Effect.NONE, EffectSetting.BITS: defaults.DEFAULT_CRUSH_BITS, EffectSetting.RATE: defaults.DEFAULT_CRUSH_RATE,
+                   EffectSetting.CURVE: Curve.WARM, EffectSetting.AMOUNT: defaults.DEFAULT_DRIVE_AMOUNT}
 
 # A sound's settings, each described once, in the order they're written to a file.
 SOUND_SETTINGS = described(
-    Choice(name=SoundSetting.FAMILY, choices=file_format.SOUND_FAMILIES, default=corrections.LEFT_OUT, error=errors.ERR_SOUND_CHOICE),
-    Checked(name=SoundSetting.OSCILLATORS, check=check_oscillators),
-    WholeNumber(name=SoundSetting.ATTACK, lowest=0, highest=limits.MAX_ENVELOPE_MS, error=errors.ERR_SOUND_NUMBER),
-    WholeNumber(name=SoundSetting.DECAY, lowest=0, highest=limits.MAX_ENVELOPE_MS, error=errors.ERR_SOUND_NUMBER),
-    WholeNumber(name=SoundSetting.SUSTAIN, lowest=0, highest=limits.MAX_PERCENT, error=errors.ERR_SOUND_NUMBER),
-    WholeNumber(name=SoundSetting.RELEASE, lowest=0, highest=limits.MAX_ENVELOPE_MS, error=errors.ERR_SOUND_NUMBER),
+    chosen(SoundSetting.ENGINE, choices=file_format.SOUND_ENGINES),
+    percent(SoundSetting.VOLUME, highest=limits.MAX_VOLUME_PERCENT),
     WholeNumber(name=SoundSetting.VOICES, lowest=1, highest=limits.MAX_VOICES, error=errors.ERR_SOUND_NUMBER),
-    Choice(name=SoundSetting.MACHINE, choices=file_format.DRUM_MACHINES, default=corrections.LEFT_OUT, error=errors.ERR_SOUND_CHOICE),
+    Checked(name=SoundSetting.OSCILLATORS, check=check_oscillators),
+    milliseconds(SoundSetting.ATTACK),
+    milliseconds(SoundSetting.DECAY),
+    percent(SoundSetting.SUSTAIN),
+    milliseconds(SoundSetting.RELEASE),
+    chosen(SoundSetting.MACHINE, choices=file_format.DRUM_MACHINES),
     Checked(name=SoundSetting.KNOBS, check=check_knobs),
     WholeNumber(name=SoundSetting.CHOKE, lowest=0, highest=limits.MAX_CHOKE, error=errors.ERR_SOUND_NUMBER),
     Flag(name=SoundSetting.OVERLAP, error=errors.ERR_SOUND_FLAG),
-    WholeNumber(name=SoundSetting.VOLUME, lowest=0, highest=limits.MAX_PERCENT, error=errors.ERR_SOUND_NUMBER),
-    WholeNumber(name=SoundSetting.BITS, lowest=limits.MIN_BITS, highest=limits.MAX_BITS, error=errors.ERR_SOUND_NUMBER),
-    WholeNumber(name=SoundSetting.RATE, lowest=0, highest=limits.MAX_HOLD_RATE, error=errors.ERR_SOUND_NUMBER),
-    WholeNumber(name=SoundSetting.DRIVE, lowest=0, highest=limits.MAX_PERCENT, error=errors.ERR_SOUND_NUMBER),
+    chosen(SoundSetting.WAVE, choices=file_format.SID_WAVES),
+    percent(SoundSetting.PULSE_WIDTH),
+    WholeNumber(name=SoundSetting.PULSE_SWEEP, lowest=-limits.MAX_PULSE_SWEEP, highest=limits.MAX_PULSE_SWEEP, error=errors.ERR_SOUND_NUMBER),
+    chosen(SoundSetting.MODULATION, choices=file_format.MODULATIONS),
+    WholeNumber(name=SoundSetting.INTERVAL, lowest=-limits.MAX_INTERVAL, highest=limits.MAX_INTERVAL, error=errors.ERR_SOUND_NUMBER),
+    Checked(name=SoundSetting.ARPEGGIO, check=check_arpeggio),
+    milliseconds(SoundSetting.GLIDE, highest=limits.MAX_GLIDE_MS),
+    chosen(SoundSetting.CHIP_VOICE, choices=file_format.CHIP_VOICES),
+    chosen(SoundSetting.DUTY, choices=file_format.DUTIES),
+    WholeNumber(name=SoundSetting.START_LEVEL, lowest=0, highest=limits.MAX_CHIP_LEVEL, error=errors.ERR_SOUND_NUMBER),
+    WholeNumber(name=SoundSetting.LEVEL_PACE, lowest=0, highest=limits.MAX_CHIP_PACE, error=errors.ERR_SOUND_NUMBER),
+    chosen(SoundSetting.LEVEL_DIRECTION, choices=file_format.CHIP_DIRECTIONS),
+    WholeNumber(name=SoundSetting.SWEEP_PACE, lowest=0, highest=limits.MAX_CHIP_PACE, error=errors.ERR_SOUND_NUMBER),
+    chosen(SoundSetting.SWEEP_DIRECTION, choices=file_format.CHIP_DIRECTIONS),
+    WholeNumber(name=SoundSetting.SWEEP_STEP, lowest=limits.MIN_SWEEP_STEP, highest=limits.MAX_SWEEP_STEP, error=errors.ERR_SOUND_NUMBER),
+    chosen(SoundSetting.WAVE_SHAPE, choices=file_format.WAVE_SHAPES),
+    chosen(SoundSetting.NOISE, choices=file_format.NOISES),
+    Checked(name=SoundSetting.EFFECTS, check=check_effects),
 )
 DEFAULT_OSCILLATORS = [{OscillatorSetting.WAVEFORM: Waveform.SAW}]
 DEFAULT_KNOBS = [defaults.DEFAULT_KNOB] * limits.KNOB_COUNT
 # What each setting is where a sound leaves it out.
 SOUND_DEFAULTS = {
-    SoundSetting.FAMILY: SoundFamily.BASIC, SoundSetting.OSCILLATORS: DEFAULT_OSCILLATORS, SoundSetting.ATTACK: defaults.DEFAULT_ATTACK_MS,
-    SoundSetting.DECAY: defaults.DEFAULT_DECAY_MS, SoundSetting.SUSTAIN: defaults.DEFAULT_SUSTAIN_PERCENT, SoundSetting.RELEASE: defaults.DEFAULT_RELEASE_MS,
-    SoundSetting.VOICES: defaults.DEFAULT_VOICES, SoundSetting.MACHINE: DrumMachine.KICK, SoundSetting.KNOBS: DEFAULT_KNOBS, SoundSetting.CHOKE: 0,
-    SoundSetting.OVERLAP: False, SoundSetting.VOLUME: defaults.DEFAULT_SOUND_VOLUME, SoundSetting.BITS: defaults.DEFAULT_BITS,
-    SoundSetting.RATE: defaults.DEFAULT_HOLD_RATE, SoundSetting.DRIVE: defaults.DEFAULT_DRIVE,
+    SoundSetting.ENGINE: SoundEngine.BASIC, SoundSetting.VOLUME: defaults.DEFAULT_SOUND_VOLUME, SoundSetting.VOICES: defaults.DEFAULT_VOICES,
+    SoundSetting.OSCILLATORS: DEFAULT_OSCILLATORS, SoundSetting.ATTACK: defaults.DEFAULT_ATTACK_MS, SoundSetting.DECAY: defaults.DEFAULT_DECAY_MS,
+    SoundSetting.SUSTAIN: defaults.DEFAULT_SUSTAIN_PERCENT, SoundSetting.RELEASE: defaults.DEFAULT_RELEASE_MS, SoundSetting.MACHINE: DrumMachine.KICK,
+    SoundSetting.KNOBS: DEFAULT_KNOBS, SoundSetting.CHOKE: 0, SoundSetting.OVERLAP: False, SoundSetting.WAVE: SidWave.PULSE,
+    SoundSetting.PULSE_WIDTH: defaults.DEFAULT_PULSE_WIDTH, SoundSetting.PULSE_SWEEP: 0, SoundSetting.MODULATION: Modulation.OFF,
+    SoundSetting.INTERVAL: defaults.DEFAULT_INTERVAL, SoundSetting.ARPEGGIO: [], SoundSetting.GLIDE: 0, SoundSetting.CHIP_VOICE: ChipVoice.PULSE,
+    SoundSetting.DUTY: Duty.QUARTER, SoundSetting.START_LEVEL: defaults.DEFAULT_START_LEVEL, SoundSetting.LEVEL_PACE: 0,
+    SoundSetting.LEVEL_DIRECTION: ChipDirection.DOWN, SoundSetting.SWEEP_PACE: 0, SoundSetting.SWEEP_DIRECTION: ChipDirection.DOWN,
+    SoundSetting.SWEEP_STEP: defaults.DEFAULT_SWEEP_STEP, SoundSetting.WAVE_SHAPE: WaveShape.TRIANGLE, SoundSetting.NOISE: Noise.LONG,
+    SoundSetting.EFFECTS: [],
 }
 
 
@@ -88,21 +152,89 @@ def sound_value(*, sound, name):
     return SOUND_DEFAULTS[name]
 
 
+def oscillator_value(*, oscillator, name):
+    """Return one of an oscillator's settings, its default where it leaves it out."""
+    if name in oscillator:
+        return oscillator[name]
+    return OSCILLATOR_DEFAULTS[name]
+
+
+def effect_value(*, block, name):
+    """Return one of an effect block's settings, its default where it leaves it out."""
+    if name in block:
+        return block[name]
+    return EFFECT_DEFAULTS[name]
+
+
+OSCILLATOR_DEFAULTS = {OscillatorSetting.WAVEFORM: Waveform.OFF, OscillatorSetting.DETUNE: 0, OscillatorSetting.LEVEL: defaults.DEFAULT_OSCILLATOR_LEVEL}
+
+
 def synth_spec(sound):
-    """Return a stored sound as the Synthesis Process compiles it: times in seconds and levels as fractions."""
-    def value(name):
-        return sound_value(sound=sound, name=name)
-    effects = [value(SoundSetting.BITS), value(SoundSetting.RATE), value(SoundSetting.DRIVE) / PERCENT]
-    volume = value(SoundSetting.VOLUME) / PERCENT
-    if value(SoundSetting.FAMILY) == SoundFamily.DRUM:
-        choke = value(SoundSetting.CHOKE) or None
-        return {'kind': SoundFamily.DRUM, 'machine': value(SoundSetting.MACHINE), 'knobs': list(value(SoundSetting.KNOBS)), 'choke': choke,
-                'overlap': value(SoundSetting.OVERLAP), 'volume': volume, 'effects': effects}
-    oscillators = []
-    for oscillator in value(SoundSetting.OSCILLATORS):
-        level = oscillator.get(OscillatorSetting.LEVEL, defaults.DEFAULT_OSCILLATOR_LEVEL) / PERCENT
-        oscillators.append([oscillator.get(OscillatorSetting.WAVEFORM, Waveform.SAW), oscillator.get(OscillatorSetting.DETUNE, 0), level])
-    envelope = [value(SoundSetting.ATTACK) / MILLISECONDS, value(SoundSetting.DECAY) / MILLISECONDS, value(SoundSetting.SUSTAIN) / PERCENT,
-                value(SoundSetting.RELEASE) / MILLISECONDS]
-    return {'kind': SoundFamily.BASIC, 'oscillators': oscillators, 'envelope': envelope, 'voices': value(SoundSetting.VOICES), 'volume': volume,
-            'effects': effects}
+    """Return a stored sound as the Synthesis Process compiles it: its engine's settings, times in seconds and levels as
+    fractions, and its effects in order, the empty blocks left out."""
+    return SoundSpec(sound).spec()
+
+
+class SoundSpec:
+    """A stored sound read for the Synthesis Process, a setting at a time."""
+
+    __slots__ = ('_sound',)
+
+    def __init__(self, sound):
+        self._sound = sound
+
+    def value(self, name):
+        return sound_value(sound=self._sound, name=name)
+
+    def spec(self):
+        engine = self.value(SoundSetting.ENGINE)
+        spec = {'kind': engine, 'volume': self.value(SoundSetting.VOLUME) / PERCENT, 'voices': self.value(SoundSetting.VOICES), 'effects': self.effects()}
+        if engine == SoundEngine.DRUM:
+            spec.update(self.drum())
+        elif engine == SoundEngine.SID:
+            spec.update(self.sid())
+        elif engine == SoundEngine.POCKET:
+            spec.update(self.pocket())
+        else:
+            spec.update(self.basic())
+        return spec
+
+    def envelope(self):
+        return [self.value(SoundSetting.ATTACK) / MILLISECONDS, self.value(SoundSetting.DECAY) / MILLISECONDS, self.value(SoundSetting.SUSTAIN) / PERCENT,
+                self.value(SoundSetting.RELEASE) / MILLISECONDS]
+
+    def basic(self):
+        oscillators = []
+        for oscillator in self.value(SoundSetting.OSCILLATORS):
+            waveform = oscillator_value(oscillator=oscillator, name=OscillatorSetting.WAVEFORM)
+            if waveform != Waveform.OFF:
+                level = oscillator_value(oscillator=oscillator, name=OscillatorSetting.LEVEL) / PERCENT
+                oscillators.append([waveform, oscillator_value(oscillator=oscillator, name=OscillatorSetting.DETUNE), level])
+        return {'oscillators': oscillators, 'envelope': self.envelope()}
+
+    def drum(self):
+        return {'machine': self.value(SoundSetting.MACHINE), 'knobs': list(self.value(SoundSetting.KNOBS)), 'choke': self.value(SoundSetting.CHOKE) or None,
+                'overlap': self.value(SoundSetting.OVERLAP)}
+
+    def sid(self):
+        return {'wave': self.value(SoundSetting.WAVE), 'pulse_width': self.value(SoundSetting.PULSE_WIDTH) / PERCENT,
+                'pulse_sweep': self.value(SoundSetting.PULSE_SWEEP) / PERCENT, 'modulation': self.value(SoundSetting.MODULATION),
+                'interval': self.value(SoundSetting.INTERVAL), 'arpeggio': list(self.value(SoundSetting.ARPEGGIO)),
+                'glide': self.value(SoundSetting.GLIDE) / MILLISECONDS, 'envelope': self.envelope()}
+
+    def pocket(self):
+        return {'chip_voice': self.value(SoundSetting.CHIP_VOICE), 'duty': DUTY_SHARES[self.value(SoundSetting.DUTY)],
+                'start_level': self.value(SoundSetting.START_LEVEL), 'level_pace': self.value(SoundSetting.LEVEL_PACE),
+                'level_up': self.value(SoundSetting.LEVEL_DIRECTION) == ChipDirection.UP, 'sweep_pace': self.value(SoundSetting.SWEEP_PACE),
+                'sweep_up': self.value(SoundSetting.SWEEP_DIRECTION) == ChipDirection.UP, 'sweep_step': self.value(SoundSetting.SWEEP_STEP),
+                'wave_shape': self.value(SoundSetting.WAVE_SHAPE), 'noise': self.value(SoundSetting.NOISE)}
+
+    def effects(self):
+        effects = []
+        for block in self.value(SoundSetting.EFFECTS):
+            effect = effect_value(block=block, name=EffectSetting.EFFECT)
+            if effect == Effect.BITCRUSH:
+                effects.append((Effect.BITCRUSH, effect_value(block=block, name=EffectSetting.BITS), effect_value(block=block, name=EffectSetting.RATE)))
+            elif effect == Effect.DRIVE:
+                effects.append((Effect.DRIVE, effect_value(block=block, name=EffectSetting.CURVE), effect_value(block=block, name=EffectSetting.AMOUNT) / PERCENT))
+        return effects

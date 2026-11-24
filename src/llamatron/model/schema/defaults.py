@@ -55,17 +55,23 @@ DEFAULT_GROOVE = 'none'
 # When an edit made while a song plays is heard, unless the song says: at the next bar, as a launch by hand waits for it.
 DEFAULT_LIVE_RESPONSIVENESS = 'next_bar'
 
-# A new built-in instrument's sound: a Basic sound of one saw, a short pluck of an envelope, four voices, at half volume, with
-# no bitcrushing or drive; a drum's knobs all in the middle until its machine's defaults are chosen.
+# A new built-in instrument's sound: a Basic sound of one saw, a short pluck of an envelope, four voices, at 80 percent, its
+# effect blocks empty; a drum's knobs all in the middle; a SID voice a half-width pulse with no sweep, ring, sync, arpeggio
+# or glide; a Pocket voice a quarter-duty pulse starting at full level and holding it, with no sweep, its wave a triangle
+# and its noise the long hiss. A bitcrusher chosen starts at 8 bits with no change of rate, drive at a third, warm.
 DEFAULT_INSTRUMENT_LATENCY = 0
 DEFAULT_ATTACK_MS = 5
 DEFAULT_DECAY_MS = 300
 DEFAULT_SUSTAIN_PERCENT = 60
 DEFAULT_RELEASE_MS = 200
 DEFAULT_VOICES = 4
-DEFAULT_SOUND_VOLUME = 50
+DEFAULT_SOUND_VOLUME = 80
 DEFAULT_KNOB = 64
-DEFAULT_BITS = 16
-DEFAULT_HOLD_RATE = 0
-DEFAULT_DRIVE = 0
 DEFAULT_OSCILLATOR_LEVEL = 100
+DEFAULT_PULSE_WIDTH = 50
+DEFAULT_INTERVAL = 7
+DEFAULT_START_LEVEL = 15
+DEFAULT_SWEEP_STEP = 3
+DEFAULT_CRUSH_BITS = 8
+DEFAULT_CRUSH_RATE = 0
+DEFAULT_DRIVE_AMOUNT = 33
