@@ -30,7 +30,7 @@ These come before every other rule, whatever the task, mode or tool permits.
 llamatron is a text UI for composing electronic music in MIDI, for Ableton Live and later other DAWs, inspired by Ableton's
 Session View, the Elektron Monomachine, the Sequentix Cirklon and software trackers. `docs/WHY_LLAMATRON.md` defines what it is
 for, and features are judged against it. The Python classes are internal, not an API, and change freely to suit the tracker.
-Dependencies: `mido`, `python-rtmidi`, `PyYAML`, `textual`, pinned in `requirements.txt`, which `setup.py` reads. The package is
+Dependencies: `mido`, `python-rtmidi`, `PyYAML`, `textual`, `reportlab` and `music21` (PDF export), pinned in `requirements.txt`, which `setup.py` reads. The package is
 `llamatron` in `src/llamatron`, and must be installed (below) before anything runs.
 
 ## Where everything is

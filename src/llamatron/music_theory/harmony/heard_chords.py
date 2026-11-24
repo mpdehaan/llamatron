@@ -30,6 +30,19 @@ MINOR_THIRD = 3
 MAJOR_THIRD = 4
 DIMINISHED_FIFTH = 6
 AUGMENTED_FIFTH = 8
+# How many letters above a chord's root each of its notes is spelled, by its half steps above it, where the half steps alone
+# decide: a ninth one letter up, a third two, a fourth three, a fifth four, a sixth five, a seventh six.
+LETTERS_BY_STEP = {0: 0, 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 7: 4, 9: 5, 10: 6, 11: 6}
+TRITONE = 6
+RAISED_FIFTH = 8
+PERFECT_FIFTH = 7
+MAJOR_SIXTH = 9
+MINOR_SEVENTH = 10
+MAJOR_SEVENTH = 11
+SHARP_ELEVENTH_LETTERS = 3
+FIFTH_LETTERS = 4
+SIXTH_LETTERS = 5
+SEVENTH_LETTERS = 6
 # How a chord symbol is shown: as llamatron writes it, but a major triad as its root alone, a dominant chord by its number alone and a power chord as 5, as lead sheets write them.
 NO_SYMBOL = ''
 DOMINANT_SEVENTH = '7'
@@ -147,12 +160,14 @@ def spelled(*, pitch_class, scale):
 
 def chord_texts(*, root, symbol, scale, bass=None):
     """Return a chord's name, its root spelled in the scale, its symbol, and its bass after a slash when the bass isn't its
-    root, and its Roman numeral in the scale: an applied chord's by the chord it leads to, as V7/V, and any other's by its
+    root, spelled as the chord's note where it is one, and its Roman numeral in the scale: an applied chord's by the chord it leads to, as V7/V, and any other's by its
     root, a flat in front for a root between two of its notes."""
     applied = applied_chord(root=root, symbol=symbol, scale=scale)
     name = root_name(root=root, applied=applied, scale=scale) + PLAIN_SYMBOLS.get(symbol, symbol)
     if bass is not None:
-        name = marks.MSG_SCENE_VIEW_SLASH_CHORD.format(chord=name, bass=spelled(pitch_class=bass, scale=scale))
+        tones = chord_tone_names(root=root, symbol=symbol, scale=scale)
+        bass_name = tones.get(bass) or spelled(pitch_class=bass, scale=scale)
+        name = marks.MSG_SCENE_VIEW_SLASH_CHORD.format(chord=name, bass=bass_name)
     if scale is None:
         return name, NO_SYMBOL
     if applied is not None:
@@ -170,12 +185,46 @@ def root_name(*, root, applied, scale):
             return name
     if applied is not None:
         letter = LETTERS[(LETTERS.index(names[applied.degree][0]) + applied.letters) % len(LETTERS)]
-        for name in [*note_values.SHARP_NAMES, *note_values.FLAT_NAMES]:
-            if name[0] == letter and note_values.SEMITONES_ABOVE_C[name] % intervals.HALF_STEPS_PER_OCTAVE == root:
-                return name
+        named = on_letter(pitch_class=root, letter=letter)
+        if named is not None:
+            return named
     if scale is None:
         return note_values.SHARP_NAMES[root]
     return note_values.FLAT_NAMES[root]
+
+
+def chord_tone_names(*, root, symbol, scale):
+    """Return how a chord's notes are spelled, by pitch class: its root as the key spells it, and each other note on the
+    letter its interval gives it, a third two letters up and a seventh six, so that C7's seventh is Bb and never A#."""
+    root_spelling = root_name(root=root, applied=applied_chord(root=root, symbol=symbol, scale=scale), scale=scale)
+    shape = chord_shapes()[symbol]
+    names = {}
+    for step in shape:
+        letter = LETTERS[(LETTERS.index(root_spelling[0]) + letters_above(step=step, shape=shape)) % len(LETTERS)]
+        pitch_class = (root + step) % intervals.HALF_STEPS_PER_OCTAVE
+        names[pitch_class] = on_letter(pitch_class=pitch_class, letter=letter) or spelled(pitch_class=pitch_class, scale=scale)
+    return names
+
+
+def letters_above(*, step, shape):
+    """Return how many letters above a chord's root one of its notes is spelled, by its half steps above the root: a
+    tritone is a diminished fifth unless the chord has a perfect fifth, eight half steps a raised fifth unless it has one,
+    and nine a diminished seventh in a diminished seventh chord."""
+    if step == TRITONE:
+        return SHARP_ELEVENTH_LETTERS if PERFECT_FIFTH in shape else FIFTH_LETTERS
+    if step == RAISED_FIFTH:
+        return SIXTH_LETTERS if PERFECT_FIFTH in shape else FIFTH_LETTERS
+    if step == MAJOR_SIXTH and MINOR_THIRD in shape and TRITONE in shape and MINOR_SEVENTH not in shape and MAJOR_SEVENTH not in shape:
+        return SEVENTH_LETTERS
+    return LETTERS_BY_STEP[step]
+
+
+def on_letter(*, pitch_class, letter):
+    """Return a pitch class's name on a letter, with one sharp or flat at most, or None where it needs more."""
+    for name in [*note_values.SHARP_NAMES, *note_values.FLAT_NAMES]:
+        if name[0] == letter and note_values.SEMITONES_ABOVE_C[name] % intervals.HALF_STEPS_PER_OCTAVE == pitch_class:
+            return name
+    return None
 
 
 def scale_names(scale):

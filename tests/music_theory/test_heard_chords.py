@@ -20,6 +20,9 @@ F = 5
 F_SHARP = 6
 G = 7
 B_FLAT = 10
+G_SHARP = 8
+E_FLAT = 3
+F_MAJOR = NamedScale(root=NoteName.F, kind=ScaleKind.MAJOR)
 FOUR = heard_chords.ROMAN_NUMERALS[3]
 FIVE = heard_chords.ROMAN_NUMERALS[4]
 SIX = heard_chords.ROMAN_NUMERALS[5]
@@ -49,3 +52,11 @@ class TestHeardChordNames(unittest.TestCase):
         self.assertEqual(heard_chords.chord_texts(root=F, symbol=ChordSymbol.MINOR, scale=C_MAJOR), ('Fm', FOUR.lower()))
         flat = marks.MSG_ACCIDENTAL_MARKS[heard_chords.Accidental.FLAT]
         self.assertEqual(heard_chords.chord_texts(root=B_FLAT, symbol=ChordSymbol.DOMINANT7, scale=C_MAJOR), ('Bb7', flat + SEVEN))
+
+    def test_a_chords_notes_are_spelled_from_its_root_by_interval(self):
+        self.assertEqual(heard_chords.chord_tone_names(root=C, symbol=ChordSymbol.DOMINANT7, scale=C_MAJOR)[B_FLAT], NoteName.B_FLAT)
+        self.assertEqual(heard_chords.chord_tone_names(root=F_SHARP, symbol=ChordSymbol.DIMINISHED7, scale=C_MAJOR)[E_FLAT], NoteName.E_FLAT)
+
+    def test_a_slash_bass_is_spelled_as_its_chords_note(self):
+        name, _ = heard_chords.chord_texts(root=E, symbol=ChordSymbol.DOMINANT7, scale=F_MAJOR, bass=G_SHARP)
+        self.assertTrue(name.endswith(NoteName.G_SHARP))
