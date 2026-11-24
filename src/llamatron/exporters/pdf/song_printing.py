@@ -8,7 +8,9 @@ The tracks chosen as the melody are merged into one line: where they overlap, th
 and a note still sounding when the next is struck ends there. The tracks chosen as the chords are heard together, one chord a
 beat as Scene View hears it (music_theory/harmony/heard_chords.py), in the key of the scene playing, and a chord heard on
 beats in a row is one chord. A song whose scenes set their Section has a section wherever that setting changes; any other has
-one wherever the key changes. Each track's default part is the role its notes play (music_theory/analysis/roles.py): the
+one at every scene, a scene played again in a row counted rather than repeated.
+
+Each track's default part is the role its notes play (music_theory/analysis/roles.py): the
 melody, the chords for harmony and pads, and left out for the rest.
 """
 
@@ -132,7 +134,7 @@ def printed_song(*, song, title, parts, level=chord_charts.DEFAULT_CHORD_LEVEL):
     keys = key_starts(song=song, render=render)
     return PrintedSong(
         title=title, melody=tuple(melody), chords=tuple(chords_heard(song=song, render=render, names=chord_tracks, level=level, melody=melody)), keys=tuple(keys),
-        sections=tuple(section_starts(render=render, keys=keys)), signature=song.get_time_signature(), tempo=song.get_tempo(),
+        sections=tuple(section_starts(song=song, render=render)), signature=song.get_time_signature(), tempo=song.get_tempo(),
         length=render.grid.song_length(),
     )
 
@@ -163,21 +165,20 @@ def key_starts(*, song, render):
     return keys
 
 
-def section_starts(*, render, keys):
+def section_starts(*, song, render):
     """Return where each section begins: where the scenes' Section setting changes, named after it, in a song whose scenes
-    set it; else where the key changes, named after the first scene of the section."""
+    set it; else at every scene, named after it, a row playing the same clips as the row before counted as a time more."""
+    if any(scene.get_section() is not None for scene in render.scenes):
+        return _sections_by_setting(render)
     sections = []
-    named = any(scene.get_section() is not None for scene in render.scenes)
-    key_times = {key.start for key in keys}
     before = None
     for scene, start in zip(render.scenes, render.starts):
-        if scene is before:
-            continue
-        before = scene
-        if named and scene.get_section() is not None and (not sections or sections[-1].name != scene.get_section()):
-            sections.append(SectionStart(start=start, name=scene.get_section()))
-        elif not named and (not sections or start in key_times):
+        music = _clips_of(song=song, scene=scene)
+        if sections and music == before:
+            sections[-1] = sections[-1]._replace(times=sections[-1].times + 1)
+        else:
             sections.append(SectionStart(start=start, name=scene.get_name()))
+        before = music
     return sections
 
 
@@ -197,6 +198,26 @@ def chords_heard(*, song, render, names, level, melody):
         charted = chord_charts.charted_chords(beats=beats, stretch=chord_charts.Stretch(length=length, beat=beat, span=span), level=level, melody=sounding)
         chords += [_printed(chord=chord, start=start, scale=scale) for chord in charted]
     return _joined_across_rows(chords)
+
+
+def _sections_by_setting(render):
+    """Return a section wherever the scenes' Section setting changes, named after it, a scene that sets none carrying on the
+    section before."""
+    sections = []
+    for scene, start in zip(render.scenes, render.starts):
+        if scene.get_section() is not None and (not sections or sections[-1].name != scene.get_section()):
+            sections.append(SectionStart(start=start, name=scene.get_section()))
+    return sections
+
+
+def _clips_of(*, song, scene):
+    """Return what a scene plays, each track's patterns in turn, so that two scenes playing alike compare equal."""
+    played = []
+    for track in song.get_track_names():
+        clip_slot = scene.get_clip_slot(track)
+        if clip_slot is not None:
+            played.append((track, tuple(clip_slot.get_pattern_names())))
+    return tuple(played)
 
 
 def _melody_from_chords(*, chosen, parts, found):

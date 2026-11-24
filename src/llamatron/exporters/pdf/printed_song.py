@@ -6,7 +6,8 @@ in whole notes from the song's start.
 
 Every page of a PDF is drawn from this, never from the set, so that the pages agree on what the song is: the tracks chosen as
 the melody merged into one line, the tracks chosen as the chords heard as one chord at a time, each key where a run of scenes
-in it begins, and each section where a scene's Section setting changes or, failing that, where the key changes.
+in it begins, and each section where a scene's Section setting changes or, in a song that sets none, at every scene, a
+scene played again in a row counted rather than printed again.
 """
 
 from dataclasses import dataclass
@@ -46,10 +47,11 @@ class KeyStart(NamedTuple):
 
 
 class SectionStart(NamedTuple):
-    """Where a section begins, and its name: its Section setting, or its first scene's name."""
+    """Where a section begins, its name, its Section setting or its scene's name, and how many times in a row it plays."""
 
     start: Rational
     name: str
+    times: int = 1
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)

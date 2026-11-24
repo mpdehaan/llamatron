@@ -72,15 +72,19 @@ class TestSongPrinting(unittest.TestCase):
         self.assertEqual([(key.start, key.scale.get_root()) for key in printed.keys], [(0 * BAR, NoteName.C), (2 * BAR, NoteName.F)])
         self.assertEqual(printed.main_key().get_root(), NoteName.C)
 
-    def test_sections_follow_the_section_setting_and_without_it_the_key(self):
-        song = the_song()
-        printed = song_printing.printed_song(song=song, title=SONG, parts=PARTS)
+    def test_sections_follow_the_section_setting(self):
+        printed = song_printing.printed_song(song=the_song(), title=SONG, parts=PARTS)
         self.assertEqual([(section.start, section.name) for section in printed.sections], [(0 * BAR, SectionKind.VERSE), (2 * BAR, SectionKind.CHORUS)])
+
+    def test_without_the_section_setting_each_scene_is_a_section_and_one_played_again_is_counted(self):
+        song = the_song()
         for scene in song.get_scenes():
             scene.set_section(None)
+        song.get_scenes()[1].set_repeat(2)
         printed = song_printing.printed_song(song=song, title=SONG, parts=PARTS)
         names = [scene.get_name() for scene in song.get_scenes()]
-        self.assertEqual([(section.start, section.name) for section in printed.sections], [(0 * BAR, names[0]), (2 * BAR, names[2])])
+        self.assertEqual([(section.start, section.name, section.times) for section in printed.sections],
+                         [(0 * BAR, names[0], 1), (BAR, names[1], 2), (3 * BAR, names[2], 1)])
 
     def test_each_track_plays_its_role_by_default_and_the_drums_are_left_out(self):
         song = the_song()
