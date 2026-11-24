@@ -180,7 +180,7 @@ class MidiImport:
         swung = moved >= SWING_SHARE * contents.note_count()
         for count, message in (
             (moved, importing.MSG_WARN_SWUNG if swung else importing.MSG_WARN_MOVED), (cut.lengths_changed, importing.MSG_WARN_LENGTHS_CHANGED), (cut.too_low, importing.MSG_WARN_TOO_LOW),
-            (cut.controls_moved, importing.MSG_WARN_CONTROLS_MOVED), (tempos_moved, importing.MSG_WARN_TEMPOS_MOVED), (contents.unended, importing.MSG_WARN_UNENDED),
+            (glided_notes(voices), importing.MSG_WARN_GLIDED), (cut.controls_moved, importing.MSG_WARN_CONTROLS_MOVED), (tempos_moved, importing.MSG_WARN_TEMPOS_MOVED), (contents.unended, importing.MSG_WARN_UNENDED),
             (len(left_out), importing.MSG_WARN_CONTROLS_LEFT_OUT if choices.controls else importing.MSG_WARN_CONTROLS_OFF),
             (contents.controls_without_notes, importing.MSG_WARN_CONTROLS_NO_NOTES), (contents.left_out, importing.MSG_WARN_LEFT_OUT),
         ):
@@ -190,6 +190,11 @@ class MidiImport:
             song=song, step_size=step_size, tracks=len(voices), patterns=len(song.patterns), scenes=len(cut.scenes),
             long_patterns=cut.long_patterns, warnings=warnings, moved=moved, control_tracks=control_tracks,
         )
+
+
+def glided_notes(voices):
+    """Return how many notes a legato line slurs into the next with Glide, each ending where Glide runs it rather than where the file does."""
+    return sum(1 for voice in voices for played in voice.played if played.glide)
 
 
 def scene_tempo_at(*, cut, time, step_size):

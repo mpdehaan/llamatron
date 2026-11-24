@@ -23,6 +23,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import NamedTuple
 
+from llamatron.math.rational import Rational
 from llamatron.model.schema import file_format, limits
 from llamatron.music_theory.fundamentals import intervals
 from llamatron.user_strings import importing
@@ -33,6 +34,11 @@ MIDDLE_C = 60
 HAND_REACH = 16
 HAND_SHARE = 0.1
 FIRST_DRUM_NUMBER = 1
+# A note held into the next by less than this share of itself is slurred into it on purpose, a legato line (legato_line).
+LEGATO_SHARE = Rational(1, 2)
+# The General MIDI sounds, numbered from 1, of instruments that play one note at a time: the basses, the solo brass, the
+# reeds, the pipes and the synth leads. The brass section and the synth brass play chords, and are left out.
+MONOPHONIC_SOUNDS = (range(33, 41), range(57, 62), range(65, 89))
 # The General MIDI sound a part's tracks get where the file sets no program: a piano, which the user can change.
 DEFAULT_SOUND = limits.MIN_GM_SOUND
 # A chord in root position, which writes no Inversion.
@@ -71,6 +77,8 @@ class Played(NamedTuple):
     chord: object
     inversion: int = 0
     root: object = None
+    # Whether it runs on into the next note with Glide, as a legato line played on purpose does (legato_line).
+    glide: bool = False
 
     def written_pitch(self):
         """Return the MIDI number a step's degree is written from: a chord's root, or the note itself."""
@@ -123,6 +131,7 @@ def voices_of(*, part, chords, controls):
         voices = []
         for name, notes, from_top in hands(part):
             units = chord_units(notes) if chords else [single(note) for note in notes]
+            units = legato_line(units=units, monophonic=plays_one_note_at_a_time(part))
             voices += named_voices(name=name, drum=False, lines=lines_of(units=units, from_top=from_top))
     if not part.is_drums():
         for voice in voices:
@@ -139,6 +148,49 @@ def sound_of(part):
     if part.program is None:
         return DEFAULT_SOUND
     return part.program + limits.MIN_GM_SOUND
+
+
+def legato_line(*, units, monophonic):
+    """Return what a hand plays, as one line with Glide where it is a legato line: single notes one after another, none
+    starting together, each next note starting while the last still sounds, as a horn or a voice slurs a phrase on purpose.
+    An instrument that plays one note at a time (monophonic) slurs wherever its notes overlap; any other only where every
+    overlap is short, under LEGATO_SHARE of the earlier note, and reaches no further than the next note, so that two voices
+    of a keyboard's line are never run into one. Each slurred note ends where the next starts, with Glide, which runs it on
+    into the next as a monosynth slides; anything else, chords or notes sounding together, is as it was."""
+    ordered = sorted(units, key=start_of)
+    pairs = list(zip(ordered, ordered[1:]))
+    if any(len(unit.pitches) > 1 for unit in ordered) or any(later.start == earlier.start for earlier, later in pairs):
+        return units
+    if not any(earlier.end > later.start for earlier, later in pairs):
+        return units
+    if not monophonic and not all(is_short_slur(earlier=earlier, later=later, after=after) for (earlier, later), after in zip(pairs, [*ordered[2:], None])):
+        return units
+    joined = []
+    for earlier, later in zip(ordered, [*ordered[1:], None]):
+        if later is not None and earlier.end > later.start:
+            earlier = Played(earlier.start, later.start, earlier.pitches, earlier.velocity, earlier.chord, earlier.inversion, earlier.root, True)
+        joined.append(earlier)
+    return joined
+
+
+def is_short_slur(*, earlier, later, after):
+    """Return whether a note, on any instrument, can be slurred into the next: it ends before the next starts, or overlaps it
+    by under LEGATO_SHARE of itself and ends before the note after."""
+    if earlier.end <= later.start:
+        return True
+    return is_legato(earlier=earlier, later=later) and (after is None or earlier.end <= after.start)
+
+
+def plays_one_note_at_a_time(part):
+    """Return whether a part's General MIDI sound is an instrument that plays one note at a time, a bass, a solo brass
+    instrument, a reed, a pipe or a synth lead, so that its overlapping notes are slurs (MONOPHONIC_SOUNDS)."""
+    return part.program is not None and any(part.program + limits.MIN_GM_SOUND in sounds for sounds in MONOPHONIC_SOUNDS)
+
+
+def is_legato(*, earlier, later):
+    """Return whether a note runs on into the next as a legato line does: the next starts after it and while it sounds, by
+    less than LEGATO_SHARE of it."""
+    return earlier.start < later.start < earlier.end and earlier.end - later.start < LEGATO_SHARE * (earlier.end - earlier.start)
 
 
 def control_lanes(part):

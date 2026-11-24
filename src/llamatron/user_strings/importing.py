@@ -58,6 +58,7 @@ MSG_WHERE_IMPORTED = 'imported song'
 # nothing. Each is a sentence, since the dialog after an import lists them.
 MSG_WARN_MOVED = '{count} notes were moved to the nearest step.'
 MSG_WARN_SWUNG = '{count} notes were moved to the nearest step. They sit a little off the steps, as a swing, a groove or a live performance plays them, and the import makes no groove yet.'
+MSG_WARN_GLIDED = '{count} notes slurred into the next note have Glide, which runs each one on into the next as a monosynth slides, a little more or less than the file holds it.'
 MSG_WARN_LENGTHS_CHANGED = '{count} notes are held for whole steps, being longer than a gate can be.'
 MSG_WARN_TOO_LOW = '{count} notes were left out, too low to write as a degree.'
 MSG_WARN_TEMPOS_MOVED = '{count} tempo changes were moved to where a scene could start.'

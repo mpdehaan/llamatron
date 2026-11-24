@@ -47,7 +47,11 @@ The song plays every note the file plays, for as long as the file plays it.
 - **Tracks** come from the file's tracks: drums become a track for each sound,
   named such as `kick` and `closed hat`; a track that plays both hands splits
   into its treble and bass; and overlapping notes within a track spread over
-  tracks lettered `a`, `b` and so on. Each track plays through an instrument
+  tracks lettered `a`, `b` and so on. A line played legato, each note held a
+  little into the next, as a horn or a voice slurs, stays one track, each
+  slurred note with Glide, so a monosynth slides across it; the dialog says
+  how many notes glide, since Glide runs a note on by its own small amount
+  rather than the file's. Each track plays through an instrument
   named after the General MIDI sound the file sets for it, such as
   `drawbar_organ`, or `acoustic_grand_piano` where the file sets none, played
   through FluidSynth until you choose a device on the Instruments page; drum

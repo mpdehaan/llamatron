@@ -74,6 +74,7 @@ def pattern_data(*, pattern, set_step_size):
     count = len(steps)
     rows = {row: [None] * count for row in (Row.DEGREE, Row.ACCIDENTAL, Row.OCTAVE, Row.CHORD, Row.INVERSION, Row.GATE, Row.VELOCITY)}
     ties = [False] * count
+    glides = [False] * count
     for place, step in enumerate(steps):
         if step == steps_values.TIED:
             ties[place] = True
@@ -85,6 +86,7 @@ def pattern_data(*, pattern, set_step_size):
             rows[Row.INVERSION][place] = step.inversion or None
             rows[Row.GATE][place] = step.gate
             rows[Row.VELOCITY][place] = None if step.velocity == defaults.DEFAULT_VELOCITY else step.velocity
+            glides[place] = step.glide
     data = {PatternSetting.STEPS: count}
     if step_size != set_step_size:
         data[PatternSetting.STEP_SIZE] = fraction_text(step_size)
@@ -93,6 +95,8 @@ def pattern_data(*, pattern, set_step_size):
     data.update({row: values for row, values in rows.items() if has_a_value(values)})
     if any(ties):
         data[Row.TIE] = ties
+    if any(glides):
+        data[Row.GLIDE] = glides
     data.update(control_rows(controls))
     return data
 

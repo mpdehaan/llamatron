@@ -235,6 +235,26 @@ class TestVoices(unittest.TestCase):
         self.assertEqual([voice.name for voice in voices], [importing.MSG_UNNAMED_DRUM.format(number=1), importing.MSG_DRUM_NAMES[KICK], importing.MSG_DRUM_NAMES[SNARE]])
         self.assertTrue(all(voice.drum for voice in voices))
 
+    def test_a_slurred_line_on_an_instrument_of_one_note_is_one_voice_with_glide_and_a_keyboards_two_voices_stay_apart(self):
+        # Each note held past the next note's start, one of them past the note after too.
+        slurred = [(0, 6, 60), (4, 3, 62), (6, 5, 64), (8, 4, 65)]
+        alto_sax = 66
+        horn = self.part(notes=slurred)
+        horn.program = alto_sax - limits.MIN_GM_SOUND
+        voices = voices_of(part=horn, chords=True, controls=True)
+        self.assertEqual(len(voices), 1)
+        self.assertEqual([played.glide for played in voices[0].played], [True, True, True, False])
+        self.assertEqual([played.end for played in voices[0].played[:-1]], [played.start for played in voices[0].played[1:]])
+        self.assertEqual(len(voices_of(part=self.part(notes=slurred), chords=True, controls=True)), 2)
+
+    def test_a_slurred_line_imported_says_how_many_notes_glide(self):
+        notes = [(0, 5, 60), (4, 5, 62), (8, 5, 64), (12, 4, 65)]
+        midi = midi_of(tracks=[('sax', 0, notes)])
+        midi.tracks[1].insert(1, mido.Message(PROGRAM_CHANGE, channel=0, program=65))
+        imported, _ = imported_into(setlist=Setlist.new(), midi=midi)
+        self.assertEqual(imported.tracks, 1)
+        self.assertIn(importing.MSG_WARN_GLIDED.format(count=3), imported.warnings)
+
     def test_notes_together_in_a_chord_symbols_shape_are_one_chord_when_asked(self):
         part = self.part(notes=[(0, 4, pitch) for pitch in C_MAJOR_TRIAD])
         chords = voices_of(part=part, chords=True, controls=True)

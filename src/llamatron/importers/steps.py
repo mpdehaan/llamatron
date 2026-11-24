@@ -41,7 +41,7 @@ SLOPE_MARGIN = 1e-9
 
 
 class NoteStep(NamedTuple):
-    """A step that plays: its degree, or a drum's letter, its accidental, octave and chord symbol, its gate as a file writes it or None for whole steps, its velocity, and its chord's inversion, 0 for none."""
+    """A step that plays: its degree, or a drum's letter, its accidental, octave and chord symbol, its gate as a file writes it or None for whole steps, its velocity, its chord's inversion, 0 for none, and whether it glides into the next."""
 
     degree: object
     accidental: object
@@ -50,6 +50,7 @@ class NoteStep(NamedTuple):
     gate: object
     velocity: int
     inversion: int = 0
+    glide: bool = False
 
 
 class ControlStep(NamedTuple):
@@ -94,7 +95,7 @@ def scene_steps(*, voice, start, end, key, step_size):
                 gated.append((place, place + length))
             else:
                 lengths_changed += 1
-        steps[place] = NoteStep(degree, accidental, octave, played.chord, gate, played.velocity, played.inversion)
+        steps[place] = NoteStep(degree, accidental, octave, played.chord, gate, played.velocity, played.inversion, played.glide)
         if gate is None:
             for tied in range(place + 1, min(place + max(int(length), 1), len(steps))):
                 steps[tied] = TIED
