@@ -99,3 +99,27 @@ MSG_IMPORTED_BUTTON = 'OK'
 
 # interface/tracker/screens/set/importing.py
 MSG_IMPORTED = 'imported song ({name}): {tracks} tracks, {patterns} patterns, {scenes} scenes'
+
+# importers/batch_import.py
+MSG_BATCH_DESCRIPTION = (
+    'Import every MIDI file under a folder as the Import Wizard cuts it, each into a set file of its own in the output folder, '
+    'named after its path with the folders joined by __, or with --multiple-songs-per-set every file a song of one set.'
+)
+MSG_BATCH_HELP_INPUT = 'the folder of MIDI files (.mid or .midi) to import, searched at every depth'
+MSG_BATCH_HELP_OUTPUT = 'the folder the set files are written to, made if missing, flat however deep the input folder is'
+MSG_BATCH_HELP_BARS = 'the longest a pattern may be, in bars (default: 8)'
+MSG_BATCH_HELP_QUANTIZE = 'the finest grid a file played by hand is put on, one of {choices} (default: 1/64)'
+MSG_BATCH_HELP_FORMAT = 'direct: one song for each file, playing it as the file does (default)'
+MSG_BATCH_HELP_ONE_SET = 'write every file as a song of one set, named after the input folder, each song named after its file'
+MSG_BATCH_CHOICES_JOIN = ', '
+MSG_BATCH_BAD_BARS = 'expected a whole number of bars from 1, got {value}'
+MSG_BATCH_BAD_QUANTIZE = 'expected a grid such as 1/16, got {value}'
+MSG_BATCH_NO_INPUT = 'no folder called ({path})'
+MSG_BATCH_FAILED = 'could not import {file}: {problem}'
+MSG_BATCH_WROTE = '{file} -> {path} ({milliseconds} ms)'
+MSG_BATCH_WROTE_SET = 'wrote {songs} songs to {path}'
+MSG_BATCH_NOTHING = 'imported nothing; {failed} files failed'
+MSG_BATCH_TIMES = (
+    'imported {count} files, {failed} failed; shortest {shortest} ms ({shortest_file}), longest {longest} ms ({longest_file}), '
+    'average {average} ms'
+)

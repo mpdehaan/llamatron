@@ -21,6 +21,7 @@ A value that comes and goes between two steps is not heard, which the comparison
 """
 
 from bisect import bisect_right
+import math
 from math import ceil
 from typing import NamedTuple
 
@@ -33,6 +34,10 @@ from llamatron.model.schema import limits
 
 # What a step holds when it ties the note before it on.
 TIED = 'tied'
+# A value on a slide is its line's value rounded, so within half of one of it, and the slopes a slide may take are widened by a
+# margin far above floating point's error so that none that fits is ruled out before it is checked exactly.
+ROUNDING = 0.5
+SLOPE_MARGIN = 1e-9
 
 
 class NoteStep(NamedTuple):
@@ -173,13 +178,71 @@ def pass_controls(*, lanes, begin, length):
 
 
 def straight_run(*, values, begin, last):
-    """Return the furthest step up to last that a slide from step begin reaches, two steps on or more, with every step between on its straight line, or None."""
-    for end in range(last, begin + 1, -1):
+    """Return the furthest step up to last that a slide from step begin reaches, two steps on or more, with every step between on its straight line, or None.
+
+    The values between are runs of one value, and a straight line rounded to whole numbers only rises or only falls, so a run
+    lies on the line wherever its first and last steps do: only those are checked, in whole numbers, which a recorded sweep
+    thousands of steps long needs, since checking every step of every reach grew with the cube of its length.
+    """
+    runs = runs_of(values=values, begin=begin, last=last)
+    for end in range(furthest_reach(values=values, begin=begin, runs=runs), begin + 1, -1):
         if values[end] is None or values[end] == values[begin]:
             continue
-        if all(values[step] == value_on_the_way(start=Rational(begin), value=values[begin], end=Rational(end), target=values[end], now=Rational(step)) for step in range(begin, end + 1)):
+        if all(on_the_line(begin=begin, end=end, values=values, step=step) for step in run_ends(runs=runs, end=end)):
             return end
     return None
+
+
+def runs_of(*, values, begin, last):
+    """Return the runs of one value from step begin to step last, each as its first and last step."""
+    runs = []
+    first = begin
+    for step in range(begin + 1, last + 1):
+        if values[step] != values[step - 1]:
+            runs.append((first, step - 1))
+            first = step
+    runs.append((first, last))
+    return runs
+
+
+def furthest_reach(*, values, begin, runs):
+    """Return the last step a slide from step begin could reach: each step's value, within half of one, bounds the slopes a
+    line from begin can take, and past the step where no slope is left no end can be on a line with every step before it.
+    The bounds are widened by SLOPE_MARGIN so that rounding in floating point never rules out a slide that fits, which
+    straight_run then checks exactly; a run's first and last steps bound it as every step of it would."""
+    low = -math.inf
+    high = math.inf
+    start = values[begin]
+    reach = runs[-1][1]
+    for first, final in runs:
+        for step in (first, final):
+            if step == begin:
+                continue
+            gap = step - begin
+            low = max(low, (values[step] - start - ROUNDING) / gap - SLOPE_MARGIN)
+            high = min(high, (values[step] - start + ROUNDING) / gap + SLOPE_MARGIN)
+            if low > high:
+                return step
+    return reach
+
+
+def run_ends(*, runs, end):
+    """Return the first and last step of each run that starts by step end, the last run cut at end."""
+    for first, final in runs:
+        if first > end:
+            return
+        yield first
+        yield min(final, end)
+
+
+def on_the_line(*, begin, end, values, step):
+    """Return whether a step's value is what a slide from step begin to step end sends there, as value_on_the_way rounds it:
+    to the nearest whole number, a half to the even one, worked out in whole numbers."""
+    span = end - begin
+    whole, remainder = divmod(values[begin] * span + (values[end] - values[begin]) * (step - begin), span)
+    if remainder * 2 > span or (remainder * 2 == span and whole % 2):
+        whole += 1
+    return values[step] == whole
 
 
 def controls_between_steps(*, voice, start, end, step_size, controls):
