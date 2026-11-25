@@ -1,0 +1,372 @@
+// llamatron: a music program
+// Copyright (C) 2026  Michael DeHaan
+// SPDX-License-Identifier: GPL-3.0-or-later
+//! The oscillator parts a voice's Oscillators slot holds, each making the raw sound before the filter and the amp:
+//!
+//! - Basic: up to three band-limited table oscillators, each a waveform, a detune in cents and a level.
+//! - SID: one voice of the classic home computer's chip: a triangle, saw, pulse whose width can sweep, or noise clocked by
+//!   the pitch, ring modulated or synced by a second oscillator an interval away, an arpeggio stepped 50 times a second.
+//! - Pocket: one voice of the handheld's chip: a pulse of one of four duties, a drawn wave of 32 steps, or a shift
+//!   register's noise, and its pitch sweep moving the chip's period register 128 times a second.
+//! - Acid: the acid bass's band-limited saw, or the square a transistor shapes from it.
+//!
+//! Tables are read with linear interpolation between samples, so that a slow note is smooth. Everything a part needs is
+//! made when it is compiled; a sample is plain arithmetic.
+
+use crate::tables::{self, Tables, Waveform, TABLE_MASK, TABLE_SIZE};
+use crate::value::{as_number, list, number, numbers, truth, word};
+use rmpv::Value;
+use std::sync::Arc;
+
+const MIDDLE_A: f64 = 69.0;
+const A_FREQUENCY: f64 = 440.0;
+const NARROWEST: f64 = 0.1;
+const WIDEST: f64 = 0.9;
+const FRAMES_PER_SECOND: f64 = 50.0;
+const NOISE_STEPS_PER_CYCLE: f64 = 16.0;
+const SID_NOISE_STEPS_PER_CYCLE: f64 = 64.0;
+const SWEEP_TICKS: f64 = 128.0;
+const CHIP_CLOCK: f64 = 131072.0;
+const LONGEST_PERIOD: i64 = 2047;
+const PERIODS: f64 = 2048.0;
+const SQUARE_PUSH: f64 = 1.8;
+
+/// A MIDI number's frequency in hertz, equal tempered from A 440.
+pub fn frequency_of(pitch: f64) -> f64 {
+    A_FREQUENCY * 2f64.powf((pitch - MIDDLE_A) / 12.0)
+}
+
+/// A table read at a fractional position, interpolated between its two nearest samples.
+#[inline]
+fn read(table: &[f32], position: f64) -> f64 {
+    let whole = position.floor();
+    let index = whole as usize & TABLE_MASK;
+    let next = (index + 1) & TABLE_MASK;
+    let fraction = position - whole;
+    let here = table[index] as f64;
+    here + (table[next] as f64 - here) * fraction
+}
+
+/// What one voice's oscillators keep from sample to sample.
+#[derive(Clone, Copy, Default)]
+pub struct OscillatorState {
+    pub phases: [f64; 3],
+    pub second_phase: f64,
+    pub period: i64,
+    pub ticks: i64,
+    pub band: usize,
+}
+
+/// One of Basic's oscillators: its tables, detune in cents and level.
+pub struct Partial {
+    tables: Tables,
+    cents: f64,
+    level: f64,
+}
+
+pub enum OscillatorPart {
+    Basic {
+        partials: Vec<Partial>,
+    },
+    Sid {
+        wave: SidWave,
+        saw: Tables,
+        triangle: Tables,
+        noise: Arc<Vec<f32>>,
+        pulse_width: f64,
+        pulse_sweep: f64,
+        interaction: Interaction,
+        interval: f64,
+        arpeggio: Vec<f64>,
+    },
+    Pocket {
+        tables: Option<Tables>,
+        noise: Option<Arc<Vec<f32>>>,
+        sweep_pace: i64,
+        sweep_up: bool,
+        sweep_step: i64,
+    },
+    Acid {
+        saw: Tables,
+        square: bool,
+        tuning: f64,
+    },
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum SidWave {
+    Triangle,
+    Saw,
+    Pulse,
+    Noise,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Interaction {
+    Off,
+    Ring,
+    Sync,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum ChipVoice {
+    Pulse,
+    Wave,
+    Noise,
+}
+
+/// The oscillators a spec describes, and their pitch envelope's depth in semitones.
+pub fn compiled(spec: &Value, rate: f64) -> (OscillatorPart, f64) {
+    let pitch_env = number(spec, "pitch_env", 0.0);
+    let part = match word(spec, "type", "basic") {
+        "sid" => sid(spec, rate),
+        "pocket" => pocket(spec, rate),
+        "acid" => OscillatorPart::Acid {
+            saw: tables::waveform_tables(Waveform::Saw, rate),
+            square: word(spec, "acid_wave", "saw") != "saw",
+            tuning: number(spec, "tuning", 0.0),
+        },
+        _ => basic(spec, rate),
+    };
+    (part, pitch_env)
+}
+
+fn basic(spec: &Value, rate: f64) -> OscillatorPart {
+    let mut partials = Vec::new();
+    for entry in list(spec, "oscillators") {
+        let Some(fields) = entry.as_array() else { continue };
+        let Some(waveform) = fields.first().and_then(Value::as_str).and_then(Waveform::named) else {
+            continue;
+        };
+        let cents = fields.get(1).and_then(as_number).unwrap_or(0.0);
+        let level = fields.get(2).and_then(as_number).unwrap_or(1.0);
+        partials.push(Partial {
+            tables: tables::waveform_tables(waveform, rate),
+            cents,
+            level,
+        });
+    }
+    OscillatorPart::Basic { partials }
+}
+
+fn sid(spec: &Value, rate: f64) -> OscillatorPart {
+    let wave = match word(spec, "wave", "pulse") {
+        "triangle" => SidWave::Triangle,
+        "saw" => SidWave::Saw,
+        "noise" => SidWave::Noise,
+        _ => SidWave::Pulse,
+    };
+    let interaction = match word(spec, "modulation", "off") {
+        "ring" => Interaction::Ring,
+        "sync" => Interaction::Sync,
+        _ => Interaction::Off,
+    };
+    OscillatorPart::Sid {
+        wave,
+        saw: tables::waveform_tables(Waveform::Saw, rate),
+        triangle: tables::waveform_tables(Waveform::Triangle, rate),
+        noise: tables::sid_noise(),
+        pulse_width: number(spec, "pulse_width", 0.5),
+        pulse_sweep: number(spec, "pulse_sweep", 0.0),
+        interaction,
+        interval: number(spec, "interval", 7.0),
+        arpeggio: numbers(spec, "arpeggio"),
+    }
+}
+
+fn pocket(spec: &Value, rate: f64) -> OscillatorPart {
+    let voice = match word(spec, "chip_voice", "pulse") {
+        "wave" => ChipVoice::Wave,
+        "noise" => ChipVoice::Noise,
+        _ => ChipVoice::Pulse,
+    };
+    let (tables, noise) = match voice {
+        ChipVoice::Pulse => (Some(tables::duty_tables(number(spec, "duty", 0.25), rate)), None),
+        ChipVoice::Wave => (Some(tables::shape_tables(word(spec, "wave_shape", "triangle"), rate)), None),
+        ChipVoice::Noise => (None, Some(tables::shift_register_noise(word(spec, "noise", "long") == "short"))),
+    };
+    OscillatorPart::Pocket {
+        tables,
+        noise,
+        sweep_pace: number(spec, "sweep_pace", 0.0) as i64,
+        sweep_up: truth(spec, "sweep_up", false),
+        sweep_step: number(spec, "sweep_step", 3.0) as i64,
+    }
+}
+
+/// What moves the oscillators at one sample: semitones of pitch, a share of the pulse's width, and the detune's spread.
+#[derive(Clone, Copy, Default)]
+pub struct Moves {
+    pub pitch: f64,
+    pub width: f64,
+    pub spread: f64,
+}
+
+impl OscillatorPart {
+    /// Ready a voice's state as its note begins.
+    pub fn begin(&self, state: &mut OscillatorState, pitch: f64) {
+        *state = OscillatorState::default();
+        if let OscillatorPart::Pocket { .. } = self {
+            state.period = ((PERIODS - CHIP_CLOCK / frequency_of(pitch)).round() as i64).clamp(0, LONGEST_PERIOD);
+        }
+    }
+
+    /// Choose the table band for the chunk ahead from the note's pitch, once a chunk.
+    pub fn choose_band(&self, state: &mut OscillatorState, pitch: f64) {
+        let frequency = match self {
+            OscillatorPart::Pocket { .. } => CHIP_CLOCK / (PERIODS - state.period as f64),
+            _ => frequency_of(pitch),
+        };
+        state.band = tables::band_of(frequency);
+    }
+
+    /// One sample of the note at a pitch, seconds into it, moved as given; true in the second place where the chip has
+    /// gone silent (the handheld's sweep past its register's top).
+    #[inline]
+    pub fn sample(&self, state: &mut OscillatorState, pitch: f64, seconds: f64, moves: Moves, rate: f64) -> (f64, bool) {
+        match self {
+            OscillatorPart::Basic { partials } => (basic_sample(partials, state, pitch, moves, rate), false),
+            OscillatorPart::Sid { .. } => (self.sid_sample(state, pitch, seconds, moves, rate), false),
+            OscillatorPart::Pocket { .. } => self.pocket_sample(state, seconds, moves, rate),
+            OscillatorPart::Acid { saw, square, tuning } => (acid_sample(saw, *square, state, pitch + tuning + moves.pitch, rate), false),
+        }
+    }
+
+    fn sid_sample(&self, state: &mut OscillatorState, pitch: f64, seconds: f64, moves: Moves, rate: f64) -> f64 {
+        let OscillatorPart::Sid {
+            wave,
+            saw,
+            triangle,
+            noise,
+            pulse_width,
+            pulse_sweep,
+            interaction,
+            interval,
+            arpeggio,
+        } = self
+        else {
+            return 0.0;
+        };
+        let mut base = pitch + moves.pitch;
+        if !arpeggio.is_empty() {
+            base += arpeggio[(seconds * FRAMES_PER_SECOND) as usize % arpeggio.len()];
+        }
+        let frequency = frequency_of(base);
+        let width = (sweep_width(*pulse_width, *pulse_sweep, seconds) + moves.width).clamp(NARROWEST, WIDEST);
+        if *interaction == Interaction::Sync {
+            let second = frequency_of(base + interval);
+            state.second_phase = (state.second_phase + second / rate) % 1.0;
+            let place = (state.second_phase * frequency / second) % 1.0;
+            return match wave {
+                SidWave::Triangle => 1.0 - 4.0 * (place - 0.5).abs(),
+                SidWave::Pulse => {
+                    if place < width {
+                        1.0
+                    } else {
+                        -1.0
+                    }
+                }
+                _ => 2.0 * place - 1.0,
+            };
+        }
+        let speed = frequency * TABLE_SIZE as f64 / rate;
+        let position = state.phases[0];
+        state.phases[0] = (position + speed) % TABLE_SIZE as f64;
+        let band = state.band;
+        let mut out = match wave {
+            SidWave::Saw => read(&saw[band], position),
+            SidWave::Triangle => read(&triangle[band], position),
+            SidWave::Noise => noise[(position * SID_NOISE_STEPS_PER_CYCLE / TABLE_SIZE as f64) as usize % noise.len()] as f64 + 0.0 * state.phases[1],
+            SidWave::Pulse => (read(&saw[band], position) - read(&saw[band], position + width * TABLE_SIZE as f64)) * 0.5,
+        };
+        if *wave == SidWave::Noise {
+            // Noise steps through the register as the cycle turns, so it must count whole cycles, not wrap at one.
+            state.phases[1] += speed * SID_NOISE_STEPS_PER_CYCLE / TABLE_SIZE as f64;
+            out = noise[state.phases[1] as usize % noise.len()] as f64;
+        }
+        if *interaction == Interaction::Ring {
+            state.second_phase = (state.second_phase + frequency_of(base + interval) / rate) % 1.0;
+            if state.second_phase >= 0.5 {
+                out = -out;
+            }
+        }
+        out
+    }
+
+    fn pocket_sample(&self, state: &mut OscillatorState, seconds: f64, moves: Moves, rate: f64) -> (f64, bool) {
+        let OscillatorPart::Pocket {
+            tables,
+            noise,
+            sweep_pace,
+            sweep_up,
+            sweep_step,
+            ..
+        } = self
+        else {
+            return (0.0, false);
+        };
+        let mut silent = false;
+        if *sweep_pace > 0 {
+            let due = (seconds * SWEEP_TICKS / *sweep_pace as f64) as i64;
+            while state.ticks < due {
+                let change = state.period >> sweep_step;
+                let period = if *sweep_up { state.period + change } else { state.period - change };
+                state.ticks += 1;
+                if period > LONGEST_PERIOD {
+                    silent = true;
+                    break;
+                }
+                state.period = period.max(0);
+            }
+        }
+        let frequency = CHIP_CLOCK / (PERIODS - state.period as f64) * 2f64.powf(moves.pitch / 12.0);
+        if let Some(noise) = noise {
+            state.phases[0] += frequency * NOISE_STEPS_PER_CYCLE / rate;
+            return (noise[state.phases[0] as usize % noise.len()] as f64, silent);
+        }
+        let Some(tables) = tables else { return (0.0, silent) };
+        let position = state.phases[0];
+        state.phases[0] = (position + frequency * TABLE_SIZE as f64 / rate) % TABLE_SIZE as f64;
+        (read(&tables[state.band], position), silent)
+    }
+}
+
+fn basic_sample(partials: &[Partial], state: &mut OscillatorState, pitch: f64, moves: Moves, rate: f64) -> f64 {
+    let mut out = 0.0;
+    let band = state.band;
+    for (place, partial) in partials.iter().enumerate().take(3) {
+        let octaves = (pitch + moves.pitch - MIDDLE_A) / 12.0 + partial.cents / 1200.0 * (1.0 + moves.spread);
+        let speed = A_FREQUENCY * 2f64.powf(octaves) * TABLE_SIZE as f64 / rate;
+        let position = state.phases[place];
+        state.phases[place] = (position + speed) % TABLE_SIZE as f64;
+        out += read(&partial.tables[band], position) * partial.level;
+    }
+    out
+}
+
+fn acid_sample(saw: &Tables, square: bool, state: &mut OscillatorState, pitch: f64, rate: f64) -> f64 {
+    let speed = frequency_of(pitch) * TABLE_SIZE as f64 / rate;
+    let position = state.phases[0];
+    state.phases[0] = (position + speed) % TABLE_SIZE as f64;
+    let table = &saw[state.band];
+    let out = read(table, position);
+    if !square {
+        return out;
+    }
+    let pulse = (out - read(table, position + TABLE_SIZE as f64 / 2.0)) * 0.5;
+    (pulse * SQUARE_PUSH).tanh() / SQUARE_PUSH.tanh()
+}
+
+/// The pulse's width a time into the note: the width moving from where it starts at the sweep's rate and bouncing back at
+/// the narrowest and widest, as players sweep the chip's width up and down.
+fn sweep_width(width: f64, sweep: f64, seconds: f64) -> f64 {
+    if sweep == 0.0 {
+        return width.clamp(NARROWEST, WIDEST);
+    }
+    let span = WIDEST - NARROWEST;
+    let mut moved = (width - NARROWEST + sweep * seconds).rem_euclid(2.0 * span);
+    if moved > span {
+        moved = 2.0 * span - moved;
+    }
+    NARROWEST + moved
+}

@@ -19,6 +19,7 @@ These come before every other rule, whatever the task, mode or tool permits.
   - The folders under `/private/tmp` whose names start with `claude`, where Claude Code keeps session scratch files.
   - `~/.claude/projects/-Users-michaeldehaan-Devel-llamatron/`, this project's session transcripts: read only, to recover
     what a summary dropped, such as an agreed mockup.
+  - `~/.llamatron/`, where the native synth daemon keeps its rotating logs: read only, to debug it (the user's allowance).
 - Status of work and lists of planned work MUST NOT go into source control: what is done, partly done or next, a queue, a plan's
   state, or a record of a conversation. They live in git-ignored files (`.claude/planning/QUEUE.md`, `.claude/planning/DESIGNS.md`,
   `.claude/planning/WIZARD_DESIGNS.md`, `.claude/planning/REFACTORING.md`, `.claude/planning/REFACTORING_LOG.md`). A commit
@@ -30,13 +31,14 @@ These come before every other rule, whatever the task, mode or tool permits.
 llamatron is a text UI for composing electronic music in MIDI, for Ableton Live and later other DAWs, inspired by Ableton's
 Session View, the Elektron Monomachine, the Sequentix Cirklon and software trackers. `docs/WHY_LLAMATRON.md` defines what it is
 for, and features are judged against it. The Python classes are internal, not an API, and change freely to suit the tracker.
-Dependencies: `mido`, `python-rtmidi`, `PyYAML`, `textual`, `reportlab` and `music21` (PDF export), `sounddevice` and `scipy` (the built-in synths), pinned in `requirements.txt`, which `pyproject.toml` reads. The package is
+Dependencies: `mido`, `python-rtmidi`, `PyYAML`, `textual`, `reportlab` and `music21` (PDF export), `sounddevice` and `scipy` (the built-in synths until the native daemon replaces them), `msgpack` (the daemon's messages), pinned in `requirements.txt`, which `pyproject.toml` reads. The package is
 `llamatron` in `src/llamatron`, and must be installed (below) before anything runs.
 
 ## Where everything is
 
 Imported, loaded every session: `.claude/rules/COMMUNICATION.md` (working with the user), `.claude/rules/STYLE.md` (code rules),
-`.claude/rules/TESTING.md` (tests), `.claude/rules/PRINCIPLES.md` (what decides a close call), `.claude/rules/UX.md` (how the text UI behaves).
+`.claude/rules/TESTING.md` (tests), `.claude/rules/PRINCIPLES.md` (what decides a close call), `.claude/rules/UX.md` (how the text UI behaves),
+`.claude/rules/RUST.md` (the native code).
 
 `.claude/` holds `rules/` (the rules, imported above, and `DOCS.md`), `reference/` (what tools generate or index),
 `planning/` (the ideas file and the git-ignored status files), `notes/` (Claude's research), and `features/`, `format/` and
@@ -122,6 +124,10 @@ keep the `version` they were saved with.
 ## How the tracker behaves
 
 @.claude/rules/UX.md
+
+## The native code
+
+@.claude/rules/RUST.md
 
 ## The references, read when needed
 

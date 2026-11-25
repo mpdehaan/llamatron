@@ -31,3 +31,5 @@ examples/**/*.wav
 .compare_screens/
 .compare_screens_again/
 .sample_profiles/
+# What cargo builds from the synth daemon's source, rebuilt by internal_tools/build_synth.sh.
+native/synth/target/

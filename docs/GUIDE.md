@@ -26,6 +26,7 @@ draws and scenes.
 | [Installing](INSTALLING.md) | Installing llamatron, and why and when to install FluidSynth. |
 | [FluidSynth](FLUIDSYNTH.md) | The software synthesizer that plays every demo with no setup: installing it, and how the tracker uses it. |
 | [Recording](INSTALLING_RECORDING.md) | What recording videos needs installed and set up: BlackHole, a Multi-Output Device, permissions and Xcode's tools. |
+| [Building the Synth Engine](BUILDING_THE_SYNTH.md) | Building the program that plays the built-in synths, with one script that offers to install what it needs. |
 
 ### Getting Started
 
@@ -200,6 +201,7 @@ generator has a page of its own, grouped by what it changes.
 | [User Scripts](USER_SCRIPTS.md) | Every script in `user_scripts/`, by category, with an example of running each and its parameters. |
 | [Recording](RECORDING.md) | Videos of a set playing, by itself or performed, one at a time or every demo in a batch. |
 | [Architecture](ARCHITECTURE.md) | How the code is put together, for anyone reading it, with a link to it on GitHub. |
+| [Synth Engine](SYNTH_ENGINE.md) | How the built-in synths' engine works inside, its messages, threads, parts and safety, for anyone changing it. |
 
 [![llamatron's visualizers, on
 YouTube](https://img.youtube.com/vi/yt9NffJ1HF4/hqdefault.jpg)](https://www.youtube.com/watch?v=yt9NffJ1HF4)
