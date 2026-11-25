@@ -94,7 +94,7 @@ class TestFluidSynth(unittest.TestCase):
             started = FakeProcess() if process is None else process
             self.processes.append((words, started))
             return started
-        return FluidSynth(port_names=ports, start_process=start, now=lambda: self.time, sleep=self.sleep)
+        return FluidSynth(port_names=ports, start_process=start, now=lambda: self.time, sleep=self.sleep, in_daemon=lambda: False)
 
     def test_it_waits_until_its_port_is_listed_and_starts_only_once(self):
         ports = Ports()

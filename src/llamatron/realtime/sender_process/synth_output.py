@@ -19,6 +19,7 @@ from llamatron.realtime.synth_process import engine as synth_engine
 
 # The controllers that end every note of a channel: all sound off cuts at once, all notes off releases.
 ENDING_CONTROLS = (sender_engine.ALL_NOTES_OFF, sender_engine.ALL_SOUND_OFF)
+MIDI_BYTES = 3
 
 
 class SynthOutput(ScheduledOutput):
@@ -65,3 +66,32 @@ def synth_note(*, data, when, first):
     if kind == timeline.CONTROL_CHANGE and data[1] == timeline.SCENE_STARTED:
         return (when, synth_engine.SCENE_STARTED, instrument, 0, 0)
     return None
+
+
+class FluidSynthDaemonOutput(ScheduledOutput):
+    """FluidSynth's port where the synth daemon plays FluidSynth itself: each MIDI message goes to the daemon with its moment
+    less the daemon's delay, as a built-in port's notes do, so that FluidSynth, the built-in synths and MIDI land together."""
+
+    __slots__ = ('_synthesis',)
+
+    def __init__(self, *, synthesis):
+        self._synthesis = synthesis
+
+    def send(self, data):
+        self.send_at(data=data, at=time.perf_counter())
+
+    def send_at(self, *, data, at):
+        self._synthesis.midi([(at - self._synthesis.delay, *padded(data))])
+
+    def flush(self):
+        """Take back every message not yet heard."""
+        self._synthesis.forget_midi(after=time.perf_counter() - self._synthesis.delay)
+
+    def close(self):
+        self._synthesis.close()
+
+
+def padded(data):
+    """Return a MIDI message's three bytes, a two-byte message, such as a program change, given a zero third."""
+    found = list(data)[:MIDI_BYTES]
+    return found + [0] * (MIDI_BYTES - len(found))

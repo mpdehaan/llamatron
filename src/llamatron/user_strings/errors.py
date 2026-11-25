@@ -398,6 +398,7 @@ ERR_DEVICE_NOT_CONNECTED = 'The device of instrument ({instrument}), ({device}),
 ERR_SILENT_INSTRUMENTS_TITLE = 'Silent instruments'
 ERR_FLUIDSYNTH_WILL_NOT_SOUND = 'Since FluidSynth is not installed, instruments using FluidSynth will not sound. Run sh user_scripts/install_fluidsynth.sh in the llamatron folder to install it.'
 ERR_DEVICE_WILL_NOT_SOUND = 'The device of instrument ({instrument}), ({device}), is not connected, so it will not sound. The set keeps it, and the Instruments page can choose another.'
+ERR_FLUIDSYNTH_DISABLED = 'Some tracks play through FluidSynth, which NO_FLUIDSYNTH=1 turns off. Start llamatron without it to play them.'
 ERR_FLUIDSYNTH_NOT_INSTALLED = 'Some tracks play through FluidSynth, which is not installed. Run sh user_scripts/install_fluidsynth.sh in the llamatron folder to install it.'
 # interface/tracker/pattern_preview.py: why Listen cannot play a pattern through the song's Preview instrument, on the status line.
 ERR_NOT_A_NOTE_NAME = 'note must be a letter from A to G, # or b where wanted, and an octave, such as C3, got {text}'

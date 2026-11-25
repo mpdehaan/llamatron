@@ -38,9 +38,17 @@ again does nothing that's already done.
   FluidSynth; [Instruments](INSTRUMENTS.md) describes the setting, its
   automatic channels and its General MIDI sound. Every demo's instruments play
   this way.
-- **Starting and stopping.** The tracker starts FluidSynth itself the first
-  time something plays through it, waits until it is ready so that no note is
-  lost, and ends it when the tracker quits, however it quits.
+- **Starting and stopping.** Where the
+  [synth engine](BUILDING_THE_SYNTH.md) is built and llamatron is started with
+  `LLAMATRON_FLUIDSYNTH_IN_DAEMON=1`, which is new and is to become the usual
+  way, the engine plays FluidSynth itself,
+  loading FluidSynth's library and the SoundFont as it starts, so that
+  FluidSynth and the built-in instruments share one sound stream and land
+  together to the sample. Otherwise the tracker starts FluidSynth as a program
+  of its own the first time something plays through it, waits until it is
+  ready so that no note is lost, and ends it when the tracker quits, however
+  it quits. Starting llamatron with `LLAMATRON_FLUIDSYNTH_PROCESS=1` keeps
+  FluidSynth's own program even where the synth engine is built.
 - **Where the tracker looks.** The tracker looks for FluidSynth in
   `/opt/homebrew`, then `/usr/local`, then the folders on your PATH, and for
   the SoundFont in `~/soundfonts`, where the install script puts them.
@@ -49,6 +57,14 @@ again does nothing that's already done.
 - **When FluidSynth isn't installed.** Opening a set whose tracks play through
   FluidSynth says so in a dialog, and playing tells you to run the install
   script.
+- **Turning FluidSynth off.** On a computer where FluidSynth does not work,
+  starting llamatron with `NO_FLUIDSYNTH=1` turns it off, installed or not:
+  nothing plays or exports through it, and playing a track through it says
+  so.
+
+```
+NO_FLUIDSYNTH=1 ./llamatron.sh
+```
 
 ## WAV Files
 

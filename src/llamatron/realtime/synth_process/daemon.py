@@ -45,6 +45,11 @@ NOTES = 'notes'
 SILENCE = 'silence'
 CLOSE = 'close'
 RENDER_MESSAGE = 'render'
+SOUNDFONT = 'soundfont'
+SOUNDFONT_READY = 'soundfont_ready'
+MIDI = 'midi'
+FORGET_MIDI = 'forget_midi'
+SOUNDFONT_SECONDS = 15.0
 LENGTH = struct.Struct('>I')
 CLOSE_TIMEOUT_SECONDS = 2.0
 DEFAULT_BLOCK = 128
@@ -97,7 +102,7 @@ class SynthDaemon:
     """The playing daemon, behind the calls of the Python Synthesis Process: its process and channel, the rate and delay its
     stream reported, its last load report and its statistics once closed."""
 
-    __slots__ = ('_block', '_device', '_shared', '_process', '_channel', '_reader', '_closed', 'rate', 'delay', 'load', 'statistics')
+    __slots__ = ('_block', '_device', '_shared', '_process', '_channel', '_reader', '_closed', '_answered', '_answer', 'rate', 'delay', 'load', 'statistics')
 
     def __init__(self, *, block=DEFAULT_BLOCK, device=None, shared=None):
         """shared, a SharedLoad or None, is where each load report is written for the tracker to show."""
@@ -108,6 +113,9 @@ class SynthDaemon:
         self._channel = None
         self._reader = None
         self._closed = threading.Event()
+        # The daemon's answer to loading a SoundFont, which the reader thread hands over.
+        self._answered = threading.Event()
+        self._answer = None
         self.rate = None
         self.delay = 0.0
         self.load = None
@@ -150,6 +158,24 @@ class SynthDaemon:
     def silence(self):
         self._send([SILENCE])
 
+    def load_soundfont(self, *, library, soundfont, gain):
+        """Have the daemon play FluidSynth from its library with a SoundFont at a gain, waiting until it is loaded; raise
+        SynthesisNotStarted with why it could not."""
+        self._answered.clear()
+        self._send([SOUNDFONT, library, soundfont, gain])
+        if not self._answered.wait(SOUNDFONT_SECONDS):
+            raise SynthesisNotStarted(errors.ERR_FLUIDSYNTH_DID_NOT_START.format(seconds=SOUNDFONT_SECONDS))
+        if self._answer[0] != SOUNDFONT_READY:
+            raise SynthesisNotStarted(errors.ERR_SYNTHESIS_FAILED.format(kind=self._answer[1], problem=self._answer[2]))
+
+    def midi(self, messages):
+        """Send FluidSynth MIDI messages, each (perf_counter seconds, status, first data byte, second data byte)."""
+        self._send([MIDI, [list(each) for each in messages]])
+
+    def forget_midi(self, *, after):
+        """Take back FluidSynth's MIDI messages still to come from a perf_counter moment on, as a MIDI port's flush does."""
+        self._send([FORGET_MIDI, after])
+
     def close(self):
         """End the daemon and wait for it, killing it if it hangs, and return its statistics, or None."""
         if self._process is None:
@@ -183,6 +209,9 @@ class SynthDaemon:
                 self._take_load(message[1])
             elif message[0] == STATISTICS:
                 self.statistics = message[1]
+            elif message[0] in (SOUNDFONT_READY, FAILED):
+                self._answer = message
+                self._answered.set()
         self._closed.set()
 
     def _take_load(self, report):

@@ -6,7 +6,7 @@
 Process and the error of its not starting, the player's two ways of running, what a score is made from and what is launched,
 the route of a track's events, the clock, FluidSynth, the ports this computer lists, and whether built-in sound may play here."""
 
-from llamatron.realtime.devices.fluidsynth import FluidSynth, FluidSynthInstallation, installation, installed
+from llamatron.realtime.devices.fluidsynth import FluidSynth, FluidSynthInstallation, installation, installed, is_disabled as fluidsynth_disabled, plays_in_daemon as fluidsynth_in_daemon
 from llamatron.realtime.devices.ports import output_port_names
 from llamatron.realtime.render_process.playback import LocalPlayback, PlayRequest, Wanted
 from llamatron.realtime.render_process.playback_process import PlaybackProcess
@@ -19,6 +19,8 @@ from llamatron.realtime.synth_process.process import synthesis_available
 # Everything the tracker may take from here.
 __all__ = [
     'built_in_renderer',
+    'fluidsynth_disabled',
+    'fluidsynth_in_daemon',
     'FluidSynth', 'FluidSynthInstallation', 'installation', 'installed', 'output_port_names', 'LocalPlayback', 'PlayRequest', 'Wanted',
     'PlaybackProcess', 'Route', 'MonotonicClock', 'RealtimeMIDISenderProcess', 'SenderNotStarted',
     'synthesis_available',

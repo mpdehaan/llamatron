@@ -38,7 +38,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.realtime import realtime_names
-from llamatron.realtime.playback_service import built_in_renderer as playback_built_in_renderer, FluidSynth, installation, installed, LocalPlayback, MonotonicClock, output_port_names, PlaybackProcess, PlayRequest, RealtimeMIDISenderProcess, Route, SenderNotStarted, synthesis_available, Wanted
+from llamatron.realtime.playback_service import built_in_renderer as playback_built_in_renderer, fluidsynth_disabled, fluidsynth_in_daemon, FluidSynth, installation, installed, LocalPlayback, MonotonicClock, output_port_names, PlaybackProcess, PlayRequest, RealtimeMIDISenderProcess, Route, SenderNotStarted, synthesis_available, Wanted
 from llamatron.user_strings import errors, messages
 
 # How often the player plans ahead and the page redraws while something plays.
@@ -253,6 +253,8 @@ class Transport:
         missing = self.missing_devices()
         if missing:
             return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_DEVICE_NOT_CONNECTED.format(instrument=name, device=device) for name, device in missing])
+        if self.uses_fluidsynth() and fluidsynth_disabled():
+            return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_FLUIDSYNTH_DISABLED])
         if self.uses_fluidsynth() and not self._fluidsynth_installed():
             return Problem(title=errors.ERR_CANT_PLAY_TITLE, lines=[errors.ERR_FLUIDSYNTH_NOT_INSTALLED])
         if self.uses_built_in_sound() and not synthesis_available():
@@ -388,6 +390,9 @@ class Transport:
                 if self._fluidsynth_installed():
                     self._fluidsynth.ensure_running()
                 ports = output_port_names()
+                if self._fluidsynth_installed() and fluidsynth_in_daemon():
+                    # FluidSynth inside the synth daemon has no port of the computer's, but the sender opens its port all the same.
+                    ports = [*ports, realtime_names.FLUIDSYNTH_PORT]
                 if ports:
                     self._playback.use_ports(self._ports_ready(sorted(set(ports))))
             except SenderNotStarted:

@@ -20,6 +20,7 @@ import contextlib
 import ctypes
 import gc
 import multiprocessing
+import os
 import struct
 import sys
 import time
@@ -32,7 +33,7 @@ from llamatron.realtime.sender_process.coremidi import CoreMidiOutput
 from llamatron.realtime.sender_process.engine import MonotonicClock, PlaybackEngine
 from llamatron.realtime.sender_process.outputs import RecordingOutput, RtMidiOutput, ScheduledRecordingOutput
 from llamatron.realtime.sender_process.scheduled_engine import ScheduledPlaybackEngine
-from llamatron.realtime.sender_process.synth_output import SynthOutput
+from llamatron.realtime.sender_process.synth_output import FluidSynthDaemonOutput, SynthOutput
 from llamatron.realtime.synth_process import daemon as synth_daemon
 from llamatron.realtime.synth_process.daemon import SynthDaemon
 from llamatron.realtime.synth_process.load import SharedLoad
@@ -241,6 +242,8 @@ def engine_for(*, driver, ports, recording, synthesis=None):
                 outputs[name] = ScheduledRecordingOutput(clock=clock)
             elif is_built_in_port(name):
                 outputs[name] = SynthOutput(synthesis=synthesis, group=built_in_group(name))
+            elif name == realtime_names.FLUIDSYNTH_PORT and plays_fluidsynth(synthesis):
+                outputs[name] = FluidSynthDaemonOutput(synthesis=synthesis)
             else:
                 outputs[name] = CoreMidiOutput(name=name)
         return ScheduledPlaybackEngine(clock=clock, outputs=outputs)
@@ -250,6 +253,8 @@ def engine_for(*, driver, ports, recording, synthesis=None):
             outputs[name] = RecordingOutput()
         elif is_built_in_port(name):
             outputs[name] = SynthOutput(synthesis=synthesis, group=built_in_group(name))
+        elif name == realtime_names.FLUIDSYNTH_PORT and plays_fluidsynth(synthesis):
+            outputs[name] = FluidSynthDaemonOutput(synthesis=synthesis)
         else:
             outputs[name] = RtMidiOutput(name=name)
     return PlaybackEngine(clock=clock, outputs=outputs)
@@ -267,14 +272,30 @@ def built_in_group(name):
 
 def started_synthesis(*, ports, recording, load=None):
     """Return the Synthesis Process the built-in ports among the ports play through, started, or None where there are none
-    or the sender records; raise SynthesisNotStarted with why it could not start."""
-    if recording or not any(is_built_in_port(name) for name in ports):
+    or the sender records; where the synth daemon plays FluidSynth and FluidSynth's port is among them, the daemon, started
+    with the SoundFont loaded. Raise SynthesisNotStarted with why it could not start."""
+    # Imported here, since the FluidSynth module imports this one for SenderNotStarted.
+    from llamatron.realtime.devices import fluidsynth as fluidsynth_device
+    if recording:
+        return None
+    built_in = any(is_built_in_port(name) for name in ports)
+    fluid = realtime_names.FLUIDSYNTH_PORT in ports and fluidsynth_device.plays_in_daemon()
+    if not built_in and not fluid:
         return None
     synthesis = SynthesisProcess()
     if synth_daemon.uses_daemon():
-        synthesis = SynthDaemon(shared=load)
+        synthesis = SynthDaemon(shared=load, device=os.environ.get(fluidsynth_device.AUDIO_DEVICE_VARIABLE) or None)
     synthesis.start()
+    if fluid:
+        library = fluidsynth_device.library_path()
+        synthesis.load_soundfont(library=library, soundfont=fluidsynth_device.soundfont_path(), gain=float(fluidsynth_device.GAIN))
     return synthesis
+
+
+def plays_fluidsynth(synthesis):
+    """Return whether a synthesis plays FluidSynth: the synth daemon does, where FluidSynth plays inside it."""
+    from llamatron.realtime.devices import fluidsynth as fluidsynth_device
+    return isinstance(synthesis, SynthDaemon) and fluidsynth_device.plays_in_daemon()
 
 
 @contextlib.contextmanager
