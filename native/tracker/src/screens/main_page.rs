@@ -463,6 +463,9 @@ impl Page for MainPage {
     }
 
     fn duration(&self, app: &App) -> Duration {
+        if let Some(playing) = app.transport.playing_clock() {
+            return Duration::Clock(playing);
+        }
         let document = &app.document;
         Duration::Seconds(SongRealizer::new(document.get_setlist(), document.song(), None).song_seconds())
     }

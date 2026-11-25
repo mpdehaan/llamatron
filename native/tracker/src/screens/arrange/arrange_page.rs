@@ -103,7 +103,7 @@ pub fn shown_name(name: &str) -> String {
     format!("{cut}{}", marks::MSG_NAME_CUT)
 }
 
-fn clip_text(clip: &ClipSlot) -> String {
+fn clip_text(clip: &ClipSlot, repeats_left: Option<i64>) -> String {
     let name = clip.get_display_name();
     let mut shown = String::new();
     if clip.get_direction().is_some() {
@@ -119,7 +119,10 @@ fn clip_text(clip: &ClipSlot) -> String {
         shown.push_str(marks::MSG_LOOP_MARK);
     }
     if clip.get_repeat() > DEFAULT_REPEAT {
-        shown.push_str(&named(marks::MSG_REPEAT_MARK, &[("repeat", clip.get_repeat().into())]));
+        shown.push_str(&named(
+            marks::MSG_REPEAT_MARK,
+            &[("repeat", repeats_left.unwrap_or_else(|| clip.get_repeat()).into())],
+        ));
     }
     if shown.is_empty() {
         return name;
@@ -741,11 +744,13 @@ impl ArrangePage {
             line.push(dividers.clone());
         }
         if Self::real_time_on(app) {
-            let button = named(marks::MSG_SONG_BUTTON, &[("mark", marks::MSG_PLAY_MARK.into())]);
+            let playing = app.transport.is_playing();
+            let mark = if playing { marks::MSG_STOP_MARK } else { marks::MSG_PLAY_MARK };
+            let button = named(marks::MSG_SONG_BUTTON, &[("mark", mark.into())]);
             lines[1].push(Piece::Text {
                 column: SCENE_LABEL_COLUMN,
                 text: button,
-                kind: Kind::Faint,
+                kind: if playing { Kind::Playing } else { Kind::Faint },
             });
         }
         for place in first..last {
@@ -764,6 +769,13 @@ impl ArrangePage {
                     text: fit(&format!(" {shown}"), room),
                     kind: Kind::Name,
                 });
+                if Self::real_time_on(app) && app.transport.is_track_sounding(name) {
+                    lines[1].push(Piece::Text {
+                        column: column + width - 1,
+                        text: marks::MSG_SOUNDING_MARK.to_string(),
+                        kind: Kind::Sounding,
+                    });
+                }
                 let cell = CellPlace::Track(name.clone());
                 if let (Some(layout), true) = (layout, self.cell_open(app, &cell)) {
                     let here = self.on_header() && !self.on_corner() && self.track_place() == place;
@@ -818,14 +830,18 @@ impl ArrangePage {
         };
         lines[2].push(Piece::Text {
             column: SCENE_BAR_COLUMN,
-            text: scene_bar.draw(lengths.scene_seconds(index), lengths.longest_scene_seconds()),
+            text: scene_bar.draw_played(
+                lengths.scene_seconds(index),
+                lengths.longest_scene_seconds(),
+                if Self::real_time_on(app) { app.transport.scene_elapsed(index) } else { None },
+            ),
             kind: Kind::Plain,
         });
         let real_time = Self::real_time_on(app);
         if real_time {
             lines[2].push(Piece::PlayButton {
                 column: SCENE_LABEL_COLUMN,
-                playing: false,
+                playing: app.transport.playing_scenes().contains(&index),
             });
         }
         for (place, track) in tracks.iter().enumerate().take(last).skip(first) {
@@ -848,7 +864,10 @@ impl ArrangePage {
             };
             let cell = CellPlace::Clip(index, track.clone());
             let open = layout.is_some() && self.cell_open(app, &cell);
-            let shown = if open { detailed_clip_text(clip) } else { clip_text(clip) };
+            let playing = real_time && app.transport.is_clip_playing(index, track);
+            let repeats_left = if playing { app.transport.repeats_left(index, track) } else { None };
+            let clip_played = if playing { app.transport.clip_elapsed(index, track) } else { None };
+            let shown = if open { detailed_clip_text(clip) } else { clip_text(clip, repeats_left) };
             lines[1].push(Piece::Text {
                 column,
                 text: fit(&format!(" {shown}"), width),
@@ -856,7 +875,7 @@ impl ArrangePage {
             });
             let total = lengths.scene_play_seconds(index);
             let (bar, bar_column) = if real_time {
-                lines[2].push(Piece::PlayButton { column, playing: false });
+                lines[2].push(Piece::PlayButton { column, playing });
                 (
                     LengthBar {
                         width: width - 2 - PLAY_BUTTON_WIDTH,
@@ -874,9 +893,12 @@ impl ArrangePage {
                 )
             };
             let text = if clip.loops() {
-                bar.full()
+                match clip_played {
+                    None => bar.full(),
+                    Some(_) => bar.draw_played(total, total, clip_played),
+                }
             } else {
-                bar.draw(lengths.clip_seconds(index, track), total)
+                bar.draw_played(lengths.clip_seconds(index, track), total, clip_played)
             };
             lines[2].push(Piece::Text {
                 column: bar_column,
@@ -1217,6 +1239,9 @@ impl Page for ArrangePage {
     }
 
     fn duration(&self, app: &App) -> Duration {
+        if let Some(playing) = app.transport.playing_clock() {
+            return Duration::Clock(playing);
+        }
         Duration::Seconds(Lengths::of(app.document.get_setlist(), app.document.song()).song_seconds())
     }
 }

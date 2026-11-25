@@ -17,6 +17,8 @@ use std::path::Path;
 
 /// How long the loop waits for a key before planning real-time playback ahead and drawing again.
 const TICK: std::time::Duration = std::time::Duration::from_millis(30);
+/// How often the screen is drawn again while something plays, for its lights.
+const LIGHTS: std::time::Duration = std::time::Duration::from_millis(100);
 
 /// Open the tracker on a set's file, or on a new set where none is named, and run it until it quits.
 pub fn run(path: Option<&Path>) -> Result<(), String> {
@@ -36,12 +38,16 @@ pub fn run(path: Option<&Path>) -> Result<(), String> {
 fn run_keys(tracker: &mut Tracker) -> Result<(), String> {
     let mut out = io::stdout();
     let mut changed = true;
+    let mut drawn = std::time::Instant::now();
     loop {
-        // The screen is drawn after each key, and while something plays at each tick, so that its lights move.
-        if changed || tracker.app.transport.is_playing() {
+        // The screen is drawn after each key, and while something plays every LIGHTS so that its lights move, less often
+        // than the ticks, which keep the player ahead.
+        let lights_due = tracker.app.transport.is_playing() && drawn.elapsed() >= LIGHTS;
+        if changed || lights_due {
             let (width, height) = terminal::size().map_err(|error| error.to_string())?;
             draw(&mut out, tracker, width as usize, height as usize).map_err(|error| error.to_string())?;
             changed = false;
+            drawn = std::time::Instant::now();
         }
         // While waiting for a key, real-time playback is planned ahead a tick at a time.
         tracker.app.transport.tick();

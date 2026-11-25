@@ -166,6 +166,8 @@ fn draw_frame(canvases: &mut [Canvas], frame: &CellFrame) {
 
 const FULL_BLOCK: char = '█';
 const HATCHING: char = '░';
+/// What of a playing bar is still to play.
+const TO_PLAY: char = '▒';
 const PARTIAL_BLOCKS: [char; 7] = ['▏', '▎', '▍', '▌', '▋', '▊', '▉'];
 const EIGHTHS: usize = 8;
 
@@ -181,21 +183,38 @@ impl LengthBar {
     }
 
     pub fn draw(&self, amount: Option<f64>, total: Option<f64>) -> String {
+        self.draw_played(amount, total, None)
+    }
+
+    /// The bar for an amount of a total; with played, the seconds of the amount played so far, a read head: full up to
+    /// where play has reached, and the rest of the amount shaded, so that a playing bar fills from the left.
+    pub fn draw_played(&self, amount: Option<f64>, total: Option<f64>, played: Option<f64>) -> String {
         let (Some(amount), Some(total)) = (amount, total) else {
             return " ".repeat(self.width);
         };
         if total == 0.0 {
             return " ".repeat(self.width);
         }
+        let mut bar = self.filled(amount, total);
+        if let Some(played) = played {
+            let head = self.filled(played.max(0.0).min(amount), total);
+            let shaded = bar.chars().count() - head.chars().count();
+            bar = format!("{head}{}", TO_PLAY.to_string().repeat(shaded));
+        }
+        let filled = bar.chars().count();
+        let rest = if self.hatched { HATCHING } else { ' ' };
+        bar.push_str(&rest.to_string().repeat(self.width - filled));
+        bar
+    }
+
+    /// The blocks for an amount of the total, the last one partial.
+    fn filled(&self, amount: f64, total: f64) -> String {
         let eighths = ((amount * self.width as f64 * EIGHTHS as f64 / total).round_ties_even() as usize).min(self.width * EIGHTHS);
         let (whole, part) = (eighths / EIGHTHS, eighths % EIGHTHS);
         let mut bar = FULL_BLOCK.to_string().repeat(whole);
         if part > 0 {
             bar.push(PARTIAL_BLOCKS[part - 1]);
         }
-        let filled = bar.chars().count();
-        let rest = if self.hatched { HATCHING } else { ' ' };
-        bar.push_str(&rest.to_string().repeat(self.width - filled));
         bar
     }
 }

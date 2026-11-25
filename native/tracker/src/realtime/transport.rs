@@ -239,6 +239,17 @@ impl Transport {
         self.asking(|player, now| player.song_position(now)).flatten()
     }
 
+    /// Where the song is and how long it is while it plays, such as ▶ 0:22 / 3:00, or None while it doesn't.
+    pub fn playing_clock(&self) -> Option<String> {
+        let position = self.song_position()?;
+        let at = crate::page::clock(Some(position));
+        let total = crate::page::clock(self.song_seconds());
+        Some(named(
+            llamatron_strings::marks::MSG_PLAYING_CLOCK,
+            &[("at", at.as_str().into()), ("total", total.as_str().into())],
+        ))
+    }
+
     /// How long the song playing lasts, in seconds.
     pub fn song_seconds(&self) -> Option<f64> {
         self.player.as_ref().map(|player| player.get_score().song_seconds())
