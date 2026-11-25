@@ -111,6 +111,7 @@ impl PatternPreview {
         let route = pattern_route(document, pattern);
         self.transport
             .play_routed(&copy, PREVIEW_SCENE, vec![track.clone()], vec![(track, route)], true)?;
+        self.transport.follows_revision(document.get_revision());
         self.playing = Some(Previewing::Pattern(pattern.to_string()));
         self.scale = scale;
         Ok(())
@@ -120,12 +121,11 @@ impl PatternPreview {
     /// drum kit for drums, as the clip page listens while Real Time is off.
     pub fn play_clip_of_song(&mut self, document: &Document, index: usize, track: &str) -> Result<(), String> {
         self.stop();
-        let copy = Document::new(document.get_setlist().clone(), None);
-        let mut copy = copy;
-        copy.select_song(document.get_current_song_name());
+        let copy = song_copy(document);
         let route = clip_route(document, index, track);
         self.transport
             .play_routed(&copy, index, vec![track.to_string()], vec![(track.to_string(), route)], true)?;
+        self.transport.follows_revision(document.get_revision());
         self.playing = Some(Previewing::Clip(index, track.to_string()));
         self.scale = None;
         Ok(())
@@ -137,9 +137,35 @@ impl PatternPreview {
         self.playing = None;
     }
 
-    /// Plan ahead.
-    pub fn tick(&mut self) {
-        self.transport.tick();
+    /// Hear an edit to the set made while the preview plays, once it has settled, by playing a copy made afresh; and plan
+    /// ahead. What the status line says of an edit that cannot be heard, if anything.
+    pub fn tick(&mut self, document: &Document) -> Option<String> {
+        let revision = document.get_revision();
+        let mut said = None;
+        if self.transport.is_playing() && self.transport.edit_settled(revision) {
+            said = match self.playing.clone() {
+                Some(Previewing::Pattern(pattern)) => self.follow_pattern(document, &pattern, revision),
+                Some(Previewing::Clip(index, track)) => {
+                    let copy = song_copy(document);
+                    let route = clip_route(document, index, &track);
+                    self.transport.follow(&copy, revision, vec![(track, route)])
+                }
+                None => None,
+            };
+        }
+        self.transport.plan_ahead();
+        said
+    }
+
+    /// Hear the pattern as an edit left it, or stop where the edit took it away.
+    fn follow_pattern(&mut self, document: &Document, pattern: &str, revision: u64) -> Option<String> {
+        let Ok((copy, track, scale)) = pattern_copy(document, pattern) else {
+            self.stop();
+            return None;
+        };
+        self.scale = scale;
+        let route = pattern_route(document, pattern);
+        self.transport.follow(&copy, revision, vec![(track, route)])
     }
 
     pub fn is_playing(&self) -> bool {
@@ -151,6 +177,13 @@ impl PatternPreview {
         self.transport.close();
         self.playing = None;
     }
+}
+
+/// A copy of the set, its current song the document's.
+fn song_copy(document: &Document) -> Document {
+    let mut copy = Document::new(document.get_setlist().clone(), None);
+    copy.select_song(document.get_current_song_name());
+    copy
 }
 
 /// A copy of the set whose current song holds one scene, the pattern's clip on a track made for it, for as many passes

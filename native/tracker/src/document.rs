@@ -25,6 +25,9 @@ pub struct Document {
     saved: Option<Data>,
     /// Whether the next change continues the step before rather than making one of its own.
     continuing: bool,
+    /// A count moved by every change to the set or to the current song, which real-time playback follows to hear an edit
+    /// made while playing.
+    revision: u64,
 }
 
 /// The kinds of generator a file's data says the Generators page shows open, only the plugins' kinds.
@@ -64,6 +67,7 @@ impl Document {
             clean,
             saved,
             continuing: false,
+            revision: 0,
         }
     }
 
@@ -198,6 +202,7 @@ impl Document {
     pub fn select_song(&mut self, name: &str) {
         if self.setlist.get_song(name).is_some() {
             self.current = name.to_string();
+            self.revision += 1;
         }
     }
 
@@ -252,10 +257,16 @@ impl Document {
         }
     }
 
+    /// The count every change to the set or the current song moves.
+    pub fn get_revision(&self) -> u64 {
+        self.revision
+    }
+
     /// Make one change to the set, and note that it needs saving.
     pub fn change_set(&mut self, change: impl FnOnce(&mut Setlist)) {
         change(&mut self.setlist);
         self.dirty = true;
+        self.revision += 1;
     }
 
     fn snapshot(&self) -> Snapshot {
@@ -303,6 +314,7 @@ impl Document {
         if let Ok(setlist) = Setlist::from_data(&arriving.data) {
             self.setlist = setlist;
         }
+        self.revision += 1;
         self.current = if self.setlist.get_song(&arriving.song).is_some() {
             arriving.song
         } else {

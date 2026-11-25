@@ -591,6 +591,54 @@ def played_lines(*, song, score, player_class):
     return lines
 
 
+def live_edit_lines(*, song, seed):
+    """Return what a player hands its sender for a song played from the top and edited while it plays, each edit's score
+    rendered afresh with the play's seed and taken at a live response of its own: two seconds in, the tempo set to
+    LIVE_EDIT_TEMPO at once; a second later a scene inserted at the top, at the next bar; a second later the last track
+    removed, where there are two or more, at the clip's restart; then two seconds more."""
+    from llamatron.model.schema.file_format import Section
+    from llamatron.realtime.render_process.player import Player
+    from llamatron.realtime.render_process.score import Score
+    lines = []
+    if not song.get_scenes():
+        return lines
+    sender = RecordingSender(lines)
+    now = [0.0]
+    player = Player(score=Score(song=song, routes=made_up_routes(song.get_track_names()), seed=seed), sender=sender, now=lambda: now[0])
+    player.play_song()
+
+    def run(seconds):
+        for _ in range(round(seconds / PLAYER_STEP)):
+            now[0] += PLAYER_STEP
+            player.tick()
+
+    def edited(responsiveness, scene_map, track_map):
+        lines.append('edit {}'.format(responsiveness))
+        score = Score(song=song, routes=made_up_routes(song.get_track_names()), seed=seed)
+        player.update_score(score=score, responsiveness=responsiveness, scene_map=scene_map, track_map=track_map)
+
+    run(LIVE_EDIT_FIRST_SECONDS)
+    scenes = range(len(song.get_scenes()))
+    tracks = list(song.get_track_names())
+    song.set_tempo(LIVE_EDIT_TEMPO)
+    edited('asap', {place: place for place in scenes}, {name: name for name in tracks})
+    run(LIVE_EDIT_GAP_SECONDS)
+    song.add_new_scene(index=0, name=LIVE_EDIT_SCENE)
+    edited('next_bar', {place: place + 1 for place in scenes}, {name: name for name in tracks})
+    run(LIVE_EDIT_GAP_SECONDS)
+    if len(tracks) > 1:
+        song.remove_item(section=Section.TRACKS, name=tracks[-1])
+        edited('clip_restart', {place: place for place in range(len(song.get_scenes()))}, {name: (name if name != tracks[-1] else None) for name in tracks})
+    run(LIVE_EDIT_LAST_SECONDS)
+    player.stop_all()
+    return lines
+
+
+LIVE_EDIT_TEMPO = 150
+LIVE_EDIT_SCENE = 'live_edit'
+LIVE_EDIT_FIRST_SECONDS = 2.0
+LIVE_EDIT_GAP_SECONDS = 1.0
+LIVE_EDIT_LAST_SECONDS = 2.0
 PLAYER_STEP = 0.1
 PLAYER_STEPS_PAST_THE_END = 100
 PLAYER_SCENARIO_STEPS = 60
@@ -615,6 +663,11 @@ def python_player(path):
             texts.append('song {}'.format(name))
             score = Score(song=song, routes=made_up_routes(song.get_track_names()), seed=RENDER_SEED)
             texts += played_lines(song=song, score=score, player_class=Player)
+        # The live edits play a set of their own, so that each song's edits start from the set as its file holds it.
+        edited = Setlist.from_data(data=as_object_layout(moved))
+        for name in edited.get_song_names():
+            texts.append('live {}'.format(name))
+            texts += live_edit_lines(song=edited.get_song(name), seed=RENDER_SEED)
         return '\n'.join(texts).rstrip('\n')
     except SongFileError:
         return None
@@ -644,7 +697,7 @@ def kept_python(step, path):
 
 # How each step's two outputs are compared: as text unless named here.
 # The functions a step's Python answer is worked out with besides the step's own, which its kept answers depend on.
-STEP_HELPERS = {'player': (made_up_routes, played_lines, RecordingSender), 'timeline': (made_up_routes,), 'import': (import_choices,), 'pattern_edits': (pattern_edit_steps,)}
+STEP_HELPERS = {'player': (made_up_routes, played_lines, live_edit_lines, RecordingSender), 'timeline': (made_up_routes,), 'import': (import_choices,), 'pattern_edits': (pattern_edit_steps,)}
 COMPARED = {'save': same_as_data, 'import': same_as_data, 'edits': same_in_order, 'pattern_edits': same_in_order}
 
 

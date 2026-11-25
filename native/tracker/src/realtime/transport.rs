@@ -10,11 +10,13 @@ use crate::document::Document;
 use crate::realtime::backend::{output_port_names, BackendSender, OpenedPort, BUILT_IN, FLUIDSYNTH, MIDI};
 use crate::realtime::player::Player;
 use crate::realtime::score::Score;
-use crate::realtime::timeline::Route;
+use crate::realtime::timeline::{ClipTag, Playing, Route, PROGRAM_CHANGE};
 use llamatron_math::python_random::PythonRandom;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::{Instrument, Item};
-use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SetlistSetting, TrackSetting, FLUIDSYNTH_DEVICE};
+use llamatron_model::objects::song::Song;
+use llamatron_model::schema::generated::defaults;
+use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SetlistSetting, SongSetting, TrackSetting, FLUIDSYNTH_DEVICE};
 use llamatron_strings::{errors, messages, named};
 
 /// How far ahead of now a launch from silence starts, so that its first window reaches the sender before it is due.
@@ -50,7 +52,28 @@ pub struct Transport {
     song_name: String,
     previewing: bool,
     seed: Option<i64>,
+    /// What plays was made from, for hearing an edit made while it plays.
+    following: Option<Following>,
 }
+
+/// What a play's score was made from, which an edit made while it plays is measured against: the set's revision, the
+/// instruments chosen in place of the tracks' own, the routes, each scene's name by its place and the tracks' names, and
+/// the revision last seen changing, with when.
+struct Following {
+    revision: u64,
+    instead: Vec<(String, String)>,
+    routes: Vec<(String, Route)>,
+    scenes: Vec<Option<String>>,
+    tracks: Vec<String>,
+    seen: u64,
+    changed_at: std::time::Instant,
+}
+
+/// How long the set must stay unchanged after an edit before the song is rendered again, so that typing a number of
+/// several digits renders once.
+const LIVE_SETTLE: std::time::Duration = std::time::Duration::from_millis(150);
+/// The scene a program change sent for an edit is tagged with, which no clip's play has.
+const EDIT_SCENE: usize = usize::MAX;
 
 impl Transport {
     /// Why nothing can play now, or None: the Real Time switch, the instruments, their devices, FluidSynth, the built-in
@@ -188,8 +211,95 @@ impl Transport {
         said
     }
 
+    /// Hear an edit to the document made while its song plays, once the edit has settled, and plan ahead; what the status
+    /// line says of an edit that cannot be heard, if anything. Another song made current stops what plays, since nothing on
+    /// screen could show or stop it any more.
+    pub fn tick(&mut self, document: &Document) -> Option<String> {
+        let mut said = None;
+        if self.is_playing() && self.following.is_some() {
+            if document.get_current_song_name() != self.song_name {
+                self.stop_all();
+                return None;
+            }
+            let revision = document.get_revision();
+            if self.edit_settled(revision) {
+                let instead = self.following.as_ref().map(|following| following.instead.clone()).unwrap_or_default();
+                said = self.follow(document, revision, routes(document, &instead));
+            }
+        }
+        self.plan_ahead();
+        said
+    }
+
+    /// Whether the set has moved on to a revision this play has not heard, and stayed there long enough to be rendered.
+    pub fn edit_settled(&mut self, revision: u64) -> bool {
+        let Some(following) = self.following.as_mut() else { return false };
+        if self.player.is_none() || revision == following.revision {
+            return false;
+        }
+        if revision != following.seen {
+            following.seen = revision;
+            following.changed_at = std::time::Instant::now();
+            return false;
+        }
+        following.changed_at.elapsed() >= LIVE_SETTLE
+    }
+
+    /// Note that what plays was made from a revision of a set, as the pattern preview does of the real set its copy came
+    /// from.
+    pub fn follows_revision(&mut self, revision: u64) {
+        if let Some(following) = self.following.as_mut() {
+            following.revision = revision;
+            following.seen = revision;
+        }
+    }
+
+    /// Render a document's current song again with this play's seed through the routes given, and hand the score to the
+    /// player, which takes it from the moment the song's live response says, keeping each clip's place in the music; what
+    /// the status line says where the edit cannot be heard. A track whose route changed hears its instrument's sound at once.
+    pub fn follow(&mut self, document: &Document, revision: u64, new_routes: Vec<(String, Route)>) -> Option<String> {
+        let following = self.following.as_mut()?;
+        following.revision = revision;
+        following.seen = revision;
+        if new_routes.iter().any(|(_, route)| !self.ports.iter().any(|port| port.name == route.port)) {
+            return Some(messages::MSG_LIVE_EDIT_NEEDS_A_DEVICE.to_string());
+        }
+        let song = document.song();
+        let score = match Score::new(document.get_setlist(), song, &new_routes, self.seed) {
+            Ok(score) => score,
+            Err(problem) => {
+                let problem = format!("{problem:?}");
+                return Some(named(messages::MSG_LIVE_EDIT_NOT_HEARD, &[("problem", problem.as_str().into())]));
+            }
+        };
+        let (Some(sender), Some(player)) = (self.sender.as_mut(), self.player.as_mut()) else {
+            return None;
+        };
+        sender.set_sounds(&sounds(document, &new_routes));
+        let now = sender.now();
+        let changes = program_changes(&following.routes, &new_routes, now + LAUNCH_LEAD_SECONDS);
+        if !changes.is_empty() {
+            crate::realtime::player::Sender::add(sender, changes);
+        }
+        let new_scenes = scene_names(song);
+        let new_tracks = track_names(song);
+        let (old_scenes, old_tracks) = (&following.scenes, &following.tracks);
+        let scene_map = |old: usize| scene_after_edit(old, old_scenes, &new_scenes);
+        let track_map = |old: &str| track_after_edit(old, old_tracks, &new_tracks);
+        let responsiveness = song
+            .get_written(SongSetting::LIVE_RESPONSIVENESS)
+            .and_then(Data::as_str)
+            .unwrap_or(defaults::DEFAULT_LIVE_RESPONSIVENESS)
+            .to_string();
+        player.update_score(sender, now, score, &responsiveness, &scene_map, &track_map);
+        following.routes = new_routes;
+        following.scenes = new_scenes;
+        following.tracks = new_tracks;
+        None
+    }
+
     /// Plan ahead: turn the moments due within the lookahead into queued events.
-    pub fn tick(&mut self) {
+    pub fn plan_ahead(&mut self) {
         let (Some(sender), Some(player)) = (self.sender.as_mut(), self.player.as_mut()) else {
             return;
         };
@@ -274,7 +384,11 @@ impl Transport {
     /// sender's clock now.
     fn ready(&mut self, document: &Document, instead: &[(String, String)]) -> Result<f64, String> {
         let routes = routes(document, instead);
-        self.ready_on(document, routes)
+        let now = self.ready_on(document, routes)?;
+        if let Some(following) = self.following.as_mut() {
+            following.instead = instead.to_vec();
+        }
+        Ok(now)
     }
 
     /// A score of a document's current song through the routes given, with the sender open on their ports and the player
@@ -312,6 +426,15 @@ impl Transport {
         sender.set_sounds(&sounds(document, &routes));
         let now = sender.now();
         self.song_name = document.get_current_song_name().to_string();
+        self.following = Some(Following {
+            revision: document.get_revision(),
+            instead: Vec::new(),
+            routes: routes.clone(),
+            scenes: scene_names(song),
+            tracks: track_names(song),
+            seen: document.get_revision(),
+            changed_at: std::time::Instant::now(),
+        });
         match self.player.as_mut() {
             Some(player) if playing => player.set_score(score),
             _ => self.player = Some(Player::new(score, LAUNCH_LEAD_SECONDS)),
@@ -544,4 +667,66 @@ fn channels_in_use(document: &Document) -> Vec<(String, i64)> {
     }
     pairs.sort();
     pairs
+}
+
+/// Each scene's name by its place, None for a scene with none.
+fn scene_names(song: &Song) -> Vec<Option<String>> {
+    song.scenes().iter().map(|scene| scene.get_name()).collect()
+}
+
+/// The song's tracks' names, in order.
+fn track_names(song: &Song) -> Vec<String> {
+    song.get_track_names().into_iter().map(str::to_string).collect()
+}
+
+/// Where a scene that played at a place is after an edit: the same place while the song has as many scenes, else the
+/// place of the scene of its name, or None where it has gone.
+fn scene_after_edit(old: usize, old_scenes: &[Option<String>], new_scenes: &[Option<String>]) -> Option<usize> {
+    if new_scenes.len() == old_scenes.len() {
+        return Some(old);
+    }
+    let name = old_scenes.get(old)?.as_ref()?;
+    new_scenes.iter().position(|found| found.as_ref() == Some(name))
+}
+
+/// What a track that played is named after an edit: its own name while a track has it, else the name of the track in its
+/// place where the song has as many tracks, as a rename leaves it, or None where it has gone.
+fn track_after_edit(old: &str, old_tracks: &[String], new_tracks: &[String]) -> Option<String> {
+    if new_tracks.iter().any(|name| name == old) {
+        return Some(old.to_string());
+    }
+    if new_tracks.len() != old_tracks.len() {
+        return None;
+    }
+    let place = old_tracks.iter().position(|name| name == old)?;
+    Some(new_tracks[place].clone())
+}
+
+/// A program change at a moment for every track whose route an edit changed and whose instrument chooses a sound, since a
+/// clip's own program change comes only at its start.
+fn program_changes(old: &[(String, Route)], new: &[(String, Route)], seconds: f64) -> Vec<Playing> {
+    let mut changes = Vec::new();
+    for (track, route) in new {
+        let Some(program) = route.program else { continue };
+        let unchanged = old.iter().any(|(name, held)| name == track && held == route);
+        if unchanged {
+            continue;
+        }
+        changes.push(Playing {
+            whole: llamatron_math::rational::Rational::ZERO,
+            seconds,
+            port: route.port.clone(),
+            channel: route.channel,
+            kind: PROGRAM_CHANGE,
+            number: program,
+            value: 0,
+            tag: ClipTag {
+                scene: EDIT_SCENE,
+                track: track.clone(),
+                play: 0,
+            },
+            switch: false,
+        });
+    }
+    changes
 }

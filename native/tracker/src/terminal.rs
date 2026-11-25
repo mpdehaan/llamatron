@@ -53,8 +53,13 @@ fn run_keys(tracker: &mut Tracker) -> Result<(), String> {
             drawn = std::time::Instant::now();
         }
         // While waiting for a key, real-time playback is planned ahead a tick at a time.
-        tracker.app.transport.tick();
-        tracker.app.preview.tick();
+        // An edit made while something plays is heard once it settles; one that cannot be heard says why.
+        let song_said = tracker.app.transport.tick(&tracker.app.document);
+        let preview_said = tracker.app.preview.tick(&tracker.app.document);
+        if let Some(said) = song_said.or(preview_said) {
+            tracker.app.say(&said);
+            changed = true;
+        }
         if !event::poll(TICK).map_err(|error| error.to_string())? {
             continue;
         }

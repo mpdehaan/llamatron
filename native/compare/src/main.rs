@@ -404,8 +404,81 @@ fn players(setlist: &llamatron_model::objects::setlist::Setlist) -> llamatron_en
         player.stop_all(&mut sender);
         texts.extend(sender.lines);
     }
+    // The live edits play a copy of the set of their own, so that each song's edits start from the set as its file holds it.
+    for name in setlist.song_names() {
+        texts.push(format!("live {name}"));
+        texts.extend(live_edit_lines(setlist, name)?);
+    }
     Ok(texts.join("\n").trim_end_matches('\n').to_string())
 }
+
+/// What a player hands its sender for a song played from the top and edited while it plays, each edit's score rendered
+/// afresh with the play's seed and taken at a live response of its own: two seconds in, the tempo set to LIVE_EDIT_TEMPO
+/// at once; a second later a scene inserted at the top, at the next bar; a second later the last track removed, where
+/// there are two or more, at the clip's restart; then two seconds more.
+fn live_edit_lines(setlist: &llamatron_model::objects::setlist::Setlist, name: &str) -> llamatron_engine::error::Rendered<Vec<String>> {
+    use llamatron_model::schema::generated::file_format::{Section, SongSetting};
+    use llamatron_tracker::realtime::player::Player;
+    use llamatron_tracker::realtime::score::Score;
+    let mut document = llamatron_tracker::document::Document::new(setlist.clone(), None);
+    document.select_song(name);
+    let mut sender = RecordingSender { lines: Vec::new() };
+    if document.song().scenes().is_empty() {
+        return Ok(sender.lines);
+    }
+    let score_now = |document: &llamatron_tracker::document::Document| {
+        let routes = made_up_routes(&document.song().get_track_names());
+        Score::new(document.get_setlist(), document.song(), &routes, Some(RENDER_SEED))
+    };
+    let mut player = Player::new(score_now(&document)?, 0.0);
+    let mut now = 0.0;
+    player.play_song(&mut sender, now);
+    let run = |player: &mut Player, sender: &mut RecordingSender, now: &mut f64, seconds: f64| {
+        for _ in 0..(seconds / PLAYER_STEP).round() as usize {
+            *now += PLAYER_STEP;
+            player.tick(sender, *now);
+        }
+    };
+    run(&mut player, &mut sender, &mut now, LIVE_EDIT_FIRST_SECONDS);
+    let scenes = document.song().scenes().len();
+    let tracks: Vec<String> = document.song().get_track_names().into_iter().map(str::to_string).collect();
+    document.change_set(|setlist| {
+        if let Some(llamatron_model::objects::setlist::Item::Song(song)) = setlist.get_item_mut(Section::SONGS, name) {
+            song.set_written(SongSetting::TEMPO, Some(llamatron_model::file::data::Data::Whole(LIVE_EDIT_TEMPO)));
+        }
+    });
+    sender.lines.push("edit asap".to_string());
+    player.update_score(&mut sender, now, score_now(&document)?, "asap", &|old| Some(old), &|old| Some(old.to_string()));
+    run(&mut player, &mut sender, &mut now, LIVE_EDIT_GAP_SECONDS);
+    // Both programs check the edits as a person makes them; a refusal would show as a difference.
+    let _ = document.add_scene(0, LIVE_EDIT_SCENE);
+    sender.lines.push("edit next_bar".to_string());
+    player.update_score(
+        &mut sender,
+        now,
+        score_now(&document)?,
+        "next_bar",
+        &|old| (old < scenes).then_some(old + 1),
+        &|old| Some(old.to_string()),
+    );
+    run(&mut player, &mut sender, &mut now, LIVE_EDIT_GAP_SECONDS);
+    if tracks.len() > 1 {
+        let last = tracks[tracks.len() - 1].clone();
+        let _ = document.delete_named(Section::TRACKS, &last);
+        sender.lines.push("edit clip_restart".to_string());
+        let gone = |old: &str| (old != last).then(|| old.to_string());
+        player.update_score(&mut sender, now, score_now(&document)?, "clip_restart", &|old| Some(old), &gone);
+    }
+    run(&mut player, &mut sender, &mut now, LIVE_EDIT_LAST_SECONDS);
+    player.stop_all(&mut sender);
+    Ok(sender.lines)
+}
+
+const LIVE_EDIT_TEMPO: i128 = 150;
+const LIVE_EDIT_SCENE: &str = "live_edit";
+const LIVE_EDIT_FIRST_SECONDS: f64 = 2.0;
+const LIVE_EDIT_GAP_SECONDS: f64 = 1.0;
+const LIVE_EDIT_LAST_SECONDS: f64 = 2.0;
 
 /// Every song of a set rendered from one seed and laid out as real-time playback's timeline, an event a line.
 fn timelines(setlist: &llamatron_model::objects::setlist::Setlist) -> llamatron_engine::error::Rendered<String> {
