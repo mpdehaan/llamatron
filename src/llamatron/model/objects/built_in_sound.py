@@ -15,6 +15,8 @@ blocks, each empty, a bitcrusher of bits and rate, or drive of a curve and amoun
 stores only what differs from it and older sets load as they are.
 """
 
+import functools
+
 from llamatron.model.file import corrections
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.schema import defaults, file_format, limits
@@ -259,7 +261,9 @@ def synth_spec(sound, *, drums_from=MIDDLE_C):
 
 
 class SoundSpec:
-    """A stored sound read for the Synthesis Process, a setting at a time."""
+    """A stored sound read for the Synthesis Process as a voice of parts (realtime/synth_process/modular.py), a setting at a
+    time: each engine's settings mapped onto its oscillator module, its three envelopes, its filter, its effects and the
+    matrix, so that each engine sounds as it always has."""
 
     __slots__ = ('_sound', '_drums_from')
 
@@ -272,22 +276,34 @@ class SoundSpec:
 
     def spec(self):
         engine = self.value(SoundSetting.ENGINE)
-        spec = {'kind': engine, 'volume': self.value(SoundSetting.VOLUME) / PERCENT, 'voices': self.value(SoundSetting.VOICES), 'effects': self.effects(), 'lfos': self.lfos(engine)}
+        effects = self.effects()
+        filter_part, filter_envelope = self.filter_part()
+        spec = {'kind': engine, 'volume': self.value(SoundSetting.VOLUME) / PERCENT, 'voices': self.value(SoundSetting.VOICES), 'legato': False,
+                'glide': 0.0, 'filter_per_note': False, 'effects': effects, 'filter': filter_part}
+        spec['lfos'], spec['matrix'] = self.lfos(engine)
+        envelopes = [self.envelope(), filter_envelope, dict(QUIET_ENVELOPE)]
         if engine == SoundEngine.DRUM:
-            spec.update(self.drum())
+            spec['oscillators'] = self.drum()
+            spec['tuned_from'] = self._drums_from
         elif engine == SoundEngine.SID:
-            spec.update(self.sid())
+            spec['oscillators'] = self.sid()
+            spec['glide'] = self.value(SoundSetting.GLIDE) / MILLISECONDS
         elif engine == SoundEngine.POCKET:
-            spec.update(self.pocket())
+            spec['oscillators'] = self.pocket()
+            envelopes[0] = self.chip_steps()
         elif engine == SoundEngine.FISHLINE:
-            spec.update(self.fishline())
+            self.fishline(spec=spec, envelopes=envelopes)
         else:
-            spec.update(self.basic())
+            spec['oscillators'] = self.basic()
+        spec['envelopes'] = envelopes
         return spec
 
     def envelope(self):
-        return [self.value(SoundSetting.ATTACK) / MILLISECONDS, self.value(SoundSetting.DECAY) / MILLISECONDS, self.value(SoundSetting.SUSTAIN) / PERCENT,
-                self.value(SoundSetting.RELEASE) / MILLISECONDS]
+        """Return the Basic and SID envelope as an ADSR part: a straight attack, and a decay and release whose time constants
+        become the time they take to fall 60 dB, so that the envelope falls exactly as it always has."""
+        return {'type': ADSR, 'attack': self.value(SoundSetting.ATTACK) / MILLISECONDS, 'attack_curve': 0, 'hold': 0.0,
+                'decay': self.value(SoundSetting.DECAY) / MILLISECONDS * T60, 'snap': 0.0, 'sustain': self.value(SoundSetting.SUSTAIN) / PERCENT,
+                'release': self.value(SoundSetting.RELEASE) / MILLISECONDS * T60}
 
     def basic(self):
         oscillators = []
@@ -296,55 +312,86 @@ class SoundSpec:
             if waveform != Waveform.OFF:
                 level = oscillator_value(oscillator=oscillator, name=OscillatorSetting.LEVEL) / PERCENT
                 oscillators.append([waveform, oscillator_value(oscillator=oscillator, name=OscillatorSetting.DETUNE), level])
-        return {'oscillators': oscillators, 'envelope': self.envelope()}
+        return {'type': SoundEngine.BASIC, 'oscillators': oscillators}
 
     def drum(self):
-        return {'machine': self.value(SoundSetting.MACHINE), 'knobs': list(self.value(SoundSetting.KNOBS)), 'choke': self.value(SoundSetting.CHOKE) or None,
-                'overlap': self.value(SoundSetting.OVERLAP), 'tuned_from': self._drums_from}
+        return {'type': SoundEngine.DRUM, 'machine': self.value(SoundSetting.MACHINE), 'knobs': list(self.value(SoundSetting.KNOBS)),
+                'choke': self.value(SoundSetting.CHOKE) or None, 'overlap': self.value(SoundSetting.OVERLAP)}
 
     def sid(self):
-        return {'wave': self.value(SoundSetting.WAVE), 'pulse_width': self.value(SoundSetting.PULSE_WIDTH) / PERCENT,
+        return {'type': SoundEngine.SID, 'wave': self.value(SoundSetting.WAVE), 'pulse_width': self.value(SoundSetting.PULSE_WIDTH) / PERCENT,
                 'pulse_sweep': self.value(SoundSetting.PULSE_SWEEP) / PERCENT, 'modulation': self.value(SoundSetting.MODULATION),
-                'interval': self.value(SoundSetting.INTERVAL), 'arpeggio': list(self.value(SoundSetting.ARPEGGIO)),
-                'glide': self.value(SoundSetting.GLIDE) / MILLISECONDS, 'envelope': self.envelope()}
+                'interval': self.value(SoundSetting.INTERVAL), 'arpeggio': list(self.value(SoundSetting.ARPEGGIO))}
 
     def pocket(self):
-        return {'chip_voice': self.value(SoundSetting.CHIP_VOICE), 'duty': DUTY_SHARES[self.value(SoundSetting.DUTY)],
-                'start_level': self.value(SoundSetting.START_LEVEL), 'level_pace': self.value(SoundSetting.LEVEL_PACE),
-                'level_up': self.value(SoundSetting.LEVEL_DIRECTION) == ChipDirection.UP, 'sweep_pace': self.value(SoundSetting.SWEEP_PACE),
-                'sweep_up': self.value(SoundSetting.SWEEP_DIRECTION) == ChipDirection.UP, 'sweep_step': self.value(SoundSetting.SWEEP_STEP),
-                'wave_shape': self.value(SoundSetting.WAVE_SHAPE), 'noise': self.value(SoundSetting.NOISE)}
+        return {'type': SoundEngine.POCKET, 'chip_voice': self.value(SoundSetting.CHIP_VOICE), 'duty': DUTY_SHARES[self.value(SoundSetting.DUTY)],
+                'sweep_pace': self.value(SoundSetting.SWEEP_PACE), 'sweep_up': self.value(SoundSetting.SWEEP_DIRECTION) == ChipDirection.UP,
+                'sweep_step': self.value(SoundSetting.SWEEP_STEP), 'wave_shape': self.value(SoundSetting.WAVE_SHAPE), 'noise': self.value(SoundSetting.NOISE)}
 
-    def fishline(self):
-        """Return Fishline's settings, always one voice, shares as fractions and times in seconds."""
-        return {'voices': 1, 'acid_wave': self.value(SoundSetting.ACID_WAVE), 'tuning': self.value(SoundSetting.TUNING), 'filter_on': self.value(SoundSetting.FILTER_ON),
-                'cutoff': self.value(SoundSetting.CUTOFF), 'resonance': self.value(SoundSetting.RESONANCE) / PERCENT, 'env_mod': self.value(SoundSetting.ENV_MOD) / PERCENT,
-                'filter_decay': self.value(SoundSetting.FILTER_DECAY) / MILLISECONDS, 'accent': self.value(SoundSetting.ACCENT) / PERCENT,
-                'accent_threshold': self.value(SoundSetting.ACCENT_THRESHOLD), 'accent_sweep': self.value(SoundSetting.ACCENT_SWEEP) / PERCENT,
-                'slide': self.value(SoundSetting.SLIDE) / MILLISECONDS, 'drive': self.value(SoundSetting.DRIVE) / PERCENT,
-                'amp_decay': self.value(SoundSetting.AMP_DECAY) / MILLISECONDS, 'soft_attack': self.value(SoundSetting.SOFT_ATTACK) / TENTHS / MILLISECONDS,
-                'accent_decay': self.value(SoundSetting.ACCENT_DECAY) / MILLISECONDS}
+    def chip_steps(self):
+        return {'type': CHIP_STEPS, 'start_level': self.value(SoundSetting.START_LEVEL), 'level_pace': self.value(SoundSetting.LEVEL_PACE),
+                'level_up': self.value(SoundSetting.LEVEL_DIRECTION) == ChipDirection.UP}
+
+    def fishline(self, *, spec, envelopes):
+        """Set Fishline's parts: its acid oscillator, its acid gate amp, its filter's sweep as Env2, its diode filter unless it
+        is off, its drive as its first effect, one voice, sliding legato."""
+        spec['oscillators'] = {'type': ACID, 'acid_wave': self.value(SoundSetting.ACID_WAVE), 'tuning': self.value(SoundSetting.TUNING)}
+        envelopes[0] = {'type': ACID_GATE, 'accent': self.value(SoundSetting.ACCENT) / PERCENT, 'accent_threshold': self.value(SoundSetting.ACCENT_THRESHOLD),
+                        'accent_sweep': self.value(SoundSetting.ACCENT_SWEEP) / PERCENT, 'accent_decay': self.value(SoundSetting.ACCENT_DECAY) / MILLISECONDS,
+                        'amp_decay': self.value(SoundSetting.AMP_DECAY) / MILLISECONDS,
+                        'soft_attack': self.value(SoundSetting.SOFT_ATTACK) / TENTHS / MILLISECONDS}
+        envelopes[1] = {'type': ADSR, 'attack': 0.0, 'attack_curve': 0, 'hold': 0.0, 'decay': self.value(SoundSetting.FILTER_DECAY) / MILLISECONDS,
+                        'snap': 0.0, 'sustain': 0.0, 'release': self.value(SoundSetting.FILTER_DECAY) / MILLISECONDS}
+        spec['filter'] = {'type': NO_FILTER}
+        if self.value(SoundSetting.FILTER_ON):
+            spec['filter'] = {'type': FilterType.DIODE, 'mode': FilterMode.LOW, 'cutoff': self.value(SoundSetting.CUTOFF),
+                              'resonance': self.value(SoundSetting.RESONANCE) / PERCENT, 'env_amount': self.value(SoundSetting.ENV_MOD) / PERCENT * ACID_ENV_SHARE,
+                              'key_track': 0.0, 'drive': 0.0}
+        drive = {EffectSetting.EFFECT: Effect.DRIVE, EffectSetting.CURVE: Curve.SOFT, EffectSetting.AMOUNT: self.value(SoundSetting.DRIVE) / PERCENT * ACID_DRIVE_SHARE,
+                 EffectSetting.MIX: 1.0}
+        spec['effects'] = [drive] + spec['effects']
+        spec['voices'] = 1
+        spec['legato'] = True
+        spec['glide'] = self.value(SoundSetting.SLIDE) / MILLISECONDS
+        spec['filter_per_note'] = True
+
+    def filter_part(self):
+        """Return the first Filter effect as the voice's filter, shared by its notes as the effect always was, and its own
+        envelope as Env2; no filter and a quiet Env2 where there is none."""
+        for block in self.value(SoundSetting.EFFECTS):
+            if effect_value(block=block, name=EffectSetting.EFFECT) != Effect.FILTER:
+                continue
+            setting = functools.partial(effect_value, block=block)
+            part = {'type': setting(name=EffectSetting.FILTER_TYPE), 'mode': setting(name=EffectSetting.FILTER_MODE), 'cutoff': setting(name=EffectSetting.CUTOFF),
+                    'resonance': setting(name=EffectSetting.RESONANCE) / PERCENT, 'env_amount': setting(name=EffectSetting.ENVELOPE_AMOUNT) / PERCENT,
+                    'key_track': setting(name=EffectSetting.KEY_TRACK) / PERCENT, 'drive': setting(name=EffectSetting.FILTER_DRIVE) / PERCENT}
+            envelope = {'type': ADSR, 'attack': setting(name=EffectSetting.ENVELOPE_ATTACK) / MILLISECONDS, 'attack_curve': 0, 'hold': 0.0,
+                        'decay': setting(name=EffectSetting.ENVELOPE_DECAY) / MILLISECONDS, 'snap': 0.0, 'sustain': 0.0, 'release': 0.01}
+            return part, envelope
+        return {'type': NO_FILTER}, dict(QUIET_ENVELOPE)
 
     def lfos(self, engine):
-        """Return the LFOs that are on and move something on the engine, each its target, shape, rate in hertz, depth as a
-        fraction either way and whether each note starts it again; an LFO that is off, whose target the engine lacks, or that
-        has none, left out."""
+        """Return the four LFOs, None for one that is off, and the matrix's slots: each LFO that is on and moves something on
+        the engine routed to it at its depth, rescaled from the old control's range to the matrix destination's."""
         lfos = []
-        for lfo in self.value(SoundSetting.LFOS):
+        slots = []
+        for index, lfo in enumerate(self.value(SoundSetting.LFOS)):
             target = lfo_value(lfo=lfo, name=LfoSetting.TARGET)
             if not lfo_value(lfo=lfo, name=LfoSetting.ON) or target not in file_format.LFO_TARGETS[engine] or target == SynthControl.NONE:
+                lfos.append(None)
                 continue
-            lfos.append({'target': target, 'shape': lfo_value(lfo=lfo, name=LfoSetting.SHAPE), 'rate': lfo_value(lfo=lfo, name=LfoSetting.RATE) / TENTHS,
-                         'depth': lfo_value(lfo=lfo, name=LfoSetting.DEPTH) / PERCENT, 'retrigger': lfo_value(lfo=lfo, name=LfoSetting.RETRIGGER),
-                         'each_scene': lfo_value(lfo=lfo, name=LfoSetting.EACH_SCENE)})
-        return lfos
+            lfos.append({'shape': lfo_value(lfo=lfo, name=LfoSetting.SHAPE), 'rate': lfo_value(lfo=lfo, name=LfoSetting.RATE) / TENTHS,
+                         'retrigger': lfo_value(lfo=lfo, name=LfoSetting.RETRIGGER), 'each_scene': lfo_value(lfo=lfo, name=LfoSetting.EACH_SCENE)})
+            destination, share = LFO_ROUTES[target]
+            slots.append({'source': LFO_SOURCES[index], 'via': NONE, 'destination': destination, 'amount': lfo_value(lfo=lfo, name=LfoSetting.DEPTH) / PERCENT * share})
+        return lfos, slots
 
     def effects(self):
         """Return the effects in order, each a mapping of its settings, every setting given, shares as fractions and times in
-        seconds, the empty blocks left out."""
+        seconds, the empty blocks and the filters, now the voice's own part, left out."""
         effects = []
         for block in self.value(SoundSetting.EFFECTS):
-            if effect_value(block=block, name=EffectSetting.EFFECT) == Effect.NONE:
+            if effect_value(block=block, name=EffectSetting.EFFECT) in (Effect.NONE, Effect.FILTER):
                 continue
             effect = {name: effect_value(block=block, name=name) for name in EFFECT_DEFAULTS}
             for name in FRACTIONS:
@@ -353,3 +400,25 @@ class SoundSpec:
                 effect[name] = effect[name] / MILLISECONDS
             effects.append(effect)
         return effects
+
+
+# The parts' names, as the Synthesis Process reads them (realtime/synth_process/).
+ADSR = 'adsr'
+ACID = 'acid'
+ACID_GATE = 'acid_gate'
+CHIP_STEPS = 'chip_steps'
+NO_FILTER = 'none'
+NONE = 'none'
+LFO_SOURCES = ('lfo1', 'lfo2', 'lfo3', 'lfo4')
+# An exponential falls 60 dB in this many time constants.
+T60 = 6.908
+# Fishline's Env Mod at full moves the cutoff three of the filter's four octaves, and its drive at full pushes a quarter as hard
+# as the Drive effect.
+ACID_ENV_SHARE = 0.75
+ACID_DRIVE_SHARE = 0.25
+# An Env2 or Env3 that moves nothing: a voice whose filter has no envelope, and no pitch envelope.
+QUIET_ENVELOPE = {'type': ADSR, 'attack': 0.0, 'attack_curve': 0, 'hold': 0.0, 'decay': 0.01, 'snap': 0.0, 'sustain': 0.0, 'release': 0.01}
+# Each old LFO target's matrix destination, and its depth's share of the destination's range: pitch moved an octave, now two;
+# pulse width two fifths, as before; cutoff four octaves, now six; detune spread as before.
+LFO_ROUTES = {SynthControl.PITCH: ('pitch', 0.5), SynthControl.PULSE_WIDTH: ('pulse_width', 1.0), SynthControl.FILTER_CUTOFF: ('cutoff', 4.0 / 6.0),
+              SynthControl.DETUNE_SPREAD: ('detune', 1.0)}

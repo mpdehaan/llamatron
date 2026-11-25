@@ -15,17 +15,14 @@ import collections
 import functools
 import time
 
-from llamatron.realtime.synth_process import drums, engine as engine_values, tables
-from llamatron.realtime.synth_process.acid import FishlinePatch
+from llamatron.realtime.synth_process import drums, engine as engine_values
 from llamatron.realtime.synth_process.effects import compiled_effects
 from llamatron.realtime.synth_process.engine import DrumPatch, SynthEngine
-from llamatron.realtime.synth_process.modulation import LfoBank
-from llamatron.realtime.synth_process.voices import BasicPatch, PocketPatch, SidPatch
+from llamatron.realtime.synth_process.modular import ModularPatch
 
 DRUM = 'drum'
-SID = 'sid'
-POCKET = 'pocket'
-FISHLINE = 'fishline'
+# The note the drum recipes play at their own pitch on, where the set gives no other.
+MIDDLE_C = 60
 LOW_LATENCY = 'low'
 FLOAT32 = 'float32'
 CHANNELS = 2
@@ -33,11 +30,10 @@ MILLISECONDS = 1000.0
 
 
 def compiled(*, spec, rate):
-    """Return an instrument's patch from its settings, a dict of its engine, volume, voices, effects, LFOs and the engine's own
-    settings (model/objects/built_in_sound.py); its tables or hits made now, not playing."""
+    """Return an instrument's patch from its settings (model/objects/built_in_sound.py): a drum machine's hits, or a voice of
+    parts; its tables or hits made now, not playing, and a way to make it again from rest after a runaway (safety.py)."""
     patch = _patch(spec=spec, rate=rate)
-    if spec.get('lfos'):
-        patch.modulation = LfoBank(lfos=spec['lfos'], rate=rate)
+    patch.remake = functools.partial(compiled, spec=spec, rate=rate)
     return patch
 
 
@@ -132,18 +128,9 @@ class SynthPlayer:
 
 def _patch(*, spec, rate):
     effects = compiled_effects(effects=spec.get('effects', ()), rate=rate)
-    volume = spec.get('volume', 0.8)
-    voices = spec.get('voices', 1)
-    kind = spec['kind']
-    if kind == DRUM:
-        render = functools.partial(drums.render_hit, machine=spec['machine'], knobs=tuple(spec['knobs']))
-        return DrumPatch(render_hit=render, spec=spec, effects=effects)
-    if kind == SID:
-        return SidPatch(spec=spec, rate=rate, effects=effects)
-    if kind == POCKET:
-        return PocketPatch(spec=spec, rate=rate, effects=effects)
-    if kind == FISHLINE:
-        return FishlinePatch(spec=spec, rate=rate, effects=effects)
-    oscillators = [(tables.waveform_tables(waveform=waveform, rate=rate), cents, level) for waveform, cents, level in spec['oscillators']]
-    return BasicPatch(oscillators=oscillators, envelope=tuple(spec['envelope']), voices=voices, volume=volume, effects=effects)
-
+    parts = spec['oscillators']
+    if parts['type'] == DRUM:
+        render = functools.partial(drums.render_hit, machine=parts['machine'], knobs=tuple(parts['knobs']))
+        drum = dict(parts, volume=spec['volume'], tuned_from=spec.get('tuned_from', MIDDLE_C))
+        return DrumPatch(render_hit=render, spec=drum, effects=effects)
+    return ModularPatch(spec=spec, rate=rate, effects_compiled=effects)

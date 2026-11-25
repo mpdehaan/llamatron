@@ -67,11 +67,12 @@ class TestBuiltInSound(unittest.TestCase):
     def test_a_sound_is_given_to_the_synthesis_process_in_seconds_and_fractions(self):
         drum = {SoundSetting.ENGINE: SoundEngine.DRUM, SoundSetting.MACHINE: DrumMachine.HATS, SoundSetting.CHOKE: CHOKE}
         spec = built_in_sound.synth_spec(drum)
-        self.assertEqual((spec['machine'], spec['choke'], spec['volume']), (DrumMachine.HATS, CHOKE, defaults.DEFAULT_SOUND_VOLUME / 100))
+        drum_part = spec['oscillators']
+        self.assertEqual((drum_part['machine'], drum_part['choke'], spec['volume']), (DrumMachine.HATS, CHOKE, defaults.DEFAULT_SOUND_VOLUME / 100))
         basic = built_in_sound.synth_spec({SoundSetting.ATTACK: ATTACK_MS, SoundSetting.OSCILLATORS: [{OscillatorSetting.WAVEFORM: Waveform.SAW}, {}]})
-        self.assertEqual(basic['envelope'][0], ATTACK_MS / 1000)
+        self.assertEqual(basic['envelopes'][0]['attack'], ATTACK_MS / 1000)
         # An oscillator left off, as the second is, does not sound.
-        self.assertEqual(basic['oscillators'], [[Waveform.SAW, 0, 1.0]])
+        self.assertEqual(basic['oscillators']['oscillators'], [[Waveform.SAW, 0, 1.0]])
 
     def test_a_sounds_effect_blocks_reach_the_synthesis_process_in_order_the_empty_left_out(self):
         blocks = [{EffectSetting.EFFECT: Effect.DRIVE, EffectSetting.AMOUNT: DRIVE_PERCENT}, {}, {EffectSetting.EFFECT: Effect.BITCRUSH, EffectSetting.BITS: BITS}]

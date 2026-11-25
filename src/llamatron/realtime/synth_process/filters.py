@@ -1,18 +1,19 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The filter effect of a built-in instrument's effect blocks, a chunk at a time on the instrument's mix
-(.claude/notes/synthesis/LADDER.md and FILTERS_AND_ACID.md).
+"""The ladder family of filters a built-in voice's Filter slot can hold, a chunk at a time, on one note or on the instrument's
+mix (.claude/notes/synthesis/LADDER.md, FILTERS_AND_ACID.md and FILTER_TOPOLOGIES.md).
 
 Two cores serve five circuits. The multimode and the Sallen-Key are a two-pole biquad, low, band, high or notch for the
 multimode, low or high for the Sallen-Key, whose resonance screams through a soft clip after it. The ladder, the diode and the
 OTA are the exact linear four-pole ladder, H = G^4 / (1 + k G^4), G a prewarped bilinear one-pole, one lfilter call: the
 ladder self-oscillates at full resonance and thins its bass as resonance rises; the diode stops short of oscillating and keeps
-its bass, as the acid bass machine's does, driven before and after; the OTA is creamier, a softer drive before it.
+its bass, as the acid bass machine's does, driven before and after, its floor lowered a little by its Env amount as that
+machine's circuit lowers it; the OTA is creamier, a softer drive before it.
 
-Each chunk is worked in SUB_BLOCKS parts, the cutoff worked out at each from its base, its envelope and key tracking, so that a
-sweep moves smoothly; the filter's state runs on from part to part and chunk to chunk. Each note the instrument starts fires
-the envelope: a linear attack, then an exponential fall. Speed rules this module, as it does the engine (the user's yes).
+The voice moves the cutoff, in octaves a sample: Env2 times the Env amount, key tracking, and the mod matrix (modular.py).
+Each chunk is worked in SUB_BLOCKS parts, the cutoff read at each, so that a sweep moves smoothly; the filter's state runs on
+from part to part and chunk to chunk. Speed rules this module, as it does the engine (the user's yes).
 """
 
 import math
@@ -33,10 +34,10 @@ SUB_BLOCKS = 4
 # How far a cutoff may go: never above this share of the sample rate, where the bilinear filter warps, nor below this.
 HIGHEST_SHARE = 0.45
 LOWEST_CUTOFF = 20.0
-# The envelope's amount at full is four octaves; its fall is an exponential that is 60 dB down at its decay time.
+# Env2 at full Env amount moves the cutoff four octaves.
 ENVELOPE_OCTAVES = 4.0
-FALL = 6.91
-MIDDLE_C = 60
+# The diode's floor falls this many octaves at full Env amount (the acid bass machine's).
+ENV_MOD_DIP = 0.5
 # How resonant each circuit goes: the ladder's feedback to self-oscillation, the diode's short of it, and the biquads' Q.
 LADDER_FEEDBACK = 3.95
 DIODE_FEEDBACK = 3.3
@@ -44,6 +45,9 @@ OTA_FEEDBACK = 3.8
 LOWEST_Q = 0.5
 MOST_Q = 20.0
 SCREAM_Q = 30.0
+# Above this share of the sample rate, a two-pole's Q is held at most to HIGH_Q.
+HIGH_SHARE = 0.3
+HIGH_Q = 10.0
 # How hard drive pushes into the filter at full, and the gentler push the diode and OTA always have.
 MOST_DRIVE = 10.0
 DIODE_PUSH = 1.5
@@ -51,75 +55,65 @@ OTA_PUSH = 1.2
 SCREAM_PUSH = 1.5
 # The four-pole ladder's numerator, the binomial of (1 + z^-1)^4.
 FOUR_POLE = numpy.array([1.0, 4.0, 6.0, 4.0, 1.0])
+ONE_ZERO = numpy.array([1.0, 1.0])
+FOUR = 4
 LADDERS = (LADDER, DIODE, OTA)
 
 
 class Filter:
-    """A filter effect: its type and mode, its cutoff in hertz and resonance from 0 to 1, its envelope's amount from -1 to 1 of
-    four octaves, attack and decay in seconds, key tracking and drive from 0 to 1, the sample rate, and what it keeps from chunk
-    to chunk: the state of its lfilter, the sample its envelope last fired at and the pitch it fired for."""
+    """A filter of the ladder family: its type and mode, its cutoff in hertz, resonance from 0 to 1, Env amount from -1 to 1
+    of four octaves, key tracking and drive from 0 to 1, the sample rate, and the state of its lfilter, which runs on from
+    chunk to chunk."""
 
-    __slots__ = ('kind', 'mode', 'cutoff', 'resonance', 'amount', 'attack', 'decay', 'key_track', 'drive', 'rate', 'state', 'fired_at', 'pitch', 'mix',
-                 'octaves')
-    # The first filter of an instrument is the one its LFOs' Filter cutoff moves.
-    moves_cutoff = True
+    __slots__ = ('kind', 'mode', 'cutoff', 'resonance', 'amount', 'key_track', 'drive', 'rate', 'state', 'poles')
+    # Only the low-pass gate is a note's amp (gates.py).
+    is_gate = False
 
     def __init__(self, *, spec, rate):
-        self.kind = spec['filter_type']
-        self.mode = spec['filter_mode']
+        self.kind = spec['type']
+        self.mode = spec['mode']
         self.cutoff = spec['cutoff']
+        if self.kind == DIODE:
+            self.cutoff = self.cutoff * 2.0 ** (-ENV_MOD_DIP * abs(spec['env_amount']))
         self.resonance = spec['resonance']
-        self.amount = spec['envelope_amount']
-        self.attack = spec['envelope_attack']
-        self.decay = spec['envelope_decay']
+        self.amount = spec['env_amount']
         self.key_track = spec['key_track']
-        self.drive = spec['filter_drive']
-        self.mix = spec['mix']
+        self.drive = spec['drive']
+        # The ladder's slope, the poles it is tapped after: 1 to 4, 6 to 24 dB an octave, its resonance still the whole loop's.
+        self.poles = spec.get('poles', FOUR)
         self.rate = rate
         self.state = None
-        self.fired_at = None
-        self.pitch = MIDDLE_C
-        # How far LFOs move the cutoff over the chunk, in octaves a sample, or None (engine.py).
-        self.octaves = None
 
-    def note_on(self, *, sample, pitch):
-        """Fire the envelope at a note's first sample, and track the note's pitch."""
-        self.fired_at = sample
-        self.pitch = pitch
+    def fresh(self):
+        """Return the same filter with a state of its own, for a note that has its own filter."""
+        other = Filter.__new__(Filter)
+        for name in Filter.__slots__:
+            setattr(other, name, getattr(self, name))
+        other.state = None
+        return other
 
-    def apply(self, buffer, *, start):
-        """Return a chunk of the instrument's mix filtered, the chunk's first sample being start."""
+    def filtered(self, buffer, *, octaves=None, resonance=None):
+        """Return a chunk filtered, the cutoff moved by octaves a sample and the resonance by a share a sample, each None for
+        none, read at the start of each part."""
         buffer = self._driven(buffer)
         size = len(buffer)
         part = -(-size // SUB_BLOCKS)
         out = numpy.empty(size, dtype=numpy.float64)
+        highest = HIGHEST_SHARE * self.rate
+        base = self.resonance
         for first in range(0, size, part):
-            cutoff = self._cutoff_at(start + first)
-            if self.octaves is not None:
-                cutoff = min(max(cutoff * 2.0 ** float(self.octaves[first]), LOWEST_CUTOFF), HIGHEST_SHARE * self.rate)
-            numerator, denominator = self._coefficients(cutoff)
+            cutoff = self.cutoff
+            if octaves is not None:
+                cutoff = cutoff * 2.0 ** float(octaves[first])
+            if resonance is not None:
+                self.resonance = min(max(base + float(resonance[first]), 0.0), 1.0)
+            numerator, denominator = self._coefficients(min(max(cutoff, LOWEST_CUTOFF), highest))
             if self.state is None or len(self.state) != len(denominator) - 1:
                 self.state = numpy.zeros(len(denominator) - 1)
             out[first:first + part], self.state = signal.lfilter(numerator, denominator, buffer[first:first + part], zi=self.state)
-        return self._finished(out).astype(numpy.float32)
-
-    def _cutoff_at(self, sample):
-        """Return the cutoff at a sample: its base, moved by the envelope and by the note's distance from middle C."""
-        octaves = self.key_track * (self.pitch - MIDDLE_C) / 12.0 + self.amount * ENVELOPE_OCTAVES * self._envelope_at(sample)
-        cutoff = self.cutoff * 2.0 ** octaves
-        return min(max(cutoff, LOWEST_CUTOFF), HIGHEST_SHARE * self.rate)
-
-    def _envelope_at(self, sample):
-        """Return the envelope from 0 to 1 at a sample: nothing before a note, a linear rise over the attack, then a fall."""
-        if self.fired_at is None:
-            return 0.0
-        age = (sample - self.fired_at) / self.rate
-        if age < 0.0:
-            # The part of a chunk before the note it fires for.
-            return 0.0
-        if age < self.attack:
-            return age / self.attack
-        return math.exp(-FALL * (age - self.attack) / max(self.decay, 1e-3))
+        out = self._finished(out).astype(numpy.float32)
+        self.resonance = base
+        return out
 
     def _coefficients(self, cutoff):
         if self.kind in LADDERS:
@@ -127,21 +121,33 @@ class Filter:
         return self._biquad(cutoff)
 
     def _ladder(self, cutoff):
-        """Return the four-pole ladder's numerator and denominator at a cutoff: G^4 over (1 + k G^4), each G the one-pole
-        g (1 + z^-1) / ((1 + g) + (g - 1) z^-1), its feedback k by the circuit."""
+        """Return the ladder's numerator and denominator at a cutoff, tapped after its poles: G^n over (1 + k G^4), each G the
+        one-pole g (1 + z^-1) / ((1 + g) + (g - 1) z^-1), its feedback k by the circuit; tapped early, the poles after the tap
+        still in the loop, so that resonance peaks as on the hardware's slope switch."""
         g = math.tan(math.pi * cutoff / self.rate)
         pole = numpy.array([1.0 + g, g - 1.0])
         squared = numpy.convolve(pole, pole)
-        denominator = numpy.convolve(squared, squared)
-        numerator = FOUR_POLE * g ** 4
+        loop = numpy.convolve(squared, squared)
+        four = FOUR_POLE * g ** 4
         feedback = {LADDER: LADDER_FEEDBACK, DIODE: DIODE_FEEDBACK, OTA: OTA_FEEDBACK}[self.kind] * self.resonance
-        denominator = denominator + feedback * numerator
+        denominator = loop + feedback * four
+        numerator = four
+        if self.poles < FOUR:
+            numerator = numpy.array([g ** self.poles])
+            for _ in range(self.poles):
+                numerator = numpy.convolve(numerator, ONE_ZERO)
+            for _ in range(FOUR - self.poles):
+                numerator = numpy.convolve(numerator, pole)
         return numerator / denominator[0], denominator / denominator[0]
 
     def _biquad(self, cutoff):
         """Return a two-pole filter's numerator and denominator at a cutoff, by the mode, its Q from the resonance."""
         most = SCREAM_Q if self.kind == SALLEN_KEY else MOST_Q
         quality = LOWEST_Q + self.resonance * most
+        if cutoff > HIGH_SHARE * self.rate:
+            # A two-pole moved fast near the top can peak dozens of times over (.claude/notes/synthesis/SYNTH_SAFETY.md), so
+            # its resonance is held back up there.
+            quality = min(quality, HIGH_Q)
         w = 2.0 * math.pi * cutoff / self.rate
         cosine = math.cos(w)
         alpha = math.sin(w) / (2.0 * quality)

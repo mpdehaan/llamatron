@@ -15,7 +15,7 @@ paths keep plain attributes, local names and few calls.
 import heapq
 import numpy
 
-from llamatron.realtime.synth_process import effects, modulation as modulation_values
+from llamatron.realtime.synth_process import effects, modulation as modulation_values, safety
 
 # A voice whose envelope has fallen below this is silent and is dropped.
 SILENT = 1e-4
@@ -29,9 +29,6 @@ ALL_OFF = 2
 FORGET = 3
 # An instrument's clip starts with its scene: its LFOs that restart each scene start again (modulation.py).
 SCENE_STARTED = 4
-# The output guard's knee: x - (4/27)x³ is flat and at full scale where x is 1.5.
-GUARD_LIMIT = 1.5
-GUARD_CURVE = 4.0 / 27.0
 # A drum's tone is rendered for each sixteenth of the velocities, its level following the exact velocity.
 # The note the drum recipes play at their own pitch on (drums.py).
 RECIPES_TUNED_AT = 60
@@ -43,8 +40,8 @@ class DrumPatch:
     None, whether its hits overlap rather than cutting the last, its volume and its effects in order, and the note it plays at
     its own pitch on; its hits are rendered once each and kept."""
 
-    __slots__ = ('render_hit', 'choke', 'overlap', 'volume', 'effects', 'hits', 'tuned_from', 'modulation')
-    # Only Fishline slides from a held note to the next (acid.py).
+    __slots__ = ('render_hit', 'choke', 'overlap', 'volume', 'effects', 'hits', 'tuned_from', 'modulation', 'remake')
+    # A drum never slides from a held note to the next; a legato voice of parts does (modular.py).
     slides = False
 
     def __init__(self, *, render_hit, spec, effects=()):
@@ -60,6 +57,8 @@ class DrumPatch:
         self.effects = list(effects)
         self.hits = {}
         self.modulation = modulation_values.NO_MODULATION
+        # Makes the patch again from its settings, from rest, after a runaway (player.py).
+        self.remake = None
 
     def recipe_pitch(self, pitch):
         """Return the note a recipe renders for a note played, the recipes playing at their own pitch on middle C."""
@@ -73,7 +72,7 @@ class SynthVoice:
     begins."""
 
     __slots__ = ('instrument', 'pitch', 'start', 'age', 'release_at', 'level', 'oscillators', 'hit', 'cut_at', 'silent', 'phase', 'second_phase',
-                 'glide_from', 'period', 'ticks', 'patch')
+                 'glide_from', 'period', 'ticks', 'patch', 'glide_at', 'random', 'accent_depth', 'short_decay', 'states', 'filter')
 
     def __init__(self, *, instrument, pitch, start, level):
         self.instrument = instrument
@@ -86,7 +85,7 @@ class SynthVoice:
         self.hit = None
         self.cut_at = None
         self.silent = False
-        # What a SID or Pocket voice keeps from chunk to chunk (voices.py).
+        # What a SID or Pocket voice keeps from chunk to chunk (oscillators.py).
         self.phase = 0.0
         self.second_phase = 0.0
         self.glide_from = pitch
@@ -94,13 +93,21 @@ class SynthVoice:
         self.ticks = 0
         # The patch the voice began with (SynthEngine._begin).
         self.patch = None
+        # What a voice of parts keeps (modular.py): where its glide started, its random value, an acid accent's extra filter
+        # depth and short decay, its envelopes' states, and its own filter.
+        self.glide_at = start
+        self.random = 0.0
+        self.accent_depth = 0.0
+        self.short_decay = None
+        self.states = ()
+        self.filter = None
 
 
 class SynthEngine:
     """The engine: the instruments by number, the events still to play in time order, the voices sounding, and the sample
     rate; render() makes each chunk of the mix."""
 
-    __slots__ = ('rate', 'instruments', 'events', 'voices', 'order', 'played', 'late', 'places')
+    __slots__ = ('rate', 'instruments', 'events', 'voices', 'order', 'played', 'late', 'places', 'guard', 'runaways')
 
     def __init__(self, *, rate):
         self.rate = rate
@@ -112,6 +119,9 @@ class SynthEngine:
         self.late = 0
         # 0 to a chunk's length, made once for the chunks the sound card asks for.
         self.places = numpy.arange(0, dtype=numpy.float64)
+        # The protections, whatever a patch does (safety.py), and how many instruments' chunks were silenced as runaways.
+        self.guard = safety.OutputGuard(rate=rate)
+        self.runaways = 0
 
     def set_instrument(self, *, number, patch):
         self.instruments[number] = patch
@@ -137,9 +147,10 @@ class SynthEngine:
         heapq.heapify(self.events)
 
     def silence(self):
-        """Forget every event still to play and stop every voice at once."""
+        """Forget every event still to play, stop every voice at once, and clear the output's latch (safety.py)."""
         self.events.clear()
         self.voices.clear()
+        self.guard.clear()
 
     def render(self, *, start, frames):
         """Return the mix of the chunk of frames starting at a sample, as float32, every event due in it begun on its sample."""
@@ -163,27 +174,32 @@ class SynthEngine:
         self.voices = alive
         for number, buffer in by_instrument.items():
             patch = self.instruments[number]
-            mix += effects.through_effects(buffer=buffer, effects=patch.effects, start=start) * patch.volume
-        # The output guard: a soft knee that reaches full scale, flat, at half again as loud, so that instruments turned up
-        # past full never clip harshly, and anything louder is held at full scale.
-        numpy.clip(mix, -GUARD_LIMIT, GUARD_LIMIT, out=mix)
-        mix -= GUARD_CURVE * mix * mix * mix
+            if safety.is_runaway(buffer):
+                self._recover(number)
+                continue
+            played = effects.through_effects(buffer=buffer, effects=patch.effects, start=start)
+            if safety.is_runaway(played):
+                self._recover(number)
+                continue
+            mix += played * patch.volume
         self.played = end
-        return mix
+        return self.guard.guarded(mix)
+
+    def _recover(self, number):
+        """Silence a runaway instrument: its sounding notes dropped and its filters and effects started again from rest, so
+        that a filter that has blown up cannot keep screaming; its next note plays clean."""
+        self.runaways += 1
+        self.guard.fault()
+        self.voices = [voice for voice in self.voices if voice.instrument != number]
+        self.instruments[number] = self.instruments[number].remake()
 
     def _modulate(self, frames):
-        """Move every instrument's LFOs on over the chunk, and hand the first filter of each its cutoff's movement."""
+        """Move every instrument's LFOs on over the chunk, before its voices read them."""
         if len(self.places) != frames:
             self.places = numpy.arange(frames, dtype=numpy.float64)
         for patch in self.instruments.values():
-            modulation = patch.modulation
-            if not modulation.lfos:
-                continue
-            modulation.advance(self.places)
-            for effect in patch.effects:
-                if effect.moves_cutoff:
-                    effect.octaves = modulation.now.get(modulation_values.FILTER_CUTOFF)
-                    break
+            if patch.modulation.is_on():
+                patch.modulation.advance(self.places)
 
     def _begin(self, *, sample, kind, instrument, pitch, velocity):
         patch = self.instruments.get(instrument)
@@ -266,6 +282,11 @@ class SynthEngine:
         while len(mine) >= patch.voices:
             mine.pop(0).cut_at = sample
 
+    def _let_go_if_ringing_on(self, *, voice, start):
+        """Cut a note released long ago that still sounds, so that nothing rings on for ever (safety.py)."""
+        if voice.release_at is not None and voice.cut_at is None and start - voice.release_at > safety.LONGEST_RING_SECONDS * self.rate:
+            voice.cut_at = start
+
     def _play(self, *, voice, start, frames, into):
         """Add a voice's part of a chunk to its instrument's buffer, and return whether it still sounds after it."""
         offset = voice.start - start
@@ -282,6 +303,7 @@ class SynthEngine:
         else:
             out = voice.patch.sound(voice=voice, first=start + offset, count=count, rate=self.rate)
         alive = True
+        self._let_go_if_ringing_on(voice=voice, start=start)
         if voice.cut_at is not None:
             fade = int(CUT_FADE_SECONDS * self.rate)
             positions = numpy.arange(start + offset, start + offset + count) - voice.cut_at

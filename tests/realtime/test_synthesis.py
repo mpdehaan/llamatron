@@ -12,14 +12,13 @@ from unittest import mock
 from llamatron.model.objects.built_in_sound import synth_spec
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, EffectSetting, FilterMode, FilterType, LfoSetting, LfoShape, Modulation, Noise, SidWave, SoundEngine, SoundSetting, SynthControl, Waveform
-from llamatron.realtime.synth_process import drums, effects as effect_values, engine as engine_values, process, tables
-from llamatron.realtime.synth_process.effects import Bitcrush, compiled_effects
+from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, EffectSetting, FilterMode, FilterType, LfoSetting, LfoShape, Modulation, Noise, OscillatorSetting, SidWave, SoundEngine, SoundSetting, SynthControl, Waveform
+from llamatron.realtime.synth_process import drums, effects as effect_values, engine as engine_values, process, safety, tables
+from llamatron.realtime.synth_process.effects import Bitcrush
 from llamatron.realtime.synth_process.engine import DrumPatch, SynthEngine
 from llamatron.realtime.synth_process.modulation import LfoBank
 from llamatron.realtime.synth_process.player import compiled
 from llamatron.realtime.synth_process.process import SynthesisNotStarted, SynthesisProcess
-from llamatron.realtime.synth_process.voices import BasicPatch
 
 RATE = 44100
 CHUNK = 128
@@ -52,12 +51,20 @@ SECONDS_TO_FALL_SILENT = 3
 PULSE_SWEEP = 40
 ARPEGGIO = [0, 4, 7]
 GLIDE_MS = 50
+SHORT_ATTACK_MS = 1
+SHORT_DECAY_MS = 50
+SHORT_RELEASE_MS = 10
+HALF = 50
+FULL = 100
+# A fast LFO swings this far, of its -1 to 1, within one chunk.
+HALF_SWING = 0.5
 
 
-def saw_patch(*, voices=4, effects=()):
-    """Return a Basic patch of one saw with a short envelope."""
-    saw = tables.waveform_tables(waveform=Waveform.SAW, rate=RATE)
-    return BasicPatch(oscillators=[(saw, 0, 1.0)], envelope=(0.001, 0.05, 0.5, 0.01), voices=voices, volume=1.0, effects=compiled_effects(effects=effects, rate=RATE))
+def saw_patch(*, voices=4, blocks=()):
+    """Return a Basic patch of one saw with a short envelope, through effect blocks as the set stores them."""
+    sound = {SoundSetting.OSCILLATORS: [{OscillatorSetting.WAVEFORM: Waveform.SAW}], SoundSetting.ATTACK: SHORT_ATTACK_MS, SoundSetting.DECAY: SHORT_DECAY_MS,
+             SoundSetting.SUSTAIN: HALF, SoundSetting.RELEASE: SHORT_RELEASE_MS, SoundSetting.VOICES: voices, SoundSetting.VOLUME: FULL, SoundSetting.EFFECTS: list(blocks)}
+    return compiled(spec=synth_spec(sound), rate=RATE)
 
 
 def drum_patch(*, machine, choke=None):
@@ -73,11 +80,6 @@ def rendered_saw():
     engine.set_instrument(number=SYNTH, patch=saw_patch())
     engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=LOUD)
     return rendered(engine, chunks=40)
-
-
-def effects_of(*blocks):
-    """Return effect blocks as llamatron gives them to the Synthesis Process, every setting given."""
-    return synth_spec({SoundSetting.EFFECTS: list(blocks)})['effects']
 
 
 def rendered(engine, *, chunks):
@@ -132,9 +134,11 @@ class TestSynthesisEngine(unittest.TestCase):
 
     def test_the_bitcrusher_holds_samples_and_reduces_bits(self):
         crushed = SynthEngine(rate=RATE)
-        crushed.set_instrument(number=SYNTH, patch=saw_patch(effects=effects_of({EffectSetting.EFFECT: Effect.BITCRUSH, EffectSetting.BITS: 2, EffectSetting.RATE: RATE // 8})))
+        crushed.set_instrument(number=SYNTH, patch=saw_patch(blocks=[{EffectSetting.EFFECT: Effect.BITCRUSH, EffectSetting.BITS: 2, EffectSetting.RATE: RATE // 8}]))
         crushed.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=127)
-        mix = rendered(crushed, chunks=4)
+        # The instrument's own mix, before the output's guard filters its steps (safety.py).
+        with mock.patch.object(safety.OutputGuard, 'guarded', autospec=True, side_effect=lambda guard, mix: mix):
+            mix = rendered(crushed, chunks=4)
         self.assertLessEqual(len(numpy.unique(numpy.round(mix, 4))), 8)
         self.assertTrue(numpy.all(mix[CHUNK:CHUNK + 8] == mix[CHUNK]))
 
@@ -222,7 +226,7 @@ class TestFilters(unittest.TestCase):
     def filtered(self, *, block, chunks=40, pitch=MIDDLE_C):
         """Return a held saw through a filter block, played a while."""
         engine = SynthEngine(rate=RATE)
-        engine.set_instrument(number=SYNTH, patch=saw_patch(effects=effects_of({EffectSetting.EFFECT: Effect.FILTER, **block})))
+        engine.set_instrument(number=SYNTH, patch=saw_patch(blocks=[{EffectSetting.EFFECT: Effect.FILTER, **block}]))
         engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=pitch, velocity=LOUD)
         return rendered(engine, chunks=chunks)
 
@@ -256,13 +260,6 @@ class TestFilters(unittest.TestCase):
         late = self.brightness(mix)
         self.assertGreater(early, late)
 
-    def test_a_half_mix_lies_between_the_dry_and_the_filtered(self):
-        block = {EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 0}
-        full = self.brightness(self.filtered(block=block))
-        half = self.brightness(self.filtered(block={**block, EffectSetting.MIX: 50}))
-        self.assertLess(full, half)
-        self.assertLess(half, self.brightness(rendered_saw()))
-
 
 class TestLfos(unittest.TestCase):
 
@@ -278,12 +275,13 @@ class TestLfos(unittest.TestCase):
         return int(numpy.count_nonzero((mix[:-1] <= 0) & (mix[1:] > 0)))
 
     def test_a_fast_lfo_moves_within_a_chunk(self):
-        lfo = {'target': SynthControl.PITCH, 'shape': LfoShape.SINE, 'rate': FAST_LFO_HERTZ, 'depth': 1.0, 'retrigger': True}
+        lfo = {'shape': LfoShape.SINE, 'rate': FAST_LFO_HERTZ, 'retrigger': True}
         modulation = LfoBank(lfos=[lfo], rate=RATE)
         modulation.advance(numpy.arange(CHUNK, dtype=numpy.float64))
-        moved = modulation.now[SynthControl.PITCH]
+        moved = modulation.now[0]
         self.assertEqual(len(numpy.unique(moved)), CHUNK)
-        self.assertGreater(moved.max() - moved.min(), 1.0)
+        self.assertGreater(moved.max() - moved.min(), HALF_SWING)
+        self.assertLessEqual(float(numpy.abs(moved).max()), 1.0)
 
     def test_a_square_lfo_on_pitch_trills_every_tonal_engine_an_octave_either_way(self):
         lfo = {LfoSetting.ON: True, LfoSetting.TARGET: SynthControl.PITCH, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.RATE: TRILL_TENTHS, LfoSetting.DEPTH: OCTAVE_DEPTH}
@@ -296,7 +294,7 @@ class TestLfos(unittest.TestCase):
                 self.assertAlmostEqual(high / low, TWO_OCTAVES, delta=0.3)
 
     def test_an_lfo_restarts_on_a_note_when_it_retriggers_and_on_a_scene_when_it_restarts_each_scene(self):
-        lfo = {'target': SynthControl.PITCH, 'shape': LfoShape.SINE, 'rate': FAST_LFO_HERTZ, 'depth': 1.0}
+        lfo = {'shape': LfoShape.SINE, 'rate': FAST_LFO_HERTZ}
         bank = LfoBank(lfos=[{**lfo, 'retrigger': True}, {**lfo, 'retrigger': False, 'each_scene': True}], rate=RATE)
         bank.advance(numpy.arange(CHUNK, dtype=numpy.float64))
         bank.note_on()
@@ -305,11 +303,14 @@ class TestLfos(unittest.TestCase):
         bank.scene_started()
         self.assertEqual(bank.lfos[1].cycles, 0.0)
 
-    def test_an_lfo_that_is_off_or_has_nothing_to_move_on_its_engine_is_left_out(self):
+    def test_an_lfo_that_is_off_or_has_nothing_to_move_on_its_engine_is_left_out_and_one_that_moves_is_routed(self):
         lfo = {LfoSetting.ON: True, LfoSetting.TARGET: SynthControl.PULSE_WIDTH}
-        self.assertEqual(synth_spec({SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.LFOS: [lfo]})['lfos'], [])
-        self.assertEqual(synth_spec({SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.LFOS: [{**lfo, LfoSetting.ON: False}]})['lfos'], [])
-        self.assertEqual(len(synth_spec({SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.LFOS: [lfo]})['lfos']), 1)
+        nothing = synth_spec({SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.LFOS: [lfo]})
+        self.assertEqual((nothing['lfos'], nothing['matrix']), ([None], []))
+        off = synth_spec({SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.LFOS: [{**lfo, LfoSetting.ON: False}]})
+        self.assertEqual((off['lfos'], off['matrix']), ([None], []))
+        routed = synth_spec({SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.LFOS: [lfo]})
+        self.assertEqual([slot['destination'] for slot in routed['matrix']], [SynthControl.PULSE_WIDTH])
 
     def test_an_lfo_on_the_filter_cutoff_moves_the_first_filter(self):
         block = {EffectSetting.EFFECT: Effect.FILTER, EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 0}

@@ -1,55 +1,45 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""What moves a built-in instrument's Synth Controls while it plays: its LFOs, each worked out sample by sample a chunk at a
-time, so that one at tens of hertz, a chip's vibrato, trill or wobbling pulse, moves smoothly and never in steps of a chunk.
+"""A built-in instrument's LFOs, each worked out sample by sample a chunk at a time, so that one at tens of hertz, a chip's
+vibrato, trill or wobbling pulse, moves smoothly and never in steps of a chunk.
 
-Each chunk, before its voices play, the engine asks every instrument's modulation to advance: it sums its LFOs into an array
-for each control they move, in that control's own unit: semitones for pitch, a share of the cycle for pulse width, octaves
-for the first filter's cutoff, and a share of the oscillators' detune for detune spread. A voice reads the arrays as it
-sounds. An LFO that retriggers starts its cycle again at each note. Speed rules this module, as it does the engine (the
-user's yes).
+Each chunk, before its voices play, the engine asks every instrument's LFOs to advance: each gives an array from -1 to 1 over
+the chunk, which the instrument's mod matrix routes to what it moves at the slot's amount (matrix.py). An LFO that is off
+gives None. An LFO that retriggers starts its cycle again at each note, and one that restarts each scene at each scene. Speed
+rules this module, as it does the engine (the user's yes).
 """
 
 import math
 import numpy
 
-PITCH = 'pitch'
-PULSE_WIDTH = 'pulse_width'
-FILTER_CUTOFF = 'filter_cutoff'
-DETUNE_SPREAD = 'detune_spread'
 SINE = 'sine'
 TRIANGLE = 'triangle'
 SAW_UP = 'saw_up'
 SAW_DOWN = 'saw_down'
 SQUARE = 'square'
 SAMPLE_AND_HOLD = 'sample_and_hold'
-# How far each control moves at full depth, either way: an octave of pitch, two fifths of a pulse's cycle, four octaves of
-# cutoff, and the oscillators' detune doubled or gone.
-RANGES = {PITCH: 12.0, PULSE_WIDTH: 0.4, FILTER_CUTOFF: 4.0, DETUNE_SPREAD: 1.0}
 # Sample and hold reads a table of random values, a new one each cycle, the same for every playing of the set.
 HELD_VALUES = 4096
 HELD_SEED = 224
 
 
 class Lfo:
-    """An LFO: the control it moves, its shape, its rate in hertz, its depth from -1 to 1 times the control's range, whether a
-    note starts it again and whether each scene does, and where it is in its cycle, counted in cycles."""
+    """An LFO: its shape, its rate in hertz, whether a note starts it again and whether each scene does, and where it is in
+    its cycle, counted in cycles."""
 
-    __slots__ = ('target', 'shape', 'step', 'amount', 'retrigger', 'each_scene', 'cycles', 'held')
+    __slots__ = ('shape', 'step', 'retrigger', 'each_scene', 'cycles', 'held')
 
     def __init__(self, *, spec, rate, held):
-        self.target = spec['target']
         self.shape = spec['shape']
         self.step = spec['rate'] / rate
-        self.amount = spec['depth'] * RANGES[self.target]
         self.retrigger = spec['retrigger']
         self.each_scene = spec.get('each_scene', False)
         self.cycles = 0.0
         self.held = held
 
     def values(self, places):
-        """Return the LFO over a chunk, places being 0 to the chunk's length, its depth applied, its cycle moving on past it."""
+        """Return the LFO over a chunk from -1 to 1, places being 0 to the chunk's length, its cycle moving on past it."""
         cycles = self.cycles + self.step * places
         self.cycles = (self.cycles + self.step * len(places)) % len(self.held)
         if self.shape == SAMPLE_AND_HOLD:
@@ -66,40 +56,43 @@ class Lfo:
                 wave = 1.0 - 2.0 * place
             else:
                 wave = numpy.where(place < 0.5, 1.0, -1.0)
-        return wave * self.amount
+        return wave
 
 
 class LfoBank:
-    """An instrument's LFOs, and what they gave the chunk now playing: an array for each control they move, now."""
+    """An instrument's four LFOs, None for one that is off, and what they gave the chunk now playing: an array each, or None,
+    now."""
 
     __slots__ = ('lfos', 'now')
 
     def __init__(self, *, lfos=(), rate=44100):
         held = numpy.random.default_rng(HELD_SEED).uniform(-1.0, 1.0, HELD_VALUES)
-        self.lfos = [Lfo(spec=spec, rate=rate, held=held) for spec in lfos]
-        self.now = {}
+        self.lfos = []
+        for spec in lfos:
+            lfo = None
+            if spec is not None:
+                lfo = Lfo(spec=spec, rate=rate, held=held)
+            self.lfos.append(lfo)
+        self.now = [None] * len(self.lfos)
+
+    def is_on(self):
+        """Return whether any LFO is on, so that an instrument with none skips the work."""
+        return any(lfo is not None for lfo in self.lfos)
 
     def advance(self, places):
         """Work out what the LFOs give the chunk ahead, places being 0 to its length."""
-        now = {}
-        for lfo in self.lfos:
-            values = lfo.values(places)
-            if lfo.target in now:
-                now[lfo.target] = now[lfo.target] + values
-            else:
-                now[lfo.target] = values
-        self.now = now
+        self.now = [None if lfo is None else lfo.values(places) for lfo in self.lfos]
 
     def note_on(self):
         """Start again every LFO that retriggers, as a note begins."""
         for lfo in self.lfos:
-            if lfo.retrigger:
+            if lfo is not None and lfo.retrigger:
                 lfo.cycles = 0.0
 
     def scene_started(self):
         """Start again every LFO that restarts each scene, as the instrument's clip starts with its scene."""
         for lfo in self.lfos:
-            if lfo.each_scene:
+            if lfo is not None and lfo.each_scene:
                 lfo.cycles = 0.0
 
 
