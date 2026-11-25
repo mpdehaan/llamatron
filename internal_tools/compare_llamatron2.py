@@ -114,6 +114,8 @@ def rendered_text(grid):
     lines = []
     for row_place, row in enumerate(grid.get_rows()):
         lines.append('scene {} tempo {}'.format(row_place, row.get_tempo()))
+        for time, tempo in row.get_tempo_changes():
+            lines.append('  tempo {} {}'.format(time, tempo))
         for column in grid.get_columns():
             clip = grid.get_clip(row=row, column=column)
             if clip is None:

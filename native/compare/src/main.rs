@@ -163,6 +163,9 @@ fn rendered_songs(setlist: &llamatron_model::objects::setlist::Setlist) -> llama
         for (place, row) in grid.rows.iter().enumerate() {
             let tempo = row.tempo.map(llamatron_math::number::python_float_text).unwrap_or("None".to_string());
             lines.push(format!("scene {place} tempo {tempo}"));
+            for (time, tempo) in &row.tempo_changes {
+                lines.push(format!("  tempo {time} {}", llamatron_math::number::python_float_text(*tempo)));
+            }
             for track in &grid.tracks {
                 let Some((_, clip)) = row.clips.iter().find(|(found, _)| found == track) else {
                     continue;

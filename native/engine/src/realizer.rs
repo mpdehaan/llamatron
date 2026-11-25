@@ -82,11 +82,7 @@ impl WrittenScene<'_> {
 /// a set may hold, worked out as Python's numbers work it out, so that the same tempo is written.
 fn own_tempo(scene: &Scene, song: &Song) -> Option<f64> {
     let percent = scene.get_written(SceneSetting::TEMPO)?;
-    let scaled = match (song.get_tempo(), percent) {
-        (Data::Whole(tempo), Data::Whole(percent)) => (tempo * percent) as f64 / 100.0,
-        (tempo, percent) => as_float(&tempo)? * as_float(percent)? / 100.0,
-    };
-    Some(scaled.max(MIN_TEMPO as f64).min(MAX_TEMPO as f64))
+    scaled_tempo(&song.get_tempo(), percent)
 }
 
 fn as_float(value: &Data) -> Option<f64> {
@@ -95,6 +91,85 @@ fn as_float(value: &Data) -> Option<f64> {
         Data::Float(number) => Some(*number),
         _ => None,
     }
+}
+
+/// A tempo scaled by a percentage, held to the tempos a set may hold, worked out as Python's numbers work it out.
+fn scaled_tempo(tempo: &Data, percent: &Data) -> Option<f64> {
+    let scaled = match (tempo, percent) {
+        (Data::Whole(tempo), Data::Whole(percent)) => (tempo * percent) as f64 / 100.0,
+        (tempo, percent) => as_float(tempo)? * as_float(percent)? / 100.0,
+    };
+    Some(scaled.max(MIN_TEMPO as f64).min(MAX_TEMPO as f64))
+}
+
+/// The tempo a scene plays at, its own or the song's, as a number Python would hold.
+fn tempo_in(scene: &Scene, song: &Song) -> Data {
+    match own_tempo(scene, song) {
+        Some(tempo) => Data::Float(tempo),
+        None => song.get_tempo(),
+    }
+}
+
+/// A number rounded to some decimal places, as Python's round(number, places) rounds a float.
+fn rounded(value: f64, places: usize) -> f64 {
+    format!("{value:.places$}").parse().unwrap_or(value)
+}
+
+/// A scene's tempo ramp one way, its ends tempos or None where blank and its bars, or None where it changes nothing.
+struct TempoRamp {
+    start: Option<f64>,
+    end: Option<f64>,
+    over: Rational,
+}
+
+fn tempo_ramp(scene: &Scene, way: &str, base: &Data) -> Option<TempoRamp> {
+    let written = |part: &str| scene.get_written(&format!("tempo_{way}_{part}")).filter(|value| !value.is_null());
+    let over = written("over")?.as_whole()?;
+    let (start, end) = (written("start"), written("end"));
+    if start.is_none() && end.is_none() {
+        return None;
+    }
+    Some(TempoRamp {
+        start: start.and_then(|start| scaled_tempo(base, start)),
+        end: end.and_then(|end| scaled_tempo(base, end)),
+        over: Rational::whole(over),
+    })
+}
+
+/// The tempo between a ramp's ends a share of the way along, a blank end being the tempo there would have been.
+fn between(ramp: &TempoRamp, base: f64, share: Rational) -> f64 {
+    let start = ramp.start.unwrap_or(base);
+    let end = ramp.end.unwrap_or(base);
+    rounded(start + (end - start) * share.to_float(), TEMPO_PLACES)
+}
+
+/// A scene's tempos across its whole play, step by step, each change of tempo with when it starts.
+fn ramped_tempos(
+    base: &Data,
+    ramp_in: Option<TempoRamp>,
+    ramp_out: Option<TempoRamp>,
+    length: Rational,
+    bar: Rational,
+    step: Rational,
+) -> Vec<(Rational, f64)> {
+    let base_float = as_float(base).unwrap_or(120.0);
+    let in_span = ramp_in.as_ref().map(|ramp| ramp.over * bar).unwrap_or(length);
+    let out_span = ramp_out.as_ref().map(|ramp| ramp.over * bar).unwrap_or(length);
+    let out_from = length - out_span;
+    let mut tempos: Vec<(Rational, f64)> = Vec::new();
+    let mut time = Rational::ZERO;
+    while time < length || tempos.is_empty() {
+        let tempo = match (&ramp_in, &ramp_out) {
+            (Some(ramp), _) if time < in_span => between(ramp, base_float, time / in_span),
+            (_, Some(ramp)) if time >= out_from => between(ramp, base_float, ((time - out_from + step) / out_span).min(Rational::whole(1))),
+            _ => base_float,
+        };
+        if tempos.last().is_none_or(|(_, last)| *last != tempo) {
+            tempos.push((time, tempo));
+        }
+        time = time + step;
+    }
+    tempos
 }
 
 /// A song rendered: its tracks, and each written-out scene's name and clips by track.
@@ -106,6 +181,8 @@ pub struct Grid {
 pub struct GridRow {
     pub name: String,
     pub tempo: Option<f64>,
+    /// The changes of tempo inside the row after its start, where its scene ramps, each with its time from the row's start.
+    pub tempo_changes: Vec<(Rational, f64)>,
     pub clips: Vec<(String, Clip)>,
 }
 
@@ -185,9 +262,11 @@ impl<'a> SongRealizer<'a> {
                     clips.push((track.clone(), clip));
                 }
             }
+            let tempos = self.tempos_of(scene)?;
             rows.push(GridRow {
                 name: scene.name.clone(),
-                tempo: scene.tempo,
+                tempo: tempos.as_ref().map(|tempos| tempos[0].1).or(scene.tempo),
+                tempo_changes: tempos.map(|tempos| tempos[1..].to_vec()).unwrap_or_default(),
                 clips,
             });
         }
@@ -397,6 +476,40 @@ impl<'a> SongRealizer<'a> {
         self.setlist.get_pattern(&clip_slot.get_pattern_name()).is_some_and(|pattern| pattern.is_drum())
     }
 
+    /// A written-out scene's tempos where its scene ramps its tempo, the first at its start, or None for one tempo: a scene's
+    /// ramps count bars across its whole play, every repeat together, so each repeat takes the part of them inside it.
+    fn tempos_of(&self, scene: &WrittenScene<'a>) -> Rendered<Option<Vec<(Rational, f64)>>> {
+        let played = scene.scene;
+        let base = tempo_in(played, self.song);
+        let (ramp_in, ramp_out) = (tempo_ramp(played, "in", &base), tempo_ramp(played, "out", &base));
+        if ramp_in.is_none() && ramp_out.is_none() {
+            return Ok(None);
+        }
+        let mut start = Rational::ZERO;
+        let mut here = (Rational::ZERO, Rational::ZERO);
+        let mut length = Rational::ZERO;
+        for written in self.scenes.iter().filter(|written| std::ptr::eq(written.scene, played)) {
+            let own = self.get_scene_length(written)?;
+            if written.number == scene.number {
+                here = (start, start + own);
+            }
+            start = start + own;
+            length = length + own;
+        }
+        let bar = self.song.get_time_signature().bar_length();
+        let tempos = ramped_tempos(&base, ramp_in, ramp_out, length, bar, self.setlist.get_step_size());
+        let (start, end) = here;
+        let before = tempos.iter().rfind(|(time, _)| *time <= start).map(|(_, tempo)| *tempo).unwrap_or(120.0);
+        let mut within = vec![(Rational::ZERO, before)];
+        within.extend(
+            tempos
+                .iter()
+                .filter(|(time, _)| start < *time && *time < end)
+                .map(|(time, tempo)| (*time - start, *tempo)),
+        );
+        Ok(Some(within))
+    }
+
     /// How long a scene lasts: its longest clip that does not loop, worked out without playing.
     pub fn get_scene_length(&self, scene: &WrittenScene) -> Rendered<Rational> {
         if let Some(length) = self.lengths.borrow().get(&scene.number) {
@@ -426,6 +539,9 @@ impl<'a> SongRealizer<'a> {
         Ok(length)
     }
 }
+
+/// The decimal places a ramped tempo is rounded to.
+const TEMPO_PLACES: usize = 4;
 
 /// The kinds of generator the port runs so far.
 const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes"];
@@ -517,6 +633,12 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
     }
     let scene_played = [
         SceneSetting::TEMPO,
+        SceneSetting::TEMPO_IN_START,
+        SceneSetting::TEMPO_IN_END,
+        SceneSetting::TEMPO_IN_OVER,
+        SceneSetting::TEMPO_OUT_START,
+        SceneSetting::TEMPO_OUT_END,
+        SceneSetting::TEMPO_OUT_OVER,
         SceneSetting::GROOVE,
         SceneSetting::CHAINS,
         SceneSetting::NAME,
