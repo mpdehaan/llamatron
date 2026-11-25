@@ -18,6 +18,7 @@ import pathlib
 import unittest
 
 import llamatron
+from tests import rules
 
 ROOT = pathlib.Path(llamatron.__file__).parents[2]
 # The program, its tests and its tools all follow the rule.
@@ -108,6 +109,7 @@ def source_files():
     return [path for root in SOURCE_ROOTS for path in sorted(root.glob(ALL_FILES))]
 
 
+@unittest.skip(rules.STYLE_WAIVED)
 class TestKeywordOnly(unittest.TestCase):
 
     def test_every_function_with_two_parameters_or_a_default_takes_them_by_keyword(self):

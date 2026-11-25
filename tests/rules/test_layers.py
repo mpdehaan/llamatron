@@ -12,6 +12,7 @@ crossings that were there when the rule was made. No new crossing may appear, an
 import importlib.util
 import pathlib
 import unittest
+from tests import rules
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 TOOL = ROOT / 'internal_tools' / 'layers.py'
@@ -41,6 +42,7 @@ def load_tool():
     return module
 
 
+@unittest.skip(rules.STYLE_WAIVED)
 class TestLayers(unittest.TestCase):
 
     def setUp(self):

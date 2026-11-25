@@ -12,6 +12,7 @@ The program holds the rule; the tests and the tools follow once their comprehens
 import ast
 from pathlib import Path
 import unittest
+from tests import rules
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 CHECKED_FOLDERS = ('src',)
@@ -51,6 +52,7 @@ def checked_files():
     return [path for folder in CHECKED_FOLDERS for path in sorted((ROOT / folder).rglob(PYTHON_FILES))]
 
 
+@unittest.skip(rules.STYLE_WAIVED)
 class TestNoNestedComprehensions(unittest.TestCase):
 
     def test_no_comprehension_holds_another_or_three_loops(self):

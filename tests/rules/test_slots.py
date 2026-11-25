@@ -20,6 +20,7 @@ import pkgutil
 import unittest
 
 import llamatron
+from tests import rules
 
 PACKAGE = 'llamatron'
 # A __main__ module starts the program when it's imported, so it's left out. It defines no classes.
@@ -106,6 +107,7 @@ class EmptyOnMethod(ConstantsWithMethod):
     __slots__ = ()
 
 
+@unittest.skip(rules.STYLE_WAIVED)
 class TestSlots(unittest.TestCase):
 
     def test_every_class_declares_its_slots(self):

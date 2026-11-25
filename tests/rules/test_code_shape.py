@@ -14,6 +14,7 @@ breaks its rule must come off the list (`internal_tools/code_shape.sh --prune`),
 import importlib.util
 import pathlib
 import unittest
+from tests import rules
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 TOOL = ROOT / 'internal_tools' / 'code_shape.py'
@@ -32,6 +33,7 @@ def the_tool():
     return module
 
 
+@unittest.skip(rules.STYLE_WAIVED)
 class TestCodeShape(unittest.TestCase):
 
     @classmethod

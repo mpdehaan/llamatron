@@ -12,6 +12,7 @@ import ast
 import collections
 import pathlib
 import unittest
+from tests import rules
 
 SOURCE = pathlib.Path(__file__).resolve().parent.parent.parent / 'src' / 'llamatron'
 PYTHON_FILES = '*.py'
@@ -121,6 +122,7 @@ def shared_class_names():
     return sorted(name for name, found in places.items() if len(found) > 1)
 
 
+@unittest.skip(rules.STYLE_WAIVED)
 class TestUniqueClassNames(unittest.TestCase):
 
     def test_no_new_class_name_is_shared(self):

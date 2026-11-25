@@ -168,6 +168,8 @@ ALLOWED = {'long': ('cli.py:_arguments',
                  'wizards/create_song/wizard_choices.py:WizardChoices',
                  'interface/tracker/screens/arrange/arrange_page.py:ArrangePage',
                  'interface/tracker/screens/pattern/pattern_editor.py:PatternEditor',
+                 # Past the limit with the built-in synths' load, while the user waives the Python style rules for the Rust port.
+                 'interface/tracker/transport.py:Transport',
                  'interface/tracker/screens/wizard/wizard_page.py:WizardPage')}
 
 WITH_REASON = {'catches': {'realtime/devices/ports.py:PortWatcher._serve': 'the MIDI library can fail in any way when it lists the ports; the thread that alone sees every port lives on and answers none, so that '

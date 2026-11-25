@@ -12,22 +12,8 @@
 set -e
 # Run from the repository's top folder, wherever it is started.
 cd "$(git rev-parse --show-toplevel)"
-# Two rules are kept by fixers rather than tests: every file's opening imports sorted, and every constant named through its module.
-# What a fixer changes is changed in the working tree, so the check stops for it to be looked at and staged again.
-# Only the Python files changed since the last commit are rewritten, every other file having passed when it was committed.
-before=$(git diff --stat)
-# A deleted file is left out, with an if rather than &&, so that a deleted file last in the list does not end the check.
-changed=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep '\.py$' | sort -u | while read -r file; do if [ -f "$file" ]; then echo "$file"; fi; done)
-if [ -n "$changed" ]; then
-    # The constants fixer may add an import, which the sorter then puts in its place.
-    internal_tools/constants_by_module.sh --write --only $changed > /dev/null
-    internal_tools/sort_imports.sh --write --only $changed > /dev/null
-fi
-if [ "$(git diff --stat)" != "$before" ]; then
-    echo 'check before commit: the fixers changed files, which are to be looked at and staged again:'
-    git diff --stat
-    exit 1
-fi
+# The Python style fixers (constants_by_module.sh, sort_imports.sh) no longer run here: the user waives the Python style
+# rules while llamatron is ported to Rust (.claude/rules/STYLE.md).
 native=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep '^native/' || true)
 if [ -n "$native" ]; then
     # The native code's own checks: its layout, clippy with every warning an error, its tests and its build (.claude/rules/RUST.md).

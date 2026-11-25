@@ -25,6 +25,7 @@ from llamatron import user_strings
 from llamatron.engine import generators as generator_package
 from llamatron.model.schema import defaults, limits
 from llamatron.user_strings import errors, help, reprs
+from tests import rules
 
 SOURCE_FOLDER = os.path.dirname(llamatron.__file__)
 TEST_FOLDER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -135,6 +136,7 @@ def defined_twice(path):
     return twice
 
 
+@unittest.skip(rules.STYLE_WAIVED)
 class TestMessageConstants(unittest.TestCase):
 
     def test_only_the_strings_package_defines_prefixed_constants(self):
