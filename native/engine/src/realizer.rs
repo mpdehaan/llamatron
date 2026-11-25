@@ -15,10 +15,11 @@ use crate::error::{RenderError, Rendered};
 use crate::generators::chords::Continuation;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
+use llamatron_model::objects::setlist::Item;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::{Scene, Song, Track};
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SongSetting, TrackSetting};
-use llamatron_model::schema::generated::file_format::{Restart, GENERATOR_ENABLED};
+use llamatron_model::schema::generated::file_format::{Restart, BYPASS_WHEN, GENERATOR_ENABLED};
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Setting, CLIP_SLOT, INSTRUMENT, PATTERN, SCENE, SONG, TRACK};
 use llamatron_strings::{errors, named, names};
@@ -104,9 +105,11 @@ pub type GeneratorKey = (String, String, i64);
 /// The state a generator leaves a clip in, for the next to carry on from: a voicing's last chord, or none.
 pub type EndState = Option<Vec<i64>>;
 
-/// A built-in generator as a step of a clip's chains: its kind and its settings, which it holds itself.
-pub struct BuiltInStep {
-    pub kind: &'static str,
+/// A step of a clip's chains: its generator's kind, the name it goes by, and its settings, a built-in's its own and a
+/// named generator's the set's.
+pub struct ChainStep {
+    pub kind: String,
+    pub name: String,
     pub settings: Data,
 }
 
@@ -202,32 +205,73 @@ impl<'a> SongRealizer<'a> {
     }
 
     /// What a track's clip in a written-out scene runs its notes through, in order: its built-ins switched on, a clip's
-    /// standing in for its track's of the same kind.
-    pub fn chains_of(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Vec<BuiltInStep>> {
+    /// standing in for its track's of the same kind, then the chains of its own list, its scene's and its track's.
+    pub fn chains_of(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Vec<ChainStep>> {
         let Some(clip_slot) = scene.scene.get_clip_slot(track) else {
             return Ok(Vec::new());
         };
-        let on_clip = clip_slot.get_written(ClipSlotSetting::BUILT_IN);
-        let on_track = self.track(track)?.get_written(TrackSetting::BUILT_IN);
+        let on_track = self.track(track)?;
         let mut kinds: Vec<_> = PLUGINS.iter().filter(|plugin| plugin.built_in_place.is_some()).collect();
         kinds.sort_by_key(|plugin| plugin.built_in_place);
         let mut steps = Vec::new();
         for plugin in kinds {
-            let held = [on_clip, on_track]
+            let held = [clip_slot.get_written(ClipSlotSetting::BUILT_IN), on_track.get_written(TrackSetting::BUILT_IN)]
                 .into_iter()
                 .flatten()
                 .filter_map(|built_ins| built_ins.get(plugin.name))
                 .find(|settings| is_switched_on(settings));
-            let Some(settings) = held else { continue };
-            if plugin.name != CHORDS_KIND {
-                return Err(RenderError::NotPorted(format!("the {} generator", plugin.name)));
+            if let Some(settings) = held {
+                steps.push(ported_step(plugin.name, llamatron_strings::names::MSG_BUILT_IN_NAME, settings.clone())?);
             }
-            steps.push(BuiltInStep {
-                kind: plugin.name,
-                settings: settings.clone(),
-            });
+        }
+        let lists = [
+            clip_slot.get_written(ClipSlotSetting::CHAINS),
+            scene.scene.get_written(SceneSetting::CHAINS),
+            on_track.get_written(TrackSetting::CHAINS),
+        ];
+        for name in lists.into_iter().flatten().filter_map(Data::as_list).flatten() {
+            steps.extend(self.chain_run(&name.python_str())?);
         }
         Ok(steps)
+    }
+
+    /// The steps of a chain the set names, its generators switched off left out; or a generator of another kind, a chain of
+    /// that generator alone.
+    fn chain_run(&self, name: &str) -> Rendered<Vec<ChainStep>> {
+        if let Some(Item::Chain(chain)) = self.setlist.get_item(Section::CHAINS, name) {
+            if chain.get_bypass_when().is_some() {
+                return Err(RenderError::not_ported("statements that bypass a chain"));
+            }
+            let mut steps = Vec::new();
+            for (kind, generator) in chain.get_steps() {
+                if let Some(settings) = self.generator_settings(kind, generator)? {
+                    steps.push(ported_step(kind, generator, settings)?);
+                }
+            }
+            return Ok(steps);
+        }
+        for plugin in PLUGINS {
+            if self.setlist.get_item(plugin.section, name).is_some() {
+                return match self.generator_settings(plugin.name, name)? {
+                    Some(settings) => Ok(vec![ported_step(plugin.name, name, settings)?]),
+                    None => Ok(Vec::new()),
+                };
+            }
+        }
+        Err(RenderError::Refused(format!("no chain or generator called ({name})")))
+    }
+
+    /// A named generator's settings, or None where it is switched off.
+    fn generator_settings(&self, kind: &str, name: &str) -> Rendered<Option<Data>> {
+        let section = PLUGINS.iter().find(|plugin| plugin.name == kind).map(|plugin| plugin.section).unwrap_or("");
+        let Some(Item::Generator(settings)) = self.setlist.get_item(section, name) else {
+            return Err(RenderError::Refused(format!("no {kind} generator called ({name})")));
+        };
+        let data = settings.to_data();
+        if data.get(GENERATOR_ENABLED) == Some(&Data::Bool(false)) {
+            return Ok(None);
+        }
+        Ok(Some(data))
     }
 
     /// Where a generator carries on from in a track's clip: how far into its run the clip starts, and the state the same
@@ -320,6 +364,24 @@ impl<'a> SongRealizer<'a> {
 /// The one built-in generator the port runs so far.
 const CHORDS_KIND: &str = "chords";
 
+/// A chain step of a kind the port runs, with no statements that bypass it, or what is not ported yet.
+fn ported_step(kind: &str, name: &str, settings: Data) -> Rendered<ChainStep> {
+    if kind != CHORDS_KIND {
+        return Err(RenderError::NotPorted(format!("the {kind} generator")));
+    }
+    if settings
+        .get(BYPASS_WHEN)
+        .is_some_and(|statements| statements.as_list().is_some_and(|items| !items.is_empty()))
+    {
+        return Err(RenderError::not_ported("statements that bypass a generator"));
+    }
+    Ok(ChainStep {
+        kind: kind.to_string(),
+        name: name.to_string(),
+        settings,
+    })
+}
+
 /// Whether a built-in generator's settings switch it on: a built-in is off unless written on.
 fn is_switched_on(settings: &Data) -> bool {
     settings.get(GENERATOR_ENABLED) == Some(&Data::Bool(true))
@@ -374,6 +436,7 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         unported(TRACK, &track_played, &|name| track.get_written(name).cloned())?;
     }
     let scene_played = [
+        SceneSetting::CHAINS,
         SceneSetting::NAME,
         SceneSetting::SECTION,
         SceneSetting::REPEAT,
@@ -390,6 +453,7 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         ClipSlotSetting::FOLLOW_ACTION,
         ClipSlotSetting::SCALE,
         ClipSlotSetting::BUILT_IN,
+        ClipSlotSetting::CHAINS,
     ];
     for scene in song.scenes() {
         unported(SCENE, &scene_played, &|name| scene.get_written(name).cloned())?;

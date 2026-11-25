@@ -69,14 +69,14 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             return Ok(clip);
         }
         let mut clip = clip;
-        let mut times: HashMap<String, i64> = HashMap::new();
+        let mut times: HashMap<(String, String), i64> = HashMap::new();
         let bar = self.realizer.song().get_time_signature().bar_length();
         for step in steps {
             if self.realizer.plays_drums(self.scene, self.track_name) {
                 continue;
             }
-            let count = times.entry(step.kind.to_string()).or_insert(0);
-            let key = (step.kind.to_string(), llamatron_strings::names::MSG_BUILT_IN_NAME.to_string(), *count);
+            let count = times.entry((step.kind.clone(), step.name.clone())).or_insert(0);
+            let key = (step.kind.clone(), step.name.clone(), *count);
             *count += 1;
             let settings = ChordsSettings::of(&step.settings)?;
             let continuation = self

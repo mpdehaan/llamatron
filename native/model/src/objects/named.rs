@@ -135,6 +135,11 @@ impl Chain {
         &self.steps
     }
 
+    /// The statements that bypass the whole chain, or None for none.
+    pub fn get_bypass_when(&self) -> Option<&Data> {
+        self.bypass_when.as_ref()
+    }
+
     pub fn to_data(&self) -> Data {
         let steps = Data::List(
             self.steps
