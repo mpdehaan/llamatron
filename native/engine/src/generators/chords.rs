@@ -477,7 +477,7 @@ fn half_steps_to(degree: i64, scale: Option<&Scale>) -> i64 {
 
 /// A clip's notes moved to the chord sounding on another track as each starts; before the first chord, or with no track to
 /// follow, nothing moves.
-fn follow(clip: &Clip, chords: Option<&ChordSource>) -> Rendered<Clip> {
+pub fn follow(clip: &Clip, chords: Option<&ChordSource>) -> Rendered<Clip> {
     let sounds = clip.resolved_sounds()?;
     let (Some(chords), Some(scale)) = (chords, clip.scale.as_ref()) else {
         return Ok(remade(clip, sounds));

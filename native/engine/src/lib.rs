@@ -20,3 +20,4 @@ pub mod shapes;
 pub mod sound;
 pub mod tables;
 pub mod timing;
+pub mod tune_source;

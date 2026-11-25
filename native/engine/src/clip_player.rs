@@ -9,6 +9,7 @@ use crate::error::Rendered;
 use crate::generators::arp::Arp;
 use crate::generators::chords::ChordsSettings;
 use crate::generators::guitarify::Guitarify;
+use crate::generators::musician::{Musician, Surroundings};
 use crate::generators::phrasing::Phrasing;
 use crate::generators::timing::TimingGenerator;
 use crate::generators::Generator;
@@ -22,7 +23,7 @@ use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::ClipSlot;
 use llamatron_model::schema::generated::file_format::GENERATOR_RESTART;
-use llamatron_model::schema::generated::file_format::{ClipSlotSetting, GuitarifySetting, Restart, TrackSetting};
+use llamatron_model::schema::generated::file_format::{ClipSlotSetting, GuitarifySetting, Restart, SceneSetting, TrackSetting};
 use llamatron_model::values::scale::Scale;
 use std::collections::HashMap;
 
@@ -157,6 +158,27 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                     let restart = step.settings.get(GENERATOR_RESTART).map(|restart| restart.python_str());
                     let continuation = self.realizer.continuation(self.scene, self.track_name, &key, restart.as_deref())?;
                     Generator::Guitarify(Guitarify::of(&step.settings, bar, self.tempo(), seed, continuation.offset)?)
+                }
+                "musician" => {
+                    let chords_from = step.settings.get("chords_from").filter(|name| !name.is_null()).map(Data::python_str);
+                    let tune_from = step.settings.get("tune_from").filter(|name| !name.is_null()).map(Data::python_str);
+                    let chords = match self.realizer.plays_drums(self.scene, self.track_name) {
+                        true => None,
+                        false => self.realizer.chords_followed(self.scene, self.track_name, chords_from.as_deref())?,
+                    };
+                    let surroundings = Surroundings {
+                        section: self
+                            .scene
+                            .scene
+                            .get_written(SceneSetting::SECTION)
+                            .filter(|section| !section.is_null())
+                            .map(Data::python_str),
+                        chords,
+                        tune: self.realizer.tune_heard(self.scene, self.track_name, tune_from.as_deref())?,
+                    };
+                    let seed = self.realizer.chain_step_seed(self.scene, self.track_name, index as i128)?;
+                    let beat = self.realizer.song().get_time_signature().beat_length();
+                    Generator::Musician(Box::new(Musician::of(&step.settings, bar, beat, surroundings, seed)))
                 }
                 "phrasing" => Generator::Phrasing(Phrasing::of(&step.settings, bar)?),
                 "timing" => {

@@ -19,6 +19,7 @@ use crate::grab_source::GrabSource;
 use crate::groove::{groove_for, Groove};
 use crate::sound::Sound;
 use crate::timing::StrumPlan;
+use crate::tune_source::TuneSource;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
@@ -390,9 +391,9 @@ impl<'a> SongRealizer<'a> {
         }
     }
 
-    /// The chords a track followed plays in a written-out scene, after its own chains, or None where it plays nothing there,
-    /// is no track of the song or is the track that follows.
-    pub fn chords_followed(&self, scene: &WrittenScene<'a>, track: &str, source: Option<&str>) -> Rendered<Option<ChordSource>> {
+    /// The finished clip of a track another one follows in a written-out scene, after its own chains, or None where it
+    /// plays nothing there, is no track of the song or is the track that follows; tracks following in a circle refused.
+    fn followed_clip(&self, scene: &WrittenScene<'a>, track: &str, source: Option<&str>) -> Rendered<Option<Clip>> {
         let Some(source) = source.filter(|source| *source != track && self.song.get_track(source).is_some() && scene.scene.get_clip_slot(source).is_some())
         else {
             return Ok(None);
@@ -411,10 +412,17 @@ impl<'a> SongRealizer<'a> {
         self.following.borrow_mut().push((scene.number, track.to_string()));
         let clip = self.get_clip(scene, source);
         self.following.borrow_mut().pop();
-        match clip? {
-            Some(clip) => Ok(Some(ChordSource::of(&clip)?)),
-            None => Ok(None),
-        }
+        clip
+    }
+
+    /// The chords a track followed plays in a written-out scene, after its own chains, or None.
+    pub fn chords_followed(&self, scene: &WrittenScene<'a>, track: &str, source: Option<&str>) -> Rendered<Option<ChordSource>> {
+        self.followed_clip(scene, track, source)?.map(|clip| ChordSource::of(&clip)).transpose()
+    }
+
+    /// When the tune sounds on the track a musician reads it from, in a written-out scene, or None.
+    pub fn tune_heard(&self, scene: &WrittenScene<'a>, track: &str, source: Option<&str>) -> Rendered<Option<TuneSource>> {
+        self.followed_clip(scene, track, source)?.map(|clip| TuneSource::of(&clip)).transpose()
     }
 
     /// What a track's clip in a written-out scene runs its notes through, in order: its built-ins switched on, a clip's
@@ -662,7 +670,7 @@ fn chords_in(clip: &Clip) -> i64 {
 const TEMPO_PLACES: usize = 4;
 
 /// The kinds of generator the port runs so far.
-const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes", "timing", "phrasing"];
+const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes", "timing", "phrasing", "musician"];
 
 /// The factors a chain step's seed is made with, so that it differs for every song, scene, track and place in the chain.
 const SEED_SONG_FACTOR: i128 = 1_000_003;
