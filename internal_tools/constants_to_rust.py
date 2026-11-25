@@ -198,11 +198,151 @@ def plugin_texts():
     return found
 
 
+SETTINGS_OUT = TOP / 'native' / 'model' / 'src' / 'schema' / 'generated' / 'settings.rs'
+SETTINGS_TYPES = '''
+/// A choice's value, or a setting's captured argument: text, a whole number, or a list of them.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Plain {
+    Text(&'static str),
+    Whole(i64),
+    Float(f64),
+    Flag(bool),
+    Null,
+    List(&'static [Plain]),
+}
+
+/// One setting's description, as the Python's model/schema/setting.py describes it.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Described {
+    Flag { error: &'static str },
+    Text { error: &'static str },
+    WholeNumber { lowest: Option<i64>, highest: Option<i64>, error: &'static str },
+    /// default None means LEFT_OUT, the setting left out of the file.
+    Choice { choices: &'static [Plain], default: Option<Plain>, error: &'static str },
+    TimeLength { most: (i64, i64), blank_allowed: bool },
+    Checked { check: Check, arguments: &'static [Plain], needs_song: bool, nearest: Option<Nearest> },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Setting {
+    pub name: &'static str,
+    pub described: Described,
+}
+'''
+
+
+def setting_holders():
+    """Return every class that holds settings, by the name its Rust table takes, in a steady order: the objects', then each
+    generator plugin's settings."""
+    import llamatron.model.objects as objects_package
+    from llamatron.model.schema.generator_plugins import plugins
+    found = []
+    for info in pkgutil.iter_modules(objects_package.__path__):
+        module = importlib.import_module('llamatron.model.objects.' + info.name)
+        for name, value in vars(module).items():
+            if inspect.isclass(value) and value.__module__ == module.__name__ and isinstance(getattr(value, 'SETTINGS', None), dict) and value.SETTINGS:
+                found.append((snake(name).upper(), value))
+    for plugin in plugins().values():
+        found.append(('{}_PLUGIN'.format(plugin.name.upper()), plugin.settings))
+    return found
+
+
+def snake(name):
+    """Return a CamelCase name as snake_case."""
+    letters = []
+    for place, letter in enumerate(name):
+        if letter.isupper() and place:
+            letters.append('_')
+        letters.append(letter.lower())
+    return ''.join(letters)
+
+
+def function_variant(function):
+    """Return the Rust variant naming a check function, from its module and name: the closures' outer function names them."""
+    module = function.__module__.split('.')[-1]
+    qualified = function.__qualname__.replace('.<locals>.', '_').lstrip('_')
+    parts = '{}_{}'.format(module, qualified).replace('.', '_').split('_')
+    return ''.join(part.capitalize() for part in parts if part)
+
+
+def plain(value):
+    """Return a choice or an argument as a Rust Plain."""
+    if value is None:
+        return 'Plain::Null'
+    if isinstance(value, bool):
+        return 'Plain::Flag({})'.format('true' if value else 'false')
+    if isinstance(value, str):
+        return 'Plain::Text({})'.format(literal(value))
+    if isinstance(value, int):
+        return 'Plain::Whole({})'.format(value)
+    if isinstance(value, float):
+        return 'Plain::Float({})'.format(repr(value))
+    if isinstance(value, (tuple, list, frozenset)):
+        return 'Plain::List(&[{}])'.format(', '.join(plain(item) for item in value))
+    raise NotWritable(value)
+
+
+def captured(function):
+    """Return the plain values a closure captured, in order, which its Rust port takes as its arguments."""
+    values = []
+    for cell in function.__closure__ or ():
+        try:
+            values.append(plain(cell.cell_contents))
+        except (NotWritable, ValueError):
+            values.append('Plain::Null')
+    return values
+
+
+def described_text(described):
+    """Return one setting's description as Rust."""
+    kind = type(described).__name__
+    if kind in ('Flag', 'Text'):
+        return 'Described::{} {{ error: {} }}'.format(kind, literal(described._error))
+    if kind == 'WholeNumber':
+        bound = lambda value: 'None' if value is None else 'Some({})'.format(value)
+        return 'Described::WholeNumber {{ lowest: {}, highest: {}, error: {} }}'.format(bound(described._lowest), bound(described._highest), literal(described._error))
+    if kind == 'Choice':
+        from llamatron.model.file import corrections
+        default = 'None' if described._default is corrections.LEFT_OUT else 'Some({})'.format(plain(described._default))
+        return 'Described::Choice {{ choices: &[{}], default: {}, error: {} }}'.format(', '.join(plain(choice) for choice in described._choices), default, literal(described._error))
+    if kind == 'TimeLength':
+        most = described._most
+        return 'Described::TimeLength {{ most: ({}, {}), blank_allowed: {} }}'.format(getattr(most, 'numerator', most), getattr(most, 'denominator', 1), 'true' if described._blank_allowed else 'false')
+    if kind == 'Checked':
+        nearest = 'None' if described._nearest is None else 'Some(Nearest::{})'.format(function_variant(described._nearest))
+        return 'Described::Checked {{ check: Check::{}, arguments: &[{}], needs_song: {}, nearest: {} }}'.format(
+            function_variant(described._check), ', '.join(captured(described._check)), 'true' if described._needs_song else 'false', nearest)
+    raise NotWritable(described)
+
+
+def write_settings():
+    """Write every class's settings, each described as the Python describes it, with the enums of the check and nearest
+    functions their Rust port must handle every one of."""
+    checks, nearests, tables = set(), set(), []
+    for name, holder in setting_holders():
+        rows = []
+        for setting_name, described in holder.SETTINGS.items():
+            if type(described).__name__ == 'Checked':
+                checks.add(function_variant(described._check))
+                if described._nearest is not None:
+                    nearests.add(function_variant(described._nearest))
+            rows.append('    Setting {{ name: {}, described: {} }},'.format(literal(setting_name), described_text(described)))
+        tables.append('pub static {}: &[Setting] = &[\n{}\n];\n'.format(name, '\n'.join(rows)))
+    lines = [HEADER.format(source='every class that holds settings, objects and generator plugins'), SETTINGS_TYPES]
+    lines.append('/// Every check function a setting names; the Rust port matches each.\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum Check {\n' + ''.join('    {},\n'.format(check) for check in sorted(checks)) + '}\n')
+    lines.append('/// Every function that finds a wrong value\'s nearest allowed one.\n#[derive(Clone, Copy, Debug, PartialEq, Eq)]\npub enum Nearest {\n' + ''.join('    {},\n'.format(nearest) for nearest in sorted(nearests)) + '}\n')
+    lines.extend(tables)
+    SETTINGS_OUT.write_text('\n'.join(lines))
+    module_list = SETTINGS_OUT.parent / 'mod.rs'
+    module_list.write_text(module_list.read_text() + '#[rustfmt::skip]\npub mod settings;\n')
+
+
 def main():
     texts = [(info.name, importlib.import_module('llamatron.user_strings.' + info.name)) for info in pkgutil.iter_modules(package.__path__)]
     unwritten = write_modules(folder=OUT, modules=texts)
     unwritten.update(write_modules(folder=PLUGIN_TEXTS_OUT, modules=plugin_texts()))
     unwritten.update(write_modules(folder=SCHEMA_OUT, modules=SCHEMA_MODULES))
+    write_settings()
     unwritten.update(write_modules(folder=FUNDAMENTALS_OUT, modules=FUNDAMENTALS_MODULES))
     write_enums(FUNDAMENTALS_OUT / 'enums.rs')
     unwritten.update(write_modules(folder=VALUES_OUT, modules=VALUES_MODULES))

@@ -13,3 +13,5 @@ pub mod limits;
 pub mod defaults;
 #[rustfmt::skip]
 pub mod midi;
+#[rustfmt::skip]
+pub mod settings;
