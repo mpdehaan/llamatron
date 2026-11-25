@@ -61,9 +61,19 @@ pub struct Rows<'a> {
     pub open: &'a std::collections::HashSet<String>,
     pub gauge_rows: usize,
     pub default_octave: i64,
+    /// The slots the Keyswitch section has a row for, each slot's name, and the hint over them.
+    pub keyswitch_slots: Vec<usize>,
+    pub slot_names: Vec<String>,
+    pub keyswitch_hint: String,
 }
 
 fn described(row: &str) -> &'static RowDescription {
+    // A keyswitch slot's row reads and writes the one Keyswitch row, and is described by it.
+    let row = if crate::keyswitches::slot_of_row(row).is_some() {
+        Row::KEYSWITCH
+    } else {
+        row
+    };
     ROW_DESCRIPTIONS.iter().find(|found| found.name == row).expect("every row is described")
 }
 
@@ -140,8 +150,10 @@ impl<'a> Rows<'a> {
     /// A section's rows, leaving out those a drum pattern has no use for.
     pub fn section_rows(&self, section: &str) -> Vec<&'static str> {
         if section == KEYSWITCH {
-            // The slots a Keyswitch section has rows for are not ported yet; a pattern that uses none has no section.
-            return Vec::new();
+            if self.is_drum() && !described(Row::KEYSWITCH).in_drum_patterns {
+                return Vec::new();
+            }
+            return self.keyswitch_slots.iter().map(|slot| crate::keyswitches::SLOT_ROWS[*slot]).collect();
         }
         let mut names = section_rows_of(section);
         if section == DRAW_APPLY {
@@ -284,6 +296,10 @@ impl<'a> Rows<'a> {
                 lines.push(label);
                 lines
             }
+            RowName::Row(name) if crate::keyswitches::slot_of_row(name).is_some() => {
+                let slot = crate::keyswitches::slot_of_row(name).unwrap_or(0);
+                vec![self.slot_names.get(slot).cloned().unwrap_or_default()]
+            }
             RowName::Row(name) if CC_ROWS.contains(name) => vec![self.cc_label(name)],
             RowName::Row(name) => vec![named_in(labels::MSG_ROW_LABELS, name)],
         }
@@ -347,6 +363,27 @@ impl<'a> Rows<'a> {
 
     pub fn marks_label(&self, row: &RowName) -> bool {
         matches!(row, RowName::Section(_))
+    }
+
+    /// Whether a step plays its note with a keyswitch slot's keyswitch.
+    fn slot_is_on(&self, slot: usize, step: usize) -> bool {
+        value(self.pattern, Row::KEYSWITCH, step)
+            .and_then(Data::as_list)
+            .is_some_and(|slots| slots.iter().any(|each| each.as_whole() == Some(slot as i128)))
+    }
+
+    /// Turn a keyswitch slot on a step on or off, the step's slots kept in order and none left out of the file.
+    fn set_slot(&self, slot: usize, step: usize, on: bool) -> RowEdit {
+        let mut slots: Vec<i128> = value(self.pattern, Row::KEYSWITCH, step)
+            .and_then(Data::as_list)
+            .map_or(Vec::new(), |held| held.iter().filter_map(Data::as_whole).collect());
+        slots.retain(|each| *each != slot as i128);
+        if on {
+            slots.push(slot as i128);
+        }
+        slots.sort_unstable();
+        let written = (!slots.is_empty()).then(|| Data::List(slots.into_iter().map(Data::Whole).collect()));
+        RowEdit::write(Row::KEYSWITCH, written)
     }
 
     fn on_rests(&self, name: &str) -> bool {
@@ -428,6 +465,13 @@ impl<'a> Rows<'a> {
     }
 
     fn cell_text(&self, name: &str, step: usize) -> String {
+        if let Some(slot) = crate::keyswitches::slot_of_row(name) {
+            if !self.is_note(step) && !self.on_rests(name) {
+                return String::new();
+            }
+            let on = self.slot_is_on(slot, step);
+            return if on { marks::MSG_TOGGLE_ON } else { marks::MSG_TOGGLE_OFF }.to_string();
+        }
         let held = value(self.pattern, name, step);
         let note = self.is_note(step);
         match name {
@@ -592,6 +636,7 @@ impl<'a> Rows<'a> {
             _ if *name == Row::INVERSION => cycle(&InversionRow::CLASS),
             _ if [Row::DOUBLE, Row::OMIT, Row::BASS].contains(name) => cycle(&CycleRow::CLASS),
             _ if DRAW_NOTE_ROWS.iter().chain(DRAW_VELOCITY_ROWS).any(|(_, row)| row == name) => cycle(&RegisterRow::CLASS),
+            _ if crate::keyswitches::slot_of_row(name).is_some() => toggle(&KeyswitchSlotRow::CLASS),
             _ if *name == Row::ACCENT => toggle(&AccentRow::CLASS),
             _ if *name == Row::GLIDE => toggle(&GlideRow::CLASS),
             _ if *name == Row::TIE => toggle(&TieRow::CLASS),
@@ -873,6 +918,15 @@ impl<'a> Rows<'a> {
     /// What a key on a row does at a step, typed being the digits typed into the cell so far.
     pub fn edit(&self, row: &str, step: usize, item: &KeyItem, key: &str, typed: &str) -> RowEdit {
         use bindings::*;
+        if let Some(slot) = crate::keyswitches::slot_of_row(row) {
+            if item.is(&ToggleRow::TOGGLE) {
+                return self.set_slot(slot, step, !self.slot_is_on(slot, step));
+            }
+            if item.is(&ToggleRow::CLEAR) {
+                return self.set_slot(slot, step, false);
+            }
+            return RowEdit::default();
+        }
         let value_here = value(self.pattern, row, step).cloned();
         if item.is(&PatternRow::LESS) || item.is(&PatternRow::MORE) {
             let offset = if item.is(&PatternRow::LESS) { -1 } else { 1 };

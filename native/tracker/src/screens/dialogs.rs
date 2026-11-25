@@ -20,7 +20,7 @@ use llamatron_strings::{labels, marks, messages, named};
 
 /// How wide a dialog's box is unless what it holds needs more, and the room it keeps from the screen's sides.
 const DIALOG_WIDTH: usize = 70;
-const DIALOG_MARGIN: usize = 4;
+pub(crate) const DIALOG_MARGIN: usize = 4;
 /// How many choices a choice dialog shows at once.
 const SHOWN_CHOICES: usize = 12;
 
@@ -35,7 +35,7 @@ pub enum Answer {
 pub type Then = Box<dyn FnMut(&mut App, &Answer)>;
 
 /// A dialog's heading, wrapped where it is wider than the box.
-fn heading_lines(title: &str, deletes: bool, width: usize) -> Vec<Text> {
+pub(crate) fn heading_lines(title: &str, deletes: bool, width: usize) -> Vec<Text> {
     let style = if deletes { Style::DELETE_TITLE } else { Style::BOLD };
     if title.chars().count() <= width {
         return vec![Text::styled(title, style)];
@@ -69,7 +69,12 @@ fn framed_dialog(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) -> 
 }
 
 /// What a dialog's box holds, and how wide the box is: as wide as it wants, or as its lines need, within the screen.
-fn sized_contents(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) -> Vec<Text>, keys: &[KeyItem], screen_width: usize) -> (Vec<Text>, usize) {
+pub(crate) fn sized_contents(
+    heading: &dyn Fn(usize) -> Vec<Text>,
+    lines: &dyn Fn(usize) -> Vec<Text>,
+    keys: &[KeyItem],
+    screen_width: usize,
+) -> (Vec<Text>, usize) {
     let widest = screen_width.saturating_sub(DIALOG_MARGIN);
     let mut width = widest.min(DIALOG_WIDTH);
     let mut held = contents(heading, lines, keys, width - DIALOG_MARGIN);
@@ -82,7 +87,7 @@ fn sized_contents(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) ->
 }
 
 /// Lines inside a heavy box of a width.
-fn box_lines(held: &[Text], width: usize) -> Vec<Text> {
+pub(crate) fn box_lines(held: &[Text], width: usize) -> Vec<Text> {
     let inner = width - DIALOG_MARGIN;
     let mut boxed = vec![Text::plain(&format!(
         "{}{}{}",
@@ -110,7 +115,7 @@ fn box_lines(held: &[Text], width: usize) -> Vec<Text> {
 pub const FLYOUT_SHIFT: usize = 2;
 
 /// One box drawn over another of the same width, FLYOUT_SHIFT down and to the right, covering what lies under it.
-fn stacked(under: &[Text], over: &[Text]) -> Vec<Text> {
+pub(crate) fn stacked(under: &[Text], over: &[Text]) -> Vec<Text> {
     let shift = SPACE.repeat(FLYOUT_SHIFT);
     (0..under.len().max(over.len() + FLYOUT_SHIFT))
         .map(|row| {

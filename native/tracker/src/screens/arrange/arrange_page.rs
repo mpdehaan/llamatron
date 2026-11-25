@@ -1080,7 +1080,7 @@ impl Page for ArrangePage {
             if let Some(clip) = Self::clip(app, self.row.get() as usize, &tracks[self.track_place()]) {
                 let name = clip.get_pattern_name();
                 let crumbs = self.crumbs(app);
-                app.show_page(crate::screens::pattern::open_clip_pattern(&name, crumbs));
+                app.show_page(crate::screens::pattern::open_clip_pattern(&name, crumbs, &tracks[self.track_place()]));
             }
         } else if item.is(&Keys::SHOW_DETAILS) || item.is(&Keys::HIDE_DETAILS) {
             // The other view starts from the top left, as its rows and columns are other sizes.

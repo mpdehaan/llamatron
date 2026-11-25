@@ -522,7 +522,7 @@ impl ClipPage {
         let Some(clip) = self.clip_slot(app) else { return };
         let Some(name) = clip.get_pattern_names().get(place).cloned() else { return };
         let crumbs = self.crumbs(app);
-        app.show_page(crate::screens::pattern::open_clip_pattern(&name, crumbs));
+        app.show_page(crate::screens::pattern::open_clip_pattern(&name, crumbs, &self.track));
     }
 }
 

@@ -156,7 +156,16 @@ impl Form for ScalePage {
             Text::styled(&self.uses_line(app), Style::DIM),
             Text::default(),
         ];
-        lines.extend(Keyboard { root, half_steps }.lines().iter().map(|line| Text::plain(line)));
+        lines.extend(
+            Keyboard {
+                root,
+                half_steps,
+                chord: Vec::new(),
+            }
+            .lines()
+            .iter()
+            .map(|line| Text::plain(line)),
+        );
         lines
     }
 

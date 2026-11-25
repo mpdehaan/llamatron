@@ -69,6 +69,8 @@ pub struct PatternEditor {
     /// The crumbs of the page a clip opened the editor from, Arrange or the clip page, which come first in the editor's so
     /// that they say where ESC goes back to; None when the Patterns page opened it.
     opener_crumbs: Option<Vec<String>>,
+    /// The track of the clip that opened the editor, whose instrument names the keyswitches, or None.
+    opened_track: Option<String>,
 }
 
 /// What the roll needs to know of the pattern and its scale, gathered once a key or a drawing.
@@ -287,14 +289,16 @@ impl PatternEditor {
             first_row: Cell::new(0),
             gauge_rows: Cell::new(7),
             opener_crumbs: None,
+            opened_track: None,
             typed: std::cell::RefCell::new(String::new()),
         }
     }
 
     /// The editor opened from a clip's page, whose crumbs come before the pattern's.
-    pub fn opened_from(name: &str, opener_crumbs: Vec<String>) -> PatternEditor {
+    pub fn opened_from(name: &str, opener_crumbs: Vec<String>, track: &str) -> PatternEditor {
         PatternEditor {
             opener_crumbs: Some(opener_crumbs),
+            opened_track: Some(track.to_string()),
             ..PatternEditor::new(name)
         }
     }
@@ -348,6 +352,10 @@ impl PatternEditor {
         } else {
             setlist.get_default_octave()
         };
+        let (keyswitch_slots, keyswitch_hint) = crate::keyswitches::slot_rows(app, &self.name, self.opened_track.as_deref());
+        let (instrument, _) = crate::keyswitches::keyswitch_instrument(app, &self.name, self.opened_track.as_deref());
+        let keyswitches = crate::keyswitches::keyswitches_of(app, instrument.as_deref());
+        let slot_names = (0..keyswitches.len()).map(|slot| crate::keyswitches::slot_name(&keyswitches, slot)).collect();
         Rows {
             setlist,
             song,
@@ -357,6 +365,9 @@ impl PatternEditor {
             open: &app.session.open_sections,
             gauge_rows: self.gauge_rows.get(),
             default_octave,
+            keyswitch_slots,
+            slot_names,
+            keyswitch_hint,
         }
     }
 
@@ -811,9 +822,12 @@ impl PatternEditor {
         let (place, cursor) = self.row_cursor(&rows);
         let shown = rows.scrolled_shown(height, place, &self.first_row);
         let section = rows.section_of(&cursor);
-        let hint = section
-            .and_then(|section| labels::MSG_SECTION_HINTS.iter().find(|(found, _)| *found == section))
-            .map(|(_, hint)| hint.to_string());
+        let hint = match section {
+            Some(section) if section == super::rows_view::KEYSWITCH => Some(rows.keyswitch_hint.clone()),
+            _ => section
+                .and_then(|section| labels::MSG_SECTION_HINTS.iter().find(|(found, _)| *found == section))
+                .map(|(_, hint)| hint.to_string()),
+        };
         let extra = vec![hint.unwrap_or_else(|| self.scale_said(app, &roll))];
         let mut lines = self.header_lines(app, &roll, width, (first, last), extra);
         let beats = self.beats(app, &roll);
@@ -1454,10 +1468,44 @@ impl PatternEditor {
                 app.refuse(errors::ERR_NO_NOTE_ON_STEP);
                 return;
             }
-            app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-                name: "KeyswitchDialog".to_string(),
-            }));
+            let Some(start) = place.covering else { return };
+            self.pick_keyswitches(app, start);
         }
+    }
+
+    /// Open the dialog that picks the keyswitches of the note starting on a step, and store what it answers on the step's
+    /// Keyswitch row.
+    fn pick_keyswitches(&self, app: &mut App, step: usize) {
+        let (instrument, said) = crate::keyswitches::keyswitch_instrument(app, &self.name, self.opened_track.as_deref());
+        let keyswitches = crate::keyswitches::keyswitches_of(app, instrument.as_deref());
+        let names = keyswitches
+            .iter()
+            .map(|keyswitch| keyswitch.name.clone().unwrap_or_else(|| marks::MSG_NONE_SHOWN.to_string()))
+            .collect();
+        let notes = keyswitches
+            .iter()
+            .map(|keyswitch| keyswitch.note.map_or(String::new(), |note| crate::keyswitches::note_text(app, note)))
+            .collect();
+        let picked = app
+            .document
+            .get_setlist()
+            .get_pattern(&self.name)
+            .and_then(|pattern| patterns::value(pattern, Row::KEYSWITCH, step))
+            .and_then(Data::as_list)
+            .map_or(Vec::new(), |slots| {
+                slots.iter().filter_map(|slot| slot.as_whole().map(|slot| slot as usize)).collect()
+            });
+        let title = named(messages::MSG_KEYSWITCH_DIALOG_TITLE, &[("step", (step + 1).into())]);
+        let name = self.name.clone();
+        let then = Box::new(move |app: &mut App, slots: Vec<usize>| {
+            let written = (!slots.is_empty()).then(|| Data::List(slots.into_iter().map(|slot| Data::Whole(slot as i128)).collect()));
+            super::whole_pattern::change_pattern(app, &name, |pattern| {
+                pattern.set_value(Row::KEYSWITCH, step, written).map_err(|problem| problem.message)
+            });
+        });
+        app.show_page(Box::new(crate::screens::keyswitch_dialog::KeyswitchDialog::new(
+            &title, &said, names, notes, picked, then,
+        )));
     }
 
     /// Draw a note of the entry size at the cursor.

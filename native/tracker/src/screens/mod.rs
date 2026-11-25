@@ -8,6 +8,8 @@ pub mod dialogs;
 pub mod field_page;
 pub mod generators;
 pub mod grouped_choice_dialog;
+pub mod keyswitch_dialog;
+pub mod keyswitch_map_dialog;
 pub mod list_page;
 pub mod main_page;
 pub mod new_pattern_dialog;

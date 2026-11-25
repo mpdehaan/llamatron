@@ -14,6 +14,6 @@ pub fn open_pattern(name: &str) -> Box<dyn crate::page::Page> {
 }
 
 /// The page that edits a pattern a clip plays, opened from Arrange or the clip page, whose crumbs come first.
-pub fn open_clip_pattern(name: &str, opener_crumbs: Vec<String>) -> Box<dyn crate::page::Page> {
-    Box::new(pattern_editor::PatternEditor::opened_from(name, opener_crumbs))
+pub fn open_clip_pattern(name: &str, opener_crumbs: Vec<String>, track: &str) -> Box<dyn crate::page::Page> {
+    Box::new(pattern_editor::PatternEditor::opened_from(name, opener_crumbs, track))
 }

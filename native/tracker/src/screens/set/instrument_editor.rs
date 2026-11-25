@@ -234,6 +234,49 @@ impl InstrumentEditor {
     }
 
     /// The page's fields, and what each that writes writes.
+    /// Open the Keyswitch Map, whose ten slots go into the instrument together on OK, as one undo step; a slot with nothing
+    /// in it is written as none, and a map with nothing in any slot leaves the setting out of the file.
+    fn open_keyswitch_map(&self, app: &mut App) {
+        let keyswitches = crate::keyswitches::keyswitches_of(app, Some(&self.name));
+        let title = llamatron_strings::named(
+            llamatron_strings::messages::MSG_KEYSWITCH_MAP_TITLE,
+            &[("instrument", self.name.as_str().into())],
+        );
+        let name = self.name.clone();
+        let then = Box::new(move |app: &mut App, slots: Vec<crate::keyswitches::Keyswitch>| {
+            let written: Vec<Data> = slots
+                .iter()
+                .map(|slot| {
+                    let mut pairs = Vec::new();
+                    if let Some(named) = &slot.name {
+                        pairs.push((Data::text("name"), Data::text(named)));
+                    }
+                    if let Some(note) = slot.note {
+                        pairs.push((Data::text("note"), Data::Whole(note as i128)));
+                    }
+                    if pairs.is_empty() {
+                        Data::Null
+                    } else {
+                        Data::Map(pairs)
+                    }
+                })
+                .collect();
+            let value = written.iter().any(|slot| !slot.is_null()).then_some(Data::List(written));
+            app.document.change_set(|setlist| {
+                if let Some(llamatron_model::objects::setlist::Item::Instrument(held)) =
+                    setlist.get_item_mut(llamatron_model::schema::generated::file_format::Section::INSTRUMENTS, &name)
+                {
+                    held.set_written("keyswitches", value);
+                }
+            });
+        });
+        app.show_page(Box::new(crate::screens::keyswitch_map_dialog::KeyswitchMapDialog::new(
+            &title,
+            keyswitches,
+            then,
+        )));
+    }
+
     fn built(&self, app: &App) -> (Vec<Node>, Ids) {
         let Some(instrument) = self.instrument(app) else {
             return (Vec::new(), Ids::default());
@@ -920,8 +963,19 @@ impl Form for InstrumentEditor {
         vec![KeyItem::of(&Keys::CLASS, &Keys::KEYSWITCH_MAP), KeyItem::of(&Keys::CLASS, &Keys::LISTEN)]
     }
 
+    fn press_own(&mut self, app: &mut App, item: &KeyItem, _key: &str, _row: Option<&Field>) {
+        if item.is(&Keys::KEYSWITCH_MAP) {
+            self.open_keyswitch_map(app);
+        }
+    }
+
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
         let Some(instrument) = self.instrument(app) else { return };
+        let is_map = |node: &Node| matches!(node, Node::Field(field) if field.id == id && field.label == labels::MSG_KEYSWITCH_MAP_LABEL);
+        if matches!(edit, Edit::Enter) && self.built(app).0.iter().any(is_map) {
+            self.open_keyswitch_map(app);
+            return;
+        }
         let sound = Sound::of(instrument);
         let (nodes, ids) = self.built(app);
         let Some((_, write, strides)) = ids.writes.iter().find(|(found, ..)| *found == id).copied() else {

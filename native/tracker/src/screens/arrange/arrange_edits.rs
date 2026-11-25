@@ -361,5 +361,5 @@ fn blank_pattern(app: &mut App, row: usize, track: &str, crumbs: Vec<String>) {
             });
         }
     }
-    app.show_page(crate::screens::pattern::open_clip_pattern(&name, crumbs));
+    app.show_page(crate::screens::pattern::open_clip_pattern(&name, crumbs, track));
 }
