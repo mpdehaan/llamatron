@@ -135,7 +135,8 @@ class ChordDialog(Dialog):
 
     def cancel(self):
         """Close with nothing changed, the page underneath shown the chord it had."""
-        if self.moved is not None and self.shown is not None:
+        # Only a choice that moved away was written underneath; one that never moved, or came back, left the set as it was.
+        if self.moved is not None and self.shown is not None and self.shown != chosen_parts(self.opened_on):
             self.moved(self.opened_on)
         self.dismiss(None)
 
@@ -145,7 +146,7 @@ class ChordDialog(Dialog):
         if self.moved is None:
             return
         choice = self.choice()
-        now = (choice.quality, choice.inversion, choice.tensions, choice.kind, choice.doubling)
+        now = chosen_parts(choice)
         if self.shown is None:
             self.shown = now
         elif now != self.shown:
@@ -315,3 +316,8 @@ class ChordDialog(Dialog):
             return self.sentences(width)
         said = dialog_renderer.said_lines(paragraphs=[said_on_one_line(text) for text in self.said(self.choice())][:SENTENCE_LINES], width=width)
         return [*said, *dialog_renderer.said_lines(paragraphs=[blank()] * KEYBOARD_GAP, width=width), *keyboard, *dialog_renderer.said_lines(paragraphs=[blank()] * (SENTENCE_LINES - len(said)), width=width)]
+
+
+def chosen_parts(choice):
+    """Return what a ChordChoice writes on a step, as one value to compare: its quality, inversion, tensions, scale and doubling."""
+    return (choice.quality, choice.inversion, choice.tensions, choice.kind, choice.doubling)

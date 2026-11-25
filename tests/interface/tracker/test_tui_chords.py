@@ -245,6 +245,17 @@ class TestPatternEditorChords(UITest):
         self.assertEqual((self.value(Row.CHORD), self.value(Row.CHORD_SCALE)), (ChordSymbol.MAJOR, None))
         self.assertFalse(self.document.can_undo())
 
+    async def test_escape_with_the_choice_never_moved_leaves_the_set_with_nothing_unsaved(self):
+        saved_as = 'chords.yml'
+        self.set(row=Row.CHORD, value=ChordSymbol.MAJOR)
+        self.document.save(path=saved_as)
+        await self.go_to_row(Row.CHORD)
+        await self.press(keybindings.ChordRow.CHOOSE)
+        self.assertIsInstance(self.app.screen, ChordDialog)
+        await self.press(keybindings.ChordDialog.CANCEL)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertFalse(self.document.is_dirty())
+
     async def test_the_double_row_cycles_its_doublings_and_shows_each_by_its_cell_mark(self):
         await self.go_to_row(Row.DOUBLE)
         await self.press(keybindings.CycleRow.NEXT)
