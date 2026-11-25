@@ -1073,7 +1073,8 @@ impl Page for ArrangePage {
             let tracks = Self::tracks(app);
             if let Some(clip) = Self::clip(app, self.row.get() as usize, &tracks[self.track_place()]) {
                 let name = clip.get_pattern_name();
-                app.show_page(crate::screens::pattern::open_pattern(&name));
+                let crumbs = self.crumbs(app);
+                app.show_page(crate::screens::pattern::open_clip_pattern(&name, crumbs));
             }
         } else if item.is(&Keys::SHOW_DETAILS) || item.is(&Keys::HIDE_DETAILS) {
             app.session.shows_arrange_details = !app.session.shows_arrange_details;

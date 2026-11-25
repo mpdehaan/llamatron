@@ -64,6 +64,9 @@ pub struct PatternEditor {
     row: Cell<usize>,
     first_row: Cell<usize>,
     gauge_rows: Cell<usize>,
+    /// The crumbs of the page a clip opened the editor from, Arrange or the clip page, which come first in the editor's so
+    /// that they say where ESC goes back to; None when the Patterns page opened it.
+    opener_crumbs: Option<Vec<String>>,
 }
 
 /// What the roll needs to know of the pattern and its scale, gathered once a key or a drawing.
@@ -281,6 +284,15 @@ impl PatternEditor {
             row: Cell::new(0),
             first_row: Cell::new(0),
             gauge_rows: Cell::new(7),
+            opener_crumbs: None,
+        }
+    }
+
+    /// The editor opened from a clip's page, whose crumbs come before the pattern's.
+    pub fn opened_from(name: &str, opener_crumbs: Vec<String>) -> PatternEditor {
+        PatternEditor {
+            opener_crumbs: Some(opener_crumbs),
+            ..PatternEditor::new(name)
         }
     }
 
@@ -1042,10 +1054,15 @@ impl Page for PatternEditor {
     }
 
     fn crumbs(&self, _app: &App) -> Vec<String> {
-        vec![
-            labels::Crumb::PATTERNS.to_string(),
-            named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
-        ]
+        let Some(opener) = &self.opener_crumbs else {
+            return vec![
+                labels::Crumb::PATTERNS.to_string(),
+                named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+            ];
+        };
+        let mut crumbs = opener.clone();
+        crumbs.push(named(labels::MSG_PATTERN_CRUMB, &[("name", self.name.as_str().into())]));
+        crumbs
     }
 
     fn caption(&self, _app: &App) -> String {

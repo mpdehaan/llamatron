@@ -507,10 +507,12 @@ impl Form for ClipPage {
 
 impl ClipPage {
     /// The pattern editor is ported, but not yet as a clip opens it, with the clip in its crumbs.
-    fn open_pattern(&self, app: &mut App, _place: usize) {
-        app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-            name: "PatternEditor".to_string(),
-        }));
+    /// Open the pattern editor on one pattern of the clip's list, with this page's crumbs before the pattern's.
+    fn open_pattern(&self, app: &mut App, place: usize) {
+        let Some(clip) = self.clip_slot(app) else { return };
+        let Some(name) = clip.get_pattern_names().get(place).cloned() else { return };
+        let crumbs = self.crumbs(app);
+        app.show_page(crate::screens::pattern::open_clip_pattern(&name, crumbs));
     }
 }
 
