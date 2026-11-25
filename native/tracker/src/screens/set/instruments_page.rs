@@ -8,7 +8,7 @@ use crate::app::App;
 use crate::drawing::Align;
 use crate::keybindings::{InstrumentsPage as Keys, KeyClass};
 use crate::keys::KeyItem;
-use crate::screens::list_page::{named_item_keys, ListColumn, Listing, Row};
+use crate::screens::list_page::{named_item_keys, ListColumn, Listing, NamedWords, Row};
 use crate::settings::named_in;
 use crate::themes::{self, Colour};
 use crate::uses::uses_of;
@@ -126,6 +126,14 @@ impl Listing for InstrumentsPage {
     }
 
     /// ENTER opens the instrument's page; adding asks its role, then makes it, off, and opens its page.
+    fn named(&self) -> Option<NamedWords> {
+        Some(NamedWords {
+            section: "instruments",
+            rename_prompt: llamatron_strings::messages::MSG_RENAME_INSTRUMENT_PROMPT,
+            what: llamatron_strings::legends::MSG_INSTRUMENT_WHAT,
+        })
+    }
+
     fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {
         if item.is(&Keys::ADD) || item.is(&Keys::ADD_HERE) {
             use llamatron_model::schema::generated::file_format::{SetlistSetting, INSTRUMENT_ROLES};

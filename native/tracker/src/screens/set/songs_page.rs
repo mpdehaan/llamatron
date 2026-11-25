@@ -10,7 +10,7 @@ use crate::drawing::Align;
 use crate::keybindings::{KeyClass, SongsPage as Keys};
 use crate::keys::KeyItem;
 use crate::screens::field_page::FieldPage;
-use crate::screens::list_page::{named_item_keys, ListColumn, Listing, Row};
+use crate::screens::list_page::{named_item_keys, ListColumn, Listing, NamedWords, Row};
 use crate::screens::set::song_page::SongPage;
 use crate::settings::number_text;
 use crate::themes::{self, Colour};
@@ -99,7 +99,23 @@ impl Listing for SongsPage {
         keys
     }
 
+    fn named(&self) -> Option<NamedWords> {
+        Some(NamedWords {
+            section: "songs",
+            rename_prompt: llamatron_strings::messages::MSG_RENAME_SONG_PROMPT,
+            what: llamatron_strings::legends::MSG_SONG_WHAT,
+        })
+    }
+
+    fn delete_refusal(&self, app: &App) -> Option<&'static str> {
+        (app.document.names_of("songs").len() <= 1).then_some(llamatron_strings::errors::ERR_LAST_SONG_SHOWN)
+    }
+
     fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {
+        if item.is(&Keys::ADD) || item.is(&Keys::ADD_HERE) {
+            ask_new_song(app);
+            return None;
+        }
         let name = row?;
         if item.is(&Keys::CURRENT) {
             app.document.select_song(name);
@@ -109,4 +125,23 @@ impl Listing for SongsPage {
         }
         None
     }
+}
+
+/// Ask for a new song's name, which cannot be empty or another's, and add the song, making it current.
+fn ask_new_song(app: &mut App) {
+    let taken = app.document.names_of("songs");
+    let mut prompt = crate::screens::dialogs::PromptDialog::new(llamatron_strings::messages::MSG_NEW_SONG_PROMPT, "");
+    prompt.max_length = Some(llamatron_model::schema::generated::limits::MAX_NAME_LENGTH as usize);
+    let prompt = prompt.then(Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
+        let crate::screens::dialogs::Answer::Typed(typed) = answer else { return };
+        let text = typed.trim();
+        if text.is_empty() {
+            app.refuse(llamatron_strings::errors::ERR_EMPTY_NAME);
+        } else if llamatron_model::objects::naming::is_taken(text, &taken) {
+            app.refuse(&llamatron_strings::named(llamatron_strings::errors::ERR_NAME_IN_USE, &[("name", text.into())]));
+        } else if let Err(problem) = app.document.add_song(text) {
+            app.refuse(&problem);
+        }
+    }));
+    app.show_page(Box::new(prompt));
 }

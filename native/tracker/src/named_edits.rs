@@ -1,0 +1,274 @@
+// llamatron: a music program
+// Copyright (C) 2026  Michael DeHaan
+// SPDX-License-Identifier: GPL-3.0-or-later
+//! The document's edits to anything that has a name (the Python document_parts/named_edits.py and set_edits.py's adds):
+//! renaming, copying, deleting, moving and sorting take the section the thing is in, the current song's tracks among them,
+//! each worked on the set's data through the model's edits; and adding a song, a scale or a groove.
+
+use crate::document::Document;
+use llamatron_engine::groove::FACTORY_GROOVES;
+use llamatron_model::file::data::Data;
+use llamatron_model::objects::edits;
+use llamatron_model::objects::naming::{copy_name, new_name};
+use llamatron_model::objects::setlist::Setlist;
+use llamatron_model::schema::generated::defaults::DEFAULT_TEMPO;
+use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_strings::{errors, named, names};
+
+pub const TRACKS: &str = "tracks";
+const SONGS: &str = "songs";
+const GROOVES: &str = "grooves";
+const INSTRUMENTS: &str = "instruments";
+const CHAINS: &str = "chains";
+const PATTERNS: &str = "patterns";
+const REAL_TIME: &str = "real_time";
+const GROUP: &str = "group";
+/// The cell length a factory groove's copy leaves out, its sixteenths.
+const SIXTEENTHS: (i128, i128) = (1, 16);
+/// What a new scale is: C major.
+const NEW_SCALE_ROOT: &str = "C";
+const NEW_SCALE_KIND: &str = "major";
+const FIRST_NUMBER: i64 = 1;
+
+impl Document {
+    /// The names in a section, in order: the current song's for its tracks, the set's otherwise, the factory grooves before
+    /// the set's own.
+    pub fn names_of(&self, section: &str) -> Vec<String> {
+        if section == TRACKS {
+            return self.song().get_track_names().into_iter().map(str::to_string).collect();
+        }
+        let own: Vec<String> = self.get_setlist().items(section).iter().map(|(name, _)| name.clone()).collect();
+        if section != GROOVES {
+            return own;
+        }
+        let mut names: Vec<String> = FACTORY_GROOVES.iter().map(|(name, ..)| name.to_string()).collect();
+        names.extend(own);
+        names
+    }
+
+    /// The names a new or copied item of a section may not take: every generator's and chain's for a generator or a chain,
+    /// since they share one list in a set file, and the section's own otherwise.
+    pub fn names_taken(&self, section: &str) -> Vec<String> {
+        if !is_generator_section(section) {
+            return self.names_of(section);
+        }
+        let mut names: Vec<String> = Vec::new();
+        for each in PLUGINS.iter().map(|plugin| plugin.section).chain([CHAINS]) {
+            names.extend(self.names_of(each));
+        }
+        names
+    }
+
+    /// The name a new item of a section is given: the word, a dash and one more than the highest number in use.
+    pub fn new_name(&self, section: &str, word: &str) -> String {
+        new_name(word, &self.names_taken(section))
+    }
+
+    /// Change the set by its data, the change read back into the set, refused with why where the set would not read.
+    fn edit_data(&mut self, change: impl FnOnce(&Data) -> Data) -> Result<(), String> {
+        let changed = change(&self.get_setlist().to_data());
+        let setlist = Setlist::from_data(&changed).map_err(|error| error.message)?;
+        self.change_set(|held| *held = setlist);
+        Ok(())
+    }
+
+    /// Rename an item of a section, which changes every reference to it by name. A renamed song stays current, and a renamed
+    /// track renames the pattern group of its name, where there is one and no group has the new name.
+    pub fn rename_named(&mut self, section: &str, old: &str, new: &str) -> Result<(), String> {
+        let song = self.get_current_song_name().to_string();
+        if section == TRACKS {
+            self.edit_data(|data| edits::renamed_track(data, &song, old, new))?;
+            let groups = pattern_groups(&self.get_setlist().to_data());
+            if groups.iter().any(|group| group == old) && !groups.iter().any(|group| group == new) {
+                self.edit_data(|data| renamed_group(data, old, new))?;
+            }
+            return Ok(());
+        }
+        self.edit_data(|data| edits::renamed_in_set(data, section, old, new))?;
+        if section == SONGS && song == old {
+            self.select_song(new);
+        }
+        Ok(())
+    }
+
+    /// Add a copy of an item of a section and return the copy's name: at the end of its section, except a track's, which
+    /// stands right after the track with a copy of each of its clips; a factory groove's copy is one of the set's own.
+    pub fn copy_named(&mut self, section: &str, name: &str) -> Result<String, String> {
+        let new = copy_name(name, &self.names_taken(section));
+        let song = self.get_current_song_name().to_string();
+        if section == TRACKS {
+            self.edit_data(|data| edits::copied_track(data, &song, name, &new))?;
+        } else if let (GROOVES, Some((_, cells, length))) = (section, FACTORY_GROOVES.iter().find(|(each, ..)| *each == name)) {
+            let mut groove = vec![(Data::text("cells"), Data::List(cells.iter().map(|cell| Data::Whole(*cell as i128)).collect()))];
+            if *length != SIXTEENTHS {
+                groove.push((Data::text("cell_length"), Data::text(&format!("{}/{}", length.0, length.1))));
+            }
+            let groove = Data::Map(groove);
+            self.edit_data(|data| with_item(data, GROOVES, &new, groove))?;
+        } else {
+            self.edit_data(|data| edits::copied_in_set(data, section, name, &new))?;
+        }
+        Ok(new)
+    }
+
+    /// Delete an item of a section; whoever asks has checked that nothing uses it. A deleted track takes its clips with it,
+    /// the last song cannot be deleted, deleting the current song makes the one before it current, and deleting the last
+    /// instrument turns real-time playback off.
+    pub fn delete_named(&mut self, section: &str, name: &str) -> Result<(), String> {
+        let song = self.get_current_song_name().to_string();
+        if section == TRACKS {
+            return self.edit_data(|data| edits::removed_track(data, &song, name));
+        }
+        let before = self.names_of(section);
+        if section == SONGS && before.len() <= 1 {
+            return Err(errors::ERR_LAST_SONG.to_string());
+        }
+        self.edit_data(|data| edits::removed_from_set(data, section, name))?;
+        if section == SONGS && song == name {
+            let place = before.iter().position(|each| each == name).unwrap_or(0).saturating_sub(1);
+            let names = self.names_of(SONGS);
+            if let Some(chosen) = names.get(place.min(names.len().saturating_sub(1))) {
+                let chosen = chosen.clone();
+                self.select_song(&chosen);
+            }
+        }
+        let real_time = matches!(self.get_setlist().get_written(REAL_TIME), Some(Data::Bool(true)));
+        if section == INSTRUMENTS && self.names_of(INSTRUMENTS).is_empty() && real_time {
+            self.change_set(|setlist| setlist.set_written(REAL_TIME, Some(Data::Bool(false))));
+        }
+        Ok(())
+    }
+
+    /// Move an item up or down its section, and return whether it moved, which it cannot past either end.
+    pub fn move_named(&mut self, section: &str, place: usize, offset: i64) -> bool {
+        let song = self.get_current_song_name().to_string();
+        let data = self.get_setlist().to_data();
+        let items = section_of(&data, section, &song);
+        let Some(moved) = edits::moved_in_section(&items, place, offset) else {
+            return false;
+        };
+        self.edit_data(|data| with_section(data, section, &song, moved)).is_ok()
+    }
+
+    /// Put a section's items in order of name, for good.
+    pub fn sort_named(&mut self, section: &str) -> Result<(), String> {
+        let song = self.get_current_song_name().to_string();
+        let data = self.get_setlist().to_data();
+        let sorted = edits::sorted_section(&section_of(&data, section, &song));
+        self.edit_data(|data| with_section(data, section, &song, sorted))
+    }
+
+    /// Add a song with its first track and scene at the end of the set, in the set's first scale, and make it current.
+    pub fn add_song(&mut self, name: &str) -> Result<(), String> {
+        let scale = self.names_of("scales").first().cloned();
+        let mut song = vec![(Data::text("tempo"), Data::Whole(DEFAULT_TEMPO as i128))];
+        if let Some(scale) = scale {
+            song.push((Data::text("scale"), Data::text(&scale)));
+        }
+        let track = named(names::MSG_NEW_TRACK_NAME, &[("number", FIRST_NUMBER.into())]);
+        let scene = named(names::MSG_NEW_SCENE_NAME, &[("number", FIRST_NUMBER.into())]);
+        song.push((Data::text("draws"), Data::Map(Vec::new())));
+        song.push((Data::text(TRACKS), Data::Map(vec![(Data::text(&track), Data::Map(Vec::new()))])));
+        song.push((
+            Data::text("scenes"),
+            Data::List(vec![Data::Map(vec![(Data::text("name"), Data::text(&scene))])]),
+        ));
+        let song = Data::Map(song);
+        self.edit_data(|data| with_item(data, SONGS, name, song))?;
+        self.select_song(name);
+        Ok(())
+    }
+
+    /// Add a C major scale under a name.
+    pub fn add_scale(&mut self, name: &str) -> Result<(), String> {
+        let scale = Data::Map(vec![
+            (Data::text("root"), Data::text(NEW_SCALE_ROOT)),
+            (Data::text("type"), Data::text(NEW_SCALE_KIND)),
+        ]);
+        self.edit_data(|data| with_item(data, "scales", name, scale))
+    }
+
+    /// Add a straight groove of one bar of sixteenths under a name.
+    pub fn add_groove(&mut self, name: &str) -> Result<(), String> {
+        let groove = Data::Map(vec![(Data::text("cells"), Data::List(vec![Data::Whole(0); 16]))]);
+        self.edit_data(|data| with_item(data, GROOVES, name, groove))
+    }
+}
+
+/// Whether a section's items are generators or chains.
+fn is_generator_section(section: &str) -> bool {
+    section == CHAINS || PLUGINS.iter().any(|plugin| plugin.section == section)
+}
+
+/// A set's data with an item added at the end of a section, the section made where it has none.
+fn with_item(data: &Data, section: &str, name: &str, item: Data) -> Data {
+    let mut data = data.clone();
+    if let Data::Map(pairs) = &mut data {
+        match pairs.iter_mut().find(|(key, _)| key.as_str() == Some(section)) {
+            Some((_, Data::Map(items))) => items.push((Data::text(name), item)),
+            Some(pair) => pair.1 = Data::Map(vec![(Data::text(name), item)]),
+            None => pairs.push((Data::text(section), Data::Map(vec![(Data::text(name), item)]))),
+        }
+    }
+    data
+}
+
+/// A section's items: the set's, or the current song's tracks.
+fn section_of(data: &Data, section: &str, song: &str) -> Data {
+    let held = if section == TRACKS {
+        data.get(SONGS).and_then(|songs| songs.get(song)).and_then(|song| song.get(TRACKS))
+    } else {
+        data.get(section)
+    };
+    held.cloned().unwrap_or(Data::Map(Vec::new()))
+}
+
+/// A set's data with a section's items replaced: the set's, or the current song's tracks.
+fn with_section(data: &Data, section: &str, song: &str, items: Data) -> Data {
+    let mut data = data.clone();
+    let replace = |pairs: &mut Vec<(Data, Data)>, name: &str, items: Data| {
+        if let Some(pair) = pairs.iter_mut().find(|(key, _)| key.as_str() == Some(name)) {
+            pair.1 = items;
+        }
+    };
+    let Data::Map(pairs) = &mut data else { return data };
+    if section != TRACKS {
+        replace(pairs, section, items);
+        return data;
+    }
+    if let Some((_, Data::Map(songs))) = pairs.iter_mut().find(|(key, _)| key.as_str() == Some(SONGS)) {
+        if let Some((_, Data::Map(settings))) = songs.iter_mut().find(|(key, _)| key.as_str() == Some(song)) {
+            replace(settings, TRACKS, items);
+        }
+    }
+    data
+}
+
+/// The groups the set's patterns are in.
+fn pattern_groups(data: &Data) -> Vec<String> {
+    data.get(PATTERNS).and_then(Data::as_map).map_or(Vec::new(), |patterns| {
+        patterns
+            .iter()
+            .filter_map(|(_, pattern)| pattern.get(GROUP).and_then(Data::as_str).map(str::to_string))
+            .collect()
+    })
+}
+
+/// A set's data with every pattern of a group given the group's new name.
+fn renamed_group(data: &Data, old: &str, new: &str) -> Data {
+    let mut data = data.clone();
+    if let Data::Map(pairs) = &mut data {
+        if let Some((_, Data::Map(patterns))) = pairs.iter_mut().find(|(key, _)| key.as_str() == Some(PATTERNS)) {
+            for (_, pattern) in patterns.iter_mut() {
+                if let Data::Map(settings) = pattern {
+                    for (key, value) in settings.iter_mut() {
+                        if key.as_str() == Some(GROUP) && value.as_str() == Some(old) {
+                            *value = Data::text(new);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    data
+}

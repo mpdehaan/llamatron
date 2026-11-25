@@ -23,6 +23,8 @@ pub struct Document {
     /// The set as its file held it when opened or last saved here, the version aside, which says whether something else has
     /// changed the file since.
     saved: Option<Data>,
+    /// Whether the next change continues the step before rather than making one of its own.
+    continuing: bool,
 }
 
 /// The kinds of generator a file's data says the Generators page shows open, only the plugins' kinds.
@@ -61,6 +63,7 @@ impl Document {
             history,
             clean,
             saved,
+            continuing: false,
         }
     }
 
@@ -259,7 +262,15 @@ impl Document {
     /// Note the set as a key left it, a step to undo where it changed.
     pub fn record_edit(&mut self) -> bool {
         let snapshot = self.snapshot();
+        if std::mem::take(&mut self.continuing) {
+            return self.history.record_continuing(snapshot);
+        }
         self.history.record(snapshot)
+    }
+
+    /// Have the next change continue the step before, as the carries of one move do, so that undo takes them back at once.
+    pub fn continue_edit(&mut self) {
+        self.continuing = true;
     }
 
     /// Go a step back in the history, or forward, and say what the step changed, or None where there is no step.
@@ -287,6 +298,20 @@ impl Document {
         };
         self.dirty = self.setlist.to_data() != self.clean;
         words
+    }
+
+    /// Where the set's data differs from the data it opened or was last saved with, by its top-level names, for the screen
+    /// tour to say why a stop's unsaved mark differs.
+    pub fn differences_from_clean(&self) -> Vec<String> {
+        let now = self.setlist.to_data();
+        let names = |data: &Data| -> Vec<String> {
+            data.as_map().map_or(Vec::new(), |pairs| {
+                pairs.iter().filter_map(|(key, _)| key.as_str().map(str::to_string)).collect()
+            })
+        };
+        let mut keys = names(&now);
+        keys.extend(names(&self.clean).into_iter().filter(|key| !names(&now).contains(key)));
+        keys.into_iter().filter(|key| now.get(key) != self.clean.get(key)).collect()
     }
 
     /// Note that the set changed, so that it needs saving.

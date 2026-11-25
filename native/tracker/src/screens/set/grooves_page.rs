@@ -8,7 +8,7 @@ use crate::app::App;
 use crate::drawing::Align;
 use crate::keybindings::{GroovesPage as Keys, KeyClass};
 use crate::keys::KeyItem;
-use crate::screens::list_page::{named_item_keys, ListColumn, Listing, Row};
+use crate::screens::list_page::{named_item_keys, ListColumn, Listing, NamedWords, Row};
 use crate::screens::one_row_editor::OneRowEditor;
 use crate::screens::set::groove_editor::{groove_of, GrooveEditor};
 use crate::themes::{self, Colour};
@@ -118,6 +118,14 @@ impl Listing for GroovesPage {
 
     fn row_keys(&self, _app: &App, row: &str) -> Option<Vec<KeyItem>> {
         is_factory(row).then(|| vec![KeyItem::of(&Keys::CLASS, &Keys::VIEW), KeyItem::of(&Keys::CLASS, &Keys::COPY)])
+    }
+
+    fn named(&self) -> Option<NamedWords> {
+        Some(NamedWords {
+            section: "grooves",
+            rename_prompt: llamatron_strings::messages::MSG_RENAME_GROOVE_PROMPT,
+            what: llamatron_strings::legends::MSG_GROOVE_WHAT,
+        })
     }
 
     fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {

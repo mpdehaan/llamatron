@@ -18,6 +18,7 @@ pub mod history;
 pub mod instrument_sound;
 pub mod keys;
 pub mod lengths;
+pub mod named_edits;
 pub mod page;
 pub mod patterns;
 pub mod screens;

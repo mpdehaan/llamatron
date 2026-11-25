@@ -77,11 +77,33 @@ pub trait Listing {
         Vec::new()
     }
 
+    /// The section of the set the page lists, with the words its prompts and questions use for one of its things, where
+    /// the page renames, copies, deletes, moves and sorts them as every list of named things does.
+    fn named(&self) -> Option<NamedWords> {
+        None
+    }
+
+    /// Why the selected thing cannot be deleted at all, such as the set's last song, or None.
+    fn delete_refusal(&self, _app: &App) -> Option<&'static str> {
+        None
+    }
+
     /// How wide the names' column may grow, or None for as wide as there is room.
     fn name_column_width(&self) -> Option<usize> {
         Some(MAX_NAME_LENGTH as usize)
     }
 }
+
+/// What a list of a section's named things says of them: its section, the title of the prompt that renames one, and the
+/// words for one in a question, each a template taking the name.
+pub struct NamedWords {
+    pub section: &'static str,
+    pub rename_prompt: &'static str,
+    pub what: &'static str,
+}
+
+/// How many of the things that still use an item the refusal to delete it lists.
+const MOST_USES_SHOWN: usize = 5;
 
 /// The keys a list of a section's named things has for its selected row: ENTER opens it, then rename, copy, delete, move and
 /// sort.
@@ -98,6 +120,10 @@ pub struct ListPage<L: Listing> {
     searching: bool,
     typed: String,
     place_before_search: usize,
+    /// Move mode: whether M has picked up the cursor's row, and whether it has been carried yet, so that one move is one
+    /// undo step.
+    moving: bool,
+    carried: bool,
 }
 
 impl<L: Listing> ListPage<L> {
@@ -108,6 +134,8 @@ impl<L: Listing> ListPage<L> {
             searching: false,
             typed: String::new(),
             place_before_search: 0,
+            moving: false,
+            carried: false,
         }
     }
 
@@ -205,6 +233,141 @@ impl<L: Listing> ListPage<L> {
         ]
     }
 
+    /// Do what the keys every list of named things has do, and say whether the key was one: Move mode's drop and carry, then
+    /// rename, copy, delete, move and sort for the selected thing.
+    fn press_named(&mut self, app: &mut App, item: &KeyItem, key: &str) -> bool {
+        if self.moving {
+            if item.is(&Keys::DROP) {
+                self.moving = false;
+            } else if item.is(&Keys::CARRY) {
+                let offset = item.step_of(key).unwrap_or(1);
+                self.carry(app, offset);
+            }
+            return true;
+        }
+        let (Some(words), Some(name)) = (self.listing.named(), self.current(app)) else {
+            return false;
+        };
+        if item.is(&Keys::RENAME) {
+            self.rename(app, &words, &name);
+        } else if item.is(&Keys::COPY) {
+            match app.document.copy_named(words.section, &name) {
+                Ok(new) => {
+                    app.say(&named(messages::MSG_COPIED_TO, &[("name", new.as_str().into())]));
+                    self.put_cursor_on(app, &new);
+                }
+                Err(problem) => app.refuse(&problem),
+            }
+        } else if item.is(&Keys::DELETE) {
+            self.delete(app, &words, &name);
+        } else if item.is(&Keys::MOVE) {
+            self.moving = true;
+            self.carried = false;
+            self.say_moving(app);
+        } else if item.is(&Keys::SORT) {
+            match app.document.sort_named(words.section) {
+                Ok(()) => self.put_cursor_on(app, &name),
+                Err(problem) => app.refuse(&problem),
+            }
+        } else {
+            return false;
+        }
+        true
+    }
+
+    /// Ask for the selected thing's new name, which cannot be empty or another's.
+    fn rename(&self, app: &mut App, words: &NamedWords, name: &str) {
+        let section = words.section;
+        let old = name.to_string();
+        let taken: Vec<String> = app.document.names_taken(section).into_iter().filter(|each| *each != old).collect();
+        let title = named(words.rename_prompt, &[("name", name.into())]);
+        let mut prompt = crate::screens::dialogs::PromptDialog::new(&title, name);
+        prompt.max_length = Some(MAX_NAME_LENGTH as usize);
+        let prompt = prompt.then(Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
+            let crate::screens::dialogs::Answer::Typed(typed) = answer else { return };
+            let text = typed.trim();
+            if text.is_empty() {
+                app.refuse(llamatron_strings::errors::ERR_EMPTY_NAME);
+            } else if text != old && llamatron_model::objects::naming::is_taken(text, &taken) {
+                app.refuse(&named(llamatron_strings::errors::ERR_NAME_IN_USE, &[("name", text.into())]));
+            } else if text != old {
+                if let Err(problem) = app.document.rename_named(section, &old, text) {
+                    app.refuse(&problem);
+                }
+            }
+        }));
+        app.show_page(Box::new(prompt));
+    }
+
+    /// Delete the selected thing after asking, or say what still uses it.
+    fn delete(&self, app: &mut App, words: &NamedWords, name: &str) {
+        if let Some(refusal) = self.listing.delete_refusal(app) {
+            app.refuse(refusal);
+            return;
+        }
+        let what = named(words.what, &[("name", name.into())]);
+        let uses = crate::uses::uses_of(app.document.get_setlist(), words.section, name);
+        if !uses.is_empty() {
+            let mut lines = vec![named(llamatron_strings::errors::ERR_STILL_USED, &[("what", what.as_str().into())])];
+            lines.extend(uses.iter().take(MOST_USES_SHOWN).cloned());
+            if uses.len() > MOST_USES_SHOWN {
+                lines.push(named(
+                    llamatron_strings::errors::ERR_AND_MORE,
+                    &[("count", (uses.len() - MOST_USES_SHOWN).into())],
+                ));
+            }
+            app.show_page(Box::new(crate::screens::dialogs::MessageDialog::new(
+                llamatron_strings::errors::ERR_CANT_DELETE_TITLE,
+                lines,
+            )));
+            return;
+        }
+        let section = words.section;
+        let name = name.to_string();
+        let question = named(messages::MSG_DELETE_QUESTION, &[("what", what.as_str().into())]);
+        let confirm = crate::screens::dialogs::ConfirmDialog::new(&question, Vec::new(), false, true).then(Box::new(
+            move |app: &mut App, _: &crate::screens::dialogs::Answer| {
+                if let Err(problem) = app.document.delete_named(section, &name) {
+                    app.refuse(&problem);
+                }
+            },
+        ));
+        app.show_page(Box::new(confirm));
+    }
+
+    /// Carry the picked-up row one place up or down, every carry of one move making one undo step.
+    fn carry(&mut self, app: &mut App, offset: i64) {
+        let (Some(words), Some(name)) = (self.listing.named(), self.current(app)) else {
+            return;
+        };
+        let Some(own) = app.document.get_setlist().items(words.section).iter().position(|(each, _)| *each == name) else {
+            return;
+        };
+        if self.carried {
+            app.document.continue_edit();
+        }
+        self.carried = true;
+        if app.document.move_named(words.section, own, offset) {
+            self.cursor.set((self.cursor.get() as i64 + offset).max(0) as usize);
+        }
+        self.say_moving(app);
+    }
+
+    /// Say what Move mode carries.
+    fn say_moving(&self, app: &mut App) {
+        let rows = self.listing.rows(app);
+        let shown = rows.get(self.cursor.get()).map(|(_, cells)| cells[0].clone()).unwrap_or_default();
+        let row = named(messages::MSG_MOVING_ROW, &[("name", shown.as_str().into())]);
+        app.say(&named(messages::MSG_MOVING, &[("what", row.as_str().into())]));
+    }
+
+    /// Put the cursor on the row of a name.
+    fn put_cursor_on(&self, app: &App, name: &str) {
+        if let Some(place) = self.listing.rows(app).iter().position(|(key, _)| key == name) {
+            self.cursor.set(place);
+        }
+    }
+
     fn column_sizes(&self, width: usize) -> Vec<usize> {
         column_sizes(self.listing.columns(), self.listing.name_column_width(), width)
     }
@@ -230,6 +393,31 @@ pub fn row_line(columns: &[ListColumn], values: &[String], sizes: &[usize], styl
     line.append(cursor_mark(selected), Style::PLAIN);
     for ((value, size), column) in values.iter().zip(sizes).zip(columns) {
         line.append(&format!("{} ", fit_aligned(value, *size, column.align)), Style::PLAIN);
+    }
+    line
+}
+
+/// A row Move mode carries: its name between < and >, put where the spaces beside it were, so that nothing shifts, in bold.
+fn carried_line(columns: &[ListColumn], values: &[String], sizes: &[usize], style: &str) -> Text {
+    let mark = cursor_mark(true);
+    let mut line = Text::styled("", style);
+    line.append(&format!("{}{}", &mark[..mark.len() - 1], marks::MSG_MOVING_OPEN), Style::PLAIN);
+    for (column, ((value, size), place)) in values.iter().zip(sizes).zip(columns).enumerate() {
+        let shown = fit_aligned(value, *size, place.align);
+        if column > 0 {
+            line.append(&format!("{shown} "), Style::PLAIN);
+            continue;
+        }
+        let end = shown.trim_end().chars().count();
+        let characters: Vec<char> = shown.chars().collect();
+        let carried = if end < *size {
+            let before: String = characters[..end].iter().collect();
+            let after: String = characters[end + 1..].iter().collect();
+            format!("{before}{}{after} ", marks::MSG_MOVING_CLOSE)
+        } else {
+            format!("{shown}{}", marks::MSG_MOVING_CLOSE)
+        };
+        line.append(&carried, Style::BOLD);
     }
     line
 }
@@ -261,6 +449,9 @@ impl<L: Listing> Page for ListPage<L> {
 
     fn page_key_table(&self, app: &App) -> Vec<KeyItem> {
         let class = self.listing.class();
+        if self.moving {
+            return in_order(class, vec![self.bind(&Keys::DROP), self.bind(&Keys::CARRY)]);
+        }
         if self.searching {
             return in_order(class, self.search_keys());
         }
@@ -277,6 +468,9 @@ impl<L: Listing> Page for ListPage<L> {
     }
 
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        if self.press_named(app, item, key) {
+            return;
+        }
         if item.is(&Keys::BACK) {
             app.go_back();
         } else if item.is(&Keys::SELECT) {
@@ -335,7 +529,12 @@ impl<L: Listing> Page for ListPage<L> {
                     (plus, Style::PLAIN)
                 }
             };
-            lines.push(self.row_line(&values, &sizes, style, *place == cursor));
+            let selected = *place == cursor;
+            if selected && self.moving {
+                lines.push(carried_line(self.listing.columns(), &values, &sizes, style));
+            } else {
+                lines.push(self.row_line(&values, &sizes, style, selected));
+            }
         }
         lines
     }

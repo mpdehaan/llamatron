@@ -89,6 +89,14 @@ pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourSto
         }
         // The screen is drawn first, since drawing a page may find a part of it not ported yet, which names it.
         let screen = composed(tracker, width, height);
+        if std::env::var("TOUR_STOP").ok().and_then(|stop| stop.parse::<usize>().ok()) == Some(recorded.len()) {
+            eprintln!(
+                "stop {}: dirty {}, differs from clean in {:?}",
+                recorded.len(),
+                tracker.app.document.is_dirty(),
+                tracker.app.document.differences_from_clean()
+            );
+        }
         recorded.push(Stop {
             page: tracker.top().name().to_string(),
             screen,

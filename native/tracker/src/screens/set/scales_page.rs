@@ -9,7 +9,7 @@ use crate::drawing::Align;
 use crate::keybindings::{KeyClass, ScalesPage as Keys};
 use crate::keys::KeyItem;
 use crate::screens::field_page::FieldPage;
-use crate::screens::list_page::{named_item_keys, ListColumn, Listing, Row};
+use crate::screens::list_page::{named_item_keys, ListColumn, Listing, NamedWords, Row};
 use crate::screens::set::scale_page::{scale_kind_name, ScalePage};
 use crate::themes::{self, Colour};
 use crate::uses::uses_of;
@@ -91,7 +91,25 @@ impl Listing for ScalesPage {
         named_item_keys(&Keys::CLASS, &Keys::EDIT)
     }
 
+    fn named(&self) -> Option<NamedWords> {
+        Some(NamedWords {
+            section: "scales",
+            rename_prompt: llamatron_strings::messages::MSG_RENAME_SCALE_PROMPT,
+            what: llamatron_strings::legends::MSG_SCALE_WHAT,
+        })
+    }
+
     fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {
+        if item.is(&Keys::ADD) || item.is(&Keys::ADD_HERE) {
+            // A new scale is C major, named by its number as every new thing is, and opens on its page to be changed.
+            let name = app.document.new_name("scales", llamatron_strings::names::MSG_NEW_SCALE_WORD);
+            if let Err(problem) = app.document.add_scale(&name) {
+                app.refuse(&problem);
+                return None;
+            }
+            app.show_page(Box::new(FieldPage::new(ScalePage { name: name.clone() })));
+            return Some(name);
+        }
         if let (true, Some(name)) = (item.is(&Keys::EDIT), row) {
             app.show_page(Box::new(FieldPage::new(ScalePage { name: name.to_string() })));
         }

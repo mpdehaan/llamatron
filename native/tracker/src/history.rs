@@ -80,6 +80,19 @@ impl History {
         true
     }
 
+    /// Keep a snapshot as the end of the step before, as each carry of one move does, so that the whole move is one step.
+    pub fn record_continuing(&mut self, snapshot: Snapshot) -> bool {
+        if snapshot == self.now {
+            return false;
+        }
+        if self.undo.is_empty() {
+            return self.record(snapshot);
+        }
+        self.now = snapshot;
+        self.redo.clear();
+        true
+    }
+
     pub fn undo(&mut self) -> Option<Snapshot> {
         let before = self.undo.pop_back()?;
         self.redo.push(std::mem::replace(&mut self.now, before));
