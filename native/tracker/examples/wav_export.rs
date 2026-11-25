@@ -21,7 +21,17 @@ fn main() -> ExitCode {
             }
             document
         })
-        .and_then(|document| document.rendered().map(|grid| (document, grid)))
+        .and_then(|document| {
+            // A seed in LLAMATRON_SEED renders the song's random parts from it, so that two programs' WAV files can compare.
+            let seed = std::env::var("LLAMATRON_SEED").ok().and_then(|seed| seed.parse::<i64>().ok());
+            let grid = match seed {
+                None => document.rendered()?,
+                Some(seed) => llamatron_engine::realizer::SongRealizer::new(document.get_setlist(), document.song(), Some(seed))
+                    .render()
+                    .map_err(|_| "the render was refused".to_string())?,
+            };
+            Ok((document, grid))
+        })
         .and_then(|(document, grid)| llamatron_tracker::wav::export(&document, &grid, std::path::Path::new(out)));
     match exported {
         Ok(()) => ExitCode::SUCCESS,
