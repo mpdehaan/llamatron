@@ -48,10 +48,12 @@ def export_name(*, setlist, song):
 
 class ExportResources(NamedTuple):
     """What some kinds of export are made with: the Live set a Live export is built from, None for the one that comes with the
-    program, and where FluidSynth and its SoundFont are, as its program and soundfont, for a WAV export, None where it isn't installed."""
+    program, where FluidSynth and its SoundFont are, as its program and soundfont, for a WAV export, None where it isn't installed,
+    and what renders the built-in instruments for a WAV export, None where the synth daemon isn't built."""
 
     template: object = None
     synth: object = None
+    built_in: object = None
 
 
 

@@ -12,6 +12,7 @@ from llamatron.engine.clips.clip_column import ClipColumn
 from llamatron.engine.clips.clip_grid import ClipGrid
 from llamatron.engine.clips.clip_row import ClipRow
 from llamatron.engine.clips.row_clock import RowClock
+from llamatron.engine.clips.track_sound import TrackSound
 from llamatron.engine.generators import registry
 from llamatron.engine.generators.base import Continuation
 from llamatron.engine.realizer.chain_runs import chain_runs
@@ -168,6 +169,14 @@ class SongRealizer:
         if instrument is None:
             return None
         return instrument.get_gm_sound()
+
+    def built_in_sound_of(self, track):
+        """Return what makes the spec of a track's built-in instrument when asked, for the WAV export, or None when the track's
+        instrument is not built in; the spec itself is made only when the export asks, never in a render."""
+        instrument = self.instrument_of(track)
+        if instrument is None or not instrument.is_built_in():
+            return None
+        return functools.partial(instrument.synth_spec, drums_from=self._setlist.drum_tuning_note())
 
     def plays_through_fluidsynth(self, track):
         """Return whether a track's instrument plays through FluidSynth."""
@@ -516,7 +525,9 @@ class SongRealizer:
             track = self._song.get_track(name)
             gm_sound = self.gm_sound_of(track)
             fluidsynth = self.plays_through_fluidsynth(track)
-            column = ClipColumn(name=name, mute=track.is_muted(), drum=track.is_drum(), gm_sound=gm_sound, fluidsynth=fluidsynth)
+            built_in = self.built_in_sound_of(track)
+            sound = TrackSound(gm_sound=gm_sound, fluidsynth=fluidsynth, built_in=built_in)
+            column = ClipColumn(name=name, mute=track.is_muted(), drum=track.is_drum(), sound=sound)
             tracks[name] = grid.add_column(column)
         return tracks
 

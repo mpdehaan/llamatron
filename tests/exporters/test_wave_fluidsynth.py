@@ -169,6 +169,76 @@ class TestWaveFluidSynth(unittest.TestCase):
         self.assertEqual(pathlib.Path(exporter.path()).read_text(), NAME)
 
 
+SYNTH = 'synth'
+# What the stand-in daemon writes: floats at the real export's rate, loudest at this level.
+BUILT_IN_PEAK = 0.25
+FLOAT_BYTES = 4
+FLOAT_FORMAT = 3
+
+
+class StandInDaemon:
+    """Writes a WAV file of floats where the synth daemon would, a second long at its peak level, keeping the tracks it was
+    handed."""
+
+    __slots__ = ('tracks',)
+
+    def __init__(self):
+        self.tracks = None
+
+    def __call__(self, *, tracks, seconds, path, rate):
+        self.tracks = tracks
+        samples = numpy.zeros(rate * STEREO, dtype=numpy.float32)
+        samples[0] = BUILT_IN_PEAK
+        body = samples.tobytes()
+        header = b'RIFF' + (36 + len(body)).to_bytes(4, 'little') + b'WAVEfmt ' + (16).to_bytes(4, 'little')
+        header += FLOAT_FORMAT.to_bytes(2, 'little') + STEREO.to_bytes(2, 'little') + rate.to_bytes(4, 'little')
+        header += (rate * STEREO * FLOAT_BYTES).to_bytes(4, 'little') + (STEREO * FLOAT_BYTES).to_bytes(2, 'little') + (FLOAT_BYTES * 8).to_bytes(2, 'little')
+        pathlib.Path(path).write_bytes(header + b'data' + len(body).to_bytes(4, 'little') + body)
+
+
+class TestWaveWithBuiltInInstruments(unittest.TestCase):
+    """The WAV export's built-in half (exporters/built_in_wave.py), with stand-ins for FluidSynth and the synth daemon."""
+
+    def setUp(self):
+        scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(scratch.cleanup)
+        self.folder = scratch.name
+        self.document = song_with_instruments()
+        self.document.add_instrument(SYNTH)
+        instrument = self.document.get_setlist().get_instrument(SYNTH)
+        self.document.change_set(instrument.set_kind, InstrumentKind.BUILT_IN)
+        self.document.set_track_instrument(name=ui_testing.DRUMS, instrument=SYNTH)
+
+    def exporter(self, *, synth=STAND_IN_SYNTH, built_in=None):
+        grid = SongRealizer(self.document.song()).render()
+        return WaveFluidSynth(directory=self.folder, grid=grid, name=NAME, synth=synth, built_in=built_in)
+
+    def test_the_built_in_tracks_go_to_the_daemon_with_their_spec_and_notes_in_seconds(self):
+        daemon = StandInDaemon()
+        self.exporter(built_in=daemon).export(render=StandInFluidSynth())
+        [track] = daemon.tracks
+        self.assertEqual(track.spec, self.document.get_setlist().get_instrument(SYNTH).synth_spec())
+        starts = [when for when, _, velocity in track.notes if velocity]
+        self.assertTrue(starts)
+        self.assertEqual(starts, sorted(starts))
+        self.assertEqual(track.scene_starts[0], 0.0)
+        self.assertEqual(os.listdir(self.folder), [WaveFluidSynth.FILE.format(name=NAME)])
+
+    def test_a_song_of_built_in_instruments_alone_needs_no_fluidsynth_and_is_normalized(self):
+        self.document.set_track_instrument(name=ui_testing.LEAD, instrument=None)
+        exporter = self.exporter(synth=None, built_in=StandInDaemon())
+        exporter.export(render=StandInFluidSynth())
+        with wave.open(exporter.path(), READ_BYTES) as file:
+            samples = numpy.frombuffer(file.readframes(file.getnframes()), dtype=numpy.int16)
+        self.assertAlmostEqual(int(numpy.abs(samples.astype(numpy.int32)).max()), peak_sample(), delta=ROUNDING)
+
+    def test_built_in_tracks_without_the_daemon_are_refused_before_anything_is_written(self):
+        with self.assertRaises(ValueError) as refused:
+            self.exporter(built_in=None).export(render=StandInFluidSynth())
+        self.assertEqual(str(refused.exception), errors.ERR_WAV_NEEDS_SYNTH_DAEMON)
+        self.assertEqual(os.listdir(self.folder), [])
+
+
 class TestWaveExportInTheTracker(UITest):
     """Choosing WAV (FluidSynth) in the export dialog says that only the tracks through FluidSynth are in it, or that FluidSynth isn't installed."""
 

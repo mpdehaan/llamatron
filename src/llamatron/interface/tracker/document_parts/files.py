@@ -253,7 +253,7 @@ class DocumentFiles:
         # Exporters print warnings, which would write over the screen.
         with contextlib.redirect_stdout(io.StringIO()):
             try:
-                make_exporter(kind=to, directory=directory, name=name, grid=grid, resources=ExportResources(synth=transport.fluidsynth_installation())).export()
+                make_exporter(kind=to, directory=directory, name=name, grid=grid, resources=ExportResources(synth=transport.fluidsynth_installation(), built_in=transport.built_in_renderer())).export()
             except (ValueError, OSError) as error:
                 raise SongFileError(str(error)) from error
         return self.export_path(to)
