@@ -47,6 +47,17 @@ fn read(table: &[f32], position: f64) -> f64 {
     here + (table[next] as f64 - here) * fraction
 }
 
+/// A read position brought back into the table, by a subtraction, since a read never moves a whole table in a sample (its
+/// frequency stays under half the rate) and a remainder of floats is slow.
+#[inline]
+fn wrapped(position: f64) -> f64 {
+    if position >= TABLE_SIZE as f64 {
+        position - TABLE_SIZE as f64
+    } else {
+        position
+    }
+}
+
 /// What one voice's oscillators keep from sample to sample.
 #[derive(Clone, Copy, Default)]
 pub struct OscillatorState {
@@ -55,6 +66,10 @@ pub struct OscillatorState {
     pub period: i64,
     pub ticks: i64,
     pub band: usize,
+    /// The pitch and spread the read speeds were last worked out for, and those speeds, so that a note whose pitch nothing
+    /// moves works out its powers of two once, not every sample.
+    pub speeds_for: (f64, f64),
+    pub speeds: [f64; 3],
 }
 
 /// One of Basic's oscillators: its tables, detune in cents and level.
@@ -271,7 +286,7 @@ impl OscillatorPart {
         }
         let speed = frequency * TABLE_SIZE as f64 / rate;
         let position = state.phases[0];
-        state.phases[0] = (position + speed) % TABLE_SIZE as f64;
+        state.phases[0] = wrapped(position + speed);
         let band = state.band;
         let mut out = match wave {
             SidWave::Saw => read(&saw[band], position),
@@ -326,7 +341,7 @@ impl OscillatorPart {
         }
         let Some(tables) = tables else { return (0.0, silent) };
         let position = state.phases[0];
-        state.phases[0] = (position + frequency * TABLE_SIZE as f64 / rate) % TABLE_SIZE as f64;
+        state.phases[0] = wrapped(position + frequency * TABLE_SIZE as f64 / rate);
         (read(&tables[state.band], position), silent)
     }
 }
@@ -334,20 +349,31 @@ impl OscillatorPart {
 fn basic_sample(partials: &[Partial], state: &mut OscillatorState, pitch: f64, moves: Moves, rate: f64) -> f64 {
     let mut out = 0.0;
     let band = state.band;
+    let wanted = (pitch + moves.pitch, moves.spread);
+    if state.speeds_for != wanted || state.speeds[0] == 0.0 {
+        for (place, partial) in partials.iter().enumerate().take(3) {
+            let octaves = (wanted.0 - MIDDLE_A) / 12.0 + partial.cents / 1200.0 * (1.0 + wanted.1);
+            state.speeds[place] = A_FREQUENCY * 2f64.powf(octaves) * TABLE_SIZE as f64 / rate;
+        }
+        state.speeds_for = wanted;
+    }
     for (place, partial) in partials.iter().enumerate().take(3) {
-        let octaves = (pitch + moves.pitch - MIDDLE_A) / 12.0 + partial.cents / 1200.0 * (1.0 + moves.spread);
-        let speed = A_FREQUENCY * 2f64.powf(octaves) * TABLE_SIZE as f64 / rate;
+        let speed = state.speeds[place];
         let position = state.phases[place];
-        state.phases[place] = (position + speed) % TABLE_SIZE as f64;
+        state.phases[place] = wrapped(position + speed);
         out += read(&partial.tables[band], position) * partial.level;
     }
     out
 }
 
 fn acid_sample(saw: &Tables, square: bool, state: &mut OscillatorState, pitch: f64, rate: f64) -> f64 {
-    let speed = frequency_of(pitch) * TABLE_SIZE as f64 / rate;
+    if state.speeds_for.0 != pitch || state.speeds[0] == 0.0 {
+        state.speeds[0] = frequency_of(pitch) * TABLE_SIZE as f64 / rate;
+        state.speeds_for.0 = pitch;
+    }
+    let speed = state.speeds[0];
     let position = state.phases[0];
-    state.phases[0] = (position + speed) % TABLE_SIZE as f64;
+    state.phases[0] = wrapped(position + speed);
     let table = &saw[state.band];
     let out = read(table, position);
     if !square {
