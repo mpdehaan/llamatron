@@ -60,7 +60,9 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             Some(other) => self.realizer.grab_source(self.scene, self.track_name, &other.python_str())?,
             None => None,
         };
-        let player = PatternPlayer::new(setlist, self.realizer.song(), track, self.scene.number, self.scale_name()).grabbing(scale, grab);
+        let player = PatternPlayer::new(setlist, self.realizer.song(), track, self.scene.number, self.scale_name())
+            .grabbing(scale, grab)
+            .hearing(self.realizer.hearing(self.scene, self.track_name)?);
         let looping = self.clip_slot.loops();
         let fill = if looping { Some(self.realizer.get_scene_length(self.scene)?) } else { None };
         let clip = self.play_passes(&player, scale, fill)?;
@@ -129,7 +131,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             // alone, since moving a drum note changes the drum.
             let runs = match step.kind.as_str() {
                 // A shape works on the finished clip, and a Hocket deals its notes out as the clip is finished.
-                "shapes" | "hocket" => false,
+                "shapes" | "hocket" | "drift" => false,
                 "chords" => !self.realizer.plays_drums(self.scene, self.track_name),
                 _ => true,
             };

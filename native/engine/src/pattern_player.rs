@@ -10,6 +10,7 @@
 //! ended with.
 
 use crate::clip::Control;
+use crate::drift::{DriftPlay, StepEffects};
 use crate::error::{RenderError, Rendered};
 use crate::grab_source::GrabSource;
 use crate::order::{DrawnWhenAsked, StepOrder};
@@ -24,13 +25,15 @@ use llamatron_model::objects::song::{Song, Track};
 use llamatron_model::schema::checking::written_length;
 use llamatron_model::schema::generated::defaults::{DEFAULT_PROBABILITY, DEFAULT_RATCHET};
 use llamatron_model::schema::generated::file_format::{Direction, Row, ACCIDENTALS, BASS_NOTES, CC_ROWS, OMITTED_ROLES, PATTERN_ROWS, SCALE_CHORDS, TENSIONS};
-use llamatron_model::schema::generated::limits::{MAX_GATE, MAX_PROBABILITY};
+use llamatron_model::schema::generated::limits::{MAX_GATE, MAX_PROBABILITY, MIN_PROBABILITY};
 use llamatron_model::schema::generated::midi::{MAX_VELOCITY, MIN_VELOCITY};
 use llamatron_model::values::generated::note::SHARP_NAMES;
 use llamatron_model::values::generated::note::{MAX_OCTAVE, MIN_OCTAVE};
 use llamatron_model::values::scale::Scale;
 use llamatron_model::values::scale::ScaleType;
 use llamatron_strings::{errors, named};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 /// How many octaves away a moved note may go to find one that fits the MIDI range.
 const MAX_OCTAVE_CHANGE: i64 = 10;
@@ -187,6 +190,18 @@ pub struct PatternPlayer<'a> {
     clip_scale: Option<Scale>,
     // What the clip's grab steps take notes from, or None for a clip that grabs nothing.
     grab: Option<GrabSource>,
+    // The drifts the clip hears, or None, and what they do to the step being played.
+    hearing: Option<Hearing>,
+    effects: RefCell<StepEffects>,
+}
+
+/// The drifts a clip hears: the song's play of them, the ones its chains name, where each one's clock starts, and where the
+/// clip's scene starts from the song's top.
+pub struct Hearing {
+    pub drift: Rc<RefCell<DriftPlay>>,
+    pub names: Vec<String>,
+    pub origins: Vec<(String, Rational)>,
+    pub scene_start: Rational,
 }
 
 impl<'a> PatternPlayer<'a> {
@@ -194,6 +209,8 @@ impl<'a> PatternPlayer<'a> {
         PatternPlayer {
             clip_scale: None,
             grab: None,
+            hearing: None,
+            effects: RefCell::new(StepEffects::default()),
             setlist,
             scene_number,
             scale_name,
@@ -208,6 +225,11 @@ impl<'a> PatternPlayer<'a> {
     /// The player with the clip's scale and what its grab steps take notes from.
     pub fn grabbing(self, clip_scale: Option<Scale>, grab: Option<GrabSource>) -> PatternPlayer<'a> {
         PatternPlayer { clip_scale, grab, ..self }
+    }
+
+    /// The player hearing the drifts its clip's chains name.
+    pub fn hearing(self, hearing: Option<Hearing>) -> PatternPlayer<'a> {
+        PatternPlayer { hearing, ..self }
     }
 
     pub fn pattern(&self, name: &str) -> Rendered<&'a Pattern> {
@@ -279,7 +301,15 @@ impl<'a> PatternPlayer<'a> {
                 continue;
             }
             tied_to = Some(sounding.len());
-            let velocity_added = if values.accent { self.accent } else { 0 };
+            let mut velocity_added = if values.accent { self.accent } else { 0 };
+            if let Some(hearing) = &self.hearing {
+                let effects = hearing
+                    .drift
+                    .borrow_mut()
+                    .effects(&hearing.names, hearing.scene_start + start + time, &hearing.origins);
+                velocity_added += effects.velocity;
+                *self.effects.borrow_mut() = effects;
+            }
             let gate = gate_of(values, step_length).min(pass_length - time);
             sounding.push((time, self.step(values, gate, drum, &where_, velocity_added, rolls, grabbed)?));
         }
@@ -311,9 +341,11 @@ impl<'a> PatternPlayer<'a> {
         let offset = values.ratchet_offset.unwrap_or(0);
         let transpose = if drum { 0 } else { self.transpose };
         let slice_length = length / Rational::whole(ratchet as i128);
+        // A drift the clip hears moves its notes along the scale, but no drum's.
+        let moved = if drum { 0 } else { self.effects.borrow().degree };
         let mut slices = Vec::new();
         for place in 0..ratchet {
-            let shift = transpose + place * offset;
+            let shift = transpose + moved + place * offset;
             // Only the last slice glides into what follows the step.
             let glide = values.glide && place == ratchet - 1;
             let mut sound = match grabbed {
@@ -326,7 +358,7 @@ impl<'a> PatternPlayer<'a> {
             }
             slices.push(sound);
         }
-        Ok(played_by_chance(slices, values.probability, rolls))
+        Ok(played_by_chance(slices, values.probability, self.effects.borrow().probability, rolls))
     }
 
     /// A grabbed note, moved along the clip's scale, or by half steps for drums, with the step's chord built on it; a note
@@ -419,8 +451,22 @@ impl<'a> PatternPlayer<'a> {
 
     /// The clip's scale rooted at an octave, or the scale type a step borrows on the same root; the inner error is an octave
     /// a root cannot be in.
+    /// The scale and root a drift the clip hears overrides it with take its place.
     fn scale_at(&self, scale_name: &str, octave: i64, kind: Option<&str>) -> Rendered<Result<Scale, llamatron_model::ValueError>> {
-        let scale = match self.named_scale(scale_name)?.scale_at(octave) {
+        let effects = self.effects.borrow();
+        let scale_name = effects.scale.as_deref().unwrap_or(scale_name);
+        let named = self.named_scale(scale_name)?;
+        if let Some(root) = &effects.root {
+            let root = match llamatron_model::values::note::Note::new(root, octave, None, None, false) {
+                Ok(root) => root,
+                Err(problem) => return Ok(Err(problem)),
+            };
+            let kind_name = kind.map(str::to_string).unwrap_or_else(|| named.get_kind().python_str());
+            let kind = ScaleType::named(&kind_name.trim().to_uppercase().replace(' ', "_"))
+                .ok_or_else(|| RenderError::Refused(format!("no scale type called {kind_name}")))?;
+            return Ok(Ok(Scale::new(root, kind)));
+        }
+        let scale = match named.scale_at(octave) {
             Ok(scale) => scale,
             Err(problem) => return Ok(Err(problem)),
         };
@@ -586,8 +632,11 @@ fn gate_of(values: &StepValues, step_length: Rational) -> Rational {
 }
 
 /// A step's slices as its probability plays them, each a rest where its roll fails.
-fn played_by_chance(slices: Vec<Sound>, probability: Option<i64>, rolls: &mut DrawnWhenAsked) -> Vec<Sound> {
-    let probability = probability.unwrap_or(DEFAULT_PROBABILITY);
+fn played_by_chance(slices: Vec<Sound>, probability: Option<i64>, added: i64, rolls: &mut DrawnWhenAsked) -> Vec<Sound> {
+    let mut probability = probability.unwrap_or(DEFAULT_PROBABILITY);
+    if added != 0 {
+        probability = (probability + added).clamp(MIN_PROBABILITY, MAX_PROBABILITY);
+    }
     if probability >= MAX_PROBABILITY {
         return slices;
     }

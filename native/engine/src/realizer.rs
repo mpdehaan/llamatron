@@ -11,12 +11,14 @@
 use crate::chord_source::ChordSource;
 use crate::clip::Clip;
 use crate::clip_player::ClipSlotPlayer;
+use crate::drift::DriftPlay;
 use crate::error::{RenderError, Rendered};
 use crate::generators::chords::Continuation;
 use crate::generators::timing::{MovingRow, NudgePlan};
 use crate::generators::GeneratorState;
 use crate::grab_source::GrabSource;
 use crate::groove::{groove_for, Groove};
+use crate::pattern_player::Hearing;
 use crate::sound::Sound;
 use crate::timing::{NoteEvent, StrumPlan};
 use crate::tune_source::TuneSource;
@@ -34,6 +36,7 @@ use llamatron_model::schema::generated::settings::{Setting, CLIP_SLOT, INSTRUMEN
 use llamatron_strings::{errors, named, names};
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 /// A scene's place in the song, counted from 1, with the name and scale it plays with.
 pub struct WrittenScene<'a> {
@@ -199,6 +202,8 @@ pub struct SongRealizer<'a> {
     grabbing: RefCell<Vec<String>>,
     // What each Hocket deals out in each written scene, by the scene's number and the Hocket's name: the notes each track takes.
     dealt: RefCell<HashMap<(i64, String), Dealt>>,
+    // The song's drifts as it plays, which every clip naming one hears.
+    drift: Rc<RefCell<DriftPlay>>,
     // How many chords each track's finished clip in each written scene holds, for a strum's down up that carries on.
     chord_counts: RefCell<HashMap<(i64, String), i64>>,
 }
@@ -235,6 +240,11 @@ impl<'a> SongRealizer<'a> {
             grabbing: RefCell::new(Vec::new()),
             chord_counts: RefCell::new(HashMap::new()),
             dealt: RefCell::new(HashMap::new()),
+            drift: Rc::new(RefCell::new(DriftPlay::new(
+                seed,
+                song.get_time_signature().bar_length(),
+                drift_settings(setlist),
+            ))),
         }
     }
 
@@ -294,6 +304,38 @@ impl<'a> SongRealizer<'a> {
             Some(self.song.get_written(SongSetting::GROOVE).unwrap_or(&song_groove)),
         ];
         groove_for(self.setlist, &choices)
+    }
+
+    /// The drifts a track's clip in a written-out scene hears, or None where its chains name none.
+    pub fn hearing(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Option<Hearing>> {
+        let mut names = Vec::new();
+        let mut origins = Vec::new();
+        for step in self.chains_of(scene, track)? {
+            if step.kind == "drift" {
+                let restart = step.settings.get(GENERATOR_RESTART).map(Data::python_str);
+                let start = self.run_start(scene, restart.as_deref());
+                origins.push((step.name.clone(), self.scene_start(&self.scenes[start])?));
+                names.push(step.name);
+            }
+        }
+        if names.is_empty() {
+            return Ok(None);
+        }
+        Ok(Some(Hearing {
+            drift: Rc::clone(&self.drift),
+            names,
+            origins,
+            scene_start: self.scene_start(scene)?,
+        }))
+    }
+
+    /// Where a written-out scene starts from the song's top: the scenes before it laid end to end.
+    fn scene_start(&self, scene: &WrittenScene<'a>) -> Rendered<Rational> {
+        let mut start = Rational::ZERO;
+        for written in &self.scenes[..(scene.number - 1) as usize] {
+            start = start + self.get_scene_length(written)?;
+        }
+        Ok(start)
     }
 
     /// The notes the Hockets a track's clip names hand it in a written-out scene, in time order.
@@ -744,6 +786,18 @@ impl<'a> SongRealizer<'a> {
     }
 }
 
+/// Every drift of a set, by its name, with its settings.
+fn drift_settings(setlist: &Setlist) -> HashMap<String, Data> {
+    setlist
+        .items("drifts")
+        .iter()
+        .filter_map(|(name, item)| match item {
+            Item::Generator(settings) => Some((name.clone(), settings.to_data())),
+            _ => None,
+        })
+        .collect()
+}
+
 /// What a strum's seed adds, so that its loose timing draws apart from everything else, and how many seeds a render picks from.
 const STRUM_SEED_OFFSET: i128 = 977;
 const STRUM_SEEDS: i128 = 1_000_000;
@@ -763,7 +817,7 @@ fn chords_in(clip: &Clip) -> i64 {
 const TEMPO_PLACES: usize = 4;
 
 /// The kinds of generator the port runs so far.
-const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes", "timing", "phrasing", "musician", "hocket"];
+const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes", "timing", "phrasing", "musician", "hocket", "drift"];
 
 /// The factors a chain step's seed is made with, so that it differs for every song, scene, track and place in the chain.
 const SEED_SONG_FACTOR: i128 = 1_000_003;

@@ -7,6 +7,7 @@
 pub mod chord_source;
 pub mod clip;
 pub mod clip_player;
+pub mod drift;
 pub mod error;
 pub mod generators;
 pub mod grab_source;
