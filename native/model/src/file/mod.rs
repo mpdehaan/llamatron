@@ -4,3 +4,4 @@
 //! Reading and writing a set file (the Python model/file/): its data as PyYAML loads it, and what each setting refuses.
 
 pub mod data;
+pub mod writing;

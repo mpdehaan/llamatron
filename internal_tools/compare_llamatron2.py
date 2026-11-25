@@ -5,6 +5,7 @@
 the same step by both, and what each makes is compared. The Rust side is native/target/release/llamatron-compare.
 
     .venv/bin/python internal_tools/compare_llamatron2.py load      # every example's and test set's data, as both load it
+    .venv/bin/python internal_tools/compare_llamatron2.py layout    # that data written back as a set file by each writer
     .venv/bin/python internal_tools/compare_llamatron2.py load --only tie
 
 It prints each set that differs with the first place it differs, and a count, and exits 1 when anything differs, so that the
@@ -18,6 +19,7 @@ import subprocess
 import sys
 
 from llamatron.model.file.safe_yaml import load_safely
+from llamatron.model.file.setlist_writer import dump_file_layout
 
 TOP = pathlib.Path(__file__).resolve().parent.parent
 RUST = TOP / 'native' / 'target' / 'release' / 'llamatron-compare'
@@ -49,7 +51,18 @@ def first_difference(first, second):
     return 'lengths {} and {}'.format(len(first), len(second))
 
 
-STEPS = {'load': python_load}
+def python_layout(path):
+    """Return a set's loaded data written back as a set file by the Python writer, or None for a set laid out in an older
+    way, which only the objects' migrations can write."""
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    try:
+        return dump_file_layout(data).rstrip('\n')
+    except (AttributeError, TypeError, KeyError):
+        return None
+
+
+STEPS = {'load': python_load, 'layout': python_layout}
 
 
 def main():
@@ -60,13 +73,17 @@ def main():
     found = [*EXAMPLES.rglob('*.yml'), *TEST_SETS.rglob('*.yml')]
     sets = sorted(path for path in found if options.only is None or options.only in str(path))
     differing = 0
+    skipped = 0
     for path in sets:
         python = STEPS[options.step](path)
+        if python is None:
+            skipped += 1
+            continue
         port = rust(options.step, path)
         if python != port:
             differing += 1
             print('{}: {}'.format(path.relative_to(TOP), first_difference(python, port)))
-    print('{} of {} sets differ'.format(differing, len(sets)))
+    print('{} of {} sets differ{}'.format(differing, len(sets) - skipped, ', {} skipped as the step does not apply'.format(skipped) if skipped else ''))
     return 1 if differing else 0
 
 

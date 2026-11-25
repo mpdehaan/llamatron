@@ -4,7 +4,8 @@
 //! llamatron-compare: what llamatron2 makes of a set, printed in a form the Python program prints the same way, so that
 //! internal_tools/compare_llamatron2.py holds each layer of the port to the Python as it lands.
 //!
-//! `llamatron-compare load SET` prints the set file's data as JSON, as Python's json.dumps writes what PyYAML loaded.
+//! `llamatron-compare load SET` prints the set file's data as JSON, as Python's json.dumps writes what PyYAML loaded;
+//! `llamatron-compare layout SET` writes that data back as a set file, as the Python writer lays it out.
 
 use llamatron_model::file::data::{json_text, load, Data};
 use std::process::ExitCode;
@@ -60,6 +61,16 @@ fn main() -> ExitCode {
         "load" => match load(&text) {
             Ok(data) => {
                 println!("{}", json(&data));
+                ExitCode::SUCCESS
+            }
+            Err(problem) => {
+                eprintln!("{path}: {}", problem.0);
+                ExitCode::from(1)
+            }
+        },
+        "layout" => match load(&text) {
+            Ok(data) => {
+                print!("{}", llamatron_model::file::writing::dump_file_layout(&data));
                 ExitCode::SUCCESS
             }
             Err(problem) => {
