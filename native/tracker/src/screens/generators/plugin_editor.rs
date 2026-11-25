@@ -16,7 +16,7 @@ use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::named::GeneratorSettings;
 use llamatron_model::objects::setlist::Item;
-use llamatron_model::schema::generated::file_format::{GENERATOR_ENABLED, GENERATOR_RESTART, RESTARTS, TIME_CHOICES};
+use llamatron_model::schema::generated::file_format::{GENERATOR_ENABLED, GENERATOR_RESTART, RESTARTS, SHAPE_PARTS, SHAPE_THENS, TIME_CHOICES};
 use llamatron_model::schema::generated::limits::MAX_STATEMENTS;
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Described, Plain};
@@ -103,6 +103,90 @@ impl<'a> Made<'a> {
             Some(Described::WholeNumber { lowest, highest, .. }) => (lowest, highest),
             _ => (None, None),
         }
+    }
+
+    /// A Guitarify's bar as its field shows it: the ready-made bar it is, or custom, with its cells and their length.
+    fn bar_shown(&self) -> String {
+        use crate::generated::tables::{DEFAULT_BAR, READY_BARS};
+        let (_, default_cell, default_strokes, default_accents) = READY_BARS
+            .iter()
+            .find(|(name, ..)| *name == DEFAULT_BAR)
+            .expect("the default bar is ready-made");
+        let texts = |value: Option<&Data>| value.and_then(Data::as_list).map(|items| items.iter().map(data_text).collect::<Vec<_>>());
+        let bar = texts(self.written("bar")).unwrap_or_else(|| default_strokes.iter().map(|stroke| stroke.to_string()).collect());
+        let accents: Vec<bool> = if self.written("bar").is_none() && self.written("accents").is_none() {
+            default_accents.to_vec()
+        } else {
+            let written: Vec<bool> = self
+                .written("accents")
+                .and_then(Data::as_list)
+                .map_or(Vec::new(), |items| items.iter().map(|item| matches!(item, Data::Bool(true))).collect());
+            (0..bar.len()).map(|place| written.get(place).copied().unwrap_or(false)).collect()
+        };
+        let cell = self.written("cell").map_or(default_cell.to_string(), data_text);
+        let ready = READY_BARS.iter().find(|(_, ready_cell, strokes, ready_accents)| {
+            *ready_cell == cell && strokes.iter().map(|stroke| stroke.to_string()).collect::<Vec<_>>() == bar && ready_accents.to_vec() == accents
+        });
+        let name = ready.map_or(labels::MSG_OWN_BAR.to_string(), |(name, ..)| named_in(labels::MSG_READY_BAR_NAMES, name));
+        named(
+            marks::MSG_GUITAR_BAR_SHOWN,
+            &[("name", name.as_str().into()), ("count", bar.len().into()), ("cell", cell.as_str().into())],
+        )
+    }
+
+    /// A shape's section: its heading, then its start and end, each a percentage, how long it takes, and what it does then.
+    fn shape_fields(&mut self, id: usize, shape: &str) -> Vec<Field> {
+        let (lowest, highest) = match shape {
+            "density" => (0, 100),
+            "swell" => (0, 200),
+            _ => (10, 200),
+        };
+        let name = named_in(labels::MSG_SHAPE_NAMES, shape);
+        let setting = |part: &str| format!("{shape}_{part}");
+        let label = |part: &str| named(&named_in(labels::MSG_SHAPE_FIELD_LABELS, part), &[("shape", name.as_str().into())]);
+        let part_label = |part: &str| named_in(labels::MSG_SHAPE_PART_LABELS, part);
+        let is_set = SHAPE_PARTS.iter().any(|part| self.written(&setting(part)).is_some());
+        let mut fields = vec![Field::heading(id, &name, is_set, None, false)];
+        for part in ["start", "end"] {
+            let written = self.written(&setting(part)).and_then(Data::as_whole).map(|whole| whole as i64);
+            let shown = written.map_or(marks::MSG_NONE_SHOWN.to_string(), |percent| {
+                named(marks::MSG_SHAPE_PERCENT_SHOWN, &[("percent", percent.into())])
+            });
+            let field_id = self.id();
+            fields.push(
+                Field::number(field_id, &label(part), written, Some(lowest), Some(highest), 100, Some(shown))
+                    .with_clear(legends::What::CLEAR)
+                    .with_shown_label(&part_label(part)),
+            );
+        }
+        let over_id = self.id();
+        let over = self.time_field(over_id, &label("over"), &setting("over"), labels::MSG_WHOLE_SPAN);
+        fields.push(over.with_shown_label(&part_label("over")));
+        let then = self.written(&setting("then")).map_or(SHAPE_THENS[0].to_string(), data_text);
+        let then_id = self.id();
+        fields.push(
+            Field::choice(then_id, &label("then"), SHAPE_THENS.iter().map(|each| each.to_string()).collect(), &then, None)
+                .with_shown_label(&part_label("then")),
+        );
+        fields
+    }
+
+    /// A length of time chosen from the plain lengths, the first choice standing for none of its own.
+    fn time_field(&mut self, id: usize, label: &str, setting: &str, first: &str) -> Field {
+        let mut times: Vec<String> = TIME_CHOICES.iter().filter(|time| **time != first).map(|time| time.to_string()).collect();
+        let current = self.written(setting).map_or(first.to_string(), data_text);
+        if current != first && !times.contains(&current) {
+            times.push(current.clone());
+        }
+        let mut choices = vec![first.to_string()];
+        choices.extend(times);
+        let name = |choice: &str| named_in(labels::MSG_TIME_NAMES, choice);
+        let names: Vec<String> = choices.iter().map(|choice| name(choice)).collect();
+        let mut field = Field::choice(id, label, choices, &current, Some(name(&current))).with_clear(&name(first));
+        if let crate::forms::nodes::Kind::Choice { names: held, .. } = &mut field.kind {
+            *held = Some(names);
+        }
+        field
     }
 
     fn enabled_field(&mut self) -> Field {
@@ -218,23 +302,7 @@ impl<'a> Made<'a> {
                     .with_enter(legends::What::EDIT)
                     .with_clear(marks::MSG_NONE_SHOWN)]
             }
-            SettingView::Time { setting, label, first } => {
-                let first = first.unwrap_or(marks::MSG_PATTERN_STEP_SHOWN).to_string();
-                let mut times: Vec<String> = TIME_CHOICES.iter().filter(|time| **time != first).map(|time| time.to_string()).collect();
-                let current = self.written(setting).map_or(first.clone(), data_text);
-                if current != first && !times.contains(&current) {
-                    times.push(current.clone());
-                }
-                let mut choices = vec![first.clone()];
-                choices.extend(times);
-                let name = |choice: &str| named_in(labels::MSG_TIME_NAMES, choice);
-                let names: Vec<String> = choices.iter().map(|choice| name(choice)).collect();
-                let mut field = Field::choice(id, label, choices, &current, Some(name(&current))).with_clear(&name(&first));
-                if let crate::forms::nodes::Kind::Choice { names: held, .. } = &mut field.kind {
-                    *held = Some(names);
-                }
-                vec![field]
-            }
+            SettingView::Time { setting, label, first } => vec![self.time_field(id, label, setting, first.unwrap_or(marks::MSG_PATTERN_STEP_SHOWN))],
             SettingView::Steps { label, .. } => vec![Field::custom(id, label, marks::MSG_CONFIGURE_STEPS).with_enter(legends::What::EDIT)],
             SettingView::Restart => {
                 let current = self.written(GENERATOR_RESTART).map_or(RESTARTS[0].to_string(), data_text);
@@ -277,6 +345,30 @@ impl<'a> Made<'a> {
                 }
                 self.fields_of(view)
             }
+            SettingView::Progression { label } => {
+                let song = self.app.document.song();
+                let shape = song
+                    .get_scale_name()
+                    .map(|scale| crate::patterns::scale_half_steps(self.app.document.get_setlist(), &scale))
+                    .filter(|shape| !shape.is_empty())
+                    .unwrap_or_else(|| MAJOR_SHAPE.to_vec());
+                let chords: Vec<i64> = self
+                    .written("chords")
+                    .and_then(Data::as_list)
+                    .map_or(vec![1], |chords| chords.iter().filter_map(Data::as_whole).map(|whole| whole as i64).collect());
+                let accidentals: Vec<Option<String>> = self
+                    .written("accidentals")
+                    .and_then(Data::as_list)
+                    .map_or(Vec::new(), |items| items.iter().map(|item| item.as_str().map(str::to_string)).collect());
+                let numerals: Vec<String> = chords
+                    .iter()
+                    .enumerate()
+                    .map(|(place, degree)| roman_numeral(&shape, *degree, accidentals.get(place).cloned().flatten().as_deref()))
+                    .collect();
+                vec![Field::custom(id, label, &numerals.join(marks::MSG_NUMERALS_SEPARATOR)).with_enter(legends::What::EDIT)]
+            }
+            SettingView::Shape { shape } => self.shape_fields(id, shape),
+            SettingView::GuitarBar { label } => vec![Field::custom(id, label, &self.bar_shown()).with_enter(legends::What::EDIT)],
             SettingView::Section { heading, settings } => {
                 let is_set = settings
                     .iter()
@@ -290,6 +382,52 @@ impl<'a> Made<'a> {
             _ => vec![Field::custom(id, "(not ported)", "")],
         }
     }
+}
+
+/// The major scale's half steps, which a song with no scale places degrees by.
+const MAJOR_SHAPE: [i64; 7] = [0, 2, 4, 5, 7, 9, 11];
+const ROMAN_NUMERALS: [&str; 7] = ["I", "II", "III", "IV", "V", "VI", "VII"];
+
+/// A chord's Roman numeral in a scale: upper case major, lower case minor, a mark for diminished or augmented, a sharp or a
+/// flat in front, the quality the triad the scale builds on the degree has, or the first degree's where it has an accidental.
+fn roman_numeral(shape: &[i64], degree: i64, accidental: Option<&str>) -> String {
+    let length = shape.len() as i64;
+    let place = if accidental.is_some_and(|accidental| !accidental.is_empty()) {
+        0
+    } else {
+        (degree - 1).rem_euclid(length)
+    };
+    let root = shape[place as usize];
+    let third = (shape[((place + 2) % length) as usize] - root).rem_euclid(12);
+    let fifth = (shape[((place + 4) % length) as usize] - root).rem_euclid(12);
+    let quality = match (third, fifth) {
+        (3, 7) => "minor",
+        (3, 6) => "diminished",
+        (4, 8) => "augmented",
+        _ => "major",
+    };
+    let mut numeral = ROMAN_NUMERALS[(degree - 1).rem_euclid(7) as usize].to_string();
+    if quality == "minor" || quality == "diminished" {
+        numeral = numeral.to_lowercase();
+    }
+    let sign = accidental
+        .map_or(String::new(), |accidental| named_in(marks::MSG_ACCIDENTAL_MARKS, accidental))
+        .replace(accidental.unwrap_or("\u{0}"), "");
+    let sign = if accidental.is_some_and(|accidental| marks::MSG_ACCIDENTAL_MARKS.iter().any(|(found, _)| *found == accidental)) {
+        sign
+    } else {
+        String::new()
+    };
+    format!("{sign}{numeral}{}", named_in(marks::MSG_QUALITY_MARKS, quality))
+}
+
+/// Whether a kind of field is ported: the drift's values, the musician's sections and inherited choices, the shapes and
+/// the guitar bar are not yet.
+fn is_ported_view(view: &SettingView) -> bool {
+    !matches!(
+        view,
+        SettingView::DriftValues | SettingView::Sections { .. } | SettingView::InheritedChoice { .. }
+    )
 }
 
 /// The setting a view shows, where it shows one.
@@ -355,17 +493,7 @@ impl Form for PluginEditor {
 
     /// Whether the plugin's view uses only the kinds of field ported so far.
     fn is_ported(&self, app: &App) -> bool {
-        self.made(app).1.iter().all(|(_, view)| {
-            !matches!(
-                view,
-                SettingView::Progression { .. }
-                    | SettingView::GuitarBar { .. }
-                    | SettingView::DriftValues
-                    | SettingView::Sections { .. }
-                    | SettingView::Shape { .. }
-                    | SettingView::InheritedChoice { .. }
-            )
-        })
+        self.made(app).1.iter().all(|(_, view)| is_ported_view(view))
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {

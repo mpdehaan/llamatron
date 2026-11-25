@@ -672,6 +672,14 @@ def write_tracker_tables(path):
     lines.append('/// Each visualizer mode by its name in a file, with its name on screen.')
     pairs = ', '.join('({}, {})'.format(literal(name), literal(mode_called(name).NAME)) for name in file_format.VISUALIZER_NAMES)
     lines.append('pub static VISUALIZER_MODE_NAMES: &[(&str, &str)] = &[{}];'.format(pairs))
+    from llamatron.engine.generators.guitarify import schema as guitar_bars
+    lines.append('')
+    lines.append('/// Each ready-made bar of strokes a Guitarify offers, by its name: its cell, its strokes and its accents.')
+    bars = []
+    for name, bar in guitar_bars.READY_BARS.items():
+        bars.append('({}, {}, &[{}], &[{}])'.format(literal(str(name)), literal(bar.cell), ', '.join(literal(stroke) for stroke in bar.strokes), ', '.join('true' if accent else 'false' for accent in bar.accents)))
+    lines.append("pub static READY_BARS: &[(&str, &str, &[&str], &[bool])] = &[{}];".format(', '.join(bars)))
+    lines.append('pub const DEFAULT_BAR: &str = {};'.format(literal(str(guitar_bars.DEFAULT_BAR))))
     path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
 
