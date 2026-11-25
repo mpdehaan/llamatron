@@ -239,3 +239,50 @@ pub fn scale_sound(
         name: names[midi.rem_euclid(HALF_STEPS_PER_OCTAVE) as usize],
     })
 }
+
+impl Sound {
+    /// A chord with its lowest notes, as many as its inversion says but never all of them, moved up an octave; anything but
+    /// a chord, or no inversion, as it is. A note that would leave the MIDI range stays where it is.
+    pub fn inverted(&self, inversion: Option<i64>) -> Sound {
+        let (Some(inversion), Sound::Chord { notes, .. }) = (inversion.filter(|inversion| *inversion != 0), self) else {
+            return self.clone();
+        };
+        let mut notes = notes.clone();
+        let mut by_pitch: Vec<usize> = (0..notes.len()).collect();
+        by_pitch.sort_by_key(|place| notes[*place].midi);
+        let moved = (inversion as usize).min(notes.len().saturating_sub(1));
+        for place in &by_pitch[..moved] {
+            if let Some(up) = notes[*place].half_step(HALF_STEPS_PER_OCTAVE) {
+                notes[*place] = up;
+            }
+        }
+        Sound::chord(notes)
+    }
+}
+
+/// A note moved a number of notes along a scale, or by half steps without one; a note not in the scale keeps its distance
+/// from the scale note below it (the Python engine/parts/scale_moves.py).
+pub fn along_scale(note: NoteSound, steps: i64, scale: Option<&llamatron_model::values::scale::Scale>) -> Result<NoteSound, OutOfRange> {
+    if steps == 0 {
+        return Ok(note);
+    }
+    let moved = |half_steps: i64| {
+        note.half_step(half_steps)
+            .ok_or_else(|| OutOfRange(format!("a note moved {half_steps} half steps leaves the MIDI range")))
+    };
+    let Some(scale) = scale else { return moved(steps) };
+    let shape = scale.get_type().get_shape();
+    let above_root = note.midi - scale.get_root().get_midi_number();
+    let (octaves, within) = (above_root.div_euclid(HALF_STEPS_PER_OCTAVE), above_root.rem_euclid(HALF_STEPS_PER_OCTAVE));
+    let place = scale_place(shape, within);
+    let extra = within - shape[place];
+    let size = shape.len() as i64;
+    let total = place as i64 + steps;
+    let (more, place) = (total.div_euclid(size), total.rem_euclid(size));
+    moved((octaves + more) * HALF_STEPS_PER_OCTAVE + shape[place as usize] + extra - above_root)
+}
+
+/// Which note of a scale's octave, counted from 0, is at or just below some half steps above its root.
+pub fn scale_place(shape: &[i64], half_steps: i64) -> usize {
+    shape.iter().rposition(|step| *step <= half_steps).unwrap_or(0)
+}

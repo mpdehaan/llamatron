@@ -6,6 +6,7 @@
 
 use crate::clip::Clip;
 use crate::error::Rendered;
+use crate::generators::chords::ChordsSettings;
 use crate::order::{ordered_patterns, DrawnWhenAsked, StepOrder};
 use crate::pattern_player::{Pass, PatternPlayer};
 use crate::realizer::{SongRealizer, WrittenScene};
@@ -13,6 +14,7 @@ use crate::sound::Sound;
 use llamatron_math::Rational;
 use llamatron_model::objects::song::ClipSlot;
 use llamatron_model::values::scale::Scale;
+use std::collections::HashMap;
 
 const PROBABILITY_SEED: &str = "{seed}/{scene}/{track}";
 const DIRECTION_SEED: &str = "{seed}/{scene}/{track}/direction";
@@ -44,6 +46,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let looping = self.clip_slot.loops();
         let fill = if looping { Some(self.realizer.get_scene_length(self.scene)?) } else { None };
         let clip = self.play_passes(&player, scale, fill)?;
+        let clip = self.through_chain(clip)?;
         let sounds = finished_sounds(&clip, looping, fill)?;
         // A clip carries its pattern's own time signature, if it has one, for the bars a DAW draws.
         let signature = player.pattern(&self.clip_slot.get_pattern_name())?.get_time_signature();
@@ -56,6 +59,40 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             looping,
             time_signature: signature,
         })
+    }
+
+    /// The clip after each generator of its chains, in order; a generator that moves pitches leaves a drum pattern alone,
+    /// since moving a drum note changes the drum.
+    fn through_chain(&self, clip: Clip) -> Rendered<Clip> {
+        let steps = self.realizer.chains_of(self.scene, self.track_name)?;
+        if steps.is_empty() || clip.total_length()? == Rational::ZERO {
+            return Ok(clip);
+        }
+        let mut clip = clip;
+        let mut times: HashMap<String, i64> = HashMap::new();
+        let bar = self.realizer.song().get_time_signature().bar_length();
+        for step in steps {
+            if self.realizer.plays_drums(self.scene, self.track_name) {
+                continue;
+            }
+            let count = times.entry(step.kind.to_string()).or_insert(0);
+            let key = (step.kind.to_string(), llamatron_strings::names::MSG_BUILT_IN_NAME.to_string(), *count);
+            *count += 1;
+            let settings = ChordsSettings::of(&step.settings)?;
+            let continuation = self
+                .realizer
+                .continuation(self.scene, self.track_name, &key, settings.get_restart().as_deref())?;
+            let followed = match settings.get_mode().as_str() {
+                "follow_progression" => self
+                    .realizer
+                    .chords_followed(self.scene, self.track_name, settings.get_chords_from().as_deref())?,
+                _ => None,
+            };
+            let mut generator = settings.make_generator(bar, &continuation, followed)?;
+            clip = generator.generate(&clip)?;
+            self.realizer.keep_end_state(self.scene, self.track_name, key, generator.end_state());
+        }
+        Ok(clip)
     }
 
     /// The scale the clip plays in: its own, or else its scene's, which is the song's when the scene has none.

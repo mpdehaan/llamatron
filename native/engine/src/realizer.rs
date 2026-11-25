@@ -8,14 +8,18 @@
 //! The port plays a part of what the Python does so far; a song using a part not yet ported is refused as not ported,
 //! named, before anything plays (`check_ported`).
 
+use crate::chord_source::ChordSource;
 use crate::clip::Clip;
 use crate::clip_player::ClipSlotPlayer;
 use crate::error::{RenderError, Rendered};
+use crate::generators::chords::Continuation;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::{Scene, Song, Track};
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SongSetting, TrackSetting};
+use llamatron_model::schema::generated::file_format::{Restart, GENERATOR_ENABLED};
+use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Setting, CLIP_SLOT, INSTRUMENT, PATTERN, SCENE, SONG, TRACK};
 use llamatron_strings::{errors, named, names};
 use std::cell::RefCell;
@@ -84,6 +88,26 @@ pub struct SongRealizer<'a> {
     seed: Option<i64>,
     scenes: Vec<WrittenScene<'a>>,
     lengths: RefCell<HashMap<i64, Rational>>,
+    // Each finished clip, by written scene and track, played once, since another clip can ask for it: one that follows its
+    // chords, or one that carries on from it.
+    clips: RefCell<HashMap<(i64, String), Clip>>,
+    // The state each generator left each track's clip in, by written scene, track and the generator's key.
+    end_states: RefCell<HashMap<(i64, String, GeneratorKey), EndState>>,
+    // The clips being made that wait on another's chords, so that tracks that follow each other in a circle are refused.
+    following: RefCell<Vec<(i64, String)>>,
+}
+
+/// What keeps a generator's end state apart from another's in a clip: its kind, its name, and how many times before it
+/// came up in the clip's chains.
+pub type GeneratorKey = (String, String, i64);
+
+/// The state a generator leaves a clip in, for the next to carry on from: a voicing's last chord, or none.
+pub type EndState = Option<Vec<i64>>;
+
+/// A built-in generator as a step of a clip's chains: its kind and its settings, which it holds itself.
+pub struct BuiltInStep {
+    pub kind: &'static str,
+    pub settings: Data,
 }
 
 impl<'a> SongRealizer<'a> {
@@ -94,6 +118,9 @@ impl<'a> SongRealizer<'a> {
             seed,
             scenes: WrittenScene::write_out(song),
             lengths: RefCell::new(HashMap::new()),
+            clips: RefCell::new(HashMap::new()),
+            end_states: RefCell::new(HashMap::new()),
+            following: RefCell::new(Vec::new()),
         }
     }
 
@@ -123,8 +150,9 @@ impl<'a> SongRealizer<'a> {
         for scene in &self.scenes {
             let mut clips = Vec::new();
             for track in &tracks {
-                let Some(clip_slot) = scene.scene.get_clip_slot(track) else { continue };
-                clips.push((track.clone(), ClipSlotPlayer::new(self, scene, track, clip_slot).play()?));
+                if let Some(clip) = self.get_clip(scene, track)? {
+                    clips.push((track.clone(), clip));
+                }
             }
             rows.push(GridRow {
                 name: scene.name.clone(),
@@ -132,6 +160,131 @@ impl<'a> SongRealizer<'a> {
             });
         }
         Ok(Grid { tracks, rows })
+    }
+
+    /// The finished clip a track plays in a written-out scene, or None where it plays nothing there.
+    pub fn get_clip(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Option<Clip>> {
+        let Some(clip_slot) = scene.scene.get_clip_slot(track) else { return Ok(None) };
+        let key = (scene.number, track.to_string());
+        if let Some(clip) = self.clips.borrow().get(&key) {
+            return Ok(Some(clip.clone()));
+        }
+        let clip = ClipSlotPlayer::new(self, scene, track, clip_slot).play()?;
+        self.clips.borrow_mut().insert(key, clip.clone());
+        Ok(Some(clip))
+    }
+
+    /// The chords a track followed plays in a written-out scene, after its own chains, or None where it plays nothing there,
+    /// is no track of the song or is the track that follows.
+    pub fn chords_followed(&self, scene: &WrittenScene<'a>, track: &str, source: Option<&str>) -> Rendered<Option<ChordSource>> {
+        let Some(source) = source.filter(|source| *source != track && self.song.get_track(source).is_some() && scene.scene.get_clip_slot(source).is_some())
+        else {
+            return Ok(None);
+        };
+        let mut waiting = self.following.borrow().clone();
+        waiting.push((scene.number, track.to_string()));
+        if let Some(first) = waiting.iter().position(|(number, name)| *number == scene.number && name == source) {
+            let mut circle: Vec<String> = waiting[first..].iter().map(|(_, name)| name.clone()).collect();
+            circle.push(source.to_string());
+            let looped = circle.join(llamatron_strings::marks::MSG_CIRCLE_ARROW);
+            return Err(RenderError::Refused(named(
+                errors::ERR_CIRCULAR_FOLLOW,
+                &[("scene", scene.describe().as_str().into()), ("loop", looped.as_str().into())],
+            )));
+        }
+        self.following.borrow_mut().push((scene.number, track.to_string()));
+        let clip = self.get_clip(scene, source);
+        self.following.borrow_mut().pop();
+        match clip? {
+            Some(clip) => Ok(Some(ChordSource::of(&clip)?)),
+            None => Ok(None),
+        }
+    }
+
+    /// What a track's clip in a written-out scene runs its notes through, in order: its built-ins switched on, a clip's
+    /// standing in for its track's of the same kind.
+    pub fn chains_of(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Vec<BuiltInStep>> {
+        let Some(clip_slot) = scene.scene.get_clip_slot(track) else {
+            return Ok(Vec::new());
+        };
+        let on_clip = clip_slot.get_written(ClipSlotSetting::BUILT_IN);
+        let on_track = self.track(track)?.get_written(TrackSetting::BUILT_IN);
+        let mut kinds: Vec<_> = PLUGINS.iter().filter(|plugin| plugin.built_in_place.is_some()).collect();
+        kinds.sort_by_key(|plugin| plugin.built_in_place);
+        let mut steps = Vec::new();
+        for plugin in kinds {
+            let held = [on_clip, on_track]
+                .into_iter()
+                .flatten()
+                .filter_map(|built_ins| built_ins.get(plugin.name))
+                .find(|settings| is_switched_on(settings));
+            let Some(settings) = held else { continue };
+            if plugin.name != CHORDS_KIND {
+                return Err(RenderError::NotPorted(format!("the {} generator", plugin.name)));
+            }
+            steps.push(BuiltInStep {
+                kind: plugin.name,
+                settings: settings.clone(),
+            });
+        }
+        Ok(steps)
+    }
+
+    /// Where a generator carries on from in a track's clip: how far into its run the clip starts, and the state the same
+    /// track's latest clip before in the run left it in, the clips before played first if they are not yet.
+    pub fn continuation(&self, scene: &WrittenScene<'a>, track: &str, key: &GeneratorKey, restart: Option<&str>) -> Rendered<Continuation> {
+        let offset = self.run_offset(scene, restart)?;
+        let start = self.run_start(scene, restart);
+        let here = (scene.number - 1) as usize;
+        let mut state = None;
+        for written in self.scenes[start..here].iter().rev() {
+            if written.scene.get_clip_slot(track).is_none() {
+                continue;
+            }
+            self.get_clip(written, track)?;
+            if let Some(found) = self.end_states.borrow().get(&(written.number, track.to_string(), key.clone())) {
+                state = found.clone();
+                break;
+            }
+        }
+        Ok(Continuation { offset, state })
+    }
+
+    pub fn keep_end_state(&self, scene: &WrittenScene, track: &str, key: GeneratorKey, state: Option<Vec<i64>>) {
+        self.end_states.borrow_mut().insert((scene.number, track.to_string(), key), state);
+    }
+
+    /// The place among the written-out scenes that a generator's run starts at, as its Restart says: this scene, the first
+    /// play of this scene, or the song's first.
+    fn run_start(&self, scene: &WrittenScene, restart: Option<&str>) -> usize {
+        let here = (scene.number - 1) as usize;
+        match restart {
+            Some(Restart::WHOLE_SONG) => 0,
+            Some(Restart::ON_NEW_SCENE) => {
+                let mut place = here;
+                while place > 0 && !self.scenes[place].first_play {
+                    place -= 1;
+                }
+                place
+            }
+            _ => here,
+        }
+    }
+
+    /// How far into its run a generator is as a written-out scene starts.
+    fn run_offset(&self, scene: &WrittenScene<'a>, restart: Option<&str>) -> Rendered<Rational> {
+        let start = self.run_start(scene, restart);
+        let mut offset = Rational::ZERO;
+        for written in &self.scenes[start..(scene.number - 1) as usize] {
+            offset = offset + self.get_scene_length(written)?;
+        }
+        Ok(offset)
+    }
+
+    /// Whether a track's clip in a written-out scene plays a drum pattern.
+    pub fn plays_drums(&self, scene: &WrittenScene, track: &str) -> bool {
+        let Some(clip_slot) = scene.scene.get_clip_slot(track) else { return false };
+        self.setlist.get_pattern(&clip_slot.get_pattern_name()).is_some_and(|pattern| pattern.is_drum())
     }
 
     /// How long a scene lasts: its longest clip that does not loop, worked out without playing.
@@ -162,6 +315,14 @@ impl<'a> SongRealizer<'a> {
         self.lengths.borrow_mut().insert(scene.number, length);
         Ok(length)
     }
+}
+
+/// The one built-in generator the port runs so far.
+const CHORDS_KIND: &str = "chords";
+
+/// Whether a built-in generator's settings switch it on: a built-in is off unless written on.
+fn is_switched_on(settings: &Data) -> bool {
+    settings.get(GENERATOR_ENABLED) == Some(&Data::Bool(true))
 }
 
 /// Whether a setting is written as something that does anything: false and an empty list are as good as not written.
@@ -228,6 +389,7 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         ClipSlotSetting::DIRECTION,
         ClipSlotSetting::FOLLOW_ACTION,
         ClipSlotSetting::SCALE,
+        ClipSlotSetting::BUILT_IN,
     ];
     for scene in song.scenes() {
         unported(SCENE, &scene_played, &|name| scene.get_written(name).cloned())?;

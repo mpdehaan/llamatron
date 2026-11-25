@@ -4,9 +4,11 @@
 //! llamatron's engine (the Python engine/): the realizer that plays a song into clips, its generators, and the timing that
 //! turns a clip's positions into notes with exact times.
 
+pub mod chord_source;
 pub mod clip;
 pub mod clip_player;
 pub mod error;
+pub mod generators;
 pub mod order;
 pub mod pattern_player;
 pub mod positions;
