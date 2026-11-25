@@ -6,6 +6,7 @@ the same step by both, and what each makes is compared. The Rust side is native/
 
     .venv/bin/python internal_tools/compare_llamatron2.py load      # every example's and test set's data, as both load it
     .venv/bin/python internal_tools/compare_llamatron2.py layout    # that data written back as a set file by each writer
+    .venv/bin/python internal_tools/compare_llamatron2.py migrate   # moved to today's layout, into the objects' and back
     .venv/bin/python internal_tools/compare_llamatron2.py load --only tie
 
 It prints each set that differs with the first place it differs, and a count, and exits 1 when anything differs, so that the
@@ -19,7 +20,10 @@ import subprocess
 import sys
 
 from llamatron.model.file.safe_yaml import load_safely
+from llamatron.model.file.file_layout import as_file_layout, as_object_layout
+from llamatron.model.file.migrations import migrated
 from llamatron.model.file.setlist_writer import dump_file_layout
+from llamatron.model.file.song_file_error import SongFileError
 
 TOP = pathlib.Path(__file__).resolve().parent.parent
 RUST = TOP / 'native' / 'target' / 'release' / 'llamatron-compare'
@@ -62,7 +66,19 @@ def python_layout(path):
         return None
 
 
-STEPS = {'load': python_load, 'layout': python_layout}
+def python_migrate(path):
+    """Return a set's data moved to today's layout, into the objects' layout and back, written as a set file, or None where the
+    Python refuses its layout, a refusal the Rust must also make."""
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    moved, _ = migrated(data, one_song_name=path.stem)
+    try:
+        return dump_file_layout(as_file_layout(as_object_layout(moved))).rstrip('\n')
+    except (SongFileError, AttributeError, TypeError, KeyError):
+        return None
+
+
+STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate}
 
 
 def main():

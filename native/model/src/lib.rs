@@ -6,6 +6,7 @@
 
 pub mod file;
 pub mod fundamentals;
+pub mod objects;
 pub mod schema;
 pub mod values;
 

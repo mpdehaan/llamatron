@@ -15,3 +15,5 @@ pub mod defaults;
 pub mod midi;
 #[rustfmt::skip]
 pub mod settings;
+#[rustfmt::skip]
+pub mod plugins;

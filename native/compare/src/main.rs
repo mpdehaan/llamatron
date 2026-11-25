@@ -5,7 +5,8 @@
 //! internal_tools/compare_llamatron2.py holds each layer of the port to the Python as it lands.
 //!
 //! `llamatron-compare load SET` prints the set file's data as JSON, as Python's json.dumps writes what PyYAML loaded;
-//! `llamatron-compare layout SET` writes that data back as a set file, as the Python writer lays it out.
+//! `llamatron-compare layout SET` writes that data back as a set file, as the Python writer lays it out;
+//! `llamatron-compare migrate SET` moves the data to today's layout, into the objects' layout and back, and writes it.
 
 use llamatron_model::file::data::{json_text, load, Data};
 use std::process::ExitCode;
@@ -72,6 +73,27 @@ fn main() -> ExitCode {
             Ok(data) => {
                 print!("{}", llamatron_model::file::writing::dump_file_layout(&data));
                 ExitCode::SUCCESS
+            }
+            Err(problem) => {
+                eprintln!("{path}: {}", problem.0);
+                ExitCode::from(1)
+            }
+        },
+        "migrate" => match load(&text) {
+            Ok(data) => {
+                let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
+                let (moved, _) = llamatron_model::file::migrations::migrated(data, stem);
+                match llamatron_model::file::layout::as_object_layout(&moved) {
+                    Ok(objects) => {
+                        let file = llamatron_model::file::layout::as_file_layout(&objects);
+                        print!("{}", llamatron_model::file::writing::dump_file_layout(&file));
+                        ExitCode::SUCCESS
+                    }
+                    Err(problem) => {
+                        eprintln!("{path}: {}: {}", problem.section, problem.problem.message);
+                        ExitCode::from(1)
+                    }
+                }
             }
             Err(problem) => {
                 eprintln!("{path}: {}", problem.0);

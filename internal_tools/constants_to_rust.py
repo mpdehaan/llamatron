@@ -341,12 +341,40 @@ def write_settings():
     module_list.write_text(module_list.read_text() + '#[rustfmt::skip]\npub mod settings;\n')
 
 
+def write_plugins(path):
+    """Write each generator plugin's name, the section of a set holding its generators, and its built-in place, in the
+    order of the names, as the Python lists them (model/schema/generator_plugins.py)."""
+    from llamatron.model.schema.generator_plugins import plugins
+    rows = []
+    for plugin in plugins().values():
+        place = 'None' if plugin.built_in_place is None else 'Some({})'.format(plugin.built_in_place)
+        rows.append('    Plugin {{ name: {}, section: {}, built_in_place: {} }},'.format(literal(plugin.name), literal(plugin.section), place))
+    text = HEADER.format(source='generator plugins, as model/schema/generator_plugins.py finds them')
+    text += '''
+/// A generator plugin as the model knows it: its name, its section of a set, and where its built-in one runs, or None.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Plugin {
+    pub name: &'static str,
+    pub section: &'static str,
+    pub built_in_place: Option<i64>,
+}
+
+pub static PLUGINS: &[Plugin] = &[
+{}
+];
+'''.replace('{}', '\n'.join(rows))
+    path.write_text(text)
+    module_list = path.parent / 'mod.rs'
+    module_list.write_text(module_list.read_text() + '#[rustfmt::skip]\npub mod plugins;\n')
+
+
 def main():
     texts = [(info.name, importlib.import_module('llamatron.user_strings.' + info.name)) for info in pkgutil.iter_modules(package.__path__)]
     unwritten = write_modules(folder=OUT, modules=texts)
     unwritten.update(write_modules(folder=PLUGIN_TEXTS_OUT, modules=plugin_texts()))
     unwritten.update(write_modules(folder=SCHEMA_OUT, modules=SCHEMA_MODULES))
     write_settings()
+    write_plugins(SCHEMA_OUT / 'plugins.rs')
     unwritten.update(write_modules(folder=FUNDAMENTALS_OUT, modules=FUNDAMENTALS_MODULES))
     write_enums(FUNDAMENTALS_OUT / 'enums.rs')
     unwritten.update(write_modules(folder=VALUES_OUT, modules=VALUES_MODULES))
