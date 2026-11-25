@@ -8,12 +8,14 @@
 use crate::app::App;
 use crate::drawing::{cursor_mark, fit, legend, BoxCharacters as Boxes, Style, SPACE};
 use crate::forms::nodes::GridCell;
-use crate::keybindings::{ChoiceDialog as ChoiceKeys, GridChoiceDialog as GridKeys, KeyClass, PromptDialog as PromptKeys, SoundDialog as SoundKeys};
+use crate::keybindings::{
+    ChoiceDialog as ChoiceKeys, GridChoiceDialog as GridKeys, HelpDialog as HelpKeys, KeyClass, PromptDialog as PromptKeys, SoundDialog as SoundKeys,
+};
 use crate::keys::KeyItem;
 use crate::page::Page;
 use crate::screens::list_page::shown_around;
 use crate::text::Text;
-use llamatron_strings::{marks, named};
+use llamatron_strings::{labels, marks, messages, named};
 
 /// How wide a dialog's box is unless what it holds needs more, and the room it keeps from the screen's sides.
 const DIALOG_WIDTH: usize = 70;
@@ -1174,4 +1176,120 @@ fn completed_from(labels: &[String], typed: &str) -> String {
         length += 1;
     }
     first[..length].iter().collect()
+}
+
+/// How many columns the help's keys panel lays its keys out in.
+const HELP_COLUMNS: usize = 2;
+
+/// The F1 dialog (the Python HelpDialog): every key that works on a page, the everywhere keys above the page's own, laid out
+/// in two columns, with Tab, Left and Right turning to what the page is about.
+pub struct HelpDialog {
+    place: String,
+    everywhere: Vec<KeyItem>,
+    own: Vec<KeyItem>,
+    about: Vec<String>,
+    /// The panel showing: the keys first, then what the page is about.
+    panel: usize,
+}
+
+impl HelpDialog {
+    /// The help of a page: where it is, the everywhere keys, its own keys and its help's lines.
+    pub fn new(place: &str, everywhere: Vec<KeyItem>, own: Vec<KeyItem>, about: Vec<String>) -> HelpDialog {
+        HelpDialog {
+            place: place.to_string(),
+            everywhere,
+            own,
+            about,
+            panel: 0,
+        }
+    }
+
+    /// The heading: the page and the panel showing.
+    fn title(&self) -> String {
+        let panel = labels::MSG_HELP_PANELS[self.panel];
+        named(messages::MSG_HELP_TITLE, &[("where", self.place.as_str().into()), ("panel", panel.into())])
+    }
+
+    /// The panel's lines: the everywhere keys, a blank line and the page's own keys, or the page's help wrapped to the width.
+    fn lines(&self, width: usize) -> Vec<Text> {
+        if self.panel == 0 {
+            let mut lines = key_columns(&self.everywhere, width, HELP_COLUMNS);
+            lines.push(Text::default());
+            lines.extend(key_columns(&self.own, width, HELP_COLUMNS));
+            return lines;
+        }
+        self.about.iter().flat_map(|line| crate::drawing::wrapped(line, width)).collect()
+    }
+
+    fn bind(binding: &'static crate::keybindings::Binding) -> KeyItem {
+        KeyItem::of(&HelpKeys::CLASS, binding)
+    }
+}
+
+impl Page for HelpDialog {
+    fn name(&self) -> &'static str {
+        "HelpDialog"
+    }
+
+    fn is_dialog(&self) -> bool {
+        true
+    }
+
+    fn class(&self) -> &'static KeyClass {
+        &HelpKeys::CLASS
+    }
+
+    fn keys(&self, _app: &App) -> Vec<KeyItem> {
+        vec![Self::bind(&HelpKeys::CLOSE), Self::bind(&HelpKeys::OTHER_PANEL)]
+    }
+
+    fn press(&mut self, app: &mut App, item: &KeyItem, _key: &str) {
+        if item.is(&HelpKeys::CLOSE) {
+            app.go_back();
+        } else if item.is(&HelpKeys::OTHER_PANEL) {
+            self.panel = (self.panel + 1) % labels::MSG_HELP_PANELS.len();
+        }
+    }
+
+    fn dialog_lines(&self, app: &App, width: usize) -> Vec<Text> {
+        let keys = crate::keys::in_order(self.class(), self.keys(app));
+        let title = self.title();
+        dialog_box(&title, false, &|inner| self.lines(inner), &keys, width)
+    }
+
+    fn body(&self, _app: &App, _width: usize, _height: usize) -> Vec<Text> {
+        Vec::new()
+    }
+
+    fn crumbs(&self, _app: &App) -> Vec<String> {
+        Vec::new()
+    }
+}
+
+/// Keys as lines of so many columns, filled down one column and then the next, each key its label reversed and what it does.
+fn key_columns(items: &[KeyItem], width: usize, columns: usize) -> Vec<Text> {
+    let rows = items.len().div_ceil(columns);
+    let column_width = width / columns;
+    (0..rows)
+        .map(|row| {
+            let mut line = Text::default();
+            for column in 0..columns {
+                if let Some(item) = items.get(row + column * rows) {
+                    line.append_text(&key_cell(item, column_width));
+                }
+            }
+            line
+        })
+        .collect()
+}
+
+/// One key as a cell of a width: its label in reverse video, then what it does, cut and padded to the width.
+fn key_cell(item: &KeyItem, width: usize) -> Text {
+    let mut cell = Text::default();
+    cell.append(&format!("{SPACE}{}{SPACE}", item.label), Style::REVERSE);
+    cell.append(&format!("{SPACE}{}", item.what), Style::PLAIN);
+    let mut cell = cell.slice(0, width.min(cell.cell_len()));
+    let room = width.saturating_sub(cell.cell_len());
+    cell.append(&SPACE.repeat(room), Style::PLAIN);
+    cell
 }

@@ -171,6 +171,21 @@ impl Tracker {
     }
 
     /// The keys that work on every page, before the page's own.
+    /// The F1 dialog of the page on top: where it is, the everywhere keys but F1 itself, the page's own keys, and its help.
+    fn help_of_top(&self) -> crate::screens::dialogs::HelpDialog {
+        let page = self.top();
+        let place = page.crumbs(&self.app).join(llamatron_strings::marks::MSG_CRUMB_SEPARATOR);
+        // F1 isn't listed in its own dialog: it closes the dialog, and leaving it out puts Undo and Redo in one column.
+        let everywhere: Vec<KeyItem> = self.everywhere_keys().into_iter().filter(|item| !item.is(&PageKeys::HELP)).collect();
+        let about = page.help().unwrap_or_else(|| {
+            crate::generated::tables::HELP_OF_PAGE
+                .iter()
+                .find(|(name, _)| *name == page.name())
+                .map_or(Vec::new(), |(_, lines)| lines.iter().map(|line| line.to_string()).collect())
+        });
+        crate::screens::dialogs::HelpDialog::new(&place, everywhere, page.page_key_table(&self.app), about)
+    }
+
     fn everywhere_keys(&self) -> Vec<KeyItem> {
         PageKeys::EVERYWHERE.iter().map(|binding| KeyItem::of(&PageKeys::CLASS, binding)).collect()
     }
@@ -185,8 +200,12 @@ impl Tracker {
                 return;
             }
         }
-        let everywhere = PageKeys::EVERYWHERE.iter().map(|binding| KeyItem::of(&PageKeys::CLASS, binding));
-        let table: Vec<KeyItem> = everywhere.chain(page.page_key_table(&self.app)).collect();
+        // A dialog keeps to its own keys: the everywhere keys work on pages, so that F1 closes the help rather than opening it.
+        let mut table: Vec<KeyItem> = Vec::new();
+        if !page.is_dialog() {
+            table.extend(PageKeys::EVERYWHERE.iter().map(|binding| KeyItem::of(&PageKeys::CLASS, binding)));
+        }
+        table.extend(page.page_key_table(&self.app));
         let Some(item) = table.into_iter().find(|item| item.keys.contains(&key)) else {
             return;
         };
@@ -197,6 +216,9 @@ impl Tracker {
         }
         if std::ptr::eq(item.binding, &PageKeys::OPEN_SET) {
             self.app.open_set();
+        } else if std::ptr::eq(item.binding, &PageKeys::HELP) {
+            let help = self.help_of_top();
+            self.app.show_page(Box::new(help));
         } else if PageKeys::EVERYWHERE.iter().any(|binding| std::ptr::eq(*binding, item.binding)) {
             // The other everywhere keys are not ported yet; they do nothing.
             return;

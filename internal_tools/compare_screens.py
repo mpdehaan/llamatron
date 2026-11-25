@@ -90,6 +90,9 @@ STACKS_BEFORE = 'stacks_before'
 SETS_BEFORE = 'sets_before'
 # The dialog trial waiting for the cursor's next move, and which fields' ENTER is tried: those that choose or edit.
 WAITING_TRIAL = 'waiting_trial'
+# The kinds of page whose help the tour has looked at.
+HELPED = 'helped_pages'
+WAITING_HELP = 'waiting_help'
 OPENING_WHATS = (legends.What.CHOOSE, legends.What.EDIT)
 MOST_ESCAPES = 4
 # The file the set is written to at a stop where it changed, whether it holds unsaved changes, and the current song.
@@ -225,9 +228,12 @@ class ScreenTour(KeyTour):
         self.record_stop()
         self.try_an_edit()
         page = self.app.screen
+        if isinstance(page, Page):
+            self.waiting_help = page
         self.waiting_trial = (page, page.cell_field()) if isinstance(page, FieldPage) else None
 
     async def go(self, name):
+        await self.try_the_help()
         await self.try_a_dialog()
         return await super().go(name)
 
@@ -261,6 +267,26 @@ class ScreenTour(KeyTour):
         self.assertIs(self.app.screen, page)
         if without_blanks(document.get_setlist().to_data()) != before:
             await self.press(Key.CTRL_Z)
+
+    async def try_the_help(self):
+        """On the first stop at each kind of page, press F1 and stop on each of the help's two panels, then close it, so that
+        another program is held to every page's help. About is left out, since it shows a quote chosen at random."""
+        page = self.__dict__.pop(WAITING_HELP, None)
+        helped = self.__dict__.setdefault(HELPED, set())
+        if page is None or self.app.screen is not page or page.takes_text() or type(page).__name__ in helped:
+            return
+        helped.add(type(page).__name__)
+        await self.press(Key.F1)
+        if self.app.screen is page:
+            return
+        self.record_stop()
+        await self.press(Key.TAB)
+        self.record_stop()
+        for _ in range(MOST_ESCAPES):
+            if self.app.screen is page:
+                break
+            await self.press(Key.ESCAPE)
+        self.assertIs(self.app.screen, page)
 
     def try_an_edit(self):
         """On a settings field, try each edit it takes that keeps to the page: ] where its value steps, Bksp where it clears and

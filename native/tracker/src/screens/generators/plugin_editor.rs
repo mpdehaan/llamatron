@@ -886,6 +886,12 @@ impl Form for PluginEditor {
         "PluginEditor"
     }
 
+    /// The generator's own help, as its kind's view gives it.
+    fn help(&self) -> Option<Vec<String>> {
+        let (_, view) = VIEWS.iter().find(|(name, _)| *name == self.kind)?;
+        Some(view.help.iter().map(|line| line.to_string()).collect())
+    }
+
     fn class(&self) -> &'static KeyClass {
         &Keys::CLASS
     }

@@ -109,6 +109,12 @@ pub trait Page {
         Vec::new()
     }
 
+    /// The page's help, the F1 dialog's panel about it, a line each, where it is the page's own rather than the one its name
+    /// finds.
+    fn help(&self) -> Option<Vec<String>> {
+        None
+    }
+
     /// How far a dialog's flyout reaches past its box, down and to the right, so that the dialog is placed by its own box.
     fn dialog_shift(&self) -> usize {
         0

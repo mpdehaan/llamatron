@@ -641,11 +641,12 @@ def write_generator_views(path):
         '    pub under: bool,',
         '}',
         '',
-        '/// A generator\'s page: its columns, and the setting that chooses its mode, where it has one.',
+        '/// A generator\'s page: its columns, the setting that chooses its mode, where it has one, and its help, a line each.',
         '#[derive(Debug)]',
         'pub struct GeneratorView {',
         "    pub columns: &'static [ColumnView],",
         "    pub mode: Option<&'static SettingView>,",
+        "    pub help: &'static [&'static str],",
         '}',
         '',
     ]
@@ -656,7 +657,8 @@ def write_generator_views(path):
             'None' if column.heading is None else 'Some({})'.format(literal(str(column.heading))), ', '.join(view_written(setting) for setting in column.settings),
             ', '.join(plain(mode) for mode in column.modes), 'true' if column.under else 'false') for column in view.columns)
         mode = 'None' if view.mode is None else 'Some(&{})'.format(view_written(view.mode))
-        lines.append('pub static {}: GeneratorView = GeneratorView {{ columns: &[{}], mode: {} }};'.format(name.upper(), columns, mode))
+        help_shown = ', '.join(literal(line) for line in help_lines(view.help))
+        lines.append('pub static {}: GeneratorView = GeneratorView {{ columns: &[{}], mode: {}, help: &[{}] }};'.format(name.upper(), columns, mode, help_shown))
         entries.append('({}, &{})'.format(literal(name), name.upper()))
     lines.append('')
     lines.append('/// Each plugin\'s view by the plugin\'s name.')
@@ -693,7 +695,35 @@ def write_tracker_tables(path):
     lines.append('')
     lines.append('/// Every kind of scale by its name in a file, in the order the tracker lists them, category by category.')
     lines.append('pub static SCALE_TYPES_IN_ORDER: &[&str] = &[{}];'.format(', '.join(literal(str(kind)) for kind in scale_categories.SCALE_TYPES_IN_ORDER)))
+    lines.append('')
+    lines.append('/// Each page\'s help, the F1 dialog\'s panel about the page, a line each, by the page\'s name.')
+    lines.append('pub static HELP_OF_PAGE: &[(&str, &[&str])] = &[{}];'.format(', '.join(
+        '({}, &[{}])'.format(literal(name), ', '.join(literal(line) for line in help_lines(text))) for name, text in page_helps())))
     path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
+def page_helps():
+    """Return each page's name with its help text, from every page class of the tracker that has help of its own."""
+    import importlib
+    import pkgutil
+    from llamatron.interface.tracker import screens
+    from llamatron.interface.tracker.screens.shared.page import Page
+    for module in pkgutil.walk_packages(screens.__path__, screens.__name__ + '.'):
+        importlib.import_module(module.name)
+    found = {}
+    waiting = list(Page.__subclasses__())
+    while waiting:
+        page = waiting.pop()
+        waiting.extend(page.__subclasses__())
+        if 'HELP' in page.__dict__:
+            found[page.__name__] = page.HELP
+    return sorted(found.items())
+
+
+def help_lines(text):
+    """Return a help text's lines, as the F1 dialog shows them."""
+    from llamatron.user_strings import help as help_text
+    return help_text.help_lines(text)
 
 
 def preset(value):

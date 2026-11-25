@@ -373,8 +373,9 @@ def keys_with_stacks(stop):
 
 
 def after_the_pdf(stops):
-    """Return the tour's stops from its first past the PDF export page, that stop's keys from where ESC left the PDF page."""
-    first = next(place for place, stop in enumerate(stops) if stop['page'] != PDF_PAGE)
+    """Return the tour's stops from the first with the PDF export page closed, its help among them, that stop's keys from
+    where ESC left the PDF page."""
+    first = next(place for place, stop in enumerate(stops) if PDF_PAGE not in stop['stack'])
     stops = [dict(stop) for stop in stops[first:]]
     keys = stops[0]['keys']
     stops[0]['keys'] = keys[keys.index(LEAVE) + 1:]
