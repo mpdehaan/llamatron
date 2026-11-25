@@ -5,6 +5,8 @@
 //! list of a value a step, kept as each row's kind keeps them (model/schema/row_descriptions.py) and written back leaving out
 //! the rows with nothing in them, so that files stay short.
 
+#[path = "pattern_munges.rs"]
+mod munges;
 use crate::file::data::Data;
 use crate::objects::holder::{in_table, passed_over, Holder};
 use crate::schema::checking::plain_data;
@@ -132,6 +134,17 @@ impl Pattern {
     pub fn has_sound(&self, step: usize) -> bool {
         let at = |row: &str| self.row(row).and_then(|values| values.get(step)).filter(|value| !value.is_null());
         at("degree").is_some() || matches!(at("grab"), Some(Data::Bool(true)))
+    }
+
+    /// Whether a step plays a note, holds one with a tie or sends a CC value.
+    pub fn holds_anything(&self, step: usize) -> bool {
+        let at = |row: &str| self.row(row).and_then(|values| values.get(step)).filter(|value| !value.is_null());
+        self.has_sound(step) || matches!(at("tie"), Some(Data::Bool(true))) || CC_ROWS.iter().any(|row| at(row).is_some())
+    }
+
+    /// How many steps from a place onward hold anything, which shortening the pattern there would lose.
+    pub fn steps_with_anything_from(&self, start: usize) -> usize {
+        (start..self.get_steps().max(0) as usize).filter(|step| self.holds_anything(*step)).count()
     }
 
     /// Whether any step plays something.

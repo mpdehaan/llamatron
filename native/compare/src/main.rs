@@ -513,6 +513,13 @@ fn toured(path: &str, keys: &str, width: usize, height: usize) -> Result<String,
     Ok(out)
 }
 
+/// What the note munges of the pattern_edits step are given, as the Python's: the step length long notes are divided by, how
+/// often a step is cleared, and the scale and default octave a melody is inverted in.
+const DIVIDED_STEP_PARTS: i128 = 16;
+const EVERY_OTHER: i64 = 2;
+const INVERTED_SCALE: i64 = 7;
+const INVERTED_OCTAVE: i64 = 3;
+
 /// The sections whose first item the edits step renames, copies, deletes, moves and sorts, and what a renamed item's name adds.
 const EDITED_SECTIONS: [&str; 15] = [
     "scales",
@@ -721,6 +728,30 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
                     Ok(())
                 }),
             ),
+            (
+                "join_repeated_notes",
+                Box::new(|pattern| {
+                    pattern.join_repeated_notes();
+                    Ok(())
+                }),
+            ),
+            (
+                "divide_long_notes",
+                Box::new(|pattern| {
+                    let covering = llamatron_tracker::patterns::covering_notes(pattern, llamatron_math::Rational::new(1, DIVIDED_STEP_PARTS));
+                    pattern.divide_long_notes(&covering);
+                    Ok(())
+                }),
+            ),
+            (
+                "reverse_pitches",
+                Box::new(|pattern| {
+                    pattern.reverse_pitches();
+                    Ok(())
+                }),
+            ),
+            ("clear_every", Box::new(|pattern| pattern.clear_every(EVERY_OTHER))),
+            ("invert_melody", Box::new(|pattern| pattern.invert_melody(0, INVERTED_SCALE, INVERTED_OCTAVE))),
         ];
         if steps > 1 {
             edits.push(("set_steps", Box::new(move |pattern| pattern.set_steps(steps as i128 - 1))));

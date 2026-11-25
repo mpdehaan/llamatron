@@ -21,6 +21,7 @@ commit check can run it.
 import argparse
 import hashlib
 import inspect
+from fractions import Fraction
 import json
 import pathlib
 import shutil
@@ -178,6 +179,12 @@ EDITED_PATTERNS = 3
 EDITED_DIRECTION = 'pendulum'
 EDITED_GROUP = 'edited'
 DRUM_DEGREE = 'C'
+# What the note munges the pattern_edits step makes are given: the step length long notes are divided by, how often a step is
+# cleared, and the scale and default octave a melody is inverted in.
+DIVIDED_STEP = Fraction(1, 16)
+EVERY_OTHER = 2
+INVERTED_SCALE = 7
+INVERTED_OCTAVE = 3
 
 
 def pattern_edit_steps(steps, drum):
@@ -192,6 +199,8 @@ def pattern_edit_steps(steps, drum):
         ('reverse_before', {'step': steps - 1}), ('pivot_around', {'step': middle}), ('repeat_at_end', {'first': 0, 'last': steps - 1}),
         ('repeat_at_start', {'first': 0, 'last': 0}), ('clear_all_but_pitch', {}), ('clear_chords', {}), ('clear_statements', {}),
         ('smooth_ccs', {}), ('smooth_velocity', {}), ('mirror', {}), ('interleave', {}), ('splice', {'at': 0}), ('splice', {}), ('set_drum', {}),
+        ('join_repeated_notes', {}), ('divide_long_notes', {'step_size': DIVIDED_STEP}), ('reverse_pitches', {}), ('clear_every', {'every': EVERY_OTHER}),
+        ('invert_melody', {'step': 0, 'scale_size': INVERTED_SCALE, 'default_octave': INVERTED_OCTAVE}),
     ]
     if steps > 1:
         edits += [('set_steps', {'steps': steps - 1}), ('remove_step', {'step': 0})]
