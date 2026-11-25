@@ -65,6 +65,11 @@ pub trait Form {
         false
     }
 
+    /// Whether every part of the page is ported, which a page made from declarations, as a generator's is, may not be yet.
+    fn is_ported(&self, _app: &App) -> bool {
+        true
+    }
+
     /// Whether a field is the last row of a list among the settings, which leaves a blank line after it.
     fn ends_a_list(&self, _field: &Field) -> bool {
         false
@@ -84,6 +89,8 @@ pub struct FormState {
 pub struct FieldPage<F: Form> {
     pub form: F,
     state: FormState,
+    /// Whether the page was wholly ported when it last answered, which names it for the screen tour.
+    ported: Cell<bool>,
 }
 
 /// What a settings page shows now: its fields, its box and its chosen tab.
@@ -133,7 +140,11 @@ impl<F: Form> FieldPage<F> {
     pub fn new(form: F) -> FieldPage<F> {
         let state = FormState::default();
         state.box_width.set(BOX_WIDTH);
-        FieldPage { form, state }
+        FieldPage {
+            form,
+            state,
+            ported: Cell::new(true),
+        }
     }
 
     fn is_open(app: &App, field: &Field) -> bool {
@@ -496,6 +507,14 @@ impl<F: Form> FieldPage<F> {
 
 impl<F: Form> Page for FieldPage<F> {
     fn name(&self) -> &'static str {
+        if self.ported.get() {
+            self.form.name()
+        } else {
+            crate::screens::not_ported::NOT_PORTED
+        }
+    }
+
+    fn stack_name(&self) -> &str {
         self.form.name()
     }
 
@@ -594,6 +613,7 @@ impl<F: Form> Page for FieldPage<F> {
     }
 
     fn body(&self, app: &App, width: usize, height: usize) -> Vec<Text> {
+        self.ported.set(self.form.is_ported(app));
         self.draw(app, width, height)
     }
 

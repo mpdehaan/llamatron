@@ -46,7 +46,8 @@ pub struct TourStop {
     pub set: Option<std::path::PathBuf>,
     pub dirty: bool,
     pub song: String,
-    pub keys: Vec<String>,
+    /// Each key pressed, with the pages open as the Python pressed it.
+    pub keys: Vec<(String, Vec<String>)>,
 }
 
 /// Press each stop's keys and record the screen after them, then follow the Python's stack of pages where pages not ported
@@ -57,13 +58,19 @@ pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourSto
     let mut recorded = Vec::new();
     for stop in stops {
         let mut unported = false;
-        for key in &stop.keys {
-            unported |= !tracker.top().is_ported();
+        for (key, stack) in &stop.keys {
+            // A page not ported yet takes no keys: where the Python's pages went from it, the Rust follows them.
+            if !tracker.top().is_ported() {
+                unported = true;
+                tracker.follow(stack);
+            }
             tracker.press(&pressed_key(key));
         }
+        // The screen is drawn first, since drawing a page may find a part of it not ported yet, which names it.
+        let screen = composed(tracker, width, height);
         recorded.push(Stop {
             page: tracker.top().name().to_string(),
-            screen: composed(tracker, width, height),
+            screen,
         });
         tracker.follow(&stop.stack);
         // A page not ported yet that changed the set leaves the Rust's behind, so it takes up the Python's, and the pages after

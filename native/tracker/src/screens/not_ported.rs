@@ -1,8 +1,8 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! A page the Rust tracker has not ported yet: it shows nothing, and ESC goes back, so that the screen tour goes on to the
-//! pages after it, counting its stops apart from real differences.
+//! A page the Rust tracker has not ported yet: it shows its name and takes no keys, so that the screen tour, following the
+//! Python's pages past it, goes on to the pages after it, counting its stops apart from real differences.
 
 use crate::app::App;
 use crate::keybindings::Page as PageKeys;
@@ -36,12 +36,10 @@ impl Page for NotPorted {
     }
 
     fn keys(&self, _app: &App) -> Vec<KeyItem> {
-        vec![KeyItem::of(&PageKeys::CLASS, &PageKeys::BACK)]
+        Vec::new()
     }
 
-    fn press(&mut self, app: &mut App, _item: &KeyItem, _key: &str) {
-        app.go_back();
-    }
+    fn press(&mut self, _app: &mut App, _item: &KeyItem, _key: &str) {}
 
     fn body(&self, _app: &App, _width: usize, _height: usize) -> Vec<Text> {
         vec![Text::plain(&self.name)]

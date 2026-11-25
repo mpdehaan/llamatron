@@ -118,7 +118,8 @@ impl OneRow for GrooveEditor {
         vec![KeyItem::of(&Keys::CLASS, &Keys::CELL_LENGTH), KeyItem::of(&Keys::CLASS, &Keys::RENAME)]
     }
 
-    fn lines(&self, app: &App, heading: &dyn Fn(String, bool, bool) -> GridLine, first: usize, last: usize, step: usize) -> Vec<GridLine> {
+    fn lines(&self, app: &App, heading: &dyn Fn(String, bool, bool) -> GridLine, window: (usize, usize, usize), step: usize) -> Vec<GridLine> {
+        let (first, last, _) = window;
         let (cells, length) = groove_of(app, &self.name);
         let title = named(
             marks::MSG_GROOVE_NAME_SHOWN,

@@ -146,6 +146,9 @@ impl Tracker {
         let page = self.pages.last_mut().expect("the main screen is never closed");
         let everywhere = PageKeys::EVERYWHERE.iter().map(|binding| KeyItem::of(&PageKeys::CLASS, binding));
         let table: Vec<KeyItem> = everywhere.chain(page.page_key_table(&self.app)).collect();
+        if !page.is_ported() {
+            return;
+        }
         let Some(item) = table.into_iter().find(|item| item.keys.contains(&key)) else {
             return;
         };

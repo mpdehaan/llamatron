@@ -13,6 +13,25 @@ pub struct Document {
     path: Option<PathBuf>,
     dirty: bool,
     current: String,
+    /// The kinds of generator the Generators page shows open, which the set's file remembers and nothing undoes.
+    open_generator_types: Vec<String>,
+}
+
+/// The kinds of generator a file's data says the Generators page shows open, only the plugins' kinds.
+fn open_types_of(text: &str) -> Vec<String> {
+    let Ok(data) = llamatron_model::file::data::load(text) else {
+        return Vec::new();
+    };
+    let listed = data
+        .get(llamatron_model::schema::generated::file_format::OPEN_GENERATOR_TYPES)
+        .and_then(|types| types.as_list().map(<[_]>::to_vec))
+        .unwrap_or_default();
+    listed
+        .iter()
+        .filter_map(|kind| kind.as_str())
+        .filter(|kind| llamatron_model::schema::generated::plugins::PLUGINS.iter().any(|plugin| plugin.name == *kind))
+        .map(str::to_string)
+        .collect()
 }
 
 impl Document {
@@ -24,6 +43,7 @@ impl Document {
             path,
             dirty: false,
             current,
+            open_generator_types: Vec::new(),
         }
     }
 
@@ -32,7 +52,9 @@ impl Document {
         let text = std::fs::read_to_string(path).map_err(|error| error.to_string())?;
         let stem = path.file_stem().map(|stem| stem.to_string_lossy().to_string());
         let setlist = Setlist::read_text(&text, stem).map_err(|error| error.message)?;
-        Ok(Document::new(setlist, Some(path.to_path_buf())))
+        let mut document = Document::new(setlist, Some(path.to_path_buf()));
+        document.open_generator_types = open_types_of(&text);
+        Ok(document)
     }
 
     pub fn get_setlist(&self) -> &Setlist {
@@ -83,6 +105,18 @@ impl Document {
             self.setlist = setlist;
             self.dirty = dirty;
             self.current = song.to_string();
+        }
+    }
+
+    pub fn is_generator_type_open(&self, kind: &str) -> bool {
+        self.open_generator_types.iter().any(|open| open == kind)
+    }
+
+    /// Show a kind of generator open or closed on the Generators page, which is no edit of the set.
+    pub fn show_generator_type(&mut self, kind: &str, opened: bool) {
+        self.open_generator_types.retain(|open| open != kind);
+        if opened {
+            self.open_generator_types.push(kind.to_string());
         }
     }
 

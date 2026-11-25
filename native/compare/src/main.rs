@@ -408,7 +408,13 @@ fn toured(path: &str, keys: &str, width: usize, height: usize) -> Result<String,
             let set = parts.next().filter(|name| !name.is_empty()).map(|name| folder_of(path).join(name));
             let dirty = parts.next() == Some("True");
             let song = parts.next().unwrap_or("").to_string();
-            let keys = parts.filter(|key| !key.is_empty()).map(str::to_string).collect();
+            let keys = parts
+                .filter(|key| !key.is_empty())
+                .map(|key| {
+                    let (name, stack) = key.split_once('\x1f').unwrap_or((key, ""));
+                    (name.to_string(), stack.split(',').filter(|page| !page.is_empty()).map(str::to_string).collect())
+                })
+                .collect();
             llamatron_tracker::tour::TourStop { stack, set, dirty, song, keys }
         })
         .collect();

@@ -203,6 +203,18 @@ impl GeneratorSettings {
         self.table
     }
 
+    /// Set one setting, or leave it out with None, at its place where it is written and at the end where it is not.
+    pub fn set_written(&mut self, name: &str, value: Option<Data>) {
+        match value {
+            Some(value) => self.data.set(name, value),
+            None => {
+                if let Data::Map(pairs) = &mut self.data {
+                    pairs.retain(|(key, _)| key.as_str() != Some(name));
+                }
+            }
+        }
+    }
+
     pub fn to_data(&self) -> Data {
         self.data.clone()
     }

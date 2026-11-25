@@ -121,9 +121,13 @@ pub trait OneRow {
     fn more_keys(&self, _app: &App) -> Vec<KeyItem> {
         Vec::new()
     }
+    /// The keys the page has beyond the row's own that depend on the cursor's step.
+    fn more_keys_at(&self, app: &App, _step: usize) -> Vec<KeyItem> {
+        self.more_keys(app)
+    }
     fn press_more(&mut self, _app: &mut App, _item: &KeyItem, _step: usize) {}
     /// The grid's lines, from the first step on screen to the last (excluded), the cursor on a step.
-    fn lines(&self, app: &App, heading: &dyn Fn(String, bool, bool) -> GridLine, first: usize, last: usize, step: usize) -> Vec<GridLine>;
+    fn lines(&self, app: &App, heading: &dyn Fn(String, bool, bool) -> GridLine, window: (usize, usize, usize), step: usize) -> Vec<GridLine>;
 }
 
 pub struct OneRowEditor<R: OneRow> {
@@ -206,7 +210,7 @@ impl<R: OneRow> Page for OneRowEditor<R> {
             if count > self.row.fewest_steps() {
                 keys.push(self.bind(self.row.remove()));
             }
-            keys.extend(self.row.more_keys(app));
+            keys.extend(self.row.more_keys_at(app, self.step.get()));
         }
         keys
     }
@@ -224,7 +228,7 @@ impl<R: OneRow> Page for OneRowEditor<R> {
         }
     }
 
-    fn body(&self, app: &App, width: usize, _height: usize) -> Vec<Text> {
+    fn body(&self, app: &App, width: usize, height: usize) -> Vec<Text> {
         let step = self.keep_step(app);
         let count = self.row.values(app).len();
         let shown = ((width.saturating_sub(LABEL_WIDTH + GRID_MARGIN)) / (self.row.cell_width() + 1)).max(1);
@@ -236,7 +240,7 @@ impl<R: OneRow> Page for OneRowEditor<R> {
             bold,
             steps_shown: steps_shown.clone(),
         };
-        grid_lines(self.row.lines(app, &heading, first, last, step), self.row.cell_width(), width)
+        grid_lines(self.row.lines(app, &heading, (first, last, height), step), self.row.cell_width(), width)
     }
 
     fn crumbs(&self, app: &App) -> Vec<String> {

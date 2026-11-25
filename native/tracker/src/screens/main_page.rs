@@ -208,6 +208,11 @@ impl MainPage {
             app.show_page(std::boxed::Box::new(FieldPage::new(FilePage)));
             return;
         }
+        if same(binding, &Keys::GENERATORS) {
+            let page = crate::screens::generators::generators_page::GeneratorsPage::new(app);
+            app.show_page(std::boxed::Box::new(page));
+            return;
+        }
         if same(binding, &Keys::PATTERNS) {
             let page = crate::screens::pattern::patterns_page::PatternsPage::new(app);
             app.show_page(std::boxed::Box::new(page));

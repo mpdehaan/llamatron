@@ -34,7 +34,10 @@ import unittest
 from unittest import mock
 
 from llamatron.interface.tracker.dialogs import dialog as dialog_values
+from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.dialogs.dialog import Dialog
+from llamatron.interface.pages import generators as generators_values
+from llamatron.interface.tracker.screens.generators.generators_page import GeneratorsPage
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 from tests.interface.tracker import test_tui_help_keys
@@ -77,6 +80,8 @@ SCREEN = 'screen'
 KEYS = 'keys'
 # The pages open at a stop, from the main screen up.
 STACK = 'stack'
+# The pages open as each key of a stop was pressed.
+STACKS_BEFORE = 'stacks_before'
 # The file the set is written to at a stop where it changed, whether it holds unsaved changes, and the current song.
 SET_FILE = 'set'
 DIRTY = 'dirty'
@@ -86,6 +91,9 @@ SET_AT_STOP = '{tour}_set_{number}.yml'
 LAST_DIGEST = 'last_digest'
 # The set the tour saves before its first stop and starts from.
 TOUR_SET = test_tui_help_keys.TOUR_SET_FILE
+# The most keys the tour presses to reach a generator on the Generators page, and the method it reaches one by.
+MOST_KEYS_TO_A_GENERATOR = 100
+PUT_CURSOR_ON = 'put_cursor_on'
 # What makes every key the tests press, which the tour notes.
 KEY_EVENT = 'key_event'
 WRITE = 'w'
@@ -118,16 +126,48 @@ class ScreenTour(KeyTour):
         await super().asyncSetUp()
         self.stops = []
         self.pressed = []
+        self.stacks_before = []
         original = ui_testing.key_event
 
         def noted(name):
             event = original(name)
+            # The pages open as the key is pressed, so that another program can follow them where its pages that the key
+            # reaches are not ported yet.
+            stack = [type(each).__name__ for each in self.app.screen_stack if isinstance(each, Page)]
             self.pressed.append(event.key)
+            self.stacks_before.append(stack)
             return event
 
         patcher = mock.patch.object(ui_testing, KEY_EVENT, noted)
         patcher.start()
         self.addCleanup(patcher.stop)
+        # The tour puts the Generators page's cursor on a generator without keys; here it goes there by keys, so that another
+        # program pressing the same keys reaches it too.
+        tour = self
+
+        def by_keys(page, *, kind, name):
+            tour.walk_to_generator(page=page, kind=kind, name=name)
+
+        patcher = mock.patch.object(GeneratorsPage, PUT_CURSOR_ON, by_keys)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def walk_to_generator(self, *, page, kind, name):
+        """Move the Generators page's cursor to a generator by keys, as a person would: PgUp or PgDn to its kind's heading,
+        Space to open the kind where it is closed, then Down to the generator."""
+        kinds = page.kinds()
+        for _ in range(MOST_KEYS_TO_A_GENERATOR):
+            listed = page.listed()
+            if listed.row == generators_values.GENERATOR and listed.kind == kind and listed.name == name:
+                return
+            if listed.kind == kind and listed.row == generators_values.HEADING and page.is_closed(kind):
+                self.press_at_once(Key.SPACE)
+            elif listed.kind == kind:
+                self.press_at_once(Key.DOWN)
+            elif listed.kind is None or kinds.index(listed.kind) > kinds.index(kind):
+                self.press_at_once(Key.PAGE_UP)
+            else:
+                self.press_at_once(Key.PAGE_DOWN)
 
     def note(self):
         super().note()
@@ -141,10 +181,11 @@ class ScreenTour(KeyTour):
         document = self.app.get_document()
         self.stops.append({
             PAGE: type(page).__name__, PLACE: place_of(page), SCREEN: screen, KEYS: self.pressed, STACK: stack,
-            SET_FILE: self.set_kept(document), DIRTY: document.is_dirty(), SONG: document.get_current_song_name(),
+            SET_FILE: self.set_kept(document), DIRTY: document.is_dirty(), SONG: document.get_current_song_name(), STACKS_BEFORE: self.stacks_before,
             PATH: without_folders(text=document.get_path() or '', folders=(os.path.realpath(self.folder), self.folder)),
         })
         self.pressed = []
+        self.stacks_before = []
 
     def set_kept(self, document):
         """Return the name of the file the set is written to where it changed since the stop before, so that another program

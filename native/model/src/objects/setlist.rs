@@ -238,6 +238,11 @@ impl Setlist {
         self.section(section)?.get(name)
     }
 
+    pub fn get_item_mut(&mut self, section: &str, name: &str) -> Option<&mut Item> {
+        let held = self.sections.iter_mut().find(|held| held.section == section)?;
+        held.items.as_mut()?.iter_mut().find(|(found, _)| found == name).map(|(_, item)| item)
+    }
+
     /// Add an item at the end of its section, which the set then holds even where its file left the section out.
     pub fn add_item(&mut self, section: &str, name: &str, item: Item) {
         if let Some(held) = self.sections.iter_mut().find(|held| held.section == section) {

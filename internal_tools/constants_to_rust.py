@@ -548,6 +548,122 @@ def write_keybindings(path):
     path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
 
+# Each kind of generator view, by its Python class's name, with how each field is written in Rust: text, an optional text,
+# a whole number, true or false, a plain value, an optional plain value, plain values, pairs of plain values and names, a
+# view, views, or columns.
+VIEW_FIELDS = {
+    'ChoiceView': (('setting', 'text'), ('label', 'text'), ('choices', 'plains'), ('default', 'plain'), ('names', 'named')),
+    'NumberView': (('setting', 'text'), ('label', 'text'), ('default', 'optional plain'), ('shown', 'optional text'), ('zero_shown', 'optional text')),
+    'ToggleView': (('setting', 'text'), ('label', 'text'), ('default', 'flag'), ('by_mode', 'flags by plain')),
+    'OctaveView': (('setting', 'text'), ('label', 'text'), ('default', 'whole')),
+    'TrackView': (('setting', 'text'), ('label', 'text')),
+    'ProgressionView': (('label', 'text'),),
+    'GuitarBarView': (('label', 'text'),),
+    'OffsetsView': (('setting', 'text'), ('label', 'text')),
+    'DriftValuesView': (),
+    'WhenView': (('view', 'view'), ('when', 'text')),
+    'InheritedChoiceView': (('setting', 'text'), ('label', 'text'), ('choices', 'plains'), ('inherited_choice', 'text'), ('inherited_shown', 'text'), ('inherited_what', 'text')),
+    'GaugeView': (('setting', 'text'), ('label', 'text'), ('lowest', 'whole'), ('highest', 'whole'), ('default', 'whole')),
+    'SectionsView': (('caption', 'text'), ('plays', 'text'), ('plays_label', 'text'), ('played', 'text'), ('played_label', 'text'), ('played_choices', 'plains'), ('defaults', 'plains by text')),
+    'TimeView': (('setting', 'text'), ('label', 'text'), ('first', 'optional text')),
+    'StepsView': (('setting', 'text'), ('row', 'text'), ('label', 'text'), ('row_name', 'text'), ('note', 'text')),
+    'ShapeView': (('shape', 'text'),),
+    'RestartView': (),
+    'SectionView': (('heading', 'text'), ('settings', 'views')),
+}
+
+
+def view_text(value, way):
+    """Return a generator view's field as Rust, written the way VIEW_FIELDS says."""
+    if way == 'text':
+        return literal(str(value))
+    if way == 'optional text':
+        return 'None' if value is None else 'Some({})'.format(literal(str(value)))
+    if way == 'whole':
+        return str(int(value))
+    if way == 'flag':
+        return 'true' if value else 'false'
+    if way == 'plain':
+        return plain(value)
+    if way == 'optional plain':
+        return 'None' if value is None else 'Some({})'.format(plain(value))
+    if way == 'plains':
+        return '&[{}]'.format(', '.join(plain(item) for item in value))
+    if way == 'named':
+        return 'None' if value is None else 'Some(&[{}])'.format(', '.join('({}, {})'.format(plain(key), literal(str(name))) for key, name in value.items()))
+    if way == 'flags by plain':
+        return 'None' if value is None else 'Some(&[{}])'.format(', '.join('({}, {})'.format(plain(key), 'true' if flag else 'false') for key, flag in value.items()))
+    if way == 'plains by text':
+        return '&[{}]'.format(', '.join('({}, {})'.format(literal(str(key)), plain(item)) for key, item in value.items()))
+    if way == 'view':
+        return '&{}'.format(view_written(value))
+    if way == 'views':
+        return '&[{}]'.format(', '.join(view_written(item) for item in value))
+    raise NotWritable(value)
+
+
+def view_written(view):
+    """Return one setting's view as a Rust SettingView."""
+    kind = type(view).__name__
+    variant = kind[:-len('View')]
+    fields = VIEW_FIELDS[kind]
+    if not fields:
+        return 'SettingView::{}'.format(variant)
+    return 'SettingView::{} {{ {} }}'.format(variant, ', '.join('{}: {}'.format(name, view_text(getattr(view, name), way)) for name, way in fields))
+
+
+def write_generator_views(path):
+    """Write each generator plugin's view, the settings its page shows in columns, as Rust data the tracker builds its page from."""
+    from llamatron.model.schema import generator_plugins
+    lines = [HEADER.format(source='each generator plugin\'s view.py').rstrip(), '#![allow(clippy::large_enum_variant)]', '', 'use llamatron_model::schema::generated::settings::Plain;', '']
+    lines += [
+        '/// What one setting shows on a generator\'s page.',
+        '#[derive(Debug)]',
+        'pub enum SettingView {',
+    ]
+    types = {'text': "&'static str", 'optional text': "Option<&'static str>", 'whole': 'i64', 'flag': 'bool', 'plain': 'Plain', 'optional plain': 'Option<Plain>',
+             'plains': "&'static [Plain]", 'named': "Option<&'static [(Plain, &'static str)]>", 'flags by plain': "Option<&'static [(Plain, bool)]>",
+             'view': "&'static SettingView", 'views': "&'static [SettingView]", 'plains by text': "&'static [(&'static str, Plain)]"}
+    for kind, fields in VIEW_FIELDS.items():
+        variant = kind[:-len('View')]
+        if not fields:
+            lines.append('    {},'.format(variant))
+        else:
+            lines.append('    {} {{ {} }},'.format(variant, ', '.join('{}: {}'.format(name, types[way]) for name, way in fields)))
+    lines += ['}', '']
+    lines += [
+        '/// A column of a generator\'s page: its heading, its settings, the modes it shows in, and whether it starts a band of its own.',
+        '#[derive(Debug)]',
+        'pub struct ColumnView {',
+        "    pub heading: Option<&'static str>,",
+        "    pub settings: &'static [SettingView],",
+        "    pub modes: &'static [Plain],",
+        '    pub under: bool,',
+        '}',
+        '',
+        '/// A generator\'s page: its columns, and the setting that chooses its mode, where it has one.',
+        '#[derive(Debug)]',
+        'pub struct GeneratorView {',
+        "    pub columns: &'static [ColumnView],",
+        "    pub mode: Option<&'static SettingView>,",
+        '}',
+        '',
+    ]
+    entries = []
+    for name, plugin in generator_plugins.plugins().items():
+        view = plugin.view
+        columns = ', '.join('ColumnView {{ heading: {}, settings: &[{}], modes: &[{}], under: {} }}'.format(
+            'None' if column.heading is None else 'Some({})'.format(literal(str(column.heading))), ', '.join(view_written(setting) for setting in column.settings),
+            ', '.join(plain(mode) for mode in column.modes), 'true' if column.under else 'false') for column in view.columns)
+        mode = 'None' if view.mode is None else 'Some(&{})'.format(view_written(view.mode))
+        lines.append('pub static {}: GeneratorView = GeneratorView {{ columns: &[{}], mode: {} }};'.format(name.upper(), columns, mode))
+        entries.append('({}, &{})'.format(literal(name), name.upper()))
+    lines.append('')
+    lines.append('/// Each plugin\'s view by the plugin\'s name.')
+    lines.append('pub static VIEWS: &[(&str, &GeneratorView)] = &[{}];'.format(', '.join(entries)))
+    path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
 def write_tracker_tables(path):
     """Write what the tracker names besides its keys: each visualizer mode's name on screen, by its name in a file."""
     from llamatron.interface.visualizers.modes import mode_called
@@ -573,6 +689,7 @@ def main():
     write_lists(VALUES_OUT / 'lists.rs')
     write_keybindings(TRACKER_OUT / 'keybindings.rs')
     write_tracker_tables(TRACKER_OUT / 'tables.rs')
+    write_generator_views(TRACKER_OUT / 'generator_views.rs')
     for name, skipped in unwritten.items():
         print('{}: not written: {}'.format(name, ', '.join(skipped)), file=sys.stderr)
 
