@@ -90,6 +90,9 @@ pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourSto
             last_unported = !tracker.top().is_ported();
             unported |= last_unported;
             tracker.press(&pressed_key(&key.key));
+            // The terminal draws after every key, and a page may keep its scrolling as it draws, such as Arrange's window
+            // over the tracks, so the tour draws after every key too.
+            composed(tracker, width, height);
         }
         // Where the Python opened a page or a dialog the Rust did not, the Rust follows it before drawing, so that the stop
         // counts as waiting on what is not ported yet rather than differing.
