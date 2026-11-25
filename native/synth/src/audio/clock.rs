@@ -33,3 +33,11 @@ pub fn now() -> f64 {
     unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut time) };
     time.tv_sec as f64 + time.tv_nsec as f64 / 1e9
 }
+
+/// A moment on the shared clock as host ticks, the stamps CoreMIDI delivers by.
+#[cfg(target_os = "macos")]
+pub fn host_ticks(seconds: f64) -> u64 {
+    let _ = now();
+    let scale = *SCALE.get().unwrap_or(&1.0);
+    (seconds / scale).max(0.0) as u64
+}

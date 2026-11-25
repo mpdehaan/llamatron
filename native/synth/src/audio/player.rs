@@ -19,7 +19,7 @@ use crate::voice::patch::Patch;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use std::panic::{self, AssertUnwindSafe};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 const COMMANDS: usize = 1 << 16;
@@ -61,6 +61,24 @@ pub enum Command {
         when: f64,
     },
     Silence,
+}
+
+/// The callback's queue of commands, shared by the threads that send it commands (the reader, and the sender's thread);
+/// the lock is only ever held by those threads, never by the callback, which reads the queue's other end without one.
+pub type Commands = Arc<Mutex<rtrb::Producer<Command>>>;
+
+/// Hand the callback a command, waiting while its queue is full, which only a flood of notes could cause.
+pub fn send(commands: &Commands, mut command: Command) {
+    let Ok(mut queue) = commands.lock() else { return };
+    loop {
+        match queue.push(command) {
+            Ok(()) => return,
+            Err(rtrb::PushError::Full(back)) => {
+                command = back;
+                std::thread::sleep(Duration::from_millis(1));
+            }
+        }
+    }
 }
 
 /// Why the stream could not start.
@@ -154,7 +172,7 @@ impl Statistics {
 /// The playing stream and the ends of its queues.
 pub struct Player {
     _stream: cpal::Stream,
-    pub commands: rtrb::Producer<Command>,
+    pub commands: Commands,
     pub statistics: Arc<Statistics>,
     pub rate: f64,
     pub block: usize,
@@ -202,7 +220,7 @@ impl Player {
         let housekeeper = Some(start_housekeeper(trash, running.clone()));
         Ok(Player {
             _stream: stream,
-            commands,
+            commands: Arc::new(Mutex::new(commands)),
             statistics,
             rate,
             block,
@@ -213,16 +231,8 @@ impl Player {
     }
 
     /// Hand the callback a command, waiting while its queue is full, which only a flood of notes could cause.
-    pub fn send(&mut self, mut command: Command) {
-        loop {
-            match self.commands.push(command) {
-                Ok(()) => return,
-                Err(rtrb::PushError::Full(back)) => {
-                    command = back;
-                    std::thread::sleep(Duration::from_millis(1));
-                }
-            }
-        }
+    pub fn send(&mut self, command: Command) {
+        send(&self.commands, command);
     }
 
     /// Stop the housekeeper; the stream closes when the player is dropped.

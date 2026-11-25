@@ -4,7 +4,8 @@
 //! llamatron-synth, the daemon that plays llamatron's built-in synths: the tracker starts it, speaks MessagePack to it
 //! over its standard input and output (protocol.rs), and it plays through the sound card or renders into a WAV file.
 //!
-//! `llamatron-synth play [--block FRAMES] [--device NAME]` plays; `llamatron-synth render --rate HZ` renders. The
+//! `llamatron-synth play [--block FRAMES] [--device NAME]` plays; `llamatron-synth render --rate HZ` renders;
+//! `llamatron-synth send` is the real-time sender, sending the tracker's events through MIDI and the synths alike. The
 //! architecture is described for people in docs/SYNTH_ENGINE.md.
 
 mod audio;
@@ -14,6 +15,7 @@ mod dsp;
 mod engine;
 mod fluid;
 mod protocol;
+mod sender;
 mod voice;
 
 use std::io;
@@ -30,6 +32,7 @@ const LOG_FILES_KEPT: usize = 10;
 /// What the command line asks for.
 struct Arguments {
     rendering: bool,
+    sending: bool,
     block: usize,
     device: Option<String>,
     rate: f64,
@@ -38,6 +41,7 @@ struct Arguments {
 fn arguments() -> Arguments {
     let mut found = Arguments {
         rendering: false,
+        sending: false,
         block: DEFAULT_BLOCK,
         device: None,
         rate: DEFAULT_RATE,
@@ -46,6 +50,7 @@ fn arguments() -> Arguments {
     while let Some(argument) = given.next() {
         match argument.as_str() {
             "render" => found.rendering = true,
+            "send" => found.sending = true,
             "play" => found.rendering = false,
             "--block" => found.block = given.next().and_then(|value| value.parse().ok()).unwrap_or(DEFAULT_BLOCK),
             "--device" => found.device = given.next(),
@@ -84,7 +89,9 @@ fn main() {
     daemon::watch_parent();
     let output = Arc::new(Mutex::new(io::stdout()));
     let code = panic::catch_unwind(|| {
-        if found.rendering {
+        if found.sending {
+            daemon::sending::serve(output.clone())
+        } else if found.rendering {
             daemon::render(found.rate, output.clone())
         } else {
             daemon::play(found.block, found.device.as_deref(), output.clone())

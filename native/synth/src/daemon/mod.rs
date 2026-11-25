@@ -9,11 +9,15 @@
 //! - Rendering: no sound card; instruments and notes timed from zero arrive, and `render` plays them through the very
 //!   same engine and safety guard into a WAV file, as fast as it can, for the tracker's WAV export.
 //!
+//! - Sending: the real-time sender (sending.rs), which replaces the Python Realtime Sender Process.
+//!
 //! Its well-behaved edges: it exits when its input closes or its parent dies, so that it is never left an orphan; it
 //! logs start-up, its settings and its problems, never a note, to rotating files in `~/.llamatron/`.
 
 use crate::audio::player::{Command, Player};
 use crate::audio::wav;
+pub mod sending;
+
 use crate::drums::{self, Hit};
 use crate::engine::{Engine, Event, MidiEvent, FORGET, NOTE_ON};
 use crate::fluid::{Fluid, FluidProblem};
@@ -47,13 +51,13 @@ pub fn tell(output: &Output, message: &Value) {
 
 /// The drums' hits, rendered on this thread as notes arrive and kept, by instrument, pitch and velocity step.
 #[derive(Default)]
-struct HitStore {
+pub struct HitStore {
     drums: HashMap<usize, Drum>,
     hits: HashMap<(usize, i64, i64), Hit>,
 }
 
 impl HitStore {
-    fn set_instrument(&mut self, number: usize, patch: &Patch) {
+    pub fn set_instrument(&mut self, number: usize, patch: &Patch) {
         self.hits.retain(|key, _| key.0 != number);
         match patch.drum() {
             Some(drum) => {
@@ -67,7 +71,7 @@ impl HitStore {
 
     /// A drum's hit for a note, its tone rendered at the middle of the velocity's eighth, or None for an instrument that is
     /// not a drum.
-    fn hit(&mut self, instrument: usize, pitch: f64, velocity: f64, rate: f64) -> Option<Hit> {
+    pub fn hit(&mut self, instrument: usize, pitch: f64, velocity: f64, rate: f64) -> Option<Hit> {
         let drum = self.drums.get(&instrument)?;
         let step = velocity as i64 / VELOCITY_STEP;
         let key = (instrument, pitch.round() as i64, step);
@@ -110,11 +114,11 @@ fn notes_of(value: Option<&Value>) -> Vec<Note> {
         .collect()
 }
 
-fn kind_of(message: &Value) -> &str {
+pub(crate) fn kind_of(message: &Value) -> &str {
     message.as_array().and_then(|items| items.first()).and_then(Value::as_str).unwrap_or("")
 }
 
-fn item(message: &Value, place: usize) -> Option<&Value> {
+pub(crate) fn item(message: &Value, place: usize) -> Option<&Value> {
     message.as_array().and_then(|items| items.get(place))
 }
 
@@ -275,7 +279,7 @@ fn failed_fluid(problem: &FluidProblem) -> Value {
 
 /// Report the load every half second: the share of the time the callback was busy, its longest chunk against its budget,
 /// and what the tracker's screen shows of dropouts.
-fn start_reporter(player: &Player, output: Output, reporting: Arc<AtomicBool>) -> std::thread::JoinHandle<()> {
+pub(crate) fn start_reporter(player: &Player, output: Output, reporting: Arc<AtomicBool>) -> std::thread::JoinHandle<()> {
     let statistics = player.statistics.clone();
     let budget = player.block as f64 / player.rate;
     std::thread::spawn(move || {
@@ -302,7 +306,7 @@ fn start_reporter(player: &Player, output: Output, reporting: Arc<AtomicBool>) -
     })
 }
 
-fn statistics_of(player: &Player) -> Value {
+pub(crate) fn statistics_of(player: &Player) -> Value {
     let statistics = &player.statistics;
     let count = |counter: &std::sync::atomic::AtomicU64| Value::from(counter.load(Ordering::Relaxed));
     mapping(vec![
