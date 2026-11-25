@@ -23,6 +23,11 @@ if [ -n "$native" ]; then
     cargo clippy --manifest-path native/Cargo.toml --workspace --release --all-targets --quiet -- -D warnings
     cargo test --manifest-path native/Cargo.toml --workspace --release --quiet
     cargo build --manifest-path native/Cargo.toml --workspace --release --quiet
+    # llamatron2 held to the Python program, every step the port has reached, over every example and test set.
+    for step in load; do
+        .venv/bin/python internal_tools/compare_llamatron2.py "$step" | tail -1
+        .venv/bin/python internal_tools/compare_llamatron2.py "$step" > /dev/null
+    done
 fi
 # The Python program is frozen while it is ported to Rust (.claude/rules/STYLE.md), so its tests run only when something it
 # reads changed; a commit of the native code alone is held by cargo's checks above and the comparisons with Python.

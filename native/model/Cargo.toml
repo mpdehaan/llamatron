@@ -12,3 +12,4 @@ publish = false
 [dependencies]
 llamatron-math = { path = "../math" }
 llamatron-strings = { path = "../strings" }
+yaml-rust2 = "0.10"

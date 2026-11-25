@@ -4,6 +4,7 @@
 //! llamatron's model (the Python model/ with music_theory/fundamentals/): the set as stored, its values, its objects, its
 //! schema and its file, the layer the engine renders and the tracker edits.
 
+pub mod file;
 pub mod fundamentals;
 pub mod schema;
 pub mod values;

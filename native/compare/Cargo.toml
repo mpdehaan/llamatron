@@ -1,0 +1,18 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+[package]
+name = "llamatron-compare"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "What llamatron2 makes of a set, printed for internal_tools/compare_llamatron2.py to hold against the Python program"
+publish = false
+
+[[bin]]
+name = "llamatron-compare"
+path = "src/main.rs"
+
+[dependencies]
+llamatron-math = { path = "../math" }
+llamatron-model = { path = "../model" }
