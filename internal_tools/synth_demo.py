@@ -13,8 +13,10 @@ import sys
 import time
 
 from llamatron.model.objects.built_in_sound import synth_spec
-from llamatron.model.schema.file_format import SoundSetting
+from llamatron.model.schema.file_format import SoundEngine, SoundSetting
 from llamatron.realtime.synth_process import engine
+from llamatron.realtime.synth_process import daemon as synth_daemon
+from llamatron.realtime.synth_process.daemon import SynthDaemon
 from llamatron.realtime.synth_process.process import SynthesisProcess
 
 LEAD_IN = 0.15
@@ -25,11 +27,22 @@ MINOR_PENTATONIC = (0, 3, 5, 7, 10, 12, 15, 17)
 
 
 def basic(*, oscillators, envelope, voices=4, volume=0.35, effects=()):
-    return {'kind': 'basic', 'oscillators': oscillators, 'envelope': envelope, 'voices': voices, 'volume': volume, 'effects': list(effects)}
+    """Return a Basic sound with no filter: its oscillators as (waveform, cents, level), Env1 as (attack, decay, sustain,
+    release) in seconds."""
+    spec = synth_spec({SoundSetting.ENGINE: SoundEngine.BASIC})
+    attack, decay, sustain, release = envelope
+    spec['oscillators']['oscillators'] = oscillators
+    spec['envelopes'][0].update(attack=attack, decay=decay, sustain=sustain, release=release)
+    spec.update(filter={'type': 'none'}, matrix=[], voices=voices, volume=volume, effects=list(effects))
+    return spec
 
 
 def drum(*, machine, knobs, choke=None, volume=0.8, effects=()):
-    return {'kind': 'drum', 'machine': machine, 'knobs': list(knobs), 'choke': choke, 'volume': volume, 'effects': list(effects)}
+    """Return a MechaDrum machine at its knobs."""
+    spec = synth_spec({SoundSetting.ENGINE: SoundEngine.DRUM})
+    spec['oscillators'].update(machine=machine, knobs=list(knobs), choke=choke)
+    spec.update(volume=volume, effects=list(effects))
+    return spec
 
 
 def effects_of(*blocks):
@@ -37,11 +50,14 @@ def effects_of(*blocks):
     return synth_spec({SoundSetting.EFFECTS: list(blocks)})['effects']
 
 
-def chip(*, engine, **settings):
-    """Return a SID or Pocket sound as the set would store it, given by its settings' names, compiled as llamatron gives it."""
-    sound = {SoundSetting.ENGINE: engine}
-    sound.update(settings)
-    return synth_spec(sound)
+def chip(*, engine, oscillator=None, envelope=None, **whole):
+    """Return a SID or Pocket sound as llamatron gives it: its engine's preset, its oscillator's and Env1's settings changed
+    as given, in the spec's own units, and the whole sound's (glide in seconds, volume from 0 to 1)."""
+    spec = synth_spec({SoundSetting.ENGINE: engine})
+    spec['oscillators'].update(oscillator or {})
+    spec['envelopes'][0].update(envelope or {})
+    spec.update(whole)
+    return spec
 
 
 def run(*, start, root=60, steps=MAJOR, length=0.18, velocity=100, gap=0.0):
@@ -104,16 +120,16 @@ TOUR = [
     ('Karplus drum', drum(machine='karplus_drum', knobs=(40, 60, 70, 90, 20)), lambda t: hits(start=t, pattern='x.x.xx.xx.x.x.xx', step=0.12, pitches=(48, 55, 52, 60))),
     ('Karplus drum, crushed to four bits', drum(machine='karplus_drum', knobs=(50, 50, 90, 110, 40), effects=effects_of({'effect': 'bitcrush', 'bits': 4, 'rate': 11000})),
      lambda t: hits(start=t, pattern='xx.xx.x.xx.x.xxx', step=0.1, pitches=(55, 50, 60, 48))),
-    ('SID pulse, its width sweeping', chip(engine='sid', pulse_sweep=40, decay=400, sustain=40), lambda t: run(start=t, root=48, steps=MINOR_PENTATONIC, length=0.15)),
-    ('SID chord arpeggio, one voice', chip(engine='sid', arpeggio=[0, 3, 7, 12], sustain=80), lambda t: chords(start=t, chords_list=[(57,), (53,), (55,), (52,)], length=0.8)),
-    ('SID ring modulated triangle', chip(engine='sid', wave='triangle', modulation='ring', interval=7), lambda t: run(start=t, root=60, steps=MINOR_PENTATONIC, length=0.15)),
-    ('SID hard sync saw lead, gliding', chip(engine='sid', wave='saw', modulation='sync', interval=19, glide=60, sustain=70), lambda t: run(start=t, root=60, steps=MAJOR, length=0.2)),
-    ('SID noise snare', chip(engine='sid', wave='noise', attack=0, decay=120, sustain=0, release=60), lambda t: run(start=t, root=72, steps=(0, 0, 0, 0), length=0.25)),
-    ('Pocket quarter pulse, fading in steps', chip(engine='pocket', level_pace=3), lambda t: run(start=t, root=60, steps=MAJOR, length=0.18)),
-    ('Pocket eighth pulse laser, sweeping down', chip(engine='pocket', duty='eighth', sweep_pace=1, sweep_step=2, level_pace=2), lambda t: run(start=t, root=84, steps=(0, 5, 0, 7), length=0.3)),
-    ('Pocket wave, the organ shape', chip(engine='pocket', chip_voice='wave', wave_shape='organ', volume=60), lambda t: run(start=t, root=48, steps=MAJOR, length=0.18)),
-    ('Pocket short noise, metallic hats', chip(engine='pocket', chip_voice='noise', noise='short', level_pace=1), lambda t: run(start=t, root=90, steps=(0,) * 8, length=0.12)),
-    ('Pocket long noise kick, sweeping', chip(engine='pocket', chip_voice='noise', level_pace=1, start_level=15), lambda t: run(start=t, root=40, steps=(0, 0, 0, 0), length=0.25)),
+    ('SID pulse, its width sweeping', chip(engine='sid', oscillator=dict(pulse_sweep=0.4), envelope=dict(decay=10, sustain=6)), lambda t: run(start=t, root=48, steps=MINOR_PENTATONIC, length=0.15)),
+    ('SID chord arpeggio, one voice', chip(engine='sid', oscillator=dict(arpeggio=[0, 3, 7, 12]), envelope=dict(sustain=12)), lambda t: chords(start=t, chords_list=[(57,), (53,), (55,), (52,)], length=0.8)),
+    ('SID ring modulated triangle', chip(engine='sid', oscillator=dict(wave='triangle', modulation='ring', interval=7)), lambda t: run(start=t, root=60, steps=MINOR_PENTATONIC, length=0.15)),
+    ('SID hard sync saw lead, gliding', chip(engine='sid', oscillator=dict(wave='saw', modulation='sync', interval=19), envelope=dict(sustain=11), glide=0.06), lambda t: run(start=t, root=60, steps=MAJOR, length=0.2)),
+    ('SID noise snare', chip(engine='sid', oscillator=dict(wave='noise'), envelope=dict(attack=0, decay=6, sustain=0, release=5)), lambda t: run(start=t, root=72, steps=(0, 0, 0, 0), length=0.25)),
+    ('Pocket quarter pulse, fading in steps', chip(engine='pocket', envelope=dict(level_pace=3)), lambda t: run(start=t, root=60, steps=MAJOR, length=0.18)),
+    ('Pocket eighth pulse laser, sweeping down', chip(engine='pocket', oscillator=dict(duty=0.125, sweep_pace=1, sweep_step=2), envelope=dict(level_pace=2)), lambda t: run(start=t, root=84, steps=(0, 5, 0, 7), length=0.3)),
+    ('Pocket wave, the organ shape', chip(engine='pocket', oscillator=dict(chip_voice='wave', wave_shape='organ'), volume=0.6), lambda t: run(start=t, root=48, steps=MAJOR, length=0.18)),
+    ('Pocket short noise, metallic hats', chip(engine='pocket', oscillator=dict(chip_voice='noise', noise='short'), envelope=dict(level_pace=1)), lambda t: run(start=t, root=90, steps=(0,) * 8, length=0.12)),
+    ('Pocket long noise kick, sweeping', chip(engine='pocket', oscillator=dict(chip_voice='noise'), envelope=dict(level_pace=1, start_level=15)), lambda t: run(start=t, root=40, steps=(0, 0, 0, 0), length=0.25)),
 ]
 
 
@@ -122,6 +138,8 @@ def main(*, arguments=None):
     made.add_argument('--only', help='play only the sounds whose names hold this text')
     options = made.parse_args(arguments)
     synthesis = SynthesisProcess(block=128)
+    if synth_daemon.uses_daemon():
+        synthesis = SynthDaemon(block=128)
     synthesis.start()
     stopped = False
     try:
