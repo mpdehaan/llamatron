@@ -10,7 +10,7 @@ use crate::drawing::{cursor_mark, fit, legend, BoxCharacters as Boxes, Style, SP
 use crate::forms::nodes::GridCell;
 use crate::keybindings::{
     ChoiceDialog as ChoiceKeys, ConfirmDialog as ConfirmKeys, ExportDialog as ExportKeys, GridChoiceDialog as GridKeys, HelpDialog as HelpKeys, KeyClass,
-    MessageDialog as MessageKeys, PromptDialog as PromptKeys, QuitDialog as QuitKeys, SoundDialog as SoundKeys,
+    MessageDialog as MessageKeys, PickManyDialog as PickManyKeys, PromptDialog as PromptKeys, QuitDialog as QuitKeys, SoundDialog as SoundKeys,
 };
 use crate::keys::KeyItem;
 use crate::page::Page;
@@ -1744,5 +1744,119 @@ impl Page for ExportDialog {
         if !self.flyout_open {
             self.list.type_text(app, character);
         }
+    }
+}
+
+/// What a pick-many dialog does with the choices picked, in the options' order.
+pub type PickedThen = Box<dyn FnMut(&mut App, Vec<String>)>;
+
+/// How many options a pick-many dialog shows at once, the list scrolling to keep the cursor's in view.
+const SHOWN_PICKS: usize = 12;
+
+/// A list where several choices can be picked at once (the Python PickManyDialog), each marked on or off, for a setting that
+/// holds a list: Up and Down move, Space turns the choice under the cursor on or off, ENTER finishes with the choices
+/// picked, and ESC cancels, changing nothing.
+pub struct PickManyDialog {
+    title: String,
+    options: Vec<String>,
+    names: Vec<String>,
+    picked: Vec<String>,
+    cursor: usize,
+    then: PickedThen,
+}
+
+impl PickManyDialog {
+    /// The list of options, each shown by its name, the picked ones marked, handing what is picked to then on ENTER.
+    pub fn new(title: &str, options: Vec<String>, names: Vec<String>, picked: Vec<String>, then: PickedThen) -> PickManyDialog {
+        PickManyDialog {
+            title: title.to_string(),
+            options,
+            names,
+            picked,
+            cursor: 0,
+            then,
+        }
+    }
+
+    fn bind(binding: &'static crate::keybindings::Binding) -> KeyItem {
+        KeyItem::of(&PickManyKeys::CLASS, binding)
+    }
+
+    /// The rows around the cursor, each its mark of being picked and its name.
+    fn lines(&self, width: usize) -> Vec<Text> {
+        let count = self.options.len();
+        let start = (self.cursor as i64 - (SHOWN_PICKS / 2) as i64).min(count as i64 - SHOWN_PICKS as i64).max(0) as usize;
+        (start..(start + SHOWN_PICKS).min(count))
+            .map(|place| {
+                let mark = if self.picked.contains(&self.options[place]) {
+                    marks::MSG_TOGGLE_ON
+                } else {
+                    marks::MSG_FIELD_TOGGLE_OFF
+                };
+                let text = named(marks::MSG_PICKED_CHOICE, &[("mark", mark.into()), ("name", self.names[place].as_str().into())]);
+                Text::plain(&fit(&format!("{}{text}", cursor_mark(place == self.cursor)), width))
+            })
+            .collect()
+    }
+}
+
+impl Page for PickManyDialog {
+    fn name(&self) -> &'static str {
+        "PickManyDialog"
+    }
+
+    fn is_dialog(&self) -> bool {
+        true
+    }
+
+    fn class(&self) -> &'static KeyClass {
+        &PickManyKeys::CLASS
+    }
+
+    fn keys(&self, _app: &App) -> Vec<KeyItem> {
+        vec![
+            Self::bind(&PickManyKeys::CANCEL),
+            Self::bind(&PickManyKeys::MOVE).wanting_key(),
+            Self::bind(&PickManyKeys::FLIP),
+            Self::bind(&PickManyKeys::DONE),
+        ]
+    }
+
+    fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        if item.is(&PickManyKeys::CANCEL) {
+            app.go_back();
+        } else if item.is(&PickManyKeys::MOVE) {
+            let last = self.options.len().saturating_sub(1);
+            self.cursor = if key == "up" {
+                self.cursor.saturating_sub(1)
+            } else {
+                (self.cursor + 1).min(last)
+            };
+        } else if item.is(&PickManyKeys::FLIP) {
+            let option = self.options[self.cursor].clone();
+            match self.picked.iter().position(|found| *found == option) {
+                Some(place) => {
+                    self.picked.remove(place);
+                }
+                None => self.picked.push(option),
+            }
+        } else if item.is(&PickManyKeys::DONE) {
+            app.go_back();
+            let picked: Vec<String> = self.options.iter().filter(|option| self.picked.contains(option)).cloned().collect();
+            (self.then)(app, picked);
+        }
+    }
+
+    fn dialog_lines(&self, app: &App, width: usize) -> Vec<Text> {
+        let keys = crate::keys::in_order(self.class(), self.keys(app));
+        dialog_box(&self.title, false, &|inner| self.lines(inner), &keys, width)
+    }
+
+    fn body(&self, _app: &App, _width: usize, _height: usize) -> Vec<Text> {
+        Vec::new()
+    }
+
+    fn crumbs(&self, _app: &App) -> Vec<String> {
+        Vec::new()
     }
 }

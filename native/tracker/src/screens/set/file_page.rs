@@ -253,6 +253,19 @@ impl Form for FilePage {
             app.document.change_set(|setlist| setlist.set_written(setting, value));
             return;
         }
+        if id == HIDDEN && edit == Edit::Enter {
+            // The modes left out of the visualizer key, picked in a list where each can be on or off.
+            let names: Vec<String> = VISUALIZER_NAMES.iter().map(|name| mode_name(name)).collect();
+            let picked = hidden_visualizers(app.document.get_setlist());
+            let then: crate::screens::dialogs::PickedThen = Box::new(|app: &mut App, picked: Vec<String>| {
+                let value = (!picked.is_empty()).then(|| Data::List(picked.iter().map(|name| Data::text(name)).collect()));
+                app.document
+                    .change_set(|setlist| setlist.set_written(SetlistSetting::HIDDEN_VISUALIZERS, value));
+            });
+            let dialog = crate::screens::dialogs::PickManyDialog::new(labels::MSG_HIDE_VISUALIZERS_LABEL, strings(VISUALIZER_NAMES), names, picked, then);
+            app.show_page(Box::new(dialog));
+            return;
+        }
         if id == SAVE && edit == Edit::Enter {
             crate::everywhere::save(app, None);
             return;
