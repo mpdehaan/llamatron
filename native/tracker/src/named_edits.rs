@@ -445,6 +445,14 @@ impl Document {
         Ok(())
     }
 
+    /// Add a song the MIDI import made, with its instruments, scales and patterns, as one change, and make it current.
+    pub fn import_song(&mut self, imported: &llamatron_importers::writing::ImportedSong) -> Result<(), String> {
+        let setlist = llamatron_importers::writing::add_imported(self.get_setlist(), imported)?;
+        self.change_set(|held| *held = setlist);
+        self.select_song(&imported.name);
+        Ok(())
+    }
+
     /// Add a C major scale under a name.
     pub fn add_scale(&mut self, name: &str) -> Result<(), String> {
         let scale = Data::Map(vec![

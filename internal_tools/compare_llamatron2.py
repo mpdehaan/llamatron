@@ -23,6 +23,7 @@ import hashlib
 import inspect
 from fractions import Fraction
 import json
+import os
 import pathlib
 import shutil
 import subprocess
@@ -542,6 +543,8 @@ NOT_PORTED_PAGE = '(not ported)'
 # What the capture writes for the folder its tour ran in, and the folder the Rust's tour runs in.
 FOLDER = 'FOLDER'
 TOUR_FOLDER = 'tour_folder'
+# The home folder the tour's MIDI import picker starts in, the same as the Python tour's.
+TOUR_HOME = TOP / 'tests' / 'data' / 'tour_home'
 PDF_PAGE = 'PdfExportPage'
 LEAVE = 'escape'
 
@@ -655,7 +658,8 @@ def compare_screens(shown_most=None, baseline=False):
         shutil.copy(SCREENS / 'tour.yml', folder / 'tour.yml')
         held = stops[0]['path']
         opened = str(folder / 'tour.yml') if held.startswith(FOLDER) else held
-        done = subprocess.run([str(RUST), 'screens', opened, str(keys_file), str(size[0]), str(size[1])], capture_output=True, text=True, cwd=folder)
+        # The MIDI import's picker starts in the home folder, which is the tour's own, as the Python's tour patched it.
+        done = subprocess.run([str(RUST), 'screens', opened, str(keys_file), str(size[0]), str(size[1])], capture_output=True, text=True, cwd=folder, env={**os.environ, 'HOME': str(TOUR_HOME)})
         if done.returncode != 0:
             print('{}x{}: the Rust tour failed: {}'.format(*size, done.stderr.strip()[:SHOWN]))
             return 1

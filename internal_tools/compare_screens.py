@@ -42,6 +42,7 @@ from llamatron.interface.pages import generators as generators_values
 from llamatron.model.schema import generator_plugins
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.generators.generators_page import GeneratorsPage
+from llamatron.interface.tracker.screens.set import importing
 from llamatron.interface.forms.nodes import Button, Toggle
 from llamatron.user_strings import legends
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
@@ -80,6 +81,9 @@ MSG_DIALOGS_KEPT = 'the dialogs captured differ: {before} before and {after} aft
 MSG_DIALOG = 'dialog {key}'
 # What the test's folder is written as.
 FOLDER = 'FOLDER'
+# The home folder the tour's MIDI import picker starts in, and the function that names it.
+TOUR_HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'tests', 'data', 'tour_home'))
+HOME_FOLDER = 'home_folder'
 # What each stop of the tour records.
 PAGE = 'page'
 PLACE = 'place'
@@ -220,6 +224,10 @@ class ScreenTour(KeyTour):
             original_setattr(page, name, value)
 
         patcher = mock.patch.object(ArrangePage, SETATTR, by_arrows)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        # The MIDI import's picker starts in a home folder of the tour's own, holding one MIDI file, never the person's.
+        patcher = mock.patch.object(importing, HOME_FOLDER, return_value=TOUR_HOME)
         patcher.start()
         self.addCleanup(patcher.stop)
 

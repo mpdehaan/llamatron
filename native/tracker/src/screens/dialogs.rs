@@ -46,14 +46,18 @@ pub(crate) fn heading_lines(title: &str, deletes: bool, width: usize) -> Vec<Tex
         .collect()
 }
 
-/// What a dialog's box holds at a width: its heading, a blank line, its own lines and, after another blank line, its keys.
+/// What a dialog's box holds at a width: its heading, a blank line, its own lines and, after another blank line, its keys
+/// where it shows any.
 fn contents(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) -> Vec<Text>, keys: &[KeyItem], inner: usize) -> Vec<Text> {
     let mut result = heading(inner);
     result.push(Text::default());
     result.extend(lines(inner));
-    result.push(Text::default());
+    // A dialog that shows no keys, such as one with only its OK button, ends at its own lines.
     let shown: Vec<KeyItem> = keys.iter().filter(|item| item.shown).cloned().collect();
-    result.extend(legend(&shown, inner));
+    if !shown.is_empty() {
+        result.push(Text::default());
+        result.extend(legend(&shown, inner));
+    }
     result
 }
 

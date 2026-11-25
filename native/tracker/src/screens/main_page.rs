@@ -264,6 +264,11 @@ impl MainPage {
             app.open_set();
             return;
         }
+        if same(binding, &Keys::IMPORT_HERE) {
+            let picker = crate::screens::set::open_page::OpenPage::for_midi(app);
+            app.show_page(std::boxed::Box::new(picker));
+            return;
+        }
         if let Some(name) = page_opened(binding) {
             app.show_page(std::boxed::Box::new(NotPorted { name: name.to_string() }));
         }

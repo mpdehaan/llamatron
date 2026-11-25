@@ -59,6 +59,8 @@ pub struct Session {
     pub shows_arrange_details: bool,
     /// The folder the Open page was last in, where the next one starts.
     pub last_set_folder: Option<std::path::PathBuf>,
+    /// The folder the MIDI import's picker was last in, where the next one starts.
+    pub last_midi_folder: Option<std::path::PathBuf>,
     /// The Live sets the person has said this session may be written over, asked about only the first time.
     pub confirmed_overwrites: Vec<std::path::PathBuf>,
 }
@@ -75,6 +77,7 @@ impl Default for Session {
                 .collect(),
             shows_arrange_details: false,
             last_set_folder: None,
+            last_midi_folder: None,
             open_munge_groups: std::collections::HashSet::new(),
             confirmed_overwrites: Vec::new(),
         }
@@ -222,7 +225,10 @@ impl Tracker {
         let page = self.pages.last_mut().expect("the main screen is never closed");
         if page.takes_text() {
             if let Some(character) = typed_character(key) {
-                self.app.status.clear();
+                // A key a page takes clears the status line; a dialog's keys leave it, as the Python's modal screens do.
+                if !page.is_dialog() {
+                    self.app.status.clear();
+                }
                 page.type_text(&mut self.app, character);
                 return;
             }
@@ -236,7 +242,9 @@ impl Tracker {
         let Some(item) = table.into_iter().find(|item| item.keys.contains(&key)) else {
             return;
         };
-        self.app.status.clear();
+        if !page.is_dialog() {
+            self.app.status.clear();
+        }
         if std::ptr::eq(item.binding, &PageKeys::UNDO) || std::ptr::eq(item.binding, &PageKeys::REDO) {
             self.step_history(std::ptr::eq(item.binding, &PageKeys::UNDO));
             return;

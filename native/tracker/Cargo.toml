@@ -14,6 +14,7 @@ llamatron-math = { path = "../math" }
 llamatron-strings = { path = "../strings" }
 llamatron-model = { path = "../model" }
 llamatron-engine = { path = "../engine" }
+llamatron-importers = { path = "../importers" }
 llamatron-exporters = { path = "../exporters" }
 unicode-width = "0.2"
 crossterm = "0.28"
