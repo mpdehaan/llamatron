@@ -5,6 +5,8 @@
 //! tab of its group, a tab per group sorted by name, then Ungrouped while a pattern is in no group, then + New; each group's
 //! patterns sorted by name, with + (New) under them. Tab goes between the row of tabs and the list.
 
+#[path = "patterns_edits.rs"]
+mod edits;
 use crate::app::App;
 use crate::drawing::{Align, Style};
 use crate::forms::drawing::{boxed_tabs, inner_width};
@@ -74,6 +76,10 @@ enum Listed {
 
 pub struct PatternsPage {
     cursor: std::cell::Cell<usize>,
+    /// The groups made on the page that hold no pattern yet, shared with the dialogs that make and rename them.
+    new_groups: std::rc::Rc<std::cell::RefCell<Vec<String>>>,
+    /// The pattern the cursor goes to when the page is next drawn, such as one just renamed here.
+    going_to: std::cell::RefCell<Option<String>>,
     on_tabs: bool,
     searching: bool,
     typed: String,
@@ -91,6 +97,8 @@ impl PatternsPage {
     pub fn new(app: &App) -> PatternsPage {
         let page = PatternsPage {
             cursor: std::cell::Cell::new(0),
+            new_groups: std::rc::Rc::new(std::cell::RefCell::new(Vec::new())),
+            going_to: std::cell::RefCell::new(None),
             on_tabs: false,
             searching: false,
             typed: String::new(),
@@ -108,6 +116,11 @@ impl PatternsPage {
             .iter()
             .filter_map(|(_, item)| group_of(item))
             .collect();
+        for made in self.groups_made_here() {
+            if !groups.contains(&made) {
+                groups.push(made);
+            }
+        }
         groups.sort_by_key(|group| name_order(group));
         groups.dedup();
         groups
@@ -206,6 +219,11 @@ impl PatternsPage {
     }
 
     fn place(&self, app: &App) -> usize {
+        if let Some(name) = self.going_to.borrow_mut().take() {
+            if let Some(found) = self.rows(app).iter().position(|(listed, _)| *listed == Listed::Pattern(name.clone())) {
+                self.cursor.set(found);
+            }
+        }
         let place = self.cursor.get().min(self.rows(app).len().saturating_sub(1));
         self.cursor.set(place);
         place
@@ -307,6 +325,20 @@ impl PatternsPage {
 }
 
 impl Page for PatternsPage {
+    fn go_to_row(&mut self, app: &App, row: &str) {
+        self.put_cursor_at(app, row);
+    }
+
+    /// After a rename made here, the cursor goes to the pattern under its new name.
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        if !renames.made_here {
+            return;
+        }
+        if let Some((_, _, new)) = renames.named.iter().find(|(section, _, _)| section == Section::PATTERNS) {
+            *self.going_to.borrow_mut() = Some(new.clone());
+        }
+    }
+
     fn name(&self) -> &'static str {
         "PatternsPage"
     }
@@ -376,6 +408,7 @@ impl Page for PatternsPage {
             self.place(app);
         } else if item.is(&Keys::SEARCH_KEEP) {
             self.searching = false;
+        } else if self.press_edit(app, item) {
         } else if item.is(&Keys::EDIT) {
             if let Listed::Pattern(name) = self.listed(app) {
                 app.show_page(crate::screens::pattern::open_pattern(&name));

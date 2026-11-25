@@ -176,6 +176,84 @@ impl Document {
         Ok(())
     }
 
+    /// The set's patterns in a group, in the file's order, or in no group for None.
+    pub fn patterns_in_group(&self, group: Option<&str>) -> Vec<String> {
+        self.get_setlist()
+            .items(Section::PATTERNS)
+            .iter()
+            .filter_map(|(name, item)| match item {
+                llamatron_model::objects::setlist::Item::Pattern(pattern) => {
+                    let held = pattern.get_written("group").and_then(Data::as_str);
+                    (held == group).then(|| name.clone())
+                }
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// Put patterns in a group, or in none.
+    fn set_groups(&mut self, names: &[String], group: Option<&str>) {
+        self.change_set(|setlist| {
+            for name in names {
+                if let Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, name) {
+                    pattern.set_group(group);
+                }
+            }
+        });
+    }
+
+    /// Give a group another name, for every pattern in it.
+    pub fn rename_pattern_group(&mut self, old: &str, new: &str) {
+        let names = self.patterns_in_group(Some(old));
+        self.set_groups(&names, Some(new));
+    }
+
+    /// Take every pattern out of a group, deleting none.
+    pub fn ungroup_patterns(&mut self, group: &str) {
+        let names = self.patterns_in_group(Some(group));
+        self.set_groups(&names, None);
+    }
+
+    /// Copy every pattern of a group into a new group, and return the copies' names: each named with the new group's name
+    /// in place of the old's at its front, or joined to it with an underscore, a taken name counting up. A name longer than
+    /// a name may be refuses the whole copy.
+    pub fn copy_pattern_group(&mut self, group: &str, new: &str) -> Result<Vec<String>, String> {
+        let mut taken = self.names_taken(Section::PATTERNS);
+        let mut names = Vec::new();
+        for name in self.patterns_in_group(Some(group)) {
+            let base = if !group.is_empty() && name.to_lowercase().starts_with(&group.to_lowercase()) {
+                format!("{new}{}", &name[group.len()..])
+            } else {
+                format!("{new}_{name}")
+            };
+            let copied = llamatron_model::objects::naming::unique_name(&base, &taken);
+            taken.push(copied.clone());
+            names.push((name, copied));
+        }
+        let most = llamatron_model::schema::generated::limits::MAX_NAME_LENGTH as usize;
+        if let Some((_, long)) = names.iter().find(|(_, copied)| copied.chars().count() > most) {
+            return Err(named(
+                errors::ERR_GROUP_COPY_NAME_TOO_LONG,
+                &[("name", long.as_str().into()), ("most", most.into())],
+            ));
+        }
+        let setlist = self.get_setlist();
+        let copies: Vec<(String, llamatron_model::objects::pattern::Pattern)> = names
+            .iter()
+            .filter_map(|(name, copied)| {
+                let mut copy = setlist.get_pattern(name)?.clone();
+                copy.set_group(Some(new));
+                Some((copied.clone(), copy))
+            })
+            .collect();
+        self.change_set(|setlist| {
+            for (copied, copy) in copies {
+                setlist.add_item(Section::PATTERNS, &copied, llamatron_model::objects::setlist::Item::Pattern(copy));
+            }
+        });
+        Ok(names.into_iter().map(|(_, copied)| copied).collect())
+    }
+
     /// Put a copy of another pattern's steps and settings in place of a pattern's, keeping its name and its place.
     pub fn load_over(&mut self, name: &str, other: &str) -> Result<(), String> {
         let copy = self

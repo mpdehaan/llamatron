@@ -10,6 +10,7 @@ pub mod generators;
 pub mod grouped_choice_dialog;
 pub mod list_page;
 pub mod main_page;
+pub mod new_pattern_dialog;
 pub mod not_ported;
 pub mod one_row_editor;
 pub mod pattern;

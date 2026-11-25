@@ -307,34 +307,7 @@ impl<L: Listing> ListPage<L> {
             app.refuse(refusal);
             return;
         }
-        let what = named(words.what, &[("name", name.into())]);
-        let uses = crate::uses::uses_of(app.document.get_setlist(), words.section, name);
-        if !uses.is_empty() {
-            let mut lines = vec![named(llamatron_strings::errors::ERR_STILL_USED, &[("what", what.as_str().into())])];
-            lines.extend(uses.iter().take(MOST_USES_SHOWN).cloned());
-            if uses.len() > MOST_USES_SHOWN {
-                lines.push(named(
-                    llamatron_strings::errors::ERR_AND_MORE,
-                    &[("count", (uses.len() - MOST_USES_SHOWN).into())],
-                ));
-            }
-            app.show_page(Box::new(crate::screens::dialogs::MessageDialog::new(
-                llamatron_strings::errors::ERR_CANT_DELETE_TITLE,
-                lines,
-            )));
-            return;
-        }
-        let section = words.section;
-        let name = name.to_string();
-        let question = named(messages::MSG_DELETE_QUESTION, &[("what", what.as_str().into())]);
-        let confirm = crate::screens::dialogs::ConfirmDialog::new(&question, Vec::new(), false, true).then(Box::new(
-            move |app: &mut App, _: &crate::screens::dialogs::Answer| {
-                if let Err(problem) = app.document.delete_named(section, &name) {
-                    app.refuse(&problem);
-                }
-            },
-        ));
-        app.show_page(Box::new(confirm));
+        delete_after_checks(app, words.section, words.what, name);
     }
 
     /// Carry the picked-up row one place up or down, every carry of one move making one undo step.
@@ -576,4 +549,36 @@ impl<L: Listing> Page for ListPage<L> {
     fn duration(&self, app: &App) -> Duration {
         self.listing.duration(app)
     }
+}
+
+/// Refuse to delete a named thing of a section that anything still uses, listing up to a few of the uses, and otherwise
+/// ask and delete it on YES; what is the template of its words in a question, taking its name.
+pub fn delete_after_checks(app: &mut App, section: &'static str, what: &str, name: &str) {
+    let what = named(what, &[("name", name.into())]);
+    let uses = crate::uses::uses_of(app.document.get_setlist(), section, name);
+    if !uses.is_empty() {
+        let mut lines = vec![named(llamatron_strings::errors::ERR_STILL_USED, &[("what", what.as_str().into())])];
+        lines.extend(uses.iter().take(MOST_USES_SHOWN).cloned());
+        if uses.len() > MOST_USES_SHOWN {
+            lines.push(named(
+                llamatron_strings::errors::ERR_AND_MORE,
+                &[("count", (uses.len() - MOST_USES_SHOWN).into())],
+            ));
+        }
+        app.show_page(Box::new(crate::screens::dialogs::MessageDialog::new(
+            llamatron_strings::errors::ERR_CANT_DELETE_TITLE,
+            lines,
+        )));
+        return;
+    }
+    let name = name.to_string();
+    let question = named(messages::MSG_DELETE_QUESTION, &[("what", what.as_str().into())]);
+    let confirm = crate::screens::dialogs::ConfirmDialog::new(&question, Vec::new(), false, true).then(Box::new(
+        move |app: &mut App, _: &crate::screens::dialogs::Answer| {
+            if let Err(problem) = app.document.delete_named(section, &name) {
+                app.refuse(&problem);
+            }
+        },
+    ));
+    app.show_page(Box::new(confirm));
 }
