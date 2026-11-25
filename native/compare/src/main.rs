@@ -364,6 +364,87 @@ fn json_written(data: &Data, out: &mut String) {
 
 /// What importing each MIDI file a path stands for into a new set makes, as JSON: the file itself, or each song of a set
 /// as its whole-song MIDI export.
+/// What the import dialog shows of one MIDI file under each of its choices changed in turn: what the file holds, and for
+/// each choice the song's data and what the import makes and warns; and the import with unique names off into a set that
+/// holds the file's song already, so that its patterns are shared.
+fn import_choices(import: &llamatron_importers::import::MidiImport, name: &str, new_set: &llamatron_model::objects::setlist::Setlist) -> Result<Data, String> {
+    use llamatron_importers::import::ImportChoices;
+    let found = import.found();
+    let shown = Data::List(vec![
+        Data::Whole(found.tracks as i128),
+        Data::Whole(found.bars as i128),
+        found.time_signature.as_deref().map_or(Data::Null, Data::text),
+        Data::text(&found.tempo.python_str()),
+        Data::List(
+            found
+                .keys
+                .iter()
+                .map(|key| Data::text(&llamatron_importers::writing::default_scale_name(key)))
+                .collect(),
+        ),
+    ]);
+    let mut changes: Vec<ImportChoices> = Vec::new();
+    let start = ImportChoices::named(name);
+    changes.push(start.clone());
+    changes.push(ImportChoices {
+        chords: false,
+        ..start.clone()
+    });
+    changes.push(ImportChoices {
+        controls: false,
+        ..start.clone()
+    });
+    changes.push(ImportChoices {
+        longest_pattern: 8,
+        ..start.clone()
+    });
+    changes.push(ImportChoices {
+        longest_pattern: 128,
+        ..start.clone()
+    });
+    changes.push(ImportChoices {
+        step_size: Some(llamatron_math::Rational::new(1, 16)),
+        ..start.clone()
+    });
+    changes.push(ImportChoices {
+        step_size: Some(llamatron_math::Rational::new(1, 4)),
+        ..start.clone()
+    });
+    let mut tried = Vec::new();
+    for choices in &changes {
+        let made = import.imported(new_set, choices);
+        tried.push(Data::List(vec![
+            made.song.song.clone(),
+            Data::Whole(made.tracks as i128),
+            Data::Whole(made.patterns as i128),
+            Data::Whole(made.scenes as i128),
+            Data::Whole(made.long_patterns as i128),
+            Data::List(made.warnings.iter().map(|warning| Data::text(warning)).collect()),
+            Data::text(&rational_text(made.step_size)),
+            Data::Whole(made.song.shared as i128),
+        ]));
+    }
+    let first = import.imported(new_set, &start);
+    let holding = llamatron_importers::writing::add_imported(new_set, &first.song)?;
+    let again = import.imported(
+        &holding,
+        &ImportChoices {
+            unique_names: false,
+            ..start.clone()
+        },
+    );
+    let mut names: Vec<String> = holding.items("patterns").iter().map(|(name, _)| name.clone()).collect();
+    names.sort();
+    tried.push(Data::List(vec![
+        Data::text(&again.song.name),
+        again.song.song.clone(),
+        Data::Whole(again.patterns as i128),
+        Data::Whole(again.song.shared as i128),
+        Data::List(names.iter().map(|name| Data::text(name)).collect()),
+    ]));
+    Ok(Data::Map(vec![(Data::text("found"), shown), (Data::text("tried"), Data::List(tried))]))
+}
+
 fn imported(path: &str, text: &str) -> Result<String, String> {
     let file = std::path::Path::new(path);
     let stem = file.file_stem().map(|stem| stem.to_string_lossy().to_string()).unwrap_or_default();
@@ -384,6 +465,7 @@ fn imported(path: &str, text: &str) -> Result<String, String> {
     }
     let new_set = llamatron_model::objects::setlist::Setlist::read_text(NEW_SET, None).map_err(|problem| problem.message)?;
     let mut made = Vec::new();
+    let first_input = inputs.first().cloned();
     for (name, bytes) in inputs {
         let entry = match llamatron_importers::import::imported(&bytes, &new_set, &name) {
             Err(_) => Data::Map(vec![(Data::text("refused"), Data::text(&name))]),
@@ -405,6 +487,11 @@ fn imported(path: &str, text: &str) -> Result<String, String> {
             ]),
         };
         made.push(entry);
+    }
+    if let Some((name, bytes)) = first_input {
+        if let Ok(import) = llamatron_importers::import::MidiImport::new(&bytes) {
+            made.push(import_choices(&import, &name, &new_set)?);
+        }
     }
     let mut out = String::new();
     json_written(&Data::List(made), &mut out);

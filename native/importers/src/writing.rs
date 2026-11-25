@@ -48,6 +48,8 @@ pub struct ImportedSong {
     pub patterns: Vec<(String, Data)>,
     pub scales: Vec<(String, Data)>,
     pub instruments: Vec<(String, Data)>,
+    /// How many of its patterns the set has already, which the song plays in place of new ones.
+    pub shared: i64,
 }
 
 fn text(value: &str) -> Data {
@@ -180,6 +182,14 @@ fn tempo_percent_of(microseconds: i64, song_microseconds: i64) -> Data {
 
 /// A tempo in microseconds a quarter note as a song's tempo: a whole number of beats a minute where one gives the very same
 /// microseconds, else exact.
+/// A pattern's data without its group.
+fn without_group(data: &Data) -> Data {
+    match data {
+        Data::Map(pairs) => Data::Map(pairs.iter().filter(|(key, _)| key.as_str() != Some("group")).cloned().collect()),
+        other => other.clone(),
+    }
+}
+
 pub fn tempo_of(microseconds: i64) -> Data {
     let exact = Rational::new(MICROSECONDS_PER_MINUTE, microseconds as i128);
     let whole = exact.round();
@@ -201,7 +211,8 @@ fn instrument_name(voice: &Voice) -> String {
     }
 }
 
-fn default_scale_name(key: &MusicalKey) -> String {
+/// The name a scale gets from a key, such as C_major: lowercase with underscores, the note's name keeping its capital.
+pub fn default_scale_name(key: &MusicalKey) -> String {
     format!("{}_{}", key.root, suggested_word(&key.kind.replace('_', " ")))
 }
 
@@ -229,6 +240,8 @@ pub struct SongWriter<'w> {
     pub cut: &'w Cut,
     pub bars: &'w [Rational],
     pub step_size: Rational,
+    /// Whether a pattern the set has already, note for note, is played in place of a new one.
+    pub share: bool,
 }
 
 impl SongWriter<'_> {
@@ -242,7 +255,7 @@ impl SongWriter<'_> {
 
     pub fn written(&self, name: &str, time_signature: Option<String>) -> ImportedSong {
         let track_names = self.track_names();
-        let (patterns, pattern_names) = self.patterns(&track_names);
+        let (patterns, shared, pattern_names) = self.patterns(&track_names);
         let (scales, scale_names) = self.scales();
         let mut song = vec![("tempo", tempo_of(self.song_microseconds()))];
         if let Some(signature) = time_signature {
@@ -275,6 +288,7 @@ impl SongWriter<'_> {
             patterns,
             scales,
             instruments: self.instruments(),
+            shared,
         }
     }
 
@@ -310,8 +324,29 @@ impl SongWriter<'_> {
         made
     }
 
-    fn patterns(&self, track_names: &[String]) -> (Named, Vec<(CutPattern, String)>) {
+    /// The set's patterns as it writes them, without their groups, which say only where the Patterns page lists them, by
+    /// name, for a new pattern to be matched against where the import may share.
+    fn existing_patterns(&self) -> Vec<(Data, String)> {
+        let mut existing: Vec<(Data, String)> = Vec::new();
+        if !self.share {
+            return existing;
+        }
+        for (name, item) in self.setlist.items(Section::PATTERNS) {
+            if let Item::Pattern(pattern) = item {
+                let data = without_group(&pattern.to_data());
+                if !existing.iter().any(|(found, _)| *found == data) {
+                    existing.push((data, name.clone()));
+                }
+            }
+        }
+        existing
+    }
+
+    /// The patterns the song adds by name, how many it shares with the set instead, and every pattern's name.
+    fn patterns(&self, track_names: &[String]) -> (Named, i64, Vec<(CutPattern, String)>) {
         let set_step_size = self.setlist.get_step_size();
+        let existing = self.existing_patterns();
+        let mut shared = 0;
         let mut taken: Vec<String> = self.setlist.items(Section::PATTERNS).iter().map(|(name, _)| name.clone()).collect();
         let mut first_track: Vec<(CutPattern, String)> = Vec::new();
         for scene in &self.cut.scenes {
@@ -327,6 +362,12 @@ impl SongWriter<'_> {
         let mut names = Vec::new();
         for pattern in &self.cut.patterns {
             let data = pattern_data(pattern, set_step_size);
+            let written = llamatron_model::objects::pattern::Pattern::from_data(&data).ok().map(|read| read.to_data());
+            if let Some((_, same)) = existing.iter().find(|(found, _)| Some(found) == written.as_ref()) {
+                names.push((pattern.clone(), same.clone()));
+                shared += 1;
+                continue;
+            }
             let word = first_track
                 .iter()
                 .find(|(found, _)| found == pattern)
@@ -337,7 +378,7 @@ impl SongWriter<'_> {
             added.push((name.clone(), data));
             names.push((pattern.clone(), name));
         }
-        (added, names)
+        (added, shared, names)
     }
 
     fn scales(&self) -> (Vec<(String, Data)>, Vec<String>) {
@@ -448,4 +489,66 @@ impl SongWriter<'_> {
     fn bar_number(&self, time: Rational) -> usize {
         self.bars[..self.bars.len() - 1].iter().filter(|line| **line <= time).count()
     }
+}
+
+/// A set with an imported song added, its instruments, scales and patterns first, since the song names them, and every
+/// pattern of no group that the song plays put in the group of the first track that plays it; or why the set refuses it.
+pub fn add_imported(setlist: &Setlist, imported: &ImportedSong) -> Result<Setlist, String> {
+    let mut data = setlist.to_data();
+    let added = [
+        (Section::INSTRUMENTS, &imported.instruments),
+        (Section::SCALES, &imported.scales),
+        (Section::PATTERNS, &imported.patterns),
+    ];
+    for (section, items) in added {
+        let mut held = match data.get(section) {
+            Some(Data::Map(pairs)) => pairs.clone(),
+            _ => Vec::new(),
+        };
+        held.extend(items.iter().map(|(name, item)| (text(name), item.clone())));
+        data.set(section, Data::Map(held));
+    }
+    let mut songs = match data.get(Section::SONGS) {
+        Some(Data::Map(pairs)) => pairs.clone(),
+        _ => Vec::new(),
+    };
+    songs.push((text(&imported.name), imported.song.clone()));
+    data.set(Section::SONGS, Data::Map(songs));
+    let read = Setlist::from_data(&data).map_err(|problem| problem.message)?;
+    let groups = track_groups(&read, &imported.name);
+    if groups.is_empty() {
+        return Ok(read);
+    }
+    if let Some(Data::Map(patterns)) = data.get(Section::PATTERNS).cloned() {
+        let grouped = patterns
+            .into_iter()
+            .map(|(name, mut pattern)| {
+                let group = name.as_str().and_then(|name| groups.iter().find(|(found, _)| found == name));
+                if let Some((_, track)) = group {
+                    pattern.set("group", text(track));
+                }
+                (name, pattern)
+            })
+            .collect();
+        data.set(Section::PATTERNS, Data::Map(grouped));
+    }
+    Setlist::from_data(&data).map_err(|problem| problem.message)
+}
+
+/// Every pattern of no group a song plays, with the first track that plays it, scene by scene in the song's track order.
+fn track_groups(setlist: &Setlist, song_name: &str) -> Vec<(String, String)> {
+    let mut groups: Vec<(String, String)> = Vec::new();
+    let Some(song) = setlist.get_song(song_name) else { return groups };
+    for scene in song.scenes() {
+        for track in song.get_track_names() {
+            let Some(clip) = scene.get_clip_slot(track) else { continue };
+            for name in clip.get_pattern_names() {
+                let ungrouped = matches!(setlist.get_item(Section::PATTERNS, &name), Some(Item::Pattern(pattern)) if pattern.get_written("group").is_none_or(Data::is_null));
+                if ungrouped && !groups.iter().any(|(found, _)| *found == name) {
+                    groups.push((name, track.to_string()));
+                }
+            }
+        }
+    }
+    groups
 }

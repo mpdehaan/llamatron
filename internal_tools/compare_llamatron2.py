@@ -461,7 +461,39 @@ def python_import(path):
             made.append({'refused': name})
             continue
         made.append({'name': imported.name, 'song': imported.song, 'patterns': imported.patterns, 'scales': imported.scales, 'instruments': imported.instruments})
+    if inputs and 'refused' not in made[0]:
+        made.append(import_choices(*inputs[0]))
     return json.dumps(made)
+
+
+def import_choices(name, data):
+    """Return what the import dialog shows of one MIDI file under each of its choices changed in turn: what the file holds,
+    and for each choice the song's data and what the import makes and warns; and the import with unique names off into a set
+    that holds the file's song already, so that its patterns are shared."""
+    import io
+    import mido
+    from llamatron.importers.midi_import import ImportChoices, MidiImport
+    from llamatron.importers.writing import add_imported
+    from llamatron.math.rational import Rational
+    from llamatron.model.objects.naming import default_scale_name
+    from llamatron.model.objects.setlist import Setlist
+    midi_import = MidiImport(midi_file=mido.MidiFile(file=io.BytesIO(data), clip=True))
+    found = midi_import.found()
+    shown = [found.tracks, found.bars, found.time_signature, str(found.tempo), [default_scale_name(root=key.root, kind=key.kind) for key in found.keys]]
+    tried = []
+    # The dialog's choices changed one at a time from where it starts.
+    for changes in [{}, {'chords': False}, {'controls': False}, {'longest_pattern': 8}, {'longest_pattern': 128}, {'step_size': (1, 16)}, {'step_size': (1, 4)}]:
+        choices = ImportChoices(song_name=name)
+        for setting, value in changes.items():
+            setattr(choices, setting, Rational(*value) if setting == 'step_size' else value)
+        made = midi_import.imported(setlist=Setlist.new(), choices=choices)
+        tried.append([made.song.song, made.tracks, made.patterns, made.scenes, made.long_patterns, made.warnings, str(made.step_size), made.song.shared])
+    holding = Setlist.new()
+    add_imported(setlist=holding, imported=midi_import.imported(setlist=holding, choices=ImportChoices(song_name=name)).song)
+    again = midi_import.imported(setlist=holding, choices=ImportChoices(song_name=name, unique_names=False))
+    tried.append([again.song.name, again.song.song, again.patterns, again.song.shared, sorted(holding.get_item_names('patterns'))])
+    return {'found': shown, 'tried': tried}
+
 
 
 def same_as_data(python, port):
@@ -498,7 +530,7 @@ def kept_python(step, path):
 
 # How each step's two outputs are compared: as text unless named here.
 # The functions a step's Python answer is worked out with besides the step's own, which its kept answers depend on.
-STEP_HELPERS = {'pattern_edits': (pattern_edit_steps,)}
+STEP_HELPERS = {'import': (import_choices,), 'pattern_edits': (pattern_edit_steps,)}
 COMPARED = {'save': same_as_data, 'import': same_as_data, 'edits': same_in_order, 'pattern_edits': same_in_order}
 
 
