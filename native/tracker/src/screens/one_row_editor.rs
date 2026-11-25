@@ -118,6 +118,14 @@ pub trait OneRow {
     fn can_edit(&self, _app: &App) -> bool {
         true
     }
+    /// Whether [ and ] and typing change the value under the cursor, as they do in a row of numbers.
+    fn steps_values(&self) -> bool {
+        true
+    }
+    /// The binding that moves the cursor along the row.
+    fn move_binding(&self) -> &'static Binding {
+        &Keys::MOVE
+    }
     fn more_keys(&self, _app: &App) -> Vec<KeyItem> {
         Vec::new()
     }
@@ -198,11 +206,13 @@ impl<R: OneRow> Page for OneRowEditor<R> {
 
     fn keys(&self, app: &App) -> Vec<KeyItem> {
         self.keep_step(app);
-        let mut keys = vec![self.bind(&Keys::BACK), self.bind(&Keys::MOVE).wanting_key()];
+        let mut keys = vec![self.bind(&Keys::BACK), self.bind(self.row.move_binding()).wanting_key()];
         if self.row.can_edit(app) {
-            keys.push(self.bind(&Keys::LESS));
-            keys.push(self.bind(&Keys::MORE));
-            keys.push(self.bind(&Keys::TYPE).wanting_key());
+            if self.row.steps_values() {
+                keys.push(self.bind(&Keys::LESS));
+                keys.push(self.bind(&Keys::MORE));
+                keys.push(self.bind(&Keys::TYPE).wanting_key());
+            }
             let count = self.row.values(app).len();
             if count < self.row.most_steps() {
                 keys.push(self.bind(self.row.insert()));
@@ -219,7 +229,7 @@ impl<R: OneRow> Page for OneRowEditor<R> {
         let count = self.row.values(app).len();
         if item.is(&Keys::BACK) {
             app.go_back();
-        } else if item.is(&Keys::MOVE) {
+        } else if item.is(self.row.move_binding()) {
             let step: i64 = if key == "left" { STEP_BACK } else { STEP_FORWARD };
             self.step.set((self.step.get() as i64 + step).clamp(0, count as i64 - 1) as usize);
         } else {

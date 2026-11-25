@@ -758,9 +758,17 @@ impl Form for PluginEditor {
                     crate::screens::generators::offsets_editor::OffsetsEditor { name },
                 )));
             }
-            (Some(SettingView::Steps { .. }), Edit::Enter) => app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-                name: "StepRowEditor".to_string(),
-            })),
+            (Some(SettingView::Steps { setting, row_name, note, .. }), Edit::Enter) => {
+                let editor = crate::screens::generators::step_row_editor::StepRowEditor {
+                    kind: self.kind,
+                    section: self.section(),
+                    name: self.name.clone(),
+                    setting,
+                    row_name,
+                    note,
+                };
+                app.show_page(Box::new(crate::screens::one_row_editor::OneRowEditor::new(editor)));
+            }
             (Some(SettingView::GuitarBar { .. }), Edit::Enter) => app.show_page(Box::new(crate::screens::not_ported::NotPorted {
                 name: "GuitarBarEditor".to_string(),
             })),

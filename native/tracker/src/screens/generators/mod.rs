@@ -9,3 +9,4 @@ pub mod generators_page;
 pub mod offsets_editor;
 pub mod plugin_editor;
 pub mod statements_page;
+pub mod step_row_editor;
