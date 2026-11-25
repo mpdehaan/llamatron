@@ -1062,6 +1062,37 @@ impl<'a> SongRealizer<'a> {
 
     /// Each written-out scene's estimate, as the Python's estimate gives it: how long it lasts and each of its clips, in
     /// seconds, or its problem, worked out without playing.
+    /// Refuse a scene whose playing would fail without playing it: a pattern with scale degrees where neither its clip, nor
+    /// the scene, nor the song has a scale, or grabs that go round in a circle.
+    fn check_plays(&self, scene: &WrittenScene<'a>) -> Rendered<()> {
+        for track in scene.scene.get_track_names() {
+            let Some(clip) = scene.scene.get_clip_slot(track) else { continue };
+            let mut names = clip.get_pattern_names();
+            if let Some(target) = clip.get_written("morph_to").and_then(llamatron_model::file::data::Data::as_str) {
+                names.push(target.to_string());
+            }
+            let has_scale = clip.get_scale_name().is_some() || scene.scale_name.is_some();
+            for name in names {
+                let Some(pattern) = self.setlist.get_pattern(&name) else { continue };
+                if !has_scale && !pattern.is_drum() && pattern.has_note_steps() {
+                    let place = named(errors::ERR_WHERE_PATTERN, &[("name", name.as_str().into())]);
+                    return Err(RenderError::Refused(named(
+                        errors::ERR_NO_SCALE,
+                        &[("where", place.as_str().into()), ("scene", scene.number.into())],
+                    )));
+                }
+            }
+        }
+        if let Some(circle) = grab_circle(scene.scene) {
+            let looped = circle.join(llamatron_strings::marks::MSG_CIRCLE_ARROW);
+            return Err(RenderError::Refused(named(
+                errors::ERR_CIRCULAR_GRAB,
+                &[("scene", scene.describe().as_str().into()), ("loop", looped.as_str().into())],
+            )));
+        }
+        Ok(())
+    }
+
     pub fn estimate(&self) -> Vec<SceneEstimate> {
         let mut estimates = Vec::new();
         for scene in &self.scenes {
@@ -1072,6 +1103,7 @@ impl<'a> SongRealizer<'a> {
                 None => (length * whole).to_float(),
             };
             let worked_out = self.get_scene_length(scene).and_then(|length| {
+                self.check_plays(scene)?;
                 let tempos = tempos.clone()?;
                 let mut clips = Vec::new();
                 for track in scene.scene.get_track_names() {
@@ -1464,4 +1496,30 @@ fn row_seconds_at(tempos: &[(Rational, f64)], time: Rational) -> f64 {
     }
     let place = starts.iter().rposition(|start| *start <= time).unwrap_or(0);
     seconds[place] + (time - starts[place]) * whole(tempos[place].1)
+}
+
+/// The tracks of a scene whose grabs go round in a circle, back to where they start, or None: a clip grabbing from a track
+/// follows that track's grab, and a grab from a track with nothing in the scene grabs nothing.
+fn grab_circle(scene: &Scene) -> Option<Vec<String>> {
+    for start in scene.get_track_names() {
+        let mut path = vec![start.to_string()];
+        loop {
+            let last = path.last().cloned().unwrap_or_default();
+            let following = scene
+                .get_clip_slot(&last)
+                .and_then(|clip| clip.get_written("grab_track"))
+                .and_then(llamatron_model::file::data::Data::as_str)
+                .map(str::to_string);
+            let Some(following) = following else { break };
+            if scene.get_clip_slot(&following).is_none() || path[1..].contains(&following) {
+                break;
+            }
+            if following == start {
+                path.push(start.to_string());
+                return Some(path);
+            }
+            path.push(following);
+        }
+    }
+    None
 }

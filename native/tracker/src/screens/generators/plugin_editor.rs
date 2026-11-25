@@ -71,9 +71,9 @@ fn plain_data(value: &Plain) -> Data {
 
 /// The setting an edit of a view writes and the value it writes there, None leaving it out of the file where the value is
 /// the one the generator takes unwritten; or None where the edit writes nothing of the view's own.
-pub fn view_write(view: &SettingView, edit: &Edit) -> Option<(&'static str, Option<Data>)> {
+pub fn view_write(view: &SettingView, edit: &Edit, mode: Option<&str>) -> Option<(&'static str, Option<Data>)> {
     if let SettingView::When { view, .. } = view {
-        return view_write(view, edit);
+        return view_write(view, edit, mode);
     }
     if *edit == Edit::Clear {
         return setting_name(view).map(|setting| (setting, None));
@@ -99,7 +99,12 @@ pub fn view_write(view: &SettingView, edit: &Edit) -> Option<(&'static str, Opti
         }
         (SettingView::Gauge { setting, default, .. }, Edit::Number(number)) => (*setting, (number != default).then_some(Data::Whole(*number as i128))),
         (SettingView::Octave { setting, default, .. }, Edit::Number(number)) => (*setting, (number != default).then_some(Data::Whole(*number as i128))),
-        (SettingView::Toggle { setting, default, .. }, Edit::Toggle(on)) => (*setting, (on != default).then_some(Data::Bool(*on))),
+        (SettingView::Toggle { setting, default, by_mode, .. }, Edit::Toggle(on)) => {
+            let in_mode = by_mode
+                .and_then(|by_mode| by_mode.iter().find(|(chosen, _)| Some(plain_text(chosen).as_str()) == mode))
+                .map_or(*default, |(_, on)| *on);
+            (*setting, (*on != in_mode).then_some(Data::Bool(*on)))
+        }
         (SettingView::Time { setting, first, .. }, Edit::Choice(chosen)) => (*setting, (Some(chosen.as_str()) != *first).then(|| Data::text(chosen))),
         (SettingView::Restart, Edit::Choice(chosen)) => (GENERATOR_RESTART, (chosen != RESTARTS[0]).then(|| Data::text(chosen))),
         _ => return None,
@@ -193,6 +198,11 @@ impl<'a> Made<'a> {
     pub fn shape_section(&mut self, shape: &str) -> Vec<Field> {
         let id = self.id();
         self.shape_fields(id, shape)
+    }
+
+    /// The generator's mode, as its view's mode setting chooses it, where its view has one.
+    pub fn mode(&self) -> Option<String> {
+        self.view.mode.map(|mode| self.chosen(mode))
     }
 
     /// Each field made so far by its id, with the view it shows.
@@ -778,6 +788,15 @@ impl PluginEditor {
         self.made(app).0.iter().find_map(|field| field.find(id)).and_then(|field| field.writes.clone())
     }
 
+    /// The generator's mode, as its mode view chooses it, where its kind has one.
+    fn mode(&self, app: &App) -> Option<String> {
+        let Some(Item::Generator(settings)) = app.document.get_setlist().get_item(self.section(), &self.name) else {
+            return None;
+        };
+        let made = Made::of(app, self.kind, settings.written_data(), false);
+        made.mode()
+    }
+
     /// Write one of the generator's settings, or take it out of the file with None.
     fn write(&self, app: &mut App, setting: &str, value: Option<Data>) {
         let (section, name) = (self.section(), self.name.clone());
@@ -885,7 +904,8 @@ impl Form for PluginEditor {
                 self.write(app, setting, (moved != *default).then_some(Data::Whole(moved as i128)));
             }
             (Some(view), edit) => {
-                if let Some((setting, value)) = view_write(view, &edit) {
+                let mode = self.mode(app);
+                if let Some((setting, value)) = view_write(view, &edit, mode.as_deref()) {
                     self.write(app, setting, value);
                 }
             }

@@ -12,7 +12,6 @@ use crate::page::Duration;
 use crate::screens::field_page::{Form, Node};
 use crate::settings::{mode_name, named_in, number_text, song_text, sorted_names};
 use crate::themes::{self, Colour};
-use llamatron_engine::realizer::SongRealizer;
 use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::{Section, SongSetting, LIVE_RESPONSIVENESSES, VISUALIZER_NAMES};
 use llamatron_model::schema::generated::genres::{GENRES, SUBGENRES, VARIANTS};
@@ -77,7 +76,7 @@ impl Form for SongPage {
 
     fn duration(&self, app: &App) -> Duration {
         let document = &app.document;
-        Duration::Seconds(SongRealizer::new(document.get_setlist(), document.song(), None).song_seconds())
+        Duration::Seconds(crate::lengths::Lengths::of(document.get_setlist(), document.song()).song_seconds())
     }
 
     fn form(&self, app: &App) -> Vec<Node> {

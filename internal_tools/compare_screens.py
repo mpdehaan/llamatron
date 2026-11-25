@@ -40,6 +40,7 @@ from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.pages import generators as generators_values
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.generators.generators_page import GeneratorsPage
+from llamatron.interface.forms.nodes import Toggle
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
@@ -220,17 +221,41 @@ class ScreenTour(KeyTour):
         self.try_an_edit()
 
     def try_an_edit(self):
-        """On a settings field whose value steps, press ] and, where that changed the set, CTRL+Z, stopping after each, so that
-        another program is held to what each field's edit shows and to undoing it, and the tour goes on from the set as it was."""
+        """On a settings field, try each edit it takes that keeps to the page: ] where its value steps, Bksp where it clears and
+        Space where it is a toggle; where an edit changed what the file holds, stop, press CTRL+Z and stop again, so that
+        another program is held to what each edit shows and to undoing it, and the tour goes on from the set as it was."""
         page = self.app.screen
         if not isinstance(page, FieldPage) or page.takes_text():
             return
         field = page.cell_field()
-        if field is None or getattr(field, 'adjust', None) is None:
+        if field is None:
             return
+        edits = []
+        if getattr(field, 'adjust', None) is not None:
+            edits.append(Key.RIGHT_BRACKET)
+        if getattr(field, 'clear', None) is not None:
+            edits.append(Key.BACKSPACE)
+        if isinstance(field, Toggle):
+            edits.append(Key.SPACE)
+        for key in edits:
+            self.try_a_key(key)
+
+    def try_a_key(self, key):
+        """Press an editing key and, where it changed what the file holds, stop, undo it and stop again. A key that opens a
+        dialog or a page is taken back whole: what it opened is closed, its change undone and the key left out of the record,
+        since the tour cannot answer a dialog between its stops."""
         document = self.app.get_document()
+        page = self.app.screen
         before = without_blanks(document.get_setlist().to_data())
-        self.press_at_once(Key.RIGHT_BRACKET)
+        recorded = (len(self.pressed), len(self.stacks_before), len(self.sets_before))
+        self.press_at_once(key)
+        if self.app.screen is not page:
+            while self.app.screen is not page:
+                self.app.pop_screen()
+            if without_blanks(document.get_setlist().to_data()) != before:
+                document.undo()
+            del self.pressed[recorded[0]:], self.stacks_before[recorded[1]:], self.sets_before[recorded[2]:]
+            return
         if without_blanks(document.get_setlist().to_data()) == before:
             return
         self.record_stop()

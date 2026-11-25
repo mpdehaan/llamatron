@@ -222,6 +222,15 @@ impl Form for FilePage {
         let whole = |name: &str, default: i64| setlist.get_written(name).and_then(Data::as_whole).map_or(default, |whole| whole as i64);
         let octave = |current: i64, offset: i64| (current + offset).clamp(MIN_OCTAVE, MAX_OCTAVE);
         let written: Option<(&str, Option<Data>)> = match (id, &edit) {
+            (TITLE | AUTHOR | DESCRIPTION, Edit::Text(text)) => {
+                let setting = match id {
+                    TITLE => SetlistSetting::TITLE,
+                    AUTHOR => SetlistSetting::AUTHOR,
+                    _ => SetlistSetting::DESCRIPTION,
+                };
+                let text = text.trim();
+                Some((setting, (!text.is_empty()).then(|| Data::text(text))))
+            }
             (FOLLOW, Edit::Choice(chosen)) => Some((SetlistSetting::DEFAULT_FOLLOW_ACTION, Some(Data::text(chosen)))),
             (PROTECTED, Edit::Toggle(on)) => Some((SetlistSetting::PROTECTED, Some(Data::Bool(*on)))),
             (DRUM_OCTAVE, Edit::Adjust(offset)) => {

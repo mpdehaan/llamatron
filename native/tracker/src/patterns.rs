@@ -27,7 +27,7 @@ fn truthy(value: Option<&Data>) -> bool {
 
 /// Whether a step plays something: a degree, or a grab.
 pub fn has_sound(pattern: &Pattern, step: usize) -> bool {
-    value(pattern, Row::DEGREE, step).is_some() || truthy(value(pattern, Row::GRAB, step))
+    pattern.has_sound(step)
 }
 
 pub fn note_steps(pattern: &Pattern) -> Vec<usize> {

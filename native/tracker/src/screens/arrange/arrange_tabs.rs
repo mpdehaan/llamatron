@@ -260,7 +260,7 @@ pub fn built_in_edit(app: &App, built_ins: Option<&Data>, kind: &'static str, fi
     let mut made = Made::of(app, kind, data, true).counting_from(first_id);
     let _ = made.tab(&tab_label_of(kind), 0);
     let view = made.views().iter().find(|(found, _)| *found == id).map(|(_, view)| *view)?;
-    view_write(view, edit)
+    view_write(view, edit, made.mode().as_deref())
 }
 
 /// A track's or a clip's built-in generators with one setting of one kind written, or taken out with None; None where none

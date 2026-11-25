@@ -125,6 +125,17 @@ impl Pattern {
     }
 
     /// A row's values, or None for a row the pattern doesn't have.
+    /// Whether a step plays something: a degree, or a grab.
+    pub fn has_sound(&self, step: usize) -> bool {
+        let at = |row: &str| self.row(row).and_then(|values| values.get(step)).filter(|value| !value.is_null());
+        at("degree").is_some() || matches!(at("grab"), Some(Data::Bool(true)))
+    }
+
+    /// Whether any step plays something.
+    pub fn has_note_steps(&self) -> bool {
+        (0..self.get_steps().max(0) as usize).any(|step| self.has_sound(step))
+    }
+
     pub fn row(&self, row: &str) -> Option<&[Data]> {
         let place = PATTERN_ROWS.iter().position(|name| *name == row)?;
         self.rows[place].as_deref()
