@@ -529,6 +529,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "llamatron-engine"
+version = "0.1.0"
+dependencies = [
+ "llamatron-math",
+ "llamatron-model",
+ "llamatron-strings",
+]
+
+[[package]]
 name = "llamatron-math"
 version = "0.1.0"
 

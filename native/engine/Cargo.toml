@@ -1,0 +1,15 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+[package]
+name = "llamatron-engine"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "llamatron's engine: the realizer that plays a song into clips, the generators and the timing (the Python package engine/)"
+publish = false
+
+[dependencies]
+llamatron-math = { path = "../math" }
+llamatron-strings = { path = "../strings" }
+llamatron-model = { path = "../model" }

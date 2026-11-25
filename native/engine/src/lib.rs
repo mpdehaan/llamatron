@@ -1,0 +1,7 @@
+// llamatron: a music program
+// Copyright (C) 2026  Michael DeHaan
+// SPDX-License-Identifier: GPL-3.0-or-later
+//! llamatron's engine (the Python engine/): the realizer that plays a song into clips, its generators, and the timing that
+//! turns a clip's positions into notes with exact times.
+
+pub mod sound;
