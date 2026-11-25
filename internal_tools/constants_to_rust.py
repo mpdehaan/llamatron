@@ -689,6 +689,10 @@ def write_tracker_tables(path):
     lines.append('pub static MUSICIAN_DEFAULTS: &[(&str, Plain)] = &[{}];'.format(', '.join('({}, {})'.format(literal(name), plain(value)) for name, value in musician_model.MUSICIAN_DEFAULTS.items())))
     lines.append('pub static MUSICIAN_SECTION_DEFAULTS: &[(&str, Plain)] = &[{}];'.format(', '.join('({}, {})'.format(literal(name), plain(value)) for name, value in musician_model.MUSICIAN_SECTION_DEFAULTS.items())))
     lines.append('pub const PLAYS_PITCHES: &str = {};'.format(literal(musician_model.PLAYS_PITCHES)))
+    from llamatron.interface.tracker import scale_categories
+    lines.append('')
+    lines.append('/// Every kind of scale by its name in a file, in the order the tracker lists them, category by category.')
+    lines.append('pub static SCALE_TYPES_IN_ORDER: &[&str] = &[{}];'.format(', '.join(literal(str(kind)) for kind in scale_categories.SCALE_TYPES_IN_ORDER)))
     path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
 

@@ -6,6 +6,7 @@
 //! view: each page holds its state, its keys name its actions, a key press updates it, and its view is lines of styled text.
 
 pub mod app;
+pub mod chord_text;
 pub mod components;
 pub mod document;
 pub mod drawing;

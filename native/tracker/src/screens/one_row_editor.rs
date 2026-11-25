@@ -133,7 +133,12 @@ pub trait OneRow {
     fn more_keys_at(&self, app: &App, _step: usize) -> Vec<KeyItem> {
         self.more_keys(app)
     }
-    fn press_more(&mut self, _app: &mut App, _item: &KeyItem, _step: usize) {}
+    /// Do what one of the row's own keys does at the cursor's step, Up and Down among them where its move binding has them.
+    fn press_more(&mut self, _app: &mut App, _item: &KeyItem, _key: &str, _step: usize) {}
+    /// What the status line says while nothing else is said, the cursor on a step.
+    fn resting(&self, _app: &App, _step: usize) -> String {
+        String::new()
+    }
     /// The grid's lines, from the first step on screen to the last (excluded), the cursor on a step.
     fn lines(&self, app: &App, heading: &dyn Fn(String, bool, bool) -> GridLine, window: (usize, usize, usize), step: usize) -> Vec<GridLine>;
 }
@@ -196,6 +201,11 @@ impl<R: OneRow> OneRowEditor<R> {
 }
 
 impl<R: OneRow> Page for OneRowEditor<R> {
+    fn resting_status(&self, app: &App) -> String {
+        let step = self.keep_step(app);
+        self.row.resting(app, step)
+    }
+
     fn name(&self) -> &'static str {
         self.row.name()
     }
@@ -229,12 +239,15 @@ impl<R: OneRow> Page for OneRowEditor<R> {
         let count = self.row.values(app).len();
         if item.is(&Keys::BACK) {
             app.go_back();
+        } else if item.is(self.row.move_binding()) && (key == "up" || key == "down") {
+            let step = self.keep_step(app);
+            self.row.press_more(app, item, key, step);
         } else if item.is(self.row.move_binding()) {
             let step: i64 = if key == "left" { STEP_BACK } else { STEP_FORWARD };
             self.step.set((self.step.get() as i64 + step).clamp(0, count as i64 - 1) as usize);
         } else {
             let step = self.keep_step(app);
-            self.row.press_more(app, item, step);
+            self.row.press_more(app, item, key, step);
         }
     }
 

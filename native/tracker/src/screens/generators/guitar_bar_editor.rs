@@ -173,7 +173,7 @@ impl OneRow for GuitarBarEditor {
             .collect()
     }
 
-    fn press_more(&mut self, app: &mut App, item: &KeyItem, step: usize) {
+    fn press_more(&mut self, app: &mut App, item: &KeyItem, _key: &str, step: usize) {
         let mut bar = self.bar(app);
         let strokes: Vec<String> = STROKES.iter().map(|stroke| stroke.to_string()).collect();
         if item.is(&Keys::LESS) || item.is(&Keys::MORE) {

@@ -4,6 +4,7 @@
 //! The pages of the generators (the Python screens/generators/).
 
 pub mod chain_editor;
+pub mod chords_editor;
 pub mod generator_list_page;
 pub mod generators_page;
 pub mod guitar_bar_editor;

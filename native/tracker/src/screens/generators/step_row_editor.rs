@@ -121,7 +121,7 @@ impl OneRow for StepRowEditor {
         vec![KeyItem::of(&Keys::CLASS, &Keys::TOGGLE)]
     }
 
-    fn press_more(&mut self, app: &mut App, item: &KeyItem, step: usize) {
+    fn press_more(&mut self, app: &mut App, item: &KeyItem, _key: &str, step: usize) {
         let mut steps = self.steps(app);
         if item.is(&Keys::TOGGLE) {
             steps[step] = !steps[step];

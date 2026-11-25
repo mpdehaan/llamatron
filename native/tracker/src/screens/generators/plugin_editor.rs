@@ -641,7 +641,7 @@ impl<'a> Made<'a> {
 
 /// The major scale's half steps, which a song with no scale places degrees by.
 const MAJOR_SHAPE: [i64; 7] = [0, 2, 4, 5, 7, 9, 11];
-const ROMAN_NUMERALS: [&str; 7] = ["I", "II", "III", "IV", "V", "VI", "VII"];
+pub const ROMAN_NUMERALS: [&str; 7] = ["I", "II", "III", "IV", "V", "VI", "VII"];
 
 /// A chord's Roman numeral in a scale: upper case major, lower case minor, a mark for diminished or augmented, a sharp or a
 /// flat in front, the quality the triad the scale builds on the degree has, or the first degree's where it has an accidental.
@@ -773,9 +773,14 @@ impl Form for PluginEditor {
                 let editor = crate::screens::generators::guitar_bar_editor::GuitarBarEditor { name: self.name.clone() };
                 app.show_page(Box::new(crate::screens::one_row_editor::OneRowEditor::new(editor)));
             }
-            (Some(SettingView::Progression { .. }), Edit::Enter) => app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-                name: "ChordsEditor".to_string(),
-            })),
+            (Some(SettingView::Progression { .. }), Edit::Enter) => {
+                let editor = crate::screens::generators::chords_editor::ChordsEditor {
+                    section: self.section(),
+                    name: self.name.clone(),
+                    edited_row: 0,
+                };
+                app.show_page(Box::new(crate::screens::one_row_editor::OneRowEditor::new(editor)));
+            }
             _ => {}
         }
     }
