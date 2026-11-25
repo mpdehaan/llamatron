@@ -35,6 +35,7 @@ from llamatron.realtime.sender_process.scheduled_engine import ScheduledPlayback
 from llamatron.realtime.sender_process.synth_output import SynthOutput
 from llamatron.realtime.synth_process import daemon as synth_daemon
 from llamatron.realtime.synth_process.daemon import SynthDaemon
+from llamatron.realtime.synth_process.load import SharedLoad
 from llamatron.realtime.synth_process.process import SynthesisNotStarted, SynthesisProcess
 from llamatron.user_strings import errors
 
@@ -118,11 +119,12 @@ class SenderNotStarted(RuntimeError):
 class RealtimeMIDISenderProcess:
     """The tracker's side of the sender: starts the process on the ports named, and sends it the messages above."""
 
-    __slots__ = ('_ports', '_recording', '_driver', '_connection', '_process', '_port_places', '_tag_numbers', '_sounds')
+    __slots__ = ('_ports', '_recording', '_driver', '_connection', '_process', '_port_places', '_tag_numbers', '_sounds', '_load')
 
-    def __init__(self, *, ports, recording=False, driver=None):
+    def __init__(self, *, ports, recording=False, driver=None, load=None):
         """ports are the names of the output ports to open. With recording, the process opens recording outputs in their place and
-        hands back what it sent on close. driver is TIMESTAMPED or IMMEDIATE, by default the timestamped one where CoreMIDI is."""
+        hands back what it sent on close. driver is TIMESTAMPED or IMMEDIATE, by default the timestamped one where CoreMIDI is.
+        load, a SharedLoad or None for one of its own, is where the built-in synths' load is written for the tracker."""
         self._ports = list(ports)
         self._recording = recording
         if driver is None:
@@ -135,12 +137,16 @@ class RealtimeMIDISenderProcess:
         self._tag_numbers = {}
         # The sound last sent for each built-in (port, channel), so that only a changed one crosses again.
         self._sounds = {}
+        self._load = load
 
     def start(self, *, at=None):
         """Start the process, which opens the ports, and take this moment, or a reading of the clock given, as the timeline's zero."""
         context = multiprocessing.get_context(SPAWN)
         self._connection, far_end = context.Pipe()
-        self._process = context.Process(target=run_sender, kwargs=dict(connection=far_end, ports=self._ports, recording=self._recording, driver=self._driver))
+        if self._load is None:
+            self._load = SharedLoad(context=context)
+        arguments = dict(connection=far_end, ports=self._ports, recording=self._recording, driver=self._driver, load=self._load)
+        self._process = context.Process(target=run_sender, kwargs=arguments)
         with real_standard_error():
             self._process.start()
         # Wait until the process has opened its ports, so that the first event is not sent late while it starts up, which measured about 150 ms on the IAC bus.
@@ -152,6 +158,12 @@ class RealtimeMIDISenderProcess:
                 reason = answer[1]
             raise SenderNotStarted(reason)
         self._connection.send((START, at))
+
+    def synth_load(self):
+        """Return the built-in synths' last load report (synth_process/load.py), or None where none has come."""
+        if self._load is None:
+            return None
+        return self._load.read()
 
     def _answer_to_starting(self):
         """Return what the process answered as it started, or None when it ended or said nothing in time."""
@@ -253,14 +265,14 @@ def built_in_group(name):
     return int(name.rsplit(' ', 1)[-1])
 
 
-def started_synthesis(*, ports, recording):
+def started_synthesis(*, ports, recording, load=None):
     """Return the Synthesis Process the built-in ports among the ports play through, started, or None where there are none
     or the sender records; raise SynthesisNotStarted with why it could not start."""
     if recording or not any(is_built_in_port(name) for name in ports):
         return None
     synthesis = SynthesisProcess()
     if synth_daemon.uses_daemon():
-        synthesis = SynthDaemon()
+        synthesis = SynthDaemon(shared=load)
     synthesis.start()
     return synthesis
 
@@ -323,10 +335,11 @@ def ask_to_be_urgent():
         return
 
 
-def run_sender(*, connection, ports, recording, driver):
-    """The process: an engine on the real clock, fed by the pipe, sending each event when its time comes."""
+def run_sender(*, connection, ports, recording, driver, load=None):
+    """The process: an engine on the real clock, fed by the pipe, sending each event when its time comes; load is where the
+    built-in synths' load is written for the tracker (synth_process/load.py)."""
     try:
-        synthesis = started_synthesis(ports=ports, recording=recording)
+        synthesis = started_synthesis(ports=ports, recording=recording, load=load)
     except SynthesisNotStarted as problem:
         connection.send((NOT_STARTED, str(problem)))
         return

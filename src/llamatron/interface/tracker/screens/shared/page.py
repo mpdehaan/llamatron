@@ -52,6 +52,7 @@ CAPTION_LIGHT = (255, 255, 255)
 
 # The space between the set's and song's names and the marks at the header's right.
 HEADER_GAP = '  '
+PERCENT = 100
 
 
 def caption_colour(theme):
@@ -174,7 +175,14 @@ class Page(BindsKeys, Screen):
         position = transport.song_position()
         if position is None:
             return None
-        return marks_text.MSG_PLAYING_CLOCK.format(at=clock(position), total=clock(transport.song_seconds()))
+        shown = marks_text.MSG_PLAYING_CLOCK.format(at=clock(position), total=clock(transport.song_seconds()))
+        load = transport.synth_load()
+        if load is None:
+            return shown
+        percent = round(load.load * PERCENT)
+        if load.dropouts:
+            return marks_text.MSG_SYNTH_LOAD_AND_DROPOUTS.format(clock=shown, percent=percent, dropouts=load.dropouts)
+        return marks_text.MSG_SYNTH_LOAD.format(clock=shown, percent=percent)
 
     def time_text(self):
         """Return the text at the right of the crumbs: the duration as a clock, or nothing."""

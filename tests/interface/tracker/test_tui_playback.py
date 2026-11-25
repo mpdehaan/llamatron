@@ -33,6 +33,7 @@ from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEd
 from llamatron.interface.tracker.screens.set.demo_scroll import DemoScroll
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.interface.tracker.screens.set.splash import Splash
+from llamatron.interface.tracker.screens.shared import page as shared_page
 from llamatron.interface.tracker.transport import Transport
 from llamatron.interface.visualizers import modes
 from llamatron.model.file.checks import listed
@@ -43,6 +44,7 @@ from llamatron.realtime.render_process import playback as playback_values, timel
 from llamatron.realtime.render_process.timeline import Route
 from llamatron.realtime.sender_process.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.sender_process.outputs import RecordingOutput
+from llamatron.realtime.synth_process.load import LoadReport
 from llamatron.user_strings import about, errors, labels, legends, marks, messages
 from tests.support import ui_testing
 from tests.support.ui_testing import a_song, fixed_text, key_name, UITest
@@ -401,6 +403,23 @@ class TestArrangePlayback(PlaybackTest):
         await self.pilot.pause()
         self.assertEqual(main.time_text(), length)
         self.assertNotIn(marks.MSG_PLAYING_CLOCK.format(at=NOTHING, total=NOTHING).strip()[0], self.text().splitlines()[1])
+
+    async def test_while_the_built_in_synths_play_the_header_shows_their_load_and_any_dropouts(self):
+        busy = 0.12
+        dropouts = 2
+        self.give_lead_an_instrument()
+        await self.press(*CORNER_KEYS, keybindings.ArrangePage.PLAY_SONG)
+        await self.let_time_pass(A_MOMENT)
+        page = self.app.screen
+        playing = marks.MSG_PLAYING_CLOCK.format(at=clock(self.transport().song_position()), total=clock(self.transport().song_seconds()))
+        quiet = LoadReport(load=busy, peak=busy, voices=1, dropouts=0, late_notes=0)
+        with mock.patch.object(Transport, 'synth_load', return_value=quiet):
+            self.assertEqual(page.playing_clock(), marks.MSG_SYNTH_LOAD.format(clock=playing, percent=round(busy * shared_page.PERCENT)))
+        dropping = quiet._replace(dropouts=dropouts)
+        with mock.patch.object(Transport, 'synth_load', return_value=dropping):
+            shown = marks.MSG_SYNTH_LOAD_AND_DROPOUTS.format(clock=playing, percent=round(busy * shared_page.PERCENT), dropouts=dropouts)
+            self.assertEqual(page.playing_clock(), shown)
+        self.assertEqual(page.playing_clock(), playing)
 
     async def test_space_on_the_corner_plays_the_song_lights_the_page_and_stops_it_again(self):
         self.give_lead_an_instrument()

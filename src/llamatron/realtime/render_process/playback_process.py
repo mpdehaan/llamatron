@@ -35,6 +35,7 @@ from llamatron.realtime.render_process.score_builder import Built
 from llamatron.realtime.render_process.set_changes import changed_items
 from llamatron.realtime.sender_process import process as sender_process
 from llamatron.realtime.sender_process.process import SenderNotStarted
+from llamatron.realtime.synth_process.load import SharedLoad
 from llamatron.user_strings import errors
 
 # How long the tracker waits for the render process to start, for a launch's answer, and for it to close.
@@ -56,7 +57,8 @@ class PlaybackNotStarted(SenderNotStarted):
 class PlaybackProcess:
     """The tracker's side of the render process, answering the transport as a LocalPlayback does."""
 
-    __slots__ = ('_recording', '_lead', '_lock', '_connection', '_lifeline', '_process', '_sent', '_latest', '_built', '_status', '_statuses', '_playing', '_ended')
+    __slots__ = ('_recording', '_lead', '_lock', '_connection', '_lifeline', '_process', '_sent', '_latest', '_built', '_status', '_statuses', '_playing', '_ended',
+                 '_load')
 
     def __init__(self, *, lead, recording=False):
         """lead is how far ahead of now a launch from silence starts; with recording, the Realtime Sender Process records what it would send, which close() hands back."""
@@ -77,6 +79,8 @@ class PlaybackProcess:
         # What the render process's player plays a score of, as the tracker last told it.
         self._playing = None
         self._ended = False
+        # Where the built-in synths' sender writes their load (synth_process/load.py), made with the process.
+        self._load = None
 
     def start(self):
         """Start the render process, unless it was started, and wait until it is ready, raising PlaybackNotStarted when it is not."""
@@ -88,7 +92,9 @@ class PlaybackProcess:
         context = multiprocessing.get_context(sender_process.SPAWN)
         self._connection, far_end = context.Pipe()
         far_lifeline, self._lifeline = context.Pipe(duplex=False)
-        self._process = context.Process(target=run_playback, kwargs=dict(connection=far_end, lifeline=far_lifeline, lead=self._lead, recording=self._recording))
+        self._load = SharedLoad(context=context)
+        arguments = dict(connection=far_end, lifeline=far_lifeline, lead=self._lead, recording=self._recording, load=self._load)
+        self._process = context.Process(target=run_playback, kwargs=arguments)
         with sender_process.real_standard_error():
             self._process.start()
         # However the tracker ends, the render process and its sender end too, before Python waits for its child processes.
@@ -97,6 +103,12 @@ class PlaybackProcess:
             self._process.terminate()
             self._process = None
             raise PlaybackNotStarted(errors.ERR_PLAYBACK_DID_NOT_START)
+
+    def synth_load(self):
+        """Return the built-in synths' last load report, or None where none has come."""
+        if self._load is None:
+            return None
+        return self._load.read()
 
     def get_process_id(self):
         """Return the render process's id, or None before it starts, for a test that ends it as a crash would."""

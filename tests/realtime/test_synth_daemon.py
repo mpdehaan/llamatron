@@ -6,6 +6,7 @@
 it renders offline, through the real daemon where it is built; nothing here opens the sound card.
 """
 
+import multiprocessing
 import numpy
 import os
 import tempfile
@@ -16,11 +17,13 @@ from llamatron.model.objects.built_in_sound import synth_spec
 from llamatron.model.schema.file_format import SoundEngine, SoundSetting
 from llamatron.realtime.synth_process import daemon, engine as engine_values
 from llamatron.realtime.synth_process.daemon import offline_notes, render_offline
+from llamatron.realtime.synth_process.load import LoadReport, SharedLoad
 
 RATE = 44100
 WAV = 'out.wav'
 MIDDLE_C = 60
 HARD = 110
+SPAWN = 'spawn'
 ENGINES = (SoundEngine.BASIC, SoundEngine.SID, SoundEngine.POCKET, SoundEngine.FISHLINE, SoundEngine.DRUM)
 BUILT = daemon.daemon_path() is not None
 
@@ -50,6 +53,24 @@ class TestFindingTheDaemon(unittest.TestCase):
         track.endings = [2.0]
         kinds = [note[1] for note in offline_notes(number=3, track=track)]
         self.assertEqual(kinds, [engine_values.SCENE_STARTED, engine_values.NOTE_ON, engine_values.NOTE_OFF, engine_values.ALL_OFF])
+
+
+class TestSharedLoad(unittest.TestCase):
+
+    def test_a_report_written_in_one_process_is_read_in_another_and_none_before_the_first(self):
+        busy = 0.25
+        voices = 7
+        context = multiprocessing.get_context(SPAWN)
+        shared = SharedLoad(context=context)
+        self.assertIsNone(shared.read())
+        child = context.Process(target=write_report, kwargs=dict(shared=shared, report={'load': busy, 'peak': busy, 'voices': voices, 'dropouts': 0, 'late_notes': 0}))
+        child.start()
+        child.join()
+        self.assertEqual(shared.read(), LoadReport(load=busy, peak=busy, voices=voices, dropouts=0, late_notes=0))
+
+
+def write_report(*, shared, report):
+    shared.write(report)
 
 
 @unittest.skipUnless(BUILT, 'the synth daemon is not built')

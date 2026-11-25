@@ -313,6 +313,9 @@ MSG_SOUNDING_MARK = '●'
 MSG_SONG_BUTTON = '{mark} song'
 # The time at the right of the crumbs while the song plays: where it is, and how long it is.
 MSG_PLAYING_CLOCK = '▶ {at} / {total}'
+# The clock with the built-in synths' load beside it, the share of each chunk's time their engine is busy, and its dropouts.
+MSG_SYNTH_LOAD = '{clock}  synth {percent}%'
+MSG_SYNTH_LOAD_AND_DROPOUTS = '{clock}  synth {percent}%, {dropouts} dropouts'
 MSG_NO_DEVICE_SHOWN = '(none)'
 # An instrument's Channel while its Device is FluidSynth, which gives each track a channel of its own.
 MSG_AUTO_CHANNEL_SHOWN = '(auto)'

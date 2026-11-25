@@ -273,6 +273,11 @@ class LocalPlayback:
             return None
         return self._player.repeats_left(scene=index, track=track)
 
+    def synth_load(self):
+        """Return None: playing in the tracker's own process, as the tests do, nothing reports the built-in synths' load,
+        which the render process's side reads from the memory it shares with the sender (playback_process.py)."""
+        return None
+
     def song_position(self):
         if self._player is None:
             return None

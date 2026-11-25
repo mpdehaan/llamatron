@@ -97,11 +97,13 @@ class SynthDaemon:
     """The playing daemon, behind the calls of the Python Synthesis Process: its process and channel, the rate and delay its
     stream reported, its last load report and its statistics once closed."""
 
-    __slots__ = ('_block', '_device', '_process', '_channel', '_reader', '_closed', 'rate', 'delay', 'load', 'statistics')
+    __slots__ = ('_block', '_device', '_shared', '_process', '_channel', '_reader', '_closed', 'rate', 'delay', 'load', 'statistics')
 
-    def __init__(self, *, block=DEFAULT_BLOCK, device=None):
+    def __init__(self, *, block=DEFAULT_BLOCK, device=None, shared=None):
+        """shared, a SharedLoad or None, is where each load report is written for the tracker to show."""
         self._block = block
         self._device = device
+        self._shared = shared
         self._process = None
         self._channel = None
         self._reader = None
@@ -178,10 +180,15 @@ class SynthDaemon:
             if message is None:
                 break
             if message[0] == LOAD:
-                self.load = message[1]
+                self._take_load(message[1])
             elif message[0] == STATISTICS:
                 self.statistics = message[1]
         self._closed.set()
+
+    def _take_load(self, report):
+        self.load = report
+        if self._shared is not None:
+            self._shared.write(report)
 
     def _end_process(self):
         """Close the daemon's input, wait for it to end, killing it if it hangs, and return its exit code."""

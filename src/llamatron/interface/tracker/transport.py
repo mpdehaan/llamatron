@@ -504,6 +504,10 @@ class Transport:
     def song_position(self):
         return self._playback.song_position()
 
+    def synth_load(self):
+        """Return the built-in synths' last load report while they play, or None."""
+        return self._playback.synth_load()
+
     def song_seconds(self):
         return self._playback.song_seconds()
 

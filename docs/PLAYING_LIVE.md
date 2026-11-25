@@ -64,7 +64,10 @@ While something plays, Arrange shows what is playing:
   scene, and each playing clip's bar fills the same way through the clip's
   repeats, a looping clip's bar filling once per play of its scene and
   starting over;
-- the clock at the right of the crumbs reads, for example, `▶ 0:22 / 3:00`.
+- the clock at the right of the crumbs reads, for example, `▶ 0:22 / 3:00`;
+  while built-in instruments play, the share of the time their engine is
+  busy follows it, `synth 12%`, and any dropouts, moments the engine was too
+  late and the sound card played silence, as `synth 12%, 2 dropouts`.
 
 These are llamatron's only colours, and the shapes change too, so the state
 shows without the colours.

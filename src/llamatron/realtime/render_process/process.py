@@ -47,23 +47,24 @@ REFUSED_SENDER = 'sender'
 PLAYER_TICK_SECONDS = 0.02
 
 
-def recording_sender(ports, *, recording):
-    return RealtimeMIDISenderProcess(ports=ports, recording=recording)
+def recording_sender(ports, *, recording, load=None):
+    return RealtimeMIDISenderProcess(ports=ports, recording=recording, load=load)
 
 
-def run_playback(*, connection, lifeline, lead, recording):
+def run_playback(*, connection, lifeline, lead, recording, load=None):
     """The render process: a LocalPlayback on the real clock, its player ticking on its own loop, fed by the pipe.
 
     It leads a process group of its own, which the Realtime Sender Process it starts joins, so that the tracker can end both at
     once however they are stuck (playback_process.end_process_group); it ends, closing its sender, when the tracker's end of
     the pipe goes, as when the tracker itself ends; and a watcher ends it even while its loop is stuck, should the tracker be
-    killed meanwhile (watch_lifeline)."""
+    killed meanwhile (watch_lifeline). load is where the built-in synths' load is written for the tracker
+    (synth_process/load.py), handed on to the sender."""
     if hasattr(os, 'setpgrp'):
         os.setpgrp()
     threading.Thread(target=watch_lifeline, args=(lifeline,), daemon=True).start()
     sender_process.ask_to_be_urgent()
     render = RenderLoop(connection=connection, playback=LocalPlayback(
-        make_sender=functools.partial(recording_sender, recording=recording), clock=MonotonicClock(), lead=lead, at_once=False,
+        make_sender=functools.partial(recording_sender, recording=recording, load=load), clock=MonotonicClock(), lead=lead, at_once=False,
     ))
     connection.send((READY,))
     render.run()
