@@ -1,0 +1,12 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+[package]
+name = "llamatron-strings"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "Every text llamatron shows, and Python's template filling (the Python package user_strings/)"
+publish = false
+
+[dependencies]
