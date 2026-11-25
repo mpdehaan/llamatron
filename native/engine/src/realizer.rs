@@ -304,6 +304,13 @@ impl<'a> SongRealizer<'a> {
         self
     }
 
+    /// Whether a track's clip in a scene of the song loops for as long as the scene lasts, as its first written-out play has it.
+    pub fn loops_through(&self, index: usize, track: &str) -> bool {
+        self.rows_of_scene(index)
+            .first()
+            .is_some_and(|place| self.fills_its_scene(&self.scenes[*place], track))
+    }
+
     /// The places among the written-out scenes of a scene of the song, one for each repeat, in order.
     pub fn rows_of_scene(&self, index: usize) -> Vec<usize> {
         let Some(scene) = self.song.scenes().get(index) else { return Vec::new() };

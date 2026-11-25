@@ -541,7 +541,86 @@ def python_timeline(path):
         return None
 
 
-STEPS = {'timeline': python_timeline, 'edits': python_edits, 'pattern_edits': python_pattern_edits, 'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
+class RecordingSender:
+    """A sender that writes down everything a player hands it, a line each, for the player step."""
+
+    def __init__(self, lines):
+        self.lines = lines
+
+    def add(self, events):
+        for event in events:
+            self.lines.append('add {} {!r} {} {} {} {} {} {} {} {}'.format(event.whole, event.seconds, event.port, event.channel, event.kind, event.number, event.value, event.tag.scene, event.tag.track, event.tag.play))
+
+    def forget(self, *, tag, after):
+        self.lines.append('forget {} {} {} {!r}'.format(tag.scene, tag.track, tag.play, after))
+
+    def stop_tag(self, tag):
+        self.lines.append('stop {} {} {}'.format(tag.scene, tag.track, tag.play))
+
+    def stop_all(self):
+        self.lines.append('stop all')
+
+
+def played_lines(*, song, score, player_class):
+    """Return what a player hands its sender for a song on a clock stepped a tenth of a second at a time: played from the top
+    to its end, then the second scene launched by hand, the first track's first clip launched alone a second later and the
+    second track stopped a second after that, run for six seconds."""
+    lines = []
+    if not score.scene_count():
+        return ['no scenes']
+    sender = RecordingSender(lines)
+    now = [0.0]
+    player = player_class(score=score, sender=sender, now=lambda: now[0])
+    player.play_song()
+    for _ in range(int(score.song_seconds() / PLAYER_STEP) + PLAYER_STEPS_PAST_THE_END):
+        if not player.is_playing():
+            break
+        now[0] += PLAYER_STEP
+        player.tick()
+    lines.append('ended {!r}'.format(now[0]))
+    tracks = song.get_track_names()
+    player.play_scene(min(1, score.scene_count() - 1))
+    for step in range(PLAYER_SCENARIO_STEPS):
+        now[0] += PLAYER_STEP
+        player.tick()
+        if step == PLAYER_CLIP_STEP and tracks:
+            player.play_clip(scene=0, track=tracks[0])
+        if step == PLAYER_STOP_STEP and len(tracks) > 1:
+            player.stop_clip(tracks[1])
+    player.stop_all()
+    return lines
+
+
+PLAYER_STEP = 0.1
+PLAYER_STEPS_PAST_THE_END = 100
+PLAYER_SCENARIO_STEPS = 60
+PLAYER_CLIP_STEP = 10
+PLAYER_STOP_STEP = 20
+
+
+def python_player(path):
+    """Return what the real-time player hands its sender for every song of a set, every track on a made-up route, as
+    played_lines plays it, or None where the Python refuses the set."""
+    from llamatron.model.objects.setlist import Setlist
+    from llamatron.realtime.render_process.player import Player
+    from llamatron.realtime.render_process.score import Score
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    moved, _ = migrated(data, one_song_name=path.stem)
+    try:
+        setlist = Setlist.from_data(data=as_object_layout(moved))
+        texts = []
+        for name in setlist.get_song_names():
+            song = setlist.get_song(name)
+            texts.append('song {}'.format(name))
+            score = Score(song=song, routes=made_up_routes(song.get_track_names()), seed=RENDER_SEED)
+            texts += played_lines(song=song, score=score, player_class=Player)
+        return '\n'.join(texts).rstrip('\n')
+    except SongFileError:
+        return None
+
+
+STEPS = {'player': python_player, 'timeline': python_timeline, 'edits': python_edits, 'pattern_edits': python_pattern_edits, 'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
 # Where the Python's answers are kept, git-ignored and never committed: since the Python program is frozen, an answer is
 # worked out from the Python only when none is kept for its step and its file as the file is now.
 KEPT = pathlib.Path('.cache/compare_llamatron2')
@@ -565,7 +644,7 @@ def kept_python(step, path):
 
 # How each step's two outputs are compared: as text unless named here.
 # The functions a step's Python answer is worked out with besides the step's own, which its kept answers depend on.
-STEP_HELPERS = {'timeline': (made_up_routes,), 'import': (import_choices,), 'pattern_edits': (pattern_edit_steps,)}
+STEP_HELPERS = {'player': (made_up_routes, played_lines, RecordingSender), 'timeline': (made_up_routes,), 'import': (import_choices,), 'pattern_edits': (pattern_edit_steps,)}
 COMPARED = {'save': same_as_data, 'import': same_as_data, 'edits': same_in_order, 'pattern_edits': same_in_order}
 
 

@@ -157,6 +157,30 @@ fn main() -> ExitCode {
                 ExitCode::from(1)
             }
         },
+        "player" => {
+            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
+            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
+                Ok(setlist) => setlist,
+                Err(problem) => {
+                    eprintln!("{path}: {}", problem.message);
+                    return ExitCode::from(1);
+                }
+            };
+            match players(&setlist) {
+                Ok(text) => {
+                    println!("{text}");
+                    ExitCode::SUCCESS
+                }
+                Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
+                    eprintln!("not ported yet: {what}");
+                    ExitCode::from(NOT_PORTED)
+                }
+                Err(llamatron_engine::error::RenderError::Refused(problem)) => {
+                    eprintln!("{path}: {problem}");
+                    ExitCode::from(1)
+                }
+            }
+        }
         "timeline" => {
             let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
             let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
@@ -285,6 +309,102 @@ fn made_up_routes(track_names: &[&str]) -> Vec<(String, llamatron_tracker::realt
             (name.to_string(), route)
         })
         .collect()
+}
+
+/// A sender that writes down everything a player hands it, a line each, for the player step.
+struct RecordingSender {
+    lines: Vec<String>,
+}
+
+impl llamatron_tracker::realtime::player::Sender for RecordingSender {
+    fn add(&mut self, events: Vec<llamatron_tracker::realtime::timeline::Playing>) {
+        for event in events {
+            self.lines.push(format!(
+                "add {} {} {} {} {} {} {} {} {} {}",
+                event.whole,
+                llamatron_math::number::python_float_text(event.seconds),
+                event.port,
+                event.channel,
+                event.kind,
+                event.number,
+                event.value,
+                event.tag.scene,
+                event.tag.track,
+                event.tag.play
+            ));
+        }
+    }
+
+    fn forget(&mut self, tag: &llamatron_tracker::realtime::timeline::ClipTag, after: f64) {
+        let after = if after == f64::NEG_INFINITY {
+            "-inf".to_string()
+        } else {
+            llamatron_math::number::python_float_text(after)
+        };
+        self.lines.push(format!("forget {} {} {} {after}", tag.scene, tag.track, tag.play));
+    }
+
+    fn stop_tag(&mut self, tag: &llamatron_tracker::realtime::timeline::ClipTag) {
+        self.lines.push(format!("stop {} {} {}", tag.scene, tag.track, tag.play));
+    }
+
+    fn stop_all(&mut self) {
+        self.lines.push("stop all".to_string());
+    }
+}
+
+/// The clock's step, and how the player step's scenario runs, as the Python's played_lines.
+const PLAYER_STEP: f64 = 0.1;
+const PLAYER_STEPS_PAST_THE_END: usize = 100;
+const PLAYER_SCENARIO_STEPS: usize = 60;
+const PLAYER_CLIP_STEP: usize = 10;
+const PLAYER_STOP_STEP: usize = 20;
+
+/// What the real-time player hands its sender for every song of a set, every track on a made-up route: played from the
+/// top to its end on a clock stepped a tenth of a second at a time, then the second scene launched by hand, the first
+/// track's first clip launched alone a second later and the second track stopped a second after that, for six seconds.
+fn players(setlist: &llamatron_model::objects::setlist::Setlist) -> llamatron_engine::error::Rendered<String> {
+    use llamatron_tracker::realtime::player::Player;
+    let mut texts = Vec::new();
+    for name in setlist.song_names() {
+        let Some(song) = setlist.get_song(name) else { continue };
+        texts.push(format!("song {name}"));
+        let routes = made_up_routes(&song.get_track_names());
+        let score = llamatron_tracker::realtime::score::Score::new(setlist, song, &routes, Some(RENDER_SEED))?;
+        let steps = (score.song_seconds() / PLAYER_STEP) as usize + PLAYER_STEPS_PAST_THE_END;
+        let scenes = score.scene_count();
+        if scenes == 0 {
+            texts.push("no scenes".to_string());
+            continue;
+        }
+        let mut sender = RecordingSender { lines: Vec::new() };
+        let mut player = Player::new(score, 0.0);
+        let mut now = 0.0;
+        player.play_song(&mut sender, now);
+        for _ in 0..steps {
+            if !player.is_playing(now) {
+                break;
+            }
+            now += PLAYER_STEP;
+            player.tick(&mut sender, now);
+        }
+        sender.lines.push(format!("ended {}", llamatron_math::number::python_float_text(now)));
+        let tracks: Vec<String> = song.get_track_names().into_iter().map(str::to_string).collect();
+        player.play_scene(&mut sender, now, 1.min(scenes.saturating_sub(1)));
+        for step in 0..PLAYER_SCENARIO_STEPS {
+            now += PLAYER_STEP;
+            player.tick(&mut sender, now);
+            if step == PLAYER_CLIP_STEP && !tracks.is_empty() {
+                player.play_clips(&mut sender, now, 0, vec![tracks[0].clone()], false);
+            }
+            if step == PLAYER_STOP_STEP && tracks.len() > 1 {
+                player.stop_clip(&mut sender, now, &tracks[1]);
+            }
+        }
+        player.stop_all(&mut sender);
+        texts.extend(sender.lines);
+    }
+    Ok(texts.join("\n").trim_end_matches('\n').to_string())
 }
 
 /// Every song of a set rendered from one seed and laid out as real-time playback's timeline, an event a line.
