@@ -184,9 +184,24 @@ def write_enums(path):
     module_list.write_text(module_list.read_text() + '#[rustfmt::skip]\npub mod enums;\n')
 
 
+PLUGINS_PACKAGE = 'llamatron.engine.generators'
+PLUGIN_TEXTS_OUT = TOP / 'native' / 'strings' / 'src' / 'plugin_texts'
+
+
+def plugin_texts():
+    """Return each generator plugin's own words, its strings module, by the plugin's folder name."""
+    plugins = importlib.import_module(PLUGINS_PACKAGE)
+    found = []
+    for folder in pkgutil.iter_modules(plugins.__path__):
+        if folder.ispkg:
+            found.append((folder.name, importlib.import_module('{}.{}.strings'.format(PLUGINS_PACKAGE, folder.name))))
+    return found
+
+
 def main():
     texts = [(info.name, importlib.import_module('llamatron.user_strings.' + info.name)) for info in pkgutil.iter_modules(package.__path__)]
     unwritten = write_modules(folder=OUT, modules=texts)
+    unwritten.update(write_modules(folder=PLUGIN_TEXTS_OUT, modules=plugin_texts()))
     unwritten.update(write_modules(folder=SCHEMA_OUT, modules=SCHEMA_MODULES))
     unwritten.update(write_modules(folder=FUNDAMENTALS_OUT, modules=FUNDAMENTALS_MODULES))
     write_enums(FUNDAMENTALS_OUT / 'enums.rs')

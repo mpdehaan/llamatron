@@ -6,6 +6,7 @@
 //! str.format does.
 
 pub mod fill;
+pub mod plugin_texts;
 pub mod texts;
 
 pub use fill::{fill, named, Value};
