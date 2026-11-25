@@ -299,7 +299,7 @@ LEAVE = 'escape'
 def python_screens():
     """Return the Python's screen tour at each size, capturing it first when it has not been."""
     files = [SCREENS / 'screens_{}x{}.json'.format(*size) for size in SCREEN_SIZES]
-    if not all(path.exists() for path in files) or not (SCREENS / 'tour.yml').exists() or 'stacks_before' not in json.loads(files[0].read_text(encoding='utf-8'))[0]:
+    if not all(path.exists() for path in files) or not (SCREENS / 'tour.yml').exists() or 'sets_before' not in json.loads(files[0].read_text(encoding='utf-8'))[0]:
         subprocess.run([str(TOP / 'internal_tools' / 'compare_screens.sh'), 'capture', str(SCREENS)], check=True, cwd=TOP)
     return [(size, json.loads(path.read_text(encoding='utf-8'))) for size, path in zip(SCREEN_SIZES, files)]
 
@@ -318,8 +318,16 @@ def pieces(line):
 
 
 def keys_with_stacks(stop):
-    """Return a stop's keys, each with the pages open as it was pressed, joined by a unit separator."""
-    return ['{}\x1f{}'.format(key, ','.join(stack)) for key, stack in zip(stop['keys'], stop['stacks_before'])]
+    """Return a stop's keys, each with the pages and dialogs open as it was pressed and, where the key before changed the
+    set, the file the set was then written to, whether it held unsaved changes and its current song, joined by a unit
+    separator."""
+    keys = []
+    for key, stack, (written, dirty, song) in zip(stop['keys'], stop['stacks_before'], stop['sets_before']):
+        parts = [key, ','.join(stack)]
+        if written:
+            parts += [written, str(dirty), song]
+        keys.append('\x1f'.join(parts))
+    return keys
 
 
 def after_the_pdf(stops):
@@ -329,6 +337,7 @@ def after_the_pdf(stops):
     keys = stops[0]['keys']
     stops[0]['keys'] = keys[keys.index(LEAVE) + 1:]
     stops[0]['stacks_before'] = stops[0]['stacks_before'][keys.index(LEAVE) + 1:]
+    stops[0]['sets_before'] = stops[0]['sets_before'][keys.index(LEAVE) + 1:]
     return stops
 
 

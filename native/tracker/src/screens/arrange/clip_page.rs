@@ -378,9 +378,12 @@ impl Form for ClipPage {
             self.open_pattern(app, id - FIRST_PATTERN);
         } else if edit == Edit::Enter && id == arrange_tabs::GENERATORS {
             // The list of a clip's generators is not ported yet.
-            app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-                name: "GeneratorListPage".to_string(),
-            }));
+            app.show_page(Box::new(crate::screens::list_page::ListPage::new(
+                crate::screens::generators::generator_list_page::GeneratorListPage {
+                    holder: crate::screens::generators::generator_list_page::Holder::Clip(self.index, self.track.clone()),
+                    opener_crumbs: self.crumbs(app),
+                },
+            )));
         }
     }
 }

@@ -135,6 +135,11 @@ impl Tracker {
         }
     }
 
+    /// How many pages are open, the main screen among them.
+    pub fn depth(&self) -> usize {
+        self.pages.len()
+    }
+
     pub fn top(&self) -> &dyn Page {
         self.pages.last().expect("the main screen is never closed").as_ref()
     }

@@ -411,8 +411,20 @@ fn toured(path: &str, keys: &str, width: usize, height: usize) -> Result<String,
             let keys = parts
                 .filter(|key| !key.is_empty())
                 .map(|key| {
-                    let (name, stack) = key.split_once('\x1f').unwrap_or((key, ""));
-                    (name.to_string(), stack.split(',').filter(|page| !page.is_empty()).map(str::to_string).collect())
+                    let mut parts = key.split('\x1f');
+                    let name = parts.next().unwrap_or("").to_string();
+                    let stack = parts
+                        .next()
+                        .unwrap_or("")
+                        .split(',')
+                        .filter(|page| !page.is_empty())
+                        .map(str::to_string)
+                        .collect();
+                    let set = match (parts.next(), parts.next(), parts.next()) {
+                        (Some(file), Some(dirty), Some(song)) => Some((folder_of(path).join(file), dirty == "True", song.to_string())),
+                        _ => None,
+                    };
+                    llamatron_tracker::tour::TourKey { key: name, stack, set }
                 })
                 .collect();
             llamatron_tracker::tour::TourStop { stack, set, dirty, song, keys }

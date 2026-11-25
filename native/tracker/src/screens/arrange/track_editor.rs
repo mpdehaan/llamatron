@@ -12,7 +12,6 @@ use crate::forms::tab_box::{Tab, TabBox, TabColumn};
 use crate::keybindings::{KeyClass, TrackEditor as Keys};
 use crate::screens::arrange::arrange_tabs::{self, built_in_kinds, tab_label_of};
 use crate::screens::field_page::{Form, Node};
-use crate::screens::generators::generators_page::label_of;
 use crate::settings::{named_in, shown_octave};
 use crate::text::Text;
 use crate::themes::{self, Colour};
@@ -20,7 +19,6 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::Track;
 use llamatron_model::schema::generated::file_format::{SceneSetting, Section, SongSetting, TrackSetting};
 use llamatron_model::schema::generated::limits::{MAX_OCTAVE, MAX_TRANSPOSE, MIN_OCTAVE};
-use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_strings::{labels, legends, marks, messages, named};
 
 const NAME: usize = 0;
@@ -28,7 +26,6 @@ const NAME: usize = 0;
 const BUILT_IN_IDS: usize = 1000;
 /// The fields' ids, past the built-in tabs' own.
 const FIRST_OWN: usize = 10_000;
-const GENERATORS: usize = FIRST_OWN + 200;
 
 pub struct TrackEditor {
     pub name: String,
@@ -243,30 +240,7 @@ impl TrackEditor {
     }
 
     fn generators_tab(&self, app: &App, track: &Track) -> Tab {
-        let names: Vec<String> = track
-            .get_written(TrackSetting::CHAINS)
-            .and_then(Data::as_list)
-            .map_or(Vec::new(), |names| names.iter().filter_map(|name| name.as_str().map(str::to_string)).collect());
-        let setlist = app.document.get_setlist();
-        let listed: Vec<String> = names
-            .iter()
-            .map(|name| {
-                let kind = PLUGINS
-                    .iter()
-                    .find(|plugin| setlist.get_item(plugin.section, name).is_some())
-                    .map_or(labels::MSG_CHAIN_LABEL, |plugin| label_of(plugin.name));
-                named(labels::MSG_LISTED_GENERATOR, &[("kind", kind.into()), ("name", name.as_str().into())])
-            })
-            .collect();
-        let shown = if listed.is_empty() {
-            marks::MSG_NONE_SHOWN.to_string()
-        } else {
-            listed.join(marks::MSG_CHAIN_JOIN)
-        };
-        let field = Field::custom(GENERATORS, labels::MSG_GENERATORS_FIELD_LABEL, &shown)
-            .with_enter(legends::What::EDIT)
-            .with_clear(marks::MSG_NONE_SHOWN);
-        Tab::new(labels::MSG_USER_TAB, vec![TabColumn::new(None, vec![field])])
+        arrange_tabs::generators_tab(app, track.get_written(TrackSetting::CHAINS))
     }
 }
 
@@ -319,11 +293,14 @@ impl Form for TrackEditor {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
-        if edit == Edit::Enter && id == GENERATORS {
+        if edit == Edit::Enter && id == arrange_tabs::GENERATORS {
             // The list of a track's generators is not ported yet.
-            app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-                name: "GeneratorListPage".to_string(),
-            }));
+            app.show_page(Box::new(crate::screens::list_page::ListPage::new(
+                crate::screens::generators::generator_list_page::GeneratorListPage {
+                    holder: crate::screens::generators::generator_list_page::Holder::Track(self.name.clone()),
+                    opener_crumbs: self.crumbs(app),
+                },
+            )));
             return;
         }
         if edit != Edit::Enter || !(BUILT_IN_IDS..FIRST_OWN).contains(&id) {

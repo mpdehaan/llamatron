@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The pages of the generators (the Python screens/generators/).
 
+pub mod generator_list_page;
 pub mod generators_page;
 pub mod offsets_editor;
 pub mod plugin_editor;

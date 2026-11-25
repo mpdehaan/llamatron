@@ -191,20 +191,8 @@ pub fn reset_draws_tab(song: &Song, reset: Option<&Data>) -> Tab {
 
 /// The tab of other generators: one field listing each, its kind before its name.
 pub fn generators_tab(app: &App, chains: Option<&Data>) -> Tab {
-    let names: Vec<String> = chains
-        .and_then(Data::as_list)
-        .map_or(Vec::new(), |names| names.iter().filter_map(|name| name.as_str().map(str::to_string)).collect());
     let setlist = app.document.get_setlist();
-    let listed: Vec<String> = names
-        .iter()
-        .map(|name| {
-            let kind = PLUGINS
-                .iter()
-                .find(|plugin| setlist.get_item(plugin.section, name).is_some())
-                .map_or(labels::MSG_CHAIN_LABEL, |plugin| label_of(plugin.name));
-            named(labels::MSG_LISTED_GENERATOR, &[("kind", kind.into()), ("name", name.as_str().into())])
-        })
-        .collect();
+    let listed: Vec<String> = chain_names(chains).iter().map(|name| listed_generator(setlist, name)).collect();
     let shown = if listed.is_empty() {
         marks::MSG_NONE_SHOWN.to_string()
     } else {
@@ -214,6 +202,22 @@ pub fn generators_tab(app: &App, chains: Option<&Data>) -> Tab {
         .with_enter(legends::What::EDIT)
         .with_clear(marks::MSG_NONE_SHOWN);
     Tab::new(labels::MSG_USER_TAB, vec![TabColumn::new(None, vec![field])])
+}
+
+/// A generator of a list as a page shows it, its kind before its name, as Chain (fills).
+pub fn listed_generator(setlist: &llamatron_model::objects::setlist::Setlist, name: &str) -> String {
+    let kind = PLUGINS
+        .iter()
+        .find(|plugin| setlist.get_item(plugin.section, name).is_some())
+        .map_or(labels::MSG_CHAIN_LABEL, |plugin| label_of(plugin.name));
+    named(labels::MSG_LISTED_GENERATOR, &[("kind", kind.into()), ("name", name.into())])
+}
+
+/// The names a list of generators holds, as written.
+pub fn chain_names(chains: Option<&Data>) -> Vec<String> {
+    chains
+        .and_then(Data::as_list)
+        .map_or(Vec::new(), |names| names.iter().filter_map(|name| name.as_str().map(str::to_string)).collect())
 }
 
 /// The Bypass When tab: the table of statements alone.

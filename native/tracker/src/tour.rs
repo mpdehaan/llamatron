@@ -47,7 +47,15 @@ pub struct TourStop {
     pub dirty: bool,
     pub song: String,
     /// Each key pressed, with the pages open as the Python pressed it.
-    pub keys: Vec<(String, Vec<String>)>,
+    pub keys: Vec<TourKey>,
+}
+
+/// A key the Python pressed: its name, the pages and dialogs open as it pressed it, and, where the key before changed the
+/// set, the file it wrote the set to then, whether the set held unsaved changes and its current song.
+pub struct TourKey {
+    pub key: String,
+    pub stack: Vec<String>,
+    pub set: Option<(std::path::PathBuf, bool, String)>,
 }
 
 /// Press each stop's keys and record the screen after them, then follow the Python's stack of pages where pages not ported
@@ -58,13 +66,21 @@ pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourSto
     let mut recorded = Vec::new();
     for stop in stops {
         let mut unported = false;
-        for (key, stack) in &stop.keys {
-            // A page not ported yet takes no keys: where the Python's pages went from it, the Rust follows them.
-            if !tracker.top().is_ported() {
-                unported = true;
-                tracker.follow(stack);
+        let mut last_unported = false;
+        for key in &stop.keys {
+            // A key pressed on a page or dialog not ported yet that changed the set leaves the Rust's behind, so it takes
+            // up the Python's.
+            if let (true, Some((file, dirty, song))) = (last_unported, &key.set) {
+                tracker.app.document.take_up(file, *dirty, song);
             }
-            tracker.press(&pressed_key(key));
+            // A page not ported yet takes no keys: where the Python's pages went from it, or where the Python opened a page
+            // or dialog the Rust has not ported, the Rust follows them.
+            if !tracker.top().is_ported() || key.stack.len() > tracker.depth() {
+                tracker.follow(&key.stack);
+            }
+            last_unported = !tracker.top().is_ported();
+            unported |= last_unported;
+            tracker.press(&pressed_key(&key.key));
         }
         // The screen is drawn first, since drawing a page may find a part of it not ported yet, which names it.
         let screen = composed(tracker, width, height);

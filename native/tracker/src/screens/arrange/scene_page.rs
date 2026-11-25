@@ -281,9 +281,12 @@ impl Form for ScenePage {
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
         if edit == Edit::Enter && id == arrange_tabs::GENERATORS {
             // The list of a scene's generators is not ported yet.
-            app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-                name: "GeneratorListPage".to_string(),
-            }));
+            app.show_page(Box::new(crate::screens::list_page::ListPage::new(
+                crate::screens::generators::generator_list_page::GeneratorListPage {
+                    holder: crate::screens::generators::generator_list_page::Holder::Scene(self.index),
+                    opener_crumbs: self.crumbs(app),
+                },
+            )));
         }
     }
 }

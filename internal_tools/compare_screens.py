@@ -29,6 +29,7 @@ import random
 import shutil
 from rich.console import Console
 import sys
+from textual.screen import ModalScreen
 from textual.widgets import Static
 import unittest
 from unittest import mock
@@ -83,12 +84,15 @@ KEYS = 'keys'
 STACK = 'stack'
 # The pages open as each key of a stop was pressed.
 STACKS_BEFORE = 'stacks_before'
+SETS_BEFORE = 'sets_before'
 # The file the set is written to at a stop where it changed, whether it holds unsaved changes, and the current song.
 SET_FILE = 'set'
 DIRTY = 'dirty'
 SONG = 'song'
 PATH = 'path'
 SET_AT_STOP = '{tour}_set_{number}.yml'
+# The set as a key left it, within a stop.
+SET_AT_KEY = '{stop}_key_{key}.yml'
 LAST_DIGEST = 'last_digest'
 # The set the tour saves before its first stop and starts from.
 TOUR_SET = test_tui_help_keys.TOUR_SET_FILE
@@ -132,15 +136,20 @@ class ScreenTour(KeyTour):
         self.stops = []
         self.pressed = []
         self.stacks_before = []
+        self.sets_before = []
         original = ui_testing.key_event
+        tour = self
 
         def noted(name):
             event = original(name)
             # The pages open as the key is pressed, so that another program can follow them where its pages that the key
             # reaches are not ported yet.
-            stack = [type(each).__name__ for each in self.app.screen_stack if isinstance(each, Page)]
             self.pressed.append(event.key)
-            self.stacks_before.append(stack)
+            self.stacks_before.append(tour.open_now())
+            # The set as the last key left it, where that key changed it, so that another program that pressed the key on
+            # a page or dialog not ported yet takes it up before the next.
+            document = self.app.get_document()
+            self.sets_before.append((self.set_kept(document, key=len(self.pressed)), document.is_dirty(), document.get_current_song_name()))
             return event
 
         patcher = mock.patch.object(ui_testing, KEY_EVENT, noted)
@@ -148,7 +157,6 @@ class ScreenTour(KeyTour):
         self.addCleanup(patcher.stop)
         # The tour puts the Generators page's cursor on a generator without keys; here it goes there by keys, so that another
         # program pressing the same keys reaches it too.
-        tour = self
 
         def by_keys(page, *, kind, name):
             tour.walk_to_generator(page=page, kind=kind, name=name)
@@ -203,17 +211,22 @@ class ScreenTour(KeyTour):
         if not self.stops:
             shutil.copyfile(os.path.join(self.folder, TOUR_SET), kept)
         screen = screen_pieces(app=self.app, folders=(os.path.realpath(self.folder), self.folder))
-        stack = [type(each).__name__ for each in self.app.screen_stack if isinstance(each, Page)]
+        stack = self.open_now()
         document = self.app.get_document()
         self.stops.append({
             PAGE: type(page).__name__, PLACE: place_of(page), SCREEN: screen, KEYS: self.pressed, STACK: stack,
-            SET_FILE: self.set_kept(document), DIRTY: document.is_dirty(), SONG: document.get_current_song_name(), STACKS_BEFORE: self.stacks_before,
+            SET_FILE: self.set_kept(document), DIRTY: document.is_dirty(), SONG: document.get_current_song_name(), STACKS_BEFORE: self.stacks_before, SETS_BEFORE: self.sets_before,
             PATH: without_folders(text=document.get_path() or '', folders=(os.path.realpath(self.folder), self.folder)),
         })
         self.pressed = []
         self.stacks_before = []
+        self.sets_before = []
 
-    def set_kept(self, document):
+    def open_now(self):
+        """Return the names of the pages and dialogs open, from the main screen up."""
+        return [type(each).__name__ for each in self.app.screen_stack if isinstance(each, (Page, ModalScreen))]
+
+    def set_kept(self, document, key=None):
         """Return the name of the file the set is written to where it changed since the stop before, so that another program
         whose pages that changed it are not ported yet can take it up, or None where it is as it was."""
         data = document.get_setlist().to_data()
@@ -222,6 +235,8 @@ class ScreenTour(KeyTour):
             return None
         self.last_digest = digest
         name = SET_AT_STOP.format(tour=os.path.splitext(os.path.basename(os.environ[OUTPUT_SETTING]))[0], number=len(self.stops))
+        if key is not None:
+            name = SET_AT_KEY.format(stop=os.path.splitext(name)[0], key=key)
         document.get_setlist().write_file(os.path.join(os.path.dirname(os.environ[OUTPUT_SETTING]), name))
         return name
 
