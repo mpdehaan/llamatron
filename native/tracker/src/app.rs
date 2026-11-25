@@ -260,6 +260,8 @@ impl Tracker {
         } else if std::ptr::eq(item.binding, &PageKeys::HELP) {
             let help = self.help_of_top();
             self.app.show_page(Box::new(help));
+        } else if std::ptr::eq(item.binding, &PageKeys::ABOUT) {
+            self.app.show_page(Box::new(crate::screens::about_dialog::AboutDialog::new()));
         } else if PageKeys::EVERYWHERE.iter().any(|binding| std::ptr::eq(*binding, item.binding)) {
             // The other everywhere keys are not ported yet; they do nothing.
             return;

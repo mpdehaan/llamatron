@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The pages, in folders by what they edit, as the Python's screens/ are.
 
+pub mod about_dialog;
 pub mod arrange;
 pub mod chord_dialog;
 pub mod dialogs;
