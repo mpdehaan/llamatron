@@ -204,6 +204,10 @@ impl MainPage {
 
     /// Do what a cell's key does: open its page, which stands not ported until it is.
     fn act(&mut self, app: &mut App, binding: &'static Binding) {
+        if same(binding, &Keys::REAL_TIME) {
+            toggle_real_time(app);
+            return;
+        }
         if same(binding, &Keys::FILE) {
             app.show_page(std::boxed::Box::new(FieldPage::new(FilePage)));
             return;
@@ -457,4 +461,26 @@ impl Page for MainPage {
         let document = &app.document;
         Duration::Seconds(SongRealizer::new(document.get_setlist(), document.song(), None).song_seconds())
     }
+}
+
+/// Turn real-time playback on or off, which needs an instrument to play through, and say which on the status line.
+fn toggle_real_time(app: &mut App) {
+    let setlist = app.document.get_setlist();
+    if setlist.items(llamatron_model::schema::generated::file_format::Section::INSTRUMENTS).is_empty() {
+        let lines = vec![llamatron_strings::errors::ERR_ADD_INSTRUMENT_FIRST.to_string()];
+        app.show_page(std::boxed::Box::new(crate::screens::dialogs::MessageDialog::new(
+            llamatron_strings::errors::ERR_NO_INSTRUMENTS_TITLE,
+            lines,
+        )));
+        return;
+    }
+    let on = !matches!(setlist.get_written(SetlistSetting::REAL_TIME), Some(Data::Bool(true)));
+    app.document
+        .change_set(|setlist| setlist.set_written(SetlistSetting::REAL_TIME, Some(Data::Bool(on))));
+    // Nothing plays in real time yet in llamatron2, so there is nothing to stop as it turns off.
+    app.say(if on {
+        llamatron_strings::messages::MSG_REAL_TIME_ON
+    } else {
+        llamatron_strings::messages::MSG_REAL_TIME_OFF
+    });
 }

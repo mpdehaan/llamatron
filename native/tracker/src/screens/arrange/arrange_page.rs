@@ -5,6 +5,8 @@
 //! across, each clip with its pattern and a bar as long as it plays, the cursor's cell in a double-lined frame, and the
 //! keys of what the cursor is on. Its details, Scene View and Move mode are not ported yet, and the page says so there.
 
+#[path = "arrange_edits.rs"]
+mod edits;
 use crate::app::App;
 use crate::drawing::{fit, fit_aligned, Align, Style};
 use crate::keybindings::{ArrangePage as Keys, KeyClass};
@@ -946,6 +948,10 @@ impl ArrangePage {
 }
 
 impl Page for ArrangePage {
+    fn go_to_row(&mut self, _app: &App, row: &str) {
+        self.put_cursor_at(row);
+    }
+
     fn is_ported(&self) -> bool {
         self.mode.get().is_none()
     }
@@ -1077,7 +1083,11 @@ impl Page for ArrangePage {
                 app.show_page(crate::screens::pattern::open_clip_pattern(&name, crumbs));
             }
         } else if item.is(&Keys::SHOW_DETAILS) || item.is(&Keys::HIDE_DETAILS) {
+            // The other view starts from the top left, as its rows and columns are other sizes.
             app.session.shows_arrange_details = !app.session.shows_arrange_details;
+            self.stop_picking();
+            self.top.set(0);
+            self.left.set(0);
         } else if item.is(&Keys::COPY_CLIP) {
             let tracks = Self::tracks(app);
             self.copied = Self::clip(app, self.row.get() as usize, &tracks[self.track_place()]).cloned();
@@ -1093,6 +1103,7 @@ impl Page for ArrangePage {
             app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
                 crate::screens::arrange::scene_page::ScenePage { index },
             )));
+        } else if self.press_edit(app, item) {
         } else if item.is(&Keys::TRACK_SETTINGS) {
             let name = Self::tracks(app)[self.track_place()].clone();
             app.show_page(Box::new(crate::screens::field_page::FieldPage::new(

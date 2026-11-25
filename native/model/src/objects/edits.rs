@@ -362,3 +362,144 @@ fn song_mut<'a>(set: &'a mut Data, song: &str) -> Option<&'a mut Data> {
         _ => None,
     }
 }
+
+// Arrange's edits of a song's scenes, tracks and clips (the Python song.py's and scene.py's).
+
+/// The setting that names a scene, and those that name a clip's one pattern or its several.
+const SCENE_NAME: &str = "name";
+const CLIP_PATTERN: &str = "pattern";
+const CLIP_PATTERNS: &str = "patterns";
+
+/// The scenes of a song in a set's data, to change.
+fn scenes_mut<'a>(set: &'a mut Data, song: &str) -> Option<&'a mut Vec<Data>> {
+    match entry_mut(song_mut(set, song)?, SCENES)? {
+        Data::List(scenes) => Some(scenes),
+        _ => None,
+    }
+}
+
+/// The clips of a scene of a song, by track, to change; a scene without any is given an empty map of them.
+fn clips_mut<'a>(set: &'a mut Data, song: &str, index: usize) -> Option<&'a mut Vec<(Data, Data)>> {
+    let scene = scenes_mut(set, song)?.get_mut(index)?;
+    if scene.get(TRACKS).is_none() {
+        scene.set(TRACKS, Data::Map(Vec::new()));
+    }
+    match entry_mut(scene, TRACKS)? {
+        Data::Map(clips) => Some(clips),
+        _ => None,
+    }
+}
+
+/// A set's data with a new scene of no clips put at a place in a song, under a name.
+pub fn added_scene(set: &Data, song: &str, index: usize, name: &str) -> Data {
+    let mut set = set.clone();
+    if let Some(scenes) = scenes_mut(&mut set, song) {
+        let scene = Data::Map(vec![(Data::text(SCENE_NAME), Data::text(name)), (Data::text(TRACKS), Data::Map(Vec::new()))]);
+        scenes.insert(index.min(scenes.len()), scene);
+    }
+    set
+}
+
+/// A set's data with a copy of a scene of a song, its clips with it, put right after it under a new name.
+pub fn copied_scene(set: &Data, song: &str, index: usize, name: &str) -> Data {
+    let mut set = set.clone();
+    if let Some(scenes) = scenes_mut(&mut set, song) {
+        if let Some(mut scene) = scenes.get(index).cloned() {
+            scene.set(SCENE_NAME, Data::text(name));
+            scenes.insert(index + 1, scene);
+        }
+    }
+    set
+}
+
+/// A set's data with a scene of a song taken out, with its clips.
+pub fn removed_scene(set: &Data, song: &str, index: usize) -> Data {
+    let mut set = set.clone();
+    if let Some(scenes) = scenes_mut(&mut set, song) {
+        if index < scenes.len() {
+            scenes.remove(index);
+        }
+    }
+    set
+}
+
+/// A set's data with a new track of no settings and no clips added to a song, at a place among its tracks or at the end.
+pub fn added_track(set: &Data, song: &str, name: &str, place: Option<usize>) -> Data {
+    let mut set = set.clone();
+    let Some(held) = song_mut(&mut set, song) else { return set };
+    if held.get(TRACKS).is_none() {
+        held.set(TRACKS, Data::Map(Vec::new()));
+    }
+    if let Some(Data::Map(tracks)) = entry_mut(held, TRACKS) {
+        let at = place.unwrap_or(tracks.len()).min(tracks.len());
+        tracks.insert(at, (Data::text(name), Data::Map(Vec::new())));
+    }
+    set
+}
+
+/// A set's data with a clip put on a track in a scene of a song, in place of any there, a new one after the scene's others.
+pub fn put_clip(set: &Data, song: &str, index: usize, track: &str, clip: &Data) -> Data {
+    let mut set = set.clone();
+    if let Some(clips) = clips_mut(&mut set, song, index) {
+        match clips.iter_mut().find(|(each, _)| each.as_str() == Some(track)) {
+            Some((_, held)) => *held = clip.clone(),
+            None => clips.push((Data::text(track), clip.clone())),
+        }
+    }
+    set
+}
+
+/// A new clip's data, playing a pattern once.
+pub fn new_clip(pattern: &str) -> Data {
+    Data::Map(vec![(Data::text(CLIP_PATTERN), Data::text(pattern))])
+}
+
+/// A set's data with the clip on a track in a scene of a song taken out.
+pub fn removed_clip(set: &Data, song: &str, index: usize, track: &str) -> Data {
+    let mut set = set.clone();
+    if let Some(clips) = clips_mut(&mut set, song, index) {
+        clips.retain(|(each, _)| each.as_str() != Some(track));
+    }
+    set
+}
+
+/// A clip's data playing other patterns in place of its own, each name its new one, as written: one pattern or several.
+pub fn clip_playing(clip: &Data, renamed: &dyn Fn(&str) -> String) -> Data {
+    let mut clip = clip.clone();
+    if let Some(Data::Text(name)) = clip.get(CLIP_PATTERN).cloned() {
+        clip.set(CLIP_PATTERN, Data::text(&renamed(&name)));
+    }
+    if let Some(Data::List(names)) = clip.get(CLIP_PATTERNS).cloned() {
+        let names = names
+            .iter()
+            .map(|name| name.as_str().map_or(name.clone(), |name| Data::text(&renamed(name))))
+            .collect();
+        clip.set(CLIP_PATTERNS, Data::List(names));
+    }
+    clip
+}
+
+/// The names of the patterns a clip's data plays, in order.
+pub fn clip_patterns(clip: &Data) -> Vec<String> {
+    if let Some(name) = clip.get(CLIP_PATTERN).and_then(Data::as_str) {
+        return vec![name.to_string()];
+    }
+    clip.get(CLIP_PATTERNS)
+        .and_then(Data::as_list)
+        .map_or(Vec::new(), |names| names.iter().filter_map(|name| name.as_str().map(str::to_string)).collect())
+}
+
+/// A blank pattern's data: its steps, its group, and a drum pattern marked as one, or a pattern written for a scale of a
+/// number of notes.
+pub fn blank_pattern(steps: i64, group: Option<&str>, drum: bool, scale_length: Option<i64>) -> Data {
+    let mut pairs = vec![(Data::text("steps"), Data::Whole(steps as i128))];
+    if let Some(group) = group {
+        pairs.push((Data::text("group"), Data::text(group)));
+    }
+    if drum {
+        pairs.push((Data::text("drum"), Data::Bool(true)));
+    } else if let Some(length) = scale_length {
+        pairs.push((Data::text("scale_length"), Data::Whole(length as i128)));
+    }
+    Data::Map(pairs)
+}

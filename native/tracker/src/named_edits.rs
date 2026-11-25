@@ -12,6 +12,7 @@ use llamatron_model::objects::edits;
 use llamatron_model::objects::naming::{copy_name, new_name};
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::schema::generated::defaults::DEFAULT_TEMPO;
+use llamatron_model::schema::generated::file_format::Section;
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_strings::{errors, named, names};
 
@@ -67,7 +68,7 @@ impl Document {
     /// Add a generator of a section with the settings a new one starts with (the Python's settings_of(kind).new()): a chain
     /// with no steps, an arpeggiator playing up, and any other kind with nothing set.
     pub fn add_generator(&mut self, section: &str, name: &str) -> Result<(), String> {
-        let item = if section == llamatron_model::schema::generated::file_format::Section::CHAINS {
+        let item = if section == Section::CHAINS {
             Data::List(Vec::new())
         } else if section == ARPS {
             Data::Map(vec![(Data::text(ARP_ORDER), Data::text(ARP_ORDER_UP))])
@@ -83,6 +84,101 @@ impl Document {
             data.set(section, items);
             data
         })
+    }
+
+    // Arrange's edits of the current song's scenes, tracks and clips.
+
+    /// Put a new scene of no clips at a place in the current song, under a name.
+    pub fn add_scene(&mut self, index: usize, name: &str) -> Result<(), String> {
+        let song = self.get_current_song_name().to_string();
+        self.edit_data(|data| edits::added_scene(data, &song, index, name))
+    }
+
+    /// Put a copy of a scene, with its clips, right after it, named after it.
+    pub fn copy_scene(&mut self, index: usize) -> Result<(), String> {
+        let song = self.get_current_song_name().to_string();
+        let taken: Vec<String> = self
+            .song()
+            .scenes()
+            .iter()
+            .filter_map(|scene| scene.get_written("name").and_then(Data::as_str).map(str::to_string))
+            .collect();
+        let name = self
+            .song()
+            .scenes()
+            .get(index)
+            .and_then(|scene| scene.get_written("name"))
+            .and_then(Data::as_str)
+            .unwrap_or(llamatron_strings::names::MSG_SCENE_WITHOUT_A_NAME)
+            .to_string();
+        let new = llamatron_model::objects::naming::copy_name(&name, &taken);
+        self.edit_data(|data| edits::copied_scene(data, &song, index, &new))
+    }
+
+    /// Take a scene out of the current song, with its clips.
+    pub fn remove_scene(&mut self, index: usize) -> Result<(), String> {
+        let song = self.get_current_song_name().to_string();
+        self.edit_data(|data| edits::removed_scene(data, &song, index))
+    }
+
+    /// Add a track of no clips to the current song, before the track at a place or after the last.
+    pub fn add_track(&mut self, name: &str, place: Option<usize>) -> Result<(), String> {
+        let song = self.get_current_song_name().to_string();
+        self.edit_data(|data| edits::added_track(data, &song, name, place))
+    }
+
+    /// Put a clip, as its data, on a track in a scene of the current song, in place of any there.
+    pub fn put_clip(&mut self, index: usize, track: &str, clip: &Data) -> Result<(), String> {
+        let song = self.get_current_song_name().to_string();
+        self.edit_data(|data| edits::put_clip(data, &song, index, track, clip))
+    }
+
+    /// Take the clip on a track in a scene of the current song out of it.
+    pub fn remove_clip(&mut self, index: usize, track: &str) -> Result<(), String> {
+        let song = self.get_current_song_name().to_string();
+        self.edit_data(|data| edits::removed_clip(data, &song, index, track))
+    }
+
+    /// Add a pattern of empty steps: a drum pattern, or one written for a scale of a number of notes.
+    pub fn add_blank_pattern(&mut self, name: &str, steps: i64, group: Option<&str>, drum: bool, scale_length: Option<i64>) -> Result<(), String> {
+        let pattern = edits::blank_pattern(steps, group, drum, scale_length);
+        self.edit_data(|data| {
+            let mut data = data.clone();
+            let mut patterns = data.get(Section::PATTERNS).cloned().unwrap_or(Data::Map(Vec::new()));
+            if let Data::Map(pairs) = &mut patterns {
+                pairs.push((Data::text(name), pattern));
+            }
+            data.set(Section::PATTERNS, patterns);
+            data
+        })
+    }
+
+    /// Give clips of the current song, each by its scene's place and its track, copies of the patterns they play, each
+    /// pattern copied once under a new name however many of them play it, so that a copied scene or track can be changed
+    /// without changing the one it was copied from.
+    pub fn give_own_patterns(&mut self, clips: &[(usize, String)]) -> Result<(), String> {
+        let mut copies: Vec<(String, String)> = Vec::new();
+        for (index, track) in clips {
+            let Some(clip) = self.clip_data(*index, track) else { continue };
+            for name in edits::clip_patterns(&clip) {
+                if !copies.iter().any(|(old, _)| *old == name) {
+                    let new = self.copy_named(Section::PATTERNS, &name)?;
+                    copies.push((name, new));
+                }
+            }
+        }
+        for (index, track) in clips {
+            let Some(clip) = self.clip_data(*index, track) else { continue };
+            let renamed = |name: &str| copies.iter().find(|(old, _)| old == name).map_or(name.to_string(), |(_, new)| new.clone());
+            let playing = edits::clip_playing(&clip, &renamed);
+            self.put_clip(*index, track, &playing)?;
+        }
+        Ok(())
+    }
+
+    /// The data of the clip on a track in a scene of the current song.
+    fn clip_data(&self, index: usize, track: &str) -> Option<Data> {
+        self.song().scenes().get(index)?.get_clip_slot(track).map(|clip| clip.to_data())
     }
 
     /// Change the set by its data, the change read back into the set, refused with why where the set would not read.
