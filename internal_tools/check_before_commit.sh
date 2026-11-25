@@ -25,8 +25,9 @@ if [ -n "$native" ]; then
     cargo build --manifest-path native/Cargo.toml --workspace --release --quiet
     # llamatron2 held to the Python program, every step the port has reached, over every example and test set.
     for step in load layout migrate save render; do
-        .venv/bin/python internal_tools/compare_llamatron2.py "$step" | tail -1
-        .venv/bin/python internal_tools/compare_llamatron2.py "$step" > /dev/null
+        # Each step runs once: its summary is shown, and a difference shows what differs and stops the check.
+        compared=$(.venv/bin/python internal_tools/compare_llamatron2.py "$step") || { echo "$compared"; exit 1; }
+        echo "$step: $(echo "$compared" | grep 'sets differ')$(echo "$compared" | grep 'wait on' | sed 's/^/, /')"
     done
 fi
 # The Python program is frozen while it is ported to Rust (.claude/rules/STYLE.md), so its tests run only when something it
