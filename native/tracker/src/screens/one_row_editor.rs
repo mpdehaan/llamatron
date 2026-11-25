@@ -244,7 +244,9 @@ impl<R: OneRow> Page for OneRowEditor<R> {
             self.row.press_more(app, item, key, step);
         } else if item.is(self.row.move_binding()) {
             let step: i64 = if key == "left" { STEP_BACK } else { STEP_FORWARD };
-            self.step.set((self.step.get() as i64 + step).clamp(0, count as i64 - 1) as usize);
+            // A row with no steps left has nowhere to move to.
+            let last = count.saturating_sub(1) as i64;
+            self.step.set((self.step.get() as i64 + step).clamp(0, last) as usize);
         } else {
             let step = self.keep_step(app);
             self.row.press_more(app, item, key, step);

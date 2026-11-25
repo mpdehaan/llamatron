@@ -1574,15 +1574,16 @@ impl Page for QuitDialog {
     }
 }
 
-/// What the export dialog answers, by its place among these: each kind of export, and PDF, whose page asks what to make.
-pub const EXPORT_CHOICES: [&str; 7] = ["ableton", "stems", "midi", "cliptree", "gm", "wav", "pdf"];
+/// What the export dialog answers, by its place among these: each kind of export.
+pub const EXPORT_CHOICES: [&str; 6] = ["ableton", "stems", "midi", "cliptree", "gm", "wav"];
 /// Each category in the order the dialog offers them, by its place among EXPORT_CHOICES, None for MIDI, which opens a
-/// flyout of its kinds.
-const CATEGORIES: [Option<usize>; 4] = [Some(0), None, Some(5), Some(6)];
+/// flyout of its kinds. The Python's PDF, its last, is left out until llamatron2 makes PDFs (the user's choice, the ideas
+/// file's "The PDF export in llamatron2").
+const CATEGORIES: [Option<usize>; 3] = [Some(0), None, Some(5)];
 /// MIDI's kinds in the order its flyout lists them, by their places among EXPORT_CHOICES.
 const MIDI_KINDS: [usize; 4] = [1, 2, 3, 4];
 
-/// The export dialog (the Python ExportDialog): the kinds of export by category, Ableton Live set, MIDI, WAV and PDF. MIDI has
+/// The export dialog (the Python ExportDialog): the kinds of export by category, Ableton Live set, MIDI and WAV. MIDI has
 /// several kinds, so ENTER on it opens a flyout over the dialog listing them, where Up and Down move, ENTER exports the one
 /// under the cursor and ESC closes the flyout.
 pub struct ExportDialog {
@@ -1595,7 +1596,11 @@ pub struct ExportDialog {
 impl ExportDialog {
     /// The dialog for a song, its answer, a place among EXPORT_CHOICES, handed to what is given.
     pub fn new(title: &str, then: Then) -> ExportDialog {
-        let options = labels::MSG_EXPORT_CATEGORIES.iter().map(|label| label.to_string()).collect();
+        let options = labels::MSG_EXPORT_CATEGORIES
+            .iter()
+            .take(CATEGORIES.len())
+            .map(|label| label.to_string())
+            .collect();
         ExportDialog {
             list: ChoiceDialog::new(title, options, 0),
             flyout_open: false,

@@ -11,14 +11,13 @@ use crate::uses::scene_label;
 use llamatron_strings::{errors, messages, named, names};
 use std::path::{Path, PathBuf};
 
-/// The kinds of export, as their files name them, and PDF, whose page asks what to make.
+/// The kinds of export, as their files name them.
 const ABLETON: &str = "ableton";
 const STEMS: &str = "stems";
 const MIDI_FILE: &str = "midi";
 const CLIP_TREE: &str = "cliptree";
 const GENERAL_MIDI: &str = "gm";
 const WAV: &str = "wav";
-const PDF: &str = "pdf";
 /// How many never-ending scenes the loop errors dialog lists, the rest counted.
 const LOOP_ERRORS_SHOWN: usize = 10;
 /// The row that holds a step's statement that stops its clip.
@@ -61,11 +60,7 @@ fn choose_export(app: &mut App) {
 
 /// Write the kind of export chosen; the WAV export says first which tracks are in it.
 fn export_chosen(app: &mut App, kind: &'static str) {
-    if kind == PDF {
-        app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-            name: "PdfExportPage".to_string(),
-        }));
-    } else if kind != WAV {
+    if kind != WAV {
         export_as(app, kind);
     } else if !crate::wav::fluidsynth_installed() {
         let lines = vec![errors::ERR_WAV_NEEDS_FLUIDSYNTH.to_string()];

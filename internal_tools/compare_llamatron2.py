@@ -384,8 +384,37 @@ def after_the_pdf(stops):
     return stops
 
 
-def compare_screens(shown_most=None):
-    """Replay the screen tour's keys in the Rust tracker at each size and compare every stop's screen; return the exit code."""
+def baseline_path(size):
+    """Return where the stops that differed when the baseline was taken are kept for a size."""
+    return KEPT / SCREENS_BASELINE.format(*size)
+
+
+def capture_digest(size):
+    """Return a digest of the Python's capture at a size, which a baseline belongs to."""
+    return hashlib.sha256((SCREENS / 'screens_{}x{}.json'.format(*size)).read_bytes()).hexdigest()
+
+
+def read_baseline(size):
+    """Return the stops kept as still differing at a size, or None where no baseline belongs to this capture."""
+    path = baseline_path(size)
+    if not path.exists():
+        return None
+    held = json.loads(path.read_text(encoding='utf-8'))
+    return set(held['differing']) if held['capture'] == capture_digest(size) else None
+
+
+def write_baseline(size, differing):
+    """Keep the stops that differ at a size, for the capture they belong to."""
+    path = baseline_path(size)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({'capture': capture_digest(size), 'differing': sorted(differing)}), encoding='utf-8')
+
+
+def compare_screens(shown_most=None, baseline=False):
+    """Replay the screen tour's keys in the Rust tracker at each size and compare every stop's screen; return the exit code.
+
+    While pages are being ported, the stops that differ are kept as a baseline (with baseline), and a run fails only where a
+    stop outside it differs, the baseline shrinking as stops come to match, so that nothing that matches can break."""
     differing = 0
     for size, stops in python_screens():
         stops = after_the_pdf(stops)
@@ -404,6 +433,7 @@ def compare_screens(shown_most=None):
             print('{}x{}: the Rust tour failed: {}'.format(*size, done.stderr.strip()[:SHOWN]))
             return 1
         port = json.loads(with_folder_named(done.stdout, folder))
+        differing_stops = set()
         pages = {}
         shown = 0
         # The pages the Rust has ported, which it shows as themselves somewhere on the tour; a stop on any other waits.
@@ -415,13 +445,28 @@ def compare_screens(shown_most=None):
                 continue
             same = rust_stop['page'] == python['page'] and [pieces(line) for line in python['screen']] == [pieces(line) for line in rust_stop['screen']]
             counts[0 if same else 1] += 1
+            if not same:
+                differing_stops.add(number)
             if not same and shown < (shown_most or MOST_SCREEN_DIFFERENCES):
                 shown += 1
                 print(screen_difference(size=size, number=number, python=python, port=rust_stop))
         ported_differ = sum(counts[1] for counts in pages.values())
-        differing += ported_differ
         waiting = sum(counts[2] for counts in pages.values())
         print('{}x{}: {} of {} stops differ, {} wait on pages not ported yet'.format(*size, ported_differ, len(stops) - waiting, waiting))
+        if baseline:
+            write_baseline(size, differing_stops)
+            print('{}x{}: the {} differing stops kept as the baseline'.format(*size, len(differing_stops)))
+            continue
+        kept = read_baseline(size)
+        if kept is None:
+            differing += ported_differ
+            continue
+        new = sorted(differing_stops - kept)
+        write_baseline(size, differing_stops & kept)
+        print('{}x{}: {} of the baseline\'s {} still differ, {} newly'.format(*size, len(differing_stops & kept), len(kept), len(new)))
+        if new:
+            print('  newly differing stops: {}'.format(', '.join(str(number) for number in new[:SHOWN_NEW])))
+        differing += len(new)
         for page, (same, different, unported) in pages.items():
             if different:
                 print('  {}: {} of {} differ'.format(page, different, same + different))
@@ -429,6 +474,9 @@ def compare_screens(shown_most=None):
 
 
 MOST_SCREEN_DIFFERENCES = 3
+# Where the baseline of differing stops is kept, by size, and how many newly differing stops are named.
+SCREENS_BASELINE = 'screens_baseline_{}x{}.json'
+SHOWN_NEW = 20
 
 
 def screen_difference(*, size, number, python, port):
@@ -446,9 +494,10 @@ def main():
     made.add_argument('step', choices=sorted([*STEPS, 'screens']))
     made.add_argument('--only', help='only the sets whose path holds this text')
     made.add_argument('--differences', type=int, help='for screens, how many differing stops to show, three unless given')
+    made.add_argument('--baseline', action='store_true', help='for screens, keep the stops that differ now, so that only others fail')
     options = made.parse_args()
     if options.step == 'screens':
-        return compare_screens(shown_most=options.differences)
+        return compare_screens(shown_most=options.differences, baseline=options.baseline)
     found = [*EXAMPLES.rglob('*.yml'), *TEST_SETS.rglob('*.yml')]
     if options.step == 'import':
         found += EXAMPLES.rglob('*.mid')

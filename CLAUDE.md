@@ -20,6 +20,8 @@ These come before every other rule, whatever the task, mode or tool permits.
   - `~/.claude/projects/-Users-michaeldehaan-Devel-llamatron/`, this project's session transcripts: read only, to recover
     what a summary dropped, such as an agreed mockup.
   - `~/.llamatron/`, where the native backend, `llamatron-backend`, keeps its rotating logs: read only, to debug it (the user's allowance).
+  - FluidSynth's program, `/opt/homebrew/bin/fluidsynth` or `/usr/local/bin/fluidsynth`, and its SoundFont,
+    `~/soundfonts/GeneralUser-GS.sf2`: run and read, for the WAV export and its checks (the user's allowance).
 - Status of work and lists of planned work MUST NOT go into source control: what is done, partly done or next, a queue, a plan's
   state, or a record of a conversation. They live in git-ignored files (`.claude/planning/QUEUE.md`, `.claude/planning/DESIGNS.md`,
   `.claude/planning/WIZARD_DESIGNS.md`, `.claude/planning/REFACTORING.md`, `.claude/planning/REFACTORING_LOG.md`). A commit

@@ -35,6 +35,7 @@ import unittest
 from unittest import mock
 
 from llamatron.interface.tracker.dialogs import dialog as dialog_values
+from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.pages import generators as generators_values
@@ -48,7 +49,7 @@ from llamatron.wizards.create_song.wizard_choices import WizardChoices
 from tests.interface.tracker import test_tui_help_keys
 from tests.interface.tracker.test_tui_help_keys import KeyTour
 from tests.support.key_map import place_of
-from tests.support import ui_testing
+from tests.support import key_map, ui_testing
 from tests.support.ui_testing import UITest
 
 CAPTURE = 'capture'
@@ -93,6 +94,18 @@ WAITING_TRIAL = 'waiting_trial'
 # The kinds of page whose help the tour has looked at.
 HELPED = 'helped_pages'
 WAITING_HELP = 'waiting_help'
+# The page and place whose keys the tour tries at the next move, and the pages and places tried.
+WAITING_KEYS = 'waiting_keys'
+TRIED_KEYS = 'tried_keys'
+# The keys the key trials leave alone: those that move, leave, play or open what the tour visits by itself.
+UNTRIED_KEYS = ('up', 'down', 'left', 'right', 'tab', 'shift+tab', 'pageup', 'pagedown', 'home', 'end', 'escape', 'enter', 'space', 'q', 'f1', 'f2', 'f3')
+CONTROL_PREFIX = 'ctrl+'
+# What a key that plays or stops sound, or shows a visualizer, says it does, which the trials leave alone, since nothing plays
+# in the tour and the visualizers come later.
+PLAYING_WHATS = (legends.MSG_PLAY_WHAT, legends.MSG_PLAY_SONG_WHAT, legends.MSG_PLAY_SCENE_WHAT, legends.MSG_PLAY_CLIP_WHAT, legends.MSG_STOP_WHAT,
+                 legends.MSG_STOP_CLIP_WHAT, legends.MSG_LISTEN_WHAT, legends.MSG_STOP_LISTENING_WHAT, legends.MSG_VISUALIZER_WHAT,
+                 legends.MSG_STEP_VISUALIZER_WHAT)
+UNTOGGLED = 'the key trial cannot take back {key} on {page} at {place}: leave it out of the trials'
 OPENING_WHATS = (legends.What.CHOOSE, legends.What.EDIT)
 MOST_ESCAPES = 4
 # The file the set is written to at a stop where it changed, whether it holds unsaved changes, and the current song.
@@ -230,10 +243,13 @@ class ScreenTour(KeyTour):
         page = self.app.screen
         if isinstance(page, Page):
             self.waiting_help = page
+        if isinstance(page, Page) and not isinstance(page, FieldPage):
+            self.waiting_keys = (page, key_map.place_of(page))
         self.waiting_trial = (page, page.cell_field()) if isinstance(page, FieldPage) else None
 
     async def go(self, name):
         await self.try_the_help()
+        await self.try_the_keys()
         await self.try_a_dialog()
         return await super().go(name)
 
@@ -287,6 +303,73 @@ class ScreenTour(KeyTour):
                 break
             await self.press(Key.ESCAPE)
         self.assertIs(self.app.screen, page)
+
+    async def try_the_keys(self):
+        """On a page other than a settings page, at the first stop at each kind of place on it, press each of the page's keys
+        that edits or opens something there, and stop wherever the key changed the screen: a key that opens a dialog or a page
+        is followed by ESC until the page is back, a key that changed what the file holds by CTRL+Z and a stop after it, and a
+        key that left the page typing, searching or carrying something by ESC, so that another program is held to every key of every
+        page. Moving, leaving, playing and the everywhere keys are left to the tour."""
+        page, place = self.__dict__.pop(WAITING_KEYS, (None, None))
+        tried = self.__dict__.setdefault(TRIED_KEYS, set())
+        if page is None or self.app.screen is not page or page.takes_text() or (type(page).__name__, place) in tried:
+            return
+        tried.add((type(page).__name__, place))
+        document = self.app.get_document()
+        for item in page.page_key_table():
+            if self.app.screen is not page or key_map.place_of(page) != place:
+                return
+            # A stepping key is tried forward, as ] is on a settings page.
+            key = item.keys[-1] if item.steps else item.keys[0]
+            if item.wants_key or key in UNTRIED_KEYS or key.startswith(CONTROL_PREFIX) or item.what in PLAYING_WHATS or item.binding is keybindings.MainPage.WIZARD:
+                continue
+            before_data = without_blanks(document.get_setlist().to_data())
+            before_dirty = document.is_dirty()
+            before_screen = screen_pieces(app=self.app, folders=(os.path.realpath(self.folder), self.folder))
+            await self.press(key)
+            if os.environ.get('TOUR_DEBUG'):
+                with open(os.environ['TOUR_DEBUG'], 'a') as log:
+                    print('trial', type(page).__name__, place, key, type(self.app.screen).__name__, self.open_now(), file=log)
+            if self.app.screen is not page:
+                self.record_stop()
+                for _ in range(MOST_ESCAPES):
+                    if self.app.screen is page:
+                        break
+                    await self.press(Key.ESCAPE)
+                if self.app.screen is not page:
+                    return
+                if without_blanks(document.get_setlist().to_data()) != before_data:
+                    await self.press(Key.CTRL_Z)
+                    self.record_stop()
+                continue
+            if without_blanks(document.get_setlist().to_data()) != before_data or document.is_dirty() != before_dirty:
+                self.record_stop()
+                await self.press(Key.CTRL_Z)
+                self.record_stop()
+                continue
+            if page.takes_text() or key_map.place_of(page) in (key_map.MOVING, key_map.SEARCHING):
+                self.record_stop()
+                await self.press(Key.ESCAPE)
+                self.record_stop()
+                continue
+            if screen_pieces(app=self.app, folders=(os.path.realpath(self.folder), self.folder)) != before_screen:
+                self.record_stop()
+                # A key that only says something on the status line is done with, as the next key clears the line in both
+                # programs.
+                status = page.holder.get_status_line()
+                if not status.is_empty():
+                    status.clear()
+                    page.draw()
+                    await self.settle()
+                    if screen_pieces(app=self.app, folders=(os.path.realpath(self.folder), self.folder)) == before_screen:
+                        continue
+                # A key that changes only what the page shows is taken back: a stepping key by its back key, a toggle by itself.
+                # A key that moved the cursor cannot be taken back so; the other program presses the same keys, so the two stay
+                # in step, and the trials at this place end, since the cursor is elsewhere.
+                await self.press(item.keys[0] if item.steps else key)
+                if screen_pieces(app=self.app, folders=(os.path.realpath(self.folder), self.folder)) != before_screen:
+                    self.record_stop()
+                    return
 
     def try_an_edit(self):
         """On a settings field, try each edit it takes that keeps to the page: ] where its value steps, Bksp where it clears and
