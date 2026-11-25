@@ -17,6 +17,7 @@ use crate::morph::{morph_controls, Blend};
 use crate::order::{ordered_patterns, DrawnWhenAsked, StepOrder};
 use crate::pattern_player::{Pass, PatternPlayer};
 use crate::realizer::{SongRealizer, WrittenScene};
+use crate::registers::{draw_place, Registers};
 use crate::shapes::{shape_values, PlacedRamp, PlacedShape, PlacedVelocity, Reshaping, Velocity, ARTICULATE, DENSITY, PLACED_SHAPES, SHAPES, SWELL};
 use crate::sound::Sound;
 use llamatron_math::Rational;
@@ -24,6 +25,7 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::ClipSlot;
 use llamatron_model::schema::generated::file_format::GENERATOR_RESTART;
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, GuitarifySetting, Restart, SceneSetting, TrackSetting};
+use llamatron_model::schema::generated::limits::MAX_CLIP_REPEAT;
 use llamatron_model::values::scale::Scale;
 use std::collections::HashMap;
 
@@ -39,15 +41,24 @@ pub struct ClipSlotPlayer<'r, 'a> {
     scene: &'r WrittenScene<'a>,
     track_name: &'r str,
     clip_slot: &'a ClipSlot,
+    // How the clip's steps meet the draws: counting what they draw, or reading the scene's timeline.
+    registers: &'r Registers,
 }
 
 impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
-    pub fn new(realizer: &'r SongRealizer<'a>, scene: &'r WrittenScene<'a>, track_name: &'r str, clip_slot: &'a ClipSlot) -> ClipSlotPlayer<'r, 'a> {
+    pub fn new(
+        realizer: &'r SongRealizer<'a>,
+        scene: &'r WrittenScene<'a>,
+        track_name: &'r str,
+        clip_slot: &'a ClipSlot,
+        registers: &'r Registers,
+    ) -> ClipSlotPlayer<'r, 'a> {
         ClipSlotPlayer {
             realizer,
             scene,
             track_name,
             clip_slot,
+            registers,
         }
     }
 
@@ -56,19 +67,35 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let setlist = self.realizer.setlist();
         let track = self.realizer.track(self.track_name)?;
         let scale = self.clip_scale()?;
-        let grab = match self.clip_slot.get_written(ClipSlotSetting::GRAB_TRACK).filter(|track| !track.is_null()) {
+        let counting = self.registers.is_counting();
+        let resets = self.clip_slot.get_written(ClipSlotSetting::RESET_DRAWS).map(draws_named).unwrap_or_default();
+        if !resets.is_empty() && self.scene.first_play {
+            self.registers.as_clip_starts(&resets);
+        }
+        // A clip played to count its draws grabs nothing, hears no drift, and runs through no chain or shape, none of which
+        // changes what its steps draw or how long it lasts.
+        let grab_track = self
+            .clip_slot
+            .get_written(ClipSlotSetting::GRAB_TRACK)
+            .filter(|track| !track.is_null() && !counting);
+        let grab = match grab_track {
             Some(other) => self.realizer.grab_source(self.scene, self.track_name, &other.python_str())?,
             None => None,
         };
         let player = PatternPlayer::new(setlist, self.realizer.song(), track, self.scene.number, self.scale_name())
             .grabbing(scale, grab)
-            .hearing(self.realizer.hearing(self.scene, self.track_name)?);
-        let looping = self.clip_slot.loops();
+            .hearing(if counting {
+                None
+            } else {
+                self.realizer.hearing(self.scene, self.track_name)?
+            })
+            .redrawing(self.realizer.redrawing());
+        // A looping clip that a step of its pattern can stop is never cut to its scene nor made to fill it.
+        let looping = self.realizer.fills_its_scene(self.scene, self.track_name);
         let fill = if looping { Some(self.realizer.get_scene_length(self.scene)?) } else { None };
         let clip = self.play_passes(&player, scale, fill)?;
         let controls = clip.controls.clone();
-        let clip = self.through_chain(clip)?;
-        let clip = self.shaped(clip)?;
+        let clip = if counting { clip } else { self.shaped(self.through_chain(clip)?)? };
         let sounds = finished_sounds(&clip, looping, fill)?;
         // A looping clip is cut where its scene ends; one that doesn't loop sends all it played.
         let end = match fill {
@@ -368,13 +395,16 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let mut pattern_rolls = DrawnWhenAsked::new(self.seed_for(PATTERN_ORDER_SEED));
         let mut target_order = StepOrder::new(DrawnWhenAsked::new(self.seed_for(MORPH_DIRECTION_SEED)));
         let repeat = self.clip_slot.get_repeat();
+        // A looping clip that a step of its pattern can stop plays until the step's statement holds, giving up after the
+        // most passes a clip can repeat.
+        let most = if fill.is_none() && self.clip_slot.loops() { MAX_CLIP_REPEAT } else { repeat };
         let mut sounds: Vec<Sound> = Vec::new();
         let mut controls = Vec::new();
         let mut total = Rational::ZERO;
         let mut place = 0;
         loop {
             let going = match fill {
-                None => place < repeat,
+                None => place < most,
                 Some(fill) => total < fill,
             };
             if !going {
@@ -448,7 +478,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             return Err(crate::error::RenderError::Refused("a morph needs its style".to_string()));
         };
         let direction = self.clip_slot.get_direction();
-        let aimed = player.play_pass(&target_name, direction.as_deref(), rolls, target_order, start, false)?;
+        let aimed = player.play_pass(&target_name, direction.as_deref(), rolls, target_order, start, false, self.registers, false)?;
         let target = Clip::of(aimed.sounds, scale).with_controls(aimed.controls).looped_to(played.length)?;
         let clip = Clip::of(played.sounds.clone(), scale).with_controls(played.controls.clone());
         let amount = Rational::new(place as i128, (repeat - 1) as i128) * Rational::whole(FULL_MORPH);
@@ -463,7 +493,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
     fn play_patterns(&self, player: &PatternPlayer, names: &[String], rolls: &mut DrawnWhenAsked, order: &mut StepOrder, start: Rational) -> Rendered<Pass> {
         let direction = self.clip_slot.get_direction();
         if names.len() == 1 {
-            return player.play_pass(&names[0], direction.as_deref(), rolls, order, start, true);
+            return player.play_pass(&names[0], direction.as_deref(), rolls, order, start, true, self.registers, true);
         }
         let mut sounds = Vec::new();
         let mut controls = Vec::new();
@@ -471,7 +501,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let mut tied_from_before = Rational::ZERO;
         let mut done = false;
         for (place, name) in names.iter().enumerate() {
-            let played = player.play_pass(name, direction.as_deref(), rolls, order, start + total, true)?;
+            let played = player.play_pass(name, direction.as_deref(), rolls, order, start + total, true, self.registers, true)?;
             if place == 0 {
                 tied_from_before = played.tied_from_before;
             } else if played.tied_from_before > Rational::ZERO {
@@ -541,4 +571,17 @@ fn held_through_rests(mut sounds: Vec<Sound>, extra: Rational) -> Vec<Sound> {
     }
     sounds[first_rest - 1] = Sound::held(sound.lasting(Some(sound.place() + extra)), *length);
     sounds
+}
+
+/// The draws a list of them names, by their places, in the draws' order.
+pub fn draws_named(names: &llamatron_model::file::data::Data) -> Vec<usize> {
+    let mut places: Vec<usize> = names
+        .as_list()
+        .unwrap_or(&[])
+        .iter()
+        .filter_map(|name| name.as_str().and_then(draw_place))
+        .collect();
+    places.sort();
+    places.dedup();
+    places
 }

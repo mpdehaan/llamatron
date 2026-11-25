@@ -14,7 +14,9 @@ use crate::drift::{DriftPlay, StepEffects};
 use crate::error::{RenderError, Rendered};
 use crate::grab_source::GrabSource;
 use crate::order::{DrawnWhenAsked, StepOrder};
+use crate::registers::{holds, Registers};
 use crate::sound::{along_scale, scale_sound, NoteSound, OutOfRange, Sound};
+use crate::statements::Statement;
 use crate::tables::{doubled_notes, fixed_chord, gate_modifier};
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
@@ -68,6 +70,59 @@ const PLAYED_ROWS: &[&str] = &[
     Row::GRAB,
 ];
 
+/// A draw's rows, AD first: what a step adds of its value to its note and its velocity, and its Reset.
+const NOTE_ROWS: [&str; 8] = [
+    Row::AD_NOTE,
+    Row::BD_NOTE,
+    Row::CD_NOTE,
+    Row::DD_NOTE,
+    Row::ED_NOTE,
+    Row::FD_NOTE,
+    Row::GD_NOTE,
+    Row::HD_NOTE,
+];
+const VELOCITY_ROWS: [&str; 8] = [
+    Row::AD_VELOCITY,
+    Row::BD_VELOCITY,
+    Row::CD_VELOCITY,
+    Row::DD_VELOCITY,
+    Row::ED_VELOCITY,
+    Row::FD_VELOCITY,
+    Row::GD_VELOCITY,
+    Row::HD_VELOCITY,
+];
+const RESET_ROWS: [&str; 8] = [
+    Row::AD_RESET,
+    Row::BD_RESET,
+    Row::CD_RESET,
+    Row::DD_RESET,
+    Row::ED_RESET,
+    Row::FD_RESET,
+    Row::GD_RESET,
+    Row::HD_RESET,
+];
+/// Each kind of statement's rows, its register first: Stop, Restart and Mute.
+const STATEMENT_ROWS: [[&str; 5]; 3] = [
+    [Row::STOP_C1, Row::STOP_C2, Row::STOP_C3, Row::STOP_C4, Row::STOP_C5],
+    [Row::RESTART_C1, Row::RESTART_C2, Row::RESTART_C3, Row::RESTART_C4, Row::RESTART_C5],
+    [Row::MUTE_C1, Row::MUTE_C2, Row::MUTE_C3, Row::MUTE_C4, Row::MUTE_C5],
+];
+const STOP: usize = 0;
+const RESTART: usize = 1;
+const MUTE: usize = 2;
+
+/// Whether a row is one the draws' code reads, apart from the rows a step plays from.
+fn is_draw_row(row: &str) -> bool {
+    NOTE_ROWS.contains(&row) || VELOCITY_ROWS.contains(&row) || RESET_ROWS.contains(&row) || STATEMENT_ROWS.iter().any(|rows| rows.contains(&row))
+}
+
+/// What one step does to the song's draws, before its statements read the values: the draws it resets, then those it takes.
+#[derive(Clone, Debug, Default)]
+struct StepDraws {
+    resets: Vec<usize>,
+    drawn: Vec<usize>,
+}
+
 /// One pass through a pattern: its sounds, how long the ties at its start last, and how long the pass lasts.
 #[derive(Clone, Debug)]
 pub struct Pass {
@@ -104,6 +159,22 @@ struct StepValues {
     cc: [Option<i64>; 4],
     slide: bool,
     grab: bool,
+    // What the step adds of each draw's value to its note and its velocity, which draws it resets, and its statements.
+    note_adds: [i64; 8],
+    velocity_adds: [i64; 8],
+    resets: [bool; 8],
+    statements: [Option<Statement>; 3],
+}
+
+impl StepValues {
+    /// The draws the step's rows use, each once, in the draws' order.
+    fn draws_used(&self) -> Vec<usize> {
+        (0..8).filter(|name| self.note_adds[*name] != 0 || self.velocity_adds[*name] != 0).collect()
+    }
+
+    fn draws_reset(&self) -> Vec<usize> {
+        (0..8).filter(|name| self.resets[*name]).collect()
+    }
 }
 
 impl StepValues {
@@ -138,7 +209,7 @@ fn text(value: &Data) -> Option<String> {
 /// Every step's values, or the row the port does not play yet that a step of the pattern holds something on.
 fn every_step_values(pattern: &Pattern) -> Rendered<Vec<StepValues>> {
     for row in PATTERN_ROWS {
-        if !PLAYED_ROWS.contains(row) && pattern.row(row).is_some_and(|values| values.iter().any(truthy)) {
+        if !PLAYED_ROWS.contains(row) && !is_draw_row(row) && pattern.row(row).is_some_and(|values| values.iter().any(truthy)) {
             return Err(RenderError::NotPorted(format!("the {row} row")));
         }
     }
@@ -173,6 +244,32 @@ fn every_step_values(pattern: &Pattern) -> Rendered<Vec<StepValues>> {
             }
         }
     }
+    for name in 0..8 {
+        for (rows, kind) in [(&NOTE_ROWS, 0), (&VELOCITY_ROWS, 1), (&RESET_ROWS, 2)] {
+            let Some(values) = pattern.row(rows[name]) else { continue };
+            for (step, value) in steps.iter_mut().zip(values) {
+                match kind {
+                    0 => step.note_adds[name] = whole(value).unwrap_or(0),
+                    1 => step.velocity_adds[name] = whole(value).unwrap_or(0),
+                    _ => step.resets[name] = truthy(value),
+                }
+            }
+        }
+    }
+    for (kind, rows) in STATEMENT_ROWS.iter().enumerate() {
+        // A kind of statement is held where any step names its register.
+        if !pattern.row(rows[0]).is_some_and(|values| values.iter().any(truthy)) {
+            continue;
+        }
+        let columns: Vec<Option<&[Data]>> = rows.iter().map(|row| pattern.row(row)).collect();
+        for (place, step) in steps.iter_mut().enumerate() {
+            let parts: Vec<Option<&Data>> = columns
+                .iter()
+                .map(|column| column.and_then(|values| values.get(place)).filter(|value| !value.is_null()))
+                .collect();
+            step.statements[kind] = Statement::of(&parts);
+        }
+    }
     Ok(steps)
 }
 
@@ -193,6 +290,8 @@ pub struct PatternPlayer<'a> {
     // The drifts the clip hears, or None, and what they do to the step being played.
     hearing: Option<Hearing>,
     effects: RefCell<StepEffects>,
+    // Which of the song's draws a statement reading them draws from.
+    redrawing: [bool; 8],
 }
 
 /// The drifts a clip hears: the song's play of them, the ones its chains name, where each one's clock starts, and where the
@@ -211,6 +310,7 @@ impl<'a> PatternPlayer<'a> {
             grab: None,
             hearing: None,
             effects: RefCell::new(StepEffects::default()),
+            redrawing: [false; 8],
             setlist,
             scene_number,
             scale_name,
@@ -225,6 +325,21 @@ impl<'a> PatternPlayer<'a> {
     /// The player with the clip's scale and what its grab steps take notes from.
     pub fn grabbing(self, clip_scale: Option<Scale>, grab: Option<GrabSource>) -> PatternPlayer<'a> {
         PatternPlayer { clip_scale, grab, ..self }
+    }
+
+    /// The player knowing which of the song's draws redraw in conditions.
+    pub fn redrawing(self, redrawing: [bool; 8]) -> PatternPlayer<'a> {
+        PatternPlayer { redrawing, ..self }
+    }
+
+    /// Whether any step's statement reads a draw that redraws in conditions.
+    fn redraws_in_statements(&self, values: &[StepValues]) -> bool {
+        values.iter().any(|step| {
+            step.statements
+                .iter()
+                .flatten()
+                .any(|statement| statement.draws_read().iter().any(|name| self.redrawing[*name]))
+        })
     }
 
     /// The player hearing the drifts its clip's chains name.
@@ -246,6 +361,7 @@ impl<'a> PatternPlayer<'a> {
     /// One pass through a pattern, its steps in the pattern's direction unless direction overrides it.
     /// start is where the pass starts in the clip, where a grab step looks; grabs says whether the pass's grab steps grab,
     /// which only the clip's own patterns do.
+    #[allow(clippy::too_many_arguments)]
     pub fn play_pass(
         &self,
         pattern_name: &str,
@@ -254,6 +370,8 @@ impl<'a> PatternPlayer<'a> {
         order: &mut StepOrder,
         start: Rational,
         grabs: bool,
+        registers: &Registers,
+        changes_registers: bool,
     ) -> Rendered<Pass> {
         let pattern = self.pattern(pattern_name)?;
         let step_length = self.setlist.get_pattern_step_size(pattern);
@@ -264,6 +382,32 @@ impl<'a> PatternPlayer<'a> {
         let own_direction = pattern.get_direction().unwrap_or(Direction::FORWARD.to_string());
         let direction = direction.map(str::to_string).unwrap_or(own_direction);
         let steps = order.next_steps(&format!("steps/{pattern_name}"), values.len(), &direction);
+        let uses_draws = values.iter().any(|step| !step.draws_used().is_empty() || !step.draws_reset().is_empty());
+        let has_statements = values.iter().any(|step| step.statements.iter().any(Option::is_some));
+        let draws = changes_registers && uses_draws;
+        let uses_registers = has_statements || draws;
+        let counting = registers.is_counting();
+        // What each step draws: the draws its rows use and those its statements read that redraw in conditions.
+        let step_draws: Option<Vec<StepDraws>> = (changes_registers && (uses_draws || self.redraws_in_statements(&values))).then(|| {
+            values
+                .iter()
+                .map(|step| {
+                    let mut drawn = step.draws_used();
+                    for statement in step.statements.iter().flatten() {
+                        drawn.extend(statement.draws_read().into_iter().filter(|name| self.redrawing[*name]));
+                    }
+                    drawn.sort();
+                    drawn.dedup();
+                    StepDraws {
+                        resets: step.draws_reset(),
+                        drawn,
+                    }
+                })
+                .collect()
+        });
+        // Where a step's statement cut the pass short, if one did, and whether it ended the clip or only started the pattern over.
+        let mut cut_at: Option<usize> = None;
+        let mut done = false;
         // What each step that plays sounds: when it starts in the pass, and its pieces, a note or chord for each ratchet.
         let mut sounding: Vec<(Rational, Vec<Sound>)> = Vec::new();
         let mut controls = Vec::new();
@@ -271,7 +415,33 @@ impl<'a> PatternPlayer<'a> {
         let mut leading_ties = 0;
         for (slot, step) in steps.iter().enumerate() {
             let time = step_length * Rational::whole(slot as i128);
+            let moment = start + time;
+            let first = slot == 0;
             let values = &values[*step];
+            // Every draw the step takes is taken before its statements read the values, the step's one draw from it.
+            if let Some(drawing) = step_draws.as_ref().map(|steps| &steps[*step]) {
+                if !drawing.drawn.is_empty() || !drawing.resets.is_empty() {
+                    registers.before_statements(moment, &drawing.drawn, &drawing.resets, first);
+                }
+            }
+            // A step's statements are read before it changes anything, in the order stop, restart, mute; a morph's target
+            // is never cut short, and the first step played never starts the pattern over, which would take no time.
+            let statement_holds = |kind: usize| {
+                values.statements[kind]
+                    .as_ref()
+                    .is_some_and(|statement| holds(statement, registers.before_step(moment, first)))
+            };
+            if changes_registers && statement_holds(STOP) {
+                cut_at = Some(slot);
+                done = true;
+                break;
+            }
+            if changes_registers && slot > 0 && statement_holds(RESTART) {
+                cut_at = Some(slot);
+                break;
+            }
+            let muted = !counting && statement_holds(MUTE);
+            let current = if uses_registers { registers.at_step(moment) } else { [0; 8] };
             // A step with no note can send CC values too.
             for (lane, value) in values.cc.iter().enumerate() {
                 if let Some(value) = value {
@@ -302,6 +472,13 @@ impl<'a> PatternPlayer<'a> {
             }
             tied_to = Some(sounding.len());
             let mut velocity_added = if values.accent { self.accent } else { 0 };
+            let mut note_moved = 0;
+            if uses_registers && draws {
+                if !drum {
+                    note_moved += (0..8).map(|name| current[name] * values.note_adds[name]).sum::<i64>();
+                }
+                velocity_added += (0..8).map(|name| current[name] * values.velocity_adds[name]).sum::<i64>();
+            }
             if let Some(hearing) = &self.hearing {
                 let effects = hearing
                     .drift
@@ -311,15 +488,38 @@ impl<'a> PatternPlayer<'a> {
                 *self.effects.borrow_mut() = effects;
             }
             let gate = gate_of(values, step_length).min(pass_length - time);
-            sounding.push((time, self.step(values, gate, drum, &where_, velocity_added, rolls, grabbed)?));
+            let step_sound = self.step(values, gate, drum, &where_, (velocity_added, note_moved), rolls, grabbed, (!muted, counting))?;
+            sounding.push((time, step_sound));
         }
         let sounds = in_sequence(&sounding, pass_length, step_length);
+        let tied_from_before = step_length * Rational::whole(leading_ties as i128);
+        let Some(cut_at) = cut_at else {
+            return Ok(Pass {
+                sounds,
+                tied_from_before,
+                length: pass_length,
+                done: false,
+                controls,
+            });
+        };
+        // What the pass played before its statement cut it, a note still sounding cut there.
+        let end = step_length * Rational::whole(cut_at as i128);
+        if end <= Rational::ZERO {
+            return Ok(Pass {
+                sounds: Vec::new(),
+                tied_from_before: Rational::ZERO,
+                length: Rational::ZERO,
+                done,
+                controls: Vec::new(),
+            });
+        }
+        let cut = crate::clip::Clip::of(sounds, None).section(Rational::ZERO, end)?;
         Ok(Pass {
-            sounds,
-            tied_from_before: step_length * Rational::whole(leading_ties as i128),
-            length: pass_length,
-            done: false,
-            controls,
+            sounds: cut.sounds,
+            tied_from_before: tied_from_before.min(end),
+            length: end,
+            done,
+            controls: controls.into_iter().filter(|control| control.time < end).collect(),
         })
     }
 
@@ -331,9 +531,10 @@ impl<'a> PatternPlayer<'a> {
         length: Rational,
         drum: bool,
         where_: &str,
-        velocity_added: i64,
+        (velocity_added, note_moved): (i64, i64),
         rolls: &mut DrawnWhenAsked,
         grabbed: Option<i64>,
+        (heard, counting): (bool, bool),
     ) -> Rendered<Vec<Sound>> {
         let octave = values.octave.unwrap_or(if drum { self.default_drum_octave } else { self.default_octave });
         let velocity = (values.velocity.unwrap_or(self.default_velocity) + velocity_added).clamp(MIN_VELOCITY, MAX_VELOCITY);
@@ -342,7 +543,7 @@ impl<'a> PatternPlayer<'a> {
         let transpose = if drum { 0 } else { self.transpose };
         let slice_length = length / Rational::whole(ratchet as i128);
         // A drift the clip hears moves its notes along the scale, but no drum's.
-        let moved = if drum { 0 } else { self.effects.borrow().degree };
+        let moved = note_moved + if drum { 0 } else { self.effects.borrow().degree };
         let mut slices = Vec::new();
         for place in 0..ratchet {
             let shift = transpose + moved + place * offset;
@@ -357,6 +558,13 @@ impl<'a> PatternPlayer<'a> {
                 sound = self.voiced(sound, values, octave, shift)?;
             }
             slices.push(sound);
+        }
+        // A step whose statement mutes it isn't heard, so a ratchet sounds all its slices or none; counting plays every slice.
+        if !heard {
+            return Ok(slices.iter().map(|piece| Sound::Rest(piece.place())).collect());
+        }
+        if counting {
+            return Ok(slices);
         }
         Ok(played_by_chance(slices, values.probability, self.effects.borrow().probability, rolls))
     }

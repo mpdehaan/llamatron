@@ -10,6 +10,7 @@
 
 use crate::chord_source::ChordSource;
 use crate::clip::Clip;
+use crate::clip_player::draws_named;
 use crate::clip_player::ClipSlotPlayer;
 use crate::drift::DriftPlay;
 use crate::error::{RenderError, Rendered};
@@ -19,15 +20,18 @@ use crate::generators::GeneratorState;
 use crate::grab_source::GrabSource;
 use crate::groove::{groove_for, Groove};
 use crate::pattern_player::Hearing;
+use crate::registers::{Change, Draw, DrawPlay, Registers, Timeline, Values};
 use crate::sound::Sound;
 use crate::timing::{NoteEvent, StrumPlan};
 use crate::tune_source::TuneSource;
 use llamatron_math::Rational;
+use llamatron_math::{PythonRandom, Seed};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::{Scene, Song, Track};
 use llamatron_model::schema::generated::defaults;
+use llamatron_model::schema::generated::file_format::DRAW_NAMES;
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SongSetting, TrackSetting};
 use llamatron_model::schema::generated::file_format::{Restart, BYPASS_WHEN, GENERATOR_ENABLED, GENERATOR_RESTART};
 use llamatron_model::schema::generated::limits::{MAX_TEMPO, MIN_TEMPO};
@@ -204,6 +208,18 @@ pub struct SongRealizer<'a> {
     dealt: RefCell<HashMap<(i64, String), Dealt>>,
     // The song's drifts as it plays, which every clip naming one hears.
     drift: Rc<RefCell<DriftPlay>>,
+    // The song's draws, AD first, whether any holds a value, and whether playing can take one at all.
+    draws: Rc<Vec<Draw>>,
+    uses_draws: bool,
+    changes_registers: bool,
+    // What draws the draws' random values, for the whole render, and each written scene's timeline of the draws' values.
+    register_chooser: RefCell<PythonRandom>,
+    timelines: RefCell<HashMap<i64, Rc<Timeline>>>,
+    // Each clip played to count what its steps draw, with what they draw, by written scene and track.
+    counted: RefCell<HashMap<(i64, String), Counted>>,
+    // How long each clip the draws can cut short lasts, found by playing, and how a scene still being settled guesses.
+    decided: RefCell<HashMap<(i64, String), Rational>>,
+    guesses: RefCell<HashMap<i64, Guess>>,
     // How many chords each track's finished clip in each written scene holds, for a strum's down up that carries on.
     chord_counts: RefCell<HashMap<(i64, String), i64>>,
 }
@@ -245,6 +261,17 @@ impl<'a> SongRealizer<'a> {
                 song.get_time_signature().bar_length(),
                 drift_settings(setlist),
             ))),
+            draws: Rc::new(song_draws(song)),
+            uses_draws: song_draws(song).iter().any(|draw| !draw.filled_places().is_empty()),
+            changes_registers: takes_draws(setlist),
+            register_chooser: RefCell::new(match seed {
+                Some(seed) => PythonRandom::new(Seed::Whole(seed as i128 * SEED_SONG_FACTOR + REGISTER_SEED_OFFSET)),
+                None => PythonRandom::unseeded(),
+            }),
+            timelines: RefCell::new(HashMap::new()),
+            counted: RefCell::new(HashMap::new()),
+            decided: RefCell::new(HashMap::new()),
+            guesses: RefCell::new(HashMap::new()),
         }
     }
 
@@ -495,9 +522,267 @@ impl<'a> SongRealizer<'a> {
         if let Some(clip) = self.clips.borrow().get(&key) {
             return Ok(Some(clip.clone()));
         }
-        let clip = ClipSlotPlayer::new(self, scene, track, clip_slot).play()?;
+        let registers = Registers::Reader {
+            place: self.track_place(track),
+            timeline: self.get_timeline(scene)?,
+        };
+        let clip = ClipSlotPlayer::new(self, scene, track, clip_slot, &registers).play()?;
         self.clips.borrow_mut().insert(key, clip.clone());
         Ok(Some(clip))
+    }
+
+    /// A track's place in the song, which orders the changes to the draws made at one time.
+    fn track_place(&self, track: &str) -> Rational {
+        Rational::whole(self.song.get_track_names().iter().position(|name| *name == track).unwrap_or(0) as i128)
+    }
+
+    /// Which of the song's draws a statement reading them draws from.
+    pub fn redrawing(&self) -> [bool; 8] {
+        std::array::from_fn(|name| self.draws[name].redraws_in_conditions)
+    }
+
+    /// Whether a step of the pattern a track's clip plays in a scene can stop the clip or start the pattern over.
+    fn cuts_passes(&self, scene: &WrittenScene, track: &str) -> bool {
+        self.patterns_hold(scene, track, &[STOP_REGISTER_ROW, RESTART_REGISTER_ROW])
+    }
+
+    /// Whether a track's clip in a scene loops for as long as the scene lasts: a looping clip no step of its pattern can stop.
+    pub fn fills_its_scene(&self, scene: &WrittenScene, track: &str) -> bool {
+        scene.scene.get_clip_slot(track).is_some_and(|clip| clip.loops()) && !self.patterns_hold(scene, track, &[STOP_REGISTER_ROW])
+    }
+
+    fn patterns_hold(&self, scene: &WrittenScene, track: &str, rows: &[&str]) -> bool {
+        let Some(clip_slot) = scene.scene.get_clip_slot(track) else { return false };
+        clip_slot
+            .get_pattern_names()
+            .iter()
+            .filter_map(|name| self.setlist.get_pattern(name))
+            .any(|pattern| {
+                rows.iter().any(|row| {
+                    pattern
+                        .row(row)
+                        .is_some_and(|values| values.iter().any(|value| !value.is_null() && *value != Data::Bool(false)))
+                })
+            })
+    }
+
+    /// Whether any clip of a scene can be cut short by the draws, so that its length and its draws are found together.
+    fn is_settled_by_playing(&self, scene: &WrittenScene) -> bool {
+        scene.scene.get_track_names().iter().any(|track| self.cuts_passes(scene, track))
+    }
+
+    /// The draws' values through a written-out scene: a scene starts where the one before left them, the draws it resets on
+    /// its first play sent back to their start; a scene before it that can't be played changes nothing.
+    pub fn get_timeline(&self, scene: &WrittenScene<'a>) -> Rendered<Rc<Timeline>> {
+        if let Some(found) = self.timelines.borrow().get(&scene.number) {
+            return Ok(Rc::clone(found));
+        }
+        let mut values: Values = [0; 8];
+        let mut draws = self.uses_draws.then(|| DrawPlay::new(Rc::clone(&self.draws)));
+        for written in &self.scenes[..scene.number as usize] {
+            let known = self.timelines.borrow().get(&written.number).cloned();
+            let timeline = match known {
+                Some(timeline) => timeline,
+                None => {
+                    let mut start = values;
+                    if let Some(draws) = &mut draws {
+                        if written.first_play {
+                            for name in written.scene.get_written(SceneSetting::RESET_DRAWS).map(draws_named).unwrap_or_default() {
+                                draws.reset(name);
+                            }
+                        }
+                        start = draws.values();
+                    }
+                    match self.timeline_of(written, start, draws.as_ref()) {
+                        Ok(timeline) => {
+                            let timeline = Rc::new(timeline);
+                            self.timelines.borrow_mut().insert(written.number, Rc::clone(&timeline));
+                            timeline
+                        }
+                        Err(problem) if written.number == scene.number => return Err(problem),
+                        Err(RenderError::NotPorted(what)) => return Err(RenderError::NotPorted(what)),
+                        Err(_) => continue,
+                    }
+                }
+            };
+            values = timeline.end_values();
+            draws = timeline.end_draws().cloned();
+        }
+        self.timelines
+            .borrow()
+            .get(&scene.number)
+            .cloned()
+            .ok_or_else(|| RenderError::Refused(format!("{} cannot be played", scene.describe())))
+    }
+
+    /// A scene's draws' values from where they start: found by playing where a statement can cut a clip of it short, and
+    /// from the draws its clips take otherwise.
+    fn timeline_of(&self, scene: &WrittenScene<'a>, start: Values, draws: Option<&DrawPlay>) -> Rendered<Timeline> {
+        if self.is_settled_by_playing(scene) {
+            return self.decide(scene, start, draws);
+        }
+        let changes = self.scene_changes(scene)?;
+        Ok(Timeline::new(start, &changes, &mut self.register_chooser.borrow_mut(), draws))
+    }
+
+    /// Every change a scene's clips make before the scene ends, and at its very end those that draw: a step that stops its
+    /// clip, ending the scene, takes its draws before its statements stop it.
+    fn scene_changes(&self, scene: &WrittenScene<'a>) -> Rendered<Vec<Change>> {
+        if !self.changes_registers {
+            return Ok(Vec::new());
+        }
+        let length = self.get_scene_length(scene)?;
+        let mut changes = Vec::new();
+        for track in scene.scene.get_track_names() {
+            let (_, counted) = self.counted_clip(scene, track)?;
+            changes.extend(
+                counted
+                    .into_iter()
+                    .filter(|change| change.time < length || (change.time == length && (!change.draws.is_empty() || !change.resets.is_empty()))),
+            );
+        }
+        Ok(changes)
+    }
+
+    /// A track's clip in a scene played without grabs or the draws' values, and what its steps draw.
+    fn counted_clip(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Counted> {
+        let key = (scene.number, track.to_string());
+        if let Some(found) = self.counted.borrow().get(&key) {
+            return Ok(found.clone());
+        }
+        if self.cuts_passes(scene, track) {
+            if self.guesses.borrow().contains_key(&scene.number) {
+                return self.tried(scene, track);
+            }
+            self.get_timeline(scene)?;
+            return self
+                .counted
+                .borrow()
+                .get(&key)
+                .cloned()
+                .ok_or_else(|| RenderError::Refused(format!("{} cannot be played", scene.describe())));
+        }
+        let Some(clip_slot) = scene.scene.get_clip_slot(track) else {
+            return Ok((Clip::of(Vec::new(), None), Vec::new()));
+        };
+        let registers = Registers::Recorder {
+            place: self.track_place(track),
+            changes: RefCell::new(Vec::new()),
+        };
+        let clip = ClipSlotPlayer::new(self, scene, track, clip_slot, &registers).play()?;
+        let counted = (clip, registers.get_changes());
+        self.counted.borrow_mut().insert(key, counted.clone());
+        Ok(counted)
+    }
+
+    /// A clip the draws can cut short, played against the scene's draws as they are guessed so far, and what it draws.
+    fn tried(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Counted> {
+        let place = self.track_place(track);
+        let registers = match self.guesses.borrow().get(&scene.number) {
+            Some(Guess::Solo { start, draws, chooser }) => Registers::Solo {
+                place,
+                changes: RefCell::new(Vec::new()),
+                values: RefCell::new(*start),
+                draws: RefCell::new(draws.clone()),
+                chooser: Rc::clone(chooser),
+            },
+            Some(Guess::Trial(timeline)) => Registers::Trial {
+                place,
+                changes: RefCell::new(Vec::new()),
+                timeline: Rc::clone(timeline),
+            },
+            None => return Err(RenderError::Refused(format!("{} has no guess", scene.describe()))),
+        };
+        let Some(clip_slot) = scene.scene.get_clip_slot(track) else {
+            return Ok((Clip::of(Vec::new(), None), Vec::new()));
+        };
+        let clip = ClipSlotPlayer::new(self, scene, track, clip_slot, &registers).play()?;
+        Ok((clip, registers.get_changes()))
+    }
+
+    /// The draws' values through a scene in which a step's statement can stop a clip or start a pattern over, finding how long
+    /// its clips and the scene last: each such clip is played first as if no other track drew, the scene's timeline made from
+    /// what every clip then draws, the clips played again reading it, and so on until a play changes nothing.
+    fn decide(&self, scene: &WrittenScene<'a>, start: Values, draws: Option<&DrawPlay>) -> Rendered<Timeline> {
+        let number = scene.number;
+        let every: Vec<&str> = scene.scene.get_track_names();
+        let cut: Vec<&str> = every.iter().copied().filter(|track| self.cuts_passes(scene, track)).collect();
+        let ending: Vec<&str> = cut.iter().copied().filter(|track| !self.fills_its_scene(scene, track)).collect();
+        let filling: Vec<&str> = cut.iter().copied().filter(|track| !ending.contains(track)).collect();
+        let mut fixed = Vec::new();
+        for track in &every {
+            let clip_slot = scene.scene.get_clip_slot(track);
+            if !cut.contains(track) && !clip_slot.is_some_and(|clip| clip.loops()) {
+                fixed.push(self.played_once(scene, track)?);
+            }
+        }
+        if ending.is_empty() && fixed.is_empty() {
+            return Err(RenderError::Refused(named(
+                errors::ERR_RENDERER_EVERY_CLIP_LOOPS,
+                &[("scene", scene.describe().as_str().into())],
+            )));
+        }
+        let guess = Rc::new(RefCell::new(PythonRandom::new(Seed::Whole(0))));
+        self.guesses.borrow_mut().insert(
+            number,
+            Guess::Solo {
+                start,
+                draws: draws.cloned().map(Box::new),
+                chooser: guess,
+            },
+        );
+        self.lengths.borrow_mut().insert(number, fixed.iter().copied().max().unwrap_or(Rational::ZERO));
+        let drawn = self.register_chooser.borrow().clone();
+        let mut settled: Option<(Vec<Change>, Vec<Rational>)> = None;
+        let result = (|| loop {
+            let mut plays = Vec::new();
+            for track in &ending {
+                plays.push((track.to_string(), self.tried(scene, track)?));
+            }
+            self.counted.borrow_mut().retain(|(found, _), _| *found != number);
+            let mut lengths = Vec::new();
+            for (track, play) in plays {
+                let length = play.0.total_length()?;
+                self.decided.borrow_mut().insert((number, track.clone()), length);
+                self.counted.borrow_mut().insert((number, track), play);
+                lengths.push(length);
+            }
+            self.lengths
+                .borrow_mut()
+                .insert(number, fixed.iter().chain(&lengths).copied().max().unwrap_or(Rational::ZERO));
+            for track in &filling {
+                let play = self.tried(scene, track)?;
+                self.counted.borrow_mut().insert((number, track.to_string()), play);
+            }
+            let changes = self.scene_changes(scene)?;
+            // Every round draws the draws' random values from the same place, so that the same changes make the same timeline.
+            *self.register_chooser.borrow_mut() = drawn.clone();
+            let timeline = Timeline::new(start, &changes, &mut self.register_chooser.borrow_mut(), draws);
+            let found = (changes, lengths);
+            if settled.as_ref() == Some(&found) {
+                return Ok(timeline);
+            }
+            settled = Some(found);
+            self.guesses.borrow_mut().insert(number, Guess::Trial(Rc::new(timeline)));
+        })();
+        self.guesses.borrow_mut().remove(&number);
+        result
+    }
+
+    /// How long a clip lasts played once: its patterns repeat times, whether or not it loops.
+    fn played_once(&self, scene: &WrittenScene, track: &str) -> Rendered<Rational> {
+        let Some(clip_slot) = scene.scene.get_clip_slot(track) else {
+            return Ok(Rational::ZERO);
+        };
+        let mut one_pass = Rational::ZERO;
+        for name in clip_slot.get_pattern_names() {
+            let pattern = self
+                .setlist
+                .get_pattern(&name)
+                .ok_or_else(|| RenderError::Refused(format!("no pattern called ({name})")))?;
+            one_pass = one_pass + self.setlist.get_pattern_length(pattern);
+        }
+        Ok(Rational::whole(clip_slot.get_repeat() as i128) * one_pass)
     }
 
     /// What a track's grab steps take notes from in a written-out scene: the finished clip of the track it grabs, or None
@@ -757,9 +1042,19 @@ impl<'a> SongRealizer<'a> {
     }
 
     /// How long a scene lasts: its longest clip that does not loop, worked out without playing.
-    pub fn get_scene_length(&self, scene: &WrittenScene) -> Rendered<Rational> {
+    pub fn get_scene_length(&self, scene: &WrittenScene<'a>) -> Rendered<Rational> {
         if let Some(length) = self.lengths.borrow().get(&scene.number) {
             return Ok(*length);
+        }
+        if self.is_settled_by_playing(scene) {
+            // A statement can cut one of its clips short, so its length is found by playing it, with its draws.
+            self.get_timeline(scene)?;
+            return self
+                .lengths
+                .borrow()
+                .get(&scene.number)
+                .copied()
+                .ok_or_else(|| RenderError::Refused(format!("{} cannot be played", scene.describe())));
         }
         if scene.scene.every_clip_loops() {
             return Err(RenderError::Refused(named(
@@ -796,6 +1091,60 @@ fn drift_settings(setlist: &Setlist) -> HashMap<String, Data> {
             _ => None,
         })
         .collect()
+}
+
+/// What the draws' seed adds, so that their random values draw apart from everything else.
+const REGISTER_SEED_OFFSET: i128 = 7;
+/// The rows naming a Stop's and a Restart's register, which say a step holds one.
+const STOP_REGISTER_ROW: &str = "stop_c1";
+const RESTART_REGISTER_ROW: &str = "restart_c1";
+
+/// A clip played to count what its steps draw, with what they draw.
+type Counted = (Clip, Vec<Change>);
+
+/// How a scene still being settled guesses the draws its clips read: as if no other track drew, or from the timeline the last
+/// round made.
+enum Guess {
+    Solo {
+        start: Values,
+        draws: Option<Box<DrawPlay>>,
+        chooser: Rc<RefCell<PythonRandom>>,
+    },
+    Trial(Rc<Timeline>),
+}
+
+/// The song's eight draws, AD first, as the song holds them or blank.
+fn song_draws(song: &Song) -> Vec<Draw> {
+    DRAW_NAMES
+        .iter()
+        .map(|name| Draw::of(song.draws().iter().find(|(found, _)| found == name).map(|(_, draw)| draw.to_data()).as_ref()))
+        .collect()
+}
+
+/// Whether playing any song of a set can take a draw: a pattern that uses a draw or holds a statement, which reads one, or a
+/// song whose draw holding a value redraws in conditions.
+fn takes_draws(setlist: &Setlist) -> bool {
+    let draw_row = |row: &str| row.ends_with("_note") || row.ends_with("_velocity") || row.ends_with("_reset") || row.contains("_c");
+    let patterns = setlist.items(Section::PATTERNS).iter().any(|(_, item)| match item {
+        Item::Pattern(pattern) => llamatron_model::schema::generated::file_format::PATTERN_ROWS
+            .iter()
+            .filter(|row| draw_row(row) && **row != "ratchet_offset")
+            .any(|row| {
+                pattern.row(row).is_some_and(|values| {
+                    values
+                        .iter()
+                        .any(|value| !value.is_null() && *value != Data::Bool(false) && *value != Data::Whole(0))
+                })
+            }),
+        _ => false,
+    });
+    patterns
+        || setlist.items(Section::SONGS).iter().any(|(_, item)| match item {
+            Item::Song(song) => song_draws(song)
+                .iter()
+                .any(|draw| draw.redraws_in_conditions && !draw.filled_places().is_empty()),
+            _ => false,
+        })
 }
 
 /// What a strum's seed adds, so that its loose timing draws apart from everything else, and how many seeds a render picks from.
@@ -886,9 +1235,6 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         SongSetting::WIZARD,
     ];
     unported(SONG, &song_played, &|name| song.get_written(name).cloned())?;
-    if song.draws().iter().any(|(_, draw)| holds_something(&draw.to_data())) {
-        return Err(RenderError::not_ported("draws"));
-    }
     let track_played = [
         TrackSetting::DRUM,
         TrackSetting::MUTE,
@@ -905,6 +1251,7 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         unported(TRACK, &track_played, &|name| track.get_written(name).cloned())?;
     }
     let scene_played = [
+        SceneSetting::RESET_DRAWS,
         SceneSetting::TEMPO,
         SceneSetting::TEMPO_IN_START,
         SceneSetting::TEMPO_IN_END,
@@ -931,6 +1278,7 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         ClipSlotSetting::SCALE,
         ClipSlotSetting::BUILT_IN,
         ClipSlotSetting::CHAINS,
+        ClipSlotSetting::RESET_DRAWS,
         ClipSlotSetting::MORPH_TO,
         ClipSlotSetting::GRAB_TRACK,
         ClipSlotSetting::MORPH_STYLE,

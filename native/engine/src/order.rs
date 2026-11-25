@@ -69,7 +69,7 @@ impl StepOrder {
             self.places.insert(key.clone(), 0);
             return 0;
         };
-        let moved = (place + chosen_move(direction, &mut self.choices)).rem_euclid(count as i64);
+        let moved = (place + chosen_move(direction, self.choices.source())).rem_euclid(count as i64);
         self.places.insert(key.clone(), moved);
         moved as usize
     }
@@ -77,7 +77,7 @@ impl StepOrder {
 
 /// Which way a direction that chooses as it goes moves this time: brownian on half the time, back a quarter and staying put
 /// the rest; eitherway on or back, half the time each.
-fn chosen_move(direction: &str, choices: &mut DrawnWhenAsked) -> i64 {
+pub fn chosen_move(direction: &str, choices: &mut PythonRandom) -> i64 {
     let chance = choices.random();
     if chance < 0.5 {
         return 1;
