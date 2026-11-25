@@ -157,30 +157,223 @@ impl Form for ScalePage {
         use llamatron_model::objects::setlist::Item;
         use llamatron_model::schema::generated::file_format::Section;
         use llamatron_model::values::generated::note::{FLAT_NAMES, SHARP_NAMES};
-        let Edit::Adjust(offset) = edit else { return };
         let Some(Item::Scale(scale)) = app.document.get_setlist().get_item(Section::SCALES, &self.name) else {
             return;
         };
         let root = scale.get_root().as_str().unwrap_or("").to_string();
         let kind = scale.get_kind().as_str().unwrap_or("").to_string();
         let name = self.name.clone();
+        let set_root = |app: &mut App, root: &str| {
+            app.document.change_set(|setlist| {
+                if let Some(Item::Scale(scale)) = setlist.get_item_mut(Section::SCALES, &name) {
+                    scale.set_root(root);
+                }
+            });
+        };
+        let set_kind = |app: &mut App, kind: &str| {
+            app.document.change_set(|setlist| {
+                if let Some(Item::Scale(scale)) = setlist.get_item_mut(Section::SCALES, &name) {
+                    scale.set_kind(kind);
+                }
+            });
+        };
+        match (id, &edit) {
+            (ROOT, Edit::Enter) => {
+                app.asking = Some(root_picker(&root));
+                return;
+            }
+            (KIND, Edit::Enter) => {
+                app.asking = Some(kind_picker(&root, &kind));
+                return;
+            }
+            (ROOT, Edit::Choice(chosen)) => {
+                set_root(app, chosen);
+                return;
+            }
+            (KIND, Edit::Choice(chosen)) => {
+                set_kind(app, chosen);
+                return;
+            }
+            _ => {}
+        }
+        let Edit::Adjust(offset) = edit else { return };
         if id == ROOT {
             let flat = FLAT_NAMES.contains(&root.as_str()) && !SHARP_NAMES.contains(&root.as_str());
             let names: Vec<String> = if flat { FLAT_NAMES } else { SHARP_NAMES }.iter().map(|name| name.to_string()).collect();
             let moved = crate::forms::nodes::stepped(&names, &root, offset);
-            app.document.change_set(|setlist| {
-                if let Some(Item::Scale(scale)) = setlist.get_item_mut(Section::SCALES, &name) {
-                    scale.set_root(&moved);
-                }
-            });
+            set_root(app, &moved);
         } else if id == KIND {
             let kinds = llamatron_model::values::scale::ScaleType::file_names();
             let moved = crate::forms::nodes::stepped(&kinds, &kind, offset);
-            app.document.change_set(|setlist| {
-                if let Some(Item::Scale(scale)) = setlist.get_item_mut(Section::SCALES, &name) {
-                    scale.set_kind(&moved);
-                }
-            });
+            set_kind(app, &moved);
         }
+    }
+}
+
+/// The kinds of scale in two pages of grouped columns, as the Kind picker lays them out: each page's name, and its columns,
+/// each a list of groups, a heading and the kinds under it by the names the file writes.
+type KindColumn = &'static [(&'static str, &'static [&'static str])];
+const KIND_PAGES: &[(&str, &[KindColumn])] = &[
+    (
+        labels::MSG_SCALE_PAGE_COMMON,
+        &[
+            &[(
+                labels::MSG_SCALE_GROUP_MODES,
+                &[
+                    "major",
+                    "ionian",
+                    "dorian",
+                    "phrygian",
+                    "lydian",
+                    "mixolydian",
+                    "minor",
+                    "aeolian",
+                    "natural_minor",
+                    "locrian",
+                ],
+            )],
+            &[
+                (labels::MSG_SCALE_GROUP_MINOR_AND_MAJOR, &["harmonic_minor", "melodic_minor", "harmonic_major"]),
+                (
+                    labels::MSG_SCALE_GROUP_SYMMETRIC,
+                    &["chromatic", "whole_tone", "whole_half_diminished", "half_whole_diminished", "augmented"],
+                ),
+            ],
+            &[(
+                labels::MSG_SCALE_GROUP_PENTATONIC_AND_BLUES,
+                &["major_pentatonic", "minor_pentatonic", "blues", "major_blues", "egyptian"],
+            )],
+        ],
+    ),
+    (
+        labels::MSG_SCALE_PAGE_JAZZ_AND_WORLD,
+        &[
+            &[
+                (
+                    labels::MSG_SCALE_GROUP_MELODIC_MINOR,
+                    &[
+                        "melodic_minor",
+                        "dorian_flat2",
+                        "lydian_augmented",
+                        "lydian_dominant",
+                        "mixolydian_flat6",
+                        "locrian_natural2",
+                        "altered",
+                    ],
+                ),
+                (labels::MSG_SCALE_GROUP_JAZZ, &["bebop_dominant", "bebop_major", "prometheus"]),
+            ],
+            &[(
+                labels::MSG_SCALE_GROUP_MIDDLE_EAST_AND_EUROPE,
+                &[
+                    "phrygian_dominant",
+                    "double_harmonic",
+                    "hungarian_minor",
+                    "hungarian_major",
+                    "ukrainian_dorian",
+                    "persian",
+                    "neapolitan_minor",
+                    "neapolitan_major",
+                    "enigmatic",
+                ],
+            )],
+            &[
+                (labels::MSG_SCALE_GROUP_EAST_ASIA, &["hirajoshi", "in_sen", "iwato", "kumoi", "yo", "ryukyu"]),
+                (labels::MSG_SCALE_GROUP_INDIA, &["todi", "marwa", "purvi"]),
+            ],
+        ],
+    ),
+];
+
+/// The roots as a keyboard: each flat under the sharp it shares a key with, a gap where a key has no flat.
+const ROOT_KEYBOARD: [[Option<&str>; 12]; 2] = [
+    [
+        Some("C"),
+        Some("C#"),
+        Some("D"),
+        Some("D#"),
+        Some("E"),
+        Some("F"),
+        Some("F#"),
+        Some("G"),
+        Some("G#"),
+        Some("A"),
+        Some("A#"),
+        Some("B"),
+    ],
+    [
+        None,
+        Some("Db"),
+        None,
+        Some("Eb"),
+        None,
+        None,
+        Some("Gb"),
+        None,
+        Some("Ab"),
+        None,
+        Some("Bb"),
+        None,
+    ],
+];
+
+/// The Root field's picker: the roots laid out as a keyboard, opening on the scale's root.
+fn root_picker(root: &str) -> Edit {
+    use crate::forms::nodes::GridCell;
+    use llamatron_model::values::generated::note::ROOT_NAMES;
+    let place_of = |name: &str| ROOT_NAMES.iter().position(|each| *each == name);
+    let grid: Vec<Vec<GridCell>> = ROOT_KEYBOARD
+        .iter()
+        .map(|row| row.iter().map(|key| key.and_then(place_of).map_or(GridCell::Gap, GridCell::Choice)).collect())
+        .collect();
+    let names: Vec<String> = ROOT_NAMES.iter().map(|name| name.to_string()).collect();
+    Edit::AskGrid {
+        title: messages::MSG_ROOT_TITLE.to_string(),
+        options: names.clone(),
+        current: place_of(root).unwrap_or(0),
+        choices: names,
+        pages: vec![(None, grid)],
+        details: None,
+    }
+}
+
+/// The Kind field's picker: the kinds on their pages, with the notes of the one under the cursor said underneath.
+fn kind_picker(root: &str, kind: &str) -> Edit {
+    let kinds = ScaleType::file_names();
+    let shown: Vec<String> = kinds.iter().map(|each| scale_label(each)).collect();
+    let place_of = |name: &str| kinds.iter().position(|each| each == name).unwrap_or(0);
+    let pages = KIND_PAGES
+        .iter()
+        .map(|(page, columns)| {
+            let columns: Vec<Vec<(String, Vec<usize>)>> = columns
+                .iter()
+                .map(|groups| {
+                    groups
+                        .iter()
+                        .map(|(heading, names)| (heading.to_string(), names.iter().map(|name| place_of(name)).collect()))
+                        .collect()
+                })
+                .collect();
+            (Some(page.to_string()), crate::screens::dialogs::grouped_grid(&columns))
+        })
+        .collect();
+    let details = kinds
+        .iter()
+        .zip(&shown)
+        .map(|(each, label)| {
+            let notes = scale_notes(root, each);
+            named(
+                messages::MSG_SCALE_NOTES_DETAIL,
+                &[("root", root.into()), ("kind", label.as_str().into()), ("notes", notes.as_str().into())],
+            )
+        })
+        .collect();
+    Edit::AskGrid {
+        title: named(messages::MSG_KIND_TITLE, &[("root", root.into())]),
+        options: shown,
+        current: place_of(kind),
+        choices: kinds,
+        pages,
+        details: Some(details),
     }
 }

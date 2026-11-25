@@ -64,6 +64,14 @@ pub enum Kind {
     },
 }
 
+/// One place of a grid picker: a choice by its place among the options, a column's heading, or a gap.
+#[derive(Clone, Debug, PartialEq)]
+pub enum GridCell {
+    Choice(usize),
+    Heading(String),
+    Gap,
+}
+
 /// What a key did to a field, for its page to store or act on.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Edit {
@@ -93,6 +101,16 @@ pub enum Edit {
     AskText {
         title: String,
         value: String,
+    },
+    /// A choice to pick from a grid, on pages each named or not, with what each choice is said under it where details
+    /// are given.
+    AskGrid {
+        title: String,
+        options: Vec<String>,
+        current: usize,
+        choices: Vec<String>,
+        pages: Vec<(Option<String>, Vec<Vec<GridCell>>)>,
+        details: Option<Vec<String>>,
     },
     /// A choice to pick from groups under headings: the headings' places among the options are never chosen.
     AskGrouped {

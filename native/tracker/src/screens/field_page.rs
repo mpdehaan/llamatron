@@ -189,6 +189,18 @@ impl<F: Form> FieldPage<F> {
                 dialog.headings = headings;
                 app.show_page(Box::new(dialog));
             }
+            Edit::AskGrid {
+                title,
+                options,
+                current,
+                choices,
+                pages,
+                details,
+            } => {
+                self.asking = Some((id, Asking::Choice(choices)));
+                let dialog = crate::screens::dialogs::GridChoiceDialog::new(&title, options, pages, current, details);
+                app.show_page(Box::new(dialog));
+            }
             Edit::AskNumber { title, value, lowest, highest } => {
                 self.asking = Some((id, Asking::Number(lowest, highest)));
                 app.show_page(Box::new(PromptDialog::new(&title, &value.to_string())));

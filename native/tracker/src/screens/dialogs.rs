@@ -7,7 +7,8 @@
 
 use crate::app::App;
 use crate::drawing::{cursor_mark, fit, legend, BoxCharacters as Boxes, Style, SPACE};
-use crate::keybindings::{ChoiceDialog as ChoiceKeys, KeyClass, PromptDialog as PromptKeys};
+use crate::forms::nodes::GridCell;
+use crate::keybindings::{ChoiceDialog as ChoiceKeys, GridChoiceDialog as GridKeys, KeyClass, PromptDialog as PromptKeys};
 use crate::keys::KeyItem;
 use crate::page::Page;
 use crate::screens::list_page::shown_around;
@@ -43,8 +44,8 @@ fn heading_lines(title: &str, deletes: bool, width: usize) -> Vec<Text> {
 }
 
 /// What a dialog's box holds at a width: its heading, a blank line, its own lines and, after another blank line, its keys.
-fn contents(title: &str, deletes: bool, lines: &dyn Fn(usize) -> Vec<Text>, keys: &[KeyItem], inner: usize) -> Vec<Text> {
-    let mut result = heading_lines(title, deletes, inner);
+fn contents(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) -> Vec<Text>, keys: &[KeyItem], inner: usize) -> Vec<Text> {
+    let mut result = heading(inner);
     result.push(Text::default());
     result.extend(lines(inner));
     result.push(Text::default());
@@ -55,13 +56,18 @@ fn contents(title: &str, deletes: bool, lines: &dyn Fn(usize) -> Vec<Text>, keys
 
 /// A dialog drawn in its heavy box, as wide as it wants or its lines need, within the screen.
 pub fn dialog_box(title: &str, deletes: bool, lines: &dyn Fn(usize) -> Vec<Text>, keys: &[KeyItem], screen_width: usize) -> Vec<Text> {
+    framed_dialog(&|inner| heading_lines(title, deletes, inner), lines, keys, screen_width)
+}
+
+/// A dialog drawn in its heavy box with a heading of its own making at the box's inner width.
+fn framed_dialog(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) -> Vec<Text>, keys: &[KeyItem], screen_width: usize) -> Vec<Text> {
     let widest = screen_width.saturating_sub(DIALOG_MARGIN);
     let mut width = widest.min(DIALOG_WIDTH);
-    let mut held = contents(title, deletes, lines, keys, width - DIALOG_MARGIN);
+    let mut held = contents(heading, lines, keys, width - DIALOG_MARGIN);
     let needed = held.iter().map(Text::cell_len).max().unwrap_or(0) + DIALOG_MARGIN;
     if needed > width {
         width = widest.min(needed);
-        held = contents(title, deletes, lines, keys, width - DIALOG_MARGIN);
+        held = contents(heading, lines, keys, width - DIALOG_MARGIN);
     }
     let inner = width - DIALOG_MARGIN;
     let mut boxed = vec![Text::plain(&format!(
@@ -399,4 +405,329 @@ impl Page for PromptDialog {
     fn takes_text(&self) -> bool {
         true
     }
+}
+
+/// A page of a grid picker: its name on the top line, or none where the grid is all one page, and its rows of cells.
+pub type GridPage = (Option<String>, Vec<Vec<GridCell>>);
+
+/// Choices laid out in a grid, with a line under it saying what the chosen one is (the Python GridChoiceDialog). Up and Down
+/// keep to a column; Left and Right go to the next column across, landing on the choice nearest the row the cursor was on.
+/// A grid may have pages, named on the top line, which Tab and Shift+Tab turn, and Left and Right off a page's edge; every
+/// page is drawn as wide and as tall as the largest, so the box keeps its size.
+pub struct GridChoiceDialog {
+    title: String,
+    options: Vec<String>,
+    pages: Vec<GridPage>,
+    /// Each page's rows made as wide as its widest, for moving about in.
+    page_cells: Vec<Vec<Vec<GridCell>>>,
+    page: usize,
+    current: usize,
+    /// What each choice is, said under the grid, where the picker says so.
+    details: Option<Vec<String>>,
+}
+
+impl GridChoiceDialog {
+    /// A grid picker opened on a choice, on the first page that holds it.
+    pub fn new(title: &str, options: Vec<String>, pages: Vec<GridPage>, current: usize, details: Option<Vec<String>>) -> GridChoiceDialog {
+        let page_cells: Vec<Vec<Vec<GridCell>>> = pages.iter().map(|(_, grid)| padded_grid(grid)).collect();
+        let page = page_cells.iter().position(|cells| find_in(cells, current).is_some()).unwrap_or(0);
+        GridChoiceDialog {
+            title: title.to_string(),
+            options,
+            pages,
+            page_cells,
+            page,
+            current,
+            details,
+        }
+    }
+
+    fn cells(&self) -> &Vec<Vec<GridCell>> {
+        &self.page_cells[self.page]
+    }
+
+    /// How many columns the current page has.
+    fn width(&self) -> usize {
+        self.cells().first().map_or(0, Vec::len)
+    }
+
+    /// The choice at a row and a column of the current page, or None for a heading, a gap or a place off the grid.
+    fn option_at(&self, row: usize, column: usize) -> Option<usize> {
+        match self.cells().get(row).and_then(|cells| cells.get(column)) {
+            Some(GridCell::Choice(place)) => Some(*place),
+            _ => None,
+        }
+    }
+
+    /// The row and column the cursor's choice is at on the current page, the first place where it is not on it.
+    fn where_now(&self) -> (usize, usize) {
+        find_in(self.cells(), self.current).unwrap_or((0, 0))
+    }
+
+    /// The choice in a column nearest to a row, or None where the column has none.
+    fn nearest(&self, row: usize, column: usize) -> Option<usize> {
+        (0..self.cells().len())
+            .filter(|other| self.option_at(*other, column).is_some())
+            .min_by_key(|other| (other.abs_diff(row), *other))
+            .and_then(|other| self.option_at(other, column))
+    }
+
+    /// Go to the next or previous page, landing near a row, starting from a column and moving inward when that column is
+    /// empty.
+    fn turn(&mut self, step: i64, row: usize, column: usize) {
+        let count = self.pages.len() as i64;
+        self.page = (self.page as i64 + step).rem_euclid(count) as usize;
+        let width = self.width();
+        if width == 0 {
+            return;
+        }
+        let column = column.min(width - 1);
+        let mut searched = vec![column];
+        if column == 0 {
+            searched.extend(1..width);
+        } else {
+            searched.extend((0..column).rev());
+        }
+        searched.extend(0..width);
+        if let Some(found) = searched.into_iter().find_map(|search| self.nearest(row, search)) {
+            self.current = found;
+        }
+    }
+
+    /// Whether a page a step away exists, the first and the last pages stopping Tab and Shift+Tab.
+    fn has_page(&self, step: i64) -> bool {
+        let turned = self.page as i64 + step;
+        turned >= 0 && turned < self.pages.len() as i64
+    }
+
+    /// Move the cursor by an arrow: Up and Down within a column or else to the nearest choice of any column, Left and Right
+    /// to the next column across that has a choice, or off the page's edge to the next page.
+    fn move_cursor(&mut self, key: &str) {
+        let (row, column) = self.where_now();
+        let width = self.width();
+        if key == "up" || key == "down" {
+            let rows: Vec<usize> = if key == "up" {
+                (0..row).rev().collect()
+            } else {
+                (row + 1..self.cells().len()).collect()
+            };
+            let mut columns = vec![column];
+            columns.extend(0..width);
+            for search in columns {
+                if let Some(found) = rows.iter().find_map(|other| self.option_at(*other, search)) {
+                    self.current = found;
+                    return;
+                }
+            }
+            return;
+        }
+        let step: i64 = if key == "left" { -1 } else { 1 };
+        for offset in 1..=width as i64 {
+            let mut target = column as i64 + step * offset;
+            if target < 0 || target >= width as i64 {
+                if self.pages.len() > 1 {
+                    // Off the edge of a page goes to the edge of the next one across, but never from the last page round to
+                    // the first.
+                    if self.has_page(step) {
+                        self.turn(step, row, if step > 0 { 0 } else { width });
+                    }
+                    return;
+                }
+                target = target.rem_euclid(width as i64);
+            }
+            if let Some(found) = self.nearest(row, target as usize) {
+                self.current = found;
+                return;
+            }
+        }
+    }
+
+    /// Each column's width: as wide as what it holds on any page, and three more.
+    fn column_widths(&self) -> Vec<usize> {
+        let columns = self.page_cells.iter().map(|cells| cells.first().map_or(0, Vec::len)).max().unwrap_or(0);
+        let mut sizes = vec![0; columns];
+        for (_, grid) in &self.pages {
+            for cells in grid {
+                for (column, cell) in cells.iter().enumerate() {
+                    let size = match cell {
+                        GridCell::Choice(place) => self.options[*place].chars().count(),
+                        GridCell::Heading(text) => text.chars().count(),
+                        GridCell::Gap => 0,
+                    };
+                    sizes[column] = sizes[column].max(size);
+                }
+            }
+        }
+        sizes.into_iter().map(|size| size + 3).collect()
+    }
+
+    /// The top line: the title, and where there are pages, each page's name, the current one reversed, with the keys that
+    /// reach the others.
+    fn heading(&self, width: usize) -> Vec<Text> {
+        if self.pages.len() == 1 {
+            return vec![Text::styled(&self.title, Style::BOLD)];
+        }
+        let mut tabs = Text::default();
+        if self.page > 0 {
+            tabs.append(marks::MSG_PREVIOUS_PAGE_MARK, Style::BOLD);
+        }
+        for (number, (name, _)) in self.pages.iter().enumerate() {
+            let tab = named(marks::MSG_PAGE_TAB, &[("name", name.as_deref().unwrap_or_default().into())]);
+            tabs.append(&tab, if number == self.page { Style::REVERSE } else { Style::DIM });
+            if number < self.pages.len() - 1 || self.page < self.pages.len() - 1 {
+                tabs.append(SPACE, Style::PLAIN);
+            }
+        }
+        if self.page < self.pages.len() - 1 {
+            tabs.append(marks::MSG_NEXT_PAGE_MARK, Style::BOLD);
+        }
+        // The page names always fit, so the title is cut short rather than widening the dialog.
+        let mut line = Text::styled(&fit(&self.title, width.saturating_sub(tabs.cell_len() + 2)), Style::BOLD);
+        let room = width.saturating_sub(line.cell_len() + tabs.cell_len());
+        line.append(&SPACE.repeat(room), Style::PLAIN);
+        line.append_text(&tabs);
+        vec![line]
+    }
+
+    /// The grid's lines for the current page, made up to the tallest page's height, then what the chosen one is.
+    fn lines(&self, width: usize) -> Vec<Text> {
+        let sizes = self.column_widths();
+        let mut lines: Vec<Text> = self.pages[self.page].1.iter().map(|cells| self.grid_line(cells, &sizes)).collect();
+        let tallest = self.pages.iter().map(|(_, grid)| grid.len()).max().unwrap_or(0);
+        while lines.len() < tallest {
+            lines.push(Text::default());
+        }
+        if let Some(details) = &self.details {
+            lines.push(Text::default());
+            lines.push(Text::plain(&fit(details.get(self.current).map_or("", String::as_str), width)));
+        }
+        lines
+    }
+
+    /// One line of the grid: each choice padded like a key label, reversed under the cursor and out to its column's width,
+    /// each heading bold in its column, and each gap blank across its column.
+    fn grid_line(&self, cells: &[GridCell], sizes: &[usize]) -> Text {
+        let mut line = Text::default();
+        for (column, cell) in cells.iter().enumerate() {
+            let size = sizes[column];
+            match cell {
+                GridCell::Gap => {
+                    line.append(&SPACE.repeat(size), Style::PLAIN);
+                }
+                GridCell::Heading(text) => {
+                    line.append(&fit(&format!("{SPACE}{text}"), size), Style::BOLD);
+                }
+                GridCell::Choice(place) => {
+                    let text = &self.options[*place];
+                    let style = if *place == self.current { Style::REVERSE } else { Style::PLAIN };
+                    line.append(&format!("{SPACE}{text}{SPACE}"), style);
+                    line.append(&SPACE.repeat(size.saturating_sub(text.chars().count() + 2)), Style::PLAIN);
+                }
+            }
+        }
+        line
+    }
+
+    fn bind(binding: &'static crate::keybindings::Binding) -> KeyItem {
+        KeyItem::of(&GridKeys::CLASS, binding)
+    }
+}
+
+impl Page for GridChoiceDialog {
+    fn name(&self) -> &'static str {
+        "GridChoiceDialog"
+    }
+
+    fn is_dialog(&self) -> bool {
+        true
+    }
+
+    fn class(&self) -> &'static KeyClass {
+        &GridKeys::CLASS
+    }
+
+    fn keys(&self, _app: &App) -> Vec<KeyItem> {
+        let mut keys = vec![
+            Self::bind(&GridKeys::CANCEL),
+            Self::bind(&GridKeys::MOVE).wanting_key(),
+            Self::bind(&GridKeys::CHOOSE),
+        ];
+        if self.pages.len() > 1 {
+            keys.push(Self::bind(&GridKeys::OTHER_PAGE));
+        }
+        keys
+    }
+
+    fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        if item.is(&GridKeys::CANCEL) {
+            app.go_back();
+        } else if item.is(&GridKeys::MOVE) {
+            self.move_cursor(key);
+        } else if item.is(&GridKeys::CHOOSE) {
+            app.go_back();
+            app.answer(Answer::Chosen(self.current));
+        } else if item.is(&GridKeys::OTHER_PAGE) {
+            let step = item.step_of(key).unwrap_or(1);
+            if self.has_page(step) {
+                let (row, column) = self.where_now();
+                self.turn(step, row, column);
+            }
+        }
+    }
+
+    fn dialog_lines(&self, app: &App, width: usize) -> Vec<Text> {
+        let keys = crate::keys::in_order(self.class(), self.keys(app));
+        framed_dialog(&|inner| self.heading(inner), &|inner| self.lines(inner), &keys, width)
+    }
+
+    fn body(&self, _app: &App, _width: usize, _height: usize) -> Vec<Text> {
+        Vec::new()
+    }
+
+    fn crumbs(&self, _app: &App) -> Vec<String> {
+        Vec::new()
+    }
+}
+
+/// A grid's rows made as wide as its widest, with gaps.
+fn padded_grid(grid: &[Vec<GridCell>]) -> Vec<Vec<GridCell>> {
+    let width = grid.iter().map(Vec::len).max().unwrap_or(1);
+    grid.iter()
+        .map(|cells| {
+            let mut padded = cells.clone();
+            padded.resize(width, GridCell::Gap);
+            padded
+        })
+        .collect()
+}
+
+/// Where a choice is among a page's cells, as its row and column, or None.
+fn find_in(cells: &[Vec<GridCell>], place: usize) -> Option<(usize, usize)> {
+    cells
+        .iter()
+        .enumerate()
+        .find_map(|(row, line)| line.iter().position(|cell| *cell == GridCell::Choice(place)).map(|column| (row, column)))
+}
+
+/// A grid's rows from columns of groups, each a heading and its choices' places, with a gap between the groups of a
+/// column; a shorter column is blank below its end.
+pub fn grouped_grid(columns: &[Vec<(String, Vec<usize>)>]) -> Vec<Vec<GridCell>> {
+    let built: Vec<Vec<GridCell>> = columns
+        .iter()
+        .map(|groups| {
+            let mut cells = Vec::new();
+            for (heading, items) in groups {
+                if !cells.is_empty() {
+                    cells.push(GridCell::Gap);
+                }
+                cells.push(GridCell::Heading(heading.clone()));
+                cells.extend(items.iter().map(|place| GridCell::Choice(*place)));
+            }
+            cells
+        })
+        .collect();
+    let height = built.iter().map(Vec::len).max().unwrap_or(0);
+    (0..height)
+        .map(|row| built.iter().map(|cells| cells.get(row).cloned().unwrap_or(GridCell::Gap)).collect())
+        .collect()
 }
