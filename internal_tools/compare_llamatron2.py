@@ -8,6 +8,7 @@ the same step by both, and what each makes is compared. The Rust side is native/
     .venv/bin/python internal_tools/compare_llamatron2.py layout    # that data written back as a set file by each writer
     .venv/bin/python internal_tools/compare_llamatron2.py migrate   # moved to today's layout, into the objects' and back
     .venv/bin/python internal_tools/compare_llamatron2.py save      # read into objects and saved, compared as data
+    .venv/bin/python internal_tools/compare_llamatron2.py render    # every song rendered from one seed, each clip's notes
     .venv/bin/python internal_tools/compare_llamatron2.py load --only tie
 
 It prints each set that differs with the first place it differs, and a count, and exits 1 when anything differs, so that the
@@ -93,6 +94,45 @@ def python_save(path):
         return None
 
 
+RENDER_SEED = 1
+
+
+def rendered_text(grid):
+    """Return a rendered grid as text both programs write alike: each scene's tempo, then each clip's length and its notes,
+    each start, end, MIDI number and velocity, the times exact."""
+    from llamatron.engine.timing.timing import timed_events
+    lines = []
+    for row_place, row in enumerate(grid.get_rows()):
+        lines.append('scene {} tempo {}'.format(row_place, row.get_tempo()))
+        for column in grid.get_columns():
+            clip = grid.get_clip(row=row, column=column)
+            if clip is None:
+                continue
+            notes, length = timed_events(clip=clip, scale=grid.scale_at(row=row, column=column))
+            lines.append('  {} length {}'.format(column.get_name(), length))
+            for note in notes:
+                lines.append('    {} {} {} {}'.format(note.start, note.end, note.midi_number, note.velocity))
+    return '\n'.join(lines)
+
+
+def python_render(path):
+    """Return every song of a set rendered from one seed, as text, or None where the Python refuses the set."""
+    from llamatron.engine.realizer.song_realizer import SongRealizer
+    from llamatron.model.objects.setlist import Setlist
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    moved, _ = migrated(data, one_song_name=path.stem)
+    try:
+        setlist = Setlist.from_data(data=as_object_layout(moved))
+        texts = []
+        for name in setlist.get_song_names():
+            texts.append('song {}'.format(name))
+            texts.append(rendered_text(SongRealizer(setlist.get_song(name), seed=RENDER_SEED).render()))
+        return '\n'.join(texts)
+    except SongFileError:
+        return None
+
+
 def same_as_data(python, port):
     """Return whether two saved sets hold the same data: mappings in any order, lists in order (the user's rule)."""
     if port.startswith('FAILED'):
@@ -100,7 +140,7 @@ def same_as_data(python, port):
     return load_safely(python) == load_safely(port)
 
 
-STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save}
+STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render}
 # How each step's two outputs are compared: as text unless named here.
 COMPARED = {'save': same_as_data}
 
