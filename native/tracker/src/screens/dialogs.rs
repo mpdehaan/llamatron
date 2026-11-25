@@ -10,7 +10,7 @@ use crate::drawing::{cursor_mark, fit, legend, BoxCharacters as Boxes, Style, SP
 use crate::forms::nodes::GridCell;
 use crate::keybindings::{
     ChoiceDialog as ChoiceKeys, ConfirmDialog as ConfirmKeys, GridChoiceDialog as GridKeys, HelpDialog as HelpKeys, KeyClass, MessageDialog as MessageKeys,
-    PromptDialog as PromptKeys, SoundDialog as SoundKeys,
+    PromptDialog as PromptKeys, QuitDialog as QuitKeys, SoundDialog as SoundKeys,
 };
 use crate::keys::KeyItem;
 use crate::page::Page;
@@ -340,9 +340,16 @@ pub struct PromptDialog {
     pub value: String,
     pub cursor: usize,
     pub max_length: Option<usize>,
+    pub then: Option<Then>,
 }
 
 impl PromptDialog {
+    /// The prompt running something with what was typed, in place of handing it back to the page that opened it.
+    pub fn then(mut self, then: Then) -> PromptDialog {
+        self.then = Some(then);
+        self
+    }
+
     /// A prompt holding a value to change, the cursor after it.
     pub fn new(title: &str, value: &str) -> PromptDialog {
         PromptDialog {
@@ -351,6 +358,7 @@ impl PromptDialog {
             value: value.to_string(),
             cursor: value.chars().count(),
             max_length: None,
+            then: None,
         }
     }
 
@@ -409,7 +417,11 @@ impl Page for PromptDialog {
             };
         } else if item.is(&PromptKeys::DONE) {
             app.go_back();
-            app.answer(Answer::Typed(self.value.clone()));
+            let answer = Answer::Typed(self.value.clone());
+            match self.then.as_mut() {
+                Some(then) => then(app, &answer),
+                None => app.answer(answer),
+            }
         } else if item.is(&PromptKeys::ERASE) && self.cursor > 0 {
             let mut characters: Vec<char> = self.value.chars().collect();
             characters.remove(self.cursor - 1);
@@ -1450,6 +1462,107 @@ impl Page for ConfirmDialog {
         let keys = crate::keys::in_order(self.class(), self.keys(app));
         let lines = |inner: usize| message_lines(&self.messages, labels::MSG_CONFIRM_BUTTONS, self.choice, inner);
         dialog_box(&self.title, self.deletes, &lines, &keys, width)
+    }
+
+    fn body(&self, _app: &App, _width: usize, _height: usize) -> Vec<Text> {
+        Vec::new()
+    }
+
+    fn crumbs(&self, _app: &App) -> Vec<String> {
+        Vec::new()
+    }
+}
+
+/// The quit dialog's answers, by their buttons' places: quit without saving, save and then quit, or cancel.
+pub const QUIT_WITHOUT_SAVING: usize = 0;
+pub const SAVE_THEN_QUIT: usize = 1;
+const CANCEL_QUIT: usize = 2;
+
+/// Quitting with unsaved changes (the Python QuitDialog): Quit without saving, Save, then Quit, and CANCEL as boxed buttons,
+/// each with its key. Left and Right choose, ENTER presses, Q and S answer at once, and ESC cancels.
+pub struct QuitDialog {
+    choice: usize,
+    then: Then,
+}
+
+impl QuitDialog {
+    /// The question, its answer handed to what is given, as QUIT_WITHOUT_SAVING or SAVE_THEN_QUIT; CANCEL does nothing.
+    pub fn new(then: Then) -> QuitDialog {
+        QuitDialog {
+            choice: QUIT_WITHOUT_SAVING,
+            then,
+        }
+    }
+
+    fn bind(binding: &'static crate::keybindings::Binding) -> KeyItem {
+        KeyItem::of(&QuitKeys::CLASS, binding)
+    }
+
+    /// Close the dialog with an answer, which CANCEL leaves alone.
+    fn answer(&mut self, app: &mut App, answer: usize) {
+        app.go_back();
+        if answer != CANCEL_QUIT {
+            (self.then)(app, &Answer::Chosen(answer));
+        }
+    }
+}
+
+impl Page for QuitDialog {
+    fn name(&self) -> &'static str {
+        "QuitDialog"
+    }
+
+    fn is_dialog(&self) -> bool {
+        true
+    }
+
+    fn class(&self) -> &'static KeyClass {
+        &QuitKeys::CLASS
+    }
+
+    fn keys(&self, _app: &App) -> Vec<KeyItem> {
+        vec![
+            Self::bind(&QuitKeys::CANCEL),
+            Self::bind(&QuitKeys::SELECT).wanting_key(),
+            Self::bind(&QuitKeys::PRESS),
+            Self::bind(&QuitKeys::QUIT),
+            Self::bind(&QuitKeys::SAVE),
+        ]
+    }
+
+    fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        if item.is(&QuitKeys::CANCEL) {
+            app.go_back();
+        } else if item.is(&QuitKeys::SELECT) {
+            self.choice = if key == "left" {
+                self.choice.saturating_sub(1)
+            } else {
+                (self.choice + 1).min(CANCEL_QUIT)
+            };
+        } else if item.is(&QuitKeys::PRESS) {
+            let choice = self.choice;
+            self.answer(app, choice);
+        } else if item.is(&QuitKeys::QUIT) {
+            self.answer(app, QUIT_WITHOUT_SAVING);
+        } else if item.is(&QuitKeys::SAVE) {
+            self.answer(app, SAVE_THEN_QUIT);
+        }
+    }
+
+    fn dialog_lines(&self, app: &App, width: usize) -> Vec<Text> {
+        let keys: Vec<KeyItem> = crate::keys::in_order(self.class(), self.keys(app));
+        let buttons: Vec<(String, String)> = [QuitKeys::QUIT.name, QuitKeys::SAVE.name, QuitKeys::CANCEL.name]
+            .iter()
+            .zip(labels::MSG_QUIT_BUTTONS)
+            .map(|(key, label)| (key.to_string(), label.to_string()))
+            .collect();
+        let lines = |inner: usize| {
+            let mut lines: Vec<Text> = crate::drawing::wrapped(messages::MSG_QUIT_UNSAVED_QUESTION, inner);
+            lines.push(Text::default());
+            lines.extend(crate::forms::drawing::button_row(&buttons, Some(self.choice)));
+            lines
+        };
+        dialog_box(messages::MSG_QUIT_WITHOUT_SAVING_TITLE, false, &lines, &keys, width)
     }
 
     fn body(&self, _app: &App, _width: usize, _height: usize) -> Vec<Text> {

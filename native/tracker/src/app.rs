@@ -96,6 +96,8 @@ pub struct App {
     requests: Vec<Request>,
     /// What a settings page's form asked the page to ask in a dialog, for the field whose key the form was handling.
     pub asking: Option<crate::forms::nodes::Edit>,
+    /// Whether the tracker is to close, once the key that said so is handled.
+    pub quitting: bool,
 }
 
 impl App {
@@ -107,6 +109,7 @@ impl App {
             fluidsynth_installed: false,
             screen_height: std::cell::Cell::new(24),
             requests: Vec::new(),
+            quitting: false,
             asking: None,
         }
     }
@@ -220,6 +223,10 @@ impl Tracker {
         }
         if std::ptr::eq(item.binding, &PageKeys::OPEN_SET) {
             self.app.open_set();
+        } else if std::ptr::eq(item.binding, &PageKeys::SAVE) {
+            crate::everywhere::save(&mut self.app, None);
+        } else if std::ptr::eq(item.binding, &PageKeys::QUIT_NOW) {
+            self.app.quitting = true;
         } else if std::ptr::eq(item.binding, &PageKeys::HELP) {
             let help = self.help_of_top();
             self.app.show_page(Box::new(help));

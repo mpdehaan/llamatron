@@ -695,6 +695,16 @@ def write_tracker_tables(path):
     lines.append('')
     lines.append('/// Every kind of scale by its name in a file, in the order the tracker lists them, category by category.')
     lines.append('pub static SCALE_TYPES_IN_ORDER: &[&str] = &[{}];'.format(', '.join(literal(str(kind)) for kind in scale_categories.SCALE_TYPES_IN_ORDER)))
+    from llamatron.model.file import version
+    from llamatron.model.file.setlist_writer import dump_setlist
+    from llamatron.model.objects.setlist import Setlist
+    lines.append('')
+    lines.append('/// The program\'s version, which every saved file records.')
+    lines.append('pub const PROGRAM_VERSION: &str = {};'.format(literal(version.VERSION)))
+    lines.append('')
+    lines.append('/// A new set as its file holds it: one empty song, a C Major scale that can be deleted, and every setting a saved file')
+    lines.append('/// writes; the tracker opens on it when no file is named.')
+    lines.append('pub const NEW_SET: &str = {};'.format(literal(dump_setlist(Setlist.new().to_data()))))
     lines.append('')
     lines.append('/// Each page\'s help, the F1 dialog\'s panel about the page, a line each, by the page\'s name.')
     lines.append('pub static HELP_OF_PAGE: &[(&str, &[&str])] = &[{}];'.format(', '.join(

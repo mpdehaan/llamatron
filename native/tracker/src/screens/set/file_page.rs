@@ -253,6 +253,14 @@ impl Form for FilePage {
             app.document.change_set(|setlist| setlist.set_written(setting, value));
             return;
         }
+        if id == SAVE && edit == Edit::Enter {
+            crate::everywhere::save(app, None);
+            return;
+        }
+        if id == SAVE_AS && edit == Edit::Enter {
+            crate::everywhere::save_as(app, None);
+            return;
+        }
         if id == OPEN && edit == Edit::Enter {
             app.open_set();
             return;

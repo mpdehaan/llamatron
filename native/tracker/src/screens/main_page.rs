@@ -244,6 +244,18 @@ impl MainPage {
             app.show_page(std::boxed::Box::new(ListPage::new(SongsPage)));
             return;
         }
+        if same(binding, &Keys::QUIT) {
+            crate::everywhere::quit_program(app);
+            return;
+        }
+        if same(binding, &PageKeys::SAVE) {
+            crate::everywhere::save(app, None);
+            return;
+        }
+        if same(binding, &Keys::OPEN_SET_HERE) {
+            app.open_set();
+            return;
+        }
         if let Some(name) = page_opened(binding) {
             app.show_page(std::boxed::Box::new(NotPorted { name: name.to_string() }));
         }

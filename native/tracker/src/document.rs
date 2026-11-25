@@ -20,6 +20,9 @@ pub struct Document {
     /// The set as each key left it, for undo and redo, and the set as its file holds it, which says whether it needs saving.
     history: History,
     clean: Data,
+    /// The set as its file held it when opened or last saved here, the version aside, which says whether something else has
+    /// changed the file since.
+    saved: Option<Data>,
 }
 
 /// The kinds of generator a file's data says the Generators page shows open, only the plugins' kinds.
@@ -44,6 +47,7 @@ impl Document {
     pub fn new(setlist: Setlist, path: Option<PathBuf>) -> Document {
         let current = setlist.song_names().first().map(|name| name.to_string()).unwrap_or_default();
         let clean = setlist.to_data();
+        let saved = path.as_ref().map(|_| without_version(&clean));
         let history = History::new(Snapshot {
             data: clean.clone(),
             song: current.clone(),
@@ -56,7 +60,113 @@ impl Document {
             open_generator_types: Vec::new(),
             history,
             clean,
+            saved,
         }
+    }
+
+    /// A new set, as the tracker opens on when no file is named: one empty song and a C Major scale, saved nowhere yet.
+    pub fn new_set() -> Result<Document, String> {
+        let setlist = Setlist::read_text(crate::generated::tables::NEW_SET, None).map_err(|error| error.message)?;
+        Ok(Document::new(setlist, None))
+    }
+
+    /// The text saving writes: the set with the program's version, and what the pages remember of how they show it.
+    pub fn file_text(&self) -> String {
+        use llamatron_model::schema::generated::file_format::{SetlistSetting, OPEN_GENERATOR_TYPES};
+        let mut data = self.setlist.to_data();
+        if let Data::Map(pairs) = &mut data {
+            let version = Data::text(SetlistSetting::VERSION);
+            match pairs.iter_mut().find(|(key, _)| *key == version) {
+                Some(pair) => pair.1 = Data::text(crate::generated::tables::PROGRAM_VERSION),
+                None => pairs.insert(0, (version, Data::text(crate::generated::tables::PROGRAM_VERSION))),
+            }
+            let opened = self.open_types_with_generators();
+            if !opened.is_empty() {
+                pairs.push((
+                    Data::text(OPEN_GENERATOR_TYPES),
+                    Data::List(opened.iter().map(|kind| Data::text(kind)).collect()),
+                ));
+            }
+        }
+        let file = llamatron_model::file::layout::as_file_layout(&data);
+        llamatron_model::file::writing::dump_file_layout(&file)
+    }
+
+    /// The kinds of generator the Generators page shows open, in the plugins' order, leaving out any the set has none of.
+    fn open_types_with_generators(&self) -> Vec<String> {
+        llamatron_model::schema::generated::plugins::PLUGINS
+            .iter()
+            .filter(|plugin| self.open_generator_types.iter().any(|kind| kind == plugin.name))
+            .filter(|plugin| !self.setlist.items(plugin.section).is_empty())
+            .map(|plugin| plugin.name.to_string())
+            .collect()
+    }
+
+    /// Write the set to a file, making any folders it needs; a protected set's own file is never written over.
+    pub fn save(&mut self, path: &Path) -> Result<(), String> {
+        if self.file_is_protected(Some(path)) {
+            let words = [("path", path.display().to_string().as_str().into())];
+            return Err(llamatron_strings::named(llamatron_strings::errors::ERR_FILE_PROTECTED, &words));
+        }
+        if let Some(folder) = path.parent().filter(|folder| !folder.as_os_str().is_empty()) {
+            std::fs::create_dir_all(folder).map_err(|error| error.to_string())?;
+        }
+        std::fs::write(path, self.file_text()).map_err(|error| error.to_string())?;
+        self.path = Some(path.to_path_buf());
+        self.dirty = false;
+        self.clean = self.setlist.to_data();
+        self.saved = Some(without_version(&self.clean));
+        Ok(())
+    }
+
+    /// Save the set under a name chosen for it: a copy of a protected set is the person's own, so the copy isn't protected.
+    pub fn save_as(&mut self, path: &Path) -> Result<(), String> {
+        use llamatron_model::schema::generated::file_format::SetlistSetting;
+        if self.is_protected() && self.path.as_deref().is_some_and(|own| own != path) {
+            self.setlist.set_written(SetlistSetting::PROTECTED, None);
+        }
+        self.save(path)
+    }
+
+    /// Whether the set is protected, as the demos are.
+    fn is_protected(&self) -> bool {
+        use llamatron_model::schema::generated::file_format::SetlistSetting;
+        matches!(self.setlist.get_written(SetlistSetting::PROTECTED), Some(Data::Bool(true)))
+    }
+
+    /// Whether saving to a path, or where the set came from, would write over a protected set's own file.
+    pub fn file_is_protected(&self, path: Option<&Path>) -> bool {
+        let path = path.or(self.path.as_deref());
+        self.is_protected() && path.is_some() && path == self.path.as_deref() && path.is_some_and(Path::exists)
+    }
+
+    /// What the set's file holds now, the version aside, or None with no file or one that can't be read.
+    fn file_now(&self) -> Option<Data> {
+        let path = self.path.as_ref()?;
+        let text = std::fs::read_to_string(path).ok()?;
+        let stem = path.file_stem().map(|stem| stem.to_string_lossy().to_string());
+        let setlist = Setlist::read_text(&text, stem).ok()?;
+        Some(without_version(&setlist.to_data()))
+    }
+
+    /// Whether the set's file already holds exactly what saving would write, in order, so that saving would change nothing;
+    /// a set whose file holds it has nothing unsaved.
+    pub fn file_holds_this_set(&mut self) -> bool {
+        let holds = self.file_now().is_some_and(|held| held == without_version(&self.setlist.to_data()));
+        if holds {
+            self.dirty = false;
+        }
+        holds
+    }
+
+    /// Whether something else has changed the set's file since it was opened or saved here; a file that can no longer be
+    /// read counts as changed, so that saving asks before writing over it.
+    pub fn file_changed_elsewhere(&self) -> bool {
+        let Some(path) = self.path.as_ref() else { return false };
+        if !path.exists() {
+            return false;
+        }
+        self.file_now() != self.saved
     }
 
     /// The set a file holds, opened as the tracker opens it.
@@ -182,5 +292,14 @@ impl Document {
     /// Note that the set changed, so that it needs saving.
     pub fn changed(&mut self) {
         self.dirty = true;
+    }
+}
+
+/// A set's data without the version that wrote it, which saving always brings up to date, for comparing.
+fn without_version(data: &Data) -> Data {
+    use llamatron_model::schema::generated::file_format::SetlistSetting;
+    match data {
+        Data::Map(pairs) => Data::Map(pairs.iter().filter(|(key, _)| key.as_str() != Some(SetlistSetting::VERSION)).cloned().collect()),
+        other => other.clone(),
     }
 }
