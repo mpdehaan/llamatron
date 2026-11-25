@@ -133,21 +133,36 @@ impl From<Rational> for Number {
 impl Add for Number {
     type Output = Number;
     fn add(self, other: Number) -> Number {
-        self.mixed(other, |first, second| first + second, |first, second| first + second, |first, second| first + second)
+        self.mixed(
+            other,
+            |first, second| first + second,
+            |first, second| first + second,
+            |first, second| first + second,
+        )
     }
 }
 
 impl Sub for Number {
     type Output = Number;
     fn sub(self, other: Number) -> Number {
-        self.mixed(other, |first, second| first - second, |first, second| first - second, |first, second| first - second)
+        self.mixed(
+            other,
+            |first, second| first - second,
+            |first, second| first - second,
+            |first, second| first - second,
+        )
     }
 }
 
 impl Mul for Number {
     type Output = Number;
     fn mul(self, other: Number) -> Number {
-        self.mixed(other, |first, second| first * second, |first, second| first * second, |first, second| first * second)
+        self.mixed(
+            other,
+            |first, second| first * second,
+            |first, second| first * second,
+            |first, second| first * second,
+        )
     }
 }
 
