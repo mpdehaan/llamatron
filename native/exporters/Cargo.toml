@@ -13,3 +13,4 @@ publish = false
 llamatron-math = { path = "../math" }
 llamatron-model = { path = "../model" }
 llamatron-engine = { path = "../engine" }
+flate2 = "1"

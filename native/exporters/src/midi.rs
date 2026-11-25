@@ -199,11 +199,11 @@ fn tempo_event(tick: i128, tempo: f64) -> MidiEvent {
 }
 
 /// One value a CC lane takes: when, the value, and whether it slides to the next.
-type ControlPoint = (Rational, i64, bool);
+pub type ControlPoint = (Rational, i64, bool);
 
-/// A clip's CC values as they are sent, each lane's values in time order, a later one at a time replacing an earlier, the
-/// groove moving each with its step, and a slide sending a value every 64th on its way to the next.
-fn control_events(clip: &Clip, length: Rational) -> Vec<(Rational, i64, i64)> {
+/// A clip's CC values by number, each lane's in time order, a later value at a time replacing an earlier, the groove moving
+/// each with its step, those at or after the clip's length left out.
+pub fn control_points(clip: &Clip, length: Rational) -> Vec<(i64, Vec<ControlPoint>)> {
     let mut lanes: Vec<(i64, Vec<ControlPoint>)> = Vec::new();
     for control in &clip.controls {
         let time = match &clip.groove {
@@ -225,6 +225,13 @@ fn control_events(clip: &Clip, length: Rational) -> Vec<(Rational, i64, i64)> {
         }
         lane.push((time, control.value, control.slide));
     }
+    lanes
+}
+
+/// A clip's CC values as they are sent, each lane's values in time order, a later one at a time replacing an earlier, the
+/// groove moving each with its step, and a slide sending a value every 64th on its way to the next.
+fn control_events(clip: &Clip, length: Rational) -> Vec<(Rational, i64, i64)> {
+    let lanes = control_points(clip, length);
     let step = Rational::new(SLIDE_STEP.0, SLIDE_STEP.1);
     let mut events = Vec::new();
     for (number, lane) in &lanes {

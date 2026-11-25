@@ -115,7 +115,7 @@ fn main() -> ExitCode {
                 }
             }
         }
-        "midi" => {
+        "live" | "midi" => {
             let stem = std::path::Path::new(path)
                 .file_stem()
                 .map(|stem| stem.to_string_lossy().to_string())
@@ -127,7 +127,12 @@ fn main() -> ExitCode {
                     return ExitCode::from(1);
                 }
             };
-            match exported_midi(&setlist, &stem) {
+            let exported = if command == "live" {
+                exported_live(&setlist)
+            } else {
+                exported_midi(&setlist, &stem)
+            };
+            match exported {
                 Ok(text) => {
                     println!("{text}");
                     ExitCode::SUCCESS
@@ -228,6 +233,24 @@ fn exported_midi(setlist: &llamatron_model::objects::setlist::Setlist, stem: &st
         for (filename, bytes) in files {
             let digest: String = llamatron_math::sha512::sha512(&bytes).iter().map(|byte| format!("{byte:02x}")).collect();
             lines.push(format!("{filename} {digest}"));
+        }
+    }
+    Ok(lines.join("\n"))
+}
+
+/// Each song of a set as a Live set from one seed, the SHA-512 of its XML before it is zipped, or that it is refused.
+fn exported_live(setlist: &llamatron_model::objects::setlist::Setlist) -> llamatron_engine::error::Rendered<String> {
+    let mut lines = Vec::new();
+    for name in setlist.song_names() {
+        let Some(song) = setlist.get_song(name) else { continue };
+        let grid = llamatron_engine::realizer::SongRealizer::new(setlist, song, Some(RENDER_SEED)).render()?;
+        match llamatron_exporters::live::live_set(&grid, llamatron_exporters::live::DEFAULT_TEMPLATE) {
+            Ok(xml) => {
+                let digest: String = llamatron_math::sha512::sha512(&xml).iter().map(|byte| format!("{byte:02x}")).collect();
+                lines.push(format!("{name} {digest}"));
+            }
+            Err(llamatron_engine::error::RenderError::Refused(_)) => lines.push(format!("{name} refused")),
+            Err(other) => return Err(other),
         }
     }
     Ok(lines.join("\n"))

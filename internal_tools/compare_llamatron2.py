@@ -10,6 +10,7 @@ the same step by both, and what each makes is compared. The Rust side is native/
     .venv/bin/python internal_tools/compare_llamatron2.py save      # read into objects and saved, compared as data
     .venv/bin/python internal_tools/compare_llamatron2.py render    # every song rendered from one seed, each clip's notes
     .venv/bin/python internal_tools/compare_llamatron2.py midi      # every MIDI file each song exports, byte for byte
+    .venv/bin/python internal_tools/compare_llamatron2.py live      # each song's Live set, its XML byte for byte
     .venv/bin/python internal_tools/compare_llamatron2.py load --only tie
 
 It prints each set that differs with the first place it differs, and a count, and exits 1 when anything differs, so that the
@@ -196,6 +197,34 @@ def python_midi(path):
     return '\n'.join(lines)
 
 
+def python_live(path):
+    """Return each song of a set as a Live set from one seed, the SHA-512 of its XML before it is zipped, or that the song is
+    refused, one line a song, or None where the Python refuses the set."""
+    import hashlib
+    from llamatron.engine.realizer.song_realizer import SongRealizer
+    from llamatron.exporters.ableton_project import AbletonProject
+    from llamatron.exporters.exports import export_name
+    from llamatron.model.objects.setlist import Setlist
+    import os
+    os.makedirs(EXPORT_DIRECTORY, exist_ok=True)
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    moved, _ = migrated(data, one_song_name=path.stem)
+    lines = []
+    try:
+        setlist = Setlist.from_data(data=as_object_layout(moved))
+        for name in setlist.get_song_names():
+            grid = SongRealizer(setlist.get_song(name), seed=RENDER_SEED).render()
+            project = AbletonProject(directory=EXPORT_DIRECTORY, grid=grid, name=export_name(setlist=path.stem, song=name))
+            try:
+                lines.append('{} {}'.format(name, hashlib.sha512(project._build()).hexdigest()))
+            except ValueError:
+                lines.append('{} refused'.format(name))
+    except SongFileError:
+        return None
+    return '\n'.join(lines)
+
+
 def same_as_data(python, port):
     """Return whether two saved sets hold the same data: mappings in any order, lists in order (the user's rule)."""
     if port.startswith('FAILED'):
@@ -203,7 +232,7 @@ def same_as_data(python, port):
     return load_safely(python) == load_safely(port)
 
 
-STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi}
+STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live}
 # How each step's two outputs are compared: as text unless named here.
 COMPARED = {'save': same_as_data}
 
