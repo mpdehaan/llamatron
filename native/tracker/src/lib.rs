@@ -24,6 +24,7 @@ pub mod lengths;
 pub mod named_edits;
 pub mod page;
 pub mod patterns;
+pub mod realtime;
 pub mod scene_notes;
 pub mod screens;
 pub mod settings;

@@ -157,6 +157,30 @@ fn main() -> ExitCode {
                 ExitCode::from(1)
             }
         },
+        "timeline" => {
+            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
+            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
+                Ok(setlist) => setlist,
+                Err(problem) => {
+                    eprintln!("{path}: {}", problem.message);
+                    return ExitCode::from(1);
+                }
+            };
+            match timelines(&setlist) {
+                Ok(text) => {
+                    println!("{text}");
+                    ExitCode::SUCCESS
+                }
+                Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
+                    eprintln!("not ported yet: {what}");
+                    ExitCode::from(NOT_PORTED)
+                }
+                Err(llamatron_engine::error::RenderError::Refused(problem)) => {
+                    eprintln!("{path}: {problem}");
+                    ExitCode::from(1)
+                }
+            }
+        }
         "live" | "midi" => {
             let stem = std::path::Path::new(path)
                 .file_stem()
@@ -243,6 +267,52 @@ const RENDER_SEED: i64 = 1;
 
 /// Every song of a set rendered from one seed, as the harness's rendered_text writes it: each scene, then each clip's length
 /// and its notes, each start, end, MIDI number and velocity.
+/// A route for every track, made up so that every kind of route is tried: three ports, channels in turn, a program on every
+/// other track, a built-in sound on every fourth and a device's latency on every fifth.
+fn made_up_routes(track_names: &[&str]) -> Vec<(String, llamatron_tracker::realtime::timeline::Route)> {
+    track_names
+        .iter()
+        .enumerate()
+        .map(|(place, name)| {
+            let route = llamatron_tracker::realtime::timeline::Route {
+                port: format!("port{}", place % 3),
+                channel: (place % 16) as i64,
+                program: (place % 2 == 1).then_some(place as i64),
+                keyswitches: true,
+                sound: (place % 4 == 0).then(|| "synth".to_string()),
+                early: if place % 5 == 0 { 0.01 } else { 0.0 },
+            };
+            (name.to_string(), route)
+        })
+        .collect()
+}
+
+/// Every song of a set rendered from one seed and laid out as real-time playback's timeline, an event a line.
+fn timelines(setlist: &llamatron_model::objects::setlist::Setlist) -> llamatron_engine::error::Rendered<String> {
+    let mut texts = Vec::new();
+    for name in setlist.song_names() {
+        let Some(song) = setlist.get_song(name) else { continue };
+        texts.push(format!("song {name}"));
+        let grid = llamatron_engine::realizer::SongRealizer::new(setlist, song, Some(RENDER_SEED)).render()?;
+        let routes = made_up_routes(&song.get_track_names());
+        for event in llamatron_tracker::realtime::timeline::song_timeline(&grid, &routes)? {
+            texts.push(format!(
+                "{} {} {} {} {} {} {} {} {}",
+                event.whole,
+                llamatron_math::number::python_float_text(event.seconds),
+                event.port,
+                event.channel,
+                event.kind,
+                event.number,
+                event.value,
+                event.tag.scene,
+                event.tag.track
+            ));
+        }
+    }
+    Ok(texts.join("\n").trim_end_matches('\n').to_string())
+}
+
 fn rendered_songs(setlist: &llamatron_model::objects::setlist::Setlist) -> llamatron_engine::error::Rendered<String> {
     let mut texts = Vec::new();
     for name in setlist.song_names() {

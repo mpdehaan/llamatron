@@ -230,7 +230,7 @@ pub fn control_points(clip: &Clip, length: Rational) -> Vec<(i64, Vec<ControlPoi
 
 /// A clip's CC values as they are sent, each lane's values in time order, a later one at a time replacing an earlier, the
 /// groove moving each with its step, and a slide sending a value every 64th on its way to the next.
-fn control_events(clip: &Clip, length: Rational) -> Vec<(Rational, i64, i64)> {
+pub fn control_events(clip: &Clip, length: Rational) -> Vec<(Rational, i64, i64)> {
     let lanes = control_points(clip, length);
     let step = Rational::new(SLIDE_STEP.0, SLIDE_STEP.1);
     let mut events = Vec::new();
@@ -289,7 +289,7 @@ fn clip_events(clip: &Clip, start: i128) -> Rendered<Vec<MidiEvent>> {
 }
 
 /// A row's tempos: its own, or the song's, at its start, then its changes.
-fn tempos_in(grid: &Grid, row: &GridRow) -> Vec<(Rational, f64)> {
+pub fn tempos_in(grid: &Grid, row: &GridRow) -> Vec<(Rational, f64)> {
     let mut tempos = vec![(Rational::ZERO, row.tempo.unwrap_or(grid.tempo))];
     tempos.extend(row.tempo_changes.iter().copied());
     tempos
@@ -300,7 +300,7 @@ fn clip_of<'g>(row: &'g GridRow, column: &GridColumn) -> Option<&'g Clip> {
 }
 
 /// Where each row starts, the rows laid end to end, each as long as its longest clip.
-fn row_starts(grid: &Grid) -> Rendered<Vec<Rational>> {
+pub fn row_starts(grid: &Grid) -> Rendered<Vec<Rational>> {
     let mut starts = Vec::new();
     let mut now = Rational::ZERO;
     for row in &grid.rows {

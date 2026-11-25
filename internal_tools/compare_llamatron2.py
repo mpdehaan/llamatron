@@ -507,7 +507,41 @@ def same_as_data(python, port):
     return load_safely(python) == load_safely(port)
 
 
-STEPS = {'edits': python_edits, 'pattern_edits': python_pattern_edits, 'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
+def made_up_routes(track_names):
+    """Return a route for every track, made up so that every kind of route is tried: three ports, channels in turn, a program
+    on every other track, a built-in sound on every fourth and a device's latency on every fifth."""
+    from llamatron.realtime.render_process.timeline import Route
+    routes = {}
+    for place, name in enumerate(track_names):
+        routes[name] = Route(port='port{}'.format(place % 3), channel=place % 16, program=place if place % 2 else None, keyswitches=True,
+                             sound='synth' if place % 4 == 0 else None, early=0.01 if place % 5 == 0 else 0.0)
+    return routes
+
+
+def python_timeline(path):
+    """Return every song of a set rendered from one seed and laid out as real-time playback's timeline, an event a line,
+    every track on a made-up route, or None where the Python refuses the set."""
+    from llamatron.engine.realizer.song_realizer import SongRealizer
+    from llamatron.model.objects.setlist import Setlist
+    from llamatron.realtime.render_process.timeline import song_timeline
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    moved, _ = migrated(data, one_song_name=path.stem)
+    try:
+        setlist = Setlist.from_data(data=as_object_layout(moved))
+        texts = []
+        for name in setlist.get_song_names():
+            song = setlist.get_song(name)
+            texts.append('song {}'.format(name))
+            grid = SongRealizer(song, seed=RENDER_SEED).render()
+            for event in song_timeline(grid=grid, routes=made_up_routes(song.get_track_names())):
+                texts.append('{} {!r} {} {} {} {} {} {} {}'.format(event.whole, event.seconds, event.port, event.channel, event.kind, event.number, event.value, event.tag.scene, event.tag.track))
+        return '\n'.join(texts).rstrip('\n')
+    except SongFileError:
+        return None
+
+
+STEPS = {'timeline': python_timeline, 'edits': python_edits, 'pattern_edits': python_pattern_edits, 'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
 # Where the Python's answers are kept, git-ignored and never committed: since the Python program is frozen, an answer is
 # worked out from the Python only when none is kept for its step and its file as the file is now.
 KEPT = pathlib.Path('.cache/compare_llamatron2')
@@ -531,7 +565,7 @@ def kept_python(step, path):
 
 # How each step's two outputs are compared: as text unless named here.
 # The functions a step's Python answer is worked out with besides the step's own, which its kept answers depend on.
-STEP_HELPERS = {'import': (import_choices,), 'pattern_edits': (pattern_edit_steps,)}
+STEP_HELPERS = {'timeline': (made_up_routes,), 'import': (import_choices,), 'pattern_edits': (pattern_edit_steps,)}
 COMPARED = {'save': same_as_data, 'import': same_as_data, 'edits': same_in_order, 'pattern_edits': same_in_order}
 
 
