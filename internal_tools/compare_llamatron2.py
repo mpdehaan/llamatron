@@ -109,7 +109,7 @@ RENDER_SEED = 1
 
 def rendered_text(grid):
     """Return a rendered grid as text both programs write alike: each scene's tempo, then each clip's length and its notes,
-    each start, end, MIDI number and velocity, the times exact."""
+    each start, end, MIDI number and velocity, the times exact, then its CC values."""
     from llamatron.engine.timing.timing import timed_events
     lines = []
     for row_place, row in enumerate(grid.get_rows()):
@@ -122,6 +122,8 @@ def rendered_text(grid):
             lines.append('  {} length {}'.format(column.get_name(), length))
             for note in notes:
                 lines.append('    {} {} {} {}'.format(note.start, note.end, note.midi_number, note.velocity))
+            for control in clip.get_controls():
+                lines.append('    cc {} {} {} {}'.format(control.get_time(), control.get_number(), control.get_value(), control.get_slide()))
     return '\n'.join(lines)
 
 

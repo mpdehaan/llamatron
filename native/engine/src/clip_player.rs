@@ -4,7 +4,7 @@
 //! Playing a track's clip in a scene (the Python engine/realizer/clip_slot_player.py): its patterns, laid end to end, passed
 //! through repeat times, or for a looping clip as many times as fill its scene, cut where the scene ends.
 
-use crate::clip::Clip;
+use crate::clip::{Clip, Control};
 use crate::error::Rendered;
 use crate::generators::arp::Arp;
 use crate::generators::chords::ChordsSettings;
@@ -18,8 +18,8 @@ use crate::sound::Sound;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::ClipSlot;
-use llamatron_model::schema::generated::file_format::Restart;
 use llamatron_model::schema::generated::file_format::GENERATOR_RESTART;
+use llamatron_model::schema::generated::file_format::{Restart, TrackSetting};
 use llamatron_model::values::scale::Scale;
 use std::collections::HashMap;
 
@@ -53,9 +53,16 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let looping = self.clip_slot.loops();
         let fill = if looping { Some(self.realizer.get_scene_length(self.scene)?) } else { None };
         let clip = self.play_passes(&player, scale, fill)?;
+        let controls = clip.controls.clone();
         let clip = self.through_chain(clip)?;
         let clip = self.shaped(clip)?;
         let sounds = finished_sounds(&clip, looping, fill)?;
+        // A looping clip is cut where its scene ends; one that doesn't loop sends all it played.
+        let end = match fill {
+            Some(fill) => fill,
+            None => clip.total_length()?,
+        };
+        let controls = self.sent_controls(&controls, end)?;
         // A clip carries its pattern's own time signature, if it has one, for the bars a DAW draws.
         let signature = player.pattern(&self.clip_slot.get_pattern_name())?.get_time_signature();
         Ok(Clip {
@@ -67,7 +74,29 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             looping,
             time_signature: signature,
             groove: None,
+            controls,
         })
+    }
+
+    /// The CC values the track sends before the clip ends, each lane turned into the track's CC number; a lane the track
+    /// has no number for sends nothing.
+    fn sent_controls(&self, controls: &[Control], end: Rational) -> Rendered<Vec<Control>> {
+        let track = self.realizer.track(self.track_name)?;
+        let numbers: Vec<Option<i64>> = match track.get_written(TrackSetting::CC).and_then(Data::as_list) {
+            Some(numbers) => numbers.iter().map(|number| number.as_whole().map(|number| number as i64)).collect(),
+            None => vec![None; 4],
+        };
+        Ok(controls
+            .iter()
+            .filter(|control| control.time < end)
+            .filter_map(|control| {
+                numbers
+                    .get(control.number as usize)
+                    .copied()
+                    .flatten()
+                    .map(|number| Control { number, ..*control })
+            })
+            .collect())
     }
 
     /// The clip after each generator of its chains, in order; a generator that moves pitches leaves a drum pattern alone,
@@ -293,6 +322,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let mut pattern_rolls = DrawnWhenAsked::new(self.seed_for(PATTERN_ORDER_SEED));
         let repeat = self.clip_slot.get_repeat();
         let mut sounds: Vec<Sound> = Vec::new();
+        let mut controls = Vec::new();
         let mut total = Rational::ZERO;
         let mut place = 0;
         loop {
@@ -318,13 +348,14 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                 sounds = tied_on(sounds, played.tied_from_before);
             }
             sounds.extend(played.sounds);
+            controls.extend(played.controls.iter().map(|control| control.moved_by(total)));
             total = total + played.length;
             place += 1;
             if played.done {
                 break;
             }
         }
-        let clip = Clip::of(sounds, scale);
+        let clip = Clip::of(sounds, scale).with_controls(controls);
         match fill {
             Some(fill) if fill != Rational::ZERO => clip.section(Rational::ZERO, fill),
             _ => Ok(clip),
@@ -338,6 +369,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             return player.play_pass(&names[0], direction.as_deref(), rolls, order);
         }
         let mut sounds = Vec::new();
+        let mut controls = Vec::new();
         let mut total = Rational::ZERO;
         let mut tied_from_before = Rational::ZERO;
         let mut done = false;
@@ -349,6 +381,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                 sounds = tied_on(sounds, played.tied_from_before);
             }
             sounds.extend(played.sounds);
+            controls.extend(played.controls.iter().map(|control| control.moved_by(total)));
             total = total + played.length;
             if played.done || played.length != player.pattern_length(player.pattern(name)?) {
                 done = played.done;
@@ -360,6 +393,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             tied_from_before,
             length: total,
             done,
+            controls,
         })
     }
 }

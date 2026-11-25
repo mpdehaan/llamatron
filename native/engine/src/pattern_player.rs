@@ -9,22 +9,25 @@
 //! gate. Ties at the very start of a pass are left for whoever joins the passes, who lengthens the note the pass before
 //! ended with.
 
+use crate::clip::Control;
 use crate::error::{RenderError, Rendered};
 use crate::order::{DrawnWhenAsked, StepOrder};
 use crate::sound::{scale_sound, NoteSound, OutOfRange, Sound};
-use crate::tables::{fixed_chord, gate_modifier};
+use crate::tables::{doubled_notes, fixed_chord, gate_modifier};
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
+use llamatron_model::fundamentals::role_of;
 use llamatron_model::objects::pattern::Pattern;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::{Song, Track};
 use llamatron_model::schema::checking::written_length;
 use llamatron_model::schema::generated::defaults::{DEFAULT_PROBABILITY, DEFAULT_RATCHET};
-use llamatron_model::schema::generated::file_format::{Direction, Row, ACCIDENTALS, PATTERN_ROWS, SCALE_CHORDS};
+use llamatron_model::schema::generated::file_format::{Direction, Row, ACCIDENTALS, BASS_NOTES, CC_ROWS, OMITTED_ROLES, PATTERN_ROWS, SCALE_CHORDS, TENSIONS};
 use llamatron_model::schema::generated::limits::{MAX_GATE, MAX_PROBABILITY};
 use llamatron_model::schema::generated::midi::{MAX_VELOCITY, MIN_VELOCITY};
 use llamatron_model::values::generated::note::{MAX_OCTAVE, MIN_OCTAVE};
 use llamatron_model::values::scale::Scale;
+use llamatron_model::values::scale::ScaleType;
 use llamatron_strings::{errors, named};
 
 /// How many octaves away a moved note may go to find one that fits the MIDI range.
@@ -45,6 +48,18 @@ const PLAYED_ROWS: &[&str] = &[
     Row::TIE,
     Row::RATCHET,
     Row::RATCHET_OFFSET,
+    Row::TENSION,
+    Row::OMIT,
+    Row::INVERSION,
+    Row::DOUBLE,
+    Row::BASS,
+    Row::BASS_OCTAVE,
+    Row::CHORD_SCALE,
+    Row::CC1,
+    Row::CC2,
+    Row::CC3,
+    Row::CC4,
+    Row::SLIDE,
 ];
 
 /// One pass through a pattern: its sounds, how long the ties at its start last, and how long the pass lasts.
@@ -54,6 +69,7 @@ pub struct Pass {
     pub tied_from_before: Rational,
     pub length: Rational,
     pub done: bool,
+    pub controls: Vec<Control>,
 }
 
 /// What one step holds on the rows a pass plays.
@@ -72,6 +88,26 @@ struct StepValues {
     tie: bool,
     ratchet: Option<i64>,
     ratchet_offset: Option<i64>,
+    tension: Vec<String>,
+    omit: Option<String>,
+    inversion: Option<i64>,
+    double: Option<String>,
+    bass: Option<String>,
+    bass_octave: bool,
+    chord_scale: Option<String>,
+    cc: [Option<i64>; 4],
+    slide: bool,
+}
+
+impl StepValues {
+    /// Whether the step's chord rows voice its note or chord: tensions, an omission, an inversion, a doubling or a bass.
+    fn is_voiced(&self) -> bool {
+        !self.tension.is_empty()
+            || self.omit.is_some()
+            || self.inversion.is_some_and(|inversion| inversion != 0)
+            || self.double.is_some()
+            || self.bass.is_some()
+    }
 }
 
 fn truthy(value: &Data) -> bool {
@@ -116,7 +152,16 @@ fn every_step_values(pattern: &Pattern) -> Rendered<Vec<StepValues>> {
                 Row::GLIDE => step.glide = truthy(value),
                 Row::TIE => step.tie = truthy(value),
                 Row::RATCHET => step.ratchet = whole(value),
-                _ => step.ratchet_offset = whole(value),
+                Row::RATCHET_OFFSET => step.ratchet_offset = whole(value),
+                Row::TENSION => step.tension = value.as_list().unwrap_or(&[]).iter().map(Data::python_str).collect(),
+                Row::OMIT => step.omit = text(value).filter(|omit| !omit.is_empty()),
+                Row::INVERSION => step.inversion = whole(value),
+                Row::DOUBLE => step.double = text(value).filter(|double| !double.is_empty()),
+                Row::BASS => step.bass = text(value).filter(|bass| !bass.is_empty()),
+                Row::BASS_OCTAVE => step.bass_octave = truthy(value),
+                Row::CHORD_SCALE => step.chord_scale = text(value).filter(|kind| !kind.is_empty()),
+                Row::SLIDE => step.slide = truthy(value),
+                lane => step.cc[CC_ROWS.iter().position(|row| *row == lane).unwrap_or(0)] = whole(value),
             }
         }
     }
@@ -173,11 +218,23 @@ impl<'a> PatternPlayer<'a> {
         let steps = order.next_steps(&format!("steps/{pattern_name}"), values.len(), &direction);
         // What each step that plays sounds: when it starts in the pass, and its pieces, a note or chord for each ratchet.
         let mut sounding: Vec<(Rational, Vec<Sound>)> = Vec::new();
+        let mut controls = Vec::new();
         let mut tied_to: Option<usize> = None;
         let mut leading_ties = 0;
         for (slot, step) in steps.iter().enumerate() {
             let time = step_length * Rational::whole(slot as i128);
             let values = &values[*step];
+            // A step with no note can send CC values too.
+            for (lane, value) in values.cc.iter().enumerate() {
+                if let Some(value) = value {
+                    controls.push(Control {
+                        time,
+                        number: lane as i64,
+                        value: *value,
+                        slide: values.slide,
+                    });
+                }
+            }
             if values.tie {
                 if let Some(place) = tied_to {
                     sounding[place] = tied(&sounding[place], time + step_length);
@@ -201,6 +258,7 @@ impl<'a> PatternPlayer<'a> {
             tied_from_before: step_length * Rational::whole(leading_ties as i128),
             length: pass_length,
             done: false,
+            controls,
         })
     }
 
@@ -217,7 +275,12 @@ impl<'a> PatternPlayer<'a> {
             let shift = transpose + place * offset;
             // Only the last slice glides into what follows the step.
             let glide = values.glide && place == ratchet - 1;
-            slices.push(self.sound(values, drum, slice_length, velocity, glide, octave, shift, where_)?);
+            let mut sound = self.sound(values, drum, slice_length, velocity, glide, octave, shift, where_)?;
+            // Most steps play one note as it is, so only a step with chord rows is voiced.
+            if values.is_voiced() {
+                sound = self.voiced(sound, values, octave, shift)?;
+            }
+            slices.push(sound);
         }
         Ok(played_by_chance(slices, values.probability, rolls))
     }
@@ -253,6 +316,78 @@ impl<'a> PatternPlayer<'a> {
             errors::ERR_CANT_PLAY,
             &[("where", where_.into()), ("problem", problem.0.as_str().into())],
         )))
+    }
+
+    /// The clip's scale rooted at an octave, or the scale type a step borrows on the same root; the inner error is an octave
+    /// a root cannot be in.
+    fn scale_at(&self, scale_name: &str, octave: i64, kind: Option<&str>) -> Rendered<Result<Scale, llamatron_model::ValueError>> {
+        let scale = match self.named_scale(scale_name)?.scale_at(octave) {
+            Ok(scale) => scale,
+            Err(problem) => return Ok(Err(problem)),
+        };
+        let Some(kind) = kind else { return Ok(Ok(scale)) };
+        let borrowed =
+            ScaleType::named(&kind.trim().to_uppercase().replace(' ', "_")).ok_or_else(|| RenderError::Refused(format!("no scale type called {kind}")))?;
+        Ok(Ok(Scale::new(*scale.get_root(), borrowed)))
+    }
+
+    /// A step's note or chord as its chord rows voice it, in this order: its tensions added, the notes its Omit row names
+    /// left out, its Inversion, its Double, and last its Bass under it all.
+    fn voiced(&self, sound: Sound, values: &StepValues, octave: i64, shift: i64) -> Rendered<Sound> {
+        let chord_tones = match &sound {
+            Sound::Chord { notes, .. } => notes.len(),
+            _ => 1,
+        };
+        let mut sound = sound;
+        if !values.tension.is_empty() {
+            sound = with_tensions(sound, &values.tension);
+        }
+        if let Some(omission) = &values.omit {
+            sound = omitted(sound, chord_tones, omission);
+        }
+        sound = sound.inverted(values.inversion);
+        if let Some(doubling) = &values.double {
+            sound = doubled(sound, doubling);
+        }
+        if values.bass.is_some() && values.degree.is_some() && self.scale_name.is_some() {
+            sound = self.with_bass(sound, values, octave, shift)?;
+        }
+        Ok(sound)
+    }
+
+    /// A step's note or chord with its Bass under it: the scale note some steps above the chord's root, off it by its sharp or
+    /// flat, in the nearest octave below the lowest note, and with Bass Octave the octave below that too; a bass that would
+    /// leave the MIDI range is left out.
+    fn with_bass(&self, sound: Sound, values: &StepValues, octave: i64, shift: i64) -> Rendered<Sound> {
+        let notes = match &sound {
+            Sound::Note(note) => vec![*note],
+            Sound::Chord { notes, .. } => notes.clone(),
+            _ => return Ok(sound),
+        };
+        let bass_name = values.bass.as_deref().unwrap_or("");
+        let Some((_, parts)) = BASS_NOTES.iter().find(|(name, _)| *name == bass_name) else {
+            return Ok(sound);
+        };
+        let (steps, half_steps) = (parts[0], parts[1]);
+        let scale_name = self.scale_name.as_deref().unwrap_or("");
+        let scale = self
+            .scale_at(scale_name, octave, values.chord_scale.as_deref())?
+            .map_err(|problem| RenderError::Refused(problem.0))?;
+        let first = notes[0];
+        let degree = values.degree.as_ref().and_then(Data::as_whole).unwrap_or(0) as i64;
+        let bass =
+            scale_sound(&scale, degree + steps, shift, half_steps, first.length, first.velocity, false).map_err(|problem| RenderError::Refused(problem.0))?;
+        let lowest = notes.iter().map(|note| note.midi).min().unwrap_or(bass.midi);
+        let Some(bass) = bass.half_step((lowest - 1 - bass.midi).div_euclid(12) * 12) else {
+            return Ok(sound);
+        };
+        let mut under = vec![bass];
+        if values.bass_octave {
+            let Some(below) = bass.half_step(-12) else { return Ok(sound) };
+            under.insert(0, below);
+        }
+        under.extend(notes);
+        Ok(Sound::chord(under))
     }
 
     /// How many notes a move needs to go up an octave: the size of the scale, or 12 half steps for drums.
@@ -291,7 +426,7 @@ impl<'a> PatternPlayer<'a> {
                 &[("where", where_.into()), ("scene", self.scene_number.into())],
             )));
         };
-        let scale: Scale = match self.named_scale(scale_name)?.scale_at(octave) {
+        let scale: Scale = match self.scale_at(scale_name, octave, values.chord_scale.as_deref())? {
             Ok(scale) => scale,
             Err(problem) => return Ok(Err(OutOfRange(problem.0))),
         };
@@ -436,4 +571,77 @@ fn rests(start: Rational, end: Rational, step_length: Rational) -> Vec<Sound> {
         step_end = step_end + step_length;
     }
     rests
+}
+
+/// A chord with its tensions added, each its half steps above the chord's first note, the root; a single note has none, and
+/// a tension the chord holds already or that would leave the MIDI range is left out.
+fn with_tensions(sound: Sound, tensions: &[String]) -> Sound {
+    let Sound::Chord { notes, .. } = &sound else { return sound };
+    let root = notes[0];
+    let held: Vec<i64> = notes.iter().map(|note| note.midi).collect();
+    let mut notes = notes.clone();
+    for tension in tensions {
+        let Some((_, steps)) = TENSIONS.iter().find(|(name, _)| name == tension) else {
+            continue;
+        };
+        if held.contains(&(root.midi + steps)) {
+            continue;
+        }
+        if let Some(added) = root.half_step(*steps) {
+            notes.push(added);
+        }
+    }
+    Sound::chord(notes)
+}
+
+/// A chord with the notes its Omit row names left out by their role among its own first notes, built up from the root; a
+/// tension is never left out, and a chord that would be left with nothing is as it is.
+fn omitted(sound: Sound, chord_tones: usize, omission: &str) -> Sound {
+    let Sound::Chord { notes, .. } = &sound else { return sound };
+    let Some((_, roles)) = OMITTED_ROLES.iter().find(|(name, _)| *name == omission) else {
+        return sound;
+    };
+    let root = notes[0].midi;
+    let kept: Vec<NoteSound> = notes
+        .iter()
+        .enumerate()
+        .filter(|(place, note)| *place >= chord_tones || role_of(note.midi - root).is_none_or(|role| !roles.contains(&role)))
+        .map(|(_, note)| *note)
+        .collect();
+    match kept.len() {
+        0 => sound,
+        1 => Sound::Note(kept[0]),
+        _ => Sound::chord(kept),
+    }
+}
+
+/// A note or chord with the notes its Double row names played again an octave away; one the chord holds already, or that
+/// would leave the MIDI range, is left out.
+fn doubled(sound: Sound, doubling: &str) -> Sound {
+    let mut notes = match &sound {
+        Sound::Note(note) => vec![*note],
+        Sound::Chord { notes, .. } => notes.clone(),
+        _ => return sound,
+    };
+    let Some((first, last, octaves)) = doubled_notes(doubling) else {
+        return sound;
+    };
+    let mut by_pitch = notes.clone();
+    by_pitch.sort_by_key(|note| note.midi);
+    let count = by_pitch.len() as isize;
+    let place = |index: isize| (if index < 0 { (count + index).max(0) } else { index.min(count) }) as usize;
+    let end = last.map(place).unwrap_or(by_pitch.len());
+    let start = place(first);
+    let copied: Vec<NoteSound> = if start < end { by_pitch[start..end].to_vec() } else { Vec::new() };
+    let half_steps = octaves * 12;
+    let mut held: Vec<i64> = notes.iter().map(|note| note.midi).collect();
+    for note in copied {
+        if held.contains(&(note.midi + half_steps)) {
+            continue;
+        }
+        let Some(again) = note.half_step(half_steps) else { continue };
+        notes.push(again);
+        held.push(note.midi + half_steps);
+    }
+    Sound::chord(notes)
 }

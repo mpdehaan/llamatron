@@ -12,6 +12,25 @@ use llamatron_math::Rational;
 use llamatron_model::values::scale::Scale;
 use llamatron_model::values::time_signature::TimeSignature;
 
+/// A CC value a clip sends: when, its number (a lane until the clip is finished, then the track's CC number), its value, and
+/// whether it slides to the next value for the same number rather than holding.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Control {
+    pub time: Rational,
+    pub number: i64,
+    pub value: i64,
+    pub slide: bool,
+}
+
+impl Control {
+    pub fn moved_by(&self, offset: Rational) -> Control {
+        Control {
+            time: self.time + offset,
+            ..*self
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Clip {
     pub name: Option<String>,
@@ -23,6 +42,8 @@ pub struct Clip {
     pub time_signature: Option<TimeSignature>,
     /// The groove the clip plays with, which the Realizer gives it once it is finished, so that no generator sees it.
     pub groove: Option<Groove>,
+    /// The CC values the clip sends, in time order.
+    pub controls: Vec<Control>,
 }
 
 impl Clip {
@@ -37,7 +58,15 @@ impl Clip {
             looping: true,
             time_signature: None,
             groove: None,
+            controls: Vec::new(),
         }
+    }
+
+    /// The clip with CC values, put in time order, those at one time kept in the order given.
+    pub fn with_controls(mut self, mut controls: Vec<Control>) -> Clip {
+        controls.sort_by_key(|control| control.time);
+        self.controls = controls;
+        self
     }
 
     pub fn has_positions(&self) -> bool {
@@ -139,6 +168,12 @@ impl Clip {
             looping: true,
             time_signature: None,
             groove: None,
+            controls: self
+                .controls
+                .iter()
+                .filter(|control| start <= control.time && control.time < end)
+                .map(|control| control.moved_by(Rational::ZERO - start))
+                .collect(),
         })
     }
 }

@@ -172,6 +172,10 @@ fn rendered_songs(setlist: &llamatron_model::objects::setlist::Setlist) -> llama
                 for note in notes {
                     lines.push(format!("    {} {} {} {}", note.start, note.end, note.midi_number, note.velocity));
                 }
+                for control in &clip.controls {
+                    let slide = if control.slide { "True" } else { "False" };
+                    lines.push(format!("    cc {} {} {} {slide}", control.time, control.number, control.value));
+                }
             }
         }
         texts.push(lines.join("\n"));
