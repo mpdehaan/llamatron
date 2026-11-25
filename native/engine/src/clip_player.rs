@@ -8,6 +8,7 @@ use crate::clip::Clip;
 use crate::error::Rendered;
 use crate::generators::arp::Arp;
 use crate::generators::chords::ChordsSettings;
+use crate::generators::guitarify::Guitarify;
 use crate::generators::Generator;
 use crate::order::{ordered_patterns, DrawnWhenAsked, StepOrder};
 use crate::pattern_player::{Pass, PatternPlayer};
@@ -15,6 +16,7 @@ use crate::realizer::{SongRealizer, WrittenScene};
 use crate::sound::Sound;
 use llamatron_math::Rational;
 use llamatron_model::objects::song::ClipSlot;
+use llamatron_model::schema::generated::file_format::GENERATOR_RESTART;
 use llamatron_model::values::scale::Scale;
 use std::collections::HashMap;
 
@@ -97,6 +99,12 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                     };
                     Generator::Chords(settings.make_generator(bar, &continuation, followed)?)
                 }
+                "guitarify" => {
+                    let seed = self.realizer.chain_step_seed(self.scene, self.track_name, index as i128)?;
+                    let restart = step.settings.get(GENERATOR_RESTART).map(|restart| restart.python_str());
+                    let continuation = self.realizer.continuation(self.scene, self.track_name, &key, restart.as_deref())?;
+                    Generator::Guitarify(Guitarify::of(&step.settings, bar, self.tempo(), seed, continuation.offset)?)
+                }
                 _ => {
                     let seed = self.realizer.chain_step_seed(self.scene, self.track_name, index as i128)?;
                     Generator::Arp(Arp::of(&step.settings, self.pattern_step()?, bar, seed)?)
@@ -106,6 +114,17 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             self.realizer.keep_end_state(self.scene, self.track_name, key, generator.end_state());
         }
         Ok(clip)
+    }
+
+    /// The scene's tempo, or the song's where the scene sets none.
+    fn tempo(&self) -> llamatron_math::Number {
+        if let Some(tempo) = self.scene.tempo {
+            return llamatron_math::Number::Float(tempo);
+        }
+        match self.realizer.song().get_tempo() {
+            llamatron_model::file::data::Data::Float(tempo) => llamatron_math::Number::Float(tempo),
+            other => llamatron_math::Number::Whole(other.as_whole().unwrap_or(120)),
+        }
     }
 
     /// The step size of the pattern the clip plays.
