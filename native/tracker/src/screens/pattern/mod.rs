@@ -3,12 +3,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The pages that edit patterns (the Python screens/pattern/).
 
+pub mod pattern_editor;
 pub mod patterns_page;
 
-/// The page that edits a pattern, which stands not ported until the pattern editor is.
+/// The page that edits a pattern.
 pub fn open_pattern(name: &str) -> Box<dyn crate::page::Page> {
-    let _ = name;
-    Box::new(crate::screens::not_ported::NotPorted {
-        name: "PatternEditor".to_string(),
-    })
+    Box::new(pattern_editor::PatternEditor::new(name))
 }

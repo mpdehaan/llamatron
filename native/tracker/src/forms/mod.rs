@@ -6,4 +6,5 @@
 
 pub mod drawing;
 pub mod nodes;
+pub mod pattern_grid;
 pub mod tab_box;

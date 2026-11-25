@@ -44,12 +44,23 @@ impl StatusLine {
 }
 
 /// What the session remembers of how the pages were left, which no file keeps.
-#[derive(Default)]
 pub struct Session {
     /// The settings pages' sections open now, by name.
     pub open_field_sections: std::collections::HashSet<String>,
     /// The tab each kind of page with a tab box last showed, by the page's name.
     pub chosen_tabs: std::collections::HashMap<String, String>,
+    /// Whether the pattern editor shows the piano roll rather than the rows, kept as you move between patterns.
+    pub on_roll: bool,
+}
+
+impl Default for Session {
+    fn default() -> Session {
+        Session {
+            open_field_sections: Default::default(),
+            chosen_tabs: Default::default(),
+            on_roll: true,
+        }
+    }
 }
 
 /// What a page asks of the stack, done once its key is handled.

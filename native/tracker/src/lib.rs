@@ -13,6 +13,7 @@ pub mod forms;
 pub mod generated;
 pub mod keys;
 pub mod page;
+pub mod patterns;
 pub mod screens;
 pub mod settings;
 pub mod style;

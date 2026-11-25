@@ -118,6 +118,30 @@ impl Text {
         self.spans.retain(|(start, finish, _)| start < finish);
     }
 
+    /// Lay a style over a part of the line, from one character to another, as Rich's stylize does.
+    pub fn stylize(&mut self, style: &str, start: usize, end: usize) {
+        let end = end.min(self.characters.len());
+        if start < end {
+            self.spans.push((start, end, Style::parse(style)));
+        }
+    }
+
+    /// The line with each character a map gives another for replaced, its styles kept.
+    pub fn translated(&self, map: &[(char, char)]) -> Text {
+        let mut result = self.clone();
+        for character in &mut result.characters {
+            if let Some((_, to)) = map.iter().find(|(from, _)| from == character) {
+                *character = *to;
+            }
+        }
+        result
+    }
+
+    /// The character at a place, or None past the end.
+    pub fn char_at(&self, place: usize) -> Option<char> {
+        self.characters.get(place).copied()
+    }
+
     /// The line's first cells, up to a width, as Rich slices a line by its characters.
     pub fn slice_cells(&self, width: usize) -> Text {
         self.slice(0, width)

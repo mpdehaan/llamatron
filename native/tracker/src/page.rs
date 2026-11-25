@@ -25,6 +25,8 @@ const PROGRAM_NAME: &str = "llamatron";
 pub enum Duration {
     Nothing,
     Seconds(Option<f64>),
+    /// A clock worked out exactly, as a pattern's length is.
+    Clock(String),
 }
 
 pub trait Page {
@@ -179,6 +181,7 @@ fn time_text(page: &dyn Page, app: &App) -> String {
     match page.duration(app) {
         Duration::Nothing => String::new(),
         Duration::Seconds(seconds) => clock(seconds),
+        Duration::Clock(text) => text,
     }
 }
 
