@@ -434,6 +434,13 @@ fn toured(path: &str, keys: &str, width: usize, height: usize) -> Result<String,
             let set = parts.next().filter(|name| !name.is_empty()).map(|name| folder_of(path).join(name));
             let dirty = parts.next() == Some("True");
             let song = parts.next().unwrap_or("").to_string();
+            let open_types = parts
+                .next()
+                .unwrap_or("")
+                .split(',')
+                .filter(|kind| !kind.is_empty())
+                .map(str::to_string)
+                .collect();
             let keys = parts
                 .filter(|key| !key.is_empty())
                 .map(|key| {
@@ -453,7 +460,14 @@ fn toured(path: &str, keys: &str, width: usize, height: usize) -> Result<String,
                     llamatron_tracker::tour::TourKey { key: name, stack, set }
                 })
                 .collect();
-            llamatron_tracker::tour::TourStop { stack, set, dirty, song, keys }
+            llamatron_tracker::tour::TourStop {
+                stack,
+                set,
+                dirty,
+                song,
+                open_types,
+                keys,
+            }
         })
         .collect();
     let mut tracker = llamatron_tracker::app::Tracker::new(document);

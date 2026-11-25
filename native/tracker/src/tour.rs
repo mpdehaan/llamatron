@@ -46,6 +46,9 @@ pub struct TourStop {
     pub set: Option<std::path::PathBuf>,
     pub dirty: bool,
     pub song: String,
+    /// The types of generator the Python's Generators page showed open before the stop's keys, which its set files do not
+    /// keep.
+    pub open_types: Vec<String>,
     /// Each key pressed, with the pages open as the Python pressed it.
     pub keys: Vec<TourKey>,
 }
@@ -64,7 +67,13 @@ pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourSto
     // The tests that made the tour count FluidSynth as installed.
     tracker.app.fluidsynth_installed = true;
     let mut recorded = Vec::new();
+    // The Python opened types on its Generators page before the stops compared begin, and pages not ported yet may open or
+    // close them, so the Rust takes the Python's up at the start and after those.
+    let mut take_up_open_types = true;
     for stop in stops {
+        if take_up_open_types {
+            tracker.app.document.set_open_generator_types(stop.open_types.clone());
+        }
         let mut unported = false;
         let mut last_unported = false;
         for key in &stop.keys {
@@ -107,6 +116,7 @@ pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourSto
         if let (true, Some(file)) = (unported, &stop.set) {
             tracker.app.document.take_up(file, stop.dirty, &stop.song)?;
         }
+        take_up_open_types = unported;
     }
     Ok(recorded)
 }

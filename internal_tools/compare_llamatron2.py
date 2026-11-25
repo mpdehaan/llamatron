@@ -453,7 +453,7 @@ LEAVE = 'escape'
 def python_screens():
     """Return the Python's screen tour at each size, capturing it first when it has not been."""
     files = [SCREENS / 'screens_{}x{}.json'.format(*size) for size in SCREEN_SIZES]
-    if not all(path.exists() for path in files) or not (SCREENS / 'tour.yml').exists() or 'sets_before' not in json.loads(files[0].read_text(encoding='utf-8'))[0]:
+    if not all(path.exists() for path in files) or not (SCREENS / 'tour.yml').exists() or 'open_types' not in json.loads(files[0].read_text(encoding='utf-8'))[0]:
         subprocess.run([str(TOP / 'internal_tools' / 'compare_screens.sh'), 'capture', str(SCREENS)], check=True, cwd=TOP)
     return [(size, json.loads(path.read_text(encoding='utf-8'))) for size, path in zip(SCREEN_SIZES, files)]
 
@@ -505,7 +505,9 @@ def after_the_pdf(stops):
     """Return the tour's stops from the first with the PDF export page closed, its help among them, that stop's keys from
     where ESC left the PDF page."""
     first = next(place for place, stop in enumerate(stops) if PDF_PAGE not in stop['stack'])
-    stops = [dict(stop) for stop in stops[first:]]
+    # Each stop carries the types of generator the Generators page showed open before its keys, as the stop before left them.
+    before = [stops[place - 1].get('open_types', []) if place > 0 else [] for place in range(first, len(stops))]
+    stops = [dict(stop, open_before=opened) for stop, opened in zip(stops[first:], before)]
     keys = stops[0]['keys']
     stops[0]['keys'] = keys[keys.index(LEAVE) + 1:]
     stops[0]['stacks_before'] = stops[0]['stacks_before'][keys.index(LEAVE) + 1:]
@@ -548,7 +550,7 @@ def compare_screens(shown_most=None, baseline=False):
     for size, stops in python_screens():
         stops = after_the_pdf(stops)
         keys_file = SCREENS / 'keys_{}x{}.txt'.format(*size)
-        keys_file.write_text(''.join('\t'.join([','.join(stop['stack']), held_set(stop['set']) if stop['set'] else '', str(stop['dirty']), stop['song'], *keys_with_stacks(stop)]) + '\n' for stop in stops), encoding='utf-8')
+        keys_file.write_text(''.join('\t'.join([','.join(stop['stack']), held_set(stop['set']) if stop['set'] else '', str(stop['dirty']), stop['song'], ','.join(stop['open_before']), *keys_with_stacks(stop)]) + '\n' for stop in stops), encoding='utf-8')
         # The Rust's tour runs in a folder of its own holding the set alone, as the Python's ran, so that the Open page lists
         # the same files; the set is opened as the Python's tour held its path, in that folder or by its name from inside it.
         folder = SCREENS / TOUR_FOLDER

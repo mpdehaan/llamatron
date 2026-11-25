@@ -39,6 +39,7 @@ from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.pages import generators as generators_values
+from llamatron.model.schema import generator_plugins
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.generators.generators_page import GeneratorsPage
 from llamatron.interface.forms.nodes import Button, Toggle
@@ -115,6 +116,8 @@ MOST_ESCAPES = 4
 SET_FILE = 'set'
 DIRTY = 'dirty'
 SONG = 'song'
+# The types of generator the Generators page shows open at a stop, which the set's file does not keep.
+OPEN_TYPES = 'open_types'
 PATH = 'path'
 SET_AT_STOP = '{tour}_set_{number}.yml'
 # The set as a key left it, within a stop.
@@ -125,6 +128,8 @@ TOUR_SET = test_tui_help_keys.TOUR_SET_FILE
 # The most keys the tour presses to reach a generator on the Generators page, and the method it reaches one by.
 MOST_KEYS_TO_A_GENERATOR = 100
 PUT_CURSOR_ON = 'put_cursor_on'
+# The Generators page's own module, whose moves of its cursor, such as onto a copy, the other program makes itself.
+GENERATORS_PAGE_MODULE = sys.modules[GeneratorsPage.__module__].__file__
 # Arrange's cursor, by the attribute the tour sets and the arrows that move it back and forward, and what catches a setting.
 ARRANGE_CURSOR = {'row': (Key.UP, Key.DOWN), 'column': (Key.LEFT, Key.RIGHT)}
 SETATTR = '__setattr__'
@@ -192,9 +197,14 @@ class ScreenTour(KeyTour):
         patcher.start()
         self.addCleanup(patcher.stop)
         # The tour puts the Generators page's cursor on a generator without keys; here it goes there by keys, so that another
-        # program pressing the same keys reaches it too.
+        # program pressing the same keys reaches it too. The page's own moves, such as onto a copy, stay its own, since the
+        # other program makes them itself.
+        original_put_cursor_on = GeneratorsPage.put_cursor_on
 
         def by_keys(page, *, kind, name):
+            if os.path.samefile(sys._getframe(1).f_code.co_filename, GENERATORS_PAGE_MODULE):
+                original_put_cursor_on(page, kind=kind, name=name)
+                return
             tour.walk_to_generator(page=page, kind=kind, name=name)
 
         patcher = mock.patch.object(GeneratorsPage, PUT_CURSOR_ON, by_keys)
@@ -435,6 +445,7 @@ class ScreenTour(KeyTour):
             PAGE: type(page).__name__, PLACE: place_of(page), SCREEN: screen, KEYS: self.pressed, STACK: stack,
             SET_FILE: self.set_kept(document), DIRTY: document.is_dirty(), SONG: document.get_current_song_name(), STACKS_BEFORE: self.stacks_before, SETS_BEFORE: self.sets_before,
             PATH: without_folders(text=document.get_path() or '', folders=(os.path.realpath(self.folder), self.folder)),
+            OPEN_TYPES: [kind for kind in generator_plugins.listed_sections() if document.get_page_memory().is_generator_type_open(kind)],
         })
         self.pressed = []
         self.stacks_before = []
