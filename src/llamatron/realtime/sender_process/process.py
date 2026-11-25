@@ -33,6 +33,8 @@ from llamatron.realtime.sender_process.engine import MonotonicClock, PlaybackEng
 from llamatron.realtime.sender_process.outputs import RecordingOutput, RtMidiOutput, ScheduledRecordingOutput
 from llamatron.realtime.sender_process.scheduled_engine import ScheduledPlaybackEngine
 from llamatron.realtime.sender_process.synth_output import SynthOutput
+from llamatron.realtime.synth_process import daemon as synth_daemon
+from llamatron.realtime.synth_process.daemon import SynthDaemon
 from llamatron.realtime.synth_process.process import SynthesisNotStarted, SynthesisProcess
 from llamatron.user_strings import errors
 
@@ -257,6 +259,8 @@ def started_synthesis(*, ports, recording):
     if recording or not any(is_built_in_port(name) for name in ports):
         return None
     synthesis = SynthesisProcess()
+    if synth_daemon.uses_daemon():
+        synthesis = SynthDaemon()
     synthesis.start()
     return synthesis
 
