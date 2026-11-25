@@ -88,6 +88,16 @@ impl Document {
 
     // Arrange's edits of the current song's scenes, tracks and clips.
 
+    /// Give every clip of the current song a pattern of its own, and return the names of the copies made.
+    pub fn fracture(&mut self) -> Result<Vec<String>, String> {
+        let song = self.get_current_song_name().to_string();
+        let (changed, copies) = edits::fractured(&self.get_setlist().to_data(), &song);
+        if !copies.is_empty() {
+            self.edit_data(|_| changed)?;
+        }
+        Ok(copies)
+    }
+
     /// Put a new scene of no clips at a place in the current song, under a name.
     pub fn add_scene(&mut self, index: usize, name: &str) -> Result<(), String> {
         let song = self.get_current_song_name().to_string();

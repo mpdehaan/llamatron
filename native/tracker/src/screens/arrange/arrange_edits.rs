@@ -66,6 +66,15 @@ impl ArrangePage {
             self.paste_clip(app);
         } else if item.is(&Keys::DELETE_CLIP) {
             self.delete_clip(app);
+        } else if item.is(&Keys::FRACTURE) {
+            let dialog = ConfirmDialog::new(messages::MSG_FRACTURE_TITLE, Vec::new(), false, false).then(Box::new(|app: &mut App, _: &Answer| {
+                match app.document.fracture() {
+                    Ok(copies) if copies.is_empty() => app.say(messages::MSG_NOTHING_TO_FRACTURE),
+                    Ok(copies) => app.say(&named(messages::MSG_FRACTURED, &[("count", copies.len().into())])),
+                    Err(problem) => app.refuse(&problem),
+                }
+            }));
+            app.show_page(Box::new(dialog));
         } else {
             return false;
         }

@@ -503,3 +503,57 @@ pub fn blank_pattern(steps: i64, group: Option<&str>, drum: bool, scale_length: 
     }
     Data::Map(pairs)
 }
+
+/// A set's data with every clip of a song given a pattern of its own, and the names of the copies made: the first clip to
+/// play a pattern, reading the scenes from the top and each scene's tracks from the left, keeps it, and every later clip
+/// that plays it plays a copy, named as a duplicate is and kept in the pattern's group. A pattern a clip names twice in its
+/// own list stays one pattern there.
+pub fn fractured(set: &Data, song: &str) -> (Data, Vec<String>) {
+    let mut set = set.clone();
+    let mut taken: Vec<String> = match set.get(PATTERNS) {
+        Some(Data::Map(patterns)) => patterns.iter().filter_map(|(name, _)| name.as_str().map(str::to_string)).collect(),
+        _ => Vec::new(),
+    };
+    let tracks: Vec<String> = song_mut(&mut set, song)
+        .and_then(|held| {
+            held.get(TRACKS)
+                .and_then(Data::as_map)
+                .map(|tracks| tracks.iter().filter_map(|(name, _)| name.as_str().map(str::to_string)).collect())
+        })
+        .unwrap_or_default();
+    let scene_count = scenes_mut(&mut set, song).map_or(0, |scenes| scenes.len());
+    let mut seen: Vec<String> = Vec::new();
+    let mut copies: Vec<(String, String)> = Vec::new();
+    for index in 0..scene_count {
+        for track in &tracks {
+            let Some(clips) = clips_mut(&mut set, song, index) else { continue };
+            let Some((_, clip)) = clips.iter_mut().find(|(each, _)| each.as_str() == Some(track.as_str())) else {
+                continue;
+            };
+            let mut own: Vec<(String, String)> = Vec::new();
+            for name in clip_patterns(clip) {
+                if own.iter().any(|(old, _)| *old == name) {
+                    continue;
+                }
+                let mut new = name.clone();
+                if seen.contains(&name) {
+                    new = crate::objects::naming::copy_name(&name, &taken);
+                    taken.push(new.clone());
+                    copies.push((name.clone(), new.clone()));
+                }
+                own.push((name, new));
+            }
+            seen.extend(own.iter().map(|(_, new)| new.clone()));
+            let renamed = |name: &str| own.iter().find(|(old, _)| old == name).map_or(name.to_string(), |(_, new)| new.clone());
+            *clip = clip_playing(clip, &renamed);
+        }
+    }
+    if let Some(Data::Map(patterns)) = entry_mut(&mut set, PATTERNS) {
+        for (old, new) in &copies {
+            if let Some((_, pattern)) = patterns.iter().find(|(each, _)| each.as_str() == Some(old.as_str())).cloned() {
+                patterns.push((Data::text(new), pattern));
+            }
+        }
+    }
+    (set, copies.into_iter().map(|(_, new)| new).collect())
+}

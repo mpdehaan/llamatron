@@ -116,6 +116,10 @@ EDITED_SECTIONS = ('scales', 'patterns', 'instruments', 'grooves', 'chains', 'ar
 RENAMED = '-renamed'
 
 
+# The name the edits step gives a scene or a track it adds.
+ADDED = 'added'
+
+
 def python_edits(path):
     """Return, as JSON, a set's data after each edit of the first item of each of its sections and of each song's first track,
     each on a fresh copy of the set: renamed, copied, deleted, moved down one and sorted, as the Python's model does them, or
@@ -171,6 +175,17 @@ def python_edits(path):
         if len(tracks) > 1:
             results.append(['move', song, first, edited(lambda setlist: setlist.get_song(song).move_item(section=Section.TRACKS, place=0, offset=1))])
         results.append(['sort', song, first, edited(lambda setlist: setlist.get_song(song).sort_items(Section.TRACKS))])
+        results.append(['add_track', song, ADDED, edited(lambda setlist: setlist.get_song(song).add_new_track(name=ADDED))])
+        results.append(['add_track', song, ADDED, edited(lambda setlist: setlist.get_song(song).add_new_track(name=ADDED, place=0))])
+        results.append(['fracture', song, '', edited(lambda setlist: setlist.fracture(setlist.get_song(song)))])
+        if not fresh().get_song(song).get_scenes():
+            continue
+        results.append(['add_scene', song, ADDED, edited(lambda setlist: setlist.get_song(song).add_new_scene(index=0, name=ADDED))])
+        results.append(['copy_scene', song, ADDED, edited(lambda setlist: setlist.get_song(song).copy_scene(index=0, name=ADDED))])
+        results.append(['remove_scene', song, '', edited(lambda setlist: setlist.get_song(song).remove_scene(0))])
+        held = fresh().get_song(song).get_scene(0).get_track_names()
+        if held:
+            results.append(['remove_clip', song, held[0], edited(lambda setlist: setlist.get_song(song).get_scene(0).remove_clip_slot(held[0]))])
     return json.dumps(results, default=str)
 
 
