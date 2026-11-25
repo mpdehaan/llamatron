@@ -107,6 +107,19 @@ fn main() -> ExitCode {
                 ExitCode::from(1)
             }
         },
+        "edits" => {
+            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
+            match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
+                Ok(setlist) => {
+                    println!("{}", edits_of(&setlist));
+                    ExitCode::SUCCESS
+                }
+                Err(problem) => {
+                    eprintln!("{path}: {}", problem.message);
+                    ExitCode::from(1)
+                }
+            }
+        }
         "save" => {
             let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
             match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
@@ -466,4 +479,105 @@ fn toured(path: &str, keys: &str, width: usize, height: usize) -> Result<String,
     }
     out.push(']');
     Ok(out)
+}
+
+/// The sections whose first item the edits step renames, copies, deletes, moves and sorts, and what a renamed item's name adds.
+const EDITED_SECTIONS: [&str; 15] = [
+    "scales",
+    "patterns",
+    "instruments",
+    "grooves",
+    "chains",
+    "arps",
+    "chords",
+    "drifts",
+    "guitarifies",
+    "hockets",
+    "musicians",
+    "phrasings",
+    "shapes",
+    "timings",
+    "songs",
+];
+const RENAMED: &str = "-renamed";
+
+/// A set's data after each edit of the first item of each section and of each song's first track, as JSON: renamed, copied,
+/// deleted, moved down one and sorted, each on a fresh copy of the set.
+fn edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
+    use llamatron_model::objects::edits::*;
+    use llamatron_model::objects::naming::copy_name;
+    let data = setlist.to_data();
+    let generator_sections: Vec<&str> = llamatron_model::schema::generated::plugins::PLUGINS
+        .iter()
+        .map(|plugin| plugin.section)
+        .chain(["chains"])
+        .collect();
+    let names_in = |section: &str| -> Vec<String> {
+        data.get(section).and_then(Data::as_map).map_or(Vec::new(), |pairs| {
+            pairs.iter().filter_map(|(name, _)| name.as_str().map(str::to_string)).collect()
+        })
+    };
+    let every_generator: Vec<String> = generator_sections.iter().flat_map(|section| names_in(section)).collect();
+    let mut results: Vec<Data> = Vec::new();
+    let mut add = |kind: &str, place: &str, name: &str, edited: Data| {
+        results.push(Data::List(vec![Data::text(kind), Data::text(place), Data::text(name), edited]));
+    };
+    let with_section = |section: &str, items: Option<Data>| -> Data {
+        let mut edited = data.clone();
+        if let (Data::Map(pairs), Some(items)) = (&mut edited, items) {
+            if let Some(pair) = pairs.iter_mut().find(|(key, _)| key.as_str() == Some(section)) {
+                pair.1 = items;
+            }
+        }
+        edited
+    };
+    for section in EDITED_SECTIONS {
+        let held = names_in(section);
+        let Some(first) = held.first() else { continue };
+        let taken = if generator_sections.contains(&section) {
+            every_generator.clone()
+        } else {
+            held.clone()
+        };
+        let new = copy_name(first, &taken);
+        add("rename", section, first, renamed_in_set(&data, section, first, &format!("{first}{RENAMED}")));
+        add("copy", section, first, copied_in_set(&data, section, first, &new));
+        add("delete", section, first, removed_from_set(&data, section, first));
+        let items = data.get(section).cloned().unwrap_or(Data::Null);
+        if held.len() > 1 {
+            add("move", section, first, with_section(section, moved_in_section(&items, 0, 1)));
+        }
+        add("sort", section, first, with_section(section, Some(sorted_section(&items))));
+    }
+    for song in setlist.song_names() {
+        let Some(tracks) = data.get("songs").and_then(|songs| songs.get(song)).and_then(|held| held.get("tracks")).cloned() else {
+            continue;
+        };
+        let names: Vec<String> = tracks.as_map().map_or(Vec::new(), |pairs| {
+            pairs.iter().filter_map(|(name, _)| name.as_str().map(str::to_string)).collect()
+        });
+        let Some(first) = names.first() else { continue };
+        let new = copy_name(first, &names);
+        let with_tracks = |items: Option<Data>| -> Data {
+            let mut edited = data.clone();
+            if let (Some(items), Data::Map(pairs)) = (items, &mut edited) {
+                if let Some((_, Data::Map(songs))) = pairs.iter_mut().find(|(key, _)| key.as_str() == Some("songs")) {
+                    if let Some((_, Data::Map(settings))) = songs.iter_mut().find(|(key, _)| key.as_str() == Some(song)) {
+                        if let Some(pair) = settings.iter_mut().find(|(key, _)| key.as_str() == Some("tracks")) {
+                            pair.1 = items;
+                        }
+                    }
+                }
+            }
+            edited
+        };
+        add("rename", song, first, renamed_track(&data, song, first, &format!("{first}{RENAMED}")));
+        add("copy", song, first, copied_track(&data, song, first, &new));
+        add("delete", song, first, removed_track(&data, song, first));
+        if names.len() > 1 {
+            add("move", song, first, with_tracks(moved_in_section(&tracks, 0, 1)));
+        }
+        add("sort", song, first, with_tracks(Some(sorted_section(&tracks))));
+    }
+    json(&Data::List(results))
 }

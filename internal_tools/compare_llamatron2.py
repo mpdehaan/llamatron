@@ -109,6 +109,76 @@ def python_save(path):
         return None
 
 
+# The sections whose first item the edits step renames, copies, deletes, moves and sorts, and what a renamed item's name adds.
+EDITED_SECTIONS = ('scales', 'patterns', 'instruments', 'grooves', 'chains', 'arps', 'chords', 'drifts', 'guitarifies', 'hockets', 'musicians', 'phrasings', 'shapes', 'timings', 'songs')
+RENAMED = '-renamed'
+
+
+def python_edits(path):
+    """Return, as JSON, a set's data after each edit of the first item of each of its sections and of each song's first track,
+    each on a fresh copy of the set: renamed, copied, deleted, moved down one and sorted, as the Python's model does them, or
+    the refusal; None where the Python refuses the set."""
+    from llamatron.model.objects.naming import copy_name
+    from llamatron.model.objects.setlist import Setlist
+    from llamatron.model.schema import generator_plugins
+    from llamatron.model.schema.file_format import Section
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    moved, _ = migrated(data, one_song_name=path.stem)
+    try:
+        Setlist.from_data(data=as_object_layout(moved))
+    except SongFileError:
+        return None
+    generator_sections = set(generator_plugins.names_by_section()) | {Section.CHAINS}
+
+    def fresh():
+        return Setlist.from_data(data=as_object_layout(moved))
+
+    def edited(change):
+        setlist = fresh()
+        try:
+            change(setlist)
+        except Exception as error:
+            return 'refused: ' + str(error)
+        return setlist.to_data()
+    results = []
+    names = fresh().to_data()
+    for section in EDITED_SECTIONS:
+        held = list((names.get(section) or {}).keys())
+        if not held:
+            continue
+        first = held[0]
+        taken = fresh().every_generator_name() if section in generator_sections else held
+        new = copy_name(name=first, taken=taken)
+        delete = (lambda setlist: setlist.delete_generator(section=section, name=first)) if section in generator_sections else (lambda setlist: setlist.remove_item(section=section, name=first))
+        results.append(['rename', section, first, edited(lambda setlist: setlist.rename_item(section=section, old=first, new=first + RENAMED))])
+        results.append(['copy', section, first, edited(lambda setlist: setlist.copy_item(section=section, name=first, new=new))])
+        results.append(['delete', section, first, edited(delete)])
+        if len(held) > 1:
+            results.append(['move', section, first, edited(lambda setlist: setlist.move_item(section=section, place=0, offset=1))])
+        results.append(['sort', section, first, edited(lambda setlist: setlist.sort_items(section))])
+    for song in fresh().get_song_names():
+        tracks = fresh().get_song(song).get_track_names()
+        if not tracks:
+            continue
+        first = tracks[0]
+        new = copy_name(name=first, taken=tracks)
+        results.append(['rename', song, first, edited(lambda setlist: setlist.get_song(song).rename_item(section=Section.TRACKS, old=first, new=first + RENAMED))])
+        results.append(['copy', song, first, edited(lambda setlist: setlist.get_song(song).copy_track(name=first, new=new))])
+        results.append(['delete', song, first, edited(lambda setlist: setlist.get_song(song).remove_item(section=Section.TRACKS, name=first))])
+        if len(tracks) > 1:
+            results.append(['move', song, first, edited(lambda setlist: setlist.get_song(song).move_item(section=Section.TRACKS, place=0, offset=1))])
+        results.append(['sort', song, first, edited(lambda setlist: setlist.get_song(song).sort_items(Section.TRACKS))])
+    return json.dumps(results, default=str)
+
+
+def same_in_order(python, port):
+    """Return whether two JSON texts hold the same data with every mapping's order counted, as a set's order of items is."""
+    if port.startswith('FAILED'):
+        return False
+    return json.loads(python, object_pairs_hook=list) == json.loads(port, object_pairs_hook=list)
+
+
 RENDER_SEED = 1
 
 
@@ -285,7 +355,7 @@ def same_as_data(python, port):
     return load_safely(python) == load_safely(port)
 
 
-STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
+STEPS = {'edits': python_edits, 'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
 # Where the Python's answers are kept, git-ignored and never committed: since the Python program is frozen, an answer is
 # worked out from the Python only when none is kept for its step and its file as the file is now.
 KEPT = pathlib.Path('.cache/compare_llamatron2')
@@ -306,7 +376,7 @@ def kept_python(step, path):
 
 
 # How each step's two outputs are compared: as text unless named here.
-COMPARED = {'save': same_as_data, 'import': same_as_data}
+COMPARED = {'save': same_as_data, 'import': same_as_data, 'edits': same_in_order}
 
 
 # The screen tour: the Python's capture, made once, since the Python program is frozen, and where the Rust's replay of its
