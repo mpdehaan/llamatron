@@ -152,6 +152,13 @@ impl Tracker {
     /// Press a key into the page on top: an everywhere key first, then the page's own.
     pub fn press(&mut self, key: &str) {
         let page = self.pages.last_mut().expect("the main screen is never closed");
+        if page.takes_text() {
+            if let Some(character) = typed_character(key) {
+                self.app.status.clear();
+                page.type_text(&mut self.app, character);
+                return;
+            }
+        }
         let everywhere = PageKeys::EVERYWHERE.iter().map(|binding| KeyItem::of(&PageKeys::CLASS, binding));
         let table: Vec<KeyItem> = everywhere.chain(page.page_key_table(&self.app)).collect();
         let Some(item) = table.into_iter().find(|item| item.keys.contains(&key)) else {
@@ -200,5 +207,17 @@ impl Tracker {
 
     pub fn everywhere(&self) -> Vec<KeyItem> {
         self.everywhere_keys()
+    }
+}
+
+/// The character a key types, where it types one: a printable letter, mark or space.
+fn typed_character(key: &str) -> Option<char> {
+    if key == "space" {
+        return Some(' ');
+    }
+    let mut characters = key.chars();
+    match (characters.next(), characters.next()) {
+        (Some(character), None) if !character.is_control() => Some(character),
+        _ => None,
     }
 }

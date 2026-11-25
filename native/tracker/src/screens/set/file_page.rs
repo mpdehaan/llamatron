@@ -11,7 +11,6 @@ use crate::forms::nodes::{Edit, Field};
 use crate::forms::tab_box::{Tab, TabBox, TabColumn};
 use crate::keybindings::{FilePage as Keys, KeyClass};
 use crate::screens::field_page::{Form, Node};
-use crate::screens::not_ported::NotPorted;
 use crate::settings::{bool_of, choice_of, hidden_visualizers, mode_name, named_in, octave_labels, shown_octave, text_of, whole_of};
 use crate::text::Text;
 use crate::themes::{self, Colour};
@@ -218,7 +217,8 @@ impl Form for FilePage {
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
         if id == NOTES && edit == Edit::Enter {
-            app.show_page(Box::new(NotPorted { name: "NotesPage".to_string() }));
+            let page = crate::screens::set::notes_page::NotesPage::new(app, true);
+            app.show_page(Box::new(page));
         }
     }
 }

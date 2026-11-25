@@ -95,6 +95,9 @@ pub trait Page {
     fn takes_text(&self) -> bool {
         false
     }
+
+    /// Type a character into the text, where the page takes text.
+    fn type_text(&mut self, _app: &mut App, _character: char) {}
 }
 
 /// Seconds as minutes and seconds, like 3:05, or dashes if they aren't known.
