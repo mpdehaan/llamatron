@@ -769,9 +769,10 @@ impl Form for PluginEditor {
                 };
                 app.show_page(Box::new(crate::screens::one_row_editor::OneRowEditor::new(editor)));
             }
-            (Some(SettingView::GuitarBar { .. }), Edit::Enter) => app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-                name: "GuitarBarEditor".to_string(),
-            })),
+            (Some(SettingView::GuitarBar { .. }), Edit::Enter) => {
+                let editor = crate::screens::generators::guitar_bar_editor::GuitarBarEditor { name: self.name.clone() };
+                app.show_page(Box::new(crate::screens::one_row_editor::OneRowEditor::new(editor)));
+            }
             (Some(SettingView::Progression { .. }), Edit::Enter) => app.show_page(Box::new(crate::screens::not_ported::NotPorted {
                 name: "ChordsEditor".to_string(),
             })),

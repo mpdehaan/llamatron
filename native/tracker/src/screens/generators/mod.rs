@@ -6,6 +6,7 @@
 pub mod chain_editor;
 pub mod generator_list_page;
 pub mod generators_page;
+pub mod guitar_bar_editor;
 pub mod offsets_editor;
 pub mod plugin_editor;
 pub mod statements_page;
