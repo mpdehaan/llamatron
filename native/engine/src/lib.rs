@@ -14,6 +14,7 @@ pub mod order;
 pub mod pattern_player;
 pub mod positions;
 pub mod realizer;
+pub mod shapes;
 pub mod sound;
 pub mod tables;
 pub mod timing;

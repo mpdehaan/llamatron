@@ -13,9 +13,12 @@ use crate::generators::Generator;
 use crate::order::{ordered_patterns, DrawnWhenAsked, StepOrder};
 use crate::pattern_player::{Pass, PatternPlayer};
 use crate::realizer::{SongRealizer, WrittenScene};
+use crate::shapes::{shape_values, PlacedRamp, PlacedShape, PlacedVelocity, Reshaping, Velocity, ARTICULATE, DENSITY, PLACED_SHAPES, SHAPES, SWELL};
 use crate::sound::Sound;
 use llamatron_math::Rational;
+use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::ClipSlot;
+use llamatron_model::schema::generated::file_format::Restart;
 use llamatron_model::schema::generated::file_format::GENERATOR_RESTART;
 use llamatron_model::values::scale::Scale;
 use std::collections::HashMap;
@@ -51,6 +54,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let fill = if looping { Some(self.realizer.get_scene_length(self.scene)?) } else { None };
         let clip = self.play_passes(&player, scale, fill)?;
         let clip = self.through_chain(clip)?;
+        let clip = self.shaped(clip)?;
         let sounds = finished_sounds(&clip, looping, fill)?;
         // A clip carries its pattern's own time signature, if it has one, for the bars a DAW draws.
         let signature = player.pattern(&self.clip_slot.get_pattern_name())?.get_time_signature();
@@ -78,15 +82,21 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let bar = self.realizer.song().get_time_signature().bar_length();
         // Each step is counted along all of the clip's chains for its seed, whether or not it runs.
         for (index, step) in steps.into_iter().enumerate() {
+            // A shape works on the finished clip after the chains, and a progression and a Follow Chords leave a drum pattern
+            // alone, since moving a drum note changes the drum.
+            let runs = match step.kind.as_str() {
+                "shapes" => false,
+                "chords" => !self.realizer.plays_drums(self.scene, self.track_name),
+                _ => true,
+            };
+            if !runs {
+                continue;
+            }
             let count = times.entry((step.kind.clone(), step.name.clone())).or_insert(0);
             let key = (step.kind.clone(), step.name.clone(), *count);
             *count += 1;
             let mut generator = match step.kind.as_str() {
                 "chords" => {
-                    // A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum.
-                    if self.realizer.plays_drums(self.scene, self.track_name) {
-                        continue;
-                    }
                     let settings = ChordsSettings::of(&step.settings)?;
                     let continuation = self
                         .realizer
@@ -114,6 +124,114 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             self.realizer.keep_end_state(self.scene, self.track_name, key, generator.end_state());
         }
         Ok(clip)
+    }
+
+    /// The clip with its Density, Swell and Articulate laid over it, the last Shapes generator of each its chains name, else
+    /// the clip's own Density or Articulate, else its scene's; and with how loud the clip and its scene play.
+    fn shaped(&self, clip: Clip) -> Rendered<Clip> {
+        let signature = self.realizer.song().get_time_signature();
+        let bar = signature.bar_length();
+        let mut named: HashMap<&str, Data> = HashMap::new();
+        for step in self.realizer.chains_of(self.scene, self.track_name)? {
+            if step.kind != "shapes" {
+                continue;
+            }
+            for shape in SHAPES {
+                if shape_values(&|name| step.settings.get(name).cloned(), shape, 0, bar).is_some() {
+                    named.insert(shape, step.settings.clone());
+                }
+            }
+        }
+        let clip_length = clip.total_length()?;
+        let scene_length = self.realizer.get_scene_length(self.scene)?;
+        let mut placed: HashMap<&str, PlacedShape> = HashMap::new();
+        for shape in SHAPES {
+            if let Some(settings) = named.get(shape) {
+                let accent = match *shape {
+                    SWELL => settings.get("swell_accent").and_then(Data::as_whole).unwrap_or(0) as i64,
+                    _ => 0,
+                };
+                let restart = settings.get(GENERATOR_RESTART).map(Data::python_str);
+                let span = self.realizer.run_span(self.scene, restart.as_deref(), clip_length)?;
+                let offset = self.realizer.run_offset(self.scene, restart.as_deref())?;
+                if let Some(values) = shape_values(&|name| settings.get(name).cloned(), shape, accent, bar) {
+                    placed.insert(shape, (values, span, offset));
+                }
+            } else if PLACED_SHAPES.contains(shape) {
+                if let Some(values) = shape_values(&|name| self.clip_slot.get_written(name).cloned(), shape, 0, bar) {
+                    placed.insert(shape, (values, clip_length, Rational::ZERO));
+                } else if let Some(values) = shape_values(&|name| self.scene.scene.get_written(name).cloned(), shape, 0, bar) {
+                    placed.insert(shape, (values, scene_length, Rational::ZERO));
+                }
+            }
+        }
+        let velocity = self.placed_velocity(clip_length, scene_length, bar)?;
+        if placed.is_empty() && velocity.is_none() {
+            return Ok(clip);
+        }
+        let reshaping = Reshaping {
+            density: placed.remove(DENSITY),
+            swell: placed.remove(SWELL),
+            articulate: placed.remove(ARTICULATE),
+            velocity,
+            span: clip_length,
+            bar,
+            beat: signature.beat_length(),
+        };
+        let sounds = reshaping.reshaped(&clip.resolved_sounds()?);
+        Ok(Clip { sounds, ..clip })
+    }
+
+    /// How loud the clip plays over its time, or None where every note plays as written: a ramp whose bars the scene gives
+    /// counted across the scene's whole play, every repeat together, and one whose bars the clip gives over the clip's own.
+    fn placed_velocity(&self, clip_length: Rational, scene_length: Rational, bar: Rational) -> Rendered<Option<PlacedVelocity>> {
+        let setlist = self.realizer.setlist();
+        let track = self.realizer.track(self.track_name)?;
+        let percent = |value: Option<&Data>| value.and_then(Data::as_whole).map(Rational::whole);
+        let instrument = self
+            .realizer
+            .song()
+            .instrument_of(track, setlist)
+            .and_then(|instrument| instrument.get_written("velocity"));
+        let outer = [percent(instrument), percent(track.get_written("velocity"))];
+        let velocity = Velocity::of(
+            &|name| self.scene.scene.get_written(name).cloned(),
+            &|name| self.clip_slot.get_written(name).cloned(),
+            &outer,
+        );
+        if velocity.changes_nothing() {
+            return Ok(None);
+        }
+        let before = self.realizer.run_offset(self.scene, Some(Restart::ON_NEW_SCENE))?;
+        let ramp_in = velocity.ramp_in.map(|ramp| PlacedRamp {
+            start: ramp.start,
+            end: ramp.end,
+            span: ramp.over * bar,
+            begins: if ramp.of_clip { Rational::ZERO } else { Rational::ZERO - before },
+        });
+        let ramp_out = match velocity.ramp_out {
+            None => None,
+            Some(ramp) => {
+                let end = if !ramp.of_clip {
+                    self.realizer.run_span(self.scene, Some(Restart::ON_NEW_SCENE), clip_length)? - before
+                } else if self.clip_slot.loops() {
+                    scene_length
+                } else {
+                    clip_length
+                };
+                Some(PlacedRamp {
+                    start: ramp.start,
+                    end: ramp.end,
+                    span: ramp.over * bar,
+                    begins: end - ramp.over * bar,
+                })
+            }
+        };
+        Ok(Some(PlacedVelocity {
+            level: velocity.level,
+            ramp_in,
+            ramp_out,
+        }))
     }
 
     /// The scene's tempo, or the song's where the scene sets none.

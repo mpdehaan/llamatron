@@ -356,7 +356,7 @@ impl<'a> SongRealizer<'a> {
     }
 
     /// How far into its run a generator is as a written-out scene starts.
-    fn run_offset(&self, scene: &WrittenScene<'a>, restart: Option<&str>) -> Rendered<Rational> {
+    pub fn run_offset(&self, scene: &WrittenScene<'a>, restart: Option<&str>) -> Rendered<Rational> {
         let start = self.run_start(scene, restart);
         let mut offset = Rational::ZERO;
         for written in &self.scenes[start..(scene.number - 1) as usize] {
@@ -372,6 +372,23 @@ impl<'a> SongRealizer<'a> {
         Ok(Some(
             seed as i128 * SEED_SONG_FACTOR + scene.number as i128 * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index,
         ))
+    }
+
+    /// How long a generator's whole run lasts: the clip, every play of the scene in a row, or the whole song.
+    pub fn run_span(&self, scene: &WrittenScene<'a>, restart: Option<&str>, clip_length: Rational) -> Rendered<Rational> {
+        if restart.is_none_or(|restart| restart == Restart::EVERY_CLIP) {
+            return Ok(clip_length);
+        }
+        let start = self.run_start(scene, restart);
+        let mut end = start + 1;
+        while end < self.scenes.len() && (restart == Some(Restart::WHOLE_SONG) || !self.scenes[end].first_play) {
+            end += 1;
+        }
+        let mut length = Rational::ZERO;
+        for written in &self.scenes[start..end] {
+            length = length + self.get_scene_length(written)?;
+        }
+        Ok(length)
     }
 
     /// Whether a track's clip in a written-out scene plays a drum pattern.
@@ -411,7 +428,7 @@ impl<'a> SongRealizer<'a> {
 }
 
 /// The kinds of generator the port runs so far.
-const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify"];
+const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes"];
 
 /// The factors a chain step's seed is made with, so that it differs for every song, scene, track and place in the chain.
 const SEED_SONG_FACTOR: i128 = 1_000_003;
@@ -448,10 +465,15 @@ fn holds_something(value: &Data) -> bool {
         && value.as_map().is_none_or(|pairs| !pairs.is_empty())
 }
 
+/// Whether a setting is one of how a clip is shaped and how loud it plays, which every object that holds one plays.
+fn is_shaping(name: &str) -> bool {
+    ["density_", "articulate_", "velocity"].iter().any(|start| name.starts_with(start))
+}
+
 /// The first setting of a table an object holds that the port does not play yet.
 fn unported(table: &[Setting], played: &[&str], written: &dyn Fn(&str) -> Option<Data>) -> Rendered<()> {
     for setting in table {
-        if !played.contains(&setting.name) && written(setting.name).is_some_and(|value| holds_something(&value)) {
+        if !played.contains(&setting.name) && !is_shaping(setting.name) && written(setting.name).is_some_and(|value| holds_something(&value)) {
             return Err(RenderError::NotPorted(format!("the {} setting", setting.name)));
         }
     }
