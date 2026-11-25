@@ -154,6 +154,54 @@ impl ChordsEditor {
         });
     }
 
+    /// Fill the chords with a named progression from a picker of two columns, matched to the song's scale: a chord whose
+    /// root is a note of the scale becomes that plain degree, any other the degree a half step above it with a flat, or,
+    /// past the scale's last note, the one below it with a sharp; every other row of the chords is left blank.
+    fn pick_progression(&self, app: &mut App) {
+        use crate::generated::tables::NAMED_PROGRESSIONS;
+        let keys: Vec<(&str, &str)> = NAMED_PROGRESSIONS.iter().flat_map(|column| column.iter().copied()).collect();
+        let mut columns = Vec::new();
+        let mut place = 0;
+        for (heading, column) in labels::MSG_PROGRESSION_GROUPS.iter().zip(NAMED_PROGRESSIONS) {
+            columns.push(vec![(heading.to_string(), (place..place + column.len()).collect())]);
+            place += column.len();
+        }
+        let options = keys
+            .iter()
+            .map(|(key, _)| {
+                labels::MSG_PROGRESSION_NAMES
+                    .iter()
+                    .find(|(each, _)| each == key)
+                    .map_or(key.to_string(), |(_, shown)| shown.to_string())
+            })
+            .collect();
+        let details = keys.iter().map(|(_, written)| shown_numerals(written)).collect();
+        let pages = vec![(None, crate::screens::dialogs::grouped_grid(&columns))];
+        let mut dialog = crate::screens::dialogs::GridChoiceDialog::new(messages::MSG_PROGRESSION_PICKER_TITLE, options, pages, 0, Some(details));
+        let editor = ChordsEditor {
+            section: self.section,
+            name: self.name.clone(),
+            edited_row: self.edited_row,
+        };
+        dialog.then = Some(Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
+            let crate::screens::dialogs::Answer::Chosen(chosen) = answer else { return };
+            let shape = crate::chord_text::shape_of(Self::scale(app).as_ref());
+            let (chords, accidentals) = matched_to(&shape, keys[*chosen].1);
+            let count = chords.len();
+            let rows = Rows {
+                chords,
+                accidentals,
+                qualities: vec![None; count],
+                tensions: vec![Vec::new(); count],
+                scales: vec![None; count],
+                inversions: vec![None; count],
+            };
+            editor.store(app, rows);
+            app.cursor_to("0");
+        }));
+        app.show_page(Box::new(dialog));
+    }
+
     /// The song's scale, which the chords are named in.
     fn scale(app: &App) -> Option<ChordScale> {
         let song = app.document.song();
@@ -415,8 +463,10 @@ impl OneRow for ChordsEditor {
             rows.scales.remove(step);
             rows.inversions.remove(step);
             self.store(app, rows);
+        } else if item.is(&Keys::PICK) {
+            self.pick_progression(app);
         }
-        // The Chord dialog and the picker of named progressions are not ported yet.
+        // The Chord dialog is not ported yet.
     }
 
     fn resting(&self, app: &App, step: usize) -> String {
@@ -508,4 +558,59 @@ impl OneRow for ChordsEditor {
         lines.push(GridLine::Rule { edge: Edge::Bottom, count });
         lines
     }
+}
+
+/// How a named progression writes a flat and a sharp before a numeral, and the half steps each moves it.
+const FLAT_WRITTEN: &str = "b";
+const SHARP_WRITTEN: &str = "#";
+/// The major scale's half steps, which a named progression's numerals are counted along.
+const MAJOR_SHAPE: [i64; 7] = [0, 2, 4, 5, 7, 9, 11];
+
+/// How many half steps a numeral of a named progression, such as bVII, is above the key's root.
+fn numeral_half_steps(numeral: &str) -> i64 {
+    let (shift, bare) = if let Some(rest) = numeral.strip_prefix(FLAT_WRITTEN) {
+        (-1, rest)
+    } else if let Some(rest) = numeral.strip_prefix(SHARP_WRITTEN) {
+        (1, rest)
+    } else {
+        (0, numeral)
+    };
+    let place = ROMAN_NUMERALS.iter().position(|each| *each == bare.to_uppercase()).unwrap_or(0);
+    MAJOR_SHAPE[place] + shift
+}
+
+/// A named progression's chords as (degrees, sharps and flats) in a scale of a shape.
+fn matched_to(shape: &[i64], written: &str) -> (Vec<i64>, Vec<Option<String>>) {
+    let (mut degrees, mut accidentals) = (Vec::new(), Vec::new());
+    for numeral in written.split_whitespace() {
+        let within = numeral_half_steps(numeral).rem_euclid(12);
+        if let Some(place) = shape.iter().position(|step| *step == within) {
+            degrees.push(place as i64 + 1);
+            accidentals.push(None);
+        } else if let Some(place) = shape.iter().position(|step| *step == within + 1) {
+            degrees.push(place as i64 + 1);
+            accidentals.push(Some(FLAT_WRITTEN.to_string()));
+        } else {
+            let below = shape.iter().rposition(|step| *step < within).unwrap_or(0);
+            degrees.push(below as i64 + 1);
+            accidentals.push(Some(SHARP_WRITTEN.to_string()));
+        }
+    }
+    (degrees, accidentals)
+}
+
+/// A named progression's numerals as the picker shows them, with flat signs.
+fn shown_numerals(written: &str) -> String {
+    let flat = marks::MSG_ACCIDENTAL_MARKS
+        .iter()
+        .find(|(each, _)| *each == FLAT_WRITTEN)
+        .map_or(FLAT_WRITTEN, |(_, mark)| mark);
+    let shown: Vec<String> = written
+        .split_whitespace()
+        .map(|numeral| match numeral.strip_prefix(FLAT_WRITTEN) {
+            Some(rest) => format!("{flat}{rest}"),
+            None => numeral.to_string(),
+        })
+        .collect();
+    shown.join(marks::MSG_PRESET_NUMERALS_SEPARATOR)
 }

@@ -97,7 +97,8 @@ pub fn degree_shown(degree: i64, accidental: Option<&str>) -> String {
     format!("{mark}{degree}")
 }
 
-fn shape_of(scale: Option<&ChordScale>) -> Vec<i64> {
+/// A scale's half steps from its root, or the major scale's where there is none.
+pub fn shape_of(scale: Option<&ChordScale>) -> Vec<i64> {
     scale.map_or(SHAPE_WITHOUT_A_SCALE.to_vec(), |scale| scale.shape.clone())
 }
 

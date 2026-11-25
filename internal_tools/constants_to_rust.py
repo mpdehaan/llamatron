@@ -682,6 +682,11 @@ def write_tracker_tables(path):
         bars.append('({}, {}, &[{}], &[{}])'.format(literal(str(name)), literal(bar.cell), ', '.join(literal(stroke) for stroke in bar.strokes), ', '.join('true' if accent else 'false' for accent in bar.accents)))
     lines.append("pub static READY_BARS: &[(&str, &str, &[&str], &[bool])] = &[{}];".format(', '.join(bars)))
     lines.append('pub const DEFAULT_BAR: &str = {};'.format(literal(str(guitar_bars.DEFAULT_BAR))))
+    from llamatron.model.values import progressions
+    lines.append('')
+    lines.append('/// The named progressions in the picker\'s columns, each by its name with its numerals as written against a major key.')
+    columns = ', '.join('&[{}]'.format(', '.join('({}, {})'.format(literal(str(name)), literal(written)) for name, written in column)) for column in progressions.NAMED_PROGRESSIONS)
+    lines.append('pub static NAMED_PROGRESSIONS: &[&[(&str, &str)]] = &[{}];'.format(columns))
     from llamatron.engine.generators.musician import generator as musicians, model as musician_model
     lines.append('')
     lines.append('/// Each kind of musician: whether it plays pitches, and how it gives way and holds its notes unless told.')

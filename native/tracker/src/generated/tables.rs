@@ -284,6 +284,38 @@ pub static READY_BARS: &[(&str, &str, &[&str], &[bool])] = &[
 ];
 pub const DEFAULT_BAR: &str = "folk_strum";
 
+/// The named progressions in the picker's columns, each by its name with its numerals as written against a major key.
+pub static NAMED_PROGRESSIONS: &[&[(&str, &str)]] = &[
+    &[
+        ("pop", "I V vi IV"),
+        ("fifties", "I vi IV V"),
+        ("sad_pop", "vi IV I V"),
+        ("epic", "vi IV I V"),
+        ("hopeful", "I IV vi V"),
+        ("rock", "I bVII IV"),
+        ("mixolydian_rock", "I bVII IV I"),
+        ("power_ballad", "I V vi iii IV"),
+        ("grunge", "i bVI bIII bVII"),
+        ("punk", "I IV V"),
+        ("royal_road", "IV V iii vi"),
+        ("hip_hop_loop", "i bVI"),
+    ],
+    &[
+        ("twelve_bar_blues", "I I I I IV IV I I V IV I V"),
+        ("quick_change_blues", "I IV I I IV IV I I V IV I V"),
+        ("eight_bar_blues", "I V IV IV I V I V"),
+        ("jazz_turnaround", "ii V I"),
+        ("long_turnaround", "I vi ii V"),
+        ("circle_of_fifths", "vi ii V I"),
+        ("rhythm_changes", "I vi ii V I vi ii V"),
+        ("folk", "I IV V I"),
+        ("gospel", "I IV I V"),
+        ("pachelbel", "I V vi iii IV I IV V"),
+        ("andalusian", "i bVII bVI V"),
+        ("minor", "i iv v i"),
+    ],
+];
+
 /// Each kind of musician: whether it plays pitches, and how it gives way and holds its notes unless told.
 pub static MUSICIAN_KINDS: &[(&str, bool, &str, &str)] = &[
     ("rhythm guitarist", true, "some", "as written"),

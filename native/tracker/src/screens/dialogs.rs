@@ -475,6 +475,8 @@ pub struct GridChoiceDialog {
     current: usize,
     /// What each choice is, said under the grid, where the picker says so.
     details: Option<Vec<String>>,
+    /// What takes the answer in place of the page that opened the picker, where something does.
+    pub then: Option<Then>,
 }
 
 impl GridChoiceDialog {
@@ -490,6 +492,7 @@ impl GridChoiceDialog {
             page,
             current,
             details,
+            then: None,
         }
     }
 
@@ -716,7 +719,11 @@ impl Page for GridChoiceDialog {
             self.move_cursor(key);
         } else if item.is(&GridKeys::CHOOSE) {
             app.go_back();
-            app.answer(Answer::Chosen(self.current));
+            let answer = Answer::Chosen(self.current);
+            match self.then.as_mut() {
+                Some(then) => then(app, &answer),
+                None => app.answer(answer),
+            }
         } else if item.is(&GridKeys::OTHER_PAGE) {
             let step = item.step_of(key).unwrap_or(1);
             if self.has_page(step) {

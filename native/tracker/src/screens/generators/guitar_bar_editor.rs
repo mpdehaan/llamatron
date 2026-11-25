@@ -96,6 +96,38 @@ impl GuitarBarEditor {
         });
     }
 
+    /// Ask which ready-made bar to take, opening on the one the bar is now where it is one, and take its cells.
+    fn pick_ready_bar(&self, app: &mut App, bar: &GuitarBar) {
+        let options = READY_BARS
+            .iter()
+            .map(|(name, _, _, _)| {
+                labels::MSG_READY_BAR_NAMES
+                    .iter()
+                    .find(|(each, _)| each == name)
+                    .map_or(name.to_string(), |(_, shown)| shown.to_string())
+            })
+            .collect();
+        let current = READY_BARS
+            .iter()
+            .position(|(_, cell, strokes, accents)| {
+                *cell == bar.cell && strokes.iter().copied().eq(bar.strokes.iter().map(String::as_str)) && accents.to_vec() == bar.accents
+            })
+            .unwrap_or(0);
+        let page = GuitarBarEditor { name: self.name.clone() };
+        let mut dialog = crate::screens::dialogs::ChoiceDialog::new(labels::MSG_READY_BARS_TITLE, options, current);
+        dialog.then = Some(Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
+            let crate::screens::dialogs::Answer::Chosen(place) = answer else { return };
+            let (_, cell, strokes, accents) = READY_BARS[*place];
+            let ready = GuitarBar {
+                strokes: strokes.iter().map(|stroke| stroke.to_string()).collect(),
+                accents: accents.to_vec(),
+                cell: cell.to_string(),
+            };
+            page.store(app, ready);
+        }));
+        app.show_page(Box::new(dialog));
+    }
+
     fn bind(binding: &'static Binding) -> KeyItem {
         KeyItem::of(&Keys::CLASS, binding)
     }
@@ -201,8 +233,10 @@ impl OneRow for GuitarBarEditor {
                 Some(place) => CELL_LENGTHS[(place + 1) % CELL_LENGTHS.len()].to_string(),
                 None => CELL_LENGTHS[0].to_string(),
             };
+        } else if item.is(&Keys::READY_BARS) {
+            self.pick_ready_bar(app, &bar);
+            return;
         } else {
-            // The ready-made bars are chosen in a dialog, not ported yet.
             return;
         }
         self.store(app, bar);

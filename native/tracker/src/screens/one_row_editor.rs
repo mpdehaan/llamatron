@@ -262,6 +262,13 @@ impl<R: OneRow> OneRowEditor<R> {
 }
 
 impl<R: OneRow> Page for OneRowEditor<R> {
+    /// A dialog's answer puts the cursor on a step.
+    fn go_to_row(&mut self, _app: &App, row: &str) {
+        if let Ok(step) = row.parse() {
+            self.step.set(step);
+        }
+    }
+
     fn follow_renames(&mut self, renames: &crate::history::Renames) {
         self.row.follow_renames(renames);
     }
