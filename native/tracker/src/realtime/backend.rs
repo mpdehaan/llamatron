@@ -54,10 +54,23 @@ const SYSTEM_LIBRARY_FOLDERS: [&str; 6] = [
 const LIBRARY_FOLDER: &str = "lib";
 const GAIN: f64 = 0.55;
 
-/// The computer's MIDI output ports by their shown names.
+/// The computer's MIDI output ports by their shown names; none in a screen tour, which lists no ports, as the Python's
+/// tests list none.
 #[cfg(target_os = "macos")]
 pub fn output_port_names() -> Vec<String> {
+    if !SENDING_ALLOWED.load(Ordering::SeqCst) {
+        return Vec::new();
+    }
     llamatron_backend::sender::coremidi::destination_names()
+}
+
+/// The MIDI ports an instrument can be sent to: every port the computer lists but FluidSynth's own, which an instrument
+/// reaches by choosing FluidSynth.
+pub fn device_port_names() -> Vec<String> {
+    output_port_names()
+        .into_iter()
+        .filter(|name| !name.starts_with("llamatron FluidSynth"))
+        .collect()
 }
 
 /// The computer's MIDI output ports, none listed where CoreMIDI isn't.

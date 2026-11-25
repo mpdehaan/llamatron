@@ -205,11 +205,13 @@ impl InstrumentEditor {
         let device = instrument.get_written(InstrumentSetting::DEVICE).and_then(Data::as_str).map(str::to_string);
         let value = match edit {
             Edit::Enter => {
-                // The ports this computer has are not listed yet; the instrument's own device is offered so that it is kept.
-                let mut ports = Vec::new();
-                if let Some(device) = device.as_ref().filter(|device| *device != FLUIDSYNTH_DEVICE) {
+                // The ports this computer has now, and the instrument's own device among them even when it has gone, so
+                // that it can be seen and kept.
+                let mut ports = crate::realtime::backend::device_port_names();
+                if let Some(device) = device.as_ref().filter(|device| *device != FLUIDSYNTH_DEVICE && !ports.contains(device)) {
                     ports.push(device.clone());
                 }
+                ports.retain(|port| port != FLUIDSYNTH_DEVICE);
                 let mut devices = vec![FLUIDSYNTH_DEVICE.to_string()];
                 devices.extend(crate::settings::sorted_names(&ports));
                 crate::screens::arrange::arrange_tabs::ask_name_or_above(
