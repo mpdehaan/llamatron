@@ -359,9 +359,16 @@ impl Page for PatternsPage {
             self.on_tabs = false;
             self.cursor.set(self.first_pattern_place(app));
         } else if item.is(&Keys::SEARCH) {
+            // The search starts from the row the cursor is on, found again among every group's rows, which it lists.
+            let before = self.listed(app);
+            self.on_tabs = false;
+            self.place_before_search = self.cursor.get();
             self.searching = true;
             self.typed.clear();
-            self.place_before_search = self.cursor.get();
+            if let Some(place) = self.rows(app).iter().position(|(listed, _)| *listed == before) {
+                self.cursor.set(place);
+            }
+            self.place(app);
             app.say(&named(messages::MSG_SEARCH_STATUS, &[("text", "".into())]));
         } else if item.is(&Keys::SEARCH_CANCEL) {
             self.searching = false;
