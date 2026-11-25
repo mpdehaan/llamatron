@@ -6,6 +6,8 @@
 pub mod arp;
 pub mod chords;
 pub mod guitarify;
+pub mod parts;
+pub mod phrasing;
 pub mod timing;
 
 use crate::clip::Clip;
@@ -26,6 +28,7 @@ pub enum Generator {
     Arp(Box<arp::Arp>),
     Guitarify(guitarify::Guitarify),
     Timing(timing::TimingGenerator),
+    Phrasing(phrasing::Phrasing),
     /// A generator whose settings change no notes in the chain.
     Unchanged,
 }
@@ -37,6 +40,7 @@ impl Generator {
             Generator::Arp(generator) => generator.generate(clip),
             Generator::Guitarify(generator) => generator.generate(clip),
             Generator::Timing(generator) => generator.generate(clip),
+            Generator::Phrasing(generator) => generator.generate(clip),
             Generator::Unchanged => Ok(Clip {
                 sounds: clip.resolved_sounds()?,
                 ..clip.clone()
@@ -49,7 +53,7 @@ impl Generator {
         match self {
             Generator::Chords(generator) => generator.end_state().map(GeneratorState::Voicing),
             Generator::Arp(generator) => generator.end_state(),
-            Generator::Guitarify(_) | Generator::Timing(_) | Generator::Unchanged => None,
+            Generator::Guitarify(_) | Generator::Timing(_) | Generator::Phrasing(_) | Generator::Unchanged => None,
         }
     }
 }

@@ -9,6 +9,7 @@ use crate::error::Rendered;
 use crate::generators::arp::Arp;
 use crate::generators::chords::ChordsSettings;
 use crate::generators::guitarify::Guitarify;
+use crate::generators::phrasing::Phrasing;
 use crate::generators::timing::TimingGenerator;
 use crate::generators::Generator;
 use crate::morph::{morph_controls, Blend};
@@ -157,6 +158,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                     let continuation = self.realizer.continuation(self.scene, self.track_name, &key, restart.as_deref())?;
                     Generator::Guitarify(Guitarify::of(&step.settings, bar, self.tempo(), seed, continuation.offset)?)
                 }
+                "phrasing" => Generator::Phrasing(Phrasing::of(&step.settings, bar)?),
                 "timing" => {
                     let restart = step.settings.get(GENERATOR_RESTART).map(|restart| restart.python_str());
                     let continuation = self.realizer.continuation(self.scene, self.track_name, &key, restart.as_deref())?;

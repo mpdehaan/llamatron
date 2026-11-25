@@ -662,7 +662,7 @@ fn chords_in(clip: &Clip) -> i64 {
 const TEMPO_PLACES: usize = 4;
 
 /// The kinds of generator the port runs so far.
-const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes", "timing"];
+const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes", "timing", "phrasing"];
 
 /// The factors a chain step's seed is made with, so that it differs for every song, scene, track and place in the chain.
 const SEED_SONG_FACTOR: i128 = 1_000_003;
