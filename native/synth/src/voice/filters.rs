@@ -17,7 +17,7 @@
 //! coefficients are worked out again every `COEFFICIENT_STEP` samples, which no ear can hear as steps.
 
 use crate::dsp::{flushed, HIGHEST_SHARE};
-use crate::value::{number, word};
+use crate::protocol::values::{number, word};
 use rmpv::Value;
 use std::f64::consts::PI;
 

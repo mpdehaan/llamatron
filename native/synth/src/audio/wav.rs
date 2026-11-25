@@ -1,7 +1,7 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! Writing a WAV file: two channels of 32-bit floats, the mono mix in both, as the tracker's WAV export reads it.
+//! Writing a WAV file: two channels of 32-bit floats, as the tracker's WAV export reads it.
 
 use std::fs::File;
 use std::io::{self, BufWriter, Write};
@@ -10,9 +10,9 @@ const FLOAT_FORMAT: u16 = 3;
 const CHANNELS: u16 = 2;
 const BYTES: u16 = 4;
 
-pub fn write_stereo(path: &str, rate: u32, samples: &[f32]) -> io::Result<()> {
+pub fn write_stereo(path: &str, rate: u32, left: &[f32], right: &[f32]) -> io::Result<()> {
     let mut file = BufWriter::new(File::create(path)?);
-    let data = (samples.len() * CHANNELS as usize * BYTES as usize) as u32;
+    let data = (left.len() * CHANNELS as usize * BYTES as usize) as u32;
     file.write_all(b"RIFF")?;
     file.write_all(&(36 + data).to_le_bytes())?;
     file.write_all(b"WAVEfmt ")?;
@@ -25,10 +25,9 @@ pub fn write_stereo(path: &str, rate: u32, samples: &[f32]) -> io::Result<()> {
     file.write_all(&(BYTES * 8).to_le_bytes())?;
     file.write_all(b"data")?;
     file.write_all(&data.to_le_bytes())?;
-    for sample in samples {
-        let bytes = sample.to_le_bytes();
-        file.write_all(&bytes)?;
-        file.write_all(&bytes)?;
+    for (first, second) in left.iter().zip(right) {
+        file.write_all(&first.to_le_bytes())?;
+        file.write_all(&second.to_le_bytes())?;
     }
     file.flush()
 }

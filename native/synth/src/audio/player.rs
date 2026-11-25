@@ -10,11 +10,12 @@
 //! leaves through another, for the housekeeper to free. The callback never allocates, never waits on a lock, and catches
 //! any panic at its edge, playing silence and counting a failure, so that the stream never stops.
 
-use crate::clock;
+use crate::audio::clock;
 use crate::drums::Hit;
-use crate::engine::{Engine, Event, Trash};
-use crate::modulation::MOST_FRAMES;
-use crate::patch::Patch;
+use crate::engine::{Engine, Event, MidiEvent, Trash};
+use crate::fluid::Fluid;
+use crate::voice::modulation::MOST_FRAMES;
+use crate::voice::patch::Patch;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use std::panic::{self, AssertUnwindSafe};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -48,6 +49,16 @@ pub enum Command {
     Instrument {
         number: usize,
         patch: Box<Patch>,
+    },
+    Fluid(Box<Fluid>),
+    Midi {
+        when: f64,
+        status: u8,
+        first: u8,
+        second: u8,
+    },
+    ForgetMidi {
+        when: f64,
     },
     Silence,
 }
@@ -180,7 +191,8 @@ impl Player {
             statistics: statistics.clone(),
             played: 0,
             delay: block as f64 / rate,
-            mono: vec![0.0; MOST_FRAMES],
+            left: vec![0.0; MOST_FRAMES],
+            right: vec![0.0; MOST_FRAMES],
             channels,
         };
         let stream = open_stream(&device, &config, format, callback, statistics.clone())?;
@@ -291,7 +303,8 @@ struct Callback {
     statistics: Arc<Statistics>,
     played: i64,
     delay: f64,
-    mono: Vec<f32>,
+    left: Vec<f32>,
+    right: Vec<f32>,
     channels: usize,
 }
 
@@ -313,11 +326,18 @@ impl Callback {
             let mut done = 0;
             while done < frames {
                 let piece = PIECE.min(frames - done);
-                self.engine.render(self.played + done as i64, &mut self.mono[..piece]);
-                for (place, sample) in self.mono[..piece].iter().enumerate() {
+                self.engine.render(self.played + done as i64, &mut self.left[..piece], &mut self.right[..piece]);
+                for place in 0..piece {
                     let frame = (done + place) * self.channels;
+                    // Left and right go to the first two channels; a mono device takes the left, and any further channel
+                    // stays silent.
                     for channel in 0..self.channels {
-                        out[frame + channel] = convert(*sample);
+                        let sample = match channel {
+                            0 => self.left[place],
+                            1 => self.right[place],
+                            _ => 0.0,
+                        };
+                        out[frame + channel] = convert(sample);
                     }
                 }
                 done += piece;
@@ -366,6 +386,21 @@ impl Callback {
                     self.engine.forget(first, last, sample);
                 }
                 Command::Instrument { number, patch } => self.engine.set_instrument(number, patch),
+                Command::Fluid(fluid) => self.engine.set_fluid(fluid),
+                Command::Midi { when, status, first, second } => {
+                    let sample = sample_of(when, self.played, self.delay);
+                    self.engine.schedule_midi(MidiEvent {
+                        sample,
+                        order: 0,
+                        status,
+                        first,
+                        second,
+                    });
+                }
+                Command::ForgetMidi { when } => {
+                    let sample = sample_of(when, self.played, self.delay);
+                    self.engine.forget_midi(sample);
+                }
                 Command::Silence => self.engine.silence(),
             }
         }
@@ -380,6 +415,8 @@ impl Callback {
         statistics.dropped.store(counts.dropped_notes, Ordering::Relaxed);
         statistics.voices.store(counts.voices, Ordering::Relaxed);
         statistics.faults.store(self.engine.guard.faults, Ordering::Relaxed);
-        statistics.muted.store(self.engine.guard.is_muted(), Ordering::Relaxed);
+        statistics
+            .muted
+            .store(self.engine.guard.is_muted() || self.engine.right_guard.is_muted(), Ordering::Relaxed);
     }
 }

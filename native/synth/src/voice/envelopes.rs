@@ -8,7 +8,7 @@
 //! Each answers a level from 0 to about 1 at a time into its note, in closed form, so that no sample ever depends on the
 //! chunk it falls in. Env1 is the amp, Env2 the filter's sweep and Env3 the pitch envelope.
 
-use crate::value::{number, word};
+use crate::protocol::values::{number, word};
 use rmpv::Value;
 
 const SILENT: f64 = 1e-4;
@@ -146,7 +146,7 @@ pub fn compiled(spec: &Value, resonance: f64) -> EnvelopePart {
         "chip_steps" => EnvelopePart::ChipSteps {
             start_level: number(spec, "start_level", 15.0),
             pace: number(spec, "level_pace", 0.0),
-            up: crate::value::truth(spec, "level_up", false),
+            up: crate::protocol::values::truth(spec, "level_up", false),
         },
         kind => adsr(spec, kind),
     }

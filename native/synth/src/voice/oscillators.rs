@@ -13,8 +13,8 @@
 //! Tables are read with linear interpolation between samples, so that a slow note is smooth. Everything a part needs is
 //! made when it is compiled; a sample is plain arithmetic.
 
-use crate::tables::{self, Tables, Waveform, TABLE_MASK, TABLE_SIZE};
-use crate::value::{as_number, list, number, numbers, truth, word};
+use crate::protocol::values::{as_number, list, number, numbers, truth, word};
+use crate::voice::tables::{self, Tables, Waveform, TABLE_MASK, TABLE_SIZE};
 use rmpv::Value;
 use std::sync::Arc;
 

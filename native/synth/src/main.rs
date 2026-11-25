@@ -7,23 +7,14 @@
 //! `llamatron-synth play [--block FRAMES] [--device NAME]` plays; `llamatron-synth render --rate HZ` renders. The
 //! architecture is described for people in docs/SYNTH_ENGINE.md.
 
-mod clock;
+mod audio;
 mod daemon;
 mod drums;
 mod dsp;
-mod effects;
 mod engine;
-mod envelopes;
-mod filters;
-mod modulation;
-mod oscillators;
-mod patch;
-mod player;
+mod fluid;
 mod protocol;
-mod safety;
-mod tables;
-mod value;
-mod wav;
+mod voice;
 
 use std::io;
 use std::panic;

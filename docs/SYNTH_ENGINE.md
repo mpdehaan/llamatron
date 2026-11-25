@@ -34,11 +34,11 @@ another.
 
 Each message is a MessagePack array, a compact binary form of a list, with its
 length written before it in four bytes, so that the reader always knows where
-one message ends. `native/synth/src/protocol.rs` and
+one message ends. `native/synth/src/protocol/` and
 `src/llamatron/realtime/synth_process/daemon.py` are the two ends.
 
 A note's time is a moment on the computer's own steady clock, the one Python's
-`time.perf_counter` reads, which the engine reads too (`clock.rs`), so that both
+`time.perf_counter` reads, which the engine reads too (`audio/clock.rs`), so that both
 programs agree on when a note falls without converting anything.
 
 ## Threads
@@ -70,6 +70,19 @@ counts how many samples into the chunk the note's moment falls, and the note
 starts on exactly that sample, whatever the chunk's size. MIDI sent to other
 devices is held back by the same delay, so the two land together.
 
+## The Code's Folders
+
+| Folder | What it holds |
+| --- | --- |
+| `protocol/` | The messages, and reading the tracker's values with a default for anything left out. |
+| `daemon/` | The two ways of running, playing and rendering, and the drum hits rendered as notes arrive. |
+| `audio/` | The sound card's stream and its callback, the clock, and WAV files. |
+| `engine/` | Notes and MIDI scheduled at exact samples, the mix, and the safety guard. |
+| `voice/` | The parts of a built-in instrument's voice, and the patch that plays them together. |
+| `drums/` | MechaDrum's recipes. |
+| `fluid/` | FluidSynth, loaded at run time. |
+| `dsp/` | Filters' building blocks and a seeded random source, which every part shares. |
+
 ## The Voice
 
 Every built-in instrument but the drum machine is a voice of swappable parts,
@@ -77,27 +90,39 @@ the same parts the Instrument page shows.
 
 | Part | File | What it does |
 | --- | --- | --- |
-| Oscillators | `oscillators.rs`, `tables.rs` | The raw sound: Basic's band-limited waveforms, the SID-style chip, the Pocket chip, the acid bass's saw or square. |
-| Env1, Env2, Env3 | `envelopes.rs` | Env1 shapes the loudness, Env2 the filter's sweep, Env3 the pitch: ADSR, AR, ASR, the SID chip's ADSR, the vactrol, the acid gate and the chip's sixteen steps. |
-| LFO1 to LFO4 | `modulation.rs` | Slow movement for the mod matrix. |
-| Filter | `filters.rs` | The ladder, diode, OTA, multimode and Sallen-Key filters, or the low-pass gate. |
-| Matrix | `modulation.rs` | Six routes from a source, such as an LFO or the velocity, to a destination, such as the cutoff. |
-| FX1, FX2 | `effects.rs` | Bitcrush and Drive. |
+| Oscillators | `voice/oscillators.rs`, `voice/tables.rs` | The raw sound: Basic's band-limited waveforms, the SID-style chip, the Pocket chip, the acid bass's saw or square. |
+| Env1, Env2, Env3 | `voice/envelopes.rs` | Env1 shapes the loudness, Env2 the filter's sweep, Env3 the pitch: ADSR, AR, ASR, the SID chip's ADSR, the vactrol, the acid gate and the chip's sixteen steps. |
+| LFO1 to LFO4 | `voice/modulation.rs` | Slow movement for the mod matrix. |
+| Filter | `voice/filters.rs` | The ladder, diode, OTA, multimode and Sallen-Key filters, or the low-pass gate. |
+| Matrix | `voice/modulation.rs` | Six routes from a source, such as an LFO or the velocity, to a destination, such as the cutoff. |
+| FX1, FX2 | `voice/effects.rs` | Bitcrush and Drive. |
 
-`patch.rs` puts the parts together into an instrument and plays its notes one
+`voice/patch.rs` puts the parts together into an instrument and plays its notes one
 sample at a time. The filters are zero-delay-feedback models: each sample, the
 filter's loop is solved exactly, so that the cutoff can sweep as fast as an
 envelope moves it without stepping or blowing up, and the ladder at full
 resonance rings on by itself as the hardware does.
 
-The drum machine, MechaDrum (`drums.rs`), renders each hit whole when its note
+The drum machine, MechaDrum (`drums/`), renders each hit whole when its note
 first arrives, from its five knobs, and replays it. The acoustic tom is a
 physical model of a struck drum head's modes, and the Karplus drum a plucked
 string turned drum.
 
+## FluidSynth
+
+Where FluidSynth is installed, the engine plays it too, in the same audio
+callback (`fluid/`). The tracker gives it the path of FluidSynth's library,
+found beside the installed `fluidsynth` program, and the SoundFont; the engine
+loads the library at run time, so building the engine never needs FluidSynth.
+The MIDI for FluidSynth's instruments arrives timed like every note, and the
+engine renders FluidSynth up to each message's sample before playing the
+message, so that each lands within FluidSynth's own block of 64 samples. The
+mix is stereo: the built-in instruments in the middle, FluidSynth's sounds
+where General MIDI pans them, each channel through its own safety guard.
+
 ## Safety
 
-`safety.rs` keeps every protection of the built-in synths, which no setting can
+`engine/safety.rs` keeps every protection of the built-in synths, which no setting can
 turn off. An instrument that produces a number that is not finite, or a level far
 past anything a patch makes, is silenced and reset. The whole mix then passes a
 filter that removes what is too low or too high to hear, a limiter that holds it

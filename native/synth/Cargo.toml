@@ -23,6 +23,7 @@ flexi_logger = "0.29"
 libc = "0.2"
 rustfft = "6"
 thiserror = "1"
+libloading = "0.8"
 
 [profile.release]
 opt-level = 3

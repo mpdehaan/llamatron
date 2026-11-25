@@ -10,7 +10,7 @@
 //! slots stay free. Empty slots and those of no amount are left out when it is compiled.
 
 use crate::dsp::Random;
-use crate::value::{number, truth, word};
+use crate::protocol::values::{number, truth, word};
 use rmpv::Value;
 use std::f64::consts::PI;
 

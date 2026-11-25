@@ -16,12 +16,12 @@
 
 use crate::drums::Hit;
 use crate::dsp::Random;
-use crate::effects::{self, Effect};
-use crate::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
-use crate::filters::{FilterPart, FilterState, GateNote, GatePart, ENVELOPE_OCTAVES};
-use crate::modulation::{LfoBank, ModMatrix, Moved, Source, Sources, LFO_COUNT, MOST_FRAMES};
-use crate::oscillators::{self, Moves, OscillatorPart, OscillatorState};
-use crate::value::{field, list, number, truth, word};
+use crate::protocol::values::{field, list, number, truth, word};
+use crate::voice::effects::{self, Effect};
+use crate::voice::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
+use crate::voice::filters::{FilterPart, FilterState, GateNote, GatePart, ENVELOPE_OCTAVES};
+use crate::voice::modulation::{LfoBank, ModMatrix, Moved, Source, Sources, LFO_COUNT, MOST_FRAMES};
+use crate::voice::oscillators::{self, Moves, OscillatorPart, OscillatorState};
 use rmpv::Value;
 
 const MIDDLE_C: f64 = 60.0;
@@ -145,10 +145,12 @@ impl Patch {
         let empty = Value::Nil;
         let oscillators = field(spec, "oscillators").unwrap_or(&empty);
         let sound = if word(oscillators, "type", "basic") == "drum" {
-            let choke = field(oscillators, "choke").and_then(crate::value::as_number).map(|group| group as i64);
+            let choke = field(oscillators, "choke")
+                .and_then(crate::protocol::values::as_number)
+                .map(|group| group as i64);
             Sound::Drum(Drum {
                 machine: word(oscillators, "machine", "kick").to_string(),
-                knobs: crate::value::numbers(oscillators, "knobs"),
+                knobs: crate::protocol::values::numbers(oscillators, "knobs"),
                 choke,
                 overlap: truth(oscillators, "overlap", false),
                 tuned_from: number(spec, "tuned_from", MIDDLE_C),

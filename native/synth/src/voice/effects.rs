@@ -8,7 +8,7 @@
 //! curve: soft and warm saturate, warm leaning to one side for even harmonics, hard clips, fold folds back past full scale
 //! and wrap wraps round, the last two the harsh digital sounds of cheap grooveboxes.
 
-use crate::value::{number, word};
+use crate::protocol::values::{number, word};
 use rmpv::Value;
 use std::f64::consts::PI;
 

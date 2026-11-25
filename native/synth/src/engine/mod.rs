@@ -9,10 +9,13 @@
 //! it the same way into a file) and allocates nothing while it plays: everything it holds is made ahead, and what it lets
 //! go of is handed to the housekeeper to free, never freed in the callback.
 
+pub mod safety;
+
 use crate::drums::Hit;
-use crate::modulation::MOST_FRAMES;
-use crate::patch::{Patch, Voice};
-use crate::safety::{self, OutputGuard};
+use crate::fluid::Fluid;
+use crate::voice::modulation::MOST_FRAMES;
+use crate::voice::patch::{Patch, Voice};
+use safety::OutputGuard;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 
@@ -30,6 +33,37 @@ pub const MOST_EVENTS: usize = 1 << 16;
 pub enum Trash {
     Hit(Hit),
     Patch(Box<Patch>),
+    Fluid(Box<Fluid>),
+}
+
+/// A MIDI message for FluidSynth at its sample.
+pub struct MidiEvent {
+    pub sample: i64,
+    pub order: u64,
+    pub status: u8,
+    pub first: u8,
+    pub second: u8,
+}
+
+impl PartialEq for MidiEvent {
+    fn eq(&self, other: &Self) -> bool {
+        (self.sample, self.order) == (other.sample, other.order)
+    }
+}
+
+impl Eq for MidiEvent {}
+
+impl PartialOrd for MidiEvent {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for MidiEvent {
+    // Reversed, so that the heap's top is the earliest message, those of one sample in the order they came.
+    fn cmp(&self, other: &Self) -> Ordering {
+        (other.sample, other.order).cmp(&(self.sample, self.order))
+    }
 }
 
 /// Where the engine puts what it lets go of: the housekeeper's queue, or nowhere (offline, where freeing is harmless).
@@ -87,6 +121,10 @@ pub struct Engine {
     pub rate: f64,
     instruments: Vec<Option<Box<Patch>>>,
     events: BinaryHeap<Event>,
+    fluid: Option<Box<Fluid>>,
+    midi: BinaryHeap<MidiEvent>,
+    fluid_scratch: Vec<f32>,
+    pub right_guard: OutputGuard,
     voices: Vec<Voice>,
     order: u64,
     next_voice: u64,
@@ -101,6 +139,10 @@ impl Engine {
             rate,
             instruments: (0..MOST_INSTRUMENTS).map(|_| None).collect(),
             events: BinaryHeap::with_capacity(MOST_EVENTS),
+            fluid: None,
+            midi: BinaryHeap::with_capacity(MOST_EVENTS),
+            fluid_scratch: vec![0.0; 2 * MOST_FRAMES],
+            right_guard: OutputGuard::new(rate),
             voices: Vec::with_capacity(MOST_VOICES),
             order: 0,
             next_voice: 0,
@@ -123,6 +165,35 @@ impl Engine {
         if let Some(old) = slot.replace(patch) {
             self.throw_away(Trash::Patch(old));
         }
+    }
+
+    /// Put FluidSynth in place, its old self thrown away.
+    pub fn set_fluid(&mut self, fluid: Box<Fluid>) {
+        if let Some(old) = self.fluid.replace(fluid) {
+            self.throw_away(Trash::Fluid(old));
+        }
+    }
+
+    /// Schedule a MIDI message for FluidSynth at an exact sample.
+    pub fn schedule_midi(&mut self, mut event: MidiEvent) {
+        if self.midi.len() >= MOST_EVENTS {
+            self.counts.dropped_notes += 1;
+            return;
+        }
+        self.order += 1;
+        event.order = self.order;
+        self.midi.push(event);
+    }
+
+    /// Take back every MIDI message for FluidSynth still to play from a sample on, as a MIDI port's flush does.
+    pub fn forget_midi(&mut self, sample: i64) {
+        self.midi.retain(|event| event.sample < sample);
+    }
+
+    /// Count a fault on both channels' guards, so that the latch holds the whole output.
+    fn fault(&mut self) {
+        self.guard.fault();
+        self.right_guard.fault();
     }
 
     /// Schedule an event at an exact sample.
@@ -171,12 +242,52 @@ impl Engine {
                 self.throw_away(Trash::Hit(hit));
             }
         }
+        self.midi.clear();
+        if let Some(fluid) = self.fluid.as_mut() {
+            fluid.silence();
+        }
         self.guard.clear();
+        self.right_guard.clear();
     }
 
-    /// The mix of the chunk starting at a sample, mono, every event due in it begun on its sample.
-    pub fn render(&mut self, start: i64, mix: &mut [f32]) {
-        let frames = mix.len().min(MOST_FRAMES);
+    /// The mix of the chunk starting at a sample into its two channels, every event due in it begun on its sample: the
+    /// built-in instruments in the middle, FluidSynth's sounds where its General MIDI pans them, each channel made safe.
+    pub fn render(&mut self, start: i64, left: &mut [f32], right: &mut [f32]) {
+        let frames = left.len().min(right.len()).min(MOST_FRAMES);
+        self.render_built_in(start, &mut left[..frames]);
+        right[..frames].copy_from_slice(&left[..frames]);
+        self.render_fluid(start, &mut left[..frames], &mut right[..frames]);
+        self.guard.guard(&mut left[..frames]);
+        self.right_guard.guard(&mut right[..frames]);
+    }
+
+    /// FluidSynth's part of the chunk, added to both channels: rendered up to each MIDI message's sample, the message played
+    /// there, then on to the next, so that each lands on its sample to FluidSynth's own block of 64.
+    fn render_fluid(&mut self, start: i64, left: &mut [f32], right: &mut [f32]) {
+        let frames = left.len();
+        let end = start + frames as i64;
+        let Some(fluid) = self.fluid.as_mut() else {
+            self.midi.retain(|event| event.sample >= end);
+            return;
+        };
+        let mut done = 0;
+        while self.midi.peek().is_some_and(|event| event.sample < end) {
+            let Some(event) = self.midi.pop() else { break };
+            let place = ((event.sample - start).max(0) as usize).min(frames);
+            if place > done {
+                fluid.render(&mut left[done..place], &mut right[done..place], &mut self.fluid_scratch);
+                done = place;
+            }
+            fluid.play(event.status, event.first, event.second);
+        }
+        if done < frames {
+            fluid.render(&mut left[done..], &mut right[done..], &mut self.fluid_scratch);
+        }
+    }
+
+    /// The built-in instruments' mono mix of the chunk.
+    fn render_built_in(&mut self, start: i64, mix: &mut [f32]) {
+        let frames = mix.len();
         mix.fill(0.0);
         let end = start + frames as i64;
         while self.events.peek().is_some_and(|event| event.sample < end) {
@@ -197,7 +308,6 @@ impl Engine {
         self.play_voices(start, frames);
         self.mix_instruments(&mut mix[..frames]);
         self.counts.voices = self.voices.len() as u64;
-        self.guard.guard(&mut mix[..frames]);
     }
 
     fn play_voices(&mut self, start: i64, frames: usize) {
@@ -246,7 +356,7 @@ impl Engine {
     /// Silence a runaway instrument: its notes dropped and its filters and effects back at rest.
     fn recover(&mut self, number: usize) {
         self.counts.runaways += 1;
-        self.guard.fault();
+        self.fault();
         let mut place = 0;
         while place < self.voices.len() {
             if self.voices[place].instrument == number {
@@ -414,7 +524,8 @@ mod tests {
         engine.set_instrument(0, basic());
         engine.schedule(note(70, NOTE_ON, 60.0));
         let mut mix = vec![0.0; 128];
-        engine.render(0, &mut mix);
+        let mut right = vec![0.0; 128];
+        engine.render(0, &mut mix, &mut right);
         // The guard's high pass lets nothing through before the note, and the note sounds from its sample.
         assert!(mix[..70].iter().all(|sample| *sample == 0.0));
         assert!(mix[72..].iter().any(|sample| *sample != 0.0));
@@ -426,9 +537,9 @@ mod tests {
         engine.set_instrument(0, basic());
         engine.schedule(note(0, NOTE_ON, 60.0));
         engine.schedule(note(4800, NOTE_OFF, 60.0));
-        let mut mix = vec![0.0; 128];
+        let (mut left, mut right) = (vec![0.0; 128], vec![0.0; 128]);
         for chunk in 0..200 {
-            engine.render(chunk * 128, &mut mix);
+            engine.render(chunk * 128, &mut left, &mut right);
         }
         assert_eq!(engine.voices.len(), 0);
     }

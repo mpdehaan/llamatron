@@ -6,9 +6,13 @@
 //! always knows where one ends. Any front end that can write MessagePack can drive the daemon.
 //!
 //! To the daemon: `["instrument", number, spec]`, `["notes", [[seconds, kind, instrument, pitch, velocity], ...]]`,
-//! `["silence"]`, `["close"]`, and, offline, `["render", path, seconds]`.
+//! `["silence"]`, `["close"]`, FluidSynth's `["soundfont", library, soundfont, gain]` (answered `soundfont_ready` or
+//! `failed`), `["midi", [[seconds, status, first, second], ...]]` and `["forget_midi", seconds]`, and, offline,
+//! `["render", path, seconds]`.
 //! From the daemon: `["ready", rate, delay]`, `["failed", problem, detail]`, `["load", {...}]` every half second while
 //! it plays, `["statistics", {...}]` as it closes, and, offline, `["rendered", {...}]`.
+
+pub mod values;
 
 use rmpv::Value;
 use std::io::{self, Read, Write};
@@ -23,6 +27,10 @@ pub const NOTES: &str = "notes";
 pub const SILENCE: &str = "silence";
 pub const CLOSE: &str = "close";
 pub const RENDER: &str = "render";
+pub const SOUNDFONT: &str = "soundfont";
+pub const SOUNDFONT_READY: &str = "soundfont_ready";
+pub const MIDI: &str = "midi";
+pub const FORGET_MIDI: &str = "forget_midi";
 /// The longest message the daemon reads, past which the stream is taken to be broken.
 const LONGEST_MESSAGE: usize = 64 << 20;
 

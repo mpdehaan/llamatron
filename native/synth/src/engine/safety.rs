@@ -18,7 +18,7 @@
 //!   silence until the tracker's silence (Ctrl+T) clears it.
 
 use crate::dsp::{Biquad, BUTTERWORTH_FOUR_Q, BUTTERWORTH_Q, HIGHEST_SHARE};
-use crate::modulation::MOST_FRAMES;
+use crate::voice::modulation::MOST_FRAMES;
 
 pub const RUNAWAY: f32 = 16.0;
 const LOWEST_KEPT: f64 = 18.0;

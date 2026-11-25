@@ -419,6 +419,7 @@ dependencies = [
  "cpal",
  "flexi_logger",
  "libc",
+ "libloading",
  "log",
  "rmp",
  "rmpv",

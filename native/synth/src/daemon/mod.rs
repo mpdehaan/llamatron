@@ -12,13 +12,14 @@
 //! Its well-behaved edges: it exits when its input closes or its parent dies, so that it is never left an orphan; it
 //! logs start-up, its settings and its problems, never a note, to rotating files in `~/.llamatron/`.
 
+use crate::audio::player::{Command, Player};
+use crate::audio::wav;
 use crate::drums::{self, Hit};
-use crate::engine::{Engine, Event, FORGET, NOTE_ON};
-use crate::patch::{Drum, Patch, VELOCITY_STEP};
-use crate::player::{Command, Player};
+use crate::engine::{Engine, Event, MidiEvent, FORGET, NOTE_ON};
+use crate::fluid::{Fluid, FluidProblem};
+use crate::protocol::values::as_number;
 use crate::protocol::{self, mapping, message};
-use crate::value::as_number;
-use crate::wav;
+use crate::voice::patch::{Drum, Patch, VELOCITY_STEP};
 use rmpv::Value;
 use std::collections::HashMap;
 use std::io::{self, Write};
@@ -29,6 +30,8 @@ use std::time::Duration;
 const REPORT_EVERY: Duration = Duration::from_millis(500);
 const OFFLINE_CHUNK: usize = 128;
 const MILLISECONDS: f64 = 1000.0;
+/// FluidSynth's gain where the tracker gives none, the one its own process played at.
+const FLUID_GAIN: f64 = 0.55;
 
 /// Where messages to the tracker are written, shared by the reader and the reporter.
 pub type Output = Arc<Mutex<io::Stdout>>;
@@ -145,7 +148,7 @@ pub fn play(block: usize, device: Option<&str>, output: Output) -> i32 {
                 break;
             }
         };
-        if !take_message(&received, &mut player, &mut hits) {
+        if !take_message(&received, &mut player, &mut hits, &output) {
             break;
         }
     }
@@ -160,7 +163,7 @@ pub fn play(block: usize, device: Option<&str>, output: Output) -> i32 {
 }
 
 /// Act on one message while playing, and return whether to go on.
-fn take_message(received: &Value, player: &mut Player, hits: &mut HitStore) -> bool {
+fn take_message(received: &Value, player: &mut Player, hits: &mut HitStore, output: &Output) -> bool {
     match kind_of(received) {
         protocol::CLOSE => return false,
         protocol::INSTRUMENT => {
@@ -202,9 +205,72 @@ fn take_message(received: &Value, player: &mut Player, hits: &mut HitStore) -> b
             }
         }
         protocol::SILENCE => player.send(Command::Silence),
+        protocol::SOUNDFONT => {
+            let answer = match fluid_of(received, player.rate) {
+                Ok(fluid) => {
+                    player.send(Command::Fluid(fluid));
+                    message(protocol::SOUNDFONT_READY, vec![])
+                }
+                Err(problem) => failed_fluid(&problem),
+            };
+            tell(output, &answer);
+        }
+        protocol::MIDI => {
+            for midi in midi_of(item(received, 1)) {
+                player.send(Command::Midi {
+                    when: midi.when,
+                    status: midi.status,
+                    first: midi.first,
+                    second: midi.second,
+                });
+            }
+        }
+        protocol::FORGET_MIDI => player.send(Command::ForgetMidi {
+            when: item(received, 1).and_then(as_number).unwrap_or(0.0),
+        }),
         other => log::warn!("a message of a kind the daemon does not know: {other}"),
     }
     true
+}
+
+/// A MIDI message for FluidSynth as the tracker sends it: (seconds, status, first, second).
+struct Midi {
+    when: f64,
+    status: u8,
+    first: u8,
+    second: u8,
+}
+
+fn midi_of(value: Option<&Value>) -> Vec<Midi> {
+    let Some(list) = value.and_then(Value::as_array) else { return Vec::new() };
+    list.iter()
+        .filter_map(|midi| {
+            let items = midi.as_array()?;
+            let number = |place: usize| items.get(place).and_then(as_number);
+            let byte = |place: usize| number(place).map(|whole| whole.clamp(0.0, 255.0) as u8);
+            Some(Midi {
+                when: number(0)?,
+                status: byte(1)?,
+                first: byte(2).unwrap_or(0),
+                second: byte(3).unwrap_or(0),
+            })
+        })
+        .collect()
+}
+
+/// FluidSynth made ready from a soundfont message: its library, its SoundFont and its gain.
+fn fluid_of(received: &Value, rate: f64) -> Result<Box<Fluid>, FluidProblem> {
+    let library = item(received, 1).and_then(Value::as_str).unwrap_or("");
+    let soundfont = item(received, 2).and_then(Value::as_str).unwrap_or("");
+    let gain = item(received, 3).and_then(as_number).unwrap_or(FLUID_GAIN);
+    let fluid = Fluid::load(library, soundfont, rate, gain)?;
+    log::info!("FluidSynth ready with {soundfont}");
+    Ok(Box::new(fluid))
+}
+
+fn failed_fluid(problem: &FluidProblem) -> Value {
+    log::error!("{problem}");
+    message(protocol::FAILED, vec!["fluidsynth".into(), problem.to_string().into()])
 }
 
 /// Report the load every half second: the share of the time the callback was busy, its longest chunk against its budget,
@@ -214,10 +280,10 @@ fn start_reporter(player: &Player, output: Output, reporting: Arc<AtomicBool>) -
     let budget = player.block as f64 / player.rate;
     std::thread::spawn(move || {
         let mut last_busy = statistics.busy_ns.load(Ordering::Relaxed);
-        let mut last_time = crate::clock::now();
+        let mut last_time = crate::audio::clock::now();
         while reporting.load(Ordering::Relaxed) {
             std::thread::sleep(REPORT_EVERY);
-            let now = crate::clock::now();
+            let now = crate::audio::clock::now();
             let busy = statistics.busy_ns.load(Ordering::Relaxed);
             let load = (busy - last_busy) as f64 / 1e9 / (now - last_time).max(1e-9);
             let peak = statistics.window_longest_ns.swap(0, Ordering::Relaxed) as f64 / 1e9 / budget;
@@ -300,6 +366,28 @@ pub fn render(rate: f64, output: Output) -> i32 {
                     });
                 }
             }
+            protocol::SOUNDFONT => {
+                let answer = match fluid_of(&received, rate) {
+                    Ok(fluid) => {
+                        engine.set_fluid(fluid);
+                        message(protocol::SOUNDFONT_READY, vec![])
+                    }
+                    Err(problem) => failed_fluid(&problem),
+                };
+                tell(&output, &answer);
+            }
+            protocol::MIDI => {
+                for midi in midi_of(item(&received, 1)) {
+                    let sample = (midi.when * rate).round() as i64;
+                    engine.schedule_midi(MidiEvent {
+                        sample,
+                        order: 0,
+                        status: midi.status,
+                        first: midi.first,
+                        second: midi.second,
+                    });
+                }
+            }
             protocol::RENDER => {
                 let path = item(&received, 1).and_then(Value::as_str).unwrap_or("").to_string();
                 let seconds = item(&received, 2).and_then(as_number).unwrap_or(0.0);
@@ -314,17 +402,18 @@ pub fn render(rate: f64, output: Output) -> i32 {
 
 fn render_file(engine: &mut Engine, path: &str, seconds: f64) -> Value {
     let frames = (seconds * engine.rate).ceil() as usize;
-    let mut samples = Vec::with_capacity(frames);
-    let mut chunk = vec![0.0; OFFLINE_CHUNK];
+    let (mut left, mut right) = (Vec::with_capacity(frames), Vec::with_capacity(frames));
+    let (mut chunk_left, mut chunk_right) = (vec![0.0; OFFLINE_CHUNK], vec![0.0; OFFLINE_CHUNK]);
     let mut start = 0;
     while start < frames {
-        engine.render(start as i64, &mut chunk);
+        engine.render(start as i64, &mut chunk_left, &mut chunk_right);
         let take = OFFLINE_CHUNK.min(frames - start);
-        samples.extend_from_slice(&chunk[..take]);
+        left.extend_from_slice(&chunk_left[..take]);
+        right.extend_from_slice(&chunk_right[..take]);
         start += OFFLINE_CHUNK;
     }
-    let peak = samples.iter().fold(0.0_f32, |most, sample| most.max(sample.abs()));
-    if let Err(problem) = wav::write_stereo(path, engine.rate as u32, &samples) {
+    let peak = left.iter().chain(right.iter()).fold(0.0_f32, |most, sample| most.max(sample.abs()));
+    if let Err(problem) = wav::write_stereo(path, engine.rate as u32, &left, &right) {
         log::error!("could not write the rendered file: {problem}");
         return message(protocol::FAILED, vec!["write".into(), problem.to_string().into()]);
     }
