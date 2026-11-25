@@ -32,7 +32,8 @@ if [ -n "$native" ]; then
 fi
 # The Python program is frozen while it is ported to Rust (.claude/rules/STYLE.md), so its tests run only when something it
 # reads changed; a commit of the native code alone is held by cargo's checks above and the comparisons with Python.
-python=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep -E '^(src/|tests/|examples/|internal_tools/.*\.py$|requirements\.txt|pyproject\.toml)' || true)
+# The comparison tools only hold the Rust to the Python, so a change to them alone runs no Python test.
+python=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep -E '^(src/|tests/|examples/|internal_tools/.*\.py$|requirements\.txt|pyproject\.toml)' | grep -vE '^internal_tools/compare_(llamatron2|screens)\.py$' || true)
 if [ -z "$python" ]; then
     echo 'check before commit: nothing the Python program reads changed, so its tests are not run'
     # Every path a document names must still exist, the native code's included.

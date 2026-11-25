@@ -19,6 +19,7 @@ commit check can run it.
 """
 
 import argparse
+import hashlib
 import json
 import pathlib
 import subprocess
@@ -281,6 +282,25 @@ def same_as_data(python, port):
 
 
 STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
+# Where the Python's answers are kept, git-ignored and never committed: since the Python program is frozen, an answer is
+# worked out from the Python only when none is kept for its step and its file as the file is now.
+KEPT = pathlib.Path('.cache/compare_llamatron2')
+NOTHING_KEPT = 'none'
+
+
+def kept_python(step, path):
+    """Return the Python's answer for a step on a set or MIDI file, worked out by the Python only when none is kept yet."""
+    digest = hashlib.sha256('{}\0'.format(step).encode('utf-8') + path.read_bytes()).hexdigest()
+    kept = KEPT / step / (digest + '.json')
+    if kept.exists():
+        held = json.loads(kept.read_text(encoding='utf-8'))
+        return None if held == NOTHING_KEPT else held
+    answer = STEPS[step](path)
+    kept.parent.mkdir(parents=True, exist_ok=True)
+    kept.write_text(json.dumps(NOTHING_KEPT if answer is None else answer), encoding='utf-8')
+    return answer
+
+
 # How each step's two outputs are compared: as text unless named here.
 COMPARED = {'save': same_as_data, 'import': same_as_data}
 
@@ -409,7 +429,7 @@ def main():
     skipped = 0
     waiting = {}
     for path in sets:
-        python = STEPS[options.step](path)
+        python = kept_python(options.step, path)
         if python is None:
             skipped += 1
             continue
