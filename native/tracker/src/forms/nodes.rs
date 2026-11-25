@@ -94,6 +94,14 @@ pub enum Edit {
         title: String,
         value: String,
     },
+    /// A choice to pick from groups under headings: the headings' places among the options are never chosen.
+    AskGrouped {
+        title: String,
+        options: Vec<String>,
+        current: usize,
+        choices: Vec<String>,
+        headings: Vec<usize>,
+    },
 }
 
 #[derive(Clone, Debug)]

@@ -177,6 +177,18 @@ impl<F: Form> FieldPage<F> {
                 self.asking = Some((id, Asking::Choice(choices)));
                 app.show_page(Box::new(ChoiceDialog::new(&title, options, current)));
             }
+            Edit::AskGrouped {
+                title,
+                options,
+                current,
+                choices,
+                headings,
+            } => {
+                self.asking = Some((id, Asking::Choice(choices)));
+                let mut dialog = ChoiceDialog::new(&title, options, current);
+                dialog.headings = headings;
+                app.show_page(Box::new(dialog));
+            }
             Edit::AskNumber { title, value, lowest, highest } => {
                 self.asking = Some((id, Asking::Number(lowest, highest)));
                 app.show_page(Box::new(PromptDialog::new(&title, &value.to_string())));
@@ -590,7 +602,8 @@ impl<F: Form> Page for FieldPage<F> {
             (Asking::Text, Answer::Typed(text)) => Edit::Text(text),
             _ => return,
         };
-        self.form.apply(app, id, edit);
+        // An answer may ask again, as a picker's choice of a number to type does.
+        self.ask_or_apply(app, id, edit);
     }
 
     fn name(&self) -> &'static str {

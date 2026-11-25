@@ -148,6 +148,11 @@ impl Chain {
         self.bypass_when.as_ref()
     }
 
+    /// Store the statements that bypass the whole chain, or None for none.
+    pub fn set_bypass_when(&mut self, statements: Option<Data>) {
+        self.bypass_when = statements;
+    }
+
     pub fn to_data(&self) -> Data {
         let steps = Data::List(
             self.steps

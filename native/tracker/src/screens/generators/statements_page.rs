@@ -6,7 +6,7 @@
 
 use crate::app::App;
 use crate::forms::nodes::Edit;
-use crate::forms::statements::statement_lines;
+use crate::forms::statements::{statement_change, statement_lines, with_statement, StatementChange};
 use crate::keybindings::{GeneratorStatementsPage as Keys, KeyClass};
 use crate::screens::field_page::{Form, Node};
 use crate::screens::generators::plugin_editor::caption_word;
@@ -18,6 +18,8 @@ use llamatron_model::schema::generated::file_format::{Section, TrackSetting};
 use llamatron_strings::{labels, named};
 
 const FIRST_LINE: usize = 1;
+/// The setting a built-in generator keeps its statements under.
+const BYPASS_WHEN: &str = "bypass_when";
 
 pub struct GeneratorStatementsPage {
     pub holder: Holder,
@@ -55,7 +57,7 @@ impl GeneratorStatementsPage {
                 .get_track(track)
                 .and_then(|track| track.get_written(TrackSetting::BUILT_IN))
                 .and_then(|built_ins| built_ins.get(kind))
-                .and_then(|settings| settings.get("bypass_when"))
+                .and_then(|settings| settings.get(BYPASS_WHEN))
                 .cloned(),
             Holder::Chain(name) => match app.document.get_setlist().get_item(Section::CHAINS, name) {
                 Some(Item::Chain(chain)) => chain.get_bypass_when().cloned(),
@@ -63,6 +65,31 @@ impl GeneratorStatementsPage {
             },
         };
         held.as_ref().and_then(Data::as_list).map(<[Data]>::to_vec).unwrap_or_default()
+    }
+
+    /// Store the table of statements in what holds it, or take it out with None.
+    fn store(&self, app: &mut App, table: Option<Data>) {
+        match &self.holder {
+            Holder::BuiltIn { track, kind, .. } => {
+                let built_ins = app
+                    .document
+                    .song()
+                    .get_track(track)
+                    .and_then(|track| track.get_written(TrackSetting::BUILT_IN))
+                    .cloned();
+                let changed = crate::screens::arrange::arrange_tabs::with_built_in(built_ins.as_ref(), kind, BYPASS_WHEN, table);
+                let (track, setting) = (track.clone(), TrackSetting::BUILT_IN);
+                crate::screens::arrange::arrange_tabs::write_in_song(app, |song| song.set_track_written(&track, setting, changed));
+            }
+            Holder::Chain(name) => {
+                let name = name.clone();
+                app.document.change_set(|setlist| {
+                    if let Some(Item::Chain(chain)) = setlist.get_item_mut(Section::CHAINS, &name) {
+                        chain.set_bypass_when(table);
+                    }
+                });
+            }
+        }
     }
 
     /// What the page's caption names: the built-in generator, or the chain.
@@ -127,5 +154,16 @@ impl Form for GeneratorStatementsPage {
             .collect()
     }
 
-    fn apply(&mut self, _app: &mut App, _id: usize, _edit: Edit) {}
+    fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        let statements = self.statements(app);
+        match statement_change(&statements, FIRST_LINE, id, &edit) {
+            StatementChange::Ask(asked) => app.asking = Some(asked),
+            StatementChange::Refuse(refusal) => app.refuse(refusal),
+            StatementChange::Store { place, statement } => {
+                let table = with_statement(&statements, place, statement);
+                self.store(app, table);
+            }
+            StatementChange::Nothing => {}
+        }
+    }
 }

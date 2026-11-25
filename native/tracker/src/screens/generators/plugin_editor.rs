@@ -16,7 +16,6 @@ use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::{GENERATOR_ENABLED, GENERATOR_RESTART, RESTARTS, SHAPE_PARTS, SHAPE_THENS, TIME_CHOICES};
-use llamatron_model::schema::generated::limits::MAX_STATEMENTS;
 use llamatron_model::schema::generated::limits::{MAX_OCTAVE, MIN_OCTAVE};
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Described, Plain};
@@ -120,6 +119,11 @@ fn setting_limits(kind: &str, setting: &str) -> (i64, i64) {
         _ => (i64::MIN, i64::MAX),
     }
 }
+
+/// The setting a generator keeps its Bypass When statements under, and the first id their cells take, past every other
+/// field's.
+const BYPASS_WHEN: &str = "bypass_when";
+const STATEMENT_IDS: usize = 10_000;
 
 /// The ends of a voicing's range of octaves, each kept from passing the other.
 const LOWEST_OCTAVE: &str = "lowest_octave";
@@ -853,6 +857,25 @@ impl PluginEditor {
         }
     }
 
+    /// Store what a key did to the generator's Bypass When statements, or open the dialog it asks for.
+    fn change_statements(&self, app: &mut App, id: usize, edit: &Edit) {
+        use crate::forms::statements::{statement_change, with_statement, StatementChange};
+        let statements = match app.document.get_setlist().get_item(self.section(), &self.name) {
+            Some(Item::Generator(settings)) => settings
+                .get_written(BYPASS_WHEN)
+                .and_then(Data::as_list)
+                .map(<[Data]>::to_vec)
+                .unwrap_or_default(),
+            _ => Vec::new(),
+        };
+        match statement_change(&statements, STATEMENT_IDS, id, edit) {
+            StatementChange::Ask(asked) => app.asking = Some(asked),
+            StatementChange::Refuse(refusal) => app.refuse(refusal),
+            StatementChange::Store { place, statement } => self.write(app, BYPASS_WHEN, with_statement(&statements, place, statement)),
+            StatementChange::Nothing => {}
+        }
+    }
+
     fn section(&self) -> &'static str {
         PLUGINS.iter().find(|plugin| plugin.name == self.kind).map_or("", |plugin| plugin.section)
     }
@@ -901,6 +924,10 @@ impl Form for PluginEditor {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        if id >= STATEMENT_IDS {
+            self.change_statements(app, id, &edit);
+            return;
+        }
         let view = self.made(app).1.into_iter().find(|(found, _)| *found == id).map(|(_, view)| view);
         match (view, edit) {
             (Some(SettingView::Offsets { setting, .. }), Edit::Enter) => {
@@ -1071,18 +1098,8 @@ impl PluginEditor {
         if self.kind != "drift" {
             let id = made.id();
             fields.push(Field::heading(id, labels::MSG_BYPASS_WHEN_LABEL, false, Some(String::new()), false));
-            for place in 0..MAX_STATEMENTS as usize {
-                let id = made.id();
-                let label = labels::MSG_STATEMENT_LINE_LABEL.repeat(place + 1);
-                fields.push(Field::cells(
-                    id,
-                    &label,
-                    vec![
-                        Field::custom(id, labels::MSG_STATEMENT_REGISTER_TITLE, &format!("{:<4}", labels::MSG_STATEMENT_IGNORED))
-                            .with_enter(legends::What::CHOOSE),
-                    ],
-                ));
-            }
+            let held = made.written(BYPASS_WHEN).and_then(Data::as_list).map(<[Data]>::to_vec).unwrap_or_default();
+            fields.extend(crate::forms::statements::statement_lines(0, &held, STATEMENT_IDS));
         }
         (fields, made.views)
     }

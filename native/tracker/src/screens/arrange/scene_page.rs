@@ -74,6 +74,21 @@ impl ScenePage {
     /// Store what a key did to one of the scene's fields; false where the field writes nothing so.
     fn write_edit(&self, app: &mut App, id: usize, edit: &Edit) -> bool {
         let Some(scene) = self.scene(app) else { return false };
+        if id >= arrange_tabs::BYPASS_IDS {
+            use crate::forms::statements::{statement_change, with_statement, StatementChange};
+            let statements = scene
+                .get_written(SceneSetting::BYPASS_WHEN)
+                .and_then(Data::as_list)
+                .map(<[Data]>::to_vec)
+                .unwrap_or_default();
+            match statement_change(&statements, arrange_tabs::BYPASS_IDS, id, edit) {
+                StatementChange::Ask(asked) => app.asking = Some(asked),
+                StatementChange::Refuse(refusal) => app.refuse(refusal),
+                StatementChange::Store { place, statement } => self.write(app, SceneSetting::BYPASS_WHEN, with_statement(&statements, place, statement)),
+                StatementChange::Nothing => return false,
+            }
+            return true;
+        }
         match (id, edit) {
             (SECTION, Edit::Choice(chosen)) => self.write(app, SceneSetting::SECTION, (chosen != marks::MSG_NONE_SHOWN).then(|| Data::text(chosen))),
             (REPEAT, Edit::Number(repeat)) => self.write(app, SceneSetting::REPEAT, (*repeat != 1).then_some(Data::Whole(*repeat as i128))),
@@ -334,7 +349,7 @@ impl Form for ScenePage {
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
         // ENTER opens a picker only on the fields whose choices the page asks for itself; elsewhere it opens a page.
-        let picks = matches!(id, SCALE | GROOVE);
+        let picks = matches!(id, SCALE | GROOVE) || id >= arrange_tabs::BYPASS_IDS;
         if (edit != Edit::Enter || picks) && self.write_edit(app, id, &edit) {
             return;
         }
