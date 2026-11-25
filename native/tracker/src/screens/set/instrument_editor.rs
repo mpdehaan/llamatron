@@ -20,7 +20,8 @@ use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::file_format::{
-    InstrumentSetting, Section, CURVES, EFFECTS, FILTER_SHARINGS, INSTRUMENT_KINDS, LFO_SHAPES, MATRIX_DESTINATIONS, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
+    InstrumentSetting, Section, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, INSTRUMENT_KINDS, LFO_SHAPES, MATRIX_DESTINATIONS, MATRIX_SOURCES,
+    OSCILLATOR_WAVEFORMS,
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
@@ -42,7 +43,6 @@ const SECOND_ROW_SLOT: usize = 4;
 const CRUSH_RATES: [i64; 11] = [0, 32000, 22050, 16000, 11025, 8000, 6000, 4000, 3000, 2000, 1000];
 const MIDI: &str = "midi";
 const BUILT_IN: &str = "built_in";
-const FLUIDSYNTH_DEVICE: &str = "FluidSynth";
 const NONE_EFFECT: &str = "none";
 const BITCRUSH: &str = "bitcrush";
 
@@ -170,6 +170,40 @@ fn stride(strides: Strides, number: i64) -> i64 {
 }
 
 impl InstrumentEditor {
+    /// The Device field's ENTER, which picks FluidSynth or a port of this computer, or no device, and its answer.
+    fn choose_device(&self, app: &mut App, edit: Edit) {
+        let Some(instrument) = self.instrument(app) else { return };
+        let device = instrument.get_written(InstrumentSetting::DEVICE).and_then(Data::as_str).map(str::to_string);
+        let value = match edit {
+            Edit::Enter => {
+                // The ports this computer has are not listed yet; the instrument's own device is offered so that it is kept.
+                let mut ports = Vec::new();
+                if let Some(device) = device.as_ref().filter(|device| *device != FLUIDSYNTH_DEVICE) {
+                    ports.push(device.clone());
+                }
+                let mut devices = vec![FLUIDSYNTH_DEVICE.to_string()];
+                devices.extend(crate::settings::sorted_names(&ports));
+                crate::screens::arrange::arrange_tabs::ask_name_or_above(
+                    app,
+                    messages::MSG_DEVICE_TITLE,
+                    marks::MSG_NO_DEVICE_SHOWN,
+                    devices,
+                    device.as_deref(),
+                );
+                return;
+            }
+            Edit::Choice(chosen) => crate::screens::arrange::arrange_tabs::chosen_name(&chosen),
+            Edit::Clear => None,
+            _ => return,
+        };
+        let name = self.name.clone();
+        app.document.change_set(|setlist| {
+            if let Some(Item::Instrument(instrument)) = setlist.get_item_mut(Section::INSTRUMENTS, &name) {
+                instrument.set_written(InstrumentSetting::DEVICE, value);
+            }
+        });
+    }
+
     /// The page's fields, and what each that writes writes.
     fn built(&self, app: &App) -> (Vec<Node>, Ids) {
         let Some(instrument) = self.instrument(app) else {
@@ -878,6 +912,10 @@ impl Form for InstrumentEditor {
             }
             (edit, _) => edit,
         };
+        if write == Write::Setting(InstrumentSetting::DEVICE) {
+            self.choose_device(app, edit);
+            return;
+        }
         let value = match edit {
             Edit::Number(number) => Some(Data::Whole(number as i128)),
             Edit::Toggle(on) => Some(Data::Bool(on)),
