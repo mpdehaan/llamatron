@@ -66,19 +66,8 @@ class ModularPatch:
         filter_spec = spec['filter']
         resonance = filter_spec.get('resonance', 0.0)
         self.envelopes = [envelopes.compiled_envelope(spec=envelope, rate=rate, resonance=resonance) for envelope in spec['envelopes']]
-        self.filter = None
-        self.own_filter = False
-        self.shared = None
         self.effects = list(effects_compiled)
-        if filter_spec['type'] == LOW_PASS_GATE:
-            self.filter = gates.LowPassGate(spec=filter_spec, rate=rate)
-            self.own_filter = True
-        elif filter_spec['type'] != NONE:
-            self.filter = filters.Filter(spec=filter_spec, rate=rate)
-            self.own_filter = spec['filter_per_note']
-            if not self.own_filter:
-                self.shared = SharedFilter(filter_part=self.filter)
-                self.effects.insert(0, self.shared)
+        self._take_filter(spec=filter_spec, per_note=spec['filter_per_note'], rate=rate)
         self.matrix = ModMatrix(spec.get('matrix', ()))
         # Env2 and Env3 are worked out only where something reads them: the filter, the pitch envelope, or the matrix.
         self.matrix_reads_env2 = self.matrix.uses(matrix.ENV2)
@@ -143,6 +132,22 @@ class ModularPatch:
         if matrix.AMP in moved:
             amp = amp * numpy.clip(1.0 + moved[matrix.AMP], 0.0, MOST_AMP)
         return (wave * amp).astype(numpy.float32)
+
+    def _take_filter(self, *, spec, per_note, rate):
+        """Take the voice's filter: none, the low-pass gate, always a note's own, or one of the ladder family, each note's own
+        or shared by them as the first of the effects."""
+        self.filter = None
+        self.own_filter = False
+        self.shared = None
+        if spec['type'] == LOW_PASS_GATE:
+            self.filter = gates.LowPassGate(spec=spec, rate=rate)
+            self.own_filter = True
+        elif spec['type'] != NONE:
+            self.filter = filters.Filter(spec=spec, rate=rate)
+            self.own_filter = per_note
+            if not per_note:
+                self.shared = SharedFilter(filter_part=self.filter)
+                self.effects.insert(0, self.shared)
 
     def _levels(self, *, voice, first, count):
         """Return the three envelopes over the chunk, Env2's decay forced short for an accent where one asks, Env2 and Env3 None
