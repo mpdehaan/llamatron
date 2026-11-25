@@ -1049,8 +1049,10 @@ impl PatternEditor {
             keys.push(view(&RowsKeys::REMOVE_STEP));
         }
         keys.extend([editor(&Keys::RESIZE), editor(&Keys::MUNGE), editor(&Keys::RECONFIGURE), editor(&Keys::RENAME)]);
-        if app.fluidsynth_installed {
-            keys.push(editor(&Keys::LISTEN));
+        match crate::screens::listening::pattern_listen_key(app, &self.name) {
+            Some(crate::screens::listening::ListenKey::Listen) => keys.push(editor(&Keys::LISTEN)),
+            Some(crate::screens::listening::ListenKey::Stop) => keys.push(editor(&Keys::STOP_LISTENING)),
+            None => {}
         }
         keys.extend(rows.keys(&cursor, self.keep_step(app)));
         keys
@@ -1144,8 +1146,10 @@ impl Page for PatternEditor {
         let mut keys = vec![editor(&Keys::BACK), roll(&RollKeys::MOVE).wanting_key(), roll(&RollKeys::ENDS)];
         keys.push(editor(if self.on_roll(app) { &Keys::TO_EDITOR } else { &Keys::TO_ROLL }));
         keys.extend([editor(&Keys::RESIZE), editor(&Keys::MUNGE), editor(&Keys::RECONFIGURE), editor(&Keys::RENAME)]);
-        if app.fluidsynth_installed {
-            keys.push(editor(&Keys::LISTEN));
+        match crate::screens::listening::pattern_listen_key(app, &self.name) {
+            Some(crate::screens::listening::ListenKey::Listen) => keys.push(editor(&Keys::LISTEN)),
+            Some(crate::screens::listening::ListenKey::Stop) => keys.push(editor(&Keys::STOP_LISTENING)),
+            None => {}
         }
         for binding in [
             &RollKeys::PLACE,
@@ -1170,6 +1174,15 @@ impl Page for PatternEditor {
     }
 
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        if item.is(&Keys::LISTEN) {
+            let name = self.name.clone();
+            crate::screens::listening::listen_to_pattern(app, &name);
+            return;
+        }
+        if item.is(&Keys::STOP_LISTENING) {
+            crate::screens::listening::stop_listening_to_pattern(app);
+            return;
+        }
         if item.is(&Keys::RESIZE) || item.is(&Keys::RENAME) || item.is(&Keys::RECONFIGURE) || item.is(&Keys::MUNGE) {
             let place = self.whole_pattern_place(app);
             if item.is(&Keys::RESIZE) {

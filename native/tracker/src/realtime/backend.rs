@@ -94,6 +94,10 @@ pub struct OpenedPort {
     pub group: i64,
 }
 
+/// Whether the sender may start: the screen tour switches it off, so that no tour ever opens a MIDI port or the sound
+/// card, as the Python's tests refuse a real FluidSynth and list no ports.
+pub static SENDING_ALLOWED: AtomicBool = AtomicBool::new(true);
+
 /// The tracker's side of the sender: the backend's sending loop on a thread of this process, handed its messages through
 /// a channel.
 pub struct BackendSender {
@@ -108,6 +112,9 @@ pub struct BackendSender {
 impl BackendSender {
     /// Start the sender on the ports and take this moment as the timeline's zero; why it could not start where it can't.
     pub fn start(ports: &[OpenedPort]) -> Result<BackendSender, String> {
+        if !SENDING_ALLOWED.load(Ordering::SeqCst) {
+            return Err(errors::ERR_SENDER_DID_NOT_START.to_string());
+        }
         let (to_sender, inbox) = mpsc::channel::<Value>();
         let (answers, answered) = mpsc::channel::<Value>();
         let answers = Mutex::new(answers);

@@ -27,9 +27,11 @@ pub fn run(path: Option<&Path>) -> Result<(), String> {
         None => Document::new_set()?,
     };
     let mut tracker = Tracker::new(document);
+    tracker.app.fluidsynth_installed = crate::wav::fluidsynth_installed();
     start_terminal()?;
     let finished = run_keys(&mut tracker);
     tracker.app.transport.close();
+    tracker.app.preview.close();
     end_terminal();
     finished
 }
@@ -42,7 +44,8 @@ fn run_keys(tracker: &mut Tracker) -> Result<(), String> {
     loop {
         // The screen is drawn after each key, and while something plays every LIGHTS so that its lights move, less often
         // than the ticks, which keep the player ahead.
-        let lights_due = tracker.app.transport.is_playing() && drawn.elapsed() >= LIGHTS;
+        let playing = tracker.app.transport.is_playing() || tracker.app.preview.is_playing();
+        let lights_due = playing && drawn.elapsed() >= LIGHTS;
         if changed || lights_due {
             let (width, height) = terminal::size().map_err(|error| error.to_string())?;
             draw(&mut out, tracker, width as usize, height as usize).map_err(|error| error.to_string())?;
@@ -51,6 +54,7 @@ fn run_keys(tracker: &mut Tracker) -> Result<(), String> {
         }
         // While waiting for a key, real-time playback is planned ahead a tick at a time.
         tracker.app.transport.tick();
+        tracker.app.preview.tick();
         if !event::poll(TICK).map_err(|error| error.to_string())? {
             continue;
         }

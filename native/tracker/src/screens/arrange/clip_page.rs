@@ -55,6 +55,16 @@ fn words(name: &str) -> String {
 }
 
 impl ClipPage {
+    /// Listen to the clip, again and again, or stop it while it plays on its own.
+    fn listen_or_stop(&self, app: &mut App) {
+        if crate::screens::listening::is_listening(app, self.index, &self.track) {
+            crate::screens::listening::stop_listening(app);
+            return;
+        }
+        let name = self.clip_slot(app).map(|clip| clip.get_display_name()).unwrap_or_default();
+        crate::screens::listening::listen(app, self.index, &self.track, &name);
+    }
+
     /// Write one of the clip's settings, or take it out of the file with None.
     fn write(&self, app: &mut App, setting: &str, value: Option<Data>) {
         arrange_tabs::write_in_song(app, |song| song.set_clip_written(self.index, &self.track, setting, value));
@@ -429,12 +439,24 @@ impl Form for ClipPage {
             label: labels::MSG_TABS_LABEL.to_string(),
             tabs,
         }));
-        nodes.push(Node::Field(Box::new(Field::button(
-            LISTEN,
-            labels::MSG_LISTEN_LABEL,
-            legends::KeyName::L,
-            legends::MSG_LISTEN_WHAT,
-        ))));
+        // Both names take the room of the longer, so that the button never changes its width as it changes its name.
+        let width = labels::MSG_LISTEN_LABEL.chars().count().max(labels::MSG_STOP_LISTENING_LABEL.chars().count());
+        let button = if crate::screens::listening::is_listening(app, self.index, &self.track) {
+            Field::button(
+                LISTEN,
+                &format!("{:^width$}", labels::MSG_STOP_LISTENING_LABEL),
+                legends::KeyName::L,
+                legends::MSG_STOP_LISTENING_WHAT,
+            )
+        } else {
+            Field::button(
+                LISTEN,
+                &format!("{:^width$}", labels::MSG_LISTEN_LABEL),
+                legends::KeyName::L,
+                legends::MSG_LISTEN_WHAT,
+            )
+        };
+        nodes.push(Node::Field(Box::new(button)));
         nodes
     }
 
@@ -476,17 +498,25 @@ impl Form for ClipPage {
         field.id == ADD_ROW
     }
 
-    fn page_keys(&self, _app: &App, row: Option<&Field>) -> Vec<KeyItem> {
+    fn page_keys(&self, app: &App, row: Option<&Field>) -> Vec<KeyItem> {
         let mut keys = vec![Self::bind(&Keys::ADD_PATTERN)];
         if row.is_some_and(|row| (FIRST_PATTERN..ADD_ROW).contains(&row.id)) {
             keys.push(Self::bind(&Keys::MOVE_PATTERN));
         }
         keys.push(Self::bind(&Keys::OPEN_PATTERN));
-        keys.push(Self::bind(&Keys::LISTEN));
+        if crate::screens::listening::is_listening(app, self.index, &self.track) {
+            keys.push(Self::bind(&Keys::STOP_LISTENING));
+        } else {
+            keys.push(Self::bind(&Keys::LISTEN));
+        }
         keys
     }
 
     fn press_own(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&Field>) {
+        if item.is(&Keys::LISTEN) || item.is(&Keys::STOP_LISTENING) {
+            self.listen_or_stop(app);
+            return;
+        }
         if item.is(&Keys::OPEN_PATTERN) {
             let place = row
                 .filter(|row| (FIRST_PATTERN..ADD_ROW).contains(&row.id))
@@ -496,6 +526,10 @@ impl Form for ClipPage {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        if id == LISTEN && edit == Edit::Enter {
+            self.listen_or_stop(app);
+            return;
+        }
         // ENTER opens a picker only on the fields whose choices the page asks for itself; elsewhere it opens a page.
         let picks = matches!(id, DIRECTION | SCALE | GRAB_TRACK);
         if (edit != Edit::Enter || picks) && self.write_edit(app, id, &edit) {

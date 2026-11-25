@@ -280,8 +280,10 @@ impl PatternsPage {
             keys.push(self.bind(&Keys::ADD));
         }
         keys.extend([&Keys::RENAME, &Keys::COPY, &Keys::DELETE].into_iter().map(|binding| self.bind(binding)));
-        if app.fluidsynth_installed {
-            keys.push(self.bind(&Keys::LISTEN));
+        match crate::screens::listening::pattern_listen_key(app, name) {
+            Some(crate::screens::listening::ListenKey::Listen) => keys.push(self.bind(&Keys::LISTEN)),
+            Some(crate::screens::listening::ListenKey::Stop) => keys.push(self.bind(&Keys::STOP_LISTENING)),
+            None => {}
         }
         keys
     }
@@ -413,6 +415,12 @@ impl Page for PatternsPage {
             if let Listed::Pattern(name) = self.listed(app) {
                 app.show_page(crate::screens::pattern::open_pattern(&name));
             }
+        } else if item.is(&Keys::LISTEN) {
+            if let Listed::Pattern(name) = self.listed(app) {
+                crate::screens::listening::listen_to_pattern(app, &name);
+            }
+        } else if item.is(&Keys::STOP_LISTENING) {
+            crate::screens::listening::stop_listening_to_pattern(app);
         }
     }
 

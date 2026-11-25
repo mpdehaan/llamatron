@@ -14,6 +14,7 @@ pub mod import_dialog;
 pub mod keyswitch_dialog;
 pub mod keyswitch_map_dialog;
 pub mod list_page;
+pub mod listening;
 pub mod main_page;
 pub mod new_pattern_dialog;
 pub mod not_ported;

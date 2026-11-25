@@ -8,6 +8,7 @@
 pub mod backend;
 pub mod clip_notes;
 pub mod player;
+pub mod preview;
 pub mod row_clock;
 pub mod score;
 pub mod timeline;

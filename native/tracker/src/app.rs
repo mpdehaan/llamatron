@@ -113,6 +113,8 @@ pub struct App {
     pub quitting: bool,
     /// Real-time playback: the sender, the player and what plays.
     pub transport: crate::realtime::transport::Transport,
+    /// The pattern preview, which plays a pattern or a clip beside the song.
+    pub preview: crate::realtime::preview::PatternPreview,
 }
 
 impl App {
@@ -127,6 +129,7 @@ impl App {
             quitting: false,
             asking: None,
             transport: crate::realtime::transport::Transport::default(),
+            preview: crate::realtime::preview::PatternPreview::default(),
         }
     }
 

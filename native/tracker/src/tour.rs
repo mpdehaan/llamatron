@@ -66,6 +66,8 @@ pub struct TourKey {
 pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourStop]) -> Result<Vec<Stop>, String> {
     // The tests that made the tour count FluidSynth as installed.
     tracker.app.fluidsynth_installed = true;
+    // A tour never makes a sound or opens a MIDI port, whatever its keys launch.
+    crate::realtime::backend::SENDING_ALLOWED.store(false, std::sync::atomic::Ordering::SeqCst);
     let mut recorded = Vec::new();
     // The Python opened types on its Generators page before the stops compared begin, and pages not ported yet may open or
     // close them, so the Rust takes the Python's up at the start and after those.
