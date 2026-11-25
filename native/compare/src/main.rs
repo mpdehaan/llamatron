@@ -6,7 +6,8 @@
 //!
 //! `llamatron-compare load SET` prints the set file's data as JSON, as Python's json.dumps writes what PyYAML loaded;
 //! `llamatron-compare layout SET` writes that data back as a set file, as the Python writer lays it out;
-//! `llamatron-compare migrate SET` moves the data to today's layout, into the objects' layout and back, and writes it.
+//! `llamatron-compare migrate SET` moves the data to today's layout, into the objects' layout and back, and writes it;
+//! `llamatron-compare save SET` reads the set into objects and saves it, as the Python program saves a set.
 
 use llamatron_model::file::data::{json_text, load, Data};
 use std::process::ExitCode;
@@ -100,6 +101,20 @@ fn main() -> ExitCode {
                 ExitCode::from(1)
             }
         },
+        "save" => {
+            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
+            match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
+                Ok(setlist) => {
+                    let file = llamatron_model::file::layout::as_file_layout(&setlist.to_data());
+                    print!("{}", llamatron_model::file::writing::dump_file_layout(&file));
+                    ExitCode::SUCCESS
+                }
+                Err(problem) => {
+                    eprintln!("{path}: {}", problem.message);
+                    ExitCode::from(1)
+                }
+            }
+        }
         other => {
             eprintln!("llamatron-compare: a command it does not know: {other}");
             ExitCode::from(2)

@@ -198,7 +198,25 @@ fn nearest_of(kind: Nearest, value: &Data) -> NearestValue {
             Err(_) => NearestValue::None,
         },
         Nearest::ArpModelNearestOffsets => NearestValue::None,
+        Nearest::GrooveNearestCells => match groove_amounts(value) {
+            Some(amounts) => NearestValue::Value(Data::List(
+                amounts
+                    .into_iter()
+                    .map(|amount| Data::Whole(amount.clamp(limits::MIN_GROOVE_AMOUNT as i128, limits::MAX_GROOVE_AMOUNT as i128)))
+                    .collect(),
+            )),
+            None => NearestValue::None,
+        },
     }
+}
+
+/// A groove's amounts, where a value is a list of as many whole numbers as a groove may hold.
+fn groove_amounts(value: &Data) -> Option<Vec<i128>> {
+    let cells = value.as_list()?;
+    if !(limits::MIN_GROOVE_CELLS as usize..=limits::MAX_GROOVE_CELLS as usize).contains(&cells.len()) {
+        return None;
+    }
+    cells.iter().map(Data::as_whole).collect()
 }
 
 /// An exact length as a file holds it: a whole number, or text like 3/16.
@@ -582,6 +600,41 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             Data::Map(_) => Ok(()),
             _ => refused(errors::ERR_NOT_SETTINGS, &[("value", shown())]),
         },
+        Check::GrooveCheckCells => {
+            let fits = groove_amounts(value).is_some_and(|amounts| {
+                amounts
+                    .iter()
+                    .all(|amount| (limits::MIN_GROOVE_AMOUNT as i128..=limits::MAX_GROOVE_AMOUNT as i128).contains(amount))
+            });
+            if fits {
+                return Ok(());
+            }
+            refused(
+                errors::ERR_BAD_GROOVE_CELLS,
+                &[
+                    ("fewest", limits::MIN_GROOVE_CELLS.into()),
+                    ("most", limits::MAX_GROOVE_CELLS.into()),
+                    ("lowest", limits::MIN_GROOVE_AMOUNT.into()),
+                    ("highest", limits::MAX_GROOVE_AMOUNT.into()),
+                    ("value", shown()),
+                ],
+            )
+        }
+        Check::NamedScaleCheckRoot => match value {
+            Data::Text(root) if crate::values::note::semitones_above_c(root).is_some() => Ok(()),
+            _ => refused(errors::ERR_EXPECTED_ROOT_NOTE, &[("root", shown())]),
+        },
+        Check::NamedScaleCheckKind => {
+            // A file's scale type is read as the member name it means, so that 'natural minor' is NATURAL_MINOR.
+            let member = value.python_str().trim().to_uppercase().replace(' ', "_");
+            if crate::values::scale::ScaleType::named(&member).is_some() {
+                return Ok(());
+            }
+            refused(
+                errors::ERR_UNKNOWN_SCALE_TYPE,
+                &[("kind", shown()), ("names", crate::values::scale::ScaleType::file_names().join(", ").into())],
+            )
+        }
         Check::ConditionsStatementsSettingCheck => {
             let fits = value.as_list().is_some_and(|statements| statements.len() <= limits::MAX_STATEMENTS as usize);
             if fits {

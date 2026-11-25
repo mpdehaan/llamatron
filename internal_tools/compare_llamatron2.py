@@ -7,6 +7,7 @@ the same step by both, and what each makes is compared. The Rust side is native/
     .venv/bin/python internal_tools/compare_llamatron2.py load      # every example's and test set's data, as both load it
     .venv/bin/python internal_tools/compare_llamatron2.py layout    # that data written back as a set file by each writer
     .venv/bin/python internal_tools/compare_llamatron2.py migrate   # moved to today's layout, into the objects' and back
+    .venv/bin/python internal_tools/compare_llamatron2.py save      # read into objects and saved, compared as data
     .venv/bin/python internal_tools/compare_llamatron2.py load --only tie
 
 It prints each set that differs with the first place it differs, and a count, and exits 1 when anything differs, so that the
@@ -78,7 +79,30 @@ def python_migrate(path):
         return None
 
 
-STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate}
+def python_save(path):
+    """Return a set read into objects and saved, as the Python program saves it, or None where the Python refuses the set,
+    whose refusal the Rust is held to separately."""
+    from llamatron.model.file.setlist_writer import dump_setlist
+    from llamatron.model.objects.setlist import Setlist
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    moved, _ = migrated(data, one_song_name=path.stem)
+    try:
+        return dump_setlist(Setlist.from_data(data=as_object_layout(moved)).to_data()).rstrip("\n")
+    except SongFileError:
+        return None
+
+
+def same_as_data(python, port):
+    """Return whether two saved sets hold the same data: mappings in any order, lists in order (the user's rule)."""
+    if port.startswith('FAILED'):
+        return False
+    return load_safely(python) == load_safely(port)
+
+
+STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save}
+# How each step's two outputs are compared: as text unless named here.
+COMPARED = {'save': same_as_data}
 
 
 def main():
@@ -96,7 +120,8 @@ def main():
             skipped += 1
             continue
         port = rust(options.step, path)
-        if python != port:
+        same = COMPARED.get(options.step, str.__eq__)(python, port)
+        if not same:
             differing += 1
             print('{}: {}'.format(path.relative_to(TOP), first_difference(python, port)))
     print('{} of {} sets differ{}'.format(differing, len(sets) - skipped, ', {} skipped as the step does not apply'.format(skipped) if skipped else ''))

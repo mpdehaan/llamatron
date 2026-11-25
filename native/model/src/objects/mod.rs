@@ -3,4 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The objects a set file stores (the Python model/objects/).
 
+pub mod holder;
+pub mod named;
 pub mod naming;
+pub mod pattern;
+pub mod setlist;
+pub mod song;
