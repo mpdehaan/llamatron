@@ -525,6 +525,7 @@ name = "llamatron-compare"
 version = "0.1.0"
 dependencies = [
  "llamatron-engine",
+ "llamatron-exporters",
  "llamatron-math",
  "llamatron-model",
 ]
@@ -536,6 +537,15 @@ dependencies = [
  "llamatron-math",
  "llamatron-model",
  "llamatron-strings",
+]
+
+[[package]]
+name = "llamatron-exporters"
+version = "0.1.0"
+dependencies = [
+ "llamatron-engine",
+ "llamatron-math",
+ "llamatron-model",
 ]
 
 [[package]]

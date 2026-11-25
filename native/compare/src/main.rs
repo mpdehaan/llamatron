@@ -115,6 +115,33 @@ fn main() -> ExitCode {
                 }
             }
         }
+        "midi" => {
+            let stem = std::path::Path::new(path)
+                .file_stem()
+                .map(|stem| stem.to_string_lossy().to_string())
+                .unwrap_or_default();
+            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, Some(stem.clone())) {
+                Ok(setlist) => setlist,
+                Err(problem) => {
+                    eprintln!("{path}: {}", problem.message);
+                    return ExitCode::from(1);
+                }
+            };
+            match exported_midi(&setlist, &stem) {
+                Ok(text) => {
+                    println!("{text}");
+                    ExitCode::SUCCESS
+                }
+                Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
+                    eprintln!("not ported yet: {what}");
+                    ExitCode::from(NOT_PORTED)
+                }
+                Err(llamatron_engine::error::RenderError::Refused(problem)) => {
+                    eprintln!("{path}: {problem}");
+                    ExitCode::from(1)
+                }
+            }
+        }
         "render" => {
             let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
             let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
@@ -184,4 +211,24 @@ fn rendered_songs(setlist: &llamatron_model::objects::setlist::Setlist) -> llama
         texts.push(lines.join("\n"));
     }
     Ok(texts.join("\n"))
+}
+
+/// Every MIDI file each song of a set exports from one seed, one line a file with its name and its SHA-512.
+fn exported_midi(setlist: &llamatron_model::objects::setlist::Setlist, stem: &str) -> llamatron_engine::error::Rendered<String> {
+    use llamatron_exporters::midi;
+    let mut lines = Vec::new();
+    for name in setlist.song_names() {
+        let Some(song) = setlist.get_song(name) else { continue };
+        let grid = llamatron_engine::realizer::SongRealizer::new(setlist, song, Some(RENDER_SEED)).render()?;
+        let base = format!("{stem}_{name}");
+        let mut files = midi::clip_tree(&grid, &base)?;
+        files.push(midi::song_file(&grid, &base, false)?);
+        files.extend(midi::stems(&grid, &base)?);
+        files.push(midi::song_file(&grid, &base, true)?);
+        for (filename, bytes) in files {
+            let digest: String = llamatron_math::sha512::sha512(&bytes).iter().map(|byte| format!("{byte:02x}")).collect();
+            lines.push(format!("{filename} {digest}"));
+        }
+    }
+    Ok(lines.join("\n"))
 }

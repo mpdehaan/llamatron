@@ -9,6 +9,7 @@ the same step by both, and what each makes is compared. The Rust side is native/
     .venv/bin/python internal_tools/compare_llamatron2.py migrate   # moved to today's layout, into the objects' and back
     .venv/bin/python internal_tools/compare_llamatron2.py save      # read into objects and saved, compared as data
     .venv/bin/python internal_tools/compare_llamatron2.py render    # every song rendered from one seed, each clip's notes
+    .venv/bin/python internal_tools/compare_llamatron2.py midi      # every MIDI file each song exports, byte for byte
     .venv/bin/python internal_tools/compare_llamatron2.py load --only tie
 
 It prints each set that differs with the first place it differs, and a count, and exits 1 when anything differs, so that the
@@ -147,6 +148,54 @@ def python_render(path):
         return None
 
 
+# Where the midi step's exporters are pointed, which write nothing there: the files are made in memory.
+EXPORT_DIRECTORY = '/tmp/claude/llamatron/compare'
+
+
+def midi_bytes(midi_file):
+    """Return a mido file's bytes as it saves them."""
+    import io
+    written = io.BytesIO()
+    midi_file.save(file=written)
+    return written.getvalue()
+
+
+def python_midi(path):
+    """Return every MIDI file each song of a set exports from one seed, each clip's, the whole song's, the stems and the
+    General MIDI file, one line a file with its name and its SHA-512, or None where the Python refuses the set."""
+    import hashlib
+    import os
+    from llamatron.engine.realizer.song_realizer import SongRealizer
+    from llamatron.exporters.clip_tree import ClipTree
+    from llamatron.exporters.exports import export_name
+    from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
+    from llamatron.model.objects.setlist import Setlist
+    os.makedirs(EXPORT_DIRECTORY, exist_ok=True)
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    moved, _ = migrated(data, one_song_name=path.stem)
+    lines = []
+    try:
+        setlist = Setlist.from_data(data=as_object_layout(moved))
+        for name in setlist.get_song_names():
+            grid = SongRealizer(setlist.get_song(name), seed=RENDER_SEED).render()
+            base = export_name(setlist=path.stem, song=name)
+            files = []
+            tree = ClipTree(directory=EXPORT_DIRECTORY, grid=grid, name=base)
+            files += tree._built_files(tree._filled_slots())
+            song = MidiSong(directory=EXPORT_DIRECTORY, grid=grid, name=base)
+            files.append((os.path.basename(song.path()), song.midi_file()))
+            stems = MidiStems(directory=EXPORT_DIRECTORY, grid=grid, name=base)
+            files += list(zip(stems.filenames(), [stems.midi_file(track) for track in stems.sounding_tracks()]))
+            general = MidiGeneralMidi(directory=EXPORT_DIRECTORY, grid=grid, name=base)
+            files.append((os.path.basename(general.path()), general.midi_file()))
+            for filename, midi_file in files:
+                lines.append('{} {}'.format(filename, hashlib.sha512(midi_bytes(midi_file)).hexdigest()))
+    except SongFileError:
+        return None
+    return '\n'.join(lines)
+
+
 def same_as_data(python, port):
     """Return whether two saved sets hold the same data: mappings in any order, lists in order (the user's rule)."""
     if port.startswith('FAILED'):
@@ -154,7 +203,7 @@ def same_as_data(python, port):
     return load_safely(python) == load_safely(port)
 
 
-STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render}
+STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi}
 # How each step's two outputs are compared: as text unless named here.
 COMPARED = {'save': same_as_data}
 

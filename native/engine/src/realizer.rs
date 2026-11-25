@@ -178,7 +178,19 @@ fn ramped_tempos(
 /// A song rendered: its tracks, and each written-out scene's name and clips by track.
 pub struct Grid {
     pub tracks: Vec<String>,
+    pub columns: Vec<GridColumn>,
     pub rows: Vec<GridRow>,
+    /// The song's tempo, and its time signature.
+    pub tempo: f64,
+    pub time_signature: llamatron_model::values::time_signature::TimeSignature,
+}
+
+/// A track as the exports write it: its name, whether it is muted or plays drums, and its instrument's General MIDI sound.
+pub struct GridColumn {
+    pub name: String,
+    pub mute: bool,
+    pub drum: bool,
+    pub gm_sound: Option<i64>,
 }
 
 pub struct GridRow {
@@ -319,7 +331,30 @@ impl<'a> SongRealizer<'a> {
                 clips,
             });
         }
-        Ok(Grid { tracks, rows })
+        let mut columns = Vec::new();
+        for name in &tracks {
+            let track = self.track(name)?;
+            let gm_sound = self
+                .song
+                .instrument_of(track, self.setlist)
+                .and_then(|instrument| instrument.get_written("gm_sound"))
+                .and_then(Data::as_whole)
+                .map(|sound| sound as i64);
+            columns.push(GridColumn {
+                name: name.clone(),
+                mute: track.get_written(TrackSetting::MUTE) == Some(&Data::Bool(true)),
+                drum: track.is_drum(),
+                gm_sound,
+            });
+        }
+        let tempo = exact(&self.song.get_tempo()).unwrap_or(Rational::whole(120)).to_float();
+        Ok(Grid {
+            tracks,
+            columns,
+            rows,
+            tempo,
+            time_signature: self.song.get_time_signature(),
+        })
     }
 
     /// The groove a track's clip plays with in a written-out scene: its track's choice, else its scene's, else its song's.
