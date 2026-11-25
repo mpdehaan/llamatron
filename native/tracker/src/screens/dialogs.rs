@@ -9,7 +9,8 @@ use crate::app::App;
 use crate::drawing::{cursor_mark, fit, legend, BoxCharacters as Boxes, Style, SPACE};
 use crate::forms::nodes::GridCell;
 use crate::keybindings::{
-    ChoiceDialog as ChoiceKeys, GridChoiceDialog as GridKeys, HelpDialog as HelpKeys, KeyClass, PromptDialog as PromptKeys, SoundDialog as SoundKeys,
+    ChoiceDialog as ChoiceKeys, ConfirmDialog as ConfirmKeys, GridChoiceDialog as GridKeys, HelpDialog as HelpKeys, KeyClass, MessageDialog as MessageKeys,
+    PromptDialog as PromptKeys, SoundDialog as SoundKeys,
 };
 use crate::keys::KeyItem;
 use crate::page::Page;
@@ -1292,4 +1293,170 @@ fn key_cell(item: &KeyItem, width: usize) -> Text {
     let room = width.saturating_sub(cell.cell_len());
     cell.append(&SPACE.repeat(room), Style::PLAIN);
     cell
+}
+
+/// What a message or a question shows: each message wrapped to the width, a blank line, and its answers as boxed buttons,
+/// each its name alone, the selected one double-lined.
+fn message_lines(messages: &[String], buttons: &[&str], selected: usize, width: usize) -> Vec<Text> {
+    let mut lines: Vec<Text> = messages.iter().flat_map(|message| crate::drawing::wrapped(message, width)).collect();
+    lines.push(Text::default());
+    let row: Vec<(String, String)> = buttons.iter().map(|label| (String::new(), label.to_string())).collect();
+    lines.extend(crate::forms::drawing::button_row(&row, Some(selected)));
+    lines
+}
+
+/// A dialog that says one thing and waits for OK (the Python MessageDialog).
+pub struct MessageDialog {
+    title: String,
+    messages: Vec<String>,
+}
+
+impl MessageDialog {
+    /// A message under a title.
+    pub fn new(title: &str, messages: Vec<String>) -> MessageDialog {
+        MessageDialog {
+            title: title.to_string(),
+            messages,
+        }
+    }
+}
+
+impl Page for MessageDialog {
+    fn name(&self) -> &'static str {
+        "MessageDialog"
+    }
+
+    fn is_dialog(&self) -> bool {
+        true
+    }
+
+    fn class(&self) -> &'static KeyClass {
+        &MessageKeys::CLASS
+    }
+
+    fn keys(&self, _app: &App) -> Vec<KeyItem> {
+        vec![KeyItem::of(&MessageKeys::CLASS, &MessageKeys::CLOSE)]
+    }
+
+    fn press(&mut self, app: &mut App, item: &KeyItem, _key: &str) {
+        if item.is(&MessageKeys::CLOSE) {
+            app.go_back();
+        }
+    }
+
+    fn dialog_lines(&self, app: &App, width: usize) -> Vec<Text> {
+        let keys = crate::keys::in_order(self.class(), self.keys(app));
+        dialog_box(
+            &self.title,
+            false,
+            &|inner| message_lines(&self.messages, &[labels::MSG_OK_BUTTON], 0, inner),
+            &keys,
+            width,
+        )
+    }
+
+    fn body(&self, _app: &App, _width: usize, _height: usize) -> Vec<Text> {
+        Vec::new()
+    }
+
+    fn crumbs(&self, _app: &App) -> Vec<String> {
+        Vec::new()
+    }
+}
+
+/// The YES button's place among a question's buttons, and NO's.
+const YES: usize = 0;
+const NO: usize = 1;
+
+/// A YES or NO question (the Python ConfirmDialog): Left and Right move between the buttons, ENTER presses the selected one,
+/// and ESC answers NO. YES runs what the dialog was given, or hands YES back to the page that opened it; NO does nothing.
+pub struct ConfirmDialog {
+    title: String,
+    messages: Vec<String>,
+    /// A question whose YES gives something up, its title red so that it isn't answered by habit.
+    deletes: bool,
+    choice: usize,
+    then: Option<Then>,
+}
+
+impl ConfirmDialog {
+    /// A question opening on YES, or on NO where YES is easy to give by accident.
+    pub fn new(title: &str, messages: Vec<String>, starts_on_no: bool, deletes: bool) -> ConfirmDialog {
+        let choice = if starts_on_no { NO } else { YES };
+        ConfirmDialog {
+            title: title.to_string(),
+            messages,
+            deletes,
+            choice,
+            then: None,
+        }
+    }
+
+    /// The question running something on YES.
+    pub fn then(mut self, then: Then) -> ConfirmDialog {
+        self.then = Some(then);
+        self
+    }
+
+    fn bind(binding: &'static crate::keybindings::Binding) -> KeyItem {
+        KeyItem::of(&ConfirmKeys::CLASS, binding)
+    }
+}
+
+impl Page for ConfirmDialog {
+    fn name(&self) -> &'static str {
+        "ConfirmDialog"
+    }
+
+    fn is_dialog(&self) -> bool {
+        true
+    }
+
+    fn class(&self) -> &'static KeyClass {
+        &ConfirmKeys::CLASS
+    }
+
+    fn keys(&self, _app: &App) -> Vec<KeyItem> {
+        vec![
+            Self::bind(&ConfirmKeys::NO),
+            Self::bind(&ConfirmKeys::SELECT).wanting_key(),
+            Self::bind(&ConfirmKeys::ANSWER),
+        ]
+    }
+
+    fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        if item.is(&ConfirmKeys::NO) {
+            app.go_back();
+        } else if item.is(&ConfirmKeys::SELECT) {
+            self.choice = if key == "left" {
+                self.choice.saturating_sub(1)
+            } else {
+                (self.choice + 1).min(NO)
+            };
+        } else if item.is(&ConfirmKeys::ANSWER) {
+            app.go_back();
+            if self.choice != YES {
+                return;
+            }
+            let answer = Answer::Chosen(YES);
+            match self.then.as_mut() {
+                Some(then) => then(app, &answer),
+                None => app.answer(answer),
+            }
+        }
+    }
+
+    fn dialog_lines(&self, app: &App, width: usize) -> Vec<Text> {
+        let keys = crate::keys::in_order(self.class(), self.keys(app));
+        let lines = |inner: usize| message_lines(&self.messages, labels::MSG_CONFIRM_BUTTONS, self.choice, inner);
+        dialog_box(&self.title, self.deletes, &lines, &keys, width)
+    }
+
+    fn body(&self, _app: &App, _width: usize, _height: usize) -> Vec<Text> {
+        Vec::new()
+    }
+
+    fn crumbs(&self, _app: &App) -> Vec<String> {
+        Vec::new()
+    }
 }

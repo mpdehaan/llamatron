@@ -116,16 +116,20 @@ impl App {
     }
 
     /// Show the Open page to pick a set file, which Ctrl+O and the File page's Open do; a set with unsaved changes asks
-    /// first, in a dialog not ported yet.
+    /// first.
     pub fn open_set(&mut self) {
-        if self.document.is_dirty() {
-            self.show_page(Box::new(crate::screens::not_ported::NotPorted {
-                name: "ConfirmDialog".to_string(),
-            }));
+        let show_open = |app: &mut App| {
+            let page = crate::screens::set::open_page::OpenPage::new(app);
+            app.show_page(Box::new(page));
+        };
+        if !self.document.is_dirty() {
+            show_open(self);
             return;
         }
-        let page = crate::screens::set::open_page::OpenPage::new(self);
-        self.show_page(Box::new(page));
+        let messages = vec![llamatron_strings::messages::MSG_UNSAVED_CONTINUE.to_string()];
+        let question = crate::screens::dialogs::ConfirmDialog::new(llamatron_strings::messages::MSG_UNSAVED_TITLE, messages, false, false);
+        let question = question.then(Box::new(move |app: &mut App, _answer: &crate::screens::dialogs::Answer| show_open(app)));
+        self.show_page(Box::new(question));
     }
 
     pub fn go_back(&mut self) {

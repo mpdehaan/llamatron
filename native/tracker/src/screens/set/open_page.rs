@@ -70,7 +70,8 @@ impl OpenPage {
         std::path::absolute(&self.folder).map_or_else(|_| self.folder.display().to_string(), |path| path.display().to_string())
     }
 
-    /// Open a set file in place of the set open now, and say so; a file that cannot be opened is refused, saying why.
+    /// Open a set file in place of the set open now, and say so; a file that cannot be opened is told in a dialog, saying
+    /// why.
     fn open_file(app: &mut App, path: &Path) {
         match Document::open(path) {
             Ok(document) => {
@@ -78,7 +79,10 @@ impl OpenPage {
                 app.go_back();
                 app.say(&named(messages::MSG_OPENED, &[("path", path.display().to_string().as_str().into())]));
             }
-            Err(error) => app.refuse(&error),
+            Err(error) => {
+                let told = crate::screens::dialogs::MessageDialog::new(llamatron_strings::errors::ERR_CANT_OPEN_TITLE, vec![error]);
+                app.show_page(Box::new(told));
+            }
         }
     }
 }
