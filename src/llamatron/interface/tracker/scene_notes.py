@@ -55,10 +55,10 @@ def marked_tracks(*, song, index):
     return marked
 
 
-def scene_notes(*, song, index, written):
-    """Return a scene's notes as played, the song's render, or as written, its patterns alone, with its rows laid end to end from the scene's start."""
+def scene_notes(*, song, index, written, seed=None):
+    """Return a scene's notes as played, the song's render, or as written, its patterns alone, with its rows laid end to end from the scene's start, its random parts drawn afresh, or from a seed where one is given, so that a tool can repeat it."""
     rendered = as_written(song) if written else song
-    realizer = SongRealizer(rendered, looping_scenes_go_round=True)
+    realizer = SongRealizer(rendered, seed=seed, looping_scenes_go_round=True)
     grid = realizer.render()
     rows = grid.get_rows()
     starts = grid.row_starts()

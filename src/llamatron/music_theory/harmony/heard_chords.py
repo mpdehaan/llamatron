@@ -99,14 +99,16 @@ def chord_of(*, weights, bass):
     HELD_SHARE of it, and up to MOST_OUTSIDE pitch classes may sound besides it, as a melody's passing
     notes; the chord whose notes
     sound longest wins, then the one with the fewest notes besides it, then the smallest, then the one
-    whose root is the bass.
+    whose root is the bass, then the one with the lowest root.
     """
     classes = set(weights)
     if len(classes) < 2:
         return None
     held = {pitch_class for pitch_class, weight in weights.items() if weight > HELD_SHARE}
     best = None
-    for root in held:
+    # The roots are tried lowest first, so that of two chords the same notes spell equally well, such as BbM6 and Gm7, the
+    # one found first is always the same.
+    for root in sorted(held):
         for symbol, shape in chord_shapes().items():
             members = {(root + step) % intervals.HALF_STEPS_PER_OCTAVE for step in shape}
             outside = classes - members

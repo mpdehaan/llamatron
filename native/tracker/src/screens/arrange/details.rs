@@ -210,7 +210,7 @@ fn scale_lines(song: &Song, name: Option<String>) -> Vec<DetailLine> {
     }
 }
 
-fn clip_lines(setlist: &Setlist, song: &Song, clip: &ClipSlot) -> Vec<DetailLine> {
+pub fn clip_lines(setlist: &Setlist, song: &Song, clip: &ClipSlot) -> Vec<DetailLine> {
     let written = |name: &str| clip.get_written(name).filter(|value| !value.is_null()).cloned();
     let mut lines = chain_lines(clip.get_written(ClipSlotSetting::CHAINS));
     lines.extend(scale_lines(song, text(clip.get_written(ClipSlotSetting::SCALE))));
@@ -278,7 +278,7 @@ fn scene_lines(song: &Song, scene: &Scene) -> Vec<DetailLine> {
     lines
 }
 
-fn track_lines(track: &Track) -> Vec<DetailLine> {
+pub fn track_lines(track: &Track) -> Vec<DetailLine> {
     let mut lines = chain_lines(track.get_written(TrackSetting::CHAINS));
     if let Some(instrument) = track.get_instrument_name() {
         let shown = named(marks::MSG_DETAILS_INSTRUMENT, &[("name", instrument.as_str().into())]);
@@ -304,7 +304,7 @@ fn track_lines(track: &Track) -> Vec<DetailLine> {
 }
 
 /// The lines, with "stock" first where nothing is set but the + that adds a chain.
-fn or_stock(lines: Vec<DetailLine>) -> Vec<DetailLine> {
+pub fn or_stock(lines: Vec<DetailLine>) -> Vec<DetailLine> {
     if lines.iter().all(|line| line.target.as_ref().is_some_and(|target| target.kind == ADD_CHAIN)) {
         let mut stocked = vec![detail(marks::MSG_DETAILS_STOCK.to_string(), Kind::Stock, None)];
         stocked.extend(lines);

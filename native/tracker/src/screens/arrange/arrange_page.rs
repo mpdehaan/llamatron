@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! Arrange (the Python screens/arrange/arrange_page.py and arrange_drawing.py): the current song's scenes down and tracks
 //! across, each clip with its pattern and a bar as long as it plays, the cursor's cell in a double-lined frame, and the
-//! keys of what the cursor is on. Its details, Scene View and Move mode are not ported yet, and the page says so there.
+//! keys of what the cursor is on; its details view, Move mode, and Scene View (scene_view.rs) over the page.
 
 #[path = "arrange_edits.rs"]
 mod edits;
@@ -15,6 +15,7 @@ use crate::lengths::Lengths;
 use crate::page::{clock, Duration, Page};
 use crate::screens::arrange::details::{detailed_clip_text, details_layout, CellPlace, DetailLine, DetailsLayout, Rooms, Target, ADD_CHAIN, DETAIL_WIDTH};
 use crate::screens::arrange::grid::{arrange_lines, CellFrame, Kind, LengthBar, Piece};
+use crate::screens::arrange::scene_view::SceneView;
 use crate::screens::not_ported::NotPorted;
 use crate::text::Text;
 use crate::themes::Colour;
@@ -59,13 +60,6 @@ const FIRST_DETAIL_LINE: usize = 3;
 /// How long a scene's detail may be under its bar, leaving room for a pick's brackets before the scene column's divider.
 const SCENE_DETAIL_ROOM: usize = SCENE_WIDTH - SCENE_BAR_COLUMN - 3;
 
-/// A mode of Arrange not ported yet: Scene View over the page; the page leaves it by its own keys and says it is not ported
-/// while in it.
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-enum Unported {
-    SceneView,
-}
-
 /// What Move mode carries: the cursor's scene, track or clip.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum Moving {
@@ -75,7 +69,8 @@ enum Moving {
 }
 
 pub struct ArrangePage {
-    mode: Cell<Option<Unported>>,
+    /// Scene View, an Inset Window over the page, while it shows.
+    inset: Option<SceneView>,
     /// The clip copied with C, which V pastes.
     copied: Option<ClipSlot>,
     /// Whether Tab has locked into the cursor's cell, the place among its lines that name something of the one picked, and
@@ -145,7 +140,7 @@ fn scene_name(scene: &Scene, index: usize) -> String {
 impl ArrangePage {
     pub fn new() -> ArrangePage {
         ArrangePage {
-            mode: Cell::new(None),
+            inset: None,
             copied: None,
             locked: false,
             picked: None,
@@ -952,16 +947,8 @@ impl Page for ArrangePage {
         self.put_cursor_at(row);
     }
 
-    fn is_ported(&self) -> bool {
-        self.mode.get().is_none()
-    }
-
     fn name(&self) -> &'static str {
-        if self.mode.get().is_some() {
-            crate::screens::not_ported::NOT_PORTED
-        } else {
-            "ArrangePage"
-        }
+        "ArrangePage"
     }
 
     fn stack_name(&self) -> &str {
@@ -974,9 +961,17 @@ impl Page for ArrangePage {
 
     fn keys(&self, app: &App) -> Vec<KeyItem> {
         self.clamp(app);
-        match self.mode.get() {
-            Some(Unported::SceneView) => return vec![Self::bind(&Keys::ESCAPE_INSET), Self::bind(&Keys::CLOSE_INSET)],
-            None => {}
+        if let Some(inset) = &self.inset {
+            let switch = if inset.is_written() { &Keys::TO_PLAYED } else { &Keys::TO_WRITTEN };
+            return vec![
+                Self::bind(&Keys::ESCAPE_INSET),
+                Self::bind(&Keys::CLOSE_INSET),
+                Self::bind(&Keys::INSET_MOVE).wanting_key(),
+                Self::bind(&Keys::INSET_BARS),
+                Self::bind(switch),
+                Self::bind(&Keys::INSET_ZOOM),
+                Self::bind(&Keys::INSET_SCROLL),
+            ];
         }
         if let Some(moving) = self.moving {
             let carry = match moving {
@@ -1030,6 +1025,22 @@ impl Page for ArrangePage {
     }
 
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        if let Some(inset) = &mut self.inset {
+            if item.is(&Keys::ESCAPE_INSET) || item.is(&Keys::CLOSE_INSET) {
+                self.inset = None;
+            } else if item.is(&Keys::INSET_MOVE) {
+                inset.move_cursor(app, key);
+            } else if item.is(&Keys::INSET_BARS) {
+                inset.jump_bar(app, item.step_of(key).unwrap_or(0));
+            } else if item.is(&Keys::TO_PLAYED) || item.is(&Keys::TO_WRITTEN) {
+                inset.switch(app);
+            } else if item.is(&Keys::INSET_ZOOM) {
+                inset.zoom_by(item.step_of(key).unwrap_or(0));
+            } else if item.is(&Keys::INSET_SCROLL) {
+                inset.scroll_sidebar(item.step_of(key).unwrap_or(0));
+            }
+            return;
+        }
         if item.is(&Keys::BACK) {
             app.go_back();
         } else if item.is(&Keys::MOVE) {
@@ -1053,7 +1064,7 @@ impl Page for ArrangePage {
         } else if item.is(&Keys::CARRY_CLIP) {
             self.carry_clip(app, key);
         } else if item.is(&Keys::SCENE_VIEW) {
-            self.mode.set(Some(Unported::SceneView));
+            self.inset = Some(SceneView::new(app, self.row.get().max(0) as usize));
         } else if item.is(&Keys::INTO_DETAILS) {
             self.start_picking(app);
         } else if item.is(&Keys::ESCAPE_CELL) || item.is(&Keys::OUT_OF_DETAILS) {
@@ -1073,8 +1084,6 @@ impl Page for ArrangePage {
             if let Some(Target { place: Some(place), .. }) = self.picked_target(app) {
                 self.remove_cell_chain(app, place);
             }
-        } else if item.is(&Keys::DROP) || item.is(&Keys::ESCAPE_INSET) || item.is(&Keys::CLOSE_INSET) {
-            self.mode.set(None);
         } else if item.is(&Keys::OPEN_PATTERN) {
             let tracks = Self::tracks(app);
             if let Some(clip) = Self::clip(app, self.row.get() as usize, &tracks[self.track_place()]) {
@@ -1150,6 +1159,20 @@ impl Page for ArrangePage {
 
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![labels::Crumb::ARRANGE.to_string()]
+    }
+
+    fn over_screen(&self, app: &App, screen: Vec<Text>, width: usize, height: usize) -> Vec<Text> {
+        let Some(inset) = &self.inset else { return screen };
+        let index = inset.get_index();
+        let title = named(
+            marks::MSG_SCENE_VIEW_TITLE,
+            &[("scene", scene_name(&app.document.song().scenes()[index], index).as_str().into())],
+        );
+        let closing = named(
+            marks::MSG_SCENE_VIEW_CLOSING,
+            &[("key", Keys::CLOSE_INSET.name.into()), ("what", Keys::CLOSE_INSET.what.into())],
+        );
+        inset.drawn_over(app, screen, width, height, &title, &closing)
     }
 
     fn theme(&self) -> Option<Colour> {

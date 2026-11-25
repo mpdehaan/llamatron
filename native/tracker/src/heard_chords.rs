@@ -102,7 +102,8 @@ type Candidate = ((Rational, usize, usize, bool), i64, &'static str, Vec<i64>);
 
 /// The chord heard in a beat, as its root's pitch class, its symbol and its bass's pitch class where it isn't the root:
 /// weights are the share of the beat each pitch class sounds through; the chord whose notes sound longest wins, then the one
-/// with the fewest notes besides it, then the smallest, then the one whose root is the bass.
+/// with the fewest notes besides it, then the smallest, then the one whose root is the bass, then the one with the lowest
+/// root, the roots tried lowest first.
 fn chord_of(weights: &[(i64, Rational)], bass: Option<i64>) -> Option<(i64, &'static str, Option<i64>)> {
     if weights.len() < 2 {
         return None;

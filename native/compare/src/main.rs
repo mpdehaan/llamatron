@@ -644,6 +644,98 @@ const EDITED_GROUP: &str = "edited";
 const DRUM_DEGREE: &str = "C";
 
 /// Each of a set's first patterns after each of the pattern_edits step's edits on a fresh copy, as JSON.
+/// The seed every scene's written view is rendered from, so that both programs draw the same random parts.
+const SCENE_VIEW_SEED: i64 = 7;
+
+/// Every scene of the first song as Scene View shows it written: its notes, its length, the chord on each beat and the
+/// values it plays with.
+fn scene_views(setlist: &llamatron_model::objects::setlist::Setlist) -> Vec<Data> {
+    use llamatron_tracker::scene_notes::{chord_scale, effective_values, scene_notes};
+    let mut results = Vec::new();
+    let Some((song_name, _)) = setlist.items("songs").first().cloned() else {
+        return results;
+    };
+    let Some(song) = setlist.get_song(&song_name) else { return results };
+    for index in 0..song.scenes().len() {
+        let Some(effective) = effective_values(song, index) else { continue };
+        let mut clip_scales = effective.clip_scales.clone();
+        clip_scales.sort();
+        let values = Data::List(vec![
+            Data::text(&effective.tempo),
+            Data::text(effective.tempo_source),
+            Data::text(effective.scale.as_deref().unwrap_or("")),
+            Data::text(effective.scale_source),
+            Data::text(&effective.groove),
+            Data::text(effective.groove_source),
+            Data::List(
+                clip_scales
+                    .iter()
+                    .map(|(track, scale)| Data::List(vec![Data::text(track), Data::text(scale)]))
+                    .collect(),
+            ),
+        ]);
+        let shown = match scene_notes(setlist, &song_name, index, true, Some(SCENE_VIEW_SEED)) {
+            Err(_) => Data::List(vec![Data::text("refused"), values]),
+            Ok(notes) => {
+                let scale = effective.scale.as_deref().and_then(|name| chord_scale(setlist, name));
+                let heard: Vec<llamatron_tracker::heard_chords::HeardNote> = notes
+                    .notes
+                    .iter()
+                    .map(|note| llamatron_tracker::heard_chords::HeardNote {
+                        start: note.start,
+                        end: note.end,
+                        pitch: note.pitch,
+                        drum: note.drum,
+                    })
+                    .collect();
+                let chords = llamatron_tracker::heard_chords::beat_chords(&heard, notes.length, notes.beat, scale.as_ref())
+                    .into_iter()
+                    .map(|chord| {
+                        Data::List(vec![
+                            Data::text(&rational_text(chord.start)),
+                            Data::text(&chord.name),
+                            Data::text(&chord.numeral),
+                        ])
+                    })
+                    .collect();
+                let mut rows: Vec<(usize, llamatron_math::Rational, llamatron_math::Rational, i64, bool, bool)> = notes
+                    .notes
+                    .iter()
+                    .map(|note| (note.track, note.start, note.end, note.pitch, note.drum, note.marked))
+                    .collect();
+                rows.sort_by(|a, b| {
+                    (a.0, rational_text(a.1), rational_text(a.2), a.3, a.4, a.5).cmp(&(b.0, rational_text(b.1), rational_text(b.2), b.3, b.4, b.5))
+                });
+                let shown = rows
+                    .into_iter()
+                    .map(|(track, start, end, pitch, drum, marked)| {
+                        Data::List(vec![
+                            Data::Whole(track as i128),
+                            Data::text(&rational_text(start)),
+                            Data::text(&rational_text(end)),
+                            Data::Whole(pitch as i128),
+                            Data::Bool(drum),
+                            Data::Bool(marked),
+                        ])
+                    })
+                    .collect();
+                Data::List(vec![Data::List(shown), Data::text(&rational_text(notes.length)), Data::List(chords), values])
+            }
+        };
+        results.push(Data::List(vec![Data::text("scene_view"), Data::text(&index.to_string()), shown]));
+    }
+    results
+}
+
+/// An exact number as Python's str of a Fraction writes it: a whole number, or a numerator over a denominator.
+fn rational_text(value: llamatron_math::Rational) -> String {
+    if value.denominator() == 1 {
+        value.numerator().to_string()
+    } else {
+        format!("{}/{}", value.numerator(), value.denominator())
+    }
+}
+
 fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
     use llamatron_model::objects::pattern::Pattern;
     let mut results = Vec::new();
@@ -671,6 +763,7 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
         }
         results.push(Data::List(vec![Data::text("chord_texts"), Data::text(""), Data::List(texts)]));
     }
+    results.extend(scene_views(setlist));
     for (name, item) in setlist.items("patterns").iter().take(EDITED_PATTERNS) {
         let llamatron_model::objects::setlist::Item::Pattern(original) = item else {
             continue;

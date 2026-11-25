@@ -352,6 +352,7 @@ impl Tracker {
         while lines.len() < height {
             lines.push(Text::default());
         }
+        lines = self.pages[under].over_screen(&self.app, lines, width, height);
         if under + 1 < self.pages.len() {
             // Under a dialog the page's lines reach across the screen in the plain style, as a modal screen lays them.
             for line in lines.iter_mut() {

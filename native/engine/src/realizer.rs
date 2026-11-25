@@ -109,7 +109,8 @@ fn scaled_tempo(tempo: Rational, percent: &Data) -> Option<Rational> {
 }
 
 /// The tempo a scene plays at, its own or the song's.
-fn tempo_in(scene: &Scene, song: &Song) -> Rational {
+/// The tempo a scene plays at: the song's, scaled by its own percentage where it has one.
+pub fn tempo_in(scene: &Scene, song: &Song) -> Rational {
     own_tempo(scene, song).or_else(|| exact(&song.get_tempo())).unwrap_or(Rational::whole(120))
 }
 
@@ -123,6 +124,12 @@ struct TempoRamp {
     start: Option<f64>,
     end: Option<f64>,
     over: Rational,
+}
+
+/// Whether either of a scene's tempo ramps changes its tempo.
+pub fn ramps_tempo(scene: &Scene, song: &Song) -> bool {
+    let base = tempo_in(scene, song);
+    ["in", "out"].iter().any(|way| tempo_ramp(scene, way, base).is_some())
 }
 
 fn tempo_ramp(scene: &Scene, way: &str, base: Rational) -> Option<TempoRamp> {

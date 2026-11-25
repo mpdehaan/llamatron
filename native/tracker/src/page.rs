@@ -111,6 +111,11 @@ pub trait Page {
     fn type_text(&mut self, _app: &mut App, _character: char) {}
 
     /// Whether the page is a dialog, drawn in a box over the page beneath it.
+    /// The whole screen with whatever the page draws over all of it, such as an Inset Window, or the screen as it is.
+    fn over_screen(&self, _app: &App, screen: Vec<Text>, _width: usize, _height: usize) -> Vec<Text> {
+        screen
+    }
+
     fn is_dialog(&self) -> bool {
         false
     }

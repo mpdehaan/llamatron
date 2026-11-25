@@ -191,6 +191,8 @@ def python_edits(path):
 
 # How many of a set's patterns the pattern_edits step edits, and the direction and group it gives them.
 EDITED_PATTERNS = 3
+# The seed every scene's written view is rendered from, so that both programs draw the same random parts.
+SCENE_VIEW_SEED = 7
 EDITED_DIRECTION = 'pendulum'
 EDITED_GROUP = 'edited'
 DRUM_DEGREE = 'C'
@@ -242,6 +244,23 @@ def python_pattern_edits(path):
     for scale in ([setlist.get_named_scale(first_names[0])] if first_names else []) + [None]:
         texts = [list(chord_texts(root=root, symbol=symbol, scale=scale, bass=bass)) for root in range(12) for symbol in chord_shapes() for bass in (None, (root + 4) % 12)]
         results.append(['chord_texts', '', texts])
+    # Every scene of the first song as Scene View shows it written: its notes, its length, the chord on each beat and the
+    # values it plays with.
+    from llamatron.interface.tracker.scene_notes import effective_values, scene_notes
+    from llamatron.music_theory.harmony.heard_chords import beat_chords
+    song = setlist.get_song(setlist.get_song_names()[0])
+    for index in range(len(song.get_scenes())):
+        effective = effective_values(song=song, index=index)
+        values = [effective.tempo, effective.tempo_source, effective.scale or '', effective.scale_source, effective.groove, effective.groove_source, sorted(effective.clip_scales.items())]
+        try:
+            notes = scene_notes(song=song, index=index, written=True, seed=SCENE_VIEW_SEED)
+        except (SongFileError, ValueError):
+            results.append(['scene_view', str(index), ['refused', values]])
+            continue
+        scale = setlist.get_named_scale(effective.scale) if effective.scale else None
+        chords = [[str(chord.start), chord.name, chord.numeral] for chord in beat_chords(notes=notes, scale=scale)]
+        shown = sorted([note.track, str(note.start), str(note.end), note.pitch, note.drum, note.marked] for note in notes.notes)
+        results.append(['scene_view', str(index), [shown, str(notes.length), chords, values]])
     for name in setlist.get_pattern_names()[:EDITED_PATTERNS]:
         original = setlist.get_pattern(name)
         for edit, given in pattern_edit_steps(original.get_steps(), original.is_drum()):

@@ -9,4 +9,5 @@ pub mod clip_page;
 pub mod details;
 pub mod grid;
 pub mod scene_page;
+pub mod scene_view;
 pub mod track_editor;
