@@ -259,7 +259,11 @@ def snake(name):
 
 def function_variant(function):
     """Return the Rust variant naming a check function, from its module and name: the closures' outer function names them."""
-    module = function.__module__.split('.')[-1]
+    parts = function.__module__.split('.')
+    module = parts[-1]
+    if 'generators' in parts:
+        # A plugin's function is named after its plugin as well as its module, since every plugin has a model module.
+        module = '{}_{}'.format(parts[parts.index('generators') + 1], parts[-1])
     qualified = function.__qualname__.replace('.<locals>.', '_').lstrip('_')
     parts = '{}_{}'.format(module, qualified).replace('.', '_').split('_')
     return ''.join(part.capitalize() for part in parts if part)

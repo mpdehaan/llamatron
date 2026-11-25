@@ -4,4 +4,5 @@
 //! The set file's schema (the Python model/schema/): the names a file writes, the limits and defaults, generated from the
 //! Python, and the settings' checks.
 
+pub mod checking;
 pub mod generated;

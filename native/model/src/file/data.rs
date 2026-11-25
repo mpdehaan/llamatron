@@ -94,6 +94,53 @@ impl Data {
     }
 }
 
+impl Data {
+    /// The value as Python's str() writes it, for a message: text as it is, the rest as repr() writes it.
+    pub fn python_str(&self) -> String {
+        match self {
+            Data::Text(text) => text.clone(),
+            other => other.python_repr(),
+        }
+    }
+
+    /// The value as Python's repr() writes it: `'abc'`, `5`, `0.25`, `True`, `None`, `[1, 'a']`, `{'a': 1}`.
+    pub fn python_repr(&self) -> String {
+        match self {
+            Data::Null => "None".into(),
+            Data::Bool(flag) => if *flag { "True" } else { "False" }.into(),
+            Data::Whole(whole) => whole.to_string(),
+            Data::Float(float) if float.is_nan() => "nan".into(),
+            Data::Float(float) if float.is_infinite() => if *float > 0.0 { "inf" } else { "-inf" }.into(),
+            Data::Float(float) => python_float_text(*float),
+            Data::Text(text) => llamatron_strings::fill::python_repr(text),
+            Data::List(items) => format!("[{}]", items.iter().map(Data::python_repr).collect::<Vec<_>>().join(", ")),
+            Data::Map(pairs) => format!(
+                "{{{}}}",
+                pairs
+                    .iter()
+                    .map(|(key, value)| format!("{}: {}", key.python_repr(), value.python_repr()))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+        }
+    }
+}
+
+impl From<&Data> for llamatron_strings::Value {
+    /// A value for a message, which a template writes as str() or, with !r, as repr() writes it.
+    fn from(data: &Data) -> llamatron_strings::Value {
+        match data {
+            Data::Whole(whole) => llamatron_strings::Value::Whole(*whole as i64),
+            Data::Float(float) => llamatron_strings::Value::Float(*float),
+            Data::Text(text) => llamatron_strings::Value::Text(text.clone()),
+            other => llamatron_strings::Value::Shown {
+                shown: other.python_str(),
+                repr: other.python_repr(),
+            },
+        }
+    }
+}
+
 /// Read a YAML text as the Python program reads it: one document, or nothing where the text is empty.
 pub fn load(text: &str) -> Result<Data, NotYaml> {
     let mut parser = Parser::new_from_str(text);

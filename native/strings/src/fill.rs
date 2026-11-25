@@ -14,6 +14,11 @@ pub enum Value {
     Text(String),
     Whole(i64),
     Float(f64),
+    /// A value of another kind, written as str() and repr() write it, such as a list or None.
+    Shown {
+        shown: String,
+        repr: String,
+    },
 }
 
 impl From<&str> for Value {
@@ -59,6 +64,7 @@ impl Value {
             Value::Text(text) => text.clone(),
             Value::Whole(whole) => whole.to_string(),
             Value::Float(float) => python_float(*float),
+            Value::Shown { shown, .. } => shown.clone(),
         }
     }
 
@@ -66,6 +72,7 @@ impl Value {
     fn repr(&self) -> String {
         match self {
             Value::Text(text) => python_repr(text),
+            Value::Shown { repr, .. } => repr.clone(),
             _ => self.shown(),
         }
     }
@@ -238,11 +245,12 @@ fn formatted(value: &Value, spec: &str, as_text: bool) -> String {
         (Value::Whole(whole), _, _) => whole.unsigned_abs().to_string(),
         (Value::Float(float), _, None) => python_float(float.abs()),
         (Value::Text(text), _, _) => text.clone(),
+        (Value::Shown { shown, .. }, _, _) => shown.clone(),
     };
     let negative = match value {
         Value::Whole(whole) => *whole < 0,
         Value::Float(float) => *float < 0.0,
-        Value::Text(_) => false,
+        Value::Text(_) | Value::Shown { .. } => false,
     };
     let sign_text = match (negative, sign) {
         (true, _) => "-",
