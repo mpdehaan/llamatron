@@ -365,6 +365,15 @@ impl<'a> SongRealizer<'a> {
         Ok(offset)
     }
 
+    /// The seed a generator that chooses at random takes at a place in a clip's chains, or None for an unseeded render.
+    pub fn chain_step_seed(&self, scene: &WrittenScene, track: &str, index: i128) -> Rendered<Option<i128>> {
+        let Some(seed) = self.seed else { return Ok(None) };
+        let place = self.song.get_track_names().iter().position(|name| *name == track).unwrap_or(0) as i128;
+        Ok(Some(
+            seed as i128 * SEED_SONG_FACTOR + scene.number as i128 * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR + index,
+        ))
+    }
+
     /// Whether a track's clip in a written-out scene plays a drum pattern.
     pub fn plays_drums(&self, scene: &WrittenScene, track: &str) -> bool {
         let Some(clip_slot) = scene.scene.get_clip_slot(track) else { return false };
@@ -401,12 +410,17 @@ impl<'a> SongRealizer<'a> {
     }
 }
 
-/// The one built-in generator the port runs so far.
-const CHORDS_KIND: &str = "chords";
+/// The kinds of generator the port runs so far.
+const PORTED_KINDS: &[&str] = &["chords", "arp"];
+
+/// The factors a chain step's seed is made with, so that it differs for every song, scene, track and place in the chain.
+const SEED_SONG_FACTOR: i128 = 1_000_003;
+const SEED_SCENE_FACTOR: i128 = 1_009;
+const SEED_TRACK_FACTOR: i128 = 31;
 
 /// A chain step of a kind the port runs, with no statements that bypass it, or what is not ported yet.
 fn ported_step(kind: &str, name: &str, settings: Data) -> Rendered<ChainStep> {
-    if kind != CHORDS_KIND {
+    if !PORTED_KINDS.contains(&kind) {
         return Err(RenderError::NotPorted(format!("the {kind} generator")));
     }
     if settings

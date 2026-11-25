@@ -6,7 +6,9 @@
 
 use crate::clip::Clip;
 use crate::error::Rendered;
+use crate::generators::arp::Arp;
 use crate::generators::chords::ChordsSettings;
+use crate::generators::Generator;
 use crate::order::{ordered_patterns, DrawnWhenAsked, StepOrder};
 use crate::pattern_player::{Pass, PatternPlayer};
 use crate::realizer::{SongRealizer, WrittenScene};
@@ -72,28 +74,47 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let mut clip = clip;
         let mut times: HashMap<(String, String), i64> = HashMap::new();
         let bar = self.realizer.song().get_time_signature().bar_length();
-        for step in steps {
-            if self.realizer.plays_drums(self.scene, self.track_name) {
-                continue;
-            }
+        // Each step is counted along all of the clip's chains for its seed, whether or not it runs.
+        for (index, step) in steps.into_iter().enumerate() {
             let count = times.entry((step.kind.clone(), step.name.clone())).or_insert(0);
             let key = (step.kind.clone(), step.name.clone(), *count);
             *count += 1;
-            let settings = ChordsSettings::of(&step.settings)?;
-            let continuation = self
-                .realizer
-                .continuation(self.scene, self.track_name, &key, settings.get_restart().as_deref())?;
-            let followed = match settings.get_mode().as_str() {
-                "follow_progression" => self
-                    .realizer
-                    .chords_followed(self.scene, self.track_name, settings.get_chords_from().as_deref())?,
-                _ => None,
+            let mut generator = match step.kind.as_str() {
+                "chords" => {
+                    // A progression and a Follow Chords leave a drum pattern alone, since moving a drum note changes the drum.
+                    if self.realizer.plays_drums(self.scene, self.track_name) {
+                        continue;
+                    }
+                    let settings = ChordsSettings::of(&step.settings)?;
+                    let continuation = self
+                        .realizer
+                        .continuation(self.scene, self.track_name, &key, settings.get_restart().as_deref())?;
+                    let followed = match settings.get_mode().as_str() {
+                        "follow_progression" => self
+                            .realizer
+                            .chords_followed(self.scene, self.track_name, settings.get_chords_from().as_deref())?,
+                        _ => None,
+                    };
+                    Generator::Chords(settings.make_generator(bar, &continuation, followed)?)
+                }
+                _ => {
+                    let seed = self.realizer.chain_step_seed(self.scene, self.track_name, index as i128)?;
+                    Generator::Arp(Arp::of(&step.settings, self.pattern_step()?, bar, seed)?)
+                }
             };
-            let mut generator = settings.make_generator(bar, &continuation, followed)?;
             clip = generator.generate(&clip)?;
             self.realizer.keep_end_state(self.scene, self.track_name, key, generator.end_state());
         }
         Ok(clip)
+    }
+
+    /// The step size of the pattern the clip plays.
+    fn pattern_step(&self) -> Rendered<Rational> {
+        let setlist = self.realizer.setlist();
+        let pattern = setlist
+            .get_pattern(&self.clip_slot.get_pattern_name())
+            .ok_or_else(|| crate::error::RenderError::Refused("a clip's pattern is missing".to_string()))?;
+        Ok(setlist.get_pattern_step_size(pattern))
     }
 
     /// The scale the clip plays in: its own, or else its scene's, which is the song's when the scene has none.
