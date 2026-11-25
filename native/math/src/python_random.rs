@@ -6,6 +6,7 @@
 //! algorithm of each call llamatron's generators make (random, getrandbits, randrange, randint, choice, shuffle, uniform,
 //! choices, sample, gauss), so that a seeded render here draws the very numbers the Python program drew.
 
+use crate::number::floor_divided;
 use crate::sha512::sha512;
 use std::f64::consts::PI;
 
@@ -282,16 +283,6 @@ impl PythonRandom {
             }
         };
         mean + drawn * spread
-    }
-}
-
-/// A division rounded toward minus infinity, as Python's // rounds, whatever the signs.
-fn floor_divided(numerator: i128, denominator: i128) -> i128 {
-    let quotient = numerator / denominator;
-    if (numerator % denominator != 0) && ((numerator < 0) != (denominator < 0)) {
-        quotient - 1
-    } else {
-        quotient
     }
 }
 
