@@ -31,12 +31,12 @@ from llamatron.caching.revised import notes_change
 from llamatron.model.file import corrections
 from llamatron.model.file.checks import pass_over_unknown, reading
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects import built_in_sound, instrument_previews
-from llamatron.model.objects.built_in_sound import check_sound, effect_value, lfo_value, oscillator_value, sound_value, synth_spec
+from llamatron.model.objects import built_in_sound, engine_presets, instrument_previews, sound_parts
+from llamatron.model.objects.built_in_sound import check_sound, synth_spec
 from llamatron.model.objects.llama_data import HoldsSettings, or_default, own_copy, settings_by_name, written_settings
 from llamatron.model.objects.pattern import Pattern
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import InstrumentKind, InstrumentSetting, KeyswitchSetting, OscillatorSetting, SoundEngine, SoundSetting, Waveform
+from llamatron.model.schema.file_format import InstrumentKind, InstrumentRole, InstrumentSetting, KeyswitchSetting, OscillatorSetting, OscillatorType, PartSetting, SoundPart, SoundSetting, Waveform
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Text, WholeNumber
 from llamatron.model.values import midi
 from llamatron.user_strings import errors
@@ -122,11 +122,12 @@ SETTINGS = described(
     WholeNumber(name=InstrumentSetting.LATENCY, lowest=limits.MIN_INSTRUMENT_LATENCY, highest=limits.MAX_INSTRUMENT_LATENCY, error=errors.ERR_BAD_LATENCY),
     Checked(name=InstrumentSetting.SOUND, check=check_sound),
     Checked(name=InstrumentSetting.PREVIEW, check=check_preview),
+    Choice(name=InstrumentSetting.ROLE, choices=file_format.INSTRUMENT_ROLES, default=corrections.LEFT_OUT, error=errors.ERR_BAD_INSTRUMENT_ROLE),
 )
 
 
 # The settings a built-in instrument adds, passed to the constructor by name.
-BUILT_IN_SETTINGS = (InstrumentSetting.KIND, InstrumentSetting.LATENCY, InstrumentSetting.SOUND)
+BUILT_IN_SETTINGS = (InstrumentSetting.KIND, InstrumentSetting.LATENCY, InstrumentSetting.SOUND, InstrumentSetting.ROLE)
 
 
 class Instrument(HoldsSettings):
@@ -145,7 +146,7 @@ class Instrument(HoldsSettings):
             InstrumentSetting.KEYSWITCHES: own_copy(keyswitches), InstrumentSetting.KEYSWITCH_LEAD: keyswitch_lead,
             InstrumentSetting.DEFAULT_VELOCITY: default_velocity, InstrumentSetting.ACCENT: accent, InstrumentSetting.VELOCITY: velocity,
             InstrumentSetting.KIND: built_in.get(InstrumentSetting.KIND), InstrumentSetting.LATENCY: built_in.get(InstrumentSetting.LATENCY),
-            InstrumentSetting.SOUND: own_copy(built_in.get(InstrumentSetting.SOUND)),
+            InstrumentSetting.SOUND: own_copy(built_in.get(InstrumentSetting.SOUND)), InstrumentSetting.ROLE: built_in.get(InstrumentSetting.ROLE),
         })
         check_settings(settings=SETTINGS, data=written_settings(self._settings))
         self._preview = None
@@ -196,10 +197,20 @@ class Instrument(HoldsSettings):
 
     @notes_change
     def make_preview(self):
-        """Give the instrument its starting preview pattern: a drum's C on each quarter, in the set's default drum octave, for a drum engine, a run up and down C
-        major for any other."""
-        drum = self.is_built_in() and self.get_sound(SoundSetting.ENGINE) == SoundEngine.DRUM
+        """Give the instrument its starting preview pattern: a drum's C on each quarter, in the set's default drum octave, for a
+        percussion instrument, a run up and down C major for a normal one."""
+        drum = self.get_role() == InstrumentRole.PERCUSSION
         self._preview = Pattern.from_data(data=instrument_previews.starting_preview(drum=drum), where=InstrumentSetting.PREVIEW)
+
+    def get_role(self):
+        """Return whether it is a normal instrument or a percussion one (InstrumentRole), chosen when it was made; one with none
+        written is percussion where its sound is a drum machine's, and normal otherwise."""
+        role = self._settings[InstrumentSetting.ROLE]
+        if role is not None:
+            return role
+        if self.is_built_in() and self.get_part_type(SoundPart.OSCILLATORS) == OscillatorType.DRUM:
+            return InstrumentRole.PERCUSSION
+        return InstrumentRole.NORMAL
 
     def get_kind(self):
         """Return what it is: a MIDI device and channel, or a sound llamatron makes itself (InstrumentKind)."""
@@ -223,71 +234,93 @@ class Instrument(HoldsSettings):
         self._settings[InstrumentSetting.LATENCY] = None if milliseconds == defaults.DEFAULT_INSTRUMENT_LATENCY else milliseconds
 
     def get_sound(self, name):
-        """Return one of its built-in sound's settings (SoundSetting), the default where it has none."""
-        return sound_value(sound=self._settings[InstrumentSetting.SOUND], name=name)
+        """Return one of its built-in sound's own settings (SoundSetting): its engine, volume, voice layer, LFOs, effects or matrix,
+        its engine preset's where it has none."""
+        return built_in_sound.sound_value(sound=self._settings[InstrumentSetting.SOUND], name=name)
 
     @notes_change
     def set_sound(self, *, name, value):
-        """Store one of its built-in sound's settings, refusing a value out of range."""
+        """Store one of its built-in sound's own settings, refusing a value out of range."""
         sound = dict(self._settings[InstrumentSetting.SOUND] or {})
         sound[name] = own_copy(value)
         check_sound(sound)
         self._settings[InstrumentSetting.SOUND] = sound
 
+    @notes_change
+    def set_engine(self, engine):
+        """Make its sound from an engine's preset: every part, the voice layer, the effects and the matrix the preset's, its
+        volume and LFOs kept."""
+        sound = {SoundSetting.ENGINE: engine}
+        for name in (SoundSetting.VOLUME, SoundSetting.LFOS):
+            if name in (self._settings[InstrumentSetting.SOUND] or {}):
+                sound[name] = own_copy(self._settings[InstrumentSetting.SOUND][name])
+        check_sound(sound)
+        self._settings[InstrumentSetting.SOUND] = sound
+
+    def get_part_type(self, part):
+        """Return the type of one of its sound's parts (Part): what its oscillators, an envelope or its filter is."""
+        return built_in_sound.part_of(sound=self._settings[InstrumentSetting.SOUND], part=part)[PartSetting.TYPE]
+
+    def get_part_setting(self, *, part, name):
+        """Return one setting of one of its sound's parts, the engine preset's or the type's default where the part has none."""
+        return built_in_sound.part_value(sound=self._settings[InstrumentSetting.SOUND], part=part, name=name)
+
+    def set_part_type(self, *, part, kind):
+        """Swap one of its sound's parts for a type: the engine preset's own part where it is that type, else the type at its
+        defaults."""
+        engine = self.get_sound(SoundSetting.ENGINE)
+        preset = engine_presets.preset_part(engine=engine, part=part)
+        self._store_part(part=part, value={PartSetting.TYPE: kind} if preset[PartSetting.TYPE] != kind else dict(preset))
+
+    def set_part_setting(self, *, part, name, value):
+        """Store one setting of one of its sound's parts, refusing a value out of range or a setting its type lacks."""
+        stored = dict(built_in_sound.part_of(sound=self._settings[InstrumentSetting.SOUND], part=part))
+        stored[name] = own_copy(value)
+        self._store_part(part=part, value=stored)
+
     def get_oscillator(self, *, number, name):
-        """Return one setting (OscillatorSetting) of its Basic sound's oscillator by number from 1, off where it has none."""
-        oscillators = self.get_sound(SoundSetting.OSCILLATORS)
+        """Return one setting (OscillatorSetting) of its Basic oscillators' oscillator by number from 1, off where it has none."""
+        oscillators = self.get_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.OSCILLATORS)
         oscillator = oscillators[number - 1] if number <= len(oscillators) else {}
-        return oscillator_value(oscillator=oscillator, name=name)
+        return built_in_sound.item_value(item=oscillator, name=name, items_defaults=sound_parts.OSCILLATOR_DEFAULTS)
 
     def set_oscillator(self, *, number, name, value):
         """Store one setting of an oscillator by number from 1, the oscillators before it made, off, where it has none."""
-        oscillators = [dict(oscillator) for oscillator in self.get_sound(SoundSetting.OSCILLATORS)]
+        oscillators = [dict(oscillator) for oscillator in self.get_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.OSCILLATORS)]
         while len(oscillators) < number:
             oscillators.append({OscillatorSetting.WAVEFORM: Waveform.OFF})
         oscillators[number - 1][name] = value
-        self.set_sound(name=SoundSetting.OSCILLATORS, value=oscillators)
+        self.set_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.OSCILLATORS, value=oscillators)
 
     def get_knob(self, place):
         """Return a drum's knob by its place, from 0, Pitch, Decay, Color, Shape, then Sweep."""
-        return self.get_sound(SoundSetting.KNOBS)[place]
+        return self.get_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.KNOBS)[place]
 
     def set_knob(self, *, place, value):
-        knobs = list(self.get_sound(SoundSetting.KNOBS))
+        knobs = list(self.get_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.KNOBS))
         knobs[place] = value
-        self.set_sound(name=SoundSetting.KNOBS, value=knobs)
+        self.set_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.KNOBS, value=knobs)
 
     def get_effect(self, *, number, name):
-        """Return one setting (EffectSetting) of an effect block by number from 1, its default where the block has none."""
-        blocks = self.get_sound(SoundSetting.EFFECTS)
-        block = blocks[number - 1] if number <= len(blocks) else {}
-        return effect_value(block=block, name=name)
+        """Return one setting (EffectSetting) of an effect by number from 1, its default where the effect has none."""
+        return self._item(list_name=SoundSetting.EFFECTS, number=number, name=name, items_defaults=built_in_sound.EFFECT_DEFAULTS)
 
     def set_effect(self, *, number, name, value):
-        """Store one setting of an effect block by number from 1, the blocks before it made, empty, where it has none."""
-        blocks = [dict(block) for block in self.get_sound(SoundSetting.EFFECTS)]
-        while len(blocks) < number:
-            blocks.append({})
-        blocks[number - 1][name] = value
-        self.set_sound(name=SoundSetting.EFFECTS, value=blocks)
+        self._set_item(list_name=SoundSetting.EFFECTS, number=number, name=name, value=value)
 
     def get_lfo(self, *, number, name):
         """Return one setting (LfoSetting) of an LFO by number from 1, its default where the LFO has none."""
-        lfos = self.get_sound(SoundSetting.LFOS)
-        lfo = lfos[number - 1] if number <= len(lfos) else {}
-        return lfo_value(lfo=lfo, name=name)
+        return self._item(list_name=SoundSetting.LFOS, number=number, name=name, items_defaults=built_in_sound.LFO_DEFAULTS)
 
     def set_lfo(self, *, number, name, value):
-        """Store one setting of an LFO by number from 1, the LFOs before it made, with nothing to move, where it has none."""
-        lfos = [dict(lfo) for lfo in self.get_sound(SoundSetting.LFOS)]
-        while len(lfos) < number:
-            lfos.append({})
-        lfos[number - 1][name] = value
-        self.set_sound(name=SoundSetting.LFOS, value=lfos)
+        self._set_item(list_name=SoundSetting.LFOS, number=number, name=name, value=value)
 
-    def synth_spec(self, *, drums_from=built_in_sound.MIDDLE_C):
-        """Return its built-in sound as the Synthesis Process compiles it, a drum playing at its own pitch on drums_from."""
-        return synth_spec(self._settings[InstrumentSetting.SOUND], drums_from=drums_from)
+    def get_slot(self, *, number, name):
+        """Return one setting (MatrixSetting) of a mod matrix slot by number from 1, its default where the slot has none."""
+        return self._item(list_name=SoundSetting.MATRIX, number=number, name=name, items_defaults=built_in_sound.SLOT_DEFAULTS)
+
+    def set_slot(self, *, number, name, value):
+        self._set_item(list_name=SoundSetting.MATRIX, number=number, name=name, value=value)
 
     def get_device(self):
         """Return the name of its MIDI output port, or None until one is chosen."""
@@ -420,6 +453,36 @@ class Instrument(HoldsSettings):
             SETTINGS[InstrumentSetting.KEYSWITCH_LEAD].check(milliseconds)
         self._settings[InstrumentSetting.KEYSWITCH_LEAD] = milliseconds
 
+    def synth_spec(self, *, drums_from=built_in_sound.MIDDLE_C):
+        """Return its built-in sound as the Synthesis Process compiles it, a drum playing at its own pitch on drums_from."""
+        return synth_spec(self._settings[InstrumentSetting.SOUND], drums_from=drums_from)
+
+    @notes_change
+    def _store_part(self, *, part, value):
+        """Store one of its sound's parts whole, checked, the envelopes as their three."""
+        sound = dict(self._settings[InstrumentSetting.SOUND] or {})
+        if part in file_format.ENVELOPE_PARTS:
+            envelopes = [dict(built_in_sound.part_of(sound=sound, part=each)) for each in file_format.ENVELOPE_PARTS]
+            envelopes[file_format.ENVELOPE_PARTS.index(part)] = value
+            sound[SoundSetting.ENVELOPES] = envelopes
+        else:
+            sound[part] = value
+        check_sound(sound)
+        self._settings[InstrumentSetting.SOUND] = sound
+
+    def _item(self, *, list_name, number, name, items_defaults):
+        """Return one setting of an LFO, effect or slot by number from 1, its default where it has none."""
+        items = self.get_sound(list_name)
+        item = items[number - 1] if number <= len(items) else {}
+        return built_in_sound.item_value(item=item, name=name, items_defaults=items_defaults)
+
+    def _set_item(self, *, list_name, number, name, value):
+        """Store one setting of an LFO, effect or slot by number from 1, those before it made, empty, where it has none."""
+        items = [dict(item) for item in self.get_sound(list_name)]
+        while len(items) < number:
+            items.append({})
+        items[number - 1][name] = value
+        self.set_sound(name=list_name, value=items)
 
 def _keyswitch_of(slot):
     """Return one slot as the file holds it as a Keyswitch, or NO_KEYSWITCH for an empty slot."""

@@ -16,7 +16,7 @@ from llamatron.interface.tracker.screens.set.instrument_editor import Instrument
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.schema.file_format import Effect, EffectSetting, FilterType, InstrumentKind, InstrumentSetting, LfoSetting, OscillatorSetting, Section, SetlistSetting, SoundEngine, SoundSetting, TrackSetting
+from llamatron.model.schema.file_format import Effect, EffectSetting, FilterType, InstrumentKind, InstrumentRole, InstrumentSetting, LfoSetting, MatrixSetting, OscillatorSetting, OscillatorType, PartSetting, Section, SetlistSetting, SoundEngine, SoundPart, SoundSetting, TrackSetting
 from llamatron.model.values import midi
 from llamatron.realtime import realtime_names
 from llamatron.user_strings import errors, labels, marks, messages, names
@@ -277,8 +277,10 @@ class TestRealTimeSwitch(UITest):
 
 
 class TestInstrumentTabs(UITest):
-    """An instrument's MIDI, Synth and Effects tabs: each On switches the other off, the engine chosen shows its own settings, a
-    gauge steps its setting, an oscillator and an effect block are chosen, and a typed arpeggio out of range is refused."""
+    """An instrument's Role, Kind and Engine above its tabs, and its MIDI, Oscillators, Envelopes, LFOs, Filter, FX and Matrix
+    tabs: the Kind switches it between off, MIDI and built in, the engine chosen fills its parts, a part's type is swapped and
+    shows its own settings, a gauge steps its setting, an oscillator, an effect and a matrix slot are chosen, and a typed
+    arpeggio out of range is refused."""
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -291,82 +293,83 @@ class TestInstrumentTabs(UITest):
     def shown_labels(self):
         return [field.label for field in self.app.screen.shown_fields()]
 
-    async def test_a_new_instrument_is_off_and_each_tabs_on_switches_the_other_off(self):
+    def part_label(self, *, part, setting):
+        return labels.MSG_PART_SETTING_LABEL.format(part=labels.MSG_PART_NAMES[part], setting=setting)
+
+    async def built_in(self):
+        self.document.change_set(self.instrument().set_kind, InstrumentKind.BUILT_IN)
+
+    async def test_a_new_instrument_is_off_and_its_kind_makes_it_midi_or_built_in(self):
         self.assertEqual(self.instrument().get_kind(), InstrumentKind.OFF)
-        await self.select_field(labels.MSG_MIDI_ON_LABEL)
-        await self.press(Key.ENTER)
+        self.assertEqual(self.instrument().get_role(), InstrumentRole.NORMAL)
+        await self.select_field(labels.MSG_INSTRUMENT_KIND_LABEL)
+        await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_kind(), InstrumentKind.MIDI)
-        await self.select_field(labels.MSG_SYNTH_ON_LABEL)
-        await self.press(Key.ENTER)
+        await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_kind(), InstrumentKind.BUILT_IN)
         self.assertFalse(self.instrument().has_device())
-        await self.press(Key.ENTER)
-        self.assertEqual(self.instrument().get_kind(), InstrumentKind.OFF)
 
-    async def test_the_engine_chosen_shows_its_own_settings(self):
-        await self.select_field(labels.MSG_ENGINE_LABEL)
+    async def test_the_engine_chosen_fills_the_parts_and_offers_only_the_roles_engines(self):
+        await self.built_in()
+        await self.select_field(labels.MSG_VOICES_LABEL)
         self.assertIn(labels.MSG_OSCILLATOR_LABEL.format(number=1), self.shown_labels())
+        await self.select_field(labels.MSG_ENGINE_LABEL)
         await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.instrument().get_sound(SoundSetting.ENGINE), SoundEngine.DRUM)
-        self.assertIn(labels.MSG_MACHINE_LABEL, self.shown_labels())
+        self.assertEqual(self.instrument().get_sound(SoundSetting.ENGINE), file_format.ENGINES_OF_ROLE[InstrumentRole.NORMAL][1])
+        self.assertEqual(self.instrument().get_part_type(SoundPart.OSCILLATORS), OscillatorType.SID)
+        await self.select_field(labels.MSG_VOICES_LABEL)
         self.assertNotIn(labels.MSG_OSCILLATOR_LABEL.format(number=1), self.shown_labels())
+        self.assertNotIn(SoundEngine.DRUM, file_format.ENGINES_OF_ROLE[InstrumentRole.NORMAL])
 
-    async def test_a_gauge_steps_its_setting_and_a_time_steps_by_more_as_it_grows(self):
+    async def test_a_part_swapped_shows_its_types_own_settings(self):
+        await self.built_in()
+        await self.select_field(self.part_label(part=SoundPart.ENV1, setting=labels.MSG_PART_TYPE_LABEL))
+        decay = self.part_label(part=SoundPart.ENV1, setting=labels.MSG_PART_SETTING_NAMES[PartSetting.DECAY])
+        self.assertIn(decay, self.shown_labels())
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_part_type(SoundPart.ENV1), file_format.ENVELOPE_TYPES[1])
+        self.assertNotIn(decay, self.shown_labels())
+        await self.select_field(self.part_label(part=SoundPart.FILTER, setting=labels.MSG_PART_TYPE_LABEL))
+        mode = self.part_label(part=SoundPart.FILTER, setting=labels.MSG_PART_SETTING_NAMES[PartSetting.MODE])
+        self.assertNotIn(mode, self.shown_labels())
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_part_type(SoundPart.FILTER), FilterType.MULTIMODE)
+        self.assertIn(mode, self.shown_labels())
+
+    async def test_a_gauge_steps_its_setting_and_a_time_and_a_cutoff_step_by_more_as_they_grow(self):
+        await self.built_in()
         await self.select_field(labels.MSG_VOLUME_LABEL)
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_sound(SoundSetting.VOLUME), defaults.DEFAULT_SOUND_VOLUME + 1)
-        await self.select_field(labels.MSG_DECAY_LABEL)
+        await self.select_field(self.part_label(part=SoundPart.ENV1, setting=labels.MSG_PART_SETTING_NAMES[PartSetting.DECAY]))
         await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.instrument().get_sound(SoundSetting.DECAY), defaults.DEFAULT_DECAY_MS + DECAY_STRIDE)
+        self.assertEqual(self.instrument().get_part_setting(part=SoundPart.ENV1, name=PartSetting.DECAY), defaults.DEFAULT_DECAY_MS + DECAY_STRIDE)
+        await self.select_field(self.part_label(part=SoundPart.FILTER, setting=labels.MSG_PART_SETTING_NAMES[PartSetting.CUTOFF]))
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_part_setting(part=SoundPart.FILTER, name=PartSetting.CUTOFF), defaults.DEFAULT_CUTOFF + CUTOFF_STRIDE)
 
-    async def test_an_oscillator_and_an_effect_block_are_chosen(self):
+    async def test_an_oscillator_an_effect_and_a_matrix_slot_are_chosen(self):
+        await self.built_in()
         await self.select_field(labels.MSG_OSCILLATOR_LABEL.format(number=2))
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_oscillator(number=2, name=OscillatorSetting.WAVEFORM), file_format.WAVEFORMS[0])
-        await self.select_field(labels.MSG_EFFECT_BLOCK_LABEL.format(number=3))
+        await self.select_field(labels.MSG_EFFECT_BLOCK_LABEL.format(number=limits.EFFECT_BLOCKS))
         await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.instrument().get_effect(number=3, name=EffectSetting.EFFECT), Effect.BITCRUSH)
-        self.assertIn(labels.MSG_EFFECT_BITS_LABEL.format(number=3), self.shown_labels())
+        self.assertEqual(self.instrument().get_effect(number=limits.EFFECT_BLOCKS, name=EffectSetting.EFFECT), Effect.BITCRUSH)
+        self.assertIn(labels.MSG_EFFECT_BITS_LABEL.format(number=limits.EFFECT_BLOCKS), self.shown_labels())
+        await self.select_field(labels.MSG_SLOT_SOURCE_LABEL.format(number=limits.MATRIX_SLOTS))
+        await self.press(keybindings.FieldPage.MORE)
+        self.assertEqual(self.instrument().get_slot(number=limits.MATRIX_SLOTS, name=MatrixSetting.SOURCE), file_format.MATRIX_SOURCES[1])
 
-    async def test_a_filter_block_shows_its_mode_only_where_its_type_has_several_and_its_cutoff_steps_by_hertz(self):
-        self.document.change_set(self.instrument().set_effect, number=1, name=EffectSetting.EFFECT, value=Effect.FILTER)
-        await self.select_field(labels.MSG_EFFECT_BLOCK_LABEL.format(number=1))
-        self.assertIn(labels.MSG_EFFECT_CUTOFF_LABEL.format(number=1), self.shown_labels())
-        self.assertIn(labels.MSG_EFFECT_MIX_LABEL.format(number=1), self.shown_labels())
-        self.assertNotIn(labels.MSG_EFFECT_FILTER_MODE_LABEL.format(number=1), self.shown_labels())
-        await self.select_field(labels.MSG_EFFECT_FILTER_TYPE_LABEL.format(number=1))
-        await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.instrument().get_effect(number=1, name=EffectSetting.FILTER_TYPE), FilterType.MULTIMODE)
-        self.assertIn(labels.MSG_EFFECT_FILTER_MODE_LABEL.format(number=1), self.shown_labels())
-        await self.select_field(labels.MSG_EFFECT_CUTOFF_LABEL.format(number=1))
-        await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.instrument().get_effect(number=1, name=EffectSetting.CUTOFF), defaults.DEFAULT_CUTOFF + CUTOFF_STRIDE)
-
-    async def test_an_lfo_starts_off_offers_its_engines_controls_and_its_rate_steps_in_tenths_of_a_hertz(self):
+    async def test_an_lfo_starts_off_and_its_rate_steps_in_tenths_of_a_hertz(self):
+        await self.built_in()
         await self.select_field(labels.MSG_LFO_LABEL.format(number=1))
         self.assertFalse(self.instrument().get_lfo(number=1, name=LfoSetting.ON))
         await self.press(Key.ENTER)
         self.assertTrue(self.instrument().get_lfo(number=1, name=LfoSetting.ON))
-        await self.select_field(labels.MSG_LFO_TARGET_LABEL.format(number=1))
-        self.assertNotIn(labels.MSG_LFO_RATE_LABEL.format(number=1), self.shown_labels())
-        await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.instrument().get_lfo(number=1, name=LfoSetting.TARGET), file_format.LFO_TARGETS[SoundEngine.BASIC][1])
         await self.select_field(labels.MSG_LFO_RATE_LABEL.format(number=1))
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_lfo(number=1, name=LfoSetting.RATE), defaults.DEFAULT_LFO_RATE + LFO_RATE_STRIDE)
-        self.document.change_set(self.instrument().set_sound, name=SoundSetting.ENGINE, value=SoundEngine.DRUM)
-        await self.select_field(labels.MSG_LFO_TARGET_LABEL.format(number=1))
-        self.assertNotIn(labels.MSG_LFO_RATE_LABEL.format(number=1), self.shown_labels())
-
-    async def test_fishline_shows_its_own_filter_and_accent_and_its_cutoff_steps_by_hertz(self):
-        self.document.change_set(self.instrument().set_sound, name=SoundSetting.ENGINE, value=SoundEngine.FISHLINE)
-        await self.select_field(labels.MSG_ENGINE_LABEL)
-        for label in (labels.MSG_CUTOFF_LABEL, labels.MSG_ENV_MOD_LABEL, labels.MSG_ACCENT_AT_LABEL, labels.MSG_SLIDE_LABEL, labels.MSG_AMP_DECAY_LABEL):
-            self.assertIn(label, self.shown_labels())
-        self.assertNotIn(labels.MSG_VOICES_LABEL, self.shown_labels())
-        await self.select_field(labels.MSG_CUTOFF_LABEL)
-        await self.press(keybindings.FieldPage.MORE)
-        self.assertEqual(self.instrument().get_sound(SoundSetting.CUTOFF), defaults.DEFAULT_ACID_CUTOFF + ACID_CUTOFF_STRIDE)
 
     async def test_preview_pattern_opens_the_instruments_own_pattern_made_as_one_undo_step_and_esc_comes_back(self):
         self.assertIsNone(self.instrument().get_preview())
@@ -382,14 +385,15 @@ class TestInstrumentTabs(UITest):
         self.assertIsNone(self.instrument().get_preview())
 
     async def test_an_arpeggio_is_typed_and_one_out_of_range_refused(self):
+        await self.built_in()
         await self.select_field(labels.MSG_ENGINE_LABEL)
-        self.document.change_set(self.instrument().set_sound, name=SoundSetting.ENGINE, value=SoundEngine.SID)
+        self.document.change_set(self.instrument().set_engine, SoundEngine.SID)
         await self.select_field(labels.MSG_ARPEGGIO_LABEL)
         await self.press(Key.ENTER)
         await self.type(ARPEGGIO_TYPED)
         await self.press(Key.ENTER)
-        self.assertEqual(self.instrument().get_sound(SoundSetting.ARPEGGIO), ARPEGGIO)
+        self.assertEqual(self.instrument().get_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.ARPEGGIO), ARPEGGIO)
         await self.press(Key.ENTER, *[Key.BACKSPACE] * len(ARPEGGIO_TYPED))
         await self.type(str(limits.MAX_INTERVAL + 1))
         await self.press(Key.ENTER)
-        self.assertEqual(self.instrument().get_sound(SoundSetting.ARPEGGIO), ARPEGGIO)
+        self.assertEqual(self.instrument().get_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.ARPEGGIO), ARPEGGIO)

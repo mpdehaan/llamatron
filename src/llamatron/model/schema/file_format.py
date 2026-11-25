@@ -570,6 +570,17 @@ class InstrumentSetting:
     SOUND = 'sound'
     # The instrument's own preview pattern, for designing its sound before any music exists (model/objects/instrument_previews.py).
     PREVIEW = 'preview'
+    # Whether it is a normal instrument or a percussion one, chosen when it is made and never changed: which tracks may play it
+    # and which engines it offers.
+    ROLE = 'role'
+
+
+class InstrumentRole:
+    """An instrument's role: normal, played by any track but a drum track, MIDI, orchestral or built in, or percussion, played
+    by drum tracks."""
+
+    NORMAL = 'normal'
+    PERCUSSION = 'percussion'
 
 
 class InstrumentKind:
@@ -582,61 +593,201 @@ class InstrumentKind:
 
 
 class SoundSetting:
-    """A built-in instrument's sound: its engine, volume and voices; a Basic sound's oscillators and the envelope a Basic or
-    SID sound shares; a drum's machine, knobs, choke group and overlap; a SID sound's wave, pulse width and its sweep, ring or
-    sync and its interval, arpeggio and glide; a Pocket sound's voice, duty, stepped envelope, pitch sweep, wave and noise;
-    every sound's four effect blocks, and its four LFOs."""
+    """A built-in instrument's sound: the engine it was made from, a preset of parts; the voice layer, its volume, how many
+    notes it plays at once, whether it plays legato, its glide, and whether its filter is each note's own or shared; then its
+    parts: the oscillators, three envelopes, the filter, four LFOs, two effects, and the mod matrix's six slots."""
 
     ENGINE = 'engine'
     VOLUME = 'volume'
     VOICES = 'voices'
+    LEGATO = 'legato'
+    GLIDE = 'glide'
+    FILTER_SHARING = 'filter_sharing'
     OSCILLATORS = 'oscillators'
-    ATTACK = 'attack'
-    DECAY = 'decay'
-    SUSTAIN = 'sustain'
-    RELEASE = 'release'
-    MACHINE = 'machine'
-    KNOBS = 'knobs'
-    CHOKE = 'choke'
-    OVERLAP = 'overlap'
+    ENVELOPES = 'envelopes'
+    FILTER = 'filter'
+    LFOS = 'lfos'
+    EFFECTS = 'effects'
+    MATRIX = 'matrix'
+
+
+class SoundPart:
+    """A part of a built-in voice whose type can be swapped: the oscillators, each of the three envelopes, and the filter."""
+
+    OSCILLATORS = 'oscillators'
+    ENV1 = 'env1'
+    ENV2 = 'env2'
+    ENV3 = 'env3'
+    FILTER = 'filter'
+
+
+class PartSetting:
+    """Every setting of a part, each of its types holding those it has: the part's type; the oscillators' pitch envelope in
+    semitones, Basic's oscillators, the SID-style voice's wave, pulse width and its sweep, ring or sync and its interval and
+    arpeggio, the handheld chip's voice, duty, wave shape, noise and pitch sweep, the acid bass's wave and tuning, a drum's
+    machine, knobs, choke group and overlap; an envelope's attack, its curve, hold, decay, snap, sustain and release, a vactrol's
+    cell, what lights it, its strike's width, memory, age and stability, the acid gate's accent, the velocity that accents, how
+    far a run of accents climbs, its decay, the amp's fall and a plain note's soft attack, and the chip's start level, pace and
+    direction; a filter's cutoff, resonance, slope, mode, Env amount, key tracking and drive, and a low-pass gate's mode,
+    open cutoff, what it is fed and a ping's width."""
+
+    TYPE = 'type'
+    PITCH_ENV = 'pitch_env'
+    OSCILLATORS = 'oscillators'
     WAVE = 'wave'
     PULSE_WIDTH = 'pulse_width'
     PULSE_SWEEP = 'pulse_sweep'
     MODULATION = 'modulation'
     INTERVAL = 'interval'
     ARPEGGIO = 'arpeggio'
-    GLIDE = 'glide'
     CHIP_VOICE = 'chip_voice'
     DUTY = 'duty'
-    START_LEVEL = 'start_level'
-    LEVEL_PACE = 'level_pace'
-    LEVEL_DIRECTION = 'level_direction'
+    WAVE_SHAPE = 'wave_shape'
+    NOISE = 'noise'
     SWEEP_PACE = 'sweep_pace'
     SWEEP_DIRECTION = 'sweep_direction'
     SWEEP_STEP = 'sweep_step'
-    WAVE_SHAPE = 'wave_shape'
-    NOISE = 'noise'
-    # Fishline's: its wave, tuning in semitones, its own diode filter, switched on or off, with cutoff, resonance, the amount
-    # and decay of its envelope, its accent's amount, the velocity that accents a note and how far a run of accents climbs,
-    # its slide's time and its drive; its amp's long fall, the soft attack of a plain note in tenths of a millisecond, and the
-    # accented note's short envelope.
     ACID_WAVE = 'acid_wave'
     TUNING = 'tuning'
-    FILTER_ON = 'filter_on'
-    CUTOFF = 'cutoff'
-    RESONANCE = 'resonance'
-    ENV_MOD = 'env_mod'
-    FILTER_DECAY = 'filter_decay'
+    MACHINE = 'machine'
+    KNOBS = 'knobs'
+    CHOKE = 'choke'
+    OVERLAP = 'overlap'
+    ATTACK = 'attack'
+    ATTACK_CURVE = 'attack_curve'
+    HOLD = 'hold'
+    DECAY = 'decay'
+    SNAP = 'snap'
+    SUSTAIN = 'sustain'
+    RELEASE = 'release'
+    CELL = 'cell'
+    LIGHT = 'light'
+    STRIKE_WIDTH = 'strike_width'
+    MEMORY = 'memory'
+    AGE = 'age'
+    STABILITY = 'stability'
     ACCENT = 'accent'
     ACCENT_THRESHOLD = 'accent_threshold'
     ACCENT_SWEEP = 'accent_sweep'
-    SLIDE = 'slide'
-    DRIVE = 'drive'
+    ACCENT_DECAY = 'accent_decay'
     AMP_DECAY = 'amp_decay'
     SOFT_ATTACK = 'soft_attack'
-    ACCENT_DECAY = 'accent_decay'
-    EFFECTS = 'effects'
-    LFOS = 'lfos'
+    START_LEVEL = 'start_level'
+    LEVEL_PACE = 'level_pace'
+    LEVEL_DIRECTION = 'level_direction'
+    CUTOFF = 'cutoff'
+    RESONANCE = 'resonance'
+    SLOPE = 'slope'
+    MODE = 'mode'
+    ENV_AMOUNT = 'env_amount'
+    KEY_TRACK = 'key_track'
+    DRIVE = 'drive'
+    GATE_MODE = 'gate_mode'
+    OPEN = 'open'
+    INPUT = 'input'
+    PING_WIDTH = 'ping_width'
+
+
+class OscillatorType:
+    """What an Oscillators part is, shown by the engine it comes from: Basic's three oscillators, the SID-style voice, the
+    handheld chip's voice, the acid bass's oscillator, or a drum machine."""
+
+    BASIC = 'basic'
+    SID = 'sid'
+    POCKET = 'pocket'
+    ACID = 'acid'
+    DRUM = 'drum'
+
+
+class EnvelopeType:
+    """What an envelope part is: the snappy ADSR, a struck AR, an ASR held at full, the SID chip's own ADSR, a vactrol, the acid
+    bass's gate, or the handheld chip's stepped envelope."""
+
+    ADSR = 'adsr'
+    AR = 'ar'
+    ASR = 'asr'
+    SID_ADSR = 'sid_adsr'
+    VACTROL = 'vactrol'
+    ACID_GATE = 'acid_gate'
+    CHIP_STEPS = 'chip_steps'
+
+
+class VactrolCell:
+    """A vactrol's cell, from fast and snappy to lazy and lingering."""
+
+    FAST = 'fast'
+    CLASSIC = 'classic'
+    SLOW = 'slow'
+    LAZY = 'lazy'
+
+
+class VactrolLight:
+    """What lights a vactrol: a short strike at each note, or the note held, the cell lit while it is."""
+
+    STRIKE = 'strike'
+    GATE = 'gate'
+
+
+class FilterSharing:
+    """Whether a voice's filter is each note's own, as a polysynth's, or one shared by every note, moved by the newest, as a
+    paraphonic synth's."""
+
+    PER_NOTE = 'per_note'
+    SHARED = 'shared'
+
+
+class GateMode:
+    """What a low-pass gate's light moves: the loudness, the cutoff, or both together."""
+
+    VCA = 'vca'
+    LOWPASS = 'lowpass'
+    BOTH = 'both'
+
+
+class GateInput:
+    """What a low-pass gate is fed: the oscillator, a ping alone each note, or both."""
+
+    OSCILLATOR = 'oscillator'
+    PING = 'ping'
+    BOTH = 'both'
+
+
+class MatrixSetting:
+    """One slot of the mod matrix: what moves, what scales it, what is moved, and how far, in percent of its range either way."""
+
+    SOURCE = 'source'
+    VIA = 'via'
+    DESTINATION = 'destination'
+    AMOUNT = 'amount'
+
+
+class MatrixSource:
+    """What a mod matrix slot routes: none, an envelope, an LFO, the note's velocity or key, or a value drawn at each note."""
+
+    NONE = 'none'
+    ENV1 = 'env1'
+    ENV2 = 'env2'
+    ENV3 = 'env3'
+    LFO1 = 'lfo1'
+    LFO2 = 'lfo2'
+    LFO3 = 'lfo3'
+    LFO4 = 'lfo4'
+    VELOCITY = 'velocity'
+    KEY = 'key'
+    RANDOM = 'random'
+
+
+class MatrixDestination:
+    """What a mod matrix slot moves: none, the pitch, the pulse's width, the oscillators' detune, the cutoff, the resonance or
+    the amp."""
+
+    NONE = 'none'
+    PITCH = 'pitch'
+    PULSE_WIDTH = 'pulse_width'
+    DETUNE = 'detune'
+    CUTOFF = 'cutoff'
+    RESONANCE = 'resonance'
+    AMP = 'amp'
 
 
 class OscillatorSetting:
@@ -648,30 +799,20 @@ class OscillatorSetting:
 
 
 class EffectSetting:
-    """One effect block of a built-in sound: which effect, or none, its settings, and how much of it is mixed in: the
-    bitcrusher's bits and the rate it holds samples at; drive's curve and amount; a filter's type and mode, cutoff in hertz,
-    resonance, its envelope's amount in percent of four octaves either way, attack and decay, key tracking and drive."""
+    """One effect of a built-in sound: which effect, or none, its settings, and how much of it is mixed in: the bitcrusher's
+    bits and the rate it holds samples at; drive's curve and amount."""
 
     EFFECT = 'effect'
     BITS = 'bits'
     RATE = 'rate'
     CURVE = 'curve'
     AMOUNT = 'amount'
-    FILTER_TYPE = 'filter_type'
-    FILTER_MODE = 'filter_mode'
-    CUTOFF = 'cutoff'
-    RESONANCE = 'resonance'
-    ENVELOPE_AMOUNT = 'envelope_amount'
-    ENVELOPE_ATTACK = 'envelope_attack'
-    ENVELOPE_DECAY = 'envelope_decay'
-    KEY_TRACK = 'key_track'
-    FILTER_DRIVE = 'filter_drive'
     MIX = 'mix'
 
 
 class SoundEngine:
-    """A built-in sound's engine: a Basic synth, a drum, a SID-style voice, a Pocket-style voice of the handheld's chip, or
-    Fishline, the acid bass."""
+    """A built-in sound's engine, a preset of parts: a Basic synth, a drum, a SID-style voice, a Pocket-style voice of the
+    handheld's chip, or Fishline, the acid bass."""
 
     BASIC = 'basic'
     DRUM = 'drum'
@@ -757,24 +898,21 @@ class Noise:
 
 
 class Effect:
-    """What an effect block holds: nothing, the bitcrusher, drive, or a filter."""
+    """What an effect holds: nothing, the bitcrusher, or drive."""
 
     NONE = 'none'
     BITCRUSH = 'bitcrush'
     DRIVE = 'drive'
-    FILTER = 'filter'
 
 
 class LfoSetting:
     """One LFO of a built-in sound: whether it is on, off for a new one, so that an LFO costs nothing until wanted and can be
-    switched off to hear the sound without it; the Synth Control it moves, or none, its shape, its rate in tenths of a hertz, its depth in
-    percent of the control's range either way, whether each note starts it again, and whether each scene does."""
+    switched off to hear the sound without it; its shape, its rate in tenths of a hertz, whether each note starts it again, and
+    whether each scene does. What it moves is the mod matrix's."""
 
     ON = 'on'
-    TARGET = 'target'
     SHAPE = 'shape'
     RATE = 'rate'
-    DEPTH = 'depth'
     RETRIGGER = 'retrigger'
     EACH_SCENE = 'each_scene'
 
@@ -791,44 +929,17 @@ class LfoShape:
     SAMPLE_AND_HOLD = 'sample_and_hold'
 
 
-class SynthControl:
-    """A setting of a built-in sound that can move while it plays, by an LFO now and by the pattern's Synth Control rows later:
-    each engine has eight, its own six, Pan, and the first Filter effect's cutoff."""
+class FilterType:
+    """A voice's filter: none, the four-pole transistor ladder, the clean two-pole multimode (a state-variable filter), the
+    screaming Sallen-Key, the acid diode ladder, the creamy four-pole OTA, or the low-pass gate."""
 
     NONE = 'none'
-    PITCH = 'pitch'
-    ATTACK = 'attack'
-    DECAY = 'decay'
-    SUSTAIN = 'sustain'
-    RELEASE = 'release'
-    DETUNE_SPREAD = 'detune_spread'
-    PULSE_WIDTH = 'pulse_width'
-    PAN = 'pan'
-    FILTER_CUTOFF = 'filter_cutoff'
-    FINE_TUNE = 'fine_tune'
-    COLOR = 'color'
-    SHAPE = 'shape'
-    SWEEP = 'sweep'
-    WAVE = 'wave'
-    RING_SYNC = 'ring_sync'
-    ENVELOPE_RATE = 'envelope_rate'
-    DUTY = 'duty'
-    NOISE_MODE = 'noise_mode'
-    ENV_MOD = 'env_mod'
-    CUTOFF = 'cutoff'
-    RESONANCE = 'resonance'
-    ACCENT = 'accent'
-
-
-class FilterType:
-    """A filter effect's circuit: the four-pole transistor ladder, the clean two-pole multimode (a state-variable filter), the
-    screaming Sallen-Key, the acid diode ladder, or the creamy four-pole OTA."""
-
     LADDER = 'ladder'
     MULTIMODE = 'multimode'
     SALLEN_KEY = 'sallen_key'
     DIODE = 'diode'
     OTA = 'ota'
+    LOW_PASS_GATE = 'low_pass_gate'
 
 
 class FilterMode:
@@ -867,7 +978,11 @@ class DrumMachine:
 
 
 INSTRUMENT_KINDS = (InstrumentKind.OFF, InstrumentKind.MIDI, InstrumentKind.BUILT_IN)
+INSTRUMENT_ROLES = (InstrumentRole.NORMAL, InstrumentRole.PERCUSSION)
 SOUND_ENGINES = (SoundEngine.BASIC, SoundEngine.DRUM, SoundEngine.SID, SoundEngine.POCKET, SoundEngine.FISHLINE)
+# Each role's engines: a percussion instrument offers the drum engines, a normal one the synth engines.
+ENGINES_OF_ROLE = {InstrumentRole.NORMAL: (SoundEngine.BASIC, SoundEngine.SID, SoundEngine.POCKET, SoundEngine.FISHLINE),
+                   InstrumentRole.PERCUSSION: (SoundEngine.DRUM,)}
 ACID_WAVES = (AcidWave.SAW, AcidWave.SQUARE)
 WAVEFORMS = (Waveform.SQUARE, Waveform.SAW, Waveform.SINE, Waveform.TRIANGLE, Waveform.PULSE)
 OSCILLATOR_WAVEFORMS = (Waveform.OFF, *WAVEFORMS)
@@ -879,43 +994,26 @@ CHIP_DIRECTIONS = (ChipDirection.DOWN, ChipDirection.UP)
 WAVE_SHAPES = (WaveShape.TRIANGLE, WaveShape.SAW, WaveShape.SQUARE, WaveShape.SINE, WaveShape.ORGAN)
 NOISES = (Noise.LONG, Noise.SHORT)
 LFO_SHAPES = (LfoShape.SINE, LfoShape.TRIANGLE, LfoShape.SAW_UP, LfoShape.SAW_DOWN, LfoShape.SQUARE, LfoShape.SAMPLE_AND_HOLD)
-# Each engine's eight Synth Controls, in the user's order: pitch first, then the envelope's, then the rest, then Pan and the
-# first Filter effect's cutoff.
-ENGINE_CONTROLS = {
-    SoundEngine.BASIC: (SynthControl.PITCH, SynthControl.ATTACK, SynthControl.DECAY, SynthControl.RELEASE, SynthControl.DETUNE_SPREAD, SynthControl.PULSE_WIDTH,
-                        SynthControl.PAN, SynthControl.FILTER_CUTOFF),
-    SoundEngine.DRUM: (SynthControl.PITCH, SynthControl.FINE_TUNE, SynthControl.DECAY, SynthControl.COLOR, SynthControl.SHAPE, SynthControl.SWEEP,
-                       SynthControl.PAN, SynthControl.FILTER_CUTOFF),
-    SoundEngine.SID: (SynthControl.PITCH, SynthControl.SUSTAIN, SynthControl.RELEASE, SynthControl.PULSE_WIDTH, SynthControl.WAVE, SynthControl.RING_SYNC,
-                      SynthControl.PAN, SynthControl.FILTER_CUTOFF),
-    SoundEngine.POCKET: (SynthControl.PITCH, SynthControl.ENVELOPE_RATE, SynthControl.DUTY, SynthControl.WAVE, SynthControl.NOISE_MODE, SynthControl.SWEEP,
-                         SynthControl.PAN, SynthControl.FILTER_CUTOFF),
-    # Fishline's own filter is its first, so the eighth is left blank.
-    SoundEngine.FISHLINE: (SynthControl.PITCH, SynthControl.DECAY, SynthControl.ENV_MOD, SynthControl.CUTOFF, SynthControl.RESONANCE, SynthControl.ACCENT,
-                           SynthControl.PAN, SynthControl.NONE),
-}
-# Every Synth Control of any engine, none first, as a stored LFO's target may name.
-SYNTH_CONTROLS = (
-    SynthControl.NONE, SynthControl.PITCH, SynthControl.ATTACK, SynthControl.DECAY, SynthControl.SUSTAIN, SynthControl.RELEASE, SynthControl.DETUNE_SPREAD,
-    SynthControl.PULSE_WIDTH, SynthControl.PAN, SynthControl.FILTER_CUTOFF, SynthControl.FINE_TUNE, SynthControl.COLOR, SynthControl.SHAPE, SynthControl.SWEEP,
-    SynthControl.WAVE, SynthControl.RING_SYNC, SynthControl.ENVELOPE_RATE, SynthControl.DUTY, SynthControl.NOISE_MODE, SynthControl.ENV_MOD,
-    SynthControl.CUTOFF, SynthControl.RESONANCE, SynthControl.ACCENT,
-)
-# The controls an LFO can move on each engine so far, none first: the ones that change smoothly while a note sounds.
-LFO_TARGETS = {
-    SoundEngine.BASIC: (SynthControl.NONE, SynthControl.PITCH, SynthControl.DETUNE_SPREAD, SynthControl.FILTER_CUTOFF),
-    SoundEngine.DRUM: (SynthControl.NONE, SynthControl.FILTER_CUTOFF),
-    SoundEngine.SID: (SynthControl.NONE, SynthControl.PITCH, SynthControl.PULSE_WIDTH, SynthControl.FILTER_CUTOFF),
-    SoundEngine.POCKET: (SynthControl.NONE, SynthControl.PITCH, SynthControl.FILTER_CUTOFF),
-    # Fishline's Filter cutoff moves its own filter while it is on, which is its first.
-    SoundEngine.FISHLINE: (SynthControl.NONE, SynthControl.PITCH, SynthControl.FILTER_CUTOFF),
-}
-EFFECTS = (Effect.NONE, Effect.BITCRUSH, Effect.DRIVE, Effect.FILTER)
-FILTER_TYPES = (FilterType.LADDER, FilterType.MULTIMODE, FilterType.SALLEN_KEY, FilterType.DIODE, FilterType.OTA)
+EFFECTS = (Effect.NONE, Effect.BITCRUSH, Effect.DRIVE)
+FILTER_TYPES = (FilterType.NONE, FilterType.LADDER, FilterType.MULTIMODE, FilterType.SALLEN_KEY, FilterType.DIODE, FilterType.OTA, FilterType.LOW_PASS_GATE)
+OSCILLATOR_TYPES = (OscillatorType.BASIC, OscillatorType.SID, OscillatorType.POCKET, OscillatorType.ACID, OscillatorType.DRUM)
+ENVELOPE_TYPES = (EnvelopeType.ADSR, EnvelopeType.AR, EnvelopeType.ASR, EnvelopeType.SID_ADSR, EnvelopeType.VACTROL, EnvelopeType.ACID_GATE, EnvelopeType.CHIP_STEPS)
+PARTS = (SoundPart.OSCILLATORS, SoundPart.ENV1, SoundPart.ENV2, SoundPart.ENV3, SoundPart.FILTER)
+ENVELOPE_PARTS = (SoundPart.ENV1, SoundPart.ENV2, SoundPart.ENV3)
+VACTROL_CELLS = (VactrolCell.FAST, VactrolCell.CLASSIC, VactrolCell.SLOW, VactrolCell.LAZY)
+VACTROL_LIGHTS = (VactrolLight.STRIKE, VactrolLight.GATE)
+FILTER_SHARINGS = (FilterSharing.PER_NOTE, FilterSharing.SHARED)
+GATE_MODES = (GateMode.VCA, GateMode.LOWPASS, GateMode.BOTH)
+GATE_INPUTS = (GateInput.OSCILLATOR, GateInput.PING, GateInput.BOTH)
+# The ladder's slopes, in decibels an octave, by the poles it is tapped after.
+LADDER_SLOPES = (6, 12, 18, 24)
+MATRIX_SOURCES = (MatrixSource.NONE, MatrixSource.ENV1, MatrixSource.ENV2, MatrixSource.ENV3, MatrixSource.LFO1, MatrixSource.LFO2, MatrixSource.LFO3,
+                  MatrixSource.LFO4, MatrixSource.VELOCITY, MatrixSource.KEY, MatrixSource.RANDOM)
+MATRIX_DESTINATIONS = (MatrixDestination.NONE, MatrixDestination.PITCH, MatrixDestination.PULSE_WIDTH, MatrixDestination.DETUNE, MatrixDestination.CUTOFF,
+                       MatrixDestination.RESONANCE, MatrixDestination.AMP)
 FILTER_MODES = (FilterMode.LOW, FilterMode.BAND, FilterMode.HIGH, FilterMode.NOTCH)
-# The modes each filter type has.
-MODES_OF_FILTER = {FilterType.LADDER: (FilterMode.LOW,), FilterType.MULTIMODE: FILTER_MODES, FilterType.SALLEN_KEY: (FilterMode.LOW, FilterMode.HIGH),
-                   FilterType.DIODE: (FilterMode.LOW,), FilterType.OTA: (FilterMode.LOW,)}
+# The Sallen-Key's modes; the multimode has all four, the ladders only the lows.
+SALLEN_KEY_MODES = (FilterMode.LOW, FilterMode.HIGH)
 CURVES = (Curve.SOFT, Curve.WARM, Curve.HARD, Curve.FOLD, Curve.WRAP)
 DRUM_MACHINES = (DrumMachine.KICK, DrumMachine.HARD_KICK, DrumMachine.SYNTH_KICK, DrumMachine.SNARE, DrumMachine.CLAP, DrumMachine.RIM,
                  DrumMachine.HATS, DrumMachine.COWBELL, DrumMachine.ACOUSTIC_TOM, DrumMachine.KARPLUS_DRUM)

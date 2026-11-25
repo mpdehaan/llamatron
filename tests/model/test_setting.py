@@ -24,7 +24,7 @@ from llamatron.model.file import corrections
 from llamatron.model.file.checks import listed
 from llamatron.model.file.invalid_value import InvalidValue
 from llamatron.model.file.song_file_error import SongFileError
-from llamatron.model.objects import built_in_sound, chain, clip_slot, draw, groove, instrument, named_scale, pattern, scene, setlist, song, track
+from llamatron.model.objects import built_in_sound, chain, clip_slot, draw, groove, instrument, named_scale, pattern, scene, setlist, song, sound_parts, track
 from llamatron.model.objects.clip_slot import ClipSlot
 from llamatron.model.objects.groove import Groove, new_groove
 from llamatron.model.objects.instrument import Instrument
@@ -34,7 +34,7 @@ from llamatron.model.objects.scene import Scene
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.objects.track import Track
 from llamatron.model.schema import file_format, generator_plugins, limits
-from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, DrawSetting, DriftValue, EffectSetting, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, LfoSetting, OscillatorSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, SoundSetting, TrackSetting, VelocitySetting
+from llamatron.model.schema.file_format import ChainSetting, ClipSlotSetting, DrawSetting, DriftValue, EffectSetting, GrooveSetting, GuitarifySetting, InstrumentSetting, KeyswitchSetting, LfoSetting, MatrixSetting, OscillatorSetting, PartSetting, PatternSetting, ScaleSetting, SceneSetting, Section, SetlistSetting, SongSetting, SoundSetting, TrackSetting, VelocitySetting
 from llamatron.model.schema.setting import check_settings, Checked, Choice, described, Flag, Setting, Text, WholeNumber
 from llamatron.model.values import midi
 from llamatron.model.values.note import NoteName
@@ -93,6 +93,16 @@ SETTING_CLASS_ENDING = 'Setting'
 # The setting every generator has, described once for them all and named by no generator's own class of names.
 SHARED_BY_GENERATORS = {file_format.BYPASS_WHEN, file_format.GENERATOR_ENABLED}
 
+def every_part_setting():
+    """Return every part type's settings together, by name: a setting several types share, such as Attack, the first type's."""
+    settings = {}
+    for types in sound_parts.TYPES.values():
+        for type_settings in types.values():
+            for name, setting in type_settings.items():
+                settings.setdefault(name, setting)
+    return settings
+
+
 def without_velocity(settings):
     """Return a scene's or a clip's settings without the velocity settings, which the two share and VelocitySetting names."""
     return {name: setting for name, setting in settings.items() if name not in file_format.VELOCITY_SETTINGS}
@@ -106,7 +116,10 @@ DESCRIBED = [
     (InstrumentSetting, instrument.SETTINGS, ()),
     (KeyswitchSetting, instrument.KEYSWITCH_SETTINGS, ()),
     (SoundSetting, built_in_sound.SOUND_SETTINGS, ()),
-    (OscillatorSetting, built_in_sound.OSCILLATOR_SETTINGS, ()),
+    (OscillatorSetting, sound_parts.OSCILLATOR_SETTINGS, ()),
+    # A part's settings, each type describing those it has: every type's together.
+    (PartSetting, every_part_setting(), ()),
+    (MatrixSetting, built_in_sound.SLOT_SETTINGS, ()),
     (EffectSetting, built_in_sound.EFFECT_SETTINGS, ()),
     (LfoSetting, built_in_sound.LFO_SETTINGS, ()),
     (TrackSetting, track.SETTINGS, ()),

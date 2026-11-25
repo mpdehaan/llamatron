@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The effects an instrument's four blocks hold, each applied to the instrument's mix a chunk at a time, keeping what it
 needs from one chunk to the next, so that nothing restarts at a chunk's edge, and each blended into what came before it by its
-Mix. A filter is in filters.py.
+Mix. The voice's filter is a part of its own (filters.py, gates.py), not an effect.
 
 The bitcrusher holds each sample for as long as its rate gives, by a phase that runs on across chunks, then rounds to its
 bits. Drive shapes the mix by a curve: soft and warm saturate, warm leaning to one side for even harmonics, hard clips,
@@ -14,11 +14,8 @@ this module, as it does the engine (the user's yes).
 import math
 import numpy
 
-from llamatron.realtime.synth_process.filters import Filter
-
 BITCRUSH = 'bitcrush'
 DRIVE = 'drive'
-FILTER = 'filter'
 SOFT = 'soft'
 WARM = 'warm'
 HARD = 'hard'
@@ -128,8 +125,6 @@ def compiled_effects(*, effects, rate):
             compiled.append(Bitcrush(bits=effect['bits'], hold_rate=effect['rate'], rate=rate, mix=effect['mix']))
         elif kind == DRIVE:
             compiled.append(Drive(curve=effect['curve'], amount=effect['amount'], mix=effect['mix']))
-        elif kind == FILTER:
-            compiled.append(Filter(spec=effect, rate=rate))
     return compiled
 
 

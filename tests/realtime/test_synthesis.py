@@ -12,7 +12,7 @@ from unittest import mock
 from llamatron.model.objects.built_in_sound import synth_spec
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import file_format
-from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, EffectSetting, FilterMode, FilterType, LfoSetting, LfoShape, Modulation, Noise, OscillatorSetting, SidWave, SoundEngine, SoundSetting, SynthControl, Waveform
+from llamatron.model.schema.file_format import ChipVoice, Curve, DrumMachine, Effect, EffectSetting, EnvelopeType, FilterMode, FilterType, LfoSetting, LfoShape, MatrixDestination, MatrixSetting, MatrixSource, Modulation, Noise, OscillatorSetting, OscillatorType, PartSetting, SidWave, SoundEngine, SoundSetting, Waveform
 from llamatron.realtime.synth_process import drums, effects as effect_values, engine as engine_values, process, safety, tables
 from llamatron.realtime.synth_process.effects import Bitcrush
 from llamatron.realtime.synth_process.engine import DrumPatch, SynthEngine
@@ -58,12 +58,27 @@ HALF = 50
 FULL = 100
 # A fast LFO swings this far, of its -1 to 1, within one chunk.
 HALF_SWING = 0.5
+NO_FILTER = {PartSetting.TYPE: FilterType.NONE}
+# A square LFO routed to pitch at half the matrix's two octaves: an octave either way.
+OCTAVE_AMOUNT = 50
+FULL_AMOUNT = 100
+CHIP_SUSTAIN = 15
 
 
-def saw_patch(*, voices=4, blocks=()):
-    """Return a Basic patch of one saw with a short envelope, through effect blocks as the set stores them."""
-    sound = {SoundSetting.OSCILLATORS: [{OscillatorSetting.WAVEFORM: Waveform.SAW}], SoundSetting.ATTACK: SHORT_ATTACK_MS, SoundSetting.DECAY: SHORT_DECAY_MS,
-             SoundSetting.SUSTAIN: HALF, SoundSetting.RELEASE: SHORT_RELEASE_MS, SoundSetting.VOICES: voices, SoundSetting.VOLUME: FULL, SoundSetting.EFFECTS: list(blocks)}
+def envelopes(*, amp=None, sweep=None):
+    """Return a sound's three envelopes as the set stores them: a short ADSR for the amp unless given, a sweep for the filter or
+    none, and no pitch envelope."""
+    quiet = {PartSetting.TYPE: EnvelopeType.ADSR, PartSetting.ATTACK: 0, PartSetting.DECAY: SHORT_RELEASE_MS, PartSetting.SUSTAIN: 0}
+    short = {PartSetting.TYPE: EnvelopeType.ADSR, PartSetting.ATTACK: SHORT_ATTACK_MS, PartSetting.DECAY: SHORT_DECAY_MS, PartSetting.SUSTAIN: HALF,
+             PartSetting.RELEASE: SHORT_RELEASE_MS}
+    return [amp or short, sweep or quiet, quiet]
+
+
+def saw_patch(*, voices=4, blocks=(), filter_part=None):
+    """Return a Basic patch of one saw with a short envelope, through a filter part or none and effects as the set stores them."""
+    sound = {SoundSetting.OSCILLATORS: {PartSetting.TYPE: OscillatorType.BASIC, PartSetting.OSCILLATORS: [{OscillatorSetting.WAVEFORM: Waveform.SAW}]},
+             SoundSetting.ENVELOPES: envelopes(), SoundSetting.FILTER: filter_part or NO_FILTER, SoundSetting.VOICES: voices, SoundSetting.VOLUME: FULL,
+             SoundSetting.EFFECTS: list(blocks)}
     return compiled(spec=synth_spec(sound), rate=RATE)
 
 
@@ -80,6 +95,21 @@ def rendered_saw():
     engine.set_instrument(number=SYNTH, patch=saw_patch())
     engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=LOUD)
     return rendered(engine, chunks=40)
+
+
+def sid(**changes):
+    """Return a SID sound, its oscillators changed as given."""
+    return {SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.OSCILLATORS: {PartSetting.TYPE: OscillatorType.SID, **changes}}
+
+
+def pocket(**changes):
+    """Return a Pocket sound, its oscillators changed as given."""
+    return {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.OSCILLATORS: {PartSetting.TYPE: OscillatorType.POCKET, **changes}}
+
+
+def lfo_to(destination, *, amount=FULL_AMOUNT, source=MatrixSource.LFO1):
+    """Return a matrix slot routing an LFO to a destination."""
+    return {MatrixSetting.SOURCE: source, MatrixSetting.VIA: MatrixSource.NONE, MatrixSetting.DESTINATION: destination, MatrixSetting.AMOUNT: amount}
 
 
 def rendered(engine, *, chunks):
@@ -154,13 +184,14 @@ class TestEngines(unittest.TestCase):
     def test_every_engine_sounds_its_note_and_falls_silent_after_it(self):
         sounds = {
             'basic': {},
-            'sid pulse sweeping, arpeggiated': {SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.PULSE_SWEEP: PULSE_SWEEP, SoundSetting.ARPEGGIO: ARPEGGIO},
-            'sid ring': {SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.WAVE: SidWave.TRIANGLE, SoundSetting.MODULATION: Modulation.RING},
-            'sid sync gliding': {SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.WAVE: SidWave.SAW, SoundSetting.MODULATION: Modulation.SYNC, SoundSetting.GLIDE: GLIDE_MS},
-            'sid noise': {SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.WAVE: SidWave.NOISE},
-            'pocket pulse': {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.SWEEP_PACE: 1},
-            'pocket wave': {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.CHIP_VOICE: ChipVoice.WAVE},
-            'pocket short noise': {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.CHIP_VOICE: ChipVoice.NOISE, SoundSetting.NOISE: Noise.SHORT},
+            'sid pulse sweeping, arpeggiated': sid(**{PartSetting.PULSE_SWEEP: PULSE_SWEEP, PartSetting.ARPEGGIO: ARPEGGIO}),
+            'sid ring': sid(**{PartSetting.WAVE: SidWave.TRIANGLE, PartSetting.MODULATION: Modulation.RING}),
+            'sid sync gliding': {**sid(**{PartSetting.WAVE: SidWave.SAW, PartSetting.MODULATION: Modulation.SYNC}), SoundSetting.GLIDE: GLIDE_MS},
+            'sid noise': sid(**{PartSetting.WAVE: SidWave.NOISE}),
+            'pocket pulse': pocket(**{PartSetting.SWEEP_PACE: 1}),
+            'pocket wave': pocket(**{PartSetting.CHIP_VOICE: ChipVoice.WAVE}),
+            'pocket short noise': pocket(**{PartSetting.CHIP_VOICE: ChipVoice.NOISE, PartSetting.NOISE: Noise.SHORT}),
+            'fishline': {SoundSetting.ENGINE: SoundEngine.FISHLINE},
         }
         for name, sound in sounds.items():
             with self.subTest(sound=name):
@@ -186,7 +217,8 @@ class TestEngines(unittest.TestCase):
                     self.assertTrue(rendered(engine, chunks=8).any())
 
     def test_a_pocket_envelope_steps_down_to_silence_at_its_pace(self):
-        sound = {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.LEVEL_PACE: 1, SoundSetting.START_LEVEL: 2}
+        steps = {PartSetting.TYPE: EnvelopeType.CHIP_STEPS, PartSetting.LEVEL_PACE: 1, PartSetting.START_LEVEL: 2}
+        sound = {SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.ENVELOPES: envelopes(amp=steps)}
         engine = SynthEngine(rate=RATE)
         engine.set_instrument(number=SYNTH, patch=compiled(spec=synth_spec(sound), rate=RATE))
         engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=LOUD)
@@ -226,7 +258,7 @@ class TestFilters(unittest.TestCase):
     def filtered(self, *, block, chunks=40, pitch=MIDDLE_C):
         """Return a held saw through a filter block, played a while."""
         engine = SynthEngine(rate=RATE)
-        engine.set_instrument(number=SYNTH, patch=saw_patch(blocks=[{EffectSetting.EFFECT: Effect.FILTER, **block}]))
+        engine.set_instrument(number=SYNTH, patch=saw_patch(filter_part=block))
         engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=pitch, velocity=LOUD)
         return rendered(engine, chunks=chunks)
 
@@ -242,20 +274,25 @@ class TestFilters(unittest.TestCase):
         open_saw = self.brightness(rendered_saw())
         for kind in (FilterType.LADDER, FilterType.MULTIMODE, FilterType.SALLEN_KEY, FilterType.DIODE, FilterType.OTA):
             with self.subTest(kind=kind):
-                mix = self.filtered(block={EffectSetting.FILTER_TYPE: kind, EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 0})
+                mix = self.filtered(block={PartSetting.TYPE: kind, PartSetting.CUTOFF: LOW_CUTOFF, PartSetting.ENV_AMOUNT: 0})
                 self.assertTrue(numpy.isfinite(mix).all())
                 self.assertGreater(numpy.abs(mix).max(), QUIET)
                 self.assertLess(self.brightness(mix), open_saw)
 
     def test_the_multimode_high_pass_keeps_the_highs(self):
-        low = self.filtered(block={EffectSetting.FILTER_TYPE: FilterType.MULTIMODE, EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 0})
-        high = self.filtered(block={EffectSetting.FILTER_TYPE: FilterType.MULTIMODE, EffectSetting.FILTER_MODE: FilterMode.HIGH, EffectSetting.CUTOFF: LOW_CUTOFF,
-                                    EffectSetting.ENVELOPE_AMOUNT: 0})
+        low = self.filtered(block={PartSetting.TYPE: FilterType.MULTIMODE, PartSetting.CUTOFF: LOW_CUTOFF, PartSetting.ENV_AMOUNT: 0})
+        high = self.filtered(block={PartSetting.TYPE: FilterType.MULTIMODE, PartSetting.MODE: FilterMode.HIGH, PartSetting.CUTOFF: LOW_CUTOFF, PartSetting.ENV_AMOUNT: 0})
         self.assertGreater(self.brightness(high), self.brightness(low))
 
     def test_the_envelope_opens_the_filter_at_a_note_and_it_falls_after(self):
-        block = {EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 100, EffectSetting.ENVELOPE_DECAY: 50}
-        mix = self.filtered(block=block, chunks=200)
+        block = {PartSetting.TYPE: FilterType.LADDER, PartSetting.CUTOFF: LOW_CUTOFF, PartSetting.ENV_AMOUNT: FULL_AMOUNT}
+        sweep = {PartSetting.TYPE: EnvelopeType.ADSR, PartSetting.ATTACK: 0, PartSetting.DECAY: SHORT_DECAY_MS, PartSetting.SUSTAIN: 0}
+        sound = {SoundSetting.OSCILLATORS: {PartSetting.TYPE: OscillatorType.BASIC, PartSetting.OSCILLATORS: [{OscillatorSetting.WAVEFORM: Waveform.SAW}]},
+                 SoundSetting.ENVELOPES: envelopes(sweep=sweep), SoundSetting.FILTER: block, SoundSetting.VOLUME: FULL}
+        engine = SynthEngine(rate=RATE)
+        engine.set_instrument(number=SYNTH, patch=compiled(spec=synth_spec(sound), rate=RATE))
+        engine.schedule(sample=0, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=LOUD)
+        mix = rendered(engine, chunks=200)
         early = self.brightness(mix[CHUNK * 2:CHUNK * 18])
         late = self.brightness(mix)
         self.assertGreater(early, late)
@@ -284,11 +321,16 @@ class TestLfos(unittest.TestCase):
         self.assertLessEqual(float(numpy.abs(moved).max()), 1.0)
 
     def test_a_square_lfo_on_pitch_trills_every_tonal_engine_an_octave_either_way(self):
-        lfo = {LfoSetting.ON: True, LfoSetting.TARGET: SynthControl.PITCH, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.RATE: TRILL_TENTHS, LfoSetting.DEPTH: OCTAVE_DEPTH}
+        lfo = {LfoSetting.ON: True, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.RATE: TRILL_TENTHS}
+        trill = lfo_to(MatrixDestination.PITCH, amount=OCTAVE_AMOUNT)
+        held = {SoundEngine.BASIC: {PartSetting.TYPE: EnvelopeType.ASR}, SoundEngine.SID: {PartSetting.TYPE: EnvelopeType.SID_ADSR, PartSetting.SUSTAIN: CHIP_SUSTAIN},
+                SoundEngine.POCKET: {PartSetting.TYPE: EnvelopeType.CHIP_STEPS}}
         half = RATE * 10 // TRILL_TENTHS // 2
-        for engine in (SoundEngine.BASIC, SoundEngine.SID, SoundEngine.POCKET):
+        for engine, amp in held.items():
             with self.subTest(engine=engine):
-                mix = self.played(sound={SoundSetting.ENGINE: engine, SoundSetting.SUSTAIN: 100, SoundSetting.LFOS: [lfo]})
+                sound = {SoundSetting.ENGINE: engine, SoundSetting.ENVELOPES: envelopes(amp=amp), SoundSetting.FILTER: NO_FILTER, SoundSetting.LFOS: [lfo],
+                         SoundSetting.MATRIX: [trill]}
+                mix = self.played(sound=sound)
                 high = self.crossings(mix[:half])
                 low = self.crossings(mix[half:2 * half])
                 self.assertAlmostEqual(high / low, TWO_OCTAVES, delta=0.3)
@@ -303,20 +345,18 @@ class TestLfos(unittest.TestCase):
         bank.scene_started()
         self.assertEqual(bank.lfos[1].cycles, 0.0)
 
-    def test_an_lfo_that_is_off_or_has_nothing_to_move_on_its_engine_is_left_out_and_one_that_moves_is_routed(self):
-        lfo = {LfoSetting.ON: True, LfoSetting.TARGET: SynthControl.PULSE_WIDTH}
-        nothing = synth_spec({SoundSetting.ENGINE: SoundEngine.POCKET, SoundSetting.LFOS: [lfo]})
-        self.assertEqual((nothing['lfos'], nothing['matrix']), ([None], []))
-        off = synth_spec({SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.LFOS: [{**lfo, LfoSetting.ON: False}]})
-        self.assertEqual((off['lfos'], off['matrix']), ([None], []))
-        routed = synth_spec({SoundSetting.ENGINE: SoundEngine.SID, SoundSetting.LFOS: [lfo]})
-        self.assertEqual([slot['destination'] for slot in routed['matrix']], [SynthControl.PULSE_WIDTH])
+    def test_an_lfo_that_is_off_keeps_its_place_and_the_matrix_routes_one_that_is_on(self):
+        on = {LfoSetting.ON: True}
+        spec = synth_spec({SoundSetting.LFOS: [{}, on], SoundSetting.MATRIX: [lfo_to(MatrixDestination.PULSE_WIDTH, source=MatrixSource.LFO2)]})
+        self.assertIsNone(spec['lfos'][0])
+        self.assertIsNotNone(spec['lfos'][1])
+        self.assertEqual([slot[MatrixSetting.SOURCE] for slot in spec['matrix']], [MatrixSource.LFO2])
 
-    def test_an_lfo_on_the_filter_cutoff_moves_the_first_filter(self):
-        block = {EffectSetting.EFFECT: Effect.FILTER, EffectSetting.CUTOFF: LOW_CUTOFF, EffectSetting.ENVELOPE_AMOUNT: 0}
-        still = self.played(sound={SoundSetting.EFFECTS: [block]})
-        lfo = {LfoSetting.ON: True, LfoSetting.TARGET: SynthControl.FILTER_CUTOFF, LfoSetting.SHAPE: LfoShape.SQUARE, LfoSetting.DEPTH: OCTAVE_DEPTH}
-        moved = self.played(sound={SoundSetting.EFFECTS: [block], SoundSetting.LFOS: [lfo]})
+    def test_an_lfo_routed_to_the_cutoff_moves_the_filter(self):
+        block = {PartSetting.TYPE: FilterType.LADDER, PartSetting.CUTOFF: LOW_CUTOFF, PartSetting.ENV_AMOUNT: 0}
+        still = self.played(sound={SoundSetting.FILTER: block})
+        lfo = {LfoSetting.ON: True, LfoSetting.SHAPE: LfoShape.SQUARE}
+        moved = self.played(sound={SoundSetting.FILTER: block, SoundSetting.LFOS: [lfo], SoundSetting.MATRIX: [lfo_to(MatrixDestination.CUTOFF, amount=OCTAVE_AMOUNT)]})
         self.assertGreater(numpy.abs(moved - still).max(), QUIET)
 
 
@@ -345,7 +385,7 @@ class TestFishline(unittest.TestCase):
     def test_with_its_filter_off_fishline_is_brighter(self):
         events = [(0, engine_values.NOTE_ON, ACID_NOTE, PLAIN_VELOCITY)]
         filtered, _ = self.played(events=events)
-        open_saw, _ = self.played(events=events, sound={SoundSetting.FILTER_ON: False})
+        open_saw, _ = self.played(events=events, sound={SoundSetting.FILTER: NO_FILTER})
         self.assertGreater(TestFilters().brightness(open_saw), TestFilters().brightness(filtered))
 
 
@@ -366,7 +406,8 @@ class TestDrumsAndTables(unittest.TestCase):
 
     def test_a_drum_plays_at_its_own_pitch_on_the_note_it_is_tuned_from(self):
         drum_c = Setlist().drum_tuning_note()
-        spec = synth_spec({SoundSetting.ENGINE: SoundEngine.DRUM, SoundSetting.KNOBS: list(KNOBS)}, drums_from=drum_c)
+        drum = {PartSetting.TYPE: OscillatorType.DRUM, PartSetting.KNOBS: list(KNOBS)}
+        spec = synth_spec({SoundSetting.ENGINE: SoundEngine.DRUM, SoundSetting.OSCILLATORS: drum}, drums_from=drum_c)
         patch = compiled(spec=spec, rate=RATE)
         self.assertEqual(patch.recipe_pitch(drum_c), MIDDLE_C)
         engine = SynthEngine(rate=RATE)

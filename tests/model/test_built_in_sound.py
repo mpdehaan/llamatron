@@ -1,18 +1,18 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""A built-in instrument in the set (model/objects/instrument.py and built_in_sound.py): its kind, a MIDI instrument's
-latency, its sound's settings with their defaults and refusals, kept through writing and reading, and its sound as the
-Synthesis Process compiles it."""
+"""A built-in instrument in the set (model/objects/instrument.py, built_in_sound.py, sound_parts.py and engine_presets.py): its
+kind and role, a MIDI instrument's latency, its sound as parts with their engine preset's and their types' defaults and
+refusals, kept through writing and reading, and its sound as the Synthesis Process compiles it."""
 
 import unittest
 
 from llamatron.model.file.invalid_value import InvalidValue
-from llamatron.model.objects import built_in_sound
+from llamatron.model.objects import built_in_sound, engine_presets, sound_parts
 from llamatron.model.objects.instrument import Instrument
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults, limits
-from llamatron.model.schema.file_format import DrumMachine, Effect, EffectSetting, InstrumentKind, InstrumentSetting, OscillatorSetting, SoundEngine, SoundSetting, Waveform
+from llamatron.model.schema.file_format import DrumMachine, Effect, EffectSetting, EnvelopeType, FilterType, InstrumentKind, InstrumentRole, InstrumentSetting, OscillatorSetting, OscillatorType, PartSetting, SoundEngine, SoundPart, SoundSetting, Waveform
 
 WHERE = 'instruments'
 LATENCY_MS = 12
@@ -40,24 +40,46 @@ class TestBuiltInSound(unittest.TestCase):
         self.assertTrue(instrument.is_built_in())
         self.assertEqual(instrument.get_latency(), LATENCY_MS)
 
-    def test_a_sound_setting_left_out_reads_as_its_default_and_one_out_of_range_is_refused(self):
+    def test_a_sound_setting_left_out_reads_as_its_presets_and_one_out_of_range_or_of_another_type_is_refused(self):
         instrument = Instrument(kind=InstrumentKind.BUILT_IN)
         self.assertEqual(instrument.get_sound(SoundSetting.ENGINE), SoundEngine.BASIC)
         self.assertEqual(instrument.get_sound(SoundSetting.VOICES), defaults.DEFAULT_VOICES)
-        instrument.set_sound(name=SoundSetting.ATTACK, value=ATTACK_MS)
-        self.assertEqual(instrument.get_sound(SoundSetting.ATTACK), ATTACK_MS)
+        instrument.set_part_setting(part=SoundPart.ENV1, name=PartSetting.ATTACK, value=ATTACK_MS)
+        self.assertEqual(instrument.get_part_setting(part=SoundPart.ENV1, name=PartSetting.ATTACK), ATTACK_MS)
         with self.assertRaises(InvalidValue):
             instrument.set_sound(name=SoundSetting.VOICES, value=limits.MAX_VOICES + 1)
         with self.assertRaises(InvalidValue):
-            instrument.set_sound(name=SoundSetting.KNOBS, value=KNOBS[:limits.KNOB_COUNT - 1])
+            instrument.set_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.KNOBS, value=KNOBS)
         with self.assertRaises(InvalidValue):
-            instrument.set_sound(name=SoundSetting.OSCILLATORS, value=[{OscillatorSetting.WAVEFORM: Waveform.SAW}] * (limits.MAX_OSCILLATORS + 1))
+            instrument.set_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.OSCILLATORS, value=[{OscillatorSetting.WAVEFORM: Waveform.SAW}] * (limits.MAX_OSCILLATORS + 1))
+
+    def test_an_engine_fills_every_part_and_a_swapped_part_is_its_presets_or_its_types_defaults(self):
+        instrument = Instrument(kind=InstrumentKind.BUILT_IN)
+        instrument.set_engine(SoundEngine.FISHLINE)
+        self.assertEqual(instrument.get_part_type(SoundPart.FILTER), FilterType.DIODE)
+        self.assertEqual(instrument.get_part_setting(part=SoundPart.FILTER, name=PartSetting.CUTOFF), defaults.DEFAULT_ACID_CUTOFF)
+        instrument.set_part_type(part=SoundPart.FILTER, kind=FilterType.LADDER)
+        self.assertEqual(instrument.get_part_setting(part=SoundPart.FILTER, name=PartSetting.CUTOFF), sound_parts.TYPE_DEFAULTS[FilterType.LADDER][PartSetting.CUTOFF])
+        instrument.set_part_type(part=SoundPart.FILTER, kind=FilterType.DIODE)
+        self.assertEqual(instrument.get_part_setting(part=SoundPart.FILTER, name=PartSetting.CUTOFF), defaults.DEFAULT_ACID_CUTOFF)
+        instrument.set_part_type(part=SoundPart.ENV2, kind=EnvelopeType.VACTROL)
+        self.assertEqual([instrument.get_part_type(part) for part in (SoundPart.ENV1, SoundPart.ENV2)], [EnvelopeType.ACID_GATE, EnvelopeType.VACTROL])
+        instrument.set_engine(SoundEngine.BASIC)
+        self.assertEqual(instrument.get_part_type(SoundPart.ENV2), engine_presets.preset_part(engine=SoundEngine.BASIC, part=SoundPart.ENV2)[PartSetting.TYPE])
+
+    def test_a_role_left_out_is_percussion_for_a_drum_machine_and_normal_otherwise(self):
+        drum = Instrument(kind=InstrumentKind.BUILT_IN)
+        drum.set_engine(SoundEngine.DRUM)
+        self.assertEqual(drum.get_role(), InstrumentRole.PERCUSSION)
+        self.assertEqual(Instrument().get_role(), InstrumentRole.NORMAL)
+        chosen = Instrument(role=InstrumentRole.PERCUSSION)
+        self.assertEqual(Instrument.from_data(data=chosen.to_data(), where=WHERE).get_role(), InstrumentRole.PERCUSSION)
 
     def test_a_built_in_instrument_is_kept_through_writing_and_reading(self):
         instrument = Instrument(kind=InstrumentKind.BUILT_IN)
-        instrument.set_sound(name=SoundSetting.ENGINE, value=SoundEngine.DRUM)
-        instrument.set_sound(name=SoundSetting.MACHINE, value=DrumMachine.SYNTH_KICK)
-        instrument.set_sound(name=SoundSetting.KNOBS, value=KNOBS)
+        instrument.set_engine(SoundEngine.DRUM)
+        instrument.set_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.MACHINE, value=DrumMachine.SYNTH_KICK)
+        instrument.set_part_setting(part=SoundPart.OSCILLATORS, name=PartSetting.KNOBS, value=KNOBS)
         data = instrument.to_data()
         again = Instrument.from_data(data=data, where=WHERE)
         self.assertEqual(again.to_data(), data)
@@ -65,11 +87,15 @@ class TestBuiltInSound(unittest.TestCase):
         self.assertEqual(data[InstrumentSetting.KIND], InstrumentKind.BUILT_IN)
 
     def test_a_sound_is_given_to_the_synthesis_process_in_seconds_and_fractions(self):
-        drum = {SoundSetting.ENGINE: SoundEngine.DRUM, SoundSetting.MACHINE: DrumMachine.HATS, SoundSetting.CHOKE: CHOKE}
+        drum = {SoundSetting.ENGINE: SoundEngine.DRUM, SoundSetting.OSCILLATORS: {PartSetting.TYPE: OscillatorType.DRUM, PartSetting.MACHINE: DrumMachine.HATS,
+                                                                                PartSetting.CHOKE: CHOKE}}
         spec = built_in_sound.synth_spec(drum)
         drum_part = spec['oscillators']
         self.assertEqual((drum_part['machine'], drum_part['choke'], spec['volume']), (DrumMachine.HATS, CHOKE, defaults.DEFAULT_SOUND_VOLUME / 100))
-        basic = built_in_sound.synth_spec({SoundSetting.ATTACK: ATTACK_MS, SoundSetting.OSCILLATORS: [{OscillatorSetting.WAVEFORM: Waveform.SAW}, {}]})
+        basic_part = {PartSetting.TYPE: OscillatorType.BASIC, PartSetting.OSCILLATORS: [{OscillatorSetting.WAVEFORM: Waveform.SAW}, {}]}
+        attack = {PartSetting.TYPE: EnvelopeType.ADSR, PartSetting.ATTACK: ATTACK_MS}
+        quiet = engine_presets.QUIET
+        basic = built_in_sound.synth_spec({SoundSetting.OSCILLATORS: basic_part, SoundSetting.ENVELOPES: [attack, quiet, quiet]})
         self.assertEqual(basic['envelopes'][0]['attack'], ATTACK_MS / 1000)
         # An oscillator left off, as the second is, does not sound.
         self.assertEqual(basic['oscillators']['oscillators'], [[Waveform.SAW, 0, 1.0]])
@@ -85,11 +111,13 @@ class TestBuiltInSound(unittest.TestCase):
 
     def test_oscillators_knobs_and_effect_blocks_are_set_one_at_a_time_the_ones_before_made(self):
         instrument = Instrument(kind=InstrumentKind.BUILT_IN)
+        drum = Instrument(kind=InstrumentKind.BUILT_IN)
+        drum.set_engine(SoundEngine.DRUM)
+        drum.set_knob(place=KNOB_PLACE, value=KNOBS[0])
+        self.assertEqual(drum.get_knob(KNOB_PLACE), KNOBS[0])
         instrument.set_oscillator(number=limits.MAX_OSCILLATORS, name=OscillatorSetting.WAVEFORM, value=Waveform.SQUARE)
         self.assertEqual(instrument.get_oscillator(number=2, name=OscillatorSetting.WAVEFORM), Waveform.OFF)
         self.assertEqual(instrument.get_oscillator(number=limits.MAX_OSCILLATORS, name=OscillatorSetting.WAVEFORM), Waveform.SQUARE)
-        instrument.set_knob(place=KNOB_PLACE, value=KNOBS[0])
-        self.assertEqual(instrument.get_knob(KNOB_PLACE), KNOBS[0])
         instrument.set_effect(number=limits.EFFECT_BLOCKS, name=EffectSetting.EFFECT, value=Effect.DRIVE)
         self.assertEqual(instrument.get_effect(number=1, name=EffectSetting.EFFECT), Effect.NONE)
         self.assertEqual(len(instrument.get_sound(SoundSetting.EFFECTS)), limits.EFFECT_BLOCKS)

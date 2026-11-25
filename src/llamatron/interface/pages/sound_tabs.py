@@ -1,31 +1,36 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The Instrument page's Synth tab, as plain nodes, for one instrument by name.
+"""The Instrument page's built-in sound, as plain nodes, for one instrument by name: its Role, Kind and Engine above the tabs,
+then the Oscillators, Envelopes, Filter and Matrix tabs; the LFOs and FX tabs are in lfo_blocks.py and effect_blocks.py.
 
-The Synth tab starts with On, which makes the instrument built in, and its Engine, then the engine's own settings in columns:
-Basic's voices, volume, envelope and three oscillators; a drum's machine, volume, choke group, overlap and five knobs; SID's
-wave, pulse width and its sweep, ring or sync and its interval, arpeggio, glide, voices, volume and envelope; Pocket's voice,
-duty, drawn wave, noise, stepped envelope and pitch sweep. Every share or time is a gauge, stepped by [ and ]. The Effects
-tab is in effect_blocks.py.
+The Role shows whether the instrument is normal or percussion, chosen when it was made and never changed. The Kind makes it
+off, MIDI or built in. The Engine is a preset of parts: choosing one fills every part from it. The Oscillators tab chooses the
+oscillators' type, named by the engine it comes from, beside the voice layer: volume, voices, legato, glide, and whether the
+filter is each note's own or shared. The Envelopes tab holds the three envelopes side by side, each choosing its type; the
+Filter tab the filter's type and settings; the Matrix tab the six slots, each a source, what scales it, what it moves and how
+far. Each built-in tab is drawn dim while the instrument isn't built in.
 """
 
-from llamatron.interface.forms import nodes
+import functools
+
 from llamatron.interface.forms.nodes import ChoiceField, Field, GaugeField, NumberField, Toggle
 from llamatron.interface.forms.tab_box import Tab, TabColumn
+from llamatron.interface.pages.part_fields import PartFields
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import InstrumentKind, OscillatorSetting, SoundEngine, SoundSetting
-from llamatron.user_strings import errors, labels, marks, messages
+from llamatron.model.schema.file_format import MatrixSetting, OscillatorType, SoundPart, SoundSetting
+from llamatron.user_strings import labels, marks
 
-KNOB_PLACES = range(limits.KNOB_COUNT)
-# Fishline's soft attack is stored in tenths of a millisecond.
-TENTHS = 10
 OSCILLATOR_NUMBERS = range(1, limits.MAX_OSCILLATORS + 1)
+SLOT_NUMBERS = range(1, limits.MATRIX_SLOTS + 1)
+# The slot that starts the matrix's second band, so that the six are drawn three over three.
+SECOND_ROW_SLOT = 4
+SLOT_GAUGE_CELLS = 8
 
 
 class SoundTabs:
-    """The Synth tab of an instrument of the set, by name: page is what fields ask through, document what every
-    change goes through, as one undo step each."""
+    """An instrument of the set's built-in sound, by name: page is what fields ask through, document what every change goes
+    through, as one undo step each."""
 
     __slots__ = ('_page', '_document', '_name')
 
@@ -37,206 +42,108 @@ class SoundTabs:
     def instrument(self):
         return self._document.get_setlist().get_instrument(self._name)
 
-    def synth_tab(self):
-        """Return the Synth tab: On and Engine across its top, then its engine's columns."""
+    def part(self, part):
+        return PartFields(page=self._page, document=self._document, name=self._name, part=part)
+
+    def above_tabs(self):
+        """Return the fields above the tabs: the Role, shown and never changed, the Kind, and the Engine of the Role's engines."""
         instrument = self.instrument()
-        on = Toggle(label=labels.MSG_SYNTH_ON_LABEL, shown_label=labels.MSG_ON_LABEL, on=instrument.is_built_in(), set=self.set_built_in)
-        engine = self.choice(label=labels.MSG_ENGINE_LABEL, name=SoundSetting.ENGINE, choices=file_format.SOUND_ENGINES, names=labels.MSG_ENGINE_NAMES)
-        columns = {
-            SoundEngine.BASIC: self.basic_columns, SoundEngine.DRUM: self.drum_columns, SoundEngine.SID: self.sid_columns, SoundEngine.POCKET: self.pocket_columns,
-            SoundEngine.FISHLINE: self.fishline_columns,
-        }[instrument.get_sound(SoundSetting.ENGINE)]()
-        return Tab(label=labels.MSG_SYNTH_TAB, top=[on, engine], columns=columns, on=instrument.is_built_in())
-
-    # Each engine's columns.
-
-    def basic_columns(self):
-        oscillators = [TabColumn(heading=labels.MSG_OSCILLATOR_LABEL.format(number=number), fields=self.oscillator_fields(number)) for number in OSCILLATOR_NUMBERS]
-        return [TabColumn(heading=labels.MSG_SOUND_HEADING, fields=[self.voices_field(), self.volume_field()]),
-                TabColumn(heading=labels.MSG_ENVELOPE_HEADING, fields=self.envelope_fields()), *oscillators]
-
-    def drum_columns(self):
-        knobs = [self.knob_field(place) for place in KNOB_PLACES]
-        sound = [
-            self.choice(label=labels.MSG_MACHINE_LABEL, name=SoundSetting.MACHINE, choices=file_format.DRUM_MACHINES, names=labels.MSG_DRUM_MACHINE_NAMES),
-            self.volume_field(), self.choke_field(), self.toggle(label=labels.MSG_OVERLAP_LABEL, name=SoundSetting.OVERLAP),
-        ]
-        return [TabColumn(heading=labels.MSG_SOUND_HEADING, fields=sound), TabColumn(heading=None, fields=knobs)]
-
-    def sid_columns(self):
-        wave = [
-            self.choice(label=labels.MSG_WAVE_LABEL, name=SoundSetting.WAVE, choices=file_format.SID_WAVES, names=labels.MSG_SID_WAVE_NAMES),
-            self.gauge(label=labels.MSG_PULSE_WIDTH_LABEL, name=SoundSetting.PULSE_WIDTH, highest=limits.MAX_PERCENT),
-            self.number(label=labels.MSG_PULSE_SWEEP_LABEL, name=SoundSetting.PULSE_SWEEP, lowest=-limits.MAX_PULSE_SWEEP, highest=limits.MAX_PULSE_SWEEP, unit=marks.MSG_SWEEP_SHOWN),
-            self.choice(label=labels.MSG_MODULATION_LABEL, name=SoundSetting.MODULATION, choices=file_format.MODULATIONS, names=labels.MSG_MODULATION_NAMES),
-            self.number(label=labels.MSG_INTERVAL_LABEL, name=SoundSetting.INTERVAL, lowest=-limits.MAX_INTERVAL, highest=limits.MAX_INTERVAL, unit=marks.MSG_SEMITONES_SHOWN),
-            self.arpeggio_field(),
-            self.gauge(label=labels.MSG_GLIDE_LABEL, name=SoundSetting.GLIDE, highest=limits.MAX_GLIDE_MS, logarithmic=True),
-        ]
-        return [TabColumn(heading=labels.MSG_SOUND_HEADING, fields=[self.voices_field(), self.volume_field()]), TabColumn(heading=labels.MSG_WAVE_LABEL, fields=wave),
-                TabColumn(heading=labels.MSG_ENVELOPE_HEADING, fields=self.envelope_fields())]
-
-    def pocket_columns(self):
-        voice = [
-            self.choice(label=labels.MSG_CHIP_VOICE_LABEL, name=SoundSetting.CHIP_VOICE, choices=file_format.CHIP_VOICES, names=labels.MSG_CHIP_VOICE_NAMES),
-            self.choice(label=labels.MSG_DUTY_LABEL, name=SoundSetting.DUTY, choices=file_format.DUTIES, names=labels.MSG_DUTY_NAMES),
-            self.choice(label=labels.MSG_WAVE_SHAPE_LABEL, name=SoundSetting.WAVE_SHAPE, choices=file_format.WAVE_SHAPES, names=labels.MSG_WAVE_SHAPE_NAMES),
-            self.choice(label=labels.MSG_NOISE_LABEL, name=SoundSetting.NOISE, choices=file_format.NOISES, names=labels.MSG_NOISE_NAMES),
-        ]
-        return [TabColumn(heading=labels.MSG_SOUND_HEADING, fields=[self.voices_field(), self.volume_field(), *voice]),
-                TabColumn(heading=labels.MSG_ENVELOPE_HEADING, fields=self.chip_level_fields()), TabColumn(heading=labels.MSG_SWEEP_HEADING, fields=self.chip_sweep_fields())]
-
-    def fishline_columns(self):
-        """Return Fishline's columns: its sound, its own filter, and its accent, slide and drive; always one voice."""
-        sound = [
-            self.volume_field(),
-            self.choice(label=labels.MSG_WAVE_LABEL, name=SoundSetting.ACID_WAVE, choices=file_format.ACID_WAVES, names=labels.MSG_ACID_WAVE_NAMES),
-            self.number(label=labels.MSG_TUNING_LABEL, name=SoundSetting.TUNING, lowest=-limits.MAX_TUNING, highest=limits.MAX_TUNING, unit=marks.MSG_SEMITONES_SHOWN),
-            self.gauge(label=labels.MSG_AMP_DECAY_LABEL, name=SoundSetting.AMP_DECAY, highest=limits.MAX_AMP_DECAY_MS, logarithmic=True),
-            GaugeField(page=self._page, label=labels.MSG_SOFT_ATTACK_LABEL, number=self.instrument().get_sound(SoundSetting.SOFT_ATTACK), lowest=limits.MIN_SOFT_ATTACK,
-                       highest=limits.MAX_SOFT_ATTACK, unit=marks.MSG_TENTH_MILLISECONDS_SHOWN, divisor=TENTHS, logarithmic=True, set=self.setter(SoundSetting.SOFT_ATTACK)),
-        ]
-        acid_filter = [
-            self.toggle(label=labels.MSG_FILTER_ON_LABEL, name=SoundSetting.FILTER_ON), self.cutoff_field(),
-            self.gauge(label=labels.MSG_RESONANCE_LABEL, name=SoundSetting.RESONANCE, highest=limits.MAX_PERCENT),
-            self.gauge(label=labels.MSG_ENV_MOD_LABEL, name=SoundSetting.ENV_MOD, highest=limits.MAX_PERCENT),
-            self.gauge(label=labels.MSG_DECAY_LABEL, name=SoundSetting.FILTER_DECAY, highest=limits.MAX_FILTER_DECAY_MS, logarithmic=True),
-        ]
-        accent = [
-            self.gauge(label=labels.MSG_ACCENT_LEVEL_LABEL, name=SoundSetting.ACCENT, highest=limits.MAX_PERCENT),
-            self.number(label=labels.MSG_ACCENT_AT_LABEL, name=SoundSetting.ACCENT_THRESHOLD, lowest=1, highest=limits.MAX_VELOCITY_THRESHOLD,
-                        unit=marks.MSG_VELOCITY_AT_SHOWN),
-            self.gauge(label=labels.MSG_ACCENT_SWEEP_LABEL, name=SoundSetting.ACCENT_SWEEP, highest=limits.MAX_PERCENT),
-            self.gauge(label=labels.MSG_ACCENT_DECAY_LABEL, name=SoundSetting.ACCENT_DECAY, highest=limits.MAX_ACCENT_DECAY_MS, logarithmic=True),
-            self.gauge(label=labels.MSG_SLIDE_LABEL, name=SoundSetting.SLIDE, highest=limits.MAX_SLIDE_MS, logarithmic=True),
-            self.gauge(label=labels.MSG_DRIVE_LABEL, name=SoundSetting.DRIVE, highest=limits.MAX_PERCENT),
-        ]
-        return [TabColumn(heading=labels.MSG_SOUND_HEADING, fields=sound), TabColumn(heading=labels.MSG_FILTER_HEADING, fields=acid_filter),
-                TabColumn(heading=labels.MSG_ACCENT_HEADING, fields=accent)]
-
-    def cutoff_field(self):
-        """Return an engine's own filter cutoff, a gauge filling by the logarithm of its hertz, as an ear hears it."""
-        return GaugeField(page=self._page, label=labels.MSG_CUTOFF_LABEL, number=self.instrument().get_sound(SoundSetting.CUTOFF), lowest=limits.MIN_CUTOFF,
-                          highest=limits.MAX_CUTOFF, unit=marks.MSG_HERTZ_SHOWN, logarithmic=True, strides=nodes.HERTZ_STRIDES,
-                          longest_stride=nodes.LONGEST_HERTZ_STRIDE, set=self.setter(SoundSetting.CUTOFF))
-
-    # Fields shared by several engines.
-
-    def voices_field(self):
-        return self.number(label=labels.MSG_VOICES_LABEL, name=SoundSetting.VOICES, lowest=1, highest=limits.MAX_VOICES)
-
-    def volume_field(self):
-        return self.gauge(label=labels.MSG_VOLUME_LABEL, name=SoundSetting.VOLUME, highest=limits.MAX_VOLUME_PERCENT)
-
-    def envelope_fields(self):
+        role = instrument.get_role()
+        kind = instrument.get_kind()
+        engines = file_format.ENGINES_OF_ROLE[role]
+        engine = instrument.get_sound(SoundSetting.ENGINE)
+        if engine not in engines:
+            engine = engines[0]
         return [
-            self.gauge(label=labels.MSG_ATTACK_LABEL, name=SoundSetting.ATTACK, highest=limits.MAX_ENVELOPE_MS, logarithmic=True),
-            self.gauge(label=labels.MSG_DECAY_LABEL, name=SoundSetting.DECAY, highest=limits.MAX_ENVELOPE_MS, logarithmic=True),
-            self.gauge(label=labels.MSG_SUSTAIN_LABEL, name=SoundSetting.SUSTAIN, highest=limits.MAX_PERCENT),
-            self.gauge(label=labels.MSG_RELEASE_LABEL, name=SoundSetting.RELEASE, highest=limits.MAX_ENVELOPE_MS, logarithmic=True),
+            Field(label=labels.MSG_ROLE_LABEL, value=lambda: labels.MSG_ROLE_NAMES[role]),
+            ChoiceField(page=self._page, label=labels.MSG_INSTRUMENT_KIND_LABEL, choices=list(file_format.INSTRUMENT_KINDS), current=kind,
+                        names=[labels.MSG_KIND_NAMES[choice] for choice in file_format.INSTRUMENT_KINDS], shown=labels.MSG_KIND_NAMES[kind], set=self.set_kind),
+            ChoiceField(page=self._page, label=labels.MSG_ENGINE_LABEL, choices=list(engines), current=engine, names=[labels.MSG_ENGINE_NAMES[choice] for choice in engines],
+                        shown=labels.MSG_ENGINE_NAMES[engine], set=self.set_engine),
         ]
 
-    def oscillator_fields(self, number):
-        """Return an oscillator's Wave, Detune and Level, labelled by its number for the keys and drawn under its heading."""
+    def oscillators_tab(self):
+        """Return the Oscillators tab: the type across its top, then the voice layer, then the type's own columns."""
+        oscillators = self.part(SoundPart.OSCILLATORS)
+        columns = [TabColumn(heading=labels.MSG_VOICE_HEADING, fields=self.voice_fields())]
+        kind = oscillators.kind()
+        if kind == OscillatorType.BASIC:
+            columns += [TabColumn(heading=labels.MSG_OSCILLATOR_LABEL.format(number=number), fields=oscillators.oscillator_fields(number)) for number in OSCILLATOR_NUMBERS]
+        own = oscillators.setting_fields()
+        if kind == OscillatorType.DRUM:
+            own += oscillators.knob_fields()
+        columns.append(TabColumn(heading=labels.MSG_PART_HEADINGS[SoundPart.OSCILLATORS], fields=own))
+        return Tab(label=labels.MSG_OSCILLATORS_TAB, top=[oscillators.type_field()], columns=columns, not_ready=self.not_built_in())
+
+    def envelopes_tab(self):
+        """Return the Envelopes tab: Env 1 for the amp, Env 2 for the filter, Env 3 for pitch, side by side, each its type first."""
+        columns = []
+        for part in file_format.ENVELOPE_PARTS:
+            envelope = self.part(part)
+            columns.append(TabColumn(heading=labels.MSG_PART_HEADINGS[part], fields=[envelope.type_field(), *envelope.setting_fields()]))
+        return Tab(label=labels.MSG_ENVELOPES_TAB, columns=columns, not_ready=self.not_built_in())
+
+    def filter_tab(self):
+        """Return the Filter tab: its type across the top, then its settings."""
+        filter_part = self.part(SoundPart.FILTER)
+        return Tab(label=labels.MSG_FILTER_TAB, top=[filter_part.type_field()], columns=[TabColumn(heading=None, fields=filter_part.setting_fields())],
+                   not_ready=self.not_built_in())
+
+    def matrix_tab(self):
+        """Return the Matrix tab: the six slots, three over three, each boxed."""
+        columns = [TabColumn(heading=None, fields=self.slot_fields(number), under=number == SECOND_ROW_SLOT, boxed=True) for number in SLOT_NUMBERS]
+        return Tab(label=labels.MSG_MATRIX_TAB, columns=columns, not_ready=self.not_built_in())
+
+    def voice_fields(self):
+        """Return the voice layer: volume, voices, legato, glide, and whether the filter is each note's own or shared."""
         instrument = self.instrument()
-        def setter(name):
-            return lambda value: self._document.change_set(self.instrument().set_oscillator, number=number, name=name, value=value)
-        waveform = instrument.get_oscillator(number=number, name=OscillatorSetting.WAVEFORM)
+        sharing = instrument.get_sound(SoundSetting.FILTER_SHARING)
         return [
-            ChoiceField(page=self._page, label=labels.MSG_OSCILLATOR_LABEL.format(number=number), shown_label=labels.MSG_WAVE_LABEL, choices=list(file_format.OSCILLATOR_WAVEFORMS),
-                        current=waveform, names=[labels.MSG_WAVEFORM_NAMES[choice] for choice in file_format.OSCILLATOR_WAVEFORMS], shown=labels.MSG_WAVEFORM_NAMES[waveform],
-                        set=setter(OscillatorSetting.WAVEFORM)),
-            NumberField(page=self._page, label=labels.MSG_OSCILLATOR_DETUNE_LABEL.format(number=number), shown_label=labels.MSG_DETUNE_LABEL,
-                        number=instrument.get_oscillator(number=number, name=OscillatorSetting.DETUNE), lowest=-limits.MAX_DETUNE_CENTS, highest=limits.MAX_DETUNE_CENTS,
-                        shown=marks.MSG_CENTS_SHOWN.format(number=instrument.get_oscillator(number=number, name=OscillatorSetting.DETUNE)), set=setter(OscillatorSetting.DETUNE)),
-            GaugeField(page=self._page, label=labels.MSG_OSCILLATOR_LEVEL_LABEL.format(number=number), shown_label=labels.MSG_LEVEL_LABEL,
-                       number=instrument.get_oscillator(number=number, name=OscillatorSetting.LEVEL), lowest=0, highest=limits.MAX_PERCENT, set=setter(OscillatorSetting.LEVEL)),
+            GaugeField(page=self._page, label=labels.MSG_VOLUME_LABEL, number=instrument.get_sound(SoundSetting.VOLUME), lowest=0, highest=limits.MAX_VOLUME_PERCENT,
+                       set=functools.partial(self.set_sound, name=SoundSetting.VOLUME)),
+            NumberField(page=self._page, label=labels.MSG_VOICES_LABEL, number=instrument.get_sound(SoundSetting.VOICES), lowest=1, highest=limits.MAX_VOICES,
+                        set=functools.partial(self.set_sound, name=SoundSetting.VOICES)),
+            Toggle(label=labels.MSG_LEGATO_LABEL, on=instrument.get_sound(SoundSetting.LEGATO), set=functools.partial(self.set_sound, name=SoundSetting.LEGATO)),
+            GaugeField(page=self._page, label=labels.MSG_GLIDE_LABEL, number=instrument.get_sound(SoundSetting.GLIDE), lowest=0, highest=limits.MAX_GLIDE_MS,
+                       unit=marks.MSG_MILLISECONDS_SHOWN, logarithmic=True, set=functools.partial(self.set_sound, name=SoundSetting.GLIDE)),
+            ChoiceField(page=self._page, label=labels.MSG_FILTER_SHARING_LABEL, choices=list(file_format.FILTER_SHARINGS), current=sharing,
+                        names=[labels.MSG_FILTER_SHARING_NAMES[choice] for choice in file_format.FILTER_SHARINGS], shown=labels.MSG_FILTER_SHARING_NAMES[sharing],
+                        set=functools.partial(self.set_sound, name=SoundSetting.FILTER_SHARING)),
         ]
 
-    def knob_field(self, place):
-        return GaugeField(page=self._page, label=labels.MSG_KNOB_LABELS[place], number=self.instrument().get_knob(place), lowest=0, highest=limits.MAX_KNOB,
-                          unit=marks.MSG_NUMBER_SHOWN, set=lambda value: self._document.change_set(self.instrument().set_knob, place=place, value=value))
-
-    def choke_field(self):
-        choke = self.instrument().get_sound(SoundSetting.CHOKE)
-        shown = marks.MSG_CHOKE_NONE_SHOWN if choke == 0 else str(choke)
-        return NumberField(page=self._page, label=labels.MSG_CHOKE_LABEL, number=choke, lowest=0, highest=limits.MAX_CHOKE, shown=shown,
-                           set=self.setter(SoundSetting.CHOKE))
-
-    def arpeggio_field(self):
-        """Return the Arpeggio field: semitones from the note, stepped at the chip's frame rate, typed apart by spaces."""
-        steps = self.instrument().get_sound(SoundSetting.ARPEGGIO)
-        shown = marks.MSG_ARPEGGIO_SEPARATOR.join(str(step) for step in steps) or marks.MSG_ARPEGGIO_NONE_SHOWN
-        return Field(label=labels.MSG_ARPEGGIO_LABEL, value=lambda: shown, enter=self.ask_arpeggio, clear=lambda: self.set_sound(name=SoundSetting.ARPEGGIO, value=[]),
-                     clear_what=marks.MSG_ARPEGGIO_NONE_SHOWN)
-
-    def ask_arpeggio(self):
-        steps = self.instrument().get_sound(SoundSetting.ARPEGGIO)
-        typed = marks.MSG_ARPEGGIO_SEPARATOR.join(str(step) for step in steps)
-        self._page.ask_text(title=messages.MSG_ARPEGGIO_PROMPT.format(most=limits.MAX_ARPEGGIO_STEPS), value=typed, then=self.set_arpeggio_text)
-
-    def set_arpeggio_text(self, text):
-        """Store an arpeggio typed as semitones apart by spaces, refusing on the status line one that isn't whole numbers in range."""
-        try:
-            steps = [int(word) for word in text.split()]
-        except ValueError:
-            steps = None
-        if steps is None or len(steps) > limits.MAX_ARPEGGIO_STEPS or any(abs(step) > limits.MAX_INTERVAL for step in steps):
-            self._page.refuse(errors.ERR_BAD_ARPEGGIO.format(most=limits.MAX_ARPEGGIO_STEPS, highest=limits.MAX_INTERVAL, value=text))
-            return
-        self.set_sound(name=SoundSetting.ARPEGGIO, value=steps)
-
-    def chip_level_fields(self):
-        level = self.instrument().get_sound(SoundSetting.START_LEVEL)
+    def slot_fields(self, number):
+        """Return a slot's fields: its source, what scales it, what it moves, and how far either way."""
+        instrument = self.instrument()
+        amount = instrument.get_slot(number=number, name=MatrixSetting.AMOUNT)
         return [
-            NumberField(page=self._page, label=labels.MSG_START_LEVEL_LABEL, number=level, lowest=0, highest=limits.MAX_CHIP_LEVEL,
-                        shown=marks.MSG_LEVEL_SHOWN.format(number=level), set=self.setter(SoundSetting.START_LEVEL)),
-            self.pace_field(label=labels.MSG_LEVEL_PACE_LABEL, name=SoundSetting.LEVEL_PACE),
-            self.choice(label=labels.MSG_LEVEL_DIRECTION_LABEL, name=SoundSetting.LEVEL_DIRECTION, choices=file_format.CHIP_DIRECTIONS, names=labels.MSG_CHIP_DIRECTION_NAMES),
+            self.slot_choice(number=number, label=labels.MSG_SLOT_SOURCE_LABEL, name=MatrixSetting.SOURCE, choices=file_format.MATRIX_SOURCES,
+                             names=labels.MSG_MATRIX_SOURCE_NAMES),
+            self.slot_choice(number=number, label=labels.MSG_SLOT_VIA_LABEL, name=MatrixSetting.VIA, choices=file_format.MATRIX_SOURCES, names=labels.MSG_MATRIX_SOURCE_NAMES),
+            self.slot_choice(number=number, label=labels.MSG_SLOT_DESTINATION_LABEL, name=MatrixSetting.DESTINATION, choices=file_format.MATRIX_DESTINATIONS,
+                             names=labels.MSG_MATRIX_DESTINATION_NAMES),
+            NumberField(page=self._page, label=labels.MSG_SLOT_AMOUNT_LABEL.format(number=number), shown_label=labels.MSG_SLOT_SHOWN_LABELS[labels.MSG_SLOT_AMOUNT_LABEL],
+                        number=amount, lowest=-limits.MAX_MATRIX_AMOUNT, highest=limits.MAX_MATRIX_AMOUNT, shown=marks.MSG_SIGNED_PERCENT_SHOWN.format(number=amount),
+                        set=functools.partial(self.set_slot, number=number, name=MatrixSetting.AMOUNT)),
         ]
 
-    def chip_sweep_fields(self):
-        return [
-            self.pace_field(label=labels.MSG_SWEEP_PACE_LABEL, name=SoundSetting.SWEEP_PACE),
-            self.choice(label=labels.MSG_SWEEP_DIRECTION_LABEL, name=SoundSetting.SWEEP_DIRECTION, choices=file_format.CHIP_DIRECTIONS, names=labels.MSG_CHIP_DIRECTION_NAMES),
-            self.number(label=labels.MSG_SWEEP_STEP_LABEL, name=SoundSetting.SWEEP_STEP, lowest=limits.MIN_SWEEP_STEP, highest=limits.MAX_SWEEP_STEP),
-        ]
+    def slot_choice(self, *, number, label, name, choices, names):
+        current = self.instrument().get_slot(number=number, name=name)
+        return ChoiceField(page=self._page, label=label.format(number=number), shown_label=labels.MSG_SLOT_SHOWN_LABELS[label], choices=list(choices), current=current,
+                           names=[names[choice] for choice in choices], shown=names[current], set=functools.partial(self.set_slot, number=number, name=name))
 
-    def pace_field(self, *, label, name):
-        """Return a chip's pace, in its ticks, 0 holding still."""
-        pace = self.instrument().get_sound(name)
-        shown = marks.MSG_PACE_HELD_SHOWN if pace == 0 else marks.MSG_PACE_SHOWN.format(number=pace)
-        return NumberField(page=self._page, label=label, number=pace, lowest=0, highest=limits.MAX_CHIP_PACE, shown=shown, set=self.setter(name))
+    # Storing what the fields set.
 
-    # Making fields, and storing what they set.
+    def not_built_in(self):
+        return not self.instrument().is_built_in()
 
-    def set_built_in(self, on):
-        """Make the instrument built in, or switch it off: neither MIDI nor built in."""
-        kind = InstrumentKind.BUILT_IN if on else InstrumentKind.OFF
+    def set_kind(self, kind):
         self._document.change_set(self.instrument().set_kind, kind)
 
-    def set_sound(self, *, name, value):
+    def set_engine(self, engine):
+        self._document.change_set(self.instrument().set_engine, engine)
+
+    def set_sound(self, value, *, name):
         self._document.change_set(self.instrument().set_sound, name=name, value=value)
 
-    def setter(self, name):
-        """Return what stores a value of one of the sound's settings, as a field sets it."""
-        return lambda value: self.set_sound(name=name, value=value)
-
-    def choice(self, *, label, name, choices, names):
-        current = self.instrument().get_sound(name)
-        return ChoiceField(page=self._page, label=label, choices=list(choices), current=current, names=[names[choice] for choice in choices], shown=names[current],
-                           set=self.setter(name))
-
-    def gauge(self, *, label, name, highest, logarithmic=False):
-        unit = marks.MSG_MILLISECONDS_SHOWN if logarithmic else marks.MSG_SOUND_PERCENT_SHOWN
-        return GaugeField(page=self._page, label=label, number=self.instrument().get_sound(name), lowest=0, highest=highest, unit=unit, logarithmic=logarithmic,
-                          set=self.setter(name))
-
-    def number(self, *, label, name, lowest, highest, unit=None):
-        number = self.instrument().get_sound(name)
-        shown = None if unit is None else unit.format(number=number)
-        return NumberField(page=self._page, label=label, number=number, lowest=lowest, highest=highest, shown=shown, set=self.setter(name))
-
-    def toggle(self, *, label, name):
-        return Toggle(label=label, on=self.instrument().get_sound(name), set=self.setter(name))
-
+    def set_slot(self, value, *, number, name):
+        self._document.change_set(self.instrument().set_slot, number=number, name=name, value=value)

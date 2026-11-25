@@ -145,7 +145,22 @@ MAX_CHIP_LEVEL = 15
 MAX_CHIP_PACE = 7
 MIN_SWEEP_STEP = 1
 MAX_SWEEP_STEP = 7
-EFFECT_BLOCKS = 4
+EFFECT_BLOCKS = 2
+# A voice of parts: its oscillators' pitch envelope in semitones either way, an envelope's attack curve either way, its hold,
+# the SID chip's sixteen rates and sustain levels, a vactrol's strike in tenths of a millisecond, a low-pass gate's open
+# cutoff and ping in tenths of a millisecond, and the mod matrix's slots and amount either way in percent.
+MAX_PITCH_ENV = 48
+MAX_ATTACK_CURVE = 100
+MAX_HOLD_MS = 2000
+MAX_SID_RATE = 15
+MIN_STRIKE_WIDTH = 5
+MAX_STRIKE_WIDTH = 100
+MIN_GATE_OPEN = 500
+MAX_GATE_OPEN = 16000
+MIN_PING_WIDTH = 2
+MAX_PING_WIDTH = 50
+MATRIX_SLOTS = 6
+MAX_MATRIX_AMOUNT = 100
 # An instrument's LFOs, their rate in tenths of a hertz, from a tenth to a hundred hertz, fast enough for a chip's vibrato and
 # trills, and their depth in percent either way.
 LFO_COUNT = 4

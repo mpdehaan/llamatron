@@ -46,8 +46,8 @@ LEAST_Q = 0.5
 MOST_Q = 25.0
 MIDDLE_C = 60
 SEMITONES = 12.0
-# A ping's strike, as a share of full scale at full velocity: loud enough that the ring speaks.
-PING_LEVEL = 4.0
+# A ping's strike at full velocity: a full strike rung at middle C with resonance peaks near 0.7 of full scale.
+PING_LEVEL = 0.45
 
 
 class LowPassGate:

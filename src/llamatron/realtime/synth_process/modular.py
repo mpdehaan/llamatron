@@ -123,7 +123,11 @@ class ModularPatch:
             light = levels[0]
             if not self.envelopes[0].takes_velocity:
                 light = light * voice.level
-            return voice.filter.gated(wave, light=light, voice=voice, first=first, octaves=moved.get(matrix.CUTOFF))
+            cutoff = moved.get(matrix.CUTOFF)
+            if cutoff is not None and numpy.ndim(cutoff) == 0:
+                # A route from the note's velocity, key or random value moves the cutoff alike over the whole chunk.
+                cutoff = numpy.full(count, float(cutoff))
+            return voice.filter.gated(wave, light=light, voice=voice, first=first, octaves=cutoff)
         if filter_part is not None:
             wave = self._filtered(wave, voice=voice, env2=levels[1], moved=moved)
         amp = levels[0]

@@ -1,15 +1,13 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The Instrument page's Effects tab, as plain nodes, for one instrument by name: the four effect blocks, two over two, each
-choosing its effect and showing that effect's settings and its Mix.
+"""The Instrument page's FX tab, as plain nodes, for one instrument by name: the two effects side by side, each choosing its
+effect and showing that effect's settings and its Mix.
 
-The bitcrusher shows its bits and its rate; drive its curve and amount; a filter its type, its mode where the type has more
-than one, its cutoff in hertz, resonance, its envelope's amount, attack and decay, key tracking and drive. The tab is drawn dim
-while the instrument isn't built in.
+The bitcrusher shows its bits and its rate; drive its curve and amount. The voice's filter is a part of its own, on the Filter
+tab. The tab is drawn dim while the instrument isn't built in.
 """
 
-from llamatron.interface.forms import nodes
 from llamatron.interface.forms.nodes import ChoiceField, GaugeField, NumberField
 from llamatron.interface.forms.tab_box import Tab, TabColumn
 from llamatron.model.schema import file_format, limits
@@ -21,7 +19,6 @@ CRUSH_RATES = (0, 32000, 22050, 16000, 11025, 8000, 6000, 4000, 3000, 2000, 1000
 EFFECT_NUMBERS = range(1, limits.EFFECT_BLOCKS + 1)
 # The blocks that start a new band, so that the four are drawn two over two, and how many cells a block's gauge has, so
 # that two boxed blocks stand side by side at 80 columns.
-SECOND_ROW_BLOCK = 3
 BLOCK_GAUGE_CELLS = 8
 
 
@@ -40,9 +37,9 @@ class EffectBlocks:
         return self._document.get_setlist().get_instrument(self._name)
 
     def effects_tab(self):
-        """Return the Effects tab: the four blocks two over two, dim while the instrument isn't built in."""
-        columns = [TabColumn(heading=None, fields=self.block_fields(number), under=number == SECOND_ROW_BLOCK, boxed=True) for number in EFFECT_NUMBERS]
-        return Tab(label=labels.MSG_EFFECTS_TAB, columns=columns, not_ready=not self.instrument().is_built_in())
+        """Return the FX tab: the two effects side by side, dim while the instrument isn't built in."""
+        columns = [TabColumn(heading=None, fields=self.block_fields(number), boxed=True) for number in EFFECT_NUMBERS]
+        return Tab(label=labels.MSG_FX_TAB, columns=columns, not_ready=not self.instrument().is_built_in())
 
     def block_fields(self, number):
         """Return an effect block's fields: its effect, that effect's own settings, then its Mix; an empty block its effect alone."""
@@ -52,7 +49,7 @@ class EffectBlocks:
                              set=self.setter(number=number, name=EffectSetting.EFFECT))
         if effect == Effect.NONE:
             return [chosen]
-        own = {Effect.BITCRUSH: self.bitcrush_fields, Effect.DRIVE: self.drive_fields, Effect.FILTER: self.filter_fields}[effect](number)
+        own = {Effect.BITCRUSH: self.bitcrush_fields, Effect.DRIVE: self.drive_fields}[effect](number)
         return [chosen, *own, self.gauge(number=number, label=labels.MSG_EFFECT_MIX_LABEL, name=EffectSetting.MIX)]
 
     def bitcrush_fields(self, number):
@@ -70,43 +67,6 @@ class EffectBlocks:
             self.choice(number=number, label=labels.MSG_EFFECT_CURVE_LABEL, name=EffectSetting.CURVE, choices=file_format.CURVES, names=labels.MSG_CURVE_NAMES),
             self.gauge(number=number, label=labels.MSG_EFFECT_AMOUNT_LABEL, name=EffectSetting.AMOUNT),
         ]
-
-    def filter_fields(self, number):
-        """Return a filter's fields: its type, its mode where the type has several, its cutoff, resonance and envelope, key
-        tracking and drive."""
-        kind = self.instrument().get_effect(number=number, name=EffectSetting.FILTER_TYPE)
-        fields = [self.choice(number=number, label=labels.MSG_EFFECT_FILTER_TYPE_LABEL, name=EffectSetting.FILTER_TYPE, choices=file_format.FILTER_TYPES,
-                              names=labels.MSG_FILTER_TYPE_NAMES)]
-        modes = file_format.MODES_OF_FILTER[kind]
-        if len(modes) > 1:
-            fields.append(self.choice(number=number, label=labels.MSG_EFFECT_FILTER_MODE_LABEL, name=EffectSetting.FILTER_MODE, choices=modes,
-                                      names=labels.MSG_FILTER_MODE_NAMES))
-        return [
-            *fields, self.cutoff_field(number), self.gauge(number=number, label=labels.MSG_EFFECT_RESONANCE_LABEL, name=EffectSetting.RESONANCE),
-            self.envelope_amount_field(number),
-            self.gauge(number=number, label=labels.MSG_EFFECT_ENVELOPE_ATTACK_LABEL, name=EffectSetting.ENVELOPE_ATTACK, highest=limits.MAX_ENVELOPE_MS,
-                       unit=marks.MSG_MILLISECONDS_SHOWN),
-            self.gauge(number=number, label=labels.MSG_EFFECT_ENVELOPE_DECAY_LABEL, name=EffectSetting.ENVELOPE_DECAY, highest=limits.MAX_ENVELOPE_MS,
-                       unit=marks.MSG_MILLISECONDS_SHOWN),
-            self.gauge(number=number, label=labels.MSG_EFFECT_KEY_TRACK_LABEL, name=EffectSetting.KEY_TRACK),
-            self.gauge(number=number, label=labels.MSG_EFFECT_FILTER_DRIVE_LABEL, name=EffectSetting.FILTER_DRIVE),
-        ]
-
-    def cutoff_field(self, number):
-        """Return a filter's cutoff, a gauge filling by the logarithm of its hertz, as an ear hears it."""
-        field = self.gauge(number=number, label=labels.MSG_EFFECT_CUTOFF_LABEL, name=EffectSetting.CUTOFF, highest=limits.MAX_CUTOFF, unit=marks.MSG_HERTZ_SHOWN)
-        field.lowest = limits.MIN_CUTOFF
-        field.strides = nodes.HERTZ_STRIDES
-        field.longest_stride = nodes.LONGEST_HERTZ_STRIDE
-        return field
-
-    def envelope_amount_field(self, number):
-        """Return a filter envelope's amount, a share of four octaves up or, below zero, down."""
-        amount = self.instrument().get_effect(number=number, name=EffectSetting.ENVELOPE_AMOUNT)
-        return NumberField(page=self._page, label=labels.MSG_EFFECT_ENVELOPE_AMOUNT_LABEL.format(number=number),
-                           shown_label=shown_label(labels.MSG_EFFECT_ENVELOPE_AMOUNT_LABEL), number=amount, lowest=-limits.MAX_ENVELOPE_AMOUNT,
-                           highest=limits.MAX_ENVELOPE_AMOUNT, shown=marks.MSG_SIGNED_PERCENT_SHOWN.format(number=amount),
-                           set=self.setter(number=number, name=EffectSetting.ENVELOPE_AMOUNT))
 
     # Making fields, and storing what they set.
 

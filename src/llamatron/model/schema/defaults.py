@@ -103,3 +103,15 @@ DEFAULT_AMP_DECAY_MS = 1500
 DEFAULT_SOFT_ATTACK = 30
 DEFAULT_ACCENT_DECAY_MS = 200
 DEFAULT_LFO_DEPTH = 5
+# A voice of parts: the snappy ADSR's attack curve, the RC timer's law; a vactrol's strike in tenths of a millisecond, its
+# memory and stability (stable, as the user likes); a low-pass gate's open cutoff and ping in tenths of a millisecond.
+DEFAULT_ATTACK_CURVE = 50
+DEFAULT_STRIKE_WIDTH = 20
+DEFAULT_MEMORY = 30
+DEFAULT_STABILITY = 100
+DEFAULT_GATE_OPEN = 7000
+DEFAULT_PING_WIDTH = 10
+DEFAULT_SID_ATTACK = 0
+DEFAULT_SID_DECAY = 9
+DEFAULT_SID_SUSTAIN = 10
+DEFAULT_SID_RELEASE = 9

@@ -7,7 +7,7 @@ its latency), Synth and Effects (interface/pages/sound_tabs.py), MIDI and Synth 
 the other off, and then the Keyswitch Map button."""
 
 from llamatron.interface.forms import percentages
-from llamatron.interface.forms.nodes import Field, NameField, NumberField, SettingNumberField, Toggle
+from llamatron.interface.forms.nodes import Field, NameField, NumberField, SettingNumberField
 from llamatron.interface.forms.tab_box import Tab, TabBox, TabColumn
 from llamatron.interface.pages.effect_blocks import EffectBlocks
 from llamatron.interface.pages.lfo_blocks import LfoBlocks
@@ -86,25 +86,26 @@ class InstrumentPresenter:
         )
 
     def form(self):
-        """Return the page's form: the instrument's name, how its steps' velocities play, its MIDI, Synth, Effects and LFOs tabs, then the
-        Keyswitch Map button."""
-        tabs = SoundTabs(page=self._page, document=self._document, name=self._name)
+        """Return the page's form: the instrument's name, how its steps' velocities play, its Role, Kind and Engine, its MIDI tab
+        and its built-in sound's tabs, then its buttons."""
+        sound = SoundTabs(page=self._page, document=self._document, name=self._name)
+        built_in = [sound.oscillators_tab(), sound.envelopes_tab(), LfoBlocks(page=self._page, document=self._document, name=self._name).lfos_tab(),
+                    sound.filter_tab(), EffectBlocks(page=self._page, document=self._document, name=self._name).effects_tab(), sound.matrix_tab()]
         return [
             NameField(value=lambda: self._name, rename=self._page.rename),
             self.default_velocity_field(),
             self.accent_field(),
             self.velocity_change_field(),
-            TabBox(tabs=[self.midi_tab(), tabs.synth_tab(), EffectBlocks(page=self._page, document=self._document, name=self._name).effects_tab(),
-                          LfoBlocks(page=self._page, document=self._document, name=self._name).lfos_tab()]),
+            *sound.above_tabs(),
+            TabBox(tabs=[self.midi_tab(), *built_in]),
             self._page.preview_button(),
             self._page.keyswitch_map_button(),
             self._page.listen_button(),
         ]
 
     def midi_tab(self):
-        """Return the MIDI tab: On across its top, then where it plays and how."""
+        """Return the MIDI tab: where it plays and how, drawn dim unless its Kind is MIDI."""
         instrument = self.instrument()
-        on = Toggle(label=labels.MSG_MIDI_ON_LABEL, shown_label=labels.MSG_ON_LABEL, on=instrument.get_kind() == InstrumentKind.MIDI, set=self.set_midi)
         fields = [
             Field(label=labels.MSG_DEVICE_LABEL, value=lambda: instrument.get_device() or marks.MSG_NO_DEVICE_SHOWN, adjust=None, enter=self._page.pick_device, enter_what=legends.What.CHOOSE,
                   clear=lambda: self.set_device(None), clear_what=marks.MSG_NONE_SHOWN),
@@ -114,12 +115,7 @@ class InstrumentPresenter:
             self.lead_field(),
             self.latency_field(),
         ]
-        return Tab(label=labels.MSG_MIDI_TAB, top=[on], columns=[TabColumn(heading=None, fields=fields)], on=instrument.get_kind() == InstrumentKind.MIDI)
-
-    def set_midi(self, on):
-        """Make the instrument play through MIDI, or switch it off: neither MIDI nor built in."""
-        kind = InstrumentKind.MIDI if on else InstrumentKind.OFF
-        self._document.change_set(self._document.get_setlist().get_instrument(self._name).set_kind, kind)
+        return Tab(label=labels.MSG_MIDI_TAB, columns=[TabColumn(heading=None, fields=fields)], not_ready=instrument.get_kind() != InstrumentKind.MIDI)
 
     def latency_field(self):
         """Return the Latency field: how many milliseconds earlier its notes are sent, for a device that is slow to sound."""

@@ -7,7 +7,7 @@ Each constant starts with MSG_, and the classes Crumb and Column group the words
 """
 
 from llamatron.interface.tracker.keys import RowSection
-from llamatron.model.schema.file_format import AcidWave, Approach, ChipDirection, ChipVoice, ChordColor, ChordSymbol, Curve, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, DrumMachine, Duty, Effect, FilterMode, FilterType, FollowAction, GateModifier, LfoShape, LiveResponsiveness, Modulation, NamedProgression, Noise, OctaveLabels, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SidWave, SingleNotes, SoundEngine, STATEMENT_ROWS, Stroke, SynthControl, Tuning, Waveform, WaveShape
+from llamatron.model.schema.file_format import AcidWave, Approach, ChipDirection, ChipVoice, ChordColor, ChordSymbol, Curve, Direction, Doubling, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, DriftValue, DrumMachine, Duty, Effect, EnvelopeType, FilterMode, FilterSharing, FilterType, FollowAction, GateInput, GateMode, GateModifier, InstrumentKind, InstrumentRole, LfoShape, LiveResponsiveness, MatrixDestination, MatrixSource, Modulation, NamedProgression, Noise, OctaveLabels, OscillatorType, PartSetting, PatternOrder, RampPart, RampWay, ReadyBar, Restart, Row, ScaleKind, Section, Shape, ShapePart, SidWave, SingleNotes, SoundEngine, SoundPart, STATEMENT_ROWS, Stroke, Tuning, VactrolCell, VactrolLight, Waveform, WaveShape
 
 
 def draw_labels(*, rows, label):
@@ -769,13 +769,62 @@ MSG_LATENCY_LABEL = 'Latency'
 # interface/pages/instrument.py and interface/pages/sound_tabs.py: the Instrument page's tabs, each tab's On, and a built-in
 # sound's settings, each engine's choices named as the page shows them.
 MSG_MIDI_TAB = 'MIDI'
-MSG_SYNTH_TAB = 'Synth'
-MSG_EFFECTS_TAB = 'Effects'
+MSG_OSCILLATORS_TAB = 'Oscillators'
+MSG_ENVELOPES_TAB = 'Envelopes'
 MSG_LFOS_TAB = 'LFOs'
-MSG_ON_LABEL = 'On'
-MSG_MIDI_ON_LABEL = 'MIDI on'
-MSG_SYNTH_ON_LABEL = 'Synth on'
+MSG_FILTER_TAB = 'Filter'
+MSG_FX_TAB = 'FX'
+MSG_MATRIX_TAB = 'Matrix'
+MSG_ROLE_LABEL = 'Role'
+MSG_INSTRUMENT_KIND_LABEL = 'Kind'
 MSG_ENGINE_LABEL = 'Engine'
+MSG_LEGATO_LABEL = 'Legato'
+MSG_FILTER_SHARING_LABEL = 'Filter'
+MSG_VOICE_HEADING = 'Voice'
+MSG_ROLE_NAMES = {InstrumentRole.NORMAL: 'Normal', InstrumentRole.PERCUSSION: 'Percussion'}
+MSG_KIND_NAMES = {InstrumentKind.OFF: 'Off', InstrumentKind.MIDI: 'MIDI', InstrumentKind.BUILT_IN: 'Built-in'}
+MSG_FILTER_SHARING_NAMES = {FilterSharing.PER_NOTE: 'Per note', FilterSharing.SHARED: 'Shared'}
+# Each part's name as its fields are labelled, its type's picker, and each part setting's label as the part's box shows it;
+# a field's whole label is the part's name and the setting's, so that every field of the page is told apart.
+MSG_PART_NAMES = {SoundPart.OSCILLATORS: 'Osc', SoundPart.ENV1: 'Env 1', SoundPart.ENV2: 'Env 2', SoundPart.ENV3: 'Env 3', SoundPart.FILTER: 'Filter'}
+MSG_PART_HEADINGS = {SoundPart.OSCILLATORS: 'Oscillators', SoundPart.ENV1: 'Env 1 (amp)', SoundPart.ENV2: 'Env 2 (filter)', SoundPart.ENV3: 'Env 3 (pitch)', SoundPart.FILTER: 'Filter'}
+MSG_PART_SETTING_LABEL = '{part} {setting}'
+MSG_PART_TYPE_LABEL = 'Type'
+MSG_PART_SETTING_NAMES = {
+    PartSetting.PITCH_ENV: 'Pitch env', PartSetting.WAVE: 'Wave', PartSetting.PULSE_WIDTH: 'Pulse width', PartSetting.PULSE_SWEEP: 'PWM speed',
+    PartSetting.MODULATION: 'Modulation', PartSetting.INTERVAL: 'Interval', PartSetting.ARPEGGIO: 'Arpeggio', PartSetting.CHIP_VOICE: 'Voice', PartSetting.DUTY: 'Duty',
+    PartSetting.WAVE_SHAPE: 'Wave shape', PartSetting.NOISE: 'Noise', PartSetting.SWEEP_PACE: 'Sweep pace', PartSetting.SWEEP_DIRECTION: 'Sweep goes',
+    PartSetting.SWEEP_STEP: 'Sweep step', PartSetting.ACID_WAVE: 'Wave', PartSetting.TUNING: 'Tuning', PartSetting.MACHINE: 'Machine', PartSetting.CHOKE: 'Choke',
+    PartSetting.OVERLAP: 'Overlap', PartSetting.ATTACK: 'Attack', PartSetting.ATTACK_CURVE: 'Curve', PartSetting.HOLD: 'Hold', PartSetting.DECAY: 'Decay',
+    PartSetting.SNAP: 'Snap', PartSetting.SUSTAIN: 'Sustain', PartSetting.RELEASE: 'Release', PartSetting.CELL: 'Cell', PartSetting.LIGHT: 'Lit by',
+    PartSetting.STRIKE_WIDTH: 'Strike', PartSetting.MEMORY: 'Memory', PartSetting.AGE: 'Age', PartSetting.STABILITY: 'Stability', PartSetting.ACCENT: 'Accent level',
+    PartSetting.ACCENT_THRESHOLD: 'Accent at', PartSetting.ACCENT_SWEEP: 'Accent sweep', PartSetting.ACCENT_DECAY: 'Accent decay', PartSetting.AMP_DECAY: 'Amp decay',
+    PartSetting.SOFT_ATTACK: 'Soft attack', PartSetting.START_LEVEL: 'Start level', PartSetting.LEVEL_PACE: 'Level pace', PartSetting.LEVEL_DIRECTION: 'Level goes',
+    PartSetting.CUTOFF: 'Cutoff', PartSetting.RESONANCE: 'Resonance', PartSetting.SLOPE: 'Slope', PartSetting.MODE: 'Mode', PartSetting.ENV_AMOUNT: 'Env amount',
+    PartSetting.KEY_TRACK: 'Key track', PartSetting.DRIVE: 'Drive', PartSetting.GATE_MODE: 'Mode', PartSetting.OPEN: 'Open', PartSetting.INPUT: 'Input',
+    PartSetting.PING_WIDTH: 'Ping width',
+}
+# Each oscillator type named by the engine it comes from.
+MSG_OSCILLATOR_TYPE_NAMES = {OscillatorType.BASIC: 'Basic', OscillatorType.SID: 'SID', OscillatorType.POCKET: 'Pocket', OscillatorType.ACID: 'Fishline',
+                             OscillatorType.DRUM: 'MechaDrum'}
+MSG_ENVELOPE_TYPE_NAMES = {EnvelopeType.ADSR: 'ADSR', EnvelopeType.AR: 'AR', EnvelopeType.ASR: 'ASR', EnvelopeType.SID_ADSR: 'SID ADSR', EnvelopeType.VACTROL: 'Vactrol',
+                           EnvelopeType.ACID_GATE: 'Acid gate', EnvelopeType.CHIP_STEPS: 'Chip steps'}
+MSG_VACTROL_CELL_NAMES = {VactrolCell.FAST: 'Fast', VactrolCell.CLASSIC: 'Classic', VactrolCell.SLOW: 'Slow', VactrolCell.LAZY: 'Lazy'}
+MSG_VACTROL_LIGHT_NAMES = {VactrolLight.STRIKE: 'Strike', VactrolLight.GATE: 'Gate'}
+MSG_SLOPE_NAMES = {6: '6 dB', 12: '12 dB', 18: '18 dB', 24: '24 dB'}
+MSG_GATE_MODE_NAMES = {GateMode.VCA: 'VCA', GateMode.LOWPASS: 'Lowpass', GateMode.BOTH: 'Both'}
+MSG_GATE_INPUT_NAMES = {GateInput.OSCILLATOR: 'Oscillator', GateInput.PING: 'Ping', GateInput.BOTH: 'Both'}
+MSG_MATRIX_SOURCE_NAMES = {MatrixSource.NONE: '(none)', MatrixSource.ENV1: 'Env 1', MatrixSource.ENV2: 'Env 2', MatrixSource.ENV3: 'Env 3', MatrixSource.LFO1: 'LFO 1',
+                           MatrixSource.LFO2: 'LFO 2', MatrixSource.LFO3: 'LFO 3', MatrixSource.LFO4: 'LFO 4', MatrixSource.VELOCITY: 'Velocity', MatrixSource.KEY: 'Key',
+                           MatrixSource.RANDOM: 'Random'}
+MSG_MATRIX_DESTINATION_NAMES = {MatrixDestination.NONE: '(none)', MatrixDestination.PITCH: 'Pitch', MatrixDestination.PULSE_WIDTH: 'Pulse width',
+                                MatrixDestination.DETUNE: 'Detune', MatrixDestination.CUTOFF: 'Cutoff', MatrixDestination.RESONANCE: 'Resonance',
+                                MatrixDestination.AMP: 'Amp'}
+MSG_SLOT_SOURCE_LABEL = 'Slot {number} source'
+MSG_SLOT_VIA_LABEL = 'Slot {number} via'
+MSG_SLOT_DESTINATION_LABEL = 'Slot {number} moves'
+MSG_SLOT_AMOUNT_LABEL = 'Slot {number} amount'
+MSG_SLOT_SHOWN_LABELS = {MSG_SLOT_SOURCE_LABEL: 'Source', MSG_SLOT_VIA_LABEL: 'Via', MSG_SLOT_DESTINATION_LABEL: 'Moves', MSG_SLOT_AMOUNT_LABEL: 'Amount'}
 MSG_VOICES_LABEL = 'Voices'
 MSG_VOLUME_LABEL = 'Volume'
 MSG_OSCILLATOR_LABEL = 'OSC {number}'
@@ -783,85 +832,31 @@ MSG_OSCILLATOR_DETUNE_LABEL = 'OSC {number} detune'
 MSG_OSCILLATOR_LEVEL_LABEL = 'OSC {number} level'
 MSG_DETUNE_LABEL = 'Detune'
 MSG_LEVEL_LABEL = 'Level'
-MSG_ATTACK_LABEL = 'Attack'
-MSG_DECAY_LABEL = 'Decay'
-MSG_SUSTAIN_LABEL = 'Sustain'
-MSG_RELEASE_LABEL = 'Release'
-MSG_MACHINE_LABEL = 'Machine'
 MSG_KNOB_LABELS = ['Pitch', 'Decay', 'Color', 'Shape', 'Sweep']
-MSG_CHOKE_LABEL = 'Choke'
-MSG_OVERLAP_LABEL = 'Overlap'
 MSG_WAVE_LABEL = 'Wave'
-MSG_PULSE_WIDTH_LABEL = 'Pulse width'
-MSG_PULSE_SWEEP_LABEL = 'PWM speed'
-MSG_MODULATION_LABEL = 'Modulation'
-MSG_INTERVAL_LABEL = 'Interval'
 MSG_ARPEGGIO_LABEL = 'Arpeggio'
 MSG_GLIDE_LABEL = 'Glide'
-MSG_CHIP_VOICE_LABEL = 'Voice'
-MSG_DUTY_LABEL = 'Duty'
-MSG_WAVE_SHAPE_LABEL = 'Wave shape'
-MSG_NOISE_LABEL = 'Noise'
-MSG_START_LEVEL_LABEL = 'Start level'
-MSG_LEVEL_PACE_LABEL = 'Level pace'
-MSG_LEVEL_DIRECTION_LABEL = 'Level goes'
-MSG_SWEEP_PACE_LABEL = 'Sweep pace'
-MSG_SWEEP_DIRECTION_LABEL = 'Sweep goes'
-MSG_SWEEP_STEP_LABEL = 'Sweep step'
-MSG_ENVELOPE_HEADING = 'Envelope'
-MSG_SOUND_HEADING = 'Sound'
-MSG_FILTER_HEADING = 'Filter'
-MSG_ACCENT_HEADING = 'Accent'
-MSG_TUNING_LABEL = 'Tuning'
-MSG_FILTER_ON_LABEL = 'Filter on'
-MSG_CUTOFF_LABEL = 'Cutoff'
-MSG_RESONANCE_LABEL = 'Resonance'
-MSG_ENV_MOD_LABEL = 'Env mod'
-MSG_ACCENT_LEVEL_LABEL = 'Accent level'
-MSG_ACCENT_AT_LABEL = 'Accent at'
-MSG_ACCENT_SWEEP_LABEL = 'Accent sweep'
-MSG_SLIDE_LABEL = 'Slide'
-MSG_DRIVE_LABEL = 'Drive'
-MSG_AMP_DECAY_LABEL = 'Amp decay'
-MSG_SOFT_ATTACK_LABEL = 'Soft attack'
-MSG_ACCENT_DECAY_LABEL = 'Accent decay'
-MSG_SWEEP_HEADING = 'Sweep'
-MSG_EFFECT_BLOCK_LABEL = 'Block {number}'
-MSG_EFFECT_BITS_LABEL = 'Block {number} bits'
-MSG_EFFECT_RATE_LABEL = 'Block {number} rate'
-MSG_EFFECT_CURVE_LABEL = 'Block {number} curve'
-MSG_EFFECT_AMOUNT_LABEL = 'Block {number} amount'
-MSG_EFFECT_MIX_LABEL = 'Block {number} mix'
-MSG_EFFECT_FILTER_TYPE_LABEL = 'Block {number} type'
-MSG_EFFECT_FILTER_MODE_LABEL = 'Block {number} mode'
-MSG_EFFECT_CUTOFF_LABEL = 'Block {number} cutoff'
-MSG_EFFECT_RESONANCE_LABEL = 'Block {number} resonance'
-MSG_EFFECT_ENVELOPE_AMOUNT_LABEL = 'Block {number} envelope'
-MSG_EFFECT_ENVELOPE_ATTACK_LABEL = 'Block {number} attack'
-MSG_EFFECT_ENVELOPE_DECAY_LABEL = 'Block {number} decay'
-MSG_EFFECT_KEY_TRACK_LABEL = 'Block {number} key track'
-MSG_EFFECT_FILTER_DRIVE_LABEL = 'Block {number} drive'
+MSG_EFFECT_BLOCK_LABEL = 'FX {number}'
+MSG_EFFECT_BITS_LABEL = 'FX {number} bits'
+MSG_EFFECT_RATE_LABEL = 'FX {number} rate'
+MSG_EFFECT_CURVE_LABEL = 'FX {number} curve'
+MSG_EFFECT_AMOUNT_LABEL = 'FX {number} amount'
+MSG_EFFECT_MIX_LABEL = 'FX {number} mix'
 MSG_BITS_LABEL = 'Bits'
 MSG_RATE_LABEL = 'Rate'
 MSG_CURVE_LABEL = 'Curve'
 MSG_AMOUNT_LABEL = 'Amount'
 MSG_LFO_LABEL = 'LFO {number}'
-MSG_LFO_TARGET_LABEL = 'LFO {number} moves'
 MSG_LFO_SHAPE_LABEL = 'LFO {number} shape'
 MSG_LFO_RATE_LABEL = 'LFO {number} rate'
-MSG_LFO_DEPTH_LABEL = 'LFO {number} depth'
 MSG_LFO_RETRIGGER_LABEL = 'LFO {number} retrigger'
 MSG_LFO_EACH_SCENE_LABEL = 'LFO {number} each scene'
 # An LFO's field labels as its box shows them, without the LFO's number.
-MSG_LFO_SHOWN_LABELS = {MSG_LFO_TARGET_LABEL: 'Moves', MSG_LFO_SHAPE_LABEL: 'Shape', MSG_LFO_RATE_LABEL: 'Rate', MSG_LFO_DEPTH_LABEL: 'Depth', MSG_LFO_RETRIGGER_LABEL: 'Retrigger',
-                        MSG_LFO_EACH_SCENE_LABEL: 'Each scene'}
+MSG_LFO_SHOWN_LABELS = {MSG_LFO_SHAPE_LABEL: 'Shape', MSG_LFO_RATE_LABEL: 'Rate', MSG_LFO_RETRIGGER_LABEL: 'Retrigger', MSG_LFO_EACH_SCENE_LABEL: 'Each scene'}
 # A block's field labels as its box shows them, without the block's number.
 MSG_EFFECT_SHOWN_LABELS = {
     MSG_EFFECT_BITS_LABEL: MSG_BITS_LABEL, MSG_EFFECT_RATE_LABEL: MSG_RATE_LABEL, MSG_EFFECT_CURVE_LABEL: MSG_CURVE_LABEL,
-    MSG_EFFECT_AMOUNT_LABEL: MSG_AMOUNT_LABEL, MSG_EFFECT_MIX_LABEL: 'Mix', MSG_EFFECT_FILTER_TYPE_LABEL: 'Type', MSG_EFFECT_FILTER_MODE_LABEL: 'Mode',
-    MSG_EFFECT_CUTOFF_LABEL: 'Cutoff', MSG_EFFECT_RESONANCE_LABEL: 'Resonance', MSG_EFFECT_ENVELOPE_AMOUNT_LABEL: 'Envelope',
-    MSG_EFFECT_ENVELOPE_ATTACK_LABEL: 'Attack', MSG_EFFECT_ENVELOPE_DECAY_LABEL: 'Decay', MSG_EFFECT_KEY_TRACK_LABEL: 'Key track',
-    MSG_EFFECT_FILTER_DRIVE_LABEL: 'Drive',
+    MSG_EFFECT_AMOUNT_LABEL: MSG_AMOUNT_LABEL, MSG_EFFECT_MIX_LABEL: 'Mix',
 }
 # How the Instruments page shows a built-in instrument where a MIDI one shows its device.
 MSG_BUILT_IN_SHOWN = 'Synth: {engine}'
@@ -879,19 +874,11 @@ MSG_DUTY_NAMES = {Duty.EIGHTH: '12.5%', Duty.QUARTER: '25%', Duty.HALF: '50%', D
 MSG_CHIP_DIRECTION_NAMES = {ChipDirection.DOWN: 'Down', ChipDirection.UP: 'Up'}
 MSG_WAVE_SHAPE_NAMES = {WaveShape.TRIANGLE: 'Triangle', WaveShape.SAW: 'Saw', WaveShape.SQUARE: 'Square', WaveShape.SINE: 'Sine', WaveShape.ORGAN: 'Organ'}
 MSG_NOISE_NAMES = {Noise.LONG: 'Long', Noise.SHORT: 'Short'}
-MSG_EFFECT_NAMES = {Effect.NONE: '(empty)', Effect.BITCRUSH: 'Bitcrush', Effect.DRIVE: 'Drive', Effect.FILTER: 'Filter'}
-MSG_FILTER_TYPE_NAMES = {FilterType.LADDER: 'Ladder', FilterType.MULTIMODE: 'Multimode', FilterType.SALLEN_KEY: 'Sallen-Key', FilterType.DIODE: 'Diode',
-                         FilterType.OTA: 'OTA'}
+MSG_EFFECT_NAMES = {Effect.NONE: '(empty)', Effect.BITCRUSH: 'Bitcrush', Effect.DRIVE: 'Drive'}
+MSG_FILTER_TYPE_NAMES = {FilterType.NONE: '(none)', FilterType.LADDER: 'Ladder', FilterType.MULTIMODE: 'Multimode', FilterType.SALLEN_KEY: 'Sallen-Key',
+                         FilterType.DIODE: 'Diode', FilterType.OTA: 'OTA', FilterType.LOW_PASS_GATE: 'Low-pass gate'}
 MSG_LFO_SHAPE_NAMES = {LfoShape.SINE: 'Sine', LfoShape.TRIANGLE: 'Triangle', LfoShape.SAW_UP: 'Saw up', LfoShape.SAW_DOWN: 'Saw down', LfoShape.SQUARE: 'Square',
                        LfoShape.SAMPLE_AND_HOLD: 'Sample & Hold'}
-MSG_SYNTH_CONTROL_NAMES = {
-    SynthControl.NONE: '(none)', SynthControl.PITCH: 'Pitch', SynthControl.ATTACK: 'Attack', SynthControl.DECAY: 'Decay', SynthControl.SUSTAIN: 'Sustain',
-    SynthControl.RELEASE: 'Release', SynthControl.DETUNE_SPREAD: 'Detune spread', SynthControl.PULSE_WIDTH: 'Pulse width', SynthControl.PAN: 'Pan',
-    SynthControl.FILTER_CUTOFF: 'Filter cutoff', SynthControl.FINE_TUNE: 'Fine tune', SynthControl.COLOR: 'Color', SynthControl.SHAPE: 'Shape',
-    SynthControl.SWEEP: 'Sweep', SynthControl.WAVE: 'Wave', SynthControl.RING_SYNC: 'Ring/Sync', SynthControl.ENVELOPE_RATE: 'Envelope rate',
-    SynthControl.DUTY: 'Duty', SynthControl.NOISE_MODE: 'Noise mode', SynthControl.ENV_MOD: 'Env mod', SynthControl.CUTOFF: 'Cutoff',
-    SynthControl.RESONANCE: 'Resonance', SynthControl.ACCENT: 'Accent',
-}
 MSG_ACID_WAVE_NAMES = {AcidWave.SAW: 'Saw', AcidWave.SQUARE: 'Square'}
 MSG_FILTER_MODE_NAMES = {FilterMode.LOW: 'Low-pass', FilterMode.BAND: 'Band-pass', FilterMode.HIGH: 'High-pass', FilterMode.NOTCH: 'Notch'}
 MSG_CURVE_NAMES = {Curve.SOFT: 'Soft', Curve.WARM: 'Warm', Curve.HARD: 'Hard', Curve.FOLD: 'Fold', Curve.WRAP: 'Wrap'}
