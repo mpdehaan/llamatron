@@ -17,6 +17,70 @@ fn glide_overlap() -> Rational {
     Rational::new(1, 128)
 }
 
+/// How a finished clip strums its chords: its direction, the gap between two strings in whole notes at its scene's tempo, its
+/// fade and loose timing as percentages, how many top notes an upstroke catches, the beat, the seed its loose timing draws
+/// from, how far into its run the clip starts, and how many chords its track strummed earlier in the run.
+#[derive(Clone, Debug, PartialEq)]
+pub struct StrumPlan {
+    pub direction: String,
+    pub gap: Rational,
+    pub fade: i64,
+    pub loose_timing: i64,
+    pub upstroke_count: Option<i64>,
+    pub beat: Rational,
+    pub seed: Option<i128>,
+    pub offset: Rational,
+    pub chords_before: i64,
+}
+
+impl StrumPlan {
+    /// A chord's notes as the strum plays them: each with how much later it starts than the first and how far through the
+    /// strum it is. Down is low to high and up high to low; by the beat is down on a beat and up between, down up alternates
+    /// from the run's first chord; an upstroke that catches only the top strings leaves the rest out.
+    fn strummed(&self, notes: &[(i64, NoteSound)], time: Rational, count: i64, place: usize) -> Vec<(NoteSound, Rational, Rational)> {
+        let mut pitches: Vec<(i64, NoteSound)> = notes.to_vec();
+        pitches.sort_by_key(|(midi, _)| *midi);
+        let down = match self.direction.as_str() {
+            "by_the_beat" => ((time + self.offset) / self.beat).is_whole(),
+            "down_up" => (count + self.chords_before) % 2 == 0,
+            other => other == "down",
+        };
+        if !down {
+            pitches.reverse();
+            if let Some(upstroke) = self.upstroke_count {
+                pitches.truncate(upstroke as usize);
+            }
+        }
+        let mut chooser = match self.seed {
+            Some(seed) => llamatron_math::PythonRandom::new(llamatron_math::Seed::Whole(seed + place as i128)),
+            None => llamatron_math::PythonRandom::unseeded(),
+        };
+        let mut delay = Rational::ZERO;
+        let last = (pitches.len() as i128 - 1).max(1);
+        let mut result = Vec::new();
+        for (string, (_, note)) in pitches.iter().enumerate() {
+            if string > 0 {
+                let mut loose = Rational::ZERO;
+                if self.loose_timing != 0 {
+                    let spread = self.loose_timing as f64;
+                    loose = Rational::new(chooser.uniform(-spread, spread).round_ties_even() as i128, 100);
+                }
+                delay = delay + self.gap * (Rational::whole(1) + loose);
+            }
+            result.push((*note, delay, Rational::new(string as i128 * self.fade as i128, last * 100)));
+        }
+        result
+    }
+}
+
+/// A velocity made quieter by a share of itself, never below 1.
+fn faded(velocity: i64, fading: Rational) -> i64 {
+    if fading == Rational::ZERO {
+        return velocity;
+    }
+    (Rational::whole(velocity as i128) * (Rational::whole(1) - fading)).round().max(1) as i64
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct NoteEvent {
     pub start: Rational,
@@ -41,6 +105,7 @@ pub fn timed_events(clip: &Clip, scale: Option<&Scale>) -> Rendered<(Vec<NoteEve
     // A stable sort keeps positions that start together in the clip's order.
     slots.sort_by_key(|(start, _)| *start);
     let mut timed = Vec::new();
+    let mut strummed = 0;
     for (place, (slot_start, notes)) in slots.iter().enumerate() {
         if notes.is_empty() {
             continue;
@@ -55,13 +120,31 @@ pub fn timed_events(clip: &Clip, scale: Option<&Scale>) -> Rendered<(Vec<NoteEve
         if let Some(nudge) = &clip.nudge {
             onset = (onset + nudge.moved(*slot_start)).max(Rational::ZERO);
         }
-        let start = onset.min(clip_length);
-        for (midi_number, note) in notes {
+        let ending = |note: &NoteSound| {
             let mut end = onset + note.length.unwrap_or(Rational::ZERO);
-            if note.glide && !following.is_empty() && !following.iter().any(|(midi, _)| midi == midi_number) {
+            if note.glide && !following.is_empty() && !following.iter().any(|(midi, _)| *midi == note.midi) {
                 end = end + glide_overlap();
             }
-            let end = end.min(clip_length);
+            end.min(clip_length)
+        };
+        if let Some(strum) = clip.strum.as_ref().filter(|_| notes.len() > 1) {
+            for (note, delay, fading) in strum.strummed(notes, *slot_start, strummed, place) {
+                let (start, end) = ((onset + delay).min(clip_length), ending(&note));
+                if end > start {
+                    timed.push(NoteEvent {
+                        start,
+                        end,
+                        midi_number: note.midi,
+                        velocity: faded(note.velocity.unwrap_or(MAX_VELOCITY), fading),
+                    });
+                }
+            }
+            strummed += 1;
+            continue;
+        }
+        let start = onset.min(clip_length);
+        for (midi_number, note) in notes {
+            let end = ending(note);
             if end > start {
                 timed.push(NoteEvent {
                     start,

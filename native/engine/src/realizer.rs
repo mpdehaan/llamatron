@@ -16,6 +16,8 @@ use crate::generators::chords::Continuation;
 use crate::generators::timing::{MovingRow, NudgePlan};
 use crate::grab_source::GrabSource;
 use crate::groove::{groove_for, Groove};
+use crate::sound::Sound;
+use crate::timing::StrumPlan;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
@@ -193,6 +195,8 @@ pub struct SongRealizer<'a> {
     following: RefCell<Vec<(i64, String)>>,
     // The tracks whose clips wait on another's notes to grab, so that tracks that grab from each other in a circle are refused.
     grabbing: RefCell<Vec<String>>,
+    // How many chords each track's finished clip in each written scene holds, for a strum's down up that carries on.
+    chord_counts: RefCell<HashMap<(i64, String), i64>>,
 }
 
 /// What keeps a generator's end state apart from another's in a clip: its kind, its name, and how many times before it
@@ -222,6 +226,7 @@ impl<'a> SongRealizer<'a> {
             end_states: RefCell::new(HashMap::new()),
             following: RefCell::new(Vec::new()),
             grabbing: RefCell::new(Vec::new()),
+            chord_counts: RefCell::new(HashMap::new()),
         }
     }
 
@@ -254,6 +259,8 @@ impl<'a> SongRealizer<'a> {
                 if let Some(mut clip) = self.get_clip(scene, track)? {
                     // The groove goes on last, so that generators, grabs and lengths never see it.
                     clip.groove = self.groove_at(scene, track)?;
+                    clip.strum = self.strum_plan(scene, track)?;
+                    self.chord_counts.borrow_mut().insert((scene.number, track.clone()), chords_in(&clip));
                     clip.nudge = self.nudge_plan(scene, track)?;
                     clips.push((track.clone(), clip));
                 }
@@ -278,6 +285,48 @@ impl<'a> SongRealizer<'a> {
             Some(self.song.get_written(SongSetting::GROOVE).unwrap_or(&song_groove)),
         ];
         groove_for(self.setlist, &choices)
+    }
+
+    /// How a clip strums its chords at its scene's tempo, from the last Guitarify in Strum mode its chains name, or None.
+    fn strum_plan(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Option<StrumPlan>> {
+        let mut found = None;
+        for step in self.chains_of(scene, track)? {
+            if step.kind == "guitarify" {
+                if let Some(values) = crate::generators::guitarify::strum_values(&step.settings) {
+                    found = Some((values, step.settings.get(GENERATOR_RESTART).map(Data::python_str)));
+                }
+            }
+        }
+        let Some(((direction, spread, fade, loose_timing, upstroke_count), restart)) = found else {
+            return Ok(None);
+        };
+        let tempo = scene.tempo.or_else(|| exact(&self.song.get_tempo())).unwrap_or(Rational::whole(120));
+        let gap = Rational::whole(spread as i128) * tempo.limit_denominator(1000) / Rational::whole(240_000);
+        let start = self.run_start(scene, restart.as_deref());
+        let chords_before = self.scenes[start..(scene.number - 1) as usize]
+            .iter()
+            .map(|written| self.chord_counts.borrow().get(&(written.number, track.to_string())).copied().unwrap_or(0))
+            .sum();
+        Ok(Some(StrumPlan {
+            direction,
+            gap,
+            fade,
+            loose_timing,
+            upstroke_count,
+            beat: self.song.get_time_signature().beat_length(),
+            seed: self.strum_seed(scene, track),
+            offset: self.run_offset(scene, restart.as_deref())?,
+            chords_before,
+        }))
+    }
+
+    /// The seed a clip's strum draws its loose timing from: one the render draws once from its own seed, made different for
+    /// every scene and track.
+    fn strum_seed(&self, scene: &WrittenScene, track: &str) -> Option<i128> {
+        let seed = self.seed? as i128;
+        let drawn = llamatron_math::PythonRandom::new(llamatron_math::Seed::Whole(seed * SEED_SONG_FACTOR + STRUM_SEED_OFFSET)).randrange_to(STRUM_SEEDS);
+        let place = self.song.get_track_names().iter().position(|name| *name == track).unwrap_or(0) as i128;
+        Some(drawn + scene.number as i128 * SEED_SCENE_FACTOR + place * SEED_TRACK_FACTOR)
     }
 
     /// How a clip's notes are rushed and dragged, from every lit Rush and Drag of the Timing generators its chains name, or
@@ -591,6 +640,21 @@ impl<'a> SongRealizer<'a> {
         self.lengths.borrow_mut().insert(scene.number, length);
         Ok(length)
     }
+}
+
+/// What a strum's seed adds, so that its loose timing draws apart from everything else, and how many seeds a render picks from.
+const STRUM_SEED_OFFSET: i128 = 977;
+const STRUM_SEEDS: i128 = 1_000_000;
+
+/// How many chords a clip holds, a held chord counted.
+fn chords_in(clip: &Clip) -> i64 {
+    clip.sounds
+        .iter()
+        .filter(|sound| match sound {
+            Sound::Held { sound, .. } => matches!(sound.as_ref(), Sound::Chord { .. }),
+            other => matches!(other, Sound::Chord { .. }),
+        })
+        .count() as i64
 }
 
 /// The decimal places a ramped tempo is rounded to.

@@ -9,6 +9,7 @@ use crate::generators::timing::NudgePlan;
 use crate::groove::Groove;
 use crate::positions::{fit_to_length, piece_of};
 use crate::sound::{NoteSound, Sound};
+use crate::timing::StrumPlan;
 use llamatron_math::Rational;
 use llamatron_model::values::scale::Scale;
 use llamatron_model::values::time_signature::TimeSignature;
@@ -47,6 +48,8 @@ pub struct Clip {
     pub controls: Vec<Control>,
     /// How the clip's notes are rushed and dragged, which the Realizer gives it once it is finished, or None.
     pub nudge: Option<NudgePlan>,
+    /// How the clip strums its chords at the very end, which the Realizer gives it once it is finished, or None.
+    pub strum: Option<StrumPlan>,
 }
 
 impl Clip {
@@ -63,6 +66,7 @@ impl Clip {
             groove: None,
             controls: Vec::new(),
             nudge: None,
+            strum: None,
         }
     }
 
@@ -173,6 +177,7 @@ impl Clip {
             time_signature: None,
             groove: None,
             nudge: None,
+            strum: None,
             controls: self
                 .controls
                 .iter()

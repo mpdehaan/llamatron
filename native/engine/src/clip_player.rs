@@ -21,7 +21,7 @@ use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::ClipSlot;
 use llamatron_model::schema::generated::file_format::GENERATOR_RESTART;
-use llamatron_model::schema::generated::file_format::{ClipSlotSetting, Restart, TrackSetting};
+use llamatron_model::schema::generated::file_format::{ClipSlotSetting, GuitarifySetting, Restart, TrackSetting};
 use llamatron_model::values::scale::Scale;
 use std::collections::HashMap;
 
@@ -85,6 +85,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             groove: None,
             controls,
             nudge: None,
+            strum: None,
         })
     }
 
@@ -148,6 +149,8 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                     };
                     Generator::Chords(settings.make_generator(bar, &continuation, followed)?)
                 }
+                // In Strum mode a Guitarify leaves the notes as written and strums the chords at the very end.
+                "guitarify" if step.settings.get(GuitarifySetting::MODE).map(Data::python_str).as_deref() == Some("strum") => Generator::Unchanged,
                 "guitarify" => {
                     let seed = self.realizer.chain_step_seed(self.scene, self.track_name, index as i128)?;
                     let restart = step.settings.get(GENERATOR_RESTART).map(|restart| restart.python_str());

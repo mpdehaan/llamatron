@@ -17,6 +17,8 @@ pub enum Generator {
     Arp(arp::Arp),
     Guitarify(guitarify::Guitarify),
     Timing(timing::TimingGenerator),
+    /// A generator whose settings change no notes in the chain.
+    Unchanged,
 }
 
 impl Generator {
@@ -26,6 +28,10 @@ impl Generator {
             Generator::Arp(generator) => generator.generate(clip),
             Generator::Guitarify(generator) => generator.generate(clip),
             Generator::Timing(generator) => generator.generate(clip),
+            Generator::Unchanged => Ok(Clip {
+                sounds: clip.resolved_sounds()?,
+                ..clip.clone()
+            }),
         }
     }
 
@@ -33,7 +39,7 @@ impl Generator {
     pub fn end_state(&self) -> Option<Vec<i64>> {
         match self {
             Generator::Chords(generator) => generator.end_state(),
-            Generator::Arp(_) | Generator::Guitarify(_) | Generator::Timing(_) => None,
+            Generator::Arp(_) | Generator::Guitarify(_) | Generator::Timing(_) | Generator::Unchanged => None,
         }
     }
 }

@@ -20,7 +20,6 @@ use llamatron_model::values::scale::Scale;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-const GUITAR: &str = "guitar";
 const REACH: i64 = 4;
 const POWER_CHORD: &[i64] = &[0, 7, 12];
 const FIFTH: i64 = 7;
@@ -133,9 +132,6 @@ impl Guitarify {
                 .unwrap_or(default.to_string())
         };
         let whole = |name: &str, default: i64| written(name).and_then(Data::as_whole).map(|value| value as i64).unwrap_or(default);
-        if text(GuitarifySetting::MODE, GUITAR) != GUITAR {
-            return Err(RenderError::not_ported("Guitarify's Strum mode"));
-        }
         if settings
             .get(BYPASS_WHEN)
             .is_some_and(|statements| statements.as_list().is_some_and(|items| !items.is_empty()))
@@ -735,4 +731,26 @@ fn positions(events: Vec<Timed>, total: Rational) -> Vec<Sound> {
         positions.push(Sound::Rest(total - time));
     }
     positions
+}
+
+/// How a Guitarify in Strum mode strums a clip's chords: its direction, its spread in milliseconds, fade and loose timing, and
+/// how many top strings an upstroke catches, None for every string; or None for one in Guitar mode.
+pub fn strum_values(settings: &Data) -> Option<(String, i64, i64, i64, Option<i64>)> {
+    let written = |name: &str| settings.get(name).filter(|value| !value.is_null());
+    if written(GuitarifySetting::MODE).map(Data::python_str).as_deref() != Some("strum") {
+        return None;
+    }
+    let whole = |name: &str, default: i64| written(name).and_then(Data::as_whole).map(|value| value as i64).unwrap_or(default);
+    let direction = written(GuitarifySetting::DIRECTION)
+        .map(Data::python_str)
+        .filter(|direction| !direction.is_empty())
+        .unwrap_or("by_the_beat".to_string());
+    let upstroke = whole(GuitarifySetting::UPSTROKE, 4);
+    Some((
+        direction,
+        whole(GuitarifySetting::SPREAD, 8),
+        whole(GuitarifySetting::FADE, 20),
+        whole(GuitarifySetting::LOOSE_TIMING, 10),
+        (upstroke != 0).then_some(upstroke),
+    ))
 }
