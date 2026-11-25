@@ -9,6 +9,7 @@ pub mod clip;
 pub mod clip_player;
 pub mod error;
 pub mod generators;
+pub mod grab_source;
 pub mod groove;
 pub mod morph;
 pub mod order;

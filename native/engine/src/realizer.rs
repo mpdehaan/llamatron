@@ -13,6 +13,7 @@ use crate::clip::Clip;
 use crate::clip_player::ClipSlotPlayer;
 use crate::error::{RenderError, Rendered};
 use crate::generators::chords::Continuation;
+use crate::grab_source::GrabSource;
 use crate::groove::{groove_for, Groove};
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
@@ -189,6 +190,8 @@ pub struct SongRealizer<'a> {
     end_states: RefCell<HashMap<(i64, String, GeneratorKey), EndState>>,
     // The clips being made that wait on another's chords, so that tracks that follow each other in a circle are refused.
     following: RefCell<Vec<(i64, String)>>,
+    // The tracks whose clips wait on another's notes to grab, so that tracks that grab from each other in a circle are refused.
+    grabbing: RefCell<Vec<String>>,
 }
 
 /// What keeps a generator's end state apart from another's in a clip: its kind, its name, and how many times before it
@@ -217,6 +220,7 @@ impl<'a> SongRealizer<'a> {
             clips: RefCell::new(HashMap::new()),
             end_states: RefCell::new(HashMap::new()),
             following: RefCell::new(Vec::new()),
+            grabbing: RefCell::new(Vec::new()),
         }
     }
 
@@ -284,6 +288,32 @@ impl<'a> SongRealizer<'a> {
         let clip = ClipSlotPlayer::new(self, scene, track, clip_slot).play()?;
         self.clips.borrow_mut().insert(key, clip.clone());
         Ok(Some(clip))
+    }
+
+    /// What a track's grab steps take notes from in a written-out scene: the finished clip of the track it grabs, or None
+    /// where that track plays nothing there.
+    pub fn grab_source(&self, scene: &WrittenScene<'a>, track: &str, other: &str) -> Rendered<Option<GrabSource>> {
+        if scene.scene.get_clip_slot(other).is_none() {
+            return Ok(None);
+        }
+        let mut waiting = self.grabbing.borrow().clone();
+        waiting.push(track.to_string());
+        if let Some(first) = waiting.iter().position(|name| name == other) {
+            let mut circle = waiting[first..].to_vec();
+            circle.push(other.to_string());
+            let looped = circle.join(llamatron_strings::marks::MSG_CIRCLE_ARROW);
+            return Err(RenderError::Refused(named(
+                errors::ERR_CIRCULAR_GRAB,
+                &[("scene", scene.describe().as_str().into()), ("loop", looped.as_str().into())],
+            )));
+        }
+        self.grabbing.borrow_mut().push(track.to_string());
+        let clip = self.get_clip(scene, other);
+        self.grabbing.borrow_mut().pop();
+        match clip? {
+            Some(clip) => Ok(Some(GrabSource::of(&clip)?)),
+            None => Ok(None),
+        }
     }
 
     /// The chords a track followed plays in a written-out scene, after its own chains, or None where it plays nothing there,
@@ -390,17 +420,26 @@ impl<'a> SongRealizer<'a> {
         let start = self.run_start(scene, restart);
         let here = (scene.number - 1) as usize;
         let mut state = None;
+        // The clips before are played without the grabs waiting on this one, since a clip before can't be in a grab circle with it.
+        let waiting = self.grabbing.replace(Vec::new());
+        let found = self.earlier_state(start, here, track, key, &mut state);
+        self.grabbing.replace(waiting);
+        found?;
+        Ok(Continuation { offset, state })
+    }
+
+    fn earlier_state(&self, start: usize, here: usize, track: &str, key: &GeneratorKey, state: &mut Option<Vec<i64>>) -> Rendered<()> {
         for written in self.scenes[start..here].iter().rev() {
             if written.scene.get_clip_slot(track).is_none() {
                 continue;
             }
             self.get_clip(written, track)?;
             if let Some(found) = self.end_states.borrow().get(&(written.number, track.to_string(), key.clone())) {
-                state = found.clone();
+                *state = found.clone();
                 break;
             }
         }
-        Ok(Continuation { offset, state })
+        Ok(())
     }
 
     pub fn keep_end_state(&self, scene: &WrittenScene, track: &str, key: GeneratorKey, state: Option<Vec<i64>>) {
@@ -649,6 +688,7 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         ClipSlotSetting::BUILT_IN,
         ClipSlotSetting::CHAINS,
         ClipSlotSetting::MORPH_TO,
+        ClipSlotSetting::GRAB_TRACK,
         ClipSlotSetting::MORPH_STYLE,
     ];
     for scene in song.scenes() {

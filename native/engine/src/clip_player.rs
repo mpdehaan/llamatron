@@ -53,7 +53,11 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let setlist = self.realizer.setlist();
         let track = self.realizer.track(self.track_name)?;
         let scale = self.clip_scale()?;
-        let player = PatternPlayer::new(setlist, self.realizer.song(), track, self.scene.number, self.scale_name());
+        let grab = match self.clip_slot.get_written(ClipSlotSetting::GRAB_TRACK).filter(|track| !track.is_null()) {
+            Some(other) => self.realizer.grab_source(self.scene, self.track_name, &other.python_str())?,
+            None => None,
+        };
+        let player = PatternPlayer::new(setlist, self.realizer.song(), track, self.scene.number, self.scale_name()).grabbing(scale, grab);
         let looping = self.clip_slot.loops();
         let fill = if looping { Some(self.realizer.get_scene_length(self.scene)?) } else { None };
         let clip = self.play_passes(&player, scale, fill)?;
@@ -342,8 +346,8 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                 place,
                 &mut pattern_rolls,
             );
-            let played = self.play_patterns(player, &names, &mut rolls, &mut order)?;
-            let played = self.morphed(played, player, place % repeat, repeat, &mut rolls, &mut target_order, scale)?;
+            let played = self.play_patterns(player, &names, &mut rolls, &mut order, total)?;
+            let played = self.morphed(played, player, (place % repeat, repeat), &mut rolls, &mut target_order, scale, total)?;
             if played.length == Rational::ZERO {
                 break;
             }
@@ -374,11 +378,11 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         &self,
         played: Pass,
         player: &PatternPlayer,
-        place: i64,
-        repeat: i64,
+        (place, repeat): (i64, i64),
         rolls: &mut DrawnWhenAsked,
         target_order: &mut StepOrder,
         scale: Option<Scale>,
+        start: Rational,
     ) -> Rendered<Pass> {
         let Some(target_name) = self
             .clip_slot
@@ -404,7 +408,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             return Err(crate::error::RenderError::Refused("a morph needs its style".to_string()));
         };
         let direction = self.clip_slot.get_direction();
-        let aimed = player.play_pass(&target_name, direction.as_deref(), rolls, target_order)?;
+        let aimed = player.play_pass(&target_name, direction.as_deref(), rolls, target_order, start, false)?;
         let target = Clip::of(aimed.sounds, scale).with_controls(aimed.controls).looped_to(played.length)?;
         let clip = Clip::of(played.sounds.clone(), scale).with_controls(played.controls.clone());
         let amount = Rational::new(place as i128, (repeat - 1) as i128) * Rational::whole(FULL_MORPH);
@@ -416,10 +420,10 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
     }
 
     /// One pass through the clip's patterns in the order given, each played whole after the one before.
-    fn play_patterns(&self, player: &PatternPlayer, names: &[String], rolls: &mut DrawnWhenAsked, order: &mut StepOrder) -> Rendered<Pass> {
+    fn play_patterns(&self, player: &PatternPlayer, names: &[String], rolls: &mut DrawnWhenAsked, order: &mut StepOrder, start: Rational) -> Rendered<Pass> {
         let direction = self.clip_slot.get_direction();
         if names.len() == 1 {
-            return player.play_pass(&names[0], direction.as_deref(), rolls, order);
+            return player.play_pass(&names[0], direction.as_deref(), rolls, order, start, true);
         }
         let mut sounds = Vec::new();
         let mut controls = Vec::new();
@@ -427,7 +431,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let mut tied_from_before = Rational::ZERO;
         let mut done = false;
         for (place, name) in names.iter().enumerate() {
-            let played = player.play_pass(name, direction.as_deref(), rolls, order)?;
+            let played = player.play_pass(name, direction.as_deref(), rolls, order, start + total, true)?;
             if place == 0 {
                 tied_from_before = played.tied_from_before;
             } else if played.tied_from_before > Rational::ZERO {

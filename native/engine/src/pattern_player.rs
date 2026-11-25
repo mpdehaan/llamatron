@@ -11,8 +11,9 @@
 
 use crate::clip::Control;
 use crate::error::{RenderError, Rendered};
+use crate::grab_source::GrabSource;
 use crate::order::{DrawnWhenAsked, StepOrder};
-use crate::sound::{scale_sound, NoteSound, OutOfRange, Sound};
+use crate::sound::{along_scale, scale_sound, NoteSound, OutOfRange, Sound};
 use crate::tables::{doubled_notes, fixed_chord, gate_modifier};
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
@@ -25,6 +26,7 @@ use llamatron_model::schema::generated::defaults::{DEFAULT_PROBABILITY, DEFAULT_
 use llamatron_model::schema::generated::file_format::{Direction, Row, ACCIDENTALS, BASS_NOTES, CC_ROWS, OMITTED_ROLES, PATTERN_ROWS, SCALE_CHORDS, TENSIONS};
 use llamatron_model::schema::generated::limits::{MAX_GATE, MAX_PROBABILITY};
 use llamatron_model::schema::generated::midi::{MAX_VELOCITY, MIN_VELOCITY};
+use llamatron_model::values::generated::note::SHARP_NAMES;
 use llamatron_model::values::generated::note::{MAX_OCTAVE, MIN_OCTAVE};
 use llamatron_model::values::scale::Scale;
 use llamatron_model::values::scale::ScaleType;
@@ -60,6 +62,7 @@ const PLAYED_ROWS: &[&str] = &[
     Row::CC3,
     Row::CC4,
     Row::SLIDE,
+    Row::GRAB,
 ];
 
 /// One pass through a pattern: its sounds, how long the ties at its start last, and how long the pass lasts.
@@ -97,6 +100,7 @@ struct StepValues {
     chord_scale: Option<String>,
     cc: [Option<i64>; 4],
     slide: bool,
+    grab: bool,
 }
 
 impl StepValues {
@@ -161,6 +165,7 @@ fn every_step_values(pattern: &Pattern) -> Rendered<Vec<StepValues>> {
                 Row::BASS_OCTAVE => step.bass_octave = truthy(value),
                 Row::CHORD_SCALE => step.chord_scale = text(value).filter(|kind| !kind.is_empty()),
                 Row::SLIDE => step.slide = truthy(value),
+                Row::GRAB => step.grab = truthy(value),
                 lane => step.cc[CC_ROWS.iter().position(|row| *row == lane).unwrap_or(0)] = whole(value),
             }
         }
@@ -178,11 +183,17 @@ pub struct PatternPlayer<'a> {
     accent: i64,
     default_octave: i64,
     default_drum_octave: i64,
+    // The clip's scale, rooted at its octave, which a grabbed note moves along and builds its chord in.
+    clip_scale: Option<Scale>,
+    // What the clip's grab steps take notes from, or None for a clip that grabs nothing.
+    grab: Option<GrabSource>,
 }
 
 impl<'a> PatternPlayer<'a> {
     pub fn new(setlist: &'a Setlist, song: &Song, track: &Track, scene_number: i64, scale_name: Option<String>) -> PatternPlayer<'a> {
         PatternPlayer {
+            clip_scale: None,
+            grab: None,
             setlist,
             scene_number,
             scale_name,
@@ -192,6 +203,11 @@ impl<'a> PatternPlayer<'a> {
             default_octave: setlist.get_default_octave(),
             default_drum_octave: setlist.get_default_drum_octave(),
         }
+    }
+
+    /// The player with the clip's scale and what its grab steps take notes from.
+    pub fn grabbing(self, clip_scale: Option<Scale>, grab: Option<GrabSource>) -> PatternPlayer<'a> {
+        PatternPlayer { clip_scale, grab, ..self }
     }
 
     pub fn pattern(&self, name: &str) -> Rendered<&'a Pattern> {
@@ -206,7 +222,17 @@ impl<'a> PatternPlayer<'a> {
     }
 
     /// One pass through a pattern, its steps in the pattern's direction unless direction overrides it.
-    pub fn play_pass(&self, pattern_name: &str, direction: Option<&str>, rolls: &mut DrawnWhenAsked, order: &mut StepOrder) -> Rendered<Pass> {
+    /// start is where the pass starts in the clip, where a grab step looks; grabs says whether the pass's grab steps grab,
+    /// which only the clip's own patterns do.
+    pub fn play_pass(
+        &self,
+        pattern_name: &str,
+        direction: Option<&str>,
+        rolls: &mut DrawnWhenAsked,
+        order: &mut StepOrder,
+        start: Rational,
+        grabs: bool,
+    ) -> Rendered<Pass> {
         let pattern = self.pattern(pattern_name)?;
         let step_length = self.setlist.get_pattern_step_size(pattern);
         let pass_length = self.pattern_length(pattern);
@@ -243,14 +269,19 @@ impl<'a> PatternPlayer<'a> {
                 }
                 continue;
             }
-            if values.degree.is_none() {
+            let grabbed = match (&self.grab, grabs && values.grab) {
+                (Some(source), true) => source.note_at(start + time),
+                _ => None,
+            };
+            // A step with no note of its own can still grab one; with nothing to grab yet, it's silence, like an empty step.
+            if values.degree.is_none() && grabbed.is_none() {
                 tied_to = None;
                 continue;
             }
             tied_to = Some(sounding.len());
             let velocity_added = if values.accent { self.accent } else { 0 };
             let gate = gate_of(values, step_length).min(pass_length - time);
-            sounding.push((time, self.step(values, gate, drum, &where_, velocity_added, rolls)?));
+            sounding.push((time, self.step(values, gate, drum, &where_, velocity_added, rolls, grabbed)?));
         }
         let sounds = in_sequence(&sounding, pass_length, step_length);
         Ok(Pass {
@@ -263,7 +294,17 @@ impl<'a> PatternPlayer<'a> {
     }
 
     /// What one step plays, lasting its gate, as more than one sound if it ratchets.
-    fn step(&self, values: &StepValues, length: Rational, drum: bool, where_: &str, velocity_added: i64, rolls: &mut DrawnWhenAsked) -> Rendered<Vec<Sound>> {
+    #[allow(clippy::too_many_arguments)]
+    fn step(
+        &self,
+        values: &StepValues,
+        length: Rational,
+        drum: bool,
+        where_: &str,
+        velocity_added: i64,
+        rolls: &mut DrawnWhenAsked,
+        grabbed: Option<i64>,
+    ) -> Rendered<Vec<Sound>> {
         let octave = values.octave.unwrap_or(if drum { self.default_drum_octave } else { self.default_octave });
         let velocity = (values.velocity.unwrap_or(self.default_velocity) + velocity_added).clamp(MIN_VELOCITY, MAX_VELOCITY);
         let ratchet = values.ratchet.filter(|ratchet| *ratchet != 0).unwrap_or(DEFAULT_RATCHET);
@@ -275,7 +316,10 @@ impl<'a> PatternPlayer<'a> {
             let shift = transpose + place * offset;
             // Only the last slice glides into what follows the step.
             let glide = values.glide && place == ratchet - 1;
-            let mut sound = self.sound(values, drum, slice_length, velocity, glide, octave, shift, where_)?;
+            let mut sound = match grabbed {
+                Some(number) => self.grabbed_sound(number, values.chord.as_deref(), slice_length, velocity, glide, shift, drum, where_)?,
+                None => self.sound(values, drum, slice_length, velocity, glide, octave, shift, where_)?,
+            };
             // Most steps play one note as it is, so only a step with chord rows is voiced.
             if values.is_voiced() {
                 sound = self.voiced(sound, values, octave, shift)?;
@@ -283,6 +327,61 @@ impl<'a> PatternPlayer<'a> {
             slices.push(sound);
         }
         Ok(played_by_chance(slices, values.probability, rolls))
+    }
+
+    /// A grabbed note, moved along the clip's scale, or by half steps for drums, with the step's chord built on it; a note
+    /// moved outside the MIDI range stays where it was grabbed, and a chord's note that would is left out.
+    #[allow(clippy::too_many_arguments)]
+    fn grabbed_sound(
+        &self,
+        number: i64,
+        chord: Option<&str>,
+        length: Rational,
+        velocity: i64,
+        glide: bool,
+        shift: i64,
+        drum: bool,
+        where_: &str,
+    ) -> Rendered<Sound> {
+        let note = NoteSound {
+            length: Some(length),
+            midi: number,
+            velocity: Some(velocity),
+            glide,
+            name: SHARP_NAMES[number.rem_euclid(12) as usize],
+        };
+        let scale = if drum { None } else { self.clip_scale.as_ref() };
+        let root = along_scale(note, shift, scale).unwrap_or(note);
+        let Some(symbol) = chord.filter(|_| !drum) else {
+            return Ok(Sound::Note(root));
+        };
+        let (scale, moves): (Option<&Scale>, Vec<i64>) = match fixed_chord(symbol) {
+            Some(shape) => (None, shape.to_vec()),
+            None => {
+                let Some(scale) = self.clip_scale.as_ref() else {
+                    return Err(RenderError::Refused(named(
+                        errors::ERR_NO_SCALE,
+                        &[("where", where_.into()), ("scene", self.scene_number.into())],
+                    )));
+                };
+                let above = SCALE_CHORDS
+                    .iter()
+                    .find(|(found, _)| *found == symbol)
+                    .map(|(_, above)| above.to_vec())
+                    .unwrap_or_default();
+                (Some(scale), above.into_iter().filter(|above| *above != 0).collect())
+            }
+        };
+        let mut notes = vec![root];
+        for step in moves {
+            if let Ok(moved) = along_scale(root, step, scale) {
+                notes.push(moved);
+            }
+        }
+        if notes.len() == 1 {
+            return Ok(Sound::Note(root));
+        }
+        Ok(Sound::chord(notes))
     }
 
     /// A step's note or chord, moved by scale degrees or, for drums, half steps; a note moved outside the MIDI range goes
