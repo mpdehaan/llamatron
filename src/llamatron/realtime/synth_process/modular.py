@@ -57,7 +57,7 @@ class ModularPatch:
     with the note it last began."""
 
     __slots__ = ('oscillator', 'pitch_env', 'envelopes', 'filter', 'own_filter', 'shared', 'matrix', 'voices', 'slides', 'glide', 'volume',
-                 'effects', 'modulation', 'last_pitch', 'newest', 'random', 'remake', 'rate')
+                 'effects', 'modulation', 'last_pitch', 'newest', 'random', 'remake', 'rate', 'reads_env2', 'reads_env3', 'matrix_reads_env2')
 
     def __init__(self, *, spec, rate, effects_compiled):
         """spec is the sound as llamatron gives it (model/objects/built_in_sound.py), effects_compiled its effects."""
@@ -80,6 +80,10 @@ class ModularPatch:
                 self.shared = SharedFilter(filter_part=self.filter)
                 self.effects.insert(0, self.shared)
         self.matrix = ModMatrix(spec.get('matrix', ()))
+        # Env2 and Env3 are worked out only where something reads them: the filter, the pitch envelope, or the matrix.
+        self.matrix_reads_env2 = self.matrix.uses(matrix.ENV2)
+        self.reads_env2 = self.filter is not None and not self.filter.is_gate or self.matrix_reads_env2
+        self.reads_env3 = bool(self.pitch_env) or self.matrix.uses(matrix.ENV3)
         self.voices = spec['voices']
         self.slides = spec['legato']
         self.glide = spec['glide']
@@ -141,12 +145,18 @@ class ModularPatch:
         return (wave * amp).astype(numpy.float32)
 
     def _levels(self, *, voice, first, count):
-        """Return the three envelopes over the chunk, Env2's decay forced short for an accent where one asks."""
+        """Return the three envelopes over the chunk, Env2's decay forced short for an accent where one asks, Env2 and Env3 None
+        where nothing reads them."""
         states = voice.states
         env1, env2, env3 = self.envelopes
-        return (env1.levels(voice=voice, state=states[0], first=first, count=count),
-                env2.levels(voice=voice, state=states[1], first=first, count=count, short=voice.short_decay),
-                env3.levels(voice=voice, state=states[2], first=first, count=count))
+        second = None
+        third = None
+        # A shared filter is moved by the newest note alone, so the others' Env2 is left unworked unless the matrix reads it.
+        if self.reads_env2 and (self.own_filter or voice is self.newest or self.matrix_reads_env2):
+            second = env2.levels(voice=voice, state=states[1], first=first, count=count, short=voice.short_decay)
+        if self.reads_env3:
+            third = env3.levels(voice=voice, state=states[2], first=first, count=count)
+        return env1.levels(voice=voice, state=states[0], first=first, count=count), second, third
 
     def _moved(self, *, voice, levels):
         """Return what the matrix moves this chunk, nothing where it has no routes."""
@@ -179,6 +189,8 @@ class ModularPatch:
 
     def _filtered(self, wave, *, voice, env2, moved):
         """Return the note through its own filter, or hand the shared filter the movement if this is the newest note."""
+        if not self.own_filter and voice is not self.newest:
+            return wave
         filter_part = self.filter
         octaves = env2 * ((filter_part.amount + voice.accent_depth) * filters.ENVELOPE_OCTAVES)
         if filter_part.key_track:
