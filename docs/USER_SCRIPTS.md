@@ -26,6 +26,19 @@ sh user_scripts/setup.sh
 
 Parameters: none.
 
+### `build.sh`
+
+Builds llamatron2, the tracker in Rust, which `./llamatron.sh` opens, with
+the backend, offering to install Rust first. `./llamatron.sh` builds it
+itself each time it starts, so this is only needed to build without opening
+the tracker.
+
+```
+sh user_scripts/build.sh
+```
+
+Parameters: none.
+
 ### `install_fluidsynth.sh`
 
 Installs FluidSynth, a free software synthesizer, and the sounds it plays,

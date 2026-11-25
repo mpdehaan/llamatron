@@ -7,7 +7,7 @@ are in `internal_tools/`.
 
 | To | Run |
 | --- | --- |
-| Set up llamatron | `setup.sh`, `install_fluidsynth.sh`, `install_blackhole.sh` |
+| Set up llamatron | `setup.sh`, `build.sh`, `install_fluidsynth.sh`, `install_blackhole.sh` |
 | Read the documentation | `launch_docs.sh` |
 | Hear the demos | `demos_to_wavs.sh`, then `play_demo.sh` |
 | Take the demos elsewhere | `demos_to_midi.sh`, `demos_to_live_sets.sh` |
@@ -25,6 +25,16 @@ once, before anything else.
 
 ```
 sh user_scripts/setup.sh
+```
+
+### `build.sh`
+
+Builds llamatron2, the tracker in Rust, which `./llamatron.sh` opens, with the
+backend, offering to install Rust first. `./llamatron.sh` builds it itself
+each time it starts, so this is only needed to build without opening it.
+
+```
+sh user_scripts/build.sh
 ```
 
 ### `install_fluidsynth.sh`

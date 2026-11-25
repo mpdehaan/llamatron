@@ -3,38 +3,22 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# Runs the llamatron command from the project folder, which opens the tracker,
-# on a set if one is named, or exports with --to, such as:
+# Opens llamatron2, the tracker in Rust, on a set if one is named, building it first, such as:
 #     ./llamatron.sh examples/learning/08_tie.yml
-# With --rust first, it opens llamatron2, the tracker in Rust, instead:
-#     ./llamatron.sh --rust examples/learning/08_tie.yml
 
 set -e
 
-# The program has to run from the top folder of the project, where this script is.
+# The program runs from the top folder of the project, where this script is.
 cd "$(dirname "$0")"
 
-if [ "$1" = "--rust" ]; then
-    shift
-    if [ ! -x native/target/release/llamatron2 ]; then
-        echo 'llamatron2 is not built, so please build it first:'
-        echo '    cd native && cargo build --release -p llamatron-tracker'
-        exit 1
-    fi
-    exec native/target/release/llamatron2 "$@"
+if [ -x "$HOME/.cargo/bin/cargo" ]; then
+    PATH="$HOME/.cargo/bin:$PATH"
 fi
-
-if [ ! -x .venv/bin/python ]; then
-    echo '.venv is missing, so please set it up first:'
-    echo '    python3 -m venv .venv'
-    echo '    .venv/bin/python -m pip install -e .'
-    exit 1
+# Built afresh every time, so that it is never older than its code; cargo does nothing where nothing changed. Without
+# Rust, the build script offers to install it first.
+if command -v cargo >/dev/null 2>&1; then
+    cargo build --release --quiet --manifest-path native/Cargo.toml -p llamatron-tracker
+else
+    sh user_scripts/build.sh
 fi
-
-if ! .venv/bin/python -c 'import llamatron' 2>/dev/null; then
-    echo 'llamatron is not installed in .venv, so please install it first:'
-    echo '    .venv/bin/python -m pip install -e .'
-    exit 1
-fi
-
-exec .venv/bin/python -m llamatron "$@"
+exec native/target/release/llamatron2 "$@"
