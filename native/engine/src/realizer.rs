@@ -35,7 +35,7 @@ pub struct WrittenScene<'a> {
     pub name: String,
     pub scale_name: Option<String>,
     /// The tempo it plays at where it changes the song's, or None where it plays at the song's.
-    pub tempo: Option<f64>,
+    pub tempo: Option<Rational>,
     pub scene: &'a Scene,
     pub first_play: bool,
 }
@@ -78,36 +78,26 @@ impl WrittenScene<'_> {
     }
 }
 
-/// The tempo a scene plays at where it changes the song's: the song's scaled by the scene's percentage, held to the tempos
-/// a set may hold, worked out as Python's numbers work it out, so that the same tempo is written.
-fn own_tempo(scene: &Scene, song: &Song) -> Option<f64> {
+/// A tempo or a percentage as the Python reads one, an exact number.
+fn exact(value: &Data) -> Option<Rational> {
+    llamatron_model::schema::checking::number(value).ok()
+}
+
+/// The tempo a scene plays at where it changes the song's: the song's scaled by the scene's percentage.
+fn own_tempo(scene: &Scene, song: &Song) -> Option<Rational> {
     let percent = scene.get_written(SceneSetting::TEMPO)?;
-    scaled_tempo(&song.get_tempo(), percent)
+    scaled_tempo(exact(&song.get_tempo())?, percent)
 }
 
-fn as_float(value: &Data) -> Option<f64> {
-    match value {
-        Data::Whole(number) => Some(*number as f64),
-        Data::Float(number) => Some(*number),
-        _ => None,
-    }
+/// A tempo scaled by a percentage, held to the tempos a set may hold.
+fn scaled_tempo(tempo: Rational, percent: &Data) -> Option<Rational> {
+    let scaled = tempo * exact(percent)? / Rational::whole(100);
+    Some(scaled.max(Rational::whole(MIN_TEMPO as i128)).min(Rational::whole(MAX_TEMPO as i128)))
 }
 
-/// A tempo scaled by a percentage, held to the tempos a set may hold, worked out as Python's numbers work it out.
-fn scaled_tempo(tempo: &Data, percent: &Data) -> Option<f64> {
-    let scaled = match (tempo, percent) {
-        (Data::Whole(tempo), Data::Whole(percent)) => (tempo * percent) as f64 / 100.0,
-        (tempo, percent) => as_float(tempo)? * as_float(percent)? / 100.0,
-    };
-    Some(scaled.max(MIN_TEMPO as f64).min(MAX_TEMPO as f64))
-}
-
-/// The tempo a scene plays at, its own or the song's, as a number Python would hold.
-fn tempo_in(scene: &Scene, song: &Song) -> Data {
-    match own_tempo(scene, song) {
-        Some(tempo) => Data::Float(tempo),
-        None => song.get_tempo(),
-    }
+/// The tempo a scene plays at, its own or the song's.
+fn tempo_in(scene: &Scene, song: &Song) -> Rational {
+    own_tempo(scene, song).or_else(|| exact(&song.get_tempo())).unwrap_or(Rational::whole(120))
 }
 
 /// A number rounded to some decimal places, as Python's round(number, places) rounds a float.
@@ -122,7 +112,7 @@ struct TempoRamp {
     over: Rational,
 }
 
-fn tempo_ramp(scene: &Scene, way: &str, base: &Data) -> Option<TempoRamp> {
+fn tempo_ramp(scene: &Scene, way: &str, base: Rational) -> Option<TempoRamp> {
     let written = |part: &str| scene.get_written(&format!("tempo_{way}_{part}")).filter(|value| !value.is_null());
     let over = written("over")?.as_whole()?;
     let (start, end) = (written("start"), written("end"));
@@ -130,8 +120,8 @@ fn tempo_ramp(scene: &Scene, way: &str, base: &Data) -> Option<TempoRamp> {
         return None;
     }
     Some(TempoRamp {
-        start: start.and_then(|start| scaled_tempo(base, start)),
-        end: end.and_then(|end| scaled_tempo(base, end)),
+        start: start.and_then(|start| scaled_tempo(base, start)).map(|tempo| tempo.to_float()),
+        end: end.and_then(|end| scaled_tempo(base, end)).map(|tempo| tempo.to_float()),
         over: Rational::whole(over),
     })
 }
@@ -145,14 +135,14 @@ fn between(ramp: &TempoRamp, base: f64, share: Rational) -> f64 {
 
 /// A scene's tempos across its whole play, step by step, each change of tempo with when it starts.
 fn ramped_tempos(
-    base: &Data,
+    base: Rational,
     ramp_in: Option<TempoRamp>,
     ramp_out: Option<TempoRamp>,
     length: Rational,
     bar: Rational,
     step: Rational,
 ) -> Vec<(Rational, f64)> {
-    let base_float = as_float(base).unwrap_or(120.0);
+    let base_float = base.to_float();
     let in_span = ramp_in.as_ref().map(|ramp| ramp.over * bar).unwrap_or(length);
     let out_span = ramp_out.as_ref().map(|ramp| ramp.over * bar).unwrap_or(length);
     let out_from = length - out_span;
@@ -265,7 +255,7 @@ impl<'a> SongRealizer<'a> {
             let tempos = self.tempos_of(scene)?;
             rows.push(GridRow {
                 name: scene.name.clone(),
-                tempo: tempos.as_ref().map(|tempos| tempos[0].1).or(scene.tempo),
+                tempo: tempos.as_ref().map(|tempos| tempos[0].1).or(scene.tempo.map(|tempo| tempo.to_float())),
                 tempo_changes: tempos.map(|tempos| tempos[1..].to_vec()).unwrap_or_default(),
                 clips,
             });
@@ -481,7 +471,7 @@ impl<'a> SongRealizer<'a> {
     fn tempos_of(&self, scene: &WrittenScene<'a>) -> Rendered<Option<Vec<(Rational, f64)>>> {
         let played = scene.scene;
         let base = tempo_in(played, self.song);
-        let (ramp_in, ramp_out) = (tempo_ramp(played, "in", &base), tempo_ramp(played, "out", &base));
+        let (ramp_in, ramp_out) = (tempo_ramp(played, "in", base), tempo_ramp(played, "out", base));
         if ramp_in.is_none() && ramp_out.is_none() {
             return Ok(None);
         }
@@ -497,7 +487,7 @@ impl<'a> SongRealizer<'a> {
             length = length + own;
         }
         let bar = self.song.get_time_signature().bar_length();
-        let tempos = ramped_tempos(&base, ramp_in, ramp_out, length, bar, self.setlist.get_step_size());
+        let tempos = ramped_tempos(base, ramp_in, ramp_out, length, bar, self.setlist.get_step_size());
         let (start, end) = here;
         let before = tempos.iter().rfind(|(time, _)| *time <= start).map(|(_, tempo)| *tempo).unwrap_or(120.0);
         let mut within = vec![(Rational::ZERO, before)];
@@ -658,6 +648,8 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         ClipSlotSetting::SCALE,
         ClipSlotSetting::BUILT_IN,
         ClipSlotSetting::CHAINS,
+        ClipSlotSetting::MORPH_TO,
+        ClipSlotSetting::MORPH_STYLE,
     ];
     for scene in song.scenes() {
         unported(SCENE, &scene_played, &|name| scene.get_written(name).cloned())?;

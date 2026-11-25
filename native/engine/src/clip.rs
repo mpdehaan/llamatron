@@ -176,4 +176,33 @@ impl Clip {
                 .collect(),
         })
     }
+
+    /// A clip that plays this one some times in a row.
+    pub fn repeated(&self, times: i128) -> Rendered<Clip> {
+        let length = self.total_length()?;
+        let played = self.played_sounds()?;
+        let mut sounds = Vec::new();
+        let mut controls = Vec::new();
+        for place in 0..times {
+            sounds.extend(played.iter().cloned());
+            controls.extend(self.controls.iter().map(|control| control.moved_by(length * Rational::whole(place))));
+        }
+        Ok(Clip {
+            sounds,
+            controls,
+            length: None,
+            ..self.clone()
+        })
+    }
+
+    /// A clip that plays this one over and over, cut to last a length, as a morph's target is to its pass.
+    pub fn looped_to(&self, length: Rational) -> Rendered<Clip> {
+        let own = self.total_length()?;
+        let clip = if own > Rational::ZERO {
+            self.repeated((length / own).ceil())?
+        } else {
+            self.clone()
+        };
+        clip.section(Rational::ZERO, length)
+    }
 }

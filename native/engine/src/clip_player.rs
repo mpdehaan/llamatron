@@ -10,6 +10,7 @@ use crate::generators::arp::Arp;
 use crate::generators::chords::ChordsSettings;
 use crate::generators::guitarify::Guitarify;
 use crate::generators::Generator;
+use crate::morph::{morph_controls, Blend};
 use crate::order::{ordered_patterns, DrawnWhenAsked, StepOrder};
 use crate::pattern_player::{Pass, PatternPlayer};
 use crate::realizer::{SongRealizer, WrittenScene};
@@ -19,13 +20,16 @@ use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::ClipSlot;
 use llamatron_model::schema::generated::file_format::GENERATOR_RESTART;
-use llamatron_model::schema::generated::file_format::{Restart, TrackSetting};
+use llamatron_model::schema::generated::file_format::{ClipSlotSetting, Restart, TrackSetting};
 use llamatron_model::values::scale::Scale;
 use std::collections::HashMap;
 
 const PROBABILITY_SEED: &str = "{seed}/{scene}/{track}";
 const DIRECTION_SEED: &str = "{seed}/{scene}/{track}/direction";
 const PATTERN_ORDER_SEED: &str = "{seed}/{scene}/{track}/pattern order";
+const MORPH_DIRECTION_SEED: &str = "{seed}/{scene}/{track}/morph direction";
+/// A morph's amount on its last repeat: all of the target.
+const FULL_MORPH: i128 = 100;
 
 pub struct ClipSlotPlayer<'r, 'a> {
     realizer: &'r SongRealizer<'a>,
@@ -266,12 +270,10 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
     /// The scene's tempo, or the song's where the scene sets none.
     fn tempo(&self) -> llamatron_math::Number {
         if let Some(tempo) = self.scene.tempo {
-            return llamatron_math::Number::Float(tempo);
+            return llamatron_math::Number::Exact(tempo);
         }
-        match self.realizer.song().get_tempo() {
-            llamatron_model::file::data::Data::Float(tempo) => llamatron_math::Number::Float(tempo),
-            other => llamatron_math::Number::Whole(other.as_whole().unwrap_or(120)),
-        }
+        let song_tempo = llamatron_model::schema::checking::number(&self.realizer.song().get_tempo()).unwrap_or(Rational::whole(120));
+        llamatron_math::Number::Exact(song_tempo)
     }
 
     /// The step size of the pattern the clip plays.
@@ -320,6 +322,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let mut rolls = DrawnWhenAsked::new(self.seed_for(PROBABILITY_SEED));
         let mut order = StepOrder::new(DrawnWhenAsked::new(self.seed_for(DIRECTION_SEED)));
         let mut pattern_rolls = DrawnWhenAsked::new(self.seed_for(PATTERN_ORDER_SEED));
+        let mut target_order = StepOrder::new(DrawnWhenAsked::new(self.seed_for(MORPH_DIRECTION_SEED)));
         let repeat = self.clip_slot.get_repeat();
         let mut sounds: Vec<Sound> = Vec::new();
         let mut controls = Vec::new();
@@ -340,6 +343,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                 &mut pattern_rolls,
             );
             let played = self.play_patterns(player, &names, &mut rolls, &mut order)?;
+            let played = self.morphed(played, player, place % repeat, repeat, &mut rolls, &mut target_order, scale)?;
             if played.length == Rational::ZERO {
                 break;
             }
@@ -360,6 +364,55 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             Some(fill) if fill != Rational::ZERO => clip.section(Rational::ZERO, fill),
             _ => Ok(clip),
         }
+    }
+
+    /// A pass part way through the clip's morph into its target: the target, played in the clip's direction or its own and
+    /// keeping its place from pass to pass, comes in further each repeat, from none of it on the first to all on the last. A
+    /// pass a statement cut short, or one with no positions, is left as it played.
+    #[allow(clippy::too_many_arguments)]
+    fn morphed(
+        &self,
+        played: Pass,
+        player: &PatternPlayer,
+        place: i64,
+        repeat: i64,
+        rolls: &mut DrawnWhenAsked,
+        target_order: &mut StepOrder,
+        scale: Option<Scale>,
+    ) -> Rendered<Pass> {
+        let Some(target_name) = self
+            .clip_slot
+            .get_written(ClipSlotSetting::MORPH_TO)
+            .filter(|name| !name.is_null())
+            .map(Data::python_str)
+        else {
+            return Ok(played);
+        };
+        let mut length = Rational::ZERO;
+        for name in self.clip_slot.get_pattern_names() {
+            length = length + player.pattern_length(player.pattern(&name)?);
+        }
+        if played.length != length || played.sounds.is_empty() {
+            return Ok(played);
+        }
+        let Some(mode) = self
+            .clip_slot
+            .get_written(ClipSlotSetting::MORPH_STYLE)
+            .filter(|style| !style.is_null())
+            .map(Data::python_str)
+        else {
+            return Err(crate::error::RenderError::Refused("a morph needs its style".to_string()));
+        };
+        let direction = self.clip_slot.get_direction();
+        let aimed = player.play_pass(&target_name, direction.as_deref(), rolls, target_order)?;
+        let target = Clip::of(aimed.sounds, scale).with_controls(aimed.controls).looped_to(played.length)?;
+        let clip = Clip::of(played.sounds.clone(), scale).with_controls(played.controls.clone());
+        let amount = Rational::new(place as i128, (repeat - 1) as i128) * Rational::whole(FULL_MORPH);
+        let blend = Blend { target: &target, amount, mode };
+        let (start, end) = blend.region(&clip)?;
+        let controls = morph_controls(&clip, &target, start, end)?;
+        let sounds = Clip::of(blend.sounds(&clip)?, scale).played_sounds()?;
+        Ok(Pass { sounds, controls, ..played })
     }
 
     /// One pass through the clip's patterns in the order given, each played whole after the one before.
