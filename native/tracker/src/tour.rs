@@ -52,6 +52,8 @@ pub struct TourStop {
 /// Press each stop's keys and record the screen after them, then follow the Python's stack of pages where pages not ported
 /// yet made the two part, so that the pages after them compare.
 pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourStop]) -> Vec<Stop> {
+    // The tests that made the tour count FluidSynth as installed.
+    tracker.app.fluidsynth_installed = true;
     let mut recorded = Vec::new();
     for stop in stops {
         let mut unported = false;

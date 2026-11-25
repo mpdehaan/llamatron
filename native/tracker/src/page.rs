@@ -106,6 +106,22 @@ pub fn clock(seconds: Option<f64>) -> String {
     }
 }
 
+/// An exact length of time in seconds as minutes and seconds, rounded half to even as Python rounds a fraction.
+pub fn clock_exact(seconds: llamatron_math::Rational) -> String {
+    let (numerator, denominator) = (seconds.numerator(), seconds.denominator());
+    let floor = numerator.div_euclid(denominator);
+    let twice_left = 2 * numerator.rem_euclid(denominator);
+    let total = if twice_left > denominator || (twice_left == denominator && floor % 2 != 0) {
+        floor + 1
+    } else {
+        floor
+    };
+    named(
+        marks::MSG_CLOCK,
+        &[("minutes", ((total / 60) as i64).into()), ("seconds", ((total % 60) as i64).into())],
+    )
+}
+
 /// The whole screen of a page at a size: the header, the body, the status line, the rule and the legend.
 pub fn page_lines(page: &dyn Page, app: &App, width: usize, height: usize) -> Vec<Text> {
     let top = header(page, app, width, height);

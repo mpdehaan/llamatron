@@ -190,23 +190,38 @@ impl<L: Listing> ListPage<L> {
     }
 
     fn column_sizes(&self, width: usize) -> Vec<usize> {
-        let columns = self.listing.columns();
-        let fixed: usize = columns.iter().filter_map(|column| column.width).map(|size| size + 1).sum();
-        let mut flexible = width.saturating_sub(fixed + 3).max(8);
-        if let (Some(most), true) = (self.listing.name_column_width(), columns.len() > 1) {
-            flexible = flexible.min(most);
-        }
-        columns.iter().map(|column| column.width.unwrap_or(flexible)).collect()
+        column_sizes(self.listing.columns(), self.listing.name_column_width(), width)
     }
 
     fn row_line(&self, values: &[String], sizes: &[usize], style: &str, selected: bool) -> Text {
-        let mut line = Text::styled("", style);
-        line.append(cursor_mark(selected), Style::PLAIN);
-        for ((value, size), column) in values.iter().zip(sizes).zip(self.listing.columns()) {
-            line.append(&format!("{} ", fit_aligned(value, *size, column.align)), Style::PLAIN);
-        }
-        line
+        row_line(self.listing.columns(), values, sizes, style, selected)
     }
+}
+
+/// Each column's width: its own where it has one, and what is left for the names', held to a name's room.
+pub fn column_sizes(columns: &[ListColumn], name_width: Option<usize>, width: usize) -> Vec<usize> {
+    let fixed: usize = columns.iter().filter_map(|column| column.width).map(|size| size + 1).sum();
+    let mut flexible = width.saturating_sub(fixed + 3).max(8);
+    if let (Some(most), true) = (name_width, columns.len() > 1) {
+        flexible = flexible.min(most);
+    }
+    columns.iter().map(|column| column.width.unwrap_or(flexible)).collect()
+}
+
+/// One row's line: the cursor's mark, then each column's value fitted to its width.
+pub fn row_line(columns: &[ListColumn], values: &[String], sizes: &[usize], style: &str, selected: bool) -> Text {
+    let mut line = Text::styled("", style);
+    line.append(cursor_mark(selected), Style::PLAIN);
+    for ((value, size), column) in values.iter().zip(sizes).zip(columns) {
+        line.append(&format!("{} ", fit_aligned(value, *size, column.align)), Style::PLAIN);
+    }
+    line
+}
+
+/// The run of places a list with room for so many shows, keeping the cursor's near the middle and the list full at either end.
+pub fn shown_around(count: usize, at: usize, room: usize) -> std::ops::Range<usize> {
+    let start = (at as i64 - (room / 2) as i64).min(count as i64 - room as i64).max(0) as usize;
+    start..(start + room).min(count)
 }
 
 impl<L: Listing> Page for ListPage<L> {

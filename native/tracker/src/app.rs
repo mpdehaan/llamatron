@@ -63,6 +63,9 @@ pub struct App {
     pub document: Document,
     pub status: StatusLine,
     pub session: Session,
+    /// Whether FluidSynth is installed to play General MIDI, which offers Listen on a pattern whose song names no Preview
+    /// instrument.
+    pub fluidsynth_installed: bool,
     requests: Vec<Request>,
 }
 
@@ -72,6 +75,7 @@ impl App {
             document,
             status: StatusLine::default(),
             session: Session::default(),
+            fluidsynth_installed: false,
             requests: Vec::new(),
         }
     }

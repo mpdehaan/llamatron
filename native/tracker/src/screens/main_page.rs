@@ -208,6 +208,11 @@ impl MainPage {
             app.show_page(std::boxed::Box::new(FieldPage::new(FilePage)));
             return;
         }
+        if same(binding, &Keys::PATTERNS) {
+            let page = crate::screens::pattern::patterns_page::PatternsPage::new(app);
+            app.show_page(std::boxed::Box::new(page));
+            return;
+        }
         if same(binding, &Keys::GROOVES) {
             app.show_page(std::boxed::Box::new(ListPage::new(GroovesPage)));
             return;
