@@ -611,9 +611,10 @@ impl Page for ArrangePage {
         } else if item.is(&Keys::SCENE_SETTINGS) {
             app.show_page(Box::new(NotPorted { name: "ScenePage".to_string() }));
         } else if item.is(&Keys::TRACK_SETTINGS) {
-            app.show_page(Box::new(NotPorted {
-                name: "TrackEditor".to_string(),
-            }));
+            let name = Self::tracks(app)[self.track_place()].clone();
+            app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
+                crate::screens::arrange::track_editor::TrackEditor { name },
+            )));
         }
     }
 

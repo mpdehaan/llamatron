@@ -14,7 +14,6 @@ use crate::settings::{named_in, shown_octave};
 use crate::text::Text;
 use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
-use llamatron_model::objects::named::GeneratorSettings;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::{GENERATOR_ENABLED, GENERATOR_RESTART, RESTARTS, SHAPE_PARTS, SHAPE_THENS, TIME_CHOICES};
 use llamatron_model::schema::generated::limits::MAX_STATEMENTS;
@@ -65,9 +64,12 @@ fn data_text(value: &Data) -> String {
     }
 }
 
-/// What a page asks of a generator's settings while its fields are made.
-struct Made<'a> {
-    settings: &'a GeneratorSettings,
+/// What a page asks of a generator's settings while its fields are made: its data as written, its table of settings,
+/// and whether it is built into a track or a clip, which is off until enabled.
+pub struct Made<'a> {
+    data: &'a Data,
+    table: &'static [llamatron_model::schema::generated::settings::Setting],
+    built_in: bool,
     view: &'static GeneratorView,
     app: &'a App,
     next_id: usize,
@@ -82,7 +84,87 @@ impl<'a> Made<'a> {
     }
 
     fn written(&self, setting: &str) -> Option<&'a Data> {
-        self.settings.get_written(setting).filter(|value| !value.is_null())
+        self.data.get(setting).filter(|value| !value.is_null())
+    }
+
+    /// The fields made from a generator's data, its kind naming its view and its table of settings.
+    pub fn of(app: &'a App, kind: &str, data: &'a Data, built_in: bool) -> Made<'a> {
+        let view = VIEWS
+            .iter()
+            .find(|(name, _)| *name == kind)
+            .map(|(_, view)| *view)
+            .expect("every plugin has a view");
+        let table = llamatron_model::objects::named::plugin_table(kind).unwrap_or(&[]);
+        Made {
+            data,
+            table,
+            built_in,
+            view,
+            app,
+            next_id: NAME,
+            views: Vec::new(),
+        }
+    }
+
+    pub fn is_enabled(&self) -> bool {
+        match self.written(GENERATOR_ENABLED) {
+            Some(value) => matches!(value, Data::Bool(true)),
+            None => !self.built_in,
+        }
+    }
+
+    /// The generator as a tab of a track's or a clip's page: whether it is on and its mode across the top, then its columns,
+    /// each section of its view a column of its own, and its Bypass When button under them.
+    pub fn tab(&mut self, label: &str, bypass_count: usize) -> crate::forms::tab_box::Tab {
+        use crate::forms::tab_box::{Tab, TabColumn};
+        let mut top = vec![self.enabled_field()];
+        let view = self.view;
+        let mode = view.mode.map(|mode| self.chosen(mode));
+        if let Some(mode_view) = view.mode {
+            top.extend(self.fields_of(mode_view));
+        }
+        let mut columns = Vec::new();
+        for column in view.columns {
+            if !column.modes.is_empty() && !column.modes.iter().any(|each| Some(plain_text(each)) == mode) {
+                continue;
+            }
+            let mut own = Vec::new();
+            let mut sections = Vec::new();
+            for setting in column.settings {
+                if let SettingView::Section { heading, settings } = setting {
+                    let mut fields = Vec::new();
+                    for inside in settings.iter() {
+                        fields.extend(self.fields_of(inside));
+                    }
+                    fields.retain(|field| !field.is_heading());
+                    sections.push(TabColumn::new(Some(heading), fields));
+                } else {
+                    let mut fields = self.fields_of(setting);
+                    fields.retain(|field| !field.is_heading());
+                    own.extend(fields);
+                }
+            }
+            if !own.is_empty() {
+                let mut first = TabColumn::new(column.heading, own);
+                first.under = column.under;
+                columns.push(first);
+            }
+            columns.extend(sections);
+        }
+        let id = self.id();
+        let button = Field::button(
+            id,
+            &named(labels::MSG_BYPASS_WHEN_BUTTON, &[("count", bypass_count.into())]),
+            "",
+            legends::What::EDIT,
+        );
+        let mut under = TabColumn::new(None, vec![button]);
+        under.under = true;
+        columns.push(under);
+        let mut tab = Tab::new(label, columns);
+        tab.top = top;
+        tab.on = Some(self.is_enabled());
+        tab
     }
 
     fn chosen(&self, setting: &SettingView) -> String {
@@ -93,13 +175,7 @@ impl<'a> Made<'a> {
     }
 
     fn limits_of(&self, setting: &str) -> (Option<i64>, Option<i64>) {
-        match self
-            .settings
-            .get_table()
-            .iter()
-            .find(|found| found.name == setting)
-            .map(|found| found.described)
-        {
+        match self.table.iter().find(|found| found.name == setting).map(|found| found.described) {
             Some(Described::WholeNumber { lowest, highest, .. }) => (lowest, highest),
             _ => (None, None),
         }
@@ -317,7 +393,7 @@ impl<'a> Made<'a> {
     }
 
     fn enabled_field(&mut self) -> Field {
-        let on = self.written(GENERATOR_ENABLED).is_none_or(|value| matches!(value, Data::Bool(true)));
+        let on = self.is_enabled();
         let id = self.id();
         Field::toggle(id, labels::MSG_ENABLED_LABEL, on)
     }
@@ -677,18 +753,9 @@ impl PluginEditor {
         let Some(Item::Generator(settings)) = app.document.get_setlist().get_item(self.section(), &self.name) else {
             return (Vec::new(), Vec::new());
         };
-        let view = VIEWS
-            .iter()
-            .find(|(name, _)| *name == self.kind)
-            .map(|(_, view)| *view)
-            .expect("every plugin has a view");
-        let mut made = Made {
-            settings,
-            view,
-            app,
-            next_id: NAME,
-            views: Vec::new(),
-        };
+        let data = settings.written_data();
+        let mut made = Made::of(app, self.kind, data, false);
+        let view = made.view;
         let mut fields = vec![Field::name(NAME, &self.name), made.enabled_field()];
         let mode = view.mode.map(|mode| made.chosen(mode));
         if let Some(mode_view) = view.mode {

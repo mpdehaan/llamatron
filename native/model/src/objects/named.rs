@@ -203,6 +203,11 @@ impl GeneratorSettings {
         self.table
     }
 
+    /// Its settings as written, a mapping by name.
+    pub fn written_data(&self) -> &Data {
+        &self.data
+    }
+
     /// Set one setting, or leave it out with None, at its place where it is written and at the end where it is not.
     pub fn set_written(&mut self, name: &str, value: Option<Data>) {
         match value {

@@ -5,3 +5,4 @@
 
 pub mod arrange_page;
 pub mod grid;
+pub mod track_editor;
