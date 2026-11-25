@@ -252,6 +252,10 @@ impl MainPage {
             crate::everywhere::save(app, None);
             return;
         }
+        if same(binding, &Keys::EXPORT_HERE) {
+            crate::exporting::export(app);
+            return;
+        }
         if same(binding, &Keys::OPEN_SET_HERE) {
             app.open_set();
             return;

@@ -9,8 +9,8 @@ use crate::app::App;
 use crate::drawing::{cursor_mark, fit, legend, BoxCharacters as Boxes, Style, SPACE};
 use crate::forms::nodes::GridCell;
 use crate::keybindings::{
-    ChoiceDialog as ChoiceKeys, ConfirmDialog as ConfirmKeys, GridChoiceDialog as GridKeys, HelpDialog as HelpKeys, KeyClass, MessageDialog as MessageKeys,
-    PromptDialog as PromptKeys, QuitDialog as QuitKeys, SoundDialog as SoundKeys,
+    ChoiceDialog as ChoiceKeys, ConfirmDialog as ConfirmKeys, ExportDialog as ExportKeys, GridChoiceDialog as GridKeys, HelpDialog as HelpKeys, KeyClass,
+    MessageDialog as MessageKeys, PromptDialog as PromptKeys, QuitDialog as QuitKeys, SoundDialog as SoundKeys,
 };
 use crate::keys::KeyItem;
 use crate::page::Page;
@@ -174,7 +174,7 @@ impl ChoiceDialog {
     }
 
     /// The places of the choices the search matches, the headings left out.
-    fn matches(&self) -> Vec<usize> {
+    pub(crate) fn matches(&self) -> Vec<usize> {
         let wanted = self.typed.to_lowercase();
         (0..self.options.len())
             .filter(|place| self.options[*place].to_lowercase().contains(&wanted) && !self.headings.contains(place))
@@ -217,7 +217,7 @@ impl ChoiceDialog {
     }
 
     /// The list's lines: what is typed while searching, then the choices around the cursor.
-    fn lines(&self, width: usize) -> Vec<Text> {
+    pub(crate) fn lines(&self, width: usize) -> Vec<Text> {
         let mut lines = Vec::new();
         if !self.typed.is_empty() {
             let shown = named(marks::MSG_SEARCH_SHOWN, &[("text", self.typed.as_str().into())]);
@@ -1571,5 +1571,157 @@ impl Page for QuitDialog {
 
     fn crumbs(&self, _app: &App) -> Vec<String> {
         Vec::new()
+    }
+}
+
+/// What the export dialog answers, by its place among these: each kind of export, and PDF, whose page asks what to make.
+pub const EXPORT_CHOICES: [&str; 7] = ["ableton", "stems", "midi", "cliptree", "gm", "wav", "pdf"];
+/// Each category in the order the dialog offers them, by its place among EXPORT_CHOICES, None for MIDI, which opens a
+/// flyout of its kinds.
+const CATEGORIES: [Option<usize>; 4] = [Some(0), None, Some(5), Some(6)];
+/// MIDI's kinds in the order its flyout lists them, by their places among EXPORT_CHOICES.
+const MIDI_KINDS: [usize; 4] = [1, 2, 3, 4];
+
+/// The export dialog (the Python ExportDialog): the kinds of export by category, Ableton Live set, MIDI, WAV and PDF. MIDI has
+/// several kinds, so ENTER on it opens a flyout over the dialog listing them, where Up and Down move, ENTER exports the one
+/// under the cursor and ESC closes the flyout.
+pub struct ExportDialog {
+    list: ChoiceDialog,
+    flyout_open: bool,
+    flyout_place: usize,
+    then: Then,
+}
+
+impl ExportDialog {
+    /// The dialog for a song, its answer, a place among EXPORT_CHOICES, handed to what is given.
+    pub fn new(title: &str, then: Then) -> ExportDialog {
+        let options = labels::MSG_EXPORT_CATEGORIES.iter().map(|label| label.to_string()).collect();
+        ExportDialog {
+            list: ChoiceDialog::new(title, options, 0),
+            flyout_open: false,
+            flyout_place: 0,
+            then,
+        }
+    }
+
+    fn bind(binding: &'static crate::keybindings::Binding) -> KeyItem {
+        KeyItem::of(&ExportKeys::CLASS, binding)
+    }
+
+    /// Close the dialog and hand over the kind chosen.
+    fn answer(&mut self, app: &mut App, choice: usize) {
+        app.go_back();
+        (self.then)(app, &Answer::Chosen(choice));
+    }
+
+    /// MIDI's flyout while it is open: its heading, dim, and its kinds, the cursor's marked.
+    fn flyout_lines(&self, width: usize) -> Option<Vec<Text>> {
+        if !self.flyout_open {
+            return None;
+        }
+        let mut lines = vec![Text::styled(
+            &fit(&format!("{}{}", cursor_mark(false), labels::MSG_MIDI_EXPORT_HEADING), width),
+            Style::DIM,
+        )];
+        for (place, text) in labels::MSG_MIDI_EXPORT_CHOICES.iter().enumerate() {
+            lines.push(Text::plain(&fit(&format!("{}{text}", cursor_mark(place == self.flyout_place)), width)));
+        }
+        Some(lines)
+    }
+}
+
+impl Page for ExportDialog {
+    fn name(&self) -> &'static str {
+        "ExportDialog"
+    }
+
+    fn is_dialog(&self) -> bool {
+        true
+    }
+
+    fn class(&self) -> &'static KeyClass {
+        &ExportKeys::CLASS
+    }
+
+    fn keys(&self, app: &App) -> Vec<KeyItem> {
+        if self.flyout_open {
+            return vec![
+                Self::bind(&ExportKeys::CLOSE_FLYOUT),
+                Self::bind(&ExportKeys::MOVE).wanting_key(),
+                Self::bind(&ExportKeys::EXPORT),
+            ];
+        }
+        self.list.keys(app)
+    }
+
+    fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        if self.flyout_open {
+            if item.is(&ExportKeys::CLOSE_FLYOUT) {
+                self.flyout_open = false;
+            } else if item.is(&ExportKeys::MOVE) {
+                self.flyout_place = if key == "up" {
+                    self.flyout_place.saturating_sub(1)
+                } else {
+                    (self.flyout_place + 1).min(MIDI_KINDS.len() - 1)
+                };
+            } else if item.is(&ExportKeys::EXPORT) {
+                let choice = MIDI_KINDS[self.flyout_place];
+                self.answer(app, choice);
+            }
+            return;
+        }
+        if !item.is(&ExportKeys::CHOOSE) {
+            self.list.press(app, item, key);
+            return;
+        }
+        let place = self.list.current;
+        if !self.list.matches().contains(&place) {
+            return;
+        }
+        match CATEGORIES[place] {
+            None => {
+                self.flyout_open = true;
+                self.flyout_place = 0;
+            }
+            Some(choice) => self.answer(app, choice),
+        }
+    }
+
+    fn dialog_lines(&self, app: &App, width: usize) -> Vec<Text> {
+        let keys = crate::keys::in_order(self.class(), self.keys(app));
+        let title = self.list.title.clone();
+        let (held, width_of_box) = sized_contents(&|inner| heading_lines(&title, false, inner), &|inner| self.list.lines(inner), &keys, width);
+        let boxed = box_lines(&held, width_of_box);
+        let Some(mut over) = self.flyout_lines(width_of_box - DIALOG_MARGIN) else {
+            return boxed;
+        };
+        over.resize(held.len(), Text::default());
+        stacked(&boxed, &box_lines(&over, width_of_box))
+    }
+
+    fn dialog_shift(&self) -> usize {
+        if self.flyout_open {
+            FLYOUT_SHIFT
+        } else {
+            0
+        }
+    }
+
+    fn body(&self, _app: &App, _width: usize, _height: usize) -> Vec<Text> {
+        Vec::new()
+    }
+
+    fn crumbs(&self, _app: &App) -> Vec<String> {
+        Vec::new()
+    }
+
+    fn takes_text(&self) -> bool {
+        !self.flyout_open && self.list.takes_text()
+    }
+
+    fn type_text(&mut self, app: &mut App, character: char) {
+        if !self.flyout_open {
+            self.list.type_text(app, character);
+        }
     }
 }

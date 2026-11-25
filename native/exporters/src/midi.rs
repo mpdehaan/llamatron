@@ -382,11 +382,17 @@ fn sounding(grid: &Grid) -> Vec<&GridColumn> {
 /// The whole song as one file of type 1: the tempo track named after the song, then a track per unmuted track; with
 /// general_midi, each track on a channel of its own, drums on channel 10, and a program change giving it its sound.
 pub fn song_file(grid: &Grid, name: &str, general_midi: bool) -> Rendered<MidiExport> {
+    song_file_of(grid, name, general_midi, &|_| true)
+}
+
+/// The whole song as song_file writes it, with only the unmuted tracks kept, as the WAV export keeps those that play
+/// through FluidSynth, the channels given among them alone.
+pub fn song_file_of(grid: &Grid, name: &str, general_midi: bool, kept: &dyn Fn(&GridColumn) -> bool) -> Rendered<MidiExport> {
     let starts = row_starts(grid)?;
     let end = ticks(starts[starts.len() - 1]);
     let mut tracks = vec![Track::of(name, conductor_events(grid, &starts), end, 0, None)];
     let mut melodic = 0;
-    for column in sounding(grid) {
+    for column in sounding(grid).into_iter().filter(|column| kept(column)) {
         let (channel, program) = if !general_midi {
             (0, None)
         } else if column.drum {
@@ -418,4 +424,92 @@ pub fn stems(grid: &Grid, name: &str) -> Rendered<Vec<MidiExport>> {
         files.push((filename, midi_file(SINGLE_TRACK_FILE, vec![Track::of(&column.name, events, end, 0, None)])));
     }
     Ok(files)
+}
+
+/// What a track plays, read back in seconds from the song's start through the song's tempo map, as the WAV export renders
+/// a built-in instrument: each note's start, with its pitch and velocity, and its end, with a velocity of 0; the moments
+/// its clips start; and the moments every note of it is ended.
+pub struct TimedTrack {
+    pub notes: Vec<(f64, i64, i64)>,
+    pub scene_starts: Vec<f64>,
+    pub endings: Vec<f64>,
+}
+
+/// The controls that end every note, and the one the real-time player marks a clip's start with.
+const ENDING_CONTROLS: [i64; 2] = [120, 123];
+
+/// A track's notes, clip starts and endings in seconds, or None where the song has no track of the name.
+pub fn timed_track(grid: &Grid, track: &str) -> Rendered<Option<TimedTrack>> {
+    let Some(column) = grid.columns.iter().find(|column| column.name == track) else {
+        return Ok(None);
+    };
+    let starts = row_starts(grid)?;
+    let tempo_map = TempoMap::of(&conductor_events(grid, &starts));
+    let mut events = track_events(grid, column, &starts)?;
+    events.sort();
+    let mut timed = TimedTrack {
+        notes: Vec::new(),
+        scene_starts: Vec::new(),
+        endings: Vec::new(),
+    };
+    for (row, start) in grid.rows.iter().zip(&starts) {
+        if clip_of(row, column).is_some() {
+            timed.scene_starts.push(tempo_map.seconds(ticks(*start)));
+        }
+    }
+    for event in &events {
+        let now = tempo_map.seconds(event.tick);
+        match event.kind {
+            NOTE_ON if event.value > 0 => timed.notes.push((now, event.number, event.value)),
+            NOTE_ON | NOTE_OFF => timed.notes.push((now, event.number, 0)),
+            CONTROL_CHANGE if ENDING_CONTROLS.contains(&event.number) => timed.endings.push(now),
+            _ => {}
+        }
+    }
+    Ok(Some(timed))
+}
+
+/// How long the song lasts in seconds, through its tempo map.
+pub fn song_seconds(grid: &Grid) -> Rendered<f64> {
+    let starts = row_starts(grid)?;
+    let end = ticks(starts[starts.len() - 1]);
+    Ok(TempoMap::of(&conductor_events(grid, &starts)).seconds(end))
+}
+
+/// A song's tempos by the tick each starts at, microseconds a quarter note, which turn a tick into seconds as a MIDI file
+/// is read back, the tempo before the first change a MIDI file's own.
+struct TempoMap {
+    changes: Vec<(i128, i64)>,
+}
+
+/// The tempo a MIDI file plays at before it sets one, 120 quarter notes a minute.
+const FIRST_TEMPO: i64 = 500_000;
+
+impl TempoMap {
+    /// The map of a conductor track's tempo events.
+    fn of(events: &[MidiEvent]) -> TempoMap {
+        let mut changes: Vec<(i128, i64)> = events
+            .iter()
+            .filter(|event| event.kind == SET_TEMPO)
+            .map(|event| (event.tick, event.value))
+            .collect();
+        changes.sort();
+        TempoMap { changes }
+    }
+
+    /// The seconds from the start to a tick.
+    fn seconds(&self, tick: i128) -> f64 {
+        let mut seconds = 0.0;
+        let mut at = 0;
+        let mut tempo = FIRST_TEMPO;
+        for (change, changed) in &self.changes {
+            if *change >= tick {
+                break;
+            }
+            seconds += (change - at) as f64 * tempo as f64 / 1e6 / TICKS_PER_BEAT as f64;
+            at = *change;
+            tempo = *changed;
+        }
+        seconds + (tick - at) as f64 * tempo as f64 / 1e6 / TICKS_PER_BEAT as f64
+    }
 }

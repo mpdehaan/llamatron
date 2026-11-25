@@ -57,6 +57,8 @@ pub struct Session {
     pub shows_arrange_details: bool,
     /// The folder the Open page was last in, where the next one starts.
     pub last_set_folder: Option<std::path::PathBuf>,
+    /// The Live sets the person has said this session may be written over, asked about only the first time.
+    pub confirmed_overwrites: Vec<std::path::PathBuf>,
 }
 
 impl Default for Session {
@@ -71,6 +73,7 @@ impl Default for Session {
                 .collect(),
             shows_arrange_details: false,
             last_set_folder: None,
+            confirmed_overwrites: Vec::new(),
         }
     }
 }
@@ -223,6 +226,8 @@ impl Tracker {
         }
         if std::ptr::eq(item.binding, &PageKeys::OPEN_SET) {
             self.app.open_set();
+        } else if std::ptr::eq(item.binding, &PageKeys::EXPORT) {
+            crate::exporting::export(&mut self.app);
         } else if std::ptr::eq(item.binding, &PageKeys::SAVE) {
             crate::everywhere::save(&mut self.app, None);
         } else if std::ptr::eq(item.binding, &PageKeys::QUIT_NOW) {

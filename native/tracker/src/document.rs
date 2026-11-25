@@ -303,3 +303,38 @@ fn without_version(data: &Data) -> Data {
         other => other.clone(),
     }
 }
+
+/// The set's name for its exports: its file's name without the ending, or untitled until it is saved.
+const UNTITLED: &str = "untitled";
+
+impl Document {
+    /// The set's name, its file's name without the ending, or untitled until it is saved.
+    pub fn get_name(&self) -> String {
+        self.path
+            .as_ref()
+            .and_then(|path| path.file_stem())
+            .map_or(UNTITLED.to_string(), |stem| stem.to_string_lossy().to_string())
+    }
+
+    /// The folder the current song's exports go in, the set's file's, or None until the set is saved.
+    pub fn export_directory(&self) -> Option<PathBuf> {
+        let path = self.path.as_ref()?;
+        let folder = path.parent().map(Path::to_path_buf).unwrap_or_default();
+        Some(if folder.as_os_str().is_empty() { PathBuf::from(".") } else { folder })
+    }
+
+    /// What the current song's exports are named after: <set>_<song>.
+    pub fn export_name(&self) -> String {
+        format!("{}_{}", self.get_name(), self.current)
+    }
+
+    /// The current song played into its clips, from its own seed, as an export plays it.
+    pub fn rendered(&self) -> Result<llamatron_engine::realizer::Grid, String> {
+        llamatron_engine::realizer::SongRealizer::new(&self.setlist, self.song(), None)
+            .render()
+            .map_err(|error| match error {
+                llamatron_engine::error::RenderError::Refused(problem) => problem,
+                llamatron_engine::error::RenderError::NotPorted(what) => format!("not ported yet: {what}"),
+            })
+    }
+}
