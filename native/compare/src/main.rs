@@ -457,10 +457,15 @@ fn toured(path: &str, keys: &str, width: usize, height: usize) -> Result<String,
         })
         .collect();
     let mut tracker = llamatron_tracker::app::Tracker::new(document);
-    let folder = std::path::Path::new(path)
-        .parent()
-        .map(|parent| parent.to_string_lossy().to_string())
-        .unwrap_or_default();
+    // The folder by every name it goes by, the longer first, so that a resolved name such as /private/tmp is not left half
+    // written.
+    let parent = std::path::Path::new(path).parent().map(std::path::Path::to_path_buf).unwrap_or_default();
+    let mut folders: Vec<String> = vec![parent.to_string_lossy().to_string()];
+    if let Ok(resolved) = parent.canonicalize() {
+        folders.push(resolved.to_string_lossy().to_string());
+    }
+    folders.retain(|folder| !folder.is_empty());
+    folders.sort_by_key(|folder| std::cmp::Reverse(folder.len()));
     let mut out = String::from("[");
     let recorded = llamatron_tracker::tour::tour(&mut tracker, width, height, &stops)?;
     for (number, stop) in recorded.into_iter().enumerate() {
@@ -480,7 +485,7 @@ fn toured(path: &str, keys: &str, width: usize, height: usize) -> Result<String,
                     out.push(',');
                 }
                 out.push('[');
-                let shown = if folder.is_empty() { text.clone() } else { text.replace(&folder, "FOLDER") };
+                let shown = folders.iter().fold(text.clone(), |shown, folder| shown.replace(folder.as_str(), "FOLDER"));
                 json_written(&Data::Text(shown), &mut out);
                 out.push(',');
                 json_written(&Data::Text(style.clone()), &mut out);

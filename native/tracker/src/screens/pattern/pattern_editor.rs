@@ -985,6 +985,49 @@ impl Page for PatternEditor {
         &Keys::CLASS
     }
 
+    /// Say the chord under the cursor, in the scale the pattern is known to play under, while the cursor rests on a step
+    /// that holds one; nothing for a drum pattern, a single note, or a step that grabs its note.
+    fn resting_status(&self, app: &App) -> String {
+        let step = self.keep_step(app);
+        let setlist = app.document.get_setlist();
+        let Some(pattern) = setlist.get_pattern(&self.name) else {
+            return String::new();
+        };
+        let Some(Data::Whole(degree)) = value(pattern, Row::DEGREE, step) else {
+            return String::new();
+        };
+        let text = |row: &str| match value(pattern, row, step) {
+            Some(Data::Text(text)) => Some(text.clone()),
+            Some(Data::Whole(whole)) => Some(whole.to_string()),
+            _ => None,
+        };
+        let Some(symbol) = text(Row::CHORD) else { return String::new() };
+        if pattern.is_drum() {
+            return String::new();
+        }
+        let song = app.document.song();
+        let scale = scales_of_pattern(setlist, song, &self.name).first().and_then(|name| {
+            let Some(llamatron_model::objects::setlist::Item::Scale(held)) = setlist.get_item(Section::SCALES, name) else {
+                return None;
+            };
+            crate::chord_text::ChordScale::new(&scale_root(setlist, name), held.get_kind().as_str()?)
+        });
+        let tensions = value(pattern, Row::TENSION, step)
+            .and_then(Data::as_list)
+            .map(|tensions| tensions.iter().filter_map(|tension| tension.as_str().map(str::to_string)).collect())
+            .unwrap_or_default();
+        let chord = crate::chord_text::ChordInWords {
+            scale,
+            degree: *degree as i64,
+            accidental: text(Row::ACCIDENTAL),
+            kind: text(Row::CHORD_SCALE),
+            symbol: Some(symbol),
+            tensions,
+            own_degree: None,
+        };
+        chord.resting(&named(messages::MSG_RESTING_STEP, &[("step", (step + 1).into())]))
+    }
+
     fn keys(&self, app: &App) -> Vec<KeyItem> {
         self.on_roll_now.set(self.on_roll(app));
         let editor = |binding| KeyItem::of(&Keys::CLASS, binding);
