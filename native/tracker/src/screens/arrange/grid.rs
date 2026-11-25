@@ -17,21 +17,25 @@ pub enum Kind {
     Faint,
     Playing,
     Sounding,
+    /// The word stock, for a cell whose details hold nothing of its own.
+    Stock,
 }
 
 impl Kind {
-    fn style(self) -> &'static str {
+    pub fn style(self) -> &'static str {
         match self {
             Kind::Plain => Style::PLAIN,
             Kind::Name => Style::BOLD,
             Kind::Faint => Style::DIM,
             Kind::Playing => Style::PLAYING,
             Kind::Sounding => Style::SOUNDING,
+            Kind::Stock => Style::DETAILS_STOCK,
         }
     }
 }
 
 /// One thing a line of the grid holds.
+#[derive(Clone)]
 pub enum Piece {
     Text {
         column: usize,
@@ -57,6 +61,14 @@ pub enum Piece {
     PlayButton {
         column: usize,
         playing: bool,
+    },
+    /// A line of details at a column in its style, cut to room when given, and in brackets when it is the one picked.
+    Detail {
+        column: usize,
+        text: String,
+        style: String,
+        picked: bool,
+        room: Option<usize>,
     },
 }
 
@@ -106,6 +118,23 @@ fn draw_piece(canvas: &mut Canvas, piece: &Piece) {
             canvas.write(*end as i64, Box::RIGHT_TEE, Style::DETAILS_DIVIDER);
         }
         Piece::More { column } => canvas.write(*column as i64, Box::MORE, Style::DIM),
+        Piece::Detail {
+            column,
+            text,
+            style,
+            picked,
+            room,
+        } => {
+            let text = match room {
+                Some(room) if text.chars().count() > *room => crate::drawing::fit(text, *room).trim_end().to_string(),
+                _ => text.clone(),
+            };
+            canvas.write(*column as i64, &text, style);
+            if *picked {
+                canvas.write(*column as i64 - 1, marks::MSG_PICKED_OPEN, Style::BOLD);
+                canvas.write((*column + text.chars().count()) as i64, marks::MSG_PICKED_CLOSE, Style::BOLD);
+            }
+        }
         Piece::PlayButton { column, playing } => {
             if *playing {
                 canvas.write(*column as i64, marks::MSG_STOP_MARK, Style::PLAYING);

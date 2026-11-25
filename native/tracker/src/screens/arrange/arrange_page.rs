@@ -11,7 +11,9 @@ use crate::keybindings::{ArrangePage as Keys, KeyClass};
 use crate::keys::KeyItem;
 use crate::lengths::Lengths;
 use crate::page::{clock, Duration, Page};
+use crate::screens::arrange::details::{detailed_clip_text, details_layout, CellPlace, DetailLine, DetailsLayout, Rooms, Target, ADD_CHAIN, DETAIL_WIDTH};
 use crate::screens::arrange::grid::{arrange_lines, CellFrame, Kind, LengthBar, Piece};
+use crate::screens::not_ported::NotPorted;
 use crate::text::Text;
 use crate::themes::Colour;
 use llamatron_model::file::data::Data;
@@ -39,22 +41,39 @@ const LINES_UNDER_A_SCENE: usize = 2;
 const FRAME_ROOM: usize = 2;
 const COLUMN_EXTRA: usize = 2 * FRAME_ROOM + 1;
 const DEFAULT_REPEAT: i64 = 1;
+/// In the details view, the room a column keeps beside its text: a space before a clip's name and one after; the indent of a
+/// detail under its bar and one after; and a space before a track's name, the sounding light and one after. And where each kind
+/// of line is written.
+const ROOMS: Rooms = Rooms {
+    least_width: CELL_WIDTH,
+    name_room: 2,
+    detail_room: 2 + PLAY_BUTTON_WIDTH,
+    track_name_room: 2 + SOUNDING_MARK_WIDTH,
+};
+const DETAIL_INDENT: usize = 1 + PLAY_BUTTON_WIDTH;
+const TRACK_DETAIL_INDENT: usize = 1;
+/// The lines of a scene before its details: the frame's room, the name and the bar.
+const FIRST_DETAIL_LINE: usize = 3;
+/// How long a scene's detail may be under its bar, leaving room for a pick's brackets before the scene column's divider.
+const SCENE_DETAIL_ROOM: usize = SCENE_WIDTH - SCENE_BAR_COLUMN - 3;
 
-/// A mode of Arrange not ported yet: carrying a scene, a track or a clip, Scene View over the page, or a cell's details
-/// locked open; the page leaves it by its own keys and says it is not ported while in it.
+/// A mode of Arrange not ported yet: carrying a scene, a track or a clip, or Scene View over the page; the page leaves it by
+/// its own keys and says it is not ported while in it.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum Unported {
     Moving,
     SceneView,
-    Locked,
 }
 
 pub struct ArrangePage {
     mode: Cell<Option<Unported>>,
     /// The clip copied with C, which V pastes.
     copied: Option<ClipSlot>,
-    /// Whether the details view showed when the page last answered, which is not ported yet and names the page so.
-    details_now: Cell<bool>,
+    /// Whether Tab has locked into the cursor's cell, the place among its lines that name something of the one picked, and
+    /// in the usual view the cell Tab opened, which alone shows its details until Tab again.
+    locked: bool,
+    picked: Option<usize>,
+    opened: Option<CellPlace>,
     row: Cell<i64>,
     column: Cell<usize>,
     top: Cell<usize>,
@@ -68,6 +87,16 @@ impl Default for ArrangePage {
 }
 
 /// A clip's name as its cell shows it, with the marks of what it does beyond playing its pattern.
+/// A name as a page shows it: whole, or cut to the most characters a name is shown with and ended with an ellipsis.
+pub fn shown_name(name: &str) -> String {
+    let most = llamatron_model::schema::generated::limits::MAX_NAME_LENGTH as usize;
+    if name.chars().count() <= most {
+        return name.to_string();
+    }
+    let cut: String = name.chars().take(most - 1).collect();
+    format!("{cut}{}", marks::MSG_NAME_CUT)
+}
+
 fn clip_text(clip: &ClipSlot) -> String {
     let name = clip.get_display_name();
     let mut shown = String::new();
@@ -107,7 +136,9 @@ impl ArrangePage {
         ArrangePage {
             mode: Cell::new(None),
             copied: None,
-            details_now: Cell::new(false),
+            locked: false,
+            picked: None,
+            opened: None,
             row: Cell::new(0),
             column: Cell::new(SCENE_COLUMN),
             top: Cell::new(0),
@@ -239,26 +270,247 @@ impl ArrangePage {
     }
 
     /// Whether the cursor is on a cell with details: a track's name, a scene's name or a clip.
-    fn has_cursor_cell(&self, app: &App) -> bool {
+    fn start_picking(&mut self, app: &App) {
+        self.locked = true;
+        self.picked = (!self.pickable(app).is_empty()).then_some(0);
+        if !Self::shows_details(app) {
+            self.opened = self.cursor_cell(app);
+        }
+    }
+
+    fn stop_picking(&mut self) {
+        self.locked = false;
+        self.picked = None;
+        self.opened = None;
+    }
+
+    /// Open the page of what a picked line names: a chain's, a scale's or a groove's; an instrument's is not ported yet.
+    fn open_target(&self, app: &mut App, target: Target) {
+        use llamatron_model::schema::generated::file_format::Section;
+        match target.kind {
+            Section::CHAINS => app.show_page(Box::new(crate::screens::list_page::ListPage::new(
+                crate::screens::generators::chain_editor::ChainEditor { name: target.name },
+            ))),
+            Section::SCALES => app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
+                crate::screens::set::scale_page::ScalePage { name: target.name },
+            ))),
+            Section::GROOVES => app.show_page(Box::new(crate::screens::one_row_editor::OneRowEditor::new(
+                crate::screens::set::groove_editor::GrooveEditor { name: target.name },
+            ))),
+            _ => app.show_page(Box::new(NotPorted {
+                name: "InstrumentEditor".to_string(),
+            })),
+        }
+    }
+
+    /// Take a chain out of the cursor's cell alone, the chain staying in the set.
+    fn remove_cell_chain(&self, app: &mut App, place: usize) {
+        use llamatron_model::schema::generated::file_format::TrackSetting;
+        let Some(cell) = self.cursor_cell(app) else { return };
+        let setting = match cell {
+            CellPlace::Track(_) => TrackSetting::CHAINS,
+            CellPlace::Scene(_) => SceneSetting::CHAINS,
+            CellPlace::Clip(..) => ClipSlotSetting::CHAINS,
+        };
+        let song_name = app.document.get_current_song_name().to_string();
+        let song = app.document.song();
+        let written = match &cell {
+            CellPlace::Track(name) => song.get_track(name).and_then(|track| track.get_written(setting)),
+            CellPlace::Scene(index) => song.scenes().get(*index).and_then(|scene| scene.get_written(setting)),
+            CellPlace::Clip(index, track) => Self::clip(app, *index, track).and_then(|clip| clip.get_written(setting)),
+        };
+        let mut names = crate::screens::arrange::arrange_tabs::chain_names(written);
+        if place >= names.len() {
+            return;
+        }
+        names.remove(place);
+        let value = (!names.is_empty()).then(|| Data::List(names.into_iter().map(Data::Text).collect()));
+        app.document.change_set(|setlist| {
+            if let Some(llamatron_model::objects::setlist::Item::Song(song)) =
+                setlist.get_item_mut(llamatron_model::schema::generated::file_format::Section::SONGS, &song_name)
+            {
+                match &cell {
+                    CellPlace::Track(name) => song.set_track_written(name, setting, value),
+                    CellPlace::Scene(index) => song.set_scene_written(*index, setting, value),
+                    CellPlace::Clip(index, track) => song.set_clip_written(*index, track, setting, value),
+                }
+            }
+        });
+    }
+
+    fn shows_details(app: &App) -> bool {
+        app.session.shows_arrange_details
+    }
+
+    /// Whether any details show: every cell's in the details view, or the one Tab opened, so that columns and rows take
+    /// their own sizes.
+    fn widened(&self, app: &App) -> bool {
+        Self::shows_details(app) || self.opened.is_some()
+    }
+
+    /// The current song's details and the room they need, where any show.
+    fn layout(&self, app: &App) -> Option<DetailsLayout> {
+        self.widened(app).then(|| details_layout(app, &ROOMS))
+    }
+
+    /// Whether a cell shows its details: every cell in the details view, and otherwise the one Tab opened.
+    fn cell_open(&self, app: &App, cell: &CellPlace) -> bool {
+        Self::shows_details(app) || self.opened.as_ref() == Some(cell)
+    }
+
+    /// The cell the cursor is on, a track's name, a scene's name or a clip, or None elsewhere.
+    fn cursor_cell(&self, app: &App) -> Option<CellPlace> {
+        let tracks = Self::tracks(app);
         if self.on_header() {
-            return !self.on_corner() && !self.on_track_plus(app);
+            return (!self.on_corner() && self.track_place() < tracks.len()).then(|| CellPlace::Track(tracks[self.track_place()].clone()));
         }
         if self.on_plus_row(app) {
-            return false;
+            return None;
         }
+        let row = self.row.get() as usize;
         if self.on_scene_name() {
-            return true;
+            return Some(CellPlace::Scene(row));
         }
-        Self::clip(app, self.row.get() as usize, &Self::tracks(app)[self.track_place()]).is_some()
+        let track = tracks.get(self.track_place())?;
+        Self::clip(app, row, track).map(|_| CellPlace::Clip(row, track.clone()))
     }
 
-    fn cell_column(&self, place: usize) -> usize {
-        SCENE_WIDTH + (place - self.left.get()) * (CELL_WIDTH + COLUMN_EXTRA)
+    /// The details of the cell the cursor is on, whether or not they show.
+    fn details_at_cursor(&self, app: &App, layout: &DetailsLayout) -> Vec<DetailLine> {
+        match self.cursor_cell(app) {
+            Some(CellPlace::Track(name)) => Self::tracks(app)
+                .iter()
+                .position(|track| *track == name)
+                .map_or(Vec::new(), |place| layout.track_details[place].clone()),
+            Some(CellPlace::Scene(index)) => layout.scene_details[index].clone(),
+            Some(CellPlace::Clip(index, track)) => layout.clip_details.get(&(index, track)).cloned().unwrap_or_default(),
+            None => Vec::new(),
+        }
     }
 
-    fn visible_tracks(&self, app: &App, width: usize) -> (usize, usize) {
-        let count = ((width.saturating_sub(SCENE_WIDTH + 1)) / (CELL_WIDTH + COLUMN_EXTRA)).max(1);
+    /// The places among the cursor's cell's lines of the lines that name something.
+    fn pickable(&self, app: &App) -> Vec<usize> {
+        let layout = details_layout(app, &ROOMS);
+        self.details_at_cursor(app, &layout)
+            .iter()
+            .enumerate()
+            .filter(|(_, line)| line.target.is_some())
+            .map(|(place, _)| place)
+            .collect()
+    }
+
+    /// Whether Tab has locked into the cursor's cell, which a cell gone away ends.
+    fn picking(&self, app: &App) -> bool {
+        self.locked && self.cursor_cell(app).is_some()
+    }
+
+    /// The place among the cursor's cell's lines of the one picked, which is drawn in brackets.
+    fn picked_line(&self, app: &App) -> Option<usize> {
+        if !self.picking(app) {
+            return None;
+        }
+        let pickable = self.pickable(app);
+        let picked = self.picked?.min(pickable.len().checked_sub(1)?);
+        pickable.get(picked).copied()
+    }
+
+    fn picked_target(&self, app: &App) -> Option<Target> {
+        let place = self.picked_line(app)?;
+        let layout = details_layout(app, &ROOMS);
+        self.details_at_cursor(app, &layout).get(place).and_then(|line| line.target.clone())
+    }
+
+    fn track_width(&self, app: &App, layout: Option<&DetailsLayout>, place: usize) -> usize {
+        let tracks = Self::tracks(app);
+        let Some(layout) = layout else { return CELL_WIDTH };
+        if place >= tracks.len() {
+            return CELL_WIDTH;
+        }
+        if Self::shows_details(app) {
+            return layout.track_widths[place];
+        }
+        match &self.opened {
+            Some(CellPlace::Track(name)) if *name == tracks[place] => layout.cell_widths.get(&CellPlace::Track(name.clone())).copied().unwrap_or(CELL_WIDTH),
+            Some(CellPlace::Clip(index, name)) if *name == tracks[place] => {
+                layout.cell_widths.get(&CellPlace::Clip(*index, name.clone())).copied().unwrap_or(CELL_WIDTH)
+            }
+            _ => CELL_WIDTH,
+        }
+    }
+
+    fn header_lines(&self, app: &App, layout: Option<&DetailsLayout>) -> usize {
+        let Some(layout) = layout else { return HEADER_LINES };
+        if Self::shows_details(app) {
+            return HEADER_LINES + layout.header_extra_lines;
+        }
+        if let Some(CellPlace::Track(name)) = &self.opened {
+            if let Some(place) = Self::tracks(app).iter().position(|track| track == name) {
+                return HEADER_LINES + layout.track_details[place].len();
+            }
+        }
+        HEADER_LINES
+    }
+
+    fn scene_lines(&self, app: &App, layout: Option<&DetailsLayout>, index: usize) -> usize {
+        let Some(layout) = layout else { return SCENE_LINES };
+        if Self::shows_details(app) {
+            return SCENE_LINES + layout.scene_extra_lines[index];
+        }
+        match &self.opened {
+            Some(CellPlace::Scene(opened)) if *opened == index => SCENE_LINES + layout.scene_details[index].len(),
+            Some(CellPlace::Clip(opened, track)) if *opened == index => SCENE_LINES + layout.clip_details.get(&(index, track.clone())).map_or(0, Vec::len),
+            _ => SCENE_LINES,
+        }
+    }
+
+    /// How many lines a row takes: a scene's, or the + row's after the last scene.
+    fn row_lines(&self, app: &App, layout: Option<&DetailsLayout>, index: usize) -> usize {
+        if index == Self::scene_count(app) as usize {
+            return FOOTER_LINES;
+        }
+        self.scene_lines(app, layout, index)
+    }
+
+    /// Whether the rows from first to last, the + row counting as the row after the last scene, fit in room lines.
+    fn rows_fit(&self, app: &App, layout: Option<&DetailsLayout>, first: usize, last: usize, room: usize) -> bool {
+        (first..=last).map(|index| self.row_lines(app, layout, index)).sum::<usize>() <= room
+    }
+
+    fn cell_column(&self, app: &App, layout: Option<&DetailsLayout>, place: usize) -> usize {
+        SCENE_WIDTH
+            + (self.left.get()..place)
+                .map(|column| self.track_width(app, layout, column) + COLUMN_EXTRA)
+                .sum::<usize>()
+    }
+
+    fn visible_tracks(&self, app: &App, layout: Option<&DetailsLayout>, width: usize) -> (usize, usize) {
         let total = Self::tracks(app).len() + 1;
+        if layout.is_some() {
+            let room = width.saturating_sub(SCENE_WIDTH + 1);
+            let fits = |first: usize, place: usize| {
+                (first..=place)
+                    .map(|column| self.track_width(app, layout, column) + COLUMN_EXTRA)
+                    .sum::<usize>()
+                    <= room
+            };
+            if self.in_a_track_column() {
+                let place = self.track_place();
+                self.left.set(self.left.get().min(place));
+                while self.left.get() < place && !fits(self.left.get(), place) {
+                    self.left.set(self.left.get() + 1);
+                }
+            }
+            self.left.set(self.left.get().min(total - 1));
+            while self.left.get() > 0 && fits(self.left.get() - 1, total - 1) {
+                self.left.set(self.left.get() - 1);
+            }
+            let mut last = self.left.get() + 1;
+            while last < total && fits(self.left.get(), last) {
+                last += 1;
+            }
+            return (self.left.get(), last);
+        }
+        let count = ((width.saturating_sub(SCENE_WIDTH + 1)) / (CELL_WIDTH + COLUMN_EXTRA)).max(1);
         if self.in_a_track_column() {
             let place = self.track_place();
             if place < self.left.get() {
@@ -271,43 +523,50 @@ impl ArrangePage {
         (self.left.get(), (self.left.get() + count).min(total))
     }
 
-    fn rows_fit(first: usize, last: usize, room: usize, count: usize) -> bool {
-        let mut height = (last - first) * SCENE_LINES;
-        if last == count {
-            height += FOOTER_LINES;
-        }
-        height <= room
-    }
-
-    fn visible_scenes(&self, app: &App, height: usize) -> std::ops::Range<usize> {
+    fn visible_scenes(&self, app: &App, layout: Option<&DetailsLayout>, height: usize) -> std::ops::Range<usize> {
         let count = Self::scene_count(app) as usize;
-        let room = height.saturating_sub(HEADER_LINES);
+        let room = height.saturating_sub(self.header_lines(app, layout));
         let wanted = (self.row.get().max(0) as usize).min(count);
         let mut top = self.top.get().min(wanted);
-        while top < wanted && !Self::rows_fit(top, wanted, room, count) {
+        while top < wanted && !self.rows_fit(app, layout, top, wanted, room) {
             top += 1;
         }
         let mut stop = top + 1;
-        while stop <= count && Self::rows_fit(top, stop, room, count) {
+        while stop <= count && self.rows_fit(app, layout, top, stop, room) {
             stop += 1;
         }
         self.top.set(top);
         top..(stop.min(count))
     }
 
-    fn dividers(&self, first: usize, last: usize) -> Piece {
+    fn dividers(&self, app: &App, layout: Option<&DetailsLayout>, first: usize, last: usize) -> Piece {
         Piece::Dividers {
             double_at: SCENE_WIDTH,
-            columns: (first + 1..=last).map(|place| self.cell_column(place)).collect(),
+            columns: (first + 1..=last).map(|place| self.cell_column(app, layout, place)).collect(),
             faint: false,
         }
     }
 
-    fn grid_rule(&self, first: usize, last: usize) -> Piece {
+    fn grid_rule(&self, app: &App, layout: Option<&DetailsLayout>, first: usize, last: usize) -> Piece {
         Piece::Rule {
-            end: self.cell_column(last),
+            end: self.cell_column(app, layout, last),
             double_at: SCENE_WIDTH,
-            crosses: (first + 1..last).map(|place| self.cell_column(place)).collect(),
+            crosses: (first + 1..last).map(|place| self.cell_column(app, layout, place)).collect(),
+        }
+    }
+
+    /// Lay lines of details from a column, each cut to room when given, the picked one in brackets when here is true.
+    fn draw_details(&self, app: &App, lines: &mut [Vec<Piece>], details: &[DetailLine], column: usize, here: bool, room: Option<usize>) {
+        let picked = if here { self.picked_line(app) } else { None };
+        for (place, (line, detail)) in lines.iter_mut().zip(details).enumerate() {
+            let style = detail.colour().map_or_else(|| detail.kind.style().to_string(), crate::themes::text_style);
+            line.push(Piece::Detail {
+                column,
+                text: detail.text.clone(),
+                style,
+                picked: picked == Some(place),
+                room,
+            });
         }
     }
 
@@ -327,11 +586,12 @@ impl ArrangePage {
         format!("{}{length}", fit(&row, SCENE_LABEL_WIDTH - length.chars().count() - 1))
     }
 
-    fn draw_header(&self, app: &App, lines: &mut [Vec<Piece>], first: usize, last: usize) {
+    fn draw_header(&self, app: &App, layout: Option<&DetailsLayout>, lines: &mut [Vec<Piece>], first: usize, last: usize) {
         let tracks = Self::tracks(app);
         let count = lines.len();
+        let dividers = self.dividers(app, layout, first, last);
         for line in lines[..count - 1].iter_mut() {
-            line.push(self.dividers(first, last));
+            line.push(dividers.clone());
         }
         if Self::real_time_on(app) {
             let button = named(marks::MSG_SONG_BUTTON, &[("mark", marks::MSG_PLAY_MARK.into())]);
@@ -342,47 +602,69 @@ impl ArrangePage {
             });
         }
         for place in first..last {
-            let column = self.cell_column(place) + FRAME_ROOM + 1;
+            let column = self.cell_column(app, layout, place) + FRAME_ROOM + 1;
+            let width = self.track_width(app, layout, place);
             if place < tracks.len() {
-                let width = if Self::real_time_on(app) {
-                    CELL_WIDTH - SOUNDING_MARK_WIDTH
+                let name = &tracks[place];
+                let shown = if layout.is_some() && name.chars().count() > DETAIL_WIDTH {
+                    fit(name, DETAIL_WIDTH).trim_end().to_string()
                 } else {
-                    CELL_WIDTH
+                    name.clone()
                 };
+                let room = if Self::real_time_on(app) { width - SOUNDING_MARK_WIDTH } else { width };
                 lines[1].push(Piece::Text {
                     column,
-                    text: fit(&format!(" {}", tracks[place]), width),
+                    text: fit(&format!(" {shown}"), room),
                     kind: Kind::Name,
                 });
+                let cell = CellPlace::Track(name.clone());
+                if let (Some(layout), true) = (layout, self.cell_open(app, &cell)) {
+                    let here = self.on_header() && !self.on_corner() && self.track_place() == place;
+                    let end = count - 2;
+                    self.draw_details(app, &mut lines[2..end], &layout.track_details[place], column + TRACK_DETAIL_INDENT, here, None);
+                }
             } else {
                 lines[1].push(Piece::Text {
                     column,
-                    text: fit_aligned(marks::MSG_ADD_ROW_MARK, CELL_WIDTH, Align::Center),
+                    text: fit_aligned(marks::MSG_ADD_ROW_MARK, width, Align::Center),
                     kind: Kind::Faint,
                 });
             }
         }
         if last < tracks.len() + 1 {
             lines[1].push(Piece::More {
-                column: self.cell_column(last),
+                column: self.cell_column(app, layout, last),
             });
         }
-        lines[count - 1].push(self.grid_rule(first, last));
+        lines[count - 1].push(self.grid_rule(app, layout, first, last));
     }
 
-    fn draw_scene(&self, app: &App, lengths: &Lengths, lines: &mut [Vec<Piece>], index: usize, window: (usize, usize)) {
+    fn draw_scene(&self, app: &App, layout: Option<&DetailsLayout>, lengths: &Lengths, lines: &mut [Vec<Piece>], index: usize, window: (usize, usize)) {
         let (first, last) = window;
         let tracks = Self::tracks(app);
         let count = lines.len();
+        let dividers = self.dividers(app, layout, first, last);
         for line in lines[..count - 1].iter_mut() {
-            line.push(self.dividers(first, last));
+            line.push(dividers.clone());
         }
-        lines[count - 1].push(self.grid_rule(first, last));
+        lines[count - 1].push(self.grid_rule(app, layout, first, last));
         lines[1].push(Piece::Text {
             column: SCENE_LABEL_COLUMN,
             text: self.scene_label(app, lengths, index),
             kind: Kind::Name,
         });
+        if let (Some(layout), true) = (layout, self.cell_open(app, &CellPlace::Scene(index))) {
+            let here = self.on_scene_name() && !self.on_plus_row(app) && self.row.get() == index as i64;
+            let end = count - LINES_UNDER_A_SCENE;
+            self.draw_details(
+                app,
+                &mut lines[FIRST_DETAIL_LINE..end],
+                &layout.scene_details[index],
+                SCENE_BAR_COLUMN,
+                here,
+                Some(SCENE_DETAIL_ROOM),
+            );
+        }
         let scene_bar = LengthBar {
             width: SCENE_WIDTH - SCENE_BAR_COLUMN - 2,
             hatched: true,
@@ -400,25 +682,29 @@ impl ArrangePage {
             });
         }
         for (place, track) in tracks.iter().enumerate().take(last).skip(first) {
-            let column = self.cell_column(place) + FRAME_ROOM + 1;
+            let column = self.cell_column(app, layout, place) + FRAME_ROOM + 1;
+            let width = self.track_width(app, layout, place);
             let Some(clip) = Self::clip(app, index, track) else {
                 if self.row.get() == index as i64 && self.in_a_track_column() && !self.on_header() && self.track_place() == place {
                     lines[1].push(Piece::Text {
                         column,
-                        text: fit_aligned(marks::MSG_ADD_ROW_MARK, CELL_WIDTH, Align::Center),
+                        text: fit_aligned(marks::MSG_ADD_ROW_MARK, width, Align::Center),
                         kind: Kind::Plain,
                     });
                     lines[2].push(Piece::Text {
                         column,
-                        text: fit_aligned(legends::What::ADD, CELL_WIDTH, Align::Center),
+                        text: fit_aligned(legends::What::ADD, width, Align::Center),
                         kind: Kind::Plain,
                     });
                 }
                 continue;
             };
+            let cell = CellPlace::Clip(index, track.clone());
+            let open = layout.is_some() && self.cell_open(app, &cell);
+            let shown = if open { detailed_clip_text(clip) } else { clip_text(clip) };
             lines[1].push(Piece::Text {
                 column,
-                text: fit(&format!(" {}", clip_text(clip)), CELL_WIDTH),
+                text: fit(&format!(" {shown}"), width),
                 kind: Kind::Plain,
             });
             let total = lengths.scene_play_seconds(index);
@@ -426,7 +712,7 @@ impl ArrangePage {
                 lines[2].push(Piece::PlayButton { column, playing: false });
                 (
                     LengthBar {
-                        width: CELL_WIDTH - 2 - PLAY_BUTTON_WIDTH,
+                        width: width - 2 - PLAY_BUTTON_WIDTH,
                         hatched: false,
                     },
                     column + 1 + PLAY_BUTTON_WIDTH,
@@ -434,7 +720,7 @@ impl ArrangePage {
             } else {
                 (
                     LengthBar {
-                        width: CELL_WIDTH - 2,
+                        width: width - 2,
                         hatched: false,
                     },
                     column + 1,
@@ -450,20 +736,29 @@ impl ArrangePage {
                 text,
                 kind: Kind::Plain,
             });
+            if let (Some(layout), true) = (layout, open) {
+                let indent = if real_time { DETAIL_INDENT } else { 1 };
+                let here = !self.on_header() && !self.on_scene_name() && self.row.get() == index as i64 && self.track_place() == place;
+                let details = layout.clip_details.get(&(index, track.clone())).cloned().unwrap_or_default();
+                let end = count - LINES_UNDER_A_SCENE;
+                self.draw_details(app, &mut lines[FIRST_DETAIL_LINE..end], &details, column + indent, here, None);
+            }
         }
     }
 
-    fn frame(&self, app: &App, shown: &std::ops::Range<usize>, window: (usize, usize)) -> Option<CellFrame> {
+    fn frame(&self, app: &App, layout: Option<&DetailsLayout>, shown: &std::ops::Range<usize>, window: (usize, usize)) -> Option<CellFrame> {
         let (first, last) = window;
-        let names = HEADER_LINES - 3;
+        let header = self.header_lines(app, layout);
+        let names = header - 3;
+        let style = if self.picking(app) { Style::DETAILS_LOCKED } else { Style::SELECTED_EDGE };
         let around = |place: usize, top: usize, inside: usize| {
-            let left = self.cell_column(place) + FRAME_ROOM;
+            let left = self.cell_column(app, layout, place) + FRAME_ROOM;
             CellFrame {
                 left,
-                right: left + CELL_WIDTH + 1,
+                right: left + self.track_width(app, layout, place) + 1,
                 top,
                 inside,
-                style: Style::SELECTED_EDGE,
+                style,
             }
         };
         if self.on_corner() {
@@ -472,36 +767,36 @@ impl ArrangePage {
                 right: SCENE_FRAME_RIGHT,
                 top: 0,
                 inside: names,
-                style: Style::SELECTED_EDGE,
+                style,
             });
         }
         if self.on_header() {
             let place = self.track_place();
             return (first <= place && place < last).then(|| around(place, 0, names));
         }
-        let scenes_height = shown.len() * SCENE_LINES;
+        let scenes_height: usize = shown.clone().map(|index| self.scene_lines(app, layout, index)).sum();
         if self.on_plus_row(app) {
             return Some(CellFrame {
                 left: 0,
                 right: SCENE_FRAME_RIGHT,
-                top: HEADER_LINES + scenes_height,
+                top: header + scenes_height,
                 inside: NAME_LINES,
-                style: Style::SELECTED_EDGE,
+                style,
             });
         }
         let row = self.row.get() as usize;
         if !shown.contains(&row) {
             return None;
         }
-        let line = HEADER_LINES + (row - shown.start) * SCENE_LINES;
-        let inside = SCENE_LINES - 1 - LINES_UNDER_A_SCENE;
+        let line = header + (shown.start..row).map(|index| self.scene_lines(app, layout, index)).sum::<usize>();
+        let inside = self.scene_lines(app, layout, row) - 1 - LINES_UNDER_A_SCENE;
         if self.on_scene_name() {
             return Some(CellFrame {
                 left: 0,
                 right: SCENE_FRAME_RIGHT,
                 top: line,
                 inside,
-                style: Style::SELECTED_EDGE,
+                style,
             });
         }
         Some(around(self.track_place(), line, inside))
@@ -510,11 +805,11 @@ impl ArrangePage {
 
 impl Page for ArrangePage {
     fn is_ported(&self) -> bool {
-        self.mode.get().is_none() && !self.details_now.get()
+        self.mode.get().is_none()
     }
 
     fn name(&self) -> &'static str {
-        if self.details_now.get() || self.mode.get().is_some() {
+        if self.mode.get().is_some() {
             crate::screens::not_ported::NOT_PORTED
         } else {
             "ArrangePage"
@@ -534,14 +829,27 @@ impl Page for ArrangePage {
         match self.mode.get() {
             Some(Unported::Moving) => return vec![Self::bind(&Keys::DROP)],
             Some(Unported::SceneView) => return vec![Self::bind(&Keys::ESCAPE_INSET), Self::bind(&Keys::CLOSE_INSET)],
-            Some(Unported::Locked) => {
-                return vec![
-                    Self::bind(&Keys::ESCAPE_CELL),
-                    Self::bind(&Keys::OUT_OF_DETAILS),
-                    Self::bind(&Keys::CLOSE_DETAILS),
-                ]
-            }
             None => {}
+        }
+        if self.picking(app) {
+            let mut keys = vec![Self::bind(&Keys::ESCAPE_CELL), Self::bind(&Keys::OUT_OF_DETAILS)];
+            if !self.pickable(app).is_empty() {
+                keys.push(Self::bind(&Keys::PICK_DETAIL).wanting_key());
+                let target = self.picked_target(app);
+                if target.as_ref().is_some_and(|target| target.kind == ADD_CHAIN) {
+                    keys.push(Self::bind(&Keys::ADD_CHAIN));
+                } else {
+                    keys.push(Self::bind(&Keys::OPEN_DETAIL));
+                }
+                if target
+                    .as_ref()
+                    .is_some_and(|target| target.kind == llamatron_model::schema::generated::file_format::Section::CHAINS)
+                {
+                    keys.push(Self::bind(&Keys::REMOVE_CHAIN));
+                }
+            }
+            keys.push(Self::bind(&Keys::CLOSE_DETAILS));
+            return keys;
         }
         let mut keys = vec![Self::bind(&Keys::BACK), Self::bind(&Keys::MOVE).wanting_key()];
         if self.on_header() {
@@ -551,7 +859,7 @@ impl Page for ArrangePage {
         } else {
             keys.extend(self.scene_row_keys(app));
         }
-        if self.has_cursor_cell(app) {
+        if self.cursor_cell(app).is_some() {
             keys.push(Self::bind(&Keys::INTO_DETAILS));
         }
         keys.push(Self::bind(if app.session.shows_arrange_details {
@@ -582,17 +890,26 @@ impl Page for ArrangePage {
         } else if item.is(&Keys::SCENE_VIEW) {
             self.mode.set(Some(Unported::SceneView));
         } else if item.is(&Keys::INTO_DETAILS) {
-            self.mode.set(Some(Unported::Locked));
-        } else if item.is(&Keys::DROP)
-            || item.is(&Keys::ESCAPE_INSET)
-            || item.is(&Keys::CLOSE_INSET)
-            || item.is(&Keys::ESCAPE_CELL)
-            || item.is(&Keys::OUT_OF_DETAILS)
-        {
-            self.mode.set(None);
+            self.start_picking(app);
+        } else if item.is(&Keys::ESCAPE_CELL) || item.is(&Keys::OUT_OF_DETAILS) {
+            self.stop_picking();
         } else if item.is(&Keys::CLOSE_DETAILS) {
-            self.mode.set(None);
+            self.stop_picking();
             app.session.shows_arrange_details = false;
+        } else if item.is(&Keys::PICK_DETAIL) {
+            let count = self.pickable(app).len() as i64;
+            let step: i64 = if key == "up" { -1 } else { 1 };
+            self.picked = Some((self.picked.unwrap_or(0) as i64 + step).clamp(0, (count - 1).max(0)) as usize);
+        } else if item.is(&Keys::OPEN_DETAIL) {
+            if let Some(target) = self.picked_target(app) {
+                self.open_target(app, target);
+            }
+        } else if item.is(&Keys::REMOVE_CHAIN) {
+            if let Some(Target { place: Some(place), .. }) = self.picked_target(app) {
+                self.remove_cell_chain(app, place);
+            }
+        } else if item.is(&Keys::DROP) || item.is(&Keys::ESCAPE_INSET) || item.is(&Keys::CLOSE_INSET) {
+            self.mode.set(None);
         } else if item.is(&Keys::OPEN_PATTERN) {
             let tracks = Self::tracks(app);
             if let Some(clip) = Self::clip(app, self.row.get() as usize, &tracks[self.track_place()]) {
@@ -625,25 +942,30 @@ impl Page for ArrangePage {
     }
 
     fn body(&self, app: &App, width: usize, height: usize) -> Vec<Text> {
-        self.details_now.set(app.session.shows_arrange_details);
         self.clamp(app);
         let lengths = Lengths::of(app.document.get_setlist(), app.document.song());
-        let window = self.visible_tracks(app, width);
-        let shown = self.visible_scenes(app, height);
+        let held = self.layout(app);
+        let layout = held.as_ref();
+        let window = self.visible_tracks(app, layout, width);
+        let shown = self.visible_scenes(app, layout, height);
         let count = Self::scene_count(app) as usize;
-        let plus_row = shown.end == count && Self::rows_fit(shown.start, count, height.saturating_sub(HEADER_LINES), count);
-        let total = HEADER_LINES + shown.len() * SCENE_LINES + if plus_row { FOOTER_LINES } else { 0 };
+        let header = self.header_lines(app, layout);
+        let plus_row = shown.end == count && self.rows_fit(app, layout, shown.start, count, height.saturating_sub(header));
+        let scenes: usize = shown.clone().map(|index| self.scene_lines(app, layout, index)).sum();
+        let total = header + scenes + if plus_row { FOOTER_LINES } else { 0 };
         let mut lines: Vec<Vec<Piece>> = (0..total).map(|_| Vec::new()).collect();
-        self.draw_header(app, &mut lines[..HEADER_LINES], window.0, window.1);
-        let mut start = HEADER_LINES;
+        self.draw_header(app, layout, &mut lines[..header], window.0, window.1);
+        let mut start = header;
         for index in shown.clone() {
-            self.draw_scene(app, &lengths, &mut lines[start..start + SCENE_LINES], index, window);
-            start += SCENE_LINES;
+            let rows = self.scene_lines(app, layout, index);
+            self.draw_scene(app, layout, &lengths, &mut lines[start..start + rows], index, window);
+            start += rows;
         }
         if plus_row {
+            let dividers = self.dividers(app, layout, window.0, window.1);
             let footer = &mut lines[total - FOOTER_LINES..];
             for line in footer.iter_mut() {
-                line.push(self.dividers(window.0, window.1));
+                line.push(dividers.clone());
             }
             footer[1].push(Piece::Text {
                 column: SCENE_BAR_COLUMN,
@@ -651,7 +973,7 @@ impl Page for ArrangePage {
                 kind: Kind::Faint,
             });
         }
-        let frames: Vec<CellFrame> = self.frame(app, &shown, window).into_iter().collect();
+        let frames: Vec<CellFrame> = self.frame(app, layout, &shown, window).into_iter().collect();
         arrange_lines(&lines, width, &frames)
     }
 

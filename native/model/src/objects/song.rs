@@ -125,6 +125,11 @@ impl Track {
         self.settings.get(name)
     }
 
+    /// Write one of its settings as a file holds it, or take it out with None.
+    pub fn set_written(&mut self, name: &str, value: Option<Data>) {
+        self.settings.put(name, value);
+    }
+
     pub fn to_data(&self) -> Data {
         self.settings.to_data()
     }
@@ -178,6 +183,11 @@ impl ClipSlot {
         self.settings.get(name)
     }
 
+    /// Write one of its settings as a file holds it, or take it out with None.
+    pub fn set_written(&mut self, name: &str, value: Option<Data>) {
+        self.settings.put(name, value);
+    }
+
     /// The clip as a file holds it: one pattern named as pattern, several listed as patterns.
     pub fn to_data(&self) -> Data {
         let pairs = self
@@ -223,6 +233,11 @@ impl Scene {
 
     pub fn get_written(&self, name: &str) -> Option<&Data> {
         self.settings.get(name)
+    }
+
+    /// Write one of its settings as a file holds it, or take it out with None.
+    pub fn set_written(&mut self, name: &str, value: Option<Data>) {
+        self.settings.put(name, value);
     }
 
     pub fn clip_slots(&self) -> &[(String, ClipSlot)] {
@@ -275,6 +290,28 @@ fn sensible_style(genre: Option<&Data>, subgenre: Option<&Data>, variant: Option
 }
 
 impl Song {
+    /// Write one of a track's settings, by the track's name.
+    pub fn set_track_written(&mut self, track: &str, name: &str, value: Option<Data>) {
+        if let Some((_, found)) = self.tracks.iter_mut().flatten().find(|(found, _)| found == track) {
+            found.set_written(name, value);
+        }
+    }
+
+    /// Write one of a scene's settings, by the scene's place.
+    pub fn set_scene_written(&mut self, index: usize, name: &str, value: Option<Data>) {
+        if let Some(scene) = self.scenes.iter_mut().flatten().nth(index) {
+            scene.set_written(name, value);
+        }
+    }
+
+    /// Write one of a clip's settings, by its scene's place and its track.
+    pub fn set_clip_written(&mut self, index: usize, track: &str, name: &str, value: Option<Data>) {
+        let Some(scene) = self.scenes.iter_mut().flatten().nth(index) else { return };
+        if let Some((_, clip)) = scene.clip_slots.iter_mut().flatten().find(|(found, _)| found == track) {
+            clip.set_written(name, value);
+        }
+    }
+
     pub fn from_data(data: &Data, set: &dyn Context) -> Result<Song, InvalidValue> {
         let data = if data.is_null() { Data::Map(Vec::new()) } else { data.clone() };
         if !matches!(data, Data::Map(_)) {
