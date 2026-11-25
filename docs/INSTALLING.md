@@ -20,7 +20,7 @@ Clone the repository and run the setup script from the project folder:
 ```
 git clone https://github.com/mpdehaan/llamatron.git
 cd llamatron
-sh user_scripts/setup.sh
+sh setup.sh
 ```
 
 The script makes a Python virtual environment in the folder `.venv` and

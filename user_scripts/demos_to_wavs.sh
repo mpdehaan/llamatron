@@ -14,7 +14,7 @@
 # Each time, it:
 #   1. runs user_scripts/install_fluidsynth.sh, which installs FluidSynth with Homebrew and downloads the free
 #      GeneralUser GS SoundFont into ~/soundfonts, each only if it isn't there;
-#   2. checks for the virtual environment that user_scripts/setup.sh makes;
+#   2. checks for the virtual environment that setup.sh makes;
 #   3. with no files named, makes the preview MIDI files first, with user_scripts/demos_to_midi.sh;
 #   4. writes a WAV file beside each preview, like output/previews/classic_strum.wav, writing over the ones
 #      it made before, and normalizes each (internal_tools/normalize_wave.py): the whole file raised until its
@@ -43,7 +43,7 @@ NORMALIZE='internal_tools/normalize_wave.py'
 cd "$(dirname "$0")/.."
 
 if [ ! -x "$PYTHON" ]; then
-    echo "There's no $PYTHON: run sh user_scripts/setup.sh first." >&2
+    echo "There's no $PYTHON: run sh setup.sh first." >&2
     exit 1
 fi
 

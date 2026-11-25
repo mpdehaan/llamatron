@@ -13,7 +13,7 @@ cd "$(dirname "$0")"
 
 if [ ! -x native/target/release/llamatron2 ]; then
     echo 'llamatron2 is not built, so please build it first:'
-    echo '    sh user_scripts/build.sh'
+    echo '    sh build.sh'
     exit 1
 fi
 exec native/target/release/llamatron2 "$@"

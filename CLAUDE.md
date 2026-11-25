@@ -80,7 +80,7 @@ GPL-3.0-or-later`), above the module docstring and below a `#!` line.
 
 `.claude/reference/COMMANDS.md` lists every script; a new or changed script MUST update it and `docs/USER_SCRIPTS.md` in the same change.
 Scripts are `sh`, named with underscores: `user_scripts/` for users, `internal_tools/` (the "support folder") for development,
-with the genre tools in `internal_tools/analysis_and_generation/`. The top folder holds only `llamatron.sh`. Every script runs
+with the genre tools in `internal_tools/analysis_and_generation/`. The top folder holds only `llamatron.sh`, `setup.sh` (the dependencies) and `build.sh` (llamatron2). Every script runs
 from the top folder wherever started.
 
 ```

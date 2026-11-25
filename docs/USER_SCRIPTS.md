@@ -21,7 +21,7 @@ cloning the repository, and again if the environment is ever deleted.
 [Installing](INSTALLING.md) describes the installation.
 
 ```
-sh user_scripts/setup.sh
+sh setup.sh
 ```
 
 Parameters: none.
@@ -33,7 +33,7 @@ the backend, offering to install Rust first. Run it once after cloning the
 repository, and again after updating it.
 
 ```
-sh user_scripts/build.sh
+sh build.sh
 ```
 
 Parameters: none.

@@ -7,14 +7,14 @@
 
 # Build llamatron2, which ./llamatron.sh runs:
 #
-#     sh user_scripts/build.sh
+#     sh build.sh
 #
 # It checks what building needs and offers to install what is missing, installing nothing unless you say yes, through
 # internal_tools/build_backend.sh, which builds the backend too; then it builds the tracker into
 # native/target/release/llamatron2. Running it again rebuilds only what changed.
 
 set -eu
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")"
 
 sh internal_tools/build_backend.sh
 if [ -x "$HOME/.cargo/bin/cargo" ]; then

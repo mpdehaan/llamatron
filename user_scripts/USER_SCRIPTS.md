@@ -24,7 +24,7 @@ Makes the virtual environment `.venv` and installs llamatron into it. Run it
 once, before anything else.
 
 ```
-sh user_scripts/setup.sh
+sh setup.sh
 ```
 
 ### `build.sh`
@@ -34,7 +34,7 @@ backend, offering to install Rust first. Run it once after cloning, and again
 after updating.
 
 ```
-sh user_scripts/build.sh
+sh build.sh
 ```
 
 ### `install_fluidsynth.sh`

@@ -14,7 +14,7 @@ to install whatever is missing, and installs nothing unless you say yes.
 sh internal_tools/build_backend.sh
 ```
 
-`sh user_scripts/setup.sh` runs the same script at the end of setting up, so
+`sh setup.sh` runs the same script at the end of setting up, so
 on a fresh copy of llamatron the backend is usually built already. Until it is
 built, llamatron plays through its older Python processes, which are slower
 and run out of room with many instruments.
