@@ -4,5 +4,7 @@
 //! Arrange and the pages it opens (the Python screens/arrange/).
 
 pub mod arrange_page;
+pub mod arrange_tabs;
 pub mod grid;
+pub mod scene_page;
 pub mod track_editor;

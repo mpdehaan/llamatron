@@ -1,0 +1,223 @@
+// llamatron: a music program
+// Copyright (C) 2026  Michael DeHaan
+// SPDX-License-Identifier: GPL-3.0-or-later
+//! The tabs a scene's page and a clip's page share (the Python pages/arrange_tabs.py, velocity_fields.py and
+//! shape_fields.py): how loud it plays and its ramps, its shapes, the draws it resets, its other generators and its
+//! Bypass When.
+
+use crate::app::App;
+use crate::forms::nodes::Field;
+use crate::forms::statements::statement_lines;
+use crate::forms::tab_box::{columns_of_sections, Tab, TabColumn};
+use crate::screens::generators::generators_page::label_of;
+use crate::screens::generators::plugin_editor::Made;
+use crate::settings::named_in;
+use llamatron_model::file::data::Data;
+use llamatron_model::objects::song::Song;
+use llamatron_model::schema::generated::file_format::{DrawSetting, DRAW_NAMES, PLACED_SHAPES, RAMP_WAYS, VELOCITY_RAMP_SETTINGS};
+use llamatron_model::schema::generated::limits::{MAX_RAMP_BARS, MAX_VELOCITY_PERCENT, MIN_VELOCITY_PERCENT};
+use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_strings::{labels, legends, marks, named};
+
+/// A velocity as written, which a level or a ramp leaves alone.
+pub const AS_WRITTEN: i64 = 100;
+const MIN_RAMP_BARS: i64 = 1;
+
+/// Where each tab's fields take their ids from, so that no two tabs' fields share one.
+pub const VELOCITY_IDS: usize = 100;
+pub const TEMPO_RAMP_IDS: usize = 200;
+pub const SHAPE_IDS: usize = 300;
+pub const RESET_IDS: usize = 400;
+pub const GENERATORS: usize = 500;
+pub const BYPASS_IDS: usize = 600;
+
+pub fn whole(value: Option<&Data>) -> Option<i64> {
+    value.filter(|value| !value.is_null()).and_then(Data::as_whole).map(|whole| whole as i64)
+}
+
+/// A percentage as a field shows it.
+pub fn percent_shown(percent: i64) -> String {
+    named(marks::MSG_PERCENT_SHOWN, &[("percent", percent.into())])
+}
+
+/// The bars a ramp takes as its field shows them.
+pub fn bars_shown(bars: i64) -> String {
+    if bars == MIN_RAMP_BARS {
+        marks::MSG_RAMP_ONE_BAR_SHOWN.to_string()
+    } else {
+        named(marks::MSG_RAMP_BARS_SHOWN, &[("bars", bars.into())])
+    }
+}
+
+/// What a table keyed by a ramp's way and part holds for one, such as velocity_in_start.
+pub fn labelled(table: &'static [(&'static [&'static str], &'static str)], way: &str, part: &str) -> &'static str {
+    table.iter().find(|(key, _)| key[0] == way && key[1] == part).map_or("", |(_, label)| label)
+}
+
+fn velocity_ramp_setting(way: &str, part: &str) -> &'static str {
+    labelled(VELOCITY_RAMP_SETTINGS, way, part)
+}
+
+/// The Velocity tab: the level across the top, then a column for each ramp; own reads the page's own setting and above the
+/// scene's, for a clip that takes it from there.
+pub fn velocity_tab(own: &dyn Fn(&str) -> Option<i64>, above: &dyn Fn(&str) -> Option<i64>) -> Tab {
+    let level = own("velocity");
+    let level_field = Field::number(
+        VELOCITY_IDS,
+        labels::MSG_VELOCITY_PERCENT_LABEL,
+        level,
+        Some(MIN_VELOCITY_PERCENT),
+        Some(MAX_VELOCITY_PERCENT),
+        AS_WRITTEN,
+        Some(percent_shown(level.unwrap_or(AS_WRITTEN))),
+    )
+    .with_clear(&percent_shown(AS_WRITTEN));
+    let mut fields = Vec::new();
+    let mut id = VELOCITY_IDS;
+    for way in RAMP_WAYS {
+        let names: Vec<&str> = ["start", "end", "over"].iter().map(|part| velocity_ramp_setting(way, part)).collect();
+        id += 1;
+        let is_set = names.iter().any(|name| own(name).is_some());
+        fields.push(Field::heading(id, &named_in(labels::MSG_RAMP_HEADINGS, way), is_set, None, false));
+        for (part, name) in ["start", "end"].iter().zip(&names) {
+            id += 1;
+            let taken = above(name);
+            let shown = match (own(name), taken) {
+                (Some(value), _) => percent_shown(value),
+                (None, Some(value)) => named(marks::MSG_FROM_SCENE_SHOWN, &[("value", percent_shown(value).as_str().into())]),
+                (None, None) => percent_shown(AS_WRITTEN),
+            };
+            let cleared = if taken.is_some() {
+                legends::MSG_FROM_SCENE_WHAT.to_string()
+            } else {
+                percent_shown(AS_WRITTEN)
+            };
+            fields.push(
+                Field::number(
+                    id,
+                    labelled(labels::MSG_VELOCITY_RAMP_LABELS, way, part),
+                    own(name),
+                    Some(MIN_VELOCITY_PERCENT),
+                    Some(MAX_VELOCITY_PERCENT),
+                    taken.unwrap_or(AS_WRITTEN),
+                    Some(shown),
+                )
+                .with_clear(&cleared)
+                .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, part)),
+            );
+        }
+        id += 1;
+        let over = names[2];
+        let taken = above(over);
+        let shown = match (own(over), taken) {
+            (Some(bars), _) => bars_shown(bars),
+            (None, Some(bars)) => named(marks::MSG_FROM_SCENE_SHOWN, &[("value", bars_shown(bars).as_str().into())]),
+            (None, None) => marks::MSG_NONE_SHOWN.to_string(),
+        };
+        let cleared = if taken.is_some() {
+            legends::MSG_FROM_SCENE_WHAT
+        } else {
+            marks::MSG_NONE_SHOWN
+        };
+        fields.push(
+            Field::number(
+                id,
+                labelled(labels::MSG_VELOCITY_RAMP_LABELS, way, "over"),
+                own(over),
+                Some(MIN_RAMP_BARS),
+                Some(MAX_RAMP_BARS),
+                taken.unwrap_or(MIN_RAMP_BARS),
+                Some(shown),
+            )
+            .with_clear(cleared)
+            .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, "over")),
+        );
+    }
+    let mut tab = Tab::new(labels::MSG_VELOCITY_TAB, columns_of_sections(fields));
+    tab.top = vec![level_field];
+    tab
+}
+
+/// The Shapes tab: a column for each shape a scene or a clip places on its notes.
+pub fn shapes_tab(app: &App, data: &Data) -> Tab {
+    let mut made = Made::over(app, data).counting_from(SHAPE_IDS);
+    let mut fields = Vec::new();
+    for shape in PLACED_SHAPES {
+        fields.extend(made.shape_section(shape));
+    }
+    Tab::new(labels::MSG_SHAPES_TAB, columns_of_sections(fields))
+}
+
+/// The draws of a song that hold a value in a slot, in order.
+pub fn draws_with_values(song: &Song) -> Vec<&'static str> {
+    DRAW_NAMES
+        .iter()
+        .copied()
+        .filter(|name| {
+            song.draws().iter().any(|(found, draw)| {
+                found == name
+                    && draw
+                        .get_written(DrawSetting::SLOTS)
+                        .and_then(Data::as_list)
+                        .is_some_and(|slots| slots.iter().any(|slot| !slot.is_null()))
+            })
+        })
+        .collect()
+}
+
+/// The Reset Draws tab: a toggle for each draw that holds a value, on where the scene or clip resets it as it starts.
+pub fn reset_draws_tab(song: &Song, reset: Option<&Data>) -> Tab {
+    let resets: Vec<&str> = reset
+        .and_then(Data::as_list)
+        .map_or(Vec::new(), |names| names.iter().filter_map(Data::as_str).collect());
+    let names = draws_with_values(song);
+    let toggles = names
+        .iter()
+        .enumerate()
+        .map(|(place, name)| {
+            Field::toggle(
+                RESET_IDS + place,
+                &named(labels::MSG_RESET_LABEL, &[("name", (*name).into())]),
+                resets.contains(name),
+            )
+        })
+        .collect();
+    let mut tab = Tab::new(labels::MSG_RESET_DRAWS_TAB, vec![TabColumn::new(None, toggles)]);
+    if names.is_empty() {
+        tab.remarks = vec![labels::MSG_NO_DRAWS_CONFIGURED.to_string()];
+    }
+    tab
+}
+
+/// The tab of other generators: one field listing each, its kind before its name.
+pub fn generators_tab(app: &App, chains: Option<&Data>) -> Tab {
+    let names: Vec<String> = chains
+        .and_then(Data::as_list)
+        .map_or(Vec::new(), |names| names.iter().filter_map(|name| name.as_str().map(str::to_string)).collect());
+    let setlist = app.document.get_setlist();
+    let listed: Vec<String> = names
+        .iter()
+        .map(|name| {
+            let kind = PLUGINS
+                .iter()
+                .find(|plugin| setlist.get_item(plugin.section, name).is_some())
+                .map_or(labels::MSG_CHAIN_LABEL, |plugin| label_of(plugin.name));
+            named(labels::MSG_LISTED_GENERATOR, &[("kind", kind.into()), ("name", name.as_str().into())])
+        })
+        .collect();
+    let shown = if listed.is_empty() {
+        marks::MSG_NONE_SHOWN.to_string()
+    } else {
+        listed.join(marks::MSG_CHAIN_JOIN)
+    };
+    let field = Field::custom(GENERATORS, labels::MSG_GENERATORS_FIELD_LABEL, &shown)
+        .with_enter(legends::What::EDIT)
+        .with_clear(marks::MSG_NONE_SHOWN);
+    Tab::new(labels::MSG_USER_TAB, vec![TabColumn::new(None, vec![field])])
+}
+
+/// The Bypass When tab: the table of statements alone.
+pub fn bypass_tab(statements: Option<&Data>) -> Tab {
+    let held = statements.and_then(Data::as_list).map(<[Data]>::to_vec).unwrap_or_default();
+    Tab::new(labels::MSG_BYPASS_WHEN_TAB, vec![TabColumn::new(None, statement_lines(0, &held, BYPASS_IDS))])
+}

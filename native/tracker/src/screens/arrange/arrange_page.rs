@@ -609,7 +609,10 @@ impl Page for ArrangePage {
         } else if item.is(&Keys::EDIT_CLIP) {
             app.show_page(Box::new(NotPorted { name: "ClipPage".to_string() }));
         } else if item.is(&Keys::SCENE_SETTINGS) {
-            app.show_page(Box::new(NotPorted { name: "ScenePage".to_string() }));
+            let index = self.row.get().max(0) as usize;
+            app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
+                crate::screens::arrange::scene_page::ScenePage { index },
+            )));
         } else if item.is(&Keys::TRACK_SETTINGS) {
             let name = Self::tracks(app)[self.track_place()].clone();
             app.show_page(Box::new(crate::screens::field_page::FieldPage::new(

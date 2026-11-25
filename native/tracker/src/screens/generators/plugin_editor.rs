@@ -106,6 +106,25 @@ impl<'a> Made<'a> {
         }
     }
 
+    /// The fields made from a scene's or a clip's data, which no generator's view describes, for the shapes they hold.
+    pub fn over(app: &'a App, data: &'a Data) -> Made<'a> {
+        Made {
+            data,
+            table: &[],
+            built_in: false,
+            view: VIEWS[0].1,
+            app,
+            next_id: NAME,
+            views: Vec::new(),
+        }
+    }
+
+    /// A shape's section, its heading taking the next id.
+    pub fn shape_section(&mut self, shape: &str) -> Vec<Field> {
+        let id = self.id();
+        self.shape_fields(id, shape)
+    }
+
     /// The same, its fields' ids counting on from an id, so that several generators' fields on one page stay apart.
     pub fn counting_from(mut self, id: usize) -> Made<'a> {
         self.next_id = id;
