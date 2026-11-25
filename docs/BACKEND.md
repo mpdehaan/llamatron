@@ -180,4 +180,4 @@ voices and the same safety guard into a file, as fast as it can.
 - `unsafe` is used only where the engine calls the operating system, each with
   a comment saying why it is sound.
 - Each module's tests sit at its end, in `mod tests`, and run with
-  `cargo test --release --manifest-path native/backend/Cargo.toml`.
+  `cargo test --release --manifest-path native/Cargo.toml`.

@@ -1,0 +1,16 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# llamatron's native code, one crate a layer, mirroring the Python packages (.claude/rules/RUST.md): a crate may use only
+# the crates its manifest names, so the compiler keeps the layering tests/rules/test_layers.py keeps for the Python.
+[workspace]
+resolver = "2"
+members = ["backend", "math"]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "unwind"
+debug = 1

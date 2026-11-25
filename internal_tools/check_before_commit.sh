@@ -19,12 +19,10 @@ if [ -n "$native" ]; then
     # The native code's own checks: its layout, clippy with every warning an error, its tests and its build (.claude/rules/RUST.md).
     echo 'check before commit: checking the native code with cargo'
     PATH="$HOME/.cargo/bin:$PATH"
-    for manifest in native/*/Cargo.toml; do
-        cargo fmt --manifest-path "$manifest" --check
-        cargo clippy --manifest-path "$manifest" --release --all-targets --quiet -- -D warnings
-        cargo test --manifest-path "$manifest" --release --quiet
-        cargo build --manifest-path "$manifest" --release --quiet
-    done
+    cargo fmt --manifest-path native/Cargo.toml --all --check
+    cargo clippy --manifest-path native/Cargo.toml --workspace --release --all-targets --quiet -- -D warnings
+    cargo test --manifest-path native/Cargo.toml --workspace --release --quiet
+    cargo build --manifest-path native/Cargo.toml --workspace --release --quiet
 fi
 echo 'check before commit: running the tests that cover what changed'
 # The classes that cover the changed files, by the map internal_tools/test_map.sh made, and the rule tests; the whole suite when

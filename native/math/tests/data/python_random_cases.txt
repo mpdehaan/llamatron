@@ -1,0 +1,176 @@
+whole	0	random		0.8444218515250481;0.7579544029403025;0.420571580830845
+whole	0	getrandbits	5	27;12;24
+whole	0	getrandbits	32	3626764237;1654615998;3255389356
+whole	0	getrandbits	70	892550237140533643213;44651664552134903426;608105494072089140794
+whole	0	randrange	10	6;6;0
+whole	0	randrange	3,40,1	27;29;5
+whole	0	randrange	10,-20,-3	-8;-8;10
+whole	0	randint	-5,5	1;1;-5
+whole	0	choice	7	6;3;6
+whole	0	shuffle	12	1,9,8,5,10,2,3,7,4,0,11,6;5,0,3,7,6,11,9,1,10,4,2,8;0,9,4,8,6,3,2,10,7,5,1,11
+whole	0	uniform	-2.5,7.0	5.5220075894879574;4.700566827932874;1.4954300178930273
+whole	0	choices	5,6	4,3,2,1,2,2;3,1,2,2,4,2;1,3,3,1,4,4
+whole	0	weighted	6	2,2,1,1,2,1;2,1,2,2,2,2;1,2,2,1,2,3
+whole	0	sample	10,4	6,9,0,2;8,7,6,9;4,7,5,9
+whole	0	sample	100,8	49,97,53,5,33,65,62,51;38,61,45,74,27,64,17,36;17,96,12,79,32,68,90,77
+whole	0	gauss	0.0,1.0	0.9417154046806644;-1.3965781047011498;-0.6797144480784211
+whole	1	random		0.13436424411240122;0.8474337369372327;0.763774618976614
+whole	1	getrandbits	5	4;18;27
+whole	1	getrandbits	32	577090037;2444712010;3639700191
+whole	1	getrandbits	70	1006624138111981302261;87876131233047068208;574024282404777899068
+whole	1	randrange	10	2;9;1
+whole	1	randrange	3,40,1	11;39;7
+whole	1	randrange	10,-20,-3	4;-17;7
+whole	1	randint	-5,5	-3;4;-4
+whole	1	choice	7	1;4;6
+whole	1	shuffle	12	7,11,0,8,5,6,3,10,4,1,9,2;8,11,4,1,2,3,5,10,9,6,0,7;4,7,2,6,1,11,3,8,9,10,0,5
+whole	1	uniform	-2.5,7.0	-1.2235396809321883;5.55062050090371;4.755858880277834
+whole	1	choices	5,6	0,4,3,1,2,2;3,3,0,0,4,2;3,0,2,3,1,4
+whole	1	weighted	6	0,2,2,1,2,1;2,2,0,0,2,1;2,0,1,2,1,3
+whole	1	sample	10,4	2,1,4,0;7,9,8,5;6,3,1,8
+whole	1	sample	100,8	17,72,97,8,32,15,63,57;60,83,48,26,12,62,3,49;55,77,97,98,0,89,57,34
+whole	1	gauss	0.0,1.0	1.2881847531554629;1.4494456086997711;0.06633580893826191
+whole	42	random		0.6394267984578837;0.025010755222666936;0.27502931836911926
+whole	42	getrandbits	5	20;3;0
+whole	42	getrandbits	32	2746317213;478163327;107420369
+whole	42	getrandbits	70	20500439928067422621;281774556622676705531;869570991858821387998
+whole	42	randrange	10	1;0;4
+whole	42	randrange	3,40,1	10;4;20
+whole	42	randrange	10,-20,-3	7;10;-2
+whole	42	randint	-5,5	5;-4;-5
+whole	42	choice	7	5;0;0
+whole	42	shuffle	12	7,5,2,8,9,6,11,3,4,0,1,10;5,7,2,9,10,6,4,8,3,1,11,0;8,10,5,2,11,1,6,0,4,9,7,3
+whole	42	uniform	-2.5,7.0	3.5745545853498957;-2.262397825384664;0.11277852450663284
+whole	42	choices	5,6	3,0,1,1,3,3;4,0,2,0,1,2;0,0,3,2,1,2
+whole	42	weighted	6	2,0,1,1,2,2;2,0,1,0,1,2;0,1,2,2,1,2
+whole	42	sample	10,4	1,0,4,9;3,2,1,5;8,1,6,0
+whole	42	sample	100,8	81,14,3,94,35,31,28,17;94,13,86,69,11,75,54,4;3,11,27,29,64,77,71,25
+whole	42	gauss	0.0,1.0	-0.14409032957792836;-0.1729036003315193;-0.11131586156766246
+whole	1099511627783	random		0.6137037779936511;0.8149162973309487;0.9450115087592873
+whole	1099511627783	getrandbits	5	19;23;26
+whole	1099511627783	getrandbits	32	2635837658;3209733218;3500038837
+whole	1099511627783	getrandbits	70	973016391035727360218;755302148334782535355;566418250166524256244
+whole	1099511627783	randrange	10	9;9;7
+whole	1099511627783	randrange	3,40,1	39;33;19
+whole	1099511627783	randrange	10,-20,-3	-17;-17;-11
+whole	1099511627783	randint	-5,5	4;5;4
+whole	1099511627783	choice	7	4;5;6
+whole	1099511627783	shuffle	12	0,5,2,3,6,1,8,4,7,11,10,9;8,2,0,1,4,9,11,3,5,10,7,6;6,3,7,11,10,8,9,2,5,1,4,0
+whole	1099511627783	uniform	-2.5,7.0	3.330185890939685;5.241704824644013;6.477609333213229
+whole	1099511627783	choices	5,6	3,4,4,2,2,4;0,1,3,1,2,4;1,4,3,0,3,3
+whole	1099511627783	weighted	6	2,2,3,2,2,3;0,1,2,1,1,2;1,2,2,1,2,2
+whole	1099511627783	sample	10,4	9,7,4,8;2,8,6,4;5,6,7,3
+whole	1099511627783	sample	100,8	78,95,81,73,90,60,32,16;66,48,92,46,50,56,57,47;28,56,96,76,23,17,94,67
+whole	1099511627783	gauss	0.0,1.0	-1.3876635294611814;-1.2034467781077498;1.2230893220199384
+whole	-99	random		0.40397807494366633;0.20007544457494542;0.17880232058661227
+whole	-99	getrandbits	5	12;12;6
+whole	-99	getrandbits	32	1735072617;1635320116;859317502
+whole	-99	getrandbits	70	228384575302960618345;261552737775061882715;887901640797669896686
+whole	-99	randrange	10	6;6;3
+whole	-99	randrange	3,40,1	28;27;15
+whole	-99	randrange	10,-20,-3	-8;-8;1
+whole	-99	randint	-5,5	1;1;-2
+whole	-99	choice	7	3;3;1
+whole	-99	shuffle	12	4,5,7,8,0,10,1,9,2,3,11,6;0,2,5,6,4,3,9,7,1,11,10,8;1,11,5,0,8,4,6,9,7,2,3,10
+whole	-99	uniform	-2.5,7.0	1.3377917119648304;-0.5992832765380185;-0.8013779544271835
+whole	-99	choices	5,6	2,1,0,1,3,1;1,3,2,4,2,2;3,1,4,1,1,3
+whole	-99	weighted	6	1,1,1,1,2,1;1,2,2,3,2,1;2,1,2,1,1,2
+whole	-99	sample	10,4	6,9,3,4;2,3,8,1;1,4,6,8
+whole	-99	sample	100,8	51,48,25,76,22,29,31,17;97,11,32,93,49,67,87,89;68,11,79,62,25,53,92,78
+whole	-99	gauss	0.0,1.0	-0.5502226977406026;0.3791183269784834;0.3269272865950446
+whole	1267650600228229401496703205379	random		0.3567616365770526;0.9714727250299201;0.8878281370584883
+whole	1267650600228229401496703205379	getrandbits	5	11;9;31
+whole	1267650600228229401496703205379	getrandbits	32	1532279558;1283910471;4172443581
+whole	1267650600228229401496703205379	getrandbits	70	1149212486055461436166;495992884332895998569;876263073007572210976
+whole	1267650600228229401496703205379	randrange	10	5;4;6
+whole	1267650600228229401496703205379	randrange	3,40,1	25;22;29
+whole	1267650600228229401496703205379	randrange	10,-20,-3	-5;-2;-8
+whole	1267650600228229401496703205379	randint	-5,5	0;-1;1
+whole	1267650600228229401496703205379	choice	7	2;2;3
+whole	1267650600228229401496703205379	shuffle	12	10,9,1,8,2,0,11,3,7,6,4,5;5,0,1,3,10,7,9,2,4,8,6,11;9,8,2,4,7,1,5,10,11,3,0,6
+whole	1267650600228229401496703205379	uniform	-2.5,7.0	0.889235547482;6.72899088778424;5.934367302055639
+whole	1267650600228229401496703205379	choices	5,6	1,4,4,2,3,3;3,0,2,0,3,2;2,4,3,2,2,1
+whole	1267650600228229401496703205379	weighted	6	1,3,2,2,2,2;2,0,1,0,2,1;2,3,2,2,1,1
+whole	1267650600228229401496703205379	sample	10,4	5,4,6,3;8,3,0,2;6,5,2,8
+whole	1267650600228229401496703205379	sample	100,8	45,38,52,60,64,95,28,85;99,98,0,36,55,40,16,88;54,98,70,38,19,77,42,64
+whole	1267650600228229401496703205379	gauss	0.0,1.0	-1.657952944335834;2.08925376632227;0.8593693683413246
+text		random		0.9602256525641875;0.595411957851699;0.3880117152955401
+text		getrandbits	5	30;14;19
+text		getrandbits	32	4124137760;1951988028;2557274880
+text		getrandbits	70	709359999547530631456;1021728476814495877248;272142127979211519866
+text		randrange	10	7;9;3
+text		randrange	3,40,1	32;16;27
+text		randrange	10,-20,-3	-11;-17;1
+text		randint	-5,5	2;4;-2
+text		choice	7	3;4;1
+text		shuffle	12	11,1,5,0,4,2,8,10,6,3,9,7;3,10,11,2,9,8,1,4,6,7,0,5;0,4,9,7,6,2,1,8,11,5,10,3
+text		uniform	-2.5,7.0	6.62214369935978;3.15641359959114;1.1861112953076312
+text		choices	5,6	4,2,1,3,1,1;3,4,3,1,0,1;0,0,1,3,1,4
+text		weighted	6	3,2,1,2,1,1;2,3,2,1,0,1;1,1,1,2,1,2
+text		sample	10,4	7,3,6,9;3,5,0,4;5,9,0,3
+text		sample	100,8	58,76,26,49,93,96,28,43;99,79,0,76,80,41,46,6;58,49,39,24,21,65,34,50
+text		gauss	0.0,1.0	1.303486260261511;-0.33270916455547;-1.240159281519803
+text	7/1/lead	random		0.2115275889202488;0.5453890215953405;0.8859728752780339
+text	7/1/lead	getrandbits	5	6;12;17
+text	7/1/lead	getrandbits	32	908504089;1693049371;2342428015
+text	7/1/lead	getrandbits	70	634460890185991629849;459065172715199242156;249566456157373136757
+text	7/1/lead	randrange	10	3;6;8
+text	7/1/lead	randrange	3,40,1	16;28;37
+text	7/1/lead	randrange	10,-20,-3	1;-8;-14
+text	7/1/lead	randint	-5,5	-2;1;3
+text	7/1/lead	choice	7	1;3;4
+text	7/1/lead	shuffle	12	11,2,9,0,1,7,4,10,5,8,6,3;9,1,3,7,11,0,6,2,4,8,5,10;8,1,11,5,9,3,0,6,7,4,2,10
+text	7/1/lead	uniform	-2.5,7.0	-0.4904879052576363;2.6811957051557354;5.916742315141322
+text	7/1/lead	choices	5,6	1,2,4,2,1,4;3,3,1,2,0,0;2,2,3,0,4,2
+text	7/1/lead	weighted	6	1,2,2,2,1,2;2,2,1,2,0,0;2,2,2,1,2,1
+text	7/1/lead	sample	10,4	3,6,5,9;8,9,3,0;6,9,5,4
+text	7/1/lead	sample	100,8	27,50,69,45,49,68,67,9;48,91,52,86,44,68,36,19;8,15,72,43,74,59,82,23
+text	7/1/lead	gauss	0.0,1.0	0.30057709389559434;1.2191307752457325;0.935122069277666
+text	12345/3/bass/direction/take 2	random		0.1859303305951996;0.06231144771517849;0.048283065812157355
+text	12345/3/bass/direction/take 2	getrandbits	5	5;17;1
+text	12345/3/bass/direction/take 2	getrandbits	32	798564703;2314027817;267625603
+text	12345/3/bass/direction/take 2	getrandbits	70	65278906017976492383;462059267180798880063;742565189103687632246
+text	12345/3/bass/direction/take 2	randrange	10	2;8;0
+text	12345/3/bass/direction/take 2	randrange	3,40,1	14;37;6
+text	12345/3/bass/direction/take 2	randrange	10,-20,-3	4;-14;10
+text	12345/3/bass/direction/take 2	randint	-5,5	-3;3;-5
+text	12345/3/bass/direction/take 2	choice	7	1;4;0
+text	12345/3/bass/direction/take 2	shuffle	12	1,4,7,10,3,5,11,6,9,0,8,2;7,0,1,3,5,4,11,6,10,8,9,2;5,7,11,8,10,1,2,4,9,3,0,6
+text	12345/3/bass/direction/take 2	uniform	-2.5,7.0	-0.7336618593456039;-1.9080412467058043;-2.041310874784505
+text	12345/3/bass/direction/take 2	choices	5,6	0,0,0,4,3,2;4,2,0,2,2,3;2,2,1,2,2,1
+text	12345/3/bass/direction/take 2	weighted	6	1,0,0,3,2,1;2,2,0,2,2,2;2,2,1,2,1,1
+text	12345/3/bass/direction/take 2	sample	10,4	2,8,0,7;6,4,9,8;0,8,9,1
+text	12345/3/bass/direction/take 2	sample	100,8	23,68,7,6,50,32,80,92;55,78,1,64,0,18,72,69;70,85,72,81,66,53,32,79
+text	12345/3/bass/direction/take 2	gauss	0.0,1.0	0.14053521070732933;0.3300374106023663;2.515566150072658
+text	é and ü	random		0.3636014990983081;0.28881460722939545;0.29738940243921097
+text	é and ü	getrandbits	5	11;3;9
+text	é and ü	getrandbits	32	1561656555;456851230;1240449287
+text	é and ü	getrandbits	70	334003554420320959723;1093843766441706404546;802746303008989937575
+text	é and ü	randrange	10	5;1;4
+text	é and ü	randrange	3,40,1	26;9;21
+text	é and ü	randrange	10,-20,-3	-5;7;-2
+text	é and ü	randint	-5,5	0;-4;-1
+text	é and ü	choice	7	2;0;2
+text	é and ü	shuffle	12	3,10,0,11,8,7,2,9,6,4,1,5;11,5,2,7,8,10,6,4,1,3,0,9;10,11,6,5,0,8,1,9,7,4,3,2
+text	é and ü	uniform	-2.5,7.0	0.9542142414339265;0.2437387686792567;0.32519932317250433
+text	é and ü	choices	5,6	1,1,1,1,3,1;1,3,0,1,0,0;4,3,3,2,0,4
+text	é and ü	weighted	6	1,1,1,1,2,1;1,2,1,1,0,1;3,2,2,2,1,3
+text	é and ü	sample	10,4	5,1,4,3;4,5,9,2;0,4,9,1
+text	é and ü	sample	100,8	46,13,36,50,38,44,66,86;33,32,2,34,77,3,25,14;36,13,84,21,91,64,28,99
+text	é and ü	gauss	0.0,1.0	-0.5405277886337622;0.6240785025935375;-0.27104340067682775
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	random		0.22742392778346976;0.029232725307174356;0.7817729566041761
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	getrandbits	5	7;28;0
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	getrandbits	32	976778305;3779285165;125553595
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	getrandbits	70	34678650260619293761;69761397950351052668;869678578065769388236
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	randrange	10	3;0;0
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	randrange	3,40,1	17;4;6
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	randrange	10,-20,-3	1;10;10
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	randint	-5,5	-2;-5;-5
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	choice	7	1;0;6
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	shuffle	12	4,7,11,8,1,6,5,2,9,10,0,3;11,5,1,4,0,7,3,9,6,10,8,2;2,11,0,10,3,8,9,1,5,4,6,7
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	uniform	-2.5,7.0	-0.3394726860570372;-2.2222891095818436;4.926843087739673
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	choices	5,6	1,0,3,0,3,3;2,1,0,2,4,1;2,0,1,1,2,1
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	weighted	6	1,0,2,0,2,2;2,1,1,2,3,1;2,0,1,1,1,1
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	sample	10,4	3,0,8,7;2,3,0,1;1,2,6,7
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	sample	100,8	29,3,6,4,18,95,85,92;26,67,1,29,12,23,65,69;54,48,61,62,95,13,1,44
+text	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	gauss	0.0,1.0	0.03443766926653124;0.24114534535810087;0.05308409408015159

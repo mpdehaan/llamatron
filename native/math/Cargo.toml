@@ -1,0 +1,12 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+[package]
+name = "llamatron-math"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "llamatron's exact arithmetic and random sources (the Python package math/)"
+publish = false
+
+[dependencies]

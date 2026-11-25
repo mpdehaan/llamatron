@@ -92,7 +92,7 @@ class TestFindingTheDaemon(unittest.TestCase):
     def test_the_built_program_is_looked_for_in_the_backend_s_own_folder(self):
         # The tests of the real backend skip where it is not found, so a path gone stale would skip them silently.
         top = pathlib.Path(daemon.__file__).resolve().parents[4]
-        self.assertTrue((top / daemon.BUILT_FOLDER[0] / daemon.BUILT_FOLDER[1] / CARGO_MANIFEST).is_file())
+        self.assertTrue((top / daemon.BUILT_FOLDER[0] / CARGO_MANIFEST).is_file())
 
     def test_the_python_engine_is_used_when_asked_for(self):
         with tempfile.NamedTemporaryFile() as program:
