@@ -12,7 +12,8 @@ its bass, as the acid bass machine's does, driven before and after, its floor lo
 machine's circuit lowers it; the OTA is creamier, a softer drive before it.
 
 The voice moves the cutoff, in octaves a sample: Env2 times the Env amount, key tracking, and the mod matrix (modular.py).
-Each chunk is worked in SUB_BLOCKS parts, the cutoff read at each, so that a sweep moves smoothly; the filter's state runs on
+Each chunk is worked in SUB_BLOCKS parts, each part's cutoff the average over it, so that a sweep moves smoothly and a fast one
+never jumps the coefficients; the filter's state runs on
 from part to part and chunk to chunk. Speed rules this module, as it does the engine (the user's yes).
 """
 
@@ -94,7 +95,7 @@ class Filter:
 
     def filtered(self, buffer, *, octaves=None, resonance=None):
         """Return a chunk filtered, the cutoff moved by octaves a sample and the resonance by a share a sample, each None for
-        none, read at the start of each part."""
+        none, each part's the average of its samples."""
         buffer = self._driven(buffer)
         size = len(buffer)
         part = -(-size // SUB_BLOCKS)
@@ -102,11 +103,13 @@ class Filter:
         highest = HIGHEST_SHARE * self.rate
         base = self.resonance
         for first in range(0, size, part):
+            # Each part's cutoff and resonance are its average, never its first sample: a filter envelope opening in a few
+            # samples would otherwise jump the coefficients from one part to the next and spike the filter's output.
             cutoff = self.cutoff
             if octaves is not None:
-                cutoff = cutoff * 2.0 ** float(octaves[first])
+                cutoff = cutoff * 2.0 ** float(numpy.mean(octaves[first:first + part]))
             if resonance is not None:
-                self.resonance = min(max(base + float(resonance[first]), 0.0), 1.0)
+                self.resonance = min(max(base + float(numpy.mean(resonance[first:first + part])), 0.0), 1.0)
             numerator, denominator = self._coefficients(min(max(cutoff, LOWEST_CUTOFF), highest))
             if self.state is None or len(self.state) != len(denominator) - 1:
                 self.state = numpy.zeros(len(denominator) - 1)

@@ -182,6 +182,7 @@ WITH_REASON = {'catches': {'realtime/devices/ports.py:PortWatcher._serve': 'the 
              'wizards/create_song/wizard_choices.py:WizardChoices.set_intro_pattern': "notes written by hand can fail in any way a set's data can: the change is undone and refused with the error's "
                                                                                       'own words',
              'realtime/sender_process/process.py:run_sender': 'the edge of a process of its own: a port the MIDI library cannot open, for any reason, ends the process quietly',
+             'realtime/synth_process/player.py:SynthPlayer.audio_callback': 'the edge of the audio callback: an error making a chunk, for any reason, must never stop the stream, so the chunk plays as silence, its notes are dropped, and the error is counted and kept for the statistics',
              'realtime/synth_process/process.py:run': 'the edge of the Synthesis Process: any failure to open the sound card or PortAudio, for any reason, is told to the parent as its reason, never '
                                                       'hidden (the user allowed this process to break the rules for timing and reliability)',
              'interface/tracker/made_preview.py:MadePreview._begin': 'stops the preview and raises the same error again, so that nothing is left sounding',

@@ -42,7 +42,7 @@ class SynthPlayer:
     set_instrument() come from the reader thread; stop() closes it and returns its timing statistics."""
 
     __slots__ = ('_sounddevice', '_block', '_device', '_stream', '_pending', 'engine', 'rate', 'delay', 'played', 'chunks', 'underflows',
-                 'longest', 'durations')
+                 'longest', 'durations', 'failures', 'last_failure')
 
     def __init__(self, *, sounddevice, block, device):
         self._sounddevice = sounddevice
@@ -58,6 +58,9 @@ class SynthPlayer:
         self.underflows = 0
         self.longest = 0.0
         self.durations = []
+        # Chunks the engine failed to make, played as silence, and the last one's error (audio_callback).
+        self.failures = 0
+        self.last_failure = None
 
     def start(self):
         info = self._sounddevice.query_devices(self._device, kind='output')
@@ -91,7 +94,8 @@ class SynthPlayer:
         budget = self._block / self.rate * MILLISECONDS if self.rate else 0.0
         return {'rate': self.rate, 'block': self._block, 'delay_ms': self.delay * MILLISECONDS, 'chunks': self.chunks,
                 'underflows': self.underflows, 'late_notes': self.engine.late if self.engine else 0,
-                'longest_callback_ms': self.longest * MILLISECONDS, 'p99_callback_ms': p99 * MILLISECONDS, 'budget_ms': budget}
+                'longest_callback_ms': self.longest * MILLISECONDS, 'p99_callback_ms': p99 * MILLISECONDS, 'budget_ms': budget,
+                'failures': self.failures, 'last_failure': self.last_failure}
 
     def audio_callback(self, outdata, frames, time_info, status):
         began = time.perf_counter()
@@ -115,7 +119,14 @@ class SynthPlayer:
                 continue
             engine.schedule(sample=played + int(round((when + delay - dac) * rate)), kind=kind, instrument=instrument, pitch=pitch,
                             velocity=velocity)
-        mix = engine.render(start=played, frames=frames)
+        try:
+            mix = engine.render(start=played, frames=frames)
+        except Exception as problem:  # The audio callback's edge: an error must never stop the stream (safety.py).
+            # A chunk that fails plays as silence, the notes sounding are dropped, and the sound plays on with the next note.
+            self.failures += 1
+            self.last_failure = f'{type(problem).__name__}: {problem}'
+            engine.silence()
+            mix = 0.0
         outdata[:, 0] = mix
         outdata[:, 1] = mix
         self.played = played + frames

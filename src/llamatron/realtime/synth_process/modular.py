@@ -173,8 +173,10 @@ class ModularPatch:
             return {}
         sources = {matrix.ENV1: levels[0], matrix.ENV2: levels[1], matrix.ENV3: levels[2], matrix.VELOCITY: voice.level,
                    matrix.KEY: (voice.pitch - MIDDLE_C) / KEY_SPAN, matrix.RANDOM: voice.random}
+        count = len(levels[0])
         for name, lfo in zip(matrix.LFO_SOURCES, self.modulation.now):
-            sources[name] = 0.0 if lfo is None else lfo
+            # An LFO is worked out for the whole chunk; a note starting partway into it reads only the chunk's end.
+            sources[name] = 0.0 if lfo is None else lfo[len(lfo) - count:]
         return self.matrix.moved(sources)
 
     def _pitch(self, *, voice, first, count, env3, moved):

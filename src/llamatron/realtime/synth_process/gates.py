@@ -101,14 +101,16 @@ class LowPassGate:
 
     def _filtered(self, source, *, conductance, voice, octaves):
         """Return the source through the gate's filter, a one-pole in Both and a resonant two-pole in Lowpass, its cutoff the
-        open cutoff scaled by the resistance, read every PART samples."""
+        open cutoff scaled by the resistance, each PART samples' average."""
         rate = self.rate
         opened = self.open * 2.0 ** (self.key_track * (voice.pitch - MIDDLE_C) / SEMITONES)
         out = numpy.empty(len(source))
         for start in range(0, len(source), PART):
-            cutoff = opened * float(conductance[start]) * LIT_OHMS
+            # Each part's cutoff is its average, so that a strike lighting the cell in a few samples never jumps the
+            # coefficients (filters.py).
+            cutoff = opened * float(numpy.mean(conductance[start:start + PART])) * LIT_OHMS
             if octaves is not None:
-                cutoff *= 2.0 ** float(octaves[start])
+                cutoff *= 2.0 ** float(numpy.mean(octaves[start:start + PART]))
             cutoff = min(max(cutoff, LOWEST_CUTOFF), HIGHEST_SHARE * rate)
             numerator, denominator = self._coefficients(cutoff)
             if self.state is None or len(self.state) != len(denominator) - 1:

@@ -9,6 +9,7 @@ import numpy
 from scipy import signal
 from types import SimpleNamespace
 import unittest
+from unittest import mock
 
 from llamatron.realtime.synth_process import engine as engine_values, envelopes, gates, matrix, safety
 from llamatron.realtime.synth_process.engine import SynthEngine
@@ -37,6 +38,9 @@ MEMORY = 0.3
 PING_WIDTH = 0.001
 OPEN_CUTOFF = 7000.0
 RINGING = 0.8
+# A chord high on the keyboard, whose filter opens near the top, and how much louder a note starting mid-chunk may be.
+HIGH_CHORD = (84, 88, 91)
+NEVER_SPIKES = 1.5
 
 
 class Voice(SimpleNamespace):
@@ -192,6 +196,28 @@ class TestFilterParts(unittest.TestCase):
             mixes[per_note] = numpy.concatenate([engine.render(start=first, frames=CHUNK) for first in range(0, later + CHUNK * 20, CHUNK)])
         self.assertTrue(numpy.isfinite(mixes[True]).all())
         self.assertGreater(float(numpy.abs(mixes[True] - mixes[False])[later:].max()), QUIET)
+
+    def test_a_note_starting_partway_into_a_chunk_reads_only_its_part_of_an_lfo(self):
+        slots = [{'source': matrix.LFO1, 'via': matrix.NONE, 'destination': matrix.PITCH, 'amount': 0.1}]
+        sound = {**a_sound(filter_part={'type': 'none'}, per_note=True, slots=slots), 'lfos': [{'shape': 'sine', 'rate': 5.0, 'retrigger': True}]}
+        engine = SynthEngine(rate=RATE)
+        engine.set_instrument(number=SYNTH, patch=compiled(spec=sound, rate=RATE))
+        engine.schedule(sample=CHUNK // 3, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=MIDDLE_C, velocity=LOUD)
+        out = numpy.concatenate([engine.render(start=first, frames=CHUNK) for first in range(0, CHUNK * 4, CHUNK)])
+        self.assertGreater(float(numpy.abs(out).max()), QUIET)
+
+    def test_a_filter_envelope_opening_on_a_note_that_starts_partway_into_a_chunk_never_spikes(self):
+        slots = [{'source': matrix.VELOCITY, 'via': matrix.NONE, 'destination': matrix.CUTOFF, 'amount': 0.15}]
+        bright = {**LADDER, 'cutoff': 1800.0, 'resonance': 0.2, 'env_amount': 0.4, 'key_track': 0.5}
+        peaks = []
+        for start in (0, CHUNK // 3, CHUNK * 2 // 3):
+            engine = SynthEngine(rate=RATE)
+            engine.set_instrument(number=SYNTH, patch=compiled(spec=a_sound(filter_part=bright, per_note=True, slots=slots), rate=RATE))
+            for pitch in HIGH_CHORD:
+                engine.schedule(sample=start, kind=engine_values.NOTE_ON, instrument=SYNTH, pitch=pitch, velocity=LOUD)
+            with mock.patch.object(safety.OutputGuard, 'guarded', autospec=True, side_effect=lambda guard, mix: mix):
+                peaks.append(float(numpy.abs(numpy.concatenate([engine.render(start=first, frames=CHUNK) for first in range(0, CHUNK * 8, CHUNK)])).max()))
+        self.assertLess(max(peaks), min(peaks) * NEVER_SPIKES)
 
     def test_velocity_routed_to_cutoff_brightens_a_harder_note(self):
         slots = [{'source': matrix.VELOCITY, 'via': matrix.NONE, 'destination': matrix.CUTOFF, 'amount': 0.5}]
