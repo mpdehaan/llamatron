@@ -312,11 +312,13 @@ impl Form for TrackEditor {
         let tab = self.built_in_tab(app, track, kind);
         let is_bypass = tab.every_field().iter().any(|field| field.id == id && field.is_button());
         if is_bypass {
-            let opened = crate::screens::generators::statements_page::GeneratorStatementsPage {
+            use crate::screens::generators::statements_page::{GeneratorStatementsPage, Holder};
+            let holder = Holder::BuiltIn {
                 track: self.name.clone(),
                 kind,
                 opener_crumbs: self.crumbs(app),
             };
+            let opened = GeneratorStatementsPage { holder };
             app.show_page(Box::new(crate::screens::field_page::FieldPage::new(opened)));
         }
     }

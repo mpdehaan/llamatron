@@ -58,6 +58,16 @@ pub trait Listing {
     /// to after, where it moves.
     fn press_row(&mut self, app: &mut App, item: &KeyItem, key: &str, row: Option<&str>) -> Option<String>;
 
+    /// What the theme's stripe says, where that is more than the page's own crumb in capitals.
+    fn caption(&self, _app: &App) -> Option<String> {
+        None
+    }
+
+    /// The keys the page has wherever its cursor is, after its rows' own.
+    fn always_keys(&self, _app: &App) -> Vec<KeyItem> {
+        Vec::new()
+    }
+
     fn row_style(&self, _app: &App, _row: &str) -> &'static str {
         Style::PLAIN
     }
@@ -175,6 +185,7 @@ impl<L: Listing> ListPage<L> {
         if let Some(row) = self.current(app) {
             keys.extend(self.listing.row_keys(app, &row).unwrap_or_else(|| self.listing.item_keys(app)));
         }
+        keys.extend(self.listing.always_keys(app));
         keys
     }
 
@@ -225,6 +236,12 @@ pub fn shown_around(count: usize, at: usize, room: usize) -> std::ops::Range<usi
 }
 
 impl<L: Listing> Page for ListPage<L> {
+    fn caption(&self, app: &App) -> String {
+        self.listing
+            .caption(app)
+            .unwrap_or_else(|| self.listing.crumbs(app).last().map(|crumb| crumb.to_uppercase()).unwrap_or_default())
+    }
+
     fn name(&self) -> &'static str {
         self.listing.name()
     }

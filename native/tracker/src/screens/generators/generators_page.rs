@@ -10,7 +10,6 @@ use crate::keybindings::{GeneratorsPage as Keys, KeyClass};
 use crate::keys::{in_order, KeyItem};
 use crate::page::Page;
 use crate::screens::list_page::{column_sizes, row_line, shown_around, ListColumn};
-use crate::screens::not_ported::NotPorted;
 use crate::text::Text;
 use crate::themes::{self, Colour};
 use crate::uses::uses_of;
@@ -275,9 +274,9 @@ impl Page for GeneratorsPage {
                     Some(plugin) => app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
                         crate::screens::generators::plugin_editor::PluginEditor { kind: plugin.name, name },
                     ))),
-                    None => app.show_page(Box::new(NotPorted {
-                        name: "ChainEditor".to_string(),
-                    })),
+                    None => app.show_page(Box::new(crate::screens::list_page::ListPage::new(
+                        crate::screens::generators::chain_editor::ChainEditor { name },
+                    ))),
                 }
             }
         }
