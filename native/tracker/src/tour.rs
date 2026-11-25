@@ -60,7 +60,7 @@ pub struct TourKey {
 
 /// Press each stop's keys and record the screen after them, then follow the Python's stack of pages where pages not ported
 /// yet made the two part, so that the pages after them compare.
-pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourStop]) -> Vec<Stop> {
+pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourStop]) -> Result<Vec<Stop>, String> {
     // The tests that made the tour count FluidSynth as installed.
     tracker.app.fluidsynth_installed = true;
     let mut recorded = Vec::new();
@@ -71,7 +71,7 @@ pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourSto
             // A key pressed on a page or dialog not ported yet that changed the set leaves the Rust's behind, so it takes
             // up the Python's.
             if let (true, Some((file, dirty, song))) = (last_unported, &key.set) {
-                tracker.app.document.take_up(file, *dirty, song);
+                tracker.app.document.take_up(file, *dirty, song)?;
             }
             // A page not ported yet takes no keys: where the Python's pages went from it, or where the Python opened a page
             // or dialog the Rust has not ported, the Rust follows them.
@@ -97,8 +97,8 @@ pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourSto
         // A page not ported yet that changed the set leaves the Rust's behind, so it takes up the Python's, and the pages after
         // it compare.
         if let (true, Some(file)) = (unported, &stop.set) {
-            tracker.app.document.take_up(file, stop.dirty, &stop.song);
+            tracker.app.document.take_up(file, stop.dirty, &stop.song)?;
         }
     }
-    recorded
+    Ok(recorded)
 }

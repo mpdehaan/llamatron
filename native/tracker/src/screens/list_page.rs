@@ -72,6 +72,11 @@ pub trait Listing {
         Style::PLAIN
     }
 
+    /// Lines the page shows over its table, such as the Open page's folder.
+    fn lines_above(&self, _app: &App) -> Vec<Text> {
+        Vec::new()
+    }
+
     /// How wide the names' column may grow, or None for as wide as there is room.
     fn name_column_width(&self) -> Option<usize> {
         Some(MAX_NAME_LENGTH as usize)
@@ -307,7 +312,10 @@ impl<L: Listing> Page for ListPage<L> {
         self.place(app);
         let sizes = self.column_sizes(width);
         let headings: Vec<String> = self.listing.columns().iter().map(|column| column.heading.to_string()).collect();
-        let mut lines = vec![self.row_line(&headings, &sizes, Style::BOLD, false), Text::default()];
+        let mut lines = self.listing.lines_above(app);
+        let height = height.saturating_sub(lines.len());
+        lines.push(self.row_line(&headings, &sizes, Style::BOLD, false));
+        lines.push(Text::default());
         let rows = self.rows_with_plus(app);
         let matches = self.matches(app);
         if matches.is_empty() {

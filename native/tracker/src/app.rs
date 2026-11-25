@@ -55,6 +55,8 @@ pub struct Session {
     pub open_sections: std::collections::HashSet<String>,
     /// Whether Arrange shows its details view, kept for the session.
     pub shows_arrange_details: bool,
+    /// The folder the Open page was last in, where the next one starts.
+    pub last_set_folder: Option<std::path::PathBuf>,
 }
 
 impl Default for Session {
@@ -68,6 +70,7 @@ impl Default for Session {
                 .map(|section| section.to_string())
                 .collect(),
             shows_arrange_details: false,
+            last_set_folder: None,
         }
     }
 }
@@ -110,6 +113,19 @@ impl App {
 
     pub fn show_page(&mut self, page: Box<dyn Page>) {
         self.requests.push(Request::Open(page));
+    }
+
+    /// Show the Open page to pick a set file, which Ctrl+O and the File page's Open do; a set with unsaved changes asks
+    /// first, in a dialog not ported yet.
+    pub fn open_set(&mut self) {
+        if self.document.is_dirty() {
+            self.show_page(Box::new(crate::screens::not_ported::NotPorted {
+                name: "ConfirmDialog".to_string(),
+            }));
+            return;
+        }
+        let page = crate::screens::set::open_page::OpenPage::new(self);
+        self.show_page(Box::new(page));
     }
 
     pub fn go_back(&mut self) {
@@ -179,11 +195,14 @@ impl Tracker {
             self.step_history(std::ptr::eq(item.binding, &PageKeys::UNDO));
             return;
         }
-        if PageKeys::EVERYWHERE.iter().any(|binding| std::ptr::eq(*binding, item.binding)) {
+        if std::ptr::eq(item.binding, &PageKeys::OPEN_SET) {
+            self.app.open_set();
+        } else if PageKeys::EVERYWHERE.iter().any(|binding| std::ptr::eq(*binding, item.binding)) {
             // The other everywhere keys are not ported yet; they do nothing.
             return;
+        } else {
+            page.press(&mut self.app, &item, key);
         }
-        page.press(&mut self.app, &item, key);
         self.app.document.record_edit();
         let requests = std::mem::take(&mut self.app.requests);
         for request in requests {

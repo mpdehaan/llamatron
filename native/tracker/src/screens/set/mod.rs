@@ -10,6 +10,7 @@ pub mod grooves_page;
 pub mod instrument_editor;
 pub mod instruments_page;
 pub mod notes_page;
+pub mod open_page;
 pub mod scale_page;
 pub mod scales_page;
 pub mod song_page;

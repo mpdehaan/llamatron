@@ -253,6 +253,10 @@ impl Form for FilePage {
             app.document.change_set(|setlist| setlist.set_written(setting, value));
             return;
         }
+        if id == OPEN && edit == Edit::Enter {
+            app.open_set();
+            return;
+        }
         if id == NOTES && edit == Edit::Enter {
             let page = crate::screens::set::notes_page::NotesPage::new(app, true);
             app.show_page(Box::new(page));

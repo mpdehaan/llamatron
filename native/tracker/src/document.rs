@@ -106,19 +106,19 @@ impl Document {
 
     /// Take up the set another program's file holds in place of this one's, keeping this one's own file, as the screen tour
     /// does where a page not ported yet changed the set.
-    pub fn take_up(&mut self, file: &Path, dirty: bool, song: &str) {
-        let Ok(text) = std::fs::read_to_string(file) else { return };
+    pub fn take_up(&mut self, file: &Path, dirty: bool, song: &str) -> Result<(), String> {
+        let text = std::fs::read_to_string(file).map_err(|error| format!("{}: {error}", file.display()))?;
         let stem = self
             .path
             .as_ref()
             .and_then(|path| path.file_stem())
             .map(|stem| stem.to_string_lossy().to_string());
-        if let Ok(setlist) = Setlist::read_text(&text, stem) {
-            self.setlist = setlist;
-            self.dirty = dirty;
-            self.current = song.to_string();
-            self.record_edit();
-        }
+        let setlist = Setlist::read_text(&text, stem).map_err(|error| format!("{}: {}", file.display(), error.message))?;
+        self.setlist = setlist;
+        self.dirty = dirty;
+        self.current = song.to_string();
+        self.record_edit();
+        Ok(())
     }
 
     pub fn is_generator_type_open(&self, kind: &str) -> bool {

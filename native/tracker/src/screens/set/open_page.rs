@@ -1,0 +1,165 @@
+// llamatron: a music program
+// Copyright (C) 2026  Michael DeHaan
+// SPDX-License-Identifier: GPL-3.0-or-later
+//! The Open page (the Python screens/set/open_page.py and pages/folder_list.py): picks a set file to open, starting in the
+//! examples folder, or the folder it was last in this session. Ctrl+O shows it from every page. A folder's rows are the
+//! folder above, then its folders, then its set files, each sorted by name with capitals ignored.
+
+use crate::app::App;
+use crate::document::Document;
+use crate::drawing::{Align, Style, INDENT};
+use crate::keybindings::{KeyClass, OpenPage as Keys};
+use crate::keys::KeyItem;
+use crate::page::Duration;
+use crate::screens::list_page::{ListColumn, ListPage, Listing, Row};
+use crate::text::Text;
+use crate::themes::{self, Colour};
+use llamatron_strings::{labels, marks, messages, named};
+use std::path::{Path, PathBuf};
+
+/// Where the picker starts: the examples folder where there is one, else the folder llamatron runs in.
+const EXAMPLES_FOLDER: &str = "examples";
+const HERE: &str = ".";
+/// The row of the folder above, and what starts a hidden folder's name.
+const PARENT: &str = "..";
+const HIDDEN_PREFIX: char = '.';
+/// The endings of the files a set is kept in.
+const SET_SUFFIXES: [&str; 2] = [".yml", ".yaml"];
+
+static COLUMNS: [ListColumn; 1] = [ListColumn {
+    heading: labels::Column::SELECT_FILE,
+    width: None,
+    align: Align::Left,
+}];
+
+/// The Open page: a folder's rows, and ENTER going into a folder or opening a set file.
+pub struct OpenPage {
+    folder: PathBuf,
+}
+
+impl OpenPage {
+    /// The Open page in the folder it was last in this session, or the examples folder, or here.
+    pub fn new(app: &App) -> ListPage<OpenPage> {
+        let folder = match &app.session.last_set_folder {
+            Some(folder) if folder.is_dir() => folder.clone(),
+            _ if Path::new(EXAMPLES_FOLDER).is_dir() => PathBuf::from(EXAMPLES_FOLDER),
+            _ => PathBuf::from(HERE),
+        };
+        ListPage::new(OpenPage { folder })
+    }
+
+    /// Whether a name in the folder is a folder the picker shows, hidden ones left out.
+    fn is_folder(&self, name: &str) -> bool {
+        self.folder.join(name).is_dir() && !name.starts_with(HIDDEN_PREFIX)
+    }
+
+    /// The path a row leads to, the folder above taken as its parent.
+    fn path_of(&self, name: &str) -> PathBuf {
+        let joined = self.folder.join(name);
+        if name == PARENT {
+            return std::path::absolute(&joined)
+                .ok()
+                .and_then(|path| path.parent().and_then(Path::parent).map(Path::to_path_buf))
+                .unwrap_or(joined);
+        }
+        joined
+    }
+
+    /// The whole path of the folder, which the page shows over its rows.
+    fn shown_path(&self) -> String {
+        std::path::absolute(&self.folder).map_or_else(|_| self.folder.display().to_string(), |path| path.display().to_string())
+    }
+
+    /// Open a set file in place of the set open now, and say so; a file that cannot be opened is refused, saying why.
+    fn open_file(app: &mut App, path: &Path) {
+        match Document::open(path) {
+            Ok(document) => {
+                app.document = document;
+                app.go_back();
+                app.say(&named(messages::MSG_OPENED, &[("path", path.display().to_string().as_str().into())]));
+            }
+            Err(error) => app.refuse(&error),
+        }
+    }
+}
+
+impl Listing for OpenPage {
+    fn name(&self) -> &'static str {
+        "OpenPage"
+    }
+
+    fn class(&self) -> &'static KeyClass {
+        &Keys::CLASS
+    }
+
+    fn crumbs(&self, _app: &App) -> Vec<String> {
+        vec![labels::Crumb::FILE.to_string(), labels::Crumb::OPEN.to_string()]
+    }
+
+    fn theme(&self) -> Option<Colour> {
+        Some(themes::SET_FILE)
+    }
+
+    fn columns(&self) -> &[ListColumn] {
+        &COLUMNS
+    }
+
+    fn duration(&self, _app: &App) -> Duration {
+        Duration::Nothing
+    }
+
+    fn can_add(&self) -> bool {
+        false
+    }
+
+    fn name_column_width(&self) -> Option<usize> {
+        None
+    }
+
+    fn rows(&self, _app: &App) -> Vec<Row> {
+        let mut names: Vec<String> = std::fs::read_dir(&self.folder)
+            .map(|entries| {
+                entries
+                    .filter_map(Result::ok)
+                    .map(|entry| entry.file_name().to_string_lossy().to_string())
+                    .collect()
+            })
+            .unwrap_or_default();
+        names.sort_by_key(|name| name.to_lowercase());
+        let mut rows = vec![(PARENT.to_string(), vec![marks::MSG_PARENT_ROW.to_string()])];
+        for name in names.iter().filter(|name| self.is_folder(name)) {
+            rows.push((name.clone(), vec![named(marks::MSG_FOLDER_ROW, &[("name", name.as_str().into())])]));
+        }
+        for name in &names {
+            let lowered = name.to_lowercase();
+            if SET_SUFFIXES.iter().any(|suffix| lowered.ends_with(suffix)) {
+                rows.push((name.clone(), vec![name.clone()]));
+            }
+        }
+        rows
+    }
+
+    fn item_keys(&self, _app: &App) -> Vec<KeyItem> {
+        vec![KeyItem::of(&Keys::CLASS, &Keys::OPEN)]
+    }
+
+    fn lines_above(&self, _app: &App) -> Vec<Text> {
+        vec![Text::styled(&format!("{INDENT}{}", self.shown_path()), Style::DIM), Text::default()]
+    }
+
+    fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {
+        let row = row?;
+        if !item.is(&Keys::OPEN) {
+            return None;
+        }
+        let path = self.path_of(row);
+        if path.is_dir() {
+            self.folder = path;
+            app.session.last_set_folder = Some(self.folder.clone());
+            return Some(PARENT.to_string());
+        }
+        app.session.last_set_folder = Some(self.folder.clone());
+        Self::open_file(app, &path);
+        None
+    }
+}

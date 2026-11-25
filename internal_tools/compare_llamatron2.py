@@ -22,6 +22,7 @@ import argparse
 import hashlib
 import json
 import pathlib
+import shutil
 import subprocess
 import sys
 
@@ -313,8 +314,9 @@ COMPARED = {'save': same_as_data, 'import': same_as_data}
 SCREENS = pathlib.Path('/tmp/claude/llamatron/screens')
 SCREEN_SIZES = ((80, 24), (160, 50))
 NOT_PORTED_PAGE = '(not ported)'
-# What the capture writes for the folder its tour ran in.
+# What the capture writes for the folder its tour ran in, and the folder the Rust's tour runs in.
 FOLDER = 'FOLDER'
+TOUR_FOLDER = 'tour_folder'
 PDF_PAGE = 'PdfExportPage'
 LEAVE = 'escape'
 
@@ -327,8 +329,16 @@ def python_screens():
     return [(size, json.loads(path.read_text(encoding='utf-8'))) for size, path in zip(SCREEN_SIZES, files)]
 
 
+def with_folder_named(text, folder):
+    """Return the Rust's screens with the folder its tour ran in written as FOLDER, by every name the folder goes by."""
+    for name in sorted({str(folder), str(folder.resolve())}, key=len, reverse=True):
+        text = text.replace(json.dumps(name)[1:-1], FOLDER)
+    return text
+
+
 def pieces(line):
-    """Return a screen line's pieces as one comparable list: empty pieces left out, and neighbours of one style joined."""
+    """Return a screen line's pieces as one comparable list: empty pieces left out, and neighbours of one style joined. A line
+    naming the tour's folder ends without its blanks, which hang on how long the folder's real path was."""
     joined = []
     for text, style in line:
         if not text:
@@ -337,7 +347,16 @@ def pieces(line):
             joined[-1][0] += text
         else:
             joined.append([text, style])
+    if any(FOLDER in text for text, _ in joined):
+        while joined and not joined[-1][0].strip():
+            joined.pop()
     return joined
+
+
+def held_set(name):
+    """Return the whole path of a set the capture wrote, which it names inside its folder, for the Rust's tour to read from
+    the folder of its own it runs in."""
+    return str(SCREENS / name)
 
 
 def keys_with_stacks(stop):
@@ -348,7 +367,7 @@ def keys_with_stacks(stop):
     for key, stack, (written, dirty, song) in zip(stop['keys'], stop['stacks_before'], stop['sets_before']):
         parts = [key, ','.join(stack)]
         if written:
-            parts += [written, str(dirty), song]
+            parts += [held_set(written), str(dirty), song]
         keys.append('\x1f'.join(parts))
     return keys
 
@@ -370,15 +389,20 @@ def compare_screens(shown_most=None):
     for size, stops in python_screens():
         stops = after_the_pdf(stops)
         keys_file = SCREENS / 'keys_{}x{}.txt'.format(*size)
-        keys_file.write_text(''.join('\t'.join([','.join(stop['stack']), stop['set'] or '', str(stop['dirty']), stop['song'], *keys_with_stacks(stop)]) + '\n' for stop in stops), encoding='utf-8')
-        # The set is opened as the Python's tour held its path, in its folder or by its name alone from inside it.
+        keys_file.write_text(''.join('\t'.join([','.join(stop['stack']), held_set(stop['set']) if stop['set'] else '', str(stop['dirty']), stop['song'], *keys_with_stacks(stop)]) + '\n' for stop in stops), encoding='utf-8')
+        # The Rust's tour runs in a folder of its own holding the set alone, as the Python's ran, so that the Open page lists
+        # the same files; the set is opened as the Python's tour held its path, in that folder or by its name from inside it.
+        folder = SCREENS / TOUR_FOLDER
+        shutil.rmtree(folder, ignore_errors=True)
+        folder.mkdir()
+        shutil.copy(SCREENS / 'tour.yml', folder / 'tour.yml')
         held = stops[0]['path']
-        opened = str(SCREENS / 'tour.yml') if held.startswith(FOLDER) else held
-        done = subprocess.run([str(RUST), 'screens', opened, str(keys_file), str(size[0]), str(size[1])], capture_output=True, text=True, cwd=SCREENS)
+        opened = str(folder / 'tour.yml') if held.startswith(FOLDER) else held
+        done = subprocess.run([str(RUST), 'screens', opened, str(keys_file), str(size[0]), str(size[1])], capture_output=True, text=True, cwd=folder)
         if done.returncode != 0:
             print('{}x{}: the Rust tour failed: {}'.format(*size, done.stderr.strip()[:SHOWN]))
             return 1
-        port = json.loads(done.stdout)
+        port = json.loads(with_folder_named(done.stdout, folder))
         pages = {}
         shown = 0
         # The pages the Rust has ported, which it shows as themselves somewhere on the tour; a stop on any other waits.

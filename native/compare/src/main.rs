@@ -436,7 +436,8 @@ fn toured(path: &str, keys: &str, width: usize, height: usize) -> Result<String,
         .map(|parent| parent.to_string_lossy().to_string())
         .unwrap_or_default();
     let mut out = String::from("[");
-    for (number, stop) in llamatron_tracker::tour::tour(&mut tracker, width, height, &stops).into_iter().enumerate() {
+    let recorded = llamatron_tracker::tour::tour(&mut tracker, width, height, &stops)?;
+    for (number, stop) in recorded.into_iter().enumerate() {
         if number > 0 {
             out.push(',');
         }
