@@ -1,9 +1,10 @@
-# Synth Engine
+# Backend
 
-The built-in synths are played by `llamatron-synth`, a program of its own
-written in Rust, in `native/synth/`. This page explains how it works and how to
+llamatron's backend, `llamatron-backend`, is a program of its own written in
+Rust, in `native/backend/`. It plays the built-in synths and FluidSynth, and
+sends every MIDI event on time, all in one process. This page explains how it works and how to
 change it, for a reader who knows some programming but perhaps no Rust.
-[Building the Synth Engine](BUILDING_THE_SYNTH.md) says how to build it.
+[Building the Backend](BUILDING_THE_BACKEND.md) says how to build it.
 
 ## Why a Program of Its Own
 
@@ -15,11 +16,19 @@ such pauses, so one voice of a synth costs a few microseconds a chunk rather
 than about eighty. Keeping the engine in a separate program also means the
 tracker, or any other program that speaks its messages, can drive it.
 
-## The Two Processes
+## The Processes
 
-The tracker starts the engine as a child process and talks to it through the
-engine's standard input and output, the way a shell pipes one program into
-another.
+The backend runs in one of three ways, each started by llamatron as a child
+process that it talks to through the backend's standard input and output, the
+way a shell pipes one program into another:
+
+- **`send`**, the usual way: the real-time sender. The render process hands it
+  every event of what plays, and it sends each on time through the MIDI ports,
+  the built-in synths and FluidSynth (`sender/`, `daemon/sending.rs`).
+- **`play`**: the built-in synths alone, as the Python sender asks for them
+  where that sender is chosen, with the messages below.
+- **`render`**: no sound card; it plays the WAV export's built-in tracks into
+  a file, as fast as it can.
 
 | Direction | Message | What it carries |
 | --- | --- | --- |
@@ -34,12 +43,26 @@ another.
 
 Each message is a MessagePack array, a compact binary form of a list, with its
 length written before it in four bytes, so that the reader always knows where
-one message ends. `native/synth/src/protocol/` and
+one message ends. `native/backend/src/protocol/` and
 `src/llamatron/realtime/synth_process/daemon.py` are the two ends.
 
 A note's time is a moment on the computer's own steady clock, the one Python's
 `time.perf_counter` reads, which the engine reads too (`audio/clock.rs`), so that both
 programs agree on when a note falls without converting anything.
+
+## The Sender
+
+The sender (`sender/`) does what llamatron's Python sender did, in the same
+way, its tests run on both. Each event arrives as a small record: its seconds
+on the timeline, its play's tag (a scene and a track), its port, and its MIDI
+bytes. On macOS each event is handed to its port a tenth of a second ahead,
+stamped with its moment: CoreMIDI delivers a MIDI port's event then, and the
+built-in synths and FluidSynth place theirs on the exact sample. What is handed
+can be taken back: stopping a clip, stopping everything, or an edit heard at
+once flushes the ports holding what is dropped, hands back what they keep, and
+undoes what handing the dropped events did to the notes counted as sounding,
+so that a stop silences exactly what has sounded. Elsewhere each event is sent
+as its moment comes, the sender's thread sleeping and then spinning up to it.
 
 ## Threads
 
@@ -142,11 +165,11 @@ sound card's stream, and a problem anywhere else is written to the log in
 ## Rendering a WAV File
 
 The WAV export plays the built-in tracks through the same engine, offline: the
-tracker starts it with `llamatron-synth render`, sends the instruments and every
+tracker starts it with `llamatron-backend render`, sends the instruments and every
 note timed from the song's start, and the engine plays them through the same
 voices and the same safety guard into a file, as fast as it can.
 
-## Changing the Engine
+## Changing the Backend
 
 `.claude/rules/RUST.md` holds the rules the code follows. In short:
 
@@ -157,4 +180,4 @@ voices and the same safety guard into a file, as fast as it can.
 - `unsafe` is used only where the engine calls the operating system, each with
   a comment saying why it is sound.
 - Each module's tests sit at its end, in `mod tests`, and run with
-  `cargo test --release --manifest-path native/synth/Cargo.toml`.
+  `cargo test --release --manifest-path native/backend/Cargo.toml`.

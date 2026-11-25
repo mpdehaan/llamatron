@@ -453,7 +453,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "llamatron-synth"
+name = "llamatron-backend"
 version = "0.1.0"
 dependencies = [
  "coremidi",

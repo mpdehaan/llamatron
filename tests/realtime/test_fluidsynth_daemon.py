@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""FluidSynth inside the synth daemon (native/synth/src/fluid.rs, realtime/devices/fluidsynth.py, sender_process/synth_output.py):
+"""FluidSynth inside the synth daemon (native/backend/src/fluid.rs, realtime/devices/fluidsynth.py, sender_process/synth_output.py):
 where its library is found, when it plays in the daemon, NO_FLUIDSYNTH, and what its port sends the daemon. The test of the
 real library runs only with LLAMATRON_TEST_REAL_FLUIDSYNTH=1, since it reads FluidSynth and its SoundFont where installed.
 """

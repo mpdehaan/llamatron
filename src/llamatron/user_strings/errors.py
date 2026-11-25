@@ -504,7 +504,7 @@ ERR_PLAYBACK_ENDED = 'The render process ended unexpectedly, which is a bug. Pla
 ERR_NOT_16_BIT_WAVE = '{path}: expected a 16-bit PCM WAV file, got {bits}-bit samples'
 ERR_WAV_NEEDS_FLUIDSYNTH = 'the WAV export plays the song through FluidSynth, which is not installed: run sh user_scripts/install_fluidsynth.sh'
 ERR_NO_FLUIDSYNTH_TRACKS = 'no track plays through FluidSynth or a built-in instrument, so the WAV export would be silent: choose *FluidSynth or a built-in instrument on the Instruments page'
-ERR_WAV_NEEDS_SYNTH_DAEMON = 'the WAV export plays the built-in instruments through the synth daemon, which is not built: run internal_tools/build_synth.sh'
+ERR_WAV_NEEDS_SYNTH_DAEMON = 'the WAV export plays the built-in instruments through llamatron-backend, which is not built: run sh internal_tools/build_backend.sh'
 ERR_FLUIDSYNTH_RENDER_FAILED = 'FluidSynth could not write the WAV file: {problem}'
 # realtime/devices/fluidsynth.py
 ERR_FLUIDSYNTH_DID_NOT_START = 'FluidSynth did not start: its MIDI port did not appear within {seconds} seconds'
@@ -668,8 +668,8 @@ ERR_SYNTHESIS_ENDED = 'the synthesis process ended while starting, exit code {co
 ERR_SYNTHESIS_FAILED = 'built-in sound could not start: {kind}: {problem}'
 
 # realtime/synth_process/daemon.py: the native daemon.
-ERR_SYNTH_DAEMON_RENDER_FAILED = 'the synth daemon could not render the built-in tracks: {answer}'
-ERR_SYNTH_DAEMON_MISSING = 'built-in sound needs the synth daemon, which is not built: run internal_tools/build_synth.sh'
+ERR_SYNTH_DAEMON_RENDER_FAILED = 'llamatron-backend could not render the built-in tracks: {answer}'
+ERR_SYNTH_DAEMON_MISSING = 'llamatron-backend, which plays built-in sound and sends MIDI, is not built: run sh internal_tools/build_backend.sh'
 
 # model/objects/built_in_sound.py and model/objects/instrument.py: what a built-in instrument's sound refuses.
 ERR_SOUND_CHOICE = '{name} must be one of: {choices}, got {value!r}'

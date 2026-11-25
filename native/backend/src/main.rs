@@ -1,12 +1,12 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! llamatron-synth, the daemon that plays llamatron's built-in synths: the tracker starts it, speaks MessagePack to it
+//! llamatron-backend, llamatron's backend, the daemon that plays the built-in synths and FluidSynth and sends MIDI: the tracker starts it, speaks MessagePack to it
 //! over its standard input and output (protocol.rs), and it plays through the sound card or renders into a WAV file.
 //!
-//! `llamatron-synth play [--block FRAMES] [--device NAME]` plays; `llamatron-synth render --rate HZ` renders;
-//! `llamatron-synth send` is the real-time sender, sending the tracker's events through MIDI and the synths alike. The
-//! architecture is described for people in docs/SYNTH_ENGINE.md.
+//! `llamatron-backend play [--block FRAMES] [--device NAME]` plays; `llamatron-backend render --rate HZ` renders;
+//! `llamatron-backend send` is the real-time sender, sending the tracker's events through MIDI and the synths alike. The
+//! architecture is described for people in docs/BACKEND.md.
 
 mod audio;
 mod daemon;
@@ -25,7 +25,7 @@ use std::sync::{Arc, Mutex};
 const DEFAULT_BLOCK: usize = 128;
 const DEFAULT_RATE: f64 = 44100.0;
 const LOG_FOLDER: &str = ".llamatron";
-const LOG_NAME: &str = "llamatron-synth";
+const LOG_NAME: &str = "llamatron-backend";
 const LOG_FILE_BYTES: u64 = 1 << 20;
 const LOG_FILES_KEPT: usize = 10;
 
@@ -55,7 +55,7 @@ fn arguments() -> Arguments {
             "--block" => found.block = given.next().and_then(|value| value.parse().ok()).unwrap_or(DEFAULT_BLOCK),
             "--device" => found.device = given.next(),
             "--rate" => found.rate = given.next().and_then(|value| value.parse().ok()).unwrap_or(DEFAULT_RATE),
-            other => eprintln!("llamatron-synth: an argument it does not know: {other}"),
+            other => eprintln!("llamatron-backend: an argument it does not know: {other}"),
         }
     }
     found

@@ -1,11 +1,11 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The built-in synths' native daemon, llamatron-synth (native/synth/), started and watched by the parent.
+"""The built-in synths' native daemon, llamatron-backend (native/backend/), started and watched by the parent.
 
 The daemon plays the sound card itself, from notes timed on the very clock time.perf_counter reads, so that a note is
 placed on its exact sample without conversion. The parent speaks MessagePack to it over its standard input and output,
-each message an array framed by its length (native/synth/src/protocol.rs), behind the same calls as the Python
+each message an array framed by its length (native/backend/src/protocol.rs), behind the same calls as the Python
 Synthesis Process (process.py): start, set_instrument, notes, forget, silence, close. A reader thread takes the daemon's
 load reports as they come, the last kept for the screen, and its statistics as it closes.
 
@@ -25,11 +25,11 @@ from llamatron.realtime.synth_process import engine as engine_values
 from llamatron.realtime.synth_process.process import SynthesisNotStarted
 from llamatron.user_strings import errors
 
-DAEMON_NAME = 'llamatron-synth'
-DAEMON_PATH = 'LLAMATRON_SYNTH_DAEMON'
+DAEMON_NAME = 'llamatron-backend'
+DAEMON_PATH = 'LLAMATRON_BACKEND'
 PYTHON_SYNTH = 'LLAMATRON_PYTHON_SYNTH'
 SWITCHED_ON = '1'
-BUILT_FOLDER = ('native', 'synth', 'target', 'release')
+BUILT_FOLDER = ('native', 'backend', 'target', 'release')
 PLAY = 'play'
 RENDER = 'render'
 BLOCK_OPTION = '--block'
@@ -56,7 +56,7 @@ DEFAULT_BLOCK = 128
 
 
 def daemon_path(*, environment=None):
-    """Return the daemon's program: LLAMATRON_SYNTH_DAEMON where set, else the one built in the source tree, or None if
+    """Return the daemon's program: LLAMATRON_BACKEND where set, else the one built in the source tree, or None if
     there is none."""
     environment = os.environ if environment is None else environment
     given = environment.get(DAEMON_PATH)

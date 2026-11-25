@@ -2,15 +2,15 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 [package]
-name = "llamatron-synth"
+name = "llamatron-backend"
 version = "0.1.0"
 edition = "2021"
 license = "GPL-3.0-or-later"
-description = "llamatron's built-in synths: a daemon that plays the tracker's notes through the sound card"
+description = "llamatron's backend: a daemon that plays the built-in synths and FluidSynth and sends MIDI on time"
 publish = false
 
 [[bin]]
-name = "llamatron-synth"
+name = "llamatron-backend"
 path = "src/main.rs"
 
 [dependencies]

@@ -1,7 +1,7 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The real-time sender in Rust: the synth daemon run as `llamatron-synth send` (native/synth/src/daemon/sending.rs), which
+"""The real-time sender in Rust: the synth daemon run as `llamatron-backend send` (native/backend/src/daemon/sending.rs), which
 sends the player's events on time through the MIDI ports, the built-in synths and FluidSynth, all in one process.
 
 RustSender answers every call of the Python Realtime Sender Process (process.py) and speaks MessagePack to the daemon in

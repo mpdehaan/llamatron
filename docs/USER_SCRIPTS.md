@@ -15,8 +15,8 @@ the set to record, and then its options, which may come in any order.
 ### `setup.sh`
 
 Makes the Python virtual environment in `.venv` and installs llamatron into
-it, then builds the built-in synths' engine, offering to install Rust first
-([Building the Synth Engine](BUILDING_THE_SYNTH.md)). Run it once after
+it, then builds the backend, which plays the built-in synths and FluidSynth and sends MIDI, offering to install Rust first
+([Building the Backend](BUILDING_THE_BACKEND.md)). Run it once after
 cloning the repository, and again if the environment is ever deleted.
 [Installing](INSTALLING.md) describes the installation.
 

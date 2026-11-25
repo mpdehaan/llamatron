@@ -2,13 +2,14 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""The native synth daemon (realtime/synth_process/daemon.py and native/synth/): where it is found, when it is used, and what
+"""The native synth daemon (realtime/synth_process/daemon.py and native/backend/): where it is found, when it is used, and what
 it renders offline, through the real daemon where it is built; nothing here opens the sound card.
 """
 
 import multiprocessing
 import numpy
 import os
+import pathlib
 import tempfile
 import unittest
 
@@ -25,6 +26,7 @@ WAV = 'out.wav'
 MIDDLE_C = 60
 HARD = 110
 SPAWN = 'spawn'
+CARGO_MANIFEST = 'Cargo.toml'
 QUIETEST = 0.01
 CEILING = 0.98
 LFO_SHAPES = ('sine', 'triangle', 'saw_up', 'saw_down', 'square', 'sample_and_hold')
@@ -86,6 +88,11 @@ class TestFindingTheDaemon(unittest.TestCase):
         with tempfile.NamedTemporaryFile() as program:
             self.assertEqual(daemon.daemon_path(environment={daemon.DAEMON_PATH: program.name}), program.name)
         self.assertIsNone(daemon.daemon_path(environment={daemon.DAEMON_PATH: program.name}))
+
+    def test_the_built_program_is_looked_for_in_the_backend_s_own_folder(self):
+        # The tests of the real backend skip where it is not found, so a path gone stale would skip them silently.
+        top = pathlib.Path(daemon.__file__).resolve().parents[4]
+        self.assertTrue((top / daemon.BUILT_FOLDER[0] / daemon.BUILT_FOLDER[1] / CARGO_MANIFEST).is_file())
 
     def test_the_python_engine_is_used_when_asked_for(self):
         with tempfile.NamedTemporaryFile() as program:

@@ -39,14 +39,14 @@ again does nothing that's already done.
   automatic channels and its General MIDI sound. Every demo's instruments play
   this way.
 - **Starting and stopping.** Where the
-  [synth engine](BUILDING_THE_SYNTH.md) is built, it plays FluidSynth itself,
+  [backend](BUILDING_THE_BACKEND.md) is built, it plays FluidSynth itself,
   loading FluidSynth's library and the SoundFont as it starts, so that
   FluidSynth and the built-in instruments share one sound stream and land
   together to the sample. Otherwise the tracker starts FluidSynth as a program
   of its own the first time something plays through it, waits until it is
   ready so that no note is lost, and ends it when the tracker quits, however
   it quits. Starting llamatron with `LLAMATRON_FLUIDSYNTH_PROCESS=1` keeps
-  FluidSynth's own program even where the synth engine is built.
+  FluidSynth's own program even where the backend is built.
 - **Where the tracker looks.** The tracker looks for FluidSynth in
   `/opt/homebrew`, then `/usr/local`, then the folders on your PATH, and for
   the SoundFont in `~/soundfonts`, where the install script puts them.

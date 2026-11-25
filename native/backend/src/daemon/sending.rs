@@ -1,7 +1,7 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! The daemon as the real-time sender, `llamatron-synth send`: the tracker's player hands it every event of what plays,
+//! The daemon as the real-time sender, `llamatron-backend send`: the tracker's player hands it every event of what plays,
 //! and it sends each on time through the MIDI ports, the built-in synths and FluidSynth, all in this one process.
 //!
 //! The first message opens it: `["open", {ports, recording, driver, block, device, fluid}]`, each port `[name, kind,

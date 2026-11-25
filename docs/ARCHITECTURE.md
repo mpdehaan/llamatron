@@ -286,17 +286,21 @@ each clip's events counted from its scene's start, built ahead and changed as
 the set changes, and its player
 (`src/llamatron/realtime/render_process/player.py`) launches scenes and clips
 as each clip's Follow action and each scene's Launch together say, so that a
-song plays from the top as the export plays. The Realtime Sender Process
-(`src/llamatron/realtime/sender_process/process.py`) sends each event at its
-moment. On macOS it hands each event to CoreMIDI, the system's MIDI service, a
-tenth of a second ahead and stamped with its moment, so that it is sent on
-time however busy the computer is
-(`src/llamatron/realtime/sender_process/coremidi.py`); on other systems it
-sends each event as its moment comes. The devices are the MIDI ports found
-(`src/llamatron/realtime/devices/ports.py`) and FluidSynth, which the tracker
-starts when something plays through it
-(`src/llamatron/realtime/devices/fluidsynth.py`). Both processes end when the
-tracker does, however it ends, and every sounding note is let go.
+song plays from the top as the export plays. The sender sends each event at
+its moment: the backend, `llamatron-backend`, written in Rust (`native/backend/`,
+described in [Backend](BACKEND.md)), which the render process starts and speaks
+to (`src/llamatron/realtime/sender_process/rust_sender.py`). On macOS it hands
+each event to CoreMIDI, the system's MIDI service, a tenth of a second ahead
+and stamped with its moment, so that it is sent on time however busy the
+computer is; on other systems it sends each event as its moment comes. The
+same process plays the built-in synths and FluidSynth, so that they and MIDI
+share one clock. The devices are the MIDI ports found
+(`src/llamatron/realtime/devices/ports.py`) and FluidSynth, whose library the
+backend loads (`src/llamatron/realtime/devices/fluidsynth.py`). Where the
+backend is not built, the Python Realtime Sender Process
+(`src/llamatron/realtime/sender_process/process.py`) and Synthesis Process
+take its place. Every process ends when the tracker does, however it ends, and
+every sounding note is let go.
 
 ### The Song Wizard
 

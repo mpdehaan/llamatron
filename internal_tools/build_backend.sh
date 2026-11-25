@@ -3,24 +3,24 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# What it does: build the built-in synths' daemon, llamatron-synth, from native/synth/, offering to install Rust first
+# What it does: build llamatron's backend, llamatron-backend, from native/backend/, offering to install Rust first
 
-# Build the daemon that plays llamatron's built-in synths:
+# Build llamatron's backend, which plays the built-in synths and FluidSynth and sends MIDI:
 #
-#     sh internal_tools/build_synth.sh
+#     sh internal_tools/build_backend.sh
 #
 # It checks what building needs and offers to install what is missing, installing nothing unless you say yes: Rust,
 # through rustup, the Rust project's installer, into your home folder; on a Mac, Apple's command line tools; on
 # Linux it says which package holds the sound library headers, since installing those needs your system's package
-# manager. Then it builds native/synth/ into native/synth/target/release/llamatron-synth, where llamatron finds it.
-# Running it again rebuilds only what changed. docs/BUILDING_THE_SYNTH.md explains each step.
+# manager. Then it builds native/backend/ into native/backend/target/release/llamatron-backend, where llamatron finds it.
+# Running it again rebuilds only what changed. docs/BUILDING_THE_BACKEND.md explains each step.
 
 set -eu
 cd "$(dirname "$0")/.."
 
 RUSTUP_URL='https://sh.rustup.rs'
-MANIFEST='native/synth/Cargo.toml'
-BUILT='native/synth/target/release/llamatron-synth'
+MANIFEST='native/backend/Cargo.toml'
+BUILT='native/backend/target/release/llamatron-backend'
 
 # Asks a yes or no question, and answers no when nobody is at the keyboard to say.
 asked_yes() {
@@ -61,7 +61,7 @@ if ! command -v cargo >/dev/null 2>&1; then
         curl --proto '=https' --tlsv1.2 -sSf "$RUSTUP_URL" | sh -s -- -y --profile minimal
         PATH="$HOME/.cargo/bin:$PATH"
     else
-        echo "Nothing was installed, and nothing was built. The built-in synths play on llamatron's slower Python engine."
+        echo "Nothing was installed, and nothing was built. llamatron plays through its slower Python processes."
         exit 1
     fi
 fi
@@ -76,4 +76,4 @@ if [ "$(uname -s)" = 'Darwin' ] && [ "$(sysctl -n hw.optional.arm64 2>/dev/null 
 fi
 
 cargo build --release --manifest-path "$MANIFEST"
-echo "Built $BUILT. llamatron plays its built-in synths through it from now on."
+echo "Built $BUILT. llamatron plays through it from now on."
