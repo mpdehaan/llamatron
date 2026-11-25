@@ -7,4 +7,5 @@ pub mod field_page;
 pub mod list_page;
 pub mod main_page;
 pub mod not_ported;
+pub mod one_row_editor;
 pub mod set;

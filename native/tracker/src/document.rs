@@ -86,6 +86,12 @@ impl Document {
         }
     }
 
+    /// Make one change to the set, and note that it needs saving.
+    pub fn change_set(&mut self, change: impl FnOnce(&mut Setlist)) {
+        change(&mut self.setlist);
+        self.dirty = true;
+    }
+
     /// Note that the set changed, so that it needs saving.
     pub fn changed(&mut self) {
         self.dirty = true;

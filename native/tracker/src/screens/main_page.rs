@@ -14,6 +14,8 @@ use crate::screens::field_page::FieldPage;
 use crate::screens::list_page::ListPage;
 use crate::screens::not_ported::NotPorted;
 use crate::screens::set::file_page::FilePage;
+use crate::screens::set::grooves_page::GroovesPage;
+use crate::screens::set::scales_page::ScalesPage;
 use crate::screens::set::songs_page::SongsPage;
 use crate::style::Style as RichStyle;
 use crate::text::Text;
@@ -204,6 +206,14 @@ impl MainPage {
     fn act(&mut self, app: &mut App, binding: &'static Binding) {
         if same(binding, &Keys::FILE) {
             app.show_page(std::boxed::Box::new(FieldPage::new(FilePage)));
+            return;
+        }
+        if same(binding, &Keys::GROOVES) {
+            app.show_page(std::boxed::Box::new(ListPage::new(GroovesPage)));
+            return;
+        }
+        if same(binding, &Keys::SCALES) {
+            app.show_page(std::boxed::Box::new(ListPage::new(ScalesPage)));
             return;
         }
         if same(binding, &Keys::SONGS) {

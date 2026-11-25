@@ -238,6 +238,18 @@ impl Setlist {
         self.section(section)?.get(name)
     }
 
+    /// Add an item at the end of its section, which the set then holds even where its file left the section out.
+    pub fn add_item(&mut self, section: &str, name: &str, item: Item) {
+        if let Some(held) = self.sections.iter_mut().find(|held| held.section == section) {
+            held.items.get_or_insert_with(Vec::new).push((name.to_string(), item));
+        }
+    }
+
+    /// Set one of the set's own settings, or leave it out with None.
+    pub fn set_written(&mut self, name: &str, value: Option<Data>) {
+        self.settings.put(name, value);
+    }
+
     /// The set's data as the objects write it: its settings, then each section the file had.
     pub fn to_data(&self) -> Data {
         let mut pairs = self.settings.written();

@@ -18,7 +18,7 @@ const PERCENT: i128 = 100;
 const DEFAULT_CELL_LENGTH: &str = "1/16";
 
 /// The factory grooves every set has, each its cells as percentages of its cell's length, and its cell's length.
-const FACTORY_GROOVES: &[(&str, [i64; 16], (i128, i128))] = &[
+pub const FACTORY_GROOVES: &[(&str, [i64; 16], (i128, i128))] = &[
     ("none", [0; 16], (1, 16)),
     ("swing 54", [0, 8, 0, 8, 0, 8, 0, 8, 0, 8, 0, 8, 0, 8, 0, 8], (1, 16)),
     ("swing 58", [0, 16, 0, 16, 0, 16, 0, 16, 0, 16, 0, 16, 0, 16, 0, 16], (1, 16)),

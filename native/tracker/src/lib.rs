@@ -6,6 +6,7 @@
 //! view: each page holds its state, its keys name its actions, a key press updates it, and its view is lines of styled text.
 
 pub mod app;
+pub mod components;
 pub mod document;
 pub mod drawing;
 pub mod forms;
@@ -18,5 +19,6 @@ pub mod style;
 pub mod text;
 pub mod themes;
 pub mod tour;
+pub mod uses;
 
 pub use generated::keybindings;

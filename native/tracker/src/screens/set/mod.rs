@@ -4,5 +4,9 @@
 //! The pages of the set as a whole (the Python screens/set/).
 
 pub mod file_page;
+pub mod groove_editor;
+pub mod grooves_page;
+pub mod scale_page;
+pub mod scales_page;
 pub mod song_page;
 pub mod songs_page;

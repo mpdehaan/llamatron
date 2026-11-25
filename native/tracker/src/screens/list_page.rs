@@ -49,8 +49,14 @@ pub trait Listing {
         Vec::new()
     }
 
-    /// Do what a key of the page's own does to the row of a key, or to the + row.
-    fn press_row(&mut self, app: &mut App, item: &KeyItem, key: &str, row: Option<&str>);
+    /// The keys for a row that has keys of its own in place of item_keys, such as a factory groove's, or None.
+    fn row_keys(&self, _app: &App, _row: &str) -> Option<Vec<KeyItem>> {
+        None
+    }
+
+    /// Do what a key of the page's own does to the row of a key, or to the + row, and say the row of the key the cursor goes
+    /// to after, where it moves.
+    fn press_row(&mut self, app: &mut App, item: &KeyItem, key: &str, row: Option<&str>) -> Option<String>;
 
     fn row_style(&self, _app: &App, _row: &str) -> &'static str {
         Style::PLAIN
@@ -166,8 +172,8 @@ impl<L: Listing> ListPage<L> {
         if self.listing.can_add() {
             keys.push(self.bind(&Keys::ADD));
         }
-        if self.current(app).is_some() {
-            keys.extend(self.listing.item_keys(app));
+        if let Some(row) = self.current(app) {
+            keys.extend(self.listing.row_keys(app, &row).unwrap_or_else(|| self.listing.item_keys(app)));
         }
         keys
     }
@@ -257,7 +263,11 @@ impl<L: Listing> Page for ListPage<L> {
             self.settle(app);
         } else {
             let current = self.current(app);
-            self.listing.press_row(app, item, key, current.as_deref());
+            if let Some(row) = self.listing.press_row(app, item, key, current.as_deref()) {
+                if let Some(place) = self.listing.rows(app).iter().position(|(found, _)| *found == row) {
+                    self.cursor.set(place);
+                }
+            }
         }
     }
 

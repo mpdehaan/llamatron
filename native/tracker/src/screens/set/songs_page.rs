@@ -99,13 +99,14 @@ impl Listing for SongsPage {
         keys
     }
 
-    fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) {
-        let Some(name) = row else { return };
+    fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {
+        let name = row?;
         if item.is(&Keys::CURRENT) {
             app.document.select_song(name);
         } else if item.is(&Keys::SETTINGS) {
             app.document.select_song(name);
             app.show_page(Box::new(FieldPage::new(SongPage)));
         }
+        None
     }
 }
