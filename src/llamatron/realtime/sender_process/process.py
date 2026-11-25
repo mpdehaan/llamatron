@@ -242,7 +242,7 @@ def engine_for(*, driver, ports, recording, synthesis=None):
                 outputs[name] = ScheduledRecordingOutput(clock=clock)
             elif is_built_in_port(name):
                 outputs[name] = SynthOutput(synthesis=synthesis, group=built_in_group(name))
-            elif name == realtime_names.FLUIDSYNTH_PORT and plays_fluidsynth(synthesis):
+            elif is_fluidsynth_port(name) and plays_fluidsynth(synthesis):
                 outputs[name] = FluidSynthDaemonOutput(synthesis=synthesis)
             else:
                 outputs[name] = CoreMidiOutput(name=name)
@@ -253,11 +253,17 @@ def engine_for(*, driver, ports, recording, synthesis=None):
             outputs[name] = RecordingOutput()
         elif is_built_in_port(name):
             outputs[name] = SynthOutput(synthesis=synthesis, group=built_in_group(name))
-        elif name == realtime_names.FLUIDSYNTH_PORT and plays_fluidsynth(synthesis):
+        elif is_fluidsynth_port(name) and plays_fluidsynth(synthesis):
             outputs[name] = FluidSynthDaemonOutput(synthesis=synthesis)
         else:
             outputs[name] = RtMidiOutput(name=name)
     return PlaybackEngine(clock=clock, outputs=outputs)
+
+
+def is_fluidsynth_port(name):
+    """Return whether a port is FluidSynth's, by its name's beginning, since the name ends with the tracker's process id,
+    which differs from this process's own."""
+    return name.startswith(realtime_names.FLUIDSYNTH_PORT_PREFIX)
 
 
 def is_built_in_port(name):
@@ -279,7 +285,7 @@ def started_synthesis(*, ports, recording, load=None):
     if recording:
         return None
     built_in = any(is_built_in_port(name) for name in ports)
-    fluid = realtime_names.FLUIDSYNTH_PORT in ports and fluidsynth_device.plays_in_daemon()
+    fluid = any(is_fluidsynth_port(name) for name in ports) and fluidsynth_device.plays_in_daemon()
     if not built_in and not fluid:
         return None
     synthesis = SynthesisProcess()

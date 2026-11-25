@@ -14,7 +14,9 @@ import unittest
 import numpy
 
 from llamatron.exporters.built_in_wave import read_wave
+from llamatron.realtime import realtime_names
 from llamatron.realtime.devices import fluidsynth
+from llamatron.realtime.sender_process import process as sender_process
 from llamatron.realtime.sender_process.synth_output import FluidSynthDaemonOutput
 from llamatron.realtime.synth_process import daemon
 
@@ -56,6 +58,12 @@ class TestFluidSynthPort(unittest.TestCase):
         port.send_at(data=[NOTE_ON, MIDDLE_C, HARD], at=MOMENT)
         port.send_at(data=[PROGRAM_CHANGE, VIOLIN], at=MOMENT)
         self.assertEqual(stand_in.sent, [(MOMENT - DELAY, NOTE_ON, MIDDLE_C, HARD), (MOMENT - DELAY, PROGRAM_CHANGE, VIOLIN, 0)])
+
+    def test_fluidsynth_s_port_is_known_whichever_process_named_it(self):
+        # The tracker names the port after its own process, and the sender, another process, must still know it.
+        other_process = realtime_names.FLUIDSYNTH_PORT_PREFIX + ' 1'
+        self.assertTrue(sender_process.is_fluidsynth_port(other_process))
+        self.assertFalse(sender_process.is_fluidsynth_port(realtime_names.BUILT_IN_PORT_PREFIX))
 
     def test_a_flush_takes_back_what_is_still_to_come(self):
         stand_in = StandInDaemon()

@@ -25,7 +25,7 @@ const DEFAULT_RATE: f64 = 44100.0;
 const LOG_FOLDER: &str = ".llamatron";
 const LOG_NAME: &str = "llamatron-synth";
 const LOG_FILE_BYTES: u64 = 1 << 20;
-const LOG_FILES_KEPT: usize = 5;
+const LOG_FILES_KEPT: usize = 10;
 
 /// What the command line asks for.
 struct Arguments {
@@ -56,7 +56,7 @@ fn arguments() -> Arguments {
     found
 }
 
-/// Log to rotating files in ~/.llamatron/, a few small files kept, so that the daemon's start-ups and problems can be read
+/// Log to rotating files in ~/.llamatron/, appended to at each start and rotated by size alone, ten small files kept, so that the daemon's start-ups and problems can be read
 /// afterwards; it logs nothing of the music. Without a home folder it logs nowhere.
 fn start_logging() -> Option<flexi_logger::LoggerHandle> {
     let home = std::env::var_os("HOME")?;
@@ -65,6 +65,7 @@ fn start_logging() -> Option<flexi_logger::LoggerHandle> {
     flexi_logger::Logger::try_with_str("info")
         .ok()?
         .log_to_file(file)
+        .append()
         .rotate(
             flexi_logger::Criterion::Size(LOG_FILE_BYTES),
             flexi_logger::Naming::Numbers,
