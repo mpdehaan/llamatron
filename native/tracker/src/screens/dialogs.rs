@@ -8,7 +8,7 @@
 use crate::app::App;
 use crate::drawing::{cursor_mark, fit, legend, BoxCharacters as Boxes, Style, SPACE};
 use crate::forms::nodes::GridCell;
-use crate::keybindings::{ChoiceDialog as ChoiceKeys, GridChoiceDialog as GridKeys, KeyClass, PromptDialog as PromptKeys};
+use crate::keybindings::{ChoiceDialog as ChoiceKeys, GridChoiceDialog as GridKeys, KeyClass, PromptDialog as PromptKeys, SoundDialog as SoundKeys};
 use crate::keys::KeyItem;
 use crate::page::Page;
 use crate::screens::list_page::shown_around;
@@ -61,6 +61,12 @@ pub fn dialog_box(title: &str, deletes: bool, lines: &dyn Fn(usize) -> Vec<Text>
 
 /// A dialog drawn in its heavy box with a heading of its own making at the box's inner width.
 fn framed_dialog(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) -> Vec<Text>, keys: &[KeyItem], screen_width: usize) -> Vec<Text> {
+    let (held, width) = sized_contents(heading, lines, keys, screen_width);
+    box_lines(&held, width)
+}
+
+/// What a dialog's box holds, and how wide the box is: as wide as it wants, or as its lines need, within the screen.
+fn sized_contents(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) -> Vec<Text>, keys: &[KeyItem], screen_width: usize) -> (Vec<Text>, usize) {
     let widest = screen_width.saturating_sub(DIALOG_MARGIN);
     let mut width = widest.min(DIALOG_WIDTH);
     let mut held = contents(heading, lines, keys, width - DIALOG_MARGIN);
@@ -69,6 +75,11 @@ fn framed_dialog(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) -> 
         width = widest.min(needed);
         held = contents(heading, lines, keys, width - DIALOG_MARGIN);
     }
+    (held, width)
+}
+
+/// Lines inside a heavy box of a width.
+fn box_lines(held: &[Text], width: usize) -> Vec<Text> {
     let inner = width - DIALOG_MARGIN;
     let mut boxed = vec![Text::plain(&format!(
         "{}{}{}",
@@ -79,7 +90,7 @@ fn framed_dialog(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) -> 
     for line in held {
         let mut framed = Text::plain(&format!("{}{SPACE}", Boxes::HEAVY_BAR));
         let room = inner.saturating_sub(line.cell_len());
-        framed.append_text(&line);
+        framed.append_text(line);
         framed.append(&format!("{}{SPACE}{}", SPACE.repeat(room), Boxes::HEAVY_BAR), Style::PLAIN);
         boxed.push(framed);
     }
@@ -92,12 +103,37 @@ fn framed_dialog(heading: &dyn Fn(usize) -> Vec<Text>, lines: &dyn Fn(usize) -> 
     boxed
 }
 
-/// The page's lines with a dialog's box laid over them in the middle of the screen, as a modal screen sits over its page.
-pub fn laid_over(lines: &mut [Text], boxed: &[Text], width: usize) {
+/// How far down and to the right a flyout's box is drawn from its dialog's, so that the two read as a stack.
+pub const FLYOUT_SHIFT: usize = 2;
+
+/// One box drawn over another of the same width, FLYOUT_SHIFT down and to the right, covering what lies under it.
+fn stacked(under: &[Text], over: &[Text]) -> Vec<Text> {
+    let shift = SPACE.repeat(FLYOUT_SHIFT);
+    (0..under.len().max(over.len() + FLYOUT_SHIFT))
+        .map(|row| {
+            if row < FLYOUT_SHIFT {
+                let mut line = under[row].clone();
+                line.append(&shift, Style::PLAIN);
+                return line;
+            }
+            let mut line = match under.get(row) {
+                Some(below) => below.slice(0, FLYOUT_SHIFT),
+                None => Text::plain(&shift),
+            };
+            line.append_text(&over[row - FLYOUT_SHIFT]);
+            line
+        })
+        .collect()
+}
+
+/// The page's lines with a dialog's box laid over them in the middle of the screen, as a modal screen sits over its page; a
+/// dialog with a flyout open is placed by its own box alone, shift being how far the flyout reaches past it, so that the
+/// dialog stays where it was.
+pub fn laid_over(lines: &mut [Text], boxed: &[Text], width: usize, shift: usize) {
     let height = lines.len();
     let box_width = boxed.iter().map(Text::cell_len).max().unwrap_or(0);
-    let left = width.saturating_sub(box_width) / 2;
-    let top = height.saturating_sub(boxed.len()) / 2;
+    let left = width.saturating_sub(box_width.saturating_sub(shift)) / 2;
+    let top = height.saturating_sub(boxed.len().saturating_sub(shift)) / 2;
     for (place, piece) in boxed.iter().enumerate() {
         let Some(line) = lines.get_mut(top + place) else { break };
         let mut padded = line.clone();
@@ -730,4 +766,412 @@ pub fn grouped_grid(columns: &[Vec<(String, Vec<usize>)>]) -> Vec<Vec<GridCell>>
     (0..height)
         .map(|row| built.iter().map(|cells| cells.get(row).cloned().unwrap_or(GridCell::Gap)).collect())
         .collect()
+}
+
+/// How many rows the sound dialog shows at once, the list scrolling to keep the cursor's in view, so that the dialog fits an
+/// 80 by 24 console.
+const SHOWN_SOUNDS: usize = 12;
+
+/// A sound and the value choosing it answers with.
+pub type Sound = (String, usize);
+
+/// A sound chosen from groups, each a row drawn as a button that opens a flyout of its sounds (the Python SoundDialog). Its
+/// first rows are choices of their own, such as no sound. / searches every group's sounds at once, and L tries the sound
+/// under the cursor. It answers with the value of the sound taken.
+pub struct SoundDialog {
+    title: String,
+    top: Vec<Sound>,
+    groups: Vec<(String, Vec<Sound>)>,
+    /// The value the dialog opened on.
+    current: usize,
+    cursor: usize,
+    /// The group whose flyout is open, and the cursor's place in it.
+    flyout: Option<usize>,
+    flyout_place: usize,
+    /// What the search has typed, or None while nothing is searched for, and the cursor's place among what it found.
+    typed: Option<String>,
+    found_place: usize,
+    /// Why the sound last tried did not play, shown until the next key.
+    said: String,
+}
+
+impl SoundDialog {
+    /// A sound dialog opened on the row that holds a value: its own row at the top, its group's, or the first.
+    pub fn new(title: &str, top: Vec<Sound>, groups: Vec<(String, Vec<Sound>)>, current: usize) -> SoundDialog {
+        let cursor = match top.iter().position(|(_, held)| *held == current) {
+            Some(place) => place,
+            None => groups
+                .iter()
+                .position(|(_, sounds)| sounds.iter().any(|(_, held)| *held == current))
+                .map_or(0, |group| top.len() + group),
+        };
+        SoundDialog {
+            title: title.to_string(),
+            top,
+            groups,
+            current,
+            cursor,
+            flyout: None,
+            flyout_place: 0,
+            typed: None,
+            found_place: 0,
+            said: String::new(),
+        }
+    }
+
+    /// Every group's sounds that hold what was typed, ignoring case, each as its group, its place there and its label.
+    fn found(&self) -> Vec<(usize, usize, String)> {
+        let wanted = self.typed.clone().unwrap_or_default().to_lowercase();
+        let mut found = Vec::new();
+        for (group, (_, sounds)) in self.groups.iter().enumerate() {
+            for (place, (label, _)) in sounds.iter().enumerate() {
+                if label.to_lowercase().contains(&wanted) {
+                    found.push((group, place, label.clone()));
+                }
+            }
+        }
+        found
+    }
+
+    /// The value of the sound under the cursor, or None on a group's row and while searching.
+    fn under_cursor(&self) -> Option<usize> {
+        if self.typed.is_some() {
+            return None;
+        }
+        if let Some(group) = self.flyout {
+            return self.groups[group].1.get(self.flyout_place).map(|(_, value)| *value);
+        }
+        self.top.get(self.cursor).map(|(_, value)| *value)
+    }
+
+    /// Whether a value is a sound to hear: anything but no sound.
+    fn can_try(value: Option<usize>) -> bool {
+        value.is_some_and(|value| value != 0)
+    }
+
+    /// Why a sound cannot be tried: the song's Preview instrument, where FluidSynth does not play it, must be on a device
+    /// of its own that is connected, and llamatron2 lists no devices yet.
+    fn trial_refusal(app: &App) -> String {
+        use llamatron_model::objects::setlist::Item;
+        use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SongSetting, FLUIDSYNTH_DEVICE};
+        use llamatron_strings::errors;
+        let Some(name) = app
+            .document
+            .song()
+            .get_written(SongSetting::PREVIEW_INSTRUMENT)
+            .and_then(|value| value.as_str())
+            .map(str::to_string)
+        else {
+            return errors::ERR_NOTHING_TO_TRY_A_SOUND_WITH.to_string();
+        };
+        let device = match app.document.get_setlist().get_item(Section::INSTRUMENTS, &name) {
+            Some(Item::Instrument(instrument)) => instrument
+                .get_written(InstrumentSetting::DEVICE)
+                .and_then(|value| value.as_str())
+                .map(str::to_string),
+            _ => None,
+        };
+        match device {
+            None => named(errors::ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, &[("name", name.as_str().into())]),
+            Some(device) if device == FLUIDSYNTH_DEVICE => named(errors::ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, &[("name", name.as_str().into())]),
+            Some(device) => named(
+                errors::ERR_PREVIEW_DEVICE_NOT_CONNECTED,
+                &[("name", name.as_str().into()), ("device", device.as_str().into())],
+            ),
+        }
+    }
+
+    /// The key that tries the sound under the cursor, where it is one to hear.
+    fn trial_keys(&self) -> Vec<KeyItem> {
+        if Self::can_try(self.under_cursor()) {
+            vec![Self::bind(&SoundKeys::LISTEN)]
+        } else {
+            Vec::new()
+        }
+    }
+
+    /// A row's text: a top row's label, or a group drawn as a button, with the current sound after a mark where it holds it.
+    fn row_text(&self, row: usize) -> String {
+        if let Some((label, _)) = self.top.get(row) {
+            return label.clone();
+        }
+        let (name, sounds) = &self.groups[row - self.top.len()];
+        match sounds.iter().find(|(_, held)| *held == self.current) {
+            Some((chosen, _)) => named(marks::MSG_FLYOUT_CHOSEN, &[("name", name.as_str().into()), ("chosen", chosen.as_str().into())]),
+            None => named(marks::MSG_FLYOUT_CLOSED, &[("name", name.as_str().into())]),
+        }
+    }
+
+    /// The rows that show, as (place, row), so many of them, scrolled to keep the cursor's in view.
+    fn windowed(rows: &[String], at: usize, shown: usize) -> Vec<(usize, String)> {
+        let start = (at as i64 - (shown / 2) as i64).min(rows.len() as i64 - shown as i64).max(0) as usize;
+        rows.iter().cloned().enumerate().skip(start).take(shown).collect()
+    }
+
+    /// A row as drawn: after the cursor's mark, cut to the width, the cursor's in bold.
+    fn row_line(text: &str, selected: bool, width: usize) -> Text {
+        let line = fit(&format!("{}{text}", cursor_mark(selected)), width);
+        if selected {
+            Text::styled(&line, Style::BOLD)
+        } else {
+            Text::plain(&line)
+        }
+    }
+
+    /// Lines made up to so many rows with blank ones, and under them the line that says why a sound did not play.
+    fn padded(&self, mut lines: Vec<Text>, rows: usize) -> Vec<Text> {
+        while lines.len() < rows {
+            lines.push(Text::default());
+        }
+        lines.push(Text::styled(&self.said, Style::REFUSAL));
+        lines
+    }
+
+    /// The dialog's own lines: what the search found, or the rows of the top choices and the groups.
+    fn lines(&self, width: usize) -> Vec<Text> {
+        if let Some(typed) = &self.typed {
+            let found = self.found();
+            let at = self.found_place.min(found.len().saturating_sub(1));
+            let rows: Vec<String> = found
+                .iter()
+                .map(|(group, _, label)| {
+                    named(
+                        marks::MSG_SOUND_FOUND,
+                        &[("sound", label.as_str().into()), ("group", self.groups[*group].0.as_str().into())],
+                    )
+                })
+                .collect();
+            let mut lines = Vec::new();
+            if !typed.is_empty() {
+                let shown = named(marks::MSG_SEARCH_SHOWN, &[("text", typed.as_str().into())]);
+                lines.push(Text::styled(&fit(&format!("{SPACE}{shown}"), width), Style::DIM));
+            }
+            let shown: Vec<Text> = Self::windowed(&rows, at, SHOWN_SOUNDS)
+                .iter()
+                .take(SHOWN_SOUNDS - 1)
+                .map(|(place, row)| Self::row_line(row, *place == at, width))
+                .collect();
+            lines.extend(self.padded(shown, SHOWN_SOUNDS - 1));
+            return lines;
+        }
+        let rows: Vec<String> = (0..self.top.len() + self.groups.len()).map(|row| self.row_text(row)).collect();
+        let shown = Self::windowed(&rows, self.cursor, SHOWN_SOUNDS)
+            .iter()
+            .map(|(place, row)| Self::row_line(row, *place == self.cursor, width))
+            .collect();
+        self.padded(shown, SHOWN_SOUNDS)
+    }
+
+    /// The open flyout's lines, or None: its group as the heading, a sound a row with the cursor's marked, and its keys.
+    fn flyout_lines(&self, app: &App, width: usize) -> Option<Vec<Text>> {
+        let group = self.flyout.filter(|_| self.typed.is_none())?;
+        let (name, sounds) = &self.groups[group];
+        let rows: Vec<String> = sounds.iter().map(|(label, _)| label.clone()).collect();
+        let shown = Self::windowed(&rows, self.flyout_place, SHOWN_SOUNDS)
+            .iter()
+            .map(|(place, row)| Self::row_line(row, *place == self.flyout_place, width))
+            .collect();
+        let mut lines = vec![Text::styled(name, Style::BOLD), Text::default()];
+        lines.extend(self.padded(shown, SHOWN_SOUNDS));
+        lines.push(Text::default());
+        let keys = crate::keys::in_order(self.class(), self.keys(app));
+        let shown_keys: Vec<KeyItem> = keys.into_iter().filter(|item| item.shown).collect();
+        lines.extend(legend(&shown_keys, width));
+        Some(lines)
+    }
+
+    fn bind(binding: &'static crate::keybindings::Binding) -> KeyItem {
+        KeyItem::of(&SoundKeys::CLASS, binding)
+    }
+
+    /// Choose the sound under the cursor, handing its value back to the page that opened the dialog.
+    fn choose(&self, app: &mut App) {
+        if let Some(value) = self.under_cursor() {
+            app.go_back();
+            app.answer(Answer::Chosen(value));
+        }
+    }
+}
+
+impl Page for SoundDialog {
+    fn name(&self) -> &'static str {
+        "SoundDialog"
+    }
+
+    fn is_dialog(&self) -> bool {
+        true
+    }
+
+    fn class(&self) -> &'static KeyClass {
+        &SoundKeys::CLASS
+    }
+
+    fn keys(&self, _app: &App) -> Vec<KeyItem> {
+        if let Some(typed) = &self.typed {
+            let mut keys = vec![
+                Self::bind(&SoundKeys::CLOSE),
+                Self::bind(&SoundKeys::MOVE).wanting_key(),
+                Self::bind(&SoundKeys::FIND),
+                Self::bind(&SoundKeys::TYPE).wanting_key(),
+            ];
+            if !typed.is_empty() {
+                keys.push(Self::bind(&SoundKeys::ERASE));
+                keys.push(Self::bind(&SoundKeys::COMPLETE));
+            }
+            return keys;
+        }
+        if self.flyout.is_some() {
+            let mut keys = vec![
+                Self::bind(&SoundKeys::CLOSE),
+                Self::bind(&SoundKeys::MOVE_IN_FLYOUT).wanting_key(),
+                Self::bind(&SoundKeys::CHOOSE),
+            ];
+            keys.extend(self.trial_keys());
+            return keys;
+        }
+        let on_group = self.cursor >= self.top.len();
+        let mut keys = vec![Self::bind(&SoundKeys::CANCEL), Self::bind(&SoundKeys::MOVE).wanting_key()];
+        keys.push(if on_group {
+            Self::bind(&SoundKeys::OPEN)
+        } else {
+            Self::bind(&SoundKeys::CHOOSE)
+        });
+        keys.push(Self::bind(&SoundKeys::SEARCH));
+        keys.extend(self.trial_keys());
+        keys
+    }
+
+    fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        self.said.clear();
+        if item.is(&SoundKeys::CANCEL) {
+            app.go_back();
+        } else if item.is(&SoundKeys::CLOSE) {
+            if self.typed.is_some() {
+                self.typed = None;
+            } else {
+                self.flyout = None;
+            }
+        } else if item.is(&SoundKeys::MOVE) && self.typed.is_some() {
+            let found = self.found().len();
+            if found > 0 {
+                let place = self.found_place.min(found - 1);
+                self.found_place = if key == "up" { place.saturating_sub(1) } else { (place + 1).min(found - 1) };
+            }
+        } else if item.is(&SoundKeys::MOVE) {
+            let rows = self.top.len() + self.groups.len();
+            self.cursor = if key == "up" {
+                self.cursor.saturating_sub(1)
+            } else {
+                (self.cursor + 1).min(rows.saturating_sub(1))
+            };
+        } else if item.is(&SoundKeys::MOVE_IN_FLYOUT) {
+            let count = self.flyout.map_or(0, |group| self.groups[group].1.len());
+            match key {
+                "left" => self.flyout = None,
+                "up" => self.flyout_place = self.flyout_place.saturating_sub(1),
+                "down" => self.flyout_place = (self.flyout_place + 1).min(count.saturating_sub(1)),
+                _ => {}
+            }
+        } else if item.is(&SoundKeys::OPEN) {
+            let group = self.cursor - self.top.len();
+            self.flyout_place = self.groups[group].1.iter().position(|(_, held)| *held == self.current).unwrap_or(0);
+            self.flyout = Some(group);
+        } else if item.is(&SoundKeys::CHOOSE) {
+            self.choose(app);
+        } else if item.is(&SoundKeys::SEARCH) {
+            self.typed = Some(String::new());
+            self.found_place = 0;
+        } else if item.is(&SoundKeys::TYPE) {
+            let typed = self.typed.get_or_insert_with(String::new);
+            typed.push_str(if key == "space" { SPACE } else { key });
+            self.found_place = 0;
+        } else if item.is(&SoundKeys::ERASE) {
+            if let Some(typed) = self.typed.as_mut() {
+                typed.pop();
+            }
+            self.found_place = 0;
+        } else if item.is(&SoundKeys::COMPLETE) {
+            let labels: Vec<String> = self.found().into_iter().map(|(_, _, label)| label).collect();
+            let typed = self.typed.clone().unwrap_or_default();
+            self.typed = Some(completed_from(&labels, &typed));
+            self.found_place = 0;
+        } else if item.is(&SoundKeys::FIND) {
+            let found = self.found();
+            if let Some((group, place, _)) = found.get(self.found_place.min(found.len().saturating_sub(1))).cloned() {
+                self.typed = None;
+                self.cursor = self.top.len() + group;
+                self.flyout = Some(group);
+                self.flyout_place = place;
+            }
+        } else if item.is(&SoundKeys::LISTEN) {
+            // llamatron2 plays nothing in real time yet, so trying a sound says why it cannot be heard.
+            self.said = Self::trial_refusal(app);
+        }
+    }
+
+    fn dialog_lines(&self, app: &App, width: usize) -> Vec<Text> {
+        let keys = crate::keys::in_order(self.class(), self.keys(app));
+        let shown: Vec<KeyItem> = if self.flyout.is_some() && self.typed.is_none() {
+            // The flyout lists the keys; the dialog under it keeps the keys it had while closed.
+            let mut closed = vec![Self::bind(&SoundKeys::CANCEL), Self::bind(&SoundKeys::MOVE)];
+            closed.push(Self::bind(&SoundKeys::OPEN));
+            closed.push(Self::bind(&SoundKeys::SEARCH));
+            crate::keys::in_order(self.class(), closed)
+        } else {
+            keys
+        };
+        let (held, width_of_box) = sized_contents(&|inner| heading_lines(&self.title, false, inner), &|inner| self.lines(inner), &shown, width);
+        let boxed = box_lines(&held, width_of_box);
+        let Some(mut over) = self.flyout_lines(app, width_of_box - DIALOG_MARGIN) else {
+            return boxed;
+        };
+        // The flyout's box is as tall as the dialog's, whatever it holds.
+        over.resize(held.len(), Text::default());
+        stacked(&boxed, &box_lines(&over, width_of_box))
+    }
+
+    fn dialog_shift(&self) -> usize {
+        if self.flyout.is_some() && self.typed.is_none() {
+            FLYOUT_SHIFT
+        } else {
+            0
+        }
+    }
+
+    fn body(&self, _app: &App, _width: usize, _height: usize) -> Vec<Text> {
+        Vec::new()
+    }
+
+    fn crumbs(&self, _app: &App) -> Vec<String> {
+        Vec::new()
+    }
+
+    fn takes_text(&self) -> bool {
+        self.typed.is_some()
+    }
+
+    fn type_text(&mut self, _app: &mut App, character: char) {
+        if let Some(typed) = self.typed.as_mut() {
+            typed.push(character);
+            self.found_place = 0;
+        }
+    }
+}
+
+/// What was typed completed as far as every label found agrees, ignoring case.
+fn completed_from(labels: &[String], typed: &str) -> String {
+    let lowered = typed.to_lowercase();
+    if labels.is_empty() || !labels.iter().all(|label| label.to_lowercase().starts_with(&lowered)) {
+        return typed.to_string();
+    }
+    let first: Vec<char> = labels[0].chars().collect();
+    let mut length = typed.chars().count();
+    while length < first.len() {
+        let longer: String = first[..length + 1].iter().collect::<String>().to_lowercase();
+        if !labels.iter().all(|label| label.to_lowercase().starts_with(&longer)) {
+            break;
+        }
+        length += 1;
+    }
+    first[..length].iter().collect()
 }

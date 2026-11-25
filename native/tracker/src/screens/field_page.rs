@@ -201,6 +201,17 @@ impl<F: Form> FieldPage<F> {
                 let dialog = crate::screens::dialogs::GridChoiceDialog::new(&title, options, pages, current, details);
                 app.show_page(Box::new(dialog));
             }
+            Edit::AskSound { title, top, groups, current } => {
+                // The dialog answers with a sound's value, which stands for itself among the choices.
+                let most = top
+                    .iter()
+                    .chain(groups.iter().flat_map(|(_, sounds)| sounds.iter()))
+                    .map(|(_, value)| *value)
+                    .max()
+                    .unwrap_or(0);
+                self.asking = Some((id, Asking::Choice((0..=most).map(|value| value.to_string()).collect())));
+                app.show_page(Box::new(crate::screens::dialogs::SoundDialog::new(&title, top, groups, current)));
+            }
             Edit::AskNumber { title, value, lowest, highest } => {
                 self.asking = Some((id, Asking::Number(lowest, highest)));
                 app.show_page(Box::new(PromptDialog::new(&title, &value.to_string())));

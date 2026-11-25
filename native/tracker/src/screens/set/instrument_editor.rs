@@ -170,6 +170,35 @@ fn stride(strides: Strides, number: i64) -> i64 {
 }
 
 impl InstrumentEditor {
+    /// The GM sound field's ENTER, which picks a sound from General MIDI's families, or none, and its answer.
+    fn choose_gm_sound(&self, app: &mut App, edit: Edit) {
+        let Some(instrument) = self.instrument(app) else { return };
+        let current = instrument
+            .get_written(InstrumentSetting::GM_SOUND)
+            .and_then(Data::as_whole)
+            .map_or(0, |whole| whole as usize);
+        let sound = match edit {
+            Edit::Enter => {
+                let top = vec![(marks::MSG_NONE_SHOWN.to_string(), 0)];
+                app.asking = Some(Edit::AskSound {
+                    title: messages::MSG_GM_SOUND_TITLE.to_string(),
+                    top,
+                    groups: sound_families(),
+                    current,
+                });
+                return;
+            }
+            Edit::Choice(chosen) => chosen.parse::<i128>().ok().filter(|sound| *sound > 0).map(Data::Whole),
+            _ => return,
+        };
+        let name = self.name.clone();
+        app.document.change_set(|setlist| {
+            if let Some(Item::Instrument(instrument)) = setlist.get_item_mut(Section::INSTRUMENTS, &name) {
+                instrument.set_written(InstrumentSetting::GM_SOUND, sound);
+            }
+        });
+    }
+
     /// The Device field's ENTER, which picks FluidSynth or a port of this computer, or no device, and its answer.
     fn choose_device(&self, app: &mut App, edit: Edit) {
         let Some(instrument) = self.instrument(app) else { return };
@@ -912,6 +941,10 @@ impl Form for InstrumentEditor {
             }
             (edit, _) => edit,
         };
+        if write == Write::GmSound && matches!(edit, Edit::Enter | Edit::Choice(_)) {
+            self.choose_gm_sound(app, edit);
+            return;
+        }
         if write == Write::Setting(InstrumentSetting::DEVICE) {
             self.choose_device(app, edit);
             return;
@@ -967,4 +1000,26 @@ impl Form for InstrumentEditor {
             }
         }
     }
+}
+
+/// General MIDI's families for the sound picker, each its name with its sounds, each labelled by its number and name.
+fn sound_families() -> Vec<(String, Vec<(String, usize)>)> {
+    use llamatron_model::schema::generated::limits::GM_FAMILY_SIZE;
+    labels::MSG_GM_FAMILIES
+        .iter()
+        .enumerate()
+        .map(|(place, family)| {
+            let first = place as i64 * GM_FAMILY_SIZE + MIN_GM_SOUND;
+            let sounds = (first..first + GM_FAMILY_SIZE)
+                .map(|sound| {
+                    let name = labels::MSG_GM_SOUNDS.get((sound - MIN_GM_SOUND) as usize).copied().unwrap_or("");
+                    (
+                        named(labels::MSG_GM_SOUND_SHOWN, &[("number", sound.into()), ("name", name.into())]),
+                        sound as usize,
+                    )
+                })
+                .collect();
+            (family.to_string(), sounds)
+        })
+        .collect()
 }

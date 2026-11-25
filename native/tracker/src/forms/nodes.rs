@@ -112,6 +112,14 @@ pub enum Edit {
         pages: Vec<(Option<String>, Vec<Vec<GridCell>>)>,
         details: Option<Vec<String>>,
     },
+    /// A sound to pick from groups, each opening a flyout of its sounds, after rows of their own at the top; each sound a
+    /// label and the value it answers with, current the value the dialog opens on.
+    AskSound {
+        title: String,
+        top: Vec<(String, usize)>,
+        groups: Vec<(String, Vec<(String, usize)>)>,
+        current: usize,
+    },
     /// A choice to pick from groups under headings: the headings' places among the options are never chosen.
     AskGrouped {
         title: String,

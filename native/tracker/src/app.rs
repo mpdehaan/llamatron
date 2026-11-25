@@ -258,7 +258,7 @@ impl Tracker {
             }
         }
         for dialog in &self.pages[under + 1..] {
-            crate::screens::dialogs::laid_over(&mut lines, &dialog.dialog_lines(&self.app, width), width);
+            crate::screens::dialogs::laid_over(&mut lines, &dialog.dialog_lines(&self.app, width), width, dialog.dialog_shift());
         }
         lines
     }

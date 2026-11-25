@@ -109,6 +109,11 @@ pub trait Page {
         Vec::new()
     }
 
+    /// How far a dialog's flyout reaches past its box, down and to the right, so that the dialog is placed by its own box.
+    fn dialog_shift(&self) -> usize {
+        0
+    }
+
     /// Take a dialog's answer, which the dialog the page opened hands back as it closes.
     fn answered(&mut self, _app: &mut App, _answer: crate::screens::dialogs::Answer) {}
 }
