@@ -5,6 +5,7 @@
 //! degrees take, and whether it loops. A clip of no length of its own ends after its last position.
 
 use crate::error::{RenderError, Rendered};
+use crate::groove::Groove;
 use crate::positions::{fit_to_length, piece_of};
 use crate::sound::{NoteSound, Sound};
 use llamatron_math::Rational;
@@ -20,6 +21,8 @@ pub struct Clip {
     pub note_length: Option<Rational>,
     pub looping: bool,
     pub time_signature: Option<TimeSignature>,
+    /// The groove the clip plays with, which the Realizer gives it once it is finished, so that no generator sees it.
+    pub groove: Option<Groove>,
 }
 
 impl Clip {
@@ -33,6 +36,7 @@ impl Clip {
             note_length: None,
             looping: true,
             time_signature: None,
+            groove: None,
         }
     }
 
@@ -134,6 +138,7 @@ impl Clip {
             note_length: self.note_length,
             looping: true,
             time_signature: None,
+            groove: None,
         })
     }
 }

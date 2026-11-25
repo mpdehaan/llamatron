@@ -13,13 +13,16 @@ use crate::clip::Clip;
 use crate::clip_player::ClipSlotPlayer;
 use crate::error::{RenderError, Rendered};
 use crate::generators::chords::Continuation;
+use crate::groove::{groove_for, Groove};
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::{Scene, Song, Track};
+use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SongSetting, TrackSetting};
 use llamatron_model::schema::generated::file_format::{Restart, BYPASS_WHEN, GENERATOR_ENABLED};
+use llamatron_model::schema::generated::limits::{MAX_TEMPO, MIN_TEMPO};
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Setting, CLIP_SLOT, INSTRUMENT, PATTERN, SCENE, SONG, TRACK};
 use llamatron_strings::{errors, named, names};
@@ -31,6 +34,8 @@ pub struct WrittenScene<'a> {
     pub number: i64,
     pub name: String,
     pub scale_name: Option<String>,
+    /// The tempo it plays at where it changes the song's, or None where it plays at the song's.
+    pub tempo: Option<f64>,
     pub scene: &'a Scene,
     pub first_play: bool,
 }
@@ -55,6 +60,7 @@ impl WrittenScene<'_> {
                     number,
                     name,
                     scale_name: scale_name.clone(),
+                    tempo: own_tempo(scene, song),
                     scene,
                     first_play: place == 0,
                 });
@@ -72,6 +78,25 @@ impl WrittenScene<'_> {
     }
 }
 
+/// The tempo a scene plays at where it changes the song's: the song's scaled by the scene's percentage, held to the tempos
+/// a set may hold, worked out as Python's numbers work it out, so that the same tempo is written.
+fn own_tempo(scene: &Scene, song: &Song) -> Option<f64> {
+    let percent = scene.get_written(SceneSetting::TEMPO)?;
+    let scaled = match (song.get_tempo(), percent) {
+        (Data::Whole(tempo), Data::Whole(percent)) => (tempo * percent) as f64 / 100.0,
+        (tempo, percent) => as_float(&tempo)? * as_float(percent)? / 100.0,
+    };
+    Some(scaled.max(MIN_TEMPO as f64).min(MAX_TEMPO as f64))
+}
+
+fn as_float(value: &Data) -> Option<f64> {
+    match value {
+        Data::Whole(number) => Some(*number as f64),
+        Data::Float(number) => Some(*number),
+        _ => None,
+    }
+}
+
 /// A song rendered: its tracks, and each written-out scene's name and clips by track.
 pub struct Grid {
     pub tracks: Vec<String>,
@@ -80,6 +105,7 @@ pub struct Grid {
 
 pub struct GridRow {
     pub name: String,
+    pub tempo: Option<f64>,
     pub clips: Vec<(String, Clip)>,
 }
 
@@ -153,16 +179,30 @@ impl<'a> SongRealizer<'a> {
         for scene in &self.scenes {
             let mut clips = Vec::new();
             for track in &tracks {
-                if let Some(clip) = self.get_clip(scene, track)? {
+                if let Some(mut clip) = self.get_clip(scene, track)? {
+                    // The groove goes on last, so that generators, grabs and lengths never see it.
+                    clip.groove = self.groove_at(scene, track)?;
                     clips.push((track.clone(), clip));
                 }
             }
             rows.push(GridRow {
                 name: scene.name.clone(),
+                tempo: scene.tempo,
                 clips,
             });
         }
         Ok(Grid { tracks, rows })
+    }
+
+    /// The groove a track's clip plays with in a written-out scene: its track's choice, else its scene's, else its song's.
+    fn groove_at(&self, scene: &WrittenScene, track: &str) -> Rendered<Option<Groove>> {
+        let song_groove = Data::text(defaults::DEFAULT_GROOVE);
+        let choices = [
+            self.track(track)?.get_written(TrackSetting::GROOVE),
+            scene.scene.get_written(SceneSetting::GROOVE),
+            Some(self.song.get_written(SongSetting::GROOVE).unwrap_or(&song_groove)),
+        ];
+        groove_for(self.setlist, &choices)
     }
 
     /// The finished clip a track plays in a written-out scene, or None where it plays nothing there.
@@ -408,6 +448,7 @@ fn unported(table: &[Setting], played: &[&str], written: &dyn Fn(&str) -> Option
 fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
     let song_played = [
         SongSetting::TEMPO,
+        SongSetting::GROOVE,
         SongSetting::TIME_SIGNATURE,
         SongSetting::ENTRY_SIZE,
         SongSetting::SCALE,
@@ -436,6 +477,8 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         unported(TRACK, &track_played, &|name| track.get_written(name).cloned())?;
     }
     let scene_played = [
+        SceneSetting::TEMPO,
+        SceneSetting::GROOVE,
         SceneSetting::CHAINS,
         SceneSetting::NAME,
         SceneSetting::SECTION,

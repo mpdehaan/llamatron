@@ -58,6 +58,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             note_length: None,
             looping,
             time_signature: signature,
+            groove: None,
         })
     }
 

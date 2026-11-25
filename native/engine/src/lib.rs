@@ -9,6 +9,7 @@ pub mod clip;
 pub mod clip_player;
 pub mod error;
 pub mod generators;
+pub mod groove;
 pub mod order;
 pub mod pattern_player;
 pub mod positions;

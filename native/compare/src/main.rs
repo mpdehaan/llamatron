@@ -161,7 +161,8 @@ fn rendered_songs(setlist: &llamatron_model::objects::setlist::Setlist) -> llama
         let grid = llamatron_engine::realizer::SongRealizer::new(setlist, song, Some(RENDER_SEED)).render()?;
         let mut lines = Vec::new();
         for (place, row) in grid.rows.iter().enumerate() {
-            lines.push(format!("scene {place} tempo None"));
+            let tempo = row.tempo.map(llamatron_math::number::python_float_text).unwrap_or("None".to_string());
+            lines.push(format!("scene {place} tempo {tempo}"));
             for track in &grid.tracks {
                 let Some((_, clip)) = row.clips.iter().find(|(found, _)| found == track) else {
                     continue;

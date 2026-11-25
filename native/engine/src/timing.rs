@@ -46,9 +46,14 @@ pub fn timed_events(clip: &Clip, scale: Option<&Scale>) -> Rendered<(Vec<NoteEve
             continue;
         }
         let following = slots.get(place + 1).map(|(_, notes)| notes.as_slice()).unwrap_or(&[]);
-        let start = (*slot_start).min(clip_length);
+        // The clip's groove moves each note's start and keeps its gate, so that a delayed note ends later too.
+        let onset = match &clip.groove {
+            Some(groove) => groove.moved(*slot_start),
+            None => *slot_start,
+        };
+        let start = onset.min(clip_length);
         for (midi_number, note) in notes {
-            let mut end = *slot_start + note.length.unwrap_or(Rational::ZERO);
+            let mut end = onset + note.length.unwrap_or(Rational::ZERO);
             if note.glide && !following.is_empty() && !following.iter().any(|(midi, _)| midi == midi_number) {
                 end = end + glide_overlap();
             }
