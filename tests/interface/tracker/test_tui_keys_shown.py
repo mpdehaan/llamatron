@@ -152,7 +152,7 @@ class TestEveryKeyIsShownOnTheSongPages(EveryKeyIsShownTests, UITest):
         yield Section.GROOVES
         await self.press(Key.ENTER)
         yield GROOVE_EDITOR
-        await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD)
+        await self.press(Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD, Key.ENTER)
         yield INSTRUMENT_EDITOR
         await self.press(Key.ESCAPE)
         yield Section.INSTRUMENTS

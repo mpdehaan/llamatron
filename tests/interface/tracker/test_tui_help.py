@@ -61,7 +61,7 @@ class TestHelp(UITest):
             [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.ARRANGE, Key.UP, Key.ENTER],
             [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.GENERATORS], [Key.ENTER],
             [Key.ESCAPE, Key.DOWN, Key.ENTER],
-            [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.SCALES], [Key.ENTER], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.GROOVES], [Key.ENTER], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD], [Key.ESCAPE], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.ARRANGE], [Key.RIGHT, Key.ENTER],
+            [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.SCALES], [Key.ENTER], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.GROOVES], [Key.ENTER], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD, Key.ENTER], [Key.ESCAPE], [Key.ESCAPE, Key.ESCAPE, keybindings.MainPage.ARRANGE], [Key.RIGHT, Key.ENTER],
             [Key.ESCAPE, Key.LEFT, Key.ENTER],
         ]:
             await self.press(*keys)

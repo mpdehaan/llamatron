@@ -6,8 +6,9 @@ its built-in engine, or that it is off, each with how many tracks play through i
 
 from llamatron.interface.forms.table import Align, ListColumn
 from llamatron.interface.pages.places import ItemPlace
+from llamatron.model.schema import file_format
 from llamatron.model.schema.file_format import InstrumentKind, Section, SoundSetting
-from llamatron.user_strings import labels, marks, names
+from llamatron.user_strings import labels, marks, messages, names
 
 
 class InstrumentListPresenter:
@@ -40,9 +41,14 @@ class InstrumentListPresenter:
         return ItemPlace(section=Section.INSTRUMENTS, name=name)
 
     def add(self):
-        """Add an instrument with no device yet, numbered like new tracks and scenes, and open it."""
+        """Ask whether the new instrument is normal or percussion, chosen once and never changed, then add it."""
+        roles = file_format.INSTRUMENT_ROLES
+        self._page.pick(title=messages.MSG_NEW_INSTRUMENT_TITLE, values=roles, shown=[labels.MSG_ROLE_NAMES[role] for role in roles], then=self.add_of_role)
+
+    def add_of_role(self, role):
+        """Add an instrument of a role with no device yet, numbered like new tracks and scenes, and open it."""
         name = self._document.new_name(section=Section.INSTRUMENTS, word=names.MSG_NEW_INSTRUMENT_WORD)
-        self._document.add_instrument(name)
+        self._document.add_instrument(name, role=role)
         self._page.put_cursor_on(name)
         self._page.open_place(self.place_of(name))
 

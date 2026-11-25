@@ -134,7 +134,7 @@ class Instrument(HoldsSettings):
     """A MIDI device, by its port's name, and a channel from 1 to 16, or a built-in sound, and its preview pattern or None,
     which it holds as a pattern of its own, written inside it under preview, never in its settings."""
 
-    __slots__ = ('_preview',)
+    __slots__ = ('_preview', '_settled_role')
 
     SETTINGS = SETTINGS
 
@@ -149,6 +149,8 @@ class Instrument(HoldsSettings):
             InstrumentSetting.SOUND: own_copy(built_in.get(InstrumentSetting.SOUND)), InstrumentSetting.ROLE: built_in.get(InstrumentSetting.ROLE),
         })
         check_settings(settings=SETTINGS, data=written_settings(self._settings))
+        # The Role an older set's instrument takes from its tracks as the set is read, held but never written (settle_role).
+        self._settled_role = None
         self._preview = None
         preview = built_in.get(InstrumentSetting.PREVIEW)
         if preview is not None:
@@ -168,11 +170,16 @@ class Instrument(HoldsSettings):
             )
 
     def copy(self):
+        """Return a copy, a Role settled from its tracks written, so that a copy of an older set's drum kit, which no track plays
+        yet, stays percussion."""
+        built_in = {name: self._settings[name] for name in BUILT_IN_SETTINGS}
+        if self._settled_role is not None:
+            built_in[InstrumentSetting.ROLE] = self._settled_role
         return Instrument(
             device=self.get_device(), channel=self.get_written_channel(), gm_sound=self.get_gm_sound(),
             keyswitches=self._settings[InstrumentSetting.KEYSWITCHES], keyswitch_lead=self.get_written_keyswitch_lead(),
             default_velocity=self.get_default_velocity(), accent=self.get_written_accent(), velocity=self.get_velocity_percent(),
-            preview=self._preview.to_data() if self._preview is not None else None, **{name: self._settings[name] for name in BUILT_IN_SETTINGS},
+            preview=self._preview.to_data() if self._preview is not None else None, **built_in,
         )
 
     def to_data(self):
@@ -208,9 +215,21 @@ class Instrument(HoldsSettings):
         role = self._settings[InstrumentSetting.ROLE]
         if role is not None:
             return role
+        if self._settled_role is not None:
+            return self._settled_role
         if self.is_built_in() and self.get_part_type(SoundPart.OSCILLATORS) == OscillatorType.DRUM:
             return InstrumentRole.PERCUSSION
         return InstrumentRole.NORMAL
+
+    def has_written_role(self):
+        return self._settings[InstrumentSetting.ROLE] is not None
+
+    @notes_change
+    def settle_role(self, role):
+        """Give an instrument read with no Role written the one its tracks show, as its set is read: held, never written, so that
+        opening a file never changes it, and worked out alike each time the set is read."""
+        SETTINGS[InstrumentSetting.ROLE].check(role)
+        self._settled_role = role
 
     def get_kind(self):
         """Return what it is: a MIDI device and channel, or a sound llamatron makes itself (InstrumentKind)."""

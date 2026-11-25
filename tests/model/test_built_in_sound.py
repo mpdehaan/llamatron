@@ -12,7 +12,7 @@ from llamatron.model.objects import built_in_sound, engine_presets, sound_parts
 from llamatron.model.objects.instrument import Instrument
 from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import defaults, limits
-from llamatron.model.schema.file_format import DrumMachine, Effect, EffectSetting, EnvelopeType, FilterType, InstrumentKind, InstrumentRole, InstrumentSetting, OscillatorSetting, OscillatorType, PartSetting, SoundEngine, SoundPart, SoundSetting, Waveform
+from llamatron.model.schema.file_format import DrumMachine, Effect, EffectSetting, EnvelopeType, FilterType, InstrumentKind, InstrumentRole, InstrumentSetting, OscillatorSetting, OscillatorType, PartSetting, Section, SoundEngine, SoundPart, SoundSetting, Waveform
 
 WHERE = 'instruments'
 LATENCY_MS = 12
@@ -23,6 +23,11 @@ DRIVE_PERCENT = 40
 BITS = 6
 KNOB_PLACE = 2
 DEVICE = 'IAC Driver Bus 1'
+SONG = 'song'
+KIT = 'kit'
+KEYS = 'keys'
+DRUMS = 'drums'
+CHORDS = 'chords'
 
 
 class TestBuiltInSound(unittest.TestCase):
@@ -74,6 +79,21 @@ class TestBuiltInSound(unittest.TestCase):
         self.assertEqual(Instrument().get_role(), InstrumentRole.NORMAL)
         chosen = Instrument(role=InstrumentRole.PERCUSSION)
         self.assertEqual(Instrument.from_data(data=chosen.to_data(), where=WHERE).get_role(), InstrumentRole.PERCUSSION)
+
+    def test_an_instrument_read_with_no_role_is_percussion_where_only_drum_tracks_play_it(self):
+        setlist = Setlist()
+        song = setlist.add_new_song(SONG)
+        for instrument in (KIT, KEYS):
+            setlist.add_new_instrument(instrument)
+        song.add_new_track(name=DRUMS, drum=True).set_instrument_name(name=KIT, song=song)
+        song.add_new_track(name=CHORDS).set_instrument_name(name=KEYS, song=song)
+        data = setlist.to_data()
+        for instrument in data[Section.INSTRUMENTS].values():
+            del instrument[InstrumentSetting.ROLE]
+        read = Setlist.from_data(data=data)
+        self.assertEqual([read.get_instrument(name).get_role() for name in (KIT, KEYS)], [InstrumentRole.PERCUSSION, InstrumentRole.NORMAL])
+        # Opening a file never changes it: the role settled is not written.
+        self.assertNotIn(InstrumentSetting.ROLE, read.get_instrument(KIT).to_data())
 
     def test_a_built_in_instrument_is_kept_through_writing_and_reading(self):
         instrument = Instrument(kind=InstrumentKind.BUILT_IN)

@@ -368,7 +368,7 @@ class KeyTour(UITest):
         await self.walk()
         await self.press(Key.ESCAPE)
         await self.walk()
-        await self.press(Key.ESCAPE, keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD)
+        await self.press(Key.ESCAPE, keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD, Key.ENTER)
         await self.walk()
         await self.press(Key.ESCAPE)
         await self.walk()

@@ -56,14 +56,20 @@ class TestInstrumentsPage(UITest):
     def instruments(self):
         return self.document.get_setlist().get_instrument_names()
 
-    async def test_a_adds_a_numbered_instrument_with_no_device_and_opens_it(self):
+    async def test_a_asks_the_role_then_adds_a_numbered_instrument_with_no_device_and_opens_it(self):
         await self.press(keybindings.InstrumentsPage.ADD)
+        self.assertIsInstance(self.app.screen, ChoiceDialog)
+        await self.press(Key.ENTER)
         self.assertIsInstance(self.app.screen, InstrumentEditor)
         self.assertEqual(self.instruments(), [INSTRUMENT_1])
         instrument = self.document.get_setlist().get_instrument(INSTRUMENT_1)
         self.assertIsNone(instrument.get_device())
         self.assertEqual(instrument.get_channel(), defaults.DEFAULT_CHANNEL)
-        await self.press(Key.ESCAPE, keybindings.InstrumentsPage.ADD, Key.ESCAPE)
+        self.assertEqual(instrument.get_role(), InstrumentRole.NORMAL)
+        await self.press(Key.ESCAPE, keybindings.InstrumentsPage.ADD, Key.DOWN, Key.ENTER, Key.ESCAPE)
+        self.assertEqual(self.instruments(), [INSTRUMENT_1, INSTRUMENT_2])
+        self.assertEqual(self.document.get_setlist().get_instrument(INSTRUMENT_2).get_role(), InstrumentRole.PERCUSSION)
+        await self.press(keybindings.InstrumentsPage.ADD, Key.ESCAPE)
         self.assertEqual(self.instruments(), [INSTRUMENT_1, INSTRUMENT_2])
 
     async def test_the_list_shows_each_instruments_device_channel_and_uses(self):
@@ -86,7 +92,7 @@ class TestInstrumentsPage(UITest):
 
     async def test_the_first_instrument_turns_real_time_on_and_deleting_the_last_turns_it_off(self):
         self.assertFalse(self.document.get_setlist().is_real_time())
-        await self.press(keybindings.InstrumentsPage.ADD, Key.ESCAPE, keybindings.InstrumentsPage.ADD, Key.ESCAPE)
+        await self.press(keybindings.InstrumentsPage.ADD, Key.ENTER, Key.ESCAPE, keybindings.InstrumentsPage.ADD, Key.ENTER, Key.ESCAPE)
         self.assertTrue(self.document.get_setlist().is_real_time())
         await self.press(keybindings.InstrumentsPage.DELETE, *ui_testing.ANSWER_YES)
         self.assertEqual(self.instruments(), [INSTRUMENT_1])
@@ -208,7 +214,8 @@ class TestInstrumentEditor(UITest):
         await self.press(Key.ENTER)
         self.assertEqual(self.instrument().get_channel(), defaults.DEFAULT_CHANNEL + 2)
         # A new instrument starts switched off, neither MIDI nor built in, until one is chosen.
-        self.assertEqual(self.document.get_setlist().to_data()[Section.INSTRUMENTS][SYNTH], {InstrumentSetting.CHANNEL: defaults.DEFAULT_CHANNEL + 2, InstrumentSetting.KIND: InstrumentKind.OFF})
+        self.assertEqual(self.document.get_setlist().to_data()[Section.INSTRUMENTS][SYNTH], {InstrumentSetting.CHANNEL: defaults.DEFAULT_CHANNEL + 2, InstrumentSetting.KIND: InstrumentKind.OFF,
+                                                                                            InstrumentSetting.ROLE: InstrumentRole.NORMAL})
 
 
 class TestTrackInstrumentField(UITest):

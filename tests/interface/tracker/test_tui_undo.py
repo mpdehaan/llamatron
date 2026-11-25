@@ -390,7 +390,7 @@ class TestInstrumentsPageUndo(UndoTest):
     async def test_adding_the_first_instrument_turns_real_time_on_and_is_one_step(self):
         before = self.data()
         self.assertFalse(self.document.get_setlist().is_real_time())
-        await self.press(keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD, Key.ESCAPE)
+        await self.press(keybindings.MainPage.INSTRUMENTS, keybindings.InstrumentsPage.ADD, Key.ENTER, Key.ESCAPE)
         self.assertIsInstance(self.app.screen, InstrumentsPage)
         self.assertTrue(self.document.get_setlist().is_real_time())
         await self.check_undo_and_redo(before=before, after=self.data())

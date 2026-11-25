@@ -284,6 +284,7 @@ MSG_RENAME_GROOVE_PROMPT = 'Rename groove ({name})'
 
 # interface/tracker/screens/set/instruments_page.py and interface/tracker/screens/set/instrument_editor.py
 MSG_RENAME_INSTRUMENT_PROMPT = 'Rename instrument ({name})'
+MSG_NEW_INSTRUMENT_TITLE = 'New instrument'
 MSG_DEVICE_TITLE = 'MIDI device'
 MSG_GM_SOUND_TITLE = 'General MIDI sound'
 MSG_CHANNEL_PROMPT = 'Channel ({lowest} to {highest})'

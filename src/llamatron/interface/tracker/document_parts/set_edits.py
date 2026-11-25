@@ -13,7 +13,7 @@ from llamatron.model.objects.groove import new_groove
 from llamatron.model.objects.named_scale import NamedScale, scale_type_name
 from llamatron.model.objects.naming import default_scale_name, is_default_scale_name, words
 from llamatron.model.schema import generator_plugins
-from llamatron.model.schema.file_format import Section
+from llamatron.model.schema.file_format import InstrumentRole, Section
 from llamatron.model.values import note
 from llamatron.user_strings import marks
 
@@ -163,12 +163,17 @@ class SetEdits:
 
     # Grooves, of the set, beside the factory grooves every set has, which can be copied but not changed.
 
-    def add_instrument(self, name):
-        """Add an instrument with no device yet under a name. The first instrument turns real-time playback on."""
+    def add_instrument(self, name, *, role=InstrumentRole.NORMAL):
+        """Add an instrument of a role with no device yet under a name. The first instrument turns real-time playback on."""
         first = not self._setlist.get_instrument_names()
-        self.change_set(self._setlist.add_new_instrument, name)
+        self.change_set(self._setlist.add_new_instrument, name, role=role)
         if first:
             self.change_set(self._setlist.set_real_time, True)
+
+    def instruments_of_role(self, role):
+        """Return the names of the set's instruments of a role (InstrumentRole), in the set's order."""
+        setlist = self._setlist
+        return [name for name in setlist.get_instrument_names() if setlist.get_instrument(name).get_role() == role]
 
     def add_groove(self, name):
         """Add a straight groove of one bar of 16ths under a name, which can't be a factory groove's."""

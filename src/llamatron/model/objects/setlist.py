@@ -38,7 +38,7 @@ from llamatron.model.objects.pattern import Pattern
 from llamatron.model.objects.song import Song, started_song
 from llamatron.model.objects.traits import HoldsSections
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits as set_limits
-from llamatron.model.schema.file_format import ClipSlotSetting, FileLayout, InstrumentKind, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
+from llamatron.model.schema.file_format import ClipSlotSetting, FileLayout, InstrumentKind, InstrumentRole, PatternSetting, Row, ScaleSetting, SceneSetting, Section, sensible_hidden_visualizers, sensible_visualizer, SetlistSetting
 from llamatron.model.schema.setting import Checked, Choice, described, Flag, settings_held, Text, TimeLength, WholeNumber
 from llamatron.model.values import note
 from llamatron.model.values.scale import ScaleType
@@ -319,6 +319,18 @@ class Setlist(HoldsSections, HoldsSettings):
         self._read_grooves(data)
         self._read_instruments(data)
         self._read_songs(data)
+        self._settle_roles()
+
+    def _settle_roles(self):
+        """Give each instrument read with no Role written the one its tracks show: percussion where only drum tracks play it, so
+        that a drum kit of an older set stays on its drum tracks."""
+        for name in self.get_instrument_names():
+            instrument = self.get_instrument(name)
+            if instrument.has_written_role():
+                continue
+            playing = [self.get_song(song).get_track(track) for song, track in self.tracks_naming(section=Section.INSTRUMENTS, name=name)]
+            if playing and all(track.is_drum() for track in playing):
+                instrument.settle_role(InstrumentRole.PERCUSSION)
 
     @notes_change
     def _read_settings(self, data):
@@ -863,10 +875,10 @@ class Setlist(HoldsSections, HoldsSettings):
         self.add_item(section=Section.CHAINS, name=name, item=chain)
         return chain
 
-    def add_new_instrument(self, name):
-        """Add an instrument at the end of the set's instruments, switched off, neither MIDI nor built in, until one is chosen,
-        and return it."""
-        instrument = Instrument(kind=InstrumentKind.OFF)
+    def add_new_instrument(self, name, *, role=InstrumentRole.NORMAL):
+        """Add an instrument of a role at the end of the set's instruments, switched off, neither MIDI nor built in, until one
+        is chosen, and return it."""
+        instrument = Instrument(kind=InstrumentKind.OFF, role=role)
         self.add_item(section=Section.INSTRUMENTS, name=name, item=instrument)
         return instrument
 

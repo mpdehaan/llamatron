@@ -14,14 +14,15 @@ from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.arrange.track_editor import TrackEditor
 from llamatron.interface.tracker.screens.generators.generator_list_page import GeneratorListPage
 from llamatron.model.schema import defaults, limits
-from llamatron.model.schema.file_format import ClipSlotSetting, PatternSetting, TrackSetting
-from llamatron.user_strings import labels, marks, names as names_text
+from llamatron.model.schema.file_format import ClipSlotSetting, InstrumentRole, PatternSetting, TrackSetting
+from llamatron.user_strings import errors, labels, marks, names as names_text
 from tests.support import ui_testing
 from tests.support.rendering import render_song
 from tests.support.ui_testing import back_key, forward_key, key_of, UITest
 
 
 LEAD = 'lead'
+KIT = 'kit'
 SYNTH = 'synth'
 QUIET = 80
 DRUMS = 'drums'
@@ -207,6 +208,19 @@ class TestTrackEditor(UITest):
         self.assertEqual(self.field_text(labels.MSG_DEFAULT_VELOCITY_LABEL), QUIET - 1)
         await self.press(Key.BACKSPACE)
         self.assertIsNone(self.track(LEAD).get_default_velocity())
+
+    async def test_a_track_offers_only_instruments_of_its_role_and_refuses_a_drum_switch_its_instrument_does_not_fit(self):
+        self.document.add_instrument(SYNTH)
+        self.document.add_instrument(KIT, role=InstrumentRole.PERCUSSION)
+        await self.select_field(labels.MSG_INSTRUMENT_LABEL)
+        await self.press(Key.ENTER)
+        self.assertEqual(self.app.screen.options, [marks.MSG_NONE_SHOWN, SYNTH])
+        await self.press(Key.DOWN, Key.ENTER)
+        self.assertEqual(self.track(LEAD).get_instrument_name(), SYNTH)
+        await self.select_field(labels.MSG_DRUM_LABEL)
+        await self.press(Key.ENTER)
+        self.assertFalse(self.track(LEAD).is_drum())
+        self.assertIn(errors.ERR_INSTRUMENT_DOES_NOT_FIT.format(instrument=SYNTH, role=labels.MSG_ROLE_NAMES[InstrumentRole.NORMAL].lower()), self.text())
 
     async def test_the_accent_starts_at_the_track_s_default_and_is_stepped_and_cleared(self):
         self.assertEqual(self.field_text(labels.MSG_ACCENT_LABEL), marks.MSG_ACCENT_SHOWN.format(accent=defaults.DEFAULT_TRACK_ACCENT))

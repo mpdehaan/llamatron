@@ -16,9 +16,9 @@ from llamatron.interface.pages.generators_field import generators_field
 from llamatron.interface.pages.groove_choice import groove_choice_field
 from llamatron.interface.pages.octave_field import octave_field
 from llamatron.model.schema import defaults, file_format, generator_plugins, limits
-from llamatron.model.schema.file_format import TrackSetting
+from llamatron.model.schema.file_format import InstrumentRole, TrackSetting
 from llamatron.model.values import midi
-from llamatron.user_strings import labels, legends, marks, messages
+from llamatron.user_strings import errors, labels, legends, marks, messages
 
 
 class TrackPresenter:
@@ -97,8 +97,9 @@ class TrackPresenter:
         )
 
     def pick_instrument(self):
-        """Choose the instrument the track plays through in real time, from the set's, or none."""
-        instruments = sorted_names(self._document.get_setlist().get_instrument_names())
+        """Choose the instrument the track plays through in real time, from the set's of its role, or none: a drum track's are
+        the percussion instruments, any other's the normal ones."""
+        instruments = sorted_names(self._document.instruments_of_role(role_of_track(self.track())))
         current = self.track().get_instrument_name()
         self._page.pick(title=labels.MSG_INSTRUMENT_LABEL, values=[None, *instruments], shown=[marks.MSG_NONE_SHOWN, *instruments], current=current, then=self.set_instrument)
 
@@ -177,6 +178,14 @@ class TrackPresenter:
         self._change(self.track().set_transpose, transpose)
 
     def _set_drum(self, on):
+        """Make the track a drum track or not, refused on the status line where its instrument would no longer fit."""
+        instrument = self.track().get_instrument_name()
+        wanted = InstrumentRole.PERCUSSION if on else InstrumentRole.NORMAL
+        if instrument is not None and instrument in self._document.get_setlist().get_instrument_names():
+            role = self._document.get_setlist().get_instrument(instrument).get_role()
+            if role != wanted:
+                self._page.refuse(errors.ERR_INSTRUMENT_DOES_NOT_FIT.format(instrument=instrument, role=labels.MSG_ROLE_NAMES[role].lower()))
+                return
         self._change(self.track().set_drum, on)
 
     def _set_mute(self, on):
@@ -198,6 +207,13 @@ class TrackPresenter:
     def _change(self, setter, *arguments, **named):
         """Change the track through one of its setters, as one edit of the set."""
         self._document.change_set(setter, *arguments, **named)
+
+
+def role_of_track(track):
+    """Return the role of the instruments a track may play: percussion for a drum track, normal for any other."""
+    if track.is_drum():
+        return InstrumentRole.PERCUSSION
+    return InstrumentRole.NORMAL
 
 
 def _drum_transpose_shown():

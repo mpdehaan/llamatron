@@ -674,6 +674,7 @@ ERR_BAD_KNOBS = 'knobs must be {count} whole numbers from 0 to {most}, got {valu
 ERR_BAD_ARPEGGIO = 'arpeggio must be a list of up to {most} whole numbers of semitones from -{highest} to {highest}, got {value!r}'
 ERR_BAD_LFOS = 'lfos must be a list of up to {most} LFOs, each its settings, got {value!r}'
 ERR_BAD_EFFECTS = 'effects must be a list of up to {most} effect blocks, each an effect and its settings, got {value!r}'
+ERR_INSTRUMENT_DOES_NOT_FIT = 'the instrument ({instrument}) is {role}, which this track could no longer play'
 ERR_BAD_INSTRUMENT_ROLE = 'role must be one of: {choices}, got {value!r}'
 ERR_BAD_SOUND_PART = "a built-in sound's {part} must be a mapping of one of its types and that type's settings, got {value!r}"
 ERR_BAD_ENVELOPES = 'envelopes must be a list of three envelopes, each a type and its settings, got {value!r}'
