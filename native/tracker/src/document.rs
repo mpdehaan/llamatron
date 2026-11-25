@@ -4,6 +4,8 @@
 //! The set being edited (the Python interface/tracker/document.py): the set, the file it came from, whether it changed since,
 //! and the current song.
 
+use crate::history::{describe_change, History, Snapshot};
+use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::Song;
 use std::path::{Path, PathBuf};
@@ -15,6 +17,9 @@ pub struct Document {
     current: String,
     /// The kinds of generator the Generators page shows open, which the set's file remembers and nothing undoes.
     open_generator_types: Vec<String>,
+    /// The set as each key left it, for undo and redo, and the set as its file holds it, which says whether it needs saving.
+    history: History,
+    clean: Data,
 }
 
 /// The kinds of generator a file's data says the Generators page shows open, only the plugins' kinds.
@@ -38,12 +43,19 @@ impl Document {
     /// A set held, saved at a path if it has one; its first song current.
     pub fn new(setlist: Setlist, path: Option<PathBuf>) -> Document {
         let current = setlist.song_names().first().map(|name| name.to_string()).unwrap_or_default();
+        let clean = setlist.to_data();
+        let history = History::new(Snapshot {
+            data: clean.clone(),
+            song: current.clone(),
+        });
         Document {
             setlist,
             path,
             dirty: false,
             current,
             open_generator_types: Vec::new(),
+            history,
+            clean,
         }
     }
 
@@ -105,6 +117,7 @@ impl Document {
             self.setlist = setlist;
             self.dirty = dirty;
             self.current = song.to_string();
+            self.record_edit();
         }
     }
 
@@ -124,6 +137,46 @@ impl Document {
     pub fn change_set(&mut self, change: impl FnOnce(&mut Setlist)) {
         change(&mut self.setlist);
         self.dirty = true;
+    }
+
+    fn snapshot(&self) -> Snapshot {
+        Snapshot {
+            data: self.setlist.to_data(),
+            song: self.current.clone(),
+        }
+    }
+
+    /// Note the set as a key left it, a step to undo where it changed.
+    pub fn record_edit(&mut self) -> bool {
+        let snapshot = self.snapshot();
+        self.history.record(snapshot)
+    }
+
+    /// Go a step back in the history, or forward, and say what the step changed, or None where there is no step.
+    pub fn undo(&mut self) -> Option<String> {
+        let leaving = self.snapshot();
+        let arriving = self.history.undo()?;
+        Some(self.restore(&leaving, arriving))
+    }
+
+    pub fn redo(&mut self) -> Option<String> {
+        let leaving = self.snapshot();
+        let arriving = self.history.redo()?;
+        Some(self.restore(&leaving, arriving))
+    }
+
+    fn restore(&mut self, leaving: &Snapshot, arriving: Snapshot) -> String {
+        let words = describe_change(leaving, &arriving);
+        if let Ok(setlist) = Setlist::from_data(&arriving.data) {
+            self.setlist = setlist;
+        }
+        self.current = if self.setlist.get_song(&arriving.song).is_some() {
+            arriving.song
+        } else {
+            self.setlist.song_names().first().map(|name| name.to_string()).unwrap_or_default()
+        };
+        self.dirty = self.setlist.to_data() != self.clean;
+        words
     }
 
     /// Note that the set changed, so that it needs saving.

@@ -12,6 +12,7 @@ pub mod document;
 pub mod drawing;
 pub mod forms;
 pub mod generated;
+pub mod history;
 pub mod instrument_sound;
 pub mod keys;
 pub mod lengths;

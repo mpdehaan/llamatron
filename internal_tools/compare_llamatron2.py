@@ -341,7 +341,7 @@ def after_the_pdf(stops):
     return stops
 
 
-def compare_screens():
+def compare_screens(shown_most=None):
     """Replay the screen tour's keys in the Rust tracker at each size and compare every stop's screen; return the exit code."""
     differing = 0
     for size, stops in python_screens():
@@ -367,7 +367,7 @@ def compare_screens():
                 continue
             same = rust_stop['page'] == python['page'] and [pieces(line) for line in python['screen']] == [pieces(line) for line in rust_stop['screen']]
             counts[0 if same else 1] += 1
-            if not same and shown < MOST_SCREEN_DIFFERENCES:
+            if not same and shown < (shown_most or MOST_SCREEN_DIFFERENCES):
                 shown += 1
                 print(screen_difference(size=size, number=number, python=python, port=rust_stop))
         ported_differ = sum(counts[1] for counts in pages.values())
@@ -397,9 +397,10 @@ def main():
     made = argparse.ArgumentParser(prog='compare_llamatron2.py', description='Hold llamatron2 to the Python program.')
     made.add_argument('step', choices=sorted([*STEPS, 'screens']))
     made.add_argument('--only', help='only the sets whose path holds this text')
+    made.add_argument('--differences', type=int, help='for screens, how many differing stops to show, three unless given')
     options = made.parse_args()
     if options.step == 'screens':
-        return compare_screens()
+        return compare_screens(shown_most=options.differences)
     found = [*EXAMPLES.rglob('*.yml'), *TEST_SETS.rglob('*.yml')]
     if options.step == 'import':
         found += EXAMPLES.rglob('*.mid')

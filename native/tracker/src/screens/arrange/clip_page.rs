@@ -55,6 +55,75 @@ fn words(name: &str) -> String {
 }
 
 impl ClipPage {
+    /// Write one of the clip's settings, or take it out of the file with None.
+    fn write(&self, app: &mut App, setting: &str, value: Option<Data>) {
+        arrange_tabs::write_in_song(app, |song| song.set_clip_written(self.index, &self.track, setting, value));
+    }
+
+    /// Store what a key did to one of the clip's fields, its built-in generators' among them; false where the field writes
+    /// nothing so.
+    fn write_edit(&self, app: &mut App, id: usize, edit: &Edit) -> bool {
+        use llamatron_model::schema::generated::file_format::DIRECTIONS;
+        let Some(clip) = self.clip_slot(app) else { return false };
+        if (BUILT_IN_IDS..BUILT_IN_IDS * (built_in_kinds().len() + 1)).contains(&id) {
+            let Some(kind) = built_in_kinds().get(id / BUILT_IN_IDS - 1).copied() else {
+                return false;
+            };
+            let built_ins = clip.get_written(ClipSlotSetting::BUILT_IN);
+            let Some((setting, value)) = arrange_tabs::built_in_edit(app, built_ins, kind, BUILT_IN_IDS * (id / BUILT_IN_IDS), id, edit) else {
+                return false;
+            };
+            let built_ins = arrange_tabs::with_built_in(built_ins, kind, setting, value);
+            self.write(app, ClipSlotSetting::BUILT_IN, built_ins);
+            return true;
+        }
+        match (id, edit) {
+            (PATTERN_ORDER, Edit::Choice(chosen)) => self.write(app, ClipSlotSetting::PATTERN_ORDER, (chosen != PATTERN_ORDERS[0]).then(|| Data::text(chosen))),
+            (DIRECTION, Edit::Adjust(offset)) => {
+                let mut options = vec![None];
+                options.extend(DIRECTIONS.iter().map(|direction| Some(direction.to_string())));
+                let place = options.iter().position(|option| *option == clip.get_direction()).unwrap_or(0) as i64;
+                let chosen = options[(place + offset).rem_euclid(options.len() as i64) as usize].clone();
+                self.write(app, ClipSlotSetting::DIRECTION, chosen.map(Data::Text));
+            }
+            (DIRECTION, Edit::Clear) => self.write(app, ClipSlotSetting::DIRECTION, None),
+            (REPEAT, Edit::Number(repeat)) => {
+                let repeat = (*repeat).max(1);
+                self.write(app, ClipSlotSetting::REPEAT, (repeat != 1).then_some(Data::Whole(repeat as i128)));
+                if repeat < 2 {
+                    self.write(app, ClipSlotSetting::MORPH_TO, None);
+                    self.write(app, ClipSlotSetting::MORPH_STYLE, None);
+                }
+            }
+            (LOOP, Edit::Toggle(on)) => self.write(app, ClipSlotSetting::LOOP, on.then_some(Data::Bool(true))),
+            (FOLLOW_ACTION, Edit::Choice(chosen)) => self.write(app, ClipSlotSetting::FOLLOW_ACTION, Some(Data::text(chosen))),
+            (SCALE, Edit::Clear) => self.write(app, ClipSlotSetting::SCALE, None),
+            (GRAB_TRACK, Edit::Clear) => self.write(app, ClipSlotSetting::GRAB_TRACK, None),
+            (MORPH_TO, Edit::Clear) => {
+                self.write(app, ClipSlotSetting::MORPH_TO, None);
+                self.write(app, ClipSlotSetting::MORPH_STYLE, None);
+            }
+            (reset, Edit::Toggle(on)) if (arrange_tabs::RESET_IDS..arrange_tabs::GENERATORS).contains(&reset) => {
+                let draws = arrange_tabs::draws_with_values(app.document.song());
+                let Some(draw) = draws.get(reset - arrange_tabs::RESET_IDS) else {
+                    return false;
+                };
+                let value = arrange_tabs::resets_after(clip.get_written(ClipSlotSetting::RESET_DRAWS), draw, *on);
+                self.write(app, ClipSlotSetting::RESET_DRAWS, value);
+            }
+            _ => {
+                let Some(field) = arrange_tabs::field_of(&self.form(app), id) else {
+                    return false;
+                };
+                let (Some(setting), Some(value)) = (field.writes.clone(), field.written(edit)) else {
+                    return false;
+                };
+                self.write(app, &setting, value);
+            }
+        }
+        true
+    }
+
     fn scene<'a>(&self, app: &'a App) -> Option<&'a Scene> {
         app.document.song().scenes().get(self.index)
     }
@@ -374,6 +443,9 @@ impl Form for ClipPage {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        if edit != Edit::Enter && self.write_edit(app, id, &edit) {
+            return;
+        }
         if edit == Edit::Enter && (FIRST_PATTERN..ADD_ROW).contains(&id) {
             self.open_pattern(app, id - FIRST_PATTERN);
         } else if edit == Edit::Enter && id == arrange_tabs::GENERATORS {

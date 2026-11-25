@@ -46,6 +46,14 @@ impl NamedScale {
         &self.kind
     }
 
+    pub fn set_root(&mut self, root: &str) {
+        self.root = Data::text(root);
+    }
+
+    pub fn set_kind(&mut self, kind: &str) {
+        self.kind = Data::text(kind);
+    }
+
     pub fn to_data(&self) -> Data {
         Data::Map(vec![
             (Data::text(ScaleSetting::ROOT), self.root.clone()),

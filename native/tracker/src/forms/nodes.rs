@@ -116,6 +116,8 @@ pub struct Field {
     pub cells: Vec<Field>,
     /// Whether the cells step with [ and ], as a drift's two versions do.
     pub stepped_cells: bool,
+    /// The setting the field writes, where its page stores it by name, as a drift's cells do.
+    pub writes: Option<String>,
 }
 
 /// The next value in a list, starting from the middle where the current one isn't there, stopping at both ends.
@@ -148,6 +150,7 @@ impl Field {
             is_set: false,
             cells: Vec::new(),
             stepped_cells: false,
+            writes: None,
         }
     }
 
@@ -299,6 +302,33 @@ impl Field {
     pub fn with_adjust(mut self) -> Field {
         self.adjusts = true;
         self
+    }
+
+    pub fn writing(mut self, setting: &str) -> Field {
+        self.writes = Some(setting.to_string());
+        self
+    }
+
+    /// The value an edit of a field that names its setting writes, None taking the setting out of the file, or None where
+    /// the edit writes nothing so: a number or a toggle as it is, a choice as its text but the first choice, which stands for
+    /// the setting left out.
+    pub fn written(&self, edit: &Edit) -> Option<Option<llamatron_model::file::data::Data>> {
+        use llamatron_model::file::data::Data;
+        match (edit, &self.kind) {
+            (Edit::Number(number), _) => Some(Some(Data::Whole(*number as i128))),
+            (Edit::Toggle(on), _) => Some(Some(Data::Bool(*on))),
+            (Edit::Choice(chosen), Kind::Choice { choices, .. }) => Some((choices.first() != Some(chosen)).then(|| Data::text(chosen))),
+            (Edit::Clear, _) => Some(None),
+            _ => None,
+        }
+    }
+
+    /// The field of an id, this one or one of its cells.
+    pub fn find(&self, id: usize) -> Option<&Field> {
+        if self.id == id {
+            return Some(self);
+        }
+        self.cells.iter().find_map(|cell| cell.find(id))
     }
 
     pub fn with_shown_label(mut self, label: &str) -> Field {

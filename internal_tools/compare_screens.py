@@ -40,6 +40,7 @@ from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.pages import generators as generators_values
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.generators.generators_page import GeneratorsPage
+from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 from tests.interface.tracker import test_tui_help_keys
@@ -127,6 +128,16 @@ SUCCESS = 0
 FAILURE = 1
 
 
+def without_blanks(data):
+    """Return a set's data without the settings it holds as nothing, which its file leaves out, so that an edit that changes
+    only those counts as no change."""
+    if isinstance(data, dict):
+        return {key: without_blanks(value) for key, value in data.items() if value not in (None, {}, [])}
+    if isinstance(data, list):
+        return [without_blanks(item) for item in data]
+    return data
+
+
 class ScreenTour(KeyTour):
     """The key tour, recording the whole screen at every stop as well as the keys, and the keys pressed since the stop before,
     so that another program can press the same keys and be held to the same screens (internal_tools/compare_llamatron2.py)."""
@@ -205,6 +216,29 @@ class ScreenTour(KeyTour):
 
     def note(self):
         super().note()
+        self.record_stop()
+        self.try_an_edit()
+
+    def try_an_edit(self):
+        """On a settings field whose value steps, press ] and, where that changed the set, CTRL+Z, stopping after each, so that
+        another program is held to what each field's edit shows and to undoing it, and the tour goes on from the set as it was."""
+        page = self.app.screen
+        if not isinstance(page, FieldPage) or page.takes_text():
+            return
+        field = page.cell_field()
+        if field is None or getattr(field, 'adjust', None) is None:
+            return
+        document = self.app.get_document()
+        before = without_blanks(document.get_setlist().to_data())
+        self.press_at_once(Key.RIGHT_BRACKET)
+        if without_blanks(document.get_setlist().to_data()) == before:
+            return
+        self.record_stop()
+        self.press_at_once(Key.CTRL_Z)
+        self.record_stop()
+
+    def record_stop(self):
+        """Record the screen at a stop, with the keys pressed since the stop before."""
         page = self.app.screen
         # The set the tour starts from, saved before its first stop, kept beside the stops for another program to open.
         kept = os.path.join(os.path.dirname(os.environ[OUTPUT_SETTING]), TOUR_SET)

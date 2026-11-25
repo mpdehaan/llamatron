@@ -495,6 +495,14 @@ impl<F: Form> FieldPage<F> {
 
     /// The edit a field's key makes, by the binding pressed.
     fn edit_of(&self, field: &Field, item: &KeyItem) -> Option<Edit> {
+        if let Some((less, more)) = self.form.slot_keys() {
+            if item.is(more) {
+                return Some(field.adjusted(1));
+            }
+            if item.is(less) {
+                return Some(field.adjusted(-1));
+            }
+        }
         if item.is(&Keys::MORE) {
             return Some(field.adjusted(1));
         }

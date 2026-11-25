@@ -10,7 +10,7 @@ use crate::forms::nodes::{Edit, Field, Kind};
 use crate::keybindings::{KeyClass, SongPage as Keys};
 use crate::page::Duration;
 use crate::screens::field_page::{Form, Node};
-use crate::settings::{mode_name, named_in, number_text, song_text};
+use crate::settings::{mode_name, named_in, number_text, song_text, sorted_names};
 use crate::themes::{self, Colour};
 use llamatron_engine::realizer::SongRealizer;
 use llamatron_model::schema::generated::defaults;
@@ -171,5 +171,93 @@ impl Form for SongPage {
         fields.into_iter().map(|field| Node::Field(Box::new(field))).collect()
     }
 
-    fn apply(&mut self, _app: &mut App, _id: usize, _edit: Edit) {}
+    fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        use llamatron_model::file::data::Data;
+        use llamatron_model::schema::generated::file_format::{STEP_SIZE_CHOICES, TIME_SIGNATURE_CHOICES};
+        let song = app.document.song();
+        let setlist = app.document.get_setlist();
+        let text = |name: &str| song.get_written(name).and_then(Data::as_str).map(str::to_string);
+        // A step along a list of choices, None first where the list starts with it, stopping at both ends.
+        let along = |values: &[Option<String>], current: &Option<String>, offset: i64| {
+            let place = values.iter().position(|value| value == current).unwrap_or(0) as i64;
+            values[(place + offset).clamp(0, values.len() as i64 - 1) as usize].clone()
+        };
+        let none_first = |names: Vec<String>| {
+            let mut values = vec![None];
+            values.extend(names.into_iter().map(Some));
+            values
+        };
+        let style = |name: &str| text(name).map(Data::Text);
+        let none_or = |chosen: String| (chosen != marks::MSG_NONE_SHOWN).then_some(Data::Text(chosen));
+        let written: Option<(&str, Option<Data>)> = match (id, edit) {
+            (TEMPO, Edit::Number(tempo)) => Some((SongSetting::TEMPO, Some(Data::Whole(tempo as i128)))),
+            (TIME_SIGNATURE, Edit::Adjust(offset)) => {
+                let choices: Vec<Option<String>> = TIME_SIGNATURE_CHOICES.iter().map(|choice| Some(choice.to_string())).collect();
+                let mut current = Some(song.get_time_signature().to_text());
+                if !choices.contains(&current) {
+                    current = Some(defaults::DEFAULT_TIME_SIGNATURE.to_string());
+                }
+                Some((SongSetting::TIME_SIGNATURE, along(&choices, &current, offset).map(Data::Text)))
+            }
+            (ENTRY_SIZE, Edit::Adjust(offset)) => {
+                let choices = none_first(STEP_SIZE_CHOICES.iter().map(|choice| choice.to_string()).collect());
+                Some((
+                    SongSetting::ENTRY_SIZE,
+                    along(&choices, &song_text(song, SongSetting::ENTRY_SIZE), offset).map(Data::Text),
+                ))
+            }
+            (ENTRY_SIZE, Edit::Clear) => Some((SongSetting::ENTRY_SIZE, None)),
+            (SCALE, Edit::Adjust(offset)) => {
+                let names = sorted_names(&setlist.items(Section::SCALES).iter().map(|(name, _)| name.clone()).collect::<Vec<_>>());
+                Some((SongSetting::SCALE, along(&none_first(names), &song.get_scale_name(), offset).map(Data::Text)))
+            }
+            (SCALE, Edit::Clear) => Some((SongSetting::SCALE, None)),
+            (GROOVE, Edit::Adjust(offset)) => {
+                let names = sorted_names(&crate::screens::set::grooves_page::groove_names(app));
+                let current = song_text(song, SongSetting::GROOVE).unwrap_or_else(|| defaults::DEFAULT_GROOVE.to_string());
+                Some((SongSetting::GROOVE, Some(Data::Text(crate::forms::nodes::stepped(&names, &current, offset)))))
+            }
+            (PREVIEW, Edit::Adjust(offset)) => {
+                let names = sorted_names(&setlist.items(Section::INSTRUMENTS).iter().map(|(name, _)| name.clone()).collect::<Vec<_>>());
+                Some((
+                    SongSetting::PREVIEW_INSTRUMENT,
+                    along(&none_first(names), &song_text(song, SongSetting::PREVIEW_INSTRUMENT), offset).map(Data::Text),
+                ))
+            }
+            (PREVIEW, Edit::Clear) => Some((SongSetting::PREVIEW_INSTRUMENT, None)),
+            (LIVE_RESPONSE, Edit::Choice(chosen)) => Some((SongSetting::LIVE_RESPONSIVENESS, Some(Data::Text(chosen)))),
+            (VISUALIZER, Edit::Choice(chosen)) => {
+                let value = (chosen != labels::MSG_SETS_VISUALIZER_CHOICE).then_some(Data::Text(chosen));
+                Some((SongSetting::VISUALIZER, llamatron_model::objects::song::sensible_visualizer(value)))
+            }
+            (GENRE | SUBGENRE | VARIANT, edit) => {
+                let chosen = match edit {
+                    Edit::Choice(chosen) => none_or(chosen),
+                    Edit::Clear => None,
+                    _ => return,
+                };
+                let (mut genre, mut subgenre, mut variant) = (style(SongSetting::GENRE), style(SongSetting::SUBGENRE), style(SongSetting::VARIANT));
+                match id {
+                    GENRE => genre = chosen,
+                    SUBGENRE => subgenre = chosen,
+                    _ => variant = chosen,
+                }
+                let name = app.document.get_current_song_name().to_string();
+                app.document.change_set(|setlist| {
+                    if let Some(llamatron_model::objects::setlist::Item::Song(song)) = setlist.get_item_mut(Section::SONGS, &name) {
+                        song.set_style(genre, subgenre, variant);
+                    }
+                });
+                return;
+            }
+            _ => None,
+        };
+        let Some((setting, value)) = written else { return };
+        let name = app.document.get_current_song_name().to_string();
+        app.document.change_set(|setlist| {
+            if let Some(llamatron_model::objects::setlist::Item::Song(song)) = setlist.get_item_mut(Section::SONGS, &name) {
+                song.set_written(setting, value);
+            }
+        });
+    }
 }

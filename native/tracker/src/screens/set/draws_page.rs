@@ -29,6 +29,9 @@ const FIRST_SLOT: usize = 10;
 
 pub struct DrawsPage;
 
+/// A change to a draw's settings, as the pairs of its data.
+type DrawChange = Box<dyn FnOnce(&mut Vec<(Data, Data)>)>;
+
 fn whole(value: Option<&Data>) -> Option<i64> {
     value.filter(|value| !value.is_null()).and_then(Data::as_whole).map(|whole| whole as i64)
 }
@@ -164,5 +167,84 @@ impl Form for DrawsPage {
         Vec::new()
     }
 
-    fn apply(&mut self, _app: &mut App, _id: usize, _edit: Edit) {}
+    fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        let place = id / IDS_PER_DRAW;
+        let Some(name) = place.checked_sub(1).and_then(|place| DRAW_NAMES.get(place)) else {
+            return;
+        };
+        let part = id % IDS_PER_DRAW;
+        let number = |edit: &Edit| match edit {
+            Edit::Number(number) => Some(Data::Whole(*number as i128)),
+            _ => None,
+        };
+        let set = |pairs: &mut Vec<(Data, Data)>, key: &str, value: Option<Data>| {
+            pairs.retain(|(found, _)| found.as_str() != Some(key));
+            if let Some(value) = value {
+                pairs.push((Data::text(key), value));
+            }
+        };
+        let slots_of = |pairs: &Vec<(Data, Data)>| -> Vec<Data> {
+            pairs
+                .iter()
+                .find(|(found, _)| found.as_str() == Some(DrawSetting::SLOTS))
+                .and_then(|(_, slots)| slots.as_list().map(<[Data]>::to_vec))
+                .unwrap_or_else(|| vec![Data::Null; DEFAULT_SLOT_COUNT])
+        };
+        let change: DrawChange = match (part, edit) {
+            (DIRECTION, Edit::Choice(chosen)) => {
+                let value = (chosen != DRAW_DIRECTIONS[0]).then(|| Data::text(&chosen));
+                Box::new(move |pairs| set(pairs, DrawSetting::DIRECTION, value))
+            }
+            (SLOTS, edit) => {
+                let Some(Data::Whole(count)) = number(&edit) else { return };
+                Box::new(move |pairs| {
+                    let mut slots = slots_of(pairs);
+                    slots.resize(count as usize, Data::Null);
+                    set(pairs, DrawSetting::SLOTS, Some(Data::List(slots)));
+                })
+            }
+            (VALUE_MIN | VALUE_MAX, edit) => {
+                let (setting, default) = if part == VALUE_MIN {
+                    (DrawSetting::VALUE_MIN, MIN_DRAW_VALUE)
+                } else {
+                    (DrawSetting::VALUE_MAX, MAX_DRAW_VALUE)
+                };
+                let value = match edit {
+                    Edit::Number(number) => (number != default).then_some(Data::Whole(number as i128)),
+                    Edit::Clear => None,
+                    _ => return,
+                };
+                Box::new(move |pairs| set(pairs, setting, value))
+            }
+            (CONDITIONS_REDRAW, Edit::Toggle(on)) => Box::new(move |pairs| set(pairs, DrawSetting::CONDITIONS_REDRAW, on.then_some(Data::Bool(true)))),
+            (slot, edit) if slot >= FIRST_SLOT => {
+                let value = match edit {
+                    Edit::Number(number) => Data::Whole(number as i128),
+                    Edit::Clear => Data::Null,
+                    _ => return,
+                };
+                let place = slot - FIRST_SLOT;
+                Box::new(move |pairs| {
+                    let mut slots = slots_of(pairs);
+                    if place < slots.len() {
+                        slots[place] = value;
+                    }
+                    set(pairs, DrawSetting::SLOTS, Some(Data::List(slots)));
+                })
+            }
+            _ => return,
+        };
+        let song = app.document.get_current_song_name().to_string();
+        let mut refusal = None;
+        app.document.change_set(|setlist| {
+            if let Some(llamatron_model::objects::setlist::Item::Song(song)) =
+                setlist.get_item_mut(llamatron_model::schema::generated::file_format::Section::SONGS, &song)
+            {
+                refusal = song.change_draw(name, change).err();
+            }
+        });
+        if let Some(refusal) = refusal {
+            app.refuse(&refusal);
+        }
+    }
 }

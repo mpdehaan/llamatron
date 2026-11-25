@@ -6,14 +6,16 @@
 //! Bypass When.
 
 use crate::app::App;
+use crate::forms::nodes::Edit;
 use crate::forms::nodes::Field;
 use crate::forms::statements::statement_lines;
 use crate::forms::tab_box::{columns_of_sections, Tab, TabColumn};
 use crate::screens::generators::generators_page::label_of;
-use crate::screens::generators::plugin_editor::Made;
+use crate::screens::generators::plugin_editor::{view_write, Made};
 use crate::settings::named_in;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::Song;
+use llamatron_model::schema::generated::file_format::GENERATOR_ENABLED;
 use llamatron_model::schema::generated::file_format::{DrawSetting, DRAW_NAMES, PLACED_SHAPES, RAMP_WAYS, VELOCITY_RAMP_SETTINGS};
 use llamatron_model::schema::generated::limits::{MAX_RAMP_BARS, MAX_VELOCITY_PERCENT, MIN_VELOCITY_PERCENT};
 use llamatron_model::schema::generated::plugins::PLUGINS;
@@ -71,7 +73,8 @@ pub fn velocity_tab(own: &dyn Fn(&str) -> Option<i64>, above: &dyn Fn(&str) -> O
         AS_WRITTEN,
         Some(percent_shown(level.unwrap_or(AS_WRITTEN))),
     )
-    .with_clear(&percent_shown(AS_WRITTEN));
+    .with_clear(&percent_shown(AS_WRITTEN))
+    .writing("velocity");
     let mut fields = Vec::new();
     let mut id = VELOCITY_IDS;
     for way in RAMP_WAYS {
@@ -103,7 +106,8 @@ pub fn velocity_tab(own: &dyn Fn(&str) -> Option<i64>, above: &dyn Fn(&str) -> O
                     Some(shown),
                 )
                 .with_clear(&cleared)
-                .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, part)),
+                .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, part))
+                .writing(name),
             );
         }
         id += 1;
@@ -130,7 +134,8 @@ pub fn velocity_tab(own: &dyn Fn(&str) -> Option<i64>, above: &dyn Fn(&str) -> O
                 Some(shown),
             )
             .with_clear(cleared)
-            .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, "over")),
+            .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, "over"))
+            .writing(over),
         );
     }
     let mut tab = Tab::new(labels::MSG_VELOCITY_TAB, columns_of_sections(fields));
@@ -241,6 +246,44 @@ pub fn built_in_tab(app: &App, built_ins: Option<&Data>, kind: &'static str, fir
     made.tab(&tab_label_of(kind), bypass)
 }
 
+/// The setting an edit of a built-in generator's tab writes and its value, None leaving it out of the file: its Enabled
+/// toggle, which a built-in generator writes only while on, or a field its plugin's view shows.
+pub fn built_in_edit(app: &App, built_ins: Option<&Data>, kind: &'static str, first_id: usize, id: usize, edit: &Edit) -> Option<(&'static str, Option<Data>)> {
+    if id == first_id + 1 {
+        return match edit {
+            Edit::Toggle(on) => Some((GENERATOR_ENABLED, on.then_some(Data::Bool(true)))),
+            _ => None,
+        };
+    }
+    let empty = Data::Map(Vec::new());
+    let data = built_ins.and_then(|built_ins| built_ins.get(kind)).unwrap_or(&empty);
+    let mut made = Made::of(app, kind, data, true).counting_from(first_id);
+    let _ = made.tab(&tab_label_of(kind), 0);
+    let view = made.views().iter().find(|(found, _)| *found == id).map(|(_, view)| *view)?;
+    view_write(view, edit)
+}
+
+/// A track's or a clip's built-in generators with one setting of one kind written, or taken out with None; None where none
+/// is left.
+pub fn with_built_in(built_ins: Option<&Data>, kind: &str, setting: &str, value: Option<Data>) -> Option<Data> {
+    let mut kinds: Vec<(Data, Data)> = built_ins.and_then(Data::as_map).map(<[(Data, Data)]>::to_vec).unwrap_or_default();
+    let mut settings: Vec<(Data, Data)> = kinds
+        .iter()
+        .find(|(found, _)| found.as_str() == Some(kind))
+        .and_then(|(_, settings)| settings.as_map().map(<[(Data, Data)]>::to_vec))
+        .unwrap_or_default();
+    settings.retain(|(found, _)| found.as_str() != Some(setting));
+    if let Some(value) = value {
+        settings.push((Data::text(setting), value));
+    }
+    match kinds.iter_mut().find(|(found, _)| found.as_str() == Some(kind)) {
+        Some((_, held)) => *held = Data::Map(settings.clone()),
+        None => kinds.push((Data::text(kind), Data::Map(settings.clone()))),
+    }
+    kinds.retain(|(_, held)| held.as_map().is_some_and(|pairs| !pairs.is_empty()));
+    (!kinds.is_empty()).then_some(Data::Map(kinds))
+}
+
 /// A built-in generator's tab's label.
 pub fn tab_label_of(kind: &str) -> String {
     use llamatron_strings::plugin_texts::*;
@@ -262,4 +305,55 @@ pub fn built_in_kinds() -> Vec<&'static str> {
         .collect();
     kinds.sort();
     kinds.into_iter().map(|(_, name)| name).collect()
+}
+
+/// Change the current song, as one edit of the set.
+pub fn write_in_song(app: &mut App, change: impl FnOnce(&mut llamatron_model::objects::song::Song)) {
+    let name = app.document.get_current_song_name().to_string();
+    app.document.change_set(|setlist| {
+        if let Some(llamatron_model::objects::setlist::Item::Song(song)) =
+            setlist.get_item_mut(llamatron_model::schema::generated::file_format::Section::SONGS, &name)
+        {
+            change(song);
+        }
+    });
+}
+
+/// The field of an id among a page's nodes, a cell of a row among them.
+pub fn field_of(nodes: &[crate::screens::field_page::Node], id: usize) -> Option<Field> {
+    use crate::screens::field_page::Node;
+    nodes.iter().find_map(|node| match node {
+        Node::Field(field) => field.find(id).cloned(),
+        Node::TabBox(tab_box) => tab_box
+            .tabs
+            .iter()
+            .find_map(|tab| tab.every_field().into_iter().find_map(|field| field.find(id).cloned())),
+    })
+}
+
+/// A groove choice a step along: from above first, then off, then each groove by name, stopping at both ends.
+pub fn groove_choice_after(app: &App, current: Option<&Data>, offset: i64) -> Option<Data> {
+    let names = crate::settings::sorted_names(&crate::screens::set::grooves_page::groove_names(app));
+    let mut choices = vec![None, Some(Data::Bool(false))];
+    choices.extend(names.into_iter().map(|name| Some(Data::Text(name))));
+    let current = current.filter(|value| !value.is_null()).cloned();
+    let place = choices.iter().position(|choice| *choice == current).unwrap_or(0) as i64;
+    choices[(place + offset).clamp(0, choices.len() as i64 - 1) as usize].clone()
+}
+
+/// The draws a scene or a clip resets with one switched on or off, in the draws' order, or None where it resets none.
+pub fn resets_after(reset: Option<&Data>, draw: &str, on: bool) -> Option<Data> {
+    let mut names: Vec<String> = reset
+        .and_then(Data::as_list)
+        .map_or(Vec::new(), |names| names.iter().filter_map(Data::as_str).map(str::to_string).collect());
+    names.retain(|name| name != draw);
+    if on {
+        names.push(draw.to_string());
+    }
+    let ordered: Vec<Data> = DRAW_NAMES
+        .iter()
+        .filter(|name| names.iter().any(|each| each == *name))
+        .map(|name| Data::text(name))
+        .collect();
+    (!ordered.is_empty()).then_some(Data::List(ordered))
 }

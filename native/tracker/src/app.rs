@@ -165,11 +165,16 @@ impl Tracker {
             return;
         };
         self.app.status.clear();
+        if std::ptr::eq(item.binding, &PageKeys::UNDO) || std::ptr::eq(item.binding, &PageKeys::REDO) {
+            self.step_history(std::ptr::eq(item.binding, &PageKeys::UNDO));
+            return;
+        }
         if PageKeys::EVERYWHERE.iter().any(|binding| std::ptr::eq(*binding, item.binding)) {
-            // The everywhere keys are not ported yet; they do nothing.
+            // The other everywhere keys are not ported yet; they do nothing.
             return;
         }
         page.press(&mut self.app, &item, key);
+        self.app.document.record_edit();
         let requests = std::mem::take(&mut self.app.requests);
         for request in requests {
             match request {
@@ -180,6 +185,20 @@ impl Tracker {
                     }
                 }
             }
+        }
+    }
+
+    /// Undo or redo a step, saying on the status line what it changed, or that there is none.
+    fn step_history(&mut self, back: bool) {
+        use llamatron_strings::{messages, named};
+        let (step, done, nothing) = if back {
+            (self.app.document.undo(), messages::MSG_UNDONE, messages::MSG_NOTHING_TO_UNDO)
+        } else {
+            (self.app.document.redo(), messages::MSG_RESTORED, messages::MSG_NOTHING_TO_REDO)
+        };
+        match step {
+            Some(words) => self.app.say(&named(done, &[("what", words.as_str().into())])),
+            None => self.app.say(nothing),
         }
     }
 

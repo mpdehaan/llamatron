@@ -17,11 +17,14 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::{GENERATOR_ENABLED, GENERATOR_RESTART, RESTARTS, SHAPE_PARTS, SHAPE_THENS, TIME_CHOICES};
 use llamatron_model::schema::generated::limits::MAX_STATEMENTS;
+use llamatron_model::schema::generated::limits::{MAX_OCTAVE, MIN_OCTAVE};
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Described, Plain};
 use llamatron_strings::{labels, legends, marks, named};
 
 const NAME: usize = 0;
+/// The id of the generator's Enabled toggle, the first field made after its name.
+const ENABLED: usize = NAME + 1;
 /// How many steps an arpeggiator's offsets start with when its Offsets field first opens them.
 const NEW_OFFSET_STEPS: usize = 8;
 
@@ -52,6 +55,73 @@ fn plain_text(value: &Plain) -> String {
         Plain::Whole(whole) => whole.to_string(),
         Plain::Flag(flag) => flag.to_string(),
         _ => String::new(),
+    }
+}
+
+fn plain_data(value: &Plain) -> Data {
+    match value {
+        Plain::Text(text) => Data::text(text),
+        Plain::Whole(whole) => Data::Whole(*whole as i128),
+        Plain::Float(number) => Data::Float(*number),
+        Plain::Flag(flag) => Data::Bool(*flag),
+        Plain::Null => Data::Null,
+        Plain::List(items) => Data::List(items.iter().map(plain_data).collect()),
+    }
+}
+
+/// The setting an edit of a view writes and the value it writes there, None leaving it out of the file where the value is
+/// the one the generator takes unwritten; or None where the edit writes nothing of the view's own.
+pub fn view_write(view: &SettingView, edit: &Edit) -> Option<(&'static str, Option<Data>)> {
+    if let SettingView::When { view, .. } = view {
+        return view_write(view, edit);
+    }
+    if *edit == Edit::Clear {
+        return setting_name(view).map(|setting| (setting, None));
+    }
+    let written = match (view, edit) {
+        (SettingView::Choice { setting, choices, default, .. }, Edit::Choice(chosen)) => {
+            let value = choices
+                .iter()
+                .find(|choice| plain_text(choice) == *chosen)
+                .map_or_else(|| Data::text(chosen), plain_data);
+            (*setting, (value != plain_data(default)).then_some(value))
+        }
+        (SettingView::InheritedChoice { setting, inherited_choice, .. }, Edit::Choice(chosen)) => {
+            (*setting, (chosen != inherited_choice).then(|| Data::text(chosen)))
+        }
+        (SettingView::Track { setting, .. }, Edit::Choice(chosen)) => (*setting, (chosen != marks::MSG_NONE_SHOWN).then(|| Data::text(chosen))),
+        (SettingView::Number { setting, default, .. }, Edit::Number(number)) => {
+            let unwritten = match default {
+                Some(default) => plain_data(default) == Data::Whole(*number as i128),
+                None => *number == 0,
+            };
+            (*setting, (!unwritten).then_some(Data::Whole(*number as i128)))
+        }
+        (SettingView::Gauge { setting, default, .. }, Edit::Number(number)) => (*setting, (number != default).then_some(Data::Whole(*number as i128))),
+        (SettingView::Octave { setting, default, .. }, Edit::Number(number)) => (*setting, (number != default).then_some(Data::Whole(*number as i128))),
+        (SettingView::Toggle { setting, default, .. }, Edit::Toggle(on)) => (*setting, (on != default).then_some(Data::Bool(*on))),
+        (SettingView::Time { setting, first, .. }, Edit::Choice(chosen)) => (*setting, (Some(chosen.as_str()) != *first).then(|| Data::text(chosen))),
+        (SettingView::Restart, Edit::Choice(chosen)) => (GENERATOR_RESTART, (chosen != RESTARTS[0]).then(|| Data::text(chosen))),
+        _ => return None,
+    };
+    Some(written)
+}
+
+/// The lowest and highest number a generator's setting may hold, as its table of settings describes it.
+fn setting_limits(kind: &str, setting: &str) -> (i64, i64) {
+    let table = llamatron_model::objects::named::plugin_table(kind).unwrap_or(&[]);
+    match table.iter().find(|found| found.name == setting).map(|found| found.described) {
+        Some(Described::WholeNumber { lowest, highest, .. }) => (lowest.unwrap_or(i64::MIN), highest.unwrap_or(i64::MAX)),
+        _ => (i64::MIN, i64::MAX),
+    }
+}
+
+/// The lowest and highest octave a generator's setting may hold, as its table of settings describes it.
+fn octave_limits(kind: &str, setting: &str) -> (i64, i64) {
+    let table = llamatron_model::objects::named::plugin_table(kind).unwrap_or(&[]);
+    match table.iter().find(|found| found.name == setting).map(|found| found.described) {
+        Some(Described::WholeNumber { lowest, highest, .. }) => (lowest.unwrap_or(MIN_OCTAVE), highest.unwrap_or(MAX_OCTAVE)),
+        _ => (MIN_OCTAVE, MAX_OCTAVE),
     }
 }
 
@@ -123,6 +193,11 @@ impl<'a> Made<'a> {
     pub fn shape_section(&mut self, shape: &str) -> Vec<Field> {
         let id = self.id();
         self.shape_fields(id, shape)
+    }
+
+    /// Each field made so far by its id, with the view it shows.
+    pub fn views(&self) -> &[(usize, &'static SettingView)] {
+        &self.views
     }
 
     /// The same, its fields' ids counting on from an id, so that several generators' fields on one page stay apart.
@@ -262,12 +337,14 @@ impl<'a> Made<'a> {
                         .with_adjust()
                         .with_enter(legends::What::CHOOSE)
                         .with_clear(legends::What::CLEAR)
+                        .writing(&setting)
                 } else {
                     let number = self.written(&setting).and_then(Data::as_whole).unwrap_or(0);
                     Field::custom(cell_id, &label, &number.to_string())
                         .with_adjust()
                         .with_enter(legends::What::EDIT)
                         .with_clear(legends::What::CLEAR)
+                        .writing(&setting)
                 };
                 cells.push(cell);
             }
@@ -384,17 +461,19 @@ impl<'a> Made<'a> {
             fields.push(
                 Field::number(field_id, &label(part), written, Some(lowest), Some(highest), 100, Some(shown))
                     .with_clear(legends::What::CLEAR)
-                    .with_shown_label(&part_label(part)),
+                    .with_shown_label(&part_label(part))
+                    .writing(&setting(part)),
             );
         }
         let over_id = self.id();
         let over = self.time_field(over_id, &label("over"), &setting("over"), labels::MSG_WHOLE_SPAN);
-        fields.push(over.with_shown_label(&part_label("over")));
+        fields.push(over.with_shown_label(&part_label("over")).writing(&setting("over")));
         let then = self.written(&setting("then")).map_or(SHAPE_THENS[0].to_string(), data_text);
         let then_id = self.id();
         fields.push(
             Field::choice(then_id, &label("then"), SHAPE_THENS.iter().map(|each| each.to_string()).collect(), &then, None)
-                .with_shown_label(&part_label("then")),
+                .with_shown_label(&part_label("then"))
+                .writing(&setting("then")),
         );
         fields
     }
@@ -694,6 +773,21 @@ fn setting_name(view: &SettingView) -> Option<&'static str> {
 }
 
 impl PluginEditor {
+    /// The setting the field of an id writes by name, where it is a cell that says so.
+    fn cell_writes(&self, app: &App, id: usize) -> Option<String> {
+        self.made(app).0.iter().find_map(|field| field.find(id)).and_then(|field| field.writes.clone())
+    }
+
+    /// Write one of the generator's settings, or take it out of the file with None.
+    fn write(&self, app: &mut App, setting: &str, value: Option<Data>) {
+        let (section, name) = (self.section(), self.name.clone());
+        app.document.change_set(|setlist| {
+            if let Some(Item::Generator(settings)) = setlist.get_item_mut(section, &name) {
+                settings.set_written(setting, value);
+            }
+        });
+    }
+
     fn section(&self) -> &'static str {
         PLUGINS.iter().find(|plugin| plugin.name == self.kind).map_or("", |plugin| plugin.section)
     }
@@ -781,6 +875,62 @@ impl Form for PluginEditor {
                 };
                 app.show_page(Box::new(crate::screens::one_row_editor::OneRowEditor::new(editor)));
             }
+            (Some(SettingView::Octave { setting, default, .. }), Edit::Adjust(offset)) => {
+                let written = match app.document.get_setlist().get_item(self.section(), &self.name) {
+                    Some(Item::Generator(settings)) => settings.get_written(setting).and_then(Data::as_whole).map(|whole| whole as i64),
+                    _ => None,
+                };
+                let (lowest, highest) = octave_limits(self.kind, setting);
+                let moved = (written.unwrap_or(*default) + offset).clamp(MIN_OCTAVE, MAX_OCTAVE).clamp(lowest, highest);
+                self.write(app, setting, (moved != *default).then_some(Data::Whole(moved as i128)));
+            }
+            (Some(view), edit) => {
+                if let Some((setting, value)) = view_write(view, &edit) {
+                    self.write(app, setting, value);
+                }
+            }
+            (None, edit) if self.cell_writes(app, id).is_some() => {
+                let setting = self.cell_writes(app, id).unwrap_or_default();
+                let written = match app.document.get_setlist().get_item(self.section(), &self.name) {
+                    Some(Item::Generator(settings)) => settings.get_written(&setting).cloned(),
+                    _ => None,
+                };
+                match edit {
+                    Edit::Clear => self.write(app, &setting, None),
+                    Edit::Adjust(offset) if setting.ends_with("_scale") || setting.ends_with("_root") => {
+                        let mut choices = vec![None];
+                        if setting.ends_with("_scale") {
+                            let names: Vec<String> = app
+                                .document
+                                .get_setlist()
+                                .items(llamatron_model::schema::generated::file_format::Section::SCALES)
+                                .iter()
+                                .map(|(name, _)| name.clone())
+                                .collect();
+                            choices.extend(crate::settings::sorted_names(&names).into_iter().map(Some));
+                        } else {
+                            choices.extend(llamatron_model::values::generated::note::ROOT_NAMES.iter().map(|name| Some(name.to_string())));
+                        }
+                        let current = written.as_ref().and_then(Data::as_str).map(str::to_string);
+                        let place = choices.iter().position(|choice| *choice == current).unwrap_or(0) as i64;
+                        let chosen = choices[(place + offset).clamp(0, choices.len() as i64 - 1) as usize].clone();
+                        self.write(app, &setting, chosen.map(Data::Text));
+                    }
+                    Edit::Adjust(offset) => {
+                        let (lowest, highest) = setting_limits(self.kind, &setting);
+                        let number = written.as_ref().and_then(Data::as_whole).map_or(0, |whole| whole as i64);
+                        let moved = (number + offset).clamp(lowest, highest);
+                        self.write(app, &setting, (moved != 0).then_some(Data::Whole(moved as i128)));
+                    }
+                    edit => {
+                        let field = self.made(app).0.iter().find_map(|field| field.find(id).cloned());
+                        if let Some(value) = field.and_then(|field| field.written(&edit)) {
+                            self.write(app, &setting, value);
+                        }
+                    }
+                }
+            }
+            (None, Edit::Toggle(on)) if id == ENABLED => self.write(app, GENERATOR_ENABLED, (!on).then_some(Data::Bool(false))),
             _ => {}
         }
     }

@@ -46,6 +46,11 @@ impl Instrument {
         self.settings.get(name)
     }
 
+    /// Write one of its settings as a file holds it, or take it out with None.
+    pub fn set_written(&mut self, name: &str, value: Option<Data>) {
+        self.settings.put(name, value);
+    }
+
     pub fn get_preview(&self) -> Option<&Pattern> {
         self.preview.as_ref()
     }

@@ -35,7 +35,137 @@ fn whole(value: Option<&Data>) -> Option<i64> {
     value.and_then(Data::as_whole).map(|whole| whole as i64)
 }
 
+/// The ids of the Settings tab's fields, in the order the tab makes them, and the first of the MIDI CC lanes'.
+const INSTRUMENT: usize = FIRST_OWN + 1;
+const DRUM: usize = FIRST_OWN + 2;
+const MUTE: usize = FIRST_OWN + 3;
+const GROOVE: usize = FIRST_OWN + 4;
+const TRANSPOSE: usize = FIRST_OWN + 5;
+const LOWEST_OCTAVE: usize = FIRST_OWN + 6;
+const HIGHEST_OCTAVE: usize = FIRST_OWN + 7;
+const DEFAULT_VELOCITY: usize = FIRST_OWN + 8;
+const ACCENT: usize = FIRST_OWN + 9;
+const VELOCITY: usize = FIRST_OWN + 10;
+const FIRST_CC: usize = FIRST_OWN + 100;
+const CC_LANES: usize = 4;
+
 impl TrackEditor {
+    /// Write one of the track's settings, or take it out of the file with None.
+    fn write(&self, app: &mut App, setting: &str, value: Option<Data>) {
+        let (song_name, track) = (app.document.get_current_song_name().to_string(), self.name.clone());
+        app.document.change_set(|setlist| {
+            if let Some(llamatron_model::objects::setlist::Item::Song(song)) = setlist.get_item_mut(Section::SONGS, &song_name) {
+                song.set_track_written(&track, setting, value);
+            }
+        });
+    }
+
+    /// Store what a key did to one of the track's fields, its built-in generators' among them; false where the field writes
+    /// nothing so.
+    fn write_edit(&self, app: &mut App, id: usize, edit: &Edit) -> bool {
+        let Some(track) = self.track(app) else { return false };
+        let whole = |name: &str| track.get_written(name).and_then(Data::as_whole).map(|whole| whole as i64);
+        if (BUILT_IN_IDS..FIRST_OWN).contains(&id) {
+            let kinds = built_in_kinds();
+            let Some(kind) = kinds.get(id / BUILT_IN_IDS - 1).copied() else {
+                return false;
+            };
+            let built_ins = track.get_written(TrackSetting::BUILT_IN);
+            let Some((setting, value)) = arrange_tabs::built_in_edit(app, built_ins, kind, BUILT_IN_IDS * (id / BUILT_IN_IDS), id, edit) else {
+                return false;
+            };
+            let built_ins = arrange_tabs::with_built_in(built_ins, kind, setting, value);
+            self.write(app, TrackSetting::BUILT_IN, built_ins);
+            return true;
+        }
+        let number = match edit {
+            Edit::Number(number) => Some(*number),
+            _ => None,
+        };
+        match (id, edit) {
+            (DRUM | MUTE, Edit::Toggle(on)) => {
+                let setting = if id == DRUM { TrackSetting::DRUM } else { TrackSetting::MUTE };
+                if id == DRUM {
+                    if let Some(refusal) = self.drum_refusal(app, *on) {
+                        app.refuse(&refusal);
+                        return true;
+                    }
+                }
+                self.write(app, setting, on.then_some(Data::Bool(true)));
+            }
+            (INSTRUMENT, Edit::Clear) => self.write(app, TrackSetting::INSTRUMENT, None),
+            (GROOVE, Edit::Adjust(offset)) => {
+                let names = crate::settings::sorted_names(&crate::screens::set::grooves_page::groove_names(app));
+                let mut choices = vec![None, Some(Data::Bool(false))];
+                choices.extend(names.into_iter().map(|name| Some(Data::Text(name))));
+                let current = track.get_written(TrackSetting::GROOVE).filter(|value| !value.is_null()).cloned();
+                let place = choices.iter().position(|choice| *choice == current).unwrap_or(0) as i64;
+                let chosen = choices[(place + offset).clamp(0, choices.len() as i64 - 1) as usize].clone();
+                self.write(app, TrackSetting::GROOVE, chosen);
+            }
+            (GROOVE, Edit::Clear) => self.write(app, TrackSetting::GROOVE, None),
+            (TRANSPOSE, Edit::Number(transpose)) => self.write(app, TrackSetting::TRANSPOSE, (*transpose != 0).then_some(Data::Whole(*transpose as i128))),
+            (TRANSPOSE, Edit::Clear) => self.write(app, TrackSetting::TRANSPOSE, None),
+            (LOWEST_OCTAVE | HIGHEST_OCTAVE, Edit::Adjust(offset)) => {
+                let lowest = whole(TrackSetting::LOWEST_OCTAVE).unwrap_or(MIN_OCTAVE);
+                let highest = whole(TrackSetting::HIGHEST_OCTAVE).unwrap_or(MAX_OCTAVE);
+                if id == LOWEST_OCTAVE {
+                    let moved = (lowest + offset).clamp(MIN_OCTAVE, MAX_OCTAVE).clamp(MIN_OCTAVE, highest);
+                    self.write(app, TrackSetting::LOWEST_OCTAVE, (moved != MIN_OCTAVE).then_some(Data::Whole(moved as i128)));
+                } else {
+                    let moved = (highest + offset).clamp(MIN_OCTAVE, MAX_OCTAVE).clamp(lowest, MAX_OCTAVE);
+                    self.write(app, TrackSetting::HIGHEST_OCTAVE, (moved != MAX_OCTAVE).then_some(Data::Whole(moved as i128)));
+                }
+            }
+            (DEFAULT_VELOCITY | ACCENT | VELOCITY, _) => {
+                let setting = match id {
+                    DEFAULT_VELOCITY => TrackSetting::DEFAULT_VELOCITY,
+                    ACCENT => TrackSetting::ACCENT,
+                    _ => TrackSetting::VELOCITY,
+                };
+                match edit {
+                    Edit::Clear => self.write(app, setting, None),
+                    _ => self.write(app, setting, number.map(|number| Data::Whole(number as i128))),
+                }
+            }
+            (cc, _) if (FIRST_CC..FIRST_CC + CC_LANES).contains(&cc) => {
+                let mut lanes: Vec<Data> = track
+                    .get_written(TrackSetting::CC)
+                    .and_then(Data::as_list)
+                    .map(<[Data]>::to_vec)
+                    .unwrap_or_default();
+                lanes.resize(CC_LANES, Data::Null);
+                lanes[cc - FIRST_CC] = number.map_or(Data::Null, |number| Data::Whole(number as i128));
+                let value = lanes.iter().any(|lane| !lane.is_null()).then_some(Data::List(lanes));
+                self.write(app, TrackSetting::CC, value);
+            }
+            _ => return false,
+        }
+        true
+    }
+
+    /// Why the track cannot be made a drum track, or the other way, where its instrument is of the other role.
+    fn drum_refusal(&self, app: &App, on: bool) -> Option<String> {
+        use llamatron_model::objects::setlist::Item;
+        let track = self.track(app)?;
+        let instrument = track.get_instrument_name()?;
+        let Some(Item::Instrument(held)) = app.document.get_setlist().get_item(Section::INSTRUMENTS, &instrument) else {
+            return None;
+        };
+        let role = held
+            .get_written(llamatron_model::schema::generated::file_format::InstrumentSetting::ROLE)
+            .and_then(Data::as_str)
+            .unwrap_or("normal");
+        let wanted = if on { "percussion" } else { "normal" };
+        (role != wanted).then(|| {
+            let role = named_in(labels::MSG_ROLE_NAMES, role).to_lowercase();
+            named(
+                llamatron_strings::errors::ERR_INSTRUMENT_DOES_NOT_FIT,
+                &[("instrument", instrument.as_str().into()), ("role", role.as_str().into())],
+            )
+        })
+    }
+
     fn track<'a>(&self, app: &'a App) -> Option<&'a Track> {
         app.document.song().get_track(&self.name)
     }
@@ -293,6 +423,9 @@ impl Form for TrackEditor {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        if edit != Edit::Enter && self.write_edit(app, id, &edit) {
+            return;
+        }
         if edit == Edit::Enter && id == arrange_tabs::GENERATORS {
             // The list of a track's generators is not ported yet.
             app.show_page(Box::new(crate::screens::list_page::ListPage::new(

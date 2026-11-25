@@ -66,6 +66,47 @@ fn percent_text(percent: Rational) -> String {
 }
 
 impl ScenePage {
+    /// Write one of the scene's settings, or take it out of the file with None.
+    fn write(&self, app: &mut App, setting: &str, value: Option<Data>) {
+        arrange_tabs::write_in_song(app, |song| song.set_scene_written(self.index, setting, value));
+    }
+
+    /// Store what a key did to one of the scene's fields; false where the field writes nothing so.
+    fn write_edit(&self, app: &mut App, id: usize, edit: &Edit) -> bool {
+        let Some(scene) = self.scene(app) else { return false };
+        match (id, edit) {
+            (SECTION, Edit::Choice(chosen)) => self.write(app, SceneSetting::SECTION, (chosen != marks::MSG_NONE_SHOWN).then(|| Data::text(chosen))),
+            (REPEAT, Edit::Number(repeat)) => self.write(app, SceneSetting::REPEAT, (*repeat != 1).then_some(Data::Whole(*repeat as i128))),
+            (LAUNCH_TOGETHER, Edit::Toggle(on)) => self.write(app, SceneSetting::LAUNCH_TOGETHER, (!on).then_some(Data::Bool(false))),
+            (SCALE, Edit::Clear) => self.write(app, SceneSetting::SCALE, None),
+            (GROOVE, Edit::Adjust(offset)) => {
+                let chosen = arrange_tabs::groove_choice_after(app, scene.get_written(SceneSetting::GROOVE), *offset);
+                self.write(app, SceneSetting::GROOVE, chosen);
+            }
+            (GROOVE, Edit::Clear) => self.write(app, SceneSetting::GROOVE, None),
+            (TEMPO, Edit::Number(percent)) => self.write(app, SceneSetting::TEMPO, Some(Data::Whole(*percent as i128))),
+            (TEMPO, Edit::Clear) => self.write(app, SceneSetting::TEMPO, None),
+            (reset, Edit::Toggle(on)) if (arrange_tabs::RESET_IDS..arrange_tabs::GENERATORS).contains(&reset) => {
+                let draws = arrange_tabs::draws_with_values(app.document.song());
+                let Some(draw) = draws.get(reset - arrange_tabs::RESET_IDS) else {
+                    return false;
+                };
+                let value = arrange_tabs::resets_after(scene.get_written(SceneSetting::RESET_DRAWS), draw, *on);
+                self.write(app, SceneSetting::RESET_DRAWS, value);
+            }
+            _ => {
+                let Some(field) = arrange_tabs::field_of(&self.form(app), id) else {
+                    return false;
+                };
+                let (Some(setting), Some(value)) = (field.writes.clone(), field.written(edit)) else {
+                    return false;
+                };
+                self.write(app, &setting, value);
+            }
+        }
+        true
+    }
+
     fn scene<'a>(&self, app: &'a App) -> Option<&'a Scene> {
         app.document.song().scenes().get(self.index)
     }
@@ -190,7 +231,8 @@ impl ScenePage {
                         Some(shown),
                     )
                     .with_clear(&blank)
-                    .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, part)),
+                    .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, part))
+                    .writing(setting(part)),
                 );
             }
             id += 1;
@@ -206,7 +248,8 @@ impl ScenePage {
                     Some(shown),
                 )
                 .with_clear(marks::MSG_NONE_SHOWN)
-                .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, "over")),
+                .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, "over"))
+                .writing(setting("over")),
             );
         }
         Tab::new(labels::MSG_TEMPO_RAMPS_TAB, columns_of_sections(fields))
@@ -279,6 +322,9 @@ impl Form for ScenePage {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        if edit != Edit::Enter && self.write_edit(app, id, &edit) {
+            return;
+        }
         if edit == Edit::Enter && id == arrange_tabs::GENERATORS {
             // The list of a scene's generators is not ported yet.
             app.show_page(Box::new(crate::screens::list_page::ListPage::new(

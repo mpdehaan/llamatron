@@ -151,5 +151,36 @@ impl Form for ScalePage {
         lines
     }
 
-    fn apply(&mut self, _app: &mut App, _id: usize, _edit: Edit) {}
+    /// [ and ] step the root a half step, flats kept flat and anything else sharp, and the kind along every kind. A scale
+    /// named for its notes is not yet renamed to follow them, as the Python renames it.
+    fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        use llamatron_model::objects::setlist::Item;
+        use llamatron_model::schema::generated::file_format::Section;
+        use llamatron_model::values::generated::note::{FLAT_NAMES, SHARP_NAMES};
+        let Edit::Adjust(offset) = edit else { return };
+        let Some(Item::Scale(scale)) = app.document.get_setlist().get_item(Section::SCALES, &self.name) else {
+            return;
+        };
+        let root = scale.get_root().as_str().unwrap_or("").to_string();
+        let kind = scale.get_kind().as_str().unwrap_or("").to_string();
+        let name = self.name.clone();
+        if id == ROOT {
+            let flat = FLAT_NAMES.contains(&root.as_str()) && !SHARP_NAMES.contains(&root.as_str());
+            let names: Vec<String> = if flat { FLAT_NAMES } else { SHARP_NAMES }.iter().map(|name| name.to_string()).collect();
+            let moved = crate::forms::nodes::stepped(&names, &root, offset);
+            app.document.change_set(|setlist| {
+                if let Some(Item::Scale(scale)) = setlist.get_item_mut(Section::SCALES, &name) {
+                    scale.set_root(&moved);
+                }
+            });
+        } else if id == KIND {
+            let kinds = llamatron_model::values::scale::ScaleType::file_names();
+            let moved = crate::forms::nodes::stepped(&kinds, &kind, offset);
+            app.document.change_set(|setlist| {
+                if let Some(Item::Scale(scale)) = setlist.get_item_mut(Section::SCALES, &name) {
+                    scale.set_kind(&moved);
+                }
+            });
+        }
+    }
 }

@@ -14,8 +14,10 @@ use crate::screens::field_page::{Form, Node};
 use crate::settings::{bool_of, choice_of, hidden_visualizers, mode_name, named_in, octave_labels, shown_octave, text_of, whole_of};
 use crate::text::Text;
 use crate::themes::{self, Colour};
+use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::{SetlistSetting, FOLLOW_ACTION_CHOICES, OCTAVE_LABEL_CHOICES, STEP_SIZE_CHOICES, VISUALIZER_NAMES};
+use llamatron_model::schema::generated::limits::{MAX_OCTAVE, MIN_OCTAVE};
 use llamatron_strings::{labels, legends, marks, messages, named};
 
 /// The fields, by id.
@@ -216,6 +218,32 @@ impl Form for FilePage {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        let setlist = app.document.get_setlist();
+        let whole = |name: &str, default: i64| setlist.get_written(name).and_then(Data::as_whole).map_or(default, |whole| whole as i64);
+        let octave = |current: i64, offset: i64| (current + offset).clamp(MIN_OCTAVE, MAX_OCTAVE);
+        let written: Option<(&str, Option<Data>)> = match (id, &edit) {
+            (FOLLOW, Edit::Choice(chosen)) => Some((SetlistSetting::DEFAULT_FOLLOW_ACTION, Some(Data::text(chosen)))),
+            (PROTECTED, Edit::Toggle(on)) => Some((SetlistSetting::PROTECTED, Some(Data::Bool(*on)))),
+            (DRUM_OCTAVE, Edit::Adjust(offset)) => {
+                let current = whole(SetlistSetting::DEFAULT_DRUM_OCTAVE, defaults::DEFAULT_DRUM_OCTAVE);
+                Some((SetlistSetting::DEFAULT_DRUM_OCTAVE, Some(Data::Whole(octave(current, *offset) as i128))))
+            }
+            (OCTAVE, Edit::Adjust(offset)) => {
+                let current = whole(SetlistSetting::DEFAULT_OCTAVE, defaults::DEFAULT_OCTAVE);
+                Some((SetlistSetting::DEFAULT_OCTAVE, Some(Data::Whole(octave(current, *offset) as i128))))
+            }
+            (OCTAVE_LABELS, Edit::Choice(chosen)) => Some((SetlistSetting::OCTAVE_LABELS, Some(Data::text(chosen)))),
+            (STEP_SIZE, Edit::Choice(chosen)) => Some((SetlistSetting::STEP_SIZE, Some(Data::text(chosen)))),
+            (VISUALIZER, Edit::Choice(chosen)) => {
+                let value = (chosen != marks::MSG_NONE_SHOWN).then(|| Data::text(chosen));
+                Some((SetlistSetting::VISUALIZER, llamatron_model::objects::song::sensible_visualizer(value)))
+            }
+            _ => None,
+        };
+        if let Some((setting, value)) = written {
+            app.document.change_set(|setlist| setlist.set_written(setting, value));
+            return;
+        }
         if id == NOTES && edit == Edit::Enter {
             let page = crate::screens::set::notes_page::NotesPage::new(app, true);
             app.show_page(Box::new(page));

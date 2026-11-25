@@ -9,8 +9,9 @@ use crate::file::layout::OBJECT_SCENE_TRACKS;
 use crate::objects::holder::{in_table, passed_over, Holder};
 use crate::objects::named::plugin_table;
 use crate::schema::checking::{Context, InvalidValue};
-use crate::schema::generated::file_format::{ClipSlotSetting, Section, SongSetting, TrackSetting, DRAW_NAMES, VISUALIZER_NAMES};
+use crate::schema::generated::file_format::{ClipSlotSetting, DrawSetting, Section, SongSetting, TrackSetting, DRAW_NAMES, VISUALIZER_NAMES};
 use crate::schema::generated::genres::{GENRES, MASHUP, MASHUP_SUFFIX, SUBGENRES, VARIANTS};
+use crate::schema::generated::limits;
 use crate::schema::generated::plugins::PLUGINS;
 use crate::schema::generated::settings::{CLIP_SLOT, DRAW, SCENE, SONG, TRACK};
 use llamatron_strings::errors;
@@ -290,6 +291,64 @@ fn sensible_style(genre: Option<&Data>, subgenre: Option<&Data>, variant: Option
 }
 
 impl Song {
+    /// Change one of the song's draws, AD to HD, as its settings' data, refusing values out of order and holding its slots
+    /// within its values; the file names only the draws whose settings differ from the default, in their order.
+    pub fn change_draw(&mut self, name: &str, change: impl FnOnce(&mut Vec<(Data, Data)>)) -> Result<(), String> {
+        let draws = self.draws.get_or_insert_with(Vec::new);
+        let held = draws.iter().find(|(found, _)| found == name).map(|(_, draw)| draw.to_data());
+        let mut pairs = held.and_then(|data| data.as_map().map(<[(Data, Data)]>::to_vec)).unwrap_or_default();
+        change(&mut pairs);
+        pairs.retain(|(_, value)| !value.is_null());
+        let of = |pairs: &[(Data, Data)], key: &str| {
+            pairs
+                .iter()
+                .find(|(found, _)| found.as_str() == Some(key))
+                .and_then(|(_, value)| value.as_whole())
+        };
+        let lowest = of(&pairs, DrawSetting::VALUE_MIN).unwrap_or(limits::MIN_DRAW_VALUE as i128);
+        let highest = of(&pairs, DrawSetting::VALUE_MAX).unwrap_or(limits::MAX_DRAW_VALUE as i128);
+        if lowest > highest {
+            return Err(named(
+                errors::ERR_DRAW_VALUES_OUT_OF_ORDER,
+                &[("lowest", (lowest as i64).into()), ("highest", (highest as i64).into())],
+            ));
+        }
+        for (key, value) in pairs.iter_mut() {
+            if key.as_str() == Some(DrawSetting::SLOTS) {
+                if let Data::List(slots) = value {
+                    for slot in slots.iter_mut() {
+                        if let Some(number) = slot.as_whole() {
+                            *slot = Data::Whole(number.clamp(lowest, highest));
+                        }
+                    }
+                }
+            }
+        }
+        let draw = Draw::from_data(&Data::Map(pairs.clone())).map_err(|problem| problem.message)?;
+        draws.retain(|(found, _)| found != name);
+        if !pairs.is_empty() {
+            draws.push((name.to_string(), draw));
+            draws.sort_by_key(|(found, _)| DRAW_NAMES.iter().position(|each| each == found).unwrap_or(usize::MAX));
+        }
+        if draws.is_empty() {
+            self.draws = None;
+        }
+        Ok(())
+    }
+
+    /// Write one of the song's own settings as a file holds it, or take it out with None.
+    pub fn set_written(&mut self, name: &str, value: Option<Data>) {
+        self.settings.put(name, value);
+    }
+
+    /// Write the song's genre, subgenre and variant together, each kept only where it fits the ones before it.
+    pub fn set_style(&mut self, genre: Option<Data>, subgenre: Option<Data>, variant: Option<Data>) {
+        let (genre, subgenre, variant) = sensible_style(genre.as_ref(), subgenre.as_ref(), variant.as_ref());
+        self.settings.put(SongSetting::GENRE, genre.map(Data::text));
+        self.settings.put(SongSetting::SUBGENRE, subgenre.map(Data::text));
+        self.settings.put(SongSetting::VARIANT, variant.map(Data::text));
+    }
+
     /// Move a scene one place up or down, as Move mode carries it; false where it would leave the list.
     pub fn move_scene(&mut self, index: usize, offset: i64) -> bool {
         let Some(scenes) = self.scenes.as_mut() else { return false };

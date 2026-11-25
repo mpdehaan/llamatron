@@ -141,3 +141,105 @@ impl Sound {
             .unwrap_or_else(|| crate::generated::sounds::OSCILLATOR_DEFAULTS.get(name).map_or(Data::Null, Preset::to_data))
     }
 }
+
+/// Put a value under a name in a mapping, replacing what it held, or adding it last.
+fn put(map: &mut Data, name: &str, value: Data) {
+    if !matches!(map, Data::Map(_)) {
+        *map = Data::Map(Vec::new());
+    }
+    if let Data::Map(pairs) = map {
+        match pairs.iter_mut().find(|(key, _)| key.as_str() == Some(name)) {
+            Some((_, held)) => *held = value,
+            None => pairs.push((Data::text(name), value)),
+        }
+    }
+}
+
+impl Sound {
+    fn written_or_empty(&self) -> Data {
+        self.written.clone().unwrap_or(Data::Map(Vec::new()))
+    }
+
+    /// The sound with one of its own settings changed.
+    pub fn with_value(&self, name: &str, value: Data) -> Data {
+        let mut sound = self.written_or_empty();
+        put(&mut sound, name, value);
+        sound
+    }
+
+    /// The sound made from an engine's preset, its volume and LFOs kept.
+    pub fn with_engine(&self, engine: &str) -> Data {
+        let mut sound = Data::Map(vec![(Data::text(ENGINE), Data::text(engine))]);
+        for name in ["volume", "lfos"] {
+            if let Some(kept) = self.own(name) {
+                put(&mut sound, name, kept);
+            }
+        }
+        sound
+    }
+
+    fn with_part(&self, part: &str, value: Data) -> Data {
+        let mut sound = self.written_or_empty();
+        if ENVELOPE_PARTS.contains(&part) {
+            let envelopes: Vec<Data> = ENVELOPE_PARTS
+                .iter()
+                .map(|each| if *each == part { value.clone() } else { self.part(each) })
+                .collect();
+            put(&mut sound, "envelopes", Data::List(envelopes));
+        } else {
+            put(&mut sound, part, value);
+        }
+        sound
+    }
+
+    /// The sound with a part swapped for a type: its engine's preset's part where that is the type, else the type alone.
+    pub fn with_part_type(&self, part: &str, kind: &str) -> Data {
+        let preset = self.preset_part(part);
+        let value = if preset.get(TYPE).and_then(Data::as_str) == Some(kind) {
+            preset
+        } else {
+            Data::Map(vec![(Data::text(TYPE), Data::text(kind))])
+        };
+        self.with_part(part, value)
+    }
+
+    /// The sound with one setting of a part changed.
+    pub fn with_part_value(&self, part: &str, name: &str, value: Data) -> Data {
+        let mut stored = self.part(part);
+        put(&mut stored, name, value);
+        self.with_part(part, stored)
+    }
+
+    /// The sound with one setting of an oscillator changed, the oscillators before it made, off, where it has none.
+    pub fn with_oscillator(&self, number: usize, name: &str, value: Data) -> Data {
+        let mut oscillators = self
+            .part_value("oscillators", "oscillators")
+            .as_list()
+            .map(<[Data]>::to_vec)
+            .unwrap_or_default();
+        while oscillators.len() < number {
+            oscillators.push(Data::Map(vec![(Data::text("waveform"), Data::text("off"))]));
+        }
+        put(&mut oscillators[number - 1], name, value);
+        self.with_part_value("oscillators", "oscillators", Data::List(oscillators))
+    }
+
+    /// The sound with one setting of an item of one of its lists changed, the items before it made empty.
+    pub fn with_item(&self, list: &str, number: usize, name: &str, value: Data) -> Data {
+        let mut items = self.value(list).as_list().map(<[Data]>::to_vec).unwrap_or_default();
+        while items.len() < number {
+            items.push(Data::Map(Vec::new()));
+        }
+        put(&mut items[number - 1], name, value);
+        self.with_value(list, Data::List(items))
+    }
+
+    /// The sound with one of the drum machine's knobs changed.
+    pub fn with_knob(&self, place: usize, value: Data) -> Data {
+        let mut knobs = self.part_value("oscillators", "knobs").as_list().map(<[Data]>::to_vec).unwrap_or_default();
+        if place < knobs.len() {
+            knobs[place] = value;
+        }
+        self.with_part_value("oscillators", "knobs", Data::List(knobs))
+    }
+}
