@@ -508,6 +508,9 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         TrackSetting::INSTRUMENT,
         TrackSetting::DEFAULT_VELOCITY,
         TrackSetting::ACCENT,
+        TrackSetting::GROOVE,
+        TrackSetting::CHAINS,
+        TrackSetting::BUILT_IN,
     ];
     for (_, track) in song.tracks() {
         unported(TRACK, &track_played, &|name| track.get_written(name).cloned())?;
