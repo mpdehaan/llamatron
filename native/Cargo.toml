@@ -6,7 +6,7 @@
 # the crates its manifest names, so the compiler keeps the layering tests/rules/test_layers.py keeps for the Python.
 [workspace]
 resolver = "2"
-members = ["backend", "math", "strings", "model", "engine", "exporters", "importers", "compare"]
+members = ["backend", "math", "strings", "model", "engine", "exporters", "importers", "tracker", "compare"]
 
 [profile.release]
 opt-level = 3

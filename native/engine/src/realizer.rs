@@ -1042,6 +1042,30 @@ impl<'a> SongRealizer<'a> {
         self.setlist.get_pattern(&clip_slot.get_pattern_name()).is_some_and(|pattern| pattern.is_drum())
     }
 
+    /// How long the song lasts in seconds, every written-out scene's length at its tempo, timed beat by beat where it ramps,
+    /// or None where any scene's length can't be worked out, as the Python's estimate sums its plays.
+    pub fn song_seconds(&self) -> Option<f64> {
+        let mut exact = Rational::ZERO;
+        let mut float: Option<f64> = None;
+        for scene in &self.scenes {
+            let length = self.get_scene_length(scene).ok()?;
+            match self.tempos_of(scene).ok()? {
+                Some(tempos) => {
+                    let seconds = row_seconds_at(&tempos, length);
+                    float = Some(float.unwrap_or_else(|| exact.to_float()) + seconds);
+                }
+                None => {
+                    let whole = Rational::whole(240) / tempo_in(scene.scene, self.song);
+                    match float.as_mut() {
+                        Some(sum) => *sum += (length * whole).to_float(),
+                        None => exact = exact + length * whole,
+                    }
+                }
+            }
+        }
+        Some(float.unwrap_or_else(|| exact.to_float()))
+    }
+
     /// A written-out scene's tempos where its scene ramps its tempo, the first at its start, or None for one tempo: a scene's
     /// ramps count bars across its whole play, every repeat together, so each repeat takes the part of them inside it.
     fn tempos_of(&self, scene: &WrittenScene<'a>) -> Rendered<Option<Vec<(Rational, f64)>>> {
@@ -1357,4 +1381,26 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         }
     }
     Ok(())
+}
+
+/// How many seconds into a row of tempos a time in whole notes falls, as the Python's RowClock works it out.
+fn row_seconds_at(tempos: &[(Rational, f64)], time: Rational) -> f64 {
+    let whole = |tempo: f64| 240.0 / tempo;
+    let mut starts = Vec::new();
+    let mut seconds = Vec::new();
+    let mut at = 0.0;
+    for (place, (start, _)) in tempos.iter().enumerate() {
+        let start = start.to_float();
+        if place > 0 {
+            at += (start - starts[place - 1]) * whole(tempos[place - 1].1);
+        }
+        starts.push(start);
+        seconds.push(at);
+    }
+    let time = time.to_float();
+    if starts.len() == 1 {
+        return time * whole(tempos[0].1);
+    }
+    let place = starts.iter().rposition(|start| *start <= time).unwrap_or(0);
+    seconds[place] + (time - starts[place]) * whole(tempos[place].1)
 }

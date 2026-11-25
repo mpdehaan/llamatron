@@ -421,6 +421,107 @@ def write_lists(path):
     module_list.write_text(module_list.read_text() + '#[rustfmt::skip]\npub mod lists;\n')
 
 
+TRACKER_OUT = TOP / 'native' / 'tracker' / 'src' / 'generated'
+
+
+def keys_text(keys):
+    """Return a binding's keys as Rust: one key, several, or a key or keys each way for one that steps."""
+    from llamatron.interface.tracker.keys import Steps
+
+    def many(found):
+        if isinstance(found, str):
+            found = (found,)
+        return '&[{}]'.format(', '.join(literal(key) for key in found))
+
+    if isinstance(keys, Steps):
+        return 'Keys::Steps {{ back: {}, forward: {} }}'.format(many(keys.back), many(keys.forward))
+    if isinstance(keys, str):
+        return 'Keys::One({})'.format(literal(keys))
+    return 'Keys::Many({})'.format(many(keys))
+
+
+def write_keybindings(path):
+    """Write every class of interface/tracker/keybindings.py as a module of statics, a binding a class inherits re-exported from
+    the class that made it, so that a binding is one thing wherever it is named, and each class's lists of bindings."""
+    from llamatron.interface.tracker import keybindings, keys as key_names
+    from llamatron.interface.tracker.keys import Binding
+    classes = [value for value in vars(keybindings).values() if inspect.isclass(value) and value.__module__ == keybindings.__name__]
+    lines = [HEADER.format(source='interface/tracker/keybindings.py and keys.py').rstrip(), '#![allow(non_snake_case)]', '']
+    lines += [
+        '/// The keys a binding answers to: one, several, or a key or keys each way for one that steps.',
+        '#[derive(Debug, PartialEq)]',
+        'pub enum Keys {',
+        '    One(&\'static str),',
+        '    Many(&\'static [&\'static str]),',
+        '    Steps { back: &\'static [&\'static str], forward: &\'static [&\'static str] },',
+        '}',
+        '',
+        '/// A binding: its keys, the name the legend shows for them, and what they are said to do.',
+        '#[derive(Debug, PartialEq)]',
+        'pub struct Binding {',
+        '    pub keys: Keys,',
+        '    pub name: &\'static str,',
+        '    pub what: &\'static str,',
+        '}',
+        '',
+        '/// A class of bindings: its name, every binding in the order the F1 dialog lists them, and those the legend shows.',
+        '#[derive(Debug)]',
+        'pub struct KeyClass {',
+        '    pub name: &\'static str,',
+        '    pub in_help: &\'static [&\'static Binding],',
+        '    pub in_legend: &\'static [&\'static Binding],',
+        '}',
+        '',
+        '/// The keys by their names.',
+        'pub mod Key {',
+    ]
+    for name, value in vars(key_names.Key).items():
+        if name.isupper() and isinstance(value, str):
+            lines.append('    pub const {}: &str = {};'.format(name, literal(value)))
+    lines += ['}', '']
+    for cls in classes:
+        lines.append('/// {}'.format((cls.__doc__ or cls.__name__).strip().splitlines()[0]))
+        lines.append('pub mod {} {{'.format(cls.__name__))
+        lines.append('    use super::*;')
+        made = {}
+        for name in dir(cls):
+            value = getattr(cls, name)
+            if not isinstance(value, Binding):
+                continue
+            owner = next(base for base in cls.__mro__ if name in vars(base) and vars(base)[name] is value)
+            if owner is cls:
+                lines.append('    pub static {}: Binding = Binding {{ keys: {}, name: {}, what: {} }};'.format(name, keys_text(value.keys), literal(str(value.name)), literal(str(value.what))))
+            else:
+                lines.append('    pub use super::{}::{};'.format(owner.__name__, name))
+            made[id(value)] = name
+        for name in dir(cls):
+            value = getattr(cls, name)
+            if isinstance(value, list) and value and all(isinstance(item, Binding) for item in value):
+                names = []
+                for item in value:
+                    found = next((attribute for attribute in dir(cls) if getattr(cls, attribute) is item), None)
+                    names.append('&' + found)
+                lines.append('    pub static {}: &[&Binding] = &[{}];'.format(name, ', '.join(names)))
+            elif isinstance(value, list) and not value:
+                lines.append('    pub static {}: &[&Binding] = &[];'.format(name))
+        lines.append('    pub static CLASS: KeyClass = KeyClass {{ name: {}, in_help: IN_HELP, in_legend: IN_LEGEND }};'.format(literal(cls.__name__)))
+        lines.append('}')
+        lines.append('')
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
+def write_tracker_tables(path):
+    """Write what the tracker names besides its keys: each visualizer mode's name on screen, by its name in a file."""
+    from llamatron.interface.visualizers.modes import mode_called
+    from llamatron.model.schema import file_format
+    lines = [HEADER.format(source='interface/visualizers/modes.py').rstrip(), '']
+    lines.append('/// Each visualizer mode by its name in a file, with its name on screen.')
+    pairs = ', '.join('({}, {})'.format(literal(name), literal(mode_called(name).NAME)) for name in file_format.VISUALIZER_NAMES)
+    lines.append('pub static VISUALIZER_MODE_NAMES: &[(&str, &str)] = &[{}];'.format(pairs))
+    path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
 def main():
     texts = [(info.name, importlib.import_module('llamatron.user_strings.' + info.name)) for info in pkgutil.iter_modules(package.__path__)]
     unwritten = write_modules(folder=OUT, modules=texts)
@@ -433,6 +534,8 @@ def main():
     write_enums(FUNDAMENTALS_OUT / 'enums.rs')
     unwritten.update(write_modules(folder=VALUES_OUT, modules=VALUES_MODULES))
     write_lists(VALUES_OUT / 'lists.rs')
+    write_keybindings(TRACKER_OUT / 'keybindings.rs')
+    write_tracker_tables(TRACKER_OUT / 'tables.rs')
     for name, skipped in unwritten.items():
         print('{}: not written: {}'.format(name, ', '.join(skipped)), file=sys.stderr)
 

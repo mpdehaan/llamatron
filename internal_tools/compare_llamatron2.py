@@ -285,11 +285,106 @@ STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate
 COMPARED = {'save': same_as_data, 'import': same_as_data}
 
 
+# The screen tour: the Python's capture, made once, since the Python program is frozen, and where the Rust's replay of its
+# keys is written. The tour starts by exporting a PDF, which stays in the Python program, so the Rust starts after it.
+SCREENS = pathlib.Path('/tmp/claude/llamatron/screens')
+SCREEN_SIZES = ((80, 24), (160, 50))
+NOT_PORTED_PAGE = '(not ported)'
+# What the capture writes for the folder its tour ran in.
+FOLDER = 'FOLDER'
+PDF_PAGE = 'PdfExportPage'
+LEAVE = 'escape'
+
+
+def python_screens():
+    """Return the Python's screen tour at each size, capturing it first when it has not been."""
+    files = [SCREENS / 'screens_{}x{}.json'.format(*size) for size in SCREEN_SIZES]
+    if not all(path.exists() for path in files) or not (SCREENS / 'tour.yml').exists() or 'path' not in json.loads(files[0].read_text(encoding='utf-8'))[0]:
+        subprocess.run([str(TOP / 'internal_tools' / 'compare_screens.sh'), 'capture', str(SCREENS)], check=True, cwd=TOP)
+    return [(size, json.loads(path.read_text(encoding='utf-8'))) for size, path in zip(SCREEN_SIZES, files)]
+
+
+def pieces(line):
+    """Return a screen line's pieces as one comparable list: empty pieces left out, and neighbours of one style joined."""
+    joined = []
+    for text, style in line:
+        if not text:
+            continue
+        if joined and joined[-1][1] == style:
+            joined[-1][0] += text
+        else:
+            joined.append([text, style])
+    return joined
+
+
+def after_the_pdf(stops):
+    """Return the tour's stops from its first past the PDF export page, that stop's keys from where ESC left the PDF page."""
+    first = next(place for place, stop in enumerate(stops) if stop['page'] != PDF_PAGE)
+    stops = [dict(stop) for stop in stops[first:]]
+    keys = stops[0]['keys']
+    stops[0]['keys'] = keys[keys.index(LEAVE) + 1:]
+    return stops
+
+
+def compare_screens():
+    """Replay the screen tour's keys in the Rust tracker at each size and compare every stop's screen; return the exit code."""
+    differing = 0
+    for size, stops in python_screens():
+        stops = after_the_pdf(stops)
+        keys_file = SCREENS / 'keys_{}x{}.txt'.format(*size)
+        keys_file.write_text(''.join('\t'.join([','.join(stop['stack']), stop['set'] or '', str(stop['dirty']), stop['song'], *stop['keys']]) + '\n' for stop in stops), encoding='utf-8')
+        # The set is opened as the Python's tour held its path, in its folder or by its name alone from inside it.
+        held = stops[0]['path']
+        opened = str(SCREENS / 'tour.yml') if held.startswith(FOLDER) else held
+        done = subprocess.run([str(RUST), 'screens', opened, str(keys_file), str(size[0]), str(size[1])], capture_output=True, text=True, cwd=SCREENS)
+        if done.returncode != 0:
+            print('{}x{}: the Rust tour failed: {}'.format(*size, done.stderr.strip()[:SHOWN]))
+            return 1
+        port = json.loads(done.stdout)
+        pages = {}
+        shown = 0
+        # The pages the Rust has ported, which it shows as themselves somewhere on the tour; a stop on any other waits.
+        ported = {rust_stop['page'] for rust_stop in port}
+        for number, (python, rust_stop) in enumerate(zip(stops, port)):
+            counts = pages.setdefault(python['page'], [0, 0, 0])
+            if rust_stop['page'] == NOT_PORTED_PAGE or python['page'] not in ported:
+                counts[2] += 1
+                continue
+            same = rust_stop['page'] == python['page'] and [pieces(line) for line in python['screen']] == [pieces(line) for line in rust_stop['screen']]
+            counts[0 if same else 1] += 1
+            if not same and shown < MOST_SCREEN_DIFFERENCES:
+                shown += 1
+                print(screen_difference(size=size, number=number, python=python, port=rust_stop))
+        ported_differ = sum(counts[1] for counts in pages.values())
+        differing += ported_differ
+        waiting = sum(counts[2] for counts in pages.values())
+        print('{}x{}: {} of {} stops differ, {} wait on pages not ported yet'.format(*size, ported_differ, len(stops) - waiting, waiting))
+        for page, (same, different, unported) in pages.items():
+            if different:
+                print('  {}: {} of {} differ'.format(page, different, same + different))
+    return 1 if differing else 0
+
+
+MOST_SCREEN_DIFFERENCES = 3
+
+
+def screen_difference(*, size, number, python, port):
+    """Return where a stop's screens first differ, the line's text and pieces on each side."""
+    if port['page'] != python['page']:
+        return '{}x{} stop {}: the Rust shows {}, the Python {}'.format(*size, number, port['page'], python['page'])
+    for line, (first, second) in enumerate(zip(python['screen'], port['screen'])):
+        if pieces(first) != pieces(second):
+            return '{}x{} stop {} ({}, {}) line {}:\n  python: {}\n  rust:   {}'.format(*size, number, python['page'], python['place'], line, pieces(first), pieces(second))
+    return '{}x{} stop {}: the screens have {} and {} lines'.format(*size, number, len(python['screen']), len(port['screen']))
+
+
 def main():
     made = argparse.ArgumentParser(prog='compare_llamatron2.py', description='Hold llamatron2 to the Python program.')
-    made.add_argument('step', choices=sorted(STEPS))
+    made.add_argument('step', choices=sorted([*STEPS, 'screens']))
     made.add_argument('--only', help='only the sets whose path holds this text')
     options = made.parse_args()
+    if options.step == 'screens':
+        return compare_screens()
     found = [*EXAMPLES.rglob('*.yml'), *TEST_SETS.rglob('*.yml')]
     if options.step == 'import':
         found += EXAMPLES.rglob('*.mid')

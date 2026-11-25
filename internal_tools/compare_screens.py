@@ -22,9 +22,11 @@ page behind it may differ from run to run, so that moving a dialog to declarativ
 """
 
 import functools
+import hashlib
 import json
 import os
 import random
+import shutil
 from rich.console import Console
 import sys
 from textual.widgets import Static
@@ -33,10 +35,12 @@ from unittest import mock
 
 from llamatron.interface.tracker.dialogs import dialog as dialog_values
 from llamatron.interface.tracker.dialogs.dialog import Dialog
+from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
 from tests.interface.tracker import test_tui_help_keys
 from tests.interface.tracker.test_tui_help_keys import KeyTour
 from tests.support.key_map import place_of
+from tests.support import ui_testing
 from tests.support.ui_testing import UITest
 
 CAPTURE = 'capture'
@@ -70,6 +74,20 @@ FOLDER = 'FOLDER'
 PAGE = 'page'
 PLACE = 'place'
 SCREEN = 'screen'
+KEYS = 'keys'
+# The pages open at a stop, from the main screen up.
+STACK = 'stack'
+# The file the set is written to at a stop where it changed, whether it holds unsaved changes, and the current song.
+SET_FILE = 'set'
+DIRTY = 'dirty'
+SONG = 'song'
+PATH = 'path'
+SET_AT_STOP = '{tour}_set_{number}.yml'
+LAST_DIGEST = 'last_digest'
+# The set the tour saves before its first stop and starts from.
+TOUR_SET = test_tui_help_keys.TOUR_SET_FILE
+# What makes every key the tests press, which the tour notes.
+KEY_EVENT = 'key_event'
 WRITE = 'w'
 ENCODING = 'utf-8'
 # The name of the screen tour at a size, and the class attribute that holds a test's size.
@@ -93,17 +111,52 @@ FAILURE = 1
 
 
 class ScreenTour(KeyTour):
-    """The key tour, recording the whole screen at every stop as well as the keys."""
+    """The key tour, recording the whole screen at every stop as well as the keys, and the keys pressed since the stop before,
+    so that another program can press the same keys and be held to the same screens (internal_tools/compare_llamatron2.py)."""
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.stops = []
+        self.pressed = []
+        original = ui_testing.key_event
+
+        def noted(name):
+            event = original(name)
+            self.pressed.append(event.key)
+            return event
+
+        patcher = mock.patch.object(ui_testing, KEY_EVENT, noted)
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def note(self):
         super().note()
         page = self.app.screen
+        # The set the tour starts from, saved before its first stop, kept beside the stops for another program to open.
+        kept = os.path.join(os.path.dirname(os.environ[OUTPUT_SETTING]), TOUR_SET)
+        if not self.stops:
+            shutil.copyfile(os.path.join(self.folder, TOUR_SET), kept)
         screen = screen_pieces(app=self.app, folders=(os.path.realpath(self.folder), self.folder))
-        self.stops.append({PAGE: type(page).__name__, PLACE: place_of(page), SCREEN: screen})
+        stack = [type(each).__name__ for each in self.app.screen_stack if isinstance(each, Page)]
+        document = self.app.get_document()
+        self.stops.append({
+            PAGE: type(page).__name__, PLACE: place_of(page), SCREEN: screen, KEYS: self.pressed, STACK: stack,
+            SET_FILE: self.set_kept(document), DIRTY: document.is_dirty(), SONG: document.get_current_song_name(),
+            PATH: without_folders(text=document.get_path() or '', folders=(os.path.realpath(self.folder), self.folder)),
+        })
+        self.pressed = []
+
+    def set_kept(self, document):
+        """Return the name of the file the set is written to where it changed since the stop before, so that another program
+        whose pages that changed it are not ported yet can take it up, or None where it is as it was."""
+        data = document.get_setlist().to_data()
+        digest = hashlib.sha1(json.dumps(data, sort_keys=True, default=str).encode(ENCODING)).hexdigest()
+        if digest == getattr(self, LAST_DIGEST, None):
+            return None
+        self.last_digest = digest
+        name = SET_AT_STOP.format(tour=os.path.splitext(os.path.basename(os.environ[OUTPUT_SETTING]))[0], number=len(self.stops))
+        document.get_setlist().write_file(os.path.join(os.path.dirname(os.environ[OUTPUT_SETTING]), name))
+        return name
 
     async def test_the_tour(self):
         await self.tour()

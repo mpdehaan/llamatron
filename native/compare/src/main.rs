@@ -187,6 +187,22 @@ fn main() -> ExitCode {
                 }
             }
         }
+        "screens" => {
+            let (Some(keys), Some(width), Some(height)) = (arguments.get(2), arguments.get(3), arguments.get(4)) else {
+                eprintln!("usage: llamatron-compare screens SET KEYS WIDTH HEIGHT");
+                return ExitCode::from(2);
+            };
+            match toured(path, keys, width.parse().unwrap_or(80), height.parse().unwrap_or(24)) {
+                Ok(text) => {
+                    println!("{text}");
+                    ExitCode::SUCCESS
+                }
+                Err(problem) => {
+                    eprintln!("{path}: {problem}");
+                    ExitCode::from(1)
+                }
+            }
+        }
         other => {
             eprintln!("llamatron-compare: a command it does not know: {other}");
             ExitCode::from(2)
@@ -366,5 +382,69 @@ fn imported(path: &str, text: &str) -> Result<String, String> {
     }
     let mut out = String::new();
     json_written(&Data::List(made), &mut out);
+    Ok(out)
+}
+
+fn folder_of(path: &str) -> std::path::PathBuf {
+    std::path::Path::new(path).parent().map(std::path::Path::to_path_buf).unwrap_or_default()
+}
+
+/// The screen tour played on a set: the keys file holds a line for each stop, its keys between tabs; the answer is every
+/// stop's page and screen as JSON, the set's folder written as FOLDER, as the Python capture writes it.
+fn toured(path: &str, keys: &str, width: usize, height: usize) -> Result<String, String> {
+    let document = llamatron_tracker::document::Document::open(std::path::Path::new(path))?;
+    let text = std::fs::read_to_string(keys).map_err(|problem| problem.to_string())?;
+    let stops: Vec<llamatron_tracker::tour::TourStop> = text
+        .lines()
+        .map(|line| {
+            let mut parts = line.split('\t');
+            let stack = parts
+                .next()
+                .unwrap_or("")
+                .split(',')
+                .filter(|name| !name.is_empty())
+                .map(str::to_string)
+                .collect();
+            let set = parts.next().filter(|name| !name.is_empty()).map(|name| folder_of(path).join(name));
+            let dirty = parts.next() == Some("True");
+            let song = parts.next().unwrap_or("").to_string();
+            let keys = parts.filter(|key| !key.is_empty()).map(str::to_string).collect();
+            llamatron_tracker::tour::TourStop { stack, set, dirty, song, keys }
+        })
+        .collect();
+    let mut tracker = llamatron_tracker::app::Tracker::new(document);
+    let folder = std::path::Path::new(path)
+        .parent()
+        .map(|parent| parent.to_string_lossy().to_string())
+        .unwrap_or_default();
+    let mut out = String::from("[");
+    for (number, stop) in llamatron_tracker::tour::tour(&mut tracker, width, height, &stops).into_iter().enumerate() {
+        if number > 0 {
+            out.push(',');
+        }
+        out.push_str("{\"page\":");
+        json_written(&Data::Text(stop.page), &mut out);
+        out.push_str(",\"screen\":[");
+        for (line_number, line) in stop.screen.iter().enumerate() {
+            if line_number > 0 {
+                out.push(',');
+            }
+            out.push('[');
+            for (piece_number, (text, style)) in line.iter().enumerate() {
+                if piece_number > 0 {
+                    out.push(',');
+                }
+                out.push('[');
+                let shown = if folder.is_empty() { text.clone() } else { text.replace(&folder, "FOLDER") };
+                json_written(&Data::Text(shown), &mut out);
+                out.push(',');
+                json_written(&Data::Text(style.clone()), &mut out);
+                out.push(']');
+            }
+            out.push(']');
+        }
+        out.push_str("]}");
+    }
+    out.push(']');
     Ok(out)
 }
