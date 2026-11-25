@@ -627,3 +627,31 @@ fn number(value: &Data) -> f64 {
         _ => 0.0,
     }
 }
+
+impl Pattern {
+    /// Give a step a statement of a kind about the draws, written across the kind's five rows, or None to take the step's
+    /// away; the first step never starts the pattern over.
+    pub fn set_statement(&mut self, kind: &str, step: usize, statement: Option<&Data>) -> Result<(), InvalidValue> {
+        self.check_step(step as i128)?;
+        if statement.is_some() && kind == "restart" && step == 0 {
+            return Err(InvalidValue::new(errors::ERR_RESTART_ON_FIRST_STEP.to_string()));
+        }
+        let rows = crate::schema::generated::file_format::STATEMENT_ROWS
+            .iter()
+            .find(|(each, _)| *each == kind)
+            .map(|(_, rows)| *rows)
+            .unwrap_or(&[]);
+        let parts = crate::schema::generated::file_format::STATEMENT_PARTS;
+        for (row, part) in rows.iter().zip(parts) {
+            let value = statement.and_then(|statement| statement.get(part)).cloned();
+            let place = Self::place_of(row);
+            if value.is_none() && place.is_none_or(|place| self.rows[place].is_none()) {
+                continue;
+            }
+            if let Some(values) = self.row_mut(row) {
+                values[step] = value.unwrap_or(Data::Null);
+            }
+        }
+        Ok(())
+    }
+}

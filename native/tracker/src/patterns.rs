@@ -204,3 +204,157 @@ pub fn pattern_octave_range(setlist: &Setlist, name: &str) -> Option<(i64, i64)>
         octave(TrackSetting::HIGHEST_OCTAVE, MAX_OCTAVE),
     ))
 }
+
+// Changing the notes as the piano roll does (the Python pattern_notes.py's PatternNotes).
+
+/// The rows a split note's new start takes from the note it held.
+const SPLIT_ROWS: [&str; 5] = [Row::DEGREE, Row::ACCIDENTAL, Row::OCTAVE, Row::CHORD, Row::VELOCITY];
+/// A note's sharp or flat in the order the roll's key steps it.
+const ACCIDENTAL_CYCLE: [Option<&str>; 3] = [None, Some("#"), Some("b")];
+
+/// What a note edit refuses with, the pattern's own words.
+type Edited = Result<(), String>;
+
+/// Write one value of a step, as the pattern refuses it.
+fn put(pattern: &mut Pattern, row: &str, step: usize, value: Option<Data>) -> Edited {
+    pattern.set_value(row, step, value).map_err(|problem| problem.message)
+}
+
+/// How many whole steps fit in a length, at least one, as an entry size is placed in ties.
+fn whole_steps_down(length: Rational, step_size: Rational) -> usize {
+    let steps = length / step_size;
+    (steps.numerator().div_euclid(steps.denominator()) as usize).max(1)
+}
+
+/// The step of the note sounding through a step by ties: the step itself when it has a note, or the note the ties before
+/// it lead back to, or None.
+pub fn holding_note(pattern: &Pattern, step: usize) -> Option<usize> {
+    let mut step = step as i64;
+    while value(pattern, Row::DEGREE, step as usize).is_none() {
+        if !value(pattern, Row::TIE, step as usize).is_some_and(|tie| matches!(tie, Data::Bool(true))) {
+            return None;
+        }
+        step -= 1;
+        if step < 0 {
+            return None;
+        }
+    }
+    Some(step as usize)
+}
+
+/// Make a tied step the start of a note of its own, at the pitch of the note it held, as the roll's knife does, and say
+/// whether it did.
+pub fn split_note(pattern: &mut Pattern, step: usize) -> Result<bool, String> {
+    let Some(start) = holding_note(pattern, step).filter(|start| *start != step) else {
+        return Ok(false);
+    };
+    for row in SPLIT_ROWS {
+        let held = value(pattern, row, start).cloned();
+        put(pattern, row, step, held)?;
+    }
+    put(pattern, Row::TIE, step, Some(Data::Bool(false)))?;
+    Ok(true)
+}
+
+/// Put a note on a step and tie the steps it covers after it to it, whatever they held going, a note it lands inside cut
+/// where the new one starts and carrying on past it as a note of its own.
+fn place_note(pattern: &mut Pattern, step: usize, note: (Data, i64, Option<&str>), covered: usize, gate: Option<String>) -> Edited {
+    let steps = pattern.get_steps() as usize;
+    let end = step + covered;
+    if end < steps && value(pattern, Row::TIE, end).is_some_and(|tie| matches!(tie, Data::Bool(true))) {
+        split_note(pattern, end)?;
+    }
+    pattern.clear_sound(step).map_err(|problem| problem.message)?;
+    let (degree, octave, accidental) = note;
+    put(pattern, Row::DEGREE, step, Some(degree))?;
+    put(pattern, Row::OCTAVE, step, Some(Data::Whole(octave as i128)))?;
+    put(pattern, Row::GATE, step, gate.map(|gate| Data::text(&gate)))?;
+    put(pattern, Row::ACCIDENTAL, step, accidental.map(Data::text))?;
+    for later in step + 1..(step + covered).min(steps) {
+        pattern.clear_sound(later).map_err(|problem| problem.message)?;
+        put(pattern, Row::TIE, later, Some(Data::Bool(true)))?;
+    }
+    Ok(())
+}
+
+/// Shorten the gate of the note reaching over a step so that it ends where the step starts, as a note drawn there cuts it.
+fn cut_gate_before(pattern: &mut Pattern, step: usize, step_size: Rational) -> Edited {
+    let Some(start) = covering_notes(pattern, step_size).get(&step).copied().filter(|start| *start != step) else {
+        return Ok(());
+    };
+    let Some(gate) = gate_length(pattern, start) else { return Ok(()) };
+    if start + whole_steps_up(gate, step_size) <= step {
+        return Ok(());
+    }
+    put(
+        pattern,
+        Row::GATE,
+        start,
+        Some(Data::text(&(step_size * Rational::whole((step - start) as i128)).to_string())),
+    )?;
+    put(pattern, Row::DOT, start, None)
+}
+
+/// Draw a note of a length on a step: in ties for each whole step it covers, or as a gate where it is shorter than a step,
+/// cutting the note it lands in; on a chord's step the chord's root moves to the note and nothing else of the step changes.
+pub fn draw_note(pattern: &mut Pattern, step: usize, note: (Data, i64, Option<&str>), length: Rational, step_size: Rational) -> Edited {
+    let starts_chord = value(pattern, Row::DEGREE, step).is_some() && value(pattern, Row::CHORD, step).is_some();
+    if starts_chord {
+        let (degree, octave, accidental) = note;
+        put(pattern, Row::DEGREE, step, Some(degree))?;
+        put(pattern, Row::OCTAVE, step, Some(Data::Whole(octave as i128)))?;
+        return put(pattern, Row::ACCIDENTAL, step, accidental.map(Data::text));
+    }
+    cut_gate_before(pattern, step, step_size)?;
+    if length < step_size {
+        return place_note(pattern, step, note, 1, Some(length.to_string()));
+    }
+    place_note(pattern, step, note, whole_steps_down(length, step_size), None)
+}
+
+/// Drag the end of the note starting on a step one step later, and say whether there was room: a note shorter than a step
+/// becomes a whole one first, and otherwise a step is tied on unless the pattern ends there or the next note starts.
+pub fn lengthen_note(pattern: &mut Pattern, start: usize, step_size: Rational) -> Result<bool, String> {
+    if gate_length(pattern, start).is_some_and(|gate| gate < step_size) {
+        put(pattern, Row::GATE, start, None)?;
+        put(pattern, Row::DOT, start, None)?;
+        return Ok(true);
+    }
+    let end = start + note_span(pattern, start, step_size);
+    if end >= pattern.get_steps() as usize || has_sound(pattern, end) {
+        return Ok(false);
+    }
+    put(pattern, Row::TIE, end, Some(Data::Bool(true)))?;
+    Ok(true)
+}
+
+/// Take the last tie off the note starting on a step, or a step off its gate where it has no ties, and say whether it could:
+/// a note of one step stays.
+pub fn shorten_note(pattern: &mut Pattern, start: usize, step_size: Rational) -> Result<bool, String> {
+    let last = start + note_span(pattern, start, step_size) - 1;
+    if last > start && value(pattern, Row::TIE, last).is_some_and(|tie| matches!(tie, Data::Bool(true))) {
+        put(pattern, Row::TIE, last, Some(Data::Bool(false)))?;
+        return Ok(true);
+    }
+    let Some(written) = value(pattern, Row::GATE, start).and_then(Data::as_str).map(str::to_string) else {
+        return Ok(false);
+    };
+    let Ok(gate) = written_length(&Data::text(&written), Rational::whole(MAX_GATE as i128)) else {
+        return Ok(false);
+    };
+    if gate <= step_size {
+        return Ok(false);
+    }
+    let shorter = gate - step_size;
+    let gate = (shorter != step_size).then(|| Data::text(&shorter.to_string()));
+    put(pattern, Row::GATE, start, gate)?;
+    Ok(true)
+}
+
+/// Move the note starting on a step on to the next of natural, sharp and flat.
+pub fn cycle_accidental(pattern: &mut Pattern, start: usize) -> Edited {
+    let current = value(pattern, Row::ACCIDENTAL, start).and_then(Data::as_str).map(str::to_string);
+    let place = ACCIDENTAL_CYCLE.iter().position(|each| each.map(str::to_string) == current).unwrap_or(0);
+    let following = ACCIDENTAL_CYCLE[(place + 1) % ACCIDENTAL_CYCLE.len()];
+    put(pattern, Row::ACCIDENTAL, start, following.map(Data::text))
+}

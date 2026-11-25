@@ -318,7 +318,7 @@ fn store(place: usize, statement: Data) -> StatementChange {
 }
 
 /// The statement a line starts as once given a register: the register less than 0, which is then edited.
-fn new_statement(register: &str) -> Data {
+pub fn new_statement(register: &str) -> Data {
     Data::Map(vec![
         (Data::text(REGISTER), Data::text(register)),
         (Data::text(OPERATOR), Data::text(Operator::LESS)),
@@ -327,7 +327,7 @@ fn new_statement(register: &str) -> Data {
 }
 
 /// A statement with one part changed, the others kept in their order.
-fn with_part(statement: &Data, part: &str, value: Data) -> Data {
+pub fn with_part(statement: &Data, part: &str, value: Data) -> Data {
     let mut pairs: Vec<(Data, Data)> = statement.as_map().map(<[(Data, Data)]>::to_vec).unwrap_or_default();
     match pairs.iter_mut().find(|(key, _)| key.as_str() == Some(part)) {
         Some(pair) => pair.1 = value,
@@ -338,7 +338,7 @@ fn with_part(statement: &Data, part: &str, value: Data) -> Data {
 
 /// A statement given another operator, keeping each part the new operator still takes and filling in the rest, so that no
 /// statement is left half written.
-fn with_operator(statement: &Data, operator: &str) -> Data {
+pub fn with_operator(statement: &Data, operator: &str) -> Data {
     let divides = DIVIDING_OPERATORS.contains(&operator);
     let new_value = if divides { NEW_DIVISOR } else { NEW_NUMBER };
     let mut pairs = vec![

@@ -12,14 +12,17 @@ use crate::keys::KeyItem;
 use crate::patterns::{self, value};
 use crate::settings::{named_in, shown_octave};
 use crate::text::Text;
+use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::pattern::Pattern;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::Song;
+use llamatron_model::schema::checking::plain_data;
 use llamatron_model::schema::generated::file_format::{
-    Row, Section, TrackSetting, CC_ROWS, DRAW_NAMES, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, STATEMENT_ROWS,
+    Row, Section, TrackSetting, CC_ROWS, CHORD_SYMBOLS, DIVIDING_OPERATORS, DRAW_NAMES, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS,
+    GATE_LENGTH_CHOICES, OPERATORS, RESULT_COMPARISONS, STATEMENT_ROWS, VALUE_NAMES,
 };
-use llamatron_model::schema::generated::limits::MIN_DEGREE;
+use llamatron_model::schema::generated::limits::{MAX_STATEMENT_NUMBER, MIN_DEGREE};
 use llamatron_model::schema::generated::rows::{RowDescription, ROW_DESCRIPTIONS};
 use llamatron_model::schema::generated::settings::Plain;
 use llamatron_strings::{labels, legends, marks, named};
@@ -823,4 +826,444 @@ fn title_words(text: &str) -> String {
         })
         .collect::<Vec<_>>()
         .join(" ")
+}
+
+/// What a key on a row of the rows view does to the pattern, which the editor makes as one change: values written on rows
+/// of the cursor's step, a step's note erased, a statement stored, the number typed so far, whether the change continues
+/// the one before, as a second digit typed into a cell does, a refusal to say, and a dialog to ask in.
+#[derive(Default)]
+pub struct RowEdit {
+    pub writes: Vec<(String, Option<Data>)>,
+    pub clear_sound: bool,
+    pub statement: Option<(&'static str, Option<Data>)>,
+    pub typed: Option<String>,
+    pub continues: bool,
+    pub refusal: Option<String>,
+    pub asking: Option<RowAsking>,
+}
+
+/// What a row asks for in a dialog: a number in a range, or a length up to a most.
+pub enum RowAsking {
+    Number {
+        row: String,
+        title: String,
+        value: i64,
+        lowest: i64,
+        highest: i64,
+    },
+    Length {
+        row: String,
+        title: String,
+        value: String,
+        most: Rational,
+    },
+}
+
+impl RowEdit {
+    /// The edit that writes one value.
+    fn write(row: &str, value: Option<Data>) -> RowEdit {
+        RowEdit {
+            writes: vec![(row.to_string(), value)],
+            ..RowEdit::default()
+        }
+    }
+}
+
+impl<'a> Rows<'a> {
+    /// What a key on a row does at a step, typed being the digits typed into the cell so far.
+    pub fn edit(&self, row: &str, step: usize, item: &KeyItem, key: &str, typed: &str) -> RowEdit {
+        use bindings::*;
+        let value_here = value(self.pattern, row, step).cloned();
+        if item.is(&PatternRow::LESS) || item.is(&PatternRow::MORE) {
+            let offset = if item.is(&PatternRow::LESS) { -1 } else { 1 };
+            return self.nudge(row, step, offset);
+        }
+        if item.is(&CycleRow::NEXT) || item.is(&ChordRow::NEXT) || item.is(&StatementRow::NEXT) {
+            return self.nudge(row, step, 1);
+        }
+        if item.is(&CycleRow::CLEAR) || item.is(&ChordRow::CLEAR) || item.is(&NumberRow::DEFAULT) || item.is(&OctaveRow::DEFAULT) || item.is(&GateRow::ONE_STEP)
+        {
+            return RowEdit::write(row, None);
+        }
+        if item.is(&StatementRow::CLEAR) {
+            return self.statement_part(row, step, None);
+        }
+        if item.is(&ToggleRow::CLEAR) {
+            return RowEdit::write(row, Some(Data::Bool(false)));
+        }
+        if item.is(&ToggleRow::TOGGLE) {
+            return self.toggle(row, step);
+        }
+        if item.is(&DegreeRow::CLEAR) {
+            return RowEdit {
+                clear_sound: true,
+                ..RowEdit::default()
+            };
+        }
+        if item.is(&DegreeRow::TOGGLE_NOTE) {
+            if self.is_note(step) {
+                return RowEdit {
+                    clear_sound: true,
+                    ..RowEdit::default()
+                };
+            }
+            return self.with_note(step, RowEdit::write(Row::DEGREE, Some(Data::Whole(MIN_DEGREE as i128))));
+        }
+        if item.is(&DegreeRow::NOTE) {
+            return self.with_note(step, RowEdit::write(Row::DEGREE, Some(Data::text(&key.to_uppercase()))));
+        }
+        if item.is(&DegreeRow::DEGREE) {
+            let typed_edit = typed_number(typed, key, MIN_DEGREE, self.degree_limit() as i64);
+            let Some(number) = typed_edit.number else {
+                return RowEdit {
+                    typed: Some(String::new()),
+                    ..RowEdit::default()
+                };
+            };
+            let mut edit = self.with_note(step, RowEdit::write(Row::DEGREE, Some(Data::Whole(number as i128))));
+            edit.typed = Some(typed_edit.typed);
+            edit.continues = typed_edit.continues;
+            return edit;
+        }
+        if item.is(&OctaveRow::TYPE) {
+            let described = described(Row::OCTAVE);
+            let (lowest, highest) = (described.lowest.unwrap_or(0), described.highest.unwrap_or(10));
+            let typed_edit = typed_number(typed, key, shown_octave(self.setlist, lowest), shown_octave(self.setlist, highest));
+            let Some(number) = typed_edit.number else {
+                return RowEdit {
+                    typed: Some(String::new()),
+                    ..RowEdit::default()
+                };
+            };
+            let stored = number - shown_octave(self.setlist, 0);
+            let mut edit = RowEdit::write(Row::OCTAVE, Some(Data::Whole(stored as i128)));
+            edit.typed = Some(typed_edit.typed);
+            edit.continues = typed_edit.continues;
+            return edit;
+        }
+        if item.is(&NumberRow::TYPE) {
+            let (lowest, highest) = number_range(row);
+            let typed_edit = typed_number(typed, key, lowest, highest);
+            let Some(number) = typed_edit.number else {
+                return RowEdit {
+                    typed: Some(String::new()),
+                    ..RowEdit::default()
+                };
+            };
+            let mut edit = RowEdit::write(row, Some(Data::Whole(number as i128)));
+            edit.typed = Some(typed_edit.typed);
+            edit.continues = typed_edit.continues;
+            return edit;
+        }
+        if item.is(&NumberRow::ASK) {
+            let (lowest, highest) = number_range(row);
+            let label = named_in(labels::MSG_ROW_LABELS, row);
+            let title = named(
+                llamatron_strings::messages::MSG_NUMBER_PROMPT,
+                &[("row", label.as_str().into()), ("low", lowest.into()), ("high", highest.into())],
+            );
+            let now = value_here.as_ref().and_then(Data::as_whole).map_or(number_default(row), |whole| whole as i64);
+            let asking = RowAsking::Number {
+                row: row.to_string(),
+                title,
+                value: now,
+                lowest,
+                highest,
+            };
+            return RowEdit {
+                asking: Some(asking),
+                ..RowEdit::default()
+            };
+        }
+        if item.is(&GateRow::TYPE) {
+            let most = described(row).most.map_or(Rational::whole(4), |most| Rational::whole(most as i128));
+            let shown = value_here.as_ref().and_then(Data::as_str).unwrap_or_default().to_string();
+            let asking = RowAsking::Length {
+                row: row.to_string(),
+                title: llamatron_strings::messages::MSG_GATE_PROMPT.to_string(),
+                value: shown,
+                most,
+            };
+            return RowEdit {
+                asking: Some(asking),
+                ..RowEdit::default()
+            };
+        }
+        RowEdit::default()
+    }
+
+    /// A new note made with what every note has: an octave, and no tie, since a tie only holds the note before it.
+    fn with_note(&self, step: usize, mut edit: RowEdit) -> RowEdit {
+        if value(self.pattern, Row::TIE, step).is_some_and(|tie| matches!(tie, Data::Bool(true))) {
+            edit.writes.push((Row::TIE.to_string(), Some(Data::Bool(false))));
+        }
+        if value(self.pattern, Row::OCTAVE, step).is_none() {
+            edit.writes.push((Row::OCTAVE.to_string(), Some(Data::Whole(self.default_octave as i128))));
+        }
+        edit
+    }
+
+    /// Turn a row's value on or off: a grab on an empty step gives it a note first, and a keyswitch slot's row adds or takes
+    /// its slot from the step's keyswitches.
+    fn toggle(&self, row: &str, step: usize) -> RowEdit {
+        let on = value(self.pattern, row, step).is_some_and(|value| matches!(value, Data::Bool(true)));
+        let mut edit = RowEdit::default();
+        if row == Row::GRAB && !on && !self.is_note(step) {
+            let note = if self.is_drum() {
+                Data::text(DRUM_GRAB_NOTE)
+            } else {
+                Data::Whole(MIN_DEGREE as i128)
+            };
+            edit = self.with_note(step, RowEdit::write(Row::DEGREE, Some(note)));
+        }
+        edit.writes.push((row.to_string(), Some(Data::Bool(!on))));
+        edit
+    }
+
+    /// Make a row's value less or more by one, as each kind of row steps.
+    fn nudge(&self, row: &str, step: usize, offset: i64) -> RowEdit {
+        let held = value(self.pattern, row, step).cloned();
+        if row == Row::DEGREE {
+            return self.nudge_degree(step, offset);
+        }
+        if row == Row::OCTAVE {
+            let described = described(Row::OCTAVE);
+            let now = held.as_ref().and_then(Data::as_whole).map_or(self.default_octave, |whole| whole as i64);
+            let moved = (now + offset).clamp(described.lowest.unwrap_or(0), described.highest.unwrap_or(10));
+            return RowEdit::write(row, Some(Data::Whole(moved as i128)));
+        }
+        if row == Row::GATE {
+            return RowEdit::write(row, Some(Data::text(&self.next_gate(held.as_ref(), offset))));
+        }
+        if Self::statement_place(row).is_some() {
+            return self.nudge_statement(row, step, offset);
+        }
+        if row == Row::CHORD || row == Row::TENSION || row == Row::CHORD_SCALE {
+            let options = chord_options(row);
+            let shown = held.as_ref().map(data_text);
+            let place = options.iter().position(|option| option.as_ref().map(data_text) == shown).unwrap_or(0) as i64;
+            let moved = (place + offset).clamp(0, options.len() as i64 - 1) as usize;
+            return RowEdit::write(row, options[moved].clone());
+        }
+        let described = described(row);
+        if !described.choices.is_empty() {
+            // A row of a few fixed choices goes round them, its blank first.
+            let mut choices = vec![described.blank];
+            choices.extend(described.choices.iter().copied());
+            let blank = plain_data(&described.blank);
+            let now = held.clone().unwrap_or(blank);
+            let place = choices.iter().position(|choice| plain_data(choice) == now).unwrap_or(0) as i64;
+            let moved = (place + offset).rem_euclid(choices.len() as i64) as usize;
+            let chosen = plain_data(&choices[moved]);
+            return RowEdit::write(row, (!chosen.is_null()).then_some(chosen));
+        }
+        let (lowest, highest) = number_range(row);
+        let now = held.as_ref().and_then(Data::as_whole).map_or(number_default(row), |whole| whole as i64);
+        RowEdit::write(row, Some(Data::Whole((now + offset).clamp(lowest, highest) as i128)))
+    }
+
+    /// Move the degree a step along the scale, stopping at the top or bottom of a known scale and saying so, a degree past the
+    /// scale written back within it with its octave moved to match.
+    fn nudge_degree(&self, step: usize, offset: i64) -> RowEdit {
+        let Some(size) = self.scale_size() else {
+            let now = value(self.pattern, Row::DEGREE, step).and_then(Data::as_whole).map_or(0, |whole| whole as i64);
+            let moved = (now + offset).clamp(MIN_DEGREE, self.degree_limit() as i64);
+            return self.with_note(step, RowEdit::write(Row::DEGREE, Some(Data::Whole(moved as i128))));
+        };
+        let size = size as i64;
+        let mut edit = RowEdit::default();
+        let degree = match self.shown_degree(step) {
+            None => MIN_DEGREE,
+            Some(current) => {
+                let degree = current + offset;
+                let scale = self.scale.clone().unwrap_or_default();
+                if degree > size {
+                    edit.refusal = Some(named(llamatron_strings::errors::ERR_TOP_OF_SCALE, &[("scale", scale.as_str().into())]));
+                    size
+                } else if degree < MIN_DEGREE {
+                    edit.refusal = Some(named(llamatron_strings::errors::ERR_BOTTOM_OF_SCALE, &[("scale", scale.as_str().into())]));
+                    MIN_DEGREE
+                } else {
+                    degree
+                }
+            }
+        };
+        let shift = self.octave_shift(step);
+        if shift != 0 {
+            let now = value(self.pattern, Row::OCTAVE, step)
+                .and_then(Data::as_whole)
+                .map_or(self.default_octave, |whole| whole as i64);
+            edit.writes.push((Row::OCTAVE.to_string(), Some(Data::Whole((now + shift) as i128))));
+        }
+        edit.writes.push((Row::DEGREE.to_string(), Some(Data::Whole(degree as i128))));
+        let mut filled = self.with_note(step, RowEdit::default());
+        // The octave just written stands, where filling in would give a blank one the default.
+        filled.writes.retain(|(row, _)| !(row == Row::OCTAVE && shift != 0));
+        edit.writes.extend(filled.writes);
+        edit
+    }
+
+    /// The next plain length longer or shorter than a gate is now, the pattern's step being a blank gate's length.
+    fn next_gate(&self, held: Option<&Data>, offset: i64) -> String {
+        let step = self
+            .pattern
+            .get_written("step_size")
+            .or_else(|| self.setlist.get_written("step_size"))
+            .and_then(Data::as_str)
+            .and_then(|text| Rational::parse(text).ok())
+            .unwrap_or_else(|| Rational::new(1, 16));
+        let now = held.and_then(Data::as_str).and_then(|text| Rational::parse(text).ok()).unwrap_or(step);
+        let lengths: Vec<Rational> = GATE_LENGTH_CHOICES.iter().filter_map(|length| Rational::parse(length).ok()).collect();
+        let chosen = if offset > 0 {
+            lengths.iter().find(|length| **length > now).copied().unwrap_or(lengths[lengths.len() - 1])
+        } else {
+            lengths.iter().rev().find(|length| **length < now).copied().unwrap_or(lengths[0])
+        };
+        chosen.to_string()
+    }
+
+    /// Step a statement's part to its next or last choice, or its number up or down, stopping at each end.
+    fn nudge_statement(&self, row: &str, step: usize, offset: i64) -> RowEdit {
+        let Some((kind, place)) = Self::statement_place(row) else {
+            return RowEdit::default();
+        };
+        let statement = self.whole_statement(kind, step);
+        let part = STATEMENT_PART_NAMES[place];
+        let current = statement.as_ref().and_then(|statement| statement.get(part)).cloned();
+        let choices: Option<Vec<Option<Data>>> = match part {
+            "register" => {
+                let mut choices = vec![None];
+                choices.extend(DRAW_NAMES.iter().map(|name| Some(Data::text(name))));
+                Some(choices)
+            }
+            "operator" => Some(OPERATORS.iter().map(|each| Some(Data::text(each))).collect()),
+            "comparison" => Some(RESULT_COMPARISONS.iter().map(|each| Some(Data::text(each))).collect()),
+            _ => None,
+        };
+        if let Some(choices) = choices {
+            let Some(at) = choices.iter().position(|choice| *choice == current) else {
+                return RowEdit::default();
+            };
+            let moved = at as i64 + offset;
+            if moved < 0 || moved >= choices.len() as i64 {
+                return RowEdit::default();
+            }
+            return self.statement_part(row, step, choices[moved as usize].clone());
+        }
+        let number = match current.as_ref() {
+            Some(Data::Text(name)) if VALUE_NAMES.contains(&name.as_str()) => 0,
+            Some(value) => value.as_whole().map_or(0, |whole| whole as i64) + offset,
+            None => return RowEdit::default(),
+        };
+        if number.abs() > MAX_STATEMENT_NUMBER {
+            return RowEdit::default();
+        }
+        self.statement_part(row, step, Some(Data::Whole(number as i128)))
+    }
+
+    /// A step's statement of a kind as one mapping of its parts, or None where it names no register.
+    fn whole_statement(&self, kind: &str, step: usize) -> Option<Data> {
+        let parts = self.statement(kind, step)?;
+        let pairs = parts
+            .iter()
+            .zip(STATEMENT_PART_NAMES)
+            .filter_map(|(value, part)| value.map(|value| (Data::text(part), value.clone())))
+            .collect();
+        Some(Data::Map(pairs))
+    }
+
+    /// The edit that gives the cursor's step a row's part of its statement: a register starts a statement where there is
+    /// none and no register takes it away, an operator keeps the parts it still takes, and nothing divides by zero.
+    fn statement_part(&self, row: &str, step: usize, chosen: Option<Data>) -> RowEdit {
+        let Some((kind, place)) = Self::statement_place(row) else {
+            return RowEdit::default();
+        };
+        let statement = self.whole_statement(kind, step);
+        let part = STATEMENT_PART_NAMES[place];
+        let stored = match (part, statement, chosen) {
+            ("register", _, None) => None,
+            ("register", None, Some(register)) => Some(crate::forms::statements::new_statement(register.as_str().unwrap_or_default())),
+            (_, None, _) => return RowEdit::default(),
+            ("operator", Some(statement), Some(operator)) => Some(crate::forms::statements::with_operator(&statement, operator.as_str().unwrap_or_default())),
+            (_, Some(statement), None) => Some(statement),
+            (part, Some(statement), Some(value)) => {
+                let operator = statement.get("operator").and_then(Data::as_str).unwrap_or_default();
+                if part == "value" && DIVIDING_OPERATORS.contains(&operator) && value == Data::Whole(0) {
+                    return RowEdit {
+                        refusal: Some(llamatron_strings::errors::ERR_CANNOT_DIVIDE_BY_ZERO.to_string()),
+                        ..RowEdit::default()
+                    };
+                }
+                Some(crate::forms::statements::with_part(&statement, part, value))
+            }
+        };
+        RowEdit {
+            statement: Some((kind, stored)),
+            ..RowEdit::default()
+        }
+    }
+}
+
+/// The parts of a statement in the order its five rows hold them.
+const STATEMENT_PART_NAMES: [&str; 5] = ["register", "operator", "value", "comparison", "against"];
+/// The note a grab on an empty step of a drum pattern plays.
+const DRUM_GRAB_NOTE: &str = "C";
+
+/// A row's lowest and highest number, as its description says.
+fn number_range(row: &str) -> (i64, i64) {
+    let described = described(row);
+    (described.lowest.unwrap_or(0), described.highest.unwrap_or(127))
+}
+
+/// The number a blank step of a row plays as, where a nudge starts.
+fn number_default(row: &str) -> i64 {
+    match described(row).default.as_ref().map(plain_data) {
+        Some(Data::Whole(whole)) => whole as i64,
+        _ => 0,
+    }
+}
+
+/// The options a chord row steps through, none first: the chord symbols, each tension alone, or each kind of scale.
+fn chord_options(row: &str) -> Vec<Option<Data>> {
+    let mut options = vec![None];
+    if row == Row::CHORD {
+        options.extend(
+            CHORD_SYMBOLS
+                .iter()
+                .map(|symbol| Some(symbol.parse::<i128>().map_or_else(|_| Data::text(symbol), Data::Whole))),
+        );
+    } else if row == Row::TENSION {
+        options.extend(described(row).choices.iter().map(|tension| Some(Data::List(vec![plain_data(tension)]))));
+    } else {
+        options.extend(crate::generated::tables::SCALE_TYPES_IN_ORDER.iter().map(|kind| Some(Data::text(kind))));
+    }
+    options
+}
+
+/// A digit typed into a cell: the number it makes with the digits typed before, or the digit alone where that would be out
+/// of range, or none where neither fits; extending the number continues the same edit, so that typing 12 is one undo step.
+struct Typed {
+    number: Option<i64>,
+    typed: String,
+    continues: bool,
+}
+
+fn typed_number(typed: &str, digit: &str, lowest: i64, highest: i64) -> Typed {
+    for text in [format!("{typed}{digit}"), digit.to_string()] {
+        if let Ok(number) = text.parse::<i64>() {
+            if (lowest..=highest).contains(&number) {
+                let continues = !typed.is_empty() && text != digit;
+                return Typed {
+                    number: Some(number),
+                    typed: text,
+                    continues,
+                };
+            }
+        }
+    }
+    Typed {
+        number: None,
+        typed: String::new(),
+        continues: false,
+    }
 }

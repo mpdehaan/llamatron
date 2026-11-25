@@ -94,6 +94,9 @@ WAITING_TRIAL = 'waiting_trial'
 # The kinds of page whose help the tour has looked at.
 HELPED = 'helped_pages'
 WAITING_HELP = 'waiting_help'
+# Whether the history has started again past the PDF export page, which the other program's tour starts after.
+HISTORY_STARTED = 'history_started'
+PDF_PAGE = 'PdfExportPage'
 # The page and place whose keys the tour tries at the next move, and the pages and places tried.
 WAITING_KEYS = 'waiting_keys'
 TRIED_KEYS = 'tried_keys'
@@ -238,6 +241,11 @@ class ScreenTour(KeyTour):
 
     def note(self):
         super().note()
+        # The other program starts after the PDF export page, which stays in the Python, so the history starts again where
+        # it does, and an undo never reaches back into the PDF page's steps.
+        if not self.__dict__.get(HISTORY_STARTED) and PDF_PAGE not in self.open_now():
+            self.app.get_document().forget_history()
+            self.history_started = True
         self.record_stop()
         self.try_an_edit()
         page = self.app.screen

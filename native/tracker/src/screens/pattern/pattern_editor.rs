@@ -64,6 +64,8 @@ pub struct PatternEditor {
     row: Cell<usize>,
     first_row: Cell<usize>,
     gauge_rows: Cell<usize>,
+    /// The digits typed into the cursor's cell, so that a second digit makes a number with the first.
+    typed: std::cell::RefCell<String>,
     /// The crumbs of the page a clip opened the editor from, Arrange or the clip page, which come first in the editor's so
     /// that they say where ESC goes back to; None when the Patterns page opened it.
     opener_crumbs: Option<Vec<String>>,
@@ -285,6 +287,7 @@ impl PatternEditor {
             first_row: Cell::new(0),
             gauge_rows: Cell::new(7),
             opener_crumbs: None,
+            typed: std::cell::RefCell::new(String::new()),
         }
     }
 
@@ -1028,7 +1031,15 @@ impl Page for PatternEditor {
         } else if item.is(&Keys::TO_EDITOR) || item.is(&Keys::TO_ROLL) {
             app.session.on_roll = !app.session.on_roll;
         } else if item.is(&RowsKeys::MOVE) {
+            self.typed.borrow_mut().clear();
             self.move_rows(app, key);
+        } else if item.is(&RowsKeys::INSERT_STEP) {
+            let step = self.keep_step(app);
+            self.change_pattern(app, |pattern| pattern.insert_step(step).map_err(|problem| problem.message));
+        } else if item.is(&RowsKeys::REMOVE_STEP) {
+            let step = self.keep_step(app);
+            self.change_pattern(app, |pattern| pattern.remove_step(step).map_err(|problem| problem.message));
+            self.keep_step(app);
         } else if item.is(&RowsKeys::ENDS) {
             let last = self.step_count(app) - 1;
             self.step.set(if item.step_of(key) == Some(crate::keys::STEP_BACK) { 0 } else { last });
@@ -1041,6 +1052,11 @@ impl Page for PatternEditor {
                     app.session.open_sections.insert(section.to_string());
                 }
             }
+        }
+        if self.on_roll(app) {
+            self.press_roll(app, item);
+        } else {
+            self.press_row(app, item, key);
         }
         self.on_roll_now.set(self.on_roll(app));
     }
@@ -1086,5 +1102,311 @@ impl Page for PatternEditor {
         let tempo = llamatron_model::schema::checking::number(&song.get_tempo()).unwrap_or(Rational::whole(120));
         let seconds = setlist.get_pattern_length(pattern) * Rational::whole(240) / tempo;
         Duration::Clock(clock_exact(seconds))
+    }
+}
+
+impl PatternEditor {
+    /// Change the editor's pattern through one of its methods, as one change, saying why where it refused.
+    fn change_pattern(&self, app: &mut App, change: impl FnOnce(&mut Pattern) -> Result<(), String>) {
+        let name = self.name.clone();
+        let mut refusal = None;
+        app.document.change_set(|setlist| {
+            if let Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, &name) {
+                if let Err(problem) = change(pattern) {
+                    refusal = Some(problem);
+                }
+            }
+        });
+        if let Some(refusal) = refusal {
+            app.refuse(&refusal);
+        }
+    }
+
+    /// Do what a key of the row under the cursor does to the cursor's step, where it is one of the row's own keys.
+    fn press_row(&self, app: &mut App, item: &KeyItem, key: &str) {
+        let step = self.keep_step(app);
+        let edit = {
+            let rows = self.rows(app);
+            let (_, row) = self.row_cursor(&rows);
+            let crate::screens::pattern::rows_view::RowName::Row(name) = row else {
+                return;
+            };
+            if !rows
+                .keys(&crate::screens::pattern::rows_view::RowName::Row(name), step)
+                .iter()
+                .any(|own| own.binding == item.binding)
+            {
+                return;
+            }
+            let typed = self.typed.borrow().clone();
+            rows.edit(name, step, item, key, &typed)
+        };
+        self.apply_row_edit(app, step, edit);
+    }
+
+    /// Make a row's edit of a step as one change, or ask in its dialog.
+    fn apply_row_edit(&self, app: &mut App, step: usize, edit: crate::screens::pattern::rows_view::RowEdit) {
+        if let Some(typed) = edit.typed.clone() {
+            *self.typed.borrow_mut() = typed;
+        }
+        if let Some(asking) = edit.asking {
+            self.ask_row(app, step, asking);
+            return;
+        }
+        if edit.continues {
+            app.document.continue_edit();
+        }
+        if !edit.writes.is_empty() || edit.clear_sound || edit.statement.is_some() {
+            let (writes, clear, statement) = (edit.writes, edit.clear_sound, edit.statement);
+            self.change_pattern(app, |pattern| {
+                if clear {
+                    pattern.clear_sound(step).map_err(|problem| problem.message)?;
+                }
+                for (row, value) in writes {
+                    pattern.set_value(&row, step, value).map_err(|problem| problem.message)?;
+                }
+                if let Some((kind, statement)) = statement {
+                    pattern.set_statement(kind, step, statement.as_ref()).map_err(|problem| problem.message)?;
+                }
+                Ok(())
+            });
+        }
+        if let Some(refusal) = edit.refusal {
+            app.refuse(&refusal);
+        }
+    }
+
+    /// Ask for a row's number or length in a prompt, and write what was typed where it is in range.
+    fn ask_row(&self, app: &mut App, step: usize, asking: crate::screens::pattern::rows_view::RowAsking) {
+        use crate::screens::pattern::rows_view::RowAsking;
+        let name = self.name.clone();
+        let (title, shown, then): (String, String, crate::screens::dialogs::Then) = match asking {
+            RowAsking::Number {
+                row,
+                title,
+                value,
+                lowest,
+                highest,
+            } => {
+                let label = crate::settings::named_in(labels::MSG_ROW_LABELS, &row);
+                let then: crate::screens::dialogs::Then = Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
+                    let crate::screens::dialogs::Answer::Typed(text) = answer else { return };
+                    let Ok(number) = text.trim().parse::<i64>() else {
+                        app.refuse(&named(llamatron_strings::errors::ERR_TYPED_NOT_AN_INTEGER, &[("text", text.as_str().into())]));
+                        return;
+                    };
+                    if !(lowest..=highest).contains(&number) {
+                        let words = [("row", label.as_str().into()), ("low", lowest.into()), ("high", highest.into())];
+                        app.refuse(&named(llamatron_strings::errors::ERR_ROW_OUT_OF_RANGE, &words));
+                        return;
+                    }
+                    write_value(app, &name, &row, step, Some(Data::Whole(number as i128)));
+                });
+                (title, value.to_string(), then)
+            }
+            RowAsking::Length { row, title, value, most } => {
+                let then: crate::screens::dialogs::Then = Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
+                    let crate::screens::dialogs::Answer::Typed(text) = answer else { return };
+                    let text = text.trim();
+                    let Ok(length) = llamatron_math::Rational::parse(text) else {
+                        app.refuse(&named(llamatron_strings::errors::ERR_NOT_A_LENGTH, &[("text", text.into())]));
+                        return;
+                    };
+                    if length <= llamatron_math::Rational::ZERO || length > most {
+                        app.refuse(&named(
+                            llamatron_strings::errors::ERR_LENGTH_OUT_OF_RANGE,
+                            &[("most", most.to_string().as_str().into())],
+                        ));
+                        return;
+                    }
+                    write_value(app, &name, &row, step, Some(Data::text(&length.to_string())));
+                });
+                (title, value, then)
+            }
+        };
+        let prompt = crate::screens::dialogs::PromptDialog::new(&title, &shown).then(then);
+        app.show_page(Box::new(prompt));
+    }
+}
+
+/// Write one value of a pattern's step, as one change, saying why where the pattern refused it.
+fn write_value(app: &mut App, name: &str, row: &str, step: usize, value: Option<Data>) {
+    let mut refusal = None;
+    app.document.change_set(|setlist| {
+        if let Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, name) {
+            if let Err(problem) = pattern.set_value(row, step, value) {
+                refusal = Some(problem.message);
+            }
+        }
+    });
+    if let Some(refusal) = refusal {
+        app.refuse(&refusal);
+    }
+}
+
+/// What a key of the roll works on: the step, the note under the cursor at its pitch, the note covering the step at any
+/// pitch, the note the cursor's row writes, the step's length and the length a drawn note lasts.
+struct RollPlace {
+    step: usize,
+    here: Option<usize>,
+    covering: Option<usize>,
+    note: (Data, i64, Option<&'static str>),
+    step_size: Rational,
+    entry_size: Rational,
+    grabs: bool,
+}
+
+impl PatternEditor {
+    /// What a key of the roll works on, as the roll stands.
+    fn roll_place(&self, app: &App) -> RollPlace {
+        let step = self.keep_step(app);
+        let roll = Roll::of(app, &self.name);
+        let rows = roll.rows();
+        let pitch = self.place_cursor(&roll, &rows);
+        let covering = roll.covering.get(&step).copied();
+        let here = covering.filter(|start| roll.pitch_of(*start) == Some(pitch));
+        let (degree, octave, accidental) = roll.note_at(pitch);
+        let written = |data: Option<&Data>| data.and_then(Data::as_str).and_then(|text| Rational::parse(text).ok());
+        let entry_size = written(roll.pattern.get_written(PatternSetting::ENTRY_SIZE))
+            .or_else(|| written(app.document.song().get_written("entry_size")))
+            .unwrap_or(roll.step_size);
+        let grabs = here.is_some_and(|start| patterns::value(roll.pattern, Row::GRAB, start).is_some_and(|grab| matches!(grab, Data::Bool(true))));
+        RollPlace {
+            step,
+            here,
+            covering,
+            note: (Data::Whole(degree as i128), octave, accidental),
+            step_size: roll.step_size,
+            entry_size,
+            grabs,
+        }
+    }
+
+    /// Do what a key of the piano roll does to the note under the cursor, or at the cursor.
+    fn press_roll(&self, app: &mut App, item: &KeyItem) {
+        use llamatron_strings::errors;
+        let place = self.roll_place(app);
+        let on_note = |app: &mut App| -> Option<usize> {
+            if place.here.is_none() {
+                app.refuse(errors::ERR_NO_NOTE_HERE);
+            }
+            place.here
+        };
+        if item.is(&RollKeys::PLACE) {
+            match place.here {
+                Some(start) => self.change_pattern(app, |pattern| pattern.clear_sound(start).map_err(|problem| problem.message)),
+                None => self.draw_here(app, &place),
+            }
+        } else if item.is(&RollKeys::ERASE) {
+            if let Some(start) = on_note(app) {
+                self.change_pattern(app, |pattern| pattern.clear_sound(start).map_err(|problem| problem.message));
+            }
+        } else if item.is(&RollKeys::LONGER) || item.is(&RollKeys::SHORTER) {
+            let Some(start) = on_note(app) else { return };
+            let longer = item.is(&RollKeys::LONGER);
+            let refusal = if longer { errors::ERR_NO_ROOM_AFTER } else { errors::ERR_NOTE_IS_ONE_STEP };
+            self.reshape(app, refusal, |pattern| {
+                if longer {
+                    patterns::lengthen_note(pattern, start, place.step_size)
+                } else {
+                    patterns::shorten_note(pattern, start, place.step_size)
+                }
+            });
+        } else if item.is(&RollKeys::KNIFE) {
+            match place.here {
+                Some(start) if start != place.step => {
+                    let step = place.step;
+                    self.reshape(app, errors::ERR_NOTHING_TO_SPLIT, |pattern| patterns::split_note(pattern, step));
+                }
+                _ => app.refuse(errors::ERR_NOTHING_TO_SPLIT),
+            }
+        } else if item.is(&RollKeys::ACCIDENTAL) {
+            if let Some(start) = on_note(app) {
+                self.change_pattern(app, |pattern| patterns::cycle_accidental(pattern, start));
+                // The cursor follows the note to its new row, which may be a row of its own between two degrees.
+                let roll = Roll::of(app, &self.name);
+                if let Some(pitch) = roll.pitch_of(start) {
+                    self.pitch.set(Some(pitch));
+                }
+            }
+        } else if item.is(&RollKeys::GRAB) {
+            if let Some(start) = on_note(app) {
+                let grabs = place.grabs;
+                self.change_pattern(app, |pattern| {
+                    pattern.set_value(Row::GRAB, start, Some(Data::Bool(!grabs))).map_err(|problem| problem.message)
+                });
+            }
+        } else if item.is(&RollKeys::ENTRY_SIZE) {
+            self.pick_entry_size(app);
+        } else if item.is(&RollKeys::CHORD) {
+            if place.covering.is_none() {
+                self.draw_here(app, &place);
+            }
+            app.show_page(Box::new(crate::screens::not_ported::NotPorted {
+                name: "ChordDialog".to_string(),
+            }));
+        } else if item.is(&RollKeys::KEYSWITCH) {
+            if place.covering.is_none() {
+                app.refuse(errors::ERR_NO_NOTE_ON_STEP);
+                return;
+            }
+            app.show_page(Box::new(crate::screens::not_ported::NotPorted {
+                name: "KeyswitchDialog".to_string(),
+            }));
+        }
+    }
+
+    /// Draw a note of the entry size at the cursor.
+    fn draw_here(&self, app: &mut App, place: &RollPlace) {
+        let (step, note, entry_size, step_size) = (place.step, place.note.clone(), place.entry_size, place.step_size);
+        self.change_pattern(app, |pattern| patterns::draw_note(pattern, step, note, entry_size, step_size));
+    }
+
+    /// Change a note through an edit that says whether it could, noting a change only where it did and saying why not
+    /// otherwise.
+    fn reshape(&self, app: &mut App, refusal: &str, change: impl FnOnce(&mut Pattern) -> Result<bool, String>) {
+        let mut pattern = match app.document.get_setlist().get_pattern(&self.name) {
+            Some(pattern) => pattern.clone(),
+            None => return,
+        };
+        match change(&mut pattern) {
+            Ok(true) => self.change_pattern(app, |held| {
+                *held = pattern;
+                Ok(())
+            }),
+            Ok(false) => app.refuse(refusal),
+            Err(problem) => app.refuse(&problem),
+        }
+    }
+
+    /// Ask for the pattern's entry size: the song's first, then the step sizes, opening on what the pattern has now.
+    fn pick_entry_size(&self, app: &mut App) {
+        use llamatron_model::schema::generated::file_format::STEP_SIZE_CHOICES;
+        let written = app
+            .document
+            .get_setlist()
+            .get_pattern(&self.name)
+            .and_then(|pattern| pattern.get_written(PatternSetting::ENTRY_SIZE))
+            .and_then(Data::as_str)
+            .map(str::to_string);
+        let mut options = vec![labels::MSG_SONG_ENTRY_SIZE_CHOICE.to_string()];
+        options.extend(STEP_SIZE_CHOICES.iter().map(|choice| choice.to_string()));
+        let current = written
+            .as_ref()
+            .and_then(|written| STEP_SIZE_CHOICES.iter().position(|choice| choice == written))
+            .map_or(0, |place| place + 1);
+        let name = self.name.clone();
+        let mut dialog = crate::screens::dialogs::ChoiceDialog::new(labels::MSG_ENTRY_SIZE_LABEL, options, current);
+        dialog.then = Some(Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
+            let crate::screens::dialogs::Answer::Chosen(place) = answer else { return };
+            let chosen = place.checked_sub(1).map(|place| Data::text(STEP_SIZE_CHOICES[place]));
+            let name = name.clone();
+            app.document.change_set(|setlist| {
+                if let Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, &name) {
+                    pattern.set_written(PatternSetting::ENTRY_SIZE, chosen);
+                }
+            });
+        }));
+        app.show_page(Box::new(dialog));
     }
 }
