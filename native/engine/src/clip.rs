@@ -9,7 +9,7 @@ use crate::generators::timing::NudgePlan;
 use crate::groove::Groove;
 use crate::positions::{fit_to_length, piece_of};
 use crate::sound::{NoteSound, Sound};
-use crate::timing::StrumPlan;
+use crate::timing::{NoteEvent, StrumPlan};
 use llamatron_math::Rational;
 use llamatron_model::values::scale::Scale;
 use llamatron_model::values::time_signature::TimeSignature;
@@ -50,6 +50,8 @@ pub struct Clip {
     pub nudge: Option<NudgePlan>,
     /// How the clip strums its chords at the very end, which the Realizer gives it once it is finished, or None.
     pub strum: Option<StrumPlan>,
+    /// The notes a Hocket hands the clip from another track, which the timing plays with its own.
+    pub handed: Vec<NoteEvent>,
 }
 
 impl Clip {
@@ -67,6 +69,7 @@ impl Clip {
             controls: Vec::new(),
             nudge: None,
             strum: None,
+            handed: Vec::new(),
         }
     }
 
@@ -178,6 +181,7 @@ impl Clip {
             groove: None,
             nudge: None,
             strum: None,
+            handed: Vec::new(),
             controls: self
                 .controls
                 .iter()

@@ -88,6 +88,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             controls,
             nudge: None,
             strum: None,
+            handed: Vec::new(),
         })
     }
 
@@ -127,7 +128,8 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             // A shape works on the finished clip after the chains, and a progression and a Follow Chords leave a drum pattern
             // alone, since moving a drum note changes the drum.
             let runs = match step.kind.as_str() {
-                "shapes" => false,
+                // A shape works on the finished clip, and a Hocket deals its notes out as the clip is finished.
+                "shapes" | "hocket" => false,
                 "chords" => !self.realizer.plays_drums(self.scene, self.track_name),
                 _ => true,
             };

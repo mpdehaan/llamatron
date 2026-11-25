@@ -18,7 +18,7 @@ use crate::generators::GeneratorState;
 use crate::grab_source::GrabSource;
 use crate::groove::{groove_for, Groove};
 use crate::sound::Sound;
-use crate::timing::StrumPlan;
+use crate::timing::{NoteEvent, StrumPlan};
 use crate::tune_source::TuneSource;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
@@ -197,6 +197,8 @@ pub struct SongRealizer<'a> {
     following: RefCell<Vec<(i64, String)>>,
     // The tracks whose clips wait on another's notes to grab, so that tracks that grab from each other in a circle are refused.
     grabbing: RefCell<Vec<String>>,
+    // What each Hocket deals out in each written scene, by the scene's number and the Hocket's name: the notes each track takes.
+    dealt: RefCell<HashMap<(i64, String), Dealt>>,
     // How many chords each track's finished clip in each written scene holds, for a strum's down up that carries on.
     chord_counts: RefCell<HashMap<(i64, String), i64>>,
 }
@@ -207,6 +209,9 @@ pub type GeneratorKey = (String, String, i64);
 
 /// The state a generator leaves a clip in, for the next to carry on from: a voicing's last chord, or none.
 pub type EndState = Option<GeneratorState>;
+
+/// What a Hocket deals out in a scene: the notes each track takes, by the track.
+type Dealt = Vec<(String, Vec<NoteEvent>)>;
 
 /// A step of a clip's chains: its generator's kind, the name it goes by, and its settings, a built-in's its own and a
 /// named generator's the set's.
@@ -229,6 +234,7 @@ impl<'a> SongRealizer<'a> {
             following: RefCell::new(Vec::new()),
             grabbing: RefCell::new(Vec::new()),
             chord_counts: RefCell::new(HashMap::new()),
+            dealt: RefCell::new(HashMap::new()),
         }
     }
 
@@ -264,6 +270,7 @@ impl<'a> SongRealizer<'a> {
                     clip.strum = self.strum_plan(scene, track)?;
                     self.chord_counts.borrow_mut().insert((scene.number, track.clone()), chords_in(&clip));
                     clip.nudge = self.nudge_plan(scene, track)?;
+                    clip.handed = self.handed_notes(scene, track)?;
                     clips.push((track.clone(), clip));
                 }
             }
@@ -287,6 +294,92 @@ impl<'a> SongRealizer<'a> {
             Some(self.song.get_written(SongSetting::GROOVE).unwrap_or(&song_groove)),
         ];
         groove_for(self.setlist, &choices)
+    }
+
+    /// The notes the Hockets a track's clip names hand it in a written-out scene, in time order.
+    fn handed_notes(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Vec<NoteEvent>> {
+        let mut named: Vec<ChainStep> = Vec::new();
+        for step in self.chains_of(scene, track)? {
+            if step.kind == "hocket" && !named.iter().any(|found| found.name == step.name) {
+                named.push(step);
+            }
+        }
+        let mut handed = Vec::new();
+        for step in named {
+            let dealt = self.notes_dealt(scene, &step)?;
+            if let Some((_, notes)) = dealt.iter().find(|(name, _)| name == track) {
+                handed.extend(notes.iter().copied());
+            }
+        }
+        handed.sort_by_key(|note| (note.start, note.end, note.midi_number, note.velocity));
+        Ok(handed)
+    }
+
+    /// What a Hocket deals out in a written-out scene: each turn, the source's notes that start together, going round the
+    /// tracks naming it from the first, carrying on from the scenes before in its run as its Restart says.
+    fn notes_dealt(&self, scene: &WrittenScene<'a>, step: &ChainStep) -> Rendered<Dealt> {
+        let key = (scene.number, step.name.clone());
+        if let Some(found) = self.dealt.borrow().get(&key) {
+            return Ok(found.clone());
+        }
+        let source = step
+            .settings
+            .get("source")
+            .filter(|source| !source.is_null())
+            .map(Data::python_str)
+            .unwrap_or_default();
+        let restart = step.settings.get(GENERATOR_RESTART).map(Data::python_str);
+        let mut dealt: Dealt = Vec::new();
+        let pool = self.pool(scene, &step.name, &source)?;
+        if !pool.is_empty() && self.plays_source(scene, &source) {
+            let mut turn = 0;
+            let start = self.run_start(scene, restart.as_deref());
+            for written in &self.scenes[start..(scene.number - 1) as usize] {
+                if !self.pool(written, &step.name, &source)?.is_empty() && self.plays_source(written, &source) {
+                    turn += self.source_turns(written, &source)?.len();
+                }
+            }
+            for notes in self.source_turns(scene, &source)? {
+                let taker = &pool[turn % pool.len()];
+                match dealt.iter_mut().find(|(name, _)| name == taker) {
+                    Some((_, held)) => held.extend(notes),
+                    None => dealt.push((taker.clone(), notes)),
+                }
+                turn += 1;
+            }
+        }
+        self.dealt.borrow_mut().insert(key, dealt.clone());
+        Ok(dealt)
+    }
+
+    /// The tracks of the song whose clips name a generator in a written-out scene, but the source.
+    fn pool(&self, scene: &WrittenScene<'a>, name: &str, source: &str) -> Rendered<Vec<String>> {
+        let mut pool = Vec::new();
+        for track in self.song.get_track_names() {
+            if track != source && self.chains_of(scene, track)?.iter().any(|step| step.name == name) {
+                pool.push(track.to_string());
+            }
+        }
+        Ok(pool)
+    }
+
+    fn plays_source(&self, scene: &WrittenScene, source: &str) -> bool {
+        self.song.get_track(source).is_some() && scene.scene.get_clip_slot(source).is_some()
+    }
+
+    /// A source track's notes in a written-out scene, where the grid puts them, in turns of the notes that start together.
+    fn source_turns(&self, scene: &WrittenScene<'a>, source: &str) -> Rendered<Vec<Vec<NoteEvent>>> {
+        let Some(clip) = self.get_clip(scene, source)? else { return Ok(Vec::new()) };
+        let (mut notes, _) = crate::timing::timed_events(&clip, clip.scale.as_ref())?;
+        notes.sort_by_key(|note| (note.start, note.end, note.midi_number, note.velocity));
+        let mut turns: Vec<(Rational, Vec<NoteEvent>)> = Vec::new();
+        for note in notes {
+            match turns.last_mut() {
+                Some((start, held)) if *start == note.start => held.push(note),
+                _ => turns.push((note.start, vec![note])),
+            }
+        }
+        Ok(turns.into_iter().map(|(_, notes)| notes).collect())
     }
 
     /// How a clip strums its chords at its scene's tempo, from the last Guitarify in Strum mode its chains name, or None.
@@ -670,7 +763,7 @@ fn chords_in(clip: &Clip) -> i64 {
 const TEMPO_PLACES: usize = 4;
 
 /// The kinds of generator the port runs so far.
-const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes", "timing", "phrasing", "musician"];
+const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes", "timing", "phrasing", "musician", "hocket"];
 
 /// The factors a chain step's seed is made with, so that it differs for every song, scene, track and place in the chain.
 const SEED_SONG_FACTOR: i128 = 1_000_003;

@@ -155,6 +155,23 @@ pub fn timed_events(clip: &Clip, scale: Option<&Scale>) -> Rendered<(Vec<NoteEve
             }
         }
     }
+    // The notes a Hocket hands the clip move by its groove and its rushes and drags as its own do, keeping their length.
+    if !clip.handed.is_empty() {
+        for note in &clip.handed {
+            let mut onset = match &clip.groove {
+                Some(groove) => groove.moved(note.start),
+                None => note.start,
+            };
+            if let Some(nudge) = &clip.nudge {
+                onset = (onset + nudge.moved(note.start)).max(Rational::ZERO);
+            }
+            let (start, end) = (onset.min(clip_length), (onset + (note.end - note.start)).min(clip_length));
+            if end > start {
+                timed.push(NoteEvent { start, end, ..*note });
+            }
+        }
+        timed.sort_by_key(|event| event.start);
+    }
     Ok((timed, clip_length))
 }
 
