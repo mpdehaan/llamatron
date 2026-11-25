@@ -26,6 +26,11 @@ pub enum Drawn {
         lit: Option<usize>,
     },
     TabRow,
+    /// A line of a table of statements, the first drawing the grid's top edge and the last its bottom edge.
+    StatementRow {
+        first: bool,
+        last: bool,
+    },
 }
 
 /// What a field's value is, which says what its keys do.
@@ -335,6 +340,7 @@ impl Field {
             Drawn::Button => 1,
             Drawn::CaptionedTableRow { .. } => 1,
             Drawn::Strip { .. } => 4,
+            Drawn::StatementRow { first: true, .. } => 1,
             _ => 0,
         }
     }
@@ -343,7 +349,7 @@ impl Field {
     pub fn may_leave_a_gap(&self) -> bool {
         !matches!(
             self.drawn,
-            Drawn::Heading | Drawn::Cells | Drawn::TableRow { .. } | Drawn::CaptionedTableRow { .. } | Drawn::Strip { .. }
+            Drawn::Heading | Drawn::Cells | Drawn::TableRow { .. } | Drawn::CaptionedTableRow { .. } | Drawn::Strip { .. } | Drawn::StatementRow { .. }
         )
     }
 

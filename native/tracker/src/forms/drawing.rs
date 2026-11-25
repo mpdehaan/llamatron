@@ -60,6 +60,7 @@ pub fn field_lines(field: &Field, looks: &Looks, here: bool, label_width: usize,
             vec![line, table_row_line(field, looks, here, label_width, widths)]
         }
         Drawn::Strip { lit } => strip_lines(field, looks, here, width, *lit),
+        Drawn::StatementRow { first, last } => statement_row_lines(field, looks, here, *first, *last),
         Drawn::SettingLine | Drawn::TabRow => {
             let mut line = Text::default();
             line.append(cursor_mark(here), Style::PLAIN);
@@ -70,6 +71,48 @@ pub fn field_lines(field: &Field, looks: &Looks, here: bool, label_width: usize,
             }
             vec![line]
         }
+    }
+}
+
+/// Each column's width in a table of statements: its widest value, padded, with room for the picker's mark.
+fn statement_cell_widths() -> Vec<usize> {
+    let room = padded("").chars().count() + padded(marks::MSG_PICKER_MARK).chars().count() - 1;
+    crate::forms::statements::part_widths().iter().map(|width| room + width).collect()
+}
+
+fn statement_rule(left: &str, joint: &str, right: &str) -> Text {
+    let widths = statement_cell_widths();
+    let parts: Vec<String> = widths.iter().map(|width| Box::RULE.repeat(*width)).collect();
+    Text::plain(&format!("{INDENT}{left}{}{right}", parts.join(joint)))
+}
+
+fn statement_row_lines(row: &Field, looks: &Looks, here: bool, first: bool, last: bool) -> Vec<Text> {
+    let mut line = Text::default();
+    line.append(cursor_mark(here), Style::PLAIN);
+    line.append(Box::BAR, Style::PLAIN);
+    for (place, cell_width) in statement_cell_widths().into_iter().enumerate() {
+        let mut cell = Text::default();
+        if let Some(field) = row.cells.get(place) {
+            let on_cell = here && place == looks.cell.min(row.cells.len() - 1);
+            cell.append(&padded(field.value().trim_end()), if on_cell { Style::REVERSE } else { Style::PLAIN });
+            if field.enter_what == legends::What::CHOOSE {
+                cell.append(marks::MSG_PICKER_MARK, Style::DIM);
+            }
+        }
+        let filled = cell.cell_len();
+        line.append_text(&cell);
+        line.append(&" ".repeat(cell_width.saturating_sub(filled)), Style::PLAIN);
+        line.append(Box::BAR, Style::PLAIN);
+    }
+    let under = if last {
+        statement_rule(Box::BOTTOM_LEFT, Box::BOTTOM_TEE, Box::BOTTOM_RIGHT)
+    } else {
+        statement_rule(Box::LEFT_TEE, Box::CROSS, Box::RIGHT_TEE)
+    };
+    if first {
+        vec![statement_rule(Box::TOP_LEFT, Box::TOP_TEE, Box::TOP_RIGHT), line, under]
+    } else {
+        vec![line, under]
     }
 }
 

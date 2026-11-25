@@ -24,8 +24,11 @@ use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_strings::{labels, legends, marks, messages, named};
 
 const NAME: usize = 0;
+/// How many ids each built-in tab's fields have to themselves.
+const BUILT_IN_IDS: usize = 1000;
 /// The fields' ids, past the built-in tabs' own.
 const FIRST_OWN: usize = 10_000;
+const GENERATORS: usize = FIRST_OWN + 200;
 
 pub struct TrackEditor {
     pub name: String,
@@ -204,7 +207,8 @@ impl TrackEditor {
             .and_then(|built_ins| built_ins.get(kind))
             .unwrap_or(&empty);
         let bypass = data.get("bypass_when").and_then(Data::as_list).map_or(0, <[Data]>::len);
-        let mut made = Made::of(app, kind, data, true);
+        let place = built_in_kinds().iter().position(|each| *each == kind).unwrap_or(0);
+        let mut made = Made::of(app, kind, data, true).counting_from(BUILT_IN_IDS * (place + 1));
         let mut tab = made.tab(&tab_label_of(kind), bypass);
         let word = tab_label_of(kind).to_lowercase();
         let song = app.document.song();
@@ -266,7 +270,7 @@ impl TrackEditor {
         } else {
             listed.join(marks::MSG_CHAIN_JOIN)
         };
-        let field = Field::custom(FIRST_OWN + 200, labels::MSG_GENERATORS_FIELD_LABEL, &shown)
+        let field = Field::custom(GENERATORS, labels::MSG_GENERATORS_FIELD_LABEL, &shown)
             .with_enter(legends::What::EDIT)
             .with_clear(marks::MSG_NONE_SHOWN);
         Tab::new(labels::MSG_USER_TAB, vec![TabColumn::new(None, vec![field])])
@@ -344,5 +348,29 @@ impl Form for TrackEditor {
         vec![Text::styled(messages::MSG_TRANSPOSE_NOTE, Style::DIM)]
     }
 
-    fn apply(&mut self, _app: &mut App, _id: usize, _edit: Edit) {}
+    fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        if edit == Edit::Enter && id == GENERATORS {
+            // The list of a track's generators is not ported yet.
+            app.show_page(Box::new(crate::screens::not_ported::NotPorted {
+                name: "GeneratorListPage".to_string(),
+            }));
+            return;
+        }
+        if edit != Edit::Enter || !(BUILT_IN_IDS..FIRST_OWN).contains(&id) {
+            return;
+        }
+        let kinds = built_in_kinds();
+        let Some(kind) = kinds.get(id / BUILT_IN_IDS - 1).copied() else { return };
+        let Some(track) = self.track(app) else { return };
+        let tab = self.built_in_tab(app, track, kind);
+        let is_bypass = tab.every_field().iter().any(|field| field.id == id && field.is_button());
+        if is_bypass {
+            let opened = crate::screens::generators::statements_page::GeneratorStatementsPage {
+                track: self.name.clone(),
+                kind,
+                opener_crumbs: self.crumbs(app),
+            };
+            app.show_page(Box::new(crate::screens::field_page::FieldPage::new(opened)));
+        }
+    }
 }

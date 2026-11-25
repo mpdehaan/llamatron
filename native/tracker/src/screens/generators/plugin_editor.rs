@@ -31,7 +31,7 @@ pub struct PluginEditor {
 }
 
 /// A plugin's word for what its page edits.
-fn caption_word(kind: &str) -> &'static str {
+pub fn caption_word(kind: &str) -> &'static str {
     use llamatron_strings::plugin_texts::*;
     match kind {
         "arp" => arp::MSG_CAPTION_WORD,
@@ -104,6 +104,12 @@ impl<'a> Made<'a> {
             next_id: NAME,
             views: Vec::new(),
         }
+    }
+
+    /// The same, its fields' ids counting on from an id, so that several generators' fields on one page stay apart.
+    pub fn counting_from(mut self, id: usize) -> Made<'a> {
+        self.next_id = id;
+        self
     }
 
     pub fn is_enabled(&self) -> bool {
