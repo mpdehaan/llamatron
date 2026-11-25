@@ -9,7 +9,13 @@
 use llamatron_math::{Number, Rational};
 use llamatron_model::fundamentals::generated::intervals::HALF_STEPS_PER_OCTAVE;
 use llamatron_model::schema::generated::midi::{MAX_MIDI_NUMBER, MIN_MIDI_NUMBER};
-use llamatron_model::values::generated::note::{FLAT_NAMES, FLAT_SIGN, SHARP_NAMES};
+use llamatron_model::values::generated::note::{FLAT_NAMES, FLAT_SIGN, MAX_OCTAVE, MIN_OCTAVE, NOTE_NAMES, SHARP_NAMES};
+use llamatron_model::values::note::semitones_above_c;
+use llamatron_model::values::note::Note;
+
+/// A note that would leave the MIDI range or the octaves, which the Python raises as a ValueError and a caller may catch.
+#[derive(Clone, Debug, PartialEq)]
+pub struct OutOfRange(pub String);
 
 /// The finest a float length is taken to: the nearest millionth of a whole note.
 pub const FINEST_LENGTH: i128 = 1_000_000;
@@ -60,6 +66,60 @@ pub enum Sound {
 }
 
 impl Sound {
+    /// The note a name and an octave spell, or what a Note says is wrong with one outside the octaves or the MIDI range.
+    pub fn named_note(name: &str, octave: i64, length: Option<Rational>, velocity: Option<i64>, glide: bool) -> Result<NoteSound, OutOfRange> {
+        let semitones = semitones_above_c(name).ok_or_else(|| OutOfRange(format!("no note called {name}")))?;
+        let midi = octave * HALF_STEPS_PER_OCTAVE + semitones;
+        if (MIN_OCTAVE..=MAX_OCTAVE).contains(&octave) && (MIN_MIDI_NUMBER..=MAX_MIDI_NUMBER).contains(&midi) {
+            return Ok(NoteSound {
+                length,
+                midi,
+                velocity,
+                glide,
+                name: spelled(name),
+            });
+        }
+        let refusal = Note::new(name, octave, None, velocity, glide)
+            .err()
+            .map(|problem| problem.0)
+            .unwrap_or_default();
+        Err(OutOfRange(refusal))
+    }
+
+    /// A chord of a root and the notes some half steps above it, or what is wrong where one leaves the MIDI range.
+    pub fn chord_above(root: NoteSound, half_steps: &[i64]) -> Result<Sound, OutOfRange> {
+        let mut notes = vec![root];
+        for above in half_steps {
+            notes.push(
+                root.half_step(*above)
+                    .ok_or_else(|| OutOfRange(format!("a note {above} half steps above {} leaves the MIDI range", root.midi)))?,
+            );
+        }
+        Ok(Sound::chord(notes))
+    }
+
+    /// A note, chord or degree held past its place: the next position starts after length while the sound lasts its own.
+    pub fn held(sound: Sound, length: Rational) -> Sound {
+        Sound::Held {
+            length,
+            sound: Box::new(sound),
+        }
+    }
+
+    /// Sounds played one after another from a held place, while the next position starts after length.
+    pub fn phrase(parts: Vec<Sound>, length: Rational) -> Sound {
+        Sound::Phrase { length, parts }
+    }
+
+    pub fn is_rest(&self) -> bool {
+        matches!(self, Sound::Rest(_))
+    }
+
+    /// The length a render's sound always has.
+    pub fn place(&self) -> Rational {
+        self.length().unwrap_or(Rational::ZERO)
+    }
+
     /// A chord of notes, as long as its longest note, or of no length where any note has none.
     pub fn chord(notes: Vec<NoteSound>) -> Sound {
         let mut length: Option<Rational> = None;
@@ -142,4 +202,40 @@ impl NoteSound {
             ..*self
         })
     }
+}
+
+/// A note name as one of the names the program spells with, for a sound to keep.
+fn spelled(name: &str) -> &'static str {
+    NOTE_NAMES.iter().copied().find(|known| *known == name).unwrap_or("C")
+}
+
+/// The note a degree of a scale plays, as the render makes it (the Python Scale.sound_at): its root's MIDI number, moved by
+/// the scale's steps, some scale notes and half steps, spelled with flats where the root is; or what is wrong with a note
+/// outside the MIDI range.
+pub fn scale_sound(
+    scale: &llamatron_model::values::scale::Scale,
+    degree: i64,
+    scale_notes: i64,
+    half_steps: i64,
+    length: Option<Rational>,
+    velocity: Option<i64>,
+    glide: bool,
+) -> Result<NoteSound, OutOfRange> {
+    let steps = scale.get_type().get_shape();
+    let size = steps.len() as i64;
+    let moved = degree - llamatron_model::values::generated::note::FIRST_DEGREE + scale_notes;
+    let (octaves, index) = (moved.div_euclid(size), moved.rem_euclid(size));
+    let root = scale.get_root();
+    let midi = root.get_midi_number() + octaves * HALF_STEPS_PER_OCTAVE + steps[index as usize] + half_steps;
+    if !(MIN_MIDI_NUMBER..=MAX_MIDI_NUMBER).contains(&midi) {
+        return Err(OutOfRange(format!("degree {degree} of the scale leaves the MIDI range")));
+    }
+    let names = if root.get_name().ends_with(FLAT_SIGN) { FLAT_NAMES } else { SHARP_NAMES };
+    Ok(NoteSound {
+        length,
+        midi,
+        velocity,
+        glide,
+        name: names[midi.rem_euclid(HALF_STEPS_PER_OCTAVE) as usize],
+    })
 }

@@ -524,6 +524,7 @@ dependencies = [
 name = "llamatron-compare"
 version = "0.1.0"
 dependencies = [
+ "llamatron-engine",
  "llamatron-math",
  "llamatron-model",
 ]

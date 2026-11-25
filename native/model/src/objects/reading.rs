@@ -1,0 +1,304 @@
+// llamatron: a music program
+// Copyright (C) 2026  Michael DeHaan
+// SPDX-License-Identifier: GPL-3.0-or-later
+//! What playing a set reads of its objects: each setting as the program uses it, its default filled in where the file leaves
+//! it out, and each length read from its text (the getters of the Python model/objects/).
+
+use crate::file::data::Data;
+use crate::objects::named::NamedScale;
+use crate::objects::pattern::Pattern;
+use crate::objects::setlist::{Instrument, Item, Setlist};
+use crate::objects::song::{ClipSlot, Scene, Song, Track};
+use crate::schema::checking::{time_signature, written_length};
+use crate::schema::generated::defaults;
+use crate::schema::generated::file_format::{
+    ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting,
+};
+use crate::schema::generated::limits::{MAX_STEP_SIZE, MIN_STEPS};
+use crate::values::note::Note;
+use crate::values::scale::{Scale, ScaleType};
+use crate::values::time_signature::TimeSignature;
+use crate::ValueError;
+use llamatron_math::Rational;
+
+fn whole(value: Option<&Data>) -> Option<i64> {
+    value.and_then(Data::as_whole).map(|value| value as i64)
+}
+
+fn text(value: Option<&Data>) -> Option<String> {
+    value.filter(|value| !value.is_null()).map(Data::python_str)
+}
+
+/// Whether a value is what Python takes as true.
+fn truthy(value: Option<&Data>) -> bool {
+    match value {
+        None | Some(Data::Null) | Some(Data::Bool(false)) => false,
+        Some(Data::Whole(number)) => *number != 0,
+        Some(Data::Text(text)) => !text.is_empty(),
+        Some(Data::List(items)) => !items.is_empty(),
+        Some(Data::Map(pairs)) => !pairs.is_empty(),
+        _ => true,
+    }
+}
+
+impl Setlist {
+    pub fn song_names(&self) -> Vec<&str> {
+        self.items(Section::SONGS).iter().map(|(name, _)| name.as_str()).collect()
+    }
+
+    pub fn get_song(&self, name: &str) -> Option<&Song> {
+        match self.get_item(Section::SONGS, name)? {
+            Item::Song(song) => Some(song),
+            _ => None,
+        }
+    }
+
+    pub fn get_pattern(&self, name: &str) -> Option<&Pattern> {
+        match self.get_item(Section::PATTERNS, name)? {
+            Item::Pattern(pattern) => Some(pattern),
+            _ => None,
+        }
+    }
+
+    pub fn get_named_scale(&self, name: &str) -> Option<&NamedScale> {
+        match self.get_item(Section::SCALES, name)? {
+            Item::Scale(scale) => Some(scale),
+            _ => None,
+        }
+    }
+
+    pub fn get_instrument(&self, name: &str) -> Option<&Instrument> {
+        match self.get_item(Section::INSTRUMENTS, name)? {
+            Item::Instrument(instrument) => Some(instrument),
+            _ => None,
+        }
+    }
+
+    pub fn get_step_size(&self) -> Rational {
+        let written = self
+            .get_written(SetlistSetting::STEP_SIZE)
+            .cloned()
+            .unwrap_or(Data::text(defaults::DEFAULT_STEP_SIZE));
+        written_length(&written, Rational::whole(MAX_STEP_SIZE as i128)).unwrap_or(Rational::new(1, 16))
+    }
+
+    /// How long each step of a pattern is: its own step size, or else the set's.
+    pub fn get_pattern_step_size(&self, pattern: &Pattern) -> Rational {
+        pattern.get_step_size().unwrap_or_else(|| self.get_step_size())
+    }
+
+    /// How long one pass through a pattern lasts: its steps times its step size, whatever the steps hold.
+    pub fn get_pattern_length(&self, pattern: &Pattern) -> Rational {
+        Rational::whole(pattern.get_steps()) * self.get_pattern_step_size(pattern)
+    }
+
+    pub fn get_default_octave(&self) -> i64 {
+        whole(self.get_written(SetlistSetting::DEFAULT_OCTAVE)).unwrap_or(defaults::DEFAULT_OCTAVE)
+    }
+
+    pub fn get_default_drum_octave(&self) -> i64 {
+        whole(self.get_written(SetlistSetting::DEFAULT_DRUM_OCTAVE)).unwrap_or(defaults::DEFAULT_DRUM_OCTAVE)
+    }
+}
+
+impl NamedScale {
+    pub fn get_scale_type(&self) -> Option<ScaleType> {
+        ScaleType::named(&self.get_kind().python_str().trim().to_uppercase().replace(' ', "_"))
+    }
+
+    /// The scale with its root in an octave.
+    pub fn scale_at(&self, octave: i64) -> Result<Scale, ValueError> {
+        let root = Note::new(&self.get_root().python_str(), octave, None, None, false)?;
+        let kind = self
+            .get_scale_type()
+            .ok_or_else(|| ValueError(format!("no scale type called {}", self.get_kind().python_str())))?;
+        Ok(Scale::new(root, kind))
+    }
+}
+
+impl Pattern {
+    pub fn get_step_size(&self) -> Option<Rational> {
+        let written = self.get_written(PatternSetting::STEP_SIZE)?;
+        written_length(written, Rational::whole(MAX_STEP_SIZE as i128)).ok()
+    }
+
+    pub fn get_time_signature(&self) -> Option<TimeSignature> {
+        time_signature(self.get_written(PatternSetting::TIME_SIGNATURE)?).ok()
+    }
+
+    pub fn get_direction(&self) -> Option<String> {
+        text(self.get_written(PatternSetting::DIRECTION))
+    }
+
+    /// The octave of the pattern's first step with one, or None.
+    pub fn get_first_octave(&self) -> Option<i64> {
+        self.row(crate::schema::generated::file_format::Row::OCTAVE)?
+            .iter()
+            .find_map(|octave| octave.as_whole())
+            .map(|octave| octave as i64)
+    }
+
+    pub fn has_enough_steps(&self) -> bool {
+        self.get_steps() >= MIN_STEPS as i128
+    }
+}
+
+impl Song {
+    pub fn get_tempo(&self) -> Data {
+        self.get_written(SongSetting::TEMPO)
+            .cloned()
+            .unwrap_or(Data::Whole(defaults::DEFAULT_TEMPO as i128))
+    }
+
+    pub fn get_time_signature(&self) -> TimeSignature {
+        let written = self
+            .get_written(SongSetting::TIME_SIGNATURE)
+            .cloned()
+            .unwrap_or(Data::text(defaults::DEFAULT_TIME_SIGNATURE));
+        time_signature(&written).unwrap_or_else(|_| TimeSignature::new(4, 4).expect("4/4 is a time signature"))
+    }
+
+    pub fn get_scale_name(&self) -> Option<String> {
+        text(self.get_written(SongSetting::SCALE))
+    }
+
+    pub fn get_track(&self, name: &str) -> Option<&Track> {
+        self.tracks().iter().find(|(found, _)| found == name).map(|(_, track)| track)
+    }
+
+    pub fn get_track_names(&self) -> Vec<&str> {
+        self.tracks().iter().map(|(name, _)| name.as_str()).collect()
+    }
+}
+
+impl Scene {
+    pub fn get_repeat(&self) -> i64 {
+        whole(self.get_written(SceneSetting::REPEAT)).unwrap_or(defaults::DEFAULT_REPEAT)
+    }
+
+    pub fn get_scale_name(&self) -> Option<String> {
+        text(self.get_written(SceneSetting::SCALE))
+    }
+
+    pub fn get_name(&self) -> Option<String> {
+        text(self.get_written(SceneSetting::NAME))
+    }
+
+    pub fn get_clip_slot(&self, track: &str) -> Option<&ClipSlot> {
+        self.clip_slots().iter().find(|(found, _)| found == track).map(|(_, clip)| clip)
+    }
+
+    pub fn get_track_names(&self) -> Vec<&str> {
+        self.clip_slots().iter().map(|(name, _)| name.as_str()).collect()
+    }
+
+    pub fn every_clip_loops(&self) -> bool {
+        !self.clip_slots().is_empty() && self.clip_slots().iter().all(|(_, clip)| clip.loops())
+    }
+}
+
+impl ClipSlot {
+    pub fn get_pattern_names(&self) -> Vec<String> {
+        self.get_written(ClipSlotSetting::PATTERNS)
+            .and_then(Data::as_list)
+            .unwrap_or(&[])
+            .iter()
+            .map(Data::python_str)
+            .collect()
+    }
+
+    pub fn get_pattern_name(&self) -> String {
+        self.get_pattern_names().into_iter().next().unwrap_or_default()
+    }
+
+    /// The clip's own name, else its one pattern's, else its first pattern's with a count of the others.
+    pub fn get_display_name(&self) -> String {
+        if let Some(name) = text(self.get_written(ClipSlotSetting::NAME)).filter(|name| !name.is_empty()) {
+            return name;
+        }
+        let names = self.get_pattern_names();
+        if names.len() == 1 {
+            return names[0].clone();
+        }
+        llamatron_strings::named(
+            llamatron_strings::marks::MSG_CLIP_PATTERNS_COUNTED,
+            &[("name", names[0].as_str().into()), ("more", ((names.len() - 1) as i64).into())],
+        )
+    }
+
+    pub fn loops(&self) -> bool {
+        truthy(self.get_written(ClipSlotSetting::LOOP))
+    }
+
+    pub fn get_repeat(&self) -> i64 {
+        whole(self.get_written(ClipSlotSetting::REPEAT)).unwrap_or(defaults::DEFAULT_REPEAT)
+    }
+
+    pub fn get_direction(&self) -> Option<String> {
+        text(self.get_written(ClipSlotSetting::DIRECTION))
+    }
+
+    pub fn get_scale_name(&self) -> Option<String> {
+        text(self.get_written(ClipSlotSetting::SCALE))
+    }
+
+    pub fn get_pattern_order(&self) -> Option<String> {
+        text(self.get_written(ClipSlotSetting::PATTERN_ORDER)).filter(|order| !order.is_empty())
+    }
+}
+
+impl Track {
+    pub fn get_transpose(&self) -> i64 {
+        if self.is_drum() {
+            return defaults::DEFAULT_TRANSPOSE;
+        }
+        whole(self.get_written(TrackSetting::TRANSPOSE)).unwrap_or(defaults::DEFAULT_TRANSPOSE)
+    }
+
+    pub fn get_default_velocity(&self) -> Option<i64> {
+        whole(self.get_written(TrackSetting::DEFAULT_VELOCITY))
+    }
+
+    pub fn get_accent(&self) -> i64 {
+        whole(self.get_written(TrackSetting::ACCENT)).unwrap_or(defaults::DEFAULT_TRACK_ACCENT)
+    }
+
+    pub fn get_instrument_name(&self) -> Option<String> {
+        text(self.get_written(TrackSetting::INSTRUMENT))
+    }
+}
+
+impl Instrument {
+    pub fn get_default_velocity(&self) -> Option<i64> {
+        whole(self.get_written(InstrumentSetting::DEFAULT_VELOCITY))
+    }
+
+    pub fn get_accent(&self) -> i64 {
+        whole(self.get_written(InstrumentSetting::ACCENT)).unwrap_or(defaults::DEFAULT_INSTRUMENT_ACCENT)
+    }
+}
+
+impl Song {
+    /// What a step with no velocity typed plays at on a track: the track's own, else its instrument's, else the loudest.
+    pub fn default_velocity_of(&self, track: &Track, setlist: &Setlist) -> i64 {
+        if let Some(own) = track.get_default_velocity() {
+            return own;
+        }
+        self.instrument_of(track, setlist)
+            .and_then(Instrument::get_default_velocity)
+            .unwrap_or(defaults::DEFAULT_VELOCITY)
+    }
+
+    /// What an accented step adds on a track: the track's accent on top of its instrument's.
+    pub fn accent_of(&self, track: &Track, setlist: &Setlist) -> i64 {
+        let of_instrument = self
+            .instrument_of(track, setlist)
+            .map(Instrument::get_accent)
+            .unwrap_or(defaults::DEFAULT_INSTRUMENT_ACCENT);
+        track.get_accent() + of_instrument
+    }
+
+    pub fn instrument_of<'a>(&self, track: &Track, setlist: &'a Setlist) -> Option<&'a Instrument> {
+        setlist.get_instrument(&track.get_instrument_name()?)
+    }
+}

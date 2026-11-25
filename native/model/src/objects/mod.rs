@@ -7,5 +7,6 @@ pub mod holder;
 pub mod named;
 pub mod naming;
 pub mod pattern;
+pub mod reading;
 pub mod setlist;
 pub mod song;

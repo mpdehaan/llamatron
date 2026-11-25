@@ -115,9 +115,65 @@ fn main() -> ExitCode {
                 }
             }
         }
+        "render" => {
+            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
+            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
+                Ok(setlist) => setlist,
+                Err(problem) => {
+                    eprintln!("{path}: {}", problem.message);
+                    return ExitCode::from(1);
+                }
+            };
+            match rendered_songs(&setlist) {
+                Ok(text) => {
+                    println!("{text}");
+                    ExitCode::SUCCESS
+                }
+                Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
+                    eprintln!("not ported yet: {what}");
+                    ExitCode::from(NOT_PORTED)
+                }
+                Err(llamatron_engine::error::RenderError::Refused(problem)) => {
+                    eprintln!("{path}: {problem}");
+                    ExitCode::from(1)
+                }
+            }
+        }
         other => {
             eprintln!("llamatron-compare: a command it does not know: {other}");
             ExitCode::from(2)
         }
     }
+}
+
+/// What the tool exits with for a set using a part of the program not ported yet, which the harness counts apart.
+const NOT_PORTED: u8 = 3;
+/// The seed every comparison renders from, the harness's RENDER_SEED.
+const RENDER_SEED: i64 = 1;
+
+/// Every song of a set rendered from one seed, as the harness's rendered_text writes it: each scene, then each clip's length
+/// and its notes, each start, end, MIDI number and velocity.
+fn rendered_songs(setlist: &llamatron_model::objects::setlist::Setlist) -> llamatron_engine::error::Rendered<String> {
+    let mut texts = Vec::new();
+    for name in setlist.song_names() {
+        let Some(song) = setlist.get_song(name) else { continue };
+        texts.push(format!("song {name}"));
+        let grid = llamatron_engine::realizer::SongRealizer::new(setlist, song, Some(RENDER_SEED)).render()?;
+        let mut lines = Vec::new();
+        for (place, row) in grid.rows.iter().enumerate() {
+            lines.push(format!("scene {place} tempo None"));
+            for track in &grid.tracks {
+                let Some((_, clip)) = row.clips.iter().find(|(found, _)| found == track) else {
+                    continue;
+                };
+                let (notes, length) = llamatron_engine::timing::timed_events(clip, clip.scale.as_ref())?;
+                lines.push(format!("  {track} length {length}"));
+                for note in notes {
+                    lines.push(format!("    {} {} {} {}", note.start, note.end, note.midi_number, note.velocity));
+                }
+            }
+        }
+        texts.push(lines.join("\n"));
+    }
+    Ok(texts.join("\n"))
 }

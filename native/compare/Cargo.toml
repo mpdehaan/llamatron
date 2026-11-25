@@ -16,3 +16,4 @@ path = "src/main.rs"
 [dependencies]
 llamatron-math = { path = "../math" }
 llamatron-model = { path = "../model" }
+llamatron-engine = { path = "../engine" }

@@ -24,7 +24,7 @@ if [ -n "$native" ]; then
     cargo test --manifest-path native/Cargo.toml --workspace --release --quiet
     cargo build --manifest-path native/Cargo.toml --workspace --release --quiet
     # llamatron2 held to the Python program, every step the port has reached, over every example and test set.
-    for step in load layout migrate save; do
+    for step in load layout migrate save render; do
         .venv/bin/python internal_tools/compare_llamatron2.py "$step" | tail -1
         .venv/bin/python internal_tools/compare_llamatron2.py "$step" > /dev/null
     done

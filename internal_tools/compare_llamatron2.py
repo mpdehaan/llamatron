@@ -44,9 +44,19 @@ def python_load(path):
 def rust(command, path):
     """Return what llamatron-compare prints for a set, or what went wrong."""
     finished = subprocess.run([str(RUST), command, str(path)], capture_output=True, text=True, check=False)
+    if finished.returncode == NOT_PORTED:
+        return NotPorted(finished.stderr.strip())
     if finished.returncode != 0:
         return 'FAILED: ' + finished.stderr.strip()
     return finished.stdout.rstrip('\n')
+
+
+# What llamatron-compare exits with for a set using a part of the program not ported yet.
+NOT_PORTED = 3
+
+
+class NotPorted(str):
+    """What llamatron-compare says of a set that uses a part of the program not ported yet, which is counted apart."""
 
 
 def first_difference(first, second):
@@ -128,7 +138,7 @@ def python_render(path):
         for name in setlist.get_song_names():
             texts.append('song {}'.format(name))
             texts.append(rendered_text(SongRealizer(setlist.get_song(name), seed=RENDER_SEED).render()))
-        return '\n'.join(texts)
+        return '\n'.join(texts).rstrip('\n')
     except SongFileError:
         return None
 
@@ -154,17 +164,26 @@ def main():
     sets = sorted(path for path in found if options.only is None or options.only in str(path))
     differing = 0
     skipped = 0
+    waiting = {}
     for path in sets:
         python = STEPS[options.step](path)
         if python is None:
             skipped += 1
             continue
         port = rust(options.step, path)
+        if isinstance(port, NotPorted):
+            waiting[port] = waiting.get(port, 0) + 1
+            continue
         same = COMPARED.get(options.step, str.__eq__)(python, port)
         if not same:
             differing += 1
             print('{}: {}'.format(path.relative_to(TOP), first_difference(python, port)))
-    print('{} of {} sets differ{}'.format(differing, len(sets) - skipped, ', {} skipped as the step does not apply'.format(skipped) if skipped else ''))
+    ported = len(sets) - skipped - sum(waiting.values())
+    print('{} of {} sets differ{}'.format(differing, ported, ', {} skipped as the step does not apply'.format(skipped) if skipped else ''))
+    if waiting:
+        print('{} sets wait on parts not ported yet:'.format(sum(waiting.values())))
+        for what, count in sorted(waiting.items(), key=lambda item: -item[1]):
+            print('  {} {}'.format(count, what))
     return 1 if differing else 0
 
 
