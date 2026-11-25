@@ -230,6 +230,11 @@ impl MainPage {
             app.show_page(std::boxed::Box::new(ListPage::new(ScalesPage)));
             return;
         }
+        if same(binding, &Keys::DRAWS) {
+            let page = crate::screens::field_page::FieldPage::new(crate::screens::set::draws_page::DrawsPage);
+            app.show_page(std::boxed::Box::new(page));
+            return;
+        }
         if same(binding, &Keys::INSTRUMENTS) {
             let page = crate::screens::set::instruments_page::InstrumentsPage;
             app.show_page(std::boxed::Box::new(ListPage::new(page)));

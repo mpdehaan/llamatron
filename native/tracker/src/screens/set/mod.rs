@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The pages of the set as a whole (the Python screens/set/).
 
+pub mod draws_page;
 pub mod file_page;
 pub mod groove_editor;
 pub mod grooves_page;
