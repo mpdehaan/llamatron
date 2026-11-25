@@ -99,6 +99,49 @@ impl ClipPage {
             (FOLLOW_ACTION, Edit::Choice(chosen)) => self.write(app, ClipSlotSetting::FOLLOW_ACTION, Some(Data::text(chosen))),
             (SCALE, Edit::Clear) => self.write(app, ClipSlotSetting::SCALE, None),
             (GRAB_TRACK, Edit::Clear) => self.write(app, ClipSlotSetting::GRAB_TRACK, None),
+            (DIRECTION, Edit::Enter) => {
+                let mut rows = vec![(
+                    labels::MSG_PATTERN_DIRECTION_OPTION.to_string(),
+                    legends::MSG_PATTERN_DIRECTION_WHAT.to_string(),
+                )];
+                rows.extend(
+                    DIRECTIONS
+                        .iter()
+                        .map(|direction| (words(direction), named_in(labels::MSG_DIRECTION_NAMES, direction))),
+                );
+                let mut choices = vec![arrange_tabs::FROM_ABOVE.to_string()];
+                choices.extend(DIRECTIONS.iter().map(|direction| direction.to_string()));
+                let current = clip.get_direction().unwrap_or_default();
+                arrange_tabs::ask_choice(app, messages::MSG_PLAY_DIRECTION_TITLE, lined_up(&rows), choices, &current);
+            }
+            (DIRECTION, Edit::Choice(chosen)) => self.write(app, ClipSlotSetting::DIRECTION, arrange_tabs::chosen_name(chosen)),
+            (SCALE, Edit::Enter) => {
+                let scales = arrange_tabs::scale_names(app);
+                let current = clip.get_written(ClipSlotSetting::SCALE).and_then(Data::as_str).map(str::to_string);
+                arrange_tabs::ask_name_or_above(app, messages::MSG_CLIP_SCALE_TITLE, labels::MSG_SCENE_OPTION, scales, current.as_deref());
+            }
+            (SCALE, Edit::Choice(chosen)) => self.write(app, ClipSlotSetting::SCALE, arrange_tabs::chosen_name(chosen)),
+            (GRAB_TRACK, Edit::Enter) => {
+                let names: Vec<String> = app
+                    .document
+                    .song()
+                    .get_track_names()
+                    .into_iter()
+                    .filter(|name| *name != self.track)
+                    .map(str::to_string)
+                    .collect();
+                let tracks = crate::settings::sorted_names(&names);
+                let current = clip.get_written(ClipSlotSetting::GRAB_TRACK).and_then(Data::as_str).map(str::to_string);
+                arrange_tabs::ask_name_or_above(app, labels::MSG_GRAB_TRACK_LABEL, marks::MSG_NONE_SHOWN, tracks, current.as_deref());
+            }
+            (GRAB_TRACK, Edit::Choice(chosen)) => {
+                // A grab that would go round in a circle is refused; the Python tells why in a dialog not ported yet.
+                if chosen.is_empty() {
+                    self.write(app, ClipSlotSetting::GRAB_TRACK, None);
+                } else if !crate::screens::arrange::arrange_page::ArrangePage::grab_circles(app, self.index, &self.track, chosen) {
+                    self.write(app, ClipSlotSetting::GRAB_TRACK, Some(Data::text(chosen)));
+                }
+            }
             (MORPH_TO, Edit::Clear) => {
                 self.write(app, ClipSlotSetting::MORPH_TO, None);
                 self.write(app, ClipSlotSetting::MORPH_STYLE, None);
@@ -443,7 +486,9 @@ impl Form for ClipPage {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
-        if edit != Edit::Enter && self.write_edit(app, id, &edit) {
+        // ENTER opens a picker only on the fields whose choices the page asks for itself; elsewhere it opens a page.
+        let picks = matches!(id, DIRECTION | SCALE | GRAB_TRACK);
+        if (edit != Edit::Enter || picks) && self.write_edit(app, id, &edit) {
             return;
         }
         if edit == Edit::Enter && (FIRST_PATTERN..ADD_ROW).contains(&id) {
@@ -467,4 +512,20 @@ impl ClipPage {
             name: "PatternEditor".to_string(),
         }));
     }
+}
+
+/// One line for each name and description, the descriptions lined up, for a picker's choices.
+fn lined_up(rows: &[(String, String)]) -> Vec<String> {
+    let widest = rows.iter().map(|(name, _)| name.chars().count()).max().unwrap_or(0);
+    rows.iter()
+        .map(|(name, description)| {
+            let padded = format!("{name:<widest$}");
+            named(
+                marks::MSG_COLUMN_LINE,
+                &[("name", padded.as_str().into()), ("description", description.as_str().into())],
+            )
+            .trim_end()
+            .to_string()
+        })
+        .collect()
 }

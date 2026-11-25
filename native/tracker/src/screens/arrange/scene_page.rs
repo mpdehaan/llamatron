@@ -79,6 +79,17 @@ impl ScenePage {
             (REPEAT, Edit::Number(repeat)) => self.write(app, SceneSetting::REPEAT, (*repeat != 1).then_some(Data::Whole(*repeat as i128))),
             (LAUNCH_TOGETHER, Edit::Toggle(on)) => self.write(app, SceneSetting::LAUNCH_TOGETHER, (!on).then_some(Data::Bool(false))),
             (SCALE, Edit::Clear) => self.write(app, SceneSetting::SCALE, None),
+            (SCALE, Edit::Enter) => {
+                let scales = arrange_tabs::scale_names(app);
+                let current = scene.get_written(SceneSetting::SCALE).and_then(Data::as_str).map(str::to_string);
+                arrange_tabs::ask_name_or_above(app, messages::MSG_SCENE_SCALE_TITLE, labels::MSG_SONG_OPTION, scales, current.as_deref());
+            }
+            (SCALE, Edit::Choice(chosen)) => self.write(app, SceneSetting::SCALE, arrange_tabs::chosen_name(chosen)),
+            (GROOVE, Edit::Enter) => {
+                let current = scene.get_written(SceneSetting::GROOVE).cloned();
+                arrange_tabs::ask_groove(app, messages::MSG_SCENE_GROOVE_TITLE, labels::MSG_SONG_OPTION, current.as_ref());
+            }
+            (GROOVE, Edit::Choice(chosen)) => self.write(app, SceneSetting::GROOVE, arrange_tabs::groove_answer(chosen)),
             (GROOVE, Edit::Adjust(offset)) => {
                 let chosen = arrange_tabs::groove_choice_after(app, scene.get_written(SceneSetting::GROOVE), *offset);
                 self.write(app, SceneSetting::GROOVE, chosen);
@@ -322,7 +333,9 @@ impl Form for ScenePage {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
-        if edit != Edit::Enter && self.write_edit(app, id, &edit) {
+        // ENTER opens a picker only on the fields whose choices the page asks for itself; elsewhere it opens a page.
+        let picks = matches!(id, SCALE | GROOVE);
+        if (edit != Edit::Enter || picks) && self.write_edit(app, id, &edit) {
             return;
         }
         if edit == Edit::Enter && id == arrange_tabs::GENERATORS {

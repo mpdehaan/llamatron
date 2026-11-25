@@ -356,7 +356,7 @@ impl ArrangePage {
                 let mut dropped = None;
                 let from_track = tracks[from_place].clone();
                 let to_row = row as usize;
-                let circles = |grab: &str| grab == to_track || self.grab_circles(app, to_row, &to_track, grab);
+                let circles = |grab: &str| grab == to_track || Self::grab_circles(app, to_row, &to_track, grab);
                 let grab = Self::clip(app, from_row, &from_track)
                     .and_then(|clip| clip.get_written(ClipSlotSetting::GRAB_TRACK))
                     .and_then(Data::as_str)
@@ -389,7 +389,7 @@ impl ArrangePage {
 
     /// Whether a clip on a track of a scene grabbing from another track would go round in a circle: the other's clip there
     /// grabbing, on and on, from the track itself.
-    fn grab_circles(&self, app: &App, index: usize, track: &str, other: &str) -> bool {
+    pub fn grab_circles(app: &App, index: usize, track: &str, other: &str) -> bool {
         let mut seen = vec![other.to_string()];
         let mut current = other.to_string();
         while let Some(next) = Self::clip(app, index, &current)

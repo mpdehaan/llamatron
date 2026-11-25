@@ -331,6 +331,60 @@ pub fn field_of(nodes: &[crate::screens::field_page::Node], id: usize) -> Option
     })
 }
 
+/// The answer a picker gives for its first choice, the value taken from above or none.
+pub const FROM_ABOVE: &str = "";
+/// The answer a groove picker gives for playing straight, which no groove's name can be.
+const GROOVE_OFF: &str = "\0off";
+
+/// Ask the page's picker for one of a list, opening on the current answer: the options as shown, the answers they give.
+pub fn ask_choice(app: &mut App, title: &str, options: Vec<String>, choices: Vec<String>, current: &str) {
+    let place = choices.iter().position(|choice| choice == current).unwrap_or(0);
+    app.asking = Some(Edit::AskChoice {
+        title: title.to_string(),
+        options,
+        current: place,
+        choices,
+    });
+}
+
+/// Ask for a value taken from above, shown first as `above`, or one of a list of names, opening on the current one.
+pub fn ask_name_or_above(app: &mut App, title: &str, above: &str, names: Vec<String>, current: Option<&str>) {
+    let mut options = vec![above.to_string()];
+    options.extend(names.iter().cloned());
+    let mut choices = vec![FROM_ABOVE.to_string()];
+    choices.extend(names);
+    ask_choice(app, title, options, choices, current.unwrap_or(FROM_ABOVE));
+}
+
+/// The value a picker's answer stores: the name chosen, or None for the first choice.
+pub fn chosen_name(chosen: &str) -> Option<Data> {
+    (chosen != FROM_ABOVE).then(|| Data::text(chosen))
+}
+
+/// Ask for a scene's or a track's groove: from above, off, or a groove by name, opening on the current choice.
+pub fn ask_groove(app: &mut App, title: &str, above: &str, current: Option<&Data>) {
+    let names = crate::settings::sorted_names(&crate::screens::set::grooves_page::groove_names(app));
+    let mut options = vec![above.to_string(), labels::MSG_GROOVE_OFF_OPTION.to_string()];
+    options.extend(names.iter().cloned());
+    let mut choices = vec![FROM_ABOVE.to_string(), GROOVE_OFF.to_string()];
+    choices.extend(names);
+    let current = match current {
+        Some(Data::Bool(false)) => GROOVE_OFF,
+        Some(Data::Text(name)) => name.as_str(),
+        _ => FROM_ABOVE,
+    };
+    ask_choice(app, title, options, choices, current);
+}
+
+/// The groove choice a groove picker's answer stores: None from above, false off, or the groove's name.
+pub fn groove_answer(chosen: &str) -> Option<Data> {
+    match chosen {
+        FROM_ABOVE => None,
+        GROOVE_OFF => Some(Data::Bool(false)),
+        name => Some(Data::text(name)),
+    }
+}
+
 /// A groove choice a step along: from above first, then off, then each groove by name, stopping at both ends.
 pub fn groove_choice_after(app: &App, current: Option<&Data>, offset: i64) -> Option<Data> {
     let names = crate::settings::sorted_names(&crate::screens::set::grooves_page::groove_names(app));
@@ -356,4 +410,16 @@ pub fn resets_after(reset: Option<&Data>, draw: &str, on: bool) -> Option<Data> 
         .map(|name| Data::text(name))
         .collect();
     (!ordered.is_empty()).then_some(Data::List(ordered))
+}
+
+/// The set's scales by name, sorted.
+pub fn scale_names(app: &App) -> Vec<String> {
+    let names: Vec<String> = app
+        .document
+        .get_setlist()
+        .items(llamatron_model::schema::generated::file_format::Section::SCALES)
+        .iter()
+        .map(|(name, _)| name.clone())
+        .collect();
+    crate::settings::sorted_names(&names)
 }

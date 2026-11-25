@@ -94,6 +94,18 @@ impl TrackEditor {
                 self.write(app, setting, on.then_some(Data::Bool(true)));
             }
             (INSTRUMENT, Edit::Clear) => self.write(app, TrackSetting::INSTRUMENT, None),
+            (INSTRUMENT, Edit::Enter) => {
+                let role = if track.is_drum() { "percussion" } else { "normal" };
+                let instruments = crate::settings::sorted_names(&instruments_of_role(app, role));
+                let current = track.get_instrument_name();
+                arrange_tabs::ask_name_or_above(app, labels::MSG_INSTRUMENT_LABEL, marks::MSG_NONE_SHOWN, instruments, current.as_deref());
+            }
+            (INSTRUMENT, Edit::Choice(chosen)) => self.write(app, TrackSetting::INSTRUMENT, arrange_tabs::chosen_name(chosen)),
+            (GROOVE, Edit::Enter) => {
+                let current = track.get_written(TrackSetting::GROOVE).filter(|value| !value.is_null()).cloned();
+                arrange_tabs::ask_groove(app, messages::MSG_TRACK_GROOVE_TITLE, marks::MSG_SCENE_OR_SONG_GROOVE_SHOWN, current.as_ref());
+            }
+            (GROOVE, Edit::Choice(chosen)) => self.write(app, TrackSetting::GROOVE, arrange_tabs::groove_answer(chosen)),
             (GROOVE, Edit::Adjust(offset)) => {
                 let names = crate::settings::sorted_names(&crate::screens::set::grooves_page::groove_names(app));
                 let mut choices = vec![None, Some(Data::Bool(false))];
@@ -423,7 +435,9 @@ impl Form for TrackEditor {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
-        if edit != Edit::Enter && self.write_edit(app, id, &edit) {
+        // ENTER opens a picker only on the fields whose choices the page asks for itself; elsewhere it opens a page.
+        let picks = matches!(id, INSTRUMENT | GROOVE);
+        if (edit != Edit::Enter || picks) && self.write_edit(app, id, &edit) {
             return;
         }
         if edit == Edit::Enter && id == arrange_tabs::GENERATORS {
@@ -455,4 +469,22 @@ impl Form for TrackEditor {
             app.show_page(Box::new(crate::screens::field_page::FieldPage::new(opened)));
         }
     }
+}
+
+/// The names of the set's instruments of a role, in the set's order.
+fn instruments_of_role(app: &App, role: &str) -> Vec<String> {
+    use llamatron_model::objects::setlist::Item;
+    let setlist = app.document.get_setlist();
+    let mut names = Vec::new();
+    for (name, item) in setlist.items(Section::INSTRUMENTS) {
+        let Item::Instrument(instrument) = item else { continue };
+        let held = instrument
+            .get_written(llamatron_model::schema::generated::file_format::InstrumentSetting::ROLE)
+            .and_then(Data::as_str)
+            .unwrap_or("normal");
+        if held == role {
+            names.push(name.clone());
+        }
+    }
+    names
 }

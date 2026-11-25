@@ -20,7 +20,7 @@ use llamatron_model::schema::generated::limits::MAX_STATEMENTS;
 use llamatron_model::schema::generated::limits::{MAX_OCTAVE, MIN_OCTAVE};
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Described, Plain};
-use llamatron_strings::{labels, legends, marks, named};
+use llamatron_strings::{labels, legends, marks, messages, named};
 
 const NAME: usize = 0;
 /// The id of the generator's Enabled toggle, the first field made after its name.
@@ -119,6 +119,28 @@ fn setting_limits(kind: &str, setting: &str) -> (i64, i64) {
         Some(Described::WholeNumber { lowest, highest, .. }) => (lowest.unwrap_or(i64::MIN), highest.unwrap_or(i64::MAX)),
         _ => (i64::MIN, i64::MAX),
     }
+}
+
+/// The ends of a voicing's range of octaves, each kept from passing the other.
+const LOWEST_OCTAVE: &str = "lowest_octave";
+const HIGHEST_OCTAVE: &str = "highest_octave";
+
+/// What a drift's scale or root may be, (none) aside: the set's scales by name, or the roots.
+fn drift_choices(app: &App, setting: &str) -> Vec<String> {
+    if setting.ends_with("_scale") {
+        let names: Vec<String> = app
+            .document
+            .get_setlist()
+            .items(llamatron_model::schema::generated::file_format::Section::SCALES)
+            .iter()
+            .map(|(name, _)| name.clone())
+            .collect();
+        return crate::settings::sorted_names(&names);
+    }
+    llamatron_model::values::generated::note::ROOT_NAMES
+        .iter()
+        .map(|name| name.to_string())
+        .collect()
 }
 
 /// The lowest and highest octave a generator's setting may hold, as its table of settings describes it.
@@ -807,6 +829,30 @@ impl PluginEditor {
         });
     }
 
+    /// An end of a range of octaves as the generator holds it, its default where the file leaves it out.
+    fn octave_of(&self, app: &App, setting: &str, default: i64) -> i64 {
+        match app.document.get_setlist().get_item(self.section(), &self.name) {
+            Some(Item::Generator(settings)) => settings.get_written(setting).and_then(Data::as_whole).map_or(default, |whole| whole as i64),
+            _ => default,
+        }
+    }
+
+    /// The lowest and highest an end of a range of octaves may be: its description's, and never past the range's other end.
+    fn octave_range(&self, app: &App, setting: &str) -> (i64, i64) {
+        let (lowest, highest) = octave_limits(self.kind, setting);
+        let other_end = |other: &str| {
+            self.made(app).1.into_iter().find_map(|(_, view)| match view {
+                SettingView::Octave { setting: found, default, .. } if *found == other => Some(self.octave_of(app, other, *default)),
+                _ => None,
+            })
+        };
+        match setting {
+            LOWEST_OCTAVE => (lowest, other_end(HIGHEST_OCTAVE).unwrap_or(highest)),
+            HIGHEST_OCTAVE => (other_end(LOWEST_OCTAVE).unwrap_or(lowest), highest),
+            _ => (lowest, highest),
+        }
+    }
+
     fn section(&self) -> &'static str {
         PLUGINS.iter().find(|plugin| plugin.name == self.kind).map_or("", |plugin| plugin.section)
     }
@@ -894,13 +940,26 @@ impl Form for PluginEditor {
                 };
                 app.show_page(Box::new(crate::screens::one_row_editor::OneRowEditor::new(editor)));
             }
+            (Some(SettingView::Octave { setting, label, default }), Edit::Enter) => {
+                // The octave is typed as the set's octave labels show it, within the ends the other end of the range leaves.
+                let (lowest, highest) = self.octave_range(app, setting);
+                let current = self.octave_of(app, setting, *default);
+                let setlist = app.document.get_setlist();
+                app.asking = Some(Edit::AskNumber {
+                    title: label.to_string(),
+                    value: shown_octave(setlist, current),
+                    lowest: Some(shown_octave(setlist, lowest)),
+                    highest: Some(shown_octave(setlist, highest)),
+                });
+            }
+            (Some(SettingView::Octave { setting, default, .. }), Edit::Number(shown)) => {
+                let stored = shown - shown_octave(app.document.get_setlist(), 0);
+                self.write(app, setting, (stored != *default).then_some(Data::Whole(stored as i128)));
+            }
             (Some(SettingView::Octave { setting, default, .. }), Edit::Adjust(offset)) => {
-                let written = match app.document.get_setlist().get_item(self.section(), &self.name) {
-                    Some(Item::Generator(settings)) => settings.get_written(setting).and_then(Data::as_whole).map(|whole| whole as i64),
-                    _ => None,
-                };
-                let (lowest, highest) = octave_limits(self.kind, setting);
-                let moved = (written.unwrap_or(*default) + offset).clamp(MIN_OCTAVE, MAX_OCTAVE).clamp(lowest, highest);
+                let written = self.octave_of(app, setting, *default);
+                let (lowest, highest) = self.octave_range(app, setting);
+                let moved = (written + offset).clamp(MIN_OCTAVE, MAX_OCTAVE).clamp(lowest, highest);
                 self.write(app, setting, (moved != *default).then_some(Data::Whole(moved as i128)));
             }
             (Some(view), edit) => {
@@ -917,20 +976,51 @@ impl Form for PluginEditor {
                 };
                 match edit {
                     Edit::Clear => self.write(app, &setting, None),
+                    Edit::Enter if setting.ends_with("_scale") || setting.ends_with("_root") => {
+                        let choices = drift_choices(app, &setting);
+                        let label = self
+                            .made(app)
+                            .0
+                            .iter()
+                            .find_map(|field| field.find(id))
+                            .map(|field| field.label.clone())
+                            .unwrap_or_default();
+                        let current = written.as_ref().and_then(Data::as_str).unwrap_or_default().to_string();
+                        let mut options = vec![marks::MSG_NONE_SHOWN.to_string()];
+                        options.extend(choices.iter().cloned());
+                        let mut answers = vec![String::new()];
+                        answers.extend(choices);
+                        let place = answers.iter().position(|answer| *answer == current).unwrap_or(0);
+                        app.asking = Some(Edit::AskChoice {
+                            title: label,
+                            options,
+                            current: place,
+                            choices: answers,
+                        });
+                    }
+                    Edit::Choice(chosen) => self.write(app, &setting, (!chosen.is_empty()).then_some(Data::Text(chosen))),
+                    Edit::Enter => {
+                        let (lowest, highest) = setting_limits(self.kind, &setting);
+                        let label = self
+                            .made(app)
+                            .0
+                            .iter()
+                            .find_map(|field| field.find(id))
+                            .map(|field| field.label.clone())
+                            .unwrap_or_default();
+                        let number = written.as_ref().and_then(Data::as_whole).map_or(0, |whole| whole as i64);
+                        let words = [("row", label.as_str().into()), ("low", lowest.into()), ("high", highest.into())];
+                        app.asking = Some(Edit::AskNumber {
+                            title: named(messages::MSG_NUMBER_PROMPT, &words),
+                            value: number,
+                            lowest: Some(lowest),
+                            highest: Some(highest),
+                        });
+                    }
+                    Edit::Number(number) => self.write(app, &setting, (number != 0).then_some(Data::Whole(number as i128))),
                     Edit::Adjust(offset) if setting.ends_with("_scale") || setting.ends_with("_root") => {
                         let mut choices = vec![None];
-                        if setting.ends_with("_scale") {
-                            let names: Vec<String> = app
-                                .document
-                                .get_setlist()
-                                .items(llamatron_model::schema::generated::file_format::Section::SCALES)
-                                .iter()
-                                .map(|(name, _)| name.clone())
-                                .collect();
-                            choices.extend(crate::settings::sorted_names(&names).into_iter().map(Some));
-                        } else {
-                            choices.extend(llamatron_model::values::generated::note::ROOT_NAMES.iter().map(|name| Some(name.to_string())));
-                        }
+                        choices.extend(drift_choices(app, &setting).into_iter().map(Some));
                         let current = written.as_ref().and_then(Data::as_str).map(str::to_string);
                         let place = choices.iter().position(|choice| *choice == current).unwrap_or(0) as i64;
                         let chosen = choices[(place + offset).clamp(0, choices.len() as i64 - 1) as usize].clone();
