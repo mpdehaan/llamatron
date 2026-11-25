@@ -82,6 +82,11 @@ pub fn tour(tracker: &mut Tracker, width: usize, height: usize, stops: &[TourSto
             unported |= last_unported;
             tracker.press(&pressed_key(&key.key));
         }
+        // Where the Python opened a page or a dialog the Rust did not, the Rust follows it before drawing, so that the stop
+        // counts as waiting on what is not ported yet rather than differing.
+        if stop.stack.len() > tracker.depth() {
+            tracker.follow(&stop.stack);
+        }
         // The screen is drawn first, since drawing a page may find a part of it not ported yet, which names it.
         let screen = composed(tracker, width, height);
         recorded.push(Stop {

@@ -14,7 +14,7 @@ use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::file_format::{DrawSetting, DRAW_DIRECTIONS, DRAW_NAMES};
 use llamatron_model::schema::generated::limits::{MAX_DRAW_SLOTS, MAX_DRAW_VALUE, MIN_DRAW_SLOTS, MIN_DRAW_VALUE};
-use llamatron_strings::{labels, legends};
+use llamatron_strings::{labels, legends, messages, named};
 
 const DEFAULT_SLOT_COUNT: usize = 8;
 /// How many ids each draw's fields have to themselves.
@@ -65,6 +65,15 @@ impl DrawsPage {
                     shown,
                 )
                 .with_clear(legends::What::CLEAR)
+                .titled(&named(
+                    messages::MSG_DRAW_SLOT_PROMPT,
+                    &[
+                        ("name", name.into()),
+                        ("place", (slot + 1).into()),
+                        ("lowest", lowest.into()),
+                        ("highest", highest.into()),
+                    ],
+                ))
             })
             .collect();
         let mut strip = Field::cells(base + STRIP, labels::MSG_DRAW_STRIP_LABEL, cells).stepped();

@@ -27,7 +27,7 @@ use llamatron_model::schema::generated::limits::{
     MAX_KNOB, MAX_LFO_RATE, MAX_MATRIX_AMOUNT, MAX_OSCILLATORS, MAX_SID_RATE, MAX_VOICES, MAX_VOLUME_PERCENT, MIN_BITS, MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY,
     MIN_KEYSWITCH_LEAD, MIN_LFO_RATE,
 };
-use llamatron_strings::{labels, legends, marks, named};
+use llamatron_strings::{labels, legends, marks, messages, named};
 
 const NAME: usize = 0;
 const GM_CELLS: usize = 12;
@@ -327,6 +327,7 @@ impl InstrumentEditor {
                 1,
                 None,
             )
+            .titled(&named(messages::MSG_CHANNEL_PROMPT, &[("lowest", 1.into()), ("highest", 16.into())]))
         };
         let sound = instrument
             .get_written(InstrumentSetting::GM_SOUND)
@@ -366,7 +367,11 @@ impl InstrumentEditor {
                 Some(MAX_KEYSWITCH_LEAD),
                 0,
                 Some(milliseconds(lead)),
-            ),
+            )
+            .titled(&named(
+                messages::MSG_KEYSWITCH_LEAD_PROMPT,
+                &[("lowest", MIN_KEYSWITCH_LEAD.into()), ("highest", MAX_KEYSWITCH_LEAD.into())],
+            )),
             Field::number(
                 ids.at(Write::Setting(InstrumentSetting::LATENCY)),
                 labels::MSG_LATENCY_LABEL,
@@ -375,7 +380,11 @@ impl InstrumentEditor {
                 Some(MAX_INSTRUMENT_LATENCY),
                 0,
                 Some(milliseconds(latency)),
-            ),
+            )
+            .titled(&named(
+                messages::MSG_LATENCY_PROMPT,
+                &[("lowest", MIN_INSTRUMENT_LATENCY.into()), ("highest", MAX_INSTRUMENT_LATENCY.into())],
+            )),
         ];
         let mut tab = Tab::new(labels::MSG_MIDI_TAB, vec![TabColumn::new(None, fields)]);
         tab.not_ready = Self::kind(instrument) != MIDI;

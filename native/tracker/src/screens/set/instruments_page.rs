@@ -130,7 +130,9 @@ impl Listing for InstrumentsPage {
         if item.is(&Keys::ADD) || item.is(&Keys::ADD_HERE) {
             use llamatron_model::schema::generated::file_format::{SetlistSetting, INSTRUMENT_ROLES};
             let options = INSTRUMENT_ROLES.iter().map(|role| named_in(labels::MSG_ROLE_NAMES, role)).collect();
-            let then = Box::new(|app: &mut App, place: usize| {
+            let then = Box::new(|app: &mut App, answer: &crate::screens::dialogs::Answer| {
+                let crate::screens::dialogs::Answer::Chosen(place) = answer else { return };
+                let place = *place;
                 let role = INSTRUMENT_ROLES[place];
                 let setlist = app.document.get_setlist();
                 let taken: Vec<String> = setlist.items(Section::INSTRUMENTS).iter().map(|(name, _)| name.clone()).collect();
@@ -150,12 +152,8 @@ impl Listing for InstrumentsPage {
                 let page = crate::screens::set::instrument_editor::InstrumentEditor { name };
                 app.show_page(Box::new(crate::screens::field_page::FieldPage::new(page)));
             });
-            let dialog = crate::screens::choice_dialog::ChoiceDialog {
-                title: llamatron_strings::messages::MSG_NEW_INSTRUMENT_TITLE.to_string(),
-                options,
-                current: 0,
-                then,
-            };
+            let mut dialog = crate::screens::dialogs::ChoiceDialog::new(llamatron_strings::messages::MSG_NEW_INSTRUMENT_TITLE, options, 0);
+            dialog.then = Some(then);
             app.show_page(Box::new(dialog));
             return None;
         }

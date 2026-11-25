@@ -97,6 +97,16 @@ pub struct FieldPage<F: Form> {
     state: FormState,
     /// Whether the page was wholly ported when it last answered, which names it for the screen tour.
     ported: Cell<bool>,
+    /// The field a dialog the page opened is asking for, by its id, and what its answer means.
+    asking: Option<(usize, Asking)>,
+}
+
+/// What a dialog's answer means to the field that opened it: a place among its choices, a number between its bounds, or
+/// its text.
+enum Asking {
+    Choice(Vec<String>),
+    Number(Option<i64>, Option<i64>),
+    Text,
 }
 
 /// What a settings page shows now: its fields, its box and its chosen tab.
@@ -150,6 +160,38 @@ impl<F: Form> FieldPage<F> {
             form,
             state,
             ported: Cell::new(true),
+            asking: None,
+        }
+    }
+
+    /// Open the dialog an edit asks for, remembering which field asked, or apply the edit where it asks nothing.
+    fn ask_or_apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        use crate::screens::dialogs::{ChoiceDialog, PromptDialog};
+        match edit {
+            Edit::AskChoice {
+                title,
+                options,
+                current,
+                choices,
+            } => {
+                self.asking = Some((id, Asking::Choice(choices)));
+                app.show_page(Box::new(ChoiceDialog::new(&title, options, current)));
+            }
+            Edit::AskNumber { title, value, lowest, highest } => {
+                self.asking = Some((id, Asking::Number(lowest, highest)));
+                app.show_page(Box::new(PromptDialog::new(&title, &value.to_string())));
+            }
+            Edit::AskText { title, value } => {
+                self.asking = Some((id, Asking::Text));
+                app.show_page(Box::new(PromptDialog::new(&title, &value)));
+            }
+            edit => {
+                self.form.apply(app, id, edit);
+                // A form asks for a picker or a prompt of its own making by leaving the edit that would open it.
+                if let Some(asked) = app.asking.take() {
+                    self.ask_or_apply(app, id, asked);
+                }
+            }
         }
     }
 
@@ -520,6 +562,37 @@ impl<F: Form> FieldPage<F> {
 }
 
 impl<F: Form> Page for FieldPage<F> {
+    fn answered(&mut self, app: &mut App, answer: crate::screens::dialogs::Answer) {
+        use crate::screens::dialogs::Answer;
+        let Some((id, asking)) = self.asking.take() else { return };
+        let edit = match (asking, answer) {
+            (Asking::Choice(choices), Answer::Chosen(place)) => match choices.get(place) {
+                Some(chosen) => Edit::Choice(chosen.clone()),
+                None => return,
+            },
+            (Asking::Number(lowest, highest), Answer::Typed(text)) => {
+                let Ok(number) = text.trim().parse::<i64>() else {
+                    app.refuse(&named(llamatron_strings::errors::ERR_TYPED_NOT_AN_INTEGER, &[("text", text.as_str().into())]));
+                    return;
+                };
+                if lowest.is_some_and(|lowest| number < lowest) || highest.is_some_and(|highest| number > highest) {
+                    let bound = |bound: Option<i64>| bound.map_or_else(|| "None".to_string(), |bound| bound.to_string());
+                    let words = [
+                        ("number", number.into()),
+                        ("low", bound(lowest).as_str().into()),
+                        ("high", bound(highest).as_str().into()),
+                    ];
+                    app.refuse(&named(llamatron_strings::errors::ERR_OUT_OF_RANGE, &words));
+                    return;
+                }
+                Edit::Number(number)
+            }
+            (Asking::Text, Answer::Typed(text)) => Edit::Text(text),
+            _ => return,
+        };
+        self.form.apply(app, id, edit);
+    }
+
     fn name(&self) -> &'static str {
         if self.ported.get() {
             self.form.name()
@@ -623,7 +696,7 @@ impl<F: Form> Page for FieldPage<F> {
                         app.session.open_field_sections.insert(label);
                     }
                 }
-                Some(edit) => self.form.apply(app, field.id, edit),
+                Some(edit) => self.ask_or_apply(app, field.id, edit),
                 None => {
                     let row = shown.fields.get(self.place(&shown)).cloned();
                     self.form.press_own(app, item, key, row.as_ref())

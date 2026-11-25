@@ -40,7 +40,8 @@ from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.pages import generators as generators_values
 from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.generators.generators_page import GeneratorsPage
-from llamatron.interface.forms.nodes import Toggle
+from llamatron.interface.forms.nodes import Button, Toggle
+from llamatron.user_strings import legends
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
@@ -87,6 +88,10 @@ STACK = 'stack'
 # The pages open as each key of a stop was pressed.
 STACKS_BEFORE = 'stacks_before'
 SETS_BEFORE = 'sets_before'
+# The dialog trial waiting for the cursor's next move, and which fields' ENTER is tried: those that choose or edit.
+WAITING_TRIAL = 'waiting_trial'
+OPENING_WHATS = (legends.What.CHOOSE, legends.What.EDIT)
+MOST_ESCAPES = 4
 # The file the set is written to at a stop where it changed, whether it holds unsaved changes, and the current song.
 SET_FILE = 'set'
 DIRTY = 'dirty'
@@ -219,6 +224,43 @@ class ScreenTour(KeyTour):
         super().note()
         self.record_stop()
         self.try_an_edit()
+        page = self.app.screen
+        self.waiting_trial = (page, page.cell_field()) if isinstance(page, FieldPage) else None
+
+    async def go(self, name):
+        await self.try_a_dialog()
+        return await super().go(name)
+
+    async def try_a_dialog(self):
+        """At the field noted last, while the cursor is still on it, press ENTER where the field chooses or edits and stop
+        on the dialog or page it opens, then press ESC until the page is back, so that another program is held to every
+        picker and prompt a field opens."""
+        waiting = getattr(self, WAITING_TRIAL, None)
+        self.waiting_trial = None
+        if waiting is None:
+            return
+        page, field = waiting
+        if self.app.screen is not page or page.takes_text() or page.cell_field() is not field or field is None:
+            return
+        if getattr(field, 'enter', None) is None or field.enter_what not in OPENING_WHATS or isinstance(field, Button):
+            return
+        document = self.app.get_document()
+        before = without_blanks(document.get_setlist().to_data())
+        await self.press(Key.ENTER)
+        if self.app.screen is page:
+            if without_blanks(document.get_setlist().to_data()) != before:
+                self.record_stop()
+                await self.press(Key.CTRL_Z)
+                self.record_stop()
+            return
+        self.record_stop()
+        for _ in range(MOST_ESCAPES):
+            if self.app.screen is page:
+                break
+            await self.press(Key.ESCAPE)
+        self.assertIs(self.app.screen, page)
+        if without_blanks(document.get_setlist().to_data()) != before:
+            await self.press(Key.CTRL_Z)
 
     def try_an_edit(self):
         """On a settings field, try each edit it takes that keeps to the page: ] where its value steps, Bksp where it clears and

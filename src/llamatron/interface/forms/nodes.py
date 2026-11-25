@@ -301,7 +301,9 @@ class ChoiceField(Field):
             self.page.ask_grouped(title=self.label, grouped=self.grouped, current=self.current, then=lambda place: self.set(self.grouped.value_at(place)))
             return
         opens_on = str(self.current if self.picked is None else self.picked)
-        place = self.choices.index(opens_on) if opens_on in self.choices else FIRST_CHOICE
+        # The choices are compared as text, as the current one is, so that a list of numbers opens on its current number too.
+        texts = [str(choice) for choice in self.choices]
+        place = texts.index(opens_on) if opens_on in texts else FIRST_CHOICE
         self.page.ask_choice(title=self.label, options=self.names or self.choices, current=place, then=lambda chosen: self.set(self.choices[chosen]))
 
 

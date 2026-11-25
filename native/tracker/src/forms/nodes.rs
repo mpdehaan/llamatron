@@ -118,6 +118,8 @@ pub struct Field {
     pub stepped_cells: bool,
     /// The setting the field writes, where its page stores it by name, as a drift's cells do.
     pub writes: Option<String>,
+    /// What the prompt for a number typed into the field asks, where that is more than its label.
+    pub title: Option<String>,
 }
 
 /// The next value in a list, starting from the middle where the current one isn't there, stopping at both ends.
@@ -151,6 +153,7 @@ impl Field {
             cells: Vec::new(),
             stepped_cells: false,
             writes: None,
+            title: None,
         }
     }
 
@@ -304,6 +307,12 @@ impl Field {
         self
     }
 
+    /// The field with a prompt's title of its own.
+    pub fn titled(mut self, title: &str) -> Field {
+        self.title = Some(title.to_string());
+        self
+    }
+
     pub fn writing(mut self, setting: &str) -> Field {
         self.writes = Some(setting.to_string());
         self
@@ -425,7 +434,7 @@ impl Field {
                 highest,
                 start,
             } => Edit::AskNumber {
-                title: self.label.clone(),
+                title: self.title.clone().unwrap_or_else(|| self.label.clone()),
                 value: number.unwrap_or(*start),
                 lowest: *lowest,
                 highest: *highest,

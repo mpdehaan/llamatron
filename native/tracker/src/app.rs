@@ -76,6 +76,8 @@ impl Default for Session {
 pub enum Request {
     Open(Box<dyn Page>),
     Back,
+    /// A dialog's answer, for the page that is on top once the dialog has closed.
+    Answer(crate::screens::dialogs::Answer),
 }
 
 /// What every page reaches: the set, the status line, what the session remembers, and the requests of the key in hand.
@@ -89,6 +91,8 @@ pub struct App {
     /// The screen's height as last drawn, which a page that fits itself to the whole screen reads.
     pub screen_height: std::cell::Cell<usize>,
     requests: Vec<Request>,
+    /// What a settings page's form asked the page to ask in a dialog, for the field whose key the form was handling.
+    pub asking: Option<crate::forms::nodes::Edit>,
 }
 
 impl App {
@@ -100,6 +104,7 @@ impl App {
             fluidsynth_installed: false,
             screen_height: std::cell::Cell::new(24),
             requests: Vec::new(),
+            asking: None,
         }
     }
 
@@ -109,6 +114,11 @@ impl App {
 
     pub fn go_back(&mut self) {
         self.requests.push(Request::Back);
+    }
+
+    /// Hand a dialog's answer to the page that opened it, once the dialog has closed.
+    pub fn answer(&mut self, answer: crate::screens::dialogs::Answer) {
+        self.requests.push(Request::Answer(answer));
     }
 
     pub fn say(&mut self, text: &str) {
@@ -184,6 +194,17 @@ impl Tracker {
                         self.pages.pop();
                     }
                 }
+                Request::Answer(answer) => {
+                    if let Some(page) = self.pages.last_mut() {
+                        page.answered(&mut self.app, answer);
+                    }
+                    let more = std::mem::take(&mut self.app.requests);
+                    for request in more {
+                        if let Request::Open(page) = request {
+                            self.pages.push(page);
+                        }
+                    }
+                }
             }
         }
     }
@@ -221,7 +242,25 @@ impl Tracker {
     /// The screen as shown at a size.
     pub fn screen(&self, width: usize, height: usize) -> Vec<Text> {
         self.app.screen_height.set(height);
-        page_lines(self.top(), &self.app, width, height)
+        let under = self.pages.iter().rposition(|page| !page.is_dialog()).unwrap_or(0);
+        let mut lines = page_lines(self.pages[under].as_ref(), &self.app, width, height);
+        while lines.len() < height {
+            lines.push(Text::default());
+        }
+        if under + 1 < self.pages.len() {
+            // Under a dialog the page's lines reach across the screen in the plain style, as a modal screen lays them.
+            for line in lines.iter_mut() {
+                let short = width.saturating_sub(line.cell_len());
+                let mut padded = Text::default();
+                padded.append_text(line);
+                padded.append(&" ".repeat(short), crate::drawing::Style::PLAIN);
+                *line = padded;
+            }
+        }
+        for dialog in &self.pages[under + 1..] {
+            crate::screens::dialogs::laid_over(&mut lines, &dialog.dialog_lines(&self.app, width), width);
+        }
+        lines
     }
 
     pub fn everywhere(&self) -> Vec<KeyItem> {

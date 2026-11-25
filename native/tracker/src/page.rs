@@ -98,6 +98,19 @@ pub trait Page {
 
     /// Type a character into the text, where the page takes text.
     fn type_text(&mut self, _app: &mut App, _character: char) {}
+
+    /// Whether the page is a dialog, drawn in a box over the page beneath it.
+    fn is_dialog(&self) -> bool {
+        false
+    }
+
+    /// A dialog's box, at the screen's width.
+    fn dialog_lines(&self, _app: &App, _width: usize) -> Vec<Text> {
+        Vec::new()
+    }
+
+    /// Take a dialog's answer, which the dialog the page opened hands back as it closes.
+    fn answered(&mut self, _app: &mut App, _answer: crate::screens::dialogs::Answer) {}
 }
 
 /// Seconds as minutes and seconds, like 3:05, or dashes if they aren't known.

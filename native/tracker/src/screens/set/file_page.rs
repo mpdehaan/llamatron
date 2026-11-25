@@ -256,6 +256,7 @@ impl Form for FilePage {
         if id == NOTES && edit == Edit::Enter {
             let page = crate::screens::set::notes_page::NotesPage::new(app, true);
             app.show_page(Box::new(page));
+            app.say(messages::MSG_EDITING);
         }
     }
 }

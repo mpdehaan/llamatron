@@ -16,7 +16,7 @@ use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::{Section, SongSetting, LIVE_RESPONSIVENESSES, VISUALIZER_NAMES};
 use llamatron_model::schema::generated::genres::{GENRES, SUBGENRES, VARIANTS};
 use llamatron_model::schema::generated::limits::{MAX_TEMPO, MIN_TEMPO};
-use llamatron_strings::{labels, legends, marks, named};
+use llamatron_strings::{labels, legends, marks, messages, named};
 
 const NAME: usize = 0;
 const TEMPO: usize = 1;
@@ -224,6 +224,92 @@ impl Form for SongPage {
                 ))
             }
             (PREVIEW, Edit::Clear) => Some((SongSetting::PREVIEW_INSTRUMENT, None)),
+            (TIME_SIGNATURE, Edit::Enter) => {
+                let current = song.get_time_signature().to_text();
+                app.asking = Some(Edit::AskText {
+                    title: messages::MSG_SONG_TIME_SIGNATURE_PROMPT.to_string(),
+                    value: current,
+                });
+                None
+            }
+            (TIME_SIGNATURE, Edit::Text(text)) => {
+                let text = text.trim().to_string();
+                if llamatron_model::values::time_signature::TimeSignature::from_text(&text).is_err() {
+                    use llamatron_model::values::generated::time_signature::{MAX_BEATS, MIN_BEATS, UNITS_LISTED};
+                    let words = [
+                        ("text", text.as_str().into()),
+                        ("lowest", MIN_BEATS.into()),
+                        ("highest", MAX_BEATS.into()),
+                        ("units", UNITS_LISTED.into()),
+                    ];
+                    app.refuse(&named(llamatron_strings::errors::ERR_TYPED_NOT_A_TIME_SIGNATURE, &words));
+                    return;
+                }
+                Some((SongSetting::TIME_SIGNATURE, Some(Data::Text(text))))
+            }
+            (ENTRY_SIZE, Edit::Enter) => {
+                let mut options = vec![marks::MSG_ONE_STEP_SHOWN.to_string()];
+                options.extend(STEP_SIZE_CHOICES.iter().map(|choice| choice.to_string()));
+                let mut choices = vec![String::new()];
+                choices.extend(STEP_SIZE_CHOICES.iter().map(|choice| choice.to_string()));
+                let current = song_text(song, SongSetting::ENTRY_SIZE).unwrap_or_default();
+                let place = choices.iter().position(|choice| *choice == current).unwrap_or(0);
+                app.asking = Some(Edit::AskChoice {
+                    title: labels::MSG_ENTRY_SIZE_LABEL.to_string(),
+                    options,
+                    current: place,
+                    choices,
+                });
+                None
+            }
+            (ENTRY_SIZE, Edit::Choice(chosen)) => Some((SongSetting::ENTRY_SIZE, (!chosen.is_empty()).then_some(Data::Text(chosen)))),
+            (SCALE, Edit::Enter) => {
+                let names = sorted_names(&setlist.items(Section::SCALES).iter().map(|(name, _)| name.clone()).collect::<Vec<_>>());
+                if names.is_empty() {
+                    app.refuse(llamatron_strings::errors::ERR_ADD_A_SCALE_FIRST);
+                    return;
+                }
+                let current = song.get_scale_name().unwrap_or_default();
+                let place = names.iter().position(|name| *name == current).unwrap_or(0);
+                app.asking = Some(Edit::AskChoice {
+                    title: messages::MSG_SONG_SCALE_TITLE.to_string(),
+                    options: names.clone(),
+                    current: place,
+                    choices: names,
+                });
+                None
+            }
+            (SCALE, Edit::Choice(chosen)) => Some((SongSetting::SCALE, Some(Data::Text(chosen)))),
+            (GROOVE, Edit::Enter) => {
+                let names = sorted_names(&crate::screens::set::grooves_page::groove_names(app));
+                let current = song_text(song, SongSetting::GROOVE).unwrap_or_else(|| defaults::DEFAULT_GROOVE.to_string());
+                let place = names.iter().position(|name| *name == current).unwrap_or(0);
+                app.asking = Some(Edit::AskChoice {
+                    title: messages::MSG_SONG_GROOVE_TITLE.to_string(),
+                    options: names.clone(),
+                    current: place,
+                    choices: names,
+                });
+                None
+            }
+            (GROOVE, Edit::Choice(chosen)) => Some((SongSetting::GROOVE, Some(Data::Text(chosen)))),
+            (PREVIEW, Edit::Enter) => {
+                let names = sorted_names(&setlist.items(Section::INSTRUMENTS).iter().map(|(name, _)| name.clone()).collect::<Vec<_>>());
+                let mut options = vec![labels::MSG_PREVIEW_INSTRUMENT_UNSET.to_string()];
+                options.extend(names.iter().cloned());
+                let mut choices = vec![String::new()];
+                choices.extend(names);
+                let current = song_text(song, SongSetting::PREVIEW_INSTRUMENT).unwrap_or_default();
+                let place = choices.iter().position(|choice| *choice == current).unwrap_or(0);
+                app.asking = Some(Edit::AskChoice {
+                    title: messages::MSG_PREVIEW_INSTRUMENT_TITLE.to_string(),
+                    options,
+                    current: place,
+                    choices,
+                });
+                None
+            }
+            (PREVIEW, Edit::Choice(chosen)) => Some((SongSetting::PREVIEW_INSTRUMENT, (!chosen.is_empty()).then_some(Data::Text(chosen)))),
             (LIVE_RESPONSE, Edit::Choice(chosen)) => Some((SongSetting::LIVE_RESPONSIVENESS, Some(Data::Text(chosen)))),
             (VISUALIZER, Edit::Choice(chosen)) => {
                 let value = (chosen != labels::MSG_SETS_VISUALIZER_CHOICE).then_some(Data::Text(chosen));
