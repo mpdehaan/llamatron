@@ -8,15 +8,20 @@ use crate::app::App;
 use crate::drawing::Align;
 use crate::keybindings::{ChainEditor as Keys, KeyClass};
 use crate::keys::KeyItem;
+use crate::screens::dialogs::{Answer, ChoiceDialog};
 use crate::screens::field_page::FieldPage;
 use crate::screens::generators::generators_page::label_of;
+use crate::screens::generators::generators_page::{editor_of, listed_kinds, new_generator, GeneratorChosen};
 use crate::screens::generators::statements_page::{GeneratorStatementsPage, Holder};
 use crate::screens::list_page::{ListColumn, Listing, Row};
 use crate::settings::named_in;
+use crate::settings::sorted_names;
 use crate::themes::{self, Colour};
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::Section;
-use llamatron_strings::{labels, marks, named};
+use llamatron_model::schema::generated::file_format::CHAIN_KIND;
+use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_strings::{labels, marks, messages, named};
 
 const COLUMNS: [ListColumn; 1] = [ListColumn {
     heading: labels::Column::SELECT_ANY_GENERATOR,
@@ -46,22 +51,87 @@ pub fn steps_shown(steps: &[(String, String)]) -> Vec<String> {
             }
         };
         let (kind, name) = step;
-        let label = label_of(kind);
-        if count >= FIRST_REPEAT {
-            shown.push(named(
-                marks::MSG_CHAIN_STEP_AGAIN,
-                &[("name", name.as_str().into()), ("number", count.into()), ("kind", label.into())],
-            ));
-        } else {
-            shown.push(named(marks::MSG_CHAIN_STEP_SHOWN, &[("name", name.as_str().into()), ("kind", label.into())]));
-        }
+        shown.push(step_shown(kind, name, (count >= FIRST_REPEAT).then_some(count)));
     }
     shown
 }
 
+/// Where the picker of generators opens: on making a new one.
+const NEW_GENERATOR_PLACE: usize = 0;
+
 impl ChainEditor {
     fn bind(binding: &'static crate::keybindings::Binding) -> KeyItem {
         KeyItem::of(&Keys::CLASS, binding)
+    }
+
+    /// The chain's steps, each (kind of generator, its name).
+    fn steps(&self, app: &App) -> Vec<(String, String)> {
+        match app.document.get_setlist().get_item(Section::CHAINS, &self.name) {
+            Some(Item::Chain(chain)) => chain.get_steps().to_vec(),
+            _ => Vec::new(),
+        }
+    }
+
+    /// Change the chain, as one edit of the set.
+    fn change_chain(&self, app: &mut App, change: impl FnOnce(&mut llamatron_model::objects::named::Chain)) {
+        change_chain(app, &self.name, change);
+    }
+
+    /// Ask for a generator to run: a new one first, then every generator the set has, kind by kind, each kind's by name;
+    /// then takes the kind and name of the one chosen, and a new one is made first and its editor opened.
+    fn pick_generator(&self, app: &mut App, title: &str, then: std::rc::Rc<GeneratorChosen>) {
+        let setlist = app.document.get_setlist();
+        let mut offered: Vec<(String, String)> = Vec::new();
+        for plugin in PLUGINS.iter() {
+            let names: Vec<String> = setlist.items(plugin.section).iter().map(|(name, _)| name.clone()).collect();
+            for name in sorted_names(&names) {
+                offered.push((plugin.name.to_string(), name));
+            }
+        }
+        let mut shown = vec![messages::MSG_NEW_GENERATOR_CHOICE.to_string()];
+        shown.extend(offered.iter().map(|(kind, name)| step_shown(kind, name, None)));
+        let mut dialog = ChoiceDialog::new(title, shown, NEW_GENERATOR_PLACE);
+        dialog.then = Some(Box::new(move |app: &mut App, answer: &Answer| {
+            let Answer::Chosen(place) = answer else { return };
+            if *place == NEW_GENERATOR_PLACE {
+                let then = then.clone();
+                let kinds = listed_kinds().into_iter().filter(|(kind, _, _)| *kind != CHAIN_KIND).collect();
+                new_generator(
+                    app,
+                    kinds,
+                    Box::new(move |app: &mut App, kind: &str, name: &str| {
+                        then(app, kind, name);
+                        app.show_page(editor_of(kind, name));
+                    }),
+                );
+                return;
+            }
+            let (kind, name) = &offered[*place - 1];
+            then(app, kind, name);
+        }));
+        app.show_page(Box::new(dialog));
+    }
+}
+
+/// Change a chain by its name, as one edit of the set.
+fn change_chain(app: &mut App, name: &str, change: impl FnOnce(&mut llamatron_model::objects::named::Chain)) {
+    app.document.change_set(|setlist| {
+        if let Some(Item::Chain(chain)) = setlist.get_item_mut(Section::CHAINS, name) {
+            change(chain);
+        }
+    });
+}
+
+/// A step as the chain editor shows it: the generator's kind by its page's name, then its name, counted when count is
+/// given.
+fn step_shown(kind: &str, name: &str, count: Option<usize>) -> String {
+    let label = label_of(kind);
+    match count {
+        Some(count) => named(
+            marks::MSG_CHAIN_STEP_AGAIN,
+            &[("name", name.into()), ("number", count.into()), ("kind", label.into())],
+        ),
+        None => named(marks::MSG_CHAIN_STEP_SHOWN, &[("name", name.into()), ("kind", label.into())]),
     }
 }
 
@@ -125,9 +195,56 @@ impl Listing for ChainEditor {
         vec![Self::bind(&Keys::RENAME), Self::bind(&Keys::WHEN)]
     }
 
-    /// Adding, changing a step and renaming ask in dialogs, not ported yet.
-    fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, _row: Option<&str>) -> Option<String> {
-        if item.is(&Keys::WHEN) {
+    fn can_add(&self) -> bool {
+        true
+    }
+
+    fn carries_rows(&self) -> bool {
+        true
+    }
+
+    fn carry_row(&mut self, app: &mut App, place: usize, offset: i64) -> bool {
+        if !(0..self.steps(app).len() as i64).contains(&(place as i64 + offset)) {
+            return false;
+        }
+        self.change_chain(app, |chain| {
+            chain.move_step(place, offset);
+        });
+        true
+    }
+
+    /// A adds a step at the end, ENTER changes the selected one's generator, C runs it again after itself, Bksp takes it
+    /// out, N renames the chain and W opens its statements.
+    fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {
+        let place: Option<usize> = row.and_then(|row| row.parse().ok());
+        if item.is(&Keys::ADD) || item.is(&Keys::ADD_HERE) {
+            let chain = self.name.clone();
+            let added = std::rc::Rc::new(move |app: &mut App, kind: &str, name: &str| {
+                change_chain(app, &chain, |held| held.add_step(kind, name));
+                let steps = app.document.get_setlist().get_item(Section::CHAINS, &chain).map_or(0, |item| match item {
+                    Item::Chain(held) => held.get_steps().len(),
+                    _ => 0,
+                });
+                app.cursor_to(&steps.saturating_sub(1).to_string());
+            });
+            self.pick_generator(app, messages::MSG_ADD_TO_CHAIN_TITLE, added);
+        } else if item.is(&Keys::CHANGE) {
+            let place = place?;
+            let chain = self.name.clone();
+            let changed = std::rc::Rc::new(move |app: &mut App, kind: &str, name: &str| {
+                change_chain(app, &chain, |held| held.set_step(place, kind, name));
+            });
+            self.pick_generator(app, messages::MSG_CHANGE_STEP_TITLE, changed);
+        } else if item.is(&Keys::COPY) {
+            let place = place?;
+            self.change_chain(app, |chain| chain.copy_step(place));
+            return Some((place + 1).to_string());
+        } else if item.is(&Keys::REMOVE) {
+            let place = place?;
+            self.change_chain(app, |chain| chain.remove_step(place));
+        } else if item.is(&Keys::RENAME) {
+            crate::screens::rename::ask_rename(app, Section::CHAINS, &self.name, messages::MSG_RENAME_CHAIN_PROMPT);
+        } else if item.is(&Keys::WHEN) {
             let page = GeneratorStatementsPage {
                 holder: Holder::Chain(self.name.clone()),
             };

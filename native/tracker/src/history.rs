@@ -206,6 +206,8 @@ pub fn describe_change(leaving: &Snapshot, arriving: &Snapshot) -> String {
 pub struct Renames {
     pub named: Vec<(String, String, String)>,
     pub scenes: Vec<(usize, Option<String>)>,
+    /// Whether the rename was made on a page just now, which a list's cursor follows, rather than by an undo or redo.
+    pub made_here: bool,
 }
 
 impl Renames {
@@ -222,6 +224,7 @@ impl Renames {
         Renames {
             named: vec![(section.to_string(), old.to_string(), new.to_string())],
             scenes: Vec::new(),
+            made_here: true,
         }
     }
 }

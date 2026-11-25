@@ -443,6 +443,10 @@ pub fn shown_around(count: usize, at: usize, room: usize) -> std::ops::Range<usi
 }
 
 impl<L: Listing> Page for ListPage<L> {
+    fn go_to_row(&mut self, app: &App, row: &str) {
+        self.put_cursor_on(app, row);
+    }
+
     fn follow_renames(&mut self, renames: &crate::history::Renames) {
         self.listing.follow_renames(renames);
     }

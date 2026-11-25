@@ -234,6 +234,12 @@ impl Document {
         Ok(())
     }
 
+    /// Show these kinds of generator open on the Generators page and every other closed, as the screen tour takes up the
+    /// Python's.
+    pub fn set_open_generator_types(&mut self, kinds: Vec<String>) {
+        self.open_generator_types = kinds;
+    }
+
     pub fn is_generator_type_open(&self, kind: &str) -> bool {
         self.open_generator_types.iter().any(|open| open == kind)
     }

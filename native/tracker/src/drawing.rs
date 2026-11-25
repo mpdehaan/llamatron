@@ -42,7 +42,8 @@ impl Style {
     pub const DRAW_LIGHT: &'static str = "bold #be5aff";
     pub const DRAW_LIGHT_REVERSED: &'static str = "bold reverse #be5aff";
     pub const REFUSAL: &'static str = "rgb(255,176,0)";
-    pub const DELETE_TITLE: &'static str = "bold red";
+    /// Red, as the Python's dialogs come out of Rich: by the terminal's palette number, which is its red.
+    pub const DELETE_TITLE: &'static str = "bold color(1)";
     pub const DETAILS_DIVIDER: &'static str = "blue";
     pub const PLAYING_SCENE: &'static str = "blue";
     pub const DETAILS_LOCKED: &'static str = "green";

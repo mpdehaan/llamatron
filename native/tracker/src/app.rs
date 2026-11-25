@@ -84,6 +84,8 @@ pub enum Request {
     Back,
     /// A rename made by a dialog's answer, which every open page follows.
     Renamed(crate::history::Renames),
+    /// The row, by its key, that a dialog's answer puts the cursor of the page it answered on, such as a row it added.
+    CursorTo(String),
     /// A dialog's answer, for the page that is on top once the dialog has closed.
     Answer(crate::screens::dialogs::Answer),
 }
@@ -142,6 +144,11 @@ impl App {
 
     pub fn go_back(&mut self) {
         self.requests.push(Request::Back);
+    }
+
+    /// Put the cursor of the page a dialog answered on a row, by its key, such as the row the answer added.
+    pub fn cursor_to(&mut self, row: &str) {
+        self.requests.push(Request::CursorTo(row.to_string()));
     }
 
     /// Have every open page follow a rename just made, such as an editor's of its own thing.
@@ -259,6 +266,7 @@ impl Tracker {
                     }
                 }
                 Request::Answer(answer) => {
+                    let answered = self.pages.len().saturating_sub(1);
                     if let Some(page) = self.pages.last_mut() {
                         page.answered(&mut self.app, answer);
                     }
@@ -267,11 +275,21 @@ impl Tracker {
                         match request {
                             Request::Open(page) => self.pages.push(page),
                             Request::Renamed(renames) => self.follow_renames(&renames),
+                            Request::CursorTo(row) => {
+                                if let Some(page) = self.pages.get_mut(answered) {
+                                    page.go_to_row(&self.app, &row);
+                                }
+                            }
                             _ => {}
                         }
                     }
                 }
                 Request::Renamed(renames) => self.follow_renames(&renames),
+                Request::CursorTo(row) => {
+                    if let Some(page) = self.pages.last_mut() {
+                        page.go_to_row(&self.app, &row);
+                    }
+                }
             }
         }
     }

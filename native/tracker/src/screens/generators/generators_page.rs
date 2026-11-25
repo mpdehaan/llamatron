@@ -69,15 +69,121 @@ pub fn listed_kinds() -> Vec<(&'static str, &'static str, &'static str)> {
 
 pub struct GeneratorsPage {
     cursor: Cell<usize>,
+    /// The generator, by kind and name, that the cursor goes to when the page is next drawn, such as one just renamed.
+    going_to: std::rc::Rc<std::cell::RefCell<Option<(String, String)>>>,
     searching: bool,
     typed: String,
     place_before_search: usize,
 }
 
+/// The editor of a generator of a kind: a chain's list of steps, or a plugin's settings page.
+pub fn editor_of(kind: &str, name: &str) -> Box<dyn Page> {
+    match PLUGINS.iter().find(|plugin| plugin.name == kind) {
+        Some(plugin) => Box::new(crate::screens::field_page::FieldPage::new(
+            crate::screens::generators::plugin_editor::PluginEditor {
+                kind: plugin.name,
+                name: name.to_string(),
+            },
+        )),
+        None => Box::new(crate::screens::list_page::ListPage::new(
+            crate::screens::generators::chain_editor::ChainEditor { name: name.to_string() },
+        )),
+    }
+}
+
+/// A name the tracker makes up from a label: lowercase, an underscore where a space would be.
+fn suggested_word(label: &str) -> String {
+    label.trim().to_lowercase().replace(' ', "_")
+}
+
+/// What takes a generator chosen or made, by its kind and name.
+pub type GeneratorChosen = dyn Fn(&mut App, &str, &str);
+
+/// Ask which of some kinds of generator to make, each (kind, section, label), make one named after the kind and numbered,
+/// and hand its kind and name on.
+pub fn new_generator(app: &mut App, kinds: Vec<(&'static str, &'static str, &'static str)>, then: Box<GeneratorChosen>) {
+    let options = kinds.iter().map(|(_, _, label)| label.to_string()).collect();
+    let mut dialog = crate::screens::dialogs::ChoiceDialog::new(messages::MSG_NEW_GENERATOR_KIND_TITLE, options, 0);
+    dialog.then = Some(Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
+        let crate::screens::dialogs::Answer::Chosen(place) = answer else { return };
+        let (kind, section, label) = kinds[*place];
+        let name = app.document.new_name(section, &suggested_word(label));
+        match app.document.add_generator(section, &name) {
+            Ok(()) => then(app, kind, &name),
+            Err(problem) => app.refuse(&problem),
+        }
+    }));
+    app.show_page(Box::new(dialog));
+}
+
 impl GeneratorsPage {
+    /// Ask which type of generator to make, make one, put the cursor on it and open it.
+    fn add(&self, app: &mut App) {
+        // Which generator the cursor goes to is known only once the dialog has made it.
+        let going_to = self.going_to.clone();
+        new_generator(
+            app,
+            listed_kinds(),
+            Box::new(move |app: &mut App, kind: &str, name: &str| {
+                app.document.show_generator_type(kind, true);
+                *going_to.borrow_mut() = Some((kind.to_string(), name.to_string()));
+                app.show_page(editor_of(kind, name));
+            }),
+        );
+    }
+
+    /// Rename, copy or delete the selected generator: a copy says what it is called and takes the cursor, and a delete asks
+    /// first, saying which chains and lists it is taken out of.
+    fn edit_generator(&self, app: &mut App, item: &KeyItem, kind: &str, name: &str) {
+        let Some(&(_, section, label)) = listed_kinds().iter().find(|(found, _, _)| *found == kind) else {
+            return;
+        };
+        if item.is(&Keys::RENAME) {
+            let prompt = named(messages::MSG_RENAME_GENERATOR_PROMPT, &[("label", label.into())]);
+            crate::screens::rename::ask_rename(app, section, name, &prompt);
+        } else if item.is(&Keys::COPY) {
+            match app.document.copy_named(section, name) {
+                Ok(new) => {
+                    app.say(&named(messages::MSG_COPIED_TO, &[("name", new.as_str().into())]));
+                    app.document.show_generator_type(kind, true);
+                    *self.going_to.borrow_mut() = Some((kind.to_string(), new));
+                }
+                Err(problem) => app.refuse(&problem),
+            }
+        } else {
+            let what = named(
+                llamatron_strings::legends::MSG_GENERATOR_WHAT,
+                &[("label", label.into()), ("name", name.into())],
+            );
+            let mut lines = Vec::new();
+            let uses = uses_of(app.document.get_setlist(), section, name);
+            if !uses.is_empty() {
+                lines.push(messages::MSG_TAKEN_OUT_OF.to_string());
+                lines.extend(uses.iter().take(MOST_USES_SHOWN).cloned());
+                if uses.len() > MOST_USES_SHOWN {
+                    lines.push(named(
+                        llamatron_strings::errors::ERR_AND_MORE,
+                        &[("count", (uses.len() - MOST_USES_SHOWN).into())],
+                    ));
+                }
+            }
+            let question = named(messages::MSG_DELETE_QUESTION, &[("what", what.as_str().into())]);
+            let name = name.to_string();
+            let confirm = crate::screens::dialogs::ConfirmDialog::new(&question, lines, false, true).then(Box::new(
+                move |app: &mut App, _: &crate::screens::dialogs::Answer| {
+                    if let Err(problem) = app.document.delete_named(section, &name) {
+                        app.refuse(&problem);
+                    }
+                },
+            ));
+            app.show_page(Box::new(confirm));
+        }
+    }
+
     pub fn new(app: &App) -> GeneratorsPage {
         let page = GeneratorsPage {
             cursor: Cell::new(0),
+            going_to: std::rc::Rc::new(std::cell::RefCell::new(None)),
             searching: false,
             typed: String::new(),
             place_before_search: 0,
@@ -132,6 +238,12 @@ impl GeneratorsPage {
     }
 
     fn place(&self, app: &App) -> usize {
+        if let Some((kind, name)) = self.going_to.borrow_mut().take() {
+            let wanted = Listed::Generator(kind, name);
+            if let Some(found) = self.rows(app).iter().position(|(listed, _)| *listed == wanted) {
+                self.cursor.set(found);
+            }
+        }
         let place = self.cursor.get().min(self.rows(app).len() - 1);
         self.cursor.set(place);
         place
@@ -208,7 +320,22 @@ impl GeneratorsPage {
     }
 }
 
+/// How many of the chains and lists a deleted generator is taken out of its question lists.
+const MOST_USES_SHOWN: usize = 5;
+
 impl Page for GeneratorsPage {
+    /// After a rename made here, the cursor goes to the generator under its new name.
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        if !renames.made_here {
+            return;
+        }
+        for (section, _, new) in &renames.named {
+            if let Some((kind, _, _)) = listed_kinds().into_iter().find(|(_, found, _)| found == section) {
+                *self.going_to.borrow_mut() = Some((kind.to_string(), new.clone()));
+            }
+        }
+    }
+
     fn name(&self) -> &'static str {
         "GeneratorsPage"
     }
@@ -268,16 +395,15 @@ impl Page for GeneratorsPage {
             self.place(app);
         } else if item.is(&Keys::SEARCH_KEEP) {
             self.searching = false;
+        } else if item.is(&Keys::ADD) || item.is(&Keys::ADD_HERE) {
+            self.add(app);
+        } else if item.is(&Keys::RENAME) || item.is(&Keys::COPY) || item.is(&Keys::DELETE) {
+            if let Listed::Generator(kind, name) = self.listed(app) {
+                self.edit_generator(app, item, &kind, &name);
+            }
         } else if item.is(&Keys::EDIT) {
             if let Listed::Generator(kind, name) = self.listed(app) {
-                match PLUGINS.iter().find(|plugin| plugin.name == kind) {
-                    Some(plugin) => app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
-                        crate::screens::generators::plugin_editor::PluginEditor { kind: plugin.name, name },
-                    ))),
-                    None => app.show_page(Box::new(crate::screens::list_page::ListPage::new(
-                        crate::screens::generators::chain_editor::ChainEditor { name },
-                    ))),
-                }
+                app.show_page(editor_of(&kind, &name));
             }
         }
     }

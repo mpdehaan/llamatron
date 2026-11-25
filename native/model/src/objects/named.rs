@@ -154,6 +154,43 @@ impl Chain {
     }
 
     /// Store the statements that bypass the whole chain, or None for none.
+    /// Add a step at the end: a generator of a kind, by its name.
+    pub fn add_step(&mut self, kind: &str, name: &str) {
+        self.steps.push((kind.to_string(), name.to_string()));
+    }
+
+    /// Make the step at a place another generator, where there is a step there.
+    pub fn set_step(&mut self, place: usize, kind: &str, name: &str) {
+        if let Some(step) = self.steps.get_mut(place) {
+            *step = (kind.to_string(), name.to_string());
+        }
+    }
+
+    /// Put the same generator again right after the step at a place.
+    pub fn copy_step(&mut self, place: usize) {
+        if let Some(step) = self.steps.get(place).cloned() {
+            self.steps.insert(place + 1, step);
+        }
+    }
+
+    /// Take out the step at a place.
+    pub fn remove_step(&mut self, place: usize) {
+        if place < self.steps.len() {
+            self.steps.remove(place);
+        }
+    }
+
+    /// Move the step at a place up or down the chain, and say whether it moved: it stops at either end.
+    pub fn move_step(&mut self, place: usize, offset: i64) -> bool {
+        let target = place as i64 + offset;
+        if place >= self.steps.len() || !(0..self.steps.len() as i64).contains(&target) {
+            return false;
+        }
+        let step = self.steps.remove(place);
+        self.steps.insert(target as usize, step);
+        true
+    }
+
     pub fn set_bypass_when(&mut self, statements: Option<Data>) {
         self.bypass_when = statements;
     }

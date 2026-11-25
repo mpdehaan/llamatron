@@ -64,6 +64,27 @@ impl Document {
         new_name(word, &self.names_taken(section))
     }
 
+    /// Add a generator of a section with the settings a new one starts with (the Python's settings_of(kind).new()): a chain
+    /// with no steps, an arpeggiator playing up, and any other kind with nothing set.
+    pub fn add_generator(&mut self, section: &str, name: &str) -> Result<(), String> {
+        let item = if section == llamatron_model::schema::generated::file_format::Section::CHAINS {
+            Data::List(Vec::new())
+        } else if section == ARPS {
+            Data::Map(vec![(Data::text(ARP_ORDER), Data::text(ARP_ORDER_UP))])
+        } else {
+            Data::Map(Vec::new())
+        };
+        self.edit_data(|data| {
+            let mut data = data.clone();
+            let mut items = data.get(section).cloned().unwrap_or(Data::Map(Vec::new()));
+            if let Data::Map(pairs) = &mut items {
+                pairs.push((Data::text(name), item));
+            }
+            data.set(section, items);
+            data
+        })
+    }
+
     /// Change the set by its data, the change read back into the set, refused with why where the set would not read.
     fn edit_data(&mut self, change: impl FnOnce(&Data) -> Data) -> Result<(), String> {
         let changed = change(&self.get_setlist().to_data());
@@ -272,3 +293,8 @@ fn renamed_group(data: &Data, old: &str, new: &str) -> Data {
     }
     data
 }
+
+/// The arpeggiators' section, and the order a new one plays in.
+const ARPS: &str = "arps";
+const ARP_ORDER: &str = "order";
+const ARP_ORDER_UP: &str = "up";

@@ -132,6 +132,10 @@ fn color_of(name: &str) -> Option<Color> {
         }
         return None;
     }
+    // A numbered colour of the terminal's own palette, as Rich writes a dialog's colours.
+    if let Some(number) = name.strip_prefix("color(").and_then(|rest| rest.strip_suffix(')')) {
+        return number.trim().parse().ok().map(Color::AnsiValue);
+    }
     let named = match name {
         "default" => Color::Reset,
         "black" => Color::Black,

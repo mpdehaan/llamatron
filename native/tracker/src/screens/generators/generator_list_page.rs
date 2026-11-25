@@ -98,7 +98,9 @@ impl GeneratorListPage {
             };
             let mut names = page.names(app);
             names.push(offered[*place].clone());
+            let added = (names.len() - 1).to_string();
             page.store(app, names);
+            app.cursor_to(&added);
         }));
         app.show_page(Box::new(dialog));
     }

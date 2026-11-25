@@ -86,6 +86,9 @@ pub trait Page {
         true
     }
 
+    /// Put the cursor on a row by its key, where the page has rows.
+    fn go_to_row(&mut self, _app: &App, _row: &str) {}
+
     /// Keep showing the same thing after a step renamed it, an undo, a redo or the page's own rename.
     fn follow_renames(&mut self, _renames: &crate::history::Renames) {}
 
