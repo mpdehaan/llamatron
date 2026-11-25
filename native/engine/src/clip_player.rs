@@ -164,7 +164,9 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                 }
                 _ => {
                     let seed = self.realizer.chain_step_seed(self.scene, self.track_name, index as i128)?;
-                    Generator::Arp(Arp::of(&step.settings, self.pattern_step()?, bar, seed)?)
+                    let restart = step.settings.get(GENERATOR_RESTART).map(|restart| restart.python_str());
+                    let continuation = self.realizer.continuation(self.scene, self.track_name, &key, restart.as_deref())?;
+                    Generator::Arp(Box::new(Arp::of(&step.settings, self.pattern_step()?, bar, seed, continuation.state)?))
                 }
             };
             clip = generator.generate(&clip)?;

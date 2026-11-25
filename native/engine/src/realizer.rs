@@ -14,6 +14,7 @@ use crate::clip_player::ClipSlotPlayer;
 use crate::error::{RenderError, Rendered};
 use crate::generators::chords::Continuation;
 use crate::generators::timing::{MovingRow, NudgePlan};
+use crate::generators::GeneratorState;
 use crate::grab_source::GrabSource;
 use crate::groove::{groove_for, Groove};
 use crate::sound::Sound;
@@ -204,7 +205,7 @@ pub struct SongRealizer<'a> {
 pub type GeneratorKey = (String, String, i64);
 
 /// The state a generator leaves a clip in, for the next to carry on from: a voicing's last chord, or none.
-pub type EndState = Option<Vec<i64>>;
+pub type EndState = Option<GeneratorState>;
 
 /// A step of a clip's chains: its generator's kind, the name it goes by, and its settings, a built-in's its own and a
 /// named generator's the set's.
@@ -501,7 +502,7 @@ impl<'a> SongRealizer<'a> {
         Ok(Continuation { offset, state })
     }
 
-    fn earlier_state(&self, start: usize, here: usize, track: &str, key: &GeneratorKey, state: &mut Option<Vec<i64>>) -> Rendered<()> {
+    fn earlier_state(&self, start: usize, here: usize, track: &str, key: &GeneratorKey, state: &mut EndState) -> Rendered<()> {
         for written in self.scenes[start..here].iter().rev() {
             if written.scene.get_clip_slot(track).is_none() {
                 continue;
@@ -515,7 +516,7 @@ impl<'a> SongRealizer<'a> {
         Ok(())
     }
 
-    pub fn keep_end_state(&self, scene: &WrittenScene, track: &str, key: GeneratorKey, state: Option<Vec<i64>>) {
+    pub fn keep_end_state(&self, scene: &WrittenScene, track: &str, key: GeneratorKey, state: EndState) {
         self.end_states.borrow_mut().insert((scene.number, track.to_string(), key), state);
     }
 

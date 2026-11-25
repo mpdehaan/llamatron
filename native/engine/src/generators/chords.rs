@@ -76,7 +76,7 @@ const OCTAVES_TRIED: i64 = 4;
 #[derive(Clone, Debug, Default)]
 pub struct Continuation {
     pub offset: Rational,
-    pub state: Option<Vec<i64>>,
+    pub state: Option<super::GeneratorState>,
 }
 
 /// A Chords generator's settings as a clip or a chain holds them.
@@ -201,7 +201,10 @@ impl<'a> ChordsSettings<'a> {
             lowest_octave: self.whole_or(LOWEST_OCTAVE, DEFAULT_LOWEST_OCTAVE),
             highest_octave: self.whole_or(HIGHEST_OCTAVE, DEFAULT_HIGHEST_OCTAVE),
             root_in_bass: self.written(ROOT_IN_BASS).is_some_and(|value| *value == Data::Bool(true)),
-            before: continuation.state.clone(),
+            before: match &continuation.state {
+                Some(super::GeneratorState::Voicing(before)) => Some(before.clone()),
+                _ => None,
+            },
         }
     }
 

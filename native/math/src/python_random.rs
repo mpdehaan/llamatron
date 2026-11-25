@@ -25,6 +25,7 @@ pub enum Seed<'a> {
     Text(&'a str),
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct PythonRandom {
     state: [u32; SIZE],
     place: usize,

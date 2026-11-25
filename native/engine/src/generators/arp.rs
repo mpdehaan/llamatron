@@ -7,13 +7,15 @@
 
 use crate::clip::Clip;
 use crate::error::{RenderError, Rendered};
+use crate::generators::GeneratorState;
 use crate::positions::fit_to_length;
 use crate::sound::{along_scale, NoteSound, Sound};
 use llamatron_math::{PythonRandom, Rational, Seed};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::checking::{time_length, TimeLength};
-use llamatron_model::schema::generated::file_format::{Restart, BYPASS_WHEN, GENERATOR_ENABLED, GENERATOR_RESTART};
+use llamatron_model::schema::generated::file_format::{BYPASS_WHEN, GENERATOR_ENABLED, GENERATOR_RESTART};
 use llamatron_model::values::scale::Scale;
+use std::cell::RefCell;
 
 const STEP: &str = "step";
 const ORDER: &str = "order";
@@ -47,12 +49,15 @@ pub struct Arp {
     octave_range: i64,
     after_each_note: bool,
     offsets: Option<Vec<Option<i64>>>,
+    // Where the draws of the same track's clip before in the run reached, for an Arp that carries on, and where this one's do.
+    start_state: Option<PythonRandom>,
+    end_state: RefCell<Option<PythonRandom>>,
 }
 
 impl Arp {
     /// An arpeggiator from its settings at a clip's place: the clip's pattern's step unless its own is set, a step in bars
     /// that many of the song's bars, and the seed its place gives.
-    pub fn of(settings: &Data, pattern_step: Rational, bar: Rational, seed: Option<i128>) -> Rendered<Arp> {
+    pub fn of(settings: &Data, pattern_step: Rational, bar: Rational, seed: Option<i128>, start_state: Option<GeneratorState>) -> Rendered<Arp> {
         for (key, value) in settings.as_map().unwrap_or(&[]) {
             let name = key.python_str();
             if !PORTED.contains(&name.as_str()) && !value.is_null() {
@@ -74,10 +79,6 @@ impl Arp {
             Some("down_up") => Order::DownUp,
             Some(_) => Order::Random,
         };
-        let restart = written(GENERATOR_RESTART).map(Data::python_str);
-        if order == Order::Random && restart.as_deref().is_some_and(|restart| restart != Restart::EVERY_CLIP) {
-            return Err(RenderError::not_ported("a random Arp that carries on through its run"));
-        }
         let offsets = written(OFFSETS)
             .and_then(Data::as_list)
             .map(|offsets| offsets.iter().map(|offset| offset.as_whole().map(|offset| offset as i64)).collect());
@@ -88,13 +89,19 @@ impl Arp {
             octave_range: written(OCTAVE_RANGE).and_then(Data::as_whole).map(|range| range as i64).unwrap_or(1),
             after_each_note: written(OCTAVE_JUMP).map(Data::python_str).as_deref() == Some("after_each_note"),
             offsets,
+            start_state: match start_state {
+                Some(GeneratorState::Random(random)) => Some(*random),
+                _ => None,
+            },
+            end_state: RefCell::new(None),
         })
     }
 
     pub fn generate(&self, clip: &Clip) -> Rendered<Clip> {
-        let mut random = match self.seed {
-            Some(seed) => PythonRandom::new(Seed::Whole(seed)),
-            None => PythonRandom::unseeded(),
+        let mut random = match (self.seed, &self.start_state) {
+            (Some(_), Some(state)) => state.clone(),
+            (Some(seed), None) => PythonRandom::new(Seed::Whole(seed)),
+            (None, _) => PythonRandom::unseeded(),
         };
         let original = clip.resolved_sounds()?;
         let scale = clip.scale.as_ref();
@@ -108,6 +115,9 @@ impl Arp {
             }
             positions = fit_to_length(&positions, wanted);
         }
+        if self.seed.is_some() {
+            *self.end_state.borrow_mut() = Some(random);
+        }
         Ok(Clip {
             sounds: positions,
             time_signature: None,
@@ -115,6 +125,11 @@ impl Arp {
             groove: None,
             ..clip.clone()
         })
+    }
+
+    /// Where its draws reached, for the same track's next clip in its run to carry on from.
+    pub fn end_state(&self) -> Option<GeneratorState> {
+        self.end_state.borrow().clone().map(|random| GeneratorState::Random(Box::new(random)))
     }
 
     fn plays_single_notes(&self) -> bool {
