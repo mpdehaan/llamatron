@@ -51,6 +51,8 @@ pub struct Session {
     pub chosen_tabs: std::collections::HashMap<String, String>,
     /// Whether the pattern editor shows the piano roll rather than the rows, kept as you move between patterns.
     pub on_roll: bool,
+    /// The pattern editor's open sections, by name, kept for the session.
+    pub open_sections: std::collections::HashSet<String>,
 }
 
 impl Default for Session {
@@ -59,6 +61,10 @@ impl Default for Session {
             open_field_sections: Default::default(),
             chosen_tabs: Default::default(),
             on_roll: true,
+            open_sections: crate::screens::pattern::rows_view::OPEN_AT_START
+                .iter()
+                .map(|section| section.to_string())
+                .collect(),
         }
     }
 }
@@ -77,6 +83,8 @@ pub struct App {
     /// Whether FluidSynth is installed to play General MIDI, which offers Listen on a pattern whose song names no Preview
     /// instrument.
     pub fluidsynth_installed: bool,
+    /// The screen's height as last drawn, which a page that fits itself to the whole screen reads.
+    pub screen_height: std::cell::Cell<usize>,
     requests: Vec<Request>,
 }
 
@@ -87,6 +95,7 @@ impl App {
             status: StatusLine::default(),
             session: Session::default(),
             fluidsynth_installed: false,
+            screen_height: std::cell::Cell::new(24),
             requests: Vec::new(),
         }
     }
@@ -177,6 +186,7 @@ impl Tracker {
 
     /// The screen as shown at a size.
     pub fn screen(&self, width: usize, height: usize) -> Vec<Text> {
+        self.app.screen_height.set(height);
         page_lines(self.top(), &self.app, width, height)
     }
 

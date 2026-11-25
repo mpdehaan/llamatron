@@ -9,13 +9,13 @@
 use crate::app::App;
 use crate::drawing::{fit, Style, SPACE};
 use crate::forms::pattern_grid::{self as grid, CellKind, Edge, LabelKind, RollCell, RollRow, Rule, RuleKind, CELL_WIDTH, EDGE_WIDTH, MARK_COLUMN};
-use crate::keybindings::{KeyClass, PatternEditor as Keys, PianoRoll as RollKeys};
+use crate::keybindings::{KeyClass, PatternEditor as Keys, PatternRows as RowsKeys, PianoRoll as RollKeys};
 use crate::keys::{in_order, KeyItem};
 use crate::page::{clock_exact, Duration, Page};
 use crate::patterns::{
     self, covering_notes, note_span, partial_cell, pattern_octave_range, pattern_scale, scale_half_steps, scale_root, scales_of_pattern, value,
 };
-use crate::screens::not_ported::NOT_PORTED;
+use crate::screens::pattern::rows_view::{RowName, Rows};
 use crate::settings::{named_in, octave_labels, shown_octave};
 use crate::text::Text;
 use crate::themes::{self, Colour};
@@ -32,11 +32,11 @@ use llamatron_strings::{labels, marks, messages, named, names};
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
 
-/// The rows view's widest label, Ratchet Offset, with a space either side, until the rows view is ported and works it out.
-const ROWS_LABEL_WIDTH: usize = 16;
 /// The lines the roll's header, rules, numbers and description take around its rows, and the fewest rows it shows.
 const LINES_AROUND_ROWS: usize = 7;
 const LINES_AFTER_GRID: usize = 2;
+/// The legend's usual height, which the Degree gauge is fitted to, so that it keeps one height as the cursor moves.
+const LEGEND_LINES: usize = 4;
 const TOP_PITCH_LINE: usize = 3;
 const HALF_STEPS_PER_OCTAVE: i64 = 12;
 /// The octave a scale's notes are spelled in.
@@ -60,6 +60,10 @@ pub struct PatternEditor {
     top_pitch: Cell<Option<i64>>,
     /// Whether the roll showed when the page last answered, which names the page for the screen tour.
     on_roll_now: Cell<bool>,
+    /// The rows view's cursor, by its place among the rows it can reach, and the first scrolled row shown.
+    row: Cell<usize>,
+    first_row: Cell<usize>,
+    gauge_rows: Cell<usize>,
 }
 
 /// What the roll needs to know of the pattern and its scale, gathered once a key or a drawing.
@@ -274,6 +278,9 @@ impl PatternEditor {
             pitch: Cell::new(None),
             top_pitch: Cell::new(None),
             on_roll_now: Cell::new(true),
+            row: Cell::new(0),
+            first_row: Cell::new(0),
+            gauge_rows: Cell::new(7),
         }
     }
 
@@ -309,8 +316,40 @@ impl PatternEditor {
         pitch
     }
 
-    fn label_width(&self, roll: &Roll) -> usize {
-        ROWS_LABEL_WIDTH.max(roll.widest_row_label() + 2)
+    fn label_width(&self, app: &App, roll: &Roll) -> usize {
+        let rows_width = self.rows(app).widest_label();
+        if roll.pattern.is_drum() {
+            return rows_width;
+        }
+        rows_width.max(roll.widest_row_label() + 2)
+    }
+
+    fn rows<'a>(&self, app: &'a App) -> Rows<'a> {
+        let setlist = app.document.get_setlist();
+        let song = app.document.song();
+        let pattern = setlist.get_pattern(&self.name).expect("the editor's pattern is in the set");
+        let default_octave = if pattern.is_drum() {
+            setlist.get_default_drum_octave()
+        } else {
+            setlist.get_default_octave()
+        };
+        Rows {
+            setlist,
+            song,
+            pattern,
+            name: self.name.clone(),
+            scale: pattern_scale(setlist, song, &self.name),
+            open: &app.session.open_sections,
+            gauge_rows: self.gauge_rows.get(),
+            default_octave,
+        }
+    }
+
+    fn row_cursor(&self, rows: &Rows) -> (usize, RowName) {
+        let reachable = rows.reachable();
+        let place = self.row.get().min(reachable.len() - 1);
+        self.row.set(place);
+        (place, reachable[place].clone())
     }
 
     fn steps_shown(&self, width: usize, label_width: usize) -> usize {
@@ -392,7 +431,8 @@ impl PatternEditor {
         }
     }
 
-    fn header_lines(&self, app: &App, roll: &Roll, width: usize, first: usize, last: usize) -> Vec<Text> {
+    fn header_lines(&self, app: &App, roll: &Roll, width: usize, window: (usize, usize), extra: Vec<String>) -> Vec<Text> {
+        let (first, last) = window;
         let pattern = roll.pattern;
         let drum = if pattern.is_drum() { marks::MSG_DRUM_ON } else { marks::MSG_DRUM_OFF };
         let whose = |setting: &str| {
@@ -417,6 +457,26 @@ impl PatternEditor {
             named(marks::MSG_DIRECTION_HEADER, &[("direction", direction.as_str().into())]),
         ];
         let signature = pattern.get_time_signature().unwrap_or_else(|| app.document.song().get_time_signature());
+        let mut second_cells = vec![named(
+            marks::MSG_TIME_SIGNATURE_SHOWN,
+            &[
+                ("signature", signature.to_text().as_str().into()),
+                ("whose", whose(PatternSetting::TIME_SIGNATURE).into()),
+            ],
+        )];
+        second_cells.extend(extra);
+        let lines = header_cells(&[first_cells, second_cells]);
+        let shown = self.steps_shown_text(pattern.get_steps() as usize, first, last);
+        let mut second = lines[1].clone();
+        if !shown.is_empty() {
+            second = format!("{} {shown}", fit(&second, width.saturating_sub(shown.chars().count() + 1)));
+        }
+        vec![Text::plain(&lines[0]), Text::plain(&second)]
+    }
+
+    /// The second header line's cells after Time on the roll: the scale and the entry size.
+    fn roll_extra(&self, app: &App, roll: &Roll) -> Vec<String> {
+        let pattern = roll.pattern;
         let entry = app
             .document
             .song()
@@ -427,27 +487,13 @@ impl PatternEditor {
             .and_then(|value| llamatron_model::schema::checking::written_length(value, Rational::whole(4)).ok())
             .unwrap_or(roll.step_size);
         let entry_whose = if pattern_entry.is_some() { "" } else { marks::MSG_FROM_SONG_SHOWN };
-        let second_cells = vec![
-            named(
-                marks::MSG_TIME_SIGNATURE_SHOWN,
-                &[
-                    ("signature", signature.to_text().as_str().into()),
-                    ("whose", whose(PatternSetting::TIME_SIGNATURE).into()),
-                ],
-            ),
+        vec![
             self.scale_said(app, roll),
             named(
                 marks::MSG_ENTRY_SIZE_SHOWN,
                 &[("size", fraction(entry_size).as_str().into()), ("whose", entry_whose.into())],
             ),
-        ];
-        let lines = header_cells(&[first_cells, second_cells]);
-        let shown = self.steps_shown_text(pattern.get_steps() as usize, first, last);
-        let mut second = lines[1].clone();
-        if !shown.is_empty() {
-            second = format!("{} {shown}", fit(&second, width.saturating_sub(shown.chars().count() + 1)));
-        }
-        vec![Text::plain(&lines[0]), Text::plain(&second)]
+        ]
     }
 
     fn pitches_shown(&self, roll: &Roll, rows: &[i64], pitch: i64, height: usize) -> Vec<i64> {
@@ -688,13 +734,13 @@ impl PatternEditor {
         let roll = Roll::of(app, &self.name);
         let rows = roll.rows();
         let pitch = self.place_cursor(&roll, &rows);
-        let label_width = self.label_width(&roll);
+        let label_width = self.label_width(app, &roll);
         let count = roll.pattern.get_steps() as usize;
         let (first, last) = self.window_of_steps(count, self.steps_shown(width, label_width));
         let pitches = self.pitches_shown(&roll, &rows, pitch, height);
         let beats = self.beats(app, &roll);
         let boxed_beside = |pitches: &[i64]| pitches.contains(&pitch).then_some(self.step.get());
-        let mut lines = self.header_lines(app, &roll, width, first, last);
+        let mut lines = self.header_lines(app, &roll, width, (first, last), self.roll_extra(app, &roll));
         let window = Window {
             first,
             last,
@@ -724,12 +770,83 @@ impl PatternEditor {
             grid_lines[TOP_PITCH_LINE] = grid::with_keyswitch_lights(&grid_lines[TOP_PITCH_LINE], &keyswitched);
         }
         lines.extend(grid_lines);
-        let description = Text::styled(&format!("{SPACE}{}", fit(&self.describe(app, &roll), width.saturating_sub(1))), Style::BOLD);
+        self.with_description(app, &roll, lines, width, height)
+    }
+
+    /// The header and grid lines with the description after them, set apart by a blank line where there's room.
+    fn with_description(&self, app: &App, roll: &Roll, mut lines: Vec<Text>, width: usize, height: usize) -> Vec<Text> {
+        let description = Text::styled(&format!("{SPACE}{}", fit(&self.describe(app, roll), width.saturating_sub(1))), Style::BOLD);
         if lines.len() + LINES_AFTER_GRID <= height {
             lines.push(Text::default());
         }
         lines.push(description);
         lines
+    }
+
+    fn rows_body(&self, app: &App, width: usize, height: usize) -> Vec<Text> {
+        self.keep_step(app);
+        let roll = Roll::of(app, &self.name);
+        let mut rows = self.rows(app);
+        let label_width = self.label_width(app, &roll);
+        let count = roll.pattern.get_steps() as usize;
+        let (first, last) = self.window_of_steps(count, self.steps_shown(width, label_width));
+        let screen_height = app.screen_height.get();
+        rows.fit_gauge(screen_height, crate::page::header_lines(self, screen_height), LEGEND_LINES);
+        self.gauge_rows.set(rows.gauge_rows);
+        let (place, cursor) = self.row_cursor(&rows);
+        let shown = rows.scrolled_shown(height, place, &self.first_row);
+        let section = rows.section_of(&cursor);
+        let hint = section
+            .and_then(|section| labels::MSG_SECTION_HINTS.iter().find(|(found, _)| *found == section))
+            .map(|(_, hint)| hint.to_string());
+        let extra = vec![hint.unwrap_or_else(|| self.scale_said(app, &roll))];
+        let mut lines = self.header_lines(app, &roll, width, (first, last), extra);
+        let beats = self.beats(app, &roll);
+        let label_width = self.label_width(app, &roll).max(rows.widest_label());
+        lines.extend(rows.grid_lines(&shown, &cursor, self.step.get(), (first, last, &beats), label_width));
+        self.with_description(app, &roll, lines, width, height)
+    }
+
+    fn move_rows(&self, app: &App, key: &str) {
+        let step: i64 = if key == "up" || key == "left" { -1 } else { 1 };
+        if key == "left" || key == "right" {
+            self.step
+                .set((self.step.get() as i64 + step).clamp(0, self.step_count(app).max(1) as i64 - 1) as usize);
+            return;
+        }
+        let count = self.rows(app).reachable().len() as i64;
+        self.row.set((self.row.get() as i64 + step).clamp(0, count - 1) as usize);
+    }
+
+    /// Move the cursor to the next section's heading, or the one before, stopping at the first and the last.
+    fn jump_section(&self, app: &App, direction: i64) {
+        let rows = self.rows(app);
+        let headings: Vec<usize> = rows
+            .reachable()
+            .iter()
+            .enumerate()
+            .filter(|(_, row)| matches!(row, RowName::Section(_)))
+            .map(|(place, _)| place)
+            .collect();
+        let Some((&first, &last)) = headings.first().zip(headings.last()) else {
+            return;
+        };
+        let row = self.row.get();
+        let found = if direction < 0 {
+            headings
+                .iter()
+                .rev()
+                .find(|place| **place < row)
+                .copied()
+                .unwrap_or(if row < first { row } else { first })
+        } else {
+            headings
+                .iter()
+                .find(|place| **place > row)
+                .copied()
+                .unwrap_or(if row > last { row } else { last })
+        };
+        self.row.set(found);
     }
 
     fn move_roll(&self, app: &App, key: &str) {
@@ -809,13 +926,40 @@ fn header_cells(lines: &[Vec<String>]) -> Vec<String> {
         .collect()
 }
 
+impl PatternEditor {
+    /// The rows view's keys: ESC, the arrows, the ends and the jump between sections, Tab to the roll, the keys that insert and
+    /// remove a step, the editor's own, then the keys of the row the cursor is on.
+    fn rows_keys(&self, app: &App) -> Vec<KeyItem> {
+        let editor = |binding| KeyItem::of(&Keys::CLASS, binding);
+        let view = |binding| KeyItem::of(&RowsKeys::CLASS, binding);
+        let rows = self.rows(app);
+        let (_, cursor) = self.row_cursor(&rows);
+        let mut keys = vec![
+            editor(&Keys::BACK),
+            view(&RowsKeys::MOVE).wanting_key(),
+            view(&RowsKeys::ENDS),
+            view(&RowsKeys::SECTION),
+        ];
+        if !rows.pattern.is_drum() {
+            keys.push(editor(&Keys::TO_ROLL));
+        }
+        let takes_letters = rows.pattern.is_drum() && cursor == RowName::Row(Row::DEGREE);
+        keys.push(view(&RowsKeys::INSERT_STEP));
+        if self.step_count(app) > 1 && !takes_letters {
+            keys.push(view(&RowsKeys::REMOVE_STEP));
+        }
+        keys.extend([editor(&Keys::RESIZE), editor(&Keys::MUNGE), editor(&Keys::RECONFIGURE), editor(&Keys::RENAME)]);
+        if app.fluidsynth_installed {
+            keys.push(editor(&Keys::LISTEN));
+        }
+        keys.extend(rows.keys(&cursor, self.keep_step(app)));
+        keys
+    }
+}
+
 impl Page for PatternEditor {
     fn name(&self) -> &'static str {
-        if self.on_roll_now.get() {
-            "PatternEditor"
-        } else {
-            NOT_PORTED
-        }
+        "PatternEditor"
     }
 
     fn stack_name(&self) -> &str {
@@ -830,6 +974,9 @@ impl Page for PatternEditor {
         self.on_roll_now.set(self.on_roll(app));
         let editor = |binding| KeyItem::of(&Keys::CLASS, binding);
         let roll = |binding| KeyItem::of(&RollKeys::CLASS, binding);
+        if !self.on_roll(app) {
+            return self.rows_keys(app);
+        }
         let mut keys = vec![editor(&Keys::BACK), roll(&RollKeys::MOVE).wanting_key(), roll(&RollKeys::ENDS)];
         keys.push(editor(if self.on_roll(app) { &Keys::TO_EDITOR } else { &Keys::TO_ROLL }));
         keys.extend([editor(&Keys::RESIZE), editor(&Keys::MUNGE), editor(&Keys::RECONFIGURE), editor(&Keys::RENAME)]);
@@ -854,6 +1001,7 @@ impl Page for PatternEditor {
     }
 
     fn page_key_table(&self, app: &App) -> Vec<KeyItem> {
+        self.on_roll_now.set(self.on_roll(app));
         in_order(&Keys::CLASS, self.keys(app))
     }
 
@@ -867,6 +1015,20 @@ impl Page for PatternEditor {
             self.step.set(if item.step_of(key) == Some(crate::keys::STEP_BACK) { 0 } else { last });
         } else if item.is(&Keys::TO_EDITOR) || item.is(&Keys::TO_ROLL) {
             app.session.on_roll = !app.session.on_roll;
+        } else if item.is(&RowsKeys::MOVE) {
+            self.move_rows(app, key);
+        } else if item.is(&RowsKeys::ENDS) {
+            let last = self.step_count(app) - 1;
+            self.step.set(if item.step_of(key) == Some(crate::keys::STEP_BACK) { 0 } else { last });
+        } else if item.is(&RowsKeys::SECTION) {
+            self.jump_section(app, item.step_of(key).unwrap_or(1));
+        } else if item.is(&crate::keybindings::SectionRow::OPEN) || item.is(&crate::keybindings::SectionRow::CLOSE) {
+            let rows = self.rows(app);
+            if let (_, RowName::Section(section)) = self.row_cursor(&rows) {
+                if !app.session.open_sections.remove(section) {
+                    app.session.open_sections.insert(section.to_string());
+                }
+            }
         }
         self.on_roll_now.set(self.on_roll(app));
     }
@@ -874,7 +1036,7 @@ impl Page for PatternEditor {
     fn body(&self, app: &App, width: usize, height: usize) -> Vec<Text> {
         self.on_roll_now.set(self.on_roll(app));
         if !self.on_roll(app) {
-            return vec![Text::plain("the rows view is not ported yet")];
+            return self.rows_body(app, width, height);
         }
         self.roll_body(app, width, height)
     }

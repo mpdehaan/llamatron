@@ -389,6 +389,7 @@ def write_rows(path):
         else:
             kind = 'RowKind::Plain'
         rows.append('    ({}, {}),'.format(literal(name), kind))
+    described_rows = [described_row(name, row_descriptions.ROW_DESCRIPTIONS[name]) for name in file_format.PATTERN_ROWS]
     text = HEADER.format(source='model/schema/row_descriptions.py, each pattern row as a pattern keeps and writes it')
     text += '''
 use crate::schema::generated::settings::Plain;
@@ -404,10 +405,46 @@ pub enum RowKind {
 pub static ROWS: &[(&str, RowKind)] = &[
 {}
 ];
-'''.replace('{}', '\n'.join(rows))
+
+/// What the pattern editor says of a row: its lowest and highest number, its default, whether a blank step is quiet, its
+/// choices, what a blank step holds, whether drum patterns have it, and the longest length it holds.
+#[derive(Debug, PartialEq)]
+pub struct RowDescription {
+    pub name: &'static str,
+    pub lowest: Option<i64>,
+    pub highest: Option<i64>,
+    pub default: Option<Plain>,
+    pub quiet: bool,
+    pub choices: &'static [Plain],
+    pub blank: Plain,
+    pub in_drum_patterns: bool,
+    pub most: Option<i64>,
+}
+
+pub static ROW_DESCRIPTIONS: &[RowDescription] = &[
+[described]
+];
+'''.replace('{}', '\n'.join(rows)).replace('[described]', '\n'.join(described_rows))
     path.write_text(text)
     module_list = path.parent / 'mod.rs'
     module_list.write_text(module_list.read_text() + '#[rustfmt::skip]\npub mod rows;\n')
+
+
+def described_row(name, described):
+    """Return a row's description as a Rust RowDescription, each answer the description has, or none where it has none."""
+    def asked(method, otherwise):
+        try:
+            return getattr(described, method)()
+        except (AttributeError, NotImplementedError, TypeError):
+            return otherwise
+    def optional(value):
+        return 'None' if value is None else 'Some({})'.format(value)
+    default = asked('get_default', None)
+    return '    RowDescription {{ name: {}, lowest: {}, highest: {}, default: {}, quiet: {}, choices: &[{}], blank: {}, in_drum_patterns: {}, most: {} }},'.format(
+        literal(name), optional(asked('get_lowest', None)), optional(asked('get_highest', None)), 'None' if default is None else 'Some({})'.format(plain(default)),
+        'true' if asked('is_quiet', False) else 'false', ', '.join(plain(choice) for choice in asked('get_choices', [])), plain(asked('blank', None)),
+        'true' if described.is_in_drum_patterns() else 'false', optional(asked('get_most', None)),
+    )
 
 
 def write_lists(path):
