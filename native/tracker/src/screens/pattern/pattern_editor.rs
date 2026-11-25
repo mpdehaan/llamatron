@@ -973,6 +973,16 @@ impl PatternEditor {
 }
 
 impl Page for PatternEditor {
+    /// A whole-pattern dialog's answer puts the cursor on a step, or the rows view at its top.
+    fn go_to_row(&mut self, _app: &App, row: &str) {
+        if row == super::whole_pattern::TOP {
+            self.row.set(0);
+            self.first_row.set(0);
+        } else if let Ok(step) = row.parse() {
+            self.step.set(step);
+        }
+    }
+
     fn follow_renames(&mut self, renames: &crate::history::Renames) {
         let section = llamatron_model::schema::generated::file_format::Section::PATTERNS;
         crate::page::follow_name(&mut self.name, section, renames);
@@ -1073,6 +1083,19 @@ impl Page for PatternEditor {
     }
 
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        if item.is(&Keys::RESIZE) || item.is(&Keys::RENAME) || item.is(&Keys::RECONFIGURE) || item.is(&Keys::MUNGE) {
+            let place = self.whole_pattern_place(app);
+            if item.is(&Keys::RESIZE) {
+                super::whole_pattern::ask_steps(app, &place);
+            } else if item.is(&Keys::RENAME) {
+                super::whole_pattern::rename(app, &self.name);
+            } else if item.is(&Keys::RECONFIGURE) {
+                super::whole_pattern::reconfigure(app, &place);
+            } else {
+                super::whole_pattern::munge(app, &place);
+            }
+            return;
+        }
         if item.is(&Keys::BACK) {
             app.go_back();
         } else if item.is(&RollKeys::MOVE) {
@@ -1293,6 +1316,35 @@ fn write_value(app: &mut App, name: &str, row: &str, step: usize, value: Option<
     });
     if let Some(refusal) = refusal {
         app.refuse(&refusal);
+    }
+}
+
+impl PatternEditor {
+    /// Where the editor is, for a whole-pattern dialog: the pattern, the cursor's step, and what its notes are measured
+    /// against, the scale the pattern is known to play under, none for a drum pattern.
+    fn whole_pattern_place(&self, app: &App) -> super::whole_pattern::Place {
+        let step = self.keep_step(app);
+        let setlist = app.document.get_setlist();
+        let pattern = setlist.get_pattern(&self.name).expect("the editor's pattern is in the set");
+        let drum = pattern.is_drum();
+        let default_octave = if drum {
+            setlist.get_default_drum_octave()
+        } else {
+            setlist.get_default_octave()
+        };
+        let scale_size = (!drum)
+            .then(|| scales_of_pattern(setlist, app.document.song(), &self.name).first().cloned())
+            .flatten()
+            .map(|scale| scale_half_steps(setlist, &scale).len() as i64);
+        super::whole_pattern::Place {
+            name: self.name.clone(),
+            step,
+            steps: pattern.get_steps() as usize,
+            drum,
+            default_octave,
+            scale_size,
+            step_size: setlist.get_pattern_step_size(pattern),
+        }
     }
 }
 

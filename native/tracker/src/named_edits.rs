@@ -176,6 +176,67 @@ impl Document {
         Ok(())
     }
 
+    /// Put a copy of another pattern's steps and settings in place of a pattern's, keeping its name and its place.
+    pub fn load_over(&mut self, name: &str, other: &str) -> Result<(), String> {
+        let copy = self
+            .get_setlist()
+            .get_pattern(other)
+            .cloned()
+            .ok_or_else(|| named(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[("name", other.into())]))?;
+        let name = name.to_string();
+        self.change_set(|setlist| {
+            if let Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, &name) {
+                *pattern = copy;
+            }
+        });
+        Ok(())
+    }
+
+    /// Make new patterns of a pattern's steps, so many steps each and the last with what is left, and return their names,
+    /// the pattern itself left as it is: each part keeps the pattern's settings and group, named after it with the word
+    /// split and a number counted on from the highest such name in use. A part's name longer than a name may be refuses the
+    /// whole split.
+    pub fn split_pattern(&mut self, name: &str, steps: usize) -> Result<Vec<String>, String> {
+        let pattern = self
+            .get_setlist()
+            .get_pattern(name)
+            .cloned()
+            .ok_or_else(|| named(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[("name", name.into())]))?;
+        let count = pattern.get_steps() as usize;
+        let starts: Vec<usize> = (0..count).step_by(steps.max(1)).collect();
+        let word = named(names::MSG_SPLIT_BASE, &[("name", name.into())]);
+        let first =
+            llamatron_model::objects::naming::split_trailing_number(&new_name(&word, &self.names_taken(Section::PATTERNS))).map_or(1, |(_, _, number)| number);
+        let made: Vec<String> = (0..starts.len())
+            .map(|part| {
+                named(
+                    names::MSG_NUMBERED_NAME,
+                    &[("base", word.as_str().into()), ("number", (first + part as i64).into())],
+                )
+            })
+            .collect();
+        let most = llamatron_model::schema::generated::limits::MAX_NAME_LENGTH as usize;
+        if let Some(long) = made.iter().find(|part| part.chars().count() > most) {
+            return Err(named(
+                errors::ERR_GROUP_COPY_NAME_TOO_LONG,
+                &[("name", long.as_str().into()), ("most", most.into())],
+            ));
+        }
+        let mut parts = Vec::new();
+        for (part, start) in made.iter().zip(&starts) {
+            let mut copy = pattern.clone();
+            let order: Vec<usize> = (*start..(*start + steps).min(count)).collect();
+            copy.take_steps(&order).map_err(|problem| problem.message)?;
+            parts.push((part.clone(), copy));
+        }
+        self.change_set(|setlist| {
+            for (part, copy) in parts {
+                setlist.add_item(Section::PATTERNS, &part, llamatron_model::objects::setlist::Item::Pattern(copy));
+            }
+        });
+        Ok(made)
+    }
+
     /// The data of the clip on a track in a scene of the current song.
     fn clip_data(&self, index: usize, track: &str) -> Option<Data> {
         self.song().scenes().get(index)?.get_clip_slot(track).map(|clip| clip.to_data())

@@ -7,6 +7,7 @@ pub mod arrange;
 pub mod dialogs;
 pub mod field_page;
 pub mod generators;
+pub mod grouped_choice_dialog;
 pub mod list_page;
 pub mod main_page;
 pub mod not_ported;

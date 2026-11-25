@@ -6,6 +6,7 @@
 pub mod pattern_editor;
 pub mod patterns_page;
 pub mod rows_view;
+pub mod whole_pattern;
 
 /// The page that edits a pattern.
 pub fn open_pattern(name: &str) -> Box<dyn crate::page::Page> {

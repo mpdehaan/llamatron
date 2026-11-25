@@ -51,6 +51,8 @@ pub struct Session {
     pub chosen_tabs: std::collections::HashMap<String, String>,
     /// Whether the pattern editor shows the piano roll rather than the rows, kept as you move between patterns.
     pub on_roll: bool,
+    /// The headings of the pattern editor's Munge dialog left open, which the next Munge dialog opens on.
+    pub open_munge_groups: std::collections::HashSet<String>,
     /// The pattern editor's open sections, by name, kept for the session.
     pub open_sections: std::collections::HashSet<String>,
     /// Whether Arrange shows its details view, kept for the session.
@@ -73,6 +75,7 @@ impl Default for Session {
                 .collect(),
             shows_arrange_details: false,
             last_set_folder: None,
+            open_munge_groups: std::collections::HashSet::new(),
             confirmed_overwrites: Vec::new(),
         }
     }
