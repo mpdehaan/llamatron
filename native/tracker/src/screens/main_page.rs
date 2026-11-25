@@ -213,6 +213,10 @@ impl MainPage {
             app.show_page(std::boxed::Box::new(page));
             return;
         }
+        if same(binding, &Keys::ARRANGE) {
+            app.show_page(std::boxed::Box::new(crate::screens::arrange::arrange_page::ArrangePage::new()));
+            return;
+        }
         if same(binding, &Keys::PATTERNS) {
             let page = crate::screens::pattern::patterns_page::PatternsPage::new(app);
             app.show_page(std::boxed::Box::new(page));

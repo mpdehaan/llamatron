@@ -53,6 +53,8 @@ pub struct Session {
     pub on_roll: bool,
     /// The pattern editor's open sections, by name, kept for the session.
     pub open_sections: std::collections::HashSet<String>,
+    /// Whether Arrange shows its details view, kept for the session.
+    pub shows_arrange_details: bool,
 }
 
 impl Default for Session {
@@ -65,6 +67,7 @@ impl Default for Session {
                 .iter()
                 .map(|section| section.to_string())
                 .collect(),
+            shows_arrange_details: false,
         }
     }
 }
@@ -146,9 +149,6 @@ impl Tracker {
         let page = self.pages.last_mut().expect("the main screen is never closed");
         let everywhere = PageKeys::EVERYWHERE.iter().map(|binding| KeyItem::of(&PageKeys::CLASS, binding));
         let table: Vec<KeyItem> = everywhere.chain(page.page_key_table(&self.app)).collect();
-        if !page.is_ported() {
-            return;
-        }
         let Some(item) = table.into_iter().find(|item| item.keys.contains(&key)) else {
             return;
         };

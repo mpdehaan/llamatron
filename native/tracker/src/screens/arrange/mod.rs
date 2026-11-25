@@ -1,0 +1,7 @@
+// llamatron: a music program
+// Copyright (C) 2026  Michael DeHaan
+// SPDX-License-Identifier: GPL-3.0-or-later
+//! Arrange and the pages it opens (the Python screens/arrange/).
+
+pub mod arrange_page;
+pub mod grid;

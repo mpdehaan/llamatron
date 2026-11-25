@@ -37,6 +37,7 @@ from llamatron.interface.tracker.dialogs import dialog as dialog_values
 from llamatron.interface.tracker.keys import Key
 from llamatron.interface.tracker.dialogs.dialog import Dialog
 from llamatron.interface.pages import generators as generators_values
+from llamatron.interface.tracker.screens.arrange.arrange_page import ArrangePage
 from llamatron.interface.tracker.screens.generators.generators_page import GeneratorsPage
 from llamatron.interface.tracker.screens.shared.page import Page
 from llamatron.wizards.create_song.wizard_choices import WizardChoices
@@ -94,6 +95,10 @@ TOUR_SET = test_tui_help_keys.TOUR_SET_FILE
 # The most keys the tour presses to reach a generator on the Generators page, and the method it reaches one by.
 MOST_KEYS_TO_A_GENERATOR = 100
 PUT_CURSOR_ON = 'put_cursor_on'
+# Arrange's cursor, by the attribute the tour sets and the arrows that move it back and forward, and what catches a setting.
+ARRANGE_CURSOR = {'row': (Key.UP, Key.DOWN), 'column': (Key.LEFT, Key.RIGHT)}
+SETATTR = '__setattr__'
+TOUR_MODULE = 'test_tui_help_keys.py'
 # What makes every key the tests press, which the tour notes.
 KEY_EVENT = 'key_event'
 WRITE = 'w'
@@ -151,6 +156,27 @@ class ScreenTour(KeyTour):
         patcher = mock.patch.object(GeneratorsPage, PUT_CURSOR_ON, by_keys)
         patcher.start()
         self.addCleanup(patcher.stop)
+        # The tour puts Arrange's cursor on a cell by setting its row and column; here the arrows take it there.
+        original_setattr = ArrangePage.__setattr__
+
+        def by_arrows(page, name, value):
+            if name in ARRANGE_CURSOR and sys._getframe(1).f_code.co_filename.endswith(TOUR_MODULE):
+                tour.arrows_to(page=page, name=name, value=value)
+                return
+            original_setattr(page, name, value)
+
+        patcher = mock.patch.object(ArrangePage, SETATTR, by_arrows)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def arrows_to(self, *, page, name, value):
+        """Move Arrange's cursor by arrows until its row or its column is the value the tour set."""
+        back, forward = ARRANGE_CURSOR[name]
+        for _ in range(MOST_KEYS_TO_A_GENERATOR):
+            here = getattr(page, name)
+            if here == value:
+                return
+            self.press_at_once(back if value < here else forward)
 
     def walk_to_generator(self, *, page, kind, name):
         """Move the Generators page's cursor to a generator by keys, as a person would: PgUp or PgDn to its kind's heading,
