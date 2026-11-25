@@ -47,10 +47,14 @@ pub fn timed_events(clip: &Clip, scale: Option<&Scale>) -> Rendered<(Vec<NoteEve
         }
         let following = slots.get(place + 1).map(|(_, notes)| notes.as_slice()).unwrap_or(&[]);
         // The clip's groove moves each note's start and keeps its gate, so that a delayed note ends later too.
-        let onset = match &clip.groove {
+        let mut onset = match &clip.groove {
             Some(groove) => groove.moved(*slot_start),
             None => *slot_start,
         };
+        // A clip's rushes and drags move its notes on top of the groove, never before the clip's start.
+        if let Some(nudge) = &clip.nudge {
+            onset = (onset + nudge.moved(*slot_start)).max(Rational::ZERO);
+        }
         let start = onset.min(clip_length);
         for (midi_number, note) in notes {
             let mut end = onset + note.length.unwrap_or(Rational::ZERO);

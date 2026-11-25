@@ -5,6 +5,7 @@
 //! degrees take, and whether it loops. A clip of no length of its own ends after its last position.
 
 use crate::error::{RenderError, Rendered};
+use crate::generators::timing::NudgePlan;
 use crate::groove::Groove;
 use crate::positions::{fit_to_length, piece_of};
 use crate::sound::{NoteSound, Sound};
@@ -44,6 +45,8 @@ pub struct Clip {
     pub groove: Option<Groove>,
     /// The CC values the clip sends, in time order.
     pub controls: Vec<Control>,
+    /// How the clip's notes are rushed and dragged, which the Realizer gives it once it is finished, or None.
+    pub nudge: Option<NudgePlan>,
 }
 
 impl Clip {
@@ -59,6 +62,7 @@ impl Clip {
             time_signature: None,
             groove: None,
             controls: Vec::new(),
+            nudge: None,
         }
     }
 
@@ -168,6 +172,7 @@ impl Clip {
             looping: true,
             time_signature: None,
             groove: None,
+            nudge: None,
             controls: self
                 .controls
                 .iter()

@@ -6,6 +6,7 @@
 pub mod arp;
 pub mod chords;
 pub mod guitarify;
+pub mod timing;
 
 use crate::clip::Clip;
 use crate::error::Rendered;
@@ -15,6 +16,7 @@ pub enum Generator {
     Chords(chords::ChordsGenerator),
     Arp(arp::Arp),
     Guitarify(guitarify::Guitarify),
+    Timing(timing::TimingGenerator),
 }
 
 impl Generator {
@@ -23,6 +25,7 @@ impl Generator {
             Generator::Chords(generator) => generator.generate(clip),
             Generator::Arp(generator) => generator.generate(clip),
             Generator::Guitarify(generator) => generator.generate(clip),
+            Generator::Timing(generator) => generator.generate(clip),
         }
     }
 
@@ -30,7 +33,7 @@ impl Generator {
     pub fn end_state(&self) -> Option<Vec<i64>> {
         match self {
             Generator::Chords(generator) => generator.end_state(),
-            Generator::Arp(_) | Generator::Guitarify(_) => None,
+            Generator::Arp(_) | Generator::Guitarify(_) | Generator::Timing(_) => None,
         }
     }
 }

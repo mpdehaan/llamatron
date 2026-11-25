@@ -13,6 +13,7 @@ use crate::clip::Clip;
 use crate::clip_player::ClipSlotPlayer;
 use crate::error::{RenderError, Rendered};
 use crate::generators::chords::Continuation;
+use crate::generators::timing::{MovingRow, NudgePlan};
 use crate::grab_source::GrabSource;
 use crate::groove::{groove_for, Groove};
 use llamatron_math::Rational;
@@ -22,7 +23,7 @@ use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::{Scene, Song, Track};
 use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SongSetting, TrackSetting};
-use llamatron_model::schema::generated::file_format::{Restart, BYPASS_WHEN, GENERATOR_ENABLED};
+use llamatron_model::schema::generated::file_format::{Restart, BYPASS_WHEN, GENERATOR_ENABLED, GENERATOR_RESTART};
 use llamatron_model::schema::generated::limits::{MAX_TEMPO, MIN_TEMPO};
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Setting, CLIP_SLOT, INSTRUMENT, PATTERN, SCENE, SONG, TRACK};
@@ -253,6 +254,7 @@ impl<'a> SongRealizer<'a> {
                 if let Some(mut clip) = self.get_clip(scene, track)? {
                     // The groove goes on last, so that generators, grabs and lengths never see it.
                     clip.groove = self.groove_at(scene, track)?;
+                    clip.nudge = self.nudge_plan(scene, track)?;
                     clips.push((track.clone(), clip));
                 }
             }
@@ -276,6 +278,28 @@ impl<'a> SongRealizer<'a> {
             Some(self.song.get_written(SongSetting::GROOVE).unwrap_or(&song_groove)),
         ];
         groove_for(self.setlist, &choices)
+    }
+
+    /// How a clip's notes are rushed and dragged, from every lit Rush and Drag of the Timing generators its chains name, or
+    /// None where there is none.
+    fn nudge_plan(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Option<NudgePlan>> {
+        let mut rows = Vec::new();
+        let bar = self.song.get_time_signature().bar_length();
+        for step in self.chains_of(scene, track)? {
+            if step.kind != "timing" {
+                continue;
+            }
+            let pattern = self
+                .setlist
+                .get_pattern(&scene.scene.get_clip_slot(track).map(|clip| clip.get_pattern_name()).unwrap_or_default());
+            let pattern_step = pattern
+                .map(|pattern| self.setlist.get_pattern_step_size(pattern))
+                .unwrap_or(self.setlist.get_step_size());
+            let restart = step.settings.get(GENERATOR_RESTART).map(Data::python_str);
+            let offset = self.run_offset(scene, restart.as_deref())?;
+            rows.extend(MovingRow::of(&step.settings, pattern_step, bar, offset)?);
+        }
+        Ok((!rows.is_empty()).then_some(NudgePlan { rows }))
     }
 
     /// The finished clip a track plays in a written-out scene, or None where it plays nothing there.
@@ -573,7 +597,7 @@ impl<'a> SongRealizer<'a> {
 const TEMPO_PLACES: usize = 4;
 
 /// The kinds of generator the port runs so far.
-const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes"];
+const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes", "timing"];
 
 /// The factors a chain step's seed is made with, so that it differs for every song, scene, track and place in the chain.
 const SEED_SONG_FACTOR: i128 = 1_000_003;

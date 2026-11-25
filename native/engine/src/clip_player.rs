@@ -9,6 +9,7 @@ use crate::error::Rendered;
 use crate::generators::arp::Arp;
 use crate::generators::chords::ChordsSettings;
 use crate::generators::guitarify::Guitarify;
+use crate::generators::timing::TimingGenerator;
 use crate::generators::Generator;
 use crate::morph::{morph_controls, Blend};
 use crate::order::{ordered_patterns, DrawnWhenAsked, StepOrder};
@@ -83,6 +84,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             time_signature: signature,
             groove: None,
             controls,
+            nudge: None,
         })
     }
 
@@ -151,6 +153,11 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                     let restart = step.settings.get(GENERATOR_RESTART).map(|restart| restart.python_str());
                     let continuation = self.realizer.continuation(self.scene, self.track_name, &key, restart.as_deref())?;
                     Generator::Guitarify(Guitarify::of(&step.settings, bar, self.tempo(), seed, continuation.offset)?)
+                }
+                "timing" => {
+                    let restart = step.settings.get(GENERATOR_RESTART).map(|restart| restart.python_str());
+                    let continuation = self.realizer.continuation(self.scene, self.track_name, &key, restart.as_deref())?;
+                    Generator::Timing(TimingGenerator::of(&step.settings, self.pattern_step()?, bar, continuation.offset)?)
                 }
                 _ => {
                     let seed = self.realizer.chain_step_seed(self.scene, self.track_name, index as i128)?;
@@ -281,7 +288,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
     }
 
     /// The step size of the pattern the clip plays.
-    fn pattern_step(&self) -> Rendered<Rational> {
+    pub fn pattern_step(&self) -> Rendered<Rational> {
         let setlist = self.realizer.setlist();
         let pattern = setlist
             .get_pattern(&self.clip_slot.get_pattern_name())
