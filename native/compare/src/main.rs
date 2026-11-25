@@ -52,7 +52,13 @@ fn main() -> ExitCode {
         eprintln!("usage: llamatron-compare load SET");
         return ExitCode::from(2);
     };
-    let text = match std::fs::read_to_string(path) {
+    // A MIDI file is read as bytes by the step that imports it.
+    let read = if path.ends_with(".mid") {
+        Ok(String::new())
+    } else {
+        std::fs::read_to_string(path)
+    };
+    let text = match read {
         Ok(text) => text,
         Err(problem) => {
             eprintln!("{path}: {problem}");
@@ -115,6 +121,16 @@ fn main() -> ExitCode {
                 }
             }
         }
+        "import" => match imported(path, &text) {
+            Ok(json) => {
+                println!("{json}");
+                ExitCode::SUCCESS
+            }
+            Err(problem) => {
+                eprintln!("{path}: {problem}");
+                ExitCode::from(1)
+            }
+        },
         "live" | "midi" => {
             let stem = std::path::Path::new(path)
                 .file_stem()
@@ -254,4 +270,101 @@ fn exported_live(setlist: &llamatron_model::objects::setlist::Setlist) -> llamat
         }
     }
     Ok(lines.join("\n"))
+}
+
+/// A new set, as the Python's Setlist.new() makes one.
+const NEW_SET: &str = "step_size: 1/16\ndefault_octave: 5\ndefault_drum_octave: 3\noctave_labels: live\n\nscales:\n  - { name: scale-1, root: C, type: major }\n\npatterns:\n  - name: pattern-1\n    steps: 16\n    group: track-1\n    degree: [1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~]\n\nsongs:\n  - name: untitled\n    tempo: 120\n    scale: scale-1\n\n    tracks:\n      - { name: track-1 }\n\n    scenes:\n      - name: scene-1\n        clips:\n          - { track: track-1, pattern: pattern-1 }\n";
+
+/// Data as JSON, which the harness reads back as YAML.
+fn json_written(data: &Data, out: &mut String) {
+    match data {
+        Data::Null => out.push_str("null"),
+        Data::Bool(value) => out.push_str(if *value { "true" } else { "false" }),
+        Data::Whole(value) => out.push_str(&value.to_string()),
+        Data::Float(value) => out.push_str(&llamatron_math::number::python_float_text(*value)),
+        Data::Text(text) => {
+            out.push('"');
+            for character in text.chars() {
+                match character {
+                    '"' => out.push_str("\\\""),
+                    '\\' => out.push_str("\\\\"),
+                    '\n' => out.push_str("\\n"),
+                    character if (character as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", character as u32)),
+                    character => out.push(character),
+                }
+            }
+            out.push('"');
+        }
+        Data::List(items) => {
+            out.push('[');
+            for (place, item) in items.iter().enumerate() {
+                if place > 0 {
+                    out.push_str(", ");
+                }
+                json_written(item, out);
+            }
+            out.push(']');
+        }
+        Data::Map(pairs) => {
+            out.push('{');
+            for (place, (key, value)) in pairs.iter().enumerate() {
+                if place > 0 {
+                    out.push_str(", ");
+                }
+                json_written(&Data::text(&key.python_str()), out);
+                out.push_str(": ");
+                json_written(value, out);
+            }
+            out.push('}');
+        }
+    }
+}
+
+/// What importing each MIDI file a path stands for into a new set makes, as JSON: the file itself, or each song of a set
+/// as its whole-song MIDI export.
+fn imported(path: &str, text: &str) -> Result<String, String> {
+    let file = std::path::Path::new(path);
+    let stem = file.file_stem().map(|stem| stem.to_string_lossy().to_string()).unwrap_or_default();
+    let mut inputs: Vec<(String, Vec<u8>)> = Vec::new();
+    if path.ends_with(".mid") {
+        inputs.push((stem, std::fs::read(file).map_err(|problem| problem.to_string())?));
+    } else {
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(text, Some(stem.clone())).map_err(|problem| problem.message)?;
+        for name in setlist.song_names() {
+            let Some(song) = setlist.get_song(name) else { continue };
+            let grid = llamatron_engine::realizer::SongRealizer::new(&setlist, song, Some(RENDER_SEED))
+                .render()
+                .map_err(|problem| format!("{problem:?}"))?;
+            let base = format!("{stem}_{name}");
+            let (_, bytes) = llamatron_exporters::midi::song_file(&grid, &base, false).map_err(|problem| format!("{problem:?}"))?;
+            inputs.push((base, bytes));
+        }
+    }
+    let new_set = llamatron_model::objects::setlist::Setlist::read_text(NEW_SET, None).map_err(|problem| problem.message)?;
+    let mut made = Vec::new();
+    for (name, bytes) in inputs {
+        let entry = match llamatron_importers::import::imported(&bytes, &new_set, &name) {
+            Err(_) => Data::Map(vec![(Data::text("refused"), Data::text(&name))]),
+            Ok(song) => Data::Map(vec![
+                (Data::text("name"), Data::text(&song.name)),
+                (Data::text("song"), song.song),
+                (
+                    Data::text("patterns"),
+                    Data::Map(song.patterns.into_iter().map(|(name, data)| (Data::text(&name), data)).collect()),
+                ),
+                (
+                    Data::text("scales"),
+                    Data::Map(song.scales.into_iter().map(|(name, data)| (Data::text(&name), data)).collect()),
+                ),
+                (
+                    Data::text("instruments"),
+                    Data::Map(song.instruments.into_iter().map(|(name, data)| (Data::text(&name), data)).collect()),
+                ),
+            ]),
+        };
+        made.push(entry);
+    }
+    let mut out = String::new();
+    json_written(&Data::List(made), &mut out);
+    Ok(out)
 }

@@ -18,3 +18,4 @@ llamatron-math = { path = "../math" }
 llamatron-model = { path = "../model" }
 llamatron-engine = { path = "../engine" }
 llamatron-exporters = { path = "../exporters" }
+llamatron-importers = { path = "../importers" }

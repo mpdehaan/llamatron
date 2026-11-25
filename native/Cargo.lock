@@ -552,6 +552,7 @@ version = "0.1.0"
 dependencies = [
  "llamatron-engine",
  "llamatron-exporters",
+ "llamatron-importers",
  "llamatron-math",
  "llamatron-model",
 ]
@@ -573,6 +574,16 @@ dependencies = [
  "llamatron-engine",
  "llamatron-math",
  "llamatron-model",
+]
+
+[[package]]
+name = "llamatron-importers"
+version = "0.1.0"
+dependencies = [
+ "llamatron-engine",
+ "llamatron-math",
+ "llamatron-model",
+ "llamatron-strings",
 ]
 
 [[package]]

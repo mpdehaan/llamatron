@@ -1,0 +1,16 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+[package]
+name = "llamatron-importers"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "llamatron's importers: a MIDI file made into a song of a set (the Python package importers/)"
+publish = false
+
+[dependencies]
+llamatron-math = { path = "../math" }
+llamatron-strings = { path = "../strings" }
+llamatron-model = { path = "../model" }
+llamatron-engine = { path = "../engine" }

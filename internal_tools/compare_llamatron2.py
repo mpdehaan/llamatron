@@ -11,6 +11,7 @@ the same step by both, and what each makes is compared. The Rust side is native/
     .venv/bin/python internal_tools/compare_llamatron2.py render    # every song rendered from one seed, each clip's notes
     .venv/bin/python internal_tools/compare_llamatron2.py midi      # every MIDI file each song exports, byte for byte
     .venv/bin/python internal_tools/compare_llamatron2.py live      # each song's Live set, its XML byte for byte
+    .venv/bin/python internal_tools/compare_llamatron2.py import    # each song's MIDI export, and examples/midi, imported again
     .venv/bin/python internal_tools/compare_llamatron2.py load --only tie
 
 It prints each set that differs with the first place it differs, and a count, and exits 1 when anything differs, so that the
@@ -225,6 +226,53 @@ def python_live(path):
     return '\n'.join(lines)
 
 
+def import_inputs(path):
+    """Return what the import step imports for a path, each a song name and a MIDI file's bytes: a MIDI file itself, or each
+    song of a set as the whole-song MIDI export writes it from one seed; None where the Python refuses the set."""
+    if path.suffix == '.mid':
+        return [(path.stem, path.read_bytes())]
+    import os
+    from llamatron.engine.realizer.song_realizer import SongRealizer
+    from llamatron.exporters.exports import export_name
+    from llamatron.exporters.midi_arrangement import MidiSong
+    from llamatron.model.objects.setlist import Setlist
+    os.makedirs(EXPORT_DIRECTORY, exist_ok=True)
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    moved, _ = migrated(data, one_song_name=path.stem)
+    try:
+        setlist = Setlist.from_data(data=as_object_layout(moved))
+        inputs = []
+        for name in setlist.get_song_names():
+            grid = SongRealizer(setlist.get_song(name), seed=RENDER_SEED).render()
+            base = export_name(setlist=path.stem, song=name)
+            inputs.append((base, midi_bytes(MidiSong(directory=EXPORT_DIRECTORY, grid=grid, name=base).midi_file())))
+        return inputs
+    except SongFileError:
+        return None
+
+
+def python_import(path):
+    """Return what importing each input of a path into a new set makes, with the import dialog's first choices: the song's
+    name and data and the patterns, scales and instruments it adds, as JSON, or None where the Python refuses the set."""
+    import io
+    import mido
+    from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
+    from llamatron.model.objects.setlist import Setlist
+    inputs = import_inputs(path)
+    if inputs is None:
+        return None
+    made = []
+    for name, data in inputs:
+        try:
+            imported = MidiImport(midi_file=mido.MidiFile(file=io.BytesIO(data), clip=True)).imported(setlist=Setlist.new(), choices=ImportChoices(song_name=name)).song
+        except MidiImportProblem:
+            made.append({'refused': name})
+            continue
+        made.append({'name': imported.name, 'song': imported.song, 'patterns': imported.patterns, 'scales': imported.scales, 'instruments': imported.instruments})
+    return json.dumps(made)
+
+
 def same_as_data(python, port):
     """Return whether two saved sets hold the same data: mappings in any order, lists in order (the user's rule)."""
     if port.startswith('FAILED'):
@@ -232,9 +280,9 @@ def same_as_data(python, port):
     return load_safely(python) == load_safely(port)
 
 
-STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live}
+STEPS = {'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
 # How each step's two outputs are compared: as text unless named here.
-COMPARED = {'save': same_as_data}
+COMPARED = {'save': same_as_data, 'import': same_as_data}
 
 
 def main():
@@ -243,6 +291,8 @@ def main():
     made.add_argument('--only', help='only the sets whose path holds this text')
     options = made.parse_args()
     found = [*EXAMPLES.rglob('*.yml'), *TEST_SETS.rglob('*.yml')]
+    if options.step == 'import':
+        found += EXAMPLES.rglob('*.mid')
     sets = sorted(path for path in found if options.only is None or options.only in str(path))
     differing = 0
     skipped = 0
