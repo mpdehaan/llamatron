@@ -20,6 +20,7 @@ commit check can run it.
 
 import argparse
 import hashlib
+import inspect
 import json
 import pathlib
 import shutil
@@ -169,6 +170,60 @@ def python_edits(path):
         if len(tracks) > 1:
             results.append(['move', song, first, edited(lambda setlist: setlist.get_song(song).move_item(section=Section.TRACKS, place=0, offset=1))])
         results.append(['sort', song, first, edited(lambda setlist: setlist.get_song(song).sort_items(Section.TRACKS))])
+    return json.dumps(results, default=str)
+
+
+# How many of a set's patterns the pattern_edits step edits, and the direction and group it gives them.
+EDITED_PATTERNS = 3
+EDITED_DIRECTION = 'pendulum'
+EDITED_GROUP = 'edited'
+DRUM_DEGREE = 'C'
+
+
+def pattern_edit_steps(steps, drum):
+    """Return the edits the pattern_edits step makes to a pattern of so many steps, each a name and its arguments; a drum
+    pattern's degree is a note letter."""
+    middle = steps // 2
+    edits = [
+        ('set_value', {'row': 'degree', 'step': 0, 'value': DRUM_DEGREE if drum else 3}), ('set_value', {'row': 'velocity', 'step': steps - 1, 'value': 100}),
+        ('clear_sound', {'step': 0}), ('set_steps', {'steps': steps + 2}), ('insert_step', {'step': 0}), ('insert_step', {'step': steps}),
+        ('set_group', {'group': EDITED_GROUP}), ('set_direction', {'direction': EDITED_DIRECTION}), ('reverse', {}), ('roll', {'steps': 1}),
+        ('roll', {'steps': -1}), ('roll_through', {'step': middle}), ('roll_from', {'step': middle}), ('reverse_after', {'step': 0}),
+        ('reverse_before', {'step': steps - 1}), ('pivot_around', {'step': middle}), ('repeat_at_end', {'first': 0, 'last': steps - 1}),
+        ('repeat_at_start', {'first': 0, 'last': 0}), ('clear_all_but_pitch', {}), ('clear_chords', {}), ('clear_statements', {}),
+        ('smooth_ccs', {}), ('smooth_velocity', {}), ('mirror', {}), ('interleave', {}), ('splice', {'at': 0}), ('splice', {}), ('set_drum', {}),
+    ]
+    if steps > 1:
+        edits += [('set_steps', {'steps': steps - 1}), ('remove_step', {'step': 0})]
+    return edits
+
+
+def python_pattern_edits(path):
+    """Return, as JSON, each of the first patterns of a set after each of the pattern_edits step's edits on a fresh copy, as
+    the Python's Pattern makes them, or the refusal; None where the Python refuses the set."""
+    from llamatron.model.objects.setlist import Setlist
+    with open(path, encoding='utf-8') as file:
+        data = load_safely(file)
+    moved, _ = migrated(data, one_song_name=path.stem)
+    try:
+        setlist = Setlist.from_data(data=as_object_layout(moved))
+    except SongFileError:
+        return None
+    results = []
+    for name in setlist.get_pattern_names()[:EDITED_PATTERNS]:
+        original = setlist.get_pattern(name)
+        for edit, given in pattern_edit_steps(original.get_steps(), original.is_drum()):
+            pattern = original.copy()
+            arguments = dict(given)
+            if edit in ('interleave', 'splice'):
+                arguments['other'] = original.copy()
+            if edit == 'set_drum':
+                arguments['drum'] = not original.is_drum()
+            try:
+                getattr(pattern, edit)(**arguments)
+                results.append([edit, name, pattern.to_data()])
+            except Exception as error:
+                results.append([edit, name, 'refused: ' + str(error)])
     return json.dumps(results, default=str)
 
 
@@ -355,7 +410,7 @@ def same_as_data(python, port):
     return load_safely(python) == load_safely(port)
 
 
-STEPS = {'edits': python_edits, 'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
+STEPS = {'edits': python_edits, 'pattern_edits': python_pattern_edits, 'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
 # Where the Python's answers are kept, git-ignored and never committed: since the Python program is frozen, an answer is
 # worked out from the Python only when none is kept for its step and its file as the file is now.
 KEPT = pathlib.Path('.cache/compare_llamatron2')
@@ -364,7 +419,9 @@ NOTHING_KEPT = 'none'
 
 def kept_python(step, path):
     """Return the Python's answer for a step on a set or MIDI file, worked out by the Python only when none is kept yet."""
-    digest = hashlib.sha256('{}\0'.format(step).encode('utf-8') + path.read_bytes()).hexdigest()
+    # The step's own code is part of the key, so that changing what a step asks of the Python asks it again.
+    code = ''.join(inspect.getsource(function) for function in (STEPS[step], *STEP_HELPERS.get(step, ())))
+    digest = hashlib.sha256('{}\0{}\0'.format(step, code).encode('utf-8') + path.read_bytes()).hexdigest()
     kept = KEPT / step / (digest + '.json')
     if kept.exists():
         held = json.loads(kept.read_text(encoding='utf-8'))
@@ -376,7 +433,9 @@ def kept_python(step, path):
 
 
 # How each step's two outputs are compared: as text unless named here.
-COMPARED = {'save': same_as_data, 'import': same_as_data, 'edits': same_in_order}
+# The functions a step's Python answer is worked out with besides the step's own, which its kept answers depend on.
+STEP_HELPERS = {'pattern_edits': (pattern_edit_steps,)}
+COMPARED = {'save': same_as_data, 'import': same_as_data, 'edits': same_in_order, 'pattern_edits': same_in_order}
 
 
 # The screen tour: the Python's capture, made once, since the Python program is frozen, and where the Rust's replay of its

@@ -107,6 +107,19 @@ fn main() -> ExitCode {
                 ExitCode::from(1)
             }
         },
+        "pattern_edits" => {
+            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
+            match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
+                Ok(setlist) => {
+                    println!("{}", pattern_edits_of(&setlist));
+                    ExitCode::SUCCESS
+                }
+                Err(problem) => {
+                    eprintln!("{path}: {}", problem.message);
+                    ExitCode::from(1)
+                }
+            }
+        }
         "edits" => {
             let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
             match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
@@ -578,6 +591,130 @@ fn edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
             add("move", song, first, with_tracks(moved_in_section(&tracks, 0, 1)));
         }
         add("sort", song, first, with_tracks(Some(sorted_section(&tracks))));
+    }
+    json(&Data::List(results))
+}
+
+/// How many of a set's patterns the pattern_edits step edits, and the direction and group it gives them.
+const EDITED_PATTERNS: usize = 3;
+const EDITED_DIRECTION: &str = "pendulum";
+const EDITED_GROUP: &str = "edited";
+const DRUM_DEGREE: &str = "C";
+
+/// Each of a set's first patterns after each of the pattern_edits step's edits on a fresh copy, as JSON.
+fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
+    use llamatron_model::objects::pattern::Pattern;
+    let mut results = Vec::new();
+    for (name, item) in setlist.items("patterns").iter().take(EDITED_PATTERNS) {
+        let llamatron_model::objects::setlist::Item::Pattern(original) = item else {
+            continue;
+        };
+        let steps = original.get_steps() as usize;
+        let middle = steps / 2;
+        type Edit<'a> = (
+            &'a str,
+            Box<dyn Fn(&mut Pattern) -> Result<(), llamatron_model::schema::checking::InvalidValue> + 'a>,
+        );
+        let mut edits: Vec<Edit> = vec![
+            (
+                "set_value",
+                Box::new(|pattern| {
+                    // A drum pattern's degree is a note letter.
+                    let degree = if original.is_drum() { Data::text(DRUM_DEGREE) } else { Data::Whole(3) };
+                    pattern.set_value("degree", 0, Some(degree))
+                }),
+            ),
+            (
+                "set_value",
+                Box::new(move |pattern| pattern.set_value("velocity", steps - 1, Some(Data::Whole(100)))),
+            ),
+            ("clear_sound", Box::new(|pattern| pattern.clear_sound(0))),
+            ("set_steps", Box::new(move |pattern| pattern.set_steps(steps as i128 + 2))),
+            ("insert_step", Box::new(|pattern| pattern.insert_step(0))),
+            ("insert_step", Box::new(move |pattern| pattern.insert_step(steps))),
+            (
+                "set_group",
+                Box::new(|pattern| {
+                    pattern.set_group(Some(EDITED_GROUP));
+                    Ok(())
+                }),
+            ),
+            (
+                "set_direction",
+                Box::new(|pattern| {
+                    pattern.set_direction(EDITED_DIRECTION);
+                    Ok(())
+                }),
+            ),
+            ("reverse", Box::new(|pattern| pattern.reverse())),
+            ("roll", Box::new(|pattern| pattern.roll(1))),
+            ("roll", Box::new(|pattern| pattern.roll(-1))),
+            ("roll_through", Box::new(move |pattern| pattern.roll_through(middle))),
+            ("roll_from", Box::new(move |pattern| pattern.roll_from(middle))),
+            ("reverse_after", Box::new(|pattern| pattern.reverse_after(0))),
+            ("reverse_before", Box::new(move |pattern| pattern.reverse_before(steps - 1))),
+            ("pivot_around", Box::new(move |pattern| pattern.pivot_around(middle).map(|_| ()))),
+            ("repeat_at_end", Box::new(move |pattern| pattern.repeat_at_end(0, steps - 1))),
+            ("repeat_at_start", Box::new(|pattern| pattern.repeat_at_start(0, 0))),
+            (
+                "clear_all_but_pitch",
+                Box::new(|pattern| {
+                    pattern.clear_all_but_pitch();
+                    Ok(())
+                }),
+            ),
+            (
+                "clear_chords",
+                Box::new(|pattern| {
+                    pattern.clear_chords();
+                    Ok(())
+                }),
+            ),
+            (
+                "clear_statements",
+                Box::new(|pattern| {
+                    pattern.clear_statements();
+                    Ok(())
+                }),
+            ),
+            (
+                "smooth_ccs",
+                Box::new(|pattern| {
+                    pattern.smooth_ccs();
+                    Ok(())
+                }),
+            ),
+            (
+                "smooth_velocity",
+                Box::new(|pattern| {
+                    pattern.smooth_velocity();
+                    Ok(())
+                }),
+            ),
+            ("mirror", Box::new(|pattern| pattern.mirror())),
+            ("interleave", Box::new(|pattern| pattern.interleave(original))),
+            ("splice", Box::new(|pattern| pattern.splice(original, Some(0)))),
+            ("splice", Box::new(|pattern| pattern.splice(original, None))),
+            (
+                "set_drum",
+                Box::new(|pattern| {
+                    pattern.set_drum(!original.is_drum());
+                    Ok(())
+                }),
+            ),
+        ];
+        if steps > 1 {
+            edits.push(("set_steps", Box::new(move |pattern| pattern.set_steps(steps as i128 - 1))));
+            edits.push(("remove_step", Box::new(|pattern| pattern.remove_step(0))));
+        }
+        for (edit, change) in edits {
+            let mut pattern = original.clone();
+            let outcome = match change(&mut pattern) {
+                Ok(()) => pattern.to_data(),
+                Err(problem) => Data::text(&format!("refused: {}", problem.message)),
+            };
+            results.push(Data::List(vec![Data::text(edit), Data::text(name), outcome]));
+        }
     }
     json(&Data::List(results))
 }
