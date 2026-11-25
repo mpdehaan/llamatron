@@ -278,6 +278,9 @@ def same_as_data(python, port):
     """Return whether two saved sets hold the same data: mappings in any order, lists in order (the user's rule)."""
     if port.startswith('FAILED'):
         return False
+    # The same text is the same data; only texts that differ are read, which is slow without libyaml.
+    if python == port:
+        return True
     return load_safely(python) == load_safely(port)
 
 
