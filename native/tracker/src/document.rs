@@ -269,7 +269,10 @@ impl Document {
     pub fn record_edit(&mut self) -> bool {
         let snapshot = self.snapshot();
         if std::mem::take(&mut self.continuing) {
-            return self.history.record_continuing(snapshot);
+            let recorded = self.history.record_continuing(snapshot);
+            // A step taken back to where it began may leave the set as its file holds it.
+            self.dirty = self.setlist.to_data() != self.clean;
+            return recorded;
         }
         self.history.record(snapshot)
     }

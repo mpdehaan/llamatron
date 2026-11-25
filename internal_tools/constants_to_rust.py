@@ -700,6 +700,12 @@ def write_tracker_tables(path):
     lines.append('')
     lines.append('/// Every kind of scale by its name in a file, in the order the tracker lists them, category by category.')
     lines.append('pub static SCALE_TYPES_IN_ORDER: &[&str] = &[{}];'.format(', '.join(literal(str(kind)) for kind in scale_categories.SCALE_TYPES_IN_ORDER)))
+    from llamatron.model.schema import file_format as doubling_format
+    lines.append('/// What each value of a step\'s Double row plays again an octave away: the notes from a place to a place (None for the')
+    lines.append('/// end), lowest first, moved by so many octaves.')
+    lines.append('pub static DOUBLED_NOTES: &[(&str, i64, Option<i64>, i64)] = &[{}];'.format(', '.join('({}, {}, {}, {})'.format(literal(name), first if first is not None else 0, 'None' if last is None else 'Some({})'.format(last), octaves) for name, (first, last, octaves) in doubling_format.DOUBLED_NOTES.items())))
+    lines.append('/// The scale types in the categories the Chord dialog offers, each category by its name, the common ones first.')
+    lines.append('pub static SCALE_CATEGORIES: &[(&str, &[&str])] = &[{}];'.format(', '.join('({}, &[{}])'.format(literal(name), ', '.join(literal(str(kind)) for kind in kinds)) for name, kinds in scale_categories.SCALE_CATEGORIES)))
     from llamatron.model.file import version
     from llamatron.model.file.setlist_writer import dump_setlist
     from llamatron.model.objects.setlist import Setlist

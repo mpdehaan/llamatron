@@ -396,6 +396,55 @@ pub static SCALE_TYPES_IN_ORDER: &[&str] = &[
     "marwa",
     "purvi",
 ];
+/// What each value of a step's Double row plays again an octave away: the notes from a place to a place (None for the
+/// end), lowest first, moved by so many octaves.
+pub static DOUBLED_NOTES: &[(&str, i64, Option<i64>, i64)] = &[
+    ("low_up", 0, Some(1), 1),
+    ("all_up", 0, None, 1),
+    ("all_down", 0, None, -1),
+    ("top_down", -1, None, -1),
+];
+/// The scale types in the categories the Chord dialog offers, each category by its name, the common ones first.
+pub static SCALE_CATEGORIES: &[(&str, &[&str])] = &[
+    ("Common", &["minor", "major", "harmonic_minor", "melodic_minor", "mixolydian", "dorian"]),
+    ("Modes", &["major", "dorian", "phrygian", "lydian", "mixolydian", "minor", "locrian"]),
+    (
+        "Harm. & Melodic",
+        &[
+            "harmonic_minor",
+            "harmonic_major",
+            "melodic_minor",
+            "dorian_flat2",
+            "lydian_augmented",
+            "lydian_dominant",
+            "mixolydian_flat6",
+            "locrian_natural2",
+            "altered",
+        ],
+    ),
+    ("Pent. & Blues", &["major_pentatonic", "minor_pentatonic", "blues", "major_blues", "egyptian"]),
+    (
+        "Symmetric",
+        &["whole_tone", "whole_half_diminished", "half_whole_diminished", "augmented", "chromatic"],
+    ),
+    ("Jazz", &["bebop_dominant", "bebop_major", "prometheus"]),
+    (
+        "Mid-East/Europe",
+        &[
+            "phrygian_dominant",
+            "double_harmonic",
+            "hungarian_minor",
+            "hungarian_major",
+            "ukrainian_dorian",
+            "persian",
+            "neapolitan_minor",
+            "neapolitan_major",
+            "enigmatic",
+        ],
+    ),
+    ("East Asia", &["hirajoshi", "in_sen", "iwato", "kumoi", "yo", "ryukyu"]),
+    ("India", &["todi", "marwa", "purvi"]),
+];
 
 /// The program's version, which every saved file records.
 pub const PROGRAM_VERSION: &str = "1.0.660";

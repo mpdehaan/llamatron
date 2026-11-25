@@ -154,6 +154,75 @@ impl ChordsEditor {
         });
     }
 
+    /// Open the Chord dialog on a chord, on the list of the row the cursor is on, and store what it answers: its quality,
+    /// tensions, scale and inversion; with no quality the chord is the scale's own triad.
+    fn pick_chord(&self, app: &mut App, place: usize) {
+        use crate::screens::chord_dialog::{ChordChoice, ChordDialog, ChordOffer, QUALITY_LIST, SCALE_LIST, TENSION_LIST};
+        let rows = self.rows(app);
+        let current = ChordChoice {
+            quality: rows.qualities[place].clone(),
+            inversion: rows.inversions[place],
+            tensions: (!rows.tensions[place].is_empty()).then(|| rows.tensions[place].clone()),
+            kind: rows.scales[place].clone(),
+            doubling: None,
+        };
+        let mut qualities = vec![None];
+        qualities.extend(PROGRESSION_CHORDS.iter().map(|symbol| Some(symbol.to_string())));
+        let mut quality_names = vec![messages::MSG_QUALITY_FROM_SCALE.to_string()];
+        quality_names.extend(PROGRESSION_CHORDS.iter().map(|symbol| {
+            let said = labels::MSG_CHORD_NAMES.iter().find(|(each, _)| each == symbol).map_or("", |(_, said)| *said);
+            named(marks::MSG_CHORD_SYMBOL_NAMED, &[("symbol", (*symbol).into()), ("name", said.into())])
+        }));
+        let mut inversions = vec![None];
+        inversions.extend((1..=MAX_PROGRESSION_INVERSION).map(Some));
+        let opens_on = match self.edited_row {
+            TENSION_ROW => TENSION_LIST,
+            SCALE_ROW => SCALE_LIST,
+            _ => QUALITY_LIST,
+        };
+        let where_ = named(
+            messages::MSG_CHORD_OF_PROGRESSION,
+            &[("chord", (place + 1).into()), ("progression", self.name.as_str().into())],
+        );
+        let said_editor = ChordsEditor {
+            section: self.section,
+            name: self.name.clone(),
+            edited_row: self.edited_row,
+        };
+        let editor = ChordsEditor {
+            section: self.section,
+            name: self.name.clone(),
+            edited_row: self.edited_row,
+        };
+        let offer = ChordOffer {
+            title: named(messages::MSG_CHORD_DIALOG_TITLE, &[("where", where_.as_str().into())]),
+            qualities,
+            quality_names,
+            inversions,
+            doublings: None,
+            current,
+            opens_on,
+            said: Box::new(move |app: &App, choice: &ChordChoice| {
+                let mut rows = said_editor.rows(app);
+                rows.qualities[place] = choice.quality.clone();
+                rows.tensions[place] = choice.tensions.clone().unwrap_or_default();
+                rows.scales[place] = choice.kind.clone();
+                Self::in_words(app, &rows, place).sentences()
+            }),
+            keyboard: None,
+            moved: None,
+            then: Box::new(move |app: &mut App, choice: &ChordChoice| {
+                let mut rows = editor.rows(app);
+                rows.qualities[place] = choice.quality.clone();
+                rows.tensions[place] = choice.tensions.clone().unwrap_or_default();
+                rows.scales[place] = choice.kind.clone();
+                rows.inversions[place] = choice.inversion;
+                editor.store(app, rows);
+            }),
+        };
+        app.show_page(Box::new(ChordDialog::new(offer)));
+    }
+
     /// Fill the chords with a named progression from a picker of two columns, matched to the song's scale: a chord whose
     /// root is a note of the scale becomes that plain degree, any other the degree a half step above it with a flat, or,
     /// past the scale's last note, the one below it with a sharp; every other row of the chords is left blank.
@@ -226,6 +295,8 @@ impl ChordsEditor {
             symbol: quality,
             tensions: rows.tensions[place].clone(),
             own_degree,
+            single_note: false,
+            doubling: None,
         }
     }
 
@@ -465,8 +536,9 @@ impl OneRow for ChordsEditor {
             self.store(app, rows);
         } else if item.is(&Keys::PICK) {
             self.pick_progression(app);
+        } else if item.is(&Keys::CHOOSE) && STOPPING_ROWS.contains(&self.edited_row) {
+            self.pick_chord(app, step);
         }
-        // The Chord dialog is not ported yet.
     }
 
     fn resting(&self, app: &App, step: usize) -> String {

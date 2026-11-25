@@ -294,9 +294,85 @@ pub struct ChordInWords {
     pub symbol: Option<String>,
     pub tensions: Vec<String>,
     pub own_degree: Option<i64>,
+    /// Whether a chord with no symbol is one note, as a pattern's step is, where a progression's chord with no quality is
+    /// the scale's triad.
+    pub single_note: bool,
+    /// What a pattern's step plays again an octave away (its Double row), or None.
+    pub doubling: Option<String>,
 }
 
 impl ChordInWords {
+    /// Whether the chord is one note: a pattern's step with no chord symbol.
+    fn is_one_note(&self) -> bool {
+        self.single_note && self.symbol.is_none()
+    }
+
+    /// The names of the chord's notes from its root up, or of its one note, or none where no scale is known.
+    pub fn note_names(&self) -> Vec<String> {
+        if self.scale.is_none() {
+            return Vec::new();
+        }
+        if self.is_one_note() {
+            return vec![self.name()];
+        }
+        self.spelled(self.kind.as_deref()).notes
+    }
+
+    /// What the Chord dialog says under its lists: the chord in its scale, the chord in the clip's own scale when it
+    /// borrows another, and its notes, with what it doubles.
+    pub fn sentences(&self) -> Vec<String> {
+        let Some(scale) = &self.scale else {
+            return vec![messages::MSG_CHORD_NO_SCALE_KNOWN.to_string()];
+        };
+        let degree = degree_shown(self.degree, self.accidental.as_deref());
+        let drawn_from = borrowed(Some(scale), self.kind.as_deref()).unwrap_or_else(|| scale.clone());
+        let doubled: Vec<String> = self
+            .doubling
+            .iter()
+            .map(|doubling| {
+                let said = messages::MSG_DOUBLINGS_SAID
+                    .iter()
+                    .find(|(each, _)| each == doubling)
+                    .map_or("", |(_, said)| *said);
+                named(messages::MSG_DOUBLED_SENTENCE, &[("doubled", said.into())])
+            })
+            .collect();
+        let shown = scale_shown(&drawn_from);
+        if self.is_one_note() {
+            let mut lines = vec![named(
+                messages::MSG_NOTE_SENTENCE,
+                &[
+                    ("scale", shown.as_str().into()),
+                    ("degree", degree.as_str().into()),
+                    ("name", self.name().as_str().into()),
+                ],
+            )];
+            lines.extend(doubled);
+            return lines;
+        }
+        let long_name = self.spelled(self.kind.as_deref()).long_name;
+        let mut lines = vec![named(
+            messages::MSG_CHORD_SENTENCE,
+            &[
+                ("scale", shown.as_str().into()),
+                ("degree", degree.as_str().into()),
+                ("name", long_name.as_str().into()),
+            ],
+        )];
+        if self.kind.is_some() {
+            lines.push(named(
+                messages::MSG_CHORD_OWN_SENTENCE,
+                &[
+                    ("scale", scale_shown(scale).as_str().into()),
+                    ("name", self.spelled(None).long_name.as_str().into()),
+                ],
+            ));
+        }
+        lines.push(named(messages::MSG_CHORD_NOTES, &[("notes", self.notes().as_str().into())]));
+        lines.extend(doubled);
+        lines
+    }
+
     fn spelled(&self, kind: Option<&str>) -> SpelledChord {
         spelled_chord(
             self.scale.as_ref(),
@@ -309,17 +385,32 @@ impl ChordInWords {
         )
     }
 
+    /// The chord's short name, such as A7(b9), or its one note's name.
     pub fn name(&self) -> String {
+        if self.is_one_note() {
+            return root_name(
+                borrowed(self.scale.as_ref(), self.kind.as_deref()).as_ref(),
+                self.degree,
+                self.accidental.as_deref(),
+            );
+        }
         self.spelled(self.kind.as_deref()).name
     }
 
+    /// The names of the chord's notes from its root up, as one line.
     pub fn notes(&self) -> String {
+        if self.is_one_note() {
+            return self.name();
+        }
         self.spelled(self.kind.as_deref()).notes.join(marks::MSG_NOTES_SEPARATOR)
     }
 
-    /// What the status line says of the chord at rest, where.
+    /// What the status line says of the chord at rest, where, or nothing for one note or a scale that isn't known.
     pub fn resting(&self, place: &str) -> String {
         let Some(scale) = &self.scale else { return String::new() };
+        if self.is_one_note() {
+            return String::new();
+        }
         let drawn_from = borrowed(Some(scale), self.kind.as_deref()).unwrap_or_else(|| scale.clone());
         let mut text = named(
             messages::MSG_CHORD_RESTING,

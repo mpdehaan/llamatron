@@ -88,6 +88,12 @@ impl History {
         if self.undo.is_empty() {
             return self.record(snapshot);
         }
+        // A continued step that ends where it began, as a dialog's choice moved and then put back, is no step at all.
+        if self.undo.back() == Some(&snapshot) {
+            self.undo.pop_back();
+            self.now = snapshot;
+            return false;
+        }
         self.now = snapshot;
         self.redo.clear();
         true

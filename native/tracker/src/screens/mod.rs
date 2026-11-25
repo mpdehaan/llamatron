@@ -4,6 +4,7 @@
 //! The pages, in folders by what they edit, as the Python's screens/ are.
 
 pub mod arrange;
+pub mod chord_dialog;
 pub mod dialogs;
 pub mod field_page;
 pub mod generators;

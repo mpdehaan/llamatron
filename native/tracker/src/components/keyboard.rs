@@ -41,7 +41,7 @@ const KEY_COUNT: i64 = OCTAVES as i64 * 12;
 /// The keys of the keyboard a chord's notes are, as numbers from the lowest C: the root in the first octave and each note
 /// after it the next key up of its name, an inversion's lowest notes an octave higher, and a note past the last key an
 /// octave lower, so that every note of the chord has a key.
-pub fn chord_keys(note_names: &[String], inversion: Option<usize>) -> Vec<i64> {
+pub fn chord_keys(note_names: &[String], inversion: Option<usize>, doubling: Option<&str>) -> Vec<i64> {
     let mut keys: Vec<i64> = Vec::new();
     let mut last = -1;
     for name in note_names {
@@ -56,10 +56,35 @@ pub fn chord_keys(note_names: &[String], inversion: Option<usize>) -> Vec<i64> {
     for key in keys.iter_mut().take(raised) {
         *key += 12;
     }
+    if let Some(doubling) = doubling {
+        keys = doubled_keys(&keys, doubling);
+    }
     let mut shown: Vec<i64> = keys.into_iter().map(|key| if key < KEY_COUNT { key } else { key % 12 + 12 }).collect();
     shown.sort_unstable();
     shown.dedup();
     shown
+}
+
+/// A chord's keys with those its Double row plays again an octave away, as the Realizer plays them, the whole moved up an
+/// octave where a note doubled down would fall below the keyboard's lowest C.
+fn doubled_keys(keys: &[i64], doubling: &str) -> Vec<i64> {
+    let Some(&(_, first, last, octaves)) = crate::generated::tables::DOUBLED_NOTES.iter().find(|(name, ..)| *name == doubling) else {
+        return keys.to_vec();
+    };
+    let mut by_pitch = keys.to_vec();
+    by_pitch.sort_unstable();
+    let count = by_pitch.len() as i64;
+    // The places are a slice's, a negative one counted from the end.
+    let at = |place: i64| if place < 0 { (count + place).max(0) } else { place.min(count) } as usize;
+    let (from, to) = (at(first), last.map_or(by_pitch.len(), at));
+    let added: Vec<i64> = by_pitch[from..to.max(from)].iter().map(|key| key + octaves * 12).collect();
+    let mut every: Vec<i64> = keys.iter().chain(&added).copied().collect();
+    every.sort_unstable();
+    every.dedup();
+    if every.first().is_some_and(|lowest| *lowest < 0) {
+        every = every.into_iter().map(|key| key + 12).collect();
+    }
+    every
 }
 
 /// The three lines of one octave of keys, one key filled and its name bracketed: the keyswitch note picker's keys.

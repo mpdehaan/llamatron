@@ -902,6 +902,8 @@ pub enum RowAsking {
         value: String,
         most: Rational,
     },
+    /// The Chord dialog, opened on one of its lists.
+    Chord { opens_on: usize },
 }
 
 impl RowEdit {
@@ -1008,6 +1010,18 @@ impl<'a> Rows<'a> {
             edit.typed = Some(typed_edit.typed);
             edit.continues = typed_edit.continues;
             return edit;
+        }
+        if item.is(&ChordRow::CHOOSE) {
+            use crate::screens::chord_dialog::{QUALITY_LIST, SCALE_LIST, TENSION_LIST};
+            let opens_on = match row {
+                _ if row == Row::TENSION => TENSION_LIST,
+                _ if row == Row::CHORD_SCALE => SCALE_LIST,
+                _ => QUALITY_LIST,
+            };
+            return RowEdit {
+                asking: Some(RowAsking::Chord { opens_on }),
+                ..RowEdit::default()
+            };
         }
         if item.is(&NumberRow::ASK) {
             let (lowest, highest) = number_range(row);

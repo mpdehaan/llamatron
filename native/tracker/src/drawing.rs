@@ -35,8 +35,10 @@ impl Style {
     pub const PLAYING: &'static str = "bold red";
     pub const SOUNDING: &'static str = "bold green";
     pub const CHORD_NOTE: &'static str = "green";
-    pub const CHORD_KEY: &'static str = "bold green";
-    pub const SCALE_KEY: &'static str = "cyan";
+    /// A chord's keys and a scale's on a dialog's keyboard, green and cyan by the terminal's palette numbers, as the
+    /// Python's dialogs come out of Rich.
+    pub const CHORD_KEY: &'static str = "bold color(2)";
+    pub const SCALE_KEY: &'static str = "color(6)";
     pub const READ_HEAD: &'static str = "khaki1";
     pub const KEYSWITCH_LIGHT: &'static str = "bold magenta";
     pub const DRAW_LIGHT: &'static str = "bold #be5aff";

@@ -1057,6 +1057,8 @@ impl Page for PatternEditor {
             symbol: Some(symbol),
             tensions,
             own_degree: None,
+            single_note: true,
+            doubling: None,
         };
         chord.resting(&named(messages::MSG_RESTING_STEP, &[("step", (step + 1).into())]))
     }
@@ -1269,7 +1271,12 @@ impl PatternEditor {
     fn ask_row(&self, app: &mut App, step: usize, asking: crate::screens::pattern::rows_view::RowAsking) {
         use crate::screens::pattern::rows_view::RowAsking;
         let name = self.name.clone();
+        if let RowAsking::Chord { opens_on } = asking {
+            self.pick_chord(app, step, opens_on);
+            return;
+        }
         let (title, shown, then): (String, String, crate::screens::dialogs::Then) = match asking {
+            RowAsking::Chord { .. } => return,
             RowAsking::Number {
                 row,
                 title,
@@ -1460,9 +1467,11 @@ impl PatternEditor {
             if place.covering.is_none() {
                 self.draw_here(app, &place);
             }
-            app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-                name: "ChordDialog".to_string(),
-            }));
+            let roll = Roll::of(app, &self.name);
+            let covering = roll.covering.get(&place.step).copied();
+            if let Some(start) = covering {
+                self.pick_chord(app, start, crate::screens::chord_dialog::QUALITY_LIST);
+            }
         } else if item.is(&RollKeys::KEYSWITCH) {
             if place.covering.is_none() {
                 app.refuse(errors::ERR_NO_NOTE_ON_STEP);
@@ -1471,6 +1480,70 @@ impl PatternEditor {
             let Some(start) = place.covering else { return };
             self.pick_keyswitches(app, start);
         }
+    }
+
+    /// Open the Chord dialog on a step, a single note among the qualities, and store what it answers on the step's Chord,
+    /// Tension, Inversion, Scale and Double rows; the editor underneath shows the chord as the choice moves.
+    fn pick_chord(&self, app: &mut App, step: usize, opens_on: usize) {
+        use crate::screens::chord_dialog::{ChordChoice, ChordDialog, ChordOffer};
+        use llamatron_model::schema::generated::file_format::{CHORD_SYMBOLS, DOUBLINGS};
+        use llamatron_model::schema::generated::limits::INVERSIONS;
+        let Some(pattern) = app.document.get_setlist().get_pattern(&self.name) else {
+            return;
+        };
+        let text_of = |row: &str| match patterns::value(pattern, row, step) {
+            Some(Data::Text(text)) => Some(text.clone()),
+            Some(Data::Whole(whole)) => Some(whole.to_string()),
+            _ => None,
+        };
+        let current = ChordChoice {
+            quality: text_of(Row::CHORD),
+            inversion: patterns::value(pattern, Row::INVERSION, step)
+                .and_then(Data::as_whole)
+                .map(|whole| whole as i64),
+            tensions: patterns::value(pattern, Row::TENSION, step)
+                .and_then(Data::as_list)
+                .map(|tensions| tensions.iter().filter_map(|tension| tension.as_str().map(str::to_string)).collect()),
+            kind: text_of(Row::CHORD_SCALE),
+            doubling: text_of(Row::DOUBLE),
+        };
+        let mut qualities = vec![None];
+        qualities.extend(CHORD_SYMBOLS.iter().map(|symbol| Some(symbol.to_string())));
+        let mut quality_names = vec![messages::MSG_QUALITY_SINGLE_NOTE.to_string()];
+        quality_names.extend(CHORD_SYMBOLS.iter().map(|symbol| {
+            let said = labels::MSG_CHORD_NAMES.iter().find(|(each, _)| each == symbol).map_or("", |(_, said)| *said);
+            named(marks::MSG_CHORD_SYMBOL_NAMED, &[("symbol", (*symbol).into()), ("name", said.into())])
+        }));
+        let mut inversions = vec![None];
+        inversions.extend(INVERSIONS.iter().map(|inversion| Some(*inversion)));
+        let mut doublings = vec![None];
+        doublings.extend(DOUBLINGS.iter().map(|doubling| Some(doubling.to_string())));
+        let where_ = named(
+            messages::MSG_CHORD_OF_STEP,
+            &[("step", (step + 1).into()), ("pattern", self.name.as_str().into())],
+        );
+        let (name, opened) = (self.name.clone(), self.opened_track.clone());
+        let in_words = move |app: &App, choice: &ChordChoice| chord_in_words(app, &name, opened.as_deref(), step, choice);
+        let said_words = in_words.clone();
+        let keyboard_words = in_words;
+        let (name, opened) = (self.name.clone(), self.opened_track.clone());
+        let keyboard = move |app: &App, choice: &ChordChoice| step_keyboard(app, &name, opened.as_deref(), &keyboard_words(app, choice), choice);
+        let name = self.name.clone();
+        let written = move |app: &mut App, choice: &ChordChoice| write_chord(app, &name, step, choice);
+        let offer = ChordOffer {
+            title: named(messages::MSG_CHORD_DIALOG_TITLE, &[("where", where_.as_str().into())]),
+            qualities,
+            quality_names,
+            inversions,
+            doublings: Some(doublings),
+            current,
+            opens_on,
+            said: Box::new(move |app: &App, choice: &ChordChoice| said_words(app, choice).sentences()),
+            keyboard: Some(Box::new(keyboard)),
+            moved: Some(Box::new(written.clone())),
+            then: Box::new(written),
+        };
+        app.show_page(Box::new(ChordDialog::new(offer)));
     }
 
     /// Open the dialog that picks the keyswitches of the note starting on a step, and store what it answers on the step's
@@ -1561,4 +1634,110 @@ impl PatternEditor {
         }));
         app.show_page(Box::new(dialog));
     }
+}
+
+/// A step's chord in words with a choice in place of the step's own, in the scale the pattern is known to play under; a
+/// step that grabs its note has no degree of its own, so its chord has no name.
+fn chord_in_words(
+    app: &App,
+    name: &str,
+    _opened: Option<&str>,
+    step: usize,
+    choice: &crate::screens::chord_dialog::ChordChoice,
+) -> crate::chord_text::ChordInWords {
+    let setlist = app.document.get_setlist();
+    let pattern = setlist.get_pattern(name);
+    let degree = pattern.and_then(|pattern| patterns::value(pattern, Row::DEGREE, step)).and_then(Data::as_whole);
+    let accidental = pattern
+        .and_then(|pattern| patterns::value(pattern, Row::ACCIDENTAL, step))
+        .and_then(Data::as_str)
+        .map(str::to_string);
+    let known = known_scale(app, name).filter(|_| degree.is_some());
+    crate::chord_text::ChordInWords {
+        scale: known,
+        degree: degree.unwrap_or(1) as i64,
+        accidental,
+        kind: choice.kind.clone(),
+        symbol: choice.quality.clone(),
+        tensions: choice.tensions.clone().unwrap_or_default(),
+        own_degree: None,
+        single_note: true,
+        doubling: choice.doubling.clone(),
+    }
+}
+
+/// The scale the pattern is known to play under, the first of its uses' scales, or None for a drum pattern or none.
+fn known_scale(app: &App, name: &str) -> Option<crate::chord_text::ChordScale> {
+    let setlist = app.document.get_setlist();
+    if setlist.get_pattern(name).is_none_or(Pattern::is_drum) {
+        return None;
+    }
+    let scale = scales_of_pattern(setlist, app.document.song(), name).first().cloned()?;
+    let Some(llamatron_model::objects::setlist::Item::Scale(held)) = setlist.get_item(Section::SCALES, &scale) else {
+        return None;
+    };
+    crate::chord_text::ChordScale::new(&scale_root(setlist, &scale), held.get_kind().as_str()?)
+}
+
+/// The lines of a keyboard showing a step's chord in the pattern's scale, for the Chord dialog: the scale's keys in an
+/// outline's colour and the chord's filled; None where the scale isn't known for certain.
+fn step_keyboard(
+    app: &App,
+    name: &str,
+    _opened: Option<&str>,
+    words: &crate::chord_text::ChordInWords,
+    choice: &crate::screens::chord_dialog::ChordChoice,
+) -> Option<Vec<Text>> {
+    use crate::components::keyboard::{chord_keys, keyboard_lines, KeyKind, Keyboard};
+    let setlist = app.document.get_setlist();
+    if setlist.get_pattern(name).is_none_or(Pattern::is_drum) || scales_of_pattern(setlist, app.document.song(), name).len() != 1 {
+        return None;
+    }
+    let names = words.note_names();
+    if names.is_empty() {
+        return None;
+    }
+    let scale = scales_of_pattern(setlist, app.document.song(), name)[0].clone();
+    let inversion = choice.quality.as_ref().and(choice.inversion).map(|inversion| inversion as usize);
+    let keyboard = Keyboard {
+        root: scale_root(setlist, &scale),
+        half_steps: scale_half_steps(setlist, &scale),
+        chord: chord_keys(&names, inversion, choice.doubling.as_deref()),
+    };
+    let style_of = |kind: Option<KeyKind>| match kind {
+        Some(KeyKind::Chord) => crate::drawing::Style::CHORD_KEY,
+        Some(KeyKind::Scale) => crate::drawing::Style::SCALE_KEY,
+        Some(KeyKind::Outside) => crate::drawing::Style::DIM,
+        None => crate::drawing::Style::PLAIN,
+    };
+    Some(keyboard_lines(&keyboard.rows(), &style_of))
+}
+
+/// Write a chord choice on a step's Chord, Tension, Inversion, Scale and Double rows; a single note takes no tensions and
+/// no inversion.
+fn write_chord(app: &mut App, name: &str, step: usize, choice: &crate::screens::chord_dialog::ChordChoice) {
+    let symbol = choice
+        .quality
+        .as_ref()
+        .map(|symbol| symbol.parse::<i128>().map_or_else(|_| Data::text(symbol), Data::Whole));
+    let tensions = choice
+        .quality
+        .as_ref()
+        .and(choice.tensions.as_ref())
+        .map(|tensions| Data::List(tensions.iter().map(|tension| Data::text(tension)).collect()));
+    let inversion = choice.quality.as_ref().and(choice.inversion).map(|inversion| Data::Whole(inversion as i128));
+    let kind = choice.kind.as_ref().map(|kind| Data::text(kind));
+    let doubling = choice.doubling.as_ref().map(|doubling| Data::text(doubling));
+    super::whole_pattern::change_pattern(app, name, |pattern| {
+        for (row, value) in [
+            (Row::CHORD, symbol),
+            (Row::TENSION, tensions),
+            (Row::INVERSION, inversion),
+            (Row::CHORD_SCALE, kind),
+            (Row::DOUBLE, doubling),
+        ] {
+            pattern.set_value(row, step, value).map_err(|problem| problem.message)?;
+        }
+        Ok(())
+    });
 }
