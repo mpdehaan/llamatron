@@ -84,8 +84,34 @@ def pattern_listen_keys(*, page, pattern):
     preview = page.app.pattern_preview()
     if pattern is None:
         return []
+    if page.document().is_preview(pattern):
+        return preview_listen_keys(page=page, instrument=pattern.instrument)
     if preview.playing_pattern() == pattern:
         return [page.bind(page.KEYS.STOP_LISTENING, action=lambda: stop_listening_to_pattern(page))]
     if not preview.can_sound(pattern):
         return []
     return [page.bind(page.KEYS.LISTEN, action=lambda: listen_to_pattern(page=page, pattern=pattern))]
+
+
+def preview_listen_keys(*, page, instrument):
+    """Return the key that listens to an instrument's preview pattern through the instrument, as Listen on its page does, or
+    stops it while it plays."""
+    preview = page.app.pattern_preview()
+    if preview.playing_instrument() == instrument:
+        return [page.bind(page.KEYS.STOP_LISTENING, action=lambda: stop_listening_to_pattern(page))]
+    return [page.bind(page.KEYS.LISTEN, action=lambda: listen_to_preview(page=page, instrument=instrument))]
+
+
+def listen_to_preview(*, page, instrument):
+    """Play an instrument's preview pattern through the instrument, again and again until stopped."""
+    preview = page.app.pattern_preview()
+    refusal = preview.instrument_refusal(instrument)
+    if refusal is not None:
+        page.refuse(refusal)
+        return
+    trial = page.document().preview_data(instrument)
+    refusal = page.app.transport.try_play(lambda: preview.play_instrument(instrument=instrument, trial=trial)).refusal
+    if refusal is not None:
+        page.tell(errors.ERR_CANT_PLAY_TITLE, refusal)
+        return
+    page.say(messages.MSG_LISTENING_TO_INSTRUMENT.format(name=instrument))

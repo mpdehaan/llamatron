@@ -14,7 +14,7 @@ from llamatron.engine.generators import drift as drift_plugin
 from llamatron.interface.pages import statements
 from llamatron.interface.pages.statements import statement_section
 from llamatron.model.schema import generator_plugins
-from llamatron.user_strings import labels
+from llamatron.user_strings import errors, labels
 
 NOTHING = ''
 from llamatron.interface.tracker.themes import theme_of
@@ -104,8 +104,12 @@ class ShowsNamedItem:
             self.show_item(new)
 
     def rename(self):
-        """Rename the thing, which changes every reference to it by name, and show it under the new name."""
+        """Rename the thing, which changes every reference to it by name, and show it under the new name; an instrument's preview
+        pattern is refused, since it goes by its instrument's name."""
         name = self.item
+        if self.document().is_preview(name):
+            self.refuse(errors.ERR_PREVIEW_KEEPS_ITS_NAME)
+            return
 
         def renamed(new):
             self.document().rename_named(section=self.SECTION, old=name, new=new)

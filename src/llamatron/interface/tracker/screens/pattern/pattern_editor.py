@@ -240,6 +240,8 @@ class PatternEditor(ShowsNamedItem, StepEditor):
         """Return the crumbs: the opener's and then this pattern's, when a clip opened the editor, and PATTERNS and the name otherwise."""
         if self.opened_from is None:
             return self.crumbs
+        if self.document().is_preview(self.item):
+            return (*self.opened_from.crumb_trail(), labels.MSG_PREVIEW_PATTERN_CRUMB)
         return (*self.opened_from.crumb_trail(), labels.MSG_PATTERN_CRUMB.format(name=self.item))
 
     def duration(self):
@@ -602,7 +604,7 @@ class PatternEditor(ShowsNamedItem, StepEditor):
                 return
             document.munge_pattern(name=name, way=Pattern.mirror)
         elif choice == Munge.SPLIT:
-            self.ask_split()
+            self.ask_split_unless_preview()
         elif choice in OTHER_PATTERN_TITLES:
             self.pick_other_pattern(choice)
         else:
@@ -672,6 +674,13 @@ class PatternEditor(ShowsNamedItem, StepEditor):
             if name != self.item:
                 names.append(name)
         return sorted_names(names)
+
+    def ask_split_unless_preview(self):
+        """Ask how to split the pattern, but refuse for an instrument's preview pattern, which makes no patterns of the set's."""
+        if self.document().is_preview(self.item):
+            self.refuse(errors.ERR_PREVIEW_KEEPS_ITS_NAME)
+            return
+        self.ask_split()
 
     def ask_split(self):
         """Ask how many steps each new pattern has, make new patterns of the pattern's steps, so many each, and say which were made; the pattern itself is left as it is."""

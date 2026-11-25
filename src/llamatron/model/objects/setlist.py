@@ -987,6 +987,26 @@ class Setlist(HoldsSections, HoldsSettings):
     def has_pattern(self, name):
         return self._section(Section.PATTERNS).has(name)
 
+    @staticmethod
+    def preview_of(instrument):
+        """Return the key an instrument's preview pattern is reached by, in place of a pattern's name."""
+        return instrument_previews.PreviewOf(instrument)
+
+    @staticmethod
+    def is_preview(name):
+        """Return whether a pattern's name is an instrument's preview's key rather than a pattern of the set's."""
+        return instrument_previews.is_preview(name)
+
+    @staticmethod
+    def preview_scale():
+        """Return the key of the hidden chromatic scale on C a tonal preview pattern plays under."""
+        return instrument_previews.PreviewScale()
+
+    @staticmethod
+    def starting_preview(*, drum):
+        """Return the data a new preview pattern starts with (model/objects/instrument_previews.py)."""
+        return instrument_previews.starting_preview(drum=drum)
+
     def get_pattern(self, name):
         """Return the pattern of a name, or an instrument's preview pattern by its key (PreviewOf), None until one is made, which
         no list of the set's patterns holds."""

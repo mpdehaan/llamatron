@@ -196,6 +196,7 @@ flowchart TD
     ClipPage --> PatternEditor
     FilePage --> NotesPage
     GroovesPage --> GrooveEditor
+    InstrumentEditor --> PatternEditor
     InstrumentsPage --> InstrumentEditor
     MainPage -- "A" --> ArrangePage
     MainPage --> DrawsPage

@@ -8,8 +8,9 @@
 from types import MethodType
 
 from llamatron.model.objects.pattern import Pattern
+from llamatron.model.objects.setlist import Setlist
 from llamatron.model.schema import limits
-from llamatron.model.schema.file_format import Section
+from llamatron.model.schema.file_format import Section, SoundEngine, SoundSetting
 
 # How many steps a new pattern has.
 NEW_PATTERN_STEPS = 16
@@ -29,6 +30,29 @@ class PatternEdits:
     __slots__ = ()
 
     # Patterns.
+
+    @staticmethod
+    def preview_of(instrument):
+        """Return the key the pattern editor opens an instrument's preview pattern by, in place of a pattern's name."""
+        return Setlist.preview_of(instrument)
+
+    @staticmethod
+    def is_preview(name):
+        """Return whether a pattern's name is an instrument's preview's key rather than a pattern of the set's."""
+        return Setlist.is_preview(name)
+
+    def make_preview(self, instrument):
+        """Give an instrument its starting preview pattern, as one undo step, unless it has one."""
+        held = self._setlist.get_instrument(instrument)
+        if held.get_preview() is None:
+            self.change_set(held.make_preview)
+
+    def preview_data(self, instrument):
+        """Return the data of the pattern Listen plays an instrument with: its preview pattern, or the one it would start with."""
+        held = self._setlist.get_instrument(instrument)
+        if held.get_preview() is not None:
+            return held.get_preview().to_data()
+        return Setlist.starting_preview(drum=held.is_built_in() and held.get_sound(SoundSetting.ENGINE) == SoundEngine.DRUM)
 
     def pattern(self, name):
         """Return the set's pattern of a name, which an edit of it reaches through change_pattern."""
@@ -213,6 +237,9 @@ class PatternEdits:
         return self.remembered(key=(PatternEdits.scales_of_pattern.__name__, name), on=(self.get_outside_patterns(),), compute=lambda: self._scales_of_pattern(name))
 
     def _scales_of_pattern(self, name):
+        if Setlist.is_preview(name):
+            # A tonal preview plays under the hidden chromatic scale on C, a drum preview under none.
+            return [] if self._setlist.get_pattern(name).is_drum() else [Setlist.preview_scale()]
         if self._setlist.clip_slots_naming(section=Section.PATTERNS, name=name):
             names = self._setlist.scales_for_pattern(name)
         else:

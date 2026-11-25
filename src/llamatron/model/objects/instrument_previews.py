@@ -17,10 +17,12 @@ from typing import NamedTuple
 from llamatron.model.schema.file_format import PatternSetting, Row
 from llamatron.model.values.note import NoteName
 from llamatron.model.values.scale import ScaleType
+from llamatron.user_strings import names as names_text
 
 PREVIEW_STEPS = 16
 PREVIEW_STEP_SIZE = '1/16'
-PREVIEW_OCTAVE = 4
+# Middle C: the file counts octaves from MIDI note 0, so middle C is in octave 5.
+PREVIEW_OCTAVE = 5
 # C major up and down, as steps of the chromatic scale from C: C D E F G A B C, then C B A G F E D C, the top C an octave up.
 MAJOR_STEPS = (1, 3, 5, 6, 8, 10, 12, 13, 13, 12, 10, 8, 6, 5, 3, 1)
 STEPS_IN_AN_OCTAVE = 12
@@ -28,15 +30,23 @@ QUARTER_STEPS = 4
 
 
 class PreviewOf(NamedTuple):
-    """The key of an instrument's preview pattern, by the instrument's name: what the pattern editor opens it by."""
+    """The key of an instrument's preview pattern, by the instrument's name: what the pattern editor opens it by, shown as the
+    page names it wherever a pattern's name is shown."""
 
     instrument: str
 
+    def __str__(self):
+        return names_text.MSG_INSTRUMENT_PREVIEW_NAME.format(instrument=self.instrument)
+
 
 class PreviewScale(NamedTuple):
-    """The key of the hidden chromatic scale on C a tonal preview plays under: what a preview's scale is named by."""
+    """The key of the hidden chromatic scale on C a tonal preview plays under: what a preview's scale is named by, shown as the
+    page names it wherever a scale's name is shown."""
 
     kind: str = ScaleType.CHROMATIC
+
+    def __str__(self):
+        return names_text.MSG_PREVIEW_SCALE_NAME
 
 
 def is_preview(name):

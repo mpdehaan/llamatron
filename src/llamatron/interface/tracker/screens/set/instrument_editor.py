@@ -10,12 +10,11 @@ from llamatron.interface.pages.instrument import InstrumentPresenter
 from llamatron.interface.tracker import keybindings
 from llamatron.interface.tracker.dialogs.keyswitch_map_dialog import KeyswitchMapDialog
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
-from llamatron.interface.tracker.screens.shared import sound_trial
 from llamatron.interface.tracker.screens.shared.field_page import FieldPage
 from llamatron.interface.tracker.screens.shared.shows_named_item import ShowsNamedItem
-from llamatron.interface.tracker.screens.shared.sound_trial import hits_of, run_in_sound, run_of, SoundTrial
+from llamatron.interface.tracker.screens.shared.sound_trial import run_in_sound, SoundTrial
 from llamatron.model.schema import file_format, limits
-from llamatron.model.schema.file_format import Section, SoundEngine, SoundSetting
+from llamatron.model.schema.file_format import Section
 from llamatron.user_strings import errors, help as help_text, labels, legends, marks, messages
 
 
@@ -70,6 +69,17 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
     def fields(self):
         return self.presenter().form()
 
+    def preview_button(self):
+        """Return the Preview pattern button, which opens the instrument's own pattern for designing its sound."""
+        return Button(label=labels.MSG_PREVIEW_PATTERN_LABEL, enter=self.open_preview, enter_what=legends.What.EDIT)
+
+    def open_preview(self):
+        """Open the pattern editor on the instrument's preview pattern, made first if it has none, with this page's crumbs before
+        it, so that ESC comes back here."""
+        document = self.document()
+        document.make_preview(self.item)
+        self.open_editor(section=Section.PATTERNS, name=document.preview_of(self.item), opened_from=self)
+
     def keyswitch_map_button(self):
         """Return the Keyswitch Map button, showing its key."""
         return Button(label=labels.MSG_KEYSWITCH_MAP_LABEL, key_name=self.KEYS.KEYSWITCH_MAP.name, enter=self.open_keyswitch_map, enter_what=self.KEYS.KEYSWITCH_MAP[2])
@@ -102,18 +112,15 @@ class InstrumentEditor(ShowsNamedItem, FieldPage):
         return self.app.pattern_preview().playing_instrument() == self.item
 
     def listen(self):
-        """Play the instrument again and again until stopped: a drum its tuning note four times, any other sound a scale up an
-        octave and back; an edit to the instrument is heard on the next pass."""
+        """Play the instrument's preview pattern again and again until stopped, an edit to the instrument or the pattern heard on
+        the next pass."""
         preview = self.app.pattern_preview()
         refusal = preview.instrument_refusal(self.item)
         if refusal is not None:
             self.refuse(refusal)
             return
-        instrument = self.instrument()
-        numbers, step = run_of(), sound_trial.RUN_STEP
-        if instrument.is_built_in() and instrument.get_sound(SoundSetting.ENGINE) == SoundEngine.DRUM:
-            numbers, step = hits_of(self.document().get_setlist().drum_tuning_note()), sound_trial.HITS_STEP
-        refusal = self.app.transport.try_play(lambda: preview.play_instrument(instrument=self.item, numbers=numbers, step_size=step)).refusal
+        trial = self.document().preview_data(self.item)
+        refusal = self.app.transport.try_play(lambda: preview.play_instrument(instrument=self.item, trial=trial)).refusal
         if refusal is not None:
             self.tell(errors.ERR_CANT_PLAY_TITLE, refusal)
             return

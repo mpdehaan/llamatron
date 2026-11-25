@@ -79,3 +79,8 @@ MSG_GENERAL_MIDI_EXPORT_LABEL = 'MIDI (General MIDI)'
 MSG_WAV_EXPORT_LABEL = 'WAV (FluidSynth)'
 MSG_STEMS_EXPORT_LABEL = 'MIDI stems'
 MSG_CLIP_TREE_EXPORT_LABEL = 'MIDI clips'
+
+# model/objects/instrument_previews.py
+# How an instrument's preview pattern and its hidden scale are named wherever a pattern's or a scale's name is shown.
+MSG_INSTRUMENT_PREVIEW_NAME = 'preview ({instrument})'
+MSG_PREVIEW_SCALE_NAME = 'chromatic on C'

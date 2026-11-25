@@ -96,6 +96,7 @@ class InstrumentPresenter:
             self.velocity_change_field(),
             TabBox(tabs=[self.midi_tab(), tabs.synth_tab(), EffectBlocks(page=self._page, document=self._document, name=self._name).effects_tab(),
                           LfoBlocks(page=self._page, document=self._document, name=self._name).lfos_tab()]),
+            self._page.preview_button(),
             self._page.keyswitch_map_button(),
             self._page.listen_button(),
         ]

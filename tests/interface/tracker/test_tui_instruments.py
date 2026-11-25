@@ -11,6 +11,7 @@ from llamatron.interface.tracker.dialogs.choice_dialog import ChoiceDialog
 from llamatron.interface.tracker.dialogs.message_dialog import MessageDialog
 from llamatron.interface.tracker.dialogs.sound_dialog import SoundDialog
 from llamatron.interface.tracker.keys import Key
+from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEditor
 from llamatron.interface.tracker.screens.set.instrument_editor import InstrumentEditor
 from llamatron.interface.tracker.screens.set.instruments_page import InstrumentsPage
 from llamatron.interface.tracker.screens.set.main_page import MainPage
@@ -366,6 +367,19 @@ class TestInstrumentTabs(UITest):
         await self.select_field(labels.MSG_CUTOFF_LABEL)
         await self.press(keybindings.FieldPage.MORE)
         self.assertEqual(self.instrument().get_sound(SoundSetting.CUTOFF), defaults.DEFAULT_ACID_CUTOFF + ACID_CUTOFF_STRIDE)
+
+    async def test_preview_pattern_opens_the_instruments_own_pattern_made_as_one_undo_step_and_esc_comes_back(self):
+        self.assertIsNone(self.instrument().get_preview())
+        await self.select_field(labels.MSG_PREVIEW_PATTERN_LABEL)
+        await self.press(Key.ENTER)
+        self.assertIsInstance(self.app.screen, PatternEditor)
+        self.assertIn(labels.MSG_PREVIEW_PATTERN_CRUMB, self.title_line())
+        self.assertIsNotNone(self.instrument().get_preview())
+        self.assertNotIn(self.app.screen.item, self.document.get_setlist().get_pattern_names())
+        await self.press(Key.ESCAPE)
+        self.assertIsInstance(self.app.screen, InstrumentEditor)
+        await self.press(keybindings.Page.UNDO)
+        self.assertIsNone(self.instrument().get_preview())
 
     async def test_an_arpeggio_is_typed_and_one_out_of_range_refused(self):
         await self.select_field(labels.MSG_ENGINE_LABEL)

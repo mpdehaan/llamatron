@@ -146,7 +146,8 @@ Right choose a tab.
 | Synth: On, Engine | Makes the instrument built in, and chooses its engine; the engine's settings follow. See Built-in Instruments above. |
 | Effects: Block 1 to 4 | Each block's effect and its settings. See Built-in Instruments above. |
 | LFOs: LFO 1 to 4 | Whether each LFO is on, what it moves, its Shape, Rate, Depth, Retrigger and Each scene. See Built-in Instruments above. |
-| Listen | A button: `ENTER` on it, or `L` from any field, plays the instrument again and again until `L` again: a scale up an octave and back, or, for a built-in drum, its tuning note four times. Edits to the instrument are heard as it plays. Leaving the page stops it. An instrument that plays nothing, with neither its MIDI nor its Synth on, is refused. |
+| Preview pattern | A button that opens the instrument's own preview pattern in the pattern editor, for designing a sound before there is any music. Each instrument has its own, kept inside it in the set file and renamed, copied and deleted with it; no list of patterns shows it. It starts as sixteen sixteenth notes running up and down C major from middle C, on a hidden chromatic scale so that any note can be written without choosing a key, or, for a built-in drum, a C on each quarter in the set's drum octave. |
+| Listen | A button: `ENTER` on it, or `L` from any field, plays the instrument's preview pattern again and again until `L` again, as does `L` in the preview pattern itself. Edits to the instrument and the pattern are heard as it plays. Leaving the page stops it. An instrument that plays nothing, with neither its MIDI nor its Synth on, is refused. |
 | Keyswitch Map | A button: `ENTER` on it, or `K` from any field, opens the instrument's Keyswitch Map. See Keyswitches below. |
 
 ## Keyswitches

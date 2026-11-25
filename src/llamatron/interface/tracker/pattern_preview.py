@@ -148,16 +148,22 @@ class PreviewSet:
 
 
     def _copy_trial(self, *, setlist, song):
-        """Finish a copy that plays the pattern written to try a sound with, once, on a drum track made for it, under no scale."""
+        """Finish a copy that plays the pattern written to try a sound with, once, on a track made for it: a drum pattern under no
+        scale, any other under the hidden chromatic scale on C."""
         name = unique_name(base=names_text.MSG_PREVIEW_PATTERN_NAME, taken=song.get_setlist().get_pattern_names())
-        setlist.add_item(section=Section.PATTERNS, name=name, item=Pattern.from_data(data=self._trial, where=name, song=song))
+        pattern = Pattern.from_data(data=self._trial, where=name, song=song)
+        setlist.add_item(section=Section.PATTERNS, name=name, item=pattern)
+        scale = None
+        if not pattern.is_drum():
+            scale = unique_name(base=names_text.MSG_PREVIEW_SCALE_NAME, taken=setlist.get_scale_names())
+            setlist.add_item(section=Section.SCALES, name=scale, item=setlist.get_named_scale(Setlist.preview_scale()).copy())
         track = unique_name(base=names_text.MSG_PREVIEW_TRACK_NAME, taken=song.get_track_names())
-        song.add_new_track(name=track, drum=True)
+        song.add_new_track(name=track, drum=pattern.is_drum())
         song.add_new_scene(index=PREVIEW_SCENE)
-        song.add_clip(index=PREVIEW_SCENE, track=track, pattern=name, repeat=TRIAL_PASSES)
+        song.add_clip(index=PREVIEW_SCENE, track=track, pattern=name, repeat=TRIAL_PASSES, scale=scale)
         self._setlist = setlist
         self._track = track
-        self._scale = None
+        self._scale = scale
         self._revision = self.real().get_revision()
 
 
@@ -332,12 +338,13 @@ class PatternPreview(Transport):
             self.stop()
             raise
 
-    def play_instrument(self, *, instrument, numbers, step_size):
-        """Play some MIDI notes, a step each, through one of the set's instruments, again and again until stopped: what Listen
-        plays on an instrument's page, edits to the instrument heard on the next pass."""
+    def play_instrument(self, *, instrument, trial):
+        """Play a pattern's data through one of the set's instruments, again and again until stopped: what Listen plays on an
+        instrument's page, its preview pattern, edits to the instrument heard on the next pass; a tonal pattern under the hidden
+        chromatic scale on C."""
         self.stop()
         self._instrument = instrument
-        self._set = PreviewSet(holder=self._document_holder, trial=trial_pattern(numbers=numbers, step_size=step_size))
+        self._set = PreviewSet(holder=self._document_holder, trial=trial)
         started = False
         try:
             self.play_clip(index=self._set.scene(), track=self._set.track(), forever=True)

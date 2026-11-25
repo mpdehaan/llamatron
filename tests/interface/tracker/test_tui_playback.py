@@ -33,7 +33,6 @@ from llamatron.interface.tracker.screens.pattern.pattern_editor import PatternEd
 from llamatron.interface.tracker.screens.set.demo_scroll import DemoScroll
 from llamatron.interface.tracker.screens.set.main_page import MainPage
 from llamatron.interface.tracker.screens.set.splash import Splash
-from llamatron.interface.tracker.screens.shared import sound_trial
 from llamatron.interface.tracker.transport import Transport
 from llamatron.interface.visualizers import modes
 from llamatron.model.file.checks import listed
@@ -134,6 +133,8 @@ DIALOG_SIDES = 2
 
 # Long enough for a scale run of eighths, up an octave and back, at the song's tempo.
 SCALE_RUN_SECONDS = 8.0
+# A new preview pattern's run up and down C major from middle C, as MIDI numbers.
+PREVIEW_RUN = [60, 62, 64, 65, 67, 69, 71, 72, 72, 71, 69, 67, 65, 64, 62, 60]
 
 
 class FakeFluidSynth:
@@ -1075,22 +1076,22 @@ class TestPatternEditorPlayback(PatternPreviewTest):
 
 
 class TestInstrumentListen(PatternPreviewTest):
-    """Listen on an instrument's page: a scale through a MIDI instrument, a drum's tuning note through a built-in drum, again and
-    again until L again; an instrument that plays nothing is refused."""
+    """Listen on an instrument's page plays its preview pattern: the run up and down C major through a MIDI instrument, a drum's
+    tuning note through a built-in drum, again and again until L again; an instrument that plays nothing is refused."""
 
     async def open_instrument(self):
         await self.press(keybindings.MainPage.INSTRUMENTS, Key.ENTER)
         self.page = self.app.screen
 
-    async def test_l_plays_a_scale_through_the_instrument_again_and_again_and_l_again_stops(self):
+    async def test_l_plays_the_preview_run_through_the_instrument_again_and_again_and_l_again_stops(self):
         self.give_lead_an_instrument()
         await self.open_instrument()
         await self.press(keybindings.InstrumentEditor.LISTEN)
         self.assertTrue(self.page.is_listening())
         self.assertIn(messages.MSG_LISTENING_TO_INSTRUMENT.format(name=SYNTH), self.text())
         await self.let_the_preview_play(SCALE_RUN_SECONDS * 2)
-        self.assertEqual(self.pitches_on(SYNTH_PORT)[:len(sound_trial.run_of())], sound_trial.run_of())
-        self.assertGreater(len(self.pitches_on(SYNTH_PORT)), len(sound_trial.run_of()))
+        self.assertEqual(self.pitches_on(SYNTH_PORT)[:len(PREVIEW_RUN)], PREVIEW_RUN)
+        self.assertGreater(len(self.pitches_on(SYNTH_PORT)), len(PREVIEW_RUN))
         await self.press(keybindings.InstrumentEditor.STOP_LISTENING)
         self.assertFalse(self.page.is_listening())
 

@@ -125,6 +125,7 @@ MSG_SCENE_CRUMB = 'scene: {name}'
 MSG_TRACK_CRUMB = 'track: {name}'
 # The pattern editor's crumb when a clip opened it, after the crumbs of the page the clip was on.
 MSG_PATTERN_CRUMB = 'pattern: {name}'
+MSG_PREVIEW_PATTERN_CRUMB = 'preview pattern'
 # The crumb of a thing that has a list page of its own above it, which is its name alone.
 MSG_ITEM_CRUMB = '{name}'
 # A named thing opened from another page, after that page's crumbs, like ARRANGE › chain: half, as a pattern opened from a clip reads.
@@ -761,6 +762,7 @@ MSG_GM_FAMILIES = [
 ]
 MSG_GM_SOUND_LABEL = 'GM sound'
 MSG_KEYSWITCH_MAP_LABEL = 'Keyswitch Map'
+MSG_PREVIEW_PATTERN_LABEL = 'Preview pattern'
 MSG_KEYSWITCH_LEAD_LABEL = 'Keyswitch lead'
 MSG_LATENCY_LABEL = 'Latency'
 
