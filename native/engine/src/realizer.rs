@@ -234,6 +234,9 @@ pub struct SongRealizer<'a> {
     guesses: RefCell<HashMap<i64, Guess>>,
     // How many chords each track's finished clip in each written scene holds, for a strum's down up that carries on.
     chord_counts: RefCell<HashMap<(i64, String), i64>>,
+    /// Whether a scene in which every clip loops lasts as long as its longest clip played once and goes round, as real-time
+    /// playback and Scene View render, rather than being refused as an export refuses it.
+    looping_scenes_go_round: bool,
 }
 
 /// What keeps a generator's end state apart from another's in a clip: its kind, its name, and how many times before it
@@ -284,7 +287,25 @@ impl<'a> SongRealizer<'a> {
             counted: RefCell::new(HashMap::new()),
             decided: RefCell::new(HashMap::new()),
             guesses: RefCell::new(HashMap::new()),
+            looping_scenes_go_round: false,
         }
+    }
+
+    /// The same render, a scene in which every clip loops lasting as long as its longest clip played once.
+    pub fn looping_scenes_go_round(mut self) -> SongRealizer<'a> {
+        self.looping_scenes_go_round = true;
+        self
+    }
+
+    /// The places among the written-out scenes of a scene of the song, one for each repeat, in order.
+    pub fn rows_of_scene(&self, index: usize) -> Vec<usize> {
+        let Some(scene) = self.song.scenes().get(index) else { return Vec::new() };
+        self.scenes
+            .iter()
+            .enumerate()
+            .filter(|(_, written)| std::ptr::eq(written.scene, scene))
+            .map(|(place, _)| place)
+            .collect()
     }
 
     pub fn setlist(&self) -> &'a Setlist {
@@ -752,10 +773,16 @@ impl<'a> SongRealizer<'a> {
             }
         }
         if ending.is_empty() && fixed.is_empty() {
-            return Err(RenderError::Refused(named(
-                errors::ERR_RENDERER_EVERY_CLIP_LOOPS,
-                &[("scene", scene.describe().as_str().into())],
-            )));
+            // Nothing in the scene ends: it is refused, or goes round once, as any scene whose every clip loops.
+            if !self.looping_scenes_go_round {
+                return Err(RenderError::Refused(named(
+                    errors::ERR_RENDERER_EVERY_CLIP_LOOPS,
+                    &[("scene", scene.describe().as_str().into())],
+                )));
+            }
+            for track in &every {
+                fixed.push(self.played_once(scene, track)?);
+            }
         }
         let guess = Rc::new(RefCell::new(PythonRandom::new(Seed::Whole(0))));
         self.guesses.borrow_mut().insert(
@@ -1201,10 +1228,18 @@ impl<'a> SongRealizer<'a> {
                 .ok_or_else(|| RenderError::Refused(format!("{} cannot be played", scene.describe())));
         }
         if scene.scene.every_clip_loops() {
-            return Err(RenderError::Refused(named(
-                errors::ERR_RENDERER_EVERY_CLIP_LOOPS,
-                &[("scene", scene.describe().as_str().into())],
-            )));
+            if !self.looping_scenes_go_round {
+                return Err(RenderError::Refused(named(
+                    errors::ERR_RENDERER_EVERY_CLIP_LOOPS,
+                    &[("scene", scene.describe().as_str().into())],
+                )));
+            }
+            let mut length = Rational::ZERO;
+            for track in scene.scene.get_track_names() {
+                length = length.max(self.played_once(scene, track)?);
+            }
+            self.lengths.borrow_mut().insert(scene.number, length);
+            return Ok(length);
         }
         let mut length = Rational::ZERO;
         for (_, clip_slot) in scene.scene.clip_slots() {

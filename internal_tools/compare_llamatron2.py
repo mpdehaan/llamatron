@@ -236,6 +236,12 @@ def python_pattern_edits(path):
     except SongFileError:
         return None
     results = []
+    # Every chord's name and numeral, each root with each chord a beat can be heard as, in the set's first scale and in none.
+    from llamatron.music_theory.harmony.heard_chords import chord_shapes, chord_texts
+    first_names = setlist.get_scale_names()
+    for scale in ([setlist.get_named_scale(first_names[0])] if first_names else []) + [None]:
+        texts = [list(chord_texts(root=root, symbol=symbol, scale=scale, bass=bass)) for root in range(12) for symbol in chord_shapes() for bass in (None, (root + 4) % 12)]
+        results.append(['chord_texts', '', texts])
     for name in setlist.get_pattern_names()[:EDITED_PATTERNS]:
         original = setlist.get_pattern(name)
         for edit, given in pattern_edit_steps(original.get_steps(), original.is_drum()):

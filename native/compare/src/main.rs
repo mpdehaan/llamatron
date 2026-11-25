@@ -647,6 +647,30 @@ const DRUM_DEGREE: &str = "C";
 fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
     use llamatron_model::objects::pattern::Pattern;
     let mut results = Vec::new();
+    // Every chord's name and numeral, each root with each chord a beat can be heard as, in the set's first scale and in none.
+    let first_scale = setlist.items("scales").first().and_then(|(scale, item)| match item {
+        llamatron_model::objects::setlist::Item::Scale(held) => {
+            llamatron_tracker::chord_text::ChordScale::new(&llamatron_tracker::patterns::scale_root(setlist, scale), held.get_kind().as_str()?)
+        }
+        _ => None,
+    });
+    let symbols: Vec<&str> = llamatron_engine::tables::FIXED_CHORDS
+        .iter()
+        .map(|(symbol, _)| *symbol)
+        .filter(|symbol| !llamatron_model::schema::generated::file_format::INTERVAL_CHORDS.contains(symbol))
+        .collect();
+    for scale in first_scale.into_iter().map(Some).chain([None]) {
+        let mut texts = Vec::new();
+        for root in 0..12 {
+            for symbol in &symbols {
+                for bass in [None, Some((root + 4) % 12)] {
+                    let (name, numeral) = llamatron_tracker::heard_chords::chord_texts(root, symbol, scale.as_ref(), bass);
+                    texts.push(Data::List(vec![Data::text(&name), Data::text(&numeral)]));
+                }
+            }
+        }
+        results.push(Data::List(vec![Data::text("chord_texts"), Data::text(""), Data::List(texts)]));
+    }
     for (name, item) in setlist.items("patterns").iter().take(EDITED_PATTERNS) {
         let llamatron_model::objects::setlist::Item::Pattern(original) = item else {
             continue;

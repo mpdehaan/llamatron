@@ -15,6 +15,7 @@ pub mod everywhere;
 pub mod exporting;
 pub mod forms;
 pub mod generated;
+pub mod heard_chords;
 pub mod history;
 pub mod instrument_sound;
 pub mod keys;
