@@ -52,7 +52,7 @@ unless `ATTEMPT_SYNTHESIS_ANYWAY=1` is set in the environment.
 A built-in sound is made of parts, as a synthesizer is: Oscillators make the
 raw tone; three envelopes shape it over each note, Env 1 its loudness, Env 2
 its filter and Env 3 its pitch; a Filter takes away part of it, darker or
-brighter; four LFOs wobble whatever the Matrix routes them to; and two FX
+brighter; four LFOs wobble whatever the Mod Matrix routes them to; and two FX
 color the result. Each part has a Type, and each type its own few controls, so
 an ADSR shows Attack, Curve, Hold, Decay, Snap, Sustain and Release while a
 Vactrol shows its Cell, what lights it, its Strike, Memory, Age and Stability.
@@ -131,14 +131,14 @@ Sample & Hold, a new random value each cycle; Rate goes from 0.1 Hz to 100 Hz,
 fast enough for chip vibrato and trills; Retrigger starts its cycle again with
 each note, and Each scene whenever a scene starts.
 
-The Matrix tab's six slots say what moves what: each a Source (an envelope, an
-LFO, the note's Velocity or Key, or a Random value drawn each note), a Via that
-scales it, what it Moves (Pitch, Pulse width, Detune, Cutoff, Resonance or
-Amp) and its Amount either way, a share of what it moves: two octaves of
-pitch, six of cutoff. LFO 1 to Pitch is vibrato, with a Square shape and a
-large Amount a chip trill; Velocity to Cutoff makes harder notes brighter.
-Env 1 to the amp, Env 2 to the filter and Env 3 to the pitch are already wired
-in, so all six slots are free.
+The Mod Matrix tab's six slots say what moves what: each a Source (an
+envelope, an LFO, the note's Velocity or Key, or a Random value drawn each
+note), a Via that scales it, what it Moves (Pitch, Pulse width, Detune,
+Cutoff, Resonance or Amp) and its Amount either way, a share of what it moves:
+two octaves of pitch, six of cutoff. LFO 1 to Pitch is vibrato, with a Square
+shape and a large Amount a chip trill; Velocity to Cutoff makes harder notes
+brighter. Env 1 to the amp, Env 2 to the filter and Env 3 to the pitch are
+already wired in, so all six slots are free.
 
 The FX tab holds two effects, each empty, Bitcrush (Bits, and the Rate it holds
 samples at) or Drive (a Curve, Soft, Warm, Hard, Fold or Wrap, and an Amount),

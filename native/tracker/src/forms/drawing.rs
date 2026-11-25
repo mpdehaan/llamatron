@@ -255,6 +255,13 @@ pub fn box_lines(looks: &Looks, tab_box: &TabBox, chosen: usize, cursor: Option<
     let inner = inner_width(width);
     let height = tab_box.tabs.iter().map(|tab| tab_contents(looks, tab, inner, None).0.len()).max().unwrap_or(0) + SPACE_UNDER;
     let (mut lines, selected) = tab_contents(looks, &tab_box.tabs[chosen], inner, cursor);
+    if tab_box.tabs[chosen].not_ready {
+        // A tab that does nothing now, such as the MIDI tab of a built-in instrument, is dim inside as well as by its name.
+        for line in &mut lines {
+            let end = line.len();
+            line.stylize(Style::DIM, 0, end);
+        }
+    }
     while lines.len() < height {
         lines.push(Text::default());
     }

@@ -43,6 +43,9 @@ def box_lines(*, page, box, chosen, cursor, width):
     inner = width - SIDES - len(INSET) * SIDES
     contents = [_tab_contents(page=page, tab=tab, inner=inner, cursor=None) for tab in box.tabs]
     lines, selected = _tab_contents(page=page, tab=box.tabs[chosen], inner=inner, cursor=cursor)
+    if box.tabs[chosen].not_ready:
+        # A tab that does nothing now, such as the MIDI tab of a built-in instrument, is dim inside as well as by its name.
+        lines = [_dimmed(line) for line in lines]
     height = max(len(content[0]) for content in contents) + SPACE_UNDER
     lines += [Text(drawing.NOTHING)] * (height - len(lines))
     result = [*boxed_tabs(tabs=box.tabs, chosen=chosen, width=width, here=cursor == tab_box_nodes.ON_TAB_ROW, lines=lines)]
@@ -347,3 +350,10 @@ def _row_width(*, names, first, last):
     if last + 1 < len(names):
         width += len(drawing.padded(marks.MSG_TABS_HIDDEN_AFTER)) + 1
     return width
+
+
+def _dimmed(line):
+    """Return a copy of a line with dim laid over the whole of it."""
+    dimmed = line.copy()
+    dimmed.stylize(Style.DIM)
+    return dimmed
