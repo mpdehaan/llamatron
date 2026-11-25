@@ -135,6 +135,11 @@ pub trait OneRow {
     }
     /// Do what one of the row's own keys does at the cursor's step, Up and Down among them where its move binding has them.
     fn press_more(&mut self, _app: &mut App, _item: &KeyItem, _key: &str, _step: usize) {}
+    /// Store a value on a step, insert a step before one, and remove one, for a row whose values the editor steps and
+    /// types (steps_values); a row with keys of its own for these leaves them as they are.
+    fn set_value(&mut self, _app: &mut App, _step: usize, _value: Option<i64>) {}
+    fn add_step(&mut self, _app: &mut App, _step: usize) {}
+    fn remove_step_here(&mut self, _app: &mut App, _step: usize) {}
     /// What the status line says while nothing else is said, the cursor on a step.
     fn resting(&self, _app: &App, _step: usize) -> String {
         String::new()
@@ -147,7 +152,14 @@ pub struct OneRowEditor<R: OneRow> {
     pub row: R,
     step: Cell<usize>,
     first_step: Cell<usize>,
+    /// The digits typed into the cursor's cell, so that a second digit makes a number with the first.
+    typed: String,
 }
+
+/// What a step with no value counts as when a key steps it, and the lowest number digits type, the sign kept from the
+/// number already there.
+const NO_VALUE_COUNTS_AS: i64 = 0;
+const LOWEST_TYPED: i64 = 0;
 
 impl<R: OneRow> OneRowEditor<R> {
     pub fn new(row: R) -> OneRowEditor<R> {
@@ -155,7 +167,50 @@ impl<R: OneRow> OneRowEditor<R> {
             row,
             step: Cell::new(0),
             first_step: Cell::new(0),
+            typed: String::new(),
         }
+    }
+
+    /// Do what the keys of a row of numbers do, and say whether the key was one: [ and ] make the cursor's number one less or
+    /// one more, stopping at the largest either side of zero; digits build up a number, keeping its sign, a second digit one
+    /// undo step with the first; and the row's own keys insert and remove a step.
+    fn press_values(&mut self, app: &mut App, item: &KeyItem, key: &str) -> bool {
+        let step = self.keep_step(app);
+        let most = self.row.most();
+        let here = self.row.values(app).get(step).copied().flatten();
+        if item.is(&Keys::LESS) || item.is(&Keys::MORE) {
+            let offset = if item.is(&Keys::LESS) { -1 } else { 1 };
+            let moved = (here.unwrap_or(NO_VALUE_COUNTS_AS) + offset).clamp(-most, most);
+            self.row.set_value(app, step, Some(moved));
+        } else if item.is(&Keys::TYPE) {
+            let mut number = None;
+            for text in [format!("{}{key}", self.typed), key.to_string()] {
+                if let Ok(typed) = text.parse::<i64>() {
+                    if (LOWEST_TYPED..=most).contains(&typed) {
+                        if !self.typed.is_empty() && text != key {
+                            app.document.continue_edit();
+                        }
+                        self.typed = text;
+                        number = Some(typed);
+                        break;
+                    }
+                }
+            }
+            let Some(number) = number else {
+                self.typed.clear();
+                return true;
+            };
+            let signed = if here.is_some_and(|value| value < 0) { -number } else { number };
+            self.row.set_value(app, step, Some(signed));
+        } else if item.is(self.row.insert()) {
+            self.row.add_step(app, step);
+        } else if item.is(self.row.remove()) {
+            self.row.remove_step_here(app, step);
+            self.keep_step(app);
+        } else {
+            return false;
+        }
+        true
     }
 
     fn keep_step(&self, app: &App) -> usize {
@@ -242,7 +297,9 @@ impl<R: OneRow> Page for OneRowEditor<R> {
         } else if item.is(self.row.move_binding()) && (key == "up" || key == "down") {
             let step = self.keep_step(app);
             self.row.press_more(app, item, key, step);
+        } else if self.row.steps_values() && self.press_values(app, item, key) {
         } else if item.is(self.row.move_binding()) {
+            self.typed.clear();
             let step: i64 = if key == "left" { STEP_BACK } else { STEP_FORWARD };
             // A row with no steps left has nowhere to move to.
             let last = count.saturating_sub(1) as i64;

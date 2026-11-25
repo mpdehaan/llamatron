@@ -24,7 +24,28 @@ pub struct OffsetsEditor {
     pub name: String,
 }
 
+/// What an offset that moves its note nowhere is, as a new or a played-again step holds.
+const NO_OFFSET: i64 = 0;
+
 impl OffsetsEditor {
+    /// Store the arp's offsets, or take them out of the file with None.
+    fn store(&self, app: &mut App, offsets: Option<Vec<Option<i64>>>) {
+        let name = self.name.clone();
+        let value = offsets.map(|offsets| {
+            Data::List(
+                offsets
+                    .iter()
+                    .map(|offset| offset.map_or(Data::Null, |whole| Data::Whole(whole as i128)))
+                    .collect(),
+            )
+        });
+        app.document.change_set(|setlist| {
+            if let Some(Item::Generator(settings)) = setlist.get_item_mut(SECTION, &name) {
+                settings.set_written("offsets", value);
+            }
+        });
+    }
+
     fn offsets(&self, app: &App) -> Vec<Option<i64>> {
         match app.document.get_setlist().get_item(SECTION, &self.name) {
             Some(Item::Generator(settings)) => settings.get_written("offsets").and_then(Data::as_list).map_or(Vec::new(), |offsets| {
@@ -118,6 +139,40 @@ impl OneRow for OffsetsEditor {
 
     fn values(&self, app: &App) -> Vec<Option<i64>> {
         self.offsets(app)
+    }
+
+    fn set_value(&mut self, app: &mut App, step: usize, value: Option<i64>) {
+        let mut offsets = self.offsets(app);
+        if step < offsets.len() {
+            offsets[step] = value;
+            self.store(app, Some(offsets));
+        }
+    }
+
+    /// A new step plays its note unmoved.
+    fn add_step(&mut self, app: &mut App, step: usize) {
+        let mut offsets = self.offsets(app);
+        offsets.insert(step.min(offsets.len()), Some(NO_OFFSET));
+        self.store(app, Some(offsets));
+    }
+
+    /// The last step taken out leaves no offsets at all.
+    fn remove_step_here(&mut self, app: &mut App, step: usize) {
+        let mut offsets = self.offsets(app);
+        if step < offsets.len() {
+            offsets.remove(step);
+        }
+        let kept = (!offsets.is_empty()).then_some(offsets);
+        self.store(app, kept);
+    }
+
+    /// Space and ENTER make a step silent, or play its note unmoved again.
+    fn press_more(&mut self, app: &mut App, item: &KeyItem, _key: &str, step: usize) {
+        if item.is(&Keys::SILENT) || item.is(&Keys::PLAY) {
+            let here = self.offsets(app).get(step).copied().flatten();
+            let value = if here.is_none() { Some(NO_OFFSET) } else { None };
+            self.set_value(app, step, value);
+        }
     }
 
     fn more_keys_at(&self, app: &App, step: usize) -> Vec<KeyItem> {

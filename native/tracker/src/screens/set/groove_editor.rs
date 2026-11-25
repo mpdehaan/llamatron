@@ -50,6 +50,29 @@ pub struct GrooveEditor {
     pub name: String,
 }
 
+impl GrooveEditor {
+    /// Store the groove's cells, keeping its cell length.
+    fn store_cells(&self, app: &mut App, cells: Vec<Option<i64>>) {
+        let name = self.name.clone();
+        app.document.change_set(|setlist| {
+            let Some(Item::Groove(groove)) = setlist.get_item_mut(Section::GROOVES, &name) else {
+                return;
+            };
+            let mut data = groove.to_data();
+            if let Data::Map(pairs) = &mut data {
+                let cells = Data::List(cells.iter().map(|cell| Data::Whole(cell.unwrap_or(0) as i128)).collect());
+                match pairs.iter_mut().find(|(key, _)| key.as_str() == Some("cells")) {
+                    Some(pair) => pair.1 = cells,
+                    None => pairs.insert(0, (Data::text("cells"), cells)),
+                }
+            }
+            if let Ok(changed) = llamatron_model::objects::named::Groove::from_data(&data) {
+                *groove = changed;
+            }
+        });
+    }
+}
+
 impl OneRow for GrooveEditor {
     fn name(&self) -> &'static str {
         "GrooveEditor"
@@ -112,6 +135,33 @@ impl OneRow for GrooveEditor {
 
     fn can_edit(&self, _app: &App) -> bool {
         !is_factory(&self.name)
+    }
+
+    fn set_value(&mut self, app: &mut App, step: usize, value: Option<i64>) {
+        let (mut cells, _) = groove_of(app, &self.name);
+        if step < cells.len() {
+            cells[step] = Some(value.unwrap_or(0).clamp(-MAX_GROOVE_AMOUNT, MAX_GROOVE_AMOUNT));
+            self.store_cells(app, cells);
+        }
+    }
+
+    /// A new cell is straight, and a groove keeps within its fewest and most cells.
+    fn add_step(&mut self, app: &mut App, step: usize) {
+        let (mut cells, _) = groove_of(app, &self.name);
+        if cells.len() >= MAX_GROOVE_CELLS as usize {
+            return;
+        }
+        cells.insert(step.min(cells.len()), Some(0));
+        self.store_cells(app, cells);
+    }
+
+    fn remove_step_here(&mut self, app: &mut App, step: usize) {
+        let (mut cells, _) = groove_of(app, &self.name);
+        if cells.len() <= MIN_GROOVE_CELLS as usize || step >= cells.len() {
+            return;
+        }
+        cells.remove(step);
+        self.store_cells(app, cells);
     }
 
     fn more_keys(&self, _app: &App) -> Vec<KeyItem> {
