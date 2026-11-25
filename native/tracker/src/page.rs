@@ -86,6 +86,14 @@ pub trait Page {
         true
     }
 
+    /// Keep showing the same thing after a step renamed it, an undo, a redo or the page's own rename.
+    fn follow_renames(&mut self, _renames: &crate::history::Renames) {}
+
+    /// Whether the thing the page shows is still in the set, which an undo or redo can take away.
+    fn still_exists(&self, _app: &App) -> bool {
+        true
+    }
+
     /// What the status line says while nothing else is said.
     fn resting_status(&self, _app: &App) -> String {
         String::new()
@@ -284,3 +292,23 @@ fn header_line(width: usize, left: &str, names: &str, names_start: usize, mark: 
 }
 
 pub use drawing::cursor_mark;
+
+/// Follow a rename of the one named thing a page shows, a thing of a section of the set or the current song's tracks.
+pub fn follow_name(name: &mut String, section: &str, renames: &crate::history::Renames) {
+    if let Some(new) = renames.new_name(section, name) {
+        *name = new.to_string();
+    }
+}
+
+/// Whether a named thing of a section of the set is still there, the current song's tracks under "tracks" and the
+/// factory grooves always.
+pub fn named_exists(app: &App, section: &str, name: &str) -> bool {
+    use llamatron_model::schema::generated::file_format::Section;
+    if section == Section::TRACKS {
+        return app.document.song().get_track(name).is_some();
+    }
+    if section == Section::GROOVES && crate::screens::set::grooves_page::is_factory(name) {
+        return true;
+    }
+    app.document.get_setlist().get_item(section, name).is_some()
+}

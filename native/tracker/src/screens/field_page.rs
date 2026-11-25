@@ -29,6 +29,12 @@ pub enum Node {
 
 /// What a page of settings says of itself: its form, and what its edits do.
 pub trait Form {
+    /// Keep showing the same thing after a step renamed it, and say whether the thing is still in the set (the page's own).
+    fn follow_renames(&mut self, _renames: &crate::history::Renames) {}
+    fn still_exists(&self, _app: &App) -> bool {
+        true
+    }
+
     /// The Python page's class name.
     fn name(&self) -> &'static str;
     fn class(&self) -> &'static KeyClass;
@@ -602,6 +608,14 @@ impl<F: Form> FieldPage<F> {
 }
 
 impl<F: Form> Page for FieldPage<F> {
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        self.form.follow_renames(renames);
+    }
+
+    fn still_exists(&self, app: &App) -> bool {
+        self.form.still_exists(app)
+    }
+
     fn help(&self) -> Option<Vec<String>> {
         self.form.help()
     }

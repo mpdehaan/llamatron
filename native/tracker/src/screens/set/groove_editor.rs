@@ -22,6 +22,8 @@ use llamatron_model::schema::generated::limits::{MAX_GROOVE_AMOUNT, MAX_GROOVE_C
 use llamatron_strings::{labels, marks, messages, named};
 
 const CELL_WIDTH: usize = 5;
+/// How long a groove's cell can be, in the order S steps through them (the Python groove.py's GROOVE_CELL_LENGTH_CHOICES).
+const CELL_LENGTH_CHOICES: [&str; 4] = ["1/32", "1/16", "1/8", "1/4"];
 
 /// A groove's cells and its cell length as the file writes it, a factory one's or the set's own.
 pub fn groove_of(app: &App, name: &str) -> (Vec<Option<i64>>, String) {
@@ -74,6 +76,15 @@ impl GrooveEditor {
 }
 
 impl OneRow for GrooveEditor {
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        let section = Section::GROOVES;
+        crate::page::follow_name(&mut self.name, section, renames);
+    }
+
+    fn still_exists(&self, app: &App) -> bool {
+        crate::page::named_exists(app, Section::GROOVES, &self.name)
+    }
+
     fn name(&self) -> &'static str {
         "GrooveEditor"
     }
@@ -162,6 +173,25 @@ impl OneRow for GrooveEditor {
         }
         cells.remove(step);
         self.store_cells(app, cells);
+    }
+
+    /// S steps the cell length through the choices, going round at the end, and N renames the groove.
+    fn press_more(&mut self, app: &mut App, item: &KeyItem, _key: &str, _step: usize) {
+        if item.is(&Keys::RENAME) {
+            crate::screens::rename::ask_rename(app, Section::GROOVES, &self.name, messages::MSG_RENAME_GROOVE_PROMPT);
+        } else if item.is(&Keys::CELL_LENGTH) {
+            let (_, current) = groove_of(app, &self.name);
+            let following = match CELL_LENGTH_CHOICES.iter().position(|choice| *choice == current) {
+                Some(place) if place + 1 < CELL_LENGTH_CHOICES.len() => CELL_LENGTH_CHOICES[place + 1],
+                _ => CELL_LENGTH_CHOICES[0],
+            };
+            let name = self.name.clone();
+            app.document.change_set(|setlist| {
+                if let Some(Item::Groove(groove)) = setlist.get_item_mut(Section::GROOVES, &name) {
+                    groove.set_cell_length(following);
+                }
+            });
+        }
     }
 
     fn more_keys(&self, _app: &App) -> Vec<KeyItem> {

@@ -96,6 +96,11 @@ impl Groove {
         self.cell_length.as_ref()
     }
 
+    /// Set how long a cell is, as the file writes it, such as 1/8; the default length is left out of the file.
+    pub fn set_cell_length(&mut self, length: &str) {
+        self.cell_length = (length != crate::schema::generated::defaults::DEFAULT_GROOVE_CELL_LENGTH).then(|| Data::text(length));
+    }
+
     pub fn to_data(&self) -> Data {
         let mut pairs = vec![(Data::text(GrooveSetting::CELLS), self.cells.clone())];
         if let Some(length) = &self.cell_length {

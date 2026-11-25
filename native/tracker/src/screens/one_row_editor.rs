@@ -95,6 +95,12 @@ fn grid_line(line: GridLine, cell_width: usize, width: usize) -> Text {
 
 /// What a one-row editor says of itself.
 pub trait OneRow {
+    /// Keep showing the same thing after a step renamed it, and say whether the thing is still in the set (the page's own).
+    fn follow_renames(&mut self, _renames: &crate::history::Renames) {}
+    fn still_exists(&self, _app: &App) -> bool {
+        true
+    }
+
     fn name(&self) -> &'static str;
     fn class(&self) -> &'static KeyClass;
     fn crumbs(&self, app: &App) -> Vec<String>;
@@ -256,6 +262,14 @@ impl<R: OneRow> OneRowEditor<R> {
 }
 
 impl<R: OneRow> Page for OneRowEditor<R> {
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        self.row.follow_renames(renames);
+    }
+
+    fn still_exists(&self, app: &App) -> bool {
+        self.row.still_exists(app)
+    }
+
     fn resting_status(&self, app: &App) -> String {
         let step = self.keep_step(app);
         self.row.resting(app, step)

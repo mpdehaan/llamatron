@@ -274,20 +274,23 @@ impl Document {
     }
 
     /// Go a step back in the history, or forward, and say what the step changed, or None where there is no step.
-    pub fn undo(&mut self) -> Option<String> {
+    /// Take the last step back, and say what it changed and what it renamed, or None when there is nothing to undo.
+    pub fn undo(&mut self) -> Option<(String, crate::history::Renames)> {
         let leaving = self.snapshot();
         let arriving = self.history.undo()?;
         Some(self.restore(&leaving, arriving))
     }
 
-    pub fn redo(&mut self) -> Option<String> {
+    /// Make again the last step undone, and say what it changed and what it renamed, or None when there is nothing to redo.
+    pub fn redo(&mut self) -> Option<(String, crate::history::Renames)> {
         let leaving = self.snapshot();
         let arriving = self.history.redo()?;
         Some(self.restore(&leaving, arriving))
     }
 
-    fn restore(&mut self, leaving: &Snapshot, arriving: Snapshot) -> String {
+    fn restore(&mut self, leaving: &Snapshot, arriving: Snapshot) -> (String, crate::history::Renames) {
         let words = describe_change(leaving, &arriving);
+        let renames = crate::history::renamed_items(leaving, &arriving);
         if let Ok(setlist) = Setlist::from_data(&arriving.data) {
             self.setlist = setlist;
         }
@@ -297,7 +300,7 @@ impl Document {
             self.setlist.song_names().first().map(|name| name.to_string()).unwrap_or_default()
         };
         self.dirty = self.setlist.to_data() != self.clean;
-        words
+        (words, renames)
     }
 
     /// Where the set's data differs from the data it opened or was last saved with, by its top-level names, for the screen

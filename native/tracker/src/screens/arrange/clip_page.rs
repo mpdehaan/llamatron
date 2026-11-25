@@ -355,6 +355,16 @@ impl ClipPage {
 }
 
 impl Form for ClipPage {
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        crate::page::follow_name(&mut self.track, llamatron_model::schema::generated::file_format::Section::TRACKS, renames);
+    }
+
+    /// The clip is gone when its scene or its track is, or the cell no longer holds a clip.
+    fn still_exists(&self, app: &App) -> bool {
+        let song = app.document.song();
+        song.scenes().get(self.index).is_some_and(|scene| scene.get_clip_slot(&self.track).is_some())
+    }
+
     fn name(&self) -> &'static str {
         "ClipPage"
     }

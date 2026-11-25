@@ -89,6 +89,15 @@ fn gauge_cell(value: Option<i64>, level: i64) -> String {
 }
 
 impl OneRow for OffsetsEditor {
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        let section = SECTION;
+        crate::page::follow_name(&mut self.name, section, renames);
+    }
+
+    fn still_exists(&self, app: &App) -> bool {
+        crate::page::named_exists(app, SECTION, &self.name)
+    }
+
     fn name(&self) -> &'static str {
         "OffsetsEditor"
     }

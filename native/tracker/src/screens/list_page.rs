@@ -28,6 +28,12 @@ pub type Row = (String, Vec<String>);
 
 /// What a list page says of itself.
 pub trait Listing {
+    /// Keep showing the same thing after a step renamed it, and say whether the thing is still in the set (the page's own).
+    fn follow_renames(&mut self, _renames: &crate::history::Renames) {}
+    fn still_exists(&self, _app: &App) -> bool {
+        true
+    }
+
     fn name(&self) -> &'static str;
     fn class(&self) -> &'static KeyClass;
     fn crumbs(&self, app: &App) -> Vec<String>;
@@ -81,6 +87,15 @@ pub trait Listing {
     /// the page renames, copies, deletes, moves and sorts them as every list of named things does.
     fn named(&self) -> Option<NamedWords> {
         None
+    }
+
+    /// Whether Move mode carries the page's rows, which are not a section's named things, such as a chain's steps: carry_row
+    /// moves the row at a place one place up or down, and says whether it moved.
+    fn carries_rows(&self) -> bool {
+        false
+    }
+    fn carry_row(&mut self, _app: &mut App, _place: usize, _offset: i64) -> bool {
+        false
     }
 
     /// Why the selected thing cannot be deleted at all, such as the set's last song, or None.
@@ -245,6 +260,12 @@ impl<L: Listing> ListPage<L> {
             }
             return true;
         }
+        if item.is(&Keys::MOVE) && self.listing.carries_rows() && self.current(app).is_some() {
+            self.moving = true;
+            self.carried = false;
+            self.say_moving(app);
+            return true;
+        }
         let (Some(words), Some(name)) = (self.listing.named(), self.current(app)) else {
             return false;
         };
@@ -277,26 +298,7 @@ impl<L: Listing> ListPage<L> {
 
     /// Ask for the selected thing's new name, which cannot be empty or another's.
     fn rename(&self, app: &mut App, words: &NamedWords, name: &str) {
-        let section = words.section;
-        let old = name.to_string();
-        let taken: Vec<String> = app.document.names_taken(section).into_iter().filter(|each| *each != old).collect();
-        let title = named(words.rename_prompt, &[("name", name.into())]);
-        let mut prompt = crate::screens::dialogs::PromptDialog::new(&title, name);
-        prompt.max_length = Some(MAX_NAME_LENGTH as usize);
-        let prompt = prompt.then(Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
-            let crate::screens::dialogs::Answer::Typed(typed) = answer else { return };
-            let text = typed.trim();
-            if text.is_empty() {
-                app.refuse(llamatron_strings::errors::ERR_EMPTY_NAME);
-            } else if text != old && llamatron_model::objects::naming::is_taken(text, &taken) {
-                app.refuse(&named(llamatron_strings::errors::ERR_NAME_IN_USE, &[("name", text.into())]));
-            } else if text != old {
-                if let Err(problem) = app.document.rename_named(section, &old, text) {
-                    app.refuse(&problem);
-                }
-            }
-        }));
-        app.show_page(Box::new(prompt));
+        crate::screens::rename::ask_rename(app, words.section, name, words.rename_prompt);
     }
 
     /// Delete the selected thing after asking, or say what still uses it.
@@ -337,6 +339,18 @@ impl<L: Listing> ListPage<L> {
 
     /// Carry the picked-up row one place up or down, every carry of one move making one undo step.
     fn carry(&mut self, app: &mut App, offset: i64) {
+        if self.listing.carries_rows() {
+            if self.carried {
+                app.document.continue_edit();
+            }
+            self.carried = true;
+            let place = self.cursor.get();
+            if self.listing.carry_row(app, place, offset) {
+                self.cursor.set((place as i64 + offset).max(0) as usize);
+            }
+            self.say_moving(app);
+            return;
+        }
         let (Some(words), Some(name)) = (self.listing.named(), self.current(app)) else {
             return;
         };
@@ -429,6 +443,14 @@ pub fn shown_around(count: usize, at: usize, room: usize) -> std::ops::Range<usi
 }
 
 impl<L: Listing> Page for ListPage<L> {
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        self.listing.follow_renames(renames);
+    }
+
+    fn still_exists(&self, app: &App) -> bool {
+        self.listing.still_exists(app)
+    }
+
     fn caption(&self, app: &App) -> String {
         self.listing
             .caption(app)

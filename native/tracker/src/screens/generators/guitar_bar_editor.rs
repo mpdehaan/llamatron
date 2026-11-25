@@ -102,6 +102,15 @@ impl GuitarBarEditor {
 }
 
 impl OneRow for GuitarBarEditor {
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        let section = SECTION;
+        crate::page::follow_name(&mut self.name, section, renames);
+    }
+
+    fn still_exists(&self, app: &App) -> bool {
+        crate::page::named_exists(app, SECTION, &self.name)
+    }
+
     fn name(&self) -> &'static str {
         "GuitarBarEditor"
     }

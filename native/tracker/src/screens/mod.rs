@@ -12,4 +12,5 @@ pub mod main_page;
 pub mod not_ported;
 pub mod one_row_editor;
 pub mod pattern;
+pub mod rename;
 pub mod set;

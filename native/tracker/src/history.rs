@@ -199,3 +199,89 @@ pub fn describe_change(leaving: &Snapshot, arriving: &Snapshot) -> String {
     }
     messages::MSG_CHANGED_THE_SET.to_string()
 }
+
+/// What a step of the history renamed: the set's named things by section, each its old name and new, and the current song's
+/// tracks under "tracks" and scenes by their place, a scene's new name being none where its name was taken away.
+#[derive(Clone, Debug, Default)]
+pub struct Renames {
+    pub named: Vec<(String, String, String)>,
+    pub scenes: Vec<(usize, Option<String>)>,
+}
+
+impl Renames {
+    /// The new name of a thing of a section the step renamed, or None.
+    pub fn new_name(&self, section: &str, old: &str) -> Option<&str> {
+        self.named
+            .iter()
+            .find(|(found, before, _)| found == section && before == old)
+            .map(|(_, _, after)| after.as_str())
+    }
+
+    /// Note a rename made here and now, such as an editor's own.
+    pub fn one(section: &str, old: &str, new: &str) -> Renames {
+        Renames {
+            named: vec![(section.to_string(), old.to_string(), new.to_string())],
+            scenes: Vec::new(),
+        }
+    }
+}
+
+/// The section that holds the current song's tracks, which renamed_items looks at in the song current on arrival.
+const TRACKS: &str = "tracks";
+const SCENES: &str = "scenes";
+const SONGS: &str = "songs";
+const SCENE_NAME: &str = "name";
+
+/// What the step between two snapshots renamed (the Python history.py's renamed_items). A rename keeps an item's place and
+/// its own data and changes only its name, which tells it from a removal and an addition; the references a rename updates
+/// are in other items, so they don't get in the way. A scale named after its root and kind, which the Python also counts as
+/// the same scale as they change, waits on that renaming being ported.
+pub fn renamed_items(leaving: &Snapshot, arriving: &Snapshot) -> Renames {
+    let mut renames = Renames::default();
+    for section in SETLIST_SECTIONS {
+        add_renames(&mut renames, section, leaving.data.get(section), arriving.data.get(section));
+    }
+    let song_of = |data: &Data| data.get(SONGS).and_then(|songs| songs.get(&arriving.song)).cloned();
+    if let (Some(before), Some(after)) = (song_of(&leaving.data), song_of(&arriving.data)) {
+        add_renames(&mut renames, TRACKS, before.get(TRACKS), after.get(TRACKS));
+        renames.scenes = renamed_scenes(before.get(SCENES), after.get(SCENES));
+    }
+    renames
+}
+
+/// Add the renames in one named section: the names that differ at the same place with the same data.
+fn add_renames(renames: &mut Renames, section: &str, leaving: Option<&Data>, arriving: Option<&Data>) {
+    let before = leaving.and_then(Data::as_map).unwrap_or(&[]);
+    let after = arriving.and_then(Data::as_map).unwrap_or(&[]);
+    if before.len() != after.len() {
+        return;
+    }
+    for ((old, old_item), (new, new_item)) in before.iter().zip(after) {
+        if let (Some(old), Some(new)) = (old.as_str(), new.as_str()) {
+            if old != new && old_item == new_item {
+                renames.named.push((section.to_string(), old.to_string(), new.to_string()));
+            }
+        }
+    }
+}
+
+/// The scenes whose name alone changed, by their place, with the new name, which can be none.
+fn renamed_scenes(leaving: Option<&Data>, arriving: Option<&Data>) -> Vec<(usize, Option<String>)> {
+    let before = leaving.and_then(Data::as_list).unwrap_or(&[]);
+    let after = arriving.and_then(Data::as_list).unwrap_or(&[]);
+    if before.len() != after.len() {
+        return Vec::new();
+    }
+    let without_name = |scene: &Data| {
+        let mut scene = scene.clone();
+        scene.remove(SCENE_NAME);
+        scene
+    };
+    let mut found = Vec::new();
+    for (place, (old, new)) in before.iter().zip(after).enumerate() {
+        if old != new && without_name(old) == without_name(new) {
+            found.push((place, new.get(SCENE_NAME).and_then(Data::as_str).map(str::to_string)));
+        }
+    }
+    found
+}

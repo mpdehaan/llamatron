@@ -82,6 +82,8 @@ impl Default for Session {
 pub enum Request {
     Open(Box<dyn Page>),
     Back,
+    /// A rename made by a dialog's answer, which every open page follows.
+    Renamed(crate::history::Renames),
     /// A dialog's answer, for the page that is on top once the dialog has closed.
     Answer(crate::screens::dialogs::Answer),
 }
@@ -140,6 +142,11 @@ impl App {
 
     pub fn go_back(&mut self) {
         self.requests.push(Request::Back);
+    }
+
+    /// Have every open page follow a rename just made, such as an editor's of its own thing.
+    pub fn renamed(&mut self, section: &str, old: &str, new: &str) {
+        self.requests.push(Request::Renamed(crate::history::Renames::one(section, old, new)));
     }
 
     /// Hand a dialog's answer to the page that opened it, once the dialog has closed.
@@ -257,12 +264,22 @@ impl Tracker {
                     }
                     let more = std::mem::take(&mut self.app.requests);
                     for request in more {
-                        if let Request::Open(page) = request {
-                            self.pages.push(page);
+                        match request {
+                            Request::Open(page) => self.pages.push(page),
+                            Request::Renamed(renames) => self.follow_renames(&renames),
+                            _ => {}
                         }
                     }
                 }
+                Request::Renamed(renames) => self.follow_renames(&renames),
             }
+        }
+    }
+
+    /// Tell every open page what a step renamed, so that each goes on showing its thing.
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        for page in self.pages.iter_mut() {
+            page.follow_renames(renames);
         }
     }
 
@@ -274,10 +291,20 @@ impl Tracker {
         } else {
             (self.app.document.redo(), messages::MSG_RESTORED, messages::MSG_NOTHING_TO_REDO)
         };
-        match step {
-            Some(words) => self.app.say(&named(done, &[("what", words.as_str().into())])),
-            None => self.app.say(nothing),
+        let Some((words, renames)) = step else {
+            self.app.say(nothing);
+            return;
+        };
+        let mut status = named(done, &[("what", words.as_str().into())]);
+        // A page whose thing the step renamed goes on showing it under its other name; a page whose thing the step took away
+        // can't be shown, so the tracker goes back to the page it was opened from, and says so.
+        self.follow_renames(&renames);
+        if let Some(gone) = self.pages.iter().position(|page| !page.still_exists(&self.app)) {
+            let crumbs = self.pages[gone].crumbs(&self.app).join(llamatron_strings::marks::MSG_CRUMB_SEPARATOR);
+            status = named(messages::MSG_BACK_FROM, &[("status", status.as_str().into()), ("page", crumbs.as_str().into())]);
+            self.pages.truncate(gone.max(1));
         }
+        self.app.say(&status);
     }
 
     /// Bring the stack of pages in line with another program's, by their names from the main screen up, where pages not

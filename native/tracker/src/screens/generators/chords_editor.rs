@@ -282,6 +282,15 @@ fn stepped_choice(choices: &[String], current: Option<&str>, offset: i64, stops:
 }
 
 impl OneRow for ChordsEditor {
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        let section = self.section;
+        crate::page::follow_name(&mut self.name, section, renames);
+    }
+
+    fn still_exists(&self, app: &App) -> bool {
+        crate::page::named_exists(app, self.section, &self.name)
+    }
+
     fn name(&self) -> &'static str {
         "ChordsEditor"
     }

@@ -387,6 +387,15 @@ impl TrackEditor {
 }
 
 impl Form for TrackEditor {
+    fn follow_renames(&mut self, renames: &crate::history::Renames) {
+        let section = llamatron_model::schema::generated::file_format::Section::TRACKS;
+        crate::page::follow_name(&mut self.name, section, renames);
+    }
+
+    fn still_exists(&self, app: &App) -> bool {
+        crate::page::named_exists(app, llamatron_model::schema::generated::file_format::Section::TRACKS, &self.name)
+    }
+
     fn name(&self) -> &'static str {
         "TrackEditor"
     }
