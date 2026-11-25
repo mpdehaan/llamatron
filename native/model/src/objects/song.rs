@@ -290,6 +290,49 @@ fn sensible_style(genre: Option<&Data>, subgenre: Option<&Data>, variant: Option
 }
 
 impl Song {
+    /// Move a scene one place up or down, as Move mode carries it; false where it would leave the list.
+    pub fn move_scene(&mut self, index: usize, offset: i64) -> bool {
+        let Some(scenes) = self.scenes.as_mut() else { return false };
+        let to = index as i64 + offset;
+        if index >= scenes.len() || to < 0 || to as usize >= scenes.len() {
+            return false;
+        }
+        scenes.swap(index, to as usize);
+        true
+    }
+
+    /// Move a track one place left or right, by its place; false where it would leave the list.
+    pub fn move_track(&mut self, place: usize, offset: i64) -> bool {
+        let Some(tracks) = self.tracks.as_mut() else { return false };
+        let to = place as i64 + offset;
+        if place >= tracks.len() || to < 0 || to as usize >= tracks.len() {
+            return false;
+        }
+        tracks.swap(place, to as usize);
+        true
+    }
+
+    /// Take a clip out of its cell, by its scene's place and its track, and hand it back.
+    pub fn take_clip(&mut self, index: usize, track: &str) -> Option<ClipSlot> {
+        let scene = self.scenes.as_mut()?.get_mut(index)?;
+        let clips = scene.clip_slots.as_mut()?;
+        let place = clips.iter().position(|(found, _)| found == track)?;
+        Some(clips.remove(place).1)
+    }
+
+    /// Put a clip in a cell, by its scene's place and its track, the scene's clips kept in the order of the song's tracks.
+    pub fn put_clip(&mut self, index: usize, track: &str, clip: ClipSlot) {
+        let order: Vec<String> = self.tracks.iter().flatten().map(|(name, _)| name.clone()).collect();
+        let Some(scene) = self.scenes.as_mut().and_then(|scenes| scenes.get_mut(index)) else {
+            return;
+        };
+        let clips = scene.clip_slots.get_or_insert_with(Vec::new);
+        clips.retain(|(found, _)| found != track);
+        let rank = |name: &str| order.iter().position(|each| each == name).unwrap_or(usize::MAX);
+        let place = clips.iter().position(|(found, _)| rank(found) > rank(track)).unwrap_or(clips.len());
+        clips.insert(place, (track.to_string(), clip));
+    }
+
     /// Write one of a track's settings, by the track's name.
     pub fn set_track_written(&mut self, track: &str, name: &str, value: Option<Data>) {
         if let Some((_, found)) = self.tracks.iter_mut().flatten().find(|(found, _)| found == track) {

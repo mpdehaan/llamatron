@@ -19,7 +19,7 @@ use crate::themes::Colour;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::{ClipSlot, Scene};
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSetting, SetlistSetting};
-use llamatron_strings::{labels, legends, marks, named, names};
+use llamatron_strings::{labels, legends, marks, messages, named, names};
 use std::cell::Cell;
 
 const HEADER_ROW: i64 = -1;
@@ -57,12 +57,19 @@ const FIRST_DETAIL_LINE: usize = 3;
 /// How long a scene's detail may be under its bar, leaving room for a pick's brackets before the scene column's divider.
 const SCENE_DETAIL_ROOM: usize = SCENE_WIDTH - SCENE_BAR_COLUMN - 3;
 
-/// A mode of Arrange not ported yet: carrying a scene, a track or a clip, or Scene View over the page; the page leaves it by
-/// its own keys and says it is not ported while in it.
+/// A mode of Arrange not ported yet: Scene View over the page; the page leaves it by its own keys and says it is not ported
+/// while in it.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum Unported {
-    Moving,
     SceneView,
+}
+
+/// What Move mode carries: the cursor's scene, track or clip.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Moving {
+    Scene,
+    Track,
+    Clip,
 }
 
 pub struct ArrangePage {
@@ -74,6 +81,8 @@ pub struct ArrangePage {
     locked: bool,
     picked: Option<usize>,
     opened: Option<CellPlace>,
+    /// What M picked up, which the arrows carry until ENTER, ESC or M drops it.
+    moving: Option<Moving>,
     row: Cell<i64>,
     column: Cell<usize>,
     top: Cell<usize>,
@@ -139,6 +148,7 @@ impl ArrangePage {
             locked: false,
             picked: None,
             opened: None,
+            moving: None,
             row: Cell::new(0),
             column: Cell::new(SCENE_COLUMN),
             top: Cell::new(0),
@@ -270,6 +280,134 @@ impl ArrangePage {
     }
 
     /// Whether the cursor is on a cell with details: a track's name, a scene's name or a clip.
+    fn start_moving(&mut self, app: &mut App, moving: Moving) {
+        self.moving = Some(moving);
+        self.say_moving(app);
+    }
+
+    fn say_moving(&self, app: &mut App) {
+        let row = self.row.get().max(0) as usize;
+        let tracks = Self::tracks(app);
+        let what = match self.moving {
+            Some(Moving::Scene) => {
+                let name = scene_name(&app.document.song().scenes()[row], row);
+                named(messages::MSG_MOVING_SCENE, &[("name", name.as_str().into())])
+            }
+            Some(Moving::Track) => named(messages::MSG_MOVING_TRACK, &[("name", tracks[self.track_place()].as_str().into())]),
+            _ => {
+                let name = Self::clip(app, row, &tracks[self.track_place()]).map_or(String::new(), ClipSlot::get_display_name);
+                named(messages::MSG_MOVING_CLIP, &[("name", name.as_str().into())])
+            }
+        };
+        app.say(&named(messages::MSG_MOVING, &[("what", what.as_str().into())]));
+    }
+
+    /// Change the current song, as one edit of the set.
+    fn change_song(app: &mut App, change: impl FnOnce(&mut llamatron_model::objects::song::Song)) {
+        let name = app.document.get_current_song_name().to_string();
+        app.document.change_set(|setlist| {
+            if let Some(llamatron_model::objects::setlist::Item::Song(song)) =
+                setlist.get_item_mut(llamatron_model::schema::generated::file_format::Section::SONGS, &name)
+            {
+                change(song);
+            }
+        });
+    }
+
+    /// Carry the picked-up scene up or down, or the picked-up track left or right, one place.
+    fn carry(&mut self, app: &mut App, offset: i64) {
+        let row = self.row.get().max(0) as usize;
+        let place = self.track_place();
+        if self.moving == Some(Moving::Scene) {
+            let count = Self::scene_count(app);
+            let to = row as i64 + offset;
+            if (0..count).contains(&to) {
+                Self::change_song(app, |song| {
+                    song.move_scene(row, offset);
+                });
+                self.row.set(to);
+            }
+        } else {
+            let to = place as i64 + offset;
+            if (0..Self::tracks(app).len() as i64).contains(&to) {
+                Self::change_song(app, |song| {
+                    song.move_track(place, offset);
+                });
+                self.column.set((self.column.get() as i64 + offset) as usize);
+            }
+        }
+        self.say_moving(app);
+    }
+
+    /// Carry the picked-up clip to the nearest empty cell the arrow points to, passing over cells that hold clips.
+    fn carry_clip(&mut self, app: &mut App, key: &str) {
+        let (rows, columns): (i64, i64) = match key {
+            "up" => (-1, 0),
+            "down" => (1, 0),
+            "left" => (0, -1),
+            _ => (0, 1),
+        };
+        let tracks = Self::tracks(app);
+        let (from_row, from_place) = (self.row.get().max(0) as usize, self.track_place());
+        let (mut row, mut place) = (from_row as i64 + rows, from_place as i64 + columns);
+        while (0..Self::scene_count(app)).contains(&row) && (0..tracks.len() as i64).contains(&place) {
+            let to_track = tracks[place as usize].clone();
+            if Self::clip(app, row as usize, &to_track).is_none() {
+                let mut dropped = None;
+                let from_track = tracks[from_place].clone();
+                let to_row = row as usize;
+                let circles = |grab: &str| grab == to_track || self.grab_circles(app, to_row, &to_track, grab);
+                let grab = Self::clip(app, from_row, &from_track)
+                    .and_then(|clip| clip.get_written(ClipSlotSetting::GRAB_TRACK))
+                    .and_then(Data::as_str)
+                    .map(str::to_string);
+                if grab.as_deref().is_some_and(circles) {
+                    dropped = grab;
+                }
+                let clears = dropped.is_some();
+                Self::change_song(app, |song| {
+                    if let Some(mut clip) = song.take_clip(from_row, &from_track) {
+                        if clears {
+                            clip.set_written(ClipSlotSetting::GRAB_TRACK, None);
+                        }
+                        song.put_clip(to_row, &to_track, clip);
+                    }
+                });
+                self.row.set(row);
+                self.column.set(place as usize + FIRST_TRACK_COLUMN);
+                if let Some(track) = dropped {
+                    app.say(&named(messages::MSG_PASTED_WITHOUT_GRAB, &[("track", track.as_str().into())]));
+                    return;
+                }
+                break;
+            }
+            row += rows;
+            place += columns;
+        }
+        self.say_moving(app);
+    }
+
+    /// Whether a clip on a track of a scene grabbing from another track would go round in a circle: the other's clip there
+    /// grabbing, on and on, from the track itself.
+    fn grab_circles(&self, app: &App, index: usize, track: &str, other: &str) -> bool {
+        let mut seen = vec![other.to_string()];
+        let mut current = other.to_string();
+        while let Some(next) = Self::clip(app, index, &current)
+            .and_then(|clip| clip.get_written(ClipSlotSetting::GRAB_TRACK))
+            .and_then(Data::as_str)
+        {
+            if next == track {
+                return true;
+            }
+            if seen.iter().any(|each| each == next) {
+                return false;
+            }
+            seen.push(next.to_string());
+            current = next.to_string();
+        }
+        false
+    }
+
     fn start_picking(&mut self, app: &App) {
         self.locked = true;
         self.picked = (!self.pickable(app).is_empty()).then_some(0);
@@ -750,7 +888,11 @@ impl ArrangePage {
         let (first, last) = window;
         let header = self.header_lines(app, layout);
         let names = header - 3;
-        let style = if self.picking(app) { Style::DETAILS_LOCKED } else { Style::SELECTED_EDGE };
+        let style = if self.picking(app) || self.moving.is_some() {
+            Style::DETAILS_LOCKED
+        } else {
+            Style::SELECTED_EDGE
+        };
         let around = |place: usize, top: usize, inside: usize| {
             let left = self.cell_column(app, layout, place) + FRAME_ROOM;
             CellFrame {
@@ -827,9 +969,16 @@ impl Page for ArrangePage {
     fn keys(&self, app: &App) -> Vec<KeyItem> {
         self.clamp(app);
         match self.mode.get() {
-            Some(Unported::Moving) => return vec![Self::bind(&Keys::DROP)],
             Some(Unported::SceneView) => return vec![Self::bind(&Keys::ESCAPE_INSET), Self::bind(&Keys::CLOSE_INSET)],
             None => {}
+        }
+        if let Some(moving) = self.moving {
+            let carry = match moving {
+                Moving::Scene => Self::bind(&Keys::CARRY_SCENE),
+                Moving::Track => Self::bind(&Keys::CARRY_TRACK),
+                Moving::Clip => Self::bind(&Keys::CARRY_CLIP).wanting_key(),
+            };
+            return vec![Self::bind(&Keys::DROP), carry];
         }
         if self.picking(app) {
             let mut keys = vec![Self::bind(&Keys::ESCAPE_CELL), Self::bind(&Keys::OUT_OF_DETAILS)];
@@ -885,8 +1034,18 @@ impl Page for ArrangePage {
                 _ => self.column.set(self.column.get() + 1),
             }
             self.clamp(app);
-        } else if item.is(&Keys::MOVE_SCENE) || item.is(&Keys::MOVE_CLIP) || item.is(&Keys::MOVE_TRACK) {
-            self.mode.set(Some(Unported::Moving));
+        } else if item.is(&Keys::MOVE_SCENE) {
+            self.start_moving(app, Moving::Scene);
+        } else if item.is(&Keys::MOVE_TRACK) {
+            self.start_moving(app, Moving::Track);
+        } else if item.is(&Keys::MOVE_CLIP) {
+            self.start_moving(app, Moving::Clip);
+        } else if item.is(&Keys::DROP) && self.moving.is_some() {
+            self.moving = None;
+        } else if item.is(&Keys::CARRY_SCENE) || item.is(&Keys::CARRY_TRACK) {
+            self.carry(app, item.step_of(key).unwrap_or(0));
+        } else if item.is(&Keys::CARRY_CLIP) {
+            self.carry_clip(app, key);
         } else if item.is(&Keys::SCENE_VIEW) {
             self.mode.set(Some(Unported::SceneView));
         } else if item.is(&Keys::INTO_DETAILS) {
