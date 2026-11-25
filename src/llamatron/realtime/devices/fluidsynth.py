@@ -40,7 +40,6 @@ AUDIO_DEVICE_VARIABLE = 'LLAMATRON_FLUIDSYNTH_AUDIO_DEVICE'
 LIBRARY_VARIABLE = 'LLAMATRON_FLUIDSYNTH_LIBRARY'
 PROCESS_VARIABLE = 'LLAMATRON_FLUIDSYNTH_PROCESS'
 DISABLED_VARIABLE = 'NO_FLUIDSYNTH'
-IN_DAEMON_VARIABLE = 'LLAMATRON_FLUIDSYNTH_IN_DAEMON'
 SWITCHED_ON = '1'
 LIBRARY_FOLDER = 'lib'
 LIBRARY_NAMES = ('libfluidsynth.dylib', 'libfluidsynth.3.dylib', 'libfluidsynth.so.3', 'libfluidsynth.so')
@@ -103,13 +102,10 @@ def library_path(*, environment=None):
 
 def plays_in_daemon(*, environment=None):
     """Return whether FluidSynth plays inside the synth daemon, sharing its stream and clock with the built-in synths: the
-    daemon is built, FluidSynth's library and the SoundFont are installed, LLAMATRON_FLUIDSYNTH_IN_DAEMON=1 asks for it, and
-    LLAMATRON_FLUIDSYNTH_PROCESS=1 does not ask for FluidSynth's own process, as before."""
+    daemon is built, FluidSynth's library and the SoundFont are installed, and LLAMATRON_FLUIDSYNTH_PROCESS=1 does not ask for
+    FluidSynth's own process, as before."""
     environment = os.environ if environment is None else environment
     if is_disabled(environment=environment) or environment.get(PROCESS_VARIABLE) == SWITCHED_ON:
-        return False
-    # Asked for by name until it has played through the installed library on the user's computer, then the default.
-    if environment.get(IN_DAEMON_VARIABLE) != SWITCHED_ON:
         return False
     if not synth_daemon.uses_daemon(environment=environment):
         return False

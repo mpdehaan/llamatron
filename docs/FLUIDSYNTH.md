@@ -39,9 +39,7 @@ again does nothing that's already done.
   automatic channels and its General MIDI sound. Every demo's instruments play
   this way.
 - **Starting and stopping.** Where the
-  [synth engine](BUILDING_THE_SYNTH.md) is built and llamatron is started with
-  `LLAMATRON_FLUIDSYNTH_IN_DAEMON=1`, which is new and is to become the usual
-  way, the engine plays FluidSynth itself,
+  [synth engine](BUILDING_THE_SYNTH.md) is built, it plays FluidSynth itself,
   loading FluidSynth's library and the SoundFont as it starts, so that
   FluidSynth and the built-in instruments share one sound stream and land
   together to the sample. Otherwise the tracker starts FluidSynth as a program

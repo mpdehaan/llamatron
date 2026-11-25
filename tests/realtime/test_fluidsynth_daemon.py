@@ -87,12 +87,11 @@ class TestWhereFluidSynthPlays(unittest.TestCase):
         self.assertIsNone(fluidsynth.library_path(environment={fluidsynth.LIBRARY_VARIABLE: self.library + 'x'}))
 
     def test_no_fluidsynth_turns_it_off_and_the_process_variable_keeps_its_own_process(self):
-        given = {fluidsynth.LIBRARY_VARIABLE: self.library, daemon.DAEMON_PATH: self.program, fluidsynth.IN_DAEMON_VARIABLE: fluidsynth.SWITCHED_ON}
+        given = {fluidsynth.LIBRARY_VARIABLE: self.library, daemon.DAEMON_PATH: self.program}
         self.assertTrue(fluidsynth.is_disabled(environment={fluidsynth.DISABLED_VARIABLE: fluidsynth.SWITCHED_ON}))
         self.assertFalse(fluidsynth.is_disabled(environment={}))
         self.assertFalse(fluidsynth.plays_in_daemon(environment={**given, fluidsynth.DISABLED_VARIABLE: fluidsynth.SWITCHED_ON}))
         self.assertFalse(fluidsynth.plays_in_daemon(environment={**given, fluidsynth.PROCESS_VARIABLE: fluidsynth.SWITCHED_ON}))
-        self.assertFalse(fluidsynth.plays_in_daemon(environment={fluidsynth.LIBRARY_VARIABLE: self.library, daemon.DAEMON_PATH: self.program}))
 
     def test_without_the_daemon_fluidsynth_plays_in_its_own_process(self):
         self.assertFalse(fluidsynth.plays_in_daemon(environment={fluidsynth.LIBRARY_VARIABLE: self.library, daemon.DAEMON_PATH: self.program + 'x'}))
