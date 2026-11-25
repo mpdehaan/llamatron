@@ -7,6 +7,7 @@ pub mod draws_page;
 pub mod file_page;
 pub mod groove_editor;
 pub mod grooves_page;
+pub mod instrument_editor;
 pub mod instruments_page;
 pub mod notes_page;
 pub mod scale_page;

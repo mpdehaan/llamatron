@@ -696,6 +696,77 @@ def write_tracker_tables(path):
     path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
 
+def preset(value):
+    """Return a piece of a set's data as a Rust Preset: a value, a list or a mapping of names."""
+    if value is None:
+        return 'Preset::Null'
+    if isinstance(value, bool):
+        return 'Preset::Flag({})'.format('true' if value else 'false')
+    if isinstance(value, str):
+        return 'Preset::Text({})'.format(literal(value))
+    if isinstance(value, int):
+        return 'Preset::Whole({})'.format(value)
+    if isinstance(value, (tuple, list)):
+        return 'Preset::List(&[{}])'.format(', '.join(preset(item) for item in value))
+    if isinstance(value, dict):
+        return 'Preset::Map(&[{}])'.format(', '.join('({}, {})'.format(literal(str(key)), preset(item)) for key, item in value.items()))
+    raise NotWritable(value)
+
+
+def setting_kind(how):
+    """Return how a part's setting is shown, one of part_fields' kinds, as a Rust SettingKind."""
+    from llamatron.interface.pages import part_fields
+    what = how[0]
+    if what == part_fields.CHOICE:
+        choices = list(how[1])
+        return 'SettingKind::Choice {{ choices: &[{}], names: &[{}] }}'.format(
+            ', '.join(literal(str(choice)) for choice in choices), ', '.join(literal(how[2][choice]) for choice in choices))
+    if what == part_fields.TOGGLE:
+        return 'SettingKind::Toggle'
+    if what == part_fields.NUMBER:
+        zero = how[part_fields.NUMBER_PLACES] if len(how) > part_fields.NUMBER_PLACES else None
+        return 'SettingKind::Number {{ lowest: {}, highest: {}, unit: {}, zero: {} }}'.format(
+            how[1], how[2], literal(how[3]), 'None' if zero is None else 'Some({})'.format(literal(zero)))
+    if what == part_fields.SID_TIME:
+        return 'SettingKind::SidTime {{ highest: {}, times: {} }}'.format(how[2], how[3])
+    return 'SettingKind::Gauge {{ lowest: {}, highest: {}, what: {} }}'.format(how[1], how[2], literal(what))
+
+
+def write_sound_tables(path):
+    """Write the built-in sound's presets and defaults, and how the instrument page shows each part's settings."""
+    from llamatron.interface.pages import part_fields
+    from llamatron.model.objects import built_in_sound, engine_presets, sound_parts
+    from llamatron.model.schema import file_format
+    lines = [HEADER.format(source='model/objects/engine_presets.py, sound_parts.py, built_in_sound.py and interface/pages/part_fields.py').rstrip(), '']
+    lines.append('/// A piece of a set\'s data as a preset or a default holds it.')
+    lines.append('#[derive(Clone, Copy, Debug)]')
+    lines.append('pub enum Preset {\n    Null,\n    Flag(bool),\n    Whole(i64),\n    Text(&\'static str),\n    List(&\'static [Preset]),\n    Map(&\'static [(&\'static str, Preset)]),\n}')
+    lines.append('')
+    lines.append('/// How the instrument page shows one of a part\'s settings.')
+    lines.append('#[derive(Clone, Copy, Debug)]')
+    lines.append('pub enum SettingKind {\n    Choice { choices: &\'static [&\'static str], names: &\'static [&\'static str] },\n    Toggle,\n    Number { lowest: i64, highest: i64, unit: &\'static str, zero: Option<&\'static str> },\n    SidTime { highest: i64, times: i64 },\n    Gauge { lowest: i64, highest: i64, what: &\'static str },\n}')
+    lines.append('')
+    lines.append('/// Each engine\'s preset sound, by the engine\'s name.')
+    lines.append('pub static ENGINE_PRESETS: &[(&str, Preset)] = &[{}];'.format(', '.join('({}, {})'.format(literal(str(name)), preset(value)) for name, value in engine_presets.PRESETS.items())))
+    lines.append('/// What each type of part holds where its settings leave it out, by the type\'s name.')
+    lines.append('pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[{}];'.format(', '.join('({}, {})'.format(literal(str(name)), preset(value)) for name, value in sound_parts.TYPE_DEFAULTS.items())))
+    for name, value in (('OSCILLATOR_DEFAULTS', sound_parts.OSCILLATOR_DEFAULTS), ('LFO_DEFAULTS', built_in_sound.LFO_DEFAULTS), ('EFFECT_DEFAULTS', built_in_sound.EFFECT_DEFAULTS),
+                        ('SLOT_DEFAULTS', built_in_sound.SLOT_DEFAULTS), ('SOUND_DEFAULTS', built_in_sound.SOUND_DEFAULTS)):
+        lines.append('pub static {}: Preset = {};'.format(name, preset(value)))
+    lines.append('/// The engines an instrument of each role may play, the first the role\'s own.')
+    lines.append('pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[{}];'.format(', '.join('({}, &[{}])'.format(literal(str(role)), ', '.join(literal(str(engine)) for engine in engines)) for role, engines in file_format.ENGINES_OF_ROLE.items())))
+    lines.append('/// The settings each type of part shows, in order.')
+    lines.append('pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[{}];'.format(', '.join('({}, &[{}])'.format(literal(str(kind)), ', '.join(literal(str(name)) for name in names)) for kind, names in part_fields.TYPE_SETTINGS.items())))
+    lines.append('/// How each setting is shown, and where a type of part shows one its own way, how it shows it there.')
+    lines.append('pub static SETTING_KINDS: &[(&str, SettingKind)] = &[{}];'.format(', '.join('({}, {})'.format(literal(str(name)), setting_kind(how)) for name, how in part_fields.KINDS.items())))
+    lines.append('pub static TYPE_SETTING_KINDS: &[(&str, &str, SettingKind)] = &[{}];'.format(', '.join('({}, {}, {})'.format(literal(str(kind)), literal(str(name)), setting_kind(how)) for (kind, name), how in part_fields.TYPE_KINDS.items())))
+    lines.append('/// The types each part may be, with their names on screen.')
+    lines.append('pub static PART_TYPES: &[(&str, &[&str], &[&str])] = &[{}];'.format(', '.join('({}, &[{}], &[{}])'.format(
+        literal(str(part)), ', '.join(literal(str(kind)) for kind in kinds), ', '.join(literal(names[kind]) for kind in kinds)) for part, (kinds, names) in part_fields.PART_TYPES.items())))
+    lines.append('pub static SID_ATTACK_MS: &[i64] = &[{}];'.format(', '.join(str(number) for number in part_fields.SID_ATTACK_MS)))
+    path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
 def main():
     texts = [(info.name, importlib.import_module('llamatron.user_strings.' + info.name)) for info in pkgutil.iter_modules(package.__path__)]
     unwritten = write_modules(folder=OUT, modules=texts)
@@ -710,6 +781,7 @@ def main():
     write_lists(VALUES_OUT / 'lists.rs')
     write_keybindings(TRACKER_OUT / 'keybindings.rs')
     write_tracker_tables(TRACKER_OUT / 'tables.rs')
+    write_sound_tables(TRACKER_OUT / 'sounds.rs')
     write_generator_views(TRACKER_OUT / 'generator_views.rs')
     for name, skipped in unwritten.items():
         print('{}: not written: {}'.format(name, ', '.join(skipped)), file=sys.stderr)

@@ -4,6 +4,7 @@
 //! The pages, in folders by what they edit, as the Python's screens/ are.
 
 pub mod arrange;
+pub mod choice_dialog;
 pub mod field_page;
 pub mod generators;
 pub mod list_page;

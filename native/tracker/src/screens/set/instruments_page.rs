@@ -125,12 +125,43 @@ impl Listing for InstrumentsPage {
         named_item_keys(&Keys::CLASS, &Keys::EDIT)
     }
 
-    /// The instrument's page is not ported yet; adding asks which kind in a dialog, not ported yet.
+    /// ENTER opens the instrument's page; adding asks its role, then makes it, off, and opens its page.
     fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {
-        if let (true, Some(_)) = (item.is(&Keys::EDIT), row) {
-            app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-                name: "InstrumentEditor".to_string(),
-            }));
+        if item.is(&Keys::ADD) || item.is(&Keys::ADD_HERE) {
+            use llamatron_model::schema::generated::file_format::{SetlistSetting, INSTRUMENT_ROLES};
+            let options = INSTRUMENT_ROLES.iter().map(|role| named_in(labels::MSG_ROLE_NAMES, role)).collect();
+            let then = Box::new(|app: &mut App, place: usize| {
+                let role = INSTRUMENT_ROLES[place];
+                let setlist = app.document.get_setlist();
+                let taken: Vec<String> = setlist.items(Section::INSTRUMENTS).iter().map(|(name, _)| name.clone()).collect();
+                let first = taken.is_empty();
+                let name = llamatron_model::objects::naming::new_name(llamatron_strings::names::MSG_NEW_INSTRUMENT_WORD, &taken);
+                let data = Data::Map(vec![
+                    (Data::text(InstrumentSetting::KIND), Data::text("off")),
+                    (Data::text(InstrumentSetting::ROLE), Data::text(role)),
+                ]);
+                let Ok(instrument) = Instrument::from_data(&data) else { return };
+                app.document.change_set(|setlist| {
+                    setlist.add_item(Section::INSTRUMENTS, &name, Item::Instrument(instrument));
+                    if first {
+                        setlist.set_written(SetlistSetting::REAL_TIME, Some(Data::Bool(true)));
+                    }
+                });
+                let page = crate::screens::set::instrument_editor::InstrumentEditor { name };
+                app.show_page(Box::new(crate::screens::field_page::FieldPage::new(page)));
+            });
+            let dialog = crate::screens::choice_dialog::ChoiceDialog {
+                title: llamatron_strings::messages::MSG_NEW_INSTRUMENT_TITLE.to_string(),
+                options,
+                current: 0,
+                then,
+            };
+            app.show_page(Box::new(dialog));
+            return None;
+        }
+        if let (true, Some(name)) = (item.is(&Keys::EDIT), row) {
+            let page = crate::screens::set::instrument_editor::InstrumentEditor { name: name.to_string() };
+            app.show_page(Box::new(crate::screens::field_page::FieldPage::new(page)));
         }
         None
     }

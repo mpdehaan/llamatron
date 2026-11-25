@@ -5,4 +5,5 @@
 
 pub mod generator_views;
 pub mod keybindings;
+pub mod sounds;
 pub mod tables;
