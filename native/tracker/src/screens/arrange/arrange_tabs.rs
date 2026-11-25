@@ -221,3 +221,41 @@ pub fn bypass_tab(statements: Option<&Data>) -> Tab {
     let held = statements.and_then(Data::as_list).map(<[Data]>::to_vec).unwrap_or_default();
     Tab::new(labels::MSG_BYPASS_WHEN_TAB, vec![TabColumn::new(None, statement_lines(0, &held, BYPASS_IDS))])
 }
+
+/// Whether a built-in generator's data says it is switched on, which it is not until enabled.
+pub fn built_in_on(data: Option<&Data>) -> bool {
+    data.and_then(|settings| settings.get("enabled"))
+        .is_some_and(|value| matches!(value, Data::Bool(true)))
+}
+
+/// A tab of a generator built into a track or a clip, made from its plugin's view, its fields' ids counting from first_id.
+pub fn built_in_tab(app: &App, built_ins: Option<&Data>, kind: &'static str, first_id: usize) -> Tab {
+    let empty = Data::Map(Vec::new());
+    let data = built_ins.and_then(|built_ins| built_ins.get(kind)).unwrap_or(&empty);
+    let bypass = data.get("bypass_when").and_then(Data::as_list).map_or(0, <[Data]>::len);
+    let mut made = Made::of(app, kind, data, true).counting_from(first_id);
+    made.tab(&tab_label_of(kind), bypass)
+}
+
+/// A built-in generator's tab's label.
+pub fn tab_label_of(kind: &str) -> String {
+    use llamatron_strings::plugin_texts::*;
+    match kind {
+        "chords" => chords::MSG_TAB_LABEL,
+        "arp" => arp::MSG_TAB_LABEL,
+        "guitarify" => guitarify::MSG_TAB_LABEL,
+        "timing" => timing::MSG_TAB_LABEL,
+        _ => phrasing::MSG_TAB_LABEL,
+    }
+    .to_string()
+}
+
+/// The kinds built into a track or a clip, in the order their tabs stand.
+pub fn built_in_kinds() -> Vec<&'static str> {
+    let mut kinds: Vec<(i64, &'static str)> = PLUGINS
+        .iter()
+        .filter_map(|plugin| plugin.built_in_place.map(|place| (place, plugin.name)))
+        .collect();
+    kinds.sort();
+    kinds.into_iter().map(|(_, name)| name).collect()
+}

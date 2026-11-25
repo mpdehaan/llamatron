@@ -53,12 +53,13 @@ pub trait Form {
     /// Store or act on what a key did to the field of an id.
     fn apply(&mut self, _app: &mut App, _id: usize, _edit: Edit) {}
 
-    /// The page's own keys besides its fields'.
-    fn page_keys(&self, _app: &App) -> Vec<KeyItem> {
+    /// The page's own keys besides its fields', where the cursor is on a row.
+    fn page_keys(&self, _app: &App, _row: Option<&Field>) -> Vec<KeyItem> {
         Vec::new()
     }
 
-    fn press_own(&mut self, _app: &mut App, _item: &KeyItem, _key: &str) {}
+    /// Act on one of the page's own keys, the cursor on a row.
+    fn press_own(&mut self, _app: &mut App, _item: &KeyItem, _key: &str, _row: Option<&Field>) {}
 
     /// Whether a blank line comes before every section's heading rather than before the first alone.
     fn headings_apart(&self) -> bool {
@@ -570,7 +571,7 @@ impl<F: Form> Page for FieldPage<F> {
         if shown.every_field().any(Field::is_heading) && !self.in_box(&shown) {
             result.push(self.bind(&Keys::SECTION));
         }
-        result.extend(self.form.page_keys(app));
+        result.extend(self.form.page_keys(app, row));
         let mut keys = vec![self.bind(&Keys::BACK)];
         keys.extend(result);
         keys
@@ -615,10 +616,14 @@ impl<F: Form> Page for FieldPage<F> {
                     }
                 }
                 Some(edit) => self.form.apply(app, field.id, edit),
-                None => self.form.press_own(app, item, key),
+                None => {
+                    let row = shown.fields.get(self.place(&shown)).cloned();
+                    self.form.press_own(app, item, key, row.as_ref())
+                }
             }
         } else {
-            self.form.press_own(app, item, key);
+            let row = shown.fields.get(self.place(&shown)).cloned();
+            self.form.press_own(app, item, key, row.as_ref());
         }
     }
 

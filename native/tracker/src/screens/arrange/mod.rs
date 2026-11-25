@@ -5,6 +5,7 @@
 
 pub mod arrange_page;
 pub mod arrange_tabs;
+pub mod clip_page;
 pub mod grid;
 pub mod scene_page;
 pub mod track_editor;

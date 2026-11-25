@@ -12,7 +12,6 @@ use crate::keys::KeyItem;
 use crate::lengths::Lengths;
 use crate::page::{clock, Duration, Page};
 use crate::screens::arrange::grid::{arrange_lines, CellFrame, Kind, LengthBar, Piece};
-use crate::screens::not_ported::NotPorted;
 use crate::text::Text;
 use crate::themes::Colour;
 use llamatron_model::file::data::Data;
@@ -607,7 +606,11 @@ impl Page for ArrangePage {
             self.copied = Self::clip(app, self.row.get() as usize, &tracks[self.track_place()]).cloned();
             app.say(llamatron_strings::messages::MSG_COPIED_CLIP);
         } else if item.is(&Keys::EDIT_CLIP) {
-            app.show_page(Box::new(NotPorted { name: "ClipPage".to_string() }));
+            let track = Self::tracks(app)[self.track_place()].clone();
+            let index = self.row.get().max(0) as usize;
+            app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
+                crate::screens::arrange::clip_page::ClipPage { index, track },
+            )));
         } else if item.is(&Keys::SCENE_SETTINGS) {
             let index = self.row.get().max(0) as usize;
             app.show_page(Box::new(crate::screens::field_page::FieldPage::new(

@@ -10,9 +10,9 @@ use crate::drawing::Style;
 use crate::forms::nodes::{Edit, Field};
 use crate::forms::tab_box::{Tab, TabBox, TabColumn};
 use crate::keybindings::{KeyClass, TrackEditor as Keys};
+use crate::screens::arrange::arrange_tabs::{self, built_in_kinds, tab_label_of};
 use crate::screens::field_page::{Form, Node};
 use crate::screens::generators::generators_page::label_of;
-use crate::screens::generators::plugin_editor::Made;
 use crate::settings::{named_in, shown_octave};
 use crate::text::Text;
 use crate::themes::{self, Colour};
@@ -201,15 +201,8 @@ impl TrackEditor {
 
     /// A built-in generator's tab, with what it says of the clips whose own built-in of its kind overrides it.
     fn built_in_tab(&self, app: &App, track: &Track, kind: &'static str) -> Tab {
-        let empty = Data::Map(Vec::new());
-        let data = track
-            .get_written(TrackSetting::BUILT_IN)
-            .and_then(|built_ins| built_ins.get(kind))
-            .unwrap_or(&empty);
-        let bypass = data.get("bypass_when").and_then(Data::as_list).map_or(0, <[Data]>::len);
         let place = built_in_kinds().iter().position(|each| *each == kind).unwrap_or(0);
-        let mut made = Made::of(app, kind, data, true).counting_from(BUILT_IN_IDS * (place + 1));
-        let mut tab = made.tab(&tab_label_of(kind), bypass);
+        let mut tab = arrange_tabs::built_in_tab(app, track.get_written(TrackSetting::BUILT_IN), kind, BUILT_IN_IDS * (place + 1));
         let word = tab_label_of(kind).to_lowercase();
         let song = app.document.song();
         let mut overriding = Vec::new();
@@ -275,29 +268,6 @@ impl TrackEditor {
             .with_clear(marks::MSG_NONE_SHOWN);
         Tab::new(labels::MSG_USER_TAB, vec![TabColumn::new(None, vec![field])])
     }
-}
-
-/// A built-in generator's tab's label.
-fn tab_label_of(kind: &str) -> String {
-    use llamatron_strings::plugin_texts::*;
-    match kind {
-        "chords" => chords::MSG_TAB_LABEL,
-        "arp" => arp::MSG_TAB_LABEL,
-        "guitarify" => guitarify::MSG_TAB_LABEL,
-        "timing" => timing::MSG_TAB_LABEL,
-        _ => phrasing::MSG_TAB_LABEL,
-    }
-    .to_string()
-}
-
-/// The kinds built into a track or a clip, in the order their tabs stand.
-pub fn built_in_kinds() -> Vec<&'static str> {
-    let mut kinds: Vec<(i64, &'static str)> = PLUGINS
-        .iter()
-        .filter_map(|plugin| plugin.built_in_place.map(|place| (place, plugin.name)))
-        .collect();
-    kinds.sort();
-    kinds.into_iter().map(|(_, name)| name).collect()
 }
 
 impl Form for TrackEditor {
