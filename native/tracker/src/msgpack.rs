@@ -91,3 +91,16 @@ pub fn packed(data: &Data, out: &mut Vec<u8>) {
         }
     }
 }
+
+/// Set data as the backend's MessagePack values, for handing it messages within this process.
+pub fn value_of(data: &Data) -> rmpv::Value {
+    match data {
+        Data::Null => rmpv::Value::Nil,
+        Data::Bool(value) => rmpv::Value::Boolean(*value),
+        Data::Whole(value) => rmpv::Value::from(*value as i64),
+        Data::Float(value) => rmpv::Value::F64(*value),
+        Data::Text(text) => rmpv::Value::from(text.as_str()),
+        Data::List(items) => rmpv::Value::Array(items.iter().map(value_of).collect()),
+        Data::Map(pairs) => rmpv::Value::Map(pairs.iter().map(|(key, value)| (value_of(key), value_of(value))).collect()),
+    }
+}

@@ -78,6 +78,28 @@ pub fn mapping(pairs: Vec<(&str, Value)>) -> Value {
     Value::Map(pairs.into_iter().map(|(name, value)| (Value::from(name), value)).collect())
 }
 
+/// Where a serving loop reads its messages from: the tracker's pipe when the daemon runs as its own program, or a channel
+/// when a front end runs the backend's code on threads of its own process.
+pub trait Inbox {
+    /// The next message, or None once the sender has gone.
+    fn next_message(&mut self) -> io::Result<Option<Value>>;
+}
+
+/// The daemon's standard input as its inbox.
+pub struct Piped<R: Read>(pub R);
+
+impl<R: Read> Inbox for Piped<R> {
+    fn next_message(&mut self) -> io::Result<Option<Value>> {
+        read_message(&mut self.0)
+    }
+}
+
+impl Inbox for std::sync::mpsc::Receiver<Value> {
+    fn next_message(&mut self) -> io::Result<Option<Value>> {
+        Ok(self.recv().ok())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

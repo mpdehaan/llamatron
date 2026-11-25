@@ -101,9 +101,6 @@ impl Transport {
         if routes.iter().any(|(_, route)| route.port.starts_with(FLUIDSYNTH_PORT_PREFIX)) && !crate::wav::fluidsynth_installed() {
             return cannot(errors::ERR_FLUIDSYNTH_NOT_INSTALLED.to_string());
         }
-        if routes.iter().any(|(_, route)| route.sound.is_some()) && crate::wav::backend_path().is_none() {
-            return cannot(errors::ERR_SYNTHESIS_OFF.to_string());
-        }
         let lines = crate::exporting::loop_error_lines(app);
         if !lines.is_empty() {
             return Some(Refusal {
@@ -133,6 +130,18 @@ impl Transport {
         }
         self.previewing = forever;
         let now = self.ready(document, instead)?;
+        let (Some(sender), Some(player)) = (self.sender.as_mut(), self.player.as_mut()) else {
+            return Err(sender_gone());
+        };
+        let at = player.play_clips(sender, now, index, tracks, forever);
+        Ok(at > now + LAUNCH_LEAD_SECONDS)
+    }
+
+    /// Play clips of a scene of a document through the routes given rather than the tracks' instruments, again and again
+    /// with forever, as the pattern preview plays its copy of the set; whether they wait for the next bar.
+    pub fn play_routed(&mut self, document: &Document, index: usize, tracks: Vec<String>, routes: Vec<(String, Route)>, forever: bool) -> Result<bool, String> {
+        self.previewing = forever;
+        let now = self.ready_on(document, routes)?;
         let (Some(sender), Some(player)) = (self.sender.as_mut(), self.player.as_mut()) else {
             return Err(sender_gone());
         };
@@ -265,6 +274,12 @@ impl Transport {
     /// sender's clock now.
     fn ready(&mut self, document: &Document, instead: &[(String, String)]) -> Result<f64, String> {
         let routes = routes(document, instead);
+        self.ready_on(document, routes)
+    }
+
+    /// A score of a document's current song through the routes given, with the sender open on their ports and the player
+    /// holding it; the sender's clock now.
+    fn ready_on(&mut self, document: &Document, routes: Vec<(String, Route)>) -> Result<f64, String> {
         let playing = self.is_playing();
         if !playing || self.seed.is_none() {
             self.seed = Some(PythonRandom::unseeded().randrange(0, SEED_RANGE, 1) as i64);
@@ -311,7 +326,7 @@ fn sender_gone() -> String {
 }
 
 /// A port as the daemon opens it, its kind told by its name.
-fn opened_port(name: &str) -> OpenedPort {
+pub fn opened_port(name: &str) -> OpenedPort {
     if let Some(group) = name.strip_prefix(BUILT_IN_PORT_PREFIX) {
         return OpenedPort {
             name: name.to_string(),
@@ -334,7 +349,7 @@ fn opened_port(name: &str) -> OpenedPort {
 }
 
 /// FluidSynth's port, named after this process.
-fn fluidsynth_port() -> String {
+pub fn fluidsynth_port() -> String {
     format!("{FLUIDSYNTH_PORT_PREFIX} {}", std::process::id())
 }
 
@@ -345,7 +360,7 @@ fn instrument_name(document: &Document, track: &str) -> Option<String> {
 }
 
 /// An instrument of the set by name.
-fn instrument<'a>(document: &'a Document, name: &str) -> Option<&'a Instrument> {
+pub fn instrument<'a>(document: &'a Document, name: &str) -> Option<&'a Instrument> {
     match document.get_setlist().get_item(Section::INSTRUMENTS, name) {
         Some(Item::Instrument(instrument)) => Some(instrument),
         _ => None,
@@ -353,7 +368,7 @@ fn instrument<'a>(document: &'a Document, name: &str) -> Option<&'a Instrument> 
 }
 
 /// An instrument's device, where it has one.
-fn device_of(instrument: &Instrument) -> Option<String> {
+pub fn device_of(instrument: &Instrument) -> Option<String> {
     instrument
         .get_written(InstrumentSetting::DEVICE)
         .and_then(Data::as_str)
@@ -361,7 +376,7 @@ fn device_of(instrument: &Instrument) -> Option<String> {
         .map(str::to_string)
 }
 
-fn is_built_in(instrument: &Instrument) -> bool {
+pub fn is_built_in(instrument: &Instrument) -> bool {
     instrument.get_written(InstrumentSetting::KIND).and_then(Data::as_str) == Some(BUILT_IN_KIND)
 }
 

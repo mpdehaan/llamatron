@@ -29,6 +29,11 @@ way a shell pipes one program into another:
   where that sender is chosen, with the messages below.
 - **`render`**: no sound card; it plays the WAV export's built-in tracks into
   a file, as fast as it can.
+- **`ports`**: lists the computer's MIDI destinations, a line each, and ends.
+
+llamatron2, the tracker in Rust, starts no child process: it links the same
+code as a library and runs `send` and `render` on threads of its own process,
+handing them the same messages through channels in place of the pipes.
 
 | Direction | Message | What it carries |
 | --- | --- | --- |

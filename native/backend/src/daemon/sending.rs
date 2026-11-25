@@ -21,7 +21,6 @@ use crate::sender::outputs::{Output, Shared, INSTRUMENTS_PER_PORT};
 use crate::sender::{self, Closed, SenderCommand};
 use crate::voice::patch::Patch;
 use rmpv::Value;
-use std::io;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
@@ -156,9 +155,8 @@ fn load_fluid(opened: &Value, player: &mut Player, rate: f64) -> Result<(), Fail
 }
 
 /// Serve as the sender until told to close or the input ends.
-pub fn serve(answer: Answer) -> i32 {
-    let mut input = io::stdin().lock();
-    let first = match protocol::read_message(&mut input) {
+pub fn serve(answer: Answer, input: &mut dyn protocol::Inbox) -> i32 {
+    let first = match input.next_message() {
         Ok(Some(first)) if kind_of(&first) == OPEN => first,
         _ => {
             log::error!("the sender was not opened");
@@ -189,7 +187,7 @@ pub fn serve(answer: Answer) -> i32 {
     let thread = std::thread::spawn(move || sender::run(engine, inbox, delay));
     let mut closed = None;
     loop {
-        let received = match protocol::read_message(&mut input) {
+        let received = match input.next_message() {
             Ok(Some(received)) => received,
             Ok(None) => break,
             Err(problem) => {

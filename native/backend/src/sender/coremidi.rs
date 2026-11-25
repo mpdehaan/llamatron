@@ -28,12 +28,18 @@ pub fn client() -> Result<Arc<Client>, OpenProblem> {
     Client::new("llamatron").map(Arc::new).map_err(OpenProblem::Client)
 }
 
-/// Print every MIDI destination's shown name, a line each, as the tracker lists the computer's ports.
+/// Every MIDI destination's shown name, as the tracker lists the computer's ports.
+pub fn destination_names() -> Vec<String> {
+    (0..Destinations::count())
+        .filter_map(Destination::from_index)
+        .filter_map(|destination| destination.display_name().or_else(|| destination.name()))
+        .collect()
+}
+
+/// Print every MIDI destination's shown name, a line each, for `llamatron-backend ports`.
 pub fn list_destinations() {
-    for destination in (0..Destinations::count()).filter_map(Destination::from_index) {
-        if let Some(name) = destination.display_name().or_else(|| destination.name()) {
-            println!("{name}");
-        }
+    for name in destination_names() {
+        println!("{name}");
     }
 }
 

@@ -650,12 +650,14 @@ name = "llamatron-tracker"
 version = "0.1.0"
 dependencies = [
  "crossterm",
+ "llamatron-backend",
  "llamatron-engine",
  "llamatron-exporters",
  "llamatron-importers",
  "llamatron-math",
  "llamatron-model",
  "llamatron-strings",
+ "rmpv",
  "unicode-width",
 ]
 

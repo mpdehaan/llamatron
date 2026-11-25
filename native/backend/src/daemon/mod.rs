@@ -37,16 +37,26 @@ const MILLISECONDS: f64 = 1000.0;
 /// FluidSynth's gain where the tracker gives none, the one its own process played at.
 const FLUID_GAIN: f64 = 0.55;
 
-/// Where messages to the tracker are written, shared by the reader and the reporter.
-pub type Output = Arc<Mutex<io::Stdout>>;
+/// Where messages to the tracker go, shared by the reader and the reporter: written to the daemon's standard output, or
+/// handed to a front end running the backend in its own process.
+pub type Output = Arc<dyn Fn(&Value) + Send + Sync>;
 
-/// Write a message to the tracker; a closed output means the tracker has gone, which the reader learns from its input.
-pub fn tell(output: &Output, message: &Value) {
-    if let Ok(mut stdout) = output.lock() {
-        if let Err(problem) = protocol::write_message(&mut *stdout, message) {
-            log::warn!("could not write to the tracker: {problem}");
+/// An output writing each message to the daemon's standard output; a closed output means the tracker has gone, which the
+/// reader learns from its input.
+pub fn standard_output() -> Output {
+    let stdout = Mutex::new(io::stdout());
+    Arc::new(move |message: &Value| {
+        if let Ok(mut stdout) = stdout.lock() {
+            if let Err(problem) = protocol::write_message(&mut *stdout, message) {
+                log::warn!("could not write to the tracker: {problem}");
+            }
         }
-    }
+    })
+}
+
+/// Hand a message to the tracker.
+pub fn tell(output: &Output, message: &Value) {
+    output(message);
 }
 
 /// The drums' hits, rendered on this thread as notes arrive and kept, by instrument, pitch and velocity step.
@@ -123,7 +133,7 @@ pub(crate) fn item(message: &Value, place: usize) -> Option<&Value> {
 }
 
 /// Play through the sound card until told to close or the input ends.
-pub fn play(block: usize, device: Option<&str>, output: Output) -> i32 {
+pub fn play(block: usize, device: Option<&str>, output: Output, input: &mut dyn protocol::Inbox) -> i32 {
     let mut player = match Player::start(block, device) {
         Ok(player) => player,
         Err(problem) => {
@@ -142,9 +152,8 @@ pub fn play(block: usize, device: Option<&str>, output: Output) -> i32 {
     let reporting = Arc::new(AtomicBool::new(true));
     let reporter = start_reporter(&player, output.clone(), reporting.clone());
     let mut hits = HitStore::default();
-    let mut input = io::stdin().lock();
     loop {
-        let received = match protocol::read_message(&mut input) {
+        let received = match input.next_message() {
             Ok(Some(received)) => received,
             Ok(None) => break,
             Err(problem) => {
@@ -327,13 +336,12 @@ pub(crate) fn statistics_of(player: &Player) -> Value {
 }
 
 /// Render notes timed from zero into WAV files as the tracker asks, with no sound card.
-pub fn render(rate: f64, output: Output) -> i32 {
+pub fn render(rate: f64, output: Output, input: &mut dyn protocol::Inbox) -> i32 {
     log::info!("rendering at {rate} Hz");
     let mut engine = Engine::new(rate, None);
     let mut hits = HitStore::default();
-    let mut input = io::stdin().lock();
     loop {
-        let received = match protocol::read_message(&mut input) {
+        let received = match input.next_message() {
             Ok(Some(received)) => received,
             Ok(None) => return 0,
             Err(problem) => {

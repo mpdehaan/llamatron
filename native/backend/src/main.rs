@@ -8,19 +8,10 @@
 //! `llamatron-backend send` is the real-time sender, sending the tracker's events through MIDI and the synths alike. The
 //! architecture is described for people in docs/BACKEND.md.
 
-mod audio;
-mod daemon;
-mod drums;
-mod dsp;
-mod engine;
-mod fluid;
-mod protocol;
-mod sender;
-mod voice;
-
+use llamatron_backend::protocol::Piped;
+use llamatron_backend::{daemon, protocol, sender};
 use std::io;
 use std::panic;
-use std::sync::{Arc, Mutex};
 
 const DEFAULT_BLOCK: usize = 128;
 const DEFAULT_RATE: f64 = 44100.0;
@@ -91,19 +82,22 @@ fn main() {
     let found = arguments();
     log::info!("started, version {}, process {}", env!("CARGO_PKG_VERSION"), std::process::id());
     daemon::watch_parent();
-    let output = Arc::new(Mutex::new(io::stdout()));
-    let code = panic::catch_unwind(|| {
+    let output = daemon::standard_output();
+    let mut input = Piped(io::stdin().lock());
+    // The output and the input are only read and written here, so a panic leaves nothing half-changed that the loop's
+    // answer below would rely on.
+    let code = panic::catch_unwind(panic::AssertUnwindSafe(|| {
         if found.listing {
             sender::coremidi::list_destinations();
             0
         } else if found.sending {
-            daemon::sending::serve(output.clone())
+            daemon::sending::serve(output.clone(), &mut input)
         } else if found.rendering {
-            daemon::render(found.rate, output.clone())
+            daemon::render(found.rate, output.clone(), &mut input)
         } else {
-            daemon::play(found.block, found.device.as_deref(), output.clone())
+            daemon::play(found.block, found.device.as_deref(), output.clone(), &mut input)
         }
-    })
+    }))
     .unwrap_or_else(|_| {
         daemon::tell(
             &output,

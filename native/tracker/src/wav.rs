@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The WAV export (the Python exporters/wave_fluidsynth.py, built_in_wave.py and wave_level.py): the tracks that play through
 //! FluidSynth, written as the General MIDI export writes them and played by FluidSynth's program faster than real time, and
-//! the tracks on built-in instruments, read back in seconds and rendered by llamatron-backend, mixed into one 16-bit file,
+//! the tracks on built-in instruments, read back in seconds and rendered by the backend's renderer here, mixed into one 16-bit file,
 //! then normalized, its loudest moment 1 dB below full scale, as the demos' WAV files are.
 
 use crate::document::Document;
@@ -15,16 +15,14 @@ use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SetlistSetting, TrackSetting, FLUIDSYNTH_DEVICE};
 use llamatron_strings::{errors, named};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 /// Where install_fluidsynth.sh puts FluidSynth, the Apple Silicon Homebrew's and then an Intel Mac's, and its SoundFont.
 const HOMEBREW_FLUIDSYNTHS: [&str; 2] = ["/opt/homebrew/bin/fluidsynth", "/usr/local/bin/fluidsynth"];
 const FLUIDSYNTH_COMMAND: &str = "fluidsynth";
 const SOUNDFONT: &str = "soundfonts/GeneralUser-GS.sf2";
-/// What turns FluidSynth off for a computer where it does not work, and where a backend built elsewhere is named.
+/// What turns FluidSynth off for a computer where it does not work.
 const DISABLED_VARIABLE: &str = "NO_FLUIDSYNTH";
-const BACKEND_VARIABLE: &str = "LLAMATRON_BACKEND";
-const BACKEND_NAME: &str = "llamatron-backend";
 const SWITCHED_ON: &str = "1";
 /// How FluidSynth's program plays a MIDI file into a WAV file, faster than real time.
 const SAMPLE_RATE: u32 = 44100;
@@ -68,17 +66,6 @@ pub fn fluidsynth_installed() -> bool {
         return false;
     }
     fluidsynth_path().is_some() && soundfont_path().is_file()
-}
-
-/// Where llamatron-backend is: where LLAMATRON_BACKEND says, else beside this program, as both are built.
-pub fn backend_path() -> Option<PathBuf> {
-    if let Ok(given) = std::env::var(BACKEND_VARIABLE) {
-        let given = PathBuf::from(given);
-        return given.is_file().then_some(given);
-    }
-    let here = std::env::current_exe().ok()?;
-    let beside = here.parent()?.join(BACKEND_NAME);
-    beside.is_file().then_some(beside)
 }
 
 /// Write the current song's WAV file at a path: its FluidSynth tracks and its built-in tracks, mixed and normalized.
@@ -125,10 +112,7 @@ pub fn export(document: &Document, grid: &Grid, path: &Path) -> Result<(), Strin
     if !on_fluidsynth.is_empty() && !fluidsynth_installed() {
         return Err(errors::ERR_WAV_NEEDS_FLUIDSYNTH.to_string());
     }
-    let backend = backend_path();
-    if !built_in.is_empty() && backend.is_none() {
-        return Err(errors::ERR_WAV_NEEDS_SYNTH_DAEMON.to_string());
-    }
+
     let scratch = Scratch::new()?;
     let mut parts = Vec::new();
     if !on_fluidsynth.is_empty() {
@@ -136,10 +120,10 @@ pub fn export(document: &Document, grid: &Grid, path: &Path) -> Result<(), Strin
         let (_, midi) = llamatron_exporters::midi::song_file_of(grid, &document.export_name(), true, &kept).map_err(refusal)?;
         parts.push(read_wave(&render_fluidsynth(&scratch.folder, &midi)?)?);
     }
-    if let Some(backend) = backend.filter(|_| !built_in.is_empty()) {
+    if !built_in.is_empty() {
         let seconds = llamatron_exporters::midi::song_seconds(grid).map_err(refusal)? + TAIL_SECONDS;
         let rendered = scratch.folder.join("built_in.wav");
-        render_built_in(&backend, &built_in, seconds, &rendered)?;
+        render_built_in(&built_in, seconds, &rendered)?;
         parts.push(read_wave(&rendered)?);
     }
     write_mix(path, &parts)
@@ -199,38 +183,39 @@ fn render_fluidsynth(folder: &Path, midi: &[u8]) -> Result<PathBuf, String> {
     Ok(played)
 }
 
-/// Render the built-in tracks through llamatron-backend into a WAV file of floats, as fast as it can.
-fn render_built_in(backend: &Path, tracks: &[(Data, llamatron_exporters::midi::TimedTrack)], seconds: f64, path: &Path) -> Result<(), String> {
+/// Render the built-in tracks through the backend's renderer, run here on this thread, into a WAV file of floats, as
+/// fast as it can.
+fn render_built_in(tracks: &[(Data, llamatron_exporters::midi::TimedTrack)], seconds: f64, path: &Path) -> Result<(), String> {
     let failed = |answer: &str| named(errors::ERR_SYNTH_DAEMON_RENDER_FAILED, &[("answer", answer.into())]);
-    let mut process = Command::new(backend)
-        .args(["render", "--rate", &SAMPLE_RATE.to_string()])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn()
-        .map_err(|error| failed(&error.to_string()))?;
-    let (Some(mut input), Some(mut output)) = (process.stdin.take(), process.stdout.take()) else {
-        return Err(failed("no pipe"));
-    };
-    let mut sent = || -> std::io::Result<Vec<u8>> {
-        for (number, (spec, timed)) in tracks.iter().enumerate() {
-            let number = Data::Whole(number as i128);
-            crate::msgpack::send(&mut input, &Data::List(vec![Data::text("instrument"), number.clone(), spec.clone()]))?;
-            crate::msgpack::send(&mut input, &Data::List(vec![Data::text("notes"), Data::List(offline_notes(&number, timed))]))?;
+    let (to_renderer, mut inbox) = std::sync::mpsc::channel::<rmpv::Value>();
+    let message = |items: Vec<Data>| crate::msgpack::value_of(&Data::List(items));
+    for (number, (spec, timed)) in tracks.iter().enumerate() {
+        let number = Data::Whole(number as i128);
+        let _ = to_renderer.send(message(vec![Data::text("instrument"), number.clone(), spec.clone()]));
+        let _ = to_renderer.send(message(vec![Data::text("notes"), Data::List(offline_notes(&number, timed))]));
+    }
+    let _ = to_renderer.send(message(vec![
+        Data::text("render"),
+        Data::text(&path.display().to_string()),
+        Data::Float(seconds),
+    ]));
+    let _ = to_renderer.send(message(vec![Data::text("close")]));
+    drop(to_renderer);
+    let answers = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let kept = answers.clone();
+    let output: llamatron_backend::daemon::Output = std::sync::Arc::new(move |answer: &rmpv::Value| {
+        if let Ok(mut kept) = kept.lock() {
+            kept.push(answer.clone());
         }
-        let render = Data::List(vec![Data::text("render"), Data::text(&path.display().to_string()), Data::Float(seconds)]);
-        crate::msgpack::send(&mut input, &render)?;
-        let answer = crate::msgpack::received(&mut output)?;
-        crate::msgpack::send(&mut input, &Data::List(vec![Data::text("close")]))?;
-        Ok(answer)
-    };
-    let answer = sent();
-    drop(input);
-    // The backend has been told to close and its input is shut, so waiting ends; a failed wait leaves nothing to report.
-    let _ = process.wait();
-    let answer = answer.map_err(|error| failed(&error.to_string()))?;
-    if crate::msgpack::first_word(&answer).as_deref() != Some("rendered") {
-        return Err(failed(&String::from_utf8_lossy(&answer)));
+    });
+    llamatron_backend::daemon::render(SAMPLE_RATE as f64, output, &mut inbox);
+    let answers = answers.lock().map(|held| held.clone()).unwrap_or_default();
+    let rendered = answers
+        .iter()
+        .any(|answer| answer.as_array().and_then(|items| items.first()).and_then(rmpv::Value::as_str) == Some("rendered"));
+    if !rendered {
+        let said = answers.last().map(ToString::to_string).unwrap_or_default();
+        return Err(failed(&said));
     }
     Ok(())
 }

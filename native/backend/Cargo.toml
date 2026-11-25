@@ -9,6 +9,10 @@ license = "GPL-3.0-or-later"
 description = "llamatron's backend: a daemon that plays the built-in synths and FluidSynth and sends MIDI on time"
 publish = false
 
+[lib]
+name = "llamatron_backend"
+path = "src/lib.rs"
+
 [[bin]]
 name = "llamatron-backend"
 path = "src/main.rs"
