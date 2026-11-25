@@ -51,6 +51,13 @@ SETTING = '-o'
 PORT_NAME = 'midi.portname={name}'
 GAIN_OPTION = '-g'
 AUDIO_DEVICE_SETTING = 'audio.coreaudio.device={device}'
+# FluidSynth's audio buffer, set rather than left to its defaults, so that its latency is known and the same every run: a
+# period of 128 frames, the built-in synths' own chunk, and two periods. A note reaches FluidSynth at the start of its next
+# period, so its timing is held to a period (.claude/notes/synthesis/ENGINE_ARCHITECTURE.md, "The User's Constraints").
+PERIOD_FRAMES = 128
+PERIODS = 2
+PERIOD_SIZE_OPTION = '-z'
+PERIODS_OPTION = '-c'
 
 
 class FluidSynthNotStarted(SenderNotStarted):
@@ -97,7 +104,8 @@ def installed():
 
 def command(*, audio_device=None):
     """Return the command that starts FluidSynth as a MIDI port with the SoundFont, playing to the audio device given or the default."""
-    words = [fluidsynth_path(), *AUDIO_DRIVER, *MIDI_DRIVER, SETTING, PORT_NAME.format(name=realtime_names.FLUIDSYNTH_PORT), GAIN_OPTION, GAIN]
+    words = [fluidsynth_path(), *AUDIO_DRIVER, *MIDI_DRIVER, SETTING, PORT_NAME.format(name=realtime_names.FLUIDSYNTH_PORT), GAIN_OPTION, GAIN,
+             PERIOD_SIZE_OPTION, str(PERIOD_FRAMES), PERIODS_OPTION, str(PERIODS)]
     if audio_device:
         words += [SETTING, AUDIO_DEVICE_SETTING.format(device=audio_device)]
     return [*words, soundfont_path()]
