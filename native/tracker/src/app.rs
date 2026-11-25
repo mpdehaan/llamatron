@@ -111,6 +111,8 @@ pub struct App {
     pub asking: Option<crate::forms::nodes::Edit>,
     /// Whether the tracker is to close, once the key that said so is handled.
     pub quitting: bool,
+    /// Real-time playback: the sender, the player and what plays.
+    pub transport: crate::realtime::transport::Transport,
 }
 
 impl App {
@@ -124,6 +126,7 @@ impl App {
             requests: Vec::new(),
             quitting: false,
             asking: None,
+            transport: crate::realtime::transport::Transport::default(),
         }
     }
 
@@ -260,6 +263,9 @@ impl Tracker {
         } else if std::ptr::eq(item.binding, &PageKeys::HELP) {
             let help = self.help_of_top();
             self.app.show_page(Box::new(help));
+        } else if std::ptr::eq(item.binding, &PageKeys::SILENCE) {
+            let said = self.app.transport.silence_everything(&self.app.document);
+            self.app.say(&said);
         } else if std::ptr::eq(item.binding, &PageKeys::ABOUT) {
             self.app.show_page(Box::new(crate::screens::about_dialog::AboutDialog::new()));
         } else if PageKeys::EVERYWHERE.iter().any(|binding| std::ptr::eq(*binding, item.binding)) {

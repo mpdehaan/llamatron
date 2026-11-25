@@ -28,6 +28,15 @@ pub fn client() -> Result<Arc<Client>, OpenProblem> {
     Client::new("llamatron").map(Arc::new).map_err(OpenProblem::Client)
 }
 
+/// Print every MIDI destination's shown name, a line each, as the tracker lists the computer's ports.
+pub fn list_destinations() {
+    for destination in (0..Destinations::count()).filter_map(Destination::from_index) {
+        if let Some(name) = destination.display_name().or_else(|| destination.name()) {
+            println!("{name}");
+        }
+    }
+}
+
 pub struct CoreMidiOutput {
     client: Arc<Client>,
     name: String,

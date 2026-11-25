@@ -14,7 +14,6 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SetlistSetting, TrackSetting, FLUIDSYNTH_DEVICE};
 use llamatron_strings::{errors, named};
-use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
@@ -47,7 +46,7 @@ const CHANNELS: usize = 2;
 const HALF_STEPS_PER_OCTAVE: i64 = 12;
 
 /// Where FluidSynth's program is: the Mac's own Homebrew's, else wherever PATH finds it.
-fn fluidsynth_path() -> Option<PathBuf> {
+pub fn fluidsynth_path() -> Option<PathBuf> {
     if let Some(found) = HOMEBREW_FLUIDSYNTHS.iter().map(PathBuf::from).find(|path| path.is_file()) {
         return Some(found);
     }
@@ -58,7 +57,7 @@ fn fluidsynth_path() -> Option<PathBuf> {
 }
 
 /// Where FluidSynth's SoundFont is.
-fn soundfont_path() -> PathBuf {
+pub fn soundfont_path() -> PathBuf {
     let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
     home.join(SOUNDFONT)
 }
@@ -216,13 +215,13 @@ fn render_built_in(backend: &Path, tracks: &[(Data, llamatron_exporters::midi::T
     let mut sent = || -> std::io::Result<Vec<u8>> {
         for (number, (spec, timed)) in tracks.iter().enumerate() {
             let number = Data::Whole(number as i128);
-            send(&mut input, &Data::List(vec![Data::text("instrument"), number.clone(), spec.clone()]))?;
-            send(&mut input, &Data::List(vec![Data::text("notes"), Data::List(offline_notes(&number, timed))]))?;
+            crate::msgpack::send(&mut input, &Data::List(vec![Data::text("instrument"), number.clone(), spec.clone()]))?;
+            crate::msgpack::send(&mut input, &Data::List(vec![Data::text("notes"), Data::List(offline_notes(&number, timed))]))?;
         }
         let render = Data::List(vec![Data::text("render"), Data::text(&path.display().to_string()), Data::Float(seconds)]);
-        send(&mut input, &render)?;
-        let answer = received(&mut output)?;
-        send(&mut input, &Data::List(vec![Data::text("close")]))?;
+        crate::msgpack::send(&mut input, &render)?;
+        let answer = crate::msgpack::received(&mut output)?;
+        crate::msgpack::send(&mut input, &Data::List(vec![Data::text("close")]))?;
         Ok(answer)
     };
     let answer = sent();
@@ -230,7 +229,7 @@ fn render_built_in(backend: &Path, tracks: &[(Data, llamatron_exporters::midi::T
     // The backend has been told to close and its input is shut, so waiting ends; a failed wait leaves nothing to report.
     let _ = process.wait();
     let answer = answer.map_err(|error| failed(&error.to_string()))?;
-    if first_word(&answer).as_deref() != Some("rendered") {
+    if crate::msgpack::first_word(&answer).as_deref() != Some("rendered") {
         return Err(failed(&String::from_utf8_lossy(&answer)));
     }
     Ok(())
@@ -254,77 +253,6 @@ fn offline_notes(number: &Data, timed: &llamatron_exporters::midi::TimedTrack) -
     }
     notes.extend(timed.endings.iter().map(|when| note(*when, ALL_OFF, 0, 0)));
     notes
-}
-
-/// Write one message to the backend, MessagePack framed by its length in four bytes, most significant first.
-fn send(input: &mut impl Write, message: &Data) -> std::io::Result<()> {
-    let mut body = Vec::new();
-    packed(message, &mut body);
-    input.write_all(&(body.len() as u32).to_be_bytes())?;
-    input.write_all(&body)?;
-    input.flush()
-}
-
-/// Read one framed message from the backend, as its bytes.
-fn received(output: &mut impl Read) -> std::io::Result<Vec<u8>> {
-    let mut length = [0u8; 4];
-    output.read_exact(&mut length)?;
-    let mut body = vec![0u8; u32::from_be_bytes(length) as usize];
-    output.read_exact(&mut body)?;
-    Ok(body)
-}
-
-/// A message's first item where it is an array starting with a string, as every answer of the backend is.
-fn first_word(message: &[u8]) -> Option<String> {
-    let rest = match *message.first()? {
-        byte if byte & 0xf0 == 0x90 => &message[1..],
-        0xdc => message.get(3..)?,
-        0xdd => message.get(5..)?,
-        _ => return None,
-    };
-    let (length, start) = match *rest.first()? {
-        byte if byte & 0xe0 == 0xa0 => ((byte & 0x1f) as usize, 1),
-        0xd9 => (*rest.get(1)? as usize, 2),
-        0xda => (u16::from_be_bytes([*rest.get(1)?, *rest.get(2)?]) as usize, 3),
-        _ => return None,
-    };
-    rest.get(start..start + length).map(|text| String::from_utf8_lossy(text).to_string())
-}
-
-/// Data as MessagePack.
-fn packed(data: &Data, out: &mut Vec<u8>) {
-    match data {
-        Data::Null => out.push(0xc0),
-        Data::Bool(value) => out.push(if *value { 0xc3 } else { 0xc2 }),
-        Data::Whole(value) => {
-            out.push(0xd3);
-            out.extend((*value as i64).to_be_bytes());
-        }
-        Data::Float(value) => {
-            out.push(0xcb);
-            out.extend(value.to_be_bytes());
-        }
-        Data::Text(text) => {
-            out.push(0xdb);
-            out.extend((text.len() as u32).to_be_bytes());
-            out.extend(text.as_bytes());
-        }
-        Data::List(items) => {
-            out.push(0xdd);
-            out.extend((items.len() as u32).to_be_bytes());
-            for item in items {
-                packed(item, out);
-            }
-        }
-        Data::Map(pairs) => {
-            out.push(0xdf);
-            out.extend((pairs.len() as u32).to_be_bytes());
-            for (key, value) in pairs {
-                packed(key, out);
-                packed(value, out);
-            }
-        }
-    }
 }
 
 /// A WAV file's rate and samples as floats from -1 to 1, two to a frame: 16-bit PCM, as FluidSynth writes, or 32-bit

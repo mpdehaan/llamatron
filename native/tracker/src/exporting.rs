@@ -211,7 +211,7 @@ fn label_of(kind: &str) -> &'static str {
 
 /// The lines of the loop errors dialog: each scene in which every clip loops and no step can stop its clip, so that the
 /// scene would never end, or nothing when every scene can end.
-fn loop_error_lines(app: &App) -> Vec<String> {
+pub fn loop_error_lines(app: &App) -> Vec<String> {
     let setlist = app.document.get_setlist();
     let song = app.document.song();
     let can_stop = |pattern: &str| {

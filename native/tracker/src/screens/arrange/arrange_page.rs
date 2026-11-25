@@ -217,6 +217,9 @@ impl ArrangePage {
 
     fn header_keys(&self, app: &App) -> Vec<KeyItem> {
         if self.on_corner() {
+            if app.transport.is_playing() {
+                return vec![Self::bind(&Keys::STOP_PLAYING)];
+            }
             return vec![Self::bind(&Keys::PLAY_SONG)];
         }
         if self.on_track_plus(app) {
@@ -240,7 +243,12 @@ impl ArrangePage {
         let real_time = Self::real_time_on(app);
         if self.on_scene_name() {
             if real_time {
-                keys.push(Self::bind(&Keys::PLAY_SCENE));
+                let row = self.row.get().max(0) as usize;
+                if app.transport.playing_scenes().contains(&row) {
+                    keys.push(Self::bind(&Keys::STOP_PLAYING));
+                } else {
+                    keys.push(Self::bind(&Keys::PLAY_SCENE));
+                }
             }
             keys.extend(
                 [
@@ -259,7 +267,11 @@ impl ArrangePage {
                 None => keys.extend([Self::bind(&Keys::ADD_CLIP), Self::bind(&Keys::BLANK_PATTERN)]),
                 Some(_) => {
                     if real_time {
-                        keys.push(Self::bind(&Keys::PLAY_CLIP));
+                        if app.transport.is_clip_playing(self.row.get().max(0) as usize, track) {
+                            keys.push(Self::bind(&Keys::STOP_CLIP));
+                        } else {
+                            keys.push(Self::bind(&Keys::PLAY_CLIP));
+                        }
                     }
                     keys.extend(
                         [&Keys::EDIT_CLIP, &Keys::OPEN_PATTERN, &Keys::MOVE_CLIP, &Keys::COPY_CLIP, &Keys::DELETE_CLIP]
@@ -1063,6 +1075,31 @@ impl Page for ArrangePage {
             self.carry(app, item.step_of(key).unwrap_or(0));
         } else if item.is(&Keys::CARRY_CLIP) {
             self.carry_clip(app, key);
+        } else if item.is(&Keys::PLAY_SONG) {
+            let scene = named(messages::MSG_SCENE_NUMBER, &[("number", 1.into())]);
+            let said = named(messages::MSG_PLAYING_FROM, &[("scene", scene.as_str().into())]);
+            play_through(app, &scene, &said, |app| app.transport.play_scene(&app.document, 0));
+        } else if item.is(&Keys::PLAY_SCENE) {
+            let index = self.row.get().max(0) as usize;
+            let scene = named(messages::MSG_SCENE_NUMBER, &[("number", (index + 1).into())]);
+            let said = named(messages::MSG_PLAYING_FROM, &[("scene", scene.as_str().into())]);
+            play_through(app, &scene, &said, |app| app.transport.play_scene(&app.document, index));
+        } else if item.is(&Keys::PLAY_CLIP) {
+            let index = self.row.get().max(0) as usize;
+            let track = Self::tracks(app)[self.track_place()].clone();
+            let name = Self::clip(app, index, &track).map(|clip| clip.get_display_name()).unwrap_or_default();
+            let clip = named(messages::MSG_CLIP_ON_TRACK, &[("name", name.as_str().into()), ("track", track.as_str().into())]);
+            let said = named(messages::MSG_PLAYING_CLIP, &[("clip", clip.as_str().into())]);
+            play_through(app, &clip, &said, |app| {
+                app.transport.play_clips(&app.document, index, vec![track.clone()], &[], false)
+            });
+        } else if item.is(&Keys::STOP_PLAYING) {
+            app.transport.stop_all();
+            app.say(messages::MSG_STOPPED);
+        } else if item.is(&Keys::STOP_CLIP) {
+            let track = Self::tracks(app)[self.track_place()].clone();
+            app.transport.stop_clip(&track);
+            app.say(&named(messages::MSG_STOPPED_TRACK, &[("track", track.as_str().into())]));
         } else if item.is(&Keys::SCENE_VIEW) {
             self.inset = Some(SceneView::new(app, self.row.get().max(0) as usize));
         } else if item.is(&Keys::INTO_DETAILS) {
@@ -1181,5 +1218,22 @@ impl Page for ArrangePage {
 
     fn duration(&self, app: &App) -> Duration {
         Duration::Seconds(Lengths::of(app.document.get_setlist(), app.document.song()).song_seconds())
+    }
+}
+
+/// Start real-time playback: tell why nothing can play if so, and otherwise play, saying on the status line what started,
+/// or that what (a scene or a clip, named) starts at the next bar.
+pub fn play_through(app: &mut App, what: &str, said: &str, play: impl FnOnce(&mut App) -> Result<bool, String>) {
+    if let Some(refusal) = app.transport.refusal(app, None) {
+        app.show_page(Box::new(crate::screens::dialogs::MessageDialog::new(&refusal.title, refusal.lines)));
+        return;
+    }
+    match play(app) {
+        Ok(true) => app.say(&named(messages::MSG_STARTS_AT_NEXT_BAR, &[("what", what.into())])),
+        Ok(false) => app.say(said),
+        Err(problem) => app.show_page(Box::new(crate::screens::dialogs::MessageDialog::new(
+            llamatron_strings::errors::ERR_CANT_PLAY_TITLE,
+            vec![problem],
+        ))),
     }
 }

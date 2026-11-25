@@ -21,6 +21,7 @@ pub mod instrument_sound;
 pub mod keys;
 pub mod keyswitches;
 pub mod lengths;
+pub mod msgpack;
 pub mod named_edits;
 pub mod page;
 pub mod patterns;

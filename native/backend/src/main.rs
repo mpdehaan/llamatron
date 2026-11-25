@@ -33,6 +33,8 @@ const LOG_FILES_KEPT: usize = 10;
 struct Arguments {
     rendering: bool,
     sending: bool,
+    /// Whether it only lists the computer's MIDI destinations and ends: `llamatron-backend ports`.
+    listing: bool,
     block: usize,
     device: Option<String>,
     rate: f64,
@@ -42,6 +44,7 @@ fn arguments() -> Arguments {
     let mut found = Arguments {
         rendering: false,
         sending: false,
+        listing: false,
         block: DEFAULT_BLOCK,
         device: None,
         rate: DEFAULT_RATE,
@@ -51,6 +54,7 @@ fn arguments() -> Arguments {
         match argument.as_str() {
             "render" => found.rendering = true,
             "send" => found.sending = true,
+            "ports" => found.listing = true,
             "play" => found.rendering = false,
             "--block" => found.block = given.next().and_then(|value| value.parse().ok()).unwrap_or(DEFAULT_BLOCK),
             "--device" => found.device = given.next(),
@@ -89,7 +93,10 @@ fn main() {
     daemon::watch_parent();
     let output = Arc::new(Mutex::new(io::stdout()));
     let code = panic::catch_unwind(|| {
-        if found.sending {
+        if found.listing {
+            sender::coremidi::list_destinations();
+            0
+        } else if found.sending {
             daemon::sending::serve(output.clone())
         } else if found.rendering {
             daemon::render(found.rate, output.clone())

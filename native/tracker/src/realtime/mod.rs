@@ -5,8 +5,10 @@
 //! events, launched scene by scene and clip by clip by the player, and sent on time by llamatron-backend, the daemon that
 //! holds the MIDI ports, the built-in synths and FluidSynth.
 
+pub mod backend;
 pub mod clip_notes;
 pub mod player;
 pub mod row_clock;
 pub mod score;
 pub mod timeline;
+pub mod transport;

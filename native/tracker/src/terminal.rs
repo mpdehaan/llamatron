@@ -15,6 +15,9 @@ use crossterm::{cursor, queue};
 use std::io::{self, Write};
 use std::path::Path;
 
+/// How long the loop waits for a key before planning real-time playback ahead and drawing again.
+const TICK: std::time::Duration = std::time::Duration::from_millis(30);
+
 /// Open the tracker on a set's file, or on a new set where none is named, and run it until it quits.
 pub fn run(path: Option<&Path>) -> Result<(), String> {
     let document = match path {
@@ -24,6 +27,7 @@ pub fn run(path: Option<&Path>) -> Result<(), String> {
     let mut tracker = Tracker::new(document);
     start_terminal()?;
     let finished = run_keys(&mut tracker);
+    tracker.app.transport.close();
     end_terminal();
     finished
 }
@@ -31,9 +35,20 @@ pub fn run(path: Option<&Path>) -> Result<(), String> {
 /// Draw the screen, then press each key into the tracker, until it quits or Ctrl+C is pressed, which quits at once.
 fn run_keys(tracker: &mut Tracker) -> Result<(), String> {
     let mut out = io::stdout();
+    let mut changed = true;
     loop {
-        let (width, height) = terminal::size().map_err(|error| error.to_string())?;
-        draw(&mut out, tracker, width as usize, height as usize).map_err(|error| error.to_string())?;
+        // The screen is drawn after each key, and while something plays at each tick, so that its lights move.
+        if changed || tracker.app.transport.is_playing() {
+            let (width, height) = terminal::size().map_err(|error| error.to_string())?;
+            draw(&mut out, tracker, width as usize, height as usize).map_err(|error| error.to_string())?;
+            changed = false;
+        }
+        // While waiting for a key, real-time playback is planned ahead a tick at a time.
+        tracker.app.transport.tick();
+        if !event::poll(TICK).map_err(|error| error.to_string())? {
+            continue;
+        }
+        changed = true;
         let Event::Key(pressed) = event::read().map_err(|error| error.to_string())? else {
             continue;
         };
