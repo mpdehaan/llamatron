@@ -237,7 +237,7 @@ impl BackendSender {
             ("ports".into(), Value::Array(listed)),
             ("recording".into(), false.into()),
             ("driver".into(), TIMESTAMPED.into()),
-            ("device".into(), Value::Nil),
+            ("device".into(), audio_device()),
             ("fluid".into(), fluid),
         ])
     }
@@ -291,6 +291,18 @@ impl Drop for BackendSender {
         self.close();
     }
 }
+
+/// Where a development check sends the sound card's stream, a loopback device it records, named by AUDIO_DEVICE_VARIABLE;
+/// the computer's default output otherwise.
+fn audio_device() -> Value {
+    match std::env::var(AUDIO_DEVICE_VARIABLE) {
+        Ok(device) if !device.is_empty() => device.into(),
+        _ => Value::Nil,
+    }
+}
+
+/// The environment variable a development check names its audio device by.
+const AUDIO_DEVICE_VARIABLE: &str = "LLAMATRON_AUDIO_DEVICE";
 
 #[cfg(test)]
 mod tests {

@@ -261,6 +261,49 @@ fn main() -> ExitCode {
                 }
             }
         }
+        "play" => {
+            // The current song's first scene played in real time through its instruments for a few seconds, for checking
+            // the sender with a loopback audio device (LLAMATRON_AUDIO_DEVICE) that a check records.
+            let seconds: f64 = arguments.get(2).and_then(|text| text.parse().ok()).unwrap_or(3.0);
+            let played = llamatron_tracker::document::Document::open(std::path::Path::new(path)).and_then(|document| {
+                let mut transport = llamatron_tracker::realtime::transport::Transport::default();
+                transport.play_scene(&document, 0)?;
+                let started = std::time::Instant::now();
+                while started.elapsed().as_secs_f64() < seconds {
+                    transport.tick(&document);
+                    std::thread::sleep(std::time::Duration::from_millis(30));
+                }
+                transport.close();
+                Ok(())
+            });
+            match played {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(problem) => {
+                    eprintln!("{path}: {problem}");
+                    ExitCode::from(1)
+                }
+            }
+        }
+        "wav" => {
+            // The set's current song exported to a WAV file, as Ctrl+X does, for checking the built-in synths and FluidSynth.
+            let Some(out) = arguments.get(2) else {
+                eprintln!("usage: llamatron-compare wav SET OUT.wav");
+                return ExitCode::from(2);
+            };
+            let exported = llamatron_tracker::document::Document::open(std::path::Path::new(path)).and_then(|document| {
+                let grid = llamatron_engine::realizer::SongRealizer::new(document.get_setlist(), document.song(), Some(RENDER_SEED))
+                    .render()
+                    .map_err(|problem| format!("{problem:?}"))?;
+                llamatron_tracker::wav::export(&document, &grid, std::path::Path::new(out))
+            });
+            match exported {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(problem) => {
+                    eprintln!("{path}: {problem}");
+                    ExitCode::from(1)
+                }
+            }
+        }
         "screens" => {
             let (Some(keys), Some(width), Some(height)) = (arguments.get(2), arguments.get(3), arguments.get(4)) else {
                 eprintln!("usage: llamatron-compare screens SET KEYS WIDTH HEIGHT");
