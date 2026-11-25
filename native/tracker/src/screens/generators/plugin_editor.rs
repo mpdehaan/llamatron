@@ -105,6 +105,133 @@ impl<'a> Made<'a> {
         }
     }
 
+    /// The musician's kind, which plays the instrument named: whether it plays pitches, and how it gives way and holds its notes.
+    fn musician_kind(&self) -> (&'static str, bool, &'static str, &'static str) {
+        use crate::generated::tables::MUSICIAN_KINDS;
+        let instrument = self.written("instrument").map_or("rhythm guitarist".to_string(), data_text);
+        *MUSICIAN_KINDS.iter().find(|(name, ..)| *name == instrument).unwrap_or(&MUSICIAN_KINDS[0])
+    }
+
+    /// One of the musician's settings, or what the musician does with it left out.
+    fn musician_own(&self, setting: &str) -> String {
+        if let Some(written) = self.written(setting) {
+            return data_text(written);
+        }
+        let (_, _, gives_way, notes) = self.musician_kind();
+        match setting {
+            "gives_way" => gives_way.to_string(),
+            "notes" => notes.to_string(),
+            _ => crate::generated::tables::MUSICIAN_DEFAULTS
+                .iter()
+                .find(|(name, _)| *name == setting)
+                .map_or(String::new(), |(_, value)| plain_text(value)),
+        }
+    }
+
+    /// Whether a condition a field shows only when holds: the musician plays pitches, or names a tune.
+    fn holds(&self, condition: &str) -> bool {
+        if condition == crate::generated::tables::PLAYS_PITCHES {
+            return self.musician_kind().1;
+        }
+        self.written("tune_from").is_some()
+    }
+
+    /// A drift's rows, a value each, with a cell for each of its two versions.
+    fn drift_rows(&mut self) -> Vec<Field> {
+        let order = [
+            "velocity",
+            "probability",
+            "degree",
+            "degree_random",
+            "scale",
+            "scale_probability",
+            "root",
+            "root_probability",
+        ];
+        let mut rows = Vec::new();
+        for value in order {
+            let label = named_in(labels::MSG_DRIFT_VALUE_LABELS, value);
+            let mut cells = Vec::new();
+            for version in ["a", "b"] {
+                let setting = format!("{version}_{value}");
+                let cell_id = self.id();
+                let cell = if value == "scale" || value == "root" {
+                    let current = self.written(&setting).map_or(marks::MSG_NONE_SHOWN.to_string(), data_text);
+                    Field::custom(cell_id, &label, &current)
+                        .with_adjust()
+                        .with_enter(legends::What::CHOOSE)
+                        .with_clear(legends::What::CLEAR)
+                } else {
+                    let number = self.written(&setting).and_then(Data::as_whole).unwrap_or(0);
+                    Field::custom(cell_id, &label, &number.to_string())
+                        .with_adjust()
+                        .with_enter(legends::What::EDIT)
+                        .with_clear(legends::What::CLEAR)
+                };
+                cells.push(cell);
+            }
+            let row_id = self.id();
+            rows.push(Field::cells(row_id, &label, cells).stepped());
+        }
+        rows
+    }
+
+    /// A musician's table of the song's kinds of section: whether it plays in each, and how much of it.
+    fn section_table(&mut self, caption: &str, plays: (&str, &str), played: (&str, &str), choices: &[Plain]) -> Vec<Field> {
+        use llamatron_model::schema::generated::file_format::{SceneSetting, SECTION_KINDS};
+        let song = self.app.document.song();
+        let used: Vec<String> = song
+            .scenes()
+            .iter()
+            .filter_map(|scene| scene.get_written(SceneSetting::SECTION).and_then(Data::as_str).map(str::to_string))
+            .collect();
+        let by_section = self.written("by_section");
+        let own = |kind: &str, name: &str| {
+            by_section
+                .and_then(|sections| sections.get(kind))
+                .and_then(|section| section.get(name))
+                .filter(|value| !value.is_null())
+                .cloned()
+        };
+        let kinds: Vec<&str> = SECTION_KINDS
+            .iter()
+            .filter(|kind| used.iter().any(|each| each == *kind) || own(kind, plays.0).is_some() || own(kind, played.0).is_some())
+            .copied()
+            .collect();
+        let plays_width = [
+            plays.1.chars().count(),
+            marks::MSG_TOGGLE_ON.chars().count(),
+            marks::MSG_FIELD_TOGGLE_OFF.chars().count(),
+        ]
+        .into_iter()
+        .max()
+        .unwrap_or(0);
+        let played_width = choices
+            .iter()
+            .map(|choice| plain_text(choice).chars().count())
+            .chain([played.1.chars().count()])
+            .max()
+            .unwrap_or(0);
+        let widths = vec![plays_width, played_width];
+        let mut rows = Vec::new();
+        for (place, kind) in kinds.iter().enumerate() {
+            let on = own(kind, plays.0).is_none_or(|value| matches!(value, Data::Bool(true)));
+            let toggle_id = self.id();
+            let mut cells = vec![Field::toggle(toggle_id, plays.1, on)];
+            let played_id = self.id();
+            if on {
+                let current = own(kind, played.0).map_or("whole".to_string(), |value| data_text(&value));
+                cells.push(Field::custom(played_id, played.1, &current).with_adjust().with_enter(legends::What::CHOOSE));
+            } else {
+                cells.push(Field::custom(played_id, played.1, marks::MSG_SITS_OUT_SHOWN));
+            }
+            let row_id = self.id();
+            let caption = (place == 0).then(|| (caption.to_string(), vec![plays.1.to_string(), played.1.to_string()]));
+            rows.push(Field::cells(row_id, kind, cells).table_row(widths.clone(), caption));
+        }
+        rows
+    }
+
     /// A Guitarify's bar as its field shows it: the ready-made bar it is, or custom, with its cells and their length.
     fn bar_shown(&self) -> String {
         use crate::generated::tables::{DEFAULT_BAR, READY_BARS};
@@ -340,7 +467,7 @@ impl<'a> Made<'a> {
                 vec![Field::number(id, label, Some(number), Some(*lowest), Some(*highest), *lowest, Some(shown))]
             }
             SettingView::When { view, when } => {
-                if self.written(when).is_none() {
+                if !self.holds(when) {
                     return Vec::new();
                 }
                 self.fields_of(view)
@@ -368,6 +495,34 @@ impl<'a> Made<'a> {
                 vec![Field::custom(id, label, &numerals.join(marks::MSG_NUMERALS_SEPARATOR)).with_enter(legends::What::EDIT)]
             }
             SettingView::Shape { shape } => self.shape_fields(id, shape),
+            SettingView::DriftValues => self.drift_rows(),
+            SettingView::Sections {
+                caption,
+                plays,
+                plays_label,
+                played,
+                played_label,
+                played_choices,
+                defaults: _,
+            } => self.section_table(caption, (plays, plays_label), (played, played_label), played_choices),
+            SettingView::InheritedChoice {
+                setting,
+                label,
+                choices,
+                inherited_choice,
+                inherited_shown,
+                inherited_what,
+            } => {
+                let value = self.musician_own(setting);
+                let (current, shown) = if self.written(setting).is_none() {
+                    (inherited_choice.to_string(), named(inherited_shown, &[("value", value.as_str().into())]))
+                } else {
+                    (value.clone(), value)
+                };
+                let mut offered = vec![inherited_choice.to_string()];
+                offered.extend(choices.iter().map(plain_text));
+                vec![Field::choice(id, label, offered, &current, Some(shown)).with_clear(inherited_what)]
+            }
             SettingView::GuitarBar { label } => vec![Field::custom(id, label, &self.bar_shown()).with_enter(legends::What::EDIT)],
             SettingView::Section { heading, settings } => {
                 let is_set = settings
@@ -379,7 +534,6 @@ impl<'a> Made<'a> {
                 }
                 fields
             }
-            _ => vec![Field::custom(id, "(not ported)", "")],
         }
     }
 }
@@ -421,15 +575,6 @@ fn roman_numeral(shape: &[i64], degree: i64, accidental: Option<&str>) -> String
     format!("{sign}{numeral}{}", named_in(marks::MSG_QUALITY_MARKS, quality))
 }
 
-/// Whether a kind of field is ported: the drift's values, the musician's sections and inherited choices, the shapes and
-/// the guitar bar are not yet.
-fn is_ported_view(view: &SettingView) -> bool {
-    !matches!(
-        view,
-        SettingView::DriftValues | SettingView::Sections { .. } | SettingView::InheritedChoice { .. }
-    )
-}
-
 /// The setting a view shows, where it shows one.
 fn setting_name(view: &SettingView) -> Option<&'static str> {
     match view {
@@ -462,6 +607,10 @@ impl Form for PluginEditor {
         &Keys::CLASS
     }
 
+    fn slot_keys(&self) -> Option<(&'static crate::keybindings::Binding, &'static crate::keybindings::Binding)> {
+        Some((&Keys::SLOT_LESS, &Keys::SLOT_MORE))
+    }
+
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::GENERATORS.to_string(),
@@ -489,11 +638,6 @@ impl Form for PluginEditor {
 
     fn remarks(&self, _app: &App, _width: usize) -> Vec<Text> {
         Vec::new()
-    }
-
-    /// Whether the plugin's view uses only the kinds of field ported so far.
-    fn is_ported(&self, app: &App) -> bool {
-        self.made(app).1.iter().all(|(_, view)| is_ported_view(view))
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {

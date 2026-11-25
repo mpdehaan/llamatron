@@ -65,6 +65,11 @@ pub trait Form {
         false
     }
 
+    /// The page's keys that step the cell under the cursor in a row of cells that step, less then more, where it has such rows.
+    fn slot_keys(&self) -> Option<(&'static crate::keybindings::Binding, &'static crate::keybindings::Binding)> {
+        None
+    }
+
     /// Whether every part of the page is ported, which a page made from declarations, as a generator's is, may not be yet.
     fn is_ported(&self, _app: &App) -> bool {
         true
@@ -532,6 +537,11 @@ impl<F: Form> Page for FieldPage<F> {
                 result.push(self.bind(&Keys::ALONG_TABS));
             } else if row.is_cells() {
                 result.push(self.bind(&Keys::ALONG_CELLS).wanting_key());
+                let cell = row.cells.get(self.state.cell.get().min(row.cells.len().saturating_sub(1)));
+                if let (true, Some((less, more)), Some(true)) = (row.stepped_cells, self.form.slot_keys(), cell.map(|cell| cell.adjusts)) {
+                    result.push(self.bind(more));
+                    result.push(self.bind(less));
+                }
             } else if row.adjusts {
                 result.push(self.bind(&Keys::MORE));
                 result.push(self.bind(&Keys::LESS));

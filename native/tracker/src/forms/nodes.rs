@@ -263,6 +263,22 @@ impl Field {
         field
     }
 
+    /// A row of cells whose cell under the cursor [ and ] step, as a drift's two versions of a value.
+    pub fn stepped(mut self) -> Field {
+        self.stepped_cells = true;
+        self
+    }
+
+    /// A row of a table of settings, each cell as wide as its column, and the table's first row with its caption above.
+    pub fn table_row(mut self, widths: Vec<usize>, caption: Option<(String, Vec<String>)>) -> Field {
+        self.stepped_cells = true;
+        self.drawn = match caption {
+            None => Drawn::TableRow { widths },
+            Some((caption, headings)) => Drawn::CaptionedTableRow { widths, caption, headings },
+        };
+        self
+    }
+
     pub fn with_clear(mut self, what: &str) -> Field {
         self.clears = true;
         self.clear_what = what.to_string();
