@@ -19,7 +19,9 @@ import sys
 
 import llamatron.user_strings as package
 from llamatron.model.schema import defaults, file_format, limits
-from llamatron.model.values import midi
+from llamatron.model.values import midi, note as note_values, time_signature
+from llamatron.model.values.chord import ChordType
+from llamatron.model.values.scale import ScaleType
 from llamatron.music_theory.fundamentals import chord_shapes, intervals, scale_shapes
 
 TOP = pathlib.Path(__file__).resolve().parent.parent
@@ -28,6 +30,10 @@ SCHEMA_OUT = TOP / 'native' / 'model' / 'src' / 'schema' / 'generated'
 SCHEMA_MODULES = (('file_format', file_format), ('limits', limits), ('defaults', defaults), ('midi', midi))
 FUNDAMENTALS_OUT = TOP / 'native' / 'model' / 'src' / 'fundamentals' / 'generated'
 FUNDAMENTALS_MODULES = (('intervals', intervals), ('scale_shapes', scale_shapes), ('chord_shapes', chord_shapes))
+VALUES_OUT = TOP / 'native' / 'model' / 'src' / 'values' / 'generated'
+VALUES_MODULES = (('note', note_values), ('time_signature', time_signature))
+# The enums whose members' order and values the Rust model reads, each written as a list of (name, value) in order.
+ENUMS = (('SCALE_TYPES', ScaleType), ('CHORD_TYPES', ChordType))
 HEADER = '''// llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -37,7 +43,7 @@ HEADER = '''// llamatron: a music program
 '''
 TEXT = '&str'
 # Constants holding rationals, an empty value or chord types, written by hand in the Rust model instead.
-HAND_WRITTEN = {'GATE_MODIFIERS', 'ACCIDENTAL_CYCLE', 'FIXED_CHORDS', 'DOUBLED_NOTES'}
+HAND_WRITTEN = {'GATE_MODIFIERS', 'ACCIDENTAL_CYCLE', 'FIXED_CHORDS', 'DOUBLED_NOTES', 'LENGTH_TYPES'}
 
 
 class NotWritable(Exception):
@@ -80,6 +86,9 @@ def written(value):
     if isinstance(value, (tuple, list)):
         parts = [written(item) for item in value]
         kinds = {kind for kind, _ in parts}
+        if len(kinds) > 1 and isinstance(value, tuple):
+            # A tuple of several kinds is a Rust tuple.
+            return '(' + ', '.join(kind for kind, _ in parts) + ')', '(' + ', '.join(expression for _, expression in parts) + ')'
         if len(kinds) > 1:
             raise NotWritable(value)
         kind = kinds.pop() if kinds else TEXT
@@ -161,11 +170,27 @@ def write_modules(*, folder, modules):
     return unwritten
 
 
+def write_enums(path):
+    """Write each enum of ENUMS as an ordered list of every name it knows, aliases included, each (name, the name of the
+    member it stands for, value), as Python's __members__ keeps them, and name the file in the folder's mod.rs. An alias
+    such as IONIAN is the very member MAJOR, so a file that reads ionian writes major back, as the Python program does."""
+    lines = [HEADER.format(source='the enums ScaleType and ChordType')]
+    for constant, enum in ENUMS:
+        members = [(name, member.name, member.value) for name, member in enum.__members__.items()]
+        kind, expression = written(members)
+        lines.append('pub static {}: {} = {};'.format(constant, kind, expression))
+    path.write_text('\n'.join(lines) + '\n')
+    module_list = path.parent / 'mod.rs'
+    module_list.write_text(module_list.read_text() + '#[rustfmt::skip]\npub mod enums;\n')
+
+
 def main():
     texts = [(info.name, importlib.import_module('llamatron.user_strings.' + info.name)) for info in pkgutil.iter_modules(package.__path__)]
     unwritten = write_modules(folder=OUT, modules=texts)
     unwritten.update(write_modules(folder=SCHEMA_OUT, modules=SCHEMA_MODULES))
     unwritten.update(write_modules(folder=FUNDAMENTALS_OUT, modules=FUNDAMENTALS_MODULES))
+    write_enums(FUNDAMENTALS_OUT / 'enums.rs')
+    unwritten.update(write_modules(folder=VALUES_OUT, modules=VALUES_MODULES))
     for name, skipped in unwritten.items():
         print('{}: not written: {}'.format(name, ', '.join(skipped)), file=sys.stderr)
 
