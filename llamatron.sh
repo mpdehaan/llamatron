@@ -6,11 +6,23 @@
 # Runs the llamatron command from the project folder, which opens the tracker,
 # on a set if one is named, or exports with --to, such as:
 #     ./llamatron.sh examples/learning/08_tie.yml
+# With --rust first, it opens llamatron2, the tracker in Rust, instead:
+#     ./llamatron.sh --rust examples/learning/08_tie.yml
 
 set -e
 
 # The program has to run from the top folder of the project, where this script is.
 cd "$(dirname "$0")"
+
+if [ "$1" = "--rust" ]; then
+    shift
+    if [ ! -x native/target/release/llamatron2 ]; then
+        echo 'llamatron2 is not built, so please build it first:'
+        echo '    cd native && cargo build --release -p llamatron-tracker'
+        exit 1
+    fi
+    exec native/target/release/llamatron2 "$@"
+fi
 
 if [ ! -x .venv/bin/python ]; then
     echo '.venv is missing, so please set it up first:'
