@@ -38,7 +38,7 @@ from llamatron.model.file.song_file_error import SongFileError
 from llamatron.model.schema import limits
 from llamatron.model.schema.file_format import Section
 from llamatron.realtime import realtime_names
-from llamatron.realtime.playback_service import built_in_renderer as playback_built_in_renderer, fluidsynth_disabled, fluidsynth_in_daemon, FluidSynth, installation, installed, LocalPlayback, MonotonicClock, output_port_names, PlaybackProcess, PlayRequest, RealtimeMIDISenderProcess, Route, SenderNotStarted, synthesis_available, Wanted
+from llamatron.realtime.playback_service import built_in_renderer as playback_built_in_renderer, fluidsynth_disabled, fluidsynth_in_daemon, FluidSynth, installation, installed, LocalPlayback, MonotonicClock, output_port_names, PlaybackProcess, PlayRequest, made_sender, Route, SenderNotStarted, synthesis_available, Wanted
 from llamatron.user_strings import errors, messages
 
 # How often the player plans ahead and the page redraws while something plays.
@@ -99,8 +99,9 @@ def fluidsynth_is_installed():
 
 
 def process_sender(ports):
-    """Return the Realtime Sender Process for the ports, the sender every real play uses."""
-    return RealtimeMIDISenderProcess(ports=ports)
+    """Return the sender for the ports, the one every real play uses: the Rust sender where the synth daemon is built, else
+    the Realtime Sender Process."""
+    return made_sender(ports=ports)
 
 
 

@@ -20,7 +20,8 @@ from llamatron.realtime.render_process.playback import LocalPlayback
 from llamatron.realtime.render_process.set_changes import with_changes
 from llamatron.realtime.sender_process import process as sender_process
 from llamatron.realtime.sender_process.engine import MonotonicClock
-from llamatron.realtime.sender_process.process import RealtimeMIDISenderProcess, SenderNotStarted
+from llamatron.realtime.sender_process.process import SenderNotStarted
+from llamatron.realtime.sender_process.rust_sender import made_sender
 
 # What the tracker tells the render process.
 SET = 'set'
@@ -48,7 +49,7 @@ PLAYER_TICK_SECONDS = 0.02
 
 
 def recording_sender(ports, *, recording, load=None):
-    return RealtimeMIDISenderProcess(ports=ports, recording=recording, load=load)
+    return made_sender(ports=ports, recording=recording, load=load)
 
 
 def run_playback(*, connection, lifeline, lead, recording, load=None):

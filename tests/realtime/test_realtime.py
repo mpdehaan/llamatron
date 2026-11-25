@@ -37,6 +37,8 @@ from llamatron.realtime.sender_process import engine as engine_values, process a
 from llamatron.realtime.sender_process.engine import PlaybackEngine, SteppedClock
 from llamatron.realtime.sender_process.outputs import RecordingOutput
 from llamatron.realtime.sender_process.process import RealtimeMIDISenderProcess, SenderNotStarted
+from llamatron.realtime.sender_process.rust_sender import RustSender
+from llamatron.realtime.synth_process import daemon as synth_daemon
 from llamatron.user_strings import errors
 from tests.support import sender_under_capture
 from tests.support.example_renders import rendered_example
@@ -235,6 +237,9 @@ class TestPlaybackEngine(unittest.TestCase):
 
 
 class TestRealtimeSenderProcess(unittest.TestCase):
+    """The Python sender; TestRustSender runs every test again on the Rust one."""
+
+    SENDER = RealtimeMIDISenderProcess
     """The real process on the real clock, sending a few seconds of a song into recording outputs."""
 
     def test_it_starts_while_textual_has_replaced_standard_error(self):
@@ -244,11 +249,11 @@ class TestRealtimeSenderProcess(unittest.TestCase):
         self.assertEqual(result.stdout.strip(), sender_under_capture.STARTED)
 
     def test_closing_a_sender_whose_process_never_ran_returns_at_once(self):
-        sender = RealtimeMIDISenderProcess(ports=[PORT], recording=True)
+        sender = self.SENDER(ports=[PORT], recording=True)
         self.assertIsNone(sender.close())
 
     def test_a_port_that_cannot_be_opened_fails_the_start_in_the_programs_words(self):
-        sender = RealtimeMIDISenderProcess(ports=[NO_SUCH_PORT])
+        sender = self.SENDER(ports=[NO_SUCH_PORT])
         with self.assertRaises(SenderNotStarted) as caught:
             sender.start()
         self.assertEqual(str(caught.exception), errors.ERR_SENDER_DID_NOT_START)
@@ -267,7 +272,7 @@ class TestRealtimeSenderProcess(unittest.TestCase):
         grid = SongRealizer(song, seed=SEED).render()
         routes = {track.get_name(): Route(PORT, place) for place, track in enumerate(grid.get_columns())}
         events = [event for event in song_timeline(grid=grid, routes=routes) if event.seconds < LAG_SECONDS]
-        sender = RealtimeMIDISenderProcess(ports=[PORT], recording=True, driver=driver)
+        sender = self.SENDER(ports=[PORT], recording=True, driver=driver)
         sender.start()
         sender.add(events)
         time.sleep(LAG_SECONDS + LAG_SETTLE_SECONDS)
@@ -337,6 +342,17 @@ def player_song(*, follow_actions=(), launch_apart=(), loops=(), steps=4):
 
 def two_routes():
     return {LEAD: Route(PORT, EXPORT_CHANNEL), BASS: Route(OTHER_PORT, EXPORT_CHANNEL)}
+
+
+
+@unittest.skipUnless(synth_daemon.daemon_path() is not None, 'the synth daemon is not built')
+class TestRustSender(TestRealtimeSenderProcess):
+    """Every test of the Python sender, on the Rust one (sender_process/rust_sender.py)."""
+
+    SENDER = RustSender
+
+    def test_it_starts_while_textual_has_replaced_standard_error(self):
+        """The Rust sender is a program, not a spawned Python process, so Textual's capture cannot stop it starting."""
 
 
 class PlayerTest(unittest.TestCase):
