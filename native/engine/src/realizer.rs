@@ -1042,6 +1042,59 @@ impl<'a> SongRealizer<'a> {
         self.setlist.get_pattern(&clip_slot.get_pattern_name()).is_some_and(|pattern| pattern.is_drum())
     }
 
+    /// How long a track's clip lasts in a written-out scene, in whole notes, without playing: as long as its scene where it
+    /// loops, as long as it played where the draws can cut it short, and otherwise its patterns repeat times.
+    pub fn get_clip_length(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Rational> {
+        let Some(clip_slot) = scene.scene.get_clip_slot(track) else {
+            return Ok(Rational::ZERO);
+        };
+        if self.cuts_passes(scene, track) && !self.fills_its_scene(scene, track) {
+            self.get_scene_length(scene)?;
+            if let Some(length) = self.decided.borrow().get(&(scene.number, track.to_string())) {
+                return Ok(*length);
+            }
+        }
+        if clip_slot.loops() {
+            return self.get_scene_length(scene);
+        }
+        self.played_once(scene, track)
+    }
+
+    /// Each written-out scene's estimate, as the Python's estimate gives it: how long it lasts and each of its clips, in
+    /// seconds, or its problem, worked out without playing.
+    pub fn estimate(&self) -> Vec<SceneEstimate> {
+        let mut estimates = Vec::new();
+        for scene in &self.scenes {
+            let tempos = self.tempos_of(scene);
+            let whole = Rational::whole(240) / tempo_in(scene.scene, self.song);
+            let seconds_of = |length: Rational, tempos: &Option<Vec<(Rational, f64)>>| match tempos {
+                Some(tempos) => row_seconds_at(tempos, length),
+                None => (length * whole).to_float(),
+            };
+            let worked_out = self.get_scene_length(scene).and_then(|length| {
+                let tempos = tempos.clone()?;
+                let mut clips = Vec::new();
+                for track in scene.scene.get_track_names() {
+                    clips.push((track.to_string(), seconds_of(self.get_clip_length(scene, track)?, &tempos)));
+                }
+                Ok((seconds_of(length, &tempos), clips))
+            });
+            estimates.push(match worked_out {
+                Ok((seconds, clips)) => SceneEstimate {
+                    seconds: Some(seconds),
+                    clips,
+                    problem: None,
+                },
+                Err(RenderError::Refused(problem)) | Err(RenderError::NotPorted(problem)) => SceneEstimate {
+                    seconds: None,
+                    clips: Vec::new(),
+                    problem: Some(problem),
+                },
+            });
+        }
+        estimates
+    }
+
     /// How long the song lasts in seconds, every written-out scene's length at its tempo, timed beat by beat where it ramps,
     /// or None where any scene's length can't be worked out, as the Python's estimate sums its plays.
     pub fn song_seconds(&self) -> Option<f64> {
@@ -1381,6 +1434,14 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         }
     }
     Ok(())
+}
+
+/// What a written-out scene lasts by the estimate: its seconds and each clip's, by track, or the problem that stops it.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SceneEstimate {
+    pub seconds: Option<f64>,
+    pub clips: Vec<(String, f64)>,
+    pub problem: Option<String>,
 }
 
 /// How many seconds into a row of tempos a time in whole notes falls, as the Python's RowClock works it out.
