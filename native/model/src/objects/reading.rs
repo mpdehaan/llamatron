@@ -53,14 +53,22 @@ impl Setlist {
         }
     }
 
+    /// The pattern of a name, or an instrument's preview pattern by its key, None until one is made.
     pub fn get_pattern(&self, name: &str) -> Option<&Pattern> {
+        if let Some(instrument) = crate::objects::instrument_previews::preview_instrument(name) {
+            return self.get_instrument(instrument)?.get_preview();
+        }
         match self.get_item(Section::PATTERNS, name)? {
             Item::Pattern(pattern) => Some(pattern),
             _ => None,
         }
     }
 
+    /// The scale of a name, or the hidden chromatic scale on C a tonal preview pattern plays under, by its key.
     pub fn get_named_scale(&self, name: &str) -> Option<&NamedScale> {
+        if name == crate::objects::instrument_previews::PREVIEW_SCALE_KEY {
+            return Some(crate::objects::instrument_previews::preview_scale());
+        }
         match self.get_item(Section::SCALES, name)? {
             Item::Scale(scale) => Some(scale),
             _ => None,

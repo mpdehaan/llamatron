@@ -31,12 +31,26 @@ const CHANNEL_OFFSET: i64 = 1;
 const ONE_PASS: i64 = 1;
 const CLIP_RESTART: &str = "clip_restart";
 
-/// What the preview plays: a pattern of the set, or a clip of the song through General MIDI.
+/// A sound is tried once through.
+const TRIAL_PASSES: i64 = 1;
+/// How loud the notes of a sound's trial are.
+const TRIAL_VELOCITY: i128 = 100;
+const HALF_STEPS_PER_OCTAVE: i64 = 12;
+const SHARP_NAMES: [&str; 12] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const MIDI_KIND: &str = "midi";
+
+/// What the preview plays: a pattern of the set, a clip of the song through General MIDI, an instrument's preview
+/// pattern through the instrument, or a sound being tried, by what its picker tells it by.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Previewing {
     Pattern(String),
     Clip(usize, String),
+    Instrument(String),
+    Sound(usize),
 }
+
+/// A copy of the set whose current song plays one clip, made for a Listen: the copy, its track's name and its scale.
+type OneClip = (Document, String, Option<String>);
 
 /// Plays one pattern again and again beside whatever the song's transport plays.
 #[derive(Default)]
@@ -131,6 +145,98 @@ impl PatternPreview {
         Ok(())
     }
 
+    /// Why an instrument cannot be listened to, for the status line, or None when it can: it is off, its device is missing
+    /// or not connected, or FluidSynth is not installed for it.
+    pub fn instrument_refusal(document: &Document, name: &str) -> Option<String> {
+        let held = instrument(document, name)?;
+        if crate::realtime::transport::is_built_in(held) {
+            return None;
+        }
+        let kind = held.get_written(InstrumentSetting::KIND).and_then(Data::as_str).unwrap_or(MIDI_KIND);
+        let Some(device) = device_of(held).filter(|_| kind == MIDI_KIND) else {
+            return Some(named(errors::ERR_INSTRUMENT_PLAYS_NOTHING, &[("name", name.into())]));
+        };
+        if device == FLUIDSYNTH_DEVICE {
+            return (!crate::wav::fluidsynth_installed()).then(|| named(errors::ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, &[("name", name.into())]));
+        }
+        if !crate::realtime::backend::output_port_names().contains(&device) {
+            return Some(named(
+                errors::ERR_PREVIEW_DEVICE_NOT_CONNECTED,
+                &[("name", name.into()), ("device", device.as_str().into())],
+            ));
+        }
+        None
+    }
+
+    /// Play an instrument's preview pattern, or the one it would start with, through the instrument, again and again until
+    /// stopped, an edit to the instrument or the pattern heard on the next pass.
+    pub fn play_instrument(&mut self, document: &Document, name: &str) -> Result<(), String> {
+        self.stop();
+        let (copy, track, scale) = instrument_copy(document, name)?;
+        let route = instrument_route(&copy, name, &track);
+        self.transport
+            .play_routed(&copy, PREVIEW_SCENE, vec![track.clone()], vec![(track, route)], true)?;
+        self.transport.follows_revision(document.get_revision());
+        self.playing = Some(Previewing::Instrument(name.to_string()));
+        self.scale = scale;
+        Ok(())
+    }
+
+    /// The instrument being listened to while it plays, or None.
+    pub fn playing_instrument(&self) -> Option<&str> {
+        match self.playing() {
+            Some(Previewing::Instrument(name)) => Some(name),
+            _ => None,
+        }
+    }
+
+    /// Why a sound cannot be tried, for a picker to say, or None when it can: FluidSynth plays it, or else the song's
+    /// Preview instrument does, where it is an instrument on a device of its own that is connected.
+    pub fn sound_refusal(document: &Document) -> Option<String> {
+        if crate::wav::fluidsynth_installed() {
+            return None;
+        }
+        let Some(name) = document.song().get_written(SongSetting::PREVIEW_INSTRUMENT).and_then(Data::as_str) else {
+            return Some(errors::ERR_NOTHING_TO_TRY_A_SOUND_WITH.to_string());
+        };
+        let Some(device) = instrument(document, name).and_then(device_of) else {
+            return Some(named(errors::ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, &[("name", name.into())]));
+        };
+        if device == FLUIDSYNTH_DEVICE {
+            return Some(named(errors::ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, &[("name", name.into())]));
+        }
+        if !crate::realtime::backend::output_port_names().contains(&device) {
+            return Some(named(
+                errors::ERR_PREVIEW_DEVICE_NOT_CONNECTED,
+                &[("name", name.into()), ("device", device.as_str().into())],
+            ));
+        }
+        None
+    }
+
+    /// Try a sound: play some MIDI notes once, a step each, through General MIDI in FluidSynth, in a General MIDI sound, or
+    /// on the drum kit where sound is None; without FluidSynth, on the song's Preview instrument, in the device's own sound.
+    /// key is whatever the picker tells one trial from another by, answered by playing_sound.
+    pub fn play_sound(&mut self, document: &Document, numbers: &[i64], step_size: &str, sound: Option<i64>, key: usize) -> Result<(), String> {
+        self.stop();
+        let (copy, track, _) = one_clip_copy(document, &trial_pattern(numbers, step_size), TRIAL_PASSES, None)?;
+        let route = sound_route(document, sound);
+        self.transport
+            .play_routed(&copy, PREVIEW_SCENE, vec![track.clone()], vec![(track, route)], false)?;
+        self.transport.follows_revision(document.get_revision());
+        self.playing = Some(Previewing::Sound(key));
+        self.scale = None;
+        Ok(())
+    }
+
+    /// The key of the sound being tried while its notes play, or None.
+    pub fn playing_sound(&self) -> Option<usize> {
+        match self.playing() {
+            Some(Previewing::Sound(key)) => Some(*key),
+            _ => None,
+        }
+    }
+
     /// Stop what the preview plays.
     pub fn stop(&mut self) {
         self.transport.stop_all();
@@ -145,6 +251,18 @@ impl PatternPreview {
         if self.transport.is_playing() && self.transport.edit_settled(revision) {
             said = match self.playing.clone() {
                 Some(Previewing::Pattern(pattern)) => self.follow_pattern(document, &pattern, revision),
+                Some(Previewing::Instrument(name)) => match instrument_copy(document, &name) {
+                    Ok((copy, track, _)) => {
+                        let route = instrument_route(&copy, &name, &track);
+                        self.transport.follow(&copy, revision, vec![(track, route)])
+                    }
+                    Err(_) => {
+                        self.stop();
+                        None
+                    }
+                },
+                // A sound's trial plays once, as it was asked for.
+                Some(Previewing::Sound(_)) => None,
                 Some(Previewing::Clip(index, track)) => {
                     let copy = song_copy(document);
                     let route = clip_route(document, index, &track);
@@ -237,6 +355,194 @@ fn pattern_copy(document: &Document, pattern: &str) -> Result<(Document, String,
     let mut copy = Document::new(copy, None);
     copy.select_song(&song_name);
     Ok((copy, track, scale))
+}
+
+/// A copy of the set that plays an instrument's preview pattern, or the one it would start with, on a track of its own
+/// through the instrument: a drum pattern under no scale, any other under the hidden chromatic scale on C.
+fn instrument_copy(document: &Document, name: &str) -> Result<OneClip, String> {
+    let held = instrument(document, name).ok_or_else(|| name.to_string())?;
+    let pattern = match held.get_preview() {
+        Some(preview) => preview.to_data(),
+        None => {
+            let sound = crate::instrument_sound::Sound::of(held);
+            let drum = crate::realtime::transport::is_built_in(held) && sound.part_type("oscillators") == "drum";
+            llamatron_model::objects::instrument_previews::starting_preview(drum)
+        }
+    };
+    one_clip_copy(document, &pattern, TRIAL_PASSES, Some(name))
+}
+
+/// A copy of the set whose current song holds one scene, a pattern's data played for so many passes on a track made for
+/// it: the pattern added under a name of its own, a drum pattern under no scale and any other under a copy of the hidden
+/// chromatic scale on C; an edit heard at the pattern's next pass.
+fn one_clip_copy(document: &Document, pattern: &Data, passes: i64, instrument: Option<&str>) -> Result<OneClip, String> {
+    let setlist = document.get_setlist();
+    let song_name = document.get_current_song_name().to_string();
+    let drum = matches!(pattern.get("drum"), Some(Data::Bool(true)));
+    let patterns: Vec<&str> = setlist.items(Section::PATTERNS).iter().map(|(name, _)| name.as_str()).collect();
+    let pattern_name = unique_name(names::MSG_PREVIEW_PATTERN_NAME, &patterns);
+    let mut data = setlist.to_data();
+    let mut held = data.get(Section::PATTERNS).cloned().unwrap_or(Data::Map(Vec::new()));
+    if let Data::Map(pairs) = &mut held {
+        pairs.push((Data::text(&pattern_name), pattern.clone()));
+    }
+    data.set(Section::PATTERNS, held);
+    let mut scale = None;
+    if !drum {
+        let scales: Vec<&str> = setlist.items(Section::SCALES).iter().map(|(name, _)| name.as_str()).collect();
+        let name = unique_name(names::MSG_PREVIEW_SCALE_NAME, &scales);
+        let mut held = data.get(Section::SCALES).cloned().unwrap_or(Data::Map(Vec::new()));
+        if let Data::Map(pairs) = &mut held {
+            pairs.push((Data::text(&name), llamatron_model::objects::instrument_previews::preview_scale().to_data()));
+        }
+        data.set(Section::SCALES, held);
+        scale = Some(name);
+    }
+    let tracks: Vec<&str> = document.song().get_track_names();
+    let track = unique_name(names::MSG_PREVIEW_TRACK_NAME, &tracks);
+    let Some(Data::Map(mut songs)) = data.get(Section::SONGS).cloned() else {
+        return Err(song_name);
+    };
+    for (name, song) in &mut songs {
+        if name.as_str() == Some(song_name.as_str()) {
+            one_clip_song(song, &track, instrument, drum, &pattern_name, passes, scale.as_deref());
+        }
+    }
+    data.set(Section::SONGS, Data::Map(songs));
+    let copy = Setlist::from_data(&data).map_err(|problem| problem.message)?;
+    let mut copy = Document::new(copy, None);
+    copy.select_song(&song_name);
+    Ok((copy, track, scale))
+}
+
+/// Make a song's data hold one scene, a pattern's clip on a new track, through an instrument where one is named, for so
+/// many passes in a scale, an edit heard at the clip's restart.
+fn one_clip_song(song: &mut Data, track: &str, instrument: Option<&str>, drum: bool, pattern: &str, passes: i64, scale: Option<&str>) {
+    let mut track_data = Data::Map(Vec::new());
+    if let Some(instrument) = instrument {
+        track_data.set("instrument", Data::text(instrument));
+    }
+    if drum {
+        track_data.set("drum", Data::Bool(true));
+    }
+    let mut song_tracks = match song.get("tracks") {
+        Some(Data::Map(pairs)) => pairs.clone(),
+        _ => Vec::new(),
+    };
+    song_tracks.push((Data::text(track), track_data));
+    song.set("tracks", Data::Map(song_tracks));
+    let mut clip = Data::Map(vec![(Data::text("track"), Data::text(track)), (Data::text("pattern"), Data::text(pattern))]);
+    if passes != ONE_PASS {
+        clip.set("repeat", Data::Whole(passes as i128));
+    }
+    if let Some(scale) = scale {
+        clip.set("scale", Data::text(scale));
+    }
+    song.set("scenes", Data::List(vec![Data::Map(vec![(Data::text("clips"), Data::List(vec![clip]))])]));
+    song.set(SongSetting::LIVE_RESPONSIVENESS, Data::text(CLIP_RESTART));
+}
+
+/// The data of a pattern that plays some MIDI notes one after another, a step each, written as a drum pattern's notes
+/// are, by name and octave, so that no scale moves them.
+fn trial_pattern(numbers: &[i64], step_size: &str) -> Data {
+    let names: Vec<&str> = numbers
+        .iter()
+        .map(|number| SHARP_NAMES[number.rem_euclid(HALF_STEPS_PER_OCTAVE) as usize])
+        .collect();
+    let mut data = Data::Map(Vec::new());
+    data.set("steps", Data::Whole(numbers.len() as i128));
+    data.set("step_size", Data::text(step_size));
+    data.set("drum", Data::Bool(true));
+    data.set("degree", Data::List(names.iter().map(|name| Data::text(&name[..1])).collect()));
+    data.set(
+        "accidental",
+        Data::List(
+            names
+                .iter()
+                .map(|name| if name.len() > 1 { Data::text(&name[1..]) } else { Data::Null })
+                .collect(),
+        ),
+    );
+    data.set(
+        "octave",
+        Data::List(
+            numbers
+                .iter()
+                .map(|number| Data::Whole(number.div_euclid(HALF_STEPS_PER_OCTAVE) as i128))
+                .collect(),
+        ),
+    );
+    data.set("velocity", Data::List(numbers.iter().map(|_| Data::Whole(TRIAL_VELOCITY)).collect()));
+    data
+}
+
+/// The route an instrument is listened to through: its built-in port, FluidSynth in its sound on the preview's channel,
+/// so that the song's own tracks keep theirs, or its device and channel.
+fn instrument_route(copy: &Document, name: &str, track: &str) -> Route {
+    let held = instrument(copy, name);
+    if held.is_some_and(crate::realtime::transport::is_built_in) {
+        let routes = crate::realtime::transport::routes(copy, &[(track.to_string(), name.to_string())]);
+        if let Some((_, route)) = routes.into_iter().find(|(found, _)| found == track) {
+            return route;
+        }
+    }
+    let device = held.and_then(device_of).unwrap_or_default();
+    if device == FLUIDSYNTH_DEVICE {
+        let sound = held
+            .and_then(|held| held.get_written(InstrumentSetting::GM_SOUND))
+            .and_then(Data::as_whole)
+            .map(|sound| sound as i64 - MIN_GM_SOUND);
+        return fluid_route(PREVIEW_CHANNEL, sound);
+    }
+    device_route(
+        device,
+        held.and_then(|held| held.get_written(InstrumentSetting::CHANNEL)).and_then(Data::as_whole),
+    )
+}
+
+/// The route a sound is tried through: FluidSynth's drum kit, or a General MIDI sound on the preview's channel, or without
+/// FluidSynth the song's Preview instrument's device and channel.
+fn sound_route(document: &Document, sound: Option<i64>) -> Route {
+    if !crate::wav::fluidsynth_installed() {
+        let held = document
+            .song()
+            .get_written(SongSetting::PREVIEW_INSTRUMENT)
+            .and_then(Data::as_str)
+            .and_then(|name| instrument(document, name));
+        let device = held.and_then(device_of).unwrap_or_default();
+        return device_route(
+            device,
+            held.and_then(|held| held.get_written(InstrumentSetting::CHANNEL)).and_then(Data::as_whole),
+        );
+    }
+    match sound {
+        None => fluid_route(DRUM_CHANNEL, None),
+        Some(sound) => fluid_route(PREVIEW_CHANNEL, Some(sound - MIN_GM_SOUND)),
+    }
+}
+
+/// A route to FluidSynth on a channel, choosing a program or none.
+fn fluid_route(channel: i64, program: Option<i64>) -> Route {
+    Route {
+        port: fluidsynth_port(),
+        channel,
+        program,
+        keyswitches: false,
+        sound: None,
+        early: 0.0,
+    }
+}
+
+/// A route to a MIDI device on a channel counted from 1, the first where none is written.
+fn device_route(device: String, channel: Option<i128>) -> Route {
+    Route {
+        port: device,
+        channel: channel.map_or(1, |channel| channel as i64) - CHANNEL_OFFSET,
+        program: None,
+        keyswitches: true,
+        sound: None,
+        early: 0.0,
+    }
 }
 
 /// How many passes of a pattern a direction takes to come back to where it started.

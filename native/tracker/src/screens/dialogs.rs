@@ -806,6 +806,12 @@ const SHOWN_SOUNDS: usize = 12;
 /// A sound and the value choosing it answers with.
 pub type Sound = (String, usize);
 
+/// A sound is tried with a run in eighth notes of the major scale from the C of the fourth octave, as half steps above C.
+const RUN_STEP: &str = "1/8";
+const MAJOR_STEPS: [i64; 7] = [0, 2, 4, 5, 7, 9, 11];
+const USUAL_OCTAVE: i64 = 4;
+const HALF_STEPS_PER_OCTAVE: i64 = 12;
+
 /// A sound chosen from groups, each a row drawn as a button that opens a flyout of its sounds (the Python SoundDialog). Its
 /// first rows are choices of their own, such as no sound. / searches every group's sounds at once, and L tries the sound
 /// under the cursor. It answers with the value of the sound taken.
@@ -880,45 +886,33 @@ impl SoundDialog {
         value.is_some_and(|value| value != 0)
     }
 
-    /// Why a sound cannot be tried: the song's Preview instrument, where FluidSynth does not play it, must be on a device
-    /// of its own that is connected, and llamatron2 lists no devices yet.
-    fn trial_refusal(app: &App) -> String {
-        use llamatron_model::objects::setlist::Item;
-        use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SongSetting, FLUIDSYNTH_DEVICE};
-        use llamatron_strings::errors;
-        let Some(name) = app
-            .document
-            .song()
-            .get_written(SongSetting::PREVIEW_INSTRUMENT)
-            .and_then(|value| value.as_str())
-            .map(str::to_string)
-        else {
-            return errors::ERR_NOTHING_TO_TRY_A_SOUND_WITH.to_string();
-        };
-        let device = match app.document.get_setlist().get_item(Section::INSTRUMENTS, &name) {
-            Some(Item::Instrument(instrument)) => instrument
-                .get_written(InstrumentSetting::DEVICE)
-                .and_then(|value| value.as_str())
-                .map(str::to_string),
-            _ => None,
-        };
-        match device {
-            None => named(errors::ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, &[("name", name.as_str().into())]),
-            Some(device) if device == FLUIDSYNTH_DEVICE => named(errors::ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, &[("name", name.as_str().into())]),
-            Some(device) => named(
-                errors::ERR_PREVIEW_DEVICE_NOT_CONNECTED,
-                &[("name", name.as_str().into()), ("device", device.as_str().into())],
-            ),
+    /// Try a sound: the usual run, the major scale from the C of the fourth octave played up an octave and back down in
+    /// eighth notes, in a General MIDI sound; and keep why nothing plays where it cannot.
+    fn try_sound(&mut self, app: &mut App, value: usize) {
+        if let Some(refusal) = crate::realtime::preview::PatternPreview::sound_refusal(&app.document) {
+            self.said = refusal;
+            return;
+        }
+        let low = USUAL_OCTAVE * HALF_STEPS_PER_OCTAVE;
+        let mut run: Vec<i64> = MAJOR_STEPS.iter().map(|step| low + step).collect();
+        run.push(low + HALF_STEPS_PER_OCTAVE);
+        let down: Vec<i64> = run[..run.len() - 1].iter().rev().copied().collect();
+        run.extend(down);
+        if let Err(problem) = app.preview.play_sound(&app.document, &run, RUN_STEP, Some(value as i64), value) {
+            self.said = problem;
         }
     }
 
-    /// The key that tries the sound under the cursor, where it is one to hear.
-    fn trial_keys(&self) -> Vec<KeyItem> {
-        if Self::can_try(self.under_cursor()) {
-            vec![Self::bind(&SoundKeys::LISTEN)]
-        } else {
-            Vec::new()
+    /// The key that tries the sound under the cursor, where it is one to hear, or stops it while it plays.
+    fn trial_keys(&self, app: &App) -> Vec<KeyItem> {
+        let value = self.under_cursor();
+        if !Self::can_try(value) {
+            return Vec::new();
         }
+        if value.is_some() && app.preview.playing_sound() == value {
+            return vec![Self::bind(&SoundKeys::STOP_LISTENING)];
+        }
+        vec![Self::bind(&SoundKeys::LISTEN)]
     }
 
     /// A row's text: a top row's label, or a group drawn as a button, with the current sound after a mark where it holds it.
@@ -1037,7 +1031,7 @@ impl Page for SoundDialog {
         &SoundKeys::CLASS
     }
 
-    fn keys(&self, _app: &App) -> Vec<KeyItem> {
+    fn keys(&self, app: &App) -> Vec<KeyItem> {
         if let Some(typed) = &self.typed {
             let mut keys = vec![
                 Self::bind(&SoundKeys::CLOSE),
@@ -1057,7 +1051,7 @@ impl Page for SoundDialog {
                 Self::bind(&SoundKeys::MOVE_IN_FLYOUT).wanting_key(),
                 Self::bind(&SoundKeys::CHOOSE),
             ];
-            keys.extend(self.trial_keys());
+            keys.extend(self.trial_keys(app));
             return keys;
         }
         let on_group = self.cursor >= self.top.len();
@@ -1068,12 +1062,13 @@ impl Page for SoundDialog {
             Self::bind(&SoundKeys::CHOOSE)
         });
         keys.push(Self::bind(&SoundKeys::SEARCH));
-        keys.extend(self.trial_keys());
+        keys.extend(self.trial_keys(app));
         keys
     }
 
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
         self.said.clear();
+        let before = self.under_cursor();
         if item.is(&SoundKeys::CANCEL) {
             app.go_back();
         } else if item.is(&SoundKeys::CLOSE) {
@@ -1135,8 +1130,16 @@ impl Page for SoundDialog {
                 self.flyout_place = place;
             }
         } else if item.is(&SoundKeys::LISTEN) {
-            // llamatron2 plays nothing in real time yet, so trying a sound says why it cannot be heard.
-            self.said = Self::trial_refusal(app);
+            if let Some(value) = before {
+                self.try_sound(app, value);
+            }
+        } else if item.is(&SoundKeys::STOP_LISTENING) {
+            app.preview.stop();
+        }
+        // A sound being tried stops as the cursor leaves it, and as the dialog closes.
+        let closing = item.is(&SoundKeys::CANCEL) || item.is(&SoundKeys::CHOOSE);
+        if app.preview.playing_sound().is_some() && (closing || self.under_cursor() != before) {
+            app.preview.stop();
         }
     }
 

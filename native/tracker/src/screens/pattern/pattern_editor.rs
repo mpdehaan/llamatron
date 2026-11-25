@@ -130,9 +130,7 @@ impl<'a> Roll<'a> {
             return ghosts;
         }
         let scale = self.scale.as_ref().and_then(|name| {
-            let Some(llamatron_model::objects::setlist::Item::Scale(held)) = self.setlist.get_item(Section::SCALES, name) else {
-                return None;
-            };
+            let held = self.setlist.get_named_scale(name)?;
             crate::chord_text::ChordScale::new(&scale_root(self.setlist, name), held.get_kind().as_str()?)
         });
         for (degree, octave, accidental) in crate::chord_tones::chord_tones(self.pattern, start, self.step_octave(start), scale.as_ref()) {
@@ -352,6 +350,14 @@ impl PatternEditor {
         }
     }
 
+    /// The editor opened on an instrument's preview pattern from the instrument's page, whose crumbs come before it.
+    pub fn opened_for_preview(key: &str, opener_crumbs: Vec<String>) -> PatternEditor {
+        PatternEditor {
+            opener_crumbs: Some(opener_crumbs),
+            ..PatternEditor::new(key)
+        }
+    }
+
     fn on_roll(&self, app: &App) -> bool {
         let drum = app.document.get_setlist().get_pattern(&self.name).is_some_and(Pattern::is_drum);
         !drum && app.session.on_roll
@@ -476,8 +482,8 @@ impl PatternEditor {
             [] => named(labels::MSG_SCALE_HEADER, &[("scale", messages::MSG_NO_SCALE.into())]),
             [scale] => {
                 let root = scale_root(roll.setlist, scale);
-                let kind = match roll.setlist.get_item(Section::SCALES, scale) {
-                    Some(llamatron_model::objects::setlist::Item::Scale(found)) => found.get_kind().as_str().unwrap_or("").to_string(),
+                let kind = match roll.setlist.get_named_scale(scale) {
+                    Some(found) => found.get_kind().as_str().unwrap_or("").to_string(),
                     _ => String::new(),
                 };
                 let default = named(names::MSG_DEFAULT_SCALE_NAME, &[("root", root.as_str().into()), ("kind", kind.as_str().into())]);
@@ -492,11 +498,12 @@ impl PatternEditor {
                     marks::MSG_SCALE_NOTES_TEXT,
                     &[("root", root.as_str().into()), ("kind", kind.replace('_', " ").as_str().into())],
                 );
+                let shown = crate::patterns::shown_scale_name(scale);
                 named(
                     labels::MSG_SCALE_HEADER,
                     &[(
                         "scale",
-                        named(marks::MSG_SCALE_SHOWN, &[("name", scale.as_str().into()), ("notes", notes.as_str().into())])
+                        named(marks::MSG_SCALE_SHOWN, &[("name", shown.as_str().into()), ("notes", notes.as_str().into())])
                             .as_str()
                             .into(),
                     )],
@@ -1076,6 +1083,9 @@ impl Page for PatternEditor {
     }
 
     fn still_exists(&self, app: &App) -> bool {
+        if llamatron_model::objects::instrument_previews::is_preview(&self.name) {
+            return app.document.get_setlist().get_pattern(&self.name).is_some();
+        }
         crate::page::named_exists(app, llamatron_model::schema::generated::file_format::Section::PATTERNS, &self.name)
     }
 
@@ -1113,9 +1123,7 @@ impl Page for PatternEditor {
         }
         let song = app.document.song();
         let scale = scales_of_pattern(setlist, song, &self.name).first().and_then(|name| {
-            let Some(llamatron_model::objects::setlist::Item::Scale(held)) = setlist.get_item(Section::SCALES, name) else {
-                return None;
-            };
+            let held = setlist.get_named_scale(name)?;
             crate::chord_text::ChordScale::new(&scale_root(setlist, name), held.get_kind().as_str()?)
         });
         let tensions = value(pattern, Row::TENSION, step)
@@ -1187,6 +1195,9 @@ impl Page for PatternEditor {
             let place = self.whole_pattern_place(app);
             if item.is(&Keys::RESIZE) {
                 super::whole_pattern::ask_steps(app, &place);
+            } else if item.is(&Keys::RENAME) && llamatron_model::objects::instrument_previews::is_preview(&self.name) {
+                // An instrument's preview pattern goes by its instrument's name.
+                app.refuse(llamatron_strings::errors::ERR_PREVIEW_KEEPS_ITS_NAME);
             } else if item.is(&Keys::RENAME) {
                 super::whole_pattern::rename(app, &self.name);
             } else if item.is(&Keys::RECONFIGURE) {
@@ -1252,6 +1263,10 @@ impl Page for PatternEditor {
             ];
         };
         let mut crumbs = opener.clone();
+        if llamatron_model::objects::instrument_previews::is_preview(&self.name) {
+            crumbs.push(labels::MSG_PREVIEW_PATTERN_CRUMB.to_string());
+            return crumbs;
+        }
         crumbs.push(named(labels::MSG_PATTERN_CRUMB, &[("name", self.name.as_str().into())]));
         crumbs
     }
@@ -1260,7 +1275,10 @@ impl Page for PatternEditor {
         let what = named_in(labels::MSG_CAPTION_WORDS, Section::PATTERNS).to_uppercase();
         named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.name.as_str().into())],
+            &[
+                ("what", what.as_str().into()),
+                ("name", crate::patterns::shown_pattern_name(&self.name).as_str().into()),
+            ],
         )
     }
 
@@ -1286,7 +1304,7 @@ impl PatternEditor {
         let name = self.name.clone();
         let mut refusal = None;
         app.document.change_set(|setlist| {
-            if let Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, &name) {
+            if let Some(pattern) = setlist.get_pattern_mut(&name) {
                 if let Err(problem) = change(pattern) {
                     refusal = Some(problem);
                 }
@@ -1413,7 +1431,7 @@ impl PatternEditor {
 fn write_value(app: &mut App, name: &str, row: &str, step: usize, value: Option<Data>) {
     let mut refusal = None;
     app.document.change_set(|setlist| {
-        if let Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, name) {
+        if let Some(pattern) = setlist.get_pattern_mut(name) {
             if let Err(problem) = pattern.set_value(row, step, value) {
                 refusal = Some(problem.message);
             }
@@ -1711,7 +1729,7 @@ impl PatternEditor {
             let chosen = place.checked_sub(1).map(|place| Data::text(STEP_SIZE_CHOICES[place]));
             let name = name.clone();
             app.document.change_set(|setlist| {
-                if let Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, &name) {
+                if let Some(pattern) = setlist.get_pattern_mut(&name) {
                     pattern.set_written(PatternSetting::ENTRY_SIZE, chosen);
                 }
             });
@@ -1757,9 +1775,7 @@ fn known_scale(app: &App, name: &str) -> Option<crate::chord_text::ChordScale> {
         return None;
     }
     let scale = scales_of_pattern(setlist, app.document.song(), name).first().cloned()?;
-    let Some(llamatron_model::objects::setlist::Item::Scale(held)) = setlist.get_item(Section::SCALES, &scale) else {
-        return None;
-    };
+    let held = setlist.get_named_scale(&scale)?;
     crate::chord_text::ChordScale::new(&scale_root(setlist, &scale), held.get_kind().as_str()?)
 }
 

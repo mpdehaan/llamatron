@@ -17,3 +17,9 @@ pub fn open_pattern(name: &str) -> Box<dyn crate::page::Page> {
 pub fn open_clip_pattern(name: &str, opener_crumbs: Vec<String>, track: &str) -> Box<dyn crate::page::Page> {
     Box::new(pattern_editor::PatternEditor::opened_from(name, opener_crumbs, track))
 }
+
+/// The page that edits an instrument's preview pattern, by its key, opened from the instrument's page, whose crumbs come
+/// first.
+pub fn open_preview_pattern(key: &str, opener_crumbs: Vec<String>) -> Box<dyn crate::page::Page> {
+    Box::new(pattern_editor::PatternEditor::opened_for_preview(key, opener_crumbs))
+}

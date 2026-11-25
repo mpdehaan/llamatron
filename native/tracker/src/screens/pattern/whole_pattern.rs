@@ -14,7 +14,6 @@ use llamatron_math::python_random::PythonRandom;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::pattern::Pattern;
-use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::{Section, DIRECTIONS};
 use llamatron_model::schema::generated::limits::{MAX_SCALE_LENGTH, MAX_STEPS, MAX_STEP_SIZE, MIN_SCALE_LENGTH, MIN_STEPS};
 use llamatron_model::schema::generated::midi::{MAX_VELOCITY, MIN_VELOCITY};
@@ -130,7 +129,7 @@ fn munge_groups() -> Vec<(&'static str, Vec<usize>)> {
 pub fn change_pattern(app: &mut App, name: &str, change: impl FnOnce(&mut Pattern) -> Result<(), String>) {
     let mut refusal = None;
     app.document.change_set(|setlist| {
-        if let Some(Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, name) {
+        if let Some(pattern) = setlist.get_pattern_mut(name) {
             if let Err(problem) = change(pattern) {
                 refusal = Some(problem);
             }
@@ -269,7 +268,8 @@ fn load_over(app: &mut App, place: &Place) {
         return;
     }
     let name = place.name.clone();
-    let title = named(messages::MSG_LOAD_OVER_CHOICE_TITLE, &[("name", name.as_str().into())]);
+    let shown = crate::patterns::shown_pattern_name(&name);
+    let title = named(messages::MSG_LOAD_OVER_CHOICE_TITLE, &[("name", shown.as_str().into())]);
     ask_choice(app, &title, others.clone(), 0, move |app, chosen| {
         let other = others[chosen].clone();
         let name = name.clone();
@@ -662,6 +662,11 @@ fn pick_other_pattern(app: &mut App, place: &Place, choice: usize) {
 /// Ask how many steps each new pattern has, make new patterns of the pattern's steps, so many each, and say which were
 /// made; the pattern itself is left as it is.
 fn ask_split(app: &mut App, place: &Place) {
+    if llamatron_model::objects::instrument_previews::is_preview(&place.name) {
+        // An instrument's preview pattern makes no patterns of the set's.
+        app.refuse(errors::ERR_PREVIEW_KEEPS_ITS_NAME);
+        return;
+    }
     let most = place.steps.saturating_sub(1);
     if most < FIRST_ROLL {
         app.refuse(errors::ERR_ONE_STEP);
@@ -733,9 +738,7 @@ fn lead_voices(app: &mut App, place: &Place, choice: usize) {
     let Some(scale) = crate::patterns::scales_of_pattern(setlist, app.document.song(), &place.name)
         .first()
         .and_then(|name| {
-            let Some(Item::Scale(held)) = setlist.get_item(Section::SCALES, name) else {
-                return None;
-            };
+            let held = setlist.get_named_scale(name)?;
             crate::chord_text::ChordScale::new(&crate::patterns::scale_root(setlist, name), held.get_kind().as_str()?)
         })
     else {

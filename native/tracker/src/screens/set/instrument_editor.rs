@@ -346,10 +346,63 @@ impl InstrumentEditor {
         let buttons = [
             Field::button(ids.next(), labels::MSG_PREVIEW_PATTERN_LABEL, "", legends::What::EDIT),
             Field::button(ids.next(), labels::MSG_KEYSWITCH_MAP_LABEL, Keys::KEYSWITCH_MAP.name, Keys::KEYSWITCH_MAP.what),
-            Field::button(ids.next(), labels::MSG_LISTEN_LABEL, legends::KeyName::L, legends::MSG_LISTEN_WHAT),
+            self.listen_button(app, ids.next()),
         ];
         nodes.extend(buttons.into_iter().map(|field| Node::Field(Box::new(field))));
         (nodes, ids)
+    }
+
+    /// The Listen button, which does what L does: it starts listening to the instrument, or stops it while it plays, both
+    /// names taking the room of the longer so that the button never changes its width.
+    fn listen_button(&self, app: &App, id: usize) -> Field {
+        let width = labels::MSG_LISTEN_LABEL.chars().count().max(labels::MSG_STOP_LISTENING_LABEL.chars().count());
+        if self.is_listening(app) {
+            return Field::button(
+                id,
+                &format!("{:^width$}", labels::MSG_STOP_LISTENING_LABEL),
+                legends::KeyName::L,
+                legends::MSG_STOP_LISTENING_WHAT,
+            );
+        }
+        Field::button(
+            id,
+            &format!("{:^width$}", labels::MSG_LISTEN_LABEL),
+            legends::KeyName::L,
+            legends::MSG_LISTEN_WHAT,
+        )
+    }
+
+    /// Whether the instrument's preview pattern is being listened to.
+    fn is_listening(&self, app: &App) -> bool {
+        app.preview.playing_instrument() == Some(self.name.as_str())
+    }
+
+    /// L and the Listen button: listen to the instrument's preview pattern through it, or stop while it plays.
+    fn listen_or_stop(&self, app: &mut App) {
+        if self.is_listening(app) {
+            crate::screens::listening::stop_listening_to_pattern(app);
+            return;
+        }
+        crate::screens::listening::listen_to_instrument(app, &self.name);
+    }
+
+    /// The Preview pattern button: open the pattern editor on the instrument's preview pattern, made first if it has none,
+    /// with this page's crumbs before it, so that ESC comes back here.
+    fn open_preview(&self, app: &mut App) {
+        let Some(instrument) = self.instrument(app) else { return };
+        if instrument.get_preview().is_none() {
+            let sound = Sound::of(instrument);
+            let drum = self.role(app, instrument, &sound) == "percussion";
+            let name = self.name.clone();
+            app.document.change_set(|setlist| {
+                if let Some(Item::Instrument(instrument)) = setlist.get_item_mut(Section::INSTRUMENTS, &name) {
+                    instrument.make_preview(drum);
+                }
+            });
+        }
+        let key = llamatron_model::objects::instrument_previews::preview_key(&self.name);
+        let crumbs = Form::crumbs(self, app);
+        app.show_page(crate::screens::pattern::open_preview_pattern(&key, crumbs));
     }
 
     fn instrument<'a>(&self, app: &'a App) -> Option<&'a Instrument> {
@@ -961,22 +1014,35 @@ impl Form for InstrumentEditor {
         self.built(app).0
     }
 
-    fn page_keys(&self, _app: &App, _row: Option<&Field>) -> Vec<KeyItem> {
-        vec![KeyItem::of(&Keys::CLASS, &Keys::KEYSWITCH_MAP), KeyItem::of(&Keys::CLASS, &Keys::LISTEN)]
+    fn page_keys(&self, app: &App, _row: Option<&Field>) -> Vec<KeyItem> {
+        let listening = if self.is_listening(app) { &Keys::STOP_LISTENING } else { &Keys::LISTEN };
+        vec![KeyItem::of(&Keys::CLASS, &Keys::KEYSWITCH_MAP), KeyItem::of(&Keys::CLASS, listening)]
     }
 
     fn press_own(&mut self, app: &mut App, item: &KeyItem, _key: &str, _row: Option<&Field>) {
         if item.is(&Keys::KEYSWITCH_MAP) {
             self.open_keyswitch_map(app);
+        } else if item.is(&Keys::LISTEN) || item.is(&Keys::STOP_LISTENING) {
+            self.listen_or_stop(app);
         }
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
         let Some(instrument) = self.instrument(app) else { return };
-        let is_map = |node: &Node| matches!(node, Node::Field(field) if field.id == id && field.label == labels::MSG_KEYSWITCH_MAP_LABEL);
-        if matches!(edit, Edit::Enter) && self.built(app).0.iter().any(is_map) {
-            self.open_keyswitch_map(app);
-            return;
+        let label_of = |nodes: &[Node]| {
+            nodes.iter().find_map(|node| match node {
+                Node::Field(field) if field.id == id && field.is_button() => Some(field.label.trim().to_string()),
+                _ => None,
+            })
+        };
+        if matches!(edit, Edit::Enter) {
+            let label = label_of(&self.built(app).0);
+            match label.as_deref() {
+                Some(labels::MSG_KEYSWITCH_MAP_LABEL) => return self.open_keyswitch_map(app),
+                Some(labels::MSG_PREVIEW_PATTERN_LABEL) => return self.open_preview(app),
+                Some(labels::MSG_LISTEN_LABEL) | Some(labels::MSG_STOP_LISTENING_LABEL) => return self.listen_or_stop(app),
+                _ => {}
+            }
         }
         let sound = Sound::of(instrument);
         let (nodes, ids) = self.built(app);

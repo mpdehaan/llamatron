@@ -25,6 +25,10 @@ pub enum ListenKey {
 /// The key that listens to a pattern, or stops it while it is the one playing, or none when nothing could sound: the
 /// song names no Preview instrument and FluidSynth is not installed.
 pub fn pattern_listen_key(app: &App, pattern: &str) -> Option<ListenKey> {
+    if let Some(instrument) = llamatron_model::objects::instrument_previews::preview_instrument(pattern) {
+        // An instrument's preview pattern is listened to through its instrument.
+        return Some(instrument_listen_key(app, instrument));
+    }
     if app.preview.playing_pattern() == Some(pattern) {
         return Some(ListenKey::Stop);
     }
@@ -34,6 +38,11 @@ pub fn pattern_listen_key(app: &App, pattern: &str) -> Option<ListenKey> {
 
 /// Play a pattern at once, again and again, beside whatever the song plays, and say the scale it plays in.
 pub fn listen_to_pattern(app: &mut App, pattern: &str) {
+    if let Some(instrument) = llamatron_model::objects::instrument_previews::preview_instrument(pattern) {
+        let instrument = instrument.to_string();
+        listen_to_instrument(app, &instrument);
+        return;
+    }
     if let Some(refusal) = PatternPreview::refusal(&app.document, pattern) {
         app.refuse(&refusal);
         return;
@@ -48,6 +57,28 @@ pub fn listen_to_pattern(app: &mut App, pattern: &str) {
         Some(scale) => named(messages::MSG_LISTENING_IN_SCALE, &[("name", pattern.into()), ("scale", scale.into())]),
     };
     app.say(&said);
+}
+
+/// The key that listens to an instrument's preview pattern through the instrument, or stops it while it plays.
+pub fn instrument_listen_key(app: &App, instrument: &str) -> ListenKey {
+    if app.preview.playing_instrument() == Some(instrument) {
+        ListenKey::Stop
+    } else {
+        ListenKey::Listen
+    }
+}
+
+/// Play an instrument's preview pattern through the instrument, again and again until stopped.
+pub fn listen_to_instrument(app: &mut App, instrument: &str) {
+    if let Some(refusal) = PatternPreview::instrument_refusal(&app.document, instrument) {
+        app.refuse(&refusal);
+        return;
+    }
+    if let Err(problem) = app.preview.play_instrument(&app.document, instrument) {
+        app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_PLAY_TITLE, vec![problem])));
+        return;
+    }
+    app.say(&named(messages::MSG_LISTENING_TO_INSTRUMENT, &[("name", instrument.into())]));
 }
 
 /// Stop the pattern's preview alone, leaving a song played from Arrange playing.

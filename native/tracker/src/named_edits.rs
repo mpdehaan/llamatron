@@ -205,7 +205,7 @@ impl Document {
     fn set_groups(&mut self, names: &[String], group: Option<&str>) {
         self.change_set(|setlist| {
             for name in names {
-                if let Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, name) {
+                if let Some(pattern) = setlist.get_pattern_mut(name) {
                     pattern.set_group(group);
                 }
             }
@@ -273,7 +273,7 @@ impl Document {
             .ok_or_else(|| named(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[("name", other.into())]))?;
         let name = name.to_string();
         self.change_set(|setlist| {
-            if let Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) = setlist.get_item_mut(Section::PATTERNS, &name) {
+            if let Some(pattern) = setlist.get_pattern_mut(&name) {
                 *pattern = copy;
             }
         });

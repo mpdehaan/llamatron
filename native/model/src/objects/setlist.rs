@@ -55,6 +55,19 @@ impl Instrument {
         self.preview.as_ref()
     }
 
+    /// The preview pattern, to change, or None until one is made.
+    pub fn get_preview_mut(&mut self) -> Option<&mut Pattern> {
+        self.preview.as_mut()
+    }
+
+    /// Give the instrument its starting preview pattern, a drum's for a percussion instrument, unless it has one.
+    pub fn make_preview(&mut self, drum: bool) {
+        if self.preview.is_none() {
+            let data = crate::objects::instrument_previews::starting_preview(drum);
+            self.preview = Some(Pattern::from_data(&data).expect("a starting preview is a pattern"));
+        }
+    }
+
     /// The settings the file writes, and the preview pattern's data under preview where it has one, last.
     pub fn to_data(&self) -> Data {
         let mut pairs: Vec<(Data, Data)> = self
@@ -241,6 +254,20 @@ impl Setlist {
 
     pub fn get_item(&self, section: &str, name: &str) -> Option<&Item> {
         self.section(section)?.get(name)
+    }
+
+    /// The pattern of a name, or an instrument's preview pattern by its key, to change.
+    pub fn get_pattern_mut(&mut self, name: &str) -> Option<&mut Pattern> {
+        if let Some(instrument) = crate::objects::instrument_previews::preview_instrument(name) {
+            return match self.get_item_mut(Section::INSTRUMENTS, instrument)? {
+                Item::Instrument(instrument) => instrument.get_preview_mut(),
+                _ => None,
+            };
+        }
+        match self.get_item_mut(Section::PATTERNS, name)? {
+            Item::Pattern(pattern) => Some(pattern),
+            _ => None,
+        }
     }
 
     pub fn get_item_mut(&mut self, section: &str, name: &str) -> Option<&mut Item> {

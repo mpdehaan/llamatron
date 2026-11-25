@@ -8,8 +8,9 @@
 use crate::uses::clip_slots_naming;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
+use llamatron_model::objects::instrument_previews;
 use llamatron_model::objects::pattern::Pattern;
-use llamatron_model::objects::setlist::{Item, Setlist};
+use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::Song;
 use llamatron_model::schema::checking::written_length;
 use llamatron_model::schema::generated::file_format::{Row, Section, TrackSetting};
@@ -132,6 +133,13 @@ pub fn scales_for_pattern(setlist: &Setlist, name: &str) -> Vec<String> {
 
 /// The scales a pattern plays under: those of the clips that play it, or the current song's when none does.
 pub fn scales_of_pattern(setlist: &Setlist, song: &Song, name: &str) -> Vec<String> {
+    if instrument_previews::is_preview(name) {
+        // A tonal preview plays under the hidden chromatic scale on C, a drum preview under none.
+        if setlist.get_pattern(name).is_some_and(Pattern::is_drum) {
+            return Vec::new();
+        }
+        return vec![instrument_previews::PREVIEW_SCALE_KEY.to_string()];
+    }
     let names = if clip_slots_naming(setlist, Section::PATTERNS, name).is_empty() {
         song.get_scale_name().into_iter().collect()
     } else {
@@ -154,8 +162,8 @@ pub fn pattern_scale(setlist: &Setlist, song: &Song, name: &str) -> Option<Strin
 
 /// A named scale's shape in half steps, by its name.
 pub fn scale_half_steps(setlist: &Setlist, name: &str) -> Vec<i64> {
-    match setlist.get_item(Section::SCALES, name) {
-        Some(Item::Scale(scale)) => scale
+    match setlist.get_named_scale(name) {
+        Some(scale) => scale
             .get_kind()
             .as_str()
             .and_then(llamatron_model::values::scale::ScaleType::named)
@@ -165,8 +173,8 @@ pub fn scale_half_steps(setlist: &Setlist, name: &str) -> Vec<i64> {
 }
 
 pub fn scale_root(setlist: &Setlist, name: &str) -> String {
-    match setlist.get_item(Section::SCALES, name) {
-        Some(Item::Scale(scale)) => scale.get_root().as_str().unwrap_or("").to_string(),
+    match setlist.get_named_scale(name) {
+        Some(scale) => scale.get_root().as_str().unwrap_or("").to_string(),
         _ => String::new(),
     }
 }
@@ -357,4 +365,20 @@ pub fn cycle_accidental(pattern: &mut Pattern, start: usize) -> Edited {
     let place = ACCIDENTAL_CYCLE.iter().position(|each| each.map(str::to_string) == current).unwrap_or(0);
     let following = ACCIDENTAL_CYCLE[(place + 1) % ACCIDENTAL_CYCLE.len()];
     put(pattern, Row::ACCIDENTAL, start, following.map(Data::text))
+}
+
+/// A pattern's name as the pages show it: an instrument's preview pattern by its instrument, `preview (lead)`.
+pub fn shown_pattern_name(name: &str) -> String {
+    match instrument_previews::preview_instrument(name) {
+        Some(instrument) => llamatron_strings::named(llamatron_strings::names::MSG_INSTRUMENT_PREVIEW_NAME, &[("instrument", instrument.into())]),
+        None => name.to_string(),
+    }
+}
+
+/// A scale's name as the pages show it: the hidden chromatic scale a preview plays under by what it is.
+pub fn shown_scale_name(name: &str) -> String {
+    if name == instrument_previews::PREVIEW_SCALE_KEY {
+        return llamatron_strings::names::MSG_PREVIEW_SCALE_NAME.to_string();
+    }
+    name.to_string()
 }

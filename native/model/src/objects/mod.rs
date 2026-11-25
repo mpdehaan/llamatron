@@ -5,6 +5,7 @@
 
 pub mod edits;
 pub mod holder;
+pub mod instrument_previews;
 pub mod named;
 pub mod naming;
 pub mod pattern;

@@ -854,8 +854,8 @@ impl<'a> Rows<'a> {
 }
 
 fn scale_kind(setlist: &Setlist, name: &str) -> String {
-    match setlist.get_item(Section::SCALES, name) {
-        Some(llamatron_model::objects::setlist::Item::Scale(scale)) => scale.get_kind().as_str().unwrap_or("").to_string(),
+    match setlist.get_named_scale(name) {
+        Some(scale) => scale.get_kind().as_str().unwrap_or("").to_string(),
         _ => String::new(),
     }
 }
