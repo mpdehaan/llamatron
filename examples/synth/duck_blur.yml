@@ -1,0 +1,304 @@
+version: 1.0.660
+title: Duck blur
+description: "an 8-bit game theme in the manner of the DuckTales theme (Mark Mueller), on the built-in synths"
+notes: |
+  Duck blur: an 8-bit game theme in the manner of the DuckTales theme (Mark Mueller), as the NES game played it,
+  every part on the built-in synths. This is a homage to the DuckTales theme (Mark Mueller): its chords, form and drive
+  follow that work as Claude knows it, and every tune and rhythm here is new. Rebuild version 2: each part's phrasing
+  follows the theme's shape as the user gave it, its words never used: a verse of long lines answered by short punchy tags,
+  a lift of two parallel lines rising, a chorus of a two-note hook and its answer then a long running line, twice, and a
+  tag, a bridge that stutters four quick hits into a held note and trades calls and answers, and a last line before the
+  final hook; the chorus driven, the form grown to about two minutes.
+
+  The chords were taken from what chord charts' search results report (the key of E, the chorus's C and D up to the E of
+  its hook, a full chart in F of F, Eb, G, Gm, C and Bb), since the charts' sites forbid automated reading, and set here in
+  G: the verse I, bVII and IV, the lift ii and V, the chorus I, bVI, bVII and I, the Mixolydian brass of a cartoon
+  adventure.
+
+  Subgenre: an 8-bit console game's title theme. Drums: a noise-channel beat, the verse's kick on one and the and of two
+  and three, the chorus's pushed, a snare on two and four that builds through the lift, hats in eighths, in sixteenths when
+  it drives. Tempo 156, straight. Bass: the triangle bouncing octaves on each chord, pumping straight eighths in the
+  chorus. Builds: the lift climbs and its snare rolls into the chorus. Sounds: a square lead with a little vibrato, a
+  two-oscillator chord stab, a triangle bass, drum machine drums. Melody manner: a busy patter of repeated notes in the
+  verse answered by short tags, a lift of two parallel lines, two punchy notes and a high answer opening each half of the
+  chorus before a running line, a stuttering bridge of calls and answers. Form: intro, verse, lift, chorus, verse, lift,
+  chorus, bridge, chorus, chorus, ending.
+
+  Band and song: the theme is known as a bright, fast cartoon march, its verse long lines answered by short punchy tags,
+  its chorus a shouted two-syllable hook answered by a sung "oo" before a long running line, its bridge a stutter and calls
+  answered by a chorus of voices, and the game for its music.
+
+  Checklist: it is good and memorable because its borrowed chords, bVI and bVII to I, sound like adventure arriving under
+  a hook anyone can shout. The hook is the chorus's two punchy notes and their high answer, on the lead; the emotion is
+  cheerful daring; the lift is the chorus, the lead up an octave over the bVI and bVII, the bass driving, the hats doubled;
+  the contrast is the patter of the verse against the shout of the chorus; the sounds are a square lead, pulse and saw
+  chords and a triangle bass.
+
+  Run it with: llamatron examples/synth/duck_blur.yml
+
+  When changing this demo:
+  - Keep every part on the built-in synths, the drums on MechaDrum.
+  - Keep the verse's long lines and short tags, and the chorus's hook short and shouted, its answer high.
+  - Keep every tune original, and the demo out of the key of the work it follows.
+real_time: true
+protected: true
+
+scales:
+  - { name: G Major, root: G, type: major }
+
+patterns:
+  - name: verse tune
+    steps: 128
+    group: lead
+    step_size: 1/16
+    degree: [5, ~, 5, 5, ~, 5, 3, ~, 5, ~, 6, ~, 5, ~, ~, ~, 1, ~, 6, ~, 5, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, 4, ~, 4, 4, ~, 4, 2, ~, 4, ~, 5, ~, 4, ~, ~, ~, 6, ~, ~, ~, 5, ~, 4, ~, ~, ~, 1, ~, ~, ~, ~, ~, 5, ~, 5, 5, ~, 5, 1, ~, 1, ~, 6, ~, 5, ~, ~, ~, 3, ~, 5, ~, 1, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 7, ~, 7, 7, ~, 7, 6, ~, 4, ~, 5, ~, 4, ~, ~, ~, 6, ~, 1, ~, 2, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "b", ~, "b", "b", ~, "b", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, 6, 6, ~, 6, 5, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 5, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, 6, ~, 6, 5, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, ~, ~, 5, ~, ~, ~, ~, ~, 6, ~, 6, 6, ~, 6, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, 5, ~, 6, ~, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, 6, ~, 6, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, ~, 104, 96, ~, 96, 104, ~, 116, ~, 104, ~, 116, ~, ~, ~, 116, ~, 104, ~, 116, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, 104, 96, ~, 96, 104, ~, 116, ~, 104, ~, 116, ~, ~, ~, 116, ~, ~, ~, 116, ~, 104, ~, ~, ~, 104, ~, ~, ~, ~, ~, 116, ~, 104, 96, ~, 96, 104, ~, 116, ~, 104, ~, 116, ~, ~, ~, 116, ~, 104, ~, 116, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, 104, 96, ~, 96, 104, ~, 116, ~, 104, ~, 116, ~, ~, ~, 116, ~, 104, ~, 116, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, true, true, true, false, false, false, false]
+  - name: lift tune
+    steps: 64
+    group: lead
+    step_size: 1/16
+    degree: [2, ~, 4, ~, 6, ~, ~, 4, 6, ~, 2, ~, ~, ~, ~, ~, 7, ~, ~, ~, ~, ~, ~, ~, 5, ~, 6, ~, 7, ~, ~, ~, 4, ~, 6, ~, 2, ~, ~, 6, 2, ~, 4, ~, ~, ~, ~, ~, 3, ~, ~, ~, 2, ~, ~, ~, 7, ~, 5, ~, 6, ~, 7, ~]
+    octave: [5, ~, 6, ~, 6, ~, ~, 6, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, 6, 6, ~, 7, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~]
+    velocity: [108, ~, 100, ~, 108, ~, ~, 100, 108, ~, 100, ~, ~, ~, ~, ~, 114, ~, ~, ~, ~, ~, ~, ~, 114, ~, 106, ~, 114, ~, ~, ~, 120, ~, 112, ~, 120, ~, ~, 112, 120, ~, 112, ~, ~, ~, ~, ~, 126, ~, ~, ~, 126, ~, ~, ~, 126, ~, 118, ~, 126, ~, 118, ~]
+    tie: [false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, true, true, true, false, true, true, true, false, false, false, false, false, false, false, false]
+  - name: chorus tune
+    steps: 128
+    group: lead
+    step_size: 1/16
+    degree: [1, ~, 1, ~, ~, ~, ~, ~, 3, ~, 2, ~, ~, ~, ~, ~, 1, ~, 1, 1, ~, 6, ~, 1, ~, 3, ~, 1, ~, 6, ~, 1, 2, ~, 2, ~, ~, ~, ~, ~, 4, ~, 2, ~, ~, ~, ~, ~, 1, ~, 1, ~, 3, ~, 1, ~, 5, ~, 1, ~, 3, ~, 2, ~, 1, ~, 1, ~, ~, ~, ~, ~, 3, ~, 2, ~, ~, ~, ~, ~, 3, ~, 3, 3, ~, 1, ~, 6, ~, 1, ~, 3, ~, 1, ~, 6, 7, ~, 2, ~, 4, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 3, ~, ~, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "b", ~, ~, ~, "b", ~, ~, ~, "b", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "b", ~, "b", "b", ~, ~, ~, "b", ~, ~, ~, "b", ~, ~, ~, "b", "b", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, 6, ~, 6, ~, ~, ~, ~, ~, 7, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, 6, ~, 6, ~, 7, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [127, ~, 127, ~, ~, ~, ~, ~, 118, ~, 106, ~, ~, ~, ~, ~, 118, ~, 106, 106, ~, 106, ~, 106, ~, 106, ~, 106, ~, 106, ~, 106, 118, ~, 106, ~, ~, ~, ~, ~, 118, ~, 106, ~, ~, ~, ~, ~, 118, ~, 106, ~, 118, ~, 106, ~, 118, ~, 106, ~, 118, ~, 106, ~, 127, ~, 127, ~, ~, ~, ~, ~, 118, ~, 106, ~, ~, ~, ~, ~, 118, ~, 106, 106, ~, 106, ~, 106, ~, 106, ~, 106, ~, 106, ~, 106, 118, ~, 106, ~, 118, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 118, ~, ~, ~, 118, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, false, true, true, true, true, true, true, true, false, false, false, false]
+  - name: bridge tune
+    steps: 128
+    group: lead
+    step_size: 1/16
+    degree: [1, 1, 1, 1, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 2, ~, 4, ~, 7, ~, ~, ~, 5, ~, 1, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 1, ~, 3, ~, 5, ~, ~, ~, 1, 1, 1, 1, ~, ~, ~, ~, 3, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 2, ~, 4, ~, 7, ~, ~, ~, 3, ~, 2, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 6, ~, 7, ~, 1, ~, 2, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, "b", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "b", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "b", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "b", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, 6, 6, 6, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 5, ~, 6, ~, ~, ~, 6, 6, 6, 6, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 6, ~, 6, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~]
+    velocity: [124, 124, 124, 124, ~, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 108, ~, 108, ~, 108, ~, ~, ~, 108, ~, 108, ~, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 108, ~, 108, ~, 108, ~, ~, ~, 124, 124, 124, 124, ~, ~, ~, ~, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 108, ~, 108, ~, 108, ~, ~, ~, 108, ~, 108, ~, 108, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 108, ~, 108, ~, 108, ~, 108, ~, 108, ~]
+    tie: [false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]
+  - name: ending tune
+    steps: 64
+    group: lead
+    step_size: 1/16
+    degree: [1, ~, 1, ~, ~, ~, ~, ~, 3, ~, 2, ~, ~, ~, ~, ~, 1, ~, 1, 1, ~, 6, ~, 1, ~, 3, ~, 1, ~, 6, ~, 1, 7, ~, 7, 7, ~, 2, ~, 4, ~, 2, ~, 7, ~, 2, ~, 4, 1, ~, 1, ~, ~, ~, ~, ~, 3, ~, 2, ~, 1, ~, ~, ~]
+    accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "b", ~, ~, ~, "b", ~, ~, ~, "b", ~, ~, "b", ~, "b", "b", ~, ~, ~, ~, ~, ~, ~, "b", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [6, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, ~, 6, 6, ~, 6, 6, ~, 6, ~, 7, ~, 6, ~, 6, ~, 6, ~, 7, 6, ~, 6, ~, ~, ~, ~, ~, 6, ~, 6, ~, 6, ~, ~, ~]
+    velocity: [127, ~, 127, ~, ~, ~, ~, ~, 118, ~, 106, ~, ~, ~, ~, ~, 118, ~, 106, 106, ~, 106, ~, 106, ~, 106, ~, 106, ~, 106, ~, 106, 118, ~, 106, 106, ~, 106, ~, 106, ~, 106, ~, 106, ~, 106, ~, 106, 118, ~, 106, ~, ~, ~, ~, ~, 118, ~, 106, ~, 118, ~, ~, ~]
+    tie: [false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, true, false, true, true, true]
+  - name: stabs
+    steps: 8
+    group: chords
+    step_size: 1/8
+    degree: [~, 1, ~, 1, ~, 1, ~, 1]
+    octave: [~, 5, ~, 5, ~, 5, ~, 5]
+    chord: [~, "3", ~, "3", ~, "3", ~, "3"]
+    velocity: [~, 96, ~, 88, ~, 96, ~, 88]
+  - name: pushes
+    steps: 8
+    group: chords
+    step_size: 1/8
+    degree: [1, ~, ~, 1, ~, ~, 1, ~]
+    octave: [5, ~, ~, 5, ~, ~, 5, ~]
+    chord: ["3", ~, ~, "3", ~, ~, "3", ~]
+    velocity: [112, ~, ~, 104, ~, ~, 108, ~]
+    tie: [false, true, false, false, true, false, false, true]
+  - name: bounce
+    steps: 8
+    group: bass
+    step_size: 1/8
+    degree: [1, ~, 1, 1, ~, 1, 5, 1]
+    octave: [3, ~, 4, 3, ~, 3, 3, 4]
+    velocity: [116, ~, 100, 108, ~, 104, 100, 96]
+  - name: drive
+    steps: 8
+    group: bass
+    step_size: 1/8
+    degree: [1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [3, 4, 3, 4, 3, 4, 3, 4]
+    velocity: [120, 96, 110, 96, 116, 96, 110, 100]
+  - name: kick
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [118, ~, ~, ~, ~, ~, 118, ~, 118, ~, ~, ~, ~, ~, ~, ~]
+  - name: push
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [C, ~, ~, C, ~, ~, ~, ~, C, ~, C, ~, ~, ~, ~, ~]
+    velocity: [122, ~, ~, 108, ~, ~, ~, ~, 122, ~, 108, ~, ~, ~, ~, ~]
+  - name: snare
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 112, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~]
+  - name: build
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [~, ~, ~, ~, C, ~, ~, ~, C, ~, C, ~, C, C, C, C]
+    velocity: [~, ~, ~, ~, 92, ~, ~, ~, 104, ~, 110, ~, 116, 119, 122, 125]
+  - name: hats
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [C, ~, C, ~, C, ~, C, ~, C, ~, C, ~, C, ~, C, ~]
+    velocity: [92, ~, 70, ~, 92, ~, 70, ~, 92, ~, 70, ~, 92, ~, 70, ~]
+  - name: busy hats
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C]
+    velocity: [96, 60, 78, 60, 96, 60, 78, 60, 96, 60, 78, 60, 96, 60, 78, 60]
+
+instruments:
+  - name: pulse lead
+    kind: built_in
+    role: normal
+    sound:
+      engine: basic
+      volume: 24
+      voices: 1
+      oscillators: { type: basic, oscillators: [{ waveform: square }] }
+      envelopes: [{ type: adsr, attack: 1, decay: 160, sustain: 60, release: 50 }, { type: adsr, attack: 0, decay: 10, sustain: 0, release: 10 }, { type: adsr, attack: 0, decay: 10, sustain: 0, release: 10 }]
+      filter: { type: none }
+      lfos: [{ "on": true, shape: sine, rate: 55, retrigger: true }]
+      matrix: [{ source: lfo1, via: none, destination: pitch, amount: 1 }]
+  - name: chord stab
+    kind: built_in
+    role: normal
+    sound:
+      engine: basic
+      volume: 36
+      oscillators: { type: basic, oscillators: [{ waveform: pulse, detune: -6, level: 70 }, { waveform: saw, detune: 6, level: 60 }] }
+      envelopes: [{ type: adsr, attack: 2, decay: 220, sustain: 35, release: 90 }, { type: adsr, attack: 0, decay: 200, sustain: 15, release: 100 }, { type: adsr, attack: 0, decay: 10, sustain: 0, release: 10 }]
+      filter: { type: ladder, cutoff: 1800, resonance: 20, env_amount: 40, key_track: 50 }
+  - name: triangle bass
+    kind: built_in
+    role: normal
+    sound:
+      engine: basic
+      volume: 25
+      voices: 1
+      oscillators: { type: basic, oscillators: [{ waveform: triangle }] }
+      envelopes: [{ type: adsr, attack: 1, decay: 120, sustain: 85, release: 30 }, { type: adsr, attack: 0, decay: 10, sustain: 0, release: 10 }, { type: adsr, attack: 0, decay: 10, sustain: 0, release: 10 }]
+      filter: { type: none }
+      matrix: []
+  - { name: kick drum, kind: built_in, role: percussion, sound: { engine: drum, volume: 33, oscillators: { type: drum, machine: kick } } }
+  - { name: snare drum, kind: built_in, role: percussion, sound: { engine: drum, volume: 60, oscillators: { type: drum, machine: snare } } }
+  - { name: hat, kind: built_in, role: percussion, sound: { engine: drum, volume: 46, oscillators: { type: drum, machine: hats } } }
+
+songs:
+  - name: duck_blur
+    tempo: 156
+    scale: G Major
+    genre: Chiptune
+
+    tracks:
+      - { name: chords, instrument: chord stab }
+      - { name: lead, instrument: pulse lead }
+      - { name: bass, instrument: triangle bass }
+      - { name: kick, drum: true, instrument: kick drum }
+      - { name: snare, drum: true, instrument: snare drum }
+      - { name: hats, drum: true, instrument: hat }
+
+    scenes:
+      - name: intro
+        clips:
+          - { track: chords, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 1, 1], accidentals: ["b", "b", ~, ~, "b", "b", ~, ~], qualities: [M, M, ~, ~, M, M, ~, ~] } } }
+          - { track: bass, pattern: bounce, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 1, 1], accidentals: ["b", "b", ~, ~, "b", "b", ~, ~], qualities: [M, M, ~, ~, M, M, ~, ~] } } }
+          - { track: hats, pattern: hats, loop: true }
+      - name: verse
+        clips:
+          - { track: chords, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4, 1, 1, 7, 4], accidentals: [~, ~, "b", ~, ~, ~, "b", ~], qualities: [~, ~, M, ~, ~, ~, M, ~] } } }
+          - { track: lead, pattern: verse tune, loop: true }
+          - { track: bass, pattern: bounce, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4, 1, 1, 7, 4], accidentals: [~, ~, "b", ~, ~, ~, "b", ~], qualities: [~, ~, M, ~, ~, ~, M, ~] } } }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+      - name: lift
+        clips:
+          - { track: chords, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [2, 5, 2, 5] } } }
+          - { track: lead, pattern: lift tune, loop: true }
+          - { track: bass, pattern: bounce, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [2, 5, 2, 5] } } }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: build, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+      - name: chorus
+        clips:
+          - { track: chords, pattern: pushes, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 1], accidentals: [~, "b", "b", ~, ~, "b", "b", ~], qualities: [~, M, M, ~, ~, M, M, ~] } } }
+          - { track: lead, pattern: chorus tune, loop: true }
+          - { track: bass, pattern: drive, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 1], accidentals: [~, "b", "b", ~, ~, "b", "b", ~], qualities: [~, M, M, ~, ~, M, M, ~] } } }
+          - { track: kick, pattern: push, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: busy hats, loop: true }
+      - name: verse 2
+        clips:
+          - { track: chords, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4, 1, 1, 7, 4], accidentals: [~, ~, "b", ~, ~, ~, "b", ~], qualities: [~, ~, M, ~, ~, ~, M, ~] } } }
+          - { track: lead, pattern: verse tune, loop: true }
+          - { track: bass, pattern: bounce, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 1, 7, 4, 1, 1, 7, 4], accidentals: [~, ~, "b", ~, ~, ~, "b", ~], qualities: [~, ~, M, ~, ~, ~, M, ~] } } }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: busy hats, loop: true }
+      - name: lift 2
+        clips:
+          - { track: chords, pattern: stabs, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [2, 5, 2, 5] } } }
+          - { track: lead, pattern: lift tune, loop: true }
+          - { track: bass, pattern: bounce, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [2, 5, 2, 5] } } }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: build, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+      - name: chorus 2
+        clips:
+          - { track: chords, pattern: pushes, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 1], accidentals: [~, "b", "b", ~, ~, "b", "b", ~], qualities: [~, M, M, ~, ~, M, M, ~] } } }
+          - { track: lead, pattern: chorus tune, loop: true }
+          - { track: bass, pattern: drive, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 1], accidentals: [~, "b", "b", ~, ~, "b", "b", ~], qualities: [~, M, M, ~, ~, M, M, ~] } } }
+          - { track: kick, pattern: push, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: busy hats, loop: true }
+      - name: bridge
+        clips:
+          - { track: chords, pattern: pushes, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 1, 1], accidentals: ["b", "b", ~, ~, "b", "b", ~, ~], qualities: [M, M, ~, ~, M, M, ~, ~] } } }
+          - { track: lead, pattern: bridge tune, loop: true }
+          - { track: bass, pattern: bounce, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [6, 7, 1, 1, 6, 7, 1, 1], accidentals: ["b", "b", ~, ~, "b", "b", ~, ~], qualities: [M, M, ~, ~, M, M, ~, ~] } } }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: busy hats, loop: true }
+      - name: chorus 3
+        clips:
+          - { track: chords, pattern: pushes, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 1], accidentals: [~, "b", "b", ~, ~, "b", "b", ~], qualities: [~, M, M, ~, ~, M, M, ~] } } }
+          - { track: lead, pattern: chorus tune, loop: true }
+          - { track: bass, pattern: drive, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 1], accidentals: [~, "b", "b", ~, ~, "b", "b", ~], qualities: [~, M, M, ~, ~, M, M, ~] } } }
+          - { track: kick, pattern: push, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: busy hats, loop: true }
+      - name: chorus out
+        clips:
+          - { track: chords, pattern: pushes, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 1], accidentals: [~, "b", "b", ~, ~, "b", "b", ~], qualities: [~, M, M, ~, ~, M, M, ~] } } }
+          - { track: lead, pattern: chorus tune, loop: true }
+          - { track: bass, pattern: drive, repeat: 8, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1, 1, 6, 7, 1], accidentals: [~, "b", "b", ~, ~, "b", "b", ~], qualities: [~, M, M, ~, ~, M, M, ~] } } }
+          - { track: kick, pattern: push, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: busy hats, loop: true }
+      - name: ending
+        clips:
+          - { track: chords, pattern: pushes, loop: true, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1], accidentals: [~, "b", "b", ~], qualities: [~, M, M, ~] } } }
+          - { track: lead, pattern: ending tune, loop: true }
+          - { track: bass, pattern: drive, repeat: 4, built_in: { chords: { enabled: true, mode: progression, chords: [1, 6, 7, 1], accidentals: [~, "b", "b", ~], qualities: [~, M, M, ~] } } }
+          - { track: kick, pattern: push, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: busy hats, loop: true }
