@@ -30,8 +30,8 @@ sh user_scripts/setup.sh
 ### `build.sh`
 
 Builds llamatron2, the tracker in Rust, which `./llamatron.sh` opens, with the
-backend, offering to install Rust first. `./llamatron.sh` builds it itself
-each time it starts, so this is only needed to build without opening it.
+backend, offering to install Rust first. Run it once after cloning, and again
+after updating.
 
 ```
 sh user_scripts/build.sh
