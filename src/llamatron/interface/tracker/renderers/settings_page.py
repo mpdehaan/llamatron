@@ -52,8 +52,8 @@ class SettingsPageDrawing:
         return self.window_of_lines(lines=drawn.get_lines(), selected=drawn.get_selected(), height=height)
 
     def draw_settings(self, *, drawn, fields, width):
-        """Add the settings to the drawing, each field's lines, a tab box with its row of tabs, and a blank line before a section's
-        heading and after a field that leaves one."""
+        """Add the settings to the drawing, each field's lines, a tab box with its row of tabs after a blank line, and a blank line
+        before a section's heading and after a field that leaves one."""
         label_width = self.label_width()
         cursor = self._page.cursor.get_place()
         seen_heading = False
@@ -64,6 +64,9 @@ class SettingsPageDrawing:
                 inside_box -= 1
                 continue
             if field.IS_TAB_ROW:
+                # A tab box stands apart from the settings above it by a blank line, as a section does.
+                if not drawn.ends_blank():
+                    drawn.blank()
                 inside_box, box, box_selected = self.box_at(place=place, cursor=cursor, width=width)
                 drawn.add(box, selected_at=box_selected)
                 drawn.blank()

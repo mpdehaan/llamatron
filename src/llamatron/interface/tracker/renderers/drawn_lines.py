@@ -27,6 +27,10 @@ class DrawnLines:
     def blank(self):
         self._lines.append(Text(drawing.NOTHING))
 
+    def ends_blank(self):
+        """Return whether nothing is drawn yet or the last line drawn is blank."""
+        return not self._lines or not self._lines[-1].plain
+
     def add(self, lines, *, selected_at=None):
         """Add lines, the cursor's being the one at selected_at among them where it is given."""
         if selected_at is not None:

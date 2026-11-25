@@ -481,6 +481,10 @@ impl<F: Form> FieldPage<F> {
                 continue;
             }
             if field.is_tab_row() {
+                // A tab box stands apart from the settings above it by a blank line, as a section does.
+                if lines.last().is_some_and(|line| !line.text().is_empty()) {
+                    lines.push(Text::default());
+                }
                 let tab_box = shown.tab_box().expect("a row of tabs has its box");
                 let count = tab_box.tabs[shown.chosen].field_count();
                 let inside = if cursor == place {
