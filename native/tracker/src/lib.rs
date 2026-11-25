@@ -7,6 +7,7 @@
 
 pub mod app;
 pub mod chord_text;
+pub mod chord_tones;
 pub mod components;
 pub mod document;
 pub mod drawing;
@@ -31,6 +32,7 @@ pub mod text;
 pub mod themes;
 pub mod tour;
 pub mod uses;
+pub mod voice_leading;
 pub mod wav;
 
 pub use generated::keybindings;

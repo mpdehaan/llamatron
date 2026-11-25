@@ -200,6 +200,8 @@ DIVIDED_STEP = Fraction(1, 16)
 EVERY_OTHER = 2
 INVERTED_SCALE = 7
 INVERTED_OCTAVE = 3
+# The octave a step's chord tones are worked out in, as a step with none takes the default.
+TONES_OCTAVE = 3
 
 
 def pattern_edit_steps(steps, drum):
@@ -248,6 +250,19 @@ def python_pattern_edits(path):
                 results.append([edit, name, pattern.to_data()])
             except Exception as error:
                 results.append([edit, name, 'refused: ' + str(error)])
+        # Every step's chord tones, in the set's first scale and with no scale known, as the roll draws them.
+        scale_names = setlist.get_scale_names()
+        for scale in ([setlist.get_named_scale(scale_names[0])] if scale_names else []) + [None]:
+            tones = [[list(tone) for tone in original.chord_tones(step=step, octave=TONES_OCTAVE, scale=scale)] for step in range(original.get_steps())]
+            results.append(['chord_tones', name, tones])
+            if scale is not None:
+                for octaves in (False, True):
+                    pattern = original.copy()
+                    try:
+                        pattern.apply_voice_leading(scale=scale, default_octave=TONES_OCTAVE, octaves=octaves)
+                        results.append(['apply_voice_leading', name, pattern.to_data()])
+                    except Exception as error:
+                        results.append(['apply_voice_leading', name, 'refused: ' + str(error)])
     return json.dumps(results, default=str)
 
 

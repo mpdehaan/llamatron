@@ -519,7 +519,7 @@ fn munge_as(app: &mut App, place: &Place, choice: usize) {
         RANDOMIZE_BEFORE => munged(app, name, |pattern| at_random(|random| pattern.shuffle_through(step, random))),
         COPY_BEFORE_TO_END | COPY_AFTER_TO_END | COPY_BEFORE_TO_START | COPY_AFTER_TO_START => copy_steps(app, place, choice),
         INVERT_MELODY => invert_melody(app, place),
-        VOICE_LEADING | VOICE_LEADING_OCTAVES => lead_voices(app, place),
+        VOICE_LEADING | VOICE_LEADING_OCTAVES => lead_voices(app, place, choice),
         DIVIDE_NOTES => {
             let covering = app
                 .document
@@ -713,8 +713,9 @@ fn invert_melody(app: &mut App, place: &Place) {
     munged(app, &place.name, |pattern| pattern.invert_melody(step, size, octave));
 }
 
-/// Write the inversions that move each chord the least from the chord before; not ported yet past its checks.
-fn lead_voices(app: &mut App, place: &Place) {
+/// Write the inversions that move each chord the least from the chord before, measured in the scale the pattern plays
+/// under.
+fn lead_voices(app: &mut App, place: &Place, choice: usize) {
     if place.scale_size.is_none() {
         app.refuse(errors::ERR_MUNGE_NO_SCALE);
         return;
@@ -728,9 +729,22 @@ fn lead_voices(app: &mut App, place: &Place) {
         app.refuse(errors::ERR_VOICE_LEADING_NEEDS_CHORDS);
         return;
     }
-    app.show_page(Box::new(crate::screens::not_ported::NotPorted {
-        name: "VoiceLeading".to_string(),
-    }));
+    let setlist = app.document.get_setlist();
+    let Some(scale) = crate::patterns::scales_of_pattern(setlist, app.document.song(), &place.name)
+        .first()
+        .and_then(|name| {
+            let Some(Item::Scale(held)) = setlist.get_item(Section::SCALES, name) else {
+                return None;
+            };
+            crate::chord_text::ChordScale::new(&crate::patterns::scale_root(setlist, name), held.get_kind().as_str()?)
+        })
+    else {
+        return;
+    };
+    let (octave, octaves) = (place.default_octave, choice == munge::VOICE_LEADING_OCTAVES);
+    munged(app, &place.name, |pattern| {
+        crate::voice_leading::apply_voice_leading(pattern, &scale, octave, octaves)
+    });
 }
 
 /// Ask for a whole number within limits and munge the pattern with it, saying on the status line why a number or the munge

@@ -122,6 +122,54 @@ impl<'a> Roll<'a> {
         }
     }
 
+    /// The rows of the notes a note's chord adds above its own, for the thin lines the roll draws them as; a step that grabs
+    /// has none, since its chord is built on whatever note the grab takes.
+    fn ghost_pitches(&self, start: usize) -> BTreeSet<i64> {
+        let mut ghosts = BTreeSet::new();
+        if self.grabs(start) {
+            return ghosts;
+        }
+        let scale = self.scale.as_ref().and_then(|name| {
+            let Some(llamatron_model::objects::setlist::Item::Scale(held)) = self.setlist.get_item(Section::SCALES, name) else {
+                return None;
+            };
+            crate::chord_text::ChordScale::new(&scale_root(self.setlist, name), held.get_kind().as_str()?)
+        });
+        for (degree, octave, accidental) in crate::chord_tones::chord_tones(self.pattern, start, self.step_octave(start), scale.as_ref()) {
+            let (octaves_up, place) = ((degree - MIN_DEGREE).div_euclid(self.size), (degree - MIN_DEGREE).rem_euclid(self.size));
+            let mut pitch = (octave + octaves_up) * self.per_octave + self.scale_steps[place as usize];
+            if self.scale.is_some() {
+                pitch += match accidental.as_deref() {
+                    Some("#") => 1,
+                    Some("b") => -1,
+                    _ => 0,
+                };
+            }
+            if (0..=self.highest_pitch()).contains(&pitch) {
+                ghosts.insert(pitch);
+            }
+        }
+        ghosts
+    }
+
+    /// Whether a note doesn't sound where it is written: its chord has an inversion, which plays the root an octave up, or
+    /// its Omit row leaves the root out.
+    fn root_is_lifted(&self, start: usize) -> bool {
+        if value(self.pattern, Row::CHORD, start).is_none() {
+            return false;
+        }
+        if value(self.pattern, Row::INVERSION, start)
+            .and_then(Data::as_whole)
+            .is_some_and(|inversion| inversion != 0)
+        {
+            return true;
+        }
+        let omit = value(self.pattern, Row::OMIT, start).and_then(Data::as_str);
+        llamatron_model::schema::generated::file_format::OMITTED_ROLES
+            .iter()
+            .any(|(name, roles)| Some(*name) == omit && roles.contains(&"root"))
+    }
+
     fn highest_pitch(&self) -> i64 {
         (MAX_OCTAVE + 1) * self.per_octave - 1
     }
@@ -201,6 +249,7 @@ impl<'a> Roll<'a> {
             if let Some(pitch) = self.pitch_of(start) {
                 pitches.insert(pitch);
             }
+            pitches.extend(self.ghost_pitches(start));
         }
         pitches.into_iter().rev().collect()
     }
@@ -607,9 +656,31 @@ impl PatternEditor {
         };
         let selected = cursor_step == Some(step);
         let note_here = start.is_some() && pitch_of_start == Some(pitch);
+        let hollow = start.is_some_and(|start| roll.root_is_lifted(start));
+        let columns_of = |start: usize| {
+            if step != start + note_span(roll.pattern, start, roll.step_size) - 1 {
+                CELL_WIDTH
+            } else {
+                partial_cell(roll.pattern, start, roll.step_size).map_or(CELL_WIDTH, filled_columns)
+            }
+        };
+        if !note_here {
+            if let Some(start) = start.filter(|start| roll.ghost_pitches(*start).contains(&pitch)) {
+                let edge = if start != step { Edge::Ghost } else { plain_edge };
+                return (
+                    edge,
+                    RollCell {
+                        kind: CellKind::Ghost,
+                        mark: None,
+                        hollow: false,
+                        columns: columns_of(start),
+                        selected,
+                    },
+                );
+            }
+        }
         if note_here {
             let start = start.expect("a note covers the step");
-            let hollow = false;
             let edge = if start != step {
                 if hollow {
                     Edge::Hollow

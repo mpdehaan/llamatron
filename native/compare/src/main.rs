@@ -519,6 +519,8 @@ const DIVIDED_STEP_PARTS: i128 = 16;
 const EVERY_OTHER: i64 = 2;
 const INVERTED_SCALE: i64 = 7;
 const INVERTED_OCTAVE: i64 = 3;
+/// The octave a step's chord tones are worked out in, as a step with none takes the default.
+const TONES_OCTAVE: i64 = 3;
 
 /// The sections whose first item the edits step renames, copies, deletes, moves and sorts, and what a renamed item's name adds.
 const EDITED_SECTIONS: [&str; 15] = [
@@ -778,6 +780,44 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
                 Err(problem) => Data::text(&format!("refused: {}", problem.message)),
             };
             results.push(Data::List(vec![Data::text(edit), Data::text(name), outcome]));
+        }
+        // Every step's chord tones, in the set's first scale and with no scale known, as the roll draws them.
+        let first_scale = setlist.items("scales").first().and_then(|(scale, item)| match item {
+            llamatron_model::objects::setlist::Item::Scale(held) => {
+                llamatron_tracker::chord_text::ChordScale::new(&llamatron_tracker::patterns::scale_root(setlist, scale), held.get_kind().as_str()?)
+            }
+            _ => None,
+        });
+        let scales: Vec<Option<llamatron_tracker::chord_text::ChordScale>> = first_scale.into_iter().map(Some).chain([None]).collect();
+        for scale in scales {
+            let tones = (0..steps)
+                .map(|step| {
+                    let tones = llamatron_tracker::chord_tones::chord_tones(original, step, TONES_OCTAVE, scale.as_ref());
+                    Data::List(
+                        tones
+                            .into_iter()
+                            .map(|(degree, octave, accidental)| {
+                                Data::List(vec![
+                                    Data::Whole(degree as i128),
+                                    Data::Whole(octave as i128),
+                                    accidental.map_or(Data::Null, |accidental| Data::text(&accidental)),
+                                ])
+                            })
+                            .collect(),
+                    )
+                })
+                .collect();
+            results.push(Data::List(vec![Data::text("chord_tones"), Data::text(name), Data::List(tones)]));
+            if let Some(scale) = &scale {
+                for octaves in [false, true] {
+                    let mut pattern = original.clone();
+                    let outcome = match llamatron_tracker::voice_leading::apply_voice_leading(&mut pattern, scale, TONES_OCTAVE, octaves) {
+                        Ok(()) => pattern.to_data(),
+                        Err(problem) => Data::text(&format!("refused: {}", problem.message)),
+                    };
+                    results.push(Data::List(vec![Data::text("apply_voice_leading"), Data::text(name), outcome]));
+                }
+            }
         }
     }
     json(&Data::List(results))
