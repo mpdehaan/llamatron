@@ -387,6 +387,11 @@ impl TrackEditor {
 }
 
 impl Form for TrackEditor {
+    /// ENTER on the Name field and F2 ask for a new name, refusing an empty one or one already taken.
+    fn rename(&self, app: &mut App) -> Option<()> {
+        crate::screens::rename::ask_rename(app, Section::TRACKS, &self.name, messages::MSG_RENAME_TRACK_PROMPT);
+        Some(())
+    }
     fn follow_renames(&mut self, renames: &crate::history::Renames) {
         let section = llamatron_model::schema::generated::file_format::Section::TRACKS;
         crate::page::follow_name(&mut self.name, section, renames);
@@ -496,4 +501,65 @@ fn instruments_of_role(app: &App, role: &str) -> Vec<String> {
         }
     }
     names
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::app::Tracker;
+    use crate::keybindings::{FieldPage as FieldKeys, PromptDialog as PromptKeys};
+    use crate::keys::first_key;
+    use crate::screens::field_page::FieldPage;
+    use llamatron_model::objects::setlist::Setlist;
+
+    /// A song of two tracks, bass and lead, and one scene.
+    const TWO_TRACK_SET: &str = "songs:\n  - name: song\n    tracks: [{ name: bass }, { name: lead }]\n    scenes: [{ name: one }]\n";
+
+    /// The tracker on the track editor of the bass track.
+    fn on_the_bass_track() -> Tracker {
+        let setlist = Setlist::read_text(TWO_TRACK_SET, None).expect("the scenario's set is valid");
+        let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
+        tracker.app.show_page(Box::new(FieldPage::new(TrackEditor { name: "bass".to_string() })));
+        tracker.settle();
+        tracker
+    }
+
+    /// Type a new name into the rename prompt over the old one, and press ENTER.
+    fn type_name(tracker: &mut Tracker, old: &str, new: &str) {
+        for _ in old.chars() {
+            tracker.press(first_key(&PromptKeys::ERASE));
+        }
+        for character in new.chars() {
+            tracker.press(&character.to_string());
+        }
+        tracker.press(first_key(&PromptKeys::DONE));
+    }
+
+    fn track_names(tracker: &Tracker) -> Vec<String> {
+        tracker.app.document.song().tracks().iter().map(|(name, _)| name.clone()).collect()
+    }
+
+    /// ENTER on the track editor's Name field asks for a new name and renames the track, the page following it.
+    #[test]
+    fn enter_on_the_name_renames_the_track() {
+        let mut tracker = on_the_bass_track();
+        assert!(tracker.top().place_kind(&tracker.app).ends_with(labels::MSG_NAME_LABEL), "the cursor on Name");
+        tracker.press(first_key(&FieldKeys::ENTER));
+        assert_eq!(tracker.top().name(), "PromptDialog");
+        type_name(&mut tracker, "bass", "groove");
+        assert_eq!(track_names(&tracker), vec!["groove", "lead"]);
+        assert!(
+            tracker.top().crumbs(&tracker.app).iter().any(|crumb| crumb.contains("groove")),
+            "the page follows the rename"
+        );
+    }
+
+    /// F2 renames the track wherever the cursor is, and a name another track has is refused.
+    #[test]
+    fn f2_renames_the_track_and_refuses_a_taken_name() {
+        let mut tracker = on_the_bass_track();
+        tracker.press("f2");
+        type_name(&mut tracker, "bass", "lead");
+        assert_eq!(track_names(&tracker), vec!["bass", "lead"]);
+    }
 }

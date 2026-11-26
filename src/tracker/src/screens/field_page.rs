@@ -70,6 +70,12 @@ pub trait Form {
     /// Store or act on what a key did to the field of an id.
     fn apply(&mut self, _app: &mut App, _id: usize, _edit: Edit) {}
 
+    /// Ask for a new name for what the page shows, as ENTER on its Name field and F2 do; None where the page's Name is
+    /// renamed some other way, which then reaches apply as ENTER on the Name field.
+    fn rename(&self, _app: &mut App) -> Option<()> {
+        None
+    }
+
     /// The page's own keys besides its fields', where the cursor is on a row.
     fn page_keys(&self, _app: &App, _row: Option<&Field>) -> Vec<KeyItem> {
         Vec::new()
@@ -592,6 +598,13 @@ impl<F: Form> FieldPage<F> {
     }
 
     /// The edit a field's key makes, by the binding pressed.
+    /// Rename what the page shows from its Name field, or hand the page ENTER on the field where it renames another way.
+    fn rename_or_apply(&mut self, app: &mut App, id: usize) {
+        if self.form.rename(app).is_none() {
+            self.form.apply(app, id, Edit::Enter);
+        }
+    }
+
     fn edit_of(&self, field: &Field, item: &KeyItem) -> Option<Edit> {
         if let Some((less, more)) = self.form.slot_keys() {
             if item.is(more) {
@@ -766,10 +779,11 @@ impl<F: Form> Page for FieldPage<F> {
         } else if item.is(&Keys::RENAME) {
             if let Some(name) = shown.every_field().find(|each| each.kind == Kind::Name) {
                 let id = name.id;
-                self.form.apply(app, id, Edit::Enter);
+                self.rename_or_apply(app, id);
             }
         } else if let Some(field) = self.cell_field(&shown).cloned() {
             match self.edit_of(&field, item) {
+                Some(Edit::Enter) if field.kind == Kind::Name => self.rename_or_apply(app, field.id),
                 Some(_) if field.is_heading() => {
                     let label = field.label.clone();
                     if !app.session.open_field_sections.remove(&label) {

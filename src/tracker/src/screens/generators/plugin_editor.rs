@@ -882,6 +882,16 @@ impl PluginEditor {
 }
 
 impl Form for PluginEditor {
+    /// ENTER on the Name field and F2 ask for a new name for the generator, refusing an empty one or one already taken.
+    fn rename(&self, app: &mut App) -> Option<()> {
+        let label = crate::screens::generators::generators_page::listed_kinds()
+            .into_iter()
+            .find(|(kind, ..)| *kind == self.kind)
+            .map_or("", |(_, _, label)| label);
+        let prompt = named(messages::MSG_RENAME_GENERATOR_PROMPT, &[("label", label.into())]);
+        crate::screens::rename::ask_rename(app, self.section(), &self.name, &prompt);
+        Some(())
+    }
     fn follow_renames(&mut self, renames: &crate::history::Renames) {
         let section = self.section();
         crate::page::follow_name(&mut self.name, section, renames);

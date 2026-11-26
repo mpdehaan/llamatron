@@ -50,6 +50,12 @@ fn style_field(id: usize, label: &str, choices: &[&str], current: Option<String>
 }
 
 impl Form for SongPage {
+    /// ENTER on the Name field and F2 ask for a new name for the current song, refusing an empty one or one already taken.
+    fn rename(&self, app: &mut App) -> Option<()> {
+        let song = app.document.get_current_song_name().to_string();
+        crate::screens::rename::ask_rename(app, Section::SONGS, &song, messages::MSG_RENAME_SONG_PROMPT);
+        Some(())
+    }
     fn name(&self) -> &'static str {
         "SongPage"
     }

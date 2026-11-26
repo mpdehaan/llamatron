@@ -1418,6 +1418,11 @@ fn rate_shown(rate: i64) -> String {
 }
 
 impl Form for InstrumentEditor {
+    /// ENTER on the Name field and F2 ask for a new name, refusing an empty one or one already taken.
+    fn rename(&self, app: &mut App) -> Option<()> {
+        crate::screens::rename::ask_rename(app, Section::INSTRUMENTS, &self.name, messages::MSG_RENAME_INSTRUMENT_PROMPT);
+        Some(())
+    }
     fn follow_renames(&mut self, renames: &crate::history::Renames) {
         let section = llamatron_model::schema::generated::file_format::Section::INSTRUMENTS;
         crate::page::follow_name(&mut self.name, section, renames);
