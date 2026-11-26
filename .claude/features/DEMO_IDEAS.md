@@ -21,6 +21,9 @@ Each made with its engine; no artist named in a title or name, a homage's inspir
 - **glass_tide.yml** on Wavetable: digital ambient.
 - **night_shift.yml** on FM with SynTom: a 1980s action-film synth score.
 - The chip engines DustCart, BitArcade and Bytecrunch, and Pocket Drum, joining cartridge_quest and side_pocket.
+- A demo for each new kind of modulator as it is built: LFO+ (a vibrato fading into held notes, a tremolo locked to
+  the tempo through a ramp, a Smooth random drift), Snail, Chaos, Tide, Turing, Bounce and Swarm (SYNTH_IDEAS.md,
+  "Demos of the new modulators").
 - A set whose tracks play through FluidSynth and the built-in instruments together, its WAV export tested.
 
 ## Other Demos

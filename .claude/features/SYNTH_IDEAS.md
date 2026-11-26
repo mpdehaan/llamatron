@@ -8,21 +8,27 @@ The professor's research is in `.claude/notes/synthesis/`.
 
 - **Modulators for MIDI instruments**: an instrument playing FluidSynth or an External MIDI device gets the Modulators
   and Mod Matrix tabs, the tabs that make no sense for it hidden (an instrument with no engine gets none). Its Mod Matrix
-  destinations are a CC by number, Velocity, Note (scale degrees, an amount of 0 to +12, separate from Pitch) and Octave
-  (0 to +4, kept within the instrument's or track's octave range); Note and Octave are offered to built-in synths too.
+  destinations are a CC by number, Velocity, Note (scale degrees, an amount of 0 to +12, separate from Pitch), Octave
+  (0 to +4, kept within the instrument's or track's octave range) and Glide (the pattern step's own glide, turned on or
+  off as the modulator crosses its middle, where the engine plays glides; left out where it cannot); Note, Octave and
+  Glide are offered to built-in synths too.
   The Realizer applies them to the pattern as rendered, reading each modulator at each step's time, so that what plays
   live is what the exports write: a chord on a moved step moves along the scale, taking the scale's quality there (C
   major up a degree in C major is D minor); a tied or glided note keeps the note it started on; a CC goes out ahead of
   its step's notes, only when its value changes, at most every 1/64 note, how often a setting of the MIDI tab with a
   default chosen from research into what devices handle.
+- **Modulators moving each other's rates**: a modulator as a Mod Matrix source for another's Rate, so that one LFO
+  speeds and slows another, rates only for now.
+- **Demos of the new modulators**: a demo for each new kind as it is built, LFO+ (Fade in, Tempo, Smooth random), Snail,
+  Chaos, Tide, Turing, Bounce and Swarm, each made to show what the modulator does to music, and kept to the synth demos'
+  rules (DEMO_IDEAS.md).
 - **Polarity on the Mod Matrix**: each route Bipolar (the source's -1 to 1 times the amount) or Unipolar (0 to the
   amount), Bipolar by default so that every set sounds as before; each Amount's gauge shows the range it gives in its
   destination's own units, such as "-4 to +4 degrees" or "0 to +4 octaves".
 - **Restart**: one field on each modulator, in place of the Retrigger and Each scene toggles, saying when its cycle
-  starts again: Each note; Each scene; On play, the default, from zero whenever playback starts of any kind, never
-  restarted by launching something while playing, so that a modulator no scene uses keeps running underneath; or Never,
-  counted from the song's start. Older sets keep their sound by a migration: Retrigger on becomes Each note, Each scene on
-  becomes Each scene, both off Never.
+  starts again: Each note; Each scene; or On play, the default, from zero whenever playback starts of any kind, never
+  restarted by launching something while playing, so that a modulator no scene uses keeps running underneath. Older sets
+  keep their sound by a migration: Retrigger on becomes Each note, Each scene on becomes Each scene, both off On play.
 - **Disconnect filter**: a switch on Env 2 that unhooks it from the filter, leaving Env 2 free for the Mod Matrix.
 - **New-instrument choices**: Blank, Sampled (FluidSynth, where installed), Synth, Drum Synth or External MIDI, beside Normal
   and Percussion, each choosing a few settings that can still be changed. Mockup first.
