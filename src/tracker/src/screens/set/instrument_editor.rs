@@ -711,7 +711,7 @@ impl InstrumentEditor {
 
     fn voice_fields(sound: &Sound, ids: &mut Ids) -> Vec<Field> {
         let sharing = text(&sound.value("filter_sharing"));
-        let fields = vec![
+        let mut fields = vec![
             gauge(
                 ids.at(Write::Sound("volume")),
                 labels::MSG_VOLUME_LABEL,
@@ -748,6 +748,10 @@ impl InstrumentEditor {
                 &sharing,
             ),
         ];
+        // A note's own filter or a shared one differ only while two notes sound at once, which one voice never does.
+        if whole(&sound.value("voices")) <= 1 {
+            fields.retain(|field| field.label != labels::MSG_FILTER_SHARING_LABEL);
+        }
         fields
     }
 
@@ -1326,5 +1330,23 @@ mod tests {
         assert_eq!(beside.field.map(|field| field.value().to_string()), Some(control.to_string()));
         let other = InstrumentEditor::control_beside(0, 2, labels::MSG_SLOT_SOURCE_CC_LABEL, "lfo1");
         assert!(other.field.is_none(), "no CC field beside an LFO");
+    }
+
+    /// The Filter field, a note's own or one shared, shows only on an instrument of more than one voice.
+    #[test]
+    fn the_filter_sharing_shows_only_with_more_than_one_voice() {
+        let shows = |voices: i64| {
+            let text = format!("{{ name: synth, kind: built_in, role: normal, sound: {{ engine: basic, voices: {voices} }} }}");
+            let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
+            let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
+            let sound = Sound::of(&instrument);
+            let mut ids = Ids { last: 0, writes: Vec::new() };
+            InstrumentEditor::voice_fields(&sound, &mut ids)
+                .iter()
+                .any(|field| field.label == labels::MSG_FILTER_SHARING_LABEL)
+        };
+        let (one, several) = (1, 4);
+        assert!(!shows(one));
+        assert!(shows(several));
     }
 }
