@@ -53,8 +53,8 @@ Imported, loaded every session: `.claude/rules/COMMUNICATION.md` (working with t
   git-ignored.
 - `.claude/format/` and `.claude/tracker/`: the model, file format and pages, a file per part (table at the end).
 - `.claude/reference/COMMANDS.md`: every script and tool.
-- `.claude/reference/KEYMAP.md`: every key on every page. Look a key up here before reading a page's code; it is to be written
-  again by llamatron after a key changes, once its tool is back.
+- `.claude/reference/KEYMAP.md`: every key on every page, written by `internal_tools/key_map.sh` from a walk of llamatron. Look
+  a key up here before reading a page's code; rerun the script after changing a key.
 - `.claude/rules/DOCS.md`: how the documents and the website are written and kept current.
 - `.claude/features/`: one file per standalone feature: `SONG_WIZARD.md` (before working in `py_legacy/src/llamatron/wizards/create_song/`),
   `GENRES.md` (before working on a demo or a generator; nothing of the genre library goes on the website until the user says
@@ -89,6 +89,8 @@ sh build.sh                                                     # build llamatro
 ./llamatron.sh examples/learning/08_tie.yml                     # the tracker, on a set
 internal_tools/check_before_commit.sh                           # before committing code; check its real exit code
 .venv/bin/python internal_tools/compare_llamatron.py STEP       # llamatron held to the retired Python's frozen answers
+internal_tools/key_map.sh                                       # rewrite .claude/reference/KEYMAP.md after changing a key
+internal_tools/screenshots.sh                                   # the documents' screenshots, retaken only before a push
 internal_tools/push_all.sh                                      # the only way to push, only when asked
 ```
 

@@ -133,6 +133,9 @@ pub struct Explored {
     pub page: String,
     /// What the cursor was on there, as the page says it.
     pub kind: String,
+    /// The keys the page offered there, each the name its legend shows and what it does, where this place was the first of
+    /// its kind; none for the places after.
+    pub offered: Vec<(String, String)>,
     pub screen: Vec<Vec<(String, String)>>,
     pub panic: Option<String>,
 }
@@ -180,11 +183,19 @@ pub fn explore(set: &std::path::Path, folder: &std::path::Path, width: usize, he
         let mut next = Vec::new();
         for (path, place) in reached {
             match place {
-                Reached::Place { page, screen, kind, offered } => {
+                Reached::Place {
+                    page,
+                    screen,
+                    kind,
+                    offered,
+                    shown,
+                } => {
+                    let shown = if seen.contains(&kind) { Vec::new() } else { shown };
                     explored.push(Explored {
                         keys: path.clone(),
                         page,
-                        kind: kind.join(": "),
+                        kind: kind[1].clone(),
+                        offered: shown,
                         screen,
                         panic: None,
                     });
@@ -201,6 +212,7 @@ pub fn explore(set: &std::path::Path, folder: &std::path::Path, width: usize, he
                     keys: path,
                     page: String::new(),
                     kind: String::new(),
+                    offered: Vec::new(),
                     screen: Vec::new(),
                     panic: Some(said),
                 }),
@@ -219,6 +231,7 @@ enum Reached {
         screen: Vec<Vec<(String, String)>>,
         kind: Vec<String>,
         offered: Vec<String>,
+        shown: Vec<(String, String)>,
     },
     Refused(String),
     Panicked(String),
@@ -241,11 +254,19 @@ fn reach(text: &str, copy: &std::path::Path, path: &[String], width: usize, heig
         // A kind of place is its top page or dialog and what the cursor is on there: each has its keys tried once, wherever
         // it was opened from.
         let kind = vec![tracker.top().name().to_string(), tracker.top().place_kind(&tracker.app)];
+        let mut shown: Vec<(String, String)> = Vec::new();
+        for item in tracker.offered_keys() {
+            let key = (item.label.clone(), item.what.clone());
+            if !shown.contains(&key) {
+                shown.push(key);
+            }
+        }
         Ok(Reached::Place {
             page: tracker.top().name().to_string(),
             screen,
             kind,
             offered,
+            shown,
         })
     }));
     match reached {

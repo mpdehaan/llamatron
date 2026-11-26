@@ -286,6 +286,9 @@ fn serve() -> ExitCode {
 
 fn main() -> ExitCode {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
+    if arguments.first().map(String::as_str) == Some("keymap") {
+        return keymap(arguments.get(1).map(String::as_str), arguments.get(2).map(String::as_str));
+    }
     if arguments.first().map(String::as_str) == Some("explore") {
         return explore(arguments.get(1).map(String::as_str));
     }
@@ -1615,4 +1618,71 @@ fn explore(set: Option<&str>) -> ExitCode {
     } else {
         ExitCode::from(1)
     }
+}
+
+/// What KEYMAP.md says of itself above the pages.
+const KEYMAP_HEADING: &str = "# Key Map
+
+Written by `internal_tools/key_map.sh` from a walk of llamatron (`llamatron-compare keymap`); never edit it by hand. For
+every page and dialog the walk reaches, it says what each key does with the cursor at each kind of place, as the page names
+the place. The keys that work everywhere are listed once:
+
+- `Ctrl+S` SAVE
+- `Ctrl+O` OPEN
+- `Ctrl+X` EXPORT
+- `Ctrl+T` SILENCE
+- `Ctrl+Z` UNDO
+- `Ctrl+Y` REDO
+- `F1` HELP
+- `F3` ABOUT
+- `Ctrl+C` QUIT NOW
+";
+/// What a place is called where its page names no kind of place.
+const ANY_PLACE: &str = "anywhere";
+
+/// Write KEYMAP.md from a walk of the program on the sets named, separated by commas: each page's keys at each kind of place.
+fn keymap(sets: Option<&str>, out: Option<&str>) -> ExitCode {
+    let (Some(sets), Some(out)) = (sets, out) else {
+        eprintln!("usage: llamatron-compare keymap SET,SET OUT.md");
+        return ExitCode::from(2);
+    };
+    let folder = std::path::PathBuf::from(EXPLORE_FOLDER);
+    let _ = std::fs::create_dir_all(&folder);
+    std::panic::set_hook(Box::new(|_| {}));
+    // Each page's kinds of place in the order the walk first reached them, each with the keys it offered there.
+    let mut pages: std::collections::BTreeMap<String, Vec<(String, Vec<(String, String)>)>> = std::collections::BTreeMap::new();
+    for set in sets.split(',') {
+        let explored = match llamatron_tracker::tour::explore(std::path::Path::new(set), &folder, EXPLORE_COLUMNS, EXPLORE_ROWS) {
+            Ok(explored) => explored,
+            Err(problem) => {
+                eprintln!("{set}: {problem}");
+                return ExitCode::from(1);
+            }
+        };
+        for place in explored.into_iter().filter(|place| !place.offered.is_empty() && place.page != "(not ported)") {
+            let kinds = pages.entry(place.page).or_default();
+            let kind = if place.kind.trim().is_empty() {
+                ANY_PLACE.to_string()
+            } else {
+                place.kind.trim().to_string()
+            };
+            if !kinds.iter().any(|(known, _)| *known == kind) {
+                kinds.push((kind, place.offered));
+            }
+        }
+    }
+    let mut text = String::from(KEYMAP_HEADING);
+    for (page, kinds) in &pages {
+        let _ = write!(text, "\n\n## {page}\n\n");
+        for (kind, keys) in kinds {
+            let shown: Vec<String> = keys.iter().map(|(key, what)| format!("`{key}` {what}")).collect();
+            let _ = writeln!(text, "- **{kind}**: {}", shown.join(" · "));
+        }
+    }
+    if let Err(problem) = std::fs::write(out, text) {
+        eprintln!("{out}: {problem}");
+        return ExitCode::from(1);
+    }
+    println!("wrote {out}: {} pages", pages.len());
+    ExitCode::SUCCESS
 }
