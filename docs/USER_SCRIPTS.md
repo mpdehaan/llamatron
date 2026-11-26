@@ -157,7 +157,7 @@ Parameters:
 
 - `COLLECTION ...`: the collections to download, by their folders, such as
   `joplin`; asked one by one unless given.
-- `--all`: every collection and research dataset, without asking.
+- `--all`: every collection, without asking.
 
 ## Recording Videos
 

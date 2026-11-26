@@ -4,15 +4,15 @@
 
 """Download the corpus into output/corpus/, which git ignores, for study on this computer, run by user_scripts/fetch_corpus.sh:
 the public domain Humdrum scores and folk collections, from their maintainers' repositories, the Public Domain Song
-Anthology, the Session's and Nottingham's folk tunes and the Mutopia Project's scores, and, offered apart with their own
-terms, research datasets. Nothing downloaded is committed or passed on; the song wizard's music theory was measured from
+Anthology, the Session's and Nottingham's folk tunes and the Mutopia Project's scores: public domain music only. Nothing
+downloaded is committed or passed on; the song wizard's music theory was measured from
 it, and the song wizard is to import songs from it where it is downloaded. Only the files a collection needs are kept,
 sparing the connection: an archive comes in one download with its other files dropped, the smaller Humdrum collections a
 file at a time with a pause between, a database as one file. A file already downloaded isn't downloaded again, a download
 past the size allowed is refused, and no archive member may land outside its folder. Nothing in the test suite runs this.
 
     sh user_scripts/fetch_corpus.sh                 asks collection by collection, saying each one's size and terms
-    sh user_scripts/fetch_corpus.sh --all           every collection and dataset, without asking
+    sh user_scripts/fetch_corpus.sh --all           every collection, without asking
     sh user_scripts/fetch_corpus.sh joplin essen    only the named ones, by their folders
 """
 
@@ -62,23 +62,14 @@ COLLECTIONS = (
     ('bach-art-of-fugue', FILES, 'craigsapp/art-of-the-fugue', 'main'),
     ('vivaldi-op6', FILES, 'craigsapp/vivaldi-op6', 'main'),
 )
-# Each research dataset: its folder under output/corpus/, how it comes, its address, the endings of the files kept, the most it may come
+# Each further source of public domain music: its folder under output/corpus/, how it comes, its address, the endings of the files kept, the most it may come
 # to in megabytes, and its terms.
 DATASETS = (
-    ('billboard', ARCHIVE, 'https://www.dropbox.com/s/2lvny9ves8kns4o/billboard-2.0-salami_chords.tar.gz?dl=1', ('.txt',), 5, 'CC0'),
-    ('billboard', SINGLE, 'https://www.dropbox.com/s/o0olz0uwl9z9stb/billboard-2.0-index.csv?dl=1', ('.csv',), 1, 'CC0'),
-    ('rock-corpus', ZIP, 'https://rockcorpus.midside.com/versions/rock_corpus_v2-1.zip', ('.txt', '.har', '.mel', '.clt', '.nlt', '.csv', '.tsv'), 5, 'CC BY 4.0'),
-    ('groove-midi', ZIP, 'https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip', ('.mid', '.midi', '.csv'), 10, 'CC BY 4.0'),
-    ('openewld', ARCHIVE, 'https://codeload.github.com/00sapo/OpenEWLD/tar.gz/master', ('.mxl', '.xml', '.db', '.csv', '.json'), 10, 'public domain scores, MIT for the rest'),
     ('song-anthology', DATAVERSE, 'https://dataverse.lib.virginia.edu doi:10.18130/V3/C4RD06', ('.xml',), 30, 'CC0, waived by David Berger and Chuck Israels'),
     ('thesession', SINGLE, 'https://raw.githubusercontent.com/adactio/TheSession-data/main/json/tunes.json', ('.json',), 30, 'published openly by the Session for reuse'),
     ('nottingham', ARCHIVE, 'https://codeload.github.com/jukedeck/nottingham-dataset/tar.gz/master', ('.abc',), 5, 'GPL-3.0'),
     ('mutopia', MUTOPIA, 'https://www.mutopiaproject.org/cgibin/make-table.cgi?Composer={composer}&preview=1', ('.mid',), 30,
      'public domain or Creative Commons, piece by piece; MIDI made from the engraved scores'),
-    ('maestro', ZIP, 'https://storage.googleapis.com/magentadata/datasets/maestro/v3.0.0/maestro-v3.0.0-midi.zip', ('.mid', '.midi', '.csv', '.json'), 70,
-     'CC BY-NC-SA 4.0, non-commercial; piano competition performances'),
-    ('chordonomicon', SINGLE, 'https://huggingface.co/datasets/ailsntua/Chordonomicon/resolve/main/chordonomicon_v2.csv', ('.csv',), 270,
-     'MIT; the chords of songs from chord pages people made, uneven in quality, with no melodies and no words'),
 )
 # The composers sampled from the Mutopia Project, by its codes, across the periods from the Renaissance to early American music,
 # and how many pieces of each (120 B): a diverse classical sample of MIDI made from engraved scores.
@@ -96,14 +87,10 @@ COLLECTION_TERMS = 'public-domain music; the encodings their editors\', for stud
 # the sources' folders.
 CATEGORIES = (
     ('Public-domain scores', 'engraved or encoded scores of music out of copyright: rags, mazurkas, sonatas, old songs',
-     ('joplin', 'chopin-mazurkas', 'haydn-piano-sonatas', 'mozart-piano-sonatas', 'mutopia', 'song-anthology', 'openewld')),
+     ('joplin', 'chopin-mazurkas', 'haydn-piano-sonatas', 'mozart-piano-sonatas', 'mutopia', 'song-anthology')),
     ('Public-domain chamber, choral and keyboard scores', 'string quartets, four-part chorales, fugues and concertos, so that the classical corpus is not all piano',
      ('beethoven-string-quartets', 'beethoven-piano-sonatas', 'bach-chorales', 'bach-art-of-fugue', 'vivaldi-op6')),
     ('Folk tunes', 'single-line traditional tunes, many transcribed by players', ('essen', 'thesession', 'nottingham')),
-    ('Research annotations', 'experts\' labels: chart songs\' chords, rock harmony, drummers',
-     ('billboard', 'rock-corpus', 'groove-midi')),
-    ('Recorded piano performances', 'competition performances as MIDI, for non-commercial use', ('maestro',)),
-    ('Chords of popular songs', 'the chords and sections of a great many songs with a genre and a decade for each, measured only', ('chordonomicon',)),
 )
 EVERYTHING = '--all'
 YES = ('y', 'yes')
@@ -112,14 +99,14 @@ JOIN = ', '
 HAVE = 'already here'
 HAVE_NOT = 'not here yet'
 INTRODUCTION = ('The corpus, downloaded into output/corpus/ (which git ignores) for analysis on this computer only.\n'
-                'Each category is asked about; a part left out is passed over when the corpus is recalculated.\n')
+                'Each category is asked about.\n')
 CATEGORY_HEADING = '{title} (up to {megabytes} MB)'
 CATEGORY_ABOUT = '  {about}'
 SOURCE_LINE = '  - {name}: up to {megabytes} MB; {terms}; {have}'
 QUESTION = '  Fetch these? [y/N] '
 NOTHING_CHOSEN = 'nothing chosen, nothing fetched'
 NO_SUCH_SOURCE = 'no source called ({names}); the sources: {known}'
-WHAT_NEXT = 'next: internal_tools/analysis_and_generation/corpus_tables.sh measures what is here into tables'
+WHAT_NEXT = 'downloaded into output/corpus/'
 FETCHED = '{name}: {count} scores in {folder}'
 FETCHED_WITH_TERMS = '{name}: {count} files in {folder} ({terms})'
 TOO_BIG = 'refused: the collections would come to {size} bytes, past the {allowed} allowed'
@@ -213,7 +200,7 @@ def fetch_mutopia(*, folder, address, allowed):
 
 
 def fetch_dataset(*, folder, kind, url, endings, allowed=ALLOWED_BYTES):
-    """Fetch one research dataset: a single file saved under its own name, the kept files of a Dataverse dataset, or an archive
+    """Fetch one further source: a single file saved under its own name, the kept files of a Dataverse dataset, or an archive
     with only the files whose endings are kept, each member's path checked."""
     if kind == DATAVERSE:
         return fetch_dataverse(folder=folder, address=url, endings=endings, allowed=allowed)
