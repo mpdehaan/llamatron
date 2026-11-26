@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The Sallen-Key filter, after the resonant two-pole circuit of the early semi-modular monosynth: two one-pole sections and a
 //! one-pole high-pass in the feedback loop, which give a two-pole slope whose resonance peaks hard and screams as it is
-//! driven, its loop saturating so that it self-oscillates into a growl rather than a clean sine.
+//! driven, its loop saturating harder as the resonance nears the top, so that it growls rather than sings, stopping just
+//! short of self-oscillation.
 //!
 //! The zero-delay-feedback model is read from sst-filters' K35Filter.h, by the Surge Synth Team, GPL-3.0-or-later,
 //! itself adapted from Odin 2 by TheWaveWarden, GPL-3.0-or-later, after Will Pirkle's virtual-analog
@@ -11,10 +12,12 @@
 
 use std::f64::consts::PI;
 
-/// The loop gain at full resonance, just past two, where the loop rings on by itself: the circuit self-oscillates at its
-/// top resonance, its saturation holding the sine at about a quarter of full level. (sst-filters stops at 1.96, short of
-/// oscillating; the original circuit does not.)
-const MOST_LOOP_GAIN: f64 = 2.05;
+/// The loop gain at full resonance, as sst-filters has it: just short of two, where the loop would ring on by itself, so
+/// that full resonance rings long after a note but never holds a tone with no input to stop it.
+const MOST_LOOP_GAIN: f64 = 1.96;
+/// How much harder the loop's saturation is pushed at full resonance than at none: the peak at the cutoff, tall near the
+/// top, is squashed and grows the circuit's growl as the resonance rises, as the driven circuit screams near oscillation.
+const EDGE_PUSH: f64 = 3.0;
 /// The least loop gain, so that the output, divided by it, stays finite.
 const LEAST_LOOP_GAIN: f64 = 0.01;
 
@@ -33,6 +36,7 @@ pub struct SallenKeyState {
     low_beta: f64,
     high_beta: f64,
     loop_gain: f64,
+    edge: f64,
     alpha: f64,
     first: f64,
     feedback_high: f64,
@@ -65,6 +69,8 @@ impl SallenKeyState {
         let loop_gain = (resonance * MOST_LOOP_GAIN).clamp(LEAST_LOOP_GAIN, MOST_LOOP_GAIN);
         self.share = share;
         self.loop_gain = loop_gain;
+        // Cubed, so the edge stays out of the way through the middle of the range and comes in over its top third.
+        self.edge = 1.0 + EDGE_PUSH * resonance.clamp(0.0, 1.0).powi(3);
         match form {
             Form::Low => {
                 self.low_beta = (loop_gain - loop_gain * share) / (1.0 + g);
@@ -86,6 +92,7 @@ impl SallenKeyState {
         let first = low_pass(share, input, &mut self.first);
         let fed_back = self.low_beta * self.second + self.high_beta * self.feedback_high;
         let solved = self.alpha * (first + fed_back);
+        let push = push * self.edge;
         let saturated = (solved * push).tanh() / push;
         let out = self.loop_gain * low_pass(share, saturated, &mut self.second);
         high_pass(share, out, &mut self.feedback_high);
@@ -101,6 +108,7 @@ impl SallenKeyState {
         let fed_back = self.high_beta * self.second + self.low_beta * self.first;
         let solved = self.alpha * (first + fed_back);
         let clean = self.loop_gain * solved;
+        let push = push * self.edge;
         let out = (clean * push).tanh() / push;
         let passed = high_pass(share, out, &mut self.second);
         low_pass(share, passed, &mut self.first);
@@ -123,9 +131,9 @@ mod tests {
     /// A quiet sine, below where the loop's saturation bends it.
     const QUIET: f64 = 0.1;
 
-    /// The low-pass passes a low sine and cuts a high one, and at full resonance a click rings on at the cutoff.
+    /// The low-pass passes a low sine and cuts a high one, and at full resonance a click rings long but dies away.
     #[test]
-    fn the_low_pass_cuts_above_its_cutoff_and_rings_at_full_resonance() {
+    fn the_low_pass_cuts_above_its_cutoff_and_rings_without_oscillating() {
         let cutoff = 1_000.0;
         let level = |frequency: f64, resonance: f64| {
             let mut state = SallenKeyState::default();
@@ -143,16 +151,21 @@ mod tests {
         let (low, high, quiet) = (100.0, 8_000.0, 0.0);
         assert!(level(low, quiet) > 0.8, "a low sine passes");
         assert!(level(high, quiet) < 0.05, "a high sine is cut");
-        let mut state = SallenKeyState::default();
-        state.prepare(Form::Low, cutoff, 1.0, RATE);
-        let mut tail: f64 = 0.0;
-        for place in 0..(RATE as usize / 10) {
-            let out = state.low(if place == 0 { 1.0 } else { 0.0 }, 1.0);
-            if place > RATE as usize / 20 {
-                tail = tail.max(out.abs());
+        let ringing = |from: f64, to: f64| {
+            let mut state = SallenKeyState::default();
+            state.prepare(Form::Low, cutoff, 1.0, RATE);
+            let mut most: f64 = 0.0;
+            for place in 0..(RATE * to) as usize {
+                let out = state.low(if place == 0 { 1.0 } else { 0.0 }, 1.0);
+                if place as f64 > RATE * from {
+                    most = most.max(out.abs());
+                }
             }
-        }
-        assert!(tail > 0.001, "full resonance still rings 50 ms after a click");
+            most
+        };
+        let (soon, later, long_after) = (0.01, 0.02, 1.0);
+        assert!(ringing(soon, later) > 0.001, "full resonance still rings 10 ms after a click");
+        assert!(ringing(long_after - 0.1, long_after) < 1e-6, "and is silent a second later");
     }
 
     /// The high-pass cuts a low sine and passes a high one.

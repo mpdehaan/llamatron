@@ -12,7 +12,7 @@
 //! - OTA: the creamier ladder, a softer drive before it.
 //! - Multimode: a state-variable filter, low, band, high or notch, its Q from the resonance.
 //! - Sallen-Key: the resonant two-pole circuit (sallen_key.rs), low or high pass, two poles with a high-pass in its loop, Drive
-//!   pushing the loop's saturation so that it screams, self-oscillating at full resonance.
+//!   pushing the loop's saturation so that it screams, harder near full resonance, stopping short of self-oscillation.
 //!
 //! The cutoff is moved in octaves a sample by Env2 through the Env amount, key tracking and the mod matrix; its
 //! coefficients are worked out again every `COEFFICIENT_STEP` samples, which no ear can hear as steps.

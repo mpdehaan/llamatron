@@ -58,9 +58,10 @@ high-pass, modelled on its circuit. Two one-pole sections pass the sound, and
 a third, a high-pass, sits in the feedback loop, so the resonance peaks hard
 and thin rather than round. The loop saturates: Drive pushes the saturation
 inside the loop rather than the sound going in, so a driven, resonant
-Sallen-Key growls and screams rather than only getting louder. At full
-resonance the loop rings on by itself and the filter self-oscillates at its
-cutoff, a sine the saturation holds steady.
+Sallen-Key growls and screams rather than only getting louder. As the
+resonance nears the top the loop saturates harder, so the peak turns from a
+whistle into a snarl; full resonance rings long after each note but stops
+just short of self-oscillating, so the filter never holds a tone of its own.
 
 ## Diode
 
