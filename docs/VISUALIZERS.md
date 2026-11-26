@@ -1,8 +1,8 @@
 # Visualizers
 
 The visualizers are coming back to llamatron, which is now written in Rust.
-The lava lamp, the spectrum, the plasma and the cycle play now, and the other
-modes below follow.
+The lava lamp, the piano roll, the spectrum, the plasma and the cycle play now,
+and the other modes below follow.
 
 While a song plays in real time, Arrange can show a visualizer in place of its
 clips: a moving picture in full colour, drawn in the terminal from the notes

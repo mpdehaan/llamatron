@@ -13,6 +13,7 @@ pub mod colour;
 pub mod cycle;
 pub mod fields;
 pub mod lava_lamp;
+pub mod piano_roll;
 pub mod picture;
 pub mod plasma;
 pub mod showing;
@@ -99,7 +100,7 @@ pub trait Mode {
 }
 
 /// The modes built so far, by their names in a set file.
-const BUILT: [&str; 4] = [lava_lamp::OPTION, spectrum::OPTION, plasma::OPTION, cycle::OPTION];
+const BUILT: [&str; 5] = [lava_lamp::OPTION, piano_roll::OPTION, spectrum::OPTION, plasma::OPTION, cycle::OPTION];
 
 /// The modes built so far, by their names in a set file, in the order the visualizer key steps through them, the mode of
 /// modes last.
@@ -117,6 +118,7 @@ pub fn made(option: &str, hidden: &[String]) -> Option<Box<dyn Mode>> {
     let mode: Box<dyn Mode> = match option {
         lava_lamp::OPTION => Box::new(picture::Painted::new(lava_lamp::LavaLamp::new())),
         spectrum::OPTION => Box::new(spectrum::Spectrum::new()),
+        piano_roll::OPTION => Box::new(piano_roll::PianoRoll::new()),
         plasma::OPTION => Box::new(picture::Painted::new(plasma::Plasma::new())),
         cycle::OPTION => Box::new(cycle::Cycle::new(hidden)),
         _ => return None,
