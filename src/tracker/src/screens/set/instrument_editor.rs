@@ -21,8 +21,8 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
 use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::file_format::{
-    InstrumentSetting, Section, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, INSTRUMENT_KINDS, LFO_PLUS_SHAPES, LFO_RESTARTS, LFO_SHAPES, LFO_TYPES,
-    MATRIX_DESTINATIONS, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
+    InstrumentSetting, Section, BIPOLAR_SOURCES, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, INSTRUMENT_KINDS, LFO_PLUS_SHAPES, LFO_RESTARTS,
+    LFO_SHAPES, LFO_TYPES, MATRIX_DESTINATIONS, MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
@@ -34,6 +34,8 @@ use llamatron_strings::{labels, legends, marks, messages, named};
 const NAME: usize = 0;
 const GM_CELLS: usize = 12;
 const BLOCK_CELLS: usize = 8;
+/// A Mod Matrix route's Polarity that moves its destination from nothing to its amount.
+const UNIPOLAR: &str = "unipolar";
 /// The longest an LFO+ takes to fade in, in milliseconds.
 const LONGEST_FADE_IN_MS: i64 = 10_000;
 const MAX_PERCENT: i64 = 100;
@@ -1272,6 +1274,14 @@ impl InstrumentEditor {
         }
     }
 
+    /// A Mod Matrix amount as the range it moves its destination over: from minus it to plus it for a Bipolar route of a
+    /// source that swings both ways, else from nothing to it.
+    fn amount_range(amount: i64, source: &str, polarity: &str) -> String {
+        let both_ways = polarity != UNIPOLAR && BIPOLAR_SOURCES.contains(&source);
+        let low = if both_ways { -amount } else { 0 };
+        named(marks::MSG_PERCENT_RANGE_SHOWN, &[("low", low.into()), ("high", amount.into())])
+    }
+
     fn matrix_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
         let slot = |number: usize, name: &str| sound.item("matrix", number, name, SLOT_DEFAULTS);
         let shown_label = |label: &str| named_in(labels::MSG_SLOT_SHOWN_LABELS, label);
@@ -1303,12 +1313,20 @@ impl InstrumentEditor {
                     &text(&slot(number, "destination")),
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_DESTINATION_LABEL)),
+                chosen(
+                    ids.at(Write::Item("matrix", number, "polarity")),
+                    &numbered(labels::MSG_SLOT_POLARITY_LABEL),
+                    MATRIX_POLARITIES,
+                    &names_in(labels::MSG_POLARITY_NAMES, MATRIX_POLARITIES),
+                    &text(&slot(number, "polarity")),
+                )
+                .with_shown_label(&shown_label(labels::MSG_SLOT_POLARITY_LABEL)),
                 bounded_gauge(
                     ids.at(Write::Item("matrix", number, "amount")),
                     &numbered(labels::MSG_SLOT_AMOUNT_LABEL),
                     amount,
                     (-MAX_MATRIX_AMOUNT, MAX_MATRIX_AMOUNT),
-                    &named(marks::MSG_SIGNED_PERCENT_SHOWN, &[("number", amount.into())]),
+                    &Self::amount_range(amount, &text(&slot(number, "source")), &text(&slot(number, "polarity"))),
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_AMOUNT_LABEL)),
             ];

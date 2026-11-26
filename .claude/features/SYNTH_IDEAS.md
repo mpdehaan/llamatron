@@ -22,9 +22,11 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **Demos of the new modulators**: a demo for each new kind as it is built, LFO+ (Fade in, Tempo, Smooth random), Snail,
   Chaos, Tide, Turing, Bounce and Swarm, each made to show what the modulator does to music, and kept to the synth demos'
   rules (DEMO_IDEAS.md).
-- **Polarity on the Mod Matrix**: each route Bipolar (the source's -1 to 1 times the amount) or Unipolar (0 to the
-  amount), Bipolar by default so that every set sounds as before; each Amount's gauge shows the range it gives in its
-  destination's own units, such as "-4 to +4 degrees" or "0 to +4 octaves".
+- **Triggers from the Mod Matrix**: a comparison in the Mod Matrix (a source rising above, or falling below, a level)
+  firing a trigger, such as striking the last note played again, restarting a filter's or an envelope's sweep, or
+  restarting a modulator; and the pattern's draws firing the same triggers. How to model it is a discussion: a route
+  whose destination is an event rather than a level, a small trigger module of its own, or a weird feature's place
+  beside the effects.
 - **Disconnect filter**: a switch on Env 2 that unhooks it from the filter, leaving Env 2 free for the Mod Matrix.
 - **New-instrument choices**: Blank, Sampled (FluidSynth, where installed), Synth, Drum Synth or External MIDI, beside Normal
   and Percussion, each choosing a few settings that can still be changed. Mockup first.

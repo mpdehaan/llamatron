@@ -608,6 +608,7 @@ pub static SLOT_DEFAULTS: Preset = Preset::Map(&[
     ("source", Preset::Text("none")),
     ("via", Preset::Text("none")),
     ("destination", Preset::Text("none")),
+    ("polarity", Preset::Text("bipolar")),
     ("amount", Preset::Whole(0)),
 ]);
 pub static SOUND_DEFAULTS: Preset = Preset::Map(&[("engine", Preset::Text("basic")), ("volume", Preset::Whole(80)), ("lfos", Preset::List(&[]))]);

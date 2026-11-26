@@ -272,6 +272,13 @@ pub enum Source {
     Control(usize),
 }
 
+impl Source {
+    /// Whether the source swings from -1 to 1, as an LFO does, rather than rising from 0 to 1, as an envelope does.
+    pub fn is_bipolar(self) -> bool {
+        matches!(self, Source::Lfo(_) | Source::Key | Source::Random | Source::Oscillator | Source::Osc(_))
+    }
+}
+
 /// What a matrix slot moves.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Destination {
@@ -338,6 +345,9 @@ pub struct Route {
     pub via: Option<Source>,
     pub destination: Destination,
     pub reach: f64,
+    /// What a Unipolar route adds to its source times its reach, moving a source of -1 to 1 into 0 to 1; 0 for a
+    /// Bipolar route or a source that is 0 to 1 already.
+    pub offset: f64,
 }
 
 /// What the matrix's sources hold at one sample.
@@ -418,11 +428,16 @@ impl ModMatrix {
                 continue;
             };
             let via = named(word(slot, "via", "none"));
+            // A Unipolar route moves its destination from 0 to the amount: a source of -1 to 1 is halved and lifted.
+            let unipolar = word(slot, "polarity", "bipolar") == "unipolar" && source.is_bipolar();
+            let reach = amount * range;
+            let (reach, offset) = if unipolar { (reach / 2.0, reach / 2.0) } else { (reach, 0.0) };
             routes.push(Route {
                 source,
                 via,
                 destination,
-                reach: amount * range,
+                reach,
+                offset,
             });
         }
         ModMatrix { routes, controls }
@@ -437,7 +452,7 @@ impl ModMatrix {
     pub fn moved(&self, sources: &Sources) -> Moved {
         let mut moved = Moved::default();
         for route in &self.routes {
-            let mut value = sources.read(route.source) * route.reach;
+            let mut value = sources.read(route.source) * route.reach + route.offset;
             if let Some(via) = route.via {
                 value *= sources.read(via);
             }
@@ -524,6 +539,26 @@ mod tests {
         lfos.play_started();
         assert_eq!(cycles(&lfos, 0), 0.0);
         assert_eq!(cycles(&lfos, 1), reached);
+    }
+
+    /// A Unipolar route moves its destination from 0 to the amount, a Bipolar one from minus it to plus it: an LFO at its
+    /// lowest moves a Unipolar route's pitch not at all.
+    #[test]
+    fn a_unipolar_route_moves_from_nothing_to_its_amount() {
+        let route = |polarity: &str| {
+            ModMatrix::compiled(&[Value::Map(vec![
+                ("source".into(), "lfo1".into()),
+                ("destination".into(), "pitch".into()),
+                ("amount".into(), 50.0.into()),
+                ("polarity".into(), polarity.into()),
+            ])])
+        };
+        let mut sources = Sources::default();
+        sources.lfos[0] = -1.0;
+        assert!(route("unipolar").moved(&sources).pitch.abs() < 1e-12);
+        assert!(route("bipolar").moved(&sources).pitch < 0.0);
+        sources.lfos[0] = 1.0;
+        assert!((route("unipolar").moved(&sources).pitch - route("bipolar").moved(&sources).pitch).abs() < 1e-12);
     }
 
     /// Fade in rises from nothing at the note's start to full at its time, smoothly, and is full at once with no fade.

@@ -233,6 +233,8 @@ pub const MSG_NO_CHANNEL_SHOWN: &str = "";
 pub const MSG_SOUND_GAUGE_EMPTY: &str = "░";
 pub const MSG_SOUND_PERCENT_SHOWN: &str = "{number}%";
 pub const MSG_SIGNED_PERCENT_SHOWN: &str = "{number:+}%";
+/// A Mod Matrix amount as the range it moves its destination over, from what the source's lowest gives to its highest.
+pub const MSG_PERCENT_RANGE_SHOWN: &str = "{low:+}% to {high:+}%";
 pub const MSG_LFO_RATE_SHOWN: &str = "{percent}% ({hertz})";
 /// An LFO+'s Fade in at 0, where its depth is there from the note's start.
 pub const MSG_FADE_IN_OFF: &str = "off";

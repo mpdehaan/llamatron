@@ -19,6 +19,14 @@ vibrato, with a Square shape and a large Amount a chip trill; Velocity to
 Cutoff makes harder notes brighter; Random to Detune makes each note a little
 different.
 
+Polarity says how the route reads a source that swings both ways, as an LFO
+does. Bipolar, the default, moves what it moves from minus the Amount to plus
+it, as a vibrato bends the pitch either side of the note. Unipolar moves it
+from nothing to the Amount, so that an LFO on the Cutoff only ever opens the
+filter from where it is set, never closes it. The Amount shows the range it
+gives, such as `-30% to +30%` or `0% to +30%`; a source that only rises, such
+as an envelope or Velocity, always moves from nothing to the Amount.
+
 ## MIDI CC Sources
 
 A knob on a controller, or a CC row of a pattern, can move the sound through
