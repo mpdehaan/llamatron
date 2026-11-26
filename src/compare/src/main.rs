@@ -1403,11 +1403,64 @@ const DRIFT_SET: &str = "examples/by_genre/rock/volcano.yml";
 const DENSITY_SET: &str = "examples/by_genre/electronic/edm_density.yml";
 const GLIDE_SET: &str = "examples/learning/12_acid_glide.yml";
 
-/// One screenshot: its file's name, the set it shows, and the keys that reach its screen from the main screen.
+/// One screenshot: its file's name, the set it shows, the keys that reach its screen from the main screen, and the place of
+/// a settings page the cursor then goes to.
 struct Shot {
     name: &'static str,
     set: &'static str,
     keys: Vec<String>,
+    reach: Option<Reach>,
+}
+
+/// A place of a settings page a shot goes to, by what the page says the cursor is on.
+#[derive(Clone, Copy)]
+enum Reach {
+    /// From the row of tabs, the tab whose first field is the one named.
+    Tab(&'static str),
+    /// Down the page, the field named.
+    Field(&'static str),
+}
+
+/// The set of the built-in synths' screenshots: an instrument on each engine, and a lead using every part.
+const SYNTH_SET: &str = "src/compare/sets/synths.yml";
+/// The most tabs, or fields, a shot tries before it gives up on finding its place.
+const MOST_TABS: usize = 16;
+const MOST_FIELDS: usize = 40;
+/// The first field of an instrument's Oscillators tab, which finds it.
+const OSCILLATORS_FIELD: &str = "Osc Type";
+/// The first fields of the Envelopes and Filter tabs.
+const ENVELOPES_FIELD: &str = "Env 1 Type";
+const FILTER_FIELD: &str = "Filter Type";
+
+/// Turn a settings page, its cursor on the row of tabs, to the tab whose first field is the one named: Down goes into the
+/// tab under the cursor and the page says which field it reached; Up comes back to the row and Right moves along it.
+fn turn_to_tab(tracker: &mut llamatron_tracker::app::Tracker, first_field: &str) -> Result<(), String> {
+    let press = |tracker: &mut llamatron_tracker::app::Tracker, key: &str| {
+        tracker.press(&llamatron_tracker::keys::pressed_key(key));
+        llamatron_tracker::tour::composed(tracker, SHOT_COLUMNS, SHOT_ROWS);
+    };
+    for _ in 0..MOST_TABS {
+        press(tracker, "down");
+        let place = tracker.top().place_kind(&tracker.app);
+        if place.trim() == first_field {
+            return Ok(());
+        }
+        press(tracker, "up");
+        press(tracker, "right");
+    }
+    Err(format!("no tab starting with the field {first_field}"))
+}
+
+/// Move a settings page's cursor down until the page says it is on the field named.
+fn go_to_field(tracker: &mut llamatron_tracker::app::Tracker, label: &str) -> Result<(), String> {
+    for _ in 0..MOST_FIELDS {
+        if tracker.top().place_kind(&tracker.app).trim() == label {
+            return Ok(());
+        }
+        tracker.press(&llamatron_tracker::keys::pressed_key("down"));
+        llamatron_tracker::tour::composed(tracker, SHOT_COLUMNS, SHOT_ROWS);
+    }
+    Err(format!("no field {label}"))
 }
 
 /// Each of the documents' screenshots, as the retired tool took them; the song wizard's wait for the wizard.
@@ -1433,7 +1486,22 @@ fn shots() -> Vec<Shot> {
             keys(&["enter", "enter"]),
         ])
     };
-    let shot = |name: &'static str, set: &'static str, keys: Vec<String>| Shot { name, set, keys };
+    let shot = |name: &'static str, set: &'static str, keys: Vec<String>| Shot { name, set, keys, reach: None };
+    // An instrument of the synths' set found by the Instruments page's search and opened, its cursor then taken to the row
+    // of tabs, and the tab whose first field is named turned to.
+    let to_instrument = |instrument: &str| {
+        joined(vec![
+            keys(&["i", "/"]),
+            instrument.chars().map(|c| if c == ' ' { "space".to_string() } else { c.to_string() }).collect(),
+            keys(&["enter", "enter"]),
+        ])
+    };
+    let synth = |name: &'static str, instrument: &str, first_field: &'static str| Shot {
+        name,
+        set: SYNTH_SET,
+        keys: joined(vec![to_instrument(instrument), keys(&["tab"])]),
+        reach: Some(Reach::Tab(first_field)),
+    };
     vec![
         shot("main", SHOT_SET, vec![]),
         shot("file", SHOT_SET, keys(&["f"])),
@@ -1493,6 +1561,37 @@ fn shots() -> Vec<Shot> {
         shot("scene_density", DENSITY_SET, keys(&["a", "enter", "tab", "right", "right", "right", "down"])),
         shot("instruments", SHOT_SET, keys(&["i"])),
         shot("instrument_editor", SHOT_SET, keys(&["i", "enter"])),
+        // The instrument page with the cursor on Engine, the field that chooses a built-in synth.
+        Shot {
+            name: "synth_engine_field",
+            set: SYNTH_SET,
+            keys: to_instrument("basic"),
+            reach: Some(Reach::Field("Engine")),
+        },
+        synth("synth_basic", "basic", OSCILLATORS_FIELD),
+        synth("synth_sid", "sid", OSCILLATORS_FIELD),
+        synth("synth_pocket", "pocket", OSCILLATORS_FIELD),
+        synth("synth_fishline", "fishline", OSCILLATORS_FIELD),
+        synth("synth_mechadrum", "mechadrum", OSCILLATORS_FIELD),
+        synth("synth_oscillators", "wobble lead", OSCILLATORS_FIELD),
+        synth("synth_envelopes", "wobble lead", ENVELOPES_FIELD),
+        synth("envelope_adsr", "env adsr", ENVELOPES_FIELD),
+        synth("envelope_ar", "env ar", ENVELOPES_FIELD),
+        synth("envelope_asr", "env asr", ENVELOPES_FIELD),
+        synth("envelope_sid_adsr", "env sid adsr", ENVELOPES_FIELD),
+        synth("envelope_vactrol", "env vactrol", ENVELOPES_FIELD),
+        synth("envelope_acid_gate", "env acid gate", ENVELOPES_FIELD),
+        synth("envelope_chip_steps", "env chip steps", ENVELOPES_FIELD),
+        synth("filter_ladder", "filter ladder", FILTER_FIELD),
+        synth("filter_multimode", "filter multimode", FILTER_FIELD),
+        synth("filter_sallen_key", "filter sallen key", FILTER_FIELD),
+        synth("filter_diode", "filter diode", FILTER_FIELD),
+        synth("filter_ota", "filter ota", FILTER_FIELD),
+        synth("filter_low_pass_gate", "filter low pass gate", FILTER_FIELD),
+        synth("synth_lfos", "wobble lead", "LFO 1"),
+        synth("synth_filter", "wobble lead", FILTER_FIELD),
+        synth("synth_effects", "wobble lead", "FX 1"),
+        synth("synth_matrix", "wobble lead", "Slot 1 source"),
         shot("chords_generator", PROGRESSION_SET, to_generator("pop", 1)),
         // The fourth setting after the Name opens the chords editor.
         shot(
@@ -1544,6 +1643,17 @@ fn screenshots(folder: Option<&str>) -> ExitCode {
         for key in &shot.keys {
             tracker.press(&llamatron_tracker::keys::pressed_key(key));
             llamatron_tracker::tour::composed(&tracker, SHOT_COLUMNS, SHOT_ROWS);
+        }
+        let reached = match shot.reach {
+            Some(Reach::Tab(first_field)) => turn_to_tab(&mut tracker, first_field),
+            Some(Reach::Field(label)) => go_to_field(&mut tracker, label),
+            None => Ok(()),
+        };
+        {
+            if let Err(problem) = reached {
+                eprintln!("{}: {problem}", shot.name);
+                return ExitCode::from(1);
+            }
         }
         let screen = llamatron_tracker::tour::composed(&tracker, SHOT_COLUMNS, SHOT_ROWS);
         let unique_id = format!("terminal-{}", shot.name);
