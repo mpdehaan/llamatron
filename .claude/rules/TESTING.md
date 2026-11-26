@@ -33,6 +33,10 @@ internal_tools/check_before_commit.sh                              # before comm
   set, what the exporters write. Complex scenarios, not one happy path.
 - A condition-specific shortcut MUST have tests of both paths.
 - A bug fixed comes with the test that would have caught it.
+- A built-in synth's control, engine or effect is tested as a person plays it: the sound the tracker writes, through
+  `sound_spec`, compiled and played by the backend, in `src/tracker/tests/synth_controls.rs`, every setting moved
+  changing the sound and an effect heard at full Mix. A backend test fed a spec written by hand never stands alone,
+  since it cannot see a setting the tracker fails to send.
 - A test that looks wrong MUST NOT be changed just to pass: work out what it protected, and ask the user where the choice is
   theirs.
 - Test data MUST NOT live in `examples/`; a set made to test the program is a data file beside the tests.
