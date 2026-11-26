@@ -524,6 +524,7 @@ pub struct OscillatorType;
 
 impl OscillatorType {
     pub const BASIC: &'static str = "basic";
+    pub const ASHEVILLE: &'static str = "asheville";
     pub const SID: &'static str = "sid";
     pub const POCKET: &'static str = "pocket";
     pub const ACID: &'static str = "acid";
@@ -642,6 +643,7 @@ pub struct SoundEngine;
 impl SoundEngine {
     pub const BASIC: &'static str = "basic";
     pub const DRUM: &'static str = "drum";
+    pub const ASHEVILLE: &'static str = "asheville";
     pub const SID: &'static str = "sid";
     pub const POCKET: &'static str = "pocket";
     pub const FISHLINE: &'static str = "fishline";
@@ -800,8 +802,8 @@ impl DrumMachine {
 
 pub static INSTRUMENT_KINDS: &[&str] = &["off", "midi", "built_in"];
 pub static INSTRUMENT_ROLES: &[&str] = &["normal", "percussion"];
-pub static SOUND_ENGINES: &[&str] = &["basic", "drum", "sid", "pocket", "fishline"];
-pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "sid", "pocket", "fishline"]), ("percussion", &["drum"])];
+pub static SOUND_ENGINES: &[&str] = &["basic", "drum", "asheville", "sid", "pocket", "fishline"];
+pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "asheville", "sid", "pocket", "fishline"]), ("percussion", &["drum"])];
 pub static ACID_WAVES: &[&str] = &["saw", "square"];
 pub static WAVEFORMS: &[&str] = &["square", "saw", "sine", "triangle", "pulse"];
 pub static OSCILLATOR_WAVEFORMS: &[&str] = &["off", "square", "saw", "sine", "triangle", "pulse"];
@@ -815,7 +817,7 @@ pub static NOISES: &[&str] = &["long", "short"];
 pub static LFO_SHAPES: &[&str] = &["sine", "triangle", "saw_up", "saw_down", "square", "sample_and_hold"];
 pub static EFFECTS: &[&str] = &["none", "bitcrush", "drive"];
 pub static FILTER_TYPES: &[&str] = &["none", "ladder", "multimode", "sallen_key", "diode", "ota", "low_pass_gate"];
-pub static OSCILLATOR_TYPES: &[&str] = &["basic", "sid", "pocket", "acid", "drum"];
+pub static OSCILLATOR_TYPES: &[&str] = &["basic", "asheville", "sid", "pocket", "acid", "drum"];
 pub static ENVELOPE_TYPES: &[&str] = &["none", "adsr", "ar", "asr", "sid_adsr", "vactrol", "acid_gate", "chip_steps"];
 pub static PARTS: &[&str] = &["oscillators", "env1", "env2", "env3", "filter"];
 pub static ENVELOPE_PARTS: &[&str] = &["env1", "env2", "env3"];
@@ -825,7 +827,7 @@ pub static FILTER_SHARINGS: &[&str] = &["per_note", "shared"];
 pub static GATE_MODES: &[&str] = &["vca", "lowpass", "both"];
 pub static GATE_INPUTS: &[&str] = &["oscillator", "ping", "both"];
 pub static LADDER_SLOPES: &[i64] = &[6, 12, 18, 24];
-pub static MATRIX_SOURCES: &[&str] = &["none", "env1", "env2", "env3", "lfo1", "lfo2", "lfo3", "lfo4", "velocity", "key", "random", "osc"];
+pub static MATRIX_SOURCES: &[&str] = &["none", "env1", "env2", "env3", "lfo1", "lfo2", "lfo3", "lfo4", "velocity", "key", "random", "osc", "osc3"];
 pub static MATRIX_DESTINATIONS: &[&str] = &["none", "pitch", "pulse_width", "detune", "cutoff", "resonance", "amp"];
 pub static FILTER_MODES: &[&str] = &["low", "band", "high", "notch"];
 pub static SALLEN_KEY_MODES: &[&str] = &["low", "high"];

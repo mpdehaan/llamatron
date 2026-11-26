@@ -86,9 +86,55 @@ fn oscillators(sound: &Sound) -> Data {
             ]);
         }
         "acid" => spec.extend([("acid_wave", setting("acid_wave")), ("tuning", setting("tuning"))]),
+        "asheville" => spec.extend(asheville(sound)),
         _ => spec.push(("oscillators", basic_oscillators(sound))),
     }
     mapping(spec)
+}
+
+/// Each footage's distance from the note in half steps: 8' plays the note, each halving of the pipe an octave up, and
+/// LO, Osc 3's range for an LFO, four octaves under.
+const FOOTAGES: &[(&str, i128)] = &[("lo", -48), ("32", -24), ("16", -12), ("8", 0), ("4", 12), ("2", 24)];
+/// A knob of the panel's 0 to 10, as the fraction the backend reads.
+const PANEL_TOP: f64 = 10.0;
+
+/// Asheville's panel as the backend reads it: each oscillator's footage in half steps, wave, shape, cents, mix and sub,
+/// and the panel's Model, Character, Osc 3 as LFO, Ring, Snap, Drift and Feedback, the knobs as fractions.
+fn asheville(sound: &Sound) -> Vec<(&'static str, Data)> {
+    let setting = |name: &str| sound.part_value(OSCILLATORS, name);
+    let panel = |name: &str| Data::Float(setting(name).as_whole().unwrap_or(0) as f64 / PANEL_TOP);
+    let oscillators = (1..=3)
+        .map(|number| {
+            let own = |name: &str| setting(&format!("osc{number}_{name}"));
+            let range = own("range");
+            let half_steps = FOOTAGES.iter().find(|(name, _)| range.as_str() == Some(name)).map_or(0, |(_, steps)| *steps);
+            let sub = own("sub").as_str().and_then(|octaves| octaves.parse::<i128>().ok()).unwrap_or(0);
+            mapping(vec![
+                ("range", Data::Whole(half_steps)),
+                ("wave", own("wave")),
+                ("shape", share(&own("shape"), PERCENT)),
+                ("cents", own("tune")),
+                ("mix", Data::Float(own("mix").as_whole().unwrap_or(0) as f64 / PANEL_TOP)),
+                ("sub", Data::Whole(sub)),
+                ("on", own("on")),
+            ])
+        })
+        .collect();
+    let feedback = if setting("feedback_on") == Data::Bool(true) {
+        panel("feedback")
+    } else {
+        Data::Float(0.0)
+    };
+    vec![
+        ("oscillators", Data::List(oscillators)),
+        ("model", setting("model")),
+        ("character", setting("character")),
+        ("osc3_lfo", setting("osc3_lfo")),
+        ("ring", panel("ring")),
+        ("snap", setting("tune_snap")),
+        ("drift", panel("drift")),
+        ("feedback", feedback),
+    ]
 }
 
 /// Basic's oscillators that sound, each its waveform, its detune in cents and its level as a fraction, those off left out.

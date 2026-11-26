@@ -38,7 +38,7 @@ yet; their pages say so.
 
 - Basic: [Basic](synths/engines/BASIC.md).
 - Analog Mono: [Fishline](synths/engines/FISHLINE.md),
-  [Asheville](synths/engines/ASHEVILLE.md) (planned),
+  [Asheville](synths/engines/ASHEVILLE.md),
   [Monorail](synths/engines/MONORAIL.md) (planned).
 - Analog Poly: [Choir](synths/engines/CHOIR.md) (planned),
   [MozaicClassic](synths/engines/MOZAICCLASSIC.md) (planned),

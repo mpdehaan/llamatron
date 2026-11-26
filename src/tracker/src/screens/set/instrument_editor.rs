@@ -62,6 +62,29 @@ fn control_number(source: &str) -> Option<i64> {
         .ok()
         .filter(|number| (0..=HIGHEST_CC).contains(number))
 }
+/// Asheville: its oscillators' settings, column by column; its panel's own; its Model's Continuous, which shows a Shape
+/// in each oscillator's Wave's place; and the endings that tell the two apart.
+const ASHEVILLE: &str = "asheville";
+const ASHEVILLE_OSCILLATORS: [[&str; 7]; 3] = [
+    ["osc1_range", "osc1_wave", "osc1_shape", "osc1_tune", "osc1_mix", "osc1_sub", "osc1_on"],
+    ["osc2_range", "osc2_wave", "osc2_shape", "osc2_tune", "osc2_mix", "osc2_sub", "osc2_on"],
+    ["osc3_range", "osc3_wave", "osc3_shape", "osc3_tune", "osc3_mix", "osc3_sub", "osc3_on"],
+];
+const ASHEVILLE_PANEL: [&str; 9] = [
+    "model",
+    "character",
+    "osc3_lfo",
+    "ring",
+    "tune_snap",
+    "drift",
+    "feedback_on",
+    "feedback",
+    "pitch_env",
+];
+const CONTINUOUS: &str = "continuous";
+const OSC3_SOURCE: &str = "osc3";
+const WAVE_SUFFIX: &str = "_wave";
+const SHAPE_SUFFIX: &str = "_shape";
 const CIRCUIT: &str = "circuit";
 const MODDED: &str = "modded";
 
@@ -814,6 +837,13 @@ impl InstrumentEditor {
                 columns.push(TabColumn::new(Some(&heading), fields));
             }
         }
+        if kind == ASHEVILLE {
+            columns.extend(Self::asheville_columns(sound, ids));
+            let mut tab = Tab::new(labels::MSG_OSCILLATORS_TAB, columns);
+            tab.top = top;
+            tab.not_ready = not_ready;
+            return tab;
+        }
         let mut own = Self::setting_fields(sound, "oscillators", ids);
         if kind == "drum" {
             let knobs = sound.part_value("oscillators", "knobs");
@@ -835,6 +865,41 @@ impl InstrumentEditor {
         tab.top = top;
         tab.not_ready = not_ready;
         tab
+    }
+
+    /// Asheville's columns, after its panel: a column for each oscillator, its Range, its Wave (or, on the Continuous
+    /// model, its Shape), Tune, Mix, Sub and On, then the panel's own settings.
+    fn asheville_columns(sound: &Sound, ids: &mut Ids) -> Vec<TabColumn> {
+        let continuous = sound.part_value("oscillators", "model").as_str() == Some(CONTINUOUS);
+        let mut columns = Vec::new();
+        for (number, names) in ASHEVILLE_OSCILLATORS.iter().enumerate() {
+            let heading = named(labels::MSG_OSCILLATOR_LABEL, &[("number", (number + 1).into())]);
+            let fields = names
+                .iter()
+                .filter(|name| {
+                    if continuous {
+                        !name.ends_with(WAVE_SUFFIX)
+                    } else {
+                        !name.ends_with(SHAPE_SUFFIX)
+                    }
+                })
+                .map(|name| {
+                    let column_label = name.rsplit_once('_').map_or(*name, |(_, own)| own);
+                    Self::setting_field(sound, "oscillators", ASHEVILLE, name, ids)
+                        .with_shown_label(&named_in(labels::MSG_ASHEVILLE_COLUMN_LABELS, column_label))
+                })
+                .collect();
+            columns.push(TabColumn::new(Some(&heading), fields));
+        }
+        let own = ASHEVILLE_PANEL
+            .iter()
+            .map(|name| Self::setting_field(sound, "oscillators", ASHEVILLE, name, ids))
+            .collect();
+        // The panel's own settings start a row of their own under the Voice column and the oscillators.
+        let mut panel = TabColumn::new(Some(&named_in(labels::MSG_PART_HEADINGS, "oscillators")), own);
+        panel.under = true;
+        columns.push(panel);
+        columns
     }
 
     fn envelopes_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
@@ -1047,9 +1112,11 @@ impl InstrumentEditor {
     }
 
     /// A Mod Matrix slot's Source or Via: the usual sources, then MIDI CC, whose number is set in the CC field beside it.
-    fn source_field(id: usize, label: &str, current: &str) -> Field {
-        let mut choices: Vec<&str> = MATRIX_SOURCES.to_vec();
-        let mut names = names_in(labels::MSG_MATRIX_SOURCE_NAMES, MATRIX_SOURCES);
+    fn source_field(id: usize, label: &str, current: &str, asheville: bool) -> Field {
+        // Osc 3 is a source only on Asheville, whose third oscillator can be an LFO.
+        let sources: Vec<&str> = MATRIX_SOURCES.iter().copied().filter(|source| asheville || *source != OSC3_SOURCE).collect();
+        let mut choices: Vec<&str> = sources.clone();
+        let mut names = names_in(labels::MSG_MATRIX_SOURCE_NAMES, &sources);
         choices.push(if control_number(current).is_some() { current } else { MIDI_CC_CHOICE });
         names.push(labels::MSG_MIDI_CC_CHOICE.to_string());
         chosen(id, label, &choices, &names, current)
@@ -1073,6 +1140,7 @@ impl InstrumentEditor {
     fn matrix_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
         let slot = |number: usize, name: &str| sound.item("matrix", number, name, SLOT_DEFAULTS);
         let shown_label = |label: &str| named_in(labels::MSG_SLOT_SHOWN_LABELS, label);
+        let asheville = sound.part_type("oscillators") == ASHEVILLE;
         let mut columns = Vec::new();
         for number in 1..=MATRIX_SLOTS as usize {
             let numbered = |label: &str| named(label, &[("number", number.into())]);
@@ -1082,12 +1150,14 @@ impl InstrumentEditor {
                     ids.at(Write::Item("matrix", number, "source")),
                     &numbered(labels::MSG_SLOT_SOURCE_LABEL),
                     &text(&slot(number, "source")),
+                    asheville,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_SOURCE_LABEL)),
                 Self::source_field(
                     ids.at(Write::Item("matrix", number, "via")),
                     &numbered(labels::MSG_SLOT_VIA_LABEL),
                     &text(&slot(number, "via")),
+                    asheville,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_VIA_LABEL)),
                 chosen(
@@ -1383,7 +1453,7 @@ mod tests {
     fn a_midi_cc_source_shows_its_number_beside() {
         let control = 74;
         let source = format!("{CONTROL_PREFIX}{control}");
-        let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, &source);
+        let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, &source, false);
         assert_eq!(field.value(), labels::MSG_MIDI_CC_CHOICE);
         let beside = InstrumentEditor::control_beside(0, 2, labels::MSG_SLOT_SOURCE_CC_LABEL, &source);
         assert_eq!(beside.field.map(|field| field.value().to_string()), Some(control.to_string()));

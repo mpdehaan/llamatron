@@ -86,6 +86,8 @@ pub struct OscillatorState {
     /// from which each oscillator's drift is its own.
     pub side: f64,
     pub last_out: f64,
+    /// Asheville: each oscillator's sub-oscillator's phase.
+    pub sub_phases: [f64; 3],
     pub began: f64,
     pub random: f64,
 }

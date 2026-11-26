@@ -79,6 +79,13 @@ How the code is put together and how to change it is in the
 [Developer Guide](developer_docs/DEVELOPER_GUIDE.md), and how it is checked
 is in [Testing](developer_docs/TESTING.md).
 
+## Credits
+
+In addition to llamatron, Copyright (C) 2026 Michael DeHaan, released under
+the GNU General Public License, version 3 or later, this code has benefitted
+from research and work from other open source projects, each listed with its
+link and licence in [Credits](docs/CREDITS.md).
+
 ## Author
 
 Michael DeHaan <michael @ michaeldehaan.net> home.laserllama.net

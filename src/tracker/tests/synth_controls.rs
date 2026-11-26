@@ -186,6 +186,9 @@ fn company(part_type: &str, setting: &str) -> &'static [(&'static str, &'static 
         ("low_pass_gate", "ping_width") => &[("input", "ping")],
         ("acid_gate", "circuit") => &[("amp_decay", "300")],
         ("diode", "circuit") => &[("filter_fm", "80")],
+        ("asheville", "osc1_shape") | ("asheville", "osc2_shape") | ("asheville", "osc3_shape") => &[("model", "continuous")],
+        ("asheville", "feedback") => &[("feedback_on", "true")],
+        ("asheville", "feedback_on") => &[("feedback", "8")],
         (kind, name) if MODDED_SETTINGS.contains(&(kind, name)) => &[("circuit", "modded")],
         _ => &[],
     }
@@ -197,9 +200,13 @@ fn tried_apart(part_type: &str, setting: &str) -> bool {
     matches!((part_type, setting), ("sid", "arpeggio") | ("vactrol", "memory") | ("drum", _))
 }
 
-/// A value as the trial writes it: a whole number where it reads as one, else text.
+/// A value as the trial writes it: a switch, a whole number where it reads as one, else text.
 fn written(value: &str) -> Data {
-    value.parse::<i128>().map_or_else(|_| Data::text(value), Data::Whole)
+    match value {
+        "true" => Data::Bool(true),
+        "false" => Data::Bool(false),
+        _ => value.parse::<i128>().map_or_else(|_| Data::text(value), Data::Whole),
+    }
 }
 
 /// Every setting of every type of every part: moved across its range, at least two of its values sound different.

@@ -7,7 +7,10 @@
 //! LFO). Model Classic switches each oscillator among the panel's six waves; Continuous sweeps one Shape from triangle
 //! through saw and square to a narrow pulse, as the later models do. Drift wanders each oscillator's tuning slowly, its
 //! own way, and Character sets how settled the instrument is: Warm, Cold Start (wandering further for its first half
-//! minute, as if just switched on) or Worn (beating more and slipping flat high up).
+//! minute, as if just switched on) or Worn (beating more and slipping flat high up). Ring is a mixer channel of its own,
+//! Osc 1 times Osc 2, the clangorous sum and difference tones of a ring modulator; Snap pulls each oscillator's Tune
+//! toward unison, fifths and octaves, after the detuning curve of Plaits' virtual-analog engine (Emilie Gillet, MIT).
+//! Beyond the original, each oscillator has a Sub, a square one or two octaves under it, mixed in with it.
 //!
 //! Each wave is made from its oscillator's phase and smoothed at its jumps by a two-sample polyBLEP, after stmlib's
 //! ThisBlepSample and NextBlepSample (stmlib/dsp/polyblep.h) and the variable-shape oscillator of Mutable Instruments'
@@ -75,7 +78,12 @@ pub struct Oscillator {
     pub cents: f64,
     pub mix: f64,
     pub on: bool,
+    /// How many octaves under the oscillator its sub sounds, 0 for none.
+    pub sub: u32,
 }
+
+/// A sub's level against its oscillator's.
+const SUB_LEVEL: f64 = 0.7;
 
 /// Asheville's oscillators as a patch compiles them.
 #[derive(Clone, Debug)]
@@ -86,6 +94,35 @@ pub struct Asheville {
     pub drift: f64,
     pub feedback: f64,
     pub osc3_lfo: bool,
+    /// The ring modulator's level in the mix, Osc 1 times Osc 2, 0 for none.
+    pub ring: f64,
+    /// Whether each oscillator's Tune is pulled toward unison, fifths and octaves.
+    pub snap: bool,
+}
+
+/// The intervals Snap pulls a Tune toward, in cents either way: unison, a fifth, an octave, an octave and a fifth, two
+/// octaves; and how near, in cents, a Tune must be to be pulled.
+const SNAP_TARGETS: [f64; 5] = [0.0, 700.0, 1200.0, 1900.0, 2400.0];
+const SNAP_REACH: f64 = 100.0;
+
+/// A Tune pulled toward its nearest snapping interval, wholly at it and less so further away, along a smoothstep so that
+/// the Tune never jumps.
+// After the detuning curve of Plaits' VirtualAnalogEngine::ComputeDetuning (plaits/dsp/engine/virtual_analog_engine.cc,
+// Emilie Gillet, MIT), which flattens its knob near those intervals; the implementation here is our own.
+fn snapped(cents: f64) -> f64 {
+    let sign = cents.signum();
+    let size = cents.abs();
+    let target = SNAP_TARGETS
+        .iter()
+        .copied()
+        .min_by(|a, b| (size - a).abs().total_cmp(&(size - b).abs()))
+        .unwrap_or(0.0);
+    let away = (size - target) / SNAP_REACH;
+    if away.abs() >= 1.0 {
+        return cents;
+    }
+    let smooth = away.abs() * away.abs() * (3.0 - 2.0 * away.abs());
+    sign * (target + away.signum() * smooth * SNAP_REACH)
 }
 
 /// A wave's name in a spec.
@@ -111,6 +148,7 @@ pub fn compiled(spec: &Value) -> Asheville {
         cents: 0.0,
         mix: 0.8,
         on: true,
+        sub: 0,
     };
     let specs = list(spec, "oscillators");
     let oscillators = std::array::from_fn(|place| match specs.get(place) {
@@ -121,6 +159,7 @@ pub fn compiled(spec: &Value) -> Asheville {
             cents: number(each, "cents", 0.0),
             mix: number(each, "mix", 0.8).clamp(0.0, 1.0),
             on: truth(each, "on", true),
+            sub: number(each, "sub", 0.0).clamp(0.0, 2.0) as u32,
         },
         None => defaults,
     });
@@ -136,6 +175,8 @@ pub fn compiled(spec: &Value) -> Asheville {
         drift: number(spec, "drift", 0.0).clamp(0.0, 1.0),
         feedback: number(spec, "feedback", 0.0).clamp(0.0, 1.0),
         osc3_lfo: field(spec, "osc3_lfo").is_some() && truth(spec, "osc3_lfo", false),
+        ring: number(spec, "ring", 0.0).clamp(0.0, 1.0),
+        snap: truth(spec, "snap", false),
     }
 }
 
@@ -209,6 +250,7 @@ impl Asheville {
         let golden = 0.618_033_988_749_895;
         for (place, phase) in state.phases.iter_mut().enumerate() {
             *phase = ((random + 1.0) * golden * (place as f64 + 1.0)).fract();
+            state.sub_phases[place] = *phase / 4.0;
         }
     }
 
@@ -238,13 +280,16 @@ impl Asheville {
     pub fn sample(&self, state: &mut OscillatorState, pitch: f64, seconds: f64, moves: Moves, rate: f64) -> f64 {
         let (began, random) = (state.began, state.random);
         let mut mix = 0.0;
+        let mut voices = [0.0; 3];
         for (place, oscillator) in self.oscillators.iter().enumerate() {
             let lfo = place == 2 && self.osc3_lfo;
-            if !oscillator.on && !lfo {
+            let ringing = place < 2 && self.ring > 0.0;
+            if !oscillator.on && !lfo && !ringing {
                 continue;
             }
             let wandered = self.wander(place, pitch, seconds, began, random);
-            let tuned = pitch + oscillator.range + (oscillator.cents + wandered) / CENTS + moves.pitch;
+            let tune = if self.snap { snapped(oscillator.cents) } else { oscillator.cents };
+            let tuned = pitch + oscillator.range + (tune + wandered) / CENTS + moves.pitch;
             let frequency = if lfo {
                 // Osc 3 as an LFO is never heard, so it may run below hearing; it keeps under half the rate.
                 (440.0 * 2f64.powf((tuned - 69.0) / 12.0)).max(SLOWEST_LFO_HERTZ)
@@ -259,12 +304,22 @@ impl Asheville {
                 classic(oscillator.wave, at, step, moves.width)
             };
             state.phases[place] = (at + step).fract();
+            voices[place] = value;
+            if oscillator.sub > 0 && oscillator.on && !lfo {
+                // The sub runs at a half or a quarter of its oscillator's step, so that it keeps under it, in step.
+                let sub_step = step / f64::from(1 << oscillator.sub);
+                let sub_at = state.sub_phases[place];
+                mix += pulse(sub_at, sub_step, 0.5) * oscillator.mix * MIX_GAIN * SUB_LEVEL;
+                state.sub_phases[place] = (sub_at + sub_step).fract();
+            }
             if lfo {
                 state.side = value;
-            } else {
+            } else if oscillator.on {
                 mix += value * oscillator.mix * MIX_GAIN;
             }
         }
+        // The ring modulator hears Osc 1 and Osc 2 whether or not they sound in the mix themselves.
+        mix += voices[0] * voices[1] * self.ring * MIX_GAIN;
         // The mixer overloads softly as it is turned up; Feedback loops the last output back into it, as the classic
         // patch of the output into the external input does.
         let fed = mix + self.feedback * MOST_FEEDBACK * state.last_out;
@@ -323,5 +378,49 @@ mod tests {
         }
         let (lowest, highest) = sides.iter().fold((f64::MAX, f64::MIN), |(low, high), side| (low.min(*side), high.max(*side)));
         assert!(highest - lowest > 1.0, "Osc 3 swings the side");
+    }
+
+    /// Ring alone, Osc 1 times Osc 2 with both out of the mix, still sounds; Snap pulls a Tune near a fifth onto it and
+    /// leaves one far from every interval alone.
+    #[test]
+    fn ring_sounds_alone_and_snap_pulls_toward_fifths() {
+        let off = || Value::Map(vec![("on".into(), false.into())]);
+        let spec = Value::Map(vec![
+            ("oscillators".into(), Value::Array(vec![off(), off(), off()])),
+            ("ring".into(), 1.0.into()),
+        ]);
+        let asheville = compiled(&spec);
+        let mut state = OscillatorState::default();
+        let rate = 48_000.0;
+        let most = (0..4800)
+            .map(|place| asheville.sample(&mut state, 60.0, place as f64 / rate, Moves::default(), rate).abs())
+            .fold(0.0, f64::max);
+        assert!(most > 0.05, "{most}");
+        let (near_fifth, fifth, far) = (690.0, 700.0, 350.0);
+        let pulled_within = 3.0;
+        assert!((snapped(near_fifth) - fifth).abs() < pulled_within);
+        assert!((snapped(-near_fifth) + fifth).abs() < pulled_within);
+        assert_eq!(snapped(far), far);
+    }
+
+    /// A Sub sounds under its oscillator: the same oscillator with a sub an octave down differs from it alone.
+    #[test]
+    fn a_sub_sounds_under_its_oscillator() {
+        let played = |sub: i64| {
+            let oscillator = |on: bool| Value::Map(vec![("on".into(), on.into()), ("sub".into(), sub.into())]);
+            let spec = Value::Map(vec![(
+                "oscillators".into(),
+                Value::Array(vec![oscillator(true), oscillator(false), oscillator(false)]),
+            )]);
+            let asheville = compiled(&spec);
+            let mut state = OscillatorState::default();
+            let rate = 48_000.0;
+            (0..4800)
+                .map(|place| asheville.sample(&mut state, 48.0, place as f64 / rate, Moves::default(), rate))
+                .collect::<Vec<_>>()
+        };
+        let (none, octave_down) = (played(0), played(1));
+        let difference: f64 = none.iter().zip(&octave_down).map(|(a, b)| (a - b).abs()).sum();
+        assert!(difference > 1.0, "{difference}");
     }
 }

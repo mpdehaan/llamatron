@@ -45,6 +45,54 @@ pub enum SettingKind {
 /// Each engine's preset sound, by the engine's name.
 pub static ENGINE_PRESETS: &[(&str, Preset)] = &[
     (
+        "asheville",
+        Preset::Map(&[
+            ("voices", Preset::Whole(1)),
+            ("glide", Preset::Whole(0)),
+            ("filter_sharing", Preset::Text("per_note")),
+            ("oscillators", Preset::Map(&[("type", Preset::Text("asheville"))])),
+            (
+                "env1",
+                Preset::Map(&[
+                    ("type", Preset::Text("adsr")),
+                    ("attack", Preset::Whole(2)),
+                    ("hold", Preset::Whole(0)),
+                    ("decay", Preset::Whole(600)),
+                    ("snap", Preset::Whole(0)),
+                    ("sustain", Preset::Whole(80)),
+                    ("release", Preset::Whole(200)),
+                ]),
+            ),
+            (
+                "env2",
+                Preset::Map(&[
+                    ("type", Preset::Text("adsr")),
+                    ("attack", Preset::Whole(2)),
+                    ("hold", Preset::Whole(0)),
+                    ("decay", Preset::Whole(400)),
+                    ("snap", Preset::Whole(0)),
+                    ("sustain", Preset::Whole(30)),
+                    ("release", Preset::Whole(300)),
+                ]),
+            ),
+            ("env3", Preset::Map(&[("type", Preset::Text("none"))])),
+            (
+                "filter",
+                Preset::Map(&[
+                    ("type", Preset::Text("ladder")),
+                    ("cutoff", Preset::Whole(900)),
+                    ("resonance", Preset::Whole(30)),
+                    ("slope", Preset::Whole(24)),
+                    ("env_amount", Preset::Whole(55)),
+                    ("key_track", Preset::Whole(33)),
+                    ("drive", Preset::Whole(10)),
+                ]),
+            ),
+            ("effects", Preset::List(&[])),
+            ("matrix", Preset::List(&[])),
+        ]),
+    ),
+    (
         "basic",
         Preset::Map(&[
             ("voices", Preset::Whole(4)),
@@ -274,6 +322,41 @@ pub static ENGINE_PRESETS: &[(&str, Preset)] = &[
 /// What each type of part holds where its settings leave it out, by the type's name.
 pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
     (
+        "asheville",
+        Preset::Map(&[
+            ("model", Preset::Text("classic")),
+            ("character", Preset::Text("warm")),
+            ("osc1_range", Preset::Text("16")),
+            ("osc1_wave", Preset::Text("saw")),
+            ("osc1_shape", Preset::Whole(33)),
+            ("osc1_tune", Preset::Whole(0)),
+            ("osc1_mix", Preset::Whole(8)),
+            ("osc1_sub", Preset::Text("off")),
+            ("osc1_on", Preset::Flag(true)),
+            ("osc2_range", Preset::Text("16")),
+            ("osc2_wave", Preset::Text("saw")),
+            ("osc2_shape", Preset::Whole(33)),
+            ("osc2_tune", Preset::Whole(8)),
+            ("osc2_mix", Preset::Whole(6)),
+            ("osc2_sub", Preset::Text("off")),
+            ("osc2_on", Preset::Flag(true)),
+            ("osc3_range", Preset::Text("32")),
+            ("osc3_wave", Preset::Text("square")),
+            ("osc3_shape", Preset::Whole(33)),
+            ("osc3_tune", Preset::Whole(-5)),
+            ("osc3_mix", Preset::Whole(5)),
+            ("osc3_sub", Preset::Text("off")),
+            ("osc3_on", Preset::Flag(true)),
+            ("osc3_lfo", Preset::Flag(false)),
+            ("ring", Preset::Whole(0)),
+            ("tune_snap", Preset::Flag(false)),
+            ("drift", Preset::Whole(3)),
+            ("feedback_on", Preset::Flag(false)),
+            ("feedback", Preset::Whole(0)),
+            ("pitch_env", Preset::Whole(0)),
+        ]),
+    ),
+    (
         "basic",
         Preset::Map(&[
             ("oscillators", Preset::List(&[Preset::Map(&[("waveform", Preset::Text("saw"))])])),
@@ -487,7 +570,7 @@ pub static SLOT_DEFAULTS: Preset = Preset::Map(&[
 ]);
 pub static SOUND_DEFAULTS: Preset = Preset::Map(&[("engine", Preset::Text("basic")), ("volume", Preset::Whole(80)), ("lfos", Preset::List(&[]))]);
 /// The engines an instrument of each role may play, the first the role's own.
-pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "sid", "pocket", "fishline"]), ("percussion", &["drum"])];
+pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "asheville", "sid", "pocket", "fishline"]), ("percussion", &["drum"])];
 /// The settings each type of part shows, in order.
 pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
     ("basic", &["pitch_env"]),
@@ -506,6 +589,41 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
         ],
     ),
     ("acid", &["acid_wave", "tuning", "pitch_env"]),
+    (
+        "asheville",
+        &[
+            "model",
+            "character",
+            "osc1_range",
+            "osc1_wave",
+            "osc1_shape",
+            "osc1_tune",
+            "osc1_mix",
+            "osc1_sub",
+            "osc1_on",
+            "osc2_range",
+            "osc2_wave",
+            "osc2_shape",
+            "osc2_tune",
+            "osc2_mix",
+            "osc2_sub",
+            "osc2_on",
+            "osc3_range",
+            "osc3_wave",
+            "osc3_shape",
+            "osc3_tune",
+            "osc3_mix",
+            "osc3_sub",
+            "osc3_on",
+            "osc3_lfo",
+            "ring",
+            "tune_snap",
+            "drift",
+            "feedback_on",
+            "feedback",
+            "pitch_env",
+        ],
+    ),
     ("drum", &["machine", "choke", "overlap"]),
     ("adsr", &["attack", "attack_curve", "hold", "decay", "snap", "sustain", "release"]),
     ("ar", &["attack", "attack_curve", "release"]),
@@ -545,6 +663,194 @@ pub static MODDED_SETTINGS: &[(&str, &str)] = &[
 
 /// How each setting is shown, and where a type of part shows one its own way, how it shows it there.
 pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
+    (
+        "model",
+        SettingKind::Choice {
+            choices: &["classic", "continuous"],
+            names: &["Classic", "Continuous"],
+        },
+    ),
+    (
+        "character",
+        SettingKind::Choice {
+            choices: &["warm", "cold_start", "worn"],
+            names: &["Warm", "Cold Start", "Worn"],
+        },
+    ),
+    (
+        "osc1_range",
+        SettingKind::Choice {
+            choices: &["32", "16", "8", "4", "2"],
+            names: &["32'", "16'", "8'", "4'", "2'"],
+        },
+    ),
+    (
+        "osc1_wave",
+        SettingKind::Choice {
+            choices: &["triangle", "shark", "saw", "square", "wide", "narrow"],
+            names: &["Triangle", "Shark tooth", "Saw", "Square", "Wide pulse", "Narrow pulse"],
+        },
+    ),
+    (
+        "osc1_shape",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
+        },
+    ),
+    (
+        "osc1_tune",
+        SettingKind::Number {
+            lowest: -2400,
+            highest: 2400,
+            unit: "{number:+d} ct",
+            zero: None,
+        },
+    ),
+    (
+        "osc1_mix",
+        SettingKind::Number {
+            lowest: 0,
+            highest: 10,
+            unit: "{number}",
+            zero: None,
+        },
+    ),
+    (
+        "osc1_sub",
+        SettingKind::Choice {
+            choices: &["off", "1", "2"],
+            names: &["Off", "-1 octave", "-2 octaves"],
+        },
+    ),
+    ("osc1_on", SettingKind::Toggle),
+    (
+        "osc2_range",
+        SettingKind::Choice {
+            choices: &["32", "16", "8", "4", "2"],
+            names: &["32'", "16'", "8'", "4'", "2'"],
+        },
+    ),
+    (
+        "osc2_wave",
+        SettingKind::Choice {
+            choices: &["triangle", "shark", "saw", "square", "wide", "narrow"],
+            names: &["Triangle", "Shark tooth", "Saw", "Square", "Wide pulse", "Narrow pulse"],
+        },
+    ),
+    (
+        "osc2_shape",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
+        },
+    ),
+    (
+        "osc2_tune",
+        SettingKind::Number {
+            lowest: -2400,
+            highest: 2400,
+            unit: "{number:+d} ct",
+            zero: None,
+        },
+    ),
+    (
+        "osc2_mix",
+        SettingKind::Number {
+            lowest: 0,
+            highest: 10,
+            unit: "{number}",
+            zero: None,
+        },
+    ),
+    (
+        "osc2_sub",
+        SettingKind::Choice {
+            choices: &["off", "1", "2"],
+            names: &["Off", "-1 octave", "-2 octaves"],
+        },
+    ),
+    ("osc2_on", SettingKind::Toggle),
+    (
+        "osc3_range",
+        SettingKind::Choice {
+            choices: &["lo", "32", "16", "8", "4", "2"],
+            names: &["LO", "32'", "16'", "8'", "4'", "2'"],
+        },
+    ),
+    (
+        "osc3_wave",
+        SettingKind::Choice {
+            choices: &["triangle", "reverse_saw", "saw", "square", "wide", "narrow"],
+            names: &["Triangle", "Reverse saw", "Saw", "Square", "Wide pulse", "Narrow pulse"],
+        },
+    ),
+    (
+        "osc3_shape",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
+        },
+    ),
+    (
+        "osc3_tune",
+        SettingKind::Number {
+            lowest: -2400,
+            highest: 2400,
+            unit: "{number:+d} ct",
+            zero: None,
+        },
+    ),
+    (
+        "osc3_mix",
+        SettingKind::Number {
+            lowest: 0,
+            highest: 10,
+            unit: "{number}",
+            zero: None,
+        },
+    ),
+    (
+        "osc3_sub",
+        SettingKind::Choice {
+            choices: &["off", "1", "2"],
+            names: &["Off", "-1 octave", "-2 octaves"],
+        },
+    ),
+    ("osc3_on", SettingKind::Toggle),
+    ("osc3_lfo", SettingKind::Toggle),
+    (
+        "ring",
+        SettingKind::Number {
+            lowest: 0,
+            highest: 10,
+            unit: "{number}",
+            zero: None,
+        },
+    ),
+    ("tune_snap", SettingKind::Toggle),
+    (
+        "drift",
+        SettingKind::Number {
+            lowest: 0,
+            highest: 10,
+            unit: "{number}",
+            zero: None,
+        },
+    ),
+    ("feedback_on", SettingKind::Toggle),
+    (
+        "feedback",
+        SettingKind::Number {
+            lowest: 0,
+            highest: 10,
+            unit: "{number}",
+            zero: None,
+        },
+    ),
     (
         "circuit",
         SettingKind::Choice {
@@ -998,8 +1304,8 @@ pub static TYPE_SETTING_KINDS: &[(&str, &str, SettingKind)] = &[
 pub static PART_TYPES: &[(&str, &[&str], &[&str])] = &[
     (
         "oscillators",
-        &["basic", "sid", "pocket", "acid", "drum"],
-        &["Basic", "SID", "Pocket", "Fishline", "MechaDrum"],
+        &["basic", "asheville", "sid", "pocket", "acid", "drum"],
+        &["Basic", "Asheville", "SID", "Pocket", "Fishline", "MechaDrum"],
     ),
     (
         "filter",
