@@ -15,10 +15,23 @@ The professor's research is in `.claude/notes/synthesis/`.
   migration, engine and block presets; with it, a Glide switch on the MIDI engine, as if it were a synth.
 - **The Mod Matrix's destinations**: Which to drop (Drive and the like need not be destinations), a discussion; later, some
   effects' settings as destinations, effect by effect.
-- **More kinds of LFO**: research other LFO plugins and the LFOs of popular modular designs (function generators and slope
-  generators, looping envelopes, random and chaotic sources, multi-phase and quadrature LFOs, sequenced and drawn shapes, LFOs
-  that modulate each other), then propose which kinds the built-in synths' LFOs gain, each credited where an open design is
-  followed.
+- **More kinds of LFO**: today an LFO is Sine, Triangle, Saw up, Saw down, Square or Sample & Hold, with its Speed and Rate,
+  Key, Retrigger and Each scene. The kinds found in LFO plugins and in modular designs (the slope and function generators,
+  looping envelopes, multi-phase LFOs, random and chaotic sources), as candidates, each to be chosen with the user:
+  - Symmetry and Curve, one continuous shape from saw down through triangle to saw up, bent from logarithmic to exponential,
+    as a slope generator's rise and fall are (Tides, MIT, is the open design to follow).
+  - Smooth random: a random value each cycle, glided to rather than stepped, with a Slew, beside Sample & Hold.
+  - Fade in: the LFO's depth rising over a time after each note, the delayed vibrato of the classic polysynths.
+  - Tempo sync: the Rate as a division of the beat, dotted and triplet included, beside a rate in hertz.
+  - Phase: where in its cycle the LFO starts, and across a chord's voices a spread, so that the voices move apart, as a
+    multi-phase LFO's outputs do.
+  - One shot: the LFO played once at each note and held at its end, an extra envelope, as a looping envelope switched to
+    single.
+  - Steps: a short drawn row of levels, eight or sixteen, played as the LFO's shape with a Slew between them, as a curve
+    sequencer does.
+  - Chaos: a smooth, never-repeating motion from a seeded chaotic system, the same every playing.
+  - Burst: a few cycles at each note, then still, for ratchets and trills.
+  - One LFO moving another's Rate or depth, through the Mod Matrix's Via or the built-in routes.
 - **A one-voice instrument's note priority**: Lowest, highest or last, beside today's lowest-of-a-chord.
 - **The instrument on the Track page**: The assigned instrument's settings drawn below the track's own, editable there.
 - **The Instruments page as a rack**: A mockup of every instrument's tab rows in one column, each expanded or collapsed and
