@@ -66,11 +66,30 @@ pushing it harder.
 | Response | 0 to 100% | How Env 1 opens it, from linear to exponential. |
 | Drive | 0 to 100% | How hard the loudest notes are pushed into saturation. |
 
-## Planned
+## Low-pass Gate
 
-The low-pass gate is to be an Amp type as well as a Filter type: a vactrol
+A vactrol in the amp's place, the note's last stage: one light-sensitive cell
 that closes the sound and darkens it at once, as a struck or plucked thing
-fades. Until then it is chosen on the Filter tab, where it is the note's amp
-([Filters](FILTERS.md), "Low-pass Gate").
+fades, the classic pluck and bonk of modular synthesizers. It is the same
+gate as the Filter tab's ([Filters](FILTERS.md#low-pass-gate)), with the same
+settings, but here it always closes when its note ends: its Trigger is
+Trigger, a short flash at each note; Gate, lit while the note is held; or Env
+1, whose level it follows through its cell. Its Mode adds VCA, the loudness
+alone.
+
+| Setting | Range | What it does |
+| --- | --- | --- |
+| Trigger | Trigger, Gate, Env 1 | What lights the cell. |
+| Trigger time | 0.5 to 50 ms | How long the flash lasts, with Trigger. |
+| Mode | VCA, Lowpass, Both | Loudness alone, the cutoff alone, or both together. |
+| Signal | Oscillator, Ping, Both | The sound coming in, a short pulse each note, or both. |
+| Ping time | 0.5 to 20 ms | How long the ping lasts, with a Ping. |
+| Resonance | 0 to 100% | How much the Lowpass mode rings. |
+| Open | 100 Hz to 16 kHz | The cutoff fully lit. |
+| Key track | 0 to 100% | How far the cutoff follows the note. |
+| Response | 0 to 100% | How fast the cell is, from fast to lazy. |
+| Memory | 0 to 100% | How much of the last glow carries into the next note. |
+| Age | 0 to 100% | An old cell: dimmer and slower. |
+| Stability | 0 to 100% | How alike each note is. |
 
 [Synths](../SYNTHS.md) lists every part of the built-in instruments.

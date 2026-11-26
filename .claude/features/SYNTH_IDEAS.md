@@ -19,6 +19,10 @@ The professor's research is in `.claude/notes/synthesis/`.
   migration, engine and block presets; with it, a Glide switch on the MIDI engine, as if it were a synth.
 - **The Mod Matrix's destinations**: Which to drop (Drive and the like need not be destinations), a discussion; later, some
   effects' settings as destinations, effect by effect.
+- **More kinds of LFO**: research other LFO plugins and the LFOs of popular modular designs (function generators and slope
+  generators, looping envelopes, random and chaotic sources, multi-phase and quadrature LFOs, sequenced and drawn shapes, LFOs
+  that modulate each other), then propose which kinds the built-in synths' LFOs gain, each credited where an open design is
+  followed.
 - **A one-voice instrument's note priority**: Lowest, highest or last, beside today's lowest-of-a-chord.
 - **The instrument on the Track page**: The assigned instrument's settings drawn below the track's own, editable there.
 - **The Instruments page as a rack**: A mockup of every instrument's tab rows in one column, each expanded or collapsed and

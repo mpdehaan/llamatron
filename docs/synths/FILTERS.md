@@ -103,19 +103,26 @@ on transconductance amplifiers sound.
 ![The low-pass gate](../screenshots/filter_low_pass_gate.svg)
 
 The filter and the amp of modular synthesizers in one: a single
-light-sensitive cell, lit by Env 1, sets both how loud the note is and how
-bright, so that the sound darkens as it fades, like a struck object. It is
-never two envelopes; it is always each note's own, since it is that note's
-amp. With a [vactrol](ENVELOPES.md#vactrol) on Env 1, it is the classic pluck
-and bonk.
+light-sensitive cell, a vactrol, sets both how loud the note is and how
+bright, so that the sound darkens as it fades, like a struck object. On the
+Filter tab it is each note's own, and the [Amp](AMP.md) still follows it, so
+that the gate can shape the tone while another envelope shapes the loudness.
+The same gate can stand in the Amp's place instead, as the note's last stage
+([Amp](AMP.md#low-pass-gate)).
 
-Mode is VCA, the loudness alone; Lowpass, the cutoff alone, through a resonant
-two-pole filter, so that a falling cutoff rings a pitch that drops as the gate
-closes; or Both, loudness and a one-pole filter's cutoff together. Input feeds
-the gate the Oscillator, a Ping, or both: a ping is a short strike at each
-note rung through the gate, which with some resonance makes a pitched bongo or
-log drum with no oscillator at all. Open is the cutoff fully lit, and Key
-track moves it with the note, so that a pinged gate plays in tune.
+Trigger chooses what lights the cell: Trigger, a short flash at each note
+lasting its Trigger time; Gate, lit for as long as the note is held; or the
+level of Env 1, Env 2 or Env 3, smoothed by the cell as it follows, as on the
+hardware, where an envelope only lights the lamp. Mode is Lowpass, the cutoff
+alone, through a resonant two-pole filter, so that a falling cutoff rings a
+pitch that drops as the gate closes; or Both, loudness and a one-pole
+filter's cutoff together. Signal feeds the gate the Oscillator, a Ping, or
+both: a ping is a short pulse at each note, lasting its Ping time, rung
+through the gate, which with some resonance makes a pitched bongo or log drum
+with no oscillator at all. Open is the cutoff fully lit, and Key track moves
+it with the note, so that a pinged gate plays in tune. Response, Memory, Age
+and Stability are the cell's own, the same as the
+[vactrol envelope's](ENVELOPES.md#vactrol).
 
 ## Planned
 

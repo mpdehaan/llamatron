@@ -101,9 +101,9 @@ of any other envelope. Because the rise depends on how
 brightly it is lit, a hard strike is snappy and a soft one lingers, so no two
 hits sound alike.
 
-Cell picks how fast the cell is, from Fast to Lazy. Lit by is a short Strike
-at each note, its width set by Strike, or the Gate, lit for as long as the
-note is held. Memory is how much of the cell's last glow carries into the next
+Response is how fast the cell is, from fast at 0% to lazy at 100%. Trigger is
+a short flash at each note, lasting its Trigger time, or the Gate, lit for as
+long as the note is held. Memory is how much of the cell's last glow carries into the next
 hit, so that hits close together build on each other, as a real cell's do. Age
 dims the light and slows the cell, as an old one does. Stability is how alike
 each hit is: below full, each hit draws its own small differences in rise,
