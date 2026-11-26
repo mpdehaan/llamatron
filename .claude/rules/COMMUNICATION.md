@@ -108,7 +108,7 @@
   many people developed over decades, so nothing in the repository names a product or a manufacturer one recalls: each is
   described by what it does and how it sounds. A design is never held to a past instrument, nor made to copy one's design
   or sound; new ideas are the aim. Code that is not open source is never consulted, code examples are sought among
-  GPLv3-compatible projects, and an open-source project whose code is used is credited with its licence as
+  GPLv3-compatible projects. Open-source projects MAY be named, and one whose code is used is credited with its licence as
   `.claude/rules/RUST.md` says, and in `docs/CREDITS.md`.
 - A proposal about the screen comes with a drawing of it.
 - A behaviour the design doesn't settle is asked about before building. When told to keep going, each decision Claude makes is
