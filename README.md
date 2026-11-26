@@ -1,9 +1,10 @@
 # Llamatron
 
 Llamatron is the sixth iteration of Michael DeHaan's project to enable faster
-complex compositions and random music through science.
+complex compositions and random music through science, now with new
+live performance and synthesis additons.
 
-Llamatron is at a surface level a "tracker", though it has many advanced
+In short, Llamatron is at a surface level a "tracker", though it has many advanced
 features not found in ordinary trackers. It is heavily inspired by legendary
 platforms like Ableton Live, the Elektron Monomachine, and the Sequentix
 Cirklon.
@@ -19,9 +20,12 @@ Llamatron can import midi, export MIDI in multiple variations, and also export
 Ableton Live sets that are a result of rending its music-theory oriented
 object structures.
 
-Llamatron can also play realtime MIDI with live realtime editing of the song
-to either MIDI devices (including hardware synthesizers) or FluidSynth. So
-yes, you CAN perform live with llamatron, at least theoretically.
+Llamatron can also send realtime MIDI to hardware synthesizers with live realtime editing, or play
+music through FluidSynth for samples. 
+
+More impressively, it contains an extremely powerful built-in synth (it is not a VST) that has a semi-modular
+architecture and various percussion engines -- slightly favoring classic synths, classic effects, and a weird
+mix of digital glitch/IDM/noise type instruments. These are well described in the web documentation.
 
 Llamatron can also automatically record visualized demos of any song with any
 synthesizer setup or FluidSynth with relatively minimal setup configuration,
