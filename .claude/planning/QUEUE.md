@@ -6,33 +6,35 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 
 ## Now: the synths (finish the outstanding synth work, then the other engines with their demos)
 
-1. OTHER_IDEAS: The screens comparison in Rust.
-2. DEMO_IDEAS: Engines and effects under each synth demo.
-3. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
-4. SYNTH_IDEAS: Modulator modules (Chaos and Snail, then Tide, Turing, Bounce and Swarm); New-instrument choices
+1. UX_IDEAS: Renaming on the Scene and Clip pages.
+2. OTHER_IDEAS: The screens comparison in Rust.
+3. DEMO_IDEAS: Engines and effects under each synth demo.
+4. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
+5. SYNTH_IDEAS: Modulator modules (Chaos and Snail, then Tide, Turing, Bounce and Swarm); New-instrument choices
    (mockup).
-5. SYNTH_IDEAS: Durham (mockup).
-6. SYNTH_IDEAS: MechaDrum split (mockup); The vactrol's age.
-7. SYNTH_IDEAS: Spectral; Variance; The professor's effect plans.
-8. SYNTH_IDEAS: Every engine and effect redesigned; The other engines and effects, each with its demo from DEMO_IDEAS
+6. SYNTH_IDEAS: Durham (mockup).
+7. SYNTH_IDEAS: MechaDrum split (mockup); The vactrol's age.
+8. SYNTH_IDEAS: Spectral; Variance; The professor's effect plans.
+9. SYNTH_IDEAS: Every engine and effect redesigned; The other engines and effects, each with its demo from DEMO_IDEAS
    (log_garden first, with ComplexOsc).
-9. SYNTH_IDEAS: Asheville's polyphonic mode; The Engine tab; The Mod Matrix's destinations; the rest of the Instrument Page.
-10. OTHER_IDEAS: Drum-kit sequencing, at the end of all synth work.
+10. SYNTH_IDEAS: Asheville's polyphonic mode; The Engine tab; The Mod Matrix's destinations; the rest of the Instrument Page.
+11. OTHER_IDEAS: Drum-kit sequencing, at the end of all synth work.
 
 When a question waits on the user, do synth work that needs no mockup, or the song wizard.
 
 ## Then
 
-11. WIZARD_IDEAS: The wizard in Rust, then The Players, then the rest of the page, then The Music, then Genres.
-12. GENERATOR_IDEAS: Built-in generators; A generator as a self-contained plugin. OTHER_IDEAS: CC ramps; A clip's list
+12. WIZARD_IDEAS: The wizard in Rust, then The Players, then the rest of the page, then The Music, then Genres.
+13. GENERATOR_IDEAS: Built-in generators; A generator as a self-contained plugin. OTHER_IDEAS: CC ramps; A clip's list
     of patterns.
-13. UX_IDEAS: The wording of everything shown, then the small ones in the file's order.
-14. OTHER_IDEAS: Export, Import and Playback; The Code.
-15. OTHER_IDEAS: Shifts; Enabled. GENERATOR_IDEAS: ChordToNote; Math.
+14. UX_IDEAS: The wording of everything shown, then the small ones in the file's order.
+15. OTHER_IDEAS: Export, Import and Playback; The Code.
+16. OTHER_IDEAS: Shifts; Enabled. GENERATOR_IDEAS: ChordToNote; Math.
 
 ## Bottom
 
-16. SYNTH_IDEAS: Choir; The talking-toy voice; A brass synth; Brass and wind; Drone.
-17. DEMO_IDEAS: Other Demos, the homages and mashups last.
-18. OTHER_IDEAS: The Documents and the Tools.
-19. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
+17. SYNTH_IDEAS: Choir; The talking-toy voice; A brass synth; Brass and wind; Drone.
+18. DEMO_IDEAS: Other Demos, the homages and mashups last.
+19. OTHER_IDEAS: The Documents and the Tools.
+20. UX_IDEAS: Listening to a drum-track pattern.
+21. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
