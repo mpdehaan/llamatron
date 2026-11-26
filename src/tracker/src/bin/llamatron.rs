@@ -18,6 +18,9 @@ struct Asked {
     replace: bool,
     /// What the tracker does by itself once it opens.
     launch: Launch,
+    /// List this computer's MIDI output ports, or the visualizer modes, one a line, and do nothing else: the recorder asks.
+    lists_ports: bool,
+    lists_visualizers: bool,
 }
 
 /// The options that only mean something when opening the tracker, and those only when exporting.
@@ -43,6 +46,18 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+    if asked.lists_ports {
+        for port in llamatron_tracker::realtime::backend::device_port_names() {
+            println!("{port}");
+        }
+        return ExitCode::SUCCESS;
+    }
+    if asked.lists_visualizers {
+        for mode in llamatron_tracker::visualizers::ported_modes() {
+            println!("{mode}\t{}", llamatron_tracker::settings::mode_name(mode));
+        }
+        return ExitCode::SUCCESS;
+    }
     let done = match &asked.kind {
         Some(kind) => export(&asked, kind),
         None => llamatron_tracker::terminal::run(asked.set.as_deref(), asked.launch.clone()),
@@ -67,6 +82,8 @@ fn asked(arguments: Vec<String>) -> Result<Asked, String> {
         out: None,
         replace: false,
         launch: Launch::default(),
+        lists_ports: false,
+        lists_visualizers: false,
     };
     let mut given: Vec<String> = Vec::new();
     let mut words = arguments.into_iter().peekable();
@@ -81,6 +98,8 @@ fn asked(arguments: Vec<String>) -> Result<Asked, String> {
             "--autoplay-quit-when-finished" => asked.launch.quit_when_finished = true,
             "--details" => asked.launch.details = true,
             "--launch-for-recording" => asked.launch.for_recording = true,
+            "--list-midi-ports" => asked.lists_ports = true,
+            "--list-visualizers" => asked.lists_visualizers = true,
             "--interactive" => {
                 asked.launch.for_recording = true;
                 asked.launch.interactive = true;

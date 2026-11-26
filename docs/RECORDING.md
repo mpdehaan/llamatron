@@ -1,7 +1,9 @@
 # Recording
 
-Recording is coming back to llamatron, which is now written in Rust; until
-it does, the scripts this page describes are not part of it.
+Recording is back in llamatron, which is now written in Rust, for single
+takes with `record.sh`. Still to come back: the staged visualizer takes and
+batch recording with `record_all.sh`, the preview, the demo's name crossing
+the screen and the scene announcements.
 
 This page covers making a video of the tracker playing a set, for YouTube and
 similar sites, with the sound of your synthesizers or of FluidSynth. One
@@ -72,22 +74,21 @@ Screen Recording permission and Xcode's command line tools from the
 sh user_scripts/record.sh --sound fluidsynth examples/learning/01_hello_world.yml
 ```
 
-`record.sh --sound fluidsynth` takes the set and asks for the view as
-`record.sh` does, and plays the set's own instruments, every instrument whose
-Device is `*FluidSynth` playing through FluidSynth. FluidSynth's sound goes to
-your Multi-Output Device of BlackHole and your speakers, as in step 3 of the
-[requirements](INSTALLING_RECORDING.md), when you have one, so both the
-recording and you hear the take; otherwise the sound goes straight into
-BlackHole, which your speakers don't play. `--fluidsynth-output` chooses
-another output:
+`record.sh --sound fluidsynth`, or `--sound own`, takes the set and asks for
+the view as `record.sh` does, and plays the set's own instruments: every
+instrument whose Device is `*FluidSynth` through FluidSynth, and every
+built-in synth. That sound goes straight into the device recorded, BlackHole,
+which your speakers don't play. To hear the take as it records, name your
+Multi-Output Device of BlackHole and your speakers, as in step 3 of the
+[requirements](INSTALLING_RECORDING.md), with `--sound-output`:
 
 ```
-sh user_scripts/record.sh --sound fluidsynth examples/learning/01_hello_world.yml --fluidsynth-output "Mac Studio Speakers"
+sh user_scripts/record.sh --sound fluidsynth examples/learning/01_hello_world.yml --sound-output "Multi-Output Device"
 ```
 
-Only the recorder sends FluidSynth's sound anywhere but the Mac's usual
-output, through the `LLAMATRON_FLUIDSYNTH_AUDIO_DEVICE` environment variable
-the recorder sets for the take, so playing a set in the tracker never needs
+Only the recorder sends llamatron's own sound anywhere but the Mac's usual
+output, through the `LLAMATRON_AUDIO_DEVICE` environment variable the
+recorder sets for the take, so playing a set in the tracker never needs
 BlackHole.
 
 ### Performed Takes
@@ -152,8 +153,9 @@ recorder asks whether it shows the clips or a visualizer, and which mode,
 listing them; `--visualizer NAME` names the mode, and `--clips` the clips,
 without asking.
 
-A take that shows a visualizer, and isn't performed, is staged like a batch
-video by default: the video opens on the title on black, shows Arrange with
+Until the staging comes back, a visualizer take records the mode over
+Arrange's clip area within the window. Once it is back, a take that shows a
+visualizer, and isn't performed, is staged like a batch video by default: the video opens on the title on black, shows Arrange with
 READY, and then the clips and the visualizer take turns filling the screen
 inside a frame whose pulse changes colour at each scene, ten seconds each with
 a fade through black between, starting on the clips, recorded from the
