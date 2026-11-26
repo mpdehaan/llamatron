@@ -148,6 +148,8 @@ pub const MSG_KEYSWITCH_PICKED_NOTE: &str = "Note    {note}";
 pub const MSG_KEYSWITCH_PICKED_OCTAVE: &str = "Octave  {octave}";
 pub const MSG_KEYSWITCH_LEAD_PROMPT: &str = "Keyswitch lead in milliseconds ({lowest} to {highest})";
 pub const MSG_LISTENING_TO_INSTRUMENT: &str = "listening to ({name}); L stops";
+/// The dialog that asks which MIDI CC a Mod Matrix slot reads.
+pub const MSG_MIDI_CC_TITLE: &str = "MIDI CC";
 pub const MSG_ARPEGGIO_PROMPT: &str = "Arpeggio: up to {most} semitones apart from the note, such as 0 4 7, blank for none";
 pub const MSG_LATENCY_PROMPT: &str = "Latency in milliseconds ({lowest} to {highest})";
 pub const MSG_KEYSWITCH_SEVERAL_INSTRUMENTS: &str = "This pattern plays on more than one instrument.";

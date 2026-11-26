@@ -14,6 +14,18 @@ vibrato, with a Square shape and a large Amount a chip trill; Velocity to
 Cutoff makes harder notes brighter; Random to Detune makes each note a little
 different.
 
+## MIDI CC Sources
+
+A knob on a controller, or a CC row of a pattern, can move the sound through
+the matrix. The last entry of the Source and Via pickers is `MIDI CC…`, which
+asks for a CC's number, from 0 to 127, and the slot then shows it as `CC 74`.
+The CC's value, from 0 to 127, moves its destination from nothing to the
+slot's full Amount. A track's CC rows reach its built-in instrument as they
+reach any MIDI device, so a pattern whose CC row the track sends as CC 74,
+with a slot reading CC 74 into Cutoff, opens and closes the filter as it
+plays, live and in a WAV export alike. A CC starts at 0 until its first
+message comes.
+
 ## How the Matrix Is Built
 
 The routes every synth needs are wired in outside the matrix, as a

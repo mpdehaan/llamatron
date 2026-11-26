@@ -24,6 +24,8 @@ pub const NOTE_OFF: i64 = 1;
 pub const ALL_OFF: i64 = 2;
 pub const FORGET: i64 = 3;
 pub const SCENE_STARTED: i64 = 4;
+/// A MIDI CC for an instrument: its number in the pitch's place, its value, 0 to 127, in the velocity's.
+pub const CONTROL: i64 = 5;
 pub const MOST_INSTRUMENTS: usize = 1024;
 pub const MOST_VOICES: usize = 512;
 pub const MOST_EVENTS: usize = 1 << 16;
@@ -402,6 +404,11 @@ impl Engine {
             SCENE_STARTED => {
                 if let Some(patch) = self.instruments[instrument].as_mut() {
                     patch.lfos.scene_started();
+                }
+            }
+            CONTROL => {
+                if let Some(patch) = self.instruments[instrument].as_mut() {
+                    patch.set_control(event.pitch as usize, event.velocity);
                 }
             }
             _ => {}

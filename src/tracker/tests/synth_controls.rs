@@ -297,3 +297,35 @@ fn every_drum_knob_changes_the_hit() {
     }
     assert!(unwired.is_empty(), "these drum knobs change nothing: {unwired:#?}");
 }
+
+/// A MIDI CC routed through the Mod Matrix moves what it is routed to: the same note with CC 74 at its lowest and at its
+/// highest, routed to the cutoff, sounds different, and a CC the matrix does not read changes nothing.
+#[test]
+fn a_midi_cc_in_the_matrix_moves_its_destination() {
+    let sound = "{ engine: basic, matrix: [{ source: cc74, via: none, destination: cutoff, amount: 80 }] }";
+    let instrument = instrument(sound);
+    let spec = llamatron_tracker::sound_spec::synth_spec(&Sound::of(&instrument), DRUMS_FROM);
+    let value = llamatron_tracker::msgpack::value_of(&spec);
+    let (cutoff_cc, other_cc, lowest, highest) = (74, 20, 0.0, 127.0);
+    let at = |number: usize, control: f64| {
+        let mut patch = Patch::compiled(&value, RATE);
+        patch.set_control(number, control);
+        let mut voice = Voice::new(1, 0, PITCH, 0, VELOCITY, None);
+        patch.begin(&mut voice);
+        let mut out = Vec::new();
+        let chunks = (HELD_SECONDS * RATE) as usize / CHUNK;
+        for chunk in 0..chunks {
+            patch.ready(CHUNK);
+            patch.buffer[..CHUNK].fill(0.0);
+            patch.play(&mut voice, (chunk * CHUNK) as i64, CHUNK);
+            patch.finish(CHUNK);
+            out.extend_from_slice(&patch.buffer[..CHUNK]);
+        }
+        out
+    };
+    assert!(differs(&at(cutoff_cc, lowest), &at(cutoff_cc, highest)), "CC 74 moves the cutoff");
+    assert!(
+        !differs(&at(other_cc, lowest), &at(other_cc, highest)),
+        "a CC the matrix does not read changes nothing"
+    );
+}

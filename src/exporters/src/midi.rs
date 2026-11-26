@@ -433,10 +433,13 @@ pub struct TimedTrack {
     pub notes: Vec<(f64, i64, i64)>,
     pub scene_starts: Vec<f64>,
     pub endings: Vec<f64>,
+    /// The track's CCs, the endings and the clip starts' mark aside: seconds, number and value.
+    pub controls: Vec<(f64, i64, i64)>,
 }
 
 /// The controls that end every note, and the one the real-time player marks a clip's start with.
 const ENDING_CONTROLS: [i64; 2] = [120, 123];
+const CLIP_START_CONTROL: i64 = 102;
 
 /// A track's notes, clip starts and endings in seconds, or None where the song has no track of the name.
 pub fn timed_track(grid: &Grid, track: &str) -> Rendered<Option<TimedTrack>> {
@@ -451,6 +454,7 @@ pub fn timed_track(grid: &Grid, track: &str) -> Rendered<Option<TimedTrack>> {
         notes: Vec::new(),
         scene_starts: Vec::new(),
         endings: Vec::new(),
+        controls: Vec::new(),
     };
     for (row, start) in grid.rows.iter().zip(&starts) {
         if clip_of(row, column).is_some() {
@@ -463,6 +467,7 @@ pub fn timed_track(grid: &Grid, track: &str) -> Rendered<Option<TimedTrack>> {
             NOTE_ON if event.value > 0 => timed.notes.push((now, event.number, event.value)),
             NOTE_ON | NOTE_OFF => timed.notes.push((now, event.number, 0)),
             CONTROL_CHANGE if ENDING_CONTROLS.contains(&event.number) => timed.endings.push(now),
+            CONTROL_CHANGE if event.number != CLIP_START_CONTROL => timed.controls.push((now, event.number, event.value)),
             _ => {}
         }
     }

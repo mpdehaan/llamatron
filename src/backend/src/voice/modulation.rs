@@ -137,6 +137,8 @@ pub enum Source {
     Velocity,
     Key,
     Random,
+    /// A MIDI CC, by its place among the CCs the matrix reads, its number kept in the matrix's list of them.
+    Control(usize),
 }
 
 /// What a matrix slot moves.
@@ -148,6 +150,21 @@ pub enum Destination {
     Cutoff,
     Resonance,
     Amp,
+}
+
+/// What a CC source is called in a sound: `cc` and its number, such as `cc74`.
+const CONTROL_PREFIX: &str = "cc";
+/// The highest CC number.
+const HIGHEST_CONTROL: u8 = 127;
+/// The most CCs the matrix reads, one a slot at most.
+pub const MOST_CONTROLS: usize = 8;
+
+/// The CC number a source names, such as 74 for `cc74`, or None for any other source.
+fn control_named(name: &str) -> Option<u8> {
+    name.strip_prefix(CONTROL_PREFIX)?
+        .parse::<u8>()
+        .ok()
+        .filter(|number| *number <= HIGHEST_CONTROL)
 }
 
 fn source_named(name: &str) -> Option<Source> {
@@ -196,6 +213,8 @@ pub struct Sources {
     pub velocity: f64,
     pub key: f64,
     pub random: f64,
+    /// The value of each CC the matrix reads, from 0 to 1, in the order of the matrix's list of them.
+    pub controls: [f64; MOST_CONTROLS],
 }
 
 impl Sources {
@@ -209,6 +228,7 @@ impl Sources {
             Source::Velocity => self.velocity,
             Source::Key => self.key,
             Source::Random => self.random,
+            Source::Control(place) => self.controls[place],
         }
     }
 }
@@ -224,31 +244,47 @@ pub struct Moved {
     pub amp: f64,
 }
 
-/// The matrix's routes.
+/// The matrix's routes, and the CC numbers its routes read, each once, in the order Source::Control counts them.
 pub struct ModMatrix {
     pub routes: Vec<Route>,
+    pub controls: Vec<u8>,
 }
 
 impl ModMatrix {
     pub fn compiled(slots: &[Value]) -> ModMatrix {
         let mut routes = Vec::new();
+        let mut controls: Vec<u8> = Vec::new();
+        // A CC source takes the place of its number among the CCs read, added the first time a route reads it.
+        let mut named = |name: &str| -> Option<Source> {
+            let Some(number) = control_named(name) else { return source_named(name) };
+            let place = match controls.iter().position(|each| *each == number) {
+                Some(place) => place,
+                None if controls.len() < MOST_CONTROLS => {
+                    controls.push(number);
+                    controls.len() - 1
+                }
+                None => return None,
+            };
+            Some(Source::Control(place))
+        };
         for slot in slots {
             let amount = number(slot, "amount", 0.0);
-            let Some(source) = source_named(word(slot, "source", "none")) else { continue };
-            let Some((destination, range)) = destination_named(word(slot, "destination", "none")) else {
-                continue;
-            };
             if amount == 0.0 {
                 continue;
             }
+            let Some(source) = named(word(slot, "source", "none")) else { continue };
+            let Some((destination, range)) = destination_named(word(slot, "destination", "none")) else {
+                continue;
+            };
+            let via = named(word(slot, "via", "none"));
             routes.push(Route {
                 source,
-                via: source_named(word(slot, "via", "none")),
+                via,
                 destination,
                 reach: amount * range,
             });
         }
-        ModMatrix { routes }
+        ModMatrix { routes, controls }
     }
 
     /// Whether any route reads a source, so that a voice works out only what is read.

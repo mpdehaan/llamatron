@@ -17,7 +17,7 @@
 use crate::audio::clock;
 use crate::audio::player::{self, Command, Commands};
 use crate::daemon::HitStore;
-use crate::engine::{ALL_OFF, NOTE_OFF as ENGINE_NOTE_OFF, NOTE_ON as ENGINE_NOTE_ON, SCENE_STARTED as ENGINE_SCENE_STARTED};
+use crate::engine::{ALL_OFF, CONTROL as ENGINE_CONTROL, NOTE_OFF as ENGINE_NOTE_OFF, NOTE_ON as ENGINE_NOTE_ON, SCENE_STARTED as ENGINE_SCENE_STARTED};
 use crate::sender::engine::{ALL_NOTES_OFF, ALL_SOUND_OFF, CONTROL_CHANGE, NOTE_OFF, NOTE_ON};
 use std::sync::{Arc, Mutex};
 
@@ -147,8 +147,8 @@ impl Output {
     }
 }
 
-/// A MIDI message as the built-in instruments take a note: a start, an end, every note of the instrument ending, or its
-/// clip starting; any other message, such as a program change, they do not play.
+/// A MIDI message as the built-in instruments take a note: a start, an end, every note of the instrument ending, its
+/// clip starting, or a CC's value; any other message, such as a program change, they do not play.
 fn built_in_note(first: usize, shared: &Shared, data: &[u8], at: f64) {
     let [status, number, value] = padded(data);
     let kind = status & KIND_MASK;
@@ -159,6 +159,8 @@ fn built_in_note(first: usize, shared: &Shared, data: &[u8], at: f64) {
         NOTE_ON | NOTE_OFF => (ENGINE_NOTE_OFF, number as f64, 0.0),
         CONTROL_CHANGE if number == ALL_NOTES_OFF || number == ALL_SOUND_OFF => (ALL_OFF, 0.0, 0.0),
         CONTROL_CHANGE if number == SCENE_STARTED => (ENGINE_SCENE_STARTED, 0.0, 0.0),
+        // Any other CC is a value the Mod Matrix's CC sources may read.
+        CONTROL_CHANGE => (ENGINE_CONTROL, number as f64, value as f64),
         _ => return,
     };
     let mut hit = None;

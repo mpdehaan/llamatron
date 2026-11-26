@@ -136,8 +136,14 @@ pub struct Patch {
     pub lfos: LfoBank,
     pub buffer: Vec<f32>,
     pub used: bool,
+    /// Each MIDI CC's last value, from 0 to 1, which the Mod Matrix's CC sources read.
+    pub controls: [f64; CONTROL_COUNT],
     rate: f64,
 }
+
+/// How many MIDI CCs there are, and a CC's highest value.
+pub const CONTROL_COUNT: usize = 128;
+const CONTROL_TOP: f64 = 127.0;
 
 impl Patch {
     /// The instrument a spec describes, as the tracker writes it (model/objects/built_in_sound.py).
@@ -168,7 +174,15 @@ impl Patch {
             lfos: LfoBank::compiled(list(spec, "lfos"), rate),
             buffer: vec![0.0; MOST_FRAMES],
             used: false,
+            controls: [0.0; CONTROL_COUNT],
             rate,
+        }
+    }
+
+    /// Take a MIDI CC's new value, 0 to 127, for the Mod Matrix's CC sources.
+    pub fn set_control(&mut self, number: usize, value: f64) {
+        if let Some(held) = self.controls.get_mut(number) {
+            *held = (value / CONTROL_TOP).clamp(0.0, 1.0);
         }
     }
 
@@ -309,6 +323,10 @@ impl Patch {
             random: voice.random,
             ..Sources::default()
         };
+        // The CCs the matrix reads, as their last messages left them, for the chunk ahead.
+        for (place, number) in modular.matrix.controls.iter().enumerate() {
+            sources.controls[place] = self.controls[*number as usize];
+        }
         let gliding = glide > 0.0 && voice.glide_from != voice.pitch;
         modular.oscillator.choose_band(&mut voice.oscillator, voice.pitch);
         for place in 0..count {

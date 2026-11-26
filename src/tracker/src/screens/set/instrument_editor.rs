@@ -46,6 +46,21 @@ const BUILT_IN: &str = "built_in";
 const NONE_EFFECT: &str = "none";
 const BITCRUSH: &str = "bitcrush";
 const ARPEGGIO: &str = "arpeggio";
+/// A Mod Matrix source that is a MIDI CC is `cc` and its number; the picker's entry that asks for one; the CC it asks
+/// with first, the filter's cutoff by custom, and the highest CC.
+const CONTROL_PREFIX: &str = "cc";
+const MIDI_CC_CHOICE: &str = "midi_cc";
+const DEFAULT_CC: i64 = 74;
+const HIGHEST_CC: i64 = 127;
+
+/// The CC number a Mod Matrix source names, such as 74 for `cc74`, or None for any other source.
+fn control_number(source: &str) -> Option<i64> {
+    source
+        .strip_prefix(CONTROL_PREFIX)?
+        .parse::<i64>()
+        .ok()
+        .filter(|number| (0..=HIGHEST_CC).contains(number))
+}
 const CIRCUIT: &str = "circuit";
 const MODDED: &str = "modded";
 /// The oscillator type whose own circuit sets the slide, so that the Voice column shows no Glide for it.
@@ -970,28 +985,37 @@ impl InstrumentEditor {
         tab
     }
 
+    /// A Mod Matrix slot's Source or Via: the usual sources, then `MIDI CC…`, which asks for a CC's number, and the slot's
+    /// own CC where it reads one, shown as `CC 74`.
+    fn source_field(id: usize, label: &str, current: &str) -> Field {
+        let mut choices: Vec<&str> = MATRIX_SOURCES.to_vec();
+        let mut names = names_in(labels::MSG_MATRIX_SOURCE_NAMES, MATRIX_SOURCES);
+        if let Some(number) = control_number(current) {
+            choices.push(current);
+            names.push(named(labels::MSG_MIDI_CC_SHOWN, &[("number", number.into())]));
+        }
+        choices.push(MIDI_CC_CHOICE);
+        names.push(labels::MSG_MIDI_CC_CHOICE.to_string());
+        chosen(id, label, &choices, &names, current)
+    }
+
     fn matrix_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
         let slot = |number: usize, name: &str| sound.item("matrix", number, name, SLOT_DEFAULTS);
         let shown_label = |label: &str| named_in(labels::MSG_SLOT_SHOWN_LABELS, label);
         let mut columns = Vec::new();
         for number in 1..=MATRIX_SLOTS as usize {
             let numbered = |label: &str| named(label, &[("number", number.into())]);
-            let sources = names_in(labels::MSG_MATRIX_SOURCE_NAMES, MATRIX_SOURCES);
             let amount = whole(&slot(number, "amount"));
             let fields = vec![
-                chosen(
+                Self::source_field(
                     ids.at(Write::Item("matrix", number, "source")),
                     &numbered(labels::MSG_SLOT_SOURCE_LABEL),
-                    MATRIX_SOURCES,
-                    &sources,
                     &text(&slot(number, "source")),
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_SOURCE_LABEL)),
-                chosen(
+                Self::source_field(
                     ids.at(Write::Item("matrix", number, "via")),
                     &numbered(labels::MSG_SLOT_VIA_LABEL),
-                    MATRIX_SOURCES,
-                    &sources,
                     &text(&slot(number, "via")),
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_VIA_LABEL)),
@@ -1151,6 +1175,33 @@ impl Form for InstrumentEditor {
             self.edit_arpeggio(app, &sound, part, edit);
             return;
         }
+        // `MIDI CC…` in a slot's Source or Via asks for the CC's number, which comes back as a number to store as `cc74`.
+        if let Write::Item("matrix", number, name @ ("source" | "via")) = write {
+            match &edit {
+                Edit::Choice(chosen) if chosen == MIDI_CC_CHOICE => {
+                    let current = control_number(&text(&sound.item("matrix", number, name, SLOT_DEFAULTS))).unwrap_or(DEFAULT_CC);
+                    app.asking = Some(Edit::AskNumber {
+                        title: messages::MSG_MIDI_CC_TITLE.to_string(),
+                        value: current,
+                        lowest: Some(0),
+                        highest: Some(HIGHEST_CC),
+                    });
+                    return;
+                }
+                Edit::Number(control) => {
+                    let value = Data::text(&format!("{CONTROL_PREFIX}{}", control.clamp(&0, &HIGHEST_CC)));
+                    let name_of = self.name.clone();
+                    let changed = sound.with_item("matrix", number, name, value);
+                    app.document.change_set(|setlist| {
+                        if let Some(Item::Instrument(instrument)) = setlist.get_item_mut(Section::INSTRUMENTS, &name_of) {
+                            instrument.set_written(InstrumentSetting::SOUND, Some(changed));
+                        }
+                    });
+                    return;
+                }
+                _ => {}
+            }
+        }
         let value = match edit {
             Edit::Number(number) => Some(Data::Whole(number as i128)),
             Edit::Toggle(on) => Some(Data::Bool(on)),
@@ -1246,5 +1297,17 @@ mod tests {
         let field = InstrumentEditor::setting_field(&sound, "filter", "ladder", "cutoff", &mut ids);
         let hertz = named(marks::MSG_HERTZ_SHOWN, &[("number", cutoff.into())]);
         assert!(field.value().ends_with(&hertz), "{}", field.value());
+    }
+
+    /// A slot reading a MIDI CC shows it by number, and its picker still offers MIDI CC… to choose another.
+    #[test]
+    fn a_midi_cc_source_shows_its_number() {
+        let control = 74;
+        let source = format!("{CONTROL_PREFIX}{control}");
+        let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, &source);
+        let shown = named(labels::MSG_MIDI_CC_SHOWN, &[("number", control.into())]);
+        assert!(field.value().ends_with(&shown), "{}", field.value());
+        assert_eq!(control_number(&source), Some(control));
+        assert_eq!(control_number("lfo1"), None);
     }
 }
