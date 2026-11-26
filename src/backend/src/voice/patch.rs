@@ -20,11 +20,13 @@ use crate::protocol::values::{field, list, number, truth, word};
 use crate::voice::effects::{self, Effect};
 use crate::voice::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
 use crate::voice::filters::{FilterPart, FilterState, GateNote, GatePart, ENVELOPE_OCTAVES};
-use crate::voice::modulation::{LfoBank, ModMatrix, Moved, Source, Sources, LFO_COUNT, MOST_FRAMES};
+use crate::voice::modulation::{Destination, LfoBank, ModMatrix, Moved, Source, Sources, LFO_COUNT, MOST_FRAMES};
 use crate::voice::oscillators::{self, Moves, OscillatorPart, OscillatorState};
 use rmpv::Value;
 
 const MIDDLE_C: f64 = 60.0;
+/// The rate from which an LFO is heard as a tone, and moves a cutoff at audio rate.
+const AUDIO_RATE_HERTZ: f64 = 20.0;
 /// The most of a cycle a Key LFO moves a sample: just under half, the highest frequency a sample rate can hold.
 const MOST_KEY_STEP: f64 = 0.45;
 const KEY_SPAN: f64 = 60.0;
@@ -492,9 +494,23 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
     let resonance = number(filter_spec, "resonance", 0.0);
     let envelope_specs = list(spec, "envelopes");
     let envelope = |place: usize| envelopes::compiled(envelope_specs.get(place).unwrap_or(&empty), resonance);
-    let filter = FilterPart::compiled(filter_spec, rate);
+    let mut filter = FilterPart::compiled(filter_spec, rate);
     let gate = GatePart::compiled(filter_spec, rate);
     let matrix = ModMatrix::compiled(list(spec, "matrix"));
+    // A cutoff moved at audio rate, by an oscillator or an LFO past hearing's bottom, is worked out every sample, so that
+    // filter FM is smooth rather than stepped.
+    let lfo_rates: Vec<f64> = list(spec, "lfos").iter().map(|lfo| number(lfo, "rate", 0.0)).collect();
+    let audio_rate = |source: Source| match source {
+        Source::Oscillator | Source::Osc(_) => true,
+        Source::Lfo(place) => lfo_rates.get(place).is_some_and(|hertz| *hertz >= AUDIO_RATE_HERTZ),
+        _ => false,
+    };
+    if let Some(filter) = filter.as_mut() {
+        filter.every_sample = matrix
+            .routes
+            .iter()
+            .any(|route| route.destination == Destination::Cutoff && (audio_rate(route.source) || route.via.is_some_and(audio_rate)));
+    }
     let matrix_reads_env2 = matrix.uses(Source::Env2);
     Modular {
         oscillator,
@@ -516,5 +532,38 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
         last_pitch: None,
         newest: u64::MAX,
         random: Random::new(RANDOM_SEED),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The filter's coefficients are worked out every sample where the Mod Matrix moves its cutoff at audio rate, by the
+    /// oscillator or an LFO past hearing's bottom, and every few samples where only a slow source moves it.
+    #[test]
+    fn an_audio_rate_route_to_the_cutoff_works_the_filter_out_every_sample() {
+        let every_sample = |source: &str, lfo_hertz: f64| {
+            let route = Value::Map(vec![
+                ("source".into(), source.into()),
+                ("destination".into(), "cutoff".into()),
+                ("amount".into(), 0.5.into()),
+            ]);
+            let lfo = Value::Map(vec![("rate".into(), lfo_hertz.into())]);
+            let spec = Value::Map(vec![
+                ("filter".into(), Value::Map(vec![("type".into(), "ladder".into())])),
+                ("matrix".into(), Value::Array(vec![route])),
+                ("lfos".into(), Value::Array(vec![lfo])),
+            ]);
+            let Sound::Modular(modular) = Patch::compiled(&spec, 48000.0).sound else {
+                panic!("a modular sound")
+            };
+            modular.filter.expect("a filter").every_sample
+        };
+        let (slow, audio) = (5.0, 440.0);
+        assert!(every_sample("osc", slow));
+        assert!(every_sample("lfo1", audio));
+        assert!(!every_sample("lfo1", slow));
+        assert!(!every_sample("velocity", slow));
     }
 }

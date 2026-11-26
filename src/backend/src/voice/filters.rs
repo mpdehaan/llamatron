@@ -87,6 +87,9 @@ pub struct FilterPart {
     /// Whether it runs at twice the rate: a saturating filter pushed hard enough for its saturation to alias, by Drive or
     /// by a set Resonance past half, decided once as the instrument is compiled, so that its delay never changes mid-note.
     pub oversampled: bool,
+    /// Whether its coefficients are worked out every sample, where the Mod Matrix moves its cutoff at audio rate, rather
+    /// than every COEFFICIENT_STEP samples.
+    pub every_sample: bool,
 }
 
 /// What a filter keeps from sample to sample: its stages' states, its coefficients and when they were worked out.
@@ -198,7 +201,17 @@ impl FilterPart {
             fm: number(spec, "filter_fm", 0.0) * FM_OCTAVES,
             rate,
             oversampled,
+            every_sample: false,
         })
+    }
+
+    /// How many samples its coefficients last: one where its cutoff moves at audio rate, else COEFFICIENT_STEP.
+    fn coefficient_step(&self) -> usize {
+        if self.every_sample {
+            1
+        } else {
+            COEFFICIENT_STEP
+        }
     }
 
     /// The rate it runs at: twice the instrument's where it is oversampled.
@@ -232,7 +245,7 @@ impl FilterPart {
         }
         if state.countdown == 0 {
             self.prepare(state, octaves, resonance_moved);
-            state.countdown = COEFFICIENT_STEP;
+            state.countdown = self.coefficient_step();
         }
         state.countdown -= 1;
         let driven = if self.push != 1.0 {
@@ -276,7 +289,7 @@ impl FilterPart {
             let cutoff = self.cutoff * 2f64.powf(octaves + self.fm * input);
             let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
             acid.prepare(cutoff, resonance, self.rate);
-            state.countdown = COEFFICIENT_STEP;
+            state.countdown = self.coefficient_step();
         }
         state.countdown -= 1;
         let driven = if self.push != 1.0 {
@@ -300,7 +313,7 @@ impl FilterPart {
             let cutoff = (self.cutoff * 2f64.powf(octaves)).clamp(LOWEST_CUTOFF, HIGHEST_SHARE * self.rate);
             let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
             state.sallen_key.prepare(form, cutoff, resonance, self.running_rate());
-            state.countdown = COEFFICIENT_STEP;
+            state.countdown = self.coefficient_step();
         }
         state.countdown -= 1;
         let out = match form {
@@ -378,7 +391,10 @@ impl FilterPart {
         let high = (input - (damping + g) * first - second) / (1.0 + damping * g + g * g);
         let band = g * high + first;
         let low = g * band + second;
-        state.stages[0] = g * high + band;
+        // The band integrator saturates softly, as the nonlinear-state filters of sst-filters' ResonanceWarp do: quiet
+        // signals pass as before, and a loud, resonant peak is held round rather than ringing out of bounds.
+        // After sst-filters' ResonanceWarp (Surge Synth Team, GPL-3.0-or-later); our own implementation.
+        state.stages[0] = soft_limit(g * high + band);
         state.stages[1] = g * band + low;
         match self.mode {
             FilterMode::Low => low,
@@ -633,5 +649,25 @@ mod tests {
         assert!(!part("ladder", 0.2).oversampled && !part("multimode", 0.9).oversampled);
         assert!(loudness(&driven, 100.0) > 0.5);
         assert!(loudness(&driven, 8000.0) < 0.02);
+    }
+
+    /// The state-variable filter's band integrator saturates: at full resonance a loud sine at its cutoff stays within a
+    /// few times full scale, while a quiet one still rings up its peak.
+    #[test]
+    fn a_multimode_peak_is_held_round_when_loud() {
+        let multimode = part("multimode", 1.0);
+        let peak = |amplitude: f64| {
+            let mut state = FilterState::default();
+            (0..48_000)
+                .map(|place| {
+                    multimode
+                        .process(&mut state, amplitude * (2.0 * PI * 1000.0 * place as f64 / 48_000.0).sin(), 0.0, 0.0)
+                        .abs()
+                })
+                .fold(0.0_f64, f64::max)
+        };
+        let (quiet, loud) = (0.01, 1.0);
+        assert!(peak(quiet) / quiet > 2.0, "a quiet sine still rings up");
+        assert!(peak(loud) < 4.0, "{}", peak(loud));
     }
 }

@@ -54,7 +54,12 @@ three poles, the feedback still taken from the last.
 A state-variable filter: two integrators in a loop, which give a low-pass, a
 band-pass and a high-pass at once, and a notch from their sum. Mode picks
 which is heard, and the resonance sets its Q, how sharply it peaks at the
-cutoff.
+cutoff. Its band integrator saturates softly, so a loud, resonant peak is held
+round rather than ringing out of bounds, while quiet sounds pass as before.
+
+On every filter, a cutoff the Mod Matrix moves at audio rate, by an
+oscillator or an LFO at Very High speed, is worked out afresh every sample, so
+that filter FM is smooth rather than stepped.
 
 ## Sallen-Key
 
