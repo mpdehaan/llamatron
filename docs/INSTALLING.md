@@ -30,6 +30,16 @@ Rust and offers to install it first, installing nothing without your yes
 ([Building llamatron](BUILDING_THE_BACKEND.md)). After a `git pull`, run `sh
 build.sh` again to build the new code.
 
+To install Rust yourself before running the setup, use rustup, the Rust
+project's own installer, which puts Rust in your home folder and needs no
+password:
+
+```
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Then open a new terminal, so that it finds `cargo`, and run `sh setup.sh`.
+
 From the project folder, `./llamatron.sh` runs llamatron, and every other
 script in `user_scripts/` and `internal_tools/` runs from there too.
 
