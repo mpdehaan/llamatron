@@ -104,66 +104,21 @@ settings and keys; `F1` on any page of the tracker lists its keys too.
 
 A generator changes how a clip's notes are played, without changing its
 pattern. The overview describes what every generator shares, and each
-generator has a page of its own, grouped by what it changes.
+generator has a page of its own.
 
 | What it covers | Page |
 | --- | --- |
 | What generators are, and what they share | [Generators](GENERATORS.md) |
-
-### Arrangement
-
-| What it does | Page |
-| --- | --- |
-| A melody dealt out among tracks | [Hocket](generators/HOCKET.md) |
-
-### Chains
-
-| What it does | Page |
-| --- | --- |
-| Several generators shared as one list | [Chain](generators/CHAIN.md) |
-
-### Articulation
-
-| What it does | Page |
-| --- | --- |
-| A tune delivered in lines, with a breath, a rise and fall | [Phrasing](generators/PHRASING.md) |
-
-### Band Generators
-
-| What it does | Page |
-| --- | --- |
-| A part played as a player of the band would play it | [Musician](generators/MUSICIAN.md) |
-
-### Harmony
-
-| What it does | Page |
-| --- | --- |
-| A figure moved through chords, or to the chords another track plays, and its chords voiced | [Chords](generators/CHORDS.md) |
-
-### Rhythm
-
-| What it does | Page |
-| --- | --- |
-
-### Timing
-
-| What it does | Page |
-| --- | --- |
-| Notes pushed early or late, played short or sliding into the next, on chosen steps | [Timing](generators/TIMING.md) |
-
-### Transitions
-
-| What it does | Page |
-| --- | --- |
-| One slow change over the whole song | [Drift](generators/DRIFT.md) |
-| How many notes play, how loud and how long, ramping over a section | [Shapes](generators/SHAPES.md) |
-
-### Voicing
-
-| What it does | Page |
-| --- | --- |
 | A chord played one note at a time | [Arpeggiator](generators/ARPEGGIATOR.md) |
+| Several generators shared as one list | [Chain](generators/CHAIN.md) |
+| A figure moved through chords, or to the chords another track plays, and its chords voiced | [Chords](generators/CHORDS.md) |
+| One slow change over the whole song | [Drift](generators/DRIFT.md) |
 | Chords and notes played as a guitar plays them | [Guitarify](generators/GUITARIFY.md) |
+| A melody dealt out among tracks | [Hocket](generators/HOCKET.md) |
+| A part played as a player of the band would play it | [Musician](generators/MUSICIAN.md) |
+| A tune delivered in lines, with a breath, a rise and fall | [Phrasing](generators/PHRASING.md) |
+| How many notes play, how loud and how long, ramping over a section | [Shapes](generators/SHAPES.md) |
+| Notes pushed early or late, played short or sliding into the next, on chosen steps | [Timing](generators/TIMING.md) |
 
 ## Song Wizard
 

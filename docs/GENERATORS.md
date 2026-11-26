@@ -2,7 +2,7 @@
 
 A pattern says what a part is; a generator says how it is played. This page
 explains what generators are, how they are put to work, and the settings every
-kind shares. Each kind has a page of its own, listed under Generator Kinds
+kind shares. Each kind has a page of its own, listed under Generator List
 below, and [Chain](generators/CHAIN.md) covers the chains that run them.
 
 ## What a Generator Does
@@ -45,74 +45,21 @@ drift's random degree, draws afresh each time the song plays or exports, so
 each is a new take. While a song plays in real time, one take is kept for the
 whole play, so an edit changes only what you edited.
 
-## Generator Kinds
+## Generator List
 
-The generators fall into eight categories by what they change, as the sidebar
-groups them. The picker of a new generator's type lists them all together,
-sorted by name.
-
-### Arrangement
-
-What plays where, among the tracks.
-
-| Generator | What it does | Demo |
-| --- | --- | --- |
-| [Hocket](generators/HOCKET.md) | Deals one track's notes out among other tracks | `examples/learning/17_hocket_shanty.yml` |
-
-### Articulation
-
-How each note is played: phrased.
-
-| Generator | What it does | Demo |
-| --- | --- | --- |
-| [Phrasing](generators/PHRASING.md) | Plays a tune in lines, as a singer would: a breath after each, a rise and fall, notes choppy or flowing | `examples/learning/23_phrasing.yml` |
-
-### Band Generators
-
-| Generator | What it does | Demo |
-| --- | --- | --- |
-| [Musician](generators/MUSICIAN.md) | Plays a clip as a player of the band would: by the kind of section, round the tune, with the instrument's habits | `examples/learning/24_musician.yml` |
-
-### Harmony
-
-Which chords a figure follows.
-
-| Generator | What it does | Demo |
-| --- | --- | --- |
-| [Chords](generators/CHORDS.md) | Moves a figure through a progression of chords, or to the chords another track plays, and voices each chord nearest the one before | `examples/learning/06_chord_progression_generator.yml`, `examples/learning/22_follow_chords.yml`, `examples/learning/05_voice_leading.yml` |
-
-### Rhythm
-
-Which notes sound, and when within the beat.
-
-| Generator | What it does | Demo |
-| --- | --- | --- |
-
-### Timing
-
-Notes placed early or late, played short or joined.
-
-| Generator | What it does | Demo |
-| --- | --- | --- |
-| [Timing](generators/TIMING.md) | Plays notes on chosen steps early, late, short or sliding into the next | `examples/learning/12_acid_glide.yml` |
-
-### Transitions
-
-A change that takes place over a section or a song.
-
-| Generator | What it does | Demo |
-| --- | --- | --- |
-| [Drift](generators/DRIFT.md) | Changes the song slowly from version A to version B | `examples/by_genre/electronic/mainstreet_hoedown.yml` |
-| [Shapes](generators/SHAPES.md) | Ramps how many notes play, how loud and how long over a section | `examples/by_genre/electronic/edm_density.yml` |
-
-### Voicing
-
-How a chord's notes are laid out and played.
+Every generator, by name, as the picker of a new generator's type lists them.
 
 | Generator | What it does | Demo |
 | --- | --- | --- |
 | [Arpeggiator](generators/ARPEGGIATOR.md) | Plays a chord one note at a time, with offsets | `examples/learning/11_sailor_arpeggiator.yml` |
+| [Chords](generators/CHORDS.md) | Moves a figure through a progression of chords, or to the chords another track plays, and voices each chord nearest the one before | `examples/learning/06_chord_progression_generator.yml`, `examples/learning/22_follow_chords.yml`, `examples/learning/05_voice_leading.yml` |
+| [Drift](generators/DRIFT.md) | Changes the song slowly from version A to version B | `examples/by_genre/electronic/mainstreet_hoedown.yml` |
 | [Guitarify](generators/GUITARIFY.md) | Holds chords as a hand does and plays a bar of strokes on them | `examples/learning/21_guitarify.yml` |
+| [Hocket](generators/HOCKET.md) | Deals one track's notes out among other tracks | `examples/learning/17_hocket_shanty.yml` |
+| [Musician](generators/MUSICIAN.md) | Plays a clip as a player of the band would: by the kind of section, round the tune, with the instrument's habits | `examples/learning/24_musician.yml` |
+| [Phrasing](generators/PHRASING.md) | Plays a tune in lines, as a singer would: a breath after each, a rise and fall, notes choppy or flowing | `examples/learning/23_phrasing.yml` |
+| [Shapes](generators/SHAPES.md) | Ramps how many notes play, how loud and how long over a section | `examples/by_genre/electronic/edm_density.yml` |
+| [Timing](generators/TIMING.md) | Plays notes on chosen steps early, late, short or sliding into the next | `examples/learning/12_acid_glide.yml` |
 
 [About Demos](DEMOS.md) describes every demo, and its table shows which
 features each one uses.

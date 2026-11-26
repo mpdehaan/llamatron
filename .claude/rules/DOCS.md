@@ -22,7 +22,7 @@ them, the screenshots or the website.
   `docs/demos/TUTORIAL.md`, a page per genre), Mashups (a page per subgenre), Objects
   (`docs/OBJECT_MODEL.md`, `docs/PATTERNS.md`, `docs/SCENES.md`, `docs/TRACKS.md`, `docs/INSTRUMENTS.md`, `docs/ARRANGE.md`,
   `docs/CLIPS.md`, `docs/SCALES.md`, `docs/DRAWS.md`, `docs/GROOVES.md`), Generators (`docs/GENERATORS.md` and a page each in
-  `docs/generators/`, in nine categories), Song Wizard (`docs/WIZARD.md`), File Operations (`docs/EXPORTING.md`,
+  `docs/generators/`, in one list by name), Song Wizard (`docs/WIZARD.md`), File Operations (`docs/EXPORTING.md`,
   `docs/IMPORTING.md`), MIDI & Performance (`docs/MIDI_SETUP.md`, `docs/PLAYING_LIVE.md`, `docs/VISUALIZERS.md`), Advanced
   (`docs/USER_SCRIPTS.md`, `docs/RECORDING.md`, `docs/BACKEND.md`, and from `developer_docs/`, `developer_docs/ARCHITECTURE.md`).
 - Every page in `docs/` MUST be linked from a row of those tables; a new page adds its row in the same change. `docs/INSTALLING.md` points
