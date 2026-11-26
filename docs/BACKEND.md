@@ -17,7 +17,7 @@ it is a library of its own, so that another program can drive it too.
 
 ## How It Runs
 
-./llamatron.sh links the backend as a library and runs it on threads of its
+llamatron links the backend as a library and runs it on threads of its
 own: the sender while a song or a preview plays, and the renderer for the WAV
 export's built-in tracks, each handed its messages through a channel. The same
 code also builds as a program, `llamatron-backend`, which another program can

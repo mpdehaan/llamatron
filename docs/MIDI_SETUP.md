@@ -4,7 +4,7 @@ This page covers getting llamatron's real-time playback into a synthesizer or
 a DAW on a Mac, and finding out what is wrong when nothing sounds. [Playing
 Live](PLAYING_LIVE.md) covers the tracker's side; this page covers everything
 outside the tracker: the MIDI ports, Ableton Live's settings, and the test
-tool. With no synthesizer or DAW, an instrument whose Device is `*FluidSynth`
+tool. With no synthesizer or DAW of your own, an instrument whose Device is `*FluidSynth`
 plays through FluidSynth instead, with none of this setup, as
 [FluidSynth](FLUIDSYNTH.md) describes.
 

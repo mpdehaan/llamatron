@@ -1,7 +1,7 @@
 # FluidSynth
 
 FluidSynth is a free software synthesizer. llamatron uses it to play a set
-with no synthesizer, no DAW and no MIDI setup: every demo plays through
+with no synthesizer of your own, no DAW and no MIDI setup: every demo plays through
 FluidSynth as the demo comes, and the WAV export renders through FluidSynth.
 This page covers installing FluidSynth, how the tracker uses FluidSynth, and
 what to do when nothing sounds.
@@ -38,15 +38,11 @@ again does nothing that's already done.
   FluidSynth; [Instruments](INSTRUMENTS.md) describes the setting, its
   automatic channels and its General MIDI sound. Every demo's instruments play
   this way.
-- **Starting and stopping.** Where the
-  [backend](BUILDING_THE_BACKEND.md) is built, it plays FluidSynth itself,
-  loading FluidSynth's library and the SoundFont as it starts, so that
-  FluidSynth and the built-in instruments share one sound stream and land
-  together to the sample. Otherwise the tracker starts FluidSynth as a program
-  of its own the first time something plays through it, waits until it is
-  ready so that no note is lost, and ends it when the tracker quits, however
-  it quits. Starting llamatron with `LLAMATRON_FLUIDSYNTH_PROCESS=1` keeps
-  FluidSynth's own program even where the backend is built.
+- **Starting and stopping.** llamatron's [backend](BACKEND.md) plays
+  FluidSynth itself, loading FluidSynth's library and the SoundFont as it
+  starts, so that FluidSynth and the built-in synths share one sound stream
+  and land together to the sample. Only the WAV export runs FluidSynth's own
+  program.
 - **Where the tracker looks.** The tracker looks for FluidSynth in
   `/opt/homebrew`, then `/usr/local`, then the folders on your PATH, and for
   the SoundFont in `~/soundfonts`, where the install script puts them.

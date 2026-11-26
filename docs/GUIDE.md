@@ -1,6 +1,6 @@
 # llamatron
 
-./llamatron.sh is a tracker for the terminal: a composing environment where songs
+llamatron is a tracker for the terminal: a composing environment where songs
 are built from shared patterns, scales and generators, arranged in scenes, and
 played. It plays in real time through MIDI hardware, software synthesizers or
 a DAW, or through FluidSynth with no setup at all, and exports to Ableton Live

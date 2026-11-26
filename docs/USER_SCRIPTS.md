@@ -41,7 +41,7 @@ Parameters: none.
 
 Installs FluidSynth, a free software synthesizer, and the sounds it plays,
 using Homebrew and offering to install Homebrew first. Run it once if you want
-to hear the demos with no synthesizer or DAW, or to export WAV files. It
+to hear the demos with no synthesizer of your own or DAW, or to export WAV files. It
 installs nothing without asking, and does nothing that is already done. See
 [FluidSynth](FLUIDSYNTH.md).
 

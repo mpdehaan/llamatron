@@ -51,7 +51,7 @@ YouTube](https://img.youtube.com/vi/68vSj5sSW3c/hqdefault.jpg)](https://www.yout
 
 ## License
 
-./llamatron.sh is licensed under the GNU General Public License, version 3 or any
+llamatron is licensed under the GNU General Public License, version 3 or any
 later version. See [LICENSE](LICENSE) for details.
 
 ## Development / Contribution / Roadmap / Ideas / Conversation

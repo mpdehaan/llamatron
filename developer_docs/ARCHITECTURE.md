@@ -74,7 +74,7 @@ scene's.
 
 ## Subsystems
 
-./llamatron.sh is built like a car: a few large subsystems, each made of
+llamatron is built like a car: a few large subsystems, each made of
 parts, rather than layers that run all the way across. Each subsystem is a
 crate, a Rust library of its own under `src/`, and a crate can use only the
 crates its manifest names, so the compiler itself keeps a lower part from

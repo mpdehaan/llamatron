@@ -1,6 +1,6 @@
 # Building llamatron
 
-./llamatron.sh is written in Rust, a language that compiles to fast native
+llamatron is written in Rust, a language that compiles to fast native
 code, so that many instruments can play at once with steady timing. It is
 built from its source on your computer by one script. No knowledge of Rust is
 needed: the script checks what building needs, offers to install whatever is

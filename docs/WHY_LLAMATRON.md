@@ -1,9 +1,11 @@
 # Why llamatron
 
-./llamatron.sh is a tool for composing music before it reaches the DAW, and it can
-also play music fully on its own, through MIDI devices or through FluidSynth.
+llamatron is a tool for composing music, and a sequencer and synthesizer that
+plays it fully on its own: through its own built-in synths, through MIDI
+devices, or through FluidSynth. A song can be finished in a DAW, or never
+leave llamatron at all.
 
-./llamatron.sh borrows from three places: Ableton Live, whose Session View shapes
+llamatron borrows from three places: Ableton Live, whose Session View shapes
 how a song is laid out; the Sequentix Cirklon, whose step sequencing shapes
 how patterns are written; and the Elektron Monomachine, whose arpeggiator and
 parameter locks shape how a few notes become a line. This page says what was
@@ -24,19 +26,20 @@ precise enough to change one note and broad enough to recast whole sections at
 once. Its notes aren't tied to a particular clip: patterns are shared between
 clips, and that sharing is where the rest of its design begins.
 
-./llamatron.sh keeps the structure saved in a YAML file: the patterns, the scales,
+llamatron keeps the structure saved in a YAML file: the patterns, the scales,
 the tracks, the scenes and the settings that tie them together. The file holds
 a set of songs, much as a band plays a set at a concert: the set shares the
 patterns, scales, generators, chains and grooves, and each song in it has its
 own tracks and scenes.
 
-./llamatron.sh can play a Live set in real time over MIDI, and exporting turns a
-song into a Live set or a set of MIDI files in seconds.
+llamatron plays a set in real time, on its built-in synths, over MIDI or
+through FluidSynth, and exporting turns a song into a Live set or a set of
+MIDI files in seconds.
 
-The intent is that a song's shape is worked out here, quickly and with room to
-try things, and then finished in Live, where the work of sound design and
-automation belongs. A song can also stay here to the end: played live,
-recorded as a video, or exported as a WAV file.
+A song's shape can be worked out here, quickly and with room to try things,
+and then taken to Live for mixing and automation, if that is where it is to be
+finished. Or it can stay here to the end: played on the built-in synths,
+performed live, recorded as a video, or exported as a WAV file.
 
 ## Shared Patterns
 
@@ -173,7 +176,7 @@ the Cirklon's aux rows, and the two influences meet there.
 
 ## Controlled Chance
 
-./llamatron.sh has many more ways to introduce randomness than a DAW's clip editor:
+llamatron has many more ways to introduce randomness than a DAW's clip editor:
 probability per step, random and brownian play directions, random arpeggiator
 orders, drifts that wander between two versions of a part, draws dealt in a
 random order, and chains of generators that stack all of these on a clip.
@@ -188,12 +191,13 @@ steps, so the arrangement stays as written while the notes vary.
 
 ## Live Play
 
-A song can be played in real time while it is being written, through MIDI to
-hardware or software synths, or through FluidSynth, a software synthesizer
-./llamatron.sh starts by itself, so that someone with no synthesizer and no DAW
-hears every example the moment they press play. Each track chooses an
-instrument, a MIDI device and channel or FluidSynth, and every example plays
-through FluidSynth as it comes.
+A song can be played in real time while it is being written: on llamatron's
+own [built-in synths](SYNTHS.md), through MIDI to hardware or software synths,
+or through FluidSynth, a software synthesizer llamatron starts by itself, so
+that someone with no synthesizer of their own and no DAW hears every example
+the moment they press play. Each track chooses an instrument, a built-in
+synth, a MIDI device and channel, or FluidSynth, and every example plays as it
+comes.
 
 Playing follows Live's Session View. Space on a scene launches it, and when it
 is done each clip's follow action starts the clip below, so a song plays from
@@ -212,6 +216,32 @@ While a song plays, Arrange can show a visualizer over its clips, and a take
 can be recorded as a video, either played from the top by itself or performed
 by hand, ending when you stop it. None of this changes an export: the exports
 always play the song as written, once through.
+
+## Timing and Performance
+
+A sequencer is only as good as its timing, and llamatron treats every
+millisecond as part of a budget: the margin that keeps time steady while the
+computer does other work. The song is played into its notes before they are
+due, so that nothing is worked out at the moment a note should sound, and
+everything that plays runs in Rust, apart from the pages the tracker draws, on
+threads of its own that never wait for the screen.
+
+The sequencer and the synths are built as one. The built-in synths are not a
+separate program that MIDI is sent to and hoped to arrive on time: they live
+in the same backend as the sender, and every note reaches them stamped with
+its moment. The sound card says when each chunk of sound will reach the
+speakers, and each note starts on exactly the sample its moment falls on,
+whatever the size of the chunk. MIDI to other devices is held back by the same
+delay, and on macOS is handed ahead to CoreMIDI stamped with its moment, so
+that the built-in synths, FluidSynth and outboard gear all land together.
+
+The two being one is also what makes llamatron an instrument to perform with.
+The song keeps playing while you edit it, and every change is heard: a new
+note, a scale, a synth's filter, a generator, a tempo. Launching a scene or a
+clip by hand waits for the next bar, so a performance stays in time, and a
+take can be recorded as it happens. Whatever happens while playing, the
+protections of the [built-in synths](SYNTHS.md#how-the-sound-is-made) and
+`Ctrl+T`, which silences everything, keep ears and speakers safe.
 
 ## Text Interface
 
@@ -240,8 +270,9 @@ plays, or exported as a WAV file.
 
 ## Non-Goals
 
-It is not a synthesizer or an editor of sound, though it plays songs in real
-time, through your synths or FluidSynth. The Live set it produces is
-deliberately bare: notes, tempo and CC envelopes, with no instruments,
-effects, panning or automation beyond that. A song meant for a release is
-finished in Live, where those things are easier to add and better done.
+It is not an audio editor or a mixer: it records and edits no audio, and has
+no mixing desk or automation lanes. Its own sound comes from its built-in
+synths, and a song can be released straight from a WAV export. The Live set it
+produces is deliberately bare: notes, tempo and CC envelopes, with no
+instruments, effects, panning or automation beyond that, for the songs that
+are better finished with a DAW's mixing and effects.

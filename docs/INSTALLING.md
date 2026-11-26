@@ -1,8 +1,8 @@
 # Installing
 
-./llamatron.sh runs in a terminal on a Mac, and on Linux for everything but
+llamatron runs in a terminal on a Mac, and on Linux for everything but
 FluidSynth's installer. This page covers installing llamatron, and one
-optional component: FluidSynth, which plays every demo with no synthesizer.
+optional component: FluidSynth, which plays every demo with no synthesizer of your own.
 When it's installed, [Getting Started](GETTING_STARTED.md) is the next page.
 
 ## Requirements
@@ -36,9 +36,9 @@ script in `user_scripts/` and `internal_tools/` runs from there too.
 ## FluidSynth (Optional)
 
 FluidSynth is a free software synthesizer, and it is the quickest way to hear
-llamatron: with it, every demo plays as it comes, with no synthesizer, no DAW
+llamatron: with it, every demo plays as it comes, with no synthesizer of your own, no DAW
 and no MIDI setup, and a song can be exported as a WAV file. Install it now if
-you want to hear the demos right away, or if you have no synthesizer or DAW
+you want to hear the demos right away, or if you have no synthesizer or DAW of your own
 set up; skip it if you will play everything through your own instruments. On a
 Mac, from the project folder:
 
