@@ -6,9 +6,19 @@ The professor's research is in `.claude/notes/synthesis/`.
 
 ## The Instrument Page
 
-- **Built-in modulation**: Beneath each envelope, LFO and filter, routes of its own, off by default, each choosing
-  Destination, Via and Amount from the Mod Matrix's values, so that the Mod Matrix drops to four fully custom slots. Env 1 stays
-  wired to the Amp always; Env 2 stays wired to the filter, with a "Disconnect filter" switch. Mockup first.
+- **Modulators for MIDI instruments**: an instrument playing FluidSynth or an External MIDI device gets the Modulators
+  and Mod Matrix tabs, the tabs that make no sense for it hidden (an instrument with no engine gets none). Its Mod Matrix
+  destinations are a CC by number, Velocity, Note (scale degrees, an amount of 0 to +12, separate from Pitch) and Octave
+  (0 to +4, kept within the instrument's or track's octave range); Note and Octave are offered to built-in synths too.
+  The Realizer applies them to the pattern as rendered, reading each modulator at each step's time, so that what plays
+  live is what the exports write: a chord on a moved step moves along the scale, taking the scale's quality there (C
+  major up a degree in C major is D minor); a tied or glided note keeps the note it started on; a CC goes out ahead of
+  its step's notes, only when its value changes, at most every 1/64 note, how often a setting of the MIDI tab with a
+  default chosen from research into what devices handle.
+- **Polarity on the Mod Matrix**: each route Bipolar (the source's -1 to 1 times the amount) or Unipolar (0 to the
+  amount), Bipolar by default so that every set sounds as before; each Amount's gauge shows the range it gives in its
+  destination's own units, such as "-4 to +4 degrees" or "0 to +4 octaves".
+- **Retrigger off by default** on every modulator, as people expect, older sets keeping theirs on by a migration.
 - **New-instrument choices**: Blank, Sampled (FluidSynth, where installed), Synth, Drum Synth or External MIDI, beside Normal
   and Percussion, each choosing a few settings that can still be changed. Mockup first.
 - **The Engine tab** (DESIGNS.md, "The Instrument page's Engine tab and presets"): Off, MIDI, FluidSynth and LlamaSynth, its
