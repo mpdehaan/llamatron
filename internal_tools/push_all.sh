@@ -24,6 +24,23 @@ done
 set -eu
 cd "$(dirname "$0")/.."
 
+# With --branch NAME, the history as it is here is checked and pushed to that branch of GitHub's alone, by force, as a
+# backup or for work in progress, leaving GitHub's main, the version and the website as they are.
+if [ "${1:-}" = "--branch" ]; then
+    target="${2:?--branch needs the name of the branch to push to}"
+    if [ "$target" = "main" ] || [ "$target" = "gh-pages" ]; then
+        echo "not pushed: --branch is for a branch other than main and gh-pages" >&2
+        exit 1
+    fi
+    PATH="$HOME/.cargo/bin:$PATH"
+    cargo test --manifest-path src/Cargo.toml --workspace --quiet
+    for step in load layout migrate save edits pattern_edits render timeline player midi live import screens; do
+        .venv/bin/python internal_tools/compare_llamatron.py "$step" > /dev/null || { echo "before the push: the $step comparison failed"; exit 1; }
+    done
+    git push --force origin "HEAD:refs/heads/$target"
+    exit 0
+fi
+
 branch=$(git rev-parse --abbrev-ref HEAD)
 if [ "$branch" != "main" ]; then
     echo "not pushed: this is the branch $branch, and only main is pushed and published" >&2
