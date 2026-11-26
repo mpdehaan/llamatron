@@ -134,6 +134,8 @@ enum Write {
 type Strides = (&'static [(i64, i64)], i64);
 const STEPS_OF_ONE: Strides = (&[], 1);
 const TIME_STRIDES: Strides = (&[(20, 1), (100, 5), (500, 10), (2000, 50)], 100);
+/// How far a frequency in hertz steps, coarser as it rises, so that a cutoff crosses its range in a few presses.
+const HERTZ_STRIDES: Strides = (&[(100, 5), (500, 10), (1000, 25), (2000, 50), (5000, 100), (10000, 250)], 500);
 const RATE_STRIDES: Strides = (&[(20, 1), (50, 2), (100, 5), (300, 10), (600, 25)], 50);
 
 /// Ids for the fields, counting on, with what each that writes writes, and how far a gauge steps.
@@ -588,7 +590,11 @@ impl InstrumentEditor {
             .map(|(.., how)| *how)
             .or_else(|| SETTING_KINDS.iter().find(|(found, _)| *found == name).map(|(_, how)| *how))
             .unwrap_or(SettingKind::Toggle);
-        let strides = matches!(how, SettingKind::Gauge { what: "milliseconds", .. }).then_some(TIME_STRIDES);
+        let strides = match how {
+            SettingKind::Gauge { what: "milliseconds", .. } => Some(TIME_STRIDES),
+            SettingKind::Gauge { what: "hertz", .. } => Some(HERTZ_STRIDES),
+            _ => None,
+        };
         let id = ids.at_gauge(Write::Part(part, name), strides.unwrap_or(STEPS_OF_ONE));
         let field = match how {
             SettingKind::Choice { choices, names } => {
@@ -621,8 +627,9 @@ impl InstrumentEditor {
                         (lowest, highest),
                         GM_CELLS,
                         marks::MSG_TENTH_MILLISECONDS_SHOWN,
-                        (false, TENTHS),
+                        (true, TENTHS),
                     ),
+                    "hertz" => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_HERTZ_SHOWN, (true, 1)),
                     _ => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_SOUND_PERCENT_SHOWN, (false, 1)),
                 }
             }
@@ -1153,4 +1160,27 @@ fn sound_families() -> Vec<(String, Vec<(String, usize)>)> {
             (family.to_string(), sounds)
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A built-in instrument on a ladder filter at a cutoff in hertz.
+    fn ladder_at(cutoff: i64) -> Instrument {
+        let text = format!("{{ name: lead, kind: built_in, role: normal, sound: {{ engine: basic, filter: {{ type: ladder, cutoff: {cutoff} }} }} }}");
+        let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
+        Instrument::from_data(&data).expect("the scenario's instrument is valid")
+    }
+
+    /// The cutoff is a frequency, so its field shows hertz, never a percent.
+    #[test]
+    fn a_filter_cutoff_shows_in_hertz() {
+        let cutoff = 1200;
+        let sound = Sound::of(&ladder_at(cutoff));
+        let mut ids = Ids { last: 0, writes: Vec::new() };
+        let field = InstrumentEditor::setting_field(&sound, "filter", "ladder", "cutoff", &mut ids);
+        let hertz = named(marks::MSG_HERTZ_SHOWN, &[("number", cutoff.into())]);
+        assert!(field.value().ends_with(&hertz), "{}", field.value());
+    }
 }
