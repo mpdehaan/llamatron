@@ -147,6 +147,15 @@ fn gauge_bar(share: f64, cells: usize) -> String {
     )
 }
 
+/// A gauge field of a whole number with ends, its bar filled from the lowest and its value shown as given.
+fn bounded_gauge(id: usize, label: &str, number: i64, range: (i64, i64), value_shown: &str) -> Field {
+    let (lowest, highest) = range;
+    let share = (number - lowest) as f64 / (highest - lowest).max(1) as f64;
+    let bar = gauge_bar(share, GM_CELLS);
+    let shown = named(marks::MSG_SOUND_GAUGE, &[("gauge", bar.as_str().into()), ("value", value_shown.into())]);
+    Field::number(id, label, Some(number), Some(lowest), Some(highest), lowest, Some(shown))
+}
+
 /// A gauge field of a whole number; how says whether it grows logarithmically and what the number is divided by to be shown.
 fn gauge(id: usize, label: &str, number: i64, range: (i64, i64), cells: usize, unit: &str, how: (bool, i64)) -> Field {
     let (lowest, highest) = range;
@@ -715,12 +724,13 @@ impl InstrumentEditor {
             }
             SettingKind::Toggle => Field::toggle(id, &label, flag(&value)),
             SettingKind::Number { lowest, highest, unit, zero } => {
+                // A number with ends is a horizontal gauge, stepped and typed (UX.md, "Settings pages").
                 let number = whole(&value);
-                let shown = match zero {
+                let value_shown = match zero {
                     Some(zero) if number == 0 => zero.to_string(),
                     _ => named(unit, &[("number", number.into())]),
                 };
-                Field::number(id, &label, Some(number), Some(lowest), Some(highest), lowest, Some(shown))
+                bounded_gauge(id, &label, number, (lowest, highest), &value_shown)
             }
             SettingKind::SidTime { times, .. } => {
                 let rate = whole(&value);
@@ -813,14 +823,12 @@ impl InstrumentEditor {
                         &waveform,
                     )
                     .with_shown_label(labels::MSG_WAVE_LABEL),
-                    Field::number(
+                    bounded_gauge(
                         ids.at(Write::Oscillator(number, "detune")),
                         &named(labels::MSG_OSCILLATOR_DETUNE_LABEL, &[("number", number.into())]),
-                        Some(detune),
-                        Some(-MAX_DETUNE_CENTS),
-                        Some(MAX_DETUNE_CENTS),
-                        0,
-                        Some(named(marks::MSG_CENTS_SHOWN, &[("number", detune.into())])),
+                        detune,
+                        (-MAX_DETUNE_CENTS, MAX_DETUNE_CENTS),
+                        &named(marks::MSG_CENTS_SHOWN, &[("number", detune.into())]),
                     )
                     .with_shown_label(labels::MSG_DETUNE_LABEL),
                     gauge(
@@ -1172,14 +1180,12 @@ impl InstrumentEditor {
                     &text(&slot(number, "destination")),
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_DESTINATION_LABEL)),
-                Field::number(
+                bounded_gauge(
                     ids.at(Write::Item("matrix", number, "amount")),
                     &numbered(labels::MSG_SLOT_AMOUNT_LABEL),
-                    Some(amount),
-                    Some(-MAX_MATRIX_AMOUNT),
-                    Some(MAX_MATRIX_AMOUNT),
-                    0,
-                    Some(named(marks::MSG_SIGNED_PERCENT_SHOWN, &[("number", amount.into())])),
+                    amount,
+                    (-MAX_MATRIX_AMOUNT, MAX_MATRIX_AMOUNT),
+                    &named(marks::MSG_SIGNED_PERCENT_SHOWN, &[("number", amount.into())]),
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_AMOUNT_LABEL)),
             ];

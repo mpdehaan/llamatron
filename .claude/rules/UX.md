@@ -92,6 +92,9 @@ changes it too. A new thing looks like the existing thing it is most like.
   often keeps a letter.
 - A value from above shows what it takes and where from: `A Minor (from scene)`, `With Scene (from set)`; its picker's first entry
   takes it from above again.
+- On the built-in synths' pages, every number with a fixed lowest and highest value whose values run continuously is a
+  horizontal gauge, stepped with `[` and `]` and typed with ENTER (the user's rule); a count or a CC's number stays a
+  plain number.
 - A field whose ENTER opens a picker (`enter_what` is `What.CHOOSE`) shows a dim `▾` after its value.
 - A table-like layout gives each column the room of its heading or widest possible value, every choice included, so columns
   never move.
