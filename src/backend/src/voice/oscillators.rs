@@ -35,8 +35,14 @@ const PERIODS: f64 = 2048.0;
 
 /// A MIDI number's frequency in hertz, equal tempered from A 440.
 pub fn frequency_of(pitch: f64) -> f64 {
-    A_FREQUENCY * 2f64.powf((pitch - MIDDLE_A) / 12.0)
+    A_FREQUENCY * 2f64.powf((pitch.clamp(LOWEST_PITCH, HIGHEST_PITCH) - MIDDLE_A) / 12.0)
 }
+
+/// The lowest and highest pitch any oscillator plays, about 8 Hz and 20 kHz, whatever the pitch envelope, the Mod
+/// Matrix, an audio-rate LFO or a glide asks: a protection of ears and speakers no patch can turn off, so that no
+/// modulation drives an oscillator to a subsonic thump or past hearing.
+pub const LOWEST_PITCH: f64 = 0.0;
+pub const HIGHEST_PITCH: f64 = 135.0;
 
 /// A table read at a fractional position, interpolated between its two nearest samples.
 #[inline]
@@ -355,7 +361,8 @@ impl OscillatorPart {
                 state.period = period.max(0);
             }
         }
-        let frequency = CHIP_CLOCK / (PERIODS - state.period as f64) * 2f64.powf(moves.pitch / 12.0);
+        let unheld = CHIP_CLOCK / (PERIODS - state.period as f64) * 2f64.powf(moves.pitch / 12.0);
+        let frequency = unheld.clamp(frequency_of(LOWEST_PITCH), frequency_of(HIGHEST_PITCH));
         if let Some(noise) = noise {
             state.phases[0] += frequency * NOISE_STEPS_PER_CYCLE / rate;
             return (noise[state.phases[0] as usize % noise.len()] as f64, silent);
@@ -407,4 +414,18 @@ fn acid_sample(tables: &Tables, state: &mut OscillatorState, pitch: f64, rate: f
     state.phases[0] = wrapped(position + speed);
     let out = -read(&tables[state.band], position);
     state.coupling.process(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// No pitch, however far modulation moves it, plays outside about 8 Hz to 20 kHz: never under MIDI's lowest note.
+    #[test]
+    fn every_oscillator_frequency_is_held_within_hearing() {
+        let (far_above, far_below) = (400.0, -300.0);
+        assert_eq!(frequency_of(far_above), frequency_of(HIGHEST_PITCH));
+        assert_eq!(frequency_of(far_below), frequency_of(LOWEST_PITCH));
+        assert!(frequency_of(HIGHEST_PITCH) < 20_000.0 && frequency_of(LOWEST_PITCH) > 8.0);
+    }
 }
