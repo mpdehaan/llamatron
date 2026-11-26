@@ -15,11 +15,13 @@ with the first place it differs, and a count, and exits 1 when anything differs,
 """
 
 import argparse
+import concurrent.futures
 import gzip
 import hashlib
 import json
 import os
 import pathlib
+import queue
 import shutil
 import subprocess
 import sys
@@ -60,14 +62,58 @@ def key_of(path):
     return str(path.relative_to(TOP))
 
 
+class Server:
+    """One llamatron-compare that answers step after step on its pipes, so that a set starts no program of its own."""
+
+    def __init__(self):
+        self.process = subprocess.Popen([str(RUST), 'serve'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+
+    def ask(self, command, path):
+        """Return the code a step ends with on a set, what it printed and what went wrong."""
+        self.process.stdin.write('{}\t{}\n'.format(command, path).encode('utf-8'))
+        self.process.stdin.flush()
+        code, printed, wrong = (int(part) for part in self.process.stdout.readline().decode('utf-8').split('\t'))
+        return code, self.process.stdout.read(printed).decode('utf-8'), self.process.stdout.read(wrong).decode('utf-8')
+
+    def close(self):
+        self.process.stdin.close()
+        self.process.wait()
+
+
+def answer_of(code, printed, wrong):
+    """Return what llamatron made of a set: its output, or that the set waits on a part not ported, or what went wrong."""
+    if code == NOT_PORTED:
+        return NotPorted(wrong.strip())
+    if code != 0:
+        return 'FAILED: ' + wrong.strip()
+    return printed.rstrip('\n')
+
+
+def rust_answers(command, paths):
+    """Return llamatron's answer for a step on each set, in order, from a server for each core working side by side."""
+    servers = queue.Queue()
+    made = []
+    for _ in range(max(1, min(os.cpu_count() or 1, len(paths)))):
+        server = Server()
+        made.append(server)
+        servers.put(server)
+
+    def asked(path):
+        server = servers.get()
+        try:
+            return answer_of(*server.ask(command, path))
+        finally:
+            servers.put(server)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(made)) as pool:
+        answers = list(pool.map(asked, paths))
+    for server in made:
+        server.close()
+    return answers
+
+
 def rust(command, path):
-    """Return what llamatron-compare prints for a set, or what went wrong."""
-    finished = subprocess.run([str(RUST), command, str(path)], capture_output=True, text=True, check=False)
-    if finished.returncode == NOT_PORTED:
-        return NotPorted(finished.stderr.strip())
-    if finished.returncode != 0:
-        return 'FAILED: ' + finished.stderr.strip()
-    return finished.stdout.rstrip('\n')
+    """Return what llamatron makes of one set for a step."""
+    return rust_answers(command, [path])[0]
 
 
 # What llamatron-compare exits with for a set using a part of the program not ported yet.
@@ -327,15 +373,18 @@ def main():
     skipped = 0
     changed = 0
     waiting = {}
+    held = {path: kept_python(options.step, path) for path in sets}
+    asked = [path for path in sets if held[path] is not None and held[path] != CHANGED]
+    ports = dict(zip(asked, rust_answers(options.step, asked)))
     for path in sets:
-        python = kept_python(options.step, path)
+        python = held[path]
         if python is None:
             skipped += 1
             continue
         if python == CHANGED:
             changed += 1
             continue
-        port = rust(options.step, path)
+        port = ports[path]
         if isinstance(port, NotPorted):
             waiting[port] = waiting.get(port, 0) + 1
             continue

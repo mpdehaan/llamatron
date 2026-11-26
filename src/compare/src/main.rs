@@ -10,6 +10,7 @@
 //! `llamatron-compare save SET` reads the set into objects and saves it, as the Python program saves a set.
 
 use llamatron_model::file::data::{json_text, load, Data};
+use std::fmt::Write;
 use std::process::ExitCode;
 
 /// Data as Python's json.dumps writes it, with its default separators, keys in their order, every key made text.
@@ -46,15 +47,9 @@ fn json_key(key: &Data) -> String {
     }
 }
 
-fn main() -> ExitCode {
-    let arguments: Vec<String> = std::env::args().skip(1).collect();
-    if arguments.first().map(String::as_str) == Some("screenshots") {
-        return screenshots(arguments.get(1).map(String::as_str));
-    }
-    let (Some(command), Some(path)) = (arguments.first(), arguments.get(1)) else {
-        eprintln!("usage: llamatron-compare load SET");
-        return ExitCode::from(2);
-    };
+/// Put one set through one step, writing what the step prints into out and what went wrong into err; the code the step
+/// ends with, 0 where it went well, NOT_PORTED where the set uses a part not ported yet.
+fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8 {
     // A MIDI file is read as bytes by the step that imports it.
     let read = if path.ends_with(".mid") {
         Ok(String::new())
@@ -64,29 +59,29 @@ fn main() -> ExitCode {
     let text = match read {
         Ok(text) => text,
         Err(problem) => {
-            eprintln!("{path}: {problem}");
-            return ExitCode::from(1);
+            let _ = writeln!(err, "{path}: {problem}");
+            return 1;
         }
     };
-    match command.as_str() {
+    match command {
         "load" => match load(&text) {
             Ok(data) => {
-                println!("{}", json(&data));
-                ExitCode::SUCCESS
+                let _ = writeln!(out, "{}", json(&data));
+                0
             }
             Err(problem) => {
-                eprintln!("{path}: {}", problem.0);
-                ExitCode::from(1)
+                let _ = writeln!(err, "{path}: {}", problem.0);
+                1
             }
         },
         "layout" => match load(&text) {
             Ok(data) => {
-                print!("{}", llamatron_model::file::writing::dump_file_layout(&data));
-                ExitCode::SUCCESS
+                let _ = write!(out, "{}", llamatron_model::file::writing::dump_file_layout(&data));
+                0
             }
             Err(problem) => {
-                eprintln!("{path}: {}", problem.0);
-                ExitCode::from(1)
+                let _ = writeln!(err, "{path}: {}", problem.0);
+                1
             }
         },
         "migrate" => match load(&text) {
@@ -96,30 +91,30 @@ fn main() -> ExitCode {
                 match llamatron_model::file::layout::as_object_layout(&moved) {
                     Ok(objects) => {
                         let file = llamatron_model::file::layout::as_file_layout(&objects);
-                        print!("{}", llamatron_model::file::writing::dump_file_layout(&file));
-                        ExitCode::SUCCESS
+                        let _ = write!(out, "{}", llamatron_model::file::writing::dump_file_layout(&file));
+                        0
                     }
                     Err(problem) => {
-                        eprintln!("{path}: {}: {}", problem.section, problem.problem.message);
-                        ExitCode::from(1)
+                        let _ = writeln!(err, "{path}: {}: {}", problem.section, problem.problem.message);
+                        1
                     }
                 }
             }
             Err(problem) => {
-                eprintln!("{path}: {}", problem.0);
-                ExitCode::from(1)
+                let _ = writeln!(err, "{path}: {}", problem.0);
+                1
             }
         },
         "pattern_edits" => {
             let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
             match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
                 Ok(setlist) => {
-                    println!("{}", pattern_edits_of(&setlist));
-                    ExitCode::SUCCESS
+                    let _ = writeln!(out, "{}", pattern_edits_of(&setlist));
+                    0
                 }
                 Err(problem) => {
-                    eprintln!("{path}: {}", problem.message);
-                    ExitCode::from(1)
+                    let _ = writeln!(err, "{path}: {}", problem.message);
+                    1
                 }
             }
         }
@@ -127,12 +122,12 @@ fn main() -> ExitCode {
             let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
             match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
                 Ok(setlist) => {
-                    println!("{}", edits_of(&setlist));
-                    ExitCode::SUCCESS
+                    let _ = writeln!(out, "{}", edits_of(&setlist));
+                    0
                 }
                 Err(problem) => {
-                    eprintln!("{path}: {}", problem.message);
-                    ExitCode::from(1)
+                    let _ = writeln!(err, "{path}: {}", problem.message);
+                    1
                 }
             }
         }
@@ -141,23 +136,23 @@ fn main() -> ExitCode {
             match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
                 Ok(setlist) => {
                     let file = llamatron_model::file::layout::as_file_layout(&setlist.to_data());
-                    print!("{}", llamatron_model::file::writing::dump_file_layout(&file));
-                    ExitCode::SUCCESS
+                    let _ = write!(out, "{}", llamatron_model::file::writing::dump_file_layout(&file));
+                    0
                 }
                 Err(problem) => {
-                    eprintln!("{path}: {}", problem.message);
-                    ExitCode::from(1)
+                    let _ = writeln!(err, "{path}: {}", problem.message);
+                    1
                 }
             }
         }
         "import" => match imported(path, &text) {
             Ok(json) => {
-                println!("{json}");
-                ExitCode::SUCCESS
+                let _ = writeln!(out, "{json}");
+                0
             }
             Err(problem) => {
-                eprintln!("{path}: {problem}");
-                ExitCode::from(1)
+                let _ = writeln!(err, "{path}: {problem}");
+                1
             }
         },
         "player" => {
@@ -165,22 +160,22 @@ fn main() -> ExitCode {
             let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
-                    eprintln!("{path}: {}", problem.message);
-                    return ExitCode::from(1);
+                    let _ = writeln!(err, "{path}: {}", problem.message);
+                    return 1;
                 }
             };
             match players(&setlist) {
                 Ok(text) => {
-                    println!("{text}");
-                    ExitCode::SUCCESS
+                    let _ = writeln!(out, "{text}");
+                    0
                 }
                 Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
-                    eprintln!("not ported yet: {what}");
-                    ExitCode::from(NOT_PORTED)
+                    let _ = writeln!(err, "not ported yet: {what}");
+                    NOT_PORTED
                 }
                 Err(llamatron_engine::error::RenderError::Refused(problem)) => {
-                    eprintln!("{path}: {problem}");
-                    ExitCode::from(1)
+                    let _ = writeln!(err, "{path}: {problem}");
+                    1
                 }
             }
         }
@@ -189,22 +184,22 @@ fn main() -> ExitCode {
             let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
-                    eprintln!("{path}: {}", problem.message);
-                    return ExitCode::from(1);
+                    let _ = writeln!(err, "{path}: {}", problem.message);
+                    return 1;
                 }
             };
             match timelines(&setlist) {
                 Ok(text) => {
-                    println!("{text}");
-                    ExitCode::SUCCESS
+                    let _ = writeln!(out, "{text}");
+                    0
                 }
                 Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
-                    eprintln!("not ported yet: {what}");
-                    ExitCode::from(NOT_PORTED)
+                    let _ = writeln!(err, "not ported yet: {what}");
+                    NOT_PORTED
                 }
                 Err(llamatron_engine::error::RenderError::Refused(problem)) => {
-                    eprintln!("{path}: {problem}");
-                    ExitCode::from(1)
+                    let _ = writeln!(err, "{path}: {problem}");
+                    1
                 }
             }
         }
@@ -216,8 +211,8 @@ fn main() -> ExitCode {
             let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, Some(stem.clone())) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
-                    eprintln!("{path}: {}", problem.message);
-                    return ExitCode::from(1);
+                    let _ = writeln!(err, "{path}: {}", problem.message);
+                    return 1;
                 }
             };
             let exported = if command == "live" {
@@ -227,16 +222,16 @@ fn main() -> ExitCode {
             };
             match exported {
                 Ok(text) => {
-                    println!("{text}");
-                    ExitCode::SUCCESS
+                    let _ = writeln!(out, "{text}");
+                    0
                 }
                 Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
-                    eprintln!("not ported yet: {what}");
-                    ExitCode::from(NOT_PORTED)
+                    let _ = writeln!(err, "not ported yet: {what}");
+                    NOT_PORTED
                 }
                 Err(llamatron_engine::error::RenderError::Refused(problem)) => {
-                    eprintln!("{path}: {problem}");
-                    ExitCode::from(1)
+                    let _ = writeln!(err, "{path}: {problem}");
+                    1
                 }
             }
         }
@@ -245,25 +240,73 @@ fn main() -> ExitCode {
             let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
-                    eprintln!("{path}: {}", problem.message);
-                    return ExitCode::from(1);
+                    let _ = writeln!(err, "{path}: {}", problem.message);
+                    return 1;
                 }
             };
             match rendered_songs(&setlist) {
                 Ok(text) => {
-                    println!("{text}");
-                    ExitCode::SUCCESS
+                    let _ = writeln!(out, "{text}");
+                    0
                 }
                 Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
-                    eprintln!("not ported yet: {what}");
-                    ExitCode::from(NOT_PORTED)
+                    let _ = writeln!(err, "not ported yet: {what}");
+                    NOT_PORTED
                 }
                 Err(llamatron_engine::error::RenderError::Refused(problem)) => {
-                    eprintln!("{path}: {problem}");
-                    ExitCode::from(1)
+                    let _ = writeln!(err, "{path}: {problem}");
+                    1
                 }
             }
         }
+        _ => {
+            let _ = writeln!(err, "no step called ({command})");
+            2
+        }
+    }
+}
+
+/// Answer step after step on one process, so that no set starts a program of its own: each line read is a step and a
+/// set's path, separated by a tab, and each answer is its code, the lengths in bytes of what it printed and of what went
+/// wrong, separated by tabs, on a line, then the two texts.
+fn serve() -> ExitCode {
+    use std::io::{BufRead, Write as _};
+    let stdin = std::io::stdin();
+    let mut stdout = std::io::stdout().lock();
+    for line in stdin.lock().lines() {
+        let Ok(line) = line else { break };
+        let Some((command, path)) = line.split_once('\t') else { continue };
+        let (mut out, mut err) = (String::new(), String::new());
+        let code = run_step(command, path, &mut out, &mut err);
+        let _ = write!(stdout, "{code}\t{}\t{}\n{out}{err}", out.len(), err.len());
+        let _ = stdout.flush();
+    }
+    ExitCode::SUCCESS
+}
+
+fn main() -> ExitCode {
+    let arguments: Vec<String> = std::env::args().skip(1).collect();
+    if arguments.first().map(String::as_str) == Some("screenshots") {
+        return screenshots(arguments.get(1).map(String::as_str));
+    }
+    if arguments.first().map(String::as_str) == Some("serve") {
+        return serve();
+    }
+    let (Some(command), Some(path)) = (arguments.first(), arguments.get(1)) else {
+        eprintln!("usage: llamatron-compare load SET");
+        return ExitCode::from(2);
+    };
+    if command == "serve" {
+        return serve();
+    }
+    if !matches!(command.as_str(), "play" | "wav" | "screens") {
+        let (mut out, mut err) = (String::new(), String::new());
+        let code = run_step(command, path, &mut out, &mut err);
+        print!("{out}");
+        eprint!("{err}");
+        return ExitCode::from(code);
+    }
+    match command.as_str() {
         "play" => {
             // The current song's first scene played in real time through its instruments for a few seconds, for checking
             // the sender with a loopback audio device (LLAMATRON_AUDIO_DEVICE) that a check records.

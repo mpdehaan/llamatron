@@ -13,19 +13,45 @@ set -e
 cd "$(git rev-parse --show-toplevel)"
 changed=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep -E '^(src/|examples/|py_legacy/frozen_test_data/|internal_tools/compare_llamatron\.py$)' || true)
 if [ -n "$changed" ]; then
-    # The native code's own checks: its layout, clippy with every warning an error, its tests and its build (.claude/rules/RUST.md).
-    echo 'check before commit: checking the native code with cargo'
+    # The Rust's own checks: its layout, clippy with every warning an error, its tests in the quick dev build, and the
+    # release build the comparisons run (.claude/rules/RUST.md).
+    echo 'check before commit: checking the Rust with cargo'
     PATH="$HOME/.cargo/bin:$PATH"
     cargo fmt --manifest-path src/Cargo.toml --all --check
     cargo clippy --manifest-path src/Cargo.toml --workspace --release --all-targets --quiet -- -D warnings
-    cargo test --manifest-path src/Cargo.toml --workspace --release --quiet
+    cargo test --manifest-path src/Cargo.toml --workspace --quiet
     cargo build --manifest-path src/Cargo.toml --workspace --release --quiet
-    # llamatron held to the Python program's frozen answers, every step, over every example and test set.
-    for step in load layout migrate save edits pattern_edits render timeline player midi live import screens; do
-        # Each step runs once: its summary is shown, and a difference shows what differs and stops the check.
-        compared=$(.venv/bin/python internal_tools/compare_llamatron.py "$step") || { echo "$compared"; exit 1; }
-        echo "$step: $(echo "$compared" | grep 'sets differ\|stops differ' | tr '\n' ' ')$(echo "$compared" | grep 'wait on\|changed since' | sed 's/^/, /' | tr '\n' ' ')"
+    # The comparisons a change can affect, by the crates it changed: everything for the set's own layers, the examples,
+    # the frozen answers or the comparison itself; the push runs every step whatever changed.
+    steps=''
+    add() { for step in "$@"; do case " $steps " in *" $step "*) ;; *) steps="$steps $step" ;; esac; done; }
+    for path in $changed; do
+        case "$path" in
+            src/model/*|src/math/*|src/strings/*|src/compare/*|src/Cargo.*|examples/*|py_legacy/*|internal_tools/*)
+                add load layout migrate save edits pattern_edits render timeline player midi live import screens ;;
+            src/engine/*) add render timeline player midi live import screens ;;
+            src/exporters/*) add midi live ;;
+            src/importers/*) add import ;;
+            src/tracker/*) add edits timeline player screens ;;
+        esac
     done
+    # llamatron held to the Python program's frozen answers, the steps side by side; a difference shows what differs and
+    # stops the check.
+    results=$(mktemp -d)
+    for step in $steps; do
+        ( .venv/bin/python internal_tools/compare_llamatron.py "$step" > "$results/$step" 2>&1; echo $? > "$results/$step.code" ) &
+    done
+    wait
+    failed=0
+    for step in $steps; do
+        if [ "$(cat "$results/$step.code")" != 0 ]; then
+            cat "$results/$step"
+            failed=1
+        fi
+        echo "$step: $(grep 'sets differ\|stops differ' "$results/$step" | tr '\n' ' ')"
+    done
+    rm -rf "$results"
+    [ "$failed" = 0 ] || exit 1
 fi
 # Every path a document names must still exist.
 exec .venv/bin/python -m unittest -q python.tests.test_doc_paths
