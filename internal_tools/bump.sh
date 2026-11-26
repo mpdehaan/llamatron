@@ -3,7 +3,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# What it does: raise the version's last number and set the build date and time, for a commit that changes Python under src/
+# What it does: raise the version's last number and set the build date and time by hand, where a change to the Rust under src/ needs a new build number before a push
 
 set -eu
 # Run from the top folder, the one above this script's, wherever it is started from.
