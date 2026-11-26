@@ -149,10 +149,13 @@ impl Track {
     }
 
     /// A track named name, playing events in order on a channel and ending at a tick, a program sent first where given.
-    fn of(name: &str, mut events: Vec<MidiEvent>, end: i128, channel: u8, program: Option<u8>) -> Vec<u8> {
+    fn of(name: &str, mut events: Vec<MidiEvent>, end: i128, channel: u8, opening: Opening) -> Vec<u8> {
         let mut track = Track::new(name);
-        if let Some(program) = program {
+        if let Some(program) = opening.program {
             track.channel(0, &[0xc0 | channel, program]);
+        }
+        if let Some(pan) = opening.pan {
+            track.channel(0, &[0xb0 | channel, PAN_CONTROL, pan]);
         }
         events.sort();
         let mut now = 0;
@@ -164,6 +167,17 @@ impl Track {
         track.bytes
     }
 }
+
+/// What a track sends before its events: the program change giving it its sound, and the pan CC placing it, each where
+/// set.
+#[derive(Clone, Copy, Default)]
+struct Opening {
+    program: Option<u8>,
+    pan: Option<u8>,
+}
+
+/// The CC that places a channel in the stereo field.
+const PAN_CONTROL: u8 = 10;
 
 /// A MIDI file of a type, its tracks' bytes each a chunk.
 fn midi_file(format: u16, tracks: Vec<Vec<u8>>) -> Vec<u8> {
@@ -342,7 +356,7 @@ pub fn clip_tree(grid: &Grid, name: &str) -> Rendered<Vec<MidiExport>> {
                 }
             }
             events.extend(clip_events(clip, 0)?);
-            let track = Track::of(filename.trim_end_matches(".mid"), events, ticks(clip_length), 0, None);
+            let track = Track::of(filename.trim_end_matches(".mid"), events, ticks(clip_length), 0, Opening::default());
             files.push((filename, midi_file(SINGLE_TRACK_FILE, vec![track])));
         }
     }
@@ -390,9 +404,11 @@ pub fn song_file(grid: &Grid, name: &str, general_midi: bool) -> Rendered<MidiEx
 pub fn song_file_of(grid: &Grid, name: &str, general_midi: bool, kept: &dyn Fn(&GridColumn) -> bool) -> Rendered<MidiExport> {
     let starts = row_starts(grid)?;
     let end = ticks(starts[starts.len() - 1]);
-    let mut tracks = vec![Track::of(name, conductor_events(grid, &starts), end, 0, None)];
+    let mut tracks = vec![Track::of(name, conductor_events(grid, &starts), end, 0, Opening::default())];
     let mut melodic = 0;
     for column in sounding(grid).into_iter().filter(|column| kept(column)) {
+        // A General MIDI file places each track where its instrument's Pan says, drums included.
+        let pan = if general_midi { column.pan.map(|pan| pan as u8) } else { None };
         let (channel, program) = if !general_midi {
             (0, None)
         } else if column.drum {
@@ -402,7 +418,8 @@ pub fn song_file_of(grid: &Grid, name: &str, general_midi: bool, kept: &dyn Fn(&
             melodic += 1;
             (channel, column.gm_sound.map(|sound| (sound - 1) as u8))
         };
-        tracks.push(Track::of(&column.name, track_events(grid, column, &starts)?, end, channel, program));
+        let opening = Opening { program, pan };
+        tracks.push(Track::of(&column.name, track_events(grid, column, &starts)?, end, channel, opening));
     }
     let filename = if general_midi { format!("{name}_gm.mid") } else { format!("{name}.mid") };
     Ok((filename, midi_file(MULTI_TRACK_FILE, tracks)))
@@ -421,7 +438,10 @@ pub fn stems(grid: &Grid, name: &str) -> Rendered<Vec<MidiExport>> {
         };
         let mut events = conductor_events(grid, &starts);
         events.extend(track_events(grid, column, &starts)?);
-        files.push((filename, midi_file(SINGLE_TRACK_FILE, vec![Track::of(&column.name, events, end, 0, None)])));
+        files.push((
+            filename,
+            midi_file(SINGLE_TRACK_FILE, vec![Track::of(&column.name, events, end, 0, Opening::default())]),
+        ));
     }
     Ok(files)
 }

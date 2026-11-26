@@ -407,6 +407,7 @@ impl InstrumentSetting {
     pub const DEVICE: &'static str = "device";
     pub const CHANNEL: &'static str = "channel";
     pub const GM_SOUND: &'static str = "gm_sound";
+    pub const PAN: &'static str = "pan";
     pub const KEYSWITCHES: &'static str = "keyswitches";
     pub const KEYSWITCH_LEAD: &'static str = "keyswitch_lead";
     pub const DEFAULT_VELOCITY: &'static str = "default_velocity";

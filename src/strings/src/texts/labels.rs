@@ -454,6 +454,7 @@ pub const MSG_ARPEGGIO_LABEL: &str = "Arpeggio";
 pub const MSG_GLIDE_LABEL: &str = "Glide";
 /// The switch at the foot of Env 2 that unhooks it from the filter, leaving it to the Mod Matrix.
 pub const MSG_DISCONNECT_FILTER_LABEL: &str = "Disconnect filter";
+pub const MSG_PAN_LABEL: &str = "Pan";
 pub const MSG_GLIDE_TIME_LABEL: &str = "Glide time";
 pub const MSG_EFFECT_BLOCK_LABEL: &str = "FX {number}";
 pub const MSG_EFFECT_BITS_LABEL: &str = "FX {number} bits";

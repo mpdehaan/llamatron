@@ -145,6 +145,7 @@ pub static INSTRUMENT: &[Setting] = &[
     Setting { name: "device", described: Described::Text { error: "device must be the name of a MIDI output port, got {value!r}" } },
     Setting { name: "channel", described: Described::WholeNumber { lowest: Some(1), highest: Some(16), error: "channel must be an integer from {lowest} to {highest}, got {value!r}" } },
     Setting { name: "gm_sound", described: Described::WholeNumber { lowest: Some(1), highest: Some(128), error: "gm_sound must be an integer from {lowest} to {highest}, got {value!r}" } },
+    Setting { name: "pan", described: Described::WholeNumber { lowest: Some(0), highest: Some(100), error: "pan must be an integer from {lowest} to {highest}, got {value!r}" } },
     Setting { name: "keyswitches", described: Described::Checked { check: Check::InstrumentCheckKeyswitches, arguments: &[], needs_song: false, nearest: None } },
     Setting { name: "keyswitch_lead", described: Described::WholeNumber { lowest: Some(0), highest: Some(500), error: "keyswitch_lead must be an integer from {lowest} to {highest}, got {value!r}" } },
     Setting { name: "default_velocity", described: Described::WholeNumber { lowest: Some(1), highest: Some(127), error: "default_velocity must be an integer from {lowest} to {highest}, got {value!r}" } },

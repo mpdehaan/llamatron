@@ -40,6 +40,8 @@ pub const DEFAULT_SUSTAIN_PERCENT: i64 = 60;
 pub const DEFAULT_RELEASE_MS: i64 = 200;
 pub const DEFAULT_VOICES: i64 = 4;
 pub const DEFAULT_SOUND_VOLUME: i64 = 90;
+/// The middle of the stereo field, where an instrument stands unless its Pan says.
+pub const DEFAULT_PAN: i64 = 50;
 pub const DEFAULT_KNOB: i64 = 64;
 pub const DEFAULT_OSCILLATOR_LEVEL: i64 = 100;
 pub const DEFAULT_PULSE_WIDTH: i64 = 50;

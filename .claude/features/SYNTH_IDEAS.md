@@ -109,8 +109,7 @@ The professor's research is in `.claude/notes/synthesis/`.
   Built on a mixer: each instrument's own buffer, already kept, given a level, a pan and its sends, cheap since it costs a
   few multiplications a sample; a bus costs only its effects, once for all its instruments. The Synth Master Bus and
   Drum Master Bus idea below is a smaller first step toward it.
-- **Pan on every instrument**: built-in and FluidSynth alike; FluidSynth's by CC 10 on the instrument's channel, the
-  built-in synths' through the mixer.
+- **Pan on every built-in instrument**: through the mixer, as FluidSynth instruments already have.
 - **FluidSynth through the effects**: FluidSynth playing each MIDI channel into a stereo pair of its own, so that each
   FluidSynth instrument gets the effect blocks, pan and the buses as a built-in synth does; FluidSynth's own reverb and
   chorus stay outside the chains.

@@ -33,6 +33,13 @@ MIDI) export assigns them: channel 10 for a drum track, where FluidSynth plays
 drums, and channels 1 to 16 in turn for the rest. Each clip starts by choosing
 the track's General MIDI sound.
 
+A FluidSynth instrument's MIDI tab also has a Pan, under its GM sound: where
+the instrument stands between the speakers, from 0%, hard left, to 100%, hard
+right, 50%, the middle, unless set. A band's guitar a little to the left and
+its keyboard a little to the right sound like players standing apart on a
+stage. Once set, each clip sends it as CC 10 after the General MIDI sound, and
+the MIDI (General MIDI) and WAV (FluidSynth) exports place the track there too.
+
 Every example plays this way as it comes: its Real Time switch is on, and
 every track plays through a FluidSynth instrument, with a drum kit for the
 drum tracks, so opening an example and pressing `Space` on Arrange's corner
@@ -99,6 +106,7 @@ tabs and back, and Left and Right choose a tab.
 | MIDI: Device | The MIDI output port, chosen with `ENTER` from `(none)`, then `*FluidSynth`, then the ports this computer has now, sorted. A port the set names that has disconnected is still offered, so that the set opens without the port and keeps it. `Bksp` sets none. |
 | MIDI: Channel | 1 to 16, as the device numbers them. `[` and `]` step it, and `ENTER` types it. With `*FluidSynth` it shows `(auto)` and can't be changed, since each track gets its own channel. |
 | MIDI: GM sound | One of General MIDI's 128 sounds, or `(none)`. `ENTER` opens a picker of General MIDI's sixteen families with `(none)` above them, where `Space` or `ENTER` on a family opens its eight sounds, `/` searches every sound, and `L` (listen) plays the sound under the cursor as a scale through FluidSynth, or, where FluidSynth is not installed, through the song's Preview instrument in that device's own sound; `[` and `]` step through the sounds by number, and `Bksp` sets none. A drum track always plays channel 10's drum kit. |
+| MIDI: Pan | A FluidSynth instrument's place between the speakers, 0% hard left to 100% hard right, `50% (center)` unless set. `[` and `]` step it, `ENTER` types it, and `Bksp` brings back the middle. |
 | MIDI: Keyswitch lead | How many milliseconds before its note a keyswitch is sent, 0 to 500, `0 ms` unless set. `[` and `]` step it, and `ENTER` types it. See Keyswitches below. |
 | MIDI: Latency | How many milliseconds earlier the instrument's notes are sent, 0 to 500, `0 ms` unless set, for a device that is slow to sound. |
 | Oscillators, Envelopes, Filter | Each part's Type and its settings, and the Voice. See Built-in Instruments above. |

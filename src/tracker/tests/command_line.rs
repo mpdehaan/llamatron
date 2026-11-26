@@ -56,3 +56,37 @@ fn launch_options_are_checked_before_anything_opens() {
     let (worked, said) = ran(&[set, "--to", "midi", "--autoplay"]);
     assert!(!worked && said.contains("--autoplay"), "{said}");
 }
+
+/// A set of two FluidSynth pianos, the first panned to 20%, the second never panned.
+fn panned_set() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/panned_fluidsynth.yml")
+}
+
+/// The General MIDI file places a panned instrument's track with CC 10 at its start, 20% as 25 of 127, on its own
+/// channel; a track whose instrument never set its Pan sends no CC 10.
+#[test]
+fn a_general_midi_export_sends_each_panned_instruments_pan() {
+    let folder = fresh_folder("panned_gm");
+    let run = Command::new(env!("CARGO_BIN_EXE_llamatron"))
+        .arg(panned_set())
+        .args(["--to", "gm", "--out"])
+        .arg(&folder)
+        .output()
+        .expect("llamatron runs");
+    assert!(run.status.success(), "{}", String::from_utf8_lossy(&run.stderr));
+    let file = std::fs::read_dir(&folder)
+        .expect("the folder was made")
+        .map(|entry| entry.expect("an entry").path())
+        .find(|path| path.extension().is_some_and(|extension| extension == "mid"))
+        .expect("a MIDI file");
+    let bytes = std::fs::read(file).expect("the MIDI file reads back");
+    let control_change = 0xb0u8;
+    let pan_control = 10u8;
+    let (left_channel, middle_channel) = (0u8, 1u8);
+    let twenty_percent = 25u8;
+    let sends = |channel: u8| bytes.windows(2).any(|pair| pair == [control_change | channel, pan_control]);
+    assert!(bytes
+        .windows(3)
+        .any(|three| three == [control_change | left_channel, pan_control, twenty_percent]));
+    assert!(!sends(middle_channel));
+}

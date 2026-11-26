@@ -20,14 +20,15 @@ use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
 use llamatron_model::objects::setlist::{Instrument, Item};
+use llamatron_model::schema::generated::defaults::DEFAULT_PAN;
 use llamatron_model::schema::generated::file_format::{
     InstrumentSetting, Section, BIPOLAR_SOURCES, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, INSTRUMENT_KINDS, LFO_PLUS_SHAPES, LFO_RESTARTS,
     LFO_SHAPES, LFO_TYPES, MATRIX_DESTINATIONS, MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
-    MAX_KNOB, MAX_MATRIX_AMOUNT, MAX_OSCILLATORS, MAX_SID_RATE, MAX_VOICES, MAX_VOLUME_PERCENT, MIN_BITS, MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY,
-    MIN_KEYSWITCH_LEAD,
+    MAX_KNOB, MAX_MATRIX_AMOUNT, MAX_OSCILLATORS, MAX_PAN, MAX_SID_RATE, MAX_VOICES, MAX_VOLUME_PERCENT, MIN_BITS, MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY,
+    MIN_KEYSWITCH_LEAD, MIN_PAN,
 };
 use llamatron_strings::{labels, legends, marks, messages, named};
 
@@ -668,7 +669,7 @@ impl InstrumentEditor {
             .and_then(Data::as_whole)
             .map_or(0, |whole| whole as i64);
         let milliseconds = |number: i64| named(marks::MSG_KEYSWITCH_LEAD_SHOWN, &[("milliseconds", number.into())]);
-        let fields = vec![
+        let mut fields = vec![
             Field::custom(
                 ids.at(Write::Setting(InstrumentSetting::DEVICE)),
                 labels::MSG_DEVICE_LABEL,
@@ -681,6 +682,7 @@ impl InstrumentEditor {
                 .with_adjust()
                 .with_enter(legends::What::CHOOSE)
                 .with_clear(marks::MSG_NONE_SHOWN),
+            Self::pan_field(instrument, ids),
             Field::number(
                 ids.at(Write::Setting(InstrumentSetting::KEYSWITCH_LEAD)),
                 labels::MSG_KEYSWITCH_LEAD_LABEL,
@@ -708,9 +710,34 @@ impl InstrumentEditor {
                 &[("lowest", MIN_INSTRUMENT_LATENCY.into()), ("highest", MAX_INSTRUMENT_LATENCY.into())],
             )),
         ];
+        // Only FluidSynth is sent the pan, since a device's own pan is its player's to set.
+        if device != Some(FLUIDSYNTH_DEVICE) {
+            fields.retain(|field| field.label != labels::MSG_PAN_LABEL);
+        }
         let mut tab = Tab::new(labels::MSG_MIDI_TAB, vec![TabColumn::new(None, fields)]);
         tab.not_ready = Self::kind(instrument) != MIDI;
         tab
+    }
+
+    /// A FluidSynth instrument's Pan, a gauge from hard left at 0% to hard right at 100%, the middle at 50% unless set.
+    fn pan_field(instrument: &Instrument, ids: &mut Ids) -> Field {
+        let pan = instrument.get_pan();
+        let unit = if pan == DEFAULT_PAN {
+            marks::MSG_PAN_CENTER_SHOWN
+        } else {
+            marks::MSG_SOUND_PERCENT_SHOWN
+        };
+        let center = named(marks::MSG_PAN_CENTER_SHOWN, &[("number", DEFAULT_PAN.into())]);
+        gauge(
+            ids.at(Write::Setting(InstrumentSetting::PAN)),
+            labels::MSG_PAN_LABEL,
+            pan,
+            (MIN_PAN, MAX_PAN),
+            GM_CELLS,
+            unit,
+            (false, 1),
+        )
+        .with_clear(&center)
     }
 
     fn type_field(sound: &Sound, part: &'static str, ids: &mut Ids) -> Field {
@@ -1665,6 +1692,28 @@ mod tests {
         assert_eq!(whole(&sound.value("volume")), unset_volume);
         let voice = InstrumentEditor::voice_fields(&sound, &mut ids);
         assert!(voice.iter().all(|field| field.label != labels::MSG_VOLUME_LABEL));
+    }
+
+    /// A FluidSynth instrument's MIDI tab has a Pan gauge under its General MIDI sound, in the middle unless set; an
+    /// instrument on any other device has none.
+    #[test]
+    fn a_fluidsynth_instrument_has_a_pan_in_the_middle() {
+        let pan_of = |device: &str| {
+            let text = format!("{{ name: piano, device: \"{device}\", gm_sound: 1 }}");
+            let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
+            let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
+            let editor = InstrumentEditor { name: "piano".to_string() };
+            let mut ids = Ids { last: 0, writes: Vec::new() };
+            let fields = editor.midi_tab(&instrument, &mut ids).columns[0].fields.clone();
+            let place = fields.iter().position(|field| field.label == labels::MSG_PAN_LABEL)?;
+            let after_sound = fields.get(place - 1).is_some_and(|field| field.label == labels::MSG_GM_SOUND_LABEL);
+            Some((fields[place].value().to_string(), after_sound))
+        };
+        let (shown, after_sound) = pan_of(FLUIDSYNTH_DEVICE).expect("a Pan on a FluidSynth instrument");
+        let center = named(marks::MSG_PAN_CENTER_SHOWN, &[("number", DEFAULT_PAN.into())]);
+        assert!(shown.ends_with(&center), "{shown}");
+        assert!(after_sound);
+        assert!(pan_of("a synthesizer").is_none());
     }
 
     /// Disconnect filter stands last in Env 2's column, off unless set, so that Env 2's settings sit level with Env 1's;

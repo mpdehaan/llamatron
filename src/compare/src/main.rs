@@ -397,6 +397,7 @@ fn made_up_routes(track_names: &[&str]) -> Vec<(String, llamatron_tracker::realt
                 port: format!("port{}", place % 3),
                 channel: (place % 16) as i64,
                 program: (place % 2 == 1).then_some(place as i64),
+                pan: None,
                 keyswitches: true,
                 sound: (place % 4 == 0).then(|| "synth".to_string()),
                 early: if place % 5 == 0 { 0.01 } else { 0.0 },

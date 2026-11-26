@@ -14,7 +14,7 @@ use crate::schema::generated::defaults;
 use crate::schema::generated::file_format::{
     ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting,
 };
-use crate::schema::generated::limits::{MAX_STEP_SIZE, MIN_STEPS};
+use crate::schema::generated::limits::{MAX_PAN, MAX_STEP_SIZE, MIN_STEPS};
 use crate::values::note::Note;
 use crate::values::scale::{Scale, ScaleType};
 use crate::values::time_signature::TimeSignature;
@@ -284,7 +284,32 @@ impl Instrument {
     pub fn get_accent(&self) -> i64 {
         whole(self.get_written(InstrumentSetting::ACCENT)).unwrap_or(defaults::DEFAULT_INSTRUMENT_ACCENT)
     }
+
+    /// Where the instrument stands in the stereo field, from 0, hard left, to 100, hard right, 50 unless its Pan says.
+    pub fn get_pan(&self) -> i64 {
+        whole(self.get_written(InstrumentSetting::PAN)).unwrap_or(defaults::DEFAULT_PAN)
+    }
+
+    /// The value of the pan CC, 10, that places the instrument where its Pan says, 0 to 127 with 64 the middle; None where
+    /// its Pan was never set, so that nothing is sent and the player's own middle stands.
+    pub fn pan_control(&self) -> Option<i64> {
+        whole(self.get_written(InstrumentSetting::PAN)).map(pan_control_of)
+    }
+
+    /// The value of the pan CC that places the instrument where its Pan stands, set or not, 64 in the middle.
+    pub fn pan_control_in_effect(&self) -> i64 {
+        pan_control_of(self.get_pan())
+    }
 }
+
+/// The pan CC's value for a Pan's percent, rounded to the nearest.
+fn pan_control_of(percent: i64) -> i64 {
+    (percent * HIGHEST_CONTROL_VALUE + PAN_HALF_STEP) / MAX_PAN
+}
+
+/// The highest value a MIDI CC carries, and half of one percent's share of it, rounding a pan to its nearest CC value.
+const HIGHEST_CONTROL_VALUE: i64 = 127;
+const PAN_HALF_STEP: i64 = MAX_PAN / 2;
 
 impl Song {
     /// What a step with no velocity typed plays at on a track: the track's own, else its instrument's, else the loudest.
@@ -308,5 +333,30 @@ impl Song {
 
     pub fn instrument_of<'a>(&self, track: &Track, setlist: &'a Setlist) -> Option<&'a Instrument> {
         setlist.get_instrument(&track.get_instrument_name()?)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// An instrument read from its YAML.
+    fn instrument(text: &str) -> Instrument {
+        let data = crate::file::data::load(text).expect("the scenario's instrument is YAML");
+        Instrument::from_data(&data).expect("the scenario's instrument is valid")
+    }
+
+    /// Pan sends CC 10 only once set, its percent rounded to the nearest of the CC's values, the middle at 64; an
+    /// instrument that never set it stands at 50%.
+    #[test]
+    fn a_pan_sends_the_cc_value_nearest_its_percent() {
+        let control = |pan: i64| instrument(&format!("{{ name: piano, device: FluidSynth, pan: {pan} }}")).pan_control();
+        let (left, middle, right) = (0, 50, 100);
+        assert_eq!(control(left), Some(0));
+        assert_eq!(control(middle), Some(64));
+        assert_eq!(control(right), Some(127));
+        let unset = instrument("{ name: piano, device: FluidSynth }");
+        assert_eq!(unset.pan_control(), None);
+        assert_eq!(unset.get_pan(), defaults::DEFAULT_PAN);
     }
 }

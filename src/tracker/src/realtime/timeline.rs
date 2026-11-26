@@ -40,15 +40,18 @@ pub fn tempo_parts(tempo: f64) -> (i64, i64) {
     (tenths / TEMPO_PART, tenths % TEMPO_PART)
 }
 const NO_VELOCITY: i64 = 0;
+/// The CC that places a channel in the stereo field.
+const PAN_CONTROL: i64 = 10;
 
-/// Where a track's events go: an output port's name, a MIDI channel from 0, the program to choose first, whether keyswitch
-/// notes go this way, the built-in sound that plays the track or None for MIDI, and how many seconds earlier its events
-/// are sent, for a device slow to sound.
+/// Where a track's events go: an output port's name, a MIDI channel from 0, the program to choose first, the pan CC's
+/// value to send first or None, whether keyswitch notes go this way, the built-in sound that plays the track or None for
+/// MIDI, and how many seconds earlier its events are sent, for a device slow to sound.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Route {
     pub port: String,
     pub channel: i64,
     pub program: Option<i64>,
+    pub pan: Option<i64>,
     pub keyswitches: bool,
     pub sound: Option<String>,
     pub early: f64,
@@ -157,6 +160,9 @@ pub fn clip_timeline(clip: &Clip, route: &Route, tag: &ClipTag, scene_start: Rat
     let mut events = Vec::new();
     if let Some(program) = route.program {
         events.push(at(Rational::ZERO, PROGRAM_CHANGE, program, NO_VELOCITY));
+    }
+    if let Some(pan) = route.pan {
+        events.push(at(Rational::ZERO, CONTROL_CHANGE, PAN_CONTROL, pan));
     }
     let (notes, clip_length) = timed_events(clip, clip.scale.as_ref())?;
     if route.sound.is_some() {

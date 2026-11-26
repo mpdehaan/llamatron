@@ -192,12 +192,14 @@ pub struct Grid {
     pub time_signature: llamatron_model::values::time_signature::TimeSignature,
 }
 
-/// A track as the exports write it: its name, whether it is muted or plays drums, and its instrument's General MIDI sound.
+/// A track as the exports write it: its name, whether it is muted or plays drums, its instrument's General MIDI sound, and
+/// the pan CC's value its instrument's Pan gives, where set.
 pub struct GridColumn {
     pub name: String,
     pub mute: bool,
     pub drum: bool,
     pub gm_sound: Option<i64>,
+    pub pan: Option<i64>,
 }
 
 pub struct GridRow {
@@ -369,17 +371,18 @@ impl<'a> SongRealizer<'a> {
         let mut columns = Vec::new();
         for name in &tracks {
             let track = self.track(name)?;
-            let gm_sound = self
-                .song
-                .instrument_of(track, self.setlist)
+            let instrument = self.song.instrument_of(track, self.setlist);
+            let gm_sound = instrument
                 .and_then(|instrument| instrument.get_written("gm_sound"))
                 .and_then(Data::as_whole)
                 .map(|sound| sound as i64);
+            let pan = instrument.and_then(|instrument| instrument.pan_control());
             columns.push(GridColumn {
                 name: name.clone(),
                 mute: track.get_written(TrackSetting::MUTE) == Some(&Data::Bool(true)),
                 drum: track.is_drum(),
                 gm_sound,
+                pan,
             });
         }
         let tempo = exact(&self.song.get_tempo()).unwrap_or(Rational::whole(120)).to_float();
@@ -1486,6 +1489,7 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         InstrumentSetting::DEVICE,
         InstrumentSetting::CHANNEL,
         InstrumentSetting::GM_SOUND,
+        InstrumentSetting::PAN,
         InstrumentSetting::KEYSWITCHES,
         InstrumentSetting::KEYSWITCH_LEAD,
         InstrumentSetting::DEFAULT_VELOCITY,

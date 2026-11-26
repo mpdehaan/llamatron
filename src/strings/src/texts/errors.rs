@@ -97,6 +97,7 @@ pub const ERR_GUITARIFY_NOT_TRUE_OR_FALSE: &str = "{name} must be true or false,
 pub const ERR_BAD_STEP_ROW: &str = "{name} must be a list of 1 to {most} steps, each true or false, got {value!r}";
 pub const ERR_BAD_GLIDE_AMOUNT: &str = "glide_amount must be a length from {least} to {most}, got {value!r}";
 pub const ERR_BAD_GM_SOUND: &str = "gm_sound must be an integer from {lowest} to {highest}, got {value!r}";
+pub const ERR_BAD_PAN: &str = "pan must be an integer from {lowest} to {highest}, got {value!r}";
 pub const ERR_NOT_INVERSION: &str = "an inversion must be one of: {choices}";
 pub const ERR_INVERSION_ON_DRUMS: &str = "a drum pattern cannot hold inversions, since it has no chords";
 pub const ERR_NOT_DOUBLING: &str = "a doubling must be one of: {choices}";

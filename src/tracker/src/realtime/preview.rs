@@ -16,7 +16,7 @@ use crate::realtime::timeline::Route;
 use crate::realtime::transport::{device_of, fluidsynth_port, instrument, Transport};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::naming::unique_name;
-use llamatron_model::objects::setlist::Setlist;
+use llamatron_model::objects::setlist::{Instrument, Setlist};
 use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SongSetting, FLUIDSYNTH_DEVICE};
 use llamatron_strings::{errors, named, names};
 
@@ -27,6 +27,8 @@ const PREVIEW_CHANNEL: i64 = 15;
 const DRUM_CHANNEL: i64 = 9;
 const PIANO_PROGRAM: i64 = 0;
 const MIN_GM_SOUND: i64 = 1;
+/// The pan CC's value in the middle of the stereo field.
+const MIDDLE_PAN: i64 = 64;
 const CHANNEL_OFFSET: i64 = 1;
 const ONE_PASS: i64 = 1;
 const CLIP_RESTART: &str = "clip_restart";
@@ -475,7 +477,12 @@ fn instrument_route(copy: &Document, name: &str, track: &str) -> Route {
             .and_then(|held| held.get_written(InstrumentSetting::GM_SOUND))
             .and_then(Data::as_whole)
             .map(|sound| sound as i64 - MIN_GM_SOUND);
-        return fluid_route(PREVIEW_CHANNEL, sound);
+        // The preview's channel is shared by every preview, so the pan in effect is always sent, the middle included.
+        let pan = held.map(Instrument::pan_control_in_effect);
+        return Route {
+            pan,
+            ..fluid_route(PREVIEW_CHANNEL, sound)
+        };
     }
     device_route(
         device,
@@ -510,6 +517,7 @@ fn fluid_route(channel: i64, program: Option<i64>) -> Route {
         port: fluidsynth_port(),
         channel,
         program,
+        pan: middle_on_the_preview_channel(channel),
         keyswitches: false,
         sound: None,
         early: 0.0,
@@ -522,6 +530,7 @@ fn device_route(device: String, channel: Option<i128>) -> Route {
         port: device,
         channel: channel.map_or(1, |channel| channel as i64) - CHANNEL_OFFSET,
         program: None,
+        pan: None,
         keyswitches: true,
         sound: None,
         early: 0.0,
@@ -551,6 +560,7 @@ fn pattern_route(document: &Document, pattern: &str) -> Route {
         port: fluidsynth_port(),
         channel,
         program,
+        pan: middle_on_the_preview_channel(channel),
         keyswitches: false,
         sound: None,
         early: 0.0,
@@ -574,7 +584,10 @@ fn pattern_route(document: &Document, pattern: &str) -> Route {
             .get_written(InstrumentSetting::GM_SOUND)
             .and_then(Data::as_whole)
             .map(|sound| sound as i64 - MIN_GM_SOUND);
-        return fluid(PREVIEW_CHANNEL, sound);
+        return Route {
+            pan: Some(held.pan_control_in_effect()),
+            ..fluid(PREVIEW_CHANNEL, sound)
+        };
     }
     let channel = held
         .get_written(InstrumentSetting::CHANNEL)
@@ -585,6 +598,7 @@ fn pattern_route(document: &Document, pattern: &str) -> Route {
         port: device,
         channel,
         program: None,
+        pan: None,
         keyswitches: true,
         sound: None,
         early: 0.0,
@@ -611,10 +625,17 @@ fn clip_route(document: &Document, index: usize, track: &str) -> Route {
         port: fluidsynth_port(),
         channel,
         program,
+        pan: middle_on_the_preview_channel(channel),
         keyswitches: false,
         sound: None,
         early: 0.0,
     }
+}
+
+/// The pan CC's middle, sent on the preview's channel so that a sound tried after a panned instrument stands in the
+/// middle again; None on any other channel, which no instrument's pan reaches.
+fn middle_on_the_preview_channel(channel: i64) -> Option<i64> {
+    (channel == PREVIEW_CHANNEL).then_some(MIDDLE_PAN)
 }
 
 #[cfg(test)]
