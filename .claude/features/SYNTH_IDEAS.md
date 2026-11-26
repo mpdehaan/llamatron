@@ -15,63 +15,38 @@ The professor's research is in `.claude/notes/synthesis/`.
   migration, engine and block presets; with it, a Glide switch on the MIDI engine, as if it were a synth.
 - **The Mod Matrix's destinations**: Which to drop (Drive and the like need not be destinations), a discussion; later, some
   effects' settings as destinations, effect by effect.
-- **More kinds of LFO**: today an LFO is Sine, Triangle, Saw up, Saw down, Square or Sample & Hold, with its Speed and Rate,
-  Key, Retrigger and Each scene. The kinds found in LFO plugins and in modular designs (the slope and function generators,
-  looping envelopes, multi-phase LFOs, random and chaotic sources), as candidates, each to be chosen with the user:
-  - Symmetry and Curve, one continuous shape from saw down through triangle to saw up, bent from logarithmic to exponential,
-    as a slope generator's rise and fall are (Tides, MIT, is the open design to follow).
-  - Smooth random: a random value each cycle, glided to rather than stepped, with a Slew, beside Sample & Hold.
-  - Fade in: the LFO's depth rising over a time after each note, the delayed vibrato of the classic polysynths.
-  - Tempo sync: the Rate as a division of the beat, dotted and triplet included, beside a rate in hertz.
-  - Phase: where in its cycle the LFO starts, and across a chord's voices a spread, so that the voices move apart, as a
-    multi-phase LFO's outputs do.
-  - One shot: the LFO played once at each note and held at its end, an extra envelope, as a looping envelope switched to
-    single.
-  - Steps: a short drawn row of levels, eight or sixteen, played as the LFO's shape with a Slew between them, as a curve
-    sequencer does.
-  - Chaos: a smooth, never-repeating motion from a chaotic system, started from a seed so it is the same every playing.
-    A system moves in two or three dimensions at once, so a chaotic LFO gives two or three related outputs (X, Y, Z), each
-    a Mod Matrix source of its own, moving two or three things together, never in step yet never unrelated. Candidates:
-    the Lorenz attractor (two lobes it flips between unpredictably, the best-known); the Rössler attractor (a simpler,
-    smoother spiral that now and then leaps out); Chua's circuit (the electronic double scroll, the analog chaos
-    circuit); the jerk systems and slow chaotic circuits ( four very slow flavours,
-    minutes a cycle, for drifting pads); Thomas', Aizawa's, Halvorsen's and Dadras' attractors; the logistic and Hénon
-    maps, stepped rather than smooth, beside Sample & Hold; a double pendulum or a Duffing oscillator, which feel
-    physical; predator and prey (Lotka-Volterra), two populations rising and falling in turn; and the rungler,
-    a shift register fed back by two oscillators, a stepped pattern that almost repeats. Each would offer a Chaos amount
-    (how wild, from a near loop to full chaos) and its speed; all must be kept bounded and numerically safe (a fixed step,
-    clamped, restarted from the seed if it ever escapes), and are cheap at control rate. Research which few sound most
-    musical before choosing.
-  - Burst: a few cycles at each note, then still, for ratchets and trills.
-  - One LFO moving another's Rate or depth, through the Mod Matrix's Via or the built-in routes.
-  - **Chaos**: one modulator holding the chaotic systems above as a choice of System (Lorenz, Rössler and the others
-    researched), with a Chaos amount and a speed, its X, Y and Z as Mod Matrix sources.
-  - **Drawn on screen**: each modulator draws what it is doing in its box (a chaotic system's path, the snails' traces,
-    a tide's four outputs), worked out on the screen's side only while its box is on screen, and only if cheap.
-  - **Snail**: three slow chaotic circuits, made to suit llamatron's pages: three slow chaotic
-    circuits, each travelling around two strange attractors at its own pace (the original's about 15 to 30 seconds, 60
-    to 90 seconds, and 30 to 40 minutes a trip), two of them with a Lean, which sets which attractor it lingers around
-    rather than its speed, the third with none; its own inputs left out. Each circuit's X and Y are Mod Matrix sources
-    (the original's Z, its Y inverted, is the Mod Matrix's negative Amount), and a mix of the three, the first and third
-    added and the second taken away, split into its rising and falling halves, as the original's difference rectifier
-    does. Never restarted by a note; the same every playing from its seed. Its circuit's equations, a jerk-type chaotic
-    system, to be found and checked before building.
-  - A tidal modulator, after Mutable Instruments' Tides (2018), whose firmware is open (MIT,
-    `pichenettes/eurorack`, `tides2/`), so its algorithms can be followed and credited above each: a rise and a fall
-    ("flow and ebb") that loops as an LFO or runs once at a note as an envelope. Its Ramp mode is AD (one shot from zero,
-    whatever the note's length), Cyclic (a looping LFO, a note restarting it at its rise) or AR (rising while held, falling
-    at release, each from where it is). Frequency spans four octaves either way around a range's centre (1/8 Hz for slow
-    movements, 2 Hz for rhythms, 130.8 Hz for tones). Shape bends the rise and fall; Slope splits the cycle's time between
-    rise and fall; Smoothness is a two-pole low-pass one way and a wavefolder the other. Its four outputs, each a Mod
-    Matrix source here, are related by an Output mode and a Shift: four shapes taken along its chain; one signal crossfaded
-    from output to output; the same shape shifted in time (a phase between outputs, or a different Slope each); or each at
-    its own ratio of the frequency, polyrhythmic LFOs or, at audio rate, just-intonation chords. Synced to the tempo, its
-    Frequency becomes a ratio of the beat. At audio rate its Shape and Slope change meaning (stronger timbres, pulse
-    width) and its Shape and Smoothness narrow at high pitches to stay unaliased.
-- **Envelopes drawn**: on the Envelopes tab, each envelope's shape drawn in its box from its settings, redrawn as they
+- **Modulator modules**: each LFOs tab slot holds a module chosen by its Type: LFO (as now), LFO+ (Fade in, a Tempo
+  speed, Smooth random), Snail, Chaos, Tide, Turing, Bounce and Swarm, a module of several outputs adding them to the Mod
+  Matrix's sources while chosen (`.claude/planning/DESIGNS.md`, "Modulator modules on the LFOs tab"). What each module is:
+  - **Chaos**: a chaotic system's path in three dimensions, X, Y and Z, never repeating; System is Lorenz (two lobes it
+    flips between), Rössler (a smoother spiral that now and then leaps out), Chua (the electronic double scroll),
+    Thomas, Pendulum (a double pendulum) or Predator & prey (Lotka-Volterra); a Chaos amount from a near loop to full
+    chaos, and a speed; bounded and numerically safe, restarted from its seed if it ever escapes. Other systems kept for
+    later: the jerk systems, Aizawa, Halvorsen, Dadras, the logistic and Hénon maps, the Duffing oscillator, the
+    rungler.
+  - **Snail**: three slow chaotic circuits, each travelling around two
+    strange attractors at its own pace (about 20 seconds, 75 seconds and 35 minutes a trip at a Pace of x1), two with a
+    Lean setting which attractor it lingers around, the third with none; each circuit's X and Y, and a mix of the three
+    (the first and third added, the second taken away) split into its rising and falling halves, as outputs. Never
+    restarted by a note. Its circuit's equations, a jerk-type system, to be found and checked before building.
+  - **Tide**: after Mutable Instruments' Tides (2018), whose firmware is open (MIT, `pichenettes/eurorack`, `tides2/`):
+    a rise and a fall, Mode Loop, Once (AD) or Held (AR); Speed and Rate; Bend (the rise and fall from logarithmic to
+    exponential); Slope (rise against fall); Smooth (a low-pass one way, a wavefolder the other); four outputs related by
+    Outputs (Shapes, Phases, Ratios) and a Spread; at audio rate its Shape and Slope change meaning and narrow at high
+    pitches to stay unaliased.
+  - **Turing**: a random loop of 8 or 16 steps that repeats and slowly changes as a Change gauge allows, from locked to
+    always new, after the open-hardware Turing Machine.
+  - **Bounce**: a ball dropped at each note, its bounces shrinking and speeding up to rest, for ratchets, dub delays and
+    falling sweeps.
+  - **Swarm**: four slow oscillators drifting into step and back out of it as their Pull rises and falls (coupled
+    oscillators, Kuramoto).
+- **Modulators drawn**, later, at a calm rate: each module draws what it is doing in its box (a chaotic system's path,
+  the snails' traces, a tide's four outputs), worked out on the screen's side only while its box is on screen, and only if
+  cheap.
+- **Envelopes drawn**, later, at a calm rate: on the Envelopes tab, each envelope's shape drawn in its box from its settings, redrawn as they
   change, and a moving mark along it while a note fires it, worked out on the screen's side as the gauges' live markers
   are, only while the tab is on screen.
-- **A spectrogram on the Instrument page**: in the upper right, beside the settings above the tabs, the instrument's sound
+- **A spectrogram on the Instrument page**, later, at a calm rate: in the upper right, beside the settings above the tabs, the instrument's sound
   as a spectrogram: low notes at the bottom, time scrolling left, brightness its loudness; drawn only while the page is
   on screen.
 - **A one-voice instrument's note priority**: Lowest, highest or last, beside today's lowest-of-a-chord.

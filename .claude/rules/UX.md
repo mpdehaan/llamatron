@@ -167,6 +167,8 @@ All made by the model's naming (`src/model/src/objects/naming.rs`):
   bold (`Style.SELECTED_EDGE`).
 - Bars are block characters; an on toggle is `●` (ties and glides too); a cell that cannot take a value is a light `/` (never on
   the Use Draws rows).
+- A page's live drawing, such as a gauge's playing marker, moves at a calm rate chosen to be easy to watch, never
+  flashing; a drawing of what a module or an envelope is doing waits until a rate is agreed.
 - Every page but Arrange has a theme stripe by its kind in place of the header's rule.
 - The crumbs say where ESC goes back to; a page reached two ways shows two trails: `PATTERNS › tune`, `ARRANGE › pattern: tune`,
   `ARRANGE › clip: (scene 1, lead) › pattern: tune`. A page that jumps elsewhere gives the opened page its crumbs.
