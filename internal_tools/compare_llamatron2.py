@@ -1,52 +1,64 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Hold llamatron2, the Rust port, to the Python program, layer by layer as the port lands: every example set is put through
-the same step by both, and what each makes is compared. The Rust side is native/target/release/llamatron-compare.
+"""Hold llamatron to the Python program's last answers, frozen in py_legacy/frozen_test_data/ before the Python program was
+retired: every example set and test set is put through a step by llamatron, and what it makes is compared with what the
+Python made of the same file. The Rust side is native/target/release/llamatron-compare.
 
     .venv/bin/python internal_tools/compare_llamatron2.py load      # every example's and test set's data, as both load it
-    .venv/bin/python internal_tools/compare_llamatron2.py layout    # that data written back as a set file by each writer
-    .venv/bin/python internal_tools/compare_llamatron2.py migrate   # moved to today's layout, into the objects' and back
-    .venv/bin/python internal_tools/compare_llamatron2.py save      # read into objects and saved, compared as data
     .venv/bin/python internal_tools/compare_llamatron2.py render    # every song rendered from one seed, each clip's notes
-    .venv/bin/python internal_tools/compare_llamatron2.py midi      # every MIDI file each song exports, byte for byte
-    .venv/bin/python internal_tools/compare_llamatron2.py live      # each song's Live set, its XML byte for byte
-    .venv/bin/python internal_tools/compare_llamatron2.py import    # each song's MIDI export, and examples/midi, imported again
+    .venv/bin/python internal_tools/compare_llamatron2.py screens   # the key tour's screens at 80x24 and 160x50
     .venv/bin/python internal_tools/compare_llamatron2.py load --only tie
 
-It prints each set that differs with the first place it differs, and a count, and exits 1 when anything differs, so that the
-commit check can run it.
+A set changed since its answers were frozen has none to be held to, and is counted apart. It prints each set that differs
+with the first place it differs, and a count, and exits 1 when anything differs, so that the commit check can run it.
 """
 
 import argparse
+import gzip
 import hashlib
-import inspect
-from fractions import Fraction
 import json
 import os
 import pathlib
 import shutil
 import subprocess
 import sys
-
-from llamatron.model.file.safe_yaml import load_safely
-from llamatron.model.file.file_layout import as_file_layout, as_object_layout
-from llamatron.model.file.migrations import migrated
-from llamatron.model.file.setlist_writer import dump_file_layout
-from llamatron.model.file.song_file_error import SongFileError
+import tarfile
 
 TOP = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(TOP / 'python' / 'src'))
+from llamatron_tools.safe_yaml import load_safely  # noqa: E402
+
 RUST = TOP / 'native' / 'target' / 'release' / 'llamatron-compare'
 EXAMPLES = TOP / 'examples'
-# The tests' own sets too, which hold old layouts, values out of range and every odd thing a file can hold.
-TEST_SETS = TOP / 'tests' / 'data'
+FROZEN = TOP / 'py_legacy' / 'frozen_test_data'
+# The test sets, which the frozen answers name test_data/...
+TEST_SETS = FROZEN / 'test_data'
+ANSWERS = FROZEN / 'answers'
 SHOWN = 120
+# The steps whose answers are frozen.
+STEPS = ('load', 'layout', 'migrate', 'save', 'edits', 'pattern_edits', 'render', 'timeline', 'player', 'midi', 'live', 'import')
+# Where the screen tour's baseline is kept, git-ignored, first copied from the frozen one.
+KEPT = TOP / '.cache' / 'compare_llamatron2'
+# What a set changed since the answers were frozen is answered with, so that it is counted apart.
+CHANGED = 'changed since frozen'
 
 
-def python_load(path):
-    """Return a set's data as the Python program loads it, as JSON."""
-    with open(path, encoding='utf-8') as file:
-        return json.dumps(load_safely(file))
+def kept_python(step, path):
+    """Return the Python's frozen answer for a step on a set or MIDI file, None where the step does not apply to it, or
+    CHANGED where the file is not the one the answer was frozen for."""
+    key = key_of(path)
+    index = json.loads((ANSWERS / step / 'index.json').read_text(encoding='utf-8'))
+    if index.get(key) != hashlib.sha256(path.read_bytes()).hexdigest():
+        return CHANGED
+    return json.loads(gzip.decompress((ANSWERS / step / (key + '.json.gz')).read_bytes()))
+
+
+def key_of(path):
+    """Return a set's place as the frozen answers name it: examples/... or test_data/..."""
+    if path.is_relative_to(TEST_SETS):
+        return 'test_data/' + str(path.relative_to(TEST_SETS))
+    return str(path.relative_to(TOP))
 
 
 def rust(command, path):
@@ -75,426 +87,11 @@ def first_difference(first, second):
     return 'lengths {} and {}'.format(len(first), len(second))
 
 
-def python_layout(path):
-    """Return a set's loaded data written back as a set file by the Python writer, or None for a set laid out in an older
-    way, which only the objects' migrations can write."""
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    try:
-        return dump_file_layout(data).rstrip('\n')
-    except (AttributeError, TypeError, KeyError):
-        return None
-
-
-def python_migrate(path):
-    """Return a set's data moved to today's layout, into the objects' layout and back, written as a set file, or None where the
-    Python refuses its layout, a refusal the Rust must also make."""
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    moved, _ = migrated(data, one_song_name=path.stem)
-    try:
-        return dump_file_layout(as_file_layout(as_object_layout(moved))).rstrip('\n')
-    except (SongFileError, AttributeError, TypeError, KeyError):
-        return None
-
-
-def python_save(path):
-    """Return a set read into objects and saved, as the Python program saves it, or None where the Python refuses the set,
-    whose refusal the Rust is held to separately."""
-    from llamatron.model.file.setlist_writer import dump_setlist
-    from llamatron.model.objects.setlist import Setlist
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    moved, _ = migrated(data, one_song_name=path.stem)
-    try:
-        return dump_setlist(Setlist.from_data(data=as_object_layout(moved)).to_data()).rstrip("\n")
-    except SongFileError:
-        return None
-
-
-# The sections whose first item the edits step renames, copies, deletes, moves and sorts, and what a renamed item's name adds.
-EDITED_SECTIONS = ('scales', 'patterns', 'instruments', 'grooves', 'chains', 'arps', 'chords', 'drifts', 'guitarifies', 'hockets', 'musicians', 'phrasings', 'shapes', 'timings', 'songs')
-RENAMED = '-renamed'
-
-
-# The name the edits step gives a scene or a track it adds.
-ADDED = 'added'
-
-
-def python_edits(path):
-    """Return, as JSON, a set's data after each edit of the first item of each of its sections and of each song's first track,
-    each on a fresh copy of the set: renamed, copied, deleted, moved down one and sorted, as the Python's model does them, or
-    the refusal; None where the Python refuses the set."""
-    from llamatron.model.objects.naming import copy_name
-    from llamatron.model.objects.setlist import Setlist
-    from llamatron.model.schema import generator_plugins
-    from llamatron.model.schema.file_format import Section
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    moved, _ = migrated(data, one_song_name=path.stem)
-    try:
-        Setlist.from_data(data=as_object_layout(moved))
-    except SongFileError:
-        return None
-    generator_sections = set(generator_plugins.names_by_section()) | {Section.CHAINS}
-
-    def fresh():
-        return Setlist.from_data(data=as_object_layout(moved))
-
-    def edited(change):
-        setlist = fresh()
-        try:
-            change(setlist)
-        except Exception as error:
-            return 'refused: ' + str(error)
-        return setlist.to_data()
-    results = []
-    names = fresh().to_data()
-    for section in EDITED_SECTIONS:
-        held = list((names.get(section) or {}).keys())
-        if not held:
-            continue
-        first = held[0]
-        taken = fresh().every_generator_name() if section in generator_sections else held
-        new = copy_name(name=first, taken=taken)
-        delete = (lambda setlist: setlist.delete_generator(section=section, name=first)) if section in generator_sections else (lambda setlist: setlist.remove_item(section=section, name=first))
-        results.append(['rename', section, first, edited(lambda setlist: setlist.rename_item(section=section, old=first, new=first + RENAMED))])
-        results.append(['copy', section, first, edited(lambda setlist: setlist.copy_item(section=section, name=first, new=new))])
-        results.append(['delete', section, first, edited(delete)])
-        if len(held) > 1:
-            results.append(['move', section, first, edited(lambda setlist: setlist.move_item(section=section, place=0, offset=1))])
-        results.append(['sort', section, first, edited(lambda setlist: setlist.sort_items(section))])
-    for song in fresh().get_song_names():
-        tracks = fresh().get_song(song).get_track_names()
-        if not tracks:
-            continue
-        first = tracks[0]
-        new = copy_name(name=first, taken=tracks)
-        results.append(['rename', song, first, edited(lambda setlist: setlist.get_song(song).rename_item(section=Section.TRACKS, old=first, new=first + RENAMED))])
-        results.append(['copy', song, first, edited(lambda setlist: setlist.get_song(song).copy_track(name=first, new=new))])
-        results.append(['delete', song, first, edited(lambda setlist: setlist.get_song(song).remove_item(section=Section.TRACKS, name=first))])
-        if len(tracks) > 1:
-            results.append(['move', song, first, edited(lambda setlist: setlist.get_song(song).move_item(section=Section.TRACKS, place=0, offset=1))])
-        results.append(['sort', song, first, edited(lambda setlist: setlist.get_song(song).sort_items(Section.TRACKS))])
-        results.append(['add_track', song, ADDED, edited(lambda setlist: setlist.get_song(song).add_new_track(name=ADDED))])
-        results.append(['add_track', song, ADDED, edited(lambda setlist: setlist.get_song(song).add_new_track(name=ADDED, place=0))])
-        results.append(['fracture', song, '', edited(lambda setlist: setlist.fracture(setlist.get_song(song)))])
-        if not fresh().get_song(song).get_scenes():
-            continue
-        results.append(['add_scene', song, ADDED, edited(lambda setlist: setlist.get_song(song).add_new_scene(index=0, name=ADDED))])
-        results.append(['copy_scene', song, ADDED, edited(lambda setlist: setlist.get_song(song).copy_scene(index=0, name=ADDED))])
-        results.append(['remove_scene', song, '', edited(lambda setlist: setlist.get_song(song).remove_scene(0))])
-        held = fresh().get_song(song).get_scene(0).get_track_names()
-        if held:
-            results.append(['remove_clip', song, held[0], edited(lambda setlist: setlist.get_song(song).get_scene(0).remove_clip_slot(held[0]))])
-    return json.dumps(results, default=str)
-
-
-# How many of a set's patterns the pattern_edits step edits, and the direction and group it gives them.
-EDITED_PATTERNS = 3
-# The seed every scene's written view is rendered from, so that both programs draw the same random parts.
-SCENE_VIEW_SEED = 7
-EDITED_DIRECTION = 'pendulum'
-EDITED_GROUP = 'edited'
-DRUM_DEGREE = 'C'
-# What the note munges the pattern_edits step makes are given: the step length long notes are divided by, how often a step is
-# cleared, and the scale and default octave a melody is inverted in.
-DIVIDED_STEP = Fraction(1, 16)
-EVERY_OTHER = 2
-INVERTED_SCALE = 7
-INVERTED_OCTAVE = 3
-# The octave a step's chord tones are worked out in, as a step with none takes the default.
-TONES_OCTAVE = 3
-
-
-def pattern_edit_steps(steps, drum):
-    """Return the edits the pattern_edits step makes to a pattern of so many steps, each a name and its arguments; a drum
-    pattern's degree is a note letter."""
-    middle = steps // 2
-    edits = [
-        ('set_value', {'row': 'degree', 'step': 0, 'value': DRUM_DEGREE if drum else 3}), ('set_value', {'row': 'velocity', 'step': steps - 1, 'value': 100}),
-        ('clear_sound', {'step': 0}), ('set_steps', {'steps': steps + 2}), ('insert_step', {'step': 0}), ('insert_step', {'step': steps}),
-        ('set_group', {'group': EDITED_GROUP}), ('set_direction', {'direction': EDITED_DIRECTION}), ('reverse', {}), ('roll', {'steps': 1}),
-        ('roll', {'steps': -1}), ('roll_through', {'step': middle}), ('roll_from', {'step': middle}), ('reverse_after', {'step': 0}),
-        ('reverse_before', {'step': steps - 1}), ('pivot_around', {'step': middle}), ('repeat_at_end', {'first': 0, 'last': steps - 1}),
-        ('repeat_at_start', {'first': 0, 'last': 0}), ('clear_all_but_pitch', {}), ('clear_chords', {}), ('clear_statements', {}),
-        ('smooth_ccs', {}), ('smooth_velocity', {}), ('mirror', {}), ('interleave', {}), ('splice', {'at': 0}), ('splice', {}), ('set_drum', {}),
-        ('join_repeated_notes', {}), ('divide_long_notes', {'step_size': DIVIDED_STEP}), ('reverse_pitches', {}), ('clear_every', {'every': EVERY_OTHER}),
-        ('invert_melody', {'step': 0, 'scale_size': INVERTED_SCALE, 'default_octave': INVERTED_OCTAVE}),
-    ]
-    if steps > 1:
-        edits += [('set_steps', {'steps': steps - 1}), ('remove_step', {'step': 0})]
-    return edits
-
-
-def python_pattern_edits(path):
-    """Return, as JSON, each of the first patterns of a set after each of the pattern_edits step's edits on a fresh copy, as
-    the Python's Pattern makes them, or the refusal; None where the Python refuses the set."""
-    from llamatron.model.objects.setlist import Setlist
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    moved, _ = migrated(data, one_song_name=path.stem)
-    try:
-        setlist = Setlist.from_data(data=as_object_layout(moved))
-    except SongFileError:
-        return None
-    results = []
-    # Every chord's name and numeral, each root with each chord a beat can be heard as, in the set's first scale and in none.
-    from llamatron.music_theory.harmony.heard_chords import chord_shapes, chord_texts
-    first_names = setlist.get_scale_names()
-    for scale in ([setlist.get_named_scale(first_names[0])] if first_names else []) + [None]:
-        texts = [list(chord_texts(root=root, symbol=symbol, scale=scale, bass=bass)) for root in range(12) for symbol in chord_shapes() for bass in (None, (root + 4) % 12)]
-        results.append(['chord_texts', '', texts])
-    # Every scene of the first song as Scene View shows it written: its notes, its length, the chord on each beat and the
-    # values it plays with.
-    from llamatron.interface.tracker.scene_notes import effective_values, scene_notes
-    from llamatron.music_theory.harmony.heard_chords import beat_chords
-    song = setlist.get_song(setlist.get_song_names()[0])
-    for index in range(len(song.get_scenes())):
-        effective = effective_values(song=song, index=index)
-        values = [effective.tempo, effective.tempo_source, effective.scale or '', effective.scale_source, effective.groove, effective.groove_source, sorted(effective.clip_scales.items())]
-        try:
-            notes = scene_notes(song=song, index=index, written=True, seed=SCENE_VIEW_SEED)
-        except (SongFileError, ValueError):
-            results.append(['scene_view', str(index), ['refused', values]])
-            continue
-        scale = setlist.get_named_scale(effective.scale) if effective.scale else None
-        chords = [[str(chord.start), chord.name, chord.numeral] for chord in beat_chords(notes=notes, scale=scale)]
-        shown = sorted([note.track, str(note.start), str(note.end), note.pitch, note.drum, note.marked] for note in notes.notes)
-        results.append(['scene_view', str(index), [shown, str(notes.length), chords, values]])
-    for name in setlist.get_pattern_names()[:EDITED_PATTERNS]:
-        original = setlist.get_pattern(name)
-        for edit, given in pattern_edit_steps(original.get_steps(), original.is_drum()):
-            pattern = original.copy()
-            arguments = dict(given)
-            if edit in ('interleave', 'splice'):
-                arguments['other'] = original.copy()
-            if edit == 'set_drum':
-                arguments['drum'] = not original.is_drum()
-            try:
-                getattr(pattern, edit)(**arguments)
-                results.append([edit, name, pattern.to_data()])
-            except Exception as error:
-                results.append([edit, name, 'refused: ' + str(error)])
-        # Every step's chord tones, in the set's first scale and with no scale known, as the roll draws them.
-        scale_names = setlist.get_scale_names()
-        for scale in ([setlist.get_named_scale(scale_names[0])] if scale_names else []) + [None]:
-            tones = [[list(tone) for tone in original.chord_tones(step=step, octave=TONES_OCTAVE, scale=scale)] for step in range(original.get_steps())]
-            results.append(['chord_tones', name, tones])
-            if scale is not None:
-                for octaves in (False, True):
-                    pattern = original.copy()
-                    try:
-                        pattern.apply_voice_leading(scale=scale, default_octave=TONES_OCTAVE, octaves=octaves)
-                        results.append(['apply_voice_leading', name, pattern.to_data()])
-                    except Exception as error:
-                        results.append(['apply_voice_leading', name, 'refused: ' + str(error)])
-    return json.dumps(results, default=str)
-
-
 def same_in_order(python, port):
     """Return whether two JSON texts hold the same data with every mapping's order counted, as a set's order of items is."""
     if port.startswith('FAILED'):
         return False
     return json.loads(python, object_pairs_hook=list) == json.loads(port, object_pairs_hook=list)
-
-
-RENDER_SEED = 1
-
-
-def rendered_text(grid):
-    """Return a rendered grid as text both programs write alike: each scene's tempo, then each clip's length and its notes,
-    each start, end, MIDI number and velocity, the times exact, then its CC values."""
-    from llamatron.engine.timing.timing import timed_events
-    lines = []
-    for row_place, row in enumerate(grid.get_rows()):
-        lines.append('scene {} tempo {}'.format(row_place, row.get_tempo()))
-        for time, tempo in row.get_tempo_changes():
-            lines.append('  tempo {} {}'.format(time, tempo))
-        for column in grid.get_columns():
-            clip = grid.get_clip(row=row, column=column)
-            if clip is None:
-                continue
-            notes, length = timed_events(clip=clip, scale=grid.scale_at(row=row, column=column))
-            lines.append('  {} length {}'.format(column.get_name(), length))
-            for note in notes:
-                lines.append('    {} {} {} {}'.format(note.start, note.end, note.midi_number, note.velocity))
-            for control in clip.get_controls():
-                lines.append('    cc {} {} {} {}'.format(control.get_time(), control.get_number(), control.get_value(), control.get_slide()))
-    return '\n'.join(lines)
-
-
-def python_render(path):
-    """Return every song of a set rendered from one seed, as text, or None where the Python refuses the set."""
-    from llamatron.engine.realizer.song_realizer import SongRealizer
-    from llamatron.model.objects.setlist import Setlist
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    moved, _ = migrated(data, one_song_name=path.stem)
-    try:
-        setlist = Setlist.from_data(data=as_object_layout(moved))
-        texts = []
-        for name in setlist.get_song_names():
-            texts.append('song {}'.format(name))
-            texts.append(rendered_text(SongRealizer(setlist.get_song(name), seed=RENDER_SEED).render()))
-        return '\n'.join(texts).rstrip('\n')
-    except SongFileError:
-        return None
-
-
-# Where the midi step's exporters are pointed, which write nothing there: the files are made in memory.
-EXPORT_DIRECTORY = '/tmp/claude/llamatron/compare'
-
-
-def midi_bytes(midi_file):
-    """Return a mido file's bytes as it saves them."""
-    import io
-    written = io.BytesIO()
-    midi_file.save(file=written)
-    return written.getvalue()
-
-
-def python_midi(path):
-    """Return every MIDI file each song of a set exports from one seed, each clip's, the whole song's, the stems and the
-    General MIDI file, one line a file with its name and its SHA-512, or None where the Python refuses the set."""
-    import hashlib
-    import os
-    from llamatron.engine.realizer.song_realizer import SongRealizer
-    from llamatron.exporters.clip_tree import ClipTree
-    from llamatron.exporters.exports import export_name
-    from llamatron.exporters.midi_arrangement import MidiGeneralMidi, MidiSong, MidiStems
-    from llamatron.model.objects.setlist import Setlist
-    os.makedirs(EXPORT_DIRECTORY, exist_ok=True)
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    moved, _ = migrated(data, one_song_name=path.stem)
-    lines = []
-    try:
-        setlist = Setlist.from_data(data=as_object_layout(moved))
-        for name in setlist.get_song_names():
-            grid = SongRealizer(setlist.get_song(name), seed=RENDER_SEED).render()
-            base = export_name(setlist=path.stem, song=name)
-            files = []
-            tree = ClipTree(directory=EXPORT_DIRECTORY, grid=grid, name=base)
-            files += tree._built_files(tree._filled_slots())
-            song = MidiSong(directory=EXPORT_DIRECTORY, grid=grid, name=base)
-            files.append((os.path.basename(song.path()), song.midi_file()))
-            stems = MidiStems(directory=EXPORT_DIRECTORY, grid=grid, name=base)
-            files += list(zip(stems.filenames(), [stems.midi_file(track) for track in stems.sounding_tracks()]))
-            general = MidiGeneralMidi(directory=EXPORT_DIRECTORY, grid=grid, name=base)
-            files.append((os.path.basename(general.path()), general.midi_file()))
-            for filename, midi_file in files:
-                lines.append('{} {}'.format(filename, hashlib.sha512(midi_bytes(midi_file)).hexdigest()))
-    except SongFileError:
-        return None
-    return '\n'.join(lines)
-
-
-def python_live(path):
-    """Return each song of a set as a Live set from one seed, the SHA-512 of its XML before it is zipped, or that the song is
-    refused, one line a song, or None where the Python refuses the set."""
-    import hashlib
-    from llamatron.engine.realizer.song_realizer import SongRealizer
-    from llamatron.exporters.ableton_project import AbletonProject
-    from llamatron.exporters.exports import export_name
-    from llamatron.model.objects.setlist import Setlist
-    import os
-    os.makedirs(EXPORT_DIRECTORY, exist_ok=True)
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    moved, _ = migrated(data, one_song_name=path.stem)
-    lines = []
-    try:
-        setlist = Setlist.from_data(data=as_object_layout(moved))
-        for name in setlist.get_song_names():
-            grid = SongRealizer(setlist.get_song(name), seed=RENDER_SEED).render()
-            project = AbletonProject(directory=EXPORT_DIRECTORY, grid=grid, name=export_name(setlist=path.stem, song=name))
-            try:
-                lines.append('{} {}'.format(name, hashlib.sha512(project._build()).hexdigest()))
-            except ValueError:
-                lines.append('{} refused'.format(name))
-    except SongFileError:
-        return None
-    return '\n'.join(lines)
-
-
-def import_inputs(path):
-    """Return what the import step imports for a path, each a song name and a MIDI file's bytes: a MIDI file itself, or each
-    song of a set as the whole-song MIDI export writes it from one seed; None where the Python refuses the set."""
-    if path.suffix == '.mid':
-        return [(path.stem, path.read_bytes())]
-    import os
-    from llamatron.engine.realizer.song_realizer import SongRealizer
-    from llamatron.exporters.exports import export_name
-    from llamatron.exporters.midi_arrangement import MidiSong
-    from llamatron.model.objects.setlist import Setlist
-    os.makedirs(EXPORT_DIRECTORY, exist_ok=True)
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    moved, _ = migrated(data, one_song_name=path.stem)
-    try:
-        setlist = Setlist.from_data(data=as_object_layout(moved))
-        inputs = []
-        for name in setlist.get_song_names():
-            grid = SongRealizer(setlist.get_song(name), seed=RENDER_SEED).render()
-            base = export_name(setlist=path.stem, song=name)
-            inputs.append((base, midi_bytes(MidiSong(directory=EXPORT_DIRECTORY, grid=grid, name=base).midi_file())))
-        return inputs
-    except SongFileError:
-        return None
-
-
-def python_import(path):
-    """Return what importing each input of a path into a new set makes, with the import dialog's first choices: the song's
-    name and data and the patterns, scales and instruments it adds, as JSON, or None where the Python refuses the set."""
-    import io
-    import mido
-    from llamatron.importers.midi_import import ImportChoices, MidiImport, MidiImportProblem
-    from llamatron.model.objects.setlist import Setlist
-    inputs = import_inputs(path)
-    if inputs is None:
-        return None
-    made = []
-    for name, data in inputs:
-        try:
-            imported = MidiImport(midi_file=mido.MidiFile(file=io.BytesIO(data), clip=True)).imported(setlist=Setlist.new(), choices=ImportChoices(song_name=name)).song
-        except MidiImportProblem:
-            made.append({'refused': name})
-            continue
-        made.append({'name': imported.name, 'song': imported.song, 'patterns': imported.patterns, 'scales': imported.scales, 'instruments': imported.instruments})
-    if inputs and 'refused' not in made[0]:
-        made.append(import_choices(*inputs[0]))
-    return json.dumps(made)
-
-
-def import_choices(name, data):
-    """Return what the import dialog shows of one MIDI file under each of its choices changed in turn: what the file holds,
-    and for each choice the song's data and what the import makes and warns; and the import with unique names off into a set
-    that holds the file's song already, so that its patterns are shared."""
-    import io
-    import mido
-    from llamatron.importers.midi_import import ImportChoices, MidiImport
-    from llamatron.importers.writing import add_imported
-    from llamatron.math.rational import Rational
-    from llamatron.model.objects.naming import default_scale_name
-    from llamatron.model.objects.setlist import Setlist
-    midi_import = MidiImport(midi_file=mido.MidiFile(file=io.BytesIO(data), clip=True))
-    found = midi_import.found()
-    shown = [found.tracks, found.bars, found.time_signature, str(found.tempo), [default_scale_name(root=key.root, kind=key.kind) for key in found.keys]]
-    tried = []
-    # The dialog's choices changed one at a time from where it starts.
-    for changes in [{}, {'chords': False}, {'controls': False}, {'longest_pattern': 8}, {'longest_pattern': 128}, {'step_size': (1, 16)}, {'step_size': (1, 4)}]:
-        choices = ImportChoices(song_name=name)
-        for setting, value in changes.items():
-            setattr(choices, setting, Rational(*value) if setting == 'step_size' else value)
-        made = midi_import.imported(setlist=Setlist.new(), choices=choices)
-        tried.append([made.song.song, made.tracks, made.patterns, made.scenes, made.long_patterns, made.warnings, str(made.step_size), made.song.shared])
-    holding = Setlist.new()
-    add_imported(setlist=holding, imported=midi_import.imported(setlist=holding, choices=ImportChoices(song_name=name)).song)
-    again = midi_import.imported(setlist=holding, choices=ImportChoices(song_name=name, unique_names=False))
-    tried.append([again.song.name, again.song.song, again.patterns, again.song.shared, sorted(holding.get_item_names('patterns'))])
-    return {'found': shown, 'tried': tried}
-
 
 
 def same_as_data(python, port):
@@ -507,197 +104,7 @@ def same_as_data(python, port):
     return load_safely(python) == load_safely(port)
 
 
-def made_up_routes(track_names):
-    """Return a route for every track, made up so that every kind of route is tried: three ports, channels in turn, a program
-    on every other track, a built-in sound on every fourth and a device's latency on every fifth."""
-    from llamatron.realtime.render_process.timeline import Route
-    routes = {}
-    for place, name in enumerate(track_names):
-        routes[name] = Route(port='port{}'.format(place % 3), channel=place % 16, program=place if place % 2 else None, keyswitches=True,
-                             sound='synth' if place % 4 == 0 else None, early=0.01 if place % 5 == 0 else 0.0)
-    return routes
-
-
-def python_timeline(path):
-    """Return every song of a set rendered from one seed and laid out as real-time playback's timeline, an event a line,
-    every track on a made-up route, or None where the Python refuses the set."""
-    from llamatron.engine.realizer.song_realizer import SongRealizer
-    from llamatron.model.objects.setlist import Setlist
-    from llamatron.realtime.render_process.timeline import song_timeline
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    moved, _ = migrated(data, one_song_name=path.stem)
-    try:
-        setlist = Setlist.from_data(data=as_object_layout(moved))
-        texts = []
-        for name in setlist.get_song_names():
-            song = setlist.get_song(name)
-            texts.append('song {}'.format(name))
-            grid = SongRealizer(song, seed=RENDER_SEED).render()
-            for event in song_timeline(grid=grid, routes=made_up_routes(song.get_track_names())):
-                texts.append('{} {!r} {} {} {} {} {} {} {}'.format(event.whole, event.seconds, event.port, event.channel, event.kind, event.number, event.value, event.tag.scene, event.tag.track))
-        return '\n'.join(texts).rstrip('\n')
-    except SongFileError:
-        return None
-
-
-class RecordingSender:
-    """A sender that writes down everything a player hands it, a line each, for the player step."""
-
-    def __init__(self, lines):
-        self.lines = lines
-
-    def add(self, events):
-        for event in events:
-            self.lines.append('add {} {!r} {} {} {} {} {} {} {} {}'.format(event.whole, event.seconds, event.port, event.channel, event.kind, event.number, event.value, event.tag.scene, event.tag.track, event.tag.play))
-
-    def forget(self, *, tag, after):
-        self.lines.append('forget {} {} {} {!r}'.format(tag.scene, tag.track, tag.play, after))
-
-    def stop_tag(self, tag):
-        self.lines.append('stop {} {} {}'.format(tag.scene, tag.track, tag.play))
-
-    def stop_all(self):
-        self.lines.append('stop all')
-
-
-def played_lines(*, song, score, player_class):
-    """Return what a player hands its sender for a song on a clock stepped a tenth of a second at a time: played from the top
-    to its end, then the second scene launched by hand, the first track's first clip launched alone a second later and the
-    second track stopped a second after that, run for six seconds."""
-    lines = []
-    if not score.scene_count():
-        return ['no scenes']
-    sender = RecordingSender(lines)
-    now = [0.0]
-    player = player_class(score=score, sender=sender, now=lambda: now[0])
-    player.play_song()
-    for _ in range(int(score.song_seconds() / PLAYER_STEP) + PLAYER_STEPS_PAST_THE_END):
-        if not player.is_playing():
-            break
-        now[0] += PLAYER_STEP
-        player.tick()
-    lines.append('ended {!r}'.format(now[0]))
-    tracks = song.get_track_names()
-    player.play_scene(min(1, score.scene_count() - 1))
-    for step in range(PLAYER_SCENARIO_STEPS):
-        now[0] += PLAYER_STEP
-        player.tick()
-        if step == PLAYER_CLIP_STEP and tracks:
-            player.play_clip(scene=0, track=tracks[0])
-        if step == PLAYER_STOP_STEP and len(tracks) > 1:
-            player.stop_clip(tracks[1])
-    player.stop_all()
-    return lines
-
-
-def live_edit_lines(*, song, seed):
-    """Return what a player hands its sender for a song played from the top and edited while it plays, each edit's score
-    rendered afresh with the play's seed and taken at a live response of its own: two seconds in, the tempo set to
-    LIVE_EDIT_TEMPO at once; a second later a scene inserted at the top, at the next bar; a second later the last track
-    removed, where there are two or more, at the clip's restart; then two seconds more."""
-    from llamatron.model.schema.file_format import Section
-    from llamatron.realtime.render_process.player import Player
-    from llamatron.realtime.render_process.score import Score
-    lines = []
-    if not song.get_scenes():
-        return lines
-    sender = RecordingSender(lines)
-    now = [0.0]
-    player = Player(score=Score(song=song, routes=made_up_routes(song.get_track_names()), seed=seed), sender=sender, now=lambda: now[0])
-    player.play_song()
-
-    def run(seconds):
-        for _ in range(round(seconds / PLAYER_STEP)):
-            now[0] += PLAYER_STEP
-            player.tick()
-
-    def edited(responsiveness, scene_map, track_map):
-        lines.append('edit {}'.format(responsiveness))
-        score = Score(song=song, routes=made_up_routes(song.get_track_names()), seed=seed)
-        player.update_score(score=score, responsiveness=responsiveness, scene_map=scene_map, track_map=track_map)
-
-    run(LIVE_EDIT_FIRST_SECONDS)
-    scenes = range(len(song.get_scenes()))
-    tracks = list(song.get_track_names())
-    song.set_tempo(LIVE_EDIT_TEMPO)
-    edited('asap', {place: place for place in scenes}, {name: name for name in tracks})
-    run(LIVE_EDIT_GAP_SECONDS)
-    song.add_new_scene(index=0, name=LIVE_EDIT_SCENE)
-    edited('next_bar', {place: place + 1 for place in scenes}, {name: name for name in tracks})
-    run(LIVE_EDIT_GAP_SECONDS)
-    if len(tracks) > 1:
-        song.remove_item(section=Section.TRACKS, name=tracks[-1])
-        edited('clip_restart', {place: place for place in range(len(song.get_scenes()))}, {name: (name if name != tracks[-1] else None) for name in tracks})
-    run(LIVE_EDIT_LAST_SECONDS)
-    player.stop_all()
-    return lines
-
-
-LIVE_EDIT_TEMPO = 150
-LIVE_EDIT_SCENE = 'live_edit'
-LIVE_EDIT_FIRST_SECONDS = 2.0
-LIVE_EDIT_GAP_SECONDS = 1.0
-LIVE_EDIT_LAST_SECONDS = 2.0
-PLAYER_STEP = 0.1
-PLAYER_STEPS_PAST_THE_END = 100
-PLAYER_SCENARIO_STEPS = 60
-PLAYER_CLIP_STEP = 10
-PLAYER_STOP_STEP = 20
-
-
-def python_player(path):
-    """Return what the real-time player hands its sender for every song of a set, every track on a made-up route, as
-    played_lines plays it, or None where the Python refuses the set."""
-    from llamatron.model.objects.setlist import Setlist
-    from llamatron.realtime.render_process.player import Player
-    from llamatron.realtime.render_process.score import Score
-    with open(path, encoding='utf-8') as file:
-        data = load_safely(file)
-    moved, _ = migrated(data, one_song_name=path.stem)
-    try:
-        setlist = Setlist.from_data(data=as_object_layout(moved))
-        texts = []
-        for name in setlist.get_song_names():
-            song = setlist.get_song(name)
-            texts.append('song {}'.format(name))
-            score = Score(song=song, routes=made_up_routes(song.get_track_names()), seed=RENDER_SEED)
-            texts += played_lines(song=song, score=score, player_class=Player)
-        # The live edits play a set of their own, so that each song's edits start from the set as its file holds it.
-        edited = Setlist.from_data(data=as_object_layout(moved))
-        for name in edited.get_song_names():
-            texts.append('live {}'.format(name))
-            texts += live_edit_lines(song=edited.get_song(name), seed=RENDER_SEED)
-        return '\n'.join(texts).rstrip('\n')
-    except SongFileError:
-        return None
-
-
-STEPS = {'player': python_player, 'timeline': python_timeline, 'edits': python_edits, 'pattern_edits': python_pattern_edits, 'load': python_load, 'layout': python_layout, 'migrate': python_migrate, 'save': python_save, 'render': python_render, 'midi': python_midi, 'live': python_live, 'import': python_import}
-# Where the Python's answers are kept, git-ignored and never committed: since the Python program is frozen, an answer is
-# worked out from the Python only when none is kept for its step and its file as the file is now.
-KEPT = pathlib.Path('.cache/compare_llamatron2')
-NOTHING_KEPT = 'none'
-
-
-def kept_python(step, path):
-    """Return the Python's answer for a step on a set or MIDI file, worked out by the Python only when none is kept yet."""
-    # The step's own code is part of the key, so that changing what a step asks of the Python asks it again.
-    code = ''.join(inspect.getsource(function) for function in (STEPS[step], *STEP_HELPERS.get(step, ())))
-    digest = hashlib.sha256('{}\0{}\0'.format(step, code).encode('utf-8') + path.read_bytes()).hexdigest()
-    kept = KEPT / step / (digest + '.json')
-    if kept.exists():
-        held = json.loads(kept.read_text(encoding='utf-8'))
-        return None if held == NOTHING_KEPT else held
-    answer = STEPS[step](path)
-    kept.parent.mkdir(parents=True, exist_ok=True)
-    kept.write_text(json.dumps(NOTHING_KEPT if answer is None else answer), encoding='utf-8')
-    return answer
-
-
 # How each step's two outputs are compared: as text unless named here.
-# The functions a step's Python answer is worked out with besides the step's own, which its kept answers depend on.
-STEP_HELPERS = {'player': (made_up_routes, played_lines, live_edit_lines, RecordingSender), 'timeline': (made_up_routes,), 'import': (import_choices,), 'pattern_edits': (pattern_edit_steps,)}
 COMPARED = {'save': same_as_data, 'import': same_as_data, 'edits': same_in_order, 'pattern_edits': same_in_order}
 
 
@@ -710,21 +117,36 @@ NOT_PORTED_PAGE = '(not ported)'
 FOLDER = 'FOLDER'
 TOUR_FOLDER = 'tour_folder'
 # The home folder the tour's MIDI import picker starts in, the same as the Python tour's.
-TOUR_HOME = TOP / 'tests' / 'data' / 'tour_home'
+# The home folder the Rust's tour runs with: a copy of the frozen one at a short path, so that no screen cuts its name.
+FROZEN_HOME = TEST_SETS / 'tour_home'
+TOUR_HOME = SCREENS / 'tour_home'
+# Where the home folder was when the Python's tour was captured, and what both tours' screens name it.
+CAPTURED_HOME = TOP / 'tests' / 'data' / 'tour_home'
+HOME = 'HOME'
 PDF_PAGE = 'PdfExportPage'
 LEAVE = 'escape'
 
 
 def python_screens():
-    """Return the Python's screen tour at each size, capturing it first when it has not been."""
+    """Return the Python's screen tour at each size, from its frozen capture, unpacked first where it has not been."""
     files = [SCREENS / 'screens_{}x{}.json'.format(*size) for size in SCREEN_SIZES]
-    if not all(path.exists() for path in files) or not (SCREENS / 'tour.yml').exists() or 'open_types' not in json.loads(files[0].read_text(encoding='utf-8'))[0]:
-        subprocess.run([str(TOP / 'internal_tools' / 'compare_screens.sh'), 'capture', str(SCREENS)], check=True, cwd=TOP)
-    return [(size, json.loads(path.read_text(encoding='utf-8'))) for size, path in zip(SCREEN_SIZES, files)]
+    if not all(path.exists() for path in files) or not (SCREENS / 'tour.yml').exists():
+        SCREENS.mkdir(parents=True, exist_ok=True)
+        with tarfile.open(FROZEN / 'screens' / 'capture.tar.gz') as archive:
+            archive.extractall(SCREENS, filter='data')
+    shutil.rmtree(TOUR_HOME, ignore_errors=True)
+    shutil.copytree(FROZEN_HOME, TOUR_HOME)
+    return [(size, json.loads(home_named(path.read_text(encoding='utf-8'), CAPTURED_HOME))) for size, path in zip(SCREEN_SIZES, files)]
+
+
+def home_named(text, home):
+    """Return screens with the tour's home folder, wherever it was, written as HOME, as both tours show it."""
+    return text.replace(json.dumps(str(home))[1:-1], HOME)
 
 
 def with_folder_named(text, folder):
     """Return the Rust's screens with the folder its tour ran in written as FOLDER, by every name the folder goes by."""
+    text = home_named(text, TOUR_HOME)
     for name in sorted({str(folder), str(folder.resolve())}, key=len, reverse=True):
         text = text.replace(json.dumps(name)[1:-1], FOLDER)
     return text
@@ -741,7 +163,7 @@ def pieces(line):
             joined[-1][0] += text
         else:
             joined.append([text, style])
-    if any(FOLDER in text for text, _ in joined):
+    if any(FOLDER in text or HOME in text for text, _ in joined):
         while joined and not joined[-1][0].strip():
             joined.pop()
     return joined
@@ -782,7 +204,12 @@ def after_the_pdf(stops):
 
 def baseline_path(size):
     """Return where the stops that differed when the baseline was taken are kept for a size."""
-    return KEPT / SCREENS_BASELINE.format(*size)
+    path = KEPT / SCREENS_BASELINE.format(*size)
+    frozen = FROZEN / 'screens' / SCREENS_BASELINE.format(*size)
+    if not path.exists() and frozen.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(frozen.read_bytes())
+    return path
 
 
 def capture_digest(size):
@@ -901,11 +328,15 @@ def main():
     sets = sorted(path for path in found if options.only is None or options.only in str(path))
     differing = 0
     skipped = 0
+    changed = 0
     waiting = {}
     for path in sets:
         python = kept_python(options.step, path)
         if python is None:
             skipped += 1
+            continue
+        if python == CHANGED:
+            changed += 1
             continue
         port = rust(options.step, path)
         if isinstance(port, NotPorted):
@@ -915,7 +346,9 @@ def main():
         if not same:
             differing += 1
             print('{}: {}'.format(path.relative_to(TOP), first_difference(python, port)))
-    ported = len(sets) - skipped - sum(waiting.values())
+    ported = len(sets) - skipped - changed - sum(waiting.values())
+    if changed:
+        print('{} sets changed since the answers were frozen, so have none to be held to'.format(changed))
     print('{} of {} sets differ{}'.format(differing, ported, ', {} skipped as the step does not apply'.format(skipped) if skipped else ''))
     if waiting:
         print('{} sets wait on parts not ported yet:'.format(sum(waiting.values())))

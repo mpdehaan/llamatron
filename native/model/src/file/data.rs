@@ -5,7 +5,7 @@
 //! false, a whole number, a float, text, a list, or a mapping that keeps its keys in the order the file gives them.
 //!
 //! The file is read by yaml-rust2 for its structure, and each plain scalar's kind is decided by PyYAML's own rules, YAML
-//! 1.1's, so that llamatron2 reads every set as llamatron reads it: `on`, `yes` and `True` are true, `010` is eight, `1:30`
+//! 1.1's, so that llamatron reads every set as llamatron reads it: `on`, `yes` and `True` are true, `010` is eight, `1:30`
 //! is ninety, `1.5` and `1.0e+3` are floats, `1e3` and `1/4` are text, and `~`, `null` or nothing is nothing.
 
 use llamatron_math::number::python_float_text;

@@ -198,7 +198,7 @@ knows the file format. Everything else works with its objects. Its values are
 the musical words the rest of the program speaks: a `Note`, a `Chord`, a
 `Scale`, a time signature, each of which can't be changed once made. Its
 objects are what the file stores: `Setlist` for the set
-(`src/llamatron/model/objects/setlist.py`), `Song`, `Track`, `Scene`,
+(`py_legacy/src/llamatron/model/objects/setlist.py`), `Song`, `Track`, `Scene`,
 `ClipSlot` (one track's part in one scene), `Pattern`, `NamedScale`, `Chain`,
 `Groove`, and each generator's settings. The set owns the shared sections and
 the songs, and a song owns its tracks, scenes and draws, so a rename in either
@@ -207,10 +207,10 @@ updates every reference, wherever it is.
 Its schema describes once what a set file may hold: each setting's name,
 range and default, and each row of a pattern, in one description that both
 reading a file and every setter ask
-(`src/llamatron/model/schema/setting.py`). Its file part reads and writes the
+(`py_legacy/src/llamatron/model/schema/setting.py`). Its file part reads and writes the
 YAML, offers to correct a value out of range, and moves a file saved by an
 older version to the layout written now through the migrations
-(`src/llamatron/model/file/migrations/`), so the rest of llamatron knows only
+(`py_legacy/src/llamatron/model/file/migrations/`), so the rest of llamatron knows only
 one layout.
 
 ### The Engine
@@ -220,7 +220,7 @@ scene and plays each clip slot's pattern as many times as it repeats,
 applying everything that changes the notes on the way: the scale, the track's
 transpose, probability, ratchets, ties, glide, play directions, grabs from
 other tracks, draws and morphs. `SongRealizer`
-(`src/llamatron/engine/realizer/song_realizer.py`) plays a song,
+(`py_legacy/src/llamatron/engine/realizer/song_realizer.py`) plays a song,
 `ClipSlotPlayer` one clip and `PatternPlayer` one pass through a pattern, so
 that's the place to read what a tie or a ratchet does. While a song plays,
 each note is plain data, a tuple, since a song has thousands; the `Note`,
@@ -230,19 +230,19 @@ by hand.
 The generators change a clip's notes after the Realizer has played them, so
 an arpeggiator doesn't care whether its chords came from degrees, grabs or
 draws. Each kind is a plugin in a folder of its own under
-`src/llamatron/engine/generators/`, holding its settings, its editor's
+`py_legacy/src/llamatron/engine/generators/`, holding its settings, its editor's
 description and its logic, and every plugin is found by itself, with no list
-to add it to (`src/llamatron/model/schema/generator_plugins.py`). A clip's
+to add it to (`py_legacy/src/llamatron/model/schema/generator_plugins.py`). A clip's
 chain runs its generators in order. The parts beside them are the pieces of
 music-making the plugins and the clips' own settings share, so that no plugin
 reaches into another.
 
 The finished clips are held in a `ClipGrid`
-(`src/llamatron/engine/clips/clip_grid.py`), with a row for every scene and a
+(`py_legacy/src/llamatron/engine/clips/clip_grid.py`), with a row for every scene and a
 column for every track, which knows how long each row lasts and where each
 starts when they are laid end to end. Timing turns the grid's clips into
 timed notes, in ticks: each note sounded once, with its groove, its strum and
-its keyswitches (`src/llamatron/engine/timing/clip_ticks.py`). Both the
+its keyswitches (`py_legacy/src/llamatron/engine/timing/clip_ticks.py`). Both the
 exporters and real-time playback take their notes from there, so a song plays
 the same in a file and live.
 
@@ -264,50 +264,50 @@ file per track, a file per clip for other DAWs, a General MIDI file, or a WAV
 file played through FluidSynth. They know nothing about patterns or scenes as
 the file has them, only the grid, which is why every kind lays the scenes out
 the same way. Each kind is one class built on `Exporter`
-(`src/llamatron/exporters/exporter.py`), which holds where the files go and
+(`py_legacy/src/llamatron/exporters/exporter.py`), which holds where the files go and
 what they're named, so a new kind, for another DAW, is one more class in the
-list in `src/llamatron/exporters/exports.py`. Each song of a set exports on
+list in `py_legacy/src/llamatron/exporters/exports.py`. Each song of a set exports on
 its own, to files beside the set named after the set and then the song, like
 `foo_bar.als`. The time signature travels the whole way without changing a
 note: the grid carries it, and the writers put it in each file as metadata,
 so that a DAW draws its bars where the song's beats are.
 
 The importers go the other way: the MIDI import
-(`src/llamatron/importers/midi_import.py`) reads a MIDI file into a song of
+(`py_legacy/src/llamatron/importers/midi_import.py`) reads a MIDI file into a song of
 tracks, patterns and scenes.
 
 ### Real Time
 
 Real time plays a song as it happens, in two processes of its own, apart from
 the tracker, so that drawing a page never makes a note late. The render
-process (`src/llamatron/realtime/render_process/playback_process.py`) renders
-the song into a score (`src/llamatron/realtime/render_process/score.py`),
+process (`py_legacy/src/llamatron/realtime/render_process/playback_process.py`) renders
+the song into a score (`py_legacy/src/llamatron/realtime/render_process/score.py`),
 each clip's events counted from its scene's start, built ahead and changed as
 the set changes, and its player
-(`src/llamatron/realtime/render_process/player.py`) launches scenes and clips
+(`py_legacy/src/llamatron/realtime/render_process/player.py`) launches scenes and clips
 as each clip's Follow action and each scene's Launch together say, so that a
 song plays from the top as the export plays. The sender sends each event at
 its moment: the backend, `llamatron-backend`, written in Rust (`native/backend/`,
 described in [Backend](BACKEND.md)), which the render process starts and speaks
-to (`src/llamatron/realtime/sender_process/rust_sender.py`). On macOS it hands
+to (`py_legacy/src/llamatron/realtime/sender_process/rust_sender.py`). On macOS it hands
 each event to CoreMIDI, the system's MIDI service, a tenth of a second ahead
 and stamped with its moment, so that it is sent on time however busy the
 computer is; on other systems it sends each event as its moment comes. The
 same process plays the built-in synths and FluidSynth, so that they and MIDI
 share one clock. The devices are the MIDI ports found
-(`src/llamatron/realtime/devices/ports.py`) and FluidSynth, whose library the
-backend loads (`src/llamatron/realtime/devices/fluidsynth.py`). Where the
+(`py_legacy/src/llamatron/realtime/devices/ports.py`) and FluidSynth, whose library the
+backend loads (`py_legacy/src/llamatron/realtime/devices/fluidsynth.py`). Where the
 backend is not built, the Python Realtime Sender Process
-(`src/llamatron/realtime/sender_process/process.py`) and Synthesis Process
+(`py_legacy/src/llamatron/realtime/sender_process/process.py`) and Synthesis Process
 take its place. Every process ends when the tracker does, however it ends, and
 every sounding note is let go.
 
 ### The Song Wizard
 
 The song wizard writes a whole song from a genre, a band and a form. Its
-choices (`src/llamatron/wizards/create_song/wizard_choices.py`) hold what a
+choices (`py_legacy/src/llamatron/wizards/create_song/wizard_choices.py`) hold what a
 person picked and what follows from it, and its composer
-(`src/llamatron/wizards/create_song/composer.py`) turns them into a set's
+(`py_legacy/src/llamatron/wizards/create_song/composer.py`) turns them into a set's
 data: tracks, patterns written by the genre's players, scenes for each
 section, and the chains that make them play like a band. Nothing goes into
 the set until Apply, which adds the song with everything it uses as one
@@ -319,70 +319,70 @@ The Interface is what a person sees and uses: the tracker, the visualizers and
 the command line. The tracker is built in three parts, so that what a page
 shows is apart from how it is drawn:
 
-- **The pages** (`src/llamatron/interface/pages/`) are presenters. Each says
+- **The pages** (`py_legacy/src/llamatron/interface/pages/`) are presenters. Each says
   what its page shows and does, as a form of plain nodes built from the set
   as it is now, with nothing of how it looks. A page's place, such as one
   clip of one song, is a plain value
-  (`src/llamatron/interface/pages/places.py`), and the site map opens the page
+  (`py_legacy/src/llamatron/interface/pages/places.py`), and the site map opens the page
   for any place
-  (`src/llamatron/interface/tracker/site_map.py`).
-- **The forms** (`src/llamatron/interface/forms/`) are the kinds of node a
+  (`py_legacy/src/llamatron/interface/tracker/site_map.py`).
+- **The forms** (`py_legacy/src/llamatron/interface/forms/`) are the kinds of node a
   page or a dialog is made of: fields of each kind, buttons, sections, tab
   boxes, a dialog's paragraphs and answers, a picker's list
-  (`src/llamatron/interface/forms/nodes.py`,
-  `src/llamatron/interface/forms/dialogs.py`). Each kind's rules are written
+  (`py_legacy/src/llamatron/interface/forms/nodes.py`,
+  `py_legacy/src/llamatron/interface/forms/dialogs.py`). Each kind's rules are written
   and tested once.
-- **The renderers** (`src/llamatron/interface/tracker/renderers/`) are the
+- **The renderers** (`py_legacy/src/llamatron/interface/tracker/renderers/`) are the
   only code that knows how a node looks. They draw with bold, dim, reverse
   video and box characters alone, so the tracker works on any terminal
   background.
 
-The tracker's screens (`src/llamatron/interface/tracker/screens/`) are thin:
+The tracker's screens (`py_legacy/src/llamatron/interface/tracker/screens/`) are thin:
 each keeps its cursor and its keys and hands the rest to its presenter and the
 renderers. It is built on Textual, which is kept to the app, the screens and
 the dialogs, so the same pages could be drawn by something else. The things
 drawn as grids, the pattern editor's rows and piano roll, Arrange and the
 step editors, are a family of their own: each keeps its own cursor and keys,
 and says what it shows as grid nodes
-(`src/llamatron/interface/forms/pattern_grid.py`,
-`src/llamatron/interface/forms/arrange.py`,
-`src/llamatron/interface/forms/step_grid.py`), which their renderers draw.
+(`py_legacy/src/llamatron/interface/forms/pattern_grid.py`,
+`py_legacy/src/llamatron/interface/forms/arrange.py`,
+`py_legacy/src/llamatron/interface/forms/step_grid.py`), which their renderers draw.
 A page shows its lines in one view
-(`src/llamatron/interface/tracker/screens/shared/page_view.py`), which keeps
+(`py_legacy/src/llamatron/interface/tracker/screens/shared/page_view.py`), which keeps
 each line it showed and sends the terminal only the lines that changed, since
 a page draws itself after every key and ten times a second while a song plays.
 
 The tracker holds one `Setlist` in a `Document`
-(`src/llamatron/interface/tracker/document.py`), which knows the file the set
+(`py_legacy/src/llamatron/interface/tracker/document.py`), which knows the file the set
 came from, which song is current and whether the set has unsaved changes.
 Each page reads the set through its methods and changes it only through the
 document, which asks the objects to check each change. The document's methods
 are grouped by subject in
-`src/llamatron/interface/tracker/document_parts/`: its file and exports, its
+`py_legacy/src/llamatron/interface/tracker/document_parts/`: its file and exports, its
 undo history, its edits to anything with a name, and its edits to the set,
 the current song and the patterns. Every key binding is defined in one
-module, `src/llamatron/interface/tracker/keybindings.py`, with a class for
+module, `py_legacy/src/llamatron/interface/tracker/keybindings.py`, with a class for
 each page, dialog and component, so that a key is changed in one place; each
 page ties its bindings to what they do, and a key that steps something one
 way or the other is handed its direction rather than its name
-(`src/llamatron/interface/tracker/key_table.py`). Playing in real time goes
+(`py_legacy/src/llamatron/interface/tracker/key_table.py`). Playing in real time goes
 through the tracker's transport
-(`src/llamatron/interface/tracker/transport.py`), the one door to Real Time,
+(`py_legacy/src/llamatron/interface/tracker/transport.py`), the one door to Real Time,
 which hands the set's changes and each launch to the render process and tells
 the pages what plays, for their lights.
 
-The command line (`src/llamatron/cli.py`) opens the tracker, or exports a set
+The command line (`py_legacy/src/llamatron/cli.py`) opens the tracker, or exports a set
 without it, through the same Engine and exporters.
 
 ### Foundations
 
 The foundations are used by every subsystem. Math holds exact arithmetic for
-lengths and times (`src/llamatron/math/rational.py`) and where random numbers
+lengths and times (`py_legacy/src/llamatron/math/rational.py`) and where random numbers
 come from. The musical fundamentals hold pitches and intervals. Caching holds
 revisions, a number every object of a set carries that moves whenever the
-object changes (`src/llamatron/caching/revised.py`), and the memory that keeps
+object changes (`py_legacy/src/llamatron/caching/revised.py`), and the memory that keeps
 an answer until something it came from changes
-(`src/llamatron/caching/memory.py`). The user strings hold every word the
+(`py_legacy/src/llamatron/caching/memory.py`). The user strings hold every word the
 program shows.
 
 ## Song Data Flow

@@ -2,7 +2,7 @@
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The real-time sender (the Python realtime/sender_process/rust_sender.py): the backend's sending loop, run on a thread of
-//! llamatron2's own process, which sends the player's events on time through the MIDI ports, the built-in synths and
+//! llamatron's own process, which sends the player's events on time through the MIDI ports, the built-in synths and
 //! FluidSynth. Its messages are handed across a channel as the backend's values; the events cross as slim records, each
 //! port named by its place and each play's tag by a number. Closing ends the loop and waits a little for its thread.
 

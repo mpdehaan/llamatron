@@ -73,9 +73,9 @@ impl AboutDialog {
         words.push(named(
             about::MSG_ABOUT_VERSION,
             &[
-                ("version", crate::generated::tables::PROGRAM_VERSION.into()),
-                ("date", crate::generated::tables::BUILD_DATE.into()),
-                ("time", crate::generated::tables::BUILD_TIME.into()),
+                ("version", crate::version::PROGRAM_VERSION.into()),
+                ("date", crate::version::BUILD_DATE.into()),
+                ("time", crate::version::BUILD_TIME.into()),
             ],
         ));
         words.push(about::MSG_ABOUT_WEB.to_string());
@@ -90,7 +90,7 @@ impl AboutDialog {
             words.push(String::new());
         }
         words.push(about::MSG_ABOUT_LICENSE.to_string());
-        let year = crate::generated::tables::BUILD_DATE.split('-').next().unwrap_or_default();
+        let year = crate::version::BUILD_DATE.split('-').next().unwrap_or_default();
         words.push(named(about::MSG_ABOUT_COPYRIGHT, &[("year", year.into())]));
         words.iter().map(|line| Text::plain(line)).collect()
     }

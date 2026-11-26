@@ -2,7 +2,7 @@
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! Writing a set's data as the text of a set file, line for line as the Python program writes it (model/file/
-//! setlist_writer.py), so that llamatron2 saves the very file llamatron saves: the set's settings, its notes as a block,
+//! setlist_writer.py), so that llamatron saves the very file llamatron saves: the set's settings, its notes as a block,
 //! then what every song shares, each a list whose items begin with their names, then the songs, one setting or pattern row
 //! a line, every value in braces and brackets.
 

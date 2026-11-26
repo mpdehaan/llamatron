@@ -49,7 +49,7 @@ handing them the same messages through channels in place of the pipes.
 Each message is a MessagePack array, a compact binary form of a list, with its
 length written before it in four bytes, so that the reader always knows where
 one message ends. `native/backend/src/protocol/` and
-`src/llamatron/realtime/synth_process/daemon.py` are the two ends.
+`py_legacy/src/llamatron/realtime/synth_process/daemon.py` are the two ends.
 
 A note's time is a moment on the computer's own steady clock, the one Python's
 `time.perf_counter` reads, which the engine reads too (`audio/clock.rs`), so that both

@@ -7,7 +7,7 @@
 //!
 //! The checks refuse what the Python refuses. Their messages are the Python's texts where they are at hand; the deepest
 //! ones (a built-in sound's own settings, keyswitches, statements, a musician's settings by section) check the value's
-//! shape alone for now, since llamatron2 need show errors as the Python does only as far as the comparisons need.
+//! shape alone for now, since llamatron need show errors as the Python does only as far as the comparisons need.
 
 use crate::file::data::Data;
 use crate::schema::generated::file_format;

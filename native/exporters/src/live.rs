@@ -16,7 +16,7 @@ use llamatron_model::values::time_signature::TimeSignature;
 use std::io::Read;
 
 /// The template that comes with the program.
-pub const DEFAULT_TEMPLATE: &[u8] = include_bytes!("../../../src/llamatron/templates/live12.als");
+pub const DEFAULT_TEMPLATE: &[u8] = include_bytes!("../templates/live12.als");
 const EMPTY_CLIP_BEATS: i128 = 4;
 const NOTE_OFF_VELOCITY: &str = "64";
 const NO_GROOVE: &str = "-1";

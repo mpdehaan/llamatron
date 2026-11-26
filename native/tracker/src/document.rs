@@ -84,8 +84,8 @@ impl Document {
         if let Data::Map(pairs) = &mut data {
             let version = Data::text(SetlistSetting::VERSION);
             match pairs.iter_mut().find(|(key, _)| *key == version) {
-                Some(pair) => pair.1 = Data::text(crate::generated::tables::PROGRAM_VERSION),
-                None => pairs.insert(0, (version, Data::text(crate::generated::tables::PROGRAM_VERSION))),
+                Some(pair) => pair.1 = Data::text(crate::version::PROGRAM_VERSION),
+                None => pairs.insert(0, (version, Data::text(crate::version::PROGRAM_VERSION))),
             }
             let opened = self.open_types_with_generators();
             if !opened.is_empty() {

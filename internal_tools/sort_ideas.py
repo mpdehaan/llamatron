@@ -19,9 +19,9 @@ import json
 from pathlib import Path
 import sys
 
-from llamatron.model.file.safe_yaml import load_safely
-
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'python' / 'src'))
+from llamatron_tools.safe_yaml import load_safely  # noqa: E402
 IDEAS_FILES = (ROOT / '.claude' / 'planning' / 'IDEAS.yml',)
 
 # The fields of an idea, as the file writes them.

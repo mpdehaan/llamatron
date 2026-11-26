@@ -6,7 +6,7 @@ name = "llamatron-tracker"
 version = "0.1.0"
 edition = "2021"
 license = "GPL-3.0-or-later"
-description = "llamatron2's tracker: the text UI's pages, dialogs and keys (the Python package interface/tracker/)"
+description = "llamatron's tracker: the text UI's pages, dialogs and keys (the Python package interface/tracker/)"
 publish = false
 
 [dependencies]

@@ -3,12 +3,12 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Bump llamatron's version, once before a push that changes the program's Python.
+"""Bump llamatron's version, written in native/tracker/src/version.rs, once before a push that changes the program.
 
 Run from the top folder:
 
-    .venv/bin/python internal_tools/bump_version.py           # 1.0.115 becomes 1.0.116, with today's date and the time now
-    .venv/bin/python internal_tools/bump_version.py --before-push   # the same, where Python under src/ changed since the last push and the version did not
+    .venv/bin/python internal_tools/bump_version.py           # 1.1.1 becomes 1.1.2, with today's date and the time now
+    .venv/bin/python internal_tools/bump_version.py --before-push   # the same, where Rust under native/ changed since the last push and the version did not
 
 `internal_tools/bump.sh` runs the first, and internal_tools/push_all.sh the second, committing the bump before it runs every
 test: the version and the build date and time are raised once a push rather than with every commit. The bump
@@ -22,20 +22,20 @@ import re
 import subprocess
 import sys
 
-VERSION_FILE = 'src/llamatron/model/file/version.py'
-SOURCE_FOLDER = 'src/'
-PYTHON_SUFFIX = '.py'
+VERSION_FILE = 'native/tracker/src/version.rs'
+SOURCE_FOLDER = 'native/'
+PYTHON_SUFFIX = '.rs'
 BEFORE_PUSH_FLAG = '--before-push'
-VERSION_PATTERN = re.compile(r"^VERSION = '(\d+)\.(\d+)\.(\d+)'$", re.MULTILINE)
-BUILD_DATE_PATTERN = re.compile(r"^BUILD_DATE = '[^']*'$", re.MULTILINE)
-BUILD_TIME_PATTERN = re.compile(r"^BUILD_TIME = '[^']*'$", re.MULTILINE)
-VERSION_LINE = "VERSION = '{first}.{second}.{last}'"
-BUILD_DATE_LINE = "BUILD_DATE = '{date}'"
-BUILD_TIME_LINE = "BUILD_TIME = '{time}'"
+VERSION_PATTERN = re.compile(r'^pub const PROGRAM_VERSION: &str = "(\d+)\.(\d+)\.(\d+)";$', re.MULTILINE)
+BUILD_DATE_PATTERN = re.compile(r'^pub const BUILD_DATE: &str = "[^"]*";$', re.MULTILINE)
+BUILD_TIME_PATTERN = re.compile(r'^pub const BUILD_TIME: &str = "[^"]*";$', re.MULTILINE)
+VERSION_LINE = 'pub const PROGRAM_VERSION: &str = "{first}.{second}.{last}";'
+BUILD_DATE_LINE = 'pub const BUILD_DATE: &str = "{date}";'
+BUILD_TIME_LINE = 'pub const BUILD_TIME: &str = "{time}";'
 DATE_FORMAT = '%Y-%m-%d'
 TIME_FORMAT = '%H:%M'
 # How a diff marks the line that sets a new version.
-BUMPED_LINE = '+VERSION = '
+BUMPED_LINE = '+pub const PROGRAM_VERSION: '
 # What changed since the last push: the files, and the version module.
 PUSHED = 'origin/main'
 CHANGED_PATHS_COMMAND = ('git', 'diff', '--name-only', PUSHED, 'HEAD')
@@ -77,12 +77,12 @@ def version_in(text):
 
 
 def changes_the_program(path):
-    """Return whether a changed path is Python under src/, the code a bump is for."""
+    """Return whether a changed path is Rust under native/, the code a bump is for."""
     return path.startswith(SOURCE_FOLDER) and path.endswith(PYTHON_SUFFIX)
 
 
 def is_missing_a_bump(*, changed_paths, version_diff):
-    """Return whether what is to be pushed changes the program's Python without setting a new version."""
+    """Return whether what is to be pushed changes the program's Rust without setting a new version."""
     return any(changes_the_program(path) for path in changed_paths) and BUMPED_LINE not in version_diff
 
 
@@ -91,7 +91,7 @@ def output_of(command):
 
 
 def bump_before_push():
-    """Bump the version where what is to be pushed changes the program's Python and does not raise the version already."""
+    """Bump the version where what is to be pushed changes the program's Rust and does not raise the version already."""
     if is_missing_a_bump(changed_paths=output_of(CHANGED_PATHS_COMMAND).splitlines(), version_diff=output_of(VERSION_DIFF_COMMAND)):
         bump()
 

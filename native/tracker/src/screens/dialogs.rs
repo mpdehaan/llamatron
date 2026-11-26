@@ -1596,8 +1596,8 @@ impl Page for QuitDialog {
 /// What the export dialog answers, by its place among these: each kind of export.
 pub const EXPORT_CHOICES: [&str; 6] = ["ableton", "stems", "midi", "cliptree", "gm", "wav"];
 /// Each category in the order the dialog offers them, by its place among EXPORT_CHOICES, None for MIDI, which opens a
-/// flyout of its kinds. The Python's PDF, its last, is left out until llamatron2 makes PDFs (the user's choice, the ideas
-/// file's "The PDF export in llamatron2").
+/// flyout of its kinds. The Python's PDF, its last, is left out until llamatron makes PDFs (the user's choice, the ideas
+/// file's "The PDF export in llamatron").
 const CATEGORIES: [Option<usize>; 3] = [Some(0), None, Some(5)];
 /// MIDI's kinds in the order its flyout lists them, by their places among EXPORT_CHOICES.
 const MIDI_KINDS: [usize; 4] = [1, 2, 3, 4];

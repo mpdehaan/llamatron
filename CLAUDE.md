@@ -55,7 +55,7 @@ Imported, loaded every session: `.claude/rules/COMMUNICATION.md` (working with t
   page's code; rerun the script after changing a key.
 - `.claude/rules/DOCS.md`: how the documents and the website are written and kept current.
 - `.claude/reference/TEST_LAYOUT.md`: which test module tests what.
-- `.claude/features/`: one file per standalone feature: `SONG_WIZARD.md` (before working in `src/llamatron/wizards/create_song/`),
+- `.claude/features/`: one file per standalone feature: `SONG_WIZARD.md` (before working in `py_legacy/src/llamatron/wizards/create_song/`),
   `GENRES.md` (before working on
   `internal_tools/analysis_and_generation/`, a demo or a generator; nothing of the genre library goes on the website until the
   user says so), `GENRE_REVIEW.md` (before changing a band genre's template or the solo, riff, loudness or instrument writers),
@@ -65,7 +65,7 @@ Imported, loaded every session: `.claude/rules/COMMUNICATION.md` (working with t
 - `.claude/notes/synthesis/`: the professor's research for the built-in synths, no maker's or product's name in it (its
   `README.md` lists the notes).
 - `.claude/planning/IDEAS.yml`: the user's only ideas file, for every kind of idea.
-- `src/llamatron/user_strings/`: every piece of text the program shows or raises.
+- `py_legacy/src/llamatron/user_strings/`: every piece of text the program shows or raises.
 - `README.md`, `docs/GUIDE.md`, `docs/INSTALLING.md`, `docs/`: for people; the user edits them too (`.claude/rules/DOCS.md`).
 
 `tests/rules/test_doc_paths.py` checks that every source path these documents name exists.
@@ -100,7 +100,7 @@ internal_tools/song_wizard_compose.sh                           # the song wizar
 
 ## Version
 
-`src/llamatron/model/file/version.py` holds `VERSION` (three numbers, like `1.0.2`), read by `pyproject.toml`, shown by About and
+`py_legacy/src/llamatron/model/file/version.py` holds `VERSION` (three numbers, like `1.0.2`), read by `pyproject.toml`, shown by About and
 written into every set file. Compare with `version_numbers()`, never as decimals. The last number is raised once per push by
 `internal_tools/push_all.sh` (via `internal_tools/bump_version.py --before-push`) when Python under `src/` changed; by hand only
 with `internal_tools/bump.sh`, never a hand edit. The first two numbers are the user's. `BUILD_DATE` and `BUILD_TIME` are written

@@ -485,7 +485,7 @@ fn toggle_real_time(app: &mut App) {
     let on = !matches!(setlist.get_written(SetlistSetting::REAL_TIME), Some(Data::Bool(true)));
     app.document
         .change_set(|setlist| setlist.set_written(SetlistSetting::REAL_TIME, Some(Data::Bool(on))));
-    // Nothing plays in real time yet in llamatron2, so there is nothing to stop as it turns off.
+    // Nothing plays in real time yet in llamatron, so there is nothing to stop as it turns off.
     app.say(if on {
         llamatron_strings::messages::MSG_REAL_TIME_ON
     } else {

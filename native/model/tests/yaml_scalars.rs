@@ -1,7 +1,7 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! llamatron2 reads every plain scalar as PyYAML reads it: tests/data/yaml_scalar_cases.txt, written by
+//! llamatron reads every plain scalar as PyYAML reads it: tests/data/yaml_scalar_cases.txt, written by
 //! internal_tools/yaml_scalar_cases.py from PyYAML itself.
 
 use llamatron_model::file::data::{resolved, Data};

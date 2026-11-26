@@ -6,7 +6,7 @@ name = "llamatron-compare"
 version = "0.1.0"
 edition = "2021"
 license = "GPL-3.0-or-later"
-description = "What llamatron2 makes of a set, printed for internal_tools/compare_llamatron2.py to hold against the Python program"
+description = "What llamatron makes of a set, printed for internal_tools/compare_llamatron.py to hold against the Python program"
 publish = false
 
 [[bin]]

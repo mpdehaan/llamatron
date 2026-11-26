@@ -2,7 +2,7 @@
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! A number as the Python program holds one: a whole number, an exact rational, or a float, mixed by Python's rules, so
-//! that llamatron2 rounds exactly where llamatron rounded and its exports come out byte for byte the same.
+//! that llamatron rounds exactly where llamatron rounded and its exports come out byte for byte the same.
 //!
 //! Python's rules, which this keeps: whole numbers stay whole under +, - and *, and give a float under / (true division);
 //! a rational with a whole number or a rational stays exact; anything with a float gives a float. Comparison is exact

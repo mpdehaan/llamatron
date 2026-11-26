@@ -1,7 +1,7 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! Filling a text's template as Python's str.format fills it, so that llamatron2 shows every message character for
+//! Filling a text's template as Python's str.format fills it, so that llamatron shows every message character for
 //! character as llamatron does: `{name}` and `{}` fields, `!r` for a value's repr, and the format specifications the texts
 //! use: a fill character and alignment (`<`, `>`, `^`) with a width that may itself be a field (`{name:<{width}}`), a `+`
 //! sign, zero padding (`02`), `d`, and a float's places (`.1f`); `{{` and `}}` for braces.
