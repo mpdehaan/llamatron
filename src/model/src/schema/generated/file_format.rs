@@ -837,7 +837,7 @@ pub static MATRIX_SOURCES: &[&str] = &["none", "env1", "env2", "env3", "lfo1", "
 pub static MATRIX_POLARITIES: &[&str] = &["bipolar", "unipolar"];
 /// The sources that swing from -1 to 1 rather than rising from 0 to 1.
 pub static BIPOLAR_SOURCES: &[&str] = &["lfo1", "lfo2", "lfo3", "lfo4", "key", "random", "osc", "osc1", "osc2", "osc3"];
-pub static MATRIX_DESTINATIONS: &[&str] = &["none", "pitch", "pulse_width", "detune", "cutoff", "resonance", "amp"];
+pub static MATRIX_DESTINATIONS: &[&str] = &["none", "pitch", "pulse_width", "detune", "cutoff", "resonance", "amp", "lfo1_rate", "lfo2_rate", "lfo3_rate", "lfo4_rate"];
 pub static FILTER_MODES: &[&str] = &["low", "band", "high", "notch"];
 pub static SALLEN_KEY_MODES: &[&str] = &["low", "high"];
 pub static CURVES: &[&str] = &["soft", "warm", "hard", "fold", "wrap"];

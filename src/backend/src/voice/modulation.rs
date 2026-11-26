@@ -8,7 +8,8 @@
 //! note, which each voice applies by its own age, and may follow the song's tempo, its cycle a division of the beat. The matrix has six slots, each a
 //! source, an optional via that scales it, a destination and an amount; the normalled routes live outside it (Env1 to the
 //! amp, Env2 to the cutoff through the Env amount, Env3 to pitch through Pitch env, the key through Key track), so that its
-//! slots stay free. Empty slots and those of no amount are left out when it is compiled.
+//! slots stay free. Empty slots and those of no amount are left out when it is compiled. A slot may also move an LFO's
+//! rate by an LFO, another or itself: those routes are the bank's, read a sample at a time as the LFOs advance.
 
 use crate::dsp::Random;
 use crate::protocol::values::{number, word};
@@ -61,6 +62,10 @@ pub struct LfoBank {
     lfos: Vec<Option<Lfo>>,
     held: Vec<f64>,
     pub now: Vec<Vec<f64>>,
+    /// The Mod Matrix's routes that move an LFO's rate by other LFOs, or by itself, and what each LFO gave the sample
+    /// before, which those routes read.
+    rate_routes: Vec<RateRoute>,
+    last: [f64; LFO_COUNT],
     /// The sample rate, from which a tempo LFO's step is worked out whenever the tempo changes.
     rate: f64,
     /// How many players play the instrument now, and whether all have stopped, so that its LFOs stand still, costing
@@ -117,6 +122,8 @@ impl LfoBank {
             lfos,
             held,
             now: (0..LFO_COUNT).map(|_| vec![0.0; MOST_FRAMES]).collect(),
+            rate_routes: Vec::new(),
+            last: [0.0; LFO_COUNT],
             rate,
             players: 0,
             stopped: false,
@@ -165,9 +172,19 @@ impl LfoBank {
         !self.stopped && self.lfos.iter().any(Option::is_some)
     }
 
+    /// The bank with the Mod Matrix's routes that move its LFOs' rates.
+    pub fn with_rate_routes(mut self, routes: Vec<RateRoute>) -> LfoBank {
+        self.rate_routes = routes;
+        self
+    }
+
     /// Work out what the LFOs give the chunk ahead.
     pub fn advance(&mut self, frames: usize) {
         let frames = frames.min(MOST_FRAMES);
+        if !self.rate_routes.is_empty() {
+            self.advance_moving_rates(frames);
+            return;
+        }
         for (lfo, values) in self.lfos.iter_mut().zip(self.now.iter_mut()) {
             // A Key LFO follows each note's own pitch, so each voice works out its own (key_lfo_value).
             let Some(lfo) = lfo.as_mut().filter(|lfo| lfo.ratio.is_none()) else {
@@ -176,6 +193,42 @@ impl LfoBank {
             for value in values.iter_mut().take(frames) {
                 *value = shaped(lfo.shape, lfo.cycles, lfo.step, &self.held);
                 lfo.cycles = (lfo.cycles + lfo.step) % HELD_VALUES as f64;
+            }
+        }
+    }
+
+    /// Work out the chunk ahead where LFOs move each other's rates: a sample at a time, every LFO together, each rate
+    /// moved by octaves from what its sources gave the sample before, so that the order of the LFOs never matters.
+    // Each sample is written into every LFO's own buffer at once, so the sample's index is the plain way to reach them.
+    #[allow(clippy::needless_range_loop)]
+    fn advance_moving_rates(&mut self, frames: usize) {
+        let LfoBank {
+            lfos,
+            held,
+            now,
+            rate_routes,
+            last,
+            ..
+        } = self;
+        for sample in 0..frames {
+            let mut octaves = [0.0; LFO_COUNT];
+            for route in rate_routes.iter() {
+                let mut value = last[route.source] * route.reach + route.offset;
+                if let Some(via) = route.via {
+                    value *= last[via];
+                }
+                octaves[route.target] += value;
+            }
+            for (place, lfo) in lfos.iter_mut().enumerate() {
+                // A Key LFO follows each note's own pitch, so each voice works out its own (key_lfo_value).
+                let Some(lfo) = lfo.as_mut().filter(|lfo| lfo.ratio.is_none()) else {
+                    continue;
+                };
+                let step = lfo.step * octaves[place].exp2();
+                let value = shaped(lfo.shape, lfo.cycles, step, held);
+                now[place][sample] = value;
+                last[place] = value;
+                lfo.cycles = (lfo.cycles + step) % HELD_VALUES as f64;
             }
         }
     }
@@ -288,6 +341,60 @@ pub enum Destination {
     Cutoff,
     Resonance,
     Amp,
+}
+
+/// How many octaves an LFO's rate moves at a route's full amount, up or down.
+const RATE_OCTAVES: f64 = 2.0;
+/// The destinations that move an LFO's rate, by the LFO's place.
+const RATE_DESTINATIONS: [&str; LFO_COUNT] = ["lfo1_rate", "lfo2_rate", "lfo3_rate", "lfo4_rate"];
+/// The LFO sources, by their places.
+const LFO_SOURCES: [&str; LFO_COUNT] = ["lfo1", "lfo2", "lfo3", "lfo4"];
+
+/// A Mod Matrix route that moves an LFO's rate: the LFO it reads, an LFO scaling it or None, the LFO it moves, and how
+/// many octaves it moves at its source's full value. Only an LFO moves a rate, since the LFOs are the instrument's, not a
+/// note's.
+#[derive(Clone, Copy)]
+pub struct RateRoute {
+    source: usize,
+    via: Option<usize>,
+    target: usize,
+    reach: f64,
+    offset: f64,
+}
+
+/// The matrix's routes that move an LFO's rate, from its slots; a route whose source or via is not an LFO moves none.
+pub fn rate_routes(slots: &[Value]) -> Vec<RateRoute> {
+    let lfo_place = |name: &str| LFO_SOURCES.iter().position(|each| *each == name);
+    let mut routes = Vec::new();
+    for slot in slots {
+        let amount = number(slot, "amount", 0.0);
+        let Some(target) = RATE_DESTINATIONS.iter().position(|each| *each == word(slot, "destination", "none")) else {
+            continue;
+        };
+        let Some(source) = lfo_place(word(slot, "source", "none")) else { continue };
+        let via = match word(slot, "via", "none") {
+            "none" => None,
+            name => match lfo_place(name) {
+                Some(place) => Some(place),
+                None => continue,
+            },
+        };
+        if amount == 0.0 {
+            continue;
+        }
+        // A Unipolar route moves the rate from its own to the amount's octaves, never below, as a matrix route does.
+        let reach = amount * RATE_OCTAVES;
+        let unipolar = word(slot, "polarity", "bipolar") == "unipolar";
+        let (reach, offset) = if unipolar { (reach / 2.0, reach / 2.0) } else { (reach, 0.0) };
+        routes.push(RateRoute {
+            source,
+            via,
+            target,
+            reach,
+            offset,
+        });
+    }
+    routes
 }
 
 /// What a CC source is called in a sound: `cc` and its number, such as `cc74`.
@@ -478,6 +585,47 @@ mod tests {
     fn bank(pairs: &[(&str, Value)]) -> LfoBank {
         let spec = Value::Map(pairs.iter().map(|(key, value)| (Value::from(*key), value.clone())).collect());
         LfoBank::compiled(&[spec], RATE)
+    }
+
+    /// The cycles an LFO's values start again in a chunk: each rise through zero.
+    fn rises(values: &[f64]) -> usize {
+        values.windows(2).filter(|pair| pair[0] < 0.0 && pair[1] >= 0.0).count()
+    }
+
+    /// A slot moving an LFO's rate by another LFO doubles it at half the Amount while its source stays at the top: a
+    /// slow square held high doubles a 10 Hz sine's cycles. A slot reading anything but an LFO moves no rate.
+    #[test]
+    fn an_lfo_moves_another_lfos_rate() {
+        let lfo = |shape: &str, hertz: f64| Value::Map(vec![("shape".into(), shape.into()), ("rate".into(), hertz.into())]);
+        let slot = |source: &str, amount: f64| {
+            Value::Map(vec![
+                ("source".into(), source.into()),
+                ("destination".into(), "lfo1_rate".into()),
+                ("amount".into(), amount.into()),
+            ])
+        };
+        let cycles = |slots: Vec<Value>| {
+            // The square at half a hertz holds at its top for its first second, the whole of the half second read.
+            let specs = [lfo("sine", 10.0), lfo("square", 0.5)];
+            let mut bank = LfoBank::compiled(&specs, RATE).with_rate_routes(rate_routes(&slots));
+            let half_second = (RATE / 2.0) as usize;
+            let mut rises_seen = 0;
+            let mut done = 0;
+            while done < half_second {
+                let frames = MOST_FRAMES.min(half_second - done);
+                bank.advance(frames);
+                rises_seen += rises(&bank.now[0][..frames]);
+                done += frames;
+            }
+            rises_seen
+        };
+        let one_octave = 0.5;
+        let cycles_of_10_hertz_in_half_a_second = 5;
+        let still = cycles(Vec::new());
+        let doubled = cycles(vec![slot("lfo2", one_octave)]);
+        assert!((still as i64 - cycles_of_10_hertz_in_half_a_second).abs() <= 1, "{still}");
+        assert!((doubled as i64 - 2 * still as i64).abs() <= 1, "{doubled} against {still}");
+        assert_eq!(cycles(vec![slot("velocity", one_octave)]), still);
     }
 
     /// A Smooth random LFO glides between its random values: no sample jumps as Sample & Hold's steps do.

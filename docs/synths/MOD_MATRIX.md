@@ -13,7 +13,8 @@ and Osc to Amp a ring of AM, on any engine, even one that never had FM. An
 LFO at Very High speed routed to Pitch is the same analog-style FM from a
 second source ([LFOs](LFOS.md)). A Via scales the source by a second one, so
 that, for instance, an LFO moves the cutoff only as far as the note is loud.
-Moves is what it moves, Pitch, Pulse width, Detune, Cutoff, Resonance or Amp,
+Moves is what it moves, Pitch, Pulse width, Detune, Cutoff, Resonance, Amp or
+an LFO's rate,
 and Amount how far, either way, as a share of what it moves. LFO 1 to Pitch is
 vibrato, with a Square shape and a large Amount a chip trill; Velocity to
 Cutoff makes harder notes brighter; Random to Detune makes each note a little
@@ -26,6 +27,21 @@ from nothing to the Amount, so that an LFO on the Cutoff only ever opens the
 filter from where it is set, never closes it. The Amount shows the range it
 gives, such as `-30% to +30%` or `0% to +30%`; a source that only rises, such
 as an envelope or Velocity, always moves from nothing to the Amount.
+
+## LFO Rates
+
+An LFO can speed up and slow down another, the way a player turns a
+vibrato's speed knob while holding a note. Moves also offers LFO 1 rate to
+LFO 4 rate. A slot whose Source is an LFO moves that LFO's rate by up to two
+octaves either way at its full Amount: 50% doubles it at the source's top and
+halves it at its bottom. LFO 2, a slow sine, into LFO 1 rate makes LFO 1's
+vibrato quicken and relax in waves; an LFO into its own rate bends its shape,
+racing through one half of its cycle and lingering in the other. Unipolar
+only ever speeds the rate up. A Via scales the route as elsewhere, by another
+LFO. The LFOs belong to the whole instrument, not to a note, so only an LFO
+moves a rate: a slot reading an envelope, Velocity, Key, Random, an oscillator
+or a CC into a rate, or scaling it by one of them, moves nothing. An LFO
+following the key keeps its ratio to the note and is not moved.
 
 ## MIDI CC Sources
 

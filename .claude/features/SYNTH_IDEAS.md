@@ -17,8 +17,6 @@ The professor's research is in `.claude/notes/synthesis/`.
   major up a degree in C major is D minor); a tied or glided note keeps the note it started on; a CC goes out ahead of
   its step's notes, only when its value changes, at most every 1/64 note, how often a setting of the MIDI tab with a
   default chosen from research into what devices handle.
-- **Modulators moving each other's rates**: a modulator as a Mod Matrix source for another's Rate, so that one LFO
-  speeds and slows another, rates only for now.
 - **Demos of the new modulators**: a demo for each new kind as it is built, LFO+ (Fade in, Tempo, Smooth random), Snail,
   Chaos, Tide, Turing, Bounce and Swarm, each made to show what the modulator does to music, and kept to the synth demos'
   rules (DEMO_IDEAS.md).

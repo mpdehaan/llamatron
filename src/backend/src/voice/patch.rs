@@ -238,7 +238,7 @@ impl Patch {
             glides: truth(spec, "glides", true),
             glide: number(spec, "glide", 0.0),
             effects: effects::compiled(list(spec, "effects"), rate),
-            lfos: LfoBank::compiled(list(spec, "lfos"), rate),
+            lfos: LfoBank::compiled(list(spec, "lfos"), rate).with_rate_routes(modulation::rate_routes(list(spec, "matrix"))),
             buffer: vec![0.0; MOST_FRAMES],
             used: false,
             controls: [0.0; CONTROL_COUNT],
