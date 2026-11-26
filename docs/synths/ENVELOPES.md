@@ -98,6 +98,12 @@ each hit is: below full, each hit draws its own small differences in rise,
 fall and brightness from a seeded random source, the same at every playing,
 and the room's slowly changing warmth drifts them further.
 
+The cell also remembers its light over a longer time, as a real one does. Kept
+lit, it tires within a second or so and answers each strike more slowly, up to
+twice as slowly; left dark for a minute or more, it rests and is quick again.
+A passage played hard softens its attacks as it goes on, and the first notes
+after a rest snap. A gated note tires the cell for as long as it is held.
+
 ## Acid Gate
 
 ![An acid gate on Env 1](../screenshots/envelope_acid_gate.svg)

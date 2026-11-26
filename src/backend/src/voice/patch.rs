@@ -53,6 +53,8 @@ pub struct Voice {
     random: f64,
     accent_depth: f64,
     short_decay: Option<f64>,
+    /// Whether the voice's release has been told to its instrument's envelope memories.
+    release_told: bool,
 }
 
 impl Voice {
@@ -76,6 +78,7 @@ impl Voice {
             random: 0.0,
             accent_depth: 0.0,
             short_decay: None,
+            release_told: false,
         }
     }
 }
@@ -275,6 +278,15 @@ impl Patch {
         let count = frames - offset;
         let rate = self.rate;
         if let Some(released) = voice.release_at {
+            if !voice.release_told {
+                voice.release_told = true;
+                if let Sound::Modular(modular) = &mut self.sound {
+                    let (began, ended) = (voice.start as f64 / rate, released as f64 / rate);
+                    for memory in modular.memory.iter_mut() {
+                        memory.note_released(began, ended);
+                    }
+                }
+            }
             if voice.cut_at.is_none() && (start - released) as f64 > LONGEST_RING_SECONDS * rate {
                 voice.cut_at = Some(start);
             }

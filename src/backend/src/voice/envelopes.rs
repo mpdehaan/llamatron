@@ -132,7 +132,33 @@ pub struct EnvelopeMemory {
     pub hits: u64,
     /// The vactrol's last note: its state as it started, and when, from which its light at any later moment is worked out.
     pub last_note: Option<(EnvelopeState, f64)>,
+    /// The vactrol cell's light history, 0 when rested to 1 when long lit, and when it was last worked out.
+    pub history: f64,
+    pub history_at: f64,
+    /// When the vactrol's last note was released, once it has been, in seconds on the voice's clock.
+    pub released_at: Option<f64>,
 }
+
+impl EnvelopeMemory {
+    /// A note that began at a time was released at another: kept when it is the last note, so that a gated vactrol
+    /// knows how long its light was held.
+    pub fn note_released(&mut self, began: f64, released: f64) {
+        if self.last_note.is_some_and(|(_, last_began)| last_began == began) {
+            self.released_at = Some(released);
+        }
+    }
+}
+
+// The light history of a cadmium-sulfide cell, after the vactrol of Mutable Instruments' Streams (streams/vactrol.cc,
+// Emilie Gillet, 2014, MIT license): a cell kept lit grows less sensitive within about a second and recovers over about a
+// minute in the dark, so a cell played hard answers more slowly than a rested one. The implementation is our own: the
+// history is charged by how long each note kept the cell lit, and slows the next note's rise.
+/// How fast the cell tires under light, and how slowly it rests in the dark, in seconds.
+const TIRING_SECONDS: f64 = 1.0;
+const RESTING_SECONDS: f64 = 60.0;
+/// How much slower a fully tired cell rises than a rested one: twice as slow (Streams goes as far as five times, which
+/// blurs a pluck; this keeps the effect a character, not a change of sound).
+const TIRED_SLOWER: f64 = 1.0;
 
 /// The envelope type that is no envelope, which Env2 and Env3 may hold.
 const OFF: &str = "none";
@@ -294,13 +320,23 @@ impl EnvelopePart {
                 // held is taken as lit until now.
                 if let Some((mut last, began)) = memory.last_note {
                     let age = (seconds - began).max(0.0);
+                    // A gated note was held until its release, or until now if it is still held.
+                    let held = memory.released_at.map_or(age, |released| (released - began).clamp(0.0, age));
                     let note = NoteTime {
                         age,
-                        released: gated.then_some(age),
+                        released: gated.then_some(held),
                     };
                     memory.left = vactrol_level(&mut last, note, *gated, *width, *full) * full;
                     memory.left_at = seconds;
+                    // The last note lit the cell while held, or for its strike, and on through its fall.
+                    let lit = if *gated { held } else { *width };
+                    let active = age.min(lit + *fall);
+                    memory.history *= (-(began - memory.history_at).max(0.0) / RESTING_SECONDS).exp();
+                    memory.history += (1.0 - memory.history) * (1.0 - (-active / TIRING_SECONDS).exp());
+                    memory.history_at = began + active;
                 }
+                memory.history *= (-(seconds - memory.history_at).max(0.0) / RESTING_SECONDS).exp();
+                memory.history_at = seconds;
                 let since = (seconds - memory.left_at).max(0.0);
                 let hyperbola = (1.0 / FALL_TO - 1.0) / fall;
                 state.start_level = keep * fallen(memory.left, since, hyperbola);
@@ -313,10 +349,12 @@ impl EnvelopePart {
                     light = (light * (unstable.2 * third).exp()).min(MOST_LIGHT_SPREAD);
                 }
                 memory.hits += 1;
+                rise *= 1.0 + TIRED_SLOWER * memory.history;
                 state.drive = (velocity * light).max(WEAKEST_DRIVE);
                 state.rise = rise * state.drive.powf(-RISE_POWER);
                 state.hyperbola = (1.0 / FALL_TO - 1.0) / fall;
                 memory.last_note = Some((state, seconds));
+                memory.released_at = None;
                 (state, 0.0, None)
             }
             EnvelopePart::AcidGate {
@@ -634,5 +672,27 @@ mod tests {
             })
             .fold(0.0_f64, f64::max);
         assert!((peak - 1.0).abs() < 0.05);
+    }
+
+    /// A cell played hard tires: after a run of held notes it rises more slowly than when rested, and a minute and more of
+    /// rest brings it back.
+    #[test]
+    fn a_vactrol_played_hard_rises_more_slowly_and_recovers_at_rest() {
+        let part = compiled(&spec(&[("type", "vactrol".into()), ("drive", "gate".into()), ("memory", 0.0.into())]), 0.0);
+        let mut memory = EnvelopeMemory::default();
+        let (rested, _, _) = part.start(&mut memory, 1.0, 0.0);
+        let (held, apart) = (1.0, 1.5);
+        let notes = 8;
+        memory.note_released(0.0, held);
+        let mut tired = rested;
+        for note in 1..=notes {
+            let began = note as f64 * apart;
+            tired = part.start(&mut memory, 1.0, began).0;
+            memory.note_released(began, began + held);
+        }
+        assert!(tired.rise > rested.rise * 1.5, "a tired cell rises more slowly");
+        let long_rest = 600.0;
+        let (recovered, _, _) = part.start(&mut memory, 1.0, notes as f64 * apart + held + long_rest);
+        assert!(recovered.rise < rested.rise * 1.05, "a rested cell rises as fast as before");
     }
 }
