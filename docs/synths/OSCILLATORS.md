@@ -50,7 +50,8 @@ moved by the newest note, as on a paraphonic synth.
 
 An instrument of one voice slides only where two notes overlap: a note that
 starts while the last is still held slides to its pitch over the Glide time,
-its envelopes going on, as a monosynth plays legato. With Glide off, every
+its envelopes going on, as a monosynth plays legato: a slid note restarts
+neither its amp envelope nor its filter's, on every engine. With Glide off, every
 note is struck afresh and the pattern's glided steps are ignored. Notes that
 only touch,
 one ending as the next starts, never slide; each is struck afresh. A step's

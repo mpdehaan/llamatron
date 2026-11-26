@@ -459,6 +459,15 @@ impl Engine {
         self.instruments[instrument] = Some(patch);
     }
 
+    /// The voices still sounding, each its number and pitch, in the order they began: what a test of sliding reads.
+    pub fn sounding(&self) -> Vec<(u64, f64)> {
+        self.voices
+            .iter()
+            .filter(|voice| voice.cut_at.is_none())
+            .map(|voice| (voice.id, voice.pitch))
+            .collect()
+    }
+
     /// Whether a held note's end is due with a new note's start, within OVERLAP_TOLERANCE_SECONDS after it, and so taken
     /// out of the queue as having come first. Live, each message's moment becomes a sample by the clock of the audio
     /// callback that takes it, so an end and the next start written for one instant can land a few samples apart, the

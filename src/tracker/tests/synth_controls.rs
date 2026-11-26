@@ -367,3 +367,43 @@ fn a_midi_cc_in_the_matrix_moves_its_destination() {
         "a CC the matrix does not read changes nothing"
     );
 }
+
+/// On every engine but the drums, a one-voice instrument slides into an overlapping note on the voice it was playing,
+/// its pitch moved and nothing struck again: a glided step never restarts the amp envelope or the filter's (the user's
+/// rule for every synth). The first note's voice is the one still sounding, at the second note's pitch.
+#[test]
+fn every_engine_slides_a_glided_step_without_striking_it_again() {
+    let (first, second) = (PITCH, PITCH + 7.0);
+    let held = (HELD_SECONDS * RATE) as i64;
+    let overlap = (OVERLAP_SECONDS * RATE) as i64;
+    let first_voice = 1;
+    for engine_name in llamatron_model::schema::generated::file_format::SOUND_ENGINES
+        .iter()
+        .filter(|name| **name != "drum")
+    {
+        let instrument = instrument(&format!("{{ engine: {engine_name}, voices: 1, glide: 60 }}"));
+        let spec = llamatron_tracker::sound_spec::synth_spec(&Sound::of(&instrument), DRUMS_FROM);
+        let value = llamatron_tracker::msgpack::value_of(&spec);
+        let mut engine = llamatron_backend::engine::Engine::new(RATE, None);
+        engine.set_instrument(0, Box::new(Patch::compiled(&value, RATE)));
+        let note = |sample: i64, kind: i64, pitch: f64| llamatron_backend::engine::Event {
+            sample,
+            order: 0,
+            kind,
+            instrument: 0,
+            pitch,
+            velocity: VELOCITY * 127.0,
+            hit: None,
+        };
+        engine.schedule(note(0, llamatron_backend::engine::NOTE_ON, first));
+        engine.schedule(note(held, llamatron_backend::engine::NOTE_ON, second));
+        engine.schedule(note(held + overlap, llamatron_backend::engine::NOTE_OFF, first));
+        let (mut left, mut right) = (vec![0.0; CHUNK], vec![0.0; CHUNK]);
+        let mut start = 0;
+        while start < held + 2 * overlap {
+            engine.render(start, &mut left, &mut right);
+            start += CHUNK as i64;
+        }
+        assert_eq!(engine.sounding(), vec![(first_voice, second)], "{engine_name} slides on its first voice");
+    }
+}
