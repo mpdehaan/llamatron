@@ -435,7 +435,9 @@ fn in_a_box(lines: &[Text], selected: Option<usize>, width: usize, height: usize
     let edge = Box::RULE.repeat(width + INSET.len() * SIDES);
     let mut boxed = vec![Text::styled(&format!("{}{edge}{}", Box::TOP_LEFT, Box::TOP_RIGHT), Style::DIM)];
     for row in 0..height {
-        let mut line = Text::styled(&format!("{}{INSET}", Box::BAR), Style::DIM);
+        // The bar alone is dim: a line made styled would dim everything appended to it, the fields in the box too.
+        let mut line = Text::default();
+        line.append(&format!("{}{INSET}", Box::BAR), Style::DIM);
         let part = lines.get(row).cloned().unwrap_or_default();
         let used = part.cell_len();
         line.append_text(&part);
@@ -675,4 +677,33 @@ fn tabs_shown(tabs: &[Tab], chosen: usize, width: usize) -> (Vec<(String, bool)>
         shown.push((marks::MSG_TABS_HIDDEN_AFTER.to_string(), false));
     }
     (shown, shown_chosen)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::forms::tab_box::TabColumn;
+
+    /// A boxed column dims its box alone: the fields inside are drawn as any field is, never greyed out with the edges.
+    #[test]
+    fn a_boxed_column_dims_its_edges_but_not_its_fields() {
+        let label = "LFO 1";
+        let mut column = TabColumn::new(None, vec![Field::toggle(1, label, false)]);
+        column.boxed = true;
+        let tab = Tab::new("LFOs", vec![column]);
+        let looks = Looks { cell: 0, open: &|_| false };
+        let wide = 80;
+        let drawn = drawn_columns(&looks, &tab, wide, None);
+        let line = drawn[0].0.iter().find(|line| line.text().contains(label)).expect("the field's line");
+        let dimmed = |segment: &crate::text::Segment| segment.style.is_on("dim");
+        let segments = line.segments();
+        assert!(
+            segments.iter().filter(|segment| segment.text.contains(label)).all(|segment| !dimmed(segment)),
+            "the label is not dim"
+        );
+        assert!(
+            segments.iter().any(|segment| segment.text.contains(Box::BAR) && dimmed(segment)),
+            "the box's bar is"
+        );
+    }
 }
