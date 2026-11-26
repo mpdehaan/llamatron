@@ -95,6 +95,18 @@ impl Voice {
         }
     }
 
+    /// What a gate reads of this voice's note at a sample: how far into the note, its pitch and level, and the cutoff
+    /// moved in octaves.
+    #[inline]
+    fn gate_note(&self, sample: i64, octaves: f64) -> GateNote {
+        GateNote {
+            place: (sample - self.start) as f64,
+            pitch: self.pitch,
+            level: self.level,
+            octaves,
+        }
+    }
+
     pub fn new(id: u64, instrument: usize, pitch: f64, start: i64, level: f64, hit: Option<Hit>) -> Voice {
         Voice {
             id,
@@ -385,6 +397,9 @@ impl Patch {
         // The oscillator is needed unless the first gate the sound meets is fed a ping alone.
         let first_gate = modular.gates[FILTER_GATE].as_ref().or(modular.gates[AMP_GATE].as_ref());
         let wants_oscillator = first_gate.is_none_or(|gate| gate.feeds_oscillator);
+        // The envelopes' levels with velocity, which light a gate, worked out only where a gate stands, so that the
+        // many voices with none pay nothing for it.
+        let lit_of = |levels: &[f64; 3]| -> [f64; 3] { std::array::from_fn(|place| levels[place] * velocity_of[place]) };
         let key = (voice.pitch - MIDDLE_C) / KEY_SPAN;
         let mut sources = Sources {
             velocity: voice.level,
@@ -446,15 +461,9 @@ impl Patch {
                     voice.silent = true;
                 }
             }
-            let lit: [f64; 3] = std::array::from_fn(|place| sources.envelopes[place] * velocity_of[place]);
-            let gate_note = GateNote {
-                place: (sample - voice.start) as f64,
-                pitch: voice.pitch,
-                level: voice.level,
-                octaves: moved.cutoff,
-            };
             if let Some(gate) = &modular.gates[FILTER_GATE] {
-                let light = gate.light(&mut voice.gates[FILTER_GATE], note, &lit);
+                let gate_note = voice.gate_note(sample, moved.cutoff);
+                let light = gate.light(&mut voice.gates[FILTER_GATE], note, &lit_of(&sources.envelopes));
                 wave = gate.process(&mut voice.gates[FILTER_GATE], wave, light, gate_note);
             } else if let Some(filter) = &modular.filter {
                 let mut octaves = sources.envelopes[1] * (filter.amount + voice.accent_depth) * ENVELOPE_OCTAVES + moved.cutoff;
@@ -471,10 +480,11 @@ impl Patch {
             let moved_amp = if moved.amp != 0.0 { (1.0 + moved.amp).clamp(0.0, MOST_AMP) } else { 1.0 };
             let out = match &modular.gates[AMP_GATE] {
                 Some(gate) => {
-                    let light = gate.light(&mut voice.gates[AMP_GATE], note, &lit);
+                    let gate_note = voice.gate_note(sample, moved.cutoff);
+                    let light = gate.light(&mut voice.gates[AMP_GATE], note, &lit_of(&sources.envelopes));
                     gate.process(&mut voice.gates[AMP_GATE], wave, light, gate_note) * moved_amp
                 }
-                None => modular.amp.process(wave, lit[0], moved_amp),
+                None => modular.amp.process(wave, sources.envelopes[0] * velocity_of[0], moved_amp),
             };
             buffer[offset + place] += out as f32;
         }
