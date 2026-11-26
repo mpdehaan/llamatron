@@ -4,8 +4,8 @@
 
 """Download the corpus into output/corpus/, which git ignores, for study on this computer, run by user_scripts/fetch_corpus.sh:
 the public domain scores and folk collections, from their editors' repositories, the Public Domain Song
-Anthology, the Session's and Nottingham's folk tunes and the Mutopia Project's scores: public domain music only. Nothing
-downloaded is committed or passed on; the song wizard's music theory was measured from
+Anthology and the Session's traditional tunes: public domain music only, in files that carry no restricting licence of
+their own. Nothing downloaded is committed or passed on; the song wizard's music theory was measured from
 it, and the song wizard is to import songs from it where it is downloaded. Only the files a collection needs are kept,
 sparing the connection: an archive comes in one download with its other files dropped, the smaller score collections a
 file at a time with a pause between, a database as one file. A file already downloaded isn't downloaded again, a download
@@ -13,7 +13,7 @@ past the size allowed is refused, and no archive member may land outside its fol
 
     sh user_scripts/fetch_corpus.sh                 asks collection by collection, saying each one's size and terms
     sh user_scripts/fetch_corpus.sh --all           every collection, without asking
-    sh user_scripts/fetch_corpus.sh joplin essen    only the named ones, by their folders
+    sh user_scripts/fetch_corpus.sh joplin thesession    only the named ones, by their folders
 """
 
 import io
@@ -42,7 +42,6 @@ FILES = 'files'
 ZIP = 'zip'
 SINGLE = 'single'
 DATAVERSE = 'dataverse'
-MUTOPIA = 'mutopia'
 MEGABYTE = 1000 * 1000
 DATAVERSE_FILES = '{server}/api/datasets/:persistentId/?persistentId={doi}'
 DATAVERSE_FILE = '{server}/api/access/datafile/{id}'
@@ -51,14 +50,12 @@ RAW = 'https://raw.githubusercontent.com/{repository}/{branch}/{path}'
 TARBALL = 'https://codeload.github.com/{repository}/tar.gz/{branch}'
 # Each score collection on GitHub: its folder under output/corpus/, how it comes, its repository and branch.
 COLLECTIONS = (
-    ('essen', ARCHIVE, 'ccarh/essen-folksong-collection', 'main'),
     ('joplin', FILES, 'craigsapp/joplin', 'main'),
     ('chopin-mazurkas', FILES, 'craigsapp/chopin-mazurkas', 'main'),
     ('haydn-piano-sonatas', FILES, 'craigsapp/haydn-piano-sonatas', 'master'),
     ('mozart-piano-sonatas', FILES, 'craigsapp/mozart-piano-sonatas', 'main'),
     ('beethoven-string-quartets', FILES, 'craigsapp/beethoven-string-quartets', 'main'),
     ('beethoven-piano-sonatas', FILES, 'craigsapp/beethoven-piano-sonatas', 'main'),
-    ('bach-chorales', FILES, 'craigsapp/bach-370-chorales', 'main'),
     ('bach-art-of-fugue', FILES, 'craigsapp/art-of-the-fugue', 'main'),
     ('vivaldi-op6', FILES, 'craigsapp/vivaldi-op6', 'main'),
 )
@@ -67,30 +64,19 @@ COLLECTIONS = (
 OTHER_SOURCES = (
     ('song-anthology', DATAVERSE, 'https://dataverse.lib.virginia.edu doi:10.18130/V3/C4RD06', ('.xml',), 30, 'CC0, waived by David Berger and Chuck Israels'),
     ('thesession', SINGLE, 'https://raw.githubusercontent.com/adactio/TheSession-data/main/json/tunes.json', ('.json',), 30, 'published openly by the Session for reuse'),
-    ('nottingham', ARCHIVE, 'https://codeload.github.com/jukedeck/nottingham-dataset/tar.gz/master', ('.abc',), 5, 'GPL-3.0'),
-    ('mutopia', MUTOPIA, 'https://www.mutopiaproject.org/cgibin/make-table.cgi?Composer={composer}&preview=1', ('.mid',), 30,
-     'public domain or Creative Commons, piece by piece; MIDI made from the engraved scores'),
 )
-# The composers sampled from the Mutopia Project, by its codes, across the periods from the Renaissance to early American music,
-# and how many pieces of each (120 B): a diverse classical sample of MIDI made from engraved scores.
-MUTOPIA_COMPOSERS = ('DowlandJ', 'GesualdoC', 'GibbonsO', 'JanequinC', 'BachJS', 'HandelGF', 'CorelliA', 'CouperinF', 'BuxtehudeD', 'CharpentierMA',
-                     'FrobergerJJ', 'HaydnFJ', 'MozartWA', 'BeethovenLv', 'ClementiM', 'DiabelliA', 'ChopinFF', 'SchubertF', 'SchumannR', 'BrahmsJ',
-                     'LisztF', 'GriegE', 'DvorakA', 'FaureG', 'FranckC', 'ElgarE', 'BrucknerA', 'MendelssohnFB', 'TchaikovskyPI', 'DebussyC',
-                     'SatieE', 'BartokB', 'HolstGT', 'JoplinS', 'FosterSC', 'GottschalkLM', 'SousaJP', 'GiulianiM', 'CarulliF', 'BachCPE')
-MUTOPIA_PIECES = 6
-MUTOPIA_LINK = 'href="(https://www.mutopiaproject.org/ftp/[^"]+\\.mid)"'
 # The most each score collection comes to, in megabytes, and the terms they share.
-COLLECTION_MEGABYTES = {'essen': 35, 'joplin': 1, 'chopin-mazurkas': 1, 'haydn-piano-sonatas': 1, 'mozart-piano-sonatas': 2, 'beethoven-string-quartets': 4,
-                        'beethoven-piano-sonatas': 3, 'bach-chorales': 2, 'bach-art-of-fugue': 1, 'vivaldi-op6': 1}
+COLLECTION_MEGABYTES = {'joplin': 1, 'chopin-mazurkas': 1, 'haydn-piano-sonatas': 1, 'mozart-piano-sonatas': 2, 'beethoven-string-quartets': 4,
+                        'beethoven-piano-sonatas': 3, 'bach-art-of-fugue': 1, 'vivaldi-op6': 1}
 COLLECTION_TERMS = 'public-domain music; the encodings their editors\', for study'
 # The sources by category, each with what it is, so that a person chooses what to download: the title, a line about it, and
 # the sources' folders.
 CATEGORIES = (
     ('Public-domain scores', 'engraved or encoded scores of music out of copyright: rags, mazurkas, sonatas, old songs',
-     ('joplin', 'chopin-mazurkas', 'haydn-piano-sonatas', 'mozart-piano-sonatas', 'mutopia', 'song-anthology')),
-    ('Public-domain chamber, choral and keyboard scores', 'string quartets, four-part chorales, fugues and concertos, so that the classical corpus is not all piano',
-     ('beethoven-string-quartets', 'beethoven-piano-sonatas', 'bach-chorales', 'bach-art-of-fugue', 'vivaldi-op6')),
-    ('Folk tunes', 'single-line traditional tunes, many transcribed by players', ('essen', 'thesession', 'nottingham')),
+     ('joplin', 'chopin-mazurkas', 'haydn-piano-sonatas', 'mozart-piano-sonatas', 'song-anthology')),
+    ('Public-domain chamber and keyboard scores', 'string quartets, sonatas, fugues and concertos, so that the classical corpus is not all piano',
+     ('beethoven-string-quartets', 'beethoven-piano-sonatas', 'bach-art-of-fugue', 'vivaldi-op6')),
+    ('Folk tunes', 'single-line traditional tunes, many transcribed by players', ('thesession',)),
 )
 EVERYTHING = '--all'
 YES = ('y', 'yes')
@@ -171,42 +157,12 @@ def fetch_dataverse(*, folder, address, endings, allowed):
     return len(wanted)
 
 
-def fetch_mutopia(*, folder, address, allowed):
-    """Fetch a sample of the Mutopia Project's MIDI files: up to MUTOPIA_PIECES of each composer named, spread through the
-    composer's table, a file at a time with a pause between, skipping any already here."""
-    count = 0
-    total = 0
-    for composer in MUTOPIA_COMPOSERS:
-        with opened(address.format(composer=composer)) as response:
-            page = response.read().decode(errors='replace')
-        links = list(dict.fromkeys(re.findall(MUTOPIA_LINK, page)))
-        step = max(1, len(links) // MUTOPIA_PIECES)
-        for link in links[::step][:MUTOPIA_PIECES]:
-            target = folder / composer / pathlib.PurePosixPath(link).name
-            if not target.exists():
-                try:
-                    data = downloaded(link, allowed=allowed)
-                except urllib.error.HTTPError:
-                    continue
-                total += len(data)
-                if total > allowed:
-                    raise SystemExit(TOO_BIG.format(size=total, allowed=allowed))
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(data)
-                time.sleep(PAUSE_SECONDS)
-            count += 1
-        time.sleep(PAUSE_SECONDS)
-    return count
-
-
 def fetch_source(*, folder, kind, url, endings, allowed=ALLOWED_BYTES):
-    """Download one of the public domain sources that is not a score collection on GitHub (the Song Anthology, the Session's
-    tunes, the Nottingham tunes, the Mutopia Project's scores): a single file saved under its own name, the kept files of
+    """Download one of the public domain sources that is not a score collection on GitHub (the Song Anthology or the
+    Session's tunes): a single file saved under its own name, the kept files of
     a Dataverse record, or an archive with only the files whose endings are kept, each member's path checked."""
     if kind == DATAVERSE:
         return fetch_dataverse(folder=folder, address=url, endings=endings, allowed=allowed)
-    if kind == MUTOPIA:
-        return fetch_mutopia(folder=folder, address=url, allowed=allowed)
     if kind == SINGLE:
         target = folder / pathlib.PurePosixPath(url.split('?')[0]).name
         if not target.exists():

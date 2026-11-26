@@ -149,7 +149,7 @@ folder.
 
 ```
 sh user_scripts/fetch_corpus.sh
-sh user_scripts/fetch_corpus.sh joplin essen
+sh user_scripts/fetch_corpus.sh joplin thesession
 sh user_scripts/fetch_corpus.sh --all
 ```
 

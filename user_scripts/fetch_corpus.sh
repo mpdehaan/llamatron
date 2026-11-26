@@ -9,7 +9,7 @@
 # computer only in output/corpus/, which git ignores:
 #
 #     sh user_scripts/fetch_corpus.sh                  # asks collection by collection, with each one's size and terms
-#     sh user_scripts/fetch_corpus.sh joplin essen     # only the named collections, by their folders
+#     sh user_scripts/fetch_corpus.sh joplin thesession     # only the named collections, by their folders
 #     sh user_scripts/fetch_corpus.sh --all            # every collection, without asking
 #
 # docs/CREDITS.md lists each collection, its link, its terms and its folder.
