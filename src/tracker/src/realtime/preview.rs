@@ -575,9 +575,16 @@ fn pattern_route(document: &Document, pattern: &str) -> Route {
     if document.get_setlist().get_pattern(pattern).is_some_and(|held| held.is_drum()) {
         return fluid(DRUM_CHANNEL, None);
     }
-    let Some(held) = PatternPreview::instrument_of(document, pattern).and_then(|name| instrument(document, &name).cloned()) else {
+    let Some(name) = PatternPreview::instrument_of(document, pattern) else {
         return fluid(PREVIEW_CHANNEL, Some(PIANO_PROGRAM));
     };
+    let Some(held) = instrument(document, &name).cloned() else {
+        return fluid(PREVIEW_CHANNEL, Some(PIANO_PROGRAM));
+    };
+    // A built-in instrument has no device: it plays on a built-in port, the only one the preview uses.
+    if crate::realtime::transport::is_built_in(&held) {
+        return crate::realtime::transport::built_in_route(&name, 0);
+    }
     let device = device_of(&held).unwrap_or_default();
     if device == FLUIDSYNTH_DEVICE {
         let sound = held
@@ -624,5 +631,23 @@ fn clip_route(document: &Document, index: usize, track: &str) -> Route {
         keyswitches: false,
         sound: None,
         early: 0.0,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A song whose Preview instrument is a built-in synth, and a pattern to listen to.
+    const BUILT_IN_PREVIEW_SET: &str = "scales:\n  - { name: C Major, root: C, type: major }\ninstruments:\n  - { name: lead synth, kind: built_in, role: normal, sound: { engine: fishline } }\npatterns:\n  tune: { steps: 4, rows: { degree: [1, 2, 3, 4] } }\nsongs:\n  - name: song\n    scale: C Major\n    preview_instrument: lead synth\n    tracks: [{ name: lead }]\n    scenes: [{ name: one }]\n";
+
+    /// Listening to a pattern through a built-in Preview instrument plays that synth, not a port with no name.
+    #[test]
+    fn a_pattern_listens_through_a_built_in_preview_instrument() {
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(BUILT_IN_PREVIEW_SET, None).expect("the scenario's set is valid");
+        let document = Document::new(setlist, None);
+        let route = pattern_route(&document, "tune");
+        assert_eq!(route.sound.as_deref(), Some("lead synth"));
+        assert!(!route.port.is_empty());
     }
 }

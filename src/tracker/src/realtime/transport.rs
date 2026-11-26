@@ -659,21 +659,22 @@ pub fn routes(document: &Document, instead: &[(String, String)]) -> Vec<(String,
             numbers.push(name.clone());
             numbers.len() - 1
         });
-        let port = format!("{BUILT_IN_PORT_PREFIX} {}", number / INSTRUMENTS_PER_PORT);
-        let channel = (number % INSTRUMENTS_PER_PORT) as i64;
-        routes.push((
-            track,
-            Route {
-                port,
-                channel,
-                program: None,
-                keyswitches: false,
-                sound: Some(name),
-                early: 0.0,
-            },
-        ));
+        routes.push((track, built_in_route(&name, number)));
     }
     routes
+}
+
+/// The route a built-in instrument plays through, the number-th the play uses: a channel of a built-in port, carrying the
+/// instrument's name so that the backend compiles its sound.
+pub fn built_in_route(name: &str, number: usize) -> Route {
+    Route {
+        port: format!("{BUILT_IN_PORT_PREFIX} {}", number / INSTRUMENTS_PER_PORT),
+        channel: (number % INSTRUMENTS_PER_PORT) as i64,
+        program: None,
+        keyswitches: false,
+        sound: Some(name.to_string()),
+        early: 0.0,
+    }
 }
 
 /// The sound each built-in route's port and channel plays, as the backend compiles it.
