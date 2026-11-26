@@ -2167,8 +2167,8 @@
 - title: "The website, what's left"
   priority: 80
   text: |
-    The site builds from `docs/GUIDE.md` and `docs/` with VitePress and is published from the committed
-    `web_docs/` by `internal_tools/publish_docs.sh`, as the `gh-pages` branch. Still to do:
+    The site builds from `docs/GUIDE.md` and `docs/` with VitePress and is built into
+    `output/web_docs/`, which git ignores, and published by `internal_tools/publish_docs.sh`, as the `gh-pages` branch. Still to do:
     - A landing page with a hero section and feature cards, in place of the guide's opening as the front
       page, which would need new text the user writes or confirms.
     - "Edit this page on GitHub" links, VitePress's `editLink`, pointing at each Markdown source.
@@ -2177,11 +2177,7 @@
       need the staging to rename the pages and rewrite the links.
     - Links from the documents to files in the repository, like `examples/by_genre/electronic/edm_density.yml`, are dead on
       the site and ignored (`ignoreDeadLinks`); the staging could point them at the files on GitHub.
-    - A check that `web_docs/` was rebuilt after a change to the documents: a test can't run VitePress, but
-      the staging could write a hash of its sources into the site for a test to compare.
     - The screenshots are light SVGs, which look harsh in the site's dark mode.
-    - `web_docs/` is about 6.4 MB of built files in git, since the user chose to commit the build rather
-      than build it on GitHub; building in the workflow instead would drop them.
     - Mermaid makes VitePress warn of a large bundle; loading it only on the pages with diagrams would help.
     - A look through the site in a browser for anything that renders oddly.
 
