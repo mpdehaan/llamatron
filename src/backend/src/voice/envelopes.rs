@@ -383,7 +383,7 @@ impl EnvelopePart {
                 memory.history_at = seconds;
                 let since = (seconds - memory.left_at).max(0.0);
                 let hyperbola = (1.0 / FALL_TO - 1.0) / fall;
-                state.start_level = keep * fallen(memory.left, since, hyperbola);
+                state.start_level = keep * fallen_scaled(memory.left, since, hyperbola, *full);
                 let (mut rise, mut fall, mut light) = (*rise, *fall, *light);
                 if unstable.0 > 0.0 || unstable.1 > 0.0 || unstable.2 > 0.0 {
                     let (first, second, third) = hit_normals(memory.hits);
@@ -532,7 +532,7 @@ fn vactrol_level(state: &mut EnvelopeState, note: NoteTime, gated: bool, width: 
         rising(note.age)
     } else {
         let peak = rising(lit);
-        let out = fallen(peak, note.age - lit, state.hyperbola);
+        let out = fallen_scaled(peak, note.age - lit, state.hyperbola, full);
         if out < SILENT {
             state.done = true;
         }
@@ -584,6 +584,13 @@ fn chip_level(state: &mut EnvelopeState, note: NoteTime, start_level: f64, pace:
 /// The cell's conductance a time after its light went off: the hyperbolic fall, and a slow leak under its tail.
 fn fallen(level: f64, seconds: f64, hyperbola: f64) -> f64 {
     level / (1.0 + hyperbola * level * seconds) * (-seconds / LEAK_SECONDS).exp()
+}
+
+/// The fall of a light that a strike lit only to a share of full (full, 1 when held), worked out on the light as it is
+/// heard, scaled up to full: the hyperbola falls faster the brighter the cell, so a strike's small real light must fall at
+/// the speed its heard level gives, reaching a tenth at its Fall time whatever its Trigger time.
+fn fallen_scaled(level: f64, seconds: f64, hyperbola: f64, full: f64) -> f64 {
+    fallen(level / full, seconds, hyperbola) * full
 }
 
 /// Three standard normals for a vactrol's hit by its number, the same every playing: splitmix64 through Box-Muller.
@@ -791,6 +798,36 @@ mod tests {
             })
             .fold(0.0_f64, f64::max);
         assert!((peak - 1.0).abs() < 0.05);
+    }
+
+    /// A struck cell falls to a tenth of its peak by its Fall time, whatever its Trigger time: a short strike that lights
+    /// the cell only a little still falls at the speed its heard level gives, as a pluck does.
+    #[test]
+    fn a_struck_vactrol_falls_to_a_tenth_by_its_fall_time() {
+        let fall = 0.25;
+        let at_fall = |strike: f64| {
+            let part = compiled(
+                &spec(&[
+                    ("type", "vactrol".into()),
+                    ("rise", 0.012.into()),
+                    ("fall", fall.into()),
+                    ("strike_width", strike.into()),
+                    ("memory", 0.0.into()),
+                ]),
+                0.0,
+            );
+            let mut memory = EnvelopeMemory::default();
+            let (mut state, _, _) = part.start(&mut memory, 1.0, 0.0);
+            let level_at = |state: &mut EnvelopeState, age: f64| part.level(state, NoteTime { age, released: None }, None);
+            let peak = level_at(&mut state, strike);
+            level_at(&mut state, strike + fall) / peak
+        };
+        // A tenth by the hyperbola, a little under it by the slow leak beneath its tail.
+        let (short_strike, long_strike) = (0.002, 0.02);
+        for strike in [short_strike, long_strike] {
+            let share = at_fall(strike);
+            assert!(share > 0.07 && share < 0.11, "{strike}: {share}");
+        }
     }
 
     /// A cell played hard tires: after a run of held notes it rises more slowly than when rested, and a minute and more of
