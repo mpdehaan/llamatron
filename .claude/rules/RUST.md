@@ -56,6 +56,8 @@ standard a person who does not know Rust can trust: it builds itself, explains i
   comparison harnesses, every example's exports and every page's screen text over a tour of both programs, stand for the
   rest. The retired Python's last outputs stay as a benchmark (`py_legacy/frozen_test_data/`) until llamatron's own baselines
   take over, made again on purpose as the program evolves.
+- An improvement to how a built-in filter sounds MAY be built without asking (the user's standing yes), reported in
+  the recap with what changed and the timing before and after.
 - Behaviour is held, not samples: better synthesis is welcome wherever it suits the instrument (the user's direction),
   chosen and tested on purpose.
 - Timings are measured before and after a change, as the render's are (`.claude/rules/PRINCIPLES.md`, "Headroom is the
