@@ -876,19 +876,6 @@ pub mod GeneratorsPage {
     pub use super::ListPage::DROP;
     pub use super::ListPage::EDIT;
     pub use super::ListPage::MOVE;
-    pub use super::Page::ABOUT;
-    pub use super::Page::BACK;
-    pub use super::Page::EXPORT;
-    pub use super::Page::HELP;
-    use super::*;
-    pub static NEXT_TYPE: Binding = Binding {
-        keys: Keys::Steps {
-            back: &["pageup"],
-            forward: &["pagedown"],
-        },
-        name: "PgUp/PgDn",
-        what: "next type",
-    };
     pub use super::ListPage::RENAME;
     pub use super::ListPage::SEARCH;
     pub use super::ListPage::SEARCH_CANCEL;
@@ -898,17 +885,17 @@ pub mod GeneratorsPage {
     pub use super::ListPage::SEARCH_TYPE;
     pub use super::ListPage::SELECT;
     pub use super::ListPage::SORT;
+    pub use super::Page::ABOUT;
+    pub use super::Page::BACK;
+    pub use super::Page::EXPORT;
+    pub use super::Page::HELP;
     pub use super::Page::OPEN_SET;
     pub use super::Page::QUIT_NOW;
     pub use super::Page::REDO;
     pub use super::Page::SAVE;
     pub use super::Page::SILENCE;
-    pub static TOGGLE_TYPE: Binding = Binding {
-        keys: Keys::Many(&["space", "enter"]),
-        name: "Space/ENTER",
-        what: "toggle",
-    };
     pub use super::Page::UNDO;
+    use super::*;
     pub static EVERYWHERE: &[&Binding] = &[&SAVE, &OPEN_SET, &EXPORT, &SILENCE, &UNDO, &REDO, &HELP, &ABOUT, &QUIT_NOW];
     pub static IN_HELP: &[&Binding] = &[
         &BACK,
@@ -919,13 +906,11 @@ pub mod GeneratorsPage {
         &SEARCH_ERASE,
         &SEARCH_COMPLETE,
         &SEARCH_KEEP,
-        &TOGGLE_TYPE,
         &ADD,
         &EDIT,
         &RENAME,
         &COPY,
         &DELETE,
-        &NEXT_TYPE,
         &SEARCH,
     ];
     pub static IN_LEGEND: &[&Binding] = &[
@@ -937,7 +922,6 @@ pub mod GeneratorsPage {
         &SEARCH_ERASE,
         &SEARCH_COMPLETE,
         &SEARCH_KEEP,
-        &TOGGLE_TYPE,
         &ADD,
         &EDIT,
         &RENAME,

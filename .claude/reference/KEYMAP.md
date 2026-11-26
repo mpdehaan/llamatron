@@ -145,17 +145,11 @@ the place. The keys that work everywhere are listed once:
 
 ## GeneratorsPage
 
-- **closed heading arp**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `A` add · `PgUp/PgDn` next type · `/` search
-- **closed heading chain**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `A` add · `PgUp/PgDn` next type · `/` search
-- **open heading arp**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `A` add · `PgUp/PgDn` next type · `/` search
+- **generator arp**: `ESC` back · `↑↓` move · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `/` search
+- **generator chain**: `ESC` back · `↑↓` move · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `/` search
 - **searching**: `ESC` CANCEL · `↑↓` move · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
-- **plus**: `ESC` back · `ENTER` add · `↑↓` move · `A` add · `PgUp/PgDn` next type · `/` search
-- **open heading chain**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `A` add · `PgUp/PgDn` next type · `/` search
-- **generator arp**: `ESC` back · `↑↓` move · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `PgUp/PgDn` next type · `/` search
-- **generator chain**: `ESC` back · `↑↓` move · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `PgUp/PgDn` next type · `/` search
-- **closed heading chords**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `A` add · `PgUp/PgDn` next type · `/` search
-- **open heading chords**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `A` add · `PgUp/PgDn` next type · `/` search
-- **generator chords**: `ESC` back · `↑↓` move · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `PgUp/PgDn` next type · `/` search
+- **generator chords**: `ESC` back · `↑↓` move · `A` add · `ENTER` edit · `N/F2` rename · `C` copy · `Bksp` delete · `/` search
+- **plus**: `ESC` back · `ENTER` add · `↑↓` move · `A` add · `/` search
 
 
 ## GridChoiceDialog

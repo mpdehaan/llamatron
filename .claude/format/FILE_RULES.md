@@ -507,9 +507,8 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   entry that isn't a generator's kind and a name is dropped), `Setlist.ordered_generators` leaves out entries for generators
   gone and adds any it doesn't name after the rest, kind by kind, a rename keeps a generator's place and a copy comes straight
   after its original (`copy_item`). Nothing in the render reads it, and since the Generators page lists by type, sorted, no page shows or changes it. `tests/engine/generators/test_generator_order.py` tests it.
-- The set's `open_generator_types` (`OPEN_GENERATOR_TYPES` in `model/schema/file_format.py`), a list of kinds of generator, says which
-  types the Generators page shows open; every other type is closed. It is no setting and no part of
-  the set's data, undo or what counts as unsaved; a kind with no generator is forgotten and anything else there is ignored.
+- The set's `open_generator_types`, which said which kinds the Generators page showed open when it had headings, is no longer
+  written; the reader passes over it in an older file, and the next save drops it.
 - The set's `real_time` (`SetlistSetting.REAL_TIME`, default `DEFAULT_REAL_TIME`, false) is the
   main screen's Real Time switch. `Document.add_instrument` turns it on with the first
   instrument, and `delete_named` turns it off with the last.

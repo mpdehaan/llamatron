@@ -1537,8 +1537,7 @@ fn shots() -> Vec<Shot> {
         ),
         // Up from the first scene's name reaches Arrange's corner, and Right the first track's name.
         shot("track_editor", SHOT_SET, keys(&["a", "up", "right", "enter"])),
-        // Space opens the Arpeggiator group, the first on the Generators page.
-        shot("generators", ARP_SET, keys(&["g", "space"])),
+        shot("generators", ARP_SET, keys(&["g"])),
         shot("arp_editor", ARP_SET, to_generator("trill_in_thirds", 0)),
         // Offsets is the sixth setting of an arpeggiator after its Name.
         shot(

@@ -69,22 +69,20 @@ features each one uses.
 ![The Generators page](screenshots/generators.svg)
 
 Press `G` on the main screen for the Generators page, which lists every
-generator of the set under a heading for its type, such as `- Chords (2)`, the
-types and the generators under each sorted by name. Every type is closed until
-opened: Space or `ENTER` on a heading opens and closes its type, the set's
-file keeps which types are open, and `PgUp` and `PgDn` jump between the
-headings. The kinds are the Chain, Arpeggiator, Chords, Drift, Guitarify,
-Hocket, Musician, Phrasing, Shapes and Timing. A generator changes a clip's
-notes when the song plays or exports; to use one, add it to the Generators
-field of a clip, a scene or a track, on its own or in a chain.
+generator of the set in one list sorted by name, with its kind and how many
+chains, clips, scenes and tracks use it. No two generators share a name,
+whatever their kinds. The kinds are the Chain, Arpeggiator, Chords, Drift,
+Guitarify, Hocket, Musician, Phrasing, Shapes and Timing. A generator changes
+a clip's notes when the song plays or exports; to use one, add it to the
+Generators field of a clip, a scene or a track, on its own or in a chain.
 
 | Key | What it does |
 | --- | --- |
 | `A` | Add one: choose its kind, and it is named after the kind and opened |
 | `ENTER` | Edit its settings |
 | `N` or `F2` | Rename it, which updates every chain and list that runs it |
-| `C` | Copy it, the copy coming straight after it |
-| `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it; the list keeps its order when the set is saved |
+| `C` | Copy it, under the next free name |
+| `/` | Search the list as you type: `Tab` completes, `ENTER` keeps your place, `ESC` shows the whole list again |
 | `Bksp` | Delete it after asking; it is taken out of every chain and list that runs it, and the question names up to five |
 
 ## Enabled

@@ -1,8 +1,8 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! The Generators page (the Python screens/generators/generators_page.py and pages/generators.py): every generator of the
-//! set under a heading for its kind, each kind's heading opening and closing it, sorted by name, then + (New).
+//! The Generators page: every generator of the set in one list sorted by name, each with its kind and how often it is used,
+//! then + (New). A set's generators and chains share one list of names, so no two rows share a name.
 
 use crate::app::App;
 use crate::drawing::{Align, Style};
@@ -20,11 +20,17 @@ use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_strings::{labels, marks, messages, named};
 use std::cell::Cell;
 
-const INDENT: &str = "    ";
-const COLUMNS: [ListColumn; 2] = [
+/// The KIND column's width: the longest kind's label and a space.
+const KIND_WIDTH: usize = 12;
+const COLUMNS: [ListColumn; 3] = [
     ListColumn {
         heading: labels::Column::SELECT_ANY_GENERATOR,
         width: None,
+        align: Align::Left,
+    },
+    ListColumn {
+        heading: labels::Column::KIND,
+        width: Some(KIND_WIDTH),
         align: Align::Left,
     },
     ListColumn {
@@ -34,10 +40,9 @@ const COLUMNS: [ListColumn; 2] = [
     },
 ];
 
-/// What a row is: a kind's heading, a generator, or + (New).
+/// What a row is: a generator, by its kind and name, or + (New).
 #[derive(Clone, Debug, PartialEq)]
 enum Listed {
-    Heading(String),
     Generator(String, String),
     New,
 }
@@ -125,7 +130,6 @@ impl GeneratorsPage {
             app,
             listed_kinds(),
             Box::new(move |app: &mut App, kind: &str, name: &str| {
-                app.document.show_generator_type(kind, true);
                 *going_to.borrow_mut() = Some((kind.to_string(), name.to_string()));
                 app.show_page(editor_of(kind, name));
             }),
@@ -145,7 +149,6 @@ impl GeneratorsPage {
             match app.document.copy_named(section, name) {
                 Ok(new) => {
                     app.say(&named(messages::MSG_COPIED_TO, &[("name", new.as_str().into())]));
-                    app.document.show_generator_type(kind, true);
                     *self.going_to.borrow_mut() = Some((kind.to_string(), new));
                 }
                 Err(problem) => app.refuse(&problem),
@@ -197,43 +200,25 @@ impl GeneratorsPage {
         page
     }
 
-    /// The kinds the set has generators of, by their labels.
-    fn kinds(&self, app: &App) -> Vec<(&'static str, &'static str, &'static str)> {
-        let setlist = app.document.get_setlist();
-        listed_kinds()
-            .into_iter()
-            .filter(|(_, section, _)| !setlist.items(section).is_empty())
-            .collect()
-    }
-
+    /// Every generator of the set, sorted by name, then the + row.
     fn rows(&self, app: &App) -> Vec<(Listed, Vec<String>)> {
         let setlist = app.document.get_setlist();
-        let mut rows = Vec::new();
-        for (kind, section, label) in self.kinds(app) {
-            let mut names: Vec<String> = setlist.items(section).iter().map(|(name, _)| name.clone()).collect();
-            names.sort_by_key(|name| name_order(name));
-            let closed = !app.document.is_generator_type_open(kind) && !self.searching;
-            let mark = if closed {
-                marks::MSG_SECTION_CLOSED_MARK
-            } else {
-                marks::MSG_SECTION_OPEN_MARK
-            };
-            let heading = named(
-                labels::MSG_GROUP_HEADING,
-                &[("mark", mark.into()), ("name", label.into()), ("count", names.len().into())],
-            );
-            rows.push((Listed::Heading(kind.to_string()), vec![heading, String::new()]));
-            if !closed {
-                for name in names {
-                    let uses = uses_of(setlist, section, &name).len();
-                    rows.push((
-                        Listed::Generator(kind.to_string(), name.clone()),
-                        vec![format!("{INDENT}{name}"), uses.to_string()],
-                    ));
-                }
+        let mut generators: Vec<(&str, &str, &str, String)> = Vec::new();
+        for (kind, section, label) in listed_kinds() {
+            for (name, _) in setlist.items(section) {
+                generators.push((kind, section, label, name.clone()));
             }
         }
-        rows.push((Listed::New, vec![marks::MSG_NEW_ROW.to_string(), String::new()]));
+        generators.sort_by_key(|(.., name)| name_order(name));
+        let mut rows: Vec<(Listed, Vec<String>)> = generators
+            .into_iter()
+            .map(|(kind, section, label, name)| {
+                let uses = uses_of(setlist, section, &name).len();
+                let cells = vec![name.clone(), label.to_string(), uses.to_string()];
+                (Listed::Generator(kind.to_string(), name), cells)
+            })
+            .collect();
+        rows.push((Listed::New, vec![marks::MSG_NEW_ROW.to_string(), String::new(), String::new()]));
         rows
     }
 
@@ -291,25 +276,6 @@ impl GeneratorsPage {
         ]
     }
 
-    fn jump_type(&self, app: &App, direction: i64) {
-        let place = self.cursor.get();
-        let headings: Vec<usize> = self
-            .rows(app)
-            .iter()
-            .enumerate()
-            .filter(|(_, (listed, _))| matches!(listed, Listed::Heading(_)))
-            .map(|(place, _)| place)
-            .collect();
-        let found = if direction > 0 {
-            headings.iter().find(|each| **each > place)
-        } else {
-            headings.iter().rfind(|each| **each < place)
-        };
-        if let Some(found) = found {
-            self.cursor.set(*found);
-        }
-    }
-
     fn move_cursor(&self, app: &mut App, key: &str) {
         let places = self.matches(app);
         if places.is_empty() {
@@ -333,16 +299,13 @@ impl GeneratorsPage {
 const MOST_USES_SHOWN: usize = 5;
 
 impl Page for GeneratorsPage {
-    /// A heading, the + row, or a generator by its kind, so that each kind's editor is reached.
+    /// The + row, or a generator by its kind, so that each kind's editor is reached.
     fn place_kind(&self, app: &App) -> String {
         // A search offers keys of its own, so a row found by one is a place apart from the same row otherwise.
         if self.searching {
             return "searching".to_string();
         }
         match self.listed(app) {
-            // An open heading and a closed one lead to different places: Down from an open one reaches its generators.
-            Listed::Heading(kind) if app.document.is_generator_type_open(&kind) => format!("open heading {kind}"),
-            Listed::Heading(kind) => format!("closed heading {kind}"),
             Listed::Generator(kind, _) => format!("generator {kind}"),
             Listed::New => "plus".to_string(),
         }
@@ -376,10 +339,8 @@ impl Page for GeneratorsPage {
                     .into_iter()
                     .map(|binding| self.bind(binding)),
             ),
-            Listed::Heading(_) => keys.extend([self.bind(&Keys::TOGGLE_TYPE), self.bind(&Keys::ADD)]),
             Listed::New => keys.extend([self.bind(&Keys::ADD_HERE), self.bind(&Keys::ADD)]),
         }
-        keys.push(self.bind(&Keys::NEXT_TYPE));
         keys
     }
 
@@ -407,13 +368,6 @@ impl Page for GeneratorsPage {
             app.go_back();
         } else if item.is(&Keys::SELECT) {
             self.move_cursor(app, key);
-        } else if item.is(&Keys::NEXT_TYPE) {
-            self.jump_type(app, item.step_of(key).unwrap_or(1));
-        } else if item.is(&Keys::TOGGLE_TYPE) {
-            if let Listed::Heading(kind) = self.listed(app) {
-                let opened = !app.document.is_generator_type_open(&kind);
-                app.document.show_generator_type(&kind, opened);
-            }
         } else if item.is(&Keys::SEARCH) {
             self.searching = true;
             self.typed.clear();
@@ -424,11 +378,10 @@ impl Page for GeneratorsPage {
             self.cursor.set(self.place_before_search);
             self.place(app);
         } else if item.is(&Keys::SEARCH_KEEP) {
-            // The generator found stays under the cursor: its type is opened, since a closed type shows no generators.
+            // The generator found stays under the cursor once every row shows again.
             let found = self.listed(app);
             self.searching = false;
             if let Listed::Generator(kind, name) = found {
-                app.document.show_generator_type(&kind, true);
                 *self.going_to.borrow_mut() = Some((kind, name));
                 self.place(app);
             }
@@ -460,7 +413,7 @@ impl Page for GeneratorsPage {
 
     fn body(&self, app: &App, width: usize, height: usize) -> Vec<Text> {
         let place = self.place(app);
-        let sizes = column_sizes(&COLUMNS, Some(MAX_NAME_LENGTH as usize + INDENT.len()), width);
+        let sizes = column_sizes(&COLUMNS, Some(MAX_NAME_LENGTH as usize), width);
         let headings: Vec<String> = COLUMNS.iter().map(|column| column.heading.to_string()).collect();
         let mut lines = vec![row_line(&COLUMNS, &headings, &sizes, Style::BOLD, false), Text::default()];
         let rows = self.rows(app);
@@ -471,9 +424,8 @@ impl Page for GeneratorsPage {
         let at = matches.iter().position(|each| *each == place).unwrap_or(0);
         for index in shown_around(matches.len(), at, height.saturating_sub(2).max(1)) {
             let row = matches[index];
-            let (listed, cells) = &rows[row];
-            let style = if matches!(listed, Listed::Heading(_)) { Style::BOLD } else { Style::PLAIN };
-            lines.push(row_line(&COLUMNS, cells, &sizes, style, row == place));
+            let (_, cells) = &rows[row];
+            lines.push(row_line(&COLUMNS, cells, &sizes, Style::PLAIN, row == place));
         }
         lines
     }
@@ -484,5 +436,38 @@ impl Page for GeneratorsPage {
 
     fn theme(&self) -> Option<Colour> {
         Some(themes::GENERATORS)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use llamatron_model::objects::setlist::Setlist;
+
+    /// A set of one song with generators of three kinds, named so that their order by name mixes the kinds.
+    const MIXED_KINDS_SET: &str =
+        "songs:\n  - name: song\n    scenes: [{ name: one }]\narps:\n  zip: {}\n  Bounce: {}\ndrifts:\n  climb: {}\nchains:\n  alpha: []\n";
+
+    fn mixed_kinds_app() -> App {
+        let setlist = Setlist::read_text(MIXED_KINDS_SET, None).expect("the scenario's set is valid");
+        App::new(crate::document::Document::new(setlist, None))
+    }
+
+    /// Every generator is in one list by name, ignoring case, whatever its kind, each row naming its kind, then the + row.
+    #[test]
+    fn the_page_lists_every_generator_by_name_with_its_kind() {
+        let app = mixed_kinds_app();
+        let page = GeneratorsPage::new(&app);
+        let rows = page.rows(&app);
+        let shown: Vec<(&str, &str)> = rows.iter().map(|(_, cells)| (cells[0].as_str(), cells[1].as_str())).collect();
+        let arpeggiator = label_of("arp");
+        let expected = vec![
+            ("alpha", labels::MSG_CHAIN_LABEL),
+            ("Bounce", arpeggiator),
+            ("climb", label_of("drift")),
+            ("zip", arpeggiator),
+            (marks::MSG_NEW_ROW, ""),
+        ];
+        assert_eq!(shown, expected);
     }
 }

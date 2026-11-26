@@ -15,7 +15,6 @@ use crate::screens::generators::generators_page::{editor_of, listed_kinds, new_g
 use crate::screens::generators::statements_page::{GeneratorStatementsPage, Holder};
 use crate::screens::list_page::{ListColumn, Listing, Row};
 use crate::settings::named_in;
-use crate::settings::sorted_names;
 use crate::themes::{self, Colour};
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::Section;
@@ -77,17 +76,17 @@ impl ChainEditor {
         change_chain(app, &self.name, change);
     }
 
-    /// Ask for a generator to run: a new one first, then every generator the set has, kind by kind, each kind's by name;
-    /// then takes the kind and name of the one chosen, and a new one is made first and its editor opened.
+    /// Ask for a generator to run: a new one first, then every generator the set has in one list by name, as the Generators
+    /// page lists them; then takes the kind and name of the one chosen, and a new one is made first and its editor opened.
     fn pick_generator(&self, app: &mut App, title: &str, then: std::rc::Rc<GeneratorChosen>) {
         let setlist = app.document.get_setlist();
         let mut offered: Vec<(String, String)> = Vec::new();
         for plugin in PLUGINS.iter() {
-            let names: Vec<String> = setlist.items(plugin.section).iter().map(|(name, _)| name.clone()).collect();
-            for name in sorted_names(&names) {
-                offered.push((plugin.name.to_string(), name));
+            for (name, _) in setlist.items(plugin.section) {
+                offered.push((plugin.name.to_string(), name.clone()));
             }
         }
+        offered.sort_by_key(|(_, name)| llamatron_model::objects::naming::name_order(name));
         let mut shown = vec![messages::MSG_NEW_GENERATOR_CHOICE.to_string()];
         shown.extend(offered.iter().map(|(kind, name)| step_shown(kind, name, None)));
         let mut dialog = ChoiceDialog::new(title, shown, NEW_GENERATOR_PLACE);

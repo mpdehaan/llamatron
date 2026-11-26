@@ -15,8 +15,6 @@ pub struct Document {
     path: Option<PathBuf>,
     dirty: bool,
     current: String,
-    /// The kinds of generator the Generators page shows open, which the set's file remembers and nothing undoes.
-    open_generator_types: Vec<String>,
     /// The set as each key left it, for undo and redo, and the set as its file holds it, which says whether it needs saving.
     history: History,
     clean: Data,
@@ -28,23 +26,6 @@ pub struct Document {
     /// A count moved by every change to the set or to the current song, which real-time playback follows to hear an edit
     /// made while playing.
     revision: u64,
-}
-
-/// The kinds of generator a file's data says the Generators page shows open, only the plugins' kinds.
-fn open_types_of(text: &str) -> Vec<String> {
-    let Ok(data) = llamatron_model::file::data::load(text) else {
-        return Vec::new();
-    };
-    let listed = data
-        .get(llamatron_model::schema::generated::file_format::OPEN_GENERATOR_TYPES)
-        .and_then(|types| types.as_list().map(<[_]>::to_vec))
-        .unwrap_or_default();
-    listed
-        .iter()
-        .filter_map(|kind| kind.as_str())
-        .filter(|kind| llamatron_model::schema::generated::plugins::PLUGINS.iter().any(|plugin| plugin.name == *kind))
-        .map(str::to_string)
-        .collect()
 }
 
 impl Document {
@@ -62,7 +43,6 @@ impl Document {
             path,
             dirty: false,
             current,
-            open_generator_types: Vec::new(),
             history,
             clean,
             saved,
@@ -77,9 +57,9 @@ impl Document {
         Ok(Document::new(setlist, None))
     }
 
-    /// The text saving writes: the set with the program's version, and what the pages remember of how they show it.
+    /// The text saving writes: the set with the program's version.
     pub fn file_text(&self) -> String {
-        use llamatron_model::schema::generated::file_format::{SetlistSetting, OPEN_GENERATOR_TYPES};
+        use llamatron_model::schema::generated::file_format::SetlistSetting;
         let mut data = self.setlist.to_data();
         if let Data::Map(pairs) = &mut data {
             let version = Data::text(SetlistSetting::VERSION);
@@ -87,26 +67,9 @@ impl Document {
                 Some(pair) => pair.1 = Data::text(crate::version::PROGRAM_VERSION),
                 None => pairs.insert(0, (version, Data::text(crate::version::PROGRAM_VERSION))),
             }
-            let opened = self.open_types_with_generators();
-            if !opened.is_empty() {
-                pairs.push((
-                    Data::text(OPEN_GENERATOR_TYPES),
-                    Data::List(opened.iter().map(|kind| Data::text(kind)).collect()),
-                ));
-            }
         }
         let file = llamatron_model::file::layout::as_file_layout(&data);
         llamatron_model::file::writing::dump_file_layout(&file)
-    }
-
-    /// The kinds of generator the Generators page shows open, in the plugins' order, leaving out any the set has none of.
-    fn open_types_with_generators(&self) -> Vec<String> {
-        llamatron_model::schema::generated::plugins::PLUGINS
-            .iter()
-            .filter(|plugin| self.open_generator_types.iter().any(|kind| kind == plugin.name))
-            .filter(|plugin| !self.setlist.items(plugin.section).is_empty())
-            .map(|plugin| plugin.name.to_string())
-            .collect()
     }
 
     /// Write the set to a file, making any folders it needs; a protected set's own file is never written over.
@@ -181,9 +144,7 @@ impl Document {
         let text = std::fs::read_to_string(path).map_err(|error| error.to_string())?;
         let stem = path.file_stem().map(|stem| stem.to_string_lossy().to_string());
         let setlist = Setlist::read_text(&text, stem).map_err(|error| error.message)?;
-        let mut document = Document::new(setlist, Some(path.to_path_buf()));
-        document.open_generator_types = open_types_of(&text);
-        Ok(document)
+        Ok(Document::new(setlist, Some(path.to_path_buf())))
     }
 
     pub fn get_setlist(&self) -> &Setlist {
@@ -237,24 +198,6 @@ impl Document {
         self.current = song.to_string();
         self.record_edit();
         Ok(())
-    }
-
-    /// Show these kinds of generator open on the Generators page and every other closed, as the screen tour takes up the
-    /// Python's.
-    pub fn set_open_generator_types(&mut self, kinds: Vec<String>) {
-        self.open_generator_types = kinds;
-    }
-
-    pub fn is_generator_type_open(&self, kind: &str) -> bool {
-        self.open_generator_types.iter().any(|open| open == kind)
-    }
-
-    /// Show a kind of generator open or closed on the Generators page, which is no edit of the set.
-    pub fn show_generator_type(&mut self, kind: &str, opened: bool) {
-        self.open_generator_types.retain(|open| open != kind);
-        if opened {
-            self.open_generator_types.push(kind.to_string());
-        }
     }
 
     /// The count every change to the set or the current song moves.

@@ -141,6 +141,7 @@ impl Column {
     pub const TRACKS: &'static str = "TRACKS";
     pub const TIME: &'static str = "TIME";
     pub const USED: &'static str = "USED";
+    pub const KIND: &'static str = "KIND";
     pub const SCALE: &'static str = "SCALE";
     pub const CURRENT: &'static str = "CURRENT";
     pub const TEMPO: &'static str = "TEMPO";

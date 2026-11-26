@@ -96,17 +96,13 @@ group and is always sorted, so `S` (Sort) and `M` (Move) are not on it; every ot
   (`ListPage.delete_taking_out`); YES deletes it and takes it out of every chain's steps and every clip's, scene's and track's list
   in one edit (`Setlist.delete_generator`, `Song.forget_generator`), the user's design.
 
-- The Generators page (`G`, `screens/generators/generators_page.py`, the user's design) lists every generator of the set under a
-  heading for its type, `- Density (2)` (`MSG_GROUP_HEADING`), the types sorted by what the tracker calls each and the generators
-  sorted by name under each, always, as the Patterns page lists patterns by group, so the page has no move and no sort. Only a
-  type the set has a generator of gets a heading. Every type is closed until opened (the user's rule): Space or ENTER on a heading opens and closes
-  its type, which the set keeps and its file holds as `open_generator_types` (`Setlist.show_generator_type`, looking and not
-  editing, as the closed pattern groups are), so the page comes back as it was left; PgUp and PgDn jump between headings, and a search looks inside closed
-  types. ENTER opens the editor (`GENERATOR_PAGES` in `screens/generators/generator_pages.py`, a `GeneratorListing` of kind,
-  section, label and `EDITOR` for each kind); `A`, or ENTER on the `+` row the page lists last, asks for a type, names one after
-  it and opens it; `N`/F2, `C`, `Bksp` (refused while a chain uses it) and `/` as on every list, the cursor following the
-  generator. The set's `generator_order` is still read and written but no page shows or changes it. Each editor's crumbs read
-  `GENERATORS › name`.
+- The Generators page (`G`, `src/tracker/src/screens/generators/generators_page.rs`, the user's design) lists every generator
+  of the set in one list sorted by name, ignoring case, with a KIND column (the label the tracker calls each kind) and USED, then
+  the `+` row; the page has no move and no sort. A set's generators and chains share one list of names, so no two rows share a
+  name. ENTER opens the editor; `A`, or ENTER on the `+` row, asks for a kind in one list by name, names one after it and opens
+  it; `N`/F2, `C`, `Bksp` (refused while a chain uses it) and `/` as on every list, the cursor following the generator. The set's
+  `generator_order` is still read and written but no page shows or changes it. Each editor's crumbs read `GENERATORS › name`.
+  The chain editor's picker lists the set's generators the same way, by name, after "(new generator)".
 - A Drift's page is drawn from its view by `PluginEditor`: Every, Steps to B, Direction and Restart, then a `DriftValuesView`,
   a row of each value's two versions side by side (`drift_values.py`, each a `SteppedCells` of `field.py`): Left and Right move
   between A and B, `[` and `]` (`keybindings.PluginEditor.SLOT_LESS` and `SLOT_MORE`) change the one under the cursor, ENTER types
