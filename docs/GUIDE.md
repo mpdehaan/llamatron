@@ -289,6 +289,7 @@ and each of its parts.
 | [Recording](RECORDING.md) | Videos of a set playing, by itself or performed, one at a time or every demo in a batch. |
 | [Architecture](../developer_docs/ARCHITECTURE.md) | How the code is put together, for anyone reading it, with a link to it on GitHub. |
 | [Backend](BACKEND.md) | How the backend works inside, its messages, threads, synths, sender and safety, for anyone changing it. |
+| [Credits](CREDITS.md) | The open work llamatron's built-in synths use, its authors and its licences. |
 
 [![llamatron's visualizers, on
 YouTube](https://img.youtube.com/vi/yt9NffJ1HF4/hqdefault.jpg)](https://www.youtube.com/watch?v=yt9NffJ1HF4)

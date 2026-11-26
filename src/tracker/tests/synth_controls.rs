@@ -8,7 +8,7 @@
 use llamatron_backend::voice::patch::{Patch, Voice};
 use llamatron_model::file::data::{load, Data};
 use llamatron_model::objects::setlist::Instrument;
-use llamatron_tracker::generated::sounds::{SettingKind, PART_TYPES, SETTING_KINDS, TYPE_SETTINGS, TYPE_SETTING_KINDS};
+use llamatron_tracker::generated::sounds::{SettingKind, MODDED_SETTINGS, PART_TYPES, SETTING_KINDS, TYPE_SETTINGS, TYPE_SETTING_KINDS};
 use llamatron_tracker::instrument_sound::Sound;
 
 /// The sample rate the notes are played at, the note, its velocity, how long it is held and how long it rings after.
@@ -146,9 +146,12 @@ fn company(part_type: &str, setting: &str) -> &'static [(&'static str, &'static 
         ("chip_steps", "level_direction") => &[("start_level", "8"), ("level_pace", "3")],
         ("adsr", "attack_curve") | ("ar", "attack_curve") | ("asr", "attack_curve") => &[("attack", "200")],
         ("adsr", "release") => &[("sustain", "80")],
-        ("acid_gate", "soft_attack") => &[("accent_threshold", "127")],
+        ("acid_gate", "soft_attack") => &[("circuit", "modded"), ("accent_threshold", "127")],
         ("low_pass_gate", "resonance") => &[("gate_mode", "lowpass")],
         ("low_pass_gate", "ping_width") => &[("input", "ping")],
+        ("acid_gate", "circuit") => &[("amp_decay", "300")],
+        ("diode", "circuit") => &[("filter_fm", "80")],
+        (kind, name) if MODDED_SETTINGS.contains(&(kind, name)) => &[("circuit", "modded")],
         _ => &[],
     }
 }
@@ -156,7 +159,10 @@ fn company(part_type: &str, setting: &str) -> &'static [(&'static str, &'static 
 /// The settings tried apart from the rest: a list typed in, what one note leaves the next, and the drum's knobs, which a
 /// hit renders apart.
 fn tried_apart(part_type: &str, setting: &str) -> bool {
-    matches!((part_type, setting), ("sid", "arpeggio") | ("vactrol", "memory") | ("drum", _))
+    matches!(
+        (part_type, setting),
+        ("sid", "arpeggio") | ("vactrol", "memory") | ("acid", "circuit") | ("acid", "slide_time") | ("drum", _)
+    )
 }
 
 /// A value as the trial writes it: a whole number where it reads as one, else text.
@@ -236,6 +242,18 @@ fn every_control_tried_apart_changes_the_sound() {
     };
     if !differs(&remembering("0"), &remembering("100")) {
         unwired.push("env1 vactrol memory");
+    }
+    // Fishline's slide is heard between two notes a fifth apart: Modded at its Slide time's ends, and Stock against Modded.
+    let sliding = |circuit: &str, slide: &str| {
+        // Legato off, so that each new note slides from the last, as a portamento does.
+        let sound = format!("{{ engine: fishline, legato: false, oscillators: {{ type: acid, circuit: {circuit}, slide_time: {slide} }} }}");
+        played_notes(&instrument(&sound), &[PITCH, PITCH + 7.0])
+    };
+    if !differs(&sliding("modded", "60"), &sliding("modded", "360")) {
+        unwired.push("oscillators acid slide_time");
+    }
+    if !differs(&sliding("stock", "360"), &sliding("modded", "360")) {
+        unwired.push("oscillators acid circuit");
     }
     // Volume is the engine's, applied to the patch's buffer as it mixes, so it is read from the compiled patch.
     let volume = |percent: &str| {

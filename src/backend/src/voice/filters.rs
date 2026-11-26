@@ -38,6 +38,8 @@ const DIODE_PUSH: f64 = 1.5;
 const OTA_PUSH: f64 = 1.2;
 const SCREAM_PUSH: f64 = 1.5;
 const COEFFICIENT_STEP: usize = 4;
+/// How many octaves Filter FM moves the cutoff at full, by the oscillator at full level.
+const FM_OCTAVES: f64 = 2.0;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum FilterKind {
@@ -67,6 +69,8 @@ pub struct FilterPart {
     pub key_track: f64,
     pub push: f64,
     pub poles: usize,
+    /// How far the oscillator moves the Diode's cutoff, in octaves at full level: Filter FM, the classic modification.
+    pub fm: f64,
     pub rate: f64,
 }
 
@@ -133,6 +137,7 @@ impl FilterPart {
             key_track: number(spec, "key_track", 0.0),
             push,
             poles: (number(spec, "poles", 4.0) as usize).clamp(1, 4),
+            fm: number(spec, "filter_fm", 0.0) * FM_OCTAVES,
             rate,
         })
     }
@@ -173,8 +178,9 @@ impl FilterPart {
     #[inline]
     fn acid(&self, state: &mut FilterState, input: f64, octaves: f64, resonance_moved: f64) -> f64 {
         let acid = state.acid.get_or_insert_with(|| AcidFilterState::new(self.rate));
-        if state.countdown == 0 {
-            let cutoff = self.cutoff * 2f64.powf(octaves);
+        // Filter FM moves the cutoff at the audio's own rate, so its coefficients are worked out every sample.
+        if state.countdown == 0 || self.fm != 0.0 {
+            let cutoff = self.cutoff * 2f64.powf(octaves + self.fm * input);
             let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
             acid.prepare(cutoff, resonance, self.rate);
             state.countdown = COEFFICIENT_STEP;

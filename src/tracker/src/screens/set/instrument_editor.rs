@@ -46,6 +46,10 @@ const BUILT_IN: &str = "built_in";
 const NONE_EFFECT: &str = "none";
 const BITCRUSH: &str = "bitcrush";
 const ARPEGGIO: &str = "arpeggio";
+const CIRCUIT: &str = "circuit";
+const MODDED: &str = "modded";
+/// The oscillator type whose own circuit sets the slide, so that the Voice column shows no Glide for it.
+const ACID: &str = "acid";
 
 pub struct InstrumentEditor {
     pub name: String,
@@ -608,7 +612,13 @@ impl InstrumentEditor {
     fn setting_fields(sound: &Sound, part: &'static str, ids: &mut Ids) -> Vec<Field> {
         let kind = sound.part_type(part);
         let settings: &[&str] = TYPE_SETTINGS.iter().find(|(found, _)| *found == kind).map_or(&[], |(_, settings)| settings);
-        settings.iter().map(|name| Self::setting_field(sound, part, &kind, name, ids)).collect()
+        // A modded setting shows only with the part's Circuit set to Modded.
+        let modded = sound.part_value(part, CIRCUIT).as_str() == Some(MODDED);
+        settings
+            .iter()
+            .filter(|name| modded || !crate::generated::sounds::MODDED_SETTINGS.contains(&(kind.as_str(), **name)))
+            .map(|name| Self::setting_field(sound, part, &kind, name, ids))
+            .collect()
     }
 
     fn setting_field(sound: &Sound, part: &'static str, kind: &str, name: &'static str, ids: &mut Ids) -> Field {
@@ -683,7 +693,9 @@ impl InstrumentEditor {
 
     fn voice_fields(sound: &Sound, ids: &mut Ids) -> Vec<Field> {
         let sharing = text(&sound.value("filter_sharing"));
-        vec![
+        // Fishline's oscillator sets its own slide, the circuit's on Stock and its Slide time on Modded, so it shows no Glide.
+        let glides = sound.part_type("oscillators") != ACID;
+        let mut fields = vec![
             gauge(
                 ids.at(Write::Sound("volume")),
                 labels::MSG_VOLUME_LABEL,
@@ -719,7 +731,11 @@ impl InstrumentEditor {
                 &names_in(labels::MSG_FILTER_SHARING_NAMES, FILTER_SHARINGS),
                 &sharing,
             ),
-        ]
+        ];
+        if !glides {
+            fields.retain(|field| field.label != labels::MSG_GLIDE_LABEL);
+        }
+        fields
     }
 
     fn oscillators_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {

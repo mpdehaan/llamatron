@@ -61,10 +61,17 @@ filters of some early synths do.
 
 ![The Diode filter](../screenshots/filter_diode.svg)
 
-The squelchy filter of acid bass lines: a ladder with a weaker feedback, so
-that it stops short of ringing on its own and keeps its bass, driven harder
-going in and soft-clipped coming out, its floor lowered a little by its Env
-amount, as that circuit's is.
+The squelchy, liquid filter of acid bass lines, after Open303's model of the
+original circuit. It is four stages in a ladder with a high-pass inside its
+feedback loop: as the resonance rises, the bass thins and the peak sings
+rather than booms, and it stops short of ringing on its own. It runs at four
+times the sample rate, so that its peak stays clean high up, and after it an
+all-pass, a high-pass and a notch shape the low end as the circuit's coupling
+does. Its Env amount follows the circuit's measured mapping: the higher the
+amount, the further the envelope sweeps, and the lower the sweep starts.
+
+Its Circuit is Stock or Modded. Modded shows Filter FM, the oscillator itself
+moving the cutoff, which adds growl.
 
 ## OTA
 

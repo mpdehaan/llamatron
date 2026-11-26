@@ -111,6 +111,10 @@ proportion to the filter's resonance and the Accent sweep, and draining
 between notes; a run of accents close together charges it further, so the
 filter climbs higher with each one, the squelch of an acid line.
 
+Its Circuit is Stock or Modded. Stock plays the circuit's own accent decay,
+accent sweep, amp decay and soft attack. Modded shows them, as the
+modifications players made to the original machine let them be set.
+
 ## Chip Steps
 
 ![Chip steps on Env 1](../screenshots/envelope_chip_steps.svg)

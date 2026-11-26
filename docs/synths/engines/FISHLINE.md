@@ -10,16 +10,32 @@ accents climbs higher.
 
 ![The Oscillators tab of Fishline](../../screenshots/synth_fishline.svg)
 
+## Stock and Modded
+
+Fishline's Circuit, on its Oscillators tab, is Stock or Modded, after the
+modifications players made to the original machine. Stock slides from note to
+note in the circuit's own fixed time, about 60 ms. Modded shows a Slide time,
+from 60 to 360 ms, so a line can glide lazily. The Acid gate and the Diode
+filter have a Circuit of their own, so a Modded envelope can play through a
+Stock filter.
+
 ## How Fishline Is Built
 
-The saw is read from band-limited wavetables, as Basic's are. The square is
-made from the saw as the circuit makes it: one saw less another half a cycle
-on gives a square, and that square is pushed through a soft saturating curve,
-the transistor's, and scaled back to full, so that its corners are rounded as
-the original's are. Tuning shifts the whole voice by semitones.
+Fishline follows Open303, an open emulation of the acid bass by Robin Schmidt,
+whose constants were measured from the circuit; [Credits](../../CREDITS.md)
+names it. Its saw is a plain rising ramp in band-limited tables of its own.
+Its square is made from that saw as the transistor makes it: the saw through a
+very steep curve, offset so that it switches a little off the middle, then
+shifted half a cycle and played at half the saw's level. Because the curve's
+edge takes a fixed time, the square sounds like a pulse on low notes and more
+like a saw on high ones, as the original's does. The oscillator's output is
+turned over and coupled into the filter through a high-pass, as the circuit
+couples it, which shapes the low end. Tuning shifts the whole voice by
+semitones.
 
 Fishline's character is in the parts its engine chooses around that
-oscillator: the acid gate's accent and its charging capacitor, the diode
-filter's resonance stopping short of ringing, Legato on and a Glide, so that
-tied steps slide without starting the envelopes again. Any of those can be
-swapped, and any of them can be given to another engine.
+oscillator: the acid gate's accent and its charging capacitor, the Diode
+filter with a high-pass inside its feedback, so that its resonance sings
+rather than booms, and Legato on, so that tied steps slide without starting
+the envelopes again. Any of those can be swapped, and any of them can be given
+to another engine.

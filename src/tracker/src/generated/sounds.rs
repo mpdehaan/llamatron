@@ -309,6 +309,8 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
         Preset::Map(&[
             ("acid_wave", Preset::Text("saw")),
             ("tuning", Preset::Whole(0)),
+            ("circuit", Preset::Text("stock")),
+            ("slide_time", Preset::Whole(60)),
             ("pitch_env", Preset::Whole(0)),
         ]),
     ),
@@ -375,6 +377,7 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
     (
         "acid_gate",
         Preset::Map(&[
+            ("circuit", Preset::Text("stock")),
             ("accent", Preset::Whole(60)),
             ("accent_threshold", Preset::Whole(110)),
             ("accent_sweep", Preset::Whole(50)),
@@ -428,9 +431,11 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
     (
         "diode",
         Preset::Map(&[
+            ("circuit", Preset::Text("stock")),
             ("cutoff", Preset::Whole(1200)),
             ("resonance", Preset::Whole(25)),
             ("env_amount", Preset::Whole(50)),
+            ("filter_fm", Preset::Whole(0)),
             ("key_track", Preset::Whole(50)),
             ("drive", Preset::Whole(0)),
         ]),
@@ -499,7 +504,7 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
             "pitch_env",
         ],
     ),
-    ("acid", &["acid_wave", "tuning", "pitch_env"]),
+    ("acid", &["acid_wave", "tuning", "circuit", "slide_time", "pitch_env"]),
     ("drum", &["machine", "choke", "overlap"]),
     ("adsr", &["attack", "attack_curve", "hold", "decay", "snap", "sustain", "release"]),
     ("ar", &["attack", "attack_curve", "release"]),
@@ -508,19 +513,61 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
     ("vactrol", &["cell", "light", "strike_width", "memory", "age", "stability"]),
     (
         "acid_gate",
-        &["accent", "accent_threshold", "accent_sweep", "accent_decay", "amp_decay", "soft_attack"],
+        &[
+            "circuit",
+            "accent",
+            "accent_threshold",
+            "accent_sweep",
+            "accent_decay",
+            "amp_decay",
+            "soft_attack",
+        ],
     ),
     ("chip_steps", &["start_level", "level_pace", "level_direction"]),
     ("none", &[]),
     ("ladder", &["cutoff", "resonance", "slope", "env_amount", "key_track", "drive"]),
     ("multimode", &["cutoff", "resonance", "mode", "env_amount", "key_track", "drive"]),
     ("sallen_key", &["cutoff", "resonance", "mode", "env_amount", "key_track", "drive"]),
-    ("diode", &["cutoff", "resonance", "env_amount", "key_track", "drive"]),
+    ("diode", &["circuit", "cutoff", "resonance", "env_amount", "filter_fm", "key_track", "drive"]),
     ("ota", &["cutoff", "resonance", "env_amount", "key_track", "drive"]),
     ("low_pass_gate", &["gate_mode", "input", "resonance", "open", "key_track", "ping_width"]),
 ];
+/// The settings a part shows only with its Circuit set to Modded, the classic modifications of the acid bass: on Stock
+/// the circuit's own values play.
+pub static MODDED_SETTINGS: &[(&str, &str)] = &[
+    ("acid", "slide_time"),
+    ("acid_gate", "accent_sweep"),
+    ("acid_gate", "accent_decay"),
+    ("acid_gate", "amp_decay"),
+    ("acid_gate", "soft_attack"),
+    ("diode", "filter_fm"),
+];
+
 /// How each setting is shown, and where a type of part shows one its own way, how it shows it there.
 pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
+    (
+        "circuit",
+        SettingKind::Choice {
+            choices: &["stock", "modded"],
+            names: &["Stock", "Modded"],
+        },
+    ),
+    (
+        "slide_time",
+        SettingKind::Gauge {
+            lowest: 60,
+            highest: 360,
+            what: "milliseconds",
+        },
+    ),
+    (
+        "filter_fm",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
+        },
+    ),
     (
         "pitch_env",
         SettingKind::Number {

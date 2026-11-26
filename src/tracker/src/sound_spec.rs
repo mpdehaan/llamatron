@@ -33,7 +33,7 @@ pub fn synth_spec(sound: &Sound, drums_from: i64) -> Data {
         ("volume", share(&value("volume"), PERCENT)),
         ("voices", value("voices")),
         ("legato", value("legato")),
-        ("glide", share(&value("glide"), MILLISECONDS)),
+        ("glide", glide(sound)),
         ("filter_per_note", Data::Bool(value("filter_sharing").as_str() == Some("per_note"))),
         ("oscillators", oscillators.clone()),
         ("envelopes", Data::List(ENVELOPE_PARTS.iter().map(|part| envelope(sound, part)).collect())),
@@ -106,6 +106,38 @@ fn basic_oscillators(sound: &Sound) -> Data {
     Data::List(sounding)
 }
 
+/// A part's Circuit, and its modded choice, which shows the classic modifications' settings.
+const CIRCUIT: &str = "circuit";
+const MODDED: &str = "modded";
+/// Fishline's oscillator, and the slide its circuit has on Stock, in milliseconds.
+const ACID: &str = "acid";
+const STOCK_SLIDE_MS: i128 = 60;
+
+/// A setting's default for a type of part, as a new part of that type holds it.
+fn default_of(kind: &str, name: &str) -> Data {
+    crate::generated::sounds::TYPE_DEFAULTS
+        .iter()
+        .find(|(found, _)| *found == kind)
+        .map(|(_, preset)| preset.to_data())
+        .and_then(|defaults| defaults.get(name).cloned())
+        .unwrap_or(Data::Null)
+}
+
+/// The voice's glide, in seconds: Fishline's own slide, the circuit's on Stock and its Slide time on Modded, or the Voice
+/// column's Glide for every other oscillator.
+fn glide(sound: &Sound) -> Data {
+    if sound.part_type("oscillators") != ACID {
+        return share(&sound.value("glide"), MILLISECONDS);
+    }
+    let modded = sound.part_value("oscillators", CIRCUIT).as_str() == Some(MODDED);
+    let slide = if modded {
+        sound.part_value("oscillators", "slide_time")
+    } else {
+        Data::Whole(STOCK_SLIDE_MS)
+    };
+    share(&slide, MILLISECONDS)
+}
+
 /// The envelope type that is no envelope, as the backend names it.
 const NO_ENVELOPE: &str = "none";
 
@@ -141,15 +173,20 @@ fn envelope(sound: &Sound, part: &str) -> Data {
                 ("stability", share(&setting("stability"), PERCENT)),
             ])
         }
-        "acid_gate" => mapping(vec![
-            typed,
-            ("accent", share(&setting("accent"), PERCENT)),
-            ("accent_threshold", setting("accent_threshold")),
-            ("accent_sweep", share(&setting("accent_sweep"), PERCENT)),
-            ("accent_decay", share(&setting("accent_decay"), MILLISECONDS)),
-            ("amp_decay", share(&setting("amp_decay"), MILLISECONDS)),
-            ("soft_attack", share(&setting("soft_attack"), TENTHS_OF_MILLISECONDS)),
-        ]),
+        "acid_gate" => {
+            // On Stock the modded settings play the circuit's own values, the type's defaults, whatever is written.
+            let modded = setting(CIRCUIT).as_str() == Some(MODDED);
+            let chosen = |name: &str| if modded { setting(name) } else { default_of("acid_gate", name) };
+            mapping(vec![
+                typed,
+                ("accent", share(&setting("accent"), PERCENT)),
+                ("accent_threshold", setting("accent_threshold")),
+                ("accent_sweep", share(&chosen("accent_sweep"), PERCENT)),
+                ("accent_decay", share(&chosen("accent_decay"), MILLISECONDS)),
+                ("amp_decay", share(&chosen("amp_decay"), MILLISECONDS)),
+                ("soft_attack", share(&chosen("soft_attack"), TENTHS_OF_MILLISECONDS)),
+            ])
+        }
         "chip_steps" => mapping(vec![
             typed,
             ("start_level", setting("start_level")),
@@ -211,6 +248,15 @@ fn filter(sound: &Sound) -> Data {
                 ("env_amount", share(&setting("env_amount"), PERCENT)),
                 ("key_track", share(&setting("key_track"), PERCENT)),
                 ("drive", share(&setting("drive"), PERCENT)),
+                // The Diode's Filter FM, the oscillator moving the cutoff for growl, is a modification: none on Stock.
+                (
+                    "filter_fm",
+                    if kind == "diode" && setting(CIRCUIT).as_str() == Some(MODDED) {
+                        share(&setting("filter_fm"), PERCENT)
+                    } else {
+                        Data::Float(0.0)
+                    },
+                ),
             ])
         }
     }
