@@ -124,7 +124,15 @@ The professor's research is in `.claude/notes/synthesis/`.
   instrument with none pays nothing. Stereo voices, such as unison spread across the field, come later.
 - **A load meter**: llamatron measures each instrument's share of the time it has for each chunk of audio, shown on the
   Instrument page and the Bus page, the whole set's share shown in the header, where room is found, and the status line
-  warning past about 70%. No track limit. Using more cores is a later idea. Its place and form to discuss.
+  warning past about 70%. No track limit; using more cores is the next idea. Its place and form to discuss.
+- **The instruments on several cores**: exporting first, each instrument rendering the whole song on a core of its own,
+  summed in a fixed order so that every export is byte for byte the same. Then playback: a fixed pool of workers, one
+  for each performance core but one, joining the sound card's real-time workgroup so that the system keeps them on the
+  performance cores; each block's instruments handed out as jobs, the callback taking jobs too, the buffers summed in a
+  fixed order. The pool is used only when the load meter shows the set needs it, past about a quarter of the block's
+  time, lighter sets staying on one thread, both paths tested. Buses make a block two rounds, the instruments, then the
+  buses; FluidSynth is one job, with its own setting for more cores measured; splitting one heavy instrument's voices
+  across workers only if the meter shows it is needed.
 
 ## The Effects
 
