@@ -17,14 +17,16 @@ different.
 ## MIDI CC Sources
 
 A knob on a controller, or a CC row of a pattern, can move the sound through
-the matrix. The last entry of the Source and Via pickers is `MIDI CC…`, which
-asks for a CC's number, from 0 to 127, and the slot then shows it as `CC 74`.
-The CC's value, from 0 to 127, moves its destination from nothing to the
-slot's full Amount. A track's CC rows reach its built-in instrument as they
-reach any MIDI device, so a pattern whose CC row the track sends as CC 74,
-with a slot reading CC 74 into Cutoff, opens and closes the filter as it
-plays, live and in a WAV export alike. A CC starts at 0 until its first
-message comes.
+the matrix. The last entry of the Source and Via pickers is `MIDI CC`. Beside
+each Source and Via stands a CC field: a dash where the slot reads anything
+else, and the CC's number, from 0 to 127, where it reads a MIDI CC, 74 at
+first. Right moves the cursor onto the number, where `[` and `]` step it and
+ENTER types it. The CC's value, from 0 to 127, moves its destination from
+nothing to the slot's full Amount. A track's CC rows reach its built-in
+instrument as they reach any MIDI device, so a pattern whose CC row the track
+sends as CC 74, with a slot reading CC 74 into Cutoff, opens and closes the
+filter as it plays, live and in a WAV export alike. A CC starts at 0 until its
+first message comes.
 
 ## How the Matrix Is Built
 

@@ -21,7 +21,7 @@ instruments:
       envelopes: [{ type: adsr, attack: 5, decay: 300, sustain: 60, release: 200 }, { type: vactrol }, { type: ar, attack: 0, release: 80 }]
       filter: { type: ladder, cutoff: 1200, resonance: 40, env_amount: 50, key_track: 50 }
       lfos: [{ "on": true, shape: triangle, rate: 60, retrigger: true }, { "on": true, shape: sample_and_hold, rate: 400 }]
-      matrix: [{ source: lfo1, via: none, destination: pitch, amount: 2 }, { source: lfo2, via: velocity, destination: cutoff, amount: 30 }, { source: env3, via: none, destination: pulse_width, amount: 25 }]
+      matrix: [{ source: lfo1, via: none, destination: pitch, amount: 2 }, { source: lfo2, via: cc1, destination: cutoff, amount: 30 }, { source: env3, via: none, destination: pulse_width, amount: 25 }]
       effects: [{ effect: drive, curve: warm, amount: 40, mix: 70 }, { effect: bitcrush, bits: 10, rate: 16000, mix: 40 }]
 
   - { name: env adsr, kind: built_in, role: normal, sound: { engine: basic, envelopes: [{ type: adsr }] } }

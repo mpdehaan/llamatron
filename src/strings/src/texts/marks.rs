@@ -172,6 +172,8 @@ pub const MSG_CC_LANE_OFF: &str = "off";
 pub const MSG_CC_LANE_VARIES: &str = "?";
 pub const MSG_TOGGLE_OFF: &str = " ";
 pub const MSG_PICKER_MARK: &str = "▾";
+/// What stands beside a field where the field beside it would mean nothing, such as a slot's CC beside a Source that is no CC.
+pub const MSG_NOTHING_BESIDE: &str = "-";
 pub const MSG_STACKED_BUTTON: &str = "[ {name} ]";
 pub const MSG_FLYOUT_CHOSEN: &str = "[ {name} ▸ {chosen} ]";
 pub const MSG_FLYOUT_CHOSEN_ALONE: &str = "[ ▸ {chosen} ]";

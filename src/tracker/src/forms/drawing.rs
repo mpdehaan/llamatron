@@ -306,16 +306,31 @@ pub fn spots_of(looks: &Looks, tab: &Tab, width: usize) -> Vec<Spot> {
     let drawn = drawn_columns(looks, tab, inner, None);
     let widths: Vec<usize> = drawn.iter().map(|(lines, _)| column_width(lines)).collect();
     for (band_place, band) in bands_of(&widths, inner, &columns_under(tab)).into_iter().enumerate() {
-        for (column_place, place) in band.into_iter().enumerate() {
+        // A column with fields beside its own takes two places in its band, so that Left and Right reach them.
+        let mut column_place = 0i64;
+        for place in band {
             let column = &tab.columns[place];
             let mut line = usize::from(column.boxed) + usize::from(column.heading.is_some());
+            let mut lines = Vec::new();
             for field in &column.fields {
+                lines.push(line);
                 spots.push(Spot {
                     band: band_place as i64,
-                    column: column_place as i64,
+                    column: column_place,
                     line: (line + field.selected_line()) as i64,
                 });
                 line += field_lines(field, looks, false, 0, inner).len();
+            }
+            column_place += 1;
+            if column.fields_beside().next().is_some() {
+                for beside in column.beside.iter().filter(|beside| beside.field.is_some()) {
+                    spots.push(Spot {
+                        band: band_place as i64,
+                        column: column_place,
+                        line: lines.get(beside.of).copied().unwrap_or(line) as i64,
+                    });
+                }
+                column_place += 1;
             }
         }
     }
@@ -396,7 +411,7 @@ fn drawn_columns(looks: &Looks, tab: &Tab, inner: usize, cursor: Option<i64>) ->
     let mut drawn = Vec::new();
     let mut first = 0i64;
     for column in &tab.columns {
-        let count = column.fields.len() as i64;
+        let count = column.field_count() as i64;
         let within = cursor
             .filter(|place| first <= *place && *place < first + count)
             .map(|place| (place - first) as usize);
@@ -470,14 +485,90 @@ fn column_lines(looks: &Looks, column: &crate::forms::tab_box::TabColumn, inner:
         lines.push(Text::styled(&format!("{INDENT}{heading}"), Style::BOLD));
     }
     let mut selected = None;
+    let mut starts = Vec::new();
     for (place, field) in column.fields.iter().enumerate() {
         let here = cursor == Some(place);
         if here {
             selected = Some(lines.len() + field.selected_line());
         }
+        starts.push(lines.len());
         lines.extend(field_lines(field, looks, here, label_width, inner));
     }
+    if !column.beside.is_empty() {
+        let beside_cursor = cursor.and_then(|place| place.checked_sub(column.fields.len()));
+        if let Some(line) = beside_lines(column, &mut lines, &starts, label_width, beside_cursor) {
+            selected = Some(line);
+        }
+    }
     (lines, selected)
+}
+
+/// The widest value a field can show, every choice included, with the picker's mark where it has one, so that what
+/// stands beside it never moves as the value changes.
+fn widest_value(field: &Field) -> usize {
+    let shown = match &field.kind {
+        crate::forms::nodes::Kind::Choice { names: Some(names), .. } => names.iter().map(|name| name.chars().count()).max(),
+        _ => None,
+    };
+    let mark = if field.enter_what == legends::What::CHOOSE {
+        marks::MSG_PICKER_MARK.chars().count()
+    } else {
+        0
+    };
+    padded("").chars().count() + shown.unwrap_or(0).max(field.value().chars().count()) + mark
+}
+
+/// The fields beside a column's own drawn onto the lines of the fields they stand beside, in a column of their own past
+/// the widest the fields they stand beside can be: each its label and value, or its label over a dash where it has no field.
+/// Gives the line the cursor is on where it is on one of them.
+fn beside_lines(column: &crate::forms::tab_box::TabColumn, lines: &mut [Text], starts: &[usize], label_width: usize, cursor: Option<usize>) -> Option<usize> {
+    // Past the widest the fields with something beside them can be; a field with nothing beside it may run under.
+    let main_width = column
+        .beside
+        .iter()
+        .filter_map(|beside| column.fields.get(beside.of).map(|field| (beside.of, field)))
+        .map(|(of, field)| {
+            let drawn = starts.get(of).and_then(|start| lines.get(*start)).map_or(0, Text::cell_len);
+            drawn.max(cursor_mark(false).chars().count() + label_width + widest_value(field))
+        })
+        .max()
+        .unwrap_or(0);
+    let beside_label = column.beside.iter().map(|beside| beside.label.chars().count()).max().unwrap_or(0) + COLUMN_GAP.len();
+    let value_width = column
+        .beside
+        .iter()
+        .filter_map(|beside| beside.field.as_ref())
+        .map(widest_value)
+        .max()
+        .unwrap_or(0)
+        .max(padded(marks::MSG_NOTHING_BESIDE).chars().count());
+    let mut selected = None;
+    let mut stopping = 0;
+    for beside in &column.beside {
+        let Some(line) = starts.get(beside.of).and_then(|start| lines.get_mut(*start)) else {
+            continue;
+        };
+        let here = beside.field.is_some() && cursor == Some(stopping);
+        let used = line.cell_len();
+        line.append(&SPACE.repeat(main_width.saturating_sub(used)), Style::PLAIN);
+        line.append(cursor_mark(here), Style::PLAIN);
+        let label_style = if here { Style::BOLD } else { Style::PLAIN };
+        match &beside.field {
+            Some(field) => {
+                line.append(&ljust(&beside.label, beside_label), label_style);
+                line.append(&padded(field.value()), Style::PLAIN);
+                if here {
+                    selected = Some(starts[beside.of]);
+                }
+                stopping += 1;
+            }
+            None => {
+                line.append(&ljust(&beside.label, beside_label), Style::DIM);
+                line.append(&format!("{:^value_width$}", marks::MSG_NOTHING_BESIDE), Style::DIM);
+            }
+        }
+    }
+    selected
 }
 
 fn column_width(lines: &[Text]) -> usize {

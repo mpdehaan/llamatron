@@ -17,16 +17,39 @@ pub const TOP_BAND: i64 = -1;
 pub struct TabColumn {
     pub heading: Option<String>,
     pub fields: Vec<Field>,
+    /// The fields drawn beside some of its fields, in a narrow column of their own inside the same box.
+    pub beside: Vec<Beside>,
     /// Whether it starts a band of its own under the columns before it.
     pub under: bool,
     pub boxed: bool,
 }
 
+/// A field drawn beside one of a column's fields, on its line, such as a Mod Matrix slot's CC number beside its Source;
+/// where the field would mean nothing, its label stands over a dash and the cursor passes it by.
+#[derive(Clone, Debug)]
+pub struct Beside {
+    /// The place among the column's fields of the field it stands beside.
+    pub of: usize,
+    pub label: String,
+    pub field: Option<Field>,
+}
+
 impl TabColumn {
+    /// The fields beside its own that the cursor stops on, in order, after its own fields.
+    pub fn fields_beside(&self) -> impl Iterator<Item = &Field> {
+        self.beside.iter().filter_map(|beside| beside.field.as_ref())
+    }
+
+    /// How many fields the cursor stops on in it, its own and those beside.
+    pub fn field_count(&self) -> usize {
+        self.fields.len() + self.fields_beside().count()
+    }
+
     pub fn new(heading: Option<&str>, fields: Vec<Field>) -> TabColumn {
         TabColumn {
             heading: heading.map(str::to_string),
             fields,
+            beside: Vec::new(),
             under: false,
             boxed: false,
         }
@@ -66,12 +89,13 @@ impl Tab {
         let mut fields: Vec<&Field> = self.top.iter().collect();
         for column in &self.columns {
             fields.extend(column.fields.iter());
+            fields.extend(column.fields_beside());
         }
         fields
     }
 
     pub fn field_count(&self) -> usize {
-        self.top.len() + self.columns.iter().map(|column| column.fields.len()).sum::<usize>()
+        self.top.len() + self.columns.iter().map(TabColumn::field_count).sum::<usize>()
     }
 
     pub fn is_dim(&self) -> bool {
