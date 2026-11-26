@@ -6,7 +6,7 @@
 //! from none at zero. Transistor is the discrete VCA of the classic monosynths: it warms and squashes the
 //! loudest notes and leaks a little when shut, part of their drone. OTA is the chip VCA of the polysynths and modulars,
 //! opening exponentially and saturating rounder. Each one's Response sets how Env 1 opens it, from linear to exponential.
-//! (The low-pass gate, the fourth type, is the voice's gate part, filters.rs's GatePart.)
+//! (The low-pass gate, the fourth type, is gate.rs's GatePart standing in the Amp's place.)
 
 use crate::protocol::values::{number, word};
 

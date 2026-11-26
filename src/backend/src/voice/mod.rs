@@ -12,6 +12,7 @@ pub mod blep;
 pub mod effects;
 pub mod envelopes;
 pub mod filters;
+pub mod gate;
 pub mod modulation;
 pub mod oscillators;
 pub mod oversample;

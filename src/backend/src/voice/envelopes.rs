@@ -241,11 +241,35 @@ fn sid_adsr(spec: &Value) -> EnvelopePart {
     }
 }
 
+/// The Response of a slow cell, the vactrol's default: two thirds of the way from fast to lazy.
+pub const SLOW_RESPONSE: f64 = 0.67;
+/// The cells the Response passes through, from fast to lazy, each its place along the gauge, its rise and its fall in
+/// seconds: the fast, classic, slow and lazy cells of the vactrol's datasheets.
+const CELLS: [(f64, f64, f64); 4] = [(0.0, 0.0025, 0.035), (0.33, 0.005, 0.08), (SLOW_RESPONSE, 0.012, 0.25), (1.0, 0.02, 0.6)];
+
+/// A cell's rise and fall in seconds at a Response from 0 (fast) to 1 (lazy), each moving evenly in its logarithm between
+/// the two cells it lies between, and slowed by its Age, as an old cell is.
+pub fn cell_times(response: f64, age: f64) -> (f64, f64) {
+    let response = response.clamp(0.0, 1.0);
+    let after = CELLS.iter().position(|cell| cell.0 >= response).unwrap_or(CELLS.len() - 1).max(1);
+    let (from, to) = (CELLS[after - 1], CELLS[after]);
+    let along = (response - from.0) / (to.0 - from.0);
+    let between = |low: f64, high: f64| low * (high / low).powf(along);
+    let rise = between(from.1, to.1).max(SHORTEST_ATTACK) * (1.0 + AGE_SLOWER_RISE * age);
+    let fall = between(from.2, to.2).max(SHORTEST_CELL_FALL) * (1.0 + AGE_LONGER_FALL * age);
+    (rise, fall)
+}
+
 fn vactrol(spec: &Value) -> EnvelopePart {
     let age = number(spec, "age", 0.0);
     let light = 1.0 - AGE_DIMMING * age;
-    let rise = number(spec, "rise", 0.012).max(SHORTEST_ATTACK) * (1.0 + AGE_SLOWER_RISE * age);
-    let fall = number(spec, "fall", 0.25).max(SHORTEST_CELL_FALL) * (1.0 + AGE_LONGER_FALL * age);
+    let (rise, fall) = match spec_number(spec, "response") {
+        Some(response) => cell_times(response, age),
+        None => (
+            number(spec, "rise", 0.012).max(SHORTEST_ATTACK) * (1.0 + AGE_SLOWER_RISE * age),
+            number(spec, "fall", 0.25).max(SHORTEST_CELL_FALL) * (1.0 + AGE_LONGER_FALL * age),
+        ),
+    };
     let unstable = 1.0 - number(spec, "stability", 1.0);
     let gated = word(spec, "drive", "strike") != "strike";
     let width = number(spec, "strike_width", 0.002);
@@ -269,6 +293,14 @@ fn vactrol(spec: &Value) -> EnvelopePart {
         drift: DRIFT * unstable,
         full,
     }
+}
+
+/// A number the spec holds, or None where it holds none.
+fn spec_number(spec: &Value, key: &str) -> Option<f64> {
+    spec.as_map()?
+        .iter()
+        .find(|(name, _)| name.as_str() == Some(key))
+        .and_then(|(_, value)| value.as_f64().or_else(|| value.as_i64().map(|whole| whole as f64)))
 }
 
 /// The SID chip's fall from a counter level to a floor, as (seconds, level) points, one straight segment for each division
@@ -613,6 +645,20 @@ mod tests {
 
     use super::*;
     use rmpv::Value;
+
+    /// The Response lands on each of the four cells at its place on the gauge, so that an older set's Cell plays as it
+    /// did, and moves evenly between them.
+    #[test]
+    fn the_response_passes_through_every_cell() {
+        let new = 0.0;
+        for (place, rise, fall) in CELLS {
+            let (at_rise, at_fall) = cell_times(place, new);
+            assert!((at_rise - rise).abs() < 1e-12 && (at_fall - fall).abs() < 1e-12, "{place}");
+        }
+        let (quick, _) = cell_times(0.1, new);
+        let (lazier, _) = cell_times(0.2, new);
+        assert!(CELLS[0].1 < quick && quick < lazier && lazier < CELLS[1].1);
+    }
 
     /// Every envelope type at its snappiest settings is tight, at its top within a millisecond and silent within a few
     /// more of its release, yet never steps by more than a twelfth of its swing from one sample to the next, so that
