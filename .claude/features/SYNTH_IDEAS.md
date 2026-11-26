@@ -68,6 +68,12 @@ The professor's research is in `.claude/notes/synthesis/`.
     its own ratio of the frequency, polyrhythmic LFOs or, at audio rate, just-intonation chords. Synced to the tempo, its
     Frequency becomes a ratio of the beat. At audio rate its Shape and Slope change meaning (stronger timbres, pulse
     width) and its Shape and Smoothness narrow at high pitches to stay unaliased.
+- **Envelopes drawn**: on the Envelopes tab, each envelope's shape drawn in its box from its settings, redrawn as they
+  change, and a moving mark along it while a note fires it, worked out on the screen's side as the gauges' live markers
+  are, only while the tab is on screen.
+- **A spectrogram on the Instrument page**: in the upper right, beside the settings above the tabs, the instrument's sound
+  as a spectrogram: low notes at the bottom, time scrolling left, brightness its loudness; drawn only while the page is
+  on screen.
 - **A one-voice instrument's note priority**: Lowest, highest or last, beside today's lowest-of-a-chord.
 - **The instrument on the Track page**: The assigned instrument's settings drawn below the track's own, editable there.
 - **The Instruments page as a rack**: A mockup of every instrument's tab rows in one column, each expanded or collapsed and
