@@ -44,6 +44,10 @@ The professor's research is in `.claude/notes/synthesis/`.
     musical before choosing.
   - Burst: a few cycles at each note, then still, for ratchets and trills.
   - One LFO moving another's Rate or depth, through the Mod Matrix's Via or the built-in routes.
+  - **Chaos**: one modulator holding the chaotic systems above as a choice of System (Lorenz, Rössler and the others
+    researched), with a Chaos amount and a speed, its X, Y and Z as Mod Matrix sources.
+  - **Drawn on screen**: each modulator draws what it is doing in its box (a chaotic system's path, the snails' traces,
+    a tide's four outputs), worked out on the screen's side only while its box is on screen, and only if cheap.
   - **Snail**: three slow chaotic circuits, made to suit llamatron's pages: three slow chaotic
     circuits, each travelling around two strange attractors at its own pace (the original's about 15 to 30 seconds, 60
     to 90 seconds, and 30 to 40 minutes a trip), two of them with a Lean, which sets which attractor it lingers around
