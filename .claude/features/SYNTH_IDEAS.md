@@ -22,6 +22,8 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **Demos of the new modulators**: a demo for each new kind as it is built, LFO+ (Fade in, Tempo, Smooth random), Snail,
   Chaos, Tide, Turing, Bounce and Swarm, each made to show what the modulator does to music, and kept to the synth demos'
   rules (DEMO_IDEAS.md).
+- **Volume on the Amp tab**: the instrument's Volume gauge, 0% to 150% after the effects, moves onto the Amp tab and
+  defaults to 90%; sets keep the value they saved.
 - **Disconnect filter**: a switch on Env 2 that unhooks it from the filter, leaving Env 2 free for the Mod Matrix.
 - **New-instrument choices**: Blank, Sampled (FluidSynth, where installed), Synth, Drum Synth or External MIDI, beside Normal
   and Percussion, each choosing a few settings that can still be changed. Mockup first.
@@ -117,6 +119,12 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **FluidSynth through the effects**: FluidSynth playing each MIDI channel into a stereo pair of its own, so that each
   FluidSynth instrument gets the effect blocks, pan and the buses as a built-in synth does; FluidSynth's own reverb and
   chorus stay outside the chains.
+- **Stereo**: every voice of a built-in synth stays mono and every instrument has a Pan; an instrument's effect chain
+  turns stereo from its first stereo effect (a ping-pong delay, chorus, reverb or the rotary speaker), so that an
+  instrument with none pays nothing. Stereo voices, such as unison spread across the field, come later.
+- **A load meter**: llamatron measures each instrument's share of the time it has for each chunk of audio, shown on the
+  Instrument page and the Bus page, the whole set's share shown in the header, where room is found, and the status line
+  warning past about 70%. No track limit. Using more cores is a later idea. Its place and form to discuss.
 
 ## The Effects
 
