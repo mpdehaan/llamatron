@@ -532,7 +532,7 @@ impl ArrangePage {
         self.opened = None;
     }
 
-    /// Open the page of what a picked line names: a chain's, a scale's or a groove's; an instrument's is not ported yet.
+    /// Open the page of what a picked line names: a chain's, a scale's, a groove's or an instrument's.
     fn open_target(&self, app: &mut App, target: Target) {
         use llamatron_model::schema::generated::file_format::Section;
         match target.kind {
@@ -545,8 +545,11 @@ impl ArrangePage {
             Section::GROOVES => app.show_page(Box::new(crate::screens::one_row_editor::OneRowEditor::new(
                 crate::screens::set::groove_editor::GrooveEditor { name: target.name },
             ))),
+            Section::INSTRUMENTS => app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
+                crate::screens::set::instrument_editor::InstrumentEditor { name: target.name },
+            ))),
             _ => app.show_page(Box::new(NotPorted {
-                name: "InstrumentEditor".to_string(),
+                name: target.kind.to_string(),
             })),
         }
     }
