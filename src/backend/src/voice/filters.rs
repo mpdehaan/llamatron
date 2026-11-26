@@ -18,6 +18,7 @@
 
 use crate::dsp::{flushed, HIGHEST_SHARE};
 use crate::protocol::values::{number, word};
+use crate::voice::acid::{self, AcidFilterState};
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -26,7 +27,6 @@ const LOWEST_CUTOFF: f64 = 20.0;
 const ENV_MOD_DIP: f64 = 0.5;
 /// The ladder's loop gain at full resonance: just past four, where the loop oscillates, held by the saturation.
 const LADDER_FEEDBACK: f64 = 4.1;
-const DIODE_FEEDBACK: f64 = 3.3;
 const OTA_FEEDBACK: f64 = 3.8;
 const LOWEST_Q: f64 = 0.5;
 const MOST_Q: f64 = 20.0;
@@ -77,6 +77,8 @@ pub struct FilterState {
     g: f64,
     feedback: f64,
     countdown: usize,
+    /// The Diode filter's own circuit, the acid bass's (acid.rs), made the first time it plays.
+    acid: Option<AcidFilterState>,
 }
 
 impl FilterState {
@@ -103,10 +105,18 @@ impl FilterPart {
             "high" if !matches!(kind, FilterKind::Ladder | FilterKind::Diode | FilterKind::Ota) => FilterMode::High,
             _ => FilterMode::Low,
         };
-        let amount = number(spec, "env_amount", 0.0);
+        let mut amount = number(spec, "env_amount", 0.0);
         let mut cutoff = number(spec, "cutoff", 1200.0);
         if kind == FilterKind::Diode {
-            cutoff *= 2f64.powf(-ENV_MOD_DIP * amount.abs());
+            // The acid bass's measured mapping: the Env amount sets how far the envelope sweeps, and lowers where the
+            // sweep starts, by the cutoff's place in the circuit's range; an amount below zero closes the filter instead.
+            if amount >= 0.0 {
+                let (scale, offset) = acid::envelope_mapping(cutoff, amount);
+                cutoff *= 2f64.powf(-scale * offset);
+                amount = scale / ENVELOPE_OCTAVES;
+            } else {
+                cutoff *= 2f64.powf(-ENV_MOD_DIP * amount.abs());
+            }
         }
         let mut push = 1.0 + number(spec, "drive", 0.0) * MOST_DRIVE;
         match kind {
@@ -134,6 +144,9 @@ impl FilterPart {
     /// One sample through the filter, its cutoff moved by octaves and its resonance by a share.
     #[inline]
     pub fn process(&self, state: &mut FilterState, input: f64, octaves: f64, resonance_moved: f64) -> f64 {
+        if self.kind == FilterKind::Diode {
+            return self.acid(state, input, octaves, resonance_moved);
+        }
         if state.countdown == 0 {
             self.prepare(state, octaves, resonance_moved);
             state.countdown = COEFFICIENT_STEP;
@@ -155,13 +168,34 @@ impl FilterPart {
         self.finished(out, resonance_moved)
     }
 
+    /// The Diode filter: the acid bass's own circuit after Open303 (acid.rs), its input pushed by Drive, its coefficients
+    /// worked out again every COEFFICIENT_STEP samples as the cutoff moves.
+    #[inline]
+    fn acid(&self, state: &mut FilterState, input: f64, octaves: f64, resonance_moved: f64) -> f64 {
+        let acid = state.acid.get_or_insert_with(|| AcidFilterState::new(self.rate));
+        if state.countdown == 0 {
+            let cutoff = self.cutoff * 2f64.powf(octaves);
+            let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
+            acid.prepare(cutoff, resonance, self.rate);
+            state.countdown = COEFFICIENT_STEP;
+        }
+        state.countdown -= 1;
+        let driven = if self.push != 1.0 {
+            (input * self.push).tanh() / self.push.tanh()
+        } else {
+            input
+        };
+        acid.process(driven)
+    }
+
     fn prepare(&self, state: &mut FilterState, octaves: f64, resonance_moved: f64) {
         let cutoff = (self.cutoff * 2f64.powf(octaves)).clamp(LOWEST_CUTOFF, HIGHEST_SHARE * self.rate);
         state.g = (PI * cutoff / self.rate).tan();
         let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
         state.feedback = match self.kind {
             FilterKind::Ladder => LADDER_FEEDBACK * resonance,
-            FilterKind::Diode => DIODE_FEEDBACK * resonance,
+            // The Diode filter runs its own circuit (acid), never the shared ladder.
+            FilterKind::Diode => 0.0,
             FilterKind::Ota => OTA_FEEDBACK * resonance,
             FilterKind::SallenKey | FilterKind::Multimode => {
                 let most = if self.kind == FilterKind::SallenKey { SCREAM_Q } else { MOST_Q };
@@ -216,14 +250,13 @@ impl FilterPart {
         }
     }
 
-    /// The output finished as its circuit does: the ladder's bass partly made up, the diode's wholly and clipped softly, the
+    /// The output finished as its circuit does: the ladder's bass partly made up, the
     /// Sallen-Key's scream clipped.
     #[inline]
     fn finished(&self, out: f64, resonance_moved: f64) -> f64 {
         let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
         match self.kind {
             FilterKind::Ladder => out * (1.0 + 0.5 * 3.95 * resonance),
-            FilterKind::Diode => (out * (1.0 + DIODE_FEEDBACK * resonance)).tanh(),
             FilterKind::SallenKey => (out * SCREAM_PUSH).tanh() / SCREAM_PUSH.tanh(),
             _ => out,
         }

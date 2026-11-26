@@ -51,6 +51,22 @@ const SCALE_HIGH_CONSTANT: f64 = 0.864344900642434;
 
 /// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `fillWithSquare303`, the 303 square
 /// table.
+/// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `fillWithSaw303`, the 303 saw
+/// table.
+/// One cycle of the saw as Open303 draws it: rising from 0 to 1 over the first half, then from -1 to 0.
+pub fn saw_cycle(length: usize) -> Vec<f64> {
+    let half = length / 2;
+    (0..length)
+        .map(|place| {
+            if place < half {
+                place as f64 / (half as f64 - 1.0)
+            } else {
+                -1.0 + (place - half) as f64 / (length - half) as f64
+            }
+        })
+        .collect()
+}
+
 /// One cycle of the square, from one cycle of a rising saw of a length.
 pub fn square_cycle(length: usize) -> Vec<f64> {
     let half = length / 2;

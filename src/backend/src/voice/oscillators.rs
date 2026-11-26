@@ -14,6 +14,7 @@
 //! made when it is compiled; a sample is plain arithmetic.
 
 use crate::protocol::values::{as_number, list, number, numbers, truth, word};
+use crate::voice::acid;
 use crate::voice::tables::{self, Tables, Waveform, TABLE_MASK, TABLE_SIZE};
 use rmpv::Value;
 use std::sync::Arc;
@@ -31,7 +32,6 @@ const SWEEP_TICKS: f64 = 128.0;
 const CHIP_CLOCK: f64 = 131072.0;
 const LONGEST_PERIOD: i64 = 2047;
 const PERIODS: f64 = 2048.0;
-const SQUARE_PUSH: f64 = 1.8;
 
 /// A MIDI number's frequency in hertz, equal tempered from A 440.
 pub fn frequency_of(pitch: f64) -> f64 {
@@ -72,6 +72,8 @@ pub struct OscillatorState {
     /// moves works out its powers of two once, not every sample.
     pub speeds_for: (f64, f64),
     pub speeds: [f64; 3],
+    /// Fishline's coupling into its filter, a one-pole high-pass, made as its note begins.
+    pub coupling: acid::OnePoleHighpass,
 }
 
 /// One of Basic's oscillators: its tables, whether it is a pulse, read as two saws its width apart, its detune in cents
@@ -104,10 +106,11 @@ pub enum OscillatorPart {
         sweep_up: bool,
         sweep_step: i64,
     },
+    /// Fishline: Open303's saw or its shaped square, each its own band-limited tables (acid.rs).
     Acid {
-        saw: Tables,
-        square: bool,
+        tables: Tables,
         tuning: f64,
+        rate: f64,
     },
 }
 
@@ -139,11 +142,18 @@ pub fn compiled(spec: &Value, rate: f64) -> (OscillatorPart, f64) {
     let part = match word(spec, "type", "basic") {
         "sid" => sid(spec, rate),
         "pocket" => pocket(spec, rate),
-        "acid" => OscillatorPart::Acid {
-            saw: tables::waveform_tables(Waveform::Saw, rate),
-            square: word(spec, "acid_wave", "saw") != "saw",
-            tuning: number(spec, "tuning", 0.0),
-        },
+        "acid" => {
+            let cycle = if word(spec, "acid_wave", "saw") == "saw" {
+                acid::saw_cycle(TABLE_SIZE)
+            } else {
+                acid::square_cycle(TABLE_SIZE)
+            };
+            OscillatorPart::Acid {
+                tables: tables::cycle_tables(&cycle, rate),
+                tuning: number(spec, "tuning", 0.0),
+                rate,
+            }
+        }
         _ => basic(spec, rate),
     };
     (part, pitch_env)
@@ -224,6 +234,9 @@ impl OscillatorPart {
     /// Ready a voice's state as its note begins.
     pub fn begin(&self, state: &mut OscillatorState, pitch: f64) {
         *state = OscillatorState::default();
+        if let OscillatorPart::Acid { rate, .. } = self {
+            state.coupling = acid::OnePoleHighpass::new(acid::COUPLING_HIGHPASS_HZ, *rate);
+        }
         if let OscillatorPart::Pocket { .. } = self {
             state.period = ((PERIODS - CHIP_CLOCK / frequency_of(pitch)).round() as i64).clamp(0, LONGEST_PERIOD);
         }
@@ -246,7 +259,7 @@ impl OscillatorPart {
             OscillatorPart::Basic { partials } => (basic_sample(partials, state, pitch, moves, rate), false),
             OscillatorPart::Sid { .. } => (self.sid_sample(state, pitch, seconds, moves, rate), false),
             OscillatorPart::Pocket { .. } => self.pocket_sample(state, seconds, moves, rate),
-            OscillatorPart::Acid { saw, square, tuning } => (acid_sample(saw, *square, state, pitch + tuning + moves.pitch, rate), false),
+            OscillatorPart::Acid { tables, tuning, .. } => (acid_sample(tables, state, pitch + tuning + moves.pitch, rate), false),
         }
     }
 
@@ -376,7 +389,9 @@ fn basic_sample(partials: &[Partial], state: &mut OscillatorState, pitch: f64, m
     out
 }
 
-fn acid_sample(saw: &Tables, square: bool, state: &mut OscillatorState, pitch: f64, rate: f64) -> f64 {
+/// One sample of Fishline: its table read at the note's pitch, inverted and coupled through the high-pass, as Open303's
+/// oscillator feeds its filter.
+fn acid_sample(tables: &Tables, state: &mut OscillatorState, pitch: f64, rate: f64) -> f64 {
     if state.speeds_for.0 != pitch || state.speeds[0] == 0.0 {
         state.speeds[0] = frequency_of(pitch) * TABLE_SIZE as f64 / rate;
         state.speeds_for.0 = pitch;
@@ -384,11 +399,6 @@ fn acid_sample(saw: &Tables, square: bool, state: &mut OscillatorState, pitch: f
     let speed = state.speeds[0];
     let position = state.phases[0];
     state.phases[0] = wrapped(position + speed);
-    let table = &saw[state.band];
-    let out = read(table, position);
-    if !square {
-        return out;
-    }
-    let pulse = (out - read(table, position + TABLE_SIZE as f64 / 2.0)) * 0.5;
-    (pulse * SQUARE_PUSH).tanh() / SQUARE_PUSH.tanh()
+    let out = -read(&tables[state.band], position);
+    state.coupling.process(out)
 }
