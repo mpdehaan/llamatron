@@ -422,6 +422,21 @@ impl Engine {
         let Some(mut patch) = self.instruments[instrument].take() else { return };
         // A one-voice instrument with Glide on slides to a note that starts while its last is still held, at its Glide
         // time, its envelopes going on, as a monosynth plays legato; a note that starts as the last ends is struck afresh.
+        // A one-voice instrument given a chord, its notes starting together, plays its lowest, as a monosynth's low-note
+        // priority does: a higher note starting with a lower one is let go, a lower one takes the voice.
+        if patch.voices == 1 && patch.drum().is_none() {
+            let together = self
+                .voices
+                .iter()
+                .any(|voice| voice.instrument == instrument && voice.start == event.sample && voice.pitch <= event.pitch && voice.cut_at.is_none());
+            if together {
+                if let Some(hit) = event.hit.take() {
+                    self.throw_away(Trash::Hit(hit));
+                }
+                self.instruments[instrument] = Some(patch);
+                return;
+            }
+        }
         if patch.glides && patch.voices == 1 && patch.drum().is_none() {
             let held = self
                 .voices
@@ -612,5 +627,22 @@ mod tests {
         let (jitter, overlap, first_voice) = (20, 1000, Some(1));
         assert_ne!(sounding_voice(jitter), first_voice, "struck afresh on a voice of its own");
         assert_eq!(sounding_voice(overlap), first_voice, "slid on the first note's voice");
+    }
+
+    /// A one-voice instrument given a chord plays its lowest note, whichever order the chord's notes arrive in.
+    #[test]
+    fn a_one_voice_instrument_plays_a_chords_lowest_note() {
+        let (low, middle, high) = (48.0, 52.0, 55.0);
+        for order in [[high, low, middle], [low, high, middle], [middle, high, low]] {
+            let mut engine = Engine::new(48000.0, None);
+            engine.set_instrument(0, basic_with_voices(1));
+            for pitch in order {
+                engine.schedule(note(0, NOTE_ON, pitch));
+            }
+            let (mut left, mut right) = (vec![0.0; 128], vec![0.0; 128]);
+            engine.render(0, &mut left, &mut right);
+            let sounding: Vec<f64> = engine.sounding().into_iter().map(|(_, pitch)| pitch).collect();
+            assert_eq!(sounding, vec![low], "{order:?}");
+        }
     }
 }

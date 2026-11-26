@@ -57,4 +57,6 @@ only touch,
 one ending as the next starts, never slide; each is struck afresh. A step's
 Glide switch on the pattern is what makes a note run into the next, so the
 pattern says which notes slide and Glide time says how fast. An instrument of
-several voices plays an overlapping note on a voice of its own.
+several voices plays an overlapping note on a voice of its own. An
+instrument of one voice given a chord plays its lowest note, as a monosynth's
+low-note priority does.
