@@ -31,7 +31,7 @@ TABLE_ROW = '|'
 PATH_IN_BACKTICKS = re.compile(r'`((?:src|test|internal_tools|user_scripts|examples|docs|developer_docs|python)/[A-Za-z0-9_./-]+\.(?:py|rs|toml|yml|svg|sh|md|mid|als|ly))`')
 ENCODING = 'utf-8'
 # Files the documents name that git ignores, so a new clone has none: Claude's own queue and its plans with their status, kept on one computer.
-KEPT_OUT_OF_GIT = ('.claude/planning/QUEUE.md', '.claude/planning/DESIGNS.md', '.claude/planning/WIZARD_DESIGNS.md', '.claude/planning/REFACTORING.md', '.claude/planning/REFACTORING_LOG.md')
+KEPT_OUT_OF_GIT = ('.claude/planning/DESIGNS.md', '.claude/planning/WIZARD_DESIGNS.md', '.claude/planning/REFACTORING.md', '.claude/planning/REFACTORING_LOG.md')
 USER_SCRIPTS = ROOT / 'user_scripts'
 USER_SCRIPTS_GUIDE = ROOT / 'docs' / 'USER_SCRIPTS.md'
 SCRIPT_FILES = '*.sh'
@@ -55,7 +55,7 @@ class TestDocumentPaths(unittest.TestCase):
                 with self.subTest(document=document.relative_to(ROOT), path=path):
                     self.assertTrue((ROOT / path).is_file(), path)
 
-    def test_the_queue_is_ignored_by_git(self):
+    def test_the_status_files_are_ignored_by_git(self):
         ignored = (ROOT / '.gitignore').read_text(encoding=ENCODING).splitlines()
         for path in KEPT_OUT_OF_GIT:
             self.assertIn(path, ignored)

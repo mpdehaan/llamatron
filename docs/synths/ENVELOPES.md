@@ -29,6 +29,13 @@ formula, rather than by stepping from one sample to the next, so that a note
 sounds the same whichever chunk of sound it falls in, live and in a WAV export
 alike.
 
+Every envelope can be very snappy and tight, yet none clicks: the quickest
+rise takes half a millisecond and the quickest fall two, as quick as the
+snappiest analog envelopes, so that a time of 0 ms is as short as a note can
+start or stop without a tick. A vactrol falls in no less than four
+milliseconds, and Chip Steps ease in their first level over the same half
+millisecond.
+
 ## ADSR
 
 ![An ADSR on Env 1](../screenshots/envelope_adsr.svg)

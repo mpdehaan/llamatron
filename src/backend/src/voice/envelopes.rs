@@ -13,8 +13,14 @@ use rmpv::Value;
 
 const SILENT: f64 = 1e-4;
 const T60: f64 = 6.908;
-const SHORTEST_ATTACK: f64 = 0.0001;
-const SHORTEST_TIME: f64 = 0.001;
+/// The shortest rise that does not click, half a millisecond, about 24 samples: as snappy as the quickest analog
+/// envelopes, with no step at a note's start sharp enough to be heard as a tick.
+const SHORTEST_ATTACK: f64 = 0.0005;
+/// The shortest decay or release to -60 dB that does not click, 2 ms: its first sample falls by under a twelfth.
+const SHORTEST_TIME: f64 = 0.002;
+/// A vactrol's shortest fall: its hyperbola falls fastest at its very start, so it needs a little longer than an
+/// exponential not to click, still far quicker than any real cell.
+const SHORTEST_CELL_FALL: f64 = 0.004;
 const CURVE_POWER: f64 = 5.64;
 const TIMER_CURVE: f64 = 50.0;
 const STRAIGHT: f64 = 1.0;
@@ -239,7 +245,7 @@ fn vactrol(spec: &Value) -> EnvelopePart {
     let age = number(spec, "age", 0.0);
     let light = 1.0 - AGE_DIMMING * age;
     let rise = number(spec, "rise", 0.012).max(SHORTEST_ATTACK) * (1.0 + AGE_SLOWER_RISE * age);
-    let fall = number(spec, "fall", 0.25).max(SHORTEST_TIME) * (1.0 + AGE_LONGER_FALL * age);
+    let fall = number(spec, "fall", 0.25).max(SHORTEST_CELL_FALL) * (1.0 + AGE_LONGER_FALL * age);
     let unstable = 1.0 - number(spec, "stability", 1.0);
     let gated = word(spec, "drive", "strike") != "strike";
     let width = number(spec, "strike_width", 0.002);
@@ -530,7 +536,9 @@ fn chip_level(state: &mut EnvelopeState, note: NoteTime, start_level: f64, pace:
     if level == 0.0 && (pace > 0.0 || start_level == 0.0) && !up {
         state.done = true;
     }
-    let mut out = level / CHIP_LEVELS;
+    // The chip's first level eased in over the shortest attack, so that a note's start does not click; its steps after are
+    // the chip's own.
+    let mut out = level / CHIP_LEVELS * (note.age / SHORTEST_ATTACK).min(1.0);
     if let Some(released) = note.released {
         let since = note.age - released;
         out *= (1.0 - since / CHIP_FADE).clamp(0.0, 1.0);
@@ -605,6 +613,54 @@ mod tests {
 
     use super::*;
     use rmpv::Value;
+
+    /// Every envelope type at its snappiest settings is tight, at its top within a millisecond and silent within a few
+    /// more of its release, yet never steps by more than a twelfth of its swing from one sample to the next, so that
+    /// neither edge clicks.
+    #[test]
+    fn every_envelope_is_snappy_without_clicking() {
+        let rate = 48_000.0;
+        let most_step = 1.0 / 12.0;
+        let (released, heard) = (0.005, 0.02);
+        let snappiest = [
+            spec(&[
+                ("type", "adsr".into()),
+                ("attack", 0.0.into()),
+                ("decay", 0.0.into()),
+                ("sustain", 0.5.into()),
+                ("release", 0.0.into()),
+            ]),
+            spec(&[("type", "ar".into()), ("attack", 0.0.into()), ("release", 0.0.into())]),
+            spec(&[("type", "asr".into()), ("attack", 0.0.into()), ("release", 0.0.into())]),
+            spec(&[
+                ("type", "sid_adsr".into()),
+                ("attack", 0.0.into()),
+                ("decay", 0.0.into()),
+                ("release", 0.0.into()),
+            ]),
+            spec(&[("type", "vactrol".into()), ("rise", 0.0.into()), ("fall", 0.0.into())]),
+            spec(&[("type", "acid_gate".into()), ("soft_attack", 0.0.into()), ("amp_decay", 0.0.into())]),
+            spec(&[("type", "chip_steps".into()), ("start_level", 15.0.into())]),
+        ];
+        for each in snappiest {
+            let part = compiled(&each, 0.0);
+            let (full_velocity, struck_at) = (1.0, 0.0);
+            let (mut state, ..) = part.start(&mut EnvelopeMemory::default(), full_velocity, struck_at);
+            let mut last = 0.0;
+            for sample in 0..(heard * rate) as usize {
+                let age = sample as f64 / rate;
+                let note = NoteTime { age, released: Some(released) };
+                let level = part.level(&mut state, note, None);
+                assert!((level - last).abs() <= most_step, "{each:?} steps {} at {age}", (level - last).abs());
+                last = level;
+            }
+        }
+        let adsr = compiled(&spec(&[("type", "asr".into()), ("attack", 0.0.into()), ("release", 0.0.into())]), 0.0);
+        let mut state = EnvelopeState::default();
+        let at = |age: f64, state: &mut EnvelopeState| adsr.level(state, NoteTime { age, released: Some(released) }, None);
+        assert!(at(0.001, &mut state) > 0.99, "at its top within a millisecond");
+        assert!(at(released + 0.003, &mut state) < 0.01, "silent within three milliseconds of its release");
+    }
 
     fn spec(pairs: &[(&str, Value)]) -> Value {
         Value::Map(pairs.iter().map(|(key, value)| (Value::from(*key), value.clone())).collect())
@@ -766,6 +822,7 @@ mod tests {
             levels.iter().all(|level| ((level * CHIP_LEVELS).round() - level * CHIP_LEVELS).abs() < 1e-9),
             "steps only"
         );
-        assert!(levels[0] == 1.0 && *levels.last().expect("levels") == 0.0 && done);
+        // Its first level is eased in over the shortest attack, so the millisecond after the start holds it.
+        assert!(levels[1] == 1.0 && *levels.last().expect("levels") == 0.0 && done);
     }
 }
