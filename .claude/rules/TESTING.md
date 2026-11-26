@@ -20,6 +20,9 @@ internal_tools/check_before_commit.sh                              # before comm
   160x50, and compare what llamatron makes with what the Python made of the same file before it retired
   (`py_legacy/frozen_test_data/`). A few `llamatron-compare` processes, one per core, answer set after set on their pipes; no set
   starts a program of its own. A set changed since the answers were frozen has none to be held to, and is counted apart.
+- The key tour's screens are held to llamatron's own earlier screens, kept and retaken on purpose as the program changes,
+  never to the retired Python's (the user's rule). The song wizard alone is held to the Python's frozen screens, until its
+  port is done; no other part of the frozen screens is consulted.
 - No commit of code, examples or tools goes in without the check passing. Documents and `.claude/` files are committed without
   a run, apart from code mid-change; a document naming paths runs `python/tests/test_doc_paths.py` first.
 - Before and after a change that should leave the music alone, every export is compared byte for byte, the version line aside.

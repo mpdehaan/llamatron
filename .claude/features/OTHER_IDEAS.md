@@ -31,7 +31,9 @@ built.
 
 ## The Code
 
-- **The screens comparison in Rust**, inside llamatron-compare, timed before and after (179 A).
+- **The screens comparison in Rust**, inside llamatron-compare, timed before and after (179 A), holding the key tour's
+  screens to llamatron's own earlier screens rather than the Python's, the song wizard's alone still held to the frozen
+  ones until its port is done.
 - **The Rust's shape**, discussions: ratatui for the UI (a crate needs the user's yes); directory depth and smaller files, the
   UI's implementation split from its presentation; testing (cargo-nextest, snapshots, properties, fakes behind traits, no
   allocation on the audio thread, benchmarks, cargo-deny); style (newtypes for units, enums over strings, invalid states
