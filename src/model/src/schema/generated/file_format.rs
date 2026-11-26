@@ -730,6 +730,7 @@ pub struct Effect;
 
 impl Effect {
     pub const NONE: &'static str = "none";
+    pub const BAX: &'static str = "bax";
     pub const BITCRUSH: &'static str = "bitcrush";
     pub const DRIVE: &'static str = "drive";
 }
@@ -821,7 +822,7 @@ pub static LFO_PLUS_SHAPES: &[&str] = &["sine", "triangle", "saw_up", "saw_down"
 pub static LFO_TYPES: &[&str] = &["lfo", "lfo_plus"];
 /// When a modulator's cycle starts again.
 pub static LFO_RESTARTS: &[&str] = &["each_note", "each_scene", "on_play", "never"];
-pub static EFFECTS: &[&str] = &["none", "bitcrush", "drive"];
+pub static EFFECTS: &[&str] = &["none", "bax", "bitcrush", "drive"];
 pub static FILTER_TYPES: &[&str] = &["none", "ladder", "multimode", "sallen_key", "diode", "ota", "low_pass_gate"];
 pub static AMP_TYPES: &[&str] = &["clean", "transistor", "ota_vca", "low_pass_gate_amp"];
 pub static OSCILLATOR_TYPES: &[&str] = &["basic", "asheville", "sid", "pocket", "acid", "drum"];

@@ -27,6 +27,18 @@ between samples, so that any Rate stays even and in tune, not only one that
 divides the sample rate. Bits rounds each sample to fewer bits, which adds a
 gritty hiss that follows the sound.
 
+## Bax
+
+Bax is a tone control, the two knobs, Bass and Treble, that every hi-fi
+amplifier and many guitar amplifiers have, after the circuit Peter Baxandall
+published in 1952. Bass lifts or cuts everything under about 100 Hz, the kick
+and the bottom of a bass line, and Treble everything over about 10 kHz, the
+air and sizzle of cymbals and bright synths, each from -15 dB to +15 dB, 0 dB
+unless set. The shelves are gentle, 6 dB an octave, as on the circuit, so even
+turned far the sound stays natural: a little Bass warms a thin lead, a cut of
+Treble tames a harsh one. At 0 dB both pass the sound untouched. `Bksp` brings
+a gauge back to 0 dB, and Mix blends the shaped sound with the plain one.
+
 ## Planned
 
 The agreed effects, by kind: Drive and Bitcrush for dirt, Bitcrush gaining a

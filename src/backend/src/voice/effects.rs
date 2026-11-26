@@ -6,8 +6,11 @@
 //!
 //! The bitcrusher holds each sample for as long as its rate gives, then rounds to its bits. Drive shapes the mix by a
 //! curve: soft and warm saturate, warm leaning to one side for even harmonics, hard clips, fold folds back past full scale
-//! and wrap wraps round, the last two the harsh digital sounds of cheap grooveboxes.
+//! and wrap wraps round, the last two the harsh digital sounds of cheap grooveboxes. Bax is a tone control after Peter
+//! Baxandall's published circuit of 1952: a gentle shelf of 6 dB an octave under its bass turnover and another over its
+//! treble turnover, each lifting or cutting by its own number of decibels.
 
+use crate::dsp::HIGHEST_SHARE;
 use crate::protocol::values::{number, word};
 use crate::voice::blep;
 use rmpv::Value;
@@ -16,6 +19,11 @@ use std::f64::consts::PI;
 const MOST_GAIN: f64 = 20.0;
 const MOST_FOLDING_GAIN: f64 = 4.0;
 const WARM_LEAN: f64 = 0.3;
+/// Where Bax's shelves turn over, in hertz, fixed as on a hi-fi tone control.
+const BASS_TURNOVER_HERTZ: f64 = 100.0;
+const TREBLE_TURNOVER_HERTZ: f64 = 10_000.0;
+/// Decibels to a gain: twenty to a power of ten.
+const DECIBELS_PER_DECADE: f64 = 20.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Curve {
@@ -43,6 +51,56 @@ enum Kind {
         scale: f64,
         offset: f64,
     },
+    /// Two shelves, each the sound plus what lies past its turnover times its gain less one: the bass the share under a
+    /// one-pole's cutoff, the treble the share over another's.
+    Bax {
+        bass: Shelf,
+        treble: Shelf,
+    },
+}
+
+/// One of Bax's shelves: how much it adds of what lies past its turnover (its gain less one, so that 0 dB adds nothing),
+/// its one-pole's share for its turnover, and the one-pole's state.
+struct Shelf {
+    added: f64,
+    share: f64,
+    state: f64,
+}
+
+/// Which end a shelf lifts or cuts: what lies under its turnover, or over it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum End {
+    Under,
+    Over,
+}
+
+impl Shelf {
+    /// A shelf turning over at some hertz, lifting or cutting one end by some decibels. A cut moves the one-pole's cutoff
+    /// by the cut's own gain, so that it is the exact mirror of a lift of as many decibels, as deep and turning at the same
+    /// place, rather than a shallower cut.
+    fn new(decibels: f64, hertz: f64, end: End, rate: f64) -> Shelf {
+        let gain = 10f64.powf(decibels / DECIBELS_PER_DECADE);
+        let cutoff = match (gain < 1.0, end) {
+            (false, _) => hertz,
+            (true, End::Under) => hertz / gain,
+            (true, End::Over) => hertz * gain,
+        };
+        let g = (PI * cutoff.min(HIGHEST_SHARE * rate) / rate).tan();
+        Shelf {
+            added: gain - 1.0,
+            share: g / (1.0 + g),
+            state: 0.0,
+        }
+    }
+
+    /// The sample's share under the turnover, through a zero-delay one-pole low pass.
+    #[inline]
+    fn low(&mut self, input: f64) -> f64 {
+        let moved = (input - self.state) * self.share;
+        let low = moved + self.state;
+        self.state = low + moved;
+        low
+    }
 }
 
 pub struct Effect {
@@ -58,6 +116,10 @@ pub fn compiled(specs: &[Value], rate: f64) -> Vec<Effect> {
         let kind = match word(spec, "effect", "none") {
             "bitcrush" => bitcrush(spec, rate),
             "drive" => drive(spec),
+            "bax" => Kind::Bax {
+                bass: Shelf::new(number(spec, "bass", 0.0), BASS_TURNOVER_HERTZ, End::Under, rate),
+                treble: Shelf::new(number(spec, "treble", 0.0), TREBLE_TURNOVER_HERTZ, End::Over, rate),
+            },
             _ => continue,
         };
         effects.push(Effect { kind, mix });
@@ -162,19 +224,34 @@ impl Effect {
                     *sample = (dry + (wet - dry) * mix) as f32;
                 }
             }
+            Kind::Bax { bass, treble } => {
+                for sample in buffer.iter_mut() {
+                    let dry = *sample as f64;
+                    let under = bass.low(dry);
+                    let over = dry - treble.low(dry);
+                    let wet = dry + bass.added * under + treble.added * over;
+                    *sample = (dry + (wet - dry) * mix) as f32;
+                }
+            }
         }
     }
 
     /// Back to rest.
     pub fn reset(&mut self) {
-        if let Kind::Bitcrush {
-            phase, held, previous, next, ..
-        } = &mut self.kind
-        {
-            *phase = 0.0;
-            *held = 0.0;
-            *previous = 0.0;
-            *next = 0.0;
+        match &mut self.kind {
+            Kind::Bitcrush {
+                phase, held, previous, next, ..
+            } => {
+                *phase = 0.0;
+                *held = 0.0;
+                *previous = 0.0;
+                *next = 0.0;
+            }
+            Kind::Bax { bass, treble } => {
+                bass.state = 0.0;
+                treble.state = 0.0;
+            }
+            Kind::Drive { .. } => {}
         }
     }
 }
@@ -213,6 +290,40 @@ mod tests {
                 assert_ne!(shape, other);
             }
         }
+    }
+
+    /// The level of a steady sine at some hertz through a Bax, once its shelves have settled, against the sine's own.
+    fn through_bax(bass: f64, treble: f64, hertz: f64) -> f64 {
+        let mut bax = effect(&[("effect", "bax".into()), ("bass", bass.into()), ("treble", treble.into())]);
+        let samples = 48_000;
+        let mut buffer: Vec<f32> = (0..samples)
+            .map(|place| (0.5 * (2.0 * PI * hertz * place as f64 / RATE).sin()) as f32)
+            .collect();
+        let before: f64 = buffer[samples / 2..].iter().map(|sample| (*sample as f64).powi(2)).sum();
+        bax.apply(&mut buffer);
+        let after: f64 = buffer[samples / 2..].iter().map(|sample| (*sample as f64).powi(2)).sum();
+        DECIBELS_PER_DECADE / 2.0 * (after / before).log10()
+    }
+
+    /// Bax at 0 dB leaves the sound as it is; its Bass lifts a low note by its decibels and leaves a high one nearly
+    /// alone, and its Treble the other way round, cutting as well as lifting.
+    #[test]
+    fn bax_lifts_and_cuts_each_end_by_its_decibels() {
+        let (low_note, middle, high_note) = (30.0, 1000.0, 18_000.0);
+        let (lift, cut, near) = (12.0, -12.0, 1.5);
+        assert!(through_bax(0.0, 0.0, middle).abs() < 0.01);
+        assert!(
+            (through_bax(lift, 0.0, low_note) - lift).abs() < near * 2.0,
+            "{}",
+            through_bax(lift, 0.0, low_note)
+        );
+        assert!(through_bax(lift, 0.0, high_note).abs() < near);
+        assert!(
+            (through_bax(0.0, cut, high_note) - cut).abs() < near * 2.0,
+            "{}",
+            through_bax(0.0, cut, high_note)
+        );
+        assert!(through_bax(0.0, cut, low_note).abs() < near);
     }
 
     /// Bitcrush's Bits leaves only a few levels: three bits give at most nine.

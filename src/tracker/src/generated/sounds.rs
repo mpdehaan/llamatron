@@ -602,6 +602,8 @@ pub static EFFECT_DEFAULTS: Preset = Preset::Map(&[
     ("rate", Preset::Whole(0)),
     ("curve", Preset::Text("warm")),
     ("amount", Preset::Whole(33)),
+    ("bass", Preset::Whole(0)),
+    ("treble", Preset::Whole(0)),
     ("mix", Preset::Whole(100)),
 ]);
 pub static SLOT_DEFAULTS: Preset = Preset::Map(&[

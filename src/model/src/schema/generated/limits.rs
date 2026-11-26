@@ -128,4 +128,6 @@ pub const MAX_CUTOFF: i64 = 18000;
 pub const MAX_ENVELOPE_AMOUNT: i64 = 100;
 pub const MIN_BITS: i64 = 1;
 pub const MAX_BITS: i64 = 16;
+/// How far Bax's Bass and Treble lift or cut, in decibels either way.
+pub const MOST_BAX_DECIBELS: i64 = 15;
 pub const MAX_HOLD_RATE: i64 = 48000;

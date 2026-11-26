@@ -234,6 +234,9 @@ pub const MSG_SOUND_GAUGE_EMPTY: &str = "░";
 pub const MSG_SOUND_PERCENT_SHOWN: &str = "{number}%";
 /// A Pan in the middle of the stereo field.
 pub const MSG_PAN_CENTER_SHOWN: &str = "{number}% (center)";
+/// A lift in decibels, and a cut or none.
+pub const MSG_LIFT_DB_SHOWN: &str = "+{number} dB";
+pub const MSG_DB_SHOWN: &str = "{number} dB";
 pub const MSG_SIGNED_PERCENT_SHOWN: &str = "{number:+}%";
 /// A Mod Matrix amount as the range it moves its destination over, from what the source's lowest gives to its highest.
 pub const MSG_PERCENT_RANGE_SHOWN: &str = "{low:+}% to {high:+}%";

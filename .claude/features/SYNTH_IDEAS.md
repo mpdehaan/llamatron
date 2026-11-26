@@ -130,9 +130,6 @@ The professor's research is in `.claude/notes/synthesis/`.
 
 ## The Effects
 
-- **Bax**: an effect after Peter Baxandall's published tone circuit of 1952: Bass and Treble gauges, each -15 dB to
-  +15 dB, 0 dB unless set, a gentle shelf of 6 dB an octave turning at 100 Hz and 10 kHz, fixed; whether it keeps a Mix
-  is open.
 - **Chorus**: a chorus effect, its design drawn from the best open-source choruses, studied when the time comes, with
   their licences checked.
 - **Pre FX**: two slots before the filter, run for each sounding note, offering only the effects that keep no memory:

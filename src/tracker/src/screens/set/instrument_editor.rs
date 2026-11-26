@@ -28,7 +28,7 @@ use llamatron_model::schema::generated::file_format::{
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
     MAX_KNOB, MAX_MATRIX_AMOUNT, MAX_OSCILLATORS, MAX_PAN, MAX_SID_RATE, MAX_VOICES, MAX_VOLUME_PERCENT, MIN_BITS, MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY,
-    MIN_KEYSWITCH_LEAD, MIN_PAN,
+    MIN_KEYSWITCH_LEAD, MIN_PAN, MOST_BAX_DECIBELS,
 };
 use llamatron_strings::{labels, legends, marks, messages, named};
 
@@ -51,6 +51,7 @@ const MIDI: &str = "midi";
 const BUILT_IN: &str = "built_in";
 const NONE_EFFECT: &str = "none";
 const BITCRUSH: &str = "bitcrush";
+const BAX: &str = "bax";
 const ARPEGGIO: &str = "arpeggio";
 /// A Mod Matrix source that is a MIDI CC is `cc` and its number; the picker's entry that asks for one; the CC it asks
 /// with first, the filter's cutoff by custom, and the highest CC.
@@ -1199,6 +1200,15 @@ impl InstrumentEditor {
         tab
     }
 
+    /// One of Bax's shelves: a gauge of decibels from a cut of 15 to a lift of 15, halfway at 0 dB, which Bksp brings back.
+    fn shelf_field(id: usize, label: &str, decibels: i64) -> Field {
+        let shown = |decibels: i64| {
+            let template = if decibels > 0 { marks::MSG_LIFT_DB_SHOWN } else { marks::MSG_DB_SHOWN };
+            named(template, &[("number", decibels.into())])
+        };
+        bounded_gauge(id, label, decibels, (-MOST_BAX_DECIBELS, MOST_BAX_DECIBELS), &shown(decibels)).with_clear(&shown(0))
+    }
+
     fn effects_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
         let effect = |number: usize, name: &str| sound.item("effects", number, name, EFFECT_DEFAULTS);
         let shown_label = |label: &str| named_in(labels::MSG_EFFECT_SHOWN_LABELS, label);
@@ -1214,7 +1224,14 @@ impl InstrumentEditor {
                 &chosen_effect,
             )];
             if chosen_effect != NONE_EFFECT {
-                if chosen_effect == BITCRUSH {
+                if chosen_effect == BAX {
+                    for (name, label) in [("bass", labels::MSG_EFFECT_BASS_LABEL), ("treble", labels::MSG_EFFECT_TREBLE_LABEL)] {
+                        fields.push(
+                            Self::shelf_field(ids.at(Write::Item("effects", number, name)), &numbered(label), whole(&effect(number, name)))
+                                .with_shown_label(&shown_label(label)),
+                        );
+                    }
+                } else if chosen_effect == BITCRUSH {
                     let bits = whole(&effect(number, "bits"));
                     fields.push(
                         Field::number(
@@ -1697,6 +1714,38 @@ mod tests {
         assert_eq!(whole(&sound.value("volume")), unset_volume);
         let voice = InstrumentEditor::voice_fields(&sound, &mut ids);
         assert!(voice.iter().all(|field| field.label != labels::MSG_VOLUME_LABEL));
+    }
+
+    /// Bax in an FX block shows its Bass and Treble, each at 0 dB unless set and a lift shown with its sign, then its Mix.
+    #[test]
+    fn bax_shows_its_bass_treble_and_mix() {
+        let data =
+            llamatron_model::file::data::load("{ name: synth, kind: built_in, role: normal, sound: { engine: basic, effects: [{ effect: bax, treble: 6 }] } }")
+                .expect("the scenario's instrument is YAML");
+        let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
+        let mut ids = Ids { last: 0, writes: Vec::new() };
+        let tab = InstrumentEditor::effects_tab(&Sound::of(&instrument), false, &mut ids);
+        let fields = &tab.columns[0].fields;
+        let numbered = |label: &str| named(label, &[("number", 1.into())]);
+        let labels_shown: Vec<String> = fields.iter().map(|field| field.label.clone()).collect();
+        let expected = [
+            labels::MSG_EFFECT_BLOCK_LABEL,
+            labels::MSG_EFFECT_BASS_LABEL,
+            labels::MSG_EFFECT_TREBLE_LABEL,
+            labels::MSG_EFFECT_MIX_LABEL,
+        ];
+        assert_eq!(labels_shown, expected.iter().map(|label| numbered(label)).collect::<Vec<_>>());
+        let lift = 6;
+        assert!(
+            fields[1].value().ends_with(&named(marks::MSG_DB_SHOWN, &[("number", 0.into())])),
+            "{}",
+            fields[1].value()
+        );
+        assert!(
+            fields[2].value().ends_with(&named(marks::MSG_LIFT_DB_SHOWN, &[("number", lift.into())])),
+            "{}",
+            fields[2].value()
+        );
     }
 
     /// A FluidSynth instrument's MIDI tab has a Pan gauge under its General MIDI sound, in the middle unless set; an
