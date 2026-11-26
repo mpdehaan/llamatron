@@ -11,7 +11,8 @@
 //!   harder before and soft-clipped after, its floor lowered a little by its Env amount as that circuit's is.
 //! - OTA: the creamier ladder, a softer drive before it.
 //! - Multimode: a state-variable filter, low, band, high or notch, its Q from the resonance.
-//! - Sallen-Key: the state-variable filter's low or high pass with a higher Q, clipped after, so that it screams.
+//! - Sallen-Key: the resonant two-pole circuit (sallen_key.rs), low or high pass, two poles with a high-pass in its loop, Drive
+//!   pushing the loop's saturation so that it screams, self-oscillating at full resonance.
 //!
 //! The cutoff is moved in octaves a sample by Env2 through the Env amount, key tracking and the mod matrix; its
 //! coefficients are worked out again every `COEFFICIENT_STEP` samples, which no ear can hear as steps.
@@ -19,6 +20,7 @@
 use crate::dsp::{flushed, HIGHEST_SHARE};
 use crate::protocol::values::{number, word};
 use crate::voice::acid::{self, AcidFilterState};
+use crate::voice::sallen_key::{self, SallenKeyState};
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -30,13 +32,11 @@ const LADDER_FEEDBACK: f64 = 4.1;
 const OTA_FEEDBACK: f64 = 3.8;
 const LOWEST_Q: f64 = 0.5;
 const MOST_Q: f64 = 20.0;
-const SCREAM_Q: f64 = 30.0;
 const HIGH_SHARE: f64 = 0.3;
 const HIGH_Q: f64 = 10.0;
 const MOST_DRIVE: f64 = 10.0;
 const DIODE_PUSH: f64 = 1.5;
 const OTA_PUSH: f64 = 1.2;
-const SCREAM_PUSH: f64 = 1.5;
 const COEFFICIENT_STEP: usize = 4;
 /// How many octaves Filter FM moves the cutoff at full, by the oscillator at full level.
 const FM_OCTAVES: f64 = 2.0;
@@ -83,6 +83,8 @@ pub struct FilterState {
     countdown: usize,
     /// The Diode filter's own circuit, the acid bass's (acid.rs), made the first time it plays.
     acid: Option<AcidFilterState>,
+    /// The Sallen-Key's circuit, its coefficients and sections.
+    sallen_key: SallenKeyState,
 }
 
 impl FilterState {
@@ -152,6 +154,9 @@ impl FilterPart {
         if self.kind == FilterKind::Diode {
             return self.acid(state, input, octaves, resonance_moved);
         }
+        if self.kind == FilterKind::SallenKey {
+            return self.sallen_key(state, input, octaves, resonance_moved);
+        }
         if state.countdown == 0 {
             self.prepare(state, octaves, resonance_moved);
             state.countdown = COEFFICIENT_STEP;
@@ -194,6 +199,30 @@ impl FilterPart {
         acid.process(driven)
     }
 
+    /// The Sallen-Key: the resonant two-pole circuit (sallen_key.rs), Drive pushing its loop's saturation rather than its input, as
+    /// the circuit screams when its loop is driven; its coefficients worked out again every COEFFICIENT_STEP samples.
+    #[inline]
+    fn sallen_key(&self, state: &mut FilterState, input: f64, octaves: f64, resonance_moved: f64) -> f64 {
+        let form = if self.mode == FilterMode::High {
+            sallen_key::Form::High
+        } else {
+            sallen_key::Form::Low
+        };
+        if state.countdown == 0 {
+            let cutoff = (self.cutoff * 2f64.powf(octaves)).clamp(LOWEST_CUTOFF, HIGHEST_SHARE * self.rate);
+            let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
+            state.sallen_key.prepare(form, cutoff, resonance, self.rate);
+            state.countdown = COEFFICIENT_STEP;
+        }
+        state.countdown -= 1;
+        let out = match form {
+            sallen_key::Form::Low => state.sallen_key.low(input, self.push),
+            sallen_key::Form::High => state.sallen_key.high(input, self.push),
+        };
+        state.sallen_key.flush(flushed);
+        out
+    }
+
     fn prepare(&self, state: &mut FilterState, octaves: f64, resonance_moved: f64) {
         let cutoff = (self.cutoff * 2f64.powf(octaves)).clamp(LOWEST_CUTOFF, HIGHEST_SHARE * self.rate);
         state.g = (PI * cutoff / self.rate).tan();
@@ -203,9 +232,10 @@ impl FilterPart {
             // The Diode filter runs its own circuit (acid), never the shared ladder.
             FilterKind::Diode => 0.0,
             FilterKind::Ota => OTA_FEEDBACK * resonance,
-            FilterKind::SallenKey | FilterKind::Multimode => {
-                let most = if self.kind == FilterKind::SallenKey { SCREAM_Q } else { MOST_Q };
-                let mut quality = LOWEST_Q + resonance * most;
+            // The Sallen-Key runs its own circuit (sallen_key), never the state-variable filter.
+            FilterKind::SallenKey => 0.0,
+            FilterKind::Multimode => {
+                let mut quality = LOWEST_Q + resonance * MOST_Q;
                 if cutoff > HIGH_SHARE * self.rate {
                     quality = quality.min(HIGH_Q);
                 }
@@ -256,14 +286,12 @@ impl FilterPart {
         }
     }
 
-    /// The output finished as its circuit does: the ladder's bass partly made up, the
-    /// Sallen-Key's scream clipped.
+    /// The output finished as its circuit does: the ladder's bass partly made up.
     #[inline]
     fn finished(&self, out: f64, resonance_moved: f64) -> f64 {
         let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
         match self.kind {
             FilterKind::Ladder => out * (1.0 + 0.5 * 3.95 * resonance),
-            FilterKind::SallenKey => (out * SCREAM_PUSH).tanh() / SCREAM_PUSH.tanh(),
             _ => out,
         }
     }

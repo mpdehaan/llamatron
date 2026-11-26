@@ -53,9 +53,14 @@ cutoff.
 
 ![The Sallen-Key filter](../screenshots/filter_sallen_key.svg)
 
-The state-variable filter's low-pass or high-pass, pushed to a higher Q and
-clipped after, so that it screams as its resonance rises, as the two-pole
-filters of some early synths do.
+The aggressive two-pole filter of early semi-modular monosynths, low-pass or
+high-pass, modelled on its circuit. Two one-pole sections pass the sound, and
+a third, a high-pass, sits in the feedback loop, so the resonance peaks hard
+and thin rather than round. The loop saturates: Drive pushes the saturation
+inside the loop rather than the sound going in, so a driven, resonant
+Sallen-Key growls and screams rather than only getting louder. At full
+resonance the loop rings on by itself and the filter self-oscillates at its
+cutoff, a sine the saturation holds steady.
 
 ## Diode
 

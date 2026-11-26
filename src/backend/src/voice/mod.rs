@@ -12,4 +12,5 @@ pub mod filters;
 pub mod modulation;
 pub mod oscillators;
 pub mod patch;
+pub mod sallen_key;
 pub mod tables;
