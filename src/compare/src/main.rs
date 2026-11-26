@@ -1637,6 +1637,8 @@ the place. The keys that work everywhere are listed once:
 - `F3` ABOUT
 - `Ctrl+C` QUIT NOW
 ";
+/// A kind of place and the keys offered there, each the name its legend shows and what it does.
+type PlaceKeys = (String, Vec<(String, String)>);
 /// What a place is called where its page names no kind of place.
 const ANY_PLACE: &str = "anywhere";
 
@@ -1650,7 +1652,7 @@ fn keymap(sets: Option<&str>, out: Option<&str>) -> ExitCode {
     let _ = std::fs::create_dir_all(&folder);
     std::panic::set_hook(Box::new(|_| {}));
     // Each page's kinds of place in the order the walk first reached them, each with the keys it offered there.
-    let mut pages: std::collections::BTreeMap<String, Vec<(String, Vec<(String, String)>)>> = std::collections::BTreeMap::new();
+    let mut pages: std::collections::BTreeMap<String, Vec<PlaceKeys>> = std::collections::BTreeMap::new();
     for set in sets.split(',') {
         let explored = match llamatron_tracker::tour::explore(std::path::Path::new(set), &folder, EXPLORE_COLUMNS, EXPLORE_ROWS) {
             Ok(explored) => explored,
