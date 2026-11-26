@@ -1,0 +1,2300 @@
+# Ideas
+#
+# The user's ideas for later, kept by Claude, with what each would mean for the code: what it touches, what it
+# depends on and what is still undecided. Nothing here is finished: Claude removes an idea as soon as it's built,
+# without being asked, and trims the finished parts out of one that's partly built. Ideas are added when the user asks.
+#
+# Each idea has a title, a priority and a text. Priority 1 is the highest. The user's words are numbers here:
+# high is 1, medium is 5, low is 10, and an idea the user hasn't ranked is 99. The file is kept sorted, priority 1
+# at the top, and ideas of one priority keep the order they have, so the user can edit a priority or move an idea by
+# hand; internal_tools/sort_ideas.sh puts the file back in order, and Claude runs it whenever the file is out of order.
+# A title that starts "In progress:" is work started but not finished, which is named first when the user asks what
+# to do next. Keys are described by what they do, not by their letters, since the letters change.
+
+- title: "An organ engine and a rotary speaker effect"
+  priority: 1
+  text: |
+    A built-in organ engine that plays the classic organ sounds: the tonewheel organ, with nine drawbars at the footages
+    16', 5 1/3', 8', 4', 2 2/3', 2', 1 3/5', 1 1/3' and 1', a percussion on the second or third harmonic, fast or slow, soft
+    or normal, key click and a little leakage between wheels; and the two transistor combo organs of the sixties, the
+    bright, reedy British one and the thin, buzzy Italian one, each with its own tabs or stops and its vibrato. Fully
+    polyphonic, every note sounding at once as an organ's does, with no envelope beyond the key's on and off. Undecided:
+    whether the three are one engine with a Model setting or three engines; which settings become the engine's eight
+    Synth Control rows (drawbars, percussion, vibrato and the speaker's speed are the likely ones); and its name, since no
+    maker's name may be used.
+    A rotary speaker effect for the effect blocks: a horn and a drum turning at their own speeds, Slow and Fast, each
+    speeding up and slowing down with its own inertia when the speed is switched, with the pitch wobble, the swirl of
+    level and the stereo spread they make, and the overdrive of the amplifier before them. Its speed switch is the setting
+    a player reaches for while playing, so it is a likely Synth Control row. Needs the professor's notes on both before
+    building, and stereo (the Pan work) for its spread.
+
+- title: "Drop 2 and drop 2 and 4 chord voicings"
+  priority: 1
+  text: |
+    Asked for by a user: drop 2 and drop 2 and 4 voicings, where the second note from the top of a close chord, or the second and
+    the fourth, is dropped an octave. Details are not settled and need a discussion: whether they are a choice in the Chord Selector
+    that the pattern editor's chord key opens, beside the inversions; whether they are a setting of the Chords generator's
+    voicing; or both, and how they meet inversions and voice leading.
+
+- title: "music_theory: llamatron's musicianship"
+  priority: 1
+  text: |
+    A refactor that grows, with later features stacked on it: the musical knowledge now spread through the song wizard, the
+    model's values, the munges, the Chords generator and the measuring tools gathered into one package, extremely well
+    organized, plain enough that reading it shows what llamatron understands about music. The wizard becomes thin: it holds
+    the panels, the person's choices and the plan that turns those choices into calls, and writes the result into the set;
+    every musical decision, judging and making alike (writing a melody, a hook, a riff, a bass line, a drum part, choosing a
+    voicing or a progression), is the package's. A maker in the package takes the random source it is handed, so the wizard's
+    seeds still decide a take, and takes no wizard object, so that the MIDI import, generators and later features call the
+    same makers. No explanations or book in the code for now (46): reasons, certainty
+    and worked examples stay in Claude's notes (.claude/notes/music_theory/, MUSICIANSHIP_MAP.md), and Claude reads the
+    package's chapter on a subject before answering from its own knowledge (53).
+    Two tiers in one package (51 A): music_theory/fundamentals, just above math and below the model (pitch classes,
+    intervals, scale shapes and keys, chord shapes and Roman numerals, meter and beat strength: pure values that model/values
+    and the render use); the rest above the model and below engine, understanding patterns, clips, scenes and songs, a rendered
+    song reaching it as a neutral score so that analysis never imports the render; generators may call it, wizards and pages
+    sit above it, and the layer test treats the tiers as two layers.
+    The chapters, in reading order (44): harmony, voice_leading, transformations (today's munges as named operations, with
+    motif development), melody, hooks, rhythm_and_drums, comping, accompaniment, counterpoint (later canon and fugue from a
+    pattern), form (including how patterns evolve between scenes), arrangement, styles, analysis, critique. A chapter is made
+    only when real code moves into it or a feature needs it; no utils module; no shape exceptions; new class names avoid those
+    taken (ScaleShape, ChordShape, MusicalKey, TheoryScore and the like). What a musician does to a pattern moves off Pattern,
+    which keeps storage and editing (52, STYLE.md). Preferences are costs, never refusals, and a style can turn any to nothing.
+    The move, each step a commit with every export byte for byte identical, deleting its old copy in the same commit (48 A):
+    (1) fundamentals: the octave constant (now in about ten places), scale shapes, chord shapes, Roman numerals, with the
+    layer rule; (2) voice leading, timed on the render path; (3) the munges into transformations; (4) the wizard's theory, one
+    module per commit (hooks, chord-tone fitting, phrasing, feels, joins), then, in a separate commit the user approves,
+    chord_notes fixed to use the real chord quality instead of treating any chord with a sharp or flat as major (50 A);
+    (5) the neutral score and the wizard's note dictionaries, one melody engine per commit, the riskiest step, since any change
+    in the order of random draws changes every song; (6) the measuring tools' key finding and chord matching into analysis;
+    (7) the style templates into music_theory/styles with a schema the package owns, separated into what is universal, what
+    is style data and what is the wizard's own choices, the wizard keeping its choices and reading the YAML (47 A).
+    It comes before the MIDI import's refinement (the user's order): the import is to divide a song into scenes smartly,
+    sort its accompaniment into tracks, and offer to remove drums, add drums or add accompaniment, all of which ask this
+    package.
+    To discuss later, each likely its own idea (49 A): a critique report finding problems with a suggested repair for each;
+    an accompaniment wizard (a lead in, a bass, pad or drums out); a counterpoint and fugue generator from a pattern; comping
+    and vamping generators; an analyze-and-recompose round trip; the tension curve driving a controller ramp.
+
+- title: "The wizard's three modes: Song, Chord Jam and MIDI"
+  priority: 1
+  text: |
+    The wizard opens on a choice of mode, the modes sharing as many panels and as much of the engine as they can. To discuss how it
+    works before anything is built.
+    1. Song: the song wizard as it is.
+    2. Chord Jam: open-source chord progressions brought in, some as long as 64 bars; the person chooses the accompaniment, and the
+       wizard makes a song of the progression.
+    3. MIDI: now the Import Wizard, agreed and planned in .claude/planning/DESIGNS.md ("The Import Wizard"). What stays an idea:
+       where the corpus is installed, browsing it, not with a file picker but a browser built for it, pleasant to look
+       through, so that a person reaches something like a hip-hop version of Drunken Sailor in a few steps; what a user may
+       download and browse of the corpus, given each source's terms, is settled first.
+    4. iReal Pro's chord charts, like the import but different: a chart holds chords and a form rather than notes, so its
+       chords are broken into scenes by the chart's sections and repeats, prompting where the chart leaves it unclear, and
+       accompaniment is added as Chord Jam does. Claude may need to download a sample file to see the format.
+
+- title: "Bassify: a generator that plays a clip's chords as a bass player would"
+  priority: 1
+  text: |
+    The user asks whether, beside Guitarify, a Bassify is needed and what it would do. To discuss before anything is built. Claude's
+    first thoughts, to bring as proposals: a bass has no chord to strum, so its two halves would be which note of the chord is
+    played and how the bar is filled. Notes: root, fifth, octave, third, an approach note a step or a half step before the next
+    chord, a walk through the scale, all kept in a bass's range on four or five strings. A bar of cells as Guitarify's, with
+    its own strokes: root, fifth, octave, approach, a ghost (dead) note, a slide in, a rest, and a note held or cut short.
+    Ready-made bars by style: roots in eighths, root and fifth on one and three, a walking four, octaves on the off-beats, a
+    reggae bar that leaves beat one empty, a funk sixteenth bar with ghosts, a gallop, an acid bar. It would let a row of chords
+    become a bass line with no bass pattern written, and give the wizard's bass player a generator to set rather than notes to
+    write. What it overlaps: the Progression generator already moves a figure through chords, and the wizard's bass player
+    already writes lines, so the questions are whether Bassify replaces either or sits beside them, and whether a bar of
+    strokes is the right picture for a bass.
+
+- title: "A picker field's mark that is not taken for the other arrows"
+  priority: 1
+  text: |
+    A settings field that opens a list of choices shows a dim down-pointing triangle after its value (`MSG_PICKER_MARK`). At a small
+    text size, and from a distance, that mark reads like the tracker's other triangles and diamonds: the selected row's mark, the
+    play mark, the flyout's mark and the keyswitch light. The user asks how a list field could be marked differently, so that
+    the kind of field is still seen at a glance and is not confused with those. To discuss with pictures of the candidates at
+    the size they are drawn, before anything changes; whatever is chosen changes every settings page, the mockup rules of
+    `.claude/rules/UX.md` and the screenshots.
+
+- title: "In progress: the designs agreed with the user on 2026-11-11, to build in this order"
+  priority: 1
+  text: |
+    What is left of the designs settled question by question with the user; each part is trimmed out
+    as it is built. Examples still to come take the genres the user approved: Electronic for
+    filter_sweep, idm_chaos1 to 3 and drift_berlin; Classical for drift_canon, drift_pastoral,
+    chamber_music, brass_doorknob, adagio and harmonizer; Children's for row_your_boat; New age for
+    newish_age and gorge; Rock for van_llama and whipping_llama; Musical theatre for retro_musical;
+    Jazz for piano_trio, bigband, llama_supreme and weather; Easy listening for the_mall; Metal for
+    black_midi.
+
+    11. **The Harmonizer**. Each harmonizer is one voice: in the scale, exact half steps, voice-led,
+        or later chord tones; Delay, one of the time settings with "(none)" as its default, makes a
+        canon or a round; "Follow the melody's rhythm" (default) or "Keep this track's rhythm". The
+        design had a Lead track field on the Scene page, overridable on the clip page; the Hocket,
+        built since, names its source track on the generator instead, at the user's choice, so the
+        Harmonizer might well do the same, to be asked when it's built.
+        Canon, once a generator of its own, is this Delay: the clip repeated a number of steps later, moved along the scale
+        and quieter, so one line becomes a round or a canon; its demo, `row_your_boat.yml`, Row, Row, Row Your Boat as a
+        round, is to show how a round is edited in the tracker.
+    12. **General MIDI previews in git**: the user's goal is to check `sh user_scripts/demos_to_midi.sh`'s files, with
+        `output/previews/DEMOS.md` describing every demo, into git, so that people without a synth can hear the
+        demos (not yet).
+    **Demos not yet written, each about three minutes unless noted**: filter_sweep, idm_chaos1 to
+    idm_chaos3, drift_canon, drift_pastoral (classical: a pastoral for strings, winds and horn in F
+    major, Drift shaping dynamics and ornaments and borrowing Lydian), drift_berlin, row_your_boat,
+    harmonizer; the pieces van_llama, whipping_llama (with Strum on its rhythm guitar, as van_llama),
+    retro_musical, piano_trio (a jazz piano trio at a medium swing: ii–V–I changes from Progression,
+    a walking bass, brushes), bigband, chamber_music, gorge, the_mall, newish_age, brass_doorknob,
+    llama_supreme, black_midi and adagio (with Drift), and weather (ten minutes). Each is original
+    music in the style asked, never a copy of a song.
+
+    **After all this**: look at a generative sequencer and a leading tracker online for ideas; suggest clearer names for the
+    demos whose names don't say their style.
+
+- title: "A view of a progression's chords as keyboards"
+  priority: 1
+  text: |
+    From the user: the progression editor could have a button that shows the progression's chords as drawings, each chord listed
+    with the keyboard the Chord dialog draws, the chord's keys filled, so that the changes from chord to chord can be seen. The
+    view scrolls down one drawing at a time and stops at the last, never going round. Only where it makes sense: whether it does,
+    and when the button can be offered (a progression's chords are numbers in whatever scale a clip plays them under, so a scale
+    has to be known), is to be discussed with the user first, on its own, with a drawing by Claude, once the other ideas of the
+    current work are done. What it would mean for the code: `Keyboard` and `chord_keys` in `interface/tracker/components/keyboard.py` already draw
+    one chord, `ChordsEditor.in_words` names each chord in the song's scale, and an Inset Window is the read-only window the
+    tracker has for looking inside things.
+
+- title: "Mono instruments, to be discussed"
+  priority: 1
+  text: |
+    From the user on 2026-11-11, while designing the Hocket, as a high priority discussion: a Mono
+    toggle on the instrument editor, for an instrument that plays one note at a time, as a monosynth or
+    a modular patch does. A Hocket hands notes to tracks that may also play notes of their own, and
+    several tracks may share one instrument, so notes can overlap on an instrument that can't sound
+    them together. What it needs, to discuss: whether Mono changes what is exported and played in real
+    time, or only warns; which note wins when two overlap (the newest, cutting the one before, as most
+    monosynths do, or the oldest, or the highest or lowest); what a chord does on a mono instrument
+    (its root, its top note, or refused); whether an overlap cut short becomes a legato slide, as the
+    Glide row's overlap is; whether it is judged per track or across every track sharing the
+    instrument; and whether the analyzer idea below would report overlaps on a mono instrument.
+
+- title: "Music videos from a Live set's audio, a helper script apart from the tracker"
+  priority: 1
+  text: |
+    From the user on 2026-11-11: a spin-off mode of the project, a helper script that works
+    differently from the tracker and turns a finished song into a music video for YouTube, a `.mov`
+    of a visualizer playing to the song's own audio. It takes two things: the audio that Ableton Live
+    renders from the song's Live set, probably AIFF, where the set may have been given any synths and
+    effects in Live, and the song's MIDI files, which the script reads so that the visualizer follows
+    the real notes and everything lines up with the audio. The Live set has to keep the song's
+    playing time, so that the audio and the MIDI last the same.
+
+    - **What the video shows.** The visualizer alone, full screen, with no scene bar, no clips and no
+      tracker around it. It doesn't open with the splash's sine-wave letters; instead something like a
+      "produced by llamatron" that flies in from the left and then fades away, its look to be designed.
+    - **Where it lives.** Not in the GUI: a script run from the command line, given the audio file and
+      the MIDI files.
+    - **What it would mean for the code.** The visualizer modes (`interface/visualizers/`) already draw from
+      what they hear (`interface/visualizers/heard.py`), which the script would feed from the MIDI files by
+      time rather than from real-time playback; each frame drawn at a fixed rate, rendered to images
+      rather than to a terminal, and joined with the audio into a `.mov` (`ffmpeg`, if installed, or
+      AVFoundation on a Mac). How the visualizer's characters and big pixels become video frames, at
+      what resolution, is the main thing to design.
+    - **Undecided.** The audio formats taken; how the MIDI files are given (the MIDI (Stems) export,
+      the single file, or the set itself); which visualizer mode, or Cycle; the intro's look and
+      length; the video's size and frame rate; and what is done when the audio and the MIDI disagree
+      in length.
+
+- title: "A humanize generator"
+  priority: 1
+  text: |
+    From the user on 2026-11-11, at the top priority. A generator, beside the arpeggiators,
+    AutoRatchets and the coming Drift, that makes a part sound played by a person rather than a
+    machine: small random changes to each note's velocity, its timing a little early or late, and
+    perhaps its gate a little longer or shorter, each within a range the composer sets, with a seed
+    like an arp's so that a take can be repeated. Drift's Vel+= with a small range does the velocity
+    part slowly, trigger by trigger; humanize works note by note, which is what a player's hands do.
+    What it needs: a settings class and an editor like the others, and a place in the render.
+    Velocity can change on a finished clip's sounds in a chain, as generators work today, but timing
+    can't: the groove moves notes in `engine/timing/timing.py` after the render, so humanized timing
+    would either be applied there, as a per-note random groove, or the chain would need to move a
+    note's start, which no generator does yet. Undecided: the ranges and their defaults, whether
+    timing is in ticks, milliseconds or a share of a step, whether it stays inside a groove's cell so
+    that notes keep their order, and whether a drum track wants different defaults from a melody.
+    `mainstreet_hoedown.yml` is the first song it would suit.
+
+- title: "Info about a set on the Open page, before opening it"
+  priority: 1
+  text: |
+    From the user on 2026-11-10. On the Open page, a key on a set's row, `I` (Info) say, opens a
+    dialog that says what the file holds before you decide to open it: the set's title, its
+    description (the one line saying what it plays), its author, and for each song its name, its
+    tempo and its length when played. ENTER in the dialog opens the set and ESC cancels, back to the
+    list, so that a look costs one key and opening after the look costs one more.
+
+    - **What it would mean for the code.** The dialog reads the file the way the Open page already
+      reads nothing: `Setlist.read_file` gives the title, description, author and each song's
+      tempo, and the length comes from the same estimate Arrange uses (`interface/tracker/lengths.py`,
+      `measured(song)`), which needs a `Document` of the set, so the dialog builds one in memory
+      and throws it away unless ENTER keeps it, in which case opening is already done. A file that
+      can't be read says so in the dialog instead, with the file's error, and a file that needs
+      corrections says that it would open with corrections and how many. The dialog is a
+      `MessageDialog` with two answers rather than one, ENTER open and ESC cancel, which is a
+      `ConfirmDialog` whose buttons read Open and Cancel. The key goes in `keybindings.OpenPage`
+      with a legend entry, and the Open page's help names it.
+    - **Undecided.** Whether ENTER on a row should show the info first and ENTER again open, which
+      would cost everyone a key on every open, or stay as it is with the info on its own key,
+      which Claude would choose. Whether a set of several songs lists them all, or the first few
+      with a count, since the dialog has to fit an 80 by 24 console.
+
+- title: "The file picker, shared and better"
+  priority: 1
+  text: |
+    From the user on 2026-11-10. Every file picker is one: the Open page
+    (`screens/set/open_page.py`, which starts in `examples/`), the MIDI import's, and any later one, the
+    same page given what files it shows and where it starts. The files people want may be far
+    outside the tracker's directory, so it needs to get there quickly: a full path typed in, with
+    `~` for the home directory, and perhaps recent directories and recent files. The MIDI import
+    starts in the home directory until this is designed. Undecided: which of those, and how a typed
+    path is reached on a page whose `/` already searches, for which Claude offered a row at the top
+    of the list, "type a path", that ENTER opens a prompt on (a directory goes there, a file opens,
+    a path that doesn't exist says so on the status line), a letter key, `G` (Go to path), opening
+    the same prompt, or both, recommending the row, since nobody has to know a key to get around.
+
+- title: "Accents on beats: velocity in grooves"
+  priority: 1
+  text: |
+    We should use the time signature information of the arrangement demo to add velocity on beats.
+    We should research whether we can automatically use, in a per track setting, some knowledge
+    of time signature to maybe auto fill in the velocity numbers, but this can be explored seperately.
+
+    Claude's note from 2026-11-07: this and "velocity shaping in grooves" are the same feature seen
+    from two sides. A groove already repeats a row of cells from the start of the scene, so a second
+    row on a groove, a velocity amount per cell, gives accents on the beats per track with no new
+    concept, chosen the way grooves are now. Swing on the classic samplers, drum machines, grooveboxes and step sequencers is timing only, and a velocity-only pattern is an accent row rather than a groove,
+    which is why timing came first.
+
+- title: "Marking the chords that fit the scale in the chord picker"
+  priority: 1
+  text: |
+    From the user on 2026-11-08: when the pattern editor knows the one scale a pattern plays under
+    (the gauge's scale, `Document.pattern_scale`, known when the pattern's uses agree on one or when
+    nothing uses it and the current song has one), the chord picker on the Chord row (`ENTER`, the
+    `GridChoiceDialog` laid out by `CHORD_GROUPS`) puts a check mark beside each fixed chord whose
+    notes all lie in that scale from the step's note, like `✓ M` on a major chord from the root of a
+    major scale. The scale chords (`5`, `3`, `7` and so on) are built from the scale, so they always
+    fit and need no mark; the mark is for the named ones, `M`, `m`, `dom7` and the rest. Since a new
+    song starts with `C Major` as its scale, the scale is known most of the time, and only a pattern
+    played under several scales goes without the marks. What it would mean for the code: a `Chord` or
+    `Scale` method that says whether a chord's notes are all in a scale, `GridChoiceDialog` taking a
+    mark per option, and the Chord row working out the marks from the step's degree, accidental and
+    octave. The user wants to talk this over before it's started.
+
+- title: "New patterns from the clip page"
+  priority: 1
+  text: |
+    From the user on 2026-11-08. `P` (Pattern) already opens a clip's pattern in the editor, from
+    Arrange and from the clip page. The clip page could gain two `Button`s under its settings: one
+    that adds a new pattern, assigns it to the clip and opens it, so a clip can be filled in without
+    a trip to the Patterns page; and one that adds a new pattern as a copy of another, asking which
+    pattern to copy in a picker and then assigning and opening it the same way. Because a pattern
+    made this way is used by this clip alone, the editor knows its scale at once, from the clip's
+    scene or the song. What it would mean for the code: the clip page building its buttons with
+    `FieldPage.button`, `Document.add_pattern` and `copy_named` (the Patterns page's `C`) followed by
+    `set_clip_slot_setting`, then opening the editor as `P` does. The user wants to talk this over
+    before it's started.
+
+- title: "More ways to munge a pattern"
+  priority: 1
+  text: |
+    The user has tried the pattern editor's munge dialog (`M`: reverse after the cursor, reverse before
+    it, reverse all, pivot around it, randomize) by hand, so the next step is to think about which
+    other munges earn a place in it. Each is a `Pattern` method that rearranges or rewrites the steps
+    in place, like the five there now, and the cursor stays on its step. Candidates to weigh, not
+    decisions: rotate the steps left or right by one (the step sequencers' and grooveboxes' nudge), invert the
+    degrees around the step under the cursor or around the scale's root, transpose every degree by a
+    number of scale steps, double the pattern by repeating it at twice the steps or halve it, thin it
+    by dropping every other note or by a probability, swap two halves, and copy one row's values from
+    another pattern. Which of them belong in the munge dialog, which are really pattern generators
+    (see "Pattern generators on the Patterns page", which already has notes for pattern builders, and
+    "Transforms that enrich a melody") and which want a key of their own is the thing to decide.
+
+- title: "The pattern editor's rows in more sections, so that a pattern's many options are easier to understand"
+  priority: 1
+  text: |
+    The user finds a pattern has too many options to take in, and wants more of the rows view's sections (the accordion, the
+    headings from `+ Basics` to `+ Set Registers`) so that each opened section holds a few related rows. To discuss before it is
+    built: which rows belong together, what each new section is called, which open by default, and whether the pinned rows,
+    Degree and Octave, stay as they are. A closed heading already says `(set)` when anything inside holds a value, so splitting
+    hides nothing that is used. It touches `SECTIONS` and the row descriptions behind the rows view
+    (`interface/tracker/screens/pattern/`), the editor's help and `.claude/reference/KEYMAP.md`, and the PgUp and PgDn jumps between headings.
+
+- title: "Performance Dashboard"
+  priority: 1
+  text: |
+    The user's name and idea: a dialog that pops up while a song plays, with dials that nudge and tweak the song as it plays,
+    held in memory and not written into the set: the tempo offset of the idea "A tempo offset for everything playing on Arrange,
+    while playing live", a key change offset that transposes what plays, and on the same panel CC controllers for the
+    instruments, with visual feedback whenever a dial moves. It touches the real-time redesign's agreed step that makes the
+    Realtime Sender Process a program of its own, which already plans a message for a knob's value and last-moment changes the
+    sender applies (velocity scale, transpose, mute, CC passed through), so a dial is heard at once without a render; a tempo
+    offset needs the render process to retime what it hands over instead. To discuss: which dials, how they are drawn and
+    reached with the keys (a dial in the tracker's characters, `[` and `]` to turn it), whether a tweak can be kept into the set
+    afterwards, what an export hears (nothing, most likely), and how the panel would appear in a web interface, as part of the
+    declarative UI discussion.
+
+- title: "Everything reachable with the arrows, ENTER, Space and ESC"
+  priority: 1
+  text: |
+    A follow-on to the declarative UI discussion (the user's idea): list what cannot be done today with the arrow keys, ENTER,
+    Space and ESC alone, page by page, and make as much of it as possible doable that way, so that the letters become shortcuts
+    for people who know them rather than the only way in. `.claude/reference/KEYMAP.md`, made by the key tour, is where the list starts:
+    every binding on a letter or a mark whose action has no button, field, picker entry or menu row the arrows reach. It fits
+    PRINCIPLES.md's "Someone who never reads the manual still gets around", and a declarative view, whose widgets say what they
+    do, could make every action reachable by the arrows on every kind of interface, a web interface's included.
+
+- title: "Collapsing a track or a scene on Arrange"
+  priority: 1
+  text: |
+    On the Arrange page, one key, the same for both, collapses what the cursor is on: a track to a column one character wide, or
+    a scene to a single line, and the key again opens it, so that a big song fits on screen and the parts not being worked on step
+    aside. Touches ArrangeDrawing's widths and heights (track_width, scene_lines, the visible tracks and scenes), the cursor, which
+    still lands on a collapsed track or scene, the frame around a collapsed one, and the details view. Undecided: what a collapsed
+    track's one column and a collapsed scene's line show (a mark, the first letter, a light while it plays), whether collapsing is
+    kept for the session only or saved in the set, whether a whole run can be collapsed at once, and which letter it takes.
+
+- title: "A step that plays only when no other track plays a note then (working title Interleave)"
+  priority: 1
+  text: |
+    A new on-or-off row of a pattern, working title Interleave, which needs a better name: a step marked in it plays only if no
+    other track plays a note at the same moment, drum tracks not counting, so that a bassline fills the gaps of a melody and never
+    clobbers it. First evaluate what it costs: the Realizer would have to know every other track's note times before playing the
+    marked track, which breaks the habit of playing each clip on its own and may mean a second pass over a scene, or playing the
+    marked tracks last against the others' notes; measure the render before and after. Undecided: what "the same moment" means
+    (the note's start alone, or any overlap while another note sounds, and a window around it), whether a held note of another
+    track blocks a later step, which tracks count (every melodic track, or chosen ones), how it meets generators that move notes
+    later in the chain, and its name.
+    A mechanism already exists to build on: a grab step already plays from what another track plays. The Realizer
+    plays clips when they are first asked for, so a clip that grabs from a track asks for that track's clip, which is played first, and
+    a GrabSource (engine/realizer/grab_source.py) keeps the finished clip's notes by when they start; SongRealizer catches grabs that go
+    round in a circle (_grab_circle). The new row could ask the same way: before playing a marked track's clip, ask for every other
+    melodic track's clip in the scene, and keep their notes by start, and with their ends, for "is a note sounding at this time".
+    Differences to weigh: a grab names one track, while this would ask for every other track, so two tracks that both use the row would
+    wait on each other, a circle the rule must settle (such as: the row ignores other tracks that also use it); and the cost is every
+    melodic clip of the scene played before the marked one, which the render mostly does anyway, so the extra cost may be small.
+    A side discussion at the same time: other ways to make counterpoint easier for a bassline, such as moving toward the melody's
+    gaps, contrary motion against the melody, or avoiding the melody's note or its octave on a strong beat. Some may not make
+    complete musical sense, but they are the same idea of a bass that listens to the melody, and are to be discussed then.
+
+- title: "Munge as a cornerstone: a wizard in an Inset Window that previews before committing"
+  priority: 1
+  text: |
+    Munge becomes one of llamatron's cornerstones. In the pattern editor, Munge opens a small wizard in an Inset Window: choose a
+    munge and its values, see the result previewed against the pattern, Tab between the piano roll and the rows view of the
+    preview, munge again (another munge, or the same one again, such as another random shuffle) as many times as wanted, and only
+    then commit it as one edit, or leave with nothing changed. Changes are shown in a different colour: easy on the piano roll,
+    where the new or moved notes can be drawn over the old in their own colour; in the rows view the changed steps' values simply
+    replace the old ones, perhaps marked. Claude's UX help is wanted for the design when the work starts. Touches the Munge dialog
+    and its picker, the pattern editor's two views (drawn from a copy of the pattern, not the set), the Inset Window, undo (one edit
+    for the whole run of munges), Listen on the preview, and colour, a new allowance. Relates to "More ways to munge a pattern" and
+    "A Munge generator", and to the audit of keys where Munge was named as a mess.
+
+- title: "The JazzStandards collection in the corpus and the Public Domain Library"
+  priority: 1
+  text: |
+    The fetch script for the library gains https://github.com/mikeoliphant/JazzStandards, and the Import Wizard's library
+    browser can import from it. Undecided: the collection's license and what it holds (chord charts of standards, many of
+    them copyrighted songs, so that the chords may be measured and imported while no melody is), checked before it is
+    fetched; how its charts become a song, chords alone or with a bass and drums the import writes; and how the browser
+    files it, by composer or by title.
+
+- title: "A visualizer called Chords"
+  priority: 1
+  text: |
+    A visualizer mode named Chords, placed right after Piano Roll and before Spectrum in the order the modes step through.
+    Each chord heard while the song plays gets a block with its chord's name written on it, the blocks gathering in the
+    order first played from the upper right. When a chord sounds, its block lights up around its edge and the light fades
+    out. When the screen is full, the block played longest ago gives its place to the new chord. It helps people hear
+    chords while playing tunes. Until the first chord is played it shows "(no chords yet)", centred, so that a song without
+    chords never leaves a blank screen. Silent tracks count too; where several instruments play different chords at once,
+    each chord shows, lit together. Undecided: whether the blocks name the chord (Am7) or its type (minor seventh), whether
+    the numeral shows, and where the chords come from: the heard chords Scene View and the PDF export use, read from the
+    clips playing.
+
+- title: "Built-in synths"
+  priority: 1
+  text: |
+    An instrument is either MIDI (Device and Channel, as now) or Built-in, a sound llamatron makes itself, so that llamatron
+    works as a tracker with nothing else installed: no FluidSynth, MIDI device, plugin or Live, while working with all of them.
+    Enqueued right after the import work (QUEUE.md).
+    How it plays: changing a built-in instrument compiles it into memory, and a song with built-in instruments may take a
+    moment longer to start while they compile, so that playing reads prepared sound rather than making it from scratch:
+    band-limited single-cycle tables for every waveform across the whole range of notes, played by a separate audio process
+    (sounddevice and PortAudio, a streaming callback of float32 chunks) that takes the same timed events as the Realtime
+    Sender Process for the built-in tracks and places each note at its exact sample, PortAudio's chunk times mapped once to
+    the clock CoreMIDI's timestamps use, so that built-in sound and MIDI stay together. Latency is what matters most.
+    The order: a measured trial first (alignment with MIDI, missed chunks, CPU while the UI draws); then the instrument page
+    (a mockup first); the basic waveforms, square, saw, sine, triangle and pulse with PWM; WAV export playing built-in
+    tracks offline with the same code (MIDI and Live exports keep them as MIDI); then the SID's waveforms and its combined
+    ones, the POKEY's polynomial distortions, perhaps the TIA's; filters dead last, once the rest can be
+    tested: one filter type out of the box, expandable, scipy allowed where efficient, the filter's cutoff the first thing a
+    CC row controls, and a CC choosing the waveform too. Effects come later.
+    Agreed so far: compiling is a detail behind the scenes, never shown as a button or a step; the Instrument page has a Kind
+    field, MIDI or Built-in, and a built-in sound's fields in tabs, Sound (Engine: Basic, SID, POKEY, TIA;
+    Waveform, picked from grouped columns; Octave, Detune, Pulse width, PWM depth and rate, Waveform CC), Envelope (Attack,
+    Decay, Sustain, Release, Glide), Filter, last (Type, low-pass to start; Cutoff, Resonance, Cutoff CC) and Playing
+    (Volume, Default velocity, Velocity, Accent, Voices: 1, mono with glide, to 8, 1 by default for the chip families and 4
+    for Basic). Inspired by the mono groovebox above all, and the drum groovebox for drums: the professor's survey of the
+    grooveboxes and of drum synthesis is to shape the waveform families and a drum family.
+    Agreed order (118 A, the user's changes): a measured trial; Basic with the instrument's cheap effects, drive,
+    sample-rate reduction and a bitcrusher (bit reduction), which the user loves; Classic Drums, a major focus, a kick like
+    the mono groovebox's and every great drum sound of the drum groovebox honored, its machines and kits researched first; then
+    SID-style; POKEY-style and TIA-style; Wavetable and Drawn waves; the filter last. FM, Unison and Chord, and Modal and
+    Plucked are ideas of their own. Rock solid timing is critical. A drum (119 A) is a built-in drum instrument with a
+    Machine field (Kick, Snare, Hats, Clap, Cowbell and the rest) and five musical knobs, Pitch, Decay, Colour, Shape and
+    Sweep, which a pattern's CC rows can move per step as the drum groovebox's parameter locks do. Effects (120) belong to the
+    instrument, never the track, which in llamatron is the notes and the composition, and only a few are offered, to
+    encourage working within limits. The professor's notes are in .claude/notes/synthesis/.
+    The MVP (121 A): a Built-in instrument kind with the Basic waveforms and their envelope, Classic Drums' kick, snare,
+    closed and open hats and clap, and the bitcrusher, playing in real time beside MIDI and in WAV export; the SID-style
+    family right after, its name to be settled since the name SID may not be usable. Effects (122 B): a chain chosen from
+    the effects that can be done well and that the user wants to use, three at once to start. The bitcrusher (123 A): Bits,
+    16 down to 1, and Rate. CCs (123, 124 A): a fixed map of each instrument's parameters to CC numbers, shown on the page,
+    and a way to map up to four CC slots to any parameter that can be changed live smoothly; a parameter Python can't move
+    smoothly is not offered for CC. A drum track has a drum instrument of its own (125 A); drums choke within a group number,
+    new hats sharing group 1 (126 A). If built-in sound can't open, the status line says so, its tracks are silent and MIDI
+    plays on (127 A). Audio (128 A): an output device and a buffer, 128, 256 or 512 frames; the user would like 44.1 kHz
+    unless the design suffers, and better timing reported if possible. Listen on a built-in instrument (129 A) plays a note:
+    for a drum it asks the drum note, and for any instrument the preview scale, C Major by default, chosen with the scale
+    picker, remembered for the session and never saved in the set. The timing trial (130 A),
+    internal_tools/builtin_timing.sh, runs before and after each step.
+    The synthesis engine is a process of its own, beside the Realtime Sender Process, built for speed above all: it may
+    break most of the code style rules where they would slow it, timing being everything (the user's yes for that process,
+    to be written into STYLE.md beside the existing allowance for engine/ and realtime/ when it is built). Measured on the
+    user's Mac: its speakers run at 44.1 kHz, and its output adds about 15 ms at 64 or 128 frames and 31 ms at 256.
+    Where built-in sound arrives later than MIDI, the MIDI and FluidSynth events are delayed by the same amount, so that every
+    instrument lands together, built-in and MIDI instruments often playing in one song at once (the user's rule): the
+    synthesis process's output latency, as PortAudio reports it, is added to
+    the sender's timestamps.
+    The Realtime Sender Process may break the code style rules too where the timing interlock needs it (the user's yes).
+    The two processes may talk to each other directly however works best, but must be very reliable: neither ever left
+    orphaned or as a zombie, both ended with llamatron however it ends, and any problem starting either shown clearly.
+    Built-in sound is for macOS first: on Linux, and anywhere else, it is off and never stops llamatron loading, unless the
+    environment holds ATTEMPT_SYNTHESIS_ANYWAY=1 (no command-line flag); sounddevice is imported only inside the synthesis
+    process, so a computer without PortAudio still opens every set, its built-in tracks silent with a note why.
+    The demos keep FluidSynth as they are; built-in instruments appear only in a new folder of demos of their own,
+    examples/synth_examples/.
+    The built-in sound will be used mostly for chiptune and IDM: crisp, exactly timed short notes and fast retriggers,
+    arpeggios at tracker speeds, glitchy drums, bitcrushing and sample-rate reduction, pitch sweeps, and many parameter
+    changes per step. Pads still matter: the sound goal for them is lo-fi, warm and nostalgic, in the manner of 1990s
+    downtempo electronica worn on tape: slow attacks, two or three slightly detuned oscillators, a gentle low-pass, slow
+    pitch drift like tape wow and flutter, and the bitcrusher and sample-rate reduction used lightly; no hiss.
+    Agreed for the MVP (131 to 140): a drum's note tunes it in half steps from middle C, C4 playing it as set; a drum
+    struck while ringing cuts its last hit with a 3 ms fade, an Overlap toggle letting hits ring; velocity changes a
+    drum's tone gently through Color as well as its level; American spelling, Color; the professor's first nine drums,
+    Kick, Hard Kick, Synth Kick, Snare, Clap, Rim, Hats (closed and open), Cowbell and Acoustic Tom
+    (.claude/notes/synthesis/DRUMS.md); every setting that changes smoothly live has a fixed CC number shown beside
+    it, and four assignable CC slots map any CC to any such setting, the waveform's family, the oscillator count and an
+    envelope's attack once a note has started not offered; the computer's own settings, the audio device, the buffer
+    (128 frames by default) and the sample rate following the device's own, live in ~/.llamatron, never in a set, and the
+    File/Global page splits into a Global tab, this computer's settings, and a Set tab, the set's; two LFOs an
+    instrument, shapes sine, triangle, square, saw, random steps and Drift, rate free or tempo-synced, restarting with each
+    note or running free, each assignable to up to four targets with an intensity each, none by default; a Basic voice of
+    up to three oscillators, each with its waveform, Detune in cents and level. 138: a MIDI instrument has a Latency field
+    in milliseconds, 0 by default, its notes sent that much earlier; the built-in sound's own delay is measured, never typed:
+    the Synthesis Process reads it from PortAudio as its stream starts.
+    141: the Karplus-Strong drum is a drum machine of its own, Karplus Drum, with the five drum knobs, which the user loves;
+    the Pluck family keeps its own string models (.claude/notes/synthesis/CHOIR_AND_PLUCK.md).
+    Names (142, the user's answer; .claude/notes/synthesis/README.md): plain names on screen, no brands; chip part numbers
+    allowed, and SID may be named; the 8-bit console-style family is DustCart for now; the handheld-style family is Pocket (its voices
+    Pocket Pulse, Pocket Wave and Pocket Noise, its drums Pocket Kick, Wave Kick, Noise Snare, Noise Hats and Crunch Kit,
+    .claude/notes/synthesis/POCKET.md). The MVP now holds SID and Pocket as well as Basic and the drums, and the
+    Instrument page's built-in settings, however rough, so that the user can play with it before the UX is discussed.
+    Export of built-in sound renders offline, not in real time, sample-exact and as fast as it can, needing no loopback
+    device such as BlackHole.
+    The Instrument page (the user's design, 143 to 152): tabs MIDI, Synth, Effects and LFOs, every tab reserving the height
+    of the tallest so that nothing jumps; MIDI and Synth each start with an On toggle, turning one on turning the other
+    off, both off for a new instrument, a tab that is off drawn dim but still settable (143 A); the Synth tab's first field
+    Engine (Basic, Drum, SID, Pocket, DustCart), then a blank line, each engine's settings laid out neatly, a mockup for
+    every engine; Volume up to 150% with an output guard on the whole mix, a soft clip and a lookahead limiter (144 A);
+    every percentage a twelve-cell horizontal gauge stepped by [ ], its value in its unit after it, a live value marked with
+    a bright bar while playing (145 A); the Effects tab four blocks in a two by two grid, each choosing, configuring or
+    deleting an effect, Bitcrush, Drive, Tape and Duck to start, the filter last; effects not modulated for now (149 A,
+    four blocks). In place of CC mapping (146, the user's idea): each engine picks six settings that can change smoothly,
+    and the pattern editor's rows view has an accordion section, "Synth Control: <instrument>", of six rows for them, not
+    MIDI CCs; LFOs choose among the same six. The six (153 A, the user's change): velocity sets volume, so no row is
+    Volume, and each engine gets one more choice in its place. The rows belong to the pattern, a section for each built-in
+    instrument of every track the pattern is on, sorted alphabetically (155, the user's design), an instrument's section
+    erased from every pattern when the instrument is deleted; what is sent needs the pattern to be playing on a track of that
+    instrument, and where several tracks of one instrument play patterns in a scene, the first that holds a value on a step
+    wins that step. Four LFOs an instrument (156 A), one of whose shapes is Sample & Hold, tempo-synced from the song's clock
+    or free in hertz. They MUST go fast, since they will modulate the chip synths (the user's ask): fast enough for chip
+    vibrato, trills and PWM wobble, tens of hertz at least, so a fast LFO is worked out sample by sample (or at least well
+    inside a chunk), never once a 128-frame chunk, which would step audibly; a slow one MAY be worked out once a chunk. A gauge's live marker comes from the playing Synth Control rows and the LFOs, worked
+    out on the screen side, the synthesis process never reporting back (157 A).
+    The six (158 A), in the order the user asked for, Pitch first, then the envelope's settings, then the rest: Basic: Pitch,
+    Attack (for notes starting on the step), Decay, Release, Detune spread, Pulse width; Drum: Pitch, Fine tune, Decay,
+    Color, Shape, Sweep; SID: Pitch, Sustain, Release, Pulse width, Wave, Ring/Sync; Pocket: Pitch, Envelope rate, Duty,
+    Wave, Noise mode, Sweep; DustCart: Pitch, Decay rate, Duty, Noise mode, Noise period, Sweep. Each row's values are in
+    the setting's own unit, a blank step holding the last, with the CC rows' Slide (154 A). Renaming an instrument renames
+    its sections in every pattern; changing a track's instrument leaves the old section until that instrument is deleted
+    (159 A). Every new engine brings this discussion again: which six, in this order.
+    Engine and drum names (the user's): Asheville for the ladder-filter monosynth, Fishline for the acid bass, Maclunkey for the
+    single-oscillator mono, ComplexOsc for the complex-oscillator engine, the West Coast engine's name still to choose, Ping for the struck
+    filter drum, Mosaic for the saw stack, MechaDrum for the drum engine, Stringy for the string synth, NoiseBuster for the hard digital family (its
+    destroyer distortion Shatter), 8oh and 9oh for the drum machines in the manner of the 1980 analog and 1983 hybrid ones.
+    No maker's or product's name appears in the professor's notes or on screen.
+    Order after the MVP (160, the user's): the Instrument page; export to WAV both played in real time and rendered offline;
+    modulation (the Synth Control rows and LFOs); then the shared Filter effect, the drums rendered once a note (Ping, Sweep
+    Drum, Electronic Tom, the FM machines), Fishline, the six-operator FM engine, stereo with Stack, chorus and the reverbs,
+    then the rest. Built-in instruments become stereo (161 A) with a Pan setting, which a Synth Control row can move: every
+    engine gets eight Synth Control rows, its six, Pan, and one left blank for now. Reverbs before buses (162 A): Room, a
+    feedback delay network; Hall, an old-school digital hall of the late seventies, grainy, dark and modulated, one of the
+    user's favourite reverb sounds, from the professor's research into how such early machines probably worked; and Plate, the modulated plate with Grit and Freeze, as effect blocks, the page warning past about
+    four in a song. The six-operator FM engine's envelope and scaling numbers worked out from the published formulas in our
+    own code (163 A). A Fishline note is accented by a velocity at or above a threshold on the Synth tab, 110 by default, a
+    Synth Control row setting the accent's amount (165 A).
+    ComplexOsc (184 A) is one engine for the classic West Coast and the modern complex oscillator: a Gate setting,
+    Envelope or Low-pass gate (Strike, Decay, Memory) for pongs and plucks, the separate West Coast engine gone; its master
+    oscillator's Shape blends sine to square to saw to folded sine, with Fold (the classic's Timbre) and Symmetry (its
+    Order) (185 A); its modulator a triangle, square or saw from band-limited tables, a Ratio to the note or Fixed in hertz
+    down to LFO rates, a linear FM Index with a Through-zero toggle off by default, AM depth and Sync (186 A); audio-rate
+    FM by a cumulative-sum phase, about 10 µs a voice, aliasing held by band-limited modulator tables, a sine carrier
+    until shaped, the index capped by the sidebands' spread at high notes, and the fold anti-aliased. Hurt (187 A), after
+    the harmonic oscillator: one core, eight harmonic sliders with Center, Width and Tilt over them, the core's saw,
+    square and triangle levels, a gentle linear FM from a sine at a Ratio, Envelope or Low-pass gate; its Synth Control rows
+    Pitch, Decay, Center, Width, Tilt, FM index, Pan and one blank, Tilt, Center, Width and Pan certainly moved by
+    modulation; eight sine reads a voice a chunk, about 16 µs.
+    The Choir engine (192 A, after the mono groovebox's choir voice, .claude/notes/synthesis/CHOIR_AND_PLUCK.md):
+    band-limited saws, a few detuned voices a note, through a five-formant cascade, breath through the same formants and an
+    ensemble chorus; Voice (Auto by register, Bass, Tenor, Alto, Soprano), Vowel (oo, oh, ah, eh, ee), Morph along the
+    vowels, Formant shift, Source (Saw, Pulse), Breath, Voices and Spread, Vibrato with its rate and delay, Ensemble, the
+    envelope; its Synth Control rows Pitch, Attack, Release, Morph, Formant, Breath, Pan and one blank. It sings, not
+    speaks: no consonants (193 A). A Hum toggle, off by default, opens each note on a soft hummed "m" that morphs into the
+    vowel (194 A).
+    From the modular study (.claude/notes/synthesis/MODULAR_IDEAS.md, 195 to 210, the user's names): the pulse-burst
+    oscillator is Formant Blip's Mask row, its drum Tick; Bytecrunch, the bit-formula oscillator; Flock, the slope-generator
+    cluster; Settle, the scanned wavetable; PhoneHome, the talking-toy voice; Dialup, the data chirp, oscillator and drum;
+    Undertones, a subharmonic mode of Basic, SID and Pocket; Halo, the sine ensemble tuned to the scale; the spectral comb
+    part of Hurt; effects Shifty (the frequency shifter), SpringReverb, Skipper (the buffer corruptor), BitMangler (the
+    logic cross-modulator), Bloom (the diffused, pitched echo); the rotating filter bank the resonator bank's Rotate; pitch
+    per tap part of Taps. Filters (211 B and 215 A, the user's design): one Filter effect whose Type is Ladder, Multimode,
+    Sallen-Key, Diode or OTA, so any filter can follow any engine, in any number and mix (four ladders after an Asheville
+    would only sound silly); and an engine whose sound is its filter keeps that filter inside it, as Asheville its ladder,
+    with a switch to turn it off and use a Filter effect instead. Effects run in series. An engine's own filter has a contour
+    envelope on each note (Attack, Decay, Sustain, amount, key tracking); a Filter effect a simpler one (Env amount, Attack,
+    Decay) fired by each note of the instrument, unless that proves expensive (212 A). Cutoff moves per step through the
+    Synth Control rows: an engine with its own filter has Cutoff among its six; for the others the blank eighth row moves the
+    first Filter effect's cutoff (214 A). Every effect block has a Mix, wet by default for distortions and filters, lower for
+    reverbs and delays, unless it proves expensive (216 A). Four effect blocks stay (217 A). The Engine picker keeps one
+    MechaDrum entry, its Machine chosen on its tab (176 B). Asheville plays mono and legato with low-note priority, a 40 ms
+    glide on legato notes, Voices up to 4 by hand (183 A); its drift subtle and in cents, the unit tuning uses, 3 cents
+    by default, 0 to 25 (the user's correction: a drift in percent means nothing).
+    Nothing in a built-in sound is random unless a modulator is attached (164, the user's rule): a drum hit sounds the same
+    each time it is played, and the Sweep Drum's Shape offers warble and trill but not random steps.
+
+- title: "Built-in synths: FM"
+  priority: 1
+  text: |
+    A built-in FM family after the first built-in synths: FM drums first, then two- and four-operator tonal FM, plain FM's
+    index movable live each chunk, feedback approximated by tables (.claude/notes/synthesis/MACHINES.md).
+
+- title: "Built-in synths: Unison and Chord"
+  priority: 1
+  text: |
+    Unison saws and pulses with subs, and a Chord instrument that plays up to four pitches for every note, so that a simple
+    pattern played through a major chord instrument fills out at once, which is fun to write with
+    (.claude/notes/synthesis/MACHINES.md).
+
+- title: "Built-in synths: Modal and Plucked"
+  priority: 1
+  text: |
+    Modal drums and tuned percussion, toms, marimba and bells as decaying modes, and Karplus-Strong plucks and drums, each
+    hit rendered when its note arrives and kept for replay (.claude/notes/synthesis/MACHINES.md).
+
+- title: "Built-in drums: 8oh and 9oh"
+  priority: 1
+  text: |
+    Drum machines in the manner of the two classic analog drum machines of 1980 and 1983, the bridged-T kicks with their long decays, the first's
+    cowbell, clap, toms and its six-oscillator metallic hats and cymbal, and the second's noisier snare and punchy kick, as
+    built-in drum machines with plain names (.claude/notes/synthesis/MACHINES.md and DRUMS.md hold the techniques).
+
+- title: "Live export with audio tracks, and the WAV export's kinds"
+  priority: 1
+  text: |
+    The Ableton Live export asks, for each track whose instrument plays through FluidSynth or a built-in synth, whether
+    that track goes into the Live set as MIDI or as WAV audio, to discuss when it comes up. The WAV export offers what the
+    MIDI export does: a single WAV of the song, stems, a WAV for each track, and the clip tree, a WAV for each clip.
+
+- title: "Built-in instruments: presets of the user's own"
+  priority: 1
+  text: |
+    On the Instrument page, saving a built-in instrument's settings as a preset of the user's own: a block's type and
+    values as a block preset, the whole instrument as an engine preset (its list of block and preset pairs), and the four
+    FX blocks together as an effects preset, each under a name the user gives, listed after the factory presets in their
+    pickers under a heading of their own. Kept in a personal library, ~/.llamatron/presets.yml, which every set shares
+    (21 B), never in the set file; a set using a preset of the user's own still holds every value itself, so it plays the
+    same on another computer. Undecided: the key that saves (S is taken on some pages), and what happens when a preset of
+    the user's own is renamed or deleted while sets name it.
+
+- title: "Listening to a scene on the Scene page, and progress bars on every listen"
+  priority: 2
+  text: |
+    The Scene page gains a way to listen to its scene, as the clip page and the pattern editor listen to theirs. Listening
+    may need everything else stopped first. With it, a question to talk through with the user before anything is built:
+    whether a listen shows a progress bar as it plays, and on which pages that makes sense (the clip page, the pattern
+    editor, the Scene page, a picker's preview). To work out: what a scene's listen does while a song plays from Arrange,
+    stop the song, refuse, or wait for the bar; whether looping clips are cut at the scene's length; and one drawing of the
+    bar shared by every page that listens, the length bars' read heads on Arrange being the nearest thing there is.
+
+    The way in would be Play and Stop buttons on the Scene page, as the clip page has.
+
+- title: "An audit of every dialog and button row for consistency"
+  priority: 2
+  text: |
+    The user wants every dialog and every row of buttons checked for UX consistency against `.claude/rules/UX.md`: the boxed buttons of
+    `interface/tracker/components/button_row.py`, OK, YES, NO and CANCEL in capitals, ENTER and ESC, the blank line above a window's bottom
+    edge, Left and Right between buttons, a settings page's buttons in one row or one under another, cascading windows and
+    flyouts, the wording of titles. The audit would list each dialog and page with buttons and what differs, as numbered
+    findings, before anything is changed.
+
+- title: "The UX audit: declarative models and pages, MVC or an alternative, then the dialogs and the keys"
+  priority: 2
+  text: |
+    Taken out of the queue to be picked up when the user decides. No web interface is planned soon, so nothing is designed for
+    one first, but nothing binds the pages to Textual either: the doors stay open, and tests can tell what a page holds.
+    Chosen (25 A): a presentation model with a view tree rebuilt on every key, as the settings pages already are. One presenter
+    per page answers form(), a tree of plain nodes; a setting field names its holder and setting, and its kind, limits and
+    choices come from the setting's description in SETTINGS, its words from one table; a navigator moves the cursor and derives
+    the keys, the legend, F1 and KEYMAP.md; renderers are the only code that knows Rich, and the shell the only code that knows
+    Textual (already confined to six files; the coupling to remove is Rich text built in about seventy). Packages:
+    interface/pages (Places, the site map, presenters), interface/forms (node kinds, navigator, key rules), interface/tracker
+    (shell, renderers, custom widgets' drawing); model/schema/generator_views.py, the first declarative pages, becomes
+    setting_views.py for any holder. Undo stays one step per key through the Document.
+    Pages connect by typed Places and a site map (26 A): each page a value object such as ClipPlace(scene=, track=); one module
+    knows each Place's parent (the crumbs), what it depends on (a deleted scene closes its clip page, a renamed pattern's place
+    follows), and what it opens; ESC pops a back stack of Places, so a page reached two ways shows its two trails; focus is
+    remembered by Place; each Place has a text form, clip(scene-2, lead), read back by one parser, for a command line option, a
+    palette, tests and any future web front end, while code navigates only by value.
+    A closed set of node kinds (29): field (number, choice, toggle, text, opens an editor), list, grouped list, tree, tab box,
+    section, button row, gauge, step grid, dialog, Inset Window, and dial for the Performance Dashboard; a new kind needs the
+    user's yes; each kind's rules are written and tested once in it. Every page is built from common components as far as it
+    can be. The forms are about the higher level: pages, fields, lists, tabs, dialogs and how pages connect. Anything grid-like,
+    with cells and a cursor among them, that grows (not a table of rows), is a second family of its own: the grid widgets, the
+    pattern editor's rows view, the piano roll, the offsets, groove, chords and other one-row step editors, the Draws strip,
+    Arrange with its details view and Scene View, lifted together onto shared grid components (cells and their widths, a cursor
+    that stops at the edges, scrolling, gauges, step marks, move mode, joints where lines meet), since they are already
+    widget-like. A grid sits in a page's tree as one node behind one contract: it draws its lines, lists its keys and says where
+    its cursor is. Outside both families, each behind the same contract: the visualizers, the main screen's grid of buttons, the
+    start screen and the Notes page's text editor (35). Every action is declared on a node the navigator reaches (a button, a menu row or a field's ENTER) and its letter is an
+    optional shortcut, so an action with only a key cannot exist; a test checks it once pages are moved.
+    The move changes nothing a person sees: every spacing, blank line and layout the user has asked for stays exactly as it is
+    (34 A). Before the move, a plain copy of the code (git archive into /tmp/claude/llamatron/baseline, outside git) records
+    every page's drawing as the key tour visits it, text and each character's style, at 80x24 and at a large size such as
+    160x50, with the cursor on each field and each tab and section open; after every conversion commit the same capture must
+    match byte for byte, and a difference stops the commit unless it is a change the user agreed to by name. The baseline stays
+    until the move is done, to open side by side where a difference needs looking at.
+    Each action declares its risk (safe, undoable, confirms first, refused while in use), and confirmations follow one rule
+    from it; and how it behaves while a song plays (works, waits for the next bar, refused), so the legend can dim a refused key
+    and the refusal's words come from the declaration (30 A). Dimming is a visible change, made as its own named decision, never
+    inside a page move.
+    Layout: no layout engine and no responsive layouts; every page must be good at 80x24, and a larger terminal gives more rows
+    and more columns, nothing else (33).
+    Order (28 A): (1) the keys audit, on paper from KEYMAP.md: N (New on File/Global, rename elsewhere), S, D, Tab, PgUp and
+    PgDn, tabs against sections; (2) internal_tools/time_keys.py fixed and key timings recorded, so the per-key cost of the tree
+    is measured; (3) interface/forms built underneath the settings pages with no visible change; (4) the File/Global page moved,
+    then the other settings pages, the list pages and the wizard, Places and the site map arriving as each page moves; (5) the
+    dialogs moved onto the same nodes; (6) the dialogs audit, then reviewing one class: consistency, language, features,
+    wording, titles and their spacing, where captions appear, whether key bars belong, whether each dialog can be answered
+    without reading its keys, and whether each default answer is the most logical. During the move a list of pages not yet
+    moved only shrinks (32 A); one kind of page moves at a time, never half a page, and no key or wording changes in a
+    conversion step. While a song plays, the clock and lights redraw without rebuilding the tree.
+    To discuss (31 A): a palette, opened by one everywhere key, that finds every action and every Place by name, each entry
+    showing its key. Held for it (219): the wizard's screens reaching WizardChoices' parts directly; the Document's mixins
+    becoming composed editors; one references object owning what uses an item and renames. The near-term arrows-only work
+    stays its own entry (27 A).
+    The tests move with the pages, as one piece of work (the testing review, 37 to 42): page drivers in tests/support/pages
+    and named starting scenarios are built first against Textual (40 A), and gain a second back end on the view tree, needing
+    no Textual, as the forms arrive; each page's tests are brought to TESTING.md's rules (what a page adds, reached by name,
+    asserting on named parts of the screen) as that page moves, never before; the table of each page's fields, a check on
+    form(), then replaces the roughly 100 per-page field tests, with coverage recorded before and after each batch (41 A). A
+    thin layer of real-Textual tests stays: real keys, drawing and joints, legends fitting 80x24, dialogs stacking, a smoke test
+    per page. Narrowing the change map and reusing one app per class wait until the new test runner is measured (42 A).
+
+- title: "Isorhythm: a rhythm and a series of pitches that repeat at different lengths"
+  priority: 3
+  text: |
+    A repeating rhythm and a repeating series of pitches, each of its own length, played together so that the two drift out
+    of phase and meet again only after many bars, as in medieval isorhythm. To look at first: how much already works, since a
+    pattern's rows can each have a step of their own and a list generator steps through its values note by note, so a row of
+    pitches of one length under a rhythm of another may need only a demo; and what is missing, such as a pattern's pitch row
+    and rhythm row having lengths of their own, or a generator that deals a series of degrees to whatever notes arrive.
+
+- title: "Canon and imitation: a track replaying another's pattern after a delay"
+  priority: 3
+  text: |
+    A generator that replays a pattern on another track after a delay, moved up or down within the scale: rounds, stretto
+    where the entries crowd closer, and phasing where the delay keeps growing a little each time round. What exists already:
+    the Harmonizer's Delay repeats a clip some steps later, moved along the scale and quieter, on the same track. What would
+    be new: taking the notes from another track, as the Hocket does, and a delay that changes over time. To settle: whether
+    this is a new source for the Harmonizer or a generator of its own, and how Restart treats the growing delay.
+
+- title: "Serial transforms as playback generators: inversion, retrograde, augmentation"
+  priority: 3
+  text: |
+    Generators that turn a clip's line upside down around a note of the scale, play the line backwards, or stretch or
+    squeeze the line's lengths, at playback, leaving the pattern as written, so that they chain with Voice leading and
+    Progression. What exists already: Munge reverses and pivots a pattern for good in the pattern editor, and the serial
+    melody style of the song wizard makes the forms of a row. To settle: where in a chain each belongs, what retrograde
+    means for a clip that loops or is cut short by its scene, and whether inversion is by scale step or by half step.
+
+- title: "Pitch bend, and CC smoothing between a pattern's steps"
+  priority: 3
+  text: |
+    The user asks for an investigation: whether FluidSynth plays pitch bend (it does take MIDI pitch bend, two semitones either
+    way by default, to be confirmed for the sounds llamatron uses), what CC smoothing llamatron has, and whether a CC could
+    glide between a pattern's steps, set per instrument perhaps, with pitch bend done the same way and switched on or off per
+    instrument. Today llamatron sends no pitch bend at all, and the only CC smoothing is Munge's Smooth CCs
+    (`Pattern.smooth_ccs`), which fills a row's blank steps from a straight line between two values: a value a step, never
+    between steps. A glide between steps would add events between a step's moment and the next, at a rate to be chosen, in the
+    render or in the real-time timeline and every export; questions are where the setting lives (the instrument, the track, the
+    row), the curve, how dense the events are, what a DAW does with them, and what it costs the render, measured.
+    The ideas "Pitch bend" (a fifth kind of lane, `PB`, sent as pitch bend, and the import that leaves it out today) and "Pitch
+    bend as the electronic genres' riser and bass slide" below hold the earlier thoughts, and are taken up with this one.
+
+- title: "A black theme forced from the environment"
+  priority: 3
+  text: |
+    When THEMES=BLACK is set in the environment, the text UI draws on a black background whatever the terminal's own settings,
+    and white is the default colour of text. Touches the app's CSS (the screen's background and default foreground), the styles
+    in interface/tracker/drawing.py that assume the terminal's colours (dim, the theme stripes' black or white caption), the
+    visualizer and Scene View, whose colours were chosen against an unknown background, and the screenshots, which could be
+    taken in it. Undecided: whether other values of THEMES follow (a white theme), whether a set or a setting can choose it too,
+    and whether dim stays dim grey on black.
+
+- title: "Hiding tracks on Arrange"
+  priority: 5
+  text: |
+    A key on the Arrange page, the hide key, opens a dialog that lists the song's tracks and lets a person hide and show each one, so that tracks a person does not need to see, such as a muted chords track or other guide tracks, take no room on the Arrange page. A hidden track still plays and is still followed, as before; hiding changes only what Arrange draws. How many tracks are hidden has to be shown somewhere on the Arrange page, so that nobody forgets tracks are there. To discuss before building: where the count shows, whether the choice is kept in the set file or only for the session, what the cursor does at a hidden track, and whether Scene View, the details view and the exports show hidden tracks. For the code: a setting of the track or of the song, the Arrange page's drawing and cursor skipping hidden columns, a new dialog, and the key's binding in interface/tracker/keybindings.py.
+
+- title: "How the Chord dialog shows borrowed chords"
+  priority: 5
+  text: |
+    The Chord dialog's BORROW FROM SCALE list, a row that borrows no scale and then the scale categories, each a button that
+    opens a flyout of its scale types, may be shown another way. To decide with the user: what a person wants to see when
+    borrowing a chord, such as the chord each scale would give on the step rather than the scale's name; whether the
+    categories stay; and how the list fits beside the other four, which take the 72 columns an 80-column console leaves now
+    that the dialog has a DOUBLE list. For the code: the scale list and its flyouts in
+    interface/tracker/dialogs/chord_dialog.py, and interface/tracker/scale_categories.py.
+
+- title: "A fill pattern for a clip, played over the scene's last bar"
+  priority: 10
+  text: |
+    A clip names a second pattern as its fill, and the fill plays in place of the clip's pattern at the end of the scene: a
+    fill as long as a bar plays over the last bar, a shorter one over the last steps, so a drum fill is written once as its
+    own pattern rather than worked out with draws and registers, which stay for anyone who wants them. To decide: whether
+    the fill replaces the pattern's notes where the two overlap or plays over them; whether it plays on every pass, on the
+    last pass of the scene only, or on a chance; whether a scene can name a fill for every clip; how real-time playback
+    knows the scene is about to end when a scene loops until a person moves on; and how Arrange shows that a clip has a fill.
+
+- title: "Chord types of your own"
+  priority: 10
+  text: |
+    A list page, reached like Scales and Grooves, where a person adds a chord type: a name of their choosing and its notes
+    as half steps above the root, such as 0 4 12. The chord types are kept in the set, like scales, and the Chord dialog
+    lists them after the built-in qualities, so a pattern's Chord row can play them. The MIDI import would use one where a
+    shape struck together is named by no built-in quality, interval chord or doubling, rather than splitting its notes
+    into tracks, and two songs imported into one set would share a type rather than each bring a copy. To decide: how an
+    imported type is named so its sound is plain; whether a type can be renamed or deleted while a pattern plays it; how
+    the Chord dialog marks the set's own types; and how an export names the chord. For the code: a section of the set like
+    scales, the chord symbols the Chord row accepts read from the built-ins and the set, the Chord dialog's quality list,
+    and voices.chord_named in the import.
+
+- title: "Effects buses"
+  priority: 10
+  text: |
+    Buses, so that several instruments can send to shared effects, such as one reverb, edited on a page of their own. Not
+    now: llamatron has no buses yet, and the first built-in effects belong to each instrument.
+
+- title: "A track's phrase pattern: each note plays a short pattern from that note"
+  priority: 12
+  text: |
+    A track names a pattern as its Phrase pattern (a setting of the track, not of the instrument, the user's design), and
+    every note the track's clips play starts that pattern in the note's place, the phrase's degree 1 landing on the note
+    played: a pattern of 1 3 5 3 played from a written D in C major sounds D F A F. One note becomes a figure, so a line of
+    long notes turns into an arpeggiated or riffing part, and the figure is written once. To decide: how long the phrase
+    plays (the note's length, cutting the phrase short or looping it; or the phrase's own length, running past the note);
+    what a chord does (the phrase from each of its notes, from its root, or the phrase's own chord moved); whether a rest in
+    the phrase leaves a gap; how velocity combines (the phrase's own velocities scaled by the note's); whether a drum track
+    may have one; how it sits among the track's generators (before the chain, as a pattern is played, or as a step of it);
+    and how the pattern editor and the piano roll show a clip whose track has a phrase pattern. The Arpeggiator does a part
+    of this with offsets on a grid; a phrase pattern is a whole pattern, with its rows, rhythm and gates.
+
+- title: "MIDI clock sent to a track's device"
+  priority: 13
+  text: |
+    The real-time sender sends MIDI clock, 24 pulses to the quarter note, with Start and Stop, so that a hardware sequencer or synth can follow llamatron's tempo. Off by default and switched on for each track, a setting of the track (the user's design), since clock confuses some synths, such as an Analog Four. It needs the sender to schedule notes with CoreMIDI timestamps, the real-time redesign's stage 3, so that the pulses are steady; the clock follows tempo changes and ramps, starts on a launch from silence and stops with Ctrl+T and the corner's stop.
+
+- title: "Pitch rows and rhythm rows of different lengths"
+  priority: 14
+  text: |
+    A pattern's pitch rows (Degree, Octave, Chord and the like) and its rhythm rows (the steps that play, Velocity, Gate, Tie)
+    each loop at a length of their own, so that a figure of five pitches over a rhythm of eight steps comes round in a new
+    order every pass, as the hardware sequencers' separate track lengths do. Each group of rows shows a loop mark where its
+    loop starts again, and the piano roll draws the notes as heard, the pitches laid over the rhythm, rather than as written.
+    To decide: which rows go in which group, how a length is set (a field on the pattern, or a mark placed on a row), what a
+    clip's repeat and the pattern's length mean when the two loops differ, and how Munge and Reconfigure treat the groups.
+
+- title: "Step input from a MIDI keyboard"
+  priority: 15
+  text: |
+    Playing notes on a MIDI keyboard into the pattern editor, one step at a time: each key pressed writes its note into the
+    step under the cursor, as a degree of the pattern's scale where it fits, and the cursor may move on to the next step by
+    itself, so a line is typed by playing it. A chord held writes a chord. To decide: how a note outside the scale is
+    written, whether the step moves on by itself (a setting, the user's thought), which key or pedal writes a rest or a tie,
+    and how the keyboard is chosen. It needs MIDI input, which llamatron does not have today: a port opened for listening,
+    as the real-time playback opens one for sending, and the CC knob idea would share it.
+
+- title: "Chords"
+  priority: 16
+  text: |
+    ### Grabbing whole chords
+
+    Today a grab step takes a single note, the chord's root, even when the track it grabs from plays a
+    chord. A chord grab feature could let a step take the whole chord. If it comes, it should
+    probably be a choice rather than a change, because single-note grabs are what basslines and
+    hocketing need.
+
+    ### Custom chord types and scale types
+
+    Let a song define its own chord types and scale types, each a new kind of named object kept
+    in the song, like scales and arps already are, and then usable anywhere the built-in ones are.
+
+    A custom chord wouldn't need to be musically "right". It's just a shape of notes built from the
+    step's note, such as three power chords stacked in octaves, an octave doubling with a note in
+    between, or a cluster. It would be written as half steps above the note, like the named chords
+    (`M`, `dom7`) are, or as scale steps, like the numbered ones (`3`, `7`), so that it follows the
+    scale. It would also fix most of the problem with The Entertainer described above: Joplin's
+    right hand is mostly a melody note doubled an octave down with a note between, a shape no
+    built-in symbol has, so each hand had to be split across three tracks.
+
+    A custom scale type would be one octave of half steps, as `ScaleType` values are, and a named
+    scale could then use it as its type. The user noted on 2026-11-08 that a user's scale type is
+    independent of any root, so it's entered as half steps from the root rather than as note names,
+    for instance by toggling keys on the Scale page's keyboard drawn from C
+    (`interface/tracker/components/keyboard.py`). Things to settle: names have to fit the pattern editor's
+    5-character chord cell and be told apart from the built-in symbols, the chord and scale pickers
+    would need a page for the song's own, and renaming or deleting one has to update or refuse its
+    uses, as with everything else.
+
+    When custom chord types come, the Import Wizard (.claude/planning/DESIGNS.md, its step 4) uses them, the
+    user's wish of 2026-11-10: notes that start and end together in a shape no built-in symbol has
+    become a chord of the set's own on the Chord row rather than extra tracks.
+
+    ### African scales
+
+    Consider adding scale types from African traditions to the built-in list, on 2026-11-07 the
+    user's request. Many of them don't sit on twelve equal half steps: the equiheptatonic scales of
+    the Chopi timbila and of Ugandan and Mozambican xylophone music divide the octave into seven
+    roughly equal steps, and the equipentatonic scales of the Gogo and much of East Africa into five,
+    so a `ScaleType` built from half steps can only approximate them, and the approximation may not
+    sound right without microtuning, which llamatron doesn't do and MIDI only manages with pitch bend
+    or a tuning table in the synth. Worth including anyway where a twelve-note approximation is in
+    use already, such as the anhemitonic pentatonic shapes common across West Africa and the
+    Ethiopian kiñit (tezeta, bati, ambassel and anchihoye), which are pentatonic modes that fit twelve
+    notes. Each would be one octave of half steps, like every `ScaleType`, so adding them is a list
+    change plus a page in the scale picker, and the picker's names would need to fit. A microtuning
+    note in the guide would say what's approximate.
+
+- title: "Tests with less hard coding"
+  priority: 17
+  text: |
+    Many of the text UI tests reach a setting by pressing a counted number of keys, like down, down,
+    enter, which breaks whenever a page gains or reorders a field, and has to be worked out again by
+    hand each time. The tests should instead ask each page where things are and navigate there, using
+    the same ordered lists that the page draws from: its fields, its rows and its keys.
+    `select_field(label)` on `UITest` in `tests/support/ui_testing.py` is a start, for settings pages: it finds a
+    field by its label in the page's own `fields()` and presses up or down as far as needed. The
+    same idea could cover list rows, pattern editor rows and dialog options, and then the existing
+    tests could be changed over to it. The aim is tests that a person can read, and change,
+    without counting key presses.
+
+- title: "Looping a whole scene, to tweak patterns live"
+  priority: 19
+  text: |
+    A way to loop one whole scene in real-time playback, for changing patterns by ear as they play. While the loop is set,
+    no clip's follow action runs, so the scene plays round until the loop is taken off. A scene set to loop blocks export,
+    which needs a song that ends, and never blocks real-time playback. To work out: whether the loop is a setting kept in
+    the set's file or a state of the tracker only; what sets it and takes it off, and how Arrange shows it; and how export
+    says which scene blocks it.
+
+    Asked before, on 2026-11-09, as a scene that loops until another is launched, where a scene's Repeat is a fixed count. To
+    decide with it: whether an export ignores the loop and plays the scene's Repeat as it does now, or warns in the export
+    dialog and on the command line, where this idea says the loop blocks export. For the code it would be read only by
+    real-time playback and never by `SongRealizer` or the exporters. How it sits with a looping clip needs settling first,
+    since a scene whose every clip loops already plays until the human starts something else, which stops an export today.
+
+- title: "Velocity and CC offsets on the Arpeggiator's steps"
+  priority: 20
+  text: |
+    The Arpeggiator's grid of steps gets two more rows beside its offsets: a velocity row adding to or taking from each
+    step's velocity, so an arpeggio fades or swells across its steps, and a CC row adding to or taking from one CC, chosen
+    on the Arpeggiator's page (only one CC, the user's limit), so a filter can open across the figure. At least in the
+    pattern grid, the user's words: the arpeggiator's own grid of steps first. To decide: the ranges, what a CC row sends
+    where the clip sends no value of that CC (a value to add to), and whether an AutoRatchet's repeats should take the same
+    rows.
+
+- title: "Inversions for AutoChord"
+  priority: 20
+  text: |
+    AutoChord, the Chords generator's mode that turns single notes into chords, choosing an inversion for the chords it builds,
+    beyond the root position and Note on top it has.
+
+- title: "Recording in Rust"
+  priority: 20
+  text: |
+    Porting the recording tools to Rust. For now llamatron2 records through the shell wrapper script, whatever gets it working
+    first, which the user accepts for the time being.
+
+- title: "Porting the helper scripts to Rust"
+  priority: 20
+  text: |
+    Porting the other helper scripts in user_scripts/ and internal_tools/ to Rust, which needs a discussion with the user
+    first about which and why.
+
+- title: "A Delay row: a step's note played early or late"
+  priority: 21
+  text: |
+    A row in the pattern editor's Timing section that moves one step's note off the grid, earlier or later, by a share of the
+    step, so a single snare can lag behind the beat or a single note can push ahead. It differs from Rush and Drag, which are
+    on or off, and from a groove, which moves every step in a place of the bar alike. To decide: the unit (a share of the
+    step, ticks, or milliseconds), the range, whether a note moved later than the next step is allowed, how the piano roll
+    draws a moved note, and whether the humanize idea shares the render work. Every exporter and real-time playback read
+    the moved times; the render already places notes by exact lengths, so a step's offset would be one more term there.
+
+- title: "Transforms that enrich a melody"
+  priority: 22
+  text: |
+    Ways to make a basic melody or part richer, each one a choice the user makes, and repeatable
+    with a seed:
+
+    - passing tones and neighbor tones between melody notes;
+    - chord extensions, turning triads into sevenths, ninths and more;
+    - syncopation, swing, and moving notes ahead of the beat;
+    - ornaments such as trills, turns and grace notes;
+    - octave doubling, and a harmony line in thirds or sixths;
+    - reharmonizing a chord progression with substitute chords.
+
+    Some of these could be generators that run in a chain at render time, so that the plain pattern
+    stays as written and the transform can be turned off. Others could be pattern mutators, which rewrite a pattern's steps
+    once, so they can be edited afterwards. Either way, nothing is generated unless the user asks,
+    and what comes out is ordinary patterns and settings.
+
+- title: "In progress: the demos as a course, agreed with the user"
+  priority: 23
+  text: |
+    What is left:
+    - The demos as a course (the user's choice): the featured songs first (edm_density, minimal_techno,
+       mainstreet_hoedown and new ones), then a learning path from hello_world and the Entertainer, which uses no
+       features, through each feature simplest first, the order kept in one data file that docs/DEMOS.md's tables and the
+       descriptions come from; each demo's entry in docs/DEMOS.md and its set's Notes get generated "Read about it" links to
+       the chapter and heading of every feature it uses (from internal_tools/demo_features.py and a map of features to
+       chapters), a test failing when a link is missing or points nowhere. The examples are in examples/learning, examples/other and
+       examples/by_genre (the user's choice), where the new demos go by purpose.
+
+- title: "Pitch bend"
+  priority: 24
+  text: |
+    From the user on 2026-11-10, with the MIDI import's CCs. Pitch bend isn't a CC: it's a MIDI
+    message of its own, with values from -8192 to 8191, and llamatron has no way to send it, in a
+    pattern, an export or real time, so the import leaves it out and counts it. The user doesn't care
+    for pitch bend much in electronic music, so it waits. Before it's built, find a good public
+    domain MIDI song that uses pitch bend, for `examples/midi/`, to prove it works by the round trip
+    (`internal_tools/test_all_sample_midi_against_import.sh`). Claude offered a fifth kind of lane that a track's
+    CC setting names, `PB` say, whose 0 to 127 are sent as pitch bend with 64 as no bend, about 3
+    cents a level over a bend of two semitones; the Live set already has a pitch bend target on every
+    MIDI track (`exporters/ableton_project.py`).
+
+- title: "Typing a chord in the Chord dialog as a chart writes it"
+  priority: 40
+  text: |
+    A chart line at the top of the Chord dialog where a player types a chord as a lead sheet writes it, such as 7(b9,no5)/E
+    on a step whose note is C, and the quality list and the fields follow as they type, so it teaches the notation too.
+    The step fixes the root, which the line shows. Jazz spellings are taken as well as pop ones: -7, Δ7, ø, °7, +, maj7, m.
+    A slash bass that the step can't play is refused in amber. To decide: what the line does with a root typed that
+    differs from the step's; how a typed chord with no symbol is shown; and how the line and the list share the cursor.
+    For the code: a parser of chord text in music_theory, the Chord dialog's first line, and the dialog's keys, since the
+    line takes typed letters.
+
+- title: "Built synth daemons from GitHub Actions"
+  priority: 50
+  text: |
+    GitHub Actions builds the native synth daemon (and any later daemons) for each supported platform on each release and attaches the binaries to the release; setup.sh downloads the right one and checks its checksum, so that no user needs Rust installed. Until then setup.sh builds it locally, offering to install Rust first.
+
+- title: "Draws as decks: the professor's review of draws and ideas for them"
+  priority: 80
+  text: |
+    The professor's review, kept whole, set aside by the user to discuss later. Nothing is decided; the questions at the end
+    (54 to 58) are open.
+    What works: few parts give many results (a count-in, accents that turn over, melodies that change each pass, gates made by
+    counting); a draw is shared by the whole song, so two tracks drawing from AD pass one sequence between them, randomness the
+    band holds in common rather than kept inside each lane, the most original thing here; a step draws once and its Note+=,
+    Vel+= and conditions all see that one value, so one value can mean several things at once; resetting on a scene's first
+    play makes chance repeatable, so it can make a form; Serial reads as a shuffled deck and Any as a die.
+    What is weak or confusing: (1) tracks to the left draw first, so moving a track column changes the music, unseen; (2)
+    "Conditions redraw" is a flag on the draw, not the statement, so one statement cannot look while another draws; (3) a
+    silenced step still draws, right but hidden, a rest that moves the melody on; (4) a value reaches only pitch, loudness and
+    on or off, never gate, octave, probability, ratchet, CC, step size or which pattern plays; (5) the names collide: "draw" is
+    the thing and the act, the code says registers, the user says accumulators, Value Min and Max squeeze the slots but do not
+    limit a running result, and Note+= does not add up across passes despite its name; (6) the twelve-tone example leads the
+    page; (7) only a scene or a step's Reset row can reset, and nothing shuffles, reverses, rotates or changes a deck mid-song.
+    Missing musically: changing the form (which clip, which scene next, how many repeats); weighting other than repeating a
+    value; memory (a value coming back, a value avoided); coupling between draws; draws read once a bar or a section, where
+    structure lives.
+    Ideas, ranked by musical payoff and novelty (cost S days, M a week or two, L more; * the professor would build first, in
+    the order 1, 2, 8, 3, 4):
+    *1. Action cards (M to L): a slot holds a verb, not a number: +3, Transpose +5, Invert, Double time, Half time, Mute a
+    track, Fill, Thin, Octave up, Ratchet 3, Hold. A step's new row, Play Card AD, beside Reset, carries out the drawn card;
+    the card's scope (a step, a pass, a scene) is part of the card. A bass riff with Play Card AD on step 1 and a serial deck
+    of plain, plain, octave up, half time, invert, plain comes back changed each bar, every change heard once a round. A slot
+    keeps its number or holds a card, so old files load; cards are picked with the existing picker; an action wraps something
+    that exists (transpose, Munge's reverse or invert, the step size). Builds on the Use Draws rows, Serial, Munge. The
+    foundation for most of the rest.
+    *2. Deal, a discard pile and reshuffle (S to M): a direction that deals without replacing; when the strip is empty the
+    deck stops (the parts that read it go quiet) or waits for a reshuffle, by a scene setting Reshuffle AD beside Reset Draws
+    or a Reshuffle card in the deck; the Draws page dims used slots so the pile shrinks as you watch. A lead deck of eight
+    phrase variations runs out and the lead drops until the chorus reshuffles it: the song breathes with the deck. Builds on
+    Reset Draws, Mute When, Serial.
+    *3. Oracle draws (M): a draw marked Oracle is drawn once as a scene starts, its card a constraint for the whole scene:
+    only degrees 1, 3 and 5; no note longer than a step; the drums leave every downbeat empty; everything an octave down; half
+    the tracks rest; every gate legato; velocity flattened to one level. Users write cards (a name and up to four settings it
+    overrides); a small starter deck in an original spirit, short imperatives such as "Leave a hole", "Lean on the fourth",
+    "Everyone whispers", "One voice too many". The header may show the card's name ("Leave a hole"). The same scenes give a
+    different arrangement on each export or performance, each section consistent in itself. A scene's Oracle field and a card
+    editor; builds on scene-level Bypass statements and Reset Draws.
+    *4. Readings with changing lines (M to L): in the spirit of hexagrams, not literally: N lines drawn at once (say six),
+    each a two-way choice, each wired to a part of the arrangement (bass plays or rests, straight or swung, high register or
+    low, dense or sparse, major or the relative mode, the lead plays or rests); each line may be changing, flipping at the next
+    scene or after N bars, so the reading moves into its second reading and the music follows: verse one low, swung, without
+    the lead, two lines changing, verse two climbs and the lead comes in. One kind of draw, a Readings tab on the Scene page
+    wiring each line to a Bypass target or a setting, and a header glyph of six short bars. The most original, the most
+    llamatron-like. Builds on Conditional Execution and the scene's reset.
+    *5. Meta cards (M after 1): cards acting on decks: Reverse BD, Shuffle BD, BD goes random, Swap AD and BD, Remove this
+    card, Add a copy of this card, Rotate CD by 1, Freeze BD for a pass. One conductor deck read once a bar shapes the decks
+    the players use: the melody deck goes forward three bars, then Reverse BD runs the tune backward, then Shuffle BD scatters
+    it, the notes kept and the order developed, as a motif is. A change holds until a reset brings back the stored strip, so
+    file and export stay deterministic.
+    6. Suits (M): every card has a suit the user names (such as rhythm, harmony, melody, dynamics); a track listens to a suit
+    and ignores another suit's value while still using up the draw, so one deck speaks to the whole band and each player
+    answers its own suit, a conversation; a suit field per slot and a suit filter per track; answers weakness 1 musically.
+    7. Hands dealt to the band (M): as a scene starts each track is dealt K cards from a shared deck, played in order, unshared;
+    with no duplicates, four players and twelve pitch cards give four disjoint motifs that fit like a hocket, new each deal. A
+    scene setting "Deal hands from AD, K each"; the Draws page shows each hand. Extends hocket and serial.
+    8. Walk, the real accumulator (S): an Accumulate mode in which each value adds to a running total kept inside Value Min and
+    Max by bouncing, wrapping or folding; slots of +1, +1, -2 make a rising line, as in climbing verses. Makes "accumulators"
+    literally true. Builds on the range settings.
+    9. Fate cards (M): a card marked Fated is set aside when first dealt and must return at a set later moment (the last
+    scene, or N bars on): the strange chord heard early and again at the climax becomes an earned motif. A flag per slot and a
+    fate slot in the timeline.
+    10. Weights that change (S to M): each slot has a weight; a wearing card loses weight each time it is dealt (a fill
+    frequent early grows rare), a ripening card gains it (dissonance creeps in toward the end): an arc without writing one. A
+    weight row under the strip and a drift amount.
+    11. Decks that read draws (M): a slot holds an expression (BD+1, -AD, CD*2, the last value AD gave), coupling voices: a
+    harmony always the melody's draw plus 2 follows the melody under chance. Reuses the Conditional Execution grammar, which
+    already parses AD + BD.
+    12. Decks that listen (L): a card's value from what has played (the last note's degree, the notes this bar, whether the
+    kick sounded), such as the bass answering the lead's highest note a fifth below; an echo slot reading from the timeline;
+    needs care, since draws are timed in the render.
+    13. A performer's hand in real time (L): the player is dealt 3 to 5 action cards on screen and presses 1 to 5 to play one
+    at the next bar, a new card drawn to refill: a performance as a card game of limited means, the drums dropped only when
+    that card is held. Care with undo and saving; the cards played could be logged.
+    14. Wager cards (M): a card stakes something on a later draw ("if the next CD is even, the chorus doubles, else it is
+    skipped"); Bypass statements with a deferred test.
+    15. A tension pool (M): each dealt card adds or removes points from a song-wide pool; past a threshold the next scene gets
+    a forced release card (a drop, a breakdown, a key change); form from building tension; a counter statements can test
+    (TENSION > 10).
+    16. Spreads (M, after 3 and 4): positions dealt once a song (past, present, future, or intro, turn, ending), each wired to
+    a section; the future card dealt face down, shown as ? until its scene plays.
+    17. Cursed and blessed cards (M): a card that stays with a track for N passes once dealt, a sticky detune for four bars,
+    or a blessing protecting a track from mutes.
+    Small fixes to today's draws, whatever is chosen: draw or look chosen per statement; tracks drawing in column order shown
+    on screen, with a draw private to each track as an option; the Use Draws cells dimmed on silenced steps that still draw;
+    the documents leading with a rhythm or melody example rather than the twelve-tone row.
+    Claude's assessment: the diagnosis is sound, and weaknesses 1 and 2 are real usability problems worth fixing whatever
+    else is chosen. Walk and Deal are cheap and make "accumulator" and "deck" true. Action cards are the big decision: they
+    turn draws from numbers into a way of changing the arrangement, where the user's meta decks and the tarot and I Ching
+    spirit need to go, but what a card may do and over what span needs careful design, so that an export stays repeatable and
+    cards do not duplicate Bypass When. Readings are the most original and closest to the I Ching spirit. Suits partly overlap
+    the simpler private draw per track.
+    Open questions: 54, record these as one entry or a group (decks with action cards, Deal and meta cards; Walk; oracle
+    draws; readings; dealing to the band; fate and wear; decks that read; games with decks), Claude recommending a group;
+    55, a statement choosing "draws" or "looks" in place of the Conditions redraw flag (needs a migration), recommended; 56, a
+    remark on the Draws page that tracks draw left to right plus a setting "Shared by the song" or "Each track its own",
+    recommended, or the remark only, or nothing; 57, silenced steps' Use Draws cells drawn dim, recommended; 58,
+    docs/DRAWS.md opening with a rhythm or melody example and the twelve-tone row lower, the demo left alone, recommended.
+
+- title: "Code a person can work on without Claude"
+  priority: 80
+  text: |
+    A large task, to be considered before any of it is done: make the code as readable as it can be for a person with less understanding of it than Claude has, while keeping it fast and easy to change, for a future in which no Claude maintains it. The user's three worries: the text UI may be bound too closely to Textual; there may be too many constants to keep in one's head; and adding a feature means touching too many places. As a measure of the third, adding the Follow Chords generator touched about thirty files: the file format's names, the settings class, the two tables of kinds, the set's reader and writer, the renderer, the strings in five modules, the key bindings, the page, the list of pages, the tests' sample set and seven test modules, three tools and four documents. To discuss: one declaration of a generator from which the tables, the page, the strings' places and the tests' tours are derived; a thin layer of llamatron's own between the pages and Textual, so that a page names no Textual class; a written walk-through for each common change, such as adding a generator, a setting, a page or a key, kept true by a test; which constants earn their names and which are noise; and a way to measure how many files a common change touches, so that progress shows. Nothing of it is started.
+
+- title: "A Munge generator, which takes Serialism's place in the wizard"
+  priority: 80
+  text: |
+    A generator that works on a pattern before it plays, a preprocessor of the pattern rather than running with the timing as the
+    other generators do. The first idea, RandomizePitch (broader than serialism, maybe with no settings at first), rearranges the
+    pitches of a pattern's steps that hold notes, at random by default, every note keeping its place in time, as the pattern
+    editor's randomize pitches munge does. The later idea: look at which of the pattern editor's Munges work as a generator, and
+    make one generator, Munge, that runs one of them on a range of steps. It would take Serialism's place in the song wizard's
+    Experimental genre, whose serial subgenres are to be removed. Wanted: opinions on settings that carry Serialist ideas further.
+    A talk of its own before anything is built.
+
+- title: "Playing lights on the list pages"
+  priority: 80
+  text: |
+    While a song plays in real time, the Patterns page lights a playing mark beside each pattern that a playing clip is
+    playing at that moment, and the Generators and Chains pages do the same for each generator and chain that is active
+    in a clip that is playing. It would use the lights Arrange already has, so that the same mark means playing everywhere.
+    On the Patterns page a group's heading lights too, while any pattern of the group is playing, so that a closed group
+    still shows that something inside plays.
+    To work out: the transport already knows which clips play, so each list asks it which patterns, chains and generators
+    those clips use, a chain counting its generators; whether a pattern reached only through a generator lights; and where
+    the mark goes in a row beside the count columns.
+
+- title: "A knob on a MIDI CC that changes what plays"
+  priority: 80
+  text: |
+    A MIDI CC from a controller, turned while a song plays, changes something in llamatron as a knob does in Live. Two lanes, by what the knob changes (agreed in the real-time redesign): what changes no notes, an outgoing CC, a velocity scale, a transpose, a track's mute, is applied by the Realtime Sender Process to each event as it goes out, heard within about a millisecond with nothing rendered, through the knob message the sender's protocol keeps room for; what changes the notes, a register's value, a generator's setting, a pattern's step, goes to the render process, which keeps the latest value and renders the touched scene at most every few milliseconds. Undecided: how a knob is mapped to what it changes, on which page, and whether a knob's turns are recorded into the set.
+
+- title: "A tempo offset for everything playing on Arrange, while playing live"
+  priority: 80
+  text: |
+    The user wants to bump the tempo of everything playing on Arrange in live mode, up or down, as a tempo offset held on the song
+    for the time being, not written into the scenes' or the song's own tempos. To discuss: the keys that bump it and by how much,
+    whether it is saved with the set or forgotten when the set closes, how it is shown (beside the clock on the header, for
+    example), how it meets a scene's own tempo and a tempo ramp, and whether an export ever hears it. Underneath, the render
+    process would change the clocks of the score it holds and the player hand the sender the events from the change on at the
+    new tempo, the way an edit heard at once is handed over now.
+
+- title: "Global patterns: a song's own or the set's"
+  priority: 80
+  text: |
+    The user's idea: a pattern normally belongs to one song, and a pattern may instead belong to the set, where every song can
+    use it. Today every pattern belongs to the set and every song shares it, so this changes the model and the file format;
+    Claude is to discuss its concerns and ideas with the user, with a drawing of the list of patterns and of the main screen,
+    before anything is built. It has to be fitted to pattern groups, built since, which the Patterns page now lists by.
+
+    Settled so far for the Patterns page: it lists the global patterns and the current song's own, narrowed by the search where
+    one is typed; a column for global patterns is headed GLOBAL and holds a solid circle where the pattern is global; the key that
+    makes a pattern global or a song's own again is named for Global; a new pattern is the current song's own. A file saved before
+    the change opens with every pattern global, so nothing changes in what it means, and every demo and homage with one song
+    keeps its patterns global (`.claude/rules/PRINCIPLES.md`). The main screen's Patterns cell counts the current song's own patterns,
+    the global ones and the total, like `3+2=5`; when either of the two is zero, the cell shows the one number alone.
+
+    A pattern that stops being global: a dialog titled "Copy Pattern to Songs" lists the songs, each with how many clips of it
+    play the pattern, like `in 8 clips`, with no OK button; several songs can be selected and each gets a copy of its own; it
+    shows ten songs at most and scrolls, with a scroll bar drawn at the right of the list, since a set may hold fifty songs.
+    Once the copies are made the global pattern is removed, and ENTER is refused while no song is marked.
+
+    Names: each song has names of its own, so two songs may each have a pattern of one name, but a global pattern's name and
+    any song's own pattern's name never match; a copy made into a song keeps the global pattern's name, which can't clash.
+    Making a pattern global, or renaming one, where that rule would break opens a dialog titled "New name required, conflict in N
+    song(s)", holding only the tracker's standard text field, opened on a free numbered name, and its keys, ENTER reading
+    "rename/promote"; only a name free everywhere the pattern would be seen is accepted.
+
+    The user wants generators and chains to work exactly as patterns do in all of this, a song's own or global, once Claude has
+    shown it understands what that means; open there: a global chain that links a song's own generator, the order of the
+    Generators page, and what the pages' columns show.
+
+- title: "List pages that use the room the console has"
+  priority: 80
+  text: |
+    After the main screen's redesign, the user wants the pages that list things made more compelling and useful on a console
+    larger than 80 by 24: the set's list of patterns among them, and whether some lists should be shown in several columns, a
+    grid to pick from, so that more names are in view. To be designed with drawings before anything is built. What it would
+    mean for the code: `ListPage` laying its rows out in columns for the size it is given, the cursor moving over them with
+    all four arrows and stopping at every edge, the search, Move mode and the `+` row keeping their behaviour, 80 by 24
+    staying as today.
+
+    For the Patterns page, the user's ask: where the console has the room, each row shows the tracks that play the pattern, in
+    the space the row has left, as a column TRACKS that reads as the number of tracks and then their names in parentheses, like
+    `(2 lead, pad)`, cut with an ellipsis when the names don't fit; the number of uses is always shown, whatever the room. Also
+    settled: a blank line separates the caption from the column headings; TYPE becomes DRUM, a solid circle for a drum pattern
+    and nothing otherwise; every column, heading and value, is left-justified. What it would mean for the code: `uses_of` in
+    `interface/pages/uses.py` already knows every use, and the Patterns page's USED column the count; the row needs the track names of the
+    uses, without repeats, fitted to the width the page is given, and the answer remembered until the set changes.
+
+    A way to see every use of one pattern, as a list of song, scene and track, like the list shown when deleting a used pattern
+    is refused, from the Patterns page or the pattern editor, belongs with this: `uses_of` already puts the uses into words, so
+    a key that shows them in a `MessageDialog` is most of it.
+
+- title: "Arrange scrolls with what plays, when launched for recording"
+  priority: 80
+  text: |
+    From the user on 2026-11-10, for the demo recorder (docs/RECORDING.md, being built). A long song
+    has more scenes than fit on an 80 by 24 console, and a video of the Arrange page that stays on the
+    first scenes shows nothing of the rest. The user suggests that Arrange scrolls down to keep the
+    playing scene in view, and only when the tracker is launched with a flag, say
+    `--launch-for-recording`, which may set other properties for a take too, rather than always, since
+    in ordinary use the cursor decides what Arrange shows and the page shouldn't move under it. What it
+    needs: Arrange's `top`, the first scene shown, is set by `visible_scenes` to keep the cursor's row
+    on screen; launched for recording, the playback timer's redraw would move `top` so that the lowest
+    playing scene (`Transport.playing_scenes`) is shown, and leave the cursor where it is. What else the
+    flag sets is open: the user mentioned other properties without naming them. The recorder's own
+    flags, `--autoplay` and `--autoplay-quit-when-finished`, are separate, so a take can be played
+    without the page scrolling.
+
+- title: "The garbage collector held back in the tracker"
+  priority: 80
+  text: |
+    Try holding back Python's garbage collector in the tracker, in the manner of gc.freeze after the set loads and a raised
+    threshold while a song plays, and measure in the tracker itself, key presses and real-time playback, whether pauses and
+    timing improve, with timings before and after for the user's yes. Apart from any performance discussion, and blocking nothing.
+
+- title: "Importing patterns from another llamatron set"
+  priority: 80
+  text: |
+    The main screen's Import opens a dialog that chooses between two kinds of import. The first is the MIDI import, as today. The
+    second imports patterns from another llamatron set: a file is picked, then a list of every pattern of that set is shown, perhaps
+    in three columns, where the patterns wanted are marked. The marked patterns all become global patterns of the set that is open,
+    and a name that is taken is renamed by the naming rule (`.claude/rules/UX.md`, "Names the tracker makes"). The mockups and what the
+    import means for the rest, such as the scales, grooves and generators a pattern leans on, are to be discussed with the user
+    when this is reached. It depends on global patterns.
+
+- title: "A scroll bar wherever a list scrolls"
+  priority: 80
+  text: |
+    The user liked the scroll bar drawn at the right of the list in the mockup of the "Copy Pattern to Songs" dialog, a column of
+    the list's height whose solid part shows which part of the list is in view, and wants to explore where else it could be used.
+    Places to consider: every picker and every list page whose rows don't all fit, the Chord dialog's lists, the Open page, the
+    F1 dialog, the pattern editor's rows view and Arrange when the scenes or tracks run past the console. What it would mean for
+    the code: one component that draws the bar from the count of rows, the rows shown and the first row in view, used by
+    `ChoiceDialog`, `ListPage` and the rest, each giving up one column at its right.
+
+- title: "Details shown on one track, scene or clip of Arrange"
+  priority: 80
+  text: |
+    Rather than the details view opening every cell at once (`R`), a key would open the details of what the cursor is on alone,
+    and the same key again close them: on a track's name, the whole column; on a scene's name, the whole row; on a clip, that
+    clip only, though its scene's row and its track's column grow to fit it, since a row is as tall and a column as wide as
+    its largest cell. For the code: `ArrangeDrawing.track_width` and `scene_lines` would ask which columns, rows and cells are
+    open, a set kept on the page or the app for the session, rather than the one switch `shows_arrange_details`, and
+    `draw_details` and the Tab picking would act only on open cells; `details_layout` already works the widths and heights out
+    per column and per row. Whether the blue dividers show while only some cells are open, and how this sits beside `R`, are
+    to be discussed.
+
+- title: "Chordify"
+  priority: 80
+  text: |
+    From the user on 2026-11-11, while settling how generators keep their state: a generator, or a
+    setting of the arpeggiator, that turns single notes into chords on chosen steps of the bar, the
+    opposite of what the arpeggiator does. Painted on a whole scene, every track's copy works on the
+    same steps, so that tracks whose patterns are the same length line up. Undecided: whether it is a
+    kind of its own or part of the arpeggiator, how the steps and the chord are chosen (a chord
+    symbol, as the Chord row's, or the scale's triad), and whether a note already a chord is left
+    alone.
+
+    An earlier ask of the same kind, from 2026-11-07: as a setting of the arpeggiator, a row like the offsets row but holding
+    chord symbols, which puts a chord type on a step of the arp's cycle, so that an arp over a line can play, say, the third
+    note of each cycle as a triad and the rest as single notes.
+
+- title: "Refactoring"
+  priority: 80
+  text: |
+    ### The goal
+
+    The long-term goal is very readable, object-oriented code: classes in files of their own,
+    designed with care, each doing one clear job, and never cryptic or obfuscated. Someone reading
+    it without AI help should be able to see what each class is for and how the pieces fit. The
+    earlier readability ideas belong here: moving classes into individual files, sharing behavior
+    through base classes where several classes repeat the same shape, more small helper methods
+    with names that say what they do, and code and comments that explain the why, in the order a
+    reader needs it.
+
+    ### Rules for every class
+
+    - **No class reads or changes another class's data members directly.** Everything goes
+      through methods on the class that owns the data.
+    - **Nobody uses the classes as an API.** llamatron is used through the text UI, so the classes
+      are internal and their methods can be renamed or reshaped freely to suit the design.
+    - **Plain accessor methods, not Python's accessor magic.** Another class changes a member only
+      through a method like `set_name(name)`, and reads it only through one like `get_name()`,
+      rather than through properties or descriptors, so that what happens is visible where it
+      happens, and every setter can validate what it's given. Setters can take sensible defaults,
+      like `set_name(name=None)`.
+    - **Only the accessors that are used.** Getters and setters aren't added for every member
+      automatically. A class has only the ones other classes actually call, so its accessors show
+      what's part of its contract with the rest of the program.
+
+    These rules are in CLAUDE.md and the whole codebase follows them since the accessor audit below.
+    Every change to the song goes through `Document` and the objects' setters, which is what made
+    undo and redo easy and will make wizards easy.
+
+    ### The accessor audit
+
+    **Done on 2026-11-07.** Every class keeps its data private behind `get_` and `set_` methods, only
+    where other classes use them; the `_Validated` descriptor and every property are gone; `Note`,
+    `Chord`, `Scale`, `Rest`, `Degree`, `Held` and `Control` are plain immutable classes with getters;
+    the grid lives in `src/llamatron/grid/` and the tracker in `interface/tracker/screens/` and `interface/tracker/dialogs/`, one
+    class per file. Decided with the user along the way: references between objects stay names looked
+    up at render, which keeps binding late, and every step was checked with `internal_tools/compare_exports.py`
+    and the full suite. What's still worth doing under the same heading is moving more behaviour onto
+    the objects that own the data wherever a reader would look for it there first.
+
+    Open question from 2026-11-08: probability rolls and random directions are seeded from the
+    song's seed, the scene and the **track's name** (`ClipSlotPlayer`), so renaming a track changes
+    what a song with probability plays, though nothing breaks. Renames are meant to change nothing.
+    Seeding from the track's place instead would make renames safe but reordering tracks unsafe,
+    and either change alters existing renders once. `tests/composition/test_renames.py` keeps track names in the
+    examples until this is decided.
+
+    ### Other design decisions to revisit
+
+    - **Chain generators work on rendered notes, not steps.** That keeps binding late, so a chain
+      follows scale changes, but a chain's result can never be seen or edited in the tracker, and a
+      generator can't think in steps. Worth keeping in mind when designing the pattern generators
+      above, which would write steps instead.
+
+- title: "Time signatures, what's left"
+  priority: 80
+  text: |
+    Time signatures were built on 2026-11-07: on the song and optionally on a pattern, purely
+    graphical in llamatron (bold step numbers on beats, the signature in the editor's header) and
+    metadata in the exports (a meta event in every MIDI file, the Live set's control and each Live
+    clip's own signature). Still to think through:
+
+    - **Scenes.** A meter change mid-song would be an optional `time_signature` on a scene, meaning
+      the song's when left out, written as a second meta event where the scene starts and into Live's
+      scene settings. It's rare in this music, and it needs no migration, so it waits for a song that
+      needs it.
+    - **Bar lines and bar counts, low priority.** Beats have bold numbers and a bold double line
+      down their left edge since 2026-11-07. The first step of each bar could get one more mark, a
+      heavier line or a bar count in the header, which would help most in long patterns, where a
+      block of steps may start in the middle of a bar.
+    - **Patterns that don't fill a bar.** A pattern shorter or longer than a bar, or one with a
+      pickup, starts its count somewhere, which links to the pickups idea.
+
+- title: "Morphing"
+  priority: 80
+  text: |
+    ### More morph types
+
+    Morphing today only moves notes from one pattern to the other, sweeping in from the left, the
+    right or the middle. Other kinds of morph worth exploring would slowly move between the two
+    patterns' other settings too, such as averaging velocities, probabilities or CC values across the
+    repeats, rather than only swapping notes.
+
+    ### Morphers as objects
+
+    Morph strategies could become their own object type, MORPHERS, defined by name with their
+    settings like arps and AutoRatchets are, and then picked on a clip in place of today's
+    `morph_style`. The details haven't been discussed yet.
+
+- title: "Songs with very many patterns"
+  priority: 80
+  text: |
+    `examples/by_genre/ragtime/entertainer.yml` is a whole piece written eight bars at a time, and it has 81
+    patterns on six tracks over 20 scenes, and had 107 over 38 when its phrases were four bars. That's a realistic size for a full composition, and it
+    shows where a plain list of patterns starts to strain:
+
+    - **Going straight from a clip to its morph target or its chain.** `P` (Pattern) opens a
+      clip's pattern from Arrange and the clip page; the same could work for its `morph_to`
+      pattern and for its chain.
+    - **Making many patterns at once.** Typing in a long piece means making one pattern per phrase
+      per track. Copying a scene's patterns to new names in one step, or naming new patterns from
+      their scene and track, would cut that down.
+    - **Size on disk.** The file is about 50 KB and still reads well in a diff, so the file format
+      isn't the limit yet.
+
+    ### The notes a pattern plays, under every step
+
+    The pattern editor's description line says what the step under the cursor plays, which the user
+    likes, and would really like to see for every step at once: a blank line under the step grid,
+    then a row in a lighter colour with the actual note each step plays, like `C3  E3  G3  --  C4`,
+    lined up under the steps so the eye can read the melody without moving the cursor. The
+    description line of the step under the cursor could then go, with that space used for the
+    default a blank cell would get when the cursor is on one, such as `Default gate: 1/16`, where a
+    row has a default to show; a blank Note cell has nothing to show, so the space stays empty there.
+
+    What it touches: `PatternDrawing` already works out what one step plays for `describe()`, through
+    the current song's scale and the editor's `cell_text`, so the row is that per step, fitted to the
+    same cell width as the grid, and scrolling sideways with it, with the lighter colour being
+    `Style.DIM` because the tracker draws with the terminal's own colours only. The 80 by 24 budget
+    is the constraint: the grid grows by two lines (the blank one and the notes); a drum pattern's row would show the drum note letters
+    and a chord step the chord's name or its lowest note. The defaults shown for a blank cell come
+    from `model/schema/defaults.py` and the set's step size, which the Gate row's default is.
+
+    ### A way home, now that pages can jump
+
+    `P` (Pattern) was the first jump, and it settled what going back means: ESC goes back to the page
+    the jump came from, the crumbs show the path taken (`ARRANGE › clip: (scene 1, lead) › pattern:
+    tune`), and a page that comes back redraws from the current set and follows renames. What's
+    left to think about: getting to the main screen could take many presses of ESC once more jumps
+    exist, so a key that goes straight there may be needed; and if a pattern could jump to the clips
+    that use it, the stack could grow without end, so a jump to a page already on the stack might
+    go back to it instead of opening it again.
+
+- title: "A tree sidebar, to try on a branch"
+  priority: 80
+  text: |
+    The user's idea from 2026-11-07, to be described more later: a sidebar beside the page, drawn as a
+    tree whose nodes expand and collapse, so that what's under each song (its tracks, scenes and
+    clips, and the set's shared patterns, scales, generators, chains and grooves above them) can be
+    seen at a glance, along with where you are and what you're looking at. It may not work out, so
+    it's something to try on a branch rather than build straight in.
+
+    What it would touch, roughly: every page is laid out for 80 columns, and the pattern editor and
+    the Arrange grid use all of them, so the sidebar would have to fold away or only show on wider
+    terminals, or replace the crumbs on the top line rather than sit beside the page. Textual has a
+    `Tree` widget, which would need checking against the rule that the tracker draws with bold, dim,
+    reverse video and box characters only. If the tree can also be moved in, it becomes the first way
+    to jump between pages that isn't up or down one level, which is the question under "What Tab
+    means, once pages can jump".
+
+- title: "Ideas from other trackers"
+  priority: 80
+  text: |
+    Look through other trackers for features worth borrowing, the way the step sequencer and the mono groovebox have already given llamatron note grab, registers, step directions, CC slides
+    and its arpeggiator. Ones worth a look include the leading trackers on the computer, chip trackers, the tracker on the handheld console, and the hardware trackers. Things to
+    look for: how they handle long songs and many patterns (see above), effect columns and per-step
+    commands, groove and swing, pattern chaining and song order, and how they keep everything
+    reachable from the keyboard.
+
+- title: "Pattern generators on the Patterns page"
+  priority: 80
+  text: |
+    Tools on the Patterns page that write a new pattern, or fill one in, from a few choices: a
+    melody, a bassline, a chord progression, a drum beat and so on. They'd be different from today's
+    generators, which change a clip at render time in a chain: these would write ordinary steps into
+    a pattern once, which can then be edited by hand like any other. They'd live beside the clip
+    generators in `src/llamatron/generators`, or in a package of their own for pattern mutators.
+
+    Making them intuitive will take some thought, so nothing is decided yet. Questions to settle
+    first:
+
+    - **Where they live.** A key on the Patterns page that makes a new pattern, a key in the pattern
+      editor that fills in or rewrites the rows under the cursor, or both.
+    - **How few choices are enough.** Something like "bassline, 16 steps, follows these chords" is
+      easy to pick, but every extra setting makes the dialog harder to use.
+    - **Trying again.** A generated pattern is rarely right the first time, so generating again with
+      another seed, and undoing, should each be one key.
+    - **Following the song.** Writing degrees rather than notes keeps a generated pattern following
+      the scale, as everything else does. A bassline or melody could also take its chords from
+      another pattern, the way a grab takes notes from a track.
+
+- title: "Utility wizards for large changes"
+  priority: 80
+  text: |
+    Bigger tools for changes too large to make by hand comfortably: utility work like renaming a set
+    of patterns, copying a section to a new key, or splitting a long pattern into phrases. The key
+    that opens them needs thought.
+
+    llamatron must not become an AI music generator, so a wizard never decides the music for you.
+    Every wizard asks plenty of questions and does only what the answers say, and what it makes is
+    ordinary patterns, tracks and scenes that can be edited afterwards. To be explored later. The
+    wizard that makes a starter song in a style is the song wizard (`.claude/planning/WIZARD_DESIGNS.md`).
+
+- title: "Live launching scenes in line with llamatron's"
+  priority: 80
+  text: |
+    Noted 2026-11-07. In llamatron a scene finishes before the next starts, and the exported
+    Arrangement View lays the scenes end to end at exactly those lengths. Session View is different:
+    launching a scene fires its clips together at the next launch quantization boundary (a bar by
+    default, counted by the time signature), each clip then loops on its own, and nothing waits for a
+    scene to finish. So a scene whose length isn't a whole number of bars (it lasts as long as its
+    longest non-looping clip) drifts from where the Arrangement put it when launched by hand. Two
+    things could help: the Arrange page showing a scene's length in bars and marking one that doesn't
+    divide evenly; and writing Live's scene follow actions, which can advance to the next scene after
+    a set time, so that Session View plays the set the way llamatron does. The second needs checking
+    against the template and proving in Live, and it's the same auto-advance idea as the real-time
+    playback design below, on Live's side.
+
+- title: "An analyzer that checks a set for problems and makes recommendations"
+  priority: 80
+  text: |
+    From the user on 2026-11-11, while designing the Harmonizer, a generator that keys off a track
+    it names: deleting that track would set the name to nothing and leave the harmonizer doing
+    nothing, which is fine for now, but a set can quietly stop doing what was meant. The idea is an
+    analyzer that reads a set and reports such things, with recommendations: a generator naming a
+    track that is gone, a register bound to a lane with no CC number, a condition comparing
+    registers nothing changes, an add past a register's limit, a pattern no clip plays, a scene that
+    waits forever. What it needs: a list of checks, each a function of the set returning findings in
+    the tracker's words, run on demand from a page or the command line, and perhaps on save; some
+    checks overlap the uses and corrections the tracker already has (`interface/pages/uses.py`,
+    `model/file/corrections.py`), which it would build on rather than repeat. Undecided: where its
+    report shows, whether it can fix what it finds, and which checks come first. The user added, while
+    designing Progression: it could flag things that don't make sense, like a progression on a drum
+    track (which does nothing), recommend features, and perhaps refactor a song.
+
+    It also reports on a song and suggests things to look at, without changing anything (once the idea of a Metrics Wizard):
+
+    - how long each scene and the song are, and how often each pattern is used, including unused
+      patterns;
+    - each track's range of notes, and notes that fall outside a typical instrument's range;
+    - how busy each scene is, in notes per bar for each track;
+    - notes outside the scale, and tracks that clash, such as a half step apart on a strong beat;
+    - velocities that never change, or clips much shorter than their scene;
+    - how much repeats exactly, which hints at where an Optimizer Wizard could help.
+
+- title: "Real-time MIDI, what's left"
+  priority: 80
+  text: |
+    Real-time playback is built: the Instruments section and the main screen's Real Time switch, the
+    Realtime Sender Process, Space on Arrange with every start by hand at the next bar, `L`
+    (Listen) on the clip page and in the pattern editor, the lights, the clock and Ctrl+T
+    (`.claude/features/REALTIME_PLAYBACK.md`, "Real-time playback"; `.claude/features/REALTIME_PLAYBACK.md`, "Real-time playback"). The exports stay exactly as they were. What the
+    user's design of 2026-11-07 and 2026-11-09 still has in it, to do one item at a time:
+
+    - **More follow actions, like Live's.** From the user on 2026-11-10, with the Advance field's
+      "With Scene", "Next" and "Off": Live's "Previous", "First" and "Last" could follow, each a
+      value of `FollowAction` that `Player._send_starts` turns into a scene other than the one
+      below, with the same Launch together rule when the start arrives. "Any" and "Other", Live's
+      random ones, would take the song's seed. Nothing in the format changes but the list of
+      choices.
+    - **Testing over the wire with a receiver**, from the user on 2026-11-07: a small program the
+      tests spin up, which makes itself visible as a MIDI device (a virtual port through
+      python-rtmidi's `open_virtual_port` on a Mac or Linux, or the IAC driver) and records every
+      event with its time, so that what the tracker sends over a real port is compared with the MIDI
+      export, every example and demo through it, the timing errors reported to the user with
+      Claude's opinion of whether they would sound tight. Today the suite holds the player to the
+      export inside the process (`tests/realtime/test_realtime.py`) and the report measures the Realtime
+      Sender Process on recording outputs, which open no port.
+    - **MIDI clock**, so that other gear follows, from the same sender.
+    - **The timestamped and compiled senders**, kept in reserve from Claude's proposals of
+      2026-11-07 in case Python ever drifts: timestamped output through CoreMIDI or the ALSA
+      sequencer (PortMidi exposes it portably, python-rtmidi doesn't; Windows has no such queue), a
+      compiled scheduler in process (a CPython extension, or Rust through PyO3), or a helper program
+      in Rust or C fed over a pipe. The Realtime Sender Process measured within 0.11 ms on every
+      event (`internal_tools/midi_timing_spike.py`, `internal_tools/midi_spike.sh`), so none is needed yet.
+
+- title: "Buttons: rows on a page that do what a key does"
+  priority: 80
+  text: |
+    The File/Global page already has Save and Open rows that do what Ctrl+S and Ctrl+O do, so that the page
+    can be worked with the arrow keys alone, and the user wants that idea finished and named: a
+    "button" is a row on a page, drawn like the menu rows on the main screen, that ENTER presses and
+    that shows the hotkey it stands for, so nothing is reachable only by a key. The File/Global page has
+    Save and Open buttons below its settings, and the clip page Play and Stop; Save as is still `W`
+    alone. Buttons are for places where a Ctrl+ or
+    other shortcut has a logical home on the page too; the rest of the UI is easy enough to move
+    around that it doesn't need them yet. Where they'd go next:
+
+    - **The pattern editor**: a Munge button right after the step grid, which opens the munge dialog
+      and shows `M`, so that munging moves out of the footer and the footer gets shorter.
+    - **Claude's other candidates, to weigh**: an Export button on the Song page already exists as a
+      row, which is the same idea; a Rename button on the editors that rename with `N`; Load over on
+      the pattern editor beside Munge; New set and Save as on the File/Global page; Add at the bottom of
+      every list, which the `+` row is already; and a Help button is probably not worth a row, since
+      F1 is on every legend.
+
+    The footer stays the key legend for the page's own keys, as "F1 as the hotkey dialog, and a
+    shorter footer" below describes, so a button's key still shows there. What it would mean for the
+    code: `Button` in `screens/shared/field.py` exists, made by
+    `FieldPage.button` and drawn below the settings after a blank line with its key's name in front,
+    as the main menu draws a row, so what's left is a Save as button on the File/Global page, a cursor
+    position below the grid in the pattern editor, which is new for it, and a check in
+    `tests/interface/tracker/test_tui_keys_shown.py` that every button's key is still in `keys()`, so pressing the key and the
+    button do the same.
+
+- title: "Naming the CC numbers in the track editor's picker"
+  priority: 80
+  text: |
+    From the user on 2026-11-08, to confirm when it comes up. The track editor's CC 1 to CC 4 fields
+    take a number from 0 to 127, typed or nudged, and the MIDI specification gives most of those
+    numbers a standard purpose: 1 is the mod wheel, 7 volume, 10 pan, 11 expression, 64 the sustain
+    pedal, 71 resonance, 74 brightness, which is the filter cutoff on most synths, and so on. ENTER on
+    one of those fields would open a picker listing every number with its name beside it, like
+    `74  brightness (filter cutoff)`, searchable as every picker is by typing, so that typing `filt`
+    finds the number for a filter sweep without looking it up, and the unnamed numbers would be
+    listed as numbers alone. The pattern editor's CC row labels, which say the lane's number, like
+    `CC 1 (74)`, could add the name where the cell width allows. What it would mean for the code: a
+    table of the standard names in `model/values/midi.py`, the CC fields' ENTER opening a `ChoiceDialog`
+    built from it in place of the number prompt (`MSG_CC_PROMPT`), with `+` and `-` still stepping the
+    number, and the names as `MSG_` constants since they're shown.
+
+- title: "A Settings page, from a YAML dotfile"
+  priority: 80
+  text: |
+    A Settings page in the app, reached from the main screen, whose values live in a dotfile in the
+    user's home directory, `~/.llamatron`, written as YAML and read through `safe_yaml.load_safely`
+    like everything else. The settings are the user's own preferences rather than anything a set
+    stores, so they never go in a set file, and every one has a default so that no dotfile at all
+    means the program as it is today. What they could hold:
+
+    - **Streamlining the app**: hiding features the user never uses, such as pages, pattern editor
+      rows or whole export kinds in the Ctrl+X dialog (someone who never writes MIDI files sees only
+      the Live set), so that the legends and dialogs get shorter.
+    - **Defaults for new songs and sets**: real-time MIDI on by default once it exists, default MIDI
+      channels for tracks, default track names for a new song (`kick`, `bass`, `lead` instead of
+      `track 1`), a default tempo, time signature or scale.
+    - **Starter content**: a set file whose patterns (and perhaps scales, chains and grooves) are
+      added to every new set automatically, so that a personal library follows the user around; this
+      overlaps with "A library of patterns, chains and arps" below and could be how that starts.
+
+    What it would mean for the code: a `Settings` object in `support/` or a package of its own, read
+    once at start with defaults for everything, passed to the app rather than read from a global;
+    `Document` and the pages ask it for defaults where they use `model/schema/defaults.py` today, so
+    the file format's defaults stay what they are and the user's defaults only apply to what the
+    tracker creates; the Ctrl+X dialog and the legends filter their lists through it; and the page
+    itself is a `FieldPage` that writes the dotfile back. Tests set a dotfile path explicitly so that
+    they never read the developer's own.
+
+- title: "Colour: a light terminal's palette, and switching itself off"
+  priority: 80
+  text: |
+    Colour has arrived allowance by allowance (`.claude/rules/UX.md`, "Drawing"), the themes' stripes among them, in place of the one
+    switch first imagined. Two things are left. The colours were chosen on a dark terminal, so each wants checking on a light
+    one, with a second palette if any reads badly: `Style` in `interface/tracker/drawing.py` is the one place styles are named, so a palette
+    is a mapping from each of its names to a Rich style, picked when the app starts. And colour should switch itself off where
+    a terminal cannot show it, with no setting: what to look up is Textual's `theme`, `available_themes` and `register_theme`
+    (the app runs with `ansi_color=True` today, which keeps the terminal's own sixteen colours), whether it asks the terminal
+    for its background colour and exposes the answer, Rich's `Console.color_system` for the colour depth, and the `COLORTERM`
+    and `NO_COLOR` environment variables, which a terminal sets and a person can set to switch colour off. Also asked for and
+    not built: the piano roll's cursor box in a colour of its own.
+
+- title: "Keys for the rest of what's global, to discuss"
+  priority: 80
+  text: |
+    What works on every page is a Ctrl+ key or a function key, so that the plain letters are always a page's own
+    (`.claude/rules/UX.md`, "Keys and legends"). Two things are left to discuss. New and Save As are still plain letters on the
+    File/Global page, and whether they count as global and should take Ctrl+ keys too. And whether the things that matter most,
+    Save, Export and Open, could take function keys as well, since one key is easier to type than Ctrl and a letter; F1, F2, F3
+    and F5 are taken, macOS keeps F9 and above for its windows, and on a Mac the function keys need Fn unless they're set to
+    standard keys, which weighs against it. Ctrl+C, Ctrl+Z and a few others are taken already.
+
+- title: "uv instead of venv and pip, to discuss"
+  priority: 80
+  text: |
+    Someone suggested using `uv` for setting up and controlling the Python environment, in place of
+    `python3 -m venv .venv` and `pip install -e .`. The user wants to discuss whether this makes
+    sense or is a good idea before anything changes, on 2026-11-07, and asked for it only to be noted
+    for now.
+
+    What it would touch, if it were done: docs/INSTALLING.md, the setup commands in README.md, docs/GUIDE.md and
+    CLAUDE.md, `internal_tools/test.sh`, `user_scripts/demos_to_live_sets.sh`, `llamatron.sh` and `internal_tools/make_docs.sh`, which all
+    assume `.venv/bin/python`, and the note in docs/INSTALLING.md about building PyYAML with libyaml. Things
+    to weigh: uv is much faster at installing and can pin the Python version too, but it's one more
+    tool to install first, where venv ships with Python, and the instructions would need to stay
+    right for people who don't have it.
+
+- title: "Exporting to other DAWs"
+  priority: 80
+  text: |
+    Today llamatron exports an Ableton Live set, one MIDI file of the whole song, MIDI stems or a
+    folder of MIDI clips. Which other DAWs get a project format of their own is to be decided
+    (2026-11-09): for now the stems and the single MIDI file are the way into any other DAW, and
+    real-time MIDI will be the other. When one is chosen, a new kind is one subclass of `Exporter`
+    (`src/llamatron/exporters/exporter.py`) listed in `src/llamatron/exporters/exports.py`, sharing
+    the note timing in `src/llamatron/engine/timing/timing.py`, so it mainly needs to write the format.
+
+- title: "A llama that runs across the bottom of the screen"
+  priority: 80
+  text: |
+    Asked for by the user on 2026-11-08: a small llama drawn in ASCII block characters that runs
+    across the bottom of the screen when the program starts, and runs across again every time the
+    set is saved, each run in the opposite direction to the last. An export runs a llama too, but one
+    that's somehow different from the save's, perhaps two llamas running together, to be decided when
+    the idea is picked up. The first thought was a llama that stood on the main screen until the
+    first key press; the running one replaced it the same day. What the llamas look like is to be
+    discussed then, with sketches to iterate on first, as with every drawing. What it would mean for the code: the drawing as a tuple of `MSG_`
+    lines, like the About dialog's cow (`MSG_COW`), and a mirrored copy for the way back; a Textual
+    timer on the app that moves the llama a column or two at a time along the line above the legend,
+    or over the status line, which every page shares, so that it runs on whatever page is open;
+    `Document.save` and the export telling the app which happened, which starts the next run with
+    the right llama or llamas; the app remembering
+    which way the last run went; and the run leaving the keys working throughout, since it's only a
+    drawing. The tests would step the timer by hand rather than wait, and check that a save starts a
+    run the other way.
+
+- title: "Tidying away unused patterns"
+  priority: 80
+  text: |
+    From the user on 2026-11-10, with the MIDI import, since a bad import is undone by deleting its
+    song. Deleting a song offers to delete the patterns that song used and no other song uses, in a
+    question that lists them. The Patterns page gets a key that deletes every pattern no song uses,
+    after a confirmation that says how many. What it would mean for the code: `uses_of` and the
+    Patterns page's USED count already know which patterns are unused, so it's a question after the
+    Songs page's delete and a key on the Patterns page, each one undo step. Undecided: the key's
+    letter, and whether the question lists the patterns or only counts them.
+
+- title: "More ideas from Claude, noted for later"
+  priority: 80
+  text: |
+    These came from building the demos. The user chose which to keep.
+
+    ### Song order, given that scenes are already ordered
+
+    Most trackers have an order list naming sections in the order they play, with repeats, so that
+    "A, A, B, B, A" is five short entries rather than twenty copied scenes. The Entertainer demo has
+    20 scenes because every repeat is written out. But llamatron's scenes already play in order, top to
+    bottom, so how an order list would fit needs thinking about first. It could be a separate list
+    that refers to scenes, scenes could get a way to say "play scene 3 again here", or a scene's
+    `repeat` might already cover most of it. Live has its own idea of scenes, which matters too.
+
+    ### Pickups, if they can be intuitive in the pattern
+
+    A way to write a pickup, the notes before the first full bar, as the music has it. Simple Gifts
+    starts with a two-note pickup, which had to be moved to the front of the pattern so that it loops
+    cleanly. Only worth doing if it reads naturally in the pattern editor, such as marking where bar
+    one starts within a pattern. A clip setting that starts it partway through is the other way.
+
+
+    ### Grooves, what's left
+
+    Timing grooves were built on 2026-11-07, as decided with the user: a `grooves` section of rows of
+    cells, the factory grooves, the song's, scene's and track's choices with `false` switching
+    grooving off, applied in the exporters' timing so that all four exports groove the same. What's
+    still open:
+
+    - **Velocity in grooves**: see "Accents on beats: velocity in grooves".
+    - **Random timing jitter** in a groove, which would use the song's seed like probability does.
+    - **Polyrhythms**: parts in different meters against each other, such as a track in 7 against 4,
+      and what that means for scene lengths.
+    - **Notes off the grid.** A note between two cells, such as a 32nd in a 16th groove, takes the
+      amount of the cell it falls in. Live moves such notes towards the groove's positions instead;
+      whether that's wanted can be decided when a groove with short notes sounds wrong.
+    - **The last note of a clip.** A note delayed past the end of its clip is cut there, as every note
+      is, so a swung last 16th is a little shorter. Letting it run into the next scene would mean
+      clips that overlap, which Live doesn't do.
+
+    ### Sequencer inspiration from the classic samplers, to think about
+
+    The user wants a pass over the best-loved classic samplers (the late-1980s and 1990s models especially) for
+    ideas, once grooves exist: their groove and swing patterns and what made the feel famous, note
+    repeat, the 16 levels mode, timing correct and shift timing, and any other quirks of their
+    sequencers that a step tracker could borrow, in the spirit of `docs/WHY_LLAMATRON.md`.
+
+    ### (Low priority) Named drum maps
+
+    Drum patterns name hits by note letter and octave, so a kick is "C, octave 1".
+    A map on a drum track, like `kick: C1`, would make drum patterns easier to read. But the user
+    uses a separate instrument in Live for each drum track, so it would need testing in a way they
+    don't usually work, and drum maps differ between instruments in Live anyway.
+
+    ### (Low priority) A library of patterns, chains and arps
+
+    A file of reusable parts that any song could copy from, and the base for song
+    templates. The difficulty is keeping it from being confusing in the text UI, alongside each
+    song's own patterns and generators.
+
+- title: "Performance hot spots"
+  priority: 80
+  text: |
+    CLAUDE.md holds the standing rule: profile with cProfile over the examples, prefer doing less work
+    to new number types, prove with `internal_tools/compare_exports.py` that a speedup changed nothing, and
+    test both paths of any shortcut. The 2026-11-08 work did that for estimating, grabs, clip
+    lengths, notes, numbers (`Rational`) and YAML reading. One candidate noticed then is still
+    unmeasured:
+
+    - **Rendering a Live set.** Each track is a deep copy of the template's track, and every
+      shared id is renumbered by walking the whole tree. That's fine for a few tracks, but worth
+      measuring for songs with many tracks and scenes, since the Live set is now the slowest part of
+      rendering a big song.
+
+    Efficiency shouldn't cost readability, which matters more here: a faster version only goes in
+    where it's measurably needed, and stays as clear as what it replaces.
+
+- title: "Every object has a unique name"
+  priority: 80
+  text: |
+    All objects must have unique names. Patterns, tracks, scales, arps, AutoRatchets and chains
+    already do, within each kind, because the file stores them by name. The exception is scenes:
+    their names are optional and can repeat, which is why the grid's `ClipRow` and `ClipColumn` have
+    ids today. Making this a rule means:
+
+    - **Scenes always get a name,** and a unique one. A new scene already gets a name like
+      `scene 3`, so mostly this means refusing duplicates, and naming the unnamed scenes in older
+      files when they load, by the defaults rule.
+    - **Unique within a kind, or across all kinds?** A pattern and a chain both called `bass` don't
+      clash today, because every reference says what kind it names. Unique within each kind is
+      probably enough, but this needs deciding, and sections may change the answer if patterns
+      belong to sections.
+    - **Ids may become unnecessary.** With unique scene names, the ids on `ClipRow` and `ClipColumn`,
+      which exist only because names could repeat, could perhaps go, and the clip tree's file names,
+      which use ids, could use names instead.
+
+- title: "Gauges for the generators: the auto ratchet counts, a stutter and the groove editor"
+  priority: 80
+  text: |
+    From the user on 2026-11-08, to sketch and iterate on before anything is built, with the gauge
+    and piano roll work's component focus: steps that can only go up and down so many points read
+    better as gauges than as numbers. The arp's offsets editor is such a gauge now, built from
+    `SignedGauge` in `interface/tracker/components/signed_gauge.py`. The auto ratchet's counts, a cycle of how many
+    slices each note is cut into, could be short gauges too, and a stutter, which llamatron doesn't
+    have yet, would be the same kind of row. The user wants a proposed sketch of each, drawn the way
+    the pattern editor sketches were, to iterate on before deciding. What it would mean for the code:
+    `SignedGauge` reused by the groove editor in place of its one-row drawing, since a groove's cells
+    are signed percentages too, and a counts row for the auto ratchet editor in place of its text
+    field.
+
+- title: "A gauge dialog for picking a number cell's value"
+  priority: 80
+  text: |
+    From the user on 2026-11-08, to sketch before anything is built: ENTER on a cell that holds a
+    number in the pattern editor, Velocity, Prob, a CC row, Octave or a register change like `AX +=`,
+    would open a dialog with a gauge, the way ENTER on the Chord row opens the chord picker, so that
+    a value can be picked by sight, with the arrows moving along the gauge and digits still typing.
+    The register note and velocity rows are toggles, so they'd have no such dialog. The user wants
+    example sketches first, drawn the way the pattern editor sketches were, before deciding. What it
+    would mean for the code: a dialog in `interface/tracker/dialogs/` drawn from the gauge pieces the Degree row
+    and `SignedGauge` already have, and an ENTER key on `NumberRow`, `ControlRow`, `CcRow` and
+    `OctaveRow`, which today only take digits and `+/-`.
+
+- title: "Reviewing every hotkey in the text UI"
+  priority: 80
+  text: |
+    Review the letter keys on every page of the text UI, to see whether any could be more logical,
+    and only change them if it's warranted. This needs discussing before anything changes. Making
+    one key more logical can mean moving another to free its letter, so the review should look at
+    every page together. Every key binding is in `src/llamatron/interface/tracker/keybindings.py`, one class for each page, and
+    `internal_tools/keys.sh` prints them all, or every binding that has one key (`internal_tools/keys.sh --key s`), so that's the
+    complete list to work from.
+
+    Things already worth a look:
+
+    - **The same letter meaning different things on different pages,** like the letter that opens a
+      page from the main screen also sorting lists, or the one that moves a row down also removing a
+      step in the pattern editor.
+    - **Letters that are text in some places.** On a drum pattern's Note row, the note letters type
+      notes, so any editor key on one of those letters isn't available there.
+    - **Letters chosen because the obvious one was taken.** Some of the pattern editor's
+      whole-pattern actions moved into the Reconfigure dialog, which freed letters, so the question is
+      whether the remaining letters on each page are the obvious ones.
+    - **Whether every page offers the same key for the same kind of action,** such as renaming,
+      copying, deleting and moving up or down, wherever those apply.
+
+- title: "Grouping the F1 dialog's keys"
+  priority: 80
+  text: |
+    From the user on 2026-11-08. The F1 dialog lists the keys that work everywhere, a blank line and
+    then the page's own keys, in two columns in the order the page's `keys()` gives them, and on the
+    pages with many keys, the pattern editor above all, that's getting messy: related keys sit apart
+    and a reader has to scan the whole list to find the one for moving, or for a note, or for the
+    whole pattern. The idea is to group them, so that related things sit together under a short
+    heading, like `Moving` (the arrows and the jumps to the ends), `Notes` (drawing, cutting,
+    lengthening and erasing a note), `The pattern` (sizing, inserting and removing steps,
+    reconfiguring) and `Views` (switching between the roll and the rows), each group in its own two
+    columns with a blank line between, the way the everywhere keys already sit apart.
+
+    What it would mean for the code: a binding in `interface/tracker/keybindings.py` would take a group, a constant from a
+    small class of group names in `user_strings/legends.py`, and `HelpDialog.key_columns` would lay out one
+    block per group in the order the groups are declared, falling back to one block for a page that
+    names no groups, so that the pages can be grouped one at a time. The legend wouldn't change. The
+    test that every page's help fits an 80 by 24 console (`tests/interface/tracker/test_tui_help.py`) keeps its hold,
+    so the dialog may need to scroll, or to put the headings in the columns' first rows, on the
+    pattern editor.
+
+- title: "Using the tracker with the basic keys alone: the arrows, Tab, Space, ENTER and ESC"
+  priority: 80
+  text: |
+    From the user on 2026-11-08: audit every flow in the tracker to see that most of it can be used
+    with the basic keys, the arrows, Tab, Space, ENTER and ESC, typing only when a text or number dialog asks for it,
+    so that the letter keys stay as shortcuts for people who know them and nobody needs them. There
+    are many letters to remember now, and the point is to make the tracker intuitive, with less to
+    remember, by giving every action a way to be reached without a letter. The user knows some keys
+    will stay; which, and how the pattern editor's views are reached, is for the audit to propose.
+
+    What the audit would look at, page by page, with what's already there:
+
+    - **The main screen and the list pages** are nearly there: Up and Down move, ENTER opens, and
+      every list has a `+` row where ENTER adds. Rename, copy, move, sort and delete are letters only
+      (`N`, `C`, `U/D`, `S`, `Bksp`), so a row would need a way to reach them: a dialog of actions on
+      the selected row, perhaps on a second ENTER or on Tab, or action buttons under the list the way
+      the settings pages have `Button`s.
+    - **The settings pages** are there: Up and Down pick a field, Left and Right change it, ENTER
+      types or chooses, Space or ENTER toggles, and the action rows are `Button`s reached with the
+      cursor.
+    - **The pattern editor** is the furthest away: the rows' values are typed or nudged with `[`/`]`
+      on every row that takes a number (Degree, Octave, Gate, Velocity, Prob, Ratchet, Ratchet
+      Offset, the CC rows and the register change rows like `BX+=`, all through
+      `PatternRow.adjust_keys`), and the whole-pattern actions sit behind `R`, `S`, `I` and `D`,
+      which could join the Reconfigure dialog or a sidebar of buttons. No key needs Shift since
+      2026-11-09 (`.claude/rules/UX.md`), so the audit proposes no Shift or Ctrl with an arrow.
+    - **Arrange** reaches every clip, scene and track with the arrows and opens them with ENTER, but
+      copying, pasting, inserting and deleting are letters; the same dialog of actions would serve.
+    - **The dialogs that search** (the pickers and the list pages' `/`) should say so: a picker's
+      search starts as soon as something is typed, which nothing announces, and a list page's search
+      is behind `/`, which the legend no longer shows. The user wants these to be a richer dialog,
+      one that tells you that `/` or typing opens the search, shows the search field and its state,
+      and perhaps offers the search as a row or button, so that it's found without being known.
+
+    Each page's `keys()` is the complete list of what it can do, so the audit can walk every page
+    from those and write up, per page, which actions have no letterless way to them and what that
+    way would be, before anything changes. The user wants that write-up, and an opinion on how to
+    group each page's keys in the F1 dialog, once the queued work is done. It belongs with the hotkey review and the grouped F1
+    dialog above, since all three are about there being less to remember.
+
+- title: "Features the demos underuse"
+  priority: 80
+  text: |
+    `internal_tools/demo_features.py` (`internal_tools/demo_features.sh`) prints which features each set in `examples/`
+    uses, and which none or only one does, so a feature without a demo is a candidate for a new demo or for a scene in an
+    existing one. Run on 2026-11-16, no set used: conditions, a pattern's own time signature, a scene's chains, a track's
+    chains, clip names, a clip's scale, a song seed, or several songs. One set alone used each of: slides, register sets,
+    register binding, a pattern's direction, a clip's shapes, register resets, a scene's groove, muted tracks, a track's groove,
+    drifts, inversions and glides, with a few more the tool lists. The existing demos stay as they are;
+    the gaps are for the new demo below.
+
+    ### A demo of several songs in one set
+
+    A new demo set that covers what no other demo does: it holds several songs, uses clip names, gives
+    a song a seed, plays in time signatures other than 4/4, and gives at least one pattern a time
+    signature of its own. Its purpose is mostly coverage, but it has to be musically interesting
+    rather than chaff: the songs are in one genre, still to choose, and the point of putting them in one
+    set is that they share patterns intelligently, the way a set of songs for one concert would, with
+    a pattern playing in more than one song, perhaps at another tempo, scale or time signature, and
+    with each song adding patterns of its own. It should use plenty of the other features too, chosen
+    because the music wants them, like the other demos do. Nothing in `examples/` plays in 3/4 or
+    6/8 yet, so at least one song should. It gets an entry in `docs/DEMOS.md`, a description that
+    says what to keep when changing it, and a place in `HAND_WRITTEN` in `tests/app/test_demos.py` unless
+    it's written through `tests/data/demo_sources/make_demos.py`. The genre and the tunes are to be decided
+    with the user first.
+
+- title: "Refactoring the tests to the program's style rules"
+  priority: 80
+  text: |
+    **Deferred by the user on 2026-11-06.** The tests are held to the same style rules as the
+    program (see CLAUDE.md), and new tests follow them, but most existing tests were written before
+    the rules and still need refactoring:
+
+    - **Format strings and messages as constants.** Tests build many strings inline, with f-strings
+      and `.format`, like `f'« {item.shown_label()} »'`. Each should be a named constant at the top of
+      its test file, or in a shared test module when several files use it.
+    - **Limits and meaningful numbers named.** Literals like `128` for "just past the top" should
+      come from the program's constants (`MAX_REGISTER_VALUE + 1`), and a number that means
+      something, like a register's maximum, should be a named variable, so that two 3s that mean
+      different things can't be confused. `tests/engine/realizer/test_registers.py` is an example of the style.
+    - **Shown text through the program's constants.** When a test checks text the program shows,
+      like a row label, a key's name, a page's title or a message, it imports the program's constant
+      for it (`ROW_LABELS[Row.DEGREE]`, `ERR_SCENE_NO_SUCH_SCALE`) instead of writing the words out
+      again, so that renaming something in the program changes the tests with it. Every shown string
+      is a `MSG_`, `ERR_` or `HELP_` constant now, so the tests, mostly the tracker's page tests in `tests/interface/tracker/` and
+      `test_tui_document.py`, can swap their literals over, along with the drawing they wrap them in,
+      like the `│` before a row label, which can be a helper in the test file.
+    - **Demo tests read from the YAML.** A test of a demo checks values it reads from the demo's
+      file, not values written into the test, so that hand edits to a demo don't break it.
+    - **One constant per line.** `src/` has none left; some tests still define several constants
+      on one line with tuple syntax, and these need splitting too.
+
+    It's mechanical but wide: the text UI tests alone are thousands of lines. Doing it a test file at
+    a time, with the full suite passing after each, keeps it safe, and it fits with the earlier note
+    on making the tests less hard-coded.
+
+- title: "What pycodestyle flags, to look at or ignore"
+  priority: 80
+  text: |
+    `internal_tools/pep8.sh` runs pycodestyle with the exclusions it names, for a look rather than as a rule.
+    On 2026-11-07 the user asked for the remaining kinds of report to be noted here, to investigate
+    whether they matter and, if nothing changes, to add them to the ignore list:
+
+    - **An import below module-level code (E402).** All five are in `tests/data/demo_sources/make_demos.py`:
+      it puts the test folder on `sys.path` before importing `gate_conversion` from there, which is
+      marked `noqa`, and the four llamatron imports after that line could simply move above it. One
+      cause, and a two-minute change if it's wanted; otherwise ignore E402.
+    - **A lambda assigned to a name (E731).** The list pages' are gone, each now a method named
+      `open_item`. What is left is in `tests/data/demo_sources/make_demos.py`. The project's own rule for
+      unclear lines would favour a named function, so pycodestyle and the style agree here, but each
+      is one short line.
+    - **Continuation line indentation (E128) and three blank lines (E303).** Cosmetic, under thirty
+      reports in all on 2026-11-07, with no conflict with the style; fix once or ignore.
+
+- title: "The Registers page as a grid"
+  priority: 80
+  text: |
+    The Registers page (`R` on the main screen) lists sixteen settings in one column: AX default, AX
+    minimum, AX maximum, AX wraps, then the same for BX, CX and DX. The user wants it drawn as a grid
+    like the pattern editor's instead, with the registers' names, AX, BX, CX and DX, across the top
+    and one row for each kind of setting down the side: default, minimum, maximum and wraps. Each
+    value is then a cell, four columns by four rows, which reads at a glance and is much shorter.
+
+    What it touches in the code: `RegistersPage` in `src/llamatron/interface/tracker/screens/registers_page.py` is a
+    `FieldPage`, a column of `Field`s, so it would become a page that draws its own grid, with a
+    cursor that moves in both directions like the pattern editor's, and the keys depending on the
+    row under the cursor: digits, `+` and `-`, `ENTER` and `Bksp` on the number rows, and `Space` or
+    `ENTER` on the wraps row. The grid drawing of the pattern editor (`screens/pattern/grid_drawing.py`) could be
+    shared, since it's the same box characters and reverse-video cursor. `Document.set_register_setting` and the
+    refusal messages stay as they are, and `TestRegistersPage` would change with the
+    keys. The help text would need rewriting for the new keys.
+
+- title: "Melodic figures for melody generators"
+  priority: 80
+  text: |
+    Short melodic figures, a few notes each, counted across many works: which turns of phrase a style favours, how a figure is
+    elaborated and ornamented. An experiment to recognize styles by them was started and deleted, the user's choice, since figures
+    may only be collected from sources clearly in the public domain (classical scores, folk tunes, ragtime), where styles are
+    already recognized best. The idea kept is the other use: a melody generator that builds a line from a style's favoured
+    figures and its ways of varying one.
+
+    What it touches in the code: a table of figures per style measured from the public-domain corpus alone, a new module in
+    `internal_tools/analysis_and_generation/measuring/hearing/` to cut a lead into figures, and a generator in `src/llamatron/generators/` that reads the table.
+    No melody of a copyrighted work is ever read (`.claude/features/GENRES.md`, "Only What Can Be Acted On").
+
+- title: "Code Examples"
+  priority: 80
+  text: |
+    The user's idea, to be discussed once the genre work has rested for a while. A top-level folder, `code_examples/`, of scripts
+    the user calls "code example" tasks, which Claude may generate when asked. Together they show the "API" for llamatron, marked
+    unstable, since the classes underneath are internal and change freely. Every code example builds its set from llamatron's own
+    objects, never from YAML, unless the user says otherwise for one. The first three:
+
+    - a script that imports a MIDI file named on its command line and saves it as a YAML set;
+    - a basic song exactly like the hello world demo;
+    - a more complex song with several clips, generators and chains and a few other settings changed, sounding more or less like
+      one of the demos.
+
+    It means: a folder and a README saying the API is unstable; tests that run each example and hold the second to the hello world
+    demo's music; the GPL header and the code rules on each script; a decision on whether the website gets a page for them.
+
+- title: "Chords From a Named Scale, and Typed Chords"
+  priority: 80
+  text: |
+    What is left of the chords that leave the scale, now that a step and a progression's chord have a Scale, a Quality and Tensions
+    and one Chord dialog. Not built: borrowing from a named scale with a root of its own (only a scale type on the clip's root is
+    borrowed); typing a chord as a numeral or a name in the Chord dialog; shortcuts for the dominant of the next chord and the
+    tritone substitute; the piano roll's thin lines for a chord's tensions.
+
+- title: "TiMidity as a Second Synthesizer"
+  priority: 80
+  text: |
+    The user's idea, to consider. TiMidity supported beside FluidSynth as what makes sound with no DAW. When both are installed
+    the tracker asks which to use as it starts; an environment variable sets the default and skips the question; when only one is
+    installed there is no question.
+
+    It means: TiMidity found, started, waited for and ended as FluidSynth is; an instrument's device able to name either; the
+    question at startup and the variable that answers it; the WAV export and the scripts that make and record the demos choosing
+    the same way; an install script that offers it; and the pages on FluidSynth saying so.
+
+- title: "The song wizard's drummers refined"
+  priority: 80
+  text: |
+    The players work and the user is happy with them from a sample of the trial songs. Later, the drummers may be refined:
+    what each complexity adds in each style, how a drummer opens up from section to section, the fills and where they come.
+    The decorations are in each style template's `players` block (`.claude/features/SONG_WIZARD.md`).
+
+- title: "A Hip Hop genre for the song wizard"
+  priority: 80
+  text: |
+    The user's ask: a style template for hip hop, with its subgenres, from clean research, with nobody named. It would lean on drum breaks and loops (the queue's talk about breaks comes first) and on a voice part that is rhythm more than tune, which the melody engines do not make yet.
+
+- title: "An Archaic genre for the wizard"
+  priority: 80
+  text: |
+    The user's ask: old styles as a genre of the wizard, with subgenres such as plainchant (one unaccompanied line in a church mode, free of a beat), harp music, renaissance songs and dances, and whatever else of early music fits (medieval dance tunes, lute songs, rounds, a drone under a tune). Each from clean research and from what the public-domain corpus can be measured for, with nobody named. It would want things the arranger lacks today: music with no meter, the church modes as scale choices, a band of one line or of voices alone, and no drums.
+
+- title: "The song wizard's band has more than two guitarists"
+  priority: 80
+  text: |
+    The Band's Guitarists field offers 1 or 2 today. More is a common band and would mean something to the music, not only a number: a third guitarist can double the chords an octave apart or in another voicing, play an acoustic guitar under electric ones, or join the lead in a tune harmonized in thirds, two leads at once. Each of those is a way of playing to write for the genres that have it, and the solo could then pass between two lead players. Undecided: whether the count alone is chosen and the genre decides what the extra player does, or the person picks the extra player's job.
+
+- title: "Stepping to the previous and next pattern of the group, in the pattern editor"
+  priority: 80
+  text: |
+    The user's idea: in the pattern editor, a pair of keys steps to the previous and the next pattern of the pattern group the
+    open pattern is in, in the order the Patterns page lists them. The pattern shown changes in the view that is open, the
+    piano roll or the rows, and nothing else of the navigation changes: the crumbs keep their trail with the new pattern's
+    name, and ESC goes back to where the editor was opened from. The keys, the user's choice: the semicolon steps to the previous
+    pattern and the apostrophe to the next, two unshifted keys side by side under the keys that step a value, used by no page.
+    To settle with it: whether the step stops at the group's first and last pattern, as a cursor does, what happens for a
+    pattern in no group (the ungrouped patterns as one list is the likely answer), whether the cursor keeps its step and row,
+    what a preview that is playing does, and whether an editor opened from a clip on Arrange may step at all, since the clip
+    would still play the pattern it names. What it would mean for the code: `PatternEditor` swapping the pattern it edits
+    in place, with `Setlist.patterns_in_group` for the order, the undo history treating the step as navigation.
+
+- title: "Jamming: a song interpreted and stretched out"
+  priority: 80
+  text: |
+    The user sees jam music not as a genre or a set of sounds but as a way of interpreting a song: stretching the song out in
+    interesting ways. Waiting, by the user's choice, until discussed further. What is agreed in principle: a jam would be something
+    a song of any rock or blues subgenre can do, a long section on one or two chords with rising Intensity and the lead passing
+    between players, of two kinds, inside the song (the song's chords, quiet to a peak) and outside the song (a new groove in a
+    mode, a change of key, a return); jams can be long. The "southern epic" ending, a jump in tempo and a long outro, goes with it.
+    The notes are `.claude/notes/music_theory/genres/JAM.md`. Touches the wizard's section kinds, the Interplay plan and Intensity.
+
+- title: "A controller ramp over time, the sibling of Swell, Density and Articulate"
+  priority: 80
+  text: |
+    From the music expert's review of the electronic template. A generator, or a shape on a clip, a scene and a
+    generator as Swell is, that writes one MIDI controller from a first value to a last over a span of time: a filter
+    opening over 16 bars (controller 74, with 71 for resonance), a pad swelling on held notes (11), a reverb wash over
+    the last bar (91). It is the dependency of the song wizard's "filter opens", "pad swell" and "wash" rises in the
+    electronic genres; the other rises (hats filling in, a snare roll, a kick or bass dropping out, a gap) need only
+    what exists. Open: whether it is a fourth shape beside Swell, Density and Articulate, sharing their time settings,
+    or a generator of its own; how it meets a pattern's own CC lane of the same controller; and what the wizard says
+    when the preview synth does not answer to the controller, since General MIDI sounds often ignore 74.
+
+- title: "Pitch bend as the electronic genres' riser and bass slide"
+  priority: 80
+  text: |
+    From the music expert's review of the electronic template, adding to the "Pitch bend" idea: a true riser, a
+    sliding sub bass and a drum and bass or dubstep bass slide want pitch bend, where Glide covers only synths with
+    portamento. A dependency of those rises and bass figures in the song wizard's electronic genres, and of none of the
+    rest of the review.
+
+- title: "Demo videos, recorded by Claude in batches"
+  priority: 80
+  text: |
+    The user's idea: Claude says which videos would help the documents, and better, asks the user and then
+    records them itself in a batch, for the user to upload to YouTube; then the user asks Claude to scan the
+    channel, and Claude asks where each video should go before linking it. The batch includes every demo
+    song recorded with a visualizer mode chosen at random, one video each.
+
+    What it would take:
+    - `internal_tools/record_demo.py` already records a set with `--visualizer` or `--clips`, through
+      FluidSynth (`--fluidsynth`) or a DAW. A batch is a script that walks the examples, picks a mode at
+      random for each (saying which, so a take can be repeated, and leaving out `cycle` unless asked), and
+      records them one after another into `output/recordings/`, with a list of each file, its set and its mode.
+    - The recordings need the screen and the audio set up as `docs/RECORDING.md` says, so the batch
+      stops at the first failure rather than recording silence, and asks before starting, since it takes
+      each song's length in real time (about three minutes each, so over an hour for every demo).
+    - Questions to put to the user first: FluidSynth or a DAW for the sound; the clips, a visualizer or
+      both for each song; which songs; the window size.
+    - Scanning the channel reads its public video list from YouTube, which no test or script does (tests
+      never fetch anything); Claude reads it in the conversation, matches titles to sets, and proposes each
+      link as new text for the user to confirm, by the rules for the user's documents.
+    - Other videos worth recording: each chapter's page being used (Patterns, the piano roll, Arrange
+      playing live with edits heard), the MIDI import, and an export opened in Live.
+
+    The videos already on the channel, and where they are linked:
+    - `https://www.youtube.com/watch?v=yt9NffJ1HF4`: the visualizers playing a song. `README.md` and
+      `docs/VISUALIZERS.md`.
+    - `https://www.youtube.com/watch?v=JAswLZ8CGzk`: navigating around the tracker, an early build, so the
+      program has changed since and will go on changing. `docs/GUIDE.md`.
+    - `https://www.youtube.com/watch?v=zcIWxtHWwtQ`: The Entertainer played in real time, with no live
+      editing and no cursor moving. `docs/DEMOS.md`.
+
+    The user will say when more demos are uploaded, and which demos they show.
+
+- title: "The website, what's left"
+  priority: 80
+  text: |
+    The site builds from `docs/GUIDE.md` and `docs/` with VitePress and is published from the committed
+    `web_docs/` by `internal_tools/publish_docs.sh`, as the `gh-pages` branch. Still to do:
+    - A landing page with a hero section and feature cards, in place of the guide's opening as the front
+      page, which would need new text the user writes or confirms.
+    - "Edit this page on GitHub" links, VitePress's `editLink`, pointing at each Markdown source.
+    - A logo and a favicon.
+    - Nicer addresses: the pages are named by their files, like `/llamatron/PATTERNS`; lower case would
+      need the staging to rename the pages and rewrite the links.
+    - Links from the documents to files in the repository, like `examples/by_genre/electronic/edm_density.yml`, are dead on
+      the site and ignored (`ignoreDeadLinks`); the staging could point them at the files on GitHub.
+    - A check that `web_docs/` was rebuilt after a change to the documents: a test can't run VitePress, but
+      the staging could write a hash of its sources into the site for a test to compare.
+    - The screenshots are light SVGs, which look harsh in the site's dark mode.
+    - `web_docs/` is about 6.4 MB of built files in git, since the user chose to commit the build rather
+      than build it on GitHub; building in the workflow instead would drop them.
+    - Mermaid makes VitePress warn of a large bundle; loading it only on the pages with diagrams would help.
+    - A look through the site in a browser for anything that renders oddly.
+
+- title: "Guides on subjects that cross chapters"
+  priority: 80
+  text: |
+    Chapters on chaos (registers, binding, conditions, probability, generators, Drift, saying chaos suits
+    tame songs too), on harmony (the Harmonizer, the Hocket, Grab, chords, progressions, voice leading) and
+    on density (Density, Swell and Articulate), each in `docs/` and in `docs/GUIDE.md`'s table of guides, linking
+    the page chapters rather than repeating them, since each thing is described in one chapter only; and
+    a chapter on the render pipeline, linked from `docs/ARCHITECTURE.md`, with every stage and its order of
+    precedence. `docs/CONCEPTS.md` already covers part of the first three as recipes.
+
+- title: "Two tutorials from screenshots, for people starting from scratch"
+  priority: 80
+  text: |
+    A very easy walk-through for someone who has never opened llamatron, built around screenshots of the
+    real tracker: starting a set, writing a simple song of a couple of patterns, arranging them in a scene
+    or two, saving, and exporting it as a Live set and as MIDI stems. Then a second, the advanced steps on
+    the same song: grooves, chains and generators, registers, grabs, morphs and the rest, one at a time.
+    Both are chapters in `docs/` linked from `docs/GUIDE.md`, the user will edit them, and Claude takes the
+    first shot. `docs/CONCEPTS.md` is the order to use the pages in, without screenshots, and the
+    tutorials would link to it rather than repeat it.
+
+    How they're written: by what's selected and what's seen, never by counted presses. "Select Patterns
+    from the main menu and press ENTER", "on the Song page, select Tempo and type 124", not "go down three
+    steps", because counts break the moment a row is added. Keystrokes are named where they help, in the
+    words the legend uses, and every one of them has to be kept true as keys change: a check like
+    `tests/rules/test_doc_paths.py`'s, reading the key names the tutorials quote against the pages' `keys()`, would
+    keep them honest, and `internal_tools/make_screenshots.py` already regenerates the screenshots from the
+    real tracker, so the tutorials' shots join its list and are retaken the same way. The song the
+    tutorials build should be a set in `examples/`, so that each step's screenshot comes from a real file
+    and the finished song can be loaded to compare.
+
+- title: "A tips and tricks document, and a FAQ"
+  priority: 80
+  text: |
+    A tips and tricks document for ways of working that need no new feature, and a FAQ beside it. The
+    first tip to include is pattern categories by naming: a set shares its patterns between every song, so
+    the list grows, and naming patterns with a prefix like `leads foo` and `bass foo` groups them, since the
+    Patterns page sorts by name with `S` (Sort). The earlier idea of a `category` field with a completing
+    picker is folded into this; a filter on the Patterns page can come later if naming isn't enough.
+
+- title: "Sheet music for the examples, to be discussed"
+  priority: 80
+  text: |
+    The user wants to talk about open-source tools that could make sheet music of the examples for the documentation website,
+    and wants it only if the result won't look terrible, since many examples have a lot of tracks. Nothing is to be built
+    before that talk. Points to bring to it:
+    - Candidate tools: LilyPond (engraving from its own text format, the best-looking output, and `examples/midi/` already
+      keeps the Entertainer's LilyPond source), MuseScore's command line (MusicXML or MIDI in, PDF or SVG out), and
+      Verovio (MusicXML or MEI in, SVG out, small enough to run in the build), with music21 or the MIDI export as the way in.
+    - Ways to keep a score readable: one or two chosen tracks only, such as the lead and the bass, named by each set; a
+      lead sheet (the melody with chord symbols from the Progression chains) instead of every part; the first scene alone;
+      drums left out or on one line.
+    - What the export gives: llamatron already writes MIDI per track (stems) and General MIDI, but notation needs more
+      than MIDI holds, such as the key, beams and ties at bar lines, so a tool that quantizes and spells notes well matters.
+    - Where it would go: an image under each demo's summary on its genre page, made by the docs build, never by hand.
+
+- title: "Keyswitches: what the first build left out"
+  priority: 80
+  text: |
+    An instrument's Keyswitch Map, a pattern's Keyswitch row and their playing are built (.claude/format/FILE_RULES.md, "Instruments").
+    Left for later, none of it designed: a slot that switches by a controller's value, a program change or a MIDI channel
+    rather than a note, to be read from a plugin's own documentation and not from memory; a generator naming a slot, as the
+    guitar generators' muted strokes would; whether a ready-made map ships for any plugin, which depends on what may be said
+    about a product's layout; and a demo, which waits for the user's word.
+
+- title: "Synth Master Bus and Drum Master Bus"
+  priority: 99
+  text: |
+    The user's idea for shared effects without a full bus system: two fixed buses, shown on the Song page for now, "Synth
+    Master Bus" and "Drum Master Bus", through which every built-in instrument plays (not FluidSynth's), the drums through
+    the Drum bus and every other engine through the Synth bus. Not a send bus: everything is routed through it, each bus
+    holding a few effect blocks of its own (the user's note read "w plugins", perhaps two; to ask) applied to the summed
+    mix of its instruments, such as one reverb for the whole kit. Only worth doing if the summed mix can be kept from
+    clipping: the output guard already soft-clips the whole mix, and a bus would need headroom before its effects. Subject
+    to a performance discussion: a bus costs one effect chain on a chunk for all its instruments, cheaper than one an
+    instrument. Undecided: which page holds the buses later, whether a song or the set owns them, and how a drum engine on
+    a melodic track is routed. The fuller Buses idea elsewhere in this file is the later version.
+
+- title: "One song per movement, when the Import Wizard brings in a suite or a multi-movement work"
+  priority: 99
+  text: |
+    The professor's advice for the Import Wizard: a suite or a multi-movement work comes in as one song per movement or dance in
+    one set, since each movement has its own tempo, key and form. Waits for a way for a song to go on to the next song of the set
+    when it ends (a song advance), which llamatron doesn't have and which would be tiresome to set up by hand; until then the
+    import makes one song (23 B).
+
+- title: "Kits of instruments saved for every set"
+  priority: 99
+  text: |
+    Save a song's current instruments, built-in sounds and MIDI instruments alike, as a named kit kept in the user's own
+    ~/.llamatron/ folder rather than in any set, so that every set can load it; and load a kit into a song, adding its
+    instruments. Undecided: whether a kit holds the tracks that use the instruments too, and how a name clash is resolved.
+
+- title: "More than six Synth Control rows"
+  priority: 99
+  text: |
+    Offering more than six Synth Control rows for an engine, if the six prove too few and the audio process keeps its
+    timing with more.
+
+- title: "Random pitch steps within a Sweep Drum hit"
+  priority: 99
+  text: |
+    The Sweep Drum's third kind of in-hit modulation, random steps, the pitch jumping to a new random value several times a
+    hit, as the late-1970s drum synthesizers' sample and hold did. Only with a modulator attached, never random on its own,
+    and only if it is cheap to render; it may never be built.
+
+- title: "A talking-toy voice"
+  priority: 99
+  text: |
+    A built-in model that speaks: a buzz or noise source at about 8 kHz through a tenth-order all-pole filter whose
+    4-bit coefficients step 40 frames a second through vowel and consonant frames chosen per step, made from our own formant
+    targets, the lo-fi robot voice of old educational toys; words rendered per note would make a drum of spoken hits
+    (.claude/notes/synthesis/MODULAR_IDEAS.md). The Choir sings and does not speak.
