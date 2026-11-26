@@ -611,7 +611,7 @@ pub static SLOT_DEFAULTS: Preset = Preset::Map(&[
     ("polarity", Preset::Text("bipolar")),
     ("amount", Preset::Whole(0)),
 ]);
-pub static SOUND_DEFAULTS: Preset = Preset::Map(&[("engine", Preset::Text("basic")), ("volume", Preset::Whole(80)), ("lfos", Preset::List(&[]))]);
+pub static SOUND_DEFAULTS: Preset = Preset::Map(&[("engine", Preset::Text("basic")), ("volume", Preset::Whole(90)), ("lfos", Preset::List(&[]))]);
 /// The engines an instrument of each role may play, the first the role's own.
 pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "asheville", "sid", "pocket", "oh3"]), ("percussion", &["drum"])];
 /// The settings each type of part shows, in order.

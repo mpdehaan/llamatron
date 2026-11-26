@@ -42,7 +42,7 @@ at the end of this page.
 ## Voice Column
 
 The Oscillators tab's Voice column holds what is the whole instrument's:
-Volume; Voices, how many notes sound at once; Glide, on unless switched off,
+Voices, how many notes sound at once; Glide, on unless switched off,
 whether the instrument slides into a glided step; Glide time, how long a note
 takes to slide; and, on an instrument of more than one voice, Filter,
 Per note, each note its own filter as on a polysynth, or Shared, one filter

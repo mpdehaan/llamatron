@@ -813,15 +813,6 @@ impl InstrumentEditor {
     fn voice_fields(sound: &Sound, ids: &mut Ids) -> Vec<Field> {
         let sharing = text(&sound.value("filter_sharing"));
         let mut fields = vec![
-            gauge(
-                ids.at(Write::Sound("volume")),
-                labels::MSG_VOLUME_LABEL,
-                whole(&sound.value("volume")),
-                (0, MAX_VOLUME_PERCENT),
-                GM_CELLS,
-                marks::MSG_SOUND_PERCENT_SHOWN,
-                (false, 1),
-            ),
             Field::number(
                 ids.at(Write::Sound("voices")),
                 labels::MSG_VOICES_LABEL,
@@ -1144,10 +1135,25 @@ impl InstrumentEditor {
         tab
     }
 
-    /// The Amp tab: its type, then its own settings.
+    /// The instrument's Volume, a gauge dimming everything it plays, after its effects.
+    fn volume_field(sound: &Sound, ids: &mut Ids) -> Field {
+        gauge(
+            ids.at(Write::Sound("volume")),
+            labels::MSG_VOLUME_LABEL,
+            whole(&sound.value("volume")),
+            (0, MAX_VOLUME_PERCENT),
+            GM_CELLS,
+            marks::MSG_SOUND_PERCENT_SHOWN,
+            (false, 1),
+        )
+    }
+
+    /// The Amp tab: its type, then the instrument's Volume, then the Amp's own settings.
     fn amp_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
         let top = vec![Self::type_field(sound, "amp", ids)];
-        let mut tab = Tab::new(labels::MSG_AMP_TAB, vec![TabColumn::new(None, Self::setting_fields(sound, "amp", ids))]);
+        let mut fields = vec![Self::volume_field(sound, ids)];
+        fields.extend(Self::setting_fields(sound, "amp", ids));
+        let mut tab = Tab::new(labels::MSG_AMP_TAB, vec![TabColumn::new(None, fields)]);
         tab.top = top;
         tab.not_ready = not_ready;
         tab
@@ -1628,6 +1634,24 @@ mod tests {
         let (one, several) = (1, 4);
         assert!(!shows(one));
         assert!(shows(several));
+    }
+
+    /// The Volume sits on the Amp tab, first under its Type, and no longer in the Oscillators tab's Voice column; a sound
+    /// that never set it plays at 90%.
+    #[test]
+    fn the_volume_is_on_the_amp_tab_at_ninety_percent() {
+        let data = llamatron_model::file::data::load("{ name: synth, kind: built_in, role: normal, sound: { engine: basic } }")
+            .expect("the scenario's instrument is YAML");
+        let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
+        let sound = Sound::of(&instrument);
+        let mut ids = Ids { last: 0, writes: Vec::new() };
+        let amp = InstrumentEditor::amp_tab(&sound, false, &mut ids);
+        let volume = amp.columns[0].fields.first().expect("a first field on the Amp tab");
+        assert_eq!(volume.label, labels::MSG_VOLUME_LABEL);
+        let unset_volume = 90;
+        assert_eq!(whole(&sound.value("volume")), unset_volume);
+        let voice = InstrumentEditor::voice_fields(&sound, &mut ids);
+        assert!(voice.iter().all(|field| field.label != labels::MSG_VOLUME_LABEL));
     }
 
     /// An LFO's Rate shows its percentage with the hertz it gives at its Speed; the Key switch shows only at Very High,

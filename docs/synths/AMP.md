@@ -7,6 +7,13 @@ polysynth has its own VCA, and it always closes when its note ends, so that
 no sound is left droning. It sits on the Amp tab, between the Filter and FX
 tabs, in the order the sound flows: Oscillators, Filter, Amp, FX.
 
+## Volume
+
+The Amp tab's Volume, under its Type, is the whole instrument's level, from 0%
+to 150%, 90% unless set. It dims or lifts everything the instrument plays, after
+its effects, as a mixer's fader does, so that one instrument can sit under the
+others without changing how hard its notes drive the Amp or the effects.
+
 ## Swappable Amps
 
 An amp looks like the plainest part of a synthesizer, and on paper it only

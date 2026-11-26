@@ -231,7 +231,7 @@ impl Patch {
         };
         Patch {
             sound,
-            volume: number(spec, "volume", 0.8),
+            volume: number(spec, "volume", 0.9),
             voices: (number(spec, "voices", 1.0) as usize).max(1),
             glides: truth(spec, "glides", true),
             glide: number(spec, "glide", 0.0),
