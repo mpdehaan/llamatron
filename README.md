@@ -69,6 +69,12 @@ what makes sense, but I also do want to keep things relatively focused.
 There are some other ideas in the pipe around generation and arps and so on
 and this will continue to evolve.
 
+## Developer Documentation
+
+How the code is put together and how to change it is in the
+[Developer Guide](developer_docs/DEVELOPER_GUIDE.md), and how it is checked
+is in [Testing](developer_docs/TESTING.md).
+
 ## Author
 
 Michael DeHaan <michael @ michaeldehaan.net> home.laserllama.net

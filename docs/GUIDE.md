@@ -199,7 +199,7 @@ generator has a page of its own, grouped by what it changes.
 | --- | --- |
 | [User Scripts](USER_SCRIPTS.md) | Every script in `user_scripts/`, by category, with an example of running each and its parameters. |
 | [Recording](RECORDING.md) | Videos of a set playing, by itself or performed, one at a time or every demo in a batch. |
-| [Architecture](ARCHITECTURE.md) | How the code is put together, for anyone reading it, with a link to it on GitHub. |
+| [Architecture](../developer_docs/ARCHITECTURE.md) | How the code is put together, for anyone reading it, with a link to it on GitHub. |
 | [Backend](BACKEND.md) | How the backend works inside, its messages, threads, synths, sender and safety, for anyone changing it. |
 
 [![llamatron's visualizers, on

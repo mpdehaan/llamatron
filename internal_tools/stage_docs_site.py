@@ -27,6 +27,11 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DOCS = ROOT / 'docs'
 GUIDE = DOCS / 'GUIDE.md'
+# The developer pages the website shows too, staged beside the chapters, where the guide's link to them is made one beside it.
+DEVELOPER_DOCS = ROOT / 'developer_docs'
+WEB_DEVELOPER_PAGES = ('ARCHITECTURE.md',)
+DOCS_FROM_DEVELOPER = '../docs/'
+GUIDE_TO_DEVELOPER = '../developer_docs/'
 SCREENSHOTS = 'screenshots'
 INDEX = 'index.md'
 SIDEBAR = 'sidebar.json'
@@ -141,7 +146,7 @@ def stage(*, out):
             shutil.rmtree(item)
         elif item.suffix == MARKDOWN:
             item.unlink()
-    guide = GUIDE.read_text(encoding=ENCODING)
+    guide = GUIDE.read_text(encoding=ENCODING).replace(GUIDE_TO_DEVELOPER, '')
     (out / INDEX).write_text(site_guide(guide), encoding=ENCODING)
     chapters = chapter_paths()
     for chapter in chapters:
@@ -149,9 +154,12 @@ def stage(*, out):
         target = out / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(site_chapter(text=chapter.read_text(encoding=ENCODING), depth=len(relative.parts) - 1), encoding=ENCODING)
+    for page in WEB_DEVELOPER_PAGES:
+        text = (DEVELOPER_DOCS / page).read_text(encoding=ENCODING).replace(DOCS_FROM_DEVELOPER, '')
+        (out / page).write_text(site_chapter(text=text, depth=0), encoding=ENCODING)
     shutil.copytree(DOCS / SCREENSHOTS, out / SCREENSHOTS)
     (out / SIDEBAR).write_text(json.dumps(sidebar(guide), indent=2), encoding=ENCODING)
-    return len(chapters) + 1
+    return len(chapters) + len(WEB_DEVELOPER_PAGES) + 1
 
 
 def main(*, argv=None):

@@ -75,7 +75,7 @@
   or speed, or on what a person sees.
 - A speed change MAY be committed without asking, provided every export is byte for byte the same and nothing is slower; a
   slower change MUST wait for the user's yes. At the end of each batch, a report MUST give the timings and call counts before and
-  after (`py_legacy/internal_tools/time.sh`).
+  after (the timing tools come back with the next talk about performance).
 - Flag names and layouts that don't fit. Point out where an existing feature already does what's asked, or where a new thing
   should look like an existing one.
 - The user edits message wording; a change need not name the constants it touched.
@@ -95,7 +95,7 @@
 - Before designing anything musical, read the subject's file in `.claude/notes/music_theory/` and raise musicality. Once the
   `music_theory` package holds a subject, read its chapter too and answer from it, saying where Claude's own knowledge goes
   beyond the code; what Claude knows that the code lacks becomes a proposal to add it.
-- The professor of music, the code maintainability expert and the Python performance expert are agents consulted only
+- The professor of music, the code maintainability expert and the Rust performance expert are agents consulted only
   when the user asks; read `.claude/features/EXPERTS.md` first.
 - A recommendation weighs the least surprising musical result heavily (`.claude/format/GENERATORS.md`, "Musical answers first").
 - Rewriting an example set MUST be confirmed by the user first. For every new feature, ask whether a demo fits.
@@ -172,15 +172,15 @@ row says which, and a reply says which too.
 | kind, of a scale | Kind on the Scale page, and scale type in a message | `ScaleType` |
 | export, render | export, always. Render is the code's word for playing a song into clips | `SongRealizer` renders, and each `Exporter` in `exporters/` writes with `export()` |
 | Live, Ableton | Ableton Live set, in the export dialog | `AbletonProject` |
-| the legend, the footer | the keys listed at the bottom of a page | `keys()`, `shown_keys()`, each class's `IN_LEGEND` in `interface/tracker/keybindings.py` |
-| a key binding, a hotkey | a key with its name in the legend and what the key does | a tuple in the page's class of `interface/tracker/keybindings.py`, bound with `self.bind` |
+| the legend, the footer | the keys listed at the bottom of a page | the keys a page offers, each class's `IN_LEGEND` in `src/tracker/src/generated/keybindings.rs` |
+| a key binding, a hotkey | a key with its name in the legend and what the key does | a `Binding` in the page's class of `src/tracker/src/generated/keybindings.rs` |
 | the everywhere keys | Ctrl+S, Ctrl+O, Ctrl+X, Ctrl+T, Ctrl+Z, Ctrl+Y, F1 and F2 | `everywhere_keys`, `keybindings.Page.EVERYWHERE` |
 | the status line | the dim line above the legend | `StatusLine`, `Page.say` |
 | the crumbs | the path at the left of every header | `Crumb`, `crumbs` |
 | a picker | a dialog with a list of choices | `ChoiceDialog`, `GridChoiceDialog` |
 | a settings page, a list page | a page of fields, and a page of rows with a `+` row at the bottom | `FieldPage` with `Field` and `Button`, and `ListPage` |
 | protected | the Protected toggle on the File/Global page | `protected`, `file_is_protected` |
-| the demos, the examples | the sets in `examples/` | every set there but the pieces, and the pieces, `PIECES` in `tests/support/rendering.py` |
+| the demos, the examples | the sets in `examples/` | every set in `examples/` |
 | the ideas file | `.claude/planning/IDEAS.yml`, the only ideas file | |
 | the support folder | nothing on screen: `internal_tools/`, the folder of development tools and scripts | `internal_tools/` |
 | follow action, advance | Follow action on the clip page, "With Scene" or "Off", and Default follow action on the File/Global page | `FollowAction`, `ClipSlotSetting.FOLLOW_ACTION`, `follow_action_of` |
@@ -191,6 +191,6 @@ row says which, and a reply says which too.
 | the Realizer | nothing on screen: the part of llamatron that plays a song into clips, draws the draws and tests the statements as it evaluates the patterns and the other objects | `SongRealizer`, with a `ClipSlotPlayer` and a `PatternPlayer` for each clip |
 | the transport | nothing on screen: the tracker's side of real-time playback, which every page asks what plays | `Transport`, `app.transport` |
 | play, stop, the corner | Space on Arrange, the `▶ song` and `■ song` cell over the scene names, the `▶` and `■` beside each clip | `ArrangePage.play_song`, `play_scene`, `play_clip`, `stop_playing_all`, `stop_clip`, `on_corner` |
-| listen, preview | `L` (Listen) on the clip page and in the pattern editor, and the clip page's Play and Stop buttons | `listen`, `listen_to_pattern` in `interface/tracker/screens/shared/listening.py` |
+| listen, preview | `L` (Listen) on the clip page and in the pattern editor, and the clip page's Play and Stop buttons | `listen`, `listen_to_pattern` in `src/tracker/src/screens/listening.rs` |
 | the lights | the red `■`, the green `●` after a track's name, the scene bar and each playing clip's bar filling as read heads, the clock `▶ 0:22 / 3:00` | `Style.PLAYING`, `Style.SOUNDING`, `LengthBar.draw(played=)`, `MSG_PLAYING_CLOCK` |
 | silence, the emergency stop, Ctrl+T | Ctrl+T on every page, `SILENCE` in the F1 dialog | `Page.SILENCE`, `Transport.silence_everything`, `PlaybackEngine.silence` |

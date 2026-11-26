@@ -288,7 +288,7 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
   above the bass before. A chord no voicing fits stays as written, and single notes are left
   alone. 
 - `tests/engine/generators/test_progression.py`, `test_follow_chords.py` and `test_voice_leading.py` test each part; the page's
-  tests are named in `.claude/reference/TEST_LAYOUT.md`. `06_chord_progression_generator.yml`, `07_blues_chords.yml`, `22_follow_chords.yml`
+  `06_chord_progression_generator.yml`, `07_blues_chords.yml`, `22_follow_chords.yml`
   and `05_voice_leading.yml` are its demos.
 
 ### Strum: a Guitarify in Strum mode

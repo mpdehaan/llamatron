@@ -12,7 +12,7 @@ Read before consulting one. Each is consulted only when the user asks.
 - **The code maintainability expert**: a fresh background agent, only when the user asks, judging the code as an engineer who wants
   it inspiring, clear and easy to work on. It changes nothing; findings come back as numbered proposals with Claude's agreement or
   disagreement.
-- **The Python performance expert**: a fresh agent, only when the user asks, reviewing speed, key and playback latency, and test
+- **The Rust performance expert**: a fresh agent, only when the user asks, reviewing speed, key and playback latency, and test
   speed, within `.claude/rules/STYLE.md`. It changes nothing; findings come back as numbered proposals, measured where possible.
 - **The usability expert**: a fresh agent, only when the user asks, judging as a PhD-level expert in the usability of
   applications who prefers simplicity and clarity and wants a product obvious without a manual, efficient and unlikely to cause

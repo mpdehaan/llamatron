@@ -149,7 +149,7 @@ A note about a component goes in its file; a standalone feature gets its own fil
 | Any page's keys | `.claude/reference/KEYMAP.md` |
 | A script or tool | `.claude/reference/COMMANDS.md` |
 | The documents, the website, screenshots | `.claude/rules/DOCS.md` |
-| Where a test goes, or what tests a feature | `.claude/reference/TEST_LAYOUT.md` |
+| How the checks work and where a test goes | `developer_docs/TESTING.md` |
 | The song wizard | `.claude/features/SONG_WIZARD.md` |
 | The genre library | `.claude/features/GENRES.md` |
 | What the song wizard or a template should make music do | the subject's file in `.claude/notes/music_theory/` |

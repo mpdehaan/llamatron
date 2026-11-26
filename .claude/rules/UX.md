@@ -8,7 +8,7 @@ changes it too. A new thing looks like the existing thing it is most like.
 
 - **Everywhere keys** are Ctrl+ or function keys, never letters: Ctrl+S save, Ctrl+O open, Ctrl+X export, Ctrl+T silence, Ctrl+Z
   undo, Ctrl+Y redo, F1 help, F2 rename (beside `N`), F3 about, Ctrl+C quit at once from
-  anywhere with no question, closing FluidSynth and the sender (`quits_at_once` in `interface/tracker/key_table.py`). Quit is
+  anywhere with no question, closing FluidSynth and the sender. Quit is
   plain `Q` on the main screen alone; Textual's Ctrl+Q is off. A page's footer shows only its own keys; the F1 dialog lists all,
   the everywhere ones in capitals (SAVE, OPEN, HELP).
 - **F1** lists the everywhere keys, a blank line, then the page's keys, in two columns; Tab, Left and Right turn to a panel about
@@ -34,9 +34,8 @@ changes it too. A new thing looks like the existing thing it is most like.
   PgUp and PgDn choose the previous and next tab, keeping the cursor's column where they can; elsewhere they jump between
   section headings.
 - **Nobody needs to know a key**: every page with rows has a cursor moved by Up and Down, followed by ENTER, with `▶` on the
-  selected row; every key is shown in the legend or, if left off it (`IN_LEGEND`), in F1. Each screen lists its keys once in
-  `keys()`. Home and End, and the piano roll's `X` (Split) and `G`, are off the legend.
-- **Cursors stop at every edge** and MUST NOT wrap without asking the user (`moves.moved` in `interface/forms/moves.py`).
+  selected row; every key is shown in the legend or, if left off it, in F1. Each screen lists its keys once. Home and End, and the piano roll's `X` (Split) and `G`, are off the legend.
+- **Cursors stop at every edge** and MUST NOT wrap without asking the user.
   Stepping a short fixed cycle MAY wrap, but a chord's quality, tensions and scale, and any new long list, stop at both ends.
   Tab through F1's panels, the Chord dialog's lists and a grid picker's pages MAY wrap.
 - **Reverse video is for things that act**: key labels, buttons. An edited or chosen value is marked only with `▶`. Exception:
@@ -52,7 +51,7 @@ changes it too. A new thing looks like the existing thing it is most like.
   the song. While playing, a track or scene with clips cannot be deleted; anything can be inserted. A start by hand while
   anything plays is at the next bar. A looping clip never holds its scene: the scene ends when its non-looping clips end, and the
   loop stops where the next scene starts on its track; only a scene whose every clip loops waits.
-- **True or false** answers to Space and ENTER alike, one legend entry `Space/ENTER` (`TOGGLE_KEYS`): toggle rows, `Toggle`
+- **True or false** answers to Space and ENTER alike, one legend entry `Space/ENTER`: toggle rows, `Toggle`
   fields, a silent step in the offsets editor, the piano roll's pencil, the Use Draws rows' cycle. A picker on the roll takes a
   letter: `H` for the chord, drawing a note at the cursor first on an empty step.
 - **Move mode**: `M` picks up a list row, or a scene, track or clip on Arrange; arrows carry it (a clip only into empty cells,
@@ -60,13 +59,13 @@ changes it too. A new thing looks like the existing thing it is most like.
   place of its spaces; on Arrange its box is green. Only those keys work meanwhile.
 - OK, YES, NO, CANCEL, ENTER and ESC are written in capitals everywhere: buttons, legends, help, messages, documents.
 - **ESC closes the topmost thing**, one layer at a time, and never quits: a dialog, an Inset Window, a locked cell, then the page.
-  In the song wizard, outside a part's settings, ESC always asks before closing, starting on NO (`ConfirmDialog(starts_on_no=True)`).
+  In the song wizard, outside a part's settings, ESC always asks before closing, starting on NO.
 - Every list a page adds to has a `+ (New)` row at the bottom, where ENTER does what `A` does.
-- **Dialog answers** are boxed buttons (`interface/tracker/components/button_row.py`), the selected one double-lined: Left and
+- **Dialog answers** are boxed buttons, the selected one double-lined: Left and
   Right move, ENTER presses the selected one, and ESC is NO or CANCEL. A dialog of OK, or of YES and NO or OK and CANCEL, with
   nothing else to do, has no letter keys, and its buttons show their names alone; a dialog of fields reaches its buttons with
-  Down. Only a choice of three, quitting with unsaved changes ("Quit without saving", "Save, then Quit", "CANCEL",
-  `QuitDialog`), keeps a letter on each button. The key line under the buttons lists only keys no button shows.
+  Down. Only a choice of three, quitting with unsaved changes ("Quit without saving", "Save, then Quit", "CANCEL"),
+  keeps a letter on each button. The key line under the buttons lists only keys no button shows.
 - **A dialog's title is its question**, such as "Delete pattern (tune)?"; the text under it says only what the title does not,
   and a question that says all in its title has nothing under it. A dialog that asks for a name is titled "New" and the kind,
   or "Rename" or "Copy", the kind and the name in parentheses: "Rename pattern (tune)".
@@ -93,7 +92,7 @@ changes it too. A new thing looks like the existing thing it is most like.
   often keeps a letter.
 - A value from above shows what it takes and where from: `A Minor (from scene)`, `With Scene (from set)`; its picker's first entry
   takes it from above again.
-- A field whose ENTER opens a picker (`enter_what` is `What.CHOOSE`) shows a dim `▾` after its value (`MSG_PICKER_MARK`).
+- A field whose ENTER opens a picker (`enter_what` is `What.CHOOSE`) shows a dim `▾` after its value.
 - A table-like layout gives each column the room of its heading or widest possible value, every choice included, so columns
   never move.
 - A list of a field's values is one list in the values' order, the value from above marked in it (`middle (from genre)`); picking
@@ -104,9 +103,9 @@ changes it too. A new thing looks like the existing thing it is most like.
 - Pickers are sorted by name ignoring case, and stepping a field goes in the same order. Non-name entries (`(none)`, `off`) come
   first in fixed order. A fixed set with its own order (step sizes, directions, export kinds, munges, Reconfigure) keeps it.
 - A list's first heading says what choosing picks, never `NAME`: `SELECT PATTERN`, `SELECT CHAIN`, `SELECT FILE`
-  (`Column.SELECT_...` in `user_strings/labels.py`).
-- A name is at most 30 characters (`MAX_NAME_LENGTH`); lists keep 30 cells for names and the next column starts there. Longer names
-  from older files stay, shown cut with an ellipsis. A clip's name may hold up to 60 (`MAX_CLIP_NAME_LENGTH`), such as the
+ .
+- A name is at most 30 characters; lists keep 30 cells for names and the next column starts there. Longer names
+  from older files stay, shown cut with an ellipsis. A clip's name may hold up to 60, such as the
   import's `S01:a1,a2,a3`, and is shown cut at 30 with an ellipsis.
 - A list page shows items in the file's order; `S` sorts for good; a picker never changes the order.
 - A flyout, a box a dialog draws over itself for a row drawn as a button (`[ Common ]`), offers a second level without a dialog
@@ -119,7 +118,7 @@ changes it too. A new thing looks like the existing thing it is most like.
 
 ## Names the tracker makes
 
-All made by `model/objects/naming.py` (`tests/model/test_naming.py`):
+All made by the model's naming (`src/model/src/objects/naming.rs`):
 
 - Lowercase, underscores for spaces (`c_major`), except a note's name in a scale's name (`C_major`, `F#_harmonic_minor`).
 - A new thing is its kind's word, a dash and one more than the highest number in use: `pattern-1`, `scene-1`, `scale-1` (a scale is
@@ -147,7 +146,7 @@ All made by `model/objects/naming.py` (`tests/model/test_naming.py`):
 
 - A bad value: `x must be ..., got value`; a wrong type: `expected a Note, got value`; only the value after `got` keeps its repr.
 - Names in parentheses, `no pattern called (tune)`, never quotes.
-- Lists joined with commas by `listed()` in `model/file/checks.py`; choices are listed only for fixed sets (`expected one of: AX,
+- Lists joined with commas; choices are listed only for fixed sets (`expected one of: AX,
   BX, CX, DX`).
 - Say `integer`, `true or false`, `directory`, `scale type`, `clip`, `export`, `cannot`; never `like` (use `such as 1/8`). An empty
   field shows `(none)`; a sentence says `no scale`. Counts are numbers.

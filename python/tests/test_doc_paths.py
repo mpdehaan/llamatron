@@ -18,6 +18,7 @@ DOCUMENTS = [
     ROOT / 'CLAUDE.md',
     ROOT / 'README.md',
     *sorted((ROOT / 'docs').rglob('*.md')),
+    *sorted((ROOT / 'developer_docs').rglob('*.md')),
     # The synthesis notes stay on this computer only, out of git, so no path in them is held.
     *sorted(path for path in (ROOT / '.claude').rglob('*.md') if 'synthesis' not in path.parts),
 ]
@@ -27,7 +28,7 @@ GUIDE = DOCS / 'GUIDE.md'
 GUIDE_LINK = ']({name})'
 TABLE_ROW = '|'
 # A path in backticks that starts in one of the repository's folders and ends in a file suffix.
-PATH_IN_BACKTICKS = re.compile(r'`((?:src|test|internal_tools|user_scripts|examples|docs)/[A-Za-z0-9_./-]+\.(?:py|rs|toml|yml|svg|sh|md|mid|als|ly))`')
+PATH_IN_BACKTICKS = re.compile(r'`((?:src|test|internal_tools|user_scripts|examples|docs|developer_docs|python)/[A-Za-z0-9_./-]+\.(?:py|rs|toml|yml|svg|sh|md|mid|als|ly))`')
 ENCODING = 'utf-8'
 # Files the documents name that git ignores, so a new clone has none: Claude's own queue and its plans with their status, kept on one computer.
 KEPT_OUT_OF_GIT = ('.claude/planning/QUEUE.md', '.claude/planning/DESIGNS.md', '.claude/planning/WIZARD_DESIGNS.md', '.claude/planning/REFACTORING.md', '.claude/planning/REFACTORING_LOG.md')

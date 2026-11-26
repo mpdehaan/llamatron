@@ -1,8 +1,8 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! llamatron's exact arithmetic and random sources, the bottom layer every other crate stands on (the Python `math/`):
-//! rationals for lengths and times, Python's mixed numbers, and CPython's random numbers, drawn exactly as the Python program drew them.
+//! llamatron's exact arithmetic and random sources, the bottom layer every other crate stands on: rationals for lengths
+//! and times, mixed numbers, and the random numbers the generators draw.
 
 pub mod number;
 pub mod python_random;

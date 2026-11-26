@@ -2,7 +2,7 @@
 
 The rules for the code, in any language it is written in: the Rust program in `src/`, and the small tools in
 `internal_tools/` and `python/`. `.claude/rules/RUST.md` holds the Rust's own rules besides these, clippy and rustfmt among
-them, and `docs/ARCHITECTURE.md` explains the design they serve. The code MUST be easy for people to maintain without AI:
+them, and `developer_docs/ARCHITECTURE.md` explains the design they serve. The code MUST be easy for people to maintain without AI:
 plain code, comments that explain why, tests that read clearly.
 
 ## Readability

@@ -1,8 +1,7 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! llamatron's importers (the Python importers/): a MIDI file made into a song of a set, with the patterns, scales and
-//! instruments it needs. Every note the file plays is played by the song, for as long as the file plays it.
+//! llamatron's importers: a MIDI file made into a song of a set, with the patterns, scales and instruments it needs.
 
 pub mod chord_naming;
 pub mod cutting;

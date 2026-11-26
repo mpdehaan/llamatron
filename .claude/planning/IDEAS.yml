@@ -2192,7 +2192,7 @@
     tame songs too), on harmony (the Harmonizer, the Hocket, Grab, chords, progressions, voice leading) and
     on density (Density, Swell and Articulate), each in `docs/` and in `docs/GUIDE.md`'s table of guides, linking
     the page chapters rather than repeating them, since each thing is described in one chapter only; and
-    a chapter on the render pipeline, linked from `docs/ARCHITECTURE.md`, with every stage and its order of
+    a chapter on the render pipeline, linked from `developer_docs/ARCHITECTURE.md`, with every stage and its order of
     precedence. `docs/CONCEPTS.md` already covers part of the first three as recipes.
 
 - title: "Two tutorials from screenshots, for people starting from scratch"

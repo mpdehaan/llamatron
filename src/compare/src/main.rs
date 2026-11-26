@@ -1,8 +1,8 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! llamatron-compare: what llamatron makes of a set, printed in a form the Python program prints the same way, so that
-//! internal_tools/compare_llamatron.py holds each layer of the port to the Python as it lands.
+//! llamatron-compare: what llamatron makes of a set, printed for internal_tools/compare_llamatron.py to hold against
+//! the retired Python program's answers, and the walks, screenshots and key map built on llamatron's own pages.
 //!
 //! `llamatron-compare load SET` prints the set file's data as JSON, as Python's json.dumps writes what PyYAML loaded;
 //! `llamatron-compare layout SET` writes that data back as a set file, as the Python writer lays it out;
