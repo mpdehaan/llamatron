@@ -9,19 +9,17 @@ are in `internal_tools/`.
 | --- | --- |
 | Set up llamatron | `setup.sh`, `build.sh`, `install_fluidsynth.sh`, `install_blackhole.sh` |
 | Read the documentation | `launch_docs.sh` |
-| Hear the demos | `demos_to_wavs.sh`, then `play_demo.sh` |
+| Hear the demos | `demos_to_wavs.sh` |
 | Take the demos elsewhere | `demos_to_midi.sh`, `demos_to_live_sets.sh` |
-| See what the demos hold | `demo_report.sh` |
-| Print a song to learn at the piano | `export_pdf.sh` |
-| Import many MIDI files at once | `batch_importer.sh` |
 | Record a video | `record.sh`, `record_all.sh` |
 
 ## Setting Up
 
 ### `setup.sh`
 
-Makes the virtual environment `.venv` and installs llamatron into it. Run it
-once, before anything else.
+Installs what llamatron needs, a small Python environment for the development
+tools in `.venv`, then builds llamatron with `build.sh`. Run it once, before
+anything else.
 
 ```
 sh setup.sh
@@ -29,8 +27,8 @@ sh setup.sh
 
 ### `build.sh`
 
-Builds llamatron2, the tracker in Rust, which `./llamatron.sh` opens, with the
-backend, offering to install Rust first. Run it once after cloning, and again
+Builds llamatron, which `./llamatron.sh` opens, offering to install Rust
+first. Run it once after cloning, and again
 after updating.
 
 ```
@@ -82,19 +80,6 @@ sh user_scripts/demos_to_wavs.sh
 sh user_scripts/demos_to_wavs.sh output/previews/entertainer.mid      # only the previews named, not made afresh
 ```
 
-### `play_demo.sh`
-
-Plays a demo's WAV file in the terminal. Before it plays, it prints the demo's
-number in the list and what the demo is: the set it came from, its title,
-genre and description. Ctrl+C stops it.
-
-```
-sh user_scripts/play_demo.sh --list            # the numbered list, playing nothing
-sh user_scripts/play_demo.sh 12                # the twelfth of the list
-sh user_scripts/play_demo.sh entertainer       # by name
-sh user_scripts/play_demo.sh                   # the list, then type a number
-```
-
 ## Taking the Demos Elsewhere
 
 ### `demos_to_midi.sh`
@@ -116,68 +101,10 @@ exports.
 sh user_scripts/demos_to_live_sets.sh
 ```
 
-## What the Demos Hold
-
-### `demo_report.sh`
-
-Prints a report of the demos as comma-separated values, for a spreadsheet: one
-row a demo, with its genre, what it plays, its length, scenes, tracks and
-features; or with `--features`, given first, one row a feature and a column a
-demo.
-
-```
-sh user_scripts/demo_report.sh > demos.csv
-sh user_scripts/demo_report.sh --features > features.csv
-sh user_scripts/demo_report.sh examples/by_genre/rock/*.yml
-```
-
-## Printing a Song
-
-### `export_pdf.sh`
-
-Makes a song of a set into its learning packet, a PDF beside the set: its
-piano roll, chord changes, chord chart and chord sequence. `--song`,
-`--output-dir`, `--pages`, `--tracks` and `--chords-level` choose
-what goes in; `--help` lists them.
-
-```
-sh user_scripts/export_pdf.sh examples/by_genre/ragtime/entertainer.yml
-sh user_scripts/export_pdf.sh my_song.yml --pages piano_roll,chord_chart --chords-level triads
-```
-
-## Importing MIDI Files
-
-### `batch_importer.sh`
-
-Imports every MIDI file under a folder, at any depth, as the Import Wizard
-cuts it, each into a set file of its own in another folder, or every file a
-song of one set. The output folder stays flat: a file's set is named after its
-path under the input folder, its folders joined by `__`, and its song after
-the file. A file that can't be imported is named and passed over, and the
-report at the end says how long the imports took: the shortest, the longest
-and the average. Use it to bring a whole collection of MIDI files into
-llamatron at once.
-
-```
-sh user_scripts/batch_importer.sh --input-dir ~/midi --output-dir ~/llamatron_sets
-sh user_scripts/batch_importer.sh --input-dir ~/midi --output-dir ~/llamatron_sets --bars-per-pattern 4 --quantize 1/16
-sh user_scripts/batch_importer.sh --help
-```
-
-Parameters:
-
-- `--input-dir FOLDER`: the folder of `.mid` and `.midi` files. Required.
-- `--output-dir FOLDER`: where the set files go, made if missing. Required.
-- `--bars-per-pattern N`: the longest a pattern may be, in bars, 8 unless
-  given.
-- `--quantize GRID`: the finest grid a file played by hand is put on, from
-  `1/4` to `1/64`, `1/64` unless given.
-- `--format direct`: one song for each file, playing it as the file does, the
-  only format so far.
-- `--multiple-songs-per-set`: every file a song of one set, named after the
-  input folder.
-
 ## Recording Videos
+
+Recording is coming back to llamatron, which is now written in Rust; until it
+does, these scripts are not part of it.
 
 These need the setup `docs/INSTALLING_RECORDING.md` describes;
 `docs/RECORDING.md` describes the takes.

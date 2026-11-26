@@ -74,11 +74,11 @@ scene's.
 
 ## Subsystems
 
-llamatron is built like a car: a few large subsystems, each made of parts,
-rather than layers that run all the way across. Each subsystem is a crate, a
-Rust library of its own under `src/`, and a crate can use only the crates its
-manifest names, so the compiler itself keeps a lower part from reaching into a
-higher one. The arrows below say which crate uses which.
+./llamatron.sh is built like a car: a few large subsystems, each made of
+parts, rather than layers that run all the way across. Each subsystem is a
+crate, a Rust library of its own under `src/`, and a crate can use only the
+crates its manifest names, so the compiler itself keeps a lower part from
+reaching into a higher one. The arrows below say which crate uses which.
 
 ```mermaid
 flowchart TD
@@ -234,58 +234,60 @@ wording is read and changed in one place.
 ## Song Data Flow
 
 1. **The file is read.** The Set turns the YAML into objects, each checking
-its own values as it loads, so a bad file is refused with a message that says
-where the problem is, down to the song.
+   its own values as it loads, so a bad file is refused with a message that
+   says where the problem is, down to the song.
 2. **The song is played.** The Engine's Realizer plays each scene's clips into
-finished clips of notes, chords and rests, each with an exact length, and each
-clip's chain of generators changes them.
+   finished clips of notes, chords and rests, each with an exact length, and
+   each clip's chain of generators changes them.
 3. **The clips are gridded.** The clips go into a grid, a row for every scene
-and a column for every track.
+   and a column for every track.
 4. **The notes are timed.** Timing turns the grid's clips into timed notes,
-with the groove moving each note's start, so every output swings the same way.
+   with the groove moving each note's start, so every output swings the same
+   way.
 5. **The notes go out.** The exporters write them into files, or Real Time
-sends them as the song plays.
+   sends them as the song plays.
 
 ## Code Rules
 
 These are the things a reader will notice everywhere, and they're deliberate:
 
 - **Every value is checked where it's set.** An object's setter runs the same
-check that loading a file does, because each setting is described once and
-both ask the description, so a page in the tracker, the command line and a
-file all get the same answer about what's allowed, and the message is the same
-wherever it's shown. A pattern's rows work the same way: each row is described
-once, and a file, a key press and the range the pattern editor steps through
-all come from that description. A file's value that is only out of range is
-the one thing put right rather than refused, and only after asking: the
-description knows the nearest value allowed, the tracker lists what would
-change in a dialog before it opens the set, and the command line wants
-`--force`. The file itself is never changed by opening it.
+  check that loading a file does, because each setting is described once and
+  both ask the description, so a page in the tracker, the command line and a
+  file all get the same answer about what's allowed, and the message is the
+  same wherever it's shown. A pattern's rows work the same way: each row is
+  described once, and a file, a key press and the range the pattern editor
+  steps through all come from that description. A file's value that is only
+  out of range is the one thing put right rather than refused, and only after
+  asking: the description knows the nearest value allowed, the tracker lists
+  what would change in a dialog before it opens the set, and the command line
+  refuses such a file. The file itself is never changed by opening it.
 - **Objects talk through methods.** A class reads another's data with a getter
-and changes it with a setter that checks the value. No class reaches into
-another's fields, and the classes that hold musical values, like `Note`,
-`Chord` and `Scale`, can't be changed at all after they're made.
+  and changes it with a setter that checks the value. No class reaches into
+  another's fields, and the classes that hold musical values, like `Note`,
+  `Chord` and `Scale`, can't be changed at all after they're made.
 - **Every word the program shows is a constant.** Error messages are in one
-file, the tracker's words in another, and each page's help text in a third, so
-wording can be read and edited in one place and a typo in a file key can't
-happen. The same goes for numbers with a meaning, like the limits of a range.
+  file, the tracker's words in another, and each page's help text in a third,
+  so wording can be read and edited in one place and a typo in a file key
+  can't happen. The same goes for numbers with a meaning, like the limits of a
+  range.
 - **Time is exact.** Lengths and positions are fractions, never decimals, so a
-triplet is exactly a third and the files that come out are the same every
-time.
+  triplet is exactly a third and the files that come out are the same every
+  time.
 - **Binding is as late as possible.** A degree stays a degree until the clip
-that plays it knows its scale, so changing a scene's scale changes every clip
-in it.
+  that plays it knows its scale, so changing a scene's scale changes every
+  clip in it.
 - **Every setting has a default.** A file that leaves a setting out, including
-one from an older version, still loads, so a new setting needs no migration.
+  one from an older version, still loads, so a new setting needs no migration.
 - **Names can change.** Everything that refers to something else by name is
-updated when it's renamed, and a test checks every kind of rename.
+  updated when it's renamed, and a test checks every kind of rename.
 - **Randomness is random.** Every play and every export is a new take. The
-tests and tools repeat a take by giving the Realizer a seed of their own,
-which no person or command-line option reaches.
+  tests and tools repeat a take by giving the Realizer a seed of their own,
+  which no person or command-line option reaches.
 - **Undo is a snapshot.** After every edit the tracker keeps the set's data as
-it was, and an undo reads the set from that through the same code that loads a
-file, so undo can never disagree with loading. The history lives in memory
-only and is never written to a file.
+  it was, and an undo reads the set from that through the same code that loads
+  a file, so undo can never disagree with loading. The history lives in memory
+  only and is never written to a file.
 
 ## Code Changes
 

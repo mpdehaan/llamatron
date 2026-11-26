@@ -109,15 +109,28 @@ fn write_export(app: &mut App, kind: &'static str) {
 
 /// Export the current song beside the set's file, replacing an earlier export of its kind, and return where it went.
 fn exported(app: &App, kind: &str) -> Result<PathBuf, String> {
-    let document = &app.document;
-    let directory = document.export_directory().ok_or_else(|| errors::ERR_SAVE_BEFORE_EXPORT.to_string())?;
+    let directory = app.document.export_directory().ok_or_else(|| errors::ERR_SAVE_BEFORE_EXPORT.to_string())?;
+    export_song(&app.document, kind, &directory)
+}
+
+/// The kinds of export, by the names the command line takes.
+pub const EXPORT_KINDS: [&str; 6] = [ABLETON, MIDI_FILE, STEMS, CLIP_TREE, GENERAL_MIDI, WAV];
+
+/// Whether a kind's earlier export is in a directory, which the command line replaces only when told to.
+pub fn has_earlier_export(document: &crate::document::Document, kind: &str, directory: &Path) -> bool {
+    !earlier_files(kind, directory, &document.export_name()).is_empty()
+}
+
+/// Export a document's current song into a directory as a kind, replacing an earlier export of its kind, and return where
+/// it went: what the Export dialog writes, and the command line's --to.
+pub fn export_song(document: &crate::document::Document, kind: &str, directory: &Path) -> Result<PathBuf, String> {
     let song = document.song();
     if song.get_track_names().is_empty() || song.scenes().is_empty() {
         return Err(errors::ERR_NOTHING_TO_EXPORT.to_string());
     }
     let grid = document.rendered()?;
     let name = document.export_name();
-    for earlier in earlier_files(kind, &directory, &name) {
+    for earlier in earlier_files(kind, directory, &name) {
         std::fs::remove_file(&earlier).map_err(|error| format!("{}: {error}", earlier.display()))?;
     }
     let refused = |error: llamatron_engine::error::RenderError| match error {
@@ -142,7 +155,7 @@ fn exported(app: &App, kind: &str) -> Result<PathBuf, String> {
         let path = directory.join(file);
         std::fs::write(&path, bytes).map_err(|error| format!("{}: {error}", path.display()))?;
     }
-    Ok(shown_path(kind, &directory, &name))
+    Ok(shown_path(kind, directory, &name))
 }
 
 /// Where a kind of export goes, as people are shown it: the file, or the files' pattern for the kinds that write several.

@@ -133,7 +133,7 @@ in every song.
 
 Sets are saved as YAML, and each file records the version of llamatron that
 saved it, which the About dialog also shows. The format is mainly for
-llamatron to read, but it stays readable so that sets can be compared in
+./llamatron.sh to read, but it stays readable so that sets can be compared in
 version control, and the files in `examples/` show every part of it.
 
 The shared sections come first, `scales`, `patterns`, the generators, `chains`

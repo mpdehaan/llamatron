@@ -74,7 +74,7 @@ every mode fits the window's size, starting again when the window is resized.
 A set can open straight onto a visualizer, playing, from the command line:
 
 ```
-llamatron examples/by_genre/electronic/edm_density.yml --visualizer lava_lamp
+./llamatron.sh examples/by_genre/electronic/edm_density.yml --visualizer lava_lamp
 ```
 
 The mode names on the command line are `lava_lamp`, `piano_roll`, `spectrum`,

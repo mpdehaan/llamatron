@@ -1,6 +1,6 @@
 # llamatron
 
-llamatron is a tracker for the terminal: a composing environment where songs
+./llamatron.sh is a tracker for the terminal: a composing environment where songs
 are built from shared patterns, scales and generators, arranged in scenes, and
 played. It plays in real time through MIDI hardware, software synthesizers or
 a DAW, or through FluidSynth with no setup at all, and exports to Ableton Live
@@ -26,7 +26,7 @@ draws and scenes.
 | [Installing](INSTALLING.md) | Installing llamatron, and why and when to install FluidSynth. |
 | [FluidSynth](FLUIDSYNTH.md) | The software synthesizer that plays every demo with no setup: installing it, and how the tracker uses it. |
 | [Recording](INSTALLING_RECORDING.md) | What recording videos needs installed and set up: BlackHole, a Multi-Output Device, permissions and Xcode's tools. |
-| [Building the Backend](BUILDING_THE_BACKEND.md) | Building the program that plays the built-in synths and FluidSynth and sends MIDI, with one script that offers to install what it needs. |
+| [Building llamatron](BUILDING_THE_BACKEND.md) | Building the program that plays the built-in synths and FluidSynth and sends MIDI, with one script that offers to install what it needs. |
 
 ### Getting Started
 

@@ -14,10 +14,9 @@ the set to record, and then its options, which may come in any order.
 
 ### `setup.sh`
 
-Makes the Python virtual environment in `.venv` and installs llamatron into
-it, then builds the backend, which plays the built-in synths and FluidSynth and sends MIDI, offering to install Rust first
-([Building the Backend](BUILDING_THE_BACKEND.md)). Run it once after
-cloning the repository, and again if the environment is ever deleted.
+Installs what llamatron needs and builds it: it makes `.venv`, a small Python
+environment the development tools use, then runs `build.sh`, which offers to
+install Rust first. Run it once after cloning the repository.
 [Installing](INSTALLING.md) describes the installation.
 
 ```
@@ -28,8 +27,8 @@ Parameters: none.
 
 ### `build.sh`
 
-Builds llamatron2, the tracker in Rust, which `./llamatron.sh` opens, with
-the backend, offering to install Rust first. Run it once after cloning the
+Builds llamatron, which `./llamatron.sh` opens, offering to install Rust
+first ([Building llamatron](BUILDING_THE_BACKEND.md)). Run it once after cloning the
 repository, and again after updating it.
 
 ```
@@ -125,28 +124,6 @@ Parameters:
 - `PREVIEW ...`: the preview MIDI files to turn into WAV files; every demo,
   its preview made afresh, unless given.
 
-### `play_demo.sh`
-
-Plays a demo's WAV file in the terminal, by its number in the list or its
-name, after saying its number and what the demo is: the set, its title, genre
-and description. Use it after `demos_to_wavs.sh` to listen without opening the
-tracker.
-
-```
-sh user_scripts/play_demo.sh
-sh user_scripts/play_demo.sh --list
-sh user_scripts/play_demo.sh 12
-sh user_scripts/play_demo.sh pachelbel
-```
-
-Parameters:
-
-- `DEMO`: the demo to play, by its number in the list, by its name, such as
-  `pachelbel`, or by the path of a WAV file; a numbered list to pick from
-  unless given.
-- `--list`: print the numbered list and play nothing.
-- `--folder FOLDER`: where the WAV files are, `output/previews/` unless given.
-
 ### `demos_to_live_sets.sh`
 
 Exports every example as an Ableton Live set beside it, replacing earlier
@@ -158,61 +135,10 @@ sh user_scripts/demos_to_live_sets.sh
 
 Parameters: none.
 
-## Demo Information
-
-### `demo_report.sh`
-
-Prints a report of the demos as comma-separated values, for a spreadsheet: one
-row per demo with its genre, what it plays, its length, scenes, tracks and the
-features it uses, or with `--features` one row per feature and a column per
-demo. Use it to find a demo that shows a feature, or to sort and filter the
-demos.
-
-```
-sh user_scripts/demo_report.sh > demos.csv
-sh user_scripts/demo_report.sh --features > features.csv
-sh user_scripts/demo_report.sh examples/by_genre/electronic/*.yml
-```
-
-Parameters:
-
-- `--features`: one row per feature and a column per demo, rather than one row
-  per demo. Given first.
-- `SET ...`: the sets to report on, every example unless given.
-
-## Importing MIDI Files
-
-### `batch_importer.sh`
-
-Imports every MIDI file under a folder, at any depth, as the Import Wizard
-cuts it, each into a set file of its own in another folder, or every file a
-song of one set. The output folder stays flat: a file's set is named after its
-path under the input folder, its folders joined by `__`, and its song after
-the file. A file that can't be imported is named and passed over, and the
-report at the end says how long the imports took: the shortest, the longest
-and the average. Use it to bring a whole collection of MIDI files into
-llamatron at once.
-
-```
-sh user_scripts/batch_importer.sh --input-dir ~/midi --output-dir ~/llamatron_sets
-sh user_scripts/batch_importer.sh --input-dir ~/midi --output-dir ~/llamatron_sets --bars-per-pattern 4 --quantize 1/16
-sh user_scripts/batch_importer.sh --help
-```
-
-Parameters:
-
-- `--input-dir FOLDER`: the folder of `.mid` and `.midi` files. Required.
-- `--output-dir FOLDER`: where the set files go, made if missing. Required.
-- `--bars-per-pattern N`: the longest a pattern may be, in bars, 8 unless
-  given.
-- `--quantize GRID`: the finest grid a file played by hand is put on, from
-  `1/4` to `1/64`, `1/64` unless given.
-- `--format direct`: one song for each file, playing it as the file does, the
-  only format so far.
-- `--multiple-songs-per-set`: every file a song of one set, named after the
-  input folder.
-
 ## Recording Videos
+
+Recording is coming back to llamatron, which is now written in Rust; until it
+does, these scripts are not part of it.
 
 Every recording script needs the setup that
 [Recording](INSTALLING_RECORDING.md), under Installing, describes: BlackHole,

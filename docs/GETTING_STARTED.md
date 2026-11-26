@@ -8,8 +8,8 @@ first song step by step. The page assumes llamatron is installed, as
 ## Starting llamatron
 
 ```
-llamatron                                   # a new set with one song, called untitled, playing a starter pattern
-llamatron examples/learning/08_tie.yml         # open a set file
+./llamatron.sh                                   # a new set with one song, called untitled, playing a starter pattern
+./llamatron.sh examples/learning/08_tie.yml         # open a set file
 ```
 
 Start llamatron from the project folder for now. The Open page starts in

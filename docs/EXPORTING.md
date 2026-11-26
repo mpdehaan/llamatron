@@ -81,11 +81,11 @@ and it can name another kind: `ableton`, `midi` (MIDI (Multitrack)), `stems`,
 (FluidSynth)). Put it after the set's name:
 
 ```
-llamatron examples/by_genre/electronic/minimal_techno.yml --to
-llamatron examples/by_genre/electronic/minimal_techno.yml --to midi
-llamatron examples/by_genre/electronic/minimal_techno.yml --to wav --out exports
-llamatron examples/by_genre/electronic/minimal_techno.yml --to ableton --replace
-llamatron examples/learning/04_scale.yml --to --song "Scale demo"
+./llamatron.sh examples/by_genre/electronic/minimal_techno.yml --to
+./llamatron.sh examples/by_genre/electronic/minimal_techno.yml --to midi
+./llamatron.sh examples/by_genre/electronic/minimal_techno.yml --to wav --out exports
+./llamatron.sh examples/by_genre/electronic/minimal_techno.yml --to ableton --replace
+./llamatron.sh examples/learning/04_scale.yml --to --song "Scale demo"
 ```
 
 | Option | What it does |
@@ -93,8 +93,6 @@ llamatron examples/learning/04_scale.yml --to --song "Scale demo"
 | `--song` | Exports only the song with that name. |
 | `--out` | Writes into that folder, with the same file names, in place of the set's own folder. |
 | `--replace` | Removes each song's earlier export first, so you can export again and listen. |
-| `--template` | Builds the Live set from another Live set. |
-| `--force` | Exports a set file that holds values llamatron can't use, each changed the way the tracker's dialog would change it, listing what it changed. Without it such a file isn't exported. The file itself is never changed. |
 
 These only work with `--to`.
 
@@ -105,4 +103,3 @@ These only work with `--to`.
 | `sh user_scripts/demos_to_live_sets.sh` | Every example as a Live set beside it, replacing earlier exports. |
 | `sh user_scripts/demos_to_midi.sh` | Every example as one General MIDI file in `output/previews/`, for any MIDI player. |
 | `sh user_scripts/demos_to_wavs.sh` | Those previews as WAV files through FluidSynth, installing it the first time. |
-| `sh user_scripts/play_demo.sh` | Pick one of those WAV files from a list and hear it. |

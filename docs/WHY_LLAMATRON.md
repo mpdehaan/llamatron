@@ -1,9 +1,9 @@
 # Why llamatron
 
-llamatron is a tool for composing music before it reaches the DAW, and it can
+./llamatron.sh is a tool for composing music before it reaches the DAW, and it can
 also play music fully on its own, through MIDI devices or through FluidSynth.
 
-llamatron borrows from three places: Ableton Live, whose Session View shapes
+./llamatron.sh borrows from three places: Ableton Live, whose Session View shapes
 how a song is laid out; the Sequentix Cirklon, whose step sequencing shapes
 how patterns are written; and the Elektron Monomachine, whose arpeggiator and
 parameter locks shape how a few notes become a line. This page says what was
@@ -24,13 +24,13 @@ precise enough to change one note and broad enough to recast whole sections at
 once. Its notes aren't tied to a particular clip: patterns are shared between
 clips, and that sharing is where the rest of its design begins.
 
-llamatron keeps the structure saved in a YAML file: the patterns, the scales,
+./llamatron.sh keeps the structure saved in a YAML file: the patterns, the scales,
 the tracks, the scenes and the settings that tie them together. The file holds
 a set of songs, much as a band plays a set at a concert: the set shares the
 patterns, scales, generators, chains and grooves, and each song in it has its
 own tracks and scenes.
 
-llamatron can play a Live set in real time over MIDI, and exporting turns a
+./llamatron.sh can play a Live set in real time over MIDI, and exporting turns a
 song into a Live set or a set of MIDI files in seconds.
 
 The intent is that a song's shape is worked out here, quickly and with room to
@@ -173,7 +173,7 @@ the Cirklon's aux rows, and the two influences meet there.
 
 ## Controlled Chance
 
-llamatron has many more ways to introduce randomness than a DAW's clip editor:
+./llamatron.sh has many more ways to introduce randomness than a DAW's clip editor:
 probability per step, random and brownian play directions, random arpeggiator
 orders, drifts that wander between two versions of a part, draws dealt in a
 random order, and chains of generators that stack all of these on a clip.
@@ -190,7 +190,7 @@ steps, so the arrangement stays as written while the notes vary.
 
 A song can be played in real time while it is being written, through MIDI to
 hardware or software synths, or through FluidSynth, a software synthesizer
-llamatron starts by itself, so that someone with no synthesizer and no DAW
+./llamatron.sh starts by itself, so that someone with no synthesizer and no DAW
 hears every example the moment they press play. Each track chooses an
 instrument, a MIDI device and channel or FluidSynth, and every example plays
 through FluidSynth as it comes.
