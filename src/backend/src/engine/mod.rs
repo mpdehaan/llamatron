@@ -21,6 +21,8 @@ use std::collections::BinaryHeap;
 
 pub const NOTE_ON: i64 = 0;
 pub const NOTE_OFF: i64 = 1;
+/// How far after a note's start its last note's end may fall and still count as ending first, not overlapping.
+const OVERLAP_TOLERANCE_SECONDS: f64 = 0.003;
 pub const ALL_OFF: i64 = 2;
 pub const FORGET: i64 = 3;
 pub const SCENE_STARTED: i64 = 4;
@@ -418,15 +420,22 @@ impl Engine {
     fn note_on(&mut self, mut event: Event) {
         let instrument = event.instrument;
         let Some(mut patch) = self.instruments[instrument].take() else { return };
-        if patch.slides && patch.drum().is_none() {
-            if let Some(voice) = self
+        // A one-voice instrument with Glide on slides to a note that starts while its last is still held, at its Glide
+        // time, its envelopes going on, as a monosynth plays legato; a note that starts as the last ends is struck afresh.
+        if patch.glides && patch.voices == 1 && patch.drum().is_none() {
+            let held = self
                 .voices
-                .iter_mut()
-                .find(|voice| voice.instrument == instrument && voice.release_at.is_none() && voice.cut_at.is_none())
-            {
-                patch.slide_to(voice, event.pitch, event.sample);
-                self.instruments[instrument] = Some(patch);
-                return;
+                .iter()
+                .position(|voice| voice.instrument == instrument && voice.release_at.is_none() && voice.cut_at.is_none());
+            if let Some(place) = held {
+                let pitch = self.voices[place].pitch;
+                if self.end_due_with(instrument, pitch, event.sample) {
+                    self.voices[place].release_at = Some(event.sample);
+                } else {
+                    patch.slide_to(&mut self.voices[place], event.pitch, event.sample);
+                    self.instruments[instrument] = Some(patch);
+                    return;
+                }
             }
         }
         if self.voices.len() >= MOST_VOICES {
@@ -448,6 +457,24 @@ impl Engine {
         }
         self.voices.push(voice);
         self.instruments[instrument] = Some(patch);
+    }
+
+    /// Whether a held note's end is due with a new note's start, within OVERLAP_TOLERANCE_SECONDS after it, and so taken
+    /// out of the queue as having come first. Live, each message's moment becomes a sample by the clock of the audio
+    /// callback that takes it, so an end and the next start written for one instant can land a few samples apart, the
+    /// end after the start; a note gliding into the next overlaps it by far more, a 128th note.
+    fn end_due_with(&mut self, instrument: usize, pitch: f64, sample: i64) -> bool {
+        let latest = sample + (OVERLAP_TOLERANCE_SECONDS * self.rate).round() as i64;
+        let is_end = |event: &Event| event.kind == NOTE_OFF && event.instrument == instrument && event.pitch == pitch && event.sample <= latest;
+        if !self.events.iter().any(is_end) {
+            return false;
+        }
+        let mut events = std::mem::take(&mut self.events).into_vec();
+        if let Some(place) = events.iter().position(is_end) {
+            events.swap_remove(place);
+        }
+        self.events = BinaryHeap::from(events);
+        true
     }
 
     /// Cut the drum's own last hit, unless its hits overlap, and every hit of its choke group, each fading out.
@@ -496,6 +523,10 @@ mod tests {
     use rmpv::Value;
 
     fn basic() -> Box<Patch> {
+        basic_with_voices(4)
+    }
+
+    fn basic_with_voices(voices: i64) -> Box<Patch> {
         let oscillators = Value::Map(vec![
             ("type".into(), "basic".into()),
             ("oscillators".into(), Value::Array(vec![Value::Array(vec!["saw".into(), 0.into(), 1.0.into()])])),
@@ -508,7 +539,8 @@ mod tests {
         let spec = Value::Map(vec![
             ("oscillators".into(), oscillators),
             ("envelopes".into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])),
-            ("voices".into(), 4.into()),
+            ("voices".into(), voices.into()),
+            ("glide".into(), 0.06.into()),
         ]);
         Box::new(Patch::compiled(&spec, 48000.0))
     }
@@ -549,5 +581,27 @@ mod tests {
             engine.render(chunk * 128, &mut left, &mut right);
         }
         assert_eq!(engine.voices.len(), 0);
+    }
+
+    /// A one-voice instrument slides only into a note that overlaps the last: an end that lands a few samples after the
+    /// next start, as the live clocks can put it, still strikes the next note afresh, while a gliding note's overlap slides.
+    #[test]
+    fn a_one_voice_instrument_slides_only_into_a_real_overlap() {
+        let (start, next, low, high) = (0, 4800, 48.0, 55.0);
+        let sounding_voice = |late: i64| {
+            let mut engine = Engine::new(48000.0, None);
+            engine.set_instrument(0, basic_with_voices(1));
+            engine.schedule(note(start, NOTE_ON, low));
+            engine.schedule(note(next, NOTE_ON, high));
+            engine.schedule(note(next + late, NOTE_OFF, low));
+            let (mut left, mut right) = (vec![0.0; 128], vec![0.0; 128]);
+            for chunk in 0..40 {
+                engine.render(chunk * 128, &mut left, &mut right);
+            }
+            engine.voices.iter().filter(|voice| voice.cut_at.is_none()).map(|voice| voice.id).max()
+        };
+        let (jitter, overlap, first_voice) = (20, 1000, Some(1));
+        assert_ne!(sounding_voice(jitter), first_voice, "struck afresh on a voice of its own");
+        assert_eq!(sounding_voice(overlap), first_voice, "slid on the first note's voice");
     }
 }

@@ -3,8 +3,9 @@
 Fishline is the acid bass: one voice of a saw, or the square a transistor
 shapes from it, through the [acid gate](../ENVELOPES.md#acid-gate) with its
 accents, a short sweep into the squelchy [diode filter](../FILTERS.md#diode)
-and a pedal's gentle [drive](../EFFECTS.md#drive), sliding legato from note to
-note. A note at the acid gate's Accent at velocity or louder is accented: its
+and a pedal's gentle [drive](../EFFECTS.md#drive), sliding from a note into
+the next where the pattern's Glide switch carries it, over its circuit's slide
+time. A note at the acid gate's Accent at velocity or louder is accented: its
 filter opens further and falls fast, it swells for a moment, and a run of
 accents climbs higher.
 
@@ -13,7 +14,7 @@ accents climbs higher.
 ## Stock and Modded
 
 Fishline's Circuit, on its Oscillators tab, is Stock or Modded, after the
-modifications players made to the original machine. Stock slides from note to
+modifications players made to the original machine. Stock slides into a glided
 note in the circuit's own fixed time, about 60 ms. Modded shows a Slide time,
 from 60 to 360 ms, so a line can glide lazily. The Acid gate and the Diode
 filter have a Circuit of their own, so a Modded envelope can play through a
@@ -36,6 +37,6 @@ semitones.
 Fishline's character is in the parts its engine chooses around that
 oscillator: the acid gate's accent and its charging capacitor, the Diode
 filter with a high-pass inside its feedback, so that its resonance sings
-rather than booms, and Legato on, so that tied steps slide without starting
-the envelopes again. Any of those can be swapped, and any of them can be given
+rather than booms, and its one voice, so that a glided step slides into the
+next without starting the envelopes again. Any of those can be swapped, and any of them can be given
 to another engine.

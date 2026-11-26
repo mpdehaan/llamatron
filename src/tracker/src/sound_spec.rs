@@ -32,7 +32,7 @@ pub fn synth_spec(sound: &Sound, drums_from: i64) -> Data {
         ("kind", value("engine")),
         ("volume", share(&value("volume"), PERCENT)),
         ("voices", value("voices")),
-        ("legato", value("legato")),
+        ("glides", Data::Bool(!matches!(value("glides"), Data::Bool(false)))),
         ("glide", glide(sound)),
         ("filter_per_note", Data::Bool(value("filter_sharing").as_str() == Some("per_note"))),
         ("oscillators", oscillators.clone()),

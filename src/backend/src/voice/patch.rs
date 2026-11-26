@@ -133,7 +133,9 @@ pub struct Patch {
     pub sound: Sound,
     pub volume: f64,
     pub voices: usize,
-    pub slides: bool,
+    /// Whether a one-voice instrument slides into a note that overlaps the last, as a glided step does; when off, every
+    /// note is struck afresh.
+    pub glides: bool,
     glide: f64,
     pub effects: Vec<Effect>,
     pub lfos: LfoBank,
@@ -171,7 +173,7 @@ impl Patch {
             sound,
             volume: number(spec, "volume", 0.8),
             voices: (number(spec, "voices", 1.0) as usize).max(1),
-            slides: truth(spec, "legato", false),
+            glides: truth(spec, "glides", true),
             glide: number(spec, "glide", 0.0),
             effects: effects::compiled(list(spec, "effects"), rate),
             lfos: LfoBank::compiled(list(spec, "lfos"), rate),
@@ -223,15 +225,8 @@ impl Patch {
     /// Start a note on a voice made for it.
     pub fn begin(&mut self, voice: &mut Voice) {
         let rate = self.rate;
-        let glide = self.glide;
-        let slides = self.slides;
         self.lfos.note_on();
         let Sound::Modular(modular) = &mut self.sound else { return };
-        if !slides && glide > 0.0 {
-            if let Some(last) = modular.last_pitch {
-                voice.glide_from = last;
-            }
-        }
         modular.last_pitch = Some(voice.pitch);
         voice.random = modular.random.between(-1.0, 1.0);
         let seconds = voice.start as f64 / rate;

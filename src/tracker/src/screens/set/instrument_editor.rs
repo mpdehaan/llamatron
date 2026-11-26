@@ -70,6 +70,11 @@ pub struct InstrumentEditor {
     pub name: String,
 }
 
+/// Whether the instrument slides into glided steps: on unless set off.
+fn glides_on(sound: &Sound) -> bool {
+    !matches!(sound.value("glides"), Data::Bool(false))
+}
+
 fn whole(value: &Data) -> i64 {
     value.as_whole().map_or(0, |whole| whole as i64)
 }
@@ -708,8 +713,9 @@ impl InstrumentEditor {
 
     fn voice_fields(sound: &Sound, ids: &mut Ids) -> Vec<Field> {
         let sharing = text(&sound.value("filter_sharing"));
-        // Fishline's oscillator sets its own slide, the circuit's on Stock and its Slide time on Modded, so it shows no Glide.
-        let glides = sound.part_type("oscillators") != ACID;
+        // Fishline's oscillator sets its own slide time, the circuit's on Stock and its Slide time on Modded, so it shows no
+        // Glide time; its Glide switch stays.
+        let timed = sound.part_type("oscillators") != ACID;
         let mut fields = vec![
             gauge(
                 ids.at(Write::Sound("volume")),
@@ -729,10 +735,10 @@ impl InstrumentEditor {
                 1,
                 None,
             ),
-            Field::toggle(ids.at(Write::Sound("legato")), labels::MSG_LEGATO_LABEL, flag(&sound.value("legato"))),
+            Field::toggle(ids.at(Write::Sound("glides")), labels::MSG_GLIDE_LABEL, glides_on(sound)),
             gauge(
                 ids.at_gauge(Write::Sound("glide"), TIME_STRIDES),
-                labels::MSG_GLIDE_LABEL,
+                labels::MSG_GLIDE_TIME_LABEL,
                 whole(&sound.value("glide")),
                 (0, MAX_GLIDE_MS),
                 GM_CELLS,
@@ -747,8 +753,8 @@ impl InstrumentEditor {
                 &sharing,
             ),
         ];
-        if !glides {
-            fields.retain(|field| field.label != labels::MSG_GLIDE_LABEL);
+        if !timed {
+            fields.retain(|field| field.label != labels::MSG_GLIDE_TIME_LABEL);
         }
         fields
     }

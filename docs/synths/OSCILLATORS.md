@@ -42,8 +42,18 @@ at the end of this page.
 ## Voice Column
 
 The Oscillators tab's Voice column holds what is the whole instrument's:
-Volume; Voices, how many notes sound at once; Legato, where a note that starts
-while another is held slides to it without starting its envelopes again, as an
-acid line's tied steps do; Glide, how long a note takes to slide; and Filter,
+Volume; Voices, how many notes sound at once; Glide, on unless switched off,
+whether the instrument slides into a glided step; Glide time, how long a note
+takes to slide; and Filter,
 Per note, each note its own filter as on a polysynth, or Shared, one filter
 moved by the newest note, as on a paraphonic synth.
+
+An instrument of one voice slides only where two notes overlap: a note that
+starts while the last is still held slides to its pitch over the Glide time,
+its envelopes going on, as a monosynth plays legato. With Glide off, every
+note is struck afresh and the pattern's glided steps are ignored. Notes that
+only touch,
+one ending as the next starts, never slide; each is struck afresh. A step's
+Glide switch on the pattern is what makes a note run into the next, so the
+pattern says which notes slide and Glide time says how fast. An instrument of
+several voices plays an overlapping note on a voice of its own.

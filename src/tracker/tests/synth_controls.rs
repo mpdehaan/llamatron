@@ -18,6 +18,8 @@ const VELOCITY: f64 = 0.9;
 const HELD_SECONDS: f64 = 0.5;
 const RINGING_SECONDS: f64 = 0.5;
 const CHUNK: usize = 256;
+/// How far a first note runs on into a second, as a glided step's does.
+const OVERLAP_SECONDS: f64 = 0.02;
 /// The default drum octave, where the built-in drums play at their own pitch.
 const DRUMS_FROM: i64 = 36;
 /// How different two playings must be, as a share of the louder's energy, to count as a different sound.
@@ -68,6 +70,39 @@ fn played_notes(instrument: &Instrument, pitches: &[f64]) -> Vec<f32> {
             out.extend_from_slice(&patch.buffer[..frames]);
             start += frames as i64;
         }
+    }
+    out
+}
+
+/// A note of an instrument overlapped by a second, as a glided step runs into the next, played through the engine so
+/// that the instrument slides or strikes the second afresh as its Glide switch says.
+fn slid(instrument: &Instrument, first: f64, second: f64) -> Vec<f32> {
+    let spec = llamatron_tracker::sound_spec::synth_spec(&Sound::of(instrument), DRUMS_FROM);
+    let value = llamatron_tracker::msgpack::value_of(&spec);
+    let mut engine = llamatron_backend::engine::Engine::new(RATE, None);
+    engine.set_instrument(0, Box::new(Patch::compiled(&value, RATE)));
+    let held = (HELD_SECONDS * RATE) as i64;
+    let overlap = (OVERLAP_SECONDS * RATE) as i64;
+    let note = |sample: i64, kind: i64, pitch: f64| llamatron_backend::engine::Event {
+        sample,
+        order: 0,
+        kind,
+        instrument: 0,
+        pitch,
+        velocity: VELOCITY * 127.0,
+        hit: None,
+    };
+    engine.schedule(note(0, llamatron_backend::engine::NOTE_ON, first));
+    engine.schedule(note(held, llamatron_backend::engine::NOTE_ON, second));
+    engine.schedule(note(held + overlap, llamatron_backend::engine::NOTE_OFF, first));
+    engine.schedule(note(2 * held, llamatron_backend::engine::NOTE_OFF, second));
+    let (mut left, mut right) = (vec![0.0; CHUNK], vec![0.0; CHUNK]);
+    let mut out = Vec::new();
+    let mut start = 0;
+    while start < 3 * held {
+        engine.render(start, &mut left, &mut right);
+        out.extend_from_slice(&left);
+        start += CHUNK as i64;
     }
     out
 }
@@ -243,17 +278,20 @@ fn every_control_tried_apart_changes_the_sound() {
     if !differs(&remembering("0"), &remembering("100")) {
         unwired.push("env1 vactrol memory");
     }
-    // Fishline's slide is heard between two notes a fifth apart: Modded at its Slide time's ends, and Stock against Modded.
-    let sliding = |circuit: &str, slide: &str| {
-        // Legato off, so that each new note slides from the last, as a portamento does.
-        let sound = format!("{{ engine: fishline, legato: false, oscillators: {{ type: acid, circuit: {circuit}, slide_time: {slide} }} }}");
-        played_notes(&instrument(&sound), &[PITCH, PITCH + 7.0])
+    // Fishline's slide is heard where a note overlaps the next a fifth higher, as a glided step does: Modded at its Slide
+    // time's ends, Stock against Modded, and the Glide switch on against off.
+    let sliding = |circuit: &str, slide: &str, glides: bool| {
+        let sound = format!("{{ engine: fishline, glides: {glides}, oscillators: {{ type: acid, circuit: {circuit}, slide_time: {slide} }} }}");
+        slid(&instrument(&sound), PITCH, PITCH + 7.0)
     };
-    if !differs(&sliding("modded", "60"), &sliding("modded", "360")) {
+    if !differs(&sliding("modded", "60", true), &sliding("modded", "360", true)) {
         unwired.push("oscillators acid slide_time");
     }
-    if !differs(&sliding("stock", "360"), &sliding("modded", "360")) {
+    if !differs(&sliding("stock", "360", true), &sliding("modded", "360", true)) {
         unwired.push("oscillators acid circuit");
+    }
+    if !differs(&sliding("modded", "360", true), &sliding("modded", "360", false)) {
+        unwired.push("voice glides");
     }
     // Volume is the engine's, applied to the patch's buffer as it mixes, so it is read from the compiled patch.
     let volume = |percent: &str| {
