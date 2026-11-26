@@ -130,6 +130,8 @@ The professor's research is in `.claude/notes/synthesis/`.
 
 - **Bax**: an effect after Peter Baxandall's published tone circuit of 1952, two gauges, Bass and Treble, each cutting or
   boosting a shelf.
+- **Chorus**: a chorus effect, its design drawn from the best open-source choruses, studied when the time comes, with
+  their licences checked.
 - **Pre FX**: two slots before the filter, run for each sounding note, offering only the effects that keep no memory:
   Drive, Bitcrush and every filter as an effect. The effect blocks after the filter stay as they are. An effect with
   memory, a delay or a reverb, is left out there, since it would cost once a note and echo each note apart.
