@@ -86,9 +86,6 @@ The professor's research is in `.claude/notes/synthesis/`.
   contours either paraphonic or per voice.
 - **Durham**: A homage to the classic analog bass pedal synth, on its modern descendant's panel, exposing only what that panel
   has; the filter very nearly perfect (the D'Angelo-Välimäki ladder). Research in `MONOSYNTHS.md`, "Durham"; mockup first.
-- **Spectral**: An effect, not a filter type: a bank of band filters splitting the sound into bands, each band's level
-  set and moved, with no new patching; built together with the planned Harm engine, renamed Spectral.
-  A design, then a mockup.
 - **Drone**: A drone instrument of held, slowly moving oscillators, yet sounding only through the Amp, Env 1 opening it, as
   every engine does. A design, then a mockup.
 - **A brass synth**, somewhat after Stringy, for the bright, stabbing synth brass of early-1980s rock and pop keyboard anthems,
@@ -108,8 +105,29 @@ The professor's research is in `.claude/notes/synthesis/`.
   (after the harmonic oscillator, now to become Spectral), the Choir, and the modular study's engines (Formant Blip,
   Bytecrunch, Flock and the rest), as agreed in `.claude/planning/DESIGNS.md`, "Built-in engines agreed and not yet built".
 
+## Mixing
+
+- **The Bus page**: The Real Time switch goes, real time always on, and its place on the main screen opens a Bus page
+  showing the Master Bus and the FX buses, so that several instruments can send to shared effects, such as one reverb.
+  Built on a mixer: each instrument's own buffer, already kept, given a level, a pan and its sends, cheap since it costs a
+  few multiplications a sample; a bus costs only its effects, once for all its instruments. The Synth Master Bus and
+  Drum Master Bus idea below is a smaller first step toward it.
+- **Pan on every instrument**: built-in and FluidSynth alike; FluidSynth's by CC 10 on the instrument's channel, the
+  built-in synths' through the mixer.
+- **FluidSynth through the effects**: FluidSynth playing each MIDI channel into a stereo pair of its own, so that each
+  FluidSynth instrument gets the effect blocks, pan and the buses as a built-in synth does; FluidSynth's own reverb and
+  chorus stay outside the chains.
+
 ## The Effects
 
+- **Bax**: an effect after Peter Baxandall's published tone circuit of 1952, two gauges, Bass and Treble, each cutting or
+  boosting a shelf.
+- **Pre FX**: two slots before the filter, run for each sounding note, offering only the effects that keep no memory:
+  Drive, Bitcrush and every filter as an effect. The effect blocks after the filter stay as they are. An effect with
+  memory, a delay or a reverb, is left out there, since it would cost once a note and echo each note apart.
+- **Spectral**: An effect, not a filter type: a bank of band filters splitting the sound into bands, each band's level
+  set and moved, with no new patching; built together with the planned Harm engine, renamed Spectral.
+  A design, then a mockup.
 - **Variance**: an effect, subtle, lo-fi, an evolving undercurrent under melodies: a short delay whose time wanders at
   random, then a low-pass gate that recovers the tone. Its settings: Rate, how far apart the random pitch wanders fall, from
   rare to nervous; Damp, how softened and drawn out each wander is, from near instant to so slow it stops sounding like
@@ -160,8 +178,6 @@ In the order of their priority, the highest first.
   ~/.llamatron/presets.yml, which every set shares (21 B), never in the set file; a set using a preset of the user's own
   still holds every value itself, so it plays the same on another computer. Undecided: the key that saves (S is taken on
   some pages), and what happens when a preset of the user's own is renamed or deleted while sets name it.
-- **Effects buses**: Buses, so that several instruments can send to shared effects, such as one reverb, edited on a page of
-  their own. Not now: llamatron has no buses yet, and the first built-in effects belong to each instrument.
 - **Synth Master Bus and Drum Master Bus**: The user's idea for shared effects without a full bus system: two fixed buses,
   shown on the Song page for now, "Synth Master Bus" and "Drum Master Bus", through which every built-in instrument plays
   (not FluidSynth's), the drums through the Drum bus and every other engine through the Synth bus. Not a send bus:

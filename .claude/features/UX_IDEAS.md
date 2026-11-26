@@ -17,6 +17,9 @@ Wanted changes to how the tracker looks and is used: what each is, never its sta
 - **The keys audit**: Letter clashes, `Bksp`'s words echoing the value it brings back, "move" for every cursor motion.
 - **"Notes & Octaves" to "Octaves & Steps"**, and the track's Notes column to "Pitch".
 - **The keyswitch map** on the Instruments page: Note and Octave as ordinary rows, no keyboard drawing, no second dialog.
+- **The on-screen keyboard**: `K` on every page opens a keyboard drawn on screen and played from the computer's keys,
+  sounding the instrument of the page, or of the track or pattern under the cursor. `K` (Keyswitch map) on the Instrument
+  page and `K` (keyswitch) in the pattern editor move to `W`, one letter for keyswitches on both pages.
 - **Batch pattern editing** on a group: a discussion, then building.
 - **Transpose** by scale degrees, semitones or octaves, with a mockup; Grab track removed, each Grab step choosing the track
   it grabs from; drop chords and smarter voice leading on the object tabs.
