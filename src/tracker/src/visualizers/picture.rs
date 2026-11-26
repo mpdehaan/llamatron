@@ -2,7 +2,9 @@
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! Big pixels: a picture of colours, each pixel drawn two terminal columns wide and one row tall so that it comes out
-//! square, as full blocks in its colour, and the modes that paint them.
+//! square, as spaces on a background of its colour, and the modes that paint them. A background fills the whole cell,
+//! where a full block leaves the thin gap many fonts put between lines, which shows the terminal's own background as
+//! stripes on a light terminal.
 //!
 //! Runs of one colour along a line are one piece of text, since a frame draws thousands of pixels many times a second.
 
@@ -12,7 +14,6 @@ use crate::text::Text;
 /// How many terminal columns and rows one big pixel takes: a terminal's cell is about twice as tall as it is wide.
 pub const PIXEL_COLUMNS: usize = 2;
 pub const PIXEL_ROWS: usize = 1;
-const FULL_BLOCK: &str = "█";
 const SPACE: &str = " ";
 
 /// A colour as red, green and blue, each from 0 to 255 once limited; whole numbers, so that the modes' arithmetic on
@@ -85,6 +86,12 @@ pub fn colour_style(colour: Colour) -> String {
     format!("rgb({red},{green},{blue})")
 }
 
+/// The style that fills a cell with a colour, as its background.
+pub fn filled_style(colour: Colour) -> String {
+    let [red, green, blue] = colour.map(|channel| channel.clamp(0, 255));
+    format!("on rgb({red},{green},{blue})")
+}
+
 /// The text lines that draw a picture in an area width columns by height rows, any columns left over blank.
 pub fn pixel_lines(picture: &Picture, width: usize, height: usize) -> Vec<Text> {
     let mut lines = Vec::new();
@@ -97,14 +104,14 @@ pub fn pixel_lines(picture: &Picture, width: usize, height: usize) -> Vec<Text> 
                 Some((held, length)) if *held == colour => *length += 1,
                 _ => {
                     if let Some((held, length)) = run {
-                        line.append(&FULL_BLOCK.repeat(length * PIXEL_COLUMNS), &colour_style(held));
+                        line.append(&SPACE.repeat(length * PIXEL_COLUMNS), &filled_style(held));
                     }
                     run = Some((colour, 1));
                 }
             }
         }
         if let Some((held, length)) = run {
-            line.append(&FULL_BLOCK.repeat(length * PIXEL_COLUMNS), &colour_style(held));
+            line.append(&SPACE.repeat(length * PIXEL_COLUMNS), &filled_style(held));
         }
         let drawn = line.cell_len();
         if drawn < width {
@@ -170,9 +177,10 @@ impl<P: Painter> Mode for Painted<P> {
 mod tests {
     use super::*;
 
-    /// A run of one colour is one piece of text, two columns a pixel, and the line is padded out to its width.
+    /// A run of one colour is one piece of text, two columns a pixel, filled with its colour, and the line is padded out to
+    /// its width.
     #[test]
-    fn a_picture_draws_as_runs_of_full_blocks() {
+    fn a_picture_draws_as_runs_of_filled_cells() {
         let red: Colour = [200, 0, 0];
         let blue: Colour = [0, 0, 200];
         let mut picture = Picture::filled(1, 3, red);
@@ -180,8 +188,9 @@ mod tests {
         let width = 7;
         let lines = pixel_lines(&picture, width, 1);
         let segments = lines[0].segments();
-        assert_eq!(segments[0].text, FULL_BLOCK.repeat(2 * PIXEL_COLUMNS));
-        assert_eq!(segments[1].text, FULL_BLOCK.repeat(PIXEL_COLUMNS));
+        assert_eq!(segments[0].text, SPACE.repeat(2 * PIXEL_COLUMNS));
+        assert_eq!(segments[0].style.bgcolor.as_deref(), Some("rgb(200,0,0)"));
+        assert_eq!(segments[1].text, SPACE.repeat(PIXEL_COLUMNS));
         assert_eq!(lines[0].cell_len(), width);
     }
 }

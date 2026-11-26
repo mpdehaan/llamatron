@@ -10,7 +10,7 @@
 //! eight steps a row, coloured up its height from green through yellow to red, held under a ceiling so that it never
 //! glares. A cap above each bar marks its highest recent level, hangs a moment and drops slowly.
 
-use super::picture::{colour_style, Colour};
+use super::picture::{colour_style, filled_style, Colour};
 use super::{FrameClock, Hearing, Mode, FULL_VELOCITY};
 use crate::text::Text;
 
@@ -142,14 +142,20 @@ impl Spectrum {
         let mut lines = Vec::with_capacity(height);
         for line in 0..height {
             let row = (height - 1 - line) as i64;
-            let style = colour_style(gradient_colour(row as f64 / (height.max(2) - 1) as f64));
+            let colour = gradient_colour(row as f64 / (height.max(2) - 1) as f64);
+            let style = colour_style(colour);
+            // A full row is a filled cell rather than a full block, which many fonts draw short of the line's height,
+            // leaving gaps that show the terminal's background.
+            let full = filled_style(colour);
             let mut text = Text::default();
             for band in 0..self.levels.len() {
                 let filled = (self.levels[band].min(1.0) * height as f64 * FULL_ROW as f64) as i64;
                 let cap = ((self.caps[band] * height as f64) as i64).min(height as i64 - 1);
                 let beneath = filled - row * FULL_ROW;
-                if beneath > 0 {
-                    text.append(&EIGHTHS[beneath.min(FULL_ROW) as usize].repeat(BAR_COLUMNS), &style);
+                if beneath >= FULL_ROW {
+                    text.append(&SPACE.repeat(BAR_COLUMNS), &full);
+                } else if beneath > 0 {
+                    text.append(&EIGHTHS[beneath as usize].repeat(BAR_COLUMNS), &style);
                 } else if cap == row && self.caps[band] > 0.0 {
                     text.append(&CAP_CHARACTER.repeat(BAR_COLUMNS), &cap_style);
                 } else {
