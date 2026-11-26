@@ -327,28 +327,9 @@ fn pattern_copy(document: &Document, pattern: &str) -> Result<(Document, String,
         return Err(song_name);
     };
     for (name, song) in &mut songs {
-        if name.as_str() != Some(song_name.as_str()) {
-            continue;
+        if name.as_str() == Some(song_name.as_str()) {
+            one_clip_song(song, &track, None, drum, pattern, passes, scale.as_deref());
         }
-        let mut track_data = Data::Map(Vec::new());
-        if drum {
-            track_data.set("drum", Data::Bool(true));
-        }
-        let mut song_tracks = match song.get("tracks") {
-            Some(Data::Map(pairs)) => pairs.clone(),
-            _ => Vec::new(),
-        };
-        song_tracks.push((Data::text(&track), track_data));
-        song.set("tracks", Data::Map(song_tracks));
-        let mut clip = Data::Map(vec![(Data::text("track"), Data::text(&track)), (Data::text("pattern"), Data::text(pattern))]);
-        if passes != ONE_PASS {
-            clip.set("repeat", Data::Whole(passes as i128));
-        }
-        if let Some(scale) = &scale {
-            clip.set("scale", Data::text(scale));
-        }
-        song.set("scenes", Data::List(vec![Data::Map(vec![(Data::text("clips"), Data::List(vec![clip]))])]));
-        song.set(SongSetting::LIVE_RESPONSIVENESS, Data::text(CLIP_RESTART));
     }
     data.set(Section::SONGS, Data::Map(songs));
     let copy = Setlist::from_data(&data).map_err(|problem| problem.message)?;
@@ -431,14 +412,16 @@ fn one_clip_song(song: &mut Data, track: &str, instrument: Option<&str>, drum: b
     };
     song_tracks.push((Data::text(track), track_data));
     song.set("tracks", Data::Map(song_tracks));
-    let mut clip = Data::Map(vec![(Data::text("track"), Data::text(track)), (Data::text("pattern"), Data::text(pattern))]);
+    let mut clip = Data::Map(vec![(Data::text("pattern"), Data::text(pattern))]);
     if passes != ONE_PASS {
         clip.set("repeat", Data::Whole(passes as i128));
     }
     if let Some(scale) = scale {
         clip.set("scale", Data::text(scale));
     }
-    song.set("scenes", Data::List(vec![Data::Map(vec![(Data::text("clips"), Data::List(vec![clip]))])]));
+    // A scene's data holds its clips by their tracks' names, as the set's data does, not the file's list of clips.
+    let clips = Data::Map(vec![(Data::text(track), clip)]);
+    song.set("scenes", Data::List(vec![Data::Map(vec![(Data::text("tracks"), clips)])]));
     song.set(SongSetting::LIVE_RESPONSIVENESS, Data::text(CLIP_RESTART));
 }
 
@@ -640,6 +623,30 @@ mod tests {
 
     /// A song whose Preview instrument is a built-in synth, and a pattern to listen to.
     const BUILT_IN_PREVIEW_SET: &str = "scales:\n  - { name: C Major, root: C, type: major }\ninstruments:\n  - { name: lead synth, kind: built_in, role: normal, sound: { engine: fishline } }\npatterns:\n  tune: { steps: 4, rows: { degree: [1, 2, 3, 4] } }\nsongs:\n  - name: song\n    scale: C Major\n    preview_instrument: lead synth\n    tracks: [{ name: lead }]\n    scenes: [{ name: one }]\n";
+
+    /// Listening to an instrument plays its preview pattern: the copy's one scene holds the preview's clip.
+    #[test]
+    fn an_instrument_preview_holds_its_clip() {
+        let text = format!(
+            "{}\ninstruments:\n  - {{ name: fish, kind: built_in, role: normal, sound: {{ engine: fishline }} }}\n",
+            crate::generated::tables::NEW_SET
+        );
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let document = Document::new(setlist, None);
+        let (copy, track, _) = instrument_copy(&document, "fish").expect("the instrument is in the set");
+        let scene = &copy.song().scenes()[PREVIEW_SCENE];
+        assert!(scene.get_clip_slot(&track).is_some());
+    }
+
+    /// Listening to a pattern plays it: the copy's one scene holds the pattern's clip.
+    #[test]
+    fn a_pattern_preview_holds_its_clip() {
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(BUILT_IN_PREVIEW_SET, None).expect("the scenario's set is valid");
+        let document = Document::new(setlist, None);
+        let (copy, track, _) = pattern_copy(&document, "tune").expect("the pattern is in the set");
+        let scene = &copy.song().scenes()[PREVIEW_SCENE];
+        assert!(scene.get_clip_slot(&track).is_some());
+    }
 
     /// Listening to a pattern through a built-in Preview instrument plays that synth, not a port with no name.
     #[test]
