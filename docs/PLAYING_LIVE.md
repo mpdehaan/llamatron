@@ -7,11 +7,20 @@ a Mac to a synthesizer or Ableton Live and testing the connection.
 
 ## Real-Time Playback
 
-Playing in real time is for composing: you hear the song through your
-synthesizers or FluidSynth as you work, and nothing about playing changes an
-export. To set it up, add an instrument on the Instruments page, `I` on the
-main screen, choosing one of this computer's MIDI output ports and a channel,
-or FluidSynth, and choose that instrument in each track's editor. Adding the
+Playing in real time is for composing and for performing: you hear the song
+as you work, and nothing about playing changes an export. A track can sound
+three ways, and one song can use all three at once, each landing in time with
+the others:
+
+- on llamatron's own [built-in synths](SYNTHS.md), with nothing else
+  installed;
+- over MIDI, to your hardware or software synthesizers, or to Ableton Live,
+  as [MIDI Setup](MIDI_SETUP.md) describes;
+- through FluidSynth, a General MIDI player llamatron starts by itself.
+
+To set it up, add an instrument on the Instruments page, `I` on the main
+screen: a built-in synth, one of this computer's MIDI output ports and a
+channel, or FluidSynth. Then choose that instrument in each track's editor. Adding the
 first instrument turns the main screen's Real Time switch on, and `T` on the
 main screen turns it on and off.
 

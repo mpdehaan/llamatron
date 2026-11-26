@@ -143,6 +143,13 @@ generator has a page of its own.
 
 ## MIDI & Performance
 
+llamatron is an instrument to perform with as well as to compose on: a song
+plays in real time while you edit it, every change heard as you make it,
+scenes and clips launched by hand in time with the bar, a visualizer drawn
+from the notes, and a take recorded as a video. Playing Live covers the
+performing; MIDI Setup covers connecting outboard synthesizers and Ableton
+Live.
+
 | Page | What it covers |
 | --- | --- |
 | [MIDI Setup](MIDI_SETUP.md) | Playing into a synthesizer or Ableton Live on a Mac, and what to do when nothing sounds. |
