@@ -25,10 +25,6 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **Polarity on the Mod Matrix**: each route Bipolar (the source's -1 to 1 times the amount) or Unipolar (0 to the
   amount), Bipolar by default so that every set sounds as before; each Amount's gauge shows the range it gives in its
   destination's own units, such as "-4 to +4 degrees" or "0 to +4 octaves".
-- **Restart**: one field on each modulator, in place of the Retrigger and Each scene toggles, saying when its cycle
-  starts again: Each note; Each scene; or On play, the default, from zero whenever playback starts of any kind, never
-  restarted by launching something while playing, so that a modulator no scene uses keeps running underneath. Older sets
-  keep their sound by a migration: Retrigger on becomes Each note, Each scene on becomes Each scene, both off On play.
 - **Disconnect filter**: a switch on Env 2 that unhooks it from the filter, leaving Env 2 free for the Mod Matrix.
 - **New-instrument choices**: Blank, Sampled (FluidSynth, where installed), Synth, Drum Synth or External MIDI, beside Normal
   and Percussion, each choosing a few settings that can still be changed. Mockup first.
@@ -36,9 +32,9 @@ The professor's research is in `.claude/notes/synthesis/`.
   migration, engine and block presets; with it, a Glide switch on the MIDI engine, as if it were a synth.
 - **The Mod Matrix's destinations**: Which to drop (Drive and the like need not be destinations), a discussion; later, some
   effects' settings as destinations, effect by effect.
-- **Modulator modules**: each LFOs tab slot holds a module chosen by its Type: LFO (as now), LFO+ (Fade in, a Tempo
-  speed, Smooth random), Snail, Chaos, Tide, Turing, Bounce and Swarm, a module of several outputs adding them to the Mod
-  Matrix's sources while chosen (`.claude/planning/DESIGNS.md`, "Modulator modules on the LFOs tab"). What each module is:
+- **Modulator modules**: each Modulators tab slot holds a module chosen by its Type, and beside LFO and LFO+ the Type
+  offers Snail, Chaos, Tide, Turing, Bounce and Swarm, a module of several outputs adding them to the Mod Matrix's sources
+  while chosen (`.claude/planning/DESIGNS.md`, "Modulator modules on the LFOs tab"). What each module is:
   - **Chaos**: a chaotic system's path in three dimensions, X, Y and Z, never repeating; System is Lorenz (two lobes it
     flips between), Rössler (a smoother spiral that now and then leaps out), Chua (the electronic double scroll),
     Thomas, Pendulum (a double pendulum) or Predator & prey (Lotka-Volterra); a Chaos amount from a near loop to full
