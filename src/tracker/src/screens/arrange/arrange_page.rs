@@ -548,9 +548,7 @@ impl ArrangePage {
             Section::INSTRUMENTS => app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
                 crate::screens::set::instrument_editor::InstrumentEditor { name: target.name },
             ))),
-            _ => app.show_page(Box::new(NotPorted {
-                name: target.kind.to_string(),
-            })),
+            _ => app.show_page(Box::new(NotPorted { name: target.kind.to_string() })),
         }
     }
 
