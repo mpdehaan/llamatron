@@ -160,9 +160,14 @@ fn tried_in(part: &str, part_type: &str) -> String {
     } else {
         "{ type: ladder, cutoff: 1500, resonance: 30, env_amount: 50 }".to_string()
     };
+    let amp = if part == "amp" {
+        format!("{{ type: {part_type} }}")
+    } else {
+        "{ type: clean }".to_string()
+    };
     let engine = if part_type == "drum" { "drum" } else { "basic" };
     format!(
-        "{{ engine: {engine}, oscillators: {oscillators}, envelopes: [{}, {}, {}], filter: {filter}, matrix: [{{ source: env3, via: none, destination: pitch, amount: 20 }}] }}",
+        "{{ engine: {engine}, oscillators: {oscillators}, envelopes: [{}, {}, {}], filter: {filter}, amp: {amp}, matrix: [{{ source: env3, via: none, destination: pitch, amount: 20 }}] }}",
         envelope("env1"),
         envelope("env2"),
         envelope("env3")
@@ -182,8 +187,8 @@ fn company(part_type: &str, setting: &str) -> &'static [(&'static str, &'static 
         ("adsr", "attack_curve") | ("ar", "attack_curve") | ("asr", "attack_curve") => &[("attack", "200")],
         ("adsr", "release") => &[("sustain", "80")],
         ("acid_gate", "soft_attack") => &[("circuit", "modded"), ("accent_threshold", "127")],
-        ("low_pass_gate", "resonance") => &[("gate_mode", "lowpass")],
-        ("low_pass_gate", "ping_width") => &[("input", "ping")],
+        ("low_pass_gate", "resonance") | ("low_pass_gate_amp", "resonance") => &[("gate_mode", "lowpass")],
+        ("low_pass_gate", "ping_time") | ("low_pass_gate_amp", "ping_time") => &[("signal", "ping")],
         ("acid_gate", "circuit") => &[("amp_decay", "300")],
         ("diode", "circuit") => &[("filter_fm", "80")],
         ("asheville", "osc1_shape") | ("asheville", "osc2_shape") | ("asheville", "osc3_shape") => &[("model", "continuous")],
@@ -200,7 +205,10 @@ fn company(part_type: &str, setting: &str) -> &'static [(&'static str, &'static 
 /// The settings tried apart from the rest: a list typed in, what one note leaves the next, and the drum's knobs, which a
 /// hit renders apart.
 fn tried_apart(part_type: &str, setting: &str) -> bool {
-    matches!((part_type, setting), ("sid", "arpeggio") | ("vactrol", "memory") | ("drum", _))
+    matches!(
+        (part_type, setting),
+        ("sid", "arpeggio") | ("vactrol", "memory") | ("low_pass_gate", "memory") | ("low_pass_gate_amp", "memory") | ("drum", _)
+    )
 }
 
 /// A value as the trial writes it: a switch, a whole number where it reads as one, else text.
@@ -289,6 +297,19 @@ fn every_control_tried_apart_changes_the_sound() {
     };
     if !differs(&remembering("0"), &remembering("100")) {
         unwired.push("env1 vactrol memory");
+    }
+    // A gate's own cell remembers the note before as the vactrol envelope does, in the Filter's place and the Amp's.
+    let gate_remembering = |part: &str, kind: &str, memory: &str| {
+        let sound = format!("{{ engine: basic, {part}: {{ type: {kind}, memory: {memory} }} }}");
+        played_notes(&instrument(&sound), &[PITCH, PITCH])
+    };
+    for (part, kind, control) in [
+        ("filter", "low_pass_gate", "filter low_pass_gate memory"),
+        ("amp", "low_pass_gate_amp", "amp low_pass_gate_amp memory"),
+    ] {
+        if !differs(&gate_remembering(part, kind, "0"), &gate_remembering(part, kind, "100")) {
+            unwired.push(control);
+        }
     }
     // Oh3's slide is heard where a note overlaps the next a fifth higher, as a glided step does: its Glide time at
     // two ends, and the Glide switch on against off.

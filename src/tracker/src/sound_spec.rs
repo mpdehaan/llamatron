@@ -18,10 +18,12 @@ const DB_A_POLE: i64 = 6;
 const FOUR_POLES: i64 = 4;
 /// The pulse shares of the chip's duty cycles, and the rise and fall in seconds of each vactrol cell.
 const DUTY_SHARES: [(&str, f64); 4] = [("eighth", 0.125), ("quarter", 0.25), ("half", 0.5), ("three_quarters", 0.75)];
-const CELLS: [(&str, f64, f64); 4] = [("fast", 0.0025, 0.035), ("classic", 0.005, 0.08), ("slow", 0.012, 0.25), ("lazy", 0.02, 0.6)];
 const ENVELOPE_PARTS: [&str; 3] = ["env1", "env2", "env3"];
 const OSCILLATORS: &str = "oscillators";
 const AMP: &str = "amp";
+/// The low-pass gate's type in the backend's spec, and its type on the Amp tab.
+const LOW_PASS_GATE: &str = "low_pass_gate";
+const AMP_GATE: &str = "low_pass_gate_amp";
 const FILTER: &str = "filter";
 const UP: &str = "up";
 
@@ -202,17 +204,13 @@ fn envelope(sound: &Sound, part: &str) -> Data {
             ("release", setting("release")),
         ]),
         "vactrol" => {
-            let cell = setting("cell");
-            let (rise, fall) = CELLS
-                .iter()
-                .find(|(name, ..)| cell.as_str() == Some(name))
-                .map_or((0.005, 0.08), |(_, rise, fall)| (*rise, *fall));
+            // The backend's vactrol is struck by a flash, or lit while the key is held.
+            let drive = if setting("trigger").as_str() == Some("gate") { "gate" } else { "strike" };
             mapping(vec![
                 typed,
-                ("rise", Data::Float(rise)),
-                ("fall", Data::Float(fall)),
-                ("drive", setting("light")),
-                ("strike_width", share(&setting("strike_width"), TENTHS_OF_MILLISECONDS)),
+                ("response", share(&setting("response"), PERCENT)),
+                ("drive", Data::text(drive)),
+                ("strike_width", share(&setting("trigger_time"), TENTHS_OF_MILLISECONDS)),
                 ("memory", share(&setting("memory"), PERCENT)),
                 ("age", share(&setting("age"), PERCENT)),
                 ("stability", share(&setting("stability"), PERCENT)),
@@ -258,8 +256,12 @@ fn envelope(sound: &Sound, part: &str) -> Data {
 }
 
 /// The filter part, as the backend's filters and gates read it, or none.
-/// The Amp as the backend reads it: its type, and its Response, Drive, Bleed and Character as fractions.
+/// The Amp as the backend reads it: its type, and its Response, Drive, Bleed and Character as fractions; or a low-pass
+/// gate standing in its place.
 fn amp(sound: &Sound) -> Data {
+    if sound.part_type(AMP) == AMP_GATE {
+        return gate(sound, AMP);
+    }
     let setting = |name: &str| sound.part_value(AMP, name);
     mapping(vec![
         ("type", Data::text(&sound.part_type(AMP))),
@@ -270,21 +272,34 @@ fn amp(sound: &Sound) -> Data {
     ])
 }
 
+/// A low-pass gate in either place as the backend reads it: what lights it and for how long a flash, its mode, the
+/// signal it is fed and its ping, its filter, and its cell, the times in seconds and the rest as fractions.
+fn gate(sound: &Sound, part: &str) -> Data {
+    let setting = |name: &str| sound.part_value(part, name);
+    mapping(vec![
+        ("type", Data::text(LOW_PASS_GATE)),
+        ("trigger", setting("trigger")),
+        ("trigger_time", share(&setting("trigger_time"), TENTHS_OF_MILLISECONDS)),
+        ("mode", setting("gate_mode")),
+        ("signal", setting("signal")),
+        ("ping_time", share(&setting("ping_time"), TENTHS_OF_MILLISECONDS)),
+        ("resonance", share(&setting("resonance"), PERCENT)),
+        ("open", setting("open")),
+        ("key_track", share(&setting("key_track"), PERCENT)),
+        ("response", share(&setting("response"), PERCENT)),
+        ("memory", share(&setting("memory"), PERCENT)),
+        ("age", share(&setting("age"), PERCENT)),
+        ("stability", share(&setting("stability"), PERCENT)),
+    ])
+}
+
 fn filter(sound: &Sound) -> Data {
     let kind = sound.part_type(FILTER);
     let setting = |name: &str| sound.part_value(FILTER, name);
     let typed = ("type", Data::text(&kind));
     match kind.as_str() {
         "none" => mapping(vec![typed]),
-        "low_pass_gate" => mapping(vec![
-            typed,
-            ("mode", setting("gate_mode")),
-            ("resonance", share(&setting("resonance"), PERCENT)),
-            ("open", setting("open")),
-            ("key_track", share(&setting("key_track"), PERCENT)),
-            ("input", setting("input")),
-            ("ping_width", share(&setting("ping_width"), TENTHS_OF_MILLISECONDS)),
-        ]),
+        "low_pass_gate" => gate(sound, FILTER),
         _ => {
             let mode = if kind == "multimode" || kind == "sallen_key" {
                 setting("mode")

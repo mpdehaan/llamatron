@@ -719,8 +719,20 @@ impl InstrumentEditor {
         settings
             .iter()
             .filter(|name| modded || !crate::generated::sounds::MODDED_SETTINGS.contains(&(kind.as_str(), **name)))
+            .filter(|name| Self::acts_with(sound, part, name))
             .map(|name| Self::setting_field(sound, part, &kind, name, ids))
             .collect()
+    }
+
+    /// Whether a setting acts with the part's other settings as they stand: a vactrol's or a gate's Trigger time only
+    /// with its Trigger lighting it by a flash, and a gate's Ping time only with a Ping in its Signal.
+    fn acts_with(sound: &Sound, part: &str, name: &str) -> bool {
+        let chosen = |setting: &str| sound.part_value(part, setting).as_str().map(str::to_string);
+        match name {
+            "trigger_time" => chosen("trigger").as_deref() == Some("trigger"),
+            "ping_time" => chosen("signal").as_deref() != Some("oscillator"),
+            _ => true,
+        }
     }
 
     fn setting_field(sound: &Sound, part: &'static str, kind: &str, name: &'static str, ids: &mut Ids) -> Field {

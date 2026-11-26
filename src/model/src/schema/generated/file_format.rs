@@ -492,9 +492,9 @@ impl PartSetting {
     pub const SNAP: &'static str = "snap";
     pub const SUSTAIN: &'static str = "sustain";
     pub const RELEASE: &'static str = "release";
-    pub const CELL: &'static str = "cell";
-    pub const LIGHT: &'static str = "light";
-    pub const STRIKE_WIDTH: &'static str = "strike_width";
+    pub const TRIGGER: &'static str = "trigger";
+    pub const TRIGGER_TIME: &'static str = "trigger_time";
+    pub const RESPONSE: &'static str = "response";
     pub const MEMORY: &'static str = "memory";
     pub const AGE: &'static str = "age";
     pub const STABILITY: &'static str = "stability";
@@ -516,8 +516,8 @@ impl PartSetting {
     pub const DRIVE: &'static str = "drive";
     pub const GATE_MODE: &'static str = "gate_mode";
     pub const OPEN: &'static str = "open";
-    pub const INPUT: &'static str = "input";
-    pub const PING_WIDTH: &'static str = "ping_width";
+    pub const SIGNAL: &'static str = "signal";
+    pub const PING_TIME: &'static str = "ping_time";
 }
 
 pub struct OscillatorType;
@@ -817,12 +817,12 @@ pub static NOISES: &[&str] = &["long", "short"];
 pub static LFO_SHAPES: &[&str] = &["sine", "triangle", "saw_up", "saw_down", "square", "sample_and_hold"];
 pub static EFFECTS: &[&str] = &["none", "bitcrush", "drive"];
 pub static FILTER_TYPES: &[&str] = &["none", "ladder", "multimode", "sallen_key", "diode", "ota", "low_pass_gate"];
+pub static AMP_TYPES: &[&str] = &["clean", "transistor", "ota_vca", "low_pass_gate_amp"];
 pub static OSCILLATOR_TYPES: &[&str] = &["basic", "asheville", "sid", "pocket", "acid", "drum"];
 pub static ENVELOPE_TYPES: &[&str] = &["none", "adsr", "ar", "asr", "sid_adsr", "vactrol", "acid_gate", "chip_steps"];
 pub static PARTS: &[&str] = &["oscillators", "env1", "env2", "env3", "filter"];
 pub static ENVELOPE_PARTS: &[&str] = &["env1", "env2", "env3"];
-pub static VACTROL_CELLS: &[&str] = &["fast", "classic", "slow", "lazy"];
-pub static VACTROL_LIGHTS: &[&str] = &["strike", "gate"];
+pub static VACTROL_TRIGGERS: &[&str] = &["trigger", "gate"];
 pub static FILTER_SHARINGS: &[&str] = &["per_note", "shared"];
 pub static GATE_MODES: &[&str] = &["vca", "lowpass", "both"];
 pub static GATE_INPUTS: &[&str] = &["oscillator", "ping", "both"];

@@ -464,9 +464,9 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
     (
         "vactrol",
         Preset::Map(&[
-            ("cell", Preset::Text("slow")),
-            ("light", Preset::Text("strike")),
-            ("strike_width", Preset::Whole(20)),
+            ("trigger", Preset::Text("trigger")),
+            ("trigger_time", Preset::Whole(20)),
+            ("response", Preset::Whole(67)),
             ("memory", Preset::Whole(30)),
             ("age", Preset::Whole(0)),
             ("stability", Preset::Whole(100)),
@@ -551,12 +551,35 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
     (
         "low_pass_gate",
         Preset::Map(&[
+            ("trigger", Preset::Text("trigger")),
+            ("trigger_time", Preset::Whole(20)),
             ("gate_mode", Preset::Text("both")),
+            ("signal", Preset::Text("oscillator")),
+            ("ping_time", Preset::Whole(10)),
             ("resonance", Preset::Whole(0)),
             ("open", Preset::Whole(7000)),
             ("key_track", Preset::Whole(0)),
-            ("input", Preset::Text("oscillator")),
-            ("ping_width", Preset::Whole(10)),
+            ("response", Preset::Whole(67)),
+            ("memory", Preset::Whole(30)),
+            ("age", Preset::Whole(0)),
+            ("stability", Preset::Whole(100)),
+        ]),
+    ),
+    (
+        "low_pass_gate_amp",
+        Preset::Map(&[
+            ("trigger", Preset::Text("trigger")),
+            ("trigger_time", Preset::Whole(20)),
+            ("gate_mode", Preset::Text("both")),
+            ("signal", Preset::Text("oscillator")),
+            ("ping_time", Preset::Whole(10)),
+            ("resonance", Preset::Whole(0)),
+            ("open", Preset::Whole(7000)),
+            ("key_track", Preset::Whole(0)),
+            ("response", Preset::Whole(67)),
+            ("memory", Preset::Whole(30)),
+            ("age", Preset::Whole(0)),
+            ("stability", Preset::Whole(100)),
         ]),
     ),
 ];
@@ -652,7 +675,7 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
     ("ar", &["attack", "attack_curve", "release"]),
     ("asr", &["attack", "attack_curve", "release"]),
     ("sid_adsr", &["attack", "decay", "sustain", "release"]),
-    ("vactrol", &["cell", "light", "strike_width", "memory", "age", "stability"]),
+    ("vactrol", &["trigger", "trigger_time", "response", "memory", "age", "stability"]),
     (
         "acid_gate",
         &[
@@ -672,7 +695,40 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
     ("sallen_key", &["cutoff", "resonance", "mode", "env_amount", "key_track", "drive"]),
     ("diode", &["circuit", "cutoff", "resonance", "env_amount", "filter_fm", "key_track", "drive"]),
     ("ota", &["cutoff", "resonance", "env_amount", "key_track", "drive"]),
-    ("low_pass_gate", &["gate_mode", "input", "resonance", "open", "key_track", "ping_width"]),
+    (
+        "low_pass_gate",
+        &[
+            "trigger",
+            "trigger_time",
+            "gate_mode",
+            "signal",
+            "ping_time",
+            "resonance",
+            "open",
+            "key_track",
+            "response",
+            "memory",
+            "age",
+            "stability",
+        ],
+    ),
+    (
+        "low_pass_gate_amp",
+        &[
+            "trigger",
+            "trigger_time",
+            "gate_mode",
+            "signal",
+            "ping_time",
+            "resonance",
+            "open",
+            "key_track",
+            "response",
+            "memory",
+            "age",
+            "stability",
+        ],
+    ),
 ];
 /// The settings a part shows only with its Circuit set to Modded, the classic modifications of the acid bass: on Stock
 /// the circuit's own values play.
@@ -1172,24 +1228,17 @@ pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
         },
     ),
     (
-        "cell",
+        "trigger",
         SettingKind::Choice {
-            choices: &["fast", "classic", "slow", "lazy"],
-            names: &["Fast", "Classic", "Slow", "Lazy"],
+            choices: &["trigger", "gate"],
+            names: &["Trigger", "Gate"],
         },
     ),
     (
-        "light",
-        SettingKind::Choice {
-            choices: &["strike", "gate"],
-            names: &["Strike", "Gate"],
-        },
-    ),
-    (
-        "strike_width",
+        "trigger_time",
         SettingKind::Gauge {
             lowest: 5,
-            highest: 100,
+            highest: 500,
             what: "tenths",
         },
     ),
@@ -1356,28 +1405,52 @@ pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
     (
         "open",
         SettingKind::Gauge {
-            lowest: 500,
+            lowest: 100,
             highest: 16000,
             what: "hertz",
         },
     ),
     (
-        "input",
+        "signal",
         SettingKind::Choice {
             choices: &["oscillator", "ping", "both"],
             names: &["Oscillator", "Ping", "Both"],
         },
     ),
     (
-        "ping_width",
+        "ping_time",
         SettingKind::Gauge {
-            lowest: 2,
-            highest: 50,
+            lowest: 5,
+            highest: 200,
             what: "tenths",
         },
     ),
 ];
 pub static TYPE_SETTING_KINDS: &[(&str, &str, SettingKind)] = &[
+    (
+        "low_pass_gate",
+        "trigger",
+        SettingKind::Choice {
+            choices: &["trigger", "gate", "env1", "env2", "env3"],
+            names: &["Trigger", "Gate", "Env 1", "Env 2", "Env 3"],
+        },
+    ),
+    (
+        "low_pass_gate",
+        "gate_mode",
+        SettingKind::Choice {
+            choices: &["lowpass", "both"],
+            names: &["Lowpass", "Both"],
+        },
+    ),
+    (
+        "low_pass_gate_amp",
+        "trigger",
+        SettingKind::Choice {
+            choices: &["trigger", "gate", "env1"],
+            names: &["Trigger", "Gate", "Env 1"],
+        },
+    ),
     ("sid_adsr", "attack", SettingKind::SidTime { highest: 15, times: 1 }),
     ("sid_adsr", "decay", SettingKind::SidTime { highest: 15, times: 3 }),
     ("sid_adsr", "release", SettingKind::SidTime { highest: 15, times: 3 }),
@@ -1407,7 +1480,11 @@ pub static PART_TYPES: &[(&str, &[&str], &[&str])] = &[
         &["basic", "asheville", "sid", "pocket", "acid", "drum"],
         &["Basic", "Asheville", "SID", "Pocket", "Oh3", "MechaDrum"],
     ),
-    ("amp", &["clean", "transistor", "ota_vca"], &["Clean", "Transistor", "OTA"]),
+    (
+        "amp",
+        &["clean", "transistor", "ota_vca", "low_pass_gate_amp"],
+        &["Clean", "Transistor", "OTA", "Low-pass gate"],
+    ),
     (
         "filter",
         &["none", "ladder", "multimode", "sallen_key", "diode", "ota", "low_pass_gate"],

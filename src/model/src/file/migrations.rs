@@ -7,7 +7,9 @@
 //! (before 1.0.155), and everything named kept by name rather than in lists (before 1.0.591). One more is told by its
 //! shape alone, whatever version saved the file: the acid bass engine's oscillator Slide time, from before its slide became
 //! the shared Glide time; an LFO's rate in tenths of a hertz, from before its Speed and Rate percent; and that engine's
-//! name, fishline, from before it was named Oh3.
+//! name, fishline, from before it was named Oh3. And the vactrol's and the low-pass gate's layout (before 1.1.3): the
+//! vactrol's Cell, Lit by and Strike became its Response, Trigger and Trigger time, and a low-pass gate on the Filter tab,
+//! which was then the note's amp lit by Env 1, moves to the Amp tab, lit by Env 1 as before.
 
 use crate::file::data::Data;
 use crate::objects::naming;
@@ -95,6 +97,12 @@ pub fn migrated(data: Data, one_song_name: Option<String>) -> (Data, Conversion)
         conversion.moved = true;
         data = each_sound(data, lfo_speeds);
     }
+    // Told by its version and its shape together, since a file from before 1.1.3 may already have been moved.
+    let older_than_gates = saved_version(&data).is_none_or(|saved| version_numbers(GATE_LAYOUT_SINCE).is_some_and(|since| saved < since));
+    if matches!(data, Data::Map(_)) && older_than_gates && gate_layout_is_before(&data) {
+        conversion.moved = true;
+        data = each_sound(data, gate_layout);
+    }
     if matches!(data, Data::Map(_)) && has_engine(&data, OLD_ACID_ENGINE) {
         conversion.moved = true;
         data = each_sound(data, acid_engine_renamed);
@@ -137,6 +145,135 @@ fn acid_engine_renamed(sound: Data) -> Data {
             }
         })
         .collect();
+    map(pairs)
+}
+
+/// The version that first wrote the vactrol's Response and Trigger and the Amp tab's low-pass gate.
+const GATE_LAYOUT_SINCE: &str = "1.1.3";
+const ENVELOPES: &str = "envelopes";
+const FILTER: &str = "filter";
+const AMP: &str = "amp";
+const VACTROL: &str = "vactrol";
+const LOW_PASS_GATE: &str = "low_pass_gate";
+const AMP_GATE: &str = "low_pass_gate_amp";
+const NONE: &str = "none";
+/// The vactrol's older settings and what each became.
+const CELL: &str = "cell";
+const LIGHT: &str = "light";
+const STRIKE_WIDTH: &str = "strike_width";
+const RESPONSE: &str = "response";
+const TRIGGER: &str = "trigger";
+const TRIGGER_TIME: &str = "trigger_time";
+/// The older gate's Input and Ping width, and what each became.
+const INPUT: &str = "input";
+const PING_WIDTH: &str = "ping_width";
+const SIGNAL: &str = "signal";
+const PING_TIME: &str = "ping_time";
+/// Each older Cell, by name, and the Response that plays it, the cell's place on the gauge.
+const CELL_RESPONSES: [(&str, i128); 4] = [("fast", 0), ("classic", 33), ("slow", 67), ("lazy", 100)];
+const SLOW_RESPONSE: i128 = 67;
+/// What lit the older gate, Env 1, and what struck an older vactrol, now called Trigger.
+const ENV1: &str = "env1";
+const OLD_STRIKE: &str = "strike";
+/// The Response of the fastest cell, which follows Env 1 most nearly as the older gate did, unsmoothed.
+const FASTEST_RESPONSE: i128 = 0;
+
+/// Whether a file from before 1.1.3 holds the older layout: a vactrol with a Cell, Lit by or Strike, or a low-pass gate
+/// on the Filter tab, where the older layout put every gate.
+fn gate_layout_is_before(data: &Data) -> bool {
+    let Some(instruments) = data.get(INSTRUMENTS).and_then(Data::as_list) else {
+        return false;
+    };
+    instruments.iter().filter_map(|instrument| instrument.get(SOUND)).any(|sound| {
+        let old_vactrol = sound
+            .get(ENVELOPES)
+            .and_then(Data::as_list)
+            .into_iter()
+            .flatten()
+            .any(|envelope| envelope.get(CELL).is_some() || envelope.get(LIGHT).is_some() || envelope.get(STRIKE_WIDTH).is_some());
+        let filter_gate = sound.get(FILTER).and_then(|filter| filter.get(TYPE)).and_then(Data::as_str) == Some(LOW_PASS_GATE);
+        old_vactrol || filter_gate
+    })
+}
+
+/// A sound in the layout of 1.1.3: its vactrol envelopes renamed, and a Filter tab low-pass gate moved to the Amp tab.
+fn gate_layout(sound: Data) -> Data {
+    let filter_gate = sound
+        .get(FILTER)
+        .filter(|filter| filter.get(TYPE).and_then(Data::as_str) == Some(LOW_PASS_GATE))
+        .cloned();
+    let mut pairs: Vec<(Data, Data)> = pairs_of(&sound)
+        .into_iter()
+        .filter(|(key, _)| !(filter_gate.is_some() && key_is(key, AMP)))
+        .map(|(key, value)| {
+            if key_is(&key, ENVELOPES) {
+                let envelopes = value.as_list().map(<[_]>::to_vec).unwrap_or_default();
+                return (key, Data::List(envelopes.iter().map(vactrol_renamed).collect()));
+            }
+            if key_is(&key, FILTER) && filter_gate.is_some() {
+                return (key, map(vec![(Data::text(TYPE), Data::text(NONE))]));
+            }
+            (key, value)
+        })
+        .collect();
+    if let Some(gate) = filter_gate {
+        pairs.push((Data::text(AMP), gate_as_amp(&gate)));
+    }
+    map(pairs)
+}
+
+/// A vactrol envelope with its Cell as a Response, Lit by as Trigger and Strike as Trigger time; any other as it was.
+fn vactrol_renamed(envelope: &Data) -> Data {
+    if envelope.get(TYPE).and_then(Data::as_str) != Some(VACTROL) {
+        return envelope.clone();
+    }
+    let pairs = pairs_of(envelope)
+        .into_iter()
+        .map(|(key, value)| {
+            if key_is(&key, CELL) {
+                let named = value.as_str().unwrap_or_default();
+                let response = CELL_RESPONSES
+                    .iter()
+                    .find(|(cell, _)| *cell == named)
+                    .map_or(SLOW_RESPONSE, |(_, response)| *response);
+                return (Data::text(RESPONSE), Data::Whole(response));
+            }
+            if key_is(&key, LIGHT) {
+                let trigger = if value.as_str() == Some(OLD_STRIKE) {
+                    TRIGGER
+                } else {
+                    value.as_str().unwrap_or(TRIGGER)
+                };
+                return (Data::text(TRIGGER), Data::text(trigger));
+            }
+            if key_is(&key, STRIKE_WIDTH) {
+                return (Data::text(TRIGGER_TIME), value);
+            }
+            (key, value)
+        })
+        .collect();
+    map(pairs)
+}
+
+/// An older Filter tab low-pass gate as the Amp tab's: the same settings, Input as Signal and Ping width as Ping time, lit
+/// by Env 1 through the fastest cell, as it was lit by Env 1 before.
+fn gate_as_amp(gate: &Data) -> Data {
+    let mut pairs: Vec<(Data, Data)> = pairs_of(gate)
+        .into_iter()
+        .map(|(key, value)| {
+            if key_is(&key, TYPE) {
+                (key, Data::text(AMP_GATE))
+            } else if key_is(&key, INPUT) {
+                (Data::text(SIGNAL), value)
+            } else if key_is(&key, PING_WIDTH) {
+                (Data::text(PING_TIME), value)
+            } else {
+                (key, value)
+            }
+        })
+        .collect();
+    pairs.push((Data::text(TRIGGER), Data::text(ENV1)));
+    pairs.push((Data::text(RESPONSE), Data::Whole(FASTEST_RESPONSE)));
     map(pairs)
 }
 
@@ -662,6 +799,46 @@ mod tests {
         assert_eq!(lfos[0].get(RATE_PERCENT).cloned(), Some(Data::Whole(74)));
         assert!(lfos[0].get(OLD_RATE).is_none());
         assert!(lfos[1].is_null(), "an LFO left out stays so");
+    }
+
+    /// An older vactrol's Cell, Lit by and Strike become its Response, Trigger and Trigger time, and an older Filter tab
+    /// low-pass gate, then the note's amp lit by Env 1, moves to the Amp tab lit by Env 1; a set of 1.1.3 is left alone.
+    #[test]
+    fn the_vactrol_and_the_gate_move_to_their_new_layout() {
+        let older = "version: 1.1.2\ninstruments:\n  - { name: pluck, kind: built_in, sound: { engine: basic, envelopes: [{ type: vactrol, cell: lazy, light: gate, strike_width: 30 }], filter: { type: low_pass_gate, gate_mode: lowpass, input: ping, ping_width: 15 } } }\n";
+        let (data, conversion) = migrated(load(older).expect("the file reads"), None);
+        assert!(conversion.moved);
+        let sound = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments")[0]
+            .get(SOUND)
+            .expect("a sound")
+            .clone();
+        let text = |part: &Data, key: &str| part.get(key).and_then(Data::as_str).map(str::to_string);
+        let whole = |part: &Data, key: &str| part.get(key).and_then(Data::as_whole);
+        let vactrol = sound.get(ENVELOPES).and_then(Data::as_list).expect("envelopes")[0].clone();
+        let lazy = 100;
+        let strike = 30;
+        assert_eq!(whole(&vactrol, RESPONSE), Some(lazy));
+        assert_eq!(text(&vactrol, TRIGGER).as_deref(), Some("gate"));
+        assert_eq!(whole(&vactrol, TRIGGER_TIME), Some(strike));
+        assert!(vactrol.get(CELL).is_none() && vactrol.get(LIGHT).is_none());
+        let filter = sound.get(FILTER).expect("a filter");
+        assert_eq!(text(filter, TYPE).as_deref(), Some(NONE));
+        let amp = sound.get(AMP).expect("an amp");
+        let ping = 15;
+        assert_eq!(text(amp, TYPE).as_deref(), Some(AMP_GATE));
+        assert_eq!(text(amp, "gate_mode").as_deref(), Some("lowpass"));
+        assert_eq!(text(amp, SIGNAL).as_deref(), Some("ping"));
+        assert_eq!(whole(amp, PING_TIME), Some(ping));
+        assert_eq!(text(amp, TRIGGER).as_deref(), Some(ENV1));
+        let newer =
+            "version: 1.1.3\ninstruments:\n  - { name: pluck, kind: built_in, sound: { engine: basic, filter: { type: low_pass_gate, trigger: env2 } } }\n";
+        let (data, conversion) = migrated(load(newer).expect("the file reads"), None);
+        assert!(!conversion.moved);
+        let sound = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments")[0]
+            .get(SOUND)
+            .expect("a sound")
+            .clone();
+        assert_eq!(text(sound.get(FILTER).expect("a filter"), TYPE).as_deref(), Some(LOW_PASS_GATE));
     }
 
     /// A sound on the acid bass engine by its old name, fishline, is renamed oh3; other engines are left alone.
