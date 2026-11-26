@@ -386,6 +386,10 @@ the takes). The song's draws and drifts are the song's and take no part. Tested 
 - **Few controls a module** (the user's rule): limits are good; a module shows the few controls that make its sound, never
   forty sliders, so that a player finds what each can do. An "all sweet spot" instrument is welcome, and one piece of code MAY
   be offered as several oscillator types, each a different face of it with its own small set of controls.
+- **Presets** (the user's rule): every block type, effect and engine has at most 8 factory presets, each different from the
+  others and representative of the instrument, the most useful first, few exotic ones. An engine preset loads the topology
+  alone, the type of each block, and each block then takes its type's first preset. Every list of presets is brought to the
+  user for a discussion once every synth is built, where the user may rename or delete them; until then they are drafts.
 - **Emulations keep their sound** (the user's rule): every emulated engine keeps its own sound in the modular voice; where a
   chip or a machine has an envelope or filter of its own, it is a type of its own (the SID chip's ADSR, the handheld chip's
   steps, the acid gate), never forced into a generic one.
