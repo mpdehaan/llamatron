@@ -383,7 +383,7 @@ fn effects(sound: &Sound) -> Data {
             continue;
         }
         if effect.get("effect").and_then(Data::as_str) == Some(MULTITAP) {
-            set(&mut effect, "taps", taps(sound, number));
+            put(&mut effect, "taps", taps(sound, number));
             let feedback = share(&sound.effect_setting(number, "feedback"), PERCENT);
             set(&mut effect, "feedback", feedback);
         }
@@ -470,6 +470,16 @@ fn set(map: &mut Data, name: &str, value: Data) {
     if let Data::Map(pairs) = map {
         if let Some(pair) = pairs.iter_mut().find(|(key, _)| key.as_str() == Some(name)) {
             pair.1 = value;
+        }
+    }
+}
+
+/// Put a value under a name in a mapping, adding the name where the mapping does not hold it yet.
+fn put(map: &mut Data, name: &str, value: Data) {
+    if let Data::Map(pairs) = map {
+        match pairs.iter_mut().find(|(key, _)| key.as_str() == Some(name)) {
+            Some(pair) => pair.1 = value,
+            None => pairs.push((Data::text(name), value)),
         }
     }
 }

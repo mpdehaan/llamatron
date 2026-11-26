@@ -287,6 +287,18 @@ const TRIALS: &[Trial] = &[
     ("effect drive mix", "{ engine: basic, effects: [{ effect: drive, curve: hard, amount: 80, mix: 100 }] }", "{ engine: basic, effects: [{ effect: drive, curve: hard, amount: 80, mix: 20 }] }"),
     ("effect bitcrush bits", "{ engine: basic, effects: [{ effect: bitcrush, bits: 16 }] }", "{ engine: basic, effects: [{ effect: bitcrush, bits: 3 }] }"),
     ("effect bitcrush rate", "{ engine: basic, effects: [{ effect: bitcrush, bits: 16, rate: 0 }] }", "{ engine: basic, effects: [{ effect: bitcrush, bits: 16, rate: 4000 }] }"),
+    ("effect bax bass", "{ engine: basic, effects: [{ effect: bax }] }", "{ engine: basic, effects: [{ effect: bax, bass: 12 }] }"),
+    ("effect bax treble", "{ engine: basic, effects: [{ effect: bax }] }", "{ engine: basic, effects: [{ effect: bax, treble: -12 }] }"),
+    ("effect multitap", "{ engine: asheville }", "{ engine: asheville, effects: [{ effect: multitap }] }"),
+    ("effect multitap sync", "{ engine: asheville, effects: [{ effect: multitap, sync: true }] }", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap1_ms: 90 }] }"),
+    ("effect multitap tap time", "{ engine: asheville, effects: [{ effect: multitap }] }", "{ engine: asheville, effects: [{ effect: multitap, tap1_division: \"1/16\" }] }"),
+    ("effect multitap tap ms", "{ engine: asheville, effects: [{ effect: multitap, sync: false }] }", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap1_ms: 90 }] }"),
+    ("effect multitap tap level", "{ engine: asheville, effects: [{ effect: multitap }] }", "{ engine: asheville, effects: [{ effect: multitap, tap1_level: 0 }] }"),
+    ("effect multitap feedback", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap4_ms: 200 }] }", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap4_ms: 200, feedback: 90 }] }"),
+    ("effect multitap tone", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap4_ms: 200, feedback: 90 }] }", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap4_ms: 200, feedback: 90, tone: 500 }] }"),
+    ("effect multitap mix", "{ engine: asheville, effects: [{ effect: multitap }] }", "{ engine: asheville, effects: [{ effect: multitap, mix: 100 }] }"),
+    ("env2 disconnect filter", "{ engine: basic, filter: { type: ladder, cutoff: 300, env_amount: 80 } }", "{ engine: basic, filter: { type: ladder, cutoff: 300, env_amount: 80 }, disconnect_filter: true }"),
+    ("matrix lfo rate", "{ engine: basic, lfos: [{ \"on\": true }, { \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true }, { \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }, { source: lfo2, via: none, destination: lfo1_rate, amount: 80 }] }"),
 ];
 
 /// The controls tried apart each change the sound, and the vactrol's memory carries from one note into the next.
@@ -347,6 +359,32 @@ fn every_control_tried_apart_changes_the_sound() {
         unwired.push("voice volume");
     }
     assert!(unwired.is_empty(), "these controls change nothing: {unwired:#?}");
+}
+
+/// The energy of a playing from a time on, in seconds from the note's start.
+fn energy_after(playing: &[f32], seconds: f64) -> f64 {
+    playing[(seconds * RATE) as usize..].iter().map(|sample| (*sample as f64).powi(2)).sum()
+}
+
+/// An effect heard alone at a Mix of 100 still sounds, as a person hears it on an engine's defaults: MultiTap's echoes
+/// ring on after the note, and every other effect plays the note through it.
+#[test]
+fn every_effect_at_full_mix_sounds() {
+    let after_the_note = HELD_SECONDS + 0.05;
+    let dry = played(&instrument("{ engine: asheville }"));
+    let delayed = played(&instrument("{ engine: asheville, effects: [{ effect: multitap, mix: 100 }] }"));
+    assert!(
+        energy_after(&delayed, after_the_note) > energy_after(&dry, after_the_note),
+        "MultiTap's echoes ring on after the note"
+    );
+    for effect in ["bax", "bitcrush", "drive", "multitap"] {
+        let wet = played(&instrument(&format!("{{ engine: asheville, effects: [{{ effect: {effect}, mix: 100 }}] }}")));
+        let audible_share = 0.01;
+        assert!(
+            energy_after(&wet, 0.0) > energy_after(&dry, 0.0) * audible_share,
+            "{effect} at full Mix is heard"
+        );
+    }
 }
 
 /// Each of MechaDrum's five knobs changes each drum's hit, moved from its lowest to its highest with the others in the
