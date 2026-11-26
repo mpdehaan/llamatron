@@ -10,18 +10,26 @@ chords, buzzy sync leads and swept pulse basses.
 
 ## How SID Is Built
 
-The triangle and saw are read from band-limited wavetables, as Basic's are,
-and the pulse is one saw less another shifted by its width. To sweep the
-width, as players sweep the chip's width in its programs, route an LFO with a
-Triangle shape to Pulse width in the [Mod Matrix](../MOD_MATRIX.md).
+The saw and triangle are made as the chip makes them. The chip counts a phase
+in a register, and its saw is the register's top bits, its triangle those bits
+folded over by the highest one. Each word goes through the chip's
+digital-to-analog converter, a ladder of resistors whose values are a little
+mismatched and whose bottom rung is missing its end resistor, so the lowest
+bits run together and the higher ones step unevenly. The waves come out
+slightly bent and grainy, never the clean ramps of a textbook, and are then
+band-limited into wavetables of their own. The pulse is a comparator on the
+same count, so it stays clean: one ideal saw less another shifted by its
+width. To sweep the width, as players sweep the chip's width in its programs,
+route an LFO with a Triangle shape to Pulse width in the [Mod
+Matrix](../MOD_MATRIX.md).
 
 Noise is the chip's own: a shift register of many bits, its feedback taken
 from two of its bits by exclusive or and fed back in at the top as the
 register shifts, and its output an eight-bit word read from scattered bits of
-the register. The register is shifted once for each step of the note's cycle,
-so that the noise is pitched by the note, from a low rumble to a high hiss.
-The register's run of values is worked out once, when the program first needs
-it, and stepped through after.
+the register and played through the same uneven converter. The register is
+shifted once for each step of the note's cycle, so that the noise is pitched
+by the note, from a low rumble to a high hiss. The register's run of values is
+worked out once, when the program first needs it, and stepped through after.
 
 Modulation brings in a second oscillator an Interval above. Ring flips the
 sign of the wave whenever the second oscillator is in its second half, the

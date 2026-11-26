@@ -91,7 +91,10 @@ pub enum OscillatorPart {
     },
     Sid {
         wave: SidWave,
+        /// The ideal saw the pulse is read from, as the chip's pulse is a comparator on its accumulator, never its DAC.
         saw: Tables,
+        /// The chip's own saw and triangle, through its uneven DAC.
+        chip_saw: Tables,
         triangle: Tables,
         noise: Arc<Vec<f32>>,
         pulse_width: f64,
@@ -190,10 +193,12 @@ fn sid(spec: &Value, rate: f64) -> OscillatorPart {
         "sync" => Interaction::Sync,
         _ => Interaction::Off,
     };
+    let (chip_saw, triangle) = tables::sid_wave_tables(rate);
     OscillatorPart::Sid {
         wave,
         saw: tables::waveform_tables(Waveform::Saw, rate),
-        triangle: tables::waveform_tables(Waveform::Triangle, rate),
+        chip_saw,
+        triangle,
         noise: tables::sid_noise(),
         pulse_width: number(spec, "pulse_width", 0.5),
         interaction,
@@ -267,6 +272,7 @@ impl OscillatorPart {
         let OscillatorPart::Sid {
             wave,
             saw,
+            chip_saw,
             triangle,
             noise,
             pulse_width,
@@ -304,7 +310,7 @@ impl OscillatorPart {
         state.phases[0] = wrapped(position + speed);
         let band = state.band;
         let mut out = match wave {
-            SidWave::Saw => read(&saw[band], position),
+            SidWave::Saw => read(&chip_saw[band], position),
             SidWave::Triangle => read(&triangle[band], position),
             SidWave::Noise => noise[(position * SID_NOISE_STEPS_PER_CYCLE / TABLE_SIZE as f64) as usize % noise.len()] as f64 + 0.0 * state.phases[1],
             SidWave::Pulse => (read(&saw[band], position) - read(&saw[band], position + width * TABLE_SIZE as f64)) * 0.5,

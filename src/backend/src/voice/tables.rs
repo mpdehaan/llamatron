@@ -196,9 +196,84 @@ pub fn shift_register_noise(short: bool) -> Arc<Vec<f32>> {
     Arc::new(values)
 }
 
-/// The SID-style chip's noise: its 23-bit shift register's values in turn, each read as an eight-bit word of its bits, -1 to
-/// 1, as the chip outputs it.
+/// The bits of the SID-style chip's waveform DAC, and its R-2R ladder's resistor ratio and leakage on the 6581: its 2R
+/// resistors are about 2.2 times its R ones rather than 2, and bit 0 has no termination resistor, so the lower bits run
+/// together and the higher ones step unevenly; a switched-off transistor still leaks a little.
+const SID_DAC_BITS: usize = 12;
+const SID_TWO_R_OVER_R: f64 = 2.20;
+const SID_LEAKAGE: f64 = 0.0075;
+
+// The 6581's waveform DAC, after reSID's build_dac_table (dac.cc, Dag Lem, 2010, GPL-2.0-or-later): each bit's voltage
+// worked out through the unterminated R-2R ladder by parallel substitution and source transformation, and every word's
+// output the superposition of its bits' voltages. The implementation is our own.
+/// The DAC's output for every 12-bit word, from 0 to 1.
+fn sid_dac() -> Vec<f64> {
+    let (r, two_r) = (1.0, SID_TWO_R_OVER_R);
+    let mut bit_voltages = [0.0; SID_DAC_BITS];
+    for (set_bit, voltage) in bit_voltages.iter_mut().enumerate() {
+        // The ladder's tail below the bit, with no termination at bit 0.
+        let mut tail = f64::INFINITY;
+        for _ in 0..set_bit {
+            tail = if tail.is_infinite() { r + two_r } else { r + two_r * tail / (two_r + tail) };
+        }
+        let mut level = 1.0;
+        if tail.is_infinite() {
+            tail = two_r;
+        } else {
+            tail = two_r * tail / (two_r + tail);
+            level *= tail / two_r;
+        }
+        // Carried up the ladder to the output.
+        for _ in (set_bit + 1)..SID_DAC_BITS {
+            tail += r;
+            let current = level / tail;
+            tail = two_r * tail / (two_r + tail);
+            level = tail * current;
+        }
+        *voltage = level;
+    }
+    let most: f64 = bit_voltages.iter().sum();
+    (0..1usize << SID_DAC_BITS)
+        .map(|word| {
+            let sum: f64 = bit_voltages
+                .iter()
+                .enumerate()
+                .map(|(bit, voltage)| if word >> bit & 1 == 1 { *voltage } else { SID_LEAKAGE * voltage })
+                .sum();
+            sum / most
+        })
+        .collect()
+}
+
+/// The SID-style chip's saw and triangle as its oscillator makes them: the 12 top bits of its phase accumulator, the
+/// triangle those bits folded by the top one, each through the 6581's uneven DAC, then band-limited as every table is.
+pub fn sid_wave_tables(rate: f64) -> (Tables, Tables) {
+    let dac = sid_dac();
+    let top = (1usize << SID_DAC_BITS) - 1;
+    let words = |place: usize| place * (1 << SID_DAC_BITS) / TABLE_SIZE;
+    let level = |word: usize| 2.0 * dac[word & top] - 1.0;
+    let saw: Vec<f64> = (0..TABLE_SIZE).map(|place| level(words(place))).collect();
+    let triangle: Vec<f64> = (0..TABLE_SIZE)
+        .map(|place| {
+            let word = words(place);
+            let folded = if word >> (SID_DAC_BITS - 1) == 1 { !word } else { word };
+            level(folded << 1)
+        })
+        .collect();
+    (cycle_tables(&without_offset(saw), rate), cycle_tables(&without_offset(triangle), rate))
+}
+
+/// A cycle with its average taken out, so that an uneven DAC adds no offset.
+fn without_offset(cycle: Vec<f64>) -> Vec<f64> {
+    let average = cycle.iter().sum::<f64>() / cycle.len() as f64;
+    cycle.into_iter().map(|value| value - average).collect()
+}
+
+/// The SID-style chip's noise: its 23-bit shift register's values in turn, each read as an eight-bit word of its bits into
+/// the top of its waveform DAC, -1 to 1, as the chip outputs it.
 pub fn sid_noise() -> Arc<Vec<f32>> {
+    let dac = sid_dac();
+    let noise_shift = SID_DAC_BITS - 8;
     let mut register: u32 = 0x7FFFF8;
     let mut values = Vec::with_capacity(SID_NOISE_STEPS);
     for _ in 0..SID_NOISE_STEPS {
@@ -206,7 +281,7 @@ pub fn sid_noise() -> Arc<Vec<f32>> {
         register = ((register << 1) | bit) & 0x7FFFFF;
         let bit_of = |place: u32, to: u32| ((register >> place) & 1) << to;
         let word = bit_of(20, 7) | bit_of(18, 6) | bit_of(14, 5) | bit_of(11, 4) | bit_of(9, 3) | bit_of(5, 2) | bit_of(2, 1) | (register & 1);
-        values.push((word as f64 / 127.5 - 1.0) as f32);
+        values.push((2.0 * dac[(word as usize) << noise_shift] - 1.0) as f32);
     }
     Arc::new(values)
 }
@@ -228,5 +303,15 @@ mod tests {
     fn the_long_noise_repeats_after_32767_steps_and_the_short_after_127() {
         assert_eq!(shift_register_noise(false).len(), 32767);
         assert_eq!(shift_register_noise(true).len(), 127);
+    }
+
+    /// The 6581's DAC is uneven as the chip's is: with no termination resistor, bit 0 alone gives what bit 1 alone gives,
+    /// and every bit set reaches the top.
+    #[test]
+    fn the_sid_dac_runs_its_lowest_bits_together() {
+        let dac = sid_dac();
+        let (bit_0, bit_1) = (dac[1], dac[2]);
+        assert!((bit_0 - bit_1).abs() < bit_1 * 0.05, "bit 0 {bit_0} is about bit 1 {bit_1}");
+        assert!((dac[dac.len() - 1] - 1.0).abs() < 1e-9);
     }
 }
