@@ -38,6 +38,14 @@ const MOST_DRIVE: f64 = 10.0;
 const DIODE_PUSH: f64 = 1.5;
 const OTA_PUSH: f64 = 1.2;
 const COEFFICIENT_STEP: usize = 4;
+/// Where the soft limit reaches one and holds.
+const SOFT_LIMIT_END: f64 = 3.0;
+/// The least a stage's saturation may slow it, so that a very loud stage never stops.
+const LEAST_SQUASH: f64 = 0.01;
+/// The feedback past which the ladder is near self-oscillation, and the level of the noise that lets it ring up there,
+/// 120 dB under full scale.
+const RINGS_FROM_FEEDBACK: f64 = 3.8;
+const NOISE_FLOOR: f64 = 1e-6;
 /// How many octaves Filter FM moves the cutoff at full, by the oscillator at full level.
 const FM_OCTAVES: f64 = 2.0;
 
@@ -85,6 +93,42 @@ pub struct FilterState {
     acid: Option<AcidFilterState>,
     /// The Sallen-Key's circuit, its coefficients and sections.
     sallen_key: SallenKeyState,
+    /// The ladder's stages' last outputs, from which each stage's saturation is worked out for the next sample.
+    outputs: [f64; 4],
+    /// The seeded noise under a filter near self-oscillation, so that it rings up from silence; the same every playing.
+    noise: u64,
+}
+
+/// A soft limit close to tanh and far cheaper, x(27 + x²)/(27 + 9x²), held at its ends past three, where it reaches one.
+// After stmlib's SoftLimit (stmlib/dsp/dsp.h, Emilie Gillet, MIT); the implementation here is our own.
+#[inline]
+fn soft_limit(x: f64) -> f64 {
+    let held = x.clamp(-SOFT_LIMIT_END, SOFT_LIMIT_END);
+    let square = held * held;
+    held * (27.0 + square) / (27.0 + 9.0 * square)
+}
+
+/// What a stage's saturation scales its gain by: soft_limit(y)/y, worked out without the division, never under
+/// LEAST_SQUASH.
+#[inline]
+fn soft_squash(y: f64) -> f64 {
+    if y.abs() >= SOFT_LIMIT_END {
+        return (1.0 / y.abs()).max(LEAST_SQUASH);
+    }
+    let square = y * y;
+    (27.0 + square) / (27.0 + 9.0 * square)
+}
+
+/// White noise from -1 to 1, a xorshift a sample, seeded the same every playing.
+#[inline]
+fn noise(state: &mut u64) -> f64 {
+    if *state == 0 {
+        *state = 0x2545_F491_4F6C_DD1D;
+    }
+    *state ^= *state << 13;
+    *state ^= *state >> 7;
+    *state ^= *state << 17;
+    (*state >> 11) as f64 / (1u64 << 52) as f64 - 1.0
 }
 
 impl FilterState {
@@ -168,11 +212,18 @@ impl FilterPart {
             input
         };
         let out = if self.is_ladder() {
-            self.ladder(state, driven)
+            // Near self-oscillation a seeded noise far under hearing lets the loop ring up from silence, as a circuit's
+            // does.
+            let floor = if state.feedback > RINGS_FROM_FEEDBACK {
+                NOISE_FLOOR * noise(&mut state.noise)
+            } else {
+                0.0
+            };
+            self.ladder(state, driven + floor)
         } else {
             self.state_variable(state, driven)
         };
-        for stage in state.stages.iter_mut() {
+        for stage in state.stages.iter_mut().chain(state.outputs.iter_mut()) {
             *stage = flushed(*stage);
         }
         self.finished(out, resonance_moved)
@@ -244,26 +295,40 @@ impl FilterPart {
         };
     }
 
-    /// The ladder: the loop solved for its input without delay, the input saturated, then the four stages run.
+    /// The ladder: the loop solved for its input without delay, the input saturated, then the four stages run, each
+    /// saturating too: each stage's gain is scaled by tanh(y)/y of its last output, so that a loud stage slows as a
+    /// transistor pair does, and the zero-delay solve takes each stage's own share.
+    // The stages' saturation after the linearised tanh of VCV Fundamental's VCF (VCVRack/Fundamental, src/VCF.cpp,
+    // GPL-3.0-or-later), folded into our own zero-delay ladder, its tanh stmlib's soft limit; the implementation is ours.
     #[inline]
     fn ladder(&self, state: &mut FilterState, input: f64) -> f64 {
         let g = state.g;
-        let share = g / (1.0 + g);
-        let rest = 1.0 / (1.0 + g);
+        let mut shares = [0.0; 4];
+        let mut rests = [0.0; 4];
+        for (place, last) in state.outputs.iter().enumerate() {
+            let squash = soft_squash(*last);
+            let stage_g = g * squash;
+            let rest = 1.0 / (1.0 + stage_g);
+            rests[place] = rest;
+            shares[place] = stage_g * rest;
+        }
         let [s1, s2, s3, s4] = state.stages;
-        let carried = share * share * share * s1 * rest + share * share * s2 * rest + share * s3 * rest + s4 * rest;
-        let all = share * share * share * share;
+        let [g1, g2, g3, g4] = shares;
+        let carried = g4 * g3 * g2 * rests[0] * s1 + g4 * g3 * rests[1] * s2 + g4 * rests[2] * s3 + rests[3] * s4;
+        let all = g1 * g2 * g3 * g4;
         let k = state.feedback;
         let solved = (input - k * carried) / (1.0 + k * all);
-        let mut signal = solved.tanh();
+        let mut signal = soft_limit(solved);
         let mut taps = [0.0; 4];
-        for (stage, tap) in state.stages.iter_mut().zip(taps.iter_mut()) {
-            let moved = (signal - *stage) * share;
+        for place in 0..4 {
+            let stage = &mut state.stages[place];
+            let moved = (signal - *stage) * shares[place];
             let out = moved + *stage;
             *stage = out + moved;
             signal = out;
-            *tap = out;
+            taps[place] = out;
         }
+        state.outputs = taps;
         taps[self.poles - 1]
     }
 
@@ -479,5 +544,38 @@ mod tests {
                 assert!(out.is_finite() && out.abs() < 16.0, "{kind}");
             }
         }
+    }
+
+    /// A ladder at full resonance rings up from silence, from its noise floor, as a circuit's does, the same every playing.
+    #[test]
+    fn a_ladder_at_full_resonance_rings_up_from_silence() {
+        let ringing = || {
+            let ladder = part("ladder", 1.0);
+            let mut state = FilterState::default();
+            (0..96_000).map(|_| ladder.process(&mut state, 0.0, 0.0, 0.0)).collect::<Vec<f64>>()
+        };
+        let heard = ringing();
+        let late = heard[90_000..].iter().fold(0.0_f64, |most, sample| most.max(sample.abs()));
+        assert!(late > 0.05, "{late}");
+        assert_eq!(heard, ringing(), "the same every playing");
+    }
+
+    /// A ladder's stages saturate: a sine near the cutoff loud comes out less than ten times as loud as it quiet.
+    #[test]
+    fn a_ladder_squashes_a_loud_sine() {
+        let ladder = part("ladder", 0.5);
+        let level = |amplitude: f64| {
+            let mut state = FilterState::default();
+            (0..48_000)
+                .map(|place| {
+                    ladder
+                        .process(&mut state, amplitude * (2.0 * PI * 900.0 * place as f64 / 48_000.0).sin(), 0.0, 0.0)
+                        .abs()
+                })
+                .skip(24_000)
+                .fold(0.0_f64, f64::max)
+        };
+        let (quiet, loud) = (0.05, 0.5);
+        assert!(level(loud) < 9.5 * level(quiet), "{} against {}", level(loud), level(quiet));
     }
 }

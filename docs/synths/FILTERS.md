@@ -33,9 +33,13 @@ into the tiny numbers a processor is slow with.
 
 The warm four-pole filter of the traditional monosynths: four one-pole stages
 in a row, the last one's output fed back to the input through a saturating
-stage. At full Resonance the loop's gain passes the point where it rings on
-its own, and the saturation holds that ringing to a clean sine, so it whistles
-as the transistor ladder does, never growing without bound. As the resonance
+stage. Each stage saturates too, as each transistor pair of the circuit does:
+a loud stage moves more slowly, so a loud note darkens and thickens rather
+than only getting louder. At full Resonance the loop's gain passes the point
+where it rings on its own, and the saturation holds that ringing to a clean
+sine, so it whistles as the transistor ladder does, never growing without
+bound; a noise far under hearing lets it ring up even from silence, as a
+circuit's own noise does. As the resonance
 rises the bass thins, also as the circuit's does, and the output makes some of
 it up again. Slope taps an earlier stage for a gentler filter of one, two or
 three poles, the feedback still taken from the last.

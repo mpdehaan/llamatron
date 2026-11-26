@@ -13,6 +13,7 @@ pub mod envelopes;
 pub mod filters;
 pub mod modulation;
 pub mod oscillators;
+pub mod oversample;
 pub mod patch;
 pub mod sallen_key;
 pub mod tables;
