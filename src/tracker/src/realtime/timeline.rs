@@ -22,6 +22,19 @@ pub const CONTROL_CHANGE: i64 = 0xB0;
 pub const PROGRAM_CHANGE: i64 = 0xC0;
 /// A controller no MIDI device is sent and the built-in instruments read as their clip starting.
 pub const SCENE_STARTED: i64 = 102;
+/// The controllers a built-in instrument is told the song's tempo on, for its LFOs that follow it: its tenths of a quarter
+/// note a minute in two parts, coarse (the tenths over 128) then fine, as two MIDI values can carry it.
+pub const TEMPO_COARSE: i64 = 103;
+pub const TEMPO_FINE: i64 = 104;
+const TEMPO_TENTHS: f64 = 10.0;
+const TEMPO_PART: i64 = 128;
+const MOST_TEMPO_TENTHS: i64 = TEMPO_PART * TEMPO_PART - 1;
+
+/// A tempo in quarter notes a minute as its two parts, coarse and fine, each a MIDI value.
+pub fn tempo_parts(tempo: f64) -> (i64, i64) {
+    let tenths = ((tempo * TEMPO_TENTHS).round() as i64).clamp(0, MOST_TEMPO_TENTHS);
+    (tenths / TEMPO_PART, tenths % TEMPO_PART)
+}
 const NO_VELOCITY: i64 = 0;
 
 /// Where a track's events go: an output port's name, a MIDI channel from 0, the program to choose first, whether keyswitch
@@ -141,10 +154,20 @@ pub fn clip_timeline(clip: &Clip, route: &Route, tag: &ClipTag, scene_start: Rat
     if let Some(program) = route.program {
         events.push(at(Rational::ZERO, PROGRAM_CHANGE, program, NO_VELOCITY));
     }
+    let (notes, clip_length) = timed_events(clip, clip.scale.as_ref())?;
     if route.sound.is_some() {
         events.push(at(Rational::ZERO, CONTROL_CHANGE, SCENE_STARTED, NO_VELOCITY));
+        // The tempo the clip starts at and each change of it while the clip plays, for LFOs that follow the tempo.
+        for (start, tempo) in clock.tempos() {
+            let start = if *start < Rational::ZERO { Rational::ZERO } else { *start };
+            if start > Rational::ZERO && start >= clip_length {
+                continue;
+            }
+            let (coarse, fine) = tempo_parts(*tempo);
+            events.push(at(start, CONTROL_CHANGE, TEMPO_COARSE, coarse));
+            events.push(at(start, CONTROL_CHANGE, TEMPO_FINE, fine));
+        }
     }
-    let (notes, clip_length) = timed_events(clip, clip.scale.as_ref())?;
     for note in notes {
         if note.end > note.start {
             events.push(at(note.start, NOTE_ON, note.midi_number, note.velocity));

@@ -406,6 +406,13 @@ fn made_up_routes(track_names: &[&str]) -> Vec<(String, llamatron_tracker::realt
         .collect()
 }
 
+/// Whether an event is the song's tempo told to a built-in instrument, which llamatron sends beyond what the retired
+/// Python did, for LFOs that follow the tempo, and so is left out of what the timeline and player steps hold to it.
+fn is_tempo_message(event: &llamatron_tracker::realtime::timeline::Playing) -> bool {
+    use llamatron_tracker::realtime::timeline::{CONTROL_CHANGE, TEMPO_COARSE, TEMPO_FINE};
+    event.kind == CONTROL_CHANGE && (event.number == TEMPO_COARSE || event.number == TEMPO_FINE)
+}
+
 /// A sender that writes down everything a player hands it, a line each, for the player step.
 struct RecordingSender {
     lines: Vec<String>,
@@ -413,7 +420,7 @@ struct RecordingSender {
 
 impl llamatron_tracker::realtime::player::Sender for RecordingSender {
     fn add(&mut self, events: Vec<llamatron_tracker::realtime::timeline::Playing>) {
-        for event in events {
+        for event in events.into_iter().filter(|event| !is_tempo_message(event)) {
             self.lines.push(format!(
                 "add {} {} {} {} {} {} {} {} {} {}",
                 event.whole,
@@ -583,7 +590,10 @@ fn timelines(setlist: &llamatron_model::objects::setlist::Setlist) -> llamatron_
         texts.push(format!("song {name}"));
         let grid = llamatron_engine::realizer::SongRealizer::new(setlist, song, Some(RENDER_SEED)).render()?;
         let routes = made_up_routes(&song.get_track_names());
-        for event in llamatron_tracker::realtime::timeline::song_timeline(&grid, &routes)? {
+        for event in llamatron_tracker::realtime::timeline::song_timeline(&grid, &routes)?
+            .into_iter()
+            .filter(|event| !is_tempo_message(event))
+        {
             texts.push(format!(
                 "{} {} {} {} {} {} {} {} {}",
                 event.whole,

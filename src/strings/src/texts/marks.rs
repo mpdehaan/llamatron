@@ -234,6 +234,8 @@ pub const MSG_SOUND_GAUGE_EMPTY: &str = "░";
 pub const MSG_SOUND_PERCENT_SHOWN: &str = "{number}%";
 pub const MSG_SIGNED_PERCENT_SHOWN: &str = "{number:+}%";
 pub const MSG_LFO_RATE_SHOWN: &str = "{percent}% ({hertz})";
+/// An LFO+'s Fade in at 0, where its depth is there from the note's start.
+pub const MSG_FADE_IN_OFF: &str = "off";
 pub const MSG_TENTHS_HERTZ_SHOWN: &str = "{number:.1f} Hz";
 pub const MSG_KILOHERTZ_SHOWN: &str = "{number:.1f} kHz";
 pub const MSG_TENTH_MILLISECONDS_SHOWN: &str = "{number:.1f} ms";

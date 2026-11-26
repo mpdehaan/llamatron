@@ -22,6 +22,8 @@ pub struct RowClock {
     starts: Vec<f64>,
     seconds: Vec<f64>,
     wholes: Vec<f64>,
+    /// Each tempo's start exactly and its tempo, as the row gave them, which a built-in instrument's LFOs are told.
+    tempos: Vec<(Rational, f64)>,
 }
 
 impl RowClock {
@@ -31,6 +33,7 @@ impl RowClock {
             starts: Vec::new(),
             seconds: Vec::new(),
             wholes: Vec::new(),
+            tempos: tempos.to_vec(),
         };
         let mut seconds = 0.0;
         for (start, tempo) in tempos {
@@ -43,6 +46,11 @@ impl RowClock {
             clock.wholes.push(seconds_per_whole(*tempo));
         }
         clock
+    }
+
+    /// Each tempo of the row from where it starts, in whole notes from the row's start, and in quarter notes a minute.
+    pub fn tempos(&self) -> &[(Rational, f64)] {
+        &self.tempos
     }
 
     /// Whether the row keeps one tempo throughout.

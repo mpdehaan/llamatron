@@ -28,6 +28,14 @@ pub const FORGET: i64 = 3;
 pub const SCENE_STARTED: i64 = 4;
 /// A MIDI CC for an instrument: its number in the pitch's place, its value, 0 to 127, in the velocity's.
 pub const CONTROL: i64 = 5;
+/// The song's tempo for an instrument's LFOs that follow it, sent in two parts as two MIDI values can carry it: its tenths
+/// of a quarter note a minute, the coarse part (the tenths over 128) first, then the fine (the rest), each in the
+/// velocity's place.
+pub const TEMPO_COARSE: i64 = 6;
+pub const TEMPO_FINE: i64 = 7;
+/// What a tempo's two parts are counted in: 128 fine steps to a coarse one, and tenths of a quarter note a minute.
+const TEMPO_PART: f64 = 128.0;
+const TEMPO_TENTHS: f64 = 10.0;
 pub const MOST_INSTRUMENTS: usize = 1024;
 pub const MOST_VOICES: usize = 512;
 pub const MOST_EVENTS: usize = 1 << 16;
@@ -411,6 +419,17 @@ impl Engine {
             CONTROL => {
                 if let Some(patch) = self.instruments[instrument].as_mut() {
                     patch.set_control(event.pitch as usize, event.velocity);
+                }
+            }
+            TEMPO_COARSE => {
+                if let Some(patch) = self.instruments[instrument].as_mut() {
+                    patch.tempo_coarse = event.velocity;
+                }
+            }
+            TEMPO_FINE => {
+                if let Some(patch) = self.instruments[instrument].as_mut() {
+                    let tenths = patch.tempo_coarse * TEMPO_PART + event.velocity;
+                    patch.lfos.set_tempo(tenths / TEMPO_TENTHS);
                 }
             }
             _ => {}

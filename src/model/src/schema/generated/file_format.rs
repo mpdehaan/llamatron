@@ -815,6 +815,10 @@ pub static CHIP_DIRECTIONS: &[&str] = &["down", "up"];
 pub static WAVE_SHAPES: &[&str] = &["triangle", "saw", "square", "sine", "organ"];
 pub static NOISES: &[&str] = &["long", "short"];
 pub static LFO_SHAPES: &[&str] = &["sine", "triangle", "saw_up", "saw_down", "square", "sample_and_hold"];
+/// The shapes an LFO+ offers: an LFO's, and Smooth random.
+pub static LFO_PLUS_SHAPES: &[&str] = &["sine", "triangle", "saw_up", "saw_down", "square", "sample_and_hold", "smooth_random"];
+/// The modulator modules an LFOs tab slot holds, by its Type.
+pub static LFO_TYPES: &[&str] = &["lfo", "lfo_plus"];
 pub static EFFECTS: &[&str] = &["none", "bitcrush", "drive"];
 pub static FILTER_TYPES: &[&str] = &["none", "ladder", "multimode", "sallen_key", "diode", "ota", "low_pass_gate"];
 pub static AMP_TYPES: &[&str] = &["clean", "transistor", "ota_vca", "low_pass_gate_amp"];

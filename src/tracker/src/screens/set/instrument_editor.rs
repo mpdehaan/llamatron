@@ -21,8 +21,8 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
 use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::file_format::{
-    InstrumentSetting, Section, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, INSTRUMENT_KINDS, LFO_SHAPES, MATRIX_DESTINATIONS, MATRIX_SOURCES,
-    OSCILLATOR_WAVEFORMS,
+    InstrumentSetting, Section, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, INSTRUMENT_KINDS, LFO_PLUS_SHAPES, LFO_SHAPES, LFO_TYPES,
+    MATRIX_DESTINATIONS, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
@@ -34,6 +34,8 @@ use llamatron_strings::{labels, legends, marks, messages, named};
 const NAME: usize = 0;
 const GM_CELLS: usize = 12;
 const BLOCK_CELLS: usize = 8;
+/// The longest an LFO+ takes to fade in, in milliseconds.
+const LONGEST_FADE_IN_MS: i64 = 10_000;
 const MAX_PERCENT: i64 = 100;
 const DEFAULT_VELOCITY: i64 = 127;
 const DEFAULT_ACCENT: i64 = 0;
@@ -1022,15 +1024,57 @@ impl InstrumentEditor {
         .with_shown_label(&shown_label)
     }
 
+    /// An LFO+'s Fade in: a gauge of how long its depth takes to rise after a note, 0 to 10 s, "off" at 0.
+    fn fade_in_field(ids: &mut Ids, number: usize, milliseconds: i64) -> Field {
+        let label = named(labels::MSG_LFO_FADE_IN_LABEL, &[("number", number.into())]);
+        let id = ids.at(Write::Item("lfos", number, "fade_in"));
+        if milliseconds == 0 {
+            let bar = gauge_bar(0.0, BLOCK_CELLS);
+            let shown = named(
+                marks::MSG_SOUND_GAUGE,
+                &[("gauge", bar.as_str().into()), ("value", marks::MSG_FADE_IN_OFF.into())],
+            );
+            return Field::number(id, &label, Some(0), Some(0), Some(LONGEST_FADE_IN_MS), 0, Some(shown));
+        }
+        gauge(
+            id,
+            &label,
+            milliseconds,
+            (0, LONGEST_FADE_IN_MS),
+            BLOCK_CELLS,
+            marks::MSG_MILLISECONDS_SHOWN,
+            (true, 1),
+        )
+    }
+
     fn lfos_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
         let lfo = |number: usize, name: &str| sound.item("lfos", number, name, LFO_DEFAULTS);
         let shown_label = |label: &str| named_in(labels::MSG_LFO_SHOWN_LABELS, label);
         let mut columns = Vec::new();
         for number in 1..=LFO_COUNT as usize {
             let numbered = |label: &str| named(label, &[("number", number.into())]);
-            let shape = text(&lfo(number, "shape"));
-            let speed = text(&lfo(number, "speed"));
+            // An LFO+ offers Smooth random, the Tempo speed and Fade in beside what an LFO does.
+            let is_plus = sound.is_lfo_plus(number);
+            let (shapes, speeds) = if is_plus {
+                (LFO_PLUS_SHAPES, lfo_speed::PLUS_SPEED_NAMES)
+            } else {
+                (LFO_SHAPES, lfo_speed::SPEED_NAMES)
+            };
+            let shape = text(&sound.lfo_setting(number, "shape"));
+            let speed = text(&sound.lfo_setting(number, "speed"));
             let keyed = speed == lfo_speed::AUDIO_SPEED && flag(&lfo(number, "key"));
+            let rate = if speed == lfo_speed::TEMPO_SPEED {
+                chosen(
+                    ids.at(Write::Item("lfos", number, "division")),
+                    &numbered(labels::MSG_LFO_DIVISION_LABEL),
+                    lfo_speed::DIVISIONS,
+                    &names_in(labels::MSG_LFO_DIVISION_NAMES, lfo_speed::DIVISIONS),
+                    &text(&lfo(number, "division")),
+                )
+                .with_shown_label(&shown_label(labels::MSG_LFO_DIVISION_LABEL))
+            } else {
+                Self::lfo_rate_field(ids, number, &speed, keyed, &lfo(number, "rate_percent"), &text(&lfo(number, "ratio")))
+            };
             let mut fields = vec![
                 Field::toggle(
                     ids.at(Write::Item("lfos", number, "on")),
@@ -1038,28 +1082,39 @@ impl InstrumentEditor {
                     flag(&lfo(number, "on")),
                 ),
                 chosen(
+                    ids.at(Write::Item("lfos", number, "type")),
+                    &numbered(labels::MSG_LFO_TYPE_LABEL),
+                    LFO_TYPES,
+                    &names_in(labels::MSG_LFO_TYPE_NAMES, LFO_TYPES),
+                    &text(&lfo(number, "type")),
+                )
+                .with_shown_label(&shown_label(labels::MSG_LFO_TYPE_LABEL)),
+                chosen(
                     ids.at(Write::Item("lfos", number, "shape")),
                     &numbered(labels::MSG_LFO_SHAPE_LABEL),
-                    LFO_SHAPES,
-                    &names_in(labels::MSG_LFO_SHAPE_NAMES, LFO_SHAPES),
+                    shapes,
+                    &names_in(labels::MSG_LFO_SHAPE_NAMES, shapes),
                     &shape,
                 )
                 .with_shown_label(&shown_label(labels::MSG_LFO_SHAPE_LABEL)),
                 chosen(
                     ids.at(Write::Item("lfos", number, "speed")),
                     &numbered(labels::MSG_LFO_SPEED_LABEL),
-                    lfo_speed::SPEED_NAMES,
-                    &names_in(labels::MSG_LFO_SPEED_NAMES, lfo_speed::SPEED_NAMES),
+                    speeds,
+                    &names_in(labels::MSG_LFO_SPEED_NAMES, speeds),
                     &speed,
                 )
                 .with_shown_label(&shown_label(labels::MSG_LFO_SPEED_LABEL)),
-                Self::lfo_rate_field(ids, number, &speed, keyed, &lfo(number, "rate_percent"), &text(&lfo(number, "ratio"))),
+                rate,
             ];
             if speed == lfo_speed::AUDIO_SPEED {
                 fields.push(
                     Field::toggle(ids.at(Write::Item("lfos", number, "key")), &numbered(labels::MSG_LFO_KEY_LABEL), keyed)
                         .with_shown_label(&shown_label(labels::MSG_LFO_KEY_LABEL)),
                 );
+            }
+            if is_plus {
+                fields.push(Self::fade_in_field(ids, number, whole(&lfo(number, "fade_in"))).with_shown_label(&shown_label(labels::MSG_LFO_FADE_IN_LABEL)));
             }
             fields.extend([
                 Field::toggle(

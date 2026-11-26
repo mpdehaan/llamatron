@@ -401,7 +401,7 @@ pub const MSG_LATENCY_LABEL: &str = "Latency";
 pub const MSG_MIDI_TAB: &str = "MIDI";
 pub const MSG_OSCILLATORS_TAB: &str = "Oscillators";
 pub const MSG_ENVELOPES_TAB: &str = "Envelopes";
-pub const MSG_LFOS_TAB: &str = "LFOs";
+pub const MSG_LFOS_TAB: &str = "Modulators";
 pub const MSG_FILTER_TAB: &str = "Filter";
 pub const MSG_AMP_TAB: &str = "Amp";
 pub const MSG_FX_TAB: &str = "FX";
@@ -469,10 +469,36 @@ pub const MSG_LFO_RATE_LABEL: &str = "LFO {number} rate";
 pub const MSG_LFO_SPEED_LABEL: &str = "LFO {number} speed";
 pub const MSG_LFO_KEY_LABEL: &str = "LFO {number} key";
 pub const MSG_LFO_RATIO_LABEL: &str = "LFO {number} ratio";
-pub static MSG_LFO_SPEED_NAMES: &[(&str, &str)] = &[("low", "Low"), ("medium", "Medium"), ("high", "High"), ("very_high", "Very High")];
+pub const MSG_LFO_TYPE_LABEL: &str = "LFO {number} type";
+pub const MSG_LFO_FADE_IN_LABEL: &str = "LFO {number} fade in";
+pub const MSG_LFO_DIVISION_LABEL: &str = "LFO {number} division";
+pub static MSG_LFO_TYPE_NAMES: &[(&str, &str)] = &[("lfo", "LFO"), ("lfo_plus", "LFO+")];
+pub static MSG_LFO_DIVISION_NAMES: &[(&str, &str)] = &[
+    ("4/1", "4/1"),
+    ("2/1", "2/1"),
+    ("1/1", "1/1"),
+    ("1/1d", "1/1 dotted"),
+    ("1/1t", "1/1 triplet"),
+    ("1/2", "1/2"),
+    ("1/2d", "1/2 dotted"),
+    ("1/2t", "1/2 triplet"),
+    ("1/4", "1/4"),
+    ("1/4d", "1/4 dotted"),
+    ("1/4t", "1/4 triplet"),
+    ("1/8", "1/8"),
+    ("1/8d", "1/8 dotted"),
+    ("1/8t", "1/8 triplet"),
+    ("1/16", "1/16"),
+    ("1/16d", "1/16 dotted"),
+    ("1/16t", "1/16 triplet"),
+    ("1/32", "1/32"),
+    ("1/32d", "1/32 dotted"),
+    ("1/32t", "1/32 triplet"),
+];
+pub static MSG_LFO_SPEED_NAMES: &[(&str, &str)] = &[("low", "Low"), ("medium", "Medium"), ("high", "High"), ("very_high", "Very High"), ("tempo", "Tempo")];
 pub const MSG_LFO_RETRIGGER_LABEL: &str = "LFO {number} retrigger";
 pub const MSG_LFO_EACH_SCENE_LABEL: &str = "LFO {number} each scene";
-pub static MSG_LFO_SHOWN_LABELS: &[(&str, &str)] = &[("LFO {number} shape", "Shape"), ("LFO {number} speed", "Speed"), ("LFO {number} rate", "Rate"), ("LFO {number} ratio", "Rate"), ("LFO {number} key", "Key"), ("LFO {number} retrigger", "Retrigger"), ("LFO {number} each scene", "Each scene")];
+pub static MSG_LFO_SHOWN_LABELS: &[(&str, &str)] = &[("LFO {number} type", "Type"), ("LFO {number} fade in", "Fade in"), ("LFO {number} division", "Rate"), ("LFO {number} shape", "Shape"), ("LFO {number} speed", "Speed"), ("LFO {number} rate", "Rate"), ("LFO {number} ratio", "Rate"), ("LFO {number} key", "Key"), ("LFO {number} retrigger", "Retrigger"), ("LFO {number} each scene", "Each scene")];
 pub static MSG_EFFECT_SHOWN_LABELS: &[(&str, &str)] = &[("FX {number} bits", "Bits"), ("FX {number} rate", "Rate"), ("FX {number} curve", "Curve"), ("FX {number} amount", "Amount"), ("FX {number} mix", "Mix")];
 pub const MSG_BUILT_IN_SHOWN: &str = "Synth: {engine}";
 pub static MSG_ENGINE_NAMES: &[(&str, &str)] = &[("basic", "Basic"), ("asheville", "Asheville"), ("drum", "MechaDrum"), ("sid", "SID"), ("pocket", "Pocket"), ("oh3", "Oh3")];
@@ -487,7 +513,7 @@ pub static MSG_WAVE_SHAPE_NAMES: &[(&str, &str)] = &[("triangle", "Triangle"), (
 pub static MSG_NOISE_NAMES: &[(&str, &str)] = &[("long", "Long"), ("short", "Short")];
 pub static MSG_EFFECT_NAMES: &[(&str, &str)] = &[("none", "(empty)"), ("bitcrush", "Bitcrush"), ("drive", "Drive")];
 pub static MSG_FILTER_TYPE_NAMES: &[(&str, &str)] = &[("none", "(none)"), ("ladder", "Ladder"), ("multimode", "Multimode"), ("sallen_key", "Sallen-Key"), ("diode", "Diode"), ("ota", "OTA"), ("low_pass_gate", "Low-pass gate")];
-pub static MSG_LFO_SHAPE_NAMES: &[(&str, &str)] = &[("sine", "Sine"), ("triangle", "Triangle"), ("saw_up", "Saw up"), ("saw_down", "Saw down"), ("square", "Square"), ("sample_and_hold", "Sample & Hold")];
+pub static MSG_LFO_SHAPE_NAMES: &[(&str, &str)] = &[("sine", "Sine"), ("triangle", "Triangle"), ("saw_up", "Saw up"), ("saw_down", "Saw down"), ("square", "Square"), ("sample_and_hold", "Sample & Hold"), ("smooth_random", "Smooth random")];
 pub static MSG_ACID_WAVE_NAMES: &[(&str, &str)] = &[("saw", "Saw"), ("square", "Square")];
 pub static MSG_FILTER_MODE_NAMES: &[(&str, &str)] = &[("low", "Low-pass"), ("band", "Band-pass"), ("high", "High-pass"), ("notch", "Notch")];
 pub static MSG_CURVE_NAMES: &[(&str, &str)] = &[("soft", "Soft"), ("warm", "Warm"), ("hard", "Hard"), ("fold", "Fold"), ("wrap", "Wrap")];

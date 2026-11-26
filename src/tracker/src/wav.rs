@@ -35,6 +35,10 @@ const NOTE_OFF: i64 = 1;
 const ALL_OFF: i64 = 2;
 const SCENE_STARTED: i64 = 4;
 const CONTROL: i64 = 5;
+/// The song's tempo in two parts, coarse then fine, for a built-in instrument's LFOs that follow it (the backend's
+/// engine/mod.rs).
+const TEMPO_COARSE: i64 = 6;
+const TEMPO_FINE: i64 = 7;
 const BUILT_IN: &str = "built_in";
 /// A 16-bit sample's most, and the level a normalized file peaks at, 1 dB below full scale.
 const HIGHEST_SAMPLE: f64 = 32767.0;
@@ -239,6 +243,11 @@ fn offline_notes(number: &Data, timed: &llamatron_exporters::midi::TimedTrack) -
     }
     notes.extend(timed.endings.iter().map(|when| note(*when, ALL_OFF, 0, 0)));
     notes.extend(timed.controls.iter().map(|(when, number, value)| note(*when, CONTROL, *number, *value)));
+    for (when, tempo) in &timed.tempos {
+        let (coarse, fine) = crate::realtime::timeline::tempo_parts(*tempo);
+        notes.push(note(*when, TEMPO_COARSE, 0, coarse));
+        notes.push(note(*when, TEMPO_FINE, 0, fine));
+    }
     notes
 }
 

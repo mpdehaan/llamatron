@@ -17,7 +17,10 @@
 use crate::audio::clock;
 use crate::audio::player::{self, Command, Commands};
 use crate::daemon::HitStore;
-use crate::engine::{ALL_OFF, CONTROL as ENGINE_CONTROL, NOTE_OFF as ENGINE_NOTE_OFF, NOTE_ON as ENGINE_NOTE_ON, SCENE_STARTED as ENGINE_SCENE_STARTED};
+use crate::engine::{
+    ALL_OFF, CONTROL as ENGINE_CONTROL, NOTE_OFF as ENGINE_NOTE_OFF, NOTE_ON as ENGINE_NOTE_ON, SCENE_STARTED as ENGINE_SCENE_STARTED,
+    TEMPO_COARSE as ENGINE_TEMPO_COARSE, TEMPO_FINE as ENGINE_TEMPO_FINE,
+};
 use crate::sender::engine::{ALL_NOTES_OFF, ALL_SOUND_OFF, CONTROL_CHANGE, NOTE_OFF, NOTE_ON};
 use std::sync::{Arc, Mutex};
 
@@ -25,6 +28,9 @@ const KIND_MASK: u8 = 0xF0;
 const CHANNEL_MASK: u8 = 0x0F;
 /// The controller the timeline marks a clip's start with for a built-in instrument, which restarts its LFOs.
 const SCENE_STARTED: u8 = 102;
+/// The controllers the timeline sends the song's tempo on for a built-in instrument, coarse then fine (engine/mod.rs).
+const TEMPO_COARSE: u8 = 103;
+const TEMPO_FINE: u8 = 104;
 pub const INSTRUMENTS_PER_PORT: usize = 16;
 const MIDI_BYTES: usize = 3;
 
@@ -159,6 +165,8 @@ fn built_in_note(first: usize, shared: &Shared, data: &[u8], at: f64) {
         NOTE_ON | NOTE_OFF => (ENGINE_NOTE_OFF, number as f64, 0.0),
         CONTROL_CHANGE if number == ALL_NOTES_OFF || number == ALL_SOUND_OFF => (ALL_OFF, 0.0, 0.0),
         CONTROL_CHANGE if number == SCENE_STARTED => (ENGINE_SCENE_STARTED, 0.0, 0.0),
+        CONTROL_CHANGE if number == TEMPO_COARSE => (ENGINE_TEMPO_COARSE, 0.0, value as f64),
+        CONTROL_CHANGE if number == TEMPO_FINE => (ENGINE_TEMPO_FINE, 0.0, value as f64),
         // Any other CC is a value the Mod Matrix's CC sources may read.
         CONTROL_CHANGE => (ENGINE_CONTROL, number as f64, value as f64),
         _ => return,

@@ -586,6 +586,9 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
 pub static OSCILLATOR_DEFAULTS: Preset = Preset::Map(&[("waveform", Preset::Text("off")), ("detune", Preset::Whole(0)), ("level", Preset::Whole(100))]);
 pub static LFO_DEFAULTS: Preset = Preset::Map(&[
     ("on", Preset::Flag(false)),
+    ("type", Preset::Text("lfo")),
+    ("fade_in", Preset::Whole(0)),
+    ("division", Preset::Text("1/4")),
     ("shape", Preset::Text("sine")),
     ("speed", Preset::Text("medium")),
     ("rate_percent", Preset::Whole(74)),

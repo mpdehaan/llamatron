@@ -4,7 +4,8 @@
 //! The LFOs and the mod matrix.
 //!
 //! An instrument has four LFOs, each a shape, a rate in hertz, whether a note starts its cycle again and whether each scene
-//! does; their values over a chunk are worked out once before the voices read them. The matrix has six slots, each a
+//! does; their values over a chunk are worked out once before the voices read them. An LFO+ may also fade in after each
+//! note, which each voice applies by its own age, and may follow the song's tempo, its cycle a division of the beat. The matrix has six slots, each a
 //! source, an optional via that scales it, a destination and an amount; the normalled routes live outside it (Env1 to the
 //! amp, Env2 to the cutoff through the Env amount, Env3 to pitch through Pitch env, the key through Key track), so that its
 //! slots stay free. Empty slots and those of no amount are left out when it is compiled.
@@ -28,6 +29,8 @@ enum Shape {
     SawDown,
     Square,
     SampleAndHold,
+    /// A random value each cycle, glided to along a cosine rather than stepped.
+    SmoothRandom,
 }
 
 struct Lfo {
@@ -38,6 +41,10 @@ struct Lfo {
     retrigger: bool,
     each_scene: bool,
     cycles: f64,
+    /// How long its depth takes to rise after a note starts, in seconds; 0 for no fade.
+    fade: f64,
+    /// Where it follows the song's tempo, how many quarter notes a cycle lasts.
+    quarters: Option<f64>,
 }
 
 /// An instrument's four LFOs, None for one that is off, and what each gave the chunk now playing.
@@ -45,7 +52,13 @@ pub struct LfoBank {
     lfos: Vec<Option<Lfo>>,
     held: Vec<f64>,
     pub now: Vec<Vec<f64>>,
+    /// The sample rate, from which a tempo LFO's step is worked out whenever the tempo changes.
+    rate: f64,
 }
+
+/// The tempo a song is taken to play at until it says, in quarter notes a minute.
+const FIRST_TEMPO: f64 = 120.0;
+const SECONDS_PER_MINUTE: f64 = 60.0;
 
 impl LfoBank {
     pub fn compiled(specs: &[Value], rate: f64) -> LfoBank {
@@ -63,11 +76,19 @@ impl LfoBank {
                     "saw_down" => Shape::SawDown,
                     "square" => Shape::Square,
                     "sample_and_hold" => Shape::SampleAndHold,
+                    "smooth_random" => Shape::SmoothRandom,
                     _ => Shape::Sine,
+                };
+                let quarters = crate::protocol::values::field(spec, "quarters").and_then(crate::protocol::values::as_number);
+                let step = match quarters {
+                    Some(quarters) => tempo_step(FIRST_TEMPO, quarters, rate),
+                    None => number(spec, "rate", 1.0) / rate,
                 };
                 Some(Lfo {
                     shape,
-                    step: number(spec, "rate", 1.0) / rate,
+                    step,
+                    fade: number(spec, "fade_in", 0.0).max(0.0),
+                    quarters,
                     ratio: crate::protocol::values::field(spec, "key_ratio").and_then(crate::protocol::values::as_number),
                     retrigger: truth(spec, "retrigger", false),
                     each_scene: truth(spec, "each_scene", false),
@@ -79,7 +100,23 @@ impl LfoBank {
             lfos,
             held,
             now: (0..LFO_COUNT).map(|_| vec![0.0; MOST_FRAMES]).collect(),
+            rate,
         }
+    }
+
+    /// The song's tempo now, in quarter notes a minute, which every LFO following it takes its step from.
+    pub fn set_tempo(&mut self, tempo: f64) {
+        let rate = self.rate;
+        for lfo in self.lfos.iter_mut().flatten() {
+            if let Some(quarters) = lfo.quarters {
+                lfo.step = tempo_step(tempo, quarters, rate);
+            }
+        }
+    }
+
+    /// How long each LFO's depth takes to rise after a note starts, in seconds, 0 for those that do not fade in.
+    pub fn fades(&self) -> [f64; LFO_COUNT] {
+        std::array::from_fn(|place| self.lfos.get(place).and_then(Option::as_ref).map_or(0.0, |lfo| lfo.fade))
     }
 
     pub fn is_on(&self) -> bool {
@@ -133,6 +170,22 @@ impl LfoBank {
     }
 }
 
+/// The cycles a sample of an LFO lasting some quarter notes a cycle moves on at a tempo.
+fn tempo_step(tempo: f64, quarters: f64, rate: f64) -> f64 {
+    tempo.max(1.0) / SECONDS_PER_MINUTE / quarters.max(f64::MIN_POSITIVE) / rate
+}
+
+/// How far an LFO fading in over some seconds has risen at an age into its note, from 0 to 1 along an S curve, so that
+/// the depth eases in and settles without a corner.
+#[inline]
+pub fn faded_in(age: f64, fade: f64) -> f64 {
+    if fade <= 0.0 || age >= fade {
+        return 1.0;
+    }
+    let x = (age / fade).max(0.0);
+    x * x * (3.0 - 2.0 * x)
+}
+
 /// A shape's value at a place in its cycles, its steps of step cycles a sample. The saws' and the square's jumps are
 /// smoothed by a two-sample polyBLEP, so that at audio rate they do not alias; at an LFO's slow rates the smoothing spans
 /// a vanishing share of a cycle and changes nothing heard.
@@ -150,6 +203,11 @@ fn shaped(shape: Shape, cycles: f64, step: f64, held: &[f64]) -> f64 {
             level + blep(place, step) - blep((place + 0.5).fract(), step)
         }
         Shape::SampleAndHold => held[cycles as usize % HELD_VALUES],
+        Shape::SmoothRandom => {
+            let from = held[cycles as usize % HELD_VALUES];
+            let to = held[(cycles as usize + 1) % HELD_VALUES];
+            from + (to - from) * (1.0 - (PI * place).cos()) / 2.0
+        }
     }
 }
 
@@ -351,5 +409,64 @@ impl ModMatrix {
             }
         }
         moved
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const RATE: f64 = 48_000.0;
+
+    fn bank(pairs: &[(&str, Value)]) -> LfoBank {
+        let spec = Value::Map(pairs.iter().map(|(key, value)| (Value::from(*key), value.clone())).collect());
+        LfoBank::compiled(&[spec], RATE)
+    }
+
+    /// A Smooth random LFO glides between its random values: no sample jumps as Sample & Hold's steps do.
+    #[test]
+    fn smooth_random_glides_where_sample_and_hold_steps() {
+        let most_jump = |shape: &str| {
+            let mut lfos = bank(&[("shape", shape.into()), ("rate", 10.0.into())]);
+            lfos.advance(MOST_FRAMES);
+            lfos.now[0]
+                .windows(2)
+                .take(MOST_FRAMES - 1)
+                .map(|pair| (pair[1] - pair[0]).abs())
+                .fold(0.0, f64::max)
+        };
+        let gliding_step = 0.01;
+        assert!(most_jump("smooth_random") < gliding_step, "{}", most_jump("smooth_random"));
+        assert!(most_jump("sample_and_hold") > gliding_step);
+    }
+
+    /// An LFO following the tempo runs a cycle a division of the beat: a quarter note at 120 is two cycles a second,
+    /// and doubling the tempo doubles it.
+    #[test]
+    fn a_tempo_lfo_follows_the_song_tempo() {
+        let quarter = 1.0;
+        let mut lfos = bank(&[("shape", "saw_up".into()), ("quarters", quarter.into())]);
+        let cycles_in = |lfos: &mut LfoBank| {
+            let before = lfos.lfos[0].as_ref().expect("an LFO").cycles;
+            lfos.advance(RATE as usize / 8);
+            lfos.lfos[0].as_ref().expect("an LFO").cycles - before
+        };
+        let eighth_second = 1.0 / 8.0;
+        let at_120 = cycles_in(&mut lfos);
+        assert!((at_120 - 2.0 * eighth_second).abs() < 1e-6, "{at_120}");
+        lfos.set_tempo(240.0);
+        let at_240 = cycles_in(&mut lfos);
+        assert!((at_240 - 2.0 * at_120).abs() < 1e-6, "{at_240}");
+    }
+
+    /// Fade in rises from nothing at the note's start to full at its time, smoothly, and is full at once with no fade.
+    #[test]
+    fn fade_in_eases_from_nothing_to_full() {
+        let fade = 2.0;
+        assert_eq!(faded_in(0.0, fade), 0.0);
+        assert!((faded_in(fade / 2.0, fade) - 0.5).abs() < 1e-12);
+        assert_eq!(faded_in(fade, fade), 1.0);
+        assert_eq!(faded_in(0.0, 0.0), 1.0);
+        assert!(bank(&[("fade_in", fade.into())]).fades()[0] == fade);
     }
 }

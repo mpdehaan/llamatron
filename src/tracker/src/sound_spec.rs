@@ -5,7 +5,7 @@
 //! time from the sound as it is stored, its engine's preset and its types' defaults filling what it leaves out, its times
 //! in seconds and its shares as fractions.
 
-use crate::generated::sounds::{Preset, EFFECT_DEFAULTS, LFO_DEFAULTS, SLOT_DEFAULTS};
+use crate::generated::sounds::{Preset, EFFECT_DEFAULTS, SLOT_DEFAULTS};
 use crate::instrument_sound::Sound;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
@@ -339,7 +339,8 @@ fn lfos(sound: &Sound) -> Data {
     let count = sound.value("lfos").as_list().map_or(0, <[Data]>::len);
     let mut lfos = Vec::new();
     for number in 1..=count {
-        let setting = |name: &str| sound.item("lfos", number, name, LFO_DEFAULTS);
+        // Each setting as the slot's Type plays it: an LFO leaves an LFO+'s own settings out (Sound::lfo_setting).
+        let setting = |name: &str| sound.lfo_setting(number, name);
         if is_falsy(&setting("on")) {
             lfos.push(Data::Null);
             continue;
@@ -351,7 +352,13 @@ fn lfos(sound: &Sound) -> Data {
             ("rate", Data::Float(lfo_speed::hertz(&speed, percent))),
             ("retrigger", setting("retrigger")),
             ("each_scene", setting("each_scene")),
+            ("fade_in", share(&setting("fade_in"), MILLISECONDS)),
         ];
+        // A Tempo LFO's cycle is a division of the beat, which the backend times by the song's tempo.
+        if speed == lfo_speed::TEMPO_SPEED {
+            let division = setting("division").as_str().unwrap_or(lfo_speed::DEFAULT_DIVISION).to_string();
+            lfo.push(("quarters", Data::Float(lfo_speed::quarters_of(&division))));
+        }
         // At audio rate an LFO may follow the key, running at its ratio times each note's frequency.
         if speed == lfo_speed::AUDIO_SPEED && setting("key") == Data::Bool(true) {
             let ratio = setting("ratio").as_str().map(lfo_speed::ratio_multiple).unwrap_or(1.0);

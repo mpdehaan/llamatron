@@ -435,6 +435,8 @@ pub struct TimedTrack {
     pub endings: Vec<f64>,
     /// The track's CCs, the endings and the clip starts' mark aside: seconds, number and value.
     pub controls: Vec<(f64, i64, i64)>,
+    /// The song's tempo from its start and at each change: seconds, and quarter notes a minute.
+    pub tempos: Vec<(f64, f64)>,
 }
 
 /// The controls that end every note, and the one the real-time player marks a clip's start with.
@@ -455,6 +457,7 @@ pub fn timed_track(grid: &Grid, track: &str) -> Rendered<Option<TimedTrack>> {
         scene_starts: Vec::new(),
         endings: Vec::new(),
         controls: Vec::new(),
+        tempos: tempo_map.tempos(),
     };
     for (row, start) in grid.rows.iter().zip(&starts) {
         if clip_of(row, column).is_some() {
@@ -489,6 +492,7 @@ struct TempoMap {
 
 /// The tempo a MIDI file plays at before it sets one, 120 quarter notes a minute.
 const FIRST_TEMPO: i64 = 500_000;
+const MICROSECONDS_PER_MINUTE: f64 = 60_000_000.0;
 
 impl TempoMap {
     /// The map of a conductor track's tempo events.
@@ -500,6 +504,21 @@ impl TempoMap {
             .collect();
         changes.sort();
         TempoMap { changes }
+    }
+
+    /// The tempo from the start and at each change, in seconds and quarter notes a minute.
+    fn tempos(&self) -> Vec<(f64, f64)> {
+        let quarters_a_minute = |microseconds: i64| MICROSECONDS_PER_MINUTE / microseconds.max(1) as f64;
+        let mut tempos = vec![(0.0, quarters_a_minute(FIRST_TEMPO))];
+        for (change, changed) in &self.changes {
+            let at = self.seconds(*change);
+            if at <= 0.0 {
+                tempos[0] = (0.0, quarters_a_minute(*changed));
+            } else {
+                tempos.push((at, quarters_a_minute(*changed)));
+            }
+        }
+        tempos
     }
 
     /// The seconds from the start to a tick.

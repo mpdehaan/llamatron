@@ -22,7 +22,7 @@ use crate::voice::effects::{self, Effect};
 use crate::voice::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
 use crate::voice::filters::{FilterPart, FilterState, ENVELOPE_OCTAVES};
 use crate::voice::gate::{GateNote, GatePart, GateState};
-use crate::voice::modulation::{Destination, LfoBank, ModMatrix, Moved, Source, Sources, LFO_COUNT, MOST_FRAMES};
+use crate::voice::modulation::{self, Destination, LfoBank, ModMatrix, Moved, Source, Sources, LFO_COUNT, MOST_FRAMES};
 use crate::voice::oscillators::{self, Moves, OscillatorPart, OscillatorState};
 use rmpv::Value;
 
@@ -201,6 +201,8 @@ pub struct Patch {
     pub used: bool,
     /// Each MIDI CC's last value, from 0 to 1, which the Mod Matrix's CC sources read.
     pub controls: [f64; CONTROL_COUNT],
+    /// The coarse part of a tempo being sent, waiting for its fine part (engine/mod.rs, TEMPO_COARSE).
+    pub tempo_coarse: f64,
     rate: f64,
 }
 
@@ -238,6 +240,7 @@ impl Patch {
             buffer: vec![0.0; MOST_FRAMES],
             used: false,
             controls: [0.0; CONTROL_COUNT],
+            tempo_coarse: 0.0,
             rate,
         }
     }
@@ -388,6 +391,9 @@ impl Patch {
         // Held under half the sample rate, MOST_KEY_STEP of a cycle a sample, so that no ratio runs a modulator past hearing.
         let frequency = oscillators::frequency_of(voice.pitch);
         let key_steps: [Option<f64>; LFO_COUNT] = std::array::from_fn(|place| bank.ratio(place).map(|ratio| (ratio * frequency / rate).min(MOST_KEY_STEP)));
+        // An LFO+ fading in rises by the voice's own age, so that each note's vibrato eases in from its start.
+        let fades = bank.fades();
+        let fading = fades.iter().any(|fade| *fade > 0.0);
         let buffer = &mut self.buffer;
         let is_newest = voice.id == modular.newest;
         let wants_env2 = modular.reads_env2 && (modular.own_filter || is_newest || modular.matrix_reads_env2);
@@ -435,6 +441,11 @@ impl Patch {
                     Some(step) => bank.key_lfo_value(number, &mut voice.lfo_cycles[number], step),
                     None => values[offset + place],
                 };
+            }
+            if fading {
+                for (lfo, fade) in sources.lfos.iter_mut().zip(fades.iter()) {
+                    *lfo *= modulation::faded_in(note.age, *fade);
+                }
             }
             let moved = if modular.matrix.routes.is_empty() {
                 Moved::default()
