@@ -62,8 +62,24 @@
 - Through an agreed list of steps, go on without stopping, committing each as it lands (a feature in three to five commits: model
   with tests, page, documents; a small refactoring step its own commit), and stop only for a question the designs don't settle.
   The recap comes at the end or at a question.
-- Agreed but unbuilt work goes in `.claude/planning/DESIGNS.md` (or `.claude/planning/WIZARD_DESIGNS.md`), the order in `.claude/planning/QUEUE.md`.
-  A design leaves once built. A request arriving mid-work goes where the user says, the bottom by default, and the reply says where.
+- Agreed but unbuilt designs go in `.claude/planning/DESIGNS.md` (or `.claude/planning/WIZARD_DESIGNS.md`). A design leaves
+  once built. A request arriving mid-work goes into its ideas file and its place in the queue where the user says, the bottom
+  by default, and the reply says where.
+
+## The ideas files and the queue
+
+- Every idea the user wants built is written into one of the ideas files in `.claude/features/`, by topic: `SYNTH_IDEAS.md`
+  (the built-in synths, drum engines and effects), `WIZARD_IDEAS.md` (the song wizard, its players and templates),
+  `DEMO_IDEAS.md` (demos and examples), `UX_IDEAS.md` (how the tracker looks and is used) and `OTHER_IDEAS.md` (the rest). A
+  new topic that outgrows these gets a file of its own, proposed first.
+- The ideas files are tracked in git, since several computers work on the project. Each idea is a bold name and what is
+  wanted: never its status, its order, a date or a record of the conversation. Claude keeps them organized, merges
+  duplicates, moves an idea that suits another file, and deletes an idea, or trims its finished part, as soon as it is built.
+- `.claude/planning/QUEUE.md` is only this computer's order of work, git-ignored, very short, naming each idea by its file and
+  bold name and saying nothing of what it is. It is not a master file for anyone working on the project: another computer
+  keeps its own queue, or makes one from the ideas files when it has none. Instructions about order stay in the queue.
+- Before working on a feature, Claude checks that its idea is still in its ideas file. One that is gone was likely built on
+  another computer: Claude checks `git log`, drops it from the queue, and does not build it again.
 - A song-wizard feature goes on its page in the same change, and the reply names the panel and field. A report on agreed work
   says of each thing: on the page, built underneath only (and why), or not started.
 - A set for the user to open is given as its whole command: `sh llamatron.sh output/previews/some_folder/song.yml`.
@@ -79,7 +95,7 @@
 - Flag names and layouts that don't fit. Point out where an existing feature already does what's asked, or where a new thing
   should look like an existing one.
 - The user edits message wording; a change need not name the constants it touched.
-- `.claude/planning/IDEAS.yml`, the only ideas file, is a YAML list of `title`, `priority` (1 highest; high 1, medium 5, low 10, unranked
+- `.claude/planning/IDEAS.yml`, the user's ranked ideas, is a YAML list of `title`, `priority` (1 highest; high 1, medium 5, low 10, unranked
   99) and `text`, kept sorted by `internal_tools/sort_ideas.sh`. Ideas describe keys by what they do. An idea is removed, or its
   finished part trimmed, as soon as it is built; ideas are added only when the user asks; nothing in it is started unprompted.
 - Rules carry no dates, and no file quotes the user: Claude records its own plain statement of what is wanted.
@@ -181,7 +197,7 @@ row says which, and a reply says which too.
 | a settings page, a list page | a page of fields, and a page of rows with a `+` row at the bottom | `FieldPage` with `Field` and `Button`, and `ListPage` |
 | protected | the Protected toggle on the File/Global page | `protected`, `file_is_protected` |
 | the demos, the examples | the sets in `examples/` | every set in `examples/` |
-| the ideas file | `.claude/planning/IDEAS.yml`, the only ideas file | |
+| the ideas file | `.claude/planning/IDEAS.yml`, the user's ranked ideas; the ideas files of `.claude/features/` hold the rest | |
 | the support folder | nothing on screen: `internal_tools/`, the folder of development tools and scripts | `internal_tools/` |
 | follow action, advance | Follow action on the clip page, "With Scene" or "Off", and Default follow action on the File/Global page | `FollowAction`, `ClipSlotSetting.FOLLOW_ACTION`, `follow_action_of` |
 | launch together, advance together | Launch together on the Scene page, and `┆` after a scene's name on Arrange when off | `SceneSetting.LAUNCH_TOGETHER`, `Scene.launches_together` |
