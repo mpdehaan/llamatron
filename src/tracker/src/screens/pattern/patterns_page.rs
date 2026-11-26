@@ -379,6 +379,12 @@ impl Page for PatternsPage {
         self.searching
     }
 
+    /// A character typed into the search, which keeps the rows holding what was typed.
+    fn type_text(&mut self, app: &mut App, character: char) {
+        self.typed.push(character);
+        self.settle_search(app);
+    }
+
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
         let direction = item.step_of(key).unwrap_or(0);
         if item.is(&Keys::BACK) {
@@ -409,7 +415,20 @@ impl Page for PatternsPage {
             self.cursor.set(self.place_before_search);
             self.place(app);
         } else if item.is(&Keys::SEARCH_KEEP) {
-            self.searching = false;
+            self.keep_found(app);
+        } else if item.is(&Keys::SEARCH_ERASE) {
+            self.typed.pop();
+            self.settle_search(app);
+        } else if item.is(&Keys::SEARCH_COMPLETE) {
+            let rows = self.rows(app);
+            let found: Vec<String> = self
+                .matches(app)
+                .iter()
+                .filter_map(|place| rows.get(*place))
+                .map(|(_, cells)| cells[0].clone())
+                .collect();
+            self.typed = crate::screens::dialogs::completed_from(&found, &self.typed);
+            self.settle_search(app);
         } else if self.press_edit(app, item) {
         } else if item.is(&Keys::EDIT) {
             if let Listed::Pattern(name) = self.listed(app) {

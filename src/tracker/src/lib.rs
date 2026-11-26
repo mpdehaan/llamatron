@@ -31,6 +31,7 @@ pub mod screens;
 pub mod settings;
 pub mod sound_spec;
 pub mod style;
+pub mod svg;
 pub mod terminal;
 pub mod text;
 pub mod themes;

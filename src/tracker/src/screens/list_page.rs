@@ -466,6 +466,12 @@ impl<L: Listing> Page for ListPage<L> {
         self.searching
     }
 
+    /// A character typed into the search, which keeps the rows holding what was typed.
+    fn type_text(&mut self, app: &mut App, character: char) {
+        self.typed.push(character);
+        self.settle(app);
+    }
+
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
         if self.press_named(app, item, key) {
             return;
@@ -485,11 +491,19 @@ impl<L: Listing> Page for ListPage<L> {
             self.place(app);
         } else if item.is(&Keys::SEARCH_KEEP) {
             self.searching = false;
-        } else if item.is(&Keys::SEARCH_TYPE) {
-            self.typed.push_str(if key == "space" { " " } else { key });
-            self.settle(app);
         } else if item.is(&Keys::SEARCH_ERASE) {
             self.typed.pop();
+            self.settle(app);
+        } else if item.is(&Keys::SEARCH_COMPLETE) {
+            // What was typed grows as far as every row the search keeps agrees from its start, as a shell completes.
+            let rows = self.listing.rows(app);
+            let found: Vec<String> = self
+                .matches(app)
+                .iter()
+                .filter_map(|place| rows.get(*place))
+                .map(|(_, cells)| cells[0].clone())
+                .collect();
+            self.typed = crate::screens::dialogs::completed_from(&found, &self.typed);
             self.settle(app);
         } else {
             let current = self.current(app);

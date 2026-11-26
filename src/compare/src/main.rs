@@ -48,6 +48,9 @@ fn json_key(key: &Data) -> String {
 
 fn main() -> ExitCode {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
+    if arguments.first().map(String::as_str) == Some("screenshots") {
+        return screenshots(arguments.get(1).map(String::as_str));
+    }
     let (Some(command), Some(path)) = (arguments.first(), arguments.get(1)) else {
         eprintln!("usage: llamatron-compare load SET");
         return ExitCode::from(2);
@@ -1331,4 +1334,178 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
         }
     }
     json(&Data::List(results))
+}
+
+/// The terminal the documents' screenshots show: wider than the 80 by 24 every page fits, so that Arrange shows more tracks
+/// and a 16-step pattern fits in one block.
+const SHOT_COLUMNS: usize = 112;
+const SHOT_ROWS: usize = 32;
+/// The name in the picture's title bar, and what the version is written as, so that a version bump alone changes no
+/// screenshot.
+const SHOT_TITLE: &str = "llamatron";
+const VERSION_PLACEHOLDER: &str = "$VERSION";
+/// The set most shots show, and the others' sets, from the top folder.
+const SHOT_SET: &str = "examples/by_genre/electronic/minimal_techno.yml";
+const ARP_SET: &str = "examples/learning/15_complex_gifts_chain.yml";
+const SWELL_SET: &str = "examples/learning/14_bolero_swell.yml";
+const PROGRESSION_SET: &str = "examples/learning/06_chord_progression_generator.yml";
+const HOCKET_SET: &str = "examples/learning/17_hocket_shanty.yml";
+const DRIFT_SET: &str = "examples/by_genre/rock/volcano.yml";
+const DENSITY_SET: &str = "examples/by_genre/electronic/edm_density.yml";
+const GLIDE_SET: &str = "examples/learning/12_acid_glide.yml";
+
+/// One screenshot: its file's name, the set it shows, and the keys that reach its screen from the main screen.
+struct Shot {
+    name: &'static str,
+    set: &'static str,
+    keys: Vec<String>,
+}
+
+/// Each of the documents' screenshots, as the retired tool took them; the song wizard's wait for the wizard.
+fn shots() -> Vec<Shot> {
+    let keys = |list: &[&str]| list.iter().map(|key| key.to_string()).collect::<Vec<String>>();
+    let repeated = |key: &str, times: usize| vec![key.to_string(); times];
+    let joined = |parts: Vec<Vec<String>>| parts.into_iter().flatten().collect::<Vec<String>>();
+    // The bass line the pattern editor's shots show, found by the Patterns page's search.
+    let to_bass_line = || {
+        joined(vec![
+            keys(&["p", "/"]),
+            "tumble".chars().map(|c| c.to_string()).collect(),
+            keys(&["enter", "enter"]),
+        ])
+    };
+    // A generator opened from the Generators page by searching for its name, then Down past the names found before it that
+    // hold the same text.
+    let to_generator = |name: &str, before: usize| {
+        joined(vec![
+            keys(&["g", "/"]),
+            name.chars().map(|c| if c == ' ' { "space".to_string() } else { c.to_string() }).collect(),
+            repeated("down", before),
+            keys(&["enter", "enter"]),
+        ])
+    };
+    let shot = |name: &'static str, set: &'static str, keys: Vec<String>| Shot { name, set, keys };
+    vec![
+        shot("main", SHOT_SET, vec![]),
+        shot("file", SHOT_SET, keys(&["f"])),
+        shot("songs", SHOT_SET, keys(&["s"])),
+        shot("song", SHOT_SET, keys(&["s", "enter"])),
+        shot("scales", SHOT_SET, keys(&["z"])),
+        shot("scale", SHOT_SET, keys(&["z", "enter"])),
+        shot("patterns", SHOT_SET, keys(&["p"])),
+        shot("pattern_editor", SHOT_SET, to_bass_line()),
+        shot("pattern_editor_rows", SHOT_SET, joined(vec![to_bass_line(), keys(&["tab"])])),
+        // PgDn jumps from heading to heading; Space opens the fifth, Advanced, and Down goes to its first row.
+        shot(
+            "pattern_editor_advanced",
+            SHOT_SET,
+            joined(vec![to_bass_line(), keys(&["tab"]), repeated("pagedown", 4), keys(&["space", "down"])]),
+        ),
+        // The Chord section's Chord row opens the Chord Selector, where Right four times reaches the scales and Down and
+        // ENTER open the flyout of Common.
+        shot(
+            "chord_selector",
+            SHOT_SET,
+            joined(vec![
+                to_bass_line(),
+                keys(&["tab", "pagedown", "pagedown", "space", "down", "enter"]),
+                repeated("right", 4),
+                keys(&["down", "enter"]),
+            ]),
+        ),
+        shot(
+            "pattern_editor_cc",
+            SHOT_SET,
+            joined(vec![to_bass_line(), keys(&["tab"]), repeated("pagedown", 5), keys(&["space", "down"])]),
+        ),
+        // Up from the first scene's name reaches Arrange's corner, and Right the first track's name.
+        shot("track_editor", SHOT_SET, keys(&["a", "up", "right", "enter"])),
+        // Space opens the Arpeggiator group, the first on the Generators page.
+        shot("generators", ARP_SET, keys(&["g", "space"])),
+        shot("arp_editor", ARP_SET, to_generator("trill_in_thirds", 0)),
+        // Offsets is the sixth setting of an arpeggiator after its Name.
+        shot(
+            "offsets_editor",
+            ARP_SET,
+            joined(vec![to_generator("trill_in_thirds", 0), repeated("down", 6), keys(&["enter"])]),
+        ),
+        shot("chain_editor", ARP_SET, to_generator("shred", 1)),
+        shot("grooves", SHOT_SET, keys(&["v"])),
+        shot("groove_editor", SHOT_SET, keys(&["v", "down", "down", "enter"])),
+        shot("arrange", SHOT_SET, keys(&["a"])),
+        shot("arrange_details", DRIFT_SET, keys(&["a", "d"])),
+        shot("arrange_details_locked", DRIFT_SET, keys(&["a", "d", "right", "down", "tab"])),
+        shot("scene_view", DENSITY_SET, keys(&["a", "p"])),
+        shot("scene_view_played", DENSITY_SET, keys(&["a", "p", "v"])),
+        shot("scene", SHOT_SET, keys(&["a", "enter"])),
+        shot("clip", SHOT_SET, keys(&["a", "right", "enter"])),
+        // The Scene page's Velocity tab, the second, and Shapes, the fourth, gone into with Down.
+        shot("scene_swell", SWELL_SET, keys(&["a", "enter", "tab", "right", "down"])),
+        shot("scene_density", DENSITY_SET, keys(&["a", "enter", "tab", "right", "right", "right", "down"])),
+        shot("instruments", SHOT_SET, keys(&["i"])),
+        shot("instrument_editor", SHOT_SET, keys(&["i", "enter"])),
+        shot("chords_generator", PROGRESSION_SET, to_generator("pop", 1)),
+        // The fourth setting after the Name opens the chords editor.
+        shot(
+            "chords_editor",
+            PROGRESSION_SET,
+            joined(vec![to_generator("pop", 1), repeated("down", 4), keys(&["enter"])]),
+        ),
+        shot("drift_editor", DRIFT_SET, to_generator("climb", 0)),
+        shot("hocket_editor", HOCKET_SET, to_generator("trade", 1)),
+        shot("shapes_editor", SWELL_SET, to_generator("hits", 1)),
+        // A clip's Timing tab: the second scene's acid track's clip, the row of tabs, and Right to Timing.
+        shot(
+            "timing_editor",
+            GLIDE_SET,
+            joined(vec![keys(&["a", "down"]), repeated("right", 4), keys(&["enter", "tab"]), repeated("right", 5)]),
+        ),
+        shot(
+            "chain_list",
+            PROGRESSION_SET,
+            joined(vec![
+                keys(&["a"]),
+                repeated("down", 5),
+                repeated("right", 5),
+                keys(&["enter", "tab"]),
+                repeated("right", 4),
+            ]),
+        ),
+    ]
+}
+
+/// Take the documents' screenshots into a folder, docs/screenshots/ unless another is named: each shot's set opened from the
+/// top folder, its keys pressed, and its screen written as an SVG named after the shot.
+fn screenshots(folder: Option<&str>) -> ExitCode {
+    let folder = std::path::PathBuf::from(folder.unwrap_or("docs/screenshots"));
+    llamatron_tracker::realtime::backend::SENDING_ALLOWED.store(false, std::sync::atomic::Ordering::SeqCst);
+    for shot in shots() {
+        // The set is opened by its whole path, as a person opens one, which the File page shows.
+        let path = std::fs::canonicalize(shot.set).unwrap_or_else(|_| std::path::PathBuf::from(shot.set));
+        let document = match llamatron_tracker::document::Document::open(&path) {
+            Ok(document) => document,
+            Err(problem) => {
+                eprintln!("{}: {problem}", shot.set);
+                return ExitCode::from(1);
+            }
+        };
+        let mut tracker = llamatron_tracker::app::Tracker::new(document);
+        tracker.app.fluidsynth_installed = true;
+        llamatron_tracker::tour::composed(&tracker, SHOT_COLUMNS, SHOT_ROWS);
+        for key in &shot.keys {
+            tracker.press(&llamatron_tracker::keys::pressed_key(key));
+            llamatron_tracker::tour::composed(&tracker, SHOT_COLUMNS, SHOT_ROWS);
+        }
+        let screen = llamatron_tracker::tour::composed(&tracker, SHOT_COLUMNS, SHOT_ROWS);
+        let unique_id = format!("terminal-{}", shot.name);
+        let svg = llamatron_tracker::svg::screen_svg(&screen, SHOT_COLUMNS, SHOT_TITLE, &unique_id)
+            .replace(llamatron_tracker::version::PROGRAM_VERSION, VERSION_PLACEHOLDER);
+        let path = folder.join(format!("{}.svg", shot.name));
+        if let Err(problem) = std::fs::write(&path, svg) {
+            eprintln!("{}: {problem}", path.display());
+            return ExitCode::from(1);
+        }
+        println!("wrote {}", path.display());
+    }
+    ExitCode::SUCCESS
 }

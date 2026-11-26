@@ -1193,7 +1193,7 @@ impl Page for SoundDialog {
 }
 
 /// What was typed completed as far as every label found agrees, ignoring case.
-fn completed_from(labels: &[String], typed: &str) -> String {
+pub(crate) fn completed_from(labels: &[String], typed: &str) -> String {
     let lowered = typed.to_lowercase();
     if labels.is_empty() || !labels.iter().all(|label| label.to_lowercase().starts_with(&lowered)) {
         return typed.to_string();

@@ -97,6 +97,25 @@ impl PatternsPage {
         }
     }
 
+    /// After a key changed what a search looks for, keep the cursor among the rows it finds, and show what was typed.
+    pub(super) fn settle_search(&mut self, app: &mut App) {
+        let matches = self.matches(app);
+        if !matches.is_empty() && !matches.contains(&self.cursor.get()) {
+            self.cursor.set(matches[0]);
+        }
+        app.say(&named(messages::MSG_SEARCH_STATUS, &[("text", self.typed.as_str().into())]));
+    }
+
+    /// ENTER at the end of a search: the cursor stays on the pattern found, its group's tab chosen.
+    pub(super) fn keep_found(&mut self, app: &mut App) {
+        let found = self.listed(app);
+        self.searching = false;
+        if let Listed::Pattern(name) = found {
+            choose_tab_of(app, &name);
+            self.put_cursor_at(app, &format!("{PATTERN_ROW}{name}"));
+        }
+    }
+
     /// Do what a key that edits the patterns or their groups does, and say whether the key was one.
     pub(super) fn press_edit(&mut self, app: &mut App, item: &KeyItem) -> bool {
         let chosen = self.chosen(app);

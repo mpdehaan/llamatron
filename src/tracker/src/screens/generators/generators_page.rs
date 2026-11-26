@@ -254,6 +254,15 @@ impl GeneratorsPage {
         rows[self.place(app)].0.clone()
     }
 
+    /// After a key changed what a search looks for, keep the cursor among the rows it finds, and show what was typed.
+    fn settle_search(&self, app: &mut App) {
+        let matches = self.matches(app);
+        if !matches.is_empty() && !matches.contains(&self.cursor.get()) {
+            self.cursor.set(matches[0]);
+        }
+        app.say(&named(messages::MSG_SEARCH_STATUS, &[("text", self.typed.as_str().into())]));
+    }
+
     fn matches(&self, app: &App) -> Vec<usize> {
         let rows = self.rows(app);
         if !self.searching {
@@ -372,6 +381,12 @@ impl Page for GeneratorsPage {
         self.searching
     }
 
+    /// A character typed into the search, which keeps the rows holding what was typed.
+    fn type_text(&mut self, app: &mut App, character: char) {
+        self.typed.push(character);
+        self.settle_search(app);
+    }
+
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
         if item.is(&Keys::BACK) {
             app.go_back();
@@ -394,7 +409,27 @@ impl Page for GeneratorsPage {
             self.cursor.set(self.place_before_search);
             self.place(app);
         } else if item.is(&Keys::SEARCH_KEEP) {
+            // The generator found stays under the cursor: its type is opened, since a closed type shows no generators.
+            let found = self.listed(app);
             self.searching = false;
+            if let Listed::Generator(kind, name) = found {
+                app.document.show_generator_type(&kind, true);
+                *self.going_to.borrow_mut() = Some((kind, name));
+                self.place(app);
+            }
+        } else if item.is(&Keys::SEARCH_ERASE) {
+            self.typed.pop();
+            self.settle_search(app);
+        } else if item.is(&Keys::SEARCH_COMPLETE) {
+            let rows = self.rows(app);
+            let found: Vec<String> = self
+                .matches(app)
+                .iter()
+                .filter_map(|place| rows.get(*place))
+                .map(|(_, cells)| cells[0].trim().to_string())
+                .collect();
+            self.typed = crate::screens::dialogs::completed_from(&found, &self.typed);
+            self.settle_search(app);
         } else if item.is(&Keys::ADD) || item.is(&Keys::ADD_HERE) {
             self.add(app);
         } else if item.is(&Keys::RENAME) || item.is(&Keys::COPY) || item.is(&Keys::DELETE) {
