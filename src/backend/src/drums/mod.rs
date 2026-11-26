@@ -168,7 +168,10 @@ fn kick(strike: &Strike, noise: &mut Random) -> Vec<f64> {
         .collect();
     click(&mut body, rate, (strike.color / 0.33).min(1.0) * (0.5 + 0.5 * strike.hardness));
     noise_burst(&mut body, noise, rate, ((strike.color - 0.33) / 0.33).clamp(0.0, 1.0) * 0.3, 0.004, 3000.0);
-    clip(&mut body, 1.0 + 19.0 * strike.shape.powi(2));
+    // At Shape 0 the kick is left unclipped, so that with Color 0 it is the pure decaying sine of the classic sine kick.
+    if strike.shape > 0.0 {
+        clip(&mut body, 1.0 + 19.0 * strike.shape.powi(2));
+    }
     body
 }
 
@@ -490,6 +493,33 @@ mod tests {
             assert!(hit.iter().all(|sample| sample.is_finite()), "{machine}");
             assert!((peak - 0.7079).abs() < 0.01, "{machine} {peak}");
         }
+    }
+
+    /// The sine kick: at Color, Shape and Sweep 0 the Kick is a pure decaying sine, its second and third harmonics more
+    /// than 60 dB under its fundamental, ringing for as long as a long Decay asks.
+    #[test]
+    fn the_kick_at_no_color_shape_or_sweep_is_a_pure_sine() {
+        let (rate, long_decay) = (48000.0, 100.0);
+        let hit = render_hit("kick", &[64.0, long_decay, 0.0, 0.0, 0.0], 60.0, 127.0, rate);
+        let fundamental = 30.0 * 2f64.powf(3.0 * 64.0 / KNOB_TOP);
+        // A Hann window over a stretch of the ring, so that the decay's own spread of frequencies stays out of the reading.
+        let (from, to) = ((0.2 * rate) as usize, (0.7 * rate) as usize);
+        let level = |frequency: f64| {
+            let (mut real, mut imaginary) = (0.0, 0.0);
+            for place in from..to {
+                let window = 0.5 - 0.5 * (2.0 * PI * (place - from) as f64 / (to - from) as f64).cos();
+                let angle = 2.0 * PI * frequency * place as f64 / rate;
+                real += hit[place] as f64 * window * angle.cos();
+                imaginary += hit[place] as f64 * window * angle.sin();
+            }
+            (real * real + imaginary * imaginary).sqrt()
+        };
+        let quietest_db = -60.0;
+        for harmonic in [2.0, 3.0] {
+            let below = 20.0 * (level(fundamental * harmonic) / level(fundamental)).log10();
+            assert!(below < quietest_db, "harmonic {harmonic} at {below} dB");
+        }
+        assert!(hit.len() as f64 / rate > 1.0, "a long Decay rings over a second");
     }
 
     #[test]

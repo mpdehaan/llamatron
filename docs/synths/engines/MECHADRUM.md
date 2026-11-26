@@ -25,7 +25,10 @@ drums:
 
 - **Kick**: a sine whose pitch starts high and sweeps down, by Sweep, decaying
   by Decay; Color adds a click, a short burst of filtered noise and a couple
-  of harmonics, and Shape drives it into a soft clipper for punch.
+  of harmonics, and Shape drives it into a soft clipper for punch. With
+  Color, Shape and Sweep at 0 and a long Decay it is the pure sine kick, a
+  clean low tone with nothing added, whose weight is all in its body; a
+  little Sweep gives it a thump at the start.
 - **Hard Kick**: a sine held at full for a moment, by Shape, before it decays,
   with a steep pitch sweep, a click and a burst of noise, clipped hard.
 - **Synth Kick**: a wave that morphs, by Color, from a sine through a triangle
