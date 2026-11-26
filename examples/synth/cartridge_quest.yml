@@ -1,20 +1,28 @@
 version: 1.1.1
 title: Cartridge quest
-description: "a chip adventure theme on the SID engine: a sweeping pulse lead, a fast arpeggio, a triangle bass and noise drums, on the built-in synths"
+description: "a chip adventure theme on the SID engine: a verse and a soaring chorus, a sweeping pulse lead, a fast arpeggio, a triangle bass and noise drums, on the built-in synths"
 notes: |
   Cartridge quest: a home-computer adventure theme at 150 beats a minute in D minor, every sound on the SID engine, as a
   single sound chip of the 1980s played it, three voices and a noise channel. The lead is a pulse wave whose width an LFO
   sweeps slowly through the Mod Matrix, the hollow-to-reedy shimmer of the chip; a second LFO adds vibrato. The arpeggio
   plays each chord as one note, the oscillator's Arpeggio stepping root, fifth and octave fifty times a second, the chip
-  composer's way of sounding a chord on one voice. The bass is a triangle, and the drums are the chip's noise wave for the
-  snare and hats and a triangle with a falling pitch for the kick. The bridge brings in a ring-modulated triangle, a bell
-  answering the lead.
+  composer's way of sounding a chord on one voice. The bass is a triangle, the drums the chip's noise wave and a triangle
+  with a falling pitch for the kick, and a ring-modulated triangle is a bell that answers the lead.
 
-  The harmony is D minor, B flat, F and C, the falling minor loop of adventure music, and the bridge climbs G minor, B flat
-  and A to set up the return. The arpeggio's root, fifth and octave leave out the third, so the one Arpeggio fits every
-  chord, the A major of the bridge included.
+  The verse and the chorus differ in every way a chip can make them differ. The verse sits low, in octave 5, on a two-bar
+  motif stated four times with its ending changed, its chords two bars each (D minor, B flat, D minor, C), the bass on the
+  beat with an octave pickup, a kick and soft noise and no snare, the arpeggio filtered dark, quiet and rising through each
+  phrase. The pre-chorus climbs a step a bar over G minor, B flat, C and A, the bass pumping on A and a noise snare
+  rolling faster into the chorus. The chorus jumps an octave to its hook: one rhythm stated, sequenced a step up, peaked
+  on its high A and resolved, a chord a bar starting on B flat for the lift, the bass in octave eighths, a backbeat, the
+  arpeggio bright, and loud. The bridge drops the drums and the bass for the hook at half speed, then builds back.
 
-  Form: intro (arpeggio alone), the theme, the theme with the drums, the bridge with the bell, the theme again, an outro.
+  The lead is phrased by the Phrasing generator on each of its clips, as a player breathes: two-bar lines in the verse and
+  the chorus, each growing toward its long note and falling away with a quick breath after it, one-bar lines in the
+  pre-chorus, whose shrinking units build, and the bridge's slow hook in four-bar lines with a deep breath.
+
+  Form: a two-bar intro, verse, pre-chorus, chorus, a second verse with the bell's counter-line, pre-chorus, chorus, the
+  bridge and its build, the last chorus, and a two-bar ending.
 
   Run it with: llamatron examples/synth/cartridge_quest.yml
 
@@ -22,6 +30,7 @@ notes: |
   - Keep every sound on the SID engine, the drums included.
   - Keep the arpeggio's chords as single notes for the oscillator's Arpeggio to spread.
   - Keep the lead's pulse width moving through the Mod Matrix; it is the chip's signature.
+  - Keep the verse and chorus apart: register, rhythm, harmony rate, drums and loudness.
 real_time: true
 protected: true
 
@@ -29,69 +38,195 @@ scales:
   - { name: D Minor, root: D, type: minor }
 
 patterns:
-  - name: lead
+  - name: verse lead
+    steps: 64
+    group: lead
+    step_size: 1/8
+    degree: [1, ~, 2, 3, 5, ~, ~, ~, 4, 3, 2, ~, 1, ~, ~, ~, 3, ~, 4, 5, 6, ~, ~, ~, 5, 4, 3, ~, 2, ~, ~, ~, 1, ~, 2, 3, 5, ~, ~, ~, 4, 3, 2, ~, 1, ~, ~, ~, 3, ~, 2, 1, 7, ~, ~, ~, 2, ~, 3, ~, 2, ~, ~, ~]
+    octave: [5, ~, 5, 5, 5, ~, ~, ~, 5, 5, 5, ~, 5, ~, ~, ~, 5, ~, 5, 5, 5, ~, ~, ~, 5, 5, 5, ~, 5, ~, ~, ~, 5, ~, 5, 5, 5, ~, ~, ~, 5, 5, 5, ~, 5, ~, ~, ~, 5, ~, 5, 5, 4, ~, ~, ~, 5, ~, 5, ~, 5, ~, ~, ~]
+    velocity: [82, ~, 80, 82, 88, ~, ~, ~, 86, 84, 84, ~, 88, ~, ~, ~, 88, ~, 86, 88, 94, ~, ~, ~, 92, 90, 90, ~, 92, ~, ~, ~, 82, ~, 80, 82, 88, ~, ~, ~, 86, 84, 84, ~, 88, ~, ~, ~, 88, ~, 86, 88, 94, ~, ~, ~, 92, ~, 92, ~, 95, ~, ~, ~]
+    tie: [~, ~, ~, ~, ~, true, true, ~, ~, ~, ~, ~, ~, true, true, true, ~, ~, ~, ~, ~, true, true, ~, ~, ~, ~, ~, ~, true, true, true, ~, ~, ~, ~, ~, true, true, ~, ~, ~, ~, ~, ~, true, true, true, ~, ~, ~, ~, ~, true, true, ~, ~, true, ~, true, ~, true, true, true]
+  - name: pre lead
     steps: 32
     group: lead
     step_size: 1/8
-    degree: [5, ~, 1, ~, 3, 2, 1, 7, 6, ~, ~, 5, 4, ~, 6, ~, 5, ~, 3, ~, 1, 2, 3, 5, 4, ~, 3, 2, 7, ~, ~, ~]
-    octave: [5, ~, 6, ~, 6, 6, 6, 5, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, 6, ~, 6, 6, 6, 6, 6, ~, 6, 6, 5, ~, ~, ~]
-    velocity: [104, ~, 112, ~, 108, 96, 100, 96, 112, ~, ~, 96, 100, ~, 108, ~, 104, ~, 112, ~, 100, 96, 104, 112, 108, ~, 100, 96, 104, ~, ~, ~]
-  - name: lead bridge
-    steps: 32
+    degree: [4, ~, 5, 6, ~, ~, ~, 5, 6, ~, 7, 1, ~, ~, ~, 7, 7, ~, 1, 2, ~, ~, ~, 1, 2, ~, ~, ~, ~, ~, 5, 7]
+    octave: [5, ~, 5, 5, ~, ~, ~, 5, 5, ~, 5, 6, ~, ~, ~, 5, 5, ~, 6, 6, ~, ~, ~, 6, 6, ~, ~, ~, ~, ~, 5, 5]
+    velocity: [96, ~, 96, 100, ~, ~, ~, 96, 100, ~, 100, 104, ~, ~, ~, 100, 104, ~, 106, 110, ~, ~, ~, 106, 112, ~, ~, ~, ~, ~, 104, 108]
+    tie: [~, ~, ~, ~, true, true, ~, ~, ~, ~, ~, ~, true, true, ~, ~, ~, ~, ~, ~, true, true, ~, ~, ~, true, true, true, true, true, ~, ~]
+  - name: chorus lead
+    steps: 64
     group: lead
     step_size: 1/8
-    degree: [4, ~, 5, 6, 1, ~, 6, ~, 4, ~, 3, 4, 6, ~, ~, ~, 5, ~, ~, 4, 3, ~, 2, ~, 1, ~, 2, ~, 5, ~, ~, ~]
-    octave: [5, ~, 5, 5, 6, ~, 5, ~, 5, ~, 6, 5, 5, ~, ~, ~, 5, ~, ~, 5, 6, ~, 6, ~, 6, ~, 6, ~, 5, ~, ~, ~]
-    velocity: [104, ~, 100, 104, 112, ~, 104, ~, 100, ~, 108, 100, 112, ~, ~, ~, 108, ~, ~, 100, 104, ~, 100, ~, 108, ~, 104, ~, 112, ~, ~, ~]
-  - name: chords
+    degree: [1, ~, 1, 2, 3, ~, ~, ~, 2, ~, 2, 3, 4, ~, ~, ~, 5, ~, 4, 3, 4, ~, 3, 2, 1, ~, ~, ~, ~, ~, ~, ~, 1, ~, 1, 2, 3, ~, ~, ~, 2, ~, 2, 3, 4, ~, ~, ~, 5, ~, ~, ~, 4, 3, 2, ~, 2, ~, ~, ~, ~, 5, ~, 5]
+    octave: [6, ~, 6, 6, 6, ~, ~, ~, 6, ~, 6, 6, 6, ~, ~, ~, 6, ~, 6, 6, 6, ~, 6, 6, 6, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, 6, 6, ~, ~, ~, 6, ~, 6, 6, 6, ~, ~, ~, 6, ~, ~, ~, 6, 6, 6, ~, 6, ~, ~, ~, ~, 5, ~, 5]
+    velocity: [118, ~, 108, 110, 114, ~, ~, ~, 118, ~, 108, 110, 114, ~, ~, ~, 122, ~, 110, 108, 112, ~, 108, 106, 116, ~, ~, ~, ~, ~, ~, ~, 118, ~, 108, 110, 114, ~, ~, ~, 118, ~, 108, 110, 114, ~, ~, ~, 122, ~, ~, ~, 110, 108, 110, ~, 112, ~, ~, ~, ~, 100, ~, 104]
+    tie: [~, ~, ~, ~, ~, true, true, true, ~, ~, ~, ~, ~, true, true, true, ~, ~, ~, ~, ~, true, ~, ~, ~, true, true, true, true, true, true, true, ~, ~, ~, ~, ~, true, true, true, ~, ~, ~, ~, ~, true, true, true, ~, true, true, true, ~, ~, ~, true, ~, true, true, true, ~, ~, ~, ~]
+  - name: bridge lead
+    steps: 16
+    group: lead
+    step_size: 1/4
+    degree: [1, ~, 1, 2, 3, ~, ~, ~, 2, ~, 2, 3, 4, ~, ~, ~]
+    octave: [6, ~, 6, 6, 6, ~, ~, ~, 6, ~, 6, 6, 6, ~, ~, ~]
+    velocity: [118, ~, 108, 110, 114, ~, ~, ~, 118, ~, 108, 110, 114, ~, ~, ~]
+    tie: [~, ~, ~, ~, ~, true, true, true, ~, ~, ~, ~, ~, true, true, true]
+  - name: verse chords
+    steps: 8
+    group: chords
+    step_size: 1/1
+    degree: [1, 1, 6, 6, 1, 1, 7, 7]
+    octave: [4, 4, 4, 4, 4, 4, 4, 4]
+    velocity: [88, 88, 88, 88, 88, 88, 88, 88]
+  - name: pre chords
     steps: 4
     group: chords
     step_size: 1/1
-    degree: [1, 6, 3, 7]
+    degree: [4, 6, 7, 5]
     octave: [4, 4, 4, 4]
-    velocity: [96, 96, 96, 96]
-  - name: chords bridge
+    velocity: [100, 100, 100, 100]
+  - name: chorus chords
+    steps: 8
+    group: chords
+    step_size: 1/1
+    degree: [6, 7, 1, 1, 6, 7, 5, 5]
+    octave: [4, 4, 4, 4, 4, 4, 4, 4]
+    velocity: [110, 110, 110, 110, 110, 110, 110, 110]
+  - name: bridge chords
     steps: 4
     group: chords
     step_size: 1/1
-    degree: [4, 6, 5, 5]
+    degree: [6, 6, 7, 7]
     octave: [4, 4, 4, 4]
-    velocity: [96, 96, 96, 100]
-  - name: bass
+    velocity: [92, 92, 92, 92]
+  - name: intro chords
+    steps: 2
+    group: chords
+    step_size: 1/1
+    degree: [1, 1]
+    octave: [4, 4]
+    velocity: [84, 84]
+  - name: outro chords
+    steps: 1
+    group: chords
+    step_size: 1/1
+    degree: [1]
+    octave: [4]
+    velocity: [96]
+  - name: verse bass
+    steps: 64
+    group: bass
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 1, ~, ~, 1, 1, ~, ~, ~, 1, ~, ~, 1, 6, ~, ~, ~, 6, ~, ~, 6, 6, ~, ~, ~, 6, ~, ~, 6, 1, ~, ~, ~, 1, ~, ~, 1, 1, ~, ~, ~, 1, ~, ~, 1, 7, ~, ~, ~, 7, ~, ~, 7, 7, ~, ~, ~, 7, ~, ~, 7]
+    octave: [3, ~, ~, ~, 3, ~, ~, 4, 3, ~, ~, ~, 3, ~, ~, 4, 2, ~, ~, ~, 2, ~, ~, 3, 2, ~, ~, ~, 2, ~, ~, 3, 3, ~, ~, ~, 3, ~, ~, 4, 3, ~, ~, ~, 3, ~, ~, 4, 2, ~, ~, ~, 2, ~, ~, 3, 2, ~, ~, ~, 2, ~, ~, 3]
+    velocity: [92, ~, ~, ~, 82, ~, ~, 78, 92, ~, ~, ~, 82, ~, ~, 78, 92, ~, ~, ~, 82, ~, ~, 78, 92, ~, ~, ~, 82, ~, ~, 78, 92, ~, ~, ~, 82, ~, ~, 78, 92, ~, ~, ~, 82, ~, ~, 78, 92, ~, ~, ~, 82, ~, ~, 78, 92, ~, ~, ~, 82, ~, ~, 78]
+    tie: [~, true, true, ~, ~, true, ~, ~, ~, true, true, ~, ~, true, ~, ~, ~, true, true, ~, ~, true, ~, ~, ~, true, true, ~, ~, true, ~, ~, ~, true, true, ~, ~, true, ~, ~, ~, true, true, ~, ~, true, ~, ~, ~, true, true, ~, ~, true, ~, ~, ~, true, true, ~, ~, true, ~, ~]
+  - name: chorus bass
+    steps: 64
+    group: bass
+    step_size: 1/8
+    degree: [6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+    octave: [2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3]
+    velocity: [112, 92, 100, 92, 100, 92, 100, 92, 112, 92, 100, 92, 100, 92, 100, 92, 112, 92, 100, 92, 100, 92, 100, 92, 112, 92, 100, 92, 100, 92, 100, 92, 112, 92, 100, 92, 100, 92, 100, 92, 112, 92, 100, 92, 100, 92, 100, 92, 112, 92, 100, 92, 100, 92, 100, 92, 112, 92, 100, 92, 100, 92, 100, 92]
+  - name: pre bass
     steps: 32
     group: bass
     step_size: 1/8
-    degree: [1, 1, ~, 1, 1, ~, 5, 1, 6, 6, ~, 6, 6, ~, 3, 6, 3, 3, ~, 3, 3, ~, 7, 3, 7, 7, ~, 7, 7, ~, 4, 5]
-    octave: [3, 4, ~, 3, 4, ~, 3, 3, 2, 3, ~, 2, 3, ~, 3, 2, 3, 4, ~, 3, 4, ~, 3, 3, 3, 4, ~, 3, 4, ~, 3, 3]
-    velocity: [112, 96, ~, 104, 96, ~, 100, 104, 112, 96, ~, 104, 96, ~, 100, 104, 112, 96, ~, 104, 96, ~, 100, 104, 112, 96, ~, 104, 96, ~, 100, 108]
-  - name: bass bridge
-    steps: 32
+    degree: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+    octave: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+    velocity: [104, 96, 96, 96, 96, 96, 96, 96, 107, 99, 99, 99, 99, 99, 99, 99, 110, 102, 102, 102, 102, 102, 102, 102, 113, 105, 105, 105, 105, 105, 105, 105]
+  - name: last note
+    steps: 8
     group: bass
     step_size: 1/8
-    degree: [4, 4, ~, 4, 4, ~, 1, 4, 6, 6, ~, 6, 6, ~, 3, 6, 5, 5, ~, 5, 5, ~, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5]
-    octave: [3, 4, ~, 3, 4, ~, 4, 3, 2, 3, ~, 2, 3, ~, 3, 2, 3, 4, ~, 3, 4, ~, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-    velocity: [112, 96, ~, 104, 96, ~, 100, 104, 112, 96, ~, 104, 96, ~, 100, 104, 112, 96, ~, 104, 96, ~, 100, 104, 96, 100, 104, 108, 112, 116, 120, 124]
-  - name: bell
-    steps: 16
-    group: bell
-    step_size: 1/8
-    degree: [~, ~, ~, ~, 1, ~, 5, ~, ~, ~, ~, ~, 3, ~, 2, ~]
-    octave: [~, ~, ~, ~, 6, ~, 5, ~, ~, ~, ~, ~, 6, ~, 6, ~]
-    velocity: [~, ~, ~, ~, 104, ~, 96, ~, ~, ~, ~, ~, 104, ~, 96, ~]
-  - name: kick
-    steps: 16
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [116, ~, ~, ~, ~, ~, ~, ~]
+    tie: [~, true, true, true, true, true, ~, ~]
+  - name: verse kick
+    steps: 8
     group: kick
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 1, ~, ~, ~]
+    octave: [3, ~, ~, ~, 3, ~, ~, ~]
+    velocity: [100, ~, ~, ~, 88, ~, ~, ~]
+  - name: chorus kick
+    steps: 8
+    group: kick
+    step_size: 1/8
+    degree: [1, ~, ~, ~, 1, ~, 1, ~]
+    octave: [3, ~, ~, ~, 3, ~, 3, ~]
+    velocity: [122, ~, ~, ~, 108, ~, 104, ~]
+  - name: one kick
+    steps: 8
+    group: kick
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [124, ~, ~, ~, ~, ~, ~, ~]
+  - name: verse noise
+    steps: 8
+    group: noise
+    step_size: 1/8
+    degree: [5, 5, 5, 5, 5, 5, 5, 5]
+    octave: [8, 8, 8, 8, 8, 8, 8, 8]
+    velocity: [52, 40, 52, 40, 52, 40, 52, 40]
+  - name: chorus noise
+    steps: 8
+    group: noise
+    step_size: 1/8
+    degree: [5, 5, 1, 5, 5, 5, 1, 5]
+    octave: [8, 8, 7, 8, 8, 8, 7, 8]
+    velocity: [80, 60, 120, 60, 80, 60, 120, 66]
+  - name: pre roll
+    steps: 64
+    group: noise
     step_size: 1/16
-    degree: [1, ~, ~, ~, ~, ~, ~, ~, 1, ~, 1, ~, ~, ~, ~, ~]
-    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
-    velocity: [120, ~, ~, ~, ~, ~, ~, ~, 120, ~, 104, ~, ~, ~, ~, ~]
-  - name: noise
+    degree: [1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, ~, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    octave: [7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, ~, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]
+    velocity: [62, ~, 64, ~, 66, ~, 68, ~, 70, ~, 72, ~, 74, ~, 76, ~, 67, ~, 69, ~, 71, ~, 73, ~, 75, ~, 77, ~, 79, ~, 81, ~, 72, ~, 74, ~, 76, ~, 78, ~, 80, ~, 82, ~, 84, ~, 86, ~, 87, 90, 93, 96, 99, 102, 105, 108, 111, 114, 117, 120, 120, 120, 120, 120]
+  - name: pickup
     steps: 16
     group: noise
     step_size: 1/16
-    degree: [5, ~, 5, ~, 1, ~, 5, ~, 5, ~, 5, ~, 1, ~, 5, 5]
-    octave: [8, ~, 8, ~, 7, ~, 8, ~, 8, ~, 8, ~, 7, ~, 8, 8]
-    velocity: [72, ~, 64, ~, 120, ~, 72, ~, 72, ~, 64, ~, 120, ~, 72, 60]
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, 1, ~, 1, ~, 1, 1, 1, 1]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, 7, ~, 7, ~, 7, 7, 7, 7]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, 70, ~, 80, ~, 92, 100, 110, 120]
+  - name: one hit
+    steps: 8
+    group: noise
+    step_size: 1/8
+    degree: [1, ~, ~, ~, ~, ~, ~, ~]
+    octave: [7, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [124, ~, ~, ~, ~, ~, ~, ~]
+  - name: verse bell
+    steps: 64
+    group: bell
+    step_size: 1/8
+    degree: [5, ~, ~, ~, 1, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 3, ~, ~, ~, 6, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, ~, ~, 1, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 4, ~, ~, ~, 2, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~]
+    octave: [5, ~, ~, ~, 6, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, ~, ~, 6, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~, 5, ~, ~, ~, 5, ~, ~, ~, ~, ~, 4, ~, ~, ~, ~, ~]
+    velocity: [100, ~, ~, ~, 90, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 100, ~, ~, ~, 92, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 100, ~, ~, ~, 90, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 100, ~, ~, ~, 92, ~, ~, ~, ~, ~, 90, ~, ~, ~, ~, ~]
+  - name: chorus bell
+    steps: 64
+    group: bell
+    step_size: 1/8
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 5, ~, 1, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 2, ~, 5, ~, ~, ~, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, 7, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 6, ~, 6, ~, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 104, ~, 100, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 104, ~, 98, ~, ~, ~, ~]
+  - name: bridge bell
+    steps: 32
+    group: bell
+    step_size: 1/8
+    degree: [3, ~, ~, ~, 5, ~, ~, ~, ~, ~, 1, ~, ~, ~, ~, ~, 4, ~, ~, ~, 2, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~]
+    octave: [6, ~, ~, ~, 6, ~, ~, ~, ~, ~, 6, ~, ~, ~, ~, ~, 6, ~, ~, ~, 6, ~, ~, ~, ~, ~, 5, ~, ~, ~, ~, ~]
+    velocity: [100, ~, ~, ~, 90, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~, 100, ~, ~, ~, 90, ~, ~, ~, ~, ~, 86, ~, ~, ~, ~, ~]
+
+  - name: rest
+    steps: 16
+    group: noise
+    step_size: 1/16
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    octave: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
 
 instruments:
   - name: pulse lead
@@ -111,11 +246,21 @@ instruments:
     role: normal
     sound:
       engine: sid
-      volume: 26
+      volume: 21
       voices: 1
       oscillators: { type: sid, wave: pulse, pulse_width: 25, modulation: "off", interval: 7, arpeggio: [0, 7, 12] }
       envelopes: [{ type: sid_adsr, attack: 0, decay: 9, sustain: 8, release: 6 }, { type: none }, { type: none }]
-      filter: { type: multimode, mode: low, cutoff: 3200, resonance: 30, env_amount: 0, key_track: 50 }
+      filter: { type: multimode, mode: low, cutoff: 1500, resonance: 30, env_amount: 0, key_track: 50 }
+  - name: bright arpeggio
+    kind: built_in
+    role: normal
+    sound:
+      engine: sid
+      volume: 24
+      voices: 1
+      oscillators: { type: sid, wave: pulse, pulse_width: 25, modulation: "off", interval: 7, arpeggio: [0, 7, 12] }
+      envelopes: [{ type: sid_adsr, attack: 0, decay: 9, sustain: 8, release: 6 }, { type: none }, { type: none }]
+      filter: { type: multimode, mode: low, cutoff: 3600, resonance: 30, env_amount: 0, key_track: 50 }
   - name: triangle bass
     kind: built_in
     role: normal
@@ -168,6 +313,7 @@ songs:
       - { name: lead, instrument: pulse lead }
       - { name: bell, instrument: ring bell }
       - { name: arpeggio, instrument: arpeggio }
+      - { name: bright, instrument: bright arpeggio }
       - { name: bass, instrument: triangle bass }
       - { name: kick, instrument: chip kick }
       - { name: noise, instrument: chip noise }
@@ -175,35 +321,76 @@ songs:
     scenes:
       - name: intro
         clips:
-          - { track: arpeggio, pattern: chords, repeat: 2 }
-      - name: theme
+          - { track: arpeggio, pattern: intro chords }
+          - { track: noise, patterns: [rest, pickup] }
+      - name: verse
         clips:
-          - { track: lead, pattern: lead, repeat: 2 }
-          - { track: arpeggio, pattern: chords, loop: true }
-          - { track: bass, pattern: bass, loop: true }
-      - name: theme drums
+          - { track: lead, pattern: verse lead, built_in: { phrasing: { enabled: true, line_bars: 2, breath: quick, rise_and_fall: a little, notes: flowing } } }
+          - { track: arpeggio, pattern: verse chords, loop: true }
+          - { track: bass, pattern: verse bass, loop: true }
+          - { track: kick, pattern: verse kick, loop: true }
+          - { track: noise, pattern: verse noise, loop: true }
+      - name: pre
         clips:
-          - { track: lead, pattern: lead, repeat: 2 }
-          - { track: arpeggio, pattern: chords, loop: true }
-          - { track: bass, pattern: bass, loop: true }
-          - { track: kick, pattern: kick, loop: true }
-          - { track: noise, pattern: noise, loop: true }
+          - { track: lead, pattern: pre lead, built_in: { phrasing: { enabled: true, line_bars: 1, breath: quick, rise_and_fall: a little, notes: as written } } }
+          - { track: arpeggio, pattern: pre chords, loop: true }
+          - { track: bass, pattern: pre bass, loop: true }
+          - { track: kick, pattern: verse kick, loop: true }
+          - { track: noise, pattern: pre roll, loop: true }
+      - name: chorus
+        clips:
+          - { track: lead, pattern: chorus lead, built_in: { phrasing: { enabled: true, line_bars: 2, breath: quick, rise_and_fall: a little, notes: flowing } } }
+          - { track: bell, pattern: chorus bell, loop: true }
+          - { track: bright, pattern: chorus chords, loop: true }
+          - { track: bass, pattern: chorus bass, loop: true }
+          - { track: kick, pattern: chorus kick, loop: true }
+          - { track: noise, pattern: chorus noise, loop: true }
+      - name: verse 2
+        clips:
+          - { track: lead, pattern: verse lead, built_in: { phrasing: { enabled: true, line_bars: 2, breath: quick, rise_and_fall: a little, notes: flowing } } }
+          - { track: arpeggio, pattern: verse chords, loop: true }
+          - { track: bass, pattern: verse bass, loop: true }
+          - { track: kick, pattern: verse kick, loop: true }
+          - { track: noise, pattern: verse noise, loop: true }
+          - { track: bell, pattern: verse bell, loop: true }
+      - name: pre 2
+        clips:
+          - { track: lead, pattern: pre lead, built_in: { phrasing: { enabled: true, line_bars: 1, breath: quick, rise_and_fall: a little, notes: as written } } }
+          - { track: arpeggio, pattern: pre chords, loop: true }
+          - { track: bass, pattern: pre bass, loop: true }
+          - { track: kick, pattern: verse kick, loop: true }
+          - { track: noise, pattern: pre roll, loop: true }
+      - name: chorus 2
+        clips:
+          - { track: lead, pattern: chorus lead, built_in: { phrasing: { enabled: true, line_bars: 2, breath: quick, rise_and_fall: a little, notes: flowing } } }
+          - { track: bell, pattern: chorus bell, loop: true }
+          - { track: bright, pattern: chorus chords, loop: true }
+          - { track: bass, pattern: chorus bass, loop: true }
+          - { track: kick, pattern: chorus kick, loop: true }
+          - { track: noise, pattern: chorus noise, loop: true }
       - name: bridge
         clips:
-          - { track: lead, pattern: lead bridge, repeat: 2 }
-          - { track: bell, pattern: bell, loop: true }
-          - { track: arpeggio, pattern: chords bridge, loop: true }
-          - { track: bass, pattern: bass bridge, loop: true }
-          - { track: kick, pattern: kick, loop: true }
-          - { track: noise, pattern: noise, loop: true }
-      - name: theme again
+          - { track: lead, pattern: bridge lead, built_in: { phrasing: { enabled: true, line_bars: 4, breath: deep, rise_and_fall: a lot, notes: flowing } } }
+          - { track: bell, pattern: bridge bell, loop: true }
+          - { track: arpeggio, pattern: bridge chords, loop: true }
+      - name: build
         clips:
-          - { track: lead, pattern: lead, repeat: 2 }
-          - { track: arpeggio, pattern: chords, loop: true }
-          - { track: bass, pattern: bass, loop: true }
-          - { track: kick, pattern: kick, loop: true }
-          - { track: noise, pattern: noise, loop: true }
-      - name: outro
+          - { track: lead, pattern: pre lead, built_in: { phrasing: { enabled: true, line_bars: 1, breath: quick, rise_and_fall: a little, notes: as written } } }
+          - { track: arpeggio, pattern: pre chords, loop: true }
+          - { track: bass, pattern: pre bass, loop: true }
+          - { track: kick, pattern: verse kick, loop: true }
+          - { track: noise, pattern: pre roll, loop: true }
+      - name: last chorus
         clips:
-          - { track: arpeggio, pattern: chords, repeat: 1 }
-          - { track: bass, pattern: bass, repeat: 1 }
+          - { track: lead, pattern: chorus lead, built_in: { phrasing: { enabled: true, line_bars: 2, breath: quick, rise_and_fall: a little, notes: flowing } } }
+          - { track: bell, pattern: chorus bell, loop: true }
+          - { track: bright, pattern: chorus chords, loop: true }
+          - { track: bass, pattern: chorus bass, loop: true }
+          - { track: kick, pattern: chorus kick, loop: true }
+          - { track: noise, pattern: chorus noise, loop: true }
+      - name: ending
+        clips:
+          - { track: arpeggio, pattern: outro chords }
+          - { track: bass, pattern: last note }
+          - { track: kick, pattern: one kick }
+          - { track: noise, pattern: one hit }
