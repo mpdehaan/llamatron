@@ -977,6 +977,34 @@ impl ArrangePage {
 }
 
 impl Page for ArrangePage {
+    /// The part of the grid the cursor is on: the corner, a track's name, the + after the tracks, a scene's name, the + row, a
+    /// clip or an empty cell.
+    fn place_kind(&self, app: &App) -> String {
+        let kind = if self.on_corner() {
+            "corner"
+        } else if self.on_track_plus(app) {
+            "track plus"
+        } else if self.on_header() {
+            "track"
+        } else if self.on_plus_row(app) {
+            "scene plus"
+        } else if self.on_scene_name() {
+            "scene"
+        } else {
+            let tracks = Self::tracks(app);
+            let has_clip = tracks
+                .get(self.track_place())
+                .and_then(|track| app.document.song().scenes().get(self.row.get() as usize)?.get_clip_slot(track))
+                .is_some();
+            if has_clip {
+                "clip"
+            } else {
+                "empty"
+            }
+        };
+        kind.to_string()
+    }
+
     fn go_to_row(&mut self, _app: &App, row: &str) {
         self.put_cursor_at(row);
     }

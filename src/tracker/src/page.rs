@@ -33,6 +33,12 @@ pub trait Page {
     /// The Python page's class name, which the screen tour records at each stop.
     fn name(&self) -> &'static str;
 
+    /// What kind of place the cursor is on, such as a clip on Arrange or a button on a settings page, as a walk of the program
+    /// tells one place on a page from another; nothing where the page has one kind of place.
+    fn place_kind(&self, _app: &App) -> String {
+        String::new()
+    }
+
     /// The page's name in a stack of pages: its Python class's, which a page not ported yet keeps of the page it stands for.
     fn stack_name(&self) -> &str {
         self.name()

@@ -29,6 +29,12 @@ pub enum Node {
 
 /// What a page of settings says of itself: its form, and what its edits do.
 pub trait Form {
+    /// The kind of thing the page edits, where one page edits several kinds, as the plugin editor does each kind of
+    /// generator, so that a walk of the program tells their fields apart; nothing where the page edits one kind.
+    fn edited_kind(&self) -> String {
+        String::new()
+    }
+
     /// Keep showing the same thing after a step renamed it, and say whether the thing is still in the set (the page's own).
     fn follow_renames(&mut self, _renames: &crate::history::Renames) {}
     fn still_exists(&self, _app: &App) -> bool {
@@ -612,6 +618,17 @@ impl<F: Form> FieldPage<F> {
 }
 
 impl<F: Form> Page for FieldPage<F> {
+    /// The field or button the cursor is on, by its label, so that every field's keys are tried.
+    fn place_kind(&self, app: &App) -> String {
+        let shown = self.shown(app);
+        let field = shown
+            .fields
+            .get(self.place(&shown))
+            .map(|field| field.label.trim().to_string())
+            .unwrap_or_default();
+        format!("{} {field}", self.form.edited_kind())
+    }
+
     fn follow_renames(&mut self, renames: &crate::history::Renames) {
         self.form.follow_renames(renames);
     }

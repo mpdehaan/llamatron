@@ -416,6 +416,15 @@ pub fn shown_around(count: usize, at: usize, room: usize) -> std::ops::Range<usi
 }
 
 impl<L: Listing> Page for ListPage<L> {
+    /// A row of the list, or the + row.
+    fn place_kind(&self, app: &App) -> String {
+        // A search offers keys of its own, so a row found by one is a place apart from the same row otherwise.
+        if self.searching {
+            return "searching".to_string();
+        }
+        if self.current(app).is_some() { "row" } else { "plus" }.to_string()
+    }
+
     fn go_to_row(&mut self, app: &App, row: &str) {
         self.put_cursor_on(app, row);
     }

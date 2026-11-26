@@ -198,6 +198,16 @@ impl Tracker {
     }
 
     /// How many pages are open, the main screen among them.
+    /// The names of the pages and dialogs open, the main screen first, as a walk of the program tells one place from another.
+    pub fn stack_names(&self) -> Vec<String> {
+        self.pages.iter().map(|page| page.stack_name().to_string()).collect()
+    }
+
+    /// The keys the top page offers where its cursor is, each binding with the keys that press it.
+    pub fn offered_keys(&self) -> Vec<crate::keys::KeyItem> {
+        self.top().page_key_table(&self.app)
+    }
+
     pub fn depth(&self) -> usize {
         self.pages.len()
     }

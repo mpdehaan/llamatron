@@ -333,6 +333,21 @@ impl GeneratorsPage {
 const MOST_USES_SHOWN: usize = 5;
 
 impl Page for GeneratorsPage {
+    /// A heading, the + row, or a generator by its kind, so that each kind's editor is reached.
+    fn place_kind(&self, app: &App) -> String {
+        // A search offers keys of its own, so a row found by one is a place apart from the same row otherwise.
+        if self.searching {
+            return "searching".to_string();
+        }
+        match self.listed(app) {
+            // An open heading and a closed one lead to different places: Down from an open one reaches its generators.
+            Listed::Heading(kind) if app.document.is_generator_type_open(&kind) => format!("open heading {kind}"),
+            Listed::Heading(kind) => format!("closed heading {kind}"),
+            Listed::Generator(kind, _) => format!("generator {kind}"),
+            Listed::New => "plus".to_string(),
+        }
+    }
+
     /// After a rename made here, the cursor goes to the generator under its new name.
     fn follow_renames(&mut self, renames: &crate::history::Renames) {
         if !renames.made_here {

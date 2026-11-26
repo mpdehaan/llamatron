@@ -327,6 +327,22 @@ impl PatternsPage {
 }
 
 impl Page for PatternsPage {
+    /// The row of tabs, a pattern, or a + row.
+    fn place_kind(&self, app: &App) -> String {
+        // A search offers keys of its own, so a row found by one is a place apart from the same row otherwise.
+        if self.searching {
+            return "searching".to_string();
+        }
+        if self.on_tabs {
+            return "tabs".to_string();
+        }
+        match self.listed(app) {
+            Listed::Pattern(_) => "pattern".to_string(),
+            Listed::NewPattern(_) => "plus".to_string(),
+            Listed::NewGroup => "new group".to_string(),
+        }
+    }
+
     fn go_to_row(&mut self, app: &App, row: &str) {
         self.put_cursor_at(app, row);
     }

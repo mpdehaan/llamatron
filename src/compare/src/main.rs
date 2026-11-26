@@ -286,6 +286,9 @@ fn serve() -> ExitCode {
 
 fn main() -> ExitCode {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
+    if arguments.first().map(String::as_str) == Some("explore") {
+        return explore(arguments.get(1).map(String::as_str));
+    }
     if arguments.first().map(String::as_str) == Some("screenshots") {
         return screenshots(arguments.get(1).map(String::as_str));
     }
@@ -1551,4 +1554,65 @@ fn screenshots(folder: Option<&str>) -> ExitCode {
         println!("wrote {}", path.display());
     }
     ExitCode::SUCCESS
+}
+
+/// Where a walk of the program keeps its copies of the set.
+const EXPLORE_FOLDER: &str = "/tmp/claude/llamatron/explore";
+/// The screen a walk of the program draws at.
+const EXPLORE_COLUMNS: usize = 80;
+const EXPLORE_ROWS: usize = 24;
+
+/// Walk the program on a set from the main screen, pressing every key every page offers at each kind of place, and say how
+/// many places it reached, on which pages, and every key that panicked, with the keys that reach it.
+fn explore(set: Option<&str>) -> ExitCode {
+    let Some(set) = set else {
+        eprintln!("usage: llamatron-compare explore SET");
+        return ExitCode::from(2);
+    };
+    // The places on every set named, separated by commas, are reported together.
+    let sets: Vec<&str> = set.split(',').collect();
+    // The walk's copies of the set go where every working file of the project's tools goes.
+    let folder = std::path::PathBuf::from(EXPLORE_FOLDER);
+    if let Err(problem) = std::fs::create_dir_all(&folder) {
+        eprintln!("{}: {problem}", folder.display());
+        return ExitCode::from(1);
+    }
+    // A panic is a finding the walk records, not a message to print as it happens.
+    std::panic::set_hook(Box::new(|_| {}));
+    let mut explored = Vec::new();
+    for set in sets {
+        match llamatron_tracker::tour::explore(std::path::Path::new(set), &folder, EXPLORE_COLUMNS, EXPLORE_ROWS) {
+            Ok(places) => explored.extend(places),
+            Err(problem) => {
+                eprintln!("{set}: {problem}");
+                return ExitCode::from(1);
+            }
+        }
+    }
+    let mut pages: Vec<(String, usize)> = Vec::new();
+    for place in &explored {
+        match pages.iter_mut().find(|(page, _)| *page == place.page) {
+            Some((_, count)) => *count += 1,
+            None => pages.push((place.page.clone(), 1)),
+        }
+    }
+    let panics: Vec<&llamatron_tracker::tour::Explored> = explored.iter().filter(|place| place.panic.is_some()).collect();
+    println!("{} places on {} pages, {} panics", explored.len(), pages.len(), panics.len());
+    for (page, count) in &pages {
+        println!("  {page}: {count}");
+    }
+    // EXPLORE_SHOW names a page whose places are listed, each with the keys that reach it, to see where a walk goes.
+    if let Ok(shown) = std::env::var("EXPLORE_SHOW") {
+        for place in explored.iter().filter(|place| place.page == shown) {
+            println!("{shown} after {} [{}]", place.keys.join(" "), place.kind);
+        }
+    }
+    for place in &panics {
+        println!("panic after {}: {}", place.keys.join(" "), place.panic.clone().unwrap_or_default());
+    }
+    if panics.is_empty() {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::from(1)
+    }
 }

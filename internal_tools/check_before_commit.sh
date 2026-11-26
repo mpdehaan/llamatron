@@ -52,6 +52,16 @@ if [ -n "$changed" ]; then
     done
     rm -rf "$results"
     [ "$failed" = 0 ] || exit 1
+    # The crash sweep: every key every page offers, at each kind of place, on sets that between them hold every kind of
+    # page, where the tracker changed; a key that panics fails the check, with the keys that reach it.
+    case " $steps " in
+        *" screens "*)
+            swept=examples/learning/15_complex_gifts_chain.yml,examples/learning/06_chord_progression_generator.yml,examples/learning/21_guitarify.yml,examples/by_genre/electronic/minimal_techno.yml
+            mkdir -p /tmp/claude/llamatron
+            sweep=/tmp/claude/llamatron/crash_sweep.txt
+            src/target/release/llamatron-compare explore "$swept" > "$sweep" || { grep '^panic' "$sweep"; exit 1; }
+            echo "crash sweep: $(head -1 "$sweep")" ;;
+    esac
 fi
 # Every path a document names must still exist.
 exec .venv/bin/python -m unittest -q python.tests.test_doc_paths
