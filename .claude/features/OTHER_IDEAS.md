@@ -374,10 +374,9 @@ In the order of their priority, the highest first.
   trip (`py_legacy/internal_tools/test_all_sample_midi_against_import.sh`). Claude offered a fifth kind of lane that a track's CC
   setting names, `PB` say, whose 0 to 127 are sent as pitch bend with 64 as no bend, about 3 cents a level over a bend of
   two semitones; the Live set already has a pitch bend target on every MIDI track (`exporters/ableton_project.py`).
-- **Built synth daemons from GitHub Actions**: GitHub Actions builds the native synth daemon (and any later daemons) for
-  each supported platform on each release and attaches the binaries to the release; setup.sh downloads the right one and
-  checks its checksum, so that no user needs Rust installed. Until then setup.sh builds it locally, offering to install Rust
-  first.
+  Once built, the electronic genres use it as a riser and a bass slide.
+- **The program built by GitHub Actions**: llamatron and llamatron-backend built for each supported platform on each release
+  and attached to it; setup.sh downloads the right ones and checks their checksums, so that no one needs Rust installed.
 - **Draws as decks: the professor's review of draws and ideas for them**: The professor's review, kept whole, set aside by
   the user to discuss later. Nothing is decided; the questions at the end (54 to 58) are open. What works: few parts give
   many results (a count-in, accents that turn over, melodies that change each pass, gates made by counting); a draw is
@@ -635,7 +634,7 @@ In the order of their priority, the highest first.
   below, with the same Launch together rule when the start arrives. "Any" and "Other", Live's random ones, would take the
   song's seed. Nothing in the format changes but the list of choices. - **Testing over the wire with a receiver**, from the
   user: a small program the tests spin up, which makes itself visible as a MIDI device (a virtual port through
-  python-rtmidi's `open_virtual_port` on a Mac or Linux, or the IAC driver) and records every event with its time, so that
+  CoreMIDI's virtual sources on a Mac, or the IAC driver) and records every event with its time, so that
   what the tracker sends over a real port is compared with the MIDI export, every example and demo through it, the timing
   errors reported to the user with Claude's opinion of whether they would sound tight. Today the suite holds the player to
   the export inside the process (`tests/realtime/test_realtime.py`) and the report measures the Realtime Sender Process on
@@ -685,23 +684,14 @@ In the order of their priority, the highest first.
   differ between instruments in Live anyway. ### (Low priority) A library of patterns, chains and arps A file of reusable
   parts that any song could copy from, and the base for song templates. The difficulty is keeping it from being confusing in
   the text UI, alongside each song's own patterns and generators.
-- **Performance hot spots**: CLAUDE.md holds the standing rule: profile with cProfile over the examples, prefer doing less
-  work to new number types, prove with `py_legacy/internal_tools/compare_exports.py` that a speedup changed nothing, and test both
-  paths of any shortcut. Earlier work did that for estimating, grabs, clip lengths, notes, numbers (`Rational`) and
-  YAML reading. One candidate noticed then is still unmeasured: - **Rendering a Live set.** Each track is a deep copy of the
-  template's track, and every shared id is renumbered by walking the whole tree. That's fine for a few tracks, but worth
-  measuring for songs with many tracks and scenes, since the Live set is now the slowest part of rendering a big song.
-  Efficiency shouldn't cost readability, which matters more here: a faster version only goes in where it's measurably
-  needed, and stays as clear as what it replaces.
-- **Gauges for the generators: the auto ratchet counts, a stutter and the groove editor**: To
-  sketch and iterate on before anything is built, with the gauge and piano roll work's component focus: steps that can only
-  go up and down so many points read better as gauges than as numbers. The arp's offsets editor is such a gauge now, built
-  from `SignedGauge` in `interface/tracker/components/signed_gauge.py`. The auto ratchet's counts, a cycle of how many
-  slices each note is cut into, could be short gauges too, and a stutter, which llamatron doesn't have yet, would be the
-  same kind of row. The user wants a proposed sketch of each, drawn the way the pattern editor sketches were, to iterate on
-  before deciding. What it would mean for the code: `SignedGauge` reused by the groove editor in place of its one-row
-  drawing, since a groove's cells are signed percentages too, and a counts row for the auto ratchet editor in place of its
-  text field.
+- **Rendering a Live set, measured**: each track is a copy of the template's track and every shared id is renumbered by
+  walking the whole tree; fine for a few tracks, but worth measuring for songs with many tracks and scenes, since the Live
+  set is the slowest part of rendering a big song. A faster version goes in only where it is measurably needed, as clear as
+  what it replaces.
+- **Gauges for a stutter and the groove editor**: steps that go up and down by so many points read better as gauges than
+  numbers, as the offsets editor's signed gauge does; the groove editor's cells, signed percentages, drawn with the same
+  gauge, and a stutter, which llamatron does not have yet, as the same kind of row. Sketches first, drawn the way the pattern
+  editor's were.
 - **Melodic figures for melody generators**: Short melodic figures, a few notes each, counted across many works: which turns
   of phrase a style favours, how a figure is elaborated and ornamented. An experiment to recognize styles by them was
   started and deleted, the user's choice, since figures may only be collected from sources clearly in the public domain
@@ -731,10 +721,7 @@ In the order of their priority, the highest first.
   and Articulate, sharing their time settings, or a generator of its own; how it meets a pattern's own CC lane of the same
   controller; and what the wizard says when the preview synth does not answer to the controller, since General MIDI sounds
   often ignore 74.
-- **Pitch bend as the electronic genres' riser and bass slide**: From the music expert's review of the electronic template,
-  adding to the "Pitch bend" idea: a true riser, a sliding sub bass and a drum and bass or dubstep bass slide want pitch
-  bend, where Glide covers only synths with portamento. A dependency of those rises and bass figures in the song wizard's
-  electronic genres, and of none of the rest of the review.
+
 - **The website, what's left**: The site builds from `docs/GUIDE.md` and `docs/` with VitePress and is built into
   `output/web_docs/`, which git ignores, and published by `internal_tools/publish_docs.sh`, as the `gh-pages` branch. Still
   to do: - A landing page with a hero section and feature cards, in place of the guide's opening as the front page, which

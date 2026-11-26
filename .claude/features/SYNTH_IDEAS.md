@@ -85,15 +85,10 @@ In the order of their priority, the highest first.
   with the pitch wobble, the swirl of level and the stereo spread they make, and the overdrive of the amplifier before them.
   Its speed switch is the setting a player reaches for while playing, so it is a likely Synth Control row. Needs the
   professor's notes on both before building, and stereo (the Pan work) for its spread.
-- **Mono instruments, to be discussed**: While designing the Hocket, as a high priority
-  discussion: a Mono toggle on the instrument editor, for an instrument that plays one note at a time, as a monosynth or a
-  modular patch does. A Hocket hands notes to tracks that may also play notes of their own, and several tracks may share one
-  instrument, so notes can overlap on an instrument that can't sound them together. What it needs, to discuss: whether Mono
-  changes what is exported and played in real time, or only warns; which note wins when two overlap (the newest, cutting the
-  one before, as most monosynths do, or the oldest, or the highest or lowest); what a chord does on a mono instrument (its
-  root, its top note, or refused); whether an overlap cut short becomes a legato slide, as the Glide row's overlap is;
-  whether it is judged per track or across every track sharing the instrument; and whether the analyzer idea below would
-  report overlaps on a mono instrument.
+- **One-voice instruments shared by tracks**: a one-voice instrument already plays one note at a time, keeping a chord's
+  lowest note and sliding only where notes overlap; still to discuss, raised by the Hocket, which hands notes to tracks that
+  may play notes of their own: whether overlaps are judged per track or across every track sharing the instrument, and
+  whether llamatron warns of them.
 - **Built-in synths: FM**: A built-in FM family after the first built-in synths: FM drums first, then two- and four-operator
   tonal FM, plain FM's index movable live each chunk, feedback approximated by tables (.claude/notes/synthesis/MACHINES.md).
 - **Built-in synths: Unison and Chord**: Unison saws and pulses with subs, and a Chord instrument that plays up to four
