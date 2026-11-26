@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Hold llamatron to the Python program's last answers, frozen in py_legacy/frozen_test_data/ before the Python program was
 retired: every example set and test set is put through a step by llamatron, and what it makes is compared with what the
-Python made of the same file. The Rust side is native/target/release/llamatron-compare.
+Python made of the same file. The Rust side is src/target/release/llamatron-compare.
 
-    .venv/bin/python internal_tools/compare_llamatron2.py load      # every example's and test set's data, as both load it
-    .venv/bin/python internal_tools/compare_llamatron2.py render    # every song rendered from one seed, each clip's notes
-    .venv/bin/python internal_tools/compare_llamatron2.py screens   # the key tour's screens at 80x24 and 160x50
-    .venv/bin/python internal_tools/compare_llamatron2.py load --only tie
+    .venv/bin/python internal_tools/compare_llamatron.py load      # every example's and test set's data, as both load it
+    .venv/bin/python internal_tools/compare_llamatron.py render    # every song rendered from one seed, each clip's notes
+    .venv/bin/python internal_tools/compare_llamatron.py screens   # the key tour's screens at 80x24 and 160x50
+    .venv/bin/python internal_tools/compare_llamatron.py load --only tie
 
 A set changed since its answers were frozen has none to be held to, and is counted apart. It prints each set that differs
 with the first place it differs, and a count, and exits 1 when anything differs, so that the commit check can run it.
@@ -23,13 +23,12 @@ import pathlib
 import shutil
 import subprocess
 import sys
-import tarfile
 
 TOP = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(TOP / 'python' / 'src'))
 from llamatron_tools.safe_yaml import load_safely  # noqa: E402
 
-RUST = TOP / 'native' / 'target' / 'release' / 'llamatron-compare'
+RUST = TOP / 'src' / 'target' / 'release' / 'llamatron-compare'
 EXAMPLES = TOP / 'examples'
 FROZEN = TOP / 'py_legacy' / 'frozen_test_data'
 # The test sets, which the frozen answers name test_data/...
@@ -39,7 +38,7 @@ SHOWN = 120
 # The steps whose answers are frozen.
 STEPS = ('load', 'layout', 'migrate', 'save', 'edits', 'pattern_edits', 'render', 'timeline', 'player', 'midi', 'live', 'import')
 # Where the screen tour's baseline is kept, git-ignored, first copied from the frozen one.
-KEPT = TOP / '.cache' / 'compare_llamatron2'
+KEPT = TOP / '.cache' / 'compare_llamatron'
 # What a set changed since the answers were frozen is answered with, so that it is counted apart.
 CHANGED = 'changed since frozen'
 
@@ -128,12 +127,10 @@ LEAVE = 'escape'
 
 
 def python_screens():
-    """Return the Python's screen tour at each size, from its frozen capture, unpacked first where it has not been."""
+    """Return the Python's screen tour at each size, from its frozen capture, copied out first where it has not been."""
     files = [SCREENS / 'screens_{}x{}.json'.format(*size) for size in SCREEN_SIZES]
     if not all(path.exists() for path in files) or not (SCREENS / 'tour.yml').exists():
-        SCREENS.mkdir(parents=True, exist_ok=True)
-        with tarfile.open(FROZEN / 'screens' / 'capture.tar.gz') as archive:
-            archive.extractall(SCREENS, filter='data')
+        shutil.copytree(FROZEN / 'screens' / 'capture', SCREENS, dirs_exist_ok=True)
     shutil.rmtree(TOUR_HOME, ignore_errors=True)
     shutil.copytree(FROZEN_HOME, TOUR_HOME)
     return [(size, json.loads(home_named(path.read_text(encoding='utf-8'), CAPTURED_HOME))) for size, path in zip(SCREEN_SIZES, files)]
@@ -314,7 +311,7 @@ def screen_difference(*, size, number, python, port):
 
 
 def main():
-    made = argparse.ArgumentParser(prog='compare_llamatron2.py', description='Hold llamatron2 to the Python program.')
+    made = argparse.ArgumentParser(prog='compare_llamatron.py', description='Hold llamatron2 to the Python program.')
     made.add_argument('step', choices=sorted([*STEPS, 'screens']))
     made.add_argument('--only', help='only the sets whose path holds this text')
     made.add_argument('--differences', type=int, help='for screens, how many differing stops to show, three unless given')

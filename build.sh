@@ -11,7 +11,7 @@
 #
 # It checks what building needs and offers to install what is missing, installing nothing unless you say yes, through
 # internal_tools/build_backend.sh, which builds the backend too; then it builds the tracker into
-# native/target/release/llamatron. Running it again rebuilds only what changed.
+# src/target/release/llamatron. Running it again rebuilds only what changed.
 
 set -eu
 cd "$(dirname "$0")"
@@ -20,5 +20,5 @@ sh internal_tools/build_backend.sh
 if [ -x "$HOME/.cargo/bin/cargo" ]; then
     PATH="$HOME/.cargo/bin:$PATH"
 fi
-cargo build --release --manifest-path native/Cargo.toml -p llamatron-tracker
+cargo build --release --manifest-path src/Cargo.toml -p llamatron-tracker
 echo 'llamatron is built: ./llamatron.sh opens it.'

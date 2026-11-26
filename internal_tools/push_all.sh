@@ -1,14 +1,14 @@
 # The version and the build date and time are raised once a push, where the program's Rust changed since the last one.
 .venv/bin/python internal_tools/bump_version.py --before-push
-if ! git diff --quiet -- native/tracker/src/version.rs; then
-    git add native/tracker/src/version.rs
+if ! git diff --quiet -- src/tracker/src/version.rs; then
+    git add src/tracker/src/version.rs
     git commit -q -m 'The version is raised for the push.'
 fi
 echo 'before the push: running every check'
 PATH="$HOME/.cargo/bin:$PATH"
-cargo test --manifest-path native/Cargo.toml --workspace --release --quiet
+cargo test --manifest-path src/Cargo.toml --workspace --release --quiet
 for step in load layout migrate save edits pattern_edits render timeline player midi live import screens; do
-    .venv/bin/python internal_tools/compare_llamatron2.py "$step" > /dev/null || { echo "before the push: the $step comparison failed"; exit 1; }
+    .venv/bin/python internal_tools/compare_llamatron.py "$step" > /dev/null || { echo "before the push: the $step comparison failed"; exit 1; }
 done
 #!/bin/sh
 # llamatron: a music program
@@ -29,24 +29,18 @@ if [ "$branch" != "main" ]; then
     echo "not pushed: this is the branch $branch, and only main is pushed and published" >&2
     exit 1
 fi
-# The version and the build date and time are raised once a push, where the program's Python changed since the last one.
+# The version and the build date and time are raised once a push, where the program's Rust changed since the last one.
 .venv/bin/python internal_tools/bump_version.py --before-push
-if ! git diff --quiet -- src/llamatron/model/file/version.py; then
-    git add src/llamatron/model/file/version.py
+if ! git diff --quiet -- src/tracker/src/version.rs; then
+    git add src/tracker/src/version.rs
     git commit -q -m 'The version is raised for the push.'
 fi
-# The commit check rewrites only the files each commit changed, so once a push both fixers go over every file, and the push stops
-# where they change one, since a change to one module can rarely leave another file breaking a rule.
-before=$(git diff --stat)
-internal_tools/constants_by_module.sh --write > /dev/null
-internal_tools/sort_imports.sh --write > /dev/null
-if [ "$(git diff --stat)" != "$before" ]; then
-    echo 'before the push: the fixers changed files, which are to be looked at and committed first:'
-    git diff --stat
-    exit 1
-fi
-echo 'before the push: running every test'
-internal_tools/test.sh
+echo 'before the push: running every check'
+PATH="$HOME/.cargo/bin:$PATH"
+cargo test --manifest-path src/Cargo.toml --workspace --release --quiet
+for step in load layout migrate save edits pattern_edits render timeline player midi live import screens; do
+    .venv/bin/python internal_tools/compare_llamatron.py "$step" > /dev/null || { echo "before the push: the $step comparison failed"; exit 1; }
+done
 internal_tools/rebuild_docs.sh
 git push origin main
 internal_tools/publish_docs.sh

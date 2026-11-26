@@ -1,7 +1,7 @@
 # Backend
 
 llamatron's backend, `llamatron-backend`, is a program of its own written in
-Rust, in `native/backend/`. It plays the built-in synths and FluidSynth, and
+Rust, in `src/backend/`. It plays the built-in synths and FluidSynth, and
 sends every MIDI event on time, all in one process. This page explains how it works and how to
 change it, for a reader who knows some programming but perhaps no Rust.
 [Building the Backend](BUILDING_THE_BACKEND.md) says how to build it.
@@ -48,7 +48,7 @@ handing them the same messages through channels in place of the pipes.
 
 Each message is a MessagePack array, a compact binary form of a list, with its
 length written before it in four bytes, so that the reader always knows where
-one message ends. `native/backend/src/protocol/` and
+one message ends. `src/backend/src/protocol/` and
 `py_legacy/src/llamatron/realtime/synth_process/daemon.py` are the two ends.
 
 A note's time is a moment on the computer's own steady clock, the one Python's
@@ -180,9 +180,9 @@ voices and the same safety guard into a file, as fast as it can.
 
 - `cargo fmt` lays out the code, and `cargo clippy` with every warning an
   error checks it; `internal_tools/check_before_commit.sh` runs both, and
-  `cargo test`, whenever a file under `native/` changes.
+  `cargo test`, whenever a file under `src/` changes.
 - Nothing in the audio thread may allocate, lock or block.
 - `unsafe` is used only where the engine calls the operating system, each with
   a comment saying why it is sound.
 - Each module's tests sit at its end, in `mod tests`, and run with
-  `cargo test --release --manifest-path native/Cargo.toml`.
+  `cargo test --release --manifest-path src/Cargo.toml`.

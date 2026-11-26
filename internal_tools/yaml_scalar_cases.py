@@ -1,8 +1,8 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Write native/model/tests/data/yaml_scalar_cases.txt: how PyYAML's safe loader reads each of many plain scalars, which
-holds llamatron2's reading of plain scalars (native/model/src/file/data.rs) to PyYAML's YAML 1.1 rules. Each line is the
+"""Write src/model/tests/data/yaml_scalar_cases.txt: how PyYAML's safe loader reads each of many plain scalars, which
+holds llamatron2's reading of plain scalars (src/model/src/file/data.rs) to PyYAML's YAML 1.1 rules. Each line is the
 text, the kind PyYAML gave (null, bool, int, float, str) and the value's repr, tab separated.
 
     .venv/bin/python internal_tools/yaml_scalar_cases.py
@@ -12,7 +12,7 @@ import pathlib
 
 import yaml
 
-OUT = pathlib.Path(__file__).resolve().parent.parent / 'native' / 'model' / 'tests' / 'data' / 'yaml_scalar_cases.txt'
+OUT = pathlib.Path(__file__).resolve().parent.parent / 'src' / 'model' / 'tests' / 'data' / 'yaml_scalar_cases.txt'
 TEXTS = (
     '', '~', 'null', 'Null', 'NULL', 'nULL', 'yes', 'Yes', 'YES', 'yEs', 'no', 'on', 'On', 'off', 'OFF', 'true', 'True', 'false', 'y', 'n',
     '0', '00', '010', '08', '0_7', '7', '-7', '+7', '1_000', '0b101', '-0b11', '0x1F', '0xg', '1:30', '1:30:05', '1:60', '01:30', '190:20:30',

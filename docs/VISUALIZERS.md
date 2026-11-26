@@ -1,5 +1,8 @@
 # Visualizers
 
+The visualizers are coming back to llamatron, which is now written in Rust,
+starting with the spectrum, the piano roll and the cycle.
+
 While a song plays in real time, Arrange can show a visualizer in place of its
 clips: a moving picture in full colour, drawn in the terminal from the notes
 being played. The track names and scene names stay where they are, so the

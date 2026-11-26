@@ -1,8 +1,8 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Write native/math/tests/data/python_random_cases.txt: CPython's random.Random drawing every call llamatron's generators
-make, from whole and text seeds, so that the Rust port of it (native/math/src/python_random.rs) is held to CPython number for
+"""Write src/math/tests/data/python_random_cases.txt: CPython's random.Random drawing every call llamatron's generators
+make, from whole and text seeds, so that the Rust port of it (src/math/src/python_random.rs) is held to CPython number for
 number. Each line is a seed's kind, the seed, the call, its arguments and what it gave, tab separated, a fresh generator a
 line, its call made three times; floats are written by repr, which reads back exactly.
 
@@ -12,7 +12,7 @@ line, its call made three times; floats are written by repr, which reads back ex
 import pathlib
 import random
 
-OUT = pathlib.Path(__file__).resolve().parent.parent / 'native' / 'math' / 'tests' / 'data' / 'python_random_cases.txt'
+OUT = pathlib.Path(__file__).resolve().parent.parent / 'src' / 'math' / 'tests' / 'data' / 'python_random_cases.txt'
 WHOLE_SEEDS = (0, 1, 42, 2 ** 40 + 7, -99, 2 ** 100 + 3)
 TEXT_SEEDS = ('', '7/1/lead', '12345/3/bass/direction/take 2', 'é and ü', 'x' * 300)
 CALLS = (

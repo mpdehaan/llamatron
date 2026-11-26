@@ -11,19 +11,19 @@
 
 set -e
 cd "$(git rev-parse --show-toplevel)"
-changed=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep -E '^(native/|examples/|py_legacy/frozen_test_data/|internal_tools/compare_llamatron2\.py$)' || true)
+changed=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep -E '^(src/|examples/|py_legacy/frozen_test_data/|internal_tools/compare_llamatron\.py$)' || true)
 if [ -n "$changed" ]; then
     # The native code's own checks: its layout, clippy with every warning an error, its tests and its build (.claude/rules/RUST.md).
     echo 'check before commit: checking the native code with cargo'
     PATH="$HOME/.cargo/bin:$PATH"
-    cargo fmt --manifest-path native/Cargo.toml --all --check
-    cargo clippy --manifest-path native/Cargo.toml --workspace --release --all-targets --quiet -- -D warnings
-    cargo test --manifest-path native/Cargo.toml --workspace --release --quiet
-    cargo build --manifest-path native/Cargo.toml --workspace --release --quiet
+    cargo fmt --manifest-path src/Cargo.toml --all --check
+    cargo clippy --manifest-path src/Cargo.toml --workspace --release --all-targets --quiet -- -D warnings
+    cargo test --manifest-path src/Cargo.toml --workspace --release --quiet
+    cargo build --manifest-path src/Cargo.toml --workspace --release --quiet
     # llamatron held to the Python program's frozen answers, every step, over every example and test set.
     for step in load layout migrate save edits pattern_edits render timeline player midi live import screens; do
         # Each step runs once: its summary is shown, and a difference shows what differs and stops the check.
-        compared=$(.venv/bin/python internal_tools/compare_llamatron2.py "$step") || { echo "$compared"; exit 1; }
+        compared=$(.venv/bin/python internal_tools/compare_llamatron.py "$step") || { echo "$compared"; exit 1; }
         echo "$step: $(echo "$compared" | grep 'sets differ\|stops differ' | tr '\n' ' ')$(echo "$compared" | grep 'wait on\|changed since' | sed 's/^/, /' | tr '\n' ' ')"
     done
 fi

@@ -1,5 +1,8 @@
 # Recording
 
+Recording is coming back to llamatron, which is now written in Rust; until
+it does, the scripts this page describes are not part of it.
+
 This page covers making a video of the tracker playing a set, for YouTube and
 similar sites, with the sound of your synthesizers or of FluidSynth. One
 command records a take: the tracker opens on the splash, moves to Arrange,
@@ -182,7 +185,7 @@ internal_tools/preview_visualizer.sh examples/by_genre/electronic/minimal_techno
 
 `sh user_scripts/record_all.sh` records a video of every example through
 FluidSynth, shortest first, each with the visualizer mode
-`internal_tools/visualizer_pairings.yml` gives it. A video opens on the title
+`visualizer_pairings.yml` gives it. A video opens on the title
 on black, shows Arrange with READY, and then the clips and the visualizer take
 turns inside a frame whose pulse changes colour at each scene, as Visualizer
 Takes above describes. The batch records the terminal's cells alone, with no
@@ -232,20 +235,20 @@ with `--to`.
 A recording shows the set's name after the opening splash: `DEMO:` and the
 file's name as words, such as `DEMO: HOCKET SHANTY` for
 `17_hocket_shanty.yml`, in large light orange capitals that cross the screen
-from right to left. `--scroll-text WORDS` on `user_scripts/record.sh` shows
+from right to left. `--scroll-text WORDS` on `record.sh` shows
 other words, and `--no-scroll` shows none.
 
 A recording that plays by itself draws a blue box around the name of the scene
 that plays, so that the playing scene shows on a small screen, and draws no
 box around Arrange's cursor; a take performed with `--interactive` keeps the
-cursor's box and has no blue box. `--announce`, on `user_scripts/record.sh`
-and `user_scripts/record_all.sh`, also shows each scene's name as the scene
+cursor's box and has no blue box. `--announce`, on `record.sh`
+and `record_all.sh`, also shows each scene's name as the scene
 starts, such as `SCENE: verse`, in reverse video near the bottom of the screen
 for eight seconds, where a visualizer mode's name otherwise shows; with
 `--announce` the modes' names are not shown.
 
-`internal_tools/demo_splash_screen.sh` shows the splash alone, to look at it,
-and `internal_tools/demo_splash_screen.sh --scroll-text 'DEMO: Hocket Shanty'`
+`demo_splash_screen.sh` shows the splash alone, to look at it,
+and `demo_splash_screen.sh --scroll-text 'DEMO: Hocket Shanty'`
 shows the splash and then those words crossing the screen.
 
 ## Troubleshooting

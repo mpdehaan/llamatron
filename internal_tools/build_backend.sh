@@ -3,7 +3,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# What it does: build llamatron's backend, llamatron-backend, from native/backend/, offering to install Rust first
+# What it does: build llamatron's backend, llamatron-backend, from src/backend/, offering to install Rust first
 
 # Build llamatron's backend, which plays the built-in synths and FluidSynth and sends MIDI:
 #
@@ -12,15 +12,15 @@
 # It checks what building needs and offers to install what is missing, installing nothing unless you say yes: Rust,
 # through rustup, the Rust project's installer, into your home folder; on a Mac, Apple's command line tools; on
 # Linux it says which package holds the sound library headers, since installing those needs your system's package
-# manager. Then it builds native/backend/ into native/target/release/llamatron-backend, where llamatron finds it.
+# manager. Then it builds src/backend/ into src/target/release/llamatron-backend, where llamatron finds it.
 # Running it again rebuilds only what changed. docs/BUILDING_THE_BACKEND.md explains each step.
 
 set -eu
 cd "$(dirname "$0")/.."
 
 RUSTUP_URL='https://sh.rustup.rs'
-MANIFEST='native/Cargo.toml'
-BUILT='native/target/release/llamatron-backend'
+MANIFEST='src/Cargo.toml'
+BUILT='src/target/release/llamatron-backend'
 
 # Asks a yes or no question, and answers no when nobody is at the keyboard to say.
 asked_yes() {

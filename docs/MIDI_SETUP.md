@@ -66,7 +66,9 @@ one that catches almost everybody.
 
 ## Test Tool
 
-`internal_tools/iac_check.sh` is the one tool in the repository that touches a
+The test tool is coming back to llamatron, which is now written in Rust.
+
+`iac_check.sh` is the one tool in the repository that touches a
 real MIDI port, and the tool only ever opens a port with `IAC` in its name. It
 plays a C major scale up and down, one note a beat, out of the bus on channel
 1, through the same Realtime Sender Process the tracker uses, and prints each

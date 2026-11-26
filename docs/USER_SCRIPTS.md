@@ -180,33 +180,6 @@ Parameters:
   per demo. Given first.
 - `SET ...`: the sets to report on, every example unless given.
 
-## Printing a Song
-
-### `export_pdf.sh`
-
-Makes a song of a set into its learning packet, a PDF beside the set named
-`<set>_<song>__packet.pdf`: its piano roll, chord changes, chord chart and
-chord sequence ([Sheet Music and Learning Packets](EXPORTING_PDF.md)). Use it
-to print a song to learn or teach at the piano.
-
-```
-sh user_scripts/export_pdf.sh examples/by_genre/ragtime/entertainer.yml
-sh user_scripts/export_pdf.sh my_song.yml --song chorus_idea --pages piano_roll,chord_chart --chords-level triads
-sh user_scripts/export_pdf.sh my_song.yml --tracks lead,piano --output-dir ~/printouts
-sh user_scripts/export_pdf.sh --help
-```
-
-Parameters:
-
-- `SET`: the set file. Required.
-- `--song NAME`: the song, the set's first if not given.
-- `--output-dir FOLDER`: where the PDF goes, the set's folder if not given.
-- `--pages PAGES`: the packet's pages, comma-separated, from `piano_roll`,
-  `chord_changes`, `chord_chart` and `chord_sequence`; all of them if not given.
-- `--tracks TRACKS`: the tracks merged and read as a lead sheet,
-  comma-separated; every track with pitched notes if not given.
-- `--chords-level LEVEL`: `sevenths` (the default), `triads` or `as_played`.
-
 ## Importing MIDI Files
 
 ### `batch_importer.sh`

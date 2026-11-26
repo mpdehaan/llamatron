@@ -3,12 +3,12 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Bump llamatron's version, written in native/tracker/src/version.rs, once before a push that changes the program.
+"""Bump llamatron's version, written in src/tracker/src/version.rs, once before a push that changes the program.
 
 Run from the top folder:
 
     .venv/bin/python internal_tools/bump_version.py           # 1.1.1 becomes 1.1.2, with today's date and the time now
-    .venv/bin/python internal_tools/bump_version.py --before-push   # the same, where Rust under native/ changed since the last push and the version did not
+    .venv/bin/python internal_tools/bump_version.py --before-push   # the same, where Rust under src/ changed since the last push and the version did not
 
 `internal_tools/bump.sh` runs the first, and internal_tools/push_all.sh the second, committing the bump before it runs every
 test: the version and the build date and time are raised once a push rather than with every commit. The bump
@@ -22,8 +22,8 @@ import re
 import subprocess
 import sys
 
-VERSION_FILE = 'native/tracker/src/version.rs'
-SOURCE_FOLDER = 'native/'
+VERSION_FILE = 'src/tracker/src/version.rs'
+SOURCE_FOLDER = 'src/'
 PYTHON_SUFFIX = '.rs'
 BEFORE_PUSH_FLAG = '--before-push'
 VERSION_PATTERN = re.compile(r'^pub const PROGRAM_VERSION: &str = "(\d+)\.(\d+)\.(\d+)";$', re.MULTILINE)
@@ -77,7 +77,7 @@ def version_in(text):
 
 
 def changes_the_program(path):
-    """Return whether a changed path is Rust under native/, the code a bump is for."""
+    """Return whether a changed path is Rust under src/, the code a bump is for."""
     return path.startswith(SOURCE_FOLDER) and path.endswith(PYTHON_SUFFIX)
 
 

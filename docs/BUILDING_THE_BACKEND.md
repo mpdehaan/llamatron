@@ -45,11 +45,11 @@ rustup toolchain install stable
 
 ## What Building Makes
 
-The script builds `native/backend/` into one file,
-`native/target/release/llamatron-backend`, where llamatron finds it. The
+The script builds `src/backend/` into one file,
+`src/target/release/llamatron-backend`, where llamatron finds it. The
 first build downloads the backend's libraries and takes a minute or so;
 running the script again rebuilds only what changed, in seconds. The
-`native/target/` folder holds everything the build makes and is never
+`src/target/` folder holds everything the build makes and is never
 committed.
 
 Setting `LLAMATRON_BACKEND` to a path makes llamatron use the backend
