@@ -2,7 +2,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Stage llamatron's guide and its chapters for the documentation website, which VitePress builds into web_docs/.
+"""Stage llamatron's guide and its chapters for the documentation website, which VitePress builds into output/web_docs/.
 
     .venv/bin/python internal_tools/stage_docs_site.py --out .cache/docs_site/site
 

@@ -2,14 +2,14 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Serve the built documentation website, web_docs/, on this computer, and open it in the browser.
+"""Serve the built documentation website, output/web_docs/, on this computer, and open it in the browser.
 
     .venv/bin/python internal_tools/serve_docs.py [--port 4173] [--no-browser]
 
-sh user_scripts/launch_docs.sh runs it. web_docs/ is committed, so reading the documents needs no Node.js
-and no build: only Python's own web server, answering as GitHub Pages does, under /llamatron/, a page's
+sh user_scripts/launch_docs.sh runs it, building the site first where it is not built. It serves with Python's own web
+server, answering as GitHub Pages does, under /llamatron/, a page's
 address without its .html (VitePress's clean addresses) finding the page. It listens on this computer
-alone, and Ctrl+C stops it. internal_tools/build_docs.sh rebuilds web_docs/ after the documents change.
+alone, and Ctrl+C stops it. internal_tools/build_docs.sh rebuilds output/web_docs/ after the documents change.
 """
 
 import argparse
@@ -21,7 +21,7 @@ import urllib.parse
 import webbrowser
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SITE = ROOT / 'web_docs'
+SITE = ROOT / 'output' / 'web_docs'
 # The site's base, as GitHub Pages serves it and config.mts builds it.
 BASE = '/llamatron/'
 INDEX = 'index.html'

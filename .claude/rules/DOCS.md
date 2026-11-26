@@ -68,8 +68,8 @@ them, the screenshots or the website.
 - The website and screenshots are rebuilt only before a push or when the user asks for a rebuild. A commit changing a document
   or what the tracker draws brings no rebuild and no new screenshots, and Claude MUST NOT retake a screenshot mid-work.
 - A push runs `internal_tools/push_all.sh`: `internal_tools/rebuild_docs.sh` (screenshots retaken by
-  `py_legacy/internal_tools/screenshots.sh`, only changed shots committed; website rebuilt by `internal_tools/build_docs.sh`, `web_docs/`
-  committed if changed), then the push of `main`, then `internal_tools/publish_docs.sh`, which refuses while `main` holds
-  unpushed commits. A rebuild request runs `internal_tools/rebuild_docs.sh` alone.
-- History is never rewritten. When the packed repository (`git count-objects -vH`) passes about 100 MB, Claude proposes no longer
-  committing `web_docs/`.
+  `internal_tools/screenshots.sh`, only changed shots committed; the website built by `internal_tools/build_docs.sh` into
+  `output/web_docs/`, which git ignores), then the push of `main`, then `internal_tools/publish_docs.sh`, which pushes the built
+  site as the whole of the `gh-pages` branch that GitHub Pages serves, and refuses while `main` holds unpushed commits. A
+  rebuild request runs `internal_tools/rebuild_docs.sh` alone. The built website is never committed to `main` (the user's rule).
+- History is rewritten only on the user's word, with a full mirror saved to `~/Devel/backup_llamatron/` first.

@@ -3,7 +3,7 @@
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# What it does: build the documentation website from docs/GUIDE.md and docs/ into web_docs/, with VitePress, installing what it needs
+# What it does: build the documentation website from docs/GUIDE.md and docs/ into output/web_docs/, with VitePress, installing what it needs
 
 # The site is VitePress (https://vitepress.dev), which needs Node.js 18 or later. On a Mac it uses the
 # Homebrew that matches the machine, /opt/homebrew on Apple Silicon and /usr/local on Intel, and when its
@@ -11,10 +11,10 @@
 # Then, in .cache/docs_site/ (ignored by git, and outside internal_tools/ so that the tests' walks of its Python
 # never reach node_modules), it installs VitePress and its plugins at the versions
 # internal_tools/docs_site/package.json and package-lock.json pin, only when one is missing or at another version, stages the pages
-# (internal_tools/stage_docs_site.py), and builds the site into web_docs/, replacing what was there.
+# (internal_tools/stage_docs_site.py), and builds the site into output/web_docs/, replacing what was there.
 #
 #     internal_tools/build_docs.sh
-#     internal_tools/build_docs.sh preview     # build, then serve web_docs/ at http://localhost:4173/llamatron/
+#     internal_tools/build_docs.sh preview     # build, then serve output/web_docs/ at http://localhost:4173/llamatron/
 
 set -eu
 cd "$(dirname "$0")/.."
@@ -22,7 +22,7 @@ cd "$(dirname "$0")/.."
 SOURCES='internal_tools/docs_site'
 SITE='.cache/docs_site'
 STAGING="$SITE/site"
-OUT="$(pwd)/web_docs"
+OUT="$(pwd)/output/web_docs"
 PYTHON='.venv/bin/python'
 NEEDED_NODE=18
 
@@ -77,7 +77,7 @@ fi
 mkdir -p "$STAGING/.vitepress"
 cp "$SOURCES/vitepress_config/config.mts" "$STAGING/.vitepress/config.mts"
 
-echo "Building the site into web_docs/"
+echo "Building the site into output/web_docs/"
 (cd "$SITE" && LLAMATRON_SITE_OUT="$OUT" npx vitepress build site)
 # GitHub Pages runs a site through Jekyll unless it holds .nojekyll, and Jekyll leaves out files starting with an underscore.
 touch "$OUT/.nojekyll"
