@@ -7,7 +7,7 @@
 
 use crate::app::Tracker;
 use crate::document::Document;
-use crate::launch::{Launch, Running};
+use crate::launch::{Launch, Running, Tick};
 use crate::style::Style;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use crossterm::style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor};
@@ -19,6 +19,10 @@ use std::path::Path;
 
 /// How long the loop waits for a key before planning real-time playback ahead and drawing again.
 const TICK: std::time::Duration = std::time::Duration::from_millis(30);
+/// The Arrange page's name, which a launch opens.
+const ARRANGE_PAGE: &str = "ArrangePage";
+/// How often the title is drawn while it shows, so that its letters move smoothly.
+const TITLE_FRAME: std::time::Duration = std::time::Duration::from_millis(33);
 /// How often the screen is drawn again while something plays, for its lights.
 const LIGHTS: std::time::Duration = std::time::Duration::from_millis(100);
 
@@ -29,30 +33,62 @@ pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
         Some(path) => Document::open(path).map_err(|error| format!("{}: {error}", path.display()))?,
         None => Document::new_set()?,
     };
+    if launch.for_recording && !launch.interactive {
+        refuse_endless(&document)?;
+    }
     let mut tracker = Tracker::new(document);
     tracker.app.fluidsynth_installed = crate::wav::fluidsynth_installed();
     start_terminal()?;
-    launched(&mut tracker, &launch);
-    let mut running = Running::new(launch);
-    let finished = run_keys(&mut tracker, &mut running);
+    tracker.app.session.recording = launch.for_recording;
+    // A recording opens on its title, and opens Arrange when the launch says to start; any other launch starts at once.
+    if !launch.for_recording {
+        start(&mut tracker, &launch);
+        start(&mut tracker, &launch);
+    }
+    let mut running = Running::new(launch.clone());
+    let finished = run_keys(&mut tracker, &mut running, &launch);
     tracker.app.transport.close();
     tracker.app.preview.close();
     end_terminal();
     finished
 }
 
-/// Do what a launch asks once the tracker is open: open Arrange, with its details view or a visualizer mode showing, and
-/// play the song from the top.
-fn launched(tracker: &mut Tracker, launch: &Launch) {
+/// Refuse a recording of a song with a scene whose every clip loops: the song would wait there forever, and so would the
+/// recording.
+fn refuse_endless(document: &Document) -> Result<(), String> {
+    let scenes: Vec<String> = document
+        .song()
+        .scenes()
+        .iter()
+        .enumerate()
+        .filter(|(_, scene)| scene.every_clip_loops())
+        .map(|(index, scene)| crate::screens::arrange::arrange_page::scene_name(scene, index))
+        .collect();
+    if scenes.is_empty() {
+        return Ok(());
+    }
+    let listed = scenes.join(", ");
+    Err(named(
+        llamatron_strings::errors::ERR_RECORDING_SONG_LOOPS,
+        &[("scenes", listed.as_str().into())],
+    ))
+}
+
+/// Take a launch's next step: open Arrange, with its details view or a visualizer mode showing, or, with Arrange open,
+/// play the song from the top when the launch plays.
+fn start(tracker: &mut Tracker, launch: &Launch) {
     if !launch.opens_arrange() {
         return;
     }
-    tracker.app.session.shows_arrange_details = launch.details;
-    tracker.press(crate::keys::first_key(&crate::keybindings::MainPage::ARRANGE));
-    if let Some(mode) = &launch.visualizer {
-        tracker.top().launch_visualizer(&tracker.app, mode);
+    if tracker.top().name() != ARRANGE_PAGE {
+        tracker.app.session.shows_arrange_details = launch.details;
+        tracker.press(crate::keys::first_key(&crate::keybindings::MainPage::ARRANGE));
+        if let Some(mode) = &launch.visualizer {
+            tracker.top().launch_visualizer(&tracker.app, mode);
+        }
+        return;
     }
-    if launch.plays() {
+    if launch.plays() && !tracker.app.transport.is_playing() {
         let scene = named(messages::MSG_SCENE_NUMBER, &[("number", 1.into())]);
         let said = named(messages::MSG_PLAYING_FROM, &[("scene", scene.as_str().into())]);
         crate::screens::arrange::arrange_page::play_through(&mut tracker.app, &scene, &said, |app| app.transport.play_scene(&app.document, 0));
@@ -61,26 +97,43 @@ fn launched(tracker: &mut Tracker, launch: &Launch) {
 }
 
 /// Draw the screen, then press each key into the tracker, until it quits, Ctrl+C is pressed, which quits at once, or the
-/// launch says to.
-fn run_keys(tracker: &mut Tracker, running: &mut Running) -> Result<(), String> {
+/// launch says to. While the launch shows its title, the title is drawn in place of the pages and no key but Ctrl+C acts.
+fn run_keys(tracker: &mut Tracker, running: &mut Running, launch: &Launch) -> Result<(), String> {
     let mut out = io::stdout();
     let mut changed = true;
     let mut drawn = std::time::Instant::now();
     loop {
-        // The screen is drawn after each key, and while something plays every LIGHTS so that its lights move, less often
-        // than the ticks, which keep the player ahead.
         let playing = tracker.app.transport.is_playing() || tracker.app.preview.is_playing();
-        if running.should_quit(playing) {
-            return Ok(());
-        }
-        let lights_due = playing && drawn.elapsed() >= LIGHTS;
-        // A page that animates, such as Arrange under a visualizer, is drawn as often as it asks, playing or not.
-        let frame_due = tracker.top().frame_interval().is_some_and(|interval| drawn.elapsed() >= interval);
-        if changed || lights_due || frame_due {
-            let (width, height) = terminal::size().map_err(|error| error.to_string())?;
-            draw(&mut out, tracker, width as usize, height as usize).map_err(|error| error.to_string())?;
-            changed = false;
-            drawn = std::time::Instant::now();
+        let on_arrange = tracker.top().name() == ARRANGE_PAGE;
+        let showing_title = match running.tick(playing, on_arrange) {
+            Tick::Quit => return Ok(()),
+            Tick::Start => {
+                start(tracker, launch);
+                changed = true;
+                None
+            }
+            Tick::Title { elapsed, seconds } => Some((elapsed, seconds)),
+            Tick::Tracker => None,
+        };
+        let (width, height) = terminal::size().map_err(|error| error.to_string())?;
+        if let Some((elapsed, seconds)) = showing_title {
+            if drawn.elapsed() >= TITLE_FRAME {
+                let lines = crate::screens::title_card::title_lines(width as usize, height as usize, elapsed, Some(seconds));
+                draw_lines(&mut out, lines, height as usize).map_err(|error| error.to_string())?;
+                drawn = std::time::Instant::now();
+            }
+            changed = true;
+        } else {
+            // The screen is drawn after each key, and while something plays every LIGHTS so that its lights move, less
+            // often than the ticks, which keep the player ahead; a page that animates, such as Arrange under a visualizer,
+            // as often as it asks.
+            let lights_due = playing && drawn.elapsed() >= LIGHTS;
+            let frame_due = tracker.top().frame_interval().is_some_and(|interval| drawn.elapsed() >= interval);
+            if changed || lights_due || frame_due {
+                draw(&mut out, tracker, width as usize, height as usize).map_err(|error| error.to_string())?;
+                changed = false;
+                drawn = std::time::Instant::now();
+            }
         }
         // While waiting for a key, real-time playback is planned ahead a tick at a time.
         // An edit made while something plays is heard once it settles; one that cannot be heard says why.
@@ -106,7 +159,9 @@ fn run_keys(tracker: &mut Tracker, running: &mut Running) -> Result<(), String> 
         if name == "ctrl+c" {
             return Ok(());
         }
-        tracker.press(&name);
+        if showing_title.is_none() {
+            tracker.press(&name);
+        }
         if tracker.app.quitting {
             return Ok(());
         }
@@ -137,8 +192,13 @@ fn end_terminal() {
 
 /// Draw the tracker's screen at a size, each piece in its style, in one update so that nothing flickers.
 fn draw(out: &mut impl Write, tracker: &Tracker, width: usize, height: usize) -> io::Result<()> {
+    draw_lines(out, tracker.screen(width, height), height)
+}
+
+/// Draw lines as the screen, each piece in its style, in one update so that nothing flickers.
+fn draw_lines(out: &mut impl Write, lines: Vec<crate::text::Text>, height: usize) -> io::Result<()> {
     queue!(out, BeginSynchronizedUpdate)?;
-    for (row, line) in tracker.screen(width, height).into_iter().take(height).enumerate() {
+    for (row, line) in lines.into_iter().take(height).enumerate() {
         queue!(out, cursor::MoveTo(0, row as u16))?;
         for segment in line.segments() {
             write_styled(out, &segment.style)?;

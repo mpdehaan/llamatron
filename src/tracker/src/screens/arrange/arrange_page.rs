@@ -142,7 +142,7 @@ fn clip_text(clip: &ClipSlot, repeats_left: Option<i64>) -> String {
     )
 }
 
-fn scene_name(scene: &Scene, index: usize) -> String {
+pub fn scene_name(scene: &Scene, index: usize) -> String {
     scene
         .get_name()
         .unwrap_or_else(|| named(names::MSG_NEW_SCENE_NAME, &[("number", (index + 1).into())]))

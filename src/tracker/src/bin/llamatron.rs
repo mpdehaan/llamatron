@@ -21,7 +21,15 @@ struct Asked {
 }
 
 /// The options that only mean something when opening the tracker, and those only when exporting.
-const LAUNCH_OPTIONS: [&str; 5] = ["--autoplay", "--autoplay-quit-when-finished", "--visualizer", "--details", "--max-seconds"];
+const LAUNCH_OPTIONS: [&str; 7] = [
+    "--autoplay",
+    "--autoplay-quit-when-finished",
+    "--visualizer",
+    "--details",
+    "--max-seconds",
+    "--launch-for-recording",
+    "--interactive",
+];
 const EXPORT_OPTIONS: [&str; 3] = ["--song", "--out", "--replace"];
 const OPTION_SEPARATOR: &str = ", ";
 
@@ -72,6 +80,11 @@ fn asked(arguments: Vec<String>) -> Result<Asked, String> {
             "--autoplay" => asked.launch.autoplay = true,
             "--autoplay-quit-when-finished" => asked.launch.quit_when_finished = true,
             "--details" => asked.launch.details = true,
+            "--launch-for-recording" => asked.launch.for_recording = true,
+            "--interactive" => {
+                asked.launch.for_recording = true;
+                asked.launch.interactive = true;
+            }
             "--visualizer" => asked.launch.visualizer = Some(visualizer_named(value_after(&mut words))?),
             "--max-seconds" => asked.launch.max_seconds = Some(seconds_named(value_after(&mut words))?),
             option if option.starts_with("--") => {

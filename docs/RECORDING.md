@@ -225,6 +225,11 @@ with `--to`.
   of the song would never end; turn Loop off on one clip of the scene to
   record it. A looping clip beside one that ends is fine, since the scene
   below cuts the loop.
+- **`--interactive`**, a launch for recording that plays nothing by itself:
+  after the splash, Arrange waits for you to start the song, and the take
+  ends when you stop everything or leave Arrange, after which the splash
+  shows again and the tracker quits. A song whose every clip loops is fine
+  here, since you end the take.
 - **`--max-seconds N`** quits after that many seconds, whatever is playing.
 - **`--details`** opens on Arrange with its details view showing, as `D`
   shows it.

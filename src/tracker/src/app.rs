@@ -45,6 +45,8 @@ impl StatusLine {
 
 /// What the session remembers of how the pages were left, which no file keeps.
 pub struct Session {
+    /// Whether the tracker plays for a recording, which leaves the save mark off the header.
+    pub recording: bool,
     /// The settings pages' sections open now, by name.
     pub open_field_sections: std::collections::HashSet<String>,
     /// The tab each kind of page with a tab box last showed, by the page's name.
@@ -76,6 +78,7 @@ impl Default for Session {
                 .map(|section| section.to_string())
                 .collect(),
             shows_arrange_details: false,
+            recording: false,
             last_set_folder: None,
             last_midi_folder: None,
             open_munge_groups: std::collections::HashSet::new(),

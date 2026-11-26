@@ -223,8 +223,12 @@ pub fn page_lines(page: &dyn Page, app: &App, width: usize, height: usize) -> Ve
     screen
 }
 
-/// The mark at the header's right: unsaved for a set with no file yet, unsaved changes for one changed since, else saved.
+/// The mark at the header's right: unsaved for a set with no file yet, unsaved changes for one changed since, else saved;
+/// none during a recording, which never saves.
 fn save_mark(app: &App) -> &'static str {
+    if app.session.recording {
+        return "";
+    }
     let document = &app.document;
     if document.get_path().is_none() {
         return marks::MSG_UNSAVED_MARK;
