@@ -85,7 +85,7 @@ and it can name another kind: `ableton`, `midi` (MIDI (Multitrack)), `stems`,
 ./llamatron.sh examples/by_genre/electronic/minimal_techno.yml --to midi
 ./llamatron.sh examples/by_genre/electronic/minimal_techno.yml --to wav --out exports
 ./llamatron.sh examples/by_genre/electronic/minimal_techno.yml --to ableton --replace
-./llamatron.sh examples/learning/04_scale.yml --to --song "Scale demo"
+./llamatron.sh examples/learning/04_scale.yml --to --song scale
 ```
 
 | Option | What it does |

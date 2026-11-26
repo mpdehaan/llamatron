@@ -81,18 +81,23 @@ fn export(asked: &Asked, kind: &str) -> Result<(), String> {
     let path = asked.set.as_ref().ok_or_else(|| cli::ERR_CLI_NEEDS_A_SET.to_string())?;
     let mut document = llamatron_tracker::document::Document::open(path)?;
     let songs: Vec<String> = document.get_setlist().song_names().into_iter().map(str::to_string).collect();
+    // A song is named without regard to case, as every name is.
     let chosen: Vec<String> = match &asked.song {
-        Some(name) if songs.contains(name) => vec![name.clone()],
-        Some(name) => {
-            let shown = path.display().to_string();
-            return Err(named(cli::ERR_CLI_NO_SONG, &[("name", name.as_str().into()), ("path", shown.as_str().into())]));
-        }
+        Some(name) => match songs.iter().find(|song| song.to_lowercase() == name.to_lowercase()) {
+            Some(song) => vec![song.clone()],
+            None => {
+                let shown = path.display().to_string();
+                return Err(named(cli::ERR_CLI_NO_SONG, &[("name", name.as_str().into()), ("path", shown.as_str().into())]));
+            }
+        },
         None => songs,
     };
     let directory = match &asked.out {
         Some(out) => out.clone(),
         None => document.export_directory().unwrap_or_default(),
     };
+    // A folder named with --out is made when it doesn't exist yet, as a person naming one expects.
+    std::fs::create_dir_all(&directory).map_err(|problem| format!("{}: {problem}", directory.display()))?;
     for song in chosen {
         document.select_song(&song);
         if !asked.replace && llamatron_tracker::exporting::has_earlier_export(&document, kind, &directory) {
