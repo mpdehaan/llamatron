@@ -57,12 +57,6 @@ and never knows a note before the note plays.
 Every track has a colour of its own, which each mode leans by pitch and
 brightens by octave, so a track looks the same across modes.
 
-## Eye Safety
-
-No mode strobes or flashes, since some people are sensitive to flashing light.
-Brightness rises and falls gently, a limiter holds the whole picture down as
-more plays, and nothing jumps to white.
-
 ## Terminal Support
 
 A visualizer draws in full colour where the terminal supports it, and in the
