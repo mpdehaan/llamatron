@@ -6,10 +6,6 @@ The professor's research is in `.claude/notes/synthesis/`.
 
 ## The Instrument Page
 
-- **The Amp stage's rest** (DESIGNS.md, "The Amp stage and the one vactrol module"): the low-pass gate as an Amp type; one
-  vactrol module everywhere, Response (in place of Cell, with a migration), Memory, Age and Stability; the gate's Trigger
-  (Filter tab: Trigger, Gate, Env 1 to Env 3; Amp tab: Trigger, Gate, Env 1), Mode (Filter tab Lowpass or Both; Amp tab VCA,
-  Lowpass or Both), Signal (Oscillator, Ping or Both) with Ping time.
 - **Built-in modulation**: Beneath each envelope, LFO and filter, routes of its own, off by default, each choosing
   Destination, Via and Amount from the Mod Matrix's values, so that the Mod Matrix drops to four fully custom slots. Env 1 stays
   wired to the Amp always; Env 2 stays wired to the filter, with a "Disconnect filter" switch. Mockup first.
