@@ -15,6 +15,7 @@
 
 use crate::protocol::values::{as_number, list, number, numbers, truth, word};
 use crate::voice::acid;
+use crate::voice::asheville;
 use crate::voice::tables::{self, Tables, Waveform, TABLE_MASK, TABLE_SIZE};
 use rmpv::Value;
 use std::sync::Arc;
@@ -80,6 +81,13 @@ pub struct OscillatorState {
     pub speeds: [f64; 3],
     /// Fishline's coupling into its filter, a one-pole high-pass, made as its note begins.
     pub coupling: acid::OnePoleHighpass,
+    /// Asheville: Osc 3's value as an LFO, which the Mod Matrix's Osc 3 source reads; the mixer's last output, which
+    /// Feedback loops back; and when the note began after the instrument started, with the voice's own random number,
+    /// from which each oscillator's drift is its own.
+    pub side: f64,
+    pub last_out: f64,
+    pub began: f64,
+    pub random: f64,
 }
 
 /// One of Basic's oscillators: its tables, whether it is a pulse, read as two saws its width apart, its detune in cents
@@ -115,6 +123,8 @@ pub enum OscillatorPart {
         sweep_up: bool,
         sweep_step: i64,
     },
+    /// Asheville: three free-running oscillators into an overloading mixer (asheville.rs).
+    Asheville(Box<asheville::Asheville>),
     /// Fishline: Open303's saw or its shaped square, each its own band-limited tables (acid.rs).
     Acid {
         tables: Tables,
@@ -151,6 +161,7 @@ pub fn compiled(spec: &Value, rate: f64) -> (OscillatorPart, f64) {
     let part = match word(spec, "type", "basic") {
         "sid" => sid(spec, rate),
         "pocket" => pocket(spec, rate),
+        "asheville" => OscillatorPart::Asheville(Box::new(asheville::compiled(spec))),
         "acid" => {
             let cycle = if word(spec, "acid_wave", "saw") == "saw" {
                 acid::saw_cycle(TABLE_SIZE)
@@ -253,6 +264,16 @@ impl OscillatorPart {
         }
     }
 
+    /// Set a voice's free-running oscillators going as its note begins, at phases of the voice's own, and say when the note
+    /// began after the instrument started, for the oscillators that drift by it.
+    pub fn free_run(&self, state: &mut OscillatorState, random: f64, began: f64) {
+        state.random = random;
+        state.began = began;
+        if let OscillatorPart::Asheville(asheville) = self {
+            asheville.begin(state, random);
+        }
+    }
+
     /// Choose the table band for the chunk ahead, once a chunk, from the highest pitch the note will sound: its pitch, the
     /// most the modulation bent it up over the last chunk, and an arpeggio's highest step, so that a pitch modulated up
     /// fast, as analog-style FM does, reads a table cut low enough not to fold its harmonics back down.
@@ -277,6 +298,7 @@ impl OscillatorPart {
             OscillatorPart::Sid { .. } => (self.sid_sample(state, pitch, seconds, moves, rate), false),
             OscillatorPart::Pocket { .. } => self.pocket_sample(state, seconds, moves, rate),
             OscillatorPart::Acid { tables, tuning, .. } => (acid_sample(tables, state, pitch + tuning + moves.pitch, rate), false),
+            OscillatorPart::Asheville(asheville) => (asheville.sample(state, pitch, seconds, moves, rate), false),
         }
     }
 

@@ -252,6 +252,7 @@ impl Patch {
             voice.short_decay = voice.short_decay.or(short);
         }
         modular.oscillator.begin(&mut voice.oscillator, voice.pitch);
+        modular.oscillator.free_run(&mut voice.oscillator, voice.random, voice.start as f64 / rate);
         modular.newest = voice.id;
     }
 
@@ -368,6 +369,7 @@ impl Patch {
                 sources.envelopes[2] = modular.envelopes[2].level(&mut voice.envelopes[2], note, None);
             }
             sources.oscillator = voice.last_wave;
+            sources.osc3 = voice.oscillator.side;
             for (number, (lfo, values)) in sources.lfos.iter_mut().zip(lfos.iter()).take(LFO_COUNT).enumerate() {
                 *lfo = match key_steps[number] {
                     Some(step) => bank.key_lfo_value(number, &mut voice.lfo_cycles[number], step),
