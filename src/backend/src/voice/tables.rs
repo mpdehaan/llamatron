@@ -48,39 +48,6 @@ impl Waveform {
     }
 }
 
-/// The amplitude of each harmonic from the first of a waveform's Fourier series; a pulse's are the saw's, since a pulse is
-/// read as one saw less another shifted by its width.
-fn harmonic_amplitude(waveform: Waveform, number: usize) -> f64 {
-    let n = number as f64;
-    match waveform {
-        Waveform::Sine => {
-            if number == 1 {
-                1.0
-            } else {
-                0.0
-            }
-        }
-        Waveform::Saw | Waveform::Pulse => {
-            let sign = if number % 2 == 1 { 1.0 } else { -1.0 };
-            2.0 / PI * sign / n
-        }
-        Waveform::Square => {
-            if number % 2 == 1 {
-                4.0 / (PI * n)
-            } else {
-                0.0
-            }
-        }
-        Waveform::Triangle => {
-            if number.is_multiple_of(2) {
-                return 0.0;
-            }
-            let sign = if ((number - 1) / 2).is_multiple_of(2) { 1.0 } else { -1.0 };
-            8.0 / (PI * PI) * sign / (n * n)
-        }
-    }
-}
-
 /// One table from a half spectrum, by the inverse real transform, scaled to peak at 1.
 fn from_spectrum(planner: &mut FftPlanner<f64>, spectrum: &[Complex<f64>]) -> Vec<f32> {
     // The full Hermitian spectrum, so that a complex inverse transform gives the real signal numpy's irfft gives.
@@ -97,31 +64,10 @@ fn from_spectrum(planner: &mut FftPlanner<f64>, spectrum: &[Complex<f64>]) -> Ve
     table.iter().map(|sample| (sample / peak) as f32).collect()
 }
 
-/// One cycle of a waveform holding its harmonics up to the highest given, no more than a table can hold.
-fn band_limited_table(planner: &mut FftPlanner<f64>, waveform: Waveform, highest_harmonic: usize) -> Vec<f32> {
-    let count = highest_harmonic.clamp(1, TABLE_SIZE / 2 - 1);
-    let mut spectrum = vec![Complex::new(0.0, 0.0); TABLE_SIZE / 2 + 1];
-    for (number, bin) in spectrum.iter_mut().enumerate().skip(1).take(count) {
-        // A sine of amplitude a at harmonic n is the bin -i * a * N / 2.
-        *bin = Complex::new(0.0, -harmonic_amplitude(waveform, number) * TABLE_SIZE as f64 / 2.0);
-    }
-    from_spectrum(planner, &spectrum)
-}
-
 /// The highest harmonic a band keeps at a sample rate.
 fn highest_in_band(band: usize, rate: f64) -> usize {
     let top = LOWEST_FREQUENCY * 2f64.powi(band as i32 + 1);
     (rate / 2.0 / top) as usize
-}
-
-/// A waveform's tables, one for each octave band, lowest first, at a sample rate.
-pub fn waveform_tables(waveform: Waveform, rate: f64) -> Tables {
-    let mut planner = FftPlanner::new();
-    Arc::new(
-        (0..OCTAVE_BANDS)
-            .map(|band| band_limited_table(&mut planner, waveform, highest_in_band(band, rate)))
-            .collect(),
-    )
 }
 
 /// The octave band a frequency reads its table from.
@@ -290,11 +236,13 @@ pub fn sid_noise() -> Arc<Vec<f32>> {
 mod tests {
     use super::*;
 
+    /// A cycle's tables, one an octave band, peak at one, and the top band holds only a few harmonics.
     #[test]
     fn a_table_peaks_at_one_and_the_top_band_holds_few_harmonics() {
-        let saw = waveform_tables(Waveform::Saw, 44100.0);
-        assert_eq!(saw.len(), OCTAVE_BANDS);
-        let peak = saw[0].iter().fold(0.0_f32, |most, sample| most.max(sample.abs()));
+        let cycle: Vec<f64> = (0..32).map(|step| if step < 16 { 1.0 } else { -1.0 }).collect();
+        let tables = cycle_tables(&cycle, 44100.0);
+        assert_eq!(tables.len(), OCTAVE_BANDS);
+        let peak = tables[0].iter().fold(0.0_f32, |most, sample| most.max(sample.abs()));
         assert!((peak - 1.0).abs() < 1e-6);
         assert!(highest_in_band(OCTAVE_BANDS - 1, 44100.0) < 4);
     }

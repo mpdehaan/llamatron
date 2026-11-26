@@ -11,6 +11,7 @@
 
 use crate::dsp::Random;
 use crate::protocol::values::{number, truth, word};
+use crate::voice::blep::blep;
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -135,8 +136,7 @@ impl LfoBank {
 /// A shape's value at a place in its cycles, its steps of step cycles a sample. The saws' and the square's jumps are
 /// smoothed by a two-sample polyBLEP, so that at audio rate they do not alias; at an LFO's slow rates the smoothing spans
 /// a vanishing share of a cycle and changes nothing heard.
-// The polyBLEP residual after stmlib's ThisBlepSample and NextBlepSample (stmlib/dsp/polyblep.h, Emilie Gillet, MIT),
-// in its two-sided polynomial form; the implementation here is our own.
+// The polyBLEP of voice/blep.rs, after stmlib's (Emilie Gillet, MIT).
 #[inline]
 fn shaped(shape: Shape, cycles: f64, step: f64, held: &[f64]) -> f64 {
     let place = cycles.fract();
@@ -150,23 +150,6 @@ fn shaped(shape: Shape, cycles: f64, step: f64, held: &[f64]) -> f64 {
             level + blep(place, step) - blep((place + 0.5).fract(), step)
         }
         Shape::SampleAndHold => held[cycles as usize % HELD_VALUES],
-    }
-}
-
-/// The polyBLEP's correction near a jump of two at the cycle's start, at a place in the cycle and a step a sample.
-#[inline]
-fn blep(place: f64, step: f64) -> f64 {
-    if step <= 0.0 || step >= 0.5 {
-        return 0.0;
-    }
-    if place < step {
-        let t = place / step;
-        2.0 * t - t * t - 1.0
-    } else if place > 1.0 - step {
-        let t = (place - 1.0) / step;
-        t * t + 2.0 * t + 1.0
-    } else {
-        0.0
     }
 }
 

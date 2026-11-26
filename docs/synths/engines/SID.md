@@ -18,8 +18,8 @@ mismatched and whose bottom rung is missing its end resistor, so the lowest
 bits run together and the higher ones step unevenly. The waves come out
 slightly bent and grainy, never the clean ramps of a textbook, and are then
 band-limited into wavetables of their own. The pulse is a comparator on the
-same count, so it stays clean: one ideal saw less another shifted by its
-width. To sweep the width, as players sweep the chip's width in its programs,
+same count, so it stays clean: a pulse made every sample, its edges smoothed
+by a polyBLEP. To sweep the width, as players sweep the chip's width in its programs,
 route an LFO with a Triangle shape to Pulse width in the [Mod
 Matrix](../MOD_MATRIX.md).
 
@@ -35,7 +35,10 @@ Modulation brings in a second oscillator an Interval above. Ring flips the
 sign of the wave whenever the second oscillator is in its second half, the
 chip's ring modulation, a bell-like clang. Sync restarts the wave each time
 the second oscillator completes its cycle, so that the wave is read at its own
-pitch inside the second oscillator's, the tearing lead of hard sync. The
+pitch inside the second oscillator's, the tearing lead of hard sync; each
+restart falls between samples, and is smoothed there, a share in that sample
+and a share in the next, so that a swept sync lead tears without the harsh
+folding of a naive one. The
 Arpeggio steps through its semitones at the speed the chip's programs ran,
 once a frame of a television picture, which is how one chip voice plays a
 whole chord.

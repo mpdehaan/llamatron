@@ -16,6 +16,7 @@
 use crate::protocol::values::{as_number, list, number, numbers, truth, word};
 use crate::voice::acid;
 use crate::voice::asheville;
+use crate::voice::blep;
 use crate::voice::tables::{self, Tables, Waveform, TABLE_MASK, TABLE_SIZE};
 use rmpv::Value;
 use std::sync::Arc;
@@ -26,6 +27,8 @@ const NARROWEST: f64 = 0.1;
 /// A pulse's width where nothing moves it: a square.
 const PULSE_MIDDLE: f64 = 0.5;
 const WIDEST: f64 = 0.9;
+/// The most of a cycle a band-limited wave moves a sample: just under half, the highest a sample rate holds.
+const MOST_STEP: f64 = 0.45;
 const FRAMES_PER_SECOND: f64 = 50.0;
 const NOISE_STEPS_PER_CYCLE: f64 = 16.0;
 const SID_NOISE_STEPS_PER_CYCLE: f64 = 64.0;
@@ -89,15 +92,16 @@ pub struct OscillatorState {
     pub last_out: f64,
     /// Asheville: each oscillator's sub-oscillator's phase.
     pub sub_phases: [f64; 3],
+    /// The SID's synced wave: its phase in cycles, and the share of a jump's smoothing owed to the next sample.
+    pub sync_phase: f64,
+    pub sync_next: f64,
     pub began: f64,
     pub random: f64,
 }
 
-/// One of Basic's oscillators: its tables, whether it is a pulse, read as two saws its width apart, its detune in cents
-/// and its level.
+/// One of Basic's oscillators: its waveform, made every sample by voice/blep.rs, its detune in cents and its level.
 pub struct Partial {
-    tables: Tables,
-    pulse: bool,
+    waveform: Waveform,
     cents: f64,
     level: f64,
 }
@@ -108,8 +112,6 @@ pub enum OscillatorPart {
     },
     Sid {
         wave: SidWave,
-        /// The ideal saw the pulse is read from, as the chip's pulse is a comparator on its accumulator, never its DAC.
-        saw: Tables,
         /// The chip's own saw and triangle, through its uneven DAC.
         chip_saw: Tables,
         triangle: Tables,
@@ -177,12 +179,12 @@ pub fn compiled(spec: &Value, rate: f64) -> (OscillatorPart, f64) {
                 rate,
             }
         }
-        _ => basic(spec, rate),
+        _ => basic(spec),
     };
     (part, pitch_env)
 }
 
-fn basic(spec: &Value, rate: f64) -> OscillatorPart {
+fn basic(spec: &Value) -> OscillatorPart {
     let mut partials = Vec::new();
     for entry in list(spec, "oscillators") {
         let Some(fields) = entry.as_array() else { continue };
@@ -191,12 +193,7 @@ fn basic(spec: &Value, rate: f64) -> OscillatorPart {
         };
         let cents = fields.get(1).and_then(as_number).unwrap_or(0.0);
         let level = fields.get(2).and_then(as_number).unwrap_or(1.0);
-        partials.push(Partial {
-            tables: tables::waveform_tables(waveform, rate),
-            pulse: waveform == Waveform::Pulse,
-            cents,
-            level,
-        });
+        partials.push(Partial { waveform, cents, level });
     }
     OscillatorPart::Basic { partials }
 }
@@ -216,7 +213,6 @@ fn sid(spec: &Value, rate: f64) -> OscillatorPart {
     let (chip_saw, triangle) = tables::sid_wave_tables(rate);
     OscillatorPart::Sid {
         wave,
-        saw: tables::waveform_tables(Waveform::Saw, rate),
         chip_saw,
         triangle,
         noise: tables::sid_noise(),
@@ -308,7 +304,6 @@ impl OscillatorPart {
     fn sid_sample(&self, state: &mut OscillatorState, pitch: f64, seconds: f64, moves: Moves, rate: f64) -> f64 {
         let OscillatorPart::Sid {
             wave,
-            saw,
             chip_saw,
             triangle,
             noise,
@@ -327,20 +322,7 @@ impl OscillatorPart {
         let frequency = frequency_of(base);
         let width = (*pulse_width + moves.width).clamp(NARROWEST, WIDEST);
         if *interaction == Interaction::Sync {
-            let second = frequency_of(base + interval);
-            state.second_phase = (state.second_phase + second / rate) % 1.0;
-            let place = (state.second_phase * frequency / second) % 1.0;
-            return match wave {
-                SidWave::Triangle => 1.0 - 4.0 * (place - 0.5).abs(),
-                SidWave::Pulse => {
-                    if place < width {
-                        1.0
-                    } else {
-                        -1.0
-                    }
-                }
-                _ => 2.0 * place - 1.0,
-            };
+            return sid_synced(*wave, state, frequency, frequency_of(base + interval), width, rate);
         }
         let speed = frequency * TABLE_SIZE as f64 / rate;
         let position = state.phases[0];
@@ -350,7 +332,8 @@ impl OscillatorPart {
             SidWave::Saw => read(&chip_saw[band], position),
             SidWave::Triangle => read(&triangle[band], position),
             SidWave::Noise => noise[(position * SID_NOISE_STEPS_PER_CYCLE / TABLE_SIZE as f64) as usize % noise.len()] as f64 + 0.0 * state.phases[1],
-            SidWave::Pulse => (read(&saw[band], position) - read(&saw[band], position + width * TABLE_SIZE as f64)) * 0.5,
+            // The chip's pulse is a comparator on its accumulator, never its DAC: a band-limited pulse of its own.
+            SidWave::Pulse => blep::pulse(position / TABLE_SIZE as f64, (speed / TABLE_SIZE as f64).min(MOST_STEP), width),
         };
         if *wave == SidWave::Noise {
             // Noise steps through the register as the cycle turns, so it must count whole cycles, not wrap at one.
@@ -407,30 +390,94 @@ impl OscillatorPart {
 
 fn basic_sample(partials: &[Partial], state: &mut OscillatorState, pitch: f64, moves: Moves, rate: f64) -> f64 {
     let mut out = 0.0;
-    let band = state.band;
     let wanted = (pitch + moves.pitch, moves.spread);
     if state.speeds_for != wanted || state.speeds[0] == 0.0 {
         for (place, partial) in partials.iter().enumerate().take(3) {
             let octaves = (wanted.0 - MIDDLE_A) / 12.0 + partial.cents / 1200.0 * (1.0 + wanted.1);
-            state.speeds[place] = A_FREQUENCY * 2f64.powf(octaves) * TABLE_SIZE as f64 / rate;
+            // In cycles a sample, held under half the rate and within hearing (frequency_of's bounds).
+            let lowest = frequency_of(LOWEST_PITCH);
+            let frequency = (A_FREQUENCY * 2f64.powf(octaves)).clamp(lowest, frequency_of(HIGHEST_PITCH));
+            state.speeds[place] = (frequency / rate).min(MOST_STEP);
         }
         state.speeds_for = wanted;
     }
-    // A pulse is half the difference of its saw and the saw its width on, the width moved by the Mod Matrix's Pulse width.
-    let width = (PULSE_MIDDLE + moves.width).clamp(NARROWEST, WIDEST) * TABLE_SIZE as f64;
+    // A pulse's width is moved by the Mod Matrix's Pulse width.
+    let width = (PULSE_MIDDLE + moves.width).clamp(NARROWEST, WIDEST);
     for (place, partial) in partials.iter().enumerate().take(3) {
-        let speed = state.speeds[place];
-        let position = state.phases[place];
-        state.phases[place] = wrapped(position + speed);
-        let table = &partial.tables[band];
-        let sample = if partial.pulse {
-            (read(table, position) - read(table, position + width)) * 0.5
-        } else {
-            read(table, position)
+        let step = state.speeds[place];
+        let at = state.phases[place];
+        state.phases[place] = (at + step).fract();
+        let sample = match partial.waveform {
+            Waveform::Sine => blep::sine(at),
+            Waveform::Saw => blep::saw(at, step),
+            Waveform::Square => blep::pulse(at, step, PULSE_MIDDLE),
+            Waveform::Pulse => blep::pulse(at, step, width),
+            Waveform::Triangle => blep::triangle(at),
         };
         out += sample * partial.level;
     }
     out
+}
+
+/// One sample of the SID's wave hard-synced to its second oscillator: the wave starts its cycle again each time the
+/// second's ends, and each jump, its own or the sync's, falling between samples is smoothed by the one-sample-delayed
+/// BLEP, a share in this sample and a share in the next, so that a swept sync lead does not alias.
+// After the hard sync of Plaits' VariableShapeOscillator (plaits/dsp/oscillator/variable_shape_oscillator.h) and
+// stmlib's ThisBlepSample and NextBlepSample (stmlib/dsp/polyblep.h), Emilie Gillet, MIT; the implementation is our own.
+fn sid_synced(wave: SidWave, state: &mut OscillatorState, frequency: f64, master: f64, width: f64, rate: f64) -> f64 {
+    let naive = |place: f64| match wave {
+        SidWave::Triangle => blep::triangle(place),
+        SidWave::Pulse => {
+            if place < width {
+                1.0
+            } else {
+                -1.0
+            }
+        }
+        _ => 2.0 * place - 1.0,
+    };
+    let step = (frequency / rate).min(MOST_STEP);
+    let master_step = (master / rate).min(MOST_STEP);
+    let mut this = state.sync_next;
+    let mut next = 0.0;
+    let mut place = state.sync_phase + step;
+    state.second_phase += master_step;
+    // A jump of the wave's own: the saw's at the cycle's end, the pulse's at its width and at the cycle's end.
+    let own_jump = |from: f64, to: f64, edge: f64, size: f64, this: &mut f64, next: &mut f64| {
+        if from < edge && to >= edge {
+            let after = (to - edge) / step;
+            *this += size * blep::this_sample(after);
+            *next += size * blep::next_sample(after);
+        }
+    };
+    if matches!(wave, SidWave::Pulse) {
+        own_jump(state.sync_phase, place, width, -2.0, &mut this, &mut next);
+    }
+    if place >= 1.0 {
+        place -= 1.0;
+        let after = place / step;
+        let size = match wave {
+            SidWave::Saw | SidWave::Noise => -2.0,
+            SidWave::Pulse => 2.0,
+            SidWave::Triangle => 0.0,
+        };
+        this += size * blep::this_sample(after);
+        next += size * blep::next_sample(after);
+    }
+    if state.second_phase >= 1.0 {
+        // The master ends its cycle a share of a sample ago: the wave jumps from where it was then back to its start.
+        state.second_phase -= 1.0;
+        let after = (state.second_phase / master_step).min(1.0);
+        let at_reset = (place - after * step).rem_euclid(1.0);
+        let size = naive(0.0) - naive(at_reset);
+        this += size * blep::this_sample(after);
+        next += size * blep::next_sample(after);
+        place = after * step;
+    }
+    state.sync_phase = place;
+    next += naive(place);
+    state.sync_next = next;
+    this
 }
 
 /// One sample of Fishline: its table read at the note's pitch, inverted and coupled through the high-pass, as Open303's
@@ -472,5 +519,18 @@ mod tests {
         let own = state.band;
         part.choose_band(&mut state, pitch, two_octaves);
         assert!(state.band > own, "{} against {own}", state.band);
+    }
+
+    /// A hard-synced saw is smoothed at its sync's jumps: from sample to sample it never leaps the full height a naive
+    /// sync makes, and it stays within its bounds.
+    #[test]
+    fn a_synced_saw_is_smoothed_at_its_jumps() {
+        let mut state = OscillatorState::default();
+        let (rate, slave, master) = (48_000.0, 3_100.0, 440.0);
+        let values: Vec<f64> = (0..4800).map(|_| sid_synced(SidWave::Saw, &mut state, slave, master, 0.5, rate)).collect();
+        let most_leap = values.windows(2).map(|pair| (pair[1] - pair[0]).abs()).fold(0.0, f64::max);
+        let naive_leap = 2.0;
+        assert!(most_leap < naive_leap * 0.95, "{most_leap}");
+        assert!(values.iter().all(|value| value.abs() < 1.5));
     }
 }

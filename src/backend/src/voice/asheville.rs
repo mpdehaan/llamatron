@@ -18,6 +18,7 @@
 //! own.
 
 use crate::protocol::values::{list, number, truth, word};
+use crate::voice::blep::{pulse, saw, triangle};
 use crate::voice::oscillators::{frequency_of, Moves, OscillatorState};
 use rmpv::Value;
 use std::f64::consts::PI;
@@ -188,20 +189,6 @@ pub fn compiled(spec: &Value) -> Asheville {
     }
 }
 
-/// The polyBLEP's correction near a jump of two at a cycle's start, at a place in the cycle and a step a sample.
-#[inline]
-fn blep(place: f64, step: f64) -> f64 {
-    if place < step {
-        let t = place / step;
-        2.0 * t - t * t - 1.0
-    } else if place > 1.0 - step {
-        let t = (place - 1.0) / step;
-        t * t + 2.0 * t + 1.0
-    } else {
-        0.0
-    }
-}
-
 /// White noise from -1 to 1, a xorshift a sample, its state the voice's own.
 #[inline]
 fn white(state: &mut u64) -> f64 {
@@ -212,22 +199,6 @@ fn white(state: &mut u64) -> f64 {
     *state ^= *state >> 7;
     *state ^= *state << 17;
     (*state >> 11) as f64 / (1u64 << 52) as f64 - 1.0
-}
-
-#[inline]
-fn saw(place: f64, step: f64) -> f64 {
-    2.0 * place - 1.0 - blep(place, step)
-}
-
-#[inline]
-fn pulse(place: f64, step: f64, width: f64) -> f64 {
-    let level = if place < width { 1.0 } else { -1.0 };
-    level + blep(place, step) - blep((place - width).rem_euclid(1.0), step)
-}
-
-#[inline]
-fn triangle(place: f64) -> f64 {
-    1.0 - 4.0 * (place - 0.5).abs()
 }
 
 /// One classic wave at a place in its cycle, its pulse widths moved by the Mod Matrix's Pulse width.

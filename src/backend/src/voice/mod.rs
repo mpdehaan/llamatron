@@ -7,6 +7,7 @@
 
 pub mod acid;
 pub mod asheville;
+pub mod blep;
 pub mod effects;
 pub mod envelopes;
 pub mod filters;
