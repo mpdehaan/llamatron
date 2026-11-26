@@ -66,6 +66,10 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **A spectrogram on the Instrument page**, later, at a calm rate: in the upper right, beside the settings above the tabs, the instrument's sound
   as a spectrogram: low notes at the bottom, time scrolling left, brightness its loudness; drawn only while the page is
   on screen.
+- **Gauges stepped in big and small moves**: a synth gauge moved in blocks, as the piano roll's gauges move, `[` and
+  `]` for a big move and other keys for a small one, perhaps with Shift (which UX.md allows nowhere today, so the keys are
+  part of the discussion), the size of each move chosen gauge by gauge, since every gauge's range differs. A discussion,
+  with the ranges laid out, before anything is built.
 - **A one-voice instrument's note priority**: Lowest, highest or last, beside today's lowest-of-a-chord.
 - **The instrument on the Track page**: The assigned instrument's settings drawn below the track's own, editable there.
 - **The Instruments page as a rack**: A mockup of every instrument's tab rows in one column, each expanded or collapsed and
