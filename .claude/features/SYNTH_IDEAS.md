@@ -44,6 +44,14 @@ The professor's research is in `.claude/notes/synthesis/`.
     musical before choosing.
   - Burst: a few cycles at each note, then still, for ratchets and trills.
   - One LFO moving another's Rate or depth, through the Mod Matrix's Via or the built-in routes.
+  - **Snail**: three slow chaotic circuits, made to suit llamatron's pages: three slow chaotic
+    circuits, each travelling around two strange attractors at its own pace (the original's about 15 to 30 seconds, 60
+    to 90 seconds, and 30 to 40 minutes a trip), two of them with a Lean, which sets which attractor it lingers around
+    rather than its speed, the third with none; its own inputs left out. Each circuit's X and Y are Mod Matrix sources
+    (the original's Z, its Y inverted, is the Mod Matrix's negative Amount), and a mix of the three, the first and third
+    added and the second taken away, split into its rising and falling halves, as the original's difference rectifier
+    does. Never restarted by a note; the same every playing from its seed. Its circuit's equations, a jerk-type chaotic
+    system, to be found and checked before building.
   - A tidal modulator, after Mutable Instruments' Tides (2018), whose firmware is open (MIT,
     `pichenettes/eurorack`, `tides2/`), so its algorithms can be followed and credited above each: a rise and a fall
     ("flow and ebb") that loops as an LFO or runs once at a note as an envelope. Its Ramp mode is AD (one shot from zero,
