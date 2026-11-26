@@ -7,7 +7,7 @@ instruments:
   - { name: basic, kind: built_in, role: normal, sound: { engine: basic } }
   - { name: sid, kind: built_in, role: normal, sound: { engine: sid } }
   - { name: pocket, kind: built_in, role: normal, sound: { engine: pocket } }
-  - { name: fishline, kind: built_in, role: normal, sound: { engine: fishline } }
+  - { name: oh3, kind: built_in, role: normal, sound: { engine: oh3 } }
   - { name: asheville, kind: built_in, role: normal, sound: { engine: asheville } }
   - { name: mechadrum, kind: built_in, role: percussion, sound: { engine: drum } }
   - name: wobble lead

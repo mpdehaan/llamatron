@@ -176,7 +176,7 @@ fn default_of(kind: &str, name: &str) -> Data {
         .unwrap_or(Data::Null)
 }
 
-/// The voice's Glide time, in seconds, the Voice column's on every engine, Fishline's included.
+/// The voice's Glide time, in seconds, the Voice column's on every engine, Oh3's included.
 fn glide(sound: &Sound) -> Data {
     share(&sound.value("glide"), MILLISECONDS)
 }

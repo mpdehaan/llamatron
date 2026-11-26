@@ -16,9 +16,9 @@ FluidSynth and no DAW. Each is described below, with the features it uses;
 ## Acid House: `acid_rain.yml`
 
 Acid house in A minor at 126 beats a minute, every part on the built-in
-synths, written to show [Fishline](../synths/engines/FISHLINE.md). The squelch
-is Fishline's saw through its Diode filter, deep and resonant, its Acid gate
-set to Modded so that a run of accents climbs higher. The lead is Fishline's
+synths, written to show [Oh3](../synths/engines/OH3.md). The squelch
+is Oh3's saw through its Diode filter, deep and resonant, its Acid gate
+set to Modded so that a run of accents climbs higher. The lead is Oh3's
 square two octaves over it, and an octave higher still at the peak, to show
 the instrument's whole range. MechaDrum plays the synth kick, snare, hats and
 cowbell.

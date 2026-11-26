@@ -622,13 +622,13 @@ mod tests {
     use super::*;
 
     /// A song whose Preview instrument is a built-in synth, and a pattern to listen to.
-    const BUILT_IN_PREVIEW_SET: &str = "scales:\n  - { name: C Major, root: C, type: major }\ninstruments:\n  - { name: lead synth, kind: built_in, role: normal, sound: { engine: fishline } }\npatterns:\n  tune: { steps: 4, rows: { degree: [1, 2, 3, 4] } }\nsongs:\n  - name: song\n    scale: C Major\n    preview_instrument: lead synth\n    tracks: [{ name: lead }]\n    scenes: [{ name: one }]\n";
+    const BUILT_IN_PREVIEW_SET: &str = "scales:\n  - { name: C Major, root: C, type: major }\ninstruments:\n  - { name: lead synth, kind: built_in, role: normal, sound: { engine: oh3 } }\npatterns:\n  tune: { steps: 4, rows: { degree: [1, 2, 3, 4] } }\nsongs:\n  - name: song\n    scale: C Major\n    preview_instrument: lead synth\n    tracks: [{ name: lead }]\n    scenes: [{ name: one }]\n";
 
     /// Listening to an instrument plays its preview pattern: the copy's one scene holds the preview's clip.
     #[test]
     fn an_instrument_preview_holds_its_clip() {
         let text = format!(
-            "{}\ninstruments:\n  - {{ name: fish, kind: built_in, role: normal, sound: {{ engine: fishline }} }}\n",
+            "{}\ninstruments:\n  - {{ name: fish, kind: built_in, role: normal, sound: {{ engine: oh3 }} }}\n",
             crate::generated::tables::NEW_SET
         );
         let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text, None).expect("the scenario's set is valid");

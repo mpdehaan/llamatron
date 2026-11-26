@@ -20,7 +20,7 @@ every algorithm in the code names the work it follows and its licence.
 | [Plaits](https://github.com/pichenettes/eurorack/tree/master/plaits), Mutable Instruments | Emilie Gillet, 2016 | MIT | Asheville's variable-shape waves and its Snap, the detuning curve that settles on unison, fifths and octaves (`src/backend/src/voice/asheville.rs`), the band-limited hard sync of the SID (`src/backend/src/voice/oscillators.rs`), and Bitcrush's Rate, its holds falling between samples (`src/backend/src/voice/effects.rs`) |
 | [VCV Fundamental](https://github.com/VCVRack/Fundamental) | VCV and Andrew Belt | GPL-3.0-or-later | The ladder's saturating stages, each stage's gain scaled by its own saturation, after its VCF (`src/backend/src/voice/filters.rs`) |
 | [reSID](https://github.com/libsidplayfp/resid) | Dag Lem, 2010 | GPL-2.0-or-later | The SID engine's waveform converter: the uneven, unterminated resistor ladder its saw, triangle and noise go through (`src/backend/src/voice/tables.rs`) |
-| [Open303](https://sourceforge.net/p/open303/code) | Robin Schmidt, www.rs-met.com, 2009 | MIT | Fishline's saw and square, the coupling filters around the Diode filter, the Diode filter itself and its measured Env amount mapping (`src/backend/src/voice/acid.rs`) |
+| [Open303](https://sourceforge.net/p/open303/code) | Robin Schmidt, www.rs-met.com, 2009 | MIT | Oh3's saw and square, the coupling filters around the Diode filter, the Diode filter itself and its measured Env amount mapping (`src/backend/src/voice/acid.rs`) |
 
 ## Research Consulted
 

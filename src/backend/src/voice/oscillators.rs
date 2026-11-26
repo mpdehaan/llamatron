@@ -82,7 +82,7 @@ pub struct OscillatorState {
     /// moves works out its powers of two once, not every sample.
     pub speeds_for: (f64, f64),
     pub speeds: [f64; 3],
-    /// Fishline's coupling into its filter, a one-pole high-pass, made as its note begins.
+    /// Oh3's coupling into its filter, a one-pole high-pass, made as its note begins.
     pub coupling: acid::OnePoleHighpass,
     /// Asheville: each oscillator's last value, which the Mod Matrix's Osc 1 to Osc 3 sources read; its noise's state;
     /// the mixer's last output, which Feedback loops back; and when the note began after the instrument started, with
@@ -130,7 +130,7 @@ pub enum OscillatorPart {
     },
     /// Asheville: three free-running oscillators into an overloading mixer (asheville.rs).
     Asheville(Box<asheville::Asheville>),
-    /// Fishline: Open303's saw or its shaped square, each its own band-limited tables (acid.rs).
+    /// Oh3: Open303's saw or its shaped square, each its own band-limited tables (acid.rs).
     Acid {
         tables: Tables,
         tuning: f64,
@@ -480,7 +480,7 @@ fn sid_synced(wave: SidWave, state: &mut OscillatorState, frequency: f64, master
     this
 }
 
-/// One sample of Fishline: its table read at the note's pitch, inverted and coupled through the high-pass, as Open303's
+/// One sample of Oh3: its table read at the note's pitch, inverted and coupled through the high-pass, as Open303's
 /// oscillator feeds its filter.
 fn acid_sample(tables: &Tables, state: &mut OscillatorState, pitch: f64, rate: f64) -> f64 {
     if state.speeds_for.0 != pitch || state.speeds[0] == 0.0 {
@@ -578,9 +578,9 @@ mod tests {
         assert!(crossings(&noise) > 2 * hertz as usize, "{}", crossings(&noise));
     }
 
-    /// Fishline's saw and square play at the note's frequency, the saw through its coupling high-pass, within bounds.
+    /// Oh3's saw and square play at the note's frequency, the saw through its coupling high-pass, within bounds.
     #[test]
-    fn fishlines_waves_play_at_their_pitch() {
+    fn oh3s_waves_play_at_their_pitch() {
         let (pitch, hertz) = (45.0, 110.0);
         for wave in ["saw", "square"] {
             let samples = played(vec![("type", "acid".into()), ("acid_wave", wave.into())], pitch);

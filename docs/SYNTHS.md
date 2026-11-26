@@ -37,7 +37,7 @@ yet; their pages say so.
 ### Standard
 
 - Basic: [Basic](synths/engines/BASIC.md).
-- Analog Mono: [Fishline](synths/engines/FISHLINE.md),
+- Analog Mono: [Oh3](synths/engines/OH3.md),
   [Asheville](synths/engines/ASHEVILLE.md),
   [Monorail](synths/engines/MONORAIL.md) (planned).
 - Analog Poly: [Choir](synths/engines/CHOIR.md) (planned),

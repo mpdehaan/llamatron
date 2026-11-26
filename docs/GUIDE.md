@@ -189,7 +189,7 @@ and each of its parts.
 
 | Page | What it covers |
 | --- | --- |
-| [Fishline](synths/engines/FISHLINE.md) | The acid bass. |
+| [Oh3](synths/engines/OH3.md) | The acid bass. |
 | [Asheville](synths/engines/ASHEVILLE.md) | Planned. |
 | [Monorail](synths/engines/MONORAIL.md) | Planned. |
 

@@ -27,11 +27,11 @@ at the end of this page.
 
 [Pocket](engines/POCKET.md) describes it.
 
-## Fishline
+## Oh3
 
-![The Oscillators tab of Fishline](../screenshots/synth_fishline.svg)
+![The Oscillators tab of Oh3](../screenshots/synth_oh3.svg)
 
-[Fishline](engines/FISHLINE.md) describes it.
+[Oh3](engines/OH3.md) describes it.
 
 ## MechaDrum
 

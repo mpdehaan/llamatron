@@ -646,7 +646,7 @@ impl SoundEngine {
     pub const ASHEVILLE: &'static str = "asheville";
     pub const SID: &'static str = "sid";
     pub const POCKET: &'static str = "pocket";
-    pub const FISHLINE: &'static str = "fishline";
+    pub const OH3: &'static str = "oh3";
 }
 
 pub struct AcidWave;
@@ -802,8 +802,8 @@ impl DrumMachine {
 
 pub static INSTRUMENT_KINDS: &[&str] = &["off", "midi", "built_in"];
 pub static INSTRUMENT_ROLES: &[&str] = &["normal", "percussion"];
-pub static SOUND_ENGINES: &[&str] = &["basic", "drum", "asheville", "sid", "pocket", "fishline"];
-pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "asheville", "sid", "pocket", "fishline"]), ("percussion", &["drum"])];
+pub static SOUND_ENGINES: &[&str] = &["basic", "drum", "asheville", "sid", "pocket", "oh3"];
+pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "asheville", "sid", "pocket", "oh3"]), ("percussion", &["drum"])];
 pub static ACID_WAVES: &[&str] = &["saw", "square"];
 pub static WAVEFORMS: &[&str] = &["square", "saw", "sine", "triangle", "pulse"];
 pub static OSCILLATOR_WAVEFORMS: &[&str] = &["off", "square", "saw", "sine", "triangle", "pulse"];

@@ -212,7 +212,7 @@ pub static ENGINE_PRESETS: &[(&str, Preset)] = &[
         ]),
     ),
     (
-        "fishline",
+        "oh3",
         Preset::Map(&[
             ("voices", Preset::Whole(1)),
             ("legato", Preset::Flag(true)),
@@ -576,7 +576,7 @@ pub static SLOT_DEFAULTS: Preset = Preset::Map(&[
 ]);
 pub static SOUND_DEFAULTS: Preset = Preset::Map(&[("engine", Preset::Text("basic")), ("volume", Preset::Whole(80)), ("lfos", Preset::List(&[]))]);
 /// The engines an instrument of each role may play, the first the role's own.
-pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "asheville", "sid", "pocket", "fishline"]), ("percussion", &["drum"])];
+pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "asheville", "sid", "pocket", "oh3"]), ("percussion", &["drum"])];
 /// The settings each type of part shows, in order.
 pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
     ("basic", &["pitch_env"]),
@@ -1370,7 +1370,7 @@ pub static PART_TYPES: &[(&str, &[&str], &[&str])] = &[
     (
         "oscillators",
         &["basic", "asheville", "sid", "pocket", "acid", "drum"],
-        &["Basic", "Asheville", "SID", "Pocket", "Fishline", "MechaDrum"],
+        &["Basic", "Asheville", "SID", "Pocket", "Oh3", "MechaDrum"],
     ),
     (
         "filter",

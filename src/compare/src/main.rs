@@ -1570,7 +1570,7 @@ fn shots() -> Vec<Shot> {
         synth("synth_basic", "basic", OSCILLATORS_FIELD),
         synth("synth_sid", "sid", OSCILLATORS_FIELD),
         synth("synth_pocket", "pocket", OSCILLATORS_FIELD),
-        synth("synth_fishline", "fishline", OSCILLATORS_FIELD),
+        synth("synth_oh3", "oh3", OSCILLATORS_FIELD),
         synth("synth_asheville", "asheville", OSCILLATORS_FIELD),
         synth("synth_mechadrum", "mechadrum", OSCILLATORS_FIELD),
         synth("synth_oscillators", "wobble lead", OSCILLATORS_FIELD),

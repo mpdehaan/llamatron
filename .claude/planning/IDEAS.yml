@@ -539,20 +539,20 @@
     the setting's own unit, a blank step holding the last, with the CC rows' Slide (154 A). Renaming an instrument renames
     its sections in every pattern; changing a track's instrument leaves the old section until that instrument is deleted
     (159 A). Every new engine brings this discussion again: which six, in this order.
-    Engine and drum names (the user's): Asheville for the ladder-filter monosynth, Fishline for the acid bass, Maclunkey for the
+    Engine and drum names (the user's): Asheville for the ladder-filter monosynth, Oh3 for the acid bass, Maclunkey for the
     single-oscillator mono, ComplexOsc for the complex-oscillator engine, the West Coast engine's name still to choose, Ping for the struck
     filter drum, Mosaic for the saw stack, MechaDrum for the drum engine, Stringy for the string synth, NoiseBuster for the hard digital family (its
     destroyer distortion Shatter), 8oh and 9oh for the drum machines in the manner of the 1980 analog and 1983 hybrid ones.
     No maker's or product's name appears in the professor's notes or on screen.
     Order after the MVP (160, the user's): the Instrument page; export to WAV both played in real time and rendered offline;
     modulation (the Synth Control rows and LFOs); then the shared Filter effect, the drums rendered once a note (Ping, Sweep
-    Drum, Electronic Tom, the FM machines), Fishline, the six-operator FM engine, stereo with Stack, chorus and the reverbs,
+    Drum, Electronic Tom, the FM machines), Oh3, the six-operator FM engine, stereo with Stack, chorus and the reverbs,
     then the rest. Built-in instruments become stereo (161 A) with a Pan setting, which a Synth Control row can move: every
     engine gets eight Synth Control rows, its six, Pan, and one left blank for now. Reverbs before buses (162 A): Room, a
     feedback delay network; Hall, an old-school digital hall of the late seventies, grainy, dark and modulated, one of the
     user's favourite reverb sounds, from the professor's research into how such early machines probably worked; and Plate, the modulated plate with Grit and Freeze, as effect blocks, the page warning past about
     four in a song. The six-operator FM engine's envelope and scaling numbers worked out from the published formulas in our
-    own code (163 A). A Fishline note is accented by a velocity at or above a threshold on the Synth tab, 110 by default, a
+    own code (163 A). A Oh3 note is accented by a velocity at or above a threshold on the Synth tab, 110 by default, a
     Synth Control row setting the accent's amount (165 A).
     ComplexOsc (184 A) is one engine for the classic West Coast and the modern complex oscillator: a Gate setting,
     Envelope or Low-pass gate (Strike, Decay, Memory) for pongs and plucks, the separate West Coast engine gone; its master

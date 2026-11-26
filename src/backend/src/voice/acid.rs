@@ -1,7 +1,7 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! The acid bass's own circuit, Fishline's oscillator and the Diode filter, after Open303 by Robin Schmidt.
+//! The acid bass's own circuit, Oh3's oscillator and the Diode filter, after Open303 by Robin Schmidt.
 //!
 //! Open303 (Copyright (c) 2009 Robin Schmidt, www.rs-met.com, released under the MIT license, which is compatible with
 //! this program's GPL) is an open emulation of the acid bass machine, its constants measured from the circuit. This module

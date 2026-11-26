@@ -1,14 +1,14 @@
 version: 1.1.1
 title: Acid rain
-description: "acid house on Fishline, a squelching acid bass and a lead two octaves over it, over MechaDrum, on the built-in synths"
+description: "acid house on Oh3, a squelching acid bass and a lead two octaves over it, over MechaDrum, on the built-in synths"
 notes: |
-  Acid rain: acid house at 126 beats a minute in A minor, every part on the built-in synths. The squelch is Fishline's
+  Acid rain: acid house at 126 beats a minute in A minor, every part on the built-in synths. The squelch is Oh3's
   saw through its Diode filter, deep and resonant, its Acid gate Modded so that a run of accents climbs higher; the lead is
-  Fishline's square on its Stock circuit, two octaves over the squelch, and an octave higher still at the peak, to show the
+  Oh3's square on its Stock circuit, two octaves over the squelch, and an octave higher still at the peak, to show the
   instrument's whole range. The drums are MechaDrum's synth kick, snare, hats and cowbell.
 
   An acid line is a few pitches made interesting by which steps are loud and which slide, and the marks are rare: two
-  accents a bar, off the beat and after a rest, and one slide a bar, aimed at the octave jump. On Fishline a step at
+  accents a bar, off the beat and after a rest, and one slide a bar, aimed at the octave jump. On Oh3 a step at
   velocity 110 or more is an accent, so every other step stays below it. The line changes by its marks, not its notes:
   every second bar moves its accents and adds a slide, and the last bar of each eight climbs through three accents, the
   turnaround, once a phrase rather than every bar. The lead is a call and its answer, two bars, its long note the peak.
@@ -20,7 +20,7 @@ notes: |
   Run it with: llamatron examples/synth/acid_rain.yml
 
   When changing this demo:
-  - Keep every part on the built-in synths, the acid lines on Fishline and the drums on MechaDrum.
+  - Keep every part on the built-in synths, the acid lines on Oh3 and the drums on MechaDrum.
   - Keep the marks rare: accents off the beat at 110 and over, every other step below it; one slide a bar into a jump.
   - Keep the lead about two octaves over the squelch, and the intro short.
 real_time: true
@@ -167,7 +167,7 @@ instruments:
     kind: built_in
     role: normal
     sound:
-      engine: fishline
+      engine: oh3
       volume: 24
       oscillators: { type: acid, acid_wave: saw, circuit: stock }
       envelopes: [{ type: acid_gate, circuit: modded, accent: 70, accent_sweep: 70, accent_decay: 180, amp_decay: 1200, soft_attack: 30 }, { type: adsr, attack: 0, hold: 0, decay: 320, snap: 0, sustain: 0, release: 320 }, { type: none }]
@@ -177,7 +177,7 @@ instruments:
     kind: built_in
     role: normal
     sound:
-      engine: fishline
+      engine: oh3
       volume: 18
       oscillators: { type: acid, acid_wave: square, circuit: stock }
       envelopes: [{ type: acid_gate, circuit: stock, accent: 50 }, { type: adsr, attack: 0, hold: 0, decay: 400, snap: 0, sustain: 0, release: 400 }, { type: none }]

@@ -290,10 +290,10 @@ fn every_control_tried_apart_changes_the_sound() {
     if !differs(&remembering("0"), &remembering("100")) {
         unwired.push("env1 vactrol memory");
     }
-    // Fishline's slide is heard where a note overlaps the next a fifth higher, as a glided step does: its Glide time at
+    // Oh3's slide is heard where a note overlaps the next a fifth higher, as a glided step does: its Glide time at
     // two ends, and the Glide switch on against off.
     let sliding = |glide: &str, glides: bool| {
-        let sound = format!("{{ engine: fishline, glides: {glides}, glide: {glide}, oscillators: {{ type: acid }} }}");
+        let sound = format!("{{ engine: oh3, glides: {glides}, glide: {glide}, oscillators: {{ type: acid }} }}");
         slid(&instrument(&sound), PITCH, PITCH + 7.0)
     };
     if !differs(&sliding("30", true), &sliding("300", true)) {

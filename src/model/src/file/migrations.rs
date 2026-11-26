@@ -5,8 +5,9 @@
 //! change to the layout after it, run in order for a file saved before each, so that the reader only ever sees the layout
 //! written now. Live's octave numbers (before 1.0.30), one song at the top (before 1.0.39), the long text under description
 //! (before 1.0.155), and everything named kept by name rather than in lists (before 1.0.591). One more is told by its
-//! shape alone, whatever version saved the file: Fishline's oscillator Slide time, from before its slide became the shared
-//! Glide time; and an LFO's rate in tenths of a hertz, from before its Speed and Rate percent.
+//! shape alone, whatever version saved the file: the acid bass engine's oscillator Slide time, from before its slide became
+//! the shared Glide time; an LFO's rate in tenths of a hertz, from before its Speed and Rate percent; and that engine's
+//! name, fishline, from before it was named Oh3.
 
 use crate::file::data::Data;
 use crate::objects::naming;
@@ -94,6 +95,10 @@ pub fn migrated(data: Data, one_song_name: Option<String>) -> (Data, Conversion)
         conversion.moved = true;
         data = each_sound(data, lfo_speeds);
     }
+    if matches!(data, Data::Map(_)) && has_engine(&data, OLD_ACID_ENGINE) {
+        conversion.moved = true;
+        data = each_sound(data, acid_engine_renamed);
+    }
     (data, conversion)
 }
 
@@ -103,6 +108,37 @@ const OLD_RATE: &str = "rate";
 const SPEED: &str = "speed";
 const RATE_PERCENT: &str = "rate_percent";
 const TENTHS: f64 = 10.0;
+
+/// The acid bass engine's name before it was Oh3, and its name now.
+const OLD_ACID_ENGINE: &str = "fishline";
+const ACID_ENGINE: &str = "oh3";
+const ENGINE: &str = "engine";
+
+/// Whether any instrument's sound names an engine.
+fn has_engine(data: &Data, engine: &str) -> bool {
+    let Some(instruments) = data.get(INSTRUMENTS).and_then(Data::as_list) else {
+        return false;
+    };
+    instruments
+        .iter()
+        .filter_map(|instrument| instrument.get(SOUND)?.get(ENGINE)?.as_str())
+        .any(|named| named == engine)
+}
+
+/// A sound on the acid bass engine by its old name, fishline, given its name now, oh3.
+fn acid_engine_renamed(sound: Data) -> Data {
+    let pairs = pairs_of(&sound)
+        .into_iter()
+        .map(|(key, value)| {
+            if key_is(&key, ENGINE) && value.as_str() == Some(OLD_ACID_ENGINE) {
+                (key, Data::text(ACID_ENGINE))
+            } else {
+                (key, value)
+            }
+        })
+        .collect();
+    map(pairs)
+}
 
 /// Whether any LFO still holds its rate in tenths of a hertz.
 fn has_lfo_tenths(data: &Data) -> bool {
@@ -189,14 +225,14 @@ fn acid_oscillators(data: &Data) -> Vec<&Data> {
         .collect()
 }
 
-/// Whether an acid oscillator still holds its own Slide time or Circuit, from before Fishline's slide was its Glide time.
+/// Whether an acid oscillator still holds its own Slide time or Circuit, from before the acid bass's slide was its Glide time.
 fn has_acid_slide_time(data: &Data) -> bool {
     acid_oscillators(data)
         .iter()
         .any(|oscillators| oscillators.get(SLIDE_TIME).is_some() || oscillators.get(CIRCUIT).is_some())
 }
 
-/// Fishline's oscillator Slide time moved to the sound's Glide time where its Circuit was Modded, Stock's fixed slide
+/// The acid bass's oscillator Slide time moved to the sound's Glide time where its Circuit was Modded, Stock's fixed slide
 /// being Glide time's default, and the oscillator's Slide time and Circuit taken away.
 fn acid_slide_as_glide(data: Data) -> Data {
     let pairs = pairs_of(&data)
@@ -590,10 +626,10 @@ mod tests {
     use super::*;
     use crate::file::data::load;
 
-    /// A Modded Fishline's oscillator Slide time becomes its sound's Glide time, a Stock one's is dropped for the
+    /// A Modded acid bass's oscillator Slide time becomes its sound's Glide time, a Stock one's is dropped for the
     /// default, and both oscillators lose their Slide time and Circuit, whatever version saved the file.
     #[test]
-    fn a_fishline_slide_time_becomes_its_glide_time() {
+    fn an_acid_slide_time_becomes_its_glide_time() {
         let file = "version: 1.1.1\ninstruments:\n  - { name: modded, kind: built_in, sound: { engine: fishline, oscillators: { type: acid, circuit: modded, slide_time: 200 } } }\n  - { name: stock, kind: built_in, sound: { engine: fishline, glide: 90, oscillators: { type: acid, circuit: stock, slide_time: 300 } } }\n";
         let (data, conversion) = migrated(load(file).expect("the file reads"), None);
         assert!(conversion.moved);
@@ -626,5 +662,23 @@ mod tests {
         assert_eq!(lfos[0].get(RATE_PERCENT).cloned(), Some(Data::Whole(74)));
         assert!(lfos[0].get(OLD_RATE).is_none());
         assert!(lfos[1].is_null(), "an LFO left out stays so");
+    }
+
+    /// A sound on the acid bass engine by its old name, fishline, is renamed oh3; other engines are left alone.
+    #[test]
+    fn the_fishline_engine_is_renamed_oh3() {
+        let file = "version: 1.1.1\ninstruments:\n  - { name: acid, kind: built_in, sound: { engine: fishline } }\n  - { name: chip, kind: built_in, sound: { engine: sid } }\n";
+        let (data, conversion) = migrated(load(file).expect("the file reads"), None);
+        assert!(conversion.moved);
+        let instruments = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments");
+        let engine = |place: usize| {
+            instruments[place]
+                .get(SOUND)
+                .and_then(|sound| sound.get(ENGINE))
+                .and_then(Data::as_str)
+                .map(str::to_string)
+        };
+        assert_eq!(engine(0).as_deref(), Some(ACID_ENGINE));
+        assert_eq!(engine(1).as_deref(), Some("sid"));
     }
 }

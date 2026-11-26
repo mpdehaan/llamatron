@@ -155,7 +155,7 @@ biggest difference, since bends and vibrato carry most of a lead's expression.
 - Vibrato is delayed, narrow (about a quarter tone) and only on held notes;
   vibrato on every note of a square wave sounds seasick. (practice)
 - On an acid voice an accent is a velocity at or over the instrument's accent
-  threshold (Fishline: 110 by default), so a loud step is an accent whether
+  threshold (Oh3: 110 by default), so a loud step is an accent whether
   meant or not: ordinary notes stay below it. The accent's filter climb
   belongs to the turnaround, once in four or eight bars, not every bar.
   (practice, and llamatron's mapping)
