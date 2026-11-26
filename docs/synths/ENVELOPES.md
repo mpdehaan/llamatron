@@ -85,7 +85,9 @@ A vactrol is a light and a light-sensitive cell sealed together, used in the
 low-pass gates of modular synthesizers. A strike lights the light, and the
 cell's conductance rises towards it, faster the brighter it is lit; when the
 light goes out, the cell falls in a hyperbolic curve, quick at first and then
-lingering, with a slow leak under its tail. Because the rise depends on how
+lingering, to a tenth over the cell's fall time, with a slow leak under its
+tail, so that a strike is a pluck with a body, as loud to the ear as a note
+of any other envelope. Because the rise depends on how
 brightly it is lit, a hard strike is snappy and a soft one lingers, so no two
 hits sound alike.
 

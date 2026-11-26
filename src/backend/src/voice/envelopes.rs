@@ -21,7 +21,9 @@ const STRAIGHT: f64 = 1.0;
 const SWELL_BEND: f64 = 5.0;
 const SNAP_SPEED: f64 = 8.0;
 const RISE_POWER: f64 = 0.7;
-const FALL_TO: f64 = 0.01;
+/// How far a vactrol's cell has fallen at its Fall time: to a tenth, so that it halves about a ninth of the way there,
+/// quick at first and then lingering, its strike a pluck with a body rather than a click.
+const FALL_TO: f64 = 0.1;
 const WEAKEST_DRIVE: f64 = 0.05;
 const LEAK_SECONDS: f64 = 2.0;
 const MOST_LIGHT: f64 = 1.5;
