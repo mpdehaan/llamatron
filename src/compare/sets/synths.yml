@@ -20,7 +20,7 @@ instruments:
       oscillators: { type: basic, oscillators: [{ waveform: saw, detune: -7 }, { waveform: pulse, detune: 7, level: 80 }, { waveform: sine, level: 50 }] }
       envelopes: [{ type: adsr, attack: 5, decay: 300, sustain: 60, release: 200 }, { type: vactrol }, { type: ar, attack: 0, release: 80 }]
       filter: { type: ladder, cutoff: 1200, resonance: 40, env_amount: 50, key_track: 50 }
-      lfos: [{ "on": true, shape: triangle, rate: 60, retrigger: true }, { "on": true, shape: sample_and_hold, rate: 400 }]
+      lfos: [{ "on": true, shape: triangle, speed: medium, rate_percent: 77, retrigger: true }, { "on": true, shape: sample_and_hold, speed: high, rate_percent: 80 }]
       matrix: [{ source: lfo1, via: none, destination: pitch, amount: 2 }, { source: lfo2, via: cc1, destination: cutoff, amount: 30 }, { source: env3, via: none, destination: pulse_width, amount: 25 }]
       effects: [{ effect: drive, curve: warm, amount: 40, mix: 70 }, { effect: bitcrush, bits: 10, rate: 16000, mix: 40 }]
 

@@ -25,6 +25,8 @@ use crate::voice::oscillators::{self, Moves, OscillatorPart, OscillatorState};
 use rmpv::Value;
 
 const MIDDLE_C: f64 = 60.0;
+/// The most of a cycle a Key LFO moves a sample: just under half, the highest frequency a sample rate can hold.
+const MOST_KEY_STEP: f64 = 0.45;
 const KEY_SPAN: f64 = 60.0;
 const MOST_AMP: f64 = 2.0;
 const RANDOM_SEED: u64 = 101;
@@ -46,6 +48,8 @@ pub struct Voice {
     pub silent: bool,
     pub hit: Option<Hit>,
     oscillator: OscillatorState,
+    /// Where each Key LFO is in its cycles on this voice, since each follows the voice's own note.
+    lfo_cycles: [f64; LFO_COUNT],
     envelopes: [EnvelopeState; 3],
     filter: FilterState,
     glide_from: f64,
@@ -71,6 +75,7 @@ impl Voice {
             silent: false,
             hit,
             oscillator: OscillatorState::default(),
+            lfo_cycles: [0.0; LFO_COUNT],
             envelopes: [EnvelopeState::default(); 3],
             filter: FilterState::default(),
             glide_from: pitch,
@@ -319,6 +324,11 @@ impl Patch {
         let glide = self.glide;
         let Sound::Modular(modular) = &mut self.sound else { return };
         let lfos = &self.lfos.now;
+        let bank = &self.lfos;
+        // A Key LFO's step a sample, its ratio times the note's frequency over the rate, the same through the chunk.
+        // Held under half the sample rate, MOST_KEY_STEP of a cycle a sample, so that no ratio runs a modulator past hearing.
+        let frequency = oscillators::frequency_of(voice.pitch);
+        let key_steps: [Option<f64>; LFO_COUNT] = std::array::from_fn(|place| bank.ratio(place).map(|ratio| (ratio * frequency / rate).min(MOST_KEY_STEP)));
         let buffer = &mut self.buffer;
         let is_newest = voice.id == modular.newest;
         let wants_env2 = modular.reads_env2 && (modular.own_filter || is_newest || modular.matrix_reads_env2);
@@ -350,8 +360,11 @@ impl Patch {
             if modular.reads_env3 {
                 sources.envelopes[2] = modular.envelopes[2].level(&mut voice.envelopes[2], note, None);
             }
-            for (lfo, values) in sources.lfos.iter_mut().zip(lfos.iter()).take(LFO_COUNT) {
-                *lfo = values[offset + place];
+            for (number, (lfo, values)) in sources.lfos.iter_mut().zip(lfos.iter()).take(LFO_COUNT).enumerate() {
+                *lfo = match key_steps[number] {
+                    Some(step) => bank.key_lfo_value(number, &mut voice.lfo_cycles[number], step),
+                    None => values[offset + place],
+                };
             }
             let moved = if modular.matrix.routes.is_empty() {
                 Moved::default()

@@ -211,7 +211,7 @@ instruments:
       oscillators: { type: pocket, chip_voice: pulse, duty: quarter, sweep_pace: 0 }
       envelopes: [{ type: chip_steps, start_level: 13, level_pace: 3, level_direction: down }, { type: none }, { type: none }]
       filter: { type: multimode, mode: low, cutoff: 500, resonance: 20, env_amount: 0, key_track: 50 }
-      lfos: [{ "on": true, shape: sine, rate: 55, retrigger: true }]
+      lfos: [{ "on": true, shape: sine, speed: medium, rate_percent: 76, retrigger: true }]
       matrix: [{ source: cc74, via: none, destination: cutoff, amount: 75 }, { source: cc71, via: none, destination: resonance, amount: 70 }, { source: lfo1, via: cc1, destination: pitch, amount: 2 }]
   - name: wave bass
     kind: built_in

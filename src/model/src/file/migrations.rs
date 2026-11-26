@@ -6,7 +6,7 @@
 //! written now. Live's octave numbers (before 1.0.30), one song at the top (before 1.0.39), the long text under description
 //! (before 1.0.155), and everything named kept by name rather than in lists (before 1.0.591). One more is told by its
 //! shape alone, whatever version saved the file: Fishline's oscillator Slide time, from before its slide became the shared
-//! Glide time.
+//! Glide time; and an LFO's rate in tenths of a hertz, from before its Speed and Rate percent.
 
 use crate::file::data::Data;
 use crate::objects::naming;
@@ -90,7 +90,81 @@ pub fn migrated(data: Data, one_song_name: Option<String>) -> (Data, Conversion)
         conversion.moved = true;
         data = acid_slide_as_glide(data);
     }
+    if matches!(data, Data::Map(_)) && has_lfo_tenths(&data) {
+        conversion.moved = true;
+        data = each_sound(data, lfo_speeds);
+    }
     (data, conversion)
+}
+
+const LFOS: &str = "lfos";
+/// The older LFO rate, in tenths of a hertz, and what replaced it.
+const OLD_RATE: &str = "rate";
+const SPEED: &str = "speed";
+const RATE_PERCENT: &str = "rate_percent";
+const TENTHS: f64 = 10.0;
+
+/// Whether any LFO still holds its rate in tenths of a hertz.
+fn has_lfo_tenths(data: &Data) -> bool {
+    let Some(instruments) = data.get(INSTRUMENTS).and_then(Data::as_list) else {
+        return false;
+    };
+    instruments
+        .iter()
+        .filter_map(|instrument| instrument.get(SOUND)?.get(LFOS)?.as_list())
+        .flatten()
+        .any(|lfo| lfo.get(OLD_RATE).is_some())
+}
+
+/// Every instrument's sound changed by a change of sounds, the rest of the file as it was.
+fn each_sound(data: Data, change: fn(Data) -> Data) -> Data {
+    let pairs = pairs_of(&data)
+        .into_iter()
+        .map(|(key, value)| {
+            if !key_is(&key, INSTRUMENTS) {
+                return (key, value);
+            }
+            let instruments = value.as_list().map(<[_]>::to_vec).unwrap_or_default();
+            let changed = instruments
+                .into_iter()
+                .map(|instrument| {
+                    let pairs = pairs_of(&instrument)
+                        .into_iter()
+                        .map(|(key, value)| if key_is(&key, SOUND) { (key, change(value)) } else { (key, value) })
+                        .collect();
+                    map(pairs)
+                })
+                .collect();
+            (key, Data::List(changed))
+        })
+        .collect();
+    map(pairs)
+}
+
+/// A sound's LFOs each given the Speed and Rate percent nearest its rate in tenths of a hertz, so that it sounds as it did.
+fn lfo_speeds(sound: Data) -> Data {
+    let pairs = pairs_of(&sound)
+        .into_iter()
+        .map(|(key, value)| {
+            if !key_is(&key, LFOS) {
+                return (key, value);
+            }
+            let lfos = value.as_list().map(<[_]>::to_vec).unwrap_or_default();
+            (key, Data::List(lfos.into_iter().map(lfo_speed).collect()))
+        })
+        .collect();
+    map(pairs)
+}
+
+fn lfo_speed(lfo: Data) -> Data {
+    let Some(tenths) = lfo.get(OLD_RATE).and_then(Data::as_whole).map(|tenths| tenths as f64) else {
+        return lfo;
+    };
+    let (speed, percent) = crate::objects::lfo_speed::speed_of(tenths / TENTHS);
+    let mut pairs: Vec<(Data, Data)> = pairs_of(&lfo).into_iter().filter(|(key, _)| !key_is(key, OLD_RATE)).collect();
+    pairs.push((Data::text(SPEED), Data::text(speed)));
+    pairs.push((Data::text(RATE_PERCENT), Data::Whole(percent as i128)));
+    map(pairs)
 }
 
 const INSTRUMENTS: &str = "instruments";
@@ -533,5 +607,24 @@ mod tests {
         }
         let (_, untouched) = migrated(data, None);
         assert!(!untouched.moved, "a file already moved is left alone");
+    }
+
+    /// An LFO's rate in tenths of a hertz becomes the Speed and Rate percent giving it again, 5.0 Hz Medium at 74%.
+    #[test]
+    fn an_lfo_rate_in_tenths_becomes_its_speed_and_percent() {
+        let file = "version: 1.1.1\ninstruments:\n  - { name: lead, kind: built_in, sound: { engine: sid, lfos: [{ on: true, rate: 50 }, ~] } }\n";
+        let (data, conversion) = migrated(load(file).expect("the file reads"), None);
+        assert!(conversion.moved);
+        let instruments = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments");
+        let lfos = instruments[0]
+            .get(SOUND)
+            .and_then(|sound| sound.get(LFOS))
+            .and_then(Data::as_list)
+            .expect("lfos")
+            .to_vec();
+        assert_eq!(lfos[0].get(SPEED).and_then(Data::as_str), Some("medium"));
+        assert_eq!(lfos[0].get(RATE_PERCENT).cloned(), Some(Data::Whole(74)));
+        assert!(lfos[0].get(OLD_RATE).is_none());
+        assert!(lfos[1].is_null(), "an LFO left out stays so");
     }
 }

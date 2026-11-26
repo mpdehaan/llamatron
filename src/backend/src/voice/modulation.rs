@@ -32,6 +32,8 @@ enum Shape {
 struct Lfo {
     shape: Shape,
     step: f64,
+    /// The multiple of the note's frequency it runs at where it follows the key, as an FM modulator does.
+    ratio: Option<f64>,
     retrigger: bool,
     each_scene: bool,
     cycles: f64,
@@ -65,6 +67,7 @@ impl LfoBank {
                 Some(Lfo {
                     shape,
                     step: number(spec, "rate", 1.0) / rate,
+                    ratio: crate::protocol::values::field(spec, "key_ratio").and_then(crate::protocol::values::as_number),
                     retrigger: truth(spec, "retrigger", false),
                     each_scene: truth(spec, "each_scene", false),
                     cycles: 0.0,
@@ -86,26 +89,28 @@ impl LfoBank {
     pub fn advance(&mut self, frames: usize) {
         let frames = frames.min(MOST_FRAMES);
         for (lfo, values) in self.lfos.iter_mut().zip(self.now.iter_mut()) {
-            let Some(lfo) = lfo else { continue };
+            // A Key LFO follows each note's own pitch, so each voice works out its own (key_lfo_value).
+            let Some(lfo) = lfo.as_mut().filter(|lfo| lfo.ratio.is_none()) else {
+                continue;
+            };
             for value in values.iter_mut().take(frames) {
-                let place = lfo.cycles.fract();
-                *value = match lfo.shape {
-                    Shape::Sine => (2.0 * PI * place).sin(),
-                    Shape::Triangle => 1.0 - 4.0 * (place - 0.5).abs(),
-                    Shape::SawUp => 2.0 * place - 1.0,
-                    Shape::SawDown => 1.0 - 2.0 * place,
-                    Shape::Square => {
-                        if place < 0.5 {
-                            1.0
-                        } else {
-                            -1.0
-                        }
-                    }
-                    Shape::SampleAndHold => self.held[lfo.cycles as usize % HELD_VALUES],
-                };
+                *value = shaped(lfo.shape, lfo.cycles, lfo.step, &self.held);
                 lfo.cycles = (lfo.cycles + lfo.step) % HELD_VALUES as f64;
             }
         }
+    }
+
+    /// The multiple of the note's frequency an LFO runs at where it follows the key, or None where it has a rate of its own.
+    pub fn ratio(&self, place: usize) -> Option<f64> {
+        self.lfos.get(place)?.as_ref()?.ratio
+    }
+
+    /// A Key LFO's value at a voice's own phase, moved on by a step of the note's frequency times its ratio over the rate.
+    pub fn key_lfo_value(&self, place: usize, cycles: &mut f64, step: f64) -> f64 {
+        let Some(Some(lfo)) = self.lfos.get(place) else { return 0.0 };
+        let value = shaped(lfo.shape, *cycles, step, &self.held);
+        *cycles = (*cycles + step) % HELD_VALUES as f64;
+        value
     }
 
     /// Start again every LFO that retriggers, as a note begins.
@@ -124,6 +129,44 @@ impl LfoBank {
                 lfo.cycles = 0.0;
             }
         }
+    }
+}
+
+/// A shape's value at a place in its cycles, its steps of step cycles a sample. The saws' and the square's jumps are
+/// smoothed by a two-sample polyBLEP, so that at audio rate they do not alias; at an LFO's slow rates the smoothing spans
+/// a vanishing share of a cycle and changes nothing heard.
+// The polyBLEP residual after stmlib's ThisBlepSample and NextBlepSample (stmlib/dsp/polyblep.h, Emilie Gillet, MIT),
+// in its two-sided polynomial form; the implementation here is our own.
+#[inline]
+fn shaped(shape: Shape, cycles: f64, step: f64, held: &[f64]) -> f64 {
+    let place = cycles.fract();
+    match shape {
+        Shape::Sine => (2.0 * PI * place).sin(),
+        Shape::Triangle => 1.0 - 4.0 * (place - 0.5).abs(),
+        Shape::SawUp => 2.0 * place - 1.0 - blep(place, step),
+        Shape::SawDown => 1.0 - 2.0 * place + blep(place, step),
+        Shape::Square => {
+            let level = if place < 0.5 { 1.0 } else { -1.0 };
+            level + blep(place, step) - blep((place + 0.5).fract(), step)
+        }
+        Shape::SampleAndHold => held[cycles as usize % HELD_VALUES],
+    }
+}
+
+/// The polyBLEP's correction near a jump of two at the cycle's start, at a place in the cycle and a step a sample.
+#[inline]
+fn blep(place: f64, step: f64) -> f64 {
+    if step <= 0.0 || step >= 0.5 {
+        return 0.0;
+    }
+    if place < step {
+        let t = place / step;
+        2.0 * t - t * t - 1.0
+    } else if place > 1.0 - step {
+        let t = (place - 1.0) / step;
+        t * t + 2.0 * t + 1.0
+    } else {
+        0.0
     }
 }
 

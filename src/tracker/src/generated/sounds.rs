@@ -464,7 +464,10 @@ pub static OSCILLATOR_DEFAULTS: Preset = Preset::Map(&[("waveform", Preset::Text
 pub static LFO_DEFAULTS: Preset = Preset::Map(&[
     ("on", Preset::Flag(false)),
     ("shape", Preset::Text("sine")),
-    ("rate", Preset::Whole(50)),
+    ("speed", Preset::Text("medium")),
+    ("rate_percent", Preset::Whole(74)),
+    ("key", Preset::Flag(false)),
+    ("ratio", Preset::Text("1:1")),
     ("retrigger", Preset::Flag(true)),
     ("each_scene", Preset::Flag(false)),
 ]);

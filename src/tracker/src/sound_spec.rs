@@ -8,11 +8,11 @@
 use crate::generated::sounds::{Preset, EFFECT_DEFAULTS, LFO_DEFAULTS, SLOT_DEFAULTS};
 use crate::instrument_sound::Sound;
 use llamatron_model::file::data::Data;
+use llamatron_model::objects::lfo_speed;
 
 const MILLISECONDS: f64 = 1000.0;
 const TENTHS_OF_MILLISECONDS: f64 = 10000.0;
 const PERCENT: f64 = 100.0;
-const TENTHS: f64 = 10.0;
 /// How many decibels a filter's pole falls by, and the poles a filter has unless its slope says.
 const DB_A_POLE: i64 = 6;
 const FOUR_POLES: i64 = 4;
@@ -259,12 +259,20 @@ fn lfos(sound: &Sound) -> Data {
             lfos.push(Data::Null);
             continue;
         }
-        lfos.push(mapping(vec![
+        let speed = setting("speed").as_str().unwrap_or(lfo_speed::DEFAULT_SPEED).to_string();
+        let percent = setting("rate_percent").as_whole().unwrap_or(0) as f64;
+        let mut lfo = vec![
             ("shape", setting("shape")),
-            ("rate", share(&setting("rate"), TENTHS)),
+            ("rate", Data::Float(lfo_speed::hertz(&speed, percent))),
             ("retrigger", setting("retrigger")),
             ("each_scene", setting("each_scene")),
-        ]));
+        ];
+        // At audio rate an LFO may follow the key, running at its ratio times each note's frequency.
+        if speed == lfo_speed::AUDIO_SPEED && setting("key") == Data::Bool(true) {
+            let ratio = setting("ratio").as_str().map(lfo_speed::ratio_multiple).unwrap_or(1.0);
+            lfo.push(("key_ratio", Data::Float(ratio)));
+        }
+        lfos.push(mapping(lfo));
     }
     Data::List(lfos)
 }

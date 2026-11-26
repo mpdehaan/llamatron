@@ -18,6 +18,7 @@ use crate::screens::field_page::{Form, Node};
 use crate::settings::named_in;
 use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
+use llamatron_model::objects::lfo_speed;
 use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::file_format::{
     InstrumentSetting, Section, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, INSTRUMENT_KINDS, LFO_SHAPES, MATRIX_DESTINATIONS, MATRIX_SOURCES,
@@ -25,8 +26,8 @@ use llamatron_model::schema::generated::file_format::{
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
-    MAX_KNOB, MAX_LFO_RATE, MAX_MATRIX_AMOUNT, MAX_OSCILLATORS, MAX_SID_RATE, MAX_VOICES, MAX_VOLUME_PERCENT, MIN_BITS, MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY,
-    MIN_KEYSWITCH_LEAD, MIN_LFO_RATE,
+    MAX_KNOB, MAX_MATRIX_AMOUNT, MAX_OSCILLATORS, MAX_SID_RATE, MAX_VOICES, MAX_VOLUME_PERCENT, MIN_BITS, MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY,
+    MIN_KEYSWITCH_LEAD,
 };
 use llamatron_strings::{labels, legends, marks, messages, named};
 
@@ -92,18 +93,35 @@ fn gauge_text(number: i64, lowest: i64, highest: i64, cells: usize, unit: &str, 
     } else {
         (number - lowest) as f64 / (highest - lowest) as f64
     };
-    let filled = ((share * cells as f64).round_ties_even() as usize).min(cells);
-    let gauge = format!(
-        "{}{}",
-        marks::MSG_SOUND_GAUGE_FULL.repeat(filled),
-        marks::MSG_SOUND_GAUGE_EMPTY.repeat(cells - filled)
-    );
+    let gauge = gauge_bar(share, cells);
     let value = if divisor != 1 {
         named(unit, &[("number", (number as f64 / divisor as f64).into())])
     } else {
         named(unit, &[("number", number.into())])
     };
     named(marks::MSG_SOUND_GAUGE, &[("gauge", gauge.as_str().into()), ("value", value.as_str().into())])
+}
+
+/// Hertz as a rate is read: tenths below ten, whole hertz below a thousand, then kilohertz.
+fn hertz_shown(hertz: f64) -> String {
+    let (tens, thousand) = (10.0, 1000.0);
+    if hertz < tens {
+        named(marks::MSG_TENTHS_HERTZ_SHOWN, &[("number", hertz.into())])
+    } else if hertz < thousand {
+        named(marks::MSG_HERTZ_SHOWN, &[("number", (hertz.round() as i64).into())])
+    } else {
+        named(marks::MSG_KILOHERTZ_SHOWN, &[("number", (hertz / thousand).into())])
+    }
+}
+
+/// A gauge's bar, as many of its cells full as a share from 0 to 1 of the way along.
+fn gauge_bar(share: f64, cells: usize) -> String {
+    let filled = ((share * cells as f64).round_ties_even() as usize).min(cells);
+    format!(
+        "{}{}",
+        marks::MSG_SOUND_GAUGE_FULL.repeat(filled),
+        marks::MSG_SOUND_GAUGE_EMPTY.repeat(cells - filled)
+    )
 }
 
 /// A gauge field of a whole number; how says whether it grows logarithmically and what the number is divided by to be shown.
@@ -159,7 +177,6 @@ const STEPS_OF_ONE: Strides = (&[], 1);
 const TIME_STRIDES: Strides = (&[(20, 1), (100, 5), (500, 10), (2000, 50)], 100);
 /// How far a frequency in hertz steps, coarser as it rises, so that a cutoff crosses its range in a few presses.
 const HERTZ_STRIDES: Strides = (&[(100, 5), (500, 10), (1000, 25), (2000, 50), (5000, 100), (10000, 250)], 500);
-const RATE_STRIDES: Strides = (&[(20, 1), (50, 2), (100, 5), (300, 10), (600, 25)], 50);
 
 /// Ids for the fields, counting on, with what each that writes writes, and how far a gauge steps.
 #[derive(Default)]
@@ -834,6 +851,39 @@ impl InstrumentEditor {
         tab
     }
 
+    /// An LFO's Rate: a ratio to the note where it follows the key, or else a percentage across its Speed's span, shown
+    /// with the hertz it gives, such as 74% (5.0 Hz).
+    fn lfo_rate_field(ids: &mut Ids, number: usize, speed: &str, keyed: bool, percent: &Data, ratio: &str) -> Field {
+        let numbered = |label: &str| named(label, &[("number", number.into())]);
+        let shown_label = named_in(labels::MSG_LFO_SHOWN_LABELS, labels::MSG_LFO_RATE_LABEL);
+        if keyed {
+            return chosen(
+                ids.at(Write::Item("lfos", number, "ratio")),
+                &numbered(labels::MSG_LFO_RATIO_LABEL),
+                lfo_speed::RATIOS,
+                &lfo_speed::RATIOS.iter().map(|ratio| ratio.to_string()).collect::<Vec<_>>(),
+                ratio,
+            )
+            .with_shown_label(&shown_label);
+        }
+        let percent = whole(percent);
+        let hertz = hertz_shown(lfo_speed::hertz(speed, percent as f64));
+        let value = named(marks::MSG_LFO_RATE_SHOWN, &[("percent", percent.into()), ("hertz", hertz.as_str().into())]);
+        let most = lfo_speed::MOST_PERCENT as i64;
+        let bar = gauge_bar(percent as f64 / most as f64, BLOCK_CELLS);
+        let shown = named(marks::MSG_SOUND_GAUGE, &[("gauge", bar.as_str().into()), ("value", value.as_str().into())]);
+        Field::number(
+            ids.at(Write::Item("lfos", number, "rate_percent")),
+            &numbered(labels::MSG_LFO_RATE_LABEL),
+            Some(percent),
+            Some(0),
+            Some(most),
+            0,
+            Some(shown),
+        )
+        .with_shown_label(&shown_label)
+    }
+
     fn lfos_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
         let lfo = |number: usize, name: &str| sound.item("lfos", number, name, LFO_DEFAULTS);
         let shown_label = |label: &str| named_in(labels::MSG_LFO_SHOWN_LABELS, label);
@@ -841,7 +891,9 @@ impl InstrumentEditor {
         for number in 1..=LFO_COUNT as usize {
             let numbered = |label: &str| named(label, &[("number", number.into())]);
             let shape = text(&lfo(number, "shape"));
-            let fields = vec![
+            let speed = text(&lfo(number, "speed"));
+            let keyed = speed == lfo_speed::AUDIO_SPEED && flag(&lfo(number, "key"));
+            let mut fields = vec![
                 Field::toggle(
                     ids.at(Write::Item("lfos", number, "on")),
                     &numbered(labels::MSG_LFO_LABEL),
@@ -855,16 +907,23 @@ impl InstrumentEditor {
                     &shape,
                 )
                 .with_shown_label(&shown_label(labels::MSG_LFO_SHAPE_LABEL)),
-                gauge(
-                    ids.at_gauge(Write::Item("lfos", number, "rate"), RATE_STRIDES),
-                    &numbered(labels::MSG_LFO_RATE_LABEL),
-                    whole(&lfo(number, "rate")),
-                    (MIN_LFO_RATE, MAX_LFO_RATE),
-                    BLOCK_CELLS,
-                    marks::MSG_LFO_RATE_SHOWN,
-                    (true, TENTHS),
+                chosen(
+                    ids.at(Write::Item("lfos", number, "speed")),
+                    &numbered(labels::MSG_LFO_SPEED_LABEL),
+                    lfo_speed::SPEED_NAMES,
+                    &names_in(labels::MSG_LFO_SPEED_NAMES, lfo_speed::SPEED_NAMES),
+                    &speed,
                 )
-                .with_shown_label(&shown_label(labels::MSG_LFO_RATE_LABEL)),
+                .with_shown_label(&shown_label(labels::MSG_LFO_SPEED_LABEL)),
+                Self::lfo_rate_field(ids, number, &speed, keyed, &lfo(number, "rate_percent"), &text(&lfo(number, "ratio"))),
+            ];
+            if speed == lfo_speed::AUDIO_SPEED {
+                fields.push(
+                    Field::toggle(ids.at(Write::Item("lfos", number, "key")), &numbered(labels::MSG_LFO_KEY_LABEL), keyed)
+                        .with_shown_label(&shown_label(labels::MSG_LFO_KEY_LABEL)),
+                );
+            }
+            fields.extend([
                 Field::toggle(
                     ids.at(Write::Item("lfos", number, "retrigger")),
                     &numbered(labels::MSG_LFO_RETRIGGER_LABEL),
@@ -877,7 +936,7 @@ impl InstrumentEditor {
                     flag(&lfo(number, "each_scene")),
                 )
                 .with_shown_label(&shown_label(labels::MSG_LFO_EACH_SCENE_LABEL)),
-            ];
+            ]);
             let mut column = TabColumn::new(None, fields);
             column.under = number == SECOND_ROW_LFO;
             column.boxed = true;
@@ -1348,5 +1407,32 @@ mod tests {
         let (one, several) = (1, 4);
         assert!(!shows(one));
         assert!(shows(several));
+    }
+
+    /// An LFO's Rate shows its percentage with the hertz it gives at its Speed; the Key switch shows only at Very High,
+    /// and with Key on the Rate is a ratio to the note.
+    #[test]
+    fn an_lfo_rate_shows_its_hertz_and_key_shows_only_at_audio_rate() {
+        let fields_of = |lfo: &str| {
+            let text = format!("{{ name: synth, kind: built_in, role: normal, sound: {{ engine: basic, lfos: [{lfo}] }} }}");
+            let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
+            let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
+            let mut ids = Ids { last: 0, writes: Vec::new() };
+            let tab = InstrumentEditor::lfos_tab(&Sound::of(&instrument), false, &mut ids);
+            tab.columns[0].fields.clone()
+        };
+        let labelled = |fields: &[Field], label: &str| fields.iter().find(|field| field.label == named(label, &[("number", 1.into())])).cloned();
+        let medium = fields_of("{ on: true, speed: medium, rate_percent: 74 }");
+        let rate = labelled(&medium, labels::MSG_LFO_RATE_LABEL).expect("a Rate");
+        let shown = named(
+            marks::MSG_LFO_RATE_SHOWN,
+            &[("percent", 74.into()), ("hertz", hertz_shown(lfo_speed::hertz("medium", 74.0)).as_str().into())],
+        );
+        assert!(rate.value().ends_with(&shown), "{}", rate.value());
+        assert!(labelled(&medium, labels::MSG_LFO_KEY_LABEL).is_none(), "no Key below Very High");
+        let keyed = fields_of("{ on: true, speed: very_high, key: true, ratio: \"2:1\" }");
+        assert!(labelled(&keyed, labels::MSG_LFO_KEY_LABEL).is_some());
+        let ratio = labelled(&keyed, labels::MSG_LFO_RATIO_LABEL).expect("a ratio in the Rate's place");
+        assert_eq!(ratio.value(), "2:1");
     }
 }
