@@ -229,3 +229,12 @@ the job.
   everything else is written to make it land; where a song is led by a riff
   the riff is written first and the singing is written into its gaps.
   (practice)
+
+## The Instrumental Riff-Hook
+
+- Where no one sings, the hook is a riff: rhythm first, one or two bars,
+  three to five pitches, stated, repeated, then varied once (its ending, a
+  sequence up a step, an octave flip), the shape AA'AB or a call and its
+  answer. The rhythm is its identity more than the pitches. (practice)
+- The phrase's peak or last note is its longest, on a strong beat, with
+  silence after it for the listener to take it in. (practice)

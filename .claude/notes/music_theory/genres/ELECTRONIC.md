@@ -179,3 +179,15 @@ has no drums at all or a pulse only.
 - **Dub techno's second generation**: sequencers the artist builds, light drum
   patterns that never sit still, heavy bass, short found sounds (hand drums,
   metal) layered in; a track kept in several versions.
+
+## Chiptune Orchestration
+
+- Three or four voices and a noise channel: the arpeggio stands in for chords,
+  the noise channel plays the drums, a voice may echo another a step late. The
+  verse and chorus are told apart by which voices play, the lead's register
+  (the chorus an octave up), the rate of the harmony (two bars a chord in the
+  verse, one in the chorus), the pulse's duty changing between sections, and
+  the drums thinning to a kick and soft noise in the verse. Dropping to almost
+  nothing before the last chorus is the largest dynamic a chip has. (practice)
+- A chip sound may ignore velocity; dynamics then come from the scoring, or
+  from a route of velocity to the volume. (llamatron: check each instrument)

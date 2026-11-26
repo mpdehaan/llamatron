@@ -317,3 +317,19 @@ quiet passage played with the hands or at a whisper, and then the finale.
 
 Contrast does more for a drum solo than speed. The quiet passages and the
 silences make the climax register as loud.
+
+## Swing by Subdivision and the Velocity Ladder
+
+- Swing goes on the busiest subdivision a part is written in: parts in
+  sixteenths take sixteenth swing (54 to 58) or none. Eighth swing on parts
+  written in sixteenths pushes the "and" into the "a" beside it, a flam on
+  every beat, and the groove sounds drunk. Kick, bass and hats share one grid.
+  (practice)
+- Velocity follows place in the beat: the downbeat strongest, the "and"
+  medium, the "e" and "a" ghosts (35 to 50 on a snare); and it follows the
+  phrase, rising into each chorus. Values that look random sound random.
+  (practice)
+- Funk: everyone hits the one hard; every part is short and mostly rests,
+  fitting into the others' holes; gates of a thirty-second to a sixteenth; the
+  bass hits the one, pops off-beats around rests and leads back with a pickup;
+  chord stabs on sixteenth off-beats, most of them muted ghosts. (practice)

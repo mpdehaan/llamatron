@@ -595,3 +595,14 @@ points:
   highest note in the last two bars and lands on a note of the chord into the
   next section.
 
+
+## Intros of a Listening Demo
+
+- A demo heard rather than mixed keeps its intro to two bars, four at most,
+  under about eight seconds, with the hook in by twenty to thirty seconds. The
+  long drum intros of dance records are there for a DJ to mix into, and with
+  no effects moving they only wait. (practice)
+- With no effects, a build is made by adding a part every four to eight bars,
+  taking the kick and bass out before a peak, a snare roll doubling its speed,
+  a bar of space, then everything at once; a filter opened over eight to
+  sixteen bars, never reset every two. (practice)

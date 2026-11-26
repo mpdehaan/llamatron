@@ -137,3 +137,25 @@ bend, and the import is said to drop pitch bend. For guitar-style leads on a
 synth, a bend lane with ramps, plus an optional vibrato, would make the
 biggest difference, since bends and vibrato carry most of a lead's expression.
 (What llamatron has is to be checked against the code.)
+
+## Synth Leads
+
+- A synth lead sits about two octaves over the bass: the bass in octaves 2 and
+  3, the lead's home in 4 and 5, its peak an octave higher. A lead in the
+  bass's register is mud. To show an instrument's range, move a phrase up an
+  octave for the last section rather than writing a wider line. (practice)
+- Portamento and accent are marks, used rarely: a glide on one to three steps
+  in sixteen, aimed at an octave jump or a target note, never into the same
+  pitch, where it does nothing; accents on two to four steps a bar, mostly off
+  the beat, best after a rest. Where the marks fall changes from section to
+  section, not bar to bar. Marks on every bar become the line itself and
+  sound squeaky and unsteady. (practice)
+- The slide must finish inside one step at the song's tempo; a slide longer
+  than the step leaves every note bending and sounds out of tune. (practice)
+- Vibrato is delayed, narrow (about a quarter tone) and only on held notes;
+  vibrato on every note of a square wave sounds seasick. (practice)
+- On an acid voice an accent is a velocity at or over the instrument's accent
+  threshold (Fishline: 110 by default), so a loud step is an accent whether
+  meant or not: ordinary notes stay below it. The accent's filter climb
+  belongs to the turnaround, once in four or eight bars, not every bar.
+  (practice, and llamatron's mapping)
