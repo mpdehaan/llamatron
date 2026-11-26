@@ -86,7 +86,7 @@ them.
 | [Rock](demos/ROCK.md) | 11 |
 | [Rock Mashup](demos/ROCK_MASHUP.md) | 6 |
 | [Soundtrack](demos/SOUNDTRACK.md) | 7 |
-| [Synth](demos/SYNTH.md) | 1 |
+| [Synth](demos/SYNTH.md) | 2 |
 | [TV Theme](demos/TV_THEME.md) | 13 |
 | [Video Game](demos/VIDEO_GAME.md) | 4 |
 | [World Mashup](demos/WORLD_MASHUP.md) | 1 |

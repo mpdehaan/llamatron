@@ -1,0 +1,171 @@
+version: 1.1.1
+title: Acid rain
+description: "acid house on Fishline, two acid lines, one squelching and one answering, over MechaDrum, on the built-in synths"
+notes: |
+  Acid rain: acid house at 126 beats a minute in A minor, every part on the built-in synths. The squelch is Fishline's
+  saw through its Diode filter, deep and resonant, its Acid gate Modded so that runs of accents climb higher; the answer is
+  Fishline's square, Modded for a longer slide and a little Filter FM, a lighter line an octave up. The drums are MechaDrum's
+  synth kick, snare, hats and cowbell.
+
+  An acid line is a few pitches made interesting by which steps are loud, short or slid: the home note on most steps, its
+  octave, the minor third, the fifth and the flat seventh, accents mostly off the beat, two or three slides a bar aimed at
+  an octave jump, and a rest before an accent so the accent hits harder. The line changes through the track by its marks,
+  not its notes: the build moves and adds accents into a run of three, and the second drop lifts the line a fourth.
+
+  Form: intro (kick and hats), the squelch alone, the build with its accent run and the snare, the drop with the answer and
+  the cowbell, a break of the answer alone, the second drop a fourth up, and an outro.
+
+  Run it with: llamatron examples/synth/acid_rain.yml
+
+  When changing this demo:
+  - Keep every part on the built-in synths, the acid lines on Fishline and the drums on MechaDrum.
+  - Keep the squelch's accents off the beat and its slides few, aimed at octave jumps; the marks are the hook.
+  - Keep the answer sparse, so the squelch leads.
+real_time: true
+protected: true
+
+scales:
+  - { name: A Minor, root: A, type: minor }
+
+patterns:
+  - name: squelch
+    steps: 16
+    group: squelch
+    step_size: 1/16
+    degree: [1, 1, 1, ~, 1, 3, 1, ~, 1, 1, 5, 1, ~, 7, 1, 1]
+    octave: [2, 2, 3, ~, 2, 2, 2, ~, 2, 3, 2, 2, ~, 2, 2, 3]
+    velocity: [96, 116, 96, ~, 96, 96, 118, ~, 96, 120, 96, 96, ~, 96, 114, 96]
+    glide: [~, true, ~, ~, ~, ~, ~, ~, true, ~, ~, ~, ~, ~, true, ~]
+  - name: squelch build
+    steps: 16
+    group: squelch
+    step_size: 1/16
+    degree: [1, 1, 1, ~, 1, 3, 1, ~, 1, 1, 5, 1, ~, 7, 1, 1]
+    octave: [2, 2, 3, ~, 2, 2, 2, ~, 2, 3, 2, 2, ~, 2, 2, 3]
+    velocity: [96, 116, 96, ~, 96, 96, 118, ~, 96, 120, 96, 112, ~, 118, 124, 96]
+    glide: [~, true, ~, ~, ~, ~, ~, ~, true, ~, ~, ~, ~, ~, true, ~]
+  - name: squelch up
+    steps: 16
+    group: squelch
+    step_size: 1/16
+    degree: [4, 4, 4, ~, 4, 6, 4, ~, 4, 4, 1, 4, ~, 3, 4, 4]
+    octave: [2, 2, 3, ~, 2, 2, 2, ~, 2, 3, 3, 2, ~, 3, 2, 3]
+    velocity: [96, 116, 96, ~, 96, 96, 118, ~, 96, 120, 96, 112, ~, 118, 124, 96]
+    glide: [~, true, ~, ~, ~, ~, ~, ~, true, ~, ~, ~, ~, ~, true, ~]
+  - name: answer
+    steps: 16
+    group: answer
+    step_size: 1/16
+    degree: [~, ~, 5, ~, ~, ~, 7, 5, ~, ~, 3, ~, ~, ~, 1, ~]
+    octave: [~, ~, 3, ~, ~, ~, 3, 3, ~, ~, 3, ~, ~, ~, 4, ~]
+    velocity: [~, ~, 100, ~, ~, ~, 116, 100, ~, ~, 112, ~, ~, ~, 120, ~]
+    glide: [~, ~, ~, ~, ~, ~, true, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  - name: kick
+    steps: 4
+    drum: true
+    group: drums
+    step_size: 1/4
+    degree: [C, C, C, C]
+    velocity: [118, 118, 118, 118]
+  - name: snare
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, C]
+    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, 80]
+  - name: hats
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, C]
+    velocity: [~, ~, 96, ~, ~, ~, 96, ~, ~, ~, 96, ~, ~, ~, 96, 70]
+  - name: cowbell
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [~, ~, ~, C, ~, ~, C, ~, ~, ~, ~, C, ~, ~, ~, ~]
+    velocity: [~, ~, ~, 90, ~, ~, 76, ~, ~, ~, ~, 90, ~, ~, ~, ~]
+
+instruments:
+  - name: squelch
+    kind: built_in
+    role: normal
+    sound:
+      engine: fishline
+      volume: 24
+      oscillators: { type: acid, acid_wave: saw, circuit: stock }
+      envelopes: [{ type: acid_gate, circuit: modded, accent: 70, accent_sweep: 85, accent_decay: 180, amp_decay: 1200, soft_attack: 30 }, { type: adsr, attack: 0, hold: 0, decay: 320, snap: 0, sustain: 0, release: 320 }, { type: none }]
+      filter: { type: diode, circuit: stock, cutoff: 360, resonance: 82, env_amount: 70, key_track: 0, drive: 10 }
+      effects: [{ effect: drive, curve: soft, amount: 12 }]
+  - name: answer
+    kind: built_in
+    role: normal
+    sound:
+      engine: fishline
+      volume: 24
+      oscillators: { type: acid, acid_wave: square, circuit: modded, slide_time: 140 }
+      envelopes: [{ type: acid_gate, circuit: stock, accent: 55 }, { type: adsr, attack: 0, hold: 0, decay: 220, snap: 0, sustain: 0, release: 220 }, { type: none }]
+      filter: { type: diode, circuit: modded, cutoff: 700, resonance: 58, env_amount: 45, filter_fm: 14, key_track: 0, drive: 0 }
+  - { name: kick, kind: built_in, role: percussion, sound: { engine: drum, volume: 62, oscillators: { type: drum, machine: synth_kick } } }
+  - { name: snare, kind: built_in, role: percussion, sound: { engine: drum, volume: 42, oscillators: { type: drum, machine: snare } } }
+  - { name: hats, kind: built_in, role: percussion, sound: { engine: drum, volume: 40, oscillators: { type: drum, machine: hats } } }
+  - { name: cowbell, kind: built_in, role: percussion, sound: { engine: drum, volume: 34, oscillators: { type: drum, machine: cowbell } } }
+
+songs:
+  - name: acid_rain
+    tempo: 126
+    scale: A Minor
+    genre: Electronic
+
+    tracks:
+      - { name: answer, instrument: answer }
+      - { name: squelch, instrument: squelch }
+      - { name: kick, drum: true, instrument: kick }
+      - { name: snare, drum: true, instrument: snare }
+      - { name: hats, drum: true, instrument: hats }
+      - { name: cowbell, drum: true, instrument: cowbell }
+
+    scenes:
+      - name: intro
+        clips:
+          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: hats, pattern: hats, loop: true }
+      - name: squelch
+        clips:
+          - { track: squelch, pattern: squelch, repeat: 8 }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+      - name: build
+        clips:
+          - { track: squelch, pattern: squelch build, repeat: 8 }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+      - name: drop
+        clips:
+          - { track: answer, pattern: answer, loop: true }
+          - { track: squelch, pattern: squelch build, repeat: 16 }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+          - { track: cowbell, pattern: cowbell, loop: true }
+      - name: break
+        clips:
+          - { track: answer, pattern: answer, repeat: 8 }
+          - { track: hats, pattern: hats, loop: true }
+          - { track: cowbell, pattern: cowbell, loop: true }
+      - name: drop up
+        clips:
+          - { track: answer, pattern: answer, loop: true }
+          - { track: squelch, pattern: squelch up, repeat: 16 }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: snare, pattern: snare, loop: true }
+          - { track: hats, pattern: hats, loop: true }
+          - { track: cowbell, pattern: cowbell, loop: true }
+      - name: outro
+        clips:
+          - { track: squelch, pattern: squelch, repeat: 4 }
+          - { track: kick, pattern: kick, repeat: 4 }
