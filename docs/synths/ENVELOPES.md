@@ -7,6 +7,11 @@ the loudness, Env 2 sweeps the filter through its Env amount, and Env 3 bends
 the pitch through the oscillator's Pitch env. The [Mod Matrix](MOD_MATRIX.md)
 can send any of them anywhere else too.
 
+At the foot of Env 2's column, Disconnect filter, off unless switched on,
+unhooks Env 2 from the filter: the cutoff then stays where the Filter tab sets
+it, and Env 2 is free for the Mod Matrix to send elsewhere, such as to the
+pulse width or to an LFO's depth through a Via.
+
 ![The Envelopes tab](../screenshots/synth_envelopes.svg)
 
 ## Swappable Envelopes

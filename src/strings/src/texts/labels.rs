@@ -452,6 +452,8 @@ pub static MSG_KNOB_LABELS: &[&str] = &["Pitch", "Decay", "Color", "Shape", "Swe
 pub const MSG_WAVE_LABEL: &str = "Wave";
 pub const MSG_ARPEGGIO_LABEL: &str = "Arpeggio";
 pub const MSG_GLIDE_LABEL: &str = "Glide";
+/// The switch at the foot of Env 2 that unhooks it from the filter, leaving it to the Mod Matrix.
+pub const MSG_DISCONNECT_FILTER_LABEL: &str = "Disconnect filter";
 pub const MSG_GLIDE_TIME_LABEL: &str = "Glide time";
 pub const MSG_EFFECT_BLOCK_LABEL: &str = "FX {number}";
 pub const MSG_EFFECT_BITS_LABEL: &str = "FX {number} bits";

@@ -628,6 +628,48 @@ mod tests {
         }
     }
 
+    /// A ladder-filtered saw whose Env 2 sweeps a low cutoff through an Env amount, with Disconnect filter on or off.
+    fn swept(env_amount: f64, disconnected: bool) -> Vec<f32> {
+        let oscillators = Value::Map(vec![
+            ("type".into(), "basic".into()),
+            ("oscillators".into(), Value::Array(vec![Value::Array(vec!["saw".into(), 0.into(), 1.0.into()])])),
+        ]);
+        let envelope = Value::Map(vec![
+            ("type".into(), "adsr".into()),
+            ("attack".into(), 0.001.into()),
+            ("release".into(), 0.05.into()),
+        ]);
+        let low_cutoff = 200.0;
+        let filter = Value::Map(vec![
+            ("type".into(), "ladder".into()),
+            ("cutoff".into(), low_cutoff.into()),
+            ("env_amount".into(), env_amount.into()),
+        ]);
+        let spec = Value::Map(vec![
+            ("oscillators".into(), oscillators),
+            ("envelopes".into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])),
+            ("filter".into(), filter),
+            ("disconnect_filter".into(), disconnected.into()),
+        ]);
+        let mut engine = Engine::new(48000.0, None);
+        engine.set_instrument(0, Box::new(Patch::compiled(&spec, 48000.0)));
+        engine.schedule(note(0, NOTE_ON, 48.0));
+        let chunk = 512;
+        let (mut left, mut right) = (vec![0.0; chunk], vec![0.0; chunk]);
+        engine.render(0, &mut left, &mut right);
+        left
+    }
+
+    /// Disconnect filter unhooks Env 2 from the cutoff: the note sounds as if the Env amount were nothing, and unlike the
+    /// same note with Env 2 sweeping the filter open.
+    #[test]
+    fn disconnect_filter_leaves_the_cutoff_where_the_filter_sets_it() {
+        let full_amount = 1.0;
+        let disconnected = swept(full_amount, true);
+        assert_eq!(disconnected, swept(0.0, false));
+        assert_ne!(disconnected, swept(full_amount, false));
+    }
+
     #[test]
     fn a_note_begins_on_its_exact_sample() {
         let mut engine = Engine::new(48000.0, None);

@@ -22,7 +22,6 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **Demos of the new modulators**: a demo for each new kind as it is built, LFO+ (Fade in, Tempo, Smooth random), Snail,
   Chaos, Tide, Turing, Bounce and Swarm, each made to show what the modulator does to music, and kept to the synth demos'
   rules (DEMO_IDEAS.md).
-- **Disconnect filter**: a switch on Env 2 that unhooks it from the filter, leaving Env 2 free for the Mod Matrix.
 - **New-instrument choices**: Blank, Sampled (FluidSynth, where installed), Synth, Drum Synth or External MIDI, beside Normal
   and Percussion, each choosing a few settings that can still be changed. Mockup first.
 - **The Engine tab** (DESIGNS.md, "The Instrument page's Engine tab and presets"): Off, MIDI, FluidSynth and LlamaSynth, its

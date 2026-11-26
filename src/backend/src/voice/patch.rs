@@ -156,6 +156,8 @@ pub struct Modular {
     last_octaves: f64,
     last_resonance: f64,
     matrix: ModMatrix,
+    /// Whether Env 2 sweeps the cutoff through the Env amount, as it does unless Disconnect filter unhooks it.
+    env2_to_filter: bool,
     reads_env2: bool,
     matrix_reads_env2: bool,
     reads_env3: bool,
@@ -477,7 +479,10 @@ impl Patch {
                 let light = gate.light(&mut voice.gates[FILTER_GATE], note, &lit_of(&sources.envelopes));
                 wave = gate.process(&mut voice.gates[FILTER_GATE], wave, light, gate_note);
             } else if let Some(filter) = &modular.filter {
-                let mut octaves = sources.envelopes[1] * (filter.amount + voice.accent_depth) * ENVELOPE_OCTAVES + moved.cutoff;
+                let mut octaves = moved.cutoff;
+                if modular.env2_to_filter {
+                    octaves += sources.envelopes[1] * (filter.amount + voice.accent_depth) * ENVELOPE_OCTAVES;
+                }
                 if filter.key_track != 0.0 {
                     octaves += filter.key_track * (voice.pitch - MIDDLE_C) / 12.0;
                 }
@@ -563,13 +568,15 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
             .any(|route| route.destination == Destination::Cutoff && (audio_rate(route.source) || route.via.is_some_and(audio_rate)));
     }
     let matrix_reads_env2 = matrix.uses(Source::Env2);
+    let env2_to_filter = !truth(spec, "disconnect_filter", false);
     Modular {
         oscillator,
         pitch_env,
         envelopes: [envelope(0), envelope(1), envelope(2)],
         memory: [EnvelopeMemory::default(); 3],
         own_filter: gates[FILTER_GATE].is_some() || truth(spec, "filter_per_note", true),
-        reads_env2: filter.is_some() || matrix_reads_env2 || gates_read(1),
+        reads_env2: (filter.is_some() && env2_to_filter) || matrix_reads_env2 || gates_read(1),
+        env2_to_filter,
         matrix_reads_env2,
         reads_env3: pitch_env != 0.0 || matrix.uses(Source::Env3) || gates_read(2),
         filter,

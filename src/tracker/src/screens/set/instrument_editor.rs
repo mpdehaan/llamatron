@@ -248,6 +248,11 @@ const TIME_STRIDES: Strides = (&[(20, 1), (100, 5), (500, 10), (2000, 50)], 100)
 /// How far a frequency in hertz steps, coarser as it rises, so that a cutoff crosses its range in a few presses.
 const HERTZ_STRIDES: Strides = (&[(100, 5), (500, 10), (1000, 25), (2000, 50), (5000, 100), (10000, 250)], 500);
 
+/// The envelope wired to the filter, the switch that unhooks it, and an envelope that is off.
+const FILTER_ENVELOPE: &str = "env2";
+const DISCONNECT_FILTER: &str = "disconnect_filter";
+const NO_ENVELOPE: &str = "none";
+
 /// Ids for the fields, counting on, with what each that writes writes, and how far a gauge steps.
 #[derive(Default)]
 struct Ids {
@@ -976,6 +981,14 @@ impl InstrumentEditor {
             .map(|part| {
                 let mut fields = vec![Self::type_field(sound, part, ids)];
                 fields.extend(Self::setting_fields(sound, part, ids));
+                // Env 2's switch stands at the foot of its column, so that its settings sit level with the others'.
+                if *part == FILTER_ENVELOPE && sound.part_type(part) != NO_ENVELOPE {
+                    fields.push(Field::toggle(
+                        ids.at(Write::Sound(DISCONNECT_FILTER)),
+                        labels::MSG_DISCONNECT_FILTER_LABEL,
+                        flag(&sound.value(DISCONNECT_FILTER)),
+                    ));
+                }
                 TabColumn::new(Some(&named_in(labels::MSG_PART_HEADINGS, part)), fields)
             })
             .collect();
@@ -1652,6 +1665,30 @@ mod tests {
         assert_eq!(whole(&sound.value("volume")), unset_volume);
         let voice = InstrumentEditor::voice_fields(&sound, &mut ids);
         assert!(voice.iter().all(|field| field.label != labels::MSG_VOLUME_LABEL));
+    }
+
+    /// Disconnect filter stands last in Env 2's column, off unless set, so that Env 2's settings sit level with Env 1's;
+    /// it is in no other column, and gone while Env 2 is Off.
+    #[test]
+    fn disconnect_filter_stands_at_the_foot_of_env_2() {
+        let columns_of = |env2: &str| {
+            let text =
+                format!("{{ name: synth, kind: built_in, role: normal, sound: {{ engine: basic, envelopes: [{{ type: adsr }}, {env2}, {{ type: adsr }}] }} }}");
+            let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
+            let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
+            let mut ids = Ids { last: 0, writes: Vec::new() };
+            InstrumentEditor::envelopes_tab(&Sound::of(&instrument), false, &mut ids).columns
+        };
+        let is_switch = |field: &Field| field.label == labels::MSG_DISCONNECT_FILTER_LABEL;
+        let columns = columns_of("{ type: adsr }");
+        let env2 = &columns[1].fields;
+        let switch = env2.last().expect("a field at Env 2's foot");
+        assert!(is_switch(switch));
+        assert!(matches!(switch.kind, FieldKind::Toggle { on: false }));
+        assert_eq!(env2.len() - 1, columns[0].fields.len(), "Env 2's settings level with Env 1's");
+        assert!(!columns[0].fields.iter().any(is_switch) && !columns[2].fields.iter().any(is_switch));
+        let off = columns_of("{ type: none }");
+        assert!(!off[1].fields.iter().any(is_switch));
     }
 
     /// An LFO's Rate shows its percentage with the hertz it gives at its Speed; the Key switch shows only at Very High,

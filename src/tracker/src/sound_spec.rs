@@ -38,6 +38,7 @@ pub fn synth_spec(sound: &Sound, drums_from: i64) -> Data {
         ("glides", Data::Bool(!matches!(value("glides"), Data::Bool(false)))),
         ("glide", glide(sound)),
         ("filter_per_note", Data::Bool(value("filter_sharing").as_str() == Some("per_note"))),
+        ("disconnect_filter", Data::Bool(matches!(value("disconnect_filter"), Data::Bool(true)))),
         ("oscillators", oscillators.clone()),
         ("envelopes", Data::List(ENVELOPE_PARTS.iter().map(|part| envelope(sound, part)).collect())),
         ("filter", filter(sound)),
