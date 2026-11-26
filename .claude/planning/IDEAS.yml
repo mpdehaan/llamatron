@@ -658,69 +658,6 @@
     flyouts, the wording of titles. The audit would list each dialog and page with buttons and what differs, as numbered
     findings, before anything is changed.
 
-- title: "The UX audit: declarative models and pages, MVC or an alternative, then the dialogs and the keys"
-  priority: 2
-  text: |
-    Taken out of the queue to be picked up when the user decides. No web interface is planned soon, so nothing is designed for
-    one first, but nothing binds the pages to Textual either: the doors stay open, and tests can tell what a page holds.
-    Chosen (25 A): a presentation model with a view tree rebuilt on every key, as the settings pages already are. One presenter
-    per page answers form(), a tree of plain nodes; a setting field names its holder and setting, and its kind, limits and
-    choices come from the setting's description in SETTINGS, its words from one table; a navigator moves the cursor and derives
-    the keys, the legend, F1 and KEYMAP.md; renderers are the only code that knows Rich, and the shell the only code that knows
-    Textual (already confined to six files; the coupling to remove is Rich text built in about seventy). Packages:
-    interface/pages (Places, the site map, presenters), interface/forms (node kinds, navigator, key rules), interface/tracker
-    (shell, renderers, custom widgets' drawing); model/schema/generator_views.py, the first declarative pages, becomes
-    setting_views.py for any holder. Undo stays one step per key through the Document.
-    Pages connect by typed Places and a site map (26 A): each page a value object such as ClipPlace(scene=, track=); one module
-    knows each Place's parent (the crumbs), what it depends on (a deleted scene closes its clip page, a renamed pattern's place
-    follows), and what it opens; ESC pops a back stack of Places, so a page reached two ways shows its two trails; focus is
-    remembered by Place; each Place has a text form, clip(scene-2, lead), read back by one parser, for a command line option, a
-    palette, tests and any future web front end, while code navigates only by value.
-    A closed set of node kinds (29): field (number, choice, toggle, text, opens an editor), list, grouped list, tree, tab box,
-    section, button row, gauge, step grid, dialog, Inset Window, and dial for the Performance Dashboard; a new kind needs the
-    user's yes; each kind's rules are written and tested once in it. Every page is built from common components as far as it
-    can be. The forms are about the higher level: pages, fields, lists, tabs, dialogs and how pages connect. Anything grid-like,
-    with cells and a cursor among them, that grows (not a table of rows), is a second family of its own: the grid widgets, the
-    pattern editor's rows view, the piano roll, the offsets, groove, chords and other one-row step editors, the Draws strip,
-    Arrange with its details view and Scene View, lifted together onto shared grid components (cells and their widths, a cursor
-    that stops at the edges, scrolling, gauges, step marks, move mode, joints where lines meet), since they are already
-    widget-like. A grid sits in a page's tree as one node behind one contract: it draws its lines, lists its keys and says where
-    its cursor is. Outside both families, each behind the same contract: the visualizers, the main screen's grid of buttons, the
-    start screen and the Notes page's text editor (35). Every action is declared on a node the navigator reaches (a button, a menu row or a field's ENTER) and its letter is an
-    optional shortcut, so an action with only a key cannot exist; a test checks it once pages are moved.
-    The move changes nothing a person sees: every spacing, blank line and layout the user has asked for stays exactly as it is
-    (34 A). Before the move, a plain copy of the code (git archive into /tmp/claude/llamatron/baseline, outside git) records
-    every page's drawing as the key tour visits it, text and each character's style, at 80x24 and at a large size such as
-    160x50, with the cursor on each field and each tab and section open; after every conversion commit the same capture must
-    match byte for byte, and a difference stops the commit unless it is a change the user agreed to by name. The baseline stays
-    until the move is done, to open side by side where a difference needs looking at.
-    Each action declares its risk (safe, undoable, confirms first, refused while in use), and confirmations follow one rule
-    from it; and how it behaves while a song plays (works, waits for the next bar, refused), so the legend can dim a refused key
-    and the refusal's words come from the declaration (30 A). Dimming is a visible change, made as its own named decision, never
-    inside a page move.
-    Layout: no layout engine and no responsive layouts; every page must be good at 80x24, and a larger terminal gives more rows
-    and more columns, nothing else (33).
-    Order (28 A): (1) the keys audit, on paper from KEYMAP.md: N (New on File/Global, rename elsewhere), S, D, Tab, PgUp and
-    PgDn, tabs against sections; (2) internal_tools/time_keys.py fixed and key timings recorded, so the per-key cost of the tree
-    is measured; (3) interface/forms built underneath the settings pages with no visible change; (4) the File/Global page moved,
-    then the other settings pages, the list pages and the wizard, Places and the site map arriving as each page moves; (5) the
-    dialogs moved onto the same nodes; (6) the dialogs audit, then reviewing one class: consistency, language, features,
-    wording, titles and their spacing, where captions appear, whether key bars belong, whether each dialog can be answered
-    without reading its keys, and whether each default answer is the most logical. During the move a list of pages not yet
-    moved only shrinks (32 A); one kind of page moves at a time, never half a page, and no key or wording changes in a
-    conversion step. While a song plays, the clock and lights redraw without rebuilding the tree.
-    To discuss (31 A): a palette, opened by one everywhere key, that finds every action and every Place by name, each entry
-    showing its key. Held for it (219): the wizard's screens reaching WizardChoices' parts directly; the Document's mixins
-    becoming composed editors; one references object owning what uses an item and renames. The near-term arrows-only work
-    stays its own entry (27 A).
-    The tests move with the pages, as one piece of work (the testing review, 37 to 42): page drivers in tests/support/pages
-    and named starting scenarios are built first against Textual (40 A), and gain a second back end on the view tree, needing
-    no Textual, as the forms arrive; each page's tests are brought to TESTING.md's rules (what a page adds, reached by name,
-    asserting on named parts of the screen) as that page moves, never before; the table of each page's fields, a check on
-    form(), then replaces the roughly 100 per-page field tests, with coverage recorded before and after each batch (41 A). A
-    thin layer of real-Textual tests stays: real keys, drawing and joints, legends fitting 80x24, dialogs stacking, a smoke test
-    per page. Narrowing the change map and reusing one app per class wait until the new test runner is measured (42 A).
-
 - title: "Isorhythm: a rhythm and a series of pitches that repeat at different lengths"
   priority: 3
   text: |
@@ -905,19 +842,6 @@
     notes. Each would be one octave of half steps, like every `ScaleType`, so adding them is a list
     change plus a page in the scale picker, and the picker's names would need to fit. A microtuning
     note in the guide would say what's approximate.
-
-- title: "Tests with less hard coding"
-  priority: 17
-  text: |
-    Many of the text UI tests reach a setting by pressing a counted number of keys, like down, down,
-    enter, which breaks whenever a page gains or reorders a field, and has to be worked out again by
-    hand each time. The tests should instead ask each page where things are and navigate there, using
-    the same ordered lists that the page draws from: its fields, its rows and its keys.
-    `select_field(label)` on `UITest` in `tests/support/ui_testing.py` is a start, for settings pages: it finds a
-    field by its label in the page's own `fields()` and presses up or down as far as needed. The
-    same idea could cover list rows, pattern editor rows and dialog options, and then the existing
-    tests could be changed over to it. The aim is tests that a person can read, and change,
-    without counting key presses.
 
 - title: "Looping a whole scene, to tweak patterns live"
   priority: 19
@@ -1243,13 +1167,6 @@
     flag sets is open: the user mentioned other properties without naming them. The recorder's own
     flags, `--autoplay` and `--autoplay-quit-when-finished`, are separate, so a take can be played
     without the page scrolling.
-
-- title: "The garbage collector held back in the tracker"
-  priority: 80
-  text: |
-    Try holding back Python's garbage collector in the tracker, in the manner of gc.freeze after the set loads and a raised
-    threshold while a song plays, and measure in the tracker itself, key presses and real-time playback, whether pauses and
-    timing improve, with timings before and after for the user's yes. Apart from any performance discussion, and blocking nothing.
 
 - title: "Importing patterns from another llamatron set"
   priority: 80
@@ -1662,21 +1579,6 @@
     and F5 are taken, macOS keeps F9 and above for its windows, and on a Mac the function keys need Fn unless they're set to
     standard keys, which weighs against it. Ctrl+C, Ctrl+Z and a few others are taken already.
 
-- title: "uv instead of venv and pip, to discuss"
-  priority: 80
-  text: |
-    Someone suggested using `uv` for setting up and controlling the Python environment, in place of
-    `python3 -m venv .venv` and `pip install -e .`. The user wants to discuss whether this makes
-    sense or is a good idea before anything changes, on 2026-11-07, and asked for it only to be noted
-    for now.
-
-    What it would touch, if it were done: docs/INSTALLING.md, the setup commands in README.md, docs/GUIDE.md and
-    CLAUDE.md, `internal_tools/test.sh`, `user_scripts/demos_to_live_sets.sh`, `llamatron.sh` and `internal_tools/make_docs.sh`, which all
-    assume `.venv/bin/python`, and the note in docs/INSTALLING.md about building PyYAML with libyaml. Things
-    to weigh: uv is much faster at installing and can pin the Python version too, but it's one more
-    tool to install first, where venv ships with Python, and the instructions would need to stay
-    right for people who don't have it.
-
 - title: "Exporting to other DAWs"
   priority: 80
   text: |
@@ -1949,54 +1851,6 @@
     says what to keep when changing it, and a place in `HAND_WRITTEN` in `tests/app/test_demos.py` unless
     it's written through `tests/data/demo_sources/make_demos.py`. The genre and the tunes are to be decided
     with the user first.
-
-- title: "Refactoring the tests to the program's style rules"
-  priority: 80
-  text: |
-    **Deferred by the user on 2026-11-06.** The tests are held to the same style rules as the
-    program (see CLAUDE.md), and new tests follow them, but most existing tests were written before
-    the rules and still need refactoring:
-
-    - **Format strings and messages as constants.** Tests build many strings inline, with f-strings
-      and `.format`, like `f'« {item.shown_label()} »'`. Each should be a named constant at the top of
-      its test file, or in a shared test module when several files use it.
-    - **Limits and meaningful numbers named.** Literals like `128` for "just past the top" should
-      come from the program's constants (`MAX_REGISTER_VALUE + 1`), and a number that means
-      something, like a register's maximum, should be a named variable, so that two 3s that mean
-      different things can't be confused. `tests/engine/realizer/test_registers.py` is an example of the style.
-    - **Shown text through the program's constants.** When a test checks text the program shows,
-      like a row label, a key's name, a page's title or a message, it imports the program's constant
-      for it (`ROW_LABELS[Row.DEGREE]`, `ERR_SCENE_NO_SUCH_SCALE`) instead of writing the words out
-      again, so that renaming something in the program changes the tests with it. Every shown string
-      is a `MSG_`, `ERR_` or `HELP_` constant now, so the tests, mostly the tracker's page tests in `tests/interface/tracker/` and
-      `test_tui_document.py`, can swap their literals over, along with the drawing they wrap them in,
-      like the `│` before a row label, which can be a helper in the test file.
-    - **Demo tests read from the YAML.** A test of a demo checks values it reads from the demo's
-      file, not values written into the test, so that hand edits to a demo don't break it.
-    - **One constant per line.** `src/` has none left; some tests still define several constants
-      on one line with tuple syntax, and these need splitting too.
-
-    It's mechanical but wide: the text UI tests alone are thousands of lines. Doing it a test file at
-    a time, with the full suite passing after each, keeps it safe, and it fits with the earlier note
-    on making the tests less hard-coded.
-
-- title: "What pycodestyle flags, to look at or ignore"
-  priority: 80
-  text: |
-    `internal_tools/pep8.sh` runs pycodestyle with the exclusions it names, for a look rather than as a rule.
-    On 2026-11-07 the user asked for the remaining kinds of report to be noted here, to investigate
-    whether they matter and, if nothing changes, to add them to the ignore list:
-
-    - **An import below module-level code (E402).** All five are in `tests/data/demo_sources/make_demos.py`:
-      it puts the test folder on `sys.path` before importing `gate_conversion` from there, which is
-      marked `noqa`, and the four llamatron imports after that line could simply move above it. One
-      cause, and a two-minute change if it's wanted; otherwise ignore E402.
-    - **A lambda assigned to a name (E731).** The list pages' are gone, each now a method named
-      `open_item`. What is left is in `tests/data/demo_sources/make_demos.py`. The project's own rule for
-      unclear lines would favour a named function, so pycodestyle and the style agree here, but each
-      is one short line.
-    - **Continuation line indentation (E128) and three blank lines (E303).** Cosmetic, under thirty
-      reports in all on 2026-11-07, with no conflict with the style; fix once or ignore.
 
 - title: "The Registers page as a grid"
   priority: 80
