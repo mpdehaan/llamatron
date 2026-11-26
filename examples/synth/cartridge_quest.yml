@@ -1,0 +1,209 @@
+version: 1.1.1
+title: Cartridge quest
+description: "a chip adventure theme on the SID engine: a sweeping pulse lead, a fast arpeggio, a triangle bass and noise drums, on the built-in synths"
+notes: |
+  Cartridge quest: a home-computer adventure theme at 150 beats a minute in D minor, every sound on the SID engine, as a
+  single sound chip of the 1980s played it, three voices and a noise channel. The lead is a pulse wave whose width an LFO
+  sweeps slowly through the Mod Matrix, the hollow-to-reedy shimmer of the chip; a second LFO adds vibrato. The arpeggio
+  plays each chord as one note, the oscillator's Arpeggio stepping root, fifth and octave fifty times a second, the chip
+  composer's way of sounding a chord on one voice. The bass is a triangle, and the drums are the chip's noise wave for the
+  snare and hats and a triangle with a falling pitch for the kick. The bridge brings in a ring-modulated triangle, a bell
+  answering the lead.
+
+  The harmony is D minor, B flat, F and C, the falling minor loop of adventure music, and the bridge climbs G minor, B flat
+  and A to set up the return. The arpeggio's root, fifth and octave leave out the third, so the one Arpeggio fits every
+  chord, the A major of the bridge included.
+
+  Form: intro (arpeggio alone), the theme, the theme with the drums, the bridge with the bell, the theme again, an outro.
+
+  Run it with: llamatron examples/synth/cartridge_quest.yml
+
+  When changing this demo:
+  - Keep every sound on the SID engine, the drums included.
+  - Keep the arpeggio's chords as single notes for the oscillator's Arpeggio to spread.
+  - Keep the lead's pulse width moving through the Mod Matrix; it is the chip's signature.
+real_time: true
+protected: true
+
+scales:
+  - { name: D Minor, root: D, type: minor }
+
+patterns:
+  - name: lead
+    steps: 32
+    group: lead
+    step_size: 1/8
+    degree: [5, ~, 1, ~, 3, 2, 1, 7, 6, ~, ~, 5, 4, ~, 6, ~, 5, ~, 3, ~, 1, 2, 3, 5, 4, ~, 3, 2, 7, ~, ~, ~]
+    octave: [5, ~, 6, ~, 6, 6, 6, 5, 5, ~, ~, 5, 5, ~, 5, ~, 5, ~, 6, ~, 6, 6, 6, 6, 6, ~, 6, 6, 5, ~, ~, ~]
+    velocity: [104, ~, 112, ~, 108, 96, 100, 96, 112, ~, ~, 96, 100, ~, 108, ~, 104, ~, 112, ~, 100, 96, 104, 112, 108, ~, 100, 96, 104, ~, ~, ~]
+  - name: lead bridge
+    steps: 32
+    group: lead
+    step_size: 1/8
+    degree: [4, ~, 5, 6, 1, ~, 6, ~, 4, ~, 3, 4, 6, ~, ~, ~, 5, ~, ~, 4, 3, ~, 2, ~, 1, ~, 2, ~, 5, ~, ~, ~]
+    octave: [5, ~, 5, 5, 6, ~, 5, ~, 5, ~, 6, 5, 5, ~, ~, ~, 5, ~, ~, 5, 6, ~, 6, ~, 6, ~, 6, ~, 5, ~, ~, ~]
+    velocity: [104, ~, 100, 104, 112, ~, 104, ~, 100, ~, 108, 100, 112, ~, ~, ~, 108, ~, ~, 100, 104, ~, 100, ~, 108, ~, 104, ~, 112, ~, ~, ~]
+  - name: chords
+    steps: 4
+    group: chords
+    step_size: 1/1
+    degree: [1, 6, 3, 7]
+    octave: [4, 4, 4, 4]
+    velocity: [96, 96, 96, 96]
+  - name: chords bridge
+    steps: 4
+    group: chords
+    step_size: 1/1
+    degree: [4, 6, 5, 5]
+    octave: [4, 4, 4, 4]
+    velocity: [96, 96, 96, 100]
+  - name: bass
+    steps: 32
+    group: bass
+    step_size: 1/8
+    degree: [1, 1, ~, 1, 1, ~, 5, 1, 6, 6, ~, 6, 6, ~, 3, 6, 3, 3, ~, 3, 3, ~, 7, 3, 7, 7, ~, 7, 7, ~, 4, 5]
+    octave: [3, 4, ~, 3, 4, ~, 3, 3, 2, 3, ~, 2, 3, ~, 3, 2, 3, 4, ~, 3, 4, ~, 3, 3, 3, 4, ~, 3, 4, ~, 3, 3]
+    velocity: [112, 96, ~, 104, 96, ~, 100, 104, 112, 96, ~, 104, 96, ~, 100, 104, 112, 96, ~, 104, 96, ~, 100, 104, 112, 96, ~, 104, 96, ~, 100, 108]
+  - name: bass bridge
+    steps: 32
+    group: bass
+    step_size: 1/8
+    degree: [4, 4, ~, 4, 4, ~, 1, 4, 6, 6, ~, 6, 6, ~, 3, 6, 5, 5, ~, 5, 5, ~, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+    octave: [3, 4, ~, 3, 4, ~, 4, 3, 2, 3, ~, 2, 3, ~, 3, 2, 3, 4, ~, 3, 4, ~, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+    velocity: [112, 96, ~, 104, 96, ~, 100, 104, 112, 96, ~, 104, 96, ~, 100, 104, 112, 96, ~, 104, 96, ~, 100, 104, 96, 100, 104, 108, 112, 116, 120, 124]
+  - name: bell
+    steps: 16
+    group: bell
+    step_size: 1/8
+    degree: [~, ~, ~, ~, 1, ~, 5, ~, ~, ~, ~, ~, 3, ~, 2, ~]
+    octave: [~, ~, ~, ~, 6, ~, 5, ~, ~, ~, ~, ~, 6, ~, 6, ~]
+    velocity: [~, ~, ~, ~, 104, ~, 96, ~, ~, ~, ~, ~, 104, ~, 96, ~]
+  - name: kick
+    steps: 16
+    group: kick
+    step_size: 1/16
+    degree: [1, ~, ~, ~, ~, ~, ~, ~, 1, ~, 1, ~, ~, ~, ~, ~]
+    octave: [3, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, ~, ~, ~, ~]
+    velocity: [120, ~, ~, ~, ~, ~, ~, ~, 120, ~, 104, ~, ~, ~, ~, ~]
+  - name: noise
+    steps: 16
+    group: noise
+    step_size: 1/16
+    degree: [5, ~, 5, ~, 1, ~, 5, ~, 5, ~, 5, ~, 1, ~, 5, 5]
+    octave: [8, ~, 8, ~, 7, ~, 8, ~, 8, ~, 8, ~, 7, ~, 8, 8]
+    velocity: [72, ~, 64, ~, 120, ~, 72, ~, 72, ~, 64, ~, 120, ~, 72, 60]
+
+instruments:
+  - name: pulse lead
+    kind: built_in
+    role: normal
+    sound:
+      engine: sid
+      volume: 26
+      voices: 1
+      oscillators: { type: sid, wave: pulse, pulse_width: 40, modulation: "off", interval: 7, arpeggio: [] }
+      envelopes: [{ type: sid_adsr, attack: 0, decay: 8, sustain: 10, release: 6 }, { type: none }, { type: none }]
+      filter: { type: none }
+      lfos: [{ "on": true, shape: triangle, rate: 3, retrigger: false }, { "on": true, shape: sine, rate: 55, retrigger: true }]
+      matrix: [{ source: lfo1, via: none, destination: pulse_width, amount: 60 }, { source: lfo2, via: none, destination: pitch, amount: 1 }]
+  - name: arpeggio
+    kind: built_in
+    role: normal
+    sound:
+      engine: sid
+      volume: 26
+      voices: 1
+      oscillators: { type: sid, wave: pulse, pulse_width: 25, modulation: "off", interval: 7, arpeggio: [0, 7, 12] }
+      envelopes: [{ type: sid_adsr, attack: 0, decay: 9, sustain: 8, release: 6 }, { type: none }, { type: none }]
+      filter: { type: multimode, mode: low, cutoff: 3200, resonance: 30, env_amount: 0, key_track: 50 }
+  - name: triangle bass
+    kind: built_in
+    role: normal
+    sound:
+      engine: sid
+      volume: 32
+      voices: 1
+      oscillators: { type: sid, wave: triangle, pulse_width: 50, modulation: "off", interval: 7, arpeggio: [] }
+      envelopes: [{ type: sid_adsr, attack: 0, decay: 6, sustain: 9, release: 3 }, { type: none }, { type: none }]
+      filter: { type: none }
+  - name: ring bell
+    kind: built_in
+    role: normal
+    sound:
+      engine: sid
+      volume: 15
+      voices: 1
+      oscillators: { type: sid, wave: triangle, pulse_width: 50, modulation: ring, interval: 7, arpeggio: [] }
+      envelopes: [{ type: sid_adsr, attack: 0, decay: 10, sustain: 0, release: 10 }, { type: none }, { type: none }]
+      filter: { type: none }
+  - name: chip kick
+    kind: built_in
+    role: normal
+    sound:
+      engine: sid
+      volume: 40
+      voices: 1
+      oscillators: { type: sid, wave: triangle, pulse_width: 50, modulation: "off", interval: 7, arpeggio: [], pitch_env: 24 }
+      envelopes: [{ type: sid_adsr, attack: 0, decay: 5, sustain: 0, release: 4 }, { type: none }, { type: adsr, attack: 0, hold: 0, decay: 60, snap: 0, sustain: 0, release: 60 }]
+      filter: { type: none }
+  - name: chip noise
+    kind: built_in
+    role: normal
+    sound:
+      engine: sid
+      volume: 22
+      voices: 1
+      oscillators: { type: sid, wave: noise, pulse_width: 50, modulation: "off", interval: 7, arpeggio: [] }
+      envelopes: [{ type: sid_adsr, attack: 0, decay: 4, sustain: 0, release: 4 }, { type: none }, { type: none }]
+      filter: { type: none }
+      matrix: [{ source: velocity, via: none, destination: amp, amount: 40 }]
+
+songs:
+  - name: cartridge_quest
+    tempo: 150
+    scale: D Minor
+    genre: Electronic
+
+    tracks:
+      - { name: lead, instrument: pulse lead }
+      - { name: bell, instrument: ring bell }
+      - { name: arpeggio, instrument: arpeggio }
+      - { name: bass, instrument: triangle bass }
+      - { name: kick, instrument: chip kick }
+      - { name: noise, instrument: chip noise }
+
+    scenes:
+      - name: intro
+        clips:
+          - { track: arpeggio, pattern: chords, repeat: 2 }
+      - name: theme
+        clips:
+          - { track: lead, pattern: lead, repeat: 2 }
+          - { track: arpeggio, pattern: chords, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+      - name: theme drums
+        clips:
+          - { track: lead, pattern: lead, repeat: 2 }
+          - { track: arpeggio, pattern: chords, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: noise, pattern: noise, loop: true }
+      - name: bridge
+        clips:
+          - { track: lead, pattern: lead bridge, repeat: 2 }
+          - { track: bell, pattern: bell, loop: true }
+          - { track: arpeggio, pattern: chords bridge, loop: true }
+          - { track: bass, pattern: bass bridge, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: noise, pattern: noise, loop: true }
+      - name: theme again
+        clips:
+          - { track: lead, pattern: lead, repeat: 2 }
+          - { track: arpeggio, pattern: chords, loop: true }
+          - { track: bass, pattern: bass, loop: true }
+          - { track: kick, pattern: kick, loop: true }
+          - { track: noise, pattern: noise, loop: true }
+      - name: outro
+        clips:
+          - { track: arpeggio, pattern: chords, repeat: 1 }
+          - { track: bass, pattern: bass, repeat: 1 }
