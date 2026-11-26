@@ -136,16 +136,9 @@ generator has a page of its own.
 
 ## File Operations
 
-### Import
-
 | Page | What it covers |
 | --- | --- |
 | [Importing](IMPORTING.md) | A MIDI file made into a new song of the set. |
-
-### Export
-
-| Page | What it covers |
-| --- | --- |
 | [Exporting](EXPORTING.md) | Ableton Live sets, MIDI files and WAV audio, from the tracker and the command line. |
 
 ## MIDI & Performance
