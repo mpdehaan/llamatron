@@ -37,19 +37,19 @@ The professor's research is in `.claude/notes/synthesis/`.
     Thomas, Pendulum (a double pendulum) or Predator & prey (Lotka-Volterra); a Chaos amount from a near loop to full
     chaos, and a speed; bounded and numerically safe, restarted from its seed if it ever escapes. Other systems kept for
     later: the jerk systems, Aizawa, Halvorsen, Dadras, the logistic and Hénon maps, the Duffing oscillator, the
-    rungler.
+    rungler (a shift register clocked and fed by its own oscillators).
   - **Snail**: three slow chaotic circuits, each travelling around two
     strange attractors at its own pace (about 20 seconds, 75 seconds and 35 minutes a trip at a Pace of x1), two with a
     Lean setting which attractor it lingers around, the third with none; each circuit's X and Y, and a mix of the three
     (the first and third added, the second taken away) split into its rising and falling halves, as outputs. Never
     restarted by a note. Its circuit's equations, a jerk-type system, to be found and checked before building.
-  - **Tide**: after Mutable Instruments' Tides (2018), whose firmware is open (MIT, `pichenettes/eurorack`, `tides2/`):
-    a rise and a fall, Mode Loop, Once (AD) or Held (AR); Speed and Rate; Bend (the rise and fall from logarithmic to
+  - **Tide**: a function generator of four related outputs, read from open firmware (MIT, `pichenettes/eurorack`,
+    `tides2/`): a rise and a fall, Mode Loop, Once (AD) or Held (AR); Speed and Rate; Bend (the rise and fall from logarithmic to
     exponential); Slope (rise against fall); Smooth (a low-pass one way, a wavefolder the other); four outputs related by
     Outputs (Shapes, Phases, Ratios) and a Spread; at audio rate its Shape and Slope change meaning and narrow at high
     pitches to stay unaliased.
   - **Turing**: a random loop of 8 or 16 steps that repeats and slowly changes as a Change gauge allows, from locked to
-    always new, after the open-hardware Turing Machine.
+    always new, after an open-hardware design.
   - **Bounce**: a ball dropped at each note, its bounces shrinking and speeding up to rest, for ratchets, dub delays and
     falling sweeps.
   - **Swarm**: four slow oscillators drifting into step and back out of it as their Pull rises and falls (coupled
@@ -86,11 +86,11 @@ The professor's research is in `.claude/notes/synthesis/`.
   contours either paraphonic or per voice.
 - **Durham**: A homage to the classic analog bass pedal synth, on its modern descendant's panel, exposing only what that panel
   has; the filter very nearly perfect (the D'Angelo-Välimäki ladder). Research in `MONOSYNTHS.md`, "Durham"; mockup first.
-- **Spectral**: A filter type, a bank of band filters, only what
-  their knobs, sliders and switches control, no new patching; built together with the planned Harm engine, renamed Spectral.
-  Research both panels, then a mockup.
-- **Drone**: A drone instrument of held, slowly moving oscillators, yet sounding only through the Amp, Env 1
-  opening it, as every engine does. Research its panel, then a mockup.
+- **Spectral**: An effect, not a filter type: a bank of band filters splitting the sound into bands, each band's level
+  set and moved, with no new patching; built together with the planned Harm engine, renamed Spectral.
+  A design, then a mockup.
+- **Drone**: A drone instrument of held, slowly moving oscillators, yet sounding only through the Amp, Env 1 opening it, as
+  every engine does. A design, then a mockup.
 - **A brass synth**, somewhat after Stringy, for the bright, stabbing synth brass of early-1980s rock and pop keyboard anthems,
   as simple as the vintage brass ensemble keyboards (research which to follow).
 - **Brass and wind** among the physical modelling ideas.
@@ -110,12 +110,12 @@ The professor's research is in `.claude/notes/synthesis/`.
 
 ## The Effects
 
-- **Variance**: an effect, subtle, lo-fi, an evolving undercurrent under
-  melodies: a short delay whose time wanders at random, then a low-pass gate that recovers the tone. Its panel, from its
-  manual: Rate, how far apart the random pitch wanders fall, from rare to nervous; Damp, how softened and drawn out each
-  wander is, from near instant to so slow it stops sounding like pitch modulation; Depth, how far, its range kept
-  subtle; Mix and Volume; and LPG, how much the sound's own envelope opens the recovery filter. Still to research: the
-  delay's times, the random source's character and the recovery filter's response; then a mockup.
+- **Variance**: an effect, subtle, lo-fi, an evolving undercurrent under melodies: a short delay whose time wanders at
+  random, then a low-pass gate that recovers the tone. Its settings: Rate, how far apart the random pitch wanders fall, from
+  rare to nervous; Damp, how softened and drawn out each wander is, from near instant to so slow it stops sounding like
+  pitch modulation; Depth, how far, its range kept subtle; Mix and Volume; and LPG, how much the sound's own envelope opens
+  the recovery filter. Still to research: the delay's times, the random source's character and the recovery filter's
+  response; then a mockup.
 - **The professor's effect plans**: Legend's Mode A on Freeverb3's Progenitor (GPL-2.0+); the Spring on stretched all-passes
   after Surge's ChowDSP spring (GPL-3.0+); Tape Echo's Time as tape speed, one speed curve for every head; Dattorro's centre-tap
   chorus feedback; setBfree's rotary geometry; CHOW Tape's loss filter; EQ bands as trapezoidal SVFs with Vicanek's matched
