@@ -26,6 +26,8 @@ they meet.
   - a file format llamatron writes or reads, named even after a product, such as "Ableton Live set" and `--to ableton`;
   - llamatron's inspirations, Ableton's Session View, the Elektron Monomachine and the Sequentix Cirklon, in `README.md`,
     the introduction of `docs/GUIDE.md`, `docs/WHY_LLAMATRON.md` and `CLAUDE.md`;
+  - a program people open llamatron's files in, named where the documents say which programs read an export, such as
+    GarageBand;
   - open-source projects, named freely, and credited when their code is used;
   - the General MIDI standard's own names for its sounds.
 - Where a waived trademark is named, its notice stands in `docs/CREDITS.md`, as the Monomachine's and the Cirklon's do.
