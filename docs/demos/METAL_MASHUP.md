@@ -1,4 +1,4 @@
-# Metal Mashup
+# Metal
 
 The mashups that set another work's notes on a metal band. Each is described
 below, with the features it uses; [About Demos](../DEMOS.md) lists every demo.

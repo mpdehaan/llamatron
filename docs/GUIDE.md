@@ -82,13 +82,13 @@ The demo songs played wholly on llamatron's built-in synths.
 
 | Page | What it covers |
 | --- | --- |
-| [Blues Mashup](demos/BLUES_MASHUP.md) | Another work's notes set on a blues band. |
-| [Electronic Mashup](demos/ELECTRONIC_MASHUP.md) | Another work's notes set on an electronic band. |
-| [Funk Mashup](demos/FUNK_MASHUP.md) | Another work's notes set on a funk band. |
-| [Jazz Mashup](demos/JAZZ_MASHUP.md) | Another work's notes set on a jazz band. |
-| [Metal Mashup](demos/METAL_MASHUP.md) | Another work's notes set on a metal band. |
-| [Rock Mashup](demos/ROCK_MASHUP.md) | Another work's notes set on a rock band. |
-| [World Mashup](demos/WORLD_MASHUP.md) | Another work's notes set on a world band. |
+| [Blues](demos/BLUES_MASHUP.md) | Another work's notes set on a blues band. |
+| [Electronic](demos/ELECTRONIC_MASHUP.md) | Another work's notes set on an electronic band. |
+| [Funk](demos/FUNK_MASHUP.md) | Another work's notes set on a funk band. |
+| [Jazz](demos/JAZZ_MASHUP.md) | Another work's notes set on a jazz band. |
+| [Metal](demos/METAL_MASHUP.md) | Another work's notes set on a metal band. |
+| [Rock](demos/ROCK_MASHUP.md) | Another work's notes set on a rock band. |
+| [World](demos/WORLD_MASHUP.md) | Another work's notes set on a world band. |
 
 ## Objects
 

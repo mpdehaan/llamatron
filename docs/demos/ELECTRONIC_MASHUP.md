@@ -1,4 +1,4 @@
-# Electronic Mashup
+# Electronic
 
 The mashups that set another work's notes on a electronic band. Each is
 described below, with the features it uses; [About Demos](../DEMOS.md) lists
