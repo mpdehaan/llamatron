@@ -8,6 +8,9 @@ user's yes first.
 
 Each made with its engine; no artist named in a title or name, a homage's inspiration kept in its notes.
 
+- **Engines and effects under each synth demo**: on the synth demos' page, under each demo, a checkbox list of every
+  engine the demo uses and, apart from it, of every effect it uses, if any; kept current as synth demos are added or
+  changed.
 - **log_garden.yml** on ComplexOsc, with the low-pass gates: audio-rate FM and the complex oscillator put through its paces,
   long tones (half notes and longer) in the intro, not only plucks; its oscillator mapped to several CCs that the demo tweaks.
 - **switched_on_beep.yml** on Asheville: a Bach mashup in the style of the early synthesizer Bach albums, no drums
