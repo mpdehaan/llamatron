@@ -44,6 +44,18 @@ The professor's research is in `.claude/notes/synthesis/`.
     musical before choosing.
   - Burst: a few cycles at each note, then still, for ratchets and trills.
   - One LFO moving another's Rate or depth, through the Mod Matrix's Via or the built-in routes.
+  - A tidal modulator, after Mutable Instruments' Tides (2018), whose firmware is open (MIT,
+    `pichenettes/eurorack`, `tides2/`), so its algorithms can be followed and credited above each: a rise and a fall
+    ("flow and ebb") that loops as an LFO or runs once at a note as an envelope. Its Ramp mode is AD (one shot from zero,
+    whatever the note's length), Cyclic (a looping LFO, a note restarting it at its rise) or AR (rising while held, falling
+    at release, each from where it is). Frequency spans four octaves either way around a range's centre (1/8 Hz for slow
+    movements, 2 Hz for rhythms, 130.8 Hz for tones). Shape bends the rise and fall; Slope splits the cycle's time between
+    rise and fall; Smoothness is a two-pole low-pass one way and a wavefolder the other. Its four outputs, each a Mod
+    Matrix source here, are related by an Output mode and a Shift: four shapes taken along its chain; one signal crossfaded
+    from output to output; the same shape shifted in time (a phase between outputs, or a different Slope each); or each at
+    its own ratio of the frequency, polyrhythmic LFOs or, at audio rate, just-intonation chords. Synced to the tempo, its
+    Frequency becomes a ratio of the beat. At audio rate its Shape and Slope change meaning (stronger timbres, pulse
+    width) and its Shape and Smoothness narrow at high pitches to stay unaliased.
 - **A one-voice instrument's note priority**: Lowest, highest or last, beside today's lowest-of-a-chord.
 - **The instrument on the Track page**: The assigned instrument's settings drawn below the track's own, editable there.
 - **The Instruments page as a rack**: A mockup of every instrument's tab rows in one column, each expanded or collapsed and
@@ -87,8 +99,12 @@ The professor's research is in `.claude/notes/synthesis/`.
 
 ## The Effects
 
-- **Variance**: An effect, subtle, lo-fi, an evolving undercurrent under
-  melodies. Its manual's PDF is saved; extract and research, then a mockup.
+- **Variance**: an effect, subtle, lo-fi, an evolving undercurrent under
+  melodies: a short delay whose time wanders at random, then a low-pass gate that recovers the tone. Its panel, from its
+  manual: Rate, how far apart the random pitch wanders fall, from rare to nervous; Damp, how softened and drawn out each
+  wander is, from near instant to so slow it stops sounding like pitch modulation; Depth, how far, its range kept
+  subtle; Mix and Volume; and LPG, how much the sound's own envelope opens the recovery filter. Still to research: the
+  delay's times, the random source's character and the recovery filter's response; then a mockup.
 - **The professor's effect plans**: Legend's Mode A on Freeverb3's Progenitor (GPL-2.0+); the Spring on stretched all-passes
   after Surge's ChowDSP spring (GPL-3.0+); Tape Echo's Time as tape speed, one speed curve for every head; Dattorro's centre-tap
   chorus feedback; setBfree's rotary geometry; CHOW Tape's loss filter; EQ bands as trapezoidal SVFs with Vicanek's matched
