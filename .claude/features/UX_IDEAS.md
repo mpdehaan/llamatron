@@ -20,7 +20,6 @@ Wanted changes to how the tracker looks and is used: what each is, never its sta
 - **Batch pattern editing** on a group: a discussion, then building.
 - **Transpose** by scale degrees, semitones or octaves, with a mockup; Grab track removed, each Grab step choosing the track
   it grabs from; drop chords and smarter voice leading on the object tabs.
-- **Guitarify presets**: Whole settings taken from the Guitarify demo, beside the ready-made bars `R` reaches.
 - **The sender falling behind**: When the Realtime Sender Process is starved, it does not choke, and the status line says so in
   the warning colour; what counts as behind, how often it says so, and the words, designed first.
 - **The pattern documents' Munge table** checked against the dialog's choices, heading by heading.

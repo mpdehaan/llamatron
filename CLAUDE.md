@@ -51,8 +51,8 @@ Imported, loaded every session: `.claude/rules/COMMUNICATION.md` (working with t
 `planning/` (the queue and the git-ignored designs), `notes/` (Claude's research), and `features/`, `format/` and
 `tracker/` (how the program is built). Read when the work needs them:
 
-- `.claude/features/SYNTH_IDEAS.md`, `WIZARD_IDEAS.md`, `DEMO_IDEAS.md`, `UX_IDEAS.md` and `OTHER_IDEAS.md`: every wanted idea,
-  by topic, tracked in git. `.claude/planning/QUEUE.md`: the order of them, tracked, never the authority on what is wanted.
+- `.claude/features/SYNTH_IDEAS.md`, `GENERATOR_IDEAS.md`, `WIZARD_IDEAS.md`, `DEMO_IDEAS.md`, `UX_IDEAS.md` and
+  `OTHER_IDEAS.md`: every wanted idea, by topic, tracked in git. `.claude/planning/QUEUE.md`: the order of them, tracked, never the authority on what is wanted.
   `.claude/planning/DESIGNS.md` and `.claude/planning/WIZARD_DESIGNS.md`: agreed designs not yet built, git-ignored.
 - `.claude/format/` and `.claude/tracker/`: the model, file format and pages, a file per part (table at the end).
 - `.claude/reference/COMMANDS.md`: every script and tool.

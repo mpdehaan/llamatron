@@ -69,7 +69,7 @@
 ## The ideas files and the queue
 
 - Every idea the user wants built is written into one of the ideas files in `.claude/features/`, by topic: `SYNTH_IDEAS.md`
-  (the built-in synths, drum engines and effects), `WIZARD_IDEAS.md` (the song wizard, its players and templates),
+  (the built-in synths, drum engines and effects), `GENERATOR_IDEAS.md` (the generators and chains), `WIZARD_IDEAS.md` (the song wizard, its players and templates),
   `DEMO_IDEAS.md` (demos and examples), `UX_IDEAS.md` (how the tracker looks and is used) and `OTHER_IDEAS.md` (the rest). A
   new topic that outgrows these gets a file of its own, proposed first.
 - The ideas files are tracked in git, since several computers work on the project. Each idea is a bold name and what is
