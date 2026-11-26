@@ -64,8 +64,6 @@ built.
 - **At the video tutorial**: Changes to the documents for people proposed first as an exact before and after (1206), and
   DOCS.md's "Who edits them" updated.
 - **Skills**: Whether the reply format or the macros should become skills or slash commands.
-- **The history of `.claude/`** purged from earlier commits, a full mirror saved to `~/Devel/backup_llamatron/` first, only on
-  the user's word.
 
 ## More Ideas
 

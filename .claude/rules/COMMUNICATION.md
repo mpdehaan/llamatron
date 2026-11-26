@@ -80,6 +80,8 @@
   name and saying nothing of what it is, nor any status. It is not a master file for anyone working on the project: the ideas
   files decide what is wanted, and a computer without a queue makes one from them. Instructions about order stay in the
   queue.
+- A request to edit git history, for any reason, is never recorded in the queue, the ideas files or the designs, nor is
+  its reason (the user's rule).
 - Before working on a feature, Claude checks that its idea is still in its ideas file. One that is gone was likely built on
   another computer: Claude checks `git log`, drops it from the queue, and does not build it again.
 - A song-wizard feature goes on its page in the same change, and the reply names the panel and field. A report on agreed work
