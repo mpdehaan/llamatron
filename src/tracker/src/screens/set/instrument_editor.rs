@@ -73,7 +73,7 @@ const ASHEVILLE_OSCILLATORS: [[&str; 7]; 3] = [
 const ASHEVILLE_PANEL: [&str; 9] = [
     "model",
     "character",
-    "osc3_lfo",
+    "noise_level",
     "ring",
     "tune_snap",
     "drift",
@@ -82,7 +82,7 @@ const ASHEVILLE_PANEL: [&str; 9] = [
     "pitch_env",
 ];
 const CONTINUOUS: &str = "continuous";
-const OSC3_SOURCE: &str = "osc3";
+const ASHEVILLE_SOURCES: [&str; 3] = ["osc1", "osc2", "osc3"];
 const WAVE_SUFFIX: &str = "_wave";
 const SHAPE_SUFFIX: &str = "_shape";
 const CIRCUIT: &str = "circuit";
@@ -1113,8 +1113,12 @@ impl InstrumentEditor {
 
     /// A Mod Matrix slot's Source or Via: the usual sources, then MIDI CC, whose number is set in the CC field beside it.
     fn source_field(id: usize, label: &str, current: &str, asheville: bool) -> Field {
-        // Osc 3 is a source only on Asheville, whose third oscillator can be an LFO.
-        let sources: Vec<&str> = MATRIX_SOURCES.iter().copied().filter(|source| asheville || *source != OSC3_SOURCE).collect();
+        // Osc 1 to Osc 3, each of Asheville's oscillators, are sources only on Asheville.
+        let sources: Vec<&str> = MATRIX_SOURCES
+            .iter()
+            .copied()
+            .filter(|source| asheville || !ASHEVILLE_SOURCES.contains(source))
+            .collect();
         let mut choices: Vec<&str> = sources.clone();
         let mut names = names_in(labels::MSG_MATRIX_SOURCE_NAMES, &sources);
         choices.push(if control_number(current).is_some() { current } else { MIDI_CC_CHOICE });

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! Asheville's oscillators, after the classic three-oscillator ladder monosynth of the 1970s: three free-running
 //! oscillators, each its footage, its wave and its tuning, mixed into a mixer that overloads as it is turned up and that
-//! the output may be looped back into (Feedback); Osc 3 may leave the mix to be a Mod Matrix source instead (Osc 3 as
-//! LFO). Model Classic switches each oscillator among the panel's six waves; Continuous sweeps one Shape from triangle
+//! the output may be looped back into (Feedback), and a white noise source of its own in the mix. Each oscillator is also
+//! a Mod Matrix source, Osc 1 to Osc 3, sounding or not, so that one can be an LFO or an audio-rate modulator of another. Model Classic switches each oscillator among the panel's six waves; Continuous sweeps one Shape from triangle
 //! through saw and square to a narrow pulse, as the later models do. Drift wanders each oscillator's tuning slowly, its
 //! own way, and Character sets how settled the instrument is: Warm, Cold Start (wandering further for its first half
 //! minute, as if just switched on) or Worn (beating more and slipping flat high up). Ring is a mixer channel of its own,
@@ -17,7 +17,7 @@
 //! Plaits (plaits/dsp/oscillator/variable_shape_oscillator.h), both by Emilie Gillet, MIT; the implementation here is our
 //! own.
 
-use crate::protocol::values::{field, list, number, truth, word};
+use crate::protocol::values::{list, number, truth, word};
 use crate::voice::oscillators::{frequency_of, Moves, OscillatorState};
 use rmpv::Value;
 use std::f64::consts::PI;
@@ -57,8 +57,10 @@ const WORN_CENTS: [f64; 3] = [0.0, 3.5, -4.5];
 const WORN_SLIP_FROM: f64 = 72.0;
 const WORN_SLIP_CENTS: f64 = 0.6;
 const CENTS: f64 = 100.0;
-/// The lowest and highest rate Osc 3 runs at as an LFO, which is never heard and so need not keep to hearing.
-const SLOWEST_LFO_HERTZ: f64 = 0.01;
+/// The slowest an oscillator that is not heard runs, as a Mod Matrix source alone it need not keep to hearing.
+const SLOWEST_UNHEARD_HERTZ: f64 = 0.01;
+/// The noise's level against an oscillator's at full Mix.
+const NOISE_GAIN: f64 = 0.5;
 const MOST_STEP: f64 = 0.45;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -93,7 +95,8 @@ pub struct Asheville {
     pub character: Character,
     pub drift: f64,
     pub feedback: f64,
-    pub osc3_lfo: bool,
+    /// The white noise's level in the mix, 0 for none.
+    pub noise: f64,
     /// The ring modulator's level in the mix, Osc 1 times Osc 2, 0 for none.
     pub ring: f64,
     /// Whether each oscillator's Tune is pulled toward unison, fifths and octaves.
@@ -174,7 +177,7 @@ pub fn compiled(spec: &Value) -> Asheville {
         character,
         drift: number(spec, "drift", 0.0).clamp(0.0, 1.0),
         feedback: number(spec, "feedback", 0.0).clamp(0.0, 1.0),
-        osc3_lfo: field(spec, "osc3_lfo").is_some() && truth(spec, "osc3_lfo", false),
+        noise: number(spec, "noise", 0.0).clamp(0.0, 1.0),
         ring: number(spec, "ring", 0.0).clamp(0.0, 1.0),
         snap: truth(spec, "snap", false),
     }
@@ -192,6 +195,18 @@ fn blep(place: f64, step: f64) -> f64 {
     } else {
         0.0
     }
+}
+
+/// White noise from -1 to 1, a xorshift a sample, its state the voice's own.
+#[inline]
+fn white(state: &mut u64) -> f64 {
+    if *state == 0 {
+        *state = 0x9E37_79B9_7F4A_7C15;
+    }
+    *state ^= *state << 13;
+    *state ^= *state >> 7;
+    *state ^= *state << 17;
+    (*state >> 11) as f64 / (1u64 << 52) as f64 - 1.0
 }
 
 #[inline]
@@ -252,6 +267,7 @@ impl Asheville {
             *phase = ((random + 1.0) * golden * (place as f64 + 1.0)).fract();
             state.sub_phases[place] = *phase / 4.0;
         }
+        state.noise_state = ((random + 1.0) * 1e9) as u64 + 1;
     }
 
     /// How far an oscillator wanders from its tuning at a moment, in cents: Drift's two slow wanderings, Cold Start's
@@ -274,27 +290,22 @@ impl Asheville {
     }
 
     /// One sample of the three oscillators through the mixer: the note at a pitch, seconds into it, moved as given, its
-    /// voice's drift read from when the note began and the voice's own random number, both kept in its state. Osc 3 as LFO leaves the mix and is kept in the state's side, from -1
-    /// to 1, for the Mod Matrix's Osc 3 source.
+    /// voice's drift read from when the note began and the voice's own random number, both kept in its state. Each
+    /// oscillator's value is kept in the state's sides, from -1 to 1, for the Mod Matrix's Osc 1 to Osc 3 sources.
     #[inline]
     pub fn sample(&self, state: &mut OscillatorState, pitch: f64, seconds: f64, moves: Moves, rate: f64) -> f64 {
         let (began, random) = (state.began, state.random);
         let mut mix = 0.0;
-        let mut voices = [0.0; 3];
+        // Every oscillator runs, sounding or not, so that each can be read by the Mod Matrix.
         for (place, oscillator) in self.oscillators.iter().enumerate() {
-            let lfo = place == 2 && self.osc3_lfo;
-            let ringing = place < 2 && self.ring > 0.0;
-            if !oscillator.on && !lfo && !ringing {
-                continue;
-            }
             let wandered = self.wander(place, pitch, seconds, began, random);
             let tune = if self.snap { snapped(oscillator.cents) } else { oscillator.cents };
             let tuned = pitch + oscillator.range + (tune + wandered) / CENTS + moves.pitch;
-            let frequency = if lfo {
-                // Osc 3 as an LFO is never heard, so it may run below hearing; it keeps under half the rate.
-                (440.0 * 2f64.powf((tuned - 69.0) / 12.0)).max(SLOWEST_LFO_HERTZ)
-            } else {
+            let frequency = if oscillator.on {
                 frequency_of(tuned)
+            } else {
+                // Not heard, it may run below hearing, as an LFO; it keeps under half the rate.
+                (440.0 * 2f64.powf((tuned - 69.0) / 12.0)).max(SLOWEST_UNHEARD_HERTZ)
             };
             let step = (frequency / rate).min(MOST_STEP);
             let at = state.phases[place];
@@ -304,22 +315,24 @@ impl Asheville {
                 classic(oscillator.wave, at, step, moves.width)
             };
             state.phases[place] = (at + step).fract();
-            voices[place] = value;
-            if oscillator.sub > 0 && oscillator.on && !lfo {
+            state.sides[place] = value;
+            if !oscillator.on {
+                continue;
+            }
+            mix += value * oscillator.mix * MIX_GAIN;
+            if oscillator.sub > 0 {
                 // The sub runs at a half or a quarter of its oscillator's step, so that it keeps under it, in step.
                 let sub_step = step / f64::from(1 << oscillator.sub);
                 let sub_at = state.sub_phases[place];
                 mix += pulse(sub_at, sub_step, 0.5) * oscillator.mix * MIX_GAIN * SUB_LEVEL;
                 state.sub_phases[place] = (sub_at + sub_step).fract();
             }
-            if lfo {
-                state.side = value;
-            } else if oscillator.on {
-                mix += value * oscillator.mix * MIX_GAIN;
-            }
+        }
+        if self.noise > 0.0 {
+            mix += white(&mut state.noise_state) * self.noise * NOISE_GAIN;
         }
         // The ring modulator hears Osc 1 and Osc 2 whether or not they sound in the mix themselves.
-        mix += voices[0] * voices[1] * self.ring * MIX_GAIN;
+        mix += state.sides[0] * state.sides[1] * self.ring * MIX_GAIN;
         // The mixer overloads softly as it is turned up; Feedback loops the last output back into it, as the classic
         // patch of the output into the external input does.
         let fed = mix + self.feedback * MOST_FEEDBACK * state.last_out;
@@ -359,14 +372,14 @@ mod tests {
         assert!(most > 0.1 && most < 1.0, "{most}");
     }
 
-    /// Osc 3 as LFO leaves the mix: silenced alone, the voice is silent, while Osc 3 still moves the side the matrix reads.
+    /// An oscillator switched off is silent in the mix but still runs, so the Mod Matrix can read it; noise alone sounds.
     #[test]
-    fn osc3_as_lfo_leaves_the_mix_and_feeds_the_matrix() {
+    fn an_oscillator_off_still_runs_for_the_matrix_and_noise_sounds() {
         let oscillator = |on: bool| Value::Map(vec![("on".into(), on.into()), ("range".into(), (-48).into())]);
-        let spec = Value::Map(vec![
-            ("oscillators".into(), Value::Array(vec![oscillator(false), oscillator(false), oscillator(true)])),
-            ("osc3_lfo".into(), true.into()),
-        ]);
+        let spec = Value::Map(vec![(
+            "oscillators".into(),
+            Value::Array(vec![oscillator(false), oscillator(false), oscillator(false)]),
+        )]);
         let asheville = compiled(&spec);
         let mut state = OscillatorState::default();
         let rate = 48_000.0;
@@ -374,10 +387,22 @@ mod tests {
         for place in 0..48_000 {
             let out = asheville.sample(&mut state, 60.0, place as f64 / rate, Moves::default(), rate);
             assert_eq!(out, 0.0, "nothing heard");
-            sides.push(state.side);
+            sides.push(state.sides[2]);
         }
         let (lowest, highest) = sides.iter().fold((f64::MAX, f64::MIN), |(low, high), side| (low.min(*side), high.max(*side)));
-        assert!(highest - lowest > 1.0, "Osc 3 swings the side");
+        assert!(highest - lowest > 1.0, "Osc 3 swings for the matrix");
+        let noisy = Value::Map(vec![
+            (
+                "oscillators".into(),
+                Value::Array(vec![oscillator(false), oscillator(false), oscillator(false)]),
+            ),
+            ("noise".into(), 1.0.into()),
+        ]);
+        let asheville = compiled(&noisy);
+        let most = (0..4800)
+            .map(|place| asheville.sample(&mut state, 60.0, place as f64 / rate, Moves::default(), rate).abs())
+            .fold(0.0, f64::max);
+        assert!(most > 0.1, "{most}");
     }
 
     /// Ring alone, Osc 1 times Osc 2 with both out of the mix, still sounds; Snap pulls a Tune near a fifth onto it and

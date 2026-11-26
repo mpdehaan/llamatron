@@ -347,7 +347,7 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("osc3_mix", Preset::Whole(5)),
             ("osc3_sub", Preset::Text("off")),
             ("osc3_on", Preset::Flag(true)),
-            ("osc3_lfo", Preset::Flag(false)),
+            ("noise_level", Preset::Whole(0)),
             ("ring", Preset::Whole(0)),
             ("tune_snap", Preset::Flag(false)),
             ("drift", Preset::Whole(3)),
@@ -615,7 +615,7 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
             "osc3_mix",
             "osc3_sub",
             "osc3_on",
-            "osc3_lfo",
+            "noise_level",
             "ring",
             "tune_snap",
             "drift",
@@ -821,7 +821,15 @@ pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
         },
     ),
     ("osc3_on", SettingKind::Toggle),
-    ("osc3_lfo", SettingKind::Toggle),
+    (
+        "noise_level",
+        SettingKind::Number {
+            lowest: 0,
+            highest: 10,
+            unit: "{number}",
+            zero: None,
+        },
+    ),
     (
         "ring",
         SettingKind::Number {

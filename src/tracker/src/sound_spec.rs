@@ -99,7 +99,7 @@ const FOOTAGES: &[(&str, i128)] = &[("lo", -48), ("32", -24), ("16", -12), ("8",
 const PANEL_TOP: f64 = 10.0;
 
 /// Asheville's panel as the backend reads it: each oscillator's footage in half steps, wave, shape, cents, mix and sub,
-/// and the panel's Model, Character, Osc 3 as LFO, Ring, Snap, Drift and Feedback, the knobs as fractions.
+/// and the panel's Model, Character, Noise, Ring, Snap, Drift and Feedback, the knobs as fractions.
 fn asheville(sound: &Sound) -> Vec<(&'static str, Data)> {
     let setting = |name: &str| sound.part_value(OSCILLATORS, name);
     let panel = |name: &str| Data::Float(setting(name).as_whole().unwrap_or(0) as f64 / PANEL_TOP);
@@ -129,7 +129,7 @@ fn asheville(sound: &Sound) -> Vec<(&'static str, Data)> {
         ("oscillators", Data::List(oscillators)),
         ("model", setting("model")),
         ("character", setting("character")),
-        ("osc3_lfo", setting("osc3_lfo")),
+        ("noise", panel("noise_level")),
         ("ring", panel("ring")),
         ("snap", setting("tune_snap")),
         ("drift", panel("drift")),

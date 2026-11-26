@@ -81,10 +81,11 @@ pub struct OscillatorState {
     pub speeds: [f64; 3],
     /// Fishline's coupling into its filter, a one-pole high-pass, made as its note begins.
     pub coupling: acid::OnePoleHighpass,
-    /// Asheville: Osc 3's value as an LFO, which the Mod Matrix's Osc 3 source reads; the mixer's last output, which
-    /// Feedback loops back; and when the note began after the instrument started, with the voice's own random number,
-    /// from which each oscillator's drift is its own.
-    pub side: f64,
+    /// Asheville: each oscillator's last value, which the Mod Matrix's Osc 1 to Osc 3 sources read; its noise's state;
+    /// the mixer's last output, which Feedback loops back; and when the note began after the instrument started, with
+    /// the voice's own random number, from which each oscillator's drift is its own.
+    pub sides: [f64; 3],
+    pub noise_state: u64,
     pub last_out: f64,
     /// Asheville: each oscillator's sub-oscillator's phase.
     pub sub_phases: [f64; 3],

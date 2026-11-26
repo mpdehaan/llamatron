@@ -182,8 +182,9 @@ pub enum Source {
     Random,
     /// The voice's own oscillator, as it sounded a sample before: an audio-rate source, for FM and AM from the voice itself.
     Oscillator,
-    /// Asheville's Osc 3 as an LFO, out of the mix, from -1 to 1.
-    Osc3,
+    /// One of Asheville's oscillators by its place, sounding or not, from -1 to 1: an LFO at a low Range, or an
+    /// audio-rate modulator of another.
+    Osc(usize),
     /// A MIDI CC, by its place among the CCs the matrix reads, its number kept in the matrix's list of them.
     Control(usize),
 }
@@ -227,7 +228,9 @@ fn source_named(name: &str) -> Option<Source> {
         "key" => Source::Key,
         "random" => Source::Random,
         "osc" => Source::Oscillator,
-        "osc3" => Source::Osc3,
+        "osc1" => Source::Osc(0),
+        "osc2" => Source::Osc(1),
+        "osc3" => Source::Osc(2),
         _ => return None,
     })
 }
@@ -264,8 +267,8 @@ pub struct Sources {
     pub random: f64,
     /// The voice's oscillator a sample before, from -1 to 1.
     pub oscillator: f64,
-    /// Asheville's Osc 3 as an LFO a sample before.
-    pub osc3: f64,
+    /// Asheville's three oscillators a sample before.
+    pub oscs: [f64; 3],
     /// The value of each CC the matrix reads, from 0 to 1, in the order of the matrix's list of them.
     pub controls: [f64; MOST_CONTROLS],
 }
@@ -282,7 +285,7 @@ impl Sources {
             Source::Key => self.key,
             Source::Random => self.random,
             Source::Oscillator => self.oscillator,
-            Source::Osc3 => self.osc3,
+            Source::Osc(place) => self.oscs[place],
             Source::Control(place) => self.controls[place],
         }
     }
