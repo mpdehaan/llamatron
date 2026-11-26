@@ -120,6 +120,14 @@ level starts at its Start level, one of sixteen steps, and at each tick of its
 Level pace moves one step down, or up, by Level goes. Held, it stays where it
 starts. A note's end fades it out very quickly, so that it doesn't click.
 
+## Off
+
+Env 2 and Env 3 can be set to Off, which holds them at nothing: Env 2 then
+sweeps no filter and Env 3 bends no pitch, and the Mod Matrix reads nothing
+from them. With Env 2 Off and the Filter set to (none), you hear the
+oscillator as it is, a quick way to learn what an oscillator sounds like. Env
+1 is the loudness, so it always holds an envelope.
+
 ## Planned
 
 The agreed design adds a fourth envelope, and two inputs to the gate types: a

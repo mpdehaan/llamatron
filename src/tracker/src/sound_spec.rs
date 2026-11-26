@@ -107,12 +107,17 @@ fn basic_oscillators(sound: &Sound) -> Data {
     Data::List(sounding)
 }
 
+/// The envelope type that is no envelope, as the backend names it.
+const NO_ENVELOPE: &str = "none";
+
 /// An envelope part, as the backend's envelopes read it.
 fn envelope(sound: &Sound, part: &str) -> Data {
     let kind = sound.part_type(part);
     let setting = |name: &str| sound.part_value(part, name);
     let typed = ("type", Data::text(&kind));
     match kind.as_str() {
+        // Off, which only Env2 and Env3 may be, has no settings: the backend holds it at nothing.
+        NO_ENVELOPE => mapping(vec![typed]),
         "sid_adsr" => mapping(vec![
             typed,
             ("attack", setting("attack")),

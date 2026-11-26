@@ -116,6 +116,9 @@ pub enum EnvelopePart {
         pace: f64,
         up: bool,
     },
+    /// No envelope: a level of nothing throughout, so that Env2 sweeps no filter and Env3 bends no pitch. Env1, the
+    /// loudness, never holds it.
+    Off,
 }
 
 /// What the acid gate and the vactrol remember across the notes of their instrument: the capacitor's charge, the cell's
@@ -128,6 +131,9 @@ pub struct EnvelopeMemory {
     pub left_at: f64,
     pub hits: u64,
 }
+
+/// The envelope type that is no envelope, which Env2 and Env3 may hold.
+const OFF: &str = "none";
 
 /// An envelope part from its spec; resonance is the filter's, which the acid gate's capacitor is fed through.
 pub fn compiled(spec: &Value, resonance: f64) -> EnvelopePart {
@@ -143,6 +149,7 @@ pub fn compiled(spec: &Value, resonance: f64) -> EnvelopePart {
             soft_attack: number(spec, "soft_attack", 0.003).max(SHORTEST_ATTACK),
             resonance,
         },
+        OFF => EnvelopePart::Off,
         "chip_steps" => EnvelopePart::ChipSteps {
             start_level: number(spec, "start_level", 15.0),
             pace: number(spec, "level_pace", 0.0),
@@ -334,6 +341,7 @@ impl EnvelopePart {
                 ..
             } => acid_level(state, note, *accent, *accent_decay, *amp_decay, *soft_attack),
             EnvelopePart::ChipSteps { start_level, pace, up } => chip_level(state, note, *start_level, *pace, *up),
+            EnvelopePart::Off => 0.0,
         }
     }
 
@@ -501,6 +509,29 @@ fn room_warmth(seconds: f64) -> f64 {
 
 #[cfg(test)]
 mod tests {
+
+    /// An envelope set to Off holds at nothing while its note sounds and after it ends, so that Env2 sweeps no filter and
+    /// Env3 bends no pitch.
+    #[test]
+    fn an_envelope_set_off_holds_at_nothing() {
+        let spec = Value::Map(vec![(Value::from("type"), Value::from(OFF))]);
+        let off = compiled(&spec, 0.0);
+        let mut state = EnvelopeState::default();
+        let (held, released) = (0.3, 0.5);
+        assert_eq!(off.level(&mut state, NoteTime { age: held, released: None }, None), 0.0);
+        assert_eq!(
+            off.level(
+                &mut state,
+                NoteTime {
+                    age: released + held,
+                    released: Some(released)
+                },
+                None
+            ),
+            0.0
+        );
+    }
+
     use super::*;
     use rmpv::Value;
 

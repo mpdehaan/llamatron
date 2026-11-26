@@ -987,13 +987,13 @@ pub static PART_TYPES: &[(&str, &[&str], &[&str])] = &[
     ),
     (
         "env2",
-        &["adsr", "ar", "asr", "sid_adsr", "vactrol", "acid_gate", "chip_steps"],
-        &["ADSR", "AR", "ASR", "SID ADSR", "Vactrol", "Acid gate", "Chip steps"],
+        &["none", "adsr", "ar", "asr", "sid_adsr", "vactrol", "acid_gate", "chip_steps"],
+        &["Off", "ADSR", "AR", "ASR", "SID ADSR", "Vactrol", "Acid gate", "Chip steps"],
     ),
     (
         "env3",
-        &["adsr", "ar", "asr", "sid_adsr", "vactrol", "acid_gate", "chip_steps"],
-        &["ADSR", "AR", "ASR", "SID ADSR", "Vactrol", "Acid gate", "Chip steps"],
+        &["none", "adsr", "ar", "asr", "sid_adsr", "vactrol", "acid_gate", "chip_steps"],
+        &["Off", "ADSR", "AR", "ASR", "SID ADSR", "Vactrol", "Acid gate", "Chip steps"],
     ),
 ];
 pub static SID_ATTACK_MS: &[i64] = &[2, 8, 16, 24, 38, 56, 68, 80, 100, 250, 500, 800, 1000, 3000, 5000, 8000];
