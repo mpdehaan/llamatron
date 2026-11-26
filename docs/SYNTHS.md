@@ -20,7 +20,7 @@ parts.
 ![The instrument page, the cursor on the Engine field](screenshots/synth_engine_field.svg)
 
 An engine is a starting point, a preset of every part: choosing one fills the
-Oscillators, Envelopes, Filter, LFOs, FX and Mod Matrix tabs as that synth has
+Oscillators, Envelopes, Filter, Modulators, FX and Mod Matrix tabs as that synth has
 them. Each part has a Type, and any part can then be swapped for another type,
 even one another engine starts with, so that the engines are places to start
 rather than walls. A part's settings are only the ones its type has, so an
@@ -97,7 +97,7 @@ Each part has a page of its own:
 | --- | --- |
 | Oscillators, the raw tone and the Voice column | [Oscillators](synths/OSCILLATORS.md) |
 | Env 1, Env 2 and Env 3 | [Envelopes](synths/ENVELOPES.md) |
-| Four LFOs | [LFOs](synths/LFOS.md) |
+| Four modulators, LFOs and LFO+s | [LFOs](synths/LFOS.md) |
 | The filter or the low-pass gate | [Filters](synths/FILTERS.md) |
 | The Amp each note ends in | [Amp](synths/AMP.md) |
 | Two effects in order, the FX tab | [Effects](synths/EFFECTS.md) |

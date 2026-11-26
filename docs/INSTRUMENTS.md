@@ -47,7 +47,7 @@ the few milliseconds the sound takes to reach the speakers, so that every
 instrument lands together.
 
 [Synths](SYNTHS.md) describes the built-in synths: their engines, each of
-their parts, the Envelopes, Filter, LFOs, Mod Matrix and FX tabs, and how the
+their parts, the Envelopes, Filter, Modulators, Mod Matrix and FX tabs, and how the
 sound is made.
 
 ## Missing Devices
@@ -82,7 +82,7 @@ the last turns it off.
 FluidSynth](screenshots/instrument_editor.svg)
 
 The editor shows the instrument's Name and how its steps' velocities play, its
-Role, Kind and Engine, then seven tabs: MIDI, Oscillators, Envelopes, LFOs,
+Role, Kind and Engine, then seven tabs: MIDI, Oscillators, Envelopes, Modulators,
 Filter, FX and Matrix. The MIDI tab is dim unless the Kind is MIDI, and the
 others unless it is Built-in; a new instrument is off. `Tab` goes to the row of
 tabs and back, and Left and Right choose a tab.
@@ -102,7 +102,7 @@ tabs and back, and Left and Right choose a tab.
 | MIDI: Keyswitch lead | How many milliseconds before its note a keyswitch is sent, 0 to 500, `0 ms` unless set. `[` and `]` step it, and `ENTER` types it. See Keyswitches below. |
 | MIDI: Latency | How many milliseconds earlier the instrument's notes are sent, 0 to 500, `0 ms` unless set, for a device that is slow to sound. |
 | Oscillators, Envelopes, Filter | Each part's Type and its settings, and the Voice. See Built-in Instruments above. |
-| LFOs: LFO 1 to 4 | Whether each LFO is on, its Shape, Rate, Retrigger and Each scene. See Built-in Instruments above. |
+| Modulators: LFO 1 to 4 | Whether each is on, its Type (LFO or LFO+), Shape, Speed, Rate, Fade in, Retrigger and Each scene. See Built-in Instruments above. |
 | FX: FX 1 and 2 | Each effect and its settings. See Built-in Instruments above. |
 | Matrix: Slot 1 to 6 | Each slot's Source, Via, what it Moves and its Amount. See Built-in Instruments above. |
 | Preview pattern | A button that opens the instrument's own preview pattern in the pattern editor, for designing a sound before there is any music. Each instrument has its own, kept inside it in the set file and renamed, copied and deleted with it; no list of patterns shows it. It starts as sixteen sixteenth notes running up and down C major from middle C, on a hidden chromatic scale so that any note can be written without choosing a key, or, for a built-in drum, a C on each quarter in the set's drum octave. |
