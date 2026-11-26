@@ -78,7 +78,7 @@ The demo songs played wholly on llamatron's built-in synths.
 | --- | --- |
 | [Synth](demos/SYNTH.md) | The demo songs on the built-in synths. |
 
-## Mashups
+## Mashup Demos
 
 | Page | What it covers |
 | --- | --- |
@@ -155,6 +155,72 @@ generator has a page of its own.
 | [MIDI Setup](MIDI_SETUP.md) | Playing into a synthesizer or Ableton Live on a Mac, and what to do when nothing sounds. |
 | [Playing Live](PLAYING_LIVE.md) | Real-time playback, launching scenes and clips, and live editing. |
 | [Visualizers](VISUALIZERS.md) | Moving pictures drawn from the notes as a song plays. |
+
+## Synths
+
+llamatron's own synthesizers: how an instrument's sound is built, each engine,
+and each of its parts.
+
+| Page | What it covers |
+| --- | --- |
+| [Synths](SYNTHS.md) | The built-in synths' design, their engines and how the sound is made. |
+| [Envelopes](synths/ENVELOPES.md) | Every envelope type, and how each moves. |
+| [Filters](synths/FILTERS.md) | Every filter type and the low-pass gate. |
+| [LFOs](synths/LFOS.md) | The four LFOs. |
+| [Mod Matrix](synths/MOD_MATRIX.md) | What moves what. |
+| [Effects](synths/EFFECTS.md) | Drive, Bitcrush and the effects planned. |
+
+### Standard Engines
+
+| Page | What it covers |
+| --- | --- |
+| [Basic](synths/engines/BASIC.md) | Up to three band-limited oscillators of classic waveforms. |
+| [SID](synths/engines/SID.md) | An 8-bit sound chip's voice. |
+| [Pocket](synths/engines/POCKET.md) | A 4-bit chip's pulse, drawn wave and noise. |
+| [Fishline](synths/engines/FISHLINE.md) | The acid bass. |
+| [Asheville](synths/engines/ASHEVILLE.md) | Planned. |
+| [Monorail](synths/engines/MONORAIL.md) | Planned. |
+| [Choir](synths/engines/CHOIR.md) | Planned. |
+| [MozaicClassic](synths/engines/MOZAICCLASSIC.md) | Planned. |
+| [MozaicHypersaw](synths/engines/MOZAICHYPERSAW.md) | Planned. |
+| [Syrup](synths/engines/SYRUP.md) | Planned. |
+| [DustCart](synths/engines/DUSTCART.md) | Planned. |
+| [PocketCart](synths/engines/POCKETCART.md) | Planned. |
+| [SIDCart](synths/engines/SIDCART.md) | Planned. |
+| [BitArcade](synths/engines/BITARCADE.md) | Planned. |
+| [Bytecrunch](synths/engines/BYTECRUNCH.md) | Planned. |
+| [Piano](synths/engines/PIANO.md) | Planned. |
+| [Tonewheel](synths/engines/TONEWHEEL.md) | Planned. |
+| [Combo Organ](synths/engines/COMBO_ORGAN.md) | Planned. |
+| [Stringy](synths/engines/STRINGY.md) | Planned. |
+| [FM](synths/engines/FM.md) | Planned. |
+| [Bit Saw](synths/engines/BIT_SAW.md) | Planned. |
+| [PhoneHome](synths/engines/PHONEHOME.md) | Planned. |
+| [Dialup](synths/engines/DIALUP.md) | Planned. |
+| [Pluck](synths/engines/PLUCK.md) | Planned. |
+| [Strings](synths/engines/STRINGS.md) | Planned. |
+| [Pipe](synths/engines/PIPE.md) | Planned. |
+| [Wavetable](synths/engines/WAVETABLE.md) | Planned. |
+| [ComplexOsc](synths/engines/COMPLEXOSC.md) | Planned. |
+| [Harm](synths/engines/HARM.md) | Planned. |
+
+### Drum Engines
+
+| Page | What it covers |
+| --- | --- |
+| [MechaDrum](synths/engines/MECHADRUM.md) | A drum machine of ten drums. |
+| [Oh8](synths/engines/OH8.md) | Planned. |
+| [Oh9](synths/engines/OH9.md) | Planned. |
+| [SynTom](synths/engines/SYNTOM.md) | Planned. |
+| [FM Kick](synths/engines/FM_KICK.md) | Planned. |
+| [FM Snare](synths/engines/FM_SNARE.md) | Planned. |
+| [FM Tom](synths/engines/FM_TOM.md) | Planned. |
+| [FM Metal](synths/engines/FM_METAL.md) | Planned. |
+| [FM Bell](synths/engines/FM_BELL.md) | Planned. |
+| [Glitch Drum](synths/engines/GLITCH_DRUM.md) | Planned. |
+| [Chirpy](synths/engines/CHIRPY.md) | Planned. |
+| [Pocket Drum](synths/engines/POCKET_DRUM.md) | Planned. |
+| [Struck](synths/engines/STRUCK.md) | Planned. |
 
 ## Advanced
 

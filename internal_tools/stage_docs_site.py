@@ -42,7 +42,7 @@ CHAPTER_TO_GUIDE = ']({up}GUIDE.md'
 TO_INDEX = ']({up}index.md'
 UP = '../'
 # The guide's tables of chapters: a row's first link to a chapter names it, and a heading starts each table's group.
-CHAPTER_LINK = re.compile(r'\[([^\]]+)\]\(([A-Za-z_/]+)\.md\)')
+CHAPTER_LINK = re.compile(r'\[([^\]]+)\]\(([A-Za-z0-9_/]+)\.md\)')
 HEADING = re.compile(r'^## (.+)$')
 SUBHEADING = re.compile(r'^### (.+)$')
 TABLE_ROW = '|'
@@ -50,7 +50,7 @@ TABLE_RULE = '| ---'
 # What the sidebar calls the front page and its group.
 FRONT_PAGE_ITEM = 'Home'
 # The guide's headings whose tables make a group of the sidebar, which opens and closes, rather than pages of their own.
-GROUPED = ('Intro', 'Demo Songs', 'Demos (Synth)', 'Mashups', 'Objects', 'Generators', 'Song Wizard', 'File Operations', 'MIDI & Performance', 'Advanced')
+GROUPED = ('Intro', 'Demo Songs', 'Demos (Synth)', 'Mashup Demos', 'Objects', 'Generators', 'Song Wizard', 'File Operations', 'MIDI & Performance', 'Synths', 'Advanced')
 FRONT_PAGE_LINK = '/'
 CHAPTER_PAGE_LINK = '/{name}'
 # The keys of VitePress's sidebar.

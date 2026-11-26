@@ -14,17 +14,19 @@ them, the screenshots or the website.
 ## The guide
 
 - `docs/GUIDE.md` is the home page of the documentation and the website: an introduction, the featured demos, and tables linking every
-  page in `docs/`, under Intro, Demo Songs, Demos (Synth), Mashups, Objects, Generators, Song Wizard, File Operations, MIDI & Performance and
-  Advanced, in that order. The sidebar is built from them (`GROUPED` in `internal_tools/stage_docs_site.py`), each heading a group
+  page in `docs/`, under Intro, Demo Songs, Demos (Synth), Mashup Demos, Objects, Generators, Song Wizard, File Operations, MIDI & Performance,
+  Synths and Advanced, in that order. The sidebar is built from them (`GROUPED` in `internal_tools/stage_docs_site.py`), each heading a group
   that opens and closes; a `###` heading makes a group within one.
 - The groups today: Intro (`docs/WHY_LLAMATRON.md`; Installing, `docs/INSTALLING.md` with `docs/FLUIDSYNTH.md`,
   `docs/INSTALLING_RECORDING.md` and `docs/BUILDING_THE_BACKEND.md`; `docs/GETTING_STARTED.md`; `docs/CONCEPTS.md`), Demo Songs (`docs/DEMOS.md`,
   `docs/demos/TUTORIAL.md`, a page per genre), Demos (Synth) (`docs/demos/SYNTH.md`, the demos on the built-in synths, one page
-  for now), Mashups (a page per subgenre), Objects
+  for now), Mashup Demos (a page per subgenre), Objects
   (`docs/OBJECT_MODEL.md`, `docs/PATTERNS.md`, `docs/SCENES.md`, `docs/TRACKS.md`, `docs/INSTRUMENTS.md`, `docs/ARRANGE.md`,
   `docs/CLIPS.md`, `docs/SCALES.md`, `docs/DRAWS.md`, `docs/GROOVES.md`), Generators (`docs/GENERATORS.md` and a page each in
   `docs/generators/`, in one list by name), Song Wizard (`docs/WIZARD.md`), File Operations (`docs/EXPORTING.md`,
-  `docs/IMPORTING.md`), MIDI & Performance (`docs/MIDI_SETUP.md`, `docs/PLAYING_LIVE.md`, `docs/VISUALIZERS.md`), Advanced
+  `docs/IMPORTING.md`), MIDI & Performance (`docs/MIDI_SETUP.md`, `docs/PLAYING_LIVE.md`, `docs/VISUALIZERS.md`), Synths (`docs/SYNTHS.md`; `docs/synths/` a
+  page for each part, Envelopes, Filters, LFOs, Mod Matrix and Effects; `docs/synths/engines/` a page for each engine,
+  standard and drum, built or planned), Advanced
   (`docs/USER_SCRIPTS.md`, `docs/RECORDING.md`, `docs/BACKEND.md`, and from `developer_docs/`, `developer_docs/ARCHITECTURE.md`).
 - Every page in `docs/` MUST be linked from a row of those tables; a new page adds its row in the same change. `docs/INSTALLING.md` points
   to `docs/INSTALLING.md`. Only `README.md`, `docs/GUIDE.md` and `docs/INSTALLING.md` are guides at the top folder.
