@@ -50,6 +50,8 @@ pub struct Voice {
     oscillator: OscillatorState,
     /// Where each Key LFO is in its cycles on this voice, since each follows the voice's own note.
     lfo_cycles: [f64; LFO_COUNT],
+    /// The most the modulation bent the pitch up over the last chunk, in half steps, from which the next chooses its table.
+    reach: f64,
     envelopes: [EnvelopeState; 3],
     filter: FilterState,
     glide_from: f64,
@@ -76,6 +78,7 @@ impl Voice {
             hit,
             oscillator: OscillatorState::default(),
             lfo_cycles: [0.0; LFO_COUNT],
+            reach: 0.0,
             envelopes: [EnvelopeState::default(); 3],
             filter: FilterState::default(),
             glide_from: pitch,
@@ -345,7 +348,8 @@ impl Patch {
             sources.controls[place] = self.controls[*number as usize];
         }
         let gliding = glide > 0.0 && voice.glide_from != voice.pitch;
-        modular.oscillator.choose_band(&mut voice.oscillator, voice.pitch);
+        modular.oscillator.choose_band(&mut voice.oscillator, voice.pitch, voice.reach);
+        let mut reach: f64 = 0.0;
         for place in 0..count {
             let sample = first + place as i64;
             let note = NoteTime {
@@ -375,6 +379,7 @@ impl Patch {
             if gliding {
                 bend += (voice.glide_from - voice.pitch) * (-((sample - voice.glide_at) as f64).max(0.0) / (glide * rate)).exp();
             }
+            reach = reach.max(bend);
             let moves = Moves {
                 pitch: bend,
                 width: moved.pulse_width,
@@ -423,6 +428,7 @@ impl Patch {
             };
             buffer[offset + place] += out as f32;
         }
+        voice.reach = reach;
         if voice.envelopes[0].done {
             voice.silent = true;
         }

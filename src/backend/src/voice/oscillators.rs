@@ -253,11 +253,17 @@ impl OscillatorPart {
         }
     }
 
-    /// Choose the table band for the chunk ahead from the note's pitch, once a chunk.
-    pub fn choose_band(&self, state: &mut OscillatorState, pitch: f64) {
+    /// Choose the table band for the chunk ahead, once a chunk, from the highest pitch the note will sound: its pitch, the
+    /// most the modulation bent it up over the last chunk, and an arpeggio's highest step, so that a pitch modulated up
+    /// fast, as analog-style FM does, reads a table cut low enough not to fold its harmonics back down.
+    pub fn choose_band(&self, state: &mut OscillatorState, pitch: f64, reach: f64) {
+        let highest_step = match self {
+            OscillatorPart::Sid { arpeggio, .. } => arpeggio.iter().copied().fold(0.0, f64::max),
+            _ => 0.0,
+        };
         let frequency = match self {
-            OscillatorPart::Pocket { .. } => CHIP_CLOCK / (PERIODS - state.period as f64),
-            _ => frequency_of(pitch),
+            OscillatorPart::Pocket { .. } => CHIP_CLOCK / (PERIODS - state.period as f64) * 2f64.powf(reach / 12.0),
+            _ => frequency_of(pitch + reach + highest_step),
         };
         state.band = tables::band_of(frequency);
     }
@@ -427,5 +433,19 @@ mod tests {
         assert_eq!(frequency_of(far_above), frequency_of(HIGHEST_PITCH));
         assert_eq!(frequency_of(far_below), frequency_of(LOWEST_PITCH));
         assert!(frequency_of(HIGHEST_PITCH) < 20_000.0 && frequency_of(LOWEST_PITCH) > 8.0);
+    }
+
+    /// A note bent up by its modulation reads the table of the highest pitch it reaches, cut lower, so that analog-style
+    /// FM does not fold harmonics back down; a note bent nowhere reads its own pitch's table.
+    #[test]
+    fn a_note_bent_up_reads_the_table_of_its_highest_pitch() {
+        let spec = rmpv::Value::Map(vec![("type".into(), "acid".into())]);
+        let (part, _) = compiled(&spec, 48000.0);
+        let mut state = OscillatorState::default();
+        let (pitch, two_octaves) = (60.0, 24.0);
+        part.choose_band(&mut state, pitch, 0.0);
+        let own = state.band;
+        part.choose_band(&mut state, pitch, two_octaves);
+        assert!(state.band > own, "{} against {own}", state.band);
     }
 }
