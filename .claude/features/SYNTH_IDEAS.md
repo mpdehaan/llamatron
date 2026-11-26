@@ -29,7 +29,19 @@ The professor's research is in `.claude/notes/synthesis/`.
     single.
   - Steps: a short drawn row of levels, eight or sixteen, played as the LFO's shape with a Slew between them, as a curve
     sequencer does.
-  - Chaos: a smooth, never-repeating motion from a seeded chaotic system, the same every playing.
+  - Chaos: a smooth, never-repeating motion from a chaotic system, started from a seed so it is the same every playing.
+    A system moves in two or three dimensions at once, so a chaotic LFO gives two or three related outputs (X, Y, Z), each
+    a Mod Matrix source of its own, moving two or three things together, never in step yet never unrelated. Candidates:
+    the Lorenz attractor (two lobes it flips between unpredictably, the best-known); the Rössler attractor (a simpler,
+    smoother spiral that now and then leaps out); Chua's circuit (the electronic double scroll, the analog chaos
+    circuit); the jerk systems and slow chaotic circuits ( four very slow flavours,
+    minutes a cycle, for drifting pads); Thomas', Aizawa's, Halvorsen's and Dadras' attractors; the logistic and Hénon
+    maps, stepped rather than smooth, beside Sample & Hold; a double pendulum or a Duffing oscillator, which feel
+    physical; predator and prey (Lotka-Volterra), two populations rising and falling in turn; and the rungler,
+    a shift register fed back by two oscillators, a stepped pattern that almost repeats. Each would offer a Chaos amount
+    (how wild, from a near loop to full chaos) and its speed; all must be kept bounded and numerically safe (a fixed step,
+    clamped, restarted from the seed if it ever escapes), and are cheap at control rate. Research which few sound most
+    musical before choosing.
   - Burst: a few cycles at each note, then still, for ratchets and trills.
   - One LFO moving another's Rate or depth, through the Mod Matrix's Via or the built-in routes.
 - **A one-voice instrument's note priority**: Lowest, highest or last, beside today's lowest-of-a-chord.
