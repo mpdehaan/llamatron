@@ -1,9 +1,10 @@
 # About Demos
 
-The example sets are in `examples/`, in three folders: `learning/`, demos that
+The example sets are in `examples/`, in four folders: `learning/`, demos that
 each teach one feature a scene at a time, most of them on a well-known tune so
 that you can hear what the feature changes, numbered in the order to learn
-them; `other/`, demos that fit no other folder; and `by_genre/`, every other
+them; `other/`, demos that fit no other folder; `synth/`, songs played wholly
+on the built-in synths; and `by_genre/`, every other
 song, in a folder for each genre. The table below lists every one, with a
 video where there is one, and the sections after it describe each demo.
 
@@ -85,6 +86,7 @@ them.
 | [Rock](demos/ROCK.md) | 11 |
 | [Rock Mashup](demos/ROCK_MASHUP.md) | 6 |
 | [Soundtrack](demos/SOUNDTRACK.md) | 7 |
+| [Synth](demos/SYNTH.md) | 1 |
 | [TV Theme](demos/TV_THEME.md) | 13 |
 | [Video Game](demos/VIDEO_GAME.md) | 4 |
 | [World Mashup](demos/WORLD_MASHUP.md) | 1 |

@@ -50,7 +50,7 @@ TABLE_RULE = '| ---'
 # What the sidebar calls the front page and its group.
 FRONT_PAGE_ITEM = 'Home'
 # The guide's headings whose tables make a group of the sidebar, which opens and closes, rather than pages of their own.
-GROUPED = ('Intro', 'Demo Songs', 'Mashups', 'Objects', 'Generators', 'Song Wizard', 'File Operations', 'MIDI & Performance', 'Advanced')
+GROUPED = ('Intro', 'Demo Songs', 'Demos (Synth)', 'Mashups', 'Objects', 'Generators', 'Song Wizard', 'File Operations', 'MIDI & Performance', 'Advanced')
 FRONT_PAGE_LINK = '/'
 CHAPTER_PAGE_LINK = '/{name}'
 # The keys of VitePress's sidebar.

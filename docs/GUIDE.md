@@ -70,6 +70,14 @@ YouTube](https://img.youtube.com/vi/68vSj5sSW3c/hqdefault.jpg)](https://www.yout
 | [TV Theme](demos/TV_THEME.md) | The TV theme demo songs. |
 | [Video Game](demos/VIDEO_GAME.md) | The video game demo songs. |
 
+## Demos (Synth)
+
+The demo songs played wholly on llamatron's built-in synths.
+
+| Page | What it covers |
+| --- | --- |
+| [Synth](demos/SYNTH.md) | The demo songs on the built-in synths. |
+
 ## Mashups
 
 | Page | What it covers |
