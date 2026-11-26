@@ -1402,13 +1402,14 @@ impl Page for ArrangePage {
     }
 }
 
-/// Start real-time playback: tell why nothing can play if so, and otherwise play, saying on the status line what started,
-/// or that what (a scene or a clip, named) starts at the next bar.
+/// Start real-time playback: tell why nothing can play if so, and otherwise stop every listening preview and play, saying
+/// on the status line what started, or that what (a scene or a clip, named) starts at the next bar.
 pub fn play_through(app: &mut App, what: &str, said: &str, play: impl FnOnce(&mut App) -> Result<bool, String>) {
     if let Some(refusal) = app.transport.refusal(app, None) {
         app.show_page(Box::new(crate::screens::dialogs::MessageDialog::new(&refusal.title, refusal.lines)));
         return;
     }
+    crate::screens::listening::stop_every_preview(app);
     match play(app) {
         Ok(true) => app.say(&named(messages::MSG_STARTS_AT_NEXT_BAR, &[("what", what.into())])),
         Ok(false) => app.say(said),

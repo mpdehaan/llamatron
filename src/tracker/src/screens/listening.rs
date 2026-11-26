@@ -146,6 +146,22 @@ pub fn listen(app: &mut App, index: usize, track: &str, name: &str) {
     app.show_page(Box::new(dialog));
 }
 
+/// Whether a listening page's preview plays: a pattern's, an instrument's or a clip on its own.
+pub fn is_previewing(app: &App) -> bool {
+    app.preview.playing().is_some() || app.transport.is_previewing()
+}
+
+/// Stop every listening page's preview, a pattern's, an instrument's or a clip played on its own again and again, so that
+/// what starts next is heard alone; a song played from Arrange plays on.
+pub fn stop_every_preview(app: &mut App) {
+    if app.preview.playing().is_some() {
+        app.preview.stop();
+    }
+    if app.transport.is_previewing() {
+        app.transport.stop_all();
+    }
+}
+
 /// Stop listening: the preview and the clip.
 pub fn stop_listening(app: &mut App) {
     app.preview.stop();

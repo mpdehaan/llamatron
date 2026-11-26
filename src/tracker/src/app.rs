@@ -189,6 +189,9 @@ impl App {
 pub struct Tracker {
     pub app: App,
     pages: Vec<Box<dyn Page>>,
+    /// How many pages were open when a listening page's preview started, the page that started it the last of them, so
+    /// that leaving that page stops the preview.
+    listening_from: Option<usize>,
 }
 
 impl Tracker {
@@ -197,6 +200,7 @@ impl Tracker {
         Tracker {
             app: App::new(document),
             pages: vec![Box::new(MainPage::new())],
+            listening_from: None,
         }
     }
 
@@ -239,8 +243,30 @@ impl Tracker {
         PageKeys::EVERYWHERE.iter().map(|binding| KeyItem::of(&PageKeys::CLASS, binding)).collect()
     }
 
-    /// Press a key into the page on top: an everywhere key first, then the page's own.
+    /// Press a key, as a person does: into the page on top, then stopping a listening page's preview once its page is left.
     pub fn press(&mut self, key: &str) {
+        let depth = self.pages.len();
+        let was_listening = crate::screens::listening::is_previewing(&self.app);
+        self.press_into_top(key);
+        self.follow_listening(depth, was_listening);
+    }
+
+    /// Note the page a preview started on, and stop the preview once that page is left; a song played from Arrange plays
+    /// on through every page.
+    fn follow_listening(&mut self, depth: usize, was_listening: bool) {
+        let listening = crate::screens::listening::is_previewing(&self.app);
+        if !listening {
+            self.listening_from = None;
+        } else if !was_listening {
+            self.listening_from = Some(depth);
+        } else if self.listening_from.is_some_and(|from| self.pages.len() < from) {
+            crate::screens::listening::stop_every_preview(&mut self.app);
+            self.listening_from = None;
+        }
+    }
+
+    /// Press a key into the page on top: an everywhere key first, then the page's own.
+    fn press_into_top(&mut self, key: &str) {
         let page = self.pages.last_mut().expect("the main screen is never closed");
         if page.takes_text() {
             if let Some(character) = typed_character(key) {
