@@ -443,7 +443,7 @@ impl Engine {
             TEMPO_FINE => {
                 if let Some(patch) = self.instruments[instrument].as_mut() {
                     let tenths = patch.tempo_coarse * TEMPO_PART + event.velocity;
-                    patch.lfos.set_tempo(tenths / TEMPO_TENTHS);
+                    patch.set_tempo(tenths / TEMPO_TENTHS);
                 }
             }
             _ => {}

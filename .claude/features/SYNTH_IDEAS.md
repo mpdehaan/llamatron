@@ -115,7 +115,8 @@ The professor's research is in `.claude/notes/synthesis/`.
   chorus stay outside the chains.
 - **Stereo**: every voice of a built-in synth stays mono and every instrument has a Pan; an instrument's effect chain
   turns stereo from its first stereo effect (a ping-pong delay, chorus, reverb or the rotary speaker), so that an
-  instrument with none pays nothing. Stereo voices, such as unison spread across the field, come later.
+  instrument with none pays nothing. Stereo voices, such as unison spread across the field, come later. With it,
+  MultiTap's tap rows gain a third cell, each tap's place from left to right, and a ping-pong choice.
 - **A load meter**: llamatron measures each instrument's share of the time it has for each chunk of audio, shown on the
   Instrument page and the Bus page, the whole set's share shown in the header, where room is found, and the status line
   warning past about 70%. No track limit; using more cores is the next idea. Its place and form to discuss.

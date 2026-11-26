@@ -604,8 +604,25 @@ pub static EFFECT_DEFAULTS: Preset = Preset::Map(&[
     ("amount", Preset::Whole(33)),
     ("bass", Preset::Whole(0)),
     ("treble", Preset::Whole(0)),
+    ("sync", Preset::Flag(true)),
+    ("tap1_division", Preset::Text("1/8")),
+    ("tap2_division", Preset::Text("1/4")),
+    ("tap3_division", Preset::Text("1/4d")),
+    ("tap4_division", Preset::Text("1/2")),
+    ("tap1_ms", Preset::Whole(250)),
+    ("tap2_ms", Preset::Whole(500)),
+    ("tap3_ms", Preset::Whole(750)),
+    ("tap4_ms", Preset::Whole(1000)),
+    ("tap1_level", Preset::Whole(70)),
+    ("tap2_level", Preset::Whole(50)),
+    ("tap3_level", Preset::Whole(35)),
+    ("tap4_level", Preset::Whole(25)),
+    ("feedback", Preset::Whole(25)),
+    ("tone", Preset::Whole(6000)),
     ("mix", Preset::Whole(100)),
 ]);
+/// The settings an effect starts on that differ from every effect's: MultiTap's echoes mixed in under the sound.
+pub static EFFECT_OWN_DEFAULTS: &[(&str, &str, Preset)] = &[("multitap", "mix", Preset::Whole(35))];
 pub static SLOT_DEFAULTS: Preset = Preset::Map(&[
     ("source", Preset::Text("none")),
     ("via", Preset::Text("none")),

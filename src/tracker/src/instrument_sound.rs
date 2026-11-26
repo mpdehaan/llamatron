@@ -4,7 +4,7 @@
 //! An instrument's built-in sound as the instrument page reads it (the Python model/objects/built_in_sound.py and the
 //! instrument's sound getters): each setting its own, or its engine's preset's, or its part's type's default.
 
-use crate::generated::sounds::{Preset, ENGINE_PRESETS, LFO_DEFAULTS, SOUND_DEFAULTS, TYPE_DEFAULTS};
+use crate::generated::sounds::{Preset, EFFECT_DEFAULTS, EFFECT_OWN_DEFAULTS, ENGINE_PRESETS, LFO_DEFAULTS, SOUND_DEFAULTS, TYPE_DEFAULTS};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
 use llamatron_model::objects::setlist::Instrument;
@@ -136,6 +136,26 @@ impl Sound {
         item.get(name)
             .cloned()
             .unwrap_or_else(|| defaults.get(name).map_or(Data::Null, Preset::to_data))
+    }
+
+    /// One setting of an effect, by its number from 1: its own, else what its effect starts on where that differs from
+    /// every effect's, else every effect's default.
+    pub fn effect_setting(&self, number: usize, name: &str) -> Data {
+        let stored = self
+            .value("effects")
+            .as_list()
+            .and_then(|items| items.get(number - 1))
+            .and_then(|item| item.get(name))
+            .cloned();
+        if let Some(stored) = stored {
+            return stored;
+        }
+        let effect = self.item("effects", number, "effect", EFFECT_DEFAULTS);
+        let own = EFFECT_OWN_DEFAULTS
+            .iter()
+            .find(|(kind, setting, _)| effect.as_str() == Some(kind) && *setting == name)
+            .map(|(_, _, preset)| preset.to_data());
+        own.unwrap_or_else(|| self.item("effects", number, name, EFFECT_DEFAULTS))
     }
 
     /// One setting of an LFO, by its number from 1, as its Type plays it: an LFO, not an LFO+, plays a Smooth random shape

@@ -407,6 +407,12 @@ impl Field {
         &self.value
     }
 
+    /// The field shown at least as wide as width, so that a column of cells of different widths lines up.
+    pub fn padded_to(mut self, width: usize) -> Field {
+        self.value = format!("{:<width$}", self.value);
+        self
+    }
+
     /// Which of the lines the field draws holds the cursor.
     pub fn selected_line(&self) -> usize {
         match self.drawn {

@@ -39,6 +39,24 @@ turned far the sound stays natural: a little Bass warms a thin lead, a cut of
 Treble tames a harsh one. At 0 dB both pass the sound untouched. `Bksp` brings
 a gauge back to 0 dB, and Mix blends the shaped sound with the plain one.
 
+## MultiTap
+
+MultiTap is a digital delay that plays the sound back at four moments, its
+taps, each at its own loudness, so that one note becomes a rhythm of echoes:
+with the taps on 1/8, 1/4, 1/4d and 1/2, as a new MultiTap starts, a single
+stab turns into a little falling figure in time with the song.
+
+Sync, on unless switched off, times each tap as a division of the beat that
+follows the song's tempo, from 1/32 to 1/1, dotted (`d`) or triplet (`t`);
+off, each tap's time is in milliseconds, from 1 to 4000. Each Tap row has two
+cells, its time and its level: Left and Right move between them, `[` and `]`
+step the one under the cursor, and a level of 0% silences the tap. Feedback
+sends the last tap back into the delay, so that the whole figure repeats,
+quieter each time, up to 90% so that it never runs away. Tone darkens each
+repeat, as the echoes of a tape or an old digital delay soften, from 500 Hz to
+18 kHz. Mix blends the echoes in under the sound, 35% as a new MultiTap
+starts. The delay holds up to four seconds, a bar at 60 beats a minute.
+
 ## Planned
 
 The agreed effects, by kind: Drive and Bitcrush for dirt, Bitcrush gaining a

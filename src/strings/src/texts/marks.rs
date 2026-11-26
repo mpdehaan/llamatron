@@ -227,6 +227,8 @@ pub const MSG_KEYSWITCH_NOTE_CELL: &str = "{note} ";
 pub const MSG_KEYSWITCH_MAP_ROW: &str = " {slot:>2}  ";
 pub const MSG_KEYSWITCH_LEAD_SHOWN: &str = "{milliseconds} ms";
 pub const MSG_SOUND_GAUGE: &str = "▕{gauge}▏ {value:>7}";
+/// A narrow gauge sharing its row with another cell, its value as wide as a percent.
+pub const MSG_NARROW_GAUGE: &str = "▕{gauge}▏{value:>5}";
 pub const MSG_SOUND_GAUGE_FULL: &str = "█";
 pub const MSG_INSTRUMENT_OFF_SHOWN: &str = "(off)";
 pub const MSG_NO_CHANNEL_SHOWN: &str = "";

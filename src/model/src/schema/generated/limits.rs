@@ -130,4 +130,10 @@ pub const MIN_BITS: i64 = 1;
 pub const MAX_BITS: i64 = 16;
 /// How far Bax's Bass and Treble lift or cut, in decibels either way.
 pub const MOST_BAX_DECIBELS: i64 = 15;
+/// MultiTap's taps, the longest a tap's own time may be in milliseconds, its most feedback, and its Tone's range in hertz.
+pub const MULTITAP_TAPS: i64 = 4;
+pub const MAX_TAP_MS: i64 = 4000;
+pub const MAX_TAP_FEEDBACK: i64 = 90;
+pub const MIN_TAP_TONE: i64 = 500;
+pub const MAX_TAP_TONE: i64 = 18000;
 pub const MAX_HOLD_RATE: i64 = 48000;

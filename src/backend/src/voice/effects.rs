@@ -8,10 +8,11 @@
 //! curve: soft and warm saturate, warm leaning to one side for even harmonics, hard clips, fold folds back past full scale
 //! and wrap wraps round, the last two the harsh digital sounds of cheap grooveboxes. Bax is a tone control after Peter
 //! Baxandall's published circuit of 1952: a gentle shelf of 6 dB an octave under its bass turnover and another over its
-//! treble turnover, each lifting or cutting by its own number of decibels.
+//! treble turnover, each lifting or cutting by its own number of decibels. MultiTap is a digital delay read at four
+//! taps, each its own time and level, the last fed back through a darkening one-pole so the figure repeats softer.
 
-use crate::dsp::HIGHEST_SHARE;
-use crate::protocol::values::{number, word};
+use crate::dsp::{flushed, HIGHEST_SHARE};
+use crate::protocol::values::{as_number, field, list, number, word};
 use crate::voice::blep;
 use rmpv::Value;
 use std::f64::consts::PI;
@@ -24,6 +25,14 @@ const BASS_TURNOVER_HERTZ: f64 = 100.0;
 const TREBLE_TURNOVER_HERTZ: f64 = 10_000.0;
 /// Decibels to a gain: twenty to a power of ten.
 const DECIBELS_PER_DECADE: f64 = 20.0;
+/// MultiTap's longest time, in seconds: a bar of 4/4 at 60 quarter notes a minute.
+const LONGEST_DELAY_SECONDS: f64 = 4.0;
+/// MultiTap's most feedback, short of a repeat as loud as the last, so that it can never run away.
+const MOST_FEEDBACK: f64 = 0.9;
+/// MultiTap's taps, and the tempo its synced taps follow until the song says.
+pub const TAP_COUNT: usize = 4;
+const FIRST_TEMPO: f64 = 120.0;
+const SECONDS_PER_MINUTE: f64 = 60.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Curve {
@@ -57,6 +66,91 @@ enum Kind {
         bass: Shelf,
         treble: Shelf,
     },
+    MultiTap(Box<MultiTap>),
+}
+
+/// When a tap of MultiTap sounds: a share of a quarter note that follows the song's tempo, or seconds of its own.
+#[derive(Clone, Copy)]
+enum TapTime {
+    Quarters(f64),
+    Seconds(f64),
+}
+
+/// MultiTap: the line it writes into, made ahead and never grown while it plays, where it writes next, each tap's time,
+/// samples behind and level, the feedback from the last tap, and the one-pole darkening each repeat.
+pub struct MultiTap {
+    line: Vec<f32>,
+    write: usize,
+    times: [TapTime; TAP_COUNT],
+    behind: [usize; TAP_COUNT],
+    levels: [f64; TAP_COUNT],
+    feedback: f64,
+    tone: Shelf,
+    rate: f64,
+}
+
+impl MultiTap {
+    /// MultiTap from its spec: its taps, its feedback, its tone in hertz, at the song's tempo until told another.
+    fn compiled(spec: &Value, rate: f64) -> MultiTap {
+        let taps = list(spec, "taps");
+        let mut times = [TapTime::Seconds(0.0); TAP_COUNT];
+        let mut levels = [0.0; TAP_COUNT];
+        for (place, tap) in taps.iter().take(TAP_COUNT).enumerate() {
+            times[place] = match field(tap, "quarters").and_then(as_number) {
+                Some(quarters) => TapTime::Quarters(quarters),
+                None => TapTime::Seconds(number(tap, "seconds", 0.0)),
+            };
+            levels[place] = number(tap, "level", 0.0);
+        }
+        let length = (LONGEST_DELAY_SECONDS * rate) as usize + 1;
+        let mut delay = MultiTap {
+            line: vec![0.0; length],
+            write: 0,
+            times,
+            behind: [0; TAP_COUNT],
+            levels,
+            feedback: number(spec, "feedback", 0.0).clamp(0.0, MOST_FEEDBACK),
+            // A one-pole low pass is a shelf cutting everything over its cutoff fully: its own low half alone is read.
+            tone: Shelf::new(0.0, number(spec, "tone", 6000.0), End::Over, rate),
+            rate,
+        };
+        delay.set_tempo(FIRST_TEMPO);
+        delay
+    }
+
+    /// The song's tempo now, in quarter notes a minute, which a synced tap's time follows.
+    fn set_tempo(&mut self, tempo: f64) {
+        let most = self.line.len() - 1;
+        for (behind, time) in self.behind.iter_mut().zip(self.times) {
+            let seconds = match time {
+                TapTime::Quarters(quarters) => quarters * SECONDS_PER_MINUTE / tempo.max(1.0),
+                TapTime::Seconds(seconds) => seconds,
+            };
+            *behind = ((seconds * self.rate).round() as usize).clamp(1, most);
+        }
+    }
+
+    /// One sample: the four taps' sum, the last tap fed back darkened with the sample into the line.
+    #[inline]
+    fn process(&mut self, dry: f64) -> f64 {
+        let length = self.line.len();
+        let read = |behind: usize| self.line[(self.write + length - behind) % length] as f64;
+        let mut wet = 0.0;
+        for (behind, level) in self.behind.iter().zip(self.levels) {
+            wet += read(*behind) * level;
+        }
+        let last = read(self.behind[TAP_COUNT - 1]);
+        let fed = self.tone.low(last) * self.feedback;
+        self.line[self.write] = flushed(dry + fed) as f32;
+        self.write = (self.write + 1) % length;
+        wet
+    }
+
+    /// Back to rest: the line silent.
+    fn reset(&mut self) {
+        self.line.fill(0.0);
+        self.tone.state = 0.0;
+    }
 }
 
 /// One of Bax's shelves: how much it adds of what lies past its turnover (its gain less one, so that 0 dB adds nothing),
@@ -116,6 +210,7 @@ pub fn compiled(specs: &[Value], rate: f64) -> Vec<Effect> {
         let kind = match word(spec, "effect", "none") {
             "bitcrush" => bitcrush(spec, rate),
             "drive" => drive(spec),
+            "multitap" => Kind::MultiTap(Box::new(MultiTap::compiled(spec, rate))),
             "bax" => Kind::Bax {
                 bass: Shelf::new(number(spec, "bass", 0.0), BASS_TURNOVER_HERTZ, End::Under, rate),
                 treble: Shelf::new(number(spec, "treble", 0.0), TREBLE_TURNOVER_HERTZ, End::Over, rate),
@@ -224,6 +319,14 @@ impl Effect {
                     *sample = (dry + (wet - dry) * mix) as f32;
                 }
             }
+            Kind::MultiTap(delay) => {
+                // The echoes alone are the effect's sound: Mix blends them in under the sound that went in.
+                for sample in buffer.iter_mut() {
+                    let dry = *sample as f64;
+                    let wet = delay.process(dry);
+                    *sample = (dry + (wet - dry) * mix) as f32;
+                }
+            }
             Kind::Bax { bass, treble } => {
                 for sample in buffer.iter_mut() {
                     let dry = *sample as f64;
@@ -251,7 +354,15 @@ impl Effect {
                 bass.state = 0.0;
                 treble.state = 0.0;
             }
+            Kind::MultiTap(delay) => delay.reset(),
             Kind::Drive { .. } => {}
+        }
+    }
+
+    /// The song's tempo now, in quarter notes a minute, which a synced delay's taps follow.
+    pub fn set_tempo(&mut self, tempo: f64) {
+        if let Kind::MultiTap(delay) = &mut self.kind {
+            delay.set_tempo(tempo);
         }
     }
 }
@@ -290,6 +401,69 @@ mod tests {
                 assert_ne!(shape, other);
             }
         }
+    }
+
+    /// MultiTap spec of four synced taps at their levels, with feedback, heard alone at full Mix.
+    fn multitap(feedback: f64) -> Effect {
+        let tap = |quarters: f64, level: f64| Value::Map(vec![("quarters".into(), quarters.into()), ("level".into(), level.into())]);
+        let taps = Value::Array(vec![tap(0.5, 0.7), tap(1.0, 0.5), tap(1.5, 0.35), tap(2.0, 0.25)]);
+        let spec = Value::Map(vec![
+            ("effect".into(), "multitap".into()),
+            ("taps".into(), taps),
+            ("feedback".into(), feedback.into()),
+            ("tone".into(), 18_000.0.into()),
+            ("mix".into(), 1.0.into()),
+        ]);
+        compiled(&[spec], RATE).remove(0)
+    }
+
+    /// A click through MultiTap at 120 comes back at each tap's time, an eighth, a quarter, a dotted quarter and a half
+    /// note, at the tap's level; at 60 every echo comes twice as late.
+    #[test]
+    fn multitap_echoes_each_tap_on_its_beat() {
+        let echoes_of = |tempo: f64| {
+            let mut delay = multitap(0.0);
+            delay.set_tempo(tempo);
+            let samples = (2.5 * RATE) as usize;
+            let mut buffer = vec![0.0f32; samples];
+            buffer[0] = 1.0;
+            for chunk in buffer.chunks_mut(512) {
+                delay.apply(chunk);
+            }
+            let loud: Vec<(usize, f32)> = buffer
+                .iter()
+                .enumerate()
+                .filter(|(_, sample)| sample.abs() > 0.01)
+                .map(|(place, sample)| (place, *sample))
+                .collect();
+            loud
+        };
+        let beat = |quarters: f64, tempo: f64| (quarters * 60.0 / tempo * RATE).round() as usize;
+        let at_120 = echoes_of(120.0);
+        let expected: Vec<(usize, f32)> = [(0.5, 0.7), (1.0, 0.5), (1.5, 0.35), (2.0, 0.25)]
+            .iter()
+            .map(|(quarters, level)| (beat(*quarters, 120.0), *level as f32))
+            .collect();
+        assert_eq!(at_120, expected);
+        let at_60 = echoes_of(60.0);
+        assert_eq!(at_60.first().map(|(place, _)| *place), Some(beat(0.5, 60.0)));
+    }
+
+    /// Feedback brings the last tap's echo back as the figure again, softer: the first tap is heard again a half note
+    /// and an eighth after a burst, at its level times the feedback.
+    #[test]
+    fn multitap_feedback_repeats_the_figure_softer() {
+        let feedback = 0.5;
+        let mut delay = multitap(feedback);
+        let samples = (2.0 * RATE) as usize;
+        let mut buffer = vec![0.0f32; samples];
+        // A millisecond's burst rather than a click, so that the darkening Tone's smoothing of one sample does not count.
+        let burst = (RATE / 1000.0) as usize;
+        buffer[..burst].fill(1.0);
+        delay.apply(&mut buffer);
+        let again = (2.5 * 60.0 / 120.0 * RATE).round() as usize;
+        let heard = buffer[again..again + burst].iter().fold(0.0f32, |most, sample| most.max(sample.abs()));
+        assert!((heard as f64 - 0.7 * feedback).abs() < 0.08, "{heard}");
     }
 
     /// The level of a steady sine at some hertz through a Bax, once its shelves have settled, against the sine's own.

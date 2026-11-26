@@ -520,6 +520,14 @@ impl Patch {
         }
     }
 
+    /// The song's tempo now, in quarter notes a minute, which its LFOs and its effects that follow the tempo take.
+    pub fn set_tempo(&mut self, tempo: f64) {
+        self.lfos.set_tempo(tempo);
+        for effect in self.effects.iter_mut() {
+            effect.set_tempo(tempo);
+        }
+    }
+
     /// Finish the chunk's buffer: the shared filter, then the effects in order.
     pub fn finish(&mut self, frames: usize) {
         if let Sound::Modular(modular) = &mut self.sound {

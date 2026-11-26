@@ -374,9 +374,18 @@ fn effects(sound: &Sound) -> Data {
     let count = sound.value("effects").as_list().map_or(0, <[Data]>::len);
     let mut effects = Vec::new();
     for number in 1..=count {
-        let mut effect = every_setting(sound, "effects", number, EFFECT_DEFAULTS);
+        let names: Vec<&str> = match EFFECT_DEFAULTS {
+            Preset::Map(pairs) => pairs.iter().map(|(name, _)| *name).collect(),
+            _ => Vec::new(),
+        };
+        let mut effect = mapping(names.iter().map(|name| (*name, sound.effect_setting(number, name))).collect());
         if effect.get("effect").and_then(Data::as_str) == Some("none") {
             continue;
+        }
+        if effect.get("effect").and_then(Data::as_str) == Some(MULTITAP) {
+            set(&mut effect, "taps", taps(sound, number));
+            let feedback = share(&sound.effect_setting(number, "feedback"), PERCENT);
+            set(&mut effect, "feedback", feedback);
         }
         for name in ["amount", "mix"] {
             let scaled = effect.get(name).map(|value| share(value, PERCENT)).unwrap_or(Data::Float(0.0));
@@ -385,6 +394,48 @@ fn effects(sound: &Sound) -> Data {
         effects.push(effect);
     }
     Data::List(effects)
+}
+
+/// MultiTap's effect name, and each division of the beat a synced tap may take with the quarter notes it lasts.
+const MULTITAP: &str = "multitap";
+const THIRD: f64 = 1.0 / 3.0;
+pub const DELAY_DIVISIONS: [(&str, f64); 13] = [
+    ("1/32", 0.125),
+    ("1/16t", 0.25 * 2.0 * THIRD),
+    ("1/16", 0.25),
+    ("1/16d", 0.375),
+    ("1/8t", THIRD),
+    ("1/8", 0.5),
+    ("1/8d", 0.75),
+    ("1/4t", 2.0 * THIRD),
+    ("1/4", 1.0),
+    ("1/4d", 1.5),
+    ("1/2", 2.0),
+    ("1/2d", 3.0),
+    ("1/1", 4.0),
+];
+
+/// A MultiTap's four taps as the backend reads them: each a share of a quarter note while Sync is on, else seconds, and
+/// its level as a fraction.
+fn taps(sound: &Sound, number: usize) -> Data {
+    let synced = !matches!(sound.effect_setting(number, "sync"), Data::Bool(false));
+    let taps = (1..=4)
+        .map(|tap| {
+            let setting = |name: &str| sound.effect_setting(number, &format!("tap{tap}_{name}"));
+            let time = if synced {
+                let division = setting("division");
+                let quarters = DELAY_DIVISIONS
+                    .iter()
+                    .find(|(name, _)| division.as_str() == Some(name))
+                    .map_or(1.0, |(_, quarters)| *quarters);
+                ("quarters", Data::Float(quarters))
+            } else {
+                ("seconds", share(&setting("ms"), MILLISECONDS))
+            };
+            mapping(vec![time, ("level", share(&setting("level"), PERCENT))])
+        })
+        .collect();
+    Data::List(taps)
 }
 
 /// The matrix's slots, each amount a fraction either way.

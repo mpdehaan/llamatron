@@ -713,7 +713,9 @@ impl<F: Form> Page for FieldPage<F> {
             } else if row.is_cells() {
                 result.push(self.bind(&Keys::ALONG_CELLS).wanting_key());
                 let cell = row.cells.get(self.state.cell.get().min(row.cells.len().saturating_sub(1)));
-                if let (true, Some((less, more)), Some(true)) = (row.stepped_cells, self.form.slot_keys(), cell.map(|cell| cell.adjusts)) {
+                // The cell under the cursor steps by the page's own keys for a slot, or by [ and ] where it has none.
+                if row.stepped_cells && cell.is_some_and(|cell| cell.adjusts) {
+                    let (less, more) = self.form.slot_keys().unwrap_or((&Keys::LESS, &Keys::MORE));
                     result.push(self.bind(more));
                     result.push(self.bind(less));
                 }
