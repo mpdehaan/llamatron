@@ -69,7 +69,11 @@ pub struct NoteTime {
 #[derive(Clone, Copy, Default)]
 pub struct EnvelopeState {
     pub released_from: Option<f64>,
+    /// Where the note's envelope starts from: 0 for a fresh note, or the level a restruck voice's envelope had reached,
+    /// so that striking a note again never jumps to silence and clicks.
     pub start_level: f64,
+    /// The level it gave last, which a restruck voice's envelope starts from.
+    pub last: f64,
     pub drive: f64,
     pub rise: f64,
     pub hyperbola: f64,
@@ -385,6 +389,12 @@ impl EnvelopePart {
     /// envelope's own. Marks the state done once the note has fallen silent.
     #[inline]
     pub fn level(&self, state: &mut EnvelopeState, note: NoteTime, short: Option<f64>) -> f64 {
+        let level = self.level_now(state, note, short);
+        state.last = level;
+        level
+    }
+
+    fn level_now(&self, state: &mut EnvelopeState, note: NoteTime, short: Option<f64>) -> f64 {
         match self {
             EnvelopePart::Adsr { .. } => self.adsr_level(state, note, short),
             EnvelopePart::SidAdsr { held, release_step } => sid_level(held, *release_step, state, note),
@@ -406,17 +416,19 @@ impl EnvelopePart {
             return 0.0;
         };
         if *struck {
-            let level = self.held(note.age, short);
+            let level = self.held(note.age, short, state.start_level);
             if note.age > *attack && level < SILENT {
                 state.done = true;
             }
             return level;
         }
-        let Some(released) = note.released else { return self.held(note.age, short) };
-        let from = *state.released_from.get_or_insert_with(|| self.held(released, short));
+        let Some(released) = note.released else {
+            return self.held(note.age, short, state.start_level);
+        };
+        let from = *state.released_from.get_or_insert_with(|| self.held(released, short, state.start_level));
         let since = note.age - released;
         if since < 0.0 {
-            return self.held(note.age, short);
+            return self.held(note.age, short, state.start_level);
         }
         let falling = from * (-since / release).exp();
         if falling < SILENT {
@@ -425,8 +437,9 @@ impl EnvelopePart {
         falling
     }
 
-    /// The ADSR while its note is held: the attack, the hold at the top, then the decay to the sustain.
-    fn held(&self, age: f64, short: Option<f64>) -> f64 {
+    /// The ADSR while its note is held: the attack from where it starts, the hold at the top, then the decay to the
+    /// sustain.
+    fn held(&self, age: f64, short: Option<f64>, from: f64) -> f64 {
         let EnvelopePart::Adsr {
             attack,
             hold,
@@ -442,11 +455,13 @@ impl EnvelopePart {
         };
         if age < *attack {
             let x = (age / attack).min(1.0);
-            return match (target, bend) {
+            let rising = match (target, bend) {
                 (Some(target), _) => target * (1.0 - ((target - 1.0) / target).powf(x)),
                 (None, Some(bend)) => ((bend * x).exp() - 1.0) / (bend.exp() - 1.0),
                 _ => x,
             };
+            // A restruck note rises from the level it had reached, so the attack never starts from a jump to silence.
+            return from + (1.0 - from) * rising;
         }
         let decay = short.map(|time| time / T60).unwrap_or(*decay);
         let gone = (age - attack - hold).max(0.0);

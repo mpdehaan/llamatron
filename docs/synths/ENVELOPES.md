@@ -35,7 +35,10 @@ alike.
 
 The envelope of most synthesizers. It rises over its Attack, stays at the top
 for its Hold, falls over its Decay to its Sustain while the note is held, and
-falls from wherever it is over its Release once the note ends.
+falls from wherever it is over its Release once the note ends. On an
+instrument of one voice, a note struck while the last still sounds starts its
+attack from where the envelope had reached, keeping the oscillators running,
+so that striking again never clicks.
 
 The Curve sets the attack's shape. Above zero it is the charge of a capacitor
 in an analog envelope circuit: the level chases a target set above full, so

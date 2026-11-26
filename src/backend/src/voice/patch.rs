@@ -66,6 +66,25 @@ pub struct Voice {
 }
 
 impl Voice {
+    /// Where each of its three envelopes started from: 0 for a fresh note, or where a restruck voice's had reached.
+    pub fn envelope_starts(&self) -> [f64; 3] {
+        std::array::from_fn(|place| self.envelopes[place].start_level)
+    }
+
+    /// Carry on from a voice of the same instrument struck again before it fell silent: its oscillators' phases, its
+    /// filter, its Key LFOs and where each envelope had reached, which this voice's envelopes now rise from, so that a
+    /// restruck one-voice instrument neither clicks nor restarts its waves.
+    pub fn restrike_from(&mut self, old: &Voice) {
+        self.oscillator = old.oscillator;
+        self.filter = old.filter;
+        self.lfo_cycles = old.lfo_cycles;
+        self.last_wave = old.last_wave;
+        self.reach = old.reach;
+        for (envelope, earlier) in self.envelopes.iter_mut().zip(old.envelopes.iter()) {
+            envelope.start_level = earlier.last;
+        }
+    }
+
     pub fn new(id: u64, instrument: usize, pitch: f64, start: i64, level: f64, hit: Option<Hit>) -> Voice {
         Voice {
             id,

@@ -463,6 +463,20 @@ impl Engine {
         }
         self.next_voice += 1;
         let mut voice = Voice::new(self.next_voice, instrument, event.pitch, event.sample, event.velocity / 127.0, event.hit.take());
+        // A one-voice instrument struck again while its last note still sounds restrikes in place, from where it was.
+        if voice.hit.is_none() && patch.voices == 1 {
+            let sounding = self
+                .voices
+                .iter()
+                .position(|old| old.instrument == instrument && old.cut_at.is_none() && old.hit.is_none());
+            if let Some(place) = sounding {
+                patch.begin(&mut voice);
+                voice.restrike_from(&self.voices[place]);
+                self.voices[place] = voice;
+                self.instruments[instrument] = Some(patch);
+                return;
+            }
+        }
         if voice.hit.is_some() {
             self.cut_drums(&patch, instrument, event.sample);
             patch.lfos.note_on();
@@ -644,5 +658,25 @@ mod tests {
             let sounding: Vec<f64> = engine.sounding().into_iter().map(|(_, pitch)| pitch).collect();
             assert_eq!(sounding, vec![low], "{order:?}");
         }
+    }
+
+    /// A one-voice instrument struck again during its last note's release restrikes in place, its envelope rising from
+    /// where it had fallen rather than from silence beside a cut voice, so that it does not click.
+    #[test]
+    fn a_one_voice_instrument_restruck_rises_from_where_it_was() {
+        let mut engine = Engine::new(48000.0, None);
+        let mut patch = basic_with_voices(1);
+        patch.glides = false;
+        engine.set_instrument(0, patch);
+        let (pitch, released, again) = (60.0, 4800, 4900);
+        engine.schedule(note(0, NOTE_ON, pitch));
+        engine.schedule(note(released, NOTE_OFF, pitch));
+        engine.schedule(note(again, NOTE_ON, pitch + 2.0));
+        let (mut left, mut right) = (vec![0.0; 128], vec![0.0; 128]);
+        for chunk in 0..40 {
+            engine.render(chunk * 128, &mut left, &mut right);
+        }
+        assert_eq!(engine.voices.len(), 1, "one voice, not a cut one fading beside a new one");
+        assert!(engine.voices[0].envelope_starts()[0] > 0.0, "Env1 rose from where it was");
     }
 }
