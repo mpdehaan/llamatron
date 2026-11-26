@@ -9,7 +9,7 @@ them, the screenshots or the website.
   words: no rewording, moving or tidying. A path, file name or command a change made wrong MUST always be fixed.
 - Claude MAY edit them as it judges best and report what changed.
 - Every reply after a change to them gives a synopsis of what changed, grouped by document.
-- `CLAUDE.md`, `.claude/` and `.claude/planning/IDEAS.yml` are Claude's, to keep consistent and correct.
+- `CLAUDE.md` and `.claude/` are Claude's, to keep consistent and correct.
 
 ## The guide
 

@@ -31,7 +31,7 @@ TABLE_ROW = '|'
 PATH_IN_BACKTICKS = re.compile(r'`((?:src|test|internal_tools|user_scripts|examples|docs|developer_docs|python)/[A-Za-z0-9_./-]+\.(?:py|rs|toml|yml|svg|sh|md|mid|als|ly))`')
 ENCODING = 'utf-8'
 # Files the documents name that git ignores, so a new clone has none: Claude's own queue and its plans with their status, kept on one computer.
-KEPT_OUT_OF_GIT = ('.claude/planning/DESIGNS.md', '.claude/planning/WIZARD_DESIGNS.md', '.claude/planning/REFACTORING.md', '.claude/planning/REFACTORING_LOG.md')
+KEPT_OUT_OF_GIT = ('.claude/planning/DESIGNS.md', '.claude/planning/WIZARD_DESIGNS.md')
 USER_SCRIPTS = ROOT / 'user_scripts'
 USER_SCRIPTS_GUIDE = ROOT / 'docs' / 'USER_SCRIPTS.md'
 SCRIPT_FILES = '*.sh'

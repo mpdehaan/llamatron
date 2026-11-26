@@ -9,7 +9,7 @@ Reference notes for Claude, one of `.claude/features/`: the engine and the Realt
 ## Real-time playback
 
 - `py_legacy/src/llamatron/realtime/` plays a rendered song out of the computer's MIDI ports, the user's
-  design. What is left of it is in `.claude/planning/IDEAS.yml` under "Real-time
+  design. What is left of it is in the ideas files of `.claude/features/` under "Real-time
   MIDI, what's left". How the tracker drives it is under "Real-time playback on the pages" below.
 - Render first, then only schedule: `song_timeline(grid=, routes=)` in `realtime/render_process/timeline.py`
   turns a `ClipGrid` into one time-ordered list of `Playing` events across every track, the
@@ -403,7 +403,7 @@ the takes). The song's draws and drifts are the song's and take no part. Tested 
   `src/backend/src/voice/oscillators.rs`), so that no modulation drives a sound to a subsonic thump or past hearing; the
   output's guards then apply to whatever any modulation makes. A new engine or modulator MUST keep both.
 - `realtime/synth_process/` plays built-in instruments as audio in a process of its own, beside the Realtime Sender Process
-  (`.claude/planning/IDEAS.yml`, "Built-in synths"; the professor's notes in `.claude/notes/synthesis/`). `process.py`'s
+  (the ideas files of `.claude/features/`, "Built-in synths"; the professor's notes in `.claude/notes/synthesis/`). `process.py`'s
   `SynthesisProcess` (the parent's handle) spawns it, waits for READY with the sample rate and the delay, or raises
   `SynthesisNotStarted` with the reason (no sound card, PortAudio missing, the child dying while starting, with its exit
   code); `close()` asks it to close, collects its timing statistics, joins it and kills it if it hangs. The child exits
@@ -444,7 +444,7 @@ the takes). The song's draws and drifts are the song's and take no part. Tested 
   Process. The waveform and drum machine names are the set's (`file_format.Waveform`, `DrumMachine`), which the synthesis
   package uses. The Instrument page builds each part's fields from a table of each setting's kind (`interface/pages/part_fields.py`).
 - A new built-in engine always brings a discussion with the user of its six Synth Control rows, ordered Pitch first, then
-  the envelope's settings, then the rest (`.claude/planning/IDEAS.yml`, "Built-in synths").
+  the envelope's settings, then the rest (the ideas files of `.claude/features/`, "Built-in synths").
 - Routing: the transport gives each track of a built-in instrument a `Route` to a built-in port (`built_in_routes`), each
   built-in instrument a channel, sixteen a port (`realtime_names.BUILT_IN_PORT`), the route naming the instrument (`sound`).
   The render side works out each route's sound as it makes a score (`playback.built_in_sounds`, `Score.set_sounds`) and

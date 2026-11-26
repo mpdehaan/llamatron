@@ -27,7 +27,7 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
 - A generator's list of values must only step through notes and chords, so rests never use up a
   value (`tests/engine/generators/test_generator_list_steps.py` checks this, so add new list generators there).
 - Chain generators work on finished clips rather than patterns, so a chain follows scale changes.
-  Pattern generators that write steps are a separate idea in `.claude/planning/IDEAS.yml`.
+  Pattern generators that write steps are a separate idea in the ideas files of `.claude/features/`.
 
 ### Generators as paint
 

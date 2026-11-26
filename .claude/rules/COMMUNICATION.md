@@ -73,7 +73,8 @@
   `DEMO_IDEAS.md` (demos and examples), `UX_IDEAS.md` (how the tracker looks and is used) and `OTHER_IDEAS.md` (the rest). A
   new topic that outgrows these gets a file of its own, proposed first.
 - The ideas files are tracked in git, since several computers work on the project. Each idea is a bold name and what is
-  wanted: never its status, its order, a date or a record of the conversation. Claude keeps them organized, merges
+  wanted: never its status, its order, a date or a record of the conversation. Ideas describe keys by what they do. Ideas
+  are added only when the user asks, and nothing in them is started unprompted. Claude keeps them organized, merges
   duplicates, moves an idea that suits another file, and deletes an idea, or trims its finished part, as soon as it is built.
 - `.claude/planning/QUEUE.md` is only the order of work, tracked in git, very short, naming each idea by its file and bold
   name and saying nothing of what it is, nor any status. It is not a master file for anyone working on the project: the ideas
@@ -96,9 +97,6 @@
 - Flag names and layouts that don't fit. Point out where an existing feature already does what's asked, or where a new thing
   should look like an existing one.
 - The user edits message wording; a change need not name the constants it touched.
-- `.claude/planning/IDEAS.yml`, the user's ranked ideas, is a YAML list of `title`, `priority` (1 highest; high 1, medium 5, low 10, unranked
-  99) and `text`, kept sorted by `internal_tools/sort_ideas.sh`. Ideas describe keys by what they do. An idea is removed, or its
-  finished part trimmed, as soon as it is built; ideas are added only when the user asks; nothing in it is started unprompted.
 - Rules carry no dates, and no file quotes the user: Claude records its own plain statement of what is wanted.
 - A lasting instruction is discussed, then written into the `.claude/` file of its topic (`CLAUDE.md` only for the project as a
   whole), never only into memory. `CLAUDE.md` stays short; each file stays on its topic.
@@ -198,7 +196,7 @@ row says which, and a reply says which too.
 | a settings page, a list page | a page of fields, and a page of rows with a `+` row at the bottom | `FieldPage` with `Field` and `Button`, and `ListPage` |
 | protected | the Protected toggle on the File/Global page | `protected`, `file_is_protected` |
 | the demos, the examples | the sets in `examples/` | every set in `examples/` |
-| the ideas file | `.claude/planning/IDEAS.yml`, the user's ranked ideas; the ideas files of `.claude/features/` hold the rest | |
+| the ideas files | the `*_IDEAS.md` files of `.claude/features/`, one a topic | |
 | the support folder | nothing on screen: `internal_tools/`, the folder of development tools and scripts | `internal_tools/` |
 | follow action, advance | Follow action on the clip page, "With Scene" or "Off", and Default follow action on the File/Global page | `FollowAction`, `ClipSlotSetting.FOLLOW_ACTION`, `follow_action_of` |
 | launch together, advance together | Launch together on the Scene page, and `┆` after a scene's name on Arrange when off | `SceneSetting.LAUNCH_TOGETHER`, `Scene.launches_together` |

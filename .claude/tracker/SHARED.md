@@ -268,7 +268,7 @@ A page asks for one of some values with `Page.pick(title=, values=, then=, curre
   turns into the page; a generator's part pages first (`GeneratorPartPlace`: offsets, a step row, chords, a guitar bar, Bypass
   When), which `open_part(part, ...)` opens; a node asks its page for a number
   (`ask_number`) or a choice (`Page.ask_choice`) rather than making the dialog. A statement's rows are nodes too (`interface/forms/statement_rows.py`),
-  drawn by `interface/tracker/renderers/statement_rows.py`. Part of the declarative pages' move (`.claude/planning/IDEAS.yml`, "The UX audit"),
+  drawn by `interface/tracker/renderers/statement_rows.py`. Part of the declarative pages' move (the ideas files of `.claude/features/`, "The UX audit"),
   each step proven by `py_legacy/internal_tools/compare_screens.sh` to leave every screen as it was.
 - `Cells` is a row of settings side by side under one label, as a kit piece's on or off and its sound in the wizard (the user's
   design): Left and Right move between the cells (`FieldPage.cell`, `cell_field`, `ALONG_CELLS`) and step nothing there, each
@@ -525,7 +525,7 @@ A page asks for one of some values with `Page.pick(title=, values=, then=, curre
   calls `import_midi` (`screens/set/importing.py`), which shows the Open page given
   `suffixes=MIDI_SUFFIXES`, `folder=home_folder()`, the crumbs `IMPORT MIDI` and `chosen`, what
   ENTER on a file does in place of opening a set, until the file picker is designed for the
-  whole tracker (.claude/planning/IDEAS.yml). `offer_import` reads the file with `MidiImport`, telling a file that
+  whole tracker (the ideas files of .claude/features/). `offer_import` reads the file with `MidiImport`, telling a file that
   can't be read in a `MessageDialog`, and asks with an `ImportDialog`.
 - `ImportDialog` (`interface/tracker/dialogs/import_dialog.py`, `keybindings.ImportDialog`) is a dialog of
   fields, the user's design: the found line (`MidiImport.found`), Song name,

@@ -24,7 +24,7 @@ These come before every other rule, whatever the task, mode or tool permits.
     `~/soundfonts/GeneralUser-GS.sf2`: run and read, for the WAV export and its checks (the user's allowance).
 - Status of work and lists of planned work MUST NOT go into source control: what is done, partly done or next, a queue, a plan's
   state, or a record of a conversation. They live in git-ignored files (`.claude/planning/DESIGNS.md`,
-  `.claude/planning/WIZARD_DESIGNS.md`, `.claude/planning/REFACTORING.md`, `.claude/planning/REFACTORING_LOG.md`). A commit
+  `.claude/planning/WIZARD_DESIGNS.md`). A commit
   message says what the code does. How an existing feature is built MAY be recorded freely. The one exception, the user's:
   the ideas files in `.claude/features/` are tracked and say only what each wanted idea is, never its status or order, and
   `.claude/planning/QUEUE.md` is tracked and holds only the order, naming ideas (`.claude/rules/COMMUNICATION.md`, "The ideas
@@ -48,13 +48,12 @@ Imported, loaded every session: `.claude/rules/COMMUNICATION.md` (working with t
 `.claude/rules/RUST.md` (the Rust code).
 
 `.claude/` holds `rules/` (the rules, imported above, and `DOCS.md`), `reference/` (what tools generate or index),
-`planning/` (the ideas file and the git-ignored status files), `notes/` (Claude's research), and `features/`, `format/` and
+`planning/` (the queue and the git-ignored designs), `notes/` (Claude's research), and `features/`, `format/` and
 `tracker/` (how the program is built). Read when the work needs them:
 
 - `.claude/features/SYNTH_IDEAS.md`, `WIZARD_IDEAS.md`, `DEMO_IDEAS.md`, `UX_IDEAS.md` and `OTHER_IDEAS.md`: every wanted idea,
-  by topic, tracked in git. `.claude/planning/QUEUE.md`: the order of them, tracked, never the authority on what is wanted. `.claude/planning/DESIGNS.md` and `.claude/planning/WIZARD_DESIGNS.md`: agreed designs not
-  yet built. `.claude/planning/REFACTORING.md` with `.claude/planning/REFACTORING_LOG.md`: before any refactoring step. All
-  git-ignored.
+  by topic, tracked in git. `.claude/planning/QUEUE.md`: the order of them, tracked, never the authority on what is wanted.
+  `.claude/planning/DESIGNS.md` and `.claude/planning/WIZARD_DESIGNS.md`: agreed designs not yet built, git-ignored.
 - `.claude/format/` and `.claude/tracker/`: the model, file format and pages, a file per part (table at the end).
 - `.claude/reference/COMMANDS.md`: every script and tool.
 - `.claude/reference/KEYMAP.md`: every key on every page, written by `internal_tools/key_map.sh` from a walk of llamatron. Look
@@ -68,7 +67,6 @@ Imported, loaded every session: `.claude/rules/COMMUNICATION.md` (working with t
   `README.md` has the rules). Read the subject's file before building in its area; add to it as the work teaches.
 - `.claude/notes/synthesis/`: the professor's research for the built-in synths, on this computer only and out of git (the
   user's rule), backed up in `~/Devel/synthesis_notes` (its `README.md` lists the notes).
-- `.claude/planning/IDEAS.yml`: the user's ranked ideas.
 - `src/strings/src/texts/`: every piece of text the program shows or raises.
 - `README.md`, `docs/GUIDE.md`, `docs/INSTALLING.md`, `docs/`: for people; the user edits them too (`.claude/rules/DOCS.md`).
 

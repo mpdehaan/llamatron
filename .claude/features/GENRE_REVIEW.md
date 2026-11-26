@@ -28,7 +28,7 @@ One genre at a time, rock first, alternating with the electronic stages (band st
    Loudness heading (`.claude/features/SONG_WIZARD.md`, "Loudness levels"). A figure for a kind of section is built too, with the first
    verse and chorus figures written. Waiting: a gate by section, figures by section for the keys, horns and voices, the lean on
    players of notes, the phrase offsets and the random amount.
-3. **The controller ramp**, straight after the loudness levels (`.claude/planning/IDEAS.yml`): organ loudness and rotary speed, string and
+3. **The controller ramp**, straight after the loudness levels (the ideas files of `.claude/features/`): organ loudness and rotary speed, string and
    pad entries, the piano's pedal and the electronic rises wait on it. Pitch bend waits; grace notes and late vibrato stand in.
 4. **The riff done as the review has it**, proved on hard rock: one or two bars said four times, mostly the root, starting on the
    root on beat 1, two to four accents off the beat as power chords with short muted roots between, a tail that leads back, a gap

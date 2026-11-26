@@ -21,11 +21,9 @@ dist/
 # which classes run which source files, made by internal_tools/test_map.sh, with the coverage data it is made from.
 tests/.cache/
 examples/**/*.wav
-# Claude's plan and status for the refactoring, kept on this computer only: no status of work or list of planned work is in the repository.
-.claude/planning/REFACTORING.md
+# The agreed designs not yet built, kept on this computer only.
 .claude/planning/DESIGNS.md
 .claude/planning/WIZARD_DESIGNS.md
-.claude/planning/REFACTORING_LOG.md
 .compare_screens/
 .compare_screens_again/
 .sample_profiles/

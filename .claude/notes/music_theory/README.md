@@ -29,7 +29,7 @@ summary of any of it written for people.
 - A note Claude wrote in another conversation, which the user hands over as
   Claude's own, is folded in nearly whole, in a section that says so, and may
   keep the names it has.
-- The `music_theory` package (the user's plan, `.claude/planning/IDEAS.yml`) is to
+- The `music_theory` package (the user's plan, the ideas files of `.claude/features/`) is to
   become the program's own musicianship, read before answering a theory
   question or building anything musical. As a principle is built there, its
   note shrinks to a line pointing at its module; the notes keep what is not

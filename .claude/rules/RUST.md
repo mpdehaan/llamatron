@@ -19,7 +19,7 @@ standard a person who does not know Rust can trust: it builds itself, explains i
 - The visualizers are ported from the retired Python's constants and intent, not screen for screen: the comparisons do not hold
   them, and their algorithms may be made better, remembering a person is watching (the user's direction).
 - `setup.sh` and `build.sh` build llamatron on the user's computer, offering to install Rust first (257 B); a prebuilt
-  program comes later (the ideas file, GitHub Actions).
+  program comes later (OTHER_IDEAS.md, GitHub Actions).
 
 ## The code
 

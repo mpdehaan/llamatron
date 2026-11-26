@@ -78,7 +78,6 @@ internal_tools/push_all.sh [--branch NAME]       # the one way to push: the vers
                                                  #   documents rebuilt, main pushed, then the website published
 internal_tools/bump.sh                           # the build number raised by hand, through internal_tools/bump_version.py
 .venv/bin/python internal_tools/make_diagrams.py [--check]   # the crates diagram in developer_docs/ARCHITECTURE.md from the code
-internal_tools/sort_ideas.sh [--check]           # .claude/planning/IDEAS.yml kept sorted by priority
 internal_tools/clean.sh                          # the tools' caches in .cache/ and the examples' exports removed, never output/
 .venv/bin/python internal_tools/yaml_scalar_cases.py      # src/model/tests/data/yaml_scalar_cases.txt from PyYAML's reading
 .venv/bin/python internal_tools/python_random_cases.py    # src/math/tests/data/python_random_cases.txt from CPython's random
