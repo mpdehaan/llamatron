@@ -1,24 +1,30 @@
 version: 1.1.1
 title: Machine room
-description: "a drum machine jam that brings in every MechaDrum machine in turn, on the built-in synths"
+description: "a drum machine jam that brings in every MechaDrum machine, swung, accented and layered with a hard kick, on the built-in synths"
 notes: |
   Machine room: a drum machine jam at 122 beats a minute, every sound on MechaDrum, the built-in drum machine, each of its
-  ten machines heard in turn. The kick and closed hats start; the snare, rim and open hats join, the open hats in the
-  closed hats' choke group, so each closed hit cuts the open one short, as one cymbal pair would; then the cowbell and a
-  Karplus Drum line in C minor pentatonic, the plucked drum tuned by its notes. The break drops to the Synth Kick's long
-  boom under the clap and a fill on the Acoustic Tom, tuned down G, F, E flat. The drop swaps the kick for the Hard Kick's
-  broken electro pattern and layers the clap on the snare.
+  ten machines heard. There is no lead and no chords: the groove is the music. The whole song swings its sixteenths a
+  little (swing 58), so the hats, the rim and the snare's ghost notes shuffle while the kick on the beat stays put.
 
-  Every machine is set by its five knobs, Pitch, Decay, Color, Shape and Sweep: the closed and open hats are one machine
-  with a short and a long Decay, and the Synth Kick's high Decay and Sweep make its boom.
+  The groove lives in its loud and quiet notes. The kick is loudest on the one, and a Hard Kick is layered under it there,
+  and on the "and" of beat three in the second groove. The snare's backbeat is answered by ghost notes at a third of its
+  level. The closed hats go loud, ghost, medium, ghost through each beat, and the open hats, in the closed hats' choke
+  group, hiss on the off-beats until the next closed hit cuts them, as one cymbal pair would. The rim plays a clave over
+  two bars, the cowbell alternates loud and soft, and the Karplus Drum plays a conga part on the root and the fifth only.
 
-  Form: intro, the room, the cowbell and Karplus line, the break, the drop, an outro and a last tom fill.
+  The Acoustic Tom fills only the last bar of each eight, so a fill stays a fill. The break drops to the Synth Kick's long
+  boom under the clap and the conga; the drop swaps the four-on-the-floor kick for the Hard Kick's broken electro pattern,
+  with the clap on both backbeats; a two-bar breakdown of hats and clave sets up the final groove and its last hard kick.
+
+  Form: a two-bar intro, the first groove, the second groove, the break, the drop, the breakdown, the final groove, and a
+  last hit.
 
   Run it with: llamatron examples/synth/machine_room.yml
 
   When changing this demo:
   - Keep every sound on MechaDrum, and every machine heard at least once.
-  - Keep the closed and open hats in one choke group.
+  - Keep it a drum piece: no lead and no chords; the Karplus Drum plays the root and fifth as a conga.
+  - Keep the closed and open hats in one choke group, and the tom fill to the last bar of a phrase.
 real_time: true
 protected: true
 
@@ -32,14 +38,35 @@ patterns:
     group: drums
     step_size: 1/16
     degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~]
-    velocity: [120, ~, ~, ~, 112, ~, ~, ~, 118, ~, ~, ~, 112, ~, ~, ~]
-  - name: hard kick
+    velocity: [124, ~, ~, ~, 104, ~, ~, ~, 116, ~, ~, ~, 104, ~, ~, ~]
+  - name: kick b
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, C, ~]
+    velocity: [124, ~, ~, ~, 104, ~, ~, ~, 116, ~, ~, ~, 104, ~, 80, ~]
+  - name: hard layer
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [124, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+  - name: hard layer b
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~]
+    velocity: [124, ~, ~, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, ~, ~, ~]
+  - name: hard electro
     steps: 16
     drum: true
     group: drums
     step_size: 1/16
     degree: [C, ~, ~, C, ~, ~, C, ~, C, ~, ~, ~, ~, ~, C, ~]
-    velocity: [124, ~, ~, 100, ~, ~, 110, ~, 122, ~, ~, ~, ~, ~, 104, ~]
+    velocity: [124, ~, ~, 104, ~, ~, 112, ~, 122, ~, ~, ~, ~, ~, 106, ~]
   - name: boom
     steps: 16
     drum: true
@@ -52,43 +79,72 @@ patterns:
     drum: true
     group: drums
     step_size: 1/16
-    degree: [~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~]
-    velocity: [~, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~]
+    degree: [~, ~, ~, ~, C, ~, ~, C, ~, C, ~, ~, C, ~, C, C]
+    velocity: [~, ~, ~, ~, 120, ~, ~, 42, ~, 36, ~, ~, 120, ~, 40, 48]
+  - name: snare drop
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [~, ~, ~, ~, C, ~, ~, C, ~, C, ~, C, C, ~, C, C]
+    velocity: [~, ~, ~, ~, 124, ~, ~, 46, ~, 40, ~, 52, 124, ~, 44, 56]
   - name: clap
     steps: 16
     drum: true
     group: drums
     step_size: 1/16
-    degree: [~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, C]
-    velocity: [~, ~, ~, ~, 110, ~, ~, ~, ~, ~, ~, ~, 110, ~, ~, 70]
-  - name: rim
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, 112, ~, ~, ~]
+  - name: clap drop
     steps: 16
     drum: true
     group: drums
     step_size: 1/16
-    degree: [~, ~, ~, C, ~, ~, C, ~, ~, ~, ~, C, ~, C, ~, ~]
-    velocity: [~, ~, ~, 96, ~, ~, 84, ~, ~, ~, ~, 96, ~, 80, ~, ~]
+    degree: [~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~]
+    velocity: [~, ~, ~, ~, 116, ~, ~, ~, ~, ~, ~, ~, 116, ~, ~, ~]
+  - name: rim clave
+    steps: 32
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [C, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [100, ~, ~, ~, ~, ~, 80, ~, ~, ~, ~, ~, 100, ~, ~, ~, ~, ~, ~, ~, 80, ~, ~, ~, 100, ~, ~, ~, ~, ~, ~, ~]
   - name: closed hats
     steps: 16
     drum: true
     group: drums
     step_size: 1/16
     degree: [C, C, ~, C, C, C, ~, C, C, C, ~, C, C, C, ~, C]
-    velocity: [96, 60, ~, 70, 92, 58, ~, 70, 96, 60, ~, 70, 92, 58, ~, 74]
+    velocity: [104, 40, ~, 45, 104, 40, ~, 45, 104, 40, ~, 45, 104, 40, ~, 45]
   - name: open hats
     steps: 16
     drum: true
     group: drums
     step_size: 1/16
     degree: [~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~, ~, ~, C, ~]
-    velocity: [~, ~, 88, ~, ~, ~, 84, ~, ~, ~, 88, ~, ~, ~, 92, ~]
+    velocity: [~, ~, 84, ~, ~, ~, 78, ~, ~, ~, 84, ~, ~, ~, 92, ~]
   - name: cowbell
     steps: 16
     drum: true
     group: drums
     step_size: 1/16
     degree: [~, ~, C, ~, ~, ~, ~, C, ~, ~, C, ~, ~, C, ~, ~]
-    velocity: [~, ~, 96, ~, ~, ~, ~, 80, ~, ~, 96, ~, ~, 84, ~, ~]
+    velocity: [~, ~, 112, ~, ~, ~, ~, 70, ~, ~, 112, ~, ~, 70, ~, ~]
+  - name: conga
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [C, ~, ~, G, ~, ~, C, ~, ~, ~, G, ~, C, ~, ~, ~]
+    octave: [3, ~, ~, 3, ~, ~, 3, ~, ~, ~, 3, ~, 3, ~, ~, ~]
+    velocity: [104, ~, ~, 70, ~, ~, 96, ~, ~, ~, 70, ~, 90, ~, ~, ~]
+  - name: tom rest
+    steps: 16
+    drum: true
+    group: drums
+    step_size: 1/16
+    degree: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
+    velocity: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~]
   - name: tom fill
     steps: 16
     drum: true
@@ -98,38 +154,33 @@ patterns:
     accidental: [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", "#", ~, ~]
     octave: [~, ~, ~, ~, ~, ~, ~, ~, 3, ~, 3, ~, 3, 3, 3, 2]
     velocity: [~, ~, ~, ~, ~, ~, ~, ~, 104, ~, 100, ~, 108, 96, 112, 120]
-  - name: karplus line
-    steps: 32
-    drum: true
-    group: drums
-    step_size: 1/16
-    degree: [C, ~, ~, D, ~, ~, G, ~, C, ~, A, ~, ~, ~, G, ~, C, ~, ~, F, ~, ~, D, ~, G, ~, ~, F, ~, ~, D, ~]
-    accidental: [~, ~, ~, "#", ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, ~, "#", ~, ~, ~, ~, ~, ~, ~, "#", ~]
-    octave: [3, ~, ~, 3, ~, ~, 3, ~, 4, ~, 3, ~, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, 3, ~, 3, ~, ~, 3, ~, ~, 3, ~]
-    velocity: [112, ~, ~, 92, ~, ~, 100, ~, 116, ~, 92, ~, ~, ~, 100, ~, 112, ~, ~, 92, ~, ~, 100, ~, 108, ~, ~, 92, ~, ~, 104, ~]
+
 
 instruments:
-  - { name: kick, kind: built_in, role: percussion, sound: { engine: drum, volume: 50, oscillators: { type: drum, machine: kick, knobs: [56, 70, 40, 64, 60] } } }
-  - { name: hard kick, kind: built_in, role: percussion, sound: { engine: drum, volume: 54, oscillators: { type: drum, machine: hard_kick, knobs: [44, 52, 84, 80, 72] } } }
+  - { name: kick, kind: built_in, role: percussion, sound: { engine: drum, volume: 50, oscillators: { type: drum, machine: kick, knobs: [56, 70, 40, 88, 60] } } }
+  - { name: hard kick, kind: built_in, role: percussion, sound: { engine: drum, volume: 46, oscillators: { type: drum, machine: hard_kick, knobs: [44, 52, 84, 80, 72] } } }
+  - { name: electro kick, kind: built_in, role: percussion, sound: { engine: drum, volume: 66, oscillators: { type: drum, machine: hard_kick, knobs: [40, 60, 90, 70, 80] } } }
   - { name: synth kick, kind: built_in, role: percussion, sound: { engine: drum, volume: 56, oscillators: { type: drum, machine: synth_kick, knobs: [30, 100, 30, 40, 92] } } }
-  - { name: snare, kind: built_in, role: percussion, sound: { engine: drum, volume: 32, oscillators: { type: drum, machine: snare, knobs: [64, 50, 72, 64, 40] } } }
-  - { name: clap, kind: built_in, role: percussion, sound: { engine: drum, volume: 36, oscillators: { type: drum, machine: clap, knobs: [64, 60, 64, 64, 64] } } }
+  - { name: snare, kind: built_in, role: percussion, sound: { engine: drum, volume: 34, oscillators: { type: drum, machine: snare, knobs: [64, 50, 72, 64, 40] } } }
+  - { name: clap, kind: built_in, role: percussion, sound: { engine: drum, volume: 34, oscillators: { type: drum, machine: clap, knobs: [64, 60, 64, 64, 64] } } }
   - { name: rim, kind: built_in, role: percussion, sound: { engine: drum, volume: 30, oscillators: { type: drum, machine: rim, knobs: [72, 30, 64, 64, 64] } } }
   - { name: closed hats, kind: built_in, role: percussion, sound: { engine: drum, volume: 30, oscillators: { type: drum, machine: hats, knobs: [84, 14, 72, 64, 64], choke: 1 } } }
-  - { name: open hats, kind: built_in, role: percussion, sound: { engine: drum, volume: 26, oscillators: { type: drum, machine: hats, knobs: [80, 84, 72, 64, 64], choke: 1 } } }
-  - { name: cowbell, kind: built_in, role: percussion, sound: { engine: drum, volume: 24, oscillators: { type: drum, machine: cowbell, knobs: [64, 40, 64, 64, 64] } } }
+  - { name: open hats, kind: built_in, role: percussion, sound: { engine: drum, volume: 24, oscillators: { type: drum, machine: hats, knobs: [80, 84, 72, 64, 64], choke: 1 } } }
+  - { name: cowbell, kind: built_in, role: percussion, sound: { engine: drum, volume: 22, oscillators: { type: drum, machine: cowbell, knobs: [64, 40, 64, 64, 64] } } }
   - { name: acoustic tom, kind: built_in, role: percussion, sound: { engine: drum, volume: 44, oscillators: { type: drum, machine: acoustic_tom, knobs: [50, 60, 40, 64, 40] } } }
-  - { name: karplus drum, kind: built_in, role: percussion, sound: { engine: drum, volume: 36, oscillators: { type: drum, machine: karplus_drum, knobs: [64, 72, 52, 40, 30] } } }
+  - { name: karplus drum, kind: built_in, role: percussion, sound: { engine: drum, volume: 34, oscillators: { type: drum, machine: karplus_drum, knobs: [64, 50, 52, 40, 30] } } }
 
 songs:
   - name: machine_room
     tempo: 122
     scale: C Minor
     genre: Electronic
+    groove: swing 58
 
     tracks:
       - { name: kick, drum: true, instrument: kick }
       - { name: hard kick, drum: true, instrument: hard kick }
+      - { name: electro, drum: true, instrument: electro kick }
       - { name: boom, drum: true, instrument: synth kick }
       - { name: snare, drum: true, instrument: snare }
       - { name: clap, drum: true, instrument: clap }
@@ -138,50 +189,71 @@ songs:
       - { name: open hats, drum: true, instrument: open hats }
       - { name: cowbell, drum: true, instrument: cowbell }
       - { name: toms, drum: true, instrument: acoustic tom }
-      - { name: karplus, drum: true, instrument: karplus drum }
+      - { name: conga, drum: true, instrument: karplus drum }
 
     scenes:
       - name: intro
         clips:
-          - { track: kick, pattern: kick, repeat: 8 }
+          - { track: kick, pattern: kick, repeat: 2 }
+          - { track: hard kick, pattern: hard layer, loop: true }
           - { track: closed hats, pattern: closed hats, loop: true }
-      - name: room
+      - name: groove
         clips:
           - { track: kick, pattern: kick, repeat: 8 }
+          - { track: hard kick, pattern: hard layer, loop: true }
           - { track: snare, pattern: snare, loop: true }
-          - { track: rim, pattern: rim, loop: true }
+          - { track: rim, pattern: rim clave, loop: true }
           - { track: closed hats, pattern: closed hats, loop: true }
           - { track: open hats, pattern: open hats, loop: true }
-      - name: cowbell
+          - { track: toms, patterns: [tom rest, tom rest, tom rest, tom rest, tom rest, tom rest, tom rest, tom fill] }
+      - name: groove b
         clips:
-          - { track: karplus, pattern: karplus line, repeat: 4 }
-          - { track: kick, pattern: kick, loop: true }
+          - { track: kick, pattern: kick b, repeat: 8 }
+          - { track: hard kick, pattern: hard layer b, loop: true }
           - { track: snare, pattern: snare, loop: true }
-          - { track: rim, pattern: rim, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: rim, pattern: rim clave, loop: true }
           - { track: closed hats, pattern: closed hats, loop: true }
           - { track: open hats, pattern: open hats, loop: true }
           - { track: cowbell, pattern: cowbell, loop: true }
+          - { track: conga, pattern: conga, loop: true }
+          - { track: toms, patterns: [tom rest, tom rest, tom rest, tom rest, tom rest, tom rest, tom rest, tom fill] }
       - name: break
         clips:
           - { track: boom, pattern: boom, repeat: 4 }
           - { track: clap, pattern: clap, loop: true }
-          - { track: toms, pattern: tom fill, loop: true }
-          - { track: karplus, pattern: karplus line, loop: true }
+          - { track: conga, pattern: conga, loop: true }
+          - { track: toms, patterns: [tom rest, tom rest, tom rest, tom fill] }
       - name: drop
         clips:
-          - { track: karplus, pattern: karplus line, repeat: 4 }
-          - { track: hard kick, pattern: hard kick, loop: true }
-          - { track: snare, pattern: snare, loop: true }
-          - { track: clap, pattern: clap, loop: true }
-          - { track: rim, pattern: rim, loop: true }
+          - { track: electro, pattern: hard electro, repeat: 16 }
+          - { track: snare, pattern: snare drop, loop: true }
+          - { track: clap, pattern: clap drop, loop: true }
+          - { track: rim, pattern: rim clave, loop: true }
           - { track: closed hats, pattern: closed hats, loop: true }
           - { track: open hats, pattern: open hats, loop: true }
           - { track: cowbell, pattern: cowbell, loop: true }
-      - name: outro
+          - { track: conga, pattern: conga, loop: true }
+          - { track: toms, patterns: [tom rest, tom rest, tom rest, tom rest, tom rest, tom rest, tom rest, tom fill], loop: true }
+      - name: breakdown
         clips:
-          - { track: kick, pattern: kick, repeat: 3 }
+          - { track: closed hats, pattern: closed hats, repeat: 2 }
+          - { track: open hats, pattern: open hats, loop: true }
+          - { track: rim, pattern: rim clave, loop: true }
+          - { track: conga, pattern: conga, loop: true }
+      - name: final
+        clips:
+          - { track: kick, pattern: kick b, repeat: 8 }
+          - { track: hard kick, pattern: hard layer b, loop: true }
+          - { track: snare, pattern: snare drop, loop: true }
+          - { track: clap, pattern: clap, loop: true }
+          - { track: rim, pattern: rim clave, loop: true }
           - { track: closed hats, pattern: closed hats, loop: true }
-      - name: last fill
+          - { track: open hats, pattern: open hats, loop: true }
+          - { track: cowbell, pattern: cowbell, loop: true }
+          - { track: conga, pattern: conga, loop: true }
+          - { track: toms, patterns: [tom rest, tom rest, tom rest, tom rest, tom rest, tom rest, tom rest, tom fill] }
+      - name: last hit
         clips:
-          - { track: toms, pattern: tom fill, repeat: 1 }
-          - { track: kick, pattern: kick, loop: true }
+          - { track: hard kick, pattern: hard layer, repeat: 1 }
+          - { track: kick, pattern: hard layer, repeat: 1 }
