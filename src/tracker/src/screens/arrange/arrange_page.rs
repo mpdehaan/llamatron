@@ -19,6 +19,7 @@ use crate::screens::arrange::scene_view::SceneView;
 use crate::screens::not_ported::NotPorted;
 use crate::text::Text;
 use crate::themes::Colour;
+use crate::visualizers::{self, showing::Showing};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::{ClipSlot, Scene};
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSetting, SetlistSetting};
@@ -84,7 +85,14 @@ pub struct ArrangePage {
     column: Cell<usize>,
     top: Cell<usize>,
     left: Cell<usize>,
+    /// The visualizer over the clip area while it shows, which draws a frame every time the page is drawn.
+    visualizer: std::cell::RefCell<Option<Showing>>,
 }
+
+/// Where the clip area starts, right of the scene names and their bar, which a visualizer's frame covers.
+const CLIP_AREA_LEFT: usize = SCENE_WIDTH + 1;
+/// How many lines above the bottom a visualizer mode's name shows.
+const NAME_ROWS_UP: usize = 2;
 
 impl Default for ArrangePage {
     fn default() -> Self {
@@ -153,7 +161,97 @@ impl ArrangePage {
             column: Cell::new(SCENE_COLUMN),
             top: Cell::new(0),
             left: Cell::new(0),
+            visualizer: std::cell::RefCell::new(None),
         }
+    }
+
+    /// The visualizer modes the key steps through, every mode built but those the set hides, in order.
+    fn shown_modes(app: &App) -> Vec<&'static str> {
+        let hidden = crate::settings::hidden_visualizers(app.document.get_setlist());
+        visualizers::ported_modes()
+            .into_iter()
+            .filter(|mode| !hidden.iter().any(|each| each == mode))
+            .collect()
+    }
+
+    /// The mode the visualizer key shows first: the song's choice, else the set's, when it is shown, and otherwise the first
+    /// shown.
+    fn first_mode(app: &App, shown: &[&'static str]) -> Option<&'static str> {
+        use llamatron_model::schema::generated::file_format::{SetlistSetting, SongSetting};
+        let song = app.document.song();
+        let set = app.document.get_setlist();
+        let chosen = song
+            .get_written(SongSetting::VISUALIZER)
+            .or_else(|| set.get_written(SetlistSetting::VISUALIZER))
+            .and_then(|value| value.as_str())
+            .and_then(|name| shown.iter().find(|mode| **mode == name).copied());
+        chosen.or_else(|| shown.first().copied())
+    }
+
+    /// Show a visualizer mode over the clip area, fresh.
+    pub fn show_visualizer(&self, app: &App, mode: &str) {
+        let hidden = crate::settings::hidden_visualizers(app.document.get_setlist());
+        *self.visualizer.borrow_mut() = Showing::of(mode, &hidden);
+    }
+
+    /// Show the first mode, or the next one shown, or the clips again after the last.
+    fn next_visualizer(&self, app: &mut App) {
+        let shown = Self::shown_modes(app);
+        if shown.is_empty() {
+            app.say(messages::MSG_EVERY_VISUALIZER_HIDDEN);
+            return;
+        }
+        let showing = self.visualizer.borrow().as_ref().map(Showing::option);
+        let next = match showing {
+            None => Self::first_mode(app, &shown),
+            Some(option) => shown.iter().position(|mode| *mode == option).and_then(|place| shown.get(place + 1)).copied(),
+        };
+        match next {
+            Some(mode) => self.show_visualizer(app, mode),
+            None => *self.visualizer.borrow_mut() = None,
+        }
+    }
+
+    /// Show the mode before or after the one showing among those shown, going round, as [ and ] step through a cycle.
+    fn step_visualizer(&self, app: &App, direction: i64) {
+        let shown = Self::shown_modes(app);
+        if shown.is_empty() {
+            return;
+        }
+        let showing = self.visualizer.borrow().as_ref().map(Showing::option);
+        let place = showing.and_then(|option| shown.iter().position(|mode| *mode == option)).unwrap_or(0) as i64;
+        let next = (place + direction).rem_euclid(shown.len() as i64) as usize;
+        self.show_visualizer(app, shown[next]);
+    }
+
+    /// Whether a visualizer shows over the clip area.
+    fn shows_visualizer(&self) -> bool {
+        self.visualizer.borrow().is_some()
+    }
+
+    /// The page's lines with the visualizer's frame over the clip area, from below the track names to the last line, and
+    /// the mode's name over it for a while when it changes.
+    fn visualized(&self, app: &App, mut lines: Vec<Text>, header: usize, width: usize, height: usize) -> Vec<Text> {
+        let mut held = self.visualizer.borrow_mut();
+        let Some(showing) = held.as_mut() else { return lines };
+        while lines.len() < height {
+            lines.push(Text::default());
+        }
+        let area_height = lines.len().saturating_sub(header);
+        let frame = showing.frame(app, width.saturating_sub(CLIP_AREA_LEFT), area_height);
+        for (row, piece) in frame.iter().enumerate() {
+            if let Some(line) = lines.get_mut(header + row) {
+                *line = crate::screens::arrange::scene_view::laid_over(line, CLIP_AREA_LEFT, piece);
+            }
+        }
+        if let Some(name) = showing.name_to_show() {
+            if lines.len() > header + NAME_ROWS_UP {
+                let row = lines.len() - 1 - NAME_ROWS_UP;
+                let start = CLIP_AREA_LEFT + width.saturating_sub(CLIP_AREA_LEFT + name.cell_len()) / 2;
+                lines[row] = crate::screens::arrange::scene_view::laid_over(&lines[row], start, &name);
+            }
+        }
+        lines
     }
 
     fn tracks(app: &App) -> Vec<String> {
@@ -1023,6 +1121,9 @@ impl Page for ArrangePage {
 
     fn keys(&self, app: &App) -> Vec<KeyItem> {
         self.clamp(app);
+        if self.shows_visualizer() {
+            return vec![Self::bind(&Keys::TO_CLIPS), Self::bind(&Keys::STEP_VISUALIZER), Self::bind(&Keys::VISUALIZER)];
+        }
         if let Some(inset) = &self.inset {
             let switch = if inset.is_written() { &Keys::TO_PLAYED } else { &Keys::TO_WRITTEN };
             return vec![
@@ -1103,8 +1204,20 @@ impl Page for ArrangePage {
             }
             return;
         }
+        if self.shows_visualizer() {
+            if item.is(&Keys::TO_CLIPS) {
+                *self.visualizer.borrow_mut() = None;
+            } else if item.is(&Keys::STEP_VISUALIZER) {
+                self.step_visualizer(app, item.step_of(key).unwrap_or(1));
+            } else if item.is(&Keys::VISUALIZER) {
+                self.next_visualizer(app);
+            }
+            return;
+        }
         if item.is(&Keys::BACK) {
             app.go_back();
+        } else if item.is(&Keys::VISUALIZER) {
+            self.next_visualizer(app);
         } else if item.is(&Keys::MOVE) {
             match key {
                 "up" => self.row.set(self.row.get() - 1),
@@ -1240,8 +1353,18 @@ impl Page for ArrangePage {
                 kind: Kind::Faint,
             });
         }
-        let frames: Vec<CellFrame> = self.frame(app, layout, &shown, window).into_iter().collect();
-        arrange_lines(&lines, width, &frames)
+        // Under a visualizer the cursor has no frame, since the clips it would box are covered.
+        let frames: Vec<CellFrame> = if self.shows_visualizer() {
+            Vec::new()
+        } else {
+            self.frame(app, layout, &shown, window).into_iter().collect()
+        };
+        let drawn = arrange_lines(&lines, width, &frames);
+        self.visualized(app, drawn, header, width, height)
+    }
+
+    fn frame_interval(&self) -> Option<std::time::Duration> {
+        self.shows_visualizer().then_some(visualizers::showing::FRAME_INTERVAL)
     }
 
     fn crumbs(&self, _app: &App) -> Vec<String> {

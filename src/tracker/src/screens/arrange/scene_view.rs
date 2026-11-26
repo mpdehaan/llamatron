@@ -788,7 +788,7 @@ fn length_text(length: Rational) -> String {
 }
 
 /// A screen line with a piece laid over it from a column, the line's text either side kept.
-fn laid_over(line: &Text, start: usize, piece: &Text) -> Text {
+pub fn laid_over(line: &Text, start: usize, piece: &Text) -> Text {
     let mut under = line.clone();
     let end = start + piece.cell_len();
     if under.cell_len() < end {

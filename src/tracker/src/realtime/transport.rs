@@ -369,6 +369,56 @@ impl Transport {
         ))
     }
 
+    /// The clock's time now and what the visualizer hears since an earlier time: each note that started since then or
+    /// still sounds, by its track's place in the song, and the beat, at the playing scene's tempo; silence, and no time,
+    /// while nothing plays.
+    pub fn heard(&self, document: &Document, since: Option<f64>) -> (Option<f64>, crate::visualizers::Hearing) {
+        use crate::visualizers::{HeardNote, Hearing, REFERENCE_SECONDS_PER_BEAT};
+        let (Some(sender), Some(player)) = (self.sender.as_ref(), self.player.as_ref()) else {
+            return (None, Hearing::silence());
+        };
+        let now = sender.now();
+        if !player.is_playing(now) {
+            return (Some(now), Hearing::silence());
+        }
+        let song = document.song();
+        let names: Vec<String> = song.get_track_names().into_iter().map(str::to_string).collect();
+        let mut notes = Vec::new();
+        for (track, started, held) in player.heard(now, since.unwrap_or(now)) {
+            let Some(place) = names.iter().position(|name| *name == track) else {
+                continue;
+            };
+            let drum = song.get_track(&track).is_some_and(|found| found.is_drum());
+            let heard = |note: &crate::realtime::clip_notes::HeardClipNote, started: bool| HeardNote {
+                track: place,
+                pitch: note.number,
+                velocity: note.velocity,
+                started,
+                drum,
+            };
+            notes.extend(started.iter().map(|note| heard(note, true)));
+            notes.extend(held.iter().map(|note| heard(note, false)));
+        }
+        let seconds_per_minute = 60.0;
+        let seconds_per_beat = player
+            .playing_scenes(now)
+            .first()
+            .and_then(|scene| song.scenes().get(*scene))
+            .map(|scene| seconds_per_minute / llamatron_engine::realizer::tempo_in(scene, song).to_float())
+            .filter(|seconds| seconds.is_finite() && *seconds > 0.0)
+            .unwrap_or(REFERENCE_SECONDS_PER_BEAT);
+        let beats = player.song_position(now).unwrap_or(0.0) / seconds_per_beat;
+        (
+            Some(now),
+            Hearing {
+                notes,
+                seconds_per_beat,
+                beats,
+                names,
+            },
+        )
+    }
+
     /// How long the song playing lasts, in seconds.
     pub fn song_seconds(&self) -> Option<f64> {
         self.player.as_ref().map(|player| player.get_score().song_seconds())

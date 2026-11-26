@@ -1,7 +1,8 @@
 # Visualizers
 
-The visualizers are coming back to llamatron, which is now written in Rust,
-starting with the spectrum, the piano roll and the cycle.
+The visualizers are coming back to llamatron, which is now written in Rust.
+The lava lamp, the spectrum, the plasma and the cycle play now, and the other
+modes below follow.
 
 While a song plays in real time, Arrange can show a visualizer in place of its
 clips: a moving picture in full colour, drawn in the terminal from the notes
@@ -21,6 +22,7 @@ Arrange, these keys control the visualizer:
 | Key | What it does |
 | --- | --- |
 | `Z` | Show the first visualizer mode over the clip area, and each press after that the next mode, and after the last, the clips again. |
+| `[` and `]` | Show the mode before or after the one showing, going round. |
 | `ESC` | Bring the clips back, staying on Arrange. |
 
 A visualizer can show while nothing plays, and follows the music once the song

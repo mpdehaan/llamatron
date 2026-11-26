@@ -36,6 +36,7 @@ pub mod themes;
 pub mod tour;
 pub mod uses;
 pub mod version;
+pub mod visualizers;
 pub mod voice_leading;
 pub mod wav;
 

@@ -46,7 +46,9 @@ fn run_keys(tracker: &mut Tracker) -> Result<(), String> {
         // than the ticks, which keep the player ahead.
         let playing = tracker.app.transport.is_playing() || tracker.app.preview.is_playing();
         let lights_due = playing && drawn.elapsed() >= LIGHTS;
-        if changed || lights_due {
+        // A page that animates, such as Arrange under a visualizer, is drawn as often as it asks, playing or not.
+        let frame_due = tracker.top().frame_interval().is_some_and(|interval| drawn.elapsed() >= interval);
+        if changed || lights_due || frame_due {
             let (width, height) = terminal::size().map_err(|error| error.to_string())?;
             draw(&mut out, tracker, width as usize, height as usize).map_err(|error| error.to_string())?;
             changed = false;
