@@ -76,7 +76,8 @@ Parameters: none.
 ### `launch_docs.sh`
 
 Serves the documentation website on this computer and opens it in the
-browser, building it first into `output/web_docs/` where it isn't built yet. Use it to read the documentation
+browser, building it first into `output/web_docs/` where it isn't built yet
+or a document has changed since it was built. Use it to read the documentation
 offline, or to check the website after rebuilding it, before publishing.
 `Ctrl+C` stops it.
 

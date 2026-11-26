@@ -49,8 +49,6 @@ yet; their pages say so.
   [MozaicClassic](synths/engines/MOZAICCLASSIC.md),
   [MozaicHypersaw](synths/engines/MOZAICHYPERSAW.md),
   [Syrup](synths/engines/SYRUP.md), [DustCart](synths/engines/DUSTCART.md),
-  [PocketCart](synths/engines/POCKETCART.md),
-  [SIDCart](synths/engines/SIDCART.md),
   [BitArcade](synths/engines/BITARCADE.md),
   [Bytecrunch](synths/engines/BYTECRUNCH.md),
   [Piano](synths/engines/PIANO.md), [Tonewheel](synths/engines/TONEWHEEL.md),

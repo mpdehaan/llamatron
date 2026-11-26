@@ -185,8 +185,6 @@ and each of its parts.
 | [MozaicHypersaw](synths/engines/MOZAICHYPERSAW.md) | Planned. |
 | [Syrup](synths/engines/SYRUP.md) | Planned. |
 | [DustCart](synths/engines/DUSTCART.md) | Planned. |
-| [PocketCart](synths/engines/POCKETCART.md) | Planned. |
-| [SIDCart](synths/engines/SIDCART.md) | Planned. |
 | [BitArcade](synths/engines/BITARCADE.md) | Planned. |
 | [Bytecrunch](synths/engines/BYTECRUNCH.md) | Planned. |
 | [Piano](synths/engines/PIANO.md) | Planned. |
