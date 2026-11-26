@@ -39,7 +39,10 @@ than only getting louder. At full Resonance the loop's gain passes the point
 where it rings on its own, and the saturation holds that ringing to a clean
 sine, so it whistles as the transistor ladder does, never growing without
 bound; a noise far under hearing lets it ring up even from silence, as a
-circuit's own noise does. As the resonance
+circuit's own noise does. Driven, or set past half its Resonance, the Ladder,
+the OTA and the Sallen-Key run at twice the sample rate, so that the harmonics
+their saturation makes above hearing are filtered away rather than folding
+back down as harsh, out-of-tune whistles. As the resonance
 rises the bass thins, also as the circuit's does, and the output makes some of
 it up again. Slope taps an earlier stage for a gentler filter of one, two or
 three poles, the feedback still taken from the last.

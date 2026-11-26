@@ -20,6 +20,7 @@
 use crate::dsp::{flushed, HIGHEST_SHARE};
 use crate::protocol::values::{number, word};
 use crate::voice::acid::{self, AcidFilterState};
+use crate::voice::oversample::Halfband;
 use crate::voice::sallen_key::{self, SallenKeyState};
 use rmpv::Value;
 use std::f64::consts::PI;
@@ -38,6 +39,9 @@ const MOST_DRIVE: f64 = 10.0;
 const DIODE_PUSH: f64 = 1.5;
 const OTA_PUSH: f64 = 1.2;
 const COEFFICIENT_STEP: usize = 4;
+/// How much faster an oversampled filter runs, and the set Resonance past which a saturating filter is oversampled.
+const OVERSAMPLED: f64 = 2.0;
+const OVERSAMPLED_FROM_RESONANCE: f64 = 0.5;
 /// Where the soft limit reaches one and holds.
 const SOFT_LIMIT_END: f64 = 3.0;
 /// The least a stage's saturation may slow it, so that a very loud stage never stops.
@@ -80,6 +84,9 @@ pub struct FilterPart {
     /// How far the oscillator moves the Diode's cutoff, in octaves at full level: Filter FM, the classic modification.
     pub fm: f64,
     pub rate: f64,
+    /// Whether it runs at twice the rate: a saturating filter pushed hard enough for its saturation to alias, by Drive or
+    /// by a set Resonance past half, decided once as the instrument is compiled, so that its delay never changes mid-note.
+    pub oversampled: bool,
 }
 
 /// What a filter keeps from sample to sample: its stages' states, its coefficients and when they were worked out.
@@ -93,6 +100,8 @@ pub struct FilterState {
     acid: Option<AcidFilterState>,
     /// The Sallen-Key's circuit, its coefficients and sections.
     sallen_key: SallenKeyState,
+    /// Twice the rate for a saturating filter pushed hard (FilterPart::oversampled).
+    halfband: Halfband,
     /// The ladder's stages' last outputs, from which each stage's saturation is worked out for the next sample.
     outputs: [f64; 4],
     /// The seeded noise under a filter near self-oscillation, so that it rings up from silence; the same every playing.
@@ -174,18 +183,31 @@ impl FilterPart {
             FilterKind::Ota => push *= OTA_PUSH,
             _ => {}
         }
+        let resonance = number(spec, "resonance", 0.0).clamp(0.0, 1.0);
+        let saturates = matches!(kind, FilterKind::Ladder | FilterKind::Ota | FilterKind::SallenKey);
+        let oversampled = saturates && (number(spec, "drive", 0.0) > 0.0 || resonance > OVERSAMPLED_FROM_RESONANCE);
         Some(FilterPart {
             kind,
             mode,
             cutoff,
-            resonance: number(spec, "resonance", 0.0).clamp(0.0, 1.0),
+            resonance,
             amount,
             key_track: number(spec, "key_track", 0.0),
             push,
             poles: (number(spec, "poles", 4.0) as usize).clamp(1, 4),
             fm: number(spec, "filter_fm", 0.0) * FM_OCTAVES,
             rate,
+            oversampled,
         })
+    }
+
+    /// The rate it runs at: twice the instrument's where it is oversampled.
+    fn running_rate(&self) -> f64 {
+        if self.oversampled {
+            OVERSAMPLED * self.rate
+        } else {
+            self.rate
+        }
     }
 
     fn is_ladder(&self) -> bool {
@@ -199,7 +221,14 @@ impl FilterPart {
             return self.acid(state, input, octaves, resonance_moved);
         }
         if self.kind == FilterKind::SallenKey {
-            return self.sallen_key(state, input, octaves, resonance_moved);
+            if !self.oversampled {
+                return self.sallen_key(state, input, octaves, resonance_moved);
+            }
+            // Twice the rate, so that the loop's saturation does not fold its harmonics back down.
+            let (first, second) = state.halfband.up(input);
+            let first = self.sallen_key(state, first, octaves, resonance_moved);
+            let second = self.sallen_key(state, second, octaves, resonance_moved);
+            return state.halfband.down(first, second);
         }
         if state.countdown == 0 {
             self.prepare(state, octaves, resonance_moved);
@@ -219,7 +248,15 @@ impl FilterPart {
             } else {
                 0.0
             };
-            self.ladder(state, driven + floor)
+            if self.oversampled {
+                // Twice the rate, so that the saturating stages do not fold their harmonics back down.
+                let (first, second) = state.halfband.up(driven + floor);
+                let first = self.ladder(state, first);
+                let second = self.ladder(state, second);
+                state.halfband.down(first, second)
+            } else {
+                self.ladder(state, driven + floor)
+            }
         } else {
             self.state_variable(state, driven)
         };
@@ -262,7 +299,7 @@ impl FilterPart {
         if state.countdown == 0 {
             let cutoff = (self.cutoff * 2f64.powf(octaves)).clamp(LOWEST_CUTOFF, HIGHEST_SHARE * self.rate);
             let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
-            state.sallen_key.prepare(form, cutoff, resonance, self.rate);
+            state.sallen_key.prepare(form, cutoff, resonance, self.running_rate());
             state.countdown = COEFFICIENT_STEP;
         }
         state.countdown -= 1;
@@ -276,7 +313,7 @@ impl FilterPart {
 
     fn prepare(&self, state: &mut FilterState, octaves: f64, resonance_moved: f64) {
         let cutoff = (self.cutoff * 2f64.powf(octaves)).clamp(LOWEST_CUTOFF, HIGHEST_SHARE * self.rate);
-        state.g = (PI * cutoff / self.rate).tan();
+        state.g = (PI * cutoff / self.running_rate()).tan();
         let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
         state.feedback = match self.kind {
             FilterKind::Ladder => LADDER_FEEDBACK * resonance,
@@ -577,5 +614,24 @@ mod tests {
         };
         let (quiet, loud) = (0.05, 0.5);
         assert!(level(loud) < 9.5 * level(quiet), "{} against {}", level(loud), level(quiet));
+    }
+
+    /// A saturating filter is oversampled only when pushed, by Drive or a Resonance past half, and filters alike either
+    /// way: the bass through, an octave above cut.
+    #[test]
+    fn a_pushed_ladder_is_oversampled_and_still_filters() {
+        let driven = FilterPart::compiled(
+            &Value::Map(vec![
+                ("type".into(), "ladder".into()),
+                ("cutoff".into(), 1000.0.into()),
+                ("drive".into(), 0.5.into()),
+            ]),
+            48000.0,
+        )
+        .expect("a ladder");
+        assert!(driven.oversampled && part("ladder", 0.9).oversampled);
+        assert!(!part("ladder", 0.2).oversampled && !part("multimode", 0.9).oversampled);
+        assert!(loudness(&driven, 100.0) > 0.5);
+        assert!(loudness(&driven, 8000.0) < 0.02);
     }
 }
