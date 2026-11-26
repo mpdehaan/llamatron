@@ -43,7 +43,8 @@ read-only beside its frozen answers (`py_legacy/frozen_test_data/`) until the tr
 
 ## Where everything is
 
-Imported, loaded every session: `.claude/rules/COMMUNICATION.md` (working with the user), `.claude/rules/STYLE.md` (code rules),
+Imported, loaded every session: `.claude/COMPLIANCE.md` (licences, credits, names and git history),
+`.claude/rules/COMMUNICATION.md` (working with the user), `.claude/rules/STYLE.md` (code rules),
 `.claude/rules/TESTING.md` (tests), `.claude/rules/PRINCIPLES.md` (what decides a close call), `.claude/rules/UX.md` (how the text UI behaves),
 `.claude/rules/RUST.md` (the Rust code).
 
@@ -72,11 +73,9 @@ Imported, loaded every session: `.claude/rules/COMMUNICATION.md` (working with t
 
 `python/tests/test_doc_paths.py` checks that every source path these documents name exists.
 
-## License
+## Compliance
 
-GPLv3, full text in `LICENSE`. Every Rust, Python and shell file, new and empty ones included, MUST start with the three-line
-header copied from any source file (`llamatron: a music program`, the copyright line, `SPDX-License-Identifier:
-GPL-3.0-or-later`), as `//` comments in Rust and `#` comments elsewhere, above the module's documentation and below a `#!` line.
+@.claude/COMPLIANCE.md
 
 ## Commands
 

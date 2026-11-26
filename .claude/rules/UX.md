@@ -147,9 +147,7 @@ All made by the model's naming (`src/model/src/objects/naming.rs`):
 
 ## Wording
 
-- No text the program shows or raises, its help included, MUST name a manufacturer or a product (the user's rule); an
-  instrument, an engine or an effect is named and described by what it does. A file format is always named, even after a
-  product, such as "Ableton Live set" and `--to ableton`.
+- Names of products and makers in what the program shows: `.claude/COMPLIANCE.md`.
 - A bad value: `x must be ..., got value`; a wrong type: `expected a Note, got value`; only the value after `got` keeps its repr.
 - Names in parentheses, `no pattern called (tune)`, never quotes.
 - Lists joined with commas; choices are listed only for fixed sets (`expected one of: AX,

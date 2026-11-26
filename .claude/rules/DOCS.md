@@ -75,4 +75,4 @@ them, the screenshots or the website.
   `output/web_docs/`, which git ignores), then the push of `main`, then `internal_tools/publish_docs.sh`, which pushes the built
   site as the whole of the `gh-pages` branch that GitHub Pages serves, and refuses while `main` holds unpushed commits. A
   rebuild request runs `internal_tools/rebuild_docs.sh` alone. The built website is never committed to `main` (the user's rule).
-- History is rewritten only on the user's word, with a full mirror saved to `~/Devel/backup_llamatron/` first.
+- Rewriting history: `.claude/COMPLIANCE.md`.

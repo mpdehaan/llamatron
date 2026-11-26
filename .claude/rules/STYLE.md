@@ -87,7 +87,7 @@ plain code, comments that explain why, tests that read clearly.
 
 ## Files, scripts, documents
 
-- The GPLv3 header (`CLAUDE.md`, "License") on every file of code and every script.
+- The GPLv3 header (`.claude/COMPLIANCE.md`) on every file of code and every script.
 - No new folder whose name starts with a dot is committed, since one is easily missed in what a commit adds; `.claude/` is the
   one there is (the user's rule). Caches and other working files go in git-ignored dot folders, such as `.cache/`.
 - Scripts are plain `sh`, `#!/bin/sh`, named with underscores. Setup instructions MUST NOT need `make`. A script that installs

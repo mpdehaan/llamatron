@@ -80,8 +80,6 @@
   name and saying nothing of what it is, nor any status. It is not a master file for anyone working on the project: the ideas
   files decide what is wanted, and a computer without a queue makes one from them. Instructions about order stay in the
   queue.
-- A request to edit git history, for any reason, is never recorded in the queue, the ideas files or the designs, nor is
-  its reason (the user's rule).
 - Before working on a feature, Claude checks that its idea is still in its ideas file. One that is gone was likely built on
   another computer: Claude checks `git log`, drops it from the queue, and does not build it again.
 - A song-wizard feature goes on its page in the same change, and the reply names the panel and field. A report on agreed work
@@ -106,12 +104,6 @@
 
 ## Discussing a feature
 
-- **Synth and effect designs name no product or maker.** Every engine, effect and modulator draws on synthesis ideas that
-  many people developed over decades, so nothing in the repository names a product or a manufacturer one recalls: each is
-  described by what it does and how it sounds. A design is never held to a past instrument, nor made to copy one's design
-  or sound; new ideas are the aim. Code that is not open source is never consulted, code examples are sought among
-  GPLv3-compatible projects. Open-source projects MAY be named, and one whose code is used is credited with its licence as
-  `.claude/rules/RUST.md` says, and in `docs/CREDITS.md`.
 - A proposal about the screen comes with a drawing of it.
 - A behaviour the design doesn't settle is asked about before building. When told to keep going, each decision Claude makes is
   listed in the recap as a numbered item with the rule chosen and the alternative.

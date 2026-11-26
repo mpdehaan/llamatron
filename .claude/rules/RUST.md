@@ -23,11 +23,7 @@ standard a person who does not know Rust can trust: it builds itself, explains i
 
 ## The code
 
-- Where an open emulator or synthesizer already models a sound (a chip's tables, a circuit's measured behaviour) under a
-  licence compatible with GPLv3, the built-in synths use its work rather than a model of our own (the user's rule), and
-  credit its authors and project in the code that holds it and in the source tree's credits. Only work under a licence
-  compatible with GPLv3 is used (the user's rule), and the credit, with the work's licence, is a comment directly above
-  each algorithm taken from it, besides the module's header; the implementation may be our own, read from theirs.
+- Licences, credits and the code taken from open projects: `.claude/COMPLIANCE.md`.
 
 - Every crate the UI uses (the tracker and its drawing) is approved by the user before it is added: Claude
   proposes it with what it does, who maintains it, how widely it is used and its licence, and waits for the yes.
@@ -38,7 +34,7 @@ standard a person who does not know Rust can trust: it builds itself, explains i
   `protocol/`, `daemon/`, `audio/`, `engine/`, `voice/`, `drums/`, `fluid/`, `dsp/` today. The tracker's
   module tree is well organized (the user's rule), each layer and page in its place.
 
-- Every Rust file starts with the project's three-line GPLv3 header (`CLAUDE.md`, "License"), as `//` comments, above its module
+- Every Rust file starts with the project's three-line GPLv3 header (`.claude/COMPLIANCE.md`), as `//` comments, above its module
   documentation.
 - `cargo clippy` clean with warnings denied, `cargo fmt` applied; both run by `internal_tools/check_before_commit.sh` when a file
   under `src/` changed, with `cargo test`.
