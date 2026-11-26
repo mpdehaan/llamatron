@@ -18,7 +18,7 @@ them, the screenshots or the website.
   Synths and Advanced, in that order. The sidebar is built from them (`GROUPED` in `internal_tools/stage_docs_site.py`), each heading a group
   that opens and closes; a `###` heading makes a group within one.
 - The groups today: Intro (`docs/WHY_LLAMATRON.md`; Installing, `docs/INSTALLING.md` with `docs/FLUIDSYNTH.md`,
-  `docs/INSTALLING_RECORDING.md` and `docs/BUILDING_THE_BACKEND.md`; `docs/GETTING_STARTED.md`; `docs/CONCEPTS.md`), Demo Songs (`docs/DEMOS.md`,
+  `docs/INSTALLING_RECORDING.md` and `docs/BUILDING_THE_BACKEND.md`; `docs/GETTING_STARTED.md`; `docs/CONCEPTS.md`; `docs/CREDITS.md` last), Demo Songs (`docs/DEMOS.md`,
   `docs/demos/TUTORIAL.md`, a page per genre), Demos (Synth) (`docs/demos/SYNTH.md`, the demos on the built-in synths, one page
   for now), Mashup Demos (a page per subgenre), Objects
   (`docs/OBJECT_MODEL.md`, `docs/PATTERNS.md`, `docs/SCENES.md`, `docs/TRACKS.md`, `docs/INSTRUMENTS.md`, `docs/ARRANGE.md`,
@@ -27,7 +27,7 @@ them, the screenshots or the website.
   `docs/IMPORTING.md`), MIDI & Performance (`docs/MIDI_SETUP.md`, `docs/PLAYING_LIVE.md`, `docs/VISUALIZERS.md`), Synths (`docs/SYNTHS.md`; `docs/synths/` a
   page for each tab of a built-in instrument in the tabs' order, Oscillators, Envelopes, LFOs, Filters, Effects and Mod Matrix; `docs/synths/engines/` a page for each engine,
   standard and drum, built or planned, under the agreed categories, a `####` heading each), Advanced
-  (`docs/USER_SCRIPTS.md`, `docs/RECORDING.md`, `docs/BACKEND.md`, `docs/CREDITS.md`, and from `developer_docs/`, `developer_docs/ARCHITECTURE.md`).
+  (`docs/USER_SCRIPTS.md`, `docs/RECORDING.md`, `docs/BACKEND.md`, and from `developer_docs/`, `developer_docs/ARCHITECTURE.md`).
 - Every page in `docs/` MUST be linked from a row of those tables; a new page adds its row in the same change. `docs/INSTALLING.md` points
   to `docs/INSTALLING.md`. Only `README.md`, `docs/GUIDE.md` and `docs/INSTALLING.md` are guides at the top folder.
 - Each thing is described on one page only; others link to it.

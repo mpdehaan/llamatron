@@ -38,3 +38,46 @@ takes an algorithm from one, it moves to the table above.
 | [sst-waveshapers](https://github.com/surge-synthesizer/sst-waveshapers) | GPL-3.0 | Wavefolders with antiderivative anti-aliasing |
 | [Ladder models](https://github.com/ddiakopoulos/MoogLadders) | each model its own: ISC, LGPL-3.0, Unlicense, BSD | Ladder filter models, among them the improved D'Angelo and Välimäki model |
 | [libsidplayfp](https://github.com/libsidplayfp/libsidplayfp) | GPL-2.0-or-later | The SID chip's waveforms, envelopes and filter |
+
+## Public Domain Music
+
+llamatron's song wizard is built on music theory measured from public domain
+music: scores and traditional tunes were read for how real melodies, harmonies
+and phrases behave, and only those measurements went into the program. None
+of the music is shipped with llamatron. Classical and traditional pieces from
+these collections also appear in some of the demos, such as the mashups. The
+song wizard will soon import downloaded corpus songs quickly, as patterns and
+scenes to start from.
+
+| Collection | Edited or kept by | Terms | What it holds | Folder |
+| --- | --- | --- | --- | --- |
+| [Essen Folksong Collection](https://github.com/ccarh/essen-folksong-collection) | the Center for Computer Assisted Research in the Humanities | CCARH's personal-use terms; the tunes are traditional | Thousands of folk melodies | `essen` |
+| [Scott Joplin's piano works](https://github.com/craigsapp/joplin) | Craig Stuart Sapp, in Humdrum | public domain music, the encoding its editor's | Ragtime | `joplin` |
+| [Chopin's mazurkas](https://github.com/craigsapp/chopin-mazurkas) | Craig Stuart Sapp | public domain music, the encoding its editor's | Piano | `chopin-mazurkas` |
+| [Haydn's piano sonatas](https://github.com/craigsapp/haydn-piano-sonatas) | Craig Stuart Sapp | public domain music, the encoding its editor's | Piano | `haydn-piano-sonatas` |
+| [Mozart's piano sonatas](https://github.com/craigsapp/mozart-piano-sonatas) | Craig Stuart Sapp | public domain music, the encoding its editor's | Piano | `mozart-piano-sonatas` |
+| [Beethoven's piano sonatas](https://github.com/craigsapp/beethoven-piano-sonatas) | Craig Stuart Sapp | public domain music, the encoding its editor's | Piano | `beethoven-piano-sonatas` |
+| [Beethoven's string quartets](https://github.com/craigsapp/beethoven-string-quartets) | Craig Stuart Sapp | public domain music, the encoding its editor's | Strings | `beethoven-string-quartets` |
+| [Bach's 370 chorales](https://github.com/craigsapp/bach-370-chorales) | Craig Stuart Sapp | CC BY-NC-SA 4.0 | Four-part harmony | `bach-chorales` |
+| [Bach's Art of Fugue](https://github.com/craigsapp/art-of-the-fugue) | Craig Stuart Sapp | public domain music, the encoding its editor's | Counterpoint | `bach-art-of-fugue` |
+| [Vivaldi's Opus 6](https://github.com/craigsapp/vivaldi-op6) | Craig Stuart Sapp | public domain music, the encoding its editor's | Concertos | `vivaldi-op6` |
+| [Public Domain Song Anthology](https://doi.org/10.18130/V3/C4RD06) | David Berger and Chuck Israels, University of Virginia | CC0 | Lead sheets of songs out of copyright | `song-anthology` |
+| [The Session's tunes](https://github.com/adactio/TheSession-data) | The Session | published openly for reuse; the tunes are traditional | Traditional dance tunes | `thesession` |
+| [Nottingham Music Database](https://github.com/jukedeck/nottingham-dataset) | cleaned by Jukedeck | GPL-3.0 | Folk tunes with their chords | `nottingham` |
+| [The Mutopia Project](https://www.mutopiaproject.org) | The Mutopia Project's volunteers | public domain or Creative Commons, piece by piece | Engraved classical scores | `mutopia` |
+
+### Downloading the Corpus
+
+The corpus is downloaded only by a person who wants it, for study, into
+`py_legacy/output/library/`, which git ignores; nothing downloaded is
+committed or passed on. From llamatron's top folder:
+
+```
+.venv/bin/python py_legacy/internal_tools/analysis_and_generation/fetch_corpus.py            # asks collection by collection, with each one's size and terms
+.venv/bin/python py_legacy/internal_tools/analysis_and_generation/fetch_corpus.py joplin essen   # only the named collections
+```
+
+A collection is named by its folder in the table above, such as `joplin` or
+`essen`. The script asks before each download, and offers some research
+datasets besides; only the collections above are public domain music.
+
