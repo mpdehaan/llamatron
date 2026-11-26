@@ -36,77 +36,43 @@ yet; their pages say so.
 
 ### Standard
 
-- [Basic](synths/engines/BASIC.md): up to three band-limited oscillators of
-  classic waveforms.
-- [SID](synths/engines/SID.md): an 8-bit sound chip's voice, with ring
-  modulation, sync and fast arpeggios.
-- [Pocket](synths/engines/POCKET.md): a 4-bit chip's pulse, drawn wave and
-  shift-register noise.
-- [Fishline](synths/engines/FISHLINE.md): an acid bass, its accents and
-  slides.
-- Planned: [Asheville](synths/engines/ASHEVILLE.md),
-  [Monorail](synths/engines/MONORAIL.md), [Choir](synths/engines/CHOIR.md),
-  [MozaicClassic](synths/engines/MOZAICCLASSIC.md),
-  [MozaicHypersaw](synths/engines/MOZAICHYPERSAW.md),
-  [Syrup](synths/engines/SYRUP.md), [DustCart](synths/engines/DUSTCART.md),
-  [BitArcade](synths/engines/BITARCADE.md),
-  [Bytecrunch](synths/engines/BYTECRUNCH.md),
-  [Piano](synths/engines/PIANO.md), [Tonewheel](synths/engines/TONEWHEEL.md),
-  [Combo Organ](synths/engines/COMBO_ORGAN.md),
-  [Stringy](synths/engines/STRINGY.md), [FM](synths/engines/FM.md), [Bit
-  Saw](synths/engines/BIT_SAW.md), [PhoneHome](synths/engines/PHONEHOME.md),
-  [Dialup](synths/engines/DIALUP.md), [Pluck](synths/engines/PLUCK.md),
-  [Strings](synths/engines/STRINGS.md), [Pipe](synths/engines/PIPE.md),
-  [Wavetable](synths/engines/WAVETABLE.md),
-  [ComplexOsc](synths/engines/COMPLEXOSC.md) and
-  [Harm](synths/engines/HARM.md).
+- Basic: [Basic](synths/engines/BASIC.md).
+- Analog Mono: [Fishline](synths/engines/FISHLINE.md),
+  [Asheville](synths/engines/ASHEVILLE.md) (planned),
+  [Monorail](synths/engines/MONORAIL.md) (planned).
+- Analog Poly: [Choir](synths/engines/CHOIR.md) (planned),
+  [MozaicClassic](synths/engines/MOZAICCLASSIC.md) (planned),
+  [MozaicHypersaw](synths/engines/MOZAICHYPERSAW.md) (planned),
+  [Syrup](synths/engines/SYRUP.md) (planned).
+- Chip: [SID](synths/engines/SID.md), [Pocket](synths/engines/POCKET.md),
+  [DustCart](synths/engines/DUSTCART.md) (planned),
+  [BitArcade](synths/engines/BITARCADE.md) (planned),
+  [Bytecrunch](synths/engines/BYTECRUNCH.md) (planned).
+- Classic Keys: [Piano](synths/engines/PIANO.md) (planned),
+  [Tonewheel](synths/engines/TONEWHEEL.md) (planned), [Combo
+  Organ](synths/engines/COMBO_ORGAN.md) (planned),
+  [Stringy](synths/engines/STRINGY.md) (planned).
+- Digital: [FM](synths/engines/FM.md) (planned).
+- Noise and Glitch: [Bit Saw](synths/engines/BIT_SAW.md) (planned),
+  [PhoneHome](synths/engines/PHONEHOME.md) (planned),
+  [Dialup](synths/engines/DIALUP.md) (planned).
+- Other Modelling: [Pluck](synths/engines/PLUCK.md) (planned),
+  [Strings](synths/engines/STRINGS.md) (planned),
+  [Pipe](synths/engines/PIPE.md) (planned).
+- Wavetable: [Wavetable](synths/engines/WAVETABLE.md) (planned).
+- West Coast: [ComplexOsc](synths/engines/COMPLEXOSC.md) (planned),
+  [Harm](synths/engines/HARM.md) (planned).
 
 ### Drum
 
-- [MechaDrum](synths/engines/MECHADRUM.md): a drum machine of ten drums, from
-  kicks to a physical model of a drum head.
-- Planned: [Oh8](synths/engines/OH8.md), [Oh9](synths/engines/OH9.md),
-  [SynTom](synths/engines/SYNTOM.md), [FM Kick](synths/engines/FM_KICK.md),
-  [FM Snare](synths/engines/FM_SNARE.md), [FM Tom](synths/engines/FM_TOM.md),
-  [FM Metal](synths/engines/FM_METAL.md), [FM
-  Bell](synths/engines/FM_BELL.md), [Glitch
-  Drum](synths/engines/GLITCH_DRUM.md), [Chirpy](synths/engines/CHIRPY.md),
-  [Pocket Drum](synths/engines/POCKET_DRUM.md) and
-  [Struck](synths/engines/STRUCK.md).
-
-## Oscillators of Each Engine
-
-The Oscillators tab holds the raw sound, and is where the engines differ most.
-Its Voice column, at the left, is the same for every engine.
-
-### Basic
-
-![The Oscillators tab of Basic](screenshots/synth_basic.svg)
-
-### SID
-
-![The Oscillators tab of SID](screenshots/synth_sid.svg)
-
-### Pocket
-
-![The Oscillators tab of Pocket](screenshots/synth_pocket.svg)
-
-### Fishline
-
-![The Oscillators tab of Fishline](screenshots/synth_fishline.svg)
-
-### MechaDrum
-
-![The Oscillators tab of MechaDrum](screenshots/synth_mechadrum.svg)
-
-## Voice
-
-The Oscillators tab's Voice column holds what is the whole instrument's:
-Volume; Voices, how many notes sound at once; Legato, where a note that starts
-while another is held slides to it without starting its envelopes again, as an
-acid line's tied steps do; Glide, how long a note takes to slide; and Filter,
-Per note, each note its own filter as on a polysynth, or Shared, one filter
-moved by the newest note, as on a paraphonic synth.
+- Classic: [MechaDrum](synths/engines/MECHADRUM.md),
+  [Oh8](synths/engines/OH8.md) (planned), [Oh9](synths/engines/OH9.md)
+  (planned), [SynTom](synths/engines/SYNTOM.md) (planned).
+- FM Drums: [FM](synths/engines/FM_DRUMS.md).
+- Noise: [Glitch Drum](synths/engines/GLITCH_DRUM.md) (planned),
+  [Chirpy](synths/engines/CHIRPY.md) (planned), [Pocket
+  Drum](synths/engines/POCKET_DRUM.md) (planned).
+- Modelling: [Struck](synths/engines/STRUCK.md) (planned).
 
 ## How a Voice Is Wired
 
@@ -127,13 +93,14 @@ as its filter.
 
 Each part has a page of its own:
 
-| Part | Page |
+| Tab | Page |
 | --- | --- |
+| Oscillators, the raw tone and the Voice column | [Oscillators](synths/OSCILLATORS.md) |
 | Env 1, Env 2 and Env 3 | [Envelopes](synths/ENVELOPES.md) |
-| The filter or the low-pass gate | [Filters](synths/FILTERS.md) |
 | Four LFOs | [LFOs](synths/LFOS.md) |
+| The filter or the low-pass gate | [Filters](synths/FILTERS.md) |
+| Two effects in order, the FX tab | [Effects](synths/EFFECTS.md) |
 | Six routes of what moves what | [Mod Matrix](synths/MOD_MATRIX.md) |
-| Two effects in order | [Effects](synths/EFFECTS.md) |
 
 A setting shown as a bar is a gauge: `[` and `]` step it, by more as a time or
 a frequency grows, and `ENTER` types it.

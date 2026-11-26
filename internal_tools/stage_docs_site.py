@@ -45,6 +45,7 @@ UP = '../'
 CHAPTER_LINK = re.compile(r'\[([^\]]+)\]\(([A-Za-z0-9_/]+)\.md\)')
 HEADING = re.compile(r'^## (.+)$')
 SUBHEADING = re.compile(r'^### (.+)$')
+INNER_HEADING = re.compile(r'^#### (.+)$')
 TABLE_ROW = '|'
 TABLE_RULE = '| ---'
 # What the sidebar calls the front page and its group.
@@ -79,26 +80,35 @@ def sidebar(guide_text):
     The front page comes first. A table under a heading GROUPED doesn't name lists pages of their own;
     the tables under a heading it names make a group of that name that opens and closes, which opens
     the page of the same name when the group's first chapter is it, and a ### heading inside such a group
-    makes a group within it; a group within one opens the page of its own name when its first chapter is
-    it, and a group within one that holds only that chapter is the chapter alone.
+    makes a group within it, and a #### heading a group within that; a group within one opens the page of
+    its own name when its first chapter is it, and a group within one that holds only that chapter is the
+    chapter alone. Every group starts closed.
     """
     entries = [{TEXT: FRONT_PAGE_ITEM, LINK: FRONT_PAGE_LINK}]
     group = None
     subgroup = None
+    innermost = None
     seen = set()
     for line in guide_text.splitlines():
         top = HEADING.match(line)
         if top:
             group = None
             subgroup = None
+            innermost = None
             if top.group(1) in GROUPED:
-                group = {TEXT: top.group(1), COLLAPSED: False, ITEMS: []}
+                group = {TEXT: top.group(1), COLLAPSED: True, ITEMS: []}
                 entries.append(group)
             continue
         inner = SUBHEADING.match(line)
         if inner and group is not None:
-            subgroup = {TEXT: inner.group(1), COLLAPSED: False, ITEMS: []}
+            subgroup = {TEXT: inner.group(1), COLLAPSED: True, ITEMS: []}
+            innermost = subgroup
             group[ITEMS].append(subgroup)
+            continue
+        deepest = INNER_HEADING.match(line)
+        if deepest and subgroup is not None:
+            innermost = {TEXT: deepest.group(1), COLLAPSED: True, ITEMS: []}
+            subgroup[ITEMS].append(innermost)
             continue
         if not line.startswith(TABLE_ROW) or line.startswith(TABLE_RULE):
             continue
@@ -109,11 +119,11 @@ def sidebar(guide_text):
             item = {TEXT: title, LINK: CHAPTER_PAGE_LINK.format(name=name)}
             if group is None:
                 entries.append(item)
-            elif subgroup is not None:
-                if title == subgroup[TEXT] and not subgroup[ITEMS] and LINK not in subgroup:
-                    subgroup[LINK] = item[LINK]
+            elif innermost is not None:
+                if title == innermost[TEXT] and not innermost[ITEMS] and LINK not in innermost:
+                    innermost[LINK] = item[LINK]
                 else:
-                    subgroup[ITEMS].append(item)
+                    innermost[ITEMS].append(item)
             elif title == group[TEXT] and not group[ITEMS] and LINK not in group:
                 group[LINK] = item[LINK]
             else:

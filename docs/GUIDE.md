@@ -164,45 +164,95 @@ and each of its parts.
 | Page | What it covers |
 | --- | --- |
 | [Synths](SYNTHS.md) | The built-in synths' design, their engines and how the sound is made. |
+| [Oscillators](synths/OSCILLATORS.md) | Each engine's oscillators and the Voice column. |
 | [Envelopes](synths/ENVELOPES.md) | Every envelope type, and how each moves. |
-| [Filters](synths/FILTERS.md) | Every filter type and the low-pass gate. |
 | [LFOs](synths/LFOS.md) | The four LFOs. |
-| [Mod Matrix](synths/MOD_MATRIX.md) | What moves what. |
+| [Filters](synths/FILTERS.md) | Every filter type and the low-pass gate. |
 | [Effects](synths/EFFECTS.md) | Drive, Bitcrush and the effects planned. |
+| [Mod Matrix](synths/MOD_MATRIX.md) | What moves what. |
 
 ### Standard Engines
+
+#### Basic
 
 | Page | What it covers |
 | --- | --- |
 | [Basic](synths/engines/BASIC.md) | Up to three band-limited oscillators of classic waveforms. |
-| [SID](synths/engines/SID.md) | An 8-bit sound chip's voice. |
-| [Pocket](synths/engines/POCKET.md) | A 4-bit chip's pulse, drawn wave and noise. |
+
+#### Analog Mono
+
+| Page | What it covers |
+| --- | --- |
 | [Fishline](synths/engines/FISHLINE.md) | The acid bass. |
 | [Asheville](synths/engines/ASHEVILLE.md) | Planned. |
 | [Monorail](synths/engines/MONORAIL.md) | Planned. |
+
+#### Analog Poly
+
+| Page | What it covers |
+| --- | --- |
 | [Choir](synths/engines/CHOIR.md) | Planned. |
 | [MozaicClassic](synths/engines/MOZAICCLASSIC.md) | Planned. |
 | [MozaicHypersaw](synths/engines/MOZAICHYPERSAW.md) | Planned. |
 | [Syrup](synths/engines/SYRUP.md) | Planned. |
+
+#### Chip
+
+| Page | What it covers |
+| --- | --- |
+| [SID](synths/engines/SID.md) | An 8-bit sound chip's voice. |
+| [Pocket](synths/engines/POCKET.md) | A 4-bit chip's pulse, drawn wave and noise. |
 | [DustCart](synths/engines/DUSTCART.md) | Planned. |
 | [BitArcade](synths/engines/BITARCADE.md) | Planned. |
 | [Bytecrunch](synths/engines/BYTECRUNCH.md) | Planned. |
+
+#### Classic Keys
+
+| Page | What it covers |
+| --- | --- |
 | [Piano](synths/engines/PIANO.md) | Planned. |
 | [Tonewheel](synths/engines/TONEWHEEL.md) | Planned. |
 | [Combo Organ](synths/engines/COMBO_ORGAN.md) | Planned. |
 | [Stringy](synths/engines/STRINGY.md) | Planned. |
+
+#### Digital
+
+| Page | What it covers |
+| --- | --- |
 | [FM](synths/engines/FM.md) | Planned. |
+
+#### Noise and Glitch
+
+| Page | What it covers |
+| --- | --- |
 | [Bit Saw](synths/engines/BIT_SAW.md) | Planned. |
 | [PhoneHome](synths/engines/PHONEHOME.md) | Planned. |
 | [Dialup](synths/engines/DIALUP.md) | Planned. |
+
+#### Other Modelling
+
+| Page | What it covers |
+| --- | --- |
 | [Pluck](synths/engines/PLUCK.md) | Planned. |
 | [Strings](synths/engines/STRINGS.md) | Planned. |
 | [Pipe](synths/engines/PIPE.md) | Planned. |
+
+#### Wavetable
+
+| Page | What it covers |
+| --- | --- |
 | [Wavetable](synths/engines/WAVETABLE.md) | Planned. |
+
+#### West Coast
+
+| Page | What it covers |
+| --- | --- |
 | [ComplexOsc](synths/engines/COMPLEXOSC.md) | Planned. |
 | [Harm](synths/engines/HARM.md) | Planned. |
 
 ### Drum Engines
+
+#### Classic
 
 | Page | What it covers |
 | --- | --- |
@@ -210,14 +260,25 @@ and each of its parts.
 | [Oh8](synths/engines/OH8.md) | Planned. |
 | [Oh9](synths/engines/OH9.md) | Planned. |
 | [SynTom](synths/engines/SYNTOM.md) | Planned. |
-| [FM Kick](synths/engines/FM_KICK.md) | Planned. |
-| [FM Snare](synths/engines/FM_SNARE.md) | Planned. |
-| [FM Tom](synths/engines/FM_TOM.md) | Planned. |
-| [FM Metal](synths/engines/FM_METAL.md) | Planned. |
-| [FM Bell](synths/engines/FM_BELL.md) | Planned. |
+
+#### FM Drums
+
+| Page | What it covers |
+| --- | --- |
+| [FM](synths/engines/FM_DRUMS.md) | The FM Kick, Snare, Tom, Metal and Bell, planned. |
+
+#### Noise
+
+| Page | What it covers |
+| --- | --- |
 | [Glitch Drum](synths/engines/GLITCH_DRUM.md) | Planned. |
 | [Chirpy](synths/engines/CHIRPY.md) | Planned. |
 | [Pocket Drum](synths/engines/POCKET_DRUM.md) | Planned. |
+
+#### Modelling
+
+| Page | What it covers |
+| --- | --- |
 | [Struck](synths/engines/STRUCK.md) | Planned. |
 
 ## Advanced
