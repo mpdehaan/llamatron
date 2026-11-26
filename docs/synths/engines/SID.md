@@ -1,19 +1,19 @@
 # SID
 
 SID is one voice of an 8-bit sound chip: a Triangle, Saw, Pulse or Noise wave,
-a pulse whose width can sweep, Ring or Sync from a second oscillator an
-Interval away, and an Arpeggio of semitones stepped very fast, through the
-chip's own [SID ADSR](../ENVELOPES.md#sid-adsr) envelope. It is the sound of
-fast arpeggiated chords, buzzy sync leads and swept pulse basses.
+a pulse of a width, Ring or Sync from a second oscillator an Interval away,
+and an Arpeggio of semitones stepped very fast, through the chip's own [SID
+ADSR](../ENVELOPES.md#sid-adsr) envelope. It is the sound of fast arpeggiated
+chords, buzzy sync leads and swept pulse basses.
 
 ![The Oscillators tab of SID](../../screenshots/synth_sid.svg)
 
 ## How SID Is Built
 
 The triangle and saw are read from band-limited wavetables, as Basic's are,
-and the pulse is one saw less another shifted by its width. PWM speed sweeps
-the width up and down at a steady rate, bouncing back at its narrowest and its
-widest, as players sweep the chip's width by hand in its programs.
+and the pulse is one saw less another shifted by its width. To sweep the
+width, as players sweep the chip's width in its programs, route an LFO with a
+Triangle shape to Pulse width in the [Mod Matrix](../MOD_MATRIX.md).
 
 Noise is the chip's own: a shift register of many bits, its feedback taken
 from two of its bits by exclusive or and fed back in at the top as the

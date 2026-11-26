@@ -285,7 +285,6 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
         Preset::Map(&[
             ("wave", Preset::Text("pulse")),
             ("pulse_width", Preset::Whole(50)),
-            ("pulse_sweep", Preset::Whole(0)),
             ("modulation", Preset::Text("off")),
             ("interval", Preset::Whole(7)),
             ("arpeggio", Preset::List(&[])),
@@ -486,10 +485,7 @@ pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "sid", 
 /// The settings each type of part shows, in order.
 pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
     ("basic", &["pitch_env"]),
-    (
-        "sid",
-        &["wave", "pulse_width", "pulse_sweep", "modulation", "interval", "arpeggio", "pitch_env"],
-    ),
+    ("sid", &["wave", "pulse_width", "modulation", "interval", "arpeggio", "pitch_env"]),
     (
         "pocket",
         &[
@@ -547,15 +543,6 @@ pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
             lowest: 0,
             highest: 100,
             what: "percent",
-        },
-    ),
-    (
-        "pulse_sweep",
-        SettingKind::Number {
-            lowest: -100,
-            highest: 100,
-            unit: "{number:+d}%/s",
-            zero: None,
         },
     ),
     (

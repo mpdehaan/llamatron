@@ -5,6 +5,7 @@
 //! the three envelopes, the filter or low-pass gate, the LFOs and the mod matrix, the effects, and the patch that plays them
 //! together.
 
+pub mod acid;
 pub mod effects;
 pub mod envelopes;
 pub mod filters;

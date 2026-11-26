@@ -218,13 +218,15 @@ impl Patch {
         modular.last_pitch = Some(voice.pitch);
         voice.random = modular.random.between(-1.0, 1.0);
         let seconds = voice.start as f64 / rate;
+        // An accent's extra filter sweep and short decay come from whichever slot holds an envelope that accents, such as
+        // the acid gate, so that it accents in any slot, not only Env1's.
+        voice.accent_depth = 0.0;
+        voice.short_decay = None;
         for place in 0..3 {
             let (state, depth, short) = modular.envelopes[place].start(&mut modular.memory[place], voice.level, seconds);
             voice.envelopes[place] = state;
-            if place == 0 {
-                voice.accent_depth = depth;
-                voice.short_decay = short;
-            }
+            voice.accent_depth = voice.accent_depth.max(depth);
+            voice.short_decay = voice.short_decay.or(short);
         }
         modular.oscillator.begin(&mut voice.oscillator, voice.pitch);
         modular.newest = voice.id;

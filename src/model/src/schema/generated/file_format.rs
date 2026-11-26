@@ -469,7 +469,6 @@ impl PartSetting {
     pub const OSCILLATORS: &'static str = "oscillators";
     pub const WAVE: &'static str = "wave";
     pub const PULSE_WIDTH: &'static str = "pulse_width";
-    pub const PULSE_SWEEP: &'static str = "pulse_sweep";
     pub const MODULATION: &'static str = "modulation";
     pub const INTERVAL: &'static str = "interval";
     pub const ARPEGGIO: &'static str = "arpeggio";

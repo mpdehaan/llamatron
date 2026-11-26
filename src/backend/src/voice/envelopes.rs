@@ -130,6 +130,8 @@ pub struct EnvelopeMemory {
     pub left: f64,
     pub left_at: f64,
     pub hits: u64,
+    /// The vactrol's last note: its state as it started, and when, from which its light at any later moment is worked out.
+    pub last_note: Option<(EnvelopeState, f64)>,
 }
 
 /// The envelope type that is no envelope, which Env2 and Env3 may hold.
@@ -284,8 +286,21 @@ impl EnvelopePart {
                 light,
                 unstable,
                 drift,
-                ..
+                gated,
+                width,
+                full,
             } => {
+                // The cell's light as this note strikes it: the last note's, risen and fallen to now. A gated note still
+                // held is taken as lit until now.
+                if let Some((mut last, began)) = memory.last_note {
+                    let age = (seconds - began).max(0.0);
+                    let note = NoteTime {
+                        age,
+                        released: gated.then_some(age),
+                    };
+                    memory.left = vactrol_level(&mut last, note, *gated, *width, *full) * full;
+                    memory.left_at = seconds;
+                }
                 let since = (seconds - memory.left_at).max(0.0);
                 let hyperbola = (1.0 / FALL_TO - 1.0) / fall;
                 state.start_level = keep * fallen(memory.left, since, hyperbola);
@@ -301,6 +316,7 @@ impl EnvelopePart {
                 state.drive = (velocity * light).max(WEAKEST_DRIVE);
                 state.rise = rise * state.drive.powf(-RISE_POWER);
                 state.hyperbola = (1.0 / FALL_TO - 1.0) / fall;
+                memory.last_note = Some((state, seconds));
                 (state, 0.0, None)
             }
             EnvelopePart::AcidGate {

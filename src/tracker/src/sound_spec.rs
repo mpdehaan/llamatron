@@ -68,7 +68,6 @@ fn oscillators(sound: &Sound) -> Data {
         "sid" => spec.extend([
             ("wave", setting("wave")),
             ("pulse_width", share(&setting("pulse_width"), PERCENT)),
-            ("pulse_sweep", share(&setting("pulse_sweep"), PERCENT)),
             ("modulation", setting("modulation")),
             ("interval", setting("interval")),
             ("arpeggio", setting("arpeggio")),
@@ -307,7 +306,12 @@ fn number(value: &Data) -> f64 {
 
 /// A whole number, 0 for anything else.
 fn whole(value: &Data) -> i64 {
-    value.as_whole().map_or(0, |whole| whole as i64)
+    // A choice of numbers, such as the ladder's slope, is stored as its text when picked on the page.
+    value
+        .as_whole()
+        .map(|whole| whole as i64)
+        .or_else(|| value.as_str().and_then(|text| text.trim().parse::<i64>().ok()))
+        .unwrap_or(0)
 }
 
 /// Whether a value counts as nothing, as Python's truth does: none, false, zero or empty.

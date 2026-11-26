@@ -21,6 +21,8 @@ use std::sync::Arc;
 const MIDDLE_A: f64 = 69.0;
 const A_FREQUENCY: f64 = 440.0;
 const NARROWEST: f64 = 0.1;
+/// A pulse's width where nothing moves it: a square.
+const PULSE_MIDDLE: f64 = 0.5;
 const WIDEST: f64 = 0.9;
 const FRAMES_PER_SECOND: f64 = 50.0;
 const NOISE_STEPS_PER_CYCLE: f64 = 16.0;
@@ -72,9 +74,11 @@ pub struct OscillatorState {
     pub speeds: [f64; 3],
 }
 
-/// One of Basic's oscillators: its tables, detune in cents and level.
+/// One of Basic's oscillators: its tables, whether it is a pulse, read as two saws its width apart, its detune in cents
+/// and its level.
 pub struct Partial {
     tables: Tables,
+    pulse: bool,
     cents: f64,
     level: f64,
 }
@@ -89,7 +93,6 @@ pub enum OscillatorPart {
         triangle: Tables,
         noise: Arc<Vec<f32>>,
         pulse_width: f64,
-        pulse_sweep: f64,
         interaction: Interaction,
         interval: f64,
         arpeggio: Vec<f64>,
@@ -157,6 +160,7 @@ fn basic(spec: &Value, rate: f64) -> OscillatorPart {
         let level = fields.get(2).and_then(as_number).unwrap_or(1.0);
         partials.push(Partial {
             tables: tables::waveform_tables(waveform, rate),
+            pulse: waveform == Waveform::Pulse,
             cents,
             level,
         });
@@ -182,7 +186,6 @@ fn sid(spec: &Value, rate: f64) -> OscillatorPart {
         triangle: tables::waveform_tables(Waveform::Triangle, rate),
         noise: tables::sid_noise(),
         pulse_width: number(spec, "pulse_width", 0.5),
-        pulse_sweep: number(spec, "pulse_sweep", 0.0),
         interaction,
         interval: number(spec, "interval", 7.0),
         arpeggio: numbers(spec, "arpeggio"),
@@ -254,7 +257,6 @@ impl OscillatorPart {
             triangle,
             noise,
             pulse_width,
-            pulse_sweep,
             interaction,
             interval,
             arpeggio,
@@ -267,7 +269,7 @@ impl OscillatorPart {
             base += arpeggio[(seconds * FRAMES_PER_SECOND) as usize % arpeggio.len()];
         }
         let frequency = frequency_of(base);
-        let width = (sweep_width(*pulse_width, *pulse_sweep, seconds) + moves.width).clamp(NARROWEST, WIDEST);
+        let width = (*pulse_width + moves.width).clamp(NARROWEST, WIDEST);
         if *interaction == Interaction::Sync {
             let second = frequency_of(base + interval);
             state.second_phase = (state.second_phase + second / rate) % 1.0;
@@ -357,11 +359,19 @@ fn basic_sample(partials: &[Partial], state: &mut OscillatorState, pitch: f64, m
         }
         state.speeds_for = wanted;
     }
+    // A pulse is half the difference of its saw and the saw its width on, the width moved by the Mod Matrix's Pulse width.
+    let width = (PULSE_MIDDLE + moves.width).clamp(NARROWEST, WIDEST) * TABLE_SIZE as f64;
     for (place, partial) in partials.iter().enumerate().take(3) {
         let speed = state.speeds[place];
         let position = state.phases[place];
         state.phases[place] = wrapped(position + speed);
-        out += read(&partial.tables[band], position) * partial.level;
+        let table = &partial.tables[band];
+        let sample = if partial.pulse {
+            (read(table, position) - read(table, position + width)) * 0.5
+        } else {
+            read(table, position)
+        };
+        out += sample * partial.level;
     }
     out
 }
@@ -381,18 +391,4 @@ fn acid_sample(saw: &Tables, square: bool, state: &mut OscillatorState, pitch: f
     }
     let pulse = (out - read(table, position + TABLE_SIZE as f64 / 2.0)) * 0.5;
     (pulse * SQUARE_PUSH).tanh() / SQUARE_PUSH.tanh()
-}
-
-/// The pulse's width a time into the note: the width moving from where it starts at the sweep's rate and bouncing back at
-/// the narrowest and widest, as players sweep the chip's width up and down.
-fn sweep_width(width: f64, sweep: f64, seconds: f64) -> f64 {
-    if sweep == 0.0 {
-        return width.clamp(NARROWEST, WIDEST);
-    }
-    let span = WIDEST - NARROWEST;
-    let mut moved = (width - NARROWEST + sweep * seconds).rem_euclid(2.0 * span);
-    if moved > span {
-        moved = 2.0 * span - moved;
-    }
-    NARROWEST + moved
 }

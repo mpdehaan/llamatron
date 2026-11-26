@@ -45,6 +45,7 @@ const MIDI: &str = "midi";
 const BUILT_IN: &str = "built_in";
 const NONE_EFFECT: &str = "none";
 const BITCRUSH: &str = "bitcrush";
+const ARPEGGIO: &str = "arpeggio";
 
 pub struct InstrumentEditor {
     pub name: String,
@@ -197,6 +198,49 @@ impl InstrumentEditor {
         app.document.change_set(|setlist| {
             if let Some(Item::Instrument(instrument)) = setlist.get_item_mut(Section::INSTRUMENTS, &name) {
                 instrument.set_written(InstrumentSetting::GM_SOUND, sound);
+            }
+        });
+    }
+
+    /// The SID's Arpeggio: ENTER types its semitones apart by spaces, refused on the status line unless whole numbers in
+    /// range and few enough, and Bksp clears it back to none.
+    fn edit_arpeggio(&self, app: &mut App, sound: &Sound, part: &'static str, edit: Edit) {
+        use llamatron_model::schema::generated::limits::{MAX_ARPEGGIO_STEPS, MAX_INTERVAL};
+        let steps: Vec<i64> = match edit {
+            Edit::Enter => {
+                let typed: Vec<String> = sound
+                    .part_value(part, ARPEGGIO)
+                    .as_list()
+                    .map_or(Vec::new(), |steps| steps.iter().map(|step| whole(step).to_string()).collect());
+                app.asking = Some(Edit::AskText {
+                    title: named(messages::MSG_ARPEGGIO_PROMPT, &[("most", MAX_ARPEGGIO_STEPS.into())]),
+                    value: typed.join(marks::MSG_ARPEGGIO_SEPARATOR),
+                });
+                return;
+            }
+            Edit::Clear => Vec::new(),
+            Edit::Text(text) => {
+                let parsed: Option<Vec<i64>> = text.split_whitespace().map(|word| word.parse::<i64>().ok()).collect();
+                let valid = parsed.filter(|steps| steps.len() as i64 <= MAX_ARPEGGIO_STEPS && steps.iter().all(|step| step.abs() <= MAX_INTERVAL));
+                let Some(steps) = valid else {
+                    let words = [
+                        ("most", MAX_ARPEGGIO_STEPS.into()),
+                        ("highest", MAX_INTERVAL.into()),
+                        ("value", text.as_str().into()),
+                    ];
+                    app.refuse(&named(llamatron_strings::errors::ERR_BAD_ARPEGGIO, &words));
+                    return;
+                };
+                steps
+            }
+            _ => return,
+        };
+        let value = Data::List(steps.into_iter().map(|step| Data::Whole(step as i128)).collect());
+        let changed = sound.with_part_value(part, ARPEGGIO, value);
+        let name = self.name.clone();
+        app.document.change_set(|setlist| {
+            if let Some(Item::Instrument(instrument)) = setlist.get_item_mut(Section::INSTRUMENTS, &name) {
+                instrument.set_written(InstrumentSetting::SOUND, Some(changed));
             }
         });
     }
@@ -571,7 +615,7 @@ impl InstrumentEditor {
         let value = sound.part_value(part, name);
         let shown_label = named_in(labels::MSG_PART_SETTING_NAMES, name);
         let label = part_label(part, &shown_label);
-        if name == "arpeggio" {
+        if name == ARPEGGIO {
             let steps: Vec<String> = value
                 .as_list()
                 .map_or(Vec::new(), |steps| steps.iter().map(|step| whole(step).to_string()).collect());
@@ -580,7 +624,7 @@ impl InstrumentEditor {
             } else {
                 steps.join(marks::MSG_ARPEGGIO_SEPARATOR)
             };
-            return Field::custom(ids.at(Write::Part(part, "arpeggio")), labels::MSG_ARPEGGIO_LABEL, &shown)
+            return Field::custom(ids.at(Write::Part(part, ARPEGGIO)), labels::MSG_ARPEGGIO_LABEL, &shown)
                 .with_enter(legends::What::EDIT)
                 .with_clear(marks::MSG_ARPEGGIO_NONE_SHOWN);
         }
@@ -1085,6 +1129,10 @@ impl Form for InstrumentEditor {
         }
         if write == Write::Setting(InstrumentSetting::DEVICE) {
             self.choose_device(app, edit);
+            return;
+        }
+        if let Write::Part(part, ARPEGGIO) = write {
+            self.edit_arpeggio(app, &sound, part, edit);
             return;
         }
         let value = match edit {
