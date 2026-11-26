@@ -39,6 +39,8 @@ const CONTROL: i64 = 5;
 /// engine/mod.rs).
 const TEMPO_COARSE: i64 = 6;
 const TEMPO_FINE: i64 = 7;
+/// Playback starting, at the export's start, so that a built-in instrument's modulators run (the backend's PLAY_STARTED).
+const PLAY_STARTED: i64 = 8;
 const BUILT_IN: &str = "built_in";
 /// A 16-bit sample's most, and the level a normalized file peaks at, 1 dB below full scale.
 const HIGHEST_SAMPLE: f64 = 32767.0;
@@ -236,7 +238,9 @@ fn offline_notes(number: &Data, timed: &llamatron_exporters::midi::TimedTrack) -
             Data::Whole(velocity as i128),
         ])
     };
-    let mut notes: Vec<Data> = timed.scene_starts.iter().map(|when| note(*when, SCENE_STARTED, 0, 0)).collect();
+    let song_start = 0.0;
+    let mut notes = vec![note(song_start, PLAY_STARTED, 0, 0)];
+    notes.extend(timed.scene_starts.iter().map(|when| note(*when, SCENE_STARTED, 0, 0)));
     for (when, pitch, velocity) in &timed.notes {
         let kind = if *velocity == 0 { NOTE_OFF } else { NOTE_ON };
         notes.push(note(*when, kind, *pitch, *velocity));

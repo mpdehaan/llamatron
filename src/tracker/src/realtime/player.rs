@@ -19,7 +19,7 @@
 
 use crate::realtime::clip_notes;
 use crate::realtime::score::Score;
-use crate::realtime::timeline::{ClipTag, Playing, NOTE_OFF};
+use crate::realtime::timeline::{ClipTag, Playing, CONTROL_CHANGE, NOTE_OFF, PLAY_STARTED, PLAY_STOPPED};
 use llamatron_math::Rational;
 use llamatron_model::schema::generated::file_format::{FollowAction, LiveResponsiveness};
 
@@ -142,6 +142,9 @@ pub struct Player {
     count: u64,
     play_count: i64,
     laps: Vec<(usize, String)>,
+    /// Whether this player is playing, from a start in silence to a stop or to everything having played out, which the
+    /// built-in instruments are told of.
+    running: bool,
 }
 
 impl Player {
@@ -155,6 +158,52 @@ impl Player {
             count: 0,
             play_count: 0,
             laps: Vec::new(),
+            running: false,
+        }
+    }
+
+    /// Tell every built-in instrument of the score's routes, at a moment, that playback starts from silence or stops: a
+    /// controller of the timeline's, so that its modulators run only while it plays.
+    fn mark_playback(&mut self, sender: &mut dyn Sender, number: i64, at: f64) {
+        let marks: Vec<Playing> = self
+            .score
+            .routes()
+            .iter()
+            .filter(|(_, route)| route.sound.is_some())
+            .map(|(track, route)| Playing {
+                whole: Rational::ZERO,
+                seconds: at,
+                port: route.port.clone(),
+                channel: route.channel,
+                kind: CONTROL_CHANGE,
+                number,
+                value: 0,
+                tag: ClipTag {
+                    scene: FIRST_SCENE,
+                    track: track.clone(),
+                    play: 0,
+                },
+                switch: false,
+            })
+            .collect();
+        if !marks.is_empty() {
+            sender.add(marks);
+        }
+    }
+
+    /// Playback starting from silence at a moment, told to the built-in instruments once.
+    fn start_running(&mut self, sender: &mut dyn Sender, at: f64) {
+        if !self.running {
+            self.running = true;
+            self.mark_playback(sender, PLAY_STARTED, at);
+        }
+    }
+
+    /// Playback stopped at a moment, by hand or by everything having played out, told to the built-in instruments once.
+    fn stop_running(&mut self, sender: &mut dyn Sender, at: f64) {
+        if self.running {
+            self.running = false;
+            self.mark_playback(sender, PLAY_STOPPED, at);
         }
     }
 
@@ -206,6 +255,7 @@ impl Player {
         sender.stop_all();
         self.plays.clear();
         self.moments.clear();
+        self.stop_running(sender, 0.0);
     }
 
     /// When the next bar starts, counted from the start of the earliest clip playing, or that clip's end if it comes
@@ -257,6 +307,9 @@ impl Player {
         }
         self.send_windows(sender, now);
         self.plays.retain(|play| play.end > now || !(play.done || play.cut));
+        if self.plays.is_empty() && self.moments.is_empty() {
+            self.stop_running(sender, now);
+        }
     }
 
     /// Take a score rendered afresh after an edit, and change what plays to it from the moment the song's Live response
@@ -553,6 +606,7 @@ impl Player {
             }
             place += 1;
         }
+        self.start_running(sender, at);
         self.play_count += 1;
         let end = at + self.score.get_scene_seconds(scene);
         let loops = forever || self.score.loops(scene, track);

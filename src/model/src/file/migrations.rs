@@ -103,6 +103,11 @@ pub fn migrated(data: Data, one_song_name: Option<String>) -> (Data, Conversion)
         conversion.moved = true;
         data = each_sound(data, gate_layout);
     }
+    let older_than_restart = saved_version(&data).is_none_or(|saved| version_numbers(RESTART_SINCE).is_some_and(|since| saved < since));
+    if matches!(data, Data::Map(_)) && older_than_restart && has_lfo_without_restart(&data) {
+        conversion.moved = true;
+        data = each_sound(data, lfo_restarts);
+    }
     if matches!(data, Data::Map(_)) && has_engine(&data, OLD_ACID_ENGINE) {
         conversion.moved = true;
         data = each_sound(data, acid_engine_renamed);
@@ -274,6 +279,63 @@ fn gate_as_amp(gate: &Data) -> Data {
         .collect();
     pairs.push((Data::text(TRIGGER), Data::text(ENV1)));
     pairs.push((Data::text(RESPONSE), Data::Whole(FASTEST_RESPONSE)));
+    map(pairs)
+}
+
+/// The version that first wrote a modulator's Restart in place of its Retrigger and Each scene, and those settings.
+const RESTART_SINCE: &str = "1.1.4";
+const RETRIGGER: &str = "retrigger";
+const EACH_SCENE: &str = "each_scene";
+const RESTART: &str = "restart";
+const EACH_NOTE: &str = "each_note";
+const ON_PLAY: &str = "on_play";
+
+/// Whether any LFO of a file from before 1.1.4 has no Restart yet, and so still plays by its Retrigger and Each scene.
+fn has_lfo_without_restart(data: &Data) -> bool {
+    let Some(instruments) = data.get(INSTRUMENTS).and_then(Data::as_list) else {
+        return false;
+    };
+    instruments
+        .iter()
+        .filter_map(|instrument| instrument.get(SOUND)?.get(LFOS)?.as_list())
+        .flatten()
+        .any(|lfo| matches!(lfo, Data::Map(_)) && lfo.get(RESTART).is_none())
+}
+
+/// A sound's LFOs given the Restart their Retrigger and Each scene played as: Retrigger on, as it was when not written,
+/// becomes Each note; else Each scene on becomes Each scene; else On play.
+fn lfo_restarts(sound: Data) -> Data {
+    let pairs = pairs_of(&sound)
+        .into_iter()
+        .map(|(key, value)| {
+            if !key_is(&key, LFOS) {
+                return (key, value);
+            }
+            let lfos = value.as_list().map(<[_]>::to_vec).unwrap_or_default();
+            (key, Data::List(lfos.into_iter().map(lfo_restart).collect()))
+        })
+        .collect();
+    map(pairs)
+}
+
+fn lfo_restart(lfo: Data) -> Data {
+    if !matches!(lfo, Data::Map(_)) || lfo.get(RESTART).is_some() {
+        return lfo;
+    }
+    let retriggers = lfo.get(RETRIGGER).is_none_or(|value| *value == Data::Bool(true));
+    let each_scene = lfo.get(EACH_SCENE) == Some(&Data::Bool(true));
+    let restart = if retriggers {
+        EACH_NOTE
+    } else if each_scene {
+        EACH_SCENE
+    } else {
+        ON_PLAY
+    };
+    let mut pairs: Vec<(Data, Data)> = pairs_of(&lfo)
+        .into_iter()
+        .filter(|(key, _)| !key_is(key, RETRIGGER) && !key_is(key, EACH_SCENE))
+        .collect();
+    pairs.push((Data::text(RESTART), Data::text(restart)));
     map(pairs)
 }
 
@@ -839,6 +901,30 @@ mod tests {
             .expect("a sound")
             .clone();
         assert_eq!(text(sound.get(FILTER).expect("a filter"), TYPE).as_deref(), Some(LOW_PASS_GATE));
+    }
+
+    /// An older LFO's Retrigger and Each scene become its Restart: unwritten Retrigger, then on, is Each note; Each scene on
+    /// alone is Each scene; both off is On play; an LFO already with a Restart, or a set of 1.1.4, is left alone.
+    #[test]
+    fn an_lfos_retrigger_and_each_scene_become_its_restart() {
+        let older = "version: 1.1.3\ninstruments:\n  - { name: wobble, kind: built_in, sound: { engine: basic, lfos: [{ \"on\": true }, { retrigger: false, each_scene: true }, { retrigger: false }, { restart: never }] } }\n";
+        let (data, conversion) = migrated(load(older).expect("the file reads"), None);
+        assert!(conversion.moved);
+        let lfos = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments")[0]
+            .get(SOUND)
+            .and_then(|sound| sound.get(LFOS))
+            .and_then(Data::as_list)
+            .expect("lfos")
+            .to_vec();
+        let restart = |place: usize| lfos[place].get(RESTART).and_then(Data::as_str).map(str::to_string);
+        assert_eq!(restart(0).as_deref(), Some(EACH_NOTE));
+        assert_eq!(restart(1).as_deref(), Some(EACH_SCENE));
+        assert_eq!(restart(2).as_deref(), Some(ON_PLAY));
+        assert_eq!(restart(3).as_deref(), Some("never"));
+        assert!(lfos.iter().all(|lfo| lfo.get(RETRIGGER).is_none() && lfo.get(EACH_SCENE).is_none()));
+        let newer = "version: 1.1.4\ninstruments:\n  - { name: wobble, kind: built_in, sound: { engine: basic, lfos: [{ \"on\": true }] } }\n";
+        let (_, conversion) = migrated(load(newer).expect("the file reads"), None);
+        assert!(!conversion.moved);
     }
 
     /// A sound on the acid bass engine by its old name, fishline, is renamed oh3; other engines are left alone.

@@ -176,7 +176,7 @@ instruments:
       oscillators: { type: basic, oscillators: [{ waveform: square }] }
       envelopes: [{ type: adsr, attack: 1, decay: 160, sustain: 60, release: 50 }, { type: adsr, attack: 0, decay: 10, sustain: 0, release: 10 }, { type: adsr, attack: 0, decay: 10, sustain: 0, release: 10 }]
       filter: { type: none }
-      lfos: [{ "on": true, shape: sine, speed: medium, rate_percent: 76, retrigger: true }]
+      lfos: [{ "on": true, shape: sine, speed: medium, rate_percent: 76, restart: each_note }]
       matrix: [{ source: lfo1, via: none, destination: pitch, amount: 1 }]
   - name: chord stab
     kind: built_in

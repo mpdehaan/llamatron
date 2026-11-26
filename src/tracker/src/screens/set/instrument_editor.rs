@@ -21,7 +21,7 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
 use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::file_format::{
-    InstrumentSetting, Section, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, INSTRUMENT_KINDS, LFO_PLUS_SHAPES, LFO_SHAPES, LFO_TYPES,
+    InstrumentSetting, Section, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, INSTRUMENT_KINDS, LFO_PLUS_SHAPES, LFO_RESTARTS, LFO_SHAPES, LFO_TYPES,
     MATRIX_DESTINATIONS, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
 };
 use llamatron_model::schema::generated::limits::{
@@ -1116,20 +1116,14 @@ impl InstrumentEditor {
             if is_plus {
                 fields.push(Self::fade_in_field(ids, number, whole(&lfo(number, "fade_in"))).with_shown_label(&shown_label(labels::MSG_LFO_FADE_IN_LABEL)));
             }
-            fields.extend([
-                Field::toggle(
-                    ids.at(Write::Item("lfos", number, "retrigger")),
-                    &numbered(labels::MSG_LFO_RETRIGGER_LABEL),
-                    flag(&lfo(number, "retrigger")),
-                )
-                .with_shown_label(&shown_label(labels::MSG_LFO_RETRIGGER_LABEL)),
-                Field::toggle(
-                    ids.at(Write::Item("lfos", number, "each_scene")),
-                    &numbered(labels::MSG_LFO_EACH_SCENE_LABEL),
-                    flag(&lfo(number, "each_scene")),
-                )
-                .with_shown_label(&shown_label(labels::MSG_LFO_EACH_SCENE_LABEL)),
-            ]);
+            fields.extend([chosen(
+                ids.at(Write::Item("lfos", number, "restart")),
+                &numbered(labels::MSG_LFO_RESTART_LABEL),
+                LFO_RESTARTS,
+                &names_in(labels::MSG_LFO_RESTART_NAMES, LFO_RESTARTS),
+                &text(&lfo(number, "restart")),
+            )
+            .with_shown_label(&shown_label(labels::MSG_LFO_RESTART_LABEL))]);
             let mut column = TabColumn::new(None, fields);
             column.under = number == SECOND_ROW_LFO;
             column.boxed = true;

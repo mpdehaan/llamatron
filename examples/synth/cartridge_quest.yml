@@ -239,7 +239,7 @@ instruments:
       oscillators: { type: sid, wave: pulse, pulse_width: 40, modulation: "off", interval: 7, arpeggio: [] }
       envelopes: [{ type: sid_adsr, attack: 0, decay: 8, sustain: 10, release: 6 }, { type: none }, { type: none }]
       filter: { type: none }
-      lfos: [{ "on": true, shape: triangle, speed: medium, rate_percent: 21, retrigger: false }, { "on": true, shape: sine, speed: medium, rate_percent: 76, retrigger: true }]
+      lfos: [{ "on": true, shape: triangle, speed: medium, rate_percent: 21, restart: on_play }, { "on": true, shape: sine, speed: medium, rate_percent: 76, restart: each_note }]
       matrix: [{ source: lfo1, via: none, destination: pulse_width, amount: 60 }, { source: lfo2, via: none, destination: pitch, amount: 1 }]
   - name: arpeggio
     kind: built_in

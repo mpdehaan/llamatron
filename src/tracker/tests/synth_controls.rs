@@ -303,6 +303,14 @@ fn every_control_tried_apart_changes_the_sound() {
     if !differs(&remembering("0"), &remembering("100")) {
         unwired.push("env1 vactrol memory");
     }
+    // Restart is heard from the second note on: Each note starts the LFO again with it, On play lets it run on.
+    let restarting = |restart: &str| {
+        let sound = format!("{{ engine: basic, lfos: [{{ \"on\": true, rate_percent: 20, restart: {restart} }}], matrix: [{{ source: lfo1, via: none, destination: pitch, amount: 30 }}] }}");
+        played_notes(&instrument(&sound), &[PITCH, PITCH])
+    };
+    if !differs(&restarting("on_play"), &restarting("each_note")) {
+        unwired.push("lfo restart");
+    }
     // A gate's own cell remembers the note before as the vactrol envelope does, in the Filter's place and the Amp's.
     let gate_remembering = |part: &str, kind: &str, memory: &str| {
         let sound = format!("{{ engine: basic, {part}: {{ type: {kind}, memory: {memory} }} }}");

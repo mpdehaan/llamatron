@@ -739,8 +739,7 @@ impl LfoSetting {
     pub const ON: &'static str = "on";
     pub const SHAPE: &'static str = "shape";
     pub const RATE: &'static str = "rate";
-    pub const RETRIGGER: &'static str = "retrigger";
-    pub const EACH_SCENE: &'static str = "each_scene";
+    pub const RESTART: &'static str = "restart";
 }
 
 pub struct LfoShape;
@@ -819,6 +818,8 @@ pub static LFO_SHAPES: &[&str] = &["sine", "triangle", "saw_up", "saw_down", "sq
 pub static LFO_PLUS_SHAPES: &[&str] = &["sine", "triangle", "saw_up", "saw_down", "square", "sample_and_hold", "smooth_random"];
 /// The modulator modules an LFOs tab slot holds, by its Type.
 pub static LFO_TYPES: &[&str] = &["lfo", "lfo_plus"];
+/// When a modulator's cycle starts again.
+pub static LFO_RESTARTS: &[&str] = &["each_note", "each_scene", "on_play", "never"];
 pub static EFFECTS: &[&str] = &["none", "bitcrush", "drive"];
 pub static FILTER_TYPES: &[&str] = &["none", "ladder", "multimode", "sallen_key", "diode", "ota", "low_pass_gate"];
 pub static AMP_TYPES: &[&str] = &["clean", "transistor", "ota_vca", "low_pass_gate_amp"];

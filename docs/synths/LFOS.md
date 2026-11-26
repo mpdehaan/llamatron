@@ -30,10 +30,17 @@ keyboard as an FM modulator does: 1:1 and 2:1 sound harmonic, 3:2 hollow, odd
 ratios metallic. With Key off any rate can be set. At audio rate the saws and
 the square are band-limited so that they do not alias, and however far an LFO
 moves the pitch, no oscillator plays below MIDI's lowest note or above about
-20 kHz. Retrigger starts its cycle again
-with each note, so that every note's vibrato starts the same way; Each scene
-starts it again whenever a scene starts, so that a slow sweep lines up with
-the song.
+20 kHz.
+
+Restart says when a modulator's cycle starts again. On play, the default,
+starts it from zero whenever playback starts from silence, then lets it run
+underneath everything until playback stops, even through scenes that do not
+use it; launching a clip or a scene while the song plays never restarts it.
+Each note starts it again with every note, so that every note's vibrato
+starts the same way. Each scene starts it again whenever a scene starts, so
+that a slow sweep lines up with each scene. Never keeps its place when
+playback stops and goes on from there when it starts again. While nothing
+plays, every modulator stands still and costs nothing.
 
 ## LFO+
 
@@ -63,5 +70,5 @@ them.
 Sample & Hold doesn't draw a random number as it goes: when the instrument is
 compiled, a long row of random values is drawn from a fixed seed, and each
 cycle of the LFO reads the next one. So a Sample & Hold line is random to the
-ear and yet the same at every playing, live and in a WAV export, and Retrigger
-brings it back to the same place in the row.
+ear and yet the same at every playing, live and in a WAV export, and a
+restart brings it back to the same place in the row.

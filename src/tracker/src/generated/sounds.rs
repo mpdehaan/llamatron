@@ -594,8 +594,7 @@ pub static LFO_DEFAULTS: Preset = Preset::Map(&[
     ("rate_percent", Preset::Whole(74)),
     ("key", Preset::Flag(false)),
     ("ratio", Preset::Text("1:1")),
-    ("retrigger", Preset::Flag(true)),
-    ("each_scene", Preset::Flag(false)),
+    ("restart", Preset::Text("on_play")),
 ]);
 pub static EFFECT_DEFAULTS: Preset = Preset::Map(&[
     ("effect", Preset::Text("none")),

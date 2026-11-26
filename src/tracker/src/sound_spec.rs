@@ -350,8 +350,7 @@ fn lfos(sound: &Sound) -> Data {
         let mut lfo = vec![
             ("shape", setting("shape")),
             ("rate", Data::Float(lfo_speed::hertz(&speed, percent))),
-            ("retrigger", setting("retrigger")),
-            ("each_scene", setting("each_scene")),
+            ("restart", setting("restart")),
             ("fade_in", share(&setting("fade_in"), MILLISECONDS)),
         ];
         // A Tempo LFO's cycle is a division of the beat, which the backend times by the song's tempo.

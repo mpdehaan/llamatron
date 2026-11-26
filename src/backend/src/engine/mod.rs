@@ -33,6 +33,10 @@ pub const CONTROL: i64 = 5;
 /// velocity's place.
 pub const TEMPO_COARSE: i64 = 6;
 pub const TEMPO_FINE: i64 = 7;
+/// Playback of an instrument starting from silence, and stopping: its LFOs run only between, and On play ones start
+/// from zero.
+pub const PLAY_STARTED: i64 = 8;
+pub const PLAY_STOPPED: i64 = 9;
 /// What a tempo's two parts are counted in: 128 fine steps to a coarse one, and tenths of a quarter note a minute.
 const TEMPO_PART: f64 = 128.0;
 const TEMPO_TENTHS: f64 = 10.0;
@@ -419,6 +423,16 @@ impl Engine {
             CONTROL => {
                 if let Some(patch) = self.instruments[instrument].as_mut() {
                     patch.set_control(event.pitch as usize, event.velocity);
+                }
+            }
+            PLAY_STARTED => {
+                if let Some(patch) = self.instruments[instrument].as_mut() {
+                    patch.lfos.play_started();
+                }
+            }
+            PLAY_STOPPED => {
+                if let Some(patch) = self.instruments[instrument].as_mut() {
+                    patch.lfos.play_stopped();
                 }
             }
             TEMPO_COARSE => {

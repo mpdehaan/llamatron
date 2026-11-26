@@ -406,11 +406,12 @@ fn made_up_routes(track_names: &[&str]) -> Vec<(String, llamatron_tracker::realt
         .collect()
 }
 
-/// Whether an event is the song's tempo told to a built-in instrument, which llamatron sends beyond what the retired
-/// Python did, for LFOs that follow the tempo, and so is left out of what the timeline and player steps hold to it.
+/// Whether an event is the song's tempo or playback starting or stopping, told to a built-in instrument for its
+/// modulators beyond what the retired Python sent, and so left out of what the timeline and player steps hold to it.
 fn is_tempo_message(event: &llamatron_tracker::realtime::timeline::Playing) -> bool {
-    use llamatron_tracker::realtime::timeline::{CONTROL_CHANGE, TEMPO_COARSE, TEMPO_FINE};
-    event.kind == CONTROL_CHANGE && (event.number == TEMPO_COARSE || event.number == TEMPO_FINE)
+    use llamatron_tracker::realtime::timeline::{CONTROL_CHANGE, PLAY_STARTED, PLAY_STOPPED, TEMPO_COARSE, TEMPO_FINE};
+    let beyond_python = [TEMPO_COARSE, TEMPO_FINE, PLAY_STARTED, PLAY_STOPPED];
+    event.kind == CONTROL_CHANGE && beyond_python.contains(&event.number)
 }
 
 /// A sender that writes down everything a player hands it, a line each, for the player step.

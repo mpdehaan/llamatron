@@ -11,7 +11,7 @@
 //! slots stay free. Empty slots and those of no amount are left out when it is compiled.
 
 use crate::dsp::Random;
-use crate::protocol::values::{number, truth, word};
+use crate::protocol::values::{number, word};
 use crate::voice::blep::blep;
 use rmpv::Value;
 use std::f64::consts::PI;
@@ -33,13 +33,22 @@ enum Shape {
     SmoothRandom,
 }
 
+/// When an LFO's cycle starts again: at each note, at each scene, when playback starts from silence, or never, standing
+/// still while playback is stopped and going on from there when it starts again.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Restart {
+    EachNote,
+    EachScene,
+    OnPlay,
+    Never,
+}
+
 struct Lfo {
     shape: Shape,
     step: f64,
     /// The multiple of the note's frequency it runs at where it follows the key, as an FM modulator does.
     ratio: Option<f64>,
-    retrigger: bool,
-    each_scene: bool,
+    restart: Restart,
     cycles: f64,
     /// How long its depth takes to rise after a note starts, in seconds; 0 for no fade.
     fade: f64,
@@ -54,6 +63,10 @@ pub struct LfoBank {
     pub now: Vec<Vec<f64>>,
     /// The sample rate, from which a tempo LFO's step is worked out whenever the tempo changes.
     rate: f64,
+    /// How many players play the instrument now, and whether all have stopped, so that its LFOs stand still, costing
+    /// nothing, until playback starts again.
+    players: u32,
+    stopped: bool,
 }
 
 /// The tempo a song is taken to play at until it says, in quarter notes a minute.
@@ -90,8 +103,12 @@ impl LfoBank {
                     fade: number(spec, "fade_in", 0.0).max(0.0),
                     quarters,
                     ratio: crate::protocol::values::field(spec, "key_ratio").and_then(crate::protocol::values::as_number),
-                    retrigger: truth(spec, "retrigger", false),
-                    each_scene: truth(spec, "each_scene", false),
+                    restart: match word(spec, "restart", "on_play") {
+                        "each_note" => Restart::EachNote,
+                        "each_scene" => Restart::EachScene,
+                        "never" => Restart::Never,
+                        _ => Restart::OnPlay,
+                    },
                     cycles: 0.0,
                 })
             })
@@ -101,6 +118,30 @@ impl LfoBank {
             held,
             now: (0..LFO_COUNT).map(|_| vec![0.0; MOST_FRAMES]).collect(),
             rate,
+            players: 0,
+            stopped: false,
+        }
+    }
+
+    /// Playback of the instrument started: from silence, every On play LFO starts its cycle from zero; while something
+    /// already plays it, nothing restarts.
+    pub fn play_started(&mut self) {
+        if self.players == 0 {
+            for lfo in self.lfos.iter_mut().flatten() {
+                if lfo.restart == Restart::OnPlay {
+                    lfo.cycles = 0.0;
+                }
+            }
+        }
+        self.players += 1;
+        self.stopped = false;
+    }
+
+    /// A playback of the instrument stopped; once none plays it, its LFOs stand still.
+    pub fn play_stopped(&mut self) {
+        self.players = self.players.saturating_sub(1);
+        if self.players == 0 {
+            self.stopped = true;
         }
     }
 
@@ -119,8 +160,9 @@ impl LfoBank {
         std::array::from_fn(|place| self.lfos.get(place).and_then(Option::as_ref).map_or(0.0, |lfo| lfo.fade))
     }
 
+    /// Whether any LFO is on and moving: none stands still while playback is stopped.
     pub fn is_on(&self) -> bool {
-        self.lfos.iter().any(Option::is_some)
+        !self.stopped && self.lfos.iter().any(Option::is_some)
     }
 
     /// Work out what the LFOs give the chunk ahead.
@@ -154,7 +196,7 @@ impl LfoBank {
     /// Start again every LFO that retriggers, as a note begins.
     pub fn note_on(&mut self) {
         for lfo in self.lfos.iter_mut().flatten() {
-            if lfo.retrigger {
+            if lfo.restart == Restart::EachNote {
                 lfo.cycles = 0.0;
             }
         }
@@ -163,7 +205,7 @@ impl LfoBank {
     /// Start again every LFO that restarts each scene.
     pub fn scene_started(&mut self) {
         for lfo in self.lfos.iter_mut().flatten() {
-            if lfo.each_scene {
+            if lfo.restart == Restart::EachScene {
                 lfo.cycles = 0.0;
             }
         }
@@ -457,6 +499,31 @@ mod tests {
         lfos.set_tempo(240.0);
         let at_240 = cycles_in(&mut lfos);
         assert!((at_240 - 2.0 * at_120).abs() < 1e-6, "{at_240}");
+    }
+
+    /// An On play LFO stands still while playback is stopped and starts from zero when it starts from silence; a Never one
+    /// goes on from where it stood; a second player starting while one plays restarts nothing.
+    #[test]
+    fn on_play_starts_from_zero_and_never_goes_on() {
+        let mut lfos = LfoBank::compiled(
+            &[
+                Value::Map(vec![("restart".into(), "on_play".into()), ("rate".into(), 1.0.into())]),
+                Value::Map(vec![("restart".into(), "never".into()), ("rate".into(), 1.0.into())]),
+            ],
+            RATE,
+        );
+        let cycles = |lfos: &LfoBank, place: usize| lfos.lfos[place].as_ref().expect("an LFO").cycles;
+        lfos.play_started();
+        lfos.advance(MOST_FRAMES);
+        let reached = cycles(&lfos, 1);
+        lfos.play_started();
+        assert!(cycles(&lfos, 0) > 0.0, "a second start while playing restarts nothing");
+        lfos.play_stopped();
+        lfos.play_stopped();
+        assert!(!lfos.is_on(), "stopped, it stands still");
+        lfos.play_started();
+        assert_eq!(cycles(&lfos, 0), 0.0);
+        assert_eq!(cycles(&lfos, 1), reached);
     }
 
     /// Fade in rises from nothing at the note's start to full at its time, smoothly, and is full at once with no fade.

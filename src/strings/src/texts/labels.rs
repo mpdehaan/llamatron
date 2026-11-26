@@ -496,9 +496,9 @@ pub static MSG_LFO_DIVISION_NAMES: &[(&str, &str)] = &[
     ("1/32t", "1/32 triplet"),
 ];
 pub static MSG_LFO_SPEED_NAMES: &[(&str, &str)] = &[("low", "Low"), ("medium", "Medium"), ("high", "High"), ("very_high", "Very High"), ("tempo", "Tempo")];
-pub const MSG_LFO_RETRIGGER_LABEL: &str = "LFO {number} retrigger";
-pub const MSG_LFO_EACH_SCENE_LABEL: &str = "LFO {number} each scene";
-pub static MSG_LFO_SHOWN_LABELS: &[(&str, &str)] = &[("LFO {number} type", "Type"), ("LFO {number} fade in", "Fade in"), ("LFO {number} division", "Rate"), ("LFO {number} shape", "Shape"), ("LFO {number} speed", "Speed"), ("LFO {number} rate", "Rate"), ("LFO {number} ratio", "Rate"), ("LFO {number} key", "Key"), ("LFO {number} retrigger", "Retrigger"), ("LFO {number} each scene", "Each scene")];
+pub const MSG_LFO_RESTART_LABEL: &str = "LFO {number} restart";
+pub static MSG_LFO_RESTART_NAMES: &[(&str, &str)] = &[("each_note", "Each note"), ("each_scene", "Each scene"), ("on_play", "On play"), ("never", "Never")];
+pub static MSG_LFO_SHOWN_LABELS: &[(&str, &str)] = &[("LFO {number} type", "Type"), ("LFO {number} fade in", "Fade in"), ("LFO {number} division", "Rate"), ("LFO {number} shape", "Shape"), ("LFO {number} speed", "Speed"), ("LFO {number} rate", "Rate"), ("LFO {number} ratio", "Rate"), ("LFO {number} key", "Key"), ("LFO {number} restart", "Restart")];
 pub static MSG_EFFECT_SHOWN_LABELS: &[(&str, &str)] = &[("FX {number} bits", "Bits"), ("FX {number} rate", "Rate"), ("FX {number} curve", "Curve"), ("FX {number} amount", "Amount"), ("FX {number} mix", "Mix")];
 pub const MSG_BUILT_IN_SHOWN: &str = "Synth: {engine}";
 pub static MSG_ENGINE_NAMES: &[(&str, &str)] = &[("basic", "Basic"), ("asheville", "Asheville"), ("drum", "MechaDrum"), ("sid", "SID"), ("pocket", "Pocket"), ("oh3", "Oh3")];

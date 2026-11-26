@@ -25,6 +25,10 @@ pub const SCENE_STARTED: i64 = 102;
 /// The controllers a built-in instrument is told the song's tempo on, for its LFOs that follow it: its tenths of a quarter
 /// note a minute in two parts, coarse (the tenths over 128) then fine, as two MIDI values can carry it.
 pub const TEMPO_COARSE: i64 = 103;
+/// The controllers a built-in instrument is told playback starts from silence and stops on, so that its modulators run
+/// only while it plays and On play ones start from zero (the backend's engine/mod.rs, PLAY_STARTED).
+pub const PLAY_STARTED: i64 = 105;
+pub const PLAY_STOPPED: i64 = 106;
 pub const TEMPO_FINE: i64 = 104;
 const TEMPO_TENTHS: f64 = 10.0;
 const TEMPO_PART: i64 = 128;
