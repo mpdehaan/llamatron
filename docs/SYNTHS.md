@@ -99,6 +99,7 @@ Each part has a page of its own:
 | Env 1, Env 2 and Env 3 | [Envelopes](synths/ENVELOPES.md) |
 | Four LFOs | [LFOs](synths/LFOS.md) |
 | The filter or the low-pass gate | [Filters](synths/FILTERS.md) |
+| The Amp each note ends in | [Amp](synths/AMP.md) |
 | Two effects in order, the FX tab | [Effects](synths/EFFECTS.md) |
 | Six routes of what moves what | [Mod Matrix](synths/MOD_MATRIX.md) |
 

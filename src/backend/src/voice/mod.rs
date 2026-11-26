@@ -6,6 +6,7 @@
 //! together.
 
 pub mod acid;
+pub mod amp;
 pub mod asheville;
 pub mod blep;
 pub mod effects;

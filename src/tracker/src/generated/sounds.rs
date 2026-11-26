@@ -88,6 +88,7 @@ pub static ENGINE_PRESETS: &[(&str, Preset)] = &[
                     ("drive", Preset::Whole(10)),
                 ]),
             ),
+            ("amp", Preset::Map(&[("type", Preset::Text("transistor"))])),
             ("effects", Preset::List(&[])),
             ("matrix", Preset::List(&[])),
         ]),
@@ -123,6 +124,7 @@ pub static ENGINE_PRESETS: &[(&str, Preset)] = &[
                 ]),
             ),
             ("filter", Preset::Map(&[("type", Preset::Text("ladder"))])),
+            ("amp", Preset::Map(&[("type", Preset::Text("clean"))])),
             ("effects", Preset::List(&[])),
             (
                 "matrix",
@@ -169,6 +171,7 @@ pub static ENGINE_PRESETS: &[(&str, Preset)] = &[
                 ]),
             ),
             ("filter", Preset::Map(&[("type", Preset::Text("none"))])),
+            ("amp", Preset::Map(&[("type", Preset::Text("clean"))])),
             ("effects", Preset::List(&[])),
             ("matrix", Preset::List(&[])),
         ]),
@@ -207,6 +210,7 @@ pub static ENGINE_PRESETS: &[(&str, Preset)] = &[
                 ]),
             ),
             ("filter", Preset::Map(&[("type", Preset::Text("none"))])),
+            ("amp", Preset::Map(&[("type", Preset::Text("clean"))])),
             ("effects", Preset::List(&[])),
             ("matrix", Preset::List(&[])),
         ]),
@@ -314,6 +318,7 @@ pub static ENGINE_PRESETS: &[(&str, Preset)] = &[
                 ]),
             ),
             ("filter", Preset::Map(&[("type", Preset::Text("none"))])),
+            ("amp", Preset::Map(&[("type", Preset::Text("clean"))])),
             ("effects", Preset::List(&[])),
             ("matrix", Preset::List(&[])),
         ]),
@@ -321,6 +326,12 @@ pub static ENGINE_PRESETS: &[(&str, Preset)] = &[
 ];
 /// What each type of part holds where its settings leave it out, by the type's name.
 pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
+    ("clean", Preset::Map(&[("response", Preset::Whole(0)), ("amp_character", Preset::Whole(0))])),
+    (
+        "transistor",
+        Preset::Map(&[("response", Preset::Whole(30)), ("drive", Preset::Whole(25)), ("bleed", Preset::Whole(5))]),
+    ),
+    ("ota_vca", Preset::Map(&[("response", Preset::Whole(60)), ("drive", Preset::Whole(10))])),
     (
         "asheville",
         Preset::Map(&[
@@ -675,6 +686,30 @@ pub static MODDED_SETTINGS: &[(&str, &str)] = &[
 
 /// How each setting is shown, and where a type of part shows one its own way, how it shows it there.
 pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
+    (
+        "response",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
+        },
+    ),
+    (
+        "bleed",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
+        },
+    ),
+    (
+        "amp_character",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
+        },
+    ),
     (
         "osc1_speed",
         SettingKind::Choice {
@@ -1372,6 +1407,7 @@ pub static PART_TYPES: &[(&str, &[&str], &[&str])] = &[
         &["basic", "asheville", "sid", "pocket", "acid", "drum"],
         &["Basic", "Asheville", "SID", "Pocket", "Oh3", "MechaDrum"],
     ),
+    ("amp", &["clean", "transistor", "ota_vca"], &["Clean", "Transistor", "OTA"]),
     (
         "filter",
         &["none", "ladder", "multimode", "sallen_key", "diode", "ota", "low_pass_gate"],

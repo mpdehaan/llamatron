@@ -25,7 +25,7 @@ them, the screenshots or the website.
   `docs/CLIPS.md`, `docs/SCALES.md`, `docs/DRAWS.md`, `docs/GROOVES.md`), Generators (`docs/GENERATORS.md` and a page each in
   `docs/generators/`, in one list by name), Song Wizard (`docs/WIZARD.md`), File Operations (`docs/EXPORTING.md`,
   `docs/IMPORTING.md`), MIDI & Performance (`docs/MIDI_SETUP.md`, `docs/PLAYING_LIVE.md`, `docs/VISUALIZERS.md`), Synths (`docs/SYNTHS.md`; `docs/synths/` a
-  page for each tab of a built-in instrument in the tabs' order, Oscillators, Envelopes, LFOs, Filters, Effects and Mod Matrix; `docs/synths/engines/` a page for each engine,
+  page for each tab of a built-in instrument in the tabs' order, Oscillators, Envelopes, LFOs, Filters, Amp, Effects and Mod Matrix; `docs/synths/engines/` a page for each engine,
   standard and drum, built or planned, under the agreed categories, a `####` heading each), Advanced
   (`docs/USER_SCRIPTS.md`, `docs/RECORDING.md`, `docs/BACKEND.md`, and from `developer_docs/`, `developer_docs/ARCHITECTURE.md`).
 - Every page in `docs/` MUST be linked from a row of those tables; a new page adds its row in the same change. `docs/INSTALLING.md` points

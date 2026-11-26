@@ -17,6 +17,7 @@
 use crate::drums::Hit;
 use crate::dsp::Random;
 use crate::protocol::values::{field, list, number, truth, word};
+use crate::voice::amp::{self, AmpPart};
 use crate::voice::effects::{self, Effect};
 use crate::voice::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
 use crate::voice::filters::{FilterPart, FilterState, GateNote, GatePart, ENVELOPE_OCTAVES};
@@ -123,6 +124,8 @@ pub struct Modular {
     memory: [EnvelopeMemory; 3],
     filter: Option<FilterPart>,
     gate: Option<GatePart>,
+    /// The Amp the voice ends in, which Env 1 opens (amp.rs); a low-pass gate is the gate instead.
+    amp: AmpPart,
     own_filter: bool,
     shared: FilterState,
     shared_octaves: Vec<f64>,
@@ -448,11 +451,8 @@ impl Patch {
                         modular.shared_resonance[offset + place] = moved.resonance;
                     }
                 }
-                let mut amp = light;
-                if moved.amp != 0.0 {
-                    amp *= (1.0 + moved.amp).clamp(0.0, MOST_AMP);
-                }
-                wave * amp
+                let moved_amp = if moved.amp != 0.0 { (1.0 + moved.amp).clamp(0.0, MOST_AMP) } else { 1.0 };
+                modular.amp.process(wave, light, moved_amp)
             };
             buffer[offset + place] += out as f32;
         }
@@ -523,6 +523,7 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
         reads_env3: pitch_env != 0.0 || matrix.uses(Source::Env3),
         filter,
         gate,
+        amp: amp::compiled(field(spec, "amp").unwrap_or(&empty)),
         shared: FilterState::default(),
         shared_octaves: vec![0.0; MOST_FRAMES],
         shared_resonance: vec![0.0; MOST_FRAMES],

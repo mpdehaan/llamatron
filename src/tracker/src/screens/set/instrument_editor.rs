@@ -487,6 +487,7 @@ impl InstrumentEditor {
             Self::envelopes_tab(&sound, not_ready, &mut ids),
             Self::lfos_tab(&sound, not_ready, &mut ids),
             Self::filter_tab(&sound, not_ready, &mut ids),
+            Self::amp_tab(&sound, not_ready, &mut ids),
             Self::effects_tab(&sound, not_ready, &mut ids),
             Self::matrix_tab(&sound, not_ready, &mut ids),
         ];
@@ -1075,6 +1076,15 @@ impl InstrumentEditor {
     fn filter_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
         let top = vec![Self::type_field(sound, "filter", ids)];
         let mut tab = Tab::new(labels::MSG_FILTER_TAB, vec![TabColumn::new(None, Self::setting_fields(sound, "filter", ids))]);
+        tab.top = top;
+        tab.not_ready = not_ready;
+        tab
+    }
+
+    /// The Amp tab: its type, then its own settings.
+    fn amp_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
+        let top = vec![Self::type_field(sound, "amp", ids)];
+        let mut tab = Tab::new(labels::MSG_AMP_TAB, vec![TabColumn::new(None, Self::setting_fields(sound, "amp", ids))]);
         tab.top = top;
         tab.not_ready = not_ready;
         tab

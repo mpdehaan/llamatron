@@ -174,6 +174,7 @@ and each of its parts.
 | [Envelopes](synths/ENVELOPES.md) | Every envelope type, and how each moves. |
 | [LFOs](synths/LFOS.md) | The four LFOs. |
 | [Filters](synths/FILTERS.md) | Every filter type and the low-pass gate. |
+| [Amp](synths/AMP.md) | The Amp each note ends in: Clean, Transistor and OTA. |
 | [Effects](synths/EFFECTS.md) | Drive, Bitcrush and the effects planned. |
 | [Mod Matrix](synths/MOD_MATRIX.md) | What moves what. |
 

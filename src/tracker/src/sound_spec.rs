@@ -21,6 +21,7 @@ const DUTY_SHARES: [(&str, f64); 4] = [("eighth", 0.125), ("quarter", 0.25), ("h
 const CELLS: [(&str, f64, f64); 4] = [("fast", 0.0025, 0.035), ("classic", 0.005, 0.08), ("slow", 0.012, 0.25), ("lazy", 0.02, 0.6)];
 const ENVELOPE_PARTS: [&str; 3] = ["env1", "env2", "env3"];
 const OSCILLATORS: &str = "oscillators";
+const AMP: &str = "amp";
 const FILTER: &str = "filter";
 const UP: &str = "up";
 
@@ -38,6 +39,7 @@ pub fn synth_spec(sound: &Sound, drums_from: i64) -> Data {
         ("oscillators", oscillators.clone()),
         ("envelopes", Data::List(ENVELOPE_PARTS.iter().map(|part| envelope(sound, part)).collect())),
         ("filter", filter(sound)),
+        ("amp", amp(sound)),
         ("lfos", lfos(sound)),
         ("effects", effects(sound)),
         ("matrix", matrix(sound)),
@@ -256,6 +258,18 @@ fn envelope(sound: &Sound, part: &str) -> Data {
 }
 
 /// The filter part, as the backend's filters and gates read it, or none.
+/// The Amp as the backend reads it: its type, and its Response, Drive, Bleed and Character as fractions.
+fn amp(sound: &Sound) -> Data {
+    let setting = |name: &str| sound.part_value(AMP, name);
+    mapping(vec![
+        ("type", Data::text(&sound.part_type(AMP))),
+        ("response", share(&setting("response"), PERCENT)),
+        ("drive", share(&setting("drive"), PERCENT)),
+        ("bleed", share(&setting("bleed"), PERCENT)),
+        ("character", share(&setting("amp_character"), PERCENT)),
+    ])
+}
+
 fn filter(sound: &Sound) -> Data {
     let kind = sound.part_type(FILTER);
     let setting = |name: &str| sound.part_value(FILTER, name);
