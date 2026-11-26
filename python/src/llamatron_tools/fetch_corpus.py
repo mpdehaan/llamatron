@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Download the corpus into output/corpus/, which git ignores, for study on this computer, run by user_scripts/fetch_corpus.sh:
-the public domain Humdrum scores and folk collections, from their maintainers' repositories, the Public Domain Song
+the public domain scores and folk collections, from their editors' repositories, the Public Domain Song
 Anthology, the Session's and Nottingham's folk tunes and the Mutopia Project's scores: public domain music only. Nothing
 downloaded is committed or passed on; the song wizard's music theory was measured from
 it, and the song wizard is to import songs from it where it is downloaded. Only the files a collection needs are kept,
-sparing the connection: an archive comes in one download with its other files dropped, the smaller Humdrum collections a
+sparing the connection: an archive comes in one download with its other files dropped, the smaller score collections a
 file at a time with a pause between, a database as one file. A file already downloaded isn't downloaded again, a download
 past the size allowed is refused, and no archive member may land outside its folder. Nothing in the test suite runs this.
 
@@ -49,7 +49,7 @@ DATAVERSE_FILE = '{server}/api/access/datafile/{id}'
 TREE = 'https://api.github.com/repos/{repository}/git/trees/{branch}?recursive=1'
 RAW = 'https://raw.githubusercontent.com/{repository}/{branch}/{path}'
 TARBALL = 'https://codeload.github.com/{repository}/tar.gz/{branch}'
-# Each Humdrum collection on GitHub: its folder under output/corpus/, how it comes, its repository and branch.
+# Each score collection on GitHub: its folder under output/corpus/, how it comes, its repository and branch.
 COLLECTIONS = (
     ('essen', ARCHIVE, 'ccarh/essen-folksong-collection', 'main'),
     ('joplin', FILES, 'craigsapp/joplin', 'main'),
@@ -62,9 +62,9 @@ COLLECTIONS = (
     ('bach-art-of-fugue', FILES, 'craigsapp/art-of-the-fugue', 'main'),
     ('vivaldi-op6', FILES, 'craigsapp/vivaldi-op6', 'main'),
 )
-# Each further source of public domain music: its folder under output/corpus/, how it comes, its address, the endings of the files kept, the most it may come
+# The public domain sources that are not score collections on GitHub: each its folder under output/corpus/, how it comes, its address, the endings of the files kept, the most it may come
 # to in megabytes, and its terms.
-DATASETS = (
+OTHER_SOURCES = (
     ('song-anthology', DATAVERSE, 'https://dataverse.lib.virginia.edu doi:10.18130/V3/C4RD06', ('.xml',), 30, 'CC0, waived by David Berger and Chuck Israels'),
     ('thesession', SINGLE, 'https://raw.githubusercontent.com/adactio/TheSession-data/main/json/tunes.json', ('.json',), 30, 'published openly by the Session for reuse'),
     ('nottingham', ARCHIVE, 'https://codeload.github.com/jukedeck/nottingham-dataset/tar.gz/master', ('.abc',), 5, 'GPL-3.0'),
@@ -79,7 +79,7 @@ MUTOPIA_COMPOSERS = ('DowlandJ', 'GesualdoC', 'GibbonsO', 'JanequinC', 'BachJS',
                      'SatieE', 'BartokB', 'HolstGT', 'JoplinS', 'FosterSC', 'GottschalkLM', 'SousaJP', 'GiulianiM', 'CarulliF', 'BachCPE')
 MUTOPIA_PIECES = 6
 MUTOPIA_LINK = 'href="(https://www.mutopiaproject.org/ftp/[^"]+\\.mid)"'
-# The most each Humdrum collection comes to, in megabytes, and the terms they share.
+# The most each score collection comes to, in megabytes, and the terms they share.
 COLLECTION_MEGABYTES = {'essen': 35, 'joplin': 1, 'chopin-mazurkas': 1, 'haydn-piano-sonatas': 1, 'mozart-piano-sonatas': 2, 'beethoven-string-quartets': 4,
                         'beethoven-piano-sonatas': 3, 'bach-chorales': 2, 'bach-art-of-fugue': 1, 'vivaldi-op6': 1}
 COLLECTION_TERMS = 'public-domain music; the encodings their editors\', for study'
@@ -199,9 +199,10 @@ def fetch_mutopia(*, folder, address, allowed):
     return count
 
 
-def fetch_dataset(*, folder, kind, url, endings, allowed=ALLOWED_BYTES):
-    """Fetch one further source: a single file saved under its own name, the kept files of a Dataverse dataset, or an archive
-    with only the files whose endings are kept, each member's path checked."""
+def fetch_source(*, folder, kind, url, endings, allowed=ALLOWED_BYTES):
+    """Download one of the public domain sources that is not a score collection on GitHub (the Song Anthology, the Session's
+    tunes, the Nottingham tunes, the Mutopia Project's scores): a single file saved under its own name, the kept files of
+    a Dataverse record, or an archive with only the files whose endings are kept, each member's path checked."""
     if kind == DATAVERSE:
         return fetch_dataverse(folder=folder, address=url, endings=endings, allowed=allowed)
     if kind == MUTOPIA:
@@ -274,16 +275,16 @@ def fetch_files(*, folder, repository, branch):
 
 def megabytes_of(name):
     """Return the most a source may come to, in megabytes."""
-    return COLLECTION_MEGABYTES.get(name) or sum(megabytes for dataset, _, _, _, megabytes, _ in DATASETS if dataset == name)
+    return COLLECTION_MEGABYTES.get(name) or sum(megabytes for dataset, _, _, _, megabytes, _ in OTHER_SOURCES if dataset == name)
 
 
 def terms_of(name):
     """Return a source's terms in a few words."""
-    return next((terms for dataset, _, _, _, _, terms in DATASETS if dataset == name), COLLECTION_TERMS)
+    return next((terms for dataset, _, _, _, _, terms in OTHER_SOURCES if dataset == name), COLLECTION_TERMS)
 
 
 def every_name():
-    return tuple(dict.fromkeys([name for name, _, _, _ in COLLECTIONS] + [name for name, _, _, _, _, _ in DATASETS]))
+    return tuple(dict.fromkeys([name for name, _, _, _ in COLLECTIONS] + [name for name, _, _, _, _, _ in OTHER_SOURCES]))
 
 
 def asked(*, ask=input, say=print):
@@ -315,12 +316,12 @@ def fetch_named(wanted):
         fetch = fetch_archive if kind == ARCHIVE else fetch_files
         count = fetch(folder=folder, repository=repository, branch=branch)
         print(FETCHED.format(name=name, count=count, folder=folder))
-    for name, kind, url, endings, megabytes, terms in DATASETS:
+    for name, kind, url, endings, megabytes, terms in OTHER_SOURCES:
         if name not in wanted:
             continue
         folder = ROOT / name
         folder.mkdir(parents=True, exist_ok=True)
-        count = fetch_dataset(folder=folder, kind=kind, url=url, endings=endings, allowed=megabytes * MEGABYTE)
+        count = fetch_source(folder=folder, kind=kind, url=url, endings=endings, allowed=megabytes * MEGABYTE)
         print(FETCHED_WITH_TERMS.format(name=name, count=count, folder=folder, terms=terms))
 
 

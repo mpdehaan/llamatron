@@ -52,7 +52,7 @@ scenes to start from.
 | Collection | Edited or kept by | Terms | What it holds | Folder |
 | --- | --- | --- | --- | --- |
 | [Essen Folksong Collection](https://github.com/ccarh/essen-folksong-collection) | the Center for Computer Assisted Research in the Humanities | CCARH's personal-use terms; the tunes are traditional | Thousands of folk melodies | `essen` |
-| [Scott Joplin's piano works](https://github.com/craigsapp/joplin) | Craig Stuart Sapp, in Humdrum | public domain music, the encoding its editor's | Ragtime | `joplin` |
+| [Scott Joplin's piano works](https://github.com/craigsapp/joplin) | Craig Stuart Sapp | public domain music, the encoding its editor's | Ragtime | `joplin` |
 | [Chopin's mazurkas](https://github.com/craigsapp/chopin-mazurkas) | Craig Stuart Sapp | public domain music, the encoding its editor's | Piano | `chopin-mazurkas` |
 | [Haydn's piano sonatas](https://github.com/craigsapp/haydn-piano-sonatas) | Craig Stuart Sapp | public domain music, the encoding its editor's | Piano | `haydn-piano-sonatas` |
 | [Mozart's piano sonatas](https://github.com/craigsapp/mozart-piano-sonatas) | Craig Stuart Sapp | public domain music, the encoding its editor's | Piano | `mozart-piano-sonatas` |
