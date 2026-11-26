@@ -30,7 +30,7 @@ if [ "$waiting" != "0" ]; then
 fi
 # The built site's files are written into a tree of their own through an index of their own, so that main's index and
 # history are never touched, and that tree is the whole of the gh-pages branch.
-index="$(git rev-parse --git-dir)/publish_docs_index"
+index="$(git rev-parse --absolute-git-dir)/publish_docs_index"
 rm -f "$index"
 GIT_INDEX_FILE="$index" git --work-tree="$SITE" add -A .
 tree=$(GIT_INDEX_FILE="$index" git write-tree)
