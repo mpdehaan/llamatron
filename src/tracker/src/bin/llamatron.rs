@@ -5,6 +5,7 @@
 //! `llamatron set.yml --to KIND` writes its songs without opening the tracker, as the Export dialog writes them.
 
 use llamatron_strings::{cli, named};
+use llamatron_tracker::launch::Launch;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
@@ -15,7 +16,14 @@ struct Asked {
     song: Option<String>,
     out: Option<PathBuf>,
     replace: bool,
+    /// What the tracker does by itself once it opens.
+    launch: Launch,
 }
+
+/// The options that only mean something when opening the tracker, and those only when exporting.
+const LAUNCH_OPTIONS: [&str; 5] = ["--autoplay", "--autoplay-quit-when-finished", "--visualizer", "--details", "--max-seconds"];
+const EXPORT_OPTIONS: [&str; 3] = ["--song", "--out", "--replace"];
+const OPTION_SEPARATOR: &str = ", ";
 
 /// Open the tracker on the set named, or write the exports asked for, saying why where neither can be done.
 fn main() -> ExitCode {
@@ -29,7 +37,7 @@ fn main() -> ExitCode {
     };
     let done = match &asked.kind {
         Some(kind) => export(&asked, kind),
-        None => llamatron_tracker::terminal::run(asked.set.as_deref()),
+        None => llamatron_tracker::terminal::run(asked.set.as_deref(), asked.launch.clone()),
     };
     match done {
         Ok(()) => ExitCode::SUCCESS,
@@ -50,7 +58,9 @@ fn asked(arguments: Vec<String>) -> Result<Asked, String> {
         song: None,
         out: None,
         replace: false,
+        launch: Launch::default(),
     };
+    let mut given: Vec<String> = Vec::new();
     let mut words = arguments.into_iter().peekable();
     while let Some(word) = words.next() {
         let value_after = |words: &mut std::iter::Peekable<std::vec::IntoIter<String>>| words.next_if(|next| !next.starts_with("--"));
@@ -59,13 +69,64 @@ fn asked(arguments: Vec<String>) -> Result<Asked, String> {
             "--song" => asked.song = value_after(&mut words),
             "--out" => asked.out = value_after(&mut words).map(PathBuf::from),
             "--replace" => asked.replace = true,
+            "--autoplay" => asked.launch.autoplay = true,
+            "--autoplay-quit-when-finished" => asked.launch.quit_when_finished = true,
+            "--details" => asked.launch.details = true,
+            "--visualizer" => asked.launch.visualizer = Some(visualizer_named(value_after(&mut words))?),
+            "--max-seconds" => asked.launch.max_seconds = Some(seconds_named(value_after(&mut words))?),
             option if option.starts_with("--") => {
                 return Err(named(cli::ERR_CLI_UNKNOWN_OPTION, &[("option", option.into())]));
             }
-            _ => asked.set = Some(PathBuf::from(word)),
+            _ => {
+                asked.set = Some(PathBuf::from(word));
+                continue;
+            }
         }
+        given.push(word);
     }
+    refuse_mixed(&asked, &given)?;
     Ok(asked)
+}
+
+/// Refuse launch options with --to, export options without it, and launch options with no set to play.
+fn refuse_mixed(asked: &Asked, given: &[String]) -> Result<(), String> {
+    let named_of = |options: &[&str]| -> String {
+        let found: Vec<&str> = options.iter().copied().filter(|option| given.iter().any(|each| each == option)).collect();
+        found.join(OPTION_SEPARATOR)
+    };
+    let launching = named_of(&LAUNCH_OPTIONS);
+    let exporting = named_of(&EXPORT_OPTIONS);
+    if asked.kind.is_some() && !launching.is_empty() {
+        return Err(named(cli::ERR_CLI_NOT_WITH_TO, &[("options", launching.as_str().into())]));
+    }
+    if asked.kind.is_none() && !exporting.is_empty() {
+        return Err(named(cli::ERR_CLI_ONLY_WITH_TO, &[("options", exporting.as_str().into())]));
+    }
+    if asked.launch.opens_arrange() && asked.set.is_none() {
+        return Err(cli::ERR_CLI_LAUNCH_NEEDS_SET.to_string());
+    }
+    Ok(())
+}
+
+/// The visualizer mode --visualizer names, one that is built.
+fn visualizer_named(value: Option<String>) -> Result<String, String> {
+    let modes = llamatron_tracker::visualizers::ported_modes();
+    let value = value.unwrap_or_default();
+    if modes.contains(&value.as_str()) {
+        return Ok(value);
+    }
+    let words = [("mode", value.as_str().into()), ("modes", modes.join(OPTION_SEPARATOR).as_str().into())];
+    Err(named(cli::ERR_CLI_UNKNOWN_VISUALIZER, &words))
+}
+
+/// The seconds --max-seconds names.
+fn seconds_named(value: Option<String>) -> Result<f64, String> {
+    let value = value.unwrap_or_default();
+    value
+        .parse::<f64>()
+        .ok()
+        .filter(|seconds| seconds.is_finite() && *seconds >= 0.0)
+        .ok_or_else(|| named(cli::ERR_CLI_NEEDS_SECONDS, &[("value", value.as_str().into())]))
 }
 
 /// Write the songs of the set asked for, or the one song named, as a kind of export, each beside the set or in the

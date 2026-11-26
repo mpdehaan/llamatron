@@ -1364,6 +1364,10 @@ impl Page for ArrangePage {
         self.visualized(app, drawn, header, width, height)
     }
 
+    fn launch_visualizer(&self, app: &App, mode: &str) {
+        self.show_visualizer(app, mode);
+    }
+
     fn frame_interval(&self) -> Option<std::time::Duration> {
         self.shows_visualizer().then_some(visualizers::showing::FRAME_INTERVAL)
     }

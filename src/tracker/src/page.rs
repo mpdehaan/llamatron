@@ -118,6 +118,10 @@ pub trait Page {
 
     /// Whether the page is a dialog, drawn in a box over the page beneath it.
     /// The whole screen with whatever the page draws over all of it, such as an Inset Window, or the screen as it is.
+    /// Show a visualizer mode by its name in a set file, as the command line's --visualizer asks of Arrange; a page with no
+    /// visualizer does nothing.
+    fn launch_visualizer(&self, _app: &App, _mode: &str) {}
+
     /// How often the page wants its screen drawn again while nothing is pressed, such as a visualizer's frames; None for a
     /// page drawn only when something changes.
     fn frame_interval(&self) -> Option<std::time::Duration> {

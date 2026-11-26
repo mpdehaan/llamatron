@@ -288,6 +288,12 @@ impl Tracker {
             page.press(&mut self.app, &item, key);
         }
         self.app.document.record_edit();
+        self.settle();
+    }
+
+    /// Carry out what pages and dialogs asked for since: pages opened, closed and answered, renames followed and rows
+    /// gone to.
+    pub fn settle(&mut self) {
         let requests = std::mem::take(&mut self.app.requests);
         for request in requests {
             match request {

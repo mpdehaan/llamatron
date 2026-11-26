@@ -226,6 +226,8 @@ with `--to`.
   record it. A looping clip beside one that ends is fine, since the scene
   below cuts the loop.
 - **`--max-seconds N`** quits after that many seconds, whatever is playing.
+- **`--details`** opens on Arrange with its details view showing, as `D`
+  shows it.
 - **`--visualizer NAME`** opens on Arrange with that visualizer mode over the
   clip area and plays the song from the top, as `--autoplay` does.
   [Visualizers](VISUALIZERS.md) lists the modes' names.

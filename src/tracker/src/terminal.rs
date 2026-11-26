@@ -7,11 +7,13 @@
 
 use crate::app::Tracker;
 use crate::document::Document;
+use crate::launch::{Launch, Running};
 use crate::style::Style;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use crossterm::style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor};
 use crossterm::terminal::{self, BeginSynchronizedUpdate, Clear, ClearType, EndSynchronizedUpdate, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::{cursor, queue};
+use llamatron_strings::{messages, named};
 use std::io::{self, Write};
 use std::path::Path;
 
@@ -20,8 +22,9 @@ const TICK: std::time::Duration = std::time::Duration::from_millis(30);
 /// How often the screen is drawn again while something plays, for its lights.
 const LIGHTS: std::time::Duration = std::time::Duration::from_millis(100);
 
-/// Open the tracker on a set's file, or on a new set where none is named, and run it until it quits.
-pub fn run(path: Option<&Path>) -> Result<(), String> {
+/// Open the tracker on a set's file, or on a new set where none is named, do what the launch asks, and run it until it
+/// quits.
+pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
     let document = match path {
         Some(path) => Document::open(path).map_err(|error| format!("{}: {error}", path.display()))?,
         None => Document::new_set()?,
@@ -29,15 +32,37 @@ pub fn run(path: Option<&Path>) -> Result<(), String> {
     let mut tracker = Tracker::new(document);
     tracker.app.fluidsynth_installed = crate::wav::fluidsynth_installed();
     start_terminal()?;
-    let finished = run_keys(&mut tracker);
+    launched(&mut tracker, &launch);
+    let mut running = Running::new(launch);
+    let finished = run_keys(&mut tracker, &mut running);
     tracker.app.transport.close();
     tracker.app.preview.close();
     end_terminal();
     finished
 }
 
-/// Draw the screen, then press each key into the tracker, until it quits or Ctrl+C is pressed, which quits at once.
-fn run_keys(tracker: &mut Tracker) -> Result<(), String> {
+/// Do what a launch asks once the tracker is open: open Arrange, with its details view or a visualizer mode showing, and
+/// play the song from the top.
+fn launched(tracker: &mut Tracker, launch: &Launch) {
+    if !launch.opens_arrange() {
+        return;
+    }
+    tracker.app.session.shows_arrange_details = launch.details;
+    tracker.press(crate::keys::first_key(&crate::keybindings::MainPage::ARRANGE));
+    if let Some(mode) = &launch.visualizer {
+        tracker.top().launch_visualizer(&tracker.app, mode);
+    }
+    if launch.plays() {
+        let scene = named(messages::MSG_SCENE_NUMBER, &[("number", 1.into())]);
+        let said = named(messages::MSG_PLAYING_FROM, &[("scene", scene.as_str().into())]);
+        crate::screens::arrange::arrange_page::play_through(&mut tracker.app, &scene, &said, |app| app.transport.play_scene(&app.document, 0));
+        tracker.settle();
+    }
+}
+
+/// Draw the screen, then press each key into the tracker, until it quits, Ctrl+C is pressed, which quits at once, or the
+/// launch says to.
+fn run_keys(tracker: &mut Tracker, running: &mut Running) -> Result<(), String> {
     let mut out = io::stdout();
     let mut changed = true;
     let mut drawn = std::time::Instant::now();
@@ -45,6 +70,9 @@ fn run_keys(tracker: &mut Tracker) -> Result<(), String> {
         // The screen is drawn after each key, and while something plays every LIGHTS so that its lights move, less often
         // than the ticks, which keep the player ahead.
         let playing = tracker.app.transport.is_playing() || tracker.app.preview.is_playing();
+        if running.should_quit(playing) {
+            return Ok(());
+        }
         let lights_due = playing && drawn.elapsed() >= LIGHTS;
         // A page that animates, such as Arrange under a visualizer, is drawn as often as it asks, playing or not.
         let frame_due = tracker.top().frame_interval().is_some_and(|interval| drawn.elapsed() >= interval);

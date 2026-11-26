@@ -18,6 +18,7 @@ pub mod history;
 pub mod instrument_sound;
 pub mod keys;
 pub mod keyswitches;
+pub mod launch;
 pub mod lengths;
 pub mod msgpack;
 pub mod named_edits;

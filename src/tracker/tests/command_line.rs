@@ -39,3 +39,20 @@ fn an_export_makes_its_out_folder_and_finds_its_song_by_any_case() {
         .collect();
     assert_eq!(written.len(), 1, "{written:?}");
 }
+
+/// What the program says on its error stream for some arguments, and whether it succeeded.
+fn ran(arguments: &[&str]) -> (bool, String) {
+    let run = Command::new(env!("CARGO_BIN_EXE_llamatron")).args(arguments).output().expect("llamatron runs");
+    (run.status.success(), String::from_utf8_lossy(&run.stderr).to_string())
+}
+
+/// A visualizer the program has no mode for is refused, naming the modes it has; a launch option with --to is refused.
+#[test]
+fn launch_options_are_checked_before_anything_opens() {
+    let set = scale_set();
+    let set = set.to_str().expect("a path of text");
+    let (worked, said) = ran(&[set, "--visualizer", "no_such_mode"]);
+    assert!(!worked && said.contains("lava_lamp"), "{said}");
+    let (worked, said) = ran(&[set, "--to", "midi", "--autoplay"]);
+    assert!(!worked && said.contains("--autoplay"), "{said}");
+}
