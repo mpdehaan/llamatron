@@ -1,7 +1,7 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! The Sallen-Key filter, after the resonant two-pole circuit of the early semi-modular monosynth: two one-pole sections and a
+//! The Sallen-Key filter, a resonant two-pole circuit of the early semi-modular monosynths: two one-pole sections and a
 //! one-pole high-pass in the feedback loop, which give a two-pole slope whose resonance peaks hard and screams as it is
 //! driven, its loop saturating harder as the resonance nears the top, so that it growls rather than sings, stopping just
 //! short of self-oscillation.
