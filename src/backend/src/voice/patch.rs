@@ -50,6 +50,8 @@ pub struct Voice {
     oscillator: OscillatorState,
     /// Where each Key LFO is in its cycles on this voice, since each follows the voice's own note.
     lfo_cycles: [f64; LFO_COUNT],
+    /// The oscillator's last sample, which the Mod Matrix's Osc source reads a sample later.
+    last_wave: f64,
     /// The most the modulation bent the pitch up over the last chunk, in half steps, from which the next chooses its table.
     reach: f64,
     envelopes: [EnvelopeState; 3],
@@ -79,6 +81,7 @@ impl Voice {
             oscillator: OscillatorState::default(),
             lfo_cycles: [0.0; LFO_COUNT],
             reach: 0.0,
+            last_wave: 0.0,
             envelopes: [EnvelopeState::default(); 3],
             filter: FilterState::default(),
             glide_from: pitch,
@@ -364,6 +367,7 @@ impl Patch {
             if modular.reads_env3 {
                 sources.envelopes[2] = modular.envelopes[2].level(&mut voice.envelopes[2], note, None);
             }
+            sources.oscillator = voice.last_wave;
             for (number, (lfo, values)) in sources.lfos.iter_mut().zip(lfos.iter()).take(LFO_COUNT).enumerate() {
                 *lfo = match key_steps[number] {
                     Some(step) => bank.key_lfo_value(number, &mut voice.lfo_cycles[number], step),
@@ -390,6 +394,7 @@ impl Patch {
             if modular.gate.is_none_or(|gate| gate.feeds_oscillator) {
                 let (out, silenced) = modular.oscillator.sample(&mut voice.oscillator, voice.pitch, seconds, moves, rate);
                 wave = out;
+                voice.last_wave = out.clamp(-1.0, 1.0);
                 if silenced {
                     voice.silent = true;
                 }

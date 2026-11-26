@@ -6,7 +6,12 @@ synthesizer do, laid out as a table. Its six slots are on the Mod Matrix tab.
 ![The Mod Matrix tab](../screenshots/synth_matrix.svg)
 
 Each slot has a Source: an envelope, an LFO, the note's Velocity or Key, or a
-Random value drawn for each note. A Via scales the source by a second one, so
+Random value drawn for each note; or Osc, the note's own oscillator, which
+moves at audio rate: Osc to Pitch is the bright, clangorous feedback FM of an
+oscillator modulating itself, Osc to Cutoff the growl of audio-rate filter FM,
+and Osc to Amp a ring of AM, on any engine, even one that never had FM. An
+LFO at Very High speed routed to Pitch is the same analog-style FM from a
+second source ([LFOs](LFOS.md)). A Via scales the source by a second one, so
 that, for instance, an LFO moves the cutoff only as far as the note is loud.
 Moves is what it moves, Pitch, Pulse width, Detune, Cutoff, Resonance or Amp,
 and Amount how far, either way, as a share of what it moves. LFO 1 to Pitch is

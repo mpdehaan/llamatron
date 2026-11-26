@@ -180,6 +180,8 @@ pub enum Source {
     Velocity,
     Key,
     Random,
+    /// The voice's own oscillator, as it sounded a sample before: an audio-rate source, for FM and AM from the voice itself.
+    Oscillator,
     /// A MIDI CC, by its place among the CCs the matrix reads, its number kept in the matrix's list of them.
     Control(usize),
 }
@@ -222,6 +224,7 @@ fn source_named(name: &str) -> Option<Source> {
         "velocity" => Source::Velocity,
         "key" => Source::Key,
         "random" => Source::Random,
+        "osc" => Source::Oscillator,
         _ => return None,
     })
 }
@@ -256,6 +259,8 @@ pub struct Sources {
     pub velocity: f64,
     pub key: f64,
     pub random: f64,
+    /// The voice's oscillator a sample before, from -1 to 1.
+    pub oscillator: f64,
     /// The value of each CC the matrix reads, from 0 to 1, in the order of the matrix's list of them.
     pub controls: [f64; MOST_CONTROLS],
 }
@@ -271,6 +276,7 @@ impl Sources {
             Source::Velocity => self.velocity,
             Source::Key => self.key,
             Source::Random => self.random,
+            Source::Oscillator => self.oscillator,
             Source::Control(place) => self.controls[place],
         }
     }

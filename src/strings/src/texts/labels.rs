@@ -427,7 +427,7 @@ pub static MSG_GATE_MODE_NAMES: &[(&str, &str)] = &[("vca", "VCA"), ("lowpass", 
 pub static MSG_GATE_INPUT_NAMES: &[(&str, &str)] = &[("oscillator", "Oscillator"), ("ping", "Ping"), ("both", "Both")];
 /// The Source picker's last entry, which asks for a MIDI CC's number, and a CC source as its field shows it.
 pub const MSG_MIDI_CC_CHOICE: &str = "MIDI CC";
-pub static MSG_MATRIX_SOURCE_NAMES: &[(&str, &str)] = &[("none", "(none)"), ("env1", "Env 1"), ("env2", "Env 2"), ("env3", "Env 3"), ("lfo1", "LFO 1"), ("lfo2", "LFO 2"), ("lfo3", "LFO 3"), ("lfo4", "LFO 4"), ("velocity", "Velocity"), ("key", "Key"), ("random", "Random")];
+pub static MSG_MATRIX_SOURCE_NAMES: &[(&str, &str)] = &[("none", "(none)"), ("env1", "Env 1"), ("env2", "Env 2"), ("env3", "Env 3"), ("lfo1", "LFO 1"), ("lfo2", "LFO 2"), ("lfo3", "LFO 3"), ("lfo4", "LFO 4"), ("velocity", "Velocity"), ("key", "Key"), ("random", "Random"), ("osc", "Osc")];
 pub static MSG_MATRIX_DESTINATION_NAMES: &[(&str, &str)] = &[("none", "(none)"), ("pitch", "Pitch"), ("pulse_width", "Pulse width"), ("detune", "Detune"), ("cutoff", "Cutoff"), ("resonance", "Resonance"), ("amp", "Amp")];
 pub const MSG_SLOT_SOURCE_LABEL: &str = "Slot {number} source";
 pub const MSG_SLOT_VIA_LABEL: &str = "Slot {number} via";
