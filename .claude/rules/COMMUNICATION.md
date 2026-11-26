@@ -75,9 +75,10 @@
 - The ideas files are tracked in git, since several computers work on the project. Each idea is a bold name and what is
   wanted: never its status, its order, a date or a record of the conversation. Claude keeps them organized, merges
   duplicates, moves an idea that suits another file, and deletes an idea, or trims its finished part, as soon as it is built.
-- `.claude/planning/QUEUE.md` is only this computer's order of work, git-ignored, very short, naming each idea by its file and
-  bold name and saying nothing of what it is. It is not a master file for anyone working on the project: another computer
-  keeps its own queue, or makes one from the ideas files when it has none. Instructions about order stay in the queue.
+- `.claude/planning/QUEUE.md` is only the order of work, tracked in git, very short, naming each idea by its file and bold
+  name and saying nothing of what it is, nor any status. It is not a master file for anyone working on the project: the ideas
+  files decide what is wanted, and a computer without a queue makes one from them. Instructions about order stay in the
+  queue.
 - Before working on a feature, Claude checks that its idea is still in its ideas file. One that is gone was likely built on
   another computer: Claude checks `git log`, drops it from the queue, and does not build it again.
 - A song-wizard feature goes on its page in the same change, and the reply names the panel and field. A report on agreed work

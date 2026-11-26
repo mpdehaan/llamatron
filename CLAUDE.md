@@ -23,11 +23,12 @@ These come before every other rule, whatever the task, mode or tool permits.
   - FluidSynth's program, `/opt/homebrew/bin/fluidsynth` or `/usr/local/bin/fluidsynth`, and its SoundFont,
     `~/soundfonts/GeneralUser-GS.sf2`: run and read, for the WAV export and its checks (the user's allowance).
 - Status of work and lists of planned work MUST NOT go into source control: what is done, partly done or next, a queue, a plan's
-  state, or a record of a conversation. They live in git-ignored files (`.claude/planning/QUEUE.md`, `.claude/planning/DESIGNS.md`,
+  state, or a record of a conversation. They live in git-ignored files (`.claude/planning/DESIGNS.md`,
   `.claude/planning/WIZARD_DESIGNS.md`, `.claude/planning/REFACTORING.md`, `.claude/planning/REFACTORING_LOG.md`). A commit
   message says what the code does. How an existing feature is built MAY be recorded freely. The one exception, the user's:
-  the ideas files in `.claude/features/` are tracked and say only what each wanted idea is, never its status or order
-  (`.claude/rules/COMMUNICATION.md`, "The ideas files and the queue").
+  the ideas files in `.claude/features/` are tracked and say only what each wanted idea is, never its status or order, and
+  `.claude/planning/QUEUE.md` is tracked and holds only the order, naming ideas (`.claude/rules/COMMUNICATION.md`, "The ideas
+  files and the queue").
 - Claude MUST NOT make a new file in `.claude/` without the user's agreement; it MAY suggest one.
 
 ## Project
@@ -51,7 +52,7 @@ Imported, loaded every session: `.claude/rules/COMMUNICATION.md` (working with t
 `tracker/` (how the program is built). Read when the work needs them:
 
 - `.claude/features/SYNTH_IDEAS.md`, `WIZARD_IDEAS.md`, `DEMO_IDEAS.md`, `UX_IDEAS.md` and `OTHER_IDEAS.md`: every wanted idea,
-  by topic, tracked in git. `.claude/planning/QUEUE.md`: this computer's order of them, not a master file. `.claude/planning/DESIGNS.md` and `.claude/planning/WIZARD_DESIGNS.md`: agreed designs not
+  by topic, tracked in git. `.claude/planning/QUEUE.md`: the order of them, tracked, never the authority on what is wanted. `.claude/planning/DESIGNS.md` and `.claude/planning/WIZARD_DESIGNS.md`: agreed designs not
   yet built. `.claude/planning/REFACTORING.md` with `.claude/planning/REFACTORING_LOG.md`: before any refactoring step. All
   git-ignored.
 - `.claude/format/` and `.claude/tracker/`: the model, file format and pages, a file per part (table at the end).

@@ -22,7 +22,6 @@ dist/
 tests/.cache/
 examples/**/*.wav
 # Claude's own list of what is built next, kept on this computer only (the user's choice).
-.claude/planning/QUEUE.md
 # Claude's plan and status for the refactoring, kept on this computer only: no status of work or list of planned work is in the repository.
 .claude/planning/REFACTORING.md
 .claude/planning/DESIGNS.md
