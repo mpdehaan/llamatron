@@ -43,6 +43,8 @@ holds their words.
 sh user_scripts/demos_to_midi.sh [SET ...]       # every example, or the sets named, as one General MIDI file each in output/previews/ (--to gm)
 sh user_scripts/demos_to_wavs.sh [MIDI ...]      # those previews played through FluidSynth into WAV files beside them, made first where missing
 sh user_scripts/demos_to_live_sets.sh            # every example as a Live set beside it (--to ableton --replace)
+sh user_scripts/fetch_corpus.sh [COLLECTION ...] [--all]   # the public domain corpus into output/corpus/, through
+                                                 #   python/src/llamatron_tools/fetch_corpus.py, asking before each collection
 sh user_scripts/install_fluidsynth.sh            # FluidSynth and the GeneralUser GS SoundFont on a Mac, offering Homebrew first
 sh user_scripts/install_blackhole.sh             # BlackHole 2ch, the loopback device the recorder records from, offering Homebrew first
 sh user_scripts/launch_docs.sh [--port N] [--no-browser]   # the website served at http://localhost:4173/llamatron/ by

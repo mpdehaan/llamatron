@@ -136,6 +136,29 @@ sh user_scripts/demos_to_live_sets.sh
 
 Parameters: none.
 
+## The Corpus
+
+### `fetch_corpus.sh`
+
+Downloads the public domain music corpus, scores and traditional tunes, into
+`output/corpus/`, which git ignores, asking before each collection and saying
+its size and terms. The song wizard's music theory was measured from it, and
+the song wizard is to import songs from it where it is downloaded.
+[Credits](CREDITS.md) lists each collection, its link, its terms and its
+folder.
+
+```
+sh user_scripts/fetch_corpus.sh
+sh user_scripts/fetch_corpus.sh joplin essen
+sh user_scripts/fetch_corpus.sh --all
+```
+
+Parameters:
+
+- `COLLECTION ...`: the collections to download, by their folders, such as
+  `joplin`; asked one by one unless given.
+- `--all`: every collection and research dataset, without asking.
+
 ## Recording Videos
 
 Recording is coming back to llamatron, which is now written in Rust; until it

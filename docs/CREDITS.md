@@ -69,15 +69,15 @@ scenes to start from.
 ### Downloading the Corpus
 
 The corpus is downloaded only by a person who wants it, for study, into
-`py_legacy/output/library/`, which git ignores; nothing downloaded is
-committed or passed on. From llamatron's top folder:
+`output/corpus/`, which git ignores; nothing downloaded is committed or passed
+on. From llamatron's top folder:
 
 ```
-.venv/bin/python py_legacy/internal_tools/analysis_and_generation/fetch_corpus.py            # asks collection by collection, with each one's size and terms
-.venv/bin/python py_legacy/internal_tools/analysis_and_generation/fetch_corpus.py joplin essen   # only the named collections
+sh user_scripts/fetch_corpus.sh                 # asks collection by collection, with each one's size and terms
+sh user_scripts/fetch_corpus.sh joplin essen    # only the named collections
 ```
 
 A collection is named by its folder in the table above, such as `joplin` or
 `essen`. The script asks before each download, and offers some research
 datasets besides; only the collections above are public domain music.
-
+[User Scripts](USER_SCRIPTS.md) describes the script.

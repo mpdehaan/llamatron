@@ -3,8 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 .venv/
-# What the tools make for a person to look at and keep: output/previews/, output/recordings/, and output/library/, the
-# public-domain scores fetched for the corpus study, never committed.
+# What the tools make for a person to look at and keep: output/previews/, output/recordings/, and output/corpus/, the
+# public domain corpus user_scripts/fetch_corpus.sh downloads, never committed.
 output/
 examples/**/*.als
 examples/**/*.mid
