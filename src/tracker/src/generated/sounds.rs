@@ -309,8 +309,6 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
         Preset::Map(&[
             ("acid_wave", Preset::Text("saw")),
             ("tuning", Preset::Whole(0)),
-            ("circuit", Preset::Text("stock")),
-            ("slide_time", Preset::Whole(60)),
             ("pitch_env", Preset::Whole(0)),
         ]),
     ),
@@ -504,7 +502,7 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
             "pitch_env",
         ],
     ),
-    ("acid", &["acid_wave", "tuning", "circuit", "slide_time", "pitch_env"]),
+    ("acid", &["acid_wave", "tuning", "pitch_env"]),
     ("drum", &["machine", "choke", "overlap"]),
     ("adsr", &["attack", "attack_curve", "hold", "decay", "snap", "sustain", "release"]),
     ("ar", &["attack", "attack_curve", "release"]),
@@ -535,7 +533,6 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
 /// The settings a part shows only with its Circuit set to Modded, the classic modifications of the acid bass: on Stock
 /// the circuit's own values play.
 pub static MODDED_SETTINGS: &[(&str, &str)] = &[
-    ("acid", "slide_time"),
     ("acid_gate", "accent_sweep"),
     ("acid_gate", "accent_decay"),
     ("acid_gate", "amp_decay"),
@@ -550,14 +547,6 @@ pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
         SettingKind::Choice {
             choices: &["stock", "modded"],
             names: &["Stock", "Modded"],
-        },
-    ),
-    (
-        "slide_time",
-        SettingKind::Gauge {
-            lowest: 60,
-            highest: 360,
-            what: "milliseconds",
         },
     ),
     (

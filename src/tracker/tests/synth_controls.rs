@@ -194,10 +194,7 @@ fn company(part_type: &str, setting: &str) -> &'static [(&'static str, &'static 
 /// The settings tried apart from the rest: a list typed in, what one note leaves the next, and the drum's knobs, which a
 /// hit renders apart.
 fn tried_apart(part_type: &str, setting: &str) -> bool {
-    matches!(
-        (part_type, setting),
-        ("sid", "arpeggio") | ("vactrol", "memory") | ("acid", "circuit") | ("acid", "slide_time") | ("drum", _)
-    )
+    matches!((part_type, setting), ("sid", "arpeggio") | ("vactrol", "memory") | ("drum", _))
 }
 
 /// A value as the trial writes it: a whole number where it reads as one, else text.
@@ -278,19 +275,16 @@ fn every_control_tried_apart_changes_the_sound() {
     if !differs(&remembering("0"), &remembering("100")) {
         unwired.push("env1 vactrol memory");
     }
-    // Fishline's slide is heard where a note overlaps the next a fifth higher, as a glided step does: Modded at its Slide
-    // time's ends, Stock against Modded, and the Glide switch on against off.
-    let sliding = |circuit: &str, slide: &str, glides: bool| {
-        let sound = format!("{{ engine: fishline, glides: {glides}, oscillators: {{ type: acid, circuit: {circuit}, slide_time: {slide} }} }}");
+    // Fishline's slide is heard where a note overlaps the next a fifth higher, as a glided step does: its Glide time at
+    // two ends, and the Glide switch on against off.
+    let sliding = |glide: &str, glides: bool| {
+        let sound = format!("{{ engine: fishline, glides: {glides}, glide: {glide}, oscillators: {{ type: acid }} }}");
         slid(&instrument(&sound), PITCH, PITCH + 7.0)
     };
-    if !differs(&sliding("modded", "60", true), &sliding("modded", "360", true)) {
-        unwired.push("oscillators acid slide_time");
+    if !differs(&sliding("30", true), &sliding("300", true)) {
+        unwired.push("voice glide");
     }
-    if !differs(&sliding("stock", "360", true), &sliding("modded", "360", true)) {
-        unwired.push("oscillators acid circuit");
-    }
-    if !differs(&sliding("modded", "360", true), &sliding("modded", "360", false)) {
+    if !differs(&sliding("300", true), &sliding("300", false)) {
         unwired.push("voice glides");
     }
     // Volume is the engine's, applied to the patch's buffer as it mixes, so it is read from the compiled patch.

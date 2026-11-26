@@ -109,9 +109,6 @@ fn basic_oscillators(sound: &Sound) -> Data {
 /// A part's Circuit, and its modded choice, which shows the classic modifications' settings.
 const CIRCUIT: &str = "circuit";
 const MODDED: &str = "modded";
-/// Fishline's oscillator, and the slide its circuit has on Stock, in milliseconds.
-const ACID: &str = "acid";
-const STOCK_SLIDE_MS: i128 = 60;
 
 /// A setting's default for a type of part, as a new part of that type holds it.
 fn default_of(kind: &str, name: &str) -> Data {
@@ -123,19 +120,9 @@ fn default_of(kind: &str, name: &str) -> Data {
         .unwrap_or(Data::Null)
 }
 
-/// The voice's glide, in seconds: Fishline's own slide, the circuit's on Stock and its Slide time on Modded, or the Voice
-/// column's Glide for every other oscillator.
+/// The voice's Glide time, in seconds, the Voice column's on every engine, Fishline's included.
 fn glide(sound: &Sound) -> Data {
-    if sound.part_type("oscillators") != ACID {
-        return share(&sound.value("glide"), MILLISECONDS);
-    }
-    let modded = sound.part_value("oscillators", CIRCUIT).as_str() == Some(MODDED);
-    let slide = if modded {
-        sound.part_value("oscillators", "slide_time")
-    } else {
-        Data::Whole(STOCK_SLIDE_MS)
-    };
-    share(&slide, MILLISECONDS)
+    share(&sound.value("glide"), MILLISECONDS)
 }
 
 /// The envelope type that is no envelope, as the backend names it.

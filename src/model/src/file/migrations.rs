@@ -4,7 +4,9 @@
 //! The migrations (the Python model/file/migrations/): each moves a set file's data from the layout before one breaking
 //! change to the layout after it, run in order for a file saved before each, so that the reader only ever sees the layout
 //! written now. Live's octave numbers (before 1.0.30), one song at the top (before 1.0.39), the long text under description
-//! (before 1.0.155), and everything named kept by name rather than in lists (before 1.0.591).
+//! (before 1.0.155), and everything named kept by name rather than in lists (before 1.0.591). One more is told by its
+//! shape alone, whatever version saved the file: Fishline's oscillator Slide time, from before its slide became the shared
+//! Glide time.
 
 use crate::file::data::Data;
 use crate::objects::naming;
@@ -84,7 +86,83 @@ pub fn migrated(data: Data, one_song_name: Option<String>) -> (Data, Conversion)
             data = change(data, &mut conversion);
         }
     }
+    if matches!(data, Data::Map(_)) && has_acid_slide_time(&data) {
+        conversion.moved = true;
+        data = acid_slide_as_glide(data);
+    }
     (data, conversion)
+}
+
+const INSTRUMENTS: &str = "instruments";
+const SOUND: &str = "sound";
+const OSCILLATORS: &str = "oscillators";
+const TYPE: &str = "type";
+const ACID: &str = "acid";
+const CIRCUIT: &str = "circuit";
+const MODDED: &str = "modded";
+const SLIDE_TIME: &str = "slide_time";
+const GLIDE: &str = "glide";
+
+/// Each built-in instrument's sound with an acid oscillator, by its place among the instruments.
+fn acid_oscillators(data: &Data) -> Vec<&Data> {
+    let Some(instruments) = data.get(INSTRUMENTS).and_then(Data::as_list) else {
+        return Vec::new();
+    };
+    instruments
+        .iter()
+        .filter_map(|instrument| instrument.get(SOUND)?.get(OSCILLATORS))
+        .filter(|oscillators| oscillators.get(TYPE).and_then(Data::as_str) == Some(ACID))
+        .collect()
+}
+
+/// Whether an acid oscillator still holds its own Slide time or Circuit, from before Fishline's slide was its Glide time.
+fn has_acid_slide_time(data: &Data) -> bool {
+    acid_oscillators(data)
+        .iter()
+        .any(|oscillators| oscillators.get(SLIDE_TIME).is_some() || oscillators.get(CIRCUIT).is_some())
+}
+
+/// Fishline's oscillator Slide time moved to the sound's Glide time where its Circuit was Modded, Stock's fixed slide
+/// being Glide time's default, and the oscillator's Slide time and Circuit taken away.
+fn acid_slide_as_glide(data: Data) -> Data {
+    let pairs = pairs_of(&data)
+        .into_iter()
+        .map(|(key, value)| {
+            if !key_is(&key, INSTRUMENTS) {
+                return (key, value);
+            }
+            let instruments = value.as_list().map(<[_]>::to_vec).unwrap_or_default();
+            (key, Data::List(instruments.into_iter().map(instrument_glide).collect()))
+        })
+        .collect();
+    map(pairs)
+}
+
+fn instrument_glide(instrument: Data) -> Data {
+    let Some(sound) = instrument.get(SOUND) else { return instrument };
+    let Some(oscillators) = sound.get(OSCILLATORS) else { return instrument };
+    if oscillators.get(TYPE).and_then(Data::as_str) != Some(ACID) {
+        return instrument;
+    }
+    let modded = oscillators.get(CIRCUIT).and_then(Data::as_str) == Some(MODDED);
+    let slide = oscillators.get(SLIDE_TIME).cloned().filter(|_| modded);
+    let kept: Vec<(Data, Data)> = pairs_of(oscillators)
+        .into_iter()
+        .filter(|(key, _)| !key_is(key, SLIDE_TIME) && !key_is(key, CIRCUIT))
+        .collect();
+    let mut sound_pairs: Vec<(Data, Data)> = pairs_of(sound)
+        .into_iter()
+        .map(|(key, value)| if key_is(&key, OSCILLATORS) { (key, map(kept.clone())) } else { (key, value) })
+        .collect();
+    if let Some(slide) = slide {
+        sound_pairs.retain(|(key, _)| !key_is(key, GLIDE));
+        sound_pairs.push((Data::text(GLIDE), slide));
+    }
+    let pairs = pairs_of(&instrument)
+        .into_iter()
+        .map(|(key, value)| if key_is(&key, SOUND) { (key, map(sound_pairs.clone())) } else { (key, value) })
+        .collect();
+    map(pairs)
 }
 
 fn map(pairs: Vec<(Data, Data)>) -> Data {
@@ -431,4 +509,29 @@ fn references_listed(settings: &Data, renamed: &[(String, String)]) -> Data {
         listed = with_key_replaced(&listed, "chains", "generators", name_references(&names));
     }
     listed
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::file::data::load;
+
+    /// A Modded Fishline's oscillator Slide time becomes its sound's Glide time, a Stock one's is dropped for the
+    /// default, and both oscillators lose their Slide time and Circuit, whatever version saved the file.
+    #[test]
+    fn a_fishline_slide_time_becomes_its_glide_time() {
+        let file = "version: 1.1.1\ninstruments:\n  - { name: modded, kind: built_in, sound: { engine: fishline, oscillators: { type: acid, circuit: modded, slide_time: 200 } } }\n  - { name: stock, kind: built_in, sound: { engine: fishline, glide: 90, oscillators: { type: acid, circuit: stock, slide_time: 300 } } }\n";
+        let (data, conversion) = migrated(load(file).expect("the file reads"), None);
+        assert!(conversion.moved);
+        let instruments = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments");
+        let sound = |place: usize| instruments[place].get(SOUND).expect("a sound").clone();
+        assert_eq!(sound(0).get(GLIDE).cloned(), Some(Data::Whole(200)));
+        assert_eq!(sound(1).get(GLIDE).cloned(), Some(Data::Whole(90)), "a Stock sound keeps its own Glide time");
+        for place in 0..2 {
+            let oscillators = sound(place).get(OSCILLATORS).expect("oscillators").clone();
+            assert!(oscillators.get(SLIDE_TIME).is_none() && oscillators.get(CIRCUIT).is_none());
+        }
+        let (_, untouched) = migrated(data, None);
+        assert!(!untouched.moved, "a file already moved is left alone");
+    }
 }

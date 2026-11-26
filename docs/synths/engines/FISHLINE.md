@@ -13,12 +13,11 @@ accents climbs higher.
 
 ## Stock and Modded
 
-Fishline's Circuit, on its Oscillators tab, is Stock or Modded, after the
-modifications players made to the original machine. Stock slides into a glided
-note in the circuit's own fixed time, about 60 ms. Modded shows a Slide time,
-from 60 to 360 ms, so a line can glide lazily. The Acid gate and the Diode
-filter have a Circuit of their own, so a Modded envelope can play through a
-Stock filter.
+The Acid gate and the Diode filter each have a Circuit, Stock or Modded, after
+the modifications players made to the original machine, so a Modded envelope
+can play through a Stock filter. Fishline slides into a glided note over its
+Glide time in the Voice column, 60 ms by default as the original circuit's
+fixed slide, and longer for a lazy line.
 
 ## How Fishline Is Built
 

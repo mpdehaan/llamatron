@@ -63,8 +63,6 @@ fn control_number(source: &str) -> Option<i64> {
 }
 const CIRCUIT: &str = "circuit";
 const MODDED: &str = "modded";
-/// The oscillator type whose own circuit sets the slide, so that the Voice column shows no Glide for it.
-const ACID: &str = "acid";
 
 pub struct InstrumentEditor {
     pub name: String,
@@ -713,10 +711,7 @@ impl InstrumentEditor {
 
     fn voice_fields(sound: &Sound, ids: &mut Ids) -> Vec<Field> {
         let sharing = text(&sound.value("filter_sharing"));
-        // Fishline's oscillator sets its own slide time, the circuit's on Stock and its Slide time on Modded, so it shows no
-        // Glide time; its Glide switch stays.
-        let timed = sound.part_type("oscillators") != ACID;
-        let mut fields = vec![
+        let fields = vec![
             gauge(
                 ids.at(Write::Sound("volume")),
                 labels::MSG_VOLUME_LABEL,
@@ -753,9 +748,6 @@ impl InstrumentEditor {
                 &sharing,
             ),
         ];
-        if !timed {
-            fields.retain(|field| field.label != labels::MSG_GLIDE_TIME_LABEL);
-        }
         fields
     }
 
