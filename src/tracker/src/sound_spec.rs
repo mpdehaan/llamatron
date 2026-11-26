@@ -95,6 +95,8 @@ fn oscillators(sound: &Sound) -> Data {
 /// Each footage's distance from the note in half steps: 8' plays the note, each halving of the pipe an octave up, and
 /// LO, Osc 3's range for an LFO, four octaves under.
 const FOOTAGES: &[(&str, i128)] = &[("lo", -48), ("32", -24), ("16", -12), ("8", 0), ("4", 12), ("2", 24)];
+/// An Asheville oscillator's Speed that plays the note at its Range, rather than an LFO's rate.
+const AUDIO_SPEED: &str = "audio";
 /// A knob of the panel's 0 to 10, as the fraction the backend reads.
 const PANEL_TOP: f64 = 10.0;
 
@@ -109,7 +111,15 @@ fn asheville(sound: &Sound) -> Vec<(&'static str, Data)> {
             let range = own("range");
             let half_steps = FOOTAGES.iter().find(|(name, _)| range.as_str() == Some(name)).map_or(0, |(_, steps)| *steps);
             let sub = own("sub").as_str().and_then(|octaves| octaves.parse::<i128>().ok()).unwrap_or(0);
+            // At an LFO's Speed the oscillator runs at its Rate's hertz whatever the note.
+            let speed = own("speed").as_str().unwrap_or(AUDIO_SPEED).to_string();
+            let hertz = if speed == AUDIO_SPEED {
+                Data::Null
+            } else {
+                Data::Float(lfo_speed::hertz(&speed, own("rate").as_whole().unwrap_or(0) as f64))
+            };
             mapping(vec![
+                ("hertz", hertz),
                 ("range", Data::Whole(half_steps)),
                 ("wave", own("wave")),
                 ("shape", share(&own("shape"), PERCENT)),

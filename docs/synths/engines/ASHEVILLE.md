@@ -16,6 +16,8 @@ Each of the three oscillators has its own column:
 
 | Setting | Choices | What it does |
 | --- | --- | --- |
+| Speed | Audio, Low, Medium, High | Audio plays the note at its Range; Low, Medium and High run it at its Rate whatever the note, as an LFO's Speed does, for the oscillator as a slow modulator through the Mod Matrix |
+| Rate | 0 to 100%, its hertz shown | At Low, Medium or High, in the Range's place, how fast it runs across its Speed's span, as an LFO's Rate |
 | Range | 32', 16', 8', 4', 2' (Osc 3 also LO) | The footage: 8' plays the note, each halving of the pipe an octave up; LO, on Osc 3, four octaves under, for an LFO through the Mod Matrix |
 | Wave | Triangle, Shark tooth, Saw, Square, Wide pulse, Narrow pulse (Osc 3 Reverse saw in the Shark tooth's place) | The panel's six waves, on the Classic model |
 | Shape | 0 to 100% | On the Continuous model, one sweep from triangle at 0 through saw and square to a narrow pulse at 100%, in the Wave's place |

@@ -65,11 +65,45 @@ fn control_number(source: &str) -> Option<i64> {
 /// Asheville: its oscillators' settings, column by column; its panel's own; its Model's Continuous, which shows a Shape
 /// in each oscillator's Wave's place; and the endings that tell the two apart.
 const ASHEVILLE: &str = "asheville";
-const ASHEVILLE_OSCILLATORS: [[&str; 7]; 3] = [
-    ["osc1_range", "osc1_wave", "osc1_shape", "osc1_tune", "osc1_mix", "osc1_sub", "osc1_on"],
-    ["osc2_range", "osc2_wave", "osc2_shape", "osc2_tune", "osc2_mix", "osc2_sub", "osc2_on"],
-    ["osc3_range", "osc3_wave", "osc3_shape", "osc3_tune", "osc3_mix", "osc3_sub", "osc3_on"],
+const ASHEVILLE_OSCILLATORS: [[&str; 9]; 3] = [
+    [
+        "osc1_speed",
+        "osc1_rate",
+        "osc1_range",
+        "osc1_wave",
+        "osc1_shape",
+        "osc1_tune",
+        "osc1_mix",
+        "osc1_sub",
+        "osc1_on",
+    ],
+    [
+        "osc2_speed",
+        "osc2_rate",
+        "osc2_range",
+        "osc2_wave",
+        "osc2_shape",
+        "osc2_tune",
+        "osc2_mix",
+        "osc2_sub",
+        "osc2_on",
+    ],
+    [
+        "osc3_speed",
+        "osc3_rate",
+        "osc3_range",
+        "osc3_wave",
+        "osc3_shape",
+        "osc3_tune",
+        "osc3_mix",
+        "osc3_sub",
+        "osc3_on",
+    ],
 ];
+/// An oscillator's Speed that plays the note at its Range; at any other it runs at its Rate, as an LFO.
+const AUDIO_SPEED: &str = "audio";
+const RATE_SUFFIX: &str = "_rate";
+const RANGE_SUFFIX: &str = "_range";
 const ASHEVILLE_PANEL: [&str; 9] = [
     "model",
     "character",
@@ -878,23 +912,21 @@ impl InstrumentEditor {
     /// Asheville's columns, after its panel: a column for each oscillator, its Range, its Wave (or, on the Continuous
     /// model, its Shape), Tune, Mix, Sub and On, then the panel's own settings.
     fn asheville_columns(sound: &Sound, ids: &mut Ids) -> Vec<TabColumn> {
-        let continuous = sound.part_value("oscillators", "model").as_str() == Some(CONTINUOUS);
         let mut columns = Vec::new();
         for (number, names) in ASHEVILLE_OSCILLATORS.iter().enumerate() {
             let heading = named(labels::MSG_OSCILLATOR_LABEL, &[("number", (number + 1).into())]);
+            let speed = text(&sound.part_value("oscillators", names[0]));
             let fields = names
                 .iter()
-                .filter(|name| {
-                    if continuous {
-                        !name.ends_with(WAVE_SUFFIX)
-                    } else {
-                        !name.ends_with(SHAPE_SUFFIX)
-                    }
-                })
+                .filter(|name| Self::asheville_shows(sound, &speed, name))
                 .map(|name| {
-                    let column_label = name.rsplit_once('_').map_or(*name, |(_, own)| own);
-                    Self::setting_field(sound, "oscillators", ASHEVILLE, name, ids)
-                        .with_shown_label(&named_in(labels::MSG_ASHEVILLE_COLUMN_LABELS, column_label))
+                    let column_label = named_in(labels::MSG_ASHEVILLE_COLUMN_LABELS, name.rsplit_once('_').map_or(*name, |(_, own)| own));
+                    let field = if name.ends_with(RATE_SUFFIX) {
+                        Self::oscillator_rate_field(sound, &speed, name, ids)
+                    } else {
+                        Self::setting_field(sound, "oscillators", ASHEVILLE, name, ids)
+                    };
+                    field.with_shown_label(&column_label)
                 })
                 .collect();
             columns.push(TabColumn::new(Some(&heading), fields));
@@ -908,6 +940,26 @@ impl InstrumentEditor {
         panel.under = true;
         columns.push(panel);
         columns
+    }
+
+    /// Whether an Asheville oscillator's setting shows: its Wave on the Classic model and its Shape on Continuous, its
+    /// Range at the Audio speed and its Rate at an LFO's.
+    fn asheville_shows(sound: &Sound, speed: &str, name: &str) -> bool {
+        let continuous = sound.part_value("oscillators", "model").as_str() == Some(CONTINUOUS);
+        let audio = speed == AUDIO_SPEED;
+        let model_hides = if continuous { WAVE_SUFFIX } else { SHAPE_SUFFIX };
+        let speed_hides = if audio { RATE_SUFFIX } else { RANGE_SUFFIX };
+        !name.ends_with(model_hides) && !name.ends_with(speed_hides)
+    }
+
+    /// An Asheville oscillator's Rate at an LFO's speed: a gauge of its percent, shown with the hertz it gives there.
+    fn oscillator_rate_field(sound: &Sound, speed: &str, name: &'static str, ids: &mut Ids) -> Field {
+        let percent = whole(&sound.part_value("oscillators", name));
+        let hertz = hertz_shown(lfo_speed::hertz(speed, percent as f64));
+        let value = named(marks::MSG_LFO_RATE_SHOWN, &[("percent", percent.into()), ("hertz", hertz.as_str().into())]);
+        let label = part_label("oscillators", &named_in(labels::MSG_PART_SETTING_NAMES, name));
+        let most = lfo_speed::MOST_PERCENT as i64;
+        bounded_gauge(ids.at(Write::Part("oscillators", name)), &label, percent, (0, most), &value)
     }
 
     fn envelopes_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {

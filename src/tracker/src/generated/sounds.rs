@@ -326,6 +326,8 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
         Preset::Map(&[
             ("model", Preset::Text("classic")),
             ("character", Preset::Text("warm")),
+            ("osc1_speed", Preset::Text("audio")),
+            ("osc1_rate", Preset::Whole(74)),
             ("osc1_range", Preset::Text("16")),
             ("osc1_wave", Preset::Text("saw")),
             ("osc1_shape", Preset::Whole(33)),
@@ -333,6 +335,8 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("osc1_mix", Preset::Whole(8)),
             ("osc1_sub", Preset::Text("off")),
             ("osc1_on", Preset::Flag(true)),
+            ("osc2_speed", Preset::Text("audio")),
+            ("osc2_rate", Preset::Whole(74)),
             ("osc2_range", Preset::Text("16")),
             ("osc2_wave", Preset::Text("saw")),
             ("osc2_shape", Preset::Whole(33)),
@@ -340,6 +344,8 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("osc2_mix", Preset::Whole(6)),
             ("osc2_sub", Preset::Text("off")),
             ("osc2_on", Preset::Flag(true)),
+            ("osc3_speed", Preset::Text("audio")),
+            ("osc3_rate", Preset::Whole(74)),
             ("osc3_range", Preset::Text("32")),
             ("osc3_wave", Preset::Text("square")),
             ("osc3_shape", Preset::Whole(33)),
@@ -594,6 +600,8 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
         &[
             "model",
             "character",
+            "osc1_speed",
+            "osc1_rate",
             "osc1_range",
             "osc1_wave",
             "osc1_shape",
@@ -601,6 +609,8 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
             "osc1_mix",
             "osc1_sub",
             "osc1_on",
+            "osc2_speed",
+            "osc2_rate",
             "osc2_range",
             "osc2_wave",
             "osc2_shape",
@@ -608,6 +618,8 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
             "osc2_mix",
             "osc2_sub",
             "osc2_on",
+            "osc3_speed",
+            "osc3_rate",
             "osc3_range",
             "osc3_wave",
             "osc3_shape",
@@ -663,6 +675,51 @@ pub static MODDED_SETTINGS: &[(&str, &str)] = &[
 
 /// How each setting is shown, and where a type of part shows one its own way, how it shows it there.
 pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
+    (
+        "osc1_speed",
+        SettingKind::Choice {
+            choices: &["audio", "low", "medium", "high"],
+            names: &["Audio", "Low", "Medium", "High"],
+        },
+    ),
+    (
+        "osc1_rate",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
+        },
+    ),
+    (
+        "osc2_speed",
+        SettingKind::Choice {
+            choices: &["audio", "low", "medium", "high"],
+            names: &["Audio", "Low", "Medium", "High"],
+        },
+    ),
+    (
+        "osc2_rate",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
+        },
+    ),
+    (
+        "osc3_speed",
+        SettingKind::Choice {
+            choices: &["audio", "low", "medium", "high"],
+            names: &["Audio", "Low", "Medium", "High"],
+        },
+    ),
+    (
+        "osc3_rate",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
+        },
+    ),
     (
         "model",
         SettingKind::Choice {

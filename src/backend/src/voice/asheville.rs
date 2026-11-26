@@ -82,6 +82,9 @@ pub struct Oscillator {
     pub on: bool,
     /// How many octaves under the oscillator its sub sounds, 0 for none.
     pub sub: u32,
+    /// Where its Speed is an LFO's, the rate in hertz it runs at whatever the note, as a modulator; None where it plays
+    /// the note at its Range.
+    pub hertz: Option<f64>,
 }
 
 /// A sub's level against its oscillator's.
@@ -152,6 +155,7 @@ pub fn compiled(spec: &Value) -> Asheville {
         mix: 0.8,
         on: true,
         sub: 0,
+        hertz: None,
     };
     let specs = list(spec, "oscillators");
     let oscillators = std::array::from_fn(|place| match specs.get(place) {
@@ -163,6 +167,7 @@ pub fn compiled(spec: &Value) -> Asheville {
             mix: number(each, "mix", 0.8).clamp(0.0, 1.0),
             on: truth(each, "on", true),
             sub: number(each, "sub", 0.0).clamp(0.0, 2.0) as u32,
+            hertz: crate::protocol::values::field(each, "hertz").and_then(crate::protocol::values::as_number),
         },
         None => defaults,
     });
@@ -301,7 +306,14 @@ impl Asheville {
             let wandered = self.wander(place, pitch, seconds, began, random);
             let tune = if self.snap { snapped(oscillator.cents) } else { oscillator.cents };
             let tuned = pitch + oscillator.range + (tune + wandered) / CENTS + moves.pitch;
-            let frequency = if oscillator.on {
+            let frequency = if let Some(hertz) = oscillator.hertz {
+                // At an LFO's Speed it runs at its own rate whatever the note; heard, it keeps to hearing's bottom.
+                if oscillator.on {
+                    hertz.max(frequency_of(crate::voice::oscillators::LOWEST_PITCH))
+                } else {
+                    hertz.max(SLOWEST_UNHEARD_HERTZ)
+                }
+            } else if oscillator.on {
                 frequency_of(tuned)
             } else {
                 // Not heard, it may run below hearing, as an LFO; it keeps under half the rate.
@@ -447,5 +459,26 @@ mod tests {
         let (none, octave_down) = (played(0), played(1));
         let difference: f64 = none.iter().zip(&octave_down).map(|(a, b)| (a - b).abs()).sum();
         assert!(difference > 1.0, "{difference}");
+    }
+
+    /// An oscillator at an LFO's Speed runs at its own rate whatever the note: two notes an octave apart swing it alike.
+    #[test]
+    fn an_oscillator_at_an_lfo_speed_ignores_the_note() {
+        let swings = |pitch: f64| {
+            let lfo = Value::Map(vec![("on".into(), false.into()), ("hertz".into(), 2.0.into())]);
+            let off = Value::Map(vec![("on".into(), false.into())]);
+            let spec = Value::Map(vec![("oscillators".into(), Value::Array(vec![off.clone(), off, lfo]))]);
+            let asheville = compiled(&spec);
+            let mut state = OscillatorState::default();
+            let rate = 48_000.0;
+            (0..24_000)
+                .map(|place| {
+                    asheville.sample(&mut state, pitch, place as f64 / rate, Moves::default(), rate);
+                    state.sides[2]
+                })
+                .collect::<Vec<_>>()
+        };
+        let (low, high) = (48.0, 60.0);
+        assert_eq!(swings(low), swings(high));
     }
 }
