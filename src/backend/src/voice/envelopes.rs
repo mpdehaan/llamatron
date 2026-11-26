@@ -712,4 +712,60 @@ mod tests {
         let (recovered, _, _) = part.start(&mut memory, 1.0, notes as f64 * apart + held + long_rest);
         assert!(recovered.rise < rested.rise * 1.05, "a rested cell rises as fast as before");
     }
+
+    /// An AR rises over its attack and falls over its release at once, held or not, and ends; an ASR holds full while
+    /// its note is held.
+    #[test]
+    fn an_ar_falls_after_its_attack_and_an_asr_holds_full() {
+        let shaped = |kind: &str| {
+            compiled(
+                &spec(&[("type", kind.into()), ("attack", 0.01.into()), ("release", 0.1.into()), ("sustain", 0.3.into())]),
+                0.0,
+            )
+        };
+        let (ar_levels, ar_done) = play(&shaped("ar"), None, 1.0);
+        let peak = ar_levels.iter().cloned().fold(0.0_f64, f64::max);
+        assert!(peak > 0.95 && ar_levels[500] < 0.01 && ar_done, "an AR falls while held and ends");
+        let (asr_levels, _) = play(&shaped("asr"), None, 1.0);
+        assert!(asr_levels[500] > 0.99, "an ASR holds full while held, not at the sustain set");
+    }
+
+    /// An acid gate's accented note swells above an unaccented one, and both decay over the amp decay.
+    #[test]
+    fn an_accented_acid_note_swells_above_an_unaccented_one() {
+        let part = compiled(&spec(&[("type", "acid_gate".into()), ("accent_threshold", 110.0.into())]), 0.5);
+        let peak_of = |velocity: f64| {
+            let mut memory = EnvelopeMemory::default();
+            let (mut state, _, _) = part.start(&mut memory, velocity / 127.0, 0.0);
+            (0..200)
+                .map(|ms| {
+                    part.level(
+                        &mut state,
+                        NoteTime {
+                            age: ms as f64 / 1000.0,
+                            released: None,
+                        },
+                        None,
+                    )
+                })
+                .fold(0.0_f64, f64::max)
+        };
+        let (soft, accented) = (90.0, 120.0);
+        assert!(peak_of(accented) > peak_of(soft) * 1.1, "{} against {}", peak_of(accented), peak_of(soft));
+    }
+
+    /// Chip steps fall a sixteenth of the way at each tick of their pace, never between, and end at nothing.
+    #[test]
+    fn chip_steps_fall_in_sixteen_steps() {
+        let part = compiled(
+            &spec(&[("type", "chip_steps".into()), ("start_level", 15.0.into()), ("level_pace", 2.0.into())]),
+            0.0,
+        );
+        let (levels, done) = play(&part, None, 2.0);
+        assert!(
+            levels.iter().all(|level| ((level * CHIP_LEVELS).round() - level * CHIP_LEVELS).abs() < 1e-9),
+            "steps only"
+        );
+        assert!(levels[0] == 1.0 && *levels.last().expect("levels") == 0.0 && done);
+    }
 }

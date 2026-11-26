@@ -22,7 +22,9 @@ cheap grooveboxes.
 
 Bitcrush makes a sound lo-fi, as early samplers and game consoles were. Rate
 holds each sample for as long as a lower sample rate would, so that high notes
-alias into metallic tones; Bits rounds each sample to fewer bits, which adds a
+alias into metallic tones. Each hold falls where the lower rate puts it, even
+between samples, so that any Rate stays even and in tune, not only one that
+divides the sample rate. Bits rounds each sample to fewer bits, which adds a
 gritty hiss that follows the sound.
 
 ## Planned

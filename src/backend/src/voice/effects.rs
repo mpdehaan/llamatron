@@ -9,6 +9,7 @@
 //! and wrap wraps round, the last two the harsh digital sounds of cheap grooveboxes.
 
 use crate::protocol::values::{number, word};
+use crate::voice::blep;
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -26,8 +27,22 @@ enum Curve {
 }
 
 enum Kind {
-    Bitcrush { levels: f64, step: f64, phase: f64, held: f64 },
-    Drive { curve: Curve, gain: f64, scale: f64, offset: f64 },
+    Bitcrush {
+        levels: f64,
+        step: f64,
+        phase: f64,
+        held: f64,
+        /// The input a sample before, from which a hold falling between samples takes its value.
+        previous: f64,
+        /// The share of a hold's step smoothing owed to the next sample.
+        next: f64,
+    },
+    Drive {
+        curve: Curve,
+        gain: f64,
+        scale: f64,
+        offset: f64,
+    },
 }
 
 pub struct Effect {
@@ -60,6 +75,8 @@ fn bitcrush(spec: &Value, rate: f64) -> Kind {
         step,
         phase: 0.0,
         held: 0.0,
+        previous: 0.0,
+        next: 0.0,
     }
 }
 
@@ -93,20 +110,37 @@ impl Effect {
     pub fn apply(&mut self, buffer: &mut [f32]) {
         let mix = self.mix;
         match &mut self.kind {
-            Kind::Bitcrush { levels, step, phase, held } => {
+            Kind::Bitcrush {
+                levels,
+                step,
+                phase,
+                held,
+                previous,
+                next,
+            } => {
                 for sample in buffer.iter_mut() {
                     let dry = *sample as f64;
                     let mut wet = dry;
                     if *step > 0.0 {
-                        let before = phase.floor();
+                        // The hold falls where its rate puts it, between samples, taking the input as it was at that
+                        // moment, and its step is smoothed over this sample and the next, so that any Rate stays in tune.
+                        // After Plaits' SampleRateReducer (plaits/dsp/fx/sample_rate_reducer.h, Emilie Gillet, MIT); our
+                        // own implementation.
+                        let mut this = *next;
+                        *next = 0.0;
                         *phase += *step;
-                        if phase.floor() > before {
-                            *held = dry;
-                        }
                         if *phase >= 1.0 {
                             *phase -= 1.0;
+                            let after = *phase / *step;
+                            let fresh = *previous + (dry - *previous) * (1.0 - after);
+                            let jump = fresh - *held;
+                            this += jump * blep::this_sample(after);
+                            *next += jump * blep::next_sample(after);
+                            *held = fresh;
                         }
-                        wet = *held;
+                        *next += *held;
+                        *previous = dry;
+                        wet = this;
                     }
                     if *levels > 0.0 {
                         wet = (wet * *levels).round() / *levels;
@@ -133,9 +167,101 @@ impl Effect {
 
     /// Back to rest.
     pub fn reset(&mut self) {
-        if let Kind::Bitcrush { phase, held, .. } = &mut self.kind {
+        if let Kind::Bitcrush {
+            phase, held, previous, next, ..
+        } = &mut self.kind
+        {
             *phase = 0.0;
             *held = 0.0;
+            *previous = 0.0;
+            *next = 0.0;
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn effect(pairs: &[(&str, Value)]) -> Effect {
+        let spec = Value::Map(pairs.iter().map(|(key, value)| (Value::from(*key), value.clone())).collect());
+        compiled(&[spec], RATE).remove(0)
+    }
+
+    const RATE: f64 = 48_000.0;
+
+    fn sine(amplitude: f64) -> Vec<f32> {
+        (0..4800)
+            .map(|place| (amplitude * (2.0 * PI * 220.0 * place as f64 / RATE).sin()) as f32)
+            .collect()
+    }
+
+    /// Every Drive curve keeps a loud sine within full scale, and each curve shapes it its own way.
+    #[test]
+    fn every_drive_curve_stays_in_bounds_and_shapes_its_own_way() {
+        let loud = 0.9;
+        let mut shapes = Vec::new();
+        for curve in ["soft", "warm", "hard", "fold", "wrap"] {
+            let mut drive = effect(&[("effect", "drive".into()), ("curve", curve.into()), ("amount", 0.8.into())]);
+            let mut buffer = sine(loud);
+            drive.apply(&mut buffer);
+            assert!(buffer.iter().all(|sample| sample.abs() <= 1.0 + 1e-6), "{curve}");
+            shapes.push(buffer);
+        }
+        for (place, shape) in shapes.iter().enumerate() {
+            for other in &shapes[place + 1..] {
+                assert_ne!(shape, other);
+            }
+        }
+    }
+
+    /// Bitcrush's Bits leaves only a few levels: three bits give at most nine.
+    #[test]
+    fn bitcrush_bits_leave_few_levels() {
+        let mut crush = effect(&[("effect", "bitcrush".into()), ("bits", 3.0.into())]);
+        let mut buffer = sine(1.0);
+        crush.apply(&mut buffer);
+        let mut levels: Vec<i64> = buffer.iter().map(|sample| (*sample as f64 * 1e6).round() as i64).collect();
+        levels.sort();
+        levels.dedup();
+        assert!(levels.len() <= 9, "{}", levels.len());
+    }
+
+    /// Bitcrush's Rate holds at its own rate even where it does not divide the sample rate: a ramp held at 7000 Hz
+    /// changes very nearly 7000 times a second, its holds evenly spread, not jumping between whole samples.
+    #[test]
+    fn bitcrush_rate_holds_at_its_own_rate() {
+        let hold_rate = 7_000.0;
+        let mut crush = effect(&[("effect", "bitcrush".into()), ("bits", 16.0.into()), ("rate", hold_rate.into())]);
+        let mut buffer: Vec<f32> = (0..48_000).map(|place| place as f32 / 48_000.0).collect();
+        crush.apply(&mut buffer);
+        // Each hold is a step up, smoothed over two samples: count each run of rising samples once.
+        let flat = 1e-7;
+        let rises: Vec<bool> = buffer.windows(2).map(|pair| (pair[1] - pair[0]) as f64 > flat).collect();
+        let steps = rises.windows(2).filter(|pair| pair[1] && !pair[0]).count();
+        assert!((steps as f64 - hold_rate).abs() < hold_rate * 0.02, "{steps}");
+        // And each step of the ramp is as high as the next, as a hold every 1/7000 s makes it; holds landing only on
+        // whole samples, six or seven apart, would make steps a seventh apart.
+        // A step is smoothed over two samples, one of which may be nearly flat, so rises fewer than two flat samples apart
+        // are one step.
+        let mut heights = Vec::new();
+        let (mut height, mut flats) = (0.0, 0);
+        for pair in buffer.windows(2).skip(4800).take(38_400) {
+            let rise = (pair[1] - pair[0]) as f64;
+            if rise > flat {
+                height += rise;
+                flats = 0;
+            } else {
+                flats += 1;
+                if flats >= 2 && height > 0.0 {
+                    heights.push(height);
+                    height = 0.0;
+                }
+            }
+        }
+        // The first and last steps are cut by the stretch's ends.
+        let whole = &heights[1..heights.len() - 1];
+        let (lowest, highest) = whole.iter().fold((f64::MAX, f64::MIN), |(low, high), each| (low.min(*each), high.max(*each)));
+        assert!(highest / lowest < 1.05, "{highest} against {lowest}");
     }
 }

@@ -533,4 +533,59 @@ mod tests {
         assert!(most_leap < naive_leap * 0.95, "{most_leap}");
         assert!(values.iter().all(|value| value.abs() < 1.5));
     }
+
+    /// A note of an oscillator part from its spec, a second of it at a pitch.
+    fn played(pairs: Vec<(&str, Value)>, pitch: f64) -> Vec<f64> {
+        let rate = 48_000.0;
+        let spec = Value::Map(pairs.into_iter().map(|(key, value)| (Value::from(key), value)).collect());
+        let (part, _) = compiled(&spec, rate);
+        let mut state = OscillatorState::default();
+        part.begin(&mut state, pitch);
+        part.choose_band(&mut state, pitch, 0.0);
+        (0..48_000)
+            .map(|place| part.sample(&mut state, pitch, place as f64 / rate, Moves::default(), rate).0)
+            .collect()
+    }
+
+    /// How many times a second a wave crosses zero upward, which for a plain wave is its pitch's frequency.
+    fn crossings(samples: &[f64]) -> usize {
+        samples.windows(2).filter(|pair| pair[0] < 0.0 && pair[1] >= 0.0).count()
+    }
+
+    /// Each of Basic's waveforms plays at its note's frequency and within full scale.
+    #[test]
+    fn every_basic_waveform_plays_at_its_pitch() {
+        let (pitch, hertz) = (57.0, 220.0);
+        for waveform in ["sine", "saw", "square", "triangle", "pulse"] {
+            let oscillator = Value::Array(vec![waveform.into(), 0.into(), 1.0.into()]);
+            let samples = played(vec![("type", "basic".into()), ("oscillators", Value::Array(vec![oscillator]))], pitch);
+            assert!(samples.iter().all(|sample| sample.abs() <= 1.1), "{waveform}");
+            assert!((crossings(&samples) as f64 - hertz).abs() <= 2.0, "{waveform} {}", crossings(&samples));
+        }
+    }
+
+    /// The Pocket's pulse and wave channels play at the note's frequency, the chip's period rounding it to a hair, and
+    /// its noise channel is noise, pitched by the note: far more crossings than its pitch.
+    #[test]
+    fn the_pockets_channels_play_their_notes() {
+        let (pitch, hertz) = (57.0, 220.0);
+        for voice in ["pulse", "wave"] {
+            let samples = played(vec![("type", "pocket".into()), ("chip_voice", voice.into())], pitch);
+            assert!(samples.iter().all(|sample| sample.abs() <= 1.1), "{voice}");
+            assert!((crossings(&samples) as f64 - hertz).abs() <= 3.0, "{voice} {}", crossings(&samples));
+        }
+        let noise = played(vec![("type", "pocket".into()), ("chip_voice", "noise".into())], pitch);
+        assert!(crossings(&noise) > 2 * hertz as usize, "{}", crossings(&noise));
+    }
+
+    /// Fishline's saw and square play at the note's frequency, the saw through its coupling high-pass, within bounds.
+    #[test]
+    fn fishlines_waves_play_at_their_pitch() {
+        let (pitch, hertz) = (45.0, 110.0);
+        for wave in ["saw", "square"] {
+            let samples = played(vec![("type", "acid".into()), ("acid_wave", wave.into())], pitch);
+            assert!(samples.iter().all(|sample| sample.abs() <= 1.5), "{wave}");
+            assert!((crossings(&samples) as f64 - hertz).abs() <= 2.0, "{wave} {}", crossings(&samples));
+        }
+    }
 }
