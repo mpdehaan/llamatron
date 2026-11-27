@@ -870,13 +870,23 @@ impl PatternEditor {
             beats: beats.clone(),
             label_width,
         };
+        let sounding = crate::screens::listening::sounding_step(app, &self.name);
+        // The read head stands down the sounding step's column on the pitch lines, beside the step's number lit above.
+        let head_column = sounding
+            .filter(|step| (first..last).contains(step))
+            .map(|step| EDGE_WIDTH + label_width + (step - first) * (CELL_WIDTH + EDGE_WIDTH) + EDGE_WIDTH + MARK_COLUMN);
         let mut grid_lines = vec![
             self.rule(RuleKind::Top, &window, None),
-            grid::step_numbers_line(first, last, &beats, None, label_width),
+            grid::step_numbers_line(first, last, &beats, sounding, label_width),
             self.rule(RuleKind::Heading, &window, boxed_beside(&pitches[..1])),
         ];
         for (place, each) in pitches.iter().enumerate() {
-            grid_lines.push(self.pitch_line(&roll, *each, pitch, &window));
+            let line = self.pitch_line(&roll, *each, pitch, &window);
+            let line = match head_column {
+                Some(column) => grid::with_read_head(vec![line], column).remove(0),
+                None => line,
+            };
+            grid_lines.push(line);
             if roll.starts_an_octave(*each) && place + 1 < pitches.len() {
                 grid_lines.push(self.rule(RuleKind::Inner, &window, boxed_beside(&pitches[place..place + 2])));
             }
@@ -929,7 +939,8 @@ impl PatternEditor {
         let mut lines = self.header_lines(app, &roll, width, (first, last), extra);
         let beats = self.beats(app, &roll);
         let label_width = self.label_width(app, &roll).max(rows.widest_label());
-        lines.extend(rows.grid_lines(&shown, &cursor, self.step.get(), (first, last, &beats), label_width));
+        let sounding = crate::screens::listening::sounding_step(app, &self.name);
+        lines.extend(rows.grid_lines(&shown, &cursor, self.step.get(), (first, last, &beats), label_width, sounding));
         self.with_description(app, &roll, lines, width, height)
     }
 

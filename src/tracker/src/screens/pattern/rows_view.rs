@@ -827,12 +827,22 @@ impl<'a> Rows<'a> {
         }
     }
 
-    /// The grid: the rules, the Step row, the pinned rows and the scrolled rows given, a rule where a row asks for one.
-    pub fn grid_lines(&self, rows: &[RowName], cursor: &RowName, step: usize, window: (usize, usize, &[usize]), label_width: usize) -> Vec<Text> {
+    /// The grid: the rules, the Step row with the sounding step's number lit, the pinned rows and the scrolled rows given, a
+    /// rule where a row asks for one.
+    #[allow(clippy::too_many_arguments)]
+    pub fn grid_lines(
+        &self,
+        rows: &[RowName],
+        cursor: &RowName,
+        step: usize,
+        window: (usize, usize, &[usize]),
+        label_width: usize,
+        sounding: Option<usize>,
+    ) -> Vec<Text> {
         let (first, last, beats) = window;
         let mut lines = vec![
             self.rule(RuleKind::Top, window, true, label_width),
-            grid::step_numbers_line(first, last, beats, None, label_width),
+            grid::step_numbers_line(first, last, beats, sounding, label_width),
         ];
         let mut all = vec![RowName::Row(Row::DEGREE), RowName::Row(Row::OCTAVE)];
         all.extend(rows.iter().cloned());

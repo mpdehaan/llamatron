@@ -183,6 +183,14 @@ pub fn stop_listening(app: &mut App) {
     app.say(messages::MSG_STOPPED);
 }
 
+/// The step of a pattern that sounds now, for the pattern editor's read head: in the pattern's or a clip's Listen first,
+/// then in a song playing from Arrange, or None.
+pub fn sounding_step(app: &App, pattern: &str) -> Option<usize> {
+    app.preview
+        .playing_step(&app.document, pattern)
+        .or_else(|| app.transport.playing_step(&app.document, pattern))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

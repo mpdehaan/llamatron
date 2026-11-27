@@ -42,6 +42,22 @@ pub struct Refusal {
     pub lines: Vec<String>,
 }
 
+/// A whole note's quarter notes, and a minute's seconds, for a step's length at a tempo.
+const QUARTERS_A_WHOLE_NOTE: f64 = 4.0;
+const SECONDS_A_MINUTE: f64 = 60.0;
+/// The direction a clip plays its pattern in where neither names one.
+const FORWARD: &str = llamatron_model::schema::generated::file_format::Direction::FORWARD;
+
+/// The step that sounds a time into a clip's play, by its direction's order, or None for a direction that chooses its
+/// steps as it goes.
+pub fn step_sounding(elapsed: f64, step_seconds: f64, steps: usize, direction: &str) -> Option<usize> {
+    let order = llamatron_engine::order::walk_order(steps, direction)?;
+    if order.is_empty() || step_seconds <= 0.0 {
+        return None;
+    }
+    order.get((elapsed / step_seconds) as usize % order.len()).copied()
+}
+
 /// The tracker's side of real-time playback: the sender while open, the player while something has played, and the
 /// seed the song's random parts are drawn from while it plays.
 #[derive(Default)]
@@ -345,6 +361,34 @@ impl Transport {
 
     pub fn clip_elapsed(&self, index: usize, track: &str) -> Option<f64> {
         self.asking(|player, now| player.clip_elapsed(now, index, track)).flatten()
+    }
+
+    /// The step of a pattern that sounds now, for the pattern editor's read head: the step of the first playing clip that
+    /// plays the pattern, in the clip's direction, or None when no playing clip plays it or its direction chooses its
+    /// steps as it goes. What a generator or a morph does to the clip is not followed.
+    pub fn playing_step(&self, document: &Document, pattern: &str) -> Option<usize> {
+        if !self.is_playing() {
+            return None;
+        }
+        let setlist = document.get_setlist();
+        let song = setlist.get_song(self.song_name())?;
+        let held = setlist.get_pattern(pattern)?;
+        let whole_notes_a_step = setlist.get_pattern_step_size(held).to_float();
+        for index in self.playing_scenes() {
+            let Some(scene) = song.scenes().get(index) else { continue };
+            for track in song.get_track_names() {
+                let Some(clip) = scene.get_clip_slot(track) else { continue };
+                if clip.get_pattern_name() != pattern || !self.is_clip_playing(index, track) {
+                    continue;
+                }
+                let Some(elapsed) = self.clip_elapsed(index, track) else { continue };
+                let tempo = llamatron_engine::realizer::tempo_in(scene, song).to_float();
+                let step_seconds = whole_notes_a_step * QUARTERS_A_WHOLE_NOTE * SECONDS_A_MINUTE / tempo;
+                let direction = clip.get_direction().or_else(|| held.get_direction()).unwrap_or_else(|| FORWARD.to_string());
+                return step_sounding(elapsed, step_seconds, held.get_steps() as usize, &direction);
+            }
+        }
+        None
     }
 
     pub fn repeats_left(&self, index: usize, track: &str) -> Option<i64> {
@@ -780,4 +824,30 @@ fn program_changes(old: &[(String, Route)], new: &[(String, Route)], seconds: f6
         });
     }
     changes
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The sounding step follows the clip's time through its direction's order, and a direction chosen as it goes has none.
+    #[test]
+    fn the_sounding_step_follows_the_direction() {
+        let step_seconds = 0.125;
+        let steps = 4;
+        let a_step_in = |place: f64| place * step_seconds + step_seconds / 2.0;
+        assert_eq!(step_sounding(a_step_in(2.0), step_seconds, steps, FORWARD), Some(2));
+        assert_eq!(step_sounding(a_step_in(5.0), step_seconds, steps, FORWARD), Some(1));
+        let backward = llamatron_model::schema::generated::file_format::Direction::REVERSE_B;
+        assert_eq!(step_sounding(a_step_in(0.0), step_seconds, steps, backward), Some(3));
+        assert_eq!(
+            step_sounding(
+                a_step_in(0.0),
+                step_seconds,
+                steps,
+                llamatron_model::schema::generated::file_format::Direction::RANDOM
+            ),
+            None
+        );
+    }
 }

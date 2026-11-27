@@ -60,6 +60,8 @@ pub struct PatternPreview {
     transport: Transport,
     playing: Option<Previewing>,
     scale: Option<String>,
+    /// The copy of the set a pattern's Listen plays, kept to find the step that sounds.
+    pattern_set: Option<Document>,
 }
 
 impl PatternPreview {
@@ -130,11 +132,12 @@ impl PatternPreview {
         self.transport.follows_revision(document.get_revision());
         self.playing = Some(Previewing::Pattern(pattern.to_string()));
         self.scale = scale;
+        self.pattern_set = Some(copy);
         Ok(())
     }
 
     /// Play a clip of the song as its scene would, again and again, through General MIDI in FluidSynth: the piano, or the
-    /// drum kit for drums, as the clip page listens while Real Time is off.
+    /// drum kit for drums, as the clip page listens where no track of the song plays through an instrument that can sound.
     pub fn play_clip_of_song(&mut self, document: &Document, index: usize, track: &str) -> Result<(), String> {
         self.stop();
         let copy = song_copy(document);
@@ -285,7 +288,19 @@ impl PatternPreview {
         };
         self.scale = scale;
         let route = pattern_route(document, pattern);
-        self.transport.follow(&copy, revision, vec![(track, route)])
+        let said = self.transport.follow(&copy, revision, vec![(track, route)]);
+        self.pattern_set = Some(copy);
+        said
+    }
+
+    /// The step of a pattern that sounds in what the preview plays, for the pattern editor's read head: in a pattern's
+    /// Listen or a clip's, or None.
+    pub fn playing_step(&self, document: &Document, pattern: &str) -> Option<usize> {
+        match self.playing()? {
+            Previewing::Pattern(name) if name == pattern => self.pattern_set.as_ref().and_then(|copy| self.transport.playing_step(copy, pattern)),
+            Previewing::Clip(..) => self.transport.playing_step(document, pattern),
+            _ => None,
+        }
     }
 
     pub fn is_playing(&self) -> bool {
