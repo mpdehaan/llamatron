@@ -15,7 +15,7 @@ use crate::keys::KeyItem;
 use crate::page::{Duration, Page};
 use crate::text::Text;
 use crate::themes::Colour;
-use llamatron_strings::{labels, marks, named};
+use llamatron_strings::{labels, legends, marks, named};
 use std::cell::Cell;
 
 /// How wide a tab box is drawn before the page has been drawn at a width.
@@ -80,6 +80,11 @@ pub trait Form {
     /// the app's asking, which the field under the cursor then asks.
     fn press_own(&mut self, _app: &mut App, _item: &KeyItem, _key: &str, _row: Option<&Field>) {}
 
+    /// Whether Space types into a field as ENTER does, on a field whose ENTER types and where Space has nothing else to do.
+    fn types_with_space(&self, _field: &Field) -> bool {
+        false
+    }
+
     /// Whether the page is carrying one of its rows in Move mode, when only its own keys work.
     fn carrying(&self) -> bool {
         false
@@ -110,6 +115,10 @@ pub trait Form {
         false
     }
 }
+
+/// The keys a field that types with Space as well as ENTER answers to.
+const SPACE: &str = "space";
+const ENTER: &str = "enter";
 
 /// What a settings page keeps of its cursor and of how it was last drawn.
 #[derive(Default)]
@@ -750,6 +759,9 @@ impl<F: Form> Page for FieldPage<F> {
         if let Some(field) = field {
             if field.enters && field.is_toggle() {
                 result.push(self.bind(&Keys::TOGGLE));
+            } else if field.enters && self.form.types_with_space(field) {
+                let space_too = self.bind(&Keys::ENTER).saying(&field.enter_what).with_keys(vec![SPACE, ENTER]);
+                result.push(space_too.named(legends::KeyName::SPACE_ENTER));
             } else if field.enters {
                 result.push(self.bind(&Keys::ENTER).saying(&field.enter_what));
             }

@@ -50,7 +50,7 @@ settings and, after them, its strip:
 The strip is a row of boxes, the slots numbered above their values. On the
 strip, `Left` and `Right` move between the slots, `[` and `]` make the slot
 under the cursor less and more, a digit puts that number in the slot at once,
-`ENTER` types any value and `Bksp` makes the slot blank. While the song plays,
+`Space` or `ENTER` types any value and `Bksp` makes the slot blank. While the song plays,
 the slot each draw last took its value from is lit in violet, and a closed
 draw's heading says which slot it is.
 

@@ -171,6 +171,11 @@ impl Form for DrawsPage {
         Some((&Keys::SLOT_LESS, &Keys::SLOT_MORE))
     }
 
+    /// A slot of the strip types with Space as with ENTER, Space having nothing else to do there.
+    fn types_with_space(&self, field: &Field) -> bool {
+        field.id % IDS_PER_DRAW >= FIRST_SLOT
+    }
+
     fn page_keys(&self, _app: &App, row: Option<&Field>) -> Vec<KeyItem> {
         if row.is_some_and(|row| matches!(row.drawn, Drawn::Strip { .. }) && !row.cells.is_empty()) {
             return vec![KeyItem::of(&Keys::CLASS, &Keys::TYPE_SLOT).wanting_key()];
@@ -257,5 +262,44 @@ impl Form for DrawsPage {
         if let Some(refusal) = refusal {
             app.refuse(&refusal);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::app::Tracker;
+    use crate::keybindings::FieldPage as FieldKeys;
+    use crate::keys::first_key;
+    use crate::screens::field_page::FieldPage;
+    use llamatron_model::objects::setlist::Setlist;
+
+    /// On a slot of the strip, Space opens the typing prompt as ENTER does.
+    #[test]
+    fn space_types_into_a_slot_as_enter_does() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/one_draw_stepping.yml");
+        let text = std::fs::read_to_string(path).expect("the scenario's set is there");
+        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
+        tracker.app.show_page(Box::new(FieldPage::new(DrawsPage)));
+        tracker.settle();
+        let on_strip = |tracker: &Tracker| tracker.top().keys(&tracker.app).iter().any(|key| key.is(&Keys::TYPE_SLOT));
+        let most_presses = 60;
+        for _ in 0..most_presses {
+            if on_strip(&tracker) {
+                break;
+            }
+            // A closed section's heading is opened, as a person opens it to reach its fields.
+            let screen = tracker.screen(80, 24);
+            let heading = screen
+                .iter()
+                .map(|line| line.text())
+                .any(|line| line.starts_with(&format!("{}+", crate::drawing::SELECTED_MARK)));
+            tracker.press(if heading { first_key(&FieldKeys::ENTER) } else { "down" });
+        }
+        assert!(on_strip(&tracker), "the cursor reaches the strip");
+        let pages = tracker.depth();
+        tracker.press("space");
+        assert_eq!(tracker.depth(), pages + 1, "Space opens the prompt");
     }
 }
