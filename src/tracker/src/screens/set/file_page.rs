@@ -317,6 +317,10 @@ impl Form for FilePage {
             app.document.change_set(|setlist| setlist.set_written(setting, value));
             return;
         }
+        if id == NEW && edit == Edit::Enter {
+            app.new_set();
+            return;
+        }
         if id == HIDDEN && edit == Edit::Enter {
             // The modes left out of the visualizer key, picked in a list where each can be on or off.
             let names: Vec<String> = VISUALIZER_NAMES.iter().map(|name| mode_name(name)).collect();
@@ -450,5 +454,41 @@ mod tests {
             Edit::Choice(TrackInstrumentDefault::ExternalMidi.word().to_string()),
         );
         assert_eq!(app.preferences.track_instrument_default(true), TrackInstrumentDefault::ExternalMidi);
+    }
+
+    /// The New button asks first where the set has unsaved changes, and on YES starts a new set in its place.
+    #[test]
+    fn new_asks_about_unsaved_changes_then_starts_a_new_set() {
+        use crate::keybindings::{ConfirmDialog as ConfirmKeys, FieldPage as FieldKeys};
+        use crate::keys::first_key;
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/clip_of_two_patterns.yml");
+        let mut document = crate::document::Document::open(&path).expect("the scenario's set opens");
+        document.change_set(|setlist| setlist.set_written(SetlistSetting::TITLE, Some(Data::text("changed"))));
+        let mut tracker = crate::app::Tracker::new(document);
+        tracker.app.show_page(Box::new(crate::screens::field_page::FieldPage::new(FilePage)));
+        tracker.settle();
+        let most_presses = 40;
+        for _ in 0..most_presses {
+            let screen = tracker.screen(80, 24);
+            let on_new = screen
+                .iter()
+                .map(|line| line.text())
+                .any(|line| line.contains(crate::drawing::SELECTED_MARK.trim()) && line.contains(labels::MSG_NEW_SET_BUTTON));
+            let boxed_new = tracker.top().place_kind(&tracker.app).contains(labels::MSG_NEW_SET_BUTTON);
+            if on_new || boxed_new {
+                break;
+            }
+            tracker.press("down");
+        }
+        tracker.press(first_key(&FieldKeys::ENTER));
+        let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
+        assert!(
+            screen.iter().any(|line| line.contains(llamatron_strings::messages::MSG_UNSAVED_TITLE)),
+            "{screen:#?}"
+        );
+        assert_eq!(tracker.app.document.get_path(), Some(path.as_path()), "nothing changes before the answer");
+        tracker.press(first_key(&ConfirmKeys::ANSWER));
+        assert_eq!(tracker.app.document.get_path(), None);
+        assert_eq!(tracker.app.status.text(), llamatron_strings::messages::MSG_STARTED_NEW);
     }
 }

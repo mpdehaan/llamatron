@@ -146,17 +146,36 @@ impl App {
     /// Show the Open page to pick a set file, which Ctrl+O and the File page's Open do; a set with unsaved changes asks
     /// first.
     pub fn open_set(&mut self) {
-        let show_open = |app: &mut App| {
+        self.unless_unsaved(|app: &mut App| {
             let page = crate::screens::set::open_page::OpenPage::new(app);
             app.show_page(Box::new(page));
-        };
+        });
+    }
+
+    /// Start a new set in place of the open one, after asking where it has unsaved changes, and say so.
+    pub fn new_set(&mut self) {
+        self.unless_unsaved(|app: &mut App| {
+            let instrument = |drum: bool| crate::track_instrument::for_new_track(&app.preferences, app.fluidsynth_installed, drum);
+            let (main, drum) = (instrument(false), instrument(true));
+            match crate::document::Document::new_set(main, drum) {
+                Ok(document) => {
+                    app.document = document;
+                    app.say(llamatron_strings::messages::MSG_STARTED_NEW);
+                }
+                Err(problem) => app.refuse(&problem),
+            }
+        });
+    }
+
+    /// Do something that replaces the open set, at once, or after YES where the set has unsaved changes.
+    fn unless_unsaved(&mut self, then: impl Fn(&mut App) + 'static) {
         if !self.document.is_dirty() {
-            show_open(self);
+            then(self);
             return;
         }
         let messages = vec![llamatron_strings::messages::MSG_UNSAVED_CONTINUE.to_string()];
         let question = crate::screens::dialogs::ConfirmDialog::new(llamatron_strings::messages::MSG_UNSAVED_TITLE, messages, false, false);
-        let question = question.then(Box::new(move |app: &mut App, _answer: &crate::screens::dialogs::Answer| show_open(app)));
+        let question = question.then(Box::new(move |app: &mut App, _answer: &crate::screens::dialogs::Answer| then(app)));
         self.show_page(Box::new(question));
     }
 
