@@ -23,7 +23,7 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 15. SYNTH_IDEAS: Modulator modules (Chaos and Snail, then Tide, Turing, Bounce and Swarm); New-instrument choices
    (mockup).
 16. SYNTH_IDEAS: Durham (mockup).
-17. SYNTH_IDEAS: MechaDrum split (mockup); The vactrol's age.
+17. SYNTH_IDEAS: The drum instruments (mockup); The vactrol's age.
 18. SYNTH_IDEAS: Spectral; Variance; The professor's effect plans.
 19. SYNTH_IDEAS: Every engine and effect redesigned; The other engines and effects, each with its demo from DEMO_IDEAS
    (log_garden first, with ComplexOsc).
@@ -56,4 +56,5 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 27. SYNTH_IDEAS: The envelopes let go of the LPG.
 28. SYNTH_IDEAS: Sine first on the Basic oscillators.
 29. SYNTH_IDEAS: A speech synth; A riser synth.
-30. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
+30. SYNTH_IDEAS: NoiseBuster.
+31. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.

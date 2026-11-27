@@ -77,8 +77,15 @@ The professor's research is in `.claude/notes/synthesis/`.
   discussed with a mockup of its Synth tab, one a reply. The professor first reviews every engine, drum and effect proposed and
   says which merge and which stay apart. Each drum engine declares a hard playable range in octaves, clamping or refusing notes
   past it, shown on its mockup.
-- **MechaDrum split** into one engine a drum ("MechaDrum Kick", "MechaDrum Snare", ...), each with its own settings after the
-  drum machine's manual's drum configurations, and presets per drum type; its demo updated.
+- **The drum instruments**: drums made by kind of synthesis, each drum its own settings (at most eight, named for what they
+  do), chosen per drum track's instrument as today: MechaDrum, the basic kit of classic analog-style circuits (Kick, Punch
+  Kick, Sine Kick, Morph Kick, Snare, Clap, Closed and Open Hat, Cymbal, Tom and Conga, Rim, Cowbell, Claves, Zap, Noise and
+  Impulse); FM Drum (FM Kick, Snare, Tom, Hat, Cymbal, Clap and Cowbell); Physical Drum (Struck Kick, Snare and Tom, Hand
+  Drum, Mallets, Shaker, Bloom Cymbal, Wood and Metal); and Karplus Drum (Classic, Pluck Tom, Snare, Hollow, Metal, Harmonic
+  Drum, Buzz, Body Drum, Boom, then Bars and Bowls and a Mesh). Every drum shares Drum FX (AM, one EQ band, a filter, rate
+  reduction and drive); the page shows only the tabs that act; each hit's loudness is matched to a reference rather than
+  its peak normalised; nothing of today's drums is kept for older sets; presets per drum and the demo updated
+  (`.claude/notes/synthesis/`, the drum chapters).
 - **The vactrol's age**: An old cell behaving less predictably strike to strike, within a musical range Claude proposes.
 - **Asheville's polyphonic mode**, after the late-1970s polyphonic analogs: every key its own voice, a shared filter and
   contours either paraphonic or per voice.
@@ -148,6 +155,16 @@ The professor's research is in `.claude/notes/synthesis/`.
   FluidSynth instrument is panned by the mixer too, never by General MIDI's pan, wherever FluidSynth's output allows, so
   that the effects move its place smoothly as they move a built-in synth's. How the instrument's own Pan, which the
   General MIDI export uses today, meets the track's is settled with the design.
+  Each track and bus has a character stage: Drive (compensated, so it changes colour rather than loudness), Amount (a blend
+  with the stage's clean path) and Character: Tube (a push-pull cell at rest), Warm Tube (a single-ended stage leaning more
+  as it gets louder), Iron (a transformer saturating the bass more than the treble), Desk (a class-A amplifier with a light
+  transformer) and Tube and Iron (the whole chain).
+- **A tube compressor and limiter**, for buses: a variable-gain tube cell whose distortion grows as it compresses, a soft
+  knee hardening toward limiting, a release that follows the programme; Input, Threshold, Knee, Time (six settings of its
+  own, two following the programme), Link (stereo, dual or mid and side), Output, Mix and Colour, clean to dirty.
+- **An equaliser colour stage**: four bands with shelf or bell, broad curves that narrow as they are boosted, stepped
+  frequencies of its own, two gain ranges, inside a driven amplifier and transformer chain so that a boost changes the
+  grain; Drive and Colour.
 - **FluidSynth through the effects**: FluidSynth playing each MIDI channel into a stereo pair of its own, so that each
   FluidSynth instrument gets the effect blocks, pan and the buses as a built-in synth does; FluidSynth's own reverb and
   chorus stay outside the chains.
@@ -228,10 +245,6 @@ In the order of their priority, the highest first.
 - **Built-in synths: Modal and Plucked**: Modal drums and tuned percussion, toms, marimba and bells as decaying modes, and
   Karplus-Strong plucks and drums, each hit rendered when its note arrives and kept for replay
   (.claude/notes/synthesis/MACHINES.md).
-- **Built-in drums: 8oh and 9oh**: Drum machines in the manner of the two classic analog drum machines of 1980 and 1983, the
-  bridged-T kicks with their long decays, the first's cowbell, clap, toms and its six-oscillator metallic hats and cymbal,
-  and the second's noisier snare and punchy kick, as built-in drum machines with plain names
-  (.claude/notes/synthesis/MACHINES.md and DRUMS.md hold the techniques).
 - **Built-in instruments: presets of the user's own**: On the Instrument page, saving a built-in instrument's settings as a
   preset of the user's own: a block's type and values as a block preset, the whole instrument as an engine preset (its list
   of block and preset pairs), and the four FX blocks together as an effects preset, each under a name the user gives, listed
@@ -266,4 +279,11 @@ In the order of their priority, the highest first.
   the rest, the documents' synth pages following the same order.
 - **Sine first on the Basic oscillators**: the Basic engine's oscillators start on a sine wave, and the sine stands at
   the top of the list of waves, since a sine makes a fine kick.
-
+- **NoiseBuster**, a family of glitch and noise voices and effects, bright and alive, sharing a clock locked to the note
+  (aliasing landing on harmonics, a Grain control) and band-limited steps at exact edge times: Shift-Register Tone (a
+  register oscillator whose Tone changes timbre at constant pitch, from square through buzzes to noise, with fractional
+  Tone, a second register modulating the first, a shape layer and built-in clamp and gate for percussion), Six-Mode Strike
+  (a drum voice from kicks to bells), Industrial Saw (six saws, sync as a formula, a modulus destroyer, a tracking filter,
+  a coherent rate blur and one envelope sent to many stages), Staged Destroyer (an effect whose stage order is a control),
+  Twin-Formant Oscillator, then Clamp Gate, Tracking Crusher, Operator Crossfade PM, Spectrum Builder, Folding Chorus,
+  Lattice Noise, register ring and gate effects, a formant bank and a binary rhythm source.
