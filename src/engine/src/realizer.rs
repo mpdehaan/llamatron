@@ -368,6 +368,13 @@ impl<'a> SongRealizer<'a> {
                 clips,
             });
         }
+        // A soloed track plays alone: every other track is heard as muted, in real time and in every export.
+        let is_soloed = |name: &str| {
+            self.track(name)
+                .ok()
+                .is_some_and(|track| track.get_written(TrackSetting::SOLO) == Some(&Data::Bool(true)))
+        };
+        let soloing = tracks.iter().any(|name| is_soloed(name));
         let mut columns = Vec::new();
         for name in &tracks {
             let track = self.track(name)?;
@@ -379,7 +386,7 @@ impl<'a> SongRealizer<'a> {
             let pan = instrument.and_then(|instrument| instrument.pan_control());
             columns.push(GridColumn {
                 name: name.clone(),
-                mute: track.get_written(TrackSetting::MUTE) == Some(&Data::Bool(true)),
+                mute: track.get_written(TrackSetting::MUTE) == Some(&Data::Bool(true)) || (soloing && !is_soloed(name)),
                 drum: track.is_drum(),
                 gm_sound,
                 pan,
@@ -1434,6 +1441,7 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
     let track_played = [
         TrackSetting::DRUM,
         TrackSetting::MUTE,
+        TrackSetting::SOLO,
         TrackSetting::TRANSPOSE,
         TrackSetting::CC,
         TrackSetting::INSTRUMENT,

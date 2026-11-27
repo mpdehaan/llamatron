@@ -200,6 +200,9 @@ pub const MSG_REAL_TIME_OFF_MARK: &str = "○";
 pub const MSG_PLAY_MARK: &str = "▶";
 pub const MSG_STOP_MARK: &str = "■";
 pub const MSG_SOUNDING_MARK: &str = "●";
+/// A muted track's heading, and a soloed one's, on Arrange.
+pub const MSG_MUTED_MARK: &str = "M";
+pub const MSG_SOLOED_MARK: &str = "S";
 pub const MSG_SONG_BUTTON: &str = "{mark} song";
 pub const MSG_PLAYING_CLOCK: &str = "▶ {at} / {total}";
 pub const MSG_SYNTH_LOAD: &str = "{clock}  synth {percent}%";

@@ -62,7 +62,7 @@ impl ArrangePage {
             let (row, track) = (self.row.get().max(0) as usize, Self::tracks(app)[self.track_place()].clone());
             let crumbs = self.crumbs(app);
             blank_pattern(app, row, &track, crumbs);
-        } else if item.is(&Keys::PASTE_CLIP) {
+        } else if item.is(&Keys::PASTE) {
             self.paste_clip(app);
         } else if item.is(&Keys::DELETE_CLIP) {
             self.delete_clip(app);

@@ -87,6 +87,7 @@ pub struct TrackSetting;
 impl TrackSetting {
     pub const DRUM: &'static str = "drum";
     pub const MUTE: &'static str = "mute";
+    pub const SOLO: &'static str = "solo";
     pub const TRANSPOSE: &'static str = "transpose";
     pub const LOWEST_OCTAVE: &'static str = "lowest_octave";
     pub const HIGHEST_OCTAVE: &'static str = "highest_octave";

@@ -19,6 +19,9 @@ pub enum Kind {
     Sounding,
     /// The word stock, for a cell whose details hold nothing of its own.
     Stock,
+    /// A muted track's M, in the amber of a refusal, and a soloed track's S, in the green of a sounding track.
+    Muted,
+    Soloed,
 }
 
 impl Kind {
@@ -29,6 +32,8 @@ impl Kind {
             Kind::Faint => Style::DIM,
             Kind::Playing => Style::PLAYING,
             Kind::Sounding => Style::SOUNDING,
+            Kind::Muted => Style::REFUSAL,
+            Kind::Soloed => Style::SOUNDING,
             Kind::Stock => Style::DETAILS_STOCK,
         }
     }

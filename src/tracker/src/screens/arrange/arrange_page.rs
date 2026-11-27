@@ -22,7 +22,7 @@ use crate::themes::Colour;
 use crate::visualizers::{self, showing::Showing};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::{ClipSlot, Scene};
-use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSetting, SetlistSetting};
+use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSetting, SetlistSetting, TrackSetting};
 use llamatron_strings::{labels, legends, marks, messages, named, names};
 use std::cell::Cell;
 
@@ -37,6 +37,8 @@ const SCENE_LABEL_WIDTH: usize = SCENE_WIDTH - 3;
 const SCENE_BAR_COLUMN: usize = 3;
 const PLAY_BUTTON_WIDTH: usize = 2;
 const SOUNDING_MARK_WIDTH: usize = 2;
+/// The room a muted or soloed track's M or S takes at the end of its heading, the letter and a space before the next.
+const MARK_ROOM: usize = 2;
 const HEADER_LINES: usize = 4;
 const SCENE_LINES: usize = 5;
 const FOOTER_LINES: usize = 3;
@@ -61,12 +63,20 @@ const FIRST_DETAIL_LINE: usize = 3;
 /// How long a scene's detail may be under its bar, leaving room for a pick's brackets before the scene column's divider.
 const SCENE_DETAIL_ROOM: usize = SCENE_WIDTH - SCENE_BAR_COLUMN - 3;
 
-/// What Move mode carries: the cursor's scene, track or clip.
+/// What T cut: the cursor's scene, track or clip.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum Moving {
     Scene,
     Track,
     Clip,
+}
+
+/// What T cut: a scene, track or clip, the row it stood on and the track whose column it was in.
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct Cut {
+    what: Moving,
+    row: usize,
+    track: String,
 }
 
 pub struct ArrangePage {
@@ -79,8 +89,8 @@ pub struct ArrangePage {
     locked: bool,
     picked: Option<usize>,
     opened: Option<CellPlace>,
-    /// What M picked up, which the arrows carry until ENTER, ESC or M drops it.
-    moving: Option<Moving>,
+    /// What T cut, and from where, which P pastes where the cursor then is, or ESC lets go of.
+    cut: Option<Cut>,
     row: Cell<i64>,
     column: Cell<usize>,
     top: Cell<usize>,
@@ -156,7 +166,7 @@ impl ArrangePage {
             locked: false,
             picked: None,
             opened: None,
-            moving: None,
+            cut: None,
             row: Cell::new(0),
             column: Cell::new(SCENE_COLUMN),
             top: Cell::new(0),
@@ -331,11 +341,13 @@ impl ArrangePage {
             &Keys::TRACK_SETTINGS,
             &Keys::COPY_TRACK,
             &Keys::INSERT_TRACK,
-            &Keys::MOVE_TRACK,
+            &Keys::CUT_TRACK,
             &Keys::DELETE_TRACK,
         ]
         .into_iter()
         .map(Self::bind)
+        .chain(self.mute_keys(app))
+        .chain(self.paste_key())
         .collect()
     }
 
@@ -355,7 +367,7 @@ impl ArrangePage {
                 [
                     &Keys::SCENE_SETTINGS,
                     &Keys::SCENE_VIEW,
-                    &Keys::MOVE_SCENE,
+                    &Keys::CUT_SCENE,
                     &Keys::COPY_SCENE,
                     &Keys::DELETE_SCENE,
                 ]
@@ -375,43 +387,31 @@ impl ArrangePage {
                         }
                     }
                     keys.extend(
-                        [&Keys::EDIT_CLIP, &Keys::OPEN_PATTERN, &Keys::MOVE_CLIP, &Keys::COPY_CLIP, &Keys::DELETE_CLIP]
+                        [&Keys::EDIT_CLIP, &Keys::OPEN_PATTERN, &Keys::CUT_CLIP, &Keys::COPY_CLIP, &Keys::DELETE_CLIP]
                             .into_iter()
                             .map(Self::bind),
                     );
                 }
             }
         }
-        if self.copied.is_some() && !self.on_scene_name() {
-            keys.push(Self::bind(&Keys::PASTE_CLIP));
+        keys.extend(self.mute_keys(app));
+        if (self.copied.is_some() && !self.on_scene_name()) || self.cut.is_some() {
+            keys.extend(self.paste_key());
         }
         keys.push(Self::bind(&Keys::INSERT_SCENE));
         keys
     }
 
+    /// P, where something was cut or a clip copied.
+    fn paste_key(&self) -> Vec<KeyItem> {
+        if self.cut.is_some() || self.copied.is_some() {
+            vec![Self::bind(&Keys::PASTE)]
+        } else {
+            Vec::new()
+        }
+    }
+
     /// Whether the cursor is on a cell with details: a track's name, a scene's name or a clip.
-    fn start_moving(&mut self, app: &mut App, moving: Moving) {
-        self.moving = Some(moving);
-        self.say_moving(app);
-    }
-
-    fn say_moving(&self, app: &mut App) {
-        let row = self.row.get().max(0) as usize;
-        let tracks = Self::tracks(app);
-        let what = match self.moving {
-            Some(Moving::Scene) => {
-                let name = scene_name(&app.document.song().scenes()[row], row);
-                named(messages::MSG_MOVING_SCENE, &[("name", name.as_str().into())])
-            }
-            Some(Moving::Track) => named(messages::MSG_MOVING_TRACK, &[("name", tracks[self.track_place()].as_str().into())]),
-            _ => {
-                let name = Self::clip(app, row, &tracks[self.track_place()]).map_or(String::new(), ClipSlot::get_display_name);
-                named(messages::MSG_MOVING_CLIP, &[("name", name.as_str().into())])
-            }
-        };
-        app.say(&named(messages::MSG_MOVING, &[("what", what.as_str().into())]));
-    }
-
     /// Change the current song, as one edit of the set.
     fn change_song(app: &mut App, change: impl FnOnce(&mut llamatron_model::objects::song::Song)) {
         let name = app.document.get_current_song_name().to_string();
@@ -424,77 +424,157 @@ impl ArrangePage {
         });
     }
 
-    /// Carry the picked-up scene up or down, or the picked-up track left or right, one place.
-    fn carry(&mut self, app: &mut App, offset: i64) {
+    /// Mark the scene, track or clip under the cursor as cut, for P to paste where the cursor then is; nothing moves until
+    /// it is pasted, so that a cut and its paste are one step to undo.
+    fn start_cut(&mut self, app: &mut App, what: Moving) {
         let row = self.row.get().max(0) as usize;
-        let place = self.track_place();
-        if self.moving == Some(Moving::Scene) {
-            let count = Self::scene_count(app);
-            let to = row as i64 + offset;
-            if (0..count).contains(&to) {
-                Self::change_song(app, |song| {
-                    song.move_scene(row, offset);
-                });
-                self.row.set(to);
+        let track = Self::tracks(app)[self.track_place()].clone();
+        let name = match what {
+            Moving::Scene => named(
+                messages::MSG_CUT_SCENE,
+                &[("name", scene_name(&app.document.song().scenes()[row], row).as_str().into())],
+            ),
+            Moving::Track => named(messages::MSG_CUT_TRACK, &[("name", track.as_str().into())]),
+            Moving::Clip => {
+                let clip = Self::clip(app, row, &track).map_or(String::new(), ClipSlot::get_display_name);
+                named(messages::MSG_CUT_CLIP, &[("name", clip.as_str().into())])
             }
-        } else {
-            let to = place as i64 + offset;
-            if (0..Self::tracks(app).len() as i64).contains(&to) {
-                Self::change_song(app, |song| {
-                    song.move_track(place, offset);
-                });
-                self.column.set((self.column.get() as i64 + offset) as usize);
-            }
-        }
-        self.say_moving(app);
+        };
+        self.cut = Some(Cut { what, row, track });
+        app.say(&name);
     }
 
-    /// Carry the picked-up clip to the nearest empty cell the arrow points to, passing over cells that hold clips.
-    fn carry_clip(&mut self, app: &mut App, key: &str) {
-        let (rows, columns): (i64, i64) = match key {
-            "up" => (-1, 0),
-            "down" => (1, 0),
-            "left" => (0, -1),
-            _ => (0, 1),
-        };
+    /// Put what was cut where the cursor is: a scene before the scene under the cursor, a track before the track under it,
+    /// a clip into the empty cell under it, as one step; what cannot go there is refused.
+    fn paste_cut(&mut self, app: &mut App) {
+        let Some(cut) = self.cut.take() else { return };
+        let to_row = self.row.get().max(0) as usize;
         let tracks = Self::tracks(app);
-        let (from_row, from_place) = (self.row.get().max(0) as usize, self.track_place());
-        let (mut row, mut place) = (from_row as i64 + rows, from_place as i64 + columns);
-        while (0..Self::scene_count(app)).contains(&row) && (0..tracks.len() as i64).contains(&place) {
-            let to_track = tracks[place as usize].clone();
-            if Self::clip(app, row as usize, &to_track).is_none() {
-                let mut dropped = None;
-                let from_track = tracks[from_place].clone();
-                let to_row = row as usize;
-                let circles = |grab: &str| grab == to_track || Self::grab_circles(app, to_row, &to_track, grab);
-                let grab = Self::clip(app, from_row, &from_track)
-                    .and_then(|clip| clip.get_written(ClipSlotSetting::GRAB_TRACK))
-                    .and_then(Data::as_str)
-                    .map(str::to_string);
-                if grab.as_deref().is_some_and(circles) {
-                    dropped = grab;
-                }
-                let clears = dropped.is_some();
+        let to_place = self.track_place();
+        match cut.what {
+            Moving::Scene => {
+                let to = if to_row > cut.row { to_row - 1 } else { to_row };
                 Self::change_song(app, |song| {
-                    if let Some(mut clip) = song.take_clip(from_row, &from_track) {
-                        if clears {
-                            clip.set_written(ClipSlotSetting::GRAB_TRACK, None);
-                        }
-                        song.put_clip(to_row, &to_track, clip);
+                    let mut at = cut.row;
+                    while at != to {
+                        let step = if to > at { 1 } else { -1 };
+                        song.move_scene(at, step);
+                        at = (at as i64 + step) as usize;
                     }
                 });
-                self.row.set(row);
-                self.column.set(place as usize + FIRST_TRACK_COLUMN);
-                if let Some(track) = dropped {
-                    app.say(&named(messages::MSG_PASTED_WITHOUT_GRAB, &[("track", track.as_str().into())]));
+                self.row.set(to as i64);
+            }
+            Moving::Track => {
+                let Some(from) = tracks.iter().position(|name| *name == cut.track) else {
+                    return;
+                };
+                let to = if to_place > from { to_place - 1 } else { to_place };
+                Self::change_song(app, |song| {
+                    let mut at = from;
+                    while at != to {
+                        let step = if to > at { 1 } else { -1 };
+                        song.move_track(at, step);
+                        at = (at as i64 + step) as usize;
+                    }
+                });
+                self.column.set(to + FIRST_TRACK_COLUMN);
+            }
+            Moving::Clip => {
+                let to_track = tracks[to_place].clone();
+                if Self::clip(app, to_row, &to_track).is_some() {
+                    self.cut = Some(cut);
+                    app.refuse(messages::MSG_PASTE_NEEDS_AN_EMPTY_CELL);
                     return;
                 }
-                break;
+                self.move_clip(app, (cut.row, &cut.track), (to_row, &to_track));
             }
-            row += rows;
-            place += columns;
         }
-        self.say_moving(app);
+    }
+
+    /// Move a clip from one cell to an empty one as one step, dropping its grab where grabbing there would go round in a
+    /// circle, and saying so.
+    fn move_clip(&mut self, app: &mut App, from: (usize, &str), to: (usize, &str)) {
+        let ((from_row, from_track), (to_row, to_track)) = (from, to);
+        let circles = |grab: &str| grab == to_track || Self::grab_circles(app, to_row, to_track, grab);
+        let grab = Self::clip(app, from_row, from_track)
+            .and_then(|clip| clip.get_written(ClipSlotSetting::GRAB_TRACK))
+            .and_then(Data::as_str)
+            .map(str::to_string);
+        let dropped = grab.filter(|grab| circles(grab));
+        let clears = dropped.is_some();
+        let (from_track, to_track) = (from_track.to_string(), to_track.to_string());
+        Self::change_song(app, |song| {
+            if let Some(mut clip) = song.take_clip(from_row, &from_track) {
+                if clears {
+                    clip.set_written(ClipSlotSetting::GRAB_TRACK, None);
+                }
+                song.put_clip(to_row, &to_track, clip);
+            }
+        });
+        if let Some(track) = dropped {
+            app.say(&named(messages::MSG_PASTED_WITHOUT_GRAB, &[("track", track.as_str().into())]));
+        }
+    }
+
+    /// The track the cursor's column belongs to, anywhere in the column, or None on the scene names.
+    fn column_track(&self, app: &App) -> Option<String> {
+        if !self.in_a_track_column() || self.on_corner() {
+            return None;
+        }
+        Self::tracks(app).get(self.track_place()).cloned()
+    }
+
+    /// Whether a track is muted, or soloed.
+    fn track_flag(app: &App, track: &str, setting: &str) -> bool {
+        app.document
+            .song()
+            .get_track(track)
+            .is_some_and(|held| held.get_written(setting) == Some(&Data::Bool(true)))
+    }
+
+    /// Whether a track is silent: muted, or another track soloed.
+    fn is_silenced(app: &App, track: &str) -> bool {
+        let soloing = Self::tracks(app).iter().any(|name| Self::track_flag(app, name, TrackSetting::SOLO));
+        Self::track_flag(app, track, TrackSetting::MUTE) || (soloing && !Self::track_flag(app, track, TrackSetting::SOLO))
+    }
+
+    /// Mute or unmute the track of the cursor's column, the same Mute as its track editor's.
+    fn toggle_mute(&self, app: &mut App, track: &str) {
+        let muted = Self::track_flag(app, track, TrackSetting::MUTE);
+        let track = track.to_string();
+        Self::change_song(app, |song| {
+            song.set_track_written(&track, TrackSetting::MUTE, (!muted).then_some(Data::Bool(true)))
+        });
+    }
+
+    /// Solo the track of the cursor's column, lifting any other track's solo, since one track is soloed at a time; or lift
+    /// its solo.
+    fn toggle_solo(&self, app: &mut App, track: &str) {
+        let soloed = Self::track_flag(app, track, TrackSetting::SOLO);
+        let names = Self::tracks(app);
+        let track = track.to_string();
+        Self::change_song(app, |song| {
+            for name in &names {
+                let on = !soloed && *name == track;
+                song.set_track_written(name, TrackSetting::SOLO, on.then_some(Data::Bool(true)));
+            }
+        });
+    }
+
+    /// The mute and solo keys for the track of the cursor's column, saying what each would do.
+    fn mute_keys(&self, app: &App) -> Vec<KeyItem> {
+        let Some(track) = self.column_track(app) else { return Vec::new() };
+        let mute = if Self::track_flag(app, &track, TrackSetting::MUTE) {
+            &Keys::UNMUTE_TRACK
+        } else {
+            &Keys::MUTE_TRACK
+        };
+        let solo = if Self::track_flag(app, &track, TrackSetting::SOLO) {
+            &Keys::UNSOLO_TRACK
+        } else {
+            &Keys::SOLO_TRACK
+        };
+        vec![Self::bind(mute), Self::bind(solo)]
     }
 
     /// Whether a clip on a track of a scene grabbing from another track would go round in a circle: the other's clip there
@@ -862,11 +942,28 @@ impl ArrangePage {
                 } else {
                     name.clone()
                 };
-                let room = if Self::real_time_on(app) { width - SOUNDING_MARK_WIDTH } else { width };
+                let mut room = if Self::real_time_on(app) { width - SOUNDING_MARK_WIDTH } else { width };
+                // A muted or soloed track says so with an M or an S at the end of its heading, and a silent track's
+                // heading is dim.
+                let mark = if Self::track_flag(app, name, TrackSetting::SOLO) {
+                    Some((marks::MSG_SOLOED_MARK, Kind::Soloed))
+                } else if Self::track_flag(app, name, TrackSetting::MUTE) {
+                    Some((marks::MSG_MUTED_MARK, Kind::Muted))
+                } else {
+                    None
+                };
+                if let Some((text, kind)) = mark {
+                    room -= MARK_ROOM;
+                    lines[1].push(Piece::Text {
+                        column: column + room,
+                        text: text.to_string(),
+                        kind,
+                    });
+                }
                 lines[1].push(Piece::Text {
                     column,
                     text: fit(&format!(" {shown}"), room),
-                    kind: Kind::Name,
+                    kind: if Self::is_silenced(app, name) { Kind::Faint } else { Kind::Name },
                 });
                 if Self::real_time_on(app) && app.transport.is_track_sounding(name) {
                     lines[1].push(Piece::Text {
@@ -967,10 +1064,12 @@ impl ArrangePage {
             let repeats_left = if playing { app.transport.repeats_left(index, track) } else { None };
             let clip_played = if playing { app.transport.clip_elapsed(index, track) } else { None };
             let shown = if open { detailed_clip_text(clip) } else { clip_text(clip, repeats_left) };
+            // A silent track's clips are dim: muted, or another track soloed.
+            let ink = if Self::is_silenced(app, track) { Kind::Faint } else { Kind::Plain };
             lines[1].push(Piece::Text {
                 column,
                 text: fit(&format!(" {shown}"), width),
-                kind: Kind::Plain,
+                kind: ink,
             });
             let total = lengths.scene_play_seconds(index);
             let (bar, bar_column) = if real_time {
@@ -1002,7 +1101,7 @@ impl ArrangePage {
             lines[2].push(Piece::Text {
                 column: bar_column,
                 text,
-                kind: Kind::Plain,
+                kind: ink,
             });
             if let (Some(layout), true) = (layout, open) {
                 let indent = if real_time { DETAIL_INDENT } else { 1 };
@@ -1018,7 +1117,7 @@ impl ArrangePage {
         let (first, last) = window;
         let header = self.header_lines(app, layout);
         let names = header - 3;
-        let style = if self.picking(app) || self.moving.is_some() {
+        let style = if self.picking(app) || self.cut.is_some() {
             Style::DETAILS_LOCKED
         } else {
             Style::SELECTED_EDGE
@@ -1129,21 +1228,12 @@ impl Page for ArrangePage {
             let switch = if inset.is_written() { &Keys::TO_PLAYED } else { &Keys::TO_WRITTEN };
             return vec![
                 Self::bind(&Keys::ESCAPE_INSET),
-                Self::bind(&Keys::CLOSE_INSET),
                 Self::bind(&Keys::INSET_MOVE).wanting_key(),
                 Self::bind(&Keys::INSET_BARS),
                 Self::bind(switch),
                 Self::bind(&Keys::INSET_ZOOM),
                 Self::bind(&Keys::INSET_SCROLL),
             ];
-        }
-        if let Some(moving) = self.moving {
-            let carry = match moving {
-                Moving::Scene => Self::bind(&Keys::CARRY_SCENE),
-                Moving::Track => Self::bind(&Keys::CARRY_TRACK),
-                Moving::Clip => Self::bind(&Keys::CARRY_CLIP).wanting_key(),
-            };
-            return vec![Self::bind(&Keys::DROP), carry];
         }
         if self.picking(app) {
             let mut keys = vec![Self::bind(&Keys::ESCAPE_CELL), Self::bind(&Keys::OUT_OF_DETAILS)];
@@ -1189,8 +1279,14 @@ impl Page for ArrangePage {
     }
 
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
+        // ESC with something cut lets go of it, nothing moved, before it would leave the page.
+        if self.cut.is_some() && self.inset.is_none() && item.is(&Keys::BACK) {
+            self.cut = None;
+            app.say(messages::MSG_CUT_LET_GO);
+            return;
+        }
         if let Some(inset) = &mut self.inset {
-            if item.is(&Keys::ESCAPE_INSET) || item.is(&Keys::CLOSE_INSET) {
+            if item.is(&Keys::ESCAPE_INSET) {
                 self.inset = None;
             } else if item.is(&Keys::INSET_MOVE) {
                 inset.move_cursor(app, key);
@@ -1227,18 +1323,22 @@ impl Page for ArrangePage {
                 _ => self.column.set(self.column.get() + 1),
             }
             self.clamp(app);
-        } else if item.is(&Keys::MOVE_SCENE) {
-            self.start_moving(app, Moving::Scene);
-        } else if item.is(&Keys::MOVE_TRACK) {
-            self.start_moving(app, Moving::Track);
-        } else if item.is(&Keys::MOVE_CLIP) {
-            self.start_moving(app, Moving::Clip);
-        } else if item.is(&Keys::DROP) && self.moving.is_some() {
-            self.moving = None;
-        } else if item.is(&Keys::CARRY_SCENE) || item.is(&Keys::CARRY_TRACK) {
-            self.carry(app, item.step_of(key).unwrap_or(0));
-        } else if item.is(&Keys::CARRY_CLIP) {
-            self.carry_clip(app, key);
+        } else if item.is(&Keys::CUT_SCENE) {
+            self.start_cut(app, Moving::Scene);
+        } else if item.is(&Keys::CUT_TRACK) {
+            self.start_cut(app, Moving::Track);
+        } else if item.is(&Keys::CUT_CLIP) {
+            self.start_cut(app, Moving::Clip);
+        } else if item.is(&Keys::PASTE) && self.cut.is_some() {
+            self.paste_cut(app);
+        } else if item.is(&Keys::MUTE_TRACK) || item.is(&Keys::UNMUTE_TRACK) {
+            if let Some(track) = self.column_track(app) {
+                self.toggle_mute(app, &track);
+            }
+        } else if item.is(&Keys::SOLO_TRACK) || item.is(&Keys::UNSOLO_TRACK) {
+            if let Some(track) = self.column_track(app) {
+                self.toggle_solo(app, &track);
+            }
         } else if item.is(&Keys::PLAY_SONG) {
             let scene = named(messages::MSG_SCENE_NUMBER, &[("number", 1.into())]);
             let said = named(messages::MSG_PLAYING_FROM, &[("scene", scene.as_str().into())]);
@@ -1385,7 +1485,7 @@ impl Page for ArrangePage {
         );
         let closing = named(
             marks::MSG_SCENE_VIEW_CLOSING,
-            &[("key", Keys::CLOSE_INSET.name.into()), ("what", Keys::CLOSE_INSET.what.into())],
+            &[("key", Keys::ESCAPE_INSET.name.into()), ("what", Keys::ESCAPE_INSET.what.into())],
         );
         inset.drawn_over(app, screen, width, height, &title, &closing)
     }
@@ -1417,5 +1517,111 @@ pub fn play_through(app: &mut App, what: &str, said: &str, play: impl FnOnce(&mu
             llamatron_strings::errors::ERR_CANT_PLAY_TITLE,
             vec![problem],
         ))),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::page::Page;
+    use llamatron_model::objects::setlist::Setlist;
+
+    /// A song of two tracks, lead and bass, and two scenes, verse and chorus, with tune on lead in the verse alone.
+    const TWO_BY_TWO_SET: &str = "patterns:\n  tune: { steps: 4 }\nsongs:\n  - name: song\n    tracks: [{ name: lead }, { name: bass }]\n    scenes:\n      - name: verse\n        clips: [{ track: lead, pattern: tune }]\n      - name: chorus\n";
+
+    fn arranged() -> (App, ArrangePage) {
+        let setlist = Setlist::read_text(TWO_BY_TWO_SET, None).expect("the scenario's set is valid");
+        (App::new(crate::document::Document::new(setlist, None)), ArrangePage::new())
+    }
+
+    /// Put Arrange's cursor on a scene's row and a track's column by their names.
+    fn at(app: &App, page: &ArrangePage, scene: &str, track: &str) {
+        let row = app
+            .document
+            .song()
+            .scenes()
+            .iter()
+            .position(|held| held.get_name().as_deref() == Some(scene))
+            .expect("the scene");
+        let place = ArrangePage::tracks(app).iter().position(|held| held == track).expect("the track");
+        page.row.set(row as i64);
+        page.column.set(place + FIRST_TRACK_COLUMN);
+    }
+
+    fn press(app: &mut App, page: &mut ArrangePage, binding: &'static crate::keybindings::Binding) {
+        let item = KeyItem::of(&Keys::CLASS, binding);
+        let key = item.keys[0];
+        page.press(app, &item, key);
+        // Each key press is one step to undo, as the tracker records it after every key.
+        app.document.record_edit();
+    }
+
+    fn flag(app: &App, track: &str, setting: &str) -> bool {
+        ArrangePage::track_flag(app, track, setting)
+    }
+
+    /// M anywhere in a track's column mutes the track and unmutes it again; a muted track is silent.
+    #[test]
+    fn m_mutes_the_track_of_the_cursors_column() {
+        let (mut app, mut page) = arranged();
+        at(&app, &page, "chorus", "bass");
+        press(&mut app, &mut page, &Keys::MUTE_TRACK);
+        assert!(flag(&app, "bass", TrackSetting::MUTE));
+        assert!(ArrangePage::is_silenced(&app, "bass") && !ArrangePage::is_silenced(&app, "lead"));
+        press(&mut app, &mut page, &Keys::UNMUTE_TRACK);
+        assert!(!flag(&app, "bass", TrackSetting::MUTE));
+    }
+
+    /// S solos one track at a time, every other track silent; soloing another moves the solo, and S again lifts it.
+    #[test]
+    fn s_solos_one_track_at_a_time() {
+        let (mut app, mut page) = arranged();
+        at(&app, &page, "verse", "lead");
+        press(&mut app, &mut page, &Keys::SOLO_TRACK);
+        assert!(flag(&app, "lead", TrackSetting::SOLO));
+        assert!(ArrangePage::is_silenced(&app, "bass") && !ArrangePage::is_silenced(&app, "lead"));
+        at(&app, &page, "verse", "bass");
+        press(&mut app, &mut page, &Keys::SOLO_TRACK);
+        assert!(flag(&app, "bass", TrackSetting::SOLO) && !flag(&app, "lead", TrackSetting::SOLO));
+        press(&mut app, &mut page, &Keys::UNSOLO_TRACK);
+        assert!(!ArrangePage::is_silenced(&app, "lead") && !ArrangePage::is_silenced(&app, "bass"));
+    }
+
+    fn scene_names(app: &App) -> Vec<String> {
+        app.document.song().scenes().iter().filter_map(Scene::get_name).collect()
+    }
+
+    /// T cuts and P pastes: a scene goes before the scene under the cursor, a clip into the empty cell under it, each as
+    /// one step to undo, and ESC lets go of a cut with nothing moved.
+    #[test]
+    fn t_cuts_and_p_pastes_scenes_and_clips() {
+        let (mut app, mut page) = arranged();
+        at(&app, &page, "chorus", "lead");
+        page.column.set(SCENE_COLUMN);
+        press(&mut app, &mut page, &Keys::CUT_SCENE);
+        at(&app, &page, "verse", "lead");
+        page.column.set(SCENE_COLUMN);
+        press(&mut app, &mut page, &Keys::PASTE);
+        assert_eq!(scene_names(&app), ["chorus", "verse"]);
+        app.document.undo();
+        assert_eq!(scene_names(&app), ["verse", "chorus"]);
+        at(&app, &page, "verse", "lead");
+        press(&mut app, &mut page, &Keys::CUT_CLIP);
+        at(&app, &page, "chorus", "bass");
+        press(&mut app, &mut page, &Keys::PASTE);
+        let chorus = app
+            .document
+            .song()
+            .scenes()
+            .iter()
+            .position(|held| held.get_name().as_deref() == Some("chorus"))
+            .expect("chorus");
+        assert!(ArrangePage::clip(&app, chorus, "bass").is_some());
+        assert!(ArrangePage::clip(&app, 0, "lead").is_none());
+        at(&app, &page, "chorus", "bass");
+        press(&mut app, &mut page, &Keys::CUT_CLIP);
+        press(&mut app, &mut page, &Keys::BACK);
+        assert!(page.cut.is_none());
+        assert!(ArrangePage::clip(&app, chorus, "bass").is_some());
     }
 }

@@ -90,3 +90,30 @@ fn a_general_midi_export_sends_each_panned_instruments_pan() {
         .any(|three| three == [control_change | left_channel, pan_control, twenty_percent]));
     assert!(!sends(middle_channel));
 }
+
+/// A soloed track plays alone, in an export as in real time: the multitrack MIDI file of a song whose left track is
+/// soloed holds the tempo track and that one track, where the same song unsoloed holds both.
+#[test]
+fn a_soloed_track_is_exported_alone() {
+    let tracks_in = |set: &str, folder: &str| {
+        let folder = fresh_folder(folder);
+        let run = Command::new(env!("CARGO_BIN_EXE_llamatron"))
+            .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join(set))
+            .args(["--to", "midi", "--out"])
+            .arg(&folder)
+            .output()
+            .expect("llamatron runs");
+        assert!(run.status.success(), "{}", String::from_utf8_lossy(&run.stderr));
+        let file = std::fs::read_dir(&folder)
+            .expect("the folder")
+            .next()
+            .expect("a file")
+            .expect("an entry")
+            .path();
+        let bytes = std::fs::read(file).expect("the MIDI file reads back");
+        bytes.windows(4).filter(|four| four == b"MTrk").count()
+    };
+    let (tempo_and_one, tempo_and_two) = (2, 3);
+    assert_eq!(tracks_in("tests/data/soloed_fluidsynth.yml", "soloed"), tempo_and_one);
+    assert_eq!(tracks_in("tests/data/panned_fluidsynth.yml", "unsoloed"), tempo_and_two);
+}

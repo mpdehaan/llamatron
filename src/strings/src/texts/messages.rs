@@ -239,10 +239,6 @@ pub const MSG_SCENE_GROOVE_TITLE: &str = "Scene groove";
 pub const MSG_TRACK_GROOVE_TITLE: &str = "Track groove";
 pub const MSG_CHORDS_NOTE: &str = "each chord moves the clip from chord I, in the song's scale";
 pub const MSG_PROGRESSION_PICKER_TITLE: &str = "Progressions";
-pub const MSG_MOVING: &str = "moving {what}: the arrows carry it, ENTER drops it";
-pub const MSG_MOVING_SCENE: &str = "scene ({name})";
-pub const MSG_MOVING_TRACK: &str = "track ({name})";
-pub const MSG_MOVING_CLIP: &str = "clip ({name})";
 pub const MSG_MOVING_ROW: &str = "({name})";
 pub const MSG_GUITAR_BAR_NOTE: &str = "one stroke a cell of {cell}, played on whatever sounds, following the song's bars";
 pub const MSG_GUITAR_CELL_NOTE: &str = "cell {number}: {stroke}";
@@ -328,3 +324,12 @@ pub const MSG_BUILT_IN_OVERRIDING_CLIP: &str = "{scene} ({track})";
 /// The question before an instrument changes between percussion and normal, and what it gives up.
 pub const MSG_CHANGE_PERCUSSION_TITLE: &str = "Change the role of instrument ({name})?";
 pub const MSG_PERCUSSION_REPLACES_SYNTH: &str = "Its built-in synth settings are replaced by the new role's engine.";
+/// What T cut on Arrange, said until P pastes it where the cursor is or ESC lets go of it; and a clip pasted onto a full cell.
+pub const MSG_CUT_SCENE: &str = "cut scene ({name}): P pastes it before the scene under the cursor, ESC lets go";
+pub const MSG_CUT_TRACK: &str = "cut track ({name}): P pastes it before the track under the cursor, ESC lets go";
+pub const MSG_CUT_CLIP: &str = "cut clip ({name}): P pastes it into the empty cell under the cursor, ESC lets go";
+pub const MSG_PASTE_NEEDS_AN_EMPTY_CELL: &str = "a clip pastes only into an empty cell";
+/// What a list page's M picked up, carried by the arrows.
+pub const MSG_MOVING: &str = "moving {what}: the arrows carry it, ENTER drops it";
+/// ESC letting go of what T cut, nothing moved.
+pub const MSG_CUT_LET_GO: &str = "let go of what was cut";

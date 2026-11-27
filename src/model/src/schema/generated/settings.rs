@@ -243,6 +243,7 @@ pub static SONG: &[Setting] = &[
 pub static TRACK: &[Setting] = &[
     Setting { name: "drum", described: Described::Flag { error: "{name} must be true or false, got {value!r}" } },
     Setting { name: "mute", described: Described::Flag { error: "{name} must be true or false, got {value!r}" } },
+    Setting { name: "solo", described: Described::Flag { error: "{name} must be true or false, got {value!r}" } },
     Setting { name: "transpose", described: Described::WholeNumber { lowest: Some(-24), highest: Some(24), error: "transpose must be an integer from -{most} to {most}, got {value!r}" } },
     Setting { name: "lowest_octave", described: Described::WholeNumber { lowest: Some(0), highest: Some(10), error: "{name} must be an integer from {lowest} to {highest}, got {value!r}" } },
     Setting { name: "highest_octave", described: Described::WholeNumber { lowest: Some(0), highest: Some(10), error: "{name} must be an integer from {lowest} to {highest}, got {value!r}" } },

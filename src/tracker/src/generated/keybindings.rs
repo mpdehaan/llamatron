@@ -3073,36 +3073,10 @@ pub mod ArrangePage {
         name: "B",
         what: "blank pattern",
     };
-    pub static CARRY_CLIP: Binding = Binding {
-        keys: Keys::Many(&["left", "right", "up", "down"]),
-        name: "←↑↓→",
-        what: "carry",
-    };
-    pub static CARRY_SCENE: Binding = Binding {
-        keys: Keys::Steps {
-            back: &["up"],
-            forward: &["down"],
-        },
-        name: "↑↓",
-        what: "carry",
-    };
-    pub static CARRY_TRACK: Binding = Binding {
-        keys: Keys::Steps {
-            back: &["left"],
-            forward: &["right"],
-        },
-        name: "←→",
-        what: "carry",
-    };
     pub static CLOSE_DETAILS: Binding = Binding {
         keys: Keys::One("d"),
         name: "D",
         what: "close details",
-    };
-    pub static CLOSE_INSET: Binding = Binding {
-        keys: Keys::One("p"),
-        name: "P",
-        what: "close",
     };
     pub static COPY_CLIP: Binding = Binding {
         keys: Keys::One("c"),
@@ -3133,11 +3107,6 @@ pub mod ArrangePage {
         keys: Keys::One("backspace"),
         name: "Bksp",
         what: "delete track",
-    };
-    pub static DROP: Binding = Binding {
-        keys: Keys::Many(&["enter", "escape", "m"]),
-        name: "ENTER/ESC/M",
-        what: "drop",
     };
     pub static EDIT_CLIP: Binding = Binding {
         keys: Keys::One("enter"),
@@ -3209,20 +3178,20 @@ pub mod ArrangePage {
         name: "←↑↓→",
         what: "move",
     };
-    pub static MOVE_CLIP: Binding = Binding {
-        keys: Keys::One("m"),
-        name: "M",
-        what: "move clip",
+    pub static CUT_CLIP: Binding = Binding {
+        keys: Keys::One("t"),
+        name: "T",
+        what: "cut clip",
     };
-    pub static MOVE_SCENE: Binding = Binding {
-        keys: Keys::One("m"),
-        name: "M",
-        what: "move scene",
+    pub static CUT_SCENE: Binding = Binding {
+        keys: Keys::One("t"),
+        name: "T",
+        what: "cut scene",
     };
-    pub static MOVE_TRACK: Binding = Binding {
-        keys: Keys::One("m"),
-        name: "M",
-        what: "move track",
+    pub static CUT_TRACK: Binding = Binding {
+        keys: Keys::One("t"),
+        name: "T",
+        what: "cut track",
     };
     pub static OPEN_DETAIL: Binding = Binding {
         keys: Keys::One("enter"),
@@ -3240,10 +3209,30 @@ pub mod ArrangePage {
         name: "Tab",
         what: "leave cell",
     };
-    pub static PASTE_CLIP: Binding = Binding {
-        keys: Keys::One("v"),
-        name: "V",
-        what: "paste clip",
+    pub static MUTE_TRACK: Binding = Binding {
+        keys: Keys::One("m"),
+        name: "M",
+        what: "mute",
+    };
+    pub static UNMUTE_TRACK: Binding = Binding {
+        keys: Keys::One("m"),
+        name: "M",
+        what: "unmute",
+    };
+    pub static SOLO_TRACK: Binding = Binding {
+        keys: Keys::One("s"),
+        name: "S",
+        what: "solo",
+    };
+    pub static UNSOLO_TRACK: Binding = Binding {
+        keys: Keys::One("s"),
+        name: "S",
+        what: "unsolo",
+    };
+    pub static PASTE: Binding = Binding {
+        keys: Keys::One("p"),
+        name: "P",
+        what: "paste",
     };
     pub static PICK_DETAIL: Binding = Binding {
         keys: Keys::Many(&["up", "down"]),
@@ -3279,8 +3268,8 @@ pub mod ArrangePage {
         what: "scene settings",
     };
     pub static SCENE_VIEW: Binding = Binding {
-        keys: Keys::One("p"),
-        name: "P",
+        keys: Keys::One("v"),
+        name: "V",
         what: "scene view",
     };
     pub static SHOW_DETAILS: Binding = Binding {
@@ -3333,11 +3322,9 @@ pub mod ArrangePage {
     pub static EVERYWHERE: &[&Binding] = &[&SAVE, &OPEN_SET, &EXPORT, &SILENCE, &UNDO, &REDO, &HELP, &ABOUT, &QUIT_NOW];
     pub static IN_HELP: &[&Binding] = &[
         &BACK,
-        &DROP,
         &TO_CLIPS,
         &ESCAPE_CELL,
         &ESCAPE_INSET,
-        &CLOSE_INSET,
         &INSET_MOVE,
         &INSET_BARS,
         &TO_PLAYED,
@@ -3347,9 +3334,6 @@ pub mod ArrangePage {
         &STEP_VISUALIZER,
         &OUT_OF_DETAILS,
         &MOVE,
-        &CARRY_SCENE,
-        &CARRY_TRACK,
-        &CARRY_CLIP,
         &PICK_DETAIL,
         &OPEN_DETAIL,
         &ADD_CHAIN,
@@ -3365,7 +3349,7 @@ pub mod ArrangePage {
         &TRACK_SETTINGS,
         &COPY_TRACK,
         &INSERT_TRACK,
-        &MOVE_TRACK,
+        &CUT_TRACK,
         &DELETE_TRACK,
         &ADD_SCENE,
         &ADD_SCENE_HERE,
@@ -3377,12 +3361,16 @@ pub mod ArrangePage {
         &BLANK_PATTERN,
         &EDIT_CLIP,
         &OPEN_PATTERN,
-        &MOVE_CLIP,
+        &CUT_CLIP,
         &COPY_CLIP,
         &DELETE_CLIP,
-        &PASTE_CLIP,
+        &PASTE,
+        &MUTE_TRACK,
+        &UNMUTE_TRACK,
+        &SOLO_TRACK,
+        &UNSOLO_TRACK,
         &INSERT_SCENE,
-        &MOVE_SCENE,
+        &CUT_SCENE,
         &SHOW_DETAILS,
         &HIDE_DETAILS,
         &INTO_DETAILS,
@@ -3391,11 +3379,9 @@ pub mod ArrangePage {
     ];
     pub static IN_LEGEND: &[&Binding] = &[
         &BACK,
-        &DROP,
         &TO_CLIPS,
         &ESCAPE_CELL,
         &ESCAPE_INSET,
-        &CLOSE_INSET,
         &INSET_MOVE,
         &INSET_BARS,
         &TO_PLAYED,
@@ -3405,9 +3391,6 @@ pub mod ArrangePage {
         &STEP_VISUALIZER,
         &OUT_OF_DETAILS,
         &MOVE,
-        &CARRY_SCENE,
-        &CARRY_TRACK,
-        &CARRY_CLIP,
         &PICK_DETAIL,
         &OPEN_DETAIL,
         &ADD_CHAIN,
@@ -3423,7 +3406,7 @@ pub mod ArrangePage {
         &TRACK_SETTINGS,
         &COPY_TRACK,
         &INSERT_TRACK,
-        &MOVE_TRACK,
+        &CUT_TRACK,
         &DELETE_TRACK,
         &ADD_SCENE,
         &ADD_SCENE_HERE,
@@ -3435,12 +3418,16 @@ pub mod ArrangePage {
         &BLANK_PATTERN,
         &EDIT_CLIP,
         &OPEN_PATTERN,
-        &MOVE_CLIP,
+        &CUT_CLIP,
         &COPY_CLIP,
         &DELETE_CLIP,
-        &PASTE_CLIP,
+        &PASTE,
+        &MUTE_TRACK,
+        &UNMUTE_TRACK,
+        &SOLO_TRACK,
+        &UNSOLO_TRACK,
         &INSERT_SCENE,
-        &MOVE_SCENE,
+        &CUT_SCENE,
         &SHOW_DETAILS,
         &HIDE_DETAILS,
         &INTO_DETAILS,
