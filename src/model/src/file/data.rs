@@ -141,6 +141,32 @@ impl From<&Data> for llamatron_strings::Value {
     }
 }
 
+/// A value as a YAML document, through yaml-rust2's emitter, for a file other than a set file, whose own layout
+/// `writing::dump_file_layout` keeps.
+pub fn dump(data: &Data) -> Result<String, NotYaml> {
+    let mut written = String::new();
+    yaml_rust2::YamlEmitter::new(&mut written)
+        .dump(&yaml_of(data))
+        .map_err(|problem| NotYaml(problem.to_string()))?;
+    // The emitter starts the document with its marker; the file holds the document alone.
+    let body = written.strip_prefix("---\n").unwrap_or(&written);
+    Ok(format!("{body}\n"))
+}
+
+/// A value as yaml-rust2's own.
+fn yaml_of(data: &Data) -> yaml_rust2::Yaml {
+    use yaml_rust2::Yaml;
+    match data {
+        Data::Null => Yaml::Null,
+        Data::Bool(flag) => Yaml::Boolean(*flag),
+        Data::Whole(whole) => Yaml::Integer(*whole as i64),
+        Data::Float(float) => Yaml::Real(yaml_float(*float)),
+        Data::Text(text) => Yaml::String(text.clone()),
+        Data::List(items) => Yaml::Array(items.iter().map(yaml_of).collect()),
+        Data::Map(pairs) => Yaml::Hash(pairs.iter().map(|(key, value)| (yaml_of(key), yaml_of(value))).collect()),
+    }
+}
+
 /// Read a YAML text as the Python program reads it: one document, or nothing where the text is empty.
 pub fn load(text: &str) -> Result<Data, NotYaml> {
     let mut parser = Parser::new_from_str(text);

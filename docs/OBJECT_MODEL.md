@@ -12,39 +12,45 @@ Press `F` on the main screen to open the File/Global page, which holds the set
 itself: what the file says about the set, the defaults every song starts from,
 and the buttons New, Open, Save and Save As.
 
-A box of tabs holds the settings, each tab's in alphabetical order: General,
-what the file says about the set; Notes & Octaves, the defaults every pattern
-starts from; and Visualizers. The buttons New, Open, Save and Save As follow.
+Two tabs hold the settings. **File** holds the set's own settings, which travel
+with its file, in two columns: General, what the set is and how it shows, and
+Defaults, what a new clip, note or step takes unless it sets its own.
+**Global** holds the settings kept for every set, in the config file,
+`~/.llamatron/settings.yml`, never in a set. The buttons New, Open, Save and
+Save As follow.
+
+**File: General**
 
 | Setting | What it does |
 | --- | --- |
+| Title | The set's name, for anyone reading or sharing the file, such as in git. It doesn't change how anything plays, and `Bksp` clears it. |
 | Author | Who wrote the set, also only for people reading the file. |
-| Default follow action | What a clip's Follow action does in real-time playback, unless the clip sets its own: "With Scene", "Next" or "Off". No export reads it. `ENTER` chooses. |
 | Description, Notes | What the set is, in a line, and anything else to say about it; see Description and Notes below. |
 | Protected | Whether the file is protected from being saved over. `Space` or `ENTER` turns it on or off. Every set in `examples/` is protected, so trying things in a demo can't spoil the demo: `Ctrl+S` offers to save a copy under another name instead, and the copy is yours and isn't protected. A set you start yourself isn't protected unless you turn this on. |
-| Title | The set's name, for anyone reading or sharing the file, such as in git. It doesn't change how anything plays, and `Bksp` clears it. |
-
-**Notes & Octaves**
-
-| Setting | What it does |
-| --- | --- |
-| Default drum octave | The octave a new drum note gets. |
-| Default octave | The octave a new note gets, in the set's octave labels. |
 | Octave labels | How octaves are numbered on screen: as Live labels them, where middle C is C3, or in llamatron's own numbering from 0, where middle C is C5. `ENTER` chooses. The setting changes only what you see, while the notes and the file stay the same. See Octave Numbering below. |
-| Step size | How long each step of a pattern is, unless the pattern sets its own, from 1/64 to a whole note. `ENTER` chooses from the list. A pattern's own step size is set in the pattern editor with `E`. |
-
-**Visualizers**
-
-| Setting | What it does |
-| --- | --- |
 | Visualizer | The visualizer mode Arrange's visualizer key shows first, unless a song names its own. `ENTER` chooses. |
 | Hide Visualizers | The modes the visualizer key leaves out, listed by name. `ENTER` opens a list where `Space` picks or unpicks each mode, `ENTER` keeps the choice and `ESC` changes nothing. |
+
+**File: Defaults**
+
+| Setting | What it does |
+| --- | --- |
+| Follow action | What a clip's Follow action does in real-time playback, unless the clip sets its own: "With Scene", "Next" or "Off". No export reads it. `ENTER` chooses. |
+| Drum octave | The octave a new drum note gets. |
+| Octave | The octave a new note gets, in the set's octave labels. |
+| Step size | How long each step of a pattern is, unless the pattern sets its own, from 1/64 to a whole note. `ENTER` chooses from the list. A pattern's own step size is set in the pattern editor with `E`. |
+
+**Global**
+
+| Setting | What it does |
+| --- | --- |
+| Track Inst. Default | What the instrument a new track gets plays through: FluidSynth, offered where FluidSynth is installed; BuiltIn, one of llamatron's built-in synths; or External MIDI, a device connected to the computer. FluidSynth where it is installed, else BuiltIn, until chosen. `ENTER` chooses. |
 
 Below the settings, two buttons save and open without remembering a key: `↓`
 from the last setting reaches them, `←` and `→` choose, and `ENTER` on
 **Save** saves the set, as `Ctrl+S` does, and `ENTER` on **Open** opens
 another set, as `Ctrl+O` does. Below the buttons, the page shows the path of
-the set's file and where the current song exports. [Opening and
+the set's file, where the current song exports, and where the config file is. [Opening and
 Saving](GETTING_STARTED.md#opening-and-saving) describes the **New** and
 **Save As** buttons.
 

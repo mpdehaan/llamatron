@@ -49,6 +49,7 @@ pub const MSG_ALSO_DELETES_CLIPS: &str = "This also deletes its {count} clip(s).
 pub const MSG_SONG_SCALE_TITLE: &str = "Song scale";
 pub const MSG_FILE_NOTE: &str = "  Path          {path}";
 pub const MSG_EXPORTS_NOTE: &str = "  Exports to    {where}";
+pub const MSG_CONFIG_NOTE: &str = "  Config file   {path}";
 pub const MSG_UNSAVED_TITLE: &str = "Continue without saving?";
 pub const MSG_UNSAVED_CONTINUE: &str = "This set has unsaved changes, which will be lost.";
 pub const MSG_STARTED_NEW: &str = "started a new set";

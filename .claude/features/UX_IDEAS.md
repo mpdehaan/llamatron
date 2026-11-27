@@ -9,12 +9,6 @@ Wanted changes to how the tracker looks and is used: what each is, never its sta
   track; BuiltIn, Basic or MechaDrum on Kick; External MIDI, the first device found on channel 1. Where FluidSynth is
   not installed or no device is connected, the instrument is made unconfigured. An instrument stays when its track is
   deleted.
-- **The File and Global tabs**: the File/Global page's two tabs. File, saved in the set, in two columns: General (Title,
-  Author, Description, Notes, Protected, Octave labels, Visualizer, Hide Visualizers) and Defaults (Follow action,
-  Octave, Drum octave, Step size, the word Default dropped from their labels), a dim `set file:` line under them.
-  Global, the settings of the config file, `~/.llamatron/settings.yml`, for every set: Track Inst. Default, FluidSynth
-  (offered only when installed), BuiltIn or External MIDI, FluidSynth where installed, else BuiltIn, and a dim
-  `config file: ~/.llamatron/settings.yml` line.
 - **The open circle**: Everywhere a toggle is shown, an unset one shows `○` where today it is blank, a set one `●`, on every
   page, the pattern editor's toggle rows and the tabs' marks included; built with the tab box.
 - **A line at the foot of every major editor** saying what the tab or section under the cursor does.

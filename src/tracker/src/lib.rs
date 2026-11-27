@@ -24,6 +24,7 @@ pub mod msgpack;
 pub mod named_edits;
 pub mod page;
 pub mod patterns;
+pub mod preferences;
 pub mod realtime;
 pub mod scene_notes;
 pub mod screens;

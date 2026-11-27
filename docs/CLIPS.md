@@ -150,7 +150,7 @@ repeats. A looping clip loops on until the scene below starts, so a scene
 whose every clip loops plays until you start something else. When the scene
 below has Launch together on, a start reaching any of its clips launches the
 whole scene and stops everything still playing in the scene above. A clip that
-sets nothing shows the File/Global page's Default follow action as its own.
+sets nothing shows the File/Global page's Follow action, under Defaults as its own.
 
 ## Clip Chains
 

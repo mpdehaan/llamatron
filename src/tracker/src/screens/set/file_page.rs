@@ -1,9 +1,10 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! The File/Global page (the Python screens/set/file_page.py and pages/file_global.py): the set's own settings in three
-//! tabs, Settings, Notes & Octaves and Visualizers, its buttons New, Open, Save and Save As, and under them where the set's
-//! file is and where the current song exports.
+//! The File/Global page (the Python screens/set/file_page.py and pages/file_global.py) in two tabs: File, the set's own
+//! settings, General and Defaults side by side, and Global, the settings of the config file for every set; its buttons
+//! New, Open, Save and Save As; and under them where the set's file is, where the current song exports, and where the
+//! config file is.
 
 use crate::app::App;
 use crate::drawing::Style;
@@ -37,6 +38,7 @@ const NEW: usize = 12;
 const OPEN: usize = 13;
 const SAVE: usize = 14;
 const SAVE_AS: usize = 15;
+const TRACK_INSTRUMENT_DEFAULT: usize = 16;
 
 pub struct FilePage;
 
@@ -45,7 +47,58 @@ fn strings(values: &[&str]) -> Vec<String> {
 }
 
 impl FilePage {
+    /// The File tab's General column: what the set is, and how it shows.
+    fn general_fields(&self, app: &App) -> Vec<Field> {
+        let mut fields = self.settings_fields(app);
+        let defaults = self.notes_and_octaves_fields(app);
+        // Octave labels say how the set's notes show, so they stand with the set's other ways of showing.
+        fields.extend(defaults.into_iter().filter(|field| field.id == OCTAVE_LABELS));
+        fields.extend(self.visualizer_fields(app));
+        fields
+    }
+
+    /// The File tab's Defaults column: what a new clip, note or step takes unless it sets its own.
+    fn defaults_fields(&self, app: &App) -> Vec<Field> {
+        let mut fields: Vec<Field> = self.settings_fields_of(app, &[FOLLOW]);
+        fields.extend(self.notes_and_octaves_fields(app).into_iter().filter(|field| field.id != OCTAVE_LABELS));
+        fields
+    }
+
+    /// The set's own settings of some ids.
+    fn settings_fields_of(&self, app: &App, ids: &[usize]) -> Vec<Field> {
+        self.all_settings_fields(app).into_iter().filter(|field| ids.contains(&field.id)).collect()
+    }
+
+    /// The settings of what the set is, without the follow action, which is a default.
     fn settings_fields(&self, app: &App) -> Vec<Field> {
+        self.all_settings_fields(app).into_iter().filter(|field| field.id != FOLLOW).collect()
+    }
+
+    /// The Global tab's fields: the config file's settings.
+    fn global_fields(&self, app: &App) -> Vec<Field> {
+        use crate::preferences::TrackInstrumentDefault;
+        // FluidSynth is offered only where it is installed.
+        let offered: Vec<TrackInstrumentDefault> = TrackInstrumentDefault::ALL
+            .into_iter()
+            .filter(|choice| *choice != TrackInstrumentDefault::FluidSynth || app.fluidsynth_installed)
+            .collect();
+        let words: Vec<String> = offered.iter().map(|choice| choice.word().to_string()).collect();
+        let current = app.preferences.track_instrument_default(app.fluidsynth_installed).word();
+        let mut field = Field::choice(
+            TRACK_INSTRUMENT_DEFAULT,
+            labels::MSG_TRACK_INSTRUMENT_DEFAULT_LABEL,
+            words.clone(),
+            current,
+            Some(named_in(labels::MSG_TRACK_INSTRUMENT_DEFAULT_NAMES, current)),
+        );
+        set_names(
+            &mut field,
+            words.iter().map(|word| named_in(labels::MSG_TRACK_INSTRUMENT_DEFAULT_NAMES, word)).collect(),
+        );
+        vec![field]
+    }
+
+    fn all_settings_fields(&self, app: &App) -> Vec<Field> {
         let setlist = app.document.get_setlist();
         let follow = choice_of(setlist, SetlistSetting::DEFAULT_FOLLOW_ACTION, defaults::DEFAULT_FOLLOW_ACTION);
         let mut follow_field = Field::choice(
@@ -178,12 +231,14 @@ impl Form for FilePage {
 
     fn form(&self, app: &App) -> Vec<Node> {
         let tabs = vec![
-            Tab::new(labels::MSG_SETTINGS_TAB, vec![TabColumn::new(None, self.settings_fields(app))]),
             Tab::new(
-                labels::MSG_NOTES_AND_OCTAVES_TAB,
-                vec![TabColumn::new(None, self.notes_and_octaves_fields(app))],
+                labels::MSG_FILE_TAB,
+                vec![
+                    TabColumn::new(Some(labels::MSG_GENERAL_HEADING), self.general_fields(app)),
+                    TabColumn::new(Some(labels::MSG_DEFAULTS_HEADING), self.defaults_fields(app)),
+                ],
             ),
-            Tab::new(labels::MSG_VISUALIZERS_TAB, vec![TabColumn::new(None, self.visualizer_fields(app))]),
+            Tab::new(labels::MSG_GLOBAL_TAB, vec![TabColumn::new(None, self.global_fields(app))]),
         ];
         let mut nodes = vec![Node::TabBox(TabBox {
             label: labels::MSG_TABS_LABEL.to_string(),
@@ -211,9 +266,11 @@ impl Form for FilePage {
                 named(marks::MSG_EXPORTS_BESIDE, &[("prefix", prefix.as_str().into())])
             }
         };
+        let config = crate::preferences::Preferences::config_path().map_or(String::new(), |path| path.to_string_lossy().to_string());
         vec![
             Text::styled(&named(messages::MSG_FILE_NOTE, &[("path", path.as_str().into())]), Style::DIM),
             Text::styled(&named(messages::MSG_EXPORTS_NOTE, &[("where", exports.as_str().into())]), Style::DIM),
+            Text::styled(&named(messages::MSG_CONFIG_NOTE, &[("path", config.as_str().into())]), Style::DIM),
         ]
     }
 
@@ -266,6 +323,15 @@ impl Form for FilePage {
             app.show_page(Box::new(dialog));
             return;
         }
+        if let (TRACK_INSTRUMENT_DEFAULT, Edit::Choice(chosen)) = (id, &edit) {
+            let Some(chosen) = crate::preferences::TrackInstrumentDefault::of_word(chosen) else {
+                return;
+            };
+            if let Err(problem) = app.preferences.set_track_instrument_default(chosen) {
+                app.refuse(&problem);
+            }
+            return;
+        }
         if id == SAVE && edit == Edit::Enter {
             crate::everywhere::save(app, None);
             return;
@@ -283,5 +349,94 @@ impl Form for FilePage {
             app.show_page(Box::new(page));
             app.say(messages::MSG_EDITING);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::preferences::TrackInstrumentDefault;
+
+    /// A column as the page shows it: its heading, and its fields' labels.
+    type ShownColumn = (Option<String>, Vec<String>);
+
+    /// The File/Global page's tabs, each its label and its columns.
+    fn tabs_of(app: &App) -> Vec<(String, Vec<ShownColumn>)> {
+        FilePage
+            .form(app)
+            .iter()
+            .find_map(|node| match node {
+                Node::TabBox(tab_box) => Some(tab_box.tabs.clone()),
+                _ => None,
+            })
+            .expect("a tab box")
+            .iter()
+            .map(|tab| {
+                let columns = tab
+                    .columns
+                    .iter()
+                    .map(|column| (column.heading.clone(), column.fields.iter().map(|field| field.label.clone()).collect()))
+                    .collect();
+                (tab.label.clone(), columns)
+            })
+            .collect()
+    }
+
+    fn new_set() -> App {
+        App::new(crate::document::Document::new_set().expect("a new set"))
+    }
+
+    /// The page has two tabs: File, the set's settings in General and Defaults, and Global, Track Inst. Default.
+    #[test]
+    fn the_page_shows_file_and_global_tabs() {
+        let app = new_set();
+        let tabs = tabs_of(&app);
+        assert_eq!(
+            tabs.iter().map(|(label, _)| label.as_str()).collect::<Vec<_>>(),
+            [labels::MSG_FILE_TAB, labels::MSG_GLOBAL_TAB]
+        );
+        let file = &tabs[0].1;
+        assert_eq!(file[0].0.as_deref(), Some(labels::MSG_GENERAL_HEADING));
+        assert_eq!(file[1].0.as_deref(), Some(labels::MSG_DEFAULTS_HEADING));
+        let defaults = &file[1].1;
+        assert_eq!(
+            defaults,
+            &[
+                labels::MSG_DEFAULT_FOLLOW_ACTION_LABEL,
+                labels::MSG_DEFAULT_DRUM_OCTAVE_LABEL,
+                labels::MSG_DEFAULT_OCTAVE_LABEL,
+                labels::MSG_STEP_SIZE_LABEL
+            ]
+        );
+        assert!(file[0].1.contains(&labels::MSG_OCTAVE_LABELS_LABEL.to_string()));
+        assert_eq!(tabs[1].1[0].1, [labels::MSG_TRACK_INSTRUMENT_DEFAULT_LABEL]);
+    }
+
+    /// Track Inst. Default offers FluidSynth only where it is installed, starts on FluidSynth where it is and on BuiltIn
+    /// where not, and takes the choice made.
+    #[test]
+    fn track_inst_default_offers_fluidsynth_only_where_installed() {
+        let mut app = new_set();
+        let choices_of = |app: &App| match &FilePage.global_fields(app)[0].kind {
+            crate::forms::nodes::Kind::Choice { choices, .. } => choices.clone(),
+            _ => Vec::new(),
+        };
+        assert_eq!(
+            choices_of(&app),
+            [TrackInstrumentDefault::BuiltIn.word(), TrackInstrumentDefault::ExternalMidi.word()]
+        );
+        assert_eq!(
+            app.preferences.track_instrument_default(app.fluidsynth_installed),
+            TrackInstrumentDefault::BuiltIn
+        );
+        app.fluidsynth_installed = true;
+        assert_eq!(choices_of(&app).len(), TrackInstrumentDefault::ALL.len());
+        let mut page = FilePage;
+        page.apply(
+            &mut app,
+            TRACK_INSTRUMENT_DEFAULT,
+            Edit::Choice(TrackInstrumentDefault::ExternalMidi.word().to_string()),
+        );
+        assert_eq!(app.preferences.track_instrument_default(true), TrackInstrumentDefault::ExternalMidi);
     }
 }

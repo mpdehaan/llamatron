@@ -38,6 +38,9 @@ pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
     }
     let mut tracker = Tracker::new(document);
     tracker.app.fluidsynth_installed = crate::wav::fluidsynth_installed();
+    if let Some(config) = crate::preferences::Preferences::config_path() {
+        tracker.app.preferences = crate::preferences::Preferences::read(&config);
+    }
     start_terminal()?;
     tracker.app.session.recording = launch.for_recording;
     // A recording opens on its title, and opens Arrange when the launch says to start; any other launch starts at once.

@@ -107,6 +107,8 @@ pub struct App {
     /// Whether FluidSynth is installed to play General MIDI, which offers Listen on a pattern whose song names no Preview
     /// instrument.
     pub fluidsynth_installed: bool,
+    /// The settings kept for every set, in the config file; in memory alone for a tracker made for a test.
+    pub preferences: crate::preferences::Preferences,
     /// The screen's height as last drawn, which a page that fits itself to the whole screen reads.
     pub screen_height: std::cell::Cell<usize>,
     requests: Vec<Request>,
@@ -127,6 +129,7 @@ impl App {
             status: StatusLine::default(),
             session: Session::default(),
             fluidsynth_installed: false,
+            preferences: crate::preferences::Preferences::default(),
             screen_height: std::cell::Cell::new(24),
             requests: Vec::new(),
             quitting: false,
