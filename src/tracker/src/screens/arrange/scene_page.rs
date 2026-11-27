@@ -342,13 +342,15 @@ impl Form for ScenePage {
         ]
     }
 
-    fn remarks(&self, app: &App, _width: usize) -> Vec<Text> {
+    fn remarks(&self, app: &App, width: usize) -> Vec<Text> {
         let lengths = Lengths::of(app.document.get_setlist(), app.document.song());
         let length = clock(lengths.scene_seconds(self.index));
-        vec![Text::styled(
+        let mut lines = vec![Text::styled(
             &named(messages::MSG_SCENE_LENGTH_NOTE, &[("length", length.as_str().into())]),
             Style::DIM,
-        )]
+        )];
+        lines.extend(crate::lengths::problem_line(&lengths, self.index, width));
+        lines
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
@@ -409,5 +411,20 @@ mod tests {
         tracker.press("f2");
         type_name(&mut tracker, "dawn", "verse");
         assert_eq!(scene_names(&tracker), vec![Some("dawn".to_string()), Some("verse".to_string())]);
+    }
+
+    /// A scene that cannot be played says why under its settings, after its length.
+    #[test]
+    fn a_scene_that_cannot_play_says_why() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/every_clip_loops.yml");
+        let text = std::fs::read_to_string(path).expect("the scenario's set is there");
+        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
+        tracker.app.show_page(Box::new(FieldPage::new(ScenePage { index: 0 })));
+        tracker.settle();
+        let shown = named(messages::MSG_PROBLEM_NOTE, &[("problem", "".into())]);
+        // The remarks stand under every setting, below the bottom of 80x24.
+        let screen: Vec<String> = tracker.screen(160, 50).iter().map(|line| line.text()).collect();
+        assert!(screen.iter().any(|line| line.starts_with(shown.trim_end())), "{screen:#?}");
     }
 }

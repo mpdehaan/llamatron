@@ -1,0 +1,12 @@
+# llamatron: a set whose one scene's every clip loops, so that the scene has no end and cannot be played.
+scales:
+  - { name: c_major, root: C, type: major }
+patterns:
+  - { name: tune, steps: 4, degree: [1, 2, 3, 4] }
+songs:
+  - name: song
+    scale: c_major
+    tracks: [{ name: lead }]
+    scenes:
+      - name: one
+        clips: [{ track: lead, pattern: tune, loop: true }]

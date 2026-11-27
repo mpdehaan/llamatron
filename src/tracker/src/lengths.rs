@@ -64,7 +64,24 @@ impl Lengths {
             .map(|(_, seconds)| *seconds)
     }
 
+    /// What stops a scene from playing, from the first of its plays that cannot be worked out, or None.
+    pub fn scene_problem(&self, index: usize) -> Option<String> {
+        let places = self.scene_plays.get(index)?.clone();
+        places.filter_map(|place| self.plays.get(place)).find_map(|play| play.problem.clone())
+    }
+
     pub fn song_seconds(&self) -> Option<f64> {
         Self::all_or_none(self.plays.iter().map(|play| play.seconds))
     }
+}
+
+/// The line saying what stops a scene from playing, cut to the page's width, or none where the scene plays.
+pub fn problem_line(lengths: &Lengths, index: usize, width: usize) -> Option<crate::text::Text> {
+    let problem = lengths.scene_problem(index)?;
+    let mut line = crate::text::Text::plain(&llamatron_strings::named(
+        llamatron_strings::messages::MSG_PROBLEM_NOTE,
+        &[("problem", problem.as_str().into())],
+    ));
+    line.truncate(width);
+    Some(line)
 }

@@ -665,7 +665,7 @@ impl Form for ClipPage {
         nodes
     }
 
-    fn remarks(&self, app: &App, _width: usize) -> Vec<Text> {
+    fn remarks(&self, app: &App, width: usize) -> Vec<Text> {
         let Some(clip) = self.clip_slot(app) else { return Vec::new() };
         let lengths = Lengths::of(app.document.get_setlist(), app.document.song());
         let length = clock(lengths.clip_seconds(self.index, &self.track));
@@ -696,6 +696,7 @@ impl Form for ClipPage {
                 lines.push(Text::styled(messages::MSG_GRAB_HINT_NOTE, Style::DIM));
             }
         }
+        lines.extend(crate::lengths::problem_line(&lengths, self.index, width));
         lines
     }
 
