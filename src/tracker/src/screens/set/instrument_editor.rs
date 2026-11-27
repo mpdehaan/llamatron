@@ -1119,7 +1119,10 @@ impl InstrumentEditor {
                 ));
             }
         }
-        columns.push(TabColumn::new(Some(&named_in(labels::MSG_PART_HEADINGS, "oscillators")), own));
+        // A type of no settings of its own, such as Basic, whose one oscillator has its column, shows no empty column.
+        if !own.is_empty() {
+            columns.push(TabColumn::new(Some(&named_in(labels::MSG_PART_HEADINGS, "oscillators")), own));
+        }
         let mut tab = Tab::new(labels::MSG_OSCILLATORS_TAB, columns);
         tab.top = top;
         tab.not_ready = not_ready;
@@ -2372,5 +2375,62 @@ mod tests {
                 assert!(names[0].starts_with(NOT_A_NAME), "(none) first");
             }
         }
+    }
+
+    /// Every field on every tab of the Instrument page, for every engine and every effect, shows a label and a value with
+    /// every placeholder filled: no `{` is ever drawn.
+    #[test]
+    fn no_field_shows_an_unfilled_placeholder() {
+        let unfilled = '{';
+        let engines = ["basic", "asheville", "sid", "pocket", "acid", "drum"];
+        let effects = ["bitcrush", "drive", "bax", "multitap"];
+        for engine in engines {
+            for effect in effects {
+                let instrument = format!(
+                    "{{ name: fish, kind: built_in, sound: {{ engine: {engine}, oscillators: {{ type: {engine} }}, effects: [{{ effect: {effect} }}] }} }}"
+                );
+                let app = engine_app(&instrument, true);
+                let editor = InstrumentEditor { name: "fish".to_string() };
+                let (nodes, _) = editor.built(&app);
+                let tab_box = nodes
+                    .iter()
+                    .find_map(|node| match node {
+                        Node::TabBox(tab_box) => Some(tab_box),
+                        _ => None,
+                    })
+                    .expect("a tab box");
+                for tab in &tab_box.tabs {
+                    for field in tab.columns.iter().flat_map(|column| column.fields.iter()) {
+                        let drawn = [field.drawn_label(true), field.value().to_string()];
+                        for text in drawn {
+                            assert!(!text.contains(unfilled), "{engine} with {effect}, {}: {text}", tab.label);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Basic's Oscillators tab shows its one oscillator's column and nothing more: no column of settings it has none of.
+    #[test]
+    fn basics_tab_shows_its_one_oscillator_alone() {
+        let app = engine_app("{ name: fish, kind: built_in, sound: { engine: basic } }", true);
+        let editor = InstrumentEditor { name: "fish".to_string() };
+        let (nodes, _) = editor.built(&app);
+        let tab_box = nodes
+            .iter()
+            .find_map(|node| match node {
+                Node::TabBox(tab_box) => Some(tab_box),
+                _ => None,
+            })
+            .expect("a tab box");
+        let oscillators = tab_box
+            .tabs
+            .iter()
+            .find(|tab| tab.label == labels::MSG_OSCILLATORS_TAB)
+            .expect("the Oscillators tab");
+        let headings: Vec<Option<String>> = oscillators.columns.iter().map(|column| column.heading.clone()).collect();
+        let first = named(labels::MSG_OSCILLATOR_LABEL, &[("number", 1.into())]);
+        assert_eq!(headings, [Some(first)]);
     }
 }
