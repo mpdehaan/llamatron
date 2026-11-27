@@ -270,6 +270,9 @@ In the order of their priority, the highest first.
   name where the cell width allows. What it would mean for the code: a table of the standard names in
   `model/values/midi.py`, the CC fields' ENTER opening a `ChoiceDialog` built from it in place of the number prompt
   (`MSG_CC_PROMPT`), with `+` and `-` still stepping the number, and the names as `MSG_` constants since they're shown.
+- **What else goes on the Global tab**: a review of which preferences belong in the config file,
+  `~/.llamatron/settings.yml`, and so on the File/Global page's Global tab, beside Track Inst. Default: what a person
+  would want the same in every set rather than carried by one.
 - **A Settings page, from a YAML dotfile**: A Settings page in the app, reached from the main screen, whose values live in a
   dotfile in the user's home directory, `~/.llamatron`, written as YAML and read through `safe_yaml.load_safely` like
   everything else. The settings are the user's own preferences rather than anything a set stores, so they never go in a set

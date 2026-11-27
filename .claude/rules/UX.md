@@ -165,6 +165,8 @@ All made by the model's naming (`src/model/src/objects/naming.rs`):
 - Text is formal, exact and as short as it can be while obvious: no chatty phrasing, no caption repeating a title, no word leaning
   on assumed knowledge ("usual", "go back to"). Choices read the plainest way a person says them: "only this section", "going
   forward". Mockups and proposed wording follow the same rules and the tracker's existing style.
+- Text never addresses the reader: no "you" or "your". A place or a value is stated as a label and what it is, such as
+  `config file: ~/.llamatron/settings.yml`.
 
 ## Drawing
 
