@@ -119,6 +119,13 @@ pub fn listen(app: &mut App, index: usize, track: &str, name: &str) {
         .as_deref()
         .and_then(|name| crate::realtime::transport::instrument(&app.document, name))
         .is_some_and(|held| crate::realtime::transport::device_of(held).is_some() || crate::realtime::transport::is_built_in(held));
+    if listens_through_drum_kit(app, track) {
+        match app.preview.play_clip_of_song(&app.document, index, track) {
+            Ok(()) => app.say(&named(messages::MSG_LISTENING_GENERAL_MIDI, &[("name", name.into())])),
+            Err(problem) => app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_PLAY_TITLE, vec![problem]))),
+        }
+        return;
+    }
     let track = track.to_string();
     if has_device {
         crate::screens::arrange::arrange_page::play_through(app, &what, &said, |app| {
@@ -151,6 +158,13 @@ pub fn is_previewing(app: &App) -> bool {
     app.preview.playing().is_some() || app.transport.is_previewing()
 }
 
+/// Whether a clip of a track is listened to through FluidSynth's drum kit without asking for an instrument: a drum track
+/// with no instrument of its own, where FluidSynth is installed, as it is heard with Real Time off.
+pub fn listens_through_drum_kit(app: &App, track: &str) -> bool {
+    let Some(held) = app.document.song().get_track(track) else { return false };
+    held.is_drum() && held.get_written(TrackSetting::INSTRUMENT).is_none() && app.fluidsynth_installed
+}
+
 /// Stop every listening page's preview, a pattern's, an instrument's or a clip played on its own again and again, so that
 /// what starts next is heard alone; a song played from Arrange plays on.
 pub fn stop_every_preview(app: &mut App) {
@@ -167,4 +181,26 @@ pub fn stop_listening(app: &mut App) {
     app.preview.stop();
     app.transport.stop_all();
     app.say(messages::MSG_STOPPED);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A song of a drum track and a notes track, neither with an instrument, and a drum track with one.
+    const TRACKS_SET: &str = "instruments:\n  - { name: kit, device: \"*FluidSynth\", role: percussion }\nsongs:\n  - name: song\n    tracks: [{ name: drums, drum: true }, { name: lead }, { name: played, drum: true, instrument: kit }]\n    scenes: [{ name: one }]\n";
+
+    /// Listen on a drum track with no instrument plays FluidSynth's drum kit without asking, where FluidSynth is installed;
+    /// a notes track, a drum track with an instrument of its own, or no FluidSynth, still go the usual way.
+    #[test]
+    fn a_drum_track_with_no_instrument_listens_through_the_drum_kit() {
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(TRACKS_SET, None).expect("the scenario's set is valid");
+        let mut app = App::new(crate::document::Document::new(setlist, None));
+        app.fluidsynth_installed = true;
+        assert!(listens_through_drum_kit(&app, "drums"));
+        assert!(!listens_through_drum_kit(&app, "lead"));
+        assert!(!listens_through_drum_kit(&app, "played"));
+        app.fluidsynth_installed = false;
+        assert!(!listens_through_drum_kit(&app, "drums"));
+    }
 }
