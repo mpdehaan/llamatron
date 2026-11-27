@@ -160,6 +160,8 @@ The professor's research is in `.claude/notes/synthesis/`.
   FluidSynth instrument is panned by the mixer too, never by General MIDI's pan, wherever FluidSynth's output allows, so
   that the effects move its place smoothly as they move a built-in synth's. How the instrument's own Pan, which the
   General MIDI export uses today, meets the track's is settled with the design.
+  A Mixer page opens from the main screen with `M` (Mixer), in the cell where the Real Time switch stood; to start it
+  offers only modes and drive, and no effects bus.
   Each track and bus has a character stage: Drive (compensated, so it changes colour rather than loudness), Amount (a blend
   with the stage's clean path) and Character: Tube (a push-pull cell at rest), Warm Tube (a single-ended stage leaning more
   as it gets louder), Iron (a transformer saturating the bass more than the treble), Desk (a class-A amplifier with a light
@@ -301,7 +303,8 @@ In the order of their priority, the highest first.
   responses the mixes make: high-pass, band-pass, notch and those between.
 - **Synths on several threads**: first a timing tool that plays a dense set and reports the synths' load and its peak,
   so that every change to the synthesis is measured against it; then each audio block's instruments shared among a few
-  worker threads made at start-up, as many as the computer's cores allow with some left for everything else, so that
-  a less powerful computer gains as much as it can. The workers allocate nothing and take no locks, a late worker's
+  worker threads made at start-up, at least three, more as the computer's cores allow with some left for everything
+  else, so that a less powerful computer gains as much as it can; the built-in synths are not expected to run beside a
+  DAW's own synths played over MIDI, so they may take that share of the computer. The workers allocate nothing and take no locks, a late worker's
   instruments are rendered by the callback itself so that nothing drops out, and each worker ends with its owner.
 
