@@ -39,10 +39,10 @@ pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
         None => None,
     };
     // A set whose file's values had to be corrected opens only once the Corrections dialog is answered YES, over a new set.
-    let (document, offered) = match opened {
-        Some((document, corrections)) if corrections.is_empty() => (document, None),
-        Some((document, corrections)) => (Document::new_set(instrument(false), instrument(true))?, Some((document, corrections))),
-        None => (Document::new_set(instrument(false), instrument(true))?, None),
+    let (document, offered, note) = match opened {
+        Some(opened) if opened.corrections.is_empty() => (opened.document, None, opened.note),
+        Some(opened) => (Document::new_set(instrument(false), instrument(true))?, Some(opened), None),
+        None => (Document::new_set(instrument(false), instrument(true))?, None, None),
     };
     if launch.for_recording && !launch.interactive {
         refuse_endless(&document)?;
@@ -50,8 +50,11 @@ pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
     let mut tracker = Tracker::new(document);
     tracker.app.fluidsynth_installed = fluidsynth_installed;
     tracker.app.preferences = preferences;
+    if let Some(note) = note {
+        tracker.app.say(&note);
+    }
     match offered {
-        Some((document, corrections)) => crate::screens::set::open_page::offer_corrected(&mut tracker.app, document, &corrections),
+        Some(opened) => crate::screens::set::open_page::offer_corrected(&mut tracker.app, opened),
         // A tracker playing on its own is never stopped by the warning's dialog.
         None if path.is_some() && !launch.opens_arrange() => crate::silent_instruments::warn_of_silent_instruments(&mut tracker.app),
         None => {}

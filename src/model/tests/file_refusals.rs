@@ -71,7 +71,8 @@ fn each_refused_set_says_why_it_does_not_open() {
 fn a_set_with_values_out_of_range_opens_corrected() {
     let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/refused");
     let text = std::fs::read_to_string(folder.join("velocity_out_of_range.yml")).expect("the set is there");
-    let (setlist, corrections) = Setlist::read_text_corrected(&text, None).expect("the set opens corrected");
+    let read = Setlist::read_text_corrected(&text, None).expect("the set opens corrected");
+    let (setlist, corrections) = (read.setlist, read.corrections);
     let pattern = setlist.get_pattern("tune").expect("the pattern");
     let loudest = llamatron_model::file::data::Data::Whole(midi::MAX_VELOCITY as i128);
     assert_eq!(pattern.row("velocity").and_then(|steps| steps.first()), Some(&loudest));

@@ -169,7 +169,8 @@ fn seconds_named(value: Option<String>) -> Result<f64, String> {
 /// read with those values in their place, each listed; without --force that is all, and the export is refused, saying to
 /// pass it. The file is never changed.
 fn corrected_for_export(path: &std::path::Path, force: bool) -> Result<llamatron_tracker::document::Document, String> {
-    let (document, corrections) = llamatron_tracker::document::Document::open_corrected(path)?;
+    let opened = llamatron_tracker::document::Document::open_corrected(path)?;
+    let (document, corrections) = (opened.document, opened.corrections);
     let line = if force { cli::MSG_CLI_CHANGED } else { cli::MSG_CLI_WOULD_CHANGE };
     for correction in &corrections {
         eprintln!("{}", named(line, &[("change", correction.described().as_str().into())]));

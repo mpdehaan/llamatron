@@ -130,13 +130,13 @@ impl OpenPage {
     /// why.
     fn open_file(app: &mut App, path: &Path) {
         match Document::open_corrected(path) {
-            Ok((document, corrections)) if corrections.is_empty() => {
+            Ok(opened) if opened.corrections.is_empty() => {
                 app.go_back();
-                take_up(app, document);
+                take_up(app, opened.document, opened.note);
             }
-            Ok((document, corrections)) => {
+            Ok(opened) => {
                 app.go_back();
-                offer_corrected(app, document, &corrections);
+                offer_corrected(app, opened);
             }
             Err(error) => {
                 let told = crate::screens::dialogs::MessageDialog::new(llamatron_strings::errors::ERR_CANT_OPEN_TITLE, vec![error]);
@@ -149,17 +149,18 @@ impl OpenPage {
 /// The most corrections the Corrections dialog lists, the rest counted, so that it always fits.
 const MOST_CORRECTIONS_SHOWN: usize = 5;
 
-/// Open a set in place of the set open now, and say so.
-fn take_up(app: &mut App, document: Document) {
+/// Open a set in place of the set open now, and say so, or say what converting its older file changed.
+pub fn take_up(app: &mut App, document: Document, note: Option<String>) {
     let path = document.get_path().map(|path| path.display().to_string()).unwrap_or_default();
     app.document = document;
-    app.say(&named(messages::MSG_OPENED, &[("path", path.as_str().into())]));
+    app.say(&note.unwrap_or_else(|| named(messages::MSG_OPENED, &[("path", path.as_str().into())])));
     crate::silent_instruments::warn_of_silent_instruments(app);
 }
 
 /// Ask whether to open a set whose file's values had to be corrected, listing the corrections, and open it on YES; on NO
 /// nothing opens.
-pub fn offer_corrected(app: &mut App, document: Document, corrections: &[Correction]) {
+pub fn offer_corrected(app: &mut App, opened: crate::document::OpenedSet) {
+    let crate::document::OpenedSet { document, corrections, note } = opened;
     let file = document.get_file_name().unwrap_or_default();
     let shown = corrections.len().min(MOST_CORRECTIONS_SHOWN);
     let mut lines = vec![named(messages::MSG_CORRECTIONS_INTRO, &[("file", file.as_str().into())])];
@@ -168,11 +169,11 @@ pub fn offer_corrected(app: &mut App, document: Document, corrections: &[Correct
         lines.push(named(messages::MSG_CORRECTIONS_MORE, &[("count", ((corrections.len() - shown) as i64).into())]));
     }
     lines.push(messages::MSG_CORRECTIONS_WARNING.to_string());
-    let offered = std::cell::RefCell::new(Some(document));
+    let offered = std::cell::RefCell::new(Some((document, note)));
     let dialog = crate::screens::dialogs::ConfirmDialog::new(messages::MSG_CORRECTIONS_TITLE, lines, false, false).then(Box::new(
         move |app: &mut App, _: &crate::screens::dialogs::Answer| {
-            if let Some(document) = offered.borrow_mut().take() {
-                take_up(app, document);
+            if let Some((document, note)) = offered.borrow_mut().take() {
+                take_up(app, document, note);
             }
         },
     ));
@@ -280,10 +281,10 @@ mod corrections_tests {
     #[test]
     fn a_corrected_set_opens_unsaved_after_yes() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/velocity_too_loud.yml");
-        let (document, corrections) = Document::open_corrected(&path).expect("the set opens corrected");
+        let opened = Document::open_corrected(&path).expect("the set opens corrected");
         let synth = |drum: bool| crate::track_instrument::new_track_instrument(TrackInstrumentDefault::BuiltIn, drum, false, None);
         let mut tracker = Tracker::new(Document::new_set(synth(false), synth(true)).expect("a new set"));
-        offer_corrected(&mut tracker.app, document, &corrections);
+        offer_corrected(&mut tracker.app, opened);
         tracker.settle();
         let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
         assert!(screen.iter().any(|line| line.contains(messages::MSG_CORRECTIONS_TITLE)), "{screen:#?}");

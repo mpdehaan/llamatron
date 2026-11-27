@@ -187,19 +187,30 @@ impl Setlist {
     /// A set from a file's text, with each value that cannot be used but has an allowed value near it changed to that value,
     /// and the corrections made: none where the file reads as it is. A problem with no allowed value near it still refuses
     /// the file. The file itself is not changed.
-    pub fn read_text_corrected(text: &str, file_stem: Option<String>) -> Result<(Setlist, Vec<Correction>), SongFileError> {
+    pub fn read_text_corrected(text: &str, file_stem: Option<String>) -> Result<ReadSet, SongFileError> {
         let data = crate::file::data::load(text).map_err(|problem| SongFileError::plain(problem.0))?;
-        let (moved, _) = migrated(data, file_stem);
+        let (moved, conversion) = migrated(data, file_stem);
         let laid_out = as_object_layout(&moved).map_err(|problem| SongFileError::at(&problem.section, problem.problem))?;
         let refusal = match Setlist::from_data(&laid_out) {
-            Ok(setlist) => return Ok((setlist, Vec::new())),
+            Ok(setlist) => {
+                return Ok(ReadSet {
+                    setlist,
+                    corrections: Vec::new(),
+                    conversion,
+                })
+            }
             Err(refusal) => refusal,
         };
         let (fixed, corrections) = corrected(&laid_out);
         if corrections.is_empty() {
             return Err(refusal);
         }
-        Ok((Setlist::from_data(&fixed)?, corrections))
+        let setlist = Setlist::from_data(&fixed)?;
+        Ok(ReadSet {
+            setlist,
+            corrections,
+            conversion,
+        })
     }
 
     pub fn from_data(data: &Data) -> Result<Setlist, SongFileError> {
@@ -340,6 +351,13 @@ fn checked_groove_names(grooves: &Data) -> Result<(), (String, InvalidValue)> {
         }
     }
     Ok(())
+}
+
+/// A set read from a file's text, with the corrections its values took and what converting an older file changed.
+pub struct ReadSet {
+    pub setlist: Setlist,
+    pub corrections: Vec<Correction>,
+    pub conversion: crate::file::migrations::Conversion,
 }
 
 impl Context for Setlist {

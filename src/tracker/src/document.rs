@@ -141,16 +141,22 @@ impl Document {
     }
 
     /// The set a file holds with each value that cannot be used but has an allowed value near it changed to that value,
-    /// and the corrections made; a set that took any is unsaved, since its file still holds what it did.
-    pub fn open_corrected(path: &Path) -> Result<(Document, Vec<Correction>), String> {
+    /// the corrections made, and what the status line says of a file in an older layout, converted. A set that took
+    /// corrections or a conversion is unsaved, since its file still holds what it did.
+    pub fn open_corrected(path: &Path) -> Result<OpenedSet, String> {
         let text = std::fs::read_to_string(path).map_err(|error| error.to_string())?;
         let stem = path.file_stem().map(|stem| stem.to_string_lossy().to_string());
-        let (setlist, corrections) = Setlist::read_text_corrected(&text, stem).map_err(|error| error.message)?;
-        let mut document = Document::new(setlist, Some(path.to_path_buf()));
-        if !corrections.is_empty() {
+        let read = Setlist::read_text_corrected(&text, stem).map_err(|error| error.message)?;
+        let note = conversion_note(&read.conversion);
+        let mut document = Document::new(read.setlist, Some(path.to_path_buf()));
+        if !read.corrections.is_empty() || note.is_some() {
             document.dirty = true;
         }
-        Ok((document, corrections))
+        Ok(OpenedSet {
+            document,
+            corrections: read.corrections,
+            note,
+        })
     }
 
     /// The set a file holds, opened as the tracker opens it.
@@ -341,5 +347,62 @@ impl Document {
             .map_err(|error| match error {
                 llamatron_engine::error::RenderError::Refused(problem) => problem,
             })
+    }
+}
+
+/// A set opened from its file: the document, the corrections its values took, and what the status line says of a file
+/// converted from an older layout, if it was.
+pub struct OpenedSet {
+    pub document: Document,
+    pub corrections: Vec<Correction>,
+    pub note: Option<String>,
+}
+
+/// What the status line says of a file converted from an older layout, naming each name the conversion changed, or
+/// None for a file read as it is.
+fn conversion_note(conversion: &llamatron_model::file::migrations::Conversion) -> Option<String> {
+    if !conversion.moved {
+        return None;
+    }
+    if conversion.renames.is_empty() {
+        return Some(llamatron_strings::messages::MSG_CONVERTED.to_string());
+    }
+    let renames: Vec<String> = conversion
+        .renames
+        .iter()
+        .map(|(kind, old, new)| {
+            llamatron_strings::named(
+                llamatron_strings::messages::MSG_RENAMED_IN_CONVERSION,
+                &[("kind", kind.as_str().into()), ("old", old.as_str().into()), ("new", new.as_str().into())],
+            )
+        })
+        .collect();
+    Some(llamatron_strings::named(
+        llamatron_strings::messages::MSG_CONVERTED_WITH_RENAMES,
+        &[("renames", renames.join(", ").as_str().into())],
+    ))
+}
+
+#[cfg(test)]
+mod conversion_tests {
+    use super::*;
+
+    /// A file saved by an older version opens converted, unsaved, its note for the status line saying so; a current file
+    /// opens with no note.
+    #[test]
+    fn an_older_file_opens_converted_and_unsaved() {
+        let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data");
+        let older = Document::open_corrected(&folder.join("older_version.yml")).expect("the older set opens");
+        assert!(
+            older
+                .note
+                .as_deref()
+                .is_some_and(|note| note.starts_with(llamatron_strings::messages::MSG_CONVERTED)),
+            "{:?}",
+            older.note
+        );
+        assert!(older.document.is_dirty());
+        let current = Document::open_corrected(&folder.join("clip_of_two_patterns.yml")).expect("the set opens");
+        assert_eq!(current.note, None);
     }
 }
