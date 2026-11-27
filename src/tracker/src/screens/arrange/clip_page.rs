@@ -23,7 +23,7 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::{ClipSlot, Scene};
 use llamatron_model::schema::generated::defaults::DEFAULT_FOLLOW_ACTION;
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SetlistSetting, TrackSetting, FOLLOW_ACTION_CHOICES, PATTERN_ORDERS};
-use llamatron_model::schema::generated::limits::{MAX_CLIP_REPEAT, MAX_NAME_LENGTH};
+use llamatron_model::schema::generated::limits::{MAX_CLIP_NAME_LENGTH, MAX_CLIP_REPEAT, MAX_NAME_LENGTH};
 use llamatron_strings::{labels, legends, marks, messages, named, names};
 
 const NAME: usize = 0;
@@ -75,6 +75,11 @@ impl ClipPage {
     fn write_edit(&self, app: &mut App, id: usize, edit: &Edit) -> bool {
         use llamatron_model::schema::generated::file_format::DIRECTIONS;
         let Some(clip) = self.clip_slot(app) else { return false };
+        // Bksp on the Name gives the clip back its pattern's name.
+        if id == NAME && *edit == Edit::Clear {
+            self.write(app, ClipSlotSetting::NAME, None);
+            return true;
+        }
         if (BUILT_IN_IDS..BUILT_IN_IDS * (built_in_kinds().len() + 1)).contains(&id) {
             let Some(kind) = built_in_kinds().get(id / BUILT_IN_IDS - 1).copied() else {
                 return false;
@@ -365,6 +370,17 @@ impl ClipPage {
 }
 
 impl Form for ClipPage {
+    /// ENTER on the Name field and F2 ask for the clip's own name, up to a clip's longer limit; clips may share names.
+    fn rename(&self, app: &mut App) -> Option<()> {
+        let name = self.clip_slot(app).map(Self::name_shown).unwrap_or_default();
+        let (index, track) = (self.index, self.track.clone());
+        let store = Box::new(move |app: &mut App, new: &str| {
+            let value = Some(Data::text(new));
+            arrange_tabs::write_in_song(app, |song| song.set_clip_written(index, &track, ClipSlotSetting::NAME, value.clone()));
+        });
+        crate::screens::rename::ask_song_name(app, messages::MSG_RENAME_CLIP_PROMPT, &name, MAX_CLIP_NAME_LENGTH as usize, Vec::new(), store);
+        Some(())
+    }
     fn follow_renames(&mut self, renames: &crate::history::Renames) {
         crate::page::follow_name(&mut self.track, llamatron_model::schema::generated::file_format::Section::TRACKS, renames);
     }
@@ -574,4 +590,48 @@ fn lined_up(rows: &[(String, String)]) -> Vec<String> {
             .to_string()
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::app::Tracker;
+    use crate::keybindings::{FieldPage as FieldKeys, PromptDialog as PromptKeys};
+    use crate::keys::first_key;
+    use crate::screens::field_page::FieldPage;
+    use llamatron_model::objects::setlist::Setlist;
+
+    /// A song of one track whose one scene plays the pattern tune.
+    const ONE_CLIP_SET: &str = "patterns:\n  tune: { steps: 4 }\nsongs:\n  - name: song\n    tracks: [{ name: lead }]\n    scenes:\n      - name: one\n        clips: [{ track: lead, pattern: tune }]\n";
+
+    fn clip_name(tracker: &Tracker) -> Option<String> {
+        let song = tracker.app.document.song();
+        let clip = song.scenes()[0].get_clip_slot("lead").expect("the clip");
+        clip.get_written(ClipSlotSetting::NAME).and_then(Data::as_str).map(str::to_string)
+    }
+
+    /// ENTER on the clip page's Name names the clip, and Bksp gives it back its pattern's name.
+    #[test]
+    fn enter_on_the_name_names_the_clip_and_bksp_gives_back_the_patterns() {
+        let setlist = Setlist::read_text(ONE_CLIP_SET, None).expect("the scenario's set is valid");
+        let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
+        tracker.app.show_page(Box::new(FieldPage::new(ClipPage {
+            index: 0,
+            track: "lead".to_string(),
+        })));
+        tracker.settle();
+        assert!(tracker.top().place_kind(&tracker.app).ends_with(labels::MSG_NAME_LABEL), "the cursor on Name");
+        tracker.press(first_key(&FieldKeys::ENTER));
+        let shown = named(marks::MSG_CLIP_NAMED_FOR_PATTERN, &[("pattern", "tune".into())]);
+        for _ in shown.chars() {
+            tracker.press(first_key(&PromptKeys::ERASE));
+        }
+        for character in "hook".chars() {
+            tracker.press(&character.to_string());
+        }
+        tracker.press(first_key(&PromptKeys::DONE));
+        assert_eq!(clip_name(&tracker), Some("hook".to_string()));
+        tracker.press(first_key(&FieldKeys::CLEAR));
+        assert_eq!(clip_name(&tracker), None);
+    }
 }

@@ -21,7 +21,7 @@ use llamatron_math::rational::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::Scene;
 use llamatron_model::schema::generated::file_format::{SceneSetting, SongSetting, RAMP_WAYS, SECTION_KINDS, TEMPO_RAMP_SETTINGS};
-use llamatron_model::schema::generated::limits::{MAX_RAMP_BARS, MAX_SCENE_REPEAT, MAX_TEMPO_PERCENT, MIN_TEMPO_PERCENT};
+use llamatron_model::schema::generated::limits::{MAX_NAME_LENGTH, MAX_RAMP_BARS, MAX_SCENE_REPEAT, MAX_TEMPO_PERCENT, MIN_TEMPO_PERCENT};
 use llamatron_strings::{labels, legends, marks, messages, named, names};
 
 const NAME: usize = 0;
@@ -283,6 +283,26 @@ impl ScenePage {
 }
 
 impl Form for ScenePage {
+    /// ENTER on the Name field and F2 ask for the scene's new name, refusing one another scene of the song has.
+    fn rename(&self, app: &mut App) -> Option<()> {
+        let name = self.scene_name(app);
+        let taken: Vec<String> = app
+            .document
+            .song()
+            .scenes()
+            .iter()
+            .enumerate()
+            .filter(|(place, _)| *place != self.index)
+            .filter_map(|(_, scene)| scene.get_name())
+            .collect();
+        let index = self.index;
+        let store = Box::new(move |app: &mut App, new: &str| {
+            let value = Some(Data::text(new));
+            arrange_tabs::write_in_song(app, |song| song.set_scene_written(index, SceneSetting::NAME, value.clone()));
+        });
+        crate::screens::rename::ask_song_name(app, messages::MSG_RENAME_SCENE_PROMPT, &name, MAX_NAME_LENGTH as usize, taken, store);
+        Some(())
+    }
     fn name(&self) -> &'static str {
         "ScenePage"
     }
@@ -362,5 +382,49 @@ impl Form for ScenePage {
                 },
             )));
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::app::Tracker;
+    use crate::keybindings::{FieldPage as FieldKeys, PromptDialog as PromptKeys};
+    use crate::keys::first_key;
+    use crate::screens::field_page::FieldPage;
+    use llamatron_model::objects::setlist::Setlist;
+
+    /// A song of one track and two scenes, intro and verse.
+    const TWO_SCENE_SET: &str = "songs:\n  - name: song\n    tracks: [{ name: lead }]\n    scenes: [{ name: intro }, { name: verse }]\n";
+
+    /// Type a new name into the rename prompt over the old one, and press ENTER.
+    fn type_name(tracker: &mut Tracker, old: &str, new: &str) {
+        for _ in old.chars() {
+            tracker.press(first_key(&PromptKeys::ERASE));
+        }
+        for character in new.chars() {
+            tracker.press(&character.to_string());
+        }
+        tracker.press(first_key(&PromptKeys::DONE));
+    }
+
+    fn scene_names(tracker: &Tracker) -> Vec<Option<String>> {
+        tracker.app.document.song().scenes().iter().map(Scene::get_name).collect()
+    }
+
+    /// ENTER on the scene page's Name renames the scene, and a name another scene has is refused.
+    #[test]
+    fn enter_on_the_name_renames_the_scene_and_refuses_a_taken_name() {
+        let setlist = Setlist::read_text(TWO_SCENE_SET, None).expect("the scenario's set is valid");
+        let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
+        tracker.app.show_page(Box::new(FieldPage::new(ScenePage { index: 0 })));
+        tracker.settle();
+        assert!(tracker.top().place_kind(&tracker.app).ends_with(labels::MSG_NAME_LABEL), "the cursor on Name");
+        tracker.press(first_key(&FieldKeys::ENTER));
+        type_name(&mut tracker, "intro", "dawn");
+        assert_eq!(scene_names(&tracker), vec![Some("dawn".to_string()), Some("verse".to_string())]);
+        tracker.press("f2");
+        type_name(&mut tracker, "dawn", "verse");
+        assert_eq!(scene_names(&tracker), vec![Some("dawn".to_string()), Some("verse".to_string())]);
     }
 }
