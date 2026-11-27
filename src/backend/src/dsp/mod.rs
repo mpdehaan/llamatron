@@ -4,6 +4,9 @@
 //! Small pieces of signal processing every part shares: a biquad section and its designs (Butterworth low and high
 //! passes, a band pass by centre and Q), and a seeded random source, so that a drum hit renders the same every time.
 
+#[cfg(test)]
+pub mod spectrum;
+
 use std::f64::consts::PI;
 
 /// Below this a filter's state is flushed to zero, so that a decaying tail never falls into denormal numbers, which are slow.

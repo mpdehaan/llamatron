@@ -14,27 +14,16 @@
 use crate::dsp::HIGHEST_SHARE;
 use crate::protocol::values::{number, word};
 use crate::voice::blep;
+use crate::voice::drive::{Curve, Drive};
 use crate::voice::multitap::MultiTap;
 use rmpv::Value;
 use std::f64::consts::PI;
 
-const MOST_GAIN: f64 = 20.0;
-const MOST_FOLDING_GAIN: f64 = 4.0;
-const WARM_LEAN: f64 = 0.3;
 /// Where Bax's shelves turn over, in hertz, fixed as on a hi-fi tone control.
 const BASS_TURNOVER_HERTZ: f64 = 100.0;
 const TREBLE_TURNOVER_HERTZ: f64 = 10_000.0;
 /// Decibels to a gain: twenty to a power of ten.
 const DECIBELS_PER_DECADE: f64 = 20.0;
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum Curve {
-    Soft,
-    Warm,
-    Hard,
-    Fold,
-    Wrap,
-}
-
 enum Kind {
     Bitcrush {
         levels: f64,
@@ -46,12 +35,7 @@ enum Kind {
         /// The share of a hold's step smoothing owed to the next sample.
         next: f64,
     },
-    Drive {
-        curve: Curve,
-        gain: f64,
-        scale: f64,
-        offset: f64,
-    },
+    Drive(Box<Drive>),
     /// Two shelves, each the sound plus what lies past its turnover times its gain less one: the bass the share under a
     /// one-pole's cutoff, the treble the share over another's.
     Bax {
@@ -146,28 +130,8 @@ fn bitcrush(spec: &Value, rate: f64) -> Kind {
 }
 
 fn drive(spec: &Value) -> Kind {
-    let curve = match word(spec, "curve", "soft") {
-        "warm" => Curve::Warm,
-        "hard" => Curve::Hard,
-        "fold" => Curve::Fold,
-        "wrap" => Curve::Wrap,
-        _ => Curve::Soft,
-    };
-    let most = if matches!(curve, Curve::Fold | Curve::Wrap) {
-        MOST_FOLDING_GAIN
-    } else {
-        MOST_GAIN
-    };
-    let gain = 1.0 + number(spec, "amount", 0.0) * most;
-    let mut offset = 0.0;
-    let mut scale = 1.0 / gain.tanh();
-    if curve == Curve::Warm {
-        // Leaning before the curve and taking the lean's own level away again leaves silence silent; the scale is the larger of
-        // the two extremes, so that the curve reaches full scale on one side and stays under it on the other.
-        offset = WARM_LEAN.tanh();
-        scale = 1.0 / ((gain + WARM_LEAN).tanh() - offset).max(offset - (WARM_LEAN - gain).tanh());
-    }
-    Kind::Drive { curve, gain, scale, offset }
+    let curve = Curve::named(word(spec, "curve", "soft"));
+    Kind::Drive(Box::new(Drive::new(curve, number(spec, "amount", 0.0))))
 }
 
 impl Effect {
@@ -213,18 +177,9 @@ impl Effect {
                     *sample = (dry + (wet - dry) * mix) as f32;
                 }
             }
-            Kind::Drive { curve, gain, scale, offset } => {
+            Kind::Drive(drive) => {
                 for sample in buffer.iter_mut() {
-                    let dry = *sample as f64;
-                    let driven = dry * *gain;
-                    let wet = match curve {
-                        Curve::Soft => driven.tanh() * *scale,
-                        Curve::Warm => ((driven + WARM_LEAN).tanh() - *offset) * *scale,
-                        Curve::Hard => driven.clamp(-1.0, 1.0),
-                        Curve::Fold => (driven * PI / 2.0).sin(),
-                        Curve::Wrap => (driven + 1.0).rem_euclid(2.0) - 1.0,
-                    };
-                    *sample = (dry + (wet - dry) * mix) as f32;
+                    *sample = drive.process(*sample as f64, mix) as f32;
                 }
             }
             Kind::MultiTap(delay) => {
@@ -263,7 +218,7 @@ impl Effect {
                 treble.state = 0.0;
             }
             Kind::MultiTap(delay) => delay.reset(),
-            Kind::Drive { .. } => {}
+            Kind::Drive(drive) => drive.reset(),
         }
     }
 
@@ -292,7 +247,12 @@ mod tests {
             .collect()
     }
 
-    /// Every Drive curve keeps a loud sine within full scale, and each curve shapes it its own way.
+    /// A band-limited curve rings a little past full scale where it clips or jumps, as any band-limited square or saw
+    /// does, by at most about 9% at a jump of the whole range.
+    const BAND_LIMITED_FULL_SCALE: f32 = 1.1;
+
+    /// Every Drive curve keeps a loud sine at full scale, give or take a band-limited clip's ripple, and each curve
+    /// shapes it its own way.
     #[test]
     fn every_drive_curve_stays_in_bounds_and_shapes_its_own_way() {
         let loud = 0.9;
@@ -301,7 +261,8 @@ mod tests {
             let mut drive = effect(&[("effect", "drive".into()), ("curve", curve.into()), ("amount", 0.8.into())]);
             let mut buffer = sine(loud);
             drive.apply(&mut buffer);
-            assert!(buffer.iter().all(|sample| sample.abs() <= 1.0 + 1e-6), "{curve}");
+            let most = buffer.iter().fold(0.0f32, |most, sample| most.max(sample.abs()));
+            assert!(most <= BAND_LIMITED_FULL_SCALE, "{curve}: {most}");
             shapes.push(buffer);
         }
         for (place, shape) in shapes.iter().enumerate() {

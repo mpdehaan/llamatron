@@ -10,6 +10,7 @@ pub mod amp;
 pub mod asheville;
 pub mod blep;
 pub mod bucket_brigade;
+pub mod drive;
 pub mod effects;
 pub mod envelopes;
 pub mod filters;

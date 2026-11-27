@@ -18,6 +18,14 @@ other. Hard clips the peaks flat. Fold folds the wave back on itself past full
 scale, and Wrap wraps it round to the other side, the harsh digital sounds of
 cheap grooveboxes.
 
+A curve pushed hard makes harmonics higher than a digital sound can hold, and
+those fold back down as whistling tones that have nothing to do with the note,
+worst on high notes. Drive keeps them out: it runs its curve at twice the
+sample rate, and takes each sample as the curve's average over the moment
+rather than its value at one instant. A high note driven hard sounds as rough
+as it should and no more, and Mix blends the shaped sound with the plain one
+in step, both delayed alike by a fraction of a millisecond.
+
 ## Bitcrush
 
 Bitcrush makes a sound lo-fi, as early samplers and game consoles were. Rate
