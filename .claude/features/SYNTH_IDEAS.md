@@ -22,8 +22,9 @@ The professor's research is in `.claude/notes/synthesis/`.
   rules (DEMO_IDEAS.md).
 - **New-instrument choices**: Blank, Sampled (FluidSynth, where installed), Synth, Drum Synth or External MIDI, beside Normal
   and Percussion, each choosing a few settings that can still be changed. Mockup first.
-- **The Engine tab** (DESIGNS.md, "The Instrument page's Engine tab and presets"): Off, MIDI, FluidSynth and LlamaSynth, its
-  migration, engine and block presets; with it, a Glide switch on the MIDI engine, as if it were a synth.
+- **The Engine tab's rest** (DESIGNS.md, "The Instrument page's Engine tab and presets"): engine and block presets; and a
+  Glide switch on the MIDI engine, on unless set off, a glided step's note overlapping the next as today, off striking
+  each note afresh, sending no CC.
 - **The Mod Matrix's destinations**: Which to drop (Drive and the like need not be destinations), a discussion; later, some
   effects' settings as destinations, effect by effect.
 - **Modulator modules**: each Modulators tab slot holds a module chosen by its Type, and beside LFO and LFO+ the Type

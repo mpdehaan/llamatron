@@ -6,8 +6,8 @@ the engines differ most, and its Type chooses which oscillator it holds, so an
 engine's oscillator can be given to another engine's envelopes and filter.
 Each engine's page says how its oscillator is made.
 
-Its Voice column, at the left, is the same for every engine, and is described
-at the end of this page.
+The whole instrument's Voice settings, the same for every engine, are on the
+Engine tab, and are described at the end of this page.
 
 ## Basic
 
@@ -39,9 +39,9 @@ at the end of this page.
 
 [MechaDrum](engines/MECHADRUM.md) describes it.
 
-## Voice Column
+## Voice Settings
 
-The Oscillators tab's Voice column holds what is the whole instrument's:
+The Engine tab of a LlamaSynth instrument holds what is the whole instrument's:
 Voices, how many notes sound at once; Glide, on unless switched off,
 whether the instrument slides into a glided step; Glide time, how long a note
 takes to slide; and, on an instrument of more than one voice, Filter,

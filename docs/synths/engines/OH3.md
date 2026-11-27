@@ -16,7 +16,7 @@ accents climbs higher.
 The Acid gate and the Diode filter each have a Circuit, Stock or Modded, after
 the modifications players made to the original machine, so a Modded envelope
 can play through a Stock filter. Oh3 slides into a glided note over its
-Glide time in the Voice column, 60 ms by default as the original circuit's
+Glide time on the Engine tab, 60 ms by default as the original circuit's
 fixed slide, and longer for a lazy line.
 
 ## How Oh3 Is Built

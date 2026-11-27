@@ -42,8 +42,8 @@ And the panel's own settings:
 Each oscillator is also a source in the Mod Matrix, Osc 1, Osc 2 and Osc 3,
 sounding or switched off: Osc 3 at LO, switched off and routed to the pitch, is
 the classic vibrato and trill; Osc 2 at audio rate routed to Osc 1's pitch, or
-to the cutoff, is analog-style FM. Glide, Glide time and Voices are in the
-Voice column every engine shares; the
+to the cutoff, is analog-style FM. Glide, Glide time and Voices are on the
+Engine tab every engine shares; the
 ladder filter is on the Filter tab, its loudness and filter contours on the
 Envelopes tab.
 

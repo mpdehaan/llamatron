@@ -170,7 +170,7 @@ and each of its parts.
 | Page | What it covers |
 | --- | --- |
 | [Synths](SYNTHS.md) | The built-in synths' design, their engines and how the sound is made. |
-| [Oscillators](synths/OSCILLATORS.md) | Each engine's oscillators and the Voice column. |
+| [Oscillators](synths/OSCILLATORS.md) | Each engine's oscillators and the Voice settings. |
 | [Envelopes](synths/ENVELOPES.md) | Every envelope type, and how each moves. |
 | [LFOs](synths/LFOS.md) | The Modulators tab: four LFOs or LFO+s. |
 | [Filters](synths/FILTERS.md) | Every filter type and the low-pass gate. |

@@ -95,7 +95,7 @@ Each part has a page of its own:
 
 | Tab | Page |
 | --- | --- |
-| Oscillators, the raw tone and the Voice column | [Oscillators](synths/OSCILLATORS.md) |
+| Oscillators, the raw tone and the Voice settings | [Oscillators](synths/OSCILLATORS.md) |
 | Env 1, Env 2 and Env 3 | [Envelopes](synths/ENVELOPES.md) |
 | Four modulators, LFOs and LFO+s | [LFOs](synths/LFOS.md) |
 | The filter or the low-pass gate | [Filters](synths/FILTERS.md) |

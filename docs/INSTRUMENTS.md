@@ -33,7 +33,7 @@ MIDI) export assigns them: channel 10 for a drum track, where FluidSynth plays
 drums, and channels 1 to 16 in turn for the rest. Each clip starts by choosing
 the track's General MIDI sound.
 
-A FluidSynth instrument's MIDI tab also has a Pan, under its GM sound: where
+A FluidSynth instrument's Engine tab also has a Pan, under its GM sound: where
 the instrument stands between the speakers, from 0%, hard left, to 100%, hard
 right, 50%, the middle, unless set. A band's guitar a little to the left and
 its keyboard a little to the right sound like players standing apart on a
@@ -48,7 +48,7 @@ plays it. A new set has no instruments until you add them.
 ## Built-in Instruments
 
 A built-in instrument plays a sound llamatron makes itself, with no device: its
-Kind is Built-in and its Engine chosen. The sound is made on threads of its
+Engine is LlamaSynth. The sound is made on threads of its
 own, beside the one that sends MIDI, and MIDI and FluidSynth are held back by
 the few milliseconds the sound takes to reach the speakers, so that every
 instrument lands together.
@@ -88,10 +88,11 @@ the last turns it off.
 ![An instrument's settings, playing through
 FluidSynth](screenshots/instrument_editor.svg)
 
-The editor shows the instrument's Name and how its steps' velocities play, its
-Role, Kind and Engine, then seven tabs: MIDI, Oscillators, Envelopes, Modulators,
-Filter, FX and Matrix. The MIDI tab is dim unless the Kind is MIDI, and the
-others unless it is Built-in; a new instrument is off. `Tab` goes to the row of
+The editor shows the instrument's Name and how its steps' velocities play,
+then its tabs. The first, Engine, chooses what plays the instrument and holds
+what that engine plays by; a LlamaSynth instrument has seven more after it,
+Oscillators, Envelopes, Modulators, Filter, Amp, FX and Mod Matrix, and every
+other engine has the Engine tab alone. A new instrument is off. `Tab` goes to the row of
 tabs and back, and Left and Right choose a tab.
 
 | Setting | What it does |
@@ -100,15 +101,14 @@ tabs and back, and Left and Right choose a tab.
 | Default velocity | The velocity a step with none typed plays at on the instrument's tracks, 1 to 127, 127 unless set. A track's own Default velocity wins. An instrument that sounds harsh at full velocity is set once here. |
 | Accent | What a step with its Accent on adds to its velocity on the instrument's tracks, 0 to 127, `+0` unless set. Each track's own Accent is added to it. See [Tracks](TRACKS.md). |
 | Velocity | How loud every clip of the instrument's tracks plays, as a percentage, from 0% to 200%, 100% unless set, stacking with each track's, scene's and clip's. An instrument that is too loud beside the others is set once here. |
-| Role | Normal or Percussion, chosen when the instrument is made and never changed: a percussion instrument plays on drum tracks and offers the drum engines. |
-| Kind | Off, MIDI or Built-in: MIDI plays through its Device; an instrument off or built in keeps its Device for later and plays nothing through it. |
-| Engine | A built-in instrument's preset of parts, from its Role's engines; choosing one fills every part. See Built-in Instruments above. |
-| MIDI: Device | The MIDI output port, chosen with `ENTER` from `(none)`, then `*FluidSynth`, then the ports this computer has now, sorted. A port the set names that has disconnected is still offered, so that the set opens without the port and keeps it. `Bksp` sets none. |
-| MIDI: Channel | 1 to 16, as the device numbers them. `[` and `]` step it, and `ENTER` types it. With `*FluidSynth` it shows `(auto)` and can't be changed, since each track gets its own channel. |
-| MIDI: GM sound | One of General MIDI's 128 sounds, or `(none)`. `ENTER` opens a picker of General MIDI's sixteen families with `(none)` above them, where `Space` or `ENTER` on a family opens its eight sounds, `/` searches every sound, and `L` (listen) plays the sound under the cursor as a scale through FluidSynth, or, where FluidSynth is not installed, through the song's Preview instrument in that device's own sound; `[` and `]` step through the sounds by number, and `Bksp` sets none. A drum track always plays channel 10's drum kit. |
-| MIDI: Pan | A FluidSynth instrument's place between the speakers, 0% hard left to 100% hard right, `50% (center)` unless set. `[` and `]` step it, `ENTER` types it, and `Bksp` brings back the middle. |
-| MIDI: Keyswitch lead | How many milliseconds before its note a keyswitch is sent, 0 to 500, `0 ms` unless set. `[` and `]` step it, and `ENTER` types it. See Keyswitches below. |
-| MIDI: Latency | How many milliseconds earlier the instrument's notes are sent, 0 to 500, `0 ms` unless set, for a device that is slow to sound. |
+| Engine | Off, MIDI, FluidSynth or LlamaSynth: MIDI plays through a device's port, FluidSynth through [FluidSynth](FLUIDSYNTH.md), LlamaSynth through the built-in synths; Off plays nothing. Choosing another keeps what the others' fields hold. |
+| Percussion | A toggle, `○` off unless set: a percussion instrument plays on drum tracks, through MechaDrum or FluidSynth's drum kit. It changes only while no track plays the instrument, which the status line names otherwise, and asks first, starting on NO, since the built-in synth settings give way to the new role's first engine. |
+| Device (MIDI) | The MIDI output port, chosen with `ENTER` from `(none)`, then the ports this computer has now, sorted. A port the set names that has disconnected is still offered, so that the set opens without the port and keeps it. `Bksp` sets none. |
+| Channel | 1 to 16, as the device numbers them. `[` and `]` step it, and `ENTER` types it. On FluidSynth it shows `(auto)`, since each track gets its own channel, or `10 (drums)` on a percussion instrument, and can't be changed. |
+| GM sound (FluidSynth) | One of General MIDI's 128 sounds, or `(none)`. `ENTER` opens a picker of General MIDI's sixteen families with `(none)` above them, where `Space` or `ENTER` on a family opens its eight sounds, `/` searches every sound, and `L` (listen) plays the sound under the cursor as a scale through FluidSynth, or, where FluidSynth is not installed, through the song's Preview instrument in that device's own sound; `[` and `]` step through the sounds by number, and `Bksp` sets none. A drum track always plays channel 10's drum kit. |
+| Pan (FluidSynth) | A FluidSynth instrument's place between the speakers, 0% hard left to 100% hard right, `50% (center)` unless set. `[` and `]` step it, `ENTER` types it, and `Bksp` brings back the middle. |
+| Keyswitch lead (MIDI) | How many milliseconds before its note a keyswitch is sent, 0 to 500, `0 ms` unless set. `[` and `]` step it, and `ENTER` types it. See Keyswitches below. |
+| Latency (MIDI) | How many milliseconds earlier the instrument's notes are sent, 0 to 500, `0 ms` unless set, for a device that is slow to sound. |
 | Oscillators, Envelopes, Filter | Each part's Type and its settings, and the Voice. See Built-in Instruments above. |
 | Modulators: LFO 1 to 4 | Whether each is on, its Type (LFO or LFO+), Shape, Speed, Rate, Fade in and Restart. See Built-in Instruments above. |
 | FX: FX 1 and 2 | Each effect and its settings. See Built-in Instruments above. |
