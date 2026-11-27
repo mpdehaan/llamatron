@@ -18,9 +18,11 @@ use crate::effects::bitcrush::Bitcrush;
 use crate::effects::drive::{Curve, Drive};
 use crate::effects::multitap::MultiTap;
 use crate::protocol::values::{number, word};
+use crate::registry::{self, Entry};
 use rmpv::Value;
 
-enum Kind {
+/// What an effect is, as its entry builds it.
+pub enum Kind {
     Bitcrush(Box<Bitcrush>),
     Drive(Box<Drive>),
     Bax(Box<Bax>),
@@ -37,22 +39,53 @@ pub fn compiled(specs: &[Value], rate: f64) -> Vec<Effect> {
     let mut effects = Vec::new();
     for spec in specs {
         let mix = number(spec, "mix", 1.0);
-        let kind = match word(spec, "effect", "none") {
-            "bitcrush" => Kind::Bitcrush(Box::new(Bitcrush::compiled(spec, rate))),
-            "drive" => drive(spec),
-            "multitap" => Kind::MultiTap(Box::new(MultiTap::compiled(spec, rate))),
-            "bax" => Kind::Bax(Box::new(Bax::compiled(spec, rate))),
-            _ => continue,
+        // An empty block, or a name no registry holds, adds no effect.
+        let Some(entry) = registry::find(REGISTRY, word(spec, "effect", EMPTY)) else {
+            continue;
         };
-        effects.push(Effect { kind, mix });
+        effects.push(Effect {
+            kind: (entry.build)(spec, rate),
+            mix,
+        });
     }
     effects
 }
 
-fn drive(spec: &Value) -> Kind {
-    let curve = Curve::named(word(spec, "curve", "soft"));
-    Kind::Drive(Box::new(Drive::new(curve, number(spec, "amount", 0.0))))
-}
+/// How an effect is built: from its spec, at a sample rate.
+pub type Build = fn(&Value, f64) -> Kind;
+
+/// An effect block's name when it holds none.
+pub const EMPTY: &str = "none";
+
+/// Every effect, by the name a spec gives it, the file that holds it, and how it is built.
+pub static REGISTRY: &[Entry<Build>] = &[
+    Entry {
+        name: "bax",
+        file: "bax.rs",
+        build: |spec, rate| Kind::Bax(Box::new(Bax::compiled(spec, rate))),
+    },
+    Entry {
+        name: "bitcrush",
+        file: "bitcrush.rs",
+        build: |spec, rate| Kind::Bitcrush(Box::new(Bitcrush::compiled(spec, rate))),
+    },
+    Entry {
+        name: "drive",
+        file: "drive.rs",
+        build: |spec, _rate| {
+            let curve = Curve::named(word(spec, "curve", "soft"));
+            Kind::Drive(Box::new(Drive::new(curve, number(spec, "amount", 0.0))))
+        },
+    },
+    Entry {
+        name: "multitap",
+        file: "multitap.rs",
+        build: |spec, rate| Kind::MultiTap(Box::new(MultiTap::compiled(spec, rate))),
+    },
+];
+
+/// The files of the effects' folder that are no effect of their own but a part one uses: MultiTap's Analog device.
+pub const HELPERS: &[&str] = &["bucket_brigade.rs"];
 
 /// What an effect with no memory of its own keeps sounding after its input falls silent: its oversampler's and filters'
 /// settling, in samples.

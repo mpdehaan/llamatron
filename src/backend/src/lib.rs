@@ -17,4 +17,5 @@ pub mod instrument;
 pub mod modulation;
 pub mod oscillators;
 pub mod protocol;
+pub mod registry;
 pub mod sender;
