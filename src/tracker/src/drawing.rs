@@ -47,6 +47,8 @@ impl Style {
     /// Red, as the Python's dialogs come out of Rich: by the terminal's palette number, which is its red.
     pub const DELETE_TITLE: &'static str = "bold color(1)";
     pub const DETAILS_DIVIDER: &'static str = "blue";
+    /// Arrange's frame of its headings and the line between its main and drum tracks.
+    pub const GRID_FRAME: &'static str = "green";
     pub const PLAYING_SCENE: &'static str = "blue";
     pub const DETAILS_LOCKED: &'static str = "green";
     pub const DETAILS_STOCK: &'static str = "red";
@@ -60,9 +62,6 @@ impl BoxCharacters {
     pub const HEAVY_RULE: &'static str = "━";
     pub const RULE: &'static str = "─";
     pub const BAR: &'static str = "│";
-    /// Where the heavy bar between Arrange's melodic tracks and its drum tracks crosses a rule, and where a rule ends on it.
-    pub const HEAVY_CROSS: &'static str = "╂";
-    pub const HEAVY_RIGHT_TEE: &'static str = "┨";
     pub const DOUBLE_BAR: &'static str = "║";
     pub const DOUBLE_TOP_TEE: &'static str = "╥";
     pub const DOUBLE_BOTTOM_TEE: &'static str = "╨";

@@ -22,6 +22,7 @@ pub mod launch;
 pub mod lengths;
 pub mod msgpack;
 pub mod named_edits;
+pub mod new_set;
 pub mod page;
 pub mod patterns;
 pub mod preferences;

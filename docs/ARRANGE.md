@@ -14,26 +14,31 @@ minimal_techno](screenshots/arrange.svg)
 Press `A` on the main screen to open the current song's arrangement. The track
 names run across the top, and the first column holds the scene names, each
 with its repeat count and length. Scenes play from top to bottom. A new song
-starts with `track-1` and `scene-1`, and new tracks and scenes are numbered
-the same way until they are renamed on their own pages.
+starts with a main track, `main1`, a drum track, `drum1`, and `scene-1`; new
+main tracks are numbered `main2`, `main3` and on, new drum tracks `drum2`,
+`drum3` and on, and new scenes as `scene-2`, until they are renamed on their
+own pages.
 
-The melodic tracks come first, then a heavy line, then the drum tracks, each
-group in the order the set keeps them. `I` (insert) adds a scene after the
+The main tracks come first, then a green double line, then the drum tracks,
+each group in the order the set keeps them. `I` (insert) adds a scene after the
 scene under the cursor, or a track of the cursor's track's kind after it, so
 the grid draws no `+` row or column of its own and leaves the room to the
-clips. A group with no tracks yet, such as a new song's drums, shows a `+`
-in its column's heading, where `I` makes its first track; once it has one
-the `+` goes. Each new track comes with an instrument of its own, named after
+clips. A song keeps at least one main track and one drum track, so each
+kind always has a track to insert after; a set saved before this, with no
+tracks of one kind, shows a `+` in that group's heading, where `I` makes its
+first track. Each new track comes with an instrument of its own, named after
 it, which plays through what the File/Global page's Track Inst. Default
-chooses: FluidSynth's grand piano or its drums, one of the built-in synths,
-or the first MIDI device found; a copied track gets a copy of its
+chooses: Sampled (FluidSynth)'s grand piano or its drums, LlamaSynth's Basic
+or MechaDrum, or the first MIDI device found; a copied track gets a copy of its
 instrument, so that the two can be changed apart. A track is a melodic track or a drum track from when it is
 made, and never changes, so a clip on a drum track only ever plays a drum
 pattern: choosing a pattern for an empty cell offers only patterns of its
 track's kind, and a new pattern made there is already the right kind.
 
 Light blue lines run between the tracks and under each scene, so that the grid
-is easy to follow. A double-lined box inside a cell marks whatever the cursor
+is easy to follow, and green lines frame the headings: the double line right
+of the scene names, the line under the track names, and the double line
+between the main and the drum tracks. A double-lined box inside a cell marks whatever the cursor
 is on: a clip, a scene, a track name, or an empty group's `+`. Under the
 track names a `+` column holds nothing, so the arrows pass over it. The arrows move the box around the grid. When there
 are more tracks or scenes than fit, the clips scroll while the track names and
@@ -56,7 +61,7 @@ The keys depend on what is under the cursor:
 | An empty group's `+` | `I` | Make the group's first track |
 | A track's name | `C` | Copy the track and its clips to its right, asking whether the copy plays the same patterns or copies of them |
 | A track's name | `T` | Cut the track: `P` on another track of its kind pastes it after that track, and `ESC` lets go |
-| A track's name | `Bksp` | Delete the track and its clips, after asking; a group left with no tracks shows its `+` |
+| A track's name | `Bksp` | Delete the track and its clips, after asking; the last main track and the last drum track can't be deleted |
 | A scene's name | `ENTER` | Open the Scene page, as [Scenes](SCENES.md) describes |
 | A scene's row | `I` | Insert a blank scene after it |
 | A scene's row | `C` | Copy the scene and all its clips below it, asking whether the copy plays the same patterns or copies of them |

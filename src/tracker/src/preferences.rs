@@ -86,7 +86,7 @@ impl Preferences {
     /// Choose what a new track's own instrument plays through, and keep it in the config file, if there is one.
     pub fn set_track_instrument_default(&mut self, chosen: TrackInstrumentDefault) -> Result<(), String> {
         self.track_instrument_default = Some(chosen);
-        self.write()
+        self.save()
     }
 
     /// The settings as data, as the config file holds them.
@@ -98,8 +98,9 @@ impl Preferences {
         Data::Map(pairs)
     }
 
-    /// Write the config file, making its folder where it is missing; nothing for settings kept in memory alone.
-    fn write(&self) -> Result<(), String> {
+    /// Write the config file, making its folder, `~/.llamatron`, where it is missing; nothing for settings kept in memory
+    /// alone.
+    pub fn save(&self) -> Result<(), String> {
         let Some(path) = &self.path else { return Ok(()) };
         if let Some(folder) = path.parent() {
             std::fs::create_dir_all(folder).map_err(|error| format!("{}: {error}", folder.display()))?;

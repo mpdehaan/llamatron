@@ -74,6 +74,17 @@ pub fn copy_name<S: AsRef<str>>(name: &str, taken: &[S]) -> String {
 
 /// The name for a new thing of a kind: its word, a dash and one more than the highest number any name of that word ends in.
 pub fn new_name<S: AsRef<str>>(word: &str, taken: &[S]) -> String {
+    numbered_after(word, taken, names::MSG_NUMBERED_NAME)
+}
+
+/// The name for a new track of a kind: its word and one more than the highest number any name of that word ends in, with
+/// no joiner between, as main1 and drum2.
+pub fn new_track_name<S: AsRef<str>>(word: &str, taken: &[S]) -> String {
+    numbered_after(word, taken, names::MSG_JOINED_NUMBERED_NAME)
+}
+
+/// A word and one more than the highest number any taken name of that word ends in, laid out by a template.
+fn numbered_after<S: AsRef<str>>(word: &str, taken: &[S], template: &str) -> String {
     let mut highest = FIRST_NEW_NUMBER - 1;
     for other in taken {
         if let Some((base, _, number)) = split_trailing_number(other.as_ref()) {
@@ -82,7 +93,7 @@ pub fn new_name<S: AsRef<str>>(word: &str, taken: &[S]) -> String {
             }
         }
     }
-    named(names::MSG_NUMBERED_NAME, &[("base", word.into()), ("number", (highest + 1).into())])
+    named(template, &[("base", word.into()), ("number", (highest + 1).into())])
 }
 
 /// What names sort by everywhere: the words ignoring capitals, then the number a name ends in read as a number.

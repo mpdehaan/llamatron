@@ -205,6 +205,13 @@ impl FilePage {
     }
 }
 
+/// Write the config file, refusing with why where it cannot be written.
+fn save_config(app: &mut App) {
+    if let Err(problem) = app.preferences.save() {
+        app.refuse(&problem);
+    }
+}
+
 /// A choice's names in its picker, where they aren't the choices themselves.
 fn set_names(field: &mut Field, names: Vec<String>) {
     if let crate::forms::nodes::Kind::Choice { names: held, .. } = &mut field.kind {
@@ -332,12 +339,15 @@ impl Form for FilePage {
             }
             return;
         }
+        // Saving from this page writes the config file too, beside the set, as it holds the Global tab's settings.
         if id == SAVE && edit == Edit::Enter {
             crate::everywhere::save(app, None);
+            save_config(app);
             return;
         }
         if id == SAVE_AS && edit == Edit::Enter {
             crate::everywhere::save_as(app, None);
+            save_config(app);
             return;
         }
         if id == OPEN && edit == Edit::Enter {
@@ -383,7 +393,9 @@ mod tests {
     }
 
     fn new_set() -> App {
-        App::new(crate::document::Document::new_set().expect("a new set"))
+        let unconfigured = crate::track_instrument::new_track_instrument(TrackInstrumentDefault::FluidSynth, false, false, None);
+        let drums = crate::track_instrument::new_track_instrument(TrackInstrumentDefault::FluidSynth, true, false, None);
+        App::new(crate::document::Document::new_set(unconfigured, drums).expect("a new set"))
     }
 
     /// The page has two tabs: File, the set's settings in General and Defaults, and Global, Track Inst. Default.

@@ -648,13 +648,11 @@ mod tests {
     /// Listening to an instrument plays its preview pattern: the copy's one scene holds the preview's clip.
     #[test]
     fn an_instrument_preview_holds_its_clip() {
-        let text = format!(
-            "{}\ninstruments:\n  - {{ name: fish, kind: built_in, role: normal, sound: {{ engine: oh3 }} }}\n",
-            crate::generated::tables::NEW_SET
-        );
-        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text, None).expect("the scenario's set is valid");
-        let document = Document::new(setlist, None);
-        let (copy, track, _) = instrument_copy(&document, "fish").expect("the instrument is in the set");
+        use crate::preferences::TrackInstrumentDefault;
+        let synth = |drum: bool| crate::track_instrument::new_track_instrument(TrackInstrumentDefault::BuiltIn, drum, false, None);
+        let document = Document::new_set(synth(false), synth(true)).expect("a new set");
+        let fish = "main1";
+        let (copy, track, _) = instrument_copy(&document, fish).expect("the instrument is in the set");
         let scene = &copy.song().scenes()[PREVIEW_SCENE];
         assert!(scene.get_clip_slot(&track).is_some());
     }

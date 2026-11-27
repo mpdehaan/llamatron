@@ -137,9 +137,16 @@ fn ask_new_song(app: &mut App) {
         let text = typed.trim();
         if text.is_empty() {
             app.refuse(llamatron_strings::errors::ERR_EMPTY_NAME);
-        } else if llamatron_model::objects::naming::is_taken(text, &taken) {
+            return;
+        }
+        if llamatron_model::objects::naming::is_taken(text, &taken) {
             app.refuse(&llamatron_strings::named(llamatron_strings::errors::ERR_NAME_IN_USE, &[("name", text.into())]));
-        } else if let Err(problem) = app.document.add_song(text) {
+            return;
+        }
+        // The song's main and drum tracks each get an instrument of their own, as a track made on Arrange does.
+        let instrument = |drum: bool| crate::track_instrument::for_new_track(&app.preferences, app.fluidsynth_installed, drum);
+        let (main, drum) = (instrument(false), instrument(true));
+        if let Err(problem) = app.document.add_song(text, main, drum) {
             app.refuse(&problem);
         }
     }));

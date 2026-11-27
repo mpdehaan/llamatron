@@ -3,6 +3,9 @@
 Wanted changes to how the tracker looks and is used: what each is, never its status or order (those are in
 `.claude/planning/QUEUE.md`). An idea leaves this file once built, and a rule it makes goes into `.claude/rules/UX.md`.
 
+- **New names without a dash**: every kind of object the tracker names counts its new ones with no dash, as tracks do
+  (`main1`, `drum1`): `pattern1`, `scene1`, `scale1` and the rest, to save room on screen; the naming rule, the new set
+  and every place a name is made follow.
 - **The open circle**: Everywhere a toggle is shown, an unset one shows `○` where today it is blank, a set one `●`, on every
   page, the pattern editor's toggle rows and the tabs' marks included; built with the tab box.
 - **A line at the foot of every major editor** saying what the tab or section under the cursor does.

@@ -26,6 +26,18 @@ const KICK: &str = "kick";
 const GRAND_PIANO: i128 = 1;
 const FIRST_CHANNEL: i128 = 1;
 
+/// The instrument a new track of a kind gets of its own, by the config file's Track Inst. Default: the first MIDI device
+/// found is looked for only where it plays through one.
+pub fn for_new_track(preferences: &crate::preferences::Preferences, fluidsynth_installed: bool, drum: bool) -> Data {
+    let default = preferences.track_instrument_default(fluidsynth_installed);
+    let first_device = if default == TrackInstrumentDefault::ExternalMidi {
+        crate::realtime::backend::device_port_names().into_iter().next()
+    } else {
+        None
+    };
+    new_track_instrument(default, drum, fluidsynth_installed, first_device.as_deref())
+}
+
 /// The new instrument's data: its role by the track's kind, and what it plays through by Track Inst. Default, given
 /// whether FluidSynth is installed and the first MIDI device found, if any.
 pub fn new_track_instrument(default: TrackInstrumentDefault, drum: bool, fluidsynth_installed: bool, first_device: Option<&str>) -> Data {

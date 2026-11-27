@@ -29,18 +29,23 @@ const LIGHTS: std::time::Duration = std::time::Duration::from_millis(100);
 /// Open the tracker on a set's file, or on a new set where none is named, do what the launch asks, and run it until it
 /// quits.
 pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
+    let preferences = crate::preferences::Preferences::config_path()
+        .map(|config| crate::preferences::Preferences::read(&config))
+        .unwrap_or_default();
+    let fluidsynth_installed = crate::wav::fluidsynth_installed();
     let document = match path {
         Some(path) => Document::open(path).map_err(|error| format!("{}: {error}", path.display()))?,
-        None => Document::new_set()?,
+        None => {
+            let instrument = |drum: bool| crate::track_instrument::for_new_track(&preferences, fluidsynth_installed, drum);
+            Document::new_set(instrument(false), instrument(true))?
+        }
     };
     if launch.for_recording && !launch.interactive {
         refuse_endless(&document)?;
     }
     let mut tracker = Tracker::new(document);
-    tracker.app.fluidsynth_installed = crate::wav::fluidsynth_installed();
-    if let Some(config) = crate::preferences::Preferences::config_path() {
-        tracker.app.preferences = crate::preferences::Preferences::read(&config);
-    }
+    tracker.app.fluidsynth_installed = fluidsynth_installed;
+    tracker.app.preferences = preferences;
     start_terminal()?;
     tracker.app.session.recording = launch.for_recording;
     // A recording opens on its title, and opens Arrange when the launch says to start; any other launch starts at once.

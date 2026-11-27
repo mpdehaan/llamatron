@@ -102,9 +102,14 @@ impl ArrangePage {
         new_name(names::MSG_NEW_SCENE_WORD, &taken)
     }
 
-    /// The name for a new track, numbered as a new scene is, which its settings page renames.
-    fn new_track_name(app: &App) -> String {
-        new_name(names::MSG_NEW_TRACK_WORD, &Self::tracks(app))
+    /// The name for a new track of a kind, main1 or drum1 and counting up, which its settings page renames.
+    fn new_track_name(app: &App, drum: bool) -> String {
+        let word = if drum {
+            names::MSG_NEW_DRUM_TRACK_WORD
+        } else {
+            names::MSG_NEW_MAIN_TRACK_WORD
+        };
+        llamatron_model::objects::naming::new_track_name(word, &Self::tracks(app))
     }
 
     /// Insert a scene after the cursor's, and move onto its name.
@@ -115,19 +120,6 @@ impl ArrangePage {
             self.row.set(index as i64);
             self.column.set(SCENE_COLUMN);
         }
-    }
-
-    /// The instrument a new track of a kind gets of its own, by the config file's Track Inst. Default: the first MIDI device
-    /// found is looked for only where it plays through one.
-    fn new_track_instrument(app: &App, drum: bool) -> Data {
-        use crate::preferences::TrackInstrumentDefault;
-        let default = app.preferences.track_instrument_default(app.fluidsynth_installed);
-        let first_device = if default == TrackInstrumentDefault::ExternalMidi {
-            crate::realtime::backend::device_port_names().into_iter().next()
-        } else {
-            None
-        };
-        crate::track_instrument::new_track_instrument(default, drum, app.fluidsynth_installed, first_device.as_deref())
     }
 
     /// Insert a track of the cursor's track's kind after it, or a group's first track from its +, with an instrument of its
@@ -141,8 +133,8 @@ impl ArrangePage {
             }
             (None, None) => return,
         };
-        let name = Self::new_track_name(app);
-        let instrument = Self::new_track_instrument(app, drum);
+        let name = Self::new_track_name(app, drum);
+        let instrument = crate::track_instrument::for_new_track(&app.preferences, app.fluidsynth_installed, drum);
         let added = app.document.add_track_with_instrument(&name, place, drum, instrument);
         if let Err(problem) = added {
             app.refuse(&problem);
@@ -240,9 +232,16 @@ impl ArrangePage {
     }
 
     /// Delete the cursor's track after asking, saying how many clips go with it and how many clips grabbing from it stop;
-    /// a group left with no tracks shows its +.
+    /// never the last main track or the last drum track.
     fn delete_track(&self, app: &mut App) {
         let Some(name) = self.cursor_track(app) else { return };
+        // A song keeps a main track and a drum track, so that each kind always has a track to insert after.
+        let drum = Self::is_drum_track(app, &name);
+        if Self::tracks(app).iter().filter(|track| Self::is_drum_track(app, track) == drum).count() <= 1 {
+            let lines = vec![errors::ERR_LAST_TRACK_OF_KIND_SHOWN.to_string()];
+            app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_DELETE_TITLE, lines)));
+            return;
+        }
         let song = app.document.song();
         let clips = song.scenes().iter().filter(|scene| scene.get_clip_slot(&name).is_some()).count();
         let grabbing = song

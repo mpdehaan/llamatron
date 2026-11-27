@@ -445,7 +445,3 @@ pub static SCALE_CATEGORIES: &[(&str, &[&str])] = &[
     ("East Asia", &["hirajoshi", "in_sen", "iwato", "kumoi", "yo", "ryukyu"]),
     ("India", &["todi", "marwa", "purvi"]),
 ];
-
-/// A new set as its file holds it: one empty song, a C Major scale that can be deleted, and every setting a saved file
-/// writes; the tracker opens on it when no file is named.
-pub const NEW_SET: &str = "step_size: 1/16\ndefault_octave: 5\ndefault_drum_octave: 3\noctave_labels: live\n\nscales:\n  - { name: scale-1, root: C, type: major }\n\npatterns:\n  - name: pattern-1\n    steps: 16\n    group: track-1\n    degree: [1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~]\n\nsongs:\n  - name: untitled\n    tempo: 120\n    scale: scale-1\n\n    tracks:\n      - { name: track-1 }\n\n    scenes:\n      - name: scene-1\n        clips:\n          - { track: track-1, pattern: pattern-1 }\n";

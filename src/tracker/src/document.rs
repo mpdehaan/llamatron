@@ -51,10 +51,10 @@ impl Document {
         }
     }
 
-    /// A new set, as the tracker opens on when no file is named: one empty song and a C Major scale, saved nowhere yet.
-    pub fn new_set() -> Result<Document, String> {
-        let setlist = Setlist::read_text(crate::generated::tables::NEW_SET, None).map_err(|error| error.message)?;
-        Ok(Document::new(setlist, None))
+    /// A new set, as the tracker opens on when no file is named, saved nowhere yet: a song of a main track and a drum
+    /// track, each playing the instrument given (`new_set.rs`).
+    pub fn new_set(main_instrument: Data, drum_instrument: Data) -> Result<Document, String> {
+        Ok(Document::new(crate::new_set::new_set(main_instrument, drum_instrument)?, None))
     }
 
     /// The text saving writes: the set with the program's version.

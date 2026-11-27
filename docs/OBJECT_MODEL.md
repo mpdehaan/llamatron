@@ -44,7 +44,7 @@ Save As follow.
 
 | Setting | What it does |
 | --- | --- |
-| Track Inst. Default | What the instrument a new track gets plays through: FluidSynth, offered where FluidSynth is installed; BuiltIn, one of llamatron's built-in synths; or External MIDI, a device connected to the computer. FluidSynth where it is installed, else BuiltIn, until chosen. `ENTER` chooses. |
+| Track Inst. Default | What the instrument a new track gets plays through: Sampled (FluidSynth), offered where FluidSynth is installed; LlamaSynth, one of llamatron's built-in synths; or External MIDI, a device connected to the computer. Sampled (FluidSynth) where FluidSynth is installed, else LlamaSynth, until chosen. `ENTER` chooses. |
 
 Below the settings, two buttons save and open without remembering a key: `↓`
 from the last setting reaches them, `←` and `→` choose, and `ENTER` on

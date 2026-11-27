@@ -275,7 +275,7 @@ impl ArrangePage {
         app.document.song().shown_tracks().into_iter().map(|(name, _)| name.clone()).collect()
     }
 
-    /// What each column after the scene names holds: the melodic tracks, then beyond the heavy line the drum tracks; a
+    /// What each column after the scene names holds: the melodic tracks, then beyond the double line the drum tracks; a
     /// group with no tracks holds a + in their place, where I makes its first track.
     fn places(app: &App) -> Vec<Place> {
         let melodic = app.document.song().melodic_count();
@@ -310,7 +310,7 @@ impl ArrangePage {
         Self::places(app).iter().position(|place| *place == Place::Track(track.to_string()))
     }
 
-    /// The first column of the drum group, at the heavy line's right: after the melodic tracks, or after the melodic +.
+    /// The first column of the drum group, at the double line's right: after the main tracks, or after the melodic +.
     fn drum_start(app: &App) -> usize {
         app.document.song().melodic_count().max(1)
     }
@@ -967,23 +967,25 @@ impl ArrangePage {
         Piece::Dividers {
             double_at: SCENE_WIDTH,
             columns: (first + 1..=last).map(|place| self.cell_column(app, layout, place)).collect(),
-            heavy_at: self.heavy_column(app, layout, first, last),
+            drums_at: self.drums_column(app, layout, first, last),
             faint: false,
         }
     }
 
-    fn grid_rule(&self, app: &App, layout: Option<&DetailsLayout>, first: usize, last: usize) -> Piece {
+    /// The rule under the headings, in the frame's green, or under a scene.
+    fn grid_rule(&self, app: &App, layout: Option<&DetailsLayout>, first: usize, last: usize, framing: bool) -> Piece {
         Piece::Rule {
             end: self.cell_column(app, layout, last),
             double_at: SCENE_WIDTH,
             crosses: (first + 1..last).map(|place| self.cell_column(app, layout, place)).collect(),
-            heavy_at: self.heavy_column(app, layout, first, last),
+            drums_at: self.drums_column(app, layout, first, last),
+            framing,
         }
     }
 
-    /// Where the heavy line between the melodic tracks and the drum tracks falls, the left of the first drum column, when
-    /// it is on screen.
-    fn heavy_column(&self, app: &App, layout: Option<&DetailsLayout>, first: usize, last: usize) -> Option<usize> {
+    /// Where the double line between the main tracks and the drum tracks falls, the left of the first drum column, when it
+    /// is on screen.
+    fn drums_column(&self, app: &App, layout: Option<&DetailsLayout>, first: usize, last: usize) -> Option<usize> {
         let place = Self::drum_start(app);
         (first < place && place <= last).then(|| self.cell_column(app, layout, place))
     }
@@ -1096,7 +1098,7 @@ impl ArrangePage {
                 column: self.cell_column(app, layout, last),
             });
         }
-        lines[count - 1].push(self.grid_rule(app, layout, first, last));
+        lines[count - 1].push(self.grid_rule(app, layout, first, last, true));
     }
 
     fn draw_scene(&self, app: &App, layout: Option<&DetailsLayout>, lengths: &Lengths, lines: &mut [Vec<Piece>], index: usize, window: (usize, usize)) {
@@ -1107,7 +1109,7 @@ impl ArrangePage {
         for line in lines[..count - 1].iter_mut() {
             line.push(dividers.clone());
         }
-        lines[count - 1].push(self.grid_rule(app, layout, first, last));
+        lines[count - 1].push(self.grid_rule(app, layout, first, last, false));
         lines[1].push(Piece::Text {
             column: SCENE_LABEL_COLUMN,
             text: self.scene_label(app, lengths, index),
@@ -1686,7 +1688,7 @@ mod tests {
     /// Arrange shows the melodic tracks first and the drum tracks after them, each in the file's order, which stays as it
     /// is, with no + after either group; a group with no tracks shows a + alone.
     #[test]
-    fn melodic_tracks_show_first_and_drums_after_the_heavy_line() {
+    fn main_tracks_show_first_and_drums_after_the_double_line() {
         let (app, _) = drums_first();
         let track = |name: &str| Place::Track(name.to_string());
         assert_eq!(ArrangePage::places(&app), vec![track("lead"), track("bass"), track("kick")]);
@@ -1769,7 +1771,7 @@ mod tests {
         assert_eq!(instrument.get(InstrumentSetting::ROLE), Some(&Data::text("percussion")));
         // When the next track's name is an instrument's already, its instrument counts up from the name.
         let taken = ArrangePage::tracks(&app);
-        let next = llamatron_model::objects::naming::new_name(llamatron_strings::names::MSG_NEW_TRACK_WORD, &taken);
+        let next = llamatron_model::objects::naming::new_track_name(llamatron_strings::names::MSG_NEW_MAIN_TRACK_WORD, &taken);
         let instruments = llamatron_model::schema::generated::file_format::Section::INSTRUMENTS;
         let (held, _) = instrument_of(&app, &drum);
         app.document.rename_named(instruments, &held, &next).expect("the rename");

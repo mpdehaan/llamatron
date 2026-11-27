@@ -25,6 +25,10 @@ pub const MSG_NEW_PATTERN_WORD: &str = "pattern";
 pub const MSG_NEW_GROUP_WORD: &str = "group";
 pub const MSG_NEW_SCENE_WORD: &str = "scene";
 pub const MSG_NEW_TRACK_WORD: &str = "track";
+/// The words a new main (melodic) track and a new drum track are named by, numbered straight after: main1, drum1.
+pub const MSG_NEW_MAIN_TRACK_WORD: &str = "main";
+pub const MSG_NEW_DRUM_TRACK_WORD: &str = "drum";
+pub const MSG_JOINED_NUMBERED_NAME: &str = "{base}{number}";
 pub const MSG_NEW_GROOVE_WORD: &str = "groove";
 pub const MSG_NEW_RIFF_WORD: &str = "riff";
 pub const MSG_NEW_INSTRUMENT_WORD: &str = "instrument";

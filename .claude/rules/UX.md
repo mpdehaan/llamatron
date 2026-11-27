@@ -62,8 +62,10 @@ changes it too. A new thing looks like the existing thing it is most like.
   until `P` pastes it: a scene after the scene under the cursor, a track after the track, only among its kind, a clip into an
   empty cell of its pattern's kind, as one undo step; ESC lets go of the cut.
 - **Arrange adds with `I`**, which inserts a scene or a track of the cursor's kind after the cursor; Arrange has no `A` and
-  draws no `+` row or column, save an empty group's `+`, where `I` makes its first track. The melodic tracks come first,
-  then a heavy line, then the drum tracks, each in the file's order; a track's kind never changes.
+  draws no `+` row or column, save the `+` of a group an older set has no tracks of, where `I` makes its first track. The
+  main tracks come first, then a green double line, then the drum tracks, each in the file's order; a track's kind never
+  changes, and a song keeps at least one of each. Green frames the headings: the scene names' double line, the rule
+  under the track names and the double line between the groups; the lines between clips stay light blue.
 - OK, YES, NO, CANCEL, ENTER and ESC are written in capitals everywhere: buttons, legends, help, messages, documents.
 - **ESC closes the topmost thing**, one layer at a time, and never quits: a dialog, an Inset Window, a locked cell, then the page.
   In the song wizard, outside a part's settings, ESC always asks before closing, starting on NO.
@@ -137,6 +139,8 @@ All made by the model's naming (`src/model/src/objects/naming.rs`):
 - Lowercase, underscores for spaces (`c_major`), except a note's name in a scale's name (`C_major`, `F#_harmonic_minor`).
 - A new thing is its kind's word, a dash and one more than the highest number in use: `pattern-1`, `scene-1`, `scale-1` (a scale is
   never named after its notes, except by an import). A blank pattern made on Arrange takes its track's name: `lead-1`.
+- A new track is named `main` or `drum` and one more than the highest number of that word in use, with no dash: `main1`,
+  `drum2`.
 - A copy or clash counts: `foo` gives `foo-2` (never `foo-1`); a name ending in a number counts up, keeping its joiner (`bass-2` to
   `bass-3`, `name1` to `name2`, `bass 2` to `bass 3`); never a number after a number.
 - Names compare without regard to case and are kept as typed; a file holding both still opens. Taken means anything it could be
@@ -146,7 +150,7 @@ All made by the model's naming (`src/model/src/objects/naming.rs`):
 
 - A dialog asks one thing; ENTER answers, ESC cancels, nothing changes until answered.
 - Deleting anything in use is refused with up to five uses listed; otherwise it confirms. Deleting a scene, track or clip always
-  confirms; the last scene of a song is refused in a dialog, and any track may go. Saving and quitting with unsaved changes ask first;
+  confirms; the last scene of a song, and its last main track and last drum track, are refused in a dialog. Saving and quitting with unsaved changes ask first;
   nothing is saved or exported unasked.
 - Opening a file never changes it. A file with values out of range opens only after a dialog lists what each becomes, and YES
   opens it unsaved. The command line refuses to export such a file without `--force`.

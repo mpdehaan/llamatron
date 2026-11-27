@@ -634,7 +634,7 @@ The tracker draws with bold, dim, reverse video, box characters and `▶`. Colou
    the shapes change too.
 2. The title card (`interface/tracker/components/title_card.py`), all blue; the scrolling `DEMO:` name light orange
    (`interface/tracker/components/scroll_text.py`).
-3. Arrange: the grid's lines light blue, always (`Style.DETAILS_DIVIDER`); in the details view (`D`) chains and generators green (`Style.DETAILS_GENERATOR`), a
+3. Arrange: the grid's lines light blue, always (`Style.DETAILS_DIVIDER`), and its frame green (`Style::GRID_FRAME`): the scene names' double line, the rule under the track names and the double line between the main and drum tracks; in the details view (`D`) chains and generators green (`Style.DETAILS_GENERATOR`), a
    Tab-locked cell's box green (`Style.DETAILS_LOCKED`), `stock` red (`Style.DETAILS_STOCK`).
 4. Scene View: each track's notes a colour of its own, two in a shared cell, its legend in the tracks' colours, its Inset Window
    purple for patterns as written and the splash's blue as played.

@@ -467,22 +467,47 @@ impl Document {
     }
 
     /// Add a song with its first track and scene at the end of the set, in the set's first scale, and make it current.
-    pub fn add_song(&mut self, name: &str) -> Result<(), String> {
+    /// Add a song of a main track, main1, and a drum track, drum1, each with an instrument of its own named after it or
+    /// counted up where taken, and one scene, and make it current, as one step to undo.
+    pub fn add_song(&mut self, name: &str, main_instrument: Data, drum_instrument: Data) -> Result<(), String> {
+        use llamatron_model::schema::generated::file_format::TrackSetting;
         let scale = self.names_of("scales").first().cloned();
         let mut song = vec![(Data::text("tempo"), Data::Whole(DEFAULT_TEMPO as i128))];
         if let Some(scale) = scale {
             song.push((Data::text("scale"), Data::text(&scale)));
         }
-        let track = named(names::MSG_NEW_TRACK_NAME, &[("number", FIRST_NUMBER.into())]);
+        let first_of = |word: &str| named(names::MSG_JOINED_NUMBERED_NAME, &[("base", word.into()), ("number", FIRST_NUMBER.into())]);
+        let (main, drum) = (first_of(names::MSG_NEW_MAIN_TRACK_WORD), first_of(names::MSG_NEW_DRUM_TRACK_WORD));
+        let mut taken = self.names_of(INSTRUMENTS);
+        let main_instrument_name = llamatron_model::objects::naming::unique_name(&main, &taken);
+        taken.push(main_instrument_name.clone());
+        let drum_instrument_name = llamatron_model::objects::naming::unique_name(&drum, &taken);
+        let track = |instrument: &str, drum: bool| {
+            let mut settings = vec![(Data::text(TrackSetting::INSTRUMENT), Data::text(instrument))];
+            if drum {
+                settings.insert(0, (Data::text(TrackSetting::DRUM), Data::Bool(true)));
+            }
+            Data::Map(settings)
+        };
         let scene = named(names::MSG_NEW_SCENE_NAME, &[("number", FIRST_NUMBER.into())]);
         song.push((Data::text("draws"), Data::Map(Vec::new())));
-        song.push((Data::text(TRACKS), Data::Map(vec![(Data::text(&track), Data::Map(Vec::new()))])));
+        song.push((
+            Data::text(TRACKS),
+            Data::Map(vec![
+                (Data::text(&main), track(&main_instrument_name, false)),
+                (Data::text(&drum), track(&drum_instrument_name, true)),
+            ]),
+        ));
         song.push((
             Data::text("scenes"),
             Data::List(vec![Data::Map(vec![(Data::text("name"), Data::text(&scene))])]),
         ));
         let song = Data::Map(song);
-        self.edit_data(|data| with_item(data, SONGS, name, song))?;
+        self.edit_data(|data| {
+            let with_main = with_item(data, INSTRUMENTS, &main_instrument_name, main_instrument);
+            let with_drum = with_item(&with_main, INSTRUMENTS, &drum_instrument_name, drum_instrument);
+            with_item(&with_drum, SONGS, name, song)
+        })?;
         self.select_song(name);
         Ok(())
     }

@@ -173,6 +173,11 @@ impl Setlist {
     /// part checked in the order the file is read.
     pub fn read_text(text: &str, file_stem: Option<String>) -> Result<Setlist, SongFileError> {
         let data = crate::file::data::load(text).map_err(|problem| SongFileError::plain(problem.0))?;
+        Setlist::read_data(data, file_stem)
+    }
+
+    /// A set from data laid out as a set file is, as a file's text reads to: migrated, then laid out as the objects are.
+    pub fn read_data(data: Data, file_stem: Option<String>) -> Result<Setlist, SongFileError> {
         let (moved, _) = migrated(data, file_stem);
         let laid_out = as_object_layout(&moved).map_err(|problem| SongFileError::at(&problem.section, problem.problem))?;
         Setlist::from_data(&laid_out)

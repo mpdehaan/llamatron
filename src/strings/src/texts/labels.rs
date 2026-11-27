@@ -195,7 +195,7 @@ pub const MSG_GLOBAL_TAB: &str = "Global";
 pub const MSG_GENERAL_HEADING: &str = "General";
 pub const MSG_DEFAULTS_HEADING: &str = "Defaults";
 pub const MSG_TRACK_INSTRUMENT_DEFAULT_LABEL: &str = "Track Inst. Default";
-pub static MSG_TRACK_INSTRUMENT_DEFAULT_NAMES: &[(&str, &str)] = &[("fluidsynth", "FluidSynth"), ("built_in", "BuiltIn"), ("external_midi", "External MIDI")];
+pub static MSG_TRACK_INSTRUMENT_DEFAULT_NAMES: &[(&str, &str)] = &[("fluidsynth", "Sampled (FluidSynth)"), ("built_in", "LlamaSynth"), ("external_midi", "External MIDI")];
 pub const MSG_HIDE_VISUALIZERS_LABEL: &str = "Hide Visualizers";
 pub const MSG_PROTECTED_LABEL: &str = "Protected";
 pub static MSG_OCTAVE_LABEL_NAMES: &[(&str, &str)] = &[("live", "Live (middle C is C3)"), ("llamatron", "llamatron (middle C is C5)")];
@@ -406,7 +406,7 @@ pub const MSG_LATENCY_LABEL: &str = "Latency";
 pub const MSG_ENGINE_TAB: &str = "Engine";
 pub const MSG_PERCUSSION_LABEL: &str = "Percussion";
 /// The engines an instrument may be played by, as the Engine tab shows them.
-pub static MSG_ENGINE_KIND_NAMES: &[(&str, &str)] = &[("off", "Off"), ("midi", "MIDI"), ("fluidsynth", "FluidSynth"), ("llamasynth", "LlamaSynth")];
+pub static MSG_ENGINE_KIND_NAMES: &[(&str, &str)] = &[("off", "Off"), ("midi", "MIDI"), ("fluidsynth", "Sampled (FluidSynth)"), ("llamasynth", "LlamaSynth")];
 pub const MSG_OSCILLATORS_TAB: &str = "Oscillators";
 pub const MSG_ENVELOPES_TAB: &str = "Envelopes";
 pub const MSG_LFOS_TAB: &str = "Modulators";

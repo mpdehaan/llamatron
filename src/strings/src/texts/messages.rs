@@ -324,7 +324,7 @@ pub const MSG_BUILT_IN_OVERRIDING_CLIP: &str = "{scene} ({track})";
 
 /// The question before an instrument changes between percussion and normal, and what it gives up.
 pub const MSG_CHANGE_PERCUSSION_TITLE: &str = "Change the role of instrument ({name})?";
-pub const MSG_PERCUSSION_REPLACES_SYNTH: &str = "Its built-in synth settings are replaced by the new role's engine.";
+pub const MSG_PERCUSSION_REPLACES_SYNTH: &str = "Its LlamaSynth settings are replaced by the new role's engine.";
 /// What T cut on Arrange, said until P pastes it where the cursor is or ESC lets go of it; and a clip pasted onto a full cell.
 pub const MSG_CUT_SCENE: &str = "cut scene ({name}): P pastes it before the scene under the cursor, ESC lets go";
 pub const MSG_CUT_TRACK: &str = "cut track ({name}): P pastes it before the track under the cursor, ESC lets go";
