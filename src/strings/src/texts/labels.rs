@@ -457,6 +457,7 @@ pub const MSG_PAN_LABEL: &str = "Pan";
 pub const MSG_GLIDE_TIME_LABEL: &str = "Glide time";
 pub const MSG_EFFECT_BLOCK_LABEL: &str = "FX {number}";
 pub const MSG_EFFECT_BITS_LABEL: &str = "FX {number} bits";
+pub const MSG_EFFECT_DITHER_LABEL: &str = "FX {number} dither";
 pub const MSG_EFFECT_RATE_LABEL: &str = "FX {number} rate";
 pub const MSG_EFFECT_CURVE_LABEL: &str = "FX {number} curve";
 pub const MSG_EFFECT_AMOUNT_LABEL: &str = "FX {number} amount";

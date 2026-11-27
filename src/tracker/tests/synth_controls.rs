@@ -286,6 +286,7 @@ const TRIALS: &[Trial] = &[
     ("effect drive curve", "{ engine: basic, effects: [{ effect: drive, curve: soft, amount: 80 }] }", "{ engine: basic, effects: [{ effect: drive, curve: fold, amount: 80 }] }"),
     ("effect drive mix", "{ engine: basic, effects: [{ effect: drive, curve: hard, amount: 80, mix: 100 }] }", "{ engine: basic, effects: [{ effect: drive, curve: hard, amount: 80, mix: 20 }] }"),
     ("effect bitcrush bits", "{ engine: basic, effects: [{ effect: bitcrush, bits: 16 }] }", "{ engine: basic, effects: [{ effect: bitcrush, bits: 3 }] }"),
+    ("effect bitcrush dither", "{ engine: basic, effects: [{ effect: bitcrush, bits: 6, dither: false }] }", "{ engine: basic, effects: [{ effect: bitcrush, bits: 6, dither: true }] }"),
     ("effect bitcrush rate", "{ engine: basic, effects: [{ effect: bitcrush, bits: 16, rate: 0 }] }", "{ engine: basic, effects: [{ effect: bitcrush, bits: 16, rate: 4000 }] }"),
     ("effect bax bass", "{ engine: basic, effects: [{ effect: bax }] }", "{ engine: basic, effects: [{ effect: bax, bass: 12 }] }"),
     ("effect bax treble", "{ engine: basic, effects: [{ effect: bax }] }", "{ engine: basic, effects: [{ effect: bax, treble: -12 }] }"),

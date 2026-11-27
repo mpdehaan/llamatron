@@ -1567,6 +1567,14 @@ impl InstrumentEditor {
                         )
                         .with_shown_label(&shown_label(labels::MSG_EFFECT_BITS_LABEL)),
                     );
+                    fields.push(
+                        Field::toggle(
+                            ids.at(Write::Item("effects", number, "dither")),
+                            &numbered(labels::MSG_EFFECT_DITHER_LABEL),
+                            flag(&effect(number, "dither")),
+                        )
+                        .with_shown_label(&shown_label(labels::MSG_EFFECT_DITHER_LABEL)),
+                    );
                     let rate = whole(&effect(number, "rate"));
                     let rates: Vec<String> = CRUSH_RATES.iter().map(|rate| rate.to_string()).collect();
                     let rate_names: Vec<String> = CRUSH_RATES.iter().map(|rate| rate_shown(*rate)).collect();

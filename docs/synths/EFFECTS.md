@@ -33,7 +33,10 @@ holds each sample for as long as a lower sample rate would, so that high notes
 alias into metallic tones. Each hold falls where the lower rate puts it, even
 between samples, so that any Rate stays even and in tune, not only one that
 divides the sample rate. Bits rounds each sample to fewer bits, which adds a
-gritty hiss that follows the sound.
+gritty hiss that follows the sound; one bit gives two levels, as a real
+converter's codes do. Dither, off unless set, adds a soft, even hiss before
+the rounding, so that a quiet sound or a fading tail sinks into the hiss
+instead of breaking up into a buzz and then silence.
 
 ## Bax
 

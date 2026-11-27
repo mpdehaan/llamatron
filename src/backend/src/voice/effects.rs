@@ -12,7 +12,7 @@
 //! taps, in a module of its own (`multitap`).
 
 use crate::dsp::{flushed, HIGHEST_SHARE};
-use crate::protocol::values::{number, word};
+use crate::protocol::values::{number, truth, word};
 use crate::voice::blep;
 use crate::voice::drive::{Curve, Drive};
 use crate::voice::multitap::MultiTap;
@@ -27,6 +27,9 @@ const DECIBELS_PER_DECADE: f64 = 20.0;
 enum Kind {
     Bitcrush {
         levels: f64,
+        /// Whether triangular noise of one code each way is added before the rounding, and its seeded state.
+        dither: bool,
+        noise: u64,
         step: f64,
         phase: f64,
         held: f64,
@@ -164,13 +167,31 @@ pub fn compiled(specs: &[Value], rate: f64) -> Vec<Effect> {
     effects
 }
 
+/// Where Bitcrush's dither starts, the same every playing.
+const DITHER_SEED: u64 = 0x9E37_79B9_7F4A_7C15;
+
+/// Triangular noise from -1 to 1, the sum of two uniform draws, from a seeded xorshift.
+#[inline]
+fn dither_noise(state: &mut u64) -> f64 {
+    let mut draw = || {
+        *state ^= *state << 13;
+        *state ^= *state >> 7;
+        *state ^= *state << 17;
+        (*state >> 11) as f64 / (1u64 << 53) as f64
+    };
+    draw() + draw() - 1.0
+}
+
 fn bitcrush(spec: &Value, rate: f64) -> Kind {
     let bits = number(spec, "bits", 16.0);
+    let dither = truth(spec, "dither", false);
     let hold_rate = number(spec, "rate", 0.0);
     let levels = if bits < 16.0 { 2f64.powf(bits - 1.0) } else { 0.0 };
     let step = if hold_rate > 0.0 && hold_rate < rate { hold_rate / rate } else { 0.0 };
     Kind::Bitcrush {
         levels,
+        dither,
+        noise: DITHER_SEED,
         step,
         phase: 0.0,
         held: 0.0,
@@ -203,6 +224,8 @@ impl Effect {
         match &mut self.kind {
             Kind::Bitcrush {
                 levels,
+                dither,
+                noise,
                 step,
                 phase,
                 held,
@@ -234,7 +257,12 @@ impl Effect {
                         wet = this;
                     }
                     if *levels > 0.0 {
-                        wet = (wet * *levels).round() / *levels;
+                        // A converter of n bits has 2^n codes, two's complement, from -2^(n-1) to 2^(n-1) - 1, so that
+                        // silence stays silent and one bit gives two levels.
+                        // Dither adds triangular noise of one code each way before the rounding, so that a quiet sound
+                        // sinks into a soft hiss rather than into silence or a buzz that follows it.
+                        let shaken = if *dither { wet * *levels + dither_noise(noise) } else { wet * *levels };
+                        wet = shaken.round().clamp(-*levels, *levels - 1.0) / *levels;
                     }
                     *sample = (dry + (wet - dry) * mix) as f32;
                 }
@@ -405,16 +433,37 @@ mod tests {
         }
     }
 
-    /// Bitcrush's Bits leaves only a few levels: three bits give at most nine.
+    /// Bitcrush's Bits gives a converter's codes, two to the bits: one bit gives two levels, three bits eight.
     #[test]
-    fn bitcrush_bits_leave_few_levels() {
-        let mut crush = effect(&[("effect", "bitcrush".into()), ("bits", 3.0.into())]);
-        let mut buffer = sine(1.0);
-        crush.apply(&mut buffer);
-        let mut levels: Vec<i64> = buffer.iter().map(|sample| (*sample as f64 * 1e6).round() as i64).collect();
-        levels.sort();
-        levels.dedup();
-        assert!(levels.len() <= 9, "{}", levels.len());
+    fn bitcrush_bits_give_two_to_the_bits_levels() {
+        for (bits, codes) in [(1.0, 2), (3.0, 8)] {
+            let mut crush = effect(&[("effect", "bitcrush".into()), ("bits", bits.into())]);
+            let mut buffer = sine(1.0);
+            crush.apply(&mut buffer);
+            let mut levels: Vec<i64> = buffer.iter().map(|sample| (*sample as f64 * 1e6).round() as i64).collect();
+            levels.sort();
+            levels.dedup();
+            assert_eq!(levels.len(), codes, "{bits} bits");
+        }
+    }
+
+    /// Dither keeps a quiet sound: at 8 bits a sine 56 dB down rounds to silence without it, and with it comes through
+    /// under a hiss, its shape still there when the hiss is averaged away against the sine.
+    #[test]
+    fn bitcrush_dither_keeps_a_quiet_sound() {
+        let quiet = 10f64.powf(-56.0 / 20.0);
+        let heard = |dither: bool| {
+            let mut crush = effect(&[("effect", "bitcrush".into()), ("bits", 8.0.into()), ("dither", dither.into())]);
+            let mut buffer = sine(quiet);
+            let original = buffer.clone();
+            crush.apply(&mut buffer);
+            let along: f64 = buffer.iter().zip(&original).map(|(out, sine)| *out as f64 * *sine as f64).sum();
+            let energy: f64 = original.iter().map(|sine| (*sine as f64).powi(2)).sum();
+            along / energy
+        };
+        assert_eq!(heard(false), 0.0, "rounded to silence");
+        let kept = heard(true);
+        assert!((kept - 1.0).abs() < 0.2, "the sine comes through: {kept}");
     }
 
     /// Bitcrush's Rate holds at its own rate even where it does not divide the sample rate: a ramp held at 7000 Hz

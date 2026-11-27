@@ -599,6 +599,7 @@ pub static LFO_DEFAULTS: Preset = Preset::Map(&[
 pub static EFFECT_DEFAULTS: Preset = Preset::Map(&[
     ("effect", Preset::Text("none")),
     ("bits", Preset::Whole(8)),
+    ("dither", Preset::Flag(false)),
     ("rate", Preset::Whole(0)),
     ("curve", Preset::Text("warm")),
     ("amount", Preset::Whole(33)),
