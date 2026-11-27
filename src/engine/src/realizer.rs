@@ -321,6 +321,13 @@ impl<'a> SongRealizer<'a> {
     }
 
     /// The places among the written-out scenes of a scene of the song, one for each repeat, in order.
+    /// The moments in a written-out row at which a draw drew, in whole notes from the row's start, with where every draw
+    /// then stood.
+    pub fn draw_moments(&self, place: usize) -> Rendered<Vec<(Rational, crate::registers::DrawPlaces)>> {
+        let Some(scene) = self.scenes.get(place) else { return Ok(Vec::new()) };
+        Ok(self.get_timeline(scene)?.draw_moments().to_vec())
+    }
+
     pub fn rows_of_scene(&self, index: usize) -> Vec<usize> {
         let Some(scene) = self.song.scenes().get(index) else { return Vec::new() };
         self.scenes

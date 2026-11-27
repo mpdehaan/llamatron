@@ -355,6 +355,11 @@ impl Transport {
         self.asking(|player, now| player.is_track_sounding(now, track)).unwrap_or(false)
     }
 
+    /// Where every draw stands in what plays now, for the Draws page's lights, or None while nothing plays.
+    pub fn draw_places(&self) -> Option<llamatron_engine::registers::DrawPlaces> {
+        self.asking(|player, now| player.draw_places(now)).flatten()
+    }
+
     pub fn scene_elapsed(&self, index: usize) -> Option<f64> {
         self.asking(|player, now| player.scene_elapsed(now, index)).flatten()
     }

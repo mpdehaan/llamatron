@@ -77,7 +77,9 @@ impl DrawsPage {
             })
             .collect();
         let mut strip = Field::cells(base + STRIP, labels::MSG_DRAW_STRIP_LABEL, cells).stepped();
-        strip.drawn = Drawn::Strip { lit: None };
+        // The slot this draw last took its value from lights while the song plays.
+        let lit = app.transport.draw_places().and_then(|places| places.get(place).copied().flatten());
+        strip.drawn = Drawn::Strip { lit };
         vec![
             Field::choice(
                 base + DIRECTION,

@@ -14,6 +14,7 @@ use crate::realtime::row_clock::RowClock;
 use crate::realtime::timeline::{clip_timeline, clock_of, row_length, ClipTag, Playing, Route, NOTE_OFF, NOTE_ON};
 use llamatron_engine::error::Rendered;
 use llamatron_engine::realizer::SongRealizer;
+use llamatron_engine::registers::DrawPlaces;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Setlist;
@@ -48,10 +49,20 @@ pub struct Score {
     clip_seconds: HashMap<(usize, usize, String), f64>,
     bar: f64,
     routes: Vec<(String, Route)>,
+    /// Each scene's moments a draw drew, in seconds from the scene's start, with where every draw then stood.
+    draw_lights: Vec<Vec<(f64, DrawPlaces)>>,
 }
 
 impl Score {
     /// A song rendered and read into the score; a track with no route has no events, since it has nothing to play through.
+    /// Where every draw stood a number of seconds into a scene: the slot each last took its value from, none before the
+    /// scene's first draw.
+    pub fn draw_places_at(&self, scene: usize, seconds: f64) -> Option<DrawPlaces> {
+        let moments = self.draw_lights.get(scene)?;
+        let found = moments.partition_point(|(time, _)| *time <= seconds);
+        found.checked_sub(1).map(|place| moments[place].1)
+    }
+
     pub fn new(setlist: &Setlist, song: &Song, routes: &[(String, Route)], seed: Option<i64>) -> Rendered<Score> {
         let realizer = SongRealizer::new(setlist, song, seed).looping_scenes_go_round();
         let grid = realizer.render()?;
@@ -69,6 +80,7 @@ impl Score {
             clip_seconds: HashMap::new(),
             bar: song.get_time_signature().bar_length().to_float(),
             routes: routes.to_vec(),
+            draw_lights: Vec::new(),
         };
         let default_action = setlist
             .get_written(SetlistSetting::DEFAULT_FOLLOW_ACTION)
@@ -87,6 +99,7 @@ impl Score {
             score.launches_together.push(together);
             score.scene_starts.push(song_start);
             score.rows.push(Vec::new());
+            score.draw_lights.push(Vec::new());
             for track in &tracks {
                 let key = (index, track.clone());
                 score.events.insert(key.clone(), Vec::new());
@@ -112,6 +125,9 @@ impl Score {
                 let clock = clock_of(&grid, row);
                 let row_seconds = clock.seconds_at_exact(row_length(row)?);
                 let row_place = score.rows[index].len();
+                for (time, places) in realizer.draw_moments(place)? {
+                    score.draw_lights[index].push((scene_start + clock.seconds_at_exact(time), places));
+                }
                 score.rows[index].push(ScoreRow {
                     start: scene_start,
                     seconds: row_seconds,
@@ -345,5 +361,27 @@ impl Score {
         }
         let played = ((elapsed - row.start) / (clip_seconds / repeat as f64)).floor() as i64;
         Some((repeat - played).max(0))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Each step that draws lights the slot it took, from the step's time on, and nothing is lit before the first draw.
+    #[test]
+    fn draw_places_follow_each_step_that_draws() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/one_draw_stepping.yml");
+        let text = std::fs::read_to_string(path).expect("the scenario's set is there");
+        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let song = setlist.get_song("song").expect("the song");
+        let score = Score::new(&setlist, song, &[], None).expect("the song renders");
+        let first_draw = 0;
+        // At 120 a minute a sixteenth lasts 0.125 s, so the middle of the third step is 0.3125 s in.
+        let third_step_middle = 0.3125;
+        let third_slot = 2;
+        let at = |seconds: f64| score.draw_places_at(0, seconds).and_then(|places| places[first_draw]);
+        assert_eq!(at(third_step_middle), Some(third_slot));
+        assert_eq!(score.draw_places_at(0, -1.0), None);
     }
 }

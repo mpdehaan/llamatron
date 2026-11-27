@@ -20,6 +20,7 @@
 use crate::realtime::clip_notes;
 use crate::realtime::score::Score;
 use crate::realtime::timeline::{ClipTag, Playing, CONTROL_CHANGE, NOTE_OFF, PLAY_STARTED, PLAY_STOPPED};
+use llamatron_engine::registers::DrawPlaces;
 use llamatron_math::Rational;
 use llamatron_model::schema::generated::file_format::{FollowAction, LiveResponsiveness};
 
@@ -415,6 +416,13 @@ impl Player {
     }
 
     /// How far into a scene its earliest running clip is, in seconds, or None when none plays.
+    /// Where every draw stands in the first scene that plays, for the Draws page's lights, or None while nothing plays.
+    pub fn draw_places(&self, now: f64) -> Option<DrawPlaces> {
+        let scene = *self.playing_scenes(now).first()?;
+        let elapsed = self.scene_elapsed(now, scene)?;
+        self.score.draw_places_at(scene, elapsed)
+    }
+
     pub fn scene_elapsed(&self, now: f64, scene: usize) -> Option<f64> {
         let start = self
             .plays

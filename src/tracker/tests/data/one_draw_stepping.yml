@@ -1,0 +1,16 @@
+# llamatron: a set whose one pattern draws AD on each of its four steps; AD runs forward through four slots, so the
+# step at a time shows which slot it took.
+scales:
+  - { name: c_major, root: C, type: major }
+patterns:
+  - { name: tune, steps: 4, degree: [1, 1, 1, 1], ad_note: [1, 1, 1, 1] }
+songs:
+  - name: song
+    tempo: 120
+    scale: c_major
+    draws:
+      AD: { direction: forward, slots: [0, 1, 2, 3] }
+    tracks: [{ name: lead }]
+    scenes:
+      - name: one
+        clips: [{ track: lead, pattern: tune }]

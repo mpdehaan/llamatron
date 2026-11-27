@@ -140,7 +140,12 @@ pub struct Timeline {
     moments: Vec<(Rational, Rational)>,
     values: Vec<Values>,
     draws: Option<DrawPlay>,
+    /// Each moment a draw drew, and where every draw then stood, for the Draws page's lights.
+    draw_moments: Vec<(Rational, DrawPlaces)>,
 }
+
+/// The slot each of the eight draws last took its value from, None for one that has drawn nothing yet.
+pub type DrawPlaces = [Option<usize>; 8];
 
 impl Timeline {
     /// The timeline the changes make from the values the scene starts with and where its draws stand, None in a song whose
@@ -155,6 +160,7 @@ impl Timeline {
             moments: Vec::new(),
             values: Vec::new(),
             draws: None,
+            draw_moments: Vec::new(),
         };
         for change in sorted {
             if let Some(draws) = &mut draws {
@@ -163,6 +169,9 @@ impl Timeline {
                 }
                 for name in &change.draws {
                     values[*name] = draws.draw(*name, chooser);
+                }
+                if !change.draws.is_empty() {
+                    timeline.draw_moments.push((change.time, draws.places()));
                 }
             }
             timeline.moments.push((change.time, change.place));
@@ -179,6 +188,11 @@ impl Timeline {
             return self.start;
         }
         self.values[found - 1]
+    }
+
+    /// Each moment in the scene at which a draw drew, in whole notes from its start, with where every draw then stood.
+    pub fn draw_moments(&self) -> &[(Rational, DrawPlaces)] {
+        &self.draw_moments
     }
 
     pub fn end_values(&self) -> Values {
