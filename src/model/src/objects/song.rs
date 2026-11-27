@@ -23,6 +23,29 @@ pub struct Names<'a> {
     pub tracks: Vec<String>,
 }
 
+/// The fewest repeats a morph needs: its first pass all the clip's own pattern and its last all the target.
+pub const MIN_MORPH_REPEAT: i64 = 2;
+
+/// Refuse a morph without both its settings, or without enough repeats to go from the pattern to its target.
+fn checked_morph(settings: &Holder) -> Result<(), InvalidValue> {
+    let written = |name: &str| settings.get(name).is_some_and(|value| !value.is_null());
+    let morphs = written(ClipSlotSetting::MORPH_TO);
+    if morphs != written(ClipSlotSetting::MORPH_STYLE) {
+        return Err(InvalidValue::new(errors::ERR_MORPH_NEEDS_BOTH.to_string()));
+    }
+    let repeat = settings
+        .get(ClipSlotSetting::REPEAT)
+        .and_then(Data::as_whole)
+        .map_or(crate::schema::generated::defaults::DEFAULT_REPEAT, |repeat| repeat as i64);
+    if morphs && repeat < MIN_MORPH_REPEAT {
+        return Err(InvalidValue::new(named(
+            errors::ERR_MORPH_TOO_FEW_REPEATS,
+            &[("lowest", MIN_MORPH_REPEAT.into())],
+        )));
+    }
+    Ok(())
+}
+
 impl Context for Names<'_> {
     fn has_scale(&self, name: &str) -> bool {
         self.set.has_scale(name)
@@ -177,6 +200,7 @@ impl ClipSlot {
         if settings.get(ClipSlotSetting::PATTERNS).is_none() {
             return Err(InvalidValue::new(errors::ERR_NEEDS_PATTERN.to_string()));
         }
+        checked_morph(&settings)?;
         Ok(ClipSlot { settings })
     }
 

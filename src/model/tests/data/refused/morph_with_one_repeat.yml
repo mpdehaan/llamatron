@@ -1,0 +1,10 @@
+# A clip morphing into another pattern with only one repeat, which leaves no pass to morph across.
+patterns:
+  - { name: tune, steps: 4, degree: [1, 2, 3, 4] }
+  - { name: other, steps: 4, degree: [5, 4, 3, 2] }
+songs:
+  - name: song
+    tracks: [{ name: lead }]
+    scenes:
+      - name: one
+        clips: [{ track: lead, pattern: tune, morph_to: other, morph_style: left }]

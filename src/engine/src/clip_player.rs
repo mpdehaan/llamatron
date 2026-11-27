@@ -492,7 +492,8 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         for name in self.clip_slot.get_pattern_names() {
             length = length + player.pattern_length(player.pattern(&name)?);
         }
-        if played.length != length || played.sounds.is_empty() {
+        // A morph needs two repeats or more, which the file holds it to; one repeat has no pass to morph across.
+        if played.length != length || played.sounds.is_empty() || repeat < llamatron_model::objects::song::MIN_MORPH_REPEAT {
             return Ok(played);
         }
         let Some(mode) = self

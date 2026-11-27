@@ -27,8 +27,9 @@ const DEGREES: [i128; 4] = [1, 2, 3, 4];
 const A_QUARTER: &str = "1/4";
 
 /// The settings whose value the small set refuses for what the set itself holds, not for a setting the render cannot play:
-/// a loop on the scene's only clip leaves the scene no end, and a drum pattern's steps are drum notes, never degrees.
-const REFUSED_BY_THE_SMALL_SET: [(&str, &str); 2] = [("Clip", "loop"), ("Pattern", "drum")];
+/// a loop on the scene's only clip leaves the scene no end, a drum pattern's steps are drum notes, never degrees, and a
+/// morph's style is refused without the pattern it morphs into, which the morph's own tests write together.
+const REFUSED_BY_THE_SMALL_SET: [(&str, &str); 3] = [("Clip", "loop"), ("Pattern", "drum"), ("Clip", "morph_style")];
 
 /// Where a setting is written in the small set: on the song, its track, its scene, its clip, its pattern, its instrument, or
 /// a generator its clip runs.

@@ -1,0 +1,10 @@
+# A clip naming a pattern to morph into but no style of morph.
+patterns:
+  - { name: tune, steps: 4, degree: [1, 2, 3, 4] }
+  - { name: other, steps: 4, degree: [5, 4, 3, 2] }
+songs:
+  - name: song
+    tracks: [{ name: lead }]
+    scenes:
+      - name: one
+        clips: [{ track: lead, pattern: tune, repeat: 4, morph_to: other }]
