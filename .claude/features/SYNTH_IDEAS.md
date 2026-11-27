@@ -292,3 +292,11 @@ In the order of their priority, the highest first.
   a coherent rate blur and one envelope sent to many stages), Staged Destroyer (an effect whose stage order is a control),
   Twin-Formant Oscillator, then Clamp Gate, Tracking Crusher, Operator Crossfade PM, Spectrum Builder, Folding Chorus,
   Lattice Noise, register ring and gate effects, a formant bank and a binary rhythm source.
+- **New filter characters**, named for how they sound: Bite (a two-pole diode-bridge filter with low, band and high
+  inputs, gritty, unstable and vocal, biting hard when driven), Break (an overloaded-integrator filter whose resonance
+  shrieks and crunches, sounding broken in a musical way), Buzz (unbuffered CMOS inverters as an SVF, buzzy and raspy
+  with strong even harmonics), Sizzle (a bright, sizzling diode ladder, never self-oscillating, for safety), Vowel (three
+  to five resonant band-passes morphing between vowels) and Comb (a delay tuned to the note, with damping and saturation
+  in its loop); and Pole Mix, a Mode of the OTA and the Ladder mixing their stages' outputs into high-pass, band-pass,
+  notch and the responses between.
+

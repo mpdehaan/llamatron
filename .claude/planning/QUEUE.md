@@ -57,4 +57,5 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 28. SYNTH_IDEAS: Sine first on the Basic oscillators.
 29. SYNTH_IDEAS: A speech synth; A riser synth.
 30. SYNTH_IDEAS: NoiseBuster.
-31. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
+31. SYNTH_IDEAS: New filter characters.
+32. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
