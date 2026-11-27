@@ -228,6 +228,9 @@ pub const MSG_KEYSWITCH_MAP_ROW: &str = " {slot:>2}  ";
 pub const MSG_KEYSWITCH_LEAD_SHOWN: &str = "{milliseconds} ms";
 pub const MSG_SOUND_GAUGE: &str = "▕{gauge}▏ {value:>7}";
 /// A narrow gauge sharing its row with another cell, its value as wide as a percent.
+/// How many of a tab's columns a row that scrolls sideways hides at each side.
+pub const MSG_HIDDEN_LEFT: &str = "◀ {count} more";
+pub const MSG_HIDDEN_RIGHT: &str = "{count} more ▶";
 pub const MSG_NARROW_GAUGE: &str = "▕{gauge}▏{value:>5}";
 pub const MSG_SOUND_GAUGE_FULL: &str = "█";
 pub const MSG_INSTRUMENT_OFF_SHOWN: &str = "(off)";

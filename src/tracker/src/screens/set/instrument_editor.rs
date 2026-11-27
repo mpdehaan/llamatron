@@ -45,8 +45,6 @@ const DEFAULT_VELOCITY: i64 = 127;
 const DEFAULT_ACCENT: i64 = 0;
 const UNCHANGED: i64 = 100;
 const TENTHS: i64 = 10;
-const SECOND_ROW_LFO: usize = 3;
-const SECOND_ROW_SLOT: usize = 4;
 const CRUSH_RATES: [i64; 11] = [0, 32000, 22050, 16000, 11025, 8000, 6000, 4000, 3000, 2000, 1000];
 const MIDI: &str = "midi";
 const BUILT_IN: &str = "built_in";
@@ -997,10 +995,8 @@ impl InstrumentEditor {
             .iter()
             .map(|name| Self::setting_field(sound, "oscillators", ASHEVILLE, name, ids))
             .collect();
-        // The panel's own settings start a row of their own under the Voice column and the oscillators.
-        let mut panel = TabColumn::new(Some(&named_in(labels::MSG_PART_HEADINGS, "oscillators")), own);
-        panel.under = true;
-        columns.push(panel);
+        // The panel's own settings stand after the oscillators, in the one row the box scrolls along.
+        columns.push(TabColumn::new(Some(&named_in(labels::MSG_PART_HEADINGS, "oscillators")), own));
         columns
     }
 
@@ -1180,7 +1176,6 @@ impl InstrumentEditor {
             )
             .with_shown_label(&shown_label(labels::MSG_LFO_RESTART_LABEL))]);
             let mut column = TabColumn::new(None, fields);
-            column.under = number == SECOND_ROW_LFO;
             column.boxed = true;
             columns.push(column);
         }
@@ -1522,7 +1517,6 @@ impl InstrumentEditor {
                     &text(&slot(number, "via")),
                 ),
             ];
-            column.under = number == SECOND_ROW_SLOT;
             column.boxed = true;
             columns.push(column);
         }

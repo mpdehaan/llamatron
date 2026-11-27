@@ -281,9 +281,7 @@ impl<'a> Made<'a> {
                 }
             }
             if !own.is_empty() {
-                let mut first = TabColumn::new(column.heading, own);
-                first.under = column.under;
-                columns.push(first);
+                columns.push(TabColumn::new(column.heading, own));
             }
             columns.extend(sections);
         }
@@ -294,9 +292,9 @@ impl<'a> Made<'a> {
             "",
             legends::What::EDIT,
         );
-        let mut under = TabColumn::new(None, vec![button]);
-        under.under = true;
-        columns.push(under);
+        let mut footer = TabColumn::new(None, vec![button]);
+        footer.footer = true;
+        columns.push(footer);
         let mut tab = Tab::new(label, columns);
         tab.top = top;
         tab.on = Some(self.is_enabled());

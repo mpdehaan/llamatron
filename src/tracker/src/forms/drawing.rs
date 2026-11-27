@@ -305,7 +305,7 @@ pub fn spots_of(looks: &Looks, tab: &Tab, width: usize) -> Vec<Spot> {
         .collect();
     let drawn = drawn_columns(looks, tab, inner, None);
     let widths: Vec<usize> = drawn.iter().map(|(lines, _)| column_width(lines)).collect();
-    for (band_place, band) in bands_of(&widths, inner, &columns_under(tab)).into_iter().enumerate() {
+    for (band_place, band) in bands_of(&widths, &footer_columns(tab)).into_iter().enumerate() {
         // A column with fields beside its own takes two places in its band, so that Left and Right reach them.
         let mut column_place = 0i64;
         for place in band {
@@ -377,10 +377,21 @@ fn bands(looks: &Looks, tab: &Tab, inner: usize, cursor: Option<i64>) -> (Vec<Te
     let widths: Vec<usize> = drawn.iter().map(|(lines, _)| column_width(lines)).collect();
     let mut lines: Vec<Text> = Vec::new();
     let mut selected = None;
-    for band in bands_of(&widths, inner, &columns_under(tab)) {
+    for (band_place, band) in bands_of(&widths, &footer_columns(tab)).into_iter().enumerate() {
         if !lines.is_empty() {
             lines.push(Text::default());
         }
+        // The row of columns shows as many as fit, always the cursor's, with a line saying how many are hidden each side.
+        let band = if band_place == 0 {
+            let cursor_place = band.iter().position(|place| drawn[*place].1.is_some());
+            let (start, end) = shown_window(&band.iter().map(|place| widths[*place]).collect::<Vec<_>>(), inner, cursor_place);
+            if start > 0 || end + 1 < band.len() {
+                lines.push(hidden_line(start, band.len() - 1 - end, inner));
+            }
+            band[start..=end].to_vec()
+        } else {
+            band
+        };
         let parts: Vec<&(Vec<Text>, Option<usize>)> = band.iter().map(|place| &drawn[*place]).collect();
         let widths: Vec<usize> = parts.iter().map(|(column, _)| column_width(column)).collect();
         let height = parts.iter().map(|(column, _)| column.len()).max().unwrap_or(0);
@@ -449,28 +460,62 @@ fn in_a_box(lines: &[Text], selected: Option<usize>, width: usize, height: usize
     (boxed, selected.map(|line| line + 1))
 }
 
-fn columns_under(tab: &Tab) -> Vec<usize> {
-    (0..tab.columns.len()).filter(|place| tab.columns[*place].under).collect()
+fn footer_columns(tab: &Tab) -> Vec<usize> {
+    (0..tab.columns.len()).filter(|place| tab.columns[*place].footer).collect()
+}
+
+/// The first and last of a row of columns of widths to show in a box's inner width: every one where all fit; otherwise
+/// from the first as far as fit where the cursor's column is among them, else ending on the cursor's column, reaching
+/// back as far as fit, then on to the right as far as fit.
+fn shown_window(widths: &[usize], inner: usize, cursor: Option<usize>) -> (usize, usize) {
+    if widths.is_empty() {
+        return (0, 0);
+    }
+    let fits = |start: usize, end: usize| band_width(&widths[start..=end]) <= inner;
+    let target = cursor.unwrap_or(0);
+    let mut start = 0;
+    if !fits(0, target) {
+        start = target;
+        while start > 0 && fits(start - 1, target) {
+            start -= 1;
+        }
+    }
+    let mut end = target.max(start);
+    while end + 1 < widths.len() && fits(start, end + 1) {
+        end += 1;
+    }
+    (start, end)
+}
+
+/// The dim line over a row of columns that scrolls: how many are hidden at the left and at the right, each only where
+/// some are.
+fn hidden_line(left: usize, right: usize, inner: usize) -> Text {
+    let left_text = if left > 0 {
+        named(marks::MSG_HIDDEN_LEFT, &[("count", left.into())])
+    } else {
+        String::new()
+    };
+    let right_text = if right > 0 {
+        named(marks::MSG_HIDDEN_RIGHT, &[("count", right.into())])
+    } else {
+        String::new()
+    };
+    let gap = inner.saturating_sub(left_text.chars().count() + right_text.chars().count());
+    Text::styled(&format!("{left_text}{}{right_text}", SPACE.repeat(gap)), Style::DIM)
 }
 
 fn band_width(widths: &[usize]) -> usize {
     widths.iter().sum::<usize>() + COLUMN_GAP.len() * widths.len().saturating_sub(1)
 }
 
-fn bands_of(widths: &[usize], inner: usize, under: &[usize]) -> Vec<Vec<usize>> {
+/// The bands a tab's columns stand in: every column in one row, then each footer in a row of its own under it.
+fn bands_of(widths: &[usize], footers: &[usize]) -> Vec<Vec<usize>> {
+    let row: Vec<usize> = (0..widths.len()).filter(|place| !footers.contains(place)).collect();
     let mut bands = Vec::new();
-    let mut band: Vec<usize> = Vec::new();
-    for (place, width) in widths.iter().enumerate() {
-        let mut trial: Vec<usize> = band.iter().map(|each| widths[*each]).collect();
-        trial.push(*width);
-        if !band.is_empty() && (under.contains(&place) || band_width(&trial) > inner) {
-            bands.push(std::mem::take(&mut band));
-        }
-        band.push(place);
+    if !row.is_empty() {
+        bands.push(row);
     }
-    if !band.is_empty() {
-        bands.push(band);
-    }
+    bands.extend(footers.iter().map(|footer| vec![*footer]));
     bands
 }
 

@@ -77,8 +77,12 @@ changes it too. A new thing looks like the existing thing it is most like.
   itself, such as `127`; `clear` only where the field then shows nothing. Left and Right never step a value on a
   settings page: they only move, along a row of cells, the buttons or the row of tabs, and inside a tab box to the field beside
   in the next column, the nearest by line (a shorter column's last), stopping at the sides. Inside a tab box Up and Down keep to
-  a column: at its head Up goes to the column above or the row of tabs, at its foot Down goes to the column below or out of the
-  box to what is under it, and Up from under the box comes in at the foot of its first column. In a one-row editor Up and Down
+  a column: at its head Up goes to the row of tabs, at its foot Down goes to a footer under the row, such as a button for the
+  whole tab, or out of the box to what is under it, and Up from under the box comes in at the foot of its first column.
+- A tab box keeps its columns in one row, never two, so that what stands under it, such as the Listen button, stays on
+  screen: where the row is wider than the box, the box shows as many columns as fit, always the cursor's, scrolling
+  sideways as Left and Right move on, a dim line over the row saying how many are hidden at each side (`◀ 1 more`,
+  `3 more ▶`). In a one-row editor Up and Down
   also step. A value with its own list of choices opens a picker with a letter. A gate is stepped or typed,
   never doubled or halved.
 - A blank line above the first setting, after a starting Name, and above the first section. Labels take the width of the longest

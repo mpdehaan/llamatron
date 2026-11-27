@@ -19,8 +19,9 @@ pub struct TabColumn {
     pub fields: Vec<Field>,
     /// The fields drawn beside some of its fields, in a narrow column of their own inside the same box.
     pub beside: Vec<Beside>,
-    /// Whether it starts a band of its own under the columns before it.
-    pub under: bool,
+    /// Whether it stands in a row of its own under the row of columns, as a button for the whole tab does; every other
+    /// column keeps to the one row, which scrolls sideways where it does not fit.
+    pub footer: bool,
     pub boxed: bool,
 }
 
@@ -50,7 +51,7 @@ impl TabColumn {
             heading: heading.map(str::to_string),
             fields,
             beside: Vec::new(),
-            under: false,
+            footer: false,
             boxed: false,
         }
     }
