@@ -426,4 +426,7 @@ In the order of their priority, the highest first.
   instrument's where drums are fixed on channel 10.
 - **A DRUM column on the Instruments page**: the list of instruments gains a column headed DRUM, just before CH, holding
   `●` for a drum instrument and nothing for one of notes.
+- **Drum engines first for a drum instrument**: on a drum instrument's Instrument page, the Engine picker lists the
+  drum engines, such as MechaDrum, first, sorted by name, then a divider `---` that the cursor passes over and cannot
+  choose, then every other engine, sorted, since any engine may make a percussion sound.
 
