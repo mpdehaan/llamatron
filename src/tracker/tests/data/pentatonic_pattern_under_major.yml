@@ -1,0 +1,12 @@
+# llamatron: a pattern written for a scale of five notes, which its clip plays under C major, of seven.
+scales:
+  - { name: c_major, root: C, type: major }
+patterns:
+  - { name: tune, steps: 4, degree: [1, 2, 3, 4], scale_length: 5 }
+songs:
+  - name: song
+    scale: c_major
+    tracks: [{ name: lead }]
+    scenes:
+      - name: one
+        clips: [{ track: lead, pattern: tune }]

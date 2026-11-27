@@ -473,7 +473,26 @@ impl PatternEditor {
             .collect()
     }
 
+    /// What the header says about the scale, followed by the number of notes the pattern was written for where a scale it
+    /// plays under has another number.
     fn scale_said(&self, app: &App, roll: &Roll) -> String {
+        let said = self.scale_named(app, roll);
+        let Some(length) = roll.pattern.get_written("scale_length").and_then(Data::as_whole) else {
+            return said;
+        };
+        let scales = scales_of_pattern(roll.setlist, app.document.song(), &self.name);
+        let unsuited = scales
+            .iter()
+            .any(|scale| crate::patterns::scale_half_steps(roll.setlist, scale).len() as i128 != length);
+        if !unsuited {
+            return said;
+        }
+        named(labels::MSG_WRITTEN_FOR, &[("scale", said.as_str().into()), ("length", (length as i64).into())])
+    }
+
+    /// What the header says about the scale: the one the rows are drawn in, that there are several, or that drums need
+    /// none.
+    fn scale_named(&self, app: &App, roll: &Roll) -> String {
         if roll.pattern.is_drum() {
             return named(labels::MSG_SCALE_HEADER, &[("scale", labels::MSG_NO_SCALE_NEEDED.into())]);
         }
@@ -1840,4 +1859,26 @@ fn write_chord(app: &mut App, name: &str, step: usize, choice: &crate::screens::
         }
         Ok(())
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A pattern written for a scale of five notes, played under one of seven, says so in its header.
+    #[test]
+    fn a_pattern_under_a_scale_of_another_size_says_what_it_was_written_for() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/pentatonic_pattern_under_major.yml");
+        let text = std::fs::read_to_string(path).expect("the scenario's set is there");
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let mut tracker = crate::app::Tracker::new(crate::document::Document::new(setlist, None));
+        tracker.app.show_page(crate::screens::pattern::open_clip_pattern("tune", Vec::new(), "lead"));
+        tracker.settle();
+        let written_for = named(labels::MSG_WRITTEN_FOR, &[("scale", "".into()), ("length", 5.into())]);
+        let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
+        assert!(
+            screen.iter().any(|line| line.contains(written_for.trim_start_matches(", ").trim())),
+            "{screen:#?}"
+        );
+    }
 }

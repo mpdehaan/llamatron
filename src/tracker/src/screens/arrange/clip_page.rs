@@ -324,6 +324,12 @@ impl ClipPage {
                     .map(str::to_string)
                     .collect();
                 let tracks = crate::settings::sorted_names(&names);
+                // With no other track there is nothing to grab from, which a dialog says rather than an empty picker.
+                if tracks.is_empty() {
+                    let lines = vec![errors::ERR_ADD_ANOTHER_TRACK.to_string()];
+                    app.show_page(Box::new(crate::screens::dialogs::MessageDialog::new(errors::ERR_NO_OTHER_TRACKS_TITLE, lines)));
+                    return true;
+                }
                 let current = clip.get_written(ClipSlotSetting::GRAB_TRACK).and_then(Data::as_str).map(str::to_string);
                 arrange_tabs::ask_name_or_above(app, labels::MSG_GRAB_TRACK_LABEL, marks::MSG_NONE_SHOWN, tracks, current.as_deref());
             }
@@ -996,5 +1002,19 @@ mod tests {
         let added = clip_patterns(&tracker).last().cloned().expect("a pattern");
         assert!(added.starts_with("lead"), "{added}");
         assert!(tracker.app.document.get_setlist().get_pattern(&added).is_some());
+    }
+
+    /// ENTER on Grab track with no other track to grab from says so in a dialog rather than an empty picker.
+    #[test]
+    fn grab_track_with_no_other_track_says_to_add_one() {
+        let mut tracker = clip_of_two_patterns();
+        let page = ClipPage::new(0, "lead".to_string());
+        page.write_edit(&mut tracker.app, GRAB_TRACK, &Edit::Enter);
+        tracker.settle();
+        let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
+        assert!(
+            screen.iter().any(|line| line.contains(llamatron_strings::errors::ERR_NO_OTHER_TRACKS_TITLE)),
+            "{screen:#?}"
+        );
     }
 }
