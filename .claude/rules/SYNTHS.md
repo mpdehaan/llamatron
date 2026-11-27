@@ -18,3 +18,8 @@ holds how their code is written, and `.claude/notes/synthesis/` the research the
 - A change to how something sounds comes with a test that measures it, such as the stray tones in a high note's
   spectrum, beside the test that hears it through the tracker. Its cost per sample per voice is timed before and after,
   and given in the recap.
+- Sound comes first in the synthesis: where a costlier algorithm sounds better, it is chosen over a cheap one, its cost
+  per sample per voice measured and reported; no two engines, filters or effects of a kind may sound alike, held by a
+  test that measures how far apart they are.
+- The synthesis notes hold a chapter for each kind of device (each filter, each drum, each effect), with its full
+  mathematics and coefficients.

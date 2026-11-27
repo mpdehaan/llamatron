@@ -22,4 +22,4 @@ llamatron is for.
 - **Headroom is the budget, and timing is never good enough.** Speed is not judged by what can be heard; every millisecond of the
   render, the real-time chain or a key press comes out of the margin that keeps time steady under load. Keep the program as tight
   as it can be: a slower change needs a reason the user accepts, a feature's time cost is measured before and after, and work done
-  only when needed, as late as possible, wins.
+  only when needed, as late as possible, wins. In the synthesis, headroom is spent on sound (`.claude/rules/SYNTHS.md`).
