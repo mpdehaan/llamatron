@@ -1,0 +1,13 @@
+# llamatron: a set for the tracker's tests: two tracks whose clips in the one scene could grab from each other, the bass
+# already grabbing from the lead, and Notes to clear.
+notes: a line to clear
+patterns:
+  - { name: tune, steps: 4 }
+songs:
+  - name: song
+    tracks: [{ name: lead }, { name: bass }]
+    scenes:
+      - name: one
+        clips:
+          - { track: lead, pattern: tune }
+          - { track: bass, pattern: tune, grab_track: lead }

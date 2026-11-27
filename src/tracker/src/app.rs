@@ -308,7 +308,7 @@ impl Tracker {
         } else if std::ptr::eq(item.binding, &PageKeys::ABOUT) {
             self.app.show_page(Box::new(crate::screens::about_dialog::AboutDialog::new()));
         } else if PageKeys::EVERYWHERE.iter().any(|binding| std::ptr::eq(*binding, item.binding)) {
-            // The other everywhere keys are not ported yet; they do nothing.
+            // Every everywhere key is answered above; one added to the table without an answer does nothing.
             return;
         } else {
             page.press(&mut self.app, &item, key);

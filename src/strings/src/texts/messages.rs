@@ -329,6 +329,7 @@ pub const MSG_PERCUSSION_REPLACES_SYNTH: &str = "Its LlamaSynth settings are rep
 pub const MSG_CUT_SCENE: &str = "cut scene ({name}): P pastes it before the scene under the cursor, ESC lets go";
 pub const MSG_CUT_TRACK: &str = "cut track ({name}): P pastes it before the track under the cursor, ESC lets go";
 pub const MSG_CUT_CLIP: &str = "cut clip ({name}): P pastes it into the empty cell under the cursor, ESC lets go";
+pub const MSG_WIZARD_NOT_YET: &str = "the song wizard returns in a later version";
 pub const MSG_PASTE_NEEDS_AN_EMPTY_CELL: &str = "a clip pastes only into an empty cell";
 pub const MSG_PASTE_TRACK_AMONG_ITS_KIND: &str = "a track pastes only among tracks of its kind";
 pub const MSG_PASTE_CLIP_AMONG_ITS_KIND: &str = "a clip pastes only onto a track of its pattern's kind";

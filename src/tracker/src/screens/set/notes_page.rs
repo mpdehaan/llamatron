@@ -262,7 +262,11 @@ impl Page for NotesPage {
             self.start_editing(app);
             app.say(messages::MSG_EDITING);
         } else if item.is(&Keys::CLEAR) && !stored_text(app).is_empty() {
-            // Clearing asks first, in a dialog not ported yet.
+            // Clearing all of the notes asks first.
+            let dialog = crate::screens::dialogs::ConfirmDialog::new(messages::MSG_CLEAR_NOTES_TITLE, Vec::new(), true, true).then(Box::new(
+                |app: &mut App, _: &crate::screens::dialogs::Answer| app.document.change_set(|setlist| setlist.set_written(SetlistSetting::NOTES, None)),
+            ));
+            app.show_page(Box::new(dialog));
         }
     }
 
@@ -326,5 +330,32 @@ impl Page for NotesPage {
         let top = self.top.get().min(lines.len().saturating_sub(room));
         self.top.set(top);
         lines.into_iter().skip(top).take(room).collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::app::Tracker;
+    use crate::keybindings::ConfirmDialog as ConfirmKeys;
+    use crate::keys::first_key;
+    use llamatron_model::objects::setlist::Setlist;
+
+    /// Bksp on the Notes page asks "Delete all of the notes?", starting on NO; YES clears them.
+    #[test]
+    fn clearing_the_notes_asks_first() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/grab_into_a_circle.yml");
+        let text = std::fs::read_to_string(path).expect("the scenario's set is there");
+        let mut tracker = Tracker::new(crate::document::Document::new(Setlist::read_text(&text, None).expect("valid"), None));
+        let page = NotesPage::new(&tracker.app, false);
+        tracker.app.show_page(Box::new(page));
+        tracker.settle();
+        tracker.press(first_key(&Keys::CLEAR));
+        let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
+        assert!(screen.iter().any(|line| line.contains(messages::MSG_CLEAR_NOTES_TITLE)));
+        assert!(!stored_text(&tracker.app).is_empty(), "nothing cleared before the answer");
+        tracker.press(first_key(&ConfirmKeys::SELECT));
+        tracker.press(first_key(&ConfirmKeys::ANSWER));
+        assert!(stored_text(&tracker.app).is_empty());
     }
 }

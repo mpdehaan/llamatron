@@ -150,10 +150,21 @@ impl ClipPage {
                 arrange_tabs::ask_name_or_above(app, labels::MSG_GRAB_TRACK_LABEL, marks::MSG_NONE_SHOWN, tracks, current.as_deref());
             }
             (GRAB_TRACK, Edit::Choice(chosen)) => {
-                // A grab that would go round in a circle is refused; the Python tells why in a dialog not ported yet.
+                // A grab that would go round in a circle is refused, in a dialog naming the circle.
                 if chosen.is_empty() {
                     self.write(app, ClipSlotSetting::GRAB_TRACK, None);
-                } else if !crate::screens::arrange::arrange_page::ArrangePage::grab_circles(app, self.index, &self.track, chosen) {
+                } else if let Some(circle) = crate::screens::arrange::arrange_page::ArrangePage::grab_circle(app, self.index, &self.track, chosen) {
+                    let shown = circle.join(marks::MSG_CIRCLE_ARROW);
+                    let lines = vec![
+                        named(
+                            llamatron_strings::errors::ERR_GRAB_CIRCLE,
+                            &[("track", chosen.as_str().into()), ("circle", shown.as_str().into())],
+                        ),
+                        llamatron_strings::errors::ERR_REMOVE_OTHER_GRAB.to_string(),
+                    ];
+                    let dialog = crate::screens::dialogs::MessageDialog::new(llamatron_strings::errors::ERR_CIRCULAR_GRAB_TITLE, lines);
+                    app.show_page(Box::new(dialog));
+                } else {
                     self.write(app, ClipSlotSetting::GRAB_TRACK, Some(Data::text(chosen)));
                 }
             }
@@ -632,5 +643,37 @@ mod tests {
         assert_eq!(clip_name(&tracker), Some("hook".to_string()));
         tracker.press(first_key(&FieldKeys::CLEAR));
         assert_eq!(clip_name(&tracker), None);
+    }
+
+    /// The set of two tracks whose bass clip grabs from the lead, read from the tests' data.
+    fn grab_into_a_circle() -> Tracker {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/grab_into_a_circle.yml");
+        let text = std::fs::read_to_string(path).expect("the scenario's set is there");
+        Tracker::new(crate::document::Document::new(
+            Setlist::read_text(&text, None).expect("the scenario's set is valid"),
+            None,
+        ))
+    }
+
+    /// Choosing a Grab track that would go round in a circle shows the Circular grab dialog naming the circle, and the
+    /// grab is not written.
+    #[test]
+    fn a_grab_into_a_circle_is_refused_in_a_dialog_naming_it() {
+        let mut tracker = grab_into_a_circle();
+        let page = ClipPage {
+            index: 0,
+            track: "lead".to_string(),
+        };
+        let pages = tracker.depth();
+        page.write_edit(&mut tracker.app, GRAB_TRACK, &Edit::Choice("bass".to_string()));
+        tracker.settle();
+        assert_eq!(tracker.depth(), pages + 1);
+        let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
+        let circle = ["lead", "bass"].join(marks::MSG_CIRCLE_ARROW);
+        assert!(screen.iter().any(|line| line.contains(llamatron_strings::errors::ERR_CIRCULAR_GRAB_TITLE)));
+        assert!(screen.iter().any(|line| line.contains(&circle)), "the circle shown: {screen:#?}");
+        let song = tracker.app.document.song();
+        let lead = song.scenes()[0].get_clip_slot("lead").expect("the lead's clip");
+        assert_eq!(lead.get_written(ClipSlotSetting::GRAB_TRACK), None);
     }
 }

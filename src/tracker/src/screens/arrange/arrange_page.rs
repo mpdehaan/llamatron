@@ -16,7 +16,6 @@ use crate::page::{clock, Duration, Page};
 use crate::screens::arrange::details::{detailed_clip_text, details_layout, CellPlace, DetailLine, DetailsLayout, Rooms, Target, ADD_CHAIN, DETAIL_WIDTH};
 use crate::screens::arrange::grid::{arrange_lines, CellFrame, Kind, LengthBar, Piece};
 use crate::screens::arrange::scene_view::SceneView;
-use crate::screens::not_ported::NotPorted;
 use crate::text::Text;
 use crate::themes::Colour;
 use crate::visualizers::{self, showing::Showing};
@@ -685,22 +684,29 @@ impl ArrangePage {
     /// Whether a clip on a track of a scene grabbing from another track would go round in a circle: the other's clip there
     /// grabbing, on and on, from the track itself.
     pub fn grab_circles(app: &App, index: usize, track: &str, other: &str) -> bool {
-        let mut seen = vec![other.to_string()];
+        Self::grab_circle(app, index, track, other).is_some()
+    }
+
+    /// The circle a clip on a track of a scene grabbing from another track would make, the tracks in order from the track
+    /// itself back to it, or None where the grabs end without coming back.
+    pub fn grab_circle(app: &App, index: usize, track: &str, other: &str) -> Option<Vec<String>> {
+        let mut circle = vec![track.to_string(), other.to_string()];
         let mut current = other.to_string();
         while let Some(next) = Self::clip(app, index, &current)
             .and_then(|clip| clip.get_written(ClipSlotSetting::GRAB_TRACK))
             .and_then(Data::as_str)
         {
             if next == track {
-                return true;
+                circle.push(track.to_string());
+                return Some(circle);
             }
-            if seen.iter().any(|each| each == next) {
-                return false;
+            if circle.iter().any(|each| each == next) {
+                return None;
             }
-            seen.push(next.to_string());
+            circle.push(next.to_string());
             current = next.to_string();
         }
-        false
+        None
     }
 
     fn start_picking(&mut self, app: &App) {
@@ -733,7 +739,8 @@ impl ArrangePage {
             Section::INSTRUMENTS => app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
                 crate::screens::set::instrument_editor::InstrumentEditor { name: target.name },
             ))),
-            _ => app.show_page(Box::new(NotPorted { name: target.kind.to_string() })),
+            // The Add chain line is answered by its own key, so no other kind of line comes here.
+            _ => {}
         }
     }
 

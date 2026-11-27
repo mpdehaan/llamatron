@@ -12,7 +12,6 @@ use crate::keys::KeyItem;
 use crate::page::{Duration, Page};
 use crate::screens::field_page::FieldPage;
 use crate::screens::list_page::ListPage;
-use crate::screens::not_ported::NotPorted;
 use crate::screens::set::file_page::FilePage;
 use crate::screens::set::grooves_page::GroovesPage;
 use crate::screens::set::scales_page::ScalesPage;
@@ -23,7 +22,7 @@ use crate::themes::{self, Colour};
 use llamatron_engine::realizer::SongRealizer;
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::file_format::{Section, SetlistSetting};
-use llamatron_strings::{labels, marks};
+use llamatron_strings::{labels, marks, messages};
 
 const COLUMNS: usize = 3;
 const GRID_WIDTH: usize = 80;
@@ -92,23 +91,6 @@ fn cell_theme(binding: &'static Binding) -> Option<Colour> {
         (&Keys::FILE, themes::SET_FILE),
     ];
     found.iter().find(|(cell, _)| std::ptr::eq(*cell, binding)).map(|(_, theme)| *theme)
-}
-
-/// The Python page each page's button opens, by its binding.
-fn page_opened(binding: &'static Binding) -> Option<&'static str> {
-    let pages: [(&'static Binding, &'static str); 10] = [
-        (&Keys::FILE, "FilePage"),
-        (&Keys::SONGS, "SongsPage"),
-        (&Keys::WIZARD, "WizardPage"),
-        (&Keys::PATTERNS, "PatternsPage"),
-        (&Keys::GENERATORS, "GeneratorsPage"),
-        (&Keys::SCALES, "ScalesPage"),
-        (&Keys::GROOVES, "GroovesPage"),
-        (&Keys::INSTRUMENTS, "InstrumentsPage"),
-        (&Keys::DRAWS, "DrawsPage"),
-        (&Keys::ARRANGE, "ArrangePage"),
-    ];
-    pages.iter().find(|(cell, _)| std::ptr::eq(*cell, binding)).map(|(_, page)| *page)
 }
 
 fn same(first: &'static Binding, second: &'static Binding) -> bool {
@@ -202,7 +184,7 @@ impl MainPage {
         }
     }
 
-    /// Do what a cell's key does: open its page, which stands not ported until it is.
+    /// Do what a cell's key does: open its page.
     fn act(&mut self, app: &mut App, binding: &'static Binding) {
         if same(binding, &Keys::REAL_TIME) {
             toggle_real_time(app);
@@ -269,8 +251,9 @@ impl MainPage {
             app.show_page(std::boxed::Box::new(picker));
             return;
         }
-        if let Some(name) = page_opened(binding) {
-            app.show_page(std::boxed::Box::new(NotPorted { name: name.to_string() }));
+        // The song wizard is not in this version: its key says so rather than opening a page.
+        if same(binding, &Keys::WIZARD) {
+            app.refuse(messages::MSG_WIZARD_NOT_YET);
         }
     }
 
@@ -491,4 +474,21 @@ fn toggle_real_time(app: &mut App) {
     } else {
         llamatron_strings::messages::MSG_REAL_TIME_OFF
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::preferences::TrackInstrumentDefault;
+
+    /// W, the song wizard's key, says the wizard returns in a later version and opens no page.
+    #[test]
+    fn w_says_the_wizard_returns_later() {
+        let synth = |drum: bool| crate::track_instrument::new_track_instrument(TrackInstrumentDefault::BuiltIn, drum, false, None);
+        let mut tracker = crate::app::Tracker::new(crate::document::Document::new_set(synth(false), synth(true)).expect("a new set"));
+        let pages = tracker.depth();
+        tracker.press(crate::keys::first_key(&Keys::WIZARD));
+        assert_eq!(tracker.depth(), pages);
+        assert_eq!(tracker.app.status.text(), messages::MSG_WIZARD_NOT_YET);
+    }
 }
