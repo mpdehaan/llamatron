@@ -22,9 +22,14 @@ internal_tools/check_before_commit.sh                              # before comm
   160x50, and compare what llamatron makes with what the Python made of the same file before it retired
   (`py_legacy/frozen_test_data/`). A few `llamatron-compare` processes, one per core, answer set after set on their pipes; no set
   starts a program of its own. A set changed since the answers were frozen has none to be held to, and is counted apart.
-- The key tour's screens are held to llamatron's own earlier screens, kept and retaken on purpose as the program changes,
-  never to the retired Python's (the user's rule). The song wizard alone is held to the Python's frozen screens, until its
-  port is done; no other part of the frozen screens is consulted.
+- The key tour's screens are held to llamatron's own earlier screens, never to the retired Python's (the user's rule). The
+  song wizard alone is held to the Python's frozen screens, until its port is done; no other part of the frozen screens is
+  consulted.
+- Every baseline the checks hold llamatron to is committed, and changes only through `--record-approved-screen-change` or
+  `--record-approved-export-change`, run in the commit that makes the change the user asked for; no baseline is kept on
+  one computer or rewritten by a plain run. What stands today is approved; a change the user asks for is made and recorded
+  rather than held back by the old answers, and a difference no request explains is fixed or named in the recap (the
+  user's rule). A set changed since the freeze gets llamatron's own committed answer in the same change.
 - No commit of code, examples or tools goes in without the check passing. Documents and `.claude/` files are committed without
   a run, apart from code mid-change; a document naming paths runs `python/tests/test_doc_paths.py` first.
 - Before and after a change that should leave the music alone, every export is compared byte for byte, the version line aside.
