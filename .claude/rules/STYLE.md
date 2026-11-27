@@ -62,6 +62,11 @@ plain code, comments that explain why, tests that read clearly.
   exporter tags, and numbers with a meaning (`MIN_PROBABILITY`). Unused constants are removed.
 - **No YAML in a string**, anywhere in the source, tests included: data is built as data structures and serialized where
   it is written. A set a test starts from is a data file beside the tests, read by name.
+- **A file is written by a serializer**: a format llamatron writes, YAML, JSON, MIDI or any other, is built as data and
+  written by the library or the module that serializes it, never by formatting its text by hand.
+- **Look before saying it is missing**: before writing code that reads or writes a format, or that does what a library
+  might, the workspace's own modules and the crates its manifests already name are checked first, and a claim that
+  nothing fits says what was checked.
 - **Arrays stay arrays.** List-like data is stored as real values (sixteen booleans, never `'x...x...'`), in files and in
   memory. Display strings are made where shown.
 - **Keys.** Every binding is in one table, a class for each page, dialog and component, each binding its keys, the name the
