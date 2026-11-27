@@ -56,7 +56,7 @@ impl OscillatorPart {
         if *interaction == Interaction::Sync {
             // A synced wave repeats at its master's period, so the master runs at the note, and the wave heard, reset
             // by it, runs at the note plus the Interval, as the chip's synced oscillator is tuned above its master.
-            return sid_synced(*wave, state, frequency_of(base + interval), frequency, width, rate);
+            return sid_synced(*wave, state, frequency_of(base + interval + moves.interval), frequency, width, rate);
         }
         let speed = frequency * TABLE_SIZE as f64 / rate;
         let position = state.phases[0];
@@ -75,7 +75,7 @@ impl OscillatorPart {
             out = noise[state.phases[1] as usize % noise.len()] as f64;
         }
         if *interaction == Interaction::Ring {
-            state.second_phase = (state.second_phase + frequency_of(base + interval) / rate) % 1.0;
+            state.second_phase = (state.second_phase + frequency_of(base + interval + moves.interval) / rate) % 1.0;
             if state.second_phase >= 0.5 {
                 out = -out;
             }

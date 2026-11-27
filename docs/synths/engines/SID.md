@@ -33,11 +33,13 @@ worked out once, when the program first needs it, and stepped through after.
 
 Modulation brings in a second oscillator an Interval above. Ring flips the
 sign of the wave whenever the second oscillator is in its second half, the
-chip's ring modulation, a bell-like clang. With Sync the second oscillator
+chip's ring modulation, a bell-like clang; the chip rings only its triangle,
+and here every wave rings, which goes beyond the chip. With Sync the second oscillator
 plays the note and the wave heard, tuned the Interval above it, restarts each
 time the second completes its cycle: the note keeps its pitch, and the
 Interval moves the bright, vocal peak inside it, the tearing lead of hard
-sync; each
+sync, and a Mod Matrix route to SID interval sweeps that peak as the note
+plays; each
 restart falls between samples, and is smoothed there, a share in that sample
 and a share in the next, so that a swept sync lead tears without the harsh
 folding of a naive one. The

@@ -480,6 +480,7 @@ impl Patch {
                 pitch: bend,
                 width: moved.pulse_width,
                 spread: moved.detune,
+                interval: moved.interval,
             };
             let seconds = note.age;
             let mut wave = 0.0;

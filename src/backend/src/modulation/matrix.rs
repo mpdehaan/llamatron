@@ -42,6 +42,8 @@ pub enum Destination {
     Pitch,
     PulseWidth,
     Detune,
+    /// The SID's Interval: how far its second oscillator stands from the note, in semitones.
+    Interval,
     Cutoff,
     Resonance,
     Amp,
@@ -192,6 +194,10 @@ pub static DESTINATIONS: &[Named<(Destination, f64)>] = &[
         value: (Destination::Detune, 1.0),
     },
     Named {
+        name: "interval",
+        value: (Destination::Interval, 24.0),
+    },
+    Named {
         name: "cutoff",
         value: (Destination::Cutoff, 6.0),
     },
@@ -267,6 +273,7 @@ pub struct Moved {
     pub pitch: f64,
     pub pulse_width: f64,
     pub detune: f64,
+    pub interval: f64,
     pub cutoff: f64,
     pub resonance: f64,
     pub amp: f64,
@@ -337,6 +344,7 @@ impl ModMatrix {
                 Destination::Pitch => moved.pitch += value,
                 Destination::PulseWidth => moved.pulse_width += value,
                 Destination::Detune => moved.detune += value,
+                Destination::Interval => moved.interval += value,
                 Destination::Cutoff => moved.cutoff += value,
                 Destination::Resonance => moved.resonance += value,
                 Destination::Amp => moved.amp += value,

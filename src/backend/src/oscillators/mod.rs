@@ -243,12 +243,14 @@ pub fn free_phase(random: f64, place: usize) -> f64 {
     (bits >> 11) as f64 / (1u64 << 53) as f64
 }
 
-/// What moves the oscillators at one sample: semitones of pitch, a share of the pulse's width, and the detune's spread.
+/// What moves the oscillators at one sample: semitones of pitch, a share of the pulse's width, the detune's spread, and
+/// semitones added to the SID's Interval.
 #[derive(Clone, Copy, Default)]
 pub struct Moves {
     pub pitch: f64,
     pub width: f64,
     pub spread: f64,
+    pub interval: f64,
 }
 
 impl OscillatorPart {
