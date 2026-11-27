@@ -1,0 +1,16 @@
+# llamatron: a set for the silent-instruments warning's test. Four instruments: sampled plays through FluidSynth, away
+# through a port this computer lacks, here through a connected port, and unused through a missing port but no track plays
+# through it.
+instruments:
+  - { name: sampled, device: "*FluidSynth" }
+  - { name: away, device: another computer's port }
+  - { name: here, device: a connected port }
+  - { name: unused, device: nowhere }
+patterns:
+  - { name: tune, steps: 4 }
+songs:
+  - name: song
+    tracks: [{ name: one, instrument: sampled }, { name: two, instrument: away }, { name: three, instrument: here }]
+    scenes:
+      - name: scene
+        clips: [{ track: one, pattern: tune }]

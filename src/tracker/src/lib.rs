@@ -30,6 +30,7 @@ pub mod realtime;
 pub mod scene_notes;
 pub mod screens;
 pub mod settings;
+pub mod silent_instruments;
 pub mod sound_spec;
 pub mod style;
 pub mod svg;

@@ -183,6 +183,12 @@ impl ArrangePage {
         let row = self.row.get().max(0) as usize;
         let scene = &app.document.song().scenes()[row];
         let count = scene.clip_slots().len();
+        // A scene with clips is never deleted from under the song playing it.
+        if count > 0 && app.transport.is_playing() {
+            let lines = vec![errors::ERR_SCENE_PLAYING_SHOWN.to_string()];
+            app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_DELETE_TITLE, lines)));
+            return;
+        }
         let question = named(messages::MSG_DELETE_SCENE_QUESTION, &[("name", super::scene_name(scene, row).as_str().into())]);
         let mut lines = Vec::new();
         if count > 0 {
@@ -244,6 +250,12 @@ impl ArrangePage {
         }
         let song = app.document.song();
         let clips = song.scenes().iter().filter(|scene| scene.get_clip_slot(&name).is_some()).count();
+        // A track with clips is never deleted from under the song playing it.
+        if clips > 0 && app.transport.is_playing() {
+            let lines = vec![errors::ERR_TRACK_PLAYING_SHOWN.to_string()];
+            app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_DELETE_TITLE, lines)));
+            return;
+        }
         let grabbing = song
             .scenes()
             .iter()

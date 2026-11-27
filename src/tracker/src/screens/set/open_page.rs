@@ -154,6 +154,7 @@ fn take_up(app: &mut App, document: Document) {
     let path = document.get_path().map(|path| path.display().to_string()).unwrap_or_default();
     app.document = document;
     app.say(&named(messages::MSG_OPENED, &[("path", path.as_str().into())]));
+    crate::silent_instruments::warn_of_silent_instruments(app);
 }
 
 /// Ask whether to open a set whose file's values had to be corrected, listing the corrections, and open it on YES; on NO

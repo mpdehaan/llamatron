@@ -50,8 +50,11 @@ pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
     let mut tracker = Tracker::new(document);
     tracker.app.fluidsynth_installed = fluidsynth_installed;
     tracker.app.preferences = preferences;
-    if let Some((document, corrections)) = offered {
-        crate::screens::set::open_page::offer_corrected(&mut tracker.app, document, &corrections);
+    match offered {
+        Some((document, corrections)) => crate::screens::set::open_page::offer_corrected(&mut tracker.app, document, &corrections),
+        // A tracker playing on its own is never stopped by the warning's dialog.
+        None if path.is_some() && !launch.opens_arrange() => crate::silent_instruments::warn_of_silent_instruments(&mut tracker.app),
+        None => {}
     }
     start_terminal()?;
     tracker.app.session.recording = launch.for_recording;

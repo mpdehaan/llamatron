@@ -12,7 +12,7 @@ use crate::objects::song::{ClipSlot, Scene, Song, Track};
 use crate::schema::checking::{time_signature, written_length};
 use crate::schema::generated::defaults;
 use crate::schema::generated::file_format::{
-    ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, FLUIDSYNTH_DEVICE,
+    ClipSlotSetting, InstrumentKind, InstrumentSetting, PatternSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, FLUIDSYNTH_DEVICE,
 };
 use crate::schema::generated::limits::{MAX_PAN, MAX_STEP_SIZE, MIN_STEPS};
 use crate::values::note::Note;
@@ -307,6 +307,20 @@ impl Instrument {
     /// How many milliseconds before its note a keyswitch is sent, 0 for at the same moment.
     pub fn keyswitch_lead(&self) -> i64 {
         whole(self.get_written(InstrumentSetting::KEYSWITCH_LEAD)).unwrap_or(defaults::DEFAULT_KEYSWITCH_LEAD)
+    }
+
+    /// What it plays through: off, MIDI or a built-in synth, MIDI where its file does not say.
+    pub fn get_kind(&self) -> &str {
+        self.get_written(InstrumentSetting::KIND).and_then(Data::as_str).unwrap_or(InstrumentKind::MIDI)
+    }
+
+    /// The MIDI device it plays through, where it is a MIDI instrument whose device is chosen: one switched off, or built
+    /// in, keeps its device for when it is MIDI again, and plays nothing through it.
+    pub fn played_device(&self) -> Option<&str> {
+        if self.get_kind() != InstrumentKind::MIDI {
+            return None;
+        }
+        self.get_written(InstrumentSetting::DEVICE).and_then(Data::as_str)
     }
 
     /// Whether it plays through FluidSynth, which would sound a keyswitch as a note, rather than through a MIDI port.
