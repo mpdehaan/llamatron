@@ -7,27 +7,28 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 ## Now: the synths (finish the outstanding synth work, then the other engines with their demos)
 
 1. OTHER_IDEAS: Page tests that read the page.
-2. OTHER_IDEAS: The coverage report.
-3. OTHER_IDEAS: The development tools in a crate of their own; The tracker's tables named for what they are.
-4. OTHER_IDEAS: No YAML in strings.
-5. OTHER_IDEAS: One source for each rule of the code; Undo recorded only when the set changed.
-6. OTHER_IDEAS: Checked writes and a lock-free sender; Dead code and comments.
-7. OTHER_IDEAS: Settings pages by field.
-8. UX_IDEAS: New names without a dash.
-9. SYNTH_IDEAS: The table oscillators' level and bands; SID closer to its chip; Pocket closer to its chip.
-10. UX_IDEAS: Space on an empty drum Note step.
-11. OTHER_IDEAS: The song wizard's screens comparison in Rust.
-12. DEMO_IDEAS: Engines and effects under each synth demo.
-13. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
-14. SYNTH_IDEAS: Modulator modules (Chaos and Snail, then Tide, Turing, Bounce and Swarm); New-instrument choices
+2. SYNTH_IDEAS: The mixer on each track; The Bus page; FluidSynth through the effects; Stereo.
+3. OTHER_IDEAS: The coverage report.
+4. OTHER_IDEAS: The development tools in a crate of their own; The tracker's tables named for what they are.
+5. OTHER_IDEAS: No YAML in strings.
+6. OTHER_IDEAS: One source for each rule of the code; Undo recorded only when the set changed.
+7. OTHER_IDEAS: Checked writes and a lock-free sender; Dead code and comments.
+8. OTHER_IDEAS: Settings pages by field.
+9. UX_IDEAS: New names without a dash.
+10. SYNTH_IDEAS: The table oscillators' level and bands; SID closer to its chip; Pocket closer to its chip.
+11. UX_IDEAS: Space on an empty drum Note step.
+12. OTHER_IDEAS: The song wizard's screens comparison in Rust.
+13. DEMO_IDEAS: Engines and effects under each synth demo.
+14. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
+15. SYNTH_IDEAS: Modulator modules (Chaos and Snail, then Tide, Turing, Bounce and Swarm); New-instrument choices
    (mockup).
-15. SYNTH_IDEAS: Durham (mockup).
-16. SYNTH_IDEAS: MechaDrum split (mockup); The vactrol's age.
-17. SYNTH_IDEAS: Spectral; Variance; The professor's effect plans.
-18. SYNTH_IDEAS: Every engine and effect redesigned; The other engines and effects, each with its demo from DEMO_IDEAS
+16. SYNTH_IDEAS: Durham (mockup).
+17. SYNTH_IDEAS: MechaDrum split (mockup); The vactrol's age.
+18. SYNTH_IDEAS: Spectral; Variance; The professor's effect plans.
+19. SYNTH_IDEAS: Every engine and effect redesigned; The other engines and effects, each with its demo from DEMO_IDEAS
    (log_garden first, with ComplexOsc).
-19. SYNTH_IDEAS: Asheville's polyphonic mode; The Engine tab's rest; The Mod Matrix's destinations; the rest of the Instrument Page.
-20. OTHER_IDEAS: Drum-kit sequencing, at the end of all synth work.
+20. SYNTH_IDEAS: Asheville's polyphonic mode; The Engine tab's rest; The Mod Matrix's destinations; the rest of the Instrument Page.
+21. OTHER_IDEAS: Drum-kit sequencing, at the end of all synth work.
 
 When a question waits on the user, do synth work that needs no mockup, or the song wizard.
 
