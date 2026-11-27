@@ -747,6 +747,18 @@ impl ArrangePage {
         }
     }
 
+    /// Ask for one of the set's generators and add it to the cursor's cell alone, after the ones it runs.
+    fn add_cell_chain(&self, app: &mut App) {
+        use crate::screens::generators::generator_list_page::{ask_to_add, Holder};
+        let Some(cell) = self.cursor_cell(app) else { return };
+        let holder = match cell {
+            CellPlace::Track(name) => Holder::Track(name),
+            CellPlace::Scene(index) => Holder::Scene(index),
+            CellPlace::Clip(index, track) => Holder::Clip(index, track),
+        };
+        ask_to_add(app, holder, false);
+    }
+
     /// Take a chain out of the cursor's cell alone, the chain staying in the set.
     fn remove_cell_chain(&self, app: &mut App, place: usize) {
         use llamatron_model::schema::generated::file_format::TrackSetting;
@@ -1489,6 +1501,8 @@ impl Page for ArrangePage {
             if let Some(target) = self.picked_target(app) {
                 self.open_target(app, target);
             }
+        } else if item.is(&Keys::ADD_CHAIN) {
+            self.add_cell_chain(app);
         } else if item.is(&Keys::REMOVE_CHAIN) {
             if let Some(Target { place: Some(place), .. }) = self.picked_target(app) {
                 self.remove_cell_chain(app, place);
@@ -1945,5 +1959,38 @@ mod tests {
         press(&mut app, &mut page, &Keys::BACK);
         assert!(page.cut.is_none());
         assert!(ArrangePage::clip(&app, chorus, "bass").is_some());
+    }
+
+    /// In the details view, ENTER on a clip's "+ add chain" line asks for one of the set's generators and adds it to the
+    /// clip alone.
+    #[test]
+    fn add_chain_in_the_details_view_adds_a_generator_to_the_clip() {
+        use crate::keys::first_key;
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/clip_and_a_generator.yml");
+        let text = std::fs::read_to_string(path).expect("the scenario's set is there");
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let mut tracker = crate::app::Tracker::new(crate::document::Document::new(setlist, None));
+        tracker.press(first_key(&crate::keybindings::MainPage::ARRANGE));
+        // Arrange opens on the scene's name; the clip is the cell to its right.
+        tracker.press("right");
+        let most_presses = 10;
+        tracker.press(first_key(&Keys::SHOW_DETAILS));
+        tracker.press(first_key(&Keys::INTO_DETAILS));
+        for _ in 0..most_presses {
+            if tracker.top().keys(&tracker.app).iter().any(|key| key.is(&Keys::ADD_CHAIN)) {
+                break;
+            }
+            tracker.press("down");
+        }
+        tracker.press(first_key(&Keys::ADD_CHAIN));
+        let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
+        assert!(
+            screen.iter().any(|line| line.contains("lift")),
+            "the picker lists the set's generator: {screen:#?}"
+        );
+        tracker.press(first_key(&crate::keybindings::ChoiceDialog::CHOOSE));
+        let clip = tracker.app.document.song().scenes()[0].get_clip_slot("lead").expect("the clip").clone();
+        let chains = crate::screens::arrange::arrange_tabs::chain_names(clip.get_written(ClipSlotSetting::CHAINS));
+        assert_eq!(chains, ["lift"]);
     }
 }

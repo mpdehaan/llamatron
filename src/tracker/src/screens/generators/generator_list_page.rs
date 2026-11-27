@@ -78,8 +78,16 @@ impl GeneratorListPage {
         });
     }
 
-    /// Ask which of the set's generators to add at the end of the list, and put the cursor on it; a set with none says so.
+    /// Ask which of the set's generators to add at the end of the list, and put the cursor on it.
     fn add(&self, app: &mut App) {
+        ask_to_add(app, self.holder.clone(), true);
+    }
+}
+
+/// Ask which of the set's generators to add at the end of a track's, a scene's or a clip's list, putting the cursor on it
+/// where the list is the page under the picker; a set with none says so.
+pub fn ask_to_add(app: &mut App, holder: Holder, puts_cursor: bool) {
+    {
         let setlist = app.document.get_setlist();
         let offered = generators_to_add(setlist);
         if offered.is_empty() {
@@ -88,7 +96,6 @@ impl GeneratorListPage {
             return;
         }
         let shown = offered.iter().map(|name| listed_generator(setlist, name)).collect();
-        let holder = self.holder.clone();
         let mut dialog = ChoiceDialog::new(messages::MSG_ADD_GENERATOR_TITLE, shown, FIRST_CHOICE);
         dialog.then = Some(Box::new(move |app: &mut App, answer: &Answer| {
             let Answer::Chosen(place) = answer else { return };
@@ -100,7 +107,9 @@ impl GeneratorListPage {
             names.push(offered[*place].clone());
             let added = (names.len() - 1).to_string();
             page.store(app, names);
-            app.cursor_to(&added);
+            if puts_cursor {
+                app.cursor_to(&added);
+            }
         }));
         app.show_page(Box::new(dialog));
     }

@@ -1,0 +1,14 @@
+# llamatron: a set for Arrange's details view test: one clip, and one generator, lift, that it does not run yet.
+scales:
+  - { name: c_major, root: C, type: major }
+patterns:
+  - { name: tune, steps: 4, degree: [1, 2, 3, 4] }
+generators:
+  - { name: lift, kind: arp }
+songs:
+  - name: song
+    scale: c_major
+    tracks: [{ name: lead }]
+    scenes:
+      - name: one
+        clips: [{ track: lead, pattern: tune }]
