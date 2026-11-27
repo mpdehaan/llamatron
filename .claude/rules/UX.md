@@ -19,7 +19,9 @@ changes it too. A new thing looks like the existing thing it is most like.
   editors. Accepted exceptions, each on a kind of page where only one meaning is ever on screen: the main screen's letters,
   which open pages; `M` munge, `S` size and `R` reconfigure in the pattern editor; `S` cell length in the groove and guitar
   bar editors and `R` ready-made in the guitar bar editor; `D` remove step or cell in the step editors and details on Arrange;
-  `G` grab, `E` entry size and `H` chord on the piano roll; `V` played in Scene View; `W` when in the chain editor. ENTER
+  `G` grab, `E` entry size and `H` chord on the piano roll; `V` played in Scene View; `W` when in the chain editor;
+  on Arrange, `M` mute and `S` solo for the cursor's track, `T` cut and `P` paste in place of Move mode, and `V` Scene View
+  (the user's choice). ENTER
   on a Name field reads `rename`; `edit` is for what opens an editor.
 - **No Shift, and no Ctrl or Shift with an arrow**; new keys are plain letters or unshifted marks. Shift+Tab in a grid picker is
   the one exception.
@@ -54,9 +56,11 @@ changes it too. A new thing looks like the existing thing it is most like.
 - **True or false** answers to Space and ENTER alike, one legend entry `Space/ENTER`: toggle rows, `Toggle`
   fields, a silent step in the offsets editor, the piano roll's pencil, the Use Draws rows' cycle. A picker on the roll takes a
   letter: `H` for the chord, drawing a note at the cursor first on an empty step.
-- **Move mode**: `M` picks up a list row, or a scene, track or clip on Arrange; arrows carry it (a clip only into empty cells,
-  passing over full ones); ENTER, ESC or `M` drops it; one move is one undo step. A carried name is drawn between `<` and `>` in
-  place of its spaces; on Arrange its box is green. Only those keys work meanwhile.
+- **Move mode**: `M` picks up a list row; arrows carry it; ENTER, ESC or `M` drops it; one move is one undo step. A carried
+  name is drawn between `<` and `>` in place of its spaces. Only those keys work meanwhile.
+- **Cut and paste on Arrange**: `T` cuts the scene, track or clip under the cursor, its box turning green, and nothing moves
+  until `P` pastes it: a scene before the scene under the cursor, a track before the track, a clip into an empty cell, as one
+  undo step; ESC lets go of the cut.
 - OK, YES, NO, CANCEL, ENTER and ESC are written in capitals everywhere: buttons, legends, help, messages, documents.
 - **ESC closes the topmost thing**, one layer at a time, and never quits: a dialog, an Inset Window, a locked cell, then the page.
   In the song wizard, outside a part's settings, ESC always asks before closing, starting on NO.
@@ -177,7 +181,8 @@ All made by the model's naming (`src/model/src/objects/naming.rs`):
 - Every page but Arrange has a theme stripe by its kind in place of the header's rule.
 - The crumbs say where ESC goes back to; a page reached two ways shows two trails: `PATTERNS › tune`, `ARRANGE › pattern: tune`,
   `ARRANGE › clip: (scene 1, lead) › pattern: tune`. A page that jumps elsewhere gives the opened page its crumbs.
-- An Inset Window is a read-only window over a page, closed by its key or ESC. `P` is the one key for looking inside things.
+- An Inset Window is a read-only window over a page, closed by its key or ESC. `P` is the one key for looking inside things,
+  except on Arrange, where `V` opens Scene View and `P` pastes.
 - The song wizard is a row of tabs, Genre, Band, Composition, Form and Apply, over a box: a tab with parts lists them at the
   left of the box, each shown, its own fields first, and the settings of the part under the cursor at the right; `< Back` and
   `Next >` at the foot of the box, showing their keys PgUp and PgDn, open the tab before and after, the last tab having Back alone; Apply is a button after the Apply tab's summary. A tab not ready yet is dim and says

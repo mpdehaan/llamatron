@@ -24,10 +24,6 @@ Wanted changes to how the tracker looks and is used: what each is, never its sta
   instrument where it has one, and otherwise through FluidSynth's drum kit, as a drum pattern does, rather than the
   song's Preview instrument or the piano.
 - **Space on an empty drum Note step**: in a drum pattern's rows, Space on a Note cell with no note writes C there.
-- **Solo a track, and mute from Arrange**: on Arrange, with the cursor anywhere in a track's column, a key mutes or
-  unmutes the track (the same Mute as its track editor's) and a key solos it; a solo is one track at a time, every other
-  track silent while it lasts, soloing another moving the solo there; live and in Listen. A muted track's column shows in
-  its own colour and its heading an `M`, a soloed track's heading an `S`. The keys and the colour are still to settle.
 - **Drawing only what changed**: the screen kept as a grid of cells, each its character and style, and each frame compared
   with the last so that only the cells that changed are sent to the terminal, the cursor moved only where the next changed
   cell does not follow the last and a style sent only where it changes, after the open-source Ratatui's buffer (MIT,

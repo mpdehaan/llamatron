@@ -39,14 +39,16 @@ The keys depend on what is under the cursor:
 | A track's name | `ENTER` | Open the track editor, as [Tracks](TRACKS.md) describes |
 | A track's name | `I` | Insert a blank track before it |
 | A track's name | `C` | Copy the track and its clips to its right, asking whether the copy plays the same patterns or copies of them |
-| A track's name | `M` | Pick the track up: `←→` carry it, and `ENTER` drops it |
+| A track's name | `T` | Cut the track: `P` on another track's name pastes it before that track, and `ESC` lets go |
 | A track's name | `Bksp` | Delete the track and its clips, after asking; the last track can't be deleted |
 | The `+` after the last track, or any track's name | `ENTER` or `A` | Add a track at the end |
 | A scene's name | `ENTER` | Open the Scene page, as [Scenes](SCENES.md) describes |
 | A scene's row | `I` | Insert a blank scene above it |
 | A scene's row | `C` | Copy the scene and all its clips below it, asking whether the copy plays the same patterns or copies of them |
-| A scene's name | `M` | Pick the scene up: `↑↓` carry it, and `ENTER` drops it |
-| A clip | `M` | Pick the clip up: the arrows carry it to the nearest empty cell, and `ENTER` drops it |
+| A scene's name | `T` | Cut the scene: `P` on another scene's name pastes it before that scene, and `ESC` lets go |
+| A clip | `T` | Cut the clip: `P` on an empty cell moves it there, and `ESC` lets go |
+| Anywhere in a track's column | `M` | Mute or unmute the track, the track editor's Mute: its column turns dim and its name shows an amber `M` |
+| Anywhere in a track's column | `S` | Solo the track, or lift its solo: one track is soloed at a time, its name showing a green `S`, and every other track is silent and dim, in real time and in every export |
 | A scene's name | `Bksp` | Delete the scene and its clips, after asking; the last scene can't be deleted |
 | A scene's row | `A` | Add a scene below it |
 | The `+` row at the bottom | `ENTER` or `A` | Add a scene at the end |
@@ -56,13 +58,13 @@ The keys depend on what is under the cursor:
 | A clip | `J` | Jump to the clip's pattern in the pattern editor; `ESC` comes back to the clip |
 | A clip | `C` | Copy the clip |
 | A clip | `Bksp` | Delete the clip, after asking |
-| A cell, after copying a clip | `V` | Paste the copied clip here, replacing what's there |
+| A cell, after copying a clip | `P` | Paste the copied clip here, replacing what's there |
 | The corner over the scene names | `Space` | Play the song from the top, or stop everything, with Real Time on |
 | A scene's name | `Space` | Play the song from this scene, or stop everything, with Real Time on |
 | A clip | `Space` | Play this clip on its own, or stop its track, with Real Time on |
 | Anywhere | `D` | Show or hide the details of every cell (see Details View below) |
 | A track's name, a scene's name or a clip | `Tab` | Lock into its details to pick, open, add or remove chains and open other settings (see Details View below) |
-| A scene's name | `P` | Open Scene View, the scene's notes laid out by track (see Scene View below) |
+| A scene's name | `V` | Open Scene View, the scene's notes laid out by track (see Scene View below) |
 | Anywhere | `F` | Fracture: give every clip a pattern of its own, after asking (see Fracture below) |
 
 
@@ -128,7 +130,7 @@ picked](screenshots/arrange_details_locked.svg)
 
 ## Scene View
 
-`P` on a scene's name opens Scene View, a window over Arrange that lays out
+`V` on a scene's name opens Scene View, a window over Arrange that lays out
 every note the scene plays, track by track, on one piano roll: each track in a
 colour of its own, the drum tracks in the lanes at the foot, the chord on each
 beat named above, and at the right each track's chains and settings, as the
@@ -143,7 +145,7 @@ and draw, with a blue border, so that the two can be compared, showing one
 take of the song's random parts. The arrows move the cursor, and the line
 under the roll names the notes under it. `PgUp` and `PgDn` jump a bar, `-` and
 `=` make each step narrower or wider, and `[` and `]` scroll the tracks at the
-right. `P` or `ESC` closes it.
+right. `ESC` closes it.
 
 Each chord heard is named in the scene's scale with its Roman numeral. A chord
 that leads to another chord of the key is numbered by the chord it leads to: in
