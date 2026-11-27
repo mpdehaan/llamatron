@@ -23,3 +23,13 @@ reference of any kind.
 - `MODULATORS_RESEARCH.md`: chaotic systems and their safe integration, slow jerk circuits, the function generator,
   the random looping shift register, the bouncing ball, Kuramoto coupled oscillators, smooth random sources and
   followers, and the modulation matrix.
+- `BITCRUSHING.md`: digital degradation: sample-rate reduction (whole-sample and fractional holds, band-limited
+  steps, reconstruction, jitter, rates that follow the note), quantisers and number formats, bits muted, forced,
+  inverted and rearranged, the converter as one table, dither, mu-law and A-law, gain-ranging converters and ladder
+  errors, early sampler converters, folding, wrapping, rectifiers and zero-crossing tricks, table waveshapers,
+  wavetable oscillators with digital character, the tone filter and separate dry and wet, and their costs.
+- `HARD_DIGITAL.md`: hard digital synthesis: shift-register noise and the chips' registers, clocked, looping and
+  filtered noise, dust and particles, dividers and integer pitch, bytebeat and its semantics, bit-wise oscillators and
+  Walsh functions, digital cross-modulation, phase distortion and accumulator truncation, chaotic maps, cellular
+  automata, Collatz sequences, dynamic stochastic and fractal synthesis, glitch techniques, circuit-bent toys as
+  algorithms, the harsh-noise wall, and destroyer distortions with their safety and costs.
