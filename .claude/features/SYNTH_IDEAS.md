@@ -134,6 +134,18 @@ The professor's research is in `.claude/notes/synthesis/`.
 
 - **Chorus**: a chorus effect, its design drawn from the best open-source choruses, studied when the time comes, with
   their licences checked.
+- **Bitcrush rebuilt as an 8-bit converter**: Bitcrush becomes a desktop 8-bit crusher with switchable bits, its
+  settings in this order: Drive, -12 to +15 dB, +3 dB untouched, into a soft diode-style clip anti-aliased as Drive's
+  curves are; Rate, the converter's clock, 250 Hz to 30 kHz, 12 kHz; Fold, 0 to 100%, 0%, a plain gauge, folding each
+  held value past a threshold; Bits, a row of eight cells, the top bit first at the left (8 7 6 5 4 3 2 1), each stepped
+  between on (`●`), off (`·`) and inverted (`◆`), every bit on untouched; Filter, Low pass, Band pass or High pass, Low
+  pass; Cutoff, 20 Hz to 15 kHz, 9 kHz; Q, 0.5 to 4, 0.7, gentle; and Dry and Wet as two gauges, 0% and 100%, in place of
+  Mix. The sound passes Drive, a hold at the clock with its steps smoothed, the fold, the converter with the bit switches
+  as one table of 256 levels, a DC blocker and the filter; the clock's aliasing is kept as the sound, a bit switched
+  crossfades over about 10 ms, and the wet signal has a safety limiter. Today's Bits, Rate and Mix go, with no migration.
+  The research is in `.claude/notes/synthesis/BITCRUSHING.md`.
+- **Bitcrush's Jitter and mu-law converter**: a Jitter gauge wobbling the converter's clock, and a choice of converter,
+  linear or mu-law, which compresses quiet sounds before the bits as telephone audio does.
 - **Pre FX**: two slots before the filter, run for each sounding note, offering only the effects that keep no memory:
   Drive, Bitcrush and every filter as an effect. The effect blocks after the filter stay as they are. An effect with
   memory, a delay or a reverb, is left out there, since it would cost once a note and echo each note apart.
