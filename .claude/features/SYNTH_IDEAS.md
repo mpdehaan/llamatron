@@ -82,9 +82,11 @@ The professor's research is in `.claude/notes/synthesis/`.
   Kick, Sine Kick, Morph Kick, Snare, Clap, Closed and Open Hat, Cymbal, Tom and Conga, Rim, Cowbell, Claves, Zap, Noise and
   Impulse); FM Drum (FM Kick, Snare, Tom, Hat, Cymbal, Clap and Cowbell); Physical Drum (Struck Kick, Snare and Tom, Hand
   Drum, Mallets, Shaker, Bloom Cymbal, Wood and Metal); and Karplus Drum (Classic, Pluck Tom, Snare, Hollow, Metal, Harmonic
-  Drum, Buzz, Body Drum, Boom, then Bars and Bowls and a Mesh). Every drum shares Drum FX (AM, one EQ band, a filter, rate
-  reduction and drive); the page shows only the tabs that act; each hit's loudness is matched to a reference rather than
-  its peak normalised; nothing of today's drums is kept for older sets; presets per drum and the demo updated
+  Drum, Buzz, Body Drum, Boom, then Bars and Bowls and a Mesh). Every drum plays as a live voice, sample by sample, like any
+  synth's: its trigger fires the envelopes and restarts the LFOs, every drum setting is a destination of the mod matrix, and
+  every tab works, nothing hidden; a drum starts with Env 1 not on the Amp (its own decay makes its loudness), Env 2 not on
+  the filter and the Filter set to (none), each available to switch on. Every drum shares Drum FX (AM, one EQ band, a
+  filter, rate reduction and drive); each hit's loudness is matched to a reference rather than its peak normalised; nothing of today's drums is kept for older sets; presets per drum and the demo updated
   (`.claude/notes/synthesis/`, the drum chapters).
 - **The vactrol's age**: An old cell behaving less predictably strike to strike, within a musical range Claude proposes.
 - **Asheville's polyphonic mode**, after the late-1970s polyphonic analogs: every key its own voice, a shared filter and
@@ -120,7 +122,10 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **A speech synth**: a voice that speaks or sings words, the words to say written in a field of their own on each
   scene, so that the voice says that scene's words as its clips play.
 - **A riser synth**: an instrument dedicated to rises, sweeps and build-ups (risers, falls, impacts and whooshes for
-  transitions), after the professor's research into the dedicated riser instruments of sample-based producers' tools.
+  transitions), after the professor's research into the dedicated riser instruments of sample-based producers' tools. A
+  note only triggers it: One Shot, the default, plays a rise whose length is set on its panel in bars, beats or seconds,
+  counted over the song's tempo, so that every curve lands on its target at the end; Until release rises while the note is
+  held and fires the impact when it is let go, for playing by hand.
 - **A brass synth**, somewhat after Stringy, for the bright, stabbing synth brass of early-1980s rock and pop keyboard anthems,
   as simple as the vintage brass ensemble keyboards (research which to follow).
 - **Brass and wind** among the physical modelling ideas.
