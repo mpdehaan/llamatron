@@ -7,7 +7,7 @@ Wanted changes to how the tracker looks and is used: what each is, never its sta
   page, the pattern editor's toggle rows and the tabs' marks included; built with the tab box.
 - **A line at the foot of every major editor** saying what the tab or section under the cursor does.
 - **Holding `[` or `]`** on a stepped field, such as the synths' gauges, speeds up as it is held.
-- **Muted tracks and scenes** change colour on Arrange (which colour and where, asked first: a new allowance of colour).
+- **Muted scenes** change colour on Arrange (which colour and where, asked first: a new allowance of colour).
 - **The wording of everything shown**: A discussion first, then an audit of every string. No "you" or "your"; "allow", never
   "let"; formal throughout; Claude answering as a professor of English who designs applications for business professionals,
   with its own rules to recommend; the tests' labels of choices in scope.
@@ -24,9 +24,10 @@ Wanted changes to how the tracker looks and is used: what each is, never its sta
   instrument where it has one, and otherwise through FluidSynth's drum kit, as a drum pattern does, rather than the
   song's Preview instrument or the piano.
 - **Space on an empty drum Note step**: in a drum pattern's rows, Space on a Note cell with no note writes C there.
-- **Solo a track, and mute from Arrange**: soloing a track plays it alone, live and in Listen, every other track silent
-  until the solo is lifted, several tracks soloed together where wanted; a track's Mute, today on its track editor, and
-  its solo reached directly from Arrange, each shown on the track's heading.
+- **Solo a track, and mute from Arrange**: on Arrange, with the cursor anywhere in a track's column, a key mutes or
+  unmutes the track (the same Mute as its track editor's) and a key solos it; a solo is one track at a time, every other
+  track silent while it lasts, soloing another moving the solo there; live and in Listen. A muted track's column shows in
+  its own colour and its heading an `M`, a soloed track's heading an `S`. The keys and the colour are still to settle.
 - **Drawing only what changed**: the screen kept as a grid of cells, each its character and style, and each frame compared
   with the last so that only the cells that changed are sent to the terminal, the cursor moved only where the next changed
   cell does not follow the last and a style sent only where it changes, after the open-source Ratatui's buffer (MIT,
