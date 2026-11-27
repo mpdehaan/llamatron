@@ -275,6 +275,21 @@ fn with_names(mut field: Field, names: Vec<String>) -> Field {
 }
 
 /// A choice among values, each shown by its name.
+/// The part whose types are filters, and how a choice that is no name, such as (none), begins.
+const FILTER_PART: &str = "filter";
+const NOT_A_NAME: char = '(';
+
+/// A part's types, each with its name, in the order its picker lists them: the filter's and the envelopes' by name, as a
+/// picker's choices are, an entry that is no name, such as (none), first; another part's in its own order.
+fn listed_types(part: &str) -> Vec<(&'static str, String)> {
+    let (_, kinds, names) = PART_TYPES.iter().find(|(found, ..)| *found == part).copied().unwrap_or(("", &[], &[]));
+    let mut types: Vec<(&'static str, String)> = kinds.iter().copied().zip(names.iter().map(|name| name.to_string())).collect();
+    if part == FILTER_PART || ENVELOPE_PARTS.contains(&part) {
+        types.sort_by_key(|(_, name)| (!name.starts_with(NOT_A_NAME), name.to_lowercase()));
+    }
+    types
+}
+
 fn chosen(id: usize, label: &str, choices: &[&str], names: &[String], current: &str) -> Field {
     let place = choices.iter().position(|choice| *choice == current).unwrap_or(0);
     let shown = names.get(place).cloned().unwrap_or_default();
@@ -894,10 +909,11 @@ impl InstrumentEditor {
     }
 
     fn type_field(sound: &Sound, part: &'static str, ids: &mut Ids) -> Field {
-        let (_, kinds, names) = PART_TYPES.iter().find(|(found, ..)| *found == part).copied().unwrap_or(("", &[], &[]));
         let label = part_label(part, labels::MSG_PART_TYPE_LABEL);
-        let names: Vec<String> = names.iter().map(|name| name.to_string()).collect();
-        chosen(ids.at(Write::PartType(part)), &label, kinds, &names, &sound.part_type(part)).with_shown_label(labels::MSG_PART_TYPE_LABEL)
+        let types = listed_types(part);
+        let kinds: Vec<&str> = types.iter().map(|(kind, _)| *kind).collect();
+        let names: Vec<String> = types.into_iter().map(|(_, name)| name).collect();
+        chosen(ids.at(Write::PartType(part)), &label, &kinds, &names, &sound.part_type(part)).with_shown_label(labels::MSG_PART_TYPE_LABEL)
     }
 
     fn setting_fields(sound: &Sound, part: &'static str, ids: &mut Ids) -> Vec<Field> {
@@ -2325,5 +2341,20 @@ mod tests {
         assert!(labelled(&keyed, labels::MSG_LFO_KEY_LABEL).is_some());
         let ratio = labelled(&keyed, labels::MSG_LFO_RATIO_LABEL).expect("a ratio in the Rate's place");
         assert_eq!(ratio.value(), "2:1");
+    }
+
+    /// The filter's types are listed by name with (none) first, and an envelope's by name.
+    #[test]
+    fn filter_and_envelope_types_are_listed_by_name() {
+        for part in [FILTER_PART, ENVELOPE_PARTS[0]] {
+            let names: Vec<String> = listed_types(part).into_iter().map(|(_, name)| name).collect();
+            let named: Vec<&String> = names.iter().filter(|name| !name.starts_with(NOT_A_NAME)).collect();
+            let mut sorted = named.clone();
+            sorted.sort_by_key(|name| name.to_lowercase());
+            assert_eq!(named, sorted, "{part}");
+            if part == FILTER_PART {
+                assert!(names[0].starts_with(NOT_A_NAME), "(none) first");
+            }
+        }
     }
 }
