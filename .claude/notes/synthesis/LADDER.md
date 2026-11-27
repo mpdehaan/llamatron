@@ -110,12 +110,27 @@ harmonics against the harmonics' own:
 | x10 | −63 dB | −54 dB | −40 dB |
 | x6 | −63 dB | −63 dB | −49 dB |
 
+(The gains are those of a linear knob from an input scale of 1.3; the top level of x10 there, 14.3 units, is the one
+the exponential knob above reaches.)
+
 At full Drive the input pair is a square wave; only a higher rate or a lower top gain cleans it further. A top gain
 of ten keeps the familiar range of a driven filter.
 
 The level after a driven filter is held by the square root of the input gain, as a player sets the level of a
 driven filter, never by dividing inside the loop, which would change how the loop saturates. A coupling capacitor at
 about 5 Hz follows the output, as the circuit's does.
+
+## The Input's Scale and Drive's Knob
+
+How hot the input pair is fed decides whether Resonance is heard. Fed 1.3 units of 2V_t at full scale, a saw at half of
+full scale through full Resonance lifts the harmonic at the cutoff only 1.5 dB above the note, since the peak, ten
+times the input, saturates the input pair and holds itself down: the resonance sounds like an equaliser's lift. Fed
+0.35 units at full scale, the same saw's peak stands 10 dB over the note and a quiet one's 14.5 dB, the peak still
+compressing as the sound grows loud, as a ladder fed from a mixer at an ordinary setting does.
+
+Drive then raises the input towards the level where the pair is a square wave, here 14.3 units. Climbed linearly, a
+knob gives almost all its change in its first quarter; climbed exponentially, gain = (top / scale)^drive, the third
+harmonic of a sine at half of full scale rises evenly: about −66, −49, −31, −14 and −11 dB at 0, 25, 50, 75 and 100%.
 
 ## Self-Oscillation
 
