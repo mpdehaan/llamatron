@@ -89,9 +89,22 @@ The professor's research is in `.claude/notes/synthesis/`.
   filter, rate reduction and drive); each hit's loudness is matched to a reference rather than its peak normalised; nothing of today's drums is kept for older sets; presets per drum and the demo updated
   (`.claude/notes/synthesis/`, the drum chapters).
 - **The vactrol's age**: An old cell behaving less predictably strike to strike, within a musical range Claude proposes.
-- **Asheville's Sync**: a Sync switch on Asheville's panel, Osc 2 hard-synced to Osc 1, starting its cycle again each
-  time Osc 1's begins, each jump band-limited, as the later and rack versions of the classic instrument offer, so that
-  sweeping Osc 2's Tune gives the tearing sync lead.
+- **Asheville's later-version features**, after the later three-oscillator ladder monosynths and their rack versions:
+  - Sync, Osc 2 hard-synced to Osc 1, starting its cycle again each time Osc 1's begins, each jump band-limited and
+    Osc 2's sub restarting with it, so that sweeping Osc 2's Tune gives the tearing sync lead;
+  - FM 3→1, an amount from 0 to 10 beside Ring, Osc 3 moving Osc 1's frequency linearly, so that the pitch stays
+    centred as the depth rises, for bells and metallic basses;
+  - an Osc 3 Key switch at audio speed, so that Osc 3 can be a drone or a fixed-pitch modulator under a moving note;
+  - Mod Matrix destinations for each oscillator's pitch alone and for the Continuous model's Shape;
+  - a Glide shape for every engine, Exponential (Asheville's default), Constant time and Constant rate, and Key priority
+    (Low, High, Last), Low for Asheville by default;
+  - a filter mode of two filters, High-pass then Low-pass in series with a Spacing between them, then Dual low-pass,
+    two ladders in parallel panned apart with a Spacing, once the second ladder's cost is measured.
+- **Asheville-Poly**, an engine after the divide-down polyphonic instruments of the late 1970s: every note divided down
+  from two shared, slightly detuned master oscillators, so that octaves never beat and every note shimmers alike, each
+  note keyed in as an organ's is, with its own simple filter, envelope and amp, velocity-sensitive; a Resonators effect
+  of three band-passes, Low, Mid and High, each with Freq, Q and Level, mixed with the dry sound, usable by any
+  instrument; and starting points for strings, a choir-like pad, organ, piano, brass and clavinet sounds.
 - **Asheville's polyphonic mode**, after the late-1970s polyphonic analogs: every key its own voice, a shared filter and
   contours either paraphonic or per voice.
 - **The table oscillators' level and bands**: the band-limited tables Pocket, SID and Oh3 read made right: one gain a

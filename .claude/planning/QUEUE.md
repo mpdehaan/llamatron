@@ -60,5 +60,5 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 30. SYNTH_IDEAS: NoiseBuster.
 31. SYNTH_IDEAS: New filter characters.
 32. UX_IDEAS: Drum engines first for a drum instrument.
-33. SYNTH_IDEAS: Asheville's Sync.
+33. SYNTH_IDEAS: Asheville's later-version features; Asheville-Poly.
 34. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
