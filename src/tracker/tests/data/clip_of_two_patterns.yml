@@ -1,0 +1,16 @@
+# llamatron: a set for the clip page's tests. The lead's clip plays tune then hook; the set also has bridge, of notes,
+# and beat, of drums, which a clip of notes cannot add.
+scales:
+  - { name: c_major, root: C, type: major }
+patterns:
+  - { name: tune, steps: 4, degree: [1, 2, 3, 4] }
+  - { name: hook, steps: 4, degree: [5, 4, 3, 2] }
+  - { name: bridge, steps: 4, degree: [6, 5, 4, 3] }
+  - { name: beat, steps: 4, drum: true, degree: [C, null, C, null] }
+songs:
+  - name: song
+    scale: c_major
+    tracks: [{ name: lead }]
+    scenes:
+      - name: one
+        clips: [{ track: lead, patterns: [tune, hook] }]

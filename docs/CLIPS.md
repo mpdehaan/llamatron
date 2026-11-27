@@ -23,6 +23,14 @@ order the clip runs them: Chords, Arp, Guitarify, Timing and Phrasing, the
 built-in generators, and last More Generators, whose generators run after
 every built-in, on what the built-ins made.
 
+In the list of Patterns, `A` (add pattern), or ENTER on `+ (New)`, adds a
+pattern at the end of the list: one the set has, of the clip's kind, or a new
+blank one named after the track. `Bksp` takes the pattern under the cursor out
+of the list, which deletes no pattern, though a clip always keeps one. `M`
+(move pattern) picks the pattern up, `↑` and `↓` carry it along the list, and
+ENTER, ESC or `M` drops it, the whole move one undo step. `J` (jump to pattern)
+opens the pattern under the cursor.
+
 On the row of tabs, `←` and `→`, or `[` and `]`, choose a tab, stopping at the
 first and the last; `↓` goes into the tab. Inside it, `↑` and `↓` keep to a
 column: at a column's foot `↓` leaves the box for what is below it, and `↑`

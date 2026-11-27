@@ -76,8 +76,19 @@ pub trait Form {
         Vec::new()
     }
 
-    /// Act on one of the page's own keys, the cursor on a row.
+    /// Act on one of the page's own keys, the cursor on a row; a key that asks something leaves the edit that asks it in
+    /// the app's asking, which the field under the cursor then asks.
     fn press_own(&mut self, _app: &mut App, _item: &KeyItem, _key: &str, _row: Option<&Field>) {}
+
+    /// Whether the page is carrying one of its rows in Move mode, when only its own keys work.
+    fn carrying(&self) -> bool {
+        false
+    }
+
+    /// The field, by its id, that the cursor goes to after the page's own key, such as a row carried, once asked.
+    fn cursor_wanted(&self) -> Option<usize> {
+        None
+    }
 
     /// Whether a blank line comes before every section's heading rather than before the first alone.
     fn headings_apart(&self) -> bool {
@@ -179,6 +190,22 @@ impl<F: Form> FieldPage<F> {
             state,
             ported: Cell::new(true),
             asking: None,
+        }
+    }
+
+    /// Press one of the page's own keys on the row under the cursor, ask what the key asks, and put the cursor where the
+    /// page wants it.
+    fn press_page_key(&mut self, app: &mut App, shown: &Shown, item: &KeyItem, key: &str) {
+        let row = shown.fields.get(self.place(shown)).cloned();
+        self.form.press_own(app, item, key, row.as_ref());
+        if let (Some(asked), Some(row)) = (app.asking.take(), row.as_ref()) {
+            self.ask_or_apply(app, row.id, asked);
+        }
+        if let Some(wanted) = self.form.cursor_wanted() {
+            let now = self.shown(app);
+            if let Some(place) = now.fields.iter().position(|field| field.id == wanted) {
+                self.state.cursor.set(place);
+            }
         }
     }
 
@@ -695,9 +722,13 @@ impl<F: Form> Page for FieldPage<F> {
 
     fn keys(&self, app: &App) -> Vec<KeyItem> {
         let shown = self.shown(app);
-        let mut result = vec![self.bind(&Keys::SELECT).wanting_key()];
         let place = self.place(&shown);
         let row = shown.fields.get(place);
+        // In Move mode only the keys that carry and drop the row work.
+        if self.form.carrying() {
+            return self.form.page_keys(app, row);
+        }
+        let mut result = vec![self.bind(&Keys::SELECT).wanting_key()];
         if let Some(row) = row {
             if row.is_tab_row() {
                 result.push(self.bind(&Keys::ALONG_TABS));
@@ -747,7 +778,9 @@ impl<F: Form> Page for FieldPage<F> {
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
         let shown = self.shown(app);
         let direction = item.step_of(key).unwrap_or(0);
-        if item.is(&Keys::BACK) {
+        if self.form.carrying() {
+            self.press_page_key(app, &shown, item, key);
+        } else if item.is(&Keys::BACK) {
             app.go_back();
         } else if item.is(&Keys::SELECT) {
             self.move_cursor(app, &shown, key);
@@ -784,14 +817,10 @@ impl<F: Form> Page for FieldPage<F> {
                     }
                 }
                 Some(edit) => self.ask_or_apply(app, field.id, edit),
-                None => {
-                    let row = shown.fields.get(self.place(&shown)).cloned();
-                    self.form.press_own(app, item, key, row.as_ref())
-                }
+                None => self.press_page_key(app, &shown, item, key),
             }
         } else {
-            let row = shown.fields.get(self.place(&shown)).cloned();
-            self.form.press_own(app, item, key, row.as_ref());
+            self.press_page_key(app, &shown, item, key);
         }
     }
 

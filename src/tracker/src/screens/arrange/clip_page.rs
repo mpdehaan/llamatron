@@ -22,9 +22,11 @@ use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::{ClipSlot, Scene};
 use llamatron_model::schema::generated::defaults::DEFAULT_FOLLOW_ACTION;
-use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SetlistSetting, TrackSetting, FOLLOW_ACTION_CHOICES, PATTERN_ORDERS};
+use llamatron_model::schema::generated::file_format::{
+    ClipSlotSetting, PatternSetting, Section, SetlistSetting, TrackSetting, FOLLOW_ACTION_CHOICES, PATTERN_ORDERS,
+};
 use llamatron_model::schema::generated::limits::{MAX_CLIP_NAME_LENGTH, MAX_CLIP_REPEAT, MAX_NAME_LENGTH};
-use llamatron_strings::{labels, legends, marks, messages, named, names};
+use llamatron_strings::{errors, labels, legends, marks, messages, named, names};
 
 const NAME: usize = 0;
 const PATTERN_ORDER: usize = 1;
@@ -45,9 +47,185 @@ const BUILT_IN_IDS: usize = 1000;
 /// The morph style a clip takes where it names none.
 const FIRST_MORPH_STYLE: &str = "left";
 
+/// The answers the Add Pattern picker gives: a pattern the set has, or a new one; no pattern's name starts so.
+const ADD_EXISTING: &str = "\0existing";
+const ADD_NEW: &str = "\0new";
+
+/// The clip page of a track's clip in a scene, and what it is in the middle of: adding a pattern to the clip's list, or
+/// carrying one of the list's patterns in Move mode.
 pub struct ClipPage {
     pub index: usize,
     pub track: String,
+    adding: Option<Adding>,
+    carrying: Option<Carrying>,
+    cursor_wanted: std::cell::Cell<Option<usize>>,
+}
+
+/// Which answer adding a pattern waits for: whether to add an existing pattern or a new one, which existing pattern, or
+/// the new one's name.
+#[derive(Clone, Copy, PartialEq)]
+enum Adding {
+    Kind,
+    Existing,
+    NewName,
+}
+
+/// The pattern Move mode carries, by its place in the clip's list, and whether it has moved, so that every carry of one
+/// move is one undo step.
+#[derive(Clone, Copy)]
+struct Carrying {
+    place: usize,
+    carried: bool,
+}
+
+impl ClipPage {
+    /// The page of the clip on a track in the scene at an index.
+    pub fn new(index: usize, track: String) -> ClipPage {
+        ClipPage {
+            index,
+            track,
+            adding: None,
+            carrying: None,
+            cursor_wanted: std::cell::Cell::new(None),
+        }
+    }
+
+    /// The clip's patterns, in its list's order.
+    fn pattern_names(&self, app: &App) -> Vec<String> {
+        self.clip_slot(app).map(ClipSlot::get_pattern_names).unwrap_or_default()
+    }
+
+    /// Store the clip's list of patterns.
+    fn write_patterns(&self, app: &mut App, names: Vec<String>) {
+        let list = Data::List(names.iter().map(|name| Data::text(name)).collect());
+        self.write(app, ClipSlotSetting::PATTERNS, Some(list));
+    }
+
+    /// Ask whether to add a pattern the set has or a new one, to the end of the clip's list.
+    fn ask_to_add(&mut self, app: &mut App) {
+        self.adding = Some(Adding::Kind);
+        let options = labels::MSG_ADD_PATTERN_CHOICES.iter().map(|option| option.to_string()).collect();
+        arrange_tabs::ask_choice(
+            app,
+            labels::MSG_ADD_PATTERN_TITLE,
+            options,
+            vec![ADD_EXISTING.to_string(), ADD_NEW.to_string()],
+            ADD_EXISTING,
+        );
+    }
+
+    /// Go on adding a pattern with an answer: ask which pattern, or its new name, or add it.
+    fn added(&mut self, app: &mut App, answer: &str) {
+        match self.adding.take() {
+            Some(Adding::Kind) if answer == ADD_EXISTING => {
+                self.adding = Some(Adding::Existing);
+                let names = crate::settings::sorted_names(&self.same_kind_patterns(app));
+                arrange_tabs::ask_name(app, labels::MSG_ADD_PATTERN_TITLE, names, None);
+            }
+            Some(Adding::Kind) => {
+                self.adding = Some(Adding::NewName);
+                let suggested = app.document.new_name(Section::PATTERNS, &self.track);
+                app.asking = Some(Edit::AskText {
+                    title: messages::MSG_NEW_PATTERN_PROMPT.to_string(),
+                    value: suggested,
+                });
+            }
+            Some(Adding::Existing) => self.add_named(app, answer),
+            Some(Adding::NewName) => self.add_new(app, answer.trim()),
+            None => {}
+        }
+    }
+
+    /// The set's patterns that can share the clip's list: drum patterns for a clip of drums, and the others for one of
+    /// notes.
+    fn same_kind_patterns(&self, app: &App) -> Vec<String> {
+        let setlist = app.document.get_setlist();
+        let drum = self
+            .pattern_names(app)
+            .first()
+            .and_then(|name| setlist.get_pattern(name))
+            .is_some_and(|pattern| pattern.is_drum());
+        setlist
+            .items(Section::PATTERNS)
+            .iter()
+            .filter(|(name, _)| setlist.get_pattern(name).is_some_and(|pattern| pattern.is_drum() == drum))
+            .map(|(name, _)| name.clone())
+            .collect()
+    }
+
+    /// Put a pattern at the end of the clip's list.
+    fn add_named(&self, app: &mut App, name: &str) {
+        let mut names = self.pattern_names(app);
+        names.push(name.to_string());
+        self.write_patterns(app, names);
+    }
+
+    /// Make a blank pattern of the clip's kind, named as typed, and put it at the end of the clip's list; a name taken is
+    /// refused.
+    fn add_new(&self, app: &mut App, name: &str) {
+        if name.is_empty() {
+            return;
+        }
+        let setlist = app.document.get_setlist();
+        let Some(first) = self.pattern_names(app).first().and_then(|first| setlist.get_pattern(first)).cloned() else {
+            return;
+        };
+        let steps = crate::screens::arrange::arrange_page::new_pattern_steps(app);
+        let scale_length = first
+            .get_written(PatternSetting::SCALE_LENGTH)
+            .and_then(Data::as_whole)
+            .map(|length| length as i64);
+        if let Err(problem) = app.document.add_blank_pattern(name, steps, Some(&self.track), first.is_drum(), scale_length) {
+            app.refuse(&problem);
+            return;
+        }
+        app.document.continue_edit();
+        self.add_named(app, name);
+    }
+
+    /// Take a pattern out of the clip's list, which deletes no pattern; the last one stays, since a clip plays something.
+    fn remove_pattern(&self, app: &mut App, place: usize) {
+        let mut names = self.pattern_names(app);
+        if names.len() <= 1 {
+            app.refuse(errors::ERR_CLIP_NEEDS_A_PATTERN);
+            return;
+        }
+        names.remove(place);
+        self.write_patterns(app, names);
+    }
+
+    /// Pick up the pattern at a place in the list, to carry it with the arrows.
+    fn start_carrying(&mut self, app: &mut App, place: usize) {
+        self.carrying = Some(Carrying { place, carried: false });
+        self.say_carrying(app);
+    }
+
+    /// Say which pattern Move mode carries.
+    fn say_carrying(&self, app: &mut App) {
+        let Some(carrying) = self.carrying else { return };
+        let Some(name) = self.pattern_names(app).get(carrying.place).cloned() else {
+            return;
+        };
+        let row = named(messages::MSG_MOVING_ROW, &[("name", name.as_str().into())]);
+        app.say(&named(messages::MSG_MOVING, &[("what", row.as_str().into())]));
+    }
+
+    /// Carry the picked-up pattern one place up or down the list, every carry of one move making one undo step.
+    fn carry(&mut self, app: &mut App, step: i64) {
+        let Some(carrying) = self.carrying else { return };
+        let mut names = self.pattern_names(app);
+        let Some(to) = carrying.place.checked_add_signed(step as isize).filter(|to| *to < names.len()) else {
+            return;
+        };
+        if carrying.carried {
+            app.document.continue_edit();
+        }
+        names.swap(carrying.place, to);
+        self.write_patterns(app, names);
+        self.carrying = Some(Carrying { place: to, carried: true });
+        self.cursor_wanted.set(Some(FIRST_PATTERN + to));
+        self.say_carrying(app);
+    }
 }
 
 fn words(name: &str) -> String {
@@ -526,6 +704,9 @@ impl Form for ClipPage {
     }
 
     fn page_keys(&self, app: &App, row: Option<&Field>) -> Vec<KeyItem> {
+        if self.carrying.is_some() {
+            return vec![Self::bind(&Keys::CARRY), Self::bind(&Keys::DROP)];
+        }
         let mut keys = vec![Self::bind(&Keys::ADD_PATTERN)];
         if row.is_some_and(|row| (FIRST_PATTERN..ADD_ROW).contains(&row.id)) {
             keys.push(Self::bind(&Keys::MOVE_PATTERN));
@@ -539,7 +720,34 @@ impl Form for ClipPage {
         keys
     }
 
-    fn press_own(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&Field>) {
+    fn carrying(&self) -> bool {
+        self.carrying.is_some()
+    }
+
+    fn cursor_wanted(&self) -> Option<usize> {
+        self.cursor_wanted.take()
+    }
+
+    fn press_own(&mut self, app: &mut App, item: &KeyItem, key: &str, row: Option<&Field>) {
+        let place = row.filter(|row| (FIRST_PATTERN..ADD_ROW).contains(&row.id)).map(|row| row.id - FIRST_PATTERN);
+        if item.is(&Keys::CARRY) {
+            self.carry(app, item.step_of(key).unwrap_or(0));
+            return;
+        }
+        if item.is(&Keys::DROP) {
+            self.carrying = None;
+            return;
+        }
+        if item.is(&Keys::ADD_PATTERN) {
+            self.ask_to_add(app);
+            return;
+        }
+        if item.is(&Keys::MOVE_PATTERN) {
+            if let Some(place) = place {
+                self.start_carrying(app, place);
+            }
+            return;
+        }
         if item.is(&Keys::LISTEN) || item.is(&Keys::STOP_LISTENING) {
             self.listen_or_stop(app);
             return;
@@ -553,6 +761,22 @@ impl Form for ClipPage {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
+        // An answer while adding a pattern goes on adding it, whichever row asked.
+        if self.adding.is_some() {
+            if let Edit::Choice(answer) | Edit::Text(answer) = &edit {
+                let answer = answer.clone();
+                self.added(app, &answer);
+                return;
+            }
+        }
+        if id == ADD_ROW && edit == Edit::Enter {
+            self.ask_to_add(app);
+            return;
+        }
+        if (FIRST_PATTERN..ADD_ROW).contains(&id) && edit == Edit::Clear {
+            self.remove_pattern(app, id - FIRST_PATTERN);
+            return;
+        }
         if id == LISTEN && edit == Edit::Enter {
             self.listen_or_stop(app);
             return;
@@ -625,10 +849,7 @@ mod tests {
     fn enter_on_the_name_names_the_clip_and_bksp_gives_back_the_patterns() {
         let setlist = Setlist::read_text(ONE_CLIP_SET, None).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
-        tracker.app.show_page(Box::new(FieldPage::new(ClipPage {
-            index: 0,
-            track: "lead".to_string(),
-        })));
+        tracker.app.show_page(Box::new(FieldPage::new(ClipPage::new(0, "lead".to_string()))));
         tracker.settle();
         assert!(tracker.top().place_kind(&tracker.app).ends_with(labels::MSG_NAME_LABEL), "the cursor on Name");
         tracker.press(first_key(&FieldKeys::ENTER));
@@ -660,10 +881,7 @@ mod tests {
     #[test]
     fn a_grab_into_a_circle_is_refused_in_a_dialog_naming_it() {
         let mut tracker = grab_into_a_circle();
-        let page = ClipPage {
-            index: 0,
-            track: "lead".to_string(),
-        };
+        let page = ClipPage::new(0, "lead".to_string());
         let pages = tracker.depth();
         page.write_edit(&mut tracker.app, GRAB_TRACK, &Edit::Choice("bass".to_string()));
         tracker.settle();
@@ -675,5 +893,107 @@ mod tests {
         let song = tracker.app.document.song();
         let lead = song.scenes()[0].get_clip_slot("lead").expect("the lead's clip");
         assert_eq!(lead.get_written(ClipSlotSetting::GRAB_TRACK), None);
+    }
+
+    /// The clip page of the lead's clip, playing tune then hook, the set also holding bridge and the drum pattern beat.
+    fn clip_of_two_patterns() -> Tracker {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/clip_of_two_patterns.yml");
+        let text = std::fs::read_to_string(path).expect("the scenario's set is there");
+        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
+        tracker.app.show_page(Box::new(FieldPage::new(ClipPage::new(0, "lead".to_string()))));
+        tracker.settle();
+        tracker
+    }
+
+    /// The patterns the clip's list holds, in order.
+    fn clip_patterns(tracker: &Tracker) -> Vec<String> {
+        tracker.app.document.song().scenes()[0]
+            .get_clip_slot("lead")
+            .expect("the clip")
+            .get_pattern_names()
+    }
+
+    /// The drawn line the cursor's mark is on.
+    fn cursor_line(tracker: &Tracker) -> String {
+        let screen = tracker.screen(80, 24);
+        let line = screen
+            .iter()
+            .map(|line| line.text())
+            .find(|line| line.contains(crate::drawing::SELECTED_MARK.trim()));
+        line.unwrap_or_default()
+    }
+
+    /// Press Up to the top, then Down, until the cursor is on the drawn row showing every one of some texts.
+    fn go_to(tracker: &mut Tracker, shown: &[&str]) {
+        let most_presses = 40;
+        let here = |tracker: &Tracker| {
+            let line = cursor_line(tracker);
+            shown.iter().all(|text| line.contains(text))
+        };
+        for _ in 0..most_presses {
+            tracker.press("up");
+        }
+        for _ in 0..most_presses {
+            if here(tracker) {
+                return;
+            }
+            tracker.press("down");
+        }
+        panic!("no row shows {shown:?}");
+    }
+
+    /// Bksp on a pattern of the list takes it out of the clip; the last one stays, the status line saying why.
+    #[test]
+    fn bksp_takes_a_pattern_out_and_keeps_the_last() {
+        let mut tracker = clip_of_two_patterns();
+        go_to(&mut tracker, &["hook"]);
+        tracker.press(first_key(&FieldKeys::CLEAR));
+        assert_eq!(clip_patterns(&tracker), ["tune"]);
+        go_to(&mut tracker, &[labels::MSG_PATTERNS_LABEL, "tune"]);
+        tracker.press(first_key(&FieldKeys::CLEAR));
+        assert_eq!(clip_patterns(&tracker), ["tune"]);
+        assert_eq!(tracker.app.status.text(), llamatron_strings::errors::ERR_CLIP_NEEDS_A_PATTERN);
+    }
+
+    /// M picks a pattern up, Down carries it after the next, the cursor going with it, ENTER drops it, and one undo puts
+    /// the list back.
+    #[test]
+    fn move_carries_a_pattern_down_the_list_in_one_undo() {
+        let mut tracker = clip_of_two_patterns();
+        go_to(&mut tracker, &[labels::MSG_PATTERNS_LABEL, "tune"]);
+        tracker.press(first_key(&Keys::MOVE_PATTERN));
+        tracker.press("down");
+        tracker.press(first_key(&Keys::DROP));
+        assert_eq!(clip_patterns(&tracker), ["hook", "tune"]);
+        assert!(cursor_line(&tracker).contains("tune"), "the cursor goes with the pattern");
+        tracker.press(first_key(&crate::keybindings::Page::UNDO));
+        assert_eq!(clip_patterns(&tracker), ["tune", "hook"]);
+    }
+
+    /// A asks whether to add an existing pattern or a new one: the existing ones offered are of the clip's kind, and a
+    /// new one, named after the track, is made and added.
+    #[test]
+    fn a_adds_an_existing_pattern_of_the_clips_kind_or_a_new_one() {
+        let mut tracker = clip_of_two_patterns();
+        tracker.press(first_key(&Keys::ADD_PATTERN));
+        tracker.press(first_key(&crate::keybindings::ChoiceDialog::CHOOSE));
+        let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
+        assert!(
+            screen.iter().any(|line| line.contains("bridge")) && !screen.iter().any(|line| line.contains("beat")),
+            "{screen:#?}"
+        );
+        for letter in "bridge".chars() {
+            tracker.press(&letter.to_string());
+        }
+        tracker.press(first_key(&crate::keybindings::ChoiceDialog::CHOOSE));
+        assert_eq!(clip_patterns(&tracker), ["tune", "hook", "bridge"]);
+        tracker.press(first_key(&Keys::ADD_PATTERN));
+        tracker.press("down");
+        tracker.press(first_key(&crate::keybindings::ChoiceDialog::CHOOSE));
+        tracker.press(first_key(&PromptKeys::DONE));
+        let added = clip_patterns(&tracker).last().cloned().expect("a pattern");
+        assert!(added.starts_with("lead"), "{added}");
+        assert!(tracker.app.document.get_setlist().get_pattern(&added).is_some());
     }
 }

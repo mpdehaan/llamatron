@@ -19,6 +19,7 @@ use crate::screens::arrange::scene_view::SceneView;
 use crate::text::Text;
 use crate::themes::Colour;
 use crate::visualizers::{self, showing::Showing};
+pub use edits::new_pattern_steps;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::{ClipSlot, Scene};
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSetting, SetlistSetting, TrackSetting};
@@ -1511,7 +1512,7 @@ impl Page for ArrangePage {
             let Some(track) = self.cursor_track(app) else { return };
             let index = self.row.get().max(0) as usize;
             app.show_page(Box::new(crate::screens::field_page::FieldPage::new(
-                crate::screens::arrange::clip_page::ClipPage { index, track },
+                crate::screens::arrange::clip_page::ClipPage::new(index, track),
             )));
         } else if item.is(&Keys::SCENE_SETTINGS) {
             let index = self.row.get().max(0) as usize;

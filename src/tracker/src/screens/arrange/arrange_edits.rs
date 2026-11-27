@@ -377,12 +377,22 @@ fn confirm_delete(app: &mut App, question: &str, lines: Vec<String>, then: Box<d
 
 /// Make a blank pattern named after a track, a drum pattern on a drum track, put a clip of it in a scene's empty cell, and
 /// open it in the pattern editor with Arrange's crumbs before its own.
+/// How many steps a new blank pattern has: a bar of the song at the set's step size, or 16 where a bar is no whole number
+/// of steps.
+pub fn new_pattern_steps(app: &App) -> i64 {
+    let bar = app.document.song().get_time_signature().bar_length() / app.document.get_setlist().get_step_size();
+    if bar.denominator() == 1 {
+        bar.numerator() as i64
+    } else {
+        NEW_PATTERN_STEPS
+    }
+}
+
 fn blank_pattern(app: &mut App, row: usize, track: &str, crumbs: Vec<String>) {
     let name = app.document.new_name(Section::PATTERNS, track);
     let song = app.document.song();
     let drum = song.get_track(track).is_some_and(|held| held.is_drum());
-    let bar = song.get_time_signature().bar_length() / app.document.get_setlist().get_step_size();
-    let steps = if bar.denominator() == 1 { bar.numerator() as i64 } else { NEW_PATTERN_STEPS };
+    let steps = new_pattern_steps(app);
     if !ArrangePage::edited(app, |document| document.add_blank_pattern(&name, steps, Some(track), drum, None)) {
         return;
     }
