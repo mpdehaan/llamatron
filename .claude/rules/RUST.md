@@ -42,6 +42,9 @@ standard a person who does not know Rust can trust: it builds itself, explains i
   uses them, and no file holds a file-wide `allow(dead_code)`: each turned on for a crate as that crate is cleaned to meet it.
 - No new name, comment or page refers to the retired Python or to "not ported"; existing ones are removed when their code
   is touched, and nothing not ported is reachable from a key.
+- The code MAY do what only macOS offers where it helps, such as its audio threads' scheduling, and MUST do a
+  generic thing elsewhere that is expected to work on any other system, such as Linux, which cannot be tested here:
+  each such place says so and keeps both paths building.
 - No `unsafe` outside the edges where the daemon calls the operating system (its clock, its parent's id); each `unsafe` block has a comment saying why it is sound.
 - The audio callback allocates nothing, takes no lock that another thread may hold for long, and reads
   its work from lock-free single-producer, single-consumer queues; patches are swapped whole. The sender thread and the

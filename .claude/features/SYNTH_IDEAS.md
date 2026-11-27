@@ -299,4 +299,9 @@ In the order of their priority, the highest first.
   to five resonant band-passes morphing between vowels) and Comb (a delay tuned to the note, with damping and saturation
   in its loop); and a Pole Mix option on the OTA and the Ladder, mixing their stages' outputs, its choices the
   responses the mixes make: high-pass, band-pass, notch and those between.
+- **Synths on several threads**: first a timing tool that plays a dense set and reports the synths' load and its peak,
+  so that every change to the synthesis is measured against it; then each audio block's instruments shared among a few
+  worker threads made at start-up, as many as the computer's cores allow with some left for everything else, so that
+  a less powerful computer gains as much as it can. The workers allocate nothing and take no locks, a late worker's
+  instruments are rendered by the callback itself so that nothing drops out, and each worker ends with its owner.
 
