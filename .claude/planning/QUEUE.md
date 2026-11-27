@@ -6,20 +6,23 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 
 ## Now: the synths (finish the outstanding synth work, then the other engines with their demos)
 
-1. SYNTH_IDEAS: The table oscillators' level and bands; SID closer to its chip; Pocket closer to its chip.
-2. UX_IDEAS: Space on an empty drum Note step.
-3. OTHER_IDEAS: The screens comparison in Rust.
-4. DEMO_IDEAS: Engines and effects under each synth demo.
-5. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
-6. SYNTH_IDEAS: Modulator modules (Chaos and Snail, then Tide, Turing, Bounce and Swarm); New-instrument choices
+1. UX_IDEAS: Arrange without + rows and columns; A new track's own instrument; The File and Global tabs.
+2. OTHER_IDEAS: The development tools in a crate of their own; The tracker's tables named for what they are.
+3. OTHER_IDEAS: No YAML in strings.
+4. SYNTH_IDEAS: The table oscillators' level and bands; SID closer to its chip; Pocket closer to its chip.
+5. UX_IDEAS: Space on an empty drum Note step.
+6. OTHER_IDEAS: The screens comparison in Rust.
+7. DEMO_IDEAS: Engines and effects under each synth demo.
+8. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
+9. SYNTH_IDEAS: Modulator modules (Chaos and Snail, then Tide, Turing, Bounce and Swarm); New-instrument choices
    (mockup).
-7. SYNTH_IDEAS: Durham (mockup).
-8. SYNTH_IDEAS: MechaDrum split (mockup); The vactrol's age.
-9. SYNTH_IDEAS: Spectral; Variance; The professor's effect plans.
-10. SYNTH_IDEAS: Every engine and effect redesigned; The other engines and effects, each with its demo from DEMO_IDEAS
+10. SYNTH_IDEAS: Durham (mockup).
+11. SYNTH_IDEAS: MechaDrum split (mockup); The vactrol's age.
+12. SYNTH_IDEAS: Spectral; Variance; The professor's effect plans.
+13. SYNTH_IDEAS: Every engine and effect redesigned; The other engines and effects, each with its demo from DEMO_IDEAS
    (log_garden first, with ComplexOsc).
-11. SYNTH_IDEAS: Asheville's polyphonic mode; The Engine tab's rest; The Mod Matrix's destinations; the rest of the Instrument Page.
-12. OTHER_IDEAS: Drum-kit sequencing, at the end of all synth work.
+14. SYNTH_IDEAS: Asheville's polyphonic mode; The Engine tab's rest; The Mod Matrix's destinations; the rest of the Instrument Page.
+15. OTHER_IDEAS: Drum-kit sequencing, at the end of all synth work.
 
 When a question waits on the user, do synth work that needs no mockup, or the song wizard.
 

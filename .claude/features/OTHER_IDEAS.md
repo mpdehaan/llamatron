@@ -59,6 +59,17 @@ built.
 
 ## The Documents and the Tools
 
+- **The development tools in a crate of their own**: `src/compare/` becomes `src/internal_tools/`, the one crate of
+  every tool not for users, building its own program, never the shipped `llamatron`: the comparisons, the screenshots,
+  the key map's walk, with the screen tour (`tour.rs`) and the screenshots' drawing (`svg.rs`) moved out of the tracker
+  into it as its modules. The scripts in `internal_tools/` build and run it under its new name.
+- **The tracker's tables named for what they are**: `src/tracker/src/generated/` becomes `src/tracker/src/tables/`, the
+  program's own tables of keys, generator pages, synth defaults and the new set, edited by hand, its documentation
+  saying so.
+- **No YAML in strings**: every set a test starts from held as a string becomes a data file in its crate's
+  `tests/data/`, named for what it holds; the synth control trials become data structures; the new-set template is
+  built in code from the model's types, the tools sharing the one function (`.claude/rules/STYLE.md`).
+
 - **The documents divided by feature** rather than by screen; a documentation expert perhaps.
 - **An overhaul of all the documentation** to match the new architecture.
 - **At the video tutorial**: Changes to the documents for people proposed first as an exact before and after (1206), and

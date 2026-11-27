@@ -60,6 +60,8 @@ plain code, comments that explain why, tests that read clearly.
   documentation stay where they are.
 - **Every name used as a value is a named constant**: file keys, settings, kinds, modes, note names, chord symbols, key names,
   exporter tags, and numbers with a meaning (`MIN_PROBABILITY`). Unused constants are removed.
+- **No YAML in a string**, anywhere in the source, tests included: data is built as data structures and serialized where
+  it is written. A set a test starts from is a data file beside the tests, read by name.
 - **Arrays stay arrays.** List-like data is stored as real values (sixteen booleans, never `'x...x...'`), in files and in
   memory. Display strings are made where shown.
 - **Keys.** Every binding is in one table, a class for each page, dialog and component, each binding its keys, the name the

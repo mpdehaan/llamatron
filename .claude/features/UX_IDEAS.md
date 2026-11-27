@@ -3,6 +3,25 @@
 Wanted changes to how the tracker looks and is used: what each is, never its status or order (those are in
 `.claude/planning/QUEUE.md`). An idea leaves this file once built, and a rule it makes goes into `.claude/rules/UX.md`.
 
+- **Arrange without + rows and columns**: `I` inserts after the cursor, a scene after the cursor's scene or a track of
+  the cursor's track's kind after it, and is the one way to add them: `A` leaves Arrange. No `+` row under the scenes
+  and no `+` column after a group are drawn; an empty cell still shows `+` and `add` under the cursor. A song always
+  shows at least one scene and both groups: a group with no tracks, such as a new song's drums or a song whose melodic
+  tracks were all deleted, shows a `+` column where `I` makes its first track, gone once it has one. Any track can be
+  deleted, only the last scene refused. `P` pastes a cut scene or track after the one under the cursor, a track only
+  among its kind, onto a group's `+` as its first track.
+- **A new track's own instrument**: every track made on Arrange gets an instrument of its own named after it, `bass`,
+  then `bass-2` if taken, a copied track a copy of its instrument; its kind by the track's and its engine by Track Inst.
+  Default: FluidSynth, General MIDI 1 Acoustic Grand Piano for a melodic track and the drum channel, 10, for a drum
+  track; BuiltIn, Basic or MechaDrum on Kick; External MIDI, the first device found on channel 1. Where FluidSynth is
+  not installed or no device is connected, the instrument is made unconfigured. An instrument stays when its track is
+  deleted.
+- **The File and Global tabs**: the File/Global page's two tabs. File, saved in the set, in two columns: General (Title,
+  Author, Description, Notes, Protected, Octave labels, Visualizer, Hide Visualizers) and Defaults (Follow action,
+  Octave, Drum octave, Step size, the word Default dropped from their labels), a dim `set file:` line under them.
+  Global, the settings of the config file, `~/.llamatron/settings.yml`, for every set: Track Inst. Default, FluidSynth
+  (offered only when installed), BuiltIn or External MIDI, FluidSynth where installed, else BuiltIn, and a dim
+  `config file: ~/.llamatron/settings.yml` line.
 - **The open circle**: Everywhere a toggle is shown, an unset one shows `○` where today it is blank, a set one `●`, on every
   page, the pattern editor's toggle rows and the tabs' marks included; built with the tab box.
 - **A line at the foot of every major editor** saying what the tab or section under the cursor does.
