@@ -489,7 +489,7 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("key_track", Preset::Whole(50)),
             ("drive", Preset::Whole(0)),
             ("slope", Preset::Whole(24)),
-            ("bass_compensation", Preset::Whole(100)),
+            ("bass_compensation", Preset::Whole(80)),
         ]),
     ),
     (

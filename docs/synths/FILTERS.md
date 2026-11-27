@@ -53,9 +53,9 @@ a real one's does with temperature, so that a held note breathes.
 The Ladder runs at four times the sample rate, and at eight once Drive is
 turned up, so that the harmonics its curves make above hearing are filtered
 away rather than folding back down as harsh, out-of-tune whistles. As the
-resonance rises the bass thins, as the circuit's does; Bass comp, at 100%
-unless set, gives the bass back, and turned down to 0% leaves the circuit's
-own thinner sound. Slope taps an earlier stage for a gentler filter of one,
+resonance rises the bass thins, as the circuit's does; Bass comp, at 80% unless
+set, gives most of the bass back, so that a resonant bass keeps its weight;
+turned down to 0% it leaves the circuit's own thinner sound. Slope taps an earlier stage for a gentler filter of one,
 two or three poles, the feedback still taken from the last.
 
 ## Multimode

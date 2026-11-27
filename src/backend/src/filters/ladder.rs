@@ -40,10 +40,14 @@ const MOST_FEEDBACK: f64 = 3.9;
 /// passes than this.
 const CLOSE_ENOUGH: f64 = 1e-7;
 const MOST_PASSES: usize = 4;
-/// A full-scale sample at Drive 0 in units of twice the thermal voltage, and how many times that Drive at full
-/// multiplies it.
-const FULL_SCALE: f64 = 1.3;
-const MOST_DRIVE_GAIN: f64 = 10.0;
+/// A full-scale sample at Drive 0 in units of twice the thermal voltage: low enough that a sound at a moderate level
+/// keeps a strong resonant peak, the input pair only starting to hold it down as the sound grows loud, as a ladder fed
+/// from a mixer at an ordinary setting does.
+const FULL_SCALE: f64 = 0.35;
+/// The input level Drive at full reaches, in the same units: a fierce, square-edged growl that still stays clean at
+/// eight times the rate; Drive's knob climbs to it exponentially, so that each step of the knob sounds as large as the
+/// last.
+const MOST_DRIVEN_LEVEL: f64 = 14.3;
 /// The output's coupling capacitor, whose corner keeps the transistors' offsets from leaving a steady level.
 const COUPLING_HERTZ: f64 = 5.0;
 /// How far each stage's capacitor is off its value, and each pair's offset, at most, as shares.
@@ -202,7 +206,7 @@ impl LadderState {
     /// the rate through two halfbands, then the coupling capacitor.
     #[inline]
     pub fn process(&mut self, settings: &LadderSettings, input: f64, rate: f64) -> f64 {
-        let drive_gain = 1.0 + MOST_DRIVE_GAIN * settings.drive;
+        let drive_gain = (MOST_DRIVEN_LEVEL / FULL_SCALE).powf(settings.drive);
         // The tanh's scale moves with the thermal voltage, as the cutoff does.
         let thermal = 1.0 + self.drift;
         let fed = input * FULL_SCALE * drive_gain / thermal;

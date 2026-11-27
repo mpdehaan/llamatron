@@ -53,6 +53,9 @@ const OVERSAMPLED_FROM_RESONANCE: f64 = 0.5;
 const SOFT_LIMIT_END: f64 = 3.0;
 /// The least a stage's saturation may slow it, so that a very loud stage never stops.
 const LEAST_SQUASH: f64 = 0.01;
+/// How much of the bass Resonance thins the Ladder gives back unless set: most of it, so that a resonant bass keeps
+/// its weight, a little of the circuit's own thinning still heard.
+const DEFAULT_BASS_COMPENSATION: f64 = 0.8;
 /// How many octaves Filter FM moves the cutoff at full, by the oscillator at full level.
 const FM_OCTAVES: f64 = 2.0;
 
@@ -201,7 +204,7 @@ impl FilterPart {
             amount,
             key_track: number(spec, "key_track", 0.0),
             push,
-            ladder: LadderSettings::new(number(spec, "drive", 0.0), number(spec, "bass_compensation", 1.0), poles),
+            ladder: LadderSettings::new(number(spec, "drive", 0.0), number(spec, "bass_compensation", DEFAULT_BASS_COMPENSATION), poles),
             poles,
             fm: number(spec, "filter_fm", 0.0) * FM_OCTAVES,
             rate,
@@ -637,5 +640,40 @@ mod tests {
     fn each_instrument_is_a_unit_of_its_own() {
         assert_eq!(LadderUnit::seeded(3), LadderUnit::seeded(3));
         assert_ne!(LadderUnit::seeded(3), LadderUnit::seeded(4));
+    }
+    /// A sine's third harmonic through an undriven-to-driven Ladder, in decibels under the sine.
+    fn ladder_grit(drive: f64) -> f64 {
+        use crate::dsp::spectrum::harmonic_decibels;
+        let hertz = 100;
+        let filter = part_at("ladder", 0.0, drive, 6000.0);
+        let mut state = FilterState::default();
+        let tone = |place: usize| 0.5 * (2.0 * PI * hertz as f64 * place as f64 / 48000.0).sin();
+        let out: Vec<f32> = (0..96_000).map(|place| filter.process(&mut state, tone(place), 0.0, 0.0) as f32).collect();
+        harmonic_decibels(&out, 48_000, hertz, 3)
+    }
+
+    /// Drive's grit grows evenly along its knob: each quarter turn adds more of the third harmonic than the last did
+    /// below the top, from nearly clean at 0 to a fierce growl at full.
+    #[test]
+    fn ladder_drive_grows_evenly_along_its_knob() {
+        let grits: Vec<f64> = [0.0, 0.25, 0.5, 0.75, 1.0].iter().map(|drive| ladder_grit(*drive)).collect();
+        assert!(grits[0] < -60.0, "clean at 0: {:.1}", grits[0]);
+        assert!(grits.windows(2).all(|pair| pair[1] > pair[0] + 2.0), "{grits:?}");
+        assert!(grits[4] > -15.0, "fierce at full: {:.1}", grits[4]);
+    }
+
+    /// The Ladder's resonant peak stands out at a moderate level, not only a quiet one: through full Resonance the
+    /// harmonic of a saw at half of full scale nearest the cutoff stands well above the note itself.
+    #[test]
+    fn a_ladders_peak_stands_out_at_a_moderate_level() {
+        use crate::dsp::spectrum::harmonic_decibels;
+        let hertz = 110;
+        let near_cutoff = 9;
+        let filter = part_at("ladder", 1.0, 0.0, 1000.0);
+        let mut state = FilterState::default();
+        let saw = |place: usize| 0.5 * (2.0 * ((place as f64 * hertz as f64 / 48000.0).fract()) - 1.0);
+        let out: Vec<f32> = (0..96_000).map(|place| filter.process(&mut state, saw(place), 0.0, 0.0) as f32).collect();
+        let peak = harmonic_decibels(&out, 48_000, hertz, near_cutoff);
+        assert!(peak > 8.0, "{peak:.1} dB over the note");
     }
 }
