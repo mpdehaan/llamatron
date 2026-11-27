@@ -58,7 +58,6 @@ pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
     // A recording opens on its title, and opens Arrange when the launch says to start; any other launch starts at once.
     if !launch.for_recording {
         start(&mut tracker, &launch);
-        start(&mut tracker, &launch);
     }
     let mut running = Running::new(launch.clone());
     let finished = run_keys(&mut tracker, &mut running, &launch);
@@ -89,8 +88,8 @@ fn refuse_endless(document: &Document) -> Result<(), String> {
     ))
 }
 
-/// Take a launch's next step: open Arrange, with its details view or a visualizer mode showing, or, with Arrange open,
-/// play the song from the top when the launch plays.
+/// Do what a launch asks once the tracker is open: open Arrange, with its details view or a visualizer mode showing,
+/// then play the song from the top when the launch plays and nothing plays yet.
 fn start(tracker: &mut Tracker, launch: &Launch) {
     if !launch.opens_arrange() {
         return;
@@ -101,7 +100,6 @@ fn start(tracker: &mut Tracker, launch: &Launch) {
         if let Some(mode) = &launch.visualizer {
             tracker.top().launch_visualizer(&tracker.app, mode);
         }
-        return;
     }
     if launch.plays() && !tracker.app.transport.is_playing() {
         let scene = named(messages::MSG_SCENE_NUMBER, &[("number", 1.into())]);
