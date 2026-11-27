@@ -5,6 +5,8 @@
 //! couples it into the Diode filter, after Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license,
 //! whose constants were measured from the circuit.
 
+use super::*;
+
 /// The square: the saw through a tanh this steep, offset so that it switches a little off the middle, shifted half a
 /// cycle, and played at half the saw's level.
 const SQUARE_SHAPER_GAIN: f64 = 69.8232412342666;
@@ -46,6 +48,34 @@ pub fn square_cycle(length: usize) -> Vec<f64> {
             -(SQUARE_SHAPER_GAIN * saw + SQUARE_SHAPER_OFFSET).tanh() * SQUARE_LEVEL
         })
         .collect()
+}
+
+/// Oh3's oscillator from its spec: Open303's saw or its shaped square, as band-limited tables, and its tuning.
+pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
+    let cycle = if word(spec, "acid_wave", "saw") == "saw" {
+        saw_cycle(TABLE_SIZE)
+    } else {
+        square_cycle(TABLE_SIZE)
+    };
+    OscillatorPart::Acid {
+        tables: tables::cycle_tables(&cycle, rate),
+        tuning: number(spec, "tuning", 0.0),
+        rate,
+    }
+}
+
+/// One sample of Oh3: its table read at the note's pitch, inverted and coupled through the high-pass, as Open303's
+/// oscillator feeds its filter.
+pub(super) fn acid_sample(tables: &Tables, state: &mut OscillatorState, pitch: f64, rate: f64) -> f64 {
+    if state.speeds_for.0 != pitch || state.speeds[0] == 0.0 {
+        state.speeds[0] = frequency_of(pitch) * TABLE_SIZE as f64 / rate;
+        state.speeds_for.0 = pitch;
+    }
+    let speed = state.speeds[0];
+    let position = state.phases[0];
+    state.phases[0] = wrapped(position + speed);
+    let out = -read(&tables[state.band], position);
+    state.coupling.process(out)
 }
 
 #[cfg(test)]

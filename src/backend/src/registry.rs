@@ -31,6 +31,11 @@ pub fn folders() -> Vec<(&'static str, Vec<&'static str>, &'static [&'static str
             crate::filters::REGISTRY.iter().map(|entry| entry.file).collect(),
             crate::filters::HELPERS,
         ),
+        (
+            "oscillators",
+            crate::oscillators::REGISTRY.iter().map(|entry| entry.file).collect(),
+            crate::oscillators::HELPERS,
+        ),
     ]
 }
 
