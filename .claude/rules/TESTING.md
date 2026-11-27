@@ -38,6 +38,13 @@ internal_tools/check_before_commit.sh                              # before comm
 
 - Every behaviour has a test, at the layer a person meets it: model rules, what a file refuses, what each page's keys do to the
   set, what the exporters write. Complex scenarios, not one happy path.
+- Every setting a page can write is played by the render: a test writes each setting of every object's table and exports
+  the set (`src/engine/tests/every_setting_plays.rs`).
+- A feature no example uses deserves a discussion of how to feature it: in a learning example, where the examples stay
+  progressive and no advanced or niche feature is hidden in an earlier one; in a demo it serves, rewritten only with the
+  user's say-so; or, where it is too unusual for a person working through the examples, in test data. Until then its own
+  tests hold it. A coverage report, run by the commit check, names every setting and pattern row no example uses, as a
+  warning.
 - A condition-specific shortcut MUST have tests of both paths.
 - A bug fixed comes with the test that would have caught it.
 - A built-in synth's control, engine or effect is tested as a person plays it: the sound the tracker writes, through

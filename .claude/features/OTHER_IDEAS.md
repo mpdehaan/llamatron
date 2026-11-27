@@ -68,6 +68,11 @@ built.
   `--record-approved-export-change`, every example changed since the freeze given llamatron's own (`.claude/rules/TESTING.md`).
   With it, the tests the review found thin: the engine's, the exporters' and the importers' behaviour tested at their own
   layer, the command line's tests through constants and a working folder of their own, and `synth_controls` made faster.
+- **The coverage report**: a tool in `internal_tools/`, run by the commit check as a warning, listing every setting of
+  every object and generator and every pattern row that no example uses, built from the file format's tables; then a
+  discussion of how each uncovered feature is best shown: in new learning examples that sound good and keep the
+  examples progressive, in a demo it serves, or, for what is too unusual for a person working through the examples, in
+  test data (`.claude/rules/TESTING.md`).
 - **The development tools in a crate of their own**: `src/compare/` becomes `src/internal_tools/`, the one crate of
   every tool not for users, building its own program, never the shipped `llamatron`: the comparisons, the screenshots,
   the key map's walk, with the screen tour (`tour.rs`) and the screenshots' drawing (`svg.rs`) moved out of the tracker
