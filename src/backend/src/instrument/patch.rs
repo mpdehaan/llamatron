@@ -16,14 +16,14 @@
 
 use crate::drums::Hit;
 use crate::dsp::Random;
+use crate::effects::{self, Effect};
+use crate::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
+use crate::filters::gate::{GateNote, GatePart, GateState};
+use crate::filters::{FilterPart, FilterState, ENVELOPE_OCTAVES};
+use crate::instrument::amp::{self, AmpPart};
+use crate::modulation::{self, Destination, LfoBank, ModMatrix, Moved, Source, Sources, LFO_COUNT, MOST_FRAMES};
+use crate::oscillators::{self, Moves, OscillatorPart, OscillatorState};
 use crate::protocol::values::{field, list, number, truth, word};
-use crate::voice::amp::{self, AmpPart};
-use crate::voice::effects::{self, Effect};
-use crate::voice::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
-use crate::voice::filters::{FilterPart, FilterState, ENVELOPE_OCTAVES};
-use crate::voice::gate::{GateNote, GatePart, GateState};
-use crate::voice::modulation::{self, Destination, LfoBank, ModMatrix, Moved, Source, Sources, LFO_COUNT, MOST_FRAMES};
-use crate::voice::oscillators::{self, Moves, OscillatorPart, OscillatorState};
 use rmpv::Value;
 
 const MIDDLE_C: f64 = 60.0;
@@ -219,7 +219,7 @@ impl Patch {
     pub fn seed_unit(&mut self, number: usize) {
         if let Sound::Modular(modular) = &mut self.sound {
             if let Some(filter) = modular.filter.as_mut() {
-                filter.ladder.unit = crate::voice::ladder::LadderUnit::seeded(number as u64 + 1);
+                filter.ladder.unit = crate::filters::ladder::LadderUnit::seeded(number as u64 + 1);
             }
         }
     }

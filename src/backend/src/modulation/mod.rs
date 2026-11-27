@@ -11,9 +11,9 @@
 //! slots stay free. Empty slots and those of no amount are left out when it is compiled. A slot may also move an LFO's
 //! rate by an LFO, another or itself: those routes are the bank's, read a sample at a time as the LFOs advance.
 
+use crate::dsp::blep::blep;
 use crate::dsp::Random;
 use crate::protocol::values::{number, word};
-use crate::voice::blep::blep;
 use rmpv::Value;
 use std::f64::consts::PI;
 

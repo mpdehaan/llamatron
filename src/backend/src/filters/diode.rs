@@ -15,7 +15,7 @@
 //! already band-limited.
 
 use crate::dsp::{flushed, Biquad, BUTTERWORTH_Q};
-use crate::voice::drive::SmoothTanh;
+use crate::effects::drive::SmoothTanh;
 use std::f64::consts::PI;
 
 /// The square: the saw through a tanh this steep, offset so that it switches a little off the middle, shifted half a

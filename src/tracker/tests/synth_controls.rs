@@ -5,7 +5,7 @@
 //! held and released, and played again with each of its settings moved across its range, the two compared sample for
 //! sample, all without a sound card. A setting that changes nothing is a control wired to nothing.
 
-use llamatron_backend::voice::patch::{Patch, Voice};
+use llamatron_backend::instrument::patch::{Patch, Voice};
 use llamatron_model::file::data::{load, Data};
 use llamatron_model::objects::setlist::Instrument;
 use llamatron_tracker::generated::sounds::{SettingKind, MODDED_SETTINGS, PART_TYPES, SETTING_KINDS, TYPE_SETTINGS, TYPE_SETTING_KINDS};

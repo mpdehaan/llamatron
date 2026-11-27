@@ -13,11 +13,13 @@
 //! Tables are read with linear interpolation between samples, so that a slow note is smooth. Everything a part needs is
 //! made when it is compiled; a sample is plain arithmetic.
 
+pub mod asheville;
+pub mod tables;
+
+use crate::dsp::blep;
+use crate::filters::diode;
+use crate::oscillators::tables::{Tables, Waveform, TABLE_MASK, TABLE_SIZE};
 use crate::protocol::values::{as_number, list, number, numbers, truth, word};
-use crate::voice::acid;
-use crate::voice::asheville;
-use crate::voice::blep;
-use crate::voice::tables::{self, Tables, Waveform, TABLE_MASK, TABLE_SIZE};
 use rmpv::Value;
 use std::sync::Arc;
 
@@ -83,7 +85,7 @@ pub struct OscillatorState {
     pub speeds_for: (f64, f64),
     pub speeds: [f64; 3],
     /// Oh3's coupling into its filter, a one-pole high-pass, made as its note begins.
-    pub coupling: acid::OnePoleHighpass,
+    pub coupling: diode::OnePoleHighpass,
     /// Asheville: each oscillator's last value, which the Mod Matrix's Osc 1 to Osc 3 sources read; its noise's state;
     /// the mixer's last output, which Feedback loops back; and when the note began after the instrument started, with
     /// the voice's own random number, from which each oscillator's drift is its own.
@@ -169,9 +171,9 @@ pub fn compiled(spec: &Value, rate: f64) -> (OscillatorPart, f64) {
         "asheville" => OscillatorPart::Asheville(Box::new(asheville::compiled(spec))),
         "acid" => {
             let cycle = if word(spec, "acid_wave", "saw") == "saw" {
-                acid::saw_cycle(TABLE_SIZE)
+                diode::saw_cycle(TABLE_SIZE)
             } else {
-                acid::square_cycle(TABLE_SIZE)
+                diode::square_cycle(TABLE_SIZE)
             };
             OscillatorPart::Acid {
                 tables: tables::cycle_tables(&cycle, rate),
@@ -256,7 +258,7 @@ impl OscillatorPart {
     pub fn begin(&self, state: &mut OscillatorState, pitch: f64) {
         *state = OscillatorState::default();
         if let OscillatorPart::Acid { rate, .. } = self {
-            state.coupling = acid::OnePoleHighpass::new(acid::COUPLING_HIGHPASS_HZ, *rate);
+            state.coupling = diode::OnePoleHighpass::new(diode::COUPLING_HIGHPASS_HZ, *rate);
         }
         if let OscillatorPart::Pocket { .. } = self {
             state.period = ((PERIODS - CHIP_CLOCK / frequency_of(pitch)).round() as i64).clamp(0, LONGEST_PERIOD);

@@ -15,8 +15,8 @@
 //! with the note, so that a pinged gate plays in tune.
 
 use crate::dsp::{flushed, HIGHEST_SHARE};
+use crate::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
 use crate::protocol::values::{number, word};
-use crate::voice::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
 use rmpv::Value;
 use std::f64::consts::{LN_10, PI};
 

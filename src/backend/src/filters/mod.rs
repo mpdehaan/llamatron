@@ -17,15 +17,20 @@
 //! The cutoff is moved in octaves a sample by Env2 through the Env amount, key tracking and the mod matrix; its
 //! coefficients are worked out again every `COEFFICIENT_STEP` samples, which no ear can hear as steps.
 
+pub mod diode;
+pub mod gate;
+pub mod ladder;
+pub mod sallen_key;
+
+use crate::dsp::oversample::Halfband;
 use crate::dsp::{flushed, HIGHEST_SHARE};
-use crate::protocol::values::{number, word};
-use crate::voice::acid::{self, AcidFilterState};
-use crate::voice::drive::SmoothTanh;
+use crate::effects::drive::SmoothTanh;
+use crate::filters::diode::AcidFilterState;
 #[cfg(test)]
-use crate::voice::ladder::LadderUnit;
-use crate::voice::ladder::{LadderSettings, LadderState};
-use crate::voice::oversample::Halfband;
-use crate::voice::sallen_key::{self, SallenKeyState};
+use crate::filters::ladder::LadderUnit;
+use crate::filters::ladder::{LadderSettings, LadderState};
+use crate::filters::sallen_key::SallenKeyState;
+use crate::protocol::values::{number, word};
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -168,7 +173,7 @@ impl FilterPart {
             // The acid bass's measured mapping: the Env amount sets how far the envelope sweeps, and lowers where the
             // sweep starts, by the cutoff's place in the circuit's range; an amount below zero closes the filter instead.
             if amount >= 0.0 {
-                let (scale, offset) = acid::envelope_mapping(cutoff, amount);
+                let (scale, offset) = diode::envelope_mapping(cutoff, amount);
                 cutoff *= 2f64.powf(-scale * offset);
                 amount = scale / ENVELOPE_OCTAVES;
             } else {

@@ -11,11 +11,15 @@
 //! treble turnover, each lifting or cutting by its own number of decibels. MultiTap is a digital delay read at four
 //! taps, in a module of its own (`multitap`).
 
+pub mod bucket_brigade;
+pub mod drive;
+pub mod multitap;
+
+use crate::dsp::blep;
 use crate::dsp::{flushed, HIGHEST_SHARE};
+use crate::effects::drive::{Curve, Drive};
+use crate::effects::multitap::MultiTap;
 use crate::protocol::values::{number, truth, word};
-use crate::voice::blep;
-use crate::voice::drive::{Curve, Drive};
-use crate::voice::multitap::MultiTap;
 use rmpv::Value;
 use std::f64::consts::PI;
 

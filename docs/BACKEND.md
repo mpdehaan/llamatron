@@ -114,14 +114,14 @@ the same parts the Instrument page shows.
 
 | Part | File | What it does |
 | --- | --- | --- |
-| Oscillators | `voice/oscillators.rs`, `voice/tables.rs` | The raw sound: Basic's band-limited waveforms, the SID-style chip, the Pocket chip, the acid bass's saw or square. |
-| Env1, Env2, Env3 | `voice/envelopes.rs` | Env1 shapes the loudness, Env2 the filter's sweep, Env3 the pitch: ADSR, AR, ASR, the SID chip's ADSR, the vactrol, the acid gate and the chip's sixteen steps. |
-| LFO1 to LFO4 | `voice/modulation.rs` | Slow movement for the mod matrix. |
-| Filter | `voice/filters.rs` | The ladder, diode, OTA, multimode and Sallen-Key filters, or the low-pass gate. |
-| Matrix | `voice/modulation.rs` | Six routes from a source, such as an LFO or the velocity, to a destination, such as the cutoff. |
-| FX1, FX2 | `voice/effects.rs` | Bitcrush and Drive. |
+| Oscillators | `oscillators/mod.rs`, `oscillators/tables.rs` | The raw sound: Basic's band-limited waveforms, the SID-style chip, the Pocket chip, the acid bass's saw or square. |
+| Env1, Env2, Env3 | `envelopes/mod.rs` | Env1 shapes the loudness, Env2 the filter's sweep, Env3 the pitch: ADSR, AR, ASR, the SID chip's ADSR, the vactrol, the acid gate and the chip's sixteen steps. |
+| LFO1 to LFO4 | `modulation/mod.rs` | Slow movement for the mod matrix. |
+| Filter | `filters/mod.rs` | The ladder, diode, OTA, multimode and Sallen-Key filters, or the low-pass gate. |
+| Matrix | `modulation/mod.rs` | Six routes from a source, such as an LFO or the velocity, to a destination, such as the cutoff. |
+| FX1, FX2 | `effects/mod.rs` | Bitcrush and Drive. |
 
-`voice/patch.rs` puts the parts together into an instrument and plays its
+`instrument/patch.rs` puts the parts together into an instrument and plays its
 notes one sample at a time. The filters are zero-delay-feedback models: each
 sample, the filter's loop is solved exactly, so that the cutoff can sweep as
 fast as an envelope moves it without stepping or blowing up, and the ladder at

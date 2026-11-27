@@ -22,8 +22,8 @@
 // The stage equations after D'Angelo and Välimäki (ICASSP 2013) and Huovilainen (DAFx 2004), both published papers; the
 // closed-form Newton solve and the implementation are our own.
 
+use crate::dsp::oversample::Halfband;
 use crate::dsp::{flushed, HIGHEST_SHARE};
-use crate::voice::oversample::Halfband;
 use std::f64::consts::PI;
 
 /// The ladder's stages.

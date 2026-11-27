@@ -13,8 +13,8 @@ pub mod safety;
 
 use crate::drums::Hit;
 use crate::fluid::Fluid;
-use crate::voice::modulation::MOST_FRAMES;
-use crate::voice::patch::{Patch, Voice};
+use crate::instrument::patch::{Patch, Voice};
+use crate::modulation::MOST_FRAMES;
 use safety::OutputGuard;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;

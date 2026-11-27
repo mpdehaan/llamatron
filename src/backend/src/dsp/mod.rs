@@ -4,6 +4,9 @@
 //! Small pieces of signal processing every part shares: a biquad section and its designs (Butterworth low and high
 //! passes, a band pass by centre and Q), and a seeded random source, so that a drum hit renders the same every time.
 
+pub mod blep;
+pub mod oversample;
+
 #[cfg(test)]
 pub mod spectrum;
 

@@ -16,7 +16,7 @@
 //! that turning Drive up changes the tone rather than the loudness. Amount 0 leaves the sound untouched, and Warm's lean,
 //! which makes a steady offset along with its even harmonics, is followed by a DC blocker.
 
-use crate::voice::oversample::{LinearHalfband, SteepDecimator};
+use crate::dsp::oversample::{LinearHalfband, SteepDecimator};
 use std::f64::consts::PI;
 
 const MOST_GAIN: f64 = 20.0;

@@ -11,8 +11,8 @@
 //! sst-effects Delay.h (the Surge Synth Team, GPL-3.0-or-later); the implementation here is our own.
 
 use crate::dsp::{flushed, HIGHEST_SHARE};
+use crate::effects::bucket_brigade::{BucketBrigade, Design};
 use crate::protocol::values::{as_number, field, list, number, truth, word};
-use crate::voice::bucket_brigade::{BucketBrigade, Design};
 use rmpv::Value;
 use std::f64::consts::PI;
 

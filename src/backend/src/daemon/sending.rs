@@ -14,12 +14,12 @@
 use crate::audio::player::{Command, Player};
 use crate::daemon::{item, kind_of, start_reporter, statistics_of, tell, HitStore, Output as Answer};
 use crate::fluid::Fluid;
+use crate::instrument::patch::Patch;
 use crate::protocol::values::{as_number, field, list, truth, word};
 use crate::protocol::{self, message};
 use crate::sender::engine::{SenderEngine, NOTE_ON};
 use crate::sender::outputs::{Output, Shared, INSTRUMENTS_PER_PORT};
 use crate::sender::{self, Closed, SenderCommand};
-use crate::voice::patch::Patch;
 use rmpv::Value;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc;

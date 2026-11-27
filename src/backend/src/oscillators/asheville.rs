@@ -17,9 +17,9 @@
 //! Plaits (plaits/dsp/oscillator/variable_shape_oscillator.h), both by Emilie Gillet, MIT; the implementation here is our
 //! own.
 
+use crate::dsp::blep::{pulse, saw, triangle};
+use crate::oscillators::{frequency_of, Moves, OscillatorState};
 use crate::protocol::values::{list, number, truth, word};
-use crate::voice::blep::{pulse, saw, triangle};
-use crate::voice::oscillators::{frequency_of, Moves, OscillatorState};
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -280,7 +280,7 @@ impl Asheville {
             let frequency = if let Some(hertz) = oscillator.hertz {
                 // At an LFO's Speed it runs at its own rate whatever the note; heard, it keeps to hearing's bottom.
                 if oscillator.on {
-                    hertz.max(frequency_of(crate::voice::oscillators::LOWEST_PITCH))
+                    hertz.max(frequency_of(crate::oscillators::LOWEST_PITCH))
                 } else {
                     hertz.max(SLOWEST_UNHEARD_HERTZ)
                 }

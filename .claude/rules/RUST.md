@@ -31,7 +31,8 @@ standard a person who does not know Rust can trust: it builds itself, explains i
 - `src/` is one Cargo workspace, a crate a layer (math, strings, model, engine, exporters, importers, backend, tracker), all
   building into `src/target/`; a crate uses only the crates its manifest names, so the compiler keeps the layering.
 - The code is in folders by component, as Rust arranges a crate (a folder a module, its `mod.rs` naming its parts):
-  `protocol/`, `daemon/`, `audio/`, `engine/`, `voice/`, `drums/`, `fluid/`, `dsp/` today. The tracker's
+  `protocol/`, `daemon/`, `audio/`, `engine/`, `instrument/`, `oscillators/`, `filters/`, `envelopes/`,
+  `modulation/`, `effects/`, `drums/`, `fluid/`, `dsp/` today. The tracker's
   module tree is well organized (the user's rule), each layer and page in its place.
 
 - Every Rust file starts with the project's three-line GPLv3 header (`.claude/COMPLIANCE.md`), as `//` comments, above its module

@@ -399,7 +399,7 @@ the takes). The song's draws and drifts are the song's and take no part. Tested 
   after it the last guard (`realtime/synth_process/safety.py`). Every oscillator, and every modulator running at audio
   rate, is held between about 8 Hz and 20 kHz (pitch 0 to 135) and under half the sample rate, whatever the pitch
   envelope, the Mod Matrix, an audio-rate LFO, a Key ratio or a glide asks (`frequency_of` in
-  `src/backend/src/voice/oscillators.rs`), so that no modulation drives a sound to a subsonic thump or past hearing; the
+  `src/backend/src/oscillators/mod.rs`), so that no modulation drives a sound to a subsonic thump or past hearing; the
   output's guards then apply to whatever any modulation makes. A new engine or modulator MUST keep both.
 - `realtime/synth_process/` plays built-in instruments as audio in a process of its own, beside the Realtime Sender Process
   (the ideas files of `.claude/features/`, "Built-in synths"; the professor's notes in `.claude/notes/synthesis/`). `process.py`'s
