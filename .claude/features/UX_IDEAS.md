@@ -426,5 +426,6 @@ In the order of their priority, the highest first.
 - **Drum pages saying so**: the stripe at the top of the Instrument page of a drum instrument reads "EDITING DRUM
   INSTRUMENT", and the pattern editor's of a drum pattern "EDITING DRUM PATTERN", the whole caption in capitals; and a
   Percussion or Melodic choice that can no longer change, such as an instrument's role once a drum track plays it, is
-  not shown.
+  not shown. Nor is a FluidSynth instrument's Channel where it is chosen automatically and cannot be changed, nor a drum
+  instrument's where drums are fixed on channel 10.
 
