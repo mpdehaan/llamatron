@@ -412,7 +412,7 @@ fn basic_sample(partials: &[Partial], state: &mut OscillatorState, pitch: f64, m
             Waveform::Saw => blep::saw(at, step),
             Waveform::Square => blep::pulse(at, step, PULSE_MIDDLE),
             Waveform::Pulse => blep::pulse(at, step, width),
-            Waveform::Triangle => blep::triangle(at),
+            Waveform::Triangle => blep::triangle(at, step),
         };
         out += sample * partial.level;
     }
@@ -426,7 +426,7 @@ fn basic_sample(partials: &[Partial], state: &mut OscillatorState, pitch: f64, m
 // stmlib's ThisBlepSample and NextBlepSample (stmlib/dsp/polyblep.h), Emilie Gillet, MIT; the implementation is our own.
 fn sid_synced(wave: SidWave, state: &mut OscillatorState, frequency: f64, master: f64, width: f64, rate: f64) -> f64 {
     let naive = |place: f64| match wave {
-        SidWave::Triangle => blep::triangle(place),
+        SidWave::Triangle => blep::naive_triangle(place),
         SidWave::Pulse => {
             if place < width {
                 1.0

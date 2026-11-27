@@ -50,7 +50,8 @@ Envelopes tab.
 ## How Asheville Is Built
 
 Each wave is worked out from its oscillator's place in its cycle, every
-sample, and its jumps are smoothed by a polyBLEP, so that the waves stay bright
+sample, its jumps smoothed by a polyBLEP and the triangle's corners rounded by
+a polyBLAMP, each over the four samples around it, so that the waves stay bright
 and clean wherever the pitch goes, under glide, vibrato and audio-rate FM
 alike. The oscillators keep running between notes, each starting at a place of
 its own, as free-running oscillators do, so that no two notes start alike. The

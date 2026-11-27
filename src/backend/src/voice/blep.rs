@@ -1,14 +1,24 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! Band-limited waves made from a phase, every sample: the saw's, the square's and the pulse's jumps smoothed by a
-//! two-sample polyBLEP, the triangle and the sine left as they are, so that a wave stays bright and clean wherever its
-//! pitch goes, under glide, vibrato and audio-rate FM, with no table to choose. Used by the LFOs, Basic, the SID's pulse
-//! and Asheville. A hard-synced wave, whose jump falls between samples at the master's reset, is smoothed by the
+//! Band-limited waves made from a phase, every sample: the saw's, the square's and the pulse's jumps smoothed over two
+//! samples either side by a polyBLEP whose kernel is the cubic B-spline, and the triangle's corners rounded alike by the
+//! matching polyBLAMP, so that a wave stays clean wherever its pitch goes, under glide, vibrato and audio-rate FM, with
+//! no table to choose. Above a quarter of the rate, where two samples either side would overlap the next jump, the
+//! two-sample polyBLEP takes over. The sine needs nothing. Used by Basic, the SID's pulse and Asheville; the LFOs use
+//! the two-sample polyBLEP alone. A hard-synced wave, whose jump falls between samples at the master's reset, is smoothed by the
 //! one-sample-delayed form instead, a correction in this sample and the next.
 //!
 //! After stmlib's ThisBlepSample and NextBlepSample (stmlib/dsp/polyblep.h) and the oscillators of Mutable Instruments'
-//! Plaits (plaits/dsp/oscillator/), by Emilie Gillet, MIT; the implementation here is our own.
+//! Plaits (plaits/dsp/oscillator/), by Emilie Gillet, MIT; and, for the four-sample corrections, after the
+//! B-spline polyBLEP and polyBLAMP of Välimäki, Pekonen and Nam, "Perceptually informed synthesis of bandlimited
+//! classical waveforms using integrated polynomial interpolation" (JASA 2012), and Esqueda, Välimäki and Bilbao,
+//! "Rounding corners with BLAMP" (DAFx 2016). The residuals are integrated here from the cubic B-spline; the
+//! implementation is our own.
+
+/// The widest step a sample at which the four-sample corrections fit: beyond it, two samples either side of one jump
+/// would reach the next.
+const WIDE_STEP: f64 = 0.25;
 
 /// The two-sided polyBLEP's correction near a jump of two at a cycle's start, at a place in the cycle and a step a sample.
 #[inline]
@@ -27,22 +37,89 @@ pub fn blep(place: f64, step: f64) -> f64 {
     }
 }
 
+/// The integrated cubic B-spline's distance from a unit step, at some samples from the step on its near side: what a
+/// band-limited step still lacks before it, and, negated, what it still has to come down after.
+#[inline]
+fn spline_step_residual(samples: f64) -> f64 {
+    if samples >= 2.0 {
+        0.0
+    } else if samples >= 1.0 {
+        (2.0 - samples).powi(4) / 24.0
+    } else {
+        0.5 + (-4.0 * samples + 2.0 * samples.powi(3) - 0.75 * samples.powi(4)) / 6.0
+    }
+}
+
+/// The integrated residual's own integral, the band-limited ramp's distance from a corner of unit change of slope a
+/// sample, some samples from the corner on either side.
+#[inline]
+fn spline_ramp_residual(samples: f64) -> f64 {
+    let samples = samples.abs();
+    if samples >= 2.0 {
+        0.0
+    } else if samples >= 1.0 {
+        (2.0 - samples).powi(5) / 120.0
+    } else {
+        1.0 / 120.0 + 0.225 - 0.5 * samples + (2.0 * samples.powi(2) - 0.5 * samples.powi(4) + 0.15 * samples.powi(5)) / 6.0
+    }
+}
+
+/// The correction near a jump of two at a cycle's start, at a place in the cycle and a step a sample: four samples wide
+/// where they fit, else two.
+#[inline]
+pub fn wide_blep(place: f64, step: f64) -> f64 {
+    if step <= 0.0 || step >= WIDE_STEP {
+        return blep(place, step);
+    }
+    let reach = 2.0 * step;
+    if place < reach {
+        -2.0 * spline_step_residual(place / step)
+    } else if place > 1.0 - reach {
+        2.0 * spline_step_residual((1.0 - place) / step)
+    } else {
+        0.0
+    }
+}
+
+/// The correction near a corner at a cycle's start whose slope rises by some amount a cycle, at a place and a step:
+/// four samples wide where they fit, none where they do not, as a corner aliases far less than a jump.
+#[inline]
+fn wide_blamp(place: f64, step: f64, rise: f64) -> f64 {
+    if step <= 0.0 || step >= WIDE_STEP {
+        return 0.0;
+    }
+    let from_corner = if place < 0.5 { place } else { place - 1.0 };
+    rise * step * spline_ramp_residual(from_corner / step)
+}
+
 /// A rising saw from -1 to 1.
 #[inline]
 pub fn saw(place: f64, step: f64) -> f64 {
-    2.0 * place - 1.0 - blep(place, step)
+    2.0 * place - 1.0 - wide_blep(place, step)
 }
 
 /// A pulse high for the first share of its cycle its width gives, low for the rest.
 #[inline]
 pub fn pulse(place: f64, step: f64, width: f64) -> f64 {
     let level = if place < width { 1.0 } else { -1.0 };
-    level + blep(place, step) - blep((place - width).rem_euclid(1.0), step)
+    level + wide_blep(place, step) - wide_blep((place - width).rem_euclid(1.0), step)
 }
 
-/// A triangle, whose corners alias little enough to leave as they are.
+/// The triangle's slope, four a cycle up and four down, which turns by eight at each corner.
+const TRIANGLE_TURN: f64 = 8.0;
+
+/// A triangle, its two corners rounded: the bottom at the cycle's start, where the slope turns up, and the top at its
+/// middle, where it turns down.
 #[inline]
-pub fn triangle(place: f64) -> f64 {
+pub fn triangle(place: f64, step: f64) -> f64 {
+    let bottom = wide_blamp(place, step, TRIANGLE_TURN);
+    let top = wide_blamp((place + 0.5).fract(), step, -TRIANGLE_TURN);
+    naive_triangle(place) + bottom + top
+}
+
+/// A triangle with sharp corners, for a hard-synced wave whose corrections are its own.
+#[inline]
+pub fn naive_triangle(place: f64) -> f64 {
     1.0 - 4.0 * (place - 0.5).abs()
 }
 
@@ -80,5 +157,32 @@ mod tests {
         let most_jump = values.windows(2).map(|pair| (pair[1] - pair[0]).abs()).fold(0.0, f64::max);
         assert!(most_jump < 2.0, "{most_jump}");
         assert!(values.iter().all(|value| value.abs() <= 1.0 + 1e-9));
+    }
+
+    const RATE: usize = 48_000;
+
+    /// Two seconds of a wave at a whole number of hertz.
+    fn played(hertz: usize, wave: impl Fn(f64, f64) -> f64) -> Vec<f32> {
+        let step = hertz as f64 / RATE as f64;
+        (0..2 * RATE).map(|sample| wave((sample as f64 * step).fract(), step) as f32).collect()
+    }
+
+    /// On a high note, the four-sample corrections fold far less back than the two-sample one: the saw by some 10 dB,
+    /// and the triangle, whose corners were left sharp before, by over 20 dB; and above a quarter of the rate the
+    /// two-sample correction still holds the saw.
+    #[test]
+    fn the_four_sample_corrections_fold_far_less_back() {
+        use crate::dsp::spectrum::stray_decibels;
+        let hertz = 2_999;
+        let two_sample_saw = stray_decibels(&played(hertz, |place, step| 2.0 * place - 1.0 - blep(place, step)), RATE, hertz);
+        let wide_saw = stray_decibels(&played(hertz, saw), RATE, hertz);
+        assert!(wide_saw < two_sample_saw - 9.0, "{wide_saw} against {two_sample_saw}");
+        let sharp = stray_decibels(&played(hertz, |place, _| naive_triangle(place)), RATE, hertz);
+        let rounded = stray_decibels(&played(hertz, triangle), RATE, hertz);
+        assert!(rounded < sharp - 20.0, "{rounded} against {sharp}");
+        let highest = 13_001;
+        let naive_saw = stray_decibels(&played(highest, |place, _| 2.0 * place - 1.0), RATE, highest);
+        let high_saw = stray_decibels(&played(highest, saw), RATE, highest);
+        assert!(high_saw < naive_saw - 3.0, "{high_saw} against {naive_saw}");
     }
 }

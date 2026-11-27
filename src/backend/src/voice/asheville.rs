@@ -206,8 +206,8 @@ fn white(state: &mut u64) -> f64 {
 fn classic(wave: Wave, place: f64, step: f64, width_moved: f64) -> f64 {
     let width = |base: f64| (base + width_moved).clamp(NARROWEST, WIDEST);
     match wave {
-        Wave::Triangle => triangle(place),
-        Wave::SharkTooth => 0.5 * (triangle(place) + saw(place, step)),
+        Wave::Triangle => triangle(place, step),
+        Wave::SharkTooth => 0.5 * (triangle(place, step) + saw(place, step)),
         Wave::Saw => saw(place, step),
         Wave::ReverseSaw => -saw(place, step),
         Wave::Square => pulse(place, step, width(0.5)),
@@ -223,7 +223,7 @@ fn continuous(shape: f64, place: f64, step: f64, width_moved: f64) -> f64 {
     let third = 1.0 / 3.0;
     if shape < third {
         let along = shape / third;
-        triangle(place) * (1.0 - along) + saw(place, step) * along
+        triangle(place, step) * (1.0 - along) + saw(place, step) * along
     } else if shape < 2.0 * third {
         let along = (shape - third) / third;
         saw(place, step) * (1.0 - along) + pulse(place, step, (0.5 + width_moved).clamp(NARROWEST, WIDEST)) * along
