@@ -277,6 +277,18 @@ impl Sound {
     }
 
     /// The sound with one setting of an item of one of its lists changed, the items before it made empty.
+    /// The sound with several settings of an item of one of its lists changed at once, as one edit.
+    pub fn with_item_values(&self, list: &str, number: usize, values: &[(&str, Data)]) -> Data {
+        let mut items = self.value(list).as_list().map(<[Data]>::to_vec).unwrap_or_default();
+        while items.len() < number {
+            items.push(Data::Map(Vec::new()));
+        }
+        for (name, value) in values {
+            put(&mut items[number - 1], name, value.clone());
+        }
+        self.with_value(list, Data::List(items))
+    }
+
     pub fn with_item(&self, list: &str, number: usize, name: &str, value: Data) -> Data {
         let mut items = self.value(list).as_list().map(<[Data]>::to_vec).unwrap_or_default();
         while items.len() < number {

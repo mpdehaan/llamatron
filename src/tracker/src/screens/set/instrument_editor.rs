@@ -157,6 +157,38 @@ const TAP_SETTINGS: [(&str, &str, &str, &str); 4] = [
 /// The taps MultiTap may feed back from, and how it reaches a changed time.
 const FEEDBACK_FROM_TAPS: [&str; 4] = ["1", "2", "3", "4"];
 const TIME_CHANGES: [&str; 2] = ["fade", "glide"];
+/// MultiTap's modes: a clean digital delay, or a bucket-brigade device's darker echoes on one clock.
+const DELAY_MODES: [&str; 2] = ["digital", "analog"];
+const ANALOG: &str = "analog";
+/// The analog device's own settings, each a gauge of percent, with its label.
+const ANALOG_SETTINGS: [(&str, &str); 5] = [
+    ("darkness", labels::MSG_EFFECT_DARKNESS_LABEL),
+    ("noise", labels::MSG_EFFECT_NOISE_LABEL),
+    ("drive", labels::MSG_EFFECT_DRIVE_LABEL),
+    ("wow", labels::MSG_EFFECT_WOW_LABEL),
+    ("flutter", labels::MSG_EFFECT_FLUTTER_LABEL),
+];
+
+/// Where MultiTap starts when its Mode becomes Analog: a warm dotted echo, the second tap off, fed back from the third,
+/// darker and thinner than the digital delay.
+fn analog_starting_point() -> Vec<(&'static str, Data)> {
+    vec![
+        ("mode", Data::text(ANALOG)),
+        ("tap1_division", Data::text("1/8d")),
+        ("tap1_level", Data::Whole(80)),
+        ("tap2_division", Data::text("1/4")),
+        ("tap2_level", Data::Whole(0)),
+        ("tap2_on", Data::Bool(false)),
+        ("tap3_division", Data::text("1/4d")),
+        ("tap3_level", Data::Whole(55)),
+        ("tap4_division", Data::text("1/2")),
+        ("tap4_level", Data::Whole(35)),
+        ("feedback_from", Data::text("3")),
+        ("feedback", Data::Whole(40)),
+        ("tone", Data::Whole(3500)),
+        ("low_cut", Data::Whole(120)),
+    ]
+}
 
 /// Whether a switch that is on unless set off is on.
 fn flag_or_on(value: &Data) -> bool {
@@ -1339,18 +1371,32 @@ impl InstrumentEditor {
         let numbered = |label: &str| named(label, &[("number", number.into())]);
         let shown_label = |label: &str| named_in(labels::MSG_EFFECT_SHOWN_LABELS, label);
         let synced = flag_or_on(&effect("sync"));
+        let analog = text(&effect("mode")) == ANALOG;
         let mut fields = vec![
+            chosen(
+                ids.at(Write::Item("effects", number, "mode")),
+                &numbered(labels::MSG_EFFECT_MODE_LABEL),
+                &DELAY_MODES,
+                &names_in(labels::MSG_DELAY_MODE_NAMES, &DELAY_MODES),
+                &text(&effect("mode")),
+            )
+            .with_shown_label(&shown_label(labels::MSG_EFFECT_MODE_LABEL)),
             Field::toggle(ids.at(Write::Item("effects", number, "sync")), &numbered(labels::MSG_EFFECT_SYNC_LABEL), synced)
                 .with_shown_label(&shown_label(labels::MSG_EFFECT_SYNC_LABEL)),
-            chosen(
-                ids.at(Write::Item("effects", number, "time_change")),
-                &numbered(labels::MSG_EFFECT_TIME_CHANGE_LABEL),
-                &TIME_CHANGES,
-                &names_in(labels::MSG_TIME_CHANGE_NAMES, &TIME_CHANGES),
-                &text(&effect("time_change")),
-            )
-            .with_shown_label(&shown_label(labels::MSG_EFFECT_TIME_CHANGE_LABEL)),
         ];
+        // The analog device's one clock always glides, so it has no choice of how a time changes.
+        if !analog {
+            fields.push(
+                chosen(
+                    ids.at(Write::Item("effects", number, "time_change")),
+                    &numbered(labels::MSG_EFFECT_TIME_CHANGE_LABEL),
+                    &TIME_CHANGES,
+                    &names_in(labels::MSG_TIME_CHANGE_NAMES, &TIME_CHANGES),
+                    &text(&effect("time_change")),
+                )
+                .with_shown_label(&shown_label(labels::MSG_EFFECT_TIME_CHANGE_LABEL)),
+            );
+        }
         for (tap, names) in TAP_SETTINGS.iter().enumerate() {
             let tapped = |label: &str| named(label, &[("number", number.into()), ("tap", (tap + 1).into())]);
             let (on, division, ms, level) = *names;
@@ -1448,6 +1494,22 @@ impl InstrumentEditor {
             )
             .with_shown_label(&shown_label(labels::MSG_EFFECT_LOW_CUT_LABEL)),
         );
+        if analog {
+            for (name, label) in ANALOG_SETTINGS {
+                fields.push(
+                    gauge(
+                        ids.at(Write::Item("effects", number, name)),
+                        &numbered(label),
+                        whole(&effect(name)),
+                        (0, MAX_PERCENT),
+                        BLOCK_CELLS,
+                        marks::MSG_SOUND_PERCENT_SHOWN,
+                        (false, 1),
+                    )
+                    .with_shown_label(&shown_label(label)),
+                );
+            }
+        }
         fields
     }
 
@@ -1858,6 +1920,13 @@ impl Form for InstrumentEditor {
             Write::Part(part, name) => set(app, InstrumentSetting::SOUND, Some(sound.with_part_value(part, name, sound_value(value)))),
             Write::Oscillator(number, name) => set(app, InstrumentSetting::SOUND, Some(sound.with_oscillator(number, name, sound_value(value)))),
             Write::Knob(place) => set(app, InstrumentSetting::SOUND, Some(sound.with_knob(place, sound_value(value)))),
+            Write::Item("effects", number, "mode") if value.as_ref().and_then(Data::as_str) == Some(ANALOG) => {
+                set(
+                    app,
+                    InstrumentSetting::SOUND,
+                    Some(sound.with_item_values("effects", number, &analog_starting_point())),
+                );
+            }
             Write::Item(list, number, name) => {
                 // An effect's rate is a number of hertz, chosen as its text.
                 let value = match (name, value) {
@@ -2145,6 +2214,35 @@ mod tests {
         assert_eq!(InstrumentEditor::engine_of(&held), MIDI);
         // Leaving FluidSynth for an outside device leaves no device chosen, rather than FluidSynth's.
         assert_eq!(held.get_written(InstrumentSetting::DEVICE).and_then(Data::as_str), None);
+    }
+
+    /// Choosing Analog for MultiTap's Mode sets the analog starting point, a dotted echo with the second tap off fed back
+    /// from the third, shows the device's five gauges and hides Time change, which the device's one clock settles.
+    #[test]
+    fn choosing_analog_starts_multitap_on_its_warm_dotted_echo() {
+        let mut app = engine_app(
+            "{ name: fish, kind: built_in, role: normal, sound: { engine: asheville, effects: [{ effect: multitap }] } }",
+            false,
+        );
+        let mut editor = InstrumentEditor { name: "fish".to_string() };
+        let mode = id_of(&app, Write::Item("effects", 1, "mode"));
+        editor.apply(&mut app, mode, Edit::Choice(ANALOG.to_string()));
+        let instrument = match app.document.get_setlist().get_item(Section::INSTRUMENTS, "fish") {
+            Some(Item::Instrument(instrument)) => instrument.clone(),
+            _ => panic!("the instrument"),
+        };
+        let sound = Sound::of(&instrument);
+        for (name, value) in analog_starting_point() {
+            assert_eq!(sound.effect_setting(1, name), value, "{name}");
+        }
+        let mut ids = Ids { last: 0, writes: Vec::new() };
+        let fields = InstrumentEditor::effects_tab(&sound, false, &mut ids).columns[0].fields.clone();
+        let numbered = |label: &str| named(label, &[("number", 1.into())]);
+        let shown = labels_of(&fields);
+        for (_, label) in ANALOG_SETTINGS {
+            assert!(shown.contains(&numbered(label).as_str()), "{label}");
+        }
+        assert!(!shown.contains(&numbered(labels::MSG_EFFECT_TIME_CHANGE_LABEL).as_str()));
     }
 
     /// Percussion changes only while no track plays the instrument, after a question starting on NO: a track playing

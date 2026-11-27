@@ -390,7 +390,7 @@ fn effects(sound: &Sound) -> Data {
             let tap = from.as_str().and_then(|tap| tap.parse::<i128>().ok()).unwrap_or(4);
             set(&mut effect, "feedback_from", Data::Whole(tap));
         }
-        for name in ["amount", "mix"] {
+        for name in ["amount", "mix", "darkness", "noise", "drive", "wow", "flutter"] {
             let scaled = effect.get(name).map(|value| share(value, PERCENT)).unwrap_or(Data::Float(0.0));
             set(&mut effect, name, scaled);
         }

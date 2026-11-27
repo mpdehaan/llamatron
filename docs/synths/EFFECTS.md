@@ -68,6 +68,21 @@ old digital delay soften, from 500 Hz to 18 kHz, and Low cut thins each one,
 from 20 Hz to 2 kHz, 80 Hz as a new MultiTap starts, so that the repeats of a
 bass or a kick do not pile up into a rumble.
 
+Mode chooses the kind of delay: Digital, clean and exact, as a new MultiTap
+starts, or Analog, a model of the bucket-brigade chips of old analog echoes. In
+Analog the four taps sit along one chain of stages moved by one clock, as on a
+multi-tap chip, so a change of tempo slides every echo together and bends its
+pitch on the way, and Time change is not shown. Choosing Analog starts the
+delay on a warm dotted echo: taps on 1/8d at 80%, 1/4 switched off, 1/4d at 55%
+and 1/2 at 35%, fed back from Tap 3 at 40%, Tone at 3.5 kHz and Low cut at
+120 Hz. Five gauges, each from 0% to 100%, shape the device. Darkness takes
+stages away, so that the clock runs slower for the same time and the echoes
+grow darker and grainier, 35% as it starts. Noise is the hiss inside the
+device, which rises and falls with the sound, as the device's compander makes
+it breathe, 15%. Drive saturates each stage warmly, 30%. Wow is a slow drift of
+the clock and Flutter a fast small wobble, each bending the echoes' pitch, 10%
+and 5%; at 100% both are a seasick warble.
+
 Mix sets how loud the echoes come in under the sound, which itself stays whole,
 35% as a new MultiTap starts. The delay holds up to four seconds, a bar at 60
 beats a minute.

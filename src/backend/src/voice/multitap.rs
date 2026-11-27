@@ -12,6 +12,7 @@
 
 use crate::dsp::{flushed, HIGHEST_SHARE};
 use crate::protocol::values::{as_number, field, list, number, truth, word};
+use crate::voice::bucket_brigade::{BucketBrigade, Design};
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -103,6 +104,8 @@ pub struct MultiTap {
     change: Change,
     glide_share: f64,
     rate: f64,
+    analog: Option<Box<BucketBrigade>>,
+    looped: f64,
 }
 
 impl MultiTap {
@@ -146,6 +149,8 @@ impl MultiTap {
             change,
             glide_share: 1.0 - (-1.0 / (GLIDE_SECONDS * rate)).exp(),
             rate,
+            analog: None,
+            looped: 0.0,
         };
         // The first times are reached at once: nothing has been written to fade from yet.
         let first = delay.targets(FIRST_TEMPO);
@@ -154,7 +159,27 @@ impl MultiTap {
             tap.target = target;
             tap.from = target;
         }
+        if word(spec, "mode", "digital") == "analog" {
+            delay.analog = Some(Box::new(delay.bucket_brigade(spec)));
+        }
         delay
+    }
+
+    /// The Analog mode's device: every tap's time a share of the longest, as taps along one chain on one clock are, a
+    /// tap switched off silent, and the device's own settings.
+    fn bucket_brigade(&self, spec: &Value) -> BucketBrigade {
+        let longest = self.taps.iter().map(|tap| tap.target).fold(SHORTEST_DELAY, f64::max);
+        let design = Design {
+            shares: self.taps.map(|tap| tap.target / longest),
+            levels: self.taps.map(|tap| if tap.on { tap.level } else { 0.0 }),
+            feedback_from: Some(self.feedback_from).filter(|tap| self.taps[*tap].on),
+            darkness: number(spec, "darkness", 0.35),
+            noise: number(spec, "noise", 0.15),
+            drive: number(spec, "drive", 0.3),
+            wow: number(spec, "wow", 0.1),
+            flutter: number(spec, "flutter", 0.05),
+        };
+        BucketBrigade::new(&design, longest / self.rate, self.rate)
     }
 
     /// Each tap's time in samples at a tempo, held between the shortest the interpolation reads and the line's length.
@@ -172,6 +197,11 @@ impl MultiTap {
     /// The song's tempo now, in quarter notes a minute: each synced tap moves to its new time, by Fade or Glide.
     pub fn set_tempo(&mut self, tempo: f64) {
         let targets = self.targets(tempo);
+        if let Some(device) = &mut self.analog {
+            let longest = targets.iter().copied().fold(SHORTEST_DELAY, f64::max);
+            device.set_longest(longest / self.rate);
+            return;
+        }
         let (change, rate) = (self.change, self.rate);
         for (tap, target) in self.taps.iter_mut().zip(targets) {
             if (target - tap.target).abs() < SMALLEST_CHANGE {
@@ -219,6 +249,12 @@ impl MultiTap {
     /// the sample into the line; and each tap's read head moved on toward its time.
     #[inline]
     pub fn process(&mut self, dry: f64) -> f64 {
+        if let Some(device) = &mut self.analog {
+            let (wet, fed) = device.process(dry + self.looped);
+            let darkened = self.tone.low(fed);
+            self.looped = flushed((darkened - self.low_cut.low(darkened)) * self.feedback);
+            return wet;
+        }
         let mut wet = 0.0;
         let mut fed = 0.0;
         for (place, tap) in self.taps.iter().enumerate() {
@@ -257,6 +293,10 @@ impl MultiTap {
     /// Back to rest: the line and the loop's filters silent.
     pub fn reset(&mut self) {
         self.line.fill(0.0);
+        self.looped = 0.0;
+        if let Some(device) = &mut self.analog {
+            device.reset();
+        }
         self.tone.state = 0.0;
         self.low_cut.state = 0.0;
     }
