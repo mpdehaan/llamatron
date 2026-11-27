@@ -1450,6 +1450,9 @@ fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
         TrackSetting::GROOVE,
         TrackSetting::CHAINS,
         TrackSetting::BUILT_IN,
+        // The octaves the track's instrument plays guide the piano roll's marks and change no note.
+        TrackSetting::LOWEST_OCTAVE,
+        TrackSetting::HIGHEST_OCTAVE,
     ];
     for (_, track) in song.tracks() {
         unported(TRACK, &track_played, &|name| track.get_written(name).cloned())?;
