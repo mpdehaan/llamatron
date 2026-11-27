@@ -4,6 +4,9 @@ Research for the built-in synths and effects, written like a textbook: principle
 implementations, from papers and open-source code only, each open project named with its licence, and no commercial
 reference of any kind.
 
+- `LADDER.md`: the transistor ladder: its circuit and equations, passband and resonance, the trapezoidal rule and its
+  closed-form Newton solve, a rational tanh, each unit's spread and offsets, drift, oversampling against Drive, and
+  its costs.
 - `DELAYS.md`: delay lines, fractional reads, moving delay times, feedback structures, the bucket-brigade device and
   its digital models.
 - `TAPE.md`: magnetic tape and its machines: hysteresis and its solvers, bias, play-head losses and head bump,
