@@ -12,10 +12,10 @@
 
 use crate::audio::clock;
 use crate::drums::Hit;
+use crate::engine::MOST_FRAMES;
 use crate::engine::{Engine, Event, MidiEvent, Trash};
 use crate::fluid::Fluid;
 use crate::instrument::patch::Patch;
-use crate::modulation::MOST_FRAMES;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use std::panic::{self, AssertUnwindSafe};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};

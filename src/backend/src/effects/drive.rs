@@ -17,37 +17,13 @@
 //! which makes a steady offset along with its even harmonics, is followed by a DC blocker.
 
 use crate::dsp::oversample::{LinearHalfband, SteepDecimator};
+use crate::dsp::saturation::{log_cosh, CLOSEST_INPUTS};
 use std::f64::consts::PI;
 
 const MOST_GAIN: f64 = 20.0;
 const MOST_FOLDING_GAIN: f64 = 4.0;
 const WARM_LEAN: f64 = 0.3;
-/// Two inputs closer than this are one: the antiderivative's difference over them would lose its precision, so the
-/// curve is read at their middle instead.
-const CLOSEST_INPUTS: f64 = 1e-6;
 
-/// A tanh whose output is its average over the span from the last input to this one, by its antiderivative, so that a
-/// curve pushed hard folds far less back down; what a filter's Drive runs on.
-// Antiderivative anti-aliasing after Parker, Zavalishin and Le Bivic (DAFx 2016); our own implementation.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct SmoothTanh {
-    previous: f64,
-}
-
-impl SmoothTanh {
-    /// The tanh's average from the last input to this one.
-    #[inline]
-    pub fn process(&mut self, input: f64) -> f64 {
-        let span = input - self.previous;
-        let out = if span.abs() < CLOSEST_INPUTS {
-            ((input + self.previous) / 2.0).tanh()
-        } else {
-            (log_cosh(input) - log_cosh(self.previous)) / span
-        };
-        self.previous = input;
-        out
-    }
-}
 /// The level a sine keeps through every curve at every Amount, its peak 6 dB under full scale; the points of a cycle
 /// its loudness is measured over; and the most and least the matching may scale by.
 const REFERENCE_LEVEL: f64 = 0.5;
@@ -80,13 +56,6 @@ impl Curve {
             _ => Curve::Soft,
         }
     }
-}
-
-/// The log of the hyperbolic cosine, the antiderivative of tanh, written so that it never overflows.
-#[inline]
-pub fn log_cosh(x: f64) -> f64 {
-    let size = x.abs();
-    size + (-2.0 * size).exp().ln_1p() - std::f64::consts::LN_2
 }
 
 /// Drive: its curve, how hard it pushes, the scale and offset that keep the curve at full scale and silence silent, the

@@ -17,11 +17,13 @@
 use crate::drums::Hit;
 use crate::dsp::Random;
 use crate::effects::{self, Effect};
+use crate::engine::MOST_FRAMES;
 use crate::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
 use crate::filters::gate::{GateNote, GatePart, GateState};
 use crate::filters::{FilterPart, FilterState, ENVELOPE_OCTAVES};
 use crate::instrument::amp::{self, AmpPart};
-use crate::modulation::{self, Destination, LfoBank, ModMatrix, Moved, Source, Sources, LFO_COUNT, MOST_FRAMES};
+use crate::modulation::lfos::{self, LfoBank, LFO_COUNT};
+use crate::modulation::matrix::{self, Destination, ModMatrix, Moved, Source, Sources};
 use crate::oscillators::{self, Moves, OscillatorPart, OscillatorState};
 use crate::protocol::values::{field, list, number, truth, word};
 use rmpv::Value;
@@ -251,7 +253,7 @@ impl Patch {
             glides: truth(spec, "glides", true),
             glide: number(spec, "glide", 0.0),
             effects: effects::compiled(list(spec, "effects"), rate),
-            lfos: LfoBank::compiled(list(spec, "lfos"), rate).with_rate_routes(modulation::rate_routes(list(spec, "matrix"))),
+            lfos: LfoBank::compiled(list(spec, "lfos"), rate).with_rate_routes(matrix::rate_routes(list(spec, "matrix"))),
             buffer: vec![0.0; MOST_FRAMES],
             used: false,
             tail_left: 0,
@@ -461,7 +463,7 @@ impl Patch {
             }
             if fading {
                 for (lfo, fade) in sources.lfos.iter_mut().zip(fades.iter()) {
-                    *lfo *= modulation::faded_in(note.age, *fade);
+                    *lfo *= lfos::faded_in(note.age, *fade);
                 }
             }
             let moved = if modular.matrix.routes.is_empty() {

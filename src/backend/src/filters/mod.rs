@@ -23,8 +23,8 @@ pub mod ladder;
 pub mod sallen_key;
 
 use crate::dsp::oversample::Halfband;
+use crate::dsp::saturation::SmoothTanh;
 use crate::dsp::{flushed, HIGHEST_SHARE};
-use crate::effects::drive::SmoothTanh;
 use crate::filters::diode::AcidFilterState;
 #[cfg(test)]
 use crate::filters::ladder::LadderUnit;

@@ -5,7 +5,9 @@
 //! passes, a band pass by centre and Q), and a seeded random source, so that a drum hit renders the same every time.
 
 pub mod blep;
+pub mod one_pole;
 pub mod oversample;
+pub mod saturation;
 
 #[cfg(test)]
 pub mod spectrum;

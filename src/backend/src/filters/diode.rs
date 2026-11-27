@@ -1,12 +1,12 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! The acid bass's own circuit, Oh3's oscillator and the Diode filter, after Open303 by Robin Schmidt.
+//! The Diode filter, the acid bass's own circuit, after Open303 by Robin Schmidt; Oh3's oscillator, which feeds it, is in
+//! `oscillators/acid.rs`.
 //!
 //! Open303 (Copyright (c) 2009 Robin Schmidt, www.rs-met.com, released under the MIT license, which is compatible with
 //! this program's GPL) is an open emulation of the acid bass machine, its constants measured from the circuit. This module
-//! follows its work: the square shaped from the saw by a steep tanh, shifted half a cycle and at half the saw's level; the
-//! one-pole high-pass that couples the oscillator into the filter; the filter, four one-pole stages in a ladder with a
+//! follows its work: the filter, four one-pole stages in a ladder with a
 //! high-pass inside its feedback loop, which thins the bass as the resonance rises and keeps the peak singing rather than
 //! booming, with Open303's fitted coefficients and its skew of the resonance; the filter run at four times the sample rate;
 //! the all-pass, high-pass and notch after the filter that the circuit's coupling makes; and the measured mapping of the
@@ -14,17 +14,11 @@
 //! two Butterworth sections rather than Open303's elliptic filter, and the oscillator runs at the sample rate, its tables
 //! already band-limited.
 
+use crate::dsp::one_pole::{OnePoleAllpass, OnePoleHighpass};
+use crate::dsp::saturation::SmoothTanh;
 use crate::dsp::{flushed, Biquad, BUTTERWORTH_Q};
-use crate::effects::drive::SmoothTanh;
 use std::f64::consts::PI;
 
-/// The square: the saw through a tanh this steep, offset so that it switches a little off the middle, shifted half a
-/// cycle, and played at half the saw's level.
-const SQUARE_SHAPER_GAIN: f64 = 69.8232412342666;
-const SQUARE_SHAPER_OFFSET: f64 = 4.37;
-const SQUARE_LEVEL: f64 = 0.5;
-/// The high-pass coupling the oscillator into the filter.
-pub const COUPLING_HIGHPASS_HZ: f64 = 44.486;
 /// How many times the sample rate the filter runs at.
 pub const OVERSAMPLING: usize = 4;
 /// The high-pass inside the filter's feedback loop, the filter's lowest and highest cutoff, and its resonance skew.
@@ -50,43 +44,8 @@ const SCALE_LOW_CONSTANT: f64 = 0.736965594166206;
 const SCALE_HIGH_FACTOR: f64 = 4.194548788411135;
 const SCALE_HIGH_CONSTANT: f64 = 0.864344900642434;
 
-/// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `fillWithSquare303`, the 303 square
-/// table.
-/// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `fillWithSaw303`, the 303 saw
-/// table.
-/// One cycle of the saw as Open303 draws it: rising from 0 to 1 over the first half, then from -1 to 0.
-pub fn saw_cycle(length: usize) -> Vec<f64> {
-    let half = length / 2;
-    (0..length)
-        .map(|place| {
-            if place < half {
-                place as f64 / (half as f64 - 1.0)
-            } else {
-                -1.0 + (place - half) as f64 / (length - half) as f64
-            }
-        })
-        .collect()
-}
-
-/// One cycle of the square, from one cycle of a rising saw of a length.
-pub fn square_cycle(length: usize) -> Vec<f64> {
-    let half = length / 2;
-    (0..length)
-        .map(|place| {
-            // The saw as Open303 draws it, rising from 0 to 1 over the first half, then from -1 to 0, read half a cycle on.
-            let shifted = (place + half) % length;
-            let saw = if shifted < half {
-                shifted as f64 / (half as f64 - 1.0)
-            } else {
-                -1.0 + (shifted - half) as f64 / (length - half) as f64
-            };
-            -(SQUARE_SHAPER_GAIN * saw + SQUARE_SHAPER_OFFSET).tanh() * SQUARE_LEVEL
-        })
-        .collect()
-}
-
-/// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `calculateEnvModScalerAndOffset`, the
-/// measured mapping.
+/// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `calculateEnvModScalerAndOffset`,
+/// the measured mapping.
 /// The envelope's scale, in octaves at full, and its offset, by the cutoff in hertz and the Env amount from 0 to 1, as
 /// Open303 measured them: the cutoff's place between the lowest and highest nominal cutoffs blends two lines.
 pub fn envelope_mapping(cutoff: f64, amount: f64) -> (f64, f64) {
@@ -97,64 +56,6 @@ pub fn envelope_mapping(cutoff: f64, amount: f64) -> (f64, f64) {
     let scale = (1.0 - place) * low + place * high;
     let offset = OFFSET_FACTOR * place + OFFSET_CONSTANT;
     (scale, offset)
-}
-
-/// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `OnePoleFilter` in HIGHPASS mode.
-/// A one-pole high-pass, as Open303 makes one: its coefficients and what it keeps.
-#[derive(Clone, Copy, Default, Debug)]
-pub struct OnePoleHighpass {
-    gain: f64,
-    pole: f64,
-    last_in: f64,
-    last_out: f64,
-}
-
-impl OnePoleHighpass {
-    pub fn new(cutoff: f64, rate: f64) -> OnePoleHighpass {
-        let pole = (-2.0 * PI * cutoff / rate).exp();
-        OnePoleHighpass {
-            gain: 0.5 * (1.0 + pole),
-            pole,
-            last_in: 0.0,
-            last_out: 0.0,
-        }
-    }
-
-    #[inline]
-    pub fn process(&mut self, input: f64) -> f64 {
-        let out = self.gain * (input - self.last_in) + self.pole * self.last_out;
-        self.last_in = input;
-        self.last_out = flushed(out);
-        self.last_out
-    }
-}
-
-/// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `OnePoleFilter` in ALLPASS mode.
-/// A one-pole all-pass, which moves the phase of the low end and leaves its level.
-#[derive(Clone, Copy, Default, Debug)]
-struct OnePoleAllpass {
-    coefficient: f64,
-    last_in: f64,
-    last_out: f64,
-}
-
-impl OnePoleAllpass {
-    fn new(cutoff: f64, rate: f64) -> OnePoleAllpass {
-        let t = (PI * cutoff / rate).tan();
-        OnePoleAllpass {
-            coefficient: (t - 1.0) / (t + 1.0),
-            last_in: 0.0,
-            last_out: 0.0,
-        }
-    }
-
-    #[inline]
-    fn process(&mut self, input: f64) -> f64 {
-        let out = self.coefficient * input + self.last_in - self.coefficient * self.last_out;
-        self.last_in = input;
-        self.last_out = flushed(out);
-        self.last_out
-    }
 }
 
 /// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `BiquadFilter` in BANDREJECT mode.
@@ -299,13 +200,5 @@ mod tests {
             loudest = loudest.max(out.abs());
         }
         assert!(loudest > 0.05 && loudest < 20.0, "{loudest}");
-    }
-
-    /// The square is shaped from the saw: it sits near its two levels most of the cycle, and is not centred on nothing.
-    #[test]
-    fn the_square_is_shaped_from_the_saw() {
-        let cycle = square_cycle(2048);
-        let near_levels = cycle.iter().filter(|value| value.abs() > 0.45).count();
-        assert!(near_levels > 1900, "{near_levels}");
     }
 }

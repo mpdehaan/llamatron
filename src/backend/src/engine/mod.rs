@@ -14,10 +14,12 @@ pub mod safety;
 use crate::drums::Hit;
 use crate::fluid::Fluid;
 use crate::instrument::patch::{Patch, Voice};
-use crate::modulation::MOST_FRAMES;
 use safety::OutputGuard;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
+
+/// The most frames a chunk of audio holds, which every buffer that a chunk fills is made for.
+pub const MOST_FRAMES: usize = 8192;
 
 pub const NOTE_ON: i64 = 0;
 pub const NOTE_OFF: i64 = 1;
