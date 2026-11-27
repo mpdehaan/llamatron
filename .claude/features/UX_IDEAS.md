@@ -420,3 +420,7 @@ In the order of their priority, the highest first.
   through an instrument that can sound, a FluidSynth instrument, an outside MIDI instrument or a LlamaSynth instrument,
   whether or not the track has clips; the play marks on Arrange (the corner's `▶`, each scene's and clip's) are what
   show that it can play, and with no such instrument they are not drawn.
+- **FluidSynth chosen as a person expects**: choosing FluidSynth as an instrument's engine gives it General MIDI's
+  Acoustic Grand Piano at once rather than no sound; and the device is shown as "FluidSynth" wherever the program shows
+  it, never as the file's `*FluidSynth`.
+
