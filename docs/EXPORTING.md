@@ -93,6 +93,7 @@ and it can name another kind: `ableton`, `midi` (MIDI (Multitrack)), `stems`,
 | `--song` | Exports only the song with that name. |
 | `--out` | Writes into that folder, with the same file names, in place of the set's own folder. |
 | `--replace` | Removes each song's earlier export first, so you can export again and listen. |
+| `--template` | Builds the Ableton Live set from another Live set, such as one with your own devices and routing, in place of the one installed with llamatron. |
 | `--force` | Exports a set that holds values that cannot be used, each changed to the nearest allowed value and listed; the set file is not changed. Without it, such a set is refused, with each change it would make listed. |
 
 These only work with `--to`.

@@ -110,7 +110,7 @@ fn write_export(app: &mut App, kind: &'static str) {
 /// Export the current song beside the set's file, replacing an earlier export of its kind, and return where it went.
 fn exported(app: &App, kind: &str) -> Result<PathBuf, String> {
     let directory = app.document.export_directory().ok_or_else(|| errors::ERR_SAVE_BEFORE_EXPORT.to_string())?;
-    export_song(&app.document, kind, &directory)
+    export_song(&app.document, kind, &directory, None)
 }
 
 /// The kinds of export, by the names the command line takes.
@@ -123,7 +123,7 @@ pub fn has_earlier_export(document: &crate::document::Document, kind: &str, dire
 
 /// Export a document's current song into a directory as a kind, replacing an earlier export of its kind, and return where
 /// it went: what the Export dialog writes, and the command line's --to.
-pub fn export_song(document: &crate::document::Document, kind: &str, directory: &Path) -> Result<PathBuf, String> {
+pub fn export_song(document: &crate::document::Document, kind: &str, directory: &Path, template: Option<&[u8]>) -> Result<PathBuf, String> {
     let song = document.song();
     if song.get_track_names().is_empty() || song.scenes().is_empty() {
         return Err(errors::ERR_NOTHING_TO_EXPORT.to_string());
@@ -138,7 +138,7 @@ pub fn export_song(document: &crate::document::Document, kind: &str, directory: 
     };
     let files: Vec<(String, Vec<u8>)> = match kind {
         ABLETON => {
-            let xml = llamatron_exporters::live::live_set(&grid, llamatron_exporters::live::DEFAULT_TEMPLATE).map_err(refused)?;
+            let xml = llamatron_exporters::live::live_set(&grid, template.unwrap_or(llamatron_exporters::live::DEFAULT_TEMPLATE)).map_err(refused)?;
             vec![(format!("{name}.als"), llamatron_exporters::live::zipped(&xml))]
         }
         STEMS => llamatron_exporters::midi::stems(&grid, &name).map_err(refused)?,

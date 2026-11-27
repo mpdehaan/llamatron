@@ -155,3 +155,28 @@ fn a_set_with_a_value_out_of_range_exports_only_with_force() {
     assert!(forced.status.success(), "{}", String::from_utf8_lossy(&forced.stderr));
     assert_eq!(std::fs::read_to_string(&set).expect("the set reads"), before);
 }
+
+/// --template builds the Ableton Live set from the Live set named, and a template that cannot be read is refused,
+/// naming it.
+#[test]
+fn template_builds_the_live_set_from_the_set_named() {
+    let folder = fresh_folder("template");
+    let set = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/clip_of_two_patterns.yml");
+    let template = Path::new(env!("CARGO_MANIFEST_DIR")).join("../exporters/templates/live12.als");
+    let export = |template: &Path| {
+        Command::new(env!("CARGO_BIN_EXE_llamatron"))
+            .arg(&set)
+            .args(["--to", "ableton", "--replace", "--out"])
+            .arg(&folder)
+            .arg("--template")
+            .arg(template)
+            .output()
+            .expect("llamatron runs")
+    };
+    let built = export(&template);
+    assert!(built.status.success(), "{}", String::from_utf8_lossy(&built.stderr));
+    let missing = folder.join("no_such_template.als");
+    let refused = export(&missing);
+    assert!(!refused.status.success());
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("no_such_template.als"));
+}
