@@ -37,3 +37,13 @@ pub fn stray_decibels_under(samples: &[f32], rate: usize, fundamental: usize, to
     }
     DECIBELS_PER_POWER_DECADE * (stray.max(1e-30) / harmonic.max(1e-30)).log10()
 }
+
+/// The level of one harmonic of a second of a steady tone against the fundamental's, in decibels, read as
+/// `stray_decibels` reads the spectrum.
+pub fn harmonic_decibels(samples: &[f32], rate: usize, fundamental: usize, harmonic: usize) -> f64 {
+    let second = &samples[samples.len() - rate..];
+    let mut bins: Vec<Complex<f64>> = second.iter().map(|sample| Complex::new(*sample as f64, 0.0)).collect();
+    FftPlanner::new().plan_fft_forward(rate).process(&mut bins);
+    let energy_near = |hertz: usize| -> f64 { (hertz - HARMONIC_WIDTH..=hertz + HARMONIC_WIDTH).map(|bin| bins[bin].norm_sqr()).sum() };
+    DECIBELS_PER_POWER_DECADE * (energy_near(fundamental * harmonic).max(1e-30) / energy_near(fundamental).max(1e-30)).log10()
+}

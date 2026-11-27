@@ -21,6 +21,9 @@ use crate::dsp::{flushed, HIGHEST_SHARE};
 use crate::protocol::values::{number, word};
 use crate::voice::acid::{self, AcidFilterState};
 use crate::voice::drive::SmoothTanh;
+#[cfg(test)]
+use crate::voice::ladder::LadderUnit;
+use crate::voice::ladder::{LadderSettings, LadderState};
 use crate::voice::oversample::Halfband;
 use crate::voice::sallen_key::{self, SallenKeyState};
 use rmpv::Value;
@@ -29,9 +32,6 @@ use std::f64::consts::PI;
 pub const ENVELOPE_OCTAVES: f64 = 4.0;
 const LOWEST_CUTOFF: f64 = 20.0;
 const ENV_MOD_DIP: f64 = 0.5;
-/// The ladder's loop gain at full resonance: just under four, where the loop would oscillate, so that its peak rings
-/// strongly when excited and always dies away.
-const LADDER_FEEDBACK: f64 = 3.85;
 const OTA_FEEDBACK: f64 = 3.8;
 const LOWEST_Q: f64 = 0.5;
 const MOST_Q: f64 = 20.0;
@@ -78,6 +78,8 @@ pub struct FilterPart {
     pub amount: f64,
     pub key_track: f64,
     pub push: f64,
+    /// The Ladder's own settings: its unit, seeded by the instrument, Drive, Bass compensation and slope.
+    pub ladder: LadderSettings,
     pub poles: usize,
     /// How far the oscillator moves the Diode's cutoff, in octaves at full level: Filter FM, the classic modification.
     pub fm: f64,
@@ -105,6 +107,8 @@ pub struct FilterState {
     halfband: Halfband,
     /// Drive's curve, anti-aliased, at the rate the filter runs at.
     drive_curve: SmoothTanh,
+    /// The Ladder's circuit.
+    ladder: LadderState,
     /// The ladder's stages' last outputs, from which each stage's saturation is worked out for the next sample.
     outputs: [f64; 4],
 }
@@ -130,6 +134,11 @@ fn soft_squash(y: f64) -> f64 {
 }
 
 impl FilterState {
+    /// Seed what wanders slowly in the filter from the note's own random number, from -1 to 1.
+    pub fn seed(&mut self, random: f64) {
+        self.ladder.seed(random);
+    }
+
     /// Back to rest, so that a runaway filter starts clean.
     pub fn reset(&mut self) {
         *self = FilterState::default();
@@ -173,10 +182,12 @@ impl FilterPart {
             _ => {}
         }
         let resonance = number(spec, "resonance", 0.0).clamp(0.0, 1.0);
+        let poles = (number(spec, "poles", 4.0) as usize).clamp(1, 4);
         let saturates = matches!(kind, FilterKind::Ladder | FilterKind::Ota | FilterKind::SallenKey);
         let driven = number(spec, "drive", 0.0) > 0.0;
         // Drive's curve makes harmonics far above the note, so any driven filter runs it at twice the rate or more.
-        let oversampled = (saturates && resonance > OVERSAMPLED_FROM_RESONANCE) || (driven && kind != FilterKind::Diode);
+        // The Ladder's circuit runs at four times the rate always, and the Diode's at its own.
+        let oversampled = kind != FilterKind::Ladder && ((saturates && resonance > OVERSAMPLED_FROM_RESONANCE) || (driven && kind != FilterKind::Diode));
         Some(FilterPart {
             kind,
             mode,
@@ -185,7 +196,8 @@ impl FilterPart {
             amount,
             key_track: number(spec, "key_track", 0.0),
             push,
-            poles: (number(spec, "poles", 4.0) as usize).clamp(1, 4),
+            ladder: LadderSettings::new(number(spec, "drive", 0.0), number(spec, "bass_compensation", 1.0), poles),
+            poles,
             fm: number(spec, "filter_fm", 0.0) * FM_OCTAVES,
             rate,
             oversampled,
@@ -221,6 +233,9 @@ impl FilterPart {
         if self.kind == FilterKind::Diode {
             return self.acid(state, input, octaves, resonance_moved);
         }
+        if self.kind == FilterKind::Ladder {
+            return self.transistor_ladder(state, input, octaves, resonance_moved);
+        }
         if self.kind == FilterKind::SallenKey {
             if !self.oversampled {
                 return self.sallen_key(state, input, octaves, resonance_moved);
@@ -251,7 +266,7 @@ impl FilterPart {
         for stage in state.stages.iter_mut().chain(state.outputs.iter_mut()) {
             *stage = flushed(*stage);
         }
-        self.finished(out, resonance_moved)
+        out
     }
 
     /// A sample pushed through Drive's curve, kept at full scale; untouched without Drive.
@@ -272,6 +287,21 @@ impl FilterPart {
         } else {
             self.state_variable(state, input)
         }
+    }
+
+    /// The Ladder: the transistor ladder's circuit (ladder.rs), its coefficients worked out again every COEFFICIENT_STEP
+    /// samples as the cutoff moves.
+    #[inline]
+    fn transistor_ladder(&self, state: &mut FilterState, input: f64, octaves: f64, resonance_moved: f64) -> f64 {
+        if state.countdown == 0 {
+            let cutoff = self.cutoff * 2f64.powf(octaves);
+            let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
+            let step = self.coefficient_step();
+            state.ladder.prepare(&self.ladder, cutoff, resonance, self.rate, step);
+            state.countdown = step;
+        }
+        state.countdown -= 1;
+        state.ladder.process(&self.ladder, input, self.rate)
     }
 
     /// The Diode filter: the acid bass's own circuit after Open303 (acid.rs), its input pushed by Drive, its coefficients
@@ -320,7 +350,8 @@ impl FilterPart {
         state.g = (PI * cutoff / self.running_rate()).tan();
         let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
         state.feedback = match self.kind {
-            FilterKind::Ladder => LADDER_FEEDBACK * resonance,
+            // The Ladder runs its own circuit (ladder.rs), never the shared ladder.
+            FilterKind::Ladder => 0.0,
             // The Diode filter runs its own circuit (acid), never the shared ladder.
             FilterKind::Diode => 0.0,
             FilterKind::Ota => OTA_FEEDBACK * resonance,
@@ -392,16 +423,6 @@ impl FilterPart {
             FilterMode::Band => band * damping,
             FilterMode::High => high,
             FilterMode::Notch => input - band * damping,
-        }
-    }
-
-    /// The output finished as its circuit does: the ladder's bass partly made up.
-    #[inline]
-    fn finished(&self, out: f64, resonance_moved: f64) -> f64 {
-        let resonance = (self.resonance + resonance_moved).clamp(0.0, 1.0);
-        match self.kind {
-            FilterKind::Ladder => out * (1.0 + 0.5 * 3.95 * resonance),
-            _ => out,
         }
     }
 }
@@ -510,18 +531,18 @@ mod tests {
     /// A saturating filter is oversampled only when pushed, by Drive or a Resonance past half, and filters alike either
     /// way: the bass through, an octave above cut.
     #[test]
-    fn a_pushed_ladder_is_oversampled_and_still_filters() {
+    fn a_pushed_ota_is_oversampled_and_still_filters() {
         let driven = FilterPart::compiled(
             &Value::Map(vec![
-                ("type".into(), "ladder".into()),
+                ("type".into(), "ota".into()),
                 ("cutoff".into(), 1000.0.into()),
                 ("drive".into(), 0.5.into()),
             ]),
             48000.0,
         )
         .expect("a ladder");
-        assert!(driven.oversampled && part("ladder", 0.9).oversampled);
-        assert!(!part("ladder", 0.2).oversampled && !part("multimode", 0.9).oversampled);
+        assert!(driven.oversampled && part("ota", 0.9).oversampled);
+        assert!(!part("ota", 0.2).oversampled && !part("multimode", 0.9).oversampled);
         assert!(loudness(&driven, 100.0) > 0.5);
         assert!(loudness(&driven, 8000.0) < 0.02);
     }
@@ -562,5 +583,54 @@ mod tests {
             let stray = stray_decibels(&out, rate, hertz);
             assert!(stray < most_stray, "{kind}: {stray:.1} dB");
         }
+    }
+    /// A Ladder's level in decibels for a quiet sine at a frequency, at a Resonance and a Bass compensation.
+    fn ladder_level(frequency: f64, resonance: f64, compensation: f64) -> f64 {
+        let spec = Value::Map(vec![
+            ("type".into(), "ladder".into()),
+            ("cutoff".into(), 1000.0.into()),
+            ("resonance".into(), resonance.into()),
+            ("bass_compensation".into(), compensation.into()),
+        ]);
+        let filter = FilterPart::compiled(&spec, 48000.0).expect("a ladder");
+        20.0 * loudness(&filter, frequency).log10()
+    }
+
+    /// Resonance thins the Ladder's bass as the circuit's does, by 1/(1 + k), and full Bass compensation gives it back.
+    #[test]
+    fn bass_compensation_gives_back_the_bass_resonance_thins() {
+        let bass = 100.0;
+        let resonance = 0.9;
+        let kept = ladder_level(bass, resonance, 1.0);
+        let thinned = ladder_level(bass, resonance, 0.0);
+        assert!(kept.abs() < 1.5, "kept at {kept:.1} dB");
+        assert!(thinned < -9.0, "thinned to {thinned:.1} dB");
+    }
+
+    /// A Ladder's even harmonics come from its unit's offsets: a sine through a driven Ladder of a seeded unit has a second
+    /// harmonic, and one through a perfectly matched unit has none.
+    #[test]
+    fn a_ladders_unit_gives_it_even_harmonics() {
+        use crate::dsp::spectrum::harmonic_decibels;
+        let hertz = 200;
+        let second = |unit: LadderUnit| {
+            let mut filter = part_at("ladder", 0.3, 0.5, 4000.0);
+            filter.ladder.unit = unit;
+            let mut state = FilterState::default();
+            let out: Vec<f32> = (0..96_000)
+                .map(|place| filter.process(&mut state, 0.5 * (2.0 * PI * hertz as f64 * place as f64 / 48000.0).sin(), 0.0, 0.0) as f32)
+                .collect();
+            harmonic_decibels(&out, 48_000, hertz, 2)
+        };
+        let matched = LadderUnit::matched();
+        assert!(second(LadderUnit::seeded(1)) > -70.0, "a unit's own second harmonic");
+        assert!(second(matched) < -100.0, "a matched unit has none");
+    }
+
+    /// The same instrument always makes the same unit, and two instruments make two.
+    #[test]
+    fn each_instrument_is_a_unit_of_its_own() {
+        assert_eq!(LadderUnit::seeded(3), LadderUnit::seeded(3));
+        assert_ne!(LadderUnit::seeded(3), LadderUnit::seeded(4));
     }
 }

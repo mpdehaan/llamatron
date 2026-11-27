@@ -215,6 +215,15 @@ pub const CONTROL_COUNT: usize = 128;
 const CONTROL_TOP: f64 = 127.0;
 
 impl Patch {
+    /// Seed what makes the instrument's filter a unit of its own, its parts' spread, by its number.
+    pub fn seed_unit(&mut self, number: usize) {
+        if let Sound::Modular(modular) = &mut self.sound {
+            if let Some(filter) = modular.filter.as_mut() {
+                filter.ladder.unit = crate::voice::ladder::LadderUnit::seeded(number as u64 + 1);
+            }
+        }
+    }
+
     /// The instrument a spec describes, as the tracker writes it (model/objects/built_in_sound.py).
     pub fn compiled(spec: &Value, rate: f64) -> Patch {
         let empty = Value::Nil;
@@ -295,6 +304,7 @@ impl Patch {
         let Sound::Modular(modular) = &mut self.sound else { return };
         modular.last_pitch = Some(voice.pitch);
         voice.random = modular.random.between(-1.0, 1.0);
+        voice.filter.seed(voice.random);
         let seconds = voice.start as f64 / rate;
         // An accent's extra filter sweep and short decay come from whichever slot holds an envelope that accents, such as
         // the acid gate, so that it accents in any slot, not only Env1's.

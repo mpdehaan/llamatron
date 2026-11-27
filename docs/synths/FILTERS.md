@@ -33,20 +33,30 @@ into the tiny numbers a processor is slow with.
 
 ![The Ladder filter](../screenshots/filter_ladder.svg)
 
-The warm four-pole filter of the traditional monosynths: four one-pole stages
-in a row, the last one's output fed back to the input through a saturating
-stage. Each stage saturates too, as each transistor pair of the circuit does:
-a loud stage moves more slowly, so a loud note darkens and thickens rather
-than only getting louder. At full Resonance the loop's gain stops just short
-of the point where it would ring on its own, so the peak rings strongly when
-the sound excites it and always dies away; no filter here holds a tone of its
-own. Driven, or set past half its Resonance, the Ladder,
-the OTA and the Sallen-Key run at twice the sample rate, so that the harmonics
-their saturation makes above hearing are filtered away rather than folding
-back down as harsh, out-of-tune whistles. As the resonance
-rises the bass thins, also as the circuit's does, and the output makes some of
-it up again. Slope taps an earlier stage for a gentler filter of one, two or
-three poles, the feedback still taken from the last.
+The warm four-pole filter of the traditional monosynths, modelled on its
+circuit: four stages, each a pair of transistors charging a capacitor, the
+last stage's voltage fed back to the pair at the input. Each pair bends its
+curve as it is pushed, so a loud note darkens and thickens rather than only
+getting louder, and a driven Ladder growls. At full Resonance the loop's gain
+stops just short of the point where it would ring on its own, so the peak
+rings strongly when the sound excites it and always dies away; no filter here
+holds a tone of its own.
+
+No two analog ladders sound quite alike, since their parts are never exactly
+matched, and each instrument's Ladder is a unit of its own in the same way:
+its capacitors are a little off their values and its transistor pairs a
+little off balance, which adds the soft even harmonics a perfectly matched
+filter lacks. The same instrument always sounds like the same unit, and two
+instruments sound like two. The circuit's warmth also wanders very slowly, as
+a real one's does with temperature, so that a held note breathes.
+
+The Ladder runs at four times the sample rate, and at eight once Drive is
+turned up, so that the harmonics its curves make above hearing are filtered
+away rather than folding back down as harsh, out-of-tune whistles. As the
+resonance rises the bass thins, as the circuit's does; Bass comp, at 100%
+unless set, gives the bass back, and turned down to 0% leaves the circuit's
+own thinner sound. Slope taps an earlier stage for a gentler filter of one,
+two or three poles, the feedback still taken from the last.
 
 ## Multimode
 
@@ -97,7 +107,9 @@ moving the cutoff, which adds growl.
 ![The OTA filter](../screenshots/filter_ota.svg)
 
 A creamier four-pole ladder, with a softer drive before it, as filters built
-on transconductance amplifiers sound.
+on transconductance amplifiers sound. Driven, or set past half its Resonance,
+it runs at twice the sample rate, so that its saturation's harmonics are
+filtered away rather than folding back down, as the Sallen-Key does.
 
 ## Low-pass Gate
 

@@ -502,6 +502,7 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("key_track", Preset::Whole(50)),
             ("drive", Preset::Whole(0)),
             ("slope", Preset::Whole(24)),
+            ("bass_compensation", Preset::Whole(100)),
         ]),
     ),
     (
@@ -726,7 +727,10 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
     ),
     ("chip_steps", &["start_level", "level_pace", "level_direction"]),
     ("none", &[]),
-    ("ladder", &["cutoff", "resonance", "slope", "env_amount", "key_track", "drive"]),
+    (
+        "ladder",
+        &["cutoff", "resonance", "slope", "env_amount", "key_track", "drive", "bass_compensation"],
+    ),
     ("multimode", &["cutoff", "resonance", "mode", "env_amount", "key_track", "drive"]),
     ("sallen_key", &["cutoff", "resonance", "mode", "env_amount", "key_track", "drive"]),
     ("diode", &["circuit", "cutoff", "resonance", "env_amount", "filter_fm", "key_track", "drive"]),
@@ -1413,6 +1417,14 @@ pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
             highest: 100,
             unit: "{number:+}%",
             zero: None,
+        },
+    ),
+    (
+        "bass_compensation",
+        SettingKind::Gauge {
+            lowest: 0,
+            highest: 100,
+            what: "percent",
         },
     ),
     (

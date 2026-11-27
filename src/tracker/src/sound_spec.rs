@@ -321,6 +321,15 @@ fn filter(sound: &Sound) -> Data {
                 ("env_amount", share(&setting("env_amount"), PERCENT)),
                 ("key_track", share(&setting("key_track"), PERCENT)),
                 ("drive", share(&setting("drive"), PERCENT)),
+                // Only the Ladder gives back the bass its Resonance thins; the others keep their own response.
+                (
+                    "bass_compensation",
+                    if kind == "ladder" {
+                        share(&setting("bass_compensation"), PERCENT)
+                    } else {
+                        Data::Float(0.0)
+                    },
+                ),
                 // The Diode's Filter FM, the oscillator moving the cutoff for growl, is a modification: none on Stock.
                 (
                     "filter_fm",

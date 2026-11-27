@@ -15,6 +15,7 @@ pub mod effects;
 pub mod envelopes;
 pub mod filters;
 pub mod gate;
+pub mod ladder;
 pub mod modulation;
 pub mod multitap;
 pub mod oscillators;

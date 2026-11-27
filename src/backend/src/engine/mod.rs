@@ -176,8 +176,9 @@ impl Engine {
     }
 
     /// Put an instrument in place, its old self thrown away; its sounding notes play on with the new one.
-    pub fn set_instrument(&mut self, number: usize, patch: Box<Patch>) {
+    pub fn set_instrument(&mut self, number: usize, mut patch: Box<Patch>) {
         let Some(slot) = self.instruments.get_mut(number) else { return };
+        patch.seed_unit(number);
         if let Some(old) = slot.replace(patch) {
             self.throw_away(Trash::Patch(old));
         }
