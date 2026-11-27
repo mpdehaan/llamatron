@@ -13,3 +13,4 @@ pub mod pattern;
 pub mod reading;
 pub mod setlist;
 pub mod song;
+pub mod step_checks;

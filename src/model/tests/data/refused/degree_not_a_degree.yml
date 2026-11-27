@@ -1,0 +1,3 @@
+# A pattern whose second step's Degree is a word.
+patterns:
+  - { name: tune, steps: 4, degree: [1, banana, 3, 4] }

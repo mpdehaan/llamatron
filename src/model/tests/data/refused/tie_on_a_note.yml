@@ -1,0 +1,3 @@
+# A pattern whose second step both plays a note and ties the first one on.
+patterns:
+  - { name: tune, steps: 4, degree: [1, 2, 3, 4], tie: [false, true, false, false] }

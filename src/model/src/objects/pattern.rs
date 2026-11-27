@@ -9,9 +9,10 @@
 mod munges;
 use crate::file::data::Data;
 use crate::objects::holder::{in_table, passed_over, Holder};
+use crate::objects::step_checks::check_step;
 use crate::schema::checking::plain_data;
 use crate::schema::checking::InvalidValue;
-use crate::schema::generated::file_format::{PatternSetting, CC_ROWS, CHORD_ROWS, PATTERN_ROWS, PITCH_ROWS, STATEMENT_OF_ROW};
+use crate::schema::generated::file_format::{PatternSetting, Row, CC_ROWS, CHORD_ROWS, PATTERN_ROWS, PITCH_ROWS, STATEMENT_OF_ROW};
 use crate::schema::generated::limits::{MAX_STEPS, MIN_STEPS};
 use crate::schema::generated::rows::{RowKind, ROWS, ROW_DESCRIPTIONS};
 use crate::schema::generated::settings::{Plain, PATTERN};
@@ -28,6 +29,9 @@ pub struct Pattern {
 fn kind_of(row: &str) -> RowKind {
     ROWS.iter().find(|(name, _)| *name == row).map(|(_, kind)| *kind).unwrap_or(RowKind::Plain)
 }
+
+/// The number a message gives the first step.
+const FIRST_STEP_NUMBER: i64 = 1;
 
 /// Whether a value is what Python takes as true.
 fn truthy(value: &Data) -> bool {
@@ -100,11 +104,17 @@ impl Pattern {
             )));
         };
         let settings = Holder::read(PATTERN, &data, None, &[])?;
+        let drum = settings.get(PatternSetting::DRUM).is_some_and(truthy);
         let mut rows = Vec::with_capacity(PATTERN_ROWS.len());
         for row in PATTERN_ROWS {
             let values = match data.get(row) {
                 None | Some(Data::Null) => None,
-                Some(Data::List(values)) if values.len() as i128 == steps => Some(read_row(row, values)),
+                Some(Data::List(values)) if values.len() as i128 == steps => {
+                    for value in values {
+                        check_step(row, value, drum).map_err(|problem| problem.within(row))?;
+                    }
+                    Some(read_row(row, values))
+                }
                 Some(found) => {
                     return Err(InvalidValue::new(named(
                         errors::ERR_ROW_WRONG_LENGTH,
@@ -114,7 +124,21 @@ impl Pattern {
             };
             rows.push(values);
         }
-        Ok(Pattern { steps, settings, rows })
+        let pattern = Pattern { steps, settings, rows };
+        pattern.checked_ties()?;
+        Ok(pattern)
+    }
+
+    /// Refuse a tie on a step that has a note or grabs one, since a tied step plays nothing of its own.
+    fn checked_ties(&self) -> Result<(), InvalidValue> {
+        let Some(ties) = self.row(Row::TIE) else { return Ok(()) };
+        for (step, tie) in ties.iter().enumerate() {
+            if truthy(tie) && self.has_sound(step) {
+                let shown = step as i64 + FIRST_STEP_NUMBER;
+                return Err(InvalidValue::new(named(errors::ERR_TIE_ON_A_NOTE, &[("step", shown.into())])));
+            }
+        }
+        Ok(())
     }
 
     pub fn get_steps(&self) -> i128 {

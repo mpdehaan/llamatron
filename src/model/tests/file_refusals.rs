@@ -6,6 +6,10 @@
 
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::MIN_MORPH_REPEAT;
+use llamatron_model::schema::generated::{limits, midi};
+
+/// The step of tie_on_a_note.yml that both plays and ties, numbered from 1.
+const TIED_STEP: i64 = 2;
 use llamatron_strings::{errors, named};
 
 /// Each refused set, and the message its refusal holds.
@@ -16,6 +20,19 @@ fn refusals() -> Vec<(&'static str, String)> {
             named(errors::ERR_MORPH_TOO_FEW_REPEATS, &[("lowest", MIN_MORPH_REPEAT.into())]),
         ),
         ("morph_without_its_style.yml", errors::ERR_MORPH_NEEDS_BOTH.to_string()),
+        (
+            "degree_not_a_degree.yml",
+            named(errors::ERR_NOT_DEGREE, &[("lowest", limits::MIN_DEGREE.into())]),
+        ),
+        (
+            "velocity_out_of_range.yml",
+            named(
+                errors::ERR_NOT_IN_RANGE,
+                &[("lowest", midi::MIN_VELOCITY.into()), ("highest", midi::MAX_VELOCITY.into())],
+            ),
+        ),
+        ("chord_on_a_drum_pattern.yml", errors::ERR_CHORD_ON_DRUMS.to_string()),
+        ("tie_on_a_note.yml", named(errors::ERR_TIE_ON_A_NOTE, &[("step", TIED_STEP.into())])),
     ]
 }
 

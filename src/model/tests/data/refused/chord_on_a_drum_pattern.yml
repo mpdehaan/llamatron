@@ -1,0 +1,3 @@
+# A drum pattern holding a chord, which means nothing without a scale.
+patterns:
+  - { name: beat, steps: 4, drum: true, degree: [C, null, D, null], chord: [M, null, null, null] }

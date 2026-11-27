@@ -24,6 +24,8 @@ use llamatron_strings::{named, Value};
 pub struct InvalidValue {
     pub message: String,
     pub nearest: NearestValue,
+    /// Where inside the thing being read the value was, such as a pattern's row, said after the thing's own place.
+    pub within: Option<String>,
 }
 
 impl InvalidValue {
@@ -31,6 +33,15 @@ impl InvalidValue {
         InvalidValue {
             message,
             nearest: NearestValue::None,
+            within: None,
+        }
+    }
+
+    /// The same refusal, found at a place inside the thing being read.
+    pub fn within(self, place: &str) -> InvalidValue {
+        InvalidValue {
+            within: Some(place.to_string()),
+            ..self
         }
     }
 }

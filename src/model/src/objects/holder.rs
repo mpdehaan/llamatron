@@ -18,6 +18,13 @@ pub struct SongFileError {
 impl SongFileError {
     /// A value refused at a place in the file, as the Python's reading(where) says it.
     pub fn at(place: &str, problem: InvalidValue) -> SongFileError {
+        let place = match &problem.within {
+            Some(within) => llamatron_strings::named(
+                llamatron_strings::errors::ERR_WHERE_IN_ROW,
+                &[("where", place.into()), ("row", within.as_str().into())],
+            ),
+            None => place.to_string(),
+        };
         SongFileError {
             message: llamatron_strings::named(
                 llamatron_strings::errors::ERR_AT,
