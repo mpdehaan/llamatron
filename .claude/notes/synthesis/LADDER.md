@@ -131,6 +131,8 @@ compressing as the sound grows loud, as a ladder fed from a mixer at an ordinary
 Drive then raises the input towards the level where the pair is a square wave, here 14.3 units. Climbed linearly, a
 knob gives almost all its change in its first quarter; climbed exponentially, gain = (top / scale)^drive, the third
 harmonic of a sine at half of full scale rises evenly: about −66, −49, −31, −14 and −11 dB at 0, 25, 50, 75 and 100%.
+Bending the knob's turn first, gain = (top / scale)^(drive^0.75), with the top raised a quarter to 17.9 units, brings
+the grit on sooner, as players asked: about −66, −41, −18, −12 and −11 dB, a little past a plain ladder's reach.
 
 ## Self-Oscillation
 
