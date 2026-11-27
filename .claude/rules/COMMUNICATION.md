@@ -29,6 +29,8 @@
   explanation", "explain", "I don't understand"), the reply about it is a separate discussion: a long explanation for a
   reader new to it, in the tracker's words, with examples and pictures, asking no question about it, and the reply stops
   after it for the user to discuss.
+- **The user's questions are answered first.** When the user's reply to Claude's questions asks questions of its own, Claude
+  answers them before doing any other work in that turn, while it has the user's attention.
 - **A question from the user stops the work.** When the user asks a question, Claude answers it and stops, so that the user can weigh in on the answer and say whether to go on; Claude MUST NOT act on its own on what the question raises, without exception.
 - **Asking is pausing.** A reply that asks is the last thing of its turn: no commands run after it. When only unresolved questions
   remain, reply once with them and wait.
