@@ -500,3 +500,24 @@ fn every_engine_slides_a_glided_step_without_striking_it_again() {
         assert_eq!(engine.sounding(), vec![(first_voice, second)], "{engine_name} slides on its first voice");
     }
 }
+
+/// Basic's oscillators run free, so that two in tune mix rather than lock: a saw and a square started together add up to
+/// a saw an octave up, no louder than the saw alone, while running free they are on average far louder, as two
+/// unrelated waves are, and each note starts them differently.
+#[test]
+fn basic_oscillators_in_tune_mix_rather_than_lock() {
+    let notes = [PITCH; 8];
+    let energy = |sound: &str| {
+        let out = played_notes(&instrument(sound), &notes);
+        let note = out.len() / notes.len();
+        (0..notes.len())
+            .map(|n| out[n * note..(n + 1) * note].iter().map(|sample| (*sample as f64).powi(2)).sum::<f64>())
+            .collect::<Vec<f64>>()
+    };
+    let saw = energy("{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }] } }");
+    let mixed = energy("{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: square }] } }");
+    let average = |energies: &[f64]| energies.iter().sum::<f64>() / energies.len() as f64;
+    assert!(average(&mixed) > 2.0 * average(&saw), "{} against {}", average(&mixed), average(&saw));
+    let spread = mixed.iter().cloned().fold(f64::MIN, f64::max) / mixed.iter().cloned().fold(f64::MAX, f64::min);
+    assert!(spread > 1.5, "each note starts the oscillators afresh: {spread}");
+}

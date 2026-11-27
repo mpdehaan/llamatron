@@ -184,6 +184,22 @@ pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
     }
 }
 
+/// What mixes a note's random number and an oscillator's place into a seed of their own: the golden ratio as a
+/// 64-bit number, the usual odd constant of such hashes.
+const PHASE_MIX: u64 = 0x9E37_79B9_7F4A_7C15;
+
+/// Where a free-running oscillator is in its cycle as a note starts, from the note's random number, from -1 to 1, and the
+/// oscillator's place: each oscillator its own draw, unrelated to the others', so that no two start near together more
+/// often than chance would have them.
+pub fn free_phase(random: f64, place: usize) -> f64 {
+    // A SplitMix64 step of the random number's bits and the place, its top 53 bits a share of a cycle.
+    let mut bits = random.to_bits() ^ (place as u64 + 1).wrapping_mul(PHASE_MIX);
+    bits = (bits ^ (bits >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+    bits = (bits ^ (bits >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+    bits ^= bits >> 31;
+    (bits >> 11) as f64 / (1u64 << 53) as f64
+}
+
 fn basic(spec: &Value) -> OscillatorPart {
     let mut partials = Vec::new();
     for entry in list(spec, "oscillators") {
@@ -268,8 +284,17 @@ impl OscillatorPart {
     pub fn free_run(&self, state: &mut OscillatorState, random: f64, began: f64) {
         state.random = random;
         state.began = began;
-        if let OscillatorPart::Asheville(asheville) = self {
-            asheville.begin(state, random);
+        match self {
+            OscillatorPart::Asheville(asheville) => asheville.begin(state, random),
+            // Each of Basic's oscillators runs free, starting the note at a phase of its own: oscillators that all
+            // started together would lock, so that a saw and a square in tune add up to one fixed wave, a saw an octave
+            // up, rather than mixing.
+            OscillatorPart::Basic { .. } => {
+                for (place, phase) in state.phases.iter_mut().enumerate() {
+                    *phase = free_phase(random, place);
+                }
+            }
+            _ => {}
         }
     }
 
@@ -587,5 +612,24 @@ mod tests {
             assert!(samples.iter().all(|sample| sample.abs() <= 1.5), "{wave}");
             assert!((crossings(&samples) as f64 - hertz).abs() <= 2.0, "{wave} {}", crossings(&samples));
         }
+    }
+
+    /// Each oscillator's starting phase is a draw of its own: over many notes, two oscillators start within a twentieth of
+    /// a cycle of each other about as often as chance has them, a tenth of the time, never far more.
+    #[test]
+    fn free_running_oscillators_start_apart_by_chance() {
+        let notes = 10_000;
+        let near = 0.05;
+        let chance = 2.0 * near;
+        let mut together = 0;
+        for note in 0..notes {
+            let random = note as f64 / notes as f64 * 2.0 - 1.0;
+            let gap = (free_phase(random, 0) - free_phase(random, 1)).abs();
+            if gap.min(1.0 - gap) < near {
+                together += 1;
+            }
+        }
+        let share = together as f64 / notes as f64;
+        assert!((share - chance).abs() < chance / 4.0, "{share}");
     }
 }

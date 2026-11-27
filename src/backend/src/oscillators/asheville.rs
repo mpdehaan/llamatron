@@ -238,10 +238,12 @@ impl Asheville {
     /// Ready a voice's oscillators as a note begins: each at a phase of its own, as free-running oscillators never start
     /// a note together.
     pub fn begin(&self, state: &mut OscillatorState, random: f64) {
-        let golden = 0.618_033_988_749_895;
         for (place, phase) in state.phases.iter_mut().enumerate() {
-            *phase = ((random + 1.0) * golden * (place as f64 + 1.0)).fract();
-            state.sub_phases[place] = *phase / 4.0;
+            *phase = super::free_phase(random, place);
+            // A sub is its oscillator divided down, so that it switches only where its oscillator's cycle begins: it
+            // starts where its own slower cycle stands when its oscillator's stands at this phase.
+            let octaves_down = self.oscillators.get(place).map_or(0, |oscillator| oscillator.sub);
+            state.sub_phases[place] = *phase / f64::from(1u32 << octaves_down);
         }
         state.noise_state = ((random + 1.0) * 1e9) as u64 + 1;
     }
@@ -451,5 +453,21 @@ mod tests {
         };
         let (low, high) = (48.0, 60.0);
         assert_eq!(swings(low), swings(high));
+    }
+
+    /// A sub is its oscillator divided down: as a note starts, a sub one or two octaves under stands where its oscillator's
+    /// phase puts it, so that it switches only where its oscillator's cycle begins.
+    #[test]
+    fn a_sub_starts_locked_to_its_oscillator() {
+        let oscillator = |sub: i64| Value::Map(vec![("wave".into(), "saw".into()), ("mix".into(), 1.0.into()), ("sub".into(), sub.into())]);
+        let spec = Value::Map(vec![("oscillators".into(), Value::Array(vec![oscillator(1), oscillator(2), oscillator(0)]))]);
+        let asheville = compiled(&spec);
+        let mut state = OscillatorState::default();
+        asheville.begin(&mut state, 0.3);
+        for place in 0..2 {
+            let octaves_down = asheville.oscillators[place].sub;
+            let divided = state.sub_phases[place] * f64::from(1u32 << octaves_down);
+            assert!((divided - state.phases[place]).abs() < 1e-12, "oscillator {place}");
+        }
     }
 }
