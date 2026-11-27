@@ -410,9 +410,18 @@ impl Page for MainPage {
         self.draw_cell(app, &mut grid[..CELL_LINES], 0, &Keys::ARRANGE, same(self.chosen, &Keys::ARRANGE), total);
         for (number, row) in rows[1..1 + BUTTON_ROWS].iter().enumerate() {
             let number = number + 1;
-            for (column, binding) in row.iter().enumerate() {
-                let lines = &mut grid[number * CELL_LINES..(number + 1) * CELL_LINES];
-                self.draw_cell(app, lines, lefts[column], binding, same(binding, self.chosen), widths[column]);
+            let lines = &mut grid[number * CELL_LINES..(number + 1) * CELL_LINES];
+            // A cell that covers several places side by side is drawn once, as wide as all of them.
+            let mut column = 0;
+            while column < COLUMNS {
+                let binding = row[column];
+                let mut last = column;
+                while last + 1 < COLUMNS && same(row[last + 1], binding) {
+                    last += 1;
+                }
+                let width = lefts[last] + widths[last] - lefts[column];
+                self.draw_cell(app, lines, lefts[column], binding, same(binding, self.chosen), width);
+                column = last + 1;
             }
         }
         let mut bar: Vec<Canvas> = (0..BAR_ROWS + BORDERS).map(|_| Canvas::new(total)).collect();
@@ -459,5 +468,31 @@ mod tests {
         tracker.press(crate::keys::first_key(&Keys::WIZARD));
         assert_eq!(tracker.depth(), pages);
         assert_eq!(tracker.app.status.text(), messages::MSG_WIZARD_NOT_YET);
+    }
+
+    /// The main screen as a person reads it: every page it opens is named in exactly one cell, at the smallest size and
+    /// a large one, so that no cell is drawn twice and none is missing.
+    #[test]
+    fn the_main_screen_names_each_page_once() {
+        let synth = |drum: bool| crate::track_instrument::new_track_instrument(TrackInstrumentDefault::BuiltIn, drum, false, None);
+        let tracker = crate::app::Tracker::new(crate::document::Document::new_set(synth(false), synth(true)).expect("a new set"));
+        let pages = [
+            labels::PageName::ARRANGE,
+            labels::PageName::SONGS,
+            labels::PageName::PATTERNS,
+            labels::PageName::SCALES,
+            labels::PageName::GENERATORS,
+            labels::PageName::DRAWS,
+            labels::PageName::GROOVES,
+            labels::PageName::INSTRUMENTS,
+        ];
+        for (width, height) in [(80, 24), (160, 50)] {
+            let screen: String = tracker.screen(width, height).iter().map(|line| line.text() + "\n").collect();
+            for page in pages {
+                let cell = format!(" {page} ");
+                let count = screen.lines().map(|line| line.matches(&cell).count()).sum::<usize>();
+                assert_eq!(count, 1, "{page} at {width}x{height}:\n{screen}");
+            }
+        }
     }
 }
