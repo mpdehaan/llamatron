@@ -20,13 +20,13 @@ Wanted changes to how the tracker looks and is used: what each is, never its sta
 - **The on-screen keyboard**: `K` on every page opens a keyboard drawn on screen and played from the computer's keys,
   sounding the instrument of the page, or of the track or pattern under the cursor. `K` (Keyswitch map) on the Instrument
   page and `K` (keyswitch) in the pattern editor move to `W`, one letter for keyswitches on both pages.
-- **Renaming on the Scene and Clip pages**: ENTER on the Name field and F2 rename the scene or the clip through the one
-  rename prompt, a scene's name refused where another scene has it, `Bksp` on a clip's Name bringing back its pattern's
-  name as today.
 - **Listening to a drum-track pattern**: a pattern whose clips are all on drum tracks listens through the drum track's own
   instrument where it has one, and otherwise through FluidSynth's drum kit, as a drum pattern does, rather than the
   song's Preview instrument or the piano.
 - **Space on an empty drum Note step**: in a drum pattern's rows, Space on a Note cell with no note writes C there.
+- **Solo a track, and mute from Arrange**: soloing a track plays it alone, live and in Listen, every other track silent
+  until the solo is lifted, several tracks soloed together where wanted; a track's Mute, today on its track editor, and
+  its solo reached directly from Arrange, each shown on the track's heading.
 - **Batch pattern editing** on a group: a discussion, then building.
 - **Transpose** by scale degrees, semitones or octaves, with a mockup; Grab track removed, each Grab step choosing the track
   it grabs from; drop chords and smarter voice leading on the object tabs.

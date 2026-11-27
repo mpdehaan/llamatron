@@ -6,7 +6,7 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 
 ## Now: the synths (finish the outstanding synth work, then the other engines with their demos)
 
-1. UX_IDEAS: Renaming on the Scene and Clip pages; Space on an empty drum Note step.
+1. UX_IDEAS: Space on an empty drum Note step.
 2. OTHER_IDEAS: The screens comparison in Rust.
 3. DEMO_IDEAS: Engines and effects under each synth demo.
 4. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
@@ -36,5 +36,5 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 17. SYNTH_IDEAS: Choir; The talking-toy voice; A brass synth; Brass and wind; Drone.
 18. DEMO_IDEAS: Other Demos, the homages and mashups last.
 19. OTHER_IDEAS: The Documents and the Tools.
-20. UX_IDEAS: Listening to a drum-track pattern.
+20. UX_IDEAS: Listening to a drum-track pattern; Solo a track, and mute from Arrange.
 21. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
