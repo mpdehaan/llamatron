@@ -206,6 +206,8 @@ pub const MSG_SYNTH_LOAD: &str = "{clock}  synth {percent}%";
 pub const MSG_SYNTH_LOAD_AND_DROPOUTS: &str = "{clock}  synth {percent}%, {dropouts} dropouts";
 pub const MSG_NO_DEVICE_SHOWN: &str = "(none)";
 pub const MSG_AUTO_CHANNEL_SHOWN: &str = "(auto)";
+/// A percussion FluidSynth instrument's channel, the drums'.
+pub const MSG_DRUM_CHANNEL_SHOWN: &str = "10 (drums)";
 pub const MSG_OWN_GROOVE_SHOWN: &str = "yours";
 pub const MSG_GROOVE_NAME_SHOWN: &str = "  {label}: {name}";
 pub const MSG_GROOVE_OFF_SHOWN: &str = "off";

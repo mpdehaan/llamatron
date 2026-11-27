@@ -322,3 +322,7 @@ pub const MSG_BUILT_IN_OVERRIDES_TRACKS: &str = "overrides the track's {word}";
 pub const MSG_BUILT_IN_OVERRIDDEN: &str = "{word} overridden in {count} clips: {clips}";
 pub const MSG_BUILT_IN_OVERRIDDEN_ONCE: &str = "{word} overridden in 1 clip: {clips}";
 pub const MSG_BUILT_IN_OVERRIDING_CLIP: &str = "{scene} ({track})";
+
+/// The question before an instrument changes between percussion and normal, and what it gives up.
+pub const MSG_CHANGE_PERCUSSION_TITLE: &str = "Change the role of instrument ({name})?";
+pub const MSG_PERCUSSION_REPLACES_SYNTH: &str = "Its built-in synth settings are replaced by the new role's engine.";

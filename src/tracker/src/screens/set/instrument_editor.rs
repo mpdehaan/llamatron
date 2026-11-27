@@ -23,8 +23,8 @@ use llamatron_model::objects::lfo_speed;
 use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::defaults::DEFAULT_PAN;
 use llamatron_model::schema::generated::file_format::{
-    InstrumentSetting, Section, BIPOLAR_SOURCES, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, INSTRUMENT_KINDS, LFO_PLUS_SHAPES, LFO_RESTARTS,
-    LFO_SHAPES, LFO_TYPES, MATRIX_DESTINATIONS, MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
+    InstrumentSetting, Section, BIPOLAR_SOURCES, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, LFO_PLUS_SHAPES, LFO_RESTARTS, LFO_SHAPES, LFO_TYPES,
+    MATRIX_DESTINATIONS, MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
@@ -48,6 +48,14 @@ const TENTHS: i64 = 10;
 const CRUSH_RATES: [i64; 11] = [0, 32000, 22050, 16000, 11025, 8000, 6000, 4000, 3000, 2000, 1000];
 const MIDI: &str = "midi";
 const BUILT_IN: &str = "built_in";
+/// The engines the Engine tab offers, in order: off, an outside MIDI device, FluidSynth, the built-in synths.
+const OFF: &str = "off";
+const FLUIDSYNTH: &str = "fluidsynth";
+const LLAMASYNTH: &str = "llamasynth";
+const ENGINES: &[&str] = &[OFF, MIDI, FLUIDSYNTH, LLAMASYNTH];
+/// The instrument's two roles.
+const NORMAL: &str = "normal";
+const PERCUSSION: &str = "percussion";
 const NONE_EFFECT: &str = "none";
 const BITCRUSH: &str = "bitcrush";
 const BAX: &str = "bax";
@@ -247,10 +255,10 @@ fn names_in(table: &[(&str, &str)], choices: &[&str]) -> Vec<String> {
 /// What a field of the page writes.
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Write {
-    /// One of the instrument's own settings, its kind, its engine, its General MIDI sound.
+    /// One of the instrument's own settings, the engine that plays it, whether it is percussion, its General MIDI sound.
     Setting(&'static str),
-    Kind,
-    Engine,
+    EngineOf,
+    Percussion,
     GmSound,
     /// One of its sound's own settings, a part's type or setting, an oscillator's setting, a drum knob, or a setting of an
     /// item of one of its sound's lists by its number from 1.
@@ -380,7 +388,66 @@ impl InstrumentEditor {
         });
     }
 
-    /// The Device field's ENTER, which picks FluidSynth or a port of this computer, or no device, and its answer.
+    /// Play the instrument by another engine: its Kind, and its Device where the engine is FluidSynth or an outside MIDI
+    /// device, as one step to undo; what the other engines' fields hold is kept.
+    fn choose_engine(&self, app: &mut App, device: Option<String>, engine: &str) {
+        let kind = match engine {
+            OFF => Some(Data::text(OFF)),
+            LLAMASYNTH => Some(Data::text(BUILT_IN)),
+            _ => None,
+        };
+        let device = match engine {
+            FLUIDSYNTH => Some(Data::text(FLUIDSYNTH_DEVICE)),
+            MIDI if device.as_deref() == Some(FLUIDSYNTH_DEVICE) => None,
+            _ => device.map(|device| Data::text(&device)),
+        };
+        let name = self.name.clone();
+        app.document.change_set(|setlist| {
+            if let Some(Item::Instrument(instrument)) = setlist.get_item_mut(Section::INSTRUMENTS, &name) {
+                instrument.set_written(InstrumentSetting::KIND, kind);
+                instrument.set_written(InstrumentSetting::DEVICE, device);
+            }
+        });
+    }
+
+    /// Make the instrument percussion or not: refused while any track plays it, since the track's drums or notes depend
+    /// on it; otherwise asked first, starting on NO, since its built-in synth settings give way to the new role's first
+    /// engine.
+    fn change_percussion(&self, app: &mut App, sound: &Sound, on: bool) {
+        let uses = crate::uses::tracks_naming(app.document.get_setlist(), Section::INSTRUMENTS, &self.name);
+        if let Some((song, track)) = uses.first() {
+            let words = [
+                ("name", self.name.as_str().into()),
+                ("track", track.as_str().into()),
+                ("song", song.as_str().into()),
+            ];
+            app.refuse(&named(llamatron_strings::errors::ERR_PERCUSSION_IN_USE, &words));
+            return;
+        }
+        let role = if on { PERCUSSION } else { NORMAL };
+        let first_engine = ENGINES_OF_ROLE
+            .iter()
+            .find(|(found, _)| *found == role)
+            .and_then(|(_, engines)| engines.first())
+            .copied()
+            .unwrap_or("");
+        let replaced = sound.with_engine(first_engine);
+        let name = self.name.clone();
+        let title = named(messages::MSG_CHANGE_PERCUSSION_TITLE, &[("name", self.name.as_str().into())]);
+        let lines = vec![messages::MSG_PERCUSSION_REPLACES_SYNTH.to_string()];
+        let dialog =
+            crate::screens::dialogs::ConfirmDialog::new(&title, lines, true, true).then(Box::new(move |app: &mut App, _: &crate::screens::dialogs::Answer| {
+                app.document.change_set(|setlist| {
+                    if let Some(Item::Instrument(instrument)) = setlist.get_item_mut(Section::INSTRUMENTS, &name) {
+                        instrument.set_written(InstrumentSetting::ROLE, Some(Data::text(role)));
+                        instrument.set_written(InstrumentSetting::SOUND, Some(replaced.clone()));
+                    }
+                });
+            }));
+        app.show_page(Box::new(dialog));
+    }
+
+    /// The Device field's ENTER, which picks a port of this computer, or no device, and its answer.
     fn choose_device(&self, app: &mut App, edit: Edit) {
         let Some(instrument) = self.instrument(app) else { return };
         let device = instrument.get_written(InstrumentSetting::DEVICE).and_then(Data::as_str).map(str::to_string);
@@ -392,9 +459,9 @@ impl InstrumentEditor {
                 if let Some(device) = device.as_ref().filter(|device| *device != FLUIDSYNTH_DEVICE && !ports.contains(device)) {
                     ports.push(device.clone());
                 }
+                // FluidSynth is an engine of its own on the Engine tab, so it is no device to choose here.
                 ports.retain(|port| port != FLUIDSYNTH_DEVICE);
-                let mut devices = vec![FLUIDSYNTH_DEVICE.to_string()];
-                devices.extend(crate::settings::sorted_names(&ports));
+                let devices = crate::settings::sorted_names(&ports);
                 crate::screens::arrange::arrange_tabs::ask_name_or_above(
                     app,
                     messages::MSG_DEVICE_TITLE,
@@ -475,7 +542,7 @@ impl InstrumentEditor {
         let percent_shown = |percent: i64| named(marks::MSG_PERCENT_SHOWN, &[("percent", percent.into())]);
         let accent_shown = |accent: i64| named(marks::MSG_ACCENT_SHOWN, &[("accent", accent.into())]);
         let in_effect = velocity.unwrap_or(DEFAULT_VELOCITY);
-        let mut nodes = vec![
+        let nodes = vec![
             Field::name(NAME, &self.name),
             Field::number(
                 ids.at(Write::Setting(InstrumentSetting::DEFAULT_VELOCITY)),
@@ -508,19 +575,21 @@ impl InstrumentEditor {
             )
             .with_clear(&percent_shown(UNCHANGED)),
         ];
-        nodes.extend(self.above_tabs(app, instrument, &sound, &mut ids));
         let mut nodes: Vec<Node> = nodes.into_iter().map(|field| Node::Field(Box::new(field))).collect();
-        let not_ready = Self::kind(instrument) != BUILT_IN;
-        let tabs = vec![
-            self.midi_tab(instrument, &mut ids),
-            Self::oscillators_tab(&sound, not_ready, &mut ids),
-            Self::envelopes_tab(&sound, not_ready, &mut ids),
-            Self::lfos_tab(&sound, not_ready, &mut ids),
-            Self::filter_tab(&sound, not_ready, &mut ids),
-            Self::amp_tab(&sound, not_ready, &mut ids),
-            Self::effects_tab(&sound, not_ready, &mut ids),
-            Self::matrix_tab(&sound, not_ready, &mut ids),
-        ];
+        // The synth's own tabs follow the Engine tab only where LlamaSynth plays the instrument.
+        let mut tabs = vec![self.engine_tab(app, instrument, &sound, &mut ids)];
+        if Self::engine_of(instrument) == LLAMASYNTH {
+            let ready = false;
+            tabs.extend([
+                Self::oscillators_tab(&sound, ready, &mut ids),
+                Self::envelopes_tab(&sound, ready, &mut ids),
+                Self::lfos_tab(&sound, ready, &mut ids),
+                Self::filter_tab(&sound, ready, &mut ids),
+                Self::amp_tab(&sound, ready, &mut ids),
+                Self::effects_tab(&sound, ready, &mut ids),
+                Self::matrix_tab(&sound, ready, &mut ids),
+            ]);
+        }
         nodes.push(Node::TabBox(TabBox {
             label: labels::MSG_TABS_LABEL.to_string(),
             tabs,
@@ -615,47 +684,77 @@ impl InstrumentEditor {
             .map(|(_, track)| track.is_drum())
             .collect();
         if let Some(drum) = tracks.first() {
-            return if *drum { "percussion" } else { "normal" }.to_string();
+            return if *drum { PERCUSSION } else { NORMAL }.to_string();
         }
         if Self::kind(instrument) == BUILT_IN && sound.part_type("oscillators") == "drum" {
-            return "percussion".to_string();
+            return PERCUSSION.to_string();
         }
-        "normal".to_string()
+        NORMAL.to_string()
     }
 
-    fn above_tabs(&self, app: &App, instrument: &Instrument, sound: &Sound, ids: &mut Ids) -> Vec<Field> {
-        let role = self.role(app, instrument, sound);
-        let kind = Self::kind(instrument);
-        let engines: &[&str] = ENGINES_OF_ROLE.iter().find(|(found, _)| *found == role).map_or(&[], |(_, engines)| engines);
-        let written = text(&sound.value("engine"));
-        let engine = if engines.contains(&written.as_str()) {
-            written
-        } else {
-            engines.first().map_or(String::new(), |first| first.to_string())
-        };
-        vec![
-            Field::custom(ids.next(), labels::MSG_ROLE_LABEL, &named_in(labels::MSG_ROLE_NAMES, &role)),
+    /// The engine that plays an instrument, from its Kind and Device: off, an outside MIDI device, FluidSynth, or the
+    /// built-in synths.
+    fn engine_of(instrument: &Instrument) -> &'static str {
+        let device = instrument.get_written(InstrumentSetting::DEVICE).and_then(Data::as_str);
+        match Self::kind(instrument).as_str() {
+            OFF => OFF,
+            BUILT_IN => LLAMASYNTH,
+            _ if device == Some(FLUIDSYNTH_DEVICE) => FLUIDSYNTH,
+            _ => MIDI,
+        }
+    }
+
+    /// The Engine tab: the Engine and Percussion, then what the engine chosen plays by: a device's port and channel, a
+    /// General MIDI sound and pan, or the built-in synths' Voice settings.
+    fn engine_tab(&self, app: &App, instrument: &Instrument, sound: &Sound, ids: &mut Ids) -> Tab {
+        let engine = Self::engine_of(instrument);
+        let percussion = self.role(app, instrument, sound) == PERCUSSION;
+        let top = vec![
             chosen(
-                ids.at(Write::Kind),
-                labels::MSG_INSTRUMENT_KIND_LABEL,
-                INSTRUMENT_KINDS,
-                &names_in(labels::MSG_KIND_NAMES, INSTRUMENT_KINDS),
-                &kind,
-            ),
-            chosen(
-                ids.at(Write::Engine),
+                ids.at(Write::EngineOf),
                 labels::MSG_ENGINE_LABEL,
-                engines,
-                &names_in(labels::MSG_ENGINE_NAMES, engines),
-                &engine,
+                ENGINES,
+                &names_in(labels::MSG_ENGINE_KIND_NAMES, ENGINES),
+                engine,
             ),
-        ]
+            Field::toggle(ids.at(Write::Percussion), labels::MSG_PERCUSSION_LABEL, percussion),
+        ];
+        let sending = self.sending_fields(instrument, percussion, ids);
+        let kept: &[&str] = match engine {
+            MIDI => &[
+                labels::MSG_DEVICE_LABEL,
+                labels::MSG_CHANNEL_LABEL,
+                labels::MSG_KEYSWITCH_LEAD_LABEL,
+                labels::MSG_LATENCY_LABEL,
+            ],
+            FLUIDSYNTH if percussion => &[labels::MSG_PAN_LABEL, labels::MSG_CHANNEL_LABEL],
+            FLUIDSYNTH => &[labels::MSG_GM_SOUND_LABEL, labels::MSG_PAN_LABEL, labels::MSG_CHANNEL_LABEL],
+            _ => &[],
+        };
+        let mut fields: Vec<Field> = Vec::new();
+        for label in kept {
+            fields.extend(sending.iter().filter(|field| field.label == *label).cloned());
+        }
+        if engine == LLAMASYNTH {
+            fields = Self::voice_fields(sound, ids);
+        }
+        let mut tab = Tab::new(labels::MSG_ENGINE_TAB, vec![TabColumn::new(None, fields)]);
+        tab.top = top;
+        tab
     }
 
-    fn midi_tab(&self, instrument: &Instrument, ids: &mut Ids) -> Tab {
+    /// Every field of how an instrument is sent to a device or FluidSynth, which the Engine tab shows those of its
+    /// engine from: its Device, Channel, General MIDI sound, Pan, keyswitch lead and latency.
+    fn sending_fields(&self, instrument: &Instrument, percussion: bool, ids: &mut Ids) -> Vec<Field> {
         let device = instrument.get_written(InstrumentSetting::DEVICE).and_then(Data::as_str);
         let channel = if device == Some(FLUIDSYNTH_DEVICE) {
-            Field::custom(ids.next(), labels::MSG_CHANNEL_LABEL, marks::MSG_AUTO_CHANNEL_SHOWN)
+            // Every track through FluidSynth gets a channel of its own, a percussion instrument's tracks the drums' 10.
+            let shown = if percussion {
+                marks::MSG_DRUM_CHANNEL_SHOWN
+            } else {
+                marks::MSG_AUTO_CHANNEL_SHOWN
+            };
+            Field::custom(ids.next(), labels::MSG_CHANNEL_LABEL, shown)
         } else {
             let channel = instrument
                 .get_written(InstrumentSetting::CHANNEL)
@@ -734,9 +833,7 @@ impl InstrumentEditor {
         if device != Some(FLUIDSYNTH_DEVICE) {
             fields.retain(|field| field.label != labels::MSG_PAN_LABEL);
         }
-        let mut tab = Tab::new(labels::MSG_MIDI_TAB, vec![TabColumn::new(None, fields)]);
-        tab.not_ready = Self::kind(instrument) != MIDI;
-        tab
+        fields
     }
 
     /// A FluidSynth instrument's Pan, a gauge from hard left at 0% to hard right at 100%, the middle at 50% unless set.
@@ -901,7 +998,7 @@ impl InstrumentEditor {
 
     fn oscillators_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
         let top = vec![Self::type_field(sound, "oscillators", ids)];
-        let mut columns = vec![TabColumn::new(Some(labels::MSG_VOICE_HEADING), Self::voice_fields(sound, ids))];
+        let mut columns = Vec::new();
         let kind = sound.part_type("oscillators");
         if kind == "basic" {
             for number in 1..=MAX_OSCILLATORS as usize {
@@ -1704,12 +1801,16 @@ impl Form for InstrumentEditor {
         match write {
             Write::Setting(setting) if setting == InstrumentSetting::KEYSWITCH_LEAD => set(app, setting, value.filter(|value| value.as_whole() != Some(0))),
             Write::Setting(setting) => set(app, setting, value),
-            Write::Kind => set(app, InstrumentSetting::KIND, value.filter(|value| value.as_str() != Some(MIDI))),
-            Write::GmSound => set(app, InstrumentSetting::GM_SOUND, value),
-            Write::Engine => {
-                let engine = value.as_ref().and_then(Data::as_str).unwrap_or("").to_string();
-                set(app, InstrumentSetting::SOUND, Some(sound.with_engine(&engine)));
+            Write::EngineOf => {
+                let engine = value.as_ref().and_then(Data::as_str).unwrap_or(MIDI).to_string();
+                let device = instrument.get_written(InstrumentSetting::DEVICE).and_then(Data::as_str).map(str::to_string);
+                self.choose_engine(app, device, &engine);
             }
+            Write::Percussion => {
+                let on = value.as_ref().is_some_and(|value| *value == Data::Bool(true));
+                self.change_percussion(app, &sound, on);
+            }
+            Write::GmSound => set(app, InstrumentSetting::GM_SOUND, value),
             Write::Sound(name) => set(app, InstrumentSetting::SOUND, Some(sound.with_value(name, sound_value(value)))),
             Write::PartType(part) => {
                 let kind = value.as_ref().and_then(Data::as_str).unwrap_or("").to_string();
@@ -1894,26 +1995,140 @@ mod tests {
         );
     }
 
-    /// A FluidSynth instrument's MIDI tab has a Pan gauge under its General MIDI sound, in the middle unless set; an
-    /// instrument on any other device has none.
+    /// A set of one song with an instrument of the YAML given, called fish, and a track called bass playing it or not.
+    fn engine_app(instrument: &str, played: bool) -> App {
+        let track = if played { "{ name: bass, instrument: fish }" } else { "{ name: bass }" };
+        let text = format!(
+            "scales:\n  - {{ name: C Major, root: C, type: major }}\ninstruments:\n  - {instrument}\nsongs:\n  - name: song\n    scale: C Major\n    tracks: [{track}]\n    scenes: [{{ name: one }}]\n"
+        );
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        App::new(crate::document::Document::new(setlist, None))
+    }
+
+    /// The tabs of the Instrument page of fish, by their labels, and the Engine tab's fields under its Engine and Percussion.
+    fn engine_tabs(app: &App) -> (Vec<String>, Vec<Field>) {
+        let editor = InstrumentEditor { name: "fish".to_string() };
+        let (nodes, _) = editor.built(app);
+        let tabs = nodes
+            .iter()
+            .find_map(|node| match node {
+                Node::TabBox(tab_box) => Some(tab_box.tabs.clone()),
+                _ => None,
+            })
+            .expect("a tab box");
+        let labels_shown = tabs.iter().map(|tab| tab.label.clone()).collect();
+        (labels_shown, tabs[0].columns[0].fields.clone())
+    }
+
+    fn labels_of(fields: &[Field]) -> Vec<&str> {
+        fields.iter().map(|field| field.label.as_str()).collect()
+    }
+
+    /// The Engine tab shows what the engine chosen plays by, and only LlamaSynth has the synth's tabs after it: a
+    /// FluidSynth instrument its GM sound, Pan in the middle and an automatic channel, a percussion one the drums' channel
+    /// and no GM sound; an outside device its Device, Channel, keyswitch lead and latency; LlamaSynth its Voice settings.
     #[test]
-    fn a_fluidsynth_instrument_has_a_pan_in_the_middle() {
-        let pan_of = |device: &str| {
-            let text = format!("{{ name: piano, device: \"{device}\", gm_sound: 1 }}");
-            let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
-            let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
-            let editor = InstrumentEditor { name: "piano".to_string() };
-            let mut ids = Ids { last: 0, writes: Vec::new() };
-            let fields = editor.midi_tab(&instrument, &mut ids).columns[0].fields.clone();
-            let place = fields.iter().position(|field| field.label == labels::MSG_PAN_LABEL)?;
-            let after_sound = fields.get(place - 1).is_some_and(|field| field.label == labels::MSG_GM_SOUND_LABEL);
-            Some((fields[place].value().to_string(), after_sound))
-        };
-        let (shown, after_sound) = pan_of(FLUIDSYNTH_DEVICE).expect("a Pan on a FluidSynth instrument");
+    fn the_engine_tab_shows_its_engines_own_fields() {
+        let fluid = engine_app("{ name: fish, device: \"*FluidSynth\", gm_sound: 1 }", false);
+        let (tabs, fields) = engine_tabs(&fluid);
+        assert_eq!(tabs, [labels::MSG_ENGINE_TAB]);
+        assert_eq!(
+            labels_of(&fields),
+            [labels::MSG_GM_SOUND_LABEL, labels::MSG_PAN_LABEL, labels::MSG_CHANNEL_LABEL]
+        );
         let center = named(marks::MSG_PAN_CENTER_SHOWN, &[("number", DEFAULT_PAN.into())]);
-        assert!(shown.ends_with(&center), "{shown}");
-        assert!(after_sound);
-        assert!(pan_of("a synthesizer").is_none());
+        assert!(fields[1].value().ends_with(&center), "{}", fields[1].value());
+        assert_eq!(fields[2].value(), marks::MSG_AUTO_CHANNEL_SHOWN);
+        let drums = engine_app("{ name: fish, device: \"*FluidSynth\", role: percussion }", false);
+        let (_, fields) = engine_tabs(&drums);
+        assert_eq!(labels_of(&fields), [labels::MSG_PAN_LABEL, labels::MSG_CHANNEL_LABEL]);
+        assert_eq!(fields[1].value(), marks::MSG_DRUM_CHANNEL_SHOWN);
+        let outside = engine_app("{ name: fish, device: \"a synthesizer\", channel: 3 }", false);
+        let (_, fields) = engine_tabs(&outside);
+        let expected = [
+            labels::MSG_DEVICE_LABEL,
+            labels::MSG_CHANNEL_LABEL,
+            labels::MSG_KEYSWITCH_LEAD_LABEL,
+            labels::MSG_LATENCY_LABEL,
+        ];
+        assert_eq!(labels_of(&fields), expected);
+        let synth = engine_app("{ name: fish, kind: built_in, role: normal, sound: { engine: asheville } }", false);
+        let (tabs, fields) = engine_tabs(&synth);
+        assert_eq!(tabs.first().map(String::as_str), Some(labels::MSG_ENGINE_TAB));
+        assert!(tabs.iter().any(|tab| tab == labels::MSG_OSCILLATORS_TAB));
+        assert!(labels_of(&fields).contains(&labels::MSG_VOICES_LABEL));
+        let off = engine_app("{ name: fish, kind: \"off\" }", false);
+        let (tabs, fields) = engine_tabs(&off);
+        assert_eq!(tabs, [labels::MSG_ENGINE_TAB]);
+        assert!(fields.is_empty());
+    }
+
+    /// The id of one of the editor's fields by what it writes.
+    fn id_of(app: &App, write: Write) -> usize {
+        let editor = InstrumentEditor { name: "fish".to_string() };
+        editor
+            .built(app)
+            .1
+            .writes
+            .iter()
+            .find(|(_, found, _)| *found == write)
+            .map(|(id, ..)| *id)
+            .expect("the field")
+    }
+
+    /// Choosing an engine sets the instrument's Kind and Device: FluidSynth its device, an outside device's port kept,
+    /// LlamaSynth the built-in synths, Off nothing played.
+    #[test]
+    fn choosing_an_engine_sets_kind_and_device() {
+        let mut app = engine_app("{ name: fish, device: \"a synthesizer\" }", false);
+        let instrument_of = |app: &App| match app.document.get_setlist().get_item(Section::INSTRUMENTS, "fish") {
+            Some(Item::Instrument(instrument)) => instrument.clone(),
+            _ => panic!("the instrument"),
+        };
+        let mut editor = InstrumentEditor { name: "fish".to_string() };
+        let engine = id_of(&app, Write::EngineOf);
+        editor.apply(&mut app, engine, Edit::Choice(FLUIDSYNTH.to_string()));
+        assert_eq!(InstrumentEditor::engine_of(&instrument_of(&app)), FLUIDSYNTH);
+        editor.apply(&mut app, engine, Edit::Choice(LLAMASYNTH.to_string()));
+        assert_eq!(InstrumentEditor::engine_of(&instrument_of(&app)), LLAMASYNTH);
+        editor.apply(&mut app, engine, Edit::Choice(OFF.to_string()));
+        assert_eq!(InstrumentEditor::engine_of(&instrument_of(&app)), OFF);
+        editor.apply(&mut app, engine, Edit::Choice(MIDI.to_string()));
+        let held = instrument_of(&app);
+        assert_eq!(InstrumentEditor::engine_of(&held), MIDI);
+        // Leaving FluidSynth for an outside device leaves no device chosen, rather than FluidSynth's.
+        assert_eq!(held.get_written(InstrumentSetting::DEVICE).and_then(Data::as_str), None);
+    }
+
+    /// Percussion changes only while no track plays the instrument, after a question starting on NO: a track playing
+    /// it refuses the change and names the track; an unused one, answered YES, turns percussion with MechaDrum's sound.
+    #[test]
+    fn percussion_changes_only_while_unused_after_asking() {
+        use crate::keybindings::ConfirmDialog as ConfirmKeys;
+        use crate::keys::first_key;
+        let synth = "{ name: fish, kind: built_in, role: normal, sound: { engine: asheville } }";
+        let mut played = engine_app(synth, true);
+        let mut editor = InstrumentEditor { name: "fish".to_string() };
+        let toggle = id_of(&played, Write::Percussion);
+        editor.apply(&mut played, toggle, Edit::Toggle(true));
+        let refused = named(
+            llamatron_strings::errors::ERR_PERCUSSION_IN_USE,
+            &[("name", "fish".into()), ("track", "bass".into()), ("song", "song".into())],
+        );
+        assert_eq!(played.status.text(), refused);
+        let unused = engine_app(synth, false);
+        let mut tracker = crate::app::Tracker::new(unused.document);
+        let mut editor = InstrumentEditor { name: "fish".to_string() };
+        editor.apply(&mut tracker.app, toggle, Edit::Toggle(true));
+        tracker.settle();
+        assert_eq!(tracker.top().name(), "ConfirmDialog");
+        tracker.press(first_key(&ConfirmKeys::SELECT));
+        tracker.press(first_key(&ConfirmKeys::ANSWER));
+        let Some(Item::Instrument(changed)) = tracker.app.document.get_setlist().get_item(Section::INSTRUMENTS, "fish") else {
+            panic!("the instrument")
+        };
+        assert_eq!(changed.get_written(InstrumentSetting::ROLE).and_then(Data::as_str), Some(PERCUSSION));
+        assert_eq!(Sound::of(changed).part_type("oscillators"), "drum");
     }
 
     /// Disconnect filter stands last in Env 2's column, off unless set, so that Env 2's settings sit level with Env 1's;

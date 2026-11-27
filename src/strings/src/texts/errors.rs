@@ -539,3 +539,5 @@ pub const ERR_BAD_INSTRUMENT_KIND: &str = "kind must be one of: {choices}, got {
 pub const ERR_INSTRUMENT_PLAYS_NOTHING: &str = "instrument ({name}) plays nothing: switch on its MIDI or its Synth";
 pub const ERR_BAD_LATENCY: &str = "latency must be a whole number of milliseconds from {lowest} to {highest}, got {value!r}";
 pub const ERR_PREVIEW_KEEPS_ITS_NAME: &str = "a preview pattern goes by its instrument's name, and cannot be renamed or split";
+/// An instrument a track plays cannot change between percussion and normal.
+pub const ERR_PERCUSSION_IN_USE: &str = "instrument ({name}) is played by track ({track}) of song ({song})";
