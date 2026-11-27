@@ -256,5 +256,6 @@ In the order of their priority, the highest first.
 - **The envelopes let go of the LPG**: with the filter set to LPG, the low-pass gate is the note's envelope, so neither
   envelope chops it up again: Env 1 stays enabled, to modulate anything, but is no longer routed to the amp, and Env 2
   loses its route to the filter, the "(filter2)" its page shows, so that it no longer reaches the LPG. Nothing is written
-  under either; Env 1's heading simply no longer says "(amp)".
+  under either; Env 1's heading simply no longer says "(amp)". To make the path plain, the instrument's tabs put Filters and Amp ahead of
+  Envelopes: Oscillators, Filters, Amp, Envelopes, then the rest, the documents' synth pages following the same order.
 
