@@ -52,4 +52,6 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 23. UX_IDEAS: J for Jump, everywhere.
 24. UX_IDEAS: FluidSynth chosen as a person expects.
 25. UX_IDEAS: Drum pages saying so.
-26. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
+26. UX_IDEAS: A DRUM column on the Instruments page.
+27. SYNTH_IDEAS: Env 1 given over to the LPG.
+28. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.

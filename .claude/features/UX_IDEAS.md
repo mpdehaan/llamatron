@@ -424,4 +424,6 @@ In the order of their priority, the highest first.
   Percussion or Melodic choice that can no longer change, such as an instrument's role once a drum track plays it, is
   not shown. Nor is a FluidSynth instrument's Channel where it is chosen automatically and cannot be changed, nor a drum
   instrument's where drums are fixed on channel 10.
+- **A DRUM column on the Instruments page**: the list of instruments gains a column headed DRUM, just before CH, holding
+  `●` for a drum instrument and nothing for one of notes.
 

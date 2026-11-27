@@ -253,3 +253,6 @@ In the order of their priority, the highest first.
 - **Random pitch steps within a Sweep Drum hit**: The Sweep Drum's third kind of in-hit modulation, random steps, the pitch
   jumping to a new random value several times a hit, as the late-1970s drum synthesizers' sample and hold did. Only with a
   modulator attached, never random on its own, and only if it is cheap to render; it may never be built.
+- **Env 1 given over to the LPG**: with the filter set to LPG, the low-pass gate is the note's envelope, so Env 1 is
+  shown disabled, dim, with "using LPG" under it, rather than shaping the gate's sound again.
+
