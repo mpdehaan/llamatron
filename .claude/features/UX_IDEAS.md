@@ -423,4 +423,8 @@ In the order of their priority, the highest first.
 - **FluidSynth chosen as a person expects**: choosing FluidSynth as an instrument's engine gives it General MIDI's
   Acoustic Grand Piano at once rather than no sound; and the device is shown as "FluidSynth" wherever the program shows
   it, never as the file's `*FluidSynth`.
+- **Drum pages saying so**: the stripe at the top of the Instrument page of a drum instrument reads "EDITING DRUM
+  INSTRUMENT", and the pattern editor's of a drum pattern "EDITING DRUM PATTERN", the whole caption in capitals; and a
+  Percussion or Melodic choice that can no longer change, such as an instrument's role once a drum track plays it, is
+  not shown.
 

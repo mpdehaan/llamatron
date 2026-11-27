@@ -52,4 +52,5 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 23. UX_IDEAS: Real time without a switch.
 24. UX_IDEAS: J for Jump, everywhere.
 25. UX_IDEAS: FluidSynth chosen as a person expects.
-26. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
+26. UX_IDEAS: Drum pages saying so.
+27. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
