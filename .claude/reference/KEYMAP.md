@@ -22,11 +22,11 @@ the place. The keys that work everywhere are listed once:
 
 ## ArrangePage
 
-- **scene**: `ESC` back · `←↑↓→` move · `Space` play scene · `A` add scene · `ENTER` scene settings · `P` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `M` move scene · `D` details · `Tab` cell details · `Z` visualizer · `F` fracture
-- **clip**: `ESC` back · `←↑↓→` move · `Space` play clip · `A` add scene · `ENTER` edit clip · `J` jump to pattern · `M` move clip · `C` copy clip · `Bksp` delete clip · `I` insert scene · `D` details · `Tab` cell details · `Z` visualizer · `F` fracture
+- **scene**: `ESC` back · `←↑↓→` move · `Space` play scene · `A` add scene · `ENTER` scene settings · `V` scene view · `C` copy scene · `Bksp` delete scene · `I` insert scene · `T` cut scene · `D` details · `Tab` cell details · `Z` visualizer · `F` fracture
+- **clip**: `ESC` back · `←↑↓→` move · `Space` play clip · `A` add scene · `ENTER` edit clip · `J` jump to pattern · `T` cut clip · `C` copy clip · `Bksp` delete clip · `M` mute · `S` solo · `I` insert scene · `D` details · `Tab` cell details · `Z` visualizer · `F` fracture
 - **corner**: `ESC` back · `←↑↓→` move · `Space` play song · `D` details · `Z` visualizer · `F` fracture
-- **track**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` track settings · `C` copy track · `I` insert track · `M` move track · `Bksp` delete track · `D` details · `Tab` cell details · `Z` visualizer · `F` fracture
-- **empty**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add clip · `B` blank pattern · `I` insert scene · `D` details · `Z` visualizer · `F` fracture
+- **track**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` track settings · `C` copy track · `I` insert track · `T` cut track · `Bksp` delete track · `M` mute · `S` solo · `D` details · `Tab` cell details · `Z` visualizer · `F` fracture
+- **empty**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add clip · `B` blank pattern · `M` mute · `S` solo · `I` insert scene · `D` details · `Z` visualizer · `F` fracture
 - **track plus**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` add track · `D` details · `Z` visualizer · `F` fracture
 
 
