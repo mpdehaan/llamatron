@@ -63,30 +63,30 @@ the place. The keys that work everywhere are listed once:
 - **Patterns**: `ESC` back · `↑↓` move · `ENTER` edit · `Bksp` remove · `Tab` to tabs · `F2` rename · `A` add pattern · `M` move pattern · `J` jump to pattern · `L` listen
 - **Tabs**: `ESC` back · `↑↓` move · `←→` move · `Tab` into tab · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **anywhere**: `ESC` back · `↑↓` move · `ENTER` add · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
-- **Pattern order**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
-- **Step direction**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` from pattern · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **Pattern order**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **Step direction**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` from pattern · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **Scale**: `ESC` back · `↑↓` move · `←→` move · `ENTER` choose · `Bksp` from scene · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Velocity in start**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 100% · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
-- **Repeat**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **Repeat**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **Grab track**: `ESC` back · `↑↓` move · `←→` move · `ENTER` choose · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Velocity in end**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 100% · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
-- **Velocity**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 100% · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Velocity out start**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 100% · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **Velocity**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 100% · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Density start**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
-- **Loop**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **Loop**: `ESC` back · `↑↓` move · `←→` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Velocity in over**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **Listen**: `ESC` back · `↑↓` move · `←→` move · `ENTER` listen · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Velocity out end**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 100% · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Density end**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Articulate start**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
-- **Follow action**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
-- **Listen**: `ESC` back · `↑↓` move · `←→` move · `ENTER` listen · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **Follow action**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Velocity out over**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Density over**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (whole) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Articulate end**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` clear · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
-- **Scale**: `ESC` back · `↑↓` move · `ENTER` choose · `Bksp` from scene · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Articulate over**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (whole) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Density then**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
-- **Grab track**: `ESC` back · `↑↓` move · `ENTER` choose · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 - **Articulate then**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
-- **Morph to**: `ESC` back · `↑↓` move · `ENTER` choose · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
+- **Morph to**: `ESC` back · `↑↓` move · `←→` move · `ENTER` choose · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `A` add pattern · `J` jump to pattern · `L` listen
 
 
 ## ConfirmDialog
@@ -185,124 +185,15 @@ the place. The keys that work everywhere are listed once:
 - **Default velocity**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 127 · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
 - **Tabs**: `ESC` back · `↑↓` move · `←→` move · `Tab` into tab · `F2` rename · `K` keyswitch map · `L` listen
 - **Accent**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` +0 · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Engine**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Device**: `ESC` back · `↑↓` move · `ENTER` choose · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
 - **Velocity**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 100% · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Kind**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Channel**: `ESC` back · `↑↓` move · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Voices**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Role**: `ESC` back · `↑↓` move · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
+- **Engine**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
+- **Percussion**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
 - **GM sound**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Osc Type**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Glide**: `ESC` back · `↑↓` move · `←→` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **OSC 1**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 1 Type**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
 - **Pan**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 50% (center) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Glide time**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **OSC 1 detune**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 1 Attack**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 1**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Keyswitch lead**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Filter**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **OSC 1 level**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 1 Curve**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 1 type**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Filter Resonance**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Latency**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **OSC 2**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 1 Hold**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **OSC 3**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 1 shape**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Filter Slope**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Filter Cutoff**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Volume**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
+- **Channel**: `ESC` back · `↑↓` move · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
 - **Preview pattern**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **OSC 2 detune**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 2 Type**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 1 Decay**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 1 speed**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **OSC 3 detune**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Filter Env amount**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Filter Type**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Amp Type**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **FX 1**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
 - **Keyswitch Map**: `ESC` back · `↑↓` move · `←→` move · `ENTER` keyswitch map · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **OSC 2 level**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 2 Attack**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 1 Release**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 2**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 1 Snap**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 1 rate**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Filter Key track**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **OSC 3 level**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **FX 2**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 1 source**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
 - **Listen**: `ESC` back · `↑↓` move · `←→` move · `ENTER` listen · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Osc Pitch env**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 2 Curve**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 2 type**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 1 Sustain**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 1 restart**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Filter Drive**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 1 via**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 3 Type**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 2 Hold**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 2 shape**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 1 moves**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Disconnect filter**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 3 Attack**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 3**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 2 Decay**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 2 speed**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 1 polarity**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 2 Release**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 2 restart**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 3 Curve**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 3 type**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 2 Snap**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 2 rate**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 1 amount**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 2 Sustain**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 3 Hold**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 3 shape**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 2 source**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 3 Decay**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 3 speed**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 2 via**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 3 Snap**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 3 rate**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 2 moves**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 3 Sustain**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 3 restart**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 2 polarity**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Env 3 Release**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 4**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 2 amount**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 4 type**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 3 source**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 4 shape**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 3 via**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 4 speed**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 3 moves**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 4 rate**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 3 polarity**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **LFO 4 restart**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 3 amount**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 4 source**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 4 via**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 4 moves**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 4 polarity**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 4 amount**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 5 source**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 5 via**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 5 moves**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 5 polarity**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 5 amount**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 6 source**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 6 via**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 6 moves**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 6 polarity**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
-- **Slot 6 amount**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename · `K` keyswitch map · `L` listen
 
 
 ## InstrumentsPage
@@ -481,57 +372,60 @@ the place. The keys that work everywhere are listed once:
 
 - **Name**: `ESC` back · `↑↓` move · `ENTER` rename · `Tab` to tabs · `F2` rename
 - **Tabs**: `ESC` back · `↑↓` move · `←→` move · `Tab` into tab · `F2` rename
-- **Instrument**: `ESC` back · `↑↓` move · `ENTER` choose · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Drum**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Instrument**: `ESC` back · `↑↓` move · `←→` move · `ENTER` choose · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Drum**: `ESC` back · `↑↓` move · `←→` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Transpose**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 0 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **CC 2**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Mute**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Mute**: `ESC` back · `↑↓` move · `←→` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Lowest octave**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` -2 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **CC 3**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **CC 1**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Voice leading**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Groove**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` from song · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Groove**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` from song · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Highest octave**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 8 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **CC 4**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Lowest octave**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 2 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Mode**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Step**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Transpose**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 0 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Highest octave**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 4 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Order**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Default velocity**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` from instrument · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Enabled**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Shape chords**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Keep the root in the bass**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Order**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Shape chords**: `ESC` back · `↑↓` move · `←→` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Accent**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` +15 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Octave range**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 1 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Tuning**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Tuning**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Play strokes**: `ESC` back · `↑↓` move · `←→` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Restart**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Velocity**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 100% · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Octave jump**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Position**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` open · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Drag step**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Position**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` open · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Bar**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Rush step**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Bypass When (0)**: `ESC` back · `↑↓` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Line**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Offsets**: `ESC` back · `↑↓` move · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Capo**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Drag amount**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 20 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Shorten step**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Play strokes**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Bypass When (0)**: `ESC` back · `↑↓` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Keep the root in the bass**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Capo**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Let ring**: `ESC` back · `↑↓` move · `←→` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Rush amount**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 15 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Drag step**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Breath**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Generators**: `ESC` back · `↑↓` move · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Strings**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 6 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Strings**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 6 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Spread**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 8 ms · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Rush steps**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Drag amount**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 20 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Shorten step**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Rise and fall**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Single notes**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Fade**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 20 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Drag steps**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Shorten amount**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 70 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Bar**: `ESC` back · `↑↓` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Rush steps**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Color**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Glide step**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Notes**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Rise and fall**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Single notes**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Glide step**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Color**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Loose timing**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 10 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Shorten steps**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Let ring**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Glide amount**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Spread**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 8 ms · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Glide steps**: `ESC` back · `↑↓` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Fade**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 20 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Loose timing**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 10 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Upstroke strings**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 4 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Approach**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Glide amount**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Upstroke strings**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 4 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Glide steps**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Approach**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
