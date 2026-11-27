@@ -13,7 +13,7 @@ use crate::sound::{along_scale, NoteSound, Sound};
 use llamatron_math::{PythonRandom, Rational, Seed};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::checking::{time_length, TimeLength};
-use llamatron_model::schema::generated::file_format::{BYPASS_WHEN, GENERATOR_ENABLED, GENERATOR_RESTART};
+use llamatron_model::schema::generated::file_format::{GENERATOR_ENABLED, GENERATOR_RESTART};
 use llamatron_model::values::scale::Scale;
 use std::cell::RefCell;
 
@@ -22,16 +22,7 @@ const ORDER: &str = "order";
 const OCTAVE_RANGE: &str = "octave_range";
 const OCTAVE_JUMP: &str = "octave_jump";
 const OFFSETS: &str = "offsets";
-const PORTED: &[&str] = &[
-    GENERATOR_ENABLED,
-    GENERATOR_RESTART,
-    BYPASS_WHEN,
-    STEP,
-    ORDER,
-    OCTAVE_RANGE,
-    OCTAVE_JUMP,
-    OFFSETS,
-];
+const PORTED: &[&str] = &[GENERATOR_ENABLED, GENERATOR_RESTART, STEP, ORDER, OCTAVE_RANGE, OCTAVE_JUMP, OFFSETS];
 
 #[derive(Clone, Copy, PartialEq)]
 enum Order {

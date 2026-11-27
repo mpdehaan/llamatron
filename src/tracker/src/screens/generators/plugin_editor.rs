@@ -2,8 +2,7 @@
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! A generator's page (the Python screens/shared/plugin_editor.py, pages/generator.py and pages/view_fields.py): its name,
-//! whether it is enabled, its mode where it has one, then each column of its plugin's view as fields, and the statements
-//! that bypass it.
+//! whether it is enabled, its mode where it has one, then each column of its plugin's view as fields.
 
 use crate::app::App;
 use crate::forms::nodes::{Edit, Field};
@@ -119,11 +118,6 @@ fn setting_limits(kind: &str, setting: &str) -> (i64, i64) {
         _ => (i64::MIN, i64::MAX),
     }
 }
-
-/// The setting a generator keeps its Bypass When statements under, and the first id their cells take, past every other
-/// field's.
-const BYPASS_WHEN: &str = "bypass_when";
-const STATEMENT_IDS: usize = 10_000;
 
 /// The ends of a voicing's range of octaves, each kept from passing the other.
 const LOWEST_OCTAVE: &str = "lowest_octave";
@@ -250,8 +244,8 @@ impl<'a> Made<'a> {
     }
 
     /// The generator as a tab of a track's or a clip's page: whether it is on and its mode across the top, then its columns,
-    /// each section of its view a column of its own, and its Bypass When button under them.
-    pub fn tab(&mut self, label: &str, bypass_count: usize) -> crate::forms::tab_box::Tab {
+    /// each section of its view a column of its own.
+    pub fn tab(&mut self, label: &str) -> crate::forms::tab_box::Tab {
         use crate::forms::tab_box::{Tab, TabColumn};
         let mut top = vec![self.enabled_field()];
         let view = self.view;
@@ -285,16 +279,6 @@ impl<'a> Made<'a> {
             }
             columns.extend(sections);
         }
-        let id = self.id();
-        let button = Field::button(
-            id,
-            &named(labels::MSG_BYPASS_WHEN_BUTTON, &[("count", bypass_count.into())]),
-            "",
-            legends::What::EDIT,
-        );
-        let mut footer = TabColumn::new(None, vec![button]);
-        footer.footer = true;
-        columns.push(footer);
         let mut tab = Tab::new(label, columns);
         tab.top = top;
         tab.on = Some(self.is_enabled());
@@ -855,25 +839,6 @@ impl PluginEditor {
         }
     }
 
-    /// Store what a key did to the generator's Bypass When statements, or open the dialog it asks for.
-    fn change_statements(&self, app: &mut App, id: usize, edit: &Edit) {
-        use crate::forms::statements::{statement_change, with_statement, StatementChange};
-        let statements = match app.document.get_setlist().get_item(self.section(), &self.name) {
-            Some(Item::Generator(settings)) => settings
-                .get_written(BYPASS_WHEN)
-                .and_then(Data::as_list)
-                .map(<[Data]>::to_vec)
-                .unwrap_or_default(),
-            _ => Vec::new(),
-        };
-        match statement_change(&statements, STATEMENT_IDS, id, edit) {
-            StatementChange::Ask(asked) => app.asking = Some(asked),
-            StatementChange::Refuse(refusal) => app.refuse(refusal),
-            StatementChange::Store { place, statement } => self.write(app, BYPASS_WHEN, with_statement(&statements, place, statement)),
-            StatementChange::Nothing => {}
-        }
-    }
-
     fn section(&self) -> &'static str {
         PLUGINS.iter().find(|plugin| plugin.name == self.kind).map_or("", |plugin| plugin.section)
     }
@@ -945,10 +910,6 @@ impl Form for PluginEditor {
     }
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
-        if id >= STATEMENT_IDS {
-            self.change_statements(app, id, &edit);
-            return;
-        }
         let view = self.made(app).1.into_iter().find(|(found, _)| *found == id).map(|(_, view)| view);
         match (view, edit) {
             (Some(SettingView::Offsets { setting, .. }), Edit::Enter) => {
@@ -1115,12 +1076,6 @@ impl PluginEditor {
             for setting in column.settings {
                 fields.extend(made.fields_of(setting));
             }
-        }
-        if self.kind != "drift" {
-            let id = made.id();
-            fields.push(Field::heading(id, labels::MSG_BYPASS_WHEN_LABEL, false, Some(String::new()), false));
-            let held = made.written(BYPASS_WHEN).and_then(Data::as_list).map(<[Data]>::to_vec).unwrap_or_default();
-            fields.extend(crate::forms::statements::statement_lines(0, &held, STATEMENT_IDS));
         }
         (fields, made.views)
     }

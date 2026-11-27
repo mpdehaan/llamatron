@@ -21,7 +21,7 @@ Under the Name, a box of tabs holds the rest, as on the clip page (see
 Velocity field across its top and the two ramps as columns under it; Tempo
 Ramps; Shapes; Reset Draws, the draws the scene starts afresh (see
 [Draws](DRAWS.md#reset-draws-on-a-scene-and-a-clip)); More Generators, the
-Generators field; Bypass When. A scene has no built-in generators.
+Generators field. A scene has no built-in generators.
 
 | Setting | What it does |
 | --- | --- |
@@ -36,7 +36,6 @@ Generators field; Bypass When. A scene has no built-in generators.
 | Ramp In, Ramp Out | On the Tempo Ramps tab, two columns that move the tempo gradually at the scene's start and at its end. See [Tempo Ramps](#tempo-ramps). |
 | Velocity | On the Velocity tab, across its top: how loud every clip of the scene plays, as a percentage, from 0% to 200%. Blank is 100%. See [Velocity and Velocity Ramps](#velocity-and-velocity-ramps). |
 | Ramp In, Ramp Out | On the Velocity tab, two columns under the Velocity that fade the scene in from its start and out to its end. See [Velocity and Velocity Ramps](#velocity-and-velocity-ramps). |
-| Bypass When | A tab of statements about the draws. When one is true as a clip's pattern starts over, that pass goes by the clip's generators untouched. See [Bypass When](DRAWS.md#bypass-when). |
 | Density, Articulate | On the Shapes tab, columns each with a Start, End, Over and Then that shape every clip of the scene across the whole scene, unless a clip sets its own shape or a generator in its chains does. See [Shapes](generators/SHAPES.md). |
 
 The page shows how long the scene lasts, and any problem, such as every clip

@@ -188,11 +188,10 @@ Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details
   page: a toggle for each of `Song.draws_with_values`, else the remark `MSG_NO_DRAWS_CONFIGURED`); then the generators in the order they run, the built-ins
   (Chords, Arp, Guitarify, Timing, Phrasing) and last Generators, the Generators field, whose lists run after every built-in
   (the user's design). The Listen button follows.
-- The track editor shows Name, then its tab box: Settings, with Routing (Instrument, Drum, Mute, Groove) and Notes (Transpose, the
+- The track editor shows Name, then its tab box: Settings, with Routing (Instrument, Kind, Mute, Groove) and Notes (Transpose, the
   octaves, Default velocity, Accent, Velocity); MIDI CCs, the numbers; the built-ins; Generators. The Scene page shows Name, then Settings, with Playing (Section, Repeat, Launch together,
-  Scale, Groove, Tempo); Velocity, its field across the top and the two ramps as columns under it; Tempo Ramps; Shapes; Reset Draws; Generators;
-  Bypass When. A built-in's tab ends with the button `Bypass When (n)` (`MSG_BYPASS_WHEN_BUTTON`, n its statements), which opens
-  `GeneratorStatementsPage` (`screens/shared/generator_statements_page.py`), the built-in's Bypass When table alone. A built-in's tab says what stands in for what (`BuiltInTab._overrides`): a clip's, that it overrides its track's;
+  Scale, Groove, Tempo); Velocity, its field across the top and the two ramps as columns under it; Tempo Ramps; Shapes; Reset Draws; Generators.
+  A built-in's tab says what stands in for what (`BuiltInTab._overrides`): a clip's, that it overrides its track's;
   a track's, the clips overriding it, three at most named.
 
 - The track editor's Name field renames. Its Lowest octave and Highest octave fields, in the

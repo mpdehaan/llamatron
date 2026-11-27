@@ -249,8 +249,7 @@ A page asks for one of some values with `Page.pick(title=, values=, then=, curre
   and keyboard until the dialogs move) the Instrument editor (`interface/pages/instrument.py`) the Draws page
   (`interface/pages/draws.py`) the Track editor (`interface/pages/track.py`) the Scene page (`interface/pages/scene.py`) and the clip page (`interface/pages/clip.py`, its tabs from
   `ClipTabs`) and a generator's page (`interface/pages/generator.py`, `PluginEditor` its shell, the view's fields asking
-  through `PageViewFields`, as a built-in's tab does), and the two Bypass When pages of a chain and of a built-in generator
-  (`BypassWhenPresenter` in `interface/pages/statements.py`), and the song wizard, its panels a file each in
+  through `PageViewFields`, as a built-in's tab does), and the song wizard, its panels a file each in
   `interface/pages/wizard/` and its tree of them `WizardTree` (`interface/pages/wizard/tree.py`), drawn by `WizardPage`, which
   keeps the tree's cursor, the editors, listening and the sound pickers. The list pages follow: a list presenter gives its
   columns (`ListColumn`, `interface/forms/table.py`), its rows as plain values, the place ENTER opens (`ItemPlace`, opened by
@@ -262,8 +261,7 @@ A page asks for one of some values with `Page.pick(title=, values=, then=, curre
   (`interface/pages/generator_list.py`) the chain editor (`interface/pages/chain.py`) and the Open page (`interface/pages/folder_list.py`); a presenter is handed its
   page and calls the page's own actions for what only the tracker can do. Pages connect by Places (`interface/pages/places.py`,
   the user's design): a value for where a page is, which the app's site map (`interface/tracker/site_map.py`, `app.site_map`)
-  turns into the page; a generator's part pages first (`GeneratorPartPlace`: offsets, a step row, chords, a guitar bar, Bypass
-  When), which `open_part(part, ...)` opens; a node asks its page for a number
+  turns into the page; a generator's part pages first (`GeneratorPartPlace`: offsets, a step row, chords, a guitar bar), which `open_part(part, ...)` opens; a node asks its page for a number
   (`ask_number`) or a choice (`Page.ask_choice`) rather than making the dialog. A statement's rows are nodes too (`interface/forms/statement_rows.py`),
   drawn by `interface/tracker/renderers/statement_rows.py`. Part of the declarative pages' move (the ideas files of `.claude/features/`, "The UX audit"),
   each step proven by `py_legacy/internal_tools/compare_screens.sh` to leave every screen as it was.
@@ -327,17 +325,6 @@ A page asks for one of some values with `Page.pick(title=, values=, then=, curre
   kept by label on the app as `open_field_sections`, closed to begin with, for the session.
 - `tests/interface/tracker/test_tui_fields.py` tests each kind, and tours every settings page for the ends of its
   numbers and the keys of its toggles.
-
-- Bypass When on a page (`interface/pages/statements.py`, the user's design): `statement_section(page=, label=, table=,
-  statements=, store=)` gives a heading that never says `(set)` and a `Cells` line for each of the `MAX_STATEMENTS` statements, each
-  cell at a fixed width so nothing moves: the draw (`ignored` first), the operator, and the parts the operator takes. A value's
-  ENTER offers `number` and each draw. Bksp, or choosing `ignored`, removes the statement, and a line past the last statement
-  writes the next one, since a table keeps no gaps. A line's label is blank and as long as its place on the page (`table` tells a
-  page's two tables apart), which is how `restore_place` and the tests find a line. The Scene page lists its table; every generator's page gets its table from `ShowsNamedItem.shared_sections`, which
-  `FieldPage.every_field` puts before the page's buttons; and the chain editor, a list page, opens `ChainStatementsPage` with `W`
-  (When). `tests/interface/tracker/test_tui_statements.py` tests them.
-
-## Opening, saving and exporting
 
 - A file picker comes back to the directory it last showed, for the session and never saved, the user's ask: `OpenPage` keeps the
   directory in `app.last_folders` by the endings of the files it lists, so the Open page and the import's picker each have their own,

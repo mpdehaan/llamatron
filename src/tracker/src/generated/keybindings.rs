@@ -1208,11 +1208,6 @@ pub mod ChainEditor {
     pub use super::Page::SAVE;
     pub use super::Page::SILENCE;
     pub use super::Page::UNDO;
-    pub static WHEN: Binding = Binding {
-        keys: Keys::One("w"),
-        name: "W",
-        what: "when",
-    };
     pub static EVERYWHERE: &[&Binding] = &[&SAVE, &OPEN_SET, &EXPORT, &SILENCE, &UNDO, &REDO, &HELP, &ABOUT, &QUIT_NOW];
     pub static IN_HELP: &[&Binding] = &[
         &BACK,
@@ -1231,7 +1226,6 @@ pub mod ChainEditor {
         &REMOVE,
         &MOVE,
         &RENAME,
-        &WHEN,
         &SEARCH,
     ];
     pub static IN_LEGEND: &[&Binding] = &[
@@ -1251,7 +1245,6 @@ pub mod ChainEditor {
         &REMOVE,
         &MOVE,
         &RENAME,
-        &WHEN,
     ];
     pub static SEARCHING: &[&Binding] = &[&SEARCH_CANCEL, &SEARCH_TYPE, &SEARCH_ERASE, &SEARCH_COMPLETE, &SEARCH_KEEP];
     pub static CLASS: KeyClass = KeyClass {
@@ -2340,147 +2333,7 @@ pub mod InstrumentEditor {
 }
 
 /// A chain's statements about the draws, with the settings keys alone.
-pub mod ChainStatementsPage {
-    pub use super::FieldPage::ACROSS;
-    pub use super::FieldPage::ALONG_BUTTONS;
-    pub use super::FieldPage::ALONG_CELLS;
-    pub use super::FieldPage::ALONG_TABS;
-    pub use super::FieldPage::CLEAR;
-    pub use super::FieldPage::ENTER;
-    pub use super::FieldPage::INTO_TAB;
-    pub use super::FieldPage::LESS;
-    pub use super::FieldPage::MORE;
-    pub use super::FieldPage::RENAME;
-    pub use super::FieldPage::SECTION;
-    pub use super::FieldPage::SELECT;
-    pub use super::FieldPage::TAB_PAGES;
-    pub use super::FieldPage::TOGGLE;
-    pub use super::FieldPage::TO_TABS;
-    pub use super::Page::ABOUT;
-    pub use super::Page::BACK;
-    pub use super::Page::EXPORT;
-    pub use super::Page::HELP;
-    pub use super::Page::OPEN_SET;
-    pub use super::Page::QUIT_NOW;
-    pub use super::Page::REDO;
-    pub use super::Page::SAVE;
-    pub use super::Page::SILENCE;
-    pub use super::Page::UNDO;
-    use super::*;
-    pub static EVERYWHERE: &[&Binding] = &[&SAVE, &OPEN_SET, &EXPORT, &SILENCE, &UNDO, &REDO, &HELP, &ABOUT, &QUIT_NOW];
-    pub static IN_HELP: &[&Binding] = &[
-        &BACK,
-        &SELECT,
-        &ALONG_BUTTONS,
-        &ALONG_CELLS,
-        &ALONG_TABS,
-        &ACROSS,
-        &LESS,
-        &MORE,
-        &TOGGLE,
-        &ENTER,
-        &CLEAR,
-        &SECTION,
-        &TAB_PAGES,
-        &TO_TABS,
-        &INTO_TAB,
-        &RENAME,
-    ];
-    pub static IN_LEGEND: &[&Binding] = &[
-        &BACK,
-        &SELECT,
-        &ALONG_BUTTONS,
-        &ALONG_CELLS,
-        &ALONG_TABS,
-        &ACROSS,
-        &LESS,
-        &MORE,
-        &TOGGLE,
-        &ENTER,
-        &CLEAR,
-        &SECTION,
-        &TAB_PAGES,
-        &TO_TABS,
-        &INTO_TAB,
-    ];
-    pub static CLASS: KeyClass = KeyClass {
-        name: "ChainStatementsPage",
-        in_help: IN_HELP,
-        in_legend: IN_LEGEND,
-    };
-}
-
 /// A built-in generator's statements about the draws, with the settings keys alone.
-pub mod GeneratorStatementsPage {
-    pub use super::FieldPage::ACROSS;
-    pub use super::FieldPage::ALONG_BUTTONS;
-    pub use super::FieldPage::ALONG_CELLS;
-    pub use super::FieldPage::ALONG_TABS;
-    pub use super::FieldPage::CLEAR;
-    pub use super::FieldPage::ENTER;
-    pub use super::FieldPage::INTO_TAB;
-    pub use super::FieldPage::LESS;
-    pub use super::FieldPage::MORE;
-    pub use super::FieldPage::RENAME;
-    pub use super::FieldPage::SECTION;
-    pub use super::FieldPage::SELECT;
-    pub use super::FieldPage::TAB_PAGES;
-    pub use super::FieldPage::TOGGLE;
-    pub use super::FieldPage::TO_TABS;
-    pub use super::Page::ABOUT;
-    pub use super::Page::BACK;
-    pub use super::Page::EXPORT;
-    pub use super::Page::HELP;
-    pub use super::Page::OPEN_SET;
-    pub use super::Page::QUIT_NOW;
-    pub use super::Page::REDO;
-    pub use super::Page::SAVE;
-    pub use super::Page::SILENCE;
-    pub use super::Page::UNDO;
-    use super::*;
-    pub static EVERYWHERE: &[&Binding] = &[&SAVE, &OPEN_SET, &EXPORT, &SILENCE, &UNDO, &REDO, &HELP, &ABOUT, &QUIT_NOW];
-    pub static IN_HELP: &[&Binding] = &[
-        &BACK,
-        &SELECT,
-        &ALONG_BUTTONS,
-        &ALONG_CELLS,
-        &ALONG_TABS,
-        &ACROSS,
-        &LESS,
-        &MORE,
-        &TOGGLE,
-        &ENTER,
-        &CLEAR,
-        &SECTION,
-        &TAB_PAGES,
-        &TO_TABS,
-        &INTO_TAB,
-        &RENAME,
-    ];
-    pub static IN_LEGEND: &[&Binding] = &[
-        &BACK,
-        &SELECT,
-        &ALONG_BUTTONS,
-        &ALONG_CELLS,
-        &ALONG_TABS,
-        &ACROSS,
-        &LESS,
-        &MORE,
-        &TOGGLE,
-        &ENTER,
-        &CLEAR,
-        &SECTION,
-        &TAB_PAGES,
-        &TO_TABS,
-        &INTO_TAB,
-    ];
-    pub static CLASS: KeyClass = KeyClass {
-        name: "GeneratorStatementsPage",
-        in_help: IN_HELP,
-        in_legend: IN_LEGEND,
-    };
-}
-
 /// A generator's page drawn from its plugin's view: the settings keys, and on a row of cells, such as a drift's two versions
 pub mod PluginEditor {
     pub use super::FieldPage::ACROSS;

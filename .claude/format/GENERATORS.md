@@ -16,8 +16,7 @@ Reference notes for Claude, one part of `.claude/format/`: every generator and w
   settings list chains says so in `CHAINS_NAMED_BY`, read through `references_of`, so that every plugin's section is covered. The
   Model finds the plugins through `generator_plugins.plugins()`, which imports every folder's declaration once, the first time
   any is asked for, and names no plugin itself. What several share is beside the folders: `base.py` (`ClipGenerator`),
-  `parts.py`, `settings_base.py` (`GeneratorSettings`, which every settings class extends, giving each the Bypass when table
-  last); each plugin keeps its own defaults and
+  `parts.py`, `settings_base.py` (`GeneratorSettings`, which every settings class extends); each plugin keeps its own defaults and
   `blend.py`, which morphing uses. Pieces that the plugins and the clips' and tracks' own settings share are in `engine/parts/`:
   `scale_moves.py` (`along_scale`). The tests are in `tests/engine/generators/`.
 - Each subclasses `ClipGenerator` (`base.py`) and implements `_generate(clip)`, which reads

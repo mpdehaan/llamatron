@@ -32,14 +32,9 @@ the place. The keys that work everywhere are listed once:
 
 ## ChainEditor
 
-- **row**: `ESC` back · `↑↓` move · `A` add · `ENTER` change · `C` copy · `Bksp` remove · `M` move · `N/F2` rename chain · `W` when · `/` search
-- **plus**: `ESC` back · `ENTER` add · `↑↓` move · `A` add · `N/F2` rename chain · `W` when · `/` search
+- **row**: `ESC` back · `↑↓` move · `A` add · `ENTER` change · `C` copy · `Bksp` remove · `M` move · `N/F2` rename chain · `/` search
+- **plus**: `ESC` back · `ENTER` add · `↑↓` move · `A` add · `N/F2` rename chain · `/` search
 - **searching**: `ESC` CANCEL · `↑↓` move · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
-
-
-## ChainStatementsPage
-
-- **anywhere**: `ESC` back · `↑↓` move · `←→` move · `ENTER` choose · `Bksp` clear
 
 
 ## ChoiceDialog
@@ -114,33 +109,29 @@ the place. The keys that work everywhere are listed once:
 ## FilePage
 
 - **Tabs**: `ESC` back · `↑↓` move · `←→` move · `Tab` into tab
-- **Title**: `ESC` back · `↑↓` move · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs
-- **Author**: `ESC` back · `↑↓` move · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs
-- **Default drum octave**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `PgUp/PgDn` next tab · `Tab` to tabs
-- **Description**: `ESC` back · `↑↓` move · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs
-- **Default octave**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `PgUp/PgDn` next tab · `Tab` to tabs
-- **Visualizer**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
-- **Notes**: `ESC` back · `↑↓` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs
-- **Octave labels**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
-- **Hide Visualizers**: `ESC` back · `↑↓` move · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
-- **Default follow action**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
-- **Step size**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
+- **Title**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs
+- **Author**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs
+- **Follow action**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
+- **Track Inst. Default**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
+- **Description**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs
+- **Drum octave**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `PgUp/PgDn` next tab · `Tab` to tabs
 - **New**: `ESC` back · `↑↓` move · `←→` move · `ENTER` new · `Tab` to tabs
-- **Protected**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs
+- **Notes**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs
+- **Octave**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `PgUp/PgDn` next tab · `Tab` to tabs
 - **Open**: `ESC` back · `↑↓` move · `←→` move · `ENTER` OPEN · `Tab` to tabs
+- **Protected**: `ESC` back · `↑↓` move · `←→` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs
+- **Step size**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
 - **Save**: `ESC` back · `↑↓` move · `←→` move · `ENTER` SAVE · `Tab` to tabs
+- **Octave labels**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
 - **Save As**: `ESC` back · `↑↓` move · `←→` move · `ENTER` save as · `Tab` to tabs
+- **Visualizer**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
+- **Hide Visualizers**: `ESC` back · `↑↓` move · `←→` move · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs
 
 
 ## GeneratorListPage
 
 - **plus**: `ESC` back · `ENTER` add · `↑↓` move · `A` add · `/` search
 - **searching**: `ESC` CANCEL · `↑↓` move · `A-Z 0-9` search · `Bksp` erase · `Tab` complete · `ENTER` keep
-
-
-## GeneratorStatementsPage
-
-- **anywhere**: `ESC` back · `↑↓` move · `←→` move · `ENTER` choose · `Bksp` clear
 
 
 ## GeneratorsPage
@@ -265,26 +256,24 @@ the place. The keys that work everywhere are listed once:
 
 ## PluginEditor
 
-- **arp Name**: `ESC` back · `↑↓` move · `ENTER` rename · `PgUp/PgDn` next section · `F2` rename
-- **arp Enabled**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
-- **arp Bypass When**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
-- **arp Step**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `PgUp/PgDn` next section · `F2` rename
-- **arp Restart**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next section · `F2` rename
-- **arp Order**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next section · `F2` rename
-- **arp Offsets**: `ESC` back · `↑↓` move · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next section · `F2` rename
-- **arp Octave range**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 1 · `PgUp/PgDn` next section · `F2` rename
-- **arp Octave jump**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next section · `F2` rename
-- **chords Name**: `ESC` back · `↑↓` move · `ENTER` rename · `PgUp/PgDn` next section · `F2` rename
-- **chords Enabled**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
-- **chords Bypass When**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
-- **chords Mode**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next section · `F2` rename
-- **chords Restart**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next section · `F2` rename
-- **chords Every**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` 1 bar · `PgUp/PgDn` next section · `F2` rename
-- **chords Keep the root in the bass**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
-- **chords Chords**: `ESC` back · `↑↓` move · `ENTER` edit · `PgUp/PgDn` next section · `F2` rename
-- **chords Highest octave**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 4 · `PgUp/PgDn` next section · `F2` rename
-- **chords Voice leading**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next section · `F2` rename
-- **chords Lowest octave**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 2 · `PgUp/PgDn` next section · `F2` rename
+- **arp Name**: `ESC` back · `↑↓` move · `ENTER` rename · `F2` rename
+- **arp Enabled**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `F2` rename
+- **arp Step**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `F2` rename
+- **arp Order**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `F2` rename
+- **arp Octave range**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 1 · `F2` rename
+- **arp Octave jump**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `F2` rename
+- **arp Offsets**: `ESC` back · `↑↓` move · `ENTER` edit · `Bksp` (none) · `F2` rename
+- **arp Restart**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `F2` rename
+- **chords Name**: `ESC` back · `↑↓` move · `ENTER` rename · `F2` rename
+- **chords Enabled**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `F2` rename
+- **chords Mode**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `F2` rename
+- **chords Every**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` 1 bar · `F2` rename
+- **chords Chords**: `ESC` back · `↑↓` move · `ENTER` edit · `F2` rename
+- **chords Voice leading**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `F2` rename
+- **chords Lowest octave**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 2 · `F2` rename
+- **chords Highest octave**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 4 · `F2` rename
+- **chords Keep the root in the bass**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `F2` rename
+- **chords Restart**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `F2` rename
 
 
 ## PromptDialog
@@ -400,7 +389,6 @@ the place. The keys that work everywhere are listed once:
 - **Position**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` open · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Bar**: `ESC` back · `↑↓` move · `←→` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Rush step**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` choose · `Bksp` (from pattern) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Bypass When (0)**: `ESC` back · `↑↓` move · `ENTER` edit · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Line**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Offsets**: `ESC` back · `↑↓` move · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Keep the root in the bass**: `ESC` back · `↑↓` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename

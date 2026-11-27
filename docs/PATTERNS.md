@@ -622,7 +622,8 @@ draw as the count.
 
 Each section holds one statement about the draws on each step, written down
 the step's column in five rows, `c1` to `c5`. The five rows are the five parts
-of a [Bypass When](DRAWS.md#bypass-when) statement, stood on end:
+of a [statement about the draws](DRAWS.md#statements-about-the-draws), stood
+on end:
 
 | Row | Holds | Example: `AD % 4 = 3` |
 | --- | --- | --- |

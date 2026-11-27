@@ -40,7 +40,6 @@ heading; `ENTER` on it opens the chain editor.
 | `A` | Add a step: any generator but a Chain, made first on the Generators page |
 | `ENTER` | Change the step to another generator |
 | `C` | Copy the step |
-| `W` | Open the Chain's Bypass When statements, which say when a pass goes by the whole Chain. See [Bypass When](../DRAWS.md#bypass-when) |
 | `M` | Pick it up: `↑↓` carry it, and `ENTER` drops it |
 | `Bksp` | Remove it |
 | `N` | Rename the Chain, which updates every list that runs it |

@@ -428,32 +428,12 @@ impl Form for TrackEditor {
             return;
         }
         if edit == Edit::Enter && id == arrange_tabs::GENERATORS {
-            // The list of a track's generators is not ported yet.
             app.show_page(Box::new(crate::screens::list_page::ListPage::new(
                 crate::screens::generators::generator_list_page::GeneratorListPage {
                     holder: crate::screens::generators::generator_list_page::Holder::Track(self.name.clone()),
                     opener_crumbs: self.crumbs(app),
                 },
             )));
-            return;
-        }
-        if edit != Edit::Enter || !(BUILT_IN_IDS..FIRST_OWN).contains(&id) {
-            return;
-        }
-        let kinds = built_in_kinds();
-        let Some(kind) = kinds.get(id / BUILT_IN_IDS - 1).copied() else { return };
-        let Some(track) = self.track(app) else { return };
-        let tab = self.built_in_tab(app, track, kind);
-        let is_bypass = tab.every_field().iter().any(|field| field.id == id && field.is_button());
-        if is_bypass {
-            use crate::screens::generators::statements_page::{GeneratorStatementsPage, Holder};
-            let holder = Holder::BuiltIn {
-                track: self.name.clone(),
-                kind,
-                opener_crumbs: self.crumbs(app),
-            };
-            let opened = GeneratorStatementsPage { holder };
-            app.show_page(Box::new(crate::screens::field_page::FieldPage::new(opened)));
         }
     }
 }

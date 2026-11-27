@@ -2,13 +2,11 @@
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The tabs a scene's page and a clip's page share (the Python pages/arrange_tabs.py, velocity_fields.py and
-//! shape_fields.py): how loud it plays and its ramps, its shapes, the draws it resets, its other generators and its
-//! Bypass When.
+//! shape_fields.py): how loud it plays and its ramps, its shapes, the draws it resets and its other generators.
 
 use crate::app::App;
 use crate::forms::nodes::Edit;
 use crate::forms::nodes::Field;
-use crate::forms::statements::statement_lines;
 use crate::forms::tab_box::{columns_of_sections, Tab, TabColumn};
 use crate::screens::generators::generators_page::label_of;
 use crate::screens::generators::plugin_editor::{view_write, Made};
@@ -31,7 +29,6 @@ pub const TEMPO_RAMP_IDS: usize = 200;
 pub const SHAPE_IDS: usize = 300;
 pub const RESET_IDS: usize = 400;
 pub const GENERATORS: usize = 500;
-pub const BYPASS_IDS: usize = 600;
 
 pub fn whole(value: Option<&Data>) -> Option<i64> {
     value.filter(|value| !value.is_null()).and_then(Data::as_whole).map(|whole| whole as i64)
@@ -225,12 +222,6 @@ pub fn chain_names(chains: Option<&Data>) -> Vec<String> {
         .map_or(Vec::new(), |names| names.iter().filter_map(|name| name.as_str().map(str::to_string)).collect())
 }
 
-/// The Bypass When tab: the table of statements alone.
-pub fn bypass_tab(statements: Option<&Data>) -> Tab {
-    let held = statements.and_then(Data::as_list).map(<[Data]>::to_vec).unwrap_or_default();
-    Tab::new(labels::MSG_BYPASS_WHEN_TAB, vec![TabColumn::new(None, statement_lines(0, &held, BYPASS_IDS))])
-}
-
 /// Whether a built-in generator's data says it is switched on, which it is not until enabled.
 pub fn built_in_on(data: Option<&Data>) -> bool {
     data.and_then(|settings| settings.get("enabled"))
@@ -241,9 +232,8 @@ pub fn built_in_on(data: Option<&Data>) -> bool {
 pub fn built_in_tab(app: &App, built_ins: Option<&Data>, kind: &'static str, first_id: usize) -> Tab {
     let empty = Data::Map(Vec::new());
     let data = built_ins.and_then(|built_ins| built_ins.get(kind)).unwrap_or(&empty);
-    let bypass = data.get("bypass_when").and_then(Data::as_list).map_or(0, <[Data]>::len);
     let mut made = Made::of(app, kind, data, true).counting_from(first_id);
-    made.tab(&tab_label_of(kind), bypass)
+    made.tab(&tab_label_of(kind))
 }
 
 /// The setting an edit of a built-in generator's tab writes and its value, None leaving it out of the file: its Enabled
@@ -258,7 +248,7 @@ pub fn built_in_edit(app: &App, built_ins: Option<&Data>, kind: &'static str, fi
     let empty = Data::Map(Vec::new());
     let data = built_ins.and_then(|built_ins| built_ins.get(kind)).unwrap_or(&empty);
     let mut made = Made::of(app, kind, data, true).counting_from(first_id);
-    let _ = made.tab(&tab_label_of(kind), 0);
+    let _ = made.tab(&tab_label_of(kind));
     let view = made.views().iter().find(|(found, _)| *found == id).map(|(_, view)| *view)?;
     view_write(view, edit, made.mode().as_deref())
 }

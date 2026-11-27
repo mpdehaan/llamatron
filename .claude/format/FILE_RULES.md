@@ -340,9 +340,9 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   track: `SongRealizer` plays each clip once with a `RegisterRecorder` to collect what each step draws and resets
   (`RegisterChange.draws`, `draw_resets`), the same play that finds lengths; a `RegisterTimeline` draws them in time order and then
   track order; the finished clips read it with a `RegisterReader`. The counting play runs only when some pattern takes draws
-  (`Setlist.takes_draws`) or a scene's tables redraw (`Song.redraws_in_conditions`).
+  (`Setlist.takes_draws`).
 - A step's statements (the user's design; `STATEMENT_ROWS`, `StepStatement`): the rows `stop_c1` to `stop_c5`, `restart_c1` to
-  `restart_c5` and `mute_c1` to `mute_c5` hold, step by step, the five parts of one Bypass When statement of each kind
+  `restart_c5` and `mute_c1` to `mute_c5` hold, step by step, the five parts of one statement about the draws of each kind
   (draw, operator, value, comparison, against), which `Pattern.get_statement` puts together (`conditions.statement_of`) and
   `Pattern.set_statement` writes whole; parts that make no whole statement are no statement. A rest keeps them. Every draw a step
   takes, for its Use Draws rows or for a statement of a draw whose `conditions_redraw` is on, is taken once, just before the step's
@@ -357,21 +357,12 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   render (`_cutting_of`, `_is_settled_by_playing`). A pass's first step takes its draws after a restarting step at the same moment
   reads the values (`PASS_START_DRAWS`, `PASS_START_READS`), and a draw a stopping step takes at the scene's very end belongs to
   the scene.
-- Bypass When (the user's name and design, one name on the button, heading, tab, crumb and documents; `model/objects/conditions.py`): a table of at most `MAX_STATEMENTS` statements,
-  each a dictionary `{register, operator, value, comparison, against}` holding only the parts its operator takes (`parts_of`);
-  the key `register` (`StatementPart.REGISTER`) names a draw, kept from when it named a register. A statement is a comparison and
-  a value, `odd` or `even` alone, or a sum, its number, a comparison of the result and what it is compared with. A value is a
-  whole number or a draw's name (`file_format.VALUE_NAMES`). Whole-number math; a typed 0 after `/` or `%` is refused and a draw
-  that divides holding 0 makes the statement true. Any true statement trips the table. The tables, all `bypass_when`: on a
-  generator (every kind, `BYPASS_SETTING`), a chain (written `{steps: [...], bypass_when: [...]}`, the plain list otherwise) and a
-  scene; a clip and a track have none. A table is tested as each pass of a clip's pattern starts, with the pass's first step's
-  draws: a draw it reads that redraws is taken by that step (`pass_draws`, `ClipSlotPlayer._pass_draws`), and
-  `RegisterReader.at_pass` adds what the step drew to the values.
-- How a table acts (`engine/realizer/clip_slot_player.py`): a bypass runs the generator on the whole clip and splices the tripped
-  passes' untouched notes back (`_kept_where`), so a generator's own state never depends on the draws; a generator that changes the
-  clip's length is taken whole unless every pass tripped; a Density, Swell or Articulate named in a chain is judged at the clip's
-  first pass; a Drift's table is never read, and the Drift page shows none. A scene's bypass leaves out the chains of each of its
-  clips.
+- A statement about the draws (`model/objects/conditions.py`): a dictionary `{register, operator, value, comparison,
+  against}` holding only the parts its operator takes (`parts_of`); the key `register` (`StatementPart.REGISTER`) names a
+  draw, kept from when it named a register. A statement is a comparison and a value, `odd` or `even` alone, or a sum, its
+  number, a comparison of the result and what it is compared with. A value is a whole number or a draw's name
+  (`file_format.VALUE_NAMES`). Whole-number math; a typed 0 after `/` or `%` is refused and a draw that divides holding 0
+  makes the statement true.
 - A note pushed outside the MIDI range goes to the nearest octave that fits.
 
 ### Directions

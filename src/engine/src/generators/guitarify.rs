@@ -14,7 +14,7 @@ use crate::sound::{NoteSound, Sound};
 use llamatron_math::{Number, PythonRandom, Rational, Seed};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::checking::{time_length, TimeLength};
-use llamatron_model::schema::generated::file_format::{Approach, ChordColor, GuitarifySetting, SingleNotes, Stroke, Tuning, BYPASS_WHEN, GENERATOR_ENABLED};
+use llamatron_model::schema::generated::file_format::{Approach, ChordColor, GuitarifySetting, SingleNotes, Stroke, Tuning, GENERATOR_ENABLED};
 use llamatron_model::schema::generated::midi::{MAX_MIDI_NUMBER, MIN_MIDI_NUMBER};
 use llamatron_model::values::scale::Scale;
 use std::cell::RefCell;
@@ -132,12 +132,6 @@ impl Guitarify {
                 .unwrap_or(default.to_string())
         };
         let whole = |name: &str, default: i64| written(name).and_then(Data::as_whole).map(|value| value as i64).unwrap_or(default);
-        if settings
-            .get(BYPASS_WHEN)
-            .is_some_and(|statements| statements.as_list().is_some_and(|items| !items.is_empty()))
-        {
-            return Err(RenderError::not_ported("statements that bypass a generator"));
-        }
         let _ = GENERATOR_ENABLED;
         let bar_written = written(GuitarifySetting::BAR).and_then(Data::as_list).filter(|bar| !bar.is_empty());
         let bar: Vec<String> = match bar_written {

@@ -110,27 +110,19 @@ impl Groove {
     }
 }
 
-/// A chain: its steps, each a generator's kind and name, and the statements that bypass it, or none.
+/// A chain: its steps, each a generator's kind and name.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Chain {
     steps: Vec<(String, String)>,
-    bypass_when: Option<Data>,
 }
 
 impl Chain {
     pub fn from_data(data: &Data) -> Result<Chain, InvalidValue> {
-        let mut steps_data = data;
-        let mut bypass_when = None;
-        if let Data::Map(pairs) = data {
-            let shaped = data.get(ChainSetting::STEPS).is_some()
-                && pairs
-                    .iter()
-                    .all(|(key, _)| matches!(key.as_str(), Some(ChainSetting::STEPS) | Some(ChainSetting::BYPASS_WHEN)));
-            if shaped {
-                bypass_when = data.get(ChainSetting::BYPASS_WHEN).filter(|value| !value.is_null()).cloned();
-                steps_data = data.get(ChainSetting::STEPS).unwrap_or(&Data::Null);
-            }
-        }
+        // A chain written as a mapping holds its steps under steps; an older file's other settings there are passed over.
+        let steps_data = match data {
+            Data::Map(_) => data.get(ChainSetting::STEPS).unwrap_or(&Data::Null),
+            _ => data,
+        };
         let Some(listed) = steps_data.as_list() else {
             return Err(InvalidValue::new(errors::ERR_EXPECTED_LIST.to_string()));
         };
@@ -141,19 +133,13 @@ impl Chain {
                 _ => return Err(InvalidValue::new(named(errors::ERR_ONE_GENERATOR_PER_STEP, &[("step", step.into())]))),
             }
         }
-        Ok(Chain { steps, bypass_when })
+        Ok(Chain { steps })
     }
 
     pub fn get_steps(&self) -> &[(String, String)] {
         &self.steps
     }
 
-    /// The statements that bypass the whole chain, or None for none.
-    pub fn get_bypass_when(&self) -> Option<&Data> {
-        self.bypass_when.as_ref()
-    }
-
-    /// Store the statements that bypass the whole chain, or None for none.
     /// Add a step at the end: a generator of a kind, by its name.
     pub fn add_step(&mut self, kind: &str, name: &str) {
         self.steps.push((kind.to_string(), name.to_string()));
@@ -191,24 +177,13 @@ impl Chain {
         true
     }
 
-    pub fn set_bypass_when(&mut self, statements: Option<Data>) {
-        self.bypass_when = statements;
-    }
-
     pub fn to_data(&self) -> Data {
-        let steps = Data::List(
+        Data::List(
             self.steps
                 .iter()
                 .map(|(kind, name)| Data::Map(vec![(Data::text(kind), Data::text(name))]))
                 .collect(),
-        );
-        match &self.bypass_when {
-            None => steps,
-            Some(statements) => Data::Map(vec![
-                (Data::text(ChainSetting::STEPS), steps),
-                (Data::text(ChainSetting::BYPASS_WHEN), statements.clone()),
-            ]),
-        }
+        )
     }
 }
 

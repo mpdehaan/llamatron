@@ -33,7 +33,7 @@ use llamatron_model::objects::song::{Scene, Song, Track};
 use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::DRAW_NAMES;
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SongSetting, TrackSetting};
-use llamatron_model::schema::generated::file_format::{Restart, BYPASS_WHEN, GENERATOR_ENABLED, GENERATOR_RESTART};
+use llamatron_model::schema::generated::file_format::{Restart, GENERATOR_ENABLED, GENERATOR_RESTART};
 use llamatron_model::schema::generated::limits::{MAX_TEMPO, MIN_TEMPO};
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Setting, CLIP_SLOT, INSTRUMENT, PATTERN, SCENE, SONG, TRACK};
@@ -966,9 +966,6 @@ impl<'a> SongRealizer<'a> {
     /// that generator alone.
     fn chain_run(&self, name: &str) -> Rendered<Vec<ChainStep>> {
         if let Some(Item::Chain(chain)) = self.setlist.get_item(Section::CHAINS, name) {
-            if chain.get_bypass_when().is_some() {
-                return Err(RenderError::not_ported("statements that bypass a chain"));
-            }
             let mut steps = Vec::new();
             for (kind, generator) in chain.get_steps() {
                 if let Some(settings) = self.generator_settings(kind, generator)? {
@@ -1376,16 +1373,10 @@ const SEED_SONG_FACTOR: i128 = 1_000_003;
 const SEED_SCENE_FACTOR: i128 = 1_009;
 const SEED_TRACK_FACTOR: i128 = 31;
 
-/// A chain step of a kind the port runs, with no statements that bypass it, or what is not ported yet.
+/// A chain step of a kind the port runs, or what is not ported yet.
 fn ported_step(kind: &str, name: &str, settings: Data) -> Rendered<ChainStep> {
     if !PORTED_KINDS.contains(&kind) {
         return Err(RenderError::NotPorted(format!("the {kind} generator")));
-    }
-    if settings
-        .get(BYPASS_WHEN)
-        .is_some_and(|statements| statements.as_list().is_some_and(|items| !items.is_empty()))
-    {
-        return Err(RenderError::not_ported("statements that bypass a generator"));
     }
     Ok(ChainStep {
         kind: kind.to_string(),

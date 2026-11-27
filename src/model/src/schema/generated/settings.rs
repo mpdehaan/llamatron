@@ -93,7 +93,6 @@ pub enum Nearest {
 }
 
 pub static CHAIN: &[Setting] = &[
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];
 
 pub static CLIP_SLOT: &[Setting] = &[
@@ -204,7 +203,6 @@ pub static SCENE: &[Setting] = &[
     Setting { name: "articulate_end", described: Described::WholeNumber { lowest: Some(10), highest: Some(200), error: "{name} must be an integer from {lowest} to {highest}, got {value!r}" } },
     Setting { name: "articulate_over", described: Described::Checked { check: Check::ChecksTimeLength, arguments: &[], needs_song: false, nearest: None } },
     Setting { name: "articulate_then", described: Described::Choice { choices: &[Plain::Text("hold"), Plain::Text("repeat"), Plain::Text("bounce")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];
 
 pub static SETLIST: &[Setting] = &[
@@ -265,7 +263,6 @@ pub static ARP_PLUGIN: &[Setting] = &[
     Setting { name: "octave_jump", described: Described::Choice { choices: &[Plain::Text("after_chord"), Plain::Text("after_each_note")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
     Setting { name: "offsets", described: Described::Checked { check: Check::ArpModelCheckArpOffsets, arguments: &[], needs_song: false, nearest: Some(Nearest::ArpModelNearestOffsets) } },
     Setting { name: "restart", described: Described::Choice { choices: &[Plain::Text("every_clip"), Plain::Text("on_new_scene"), Plain::Text("whole_song")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];
 
 pub static CHORDS_PLUGIN: &[Setting] = &[
@@ -286,7 +283,6 @@ pub static CHORDS_PLUGIN: &[Setting] = &[
     Setting { name: "highest_octave", described: Described::WholeNumber { lowest: Some(0), highest: Some(10), error: "{name} must be an integer from {lowest} to {highest}, got {value!r}" } },
     Setting { name: "root_in_bass", described: Described::Flag { error: "root_in_bass must be true or false, got {value!r}" } },
     Setting { name: "restart", described: Described::Choice { choices: &[Plain::Text("every_clip"), Plain::Text("on_new_scene"), Plain::Text("whole_song")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];
 
 pub static DRIFT_PLUGIN: &[Setting] = &[
@@ -311,7 +307,6 @@ pub static DRIFT_PLUGIN: &[Setting] = &[
     Setting { name: "b_root", described: Described::Checked { check: Check::DriftModelCheckRoot, arguments: &[], needs_song: false, nearest: None } },
     Setting { name: "b_root_probability", described: Described::WholeNumber { lowest: Some(0), highest: Some(100), error: "{name} must be an integer from {lowest} to {highest}, got {value!r}" } },
     Setting { name: "restart", described: Described::Choice { choices: &[Plain::Text("every_clip"), Plain::Text("on_new_scene"), Plain::Text("whole_song")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];
 
 pub static GUITARIFY_PLUGIN: &[Setting] = &[
@@ -336,14 +331,12 @@ pub static GUITARIFY_PLUGIN: &[Setting] = &[
     Setting { name: "upstroke", described: Described::WholeNumber { lowest: Some(0), highest: Some(6), error: "{name} must be an integer from {lowest} to {highest}, got {value!r}" } },
     Setting { name: "approach", described: Described::Choice { choices: &[Plain::Text("off"), Plain::Text("from_below"), Plain::Text("from_above")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
     Setting { name: "restart", described: Described::Choice { choices: &[Plain::Text("every_clip"), Plain::Text("on_new_scene"), Plain::Text("whole_song")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];
 
 pub static HOCKET_PLUGIN: &[Setting] = &[
     Setting { name: "enabled", described: Described::Flag { error: "enabled must be true or false, got {value!r}" } },
     Setting { name: "source", described: Described::Text { error: "{name} must be text, got {value!r}" } },
     Setting { name: "restart", described: Described::Choice { choices: &[Plain::Text("every_clip"), Plain::Text("on_new_scene"), Plain::Text("whole_song")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];
 
 pub static MUSICIAN_PLUGIN: &[Setting] = &[
@@ -359,7 +352,6 @@ pub static MUSICIAN_PLUGIN: &[Setting] = &[
     Setting { name: "notes", described: Described::Choice { choices: &[Plain::Text("as written"), Plain::Text("held"), Plain::Text("short")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
     Setting { name: "range", described: Described::Choice { choices: &[Plain::Text("low"), Plain::Text("as written"), Plain::Text("high")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
     Setting { name: "by_section", described: Described::Checked { check: Check::MusicianModelCheckMusicianBySection, arguments: &[], needs_song: false, nearest: None } },
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];
 
 pub static PHRASING_PLUGIN: &[Setting] = &[
@@ -368,7 +360,6 @@ pub static PHRASING_PLUGIN: &[Setting] = &[
     Setting { name: "breath", described: Described::Choice { choices: &[Plain::Text("none"), Plain::Text("quick"), Plain::Text("deep")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
     Setting { name: "rise_and_fall", described: Described::Choice { choices: &[Plain::Text("none"), Plain::Text("a little"), Plain::Text("a lot")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
     Setting { name: "notes", described: Described::Choice { choices: &[Plain::Text("choppy"), Plain::Text("as written"), Plain::Text("flowing")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];
 
 pub static SHAPES_PLUGIN: &[Setting] = &[
@@ -387,7 +378,6 @@ pub static SHAPES_PLUGIN: &[Setting] = &[
     Setting { name: "articulate_then", described: Described::Choice { choices: &[Plain::Text("hold"), Plain::Text("repeat"), Plain::Text("bounce")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
     Setting { name: "swell_accent", described: Described::WholeNumber { lowest: Some(0), highest: Some(50), error: "{name} must be an integer from {lowest} to {highest}, got {value!r}" } },
     Setting { name: "restart", described: Described::Choice { choices: &[Plain::Text("every_clip"), Plain::Text("on_new_scene"), Plain::Text("whole_song")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];
 
 pub static TIMING_PLUGIN: &[Setting] = &[
@@ -405,5 +395,4 @@ pub static TIMING_PLUGIN: &[Setting] = &[
     Setting { name: "glide_step", described: Described::Checked { check: Check::ChecksTimeLength, arguments: &[], needs_song: false, nearest: None } },
     Setting { name: "glide_amount", described: Described::Checked { check: Check::TimingModelCheckGlide, arguments: &[], needs_song: false, nearest: None } },
     Setting { name: "restart", described: Described::Choice { choices: &[Plain::Text("every_clip"), Plain::Text("on_new_scene"), Plain::Text("whole_song")], default: None, error: "{name} must be one of: {choices}, got {value!r}" } },
-    Setting { name: "bypass_when", described: Described::Checked { check: Check::ConditionsStatementsSettingCheck, arguments: &[Plain::Text("bypass_when")], needs_song: false, nearest: None } },
 ];

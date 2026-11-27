@@ -354,7 +354,7 @@ In the order of their priority, the highest first.
   changing the form (which clip, which scene next, how many repeats); weighting other than repeating a value; memory (a
   value coming back, a value avoided); coupling between draws; draws read once a bar or a section, where structure lives.
   Ideas, ranked by musical payoff and novelty (cost S days, M a week or two, L more; * the professor would build first, in
-  the order 1, 2, 8, 3, 4): *1. Action cards (M to L): a slot holds a verb, not a number: +3, Transpose +5, Invert, Double
+  the order 1, 2, 8, 4): *1. Action cards (M to L): a slot holds a verb, not a number: +3, Transpose +5, Invert, Double
   time, Half time, Mute a track, Fill, Thin, Octave up, Ratchet 3, Hold. A step's new row, Play Card AD, beside Reset,
   carries out the drawn card; the card's scope (a step, a pass, a scene) is part of the card. A bass riff with Play Card AD
   on step 1 and a serial deck of plain, plain, octave up, half time, invert, plain comes back changed each bar, every change
@@ -364,19 +364,12 @@ In the order of their priority, the highest first.
   deals without replacing; when the strip is empty the deck stops (the parts that read it go quiet) or waits for a
   reshuffle, by a scene setting Reshuffle AD beside Reset Draws or a Reshuffle card in the deck; the Draws page dims used
   slots so the pile shrinks as you watch. A lead deck of eight phrase variations runs out and the lead drops until the
-  chorus reshuffles it: the song breathes with the deck. Builds on Reset Draws, Mute When, Serial. *3. Oracle draws (M): a
-  draw marked Oracle is drawn once as a scene starts, its card a constraint for the whole scene: only degrees 1, 3 and 5; no
-  note longer than a step; the drums leave every downbeat empty; everything an octave down; half the tracks rest; every gate
-  legato; velocity flattened to one level. Users write cards (a name and up to four settings it overrides); a small starter
-  deck in an original spirit, short imperatives such as "Leave a hole", "Lean on the fourth", "Everyone whispers", "One
-  voice too many". The header may show the card's name ("Leave a hole"). The same scenes give a different arrangement on
-  each export or performance, each section consistent in itself. A scene's Oracle field and a card editor; builds on
-  scene-level Bypass statements and Reset Draws. *4. Readings with changing lines (M to L): in the spirit of hexagrams, not
+  chorus reshuffles it: the song breathes with the deck. Builds on Reset Draws, Mute When, Serial. *4. Readings with changing lines (M to L): in the spirit of hexagrams, not
   literally: N lines drawn at once (say six), each a two-way choice, each wired to a part of the arrangement (bass plays or
   rests, straight or swung, high register or low, dense or sparse, major or the relative mode, the lead plays or rests);
   each line may be changing, flipping at the next scene or after N bars, so the reading moves into its second reading and
   the music follows: verse one low, swung, without the lead, two lines changing, verse two climbs and the lead comes in. One
-  kind of draw, a Readings tab on the Scene page wiring each line to a Bypass target or a setting, and a header glyph of six
+  kind of draw, a Readings tab on the Scene page wiring each line to a setting, and a header glyph of six
   short bars. The most original, the most llamatron-like. Builds on Conditional Execution and the scene's reset. *5. Meta
   cards (M after 1): cards acting on decks: Reverse BD, Shuffle BD, BD goes random, Swap AD and BD, Remove this card, Add a
   copy of this card, Rotate CD by 1, Freeze BD for a pass. One conductor deck read once a bar shapes the decks the players
@@ -403,7 +396,7 @@ In the order of their priority, the highest first.
   time (L): the player is dealt 3 to 5 action cards on screen and presses 1 to 5 to play one at the next bar, a new card
   drawn to refill: a performance as a card game of limited means, the drums dropped only when that card is held. Care with
   undo and saving; the cards played could be logged. 14. Wager cards (M): a card stakes something on a later draw ("if the
-  next CD is even, the chorus doubles, else it is skipped"); Bypass statements with a deferred test. 15. A tension pool (M):
+  next CD is even, the chorus doubles, else it is skipped"), a statement with a deferred test. 15. A tension pool (M):
   each dealt card adds or removes points from a song-wide pool; past a threshold the next scene gets a forced release card
   (a drop, a breakdown, a key change); form from building tension; a counter statements can test (TENSION > 10). 16. Spreads
   (M, after 3 and 4): positions dealt once a song (past, present, future, or intro, turn, ending), each wired to a section;
@@ -415,7 +408,7 @@ In the order of their priority, the highest first.
   sound, and weaknesses 1 and 2 are real usability problems worth fixing whatever else is chosen. Walk and Deal are cheap
   and make "accumulator" and "deck" true. Action cards are the big decision: they turn draws from numbers into a way of
   changing the arrangement, where the user's meta decks and the tarot and I Ching spirit need to go, but what a card may do
-  and over what span needs careful design, so that an export stays repeatable and cards do not duplicate Bypass When.
+  and over what span needs careful design, so that an export stays repeatable.
   Readings are the most original and closest to the I Ching spirit. Suits partly overlap the simpler private draw per track.
   Open questions: 54, record these as one entry or a group (decks with action cards, Deal and meta cards; Walk; oracle
   draws; readings; dealing to the band; fate and wear; decks that read; games with decks), Claude recommending a group; 55,

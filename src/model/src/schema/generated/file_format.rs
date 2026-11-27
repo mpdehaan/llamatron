@@ -239,7 +239,6 @@ impl SceneSetting {
     pub const ARTICULATE_END: &'static str = "articulate_end";
     pub const ARTICULATE_OVER: &'static str = "articulate_over";
     pub const ARTICULATE_THEN: &'static str = "articulate_then";
-    pub const BYPASS_WHEN: &'static str = "bypass_when";
     pub const TRACKS: &'static str = "tracks";
 }
 
@@ -348,12 +347,10 @@ pub static ARITHMETIC_OPERATORS: &[&str] = &["+", "-", "%", "*", "/"];
 pub static DIVIDING_OPERATORS: &[&str] = &["%", "/"];
 pub static OPERATORS: &[&str] = &["<", "<=", "=", ">=", ">", "odd", "even", "!=", "+", "-", "%", "*", "/"];
 pub static RESULT_COMPARISONS: &[&str] = &["<=", "<", "=", ">", ">=", "!="];
-pub const BYPASS_WHEN: &str = "bypass_when";
 pub struct ChainSetting;
 
 impl ChainSetting {
     pub const STEPS: &'static str = "steps";
-    pub const BYPASS_WHEN: &'static str = "bypass_when";
 }
 
 pub struct Direction;

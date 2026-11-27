@@ -2,8 +2,8 @@
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! A scene's page (the Python screens/arrange/scene_page.py and pages/scene.py): its name, then its settings in tabs:
-//! what it plays, its velocity, its tempo ramps, its shapes, the draws it resets, its other generators and its Bypass
-//! When; under them, how long it plays.
+//! what it plays, its velocity, its tempo ramps, its shapes, the draws it resets and its other generators; under them,
+//! how long it plays.
 
 use crate::app::App;
 use crate::drawing::Style;
@@ -74,21 +74,6 @@ impl ScenePage {
     /// Store what a key did to one of the scene's fields; false where the field writes nothing so.
     fn write_edit(&self, app: &mut App, id: usize, edit: &Edit) -> bool {
         let Some(scene) = self.scene(app) else { return false };
-        if id >= arrange_tabs::BYPASS_IDS {
-            use crate::forms::statements::{statement_change, with_statement, StatementChange};
-            let statements = scene
-                .get_written(SceneSetting::BYPASS_WHEN)
-                .and_then(Data::as_list)
-                .map(<[Data]>::to_vec)
-                .unwrap_or_default();
-            match statement_change(&statements, arrange_tabs::BYPASS_IDS, id, edit) {
-                StatementChange::Ask(asked) => app.asking = Some(asked),
-                StatementChange::Refuse(refusal) => app.refuse(refusal),
-                StatementChange::Store { place, statement } => self.write(app, SceneSetting::BYPASS_WHEN, with_statement(&statements, place, statement)),
-                StatementChange::Nothing => return false,
-            }
-            return true;
-        }
         match (id, edit) {
             (SECTION, Edit::Choice(chosen)) => self.write(app, SceneSetting::SECTION, (chosen != marks::MSG_NONE_SHOWN).then(|| Data::text(chosen))),
             (REPEAT, Edit::Number(repeat)) => self.write(app, SceneSetting::REPEAT, (*repeat != 1).then_some(Data::Whole(*repeat as i128))),
@@ -346,7 +331,6 @@ impl Form for ScenePage {
             arrange_tabs::shapes_tab(app, &data),
             arrange_tabs::reset_draws_tab(app.document.song(), scene.get_written(SceneSetting::RESET_DRAWS)),
             arrange_tabs::generators_tab(app, scene.get_written(SceneSetting::CHAINS)),
-            arrange_tabs::bypass_tab(scene.get_written(SceneSetting::BYPASS_WHEN)),
         ];
         let name = scene.get_name().unwrap_or_default();
         vec![
@@ -369,12 +353,11 @@ impl Form for ScenePage {
 
     fn apply(&mut self, app: &mut App, id: usize, edit: Edit) {
         // ENTER opens a picker only on the fields whose choices the page asks for itself; elsewhere it opens a page.
-        let picks = matches!(id, SCALE | GROOVE) || id >= arrange_tabs::BYPASS_IDS;
+        let picks = matches!(id, SCALE | GROOVE);
         if (edit != Edit::Enter || picks) && self.write_edit(app, id, &edit) {
             return;
         }
         if edit == Edit::Enter && id == arrange_tabs::GENERATORS {
-            // The list of a scene's generators is not ported yet.
             app.show_page(Box::new(crate::screens::list_page::ListPage::new(
                 crate::screens::generators::generator_list_page::GeneratorListPage {
                     holder: crate::screens::generators::generator_list_page::Holder::Scene(self.index),

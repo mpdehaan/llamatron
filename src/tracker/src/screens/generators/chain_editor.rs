@@ -9,10 +9,8 @@ use crate::drawing::Align;
 use crate::keybindings::{ChainEditor as Keys, KeyClass};
 use crate::keys::KeyItem;
 use crate::screens::dialogs::{Answer, ChoiceDialog};
-use crate::screens::field_page::FieldPage;
 use crate::screens::generators::generators_page::label_of;
 use crate::screens::generators::generators_page::{editor_of, listed_kinds, new_generator, GeneratorChosen};
-use crate::screens::generators::statements_page::{GeneratorStatementsPage, Holder};
 use crate::screens::list_page::{ListColumn, Listing, Row};
 use crate::settings::named_in;
 use crate::themes::{self, Colour};
@@ -191,7 +189,7 @@ impl Listing for ChainEditor {
     }
 
     fn always_keys(&self, _app: &App) -> Vec<KeyItem> {
-        vec![Self::bind(&Keys::RENAME), Self::bind(&Keys::WHEN)]
+        vec![Self::bind(&Keys::RENAME)]
     }
 
     fn can_add(&self) -> bool {
@@ -243,11 +241,6 @@ impl Listing for ChainEditor {
             self.change_chain(app, |chain| chain.remove_step(place));
         } else if item.is(&Keys::RENAME) {
             crate::screens::rename::ask_rename(app, Section::CHAINS, &self.name, messages::MSG_RENAME_CHAIN_PROMPT);
-        } else if item.is(&Keys::WHEN) {
-            let page = GeneratorStatementsPage {
-                holder: Holder::Chain(self.name.clone()),
-            };
-            app.show_page(Box::new(FieldPage::new(page)));
         }
         None
     }

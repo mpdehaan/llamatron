@@ -78,8 +78,7 @@ probability or a condition silences still moves the draw on.
 
 ## Draws in Conditions
 
-Stop When, Restart When and Mute When on a step, and the Bypass When tables,
-name a draw as what is tested, as the number it is compared with, or as what a
+Stop When, Restart When and Mute When on a step name a draw as what is tested, as the number it is compared with, or as what a
 sum is compared with. A draw is drawn at most once for each pattern step,
 before anything on that step is tested, so the conditions and the Note+= and
 Vel+= rows of one step all see the one value drawn. A step draws when its
@@ -87,33 +86,16 @@ Note+= or Vel+= rows use the draw, or when one of its conditions names a draw
 whose Conditions redraw is on; a condition on a step that draws nothing looks
 at the value the draw last gave.
 
-The Bypass When tables are tested as a clip's pattern starts a pass, and they
-belong to the pass's first step: a draw they name whose Conditions redraw is
-on is drawn there, once, with that step's own draws, and the whole pass starts
-from that value.
-
 So a hi-hat with Vel+=CD and Mute When CD = 0 drops out whenever its own hit
 draws a 0, and a bell with Mute When BD < 2, where BD redraws, plays the
 rhythm its own draws make.
 
-## Bypass When
+## Statements About the Draws
 
-Bypass When lets the draws decide what plays. A table of up to 4 statements
-about the draws is read each time a clip's pattern starts over, and when any
-one statement is true, the notes of that pass go by generators untouched. The
-table is in four places:
+Stop When, Restart When and Mute When each hold one statement about the draws
+on a step, and the step acts when the statement is true.
 
-| Where | What a true statement leaves out |
-| --- | --- |
-| A generator's page | That generator, wherever a chain names it. |
-| `Bypass When (n)` at the foot of a built-in generator's tab on a clip's or a track's page | That built-in generator. |
-| A chain's statements, `W` in the chain editor | The whole chain. |
-| The Scene page | Every chain each of the scene's clips runs. |
-
-So a guitar can stop strumming after its pattern has played 4 times, or an
-arpeggio can rest in every other bar.
-
-Each line of a table is one statement, read from left to right:
+Each statement is read from left to right:
 
 | Statement | True when |
 | --- | --- |
@@ -127,11 +109,6 @@ The sums are in whole numbers: a division rounds down, and a remainder is
 counted from 0 upward. A typed 0 is refused after `/` and `%`, and when a draw
 that divides holds 0 the statement counts as true.
 
-The lines are drawn as a grid of five columns, one a part, each as wide as its
-widest value, so the table keeps its size as a line fills. Left and Right move
-between the parts of a line and `ENTER` changes the part under the cursor: the
-draw, the operator, and then a number or a draw. `Bksp` sets the line back to
-`ignored`.
 
 A step of a pattern can hold a statement of its own, which is read as the step
 is reached and stops the clip, starts the pattern over or mutes the step: see

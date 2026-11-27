@@ -121,13 +121,6 @@ a scene's first chord near the last chord before, and an arpeggiator goes on
 with its random choices. A generator painted on several tracks gives each
 track a copy of its own, so that tracks line up when their patterns do.
 
-## Bypass When
-
-Every generator's page ends with a section called Bypass When, a table of
-statements about the draws. When one is true as a clip's pattern starts over,
-the notes of that pass go by the generator untouched, in every chain that
-names the generator. See [Bypass When](DRAWS.md#bypass-when).
-
 ## Rows of Steps
 
 A [Timing](generators/TIMING.md) generator's Rush, Drag, Shorten and Glide are
