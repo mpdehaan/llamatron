@@ -46,7 +46,7 @@ read-only beside its frozen answers (`py_legacy/frozen_test_data/`) until the tr
 Imported, loaded every session: `.claude/COMPLIANCE.md` (licences, credits, names and git history),
 `.claude/rules/COMMUNICATION.md` (working with the user), `.claude/rules/STYLE.md` (code rules),
 `.claude/rules/TESTING.md` (tests), `.claude/rules/PRINCIPLES.md` (what decides a close call), `.claude/rules/UX.md` (how the text UI behaves),
-`.claude/rules/RUST.md` (the Rust code).
+`.claude/rules/RUST.md` (the Rust code), `.claude/rules/SYNTHS.md` (how the built-in synths sound).
 
 `.claude/` holds `rules/` (the rules, imported above, and `DOCS.md`), `reference/` (what tools generate or index),
 `planning/` (the queue and the git-ignored designs), `notes/` (Claude's research), and `features/`, `format/` and
@@ -128,6 +128,10 @@ written with each bump. A layout change that would break an older file MUST come
 ## The Rust code
 
 @.claude/rules/RUST.md
+
+## How the built-in synths sound
+
+@.claude/rules/SYNTHS.md
 
 ## The references, read when needed
 
