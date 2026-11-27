@@ -325,5 +325,7 @@ In the order of their priority, the highest first.
   instruments are rendered by the callback itself so that nothing drops out, and each worker ends with its owner.
 - **The Mod Matrix names each destination by its block**: every block of an instrument offers what can be moved in it,
   and the Destination picker names each by its block and setting, such as `Oscillator / Pitch`, `Filter / Cutoff`,
-  `LFO 1 / Rate` and `FX 1 / Mix`, grouped by block in the blocks' order.
+  `LFO 1 / Rate` and `FX 1 / Mix`, grouped by block in the blocks' order. Each component declares what it offers the
+  Mod Matrix in one standard form in its registry entry (each setting a route may move, with its label, range and
+  reach), so that more of a component is made movable by adding to its entry.
 
