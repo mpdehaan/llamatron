@@ -31,9 +31,8 @@ built.
 
 ## The Code
 
-- **The screens comparison in Rust**, inside llamatron-compare, timed before and after (179 A), holding the key tour's
-  screens to llamatron's own earlier screens rather than the Python's, the song wizard's alone still held to the frozen
-  ones until its port is done.
+- **The song wizard's screens comparison in Rust**, inside llamatron-compare, timed before and after, holding the wizard's
+  screens to the Python's frozen ones until its port is done, the one whole-screen comparison left.
 - **The Rust's shape**, discussions: ratatui for the UI (a crate needs the user's yes); directory depth and smaller files, the
   UI's implementation split from its presentation; testing (cargo-nextest, snapshots, properties, fakes behind traits, no
   allocation on the audio thread, benchmarks, cargo-deny); style (newtypes for units, enums over strings, invalid states
@@ -59,13 +58,26 @@ built.
 
 ## The Documents and the Tools
 
+- **Page tests that read the page**: one screen reader in a shared test-support module, which draws the tracker's screen
+  at 80x24 and answers as a person reading it (the cursor's line, where a label is drawn, the value beside it, the legend,
+  the status line, a dialog's title and choices, the tabs, Arrange's headings and boxed cell), with verbs that act as a
+  person does (go to a label by the arrows, open a tab, choose a listed choice, press a key through the tracker); every
+  page test converted onto it, none calling a page's `press` or setting its fields; the screen tour's whole-screen
+  comparison and its baselines removed, its crash sweep and the key map's walk kept, the song wizard alone still held to
+  the Python's frozen screens; the renders' and exports' answers committed in git and changed with
+  `--record-approved-export-change`, every example changed since the freeze given llamatron's own (`.claude/rules/TESTING.md`).
+  With it, the tests the review found thin: the engine's, the exporters' and the importers' behaviour tested at their own
+  layer, the command line's tests through constants and a working folder of their own, and `synth_controls` made faster.
 - **The development tools in a crate of their own**: `src/compare/` becomes `src/internal_tools/`, the one crate of
   every tool not for users, building its own program, never the shipped `llamatron`: the comparisons, the screenshots,
   the key map's walk, with the screen tour (`tour.rs`) and the screenshots' drawing (`svg.rs`) moved out of the tracker
-  into it as its modules. The scripts in `internal_tools/` build and run it under its new name.
+  into it as its modules. The scripts in `internal_tools/` build and run it under its new name. With it, the port's
+  leftovers go from the shipped program: `W` refuses with a status message until the wizard is back, no page shows a
+  Python class's name, and the stray Python folders in `src/` are deleted.
 - **The tracker's tables named for what they are**: `src/tracker/src/generated/` becomes `src/tracker/src/tables/`, the
   program's own tables of keys, generator pages, synth defaults and the new set, edited by hand, its documentation
-  saying so.
+  saying so; the false "generated" banners go, the key bindings are split by page group, each key a `Key::` constant
+  and each shown text a strings-crate constant, with a test that no class binds a key twice or shadows an everywhere key.
 - **No YAML in strings**: every set a test starts from held as a string becomes a data file in its crate's
   `tests/data/`, named for what it holds; the synth control trials become data structures; the new-set template is
   built in code from the model's types, the tools sharing the one function (`.claude/rules/STYLE.md`).
@@ -75,6 +87,23 @@ built.
 - **At the video tutorial**: Changes to the documents for people proposed first as an exact before and after (1206), and
   DOCS.md's "Who edits them" updated.
 - **Skills**: Whether the reply format or the macros should become skills or slash commands.
+
+- **One source for each rule of the code**: one stepping helper for moving through a list, safe on an empty one; the
+  constants redeclared locally imported from the schema or the strings crate; whether a track is heard worked out once,
+  `Song::is_heard`, real-time playback minding solo as the render does; the lists of sections and settings built from
+  the schema rather than kept by hand.
+- **Undo recorded only when the set changed**: a cursor move copies nothing, a failed undo says so, timed before and
+  after.
+- **Checked writes and a lock-free sender**: `set_written` checks a value against its object's settings, at least in
+  the tests; a misnamed `{placeholder}` fails a test; the sender thread takes no lock the daemon holds while drum hits
+  render.
+- **Dead code and comments**: unused text and schema constants removed, the wizard's kept until its port; modules
+  `pub(crate)` and the file-wide `allow(dead_code)` dropped, and every function given its comment, crate by crate with
+  the lints turned on as each is clean (`.claude/rules/RUST.md`).
+- **The command line's `--force`**: exporting a file with values out of range refused unless `--force` is given, as the
+  documents describe.
+- **Settings pages by field**: each settings page's fields an enumeration rather than numbered ids, and the instrument
+  editor split into a module a tab; functions over a hundred lines divided where a reader would name the parts.
 
 ## More Ideas
 

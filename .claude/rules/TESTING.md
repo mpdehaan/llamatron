@@ -22,14 +22,14 @@ internal_tools/check_before_commit.sh                              # before comm
   160x50, and compare what llamatron makes with what the Python made of the same file before it retired
   (`py_legacy/frozen_test_data/`). A few `llamatron-compare` processes, one per core, answer set after set on their pipes; no set
   starts a program of its own. A set changed since the answers were frozen has none to be held to, and is counted apart.
-- The key tour's screens are held to llamatron's own earlier screens, never to the retired Python's (the user's rule). The
-  song wizard alone is held to the Python's frozen screens, until its port is done; no other part of the frozen screens is
-  consulted.
-- Every baseline the checks hold llamatron to is committed, and changes only through `--record-approved-screen-change` or
-  `--record-approved-export-change`, run in the commit that makes the change the user asked for; no baseline is kept on
-  one computer or rewritten by a plain run. What stands today is approved; a change the user asks for is made and recorded
-  rather than held back by the old answers, and a difference no request explains is fixed or named in the recap (the
-  user's rule). A set changed since the freeze gets llamatron's own committed answer in the same change.
+- The screens are held by page tests that read the page as a person does (How tests are written, below), never by whole-
+  screen baselines (the user's rule). The key tour keeps its crash sweep, every key on every page and no panic, and the key
+  map's walk; the song wizard alone is held to the Python's frozen screens, until its port is done.
+- The renders and exports (render, timeline, player, MIDI, Live and the other steps) are held to answers committed in git,
+  which change only through `--record-approved-export-change`, run in the commit that makes the change the user asked for;
+  never kept on one computer or rewritten by a plain run. What stands today is approved; a change the user asks for is made
+  and recorded rather than held back by the old answers, and a difference no request explains is fixed or named in the
+  recap (the user's rule). A set changed since the freeze gets llamatron's own committed answers in the same change.
 - No commit of code, examples or tools goes in without the check passing. Documents and `.claude/` files are committed without
   a run, apart from code mid-change; a document naming paths runs `python/tests/test_doc_paths.py` first.
 - Before and after a change that should leave the music alone, every export is compared byte for byte, the version line aside.
@@ -52,11 +52,15 @@ internal_tools/check_before_commit.sh                              # before comm
 
 - Tests follow every rule of `.claude/rules/STYLE.md`; values a test names are named (`let seed = 7;`), and limits come from the
   program's constants.
-- **A UI test reaches its place by what is under the cursor**, never by a count of presses: it moves until the page says the
-  cursor is on the row, field, cell or column named (the user's rule). The same holds for the screenshots and the tour.
+- **A UI test reads the page, as a Selenium test does** (the user's rule): it draws the screen as a person sees it and
+  decides everything from what is drawn. It finds a field, a tab, a heading, a cell or a choice by its drawn label; moves the
+  cursor with the arrows until the drawn `▶` or box is on it, never by a count of presses and never by setting a page's
+  fields; presses keys through the tracker, as typed, so that the everywhere keys and dialogs act as for a person; and checks
+  what the page then shows: the value beside a label, the legend's keys, the status line, a dialog's title and choices.
+  One shared screen reader in the test support does the reading, and a test starts from a scenario helper there. The same
+  holds for the screenshots.
 - Keys are pressed by binding, never as letters; text the program shows is checked through its constant.
-- A test asserts on a named part (the set's data, the status line, a field's shown value), never on a whole screen; whole
-  screens are the screen baseline's.
+- A test asserts on a named part (the set's data, the status line, a field's shown value), never on a whole screen.
 - Keep the suite small: test a behaviour once, at the layer a person meets it. Nothing the compiler guarantees is tested.
 - Tests use the program's contract, its public types, functions and the document's methods, never a type's private parts.
 - A test starts from a named scenario, a set or a document made by a shared helper and named for what it holds, so that
