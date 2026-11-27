@@ -8,6 +8,10 @@ built is in `SONG_WIZARD.md`. An idea leaves this file once built.
 
 - **The wizard in Rust** (WIZARD_DESIGNS.md, "Finishing the song wizard in Rust"): the one freezing run of the Python wizard,
   the music_theory and wizard crates held to the sweep, the page, the musical checks, then S48 to S53.
+- **Electronic genres on the built-in synths**: in the Rust wizard, for the electronic genres alone, the band's
+  instruments are made on the built-in synths by default, each part given a well-chosen engine of the existing ones
+  (a new behaviour of the port, not the Python's); FluidSynth's General MIDI sounds only where FluidSynth is installed
+  and the person opts in. Every other genre keeps its instruments as before.
 - **Speed**: Moving between panels lags; every panel and field visited, changed and timed, the cause found, timings before
   and after.
 - **Listen turns to Stop** while its sound plays, at the same width.

@@ -3,12 +3,6 @@
 Wanted changes to how the tracker looks and is used: what each is, never its status or order (those are in
 `.claude/planning/QUEUE.md`). An idea leaves this file once built, and a rule it makes goes into `.claude/rules/UX.md`.
 
-- **A new track's own instrument**: every track made on Arrange gets an instrument of its own named after it, `bass`,
-  then `bass-2` if taken, a copied track a copy of its instrument; its kind by the track's and its engine by Track Inst.
-  Default: FluidSynth, General MIDI 1 Acoustic Grand Piano for a melodic track and the drum channel, 10, for a drum
-  track; BuiltIn, Basic or MechaDrum on Kick; External MIDI, the first device found on channel 1. Where FluidSynth is
-  not installed or no device is connected, the instrument is made unconfigured. An instrument stays when its track is
-  deleted.
 - **The open circle**: Everywhere a toggle is shown, an unset one shows `○` where today it is blank, a set one `●`, on every
   page, the pattern editor's toggle rows and the tabs' marks included; built with the tab box.
 - **A line at the foot of every major editor** saying what the tab or section under the cursor does.

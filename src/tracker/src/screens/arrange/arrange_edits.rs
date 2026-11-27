@@ -117,7 +117,21 @@ impl ArrangePage {
         }
     }
 
-    /// Insert a track of the cursor's track's kind after it, or a group's first track from its +, and move onto its name.
+    /// The instrument a new track of a kind gets of its own, by the config file's Track Inst. Default: the first MIDI device
+    /// found is looked for only where it plays through one.
+    fn new_track_instrument(app: &App, drum: bool) -> Data {
+        use crate::preferences::TrackInstrumentDefault;
+        let default = app.preferences.track_instrument_default(app.fluidsynth_installed);
+        let first_device = if default == TrackInstrumentDefault::ExternalMidi {
+            crate::realtime::backend::device_port_names().into_iter().next()
+        } else {
+            None
+        };
+        crate::track_instrument::new_track_instrument(default, drum, app.fluidsynth_installed, first_device.as_deref())
+    }
+
+    /// Insert a track of the cursor's track's kind after it, or a group's first track from its +, with an instrument of its
+    /// own, and move onto its name.
     fn insert_track(&mut self, app: &mut App) {
         let (drum, place) = match (self.plus_here(app), self.cursor_track(app)) {
             (Some(drum), _) => (drum, None),
@@ -128,11 +142,15 @@ impl ArrangePage {
             (None, None) => return,
         };
         let name = Self::new_track_name(app);
-        if Self::edited(app, |document| document.add_track(&name, place, drum)) {
-            self.row.set(HEADER_ROW);
-            if let Some(column) = Self::place_of(app, &name) {
-                self.column.set(column + FIRST_TRACK_COLUMN);
-            }
+        let instrument = Self::new_track_instrument(app, drum);
+        let added = app.document.add_track_with_instrument(&name, place, drum, instrument);
+        if let Err(problem) = added {
+            app.refuse(&problem);
+            return;
+        }
+        self.row.set(HEADER_ROW);
+        if let Some(column) = Self::place_of(app, &name) {
+            self.column.set(column + FIRST_TRACK_COLUMN);
         }
     }
 
@@ -200,6 +218,10 @@ impl ArrangePage {
                     Ok(copy) => copy,
                     Err(problem) => return app.refuse(&problem),
                 };
+                // The copy plays a copy of the instrument, so that the two can be changed apart.
+                if let Err(problem) = app.document.give_track_own_instrument(&copy) {
+                    return app.refuse(&problem);
+                }
                 if own {
                     let clips: Vec<(usize, String)> = app
                         .document

@@ -36,6 +36,7 @@ pub mod terminal;
 pub mod text;
 pub mod themes;
 pub mod tour;
+pub mod track_instrument;
 pub mod uses;
 pub mod version;
 pub mod visualizers;

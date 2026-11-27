@@ -28,6 +28,10 @@ Each made with its engine; no artist named in a title or name, a homage's inspir
   the tempo through a ramp, a Smooth random drift), Snail, Chaos, Tide, Turing, Bounce and Swarm (SYNTH_IDEAS.md,
   "Demos of the new modulators").
 - A set whose tracks play through FluidSynth and the built-in instruments together, its WAV export tested.
+- **The electronic demos on the built-in synths**: once more synth and drum engines are built, edm_density.yml (Density)
+  plays through the built-in synths and drum engines in place of its General MIDI sounds, its arrangement, patterns and
+  clips kept and only its instruments changed; then the other electronic demos in `examples/by_genre/electronic/` are
+  looked at again the same way, each change of a demo confirmed with the user first.
 
 ## Other Demos
 

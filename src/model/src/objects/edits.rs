@@ -424,9 +424,9 @@ pub fn removed_scene(set: &Data, song: &str, index: usize) -> Data {
     set
 }
 
-/// A set's data with a new track of no clips added to a song, a drum track or a melodic one, at a place among its tracks
-/// in the file's order or at the end.
-pub fn added_track(set: &Data, song: &str, name: &str, place: Option<usize>, drum: bool) -> Data {
+/// A set's data with a new track of no clips added to a song, a drum track or a melodic one, playing an instrument where
+/// one is named, at a place among its tracks in the file's order or at the end.
+pub fn added_track(set: &Data, song: &str, name: &str, place: Option<usize>, drum: bool, instrument: Option<&str>) -> Data {
     let mut set = set.clone();
     let Some(held) = song_mut(&mut set, song) else { return set };
     if held.get(TRACKS).is_none() {
@@ -434,11 +434,14 @@ pub fn added_track(set: &Data, song: &str, name: &str, place: Option<usize>, dru
     }
     if let Some(Data::Map(tracks)) = entry_mut(held, TRACKS) {
         let at = place.unwrap_or(tracks.len()).min(tracks.len());
-        let settings = if drum {
+        let mut settings = if drum {
             vec![(Data::text(TrackSetting::DRUM), Data::Bool(true))]
         } else {
             Vec::new()
         };
+        if let Some(instrument) = instrument {
+            settings.push((Data::text(TrackSetting::INSTRUMENT), Data::text(instrument)));
+        }
         tracks.insert(at, (Data::text(name), Data::Map(settings)));
     }
     set

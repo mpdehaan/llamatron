@@ -23,7 +23,11 @@ scene under the cursor, or a track of the cursor's track's kind after it, so
 the grid draws no `+` row or column of its own and leaves the room to the
 clips. A group with no tracks yet, such as a new song's drums, shows a `+`
 in its column's heading, where `I` makes its first track; once it has one
-the `+` goes. A track is a melodic track or a drum track from when it is
+the `+` goes. Each new track comes with an instrument of its own, named after
+it, which plays through what the File/Global page's Track Inst. Default
+chooses: FluidSynth's grand piano or its drums, one of the built-in synths,
+or the first MIDI device found; a copied track gets a copy of its
+instrument, so that the two can be changed apart. A track is a melodic track or a drum track from when it is
 made, and never changes, so a clip on a drum track only ever plays a drum
 pattern: choosing a pattern for an empty cell offers only patterns of its
 track's kind, and a new pattern made there is already the right kind.

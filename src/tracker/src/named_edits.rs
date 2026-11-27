@@ -134,7 +134,49 @@ impl Document {
     /// Add a track of no clips to the current song, before the track at a place or after the last.
     pub fn add_track(&mut self, name: &str, place: Option<usize>, drum: bool) -> Result<(), String> {
         let song = self.get_current_song_name().to_string();
-        self.edit_data(|data| edits::added_track(data, &song, name, place, drum))
+        self.edit_data(|data| edits::added_track(data, &song, name, place, drum, None))
+    }
+
+    /// Add a track with an instrument of its own, named after it or counted up from its name where that is taken, as one
+    /// step to undo; the set's first instrument turns real-time playback on, as the Instruments page's does. Hands back
+    /// the instrument's name.
+    pub fn add_track_with_instrument(&mut self, name: &str, place: Option<usize>, drum: bool, instrument: Data) -> Result<String, String> {
+        let song = self.get_current_song_name().to_string();
+        let taken = self.names_of(INSTRUMENTS);
+        let first = taken.is_empty();
+        let instrument_name = llamatron_model::objects::naming::unique_name(name, &taken);
+        self.edit_data(|data| {
+            let with_track = edits::added_track(data, &song, name, place, drum, Some(&instrument_name));
+            let mut changed = with_item(&with_track, INSTRUMENTS, &instrument_name, instrument);
+            if first {
+                changed.set(REAL_TIME, Data::Bool(true));
+            }
+            changed
+        })?;
+        Ok(instrument_name)
+    }
+
+    /// Give a track a copy of its instrument, named after the track or counted up, as one step to undo; nothing for a
+    /// track with no instrument.
+    pub fn give_track_own_instrument(&mut self, track: &str) -> Result<(), String> {
+        use llamatron_model::objects::setlist::Item;
+        use llamatron_model::schema::generated::file_format::TrackSetting;
+        let Some(instrument) = self.song().get_track(track).and_then(|held| held.get_instrument_name()) else {
+            return Ok(());
+        };
+        let Some(Item::Instrument(held)) = self.get_setlist().get_item(INSTRUMENTS, &instrument).cloned() else {
+            return Ok(());
+        };
+        let copy = llamatron_model::objects::naming::unique_name(track, &self.names_of(INSTRUMENTS));
+        let song = self.get_current_song_name().to_string();
+        let track = track.to_string();
+        self.change_set(|setlist| {
+            setlist.add_item(INSTRUMENTS, &copy, Item::Instrument(held));
+            if let Some(Item::Song(song)) = setlist.get_item_mut(SONGS, &song) {
+                song.set_track_written(&track, TrackSetting::INSTRUMENT, Some(Data::text(&copy)));
+            }
+        });
+        Ok(())
     }
 
     /// Put a clip, as its data, on a track in a scene of the current song, in place of any there.

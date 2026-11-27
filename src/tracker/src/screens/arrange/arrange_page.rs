@@ -1722,6 +1722,86 @@ mod tests {
         assert_eq!(app.document.song().scenes()[2].get_name().as_deref(), Some("chorus"));
     }
 
+    /// The instrument a track plays, as data, by its track's name.
+    fn instrument_of(app: &App, track: &str) -> (String, Data) {
+        use llamatron_model::objects::setlist::Item;
+        let name = app
+            .document
+            .song()
+            .get_track(track)
+            .and_then(|held| held.get_instrument_name())
+            .expect("an instrument");
+        let instrument = match app
+            .document
+            .get_setlist()
+            .get_item(llamatron_model::schema::generated::file_format::Section::INSTRUMENTS, &name)
+        {
+            Some(Item::Instrument(held)) => held.to_data(),
+            _ => panic!("the instrument {name}"),
+        };
+        (name, instrument)
+    }
+
+    /// I makes each new track an instrument of its own, named after it, by Track Inst. Default: with the built-in synths,
+    /// a melodic track plays Basic and a drum track MechaDrum; a name taken by an instrument counts up; and the set's first
+    /// instrument turns real-time playback on.
+    #[test]
+    fn a_new_track_gets_an_instrument_of_its_own_named_after_it() {
+        use llamatron_model::schema::generated::file_format::InstrumentSetting;
+        let (mut app, mut page) = arranged();
+        at(&app, &page, "verse", "bass");
+        page.row.set(HEADER_ROW);
+        press(&mut app, &mut page, &Keys::INSERT_TRACK);
+        let melodic = page.cursor_track(&app).expect("the new track");
+        let (name, instrument) = instrument_of(&app, &melodic);
+        assert_eq!(name, melodic);
+        assert_eq!(instrument.get(InstrumentSetting::ROLE), Some(&Data::text("normal")));
+        assert_eq!(
+            instrument.get(InstrumentSetting::SOUND).and_then(|sound| sound.get("engine")),
+            Some(&Data::text("basic"))
+        );
+        assert!(ArrangePage::real_time_on(&app));
+        page.column.set(FIRST_TRACK_COLUMN);
+        right_until(&mut app, &mut page, "drum track plus");
+        press(&mut app, &mut page, &Keys::INSERT_TRACK);
+        let drum = page.cursor_track(&app).expect("the drum track");
+        let (_, instrument) = instrument_of(&app, &drum);
+        assert_eq!(instrument.get(InstrumentSetting::ROLE), Some(&Data::text("percussion")));
+        // When the next track's name is an instrument's already, its instrument counts up from the name.
+        let taken = ArrangePage::tracks(&app);
+        let next = llamatron_model::objects::naming::new_name(llamatron_strings::names::MSG_NEW_TRACK_WORD, &taken);
+        let instruments = llamatron_model::schema::generated::file_format::Section::INSTRUMENTS;
+        let (held, _) = instrument_of(&app, &drum);
+        app.document.rename_named(instruments, &held, &next).expect("the rename");
+        at(&app, &page, "verse", "bass");
+        page.row.set(HEADER_ROW);
+        press(&mut app, &mut page, &Keys::INSERT_TRACK);
+        let third = page.cursor_track(&app).expect("the third track");
+        assert_eq!(third, next);
+        let (counted, _) = instrument_of(&app, &third);
+        assert_eq!(counted, llamatron_model::objects::naming::copy_name(&next, std::slice::from_ref(&next)));
+    }
+
+    /// A copied track plays a copy of its instrument, named after the copy, so that the two can be changed apart.
+    #[test]
+    fn a_copied_track_plays_a_copy_of_its_instrument() {
+        let (mut app, mut page) = arranged();
+        at(&app, &page, "verse", "bass");
+        page.row.set(HEADER_ROW);
+        press(&mut app, &mut page, &Keys::INSERT_TRACK);
+        let original = page.cursor_track(&app).expect("the new track");
+        let copy = app
+            .document
+            .copy_named(llamatron_model::schema::generated::file_format::Section::TRACKS, &original)
+            .expect("the copy");
+        app.document.give_track_own_instrument(&copy).expect("its own instrument");
+        let (copied_name, copied) = instrument_of(&app, &copy);
+        let (original_name, held) = instrument_of(&app, &original);
+        assert_ne!(copied_name, original_name);
+        assert_eq!(copied_name, copy);
+        assert_eq!(copied, held);
+    }
+
     /// Deleting every melodic track leaves the melodic +, where I makes a melodic track again.
     #[test]
     fn a_group_emptied_keeps_its_plus() {
