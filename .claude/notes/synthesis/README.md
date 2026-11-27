@@ -33,3 +33,9 @@ reference of any kind.
   Walsh functions, digital cross-modulation, phase distortion and accumulator truncation, chaotic maps, cellular
   automata, Collatz sequences, dynamic stochastic and fractal synthesis, glitch techniques, circuit-bent toys as
   algorithms, the harsh-noise wall, and destroyer distortions with their safety and costs.
+- `WAVETABLES.md`: wavetable synthesis and the stacked saw: table sizes, band-limited mip levels and their spacing and
+  crossfades, per-block spectra, interpolation orders and their images, normalisation, phase alignment, crossfade and
+  spectral morphing, phase, spectral and amplitude warps, tables from harmonics, formulas, drawings, recordings and
+  long ensemble tables, integrated wavetables, building tables off the callback, tables as LFOs, drums, chip, organ
+  and waveshaper voices, the published measurements of a 1990s seven-saw oscillator, denser stacks, unison in open
+  synthesizers, detune distributions, phase at note-on, and the costs and loudness of a stack.
