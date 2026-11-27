@@ -270,6 +270,9 @@ In the order of their priority, the highest first.
   name where the cell width allows. What it would mean for the code: a table of the standard names in
   `model/values/midi.py`, the CC fields' ENTER opening a `ChoiceDialog` built from it in place of the number prompt
   (`MSG_CC_PROMPT`), with `+` and `-` still stepping the number, and the names as `MSG_` constants since they're shown.
+- **F1 shows the keys alone**: the help panels about each page go, F1 showing only the keys: the everywhere keys, then
+  the page's own; the `HELP_` texts, their constants and the Tab, Left and Right between panels go with them, and the
+  documents and rules that describe F1's panels say so.
 - **What else goes on the Global tab**: a review of which preferences belong in the config file,
   `~/.llamatron/settings.yml`, and so on the File/Global page's Global tab, beside Track Inst. Default: what a person
   would want the same in every set rather than carried by one.
