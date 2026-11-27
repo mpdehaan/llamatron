@@ -425,4 +425,24 @@ mod tests {
         let share = together as f64 / notes as f64;
         assert!((share - chance).abs() < chance / 4.0, "{share}");
     }
+
+    /// A synced SID wave sounds at the note played: its master runs at the note, so that its lowest strong partial is the
+    /// note's, whatever the Interval tunes the synced wave to.
+    #[test]
+    fn a_synced_sid_wave_sounds_at_its_note() {
+        let (pitch, hertz) = (57.0, 220usize);
+        let pairs = vec![
+            ("type", Value::from("sid")),
+            ("wave", Value::from("saw")),
+            ("modulation", Value::from("sync")),
+            ("interval", Value::from(7.0)),
+        ];
+        let out: Vec<f64> = played(pairs, pitch);
+        let mut bins: Vec<rustfft::num_complex::Complex<f64>> = out.iter().map(|sample| rustfft::num_complex::Complex::new(*sample, 0.0)).collect();
+        let rate = 48_000;
+        rustfft::FftPlanner::new().plan_fft_forward(rate).process(&mut bins);
+        let strong = 0.05 * rate as f64 / 2.0;
+        let lowest = (20..2000).find(|bin| bins[*bin].norm() > strong);
+        assert!(lowest.is_some_and(|bin| bin.abs_diff(hertz) <= 2), "lowest strong partial {lowest:?} Hz");
+    }
 }

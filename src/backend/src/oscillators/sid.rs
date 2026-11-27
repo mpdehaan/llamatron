@@ -54,7 +54,9 @@ impl OscillatorPart {
         let frequency = frequency_of(base);
         let width = (*pulse_width + moves.width).clamp(NARROWEST, WIDEST);
         if *interaction == Interaction::Sync {
-            return sid_synced(*wave, state, frequency, frequency_of(base + interval), width, rate);
+            // A synced wave repeats at its master's period, so the master runs at the note, and the wave heard, reset
+            // by it, runs at the note plus the Interval, as the chip's synced oscillator is tuned above its master.
+            return sid_synced(*wave, state, frequency_of(base + interval), frequency, width, rate);
         }
         let speed = frequency * TABLE_SIZE as f64 / rate;
         let position = state.phases[0];
