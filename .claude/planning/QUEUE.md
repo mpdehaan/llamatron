@@ -6,7 +6,8 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 
 ## Now: the synths (finish the outstanding synth work, then the other engines with their demos)
 
-1. UX_IDEAS: Renaming on the Scene and Clip pages.
+1. UX_IDEAS: Renaming on the Scene and Clip pages; An instrument's Role changed while unused; Space on an empty drum
+   Note step.
 2. OTHER_IDEAS: The screens comparison in Rust.
 3. DEMO_IDEAS: Engines and effects under each synth demo.
 4. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).

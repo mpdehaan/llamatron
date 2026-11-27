@@ -26,6 +26,10 @@ Wanted changes to how the tracker looks and is used: what each is, never its sta
 - **Listening to a drum-track pattern**: a pattern whose clips are all on drum tracks listens through the drum track's own
   instrument where it has one, and otherwise through FluidSynth's drum kit, as a drum pattern does, rather than the
   song's Preview instrument or the piano.
+- **An instrument's Role changed while unused**: an instrument on no track may change from Percussion to Normal and back,
+  its Role becoming a choice there, with a dialog warning first that its built-in synth settings are replaced by the new
+  role's engine.
+- **Space on an empty drum Note step**: in a drum pattern's rows, Space on a Note cell with no note writes C there.
 - **Batch pattern editing** on a group: a discussion, then building.
 - **Transpose** by scale degrees, semitones or octaves, with a mockup; Grab track removed, each Grab step choosing the track
   it grabs from; drop chords and smarter voice leading on the object tabs.
