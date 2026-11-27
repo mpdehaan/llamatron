@@ -42,6 +42,8 @@ pub struct Refusal {
     pub lines: Vec<String>,
 }
 
+/// A share as a percentage, for the synths' load.
+const PERCENT: f64 = 100.0;
 /// A whole note's quarter notes, and a minute's seconds, for a step's length at a tempo.
 const QUARTERS_A_WHOLE_NOTE: f64 = 4.0;
 const SECONDS_A_MINUTE: f64 = 60.0;
@@ -222,6 +224,18 @@ impl Transport {
             sender.silence(&channels);
         }
         said
+    }
+
+    /// Whether the sender ended by itself while something played, which only a bug does: the player and the sender are
+    /// let go, so that playing again starts them afresh. True once, for the dialog that says so.
+    pub fn take_ended(&mut self) -> bool {
+        let ended = self.player.is_some() && self.sender.as_ref().is_some_and(|sender| !sender.is_running());
+        if ended {
+            self.sender = None;
+            self.player = None;
+            self.following = None;
+        }
+        ended
     }
 
     /// Hear an edit to the document made while its song plays, once the edit has settled, and plan ahead; what the status
@@ -409,9 +423,25 @@ impl Transport {
         let position = self.song_position()?;
         let at = crate::page::clock(Some(position));
         let total = crate::page::clock(self.song_seconds());
-        Some(named(
+        let shown = named(
             llamatron_strings::marks::MSG_PLAYING_CLOCK,
             &[("at", at.as_str().into()), ("total", total.as_str().into())],
+        );
+        // The synths' load follows the clock, and the dropouts once there are any.
+        let Some((busy, dropouts)) = self.sender.as_ref().and_then(BackendSender::synth_load) else {
+            return Some(shown);
+        };
+        let percent = (busy * PERCENT).round() as i64;
+        let clock = shown.as_str().into();
+        if dropouts > 0 {
+            return Some(named(
+                llamatron_strings::marks::MSG_SYNTH_LOAD_AND_DROPOUTS,
+                &[("clock", clock), ("percent", percent.into()), ("dropouts", (dropouts as i64).into())],
+            ));
+        }
+        Some(named(
+            llamatron_strings::marks::MSG_SYNTH_LOAD,
+            &[("clock", clock), ("percent", percent.into())],
         ))
     }
 

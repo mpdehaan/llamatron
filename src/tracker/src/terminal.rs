@@ -156,6 +156,13 @@ fn run_keys(tracker: &mut Tracker, running: &mut Running, launch: &Launch) -> Re
         }
         // While waiting for a key, real-time playback is planned ahead a tick at a time.
         // An edit made while something plays is heard once it settles; one that cannot be heard says why.
+        // A sender that ended by itself is a bug, told once in a dialog; playing again starts it afresh.
+        if tracker.app.transport.take_ended() {
+            let lines = vec![llamatron_strings::errors::ERR_PLAYBACK_ENDED.to_string()];
+            let told = crate::screens::dialogs::MessageDialog::new(llamatron_strings::errors::ERR_PLAYBACK_ENDED_TITLE, lines);
+            tracker.app.show_page(Box::new(told));
+            changed = true;
+        }
         let song_said = tracker.app.transport.tick(&tracker.app.document);
         let preview_said = tracker.app.preview.tick(&tracker.app.document);
         if let Some(said) = song_said.or(preview_said) {

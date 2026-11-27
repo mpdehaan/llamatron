@@ -8,7 +8,7 @@
 
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -120,7 +120,44 @@ pub struct BackendSender {
     tags: HashMap<ClipTag, u32>,
     sounds: HashMap<(String, i64), Data>,
     started: Instant,
+    /// The synths' latest load report, kept by the thread that reads the sender's messages.
+    load: Arc<SynthLoad>,
 }
+
+/// The built-in synths' and FluidSynth's latest load report: the share of the time the audio callback was busy, as the
+/// bits of a float, and how many dropouts the sound card has reported, each kept in an atomic so that no lock is taken.
+#[derive(Default)]
+pub struct SynthLoad {
+    busy_bits: AtomicU64,
+    dropouts: AtomicU64,
+    reported: AtomicBool,
+}
+
+impl SynthLoad {
+    /// Keep a load report's figures.
+    fn take(&self, report: &Value) {
+        let Some(pairs) = report.as_map() else { return };
+        let field = |name: &str| pairs.iter().find(|(key, _)| key.as_str() == Some(name)).map(|(_, value)| value);
+        if let Some(busy) = field(BUSY).and_then(Value::as_f64) {
+            self.busy_bits.store(busy.to_bits(), Ordering::Relaxed);
+        }
+        if let Some(dropouts) = field(DROPOUTS).and_then(Value::as_u64) {
+            self.dropouts.store(dropouts, Ordering::Relaxed);
+        }
+        self.reported.store(true, Ordering::Relaxed);
+    }
+
+    /// The share of the time the callback was busy and the dropouts so far, or None before the first report.
+    pub fn latest(&self) -> Option<(f64, u64)> {
+        self.reported
+            .load(Ordering::Relaxed)
+            .then(|| (f64::from_bits(self.busy_bits.load(Ordering::Relaxed)), self.dropouts.load(Ordering::Relaxed)))
+    }
+}
+
+/// A load report's figures, as the backend names them.
+const BUSY: &str = "load";
+const DROPOUTS: &str = "dropouts";
 
 impl BackendSender {
     /// Start the sender on the ports and take this moment as the timeline's zero; why it could not start where it can't.
@@ -162,16 +199,34 @@ impl BackendSender {
             tags: HashMap::new(),
             sounds: HashMap::new(),
             started: Instant::now(),
+            load: Arc::new(SynthLoad::default()),
         };
         if !ready {
             sender.close();
             return Err(errors::ERR_SENDER_DID_NOT_START.to_string());
         }
-        // The sender's later messages, its load reports and its answer as it closes, are taken and passed over.
-        std::thread::spawn(move || while answered.recv().is_ok() {});
+        // The sender's later messages are read here: its load reports are kept, and the rest, its answer as it closes among
+        // them, passed over.
+        let load = sender.load.clone();
+        std::thread::spawn(move || {
+            while let Ok(message) = answered.recv() {
+                let items = message.as_array();
+                if items.and_then(|items| items.first()).and_then(Value::as_str) == Some(llamatron_backend::protocol::LOAD) {
+                    if let Some(report) = items.and_then(|items| items.get(1)) {
+                        load.take(report);
+                    }
+                }
+            }
+        });
         sender.started = Instant::now();
         sender.send(Value::Array(vec![START.into(), Value::Nil]));
         Ok(sender)
+    }
+
+    /// The synths' latest load: the share of the time the audio callback was busy and the dropouts so far, or None before
+    /// the first report.
+    pub fn synth_load(&self) -> Option<(f64, u64)> {
+        self.load.latest()
     }
 
     /// The seconds since the timeline's zero, the clock the events' seconds are on.
@@ -339,5 +394,17 @@ mod tests {
         sender.close();
         std::thread::sleep(Duration::from_millis(200));
         assert!(!sender.is_running());
+    }
+
+    /// A load report's busy share and dropouts are kept, and nothing is shown before the first report.
+    #[test]
+    fn a_load_report_is_kept() {
+        let load = SynthLoad::default();
+        assert_eq!(load.latest(), None);
+        let busy = 0.25;
+        let dropouts: u64 = 3;
+        let report = Value::Map(vec![(BUSY.into(), busy.into()), (DROPOUTS.into(), Value::from(dropouts))]);
+        load.take(&report);
+        assert_eq!(load.latest(), Some((busy, dropouts)));
     }
 }
