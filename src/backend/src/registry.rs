@@ -20,11 +20,18 @@ pub fn find<Build>(entries: &'static [Entry<Build>], name: &str) -> Option<&'sta
 /// Every registry with its kind's folder, for the tests that hold each folder's files to its registry.
 #[cfg(test)]
 pub fn folders() -> Vec<(&'static str, Vec<&'static str>, &'static [&'static str])> {
-    vec![(
-        "effects",
-        crate::effects::REGISTRY.iter().map(|entry| entry.file).collect(),
-        crate::effects::HELPERS,
-    )]
+    vec![
+        (
+            "effects",
+            crate::effects::REGISTRY.iter().map(|entry| entry.file).collect(),
+            crate::effects::HELPERS,
+        ),
+        (
+            "filters",
+            crate::filters::REGISTRY.iter().map(|entry| entry.file).collect(),
+            crate::filters::HELPERS,
+        ),
+    ]
 }
 
 #[cfg(test)]

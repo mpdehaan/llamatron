@@ -20,6 +20,8 @@
 pub mod diode;
 pub mod gate;
 pub mod ladder;
+pub mod multimode;
+pub mod ota;
 pub mod sallen_key;
 
 use crate::dsp::oversample::Halfband;
@@ -31,6 +33,7 @@ use crate::filters::ladder::LadderUnit;
 use crate::filters::ladder::{LadderSettings, LadderState};
 use crate::filters::sallen_key::SallenKeyState;
 use crate::protocol::values::{number, word};
+use crate::registry::{self, Entry};
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -49,15 +52,58 @@ const COEFFICIENT_STEP: usize = 4;
 /// How much faster an oversampled filter runs, and the set Resonance past which a saturating filter is oversampled.
 const OVERSAMPLED: f64 = 2.0;
 const OVERSAMPLED_FROM_RESONANCE: f64 = 0.5;
-/// Where the soft limit reaches one and holds.
-const SOFT_LIMIT_END: f64 = 3.0;
-/// The least a stage's saturation may slow it, so that a very loud stage never stops.
-const LEAST_SQUASH: f64 = 0.01;
 /// How much of the bass Resonance thins the Ladder gives back unless set: most of it, so that a resonant bass keeps
 /// its weight, a little of the circuit's own thinning still heard.
 const DEFAULT_BASS_COMPENSATION: f64 = 0.8;
 /// How many octaves Filter FM moves the cutoff at full, by the oscillator at full level.
 const FM_OCTAVES: f64 = 2.0;
+
+/// The Filter slot's name when it holds no filter.
+pub const NO_FILTER: &str = "none";
+
+/// What a registered filter is: one of the filters this module runs, or the low-pass gate, a part of its own
+/// (`gate.rs`) that is the voice's filter and amp together.
+pub enum Slot {
+    Filter(FilterKind),
+    Gate,
+}
+
+/// Every filter, by the name a spec gives it, the file that holds it, and what it is.
+pub static REGISTRY: &[Entry<Slot>] = &[
+    Entry {
+        name: "diode",
+        file: "diode.rs",
+        build: Slot::Filter(FilterKind::Diode),
+    },
+    Entry {
+        name: "ladder",
+        file: "ladder.rs",
+        build: Slot::Filter(FilterKind::Ladder),
+    },
+    Entry {
+        name: gate::LOW_PASS_GATE,
+        file: "gate.rs",
+        build: Slot::Gate,
+    },
+    Entry {
+        name: "multimode",
+        file: "multimode.rs",
+        build: Slot::Filter(FilterKind::Multimode),
+    },
+    Entry {
+        name: "ota",
+        file: "ota.rs",
+        build: Slot::Filter(FilterKind::Ota),
+    },
+    Entry {
+        name: "sallen_key",
+        file: "sallen_key.rs",
+        build: Slot::Filter(FilterKind::SallenKey),
+    },
+];
+
+/// The files of the filters' folder that are no filter of their own but a part one uses: none today.
+pub const HELPERS: &[&str] = &[];
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum FilterKind {
@@ -121,26 +167,6 @@ pub struct FilterState {
     outputs: [f64; 4],
 }
 
-/// A soft limit close to tanh and far cheaper, x(27 + x²)/(27 + 9x²), held at its ends past three, where it reaches one.
-// After stmlib's SoftLimit (stmlib/dsp/dsp.h, Emilie Gillet, MIT); the implementation here is our own.
-#[inline]
-fn soft_limit(x: f64) -> f64 {
-    let held = x.clamp(-SOFT_LIMIT_END, SOFT_LIMIT_END);
-    let square = held * held;
-    held * (27.0 + square) / (27.0 + 9.0 * square)
-}
-
-/// What a stage's saturation scales its gain by: soft_limit(y)/y, worked out without the division, never under
-/// LEAST_SQUASH.
-#[inline]
-fn soft_squash(y: f64) -> f64 {
-    if y.abs() >= SOFT_LIMIT_END {
-        return (1.0 / y.abs()).max(LEAST_SQUASH);
-    }
-    let square = y * y;
-    (27.0 + square) / (27.0 + 9.0 * square)
-}
-
 impl FilterState {
     /// Seed what wanders slowly in the filter from the note's own random number, from -1 to 1.
     pub fn seed(&mut self, random: f64) {
@@ -156,14 +182,9 @@ impl FilterState {
 impl FilterPart {
     /// The filter a spec describes, or None for none or the low-pass gate.
     pub fn compiled(spec: &Value, rate: f64) -> Option<FilterPart> {
-        let kind = match word(spec, "type", "none") {
-            "ladder" => FilterKind::Ladder,
-            "diode" => FilterKind::Diode,
-            "ota" => FilterKind::Ota,
-            "multimode" => FilterKind::Multimode,
-            "sallen_key" => FilterKind::SallenKey,
-            _ => return None,
-        };
+        // No filter, the low-pass gate (its own part), or a name no registry holds builds no filter here.
+        let entry = registry::find(REGISTRY, word(spec, "type", NO_FILTER))?;
+        let Slot::Filter(kind) = entry.build else { return None };
         let mode = match word(spec, "mode", "low") {
             "band" if kind == FilterKind::Multimode => FilterMode::Band,
             "notch" if kind == FilterKind::Multimode => FilterMode::Notch,
@@ -291,7 +312,7 @@ impl FilterPart {
     #[inline]
     fn core(&self, state: &mut FilterState, input: f64) -> f64 {
         if self.is_ladder() {
-            self.ladder(state, input)
+            self.ota_stages(state, input)
         } else {
             self.state_variable(state, input)
         }
@@ -373,65 +394,6 @@ impl FilterPart {
                 1.0 / quality
             }
         };
-    }
-
-    /// The ladder: the loop solved for its input without delay, the input saturated, then the four stages run, each
-    /// saturating too: each stage's gain is scaled by tanh(y)/y of its last output, so that a loud stage slows as a
-    /// transistor pair does, and the zero-delay solve takes each stage's own share.
-    // The stages' saturation after the linearised tanh of VCV Fundamental's VCF (VCVRack/Fundamental, src/VCF.cpp,
-    // GPL-3.0-or-later), folded into our own zero-delay ladder, its tanh stmlib's soft limit; the implementation is ours.
-    #[inline]
-    fn ladder(&self, state: &mut FilterState, input: f64) -> f64 {
-        let g = state.g;
-        let mut shares = [0.0; 4];
-        let mut rests = [0.0; 4];
-        for (place, last) in state.outputs.iter().enumerate() {
-            let squash = soft_squash(*last);
-            let stage_g = g * squash;
-            let rest = 1.0 / (1.0 + stage_g);
-            rests[place] = rest;
-            shares[place] = stage_g * rest;
-        }
-        let [s1, s2, s3, s4] = state.stages;
-        let [g1, g2, g3, g4] = shares;
-        let carried = g4 * g3 * g2 * rests[0] * s1 + g4 * g3 * rests[1] * s2 + g4 * rests[2] * s3 + rests[3] * s4;
-        let all = g1 * g2 * g3 * g4;
-        let k = state.feedback;
-        let solved = (input - k * carried) / (1.0 + k * all);
-        let mut signal = soft_limit(solved);
-        let mut taps = [0.0; 4];
-        for place in 0..4 {
-            let stage = &mut state.stages[place];
-            let moved = (signal - *stage) * shares[place];
-            let out = moved + *stage;
-            *stage = out + moved;
-            signal = out;
-            taps[place] = out;
-        }
-        state.outputs = taps;
-        taps[self.poles - 1]
-    }
-
-    /// The state-variable filter (two integrators), its damping the stored feedback, its output by the mode.
-    #[inline]
-    fn state_variable(&self, state: &mut FilterState, input: f64) -> f64 {
-        let g = state.g;
-        let damping = state.feedback;
-        let [first, second, _, _] = state.stages;
-        let high = (input - (damping + g) * first - second) / (1.0 + damping * g + g * g);
-        let band = g * high + first;
-        let low = g * band + second;
-        // The band integrator saturates softly, as the nonlinear-state filters of sst-filters' ResonanceWarp do: quiet
-        // signals pass as before, and a loud, resonant peak is held round rather than ringing out of bounds.
-        // After sst-filters' ResonanceWarp (Surge Synth Team, GPL-3.0-or-later); our own implementation.
-        state.stages[0] = soft_limit(g * high + band);
-        state.stages[1] = g * band + low;
-        match self.mode {
-            FilterMode::Low => low,
-            FilterMode::Band => band * damping,
-            FilterMode::High => high,
-            FilterMode::Notch => input - band * damping,
-        }
     }
 }
 
