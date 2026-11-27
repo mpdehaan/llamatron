@@ -186,6 +186,9 @@ pub type Build = fn(&Value, f64) -> OscillatorPart;
 
 /// The type of oscillator a spec that names none plays.
 const BASIC: &str = "basic";
+/// The drum machine: a sound of its own (drums/), which the patch builds in place of any oscillator; its entry here
+/// builds nothing, since no voice of oscillators plays it.
+pub const DRUM: &str = "drum";
 
 /// Every oscillator type, by the name a spec gives it, the file that holds it, and how it is built.
 pub static REGISTRY: &[Entry<Build>] = &[
@@ -203,6 +206,11 @@ pub static REGISTRY: &[Entry<Build>] = &[
         name: BASIC,
         file: "basic.rs",
         build: |spec, _rate| basic::compiled(spec),
+    },
+    Entry {
+        name: DRUM,
+        file: "mod.rs",
+        build: |_spec, _rate| OscillatorPart::Silent,
     },
     Entry {
         name: "pocket",

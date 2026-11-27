@@ -12,6 +12,7 @@ use crate::dsp::Random;
 use crate::engine::MOST_FRAMES;
 use crate::modulation::matrix::RateRoute;
 use crate::protocol::values::{number, word};
+use crate::registry::{self, Named};
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -20,7 +21,7 @@ const HELD_VALUES: usize = 4096;
 const HELD_SEED: u64 = 224;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum Shape {
+pub enum Shape {
     Sine,
     Triangle,
     SawUp,
@@ -54,6 +55,41 @@ struct Lfo {
     quarters: Option<f64>,
 }
 
+/// The shape an LFO takes when its spec names none.
+const SINE: &str = "sine";
+
+/// Every LFO shape a spec may name, and what it is.
+pub static SHAPES: &[Named<Shape>] = &[
+    Named {
+        name: SINE,
+        value: Shape::Sine,
+    },
+    Named {
+        name: "triangle",
+        value: Shape::Triangle,
+    },
+    Named {
+        name: "saw_up",
+        value: Shape::SawUp,
+    },
+    Named {
+        name: "saw_down",
+        value: Shape::SawDown,
+    },
+    Named {
+        name: "square",
+        value: Shape::Square,
+    },
+    Named {
+        name: "sample_and_hold",
+        value: Shape::SampleAndHold,
+    },
+    Named {
+        name: "smooth_random",
+        value: Shape::SmoothRandom,
+    },
+];
+
 /// An instrument's four LFOs, None for one that is off, and what each gave the chunk now playing.
 pub struct LfoBank {
     lfos: Vec<Option<Lfo>>,
@@ -85,15 +121,7 @@ impl LfoBank {
                 if spec.is_nil() {
                     return None;
                 }
-                let shape = match word(spec, "shape", "sine") {
-                    "triangle" => Shape::Triangle,
-                    "saw_up" => Shape::SawUp,
-                    "saw_down" => Shape::SawDown,
-                    "square" => Shape::Square,
-                    "sample_and_hold" => Shape::SampleAndHold,
-                    "smooth_random" => Shape::SmoothRandom,
-                    _ => Shape::Sine,
-                };
+                let shape = registry::named(SHAPES, word(spec, "shape", SINE)).unwrap_or(Shape::Sine);
                 let quarters = crate::protocol::values::field(spec, "quarters").and_then(crate::protocol::values::as_number);
                 let step = match quarters {
                     Some(quarters) => tempo_step(FIRST_TEMPO, quarters, rate),

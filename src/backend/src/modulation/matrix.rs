@@ -7,6 +7,7 @@
 
 use crate::modulation::lfos::LFO_COUNT;
 use crate::protocol::values::{number, word};
+use crate::registry::{self, Named};
 use rmpv::Value;
 
 /// What a matrix slot reads.
@@ -49,7 +50,7 @@ pub enum Destination {
 /// How many octaves an LFO's rate moves at a route's full amount, up or down.
 const RATE_OCTAVES: f64 = 2.0;
 /// The destinations that move an LFO's rate, by the LFO's place.
-const RATE_DESTINATIONS: [&str; LFO_COUNT] = ["lfo1_rate", "lfo2_rate", "lfo3_rate", "lfo4_rate"];
+pub const RATE_DESTINATIONS: [&str; LFO_COUNT] = ["lfo1_rate", "lfo2_rate", "lfo3_rate", "lfo4_rate"];
 /// The LFO sources, by their places.
 const LFO_SOURCES: [&str; LFO_COUNT] = ["lfo1", "lfo2", "lfo3", "lfo4"];
 
@@ -115,37 +116,103 @@ fn control_named(name: &str) -> Option<u8> {
         .filter(|number| *number <= HIGHEST_CONTROL)
 }
 
+/// Every Mod Matrix source a spec may name, besides a CC by its number: what each is.
+pub static SOURCES: &[Named<Source>] = &[
+    Named {
+        name: "env1",
+        value: Source::Env1,
+    },
+    Named {
+        name: "env2",
+        value: Source::Env2,
+    },
+    Named {
+        name: "env3",
+        value: Source::Env3,
+    },
+    Named {
+        name: "lfo1",
+        value: Source::Lfo(0),
+    },
+    Named {
+        name: "lfo2",
+        value: Source::Lfo(1),
+    },
+    Named {
+        name: "lfo3",
+        value: Source::Lfo(2),
+    },
+    Named {
+        name: "lfo4",
+        value: Source::Lfo(3),
+    },
+    Named {
+        name: "velocity",
+        value: Source::Velocity,
+    },
+    Named {
+        name: "key",
+        value: Source::Key,
+    },
+    Named {
+        name: "random",
+        value: Source::Random,
+    },
+    Named {
+        name: "osc",
+        value: Source::Oscillator,
+    },
+    Named {
+        name: "osc1",
+        value: Source::Osc(0),
+    },
+    Named {
+        name: "osc2",
+        value: Source::Osc(1),
+    },
+    Named {
+        name: "osc3",
+        value: Source::Osc(2),
+    },
+];
+
+/// Every Mod Matrix destination a spec may name, besides an LFO's rate: what each is, and how far it moves at its
+/// source's full value.
+pub static DESTINATIONS: &[Named<(Destination, f64)>] = &[
+    Named {
+        name: "pitch",
+        value: (Destination::Pitch, 24.0),
+    },
+    Named {
+        name: "pulse_width",
+        value: (Destination::PulseWidth, 0.4),
+    },
+    Named {
+        name: "detune",
+        value: (Destination::Detune, 1.0),
+    },
+    Named {
+        name: "cutoff",
+        value: (Destination::Cutoff, 6.0),
+    },
+    Named {
+        name: "resonance",
+        value: (Destination::Resonance, 1.0),
+    },
+    Named {
+        name: "amp",
+        value: (Destination::Amp, 1.0),
+    },
+];
+
+/// A source by name, from its registry.
 fn source_named(name: &str) -> Option<Source> {
-    Some(match name {
-        "env1" => Source::Env1,
-        "env2" => Source::Env2,
-        "env3" => Source::Env3,
-        "lfo1" => Source::Lfo(0),
-        "lfo2" => Source::Lfo(1),
-        "lfo3" => Source::Lfo(2),
-        "lfo4" => Source::Lfo(3),
-        "velocity" => Source::Velocity,
-        "key" => Source::Key,
-        "random" => Source::Random,
-        "osc" => Source::Oscillator,
-        "osc1" => Source::Osc(0),
-        "osc2" => Source::Osc(1),
-        "osc3" => Source::Osc(2),
-        _ => return None,
-    })
+    registry::named(SOURCES, name)
 }
 
-/// A destination by name, and how far it moves at its source's full value.
+/// A destination by name, and how far it moves at its source's full value, from its registry.
 fn destination_named(name: &str) -> Option<(Destination, f64)> {
-    Some(match name {
-        "pitch" => (Destination::Pitch, 24.0),
-        "pulse_width" => (Destination::PulseWidth, 0.4),
-        "detune" => (Destination::Detune, 1.0),
-        "cutoff" => (Destination::Cutoff, 6.0),
-        "resonance" => (Destination::Resonance, 1.0),
-        "amp" => (Destination::Amp, 1.0),
-        _ => return None,
-    })
+    registry::named(DESTINATIONS, name)
 }
 
 /// One route of the matrix: its source, its via or None, its destination and how far it moves.

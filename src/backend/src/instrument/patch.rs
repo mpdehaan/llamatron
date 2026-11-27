@@ -232,7 +232,7 @@ impl Patch {
     pub fn compiled(spec: &Value, rate: f64) -> Patch {
         let empty = Value::Nil;
         let oscillators = field(spec, "oscillators").unwrap_or(&empty);
-        let sound = if word(oscillators, "type", "basic") == "drum" {
+        let sound = if word(oscillators, "type", "basic") == crate::oscillators::DRUM {
             let choke = field(oscillators, "choke")
                 .and_then(crate::protocol::values::as_number)
                 .map(|group| group as i64);

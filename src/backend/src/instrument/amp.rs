@@ -9,6 +9,7 @@
 //! (The low-pass gate, the fourth type, is gate.rs's GatePart standing in the Amp's place.)
 
 use crate::protocol::values::{number, word};
+use crate::registry::{self, Named};
 
 /// The kinds of Amp, each a circuit.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -53,13 +54,34 @@ impl Default for AmpPart {
     }
 }
 
+/// The Amp's type when its spec names none.
+const CLEAN: &str = "clean";
+
+/// Every Amp type a spec may name, and what it is.
+pub static TYPES: &[Named<AmpKind>] = &[
+    Named {
+        name: CLEAN,
+        value: AmpKind::Clean,
+    },
+    Named {
+        name: "transistor",
+        value: AmpKind::Transistor,
+    },
+    Named {
+        name: "ota_vca",
+        value: AmpKind::Ota,
+    },
+    // The low-pass gate in the Amp's slot is the voice's amp itself (filters/gate.rs); the Amp's own circuit stays
+    // clean beside it.
+    Named {
+        name: crate::filters::gate::LOW_PASS_GATE,
+        value: AmpKind::Clean,
+    },
+];
+
 /// An Amp from its spec: its type, Response, Drive and Bleed as fractions; Clean for none or one it does not know.
 pub fn compiled(spec: &rmpv::Value) -> AmpPart {
-    let kind = match word(spec, "type", "clean") {
-        "transistor" => AmpKind::Transistor,
-        "ota_vca" => AmpKind::Ota,
-        _ => AmpKind::Clean,
-    };
+    let kind = registry::named(TYPES, word(spec, "type", CLEAN)).unwrap_or(AmpKind::Clean);
     AmpPart {
         kind,
         response: number(spec, "response", 0.0).clamp(0.0, 1.0),

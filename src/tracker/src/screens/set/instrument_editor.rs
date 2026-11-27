@@ -2377,18 +2377,16 @@ mod tests {
         }
     }
 
-    /// Every field on every tab of the Instrument page, for every engine and every effect, shows a label and a value with
-    /// every placeholder filled: no `{` is ever drawn.
+    /// Every field on every tab of the Instrument page, for every engine and every effect the registries hold, shows a
+    /// label and a value with every placeholder filled: no `{` is ever drawn.
     #[test]
     fn no_field_shows_an_unfilled_placeholder() {
         let unfilled = '{';
-        let engines = ["basic", "asheville", "sid", "pocket", "acid", "drum"];
-        let effects = ["bitcrush", "drive", "bax", "multitap"];
+        // Every engine and every effect, walked from their lists, so that one added later is held too.
+        let engines = ENGINES_OF_ROLE.iter().flat_map(|(_, engines)| engines.iter().copied());
         for engine in engines {
-            for effect in effects {
-                let instrument = format!(
-                    "{{ name: fish, kind: built_in, sound: {{ engine: {engine}, oscillators: {{ type: {engine} }}, effects: [{{ effect: {effect} }}] }} }}"
-                );
+            for effect in llamatron_backend::effects::REGISTRY.iter().map(|entry| entry.name) {
+                let instrument = format!("{{ name: fish, kind: built_in, sound: {{ engine: {engine}, effects: [{{ effect: {effect} }}] }} }}");
                 let app = engine_app(&instrument, true);
                 let editor = InstrumentEditor { name: "fish".to_string() };
                 let (nodes, _) = editor.built(&app);

@@ -66,10 +66,17 @@ pub const NO_FILTER: &str = "none";
 pub enum Slot {
     Filter(FilterKind),
     Gate,
+    /// The slot left empty: no filter.
+    Empty,
 }
 
 /// Every filter, by the name a spec gives it, the file that holds it, and what it is.
 pub static REGISTRY: &[Entry<Slot>] = &[
+    Entry {
+        name: NO_FILTER,
+        file: "mod.rs",
+        build: Slot::Empty,
+    },
     Entry {
         name: "diode",
         file: "diode.rs",

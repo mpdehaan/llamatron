@@ -12,6 +12,18 @@ pub struct Entry<Build: 'static> {
     pub build: Build,
 }
 
+/// One registered choice of a setting that is no component of its own, such as an LFO's shape or a Mod Matrix source:
+/// the name a spec gives it and what it stands for.
+pub struct Named<Value: 'static> {
+    pub name: &'static str,
+    pub value: Value,
+}
+
+/// What a registry of choices holds under a name, if any.
+pub fn named<Value: Copy>(choices: &'static [Named<Value>], name: &str) -> Option<Value> {
+    choices.iter().find(|choice| choice.name == name).map(|choice| choice.value)
+}
+
 /// The entry a registry holds under a name, if any.
 pub fn find<Build>(entries: &'static [Entry<Build>], name: &str) -> Option<&'static Entry<Build>> {
     entries.iter().find(|entry| entry.name == name)
