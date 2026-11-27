@@ -33,6 +33,8 @@ they meet.
 - Where a waived trademark is named, its notice stands in `docs/CREDITS.md`, as the Monomachine's and the Cirklon's do.
 - No text the program shows or raises, its help included, names a manufacturer or a product beyond the waivers; an
   instrument, an engine or an effect is named and described by what it does.
+- The synthesis notes in `.claude/notes/synthesis/` record algorithm research from papers and open-source code only,
+  each open project named with its licence; they hold no commercial reference of any kind.
 - Synth and effect designs name no product or maker. Every engine, effect and modulator draws on synthesis ideas that
   many people developed over decades, so each is described by what it does and how it sounds. A design is never held to a
   past instrument, nor made to copy one's design or sound; new ideas are the aim.

@@ -19,7 +19,7 @@ DOCUMENTS = [
     ROOT / 'README.md',
     *sorted((ROOT / 'docs').rglob('*.md')),
     *sorted((ROOT / 'developer_docs').rglob('*.md')),
-    # The synthesis notes stay on this computer only, out of git, so no path in them is held.
+    # The synthesis notes name files in other projects' source trees, not ours, so no path in them is held.
     *sorted(path for path in (ROOT / '.claude').rglob('*.md') if 'synthesis' not in path.parts),
 ]
 # The guide, whose table of guides links every chapter in docs/.

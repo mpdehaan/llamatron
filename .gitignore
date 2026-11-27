@@ -30,5 +30,3 @@ examples/**/*.wav
 # What cargo builds from the synth daemon's source, rebuilt by internal_tools/build_backend.sh.
 src/target/
 
-# The professor's synthesis notes stay on this computer only, out of git (the user's rule).
-.claude/notes/synthesis/

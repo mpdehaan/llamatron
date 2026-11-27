@@ -66,8 +66,9 @@ Imported, loaded every session: `.claude/COMPLIANCE.md` (licences, credits, name
   `MASHUPS.md`, `REALTIME_PLAYBACK.md`, `VISUALIZER.md`, `RECORDING.md`, `EXPERTS.md` (before consulting an expert agent).
 - `.claude/notes/music_theory/`: Claude's notes on structure, hooks, melody, harmony, drums and genres, principles only (its
   `README.md` has the rules). Read the subject's file before building in its area; add to it as the work teaches.
-- `.claude/notes/synthesis/`: the professor's research for the built-in synths, on this computer only and out of git (the
-  user's rule), backed up in `~/Devel/synthesis_notes` (its `README.md` lists the notes).
+- `.claude/notes/synthesis/`: the professor's research for the built-in synths, tracked in git: written like a textbook,
+  the principles, algorithms and open implementations, specific to llamatron's kind of real-time code but never a plan of
+  changes to it, and holding no commercial reference of any kind (`.claude/COMPLIANCE.md`); its `README.md` lists the notes.
 - `src/strings/src/texts/`: every piece of text the program shows or raises.
 - `README.md`, `docs/GUIDE.md`, `docs/INSTALLING.md`, `docs/`: for people; the user edits them too (`.claude/rules/DOCS.md`).
 
