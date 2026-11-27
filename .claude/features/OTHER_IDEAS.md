@@ -87,7 +87,9 @@ built.
   every place the key tour reaches, at 80x24 and 160x50, with no baselines: no line overflows (none cut silently), every
   box joint meets its neighbours' arms, one cursor in a focused layer, a column's values start in line, a table's widths
   hold as its values step, and the legend and F1 fit 80x24; each low-level widget has unit tests of its widths, joints,
-  scrolling and search. Every test's set is a data file read by a shared scenario helper.
+  scrolling and search. Every test's set is a data file read by a shared scenario helper. Among the first page tests,
+  the main screen's contents in full, read as a person does: every cell drawn once with its key and its page's name,
+  each where the geometry puts it, the counts beside them, and the file bar's actions.
   The scene page's remarks, its length and Problem lines, fit 80x24, as the layout checks will hold.
   4. Action tables for Arrange, the pattern editor and the main screen, so that the keys a page shows and the keys it
      answers come from one list; and `.claude/tracker/` rewritten to describe the Rust's widgets and paths.

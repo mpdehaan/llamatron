@@ -323,4 +323,7 @@ In the order of their priority, the highest first.
   else, so that a less powerful computer gains as much as it can; the built-in synths are not expected to run beside a
   DAW's own synths played over MIDI, so they may take that share of the computer. The workers allocate nothing and take no locks, a late worker's
   instruments are rendered by the callback itself so that nothing drops out, and each worker ends with its owner.
+- **The Mod Matrix names each destination by its block**: every block of an instrument offers what can be moved in it,
+  and the Destination picker names each by its block and setting, such as `Oscillator / Pitch`, `Filter / Cutoff`,
+  `LFO 1 / Rate` and `FX 1 / Mix`, grouped by block in the blocks' order.
 
