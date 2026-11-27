@@ -115,7 +115,7 @@ the same parts the Instrument page shows.
 | Part | File | What it does |
 | --- | --- | --- |
 | Oscillators | `oscillators/` (a file each), `oscillators/tables.rs` | The raw sound: Basic's band-limited waveforms, the SID-style chip, the Pocket chip, the acid bass's saw or square. |
-| Env1, Env2, Env3 | `envelopes/mod.rs` | Env1 shapes the loudness, Env2 the filter's sweep, Env3 whatever the Mod Matrix sends it to: ADSR, AR, ASR, the SID chip's ADSR, the vactrol, the acid gate and the chip's sixteen steps. |
+| Env1, Env2, Env3 | `envelopes/` (a file each) | Env1 shapes the loudness, Env2 the filter's sweep, Env3 whatever the Mod Matrix sends it to: ADSR, AR, ASR, the SID chip's ADSR, the vactrol, the acid gate and the chip's sixteen steps. |
 | LFO1 to LFO4 | `modulation/lfos.rs` | Slow movement for the mod matrix. |
 | Filter | `filters/mod.rs` | The ladder, diode, OTA, multimode and Sallen-Key filters, or the low-pass gate. |
 | Matrix | `modulation/matrix.rs` | Six routes from a source, such as an LFO or the velocity, to a destination, such as the cutoff. |

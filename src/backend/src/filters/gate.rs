@@ -115,7 +115,7 @@ impl GatePart {
         let resonance = number(spec, "resonance", 0.0).clamp(0.0, 1.0);
         let response = number(spec, "response", envelopes::SLOW_RESPONSE);
         let age = number(spec, "age", 0.0);
-        let (rise, fall) = envelopes::cell_times(response, age);
+        let (rise, fall) = envelopes::vactrol::cell_times(response, age);
         Some(GatePart {
             mode,
             trigger,

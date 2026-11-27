@@ -27,6 +27,11 @@ pub fn folders() -> Vec<(&'static str, Vec<&'static str>, &'static [&'static str
             crate::effects::HELPERS,
         ),
         (
+            "envelopes",
+            crate::envelopes::REGISTRY.iter().map(|entry| entry.file).collect(),
+            crate::envelopes::HELPERS,
+        ),
+        (
             "filters",
             crate::filters::REGISTRY.iter().map(|entry| entry.file).collect(),
             crate::filters::HELPERS,

@@ -8,7 +8,14 @@
 //! Each answers a level from 0 to about 1 at a time into its note, in closed form, so that no sample ever depends on the
 //! chunk it falls in. Env1 is the amp, Env2 the filter's sweep and Env3 the pitch envelope.
 
+pub mod acid_gate;
+pub mod adsr;
+pub mod chip_steps;
+pub mod sid_adsr;
+pub mod vactrol;
+
 use crate::protocol::values::{number, word};
+use crate::registry::{self, Entry};
 use rmpv::Value;
 
 const SILENT: f64 = 1e-4;
@@ -175,71 +182,64 @@ const TIRED_SLOWER: f64 = 1.0;
 /// The envelope type that is no envelope, which Env2 and Env3 may hold.
 const OFF: &str = "none";
 
-/// An envelope part from its spec; resonance is the filter's, which the acid gate's capacitor is fed through.
+/// An envelope part from its spec, built by its registry's entry; resonance is the filter's, which the acid gate's
+/// capacitor is fed through. A type no entry holds is no envelope.
 pub fn compiled(spec: &Value, resonance: f64) -> EnvelopePart {
-    match word(spec, "type", "adsr") {
-        "sid_adsr" => sid_adsr(spec),
-        "vactrol" => vactrol(spec),
-        "acid_gate" => EnvelopePart::AcidGate {
-            accent: number(spec, "accent", 0.6),
-            threshold: number(spec, "accent_threshold", 110.0),
-            sweep: number(spec, "accent_sweep", 0.5),
-            accent_decay: number(spec, "accent_decay", 0.2).max(SHORTEST_TIME),
-            amp_decay: number(spec, "amp_decay", 1.5).max(SHORTEST_TIME),
-            soft_attack: number(spec, "soft_attack", 0.003).max(SHORTEST_ATTACK),
-            resonance,
-        },
-        OFF => EnvelopePart::Off,
-        "chip_steps" => EnvelopePart::ChipSteps {
-            start_level: number(spec, "start_level", 15.0),
-            pace: number(spec, "level_pace", 0.0),
-            up: crate::protocol::values::truth(spec, "level_up", false),
-        },
-        kind => adsr(spec, kind),
+    match registry::find(REGISTRY, word(spec, "type", "adsr")) {
+        Some(entry) => (entry.build)(spec, resonance),
+        None => EnvelopePart::Off,
     }
 }
 
-fn adsr(spec: &Value, kind: &str) -> EnvelopePart {
-    let struck = kind == "ar";
-    let release = number(spec, "release", 0.2).max(SHORTEST_TIME) / T60;
-    let mut sustain = number(spec, "sustain", 0.6);
-    let mut decay = number(spec, "decay", 0.3).max(SHORTEST_TIME) / T60;
-    if struck {
-        sustain = 0.0;
-        decay = release;
-    } else if kind == "asr" {
-        sustain = 1.0;
-    }
-    let curve = number(spec, "attack_curve", TIMER_CURVE);
-    let target = (curve > STRAIGHT).then(|| 1.0 + 0.5 * (TIMER_CURVE / curve).powf(CURVE_POWER));
-    let bend = (curve < -STRAIGHT).then(|| SWELL_BEND * -curve / 100.0);
-    EnvelopePart::Adsr {
-        attack: number(spec, "attack", 0.005).max(SHORTEST_ATTACK),
-        hold: number(spec, "hold", 0.0),
-        decay,
-        sustain,
-        release,
-        snap: number(spec, "snap", 0.0),
-        target,
-        bend,
-        struck,
-    }
-}
+/// How an envelope type is built: from its spec and the filter's resonance.
+pub type Build = fn(&Value, f64) -> EnvelopePart;
 
-fn sid_adsr(spec: &Value) -> EnvelopePart {
-    let rate = |name: &str, default: f64| SID_PERIODS[(number(spec, name, default) as usize).min(15)] / SID_CLOCK;
-    let attack_step = rate("attack", 0.0);
-    let sustain = number(spec, "sustain", 10.0).clamp(0.0, 15.0) * SID_SUSTAIN_STEP;
-    let rise = SID_TOP * attack_step;
-    let mut held = vec![(0.0, 0.0)];
-    for (time, level) in sid_fall(SID_TOP, sustain, rate("decay", 9.0)) {
-        held.push((rise + time, level));
-    }
-    EnvelopePart::SidAdsr {
-        held,
-        release_step: rate("release", 9.0),
-    }
-}
+/// Every envelope type, by the name a spec gives it, the file that holds it, and how it is built.
+pub static REGISTRY: &[Entry<Build>] = &[
+    Entry {
+        name: "acid_gate",
+        file: "acid_gate.rs",
+        build: acid_gate::compiled,
+    },
+    Entry {
+        name: "adsr",
+        file: "adsr.rs",
+        build: |spec, _resonance| adsr::compiled(spec, "adsr"),
+    },
+    Entry {
+        name: "ar",
+        file: "adsr.rs",
+        build: |spec, _resonance| adsr::compiled(spec, "ar"),
+    },
+    Entry {
+        name: "asr",
+        file: "adsr.rs",
+        build: |spec, _resonance| adsr::compiled(spec, "asr"),
+    },
+    Entry {
+        name: "chip_steps",
+        file: "chip_steps.rs",
+        build: |spec, _resonance| chip_steps::compiled(spec),
+    },
+    Entry {
+        name: OFF,
+        file: "mod.rs",
+        build: |_spec, _resonance| EnvelopePart::Off,
+    },
+    Entry {
+        name: "sid_adsr",
+        file: "sid_adsr.rs",
+        build: |spec, _resonance| sid_adsr::sid_adsr(spec),
+    },
+    Entry {
+        name: "vactrol",
+        file: "vactrol.rs",
+        build: |spec, _resonance| vactrol::vactrol(spec),
+    },
+];
+
+/// The files of the envelopes' folder that are no envelope type of their own: none today.
+pub const HELPERS: &[&str] = &[];
 
 /// The Response of a slow cell, the vactrol's default: two thirds of the way from fast to lazy.
 pub const SLOW_RESPONSE: f64 = 0.67;
@@ -247,95 +247,12 @@ pub const SLOW_RESPONSE: f64 = 0.67;
 /// seconds: the fast, classic, slow and lazy cells of the vactrol's datasheets.
 const CELLS: [(f64, f64, f64); 4] = [(0.0, 0.0025, 0.035), (0.33, 0.005, 0.08), (SLOW_RESPONSE, 0.012, 0.25), (1.0, 0.02, 0.6)];
 
-/// A cell's rise and fall in seconds at a Response from 0 (fast) to 1 (lazy), each moving evenly in its logarithm between
-/// the two cells it lies between, and slowed by its Age, as an old cell is.
-pub fn cell_times(response: f64, age: f64) -> (f64, f64) {
-    let response = response.clamp(0.0, 1.0);
-    let after = CELLS.iter().position(|cell| cell.0 >= response).unwrap_or(CELLS.len() - 1).max(1);
-    let (from, to) = (CELLS[after - 1], CELLS[after]);
-    let along = (response - from.0) / (to.0 - from.0);
-    let between = |low: f64, high: f64| low * (high / low).powf(along);
-    let rise = between(from.1, to.1).max(SHORTEST_ATTACK) * (1.0 + AGE_SLOWER_RISE * age);
-    let fall = between(from.2, to.2).max(SHORTEST_CELL_FALL) * (1.0 + AGE_LONGER_FALL * age);
-    (rise, fall)
-}
-
-fn vactrol(spec: &Value) -> EnvelopePart {
-    let age = number(spec, "age", 0.0);
-    let light = 1.0 - AGE_DIMMING * age;
-    let (rise, fall) = match spec_number(spec, "response") {
-        Some(response) => cell_times(response, age),
-        None => (
-            number(spec, "rise", 0.012).max(SHORTEST_ATTACK) * (1.0 + AGE_SLOWER_RISE * age),
-            number(spec, "fall", 0.25).max(SHORTEST_CELL_FALL) * (1.0 + AGE_LONGER_FALL * age),
-        ),
-    };
-    let unstable = 1.0 - number(spec, "stability", 1.0);
-    let gated = word(spec, "drive", "strike") != "strike";
-    let width = number(spec, "strike_width", 0.002);
-    let full = if gated {
-        1.0
-    } else {
-        1.0 - (-width / (rise * light.powf(-RISE_POWER))).exp()
-    };
-    EnvelopePart::Vactrol {
-        rise,
-        fall,
-        gated,
-        width,
-        memory: (number(spec, "memory", 0.3) * (1.0 + AGE_MORE_MEMORY * age)).min(1.0),
-        light,
-        unstable: (
-            FALL_SPREAD * unstable + AGE_SPREAD * age,
-            RISE_SPREAD * unstable + AGE_RISE_SPREAD * age,
-            LIGHT_SPREAD * unstable + AGE_SPREAD * age,
-        ),
-        drift: DRIFT * unstable,
-        full,
-    }
-}
-
 /// A number the spec holds, or None where it holds none.
 fn spec_number(spec: &Value, key: &str) -> Option<f64> {
     spec.as_map()?
         .iter()
         .find(|(name, _)| name.as_str() == Some(key))
         .and_then(|(_, value)| value.as_f64().or_else(|| value.as_i64().map(|whole| whole as f64)))
-}
-
-/// The SID chip's fall from a counter level to a floor, as (seconds, level) points, one straight segment for each division
-/// of its exponential counter, each slower.
-fn sid_fall(start: f64, floor: f64, step: f64) -> Vec<(f64, f64)> {
-    let mut points = vec![(0.0, start)];
-    let mut level = start;
-    for (below, division) in SID_DIVISIONS {
-        let lowest = below.max(floor);
-        if level <= lowest {
-            continue;
-        }
-        let time = points.last().map(|point| point.0).unwrap_or(0.0) + (level - lowest) * step * division;
-        points.push((time, lowest));
-        level = lowest;
-        if level <= floor {
-            break;
-        }
-    }
-    points
-}
-
-/// A level read along (time, level) points, held at the last.
-fn along(points: &[(f64, f64)], time: f64) -> f64 {
-    if time <= points[0].0 {
-        return points[0].1;
-    }
-    for pair in points.windows(2) {
-        let (start, end) = (pair[0], pair[1]);
-        if time <= end.0 {
-            let span = (end.0 - start.0).max(1e-12);
-            return start.1 + (end.1 - start.1) * (time - start.0) / span;
-        }
-    }
-    points[points.len() - 1].1
 }
 
 impl EnvelopePart {
@@ -370,7 +287,7 @@ impl EnvelopePart {
                         age,
                         released: gated.then_some(held),
                     };
-                    memory.left = vactrol_level(&mut last, note, *gated, *width, *full) * full;
+                    memory.left = vactrol::vactrol_level(&mut last, note, *gated, *width, *full) * full;
                     memory.left_at = seconds;
                     // The last note lit the cell while held, or for its strike, and on through its fall.
                     let lit = if *gated { held } else { *width };
@@ -383,11 +300,11 @@ impl EnvelopePart {
                 memory.history_at = seconds;
                 let since = (seconds - memory.left_at).max(0.0);
                 let hyperbola = (1.0 / FALL_TO - 1.0) / fall;
-                state.start_level = keep * fallen_scaled(memory.left, since, hyperbola, *full);
+                state.start_level = keep * vactrol::fallen_scaled(memory.left, since, hyperbola, *full);
                 let (mut rise, mut fall, mut light) = (*rise, *fall, *light);
                 if unstable.0 > 0.0 || unstable.1 > 0.0 || unstable.2 > 0.0 {
-                    let (first, second, third) = hit_normals(memory.hits);
-                    let warmth = room_warmth(seconds);
+                    let (first, second, third) = vactrol::hit_normals(memory.hits);
+                    let warmth = vactrol::room_warmth(seconds);
                     fall *= (unstable.0 * first).exp() * (1.0 + drift * warmth);
                     rise *= (unstable.1 * second).exp() * (1.0 + 0.5 * drift * warmth);
                     light = (light * (unstable.2 * third).exp()).min(MOST_LIGHT_SPREAD);
@@ -435,194 +352,19 @@ impl EnvelopePart {
     fn level_now(&self, state: &mut EnvelopeState, note: NoteTime, short: Option<f64>) -> f64 {
         match self {
             EnvelopePart::Adsr { .. } => self.adsr_level(state, note, short),
-            EnvelopePart::SidAdsr { held, release_step } => sid_level(held, *release_step, state, note),
-            EnvelopePart::Vactrol { gated, width, full, .. } => vactrol_level(state, note, *gated, *width, *full),
+            EnvelopePart::SidAdsr { held, release_step } => sid_adsr::sid_level(held, *release_step, state, note),
+            EnvelopePart::Vactrol { gated, width, full, .. } => vactrol::vactrol_level(state, note, *gated, *width, *full),
             EnvelopePart::AcidGate {
                 accent,
                 accent_decay,
                 amp_decay,
                 soft_attack,
                 ..
-            } => acid_level(state, note, *accent, *accent_decay, *amp_decay, *soft_attack),
-            EnvelopePart::ChipSteps { start_level, pace, up } => chip_level(state, note, *start_level, *pace, *up),
+            } => acid_gate::acid_level(state, note, *accent, *accent_decay, *amp_decay, *soft_attack),
+            EnvelopePart::ChipSteps { start_level, pace, up } => chip_steps::chip_level(state, note, *start_level, *pace, *up),
             EnvelopePart::Off => 0.0,
         }
     }
-
-    fn adsr_level(&self, state: &mut EnvelopeState, note: NoteTime, short: Option<f64>) -> f64 {
-        let EnvelopePart::Adsr { release, struck, attack, .. } = self else {
-            return 0.0;
-        };
-        if *struck {
-            let level = self.held(note.age, short, state.start_level);
-            if note.age > *attack && level < SILENT {
-                state.done = true;
-            }
-            return level;
-        }
-        let Some(released) = note.released else {
-            return self.held(note.age, short, state.start_level);
-        };
-        let from = *state.released_from.get_or_insert_with(|| self.held(released, short, state.start_level));
-        let since = note.age - released;
-        if since < 0.0 {
-            return self.held(note.age, short, state.start_level);
-        }
-        let falling = from * (-since / release).exp();
-        if falling < SILENT {
-            state.done = true;
-        }
-        falling
-    }
-
-    /// The ADSR while its note is held: the attack from where it starts, the hold at the top, then the decay to the
-    /// sustain.
-    fn held(&self, age: f64, short: Option<f64>, from: f64) -> f64 {
-        let EnvelopePart::Adsr {
-            attack,
-            hold,
-            decay,
-            sustain,
-            snap,
-            target,
-            bend,
-            ..
-        } = self
-        else {
-            return 0.0;
-        };
-        if age < *attack {
-            let x = (age / attack).min(1.0);
-            let rising = match (target, bend) {
-                (Some(target), _) => target * (1.0 - ((target - 1.0) / target).powf(x)),
-                (None, Some(bend)) => ((bend * x).exp() - 1.0) / (bend.exp() - 1.0),
-                _ => x,
-            };
-            // A restruck note rises from the level it had reached, so the attack never starts from a jump to silence.
-            return from + (1.0 - from) * rising;
-        }
-        let decay = short.map(|time| time / T60).unwrap_or(*decay);
-        let gone = (age - attack - hold).max(0.0);
-        let mut fall = (-gone / decay).exp();
-        if *snap > 0.0 {
-            fall = (1.0 - snap) * fall + snap * (-gone * (SNAP_SPEED / decay)).exp();
-        }
-        sustain + (1.0 - sustain) * fall
-    }
-}
-
-fn sid_level(held: &[(f64, f64)], release_step: f64, state: &mut EnvelopeState, note: NoteTime) -> f64 {
-    let mut counter = along(held, note.age);
-    if let Some(released) = note.released {
-        let from = *state.released_from.get_or_insert_with(|| along(held, released).floor());
-        if note.age >= released {
-            counter = along(&sid_fall(from, 0.0, release_step), note.age - released);
-            if counter < 1.0 {
-                state.done = true;
-            }
-        }
-    }
-    counter.floor() / SID_TOP
-}
-
-fn vactrol_level(state: &mut EnvelopeState, note: NoteTime, gated: bool, width: f64, full: f64) -> f64 {
-    let lit = if gated { note.released.unwrap_or(f64::INFINITY) } else { width };
-    let rising = |age: f64| state.drive + (state.start_level - state.drive) * (-age.min(lit) / state.rise).exp();
-    let level = if note.age < lit {
-        rising(note.age)
-    } else {
-        let peak = rising(lit);
-        let out = fallen_scaled(peak, note.age - lit, state.hyperbola, full);
-        if out < SILENT {
-            state.done = true;
-        }
-        out
-    };
-    (level / full).min(MOST_LIGHT)
-}
-
-fn acid_level(state: &mut EnvelopeState, note: NoteTime, accent: f64, accent_decay: f64, amp_decay: f64, soft_attack: f64) -> f64 {
-    let age = note.age;
-    let mut level = if state.accented {
-        let swell = 1.0 + ACCENT_LOUDER * accent * (-age * (T60 / accent_decay)).exp();
-        (age / ACCENT_ATTACK).min(1.0) * (-age / amp_decay).exp() * swell
-    } else {
-        (age / soft_attack).min(1.0) * (-age / amp_decay).exp()
-    };
-    if let Some(released) = note.released {
-        let since = age - released;
-        level *= (1.0 - since / END_FADE).clamp(0.0, 1.0);
-        if since >= END_FADE {
-            state.done = true;
-        }
-    }
-    level
-}
-
-fn chip_level(state: &mut EnvelopeState, note: NoteTime, start_level: f64, pace: f64, up: bool) -> f64 {
-    let mut level = start_level;
-    if pace > 0.0 {
-        let moved = (note.age * CHIP_TICKS / pace).floor();
-        level = if up { (level + moved).min(CHIP_LEVELS) } else { (level - moved).max(0.0) };
-    }
-    if level == 0.0 && (pace > 0.0 || start_level == 0.0) && !up {
-        state.done = true;
-    }
-    // The chip's first level eased in over the shortest attack, so that a note's start does not click; its steps after are
-    // the chip's own.
-    let mut out = level / CHIP_LEVELS * (note.age / SHORTEST_ATTACK).min(1.0);
-    if let Some(released) = note.released {
-        let since = note.age - released;
-        out *= (1.0 - since / CHIP_FADE).clamp(0.0, 1.0);
-        if since >= CHIP_FADE {
-            state.done = true;
-        }
-    }
-    out
-}
-
-/// The cell's conductance a time after its light went off: the hyperbolic fall, and a slow leak under its tail.
-fn fallen(level: f64, seconds: f64, hyperbola: f64) -> f64 {
-    level / (1.0 + hyperbola * level * seconds) * (-seconds / LEAK_SECONDS).exp()
-}
-
-/// The fall of a light that a strike lit only to a share of full (full, 1 when held), worked out on the light as it is
-/// heard, scaled up to full: the hyperbola falls faster the brighter the cell, so a strike's small real light must fall at
-/// the speed its heard level gives, reaching a tenth at its Fall time whatever its Trigger time.
-fn fallen_scaled(level: f64, seconds: f64, hyperbola: f64, full: f64) -> f64 {
-    fallen(level / full, seconds, hyperbola) * full
-}
-
-/// Three standard normals for a vactrol's hit by its number, the same every playing: splitmix64 through Box-Muller.
-fn hit_normals(hit: u64) -> (f64, f64, f64) {
-    let (first, second) = uniforms(hit * 2 + 1);
-    let (third, fourth) = uniforms(hit * 2 + 2);
-    let radius = (-2.0 * first.ln()).sqrt();
-    let angle = 2.0 * std::f64::consts::PI * second;
-    (
-        radius * angle.cos(),
-        radius * angle.sin(),
-        (-2.0 * third.ln()).sqrt() * (2.0 * std::f64::consts::PI * fourth).cos(),
-    )
-}
-
-fn uniforms(number: u64) -> (f64, f64) {
-    let mix = |step: u64| {
-        let mut value = step.wrapping_mul(0x9E37_79B9_7F4A_7C15);
-        value = (value ^ (value >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
-        value = (value ^ (value >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
-        value ^= value >> 31;
-        (value as f64 + 1.0) / (u64::MAX as f64 + 2.0)
-    };
-    (mix(number), mix(number.wrapping_add(0x9E37_79B9_7F4A_7C15)))
-}
-
-/// The room's warmth from -1 to 1 at a time: slow, smooth and the same every playing.
-fn room_warmth(seconds: f64) -> f64 {
-    WARMTH
-        .iter()
-        .map(|(period, weight, phase)| weight * (2.0 * std::f64::consts::PI * seconds / period + phase).sin())
-        .sum()
 }
 
 #[cfg(test)]
@@ -659,11 +401,11 @@ mod tests {
     fn the_response_passes_through_every_cell() {
         let new = 0.0;
         for (place, rise, fall) in CELLS {
-            let (at_rise, at_fall) = cell_times(place, new);
+            let (at_rise, at_fall) = vactrol::cell_times(place, new);
             assert!((at_rise - rise).abs() < 1e-12 && (at_fall - fall).abs() < 1e-12, "{place}");
         }
-        let (quick, _) = cell_times(0.1, new);
-        let (lazier, _) = cell_times(0.2, new);
+        let (quick, _) = vactrol::cell_times(0.1, new);
+        let (lazier, _) = vactrol::cell_times(0.2, new);
         assert!(CELLS[0].1 < quick && quick < lazier && lazier < CELLS[1].1);
     }
 
