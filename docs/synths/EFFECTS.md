@@ -48,14 +48,29 @@ stab turns into a little falling figure in time with the song.
 
 Sync, on unless switched off, times each tap as a division of the beat that
 follows the song's tempo, from 1/32 to 1/1, dotted (`d`) or triplet (`t`);
-off, each tap's time is in milliseconds, from 1 to 4000. Each Tap row has two
-cells, its time and its level: Left and Right move between them, `[` and `]`
-step the one under the cursor, and a level of 0% silences the tap. Feedback
-sends the last tap back into the delay, so that the whole figure repeats,
-quieter each time, up to 90% so that it never runs away. Tone darkens each
-repeat, as the echoes of a tape or an old digital delay soften, from 500 Hz to
-18 kHz. Mix blends the echoes in under the sound, 35% as a new MultiTap
-starts. The delay holds up to four seconds, a bar at 60 beats a minute.
+off, each tap's time is in milliseconds, from 1 to 4000. Time change says how
+a tap reaches a new time, as a synced tap does when the tempo moves: Fade, as
+a new MultiTap starts, crossfades from the old echo to the new one without a
+click or a bend, and Glide slides the echo there, bending its pitch on the way
+as a tape echo does.
+
+Each Tap row has three cells: a switch, its time and its level. Left and Right
+move between them, Space or ENTER turns the switch, which silences the tap
+while keeping its level, and `[` and `]` step the time or level under the
+cursor.
+
+Feedback from chooses the tap sent back into the delay, Tap 4 as a new
+MultiTap starts, and Feedback says how much, up to 90% so that it never runs
+away: from the last tap the whole figure repeats, quieter each time, and from
+an earlier tap the figure overlaps itself in a new rhythm. A tap switched off
+sends nothing back. Tone darkens each repeat, as the echoes of a tape or an
+old digital delay soften, from 500 Hz to 18 kHz, and Low cut thins each one,
+from 20 Hz to 2 kHz, 80 Hz as a new MultiTap starts, so that the repeats of a
+bass or a kick do not pile up into a rumble.
+
+Mix sets how loud the echoes come in under the sound, which itself stays whole,
+35% as a new MultiTap starts. The delay holds up to four seconds, a bar at 60
+beats a minute.
 
 ## Planned
 

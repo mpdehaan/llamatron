@@ -386,6 +386,9 @@ fn effects(sound: &Sound) -> Data {
             put(&mut effect, "taps", taps(sound, number));
             let feedback = share(&sound.effect_setting(number, "feedback"), PERCENT);
             set(&mut effect, "feedback", feedback);
+            let from = sound.effect_setting(number, "feedback_from");
+            let tap = from.as_str().and_then(|tap| tap.parse::<i128>().ok()).unwrap_or(4);
+            set(&mut effect, "feedback_from", Data::Whole(tap));
         }
         for name in ["amount", "mix"] {
             let scaled = effect.get(name).map(|value| share(value, PERCENT)).unwrap_or(Data::Float(0.0));
@@ -416,7 +419,7 @@ pub const DELAY_DIVISIONS: [(&str, f64); 13] = [
 ];
 
 /// A MultiTap's four taps as the backend reads them: each a share of a quarter note while Sync is on, else seconds, and
-/// its level as a fraction.
+/// its level as a fraction, and whether it sounds.
 fn taps(sound: &Sound, number: usize) -> Data {
     let synced = !matches!(sound.effect_setting(number, "sync"), Data::Bool(false));
     let taps = (1..=4)
@@ -432,7 +435,8 @@ fn taps(sound: &Sound, number: usize) -> Data {
             } else {
                 ("seconds", share(&setting("ms"), MILLISECONDS))
             };
-            mapping(vec![time, ("level", share(&setting("level"), PERCENT))])
+            let on = Data::Bool(!matches!(setting("on"), Data::Bool(false)));
+            mapping(vec![time, ("level", share(&setting("level"), PERCENT)), ("on", on)])
         })
         .collect();
     Data::List(taps)

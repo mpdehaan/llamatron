@@ -136,4 +136,7 @@ pub const MAX_TAP_MS: i64 = 4000;
 pub const MAX_TAP_FEEDBACK: i64 = 90;
 pub const MIN_TAP_TONE: i64 = 500;
 pub const MAX_TAP_TONE: i64 = 18000;
+/// MultiTap's Low cut range in hertz.
+pub const MIN_TAP_LOW_CUT: i64 = 20;
+pub const MAX_TAP_LOW_CUT: i64 = 2000;
 pub const MAX_HOLD_RATE: i64 = 48000;

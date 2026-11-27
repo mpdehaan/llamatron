@@ -28,8 +28,8 @@ use llamatron_model::schema::generated::file_format::{
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
-    MAX_KNOB, MAX_MATRIX_AMOUNT, MAX_OSCILLATORS, MAX_PAN, MAX_SID_RATE, MAX_TAP_FEEDBACK, MAX_TAP_MS, MAX_TAP_TONE, MAX_VOICES, MAX_VOLUME_PERCENT, MIN_BITS,
-    MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY, MIN_KEYSWITCH_LEAD, MIN_PAN, MIN_TAP_TONE, MOST_BAX_DECIBELS,
+    MAX_KNOB, MAX_MATRIX_AMOUNT, MAX_OSCILLATORS, MAX_PAN, MAX_SID_RATE, MAX_TAP_FEEDBACK, MAX_TAP_LOW_CUT, MAX_TAP_MS, MAX_TAP_TONE, MAX_VOICES,
+    MAX_VOLUME_PERCENT, MIN_BITS, MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY, MIN_KEYSWITCH_LEAD, MIN_PAN, MIN_TAP_LOW_CUT, MIN_TAP_TONE, MOST_BAX_DECIBELS,
 };
 use llamatron_strings::{labels, legends, marks, messages, named};
 
@@ -146,13 +146,17 @@ pub struct InstrumentEditor {
     pub name: String,
 }
 
-/// The settings of MultiTap's four taps, by tap: its time as a division of the beat, its time in milliseconds, its level.
-const TAP_SETTINGS: [(&str, &str, &str); 4] = [
-    ("tap1_division", "tap1_ms", "tap1_level"),
-    ("tap2_division", "tap2_ms", "tap2_level"),
-    ("tap3_division", "tap3_ms", "tap3_level"),
-    ("tap4_division", "tap4_ms", "tap4_level"),
+/// The settings of MultiTap's four taps, by tap: whether it sounds, its time as a division of the beat, its time in
+/// milliseconds, its level.
+const TAP_SETTINGS: [(&str, &str, &str, &str); 4] = [
+    ("tap1_on", "tap1_division", "tap1_ms", "tap1_level"),
+    ("tap2_on", "tap2_division", "tap2_ms", "tap2_level"),
+    ("tap3_on", "tap3_division", "tap3_ms", "tap3_level"),
+    ("tap4_on", "tap4_division", "tap4_ms", "tap4_level"),
 ];
+/// The taps MultiTap may feed back from, and how it reaches a changed time.
+const FEEDBACK_FROM_TAPS: [&str; 4] = ["1", "2", "3", "4"];
+const TIME_CHANGES: [&str; 2] = ["fade", "glide"];
 
 /// Whether a switch that is on unless set off is on.
 fn flag_or_on(value: &Data) -> bool {
@@ -1338,10 +1342,23 @@ impl InstrumentEditor {
         let mut fields = vec![
             Field::toggle(ids.at(Write::Item("effects", number, "sync")), &numbered(labels::MSG_EFFECT_SYNC_LABEL), synced)
                 .with_shown_label(&shown_label(labels::MSG_EFFECT_SYNC_LABEL)),
+            chosen(
+                ids.at(Write::Item("effects", number, "time_change")),
+                &numbered(labels::MSG_EFFECT_TIME_CHANGE_LABEL),
+                &TIME_CHANGES,
+                &names_in(labels::MSG_TIME_CHANGE_NAMES, &TIME_CHANGES),
+                &text(&effect("time_change")),
+            )
+            .with_shown_label(&shown_label(labels::MSG_EFFECT_TIME_CHANGE_LABEL)),
         ];
         for (tap, names) in TAP_SETTINGS.iter().enumerate() {
             let tapped = |label: &str| named(label, &[("number", number.into()), ("tap", (tap + 1).into())]);
-            let (division, ms, level) = *names;
+            let (on, division, ms, level) = *names;
+            let switch = Field::toggle(
+                ids.at(Write::Item("effects", number, on)),
+                &tapped(labels::MSG_EFFECT_TAP_ON_LABEL),
+                flag_or_on(&effect(on)),
+            );
             let time = if synced {
                 let divisions: Vec<&str> = DELAY_DIVISIONS.iter().map(|(name, _)| *name).collect();
                 chosen(
@@ -1380,11 +1397,21 @@ impl InstrumentEditor {
             let time = time.padded_to(if synced { DIVISION_WIDTH } else { TAP_MS_WIDTH });
             let row_label = named(labels::MSG_TAP_SHOWN_LABEL, &[("tap", (tap + 1).into())]);
             fields.push(
-                Field::cells(ids.next(), &tapped(labels::MSG_EFFECT_TAP_LABEL), vec![time, loudness])
+                Field::cells(ids.next(), &tapped(labels::MSG_EFFECT_TAP_LABEL), vec![switch, time, loudness])
                     .stepped()
                     .with_shown_label(&row_label),
             );
         }
+        fields.push(
+            chosen(
+                ids.at(Write::Item("effects", number, "feedback_from")),
+                &numbered(labels::MSG_EFFECT_FEEDBACK_FROM_LABEL),
+                &FEEDBACK_FROM_TAPS,
+                &names_in(labels::MSG_FEEDBACK_FROM_NAMES, &FEEDBACK_FROM_TAPS),
+                &text(&effect("feedback_from")),
+            )
+            .with_shown_label(&shown_label(labels::MSG_EFFECT_FEEDBACK_FROM_LABEL)),
+        );
         fields.push(
             gauge(
                 ids.at(Write::Item("effects", number, "feedback")),
@@ -1408,6 +1435,18 @@ impl InstrumentEditor {
                 (true, 1),
             )
             .with_shown_label(&shown_label(labels::MSG_EFFECT_TONE_LABEL)),
+        );
+        fields.push(
+            gauge(
+                ids.at_gauge(Write::Item("effects", number, "low_cut"), HERTZ_STRIDES),
+                &numbered(labels::MSG_EFFECT_LOW_CUT_LABEL),
+                whole(&effect("low_cut")),
+                (MIN_TAP_LOW_CUT, MAX_TAP_LOW_CUT),
+                BLOCK_CELLS,
+                marks::MSG_HERTZ_SHOWN,
+                (true, 1),
+            )
+            .with_shown_label(&shown_label(labels::MSG_EFFECT_LOW_CUT_LABEL)),
         );
         fields
     }
@@ -1959,7 +1998,7 @@ mod tests {
     /// MultiTap shows Sync, a row of time and level for each of its four taps, then Feedback, Tone and its own Mix of 35%;
     /// a falling figure untouched, the taps on 1/8, 1/4, 1/4d and 1/2. With Sync off each tap's time is in milliseconds.
     #[test]
-    fn multitap_shows_its_taps_as_rows_of_time_and_level() {
+    fn multitap_shows_its_taps_as_rows_of_switch_time_and_level() {
         let fields_of = |effect: &str| {
             let text = format!("{{ name: synth, kind: built_in, role: normal, sound: {{ engine: basic, effects: [{effect}] }} }}");
             let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
@@ -1974,9 +2013,10 @@ mod tests {
         let tapped = |label: &str, tap: usize| named(label, &[("number", 1.into()), ("tap", tap.into())]);
         let taps: Vec<&Field> = synced.iter().filter(|field| field.is_cells()).collect();
         assert_eq!(taps.len(), 4);
-        let times: Vec<String> = taps.iter().map(|tap| tap.cells[0].value().trim_end().to_string()).collect();
+        let times: Vec<String> = taps.iter().map(|tap| tap.cells[1].value().trim_end().to_string()).collect();
         assert_eq!(times, ["1/8", "1/4", "1/4d", "1/2"]);
-        assert!(taps[0].cells[1]
+        assert!(taps.iter().all(|tap| tap.cells[0].is_toggle() && tap.cells[0].value() == marks::MSG_TOGGLE_ON));
+        assert!(taps[0].cells[2]
             .value()
             .ends_with(&named(marks::MSG_SOUND_PERCENT_SHOWN, &[("number", 70.into())])));
         assert_eq!(taps[0].label, tapped(labels::MSG_EFFECT_TAP_LABEL, 1));
@@ -1990,9 +2030,16 @@ mod tests {
         let free = fields_of("{ effect: multitap, sync: false }");
         let first = free.iter().find(|field| field.is_cells()).expect("a tap row");
         assert_eq!(
-            first.cells[0].value().trim_end(),
+            first.cells[1].value().trim_end(),
             named(marks::MSG_MILLISECONDS_SHOWN, &[("number", 250.into())])
         );
+        let second_off = fields_of("{ effect: multitap, tap2_on: false }");
+        let switches: Vec<bool> = second_off
+            .iter()
+            .filter(|field| field.is_cells())
+            .map(|tap| tap.cells[0].value() == marks::MSG_TOGGLE_ON)
+            .collect();
+        assert_eq!(switches, [true, false, true, true]);
     }
 
     /// A set of one song with an instrument of the YAML given, called fish, and a track called bass playing it or not.

@@ -14,6 +14,7 @@ pub mod envelopes;
 pub mod filters;
 pub mod gate;
 pub mod modulation;
+pub mod multitap;
 pub mod oscillators;
 pub mod oversample;
 pub mod patch;

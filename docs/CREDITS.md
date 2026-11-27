@@ -14,6 +14,7 @@ every algorithm in the code names the work it follows and its licence.
 | Work | Author | Licence | What llamatron uses |
 | --- | --- | --- | --- |
 | [sst-filters](https://github.com/surge-synthesizer/sst-filters) | the Surge Synth Team, 2019 to 2025 | GPL-3.0-or-later | The Sallen-Key filter's model of the resonant two-pole circuit, adapted there from Odin 2 (`src/backend/src/voice/sallen_key.rs`), and the Multimode's saturating band state, after its ResonanceWarp (`src/backend/src/voice/filters.rs`) |
+| [sst-effects](https://github.com/surge-synthesizer/sst-effects) | the Surge Synth Team | GPL-3.0-or-later | MultiTap's crossfade to a changed tap time: half the delay long, held between 10 and 500 ms, a change during a fade waiting for it to end (`src/backend/src/voice/multitap.rs`) |
 | [Odin 2](https://github.com/TheWaveWarden/odin2) | TheWaveWarden | GPL-3.0-or-later | The resonant two-pole filter sst-filters adapted, after Will Pirkle's virtual-analog design |
 | [Streams](https://github.com/pichenettes/eurorack/tree/master/streams), Mutable Instruments | Emilie Gillet, 2014 | MIT | The vactrol's light history: a cell tiring under light and resting in the dark (`src/backend/src/voice/envelopes.rs`) |
 | [stmlib](https://github.com/pichenettes/stmlib) | Emilie Gillet | MIT | The polyBLEP that smooths the jumps of the LFOs', Basic's, the SID pulse's and Asheville's waves, and the one-sample-delayed BLEP of the SID's hard sync (`src/backend/src/voice/blep.rs`); the soft limit the ladder saturates through (`src/backend/src/voice/filters.rs`) |
