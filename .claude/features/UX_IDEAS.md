@@ -3,13 +3,6 @@
 Wanted changes to how the tracker looks and is used: what each is, never its status or order (those are in
 `.claude/planning/QUEUE.md`). An idea leaves this file once built, and a rule it makes goes into `.claude/rules/UX.md`.
 
-- **Arrange without + rows and columns**: `I` inserts after the cursor, a scene after the cursor's scene or a track of
-  the cursor's track's kind after it, and is the one way to add them: `A` leaves Arrange. No `+` row under the scenes
-  and no `+` column after a group are drawn; an empty cell still shows `+` and `add` under the cursor. A song always
-  shows at least one scene and both groups: a group with no tracks, such as a new song's drums or a song whose melodic
-  tracks were all deleted, shows a `+` column where `I` makes its first track, gone once it has one. Any track can be
-  deleted, only the last scene refused. `P` pastes a cut scene or track after the one under the cursor, a track only
-  among its kind, onto a group's `+` as its first track.
 - **A new track's own instrument**: every track made on Arrange gets an instrument of its own named after it, `bass`,
   then `bass-2` if taken, a copied track a copy of its instrument; its kind by the track's and its engine by Track Inst.
   Default: FluidSynth, General MIDI 1 Acoustic Grand Piano for a melodic track and the drum channel, 10, for a drum

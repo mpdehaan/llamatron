@@ -18,17 +18,20 @@ starts with `track-1` and `scene-1`, and new tracks and scenes are numbered
 the same way until they are renamed on their own pages.
 
 The melodic tracks come first, then a heavy line, then the drum tracks, each
-group in the order the set keeps them, and each ending in a `+` that adds a
-track of its kind. A track is a melodic track or a drum track from when it is
+group in the order the set keeps them. `I` (insert) adds a scene after the
+scene under the cursor, or a track of the cursor's track's kind after it, so
+the grid draws no `+` row or column of its own and leaves the room to the
+clips. A group with no tracks yet, such as a new song's drums, shows a `+`
+in its column's heading, where `I` makes its first track; once it has one
+the `+` goes. A track is a melodic track or a drum track from when it is
 made, and never changes, so a clip on a drum track only ever plays a drum
 pattern: choosing a pattern for an empty cell offers only patterns of its
 track's kind, and a new pattern made there is already the right kind.
 
 Light blue lines run between the tracks and under each scene, so that the grid
 is easy to follow. A double-lined box inside a cell marks whatever the cursor
-is on: a clip, a scene, a track name, or one of the `+` places, including the
-two `+` after each group of tracks. Under the track names the `+` between the
-groups holds nothing, so the arrows pass over it. The arrows move the box around the grid. When there
+is on: a clip, a scene, a track name, or an empty group's `+`. Under the
+track names a `+` column holds nothing, so the arrows pass over it. The arrows move the box around the grid. When there
 are more tracks or scenes than fit, the clips scroll while the track names and
 the scene column stay in place. An empty cell is blank until the cursor
 reaches it, when it shows `+` and `add`.
@@ -45,22 +48,19 @@ The keys depend on what is under the cursor:
 | Where | Key | What it does |
 | --- | --- | --- |
 | A track's name | `ENTER` | Open the track editor, as [Tracks](TRACKS.md) describes |
-| A track's name | `I` | Insert a blank track of its kind before it |
+| A track's name | `I` | Insert a blank track of its kind after it |
+| An empty group's `+` | `I` | Make the group's first track |
 | A track's name | `C` | Copy the track and its clips to its right, asking whether the copy plays the same patterns or copies of them |
-| A track's name | `T` | Cut the track: `P` on another track of its kind pastes it before that track, `P` on its group's `+` at the end of the group, and `ESC` lets go |
-| A track's name | `Bksp` | Delete the track and its clips, after asking; the last track can't be deleted |
-| The `+` after the melodic tracks, or a melodic track's name | `ENTER` or `A` | Add a melodic track at the end of the melodic tracks |
-| The `+` after the drum tracks, or a drum track's name | `ENTER` or `A` | Add a drum track at the end of the drum tracks |
+| A track's name | `T` | Cut the track: `P` on another track of its kind pastes it after that track, and `ESC` lets go |
+| A track's name | `Bksp` | Delete the track and its clips, after asking; a group left with no tracks shows its `+` |
 | A scene's name | `ENTER` | Open the Scene page, as [Scenes](SCENES.md) describes |
-| A scene's row | `I` | Insert a blank scene above it |
+| A scene's row | `I` | Insert a blank scene after it |
 | A scene's row | `C` | Copy the scene and all its clips below it, asking whether the copy plays the same patterns or copies of them |
-| A scene's name | `T` | Cut the scene: `P` on another scene's name pastes it before that scene, and `ESC` lets go |
+| A scene's name | `T` | Cut the scene: `P` on another scene's name pastes it after that scene, and `ESC` lets go |
 | A clip | `T` | Cut the clip: `P` on an empty cell moves it there, and `ESC` lets go |
 | Anywhere in a track's column | `M` | Mute or unmute the track, the track editor's Mute: its column turns dim and its name shows an amber `M` |
 | Anywhere in a track's column | `S` | Solo the track, or lift its solo: one track is soloed at a time, its name showing a green `S`, and every other track is silent and dim, in real time and in every export |
 | A scene's name | `Bksp` | Delete the scene and its clips, after asking; the last scene can't be deleted |
-| A scene's row | `A` | Add a scene below it |
-| The `+` row at the bottom | `ENTER` or `A` | Add a scene at the end |
 | An empty cell | `ENTER` | Choose what the new clip plays: "(new pattern)", first, does what `B` does; an existing pattern adds a clip of it, and `ENTER` on the clip again opens it |
 | An empty cell | `B` | Make a blank pattern named after the track, add a clip of it and open it in the pattern editor |
 | A clip | `ENTER` | Open the clip page, as [Clips](CLIPS.md) describes |

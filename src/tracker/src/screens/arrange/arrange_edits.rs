@@ -32,35 +32,14 @@ pub fn cursor_row(row: i64, column: usize) -> String {
 impl ArrangePage {
     /// Do what a key that edits the song does, and say whether the key was one.
     pub(super) fn press_edit(&mut self, app: &mut App, item: &KeyItem) -> bool {
-        if item.is(&Keys::ADD_SCENE) || item.is(&Keys::ADD_SCENE_HERE) {
-            self.add_scene(app);
-        } else if item.is(&Keys::INSERT_SCENE) {
-            let index = self.row.get().max(0) as usize;
-            let name = Self::new_scene_name(app);
-            Self::edited(app, |document| document.add_scene(index, &name));
+        if item.is(&Keys::INSERT_SCENE) {
+            self.insert_scene(app);
         } else if item.is(&Keys::COPY_SCENE) {
             self.copy_scene(app);
         } else if item.is(&Keys::DELETE_SCENE) {
             self.delete_scene(app);
-        } else if item.is(&Keys::ADD_TRACK) || item.is(&Keys::ADD_TRACK_HERE) {
-            // On a + column, a track of that column's kind; on a track, one of that track's kind, at the end of its group.
-            let drum = self
-                .plus_here(app)
-                .unwrap_or_else(|| self.cursor_track(app).is_some_and(|track| Self::is_drum_track(app, &track)));
-            let name = Self::new_track_name(app);
-            if Self::edited(app, |document| document.add_track(&name, None, drum)) {
-                self.row.set(HEADER_ROW);
-                if let Some(place) = Self::place_of(app, &name) {
-                    self.column.set(place + FIRST_TRACK_COLUMN);
-                }
-            }
         } else if item.is(&Keys::INSERT_TRACK) {
-            // A track of the cursor's track's kind, just before it.
-            let Some(track) = self.cursor_track(app) else { return true };
-            let drum = Self::is_drum_track(app, &track);
-            let place = app.document.song().tracks().iter().position(|(name, _)| *name == track);
-            let name = Self::new_track_name(app);
-            Self::edited(app, |document| document.add_track(&name, place, drum));
+            self.insert_track(app);
         } else if item.is(&Keys::COPY_TRACK) {
             self.copy_track(app);
         } else if item.is(&Keys::DELETE_TRACK) {
@@ -128,17 +107,32 @@ impl ArrangePage {
         new_name(names::MSG_NEW_TRACK_WORD, &Self::tracks(app))
     }
 
-    /// Add a scene after the cursor's, or at the end from the + row, and move onto its name.
-    fn add_scene(&mut self, app: &mut App) {
-        let index = if self.on_plus_row(app) {
-            Self::scene_count(app) as usize
-        } else {
-            (self.row.get() + 1).max(0) as usize
-        };
+    /// Insert a scene after the cursor's, and move onto its name.
+    fn insert_scene(&mut self, app: &mut App) {
+        let index = (self.row.get() + 1).max(0) as usize;
         let name = Self::new_scene_name(app);
         if Self::edited(app, |document| document.add_scene(index, &name)) {
             self.row.set(index as i64);
             self.column.set(SCENE_COLUMN);
+        }
+    }
+
+    /// Insert a track of the cursor's track's kind after it, or a group's first track from its +, and move onto its name.
+    fn insert_track(&mut self, app: &mut App) {
+        let (drum, place) = match (self.plus_here(app), self.cursor_track(app)) {
+            (Some(drum), _) => (drum, None),
+            (None, Some(track)) => {
+                let after = app.document.song().tracks().iter().position(|(name, _)| *name == track).map(|at| at + 1);
+                (Self::is_drum_track(app, &track), after)
+            }
+            (None, None) => return,
+        };
+        let name = Self::new_track_name(app);
+        if Self::edited(app, |document| document.add_track(&name, place, drum)) {
+            self.row.set(HEADER_ROW);
+            if let Some(column) = Self::place_of(app, &name) {
+                self.column.set(column + FIRST_TRACK_COLUMN);
+            }
         }
     }
 
@@ -223,15 +217,9 @@ impl ArrangePage {
         );
     }
 
-    /// Delete the cursor's track after asking, saying how many clips go with it and how many clips grabbing from it stop,
-    /// never the song's last.
+    /// Delete the cursor's track after asking, saying how many clips go with it and how many clips grabbing from it stop;
+    /// a group left with no tracks shows its +.
     fn delete_track(&self, app: &mut App) {
-        let tracks = Self::tracks(app);
-        if tracks.len() <= 1 {
-            let lines = vec![errors::ERR_LAST_TRACK_SHOWN.to_string()];
-            app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_DELETE_TITLE, lines)));
-            return;
-        }
         let Some(name) = self.cursor_track(app) else { return };
         let song = app.document.song();
         let clips = song.scenes().iter().filter(|scene| scene.get_clip_slot(&name).is_some()).count();

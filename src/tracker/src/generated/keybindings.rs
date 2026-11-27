@@ -3047,26 +3047,6 @@ pub mod ArrangePage {
         name: "ENTER",
         what: "add clip",
     };
-    pub static ADD_SCENE: Binding = Binding {
-        keys: Keys::One("a"),
-        name: "A",
-        what: "add scene",
-    };
-    pub static ADD_SCENE_HERE: Binding = Binding {
-        keys: Keys::One("enter"),
-        name: "ENTER",
-        what: "add scene",
-    };
-    pub static ADD_TRACK: Binding = Binding {
-        keys: Keys::One("a"),
-        name: "A",
-        what: "add track",
-    };
-    pub static ADD_TRACK_HERE: Binding = Binding {
-        keys: Keys::One("enter"),
-        name: "ENTER",
-        what: "add track",
-    };
     pub use super::Page::BACK;
     pub static BLANK_PATTERN: Binding = Binding {
         keys: Keys::One("b"),
@@ -3344,15 +3324,11 @@ pub mod ArrangePage {
         &PLAY_CLIP,
         &STOP_PLAYING,
         &STOP_CLIP,
-        &ADD_TRACK,
-        &ADD_TRACK_HERE,
         &TRACK_SETTINGS,
         &COPY_TRACK,
         &INSERT_TRACK,
         &CUT_TRACK,
         &DELETE_TRACK,
-        &ADD_SCENE,
-        &ADD_SCENE_HERE,
         &SCENE_SETTINGS,
         &SCENE_VIEW,
         &COPY_SCENE,
@@ -3401,15 +3377,11 @@ pub mod ArrangePage {
         &PLAY_CLIP,
         &STOP_PLAYING,
         &STOP_CLIP,
-        &ADD_TRACK,
-        &ADD_TRACK_HERE,
         &TRACK_SETTINGS,
         &COPY_TRACK,
         &INSERT_TRACK,
         &CUT_TRACK,
         &DELETE_TRACK,
-        &ADD_SCENE,
-        &ADD_SCENE_HERE,
         &SCENE_SETTINGS,
         &SCENE_VIEW,
         &COPY_SCENE,

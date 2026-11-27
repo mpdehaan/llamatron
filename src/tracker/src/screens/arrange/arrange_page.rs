@@ -49,8 +49,6 @@ const SOUNDING_MARK_WIDTH: usize = 2;
 const MARK_ROOM: usize = 2;
 const HEADER_LINES: usize = 4;
 const SCENE_LINES: usize = 5;
-const FOOTER_LINES: usize = 3;
-const NAME_LINES: usize = 1;
 const LINES_UNDER_A_SCENE: usize = 2;
 const FRAME_ROOM: usize = 2;
 const COLUMN_EXTRA: usize = 2 * FRAME_ROOM + 1;
@@ -277,16 +275,20 @@ impl ArrangePage {
         app.document.song().shown_tracks().into_iter().map(|(name, _)| name.clone()).collect()
     }
 
-    /// What each column after the scene names holds: the melodic tracks, the + that adds a melodic track, the drum tracks
-    /// beyond the heavy line, and the + that adds a drum track.
+    /// What each column after the scene names holds: the melodic tracks, then beyond the heavy line the drum tracks; a
+    /// group with no tracks holds a + in their place, where I makes its first track.
     fn places(app: &App) -> Vec<Place> {
-        let song = app.document.song();
-        let melodic = song.melodic_count();
+        let melodic = app.document.song().melodic_count();
         let names = Self::tracks(app);
-        let mut places: Vec<Place> = names[..melodic].iter().cloned().map(Place::Track).collect();
-        places.push(Place::Add { drum: false });
-        places.extend(names[melodic..].iter().cloned().map(Place::Track));
-        places.push(Place::Add { drum: true });
+        let group = |names: &[String], drum: bool| -> Vec<Place> {
+            if names.is_empty() {
+                vec![Place::Add { drum }]
+            } else {
+                names.iter().cloned().map(Place::Track).collect()
+            }
+        };
+        let mut places = group(&names[..melodic], false);
+        places.extend(group(&names[melodic..], true));
         places
     }
 
@@ -308,12 +310,12 @@ impl ArrangePage {
         Self::places(app).iter().position(|place| *place == Place::Track(track.to_string()))
     }
 
-    /// The column of the heavy line's left, the melodic +, after which the drum tracks begin.
-    fn melodic_plus(app: &App) -> usize {
-        app.document.song().melodic_count()
+    /// The first column of the drum group, at the heavy line's right: after the melodic tracks, or after the melodic +.
+    fn drum_start(app: &App) -> usize {
+        app.document.song().melodic_count().max(1)
     }
 
-    /// The + column the cursor is on in the header, by the kind of track it adds, or None elsewhere.
+    /// The + column the cursor is on, by the kind of track it stands for, or None elsewhere.
     fn plus_here(&self, app: &App) -> Option<bool> {
         if !self.on_header() || self.on_corner() {
             return None;
@@ -348,10 +350,6 @@ impl ArrangePage {
         !self.on_header() && self.column.get() == SCENE_COLUMN
     }
 
-    fn on_plus_row(&self, app: &App) -> bool {
-        self.row.get() == Self::scene_count(app)
-    }
-
     fn in_a_track_column(&self) -> bool {
         self.column.get() != SCENE_COLUMN
     }
@@ -361,45 +359,44 @@ impl ArrangePage {
     }
 
     fn clamp(&self, app: &App) {
-        let row = self.row.get().clamp(HEADER_ROW, Self::scene_count(app));
+        let row = self.row.get().clamp(HEADER_ROW, Self::scene_count(app) - 1);
         self.row.set(row);
-        let last_place = Self::places(app).len() - 1;
-        if self.on_plus_row(app) {
-            self.column.set(SCENE_COLUMN);
-        } else if self.on_header() {
+        let last_column = Self::places(app).len() - 1 + FIRST_TRACK_COLUMN;
+        if self.on_header() {
             let first = if Self::real_time_on(app) { SCENE_COLUMN } else { FIRST_TRACK_COLUMN };
-            self.column.set(self.column.get().clamp(first, last_place + FIRST_TRACK_COLUMN));
-        } else {
-            // Under the header the + columns hold nothing, so the cursor stops on the tracks beside them.
-            let mut column = self.column.get().min(last_place - 1 + FIRST_TRACK_COLUMN);
-            if column != SCENE_COLUMN && Self::track_at(app, column - FIRST_TRACK_COLUMN).is_none() {
-                column = if column > FIRST_TRACK_COLUMN && Self::track_at(app, column - 1 - FIRST_TRACK_COLUMN).is_some() {
-                    column - 1
-                } else if Self::track_at(app, column + 1 - FIRST_TRACK_COLUMN).is_some() {
-                    column + 1
-                } else {
-                    SCENE_COLUMN
-                };
-            }
-            self.column.set(column);
-        }
-    }
-
-    /// Under the header the melodic + column holds nothing, so Left and Right pass over it onto the track beyond.
-    fn step_over_plus(&self, app: &App, key: &str) {
-        let in_the_body = !self.on_header() && !self.on_plus_row(app) && self.in_a_track_column();
-        if !in_the_body || self.track_place() != Self::melodic_plus(app) {
+            self.column.set(self.column.get().clamp(first, last_column));
             return;
         }
-        let beyond = if key == "left" {
-            self.column.get().saturating_sub(1)
-        } else {
-            self.column.get() + 1
-        };
-        let is_a_track = beyond >= FIRST_TRACK_COLUMN && Self::track_at(app, beyond - FIRST_TRACK_COLUMN).is_some();
-        if beyond == SCENE_COLUMN || is_a_track {
-            self.column.set(beyond);
+        // Under the header a + column holds nothing, so the cursor stops on the nearest track, or the scene's name.
+        let mut column = self.column.get().min(last_column);
+        if column != SCENE_COLUMN && !Self::column_holds_track(app, column) {
+            let left = (FIRST_TRACK_COLUMN..column).rev().find(|each| Self::column_holds_track(app, *each));
+            let right = (column + 1..=last_column).find(|each| Self::column_holds_track(app, *each));
+            column = left.or(right).unwrap_or(SCENE_COLUMN);
         }
+        self.column.set(column);
+    }
+
+    /// Whether a column of the grid holds a track rather than a +.
+    fn column_holds_track(app: &App, column: usize) -> bool {
+        column >= FIRST_TRACK_COLUMN && Self::track_at(app, column - FIRST_TRACK_COLUMN).is_some()
+    }
+
+    /// Under the header a + column holds nothing, so Left and Right pass over it onto the track beyond, or the scene's
+    /// name, staying put where there is nothing beyond.
+    fn step_over_plus(&self, app: &App, key: &str, from: usize) {
+        if self.on_header() || !self.in_a_track_column() || Self::column_holds_track(app, self.column.get()) {
+            return;
+        }
+        let last_column = Self::places(app).len() - 1 + FIRST_TRACK_COLUMN;
+        let beyond = if key == "left" {
+            (SCENE_COLUMN..self.column.get())
+                .rev()
+                .find(|each| *each == SCENE_COLUMN || Self::column_holds_track(app, *each))
+        } else {
+            (self.column.get() + 1..=last_column).find(|each| Self::column_holds_track(app, *each))
+        };
+        self.column.set(beyond.unwrap_or(from));
     }
 
     fn clip<'a>(app: &'a App, index: usize, track: &str) -> Option<&'a ClipSlot> {
@@ -418,10 +415,9 @@ impl ArrangePage {
             return vec![Self::bind(&Keys::PLAY_SONG)];
         }
         if self.on_track_plus(app) {
-            return vec![Self::bind(&Keys::ADD_TRACK), Self::bind(&Keys::ADD_TRACK_HERE)];
+            return [Self::bind(&Keys::INSERT_TRACK)].into_iter().chain(self.paste_key()).collect();
         }
         [
-            &Keys::ADD_TRACK,
             &Keys::TRACK_SETTINGS,
             &Keys::COPY_TRACK,
             &Keys::INSERT_TRACK,
@@ -436,7 +432,7 @@ impl ArrangePage {
     }
 
     fn scene_row_keys(&self, app: &App) -> Vec<KeyItem> {
-        let mut keys = vec![Self::bind(&Keys::ADD_SCENE)];
+        let mut keys = Vec::new();
         let real_time = Self::real_time_on(app);
         if self.on_scene_name() {
             if real_time {
@@ -535,7 +531,8 @@ impl ArrangePage {
         let to_row = self.row.get().max(0) as usize;
         match cut.what {
             Moving::Scene => {
-                let to = if to_row > cut.row { to_row - 1 } else { to_row };
+                // After the scene under the cursor, as I inserts one.
+                let to = if to_row >= cut.row { to_row } else { to_row + 1 };
                 Self::change_song(app, |song| {
                     let mut at = cut.row;
                     while at != to {
@@ -547,29 +544,32 @@ impl ArrangePage {
                 self.row.set(to as i64);
             }
             Moving::Track => {
-                // A track pastes only among its own kind, before the track under the cursor, or at the end of its group
-                // from that group's +.
+                // A track pastes only among its own kind, after the track under the cursor, as I inserts one.
                 let drum = Self::is_drum_track(app, &cut.track);
-                let before = match Self::places(app).into_iter().nth(self.track_place()) {
-                    Some(Place::Track(name)) if Self::is_drum_track(app, &name) == drum => Some(Some(name)),
-                    Some(Place::Add { drum: adds }) if adds == drum => Some(None),
+                let after = match Self::places(app).into_iter().nth(self.track_place()) {
+                    Some(Place::Track(name)) if Self::is_drum_track(app, &name) == drum => Some(name),
                     _ => None,
                 };
-                let Some(before) = before else {
+                let Some(after) = after else {
                     self.cut = Some(cut);
                     app.refuse(messages::MSG_PASTE_TRACK_AMONG_ITS_KIND);
                     return;
                 };
-                let before = before.filter(|name| *name != cut.track);
                 let name = cut.track.clone();
                 Self::change_song(app, |song| {
-                    let next_of_kind = before.clone().or_else(|| {
-                        // At the end of its group: after the last track of its kind in the file.
-                        let tracks = song.tracks();
-                        let last = tracks.iter().rposition(|(_, track)| track.is_drum() == drum)?;
-                        tracks.get(last + 1).map(|(name, _)| name.clone())
-                    });
-                    song.move_track_before(&name, next_of_kind.as_deref());
+                    if after == name {
+                        return;
+                    }
+                    let tracks = song.tracks();
+                    let next = tracks
+                        .iter()
+                        .position(|(held, _)| *held == after)
+                        .and_then(|at| tracks.get(at + 1))
+                        .map(|(held, _)| held.clone());
+                    // A track already right after the one under the cursor stays where it is.
+                    if next.as_deref() != Some(name.as_str()) {
+                        song.move_track_before(&name, next.as_deref());
+                    }
                 });
                 if let Some(place) = Self::place_of(app, &name) {
                     self.column.set(place + FIRST_TRACK_COLUMN);
@@ -801,9 +801,6 @@ impl ArrangePage {
                 self.cursor_track(app).map(CellPlace::Track)
             };
         }
-        if self.on_plus_row(app) {
-            return None;
-        }
         let row = self.row.get() as usize;
         if self.on_scene_name() {
             return Some(CellPlace::Scene(row));
@@ -898,17 +895,9 @@ impl ArrangePage {
         }
     }
 
-    /// How many lines a row takes: a scene's, or the + row's after the last scene.
-    fn row_lines(&self, app: &App, layout: Option<&DetailsLayout>, index: usize) -> usize {
-        if index == Self::scene_count(app) as usize {
-            return FOOTER_LINES;
-        }
-        self.scene_lines(app, layout, index)
-    }
-
-    /// Whether the rows from first to last, the + row counting as the row after the last scene, fit in room lines.
+    /// Whether the scenes from first to last fit in room lines.
     fn rows_fit(&self, app: &App, layout: Option<&DetailsLayout>, first: usize, last: usize, room: usize) -> bool {
-        (first..=last).map(|index| self.row_lines(app, layout, index)).sum::<usize>() <= room
+        (first..=last).map(|index| self.scene_lines(app, layout, index)).sum::<usize>() <= room
     }
 
     fn cell_column(&self, app: &App, layout: Option<&DetailsLayout>, place: usize) -> usize {
@@ -961,13 +950,13 @@ impl ArrangePage {
     fn visible_scenes(&self, app: &App, layout: Option<&DetailsLayout>, height: usize) -> std::ops::Range<usize> {
         let count = Self::scene_count(app) as usize;
         let room = height.saturating_sub(self.header_lines(app, layout));
-        let wanted = (self.row.get().max(0) as usize).min(count);
+        let wanted = (self.row.get().max(0) as usize).min(count - 1);
         let mut top = self.top.get().min(wanted);
         while top < wanted && !self.rows_fit(app, layout, top, wanted, room) {
             top += 1;
         }
         let mut stop = top + 1;
-        while stop <= count && self.rows_fit(app, layout, top, stop, room) {
+        while stop < count && self.rows_fit(app, layout, top, stop, room) {
             stop += 1;
         }
         self.top.set(top);
@@ -995,7 +984,7 @@ impl ArrangePage {
     /// Where the heavy line between the melodic tracks and the drum tracks falls, the left of the first drum column, when
     /// it is on screen.
     fn heavy_column(&self, app: &App, layout: Option<&DetailsLayout>, first: usize, last: usize) -> Option<usize> {
-        let place = Self::melodic_plus(app) + 1;
+        let place = Self::drum_start(app);
         (first < place && place <= last).then(|| self.cell_column(app, layout, place))
     }
 
@@ -1125,7 +1114,7 @@ impl ArrangePage {
             kind: Kind::Name,
         });
         if let (Some(layout), true) = (layout, self.cell_open(app, &CellPlace::Scene(index))) {
-            let here = self.on_scene_name() && !self.on_plus_row(app) && self.row.get() == index as i64;
+            let here = self.on_scene_name() && self.row.get() == index as i64;
             let end = count - LINES_UNDER_A_SCENE;
             self.draw_details(
                 app,
@@ -1263,16 +1252,6 @@ impl ArrangePage {
             let place = self.track_place();
             return (first <= place && place < last).then(|| around(place, 0, names));
         }
-        let scenes_height: usize = shown.clone().map(|index| self.scene_lines(app, layout, index)).sum();
-        if self.on_plus_row(app) {
-            return Some(CellFrame {
-                left: 0,
-                right: SCENE_FRAME_RIGHT,
-                top: header + scenes_height,
-                inside: NAME_LINES,
-                style,
-            });
-        }
         let row = self.row.get() as usize;
         if !shown.contains(&row) {
             return None;
@@ -1304,8 +1283,6 @@ impl Page for ArrangePage {
             "drum track plus"
         } else if self.on_header() {
             "track"
-        } else if self.on_plus_row(app) {
-            "scene plus"
         } else if self.on_scene_name() {
             "scene"
         } else {
@@ -1377,8 +1354,6 @@ impl Page for ArrangePage {
         let mut keys = vec![Self::bind(&Keys::BACK), Self::bind(&Keys::MOVE).wanting_key()];
         if self.on_header() {
             keys.extend(self.header_keys(app));
-        } else if self.on_plus_row(app) {
-            keys.extend([Self::bind(&Keys::ADD_SCENE), Self::bind(&Keys::ADD_SCENE_HERE)]);
         } else {
             keys.extend(self.scene_row_keys(app));
         }
@@ -1435,13 +1410,14 @@ impl Page for ArrangePage {
         } else if item.is(&Keys::VISUALIZER) {
             self.next_visualizer(app);
         } else if item.is(&Keys::MOVE) {
+            let from = self.column.get();
             match key {
                 "up" => self.row.set(self.row.get() - 1),
                 "down" => self.row.set(self.row.get() + 1),
                 "left" => self.column.set(self.column.get().saturating_sub(1)),
                 _ => self.column.set(self.column.get() + 1),
             }
-            self.step_over_plus(app, key);
+            self.step_over_plus(app, key, from);
             self.clamp(app);
         } else if item.is(&Keys::CUT_SCENE) {
             self.start_cut(app, Moving::Scene);
@@ -1549,11 +1525,9 @@ impl Page for ArrangePage {
         let layout = held.as_ref();
         let window = self.visible_tracks(app, layout, width);
         let shown = self.visible_scenes(app, layout, height);
-        let count = Self::scene_count(app) as usize;
         let header = self.header_lines(app, layout);
-        let plus_row = shown.end == count && self.rows_fit(app, layout, shown.start, count, height.saturating_sub(header));
         let scenes: usize = shown.clone().map(|index| self.scene_lines(app, layout, index)).sum();
-        let total = header + scenes + if plus_row { FOOTER_LINES } else { 0 };
+        let total = header + scenes;
         let mut lines: Vec<Vec<Piece>> = (0..total).map(|_| Vec::new()).collect();
         self.draw_header(app, layout, &mut lines[..header], window.0, window.1);
         let mut start = header;
@@ -1561,18 +1535,6 @@ impl Page for ArrangePage {
             let rows = self.scene_lines(app, layout, index);
             self.draw_scene(app, layout, &lengths, &mut lines[start..start + rows], index, window);
             start += rows;
-        }
-        if plus_row {
-            let dividers = self.dividers(app, layout, window.0, window.1);
-            let footer = &mut lines[total - FOOTER_LINES..];
-            for line in footer.iter_mut() {
-                line.push(dividers.clone());
-            }
-            footer[1].push(Piece::Text {
-                column: SCENE_BAR_COLUMN,
-                text: marks::MSG_ADD_ROW_MARK.to_string(),
-                kind: Kind::Faint,
-            });
         }
         // Under a visualizer the cursor has no frame, since the clips it would box are covered.
         let frames: Vec<CellFrame> = if self.shows_visualizer() {
@@ -1701,6 +1663,15 @@ mod tests {
         app.document.song().tracks().iter().map(|(name, _)| name.clone()).collect()
     }
 
+    /// A song of drum tracks alone, kick and hat, and one scene, verse.
+    const DRUMS_ONLY_SET: &str =
+        "songs:\n  - name: song\n    tracks: [{ name: kick, drum: true }, { name: hat, drum: true }]\n    scenes:\n      - name: verse\n";
+
+    fn drums_only() -> (App, ArrangePage) {
+        let setlist = Setlist::read_text(DRUMS_ONLY_SET, None).expect("the scenario's set is valid");
+        (App::new(crate::document::Document::new(setlist, None)), ArrangePage::new())
+    }
+
     /// Press Right on the header until the cursor is on what a place's kind names, at most a column a press.
     fn right_until(app: &mut App, page: &mut ArrangePage, kind: &str) {
         for _ in 0..ArrangePage::places(app).len() {
@@ -1713,52 +1684,73 @@ mod tests {
     }
 
     /// Arrange shows the melodic tracks first and the drum tracks after them, each in the file's order, which stays as it
-    /// is: lead, bass, the melodic +, then kick and the drum +.
+    /// is, with no + after either group; a group with no tracks shows a + alone.
     #[test]
     fn melodic_tracks_show_first_and_drums_after_the_heavy_line() {
         let (app, _) = drums_first();
-        let shown = ArrangePage::places(&app);
-        let expected = vec![
-            Place::Track("lead".to_string()),
-            Place::Track("bass".to_string()),
-            Place::Add { drum: false },
-            Place::Track("kick".to_string()),
-            Place::Add { drum: true },
-        ];
-        assert_eq!(shown, expected);
+        let track = |name: &str| Place::Track(name.to_string());
+        assert_eq!(ArrangePage::places(&app), vec![track("lead"), track("bass"), track("kick")]);
         assert_eq!(file_order(&app), ["kick", "lead", "bass"]);
+        let (app, _) = arranged();
+        assert_eq!(ArrangePage::places(&app), vec![track("lead"), track("bass"), Place::Add { drum: true }]);
+        let (app, _) = drums_only();
+        assert_eq!(ArrangePage::places(&app), vec![Place::Add { drum: false }, track("kick"), track("hat")]);
     }
 
-    /// A on the drum + adds a drum track, and on the melodic + a melodic one, each at the end of its group; I on a drum
-    /// track inserts a drum track before it.
+    /// I inserts after the cursor: on a melodic track a melodic track after it, on a scene a scene after it, and on the
+    /// drum group's + the song's first drum track, the + then gone.
     #[test]
-    fn each_plus_adds_a_track_of_its_kind_and_i_inserts_one_alike() {
-        let (mut app, mut page) = drums_first();
+    fn i_inserts_after_the_cursor_and_on_a_plus_makes_its_groups_first_track() {
+        let (mut app, mut page) = arranged();
+        at(&app, &page, "verse", "lead");
         page.row.set(HEADER_ROW);
+        press(&mut app, &mut page, &Keys::INSERT_TRACK);
+        let inserted = page.cursor_track(&app).expect("the new track");
+        assert_eq!(ArrangePage::tracks(&app)[..3], ["lead".to_string(), inserted.clone(), "bass".to_string()]);
+        assert!(!ArrangePage::is_drum_track(&app, &inserted));
         page.column.set(FIRST_TRACK_COLUMN);
         right_until(&mut app, &mut page, "drum track plus");
-        press(&mut app, &mut page, &Keys::ADD_TRACK);
-        let added = page.cursor_track(&app).expect("the new track");
-        assert!(ArrangePage::is_drum_track(&app, &added));
-        page.column.set(FIRST_TRACK_COLUMN);
-        right_until(&mut app, &mut page, "track plus");
-        press(&mut app, &mut page, &Keys::ADD_TRACK);
-        let melodic = page.cursor_track(&app).expect("the new track");
-        assert!(!ArrangePage::is_drum_track(&app, &melodic));
-        assert_eq!(ArrangePage::place_of(&app, &melodic), Some(ArrangePage::melodic_plus(&app) - 1));
-        at(&app, &page, "verse", "kick");
-        page.row.set(HEADER_ROW);
-        let before = ArrangePage::tracks(&app).len();
         press(&mut app, &mut page, &Keys::INSERT_TRACK);
-        assert_eq!(ArrangePage::tracks(&app).len(), before + 1);
-        let inserted = ArrangePage::track_at(&app, ArrangePage::place_of(&app, "kick").expect("kick") - 1).expect("a track");
-        assert!(ArrangePage::is_drum_track(&app, &inserted));
+        let drums = page.cursor_track(&app).expect("the first drum track");
+        assert!(ArrangePage::is_drum_track(&app, &drums));
+        assert!(!ArrangePage::places(&app).contains(&Place::Add { drum: true }));
+        at(&app, &page, "verse", "lead");
+        page.column.set(SCENE_COLUMN);
+        press(&mut app, &mut page, &Keys::INSERT_SCENE);
+        assert_eq!(page.row.get(), 1);
+        assert_eq!(app.document.song().scenes().len(), 3);
+        assert_eq!(app.document.song().scenes()[2].get_name().as_deref(), Some("chorus"));
     }
 
-    /// A cut drum track pastes only among the drum tracks: on a melodic track it is refused and stays cut, and from the
-    /// drum + it moves to the end of the drums, as one step to undo.
+    /// Deleting every melodic track leaves the melodic +, where I makes a melodic track again.
     #[test]
-    fn a_track_pastes_only_among_its_kind() {
+    fn a_group_emptied_keeps_its_plus() {
+        let (mut app, mut page) = drums_first();
+        for name in ["lead", "bass"] {
+            app.document
+                .delete_named(llamatron_model::schema::generated::file_format::Section::TRACKS, name)
+                .expect("the track deletes");
+        }
+        assert_eq!(ArrangePage::places(&app)[0], Place::Add { drum: false });
+        page.row.set(HEADER_ROW);
+        page.column.set(FIRST_TRACK_COLUMN);
+        assert_eq!(page.place_kind(&app), "track plus");
+        press(&mut app, &mut page, &Keys::INSERT_TRACK);
+        assert_eq!(app.document.song().melodic_count(), 1);
+    }
+
+    /// A cut drum track pastes only among the drum tracks: on a melodic track it is refused and stays cut; after a drum
+    /// track it lands after it.
+    #[test]
+    fn a_track_pastes_only_among_its_kind_after_the_cursor() {
+        let (mut app, mut page) = drums_only();
+        at(&app, &page, "verse", "kick");
+        page.row.set(HEADER_ROW);
+        press(&mut app, &mut page, &Keys::CUT_TRACK);
+        at(&app, &page, "verse", "hat");
+        page.row.set(HEADER_ROW);
+        press(&mut app, &mut page, &Keys::PASTE);
+        assert_eq!(file_order(&app), ["hat", "kick"]);
         let (mut app, mut page) = drums_first();
         at(&app, &page, "verse", "kick");
         page.row.set(HEADER_ROW);
@@ -1771,16 +1763,16 @@ mod tests {
         assert_eq!(file_order(&app), ["kick", "lead", "bass"]);
     }
 
-    /// Left and Right in a scene's row pass over the melodic + column, from the last melodic track to the first drum track
-    /// and back.
+    /// Under the header Left passes over a group's + onto the scene's name, and Right from the last track stays put.
     #[test]
-    fn left_and_right_pass_over_the_melodic_plus_under_the_header() {
-        let (mut app, mut page) = drums_first();
-        at(&app, &page, "verse", "bass");
-        press_key(&mut app, &mut page, &Keys::MOVE, "right");
-        assert_eq!(page.cursor_track(&app).as_deref(), Some("kick"));
+    fn left_and_right_pass_over_a_plus_under_the_header() {
+        let (mut app, mut page) = drums_only();
+        at(&app, &page, "verse", "kick");
         press_key(&mut app, &mut page, &Keys::MOVE, "left");
-        assert_eq!(page.cursor_track(&app).as_deref(), Some("bass"));
+        assert!(page.on_scene_name());
+        at(&app, &page, "verse", "hat");
+        press_key(&mut app, &mut page, &Keys::MOVE, "right");
+        assert_eq!(page.cursor_track(&app).as_deref(), Some("hat"));
     }
 
     /// A copied drum clip pastes onto an empty drum cell, but not onto a melodic track.
@@ -1829,15 +1821,15 @@ mod tests {
         app.document.song().scenes().iter().filter_map(Scene::get_name).collect()
     }
 
-    /// T cuts and P pastes: a scene goes before the scene under the cursor, a clip into the empty cell under it, each as
+    /// T cuts and P pastes: a scene goes after the scene under the cursor, a clip into the empty cell under it, each as
     /// one step to undo, and ESC lets go of a cut with nothing moved.
     #[test]
     fn t_cuts_and_p_pastes_scenes_and_clips() {
         let (mut app, mut page) = arranged();
-        at(&app, &page, "chorus", "lead");
+        at(&app, &page, "verse", "lead");
         page.column.set(SCENE_COLUMN);
         press(&mut app, &mut page, &Keys::CUT_SCENE);
-        at(&app, &page, "verse", "lead");
+        at(&app, &page, "chorus", "lead");
         page.column.set(SCENE_COLUMN);
         press(&mut app, &mut page, &Keys::PASTE);
         assert_eq!(scene_names(&app), ["chorus", "verse"]);

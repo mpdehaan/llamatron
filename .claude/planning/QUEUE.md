@@ -6,7 +6,7 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 
 ## Now: the synths (finish the outstanding synth work, then the other engines with their demos)
 
-1. UX_IDEAS: Arrange without + rows and columns; A new track's own instrument; The File and Global tabs.
+1. UX_IDEAS: A new track's own instrument; The File and Global tabs.
 2. OTHER_IDEAS: The development tools in a crate of their own; The tracker's tables named for what they are.
 3. OTHER_IDEAS: No YAML in strings.
 4. SYNTH_IDEAS: The table oscillators' level and bands; SID closer to its chip; Pocket closer to its chip.

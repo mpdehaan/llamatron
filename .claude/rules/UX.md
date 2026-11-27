@@ -59,12 +59,15 @@ changes it too. A new thing looks like the existing thing it is most like.
 - **Move mode**: `M` picks up a list row; arrows carry it; ENTER, ESC or `M` drops it; one move is one undo step. A carried
   name is drawn between `<` and `>` in place of its spaces. Only those keys work meanwhile.
 - **Cut and paste on Arrange**: `T` cuts the scene, track or clip under the cursor, its box turning green, and nothing moves
-  until `P` pastes it: a scene before the scene under the cursor, a track before the track, a clip into an empty cell, as one
-  undo step; ESC lets go of the cut.
+  until `P` pastes it: a scene after the scene under the cursor, a track after the track, only among its kind, a clip into an
+  empty cell of its pattern's kind, as one undo step; ESC lets go of the cut.
+- **Arrange adds with `I`**, which inserts a scene or a track of the cursor's kind after the cursor; Arrange has no `A` and
+  draws no `+` row or column, save an empty group's `+`, where `I` makes its first track. The melodic tracks come first,
+  then a heavy line, then the drum tracks, each in the file's order; a track's kind never changes.
 - OK, YES, NO, CANCEL, ENTER and ESC are written in capitals everywhere: buttons, legends, help, messages, documents.
 - **ESC closes the topmost thing**, one layer at a time, and never quits: a dialog, an Inset Window, a locked cell, then the page.
   In the song wizard, outside a part's settings, ESC always asks before closing, starting on NO.
-- Every list a page adds to has a `+ (New)` row at the bottom, where ENTER does what `A` does.
+- Every list a page adds to has a `+ (New)` row at the bottom, where ENTER does what `A` does; Arrange alone adds with `I`.
 - **Dialog answers** are boxed buttons, the selected one double-lined: Left and
   Right move, ENTER presses the selected one, and ESC is NO or CANCEL. A dialog of OK, or of YES and NO or OK and CANCEL, with
   nothing else to do, has no letter keys, and its buttons show their names alone; a dialog of fields reaches its buttons with
@@ -143,7 +146,7 @@ All made by the model's naming (`src/model/src/objects/naming.rs`):
 
 - A dialog asks one thing; ENTER answers, ESC cancels, nothing changes until answered.
 - Deleting anything in use is refused with up to five uses listed; otherwise it confirms. Deleting a scene, track or clip always
-  confirms; the last scene and track of a song are refused in a dialog. Saving and quitting with unsaved changes ask first;
+  confirms; the last scene of a song is refused in a dialog, and any track may go. Saving and quitting with unsaved changes ask first;
   nothing is saved or exported unasked.
 - Opening a file never changes it. A file with values out of range opens only after a dialog lists what each becomes, and YES
   opens it unsaved. The command line refuses to export such a file without `--force`.

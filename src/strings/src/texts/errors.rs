@@ -289,7 +289,6 @@ pub const ERR_NOT_A_SCALE_TYPE: &str = "expected a ScaleType, got {value!r}";
 pub const ERR_BAD_TIME_SIGNATURE: &str = "time signature must be beats over a note value such as 6/8, with {lowest} to {highest} beats over one of: {units}, got {value!r}";
 pub const ERR_NOT_A_TIME_SIGNATURE: &str = "expected a TimeSignature, got {value!r}";
 pub const ERR_LAST_SCENE_SHOWN: &str = "A song needs at least one scene, so the last one cannot be deleted.";
-pub const ERR_LAST_TRACK_SHOWN: &str = "A song needs at least one track, so the last one cannot be deleted.";
 pub const ERR_SCENE_PLAYING_SHOWN: &str = "A scene with clips cannot be deleted while the song plays. Stop it first, with Space on the corner or Ctrl+T.";
 pub const ERR_TRACK_PLAYING_SHOWN: &str = "A track with clips cannot be deleted while the song plays. Stop it first, with Space on the corner or Ctrl+T.";
 pub const ERR_NO_OTHER_TRACKS_TITLE: &str = "No other tracks";
