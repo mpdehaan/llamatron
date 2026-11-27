@@ -84,7 +84,6 @@ impl PageName {
     pub const INSTRUMENTS: &'static str = "Instruments";
     pub const DRAWS: &'static str = "Draws";
     pub const ARRANGE: &'static str = "Arrange";
-    pub const REAL_TIME: &'static str = "Real Time";
     pub const SAVE: &'static str = "Save";
     pub const OPEN: &'static str = "Open";
     pub const EXPORT: &'static str = "Export";

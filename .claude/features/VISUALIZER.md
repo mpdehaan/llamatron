@@ -4,14 +4,14 @@ Reference notes for Claude, one of `.claude/features/`: the visualizer and its m
 
 ## The visualizer
 
-- On Arrange, with the set's Real Time switch on, `Z` (`ArrangePage.VISUALIZER`) shows the
+- On Arrange, whenever a track's instrument can sound, `Z` (`ArrangePage.VISUALIZER`) shows the
   visualizer over the clip area, the user's design (the ideas files of .claude/features/, "The visualizer", holds
   the plan, built a stage at a time): `next_visualizer` steps through `MODES`
   (`interface/visualizers/modes.py`) and after the last back to the clips. While it shows, the page binds
   only `TO_CLIPS` (ESC, which brings the clips back and stays on the page) and `VISUALIZER`, and
   `show_visualizer` runs a timer that draws a frame every `FRAME_SECONDS` (0.05) until
-  `hide_visualizer` stops it, so it costs nothing while the clips show. With Real Time off the key
-  isn't bound.
+  `hide_visualizer` stops it, so it costs nothing while the clips show. With no instrument that can sound the
+  key isn't bound.
 - `ArrangeDrawing.visualized_body` draws the track names and the scene names as ever, the
   divider down every line, and lays the mode's frame (`Visualizer.frame(width=, height=, now=)`)
   over the clip area from `CLIP_AREA_LEFT` and `HEADER_LINES` to the line above the footer with

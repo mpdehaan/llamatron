@@ -22,7 +22,7 @@ use crate::visualizers::{self, showing::Showing};
 pub use edits::new_pattern_steps;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::{ClipSlot, Scene};
-use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSetting, SetlistSetting, TrackSetting};
+use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSetting, TrackSetting};
 use llamatron_strings::{labels, legends, marks, messages, named, names};
 use std::cell::Cell;
 
@@ -326,8 +326,10 @@ impl ArrangePage {
         }
     }
 
+    /// Whether the song plays in real time, which the play marks show: whether a track plays through an instrument that
+    /// can sound.
     fn real_time_on(app: &App) -> bool {
-        matches!(app.document.get_setlist().get_written(SetlistSetting::REAL_TIME), Some(Data::Bool(true)))
+        app.document.song().plays_in_real_time(app.document.get_setlist())
     }
 
     fn scene_count(app: &App) -> i64 {

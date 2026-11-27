@@ -129,8 +129,8 @@ between, `ENTER` presses the marked one, and `ESC` means no.
 
 The main screen is one block of buttons, the same size in every window.
 Arrange is the bar across the top. Under it are three rows of three: Songs,
-the Wizard and Patterns; Scales, Generators and Draws; Grooves, Instruments
-and the Real Time switch. A bar under the buttons holds Open, Save, Import,
+the Wizard and Patterns; Scales, Generators and Draws; Grooves and
+Instruments. A bar under the buttons holds Open, Save, Import,
 Export, File/Global and Quit. While a song plays, the header shows a play mark
 and a clock beside the song's length. Press a cell's letter, or move the box
 with the arrows and press `ENTER`; the arrows move to the cell beside, above

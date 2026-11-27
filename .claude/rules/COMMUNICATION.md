@@ -204,7 +204,7 @@ row says which, and a reply says which too.
 | the support folder | nothing on screen: `internal_tools/`, the folder of development tools and scripts | `internal_tools/` |
 | follow action, advance | Follow action on the clip page, "With Scene" or "Off", and Default follow action on the File/Global page | `FollowAction`, `ClipSlotSetting.FOLLOW_ACTION`, `follow_action_of` |
 | launch together, advance together | Launch together on the Scene page, and `┆` after a scene's name on Arrange when off | `SceneSetting.LAUNCH_TOGETHER`, `Scene.launches_together` |
-| an instrument, a device | an instrument on the Instruments page, with its Device and Channel; the Real Time switch on the main screen | `Instrument`, `Section.INSTRUMENTS`, `TrackSetting.INSTRUMENT`, `Setlist.is_real_time` |
+| an instrument, a device | an instrument on the Instruments page, with its Device and Channel; a song plays in real time once a track's instrument can sound | `Instrument`, `Section.INSTRUMENTS`, `TrackSetting.INSTRUMENT`, `Song::plays_in_real_time` |
 | the Realtime Sender Process | nothing on screen: the separate process that plays MIDI in real time, fed each clip's events by the player | `RealtimeMIDISenderProcess` |
 | the player | nothing on screen: what launches scenes and clips and follows the follow actions | `Player`, on a `Score` |
 | the Realizer | nothing on screen: the part of llamatron that plays a song into clips, draws the draws and tests the statements as it evaluates the patterns and the other objects | `SongRealizer`, with a `ClipSlotPlayer` and a `PatternPlayer` for each clip |

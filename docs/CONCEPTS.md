@@ -21,8 +21,7 @@ page is heard, at the moment the song's Live Response setting says.
 1. On the main screen, press `I` for Instruments and `A` to add one. On its
    Device field, press `ENTER` and choose `*FluidSynth`, or one of your MIDI
    ports, and give it a General MIDI sound if it plays through FluidSynth.
-   Adding the first instrument turns the set's Real Time switch on. See
-   [Instruments](INSTRUMENTS.md).
+   See [Instruments](INSTRUMENTS.md).
 2. On Arrange, move to a track's name and press `ENTER` for the track editor,
    and choose the instrument on its Instrument field. A drum track wants Drum
    on, and plays on channel 10 through FluidSynth. See [Tracks](TRACKS.md).

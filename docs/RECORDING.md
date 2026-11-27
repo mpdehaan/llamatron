@@ -203,7 +203,7 @@ two shortest, to try it first.
 The recorder changes nothing on disk. The set is read, and in memory the set
 gains one instrument per channel used, named `RECORDER 1`, `RECORDER 2` and so
 on, on the driver's port. Each track is given the instrument of its channel,
-the set's Real Time switch is turned on, and the tracker is launched for
+and the tracker is launched for
 recording on that set. The set's own instruments are set aside for the take,
 unless a `-` in `--track-assign` keeps one. A FluidSynth take keeps the set's
 own instruments. The file is never written, which is why the header shows no
@@ -217,7 +217,7 @@ with `--to`.
 
 - **`--autoplay`** opens on Arrange and plays the song from the top, as
   `Space` on the `▶ song` corner does. The set needs instruments on its tracks
-  and the Real Time switch on.
+  that can sound.
 - **`--autoplay-quit-when-finished`** does the same and quits two seconds
   after the song's last note.
 - **`--launch-for-recording`** opens on the splash for six seconds, shows the

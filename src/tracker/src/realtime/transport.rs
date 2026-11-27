@@ -88,10 +88,7 @@ impl Transport {
                 lines: vec![line],
             })
         };
-        if !matches!(setlist.get_written(SetlistSetting::REAL_TIME), Some(Data::Bool(true))) {
-            return cannot(errors::ERR_REAL_TIME_OFF.to_string());
-        }
-        if setlist.items(Section::INSTRUMENTS).is_empty() {
+        if setlist.items(Section::INSTRUMENTS).is_empty() || !document.song().plays_in_real_time(setlist) {
             return Some(Refusal {
                 title: errors::ERR_NO_INSTRUMENTS_TITLE.to_string(),
                 lines: vec![errors::ERR_ADD_INSTRUMENT_FIRST.to_string()],

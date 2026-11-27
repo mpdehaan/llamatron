@@ -128,8 +128,8 @@ The professor's research is in `.claude/notes/synthesis/`.
 
 ## Mixing
 
-- **The Bus page**: With the Real Time switch gone (`UX_IDEAS.md`, Real time without a switch), its place on the main
-  screen opens a Bus page
+- **The Bus page**: The place on the main screen where the Real Time switch stood, which the Instruments cell spans
+  for now, opens a Bus page
   showing the Master Bus and the FX buses, so that several instruments can send to shared effects, such as one reverb.
   Built on a mixer: each instrument's own buffer, already kept, given a level, a pan and its sends, cheap since it costs a
   few multiplications a sample; a bus costs only its effects, once for all its instruments. The Synth Master Bus and

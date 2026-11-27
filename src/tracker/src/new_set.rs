@@ -99,7 +99,6 @@ pub fn new_set(main_instrument: Data, drum_instrument: Data) -> Result<Setlist, 
         (SetlistSetting::DEFAULT_OCTAVE, Data::Whole(DEFAULT_OCTAVE)),
         (SetlistSetting::DEFAULT_DRUM_OCTAVE, Data::Whole(DEFAULT_DRUM_OCTAVE)),
         (SetlistSetting::OCTAVE_LABELS, Data::text(OCTAVE_LABELS)),
-        (SetlistSetting::REAL_TIME, Data::Bool(true)),
         (
             Section::SCALES,
             Data::List(vec![map(vec![

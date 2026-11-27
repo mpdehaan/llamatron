@@ -297,7 +297,6 @@ pub const ERR_ADD_ANOTHER_TRACK: &str = "Add another track to grab notes from, o
 pub const ERR_NO_INSTRUMENTS_TITLE: &str = "No instruments";
 pub const ERR_ADD_INSTRUMENT_FIRST: &str = "Add an instrument first, on the Instruments page, and give a track it.";
 pub const ERR_CANT_PLAY_TITLE: &str = "Cannot play";
-pub const ERR_REAL_TIME_OFF: &str = "Turn Real Time on first, with T on the main screen.";
 pub const ERR_NO_TRACK_HAS_AN_INSTRUMENT: &str = "No track has an instrument. Choose one at the bottom of a track editor, from Arrange.";
 pub const ERR_NO_TRACK_HAS_A_DEVICE: &str = "No track plays through an instrument with a device. Choose a device for an instrument on the Instruments page.";
 pub const ERR_DEVICE_NOT_CONNECTED: &str = "The device of instrument ({instrument}), ({device}), is not connected. Choose another on the Instruments page.";

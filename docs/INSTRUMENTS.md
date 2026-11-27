@@ -40,8 +40,8 @@ its keyboard a little to the right sound like players standing apart on a
 stage. Once set, each clip sends it as CC 10 after the General MIDI sound, and
 the MIDI (General MIDI) and WAV (FluidSynth) exports place the track there too.
 
-Every example plays this way as it comes: its Real Time switch is on, and
-every track plays through a FluidSynth instrument, with a drum kit for the
+Every example plays this way as it comes: every track plays through a
+FluidSynth instrument, with a drum kit for the
 drum tracks, so opening an example and pressing `Space` on Arrange's corner
 plays it. A new set has no instruments until you add them.
 
@@ -69,9 +69,9 @@ another.
 ## Instruments Page
 
 Press `I` on the main screen to open the Instruments page. The list shows each
-instrument's device and channel, and how many tracks play through it. Adding
-the first instrument turns the main screen's Real Time switch on, and deleting
-the last turns it off.
+instrument's device and channel, and how many tracks play through it. A song
+plays in real time as soon as any of its tracks plays through an instrument
+that can sound: a built-in synth, FluidSynth or a MIDI port.
 
 | Key | What it does |
 | --- | --- |

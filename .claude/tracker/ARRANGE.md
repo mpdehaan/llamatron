@@ -39,7 +39,7 @@ Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details
 - Deleting a scene, track or clip confirms in a dialog, and the last scene or track is refused in
   a message dialog (`ERR_LAST_SCENE_SHOWN`, `ERR_LAST_TRACK_SHOWN`).
 - The page has no details line under the grid.
-- While the set's Real Time switch is on, the corner over the scene names is a place of its own
+- Whenever a track's instrument can sound, the corner over the scene names is a place of its own
   (`on_corner`, the header row at `SCENE_COLUMN`, which `clamp` lets the cursor reach then and
   not otherwise), and Space plays and stops (`.claude/features/REALTIME_PLAYBACK.md`).
 
@@ -78,7 +78,7 @@ Reference notes for Claude, one part of `.claude/tracker/`: Arrange, its details
 - The bars are `LengthBar`s (`interface/tracker/components/length_bar.py`). `SCENE_BAR`, hatched, is a scene's
   seconds against `Lengths.longest_scene_seconds()`. `CLIP_BAR` is a clip's seconds against
   `Lengths.scene_play_seconds()`, its scene's first play, full for a looping clip and blank where
-  a length can't be worked out. With Real Time on a clip's bar is `CLIP_BAR_WITH_BUTTON`, two
+  a length can't be worked out. When a track's instrument can sound a clip's bar is `CLIP_BAR_WITH_BUTTON`, two
   columns shorter, after the clip's play button (`play_button`: a dim `▶`, or `■` in
   `Style.PLAYING` while the clip plays), the corner holds `MSG_SONG_BUTTON` (`▶ song` or
   `■ song`), a track's name is followed by `MSG_SOUNDING_MARK` in `Style.SOUNDING` while a note

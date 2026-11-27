@@ -416,10 +416,6 @@ In the order of their priority, the highest first.
   Instrument page; the clip page's list of patterns already jumps to a pattern with it; every field naming a thing that
   has a page of its own (a scale, a groove, a chain, a pattern, an instrument) offers it the same way, and no page binds
   `J` to anything else.
-- **Real time without a switch**: the Real Time switch goes; a song plays in real time whenever any track of it plays
-  through an instrument that can sound, a FluidSynth instrument, an outside MIDI instrument or a LlamaSynth instrument,
-  whether or not the track has clips; the play marks on Arrange (the corner's `▶`, each scene's and clip's) are what
-  show that it can play, and with no such instrument they are not drawn.
 - **FluidSynth chosen as a person expects**: choosing FluidSynth as an instrument's engine gives it General MIDI's
   Acoustic Grand Piano at once rather than no sound; and the device is shown as "FluidSynth" wherever the program shows
   it, never as the file's `*FluidSynth`.

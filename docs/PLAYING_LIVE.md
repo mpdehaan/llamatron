@@ -20,11 +20,10 @@ the others:
 
 To set it up, add an instrument on the Instruments page, `I` on the main
 screen: a built-in synth, one of this computer's MIDI output ports and a
-channel, or FluidSynth. Then choose that instrument in each track's editor. Adding the
-first instrument turns the main screen's Real Time switch on, and `T` on the
-main screen turns it on and off.
+channel, or FluidSynth. Then choose that instrument in each track's editor.
 
-While the switch is on, Arrange has its play controls: a `▶ song` button in
+As soon as a track plays through an instrument that can sound, Arrange has its
+play controls: a `▶ song` button in
 the corner over the scene names, which the arrows reach; a `▶` beside each
 clip, in place of the left end of the clip's bar; and `Space` wherever the
 cursor is.

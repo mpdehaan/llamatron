@@ -22,7 +22,6 @@ const GROOVES: &str = "grooves";
 const INSTRUMENTS: &str = "instruments";
 const CHAINS: &str = "chains";
 const PATTERNS: &str = "patterns";
-const REAL_TIME: &str = "real_time";
 const GROUP: &str = "group";
 /// The cell length a factory groove's copy leaves out, its sixteenths.
 const SIXTEENTHS: (i128, i128) = (1, 16);
@@ -138,20 +137,14 @@ impl Document {
     }
 
     /// Add a track with an instrument of its own, named after it or counted up from its name where that is taken, as one
-    /// step to undo; the set's first instrument turns real-time playback on, as the Instruments page's does. Hands back
-    /// the instrument's name.
+    /// step to undo. Hands back the instrument's name.
     pub fn add_track_with_instrument(&mut self, name: &str, place: Option<usize>, drum: bool, instrument: Data) -> Result<String, String> {
         let song = self.get_current_song_name().to_string();
         let taken = self.names_of(INSTRUMENTS);
-        let first = taken.is_empty();
         let instrument_name = llamatron_model::objects::naming::unique_name(name, &taken);
         self.edit_data(|data| {
             let with_track = edits::added_track(data, &song, name, place, drum, Some(&instrument_name));
-            let mut changed = with_item(&with_track, INSTRUMENTS, &instrument_name, instrument);
-            if first {
-                changed.set(REAL_TIME, Data::Bool(true));
-            }
-            changed
+            with_item(&with_track, INSTRUMENTS, &instrument_name, instrument)
         })?;
         Ok(instrument_name)
     }
@@ -439,10 +432,6 @@ impl Document {
                 let chosen = chosen.clone();
                 self.select_song(&chosen);
             }
-        }
-        let real_time = matches!(self.get_setlist().get_written(REAL_TIME), Some(Data::Bool(true)));
-        if section == INSTRUMENTS && self.names_of(INSTRUMENTS).is_empty() && real_time {
-            self.change_set(|setlist| setlist.set_written(REAL_TIME, Some(Data::Bool(false))));
         }
         Ok(())
     }

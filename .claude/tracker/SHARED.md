@@ -145,7 +145,7 @@ A page asks for one of some values with `Page.pick(title=, values=, then=, curre
 
 - `MainPage` is one block of buttons drawn on `Canvas` lines, the user's layout, `GRID_WIDTH` (80) wide on every console and at
   the top left, never stretched to the window: `rows()` is the geometry, six rows of three, Arrange across the first row, then
-  Songs, the Wizard and Patterns, Scales, Generators and Draws, Grooves, Instruments and the Real Time switch, then the bar's two
+  Songs, the Wizard and Patterns, Scales, Generators and Draws, Grooves and Instruments, which spans the third column, then the bar's two
   rows, Open, Import and File/Global over Save, Export and Quit. `body()` draws Arrange as a regular button as wide as the grid
   (`draw_cell`), the three rows of buttons, `LINES_ABOVE_BAR` blank lines and the bar (`draw_bar`), whose keys start under the keys
   of the buttons above, each column's names starting at one place, past its longest key. `menu_items()` is each cell once. The
@@ -576,7 +576,7 @@ The exact layouts and colours, read when drawing or changing these. The rules th
 
 One block of buttons, the same size on every console, at the top left, never stretched. Arrange is a bar across the top, as wide
 as the three columns under it, a regular button with no details. Then three rows of three, in the order a song is made: Songs,
-the Wizard, Patterns; Scales, Generators, Draws; Grooves, Instruments, the Real Time switch. Then a blank line and one bar as wide
+the Wizard, Patterns; Scales, Generators, Draws; Grooves, Instruments, Instruments spanning two cells until the Bus page takes the second. Then a blank line and one bar as wide
 as the grid with the file's six actions in two rows on the grid's columns: Open over Save, Import over Export, File/Global over
 Quit, each column's keys under the keys of the buttons above and its names starting at one place. Every bar and row ends at one
 place on the right. All four arrows move by the geometry drawn; Down from Arrange returns to the button the cursor came from. The

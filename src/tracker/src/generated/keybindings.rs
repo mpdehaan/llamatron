@@ -253,11 +253,6 @@ pub mod MainPage {
         what: "QUIT",
     };
     pub use super::Page::QUIT_NOW;
-    pub static REAL_TIME: Binding = Binding {
-        keys: Keys::One("t"),
-        name: "T",
-        what: "Real Time",
-    };
     pub use super::Page::REDO;
     pub use super::Page::SAVE;
     pub static SCALES: Binding = Binding {
@@ -294,7 +289,6 @@ pub mod MainPage {
         &INSTRUMENTS,
         &DRAWS,
         &ARRANGE,
-        &REAL_TIME,
         &OPEN_SET_HERE,
         &EXPORT_HERE,
         &IMPORT_HERE,
@@ -314,7 +308,6 @@ pub mod MainPage {
         &INSTRUMENTS,
         &DRAWS,
         &ARRANGE,
-        &REAL_TIME,
     ];
     pub static CLASS: KeyClass = KeyClass {
         name: "MainPage",

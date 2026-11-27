@@ -206,7 +206,7 @@ the place. The keys that work everywhere are listed once:
 
 ## MainPage
 
-- **anywhere**: `F` File/Global · `S` Songs · `W` Wizard · `P` Patterns · `G` Generators · `Z` Scales · `V` Grooves · `I` Instruments · `D` Draws · `A` Arrange · `T` Real Time · `O` OPEN · `X` EXPORT · `L` LOAD MIDI · `Q` QUIT · `←↑↓→` move · `ENTER` open
+- **anywhere**: `F` File/Global · `S` Songs · `W` Wizard · `P` Patterns · `G` Generators · `Z` Scales · `V` Grooves · `I` Instruments · `D` Draws · `A` Arrange · `O` OPEN · `X` EXPORT · `L` LOAD MIDI · `Q` QUIT · `←↑↓→` move · `ENTER` open
 
 
 ## MessageDialog

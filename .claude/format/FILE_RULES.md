@@ -450,7 +450,7 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   `model/schema/file_format.py`, `Instrument.uses_fluidsynth`), the user's design,
   plays through FluidSynth, which the tracker starts (`.claude/features/REALTIME_PLAYBACK.md`): its `channel`
   is ignored and its `gm_sound` is sent as a program change, which no MIDI port's instrument is
-  sent. Every example plays this way as it comes: its `real_time` is on, every unmuted track has
+  sent. Every example plays this way as it comes: every unmuted track has
   an instrument on `*FluidSynth`, the melodic ones with a sound and the drum tracks sharing one
   called `drum kit`, and every track that plays only drum patterns is a drum track, which
   `tests/app/test_examples.py` holds them to. A new set has no instruments.
@@ -500,9 +500,8 @@ Reference notes for Claude, one part of `.claude/format/`: what a set file holds
   after its original (`copy_item`). Nothing in the render reads it, and since the Generators page lists by type, sorted, no page shows or changes it. `tests/engine/generators/test_generator_order.py` tests it.
 - The set's `open_generator_types`, which said which kinds the Generators page showed open when it had headings, is no longer
   written; the reader passes over it in an older file, and the next save drops it.
-- The set's `real_time` (`SetlistSetting.REAL_TIME`, default `DEFAULT_REAL_TIME`, false) is the
-  main screen's Real Time switch. `Document.add_instrument` turns it on with the first
-  instrument, and `delete_named` turns it off with the last.
+- The set's `real_time` (`SetlistSetting.REAL_TIME`) is still read and written as the file holds it, but nothing reads it:
+  a song plays in real time whenever a track's instrument can sound (`.claude/tracker/PAGES.md`, Instruments and real time).
 
 ### Clip names
 

@@ -347,6 +347,15 @@ const HIGHEST_CONTROL_VALUE: i64 = 127;
 const PAN_HALF_STEP: i64 = MAX_PAN / 2;
 
 impl Song {
+    /// Whether the song plays in real time: whether any of its tracks plays through an instrument that can sound, one
+    /// through FluidSynth or an outside MIDI device, or a built-in synth, whether or not the track has clips.
+    pub fn plays_in_real_time(&self, setlist: &Setlist) -> bool {
+        self.get_track_names().iter().filter_map(|name| self.get_track(name)).any(|track| {
+            self.instrument_of(track, setlist)
+                .is_some_and(|instrument| instrument.get_kind() == InstrumentKind::BUILT_IN || instrument.played_device().is_some())
+        })
+    }
+
     /// What a step with no velocity typed plays at on a track: the track's own, else its instrument's, else the loudest.
     pub fn default_velocity_of(&self, track: &Track, setlist: &Setlist) -> i64 {
         if let Some(own) = track.get_default_velocity() {

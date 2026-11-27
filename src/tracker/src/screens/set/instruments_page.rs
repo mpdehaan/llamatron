@@ -136,7 +136,7 @@ impl Listing for InstrumentsPage {
 
     fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {
         if item.is(&Keys::ADD) || item.is(&Keys::ADD_HERE) {
-            use llamatron_model::schema::generated::file_format::{SetlistSetting, INSTRUMENT_ROLES};
+            use llamatron_model::schema::generated::file_format::INSTRUMENT_ROLES;
             let options = INSTRUMENT_ROLES.iter().map(|role| named_in(labels::MSG_ROLE_NAMES, role)).collect();
             let then = Box::new(|app: &mut App, answer: &crate::screens::dialogs::Answer| {
                 let crate::screens::dialogs::Answer::Chosen(place) = answer else { return };
@@ -144,19 +144,14 @@ impl Listing for InstrumentsPage {
                 let role = INSTRUMENT_ROLES[place];
                 let setlist = app.document.get_setlist();
                 let taken: Vec<String> = setlist.items(Section::INSTRUMENTS).iter().map(|(name, _)| name.clone()).collect();
-                let first = taken.is_empty();
                 let name = llamatron_model::objects::naming::new_name(llamatron_strings::names::MSG_NEW_INSTRUMENT_WORD, &taken);
                 let data = Data::Map(vec![
                     (Data::text(InstrumentSetting::KIND), Data::text("off")),
                     (Data::text(InstrumentSetting::ROLE), Data::text(role)),
                 ]);
                 let Ok(instrument) = Instrument::from_data(&data) else { return };
-                app.document.change_set(|setlist| {
-                    setlist.add_item(Section::INSTRUMENTS, &name, Item::Instrument(instrument));
-                    if first {
-                        setlist.set_written(SetlistSetting::REAL_TIME, Some(Data::Bool(true)));
-                    }
-                });
+                app.document
+                    .change_set(|setlist| setlist.add_item(Section::INSTRUMENTS, &name, Item::Instrument(instrument)));
                 let page = crate::screens::set::instrument_editor::InstrumentEditor { name };
                 app.show_page(Box::new(crate::screens::field_page::FieldPage::new(page)));
             });

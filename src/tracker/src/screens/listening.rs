@@ -12,7 +12,7 @@ use crate::app::App;
 use crate::realtime::preview::{PatternPreview, Previewing};
 use crate::screens::dialogs::{Answer, ChoiceDialog, MessageDialog};
 use llamatron_model::file::data::Data;
-use llamatron_model::schema::generated::file_format::{Section, SetlistSetting, TrackSetting};
+use llamatron_model::schema::generated::file_format::{Section, TrackSetting};
 use llamatron_strings::{errors, messages, named};
 
 /// What a pattern's Listen key does now: listen, or stop the pattern playing.
@@ -94,7 +94,7 @@ pub fn is_listening(app: &App, index: usize, track: &str) -> bool {
 
 /// Play one clip of the current song on its own and again and again, asking for an instrument when its track has none.
 pub fn listen(app: &mut App, index: usize, track: &str, name: &str) {
-    let real_time = matches!(app.document.get_setlist().get_written(SetlistSetting::REAL_TIME), Some(Data::Bool(true)));
+    let real_time = app.document.song().plays_in_real_time(app.document.get_setlist());
     if !real_time && app.fluidsynth_installed {
         match app.preview.play_clip_of_song(&app.document, index, track) {
             Ok(()) => app.say(&named(messages::MSG_LISTENING_GENERAL_MIDI, &[("name", name.into())])),

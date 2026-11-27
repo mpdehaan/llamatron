@@ -20,9 +20,8 @@ use crate::style::Style as RichStyle;
 use crate::text::Text;
 use crate::themes::{self, Colour};
 use llamatron_engine::realizer::SongRealizer;
-use llamatron_model::file::data::Data;
-use llamatron_model::schema::generated::file_format::{Section, SetlistSetting};
-use llamatron_strings::{labels, marks, messages};
+use llamatron_model::schema::generated::file_format::Section;
+use llamatron_strings::{labels, messages};
 
 const COLUMNS: usize = 3;
 const GRID_WIDTH: usize = 80;
@@ -56,7 +55,7 @@ fn rows() -> Grid {
         [&Keys::ARRANGE, &Keys::ARRANGE, &Keys::ARRANGE],
         [&Keys::SONGS, &Keys::WIZARD, &Keys::PATTERNS],
         [&Keys::SCALES, &Keys::GENERATORS, &Keys::DRAWS],
-        [&Keys::GROOVES, &Keys::INSTRUMENTS, &Keys::REAL_TIME],
+        [&Keys::GROOVES, &Keys::INSTRUMENTS, &Keys::INSTRUMENTS],
         [&Keys::OPEN_SET_HERE, &Keys::IMPORT_HERE, &Keys::FILE],
         [&PageKeys::SAVE, &Keys::EXPORT_HERE, &Keys::QUIT],
     ]
@@ -186,10 +185,6 @@ impl MainPage {
 
     /// Do what a cell's key does: open its page.
     fn act(&mut self, app: &mut App, binding: &'static Binding) {
-        if same(binding, &Keys::REAL_TIME) {
-            toggle_real_time(app);
-            return;
-        }
         if same(binding, &Keys::FILE) {
             app.show_page(std::boxed::Box::new(FieldPage::new(FilePage)));
             return;
@@ -257,13 +252,9 @@ impl MainPage {
         }
     }
 
-    /// What a cell shows at its right: how many of its things the set has, the Real Time switch's mark, or nothing.
+    /// What a cell shows at its right: how many of its things the set has, or nothing.
     fn count(&self, app: &App, binding: &'static Binding) -> Option<String> {
         let setlist = app.document.get_setlist();
-        if same(binding, &Keys::REAL_TIME) {
-            let on = matches!(setlist.get_written(SetlistSetting::REAL_TIME), Some(Data::Bool(true)));
-            return Some(if on { marks::MSG_REAL_TIME_ON_MARK } else { marks::MSG_REAL_TIME_OFF_MARK }.to_string());
-        }
         if same(binding, &Keys::GENERATORS) {
             return Some(GENERATOR_SECTIONS.iter().map(|section| setlist.items(section).len()).sum::<usize>().to_string());
         }
@@ -452,33 +443,6 @@ impl Page for MainPage {
         let document = &app.document;
         Duration::Seconds(SongRealizer::new(document.get_setlist(), document.song(), None).song_seconds())
     }
-}
-
-/// Turn real-time playback on or off, which needs an instrument to play through, and say which on the status line.
-fn toggle_real_time(app: &mut App) {
-    let setlist = app.document.get_setlist();
-    if setlist.items(llamatron_model::schema::generated::file_format::Section::INSTRUMENTS).is_empty() {
-        let lines = vec![llamatron_strings::errors::ERR_ADD_INSTRUMENT_FIRST.to_string()];
-        app.show_page(std::boxed::Box::new(crate::screens::dialogs::MessageDialog::new(
-            llamatron_strings::errors::ERR_NO_INSTRUMENTS_TITLE,
-            lines,
-        )));
-        return;
-    }
-    let on = !matches!(setlist.get_written(SetlistSetting::REAL_TIME), Some(Data::Bool(true)));
-    app.document
-        .change_set(|setlist| setlist.set_written(SetlistSetting::REAL_TIME, Some(Data::Bool(on))));
-    // Arrange shows no stop with Real Time off, so turning it off stops what plays.
-    if !on && app.transport.is_playing() {
-        app.transport.stop_all();
-        app.say(llamatron_strings::messages::MSG_REAL_TIME_OFF_STOPPED);
-        return;
-    }
-    app.say(if on {
-        llamatron_strings::messages::MSG_REAL_TIME_ON
-    } else {
-        llamatron_strings::messages::MSG_REAL_TIME_OFF
-    });
 }
 
 #[cfg(test)]

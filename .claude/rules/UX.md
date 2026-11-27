@@ -46,7 +46,8 @@ changes it too. A new thing looks like the existing thing it is most like.
   footer shows one `←↑↓→ move`. Move mode's arrows `carry`, since they move a thing, not the cursor.
 - **Legend order**: ESC, the arrows, the keys the page has in all modes, then the rest. A key acting on a step says so in full:
   `insert step`, `remove step`, `insert cell`, `remove cell`. Every legend and F1's list of keys fits 80x24.
-- **Space on Arrange** plays and stops while the Real Time switch is on; ENTER stays edit. On the corner over the scene names:
+- **Space on Arrange** plays and stops whenever a track of the song plays through an instrument that can sound, which
+  the play marks show, there being no Real Time switch; ENTER stays edit. On the corner over the scene names:
   the song from the top, or stop all; on a scene's name: from that scene, or stop all; on a clip: that clip, or stop its track.
   The mark under the cursor, `▶` or `■`, and the legend say which. A song played from Arrange plays on through every page; edits
   are heard at the song's Live response; only a listening page's preview stops when its page is left; the corner or Ctrl+T stops

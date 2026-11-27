@@ -77,9 +77,9 @@ The keys depend on what is under the cursor:
 | A clip | `C` | Copy the clip |
 | A clip | `Bksp` | Delete the clip, after asking |
 | A cell, after copying a clip | `P` | Paste the copied clip here, replacing what's there |
-| The corner over the scene names | `Space` | Play the song from the top, or stop everything, with Real Time on |
-| A scene's name | `Space` | Play the song from this scene, or stop everything, with Real Time on |
-| A clip | `Space` | Play this clip on its own, or stop its track, with Real Time on |
+| The corner over the scene names | `Space` | Play the song from the top, or stop everything, when a track's instrument can sound |
+| A scene's name | `Space` | Play the song from this scene, or stop everything, when a track's instrument can sound |
+| A clip | `Space` | Play this clip on its own, or stop its track, when a track's instrument can sound |
 | Anywhere | `D` | Show or hide the details of every cell (see Details View below) |
 | A track's name, a scene's name or a clip | `Tab` | Lock into its details to pick, open, add or remove chains and open other settings (see Details View below) |
 | A scene's name | `V` | Open Scene View, the scene's notes laid out by track (see Scene View below) |

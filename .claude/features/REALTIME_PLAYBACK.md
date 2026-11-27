@@ -187,8 +187,7 @@ Reference notes for Claude, one of `.claude/features/`: the engine and the Realt
   between the pages and the player ("Real-time playback" above). It answers
   `problem(track=)` before anything is rendered (with `ERR_FLUIDSYNTH_NOT_INSTALLED` when a track
   plays through FluidSynth and `fluidsynth_installed()` says no, the tests giving a `FakeFluidSynth`
-  and their own answer): `ERR_REAL_TIME_OFF` when the set's switch is
-  off, `ERR_ADD_INSTRUMENT_FIRST` when the set has no instrument, `ERR_NO_TRACK_HAS_AN_INSTRUMENT`
+  and their own answer): `ERR_ADD_INSTRUMENT_FIRST` when the set has no instrument, or no track's instrument can sound, `ERR_NO_TRACK_HAS_AN_INSTRUMENT`
   when no track has one and `ERR_NO_TRACK_HAS_A_DEVICE` when no track's instrument has a device
   (`has_a_device`; an example's instruments carry only a General MIDI sound), unless a `track` is
   given, which a listening page picks an instrument for, `ERR_DEVICE_NOT_CONNECTED` for each instrument whose device `output_port_names()`
@@ -206,7 +205,7 @@ Reference notes for Claude, one of `.claude/features/`: the engine and the Realt
 - `play_through(page=, play=, said=)` in `screens/shared/shared.py` tells the transport's problem in a
   dialog, or plays and says `said` on the status line, telling a `SongFileError` from the render
   as `ERR_CANT_PLAY_TITLE`.
-- On Arrange, with Real Time on, Space is bound by where the cursor is: `PLAY_SONG` on the
+- On Arrange, whenever a track's instrument can sound, Space is bound by where the cursor is: `PLAY_SONG` on the
   corner, `PLAY_SCENE` on a scene's name, `PLAY_CLIP` on a clip, and `STOP_PLAYING` or
   `STOP_CLIP` in their place while that plays (`play_scene_keys`, `play_clip_keys`, the header's
   keys on the corner). The status line says `playing from scene 1`, `playing clip (tune) on
@@ -243,7 +242,7 @@ Reference notes for Claude, one of `.claude/features/`: the engine and the Realt
   pattern editor and on the Patterns page (`pattern_listen_keys`, `listen_to_pattern`) plays the pattern
   at once with nothing asked, and `L` stops it. `PatternPreview` is a second `Transport` beside the
   song's (`Transport.shared()`), with a player and a sender of its own, so that it never stops the song
-  and plays whatever the Real Time switch says (`may_play`). It plays a copy of the set (`PreviewSet`,
+  and plays whatever the song's instruments can sound (`may_play`). It plays a copy of the set (`PreviewSet`,
   made again when the set's revision moves, so an edit is heard at the next pass) whose current song
   holds one scene, the pattern's clip on a track of its own, in the pattern's direction for as many
   passes as the direction takes to come round (`passes_to_come_round`), one pass for a direction that chooses as it goes, in the first of

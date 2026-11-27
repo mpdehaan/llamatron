@@ -192,7 +192,7 @@ group and is always sorted, so `S` (Sort) and `M` (Move) are not on it; every ot
 - The Song, Scene and Track pages have a Groove field. The last two are built by
   `interface/pages/groove_choice.py`, stepping through take-from-above, `off` and the names.
 
-## Instruments and the Real Time switch
+## Instruments and real time
 
 - The Instruments page (`I`, `InstrumentsPage`, a `NamedListPage`) lists the set's instruments
   with each one's device, channel and uses. `A` adds `instrument-1` and so on
@@ -212,13 +212,11 @@ group and is always sorted, so `S` (Sort) and `M` (Move) are not on it; every ot
   or closing
   , and `[` and `]` step it by number (`step_gm_sound`). An asker whose sound plays on one note passes `note=`, and the dialog keeps a Note row in view under its list: `[` and `]` step the note, a name such as C3 or f#2 typed and ENTER sets it (`interface/forms/note_names.py`), ENTER with nothing typed takes the sound the dialog opened on, and the answer is the sound and the note.
 - The track editor's last field, Instrument, picks one of the set's instruments or `(none)`.
-- The main screen's Real Time cell (`T`, `MainPage.toggle_real_time`) sits among the pages,
-  with `MSG_REAL_TIME_ON_MARK` (`●`) or `MSG_REAL_TIME_OFF_MARK` (`○`) where a page's cell has
-  its count. With no instruments it tells `ERR_ADD_INSTRUMENT_FIRST` in a dialog; otherwise it
-  flips the set's `real_time` and says so on the status line. Turning it off while something plays stops it
-  (`MSG_REAL_TIME_OFF_STOPPED`), and `Transport.tick` stops whatever plays once the switch is off by any path, deleting the
-  last instrument included, since Arrange shows no stop with Real Time off (a bug the user found). A cell's count sits against the
-  box's edge when a name as long as Instruments leaves no room for the space before it.
+- There is no Real Time switch: a song plays in real time whenever any of its tracks plays through an instrument that
+  can sound, a built-in synth, FluidSynth or a MIDI port (`Song::plays_in_real_time` in `src/model/src/objects/reading.rs`),
+  whether or not the track has clips, and Arrange's play marks are what show it. The main screen's Instruments cell
+  spans the switch's old place, until the Bus page takes it. A cell's count sits against the box's edge when a name as
+  long as Instruments leaves no room for the space before it.
 - The Scene page's last field is the Launch together toggle, and the clip page's last field is
   Advance, the clip's follow action (`.claude/format/FILE_RULES.md`, "Follow action and Launch together").
 
@@ -302,8 +300,7 @@ The user's design, agreed in detail in `.claude/planning/WIZARD_DESIGNS.md` (S16
   draws a new seed at Create, the user's rule: a run from the last settings keeps the settings and never the seed, and
   there is no Take field. The four names are Claude's shortening of the user's, which the user accepted. A current song nothing was
   done to, as a new set's (`Setlist.song_is_untouched`), is filled in place under the wizard's name, where otherwise a song
-  is added. Create turns the set's Real Time switch on, in the same undo step, the user's ask, so that the song can be
-  played at once.
+  is added.
 - Nothing in the set changes until Create, so undo and redo do nothing in the wizard and say why (`Page.steps_history`,
   `why_no_history`). Create is `Document.add_made_song`: `Setlist.take_in` of the set `WizardChoices.made_setlist` made
   (`.claude/features/SONG_WIZARD.md`, "The Wizard's Choices"), one change and so one undo step, after which

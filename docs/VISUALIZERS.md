@@ -15,9 +15,9 @@ song](https://www.youtube.com/watch?v=yt9NffJ1HF4) is on YouTube.
 
 ## Visualizer Controls
 
-Visualizers need real-time playback, so the set's Real Time switch has to be
-on; `T` on the main screen turns it on, and every example has it on. On
-Arrange, these keys control the visualizer:
+Visualizers need real-time playback, so a track of the song has to play
+through an instrument that can sound, as every example's do. On Arrange,
+these keys control the visualizer:
 
 | Key | What it does |
 | --- | --- |
