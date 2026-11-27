@@ -14,6 +14,8 @@ internal_tools/check_before_commit.sh                              # before comm
 - The commit check runs rustfmt, clippy with every warning an error, the tests, the release build, and the comparisons the
   changed crates can affect, side by side. Read its real exit code; never pipe it through `tail`. There is no git hook, and none
   MUST be added.
+- A commit is made only after the check's exit code has been read as 0, in a step of its own, never chained after the
+  check in one command.
 - `internal_tools/push_all.sh` runs every check and every comparison before any push, whatever changed.
 - The comparisons (`internal_tools/compare_llamatron.py`) put every example and test set through each step, load, layout,
   migrate, save, edits, pattern edits, render, timeline, player, MIDI, Live and import, and the key tour's screens at 80x24 and
