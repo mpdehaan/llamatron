@@ -7,6 +7,7 @@ plain code, comments that explain why, tests that read clearly.
 
 ## Readability
 
+- **Bounds for stepping**: moving through a list goes through the one stepping helper, which handles an empty list.
 - **Readable over clever.** Explicit, simple, flat; errors never pass silently. Code a reader must stop to work out is allowed
   only for measured speed, with a comment saying why.
 - **Timing comes first where it matters.** The synthesis and every timing-sensitive path (the audio callback, the sender, the
@@ -59,7 +60,10 @@ plain code, comments that explain why, tests that read clearly.
   for all else, in the module of how it is used (labels, legends, messages, marks, names, the command line). Comments and
   documentation stay where they are.
 - **Every name used as a value is a named constant**: file keys, settings, kinds, modes, note names, chord symbols, key names,
-  exporter tags, and numbers with a meaning (`MIN_PROBABILITY`). Unused constants are removed.
+  exporter tags, and numbers with a meaning (`MIN_PROBABILITY`). Unused constants are removed. A constant is defined once, in
+  the model's schema or the strings crate, and imported, never redeclared as a local constant; no list of sections or
+  settings is kept by hand where the schema holds it. Different meanings are different constants even where their values
+  agree: a dozen minimums of 0 are a dozen constants, each named for what it bounds.
 - **No YAML in a string**, anywhere in the source, tests included: data is built as data structures and serialized where
   it is written. A set a test starts from is a data file beside the tests, read by name.
 - **A file is written by a serializer**: a format llamatron writes, YAML, JSON, MIDI or any other, is built as data and
@@ -70,7 +74,8 @@ plain code, comments that explain why, tests that read clearly.
 - **Arrays stay arrays.** List-like data is stored as real values (sixteen booleans, never `'x...x...'`), in files and in
   memory. Display strings are made where shown.
 - **Keys.** Every binding is in one table, a class for each page, dialog and component, each binding its keys, the name the
-  legend shows and what it does; a page binds only its class's bindings. UX rules are in `.claude/rules/UX.md`.
+  legend shows and what it does; a page binds only its class's bindings. A key is written only as a `Key::` constant, and a
+  test holds that no class binds a key twice or shadows an everywhere key. UX rules are in `.claude/rules/UX.md`.
 
 ## Performance
 

@@ -38,9 +38,14 @@ standard a person who does not know Rust can trust: it builds itself, explains i
   documentation.
 - `cargo clippy` clean with warnings denied, `cargo fmt` applied; both run by `internal_tools/check_before_commit.sh` when a file
   under `src/` changed, with `cargo test`.
+- `missing_docs_in_private_items` is warned and denied by the commit check, modules are `pub(crate)` unless another crate
+  uses them, and no file holds a file-wide `allow(dead_code)`: each turned on for a crate as that crate is cleaned to meet it.
+- No new name, comment or page refers to the retired Python or to "not ported"; existing ones are removed when their code
+  is touched, and nothing not ported is reachable from a key.
 - No `unsafe` outside the edges where the daemon calls the operating system (its clock, its parent's id); each `unsafe` block has a comment saying why it is sound.
 - The audio callback allocates nothing, takes no lock that another thread may hold for long, and reads
-  its work from lock-free single-producer, single-consumer queues; patches are swapped whole.
+  its work from lock-free single-producer, single-consumer queues; patches are swapped whole. The sender thread and the
+  player's tick take no lock another thread holds across expensive work: they use `try_lock` or a lock-free hand-off.
 - Every function, public or private, has a comment saying what it does (the user's requirement).
 - Readable over clever, after the Zen of Python (the user's requirement): explicit, simple and flat, one obvious way to do
   a thing, errors never passing silently; cleverness only where a performance-heavy part of the backend needs it, with a
