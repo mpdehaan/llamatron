@@ -37,7 +37,6 @@ And the panel's own settings:
 | Snap | on or off | Pulls each Tune toward unison, fifths and octaves, so that a chord tuned by ear lands in tune |
 | Drift | 0 to 10 | How far each oscillator's tuning wanders, slowly and in its own way |
 | Feedback | on or off, with its amount 0 to 10 | Loops the mixer's output back into it, the classic patch of the output into the external input, for a thicker, overdriven growl |
-| Pitch env | −48 to +48 semitones | How far Env 3 moves the pitch |
 
 Each oscillator is also a source in the Mod Matrix, Osc 1, Osc 2 and Osc 3,
 sounding or switched off: Osc 3 at LO, switched off and routed to the pitch, is

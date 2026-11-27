@@ -61,9 +61,10 @@ first message comes.
 
 The routes every synth needs are wired in outside the matrix, as a
 semi-modular synth's normalled connections are: Env 1 to the amp, Env 2 to the
-cutoff through the filter's Env amount, Env 3 to the pitch through the
-oscillator's Pitch env, and the key to the cutoff through Key track. So all
-six slots stay free for movement of your own.
+cutoff through the filter's Env amount, and the key to the cutoff through Key
+track. Env 3 is wired to nothing, so that it is free for any use: a route
+from Env 3 to Pitch gives a pitch envelope. All six slots stay free for
+movement of your own.
 
 When an instrument is compiled, empty slots and slots of no amount are left
 out, and each route keeps its source, its via, its destination and how far it

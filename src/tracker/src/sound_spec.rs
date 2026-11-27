@@ -68,7 +68,7 @@ fn oscillators(sound: &Sound) -> Data {
             ("overlap", setting("overlap")),
         ]);
     }
-    let mut spec = vec![("type", Data::text(&kind)), ("pitch_env", setting("pitch_env"))];
+    let mut spec = vec![("type", Data::text(&kind))];
     match kind.as_str() {
         "sid" => spec.extend([
             ("wave", setting("wave")),

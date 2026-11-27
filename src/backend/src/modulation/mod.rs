@@ -7,7 +7,7 @@
 //! does; their values over a chunk are worked out once before the voices read them. An LFO+ may also fade in after each
 //! note, which each voice applies by its own age, and may follow the song's tempo, its cycle a division of the beat. The matrix has six slots, each a
 //! source, an optional via that scales it, a destination and an amount; the normalled routes live outside it (Env1 to the
-//! amp, Env2 to the cutoff through the Env amount, Env3 to pitch through Pitch env, the key through Key track), so that its
+//! amp, Env2 to the cutoff through the Env amount, the key through Key track), so that its
 //! slots stay free. Empty slots and those of no amount are left out when it is compiled. A slot may also move an LFO's
 //! rate by an LFO, another or itself: those routes are the bank's, read a sample at a time as the LFOs advance.
 

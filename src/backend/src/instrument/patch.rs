@@ -4,7 +4,7 @@
 //! A compiled instrument and its sounding notes.
 //!
 //! A voice of parts runs a sample at a time: its envelopes; the matrix, from the envelopes, the LFOs, its velocity, key and a
-//! random value; the oscillator, its pitch moved by glide, Env3 through Pitch env and the matrix; its filter, its cutoff
+//! random value; the oscillator, its pitch moved by glide and the matrix; its filter, its cutoff
 //! moved by Env2 through the Env amount (and an acid accent's extra depth), key tracking and the matrix; and the amp, Env1
 //! times its velocity, moved by the matrix. A filter is each note's own, or the instrument's, shared by every note and moved
 //! by the newest, as a paraphonic synth's is; a low-pass gate is always the note's own and is its amp, lit by Env1.
@@ -139,7 +139,6 @@ impl Voice {
 /// A voice of parts.
 pub struct Modular {
     oscillator: OscillatorPart,
-    pitch_env: f64,
     envelopes: [EnvelopePart; 3],
     memory: [EnvelopeMemory; 3],
     filter: Option<FilterPart>,
@@ -467,7 +466,7 @@ impl Patch {
             } else {
                 modular.matrix.moved(&sources)
             };
-            let mut bend = sources.envelopes[2] * modular.pitch_env + moved.pitch;
+            let mut bend = moved.pitch;
             if gliding {
                 bend += (voice.glide_from - voice.pitch) * (-((sample - voice.glide_at) as f64).max(0.0) / (glide * rate)).exp();
             }
@@ -573,9 +572,12 @@ impl Patch {
     }
 }
 
+/// The envelope whose accent adds a sweep of its own to the filter through Env2.
+const ACCENTING_ENVELOPE: &str = "acid_gate";
+
 fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
     let empty = Value::Nil;
-    let (oscillator, pitch_env) = oscillators::compiled(oscillators, rate);
+    let oscillator = oscillators::compiled(oscillators, rate);
     let filter_spec = field(spec, "filter").unwrap_or(&empty);
     let resonance = number(filter_spec, "resonance", 0.0);
     let envelope_specs = list(spec, "envelopes");
@@ -601,16 +603,19 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
     }
     let matrix_reads_env2 = matrix.uses(Source::Env2);
     let env2_to_filter = !truth(spec, "disconnect_filter", false);
+    // Env2 sweeps the cutoff only through an Env amount or an accent's extra sweep; with neither, nothing hears it, and
+    // its level is never worked out.
+    let can_accent = envelope_specs.iter().any(|envelope| word(envelope, "type", "") == ACCENTING_ENVELOPE);
+    let env2_sweeps = env2_to_filter && filter.as_ref().is_some_and(|filter| filter.amount != 0.0 || can_accent);
     Modular {
         oscillator,
-        pitch_env,
         envelopes: [envelope(0), envelope(1), envelope(2)],
         memory: [EnvelopeMemory::default(); 3],
         own_filter: gates[FILTER_GATE].is_some() || truth(spec, "filter_per_note", true),
-        reads_env2: (filter.is_some() && env2_to_filter) || matrix_reads_env2 || gates_read(1),
+        reads_env2: env2_sweeps || matrix_reads_env2 || gates_read(1),
         env2_to_filter,
         matrix_reads_env2,
-        reads_env3: pitch_env != 0.0 || matrix.uses(Source::Env3) || gates_read(2),
+        reads_env3: matrix.uses(Source::Env3) || gates_read(2),
         filter,
         gates,
         gate_memory: [EnvelopeMemory::default(); 2],

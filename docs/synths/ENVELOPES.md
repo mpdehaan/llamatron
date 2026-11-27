@@ -2,10 +2,11 @@
 
 An envelope is how a note rises and falls: the swell of a bowed string, the
 sharp hit and quick fade of a pluck, the long glow of a pad. Every built-in
-instrument has three, on the Envelopes tab, and each is wired in: Env 1 shapes
-the loudness, Env 2 sweeps the filter through its Env amount, and Env 3 bends
-the pitch through the oscillator's Pitch env. The [Mod Matrix](MOD_MATRIX.md)
-can send any of them anywhere else too.
+instrument has three, on the Envelopes tab: Env 1 shapes the loudness, Env 2
+sweeps the filter through its Env amount, and Env 3 is wired to nothing, free
+for whatever the [Mod Matrix](MOD_MATRIX.md) sends it to, such as the pitch
+for a falling tom or a laser zap. The Mod Matrix can send Env 1 and Env 2
+anywhere else too.
 
 At the foot of Env 2's column, Disconnect filter, off unless switched on,
 unhooks Env 2 from the filter: the cutoff then stays where the Filter tab sets
@@ -150,8 +151,7 @@ starts. A note's end fades it out very quickly, so that it doesn't click.
 ## Off
 
 Env 2 and Env 3 can be set to Off, which holds them at nothing: Env 2 then
-sweeps no filter and Env 3 bends no pitch, and the Mod Matrix reads nothing
-from them. With Env 2 Off and the Filter set to (none), you hear the
+sweeps no filter, and the Mod Matrix reads nothing from either. With Env 2 Off and the Filter set to (none), you hear the
 oscillator as it is, a quick way to learn what an oscillator sounds like. Env
 1 is the loudness, so it always holds an envelope.
 

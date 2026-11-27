@@ -162,10 +162,9 @@ pub enum ChipVoice {
     Noise,
 }
 
-/// The oscillators a spec describes, and their pitch envelope's depth in semitones.
-pub fn compiled(spec: &Value, rate: f64) -> (OscillatorPart, f64) {
-    let pitch_env = number(spec, "pitch_env", 0.0);
-    let part = match word(spec, "type", "basic") {
+/// The oscillators a spec describes.
+pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
+    match word(spec, "type", "basic") {
         "sid" => sid(spec, rate),
         "pocket" => pocket(spec, rate),
         "asheville" => OscillatorPart::Asheville(Box::new(asheville::compiled(spec))),
@@ -182,8 +181,7 @@ pub fn compiled(spec: &Value, rate: f64) -> (OscillatorPart, f64) {
             }
         }
         _ => basic(spec),
-    };
-    (part, pitch_env)
+    }
 }
 
 fn basic(spec: &Value) -> OscillatorPart {
@@ -514,7 +512,7 @@ mod tests {
     #[test]
     fn a_note_bent_up_reads_the_table_of_its_highest_pitch() {
         let spec = rmpv::Value::Map(vec![("type".into(), "acid".into())]);
-        let (part, _) = compiled(&spec, 48000.0);
+        let part = compiled(&spec, 48000.0);
         let mut state = OscillatorState::default();
         let (pitch, two_octaves) = (60.0, 24.0);
         part.choose_band(&mut state, pitch, 0.0);
@@ -540,7 +538,7 @@ mod tests {
     fn played(pairs: Vec<(&str, Value)>, pitch: f64) -> Vec<f64> {
         let rate = 48_000.0;
         let spec = Value::Map(pairs.into_iter().map(|(key, value)| (Value::from(key), value)).collect());
-        let (part, _) = compiled(&spec, rate);
+        let part = compiled(&spec, rate);
         let mut state = OscillatorState::default();
         part.begin(&mut state, pitch);
         part.choose_band(&mut state, pitch, 0.0);

@@ -77,8 +77,7 @@ yet; their pages say so.
 ## How a Voice Is Wired
 
 Each note is a voice, run one sample at a time. Its oscillator makes the tone,
-its pitch moved by the glide, by Env 3 through the oscillator's Pitch env and
-by the Mod Matrix. The filter takes part of the tone away, its cutoff moved by
+its pitch moved by the glide and by the Mod Matrix. The filter takes part of the tone away, its cutoff moved by
 Env 2 through the filter's Env amount, by key tracking and by the Mod Matrix.
 The amp sets the loudness, from Env 1 and the note's velocity, moved by the
 Mod Matrix. These routes are wired in, as a semi-modular synth's normalled

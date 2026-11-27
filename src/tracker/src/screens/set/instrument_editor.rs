@@ -124,17 +124,7 @@ const ASHEVILLE_OSCILLATORS: [[&str; 9]; 3] = [
 const AUDIO_SPEED: &str = "audio";
 const RATE_SUFFIX: &str = "_rate";
 const RANGE_SUFFIX: &str = "_range";
-const ASHEVILLE_PANEL: [&str; 9] = [
-    "model",
-    "character",
-    "noise_level",
-    "ring",
-    "tune_snap",
-    "drift",
-    "feedback_on",
-    "feedback",
-    "pitch_env",
-];
+const ASHEVILLE_PANEL: [&str; 8] = ["model", "character", "noise_level", "ring", "tune_snap", "drift", "feedback_on", "feedback"];
 const CONTINUOUS: &str = "continuous";
 const ASHEVILLE_SOURCES: [&str; 3] = ["osc1", "osc2", "osc3"];
 const WAVE_SUFFIX: &str = "_wave";

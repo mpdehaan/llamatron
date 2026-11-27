@@ -464,7 +464,6 @@ pub struct PartSetting;
 
 impl PartSetting {
     pub const TYPE: &'static str = "type";
-    pub const PITCH_ENV: &'static str = "pitch_env";
     pub const OSCILLATORS: &'static str = "oscillators";
     pub const WAVE: &'static str = "wave";
     pub const PULSE_WIDTH: &'static str = "pulse_width";

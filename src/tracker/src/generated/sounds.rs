@@ -370,15 +370,11 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("drift", Preset::Whole(3)),
             ("feedback_on", Preset::Flag(false)),
             ("feedback", Preset::Whole(0)),
-            ("pitch_env", Preset::Whole(0)),
         ]),
     ),
     (
         "basic",
-        Preset::Map(&[
-            ("oscillators", Preset::List(&[Preset::Map(&[("waveform", Preset::Text("saw"))])])),
-            ("pitch_env", Preset::Whole(0)),
-        ]),
+        Preset::Map(&[("oscillators", Preset::List(&[Preset::Map(&[("waveform", Preset::Text("saw"))])]))]),
     ),
     (
         "sid",
@@ -388,7 +384,6 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("modulation", Preset::Text("off")),
             ("interval", Preset::Whole(7)),
             ("arpeggio", Preset::List(&[])),
-            ("pitch_env", Preset::Whole(0)),
         ]),
     ),
     (
@@ -401,17 +396,9 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("sweep_pace", Preset::Whole(0)),
             ("sweep_direction", Preset::Text("down")),
             ("sweep_step", Preset::Whole(3)),
-            ("pitch_env", Preset::Whole(0)),
         ]),
     ),
-    (
-        "acid",
-        Preset::Map(&[
-            ("acid_wave", Preset::Text("saw")),
-            ("tuning", Preset::Whole(0)),
-            ("pitch_env", Preset::Whole(0)),
-        ]),
-    ),
+    ("acid", Preset::Map(&[("acid_wave", Preset::Text("saw")), ("tuning", Preset::Whole(0))])),
     (
         "drum",
         Preset::Map(&[
@@ -650,22 +637,13 @@ pub static SOUND_DEFAULTS: Preset = Preset::Map(&[("engine", Preset::Text("basic
 pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "asheville", "sid", "pocket", "oh3"]), ("percussion", &["drum"])];
 /// The settings each type of part shows, in order.
 pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
-    ("basic", &["pitch_env"]),
-    ("sid", &["wave", "pulse_width", "modulation", "interval", "arpeggio", "pitch_env"]),
+    ("basic", &[]),
+    ("sid", &["wave", "pulse_width", "modulation", "interval", "arpeggio"]),
     (
         "pocket",
-        &[
-            "chip_voice",
-            "duty",
-            "wave_shape",
-            "noise",
-            "sweep_pace",
-            "sweep_direction",
-            "sweep_step",
-            "pitch_env",
-        ],
+        &["chip_voice", "duty", "wave_shape", "noise", "sweep_pace", "sweep_direction", "sweep_step"],
     ),
-    ("acid", &["acid_wave", "tuning", "pitch_env"]),
+    ("acid", &["acid_wave", "tuning"]),
     (
         "asheville",
         &[
@@ -704,7 +682,6 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
             "drift",
             "feedback_on",
             "feedback",
-            "pitch_env",
         ],
     ),
     ("drum", &["machine", "choke", "overlap"]),
@@ -1060,15 +1037,6 @@ pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
             lowest: 0,
             highest: 100,
             what: "percent",
-        },
-    ),
-    (
-        "pitch_env",
-        SettingKind::Number {
-            lowest: -48,
-            highest: 48,
-            unit: "{number:+d} st",
-            zero: None,
         },
     ),
     (

@@ -288,9 +288,10 @@ instruments:
       engine: sid
       volume: 40
       voices: 1
-      oscillators: { type: sid, wave: triangle, pulse_width: 50, modulation: "off", interval: 7, arpeggio: [], pitch_env: 24 }
+      oscillators: { type: sid, wave: triangle, pulse_width: 50, modulation: "off", interval: 7, arpeggio: [] }
       envelopes: [{ type: sid_adsr, attack: 0, decay: 5, sustain: 0, release: 4 }, { type: none }, { type: adsr, attack: 0, hold: 0, decay: 60, snap: 0, sustain: 0, release: 60 }]
       filter: { type: none }
+      matrix: [{ source: env3, via: none, destination: pitch, amount: 100 }]
   - name: chip noise
     kind: built_in
     role: normal

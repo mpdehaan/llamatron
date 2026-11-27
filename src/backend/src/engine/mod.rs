@@ -632,6 +632,11 @@ mod tests {
 
     /// A ladder-filtered saw whose Env 2 sweeps a low cutoff through an Env amount, with Disconnect filter on or off.
     fn swept(env_amount: f64, disconnected: bool) -> Vec<f32> {
+        swept_with(env_amount, disconnected, Vec::new())
+    }
+
+    /// The same, with Mod Matrix routes.
+    fn swept_with(env_amount: f64, disconnected: bool, routes: Vec<Value>) -> Vec<f32> {
         let oscillators = Value::Map(vec![
             ("type".into(), "basic".into()),
             ("oscillators".into(), Value::Array(vec![Value::Array(vec!["saw".into(), 0.into(), 1.0.into()])])),
@@ -652,6 +657,7 @@ mod tests {
             ("envelopes".into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])),
             ("filter".into(), filter),
             ("disconnect_filter".into(), disconnected.into()),
+            ("matrix".into(), Value::Array(routes)),
         ]);
         let mut engine = Engine::new(48000.0, None);
         engine.set_instrument(0, Box::new(Patch::compiled(&spec, 48000.0)));
@@ -660,6 +666,21 @@ mod tests {
         let (mut left, mut right) = (vec![0.0; chunk], vec![0.0; chunk]);
         engine.render(0, &mut left, &mut right);
         left
+    }
+
+    /// With no Env amount, Env2's level is never worked out, and the note sounds exactly as when something else makes it
+    /// work Env2 out, here a Mod Matrix route of nothing: the skipped path and the worked one are the same.
+    #[test]
+    fn an_env2_nothing_hears_is_skipped_without_changing_the_sound() {
+        let skipped = swept_with(0.0, false, Vec::new());
+        let route = Value::Map(vec![
+            ("source".into(), "env2".into()),
+            ("via".into(), "none".into()),
+            ("destination".into(), "pitch".into()),
+            ("amount".into(), 0.0.into()),
+        ]);
+        let worked = swept_with(0.0, false, vec![route]);
+        assert_eq!(skipped, worked);
     }
 
     /// Disconnect filter unhooks Env 2 from the cutoff: the note sounds as if the Env amount were nothing, and unlike the
