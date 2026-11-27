@@ -35,11 +35,10 @@ The warm four-pole filter of the traditional monosynths: four one-pole stages
 in a row, the last one's output fed back to the input through a saturating
 stage. Each stage saturates too, as each transistor pair of the circuit does:
 a loud stage moves more slowly, so a loud note darkens and thickens rather
-than only getting louder. At full Resonance the loop's gain passes the point
-where it rings on its own, and the saturation holds that ringing to a clean
-sine, so it whistles as the transistor ladder does, never growing without
-bound; a noise far under hearing lets it ring up even from silence, as a
-circuit's own noise does. Driven, or set past half its Resonance, the Ladder,
+than only getting louder. At full Resonance the loop's gain stops just short
+of the point where it would ring on its own, so the peak rings strongly when
+the sound excites it and always dies away; no filter here holds a tone of its
+own. Driven, or set past half its Resonance, the Ladder,
 the OTA and the Sallen-Key run at twice the sample rate, so that the harmonics
 their saturation makes above hearing are filtered away rather than folding
 back down as harsh, out-of-tune whistles. As the resonance

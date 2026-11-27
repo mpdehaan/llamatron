@@ -4,9 +4,9 @@
 //! The filter parts of a voice's Filter slot, each a zero-delay-feedback model solved a sample at a time (the topology
 //! preserving transform), so that the cutoff can sweep as fast as an envelope moves it with no step or blow-up:
 //!
-//! - Ladder: four one-pole stages in a loop, its feedback through a saturating input, so that it self-oscillates at full
-//!   resonance into a clean sine bounded by the saturation, and thins its bass as resonance rises, as the transistor
-//!   ladder does; a slope of one to four poles taps an earlier stage, the feedback still from the last.
+//! - Ladder: four one-pole stages in a loop, its feedback through a saturating input, stopping just short of
+//!   self-oscillation at full resonance, as no filter here oscillates on its own, and thinning its bass as resonance
+//!   rises, as the transistor ladder does; a slope of one to four poles taps an earlier stage, the feedback still from the last.
 //! - Diode: the acid bass's ladder, its feedback weaker so that it stops short of oscillating and keeps its bass, driven
 //!   harder before and soft-clipped after, its floor lowered a little by its Env amount as that circuit's is.
 //! - OTA: the creamier ladder, a softer drive before it.
@@ -28,8 +28,9 @@ use std::f64::consts::PI;
 pub const ENVELOPE_OCTAVES: f64 = 4.0;
 const LOWEST_CUTOFF: f64 = 20.0;
 const ENV_MOD_DIP: f64 = 0.5;
-/// The ladder's loop gain at full resonance: just past four, where the loop oscillates, held by the saturation.
-const LADDER_FEEDBACK: f64 = 4.1;
+/// The ladder's loop gain at full resonance: just under four, where the loop would oscillate, so that its peak rings
+/// strongly when excited and always dies away.
+const LADDER_FEEDBACK: f64 = 3.85;
 const OTA_FEEDBACK: f64 = 3.8;
 const LOWEST_Q: f64 = 0.5;
 const MOST_Q: f64 = 20.0;
@@ -46,10 +47,6 @@ const OVERSAMPLED_FROM_RESONANCE: f64 = 0.5;
 const SOFT_LIMIT_END: f64 = 3.0;
 /// The least a stage's saturation may slow it, so that a very loud stage never stops.
 const LEAST_SQUASH: f64 = 0.01;
-/// The feedback past which the ladder is near self-oscillation, and the level of the noise that lets it ring up there,
-/// 120 dB under full scale.
-const RINGS_FROM_FEEDBACK: f64 = 3.8;
-const NOISE_FLOOR: f64 = 1e-6;
 /// How many octaves Filter FM moves the cutoff at full, by the oscillator at full level.
 const FM_OCTAVES: f64 = 2.0;
 
@@ -107,8 +104,6 @@ pub struct FilterState {
     halfband: Halfband,
     /// The ladder's stages' last outputs, from which each stage's saturation is worked out for the next sample.
     outputs: [f64; 4],
-    /// The seeded noise under a filter near self-oscillation, so that it rings up from silence; the same every playing.
-    noise: u64,
 }
 
 /// A soft limit close to tanh and far cheaper, x(27 + x²)/(27 + 9x²), held at its ends past three, where it reaches one.
@@ -129,18 +124,6 @@ fn soft_squash(y: f64) -> f64 {
     }
     let square = y * y;
     (27.0 + square) / (27.0 + 9.0 * square)
-}
-
-/// White noise from -1 to 1, a xorshift a sample, seeded the same every playing.
-#[inline]
-fn noise(state: &mut u64) -> f64 {
-    if *state == 0 {
-        *state = 0x2545_F491_4F6C_DD1D;
-    }
-    *state ^= *state << 13;
-    *state ^= *state >> 7;
-    *state ^= *state << 17;
-    (*state >> 11) as f64 / (1u64 << 52) as f64 - 1.0
 }
 
 impl FilterState {
@@ -254,21 +237,14 @@ impl FilterPart {
             input
         };
         let out = if self.is_ladder() {
-            // Near self-oscillation a seeded noise far under hearing lets the loop ring up from silence, as a circuit's
-            // does.
-            let floor = if state.feedback > RINGS_FROM_FEEDBACK {
-                NOISE_FLOOR * noise(&mut state.noise)
-            } else {
-                0.0
-            };
             if self.oversampled {
                 // Twice the rate, so that the saturating stages do not fold their harmonics back down.
-                let (first, second) = state.halfband.up(driven + floor);
+                let (first, second) = state.halfband.up(driven);
                 let first = self.ladder(state, first);
                 let second = self.ladder(state, second);
                 state.halfband.down(first, second)
             } else {
-                self.ladder(state, driven + floor)
+                self.ladder(state, driven)
             }
         } else {
             self.state_variable(state, driven)
@@ -428,6 +404,17 @@ mod tests {
         FilterPart::compiled(&spec, 48000.0).unwrap()
     }
 
+    /// A filter of a kind at a Resonance, a Drive and a cutoff.
+    fn part_at(kind: &str, resonance: f64, drive: f64, cutoff: f64) -> FilterPart {
+        let spec = Value::Map(vec![
+            ("type".into(), kind.into()),
+            ("cutoff".into(), cutoff.into()),
+            ("resonance".into(), resonance.into()),
+            ("drive".into(), drive.into()),
+        ]);
+        FilterPart::compiled(&spec, 48000.0).unwrap()
+    }
+
     fn loudness(filter: &FilterPart, frequency: f64) -> f64 {
         let mut state = FilterState::default();
         let mut peak: f64 = 0.0;
@@ -447,19 +434,30 @@ mod tests {
         assert!(loudness(&ladder, 8000.0) < 0.01);
     }
 
+    /// No filter self-oscillates at any setting: at full Resonance and full Drive an impulse's ringing dies away, and
+    /// silence stays silent (`.claude/rules/SYNTHS.md`).
     #[test]
-    fn a_ladder_at_full_resonance_rings_on_by_itself_and_stays_bounded() {
-        let ladder = part("ladder", 1.0);
-        let mut state = FilterState::default();
-        let mut late: f64 = 0.0;
-        for place in 0..48000 {
-            let input = if place == 0 { 1.0 } else { 0.0 };
-            let out = ladder.process(&mut state, input, 0.0, 0.0);
-            if place > 40000 {
-                late = late.max(out.abs());
+    fn no_filter_rings_on_by_itself() {
+        let rate = 48000;
+        let dies_within = 2 * rate;
+        for kind in ["ladder", "diode", "ota", "multimode", "sallen_key"] {
+            for cutoff in [80.0, 1000.0, 8000.0] {
+                let filter = part_at(kind, 1.0, 1.0, cutoff);
+                let mut state = FilterState::default();
+                let mut late: f64 = 0.0;
+                for place in 0..dies_within + rate / 4 {
+                    let input = if place == 0 { 1.0 } else { 0.0 };
+                    let out = filter.process(&mut state, input, 0.0, 0.0);
+                    if place > dies_within {
+                        late = late.max(out.abs());
+                    }
+                }
+                assert!(late < 1e-4, "{kind} at {cutoff} Hz still rings: {late}");
+                let mut quiet = FilterState::default();
+                let silent = (0..rate).all(|_| filter.process(&mut quiet, 0.0, 0.0, 0.0) == 0.0);
+                assert!(silent, "{kind} at {cutoff} Hz sounds from silence");
             }
         }
-        assert!(late > 0.05 && late < 8.0, "{late}");
     }
 
     #[test]
@@ -473,20 +471,6 @@ mod tests {
                 assert!(out.is_finite() && out.abs() < 16.0, "{kind}");
             }
         }
-    }
-
-    /// A ladder at full resonance rings up from silence, from its noise floor, as a circuit's does, the same every playing.
-    #[test]
-    fn a_ladder_at_full_resonance_rings_up_from_silence() {
-        let ringing = || {
-            let ladder = part("ladder", 1.0);
-            let mut state = FilterState::default();
-            (0..96_000).map(|_| ladder.process(&mut state, 0.0, 0.0, 0.0)).collect::<Vec<f64>>()
-        };
-        let heard = ringing();
-        let late = heard[90_000..].iter().fold(0.0_f64, |most, sample| most.max(sample.abs()));
-        assert!(late > 0.05, "{late}");
-        assert_eq!(heard, ringing(), "the same every playing");
     }
 
     /// A ladder's stages saturate: a sine near the cutoff loud comes out less than ten times as loud as it quiet.
