@@ -89,6 +89,9 @@ The professor's research is in `.claude/notes/synthesis/`.
   filter, rate reduction and drive); each hit's loudness is matched to a reference rather than its peak normalised; nothing of today's drums is kept for older sets; presets per drum and the demo updated
   (`.claude/notes/synthesis/`, the drum chapters).
 - **The vactrol's age**: An old cell behaving less predictably strike to strike, within a musical range Claude proposes.
+- **Asheville's Sync**: a Sync switch on Asheville's panel, Osc 2 hard-synced to Osc 1, starting its cycle again each
+  time Osc 1's begins, each jump band-limited, as the later and rack versions of the classic instrument offer, so that
+  sweeping Osc 2's Tune gives the tearing sync lead.
 - **Asheville's polyphonic mode**, after the late-1970s polyphonic analogs: every key its own voice, a shared filter and
   contours either paraphonic or per voice.
 - **The table oscillators' level and bands**: the band-limited tables Pocket, SID and Oh3 read made right: one gain a

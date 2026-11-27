@@ -26,3 +26,8 @@ holds how their code is written, and `.claude/notes/synthesis/` the research the
 - No filter self-oscillates or runs away into feedback, at any setting: full Resonance and full Drive give a peak that
   rings when the sound excites it and always dies away, never a tone of its own; a test holds every filter to it, its
   ringing from an impulse decaying within a set time and silence staying silent.
+- A voice's oscillators run free, as analog oscillators do: each starts a note at a phase drawn on its own, seeded by
+  the note, never all at one phase, since oscillators that start together lock, and two in tune add up to one fixed
+  wave rather than mixing. A sub-oscillator is its oscillator divided down and stays locked to it, switching only where
+  its oscillator's cycle begins. A test of every engine with several oscillators holds both, hearing two in tune mix.
+
