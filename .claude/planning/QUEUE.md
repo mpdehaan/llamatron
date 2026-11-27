@@ -54,4 +54,5 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 25. UX_IDEAS: Drum pages saying so.
 26. UX_IDEAS: A DRUM column on the Instruments page.
 27. SYNTH_IDEAS: The envelopes let go of the LPG.
-28. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
+28. SYNTH_IDEAS: Sine first on the Basic oscillators.
+29. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.

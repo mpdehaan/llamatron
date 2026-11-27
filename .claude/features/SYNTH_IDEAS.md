@@ -258,4 +258,6 @@ In the order of their priority, the highest first.
   loses its route to the filter, the "(filter2)" its page shows, so that it no longer reaches the LPG. Nothing is written
   under either; Env 1's heading simply no longer says "(amp)". To make the path plain, the instrument's tabs put Filters and Amp ahead of
   Envelopes: Oscillators, Filters, Amp, Envelopes, then the rest, the documents' synth pages following the same order.
+- **Sine first on the Basic oscillators**: the Basic engine's oscillators start on a sine wave, and the sine stands at
+  the top of the list of waves, since a sine makes a fine kick.
 
