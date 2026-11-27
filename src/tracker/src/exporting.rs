@@ -135,7 +135,6 @@ pub fn export_song(document: &crate::document::Document, kind: &str, directory: 
     }
     let refused = |error: llamatron_engine::error::RenderError| match error {
         llamatron_engine::error::RenderError::Refused(problem) => problem,
-        llamatron_engine::error::RenderError::NotPorted(what) => format!("not ported yet: {what}"),
     };
     let files: Vec<(String, Vec<u8>)> = match kind {
         ABLETON => {

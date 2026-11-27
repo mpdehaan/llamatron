@@ -326,7 +326,6 @@ impl Document {
             .render()
             .map_err(|error| match error {
                 llamatron_engine::error::RenderError::Refused(problem) => problem,
-                llamatron_engine::error::RenderError::NotPorted(what) => format!("not ported yet: {what}"),
             })
     }
 }

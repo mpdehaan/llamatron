@@ -701,7 +701,6 @@ impl<'a> SongRealizer<'a> {
                             timeline
                         }
                         Err(problem) if written.number == scene.number => return Err(problem),
-                        Err(RenderError::NotPorted(what)) => return Err(RenderError::NotPorted(what)),
                         Err(_) => continue,
                     }
                 }
@@ -1186,7 +1185,7 @@ impl<'a> SongRealizer<'a> {
                     clips,
                     problem: None,
                 },
-                Err(RenderError::Refused(problem)) | Err(RenderError::NotPorted(problem)) => SceneEstimate {
+                Err(RenderError::Refused(problem)) => SceneEstimate {
                     seconds: None,
                     clips: Vec::new(),
                     problem: Some(problem),

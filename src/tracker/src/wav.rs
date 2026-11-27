@@ -140,7 +140,6 @@ pub fn export(document: &Document, grid: &Grid, path: &Path) -> Result<(), Strin
 fn refusal(error: llamatron_engine::error::RenderError) -> String {
     match error {
         llamatron_engine::error::RenderError::Refused(problem) => problem,
-        llamatron_engine::error::RenderError::NotPorted(what) => format!("not ported yet: {what}"),
     }
 }
 

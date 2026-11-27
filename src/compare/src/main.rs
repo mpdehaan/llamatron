@@ -48,7 +48,7 @@ fn json_key(key: &Data) -> String {
 }
 
 /// Put one set through one step, writing what the step prints into out and what went wrong into err; the code the step
-/// ends with, 0 where it went well, NOT_PORTED where the set uses a part not ported yet.
+/// ends with, 0 where it went well.
 fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8 {
     // A MIDI file is read as bytes by the step that imports it.
     let read = if path.ends_with(".mid") {
@@ -169,10 +169,6 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                     let _ = writeln!(out, "{text}");
                     0
                 }
-                Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
-                    let _ = writeln!(err, "not ported yet: {what}");
-                    NOT_PORTED
-                }
                 Err(llamatron_engine::error::RenderError::Refused(problem)) => {
                     let _ = writeln!(err, "{path}: {problem}");
                     1
@@ -192,10 +188,6 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 Ok(text) => {
                     let _ = writeln!(out, "{text}");
                     0
-                }
-                Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
-                    let _ = writeln!(err, "not ported yet: {what}");
-                    NOT_PORTED
                 }
                 Err(llamatron_engine::error::RenderError::Refused(problem)) => {
                     let _ = writeln!(err, "{path}: {problem}");
@@ -225,10 +217,6 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                     let _ = writeln!(out, "{text}");
                     0
                 }
-                Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
-                    let _ = writeln!(err, "not ported yet: {what}");
-                    NOT_PORTED
-                }
                 Err(llamatron_engine::error::RenderError::Refused(problem)) => {
                     let _ = writeln!(err, "{path}: {problem}");
                     1
@@ -248,10 +236,6 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 Ok(text) => {
                     let _ = writeln!(out, "{text}");
                     0
-                }
-                Err(llamatron_engine::error::RenderError::NotPorted(what)) => {
-                    let _ = writeln!(err, "not ported yet: {what}");
-                    NOT_PORTED
                 }
                 Err(llamatron_engine::error::RenderError::Refused(problem)) => {
                     let _ = writeln!(err, "{path}: {problem}");
@@ -379,8 +363,6 @@ fn main() -> ExitCode {
     }
 }
 
-/// What the tool exits with for a set using a part of the program not ported yet, which the harness counts apart.
-const NOT_PORTED: u8 = 3;
 /// The seed every comparison renders from, the harness's RENDER_SEED.
 const RENDER_SEED: i64 = 1;
 
@@ -678,7 +660,6 @@ fn exported_live(setlist: &llamatron_model::objects::setlist::Setlist) -> llamat
                 lines.push(format!("{name} {digest}"));
             }
             Err(llamatron_engine::error::RenderError::Refused(_)) => lines.push(format!("{name} refused")),
-            Err(other) => return Err(other),
         }
     }
     Ok(lines.join("\n"))

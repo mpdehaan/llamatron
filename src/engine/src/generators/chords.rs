@@ -207,7 +207,10 @@ impl<'a> ChordsSettings<'a> {
             FOLLOW_PROGRESSION => Some(Moving::Follow(followed)),
             AUTO_CHORD => Some(Moving::Auto(self.auto_chord())),
             VOICING => None,
-            other => return Err(RenderError::NotPorted(format!("the Chords generator's {other} mode"))),
+            other => {
+                let problem = llamatron_strings::named(llamatron_strings::errors::ERR_NO_SUCH_CHORDS_MODE, &[("mode", other.into())]);
+                return Err(RenderError::Refused(problem));
+            }
         };
         let voicing = self.voices().then(|| self.voicing(continuation));
         Ok(ChordsGenerator { moving, voicing })

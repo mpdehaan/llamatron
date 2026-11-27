@@ -387,6 +387,7 @@ pub const ERR_FLUIDSYNTH_DID_NOT_START: &str = "FluidSynth did not start: its MI
 pub const ERR_FLUIDSYNTH_ENDED: &str = "FluidSynth ended as it started, with exit code {code}";
 pub const ERR_RECORDING_SONG_LOOPS: &str = "every clip loops in {scenes}, so playing the song would wait there forever: turn Loop off on one clip to record it";
 pub const ERR_LAUNCH_NEEDS_SET: &str = "the launch options need a set file to play";
+pub const ERR_NO_SUCH_CHORDS_MODE: &str = "the Chords generator has no mode called ({mode})";
 pub const ERR_BATCH_VIDEO_NEEDS_VISUALIZER: &str = "--batch-video needs --visualizer to name the mode the video shows";
 pub const ERR_NO_SUCH_MIDI_PORT: &str = "no MIDI output port called ({name})";
 pub const ERR_MIDI_NO_NOTES: &str = "the MIDI file plays no notes";
