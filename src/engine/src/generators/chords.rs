@@ -12,13 +12,14 @@
 use crate::chord_source::{ChordSource, HeardChord};
 use crate::clip::Clip;
 use crate::error::{RenderError, Rendered};
+use crate::generators::auto_chord::{AutoChord, FROM_SCALE};
 use crate::sound::{along_scale, scale_place, scale_sound, NoteSound, OutOfRange, Sound};
 use crate::tables::fixed_chord;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::fundamentals::voice_leading;
 use llamatron_model::schema::checking::{time_length, TimeLength};
-use llamatron_model::schema::generated::file_format::{ACCIDENTALS, GENERATOR_ENABLED, GENERATOR_RESTART, ONE_BAR_WRITTEN, TENSIONS};
+use llamatron_model::schema::generated::file_format::{ACCIDENTALS, GENERATOR_RESTART, ONE_BAR_WRITTEN, TENSIONS};
 use llamatron_model::schema::generated::midi::{MAX_MIDI_NUMBER, MIN_MIDI_NUMBER};
 use llamatron_model::values::scale::{Scale, ScaleType};
 
@@ -27,6 +28,10 @@ pub const CHORDS_FROM: &str = "chords_from";
 const VOICING: &str = "voicing";
 const PROGRESSION: &str = "progression";
 const FOLLOW_PROGRESSION: &str = "follow_progression";
+const AUTO_CHORD: &str = "auto_chord";
+/// Auto chord's chord, and whether the note ends it.
+const CHORD: &str = "chord";
+const NOTE_ON_TOP: &str = "note_on_top";
 const EVERY: &str = "every";
 const CHORDS: &str = "chords";
 const ACCIDENTAL_ROW: &str = "accidentals";
@@ -40,24 +45,6 @@ const HIGHEST_OCTAVE: &str = "highest_octave";
 const ROOT_IN_BASS: &str = "root_in_bass";
 const DEFAULT_LOWEST_OCTAVE: i64 = 4;
 const DEFAULT_HIGHEST_OCTAVE: i64 = 6;
-/// The settings the port reads; a Chords generator with any other written is not ported yet.
-const PORTED: &[&str] = &[
-    GENERATOR_ENABLED,
-    GENERATOR_RESTART,
-    MODE,
-    EVERY,
-    CHORDS,
-    ACCIDENTAL_ROW,
-    INVERSIONS,
-    SCALES,
-    QUALITIES,
-    TENSION_ROW,
-    CHORDS_FROM,
-    VOICE_LEADING,
-    LOWEST_OCTAVE,
-    HIGHEST_OCTAVE,
-    ROOT_IN_BASS,
-];
 /// A chord's places above its root, in a scale of seven notes: the 9th, 3rd, 11th, 5th, 13th and 7th.
 const ROOT_PLACE: i64 = 0;
 const NINTH_PLACE: i64 = 1;
@@ -91,12 +78,6 @@ fn row<'a>(data: &'a Data, name: &str, count: usize) -> Vec<Option<&'a Data>> {
 
 impl<'a> ChordsSettings<'a> {
     pub fn of(data: &'a Data) -> Rendered<ChordsSettings<'a>> {
-        for (key, value) in data.as_map().unwrap_or(&[]) {
-            let name = key.python_str();
-            if !PORTED.contains(&name.as_str()) && !value.is_null() {
-                return Err(RenderError::NotPorted(format!("the Chords generator's {name} setting")));
-            }
-        }
         Ok(ChordsSettings { data })
     }
 
@@ -208,11 +189,23 @@ impl<'a> ChordsSettings<'a> {
         }
     }
 
+    /// Auto chord as its settings write it: the chord to build, From scale unless chosen, and whether the note ends it.
+    fn auto_chord(&self) -> AutoChord {
+        let chord = self
+            .data
+            .get(CHORD)
+            .filter(|value| !value.is_null())
+            .map_or(FROM_SCALE.to_string(), Data::python_str);
+        let on_top = self.data.get(NOTE_ON_TOP) == Some(&Data::Bool(true));
+        AutoChord { chord, on_top }
+    }
+
     /// The generator its settings make at a clip's place: what its Mode does to the notes, then its voicing.
     pub fn make_generator(&self, bar: Rational, continuation: &Continuation, followed: Option<ChordSource>) -> Rendered<ChordsGenerator> {
         let moving = match self.get_mode().as_str() {
             PROGRESSION => Some(Moving::Progression(self.progression(bar, continuation)?)),
             FOLLOW_PROGRESSION => Some(Moving::Follow(followed)),
+            AUTO_CHORD => Some(Moving::Auto(self.auto_chord())),
             VOICING => None,
             other => return Err(RenderError::NotPorted(format!("the Chords generator's {other} mode"))),
         };
@@ -280,6 +273,7 @@ fn replaced_places(symbol: Option<&str>, tensions: Option<&Data>) -> Vec<(i64, i
 pub enum Moving {
     Progression(Progression),
     Follow(Option<ChordSource>),
+    Auto(AutoChord),
 }
 
 /// Runs a Chords generator's parts in order on a clip: what its Mode makes of the notes, then its voicing.
@@ -296,6 +290,7 @@ impl ChordsGenerator {
             clip = match moving {
                 Moving::Progression(progression) => progression.generate(&clip)?,
                 Moving::Follow(chords) => follow(&clip, chords.as_ref())?,
+                Moving::Auto(auto_chord) => auto_chord.generate(&clip)?,
             };
         }
         if let Some(voicing) = &mut self.voicing {
@@ -413,7 +408,8 @@ impl Progression {
     }
 }
 
-fn settled(sound: &Sound, scale: Option<&Scale>) -> Rendered<Sound> {
+/// A degree made the note it plays in a scale; any other sound as it is.
+pub(crate) fn settled(sound: &Sound, scale: Option<&Scale>) -> Rendered<Sound> {
     let (
         Sound::Degree {
             length,

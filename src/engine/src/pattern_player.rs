@@ -756,9 +756,12 @@ impl<'a> PatternPlayer<'a> {
     }
 
     fn named_scale(&self, name: &str) -> Rendered<&'a llamatron_model::objects::named::NamedScale> {
-        self.setlist
-            .get_named_scale(name)
-            .ok_or_else(|| RenderError::NotPorted(format!("a scale the set does not name ({name})")))
+        self.setlist.get_named_scale(name).ok_or_else(|| {
+            RenderError::Refused(llamatron_strings::named(
+                llamatron_strings::errors::ERR_SCENE_NO_SUCH_SCALE,
+                &[("scale", name.into())],
+            ))
+        })
     }
 
     /// A step's note or chord of the scale; the outer error refuses the set, the inner is a note that does not fit.

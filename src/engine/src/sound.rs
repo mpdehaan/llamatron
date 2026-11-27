@@ -286,3 +286,18 @@ pub fn along_scale(note: NoteSound, steps: i64, scale: Option<&llamatron_model::
 pub fn scale_place(shape: &[i64], half_steps: i64) -> usize {
     shape.iter().rposition(|step| *step <= half_steps).unwrap_or(0)
 }
+
+/// The half steps above a note to the third and fifth its place in the scale builds, or None for a note not in the scale:
+/// the triad Guitarify's Scale chord and the Chords generator's Auto chord build on a single note.
+pub fn triad_above(note: &NoteSound, scale: &llamatron_model::values::scale::Scale) -> Option<Vec<i64>> {
+    let steps = scale.get_type().get_shape();
+    let place = (note.midi - scale.get_root().get_midi_number()).rem_euclid(12);
+    let index = steps.iter().position(|step| *step == place)? as i64;
+    let size = steps.len() as i64;
+    Some(
+        [2, 4]
+            .iter()
+            .map(|along| (index + along).div_euclid(size) * 12 + steps[(index + along).rem_euclid(size) as usize] - place)
+            .collect(),
+    )
+}

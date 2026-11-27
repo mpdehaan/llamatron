@@ -365,9 +365,12 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
     fn clip_scale(&self) -> Rendered<Option<Scale>> {
         let Some(name) = self.scale_name() else { return Ok(None) };
         let setlist = self.realizer.setlist();
-        let named = setlist
-            .get_named_scale(&name)
-            .ok_or_else(|| crate::error::RenderError::NotPorted(format!("a scale the set does not name ({name})")))?;
+        let named = setlist.get_named_scale(&name).ok_or_else(|| {
+            crate::error::RenderError::Refused(llamatron_strings::named(
+                llamatron_strings::errors::ERR_SCENE_NO_SUCH_SCALE,
+                &[("scale", name.as_str().into())],
+            ))
+        })?;
         let pattern = setlist
             .get_pattern(&self.clip_slot.get_pattern_name())
             .ok_or_else(|| crate::error::RenderError::Refused("a clip's pattern is missing".to_string()))?;

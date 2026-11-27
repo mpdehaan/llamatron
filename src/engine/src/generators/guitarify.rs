@@ -10,7 +10,7 @@
 
 use crate::clip::Clip;
 use crate::error::{RenderError, Rendered};
-use crate::sound::{NoteSound, Sound};
+use crate::sound::{triad_above, NoteSound, Sound};
 use llamatron_math::{Number, PythonRandom, Rational, Seed};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::checking::{time_length, TimeLength};
@@ -670,20 +670,6 @@ fn missing_cost(missing: i64, root: i64) -> i64 {
         return MISSING_FIFTH_COST;
     }
     MISSING_NOTE_COST
-}
-
-/// The half steps above a note to the third and fifth its place in the scale builds, or None for a note not in the scale.
-fn triad_above(note: &NoteSound, scale: &Scale) -> Option<Vec<i64>> {
-    let steps = scale.get_type().get_shape();
-    let place = (note.midi - scale.get_root().get_midi_number()).rem_euclid(12);
-    let index = steps.iter().position(|step| *step == place)? as i64;
-    let size = steps.len() as i64;
-    Some(
-        [2, 4]
-            .iter()
-            .map(|along| (index + along).div_euclid(size) * 12 + steps[(index + along).rem_euclid(size) as usize] - place)
-            .collect(),
-    )
 }
 
 /// A clip's positions from timed events: notes struck at one moment are one chord, each place lasting until the next

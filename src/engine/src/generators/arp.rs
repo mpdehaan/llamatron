@@ -13,7 +13,6 @@ use crate::sound::{along_scale, NoteSound, Sound};
 use llamatron_math::{PythonRandom, Rational, Seed};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::checking::{time_length, TimeLength};
-use llamatron_model::schema::generated::file_format::{GENERATOR_ENABLED, GENERATOR_RESTART};
 use llamatron_model::values::scale::Scale;
 use std::cell::RefCell;
 
@@ -22,7 +21,6 @@ const ORDER: &str = "order";
 const OCTAVE_RANGE: &str = "octave_range";
 const OCTAVE_JUMP: &str = "octave_jump";
 const OFFSETS: &str = "offsets";
-const PORTED: &[&str] = &[GENERATOR_ENABLED, GENERATOR_RESTART, STEP, ORDER, OCTAVE_RANGE, OCTAVE_JUMP, OFFSETS];
 
 #[derive(Clone, Copy, PartialEq)]
 enum Order {
@@ -49,12 +47,6 @@ impl Arp {
     /// An arpeggiator from its settings at a clip's place: the clip's pattern's step unless its own is set, a step in bars
     /// that many of the song's bars, and the seed its place gives.
     pub fn of(settings: &Data, pattern_step: Rational, bar: Rational, seed: Option<i128>, start_state: Option<GeneratorState>) -> Rendered<Arp> {
-        for (key, value) in settings.as_map().unwrap_or(&[]) {
-            let name = key.python_str();
-            if !PORTED.contains(&name.as_str()) && !value.is_null() {
-                return Err(RenderError::NotPorted(format!("the Arp generator's {name} setting")));
-            }
-        }
         let written = |name: &str| settings.get(name).filter(|value| !value.is_null());
         let step = match written(STEP) {
             None => pattern_step,

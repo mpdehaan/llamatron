@@ -4,6 +4,7 @@
 //! The generators a clip's notes run through (the Python engine/generators/), a module a plugin.
 
 pub mod arp;
+pub mod auto_chord;
 pub mod chords;
 pub mod guitarify;
 pub mod musician;

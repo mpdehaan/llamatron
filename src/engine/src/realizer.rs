@@ -4,9 +4,6 @@
 //! The Realizer, which plays a song into clips (the Python engine/realizer/song_realizer.py and written_scene.py): every
 //! scene in order, a scene that repeats written out once for each repeat, each track's clip in it played, and a scene's
 //! length worked out without playing, as its longest clip that does not loop.
-//!
-//! The port plays a part of what the Python does so far; a song using a part not yet ported is refused as not ported,
-//! named, before anything plays (`check_ported`).
 
 use crate::chord_source::ChordSource;
 use crate::clip::Clip;
@@ -32,11 +29,10 @@ use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::{Scene, Song, Track};
 use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::DRAW_NAMES;
-use llamatron_model::schema::generated::file_format::{ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SongSetting, TrackSetting};
+use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSetting, Section, SongSetting, TrackSetting};
 use llamatron_model::schema::generated::file_format::{Restart, GENERATOR_ENABLED, GENERATOR_RESTART};
 use llamatron_model::schema::generated::limits::{MAX_TEMPO, MIN_TEMPO};
 use llamatron_model::schema::generated::plugins::PLUGINS;
-use llamatron_model::schema::generated::settings::{Setting, CLIP_SLOT, INSTRUMENT, PATTERN, SCENE, SONG, TRACK};
 use llamatron_strings::{errors, named, names};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -344,7 +340,6 @@ impl<'a> SongRealizer<'a> {
 
     /// Every written-out scene's finished clips.
     pub fn render(&self) -> Rendered<Grid> {
-        check_ported(self.setlist, self.song)?;
         let tracks: Vec<String> = self.song.get_track_names().into_iter().map(str::to_string).collect();
         let mut rows = Vec::new();
         for scene in &self.scenes {
@@ -1365,19 +1360,13 @@ fn chords_in(clip: &Clip) -> i64 {
 /// The decimal places a ramped tempo is rounded to.
 const TEMPO_PLACES: usize = 4;
 
-/// The kinds of generator the port runs so far.
-const PORTED_KINDS: &[&str] = &["chords", "arp", "guitarify", "shapes", "timing", "phrasing", "musician", "hocket", "drift"];
-
 /// The factors a chain step's seed is made with, so that it differs for every song, scene, track and place in the chain.
 const SEED_SONG_FACTOR: i128 = 1_000_003;
 const SEED_SCENE_FACTOR: i128 = 1_009;
 const SEED_TRACK_FACTOR: i128 = 31;
 
-/// A chain step of a kind the port runs, or what is not ported yet.
+/// A chain step: a generator's kind, its name and its settings.
 fn ported_step(kind: &str, name: &str, settings: Data) -> Rendered<ChainStep> {
-    if !PORTED_KINDS.contains(&kind) {
-        return Err(RenderError::NotPorted(format!("the {kind} generator")));
-    }
     Ok(ChainStep {
         kind: kind.to_string(),
         name: name.to_string(),
@@ -1388,141 +1377,6 @@ fn ported_step(kind: &str, name: &str, settings: Data) -> Rendered<ChainStep> {
 /// Whether a built-in generator's settings switch it on: a built-in is off unless written on.
 fn is_switched_on(settings: &Data) -> bool {
     settings.get(GENERATOR_ENABLED) == Some(&Data::Bool(true))
-}
-
-/// Whether a setting is written as something that does anything: false and an empty list are as good as not written.
-fn holds_something(value: &Data) -> bool {
-    !matches!(value, Data::Null | Data::Bool(false))
-        && value.as_list().is_none_or(|items| !items.is_empty())
-        && value.as_map().is_none_or(|pairs| !pairs.is_empty())
-}
-
-/// Whether a setting is one of how a clip is shaped and how loud it plays, which every object that holds one plays.
-fn is_shaping(name: &str) -> bool {
-    ["density_", "articulate_", "velocity"].iter().any(|start| name.starts_with(start))
-}
-
-/// The first setting of a table an object holds that the port does not play yet.
-fn unported(table: &[Setting], played: &[&str], written: &dyn Fn(&str) -> Option<Data>) -> Rendered<()> {
-    for setting in table {
-        if !played.contains(&setting.name) && !is_shaping(setting.name) && written(setting.name).is_some_and(|value| holds_something(&value)) {
-            return Err(RenderError::NotPorted(format!("the {} setting", setting.name)));
-        }
-    }
-    Ok(())
-}
-
-/// Refuse a song that uses a part of the render not ported yet, naming the part.
-fn check_ported(setlist: &Setlist, song: &Song) -> Rendered<()> {
-    let song_played = [
-        SongSetting::TEMPO,
-        SongSetting::GROOVE,
-        SongSetting::TIME_SIGNATURE,
-        SongSetting::ENTRY_SIZE,
-        SongSetting::SCALE,
-        SongSetting::GENRE,
-        SongSetting::SUBGENRE,
-        SongSetting::VARIANT,
-        SongSetting::LIVE_RESPONSIVENESS,
-        SongSetting::VISUALIZER,
-        SongSetting::PREVIEW_INSTRUMENT,
-        SongSetting::WIZARD,
-    ];
-    unported(SONG, &song_played, &|name| song.get_written(name).cloned())?;
-    let track_played = [
-        TrackSetting::DRUM,
-        TrackSetting::MUTE,
-        TrackSetting::SOLO,
-        TrackSetting::TRANSPOSE,
-        TrackSetting::CC,
-        TrackSetting::INSTRUMENT,
-        TrackSetting::DEFAULT_VELOCITY,
-        TrackSetting::ACCENT,
-        TrackSetting::GROOVE,
-        TrackSetting::CHAINS,
-        TrackSetting::BUILT_IN,
-        // The octaves the track's instrument plays guide the piano roll's marks and change no note.
-        TrackSetting::LOWEST_OCTAVE,
-        TrackSetting::HIGHEST_OCTAVE,
-    ];
-    for (_, track) in song.tracks() {
-        unported(TRACK, &track_played, &|name| track.get_written(name).cloned())?;
-    }
-    let scene_played = [
-        SceneSetting::RESET_DRAWS,
-        SceneSetting::TEMPO,
-        SceneSetting::TEMPO_IN_START,
-        SceneSetting::TEMPO_IN_END,
-        SceneSetting::TEMPO_IN_OVER,
-        SceneSetting::TEMPO_OUT_START,
-        SceneSetting::TEMPO_OUT_END,
-        SceneSetting::TEMPO_OUT_OVER,
-        SceneSetting::GROOVE,
-        SceneSetting::CHAINS,
-        SceneSetting::NAME,
-        SceneSetting::SECTION,
-        SceneSetting::REPEAT,
-        SceneSetting::SCALE,
-        SceneSetting::LAUNCH_TOGETHER,
-    ];
-    let clip_played = [
-        ClipSlotSetting::NAME,
-        ClipSlotSetting::PATTERNS,
-        ClipSlotSetting::LOOP,
-        ClipSlotSetting::PATTERN_ORDER,
-        ClipSlotSetting::REPEAT,
-        ClipSlotSetting::DIRECTION,
-        ClipSlotSetting::FOLLOW_ACTION,
-        ClipSlotSetting::SCALE,
-        ClipSlotSetting::BUILT_IN,
-        ClipSlotSetting::CHAINS,
-        ClipSlotSetting::RESET_DRAWS,
-        ClipSlotSetting::MORPH_TO,
-        ClipSlotSetting::GRAB_TRACK,
-        ClipSlotSetting::MORPH_STYLE,
-    ];
-    for scene in song.scenes() {
-        unported(SCENE, &scene_played, &|name| scene.get_written(name).cloned())?;
-        for (_, clip_slot) in scene.clip_slots() {
-            unported(CLIP_SLOT, &clip_played, &|name| clip_slot.get_written(name).cloned())?;
-        }
-    }
-    let instrument_played = [
-        InstrumentSetting::DEVICE,
-        InstrumentSetting::CHANNEL,
-        InstrumentSetting::GM_SOUND,
-        InstrumentSetting::PAN,
-        InstrumentSetting::KEYSWITCHES,
-        InstrumentSetting::KEYSWITCH_LEAD,
-        InstrumentSetting::DEFAULT_VELOCITY,
-        InstrumentSetting::ACCENT,
-        InstrumentSetting::KIND,
-        InstrumentSetting::LATENCY,
-        InstrumentSetting::SOUND,
-        InstrumentSetting::PREVIEW,
-        InstrumentSetting::ROLE,
-    ];
-    for (_, item) in setlist.items(Section::INSTRUMENTS) {
-        if let llamatron_model::objects::setlist::Item::Instrument(instrument) = item {
-            unported(INSTRUMENT, &instrument_played, &|name| instrument.get_written(name).cloned())?;
-        }
-    }
-    let pattern_played = [
-        PatternSetting::STEP_SIZE,
-        PatternSetting::TIME_SIGNATURE,
-        PatternSetting::ENTRY_SIZE,
-        PatternSetting::DRUM,
-        PatternSetting::DIRECTION,
-        PatternSetting::GROUP,
-        // How many notes the scale had that the pattern was written for: it guides the pickers and changes no note.
-        PatternSetting::SCALE_LENGTH,
-    ];
-    for (_, item) in setlist.items(Section::PATTERNS) {
-        if let llamatron_model::objects::setlist::Item::Pattern(pattern) = item {
-            unported(PATTERN, &pattern_played, &|name| pattern.get_written(name).cloned())?;
-        }
-    }
-    Ok(())
 }
 
 /// What a written-out scene lasts by the estimate: its seconds and each clip's, by track, or the problem that stops it.
