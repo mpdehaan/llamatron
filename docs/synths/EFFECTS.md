@@ -11,17 +11,20 @@ how much of the effect is heard against the sound that went into it.
 Drive shapes the sound by a curve, as an overdriven amplifier or a pedal does,
 by its Amount. Soft and Warm saturate, rounding the peaks off smoothly; Warm
 leans to one side first, so that the two halves of the wave are rounded
-differently and even harmonics are added, as a tube's are. Leaning a sound and
-then taking the lean's own level away again keeps silence silent, and the
-curve is scaled so that it reaches full on one side and stays under it on the
-other. Hard clips the peaks flat. Fold folds the wave back on itself past full
+differently and even harmonics are added, as a tube's are; the steady offset a
+lean leaves is taken away afterwards, so that the sound stays centred. Hard clips the peaks flat. Fold folds the wave back on itself past full
 scale, and Wrap wraps it round to the other side, the harsh digital sounds of
 cheap grooveboxes.
+
+Turning Amount up changes the tone, not the loudness: each curve is matched so
+that a sound at a moderate level comes out as loud as it went in, whatever the
+Amount. At Amount 0 Drive leaves the sound untouched.
 
 A curve pushed hard makes harmonics higher than a digital sound can hold, and
 those fold back down as whistling tones that have nothing to do with the note,
 worst on high notes. Drive keeps them out: it runs its curve at twice the
-sample rate, and takes each sample as the curve's average over the moment
+sample rate, Fold and Wrap at eight times, since they make the highest
+harmonics, and takes each sample as the curve's average over the moment
 rather than its value at one instant. A high note driven hard sounds as rough
 as it should and no more, and Mix blends the shaped sound with the plain one
 in step, both delayed alike by a fraction of a millisecond.

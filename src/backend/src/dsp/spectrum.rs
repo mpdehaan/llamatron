@@ -15,6 +15,12 @@ const DECIBELS_PER_POWER_DECADE: f64 = 10.0;
 /// The stray energy of a second of a steady tone against its harmonics' energy, in decibels: the last `rate` samples
 /// read with one bin a hertz, so that a whole-hertz fundamental's harmonics fall exactly on bins.
 pub fn stray_decibels(samples: &[f32], rate: usize, fundamental: usize) -> f64 {
+    stray_decibels_under(samples, rate, fundamental, rate / 2)
+}
+
+/// The stray energy under a frequency, as `stray_decibels` measures it, against all the harmonics' energy: what is
+/// heard of the aliasing, leaving out what falls in the top octave's last few kilohertz.
+pub fn stray_decibels_under(samples: &[f32], rate: usize, fundamental: usize, top_hertz: usize) -> f64 {
     let second = &samples[samples.len() - rate..];
     let mut bins: Vec<Complex<f64>> = second.iter().map(|sample| Complex::new(*sample as f64, 0.0)).collect();
     FftPlanner::new().plan_fft_forward(rate).process(&mut bins);
@@ -25,7 +31,7 @@ pub fn stray_decibels(samples: &[f32], rate: usize, fundamental: usize) -> f64 {
         let energy = bin.norm_sqr();
         if nearest > 0 && hertz.abs_diff(nearest) <= HARMONIC_WIDTH {
             harmonic += energy;
-        } else {
+        } else if hertz < top_hertz {
             stray += energy;
         }
     }
