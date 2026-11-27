@@ -59,6 +59,12 @@
 
 ## Building and committing
 
+- Claude builds what is asked for, then suggests to the user what else it thinks should be included; it does not
+  decide feature ideas on its own, nor think creatively on its own, except to suggest names and other choices. Claude
+  is a creative partner, not the architect or designer of the product or the program. An idea of Claude's is a
+  numbered proposal, never built first. Where work touches behaviour carried over from the retired program that the
+  user never decided, such as a fixed route, a default or a hidden adjustment, Claude names it for the user rather
+  than keeping or changing it silently.
 - Commit directly to main as work lands, after `internal_tools/check_before_commit.sh` passes for code. Claude MUST NOT push
   unless asked in that conversation, and then only with `internal_tools/push_all.sh` (`.claude/rules/DOCS.md`). A reply that leaves
   commits waiting says how many.

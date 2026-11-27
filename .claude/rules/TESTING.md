@@ -73,6 +73,8 @@ internal_tools/check_before_commit.sh                              # before comm
   joints, scrolling and search.
 - A test asserts on a named part (the set's data, the status line, a field's shown value), never on a whole screen.
 - Keep the suite small: test a behaviour once, at the layer a person meets it. Nothing the compiler guarantees is tested.
+- Tests walk the registries (`.claude/rules/STYLE.md`) and never list components or pages by hand. A test fails for a
+  file in a component folder that no registry names, and for a registered page the key tour cannot reach.
 - Tests use the program's contract, its public types, functions and the document's methods, never a type's private parts.
 - A test starts from a named scenario, a set or a document made by a shared helper and named for what it holds, so that
   tests of the same thing start alike.

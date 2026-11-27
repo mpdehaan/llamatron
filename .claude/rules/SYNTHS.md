@@ -30,4 +30,8 @@ holds how their code is written, and `.claude/notes/synthesis/` the research the
   the note, never all at one phase, since oscillators that start together lock, and two in tune add up to one fixed
   wave rather than mixing. A sub-oscillator is its oscillator divided down and stays locked to it, switching only where
   its oscillator's cycle begins. A test of every engine with several oscillators holds both, hearing two in tune mix.
+- Nothing is connected that a person cannot see and undo (`.claude/rules/UX.md`, "Nothing hidden"): one part of a voice
+  moves another only through a setting shown on its page or a Mod Matrix route. The fixed connections are Env 1 to the
+  Amp and Env 2 to the cutoff through the filter's Env amount, each shown on screen with its way out (Disconnect
+  filter); a new fixed connection needs the user's yes.
 

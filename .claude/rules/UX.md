@@ -4,6 +4,13 @@ The rules for every page, dialog and message of the text UI. Exact layouts and c
 "Drawing details moved from UX.md". `docs/GETTING_STARTED.md` ("Keyboard Control") tells people the same rules; a change here
 changes it too. A new thing looks like the existing thing it is most like.
 
+## Nothing hidden
+
+- Nothing in the program acts or is connected where a person cannot see it and undo it: one thing moves or changes
+  another only through a setting shown on its page, with its way out shown there too. A new fixed connection, hidden
+  adjustment or automatic behaviour needs the user's yes. The built-in synths' instance of this rule is in
+  `.claude/rules/SYNTHS.md`.
+
 ## Keys and legends
 
 - **Everywhere keys** are Ctrl+ or function keys, never letters: Ctrl+S save, Ctrl+O open, Ctrl+X export, Ctrl+T silence, Ctrl+Z

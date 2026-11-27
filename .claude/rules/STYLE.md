@@ -18,6 +18,10 @@ plain code, comments that explain why, tests that read clearly.
   named constant saying what it is for, such as `let shown_rows = 7;` or `const PREVIEW_CHANNEL: i64 = 15;`. Zero, one, and the
   empty text in their plain sense need no name.
 - **A rule about shape is met by naming the thing a person would name**, never by cutting code into pieces or a clever line.
+- **Everything the program offers is registered.** Every component (engine, oscillator, filter, envelope, Amp,
+  effect, LFO, Mod Matrix source and destination) and every page is an entry in its kind's registry, the one place the
+  program builds it from and draws its lists from: no list of components or pages is written anywhere else, and a
+  name no registry holds builds nothing rather than falling through to another.
 - **Organized at every scale.** A file holds one subject in a sensible order; a type is a nameable thing with a visible
   contract; each line says plainly what it does. Three or four near-repeats get a helper whose name says what the shape means.
   Keep making code simpler and more elegant, not only correct.

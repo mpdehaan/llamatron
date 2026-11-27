@@ -30,10 +30,13 @@ standard a person who does not know Rust can trust: it builds itself, explains i
 
 - `src/` is one Cargo workspace, a crate a layer (math, strings, model, engine, exporters, importers, backend, tracker), all
   building into `src/target/`; a crate uses only the crates its manifest names, so the compiler keeps the layering.
-- The code is in folders by component, as Rust arranges a crate (a folder a module, its `mod.rs` naming its parts):
-  `protocol/`, `daemon/`, `audio/`, `engine/`, `instrument/`, `oscillators/`, `filters/`, `envelopes/`,
-  `modulation/`, `effects/`, `drums/`, `fluid/`, `dsp/` today. The tracker's
-  module tree is well organized (the user's rule), each layer and page in its place.
+- The code is in folders by kind, as Rust arranges a crate (a folder a module, its `mod.rs` naming its parts and
+  holding only what the kind shares): `protocol/`, `daemon/`, `audio/`, `engine/`, `instrument/`, `oscillators/`,
+  `filters/`, `envelopes/`, `modulation/`, `effects/`, `drums/`, `fluid/`, `dsp/` today. Each component, such as one
+  oscillator type, one filter, one envelope type or one effect, is a file of its own in its kind's folder; code that
+  several kinds use lives in `dsp/`. A folder holds one kind, and a file holds one component; where either grows a
+  second, it is split in the same change. The tracker's module tree follows the same rule (the user's): a folder per
+  area of pages, a file per page, and the widgets in their own folder.
 
 - Every Rust file starts with the project's three-line GPLv3 header (`.claude/COMPLIANCE.md`), as `//` comments, above its module
   documentation.
