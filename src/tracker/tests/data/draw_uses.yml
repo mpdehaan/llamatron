@@ -1,0 +1,14 @@
+# llamatron: a pattern whose four steps use AD on the Note+= row as add, subtract, neither, and an older file's true.
+scales:
+  - { name: c_major, root: C, type: major }
+patterns:
+  - { name: tune, steps: 4, degree: [1, 1, 1, 1], ad_note: [1, -1, 0, true] }
+songs:
+  - name: song
+    scale: c_major
+    draws:
+      AD: { slots: [0, 1] }
+    tracks: [{ name: lead }]
+    scenes:
+      - name: one
+        clips: [{ track: lead, pattern: tune }]

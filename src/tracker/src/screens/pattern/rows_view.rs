@@ -19,7 +19,7 @@ use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::Song;
 use llamatron_model::schema::checking::plain_data;
 use llamatron_model::schema::generated::file_format::{
-    Row, Section, TrackSetting, CC_ROWS, CHORD_SYMBOLS, DIVIDING_OPERATORS, DRAW_NAMES, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS,
+    RegisterUse, Row, Section, TrackSetting, CC_ROWS, CHORD_SYMBOLS, DIVIDING_OPERATORS, DRAW_NAMES, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS,
     GATE_LENGTH_CHOICES, OPERATORS, RESULT_COMPARISONS, STATEMENT_ROWS, VALUE_NAMES,
 };
 use llamatron_model::schema::generated::limits::{MAX_STATEMENT_NUMBER, MIN_DEGREE};
@@ -513,9 +513,11 @@ impl<'a> Rows<'a> {
                 }
                 .to_string()
             }
-            _ if DRAW_NOTE_ROWS.iter().chain(DRAW_VELOCITY_ROWS).any(|(_, row)| *row == name) => match held.and_then(Data::as_str) {
-                Some("add") => marks::MSG_REGISTER_ADDS.to_string(),
-                Some("subtract") => marks::MSG_REGISTER_SUBTRACTS.to_string(),
+            // A step adds the draw (1), subtracts it (-1) or neither (0); an older file's true reads as adding.
+            _ if DRAW_NOTE_ROWS.iter().chain(DRAW_VELOCITY_ROWS).any(|(_, row)| *row == name) => match held {
+                Some(Data::Whole(use_of)) if *use_of == RegisterUse::ADD as i128 => marks::MSG_REGISTER_ADDS.to_string(),
+                Some(Data::Bool(true)) => marks::MSG_REGISTER_ADDS.to_string(),
+                Some(Data::Whole(use_of)) if *use_of == RegisterUse::SUBTRACT as i128 => marks::MSG_REGISTER_SUBTRACTS.to_string(),
                 _ => marks::MSG_TOGGLE_OFF.to_string(),
             },
             _ if Self::statement_place(name).is_some() => {
@@ -1343,5 +1345,44 @@ fn typed_number(typed: &str, digit: &str, lowest: i64, highest: i64) -> Typed {
         number: None,
         typed: String::new(),
         continues: false,
+    }
+}
+
+#[cfg(test)]
+mod draw_use_tests {
+    use super::*;
+
+    /// A Use Draws row shows each step's use of its draw: + for adding, - for subtracting, off for neither, and + for an
+    /// older file's true.
+    #[test]
+    fn a_use_draws_row_shows_what_each_step_does() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/draw_uses.yml");
+        let text = std::fs::read_to_string(path).expect("the scenario's set is there");
+        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let song = setlist.get_song("song").expect("the song");
+        let pattern = setlist.get_pattern("tune").expect("the pattern");
+        let open = std::collections::HashSet::new();
+        let rows = Rows {
+            setlist: &setlist,
+            song,
+            pattern,
+            name: "tune".to_string(),
+            scale: Some("c_major".to_string()),
+            open: &open,
+            gauge_rows: 0,
+            default_octave: 4,
+            keyswitch_slots: Vec::new(),
+            slot_names: Vec::new(),
+            keyswitch_hint: String::new(),
+        };
+        let row = DRAW_NOTE_ROWS[0].1;
+        let shown: Vec<String> = (0..4).map(|step| rows.cell_text(row, step)).collect();
+        let expected = [
+            marks::MSG_REGISTER_ADDS,
+            marks::MSG_REGISTER_SUBTRACTS,
+            marks::MSG_TOGGLE_OFF,
+            marks::MSG_REGISTER_ADDS,
+        ];
+        assert_eq!(shown, expected);
     }
 }
