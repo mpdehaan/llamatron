@@ -34,4 +34,7 @@ holds how their code is written, and `.claude/notes/synthesis/` the research the
   moves another only through a setting shown on its page or a Mod Matrix route. The fixed connections are Env 1 to the
   Amp and Env 2 to the cutoff through the filter's Env amount, each shown on screen with its way out (Disconnect
   filter); a new fixed connection needs the user's yes.
+- Every oscillator has a Detune in cents and a Fine in tenths of a cent, each a destination of the Mod Matrix, so that
+  any oscillator can beat slowly against another or be moved by a modulator, as the slow chaotic modulators make most
+  of.
 

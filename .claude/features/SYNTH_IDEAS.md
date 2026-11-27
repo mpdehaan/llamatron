@@ -121,6 +121,12 @@ The professor's research is in `.claude/notes/synthesis/`.
   kept only with the saturation curve; the combined waveforms from reSIDfp's model (GPL-2.0-or-later), with a choice of
   the chip's two revisions and the envelope's 8-bit converter; later, the filter, the later revision's linear cutoff
   first (`.claude/notes/synthesis/CHIP_TABLES.md`).
+  Beside the chip's own sound: the combined waveforms; the chip's filter as a Filter type, its mixed modes and the first
+  revision's distortion; three oscillators to a voice, each with its wave, level, transpose and tune, ring and sync
+  chained from the one before, in place of the hidden second; a fixed pitch for the second oscillator; an arpeggio
+  Speed of one to four frames a step and a Chord mode that cycles a held chord; a Frame rate of 50, 60, 100 or 200 Hz;
+  the Chip revision, and the first revision's thump at note-on; and Ring kept on every wave, the SID page saying that
+  this goes beyond the chip, which rings only the triangle.
 - **Pocket closer to its chip**: the wave channel on its own clock, an octave under the pulses' for one register value,
   and notes under 64 Hz played as the chip plays them; the noise on the chip's grid of divisors and shifts,
   band-limited; and, as a faithful mode, levels from silence to full with the console's 28 Hz high-pass, which gives
@@ -328,4 +334,11 @@ In the order of their priority, the highest first.
   `LFO 1 / Rate` and `FX 1 / Mix`, grouped by block in the blocks' order. Each component declares what it offers the
   Mod Matrix in one standard form in its registry entry (each setting a route may move, with its label, range and
   reach), so that more of a component is made movable by adding to its entry.
+- **Steps, a per-frame table for every engine**: a table of up to 32 rows played at a frame rate (the engine's own, a
+  fixed rate, or the tempo), each row holding lanes for a note (relative or fixed), a level, a pulse width or duty, a
+  wave, a noise period and a pan, with a loop point and a release point, as a tracker's instrument table is. It is a
+  tab of its own and a Mod Matrix source; the chip engines show its common uses as simple fields of their own
+  (Arpeggio, Duty steps, Drop, Vibrato delay), and the SID's Arpeggio becomes its Note lane.
+- **Glissando and LFO extras**: Glissando, gliding in semitone steps, among the Glide shapes; an LFO One-shot and a
+  Start phase.
 
