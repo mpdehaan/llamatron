@@ -141,7 +141,7 @@ fn values_of(kind: SettingKind) -> Vec<Data> {
 fn tried_in(part: &str, part_type: &str) -> String {
     let oscillators = if part == "oscillators" {
         match part_type {
-            "basic" => "{ type: basic, oscillators: [{ waveform: saw }, { waveform: pulse, detune: 7 }] }".to_string(),
+            "basic" => "{ type: basic, oscillators: [{ waveform: pulse, detune: 7 }] }".to_string(),
             "sid" => "{ type: sid, wave: pulse }".to_string(),
             other => format!("{{ type: {other} }}"),
         }
@@ -260,9 +260,9 @@ type Trial = (&'static str, &'static str, &'static str);
 const TRIALS: &[Trial] = &[
     ("sid arpeggio", "{ engine: sid }", "{ engine: sid, oscillators: { type: sid, arpeggio: [0, 4, 7] } }"),
     ("basic wave", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: pulse }] } }"),
-    ("basic fine", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: saw, fine: 35 }] } }"),
-    ("basic detune", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: saw, detune: 15 }] } }"),
-    ("basic level", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: square }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: square, level: 20 }] } }"),
+    ("basic fine", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw, fine: 35 }] } }"),
+    ("basic detune", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw, detune: 15 }] } }"),
+    ("basic level", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: square }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: square, level: 20 }] } }"),
     ("lfo on", "{ engine: basic, matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
     ("lfo shape", "{ engine: basic, lfos: [{ \"on\": true, shape: sine }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true, shape: square }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
     ("matrix osc", "{ engine: basic, matrix: [{ source: osc, via: none, destination: pitch, amount: 0 }] }", "{ engine: basic, matrix: [{ source: osc, via: none, destination: pitch, amount: 40 }] }"),
@@ -282,7 +282,7 @@ const TRIALS: &[Trial] = &[
     ("matrix destination", "{ engine: basic, matrix: [{ source: env2, via: none, destination: pitch, amount: 40 }] }", "{ engine: basic, matrix: [{ source: env2, via: none, destination: resonance, amount: 40 }] }"),
     ("matrix amount", "{ engine: basic, matrix: [{ source: env2, via: none, destination: pitch, amount: 10 }] }", "{ engine: basic, matrix: [{ source: env2, via: none, destination: pitch, amount: 60 }] }"),
     ("matrix pulse width", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: pulse }] }, lfos: [{ \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pulse_width, amount: 0 }] }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: pulse }] }, lfos: [{ \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pulse_width, amount: 60 }] }"),
-    ("matrix detune", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: saw, detune: 10 }] }, matrix: [{ source: env2, via: none, destination: detune, amount: 0 }] }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: saw, detune: 10 }] }, matrix: [{ source: env2, via: none, destination: detune, amount: 80 }] }"),
+    ("matrix detune", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw, detune: 10 }] }, matrix: [{ source: env2, via: none, destination: detune, amount: 0 }] }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw, detune: 10 }] }, matrix: [{ source: env2, via: none, destination: detune, amount: 80 }] }"),
     ("filter ladder bass compensation", "{ engine: basic, filter: { type: ladder, cutoff: 400, resonance: 90, bass_compensation: 100 } }", "{ engine: basic, filter: { type: ladder, cutoff: 400, resonance: 90, bass_compensation: 0 } }"),
     ("effect drive", "{ engine: basic }", "{ engine: basic, effects: [{ effect: drive, curve: hard, amount: 80 }] }"),
     ("effect drive curve", "{ engine: basic, effects: [{ effect: drive, curve: soft, amount: 80 }] }", "{ engine: basic, effects: [{ effect: drive, curve: fold, amount: 80 }] }"),
@@ -502,21 +502,25 @@ fn every_engine_slides_a_glided_step_without_striking_it_again() {
     }
 }
 
-/// Basic's oscillators run free, so that two in tune mix rather than lock: a saw and a square started together add up to
-/// a saw an octave up, no louder than the saw alone, while running free they are on average far louder, as two
-/// unrelated waves are, and each note starts them differently.
+/// Oscillators run free, so that two in tune mix rather than lock: a saw and a square started together add up to a saw
+/// an octave up, no louder than the saw alone, while running free they are on average far louder, as two unrelated
+/// waves are, and each note starts them differently. Asheville's, with Drift at nothing, so that only their phases
+/// differ.
 #[test]
-fn basic_oscillators_in_tune_mix_rather_than_lock() {
+fn oscillators_in_tune_mix_rather_than_lock() {
     let notes = [PITCH; 8];
-    let energy = |sound: &str| {
-        let out = played_notes(&instrument(sound), &notes);
+    let energy = |waves: &str| {
+        let sound = format!(
+            "{{ engine: asheville, oscillators: {{ type: asheville, osc1_range: \"8\", osc2_range: \"8\", {waves}, osc1_tune: 0, osc2_tune: 0, osc3_on: false, drift: 0 }}, filter: {{ type: none }} }}"
+        );
+        let out = played_notes(&instrument(&sound), &notes);
         let note = out.len() / notes.len();
         (0..notes.len())
             .map(|n| out[n * note..(n + 1) * note].iter().map(|sample| (*sample as f64).powi(2)).sum::<f64>())
             .collect::<Vec<f64>>()
     };
-    let saw = energy("{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }] } }");
-    let mixed = energy("{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: square }] } }");
+    let saw = energy("osc1_wave: saw, osc1_mix: 10, osc2_on: false");
+    let mixed = energy("osc1_wave: saw, osc1_mix: 10, osc2_wave: square, osc2_mix: 10");
     let average = |energies: &[f64]| energies.iter().sum::<f64>() / energies.len() as f64;
     assert!(average(&mixed) > 2.0 * average(&saw), "{} against {}", average(&mixed), average(&saw));
     let spread = mixed.iter().cloned().fold(f64::MIN, f64::max) / mixed.iter().cloned().fold(f64::MAX, f64::min);

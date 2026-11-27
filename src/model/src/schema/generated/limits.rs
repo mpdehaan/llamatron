@@ -79,7 +79,6 @@ pub const MIN_INSTRUMENT_LATENCY: i64 = 0;
 pub const MAX_INSTRUMENT_LATENCY: i64 = 500;
 pub const MIN_PAN: i64 = 0;
 pub const MAX_PAN: i64 = 100;
-pub const MAX_OSCILLATORS: i64 = 3;
 pub const MAX_DETUNE_CENTS: i64 = 100;
 pub const MAX_PERCENT: i64 = 100;
 pub const MAX_VOLUME_PERCENT: i64 = 150;

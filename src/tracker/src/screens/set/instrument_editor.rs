@@ -28,8 +28,8 @@ use llamatron_model::schema::generated::file_format::{
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
-    MAX_KNOB, MAX_MATRIX_AMOUNT, MAX_OSCILLATORS, MAX_PAN, MAX_SID_RATE, MAX_TAP_FEEDBACK, MAX_TAP_LOW_CUT, MAX_TAP_MS, MAX_TAP_TONE, MAX_VOICES,
-    MAX_VOLUME_PERCENT, MIN_BITS, MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY, MIN_KEYSWITCH_LEAD, MIN_PAN, MIN_TAP_LOW_CUT, MIN_TAP_TONE, MOST_BAX_DECIBELS,
+    MAX_KNOB, MAX_MATRIX_AMOUNT, MAX_PAN, MAX_SID_RATE, MAX_TAP_FEEDBACK, MAX_TAP_LOW_CUT, MAX_TAP_MS, MAX_TAP_TONE, MAX_VOICES, MAX_VOLUME_PERCENT, MIN_BITS,
+    MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY, MIN_KEYSWITCH_LEAD, MIN_PAN, MIN_TAP_LOW_CUT, MIN_TAP_TONE, MOST_BAX_DECIBELS,
 };
 use llamatron_strings::{labels, legends, marks, messages, named};
 
@@ -84,6 +84,8 @@ fn control_number(source: &str) -> Option<i64> {
 }
 /// Asheville: its oscillators' settings, column by column; its panel's own; its Model's Continuous, which shows a Shape
 /// in each oscillator's Wave's place; and the endings that tell the two apart.
+/// Basic's oscillators: one, a plain wave; the engines of several oscillators are the ones built for it.
+const BASIC_OSCILLATORS: usize = 1;
 /// Fine tuning's reach either way, in tenths of a cent: ten cents.
 const MOST_FINE_TENTHS: i64 = 100;
 const ASHEVILLE: &str = "asheville";
@@ -1049,7 +1051,7 @@ impl InstrumentEditor {
         let mut columns = Vec::new();
         let kind = sound.part_type("oscillators");
         if kind == "basic" {
-            for number in 1..=MAX_OSCILLATORS as usize {
+            for number in 1..=BASIC_OSCILLATORS {
                 let heading = named(labels::MSG_OSCILLATOR_LABEL, &[("number", number.into())]);
                 let waveform = text(&sound.oscillator(number, "waveform"));
                 let detune = whole(&sound.oscillator(number, "detune"));

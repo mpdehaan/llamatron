@@ -182,9 +182,9 @@ instruments:
     kind: built_in
     role: normal
     sound:
-      engine: basic
+      engine: asheville
       volume: 36
-      oscillators: { type: basic, oscillators: [{ waveform: pulse, detune: -6, level: 70 }, { waveform: saw, detune: 6, level: 60 }] }
+      oscillators: { type: asheville, osc1_range: "8", osc1_wave: square, osc1_tune: -6, osc1_mix: 7, osc2_range: "8", osc2_wave: saw, osc2_tune: 6, osc2_mix: 6, osc3_on: false }
       envelopes: [{ type: adsr, attack: 2, decay: 220, sustain: 35, release: 90 }, { type: adsr, attack: 0, decay: 200, sustain: 15, release: 100 }, { type: adsr, attack: 0, decay: 10, sustain: 0, release: 10 }]
       filter: { type: ladder, cutoff: 1800, resonance: 20, env_amount: 40, key_track: 50 }
   - name: triangle bass

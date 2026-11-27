@@ -159,8 +159,16 @@ fn cents_with_fine(cents: &Data, fine: &Data) -> f64 {
     cents.as_whole().unwrap_or(0) as f64 + fine.as_whole().unwrap_or(0) as f64 / tenths_a_cent
 }
 
+/// How many oscillators Basic plays.
+const BASIC_OSCILLATORS: usize = 1;
+
 fn basic_oscillators(sound: &Sound) -> Data {
-    let count = sound.part_value(OSCILLATORS, OSCILLATORS).as_list().map_or(0, <[Data]>::len);
+    // Basic plays its first oscillator alone; a set from before it had one keeps only that.
+    let count = sound
+        .part_value(OSCILLATORS, OSCILLATORS)
+        .as_list()
+        .map_or(0, <[Data]>::len)
+        .min(BASIC_OSCILLATORS);
     let mut sounding = Vec::new();
     for number in 1..=count {
         let waveform = sound.oscillator(number, "waveform");
