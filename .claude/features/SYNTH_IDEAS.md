@@ -108,7 +108,12 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **Durham**: A homage to the classic analog bass pedal synth, on its modern descendant's panel, exposing only what that panel
   has; the filter very nearly perfect (the D'Angelo-Välimäki ladder). Research in `MONOSYNTHS.md`, "Durham"; mockup first.
 - **Drone**: A drone instrument of held, slowly moving oscillators, yet sounding only through the Amp, Env 1 opening it, as
-  every engine does. A design, then a mockup.
+  every engine does, drawing on the professor's research into a classic boutique drone synth's ideas: its special LFOs,
+  its tone and how its voices interact. A design, then a mockup.
+- **A speech synth**: a voice that speaks or sings words, the words to say written in a field of their own on each
+  scene, so that the voice says that scene's words as its clips play.
+- **A riser synth**: an instrument dedicated to rises, sweeps and build-ups (risers, falls, impacts and whooshes for
+  transitions), after the professor's research into the dedicated riser instruments of sample-based producers' tools.
 - **A brass synth**, somewhat after Stringy, for the bright, stabbing synth brass of early-1980s rock and pop keyboard anthems,
   as simple as the vintage brass ensemble keyboards (research which to follow).
 - **Brass and wind** among the physical modelling ideas.
